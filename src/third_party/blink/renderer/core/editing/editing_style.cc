@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -100,7 +101,7 @@ enum EditingPropertiesType {
 static const Vector<const CSSProperty*>& AllEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size(); index++) {
@@ -116,7 +117,7 @@ static const Vector<const CSSProperty*>& AllEditingProperties() {
 static const Vector<const CSSProperty*>& InheritableEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticEditingProperties, base::size(kStaticEditingProperties),
         properties);
     for (wtf_size_t index = 0; index < properties.size();) {
@@ -397,8 +398,6 @@ const CSSValue* HTMLFontSizeEquivalent::AttributeValueAsCSSValue(
   return CSSIdentifierValue::Create(size);
 }
 
-float EditingStyle::no_font_delta_ = 0.0f;
-
 EditingStyle::EditingStyle(ContainerNode* node,
                            PropertiesToInclude properties_to_include) {
   Init(node, properties_to_include);
@@ -517,7 +516,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
           /* important */ false, node->GetDocument().GetSecureContextMode());
     }
     if (const CSSValue* value = computed_style_at_position->GetPropertyCSSValue(
-            GetCSSPropertyWebkitTextDecorationsInEffect())) {
+            CSSPropertyID::kWebkitTextDecorationsInEffect)) {
       mutable_style_->SetProperty(
           CSSPropertyID::kTextDecoration, value->CssText(),
           /* important */ false, node->GetDocument().GetSecureContextMode());
@@ -537,8 +536,8 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
       // ReplaceSelectionCommandTest_TextAutosizingDoesntInflateText gets here.
       mutable_style_->SetProperty(
           CSSPropertyID::kFontSize,
-          CSSPrimitiveValue::Create(computed_style->SpecifiedFontSize(),
-                                    CSSPrimitiveValue::UnitType::kPixels)
+          CSSNumericLiteralValue::Create(computed_style->SpecifiedFontSize(),
+                                         CSSPrimitiveValue::UnitType::kPixels)
               ->CssText(),
           /* important */ false, node->GetDocument().GetSecureContextMode());
     }
@@ -622,7 +621,7 @@ void EditingStyle::ExtractFontSizeDelta() {
 
 bool EditingStyle::IsEmpty() const {
   return (!mutable_style_ || mutable_style_->IsEmpty()) &&
-         font_size_delta_ == no_font_delta_;
+         font_size_delta_ == kNoFontDelta;
 }
 
 bool EditingStyle::GetTextDirection(WritingDirection& writing_direction) const {
@@ -674,7 +673,7 @@ void EditingStyle::OverrideWithStyle(const CSSPropertyValueSet* style) {
 void EditingStyle::Clear() {
   mutable_style_.Clear();
   is_monospace_font_ = false;
-  font_size_delta_ = no_font_delta_;
+  font_size_delta_ = kNoFontDelta;
 }
 
 EditingStyle* EditingStyle::Copy() const {
@@ -703,10 +702,10 @@ static const CSSPropertyID kStaticBlockProperties[] = {
     CSSPropertyID::kTextAlignLast, CSSPropertyID::kTextIndent,
     CSSPropertyID::kTextJustify, CSSPropertyID::kWidows};
 
-static Vector<const CSSProperty*>& BlockPropertiesVector() {
+static const Vector<const CSSProperty*>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
-    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         kStaticBlockProperties, base::size(kStaticBlockProperties), properties);
   }
   return properties;
@@ -877,9 +876,10 @@ EditingTriState EditingStyle::TriStateOfStyle(
               To<CSSIdentifierValue>(mutable_style_->GetPropertyCSSValue(
                   CSSPropertyID::kVerticalAlign));
           if (EditingStyleUtilities::HasAncestorVerticalAlignStyle(
-                  node, vertical_align->GetValueID()))
-            node.MutableComputedStyle()->SetVerticalAlign(
+                  node, vertical_align->GetValueID())) {
+            node.MutableComputedStyleForEditingDeprecated()->SetVerticalAlign(
                 vertical_align->ConvertTo<EVerticalAlign>());
+          }
         }
 
         // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if
@@ -1452,7 +1452,8 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
         continue;
       if (primitive_value->IsPercentage()) {
         if (const CSSValue* computed_property_value =
-                computed_style_for_element->GetPropertyCSSValue(css_property)) {
+                computed_style_for_element->GetPropertyCSSValue(
+                    property.Name())) {
           from_computed_style->AddRespectingCascade(
               CSSPropertyValue(css_property, *computed_property_value));
         }
@@ -1876,25 +1877,32 @@ int LegacyFontSizeFromCSSValue(Document* document,
                                bool is_monospace_font,
                                LegacyFontSizeMode mode) {
   if (const auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value)) {
-    CSSPrimitiveValue::LengthUnitType length_type;
-    if (CSSPrimitiveValue::UnitTypeToLengthUnitType(
-            primitive_value->TypeWithCalcResolved(), length_type) &&
-        length_type == CSSPrimitiveValue::kUnitTypePixels) {
-      double conversion =
-          CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
-              primitive_value->TypeWithCalcResolved());
-      int pixel_font_size =
-          clampTo<int>(primitive_value->GetDoubleValue() * conversion);
-      int legacy_font_size = FontSizeFunctions::LegacyFontSize(
-          document, pixel_font_size, is_monospace_font);
-      // Use legacy font size only if pixel value matches exactly to that of
-      // legacy font size.
-      if (mode == kAlwaysUseLegacyFontSize ||
-          FontSizeFunctions::FontSizeForKeyword(
-              document, legacy_font_size, is_monospace_font) == pixel_font_size)
-        return legacy_font_size;
+    if (primitive_value->IsLength()) {
+      // TODO(crbug.com/979895): This doesn't seem to be handle math functions
+      // correctly. This is the result of a refactoring, and may have revealed
+      // an existing bug. Fix it if necessary.
+      CSSPrimitiveValue::UnitType length_unit =
+          primitive_value->IsNumericLiteralValue()
+              ? To<CSSNumericLiteralValue>(primitive_value)->GetType()
+              : CSSPrimitiveValue::UnitType::kPixels;
+      if (!CSSPrimitiveValue::IsRelativeUnit(length_unit)) {
+        double conversion =
+            CSSPrimitiveValue::ConversionToCanonicalUnitsScaleFactor(
+                length_unit);
+        int pixel_font_size =
+            clampTo<int>(primitive_value->GetDoubleValue() * conversion);
+        int legacy_font_size = FontSizeFunctions::LegacyFontSize(
+            document, pixel_font_size, is_monospace_font);
+        // Use legacy font size only if pixel value matches exactly to that of
+        // legacy font size.
+        if (mode == kAlwaysUseLegacyFontSize ||
+            FontSizeFunctions::FontSizeForKeyword(document, legacy_font_size,
+                                                  is_monospace_font) ==
+                pixel_font_size)
+          return legacy_font_size;
 
-      return 0;
+        return 0;
+      }
     }
   }
 

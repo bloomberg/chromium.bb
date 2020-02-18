@@ -19,6 +19,10 @@
 
 #include "source/fuzz/fact_manager.h"
 #include "source/fuzz/fuzzer_context.h"
+#include "source/fuzz/fuzzer_pass_add_dead_breaks.h"
+#include "source/fuzz/fuzzer_pass_add_useful_constructs.h"
+#include "source/fuzz/fuzzer_pass_obfuscate_constants.h"
+#include "source/fuzz/fuzzer_pass_permute_blocks.h"
 #include "source/fuzz/fuzzer_pass_split_blocks.h"
 #include "source/fuzz/protobufs/spirvfuzz_protobufs.h"
 #include "source/fuzz/pseudo_random_generator.h"
@@ -51,14 +55,14 @@ void Fuzzer::SetMessageConsumer(MessageConsumer c) {
 Fuzzer::FuzzerResultStatus Fuzzer::Run(
     const std::vector<uint32_t>& binary_in,
     const protobufs::FactSequence& initial_facts,
-    std::vector<uint32_t>* binary_out,
-    protobufs::TransformationSequence* transformation_sequence_out,
-    spv_const_fuzzer_options options) const {
+    spv_const_fuzzer_options options, std::vector<uint32_t>* binary_out,
+    protobufs::TransformationSequence* transformation_sequence_out) const {
   // Check compatibility between the library version being linked with and the
   // header files being used.
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   spvtools::SpirvTools tools(impl_->target_env);
+  tools.SetMessageConsumer(impl_->consumer);
   if (!tools.IsValid()) {
     impl_->consumer(SPV_MSG_ERROR, nullptr, {},
                     "Failed to create SPIRV-Tools interface; stopping.");
@@ -80,7 +84,7 @@ Fuzzer::FuzzerResultStatus Fuzzer::Run(
   // Make a PRNG, either from a given seed or from a random device.
   PseudoRandomGenerator random_generator(
       options->has_random_seed ? options->random_seed
-                               : (uint32_t)std::random_device()());
+                               : static_cast<uint32_t>(std::random_device()()));
 
   // The fuzzer will introduce new ids into the module.  The module's id bound
   // gives the smallest id that can be used for this purpose.  We add an offset
@@ -93,13 +97,28 @@ Fuzzer::FuzzerResultStatus Fuzzer::Run(
   FuzzerContext fuzzer_context(&random_generator, minimum_fresh_id);
 
   FactManager fact_manager;
-  if (!fact_manager.AddFacts(initial_facts, ir_context.get())) {
-    return Fuzzer::FuzzerResultStatus::kInitialFactsInvalid;
-  }
+  fact_manager.AddFacts(impl_->consumer, initial_facts, ir_context.get());
+
+  // Add some essential ingredients to the module if they are not already
+  // present, such as boolean constants.
+  FuzzerPassAddUsefulConstructs(ir_context.get(), &fact_manager,
+                                &fuzzer_context, transformation_sequence_out)
+      .Apply();
 
   // Apply some semantics-preserving passes.
   FuzzerPassSplitBlocks(ir_context.get(), &fact_manager, &fuzzer_context,
                         transformation_sequence_out)
+      .Apply();
+  FuzzerPassAddDeadBreaks(ir_context.get(), &fact_manager, &fuzzer_context,
+                          transformation_sequence_out)
+      .Apply();
+  FuzzerPassObfuscateConstants(ir_context.get(), &fact_manager, &fuzzer_context,
+                               transformation_sequence_out)
+      .Apply();
+
+  // Finally, give the blocks in the module a good shake-up.
+  FuzzerPassPermuteBlocks(ir_context.get(), &fact_manager, &fuzzer_context,
+                          transformation_sequence_out)
       .Apply();
 
   // Encode the module as a binary.

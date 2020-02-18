@@ -7,12 +7,10 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
-
-class CSSStyleValue;
 
 enum class CSSSyntaxType {
   kTokenStream,
@@ -57,8 +55,6 @@ class CSSSyntaxComponent {
     DCHECK(IsRepeatable());
     return repeat_ == CSSSyntaxRepeat::kSpaceSeparated ? ' ' : ',';
   }
-
-  bool CanTake(const CSSStyleValue&) const;
 
  private:
   CSSSyntaxType type_;

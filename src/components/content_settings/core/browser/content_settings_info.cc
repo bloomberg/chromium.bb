@@ -34,7 +34,7 @@ ContentSetting ContentSettingsInfo::GetInitialDefaultSetting() const {
 }
 
 bool ContentSettingsInfo::IsSettingValid(ContentSetting setting) const {
-  return base::ContainsKey(valid_settings_, setting);
+  return base::Contains(valid_settings_, setting);
 }
 
 // TODO(raymes): Find a better way to deal with the special-casing in
@@ -56,7 +56,7 @@ bool ContentSettingsInfo::IsDefaultSettingValid(ContentSetting setting) const {
     return false;
   }
 
-  return base::ContainsKey(valid_settings_, setting);
+  return base::Contains(valid_settings_, setting);
 }
 
 }  // namespace content_settings

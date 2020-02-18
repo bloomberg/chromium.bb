@@ -44,7 +44,8 @@ void init() {
         "void main() {\n"
         "   gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);\n"
         "}\n";
-    DawnShaderModule vsModule = utils::CreateShaderModule(dawn::Device(device), dawn::ShaderStage::Vertex, vs).Release();
+    DawnShaderModule vsModule =
+        utils::CreateShaderModule(dawn::Device(device), utils::ShaderStage::Vertex, vs).Release();
 
     const char* fs =
         "#version 450\n"
@@ -52,7 +53,8 @@ void init() {
         "void main() {\n"
         "   fragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
         "}\n";
-    DawnShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fs).Release();
+    DawnShaderModule fsModule =
+        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs).Release();
 
     {
         DawnRenderPipelineDescriptor descriptor;
@@ -96,10 +98,8 @@ void init() {
         DawnVertexInputDescriptor vertexInput;
         vertexInput.nextInChain = nullptr;
         vertexInput.indexFormat = DAWN_INDEX_FORMAT_UINT32;
-        vertexInput.numBuffers = 0;
+        vertexInput.bufferCount = 0;
         vertexInput.buffers = nullptr;
-        vertexInput.numAttributes = 0;
-        vertexInput.attributes = nullptr;
         descriptor.vertexInput = &vertexInput;
 
         DawnRasterizationStateDescriptor rasterizationState;
@@ -112,6 +112,8 @@ void init() {
         descriptor.rasterizationState = &rasterizationState;
 
         descriptor.primitiveTopology = DAWN_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        descriptor.sampleMask = 0xFFFFFFFF;
+        descriptor.alphaToCoverageEnabled = false;
 
         descriptor.depthStencilState = nullptr;
 
@@ -143,7 +145,7 @@ void frame() {
     }
     DawnCommandBuffer commands;
     {
-        DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device);
+        DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device, nullptr);
 
         DawnRenderPassEncoder pass = dawnCommandEncoderBeginRenderPass(encoder, &renderpassInfo);
         dawnRenderPassEncoderSetPipeline(pass, pipeline);
@@ -151,7 +153,7 @@ void frame() {
         dawnRenderPassEncoderEndPass(pass);
         dawnRenderPassEncoderRelease(pass);
 
-        commands = dawnCommandEncoderFinish(encoder);
+        commands = dawnCommandEncoderFinish(encoder, nullptr);
         dawnCommandEncoderRelease(encoder);
     }
 

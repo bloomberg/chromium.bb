@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/web/web_script_source.h"
-#include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/property_descriptor.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
@@ -37,8 +37,6 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   ScopedStackedCSSPropertyAnimationsForTest stacked_css_property_animation(
       true);
 
-  WebView().GetPage()->Animator().Clock().DisableSyntheticTimeForTesting();
-
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<div id=\"target\"></div>");
@@ -68,14 +66,14 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
 
   // target.animate({'--x': '100%'}, 1000);
   auto* keyframe = MakeGarbageCollected<StringKeyframe>();
-  keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%", GetDocument().GetSecureContextMode(),
+  keyframe->SetCSSPropertyValue("--x", "100%",
+                                GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
   keyframes.push_back(keyframe);
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  ElementAnimation::animateInternal(
+  Animatable::animateInternal(
       *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
 
@@ -90,14 +88,14 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
 
   // target.animate({'--x': '100%'}, 1000);
   keyframe = MakeGarbageCollected<StringKeyframe>();
-  keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
-                                "100%", GetDocument().GetSecureContextMode(),
+  keyframe->SetCSSPropertyValue("--x", "100%",
+                                GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   keyframes.clear();
   keyframes.push_back(std::move(keyframe));
-  timing = Timing::Defaults();
+  timing = Timing();
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
-  ElementAnimation::animateInternal(
+  Animatable::animateInternal(
       *target, MakeGarbageCollected<StringKeyframeEffectModel>(keyframes),
       timing);
 

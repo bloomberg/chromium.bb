@@ -58,7 +58,6 @@ struct VR_UI_EXPORT Model {
   bool standalone_vr_device = false;
   bool menu_button_long_pressed = false;
   float floor_height = 0.0f;
-  bool use_new_incognito_strings = false;
 
   // WebVR state.
   WebVrModel web_vr;

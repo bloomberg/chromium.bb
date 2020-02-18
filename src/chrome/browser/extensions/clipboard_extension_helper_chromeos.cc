@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "chrome/browser/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -110,7 +110,7 @@ void ClipboardExtensionHelper::OnImageDecodeFailure() {
 
 void ClipboardExtensionHelper::OnImageDecoded(const SkBitmap& bitmap) {
   {
-    ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+    ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
     // Write the decoded image data to clipboard.
     if (!bitmap.empty() && !bitmap.isNull())
       scw.WriteImage(bitmap);

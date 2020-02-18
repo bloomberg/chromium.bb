@@ -6,11 +6,11 @@
 
 #include <random>
 
-#include "osp_base/big_endian.h"
-#include "osp_base/boringssl_util.h"
-#include "third_party/boringssl/src/include/openssl/crypto.h"
-#include "third_party/boringssl/src/include/openssl/err.h"
-#include "third_party/boringssl/src/include/openssl/rand.h"
+#include "openssl/crypto.h"
+#include "openssl/err.h"
+#include "openssl/rand.h"
+#include "util/big_endian.h"
+#include "util/crypto/openssl_util.h"
 
 namespace openscreen {
 namespace cast_streaming {
@@ -35,7 +35,7 @@ FrameCrypto::FrameCrypto(const std::array<uint8_t, 16>& aes_key,
   const int return_code = AES_set_encrypt_key(
       aes_key.data(), aes_key.size() * 8, const_cast<AES_KEY*>(&aes_key_));
   if (return_code != 0) {
-    LogAndClearBoringSslErrors();
+    ClearOpenSSLERRStack(CURRENT_LOCATION);
     OSP_LOG_FATAL << "Failure when setting encryption key; unsafe to continue.";
     OSP_NOTREACHED();
   }
@@ -87,7 +87,7 @@ std::array<uint8_t, 16> FrameCrypto::GenerateRandomBytes() {
   std::array<uint8_t, 16> result;
   const int return_code = RAND_bytes(result.data(), sizeof(result));
   if (return_code != 1) {
-    LogAndClearBoringSslErrors();
+    ClearOpenSSLERRStack(CURRENT_LOCATION);
     OSP_LOG_FATAL
         << "Failure when generating random bytes; unsafe to continue.";
     OSP_NOTREACHED();

@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/about_handler/about_protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -32,7 +31,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/ios/proxy_service_factory.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -44,8 +43,8 @@
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/public/browsing_data/system_cookie_store_util.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/canonical_cookie.h"
@@ -121,7 +120,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
   if (!IsOffTheRecord()) {
     google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
                                           pref_service);
-    google_services_user_account_id_.MoveToThread(io_task_runner);
+    google_services_user_account_id_.MoveToSequence(io_task_runner);
   }
 }
 
@@ -256,7 +255,7 @@ net::URLRequestContext* ChromeBrowserStateIOData::GetIsolatedAppRequestContext(
     const base::FilePath& partition_path) const {
   DCHECK(initialized_);
   AppRequestContext* context = nullptr;
-  if (base::ContainsKey(app_request_context_map_, partition_path)) {
+  if (base::Contains(app_request_context_map_, partition_path)) {
     context = app_request_context_map_[partition_path];
   } else {
     context = AcquireIsolatedAppRequestContext(main_context);
@@ -269,7 +268,7 @@ net::URLRequestContext* ChromeBrowserStateIOData::GetIsolatedAppRequestContext(
 void ChromeBrowserStateIOData::SetCookieStoreForPartitionPath(
     std::unique_ptr<net::CookieStore> cookie_store,
     const base::FilePath& partition_path) {
-  DCHECK(base::ContainsKey(app_request_context_map_, partition_path));
+  DCHECK(base::Contains(app_request_context_map_, partition_path));
   app_request_context_map_[partition_path]->SetCookieStore(
       std::move(cookie_store));
 }
@@ -297,7 +296,7 @@ void ChromeBrowserStateIOData::InitializeMetricsEnabledStateOnUIThread() {
   // read from there.
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        GetApplicationContext()->GetLocalState());
-  enable_metrics_.MoveToThread(
+  enable_metrics_.MoveToSequence(
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 }
 
@@ -428,10 +427,6 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
   set_protocol = job_factory->SetProtocolHandler(
       url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
   DCHECK(set_protocol);
-
-  job_factory->SetProtocolHandler(
-      url::kAboutScheme,
-      std::make_unique<about_handler::AboutProtocolHandler>());
 
   return job_factory;
 }

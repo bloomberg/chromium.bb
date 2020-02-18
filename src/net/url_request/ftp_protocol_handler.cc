@@ -18,15 +18,18 @@
 namespace net {
 
 std::unique_ptr<FtpProtocolHandler> FtpProtocolHandler::Create(
-    HostResolver* host_resolver) {
+    HostResolver* host_resolver,
+    FtpAuthCache* auth_cache) {
+  DCHECK(auth_cache);
   return base::WrapUnique(new FtpProtocolHandler(
-      base::WrapUnique(new FtpNetworkLayer(host_resolver))));
+      base::WrapUnique(new FtpNetworkLayer(host_resolver)), auth_cache));
 }
 
 std::unique_ptr<FtpProtocolHandler> FtpProtocolHandler::CreateForTesting(
-    std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory) {
+    std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory,
+    FtpAuthCache* auth_cache) {
   return base::WrapUnique(
-      new FtpProtocolHandler(std::move(ftp_transaction_factory)));
+      new FtpProtocolHandler(std::move(ftp_transaction_factory), auth_cache));
 }
 
 FtpProtocolHandler::~FtpProtocolHandler() = default;
@@ -41,14 +44,14 @@ URLRequestJob* FtpProtocolHandler::MaybeCreateJob(
   }
 
   return new URLRequestFtpJob(request, network_delegate,
-                              ftp_transaction_factory_.get(),
-                              ftp_auth_cache_.get());
+                              ftp_transaction_factory_.get(), ftp_auth_cache_);
 }
 
 FtpProtocolHandler::FtpProtocolHandler(
-    std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory)
+    std::unique_ptr<FtpTransactionFactory> ftp_transaction_factory,
+    FtpAuthCache* auth_cache)
     : ftp_transaction_factory_(std::move(ftp_transaction_factory)),
-      ftp_auth_cache_(new FtpAuthCache) {
+      ftp_auth_cache_(auth_cache) {
   DCHECK(ftp_transaction_factory_);
 }
 

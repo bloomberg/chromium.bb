@@ -132,6 +132,8 @@ Console.ConsoleView = class extends UI.VBox {
     settingsPane.show(this._contentsElement);
     settingsPane.element.classList.add('console-settings-pane');
 
+    UI.ARIAUtils.setAccessibleName(settingsPane.element, ls`Console settings`);
+    UI.ARIAUtils.markAsGroup(settingsPane.element);
     const settingsToolbarLeft = new UI.Toolbar('', settingsPane.element);
     settingsToolbarLeft.makeVertical();
     settingsToolbarLeft.appendToolbarItem(this._hideNetworkMessagesCheckbox);
@@ -1328,6 +1330,7 @@ Console.ConsoleViewFilter = class {
       text = text || Common.UIString('Hide all');
     this._levelMenuButton.element.classList.toggle('warning', !isAll && !isDefault);
     this._levelMenuButton.setText(text);
+    this._levelMenuButton.setTitle(ls`Log level: ${text}`);
   }
 
   /**

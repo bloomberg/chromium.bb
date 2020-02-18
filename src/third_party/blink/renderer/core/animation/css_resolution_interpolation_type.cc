@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/css_resolution_interpolation_type.h"
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
@@ -19,8 +20,7 @@ InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
     const StyleResolverState*,
     ConversionCheckers&) const {
   auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  if (!primitive_value ||
-      !CSSPrimitiveValue::IsResolution(primitive_value->TypeWithCalcResolved()))
+  if (!primitive_value || !primitive_value->IsResolution())
     return nullptr;
   return InterpolationValue(std::make_unique<InterpolableNumber>(
       primitive_value->ComputeDotsPerPixel()));
@@ -30,8 +30,9 @@ const CSSValue* CSSResolutionInterpolationType::CreateCSSValue(
     const InterpolableValue& value,
     const NonInterpolableValue*,
     const StyleResolverState&) const {
-  return CSSPrimitiveValue::Create(ToInterpolableNumber(value).Value(),
-                                   CSSPrimitiveValue::UnitType::kDotsPerPixel);
+  return CSSNumericLiteralValue::Create(
+      ToInterpolableNumber(value).Value(),
+      CSSPrimitiveValue::UnitType::kDotsPerPixel);
 }
 
 }  // namespace blink

@@ -82,6 +82,7 @@ source_set("toolbar_ui") {
     "toolbar_progress_bar.mm",
   ]
   deps = [
+    "resources:tab_toolbar_shadow_color",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/activity_services/requirements",
@@ -145,8 +146,25 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = []
+  deps = [
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "adaptive_toolbar_egtest.mm",
@@ -168,7 +186,6 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/omnibox/popup:popup_internal",
     "//ios/chrome/browser/ui/omnibox/popup:popup_ui",
     "//ios/chrome/browser/ui/popup_menu:constants",
-    "//ios/chrome/browser/ui/tab_grid:egtest_support",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",

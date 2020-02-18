@@ -22,8 +22,18 @@ namespace
 // To know when to call sh::Initialize and sh::Finalize.
 size_t gActiveCompilers = 0;
 
-ShShaderSpec SelectShaderSpec(GLint majorVersion, GLint minorVersion, bool isWebGL)
+ShShaderSpec SelectShaderSpec(GLint majorVersion,
+                              GLint minorVersion,
+                              bool isWebGL,
+                              EGLenum clientType)
 {
+    // For Desktop GL
+    if (clientType == EGL_OPENGL_API)
+    {
+        ASSERT(majorVersion == 3 && minorVersion == 3);
+        return SH_GL3_3_SPEC;
+    }
+
     if (majorVersion >= 3)
     {
         if (minorVersion == 1)
@@ -51,7 +61,8 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     : mImplementation(implFactory->createCompiler()),
       mSpec(SelectShaderSpec(state.getClientMajorVersion(),
                              state.getClientMinorVersion(),
-                             state.getExtensions().webglCompatibility)),
+                             state.getExtensions().webglCompatibility,
+                             state.getClientType())),
       mOutputType(mImplementation->getTranslatorOutputType()),
       mResources()
 {
@@ -85,8 +96,10 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     mResources.ARB_texture_rectangle           = extensions.textureRectangle;
     mResources.OES_texture_storage_multisample_2d_array =
         extensions.textureStorageMultisample2DArray;
-    mResources.ANGLE_texture_multisample = extensions.textureMultisample;
-    mResources.ANGLE_multi_draw          = extensions.multiDraw;
+    mResources.OES_texture_3D                  = extensions.texture3DOES;
+    mResources.ANGLE_texture_multisample       = extensions.textureMultisample;
+    mResources.ANGLE_multi_draw                = extensions.multiDraw;
+    mResources.ANGLE_base_vertex_base_instance = extensions.baseVertexBaseInstance;
 
     // TODO: use shader precision caps to determine if high precision is supported?
     mResources.FragmentPrecisionHigh = 1;

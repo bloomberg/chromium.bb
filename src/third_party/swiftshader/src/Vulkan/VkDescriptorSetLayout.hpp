@@ -25,14 +25,18 @@ namespace vk
 {
 
 class DescriptorSet;
+class Device;
 
 // TODO(b/129523279): Move to the Device or Pipeline layer.
 struct alignas(16) SampledImageDescriptor
 {
+	~SampledImageDescriptor() = delete;
+
 	void updateSampler(const vk::Sampler *sampler);
 
 	// TODO(b/129523279): Minimize to the data actually needed.
 	vk::Sampler sampler;
+	vk::Device* device;
 
 	uint32_t imageViewId;
 	VkImageViewType type;
@@ -47,6 +51,8 @@ struct alignas(16) SampledImageDescriptor
 
 struct alignas(16) StorageImageDescriptor
 {
+	~StorageImageDescriptor() = delete;
+
 	void *ptr;
 	VkExtent3D extent;
 	int rowPitchBytes;
@@ -64,6 +70,8 @@ struct alignas(16) StorageImageDescriptor
 
 struct alignas(16) BufferDescriptor
 {
+	~BufferDescriptor() = delete;
+
 	void *ptr;
 	int sizeInBytes;		// intended size of the bound region -- slides along with dynamic offsets
 	int robustnessSize;		// total accessible size from static offset -- does not move with dynamic offset
@@ -78,13 +86,13 @@ public:
 	static size_t ComputeRequiredAllocationSize(const VkDescriptorSetLayoutCreateInfo* pCreateInfo);
 
 	static size_t GetDescriptorSize(VkDescriptorType type);
-	static void WriteDescriptorSet(const VkWriteDescriptorSet& descriptorWrites);
+	static void WriteDescriptorSet(Device* device, const VkWriteDescriptorSet& descriptorWrites);
 	static void CopyDescriptorSet(const VkCopyDescriptorSet& descriptorCopies);
 
-	static void WriteDescriptorSet(DescriptorSet *dstSet, VkDescriptorUpdateTemplateEntry const &entry, char const *src);
+	static void WriteDescriptorSet(Device* device, DescriptorSet *dstSet, VkDescriptorUpdateTemplateEntry const &entry, char const *src);
 	static void WriteTextureLevelInfo(sw::Texture *texture, int level, int width, int height, int depth, int pitchP, int sliceP);
 
-	void initialize(VkDescriptorSet descriptorSet);
+	void initialize(DescriptorSet* descriptorSet);
 
 	// Returns the total size of the descriptor set in bytes.
 	size_t getDescriptorSetAllocationSize() const;
@@ -135,7 +143,7 @@ private:
 
 static inline DescriptorSetLayout* Cast(VkDescriptorSetLayout object)
 {
-	return reinterpret_cast<DescriptorSetLayout*>(object.get());
+	return DescriptorSetLayout::Cast(object);
 }
 
 } // namespace vk

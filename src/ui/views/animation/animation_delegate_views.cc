@@ -12,17 +12,27 @@
 namespace views {
 
 AnimationDelegateViews::AnimationDelegateViews(View* view) : view_(view) {
-  scoped_observer_.Add(view);
+  if (view)
+    scoped_observer_.Add(view);
 }
 
-AnimationDelegateViews::~AnimationDelegateViews() = default;
+AnimationDelegateViews::~AnimationDelegateViews() {
+  // Reset the delegate so that we don't attempt to notify our observer from
+  // the destructor.
+  if (container_)
+    container_->set_observer(nullptr);
+}
 
 void AnimationDelegateViews::AnimationContainerWasSet(
     gfx::AnimationContainer* container) {
   if (container_ == container)
     return;
 
+  if (container_)
+    container_->set_observer(nullptr);
+
   container_ = container;
+  container_->set_observer(this);
   UpdateAnimationRunner();
 }
 
@@ -40,11 +50,22 @@ void AnimationDelegateViews::OnViewIsDeleting(View* observed_view) {
   UpdateAnimationRunner();
 }
 
+void AnimationDelegateViews::AnimationContainerShuttingDown(
+    gfx::AnimationContainer* container) {
+  container_ = nullptr;
+}
+
 void AnimationDelegateViews::UpdateAnimationRunner() {
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/969788): Re-enable this function with better ui::Compositor
+  // switching support.
+  return;
+#endif  // defined(OS_CHROMEOS)
+
   if (!container_)
     return;
 
-  if (!view_ || !view_->GetWidget()) {
+  if (!view_ || !view_->GetWidget() || !view_->GetWidget()->GetCompositor()) {
     // TODO(https://crbug.com/960621): make sure the container has a correct
     // compositor-assisted runner.
     container_->SetAnimationRunner(nullptr);

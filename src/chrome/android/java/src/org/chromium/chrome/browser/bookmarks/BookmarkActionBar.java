@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -56,9 +55,7 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
 
         getMenu()
                 .findItem(R.id.selection_open_in_incognito_tab_id)
-                .setTitle(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                ? R.string.contextmenu_open_in_private_tab
-                                : R.string.contextmenu_open_in_incognito_tab);
+                .setTitle(R.string.contextmenu_open_in_incognito_tab);
 
         // Wait to enable the selection mode group until the BookmarkDelegate is set. The
         // SelectionDelegate is retrieved from the BookmarkDelegate.

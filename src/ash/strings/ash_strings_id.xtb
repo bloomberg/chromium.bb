@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Perangkat berfungsi lebih baik jika digunakan bersama</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
 <translation id="1153356358378277386">Perangkat dihubungkan</translation>
+<translation id="1175572348579024023">Scroll</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1195412055398077112">pemindaian berlebih</translation>
 <translation id="119944043368869598">Hapus semua</translation>
-<translation id="123828989343052515">Halaman Kerja Baru</translation>
 <translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Gimana kondisi cuaca?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Metode masukan dikonfigurasi oleh administrator.</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="1761222317188459878">Alihkan sambungan jaringan. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Scroll ke kanan</translation>
 <translation id="1812997170047690955">Konten apa yang ada di layar saya?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> telah dinonaktifkan oleh kebijakan yang diterapkan ke perangkat ini. Harap hubungi administrator Anda untuk meminta perubahan.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asisten (sedang dimuat...)</translation>
 <translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Setel bahasa Anda</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Masukan teks</translation>
 <translation id="1993072747612765854">Pelajari lebih lanjut update <ph name="SYSTEM_APP_NAME" /> terbaru</translation>
 <translation id="1995660704900986789">Matikan perangkat</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Potret</translation>
 <translation id="2067602449040652523">Kecerahan keyboard</translation>
 <translation id="209965399369889474">Tidak terhubung ke jaringan</translation>
+<translation id="2126242104232412123">Halaman kerja baru</translation>
 <translation id="2127372758936585790">Pengisi daya rendah</translation>
 <translation id="2135456203358955318">Kaca pembesar yang dipasang ke dok</translation>
 <translation id="2144487987174258011">Nyalakan ulang untuk mengupdate Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Asisten Google tidak tersedia dalam sesi publik.</translation>
 <translation id="2575685495496069081">Fitur login multipel telah dinonaktifkan</translation>
 <translation id="2582112259361606227">Nyalakan ulang untuk mengupdate</translation>
-<translation id="2597972630681408282">Cahaya Malam: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kartu SIM terkunci</translation>
+<translation id="2651765386227849097">Asisten Google dinonaktifkan di perangkat ini.</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2658778018866295321">Klik dan tarik</translation>
 <translation id="2700493154570097719">Setel keyboard Anda</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> lagi</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
+<translation id="3249513730522716925">Jendela <ph name="WINDOW_TITLE" /> berpindah dari Desktop <ph name="ACTIVE_DESK" /> ke Desktop <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Apa yang bisa kamu lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> tetap dapat login di lain waktu.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3576141592585647168">Ubah zona waktu</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
+<translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Layar Braille tersambung.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Baterai <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
+<translation id="4021716437419160885">Scroll ke bawah</translation>
 <translation id="4042660782729322247">Anda membagikan layar Anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Baterai penuh.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Pintasan untuk beralih Mode Kontras Tinggi telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai ganti <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4924411785043111640">Mulai ulang dan setel ulang</translation>
+<translation id="495046168593986294">Scroll ke atas</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5030687792513154421">Waktu habis</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> terhubung ke ponsel baru</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Colokan mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
 <translation id="5673434351075758678">Dari "<ph name="FROM_LOCALE" />" ke "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
+<translation id="5682642926269496722">Asisten Google tidak tersedia untuk akun pengguna saat ini.</translation>
 <translation id="5691772641933328258">Sidik jari tidak dikenali</translation>
 <translation id="5710450975648804523">Mode Jangan Ganggu aktif</translation>
 <translation id="574392208103952083">Sedang</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Untuk mendapatkan update, nyalakan ulang Chromebook dengan keyboard dalam keadaan terhubung.</translation>
 <translation id="5992218262414051481">Mode Kontras Tinggi diaktifkan. Tekan Ctrl+Search+H lagi untuk menonaktifkannya.</translation>
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
+<translation id="602001110135236999">Scroll ke kiri</translation>
+<translation id="6040143037577758943">Tutup</translation>
 <translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
 <translation id="6047696787498798094">Berbagi layar akan berhenti saat Anda beralih ke pengguna lain. Ingin melanjutkan?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Maaf, sandi Anda tidak dapat diverifikasi. Harap coba lagi.</translation>
 <translation id="607652042414456612">Komputer Anda dapat ditemukan pada perangkat Bluetooth terdekat dan akan muncul sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Mengisi daya <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Asisten Google tidak tersedia dalam sesi tamu.</translation>
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6164005077879661055">Semua file dan data lokal yang terkait dengan pengguna yang dilindungi akan dihapus secara permanen setelah pengguna yang dilindungi ini dihapus. Situs web yang dikunjungi dan setelan untuk pengguna yang dilindungi ini mungkin tetap dapat dilihat oleh pengelola di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" telah disandingkan dan kini tersedia bagi semua pengguna. Anda dapat menghapus penyandingan ini menggunakan Setelan.</translation>
 <translation id="6715542151869432661">Perangkat seluler tidak ditemukan.</translation>
 <translation id="6723839937902243910">Daya</translation>
+<translation id="6727969043791803658">Terhubung, baterai <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
+<translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> dihapus dan digabung dengan Desktop <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Mengisi daya perangkat USB-C yang tersambung</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notifikasi}other{# notifikasi}}</translation>
+<translation id="7749443890790263709">Jumlah halaman kerja maksimum tercapai.</translation>
 <translation id="776344839111254542">Klik untuk melihat detail update</translation>
 <translation id="7780159184141939021">Memutar Layar</translation>
 <translation id="7796353162336583443">Ketuk tombol stilus di rak untuk mencatat, mengambil screenshot, menggunakan asisten, penunjuk laser, atau kaca pembesar.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat catatan</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> ini dan ponsel Anda akan terhubung otomatis</translation>
+<translation id="8388750414311082622">Halaman kerja terakhir tidak dapat dihapus.</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Orang tuamu mengunci perangkat ini</translation>
 <translation id="8406981827175133772">Kaca Pembesar Layar Penuh</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433186206711564395">Setelan jaringan</translation>
 <translation id="8433977262951327081">Pintasan untuk menampilkan balon menu opsi masukan di rak telah diubah. Harap gunakan <ph name="NEW_SHORTCUT" />, bukan <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Desktop <ph name="DESK_TITILE" /> diaktifkan</translation>
 <translation id="8452135315243592079">Kartu SIM tidak ada</translation>
 <translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
 <translation id="847056008324733326">Setelan skala layar</translation>

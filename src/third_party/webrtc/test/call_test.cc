@@ -217,6 +217,7 @@ void CallTest::CreateSenderCall() {
 
 void CallTest::CreateSenderCall(const Call::Config& config) {
   auto sender_config = config;
+  sender_config.task_queue_factory = task_queue_factory_.get();
   sender_config.network_state_predictor_factory =
       network_state_predictor_factory_.get();
   sender_config.network_controller_factory = network_controller_factory_.get();
@@ -224,7 +225,9 @@ void CallTest::CreateSenderCall(const Call::Config& config) {
 }
 
 void CallTest::CreateReceiverCall(const Call::Config& config) {
-  receiver_call_.reset(Call::Create(config));
+  auto receiver_config = config;
+  receiver_config.task_queue_factory = task_queue_factory_.get();
+  receiver_call_.reset(Call::Create(receiver_config));
 }
 
 void CallTest::DestroyCalls() {
@@ -492,10 +495,10 @@ void CallTest::CreateFrameGeneratorCapturer(int framerate,
 void CallTest::CreateFakeAudioDevices(
     std::unique_ptr<TestAudioDeviceModule::Capturer> capturer,
     std::unique_ptr<TestAudioDeviceModule::Renderer> renderer) {
-  fake_send_audio_device_ = TestAudioDeviceModule::CreateTestAudioDeviceModule(
-      std::move(capturer), nullptr, 1.f);
-  fake_recv_audio_device_ = TestAudioDeviceModule::CreateTestAudioDeviceModule(
-      nullptr, std::move(renderer), 1.f);
+  fake_send_audio_device_ = TestAudioDeviceModule::Create(
+      task_queue_factory_.get(), std::move(capturer), nullptr, 1.f);
+  fake_recv_audio_device_ = TestAudioDeviceModule::Create(
+      task_queue_factory_.get(), nullptr, std::move(renderer), 1.f);
 }
 
 void CallTest::CreateVideoStreams() {

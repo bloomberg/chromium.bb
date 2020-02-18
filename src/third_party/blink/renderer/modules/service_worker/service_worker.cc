@@ -91,12 +91,6 @@ void ServiceWorker::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  if (state_ == mojom::blink::ServiceWorkerState::kRedundant) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "ServiceWorker is in redundant state.");
-    return;
-  }
-
   host_->PostMessageToServiceWorker(std::move(msg));
 }
 
@@ -198,6 +192,11 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
 }
 
 ServiceWorker::~ServiceWorker() = default;
+
+void ServiceWorker::Dispose() {
+  host_.reset();
+  binding_.Close();
+}
 
 void ServiceWorker::Trace(blink::Visitor* visitor) {
   AbstractWorker::Trace(visitor);

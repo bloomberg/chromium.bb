@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 
 #include <numeric>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -22,9 +23,17 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_device_linux.h"
 
 namespace device {
+
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+using mojom::UsbTransferType;
 
 namespace {
 
@@ -170,7 +179,7 @@ struct UsbDeviceHandleUsbfs::Transfer {
 
   void* operator new(std::size_t size, size_t number_of_iso_packets);
   void RunCallback(UsbTransferStatus status, size_t bytes_transferred);
-  void RunIsochronousCallback(const std::vector<IsochronousPacket>& packets);
+  void RunIsochronousCallback(std::vector<UsbIsochronousPacketPtr> packets);
 
   scoped_refptr<base::RefCountedBytes> control_transfer_buffer;
   scoped_refptr<base::RefCountedBytes> buffer;
@@ -404,10 +413,10 @@ void UsbDeviceHandleUsbfs::Transfer::RunCallback(UsbTransferStatus status,
 }
 
 void UsbDeviceHandleUsbfs::Transfer::RunIsochronousCallback(
-    const std::vector<IsochronousPacket>& packets) {
+    std::vector<UsbIsochronousPacketPtr> packets) {
   DCHECK_EQ(urb.type, USBDEVFS_URB_TYPE_ISO);
   DCHECK(isoc_callback);
-  std::move(isoc_callback).Run(buffer, packets);
+  std::move(isoc_callback).Run(buffer, std::move(packets));
 }
 
 UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
@@ -450,6 +459,8 @@ void UsbDeviceHandleUsbfs::Close() {
   // see if the handle is closed.
   device_->HandleClosed(this);
   device_ = nullptr;
+  // The device is no longer attached so we don't have any endpoints either.
+  endpoints_.clear();
 
   // Releases |helper_|.
   blocking_task_runner_->PostTask(
@@ -485,7 +496,7 @@ void UsbDeviceHandleUsbfs::ClaimInterface(int interface_number,
     return;
   }
 
-  if (base::ContainsKey(interfaces_, interface_number)) {
+  if (base::Contains(interfaces_, interface_number)) {
     USB_LOG(DEBUG) << "Interface " << interface_number << " already claimed.";
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));
@@ -703,7 +714,7 @@ void UsbDeviceHandleUsbfs::GenericTransfer(
   }
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleUsbfs::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleUsbfs::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   auto it = endpoints_.find(endpoint_address);
@@ -746,7 +757,10 @@ void UsbDeviceHandleUsbfs::ReleaseInterfaceComplete(int interface_number,
   auto it = interfaces_.find(interface_number);
   DCHECK(it != interfaces_.end());
   interfaces_.erase(it);
-  RefreshEndpointInfo();
+  if (device_) {
+    // Only refresh endpoints if a device is still attached.
+    RefreshEndpointInfo();
+  }
   std::move(callback).Run(true);
 }
 
@@ -826,17 +840,19 @@ void UsbDeviceHandleUsbfs::TransferComplete(
   transfer->timeout_closure.Cancel();
 
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
-    std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = transfer->urb.iso_frame_desc[i].length;
-      packets[i].transferred_length =
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = transfer->urb.iso_frame_desc[i].length;
+      packets[i]->transferred_length =
           transfer->urb.iso_frame_desc[i].actual_length;
-      packets[i].status = ConvertTransferResult(
+      packets[i]->status = ConvertTransferResult(
           transfer->urb.status == 0 ? transfer->urb.iso_frame_desc[i].status
                                     : transfer->urb.status);
     }
 
-    transfer->RunIsochronousCallback(packets);
+    transfer->RunIsochronousCallback(std::move(packets));
   } else {
     if (transfer->urb.status == 0 &&
         transfer->urb.type == USBDEVFS_URB_TYPE_CONTROL) {
@@ -853,27 +869,24 @@ void UsbDeviceHandleUsbfs::TransferComplete(
 
 void UsbDeviceHandleUsbfs::RefreshEndpointInfo() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(device_);
   endpoints_.clear();
 
-  const UsbConfigDescriptor* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
   if (!config)
     return;
 
   for (const auto& entry : interfaces_) {
-    auto interface_it = std::find_if(
-        config->interfaces.begin(), config->interfaces.end(),
-        [entry](const UsbInterfaceDescriptor& interface) {
-          uint8_t interface_number = entry.first;
-          uint8_t alternate_setting = entry.second.alternate_setting;
-          return interface.interface_number == interface_number &&
-                 interface.alternate_setting == alternate_setting;
-        });
-    DCHECK(interface_it != config->interfaces.end());
+    CombinedInterfaceInfo interface = FindInterfaceInfoFromConfig(
+        config, entry.first, entry.second.alternate_setting);
 
-    for (const auto& endpoint : interface_it->endpoints) {
-      EndpointInfo& info = endpoints_[endpoint.address];
-      info.type = endpoint.transfer_type;
-      info.interface = &*interface_it;
+    DCHECK(interface.IsValid());
+
+    for (const auto& endpoint : interface.alternate->endpoints) {
+      EndpointInfo& info =
+          endpoints_[ConvertEndpointNumberToAddress(*endpoint)];
+      info.type = endpoint->type;
+      info.interface = interface.interface;
     }
   }
 }
@@ -883,15 +896,15 @@ void UsbDeviceHandleUsbfs::ReportIsochronousError(
     UsbDeviceHandle::IsochronousTransferCallback callback,
     UsbTransferStatus status) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
-      packet_lengths.size());
+  std::vector<UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 void UsbDeviceHandleUsbfs::SetUpTimeoutCallback(Transfer* transfer,
@@ -947,13 +960,15 @@ void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
   transfer->timeout_closure.Cancel();
 
   if (transfer->urb.type == USBDEVFS_URB_TYPE_ISO) {
-    std::vector<IsochronousPacket> packets(transfer->urb.number_of_packets);
+    std::vector<UsbIsochronousPacketPtr> packets(
+        transfer->urb.number_of_packets);
     for (size_t i = 0; i < packets.size(); ++i) {
-      packets[i].length = transfer->urb.iso_frame_desc[i].length;
-      packets[i].transferred_length = 0;
-      packets[i].status = status;
+      packets[i] = mojom::UsbIsochronousPacket::New();
+      packets[i]->length = transfer->urb.iso_frame_desc[i].length;
+      packets[i]->transferred_length = 0;
+      packets[i]->status = status;
     }
-    transfer->RunIsochronousCallback(packets);
+    transfer->RunIsochronousCallback(std::move(packets));
   } else {
     transfer->RunCallback(status, 0);
   }

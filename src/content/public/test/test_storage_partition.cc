@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_storage_partition.h"
 
+#include "content/public/browser/native_file_system_entry_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 namespace content {
@@ -33,6 +34,11 @@ TestStoragePartition::GetURLLoaderFactoryForBrowserProcess() {
   return nullptr;
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestStoragePartition::GetURLLoaderFactoryForBrowserProcessWithCORBEnabled() {
+  return nullptr;
+}
+
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 TestStoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread() {
   return nullptr;
@@ -41,6 +47,16 @@ TestStoragePartition::GetURLLoaderFactoryForBrowserProcessIOThread() {
 network::mojom::CookieManager*
 TestStoragePartition::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_;
+}
+
+void TestStoragePartition::CreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int routing_id,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  NOTREACHED();
 }
 
 storage::QuotaManager* TestStoragePartition::GetQuotaManager() {
@@ -71,6 +87,11 @@ IndexedDBContext* TestStoragePartition::GetIndexedDBContext() {
   return indexed_db_context_;
 }
 
+NativeFileSystemEntryFactory*
+TestStoragePartition::GetNativeFileSystemEntryFactory() {
+  return nullptr;
+}
+
 ServiceWorkerContext* TestStoragePartition::GetServiceWorkerContext() {
   return service_worker_context_;
 }
@@ -90,12 +111,16 @@ TestStoragePartition::GetGeneratedCodeCacheContext() {
 
 PlatformNotificationContext*
 TestStoragePartition::GetPlatformNotificationContext() {
-  return nullptr;
+  return platform_notification_context_;
 }
 
 DevToolsBackgroundServicesContext*
 TestStoragePartition::GetDevToolsBackgroundServicesContext() {
-  return nullptr;
+  return devtools_background_services_context_;
+}
+
+ContentIndexContext* TestStoragePartition::GetContentIndexContext() {
+  return content_index_context_;
 }
 
 #if !defined(OS_ANDROID)

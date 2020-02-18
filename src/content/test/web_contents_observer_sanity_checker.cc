@@ -230,8 +230,8 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
   // If ReadyToCommitNavigation was dispatched, verify that the
   // |navigation_handle| has the same RenderFrameHost at this time as the one
   // returned at ReadyToCommitNavigation.
-  if (base::ContainsKey(ready_to_commit_hosts_,
-                        navigation_handle->GetNavigationId())) {
+  if (base::Contains(ready_to_commit_hosts_,
+                     navigation_handle->GetNavigationId())) {
     CHECK_EQ(ready_to_commit_hosts_[navigation_handle->GetNavigationId()],
              navigation_handle->GetRenderFrameHost());
     ready_to_commit_hosts_.erase(navigation_handle->GetNavigationId());
@@ -283,7 +283,7 @@ void WebContentsObserverSanityChecker::MediaStartedPlaying(
     const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
   CHECK(!web_contents_destroyed_);
-  CHECK(!base::ContainsValue(active_media_players_, id));
+  CHECK(!base::Contains(active_media_players_, id));
   active_media_players_.push_back(id);
 }
 
@@ -292,7 +292,7 @@ void WebContentsObserverSanityChecker::MediaStoppedPlaying(
     const MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   CHECK(!web_contents_destroyed_);
-  CHECK(base::ContainsValue(active_media_players_, id));
+  CHECK(base::Contains(active_media_players_, id));
   base::Erase(active_media_players_, id);
 }
 

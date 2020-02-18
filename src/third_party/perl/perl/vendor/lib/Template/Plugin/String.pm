@@ -716,14 +716,14 @@ complete with suffix is exactly C<$length> characters long.
 
 =head2 replace($search, $replace)
 
-Replaces all occurences of C<$search> in the string with C<$replace>.
+Replaces all occurrences of C<$search> in the string with C<$replace>.
 
     [% USE String('foo bar foo baz') %]
     [% String.replace('foo', 'wiz')  %]  # => 'wiz bar wiz baz'
 
 =head2 remove($search)
 
-Remove all occurences of C<$search> in the string.
+Remove all occurrences of C<$search> in the string.
 
     [% USE String('foo bar foo baz') %]
     [% String.remove('foo ')  %]  # => 'bar baz'

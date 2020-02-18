@@ -483,7 +483,7 @@ ChannelReceive::ChannelReceive(
       jitter_buffer_enable_rtx_handling;
   audio_coding_.reset(AudioCodingModule::Create(acm_config));
 
-  _outputAudioLevel.Clear();
+  _outputAudioLevel.ResetLevelFullRange();
 
   rtp_receive_statistics_->EnableRetransmitDetection(remote_ssrc_, true);
   RtpRtcp::Configuration configuration;
@@ -546,11 +546,11 @@ void ChannelReceive::StopPlayout() {
   RTC_DCHECK(worker_thread_checker_.IsCurrent());
   rtc::CritScope lock(&playing_lock_);
   playing_ = false;
-  _outputAudioLevel.Clear();
+  _outputAudioLevel.ResetLevelFullRange();
 }
 
-absl::optional<std::pair<int, SdpAudioFormat>>
-    ChannelReceive::GetReceiveCodec() const {
+absl::optional<std::pair<int, SdpAudioFormat>> ChannelReceive::GetReceiveCodec()
+    const {
   RTC_DCHECK(worker_thread_checker_.IsCurrent());
   return audio_coding_->ReceiveCodec();
 }
@@ -756,7 +756,6 @@ CallReceiveStatistics ChannelReceive::GetRTCPStatistics() const {
                                 _rtpRtcpModule->RTCP() == RtcpMode::kOff);
   }
 
-  stats.fractionLost = statistics.fraction_lost;
   stats.cumulativeLost = statistics.packets_lost;
   stats.extendedMax = statistics.extended_highest_sequence_number;
   stats.jitterSamples = statistics.jitter;

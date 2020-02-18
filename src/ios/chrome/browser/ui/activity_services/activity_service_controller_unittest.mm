@@ -13,13 +13,10 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/send_tab_to_self/features.h"
-#include "components/send_tab_to_self/send_tab_to_self_model.h"
-#include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
-#include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/find_in_page_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/print_activity.h"
@@ -37,6 +34,7 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -78,13 +76,11 @@
 
 @interface ActivityServiceController (CrVisibleForTesting)
 - (NSArray*)activityItemsForData:(ShareToData*)data;
-- (NSArray*)
-    applicationActivitiesForData:(ShareToData*)data
-                      dispatcher:(id<BrowserCommands>)dispatcher
-                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                canSendTabToSelf:(BOOL)canSendTabToSelf
-              sendTabToSelfModel:
-                  (send_tab_to_self::SendTabToSelfModel*)sendTabToSelfModel;
+- (NSArray*)applicationActivitiesForData:(ShareToData*)data
+                              dispatcher:(id<BrowserCommands>)dispatcher
+                           bookmarkModel:
+                               (bookmarks::BookmarkModel*)bookmarkModel
+                        canSendTabToSelf:(BOOL)canSendTabToSelf;
 
 - (BOOL)processItemsReturnedFromActivity:(NSString*)activityType
                                   status:(ShareTo::ShareResult)result
@@ -161,12 +157,6 @@
   _latestErrorAlertMessage = [message copy];
 }
 
-- (void)showActivityServiceContextMenu:(NSString*)title
-                                 items:(NSArray<ContextMenuItem*>*)items {
-  _latestContextMenuTitle = [title copy];
-  EXPECT_GE([items count], 1U);
-}
-
 #pragma mark - ActivityServicePositioner
 
 - (UIView*)shareButtonView {
@@ -193,14 +183,17 @@ class ActivityServiceControllerTest : public PlatformTest {
     bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
         chrome_browser_state_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);
-    send_tab_to_self_model_ =
-        SendTabToSelfSyncServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get())
-            ->GetSendTabToSelfModel();
     parentController_ =
         [[UIViewController alloc] initWithNibName:nil bundle:nil];
     [[UIApplication sharedApplication] keyWindow].rootViewController =
         parentController_;
+    // Setting the |test_web_state_| to incognito to avoid using the snapshot
+    // genrator to create a thumbnail via the |thumbnail_generator_|.
+    test_web_state_.SetBrowserState(
+        chrome_browser_state_->GetOffTheRecordChromeBrowserState());
+    thumbnail_generator_ = [[ChromeActivityItemThumbnailGenerator alloc]
+        initWithWebState:&test_web_state_];
+
     shareData_ =
         [[ShareToData alloc] initWithShareURL:GURL("https://chromium.org")
                                    visibleURL:GURL("https://chromium.org")
@@ -209,16 +202,12 @@ class ActivityServiceControllerTest : public PlatformTest {
                               isPagePrintable:YES
                              isPageSearchable:YES
                                     userAgent:web::UserAgentType::MOBILE
-                           thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                           thumbnailGenerator:thumbnail_generator_];
   }
 
   void TearDown() override {
     [[UIApplication sharedApplication] keyWindow].rootViewController = nil;
     PlatformTest::TearDown();
-  }
-
-  ThumbnailGeneratorBlock DummyThumbnailGeneratorBlock() {
-    return ^UIImage*(CGSize const& size) { return nil; };
   }
 
   BOOL ArrayContainsImageSource(NSArray* array) {
@@ -328,7 +317,8 @@ class ActivityServiceControllerTest : public PlatformTest {
   ShareToData* shareData_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   bookmarks::BookmarkModel* bookmark_model_;
-  send_tab_to_self::SendTabToSelfModel* send_tab_to_self_model_;
+  ChromeActivityItemThumbnailGenerator* thumbnail_generator_;
+  web::TestWebState test_web_state_;
 };
 
 TEST_F(ActivityServiceControllerTest, PresentAndDismissController) {
@@ -374,7 +364,7 @@ TEST_F(ActivityServiceControllerTest, ActivityItemsForDataWithPasswordAppEx) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* findLoginAction =
       (NSString*)activity_services::kUTTypeAppExtensionFindLoginAction;
@@ -438,7 +428,7 @@ TEST_F(ActivityServiceControllerTest,
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::DESKTOP
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
   NSArray* items = [activityController activityItemsForData:data];
   NSString* shareAction = @"com.apple.UIKit.activity.PostToFacebook";
   NSArray* urlItems =
@@ -542,14 +532,13 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [PrintActivity class]));
 
@@ -562,13 +551,11 @@ TEST_F(ActivityServiceControllerTest, ApplicationActivitiesForData) {
          isPagePrintable:NO
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+      thumbnailGenerator:thumbnail_generator_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
   EXPECT_FALSE(ArrayContainsObjectOfClass(items, [PrintActivity class]));
 }
@@ -588,14 +575,13 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
 
   // Verify non-HTTP URL.
@@ -606,13 +592,11 @@ TEST_F(ActivityServiceControllerTest, HTTPActivities) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::MOBILE
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                            thumbnailGenerator:thumbnail_generator_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:false];
   ASSERT_EQ(2U, [items count]);
 }
 
@@ -630,14 +614,13 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::NONE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   UIActivity* activity = [items objectAtIndex:2];
   EXPECT_EQ([BookmarkActivity class], [activity class]);
@@ -648,7 +631,7 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
   // Verify bookmarked URL.
   GURL bookmarkedURL = GURL("https://chromium.org/page");
   const bookmarks::BookmarkNode* defaultFolder = bookmark_model_->mobile_node();
-  bookmark_model_->AddURL(defaultFolder, defaultFolder->child_count(),
+  bookmark_model_->AddURL(defaultFolder, defaultFolder->children().size(),
                           base::SysNSStringToUTF16(@"Test bookmark"),
                           bookmarkedURL);
   data = [[ShareToData alloc]
@@ -659,13 +642,11 @@ TEST_F(ActivityServiceControllerTest, BookmarkActivities) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+      thumbnailGenerator:thumbnail_generator_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   activity = [items objectAtIndex:2];
   EXPECT_EQ([BookmarkActivity class], [activity class]);
@@ -691,15 +672,14 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                             isPagePrintable:YES
                            isPageSearchable:YES
                                   userAgent:web::UserAgentType::MOBILE
-                         thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                         thumbnailGenerator:thumbnail_generator_];
   id mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
   OCMExpect([mockDispatcher requestDesktopSite]);
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:mockDispatcher
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
   UIActivity* activity = [items objectAtIndex:4];
   EXPECT_EQ([RequestDesktopOrMobileSiteActivity class], [activity class]);
@@ -718,15 +698,13 @@ TEST_F(ActivityServiceControllerTest, RequestMobileDesktopSite) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::DESKTOP
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+                            thumbnailGenerator:thumbnail_generator_];
   mockDispatcher = OCMProtocolMock(@protocol(BrowserCommands));
   OCMExpect([mockDispatcher requestMobileSite]);
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:mockDispatcher
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:mockDispatcher
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:false];
   ASSERT_EQ(6U, [items count]);
   activity = [items objectAtIndex:4];
   EXPECT_EQ([RequestDesktopOrMobileSiteActivity class], [activity class]);
@@ -838,14 +816,13 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [FindInPageActivity class]));
 
@@ -858,13 +835,11 @@ TEST_F(ActivityServiceControllerTest, FindInPageActivity) {
          isPagePrintable:YES
         isPageSearchable:NO
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+      thumbnailGenerator:thumbnail_generator_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:false];
   EXPECT_EQ(4U, [items count]);
   EXPECT_FALSE(ArrayContainsObjectOfClass(items, [FindInPageActivity class]));
 }
@@ -884,14 +859,13 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   NSArray* items =
       [activityController applicationActivitiesForData:data
                                             dispatcher:nil
                                          bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:true
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                                      canSendTabToSelf:true];
   ASSERT_EQ(6U, [items count]);
   EXPECT_TRUE(ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
 
@@ -908,34 +882,12 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
          isPagePrintable:YES
         isPageSearchable:YES
                userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:false
-                                    sendTabToSelfModel:send_tab_to_self_model_];
-  ASSERT_EQ(5U, [items count]);
-  EXPECT_FALSE(
-      ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
-
-  // Verify searchable data with no send tab to self model.
-  data = [[ShareToData alloc]
-        initWithShareURL:GURL("https://chromium.org/printable")
-              visibleURL:GURL("https://chromium.org/printable")
-                   title:@"bar"
-         isOriginalTitle:YES
-         isPagePrintable:YES
-        isPageSearchable:YES
-               userAgent:web::UserAgentType::NONE
-      thumbnailGenerator:DummyThumbnailGeneratorBlock()];
+      thumbnailGenerator:thumbnail_generator_];
 
   items = [activityController applicationActivitiesForData:data
                                                 dispatcher:nil
                                              bookmarkModel:bookmark_model_
-                                          canSendTabToSelf:true
-                                        sendTabToSelfModel:nil];
+                                          canSendTabToSelf:false];
   ASSERT_EQ(5U, [items count]);
   EXPECT_FALSE(
       ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));
@@ -948,13 +900,11 @@ TEST_F(ActivityServiceControllerTest, SendTabToSelfActivity) {
                                isPagePrintable:YES
                               isPageSearchable:YES
                                      userAgent:web::UserAgentType::NONE
-                            thumbnailGenerator:DummyThumbnailGeneratorBlock()];
-  items =
-      [activityController applicationActivitiesForData:data
-                                            dispatcher:nil
-                                         bookmarkModel:bookmark_model_
-                                      canSendTabToSelf:true
-                                    sendTabToSelfModel:send_tab_to_self_model_];
+                            thumbnailGenerator:thumbnail_generator_];
+  items = [activityController applicationActivitiesForData:data
+                                                dispatcher:nil
+                                             bookmarkModel:bookmark_model_
+                                          canSendTabToSelf:true];
   EXPECT_EQ(2U, [items count]);
   EXPECT_FALSE(
       ArrayContainsObjectOfClass(items, [SendTabToSelfActivity class]));

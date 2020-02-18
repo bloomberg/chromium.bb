@@ -166,7 +166,8 @@ class AutotestTarballBuilder(object):
     if cros_build_lib.IsInsideChroot():
       files.extend(self._TAST_SSP_CHROOT_FILES)
     else:
-      files.extend(map(path_util.FromChrootPath, self._TAST_SSP_CHROOT_FILES))
+      files.extend(path_util.FromChrootPath(x)
+                   for x in self._TAST_SSP_CHROOT_FILES)
 
     for filename in self._TAST_SSP_SOURCE_FILES:
       files.append(os.path.join(constants.SOURCE_ROOT, filename))

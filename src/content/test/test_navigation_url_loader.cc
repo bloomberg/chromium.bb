@@ -9,7 +9,6 @@
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -47,9 +46,9 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
   redirect_info.new_method = "GET";
   redirect_info.new_url = redirect_url;
   redirect_info.new_site_for_cookies = redirect_url;
-  scoped_refptr<network::ResourceResponse> response(
+  scoped_refptr<network::ResourceResponse> response_head(
       new network::ResourceResponse);
-  CallOnRequestRedirected(redirect_info, response);
+  CallOnRequestRedirected(redirect_info, response_head);
 }
 
 void TestNavigationURLLoader::SimulateError(int error_code) {
@@ -63,13 +62,12 @@ void TestNavigationURLLoader::SimulateErrorWithStatus(
 
 void TestNavigationURLLoader::CallOnRequestRedirected(
     const net::RedirectInfo& redirect_info,
-    const scoped_refptr<network::ResourceResponse>& response) {
-  delegate_->OnRequestRedirected(redirect_info, response);
+    const scoped_refptr<network::ResourceResponse>& response_head) {
+  delegate_->OnRequestRedirected(redirect_info, response_head);
 }
 
 void TestNavigationURLLoader::CallOnResponseStarted(
-    const scoped_refptr<network::ResourceResponse>& response,
-    std::unique_ptr<NavigationData> navigation_data) {
+    const scoped_refptr<network::ResourceResponse>& response_head) {
   // Start the request_ids at 1000 to avoid collisions with request ids from
   // network resources (it should be rare to compare these in unit tests).
   static int request_id = 1000;
@@ -93,10 +91,10 @@ void TestNavigationURLLoader::CallOnResponseStarted(
       network::mojom::URLLoaderClientEndpoints::New(
           url_loader_ptr.PassInterface(), std::move(url_loader_client_request));
 
-  delegate_->OnResponseStarted(response, std::move(url_loader_client_endpoints),
-                               std::move(navigation_data), global_id, false,
-                               NavigationDownloadPolicy(), false,
-                               base::nullopt);
+  delegate_->OnResponseStarted(
+      std::move(url_loader_client_endpoints), response_head,
+      mojo::ScopedDataPipeConsumerHandle(), global_id, false,
+      NavigationDownloadPolicy(), base::nullopt);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

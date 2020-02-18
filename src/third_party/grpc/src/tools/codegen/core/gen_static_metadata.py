@@ -376,6 +376,8 @@ print >> H, '#define GRPC_CORE_LIB_TRANSPORT_STATIC_METADATA_H'
 print >> H
 print >> H, '#include <grpc/support/port_platform.h>'
 print >> H
+print >> H, '#include <cstdint>'
+print >> H
 print >> H, '#include "src/core/lib/transport/metadata.h"'
 print >> H
 print >> C, '#include <grpc/support/port_platform.h>'
@@ -394,7 +396,7 @@ for i, elem in enumerate(all_strs):
 
 def slice_def(i):
     return ('{&grpc_static_metadata_refcounts[%d],'
-            ' {{g_bytes+%d, %d}}}') % (i, id2strofs[i], len(all_strs[i]))
+            ' {{%d, g_bytes+%d}}}') % (i, len(all_strs[i]), id2strofs[i])
 
 
 # validate configuration
@@ -412,29 +414,19 @@ print >> H
 print >> C, 'static uint8_t g_bytes[] = {%s};' % (','.join(
     '%d' % ord(c) for c in ''.join(all_strs)))
 print >> C
-print >> C, 'static void static_ref(void *unused) {}'
-print >> C, 'static void static_unref(void *unused) {}'
-print >> C, ('static const grpc_slice_refcount_vtable static_sub_vtable = '
-             '{static_ref, static_unref, grpc_slice_default_eq_impl, '
-             'grpc_slice_default_hash_impl};')
-print >> H, ('extern const grpc_slice_refcount_vtable '
-             'grpc_static_metadata_vtable;')
-print >> C, ('const grpc_slice_refcount_vtable grpc_static_metadata_vtable = '
-             '{static_ref, static_unref, grpc_static_slice_eq, '
-             'grpc_static_slice_hash};')
-print >> C, ('static grpc_slice_refcount static_sub_refcnt = '
-             '{&static_sub_vtable, &static_sub_refcnt};')
+print >> C, ('static grpc_slice_refcount static_sub_refcnt;')
 print >> H, ('extern grpc_slice_refcount '
              'grpc_static_metadata_refcounts[GRPC_STATIC_MDSTR_COUNT];')
 print >> C, ('grpc_slice_refcount '
              'grpc_static_metadata_refcounts[GRPC_STATIC_MDSTR_COUNT] = {')
 for i, elem in enumerate(all_strs):
-    print >> C, '  {&grpc_static_metadata_vtable, &static_sub_refcnt},'
+    print >> C, ('  grpc_slice_refcount(&static_sub_refcnt, '
+                 'grpc_slice_refcount::Type::STATIC), ')
 print >> C, '};'
 print >> C
 print >> H, '#define GRPC_IS_STATIC_METADATA_STRING(slice) \\'
-print >> H, ('  ((slice).refcount != NULL && (slice).refcount->vtable == '
-             '&grpc_static_metadata_vtable)')
+print >> H, ('  ((slice).refcount != NULL && (slice).refcount->GetType() == '
+             'grpc_slice_refcount::Type::STATIC)')
 print >> H
 print >> C, ('const grpc_slice grpc_static_slice_table[GRPC_STATIC_MDSTR_COUNT]'
              ' = {')
@@ -443,8 +435,8 @@ for i, elem in enumerate(all_strs):
 print >> C, '};'
 print >> C
 print >> H, '#define GRPC_STATIC_METADATA_INDEX(static_slice) \\'
-print >> H, ('  ((int)((static_slice).refcount - '
-             'grpc_static_metadata_refcounts))')
+print >> H, ('  (static_cast<intptr_t>(((static_slice).refcount - '
+             'grpc_static_metadata_refcounts)))')
 print >> H
 
 print >> D, '# hpack fuzzing dictionary'
@@ -455,14 +447,41 @@ for i, elem in enumerate(all_elems):
                                  [len(elem[1])] + [ord(c) for c in elem[1]]))
 
 print >> H, '#define GRPC_STATIC_MDELEM_COUNT %d' % len(all_elems)
-print >> H, ('extern grpc_mdelem_data '
+print >> H, ('extern grpc_core::StaticMetadata '
              'grpc_static_mdelem_table[GRPC_STATIC_MDELEM_COUNT];')
 print >> H, ('extern uintptr_t '
              'grpc_static_mdelem_user_data[GRPC_STATIC_MDELEM_COUNT];')
+print >> H, ('extern grpc_mdelem '
+             'grpc_static_mdelem_manifested[GRPC_STATIC_MDELEM_COUNT];')
+print >> C, ('''
+/* Warning: the core static metadata currently operates under the soft constraint
+that the first GRPC_CHTTP2_LAST_STATIC_ENTRY (61) entries must contain
+metadata specified by the http2 hpack standard. The CHTTP2 transport reads the
+core metadata with this assumption in mind. If the order of the core static
+metadata is to be changed, then the CHTTP2 transport must be changed as well to
+stop relying on the core metadata. */
+''')
+print >> C, ('grpc_mdelem '
+             'grpc_static_mdelem_manifested[GRPC_STATIC_MDELEM_COUNT] = {')
+print >> C, '// clang-format off'
+static_mds = []
 for i, elem in enumerate(all_elems):
+    md_name = mangle(elem).upper()
+    md_human_readable = '"%s": "%s"' % elem
+    md_spec = '    /* %s: \n     %s */\n' % (md_name, md_human_readable)
+    md_spec += '    GRPC_MAKE_MDELEM(\n'
+    md_spec += (('        &grpc_static_mdelem_table[%d].data(),\n' % i) +
+                '        GRPC_MDELEM_STORAGE_STATIC)')
+    static_mds.append(md_spec)
+print >> C, ',\n'.join(static_mds)
+print >> C, '// clang-format on'
+print >> C, ('};')
+
+for i, elem in enumerate(all_elems):
+    md_name = mangle(elem).upper()
     print >> H, '/* "%s": "%s" */' % elem
-    print >> H, ('#define %s (GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[%d], '
-                 'GRPC_MDELEM_STORAGE_STATIC))') % (mangle(elem).upper(), i)
+    print >> H, ('#define %s (grpc_static_mdelem_manifested[%d])' % (md_name,
+                                                                     i))
 print >> H
 
 print >> C, ('uintptr_t grpc_static_mdelem_user_data[GRPC_STATIC_MDELEM_COUNT] '
@@ -547,18 +566,19 @@ print >> C, 'static const uint8_t elem_idxs[] = {%s};' % ','.join(
     '%d' % i for i in idxs)
 print >> C
 
-print >> H, 'grpc_mdelem grpc_static_mdelem_for_static_strings(int a, int b);'
-print >> C, 'grpc_mdelem grpc_static_mdelem_for_static_strings(int a, int b) {'
+print >> H, 'grpc_mdelem grpc_static_mdelem_for_static_strings(intptr_t a, intptr_t b);'
+print >> C, 'grpc_mdelem grpc_static_mdelem_for_static_strings(intptr_t a, intptr_t b) {'
 print >> C, '  if (a == -1 || b == -1) return GRPC_MDNULL;'
-print >> C, '  uint32_t k = (uint32_t)(a * %d + b);' % len(all_strs)
+print >> C, '  uint32_t k = static_cast<uint32_t>(a * %d + b);' % len(all_strs)
 print >> C, '  uint32_t h = elems_phash(k);'
-print >> C, '  return h < GPR_ARRAY_SIZE(elem_keys) && elem_keys[h] == k && elem_idxs[h] != 255 ? GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[elem_idxs[h]], GRPC_MDELEM_STORAGE_STATIC) : GRPC_MDNULL;'
+print >> C, '  return h < GPR_ARRAY_SIZE(elem_keys) && elem_keys[h] == k && elem_idxs[h] != 255 ? GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[elem_idxs[h]].data(), GRPC_MDELEM_STORAGE_STATIC) : GRPC_MDNULL;'
 print >> C, '}'
 print >> C
 
-print >> C, 'grpc_mdelem_data grpc_static_mdelem_table[GRPC_STATIC_MDELEM_COUNT] = {'
-for a, b in all_elems:
-    print >> C, '{%s,%s},' % (slice_def(str_idx(a)), slice_def(str_idx(b)))
+print >> C, 'grpc_core::StaticMetadata grpc_static_mdelem_table[GRPC_STATIC_MDELEM_COUNT] = {'
+for idx, (a, b) in enumerate(all_elems):
+    print >> C, 'grpc_core::StaticMetadata(%s,%s, %d),' % (
+        slice_def(str_idx(a)), slice_def(str_idx(b)), idx)
 print >> C, '};'
 
 print >> H, 'typedef enum {'
@@ -576,7 +596,7 @@ print >> H, '  } named;'
 print >> H, '} grpc_metadata_batch_callouts;'
 print >> H
 print >> H, '#define GRPC_BATCH_INDEX_OF(slice) \\'
-print >> H, '  (GRPC_IS_STATIC_METADATA_STRING((slice)) ? (grpc_metadata_batch_callouts_index)GPR_CLAMP(GRPC_STATIC_METADATA_INDEX((slice)), 0, GRPC_BATCH_CALLOUTS_COUNT) : GRPC_BATCH_CALLOUTS_COUNT)'
+print >> H, '  (GRPC_IS_STATIC_METADATA_STRING((slice)) ? static_cast<grpc_metadata_batch_callouts_index>(GPR_CLAMP(GRPC_STATIC_METADATA_INDEX((slice)), 0, static_cast<intptr_t>(GRPC_BATCH_CALLOUTS_COUNT))) : GRPC_BATCH_CALLOUTS_COUNT)'
 print >> H
 
 print >> H, 'extern const uint8_t grpc_static_accept_encoding_metadata[%d];' % (
@@ -587,7 +607,7 @@ print >> C, '0,%s' % ','.join('%d' % md_idx(elem) for elem in compression_elems)
 print >> C, '};'
 print >> C
 
-print >> H, '#define GRPC_MDELEM_ACCEPT_ENCODING_FOR_ALGORITHMS(algs) (GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[grpc_static_accept_encoding_metadata[(algs)]], GRPC_MDELEM_STORAGE_STATIC))'
+print >> H, '#define GRPC_MDELEM_ACCEPT_ENCODING_FOR_ALGORITHMS(algs) (GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[grpc_static_accept_encoding_metadata[(algs)]].data(), GRPC_MDELEM_STORAGE_STATIC))'
 print >> H
 
 print >> H, 'extern const uint8_t grpc_static_accept_stream_encoding_metadata[%d];' % (
@@ -598,7 +618,7 @@ print >> C, '0,%s' % ','.join(
     '%d' % md_idx(elem) for elem in stream_compression_elems)
 print >> C, '};'
 
-print >> H, '#define GRPC_MDELEM_ACCEPT_STREAM_ENCODING_FOR_ALGORITHMS(algs) (GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[grpc_static_accept_stream_encoding_metadata[(algs)]], GRPC_MDELEM_STORAGE_STATIC))'
+print >> H, '#define GRPC_MDELEM_ACCEPT_STREAM_ENCODING_FOR_ALGORITHMS(algs) (GRPC_MAKE_MDELEM(&grpc_static_mdelem_table[grpc_static_accept_stream_encoding_metadata[(algs)]].data(), GRPC_MDELEM_STORAGE_STATIC))'
 
 print >> H, '#endif /* GRPC_CORE_LIB_TRANSPORT_STATIC_METADATA_H */'
 

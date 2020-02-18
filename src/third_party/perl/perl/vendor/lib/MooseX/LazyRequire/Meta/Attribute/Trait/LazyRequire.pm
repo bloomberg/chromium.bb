@@ -1,21 +1,13 @@
 package MooseX::LazyRequire::Meta::Attribute::Trait::LazyRequire;
-BEGIN {
-  $MooseX::LazyRequire::Meta::Attribute::Trait::LazyRequire::AUTHORITY = 'cpan:FLORA';
-}
-BEGIN {
-  $MooseX::LazyRequire::Meta::Attribute::Trait::LazyRequire::VERSION = '0.07';
-}
 # ABSTRACT: Attribute trait to make getters fail on unset attributes
-
+$MooseX::LazyRequire::Meta::Attribute::Trait::LazyRequire::VERSION = '0.11';
 use Moose::Role;
 use Carp qw/cluck/;
-use MooseX::Types::Moose qw/Bool/;
 use namespace::autoclean;
 
 has lazy_required => (
     is       => 'ro',
-    isa      => Bool,
-    required => 1,
+    isa      => 'Bool',
     default  => 0,
 );
 
@@ -29,15 +21,17 @@ after _process_options => sub {
 
     return unless $options->{lazy_required};
 
+    # lazy_required + default or builder doesn't make sense because if there
+    # is a default/builder, the reader will always be able to return a value.
     Moose->throw_error(
         "You may not use both a builder or a default and lazy_required for one attribute ($name)",
         data => $options,
-    ) if $options->{builder};
+    ) if $options->{builder} or $options->{default};
 
     $options->{ lazy     } = 1;
     $options->{ required } = 1;
     $options->{ default  } = sub {
-        confess "Attribute $name must be provided before calling reader"
+        confess "Attribute '$name' must be provided before calling reader"
     };
 };
 
@@ -49,13 +43,18 @@ sub register_implementation { 'MooseX::LazyRequire::Meta::Attribute::Trait::Lazy
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::LazyRequire::Meta::Attribute::Trait::LazyRequire - Attribute trait to make getters fail on unset attributes
+
+=head1 VERSION
+
+version 0.11
 
 =head1 AUTHORS
 
@@ -73,10 +72,9 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2009 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

@@ -24,6 +24,7 @@
 
 namespace performance_manager {
 
+class SiteDataCacheImpl;
 class SiteDataReaderTest;
 class SiteDataWriterTest;
 
@@ -150,6 +151,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
  protected:
   friend class base::RefCounted<SiteDataImpl>;
+  friend class performance_manager::SiteDataCacheImpl;
 
   // Friend all the tests.
   friend class SiteDataImplTest;
@@ -278,7 +280,7 @@ class SiteDataImpl : public base::RefCounted<SiteDataImpl> {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SiteDataImpl> weak_factory_;
+  base::WeakPtrFactory<SiteDataImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataImpl);
 };

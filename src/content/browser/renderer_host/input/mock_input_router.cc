@@ -45,8 +45,14 @@ base::Optional<cc::TouchAction> MockInputRouter::ActiveTouchAction() {
   return cc::kTouchActionAuto;
 }
 
-bool MockInputRouter::FlingCancellationIsDeferred() {
-  return false;
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+MockInputRouter::BindNewHost() {
+  return mojo::NullRemote();
+}
+
+mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+MockInputRouter::BindNewFrameHost() {
+  return mojo::NullRemote();
 }
 
 void MockInputRouter::OnHasTouchEventHandlers(bool has_handlers) {

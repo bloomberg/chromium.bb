@@ -47,7 +47,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            mojom::SerialPortClientAssociatedPtrInfo client,
+            mojom::SerialPortClientPtr client,
             OpenCallback callback) override;
   void ClearSendError(mojo::ScopedDataPipeConsumerHandle consumer) override;
   void ClearReadError(mojo::ScopedDataPipeProducerHandle producer) override;
@@ -60,6 +60,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void GetPortInfo(GetPortInfoCallback callback) override;
   void SetBreak(SetBreakCallback callback) override;
   void ClearBreak(ClearBreakCallback callback) override;
+  void Close(CloseCallback callback) override;
 
   void OnOpenCompleted(OpenCallback callback, bool success);
   void WriteToPort(MojoResult result, const mojo::HandleSignalsState& state);
@@ -76,7 +77,7 @@ class SerialPortImpl : public mojom::SerialPort {
   scoped_refptr<SerialIoHandler> io_handler_;
 
   // Client interfaces.
-  mojom::SerialPortClientAssociatedPtr client_;
+  mojom::SerialPortClientPtr client_;
   mojom::SerialPortConnectionWatcherPtr watcher_;
 
   // Data pipes for input and output.
@@ -85,7 +86,7 @@ class SerialPortImpl : public mojom::SerialPort {
   mojo::ScopedDataPipeProducerHandle out_stream_;
   mojo::SimpleWatcher out_stream_watcher_;
 
-  base::WeakPtrFactory<SerialPortImpl> weak_factory_;
+  base::WeakPtrFactory<SerialPortImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);
 };
 

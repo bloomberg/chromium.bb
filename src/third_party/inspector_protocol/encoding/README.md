@@ -1,10 +1,29 @@
 # Inspector Protocol Encoding Library
 
-### Notice
+This library implements the encoding layer for the inspector protocol.
+The following facilities are provided:
 
-Code in this directory (including tests and library) is not used in production
-yet, and won't be for a little while. Below is a rough sketch as to the overall
-plan as well as the goals.
+- Some tools for portability, including a simple span implementation.
+  The library itself does not depend on anything except the C++ standard
+  libraries. For the JSON features, dependencies are injected via a
+  json::Platform object. See the json namespace in encoding.h
+
+- CBOR-based encoding/decoding functionality for a binary format. See the
+  comment at the top of the cbor namespace in encoding.h for details.
+
+- JSON encoder/decoder. See the json namespace in encoding.h for details.
+
+- CBOR and JSON parsers use a streaming API. See StreamingParserHandler
+  in encoding.h.
+
+- Two-way conversions between CBOR-based binary and JSON. See the
+  json::ConvertCBORToJSON / json::ConvertJSONToCBOR functions in encoding.h
+
+The library is designed for portability and users of the inspector protocol
+should link it into their programs. We do so in Chromium, V8, and
+internally at Google.
+
+TODO(johannes): Update the design documentation below.
 
 ## Objective
 

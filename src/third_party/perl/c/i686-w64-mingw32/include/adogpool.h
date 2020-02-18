@@ -1,2236 +1,951 @@
 /**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+ * This file is part of the mingw-w64 runtime package.
+ * No warranty is given; refer to the file DISCLAIMER within this package.
  */
+
 #ifndef INCLUDING_ADOGUIDS
-#error Incorrect usage of this include file - cannot be used directly
+#error Include via adoguids.h header only
 #endif
 
-#define MAXAVAILABLEGUID 0x00000570
-#define MAXAVAILABLEGUIDALL 0x0000057F
+#if !defined (NTDDI_VERSION) || (NTDDI_VERSION < 0x06020000)
+#include "adogpool_backcompat.h"
+#else
+#define MAXAVAILABLEGUID 0x570
+#define MAXAVAILABLEGUIDALL 0x57f
 
-#define LIBID_ADO LIBID_ADO28
+#define LIBID_ADO LIBID_ADO60
 #define LIBID_ADOR LIBID_ADOR20
 #define LIBID_CADO10 LIBID_ADO20
 #define LIBID_CADOR10 LIBID_ADOR20
 
-#define LIBID_ADO20 GUID_BUILDER(LIBID_ADO20,00000200,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADO20;
-#undef LIBID_ADO20
-#endif
+#define CLSID_ADO GUID_BUILDER (CLSID_ADO, 0000051a, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOCommand GUID_BUILDER (CLSID_CADOCommand, 00000507, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOConnection GUID_BUILDER (CLSID_CADOConnection, 00000514, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOError GUID_BUILDER (CLSID_CADOError, 00000541, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOErrorLookup GUID_BUILDER (CLSID_CADOErrorLookup, 00000542, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOField GUID_BUILDER (CLSID_CADOField, 0000053a, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOParameter GUID_BUILDER (CLSID_CADOParameter, 0000050b, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADORecField GUID_BUILDER (CLSID_CADORecField, 00000561, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADORecord GUID_BUILDER (CLSID_CADORecord, 00000560, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADORecordset GUID_BUILDER (CLSID_CADORecordset, 00000535, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define CLSID_CADOStream GUID_BUILDER (CLSID_CADOStream, 00000566, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID__ADO GUID_BUILDER (IID__ADO, 00000534, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_ConnectionEvents GUID_BUILDER (IID_ConnectionEvents, 00001400, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_ConnectionEventsVt GUID_BUILDER (IID_ConnectionEventsVt, 00001402, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumAffect GUID_BUILDER (IID_EnumAffect, 00000543, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCEResync GUID_BUILDER (IID_EnumCEResync, 00000553, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCommandType GUID_BUILDER (IID_EnumCommandType, 0000052e, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCompare GUID_BUILDER (IID_EnumCompare, 00000545, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumConnectMode GUID_BUILDER (IID_EnumConnectMode, 00000521, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumConnectOption GUID_BUILDER (IID_EnumConnectOption, 00000541, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumConnectPrompt GUID_BUILDER (IID_EnumConnectPrompt, 00000520, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCopyRecordOptions GUID_BUILDER (IID_EnumCopyRecordOptions, 00000574, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCursorLocation GUID_BUILDER (IID_EnumCursorLocation, 0000052f, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCursorOption GUID_BUILDER (IID_EnumCursorOption, 0000051c, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumCursorType GUID_BUILDER (IID_EnumCursorType, 0000051b, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumDataType GUID_BUILDER (IID_EnumDataType, 0000051f, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumEditMode GUID_BUILDER (IID_EnumEditMode, 00000526, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumErrorValue GUID_BUILDER (IID_EnumErrorValue, 0000052a, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumEventReason GUID_BUILDER (IID_EnumEventReason, 00000531, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumEventStatus GUID_BUILDER (IID_EnumEventStatus, 00000530, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumExecuteOption GUID_BUILDER (IID_EnumExecuteOption, 0000051e, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumFieldAttribute GUID_BUILDER (IID_EnumFieldAttribute, 00000525, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumFieldStatus GUID_BUILDER (IID_EnumFieldStatus, 0000057e, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumFilterCriteria GUID_BUILDER (IID_EnumFilterCriteria, 0000052d, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumFilterGroup GUID_BUILDER (IID_EnumFilterGroup, 00000546, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumGetRowsOption GUID_BUILDER (IID_EnumGetRowsOption, 00000542, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumIsolationLevel GUID_BUILDER (IID_EnumIsolationLevel, 00000523, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumLineSeparator GUID_BUILDER (IID_EnumLineSeparator, 00000577, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumLockType GUID_BUILDER (IID_EnumLockType, 0000051d, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumMarshalOptions GUID_BUILDER (IID_EnumMarshalOptions, 00000540, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumMode GUID_BUILDER (IID_EnumMode, 00000575, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumMoveRecordOptions GUID_BUILDER (IID_EnumMoveRecordOptions, 00000573, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumObjectState GUID_BUILDER (IID_EnumObjectState, 00000532, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumParameterAttributes GUID_BUILDER (IID_EnumParameterAttributes, 0000052b, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumParameterDirection GUID_BUILDER (IID_EnumParameterDirection, 0000052c, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumPersistFormat GUID_BUILDER (IID_EnumPersistFormat, 00000548, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumPosition GUID_BUILDER (IID_EnumPosition, 00000528, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumPrepareOption GUID_BUILDER (IID_EnumPrepareOption, 00000522, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumPropertyAttributes GUID_BUILDER (IID_EnumPropertyAttributes, 00000529, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRDSAsyncThreadPriority GUID_BUILDER (IID_EnumRDSAsyncThreadPriority, 0000054b, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRDSAutoRecalc GUID_BUILDER (IID_EnumRDSAutoRecalc, 00000554, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRDSUpdateCriteria GUID_BUILDER (IID_EnumRDSUpdateCriteria, 0000054a, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRecordCreateOptions GUID_BUILDER (IID_EnumRecordCreateOptions, 00000570, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRecordOpenOptions GUID_BUILDER (IID_EnumRecordOpenOptions, 00000571, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRecordStatus GUID_BUILDER (IID_EnumRecordStatus, 00000527, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumRecordType GUID_BUILDER (IID_EnumRecordType, 0000057d, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumResync GUID_BUILDER (IID_EnumResync, 00000544, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumSaveOptions GUID_BUILDER (IID_EnumSaveOptions, 0000057c, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumSchema GUID_BUILDER (IID_EnumSchema, 00000533, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumSearchDirection GUID_BUILDER (IID_EnumSearchDirection, 00000547, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumSeek GUID_BUILDER (IID_EnumSeek, 00000552, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumStreamOpenOptions GUID_BUILDER (IID_EnumStreamOpenOptions, 0000057a, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumStreamType GUID_BUILDER (IID_EnumStreamType, 00000576, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumStreamWrite GUID_BUILDER (IID_EnumStreamWrite, 0000057b, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumStringFormat GUID_BUILDER (IID_EnumStringFormat, 00000549, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_EnumXactAttribute GUID_BUILDER (IID_EnumXactAttribute, 00000524, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADO10StdObject GUID_BUILDER (IID_IADO10StdObject, 00000534, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOClass GUID_BUILDER (IID_IADOClass, 00000560, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCollection GUID_BUILDER (IID_IADOCollection, 00000512, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCommand GUID_BUILDER (IID_IADOCommand, 986761e8, 7269, 4890, AA, 65, AD, 7c, 03, 69, 7a, 6d)
+#define IID_IADOCommand15 GUID_BUILDER (IID_IADOCommand15, 00001508, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCommand25 GUID_BUILDER (IID_IADOCommand25, 0000154e, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCommandConstruction GUID_BUILDER (IID_IADOCommandConstruction, 00000517, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCommands GUID_BUILDER (IID_IADOCommands, 00000509, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnection GUID_BUILDER (IID_IADOConnection, 00001550, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnection15 GUID_BUILDER (IID_IADOConnection15, 00001515, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnectionConstruction GUID_BUILDER (IID_IADOConnectionConstruction, 00000551, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnectionConstruction15 GUID_BUILDER (IID_IADOConnectionConstruction15, 00000516, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnectionEvents GUID_BUILDER (IID_IADOConnectionEvents, 00001400, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnectionEventsVt GUID_BUILDER (IID_IADOConnectionEventsVt, 00001402, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOConnections GUID_BUILDER (IID_IADOConnections, 00000518, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOCustomError GUID_BUILDER (IID_IADOCustomError, 00000519, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADODynaCollection GUID_BUILDER (IID_IADODynaCollection, 00000513, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOError GUID_BUILDER (IID_IADOError, 00000500, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOErrors GUID_BUILDER (IID_IADOErrors, 00000501, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOField GUID_BUILDER (IID_IADOField, 00001569, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOField15 GUID_BUILDER (IID_IADOField15, 00001505, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOField20 GUID_BUILDER (IID_IADOField20, 0000154c, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOField25 GUID_BUILDER (IID_IADOField25, 00001569, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOFields GUID_BUILDER (IID_IADOFields, 00001564, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOFields15 GUID_BUILDER (IID_IADOFields15, 00001506, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOFields20 GUID_BUILDER (IID_IADOFields20, 0000154d, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOParameter GUID_BUILDER (IID_IADOParameter, 0000150c, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOParameters GUID_BUILDER (IID_IADOParameters, 0000150d, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOProperties GUID_BUILDER (IID_IADOProperties, 00000504, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOProperty GUID_BUILDER (IID_IADOProperty, 00000503, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecord GUID_BUILDER (IID_IADORecord, 00001562, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecord25 GUID_BUILDER (IID_IADORecord25, 00001562, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordConstruction GUID_BUILDER (IID_IADORecordConstruction, 00000567, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordGroup GUID_BUILDER (IID_IADORecordGroup, 00000511, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordset GUID_BUILDER (IID_IADORecordset, 00001556, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordset15 GUID_BUILDER (IID_IADORecordset15, 0000150e, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordset20 GUID_BUILDER (IID_IADORecordset20, 0000154f, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordset21 GUID_BUILDER (IID_IADORecordset21, 00001555, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordset25 GUID_BUILDER (IID_IADORecordset25, 00001556, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordsetConstruction GUID_BUILDER (IID_IADORecordsetConstruction, 00001283, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordsetEvents GUID_BUILDER (IID_IADORecordsetEvents, 00001266, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordsetEventsVt GUID_BUILDER (IID_IADORecordsetEventsVt, 00001403, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADORecordsets GUID_BUILDER (IID_IADORecordsets, 0000050f, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOStream GUID_BUILDER (IID_IADOStream, 00001565, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_IADOStreamConstruction GUID_BUILDER (IID_IADOStreamConstruction, 00000568, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define IID_ICMemStreamProperties GUID_BUILDER (IID_ICMemStreamProperties, FF184014, B5D3, 4310, AB, F0, 9b, 70, 45, A2, CF, 17)
+#define IID_IPrivErrors GUID_BUILDER (IID_IPrivErrors, 00000502, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADO20 GUID_BUILDER (LIBID_ADO20, 00000200, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADO21 GUID_BUILDER (LIBID_ADO21, 00000201, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADO25 GUID_BUILDER (LIBID_ADO25, 00000205, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADO26 GUID_BUILDER (LIBID_ADO26, 00000206, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADO27 GUID_BUILDER (LIBID_ADO27, EF53050B, 882e, 4776, B6, 43, ED, A4, 72, E8, E3, F2)
+#define LIBID_ADO28 GUID_BUILDER (LIBID_ADO28, 2a75196c, D9EB, 4129, B8, 03, 93, 13, 27, F7, 2d, 5c)
+#define LIBID_ADO60 GUID_BUILDER (LIBID_ADO60, B691E011, 1797, 432e, 90, 7a, 4d, 8c, 69, 33, 91, 29)
+#define LIBID_ADOR20 GUID_BUILDER (LIBID_ADOR20, 00000300, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
+#define LIBID_ADOR25 GUID_BUILDER (LIBID_ADOR25, 00000305, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
 
-#define LIBID_ADO21 GUID_BUILDER(LIBID_ADO21,00000201,0000,0010,80,00,00,AA,00,6D,2E,A4)
 #ifdef IMMEDIATE_GUID_USE
-LIBID_ADO21;
-#undef LIBID_ADO21
-#endif
-
-#define LIBID_ADOR20 GUID_BUILDER(LIBID_ADOR20,00000300,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADOR20;
-#undef LIBID_ADOR20
-#endif
-
-#define LIBID_ADO25 GUID_BUILDER(LIBID_ADO25,00000205,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADO25;
-#undef LIBID_ADO25
-#endif
-
-#define LIBID_ADO26 GUID_BUILDER(LIBID_ADO26,00000206,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADO26;
-#undef LIBID_ADO26
-#endif
-
-#define LIBID_ADOR25 GUID_BUILDER(LIBID_ADOR25,00000305,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADOR25;
-#undef LIBID_ADOR25
-#endif
-
-#define IID_IADOError GUID_BUILDER(IID_IADOError,00000500,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOError;
-#undef IID_IADOError
-#endif
-
-#define IID_IADOErrors GUID_BUILDER(IID_IADOErrors,00000501,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOErrors;
-#undef IID_IADOErrors
-#endif
-
-#define IID_IADOProperty GUID_BUILDER(IID_IADOProperty,00000503,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOProperty;
-#undef IID_IADOProperty
-#endif
-
-#define IID_IADOProperties GUID_BUILDER(IID_IADOProperties,00000504,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOProperties;
-#undef IID_IADOProperties
-#endif
-
-#define CLSID_CADOField GUID_BUILDER(CLSID_CADOField,0000053A,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
+CLSID_ADO;
+CLSID_CADOCommand;
+CLSID_CADOConnection;
+CLSID_CADOError;
+CLSID_CADOErrorLookup;
 CLSID_CADOField;
-#undef CLSID_CADOField
-#endif
-
-#define IID_IADOField15 GUID_BUILDER(IID_IADOField15,00000505,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOField15;
-#undef IID_IADOField15
-#endif
-
-#define IID_IADOField20 GUID_BUILDER(IID_IADOField20,0000054C,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOField20;
-#undef IID_IADOField20
-#endif
-
-#define IID_IADOField GUID_BUILDER(IID_IADOField,00000569,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
+CLSID_CADOParameter;
+CLSID_CADORecField;
+CLSID_CADORecord;
+CLSID_CADORecordset;
+CLSID_CADOStream;
+IID__ADO;
+IID_ConnectionEvents;
+IID_ConnectionEventsVt;
+IID_EnumAffect;
+IID_EnumCEResync;
+IID_EnumCommandType;
+IID_EnumCompare;
+IID_EnumConnectMode;
+IID_EnumConnectOption;
+IID_EnumConnectPrompt;
+IID_EnumCopyRecordOptions;
+IID_EnumCursorLocation;
+IID_EnumCursorOption;
+IID_EnumCursorType;
+IID_EnumDataType;
+IID_EnumEditMode;
+IID_EnumErrorValue;
+IID_EnumEventReason;
+IID_EnumEventStatus;
+IID_EnumExecuteOption;
+IID_EnumFieldAttribute;
+IID_EnumFieldStatus;
+IID_EnumFilterCriteria;
+IID_EnumFilterGroup;
+IID_EnumGetRowsOption;
+IID_EnumIsolationLevel;
+IID_EnumLineSeparator;
+IID_EnumLockType;
+IID_EnumMarshalOptions;
+IID_EnumMode;
+IID_EnumMoveRecordOptions;
+IID_EnumObjectState;
+IID_EnumParameterAttributes;
+IID_EnumParameterDirection;
+IID_EnumPersistFormat;
+IID_EnumPosition;
+IID_EnumPrepareOption;
+IID_EnumPropertyAttributes;
+IID_EnumRDSAsyncThreadPriority;
+IID_EnumRDSAutoRecalc;
+IID_EnumRDSUpdateCriteria;
+IID_EnumRecordCreateOptions;
+IID_EnumRecordOpenOptions;
+IID_EnumRecordStatus;
+IID_EnumRecordType;
+IID_EnumResync;
+IID_EnumSaveOptions;
+IID_EnumSchema;
+IID_EnumSearchDirection;
+IID_EnumSeek;
+IID_EnumStreamOpenOptions;
+IID_EnumStreamType;
+IID_EnumStreamWrite;
+IID_EnumStringFormat;
+IID_EnumXactAttribute;
+IID_IADO10StdObject;
+IID_IADOClass;
+IID_IADOCollection;
+IID_IADOCommand;
+IID_IADOCommand15;
+IID_IADOCommand25;
+IID_IADOCommandConstruction;
+IID_IADOCommands;
+IID_IADOConnection;
+IID_IADOConnection15;
+IID_IADOConnectionConstruction;
+IID_IADOConnectionConstruction15;
+IID_IADOConnectionEvents;
+IID_IADOConnectionEventsVt;
+IID_IADOConnections;
+IID_IADOCustomError;
+IID_IADODynaCollection;
+IID_IADOError;
+IID_IADOErrors;
 IID_IADOField;
+IID_IADOField15;
+IID_IADOField20;
+IID_IADOField25;
+IID_IADOFields;
+IID_IADOFields15;
+IID_IADOFields20;
+IID_IADOParameter;
+IID_IADOParameters;
+IID_IADOProperties;
+IID_IADOProperty;
+IID_IADORecord;
+IID_IADORecord25;
+IID_IADORecordConstruction;
+IID_IADORecordGroup;
+IID_IADORecordset;
+IID_IADORecordset15;
+IID_IADORecordset20;
+IID_IADORecordset21;
+IID_IADORecordset25;
+IID_IADORecordsetConstruction;
+IID_IADORecordsetEvents;
+IID_IADORecordsetEventsVt;
+IID_IADORecordsets;
+IID_IADOStream;
+IID_IADOStreamConstruction;
+IID_ICMemStreamProperties;
+IID_IPrivErrors;
+LIBID_ADO20;
+LIBID_ADO21;
+LIBID_ADO25;
+LIBID_ADO26;
+LIBID_ADO27;
+LIBID_ADO28;
+LIBID_ADO60;
+LIBID_ADOR20;
+LIBID_ADOR25;
+
+#undef CLSID_ADO
+#undef CLSID_CADOCommand
+#undef CLSID_CADOConnection
+#undef CLSID_CADOError
+#undef CLSID_CADOErrorLookup
+#undef CLSID_CADOField
+#undef CLSID_CADOParameter
+#undef CLSID_CADORecField
+#undef CLSID_CADORecord
+#undef CLSID_CADORecordset
+#undef CLSID_CADOStream
+#undef IID__ADO
+#undef IID_ConnectionEvents
+#undef IID_ConnectionEventsVt
+#undef IID_EnumAffect
+#undef IID_EnumCEResync
+#undef IID_EnumCommandType
+#undef IID_EnumCompare
+#undef IID_EnumConnectMode
+#undef IID_EnumConnectOption
+#undef IID_EnumConnectPrompt
+#undef IID_EnumCopyRecordOptions
+#undef IID_EnumCursorLocation
+#undef IID_EnumCursorOption
+#undef IID_EnumCursorType
+#undef IID_EnumDataType
+#undef IID_EnumEditMode
+#undef IID_EnumErrorValue
+#undef IID_EnumEventReason
+#undef IID_EnumEventStatus
+#undef IID_EnumExecuteOption
+#undef IID_EnumFieldAttribute
+#undef IID_EnumFieldStatus
+#undef IID_EnumFilterCriteria
+#undef IID_EnumFilterGroup
+#undef IID_EnumGetRowsOption
+#undef IID_EnumIsolationLevel
+#undef IID_EnumLineSeparator
+#undef IID_EnumLockType
+#undef IID_EnumMarshalOptions
+#undef IID_EnumMode
+#undef IID_EnumMoveRecordOptions
+#undef IID_EnumObjectState
+#undef IID_EnumParameterAttributes
+#undef IID_EnumParameterDirection
+#undef IID_EnumPersistFormat
+#undef IID_EnumPosition
+#undef IID_EnumPrepareOption
+#undef IID_EnumPropertyAttributes
+#undef IID_EnumRDSAsyncThreadPriority
+#undef IID_EnumRDSAutoRecalc
+#undef IID_EnumRDSUpdateCriteria
+#undef IID_EnumRecordCreateOptions
+#undef IID_EnumRecordOpenOptions
+#undef IID_EnumRecordStatus
+#undef IID_EnumRecordType
+#undef IID_EnumResync
+#undef IID_EnumSaveOptions
+#undef IID_EnumSchema
+#undef IID_EnumSearchDirection
+#undef IID_EnumSeek
+#undef IID_EnumStreamOpenOptions
+#undef IID_EnumStreamType
+#undef IID_EnumStreamWrite
+#undef IID_EnumStringFormat
+#undef IID_EnumXactAttribute
+#undef IID_IADO10StdObject
+#undef IID_IADOClass
+#undef IID_IADOCollection
+#undef IID_IADOCommand
+#undef IID_IADOCommand15
+#undef IID_IADOCommand25
+#undef IID_IADOCommandConstruction
+#undef IID_IADOCommands
+#undef IID_IADOConnection
+#undef IID_IADOConnection15
+#undef IID_IADOConnectionConstruction
+#undef IID_IADOConnectionConstruction15
+#undef IID_IADOConnectionEvents
+#undef IID_IADOConnectionEventsVt
+#undef IID_IADOConnections
+#undef IID_IADOCustomError
+#undef IID_IADODynaCollection
+#undef IID_IADOError
+#undef IID_IADOErrors
 #undef IID_IADOField
+#undef IID_IADOField15
+#undef IID_IADOField20
+#undef IID_IADOField25
+#undef IID_IADOFields
+#undef IID_IADOFields15
+#undef IID_IADOFields20
+#undef IID_IADOParameter
+#undef IID_IADOParameters
+#undef IID_IADOProperties
+#undef IID_IADOProperty
+#undef IID_IADORecord
+#undef IID_IADORecord25
+#undef IID_IADORecordConstruction
+#undef IID_IADORecordGroup
+#undef IID_IADORecordset
+#undef IID_IADORecordset15
+#undef IID_IADORecordset20
+#undef IID_IADORecordset21
+#undef IID_IADORecordset25
+#undef IID_IADORecordsetConstruction
+#undef IID_IADORecordsetEvents
+#undef IID_IADORecordsetEventsVt
+#undef IID_IADORecordsets
+#undef IID_IADOStream
+#undef IID_IADOStreamConstruction
+#undef IID_ICMemStreamProperties
+#undef IID_IPrivErrors
+#undef LIBID_ADO20
+#undef LIBID_ADO21
+#undef LIBID_ADO25
+#undef LIBID_ADO26
+#undef LIBID_ADO27
+#undef LIBID_ADO28
+#undef LIBID_ADO60
+#undef LIBID_ADOR20
+#undef LIBID_ADOR25
 #endif
 
 #ifdef _LOCKBYTESUPPORT_
 
-#define IID_IADOField25 GUID_BUILDER(IID_IADOField25,00000569,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOField25;
-#undef IID_IADOField25
-#endif
+#define IID_IADOField26 GUID_BUILDER (IID_IADOField26, 00001557, 0000, 0010, 80, 00, 00, AA, 00, 6d, 2e, A4)
 
-#define IID_IADOField26 GUID_BUILDER(IID_IADOField26,00000557,0000,0010,80,00,00,AA,00,6D,2E,A4)
 #ifdef IMMEDIATE_GUID_USE
 IID_IADOField26;
+
 #undef IID_IADOField26
 #endif
-#endif
 
-#define IID_IADOFields15 GUID_BUILDER(IID_IADOFields15,00000506,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOFields15;
-#undef IID_IADOFields15
-#endif
-
-#define IID_IADOFields20 GUID_BUILDER(IID_IADOFields20,0000054D,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOFields20;
-#undef IID_IADOFields20
-#endif
-
-#define IID_IADOFields GUID_BUILDER(IID_IADOFields,00000564,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOFields;
-#undef IID_IADOFields
-#endif
-
-#define CLSID_CADOCommand GUID_BUILDER(CLSID_CADOCommand,00000507,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOCommand;
-#undef CLSID_CADOCommand
-#endif
-
-#define IID_IADOCommand15 GUID_BUILDER(IID_IADOCommand15,00000508,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCommand15;
-#undef IID_IADOCommand15
-#endif
-
-#define IID_IADOCommand25 GUID_BUILDER(IID_IADOCommand25,0000054E,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCommand25;
-#undef IID_IADOCommand25
-#endif
-
-#define IID_IADOCommands GUID_BUILDER(IID_IADOCommands,00000509,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCommands;
-#undef IID_IADOCommands
-#endif
-
-#define IID_IADOCommandConstruction GUID_BUILDER(IID_IADOCommandConstruction,00000517,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCommandConstruction;
-#undef IID_IADOCommandConstruction
-#endif
-
-#define CLSID_CADOParameter GUID_BUILDER(CLSID_CADOParameter,0000050B,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOParameter;
-#undef CLSID_CADOParameter
-#endif
-
-#define IID_IADOParameter GUID_BUILDER(IID_IADOParameter,0000050C,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOParameter;
-#undef IID_IADOParameter
-#endif
-
-#define IID_IADOParameters GUID_BUILDER(IID_IADOParameters,0000050D,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOParameters;
-#undef IID_IADOParameters
-#endif
-
-#define CLSID_CADORecordset GUID_BUILDER(CLSID_CADORecordset,00000535,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADORecordset;
-#undef CLSID_CADORecordset
-#endif
-
-#define IID_IADORecordset15 GUID_BUILDER(IID_IADORecordset15,0000050E,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordset15;
-#undef IID_IADORecordset15
-#endif
-
-#define IID_IADORecordset20 GUID_BUILDER(IID_IADORecordset20,0000054F,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordset20;
-#undef IID_IADORecordset20
-#endif
-
-#define IID_IADORecordset21 GUID_BUILDER(IID_IADORecordset21,00000555,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordset21;
-#undef IID_IADORecordset21
-#endif
-
-#define IID_IADORecordset25 GUID_BUILDER(IID_IADORecordset25,00000556,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordset25;
-#undef IID_IADORecordset25
-#endif
-
-#define IID_IADORecordset GUID_BUILDER(IID_IADORecordset,00000556,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordset;
-#undef IID_IADORecordset
-#endif
-
-#define IID_IADORecordsets GUID_BUILDER(IID_IADORecordsets,0000050F,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordsets;
-#undef IID_IADORecordsets
-#endif
-
-#define IID_IADORecordsetConstruction GUID_BUILDER(IID_IADORecordsetConstruction,00000283,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordsetConstruction;
-#undef IID_IADORecordsetConstruction
-#endif
-
-#define IID_IADOCollection GUID_BUILDER(IID_IADOCollection,00000512,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCollection;
-#undef IID_IADOCollection
-#endif
-
-#define IID_IADODynaCollection GUID_BUILDER(IID_IADODynaCollection,00000513,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADODynaCollection;
-#undef IID_IADODynaCollection
-#endif
-
-#define CLSID_CADOConnection GUID_BUILDER(CLSID_CADOConnection,00000514,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOConnection;
-#undef CLSID_CADOConnection
-#endif
-
-#define IID_IADOConnection15 GUID_BUILDER(IID_IADOConnection15,00000515,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnection15;
-#undef IID_IADOConnection15
-#endif
-
-#define IID_IADOConnection GUID_BUILDER(IID_IADOConnection,00000550,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnection;
-#undef IID_IADOConnection
-#endif
-
-#define IID_IADOConnectionConstruction15 GUID_BUILDER(IID_IADOConnectionConstruction15,00000516,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnectionConstruction15;
-#undef IID_IADOConnectionConstruction15
-#endif
-
-#define IID_IADOConnectionConstruction GUID_BUILDER(IID_IADOConnectionConstruction,00000551,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnectionConstruction;
-#undef IID_IADOConnectionConstruction
-#endif
-
-#define IID_IADOConnections GUID_BUILDER(IID_IADOConnections,00000518,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnections;
-#undef IID_IADOConnections
-#endif
-
-#define IID_IADORecordsetEvents GUID_BUILDER(IID_IADORecordsetEvents,00000266,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordsetEvents;
-#undef IID_IADORecordsetEvents
-#endif
-
-#define IID_IADOConnectionEvents GUID_BUILDER(IID_IADOConnectionEvents,00000400,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnectionEvents;
-#undef IID_IADOConnectionEvents
-#endif
-
-#define IID_IADORecordsetEventsVt GUID_BUILDER(IID_IADORecordsetEventsVt,00000403,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordsetEventsVt;
-#undef IID_IADORecordsetEventsVt
-#endif
-
-#define IID_IADOConnectionEventsVt GUID_BUILDER(IID_IADOConnectionEventsVt,00000402,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOConnectionEventsVt;
-#undef IID_IADOConnectionEventsVt
-#endif
-
-#define CLSID_CADORecord GUID_BUILDER(CLSID_CADORecord,00000560,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADORecord;
-#undef CLSID_CADORecord
-#endif
-
-#define CLSID_CADORecField GUID_BUILDER(CLSID_CADORecField,00000561,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADORecField;
-#undef CLSID_CADORecField
-#endif
-
-#define IID_IADORecord GUID_BUILDER(IID_IADORecord,00000562,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecord;
-#undef IID_IADORecord
-#endif
-
-#define IID_IADORecord25 GUID_BUILDER(IID_IADORecord25,00000562,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecord25;
-#undef IID_IADORecord25
-#endif
-
-#define IID_IADORecord26 GUID_BUILDER(IID_IADORecord26,00000563,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecord26;
-#undef IID_IADORecord26
-#endif
-
-#define IID_IADOStream GUID_BUILDER(IID_IADOStream,00000565,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOStream;
-#undef IID_IADOStream
-#endif
-
-#define CLSID_CADOStream GUID_BUILDER(CLSID_CADOStream,00000566,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOStream;
-#undef CLSID_CADOStream
-#endif
-
-#define IID_IADORecordConstruction GUID_BUILDER(IID_IADORecordConstruction,00000567,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordConstruction;
-#undef IID_IADORecordConstruction
-#endif
-
-#define IID_IADOStreamConstruction GUID_BUILDER(IID_IADOStreamConstruction,00000568,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOStreamConstruction;
-#undef IID_IADOStreamConstruction
-#endif
-
-#define IID_EnumCursorType GUID_BUILDER(IID_EnumCursorType,0000051B,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCursorType;
-#undef IID_EnumCursorType
-#endif
-
-#define IID_EnumCursorOption GUID_BUILDER(IID_EnumCursorOption,0000051C,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCursorOption;
-#undef IID_EnumCursorOption
-#endif
-
-#define IID_EnumLockType GUID_BUILDER(IID_EnumLockType,0000051D,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumLockType;
-#undef IID_EnumLockType
-#endif
-
-#define IID_EnumExecuteOption GUID_BUILDER(IID_EnumExecuteOption,0000051E,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumExecuteOption;
-#undef IID_EnumExecuteOption
-#endif
-
-#define IID_EnumDataType GUID_BUILDER(IID_EnumDataType,0000051F,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumDataType;
-#undef IID_EnumDataType
-#endif
-
-#define IID_EnumConnectPrompt GUID_BUILDER(IID_EnumConnectPrompt,00000520,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumConnectPrompt;
-#undef IID_EnumConnectPrompt
-#endif
-
-#define IID_EnumConnectMode GUID_BUILDER(IID_EnumConnectMode,00000521,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumConnectMode;
-#undef IID_EnumConnectMode
-#endif
-
-#define IID_EnumPrepareOption GUID_BUILDER(IID_EnumPrepareOption,00000522,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumPrepareOption;
-#undef IID_EnumPrepareOption
-#endif
-
-#define IID_EnumIsolationLevel GUID_BUILDER(IID_EnumIsolationLevel,00000523,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumIsolationLevel;
-#undef IID_EnumIsolationLevel
-#endif
-
-#define IID_EnumXactAttribute GUID_BUILDER(IID_EnumXactAttribute,00000524,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumXactAttribute;
-#undef IID_EnumXactAttribute
-#endif
-
-#define IID_EnumFieldAttribute GUID_BUILDER(IID_EnumFieldAttribute,00000525,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumFieldAttribute;
-#undef IID_EnumFieldAttribute
-#endif
-
-#define IID_EnumEditMode GUID_BUILDER(IID_EnumEditMode,00000526,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumEditMode;
-#undef IID_EnumEditMode
-#endif
-
-#define IID_EnumRecordStatus GUID_BUILDER(IID_EnumRecordStatus,00000527,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRecordStatus;
-#undef IID_EnumRecordStatus
-#endif
-
-#define IID_EnumPosition GUID_BUILDER(IID_EnumPosition,00000528,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumPosition;
-#undef IID_EnumPosition
-#endif
-
-#define IID_EnumPropertyAttributes GUID_BUILDER(IID_EnumPropertyAttributes,00000529,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumPropertyAttributes;
-#undef IID_EnumPropertyAttributes
-#endif
-
-#define IID_EnumErrorValue GUID_BUILDER(IID_EnumErrorValue,0000052A,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumErrorValue;
-#undef IID_EnumErrorValue
-#endif
-
-#define IID_EnumParameterAttributes GUID_BUILDER(IID_EnumParameterAttributes,0000052B,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumParameterAttributes;
-#undef IID_EnumParameterAttributes
-#endif
-
-#define IID_EnumParameterDirection GUID_BUILDER(IID_EnumParameterDirection,0000052C,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumParameterDirection;
-#undef IID_EnumParameterDirection
-#endif
-
-#define IID_EnumFilterCriteria GUID_BUILDER(IID_EnumFilterCriteria,0000052D,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumFilterCriteria;
-#undef IID_EnumFilterCriteria
-#endif
-
-#define IID_EnumCommandType GUID_BUILDER(IID_EnumCommandType,0000052E,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCommandType;
-#undef IID_EnumCommandType
-#endif
-
-#define IID_EnumCursorLocation GUID_BUILDER(IID_EnumCursorLocation,0000052F,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCursorLocation;
-#undef IID_EnumCursorLocation
-#endif
-
-#define IID_EnumEventStatus GUID_BUILDER(IID_EnumEventStatus,00000530,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumEventStatus;
-#undef IID_EnumEventStatus
-#endif
-
-#define IID_EnumEventReason GUID_BUILDER(IID_EnumEventReason,00000531,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumEventReason;
-#undef IID_EnumEventReason
-#endif
-
-#define IID_EnumObjectState GUID_BUILDER(IID_EnumObjectState,00000532,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumObjectState;
-#undef IID_EnumObjectState
-#endif
-
-#define IID_EnumSchema GUID_BUILDER(IID_EnumSchema,00000533,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumSchema;
-#undef IID_EnumSchema
-#endif
-
-#define IID_EnumMarshalOptions GUID_BUILDER(IID_EnumMarshalOptions,00000540,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumMarshalOptions;
-#undef IID_EnumMarshalOptions
-#endif
-
-#define IID_EnumConnectOption GUID_BUILDER(IID_EnumConnectOption,00000541,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumConnectOption;
-#undef IID_EnumConnectOption
-#endif
-
-#define IID_EnumGetRowsOption GUID_BUILDER(IID_EnumGetRowsOption,00000542,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumGetRowsOption;
-#undef IID_EnumGetRowsOption
-#endif
-
-#define IID_EnumAffect GUID_BUILDER(IID_EnumAffect,00000543,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumAffect;
-#undef IID_EnumAffect
-#endif
-
-#define IID_EnumResync GUID_BUILDER(IID_EnumResync,00000544,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumResync;
-#undef IID_EnumResync
-#endif
-
-#define IID_EnumCompare GUID_BUILDER(IID_EnumCompare,00000545,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCompare;
-#undef IID_EnumCompare
-#endif
-
-#define IID_EnumFilterGroup GUID_BUILDER(IID_EnumFilterGroup,00000546,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumFilterGroup;
-#undef IID_EnumFilterGroup
-#endif
-
-#define IID_EnumSearchDirection GUID_BUILDER(IID_EnumSearchDirection,00000547,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumSearchDirection;
-#undef IID_EnumSearchDirection
-#endif
-
-#define IID_EnumPersistFormat GUID_BUILDER(IID_EnumPersistFormat,00000548,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumPersistFormat;
-#undef IID_EnumPersistFormat
-#endif
-
-#define IID_EnumStringFormat GUID_BUILDER(IID_EnumStringFormat,00000549,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumStringFormat;
-#undef IID_EnumStringFormat
-#endif
-
-#define IID_EnumRDSUpdateCriteria GUID_BUILDER(IID_EnumRDSUpdateCriteria,0000054A,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRDSUpdateCriteria;
-#undef IID_EnumRDSUpdateCriteria
-#endif
-
-#define IID_EnumRDSAsyncThreadPriority GUID_BUILDER(IID_EnumRDSAsyncThreadPriority,0000054B,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRDSAsyncThreadPriority;
-#undef IID_EnumRDSAsyncThreadPriority
-#endif
-
-#define IID_EnumCEResync GUID_BUILDER(IID_EnumCEResync,00000553,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCEResync;
-#undef IID_EnumCEResync
-#endif
-
-#define IID_EnumRDSAutoRecalc GUID_BUILDER(IID_EnumRDSAutoRecalc,00000554,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRDSAutoRecalc;
-#undef IID_EnumRDSAutoRecalc
-#endif
-
-#define IID_EnumSeek GUID_BUILDER(IID_EnumSeek,00000552,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumSeek;
-#undef IID_EnumSeek
-#endif
-
-#define IID_IADORecordGroup GUID_BUILDER(IID_IADORecordGroup,00000511,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADORecordGroup;
-#undef IID_IADORecordGroup
-#endif
-
-#define IID_IADOCustomError GUID_BUILDER(IID_IADOCustomError,00000519,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCustomError;
-#undef IID_IADOCustomError
-#endif
-
-#define CLSID_CADOError GUID_BUILDER(CLSID_CADOError,00000541,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOError;
-#undef CLSID_CADOError
-#endif
-
-#define IID_IPrivErrors GUID_BUILDER(IID_IPrivErrors,00000502,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IPrivErrors;
-#undef IID_IPrivErrors
-#endif
-
-#define CLSID_CADOErrorLookup GUID_BUILDER(CLSID_CADOErrorLookup,00000542,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_CADOErrorLookup;
-#undef CLSID_CADOErrorLookup
-#endif
-
-#define CLSID_ADO GUID_BUILDER(CLSID_ADO,0000051A,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-CLSID_ADO;
-#undef CLSID_ADO
-#endif
-
-#define IID_ConnectionEvents GUID_BUILDER(IID_ConnectionEvents,00000400,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_ConnectionEvents;
-#undef IID_ConnectionEvents
-#endif
-
-#define IID_ConnectionEventsVt GUID_BUILDER(IID_ConnectionEventsVt,00000402,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_ConnectionEventsVt;
-#undef IID_ConnectionEventsVt
-#endif
-
-#define IID_IADO10StdObject GUID_BUILDER(IID_IADO10StdObject,00000534,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADO10StdObject;
-#undef IID_IADO10StdObject
-#endif
-
-#define IID__ADO GUID_BUILDER(IID__ADO,00000534,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID__ADO;
-#undef IID__ADO
-#endif
-
-#define IID_IADOClass GUID_BUILDER(IID_IADOClass,00000560,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOClass;
-#undef IID_IADOClass
-#endif
-
-#define IID_EnumRecordCreateOptions GUID_BUILDER(IID_EnumRecordCreateOptions,00000570,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRecordCreateOptions;
-#undef IID_EnumRecordCreateOptions
-#endif
-
-#define IID_EnumRecordOpenOptions GUID_BUILDER(IID_EnumRecordOpenOptions,00000571,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRecordOpenOptions;
-#undef IID_EnumRecordOpenOptions
-#endif
-
-#define IID_EnumMoveRecordOptions GUID_BUILDER(IID_EnumMoveRecordOptions,00000573,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumMoveRecordOptions;
-#undef IID_EnumMoveRecordOptions
-#endif
-
-#define IID_EnumCopyRecordOptions GUID_BUILDER(IID_EnumCopyRecordOptions,00000574,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumCopyRecordOptions;
-#undef IID_EnumCopyRecordOptions
-#endif
-
-#define IID_EnumMode GUID_BUILDER(IID_EnumMode,00000575,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumMode;
-#undef IID_EnumMode
-#endif
-
-#define IID_EnumStreamType GUID_BUILDER(IID_EnumStreamType,00000576,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumStreamType;
-#undef IID_EnumStreamType
-#endif
-
-#define IID_EnumLineSeparator GUID_BUILDER(IID_EnumLineSeparator,00000577,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumLineSeparator;
-#undef IID_EnumLineSeparator
-#endif
-
-#define IID_EnumStreamOpenOptions GUID_BUILDER(IID_EnumStreamOpenOptions,0000057A,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumStreamOpenOptions;
-#undef IID_EnumStreamOpenOptions
-#endif
-
-#define IID_EnumStreamWrite GUID_BUILDER(IID_EnumStreamWrite,0000057B,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumStreamWrite;
-#undef IID_EnumStreamWrite
-#endif
-
-#define IID_EnumSaveOptions GUID_BUILDER(IID_EnumSaveOptions,0000057C,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumSaveOptions;
-#undef IID_EnumSaveOptions
-#endif
-
-#define IID_EnumRecordType GUID_BUILDER(IID_EnumRecordType,0000057D,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumRecordType;
-#undef IID_EnumRecordType
-#endif
-
-#define IID_EnumFieldStatus GUID_BUILDER(IID_EnumFieldStatus,0000057E,0000,0010,80,00,00,AA,00,6D,2E,A4)
-#ifdef IMMEDIATE_GUID_USE
-IID_EnumFieldStatus;
-#undef IID_EnumFieldStatus
-#endif
-
-#define IID_IADOCommand GUID_BUILDER(IID_IADOCommand,B08400BD,F9D1,4D02,B8,56,71,D5,DB,A1,23,E9)
-#ifdef IMMEDIATE_GUID_USE
-IID_IADOCommand;
-#undef IID_IADOCommand
-#endif
-
-#define LIBID_ADO27 GUID_BUILDER(LIBID_ADO27,EF53050B,882E,4776,B6,43,ED,A4,72,E8,E3,F2)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADO27;
-#undef LIBID_ADO27
-#endif
-
-#define IID_ICMemStreamProperties GUID_BUILDER(IID_ICMemStreamProperties,FF184014,B5D3,4310,AB,F0,9B,70,45,A2,CF,17)
-#ifdef IMMEDIATE_GUID_USE
-IID_ICMemStreamProperties;
-#undef IID_ICMemStreamProperties
-#endif
-
-#define LIBID_ADO28 GUID_BUILDER(LIBID_ADO28,2A75196C,D9EB,4129,B8,03,93,13,27,F7,2D,5C)
-#ifdef IMMEDIATE_GUID_USE
-LIBID_ADO28;
-#undef LIBID_ADO28
 #endif
 
 #ifdef RESERVED_GUIDS_BEYOND_THIS_POINT
 
-#define ADO_Reserved_3 GUID_BUILDER(ADO_Reserved_3,B691E011,1797,432E,90,7A,4D,8C,69,33,91,29)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_3;
-#undef ADO_Reserved_3
-#endif
+#define ADO_Reserved_4 GUID_BUILDER (ADO_Reserved_4, 567747f1, 658b, 4906, 82, C4, E9, CD, A1, 46, 26, 15)
+#define ADO_Reserved_6 GUID_BUILDER (ADO_Reserved_6, ED5A4589, 7a9d, 41df, 89, 86, CC, A9, 25, 01, A5, DA)
+#define ADO_Reserved_7 GUID_BUILDER (ADO_Reserved_7, C029178A, F16B, 4a06, 82, 93, A8, 08, B7, F8, 78, 92)
+#define ADO_Reserved_8 GUID_BUILDER (ADO_Reserved_8, FD6974FD, 21fb, 409c, 96, 56, A5, 68, FE, C0, AC, 01)
+#define ADO_Reserved_9 GUID_BUILDER (ADO_Reserved_9, F23FCB5E, 7159, 4cba, A3, 41, 0e, 7a, A5, 15, 18, 70)
+#define ADO_Reserved_10 GUID_BUILDER (ADO_Reserved_10, E724D5C9, 327c, 43f7, 86, 4c, 68, 2f, FF, 5c, 99, 93)
+#define ADO_Reserved_12 GUID_BUILDER (ADO_Reserved_12, 8831ebb5, 2c09, 4ddd, 9a, 7a, AC, 13, 6d, 58, D7, 21)
+#define ADO_Reserved_13 GUID_BUILDER (ADO_Reserved_13, 447b1221, 64fa, 44e9, B1, 46, B1, 1f, 16, E3, 14, B2)
+#define ADO_Reserved_14 GUID_BUILDER (ADO_Reserved_14, FC528DC2, A992, 44d3, 97, 9f, 07, F7, F4, 45, 5f, 23)
+#define ADO_Reserved_15 GUID_BUILDER (ADO_Reserved_15, C2CC7BC0, 9f8b, 46c8, 83, 6b, BC, 46, 70, 28, F4, 54)
+#define ADO_Reserved_16 GUID_BUILDER (ADO_Reserved_16, 4687ee6c, 12ce, 4a31, 97, E9, E6, 49, 6d, E7, 2c, 71)
+#define ADO_Reserved_17 GUID_BUILDER (ADO_Reserved_17, 4b56fc5d, 992f, 4339, 95, 81, C5, 40, 7a, B2, BF, FD)
+#define ADO_Reserved_18 GUID_BUILDER (ADO_Reserved_18, 1f13bfb3, 8ba8, 46ca, 91, 78, 74, 28, EF, 9a, 85, C0)
+#define ADO_Reserved_19 GUID_BUILDER (ADO_Reserved_19, 0b410060, 4d75, 4f77, 96, A1, 68, 4c, 38, 15, E1, B1)
+#define ADO_Reserved_20 GUID_BUILDER (ADO_Reserved_20, 5593f2e0, 436b, 40b8, 81, A8, 1b, 7e, F4, E6, 25, 2c)
+#define ADO_Reserved_21 GUID_BUILDER (ADO_Reserved_21, 88447b2f, E1C9, 413e, BE, E7, A7, D2, B9, 0e, D1, 96)
+#define ADO_Reserved_22 GUID_BUILDER (ADO_Reserved_22, 89bfee1b, 8cb5, 4a90, 89, AF, E8, 29, 93, 4e, 6c, 48)
+#define ADO_Reserved_23 GUID_BUILDER (ADO_Reserved_23, 28d7f9fc, F485, 4bdb, 9c, C4, 6f, AE, 44, F9, 9f, D9)
+#define ADO_Reserved_24 GUID_BUILDER (ADO_Reserved_24, 1bb4223f, B0E8, 4540, 96, FD, B8, FE, D9, A7, C0, 8b)
+#define ADO_Reserved_25 GUID_BUILDER (ADO_Reserved_25, AD1A1568, 8b4a, 403f, 84, 76, D8, F6, 33, 4d, BD, 9f)
+#define ADO_Reserved_26 GUID_BUILDER (ADO_Reserved_26, 1326b4d8, EE0B, 4054, 8f, 4c, 86, 35, 9f, 00, 24, AD)
+#define ADO_Reserved_27 GUID_BUILDER (ADO_Reserved_27, 98b7eb70, 7aed, 401a, AF, 6d, A6, B8, DB, A0, AF, A6)
+#define ADO_Reserved_28 GUID_BUILDER (ADO_Reserved_28, FD46F2C2, 7fda, 4dc9, A2, DB, D9, BE, 4f, 59, 98, C2)
+#define ADO_Reserved_29 GUID_BUILDER (ADO_Reserved_29, FAA37542, B471, 4183, A6, 56, 99, C8, FD, 80, FF, 73)
+#define ADO_Reserved_30 GUID_BUILDER (ADO_Reserved_30, 56ce86f1, 3116, 4104, A5, 28, 17, D1, 1e, DC, 68, 2a)
+#define ADO_Reserved_31 GUID_BUILDER (ADO_Reserved_31, 83e8cf0e, 176f, 4908, 86, 3a, 2a, 77, 4d, 76, 9b, EF)
+#define ADO_Reserved_32 GUID_BUILDER (ADO_Reserved_32, 0494d18d, 98f7, 4a38, 80, DF, 35, F8, 80, 98, BD, DF)
+#define ADO_Reserved_33 GUID_BUILDER (ADO_Reserved_33, 00c61f59, 4e7f, 4093, BF, FD, 03, 53, B4, 5d, E5, 8b)
+#define ADO_Reserved_34 GUID_BUILDER (ADO_Reserved_34, 732a172f, 384d, 4c4a, A6, AF, D2, 28, 20, D3, 34, 26)
+#define ADO_Reserved_35 GUID_BUILDER (ADO_Reserved_35, 104e1f7e, 8993, 455c, B7, D8, 58, CD, 88, 74, 80, 75)
+#define ADO_Reserved_36 GUID_BUILDER (ADO_Reserved_36, C12B8DFD, 42f7, 408e, AE, FB, A7, C2, FB, 43, 49, A7)
+#define ADO_Reserved_37 GUID_BUILDER (ADO_Reserved_37, EE881FC9, 6c2f, 45a2, BA, 17, 24, 95, BC, 72, 4e, 55)
+#define ADO_Reserved_38 GUID_BUILDER (ADO_Reserved_38, 7381c764, 646b, 4f11, A6, 73, 13, 50, 98, 9d, 62, 3a)
+#define ADO_Reserved_39 GUID_BUILDER (ADO_Reserved_39, D8E4965C, F571, 4771, 8a, 74, 63, 95, 05, 16, B0, 88)
+#define ADO_Reserved_40 GUID_BUILDER (ADO_Reserved_40, 2be262e5, 3a8c, 4b07, A3, C3, 3b, B7, 40, EF, 40, 95)
+#define ADO_Reserved_41 GUID_BUILDER (ADO_Reserved_41, 3e90a199, 4f86, 445c, 84, 8e, A6, 17, 86, B9, 67, D1)
+#define ADO_Reserved_42 GUID_BUILDER (ADO_Reserved_42, DCD025E0, DA44, 47e4, 82, 65, E4, A7, 6b, 85, 29, 0c)
+#define ADO_Reserved_43 GUID_BUILDER (ADO_Reserved_43, 31eff562, FB6B, 41d6, 81, AD, 30, 1b, B0, 53, 9c, 61)
+#define ADO_Reserved_44 GUID_BUILDER (ADO_Reserved_44, BD3ECD6B, F4A7, 42fc, 90, F1, 75, D5, 37, 2a, F2, 8f)
+#define ADO_Reserved_45 GUID_BUILDER (ADO_Reserved_45, 6efbc56f, 67e4, 4f7d, BE, 59, C5, D6, FA, 21, B7, 77)
+#define ADO_Reserved_46 GUID_BUILDER (ADO_Reserved_46, 3bf5e1fc, B960, 4564, 86, 54, 07, B0, 7a, AF, 6e, 4f)
+#define ADO_Reserved_47 GUID_BUILDER (ADO_Reserved_47, 2430f883, 1462, 4899, 9a, DE, F7, 24, 27, FD, 5e, E4)
+#define ADO_Reserved_48 GUID_BUILDER (ADO_Reserved_48, AB663F07, BA4D, 42cc, 93, C6, F2, EA, 9f, C8, BA, 74)
+#define ADO_Reserved_49 GUID_BUILDER (ADO_Reserved_49, D808C6F7, 36c0, 4302, 80, EE, C4, B7, 00, F8, D2, 38)
+#define ADO_Reserved_50 GUID_BUILDER (ADO_Reserved_50, AB146E06, E493, 4df0, A1, CD, 07, D4, B0, 74, 46, C3)
+#define ADO_Reserved_51 GUID_BUILDER (ADO_Reserved_51, 74f1fd51, 9cb8, 4186, 8c, 3d, DD, F3, 55, 2a, 99, 9b)
+#define ADO_Reserved_52 GUID_BUILDER (ADO_Reserved_52, 71701a97, 5386, 43b0, 95, 8d, 3c, EE, 40, 57, B1, 99)
+#define ADO_Reserved_53 GUID_BUILDER (ADO_Reserved_53, 63cc6087, A6C6, 4ccf, 8e, D4, 17, 5b, 91, A6, 32, C5)
+#define ADO_Reserved_54 GUID_BUILDER (ADO_Reserved_54, 7323fd37, B7D8, 4f8a, 80, F4, E8, 3d, 0b, 2a, 73, B5)
+#define ADO_Reserved_55 GUID_BUILDER (ADO_Reserved_55, 5c666403, 2a0a, 4b12, 8e, 1d, 41, 19, 88, DD, E0, 0a)
+#define ADO_Reserved_56 GUID_BUILDER (ADO_Reserved_56, ECA4C14C, 5529, 49df, B1, 3c, 17, F0, 22, DB, 1b, A6)
+#define ADO_Reserved_57 GUID_BUILDER (ADO_Reserved_57, 304ade1d, 4458, 4a6a, 93, 48, 1f, 7c, 2e, 64, D6, FA)
+#define ADO_Reserved_58 GUID_BUILDER (ADO_Reserved_58, D87A7AF2, FB3C, 49bc, B2, 69, F3, 57, 36, E7, 23, 2e)
+#define ADO_Reserved_59 GUID_BUILDER (ADO_Reserved_59, 542d6d77, AECB, 4aff, B1, C6, 54, EF, 79, 8f, 61, ED)
+#define ADO_Reserved_60 GUID_BUILDER (ADO_Reserved_60, 46359618, 34ae, 410e, AE, 20, F3, D4, E1, BD, A6, BE)
+#define ADO_Reserved_61 GUID_BUILDER (ADO_Reserved_61, F98DF79B, 2935, 464b, AA, 08, CC, EF, F1, 5f, 71, 32)
+#define ADO_Reserved_62 GUID_BUILDER (ADO_Reserved_62, 214887fb, 4867, 4dd8, 83, 9d, 4c, F0, BB, 83, E1, 95)
+#define ADO_Reserved_63 GUID_BUILDER (ADO_Reserved_63, C9B68C08, F663, 4386, 8f, 5b, FA, BA, E0, 27, 43, 6d)
+#define ADO_Reserved_64 GUID_BUILDER (ADO_Reserved_64, F46511DD, 10b6, 49cf, AA, 75, 5e, E2, 7c, FD, 9e, A4)
+#define ADO_Reserved_65 GUID_BUILDER (ADO_Reserved_65, C057EF87, F3A8, 4890, A9, 56, 57, 8c, 07, CD, 2e, F8)
+#define ADO_Reserved_66 GUID_BUILDER (ADO_Reserved_66, 1c9e0666, 1405, 4dc5, BD, A7, 65, F4, B4, 16, 1d, 7b)
+#define ADO_Reserved_67 GUID_BUILDER (ADO_Reserved_67, B91484C2, 5e48, 438c, 91, CD, B9, D6, 99, 32, 30, E4)
+#define ADO_Reserved_68 GUID_BUILDER (ADO_Reserved_68, 17d12bfe, 6c9f, 4229, 87, 95, 60, 20, 6f, D1, 45, 35)
+#define ADO_Reserved_69 GUID_BUILDER (ADO_Reserved_69, 5a816ea3, EE82, 4f65, BC, 76, 74, 07, E9, E5, 43, 58)
+#define ADO_Reserved_70 GUID_BUILDER (ADO_Reserved_70, 3ad0de2b, AA3E, 4508, BE, 9e, 1e, AA, DF, 1c, 4d, 8b)
+#define ADO_Reserved_71 GUID_BUILDER (ADO_Reserved_71, 54dc8b80, 7869, 4d90, AB, 5c, 8c, 54, 1a, 74, EE, F8)
+#define ADO_Reserved_72 GUID_BUILDER (ADO_Reserved_72, 80a200b0, 5783, 48e7, 81, 25, B9, E4, BF, 59, F7, 22)
+#define ADO_Reserved_73 GUID_BUILDER (ADO_Reserved_73, 1502cb61, 8c42, 4c4b, B9, 0c, 3a, 9e, 4e, 46, D1, BE)
+#define ADO_Reserved_74 GUID_BUILDER (ADO_Reserved_74, 70eb3f53, 91a0, 42f5, BE, 50, F1, 02, DE, C8, 92, 27)
+#define ADO_Reserved_75 GUID_BUILDER (ADO_Reserved_75, 4680aa81, B27C, 4a8f, 83, F9, 6f, B7, E1, 8e, D2, 3c)
+#define ADO_Reserved_76 GUID_BUILDER (ADO_Reserved_76, EF31F9EB, 4541, 4fcb, 8d, 67, 59, 2c, 85, 50, 93, 05)
+#define ADO_Reserved_77 GUID_BUILDER (ADO_Reserved_77, 88b77d15, 997e, 4e3a, 83, 20, 3b, 37, 83, 52, 86, D5)
+#define ADO_Reserved_78 GUID_BUILDER (ADO_Reserved_78, D03A3AA8, 1aac, 4867, 93, C9, 5f, 51, D8, 7d, 6a, 74)
+#define ADO_Reserved_79 GUID_BUILDER (ADO_Reserved_79, 47022458, 17e7, 4bd7, 90, 81, 85, B4, 0b, 03, 6d, 5b)
+#define ADO_Reserved_80 GUID_BUILDER (ADO_Reserved_80, 9e5bee82, F410, 44c7, 9d, 6d, 3f, 7d, D2, 8b, A7, CC)
+#define ADO_Reserved_81 GUID_BUILDER (ADO_Reserved_81, 278a1c47, 3c39, 41c7, A3, FB, 7c, 2e, 62, 0b, E4, 44)
+#define ADO_Reserved_82 GUID_BUILDER (ADO_Reserved_82, 964cbf05, 8084, 4c15, 9c, F5, 8c, 4b, 81, 41, B4, AE)
+#define ADO_Reserved_83 GUID_BUILDER (ADO_Reserved_83, A86296A0, F272, 4acd, 83, 06, FF, CA, FF, 89, 14, A9)
+#define ADO_Reserved_84 GUID_BUILDER (ADO_Reserved_84, F805FC7C, 7c4a, 43a1, B0, 14, 71, EA, 0e, EB, EA, 5f)
+#define ADO_Reserved_85 GUID_BUILDER (ADO_Reserved_85, 33e6e9b6, 0bea, 4549, 90, CB, 3b, 64, 12, DB, 8c, F5)
+#define ADO_Reserved_86 GUID_BUILDER (ADO_Reserved_86, 7337e3dc, 219f, 4d9e, 82, 5b, 0a, 2c, 18, 4e, C0, DE)
+#define ADO_Reserved_87 GUID_BUILDER (ADO_Reserved_87, 7397bafc, 354e, 4f18, 9f, 76, C3, 3a, 4e, EF, 6d, 20)
+#define ADO_Reserved_88 GUID_BUILDER (ADO_Reserved_88, 5ec2d163, E671, 4186, BE, 72, BF, FF, 72, D5, 7a, 5c)
+#define ADO_Reserved_89 GUID_BUILDER (ADO_Reserved_89, 8b37b801, 0a35, 4f97, A3, 43, 82, 57, B3, E7, 6c, 79)
+#define ADO_Reserved_90 GUID_BUILDER (ADO_Reserved_90, FAD396B6, EE4E, 4f70, 85, 54, E8, 23, 9e, 47, 05, 29)
+#define ADO_Reserved_91 GUID_BUILDER (ADO_Reserved_91, 6063972c, 395b, 4fef, A0, 04, ED, 95, E7, D8, 72, 0d)
+#define ADO_Reserved_92 GUID_BUILDER (ADO_Reserved_92, 85aeed72, A1F8, 4597, 82, 32, F8, 40, EF, C9, 21, 09)
+#define ADO_Reserved_93 GUID_BUILDER (ADO_Reserved_93, CE4FD8FF, 553a, 4424, B1, EA, 3e, DF, 11, 42, AD, 8b)
+#define ADO_Reserved_94 GUID_BUILDER (ADO_Reserved_94, 1a856a0f, 0844, 4de4, AC, 7b, 75, 30, 62, 56, 39, 86)
+#define ADO_Reserved_95 GUID_BUILDER (ADO_Reserved_95, 09a742a1, 19ed, 43bb, 85, E9, 99, 23, DE, C4, 17, F7)
+#define ADO_Reserved_96 GUID_BUILDER (ADO_Reserved_96, 3695bd0c, 9de6, 4895, 84, E6, B2, 4c, E7, 55, 47, 02)
+#define ADO_Reserved_97 GUID_BUILDER (ADO_Reserved_97, 8802531f, 6ea8, 4a55, 8a, 18, 05, 97, 86, 3c, DA, 38)
+#define ADO_Reserved_98 GUID_BUILDER (ADO_Reserved_98, 498e70f0, B13F, 4804, AD, D5, 72, E8, 0e, 28, 05, E7)
+#define ADO_Reserved_99 GUID_BUILDER (ADO_Reserved_99, 50d0e90f, E3A4, 4a93, 8b, 48, 71, 21, 66, E8, 87, CD)
+#define ADO_Reserved_100 GUID_BUILDER (ADO_Reserved_100, F1D30550, 8515, 4f8b, 93, E1, 1e, F0, 12, 1b, 4b, D0)
+#define ADO_Reserved_101 GUID_BUILDER (ADO_Reserved_101, 901cda31, 8cdb, 4a5b, 91, 6b, 63, EA, 90, 1d, 8c, E0)
+#define ADO_Reserved_102 GUID_BUILDER (ADO_Reserved_102, 00bda239, 1094, 4aef, 93, AD, 7c, E2, 73, 6c, 42, 25)
+#define ADO_Reserved_103 GUID_BUILDER (ADO_Reserved_103, DCA4E51E, 250e, 4ab3, B4, 90, F2, CB, 9e, 8f, 6c, C4)
+#define ADO_Reserved_104 GUID_BUILDER (ADO_Reserved_104, 24679ebd, 8535, 4494, A9, 1c, 18, 91, F0, 75, 5b, 6f)
+#define ADO_Reserved_105 GUID_BUILDER (ADO_Reserved_105, F041739E, F37E, 4925, 94, 25, FB, 51, 5e, 56, 0f, 54)
+#define ADO_Reserved_106 GUID_BUILDER (ADO_Reserved_106, FECACBBF, A73C, 4616, 84, 2f, FE, F5, 72, 85, 70, AB)
+#define ADO_Reserved_107 GUID_BUILDER (ADO_Reserved_107, DBAD7368, 1ded, 4a77, B8, 0a, 1a, EB, 12, 99, BD, B3)
+#define ADO_Reserved_108 GUID_BUILDER (ADO_Reserved_108, CFDE81B8, 66ef, 4503, 84, A8, 7e, 8f, C8, AB, 0b, 31)
+#define ADO_Reserved_109 GUID_BUILDER (ADO_Reserved_109, 9b7484fa, 023a, 4ffb, A2, 94, 11, A6, E5, 97, AB, 35)
+#define ADO_Reserved_110 GUID_BUILDER (ADO_Reserved_110, 54f0f09c, 1201, 49a9, B4, 65, 6b, 02, 9b, 5f, E3, 12)
+#define ADO_Reserved_111 GUID_BUILDER (ADO_Reserved_111, BFFA01F8, EAE7, 4fa1, BF, 74, 37, 73, 3f, BF, 36, 4c)
+#define ADO_Reserved_112 GUID_BUILDER (ADO_Reserved_112, 12fad291, 4aab, 4038, 9d, D1, 04, E4, E7, A9, E0, F4)
+#define ADO_Reserved_113 GUID_BUILDER (ADO_Reserved_113, 8d2af964, C489, 4d77, A8, 17, A0, 4d, B1, DB, 26, A5)
+#define ADO_Reserved_114 GUID_BUILDER (ADO_Reserved_114, 79f89dd7, BE86, 4b36, BE, 9b, FA, 75, 24, 18, 55, 68)
+#define ADO_Reserved_115 GUID_BUILDER (ADO_Reserved_115, 4387d7fa, 7a52, 4f67, BF, B6, 7e, 7d, 7a, B7, C9, DE)
+#define ADO_Reserved_116 GUID_BUILDER (ADO_Reserved_116, 7571252f, 0e49, 4f4b, A3, 87, 9e, D9, 70, 54, 68, D8)
+#define ADO_Reserved_117 GUID_BUILDER (ADO_Reserved_117, 0dab016b, 6ba4, 470f, 98, 1a, 2b, A7, 65, D4, 60, 4b)
+#define ADO_Reserved_118 GUID_BUILDER (ADO_Reserved_118, E97D87A3, 8a95, 4080, 8c, A9, ED, 9f, 05, 1a, B7, B2)
+#define ADO_Reserved_119 GUID_BUILDER (ADO_Reserved_119, C9EA1598, 2d23, 4978, 9b, 33, 3d, 2c, C4, 0a, B7, A1)
+#define ADO_Reserved_120 GUID_BUILDER (ADO_Reserved_120, E41CA9FC, 7fc9, 4831, 90, CE, F5, 33, 96, CE, 42, C3)
+#define ADO_Reserved_121 GUID_BUILDER (ADO_Reserved_121, 15df0905, 4acc, 44f7, A0, 1e, 0f, EF, 56, 3c, C4, E5)
+#define ADO_Reserved_122 GUID_BUILDER (ADO_Reserved_122, D2879A0E, D0B3, 42a2, A1, 16, D1, 5e, 13, C7, 51, 77)
+#define ADO_Reserved_123 GUID_BUILDER (ADO_Reserved_123, A999A8D2, 5e83, 4c0e, 83, 97, 18, 33, 19, 32, 79, CD)
+#define ADO_Reserved_124 GUID_BUILDER (ADO_Reserved_124, C6AFAE72, B3FF, 48ab, B1, EE, F5, EE, F9, 05, DF, 47)
+#define ADO_Reserved_125 GUID_BUILDER (ADO_Reserved_125, 0deadf50, 0940, 4f0e, AC, 3b, 94, 80, B7, 32, 2b, 1b)
+#define ADO_Reserved_126 GUID_BUILDER (ADO_Reserved_126, 61278818, 2fe6, 4892, 8b, 95, A7, 5c, AC, 6e, 21, BB)
+#define ADO_Reserved_127 GUID_BUILDER (ADO_Reserved_127, 3ac2bed7, 1111, 4e55, B2, 06, 1f, 54, 18, 94, 4c, BA)
+#define ADO_Reserved_128 GUID_BUILDER (ADO_Reserved_128, 3d4751e2, 04b8, 4593, A0, 0d, 3a, 4b, 94, 67, 4b, E9)
+#define ADO_Reserved_129 GUID_BUILDER (ADO_Reserved_129, 69bc6751, FE10, 4b3f, 89, 35, 40, 2f, A5, FD, 04, 82)
+#define ADO_Reserved_130 GUID_BUILDER (ADO_Reserved_130, 5867af81, 995a, 4686, 8b, CB, 13, B6, 8b, 10, 26, 8a)
+#define ADO_Reserved_131 GUID_BUILDER (ADO_Reserved_131, DA46C62F, BDCD, 4745, A3, CA, 4e, C9, FA, AB, E1, 10)
+#define ADO_Reserved_132 GUID_BUILDER (ADO_Reserved_132, 93028aa6, EECC, 482f, B3, A4, 2f, D4, 13, 04, 96, 5e)
+#define ADO_Reserved_133 GUID_BUILDER (ADO_Reserved_133, AB14F604, D05E, 4e50, A4, 5b, A8, 10, 48, E3, A4, 75)
+#define ADO_Reserved_134 GUID_BUILDER (ADO_Reserved_134, 35267875, 8420, 4226, 87, C0, 25, 00, 58, 56, 0f, D2)
+#define ADO_Reserved_135 GUID_BUILDER (ADO_Reserved_135, 16e34932, EEFA, 440e, A7, 86, 6a, 36, D2, C6, 21, 69)
+#define ADO_Reserved_136 GUID_BUILDER (ADO_Reserved_136, 2710a15a, B2B0, 46ec, BD, EC, E2, 2e, A8, A6, 28, FA)
+#define ADO_Reserved_137 GUID_BUILDER (ADO_Reserved_137, 2777696f, CB34, 4cc4, A0, A9, 02, EA, 15, 16, 63, DD)
+#define ADO_Reserved_138 GUID_BUILDER (ADO_Reserved_138, D11CA1A0, A261, 4ba2, 81, 68, 46, 52, 32, 9a, 60, 77)
+#define ADO_Reserved_139 GUID_BUILDER (ADO_Reserved_139, C33509A8, 883f, 4bea, AF, B5, 35, 26, CF, 0b, 8b, E1)
+#define ADO_Reserved_140 GUID_BUILDER (ADO_Reserved_140, DEBDC8E1, 4f02, 43e1, 8c, 88, 0b, A8, E1, 50, 6b, F5)
+#define ADO_Reserved_141 GUID_BUILDER (ADO_Reserved_141, 552f8531, 3f79, 4db3, 87, 7b, 8e, 54, C3, 5b, 38, 54)
+#define ADO_Reserved_142 GUID_BUILDER (ADO_Reserved_142, 1e6a2bf4, 241c, 48a1, 90, 66, C6, E1, E5, 2b, 0a, 4b)
+#define ADO_Reserved_143 GUID_BUILDER (ADO_Reserved_143, 8e5b2a8d, 1f0d, 429d, 94, 95, 16, F8, E9, 58, 06, 80)
+#define ADO_Reserved_144 GUID_BUILDER (ADO_Reserved_144, 57faec9d, 5cde, 4ebe, 84, A1, 5a, CB, 75, 7c, D4, 51)
+#define ADO_Reserved_145 GUID_BUILDER (ADO_Reserved_145, 707b03c3, A3B0, 4f00, 81, 61, 6e, 3f, 02, 7f, F0, B3)
+#define ADO_Reserved_146 GUID_BUILDER (ADO_Reserved_146, 5dd552f4, 0718, 4bdd, 82, 6c, 7c, C3, 5c, DA, 1d, 93)
+#define ADO_Reserved_147 GUID_BUILDER (ADO_Reserved_147, F3247F33, E377, 4a44, A9, 37, AC, E6, 36, F6, 58, 1f)
+#define ADO_Reserved_148 GUID_BUILDER (ADO_Reserved_148, E7C324C4, 38a5, 42a8, 99, FF, 34, 5d, AD, 8c, D2, 29)
+#define ADO_Reserved_149 GUID_BUILDER (ADO_Reserved_149, D14FCA70, 390d, 4158, B5, C3, 9a, 02, D1, F7, 85, 87)
+#define ADO_Reserved_150 GUID_BUILDER (ADO_Reserved_150, 58d30b5f, 92a5, 4ef4, 8e, 45, A0, 24, A9, CD, F9, FE)
+#define ADO_Reserved_151 GUID_BUILDER (ADO_Reserved_151, 9673df76, 73e4, 4c66, 89, 14, 7f, A4, 17, 43, 6c, 4a)
+#define ADO_Reserved_152 GUID_BUILDER (ADO_Reserved_152, 9fa8a7e1, CF3C, 4a61, BE, 10, 1d, 85, 5f, A0, D5, 08)
+#define ADO_Reserved_153 GUID_BUILDER (ADO_Reserved_153, B657729F, 6cc7, 4392, BD, 56, DC, ED, 6e, 53, F6, 4c)
+#define ADO_Reserved_154 GUID_BUILDER (ADO_Reserved_154, 06e5224b, 8c27, 4f41, 8f, B7, C6, 41, E4, C5, 04, 2d)
+#define ADO_Reserved_155 GUID_BUILDER (ADO_Reserved_155, 2268a619, CC1D, 4f72, B8, 3f, 79, 63, C0, 13, B1, 3d)
+#define ADO_Reserved_156 GUID_BUILDER (ADO_Reserved_156, FB4810F3, 3a65, 4c33, B3, 99, B5, C9, 33, 11, 11, D7)
+#define ADO_Reserved_157 GUID_BUILDER (ADO_Reserved_157, 9011be74, 6c9d, 44f7, BE, 2c, 8a, 2a, BB, 62, 51, AC)
+#define ADO_Reserved_158 GUID_BUILDER (ADO_Reserved_158, 3145c182, 82c6, 4082, BB, E7, 79, 1a, 2f, 49, 6c, B1)
+#define ADO_Reserved_159 GUID_BUILDER (ADO_Reserved_159, D8865377, 8799, 4c08, 97, E5, D6, 7e, 88, 6f, F5, 49)
+#define ADO_Reserved_160 GUID_BUILDER (ADO_Reserved_160, 8993232e, 8afa, 4552, A7, 8c, C6, 6c, 9d, 3a, E6, D0)
+#define ADO_Reserved_161 GUID_BUILDER (ADO_Reserved_161, 40af1931, 8721, 427b, 83, 5e, 50, 87, 79, BD, 1e, B2)
+#define ADO_Reserved_162 GUID_BUILDER (ADO_Reserved_162, 9c6e2b26, 4468, 427c, 8c, F5, 01, 14, 7d, B8, DF, 22)
+#define ADO_Reserved_163 GUID_BUILDER (ADO_Reserved_163, 3537fa93, 7e92, 4ce0, 80, 96, EF, DC, 1a, 80, A8, 95)
+#define ADO_Reserved_164 GUID_BUILDER (ADO_Reserved_164, 36992492, 3e17, 47c1, AB, 98, 5f, 0c, 49, B4, 6a, 25)
+#define ADO_Reserved_165 GUID_BUILDER (ADO_Reserved_165, 01662edb, CE23, 4215, AE, 9d, 51, 51, E6, DA, 36, 3c)
+#define ADO_Reserved_166 GUID_BUILDER (ADO_Reserved_166, 80b4a97b, 5256, 4397, 89, CD, 4e, F9, 91, 0f, 1d, E6)
+#define ADO_Reserved_167 GUID_BUILDER (ADO_Reserved_167, C2341A38, 2c6b, 414e, 96, A8, 8b, 5e, 47, F8, 14, DA)
+#define ADO_Reserved_168 GUID_BUILDER (ADO_Reserved_168, 5c2b7578, 53fa, 4ace, 8e, 6c, 39, 18, 2f, 68, D2, 67)
+#define ADO_Reserved_169 GUID_BUILDER (ADO_Reserved_169, B80C1E36, 611b, 49d4, 97, 19, 4e, 0c, 59, 0e, 2e, E1)
+#define ADO_Reserved_170 GUID_BUILDER (ADO_Reserved_170, BA269EB4, B741, 4fb2, A9, C9, 52, 4c, 9d, BE, 7c, 16)
+#define ADO_Reserved_171 GUID_BUILDER (ADO_Reserved_171, EE49769D, 1028, 4429, A9, 66, 2f, A8, 1d, 70, EE, 19)
+#define ADO_Reserved_172 GUID_BUILDER (ADO_Reserved_172, 541fc621, D6E6, 4cc4, B4, 98, 8e, 4f, AA, A0, 65, BF)
+#define ADO_Reserved_173 GUID_BUILDER (ADO_Reserved_173, AA8B544C, 4067, 4e00, 96, 09, 95, EE, 21, 68, AF, CE)
+#define ADO_Reserved_174 GUID_BUILDER (ADO_Reserved_174, 5b161b2b, D02C, 4300, A1, 54, CF, DC, 25, 3b, 13, 0d)
+#define ADO_Reserved_175 GUID_BUILDER (ADO_Reserved_175, 81f62203, 182e, 42de, B1, B7, 63, 5f, C6, 6f, 6e, 9e)
+#define ADO_Reserved_176 GUID_BUILDER (ADO_Reserved_176, 04934bdd, A530, 48ec, 91, CE, 11, 83, 42, 5b, DB, 61)
+#define ADO_Reserved_177 GUID_BUILDER (ADO_Reserved_177, F6997841, 9a99, 48aa, B0, 56, 8c, 75, 17, 06, 41, 7f)
+#define ADO_Reserved_178 GUID_BUILDER (ADO_Reserved_178, 353fe3f1, DE50, 45ee, 91, E9, 3e, 62, E3, C7, 86, 04)
+#define ADO_Reserved_179 GUID_BUILDER (ADO_Reserved_179, F142C8C6, 9e24, 422e, 81, BD, D2, 94, 7f, 93, 94, D4)
+#define ADO_Reserved_180 GUID_BUILDER (ADO_Reserved_180, 95951773, 9566, 46c9, 86, B0, 40, ED, 25, 46, 02, 93)
+#define ADO_Reserved_181 GUID_BUILDER (ADO_Reserved_181, 54140563, 0f25, 4f56, 9d, 8f, B6, DE, CB, 96, DC, E4)
+#define ADO_Reserved_182 GUID_BUILDER (ADO_Reserved_182, 91a48243, AE16, 48cf, 82, 29, 00, 00, F8, 3c, 5e, FC)
+#define ADO_Reserved_183 GUID_BUILDER (ADO_Reserved_183, E0FA1A1F, 3967, 4392, AB, 1a, E2, 8b, 85, 04, 68, CA)
+#define ADO_Reserved_184 GUID_BUILDER (ADO_Reserved_184, 5582d772, ABAC, 4a85, A0, B3, 2e, 65, E1, 71, 10, 53)
+#define ADO_Reserved_185 GUID_BUILDER (ADO_Reserved_185, 1cd1f347, 8fb4, 49a2, B5, 65, A6, 74, A0, C1, 45, 0e)
+#define ADO_Reserved_186 GUID_BUILDER (ADO_Reserved_186, 0ec3aa4e, FEF5, 4a5c, BD, 0a, E9, CD, B7, 6a, 5f, 30)
+#define ADO_Reserved_187 GUID_BUILDER (ADO_Reserved_187, 4118414d, 4a21, 46da, 88, C1, EF, A7, 01, 8c, 45, 27)
+#define ADO_Reserved_188 GUID_BUILDER (ADO_Reserved_188, D5C1CC0D, E38E, 4cb6, 89, D9, 99, 27, 7f, 12, D1, 9e)
+#define ADO_Reserved_189 GUID_BUILDER (ADO_Reserved_189, 0956b82a, 94a7, 474e, A5, 05, 1a, 76, 26, 36, AF, 08)
+#define ADO_Reserved_190 GUID_BUILDER (ADO_Reserved_190, 2cbf62ab, B8E4, 48d0, B5, 01, 69, CF, 63, 3c, AA, E6)
+#define ADO_Reserved_191 GUID_BUILDER (ADO_Reserved_191, C02B8113, AECF, 4a34, B3, E9, 5b, 52, 4e, 51, 44, B5)
+#define ADO_Reserved_192 GUID_BUILDER (ADO_Reserved_192, 1c90947b, 4a3a, 4ecd, 8c, 70, F4, 3f, E5, 2d, 46, 45)
+#define ADO_Reserved_193 GUID_BUILDER (ADO_Reserved_193, 48175e98, 6672, 4db4, B5, 74, 8c, 93, 25, 8d, BF, 14)
+#define ADO_Reserved_194 GUID_BUILDER (ADO_Reserved_194, 99cb88bf, E5C1, 4af0, 85, 00, 72, 36, 47, DC, D2, 05)
+#define ADO_Reserved_195 GUID_BUILDER (ADO_Reserved_195, 6a2cc3cc, 7855, 4b27, 86, F7, 98, 6b, AA, F9, 5f, 0f)
+#define ADO_Reserved_196 GUID_BUILDER (ADO_Reserved_196, 7640b336, 9ebb, 4017, 9e, EE, 54, 01, F4, EC, B1, 70)
+#define ADO_Reserved_197 GUID_BUILDER (ADO_Reserved_197, 507b39e1, 2965, 42ea, 92, 66, 55, 8d, E4, 31, 53, 73)
+#define ADO_Reserved_198 GUID_BUILDER (ADO_Reserved_198, 58c591fa, 37ff, 4428, A0, 4a, 46, 71, 98, 17, 74, 8c)
+#define ADO_Reserved_199 GUID_BUILDER (ADO_Reserved_199, 24be98e9, B43D, 49b5, 9c, 41, 20, AF, C2, FE, 1d, 8d)
+#define ADO_Reserved_200 GUID_BUILDER (ADO_Reserved_200, 041956c5, B951, 4c8f, 8c, 61, 8e, 12, 34, E1, E9, 61)
+#define ADO_Reserved_201 GUID_BUILDER (ADO_Reserved_201, 6c98d05c, D366, 48b4, 80, E3, 8f, A1, CC, 06, 1d, B7)
+#define ADO_Reserved_202 GUID_BUILDER (ADO_Reserved_202, 09570783, A1E8, 4a52, BA, 74, 6c, AC, 02, C0, 14, 8c)
+#define ADO_Reserved_203 GUID_BUILDER (ADO_Reserved_203, 96c8c205, FD0D, 4b56, 9a, 12, 39, B3, 7e, 9d, 07, 4d)
+#define ADO_Reserved_204 GUID_BUILDER (ADO_Reserved_204, 136c40e1, 366e, 4ba6, AF, 71, C4, 9a, EF, 17, 3f, C0)
+#define ADO_Reserved_205 GUID_BUILDER (ADO_Reserved_205, A298C799, 06fb, 466e, B5, 6d, 3e, CC, 6d, 0c, D6, 75)
+#define ADO_Reserved_206 GUID_BUILDER (ADO_Reserved_206, 41a96542, 08f2, 4609, B7, 6a, ED, 93, E5, 5b, 8c, 60)
+#define ADO_Reserved_207 GUID_BUILDER (ADO_Reserved_207, 65a3b57e, 06f9, 4572, 80, 91, 17, 3f, C4, A6, 5a, 16)
+#define ADO_Reserved_208 GUID_BUILDER (ADO_Reserved_208, 114f3e9d, 5431, 4dc1, 95, 42, 9b, 85, 44, CF, 83, B2)
+#define ADO_Reserved_209 GUID_BUILDER (ADO_Reserved_209, 41de92d4, 9f2a, 4085, 8c, C1, C1, 04, 3e, 5b, 11, 12)
+#define ADO_Reserved_210 GUID_BUILDER (ADO_Reserved_210, E32A7A98, FF1E, 45c9, AA, 51, 5f, 86, 9a, 9a, 48, 57)
+#define ADO_Reserved_211 GUID_BUILDER (ADO_Reserved_211, 5e5a209f, 3efc, 48bc, A7, 1e, F4, CE, BE, 4c, A6, 25)
+#define ADO_Reserved_212 GUID_BUILDER (ADO_Reserved_212, C556C1CC, 8b2e, 482b, B7, 8c, E2, F6, FD, A0, 4f, 4d)
+#define ADO_Reserved_213 GUID_BUILDER (ADO_Reserved_213, 39c54fd9, A22A, 43d4, A4, 36, D9, CB, C5, 53, D5, 5a)
+#define ADO_Reserved_214 GUID_BUILDER (ADO_Reserved_214, 750e0ba2, E25C, 479f, B0, C1, 58, 44, A1, 4d, 08, 77)
+#define ADO_Reserved_215 GUID_BUILDER (ADO_Reserved_215, 7ecbdb2c, C5C2, 48fb, 8a, 3a, 30, B7, E7, BD, 17, 25)
+#define ADO_Reserved_216 GUID_BUILDER (ADO_Reserved_216, 0bf18ac7, 8be1, 49e6, A8, 57, EA, 89, 3a, 83, 58, F5)
+#define ADO_Reserved_217 GUID_BUILDER (ADO_Reserved_217, DA74EAB6, AAFE, 42ad, 8a, 0d, B2, 73, 35, 0c, 82, E3)
+#define ADO_Reserved_218 GUID_BUILDER (ADO_Reserved_218, F6A3D173, E366, 424a, AD, 0c, 25, 5c, 32, 2d, 09, 80)
+#define ADO_Reserved_219 GUID_BUILDER (ADO_Reserved_219, 7cd83ba3, 0516, 4366, BB, 85, DE, 53, 03, F7, 75, 08)
+#define ADO_Reserved_220 GUID_BUILDER (ADO_Reserved_220, 42edfc05, 3a70, 4f5c, 8c, 32, 06, 5e, 61, 45, 3c, BE)
+#define ADO_Reserved_221 GUID_BUILDER (ADO_Reserved_221, 624bc037, 05b0, 44e1, 85, A7, 73, C4, 7f, A0, CC, 04)
+#define ADO_Reserved_222 GUID_BUILDER (ADO_Reserved_222, 8811f8dd, FA15, 4fa6, A7, 6e, 7e, DA, E7, 0d, EC, D4)
+#define ADO_Reserved_223 GUID_BUILDER (ADO_Reserved_223, DD310D89, 9f22, 4f49, 89, 8c, AF, A2, 7f, AF, 11, 1c)
+#define ADO_Reserved_224 GUID_BUILDER (ADO_Reserved_224, 321e3a7d, DF0E, 4ff7, 98, 5d, F6, E6, 73, FD, E2, 9f)
+#define ADO_Reserved_225 GUID_BUILDER (ADO_Reserved_225, 036d1b77, 3737, 47cb, 9e, 75, 31, 13, 13, 2d, 32, B8)
+#define ADO_Reserved_226 GUID_BUILDER (ADO_Reserved_226, A46B9E8C, 4740, 4919, 86, 34, A3, 57, 73, F6, 53, 2f)
+#define ADO_Reserved_227 GUID_BUILDER (ADO_Reserved_227, 7c064e3a, 014e, 4733, 9d, 00, 5d, 03, 13, F7, B7, F5)
+#define ADO_Reserved_228 GUID_BUILDER (ADO_Reserved_228, 7cbff995, A041, 4b0a, B7, 9b, 16, 3a, 74, 2c, DC, CF)
+#define ADO_Reserved_229 GUID_BUILDER (ADO_Reserved_229, C3271965, BA03, 4abc, 8f, D8, 98, 97, 7e, 4c, B3, 9a)
+#define ADO_Reserved_230 GUID_BUILDER (ADO_Reserved_230, 565dc4b1, 8d7a, 41c6, AE, 01, 6c, EF, 63, 46, 4d, 5e)
+#define ADO_Reserved_231 GUID_BUILDER (ADO_Reserved_231, 3331e567, EB74, 45d2, 86, 32, 20, 43, 47, DB, BE, 04)
+#define ADO_Reserved_232 GUID_BUILDER (ADO_Reserved_232, 3cee44a8, 6fc5, 4cd5, AA, 9d, 1b, 67, 4c, B6, 2e, EC)
+#define ADO_Reserved_233 GUID_BUILDER (ADO_Reserved_233, CD1BE145, 71b9, 4ccd, A7, AF, 5b, BA, A0, 2a, 51, E6)
+#define ADO_Reserved_234 GUID_BUILDER (ADO_Reserved_234, 4203c429, F3F0, 4dd7, 91, 24, 51, E0, 13, 95, 5e, 7a)
+#define ADO_Reserved_235 GUID_BUILDER (ADO_Reserved_235, BB256836, 2804, 492f, 9c, B2, CF, 83, CB, 82, 63, 8a)
+#define ADO_Reserved_236 GUID_BUILDER (ADO_Reserved_236, 8b247756, 34aa, 45ef, B1, 24, A9, 60, 66, AC, E8, D6)
+#define ADO_Reserved_237 GUID_BUILDER (ADO_Reserved_237, EF1CF73C, 4915, 4289, AD, C4, DD, DA, 62, 70, 70, A6)
+#define ADO_Reserved_238 GUID_BUILDER (ADO_Reserved_238, D0EB0A94, 91a0, 49d3, 97, 26, 94, 52, 66, 5a, FE, 53)
+#define ADO_Reserved_239 GUID_BUILDER (ADO_Reserved_239, D6F5003E, 4c06, 47b1, 89, E9, D6, 3c, 3d, 7d, 41, B6)
+#define ADO_Reserved_240 GUID_BUILDER (ADO_Reserved_240, AA803151, F4AE, 4ce3, BC, 92, 97, 1c, 84, 2e, F5, BC)
+#define ADO_Reserved_241 GUID_BUILDER (ADO_Reserved_241, C4BB086F, 5b11, 4c67, 98, 6c, 8c, D4, 8c, 5c, E3, 8b)
+#define ADO_Reserved_242 GUID_BUILDER (ADO_Reserved_242, F1C4A502, 4744, 478f, 87, 71, C6, 94, CC, 2d, F7, B6)
+#define ADO_Reserved_243 GUID_BUILDER (ADO_Reserved_243, 2cd39761, F389, 4f5e, BE, 91, A6, B9, 1b, 18, AD, 12)
+#define ADO_Reserved_244 GUID_BUILDER (ADO_Reserved_244, 8895ba8f, 0cb7, 4354, A8, EA, CD, 9d, F4, 1b, F8, 88)
+#define ADO_Reserved_245 GUID_BUILDER (ADO_Reserved_245, 71e0b0dc, 1245, 441d, 92, 92, 32, 71, 3f, 57, 97, 7a)
+#define ADO_Reserved_246 GUID_BUILDER (ADO_Reserved_246, 7604d0cb, F137, 472d, 8b, 4c, 85, 66, 72, 9a, CF, 03)
+#define ADO_Reserved_247 GUID_BUILDER (ADO_Reserved_247, 94c9b5ac, 8309, 4f4b, 8e, 68, C4, 37, 7e, C2, B7, 91)
+#define ADO_Reserved_248 GUID_BUILDER (ADO_Reserved_248, 0e555180, 5e2c, 4bf6, 90, A0, 1b, 36, 3d, 4b, B9, 99)
+#define ADO_Reserved_249 GUID_BUILDER (ADO_Reserved_249, C077D666, 6988, 4eac, A5, 52, 61, 61, 55, F9, 6a, 12)
 
-#define ADO_Reserved_4 GUID_BUILDER(ADO_Reserved_4,567747F1,658B,4906,82,C4,E9,CD,A1,46,26,15)
 #ifdef IMMEDIATE_GUID_USE
 ADO_Reserved_4;
+ADO_Reserved_6; ADO_Reserved_7; ADO_Reserved_8; ADO_Reserved_9;
+ADO_Reserved_10; ADO_Reserved_12; ADO_Reserved_13; ADO_Reserved_14;
+ADO_Reserved_15; ADO_Reserved_16; ADO_Reserved_17; ADO_Reserved_18; ADO_Reserved_19;
+ADO_Reserved_20; ADO_Reserved_21; ADO_Reserved_22; ADO_Reserved_23; ADO_Reserved_24;
+ADO_Reserved_25; ADO_Reserved_26; ADO_Reserved_27; ADO_Reserved_28; ADO_Reserved_29;
+ADO_Reserved_30; ADO_Reserved_31; ADO_Reserved_32; ADO_Reserved_33; ADO_Reserved_34;
+ADO_Reserved_35; ADO_Reserved_36; ADO_Reserved_37; ADO_Reserved_38; ADO_Reserved_39;
+ADO_Reserved_40; ADO_Reserved_41; ADO_Reserved_42; ADO_Reserved_43; ADO_Reserved_44;
+ADO_Reserved_45; ADO_Reserved_46; ADO_Reserved_47; ADO_Reserved_48; ADO_Reserved_49;
+ADO_Reserved_50; ADO_Reserved_51; ADO_Reserved_52; ADO_Reserved_53; ADO_Reserved_54;
+ADO_Reserved_55; ADO_Reserved_56; ADO_Reserved_57; ADO_Reserved_58; ADO_Reserved_59;
+ADO_Reserved_60; ADO_Reserved_61; ADO_Reserved_62; ADO_Reserved_63; ADO_Reserved_64;
+ADO_Reserved_65; ADO_Reserved_66; ADO_Reserved_67; ADO_Reserved_68; ADO_Reserved_69;
+ADO_Reserved_70; ADO_Reserved_71; ADO_Reserved_72; ADO_Reserved_73; ADO_Reserved_74;
+ADO_Reserved_75; ADO_Reserved_76; ADO_Reserved_77; ADO_Reserved_78; ADO_Reserved_79;
+ADO_Reserved_80; ADO_Reserved_81; ADO_Reserved_82; ADO_Reserved_83; ADO_Reserved_84;
+ADO_Reserved_85; ADO_Reserved_86; ADO_Reserved_87; ADO_Reserved_88; ADO_Reserved_89;
+ADO_Reserved_90; ADO_Reserved_91; ADO_Reserved_92; ADO_Reserved_93; ADO_Reserved_94;
+ADO_Reserved_95; ADO_Reserved_96; ADO_Reserved_97; ADO_Reserved_98; ADO_Reserved_99;
+ADO_Reserved_100; ADO_Reserved_101; ADO_Reserved_102; ADO_Reserved_103; ADO_Reserved_104;
+ADO_Reserved_105; ADO_Reserved_106; ADO_Reserved_107; ADO_Reserved_108; ADO_Reserved_109;
+ADO_Reserved_110; ADO_Reserved_111; ADO_Reserved_112; ADO_Reserved_113; ADO_Reserved_114;
+ADO_Reserved_115; ADO_Reserved_116; ADO_Reserved_117; ADO_Reserved_118; ADO_Reserved_119;
+ADO_Reserved_120; ADO_Reserved_121; ADO_Reserved_122; ADO_Reserved_123; ADO_Reserved_124;
+ADO_Reserved_125; ADO_Reserved_126; ADO_Reserved_127; ADO_Reserved_128; ADO_Reserved_129;
+ADO_Reserved_130; ADO_Reserved_131; ADO_Reserved_132; ADO_Reserved_133; ADO_Reserved_134;
+ADO_Reserved_135; ADO_Reserved_136; ADO_Reserved_137; ADO_Reserved_138; ADO_Reserved_139;
+ADO_Reserved_140; ADO_Reserved_141; ADO_Reserved_142; ADO_Reserved_143; ADO_Reserved_144;
+ADO_Reserved_145; ADO_Reserved_146; ADO_Reserved_147; ADO_Reserved_148; ADO_Reserved_149;
+ADO_Reserved_150; ADO_Reserved_151; ADO_Reserved_152; ADO_Reserved_153; ADO_Reserved_154;
+ADO_Reserved_155; ADO_Reserved_156; ADO_Reserved_157; ADO_Reserved_158; ADO_Reserved_159;
+ADO_Reserved_160; ADO_Reserved_161; ADO_Reserved_162; ADO_Reserved_163; ADO_Reserved_164;
+ADO_Reserved_165; ADO_Reserved_166; ADO_Reserved_167; ADO_Reserved_168; ADO_Reserved_169;
+ADO_Reserved_170; ADO_Reserved_171; ADO_Reserved_172; ADO_Reserved_173; ADO_Reserved_174;
+ADO_Reserved_175; ADO_Reserved_176; ADO_Reserved_177; ADO_Reserved_178; ADO_Reserved_179;
+ADO_Reserved_180; ADO_Reserved_181; ADO_Reserved_182; ADO_Reserved_183; ADO_Reserved_184;
+ADO_Reserved_185; ADO_Reserved_186; ADO_Reserved_187; ADO_Reserved_188; ADO_Reserved_189;
+ADO_Reserved_190; ADO_Reserved_191; ADO_Reserved_192; ADO_Reserved_193; ADO_Reserved_194;
+ADO_Reserved_195; ADO_Reserved_196; ADO_Reserved_197; ADO_Reserved_198; ADO_Reserved_199;
+ADO_Reserved_200; ADO_Reserved_201; ADO_Reserved_202; ADO_Reserved_203; ADO_Reserved_204;
+ADO_Reserved_205; ADO_Reserved_206; ADO_Reserved_207; ADO_Reserved_208; ADO_Reserved_209;
+ADO_Reserved_210; ADO_Reserved_211; ADO_Reserved_212; ADO_Reserved_213; ADO_Reserved_214;
+ADO_Reserved_215; ADO_Reserved_216; ADO_Reserved_217; ADO_Reserved_218; ADO_Reserved_219;
+ADO_Reserved_220; ADO_Reserved_221; ADO_Reserved_222; ADO_Reserved_223; ADO_Reserved_224;
+ADO_Reserved_225; ADO_Reserved_226; ADO_Reserved_227; ADO_Reserved_228; ADO_Reserved_229;
+ADO_Reserved_230; ADO_Reserved_231; ADO_Reserved_232; ADO_Reserved_233; ADO_Reserved_234;
+ADO_Reserved_235; ADO_Reserved_236; ADO_Reserved_237; ADO_Reserved_238; ADO_Reserved_239;
+ADO_Reserved_240; ADO_Reserved_241; ADO_Reserved_242; ADO_Reserved_243; ADO_Reserved_244;
+ADO_Reserved_245; ADO_Reserved_246; ADO_Reserved_247; ADO_Reserved_248; ADO_Reserved_249;
+
 #undef ADO_Reserved_4
-#endif
-
-#define ADO_Reserved_5 GUID_BUILDER(ADO_Reserved_5,986761E8,7269,4890,AA,65,AD,7C,03,69,7A,6D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_5;
-#undef ADO_Reserved_5
-#endif
-
-#define ADO_Reserved_6 GUID_BUILDER(ADO_Reserved_6,ED5A4589,7A9D,41DF,89,86,CC,A9,25,01,A5,DA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_6;
 #undef ADO_Reserved_6
-#endif
-
-#define ADO_Reserved_7 GUID_BUILDER(ADO_Reserved_7,C029178A,F16B,4A06,82,93,A8,08,B7,F8,78,92)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_7;
 #undef ADO_Reserved_7
-#endif
-
-#define ADO_Reserved_8 GUID_BUILDER(ADO_Reserved_8,FD6974FD,21FB,409C,96,56,A5,68,FE,C0,AC,01)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_8;
 #undef ADO_Reserved_8
-#endif
-
-#define ADO_Reserved_9 GUID_BUILDER(ADO_Reserved_9,F23FCB5E,7159,4CBA,A3,41,0E,7A,A5,15,18,70)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_9;
 #undef ADO_Reserved_9
-#endif
-
-#define ADO_Reserved_10 GUID_BUILDER(ADO_Reserved_10,E724D5C9,327C,43F7,86,4C,68,2F,FF,5C,99,93)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_10;
 #undef ADO_Reserved_10
-#endif
-
-#define ADO_Reserved_12 GUID_BUILDER(ADO_Reserved_12,8831EBB5,2C09,4DDD,9A,7A,AC,13,6D,58,D7,21)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_12;
 #undef ADO_Reserved_12
-#endif
-
-#define ADO_Reserved_13 GUID_BUILDER(ADO_Reserved_13,447B1221,64FA,44E9,B1,46,B1,1F,16,E3,14,B2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_13;
 #undef ADO_Reserved_13
-#endif
-
-#define ADO_Reserved_14 GUID_BUILDER(ADO_Reserved_14,FC528DC2,A992,44D3,97,9F,07,F7,F4,45,5F,23)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_14;
 #undef ADO_Reserved_14
-#endif
-
-#define ADO_Reserved_15 GUID_BUILDER(ADO_Reserved_15,C2CC7BC0,9F8B,46C8,83,6B,BC,46,70,28,F4,54)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_15;
 #undef ADO_Reserved_15
-#endif
-
-#define ADO_Reserved_16 GUID_BUILDER(ADO_Reserved_16,4687EE6C,12CE,4A31,97,E9,E6,49,6D,E7,2C,71)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_16;
 #undef ADO_Reserved_16
-#endif
-
-#define ADO_Reserved_17 GUID_BUILDER(ADO_Reserved_17,4B56FC5D,992F,4339,95,81,C5,40,7A,B2,BF,FD)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_17;
 #undef ADO_Reserved_17
-#endif
-
-#define ADO_Reserved_18 GUID_BUILDER(ADO_Reserved_18,1F13BFB3,8BA8,46CA,91,78,74,28,EF,9A,85,C0)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_18;
 #undef ADO_Reserved_18
-#endif
-
-#define ADO_Reserved_19 GUID_BUILDER(ADO_Reserved_19,0B410060,4D75,4F77,96,A1,68,4C,38,15,E1,B1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_19;
 #undef ADO_Reserved_19
-#endif
-
-#define ADO_Reserved_20 GUID_BUILDER(ADO_Reserved_20,5593F2E0,436B,40B8,81,A8,1B,7E,F4,E6,25,2C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_20;
 #undef ADO_Reserved_20
-#endif
-
-#define ADO_Reserved_21 GUID_BUILDER(ADO_Reserved_21,88447B2F,E1C9,413E,BE,E7,A7,D2,B9,0E,D1,96)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_21;
 #undef ADO_Reserved_21
-#endif
-
-#define ADO_Reserved_22 GUID_BUILDER(ADO_Reserved_22,89BFEE1B,8CB5,4A90,89,AF,E8,29,93,4E,6C,48)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_22;
 #undef ADO_Reserved_22
-#endif
-
-#define ADO_Reserved_23 GUID_BUILDER(ADO_Reserved_23,28D7F9FC,F485,4BDB,9C,C4,6F,AE,44,F9,9F,D9)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_23;
 #undef ADO_Reserved_23
-#endif
-
-#define ADO_Reserved_24 GUID_BUILDER(ADO_Reserved_24,1BB4223F,B0E8,4540,96,FD,B8,FE,D9,A7,C0,8B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_24;
 #undef ADO_Reserved_24
-#endif
-
-#define ADO_Reserved_25 GUID_BUILDER(ADO_Reserved_25,AD1A1568,8B4A,403F,84,76,D8,F6,33,4D,BD,9F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_25;
 #undef ADO_Reserved_25
-#endif
-
-#define ADO_Reserved_26 GUID_BUILDER(ADO_Reserved_26,1326B4D8,EE0B,4054,8F,4C,86,35,9F,00,24,AD)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_26;
 #undef ADO_Reserved_26
-#endif
-
-#define ADO_Reserved_27 GUID_BUILDER(ADO_Reserved_27,98B7EB70,7AED,401A,AF,6D,A6,B8,DB,A0,AF,A6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_27;
 #undef ADO_Reserved_27
-#endif
-
-#define ADO_Reserved_28 GUID_BUILDER(ADO_Reserved_28,FD46F2C2,7FDA,4DC9,A2,DB,D9,BE,4F,59,98,C2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_28;
 #undef ADO_Reserved_28
-#endif
-
-#define ADO_Reserved_29 GUID_BUILDER(ADO_Reserved_29,FAA37542,B471,4183,A6,56,99,C8,FD,80,FF,73)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_29;
 #undef ADO_Reserved_29
-#endif
-
-#define ADO_Reserved_30 GUID_BUILDER(ADO_Reserved_30,56CE86F1,3116,4104,A5,28,17,D1,1E,DC,68,2A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_30;
 #undef ADO_Reserved_30
-#endif
-
-#define ADO_Reserved_31 GUID_BUILDER(ADO_Reserved_31,83E8CF0E,176F,4908,86,3A,2A,77,4D,76,9B,EF)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_31;
 #undef ADO_Reserved_31
-#endif
-
-#define ADO_Reserved_32 GUID_BUILDER(ADO_Reserved_32,0494D18D,98F7,4A38,80,DF,35,F8,80,98,BD,DF)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_32;
 #undef ADO_Reserved_32
-#endif
-
-#define ADO_Reserved_33 GUID_BUILDER(ADO_Reserved_33,00C61F59,4E7F,4093,BF,FD,03,53,B4,5D,E5,8B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_33;
 #undef ADO_Reserved_33
-#endif
-
-#define ADO_Reserved_34 GUID_BUILDER(ADO_Reserved_34,732A172F,384D,4C4A,A6,AF,D2,28,20,D3,34,26)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_34;
 #undef ADO_Reserved_34
-#endif
-
-#define ADO_Reserved_35 GUID_BUILDER(ADO_Reserved_35,104E1F7E,8993,455C,B7,D8,58,CD,88,74,80,75)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_35;
 #undef ADO_Reserved_35
-#endif
-
-#define ADO_Reserved_36 GUID_BUILDER(ADO_Reserved_36,C12B8DFD,42F7,408E,AE,FB,A7,C2,FB,43,49,A7)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_36;
 #undef ADO_Reserved_36
-#endif
-
-#define ADO_Reserved_37 GUID_BUILDER(ADO_Reserved_37,EE881FC9,6C2F,45A2,BA,17,24,95,BC,72,4E,55)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_37;
 #undef ADO_Reserved_37
-#endif
-
-#define ADO_Reserved_38 GUID_BUILDER(ADO_Reserved_38,7381C764,646B,4F11,A6,73,13,50,98,9D,62,3A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_38;
 #undef ADO_Reserved_38
-#endif
-
-#define ADO_Reserved_39 GUID_BUILDER(ADO_Reserved_39,D8E4965C,F571,4771,8A,74,63,95,05,16,B0,88)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_39;
 #undef ADO_Reserved_39
-#endif
-
-#define ADO_Reserved_40 GUID_BUILDER(ADO_Reserved_40,2BE262E5,3A8C,4B07,A3,C3,3B,B7,40,EF,40,95)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_40;
 #undef ADO_Reserved_40
-#endif
-
-#define ADO_Reserved_41 GUID_BUILDER(ADO_Reserved_41,3E90A199,4F86,445C,84,8E,A6,17,86,B9,67,D1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_41;
 #undef ADO_Reserved_41
-#endif
-
-#define ADO_Reserved_42 GUID_BUILDER(ADO_Reserved_42,DCD025E0,DA44,47E4,82,65,E4,A7,6B,85,29,0C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_42;
 #undef ADO_Reserved_42
-#endif
-
-#define ADO_Reserved_43 GUID_BUILDER(ADO_Reserved_43,31EFF562,FB6B,41D6,81,AD,30,1B,B0,53,9C,61)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_43;
 #undef ADO_Reserved_43
-#endif
-
-#define ADO_Reserved_44 GUID_BUILDER(ADO_Reserved_44,BD3ECD6B,F4A7,42FC,90,F1,75,D5,37,2A,F2,8F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_44;
 #undef ADO_Reserved_44
-#endif
-
-#define ADO_Reserved_45 GUID_BUILDER(ADO_Reserved_45,6EFBC56F,67E4,4F7D,BE,59,C5,D6,FA,21,B7,77)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_45;
 #undef ADO_Reserved_45
-#endif
-
-#define ADO_Reserved_46 GUID_BUILDER(ADO_Reserved_46,3BF5E1FC,B960,4564,86,54,07,B0,7A,AF,6E,4F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_46;
 #undef ADO_Reserved_46
-#endif
-
-#define ADO_Reserved_47 GUID_BUILDER(ADO_Reserved_47,2430F883,1462,4899,9A,DE,F7,24,27,FD,5E,E4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_47;
 #undef ADO_Reserved_47
-#endif
-
-#define ADO_Reserved_48 GUID_BUILDER(ADO_Reserved_48,AB663F07,BA4D,42CC,93,C6,F2,EA,9F,C8,BA,74)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_48;
 #undef ADO_Reserved_48
-#endif
-
-#define ADO_Reserved_49 GUID_BUILDER(ADO_Reserved_49,D808C6F7,36C0,4302,80,EE,C4,B7,00,F8,D2,38)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_49;
 #undef ADO_Reserved_49
-#endif
-
-#define ADO_Reserved_50 GUID_BUILDER(ADO_Reserved_50,AB146E06,E493,4DF0,A1,CD,07,D4,B0,74,46,C3)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_50;
 #undef ADO_Reserved_50
-#endif
-
-#define ADO_Reserved_51 GUID_BUILDER(ADO_Reserved_51,74F1FD51,9CB8,4186,8C,3D,DD,F3,55,2A,99,9B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_51;
 #undef ADO_Reserved_51
-#endif
-
-#define ADO_Reserved_52 GUID_BUILDER(ADO_Reserved_52,71701A97,5386,43B0,95,8D,3C,EE,40,57,B1,99)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_52;
 #undef ADO_Reserved_52
-#endif
-
-#define ADO_Reserved_53 GUID_BUILDER(ADO_Reserved_53,63CC6087,A6C6,4CCF,8E,D4,17,5B,91,A6,32,C5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_53;
 #undef ADO_Reserved_53
-#endif
-
-#define ADO_Reserved_54 GUID_BUILDER(ADO_Reserved_54,7323FD37,B7D8,4F8A,80,F4,E8,3D,0B,2A,73,B5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_54;
 #undef ADO_Reserved_54
-#endif
-
-#define ADO_Reserved_55 GUID_BUILDER(ADO_Reserved_55,5C666403,2A0A,4B12,8E,1D,41,19,88,DD,E0,0A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_55;
 #undef ADO_Reserved_55
-#endif
-
-#define ADO_Reserved_56 GUID_BUILDER(ADO_Reserved_56,ECA4C14C,5529,49DF,B1,3C,17,F0,22,DB,1B,A6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_56;
 #undef ADO_Reserved_56
-#endif
-
-#define ADO_Reserved_57 GUID_BUILDER(ADO_Reserved_57,304ADE1D,4458,4A6A,93,48,1F,7C,2E,64,D6,FA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_57;
 #undef ADO_Reserved_57
-#endif
-
-#define ADO_Reserved_58 GUID_BUILDER(ADO_Reserved_58,D87A7AF2,FB3C,49BC,B2,69,F3,57,36,E7,23,2E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_58;
 #undef ADO_Reserved_58
-#endif
-
-#define ADO_Reserved_59 GUID_BUILDER(ADO_Reserved_59,542D6D77,AECB,4AFF,B1,C6,54,EF,79,8F,61,ED)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_59;
 #undef ADO_Reserved_59
-#endif
-
-#define ADO_Reserved_60 GUID_BUILDER(ADO_Reserved_60,46359618,34AE,410E,AE,20,F3,D4,E1,BD,A6,BE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_60;
 #undef ADO_Reserved_60
-#endif
-
-#define ADO_Reserved_61 GUID_BUILDER(ADO_Reserved_61,F98DF79B,2935,464B,AA,08,CC,EF,F1,5F,71,32)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_61;
 #undef ADO_Reserved_61
-#endif
-
-#define ADO_Reserved_62 GUID_BUILDER(ADO_Reserved_62,214887FB,4867,4DD8,83,9D,4C,F0,BB,83,E1,95)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_62;
 #undef ADO_Reserved_62
-#endif
-
-#define ADO_Reserved_63 GUID_BUILDER(ADO_Reserved_63,C9B68C08,F663,4386,8F,5B,FA,BA,E0,27,43,6D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_63;
 #undef ADO_Reserved_63
-#endif
-
-#define ADO_Reserved_64 GUID_BUILDER(ADO_Reserved_64,F46511DD,10B6,49CF,AA,75,5E,E2,7C,FD,9E,A4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_64;
 #undef ADO_Reserved_64
-#endif
-
-#define ADO_Reserved_65 GUID_BUILDER(ADO_Reserved_65,C057EF87,F3A8,4890,A9,56,57,8C,07,CD,2E,F8)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_65;
 #undef ADO_Reserved_65
-#endif
-
-#define ADO_Reserved_66 GUID_BUILDER(ADO_Reserved_66,1C9E0666,1405,4DC5,BD,A7,65,F4,B4,16,1D,7B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_66;
 #undef ADO_Reserved_66
-#endif
-
-#define ADO_Reserved_67 GUID_BUILDER(ADO_Reserved_67,B91484C2,5E48,438C,91,CD,B9,D6,99,32,30,E4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_67;
 #undef ADO_Reserved_67
-#endif
-
-#define ADO_Reserved_68 GUID_BUILDER(ADO_Reserved_68,17D12BFE,6C9F,4229,87,95,60,20,6F,D1,45,35)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_68;
 #undef ADO_Reserved_68
-#endif
-
-#define ADO_Reserved_69 GUID_BUILDER(ADO_Reserved_69,5A816EA3,EE82,4F65,BC,76,74,07,E9,E5,43,58)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_69;
 #undef ADO_Reserved_69
-#endif
-
-#define ADO_Reserved_70 GUID_BUILDER(ADO_Reserved_70,3AD0DE2B,AA3E,4508,BE,9E,1E,AA,DF,1C,4D,8B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_70;
 #undef ADO_Reserved_70
-#endif
-
-#define ADO_Reserved_71 GUID_BUILDER(ADO_Reserved_71,54DC8B80,7869,4D90,AB,5C,8C,54,1A,74,EE,F8)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_71;
 #undef ADO_Reserved_71
-#endif
-
-#define ADO_Reserved_72 GUID_BUILDER(ADO_Reserved_72,80A200B0,5783,48E7,81,25,B9,E4,BF,59,F7,22)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_72;
 #undef ADO_Reserved_72
-#endif
-
-#define ADO_Reserved_73 GUID_BUILDER(ADO_Reserved_73,1502CB61,8C42,4C4B,B9,0C,3A,9E,4E,46,D1,BE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_73;
 #undef ADO_Reserved_73
-#endif
-
-#define ADO_Reserved_74 GUID_BUILDER(ADO_Reserved_74,70EB3F53,91A0,42F5,BE,50,F1,02,DE,C8,92,27)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_74;
 #undef ADO_Reserved_74
-#endif
-
-#define ADO_Reserved_75 GUID_BUILDER(ADO_Reserved_75,4680AA81,B27C,4A8F,83,F9,6F,B7,E1,8E,D2,3C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_75;
 #undef ADO_Reserved_75
-#endif
-
-#define ADO_Reserved_76 GUID_BUILDER(ADO_Reserved_76,EF31F9EB,4541,4FCB,8D,67,59,2C,85,50,93,05)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_76;
 #undef ADO_Reserved_76
-#endif
-
-#define ADO_Reserved_77 GUID_BUILDER(ADO_Reserved_77,88B77D15,997E,4E3A,83,20,3B,37,83,52,86,D5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_77;
 #undef ADO_Reserved_77
-#endif
-
-#define ADO_Reserved_78 GUID_BUILDER(ADO_Reserved_78,D03A3AA8,1AAC,4867,93,C9,5F,51,D8,7D,6A,74)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_78;
 #undef ADO_Reserved_78
-#endif
-
-#define ADO_Reserved_79 GUID_BUILDER(ADO_Reserved_79,47022458,17E7,4BD7,90,81,85,B4,0B,03,6D,5B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_79;
 #undef ADO_Reserved_79
-#endif
-
-#define ADO_Reserved_80 GUID_BUILDER(ADO_Reserved_80,9E5BEE82,F410,44C7,9D,6D,3F,7D,D2,8B,A7,CC)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_80;
 #undef ADO_Reserved_80
-#endif
-
-#define ADO_Reserved_81 GUID_BUILDER(ADO_Reserved_81,278A1C47,3C39,41C7,A3,FB,7C,2E,62,0B,E4,44)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_81;
 #undef ADO_Reserved_81
-#endif
-
-#define ADO_Reserved_82 GUID_BUILDER(ADO_Reserved_82,964CBF05,8084,4C15,9C,F5,8C,4B,81,41,B4,AE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_82;
 #undef ADO_Reserved_82
-#endif
-
-#define ADO_Reserved_83 GUID_BUILDER(ADO_Reserved_83,A86296A0,F272,4ACD,83,06,FF,CA,FF,89,14,A9)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_83;
 #undef ADO_Reserved_83
-#endif
-
-#define ADO_Reserved_84 GUID_BUILDER(ADO_Reserved_84,F805FC7C,7C4A,43A1,B0,14,71,EA,0E,EB,EA,5F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_84;
 #undef ADO_Reserved_84
-#endif
-
-#define ADO_Reserved_85 GUID_BUILDER(ADO_Reserved_85,33E6E9B6,0BEA,4549,90,CB,3B,64,12,DB,8C,F5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_85;
 #undef ADO_Reserved_85
-#endif
-
-#define ADO_Reserved_86 GUID_BUILDER(ADO_Reserved_86,7337E3DC,219F,4D9E,82,5B,0A,2C,18,4E,C0,DE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_86;
 #undef ADO_Reserved_86
-#endif
-
-#define ADO_Reserved_87 GUID_BUILDER(ADO_Reserved_87,7397BAFC,354E,4F18,9F,76,C3,3A,4E,EF,6D,20)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_87;
 #undef ADO_Reserved_87
-#endif
-
-#define ADO_Reserved_88 GUID_BUILDER(ADO_Reserved_88,5EC2D163,E671,4186,BE,72,BF,FF,72,D5,7A,5C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_88;
 #undef ADO_Reserved_88
-#endif
-
-#define ADO_Reserved_89 GUID_BUILDER(ADO_Reserved_89,8B37B801,0A35,4F97,A3,43,82,57,B3,E7,6C,79)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_89;
 #undef ADO_Reserved_89
-#endif
-
-#define ADO_Reserved_90 GUID_BUILDER(ADO_Reserved_90,FAD396B6,EE4E,4F70,85,54,E8,23,9E,47,05,29)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_90;
 #undef ADO_Reserved_90
-#endif
-
-#define ADO_Reserved_91 GUID_BUILDER(ADO_Reserved_91,6063972C,395B,4FEF,A0,04,ED,95,E7,D8,72,0D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_91;
 #undef ADO_Reserved_91
-#endif
-
-#define ADO_Reserved_92 GUID_BUILDER(ADO_Reserved_92,85AEED72,A1F8,4597,82,32,F8,40,EF,C9,21,09)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_92;
 #undef ADO_Reserved_92
-#endif
-
-#define ADO_Reserved_93 GUID_BUILDER(ADO_Reserved_93,CE4FD8FF,553A,4424,B1,EA,3E,DF,11,42,AD,8B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_93;
 #undef ADO_Reserved_93
-#endif
-
-#define ADO_Reserved_94 GUID_BUILDER(ADO_Reserved_94,1A856A0F,0844,4DE4,AC,7B,75,30,62,56,39,86)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_94;
 #undef ADO_Reserved_94
-#endif
-
-#define ADO_Reserved_95 GUID_BUILDER(ADO_Reserved_95,09A742A1,19ED,43BB,85,E9,99,23,DE,C4,17,F7)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_95;
 #undef ADO_Reserved_95
-#endif
-
-#define ADO_Reserved_96 GUID_BUILDER(ADO_Reserved_96,3695BD0C,9DE6,4895,84,E6,B2,4C,E7,55,47,02)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_96;
 #undef ADO_Reserved_96
-#endif
-
-#define ADO_Reserved_97 GUID_BUILDER(ADO_Reserved_97,8802531F,6EA8,4A55,8A,18,05,97,86,3C,DA,38)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_97;
 #undef ADO_Reserved_97
-#endif
-
-#define ADO_Reserved_98 GUID_BUILDER(ADO_Reserved_98,498E70F0,B13F,4804,AD,D5,72,E8,0E,28,05,E7)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_98;
 #undef ADO_Reserved_98
-#endif
-
-#define ADO_Reserved_99 GUID_BUILDER(ADO_Reserved_99,50D0E90F,E3A4,4A93,8B,48,71,21,66,E8,87,CD)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_99;
 #undef ADO_Reserved_99
-#endif
-
-#define ADO_Reserved_100 GUID_BUILDER(ADO_Reserved_100,F1D30550,8515,4F8B,93,E1,1E,F0,12,1B,4B,D0)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_100;
 #undef ADO_Reserved_100
-#endif
-
-#define ADO_Reserved_101 GUID_BUILDER(ADO_Reserved_101,901CDA31,8CDB,4A5B,91,6B,63,EA,90,1D,8C,E0)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_101;
 #undef ADO_Reserved_101
-#endif
-
-#define ADO_Reserved_102 GUID_BUILDER(ADO_Reserved_102,00BDA239,1094,4AEF,93,AD,7C,E2,73,6C,42,25)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_102;
 #undef ADO_Reserved_102
-#endif
-
-#define ADO_Reserved_103 GUID_BUILDER(ADO_Reserved_103,DCA4E51E,250E,4AB3,B4,90,F2,CB,9E,8F,6C,C4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_103;
 #undef ADO_Reserved_103
-#endif
-
-#define ADO_Reserved_104 GUID_BUILDER(ADO_Reserved_104,24679EBD,8535,4494,A9,1C,18,91,F0,75,5B,6F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_104;
 #undef ADO_Reserved_104
-#endif
-
-#define ADO_Reserved_105 GUID_BUILDER(ADO_Reserved_105,F041739E,F37E,4925,94,25,FB,51,5E,56,0F,54)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_105;
 #undef ADO_Reserved_105
-#endif
-
-#define ADO_Reserved_106 GUID_BUILDER(ADO_Reserved_106,FECACBBF,A73C,4616,84,2F,FE,F5,72,85,70,AB)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_106;
 #undef ADO_Reserved_106
-#endif
-
-#define ADO_Reserved_107 GUID_BUILDER(ADO_Reserved_107,DBAD7368,1DED,4A77,B8,0A,1A,EB,12,99,BD,B3)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_107;
 #undef ADO_Reserved_107
-#endif
-
-#define ADO_Reserved_108 GUID_BUILDER(ADO_Reserved_108,CFDE81B8,66EF,4503,84,A8,7E,8F,C8,AB,0B,31)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_108;
 #undef ADO_Reserved_108
-#endif
-
-#define ADO_Reserved_109 GUID_BUILDER(ADO_Reserved_109,9B7484FA,023A,4FFB,A2,94,11,A6,E5,97,AB,35)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_109;
 #undef ADO_Reserved_109
-#endif
-
-#define ADO_Reserved_110 GUID_BUILDER(ADO_Reserved_110,54F0F09C,1201,49A9,B4,65,6B,02,9B,5F,E3,12)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_110;
 #undef ADO_Reserved_110
-#endif
-
-#define ADO_Reserved_111 GUID_BUILDER(ADO_Reserved_111,BFFA01F8,EAE7,4FA1,BF,74,37,73,3F,BF,36,4C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_111;
 #undef ADO_Reserved_111
-#endif
-
-#define ADO_Reserved_112 GUID_BUILDER(ADO_Reserved_112,12FAD291,4AAB,4038,9D,D1,04,E4,E7,A9,E0,F4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_112;
 #undef ADO_Reserved_112
-#endif
-
-#define ADO_Reserved_113 GUID_BUILDER(ADO_Reserved_113,8D2AF964,C489,4D77,A8,17,A0,4D,B1,DB,26,A5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_113;
 #undef ADO_Reserved_113
-#endif
-
-#define ADO_Reserved_114 GUID_BUILDER(ADO_Reserved_114,79F89DD7,BE86,4B36,BE,9B,FA,75,24,18,55,68)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_114;
 #undef ADO_Reserved_114
-#endif
-
-#define ADO_Reserved_115 GUID_BUILDER(ADO_Reserved_115,4387D7FA,7A52,4F67,BF,B6,7E,7D,7A,B7,C9,DE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_115;
 #undef ADO_Reserved_115
-#endif
-
-#define ADO_Reserved_116 GUID_BUILDER(ADO_Reserved_116,7571252F,0E49,4F4B,A3,87,9E,D9,70,54,68,D8)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_116;
 #undef ADO_Reserved_116
-#endif
-
-#define ADO_Reserved_117 GUID_BUILDER(ADO_Reserved_117,0DAB016B,6BA4,470F,98,1A,2B,A7,65,D4,60,4B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_117;
 #undef ADO_Reserved_117
-#endif
-
-#define ADO_Reserved_118 GUID_BUILDER(ADO_Reserved_118,E97D87A3,8A95,4080,8C,A9,ED,9F,05,1A,B7,B2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_118;
 #undef ADO_Reserved_118
-#endif
-
-#define ADO_Reserved_119 GUID_BUILDER(ADO_Reserved_119,C9EA1598,2D23,4978,9B,33,3D,2C,C4,0A,B7,A1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_119;
 #undef ADO_Reserved_119
-#endif
-
-#define ADO_Reserved_120 GUID_BUILDER(ADO_Reserved_120,E41CA9FC,7FC9,4831,90,CE,F5,33,96,CE,42,C3)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_120;
 #undef ADO_Reserved_120
-#endif
-
-#define ADO_Reserved_121 GUID_BUILDER(ADO_Reserved_121,15DF0905,4ACC,44F7,A0,1E,0F,EF,56,3C,C4,E5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_121;
 #undef ADO_Reserved_121
-#endif
-
-#define ADO_Reserved_122 GUID_BUILDER(ADO_Reserved_122,D2879A0E,D0B3,42A2,A1,16,D1,5E,13,C7,51,77)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_122;
 #undef ADO_Reserved_122
-#endif
-
-#define ADO_Reserved_123 GUID_BUILDER(ADO_Reserved_123,A999A8D2,5E83,4C0E,83,97,18,33,19,32,79,CD)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_123;
 #undef ADO_Reserved_123
-#endif
-
-#define ADO_Reserved_124 GUID_BUILDER(ADO_Reserved_124,C6AFAE72,B3FF,48AB,B1,EE,F5,EE,F9,05,DF,47)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_124;
 #undef ADO_Reserved_124
-#endif
-
-#define ADO_Reserved_125 GUID_BUILDER(ADO_Reserved_125,0DEADF50,0940,4F0E,AC,3B,94,80,B7,32,2B,1B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_125;
 #undef ADO_Reserved_125
-#endif
-
-#define ADO_Reserved_126 GUID_BUILDER(ADO_Reserved_126,61278818,2FE6,4892,8B,95,A7,5C,AC,6E,21,BB)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_126;
 #undef ADO_Reserved_126
-#endif
-
-#define ADO_Reserved_127 GUID_BUILDER(ADO_Reserved_127,3AC2BED7,1111,4E55,B2,06,1F,54,18,94,4C,BA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_127;
 #undef ADO_Reserved_127
-#endif
-
-#define ADO_Reserved_128 GUID_BUILDER(ADO_Reserved_128,3D4751E2,04B8,4593,A0,0D,3A,4B,94,67,4B,E9)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_128;
 #undef ADO_Reserved_128
-#endif
-
-#define ADO_Reserved_129 GUID_BUILDER(ADO_Reserved_129,69BC6751,FE10,4B3F,89,35,40,2F,A5,FD,04,82)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_129;
 #undef ADO_Reserved_129
-#endif
-
-#define ADO_Reserved_130 GUID_BUILDER(ADO_Reserved_130,5867AF81,995A,4686,8B,CB,13,B6,8B,10,26,8A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_130;
 #undef ADO_Reserved_130
-#endif
-
-#define ADO_Reserved_131 GUID_BUILDER(ADO_Reserved_131,DA46C62F,BDCD,4745,A3,CA,4E,C9,FA,AB,E1,10)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_131;
 #undef ADO_Reserved_131
-#endif
-
-#define ADO_Reserved_132 GUID_BUILDER(ADO_Reserved_132,93028AA6,EECC,482F,B3,A4,2F,D4,13,04,96,5E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_132;
 #undef ADO_Reserved_132
-#endif
-
-#define ADO_Reserved_133 GUID_BUILDER(ADO_Reserved_133,AB14F604,D05E,4E50,A4,5B,A8,10,48,E3,A4,75)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_133;
 #undef ADO_Reserved_133
-#endif
-
-#define ADO_Reserved_134 GUID_BUILDER(ADO_Reserved_134,35267875,8420,4226,87,C0,25,00,58,56,0F,D2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_134;
 #undef ADO_Reserved_134
-#endif
-
-#define ADO_Reserved_135 GUID_BUILDER(ADO_Reserved_135,16E34932,EEFA,440E,A7,86,6A,36,D2,C6,21,69)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_135;
 #undef ADO_Reserved_135
-#endif
-
-#define ADO_Reserved_136 GUID_BUILDER(ADO_Reserved_136,2710A15A,B2B0,46EC,BD,EC,E2,2E,A8,A6,28,FA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_136;
 #undef ADO_Reserved_136
-#endif
-
-#define ADO_Reserved_137 GUID_BUILDER(ADO_Reserved_137,2777696F,CB34,4CC4,A0,A9,02,EA,15,16,63,DD)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_137;
 #undef ADO_Reserved_137
-#endif
-
-#define ADO_Reserved_138 GUID_BUILDER(ADO_Reserved_138,D11CA1A0,A261,4BA2,81,68,46,52,32,9A,60,77)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_138;
 #undef ADO_Reserved_138
-#endif
-
-#define ADO_Reserved_139 GUID_BUILDER(ADO_Reserved_139,C33509A8,883F,4BEA,AF,B5,35,26,CF,0B,8B,E1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_139;
 #undef ADO_Reserved_139
-#endif
-
-#define ADO_Reserved_140 GUID_BUILDER(ADO_Reserved_140,DEBDC8E1,4F02,43E1,8C,88,0B,A8,E1,50,6B,F5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_140;
 #undef ADO_Reserved_140
-#endif
-
-#define ADO_Reserved_141 GUID_BUILDER(ADO_Reserved_141,552F8531,3F79,4DB3,87,7B,8E,54,C3,5B,38,54)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_141;
 #undef ADO_Reserved_141
-#endif
-
-#define ADO_Reserved_142 GUID_BUILDER(ADO_Reserved_142,1E6A2BF4,241C,48A1,90,66,C6,E1,E5,2B,0A,4B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_142;
 #undef ADO_Reserved_142
-#endif
-
-#define ADO_Reserved_143 GUID_BUILDER(ADO_Reserved_143,8E5B2A8D,1F0D,429D,94,95,16,F8,E9,58,06,80)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_143;
 #undef ADO_Reserved_143
-#endif
-
-#define ADO_Reserved_144 GUID_BUILDER(ADO_Reserved_144,57FAEC9D,5CDE,4EBE,84,A1,5A,CB,75,7C,D4,51)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_144;
 #undef ADO_Reserved_144
-#endif
-
-#define ADO_Reserved_145 GUID_BUILDER(ADO_Reserved_145,707B03C3,A3B0,4F00,81,61,6E,3F,02,7F,F0,B3)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_145;
 #undef ADO_Reserved_145
-#endif
-
-#define ADO_Reserved_146 GUID_BUILDER(ADO_Reserved_146,5DD552F4,0718,4BDD,82,6C,7C,C3,5C,DA,1D,93)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_146;
 #undef ADO_Reserved_146
-#endif
-
-#define ADO_Reserved_147 GUID_BUILDER(ADO_Reserved_147,F3247F33,E377,4A44,A9,37,AC,E6,36,F6,58,1F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_147;
 #undef ADO_Reserved_147
-#endif
-
-#define ADO_Reserved_148 GUID_BUILDER(ADO_Reserved_148,E7C324C4,38A5,42A8,99,FF,34,5D,AD,8C,D2,29)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_148;
 #undef ADO_Reserved_148
-#endif
-
-#define ADO_Reserved_149 GUID_BUILDER(ADO_Reserved_149,D14FCA70,390D,4158,B5,C3,9A,02,D1,F7,85,87)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_149;
 #undef ADO_Reserved_149
-#endif
-
-#define ADO_Reserved_150 GUID_BUILDER(ADO_Reserved_150,58D30B5F,92A5,4EF4,8E,45,A0,24,A9,CD,F9,FE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_150;
 #undef ADO_Reserved_150
-#endif
-
-#define ADO_Reserved_151 GUID_BUILDER(ADO_Reserved_151,9673DF76,73E4,4C66,89,14,7F,A4,17,43,6C,4A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_151;
 #undef ADO_Reserved_151
-#endif
-
-#define ADO_Reserved_152 GUID_BUILDER(ADO_Reserved_152,9FA8A7E1,CF3C,4A61,BE,10,1D,85,5F,A0,D5,08)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_152;
 #undef ADO_Reserved_152
-#endif
-
-#define ADO_Reserved_153 GUID_BUILDER(ADO_Reserved_153,B657729F,6CC7,4392,BD,56,DC,ED,6E,53,F6,4C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_153;
 #undef ADO_Reserved_153
-#endif
-
-#define ADO_Reserved_154 GUID_BUILDER(ADO_Reserved_154,06E5224B,8C27,4F41,8F,B7,C6,41,E4,C5,04,2D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_154;
 #undef ADO_Reserved_154
-#endif
-
-#define ADO_Reserved_155 GUID_BUILDER(ADO_Reserved_155,2268A619,CC1D,4F72,B8,3F,79,63,C0,13,B1,3D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_155;
 #undef ADO_Reserved_155
-#endif
-
-#define ADO_Reserved_156 GUID_BUILDER(ADO_Reserved_156,FB4810F3,3A65,4C33,B3,99,B5,C9,33,11,11,D7)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_156;
 #undef ADO_Reserved_156
-#endif
-
-#define ADO_Reserved_157 GUID_BUILDER(ADO_Reserved_157,9011BE74,6C9D,44F7,BE,2C,8A,2A,BB,62,51,AC)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_157;
 #undef ADO_Reserved_157
-#endif
-
-#define ADO_Reserved_158 GUID_BUILDER(ADO_Reserved_158,3145C182,82C6,4082,BB,E7,79,1A,2F,49,6C,B1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_158;
 #undef ADO_Reserved_158
-#endif
-
-#define ADO_Reserved_159 GUID_BUILDER(ADO_Reserved_159,D8865377,8799,4C08,97,E5,D6,7E,88,6F,F5,49)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_159;
 #undef ADO_Reserved_159
-#endif
-
-#define ADO_Reserved_160 GUID_BUILDER(ADO_Reserved_160,8993232E,8AFA,4552,A7,8C,C6,6C,9D,3A,E6,D0)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_160;
 #undef ADO_Reserved_160
-#endif
-
-#define ADO_Reserved_161 GUID_BUILDER(ADO_Reserved_161,40AF1931,8721,427B,83,5E,50,87,79,BD,1E,B2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_161;
 #undef ADO_Reserved_161
-#endif
-
-#define ADO_Reserved_162 GUID_BUILDER(ADO_Reserved_162,9C6E2B26,4468,427C,8C,F5,01,14,7D,B8,DF,22)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_162;
 #undef ADO_Reserved_162
-#endif
-
-#define ADO_Reserved_163 GUID_BUILDER(ADO_Reserved_163,3537FA93,7E92,4CE0,80,96,EF,DC,1A,80,A8,95)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_163;
 #undef ADO_Reserved_163
-#endif
-
-#define ADO_Reserved_164 GUID_BUILDER(ADO_Reserved_164,36992492,3E17,47C1,AB,98,5F,0C,49,B4,6A,25)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_164;
 #undef ADO_Reserved_164
-#endif
-
-#define ADO_Reserved_165 GUID_BUILDER(ADO_Reserved_165,01662EDB,CE23,4215,AE,9D,51,51,E6,DA,36,3C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_165;
 #undef ADO_Reserved_165
-#endif
-
-#define ADO_Reserved_166 GUID_BUILDER(ADO_Reserved_166,80B4A97B,5256,4397,89,CD,4E,F9,91,0F,1D,E6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_166;
 #undef ADO_Reserved_166
-#endif
-
-#define ADO_Reserved_167 GUID_BUILDER(ADO_Reserved_167,C2341A38,2C6B,414E,96,A8,8B,5E,47,F8,14,DA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_167;
 #undef ADO_Reserved_167
-#endif
-
-#define ADO_Reserved_168 GUID_BUILDER(ADO_Reserved_168,5C2B7578,53FA,4ACE,8E,6C,39,18,2F,68,D2,67)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_168;
 #undef ADO_Reserved_168
-#endif
-
-#define ADO_Reserved_169 GUID_BUILDER(ADO_Reserved_169,B80C1E36,611B,49D4,97,19,4E,0C,59,0E,2E,E1)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_169;
 #undef ADO_Reserved_169
-#endif
-
-#define ADO_Reserved_170 GUID_BUILDER(ADO_Reserved_170,BA269EB4,B741,4FB2,A9,C9,52,4C,9D,BE,7C,16)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_170;
 #undef ADO_Reserved_170
-#endif
-
-#define ADO_Reserved_171 GUID_BUILDER(ADO_Reserved_171,EE49769D,1028,4429,A9,66,2F,A8,1D,70,EE,19)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_171;
 #undef ADO_Reserved_171
-#endif
-
-#define ADO_Reserved_172 GUID_BUILDER(ADO_Reserved_172,541FC621,D6E6,4CC4,B4,98,8E,4F,AA,A0,65,BF)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_172;
 #undef ADO_Reserved_172
-#endif
-
-#define ADO_Reserved_173 GUID_BUILDER(ADO_Reserved_173,AA8B544C,4067,4E00,96,09,95,EE,21,68,AF,CE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_173;
 #undef ADO_Reserved_173
-#endif
-
-#define ADO_Reserved_174 GUID_BUILDER(ADO_Reserved_174,5B161B2B,D02C,4300,A1,54,CF,DC,25,3B,13,0D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_174;
 #undef ADO_Reserved_174
-#endif
-
-#define ADO_Reserved_175 GUID_BUILDER(ADO_Reserved_175,81F62203,182E,42DE,B1,B7,63,5F,C6,6F,6E,9E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_175;
 #undef ADO_Reserved_175
-#endif
-
-#define ADO_Reserved_176 GUID_BUILDER(ADO_Reserved_176,04934BDD,A530,48EC,91,CE,11,83,42,5B,DB,61)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_176;
 #undef ADO_Reserved_176
-#endif
-
-#define ADO_Reserved_177 GUID_BUILDER(ADO_Reserved_177,F6997841,9A99,48AA,B0,56,8C,75,17,06,41,7F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_177;
 #undef ADO_Reserved_177
-#endif
-
-#define ADO_Reserved_178 GUID_BUILDER(ADO_Reserved_178,353FE3F1,DE50,45EE,91,E9,3E,62,E3,C7,86,04)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_178;
 #undef ADO_Reserved_178
-#endif
-
-#define ADO_Reserved_179 GUID_BUILDER(ADO_Reserved_179,F142C8C6,9E24,422E,81,BD,D2,94,7F,93,94,D4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_179;
 #undef ADO_Reserved_179
-#endif
-
-#define ADO_Reserved_180 GUID_BUILDER(ADO_Reserved_180,95951773,9566,46C9,86,B0,40,ED,25,46,02,93)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_180;
 #undef ADO_Reserved_180
-#endif
-
-#define ADO_Reserved_181 GUID_BUILDER(ADO_Reserved_181,54140563,0F25,4F56,9D,8F,B6,DE,CB,96,DC,E4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_181;
 #undef ADO_Reserved_181
-#endif
-
-#define ADO_Reserved_182 GUID_BUILDER(ADO_Reserved_182,91A48243,AE16,48CF,82,29,00,00,F8,3C,5E,FC)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_182;
 #undef ADO_Reserved_182
-#endif
-
-#define ADO_Reserved_183 GUID_BUILDER(ADO_Reserved_183,E0FA1A1F,3967,4392,AB,1A,E2,8B,85,04,68,CA)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_183;
 #undef ADO_Reserved_183
-#endif
-
-#define ADO_Reserved_184 GUID_BUILDER(ADO_Reserved_184,5582D772,ABAC,4A85,A0,B3,2E,65,E1,71,10,53)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_184;
 #undef ADO_Reserved_184
-#endif
-
-#define ADO_Reserved_185 GUID_BUILDER(ADO_Reserved_185,1CD1F347,8FB4,49A2,B5,65,A6,74,A0,C1,45,0E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_185;
 #undef ADO_Reserved_185
-#endif
-
-#define ADO_Reserved_186 GUID_BUILDER(ADO_Reserved_186,0EC3AA4E,FEF5,4A5C,BD,0A,E9,CD,B7,6A,5F,30)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_186;
 #undef ADO_Reserved_186
-#endif
-
-#define ADO_Reserved_187 GUID_BUILDER(ADO_Reserved_187,4118414D,4A21,46DA,88,C1,EF,A7,01,8C,45,27)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_187;
 #undef ADO_Reserved_187
-#endif
-
-#define ADO_Reserved_188 GUID_BUILDER(ADO_Reserved_188,D5C1CC0D,E38E,4CB6,89,D9,99,27,7F,12,D1,9E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_188;
 #undef ADO_Reserved_188
-#endif
-
-#define ADO_Reserved_189 GUID_BUILDER(ADO_Reserved_189,0956B82A,94A7,474E,A5,05,1A,76,26,36,AF,08)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_189;
 #undef ADO_Reserved_189
-#endif
-
-#define ADO_Reserved_190 GUID_BUILDER(ADO_Reserved_190,2CBF62AB,B8E4,48D0,B5,01,69,CF,63,3C,AA,E6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_190;
 #undef ADO_Reserved_190
-#endif
-
-#define ADO_Reserved_191 GUID_BUILDER(ADO_Reserved_191,C02B8113,AECF,4A34,B3,E9,5B,52,4E,51,44,B5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_191;
 #undef ADO_Reserved_191
-#endif
-
-#define ADO_Reserved_192 GUID_BUILDER(ADO_Reserved_192,1C90947B,4A3A,4ECD,8C,70,F4,3F,E5,2D,46,45)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_192;
 #undef ADO_Reserved_192
-#endif
-
-#define ADO_Reserved_193 GUID_BUILDER(ADO_Reserved_193,48175E98,6672,4DB4,B5,74,8C,93,25,8D,BF,14)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_193;
 #undef ADO_Reserved_193
-#endif
-
-#define ADO_Reserved_194 GUID_BUILDER(ADO_Reserved_194,99CB88BF,E5C1,4AF0,85,00,72,36,47,DC,D2,05)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_194;
 #undef ADO_Reserved_194
-#endif
-
-#define ADO_Reserved_195 GUID_BUILDER(ADO_Reserved_195,6A2CC3CC,7855,4B27,86,F7,98,6B,AA,F9,5F,0F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_195;
 #undef ADO_Reserved_195
-#endif
-
-#define ADO_Reserved_196 GUID_BUILDER(ADO_Reserved_196,7640B336,9EBB,4017,9E,EE,54,01,F4,EC,B1,70)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_196;
 #undef ADO_Reserved_196
-#endif
-
-#define ADO_Reserved_197 GUID_BUILDER(ADO_Reserved_197,507B39E1,2965,42EA,92,66,55,8D,E4,31,53,73)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_197;
 #undef ADO_Reserved_197
-#endif
-
-#define ADO_Reserved_198 GUID_BUILDER(ADO_Reserved_198,58C591FA,37FF,4428,A0,4A,46,71,98,17,74,8C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_198;
 #undef ADO_Reserved_198
-#endif
-
-#define ADO_Reserved_199 GUID_BUILDER(ADO_Reserved_199,24BE98E9,B43D,49B5,9C,41,20,AF,C2,FE,1D,8D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_199;
 #undef ADO_Reserved_199
-#endif
-
-#define ADO_Reserved_200 GUID_BUILDER(ADO_Reserved_200,041956C5,B951,4C8F,8C,61,8E,12,34,E1,E9,61)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_200;
 #undef ADO_Reserved_200
-#endif
-
-#define ADO_Reserved_201 GUID_BUILDER(ADO_Reserved_201,6C98D05C,D366,48B4,80,E3,8F,A1,CC,06,1D,B7)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_201;
 #undef ADO_Reserved_201
-#endif
-
-#define ADO_Reserved_202 GUID_BUILDER(ADO_Reserved_202,09570783,A1E8,4A52,BA,74,6C,AC,02,C0,14,8C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_202;
 #undef ADO_Reserved_202
-#endif
-
-#define ADO_Reserved_203 GUID_BUILDER(ADO_Reserved_203,96C8C205,FD0D,4B56,9A,12,39,B3,7E,9D,07,4D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_203;
 #undef ADO_Reserved_203
-#endif
-
-#define ADO_Reserved_204 GUID_BUILDER(ADO_Reserved_204,136C40E1,366E,4BA6,AF,71,C4,9A,EF,17,3F,C0)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_204;
 #undef ADO_Reserved_204
-#endif
-
-#define ADO_Reserved_205 GUID_BUILDER(ADO_Reserved_205,A298C799,06FB,466E,B5,6D,3E,CC,6D,0C,D6,75)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_205;
 #undef ADO_Reserved_205
-#endif
-
-#define ADO_Reserved_206 GUID_BUILDER(ADO_Reserved_206,41A96542,08F2,4609,B7,6A,ED,93,E5,5B,8C,60)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_206;
 #undef ADO_Reserved_206
-#endif
-
-#define ADO_Reserved_207 GUID_BUILDER(ADO_Reserved_207,65A3B57E,06F9,4572,80,91,17,3F,C4,A6,5A,16)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_207;
 #undef ADO_Reserved_207
-#endif
-
-#define ADO_Reserved_208 GUID_BUILDER(ADO_Reserved_208,114F3E9D,5431,4DC1,95,42,9B,85,44,CF,83,B2)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_208;
 #undef ADO_Reserved_208
-#endif
-
-#define ADO_Reserved_209 GUID_BUILDER(ADO_Reserved_209,41DE92D4,9F2A,4085,8C,C1,C1,04,3E,5B,11,12)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_209;
 #undef ADO_Reserved_209
-#endif
-
-#define ADO_Reserved_210 GUID_BUILDER(ADO_Reserved_210,E32A7A98,FF1E,45C9,AA,51,5F,86,9A,9A,48,57)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_210;
 #undef ADO_Reserved_210
-#endif
-
-#define ADO_Reserved_211 GUID_BUILDER(ADO_Reserved_211,5E5A209F,3EFC,48BC,A7,1E,F4,CE,BE,4C,A6,25)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_211;
 #undef ADO_Reserved_211
-#endif
-
-#define ADO_Reserved_212 GUID_BUILDER(ADO_Reserved_212,C556C1CC,8B2E,482B,B7,8C,E2,F6,FD,A0,4F,4D)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_212;
 #undef ADO_Reserved_212
-#endif
-
-#define ADO_Reserved_213 GUID_BUILDER(ADO_Reserved_213,39C54FD9,A22A,43D4,A4,36,D9,CB,C5,53,D5,5A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_213;
 #undef ADO_Reserved_213
-#endif
-
-#define ADO_Reserved_214 GUID_BUILDER(ADO_Reserved_214,750E0BA2,E25C,479F,B0,C1,58,44,A1,4D,08,77)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_214;
 #undef ADO_Reserved_214
-#endif
-
-#define ADO_Reserved_215 GUID_BUILDER(ADO_Reserved_215,7ECBDB2C,C5C2,48FB,8A,3A,30,B7,E7,BD,17,25)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_215;
 #undef ADO_Reserved_215
-#endif
-
-#define ADO_Reserved_216 GUID_BUILDER(ADO_Reserved_216,0BF18AC7,8BE1,49E6,A8,57,EA,89,3A,83,58,F5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_216;
 #undef ADO_Reserved_216
-#endif
-
-#define ADO_Reserved_217 GUID_BUILDER(ADO_Reserved_217,DA74EAB6,AAFE,42AD,8A,0D,B2,73,35,0C,82,E3)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_217;
 #undef ADO_Reserved_217
-#endif
-
-#define ADO_Reserved_218 GUID_BUILDER(ADO_Reserved_218,F6A3D173,E366,424A,AD,0C,25,5C,32,2D,09,80)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_218;
 #undef ADO_Reserved_218
-#endif
-
-#define ADO_Reserved_219 GUID_BUILDER(ADO_Reserved_219,7CD83BA3,0516,4366,BB,85,DE,53,03,F7,75,08)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_219;
 #undef ADO_Reserved_219
-#endif
-
-#define ADO_Reserved_220 GUID_BUILDER(ADO_Reserved_220,42EDFC05,3A70,4F5C,8C,32,06,5E,61,45,3C,BE)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_220;
 #undef ADO_Reserved_220
-#endif
-
-#define ADO_Reserved_221 GUID_BUILDER(ADO_Reserved_221,624BC037,05B0,44E1,85,A7,73,C4,7F,A0,CC,04)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_221;
 #undef ADO_Reserved_221
-#endif
-
-#define ADO_Reserved_222 GUID_BUILDER(ADO_Reserved_222,8811F8DD,FA15,4FA6,A7,6E,7E,DA,E7,0D,EC,D4)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_222;
 #undef ADO_Reserved_222
-#endif
-
-#define ADO_Reserved_223 GUID_BUILDER(ADO_Reserved_223,DD310D89,9F22,4F49,89,8C,AF,A2,7F,AF,11,1C)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_223;
 #undef ADO_Reserved_223
-#endif
-
-#define ADO_Reserved_224 GUID_BUILDER(ADO_Reserved_224,321E3A7D,DF0E,4FF7,98,5D,F6,E6,73,FD,E2,9F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_224;
 #undef ADO_Reserved_224
-#endif
-
-#define ADO_Reserved_225 GUID_BUILDER(ADO_Reserved_225,036D1B77,3737,47CB,9E,75,31,13,13,2D,32,B8)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_225;
 #undef ADO_Reserved_225
-#endif
-
-#define ADO_Reserved_226 GUID_BUILDER(ADO_Reserved_226,A46B9E8C,4740,4919,86,34,A3,57,73,F6,53,2F)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_226;
 #undef ADO_Reserved_226
-#endif
-
-#define ADO_Reserved_227 GUID_BUILDER(ADO_Reserved_227,7C064E3A,014E,4733,9D,00,5D,03,13,F7,B7,F5)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_227;
 #undef ADO_Reserved_227
-#endif
-
-#define ADO_Reserved_228 GUID_BUILDER(ADO_Reserved_228,7CBFF995,A041,4B0A,B7,9B,16,3A,74,2C,DC,CF)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_228;
 #undef ADO_Reserved_228
-#endif
-
-#define ADO_Reserved_229 GUID_BUILDER(ADO_Reserved_229,C3271965,BA03,4ABC,8F,D8,98,97,7E,4C,B3,9A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_229;
 #undef ADO_Reserved_229
-#endif
-
-#define ADO_Reserved_230 GUID_BUILDER(ADO_Reserved_230,565DC4B1,8D7A,41C6,AE,01,6C,EF,63,46,4D,5E)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_230;
 #undef ADO_Reserved_230
-#endif
-
-#define ADO_Reserved_231 GUID_BUILDER(ADO_Reserved_231,3331E567,EB74,45D2,86,32,20,43,47,DB,BE,04)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_231;
 #undef ADO_Reserved_231
-#endif
-
-#define ADO_Reserved_232 GUID_BUILDER(ADO_Reserved_232,3CEE44A8,6FC5,4CD5,AA,9D,1B,67,4C,B6,2E,EC)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_232;
 #undef ADO_Reserved_232
-#endif
-
-#define ADO_Reserved_233 GUID_BUILDER(ADO_Reserved_233,CD1BE145,71B9,4CCD,A7,AF,5B,BA,A0,2A,51,E6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_233;
 #undef ADO_Reserved_233
-#endif
-
-#define ADO_Reserved_234 GUID_BUILDER(ADO_Reserved_234,4203C429,F3F0,4DD7,91,24,51,E0,13,95,5E,7A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_234;
 #undef ADO_Reserved_234
-#endif
-
-#define ADO_Reserved_235 GUID_BUILDER(ADO_Reserved_235,BB256836,2804,492F,9C,B2,CF,83,CB,82,63,8A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_235;
 #undef ADO_Reserved_235
-#endif
-
-#define ADO_Reserved_236 GUID_BUILDER(ADO_Reserved_236,8B247756,34AA,45EF,B1,24,A9,60,66,AC,E8,D6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_236;
 #undef ADO_Reserved_236
-#endif
-
-#define ADO_Reserved_237 GUID_BUILDER(ADO_Reserved_237,EF1CF73C,4915,4289,AD,C4,DD,DA,62,70,70,A6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_237;
 #undef ADO_Reserved_237
-#endif
-
-#define ADO_Reserved_238 GUID_BUILDER(ADO_Reserved_238,D0EB0A94,91A0,49D3,97,26,94,52,66,5A,FE,53)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_238;
 #undef ADO_Reserved_238
-#endif
-
-#define ADO_Reserved_239 GUID_BUILDER(ADO_Reserved_239,D6F5003E,4C06,47B1,89,E9,D6,3C,3D,7D,41,B6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_239;
 #undef ADO_Reserved_239
-#endif
-
-#define ADO_Reserved_240 GUID_BUILDER(ADO_Reserved_240,AA803151,F4AE,4CE3,BC,92,97,1C,84,2E,F5,BC)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_240;
 #undef ADO_Reserved_240
-#endif
-
-#define ADO_Reserved_241 GUID_BUILDER(ADO_Reserved_241,C4BB086F,5B11,4C67,98,6C,8C,D4,8C,5C,E3,8B)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_241;
 #undef ADO_Reserved_241
-#endif
-
-#define ADO_Reserved_242 GUID_BUILDER(ADO_Reserved_242,F1C4A502,4744,478F,87,71,C6,94,CC,2D,F7,B6)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_242;
 #undef ADO_Reserved_242
-#endif
-
-#define ADO_Reserved_243 GUID_BUILDER(ADO_Reserved_243,2CD39761,F389,4F5E,BE,91,A6,B9,1B,18,AD,12)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_243;
 #undef ADO_Reserved_243
-#endif
-
-#define ADO_Reserved_244 GUID_BUILDER(ADO_Reserved_244,8895BA8F,0CB7,4354,A8,EA,CD,9D,F4,1B,F8,88)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_244;
 #undef ADO_Reserved_244
-#endif
-
-#define ADO_Reserved_245 GUID_BUILDER(ADO_Reserved_245,71E0B0DC,1245,441D,92,92,32,71,3F,57,97,7A)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_245;
 #undef ADO_Reserved_245
-#endif
-
-#define ADO_Reserved_246 GUID_BUILDER(ADO_Reserved_246,7604D0CB,F137,472D,8B,4C,85,66,72,9A,CF,03)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_246;
 #undef ADO_Reserved_246
-#endif
-
-#define ADO_Reserved_247 GUID_BUILDER(ADO_Reserved_247,94C9B5AC,8309,4F4B,8E,68,C4,37,7E,C2,B7,91)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_247;
 #undef ADO_Reserved_247
-#endif
-
-#define ADO_Reserved_248 GUID_BUILDER(ADO_Reserved_248,0E555180,5E2C,4BF6,90,A0,1B,36,3D,4B,B9,99)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_248;
 #undef ADO_Reserved_248
-#endif
-
-#define ADO_Reserved_249 GUID_BUILDER(ADO_Reserved_249,C077D666,6988,4EAC,A5,52,61,61,55,F9,6A,12)
-#ifdef IMMEDIATE_GUID_USE
-ADO_Reserved_249;
 #undef ADO_Reserved_249
 #endif
+
+#endif
+
 #endif

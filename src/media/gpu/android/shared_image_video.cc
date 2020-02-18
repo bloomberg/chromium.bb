@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
+#include "gpu/command_buffer/service/shared_image_representation_skia_gl.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -76,6 +77,7 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
                            vk_image_info.format,
                            vk_image_info.mipLevels,
                            VK_QUEUE_FAMILY_EXTERNAL,
+                           GrProtected::kNo,
                            fYcbcrConversionInfo};
 
   // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
@@ -149,7 +151,9 @@ bool SharedImageVideo::IsCleared() const {
 
 void SharedImageVideo::SetCleared() {}
 
-void SharedImageVideo::Update() {}
+void SharedImageVideo::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+  DCHECK(!in_fence);
+}
 
 bool SharedImageVideo::ProduceLegacyMailbox(
     gpu::MailboxManager* mailbox_manager) {
@@ -220,17 +224,12 @@ class SharedImageRepresentationGLTextureVideo
   gpu::gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
+    // This representation should only be called for read.
+    DCHECK_EQ(mode,
+              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
+
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
-    DCHECK(video_backing);
-    auto* codec_image = video_backing->codec_image_.get();
-    auto* texture_owner = codec_image->texture_owner().get();
-
-    // Render the codec image.
-    codec_image->RenderToFrontBuffer();
-
-    // Bind the tex image if it's not already bound.
-    if (!texture_owner->binds_texture_on_update())
-      texture_owner->EnsureTexImageBound();
+    video_backing->BeginGLReadAccess();
     return true;
   }
 
@@ -242,61 +241,41 @@ class SharedImageRepresentationGLTextureVideo
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureVideo);
 };
 
-// GL backed Skia representation of SharedImageVideo.
-class SharedImageRepresentationVideoSkiaGL
-    : public gpu::SharedImageRepresentationSkia {
+// Representation of SharedImageVideo as a GL Texture.
+class SharedImageRepresentationGLTexturePassthroughVideo
+    : public gpu::SharedImageRepresentationGLTexturePassthrough {
  public:
-  SharedImageRepresentationVideoSkiaGL(gpu::SharedImageManager* manager,
-                                       gpu::SharedImageBacking* backing,
-                                       gpu::MemoryTypeTracker* tracker)
-      : gpu::SharedImageRepresentationSkia(manager, backing, tracker) {}
+  SharedImageRepresentationGLTexturePassthroughVideo(
+      gpu::SharedImageManager* manager,
+      SharedImageVideo* backing,
+      gpu::MemoryTypeTracker* tracker,
+      scoped_refptr<gpu::gles2::TexturePassthrough> texture)
+      : gpu::SharedImageRepresentationGLTexturePassthrough(manager,
+                                                           backing,
+                                                           tracker),
+        texture_(std::move(texture)) {}
 
-  ~SharedImageRepresentationVideoSkiaGL() override = default;
-
-  sk_sp<SkSurface> BeginWriteAccess(
-      int final_msaa_count,
-      const SkSurfaceProps& surface_props,
-      std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
-    // Writes are not intended to used for video backed representations.
-    NOTIMPLEMENTED();
-    return nullptr;
+  const scoped_refptr<gpu::gles2::TexturePassthrough>& GetTexturePassthrough()
+      override {
+    return texture_;
   }
 
-  void EndWriteAccess(sk_sp<SkSurface> surface) override { NOTIMPLEMENTED(); }
-
-  sk_sp<SkPromiseImageTexture> BeginReadAccess(
-      std::vector<GrBackendSemaphore>* begin_semaphores,
-      std::vector<GrBackendSemaphore>* end_semaphores) override {
-    if (promise_texture_)
-      return promise_texture_;
+  bool BeginAccess(GLenum mode) override {
+    // This representation should only be called for read.
+    DCHECK_EQ(mode,
+              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
 
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
-    DCHECK(video_backing);
-    auto* codec_image = video_backing->codec_image_.get();
-    auto* texture_owner = codec_image->texture_owner().get();
-
-    // Render the codec image.
-    codec_image->RenderToFrontBuffer();
-
-    // Bind the tex image if it's not already bound.
-    if (!texture_owner->binds_texture_on_update())
-      texture_owner->EnsureTexImageBound();
-    GrBackendTexture backend_texture;
-    if (!gpu::GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                                  GL_TEXTURE_EXTERNAL_OES, size(),
-                                  texture_owner->GetTextureId(), format(),
-                                  &backend_texture)) {
-      return nullptr;
-    }
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
-    return promise_texture_;
+    video_backing->BeginGLReadAccess();
+    return true;
   }
 
-  void EndReadAccess() override {}
+  void EndAccess() override {}
 
  private:
-  sk_sp<SkPromiseImageTexture> promise_texture_;
+  scoped_refptr<gpu::gles2::TexturePassthrough> texture_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTexturePassthroughVideo);
 };
 
 // Vulkan backed Skia representation of SharedImageVideo.
@@ -465,12 +444,38 @@ SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
   // which should result in no image.
   if (!codec_image_->texture_owner())
     return nullptr;
-  auto* texture = gpu::gles2::Texture::CheckedCast(
-      codec_image_->texture_owner()->GetTextureBase());
+  // TODO(vikassoni): We would want to give the TextureOwner's underlying
+  // Texture, but it was not set with the correct size. The AbstractTexture,
+  // that we use for legacy mailbox, is correctly set.
+  auto* texture =
+      gpu::gles2::Texture::CheckedCast(abstract_texture_->GetTextureBase());
   DCHECK(texture);
 
   return std::make_unique<SharedImageRepresentationGLTextureVideo>(
       manager, this, tracker, texture);
+}
+
+// TODO(vikassoni): Currently GLRenderer doesn't support overlays with shared
+// image. Add support for overlays in GLRenderer as well as overlay
+// representations of shared image.
+std::unique_ptr<gpu::SharedImageRepresentationGLTexturePassthrough>
+SharedImageVideo::ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
+                                              gpu::MemoryTypeTracker* tracker) {
+  // For (old) overlays, we don't have a texture owner, but overlay promotion
+  // might not happen for some reasons. In that case, it will try to draw
+  // which should result in no image.
+  if (!codec_image_->texture_owner())
+    return nullptr;
+  // TODO(vikassoni): We would want to give the TextureOwner's underlying
+  // Texture, but it was not set with the correct size. The AbstractTexture,
+  // that we use for legacy mailbox, is correctly set.
+  scoped_refptr<gpu::gles2::TexturePassthrough> texture =
+      gpu::gles2::TexturePassthrough::CheckedCast(
+          abstract_texture_->GetTextureBase());
+  DCHECK(texture);
+
+  return std::make_unique<SharedImageRepresentationGLTexturePassthroughVideo>(
+      manager, this, tracker, std::move(texture));
 }
 
 // Currently SkiaRenderer doesn't support overlays.
@@ -493,9 +498,27 @@ SharedImageVideo::ProduceSkia(
   }
 
   DCHECK(context_state->GrContextIsGL());
-  // In GL mode, use the texture id of the TextureOwner.
-  return std::make_unique<SharedImageRepresentationVideoSkiaGL>(manager, this,
-                                                                tracker);
+  auto* texture = gpu::gles2::Texture::CheckedCast(
+      codec_image_->texture_owner()->GetTextureBase());
+  DCHECK(texture);
+
+  // In GL mode, create the SharedImageRepresentationGLTextureVideo
+  // representation to use with SharedImageRepresentationVideoSkiaGL.
+  auto gl_representation =
+      std::make_unique<SharedImageRepresentationGLTextureVideo>(
+          manager, this, tracker, texture);
+  return gpu::SharedImageRepresentationSkiaGL::Create(
+      std::move(gl_representation), nullptr, manager, this, tracker);
+}
+
+void SharedImageVideo::BeginGLReadAccess() {
+  // Render the codec image.
+  codec_image_->RenderToFrontBuffer();
+
+  // Bind the tex image if it's not already bound.
+  auto* texture_owner = codec_image_->texture_owner().get();
+  if (!texture_owner->binds_texture_on_update())
+    texture_owner->EnsureTexImageBound();
 }
 
 }  // namespace media

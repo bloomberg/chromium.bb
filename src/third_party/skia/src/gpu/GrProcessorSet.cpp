@@ -162,8 +162,9 @@ bool GrProcessorSet::operator==(const GrProcessorSet& that) const {
 
 GrProcessorSet::Analysis GrProcessorSet::finalize(
         const GrProcessorAnalysisColor& colorInput, const GrProcessorAnalysisCoverage coverageInput,
-        const GrAppliedClip* clip, const GrUserStencilSettings* userStencil, GrFSAAType fsaaType,
-        const GrCaps& caps, GrClampType clampType, SkPMColor4f* overrideInputColor) {
+        const GrAppliedClip* clip, const GrUserStencilSettings* userStencil,
+        bool hasMixedSampledCoverage, const GrCaps& caps, GrClampType clampType,
+        SkPMColor4f* overrideInputColor) {
     SkASSERT(!this->isFinalized());
     SkASSERT(!fFragmentProcessorOffset);
 
@@ -188,7 +189,6 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
         hasCoverageFP = hasCoverageFP || clip->numClipCoverageFragmentProcessors();
         for (int i = 0; i < clip->numClipCoverageFragmentProcessors(); ++i) {
             const GrFragmentProcessor* clipFP = clip->clipCoverageFragmentProcessor(i);
-            clipFP->markPendingExecution();
             analysis.fCompatibleWithCoverageAsAlpha &= clipFP->compatibleWithCoverageAsAlpha();
             coverageUsesLocalCoords |= clipFP->usesLocalCoords();
         }
@@ -231,15 +231,10 @@ GrProcessorSet::Analysis GrProcessorSet::finalize(
     for (int i = 0; i < colorFPsToEliminate; ++i) {
         fFragmentProcessors[i].reset(nullptr);
     }
-    for (int i = colorFPsToEliminate; i < fFragmentProcessors.count(); ++i) {
-        fFragmentProcessors[i]->markPendingExecution();
-    }
     fFragmentProcessorOffset = colorFPsToEliminate;
     fColorFragmentProcessorCnt -= colorFPsToEliminate;
     analysis.fHasColorFragmentProcessor = (fColorFragmentProcessorCnt != 0);
 
-    bool hasMixedSampledCoverage = (GrFSAAType::kMixedSamples == fsaaType)
-            && !userStencil->testAlwaysPasses((clip) ? clip->hasStencilClip() : false);
     auto xp = GrXPFactory::MakeXferProcessor(this->xpFactory(), colorAnalysis.outputColor(),
                                              outputCoverage, hasMixedSampledCoverage, caps,
                                              clampType);

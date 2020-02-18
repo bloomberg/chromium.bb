@@ -44,6 +44,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/test/browser_test_utils.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -102,6 +103,16 @@ ArticleEntry CreateEntry(const std::string& entry_id,
   return entry;
 }
 
+void ExpectBodyHasThemeAndFont(content::WebContents* contents,
+                               const std::string& expected_theme,
+                               const std::string& expected_font) {
+  std::string result;
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
+  EXPECT_THAT(result, HasSubstr(expected_theme));
+  EXPECT_THAT(result, HasSubstr(expected_font));
+}
+
 }  // namespace
 
 class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
@@ -154,6 +165,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
 
   void ViewSingleDistilledPage(const GURL& url,
                                const std::string& expected_mime_type);
+  void ViewSingleDistilledPageAndExpectErrorPage(const GURL& url);
   void PrefTest(bool is_error_page);
   // Database entries.
   static FakeDB<ArticleEntry>::EntryMap* database_model_;
@@ -208,10 +220,10 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   // We should expect distillation for any valid URL.
   expect_distillation_ = true;
   expect_distiller_page_ = true;
-  GURL view_url("http://www.example.com/1");
-  const GURL url =
-      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, view_url);
-  ViewSingleDistilledPage(url, "text/html");
+  GURL original_url("http://www.example.com/1");
+  const GURL view_url =
+      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, original_url);
+  ViewSingleDistilledPage(view_url, "text/html");
 }
 
 void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
@@ -245,9 +257,13 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        MAYBE_TestBadUrlErrorPage) {
   GURL url("chrome-distiller://bad");
+  ViewSingleDistilledPageAndExpectErrorPage(url);
+}
 
+void DomDistillerViewerSourceBrowserTest::
+    ViewSingleDistilledPageAndExpectErrorPage(const GURL& url) {
   // Navigate to a distiller URL.
-  ui_test_utils::NavigateToURL(browser(), url);
+  ViewSingleDistilledPage(url, "text/html");
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -306,6 +322,19 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   expect_distiller_page_ = false;
   const GURL url(std::string(kDomDistillerScheme) + "://bogus/foobar");
   ViewSingleDistilledPage(url, "text/html");
+}
+
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
+                       InvalidURLShouldGetErrorPage) {
+  const GURL original_url("http://www.example.com/1");
+  const GURL different_url("http://www.example.com/2");
+  const GURL view_url =
+      url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, original_url);
+  // This is a bogus URL, so no distillation will happen.
+  const GURL bad_view_url = net::AppendOrReplaceQueryParameter(
+      view_url, kUrlKey, different_url.spec());
+
+  ViewSingleDistilledPageAndExpectErrorPage(bad_view_url);
 }
 
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, EarlyTemplateLoad) {
@@ -542,25 +571,23 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 }
 
 void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
-  GURL url;
+  GURL view_url;
   if (is_error_page) {
     expect_distillation_ = false;
     expect_distiller_page_ = false;
-    url = GURL("chrome-distiller://bad");
+    view_url = GURL("chrome-distiller://bad");
   } else {
     expect_distillation_ = true;
     expect_distiller_page_ = true;
-    GURL view_url("http://www.example.com/1");
-    url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme, view_url);
+    GURL original_url("http://www.example.com/1");
+    view_url = url_utils::GetDistillerViewUrlFromUrl(kDomDistillerScheme,
+                                                     original_url);
   }
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ViewSingleDistilledPage(url, "text/html");
+  ViewSingleDistilledPage(view_url, "text/html");
   content::WaitForLoadStop(contents);
-  std::string result;
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("light sans-serif", result);
+  ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
 
   DistilledPagePrefs* distilled_page_prefs =
       DomDistillerServiceFactory::GetForBrowserContext(browser()->profile())
@@ -569,21 +596,19 @@ void DomDistillerViewerSourceBrowserTest::PrefTest(bool is_error_page) {
   // Test theme.
   distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark sans-serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "sans-serif");
 
   // Verify that the theme color for the tab is updated as well.
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   // Test font family.
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
+  distilled_page_prefs->SetFontFamily(
+      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
 
   // Test font scaling.
+  std::string result;
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetFontSize, &result));
   double oldFontSize;
@@ -621,13 +646,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   // Set preference.
   const double kScale = 1.23;
   distilled_page_prefs->SetTheme(DistilledPagePrefs::THEME_DARK);
-  distilled_page_prefs->SetFontFamily(DistilledPagePrefs::FONT_FAMILY_SERIF);
+  distilled_page_prefs->SetFontFamily(
+      DistilledPagePrefs::FONT_FAMILY_MONOSPACE);
   distilled_page_prefs->SetFontScaling(kScale);
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
+
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetFontSize, &result));
@@ -643,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefPersist) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(
       content::ExecuteScriptAndExtractString(contents, kGetBodyClass, &result));
-  EXPECT_EQ("dark serif", result);
+  ExpectBodyHasThemeAndFont(contents, "dark", "monospace");
   EXPECT_EQ(kDarkToolbarThemeColor, contents->GetThemeColor());
 
   EXPECT_TRUE(

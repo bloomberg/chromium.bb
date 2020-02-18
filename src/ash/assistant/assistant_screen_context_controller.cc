@@ -12,9 +12,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -135,10 +133,10 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
             // Parent layer is excluded meaning that it's pointless to clone
             // current child and all its descendants. This reduces the number
             // of layers to create.
-            if (base::ContainsKey(blocked_layers, owner->layer()->parent()))
+            if (base::Contains(blocked_layers, owner->layer()->parent()))
               return nullptr;
 
-            if (base::ContainsKey(blocked_layers, owner->layer())) {
+            if (base::Contains(blocked_layers, owner->layer())) {
               // Blocked layers are replaced with solid black layers so that
               // they won't be included in the screenshot but still preserve
               // the window stacking.

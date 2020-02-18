@@ -1,11 +1,11 @@
 # WebView quick start
 
-[TOC]
-
 *** promo
 Googlers may wish to consult http://go/clank-webview for Google-specific
 developer guides.
 ***
+
+[TOC]
 
 ## Overview
 
@@ -23,13 +23,14 @@ See general Android instructions for:
 
 * [System
   requirements](/docs/android_build_instructions.md#System-requirements)
-* [Installing `depot_tools`](/docs/android_build_instructions.md#install)
-* [Getting the code](/docs/android_build_instructions.md#get-the-code) **or**
+* [Installing
+  `depot_tools`](/docs/android_build_instructions.md#Install-depot_tools)
+* [Getting the code](/docs/android_build_instructions.md#Get-the-code) **or**
   [converting a Linux
-  checkout](/docs/android_build_instructions.md#converting-an-existing-linux-checkout)
+  checkout](/docs/android_build_instructions.md#Converting-an-existing-Linux-checkout)
 * [Installing build
-  dependencies](/docs/android_build_instructions.md#install-additional-build-dependencies)
-  **and** [running hooks](/docs/android_build_instructions.md#run-the-hooks)
+  dependencies](/docs/android_build_instructions.md#Install-additional-build-dependencies)
+  **and** [running hooks](/docs/android_build_instructions.md#Run-the-hooks)
 
 ## Device setup
 
@@ -43,7 +44,8 @@ recommended.
 
 ## Setting up the build
 
-Assuming you took the advice from above:
+Assuming you took the advice from above, configure GN args (run `gn args
+out/Default`) as follows:
 
 ```gn
 # Minimal
@@ -165,7 +167,7 @@ Either your package didn't install (see below) or you chose a package which is
 not in the WebView provider whitelist. Double-check the package name in your GN
 args. If you're on AOSP (any OS level), choose
 `"com.android.webview"`. If you're on L-M, choose
-`"com.android.google.webview"`. In either case, you'll likely need to [remove
+`"com.google.android.webview"`. In either case, you'll likely need to [remove
 the preinstalled WebView
 APK](/android_webview/tools/remove_preinstalled_webview.py).
 
@@ -173,6 +175,15 @@ APK](/android_webview/tools/remove_preinstalled_webview.py).
 
 Check the "Current WebView package" in the dumpsys output. You're probably
 hitting one of the cases above.
+
+### INSTALL\_FAILED\_UPDATE\_INCOMPATIBLE: Package ... signatures do not match previously installed version
+
+This is probably because you've already installed Chrome Debug (ex. with the
+Google-only `monochrome_apk` target, or through a Google-only official build).
+This guide borrows that app's package name, but the locally compiled APK may not
+have the same signing key, causing the `adb install` error. You should remove
+the conflicting package with `out/Default/bin/system_webview_apk uninstall`, and
+then try installing WebView again.
 
 ### I couldn't install the APK/... is NOT installed.
 
@@ -194,7 +205,6 @@ don't know what you're doing) there's a good chance of making mistakes (some of
 which don't have any error messages).
 
 If you can't follow the quick start guide for some reason, please consult our
-[public](https://www.chromium.org/developers/how-tos/build-instructions-android-webview)
-or [internal](http://go/clank-webview) instructions.
+[general build instructions](build-instructions.md).
 
 [1]: https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev

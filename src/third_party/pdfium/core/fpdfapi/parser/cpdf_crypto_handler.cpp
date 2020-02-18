@@ -263,7 +263,7 @@ ByteString CPDF_CryptoHandler::Decrypt(uint32_t objnum,
                                        const ByteString& str) {
   CFX_BinaryBuf dest_buf;
   void* context = DecryptStart(objnum, gennum);
-  DecryptStream(context, str.AsRawSpan(), dest_buf);
+  DecryptStream(context, str.raw_span(), dest_buf);
   DecryptFinish(context, dest_buf);
   return ByteString(dest_buf.GetBuffer(), dest_buf.GetSize());
 }
@@ -351,7 +351,7 @@ bool CPDF_CryptoHandler::DecryptObjectTree(RetainPtr<CPDF_Object> object) {
     }
     // Signature dictionaries check.
     while (!may_be_sign_dictionaries.empty()) {
-      auto dict_and_contents = std::move(may_be_sign_dictionaries.top());
+      auto dict_and_contents = may_be_sign_dictionaries.top();
       may_be_sign_dictionaries.pop();
       if (!IsSignatureDictionary(dict_and_contents.parent)) {
         // This is not signature dictionary. Do decrypt its contents.

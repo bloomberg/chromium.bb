@@ -36,10 +36,27 @@ namespace
 namespace vk
 {
 
-Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice)
+rr::Routine* Device::SamplingRoutineCache::query(const vk::Device::SamplingRoutineCache::Key& key) const
+{
+	return cache.query(hash(key));
+}
+
+void Device::SamplingRoutineCache::add(const vk::Device::SamplingRoutineCache::Key& key, rr::Routine* routine)
+{
+	ASSERT(routine);
+	cache.add(hash(key), routine);
+}
+
+std::size_t Device::SamplingRoutineCache::hash(const vk::Device::SamplingRoutineCache::Key &key) const
+{
+	return (key.instruction << 16) ^ (key.sampler << 8) ^ key.imageView;
+}
+
+Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures)
 	: physicalDevice(physicalDevice),
 	  queues(reinterpret_cast<Queue*>(mem)),
-	  enabledExtensionCount(pCreateInfo->enabledExtensionCount)
+	  enabledExtensionCount(pCreateInfo->enabledExtensionCount),
+	  enabledFeatures(enabledFeatures ? *enabledFeatures : VkPhysicalDeviceFeatures{})  // "Setting pEnabledFeatures to NULL and not including a VkPhysicalDeviceFeatures2 in the pNext member of VkDeviceCreateInfo is equivalent to setting all members of the structure to VK_FALSE."
 {
 	for(uint32_t i = 0; i < pCreateInfo->queueCreateInfoCount; i++)
 	{
@@ -71,7 +88,7 @@ Device::Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice 
 	}
 
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-	blitter = new sw::Blitter();
+	blitter.reset(new sw::Blitter());
 }
 
 void Device::destroy(const VkAllocationCallbacks* pAllocator)
@@ -82,8 +99,6 @@ void Device::destroy(const VkAllocationCallbacks* pAllocator)
 	}
 
 	vk::deallocate(queues, pAllocator);
-
-	delete blitter;
 }
 
 size_t Device::ComputeRequiredAllocationSize(const VkDeviceCreateInfo* pCreateInfo)
@@ -123,7 +138,8 @@ VkResult Device::waitForFences(uint32_t fenceCount, const VkFence* pFences, VkBo
 	const uint64_t max_timeout = (LLONG_MAX - start.time_since_epoch().count());
 	bool infiniteTimeout = (timeout > max_timeout);
 	const time_point end_ns = start + std::chrono::nanoseconds(std::min(max_timeout, timeout));
-	if(waitAll) // All fences must be signaled
+
+	if(waitAll != VK_FALSE) // All fences must be signaled
 	{
 		for(uint32_t i = 0; i < fenceCount; i++)
 		{
@@ -210,13 +226,27 @@ void Device::updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDe
 {
 	for(uint32_t i = 0; i < descriptorWriteCount; i++)
 	{
-		DescriptorSetLayout::WriteDescriptorSet(pDescriptorWrites[i]);
+		DescriptorSetLayout::WriteDescriptorSet(this, pDescriptorWrites[i]);
 	}
 
 	for(uint32_t i = 0; i < descriptorCopyCount; i++)
 	{
 		DescriptorSetLayout::CopyDescriptorSet(pDescriptorCopies[i]);
 	}
+}
+
+Device::SamplingRoutineCache* Device::getSamplingRoutineCache()
+{
+	if(!samplingRoutineCache.get())
+	{
+		samplingRoutineCache.reset(new SamplingRoutineCache());
+	}
+	return samplingRoutineCache.get();
+}
+
+std::mutex& Device::getSamplingRoutineCacheMutex()
+{
+	return samplingRoutineCacheMutex;
 }
 
 } // namespace vk

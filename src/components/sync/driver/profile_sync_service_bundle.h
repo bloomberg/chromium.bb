@@ -12,11 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_client_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace syncer {
@@ -50,11 +50,11 @@ class ProfileSyncServiceBundle {
     return &pref_service_;
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
@@ -72,7 +72,7 @@ class ProfileSyncServiceBundle {
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   testing::NiceMock<SyncApiComponentFactoryMock> component_factory_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
   invalidation::FakeInvalidationService fake_invalidation_service_;

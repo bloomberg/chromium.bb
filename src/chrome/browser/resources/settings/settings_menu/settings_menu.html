@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -20,11 +20,12 @@
         padding-top: 8px;
       }
 
+      :host * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
       a[href],
       #advancedButton {
-        --cr-selectable-focus: {
-          outline: auto 5px -webkit-focus-ring-color;
-        };
         align-items: center;
         color: var(--settings-nav-item-color);
         display: flex;
@@ -41,6 +42,11 @@
         color: var(--cr-link-color);
       }
 
+      a[href]:focus {
+        background: transparent;
+        outline: auto 5px -webkit-focus-ring-color;
+      }
+
       iron-icon {
         --iron-icon-fill-color: var(--settings-nav-icon-color);
         margin-inline-end: 24px;
@@ -53,8 +59,11 @@
       }
 
       #advancedButton {
+        --ink-color: var(--settings-nav-item-color);
+        background: none;
         border: none;
         border-radius: initial;
+        box-shadow: none;
         height: unset;
         margin-top: 8px;
         padding-inline-end: 0;
@@ -62,11 +71,10 @@
       }
 
       #advancedButton:focus {
-        box-shadow: none;
         outline: none;
       }
 
-      #advancedButton.keyboard-focus:focus {
+      :host-context(.focus-outline-visible) #advancedButton:focus {
         outline: auto 5px -webkit-focus-ring-color;
       }
 
@@ -88,8 +96,10 @@
         margin-top: 8px;
       }
 
-      :host-context([dark]) #menuSeparator {
-        border-bottom: var(--cr-separator-line);  /* override */
+      @media (prefers-color-scheme: dark) {
+        #menuSeparator {
+          border-bottom: var(--cr-separator-line);  /* override */
+        }
       }
     </style>
     <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
@@ -165,12 +175,12 @@
         <iron-icon icon="settings:power-settings-new"></iron-icon>
         $i18n{onStartup}
       </a>
-      <paper-button toggles id="advancedButton"
-          aria-active-attribute="aria-expanded" active="{{advancedOpened}}"
+      <cr-button id="advancedButton" aria-active-attribute="aria-expanded"
+          on-click="onAdvancedButtonToggle_"
           hidden="[[!pageVisibility.advancedSettings]]">
         <span>$i18n{advancedPageTitle}</span>
         <iron-icon icon="[[arrowState_(advancedOpened)]]">
-        </iron-icon></paper-button>
+        </iron-icon></cr-button>
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
           hidden="[[!pageVisibility.advancedSettings]]">
         <iron-selector id="subMenu" selectable="a" attr-for-selected="href"

@@ -262,8 +262,10 @@ const char* AssistantContainerView::GetClassName() const {
 }
 
 void AssistantContainerView::AddedToWidget() {
-  GetWidget()->GetNativeWindow()->SetEventTargeter(
-      std::make_unique<AssistantContainerEventTargeter>());
+  // Exclude the Assistant window for occlusion, so it doesn't trigger auto-pip.
+  auto* window = GetWidget()->GetNativeWindow();
+  occlusion_excluder_.emplace(window);
+  window->SetEventTargeter(std::make_unique<AssistantContainerEventTargeter>());
 }
 
 ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() {
@@ -310,7 +312,7 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
     views::Widget* widget) const {
   params->context = delegate_->GetRootWindowForNewWindows();
   params->corner_radius = kCornerRadiusDip;
-  params->keep_on_top = true;
+  params->z_order = ui::ZOrderLevel::kFloatingWindow;
 }
 
 views::ClientView* AssistantContainerView::CreateClientView(

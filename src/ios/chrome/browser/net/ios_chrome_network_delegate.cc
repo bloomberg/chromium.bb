@@ -18,8 +18,8 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_options.h"
@@ -70,7 +70,7 @@ void IOSChromeNetworkDelegate::InitializePrefsOnUIThread(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
-    enable_do_not_track->MoveToThread(
+    enable_do_not_track->MoveToSequence(
         base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
   }
 }

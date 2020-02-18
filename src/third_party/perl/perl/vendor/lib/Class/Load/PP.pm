@@ -1,13 +1,12 @@
-package Class::Load::PP;
-{
-  $Class::Load::PP::VERSION = '0.19';
-}
-
 use strict;
 use warnings;
-use Module::Runtime 'is_module_name';
+package Class::Load::PP;
+
+our $VERSION = '0.25';
+
+use Module::Runtime ();
 use Package::Stash 0.14;
-use Scalar::Util 'blessed', 'reftype';
+use Scalar::Util ();
 use Try::Tiny;
 
 sub is_class_loaded {
@@ -31,7 +30,7 @@ sub is_class_loaded {
 sub _is_class_loaded {
     my $class = shift;
 
-    return 0 unless is_module_name($class);
+    return 0 unless Module::Runtime::is_module_name($class);
 
     my $stash = Package::Stash->new($class);
 
@@ -40,9 +39,9 @@ sub _is_class_loaded {
         if (defined $version) {
             return 1 if ! ref $version;
             # Sometimes $VERSION ends up as a reference to undef (weird)
-            return 1 if ref $version && reftype $version eq 'SCALAR' && defined ${$version};
+            return 1 if ref $version && Scalar::Util::reftype $version eq 'SCALAR' && defined ${$version};
             # a version object
-            return 1 if blessed $version;
+            return 1 if Scalar::Util::blessed $version;
         }
     }
 

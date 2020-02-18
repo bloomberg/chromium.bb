@@ -30,6 +30,8 @@
 
 #include "base/auto_reset.h"
 #include "base/numerics/safe_conversions.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -54,16 +56,17 @@
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -151,9 +154,8 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
       pump_speculations_session_nesting_level_(0),
       is_parsing_at_line_number_(false),
       tried_loading_link_headers_(false),
-      added_pending_stylesheet_in_body_(false),
-      is_waiting_for_stylesheets_(false),
-      weak_factory_(this) {
+      added_pending_parser_blocking_stylesheet_(false),
+      is_waiting_for_stylesheets_(false) {
   DCHECK(ShouldUseThreading() || (token_ && tokenizer_));
   // Threading is not allowed in prefetch mode.
   DCHECK(!document.IsPrefetchOnly() || !ShouldUseThreading());
@@ -254,6 +256,9 @@ void HTMLDocumentParser::PrepareToStopParsing() {
   if (IsDetached())
     return;
 
+  if (script_runner_)
+    script_runner_->RecordMetricsAtParseEnd();
+
   AttemptToRunDeferredScriptsAndEnd();
 }
 
@@ -315,6 +320,8 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   TRACE_EVENT0("blink", "HTMLDocumentParser::EnqueueTokenizedChunk");
 
   DCHECK(chunk);
+  DCHECK(GetDocument());
+
   if (!IsParsing())
     return;
 
@@ -346,13 +353,20 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
   }
 
   if (preloader_) {
-    bool appcache_initialized = GetDocument()->documentElement();
-    if (!appcache_initialized) {
-      appcache_queueing_start_time_ = CurrentTimeTicks();
+    bool appcache_fetched = false;
+    if (GetDocument()->Loader()) {
+      appcache_fetched = (GetDocument()->Loader()->GetResponse().AppCacheID() !=
+                          mojom::blink::kAppCacheNoCacheId);
     }
+    bool appcache_initialized = GetDocument()->documentElement();
     // Delay sending some requests if meta tag based CSP is present or
-    // if AppCache was not yet initialized.
-    if (pending_csp_meta_token_ || !appcache_initialized) {
+    // if AppCache was used to fetch the HTML but was not yet initialized for
+    // this document.
+    if (pending_csp_meta_token_ ||
+        ((!base::FeatureList::IsEnabled(
+              blink::features::kVerifyHTMLFetchedFromAppCacheBeforeDelay) ||
+          appcache_fetched) &&
+         !appcache_initialized)) {
       PreloadRequestStream link_rel_preloads;
       for (auto& request : chunk->preloads) {
         // Link rel preloads don't need to wait for AppCache but they
@@ -1071,6 +1085,10 @@ void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
   DCHECK(script_runner_);
   DCHECK(!IsExecutingScript());
 
+  scheduler::CooperativeSchedulingManager::AllowedStackScope
+      whitelisted_stack_scope(
+          scheduler::CooperativeSchedulingManager::Instance());
+
   if (IsStopped()) {
     return;
   }
@@ -1102,27 +1120,27 @@ void HTMLDocumentParser::ExecuteScriptsWaitingForResources() {
     ResumeParsingAfterPause();
 }
 
-void HTMLDocumentParser::DidAddPendingStylesheetInBody() {
+void HTMLDocumentParser::DidAddPendingParserBlockingStylesheet() {
   // In-body CSS doesn't block painting. The parser needs to pause so that
   // the DOM doesn't include any elements that may depend on the CSS for style.
   // The stylesheet can be added and removed during the parsing of a single
   // token so don't actually set the bit to block parsing here, just track
   // the state of the added sheet in case it does persist beyond a single
   // token.
-  added_pending_stylesheet_in_body_ = true;
+  added_pending_parser_blocking_stylesheet_ = true;
 }
 
-void HTMLDocumentParser::DidLoadAllBodyStylesheets() {
+void HTMLDocumentParser::DidLoadAllPendingParserBlockingStylesheets() {
   // Just toggle the stylesheet flag here (mostly for synchronous sheets).
   // The document will also call into executeScriptsWaitingForResources
   // which is when the parser will re-start, otherwise it will attempt to
   // resume twice which could cause state machine issues.
-  added_pending_stylesheet_in_body_ = false;
+  added_pending_parser_blocking_stylesheet_ = false;
 }
 
 void HTMLDocumentParser::CheckIfBodyStylesheetAdded() {
-  if (added_pending_stylesheet_in_body_) {
-    added_pending_stylesheet_in_body_ = false;
+  if (added_pending_parser_blocking_stylesheet_) {
+    added_pending_parser_blocking_stylesheet_ = false;
     is_waiting_for_stylesheets_ = true;
   }
 }
@@ -1215,23 +1233,8 @@ void HTMLDocumentParser::SetDecoder(
 
 void HTMLDocumentParser::DocumentElementAvailable() {
   TRACE_EVENT0("blink,loading", "HTMLDocumentParser::DocumentElementAvailable");
-  TimeDelta delta;
-  if (!appcache_queueing_start_time_.is_null()) {
-    delta = CurrentTimeTicks() - appcache_queueing_start_time_;
-  }
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-      "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime", delta,
-      base::TimeDelta::FromMicroseconds(1),
-      base::TimeDelta::FromMilliseconds(1000), 50);
   Document* document = GetDocument();
   DCHECK(document);
-  LocalFrame* frame = document->GetFrame();
-  if (frame && frame->IsMainFrame()) {
-    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-        "WebCore.HTMLDocumentParser.PreloadScannerAppCacheDelayTime.MainFrame",
-        delta, base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromMilliseconds(1000), 50);
-  }
   DCHECK(document->documentElement());
   Element* documentElement = GetDocument()->documentElement();
   if (documentElement->hasAttribute(u"\u26A1") ||

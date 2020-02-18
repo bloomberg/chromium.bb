@@ -55,10 +55,10 @@
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
 using ash::mojom::LockScreenNoteOrigin;
@@ -388,7 +388,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     SetUpStylusAvailability();
 
     session_manager_ = std::make_unique<session_manager::SessionManager>();
-    session_manager_->SessionStarted();
     session_manager_->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
@@ -468,7 +467,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   void SetStylusEnabled() {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshForceEnableStylusTools);
-    ws::InputDeviceClientTestApi()
+    ui::DeviceDataManagerTestApi()
         .NotifyObserversTouchscreenDeviceConfigurationChanged();
   }
 

@@ -329,6 +329,14 @@ void CertificateProviderService::SetDelegate(
   delegate_ = std::move(delegate);
 }
 
+void CertificateProviderService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CertificateProviderService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool CertificateProviderService::SetCertificatesProvidedByExtension(
     const std::string& extension_id,
     int cert_request_id,
@@ -358,8 +366,10 @@ void CertificateProviderService::ReplyToSignRequest(
     const std::vector<uint8_t>& signature) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  scoped_refptr<net::X509Certificate> certificate;
   net::SSLPrivateKey::SignCallback callback;
-  if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &callback)) {
+  if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
+                                    &callback)) {
     LOG(ERROR) << "request id unknown.";
     // Maybe multiple replies to the same request.
     return;
@@ -367,6 +377,11 @@ void CertificateProviderService::ReplyToSignRequest(
 
   const net::Error error_code = signature.empty() ? net::ERR_FAILED : net::OK;
   std::move(callback).Run(error_code, signature);
+
+  if (!signature.empty()) {
+    for (auto& observer : observers_)
+      observer.OnSignCompleted(certificate);
+  }
 }
 
 bool CertificateProviderService::LookUpCertificate(
@@ -407,6 +422,44 @@ void CertificateProviderService::OnExtensionUnloaded(
     std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
 
   pin_dialog_manager_.ExtensionUnloaded(extension_id);
+}
+
+void CertificateProviderService::RequestSignatureBySpki(
+    const std::string& subject_public_key_info,
+    uint16_t algorithm,
+    base::span<const uint8_t> digest,
+    net::SSLPrivateKey::SignCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool is_currently_provided = false;
+  CertificateInfo info;
+  std::string extension_id;
+  certificate_map_.LookUpCertificateBySpki(
+      subject_public_key_info, &is_currently_provided, &info, &extension_id);
+  if (!is_currently_provided) {
+    LOG(ERROR) << "no certificate with the specified spki was found";
+    std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
+    return;
+  }
+
+  RequestSignatureFromExtension(extension_id, info.certificate, algorithm,
+                                digest, std::move(callback));
+}
+
+bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
+    const std::string& subject_public_key_info,
+    std::vector<uint16_t>* supported_algorithms) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  bool is_currently_provided = false;
+  CertificateInfo info;
+  std::string extension_id;
+  certificate_map_.LookUpCertificateBySpki(
+      subject_public_key_info, &is_currently_provided, &info, &extension_id);
+  if (!is_currently_provided) {
+    LOG(ERROR) << "no certificate with the specified spki was found";
+    return false;
+  }
+  *supported_algorithms = info.supported_algorithms;
+  return true;
 }
 
 void CertificateProviderService::GetCertificatesFromExtensions(
@@ -477,10 +530,12 @@ void CertificateProviderService::RequestSignatureFromExtension(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int sign_request_id =
-      sign_requests_.AddRequest(extension_id, std::move(callback));
+      sign_requests_.AddRequest(extension_id, certificate, std::move(callback));
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
-    sign_requests_.RemoveRequest(extension_id, sign_request_id, &callback);
+    scoped_refptr<net::X509Certificate> local_certificate;
+    sign_requests_.RemoveRequest(extension_id, sign_request_id,
+                                 &local_certificate, &callback);
     std::move(callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
   }
 }

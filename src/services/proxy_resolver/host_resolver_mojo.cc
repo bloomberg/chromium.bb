@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_once_callback.h"
@@ -51,7 +51,6 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
               Impl* impl)
       : hostname_(hostname),
         operation_(operation),
-        binding_(this),
         host_cache_(std::move(host_cache)),
         impl_(impl) {}
 
@@ -69,13 +68,10 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
     }
 
     callback_ = std::move(callback);
-
-    mojom::HostResolverRequestClientPtr handle;
-    binding_.Bind(mojo::MakeRequest(&handle));
-    binding_.set_connection_error_handler(base::BindOnce(
-        &RequestImpl::OnConnectionError, base::Unretained(this)));
-
-    impl_->ResolveDns(hostname_, operation_, std::move(handle));
+    impl_->ResolveDns(hostname_, operation_,
+                      receiver_.BindNewPipeAndPassRemote());
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&RequestImpl::OnDisconnect, base::Unretained(this)));
     return net::ERR_IO_PENDING;
   }
 
@@ -99,8 +95,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
       host_cache_->Set(CacheKeyForRequest(hostname_, operation_), entry,
                        base::TimeTicks::Now(), ttl);
     }
-    if (binding_.is_bound())
-      binding_.Close();
+    receiver_.reset();
     std::move(callback_).Run(error);
   }
 
@@ -118,7 +113,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
     return cache_result->second.error();
   }
 
-  void OnConnectionError() { ReportResult(net::ERR_FAILED, {} /* result */); }
+  void OnDisconnect() { ReportResult(net::ERR_FAILED, {} /* result */); }
 
   static std::vector<net::IPAddress> AddressListToAddresses(
       net::AddressList address_list) {
@@ -132,7 +127,7 @@ class HostResolverMojo::RequestImpl : public ProxyHostResolver::Request,
   const std::string hostname_;
   const net::ProxyResolveDnsOperation operation_;
 
-  mojo::Binding<mojom::HostResolverRequestClient> binding_;
+  mojo::Receiver<mojom::HostResolverRequestClient> receiver_{this};
   net::CompletionOnceCallback callback_;
 
   base::WeakPtr<net::HostCache> host_cache_;

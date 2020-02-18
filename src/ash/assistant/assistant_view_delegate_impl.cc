@@ -9,8 +9,8 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/shell.h"
-#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
 namespace ash {
@@ -91,14 +91,14 @@ void AssistantViewDelegateImpl::RemoveUiModelObserver(
   assistant_controller_->ui_controller()->RemoveModelObserver(observer);
 }
 
-void AssistantViewDelegateImpl::AddVoiceInteractionControllerObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  Shell::Get()->voice_interaction_controller()->AddLocalObserver(observer);
+void AssistantViewDelegateImpl::AddAssistantPrefsObserver(
+    AssistantPrefsObserver* observer) {
+  assistant_controller_->prefs_controller()->AddObserver(observer);
 }
 
-void AssistantViewDelegateImpl::RemoveVoiceInteractionControllerObserver(
-    DefaultVoiceInteractionObserver* observer) {
-  Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(observer);
+void AssistantViewDelegateImpl::RemoveAssistantPrefsObserver(
+    AssistantPrefsObserver* observer) {
+  assistant_controller_->prefs_controller()->RemoveObserver(observer);
 }
 
 CaptionBarDelegate* AssistantViewDelegateImpl::GetCaptionBarDelegate() {
@@ -111,11 +111,9 @@ void AssistantViewDelegateImpl::DownloadImage(
   assistant_controller_->DownloadImage(url, std::move(callback));
 }
 
-mojom::ConsentStatus AssistantViewDelegateImpl::GetConsentStatus() const {
-  return Shell::Get()
-      ->voice_interaction_controller()
-      ->consent_status()
-      .value_or(mojom::ConsentStatus::kUnknown);
+int AssistantViewDelegateImpl::GetConsentStatus() const {
+  return assistant_controller_->prefs_controller()->prefs()->GetInteger(
+      chromeos::assistant::prefs::kAssistantConsentStatus);
 }
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
@@ -132,13 +130,12 @@ aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
 }
 
 bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
-  return Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
+  return assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
 }
 
 bool AssistantViewDelegateImpl::IsTabletMode() const {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 void AssistantViewDelegateImpl::OnDialogPlateButtonPressed(

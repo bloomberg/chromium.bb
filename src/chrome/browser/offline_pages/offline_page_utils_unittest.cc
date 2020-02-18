@@ -350,12 +350,7 @@ TEST_F(OfflinePageUtilsTest, CheckDuplicateDownloads) {
   EXPECT_EQ(OfflinePageUtils::DuplicateCheckResult::NOT_FOUND, result);
 }
 
-#if defined(DISABLE_OFFLINE_PAGES_TOUCHLESS)
-#define MAYBE_ScheduleDownload DISABLED_ScheduleDownload
-#else
-#define MAYBE_ScheduleDownload ScheduleDownload
-#endif
-TEST_F(OfflinePageUtilsTest, MAYBE_ScheduleDownload) {
+TEST_F(OfflinePageUtilsTest, ScheduleDownload) {
   // Pre-check.
   ASSERT_EQ(0, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage1Url));
   ASSERT_EQ(1, FindRequestByNamespaceAndURL(kDownloadNamespace, kTestPage3Url));
@@ -494,7 +489,16 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeEdgeCase) {
   EXPECT_EQ(kTestFileSize * 1, last_cache_size());
 }
 
-TEST_F(OfflinePageUtilsTest, TestExtractOfflineHeaderValueFromNavigationEntry) {
+// Timeout on Android.  http://crbug.com/981972
+#if defined(OS_ANDROID)
+#define MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry \
+  DISABLED_TestExtractOfflineHeaderValueFromNavigationEntry
+#else
+#define MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry \
+  TestExtractOfflineHeaderValueFromNavigationEntry
+#endif
+TEST_F(OfflinePageUtilsTest,
+       MAYBE_TestExtractOfflineHeaderValueFromNavigationEntry) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   std::string header_value;

@@ -5,16 +5,15 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
@@ -50,7 +49,7 @@ public final class FirstRunSignInProcessor {
      * @param activity The context for the FRE parameters processor.
      */
     public static void start(final Activity activity) {
-        SigninManager signinManager = SigninManager.get();
+        SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         signinManager.onFirstRunCheckDone();
 
         // Skip signin if the first run flow is not complete. Examples of cases where the user
@@ -76,9 +75,7 @@ public final class FirstRunSignInProcessor {
         signinManager.signIn(accountName, activity, new SignInCallback() {
             @Override
             public void onSignInComplete() {
-                if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                    UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
-                }
+                UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
                     openSignInSettings(activity);
@@ -99,16 +96,9 @@ public final class FirstRunSignInProcessor {
      * Opens sign in settings as requested in the FRE sign-in dialog.
      */
     private static void openSignInSettings(Activity activity) {
-        final Class<? extends Fragment> fragment;
-        final Bundle arguments;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            fragment = SyncAndServicesPreferences.class;
-            arguments = SyncAndServicesPreferences.createArguments(true);
-        } else {
-            fragment = AccountManagementFragment.class;
-            arguments = null;
-        }
-        PreferencesLauncher.launchSettingsPage(activity, fragment, arguments);
+        final Class<? extends Fragment> fragment = SyncAndServicesPreferences.class;
+        final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
+        PreferencesLauncher.launchSettingsPageCompat(activity, fragment, arguments);
     }
 
     /**
@@ -186,7 +176,7 @@ public final class FirstRunSignInProcessor {
      * Allows the user to sign-in if there are no pending FRE sign-in requests.
      */
     public static void updateSigninManagerFirstRunCheckDone() {
-        SigninManager manager = SigninManager.get();
+        SigninManager manager = IdentityServicesProvider.getSigninManager();
         if (manager.isSignInAllowed()) return;
         if (!FirstRunStatus.getFirstRunFlowComplete()) return;
         if (!getFirstRunFlowSignInComplete()) return;

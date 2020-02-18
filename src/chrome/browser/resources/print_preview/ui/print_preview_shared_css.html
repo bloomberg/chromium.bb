@@ -28,14 +28,19 @@
       .checkbox cr-checkbox {
         min-height: var(--print-preview-row-height);
         --cr-checkbox-ripple-size: var(--print-preview-row-height);
-        --cr-checkbox-label-container: {
-          overflow: hidden;
-          padding-inline-start: 16px;
-        };
+      }
+
+      .checkbox cr-checkbox::part(label-container) {
+        overflow: hidden;
+        padding-inline-start: 16px;
       }
 
       cr-input {
         line-height: 20px;
+      }
+
+      cr-input::part(row-container) {
+        min-height: var(--print-preview-row-height);
       }
 
       a[href],
@@ -44,8 +49,10 @@
         text-decoration: none;
       }
 
-      :host-context([dark]) :-webkit-any(a[href], a[is='action-link']) {
-        color: var(--cr-link-color);
+      @media (prefers-color-scheme: dark) {
+        :-webkit-any(a[href], a[is='action-link']) {
+          color: var(--cr-link-color);
+        }
       }
 
       print-preview-settings-section [slot=controls] > * {
@@ -53,19 +60,14 @@
       }
 
       /* Default print preview dialog styles. */
-      cr-dialog {
-        --cr-dialog-wrapper: {
-          max-height: calc(100vh - 68px);
-          width:  calc(100vw - 68px);
-          max-width: 100%;
-        };
-        --cr-dialog-body: {
-          box-sizing: border-box;
-          padding-inline-end: 20px;
-          padding-inline-start: 20px;
-          padding-bottom: 0;
-          padding-top: 0;
-        };
+      cr-dialog::part(wrapper) {
+        max-height: calc(100vh - 68px);
+        max-width: 100%;
+        width:  calc(100vw - 68px);
+      }
+
+      cr-dialog [slot=body] {
+        box-sizing: border-box;
       }
 
       #dialog div[slot='title'] {

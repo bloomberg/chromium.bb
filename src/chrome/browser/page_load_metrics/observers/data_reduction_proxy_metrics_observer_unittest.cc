@@ -10,12 +10,15 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
+#include "content/public/browser/web_contents.h"
 
 namespace data_reduction_proxy {
 
@@ -43,13 +46,17 @@ class TestDataReductionProxyMetricsObserver
   // DataReductionProxyMetricsObserver:
   ObservePolicy OnCommitCalled(content::NavigationHandle* navigation_handle,
                                ukm::SourceId source_id) override {
-    DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
+    auto data =
+        std::make_unique<data_reduction_proxy::DataReductionProxyData>();
+    data->set_request_url(navigation_handle->GetURL());
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_was_cached_data_reduction_proxy_response(
         cached_data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lite_page_received(lite_page_used_);
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        web_contents_->GetBrowserContext())
+        ->SetDataForNextCommitForTesting(std::move(data));
 
     auto* previews_data = PreviewsDataForNavigationHandle(navigation_handle);
     previews_data->set_black_listed_for_lite_page(black_listed_);
@@ -250,7 +257,7 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   ResetTest();
   // Verify that when the data reduction proxy was used, but lite page was not
-  // used, the correpsonding UMA is reported.
+  // used, the corresponding UMA is reported.
   RunTest(true, false, false, false);
   ValidateHistograms();
 }
@@ -267,11 +274,6 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   ResetTest();
 
   RunTest(true, false, false, false);
-
-  std::unique_ptr<DataReductionProxyData> data =
-      std::make_unique<DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_request_url(GURL(kDefaultTestUrl));
 
   std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
   // Cached resource.
@@ -303,7 +305,8 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    if (!request->was_fetched_via_cache) {
+    if (request->cache_type ==
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (request->is_secure_scheme) {
         secure_network_bytes += request->delta_bytes;
         secure_ocl_bytes +=
@@ -320,7 +323,9 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationCompression) {
     }
     if (request->proxy_used) {
       drp_bytes += request->delta_bytes;
-      if (!request->was_fetched_via_cache && request->is_complete)
+      if (request->cache_type ==
+              page_load_metrics::mojom::CacheType::kNotCached &&
+          request->is_complete)
         ++drp_resources;
     }
   }
@@ -335,11 +340,6 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   ResetTest();
 
   RunTest(true, false, false, false);
-
-  std::unique_ptr<DataReductionProxyData> data =
-      std::make_unique<DataReductionProxyData>();
-  data->set_used_data_reduction_proxy(true);
-  data->set_request_url(GURL(kDefaultTestUrl));
 
   std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr> resources;
   // Cached resource.
@@ -371,7 +371,8 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
   int64_t insecure_ocl_bytes = 0;
   int64_t secure_ocl_bytes = 0;
   for (const auto& request : resources) {
-    if (!request->was_fetched_via_cache) {
+    if (request->cache_type ==
+        page_load_metrics::mojom::CacheType::kNotCached) {
       if (request->is_secure_scheme) {
         secure_network_bytes += request->delta_bytes;
         secure_ocl_bytes +=
@@ -391,7 +392,9 @@ TEST_F(DataReductionProxyMetricsObserverTest, ByteInformationInflation) {
         secure_drp_bytes += request->delta_bytes;
       else
         drp_bytes += request->delta_bytes;
-      if (!request->was_fetched_via_cache && request->is_complete)
+      if (request->cache_type ==
+              page_load_metrics::mojom::CacheType::kNotCached &&
+          request->is_complete)
         ++drp_resources;
     }
   }

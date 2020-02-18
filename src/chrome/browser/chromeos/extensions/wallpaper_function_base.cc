@@ -7,7 +7,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/synchronization/cancellation_flag.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/task/lazy_task_runner.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/image_decoder.h"
@@ -35,12 +35,14 @@ const int kWallpaperLayoutCount = base::size(kWallpaperLayoutArrays);
 
 base::LazySequencedTaskRunner g_blocking_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_BLOCKING,
                          base::TaskShutdownBehavior::BLOCK_SHUTDOWN));
 base::LazySequencedTaskRunner g_non_blocking_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::USER_VISIBLE,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 
@@ -119,7 +121,7 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
 
  private:
   scoped_refptr<WallpaperFunctionBase> function_;
-  base::CancellationFlag cancel_flag_;
+  base::AtomicFlag cancel_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(UnsafeWallpaperDecoder);
 };

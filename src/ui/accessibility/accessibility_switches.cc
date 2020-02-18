@@ -32,6 +32,10 @@ const char kEnableExperimentalAccessibilityLanguageDetection[] =
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
 
+// Enables in progress Switch Access features for text input.
+const char kEnableExperimentalAccessibilitySwitchAccessText[] =
+    "enable-experimental-accessibility-switch-access-text";
+
 // Enables language switching feature that hasn't launched yet.
 const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-language-switching";
@@ -48,6 +52,11 @@ bool AreExperimentalAccessibilityFeaturesEnabled() {
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+}
+
+bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilitySwitchAccessText);
 }
 
 #if defined(OS_WIN)

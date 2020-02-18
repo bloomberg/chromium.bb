@@ -53,7 +53,8 @@ jumbo_source_set("fxcrt") {
     "fx_unicode.cpp",
     "fx_unicode.h",
     "maybe_owned.h",
-    "observable.h",
+    "observed_ptr.cpp",
+    "observed_ptr.h",
     "pauseindicator_iface.h",
     "retain_ptr.h",
     "retained_tree_node.h",
@@ -126,21 +127,6 @@ jumbo_source_set("fxcrt") {
   }
 }
 
-if (pdf_enable_xfa) {
-  jumbo_source_set("seekablemultistream") {
-    sources = [
-      "cfx_seekablemultistream.cpp",
-      "cfx_seekablemultistream.h",
-    ]
-    deps = [
-      ":fxcrt",
-      "../fpdfapi/parser",
-    ]
-    configs += [ "../../:pdfium_core_config" ]
-    visibility = [ "../../*" ]
-  }
-}
-
 pdfium_unittest_source_set("unittests") {
   sources = [
     "autorestorer_unittest.cpp",
@@ -157,7 +143,7 @@ pdfium_unittest_source_set("unittests") {
     "fx_string_unittest.cpp",
     "fx_system_unittest.cpp",
     "maybe_owned_unittest.cpp",
-    "observable_unittest.cpp",
+    "observed_ptr_unittest.cpp",
     "pdfium_span_unittest.cpp",
     "retain_ptr_unittest.cpp",
     "retained_tree_node_unittest.cpp",
@@ -181,13 +167,11 @@ pdfium_unittest_source_set("unittests") {
   if (pdf_enable_xfa) {
     sources += [
       "cfx_memorystream_unittest.cpp",
-      "cfx_seekablemultistream_unittest.cpp",
       "css/cfx_cssdeclaration_unittest.cpp",
       "css/cfx_cssstylesheet_unittest.cpp",
       "css/cfx_cssvaluelistparser_unittest.cpp",
     ]
     deps += [
-      ":seekablemultistream",
       "../fpdfapi/parser",
       "css",
     ]

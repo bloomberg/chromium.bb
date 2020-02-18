@@ -15,12 +15,12 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
@@ -95,7 +95,7 @@ void DidUpdateNavigationPreloadState(
 ServiceWorkerStorage::InitialData::InitialData()
     : next_registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id(blink::mojom::kInvalidServiceWorkerVersionId),
-      next_resource_id(kInvalidServiceWorkerResourceId) {}
+      next_resource_id(ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {}
 
 ServiceWorkerStorage::InitialData::~InitialData() {
 }
@@ -165,7 +165,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   }
 
   // See if there are any stored registrations for the origin.
-  if (!base::ContainsKey(registered_origins_, document_url.GetOrigin())) {
+  if (!base::Contains(registered_origins_, document_url.GetOrigin())) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
@@ -219,7 +219,7 @@ void ServiceWorkerStorage::FindRegistrationForScope(
   }
 
   // See if there are any stored registrations for the origin.
-  if (!base::ContainsKey(registered_origins_, scope.GetOrigin())) {
+  if (!base::Contains(registered_origins_, scope.GetOrigin())) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForScope(scope);
@@ -277,7 +277,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
   }
 
   // See if there are any stored registrations for the origin.
-  if (!base::ContainsKey(registered_origins_, origin)) {
+  if (!base::Contains(registered_origins_, origin)) {
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForId(registration_id);
@@ -459,6 +459,7 @@ void ServiceWorkerStorage::StoreRegistration(
 
   uint64_t resources_total_size_bytes = 0;
   for (const auto& resource : resources) {
+    DCHECK_GE(resource.size_bytes, 0);
     resources_total_size_bytes += resource.size_bytes;
   }
   data.resources_total_size_bytes = resources_total_size_bytes;
@@ -630,7 +631,7 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
 }
 
 void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
@@ -650,7 +651,7 @@ void ServiceWorkerStorage::StoreUncommittedResourceId(int64_t resource_id) {
 }
 
 void ServiceWorkerStorage::DoomUncommittedResource(int64_t resource_id) {
-  DCHECK_NE(kInvalidServiceWorkerResourceId, resource_id);
+  DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id);
   DCHECK(STORAGE_STATE_INITIALIZED == state_ ||
          STORAGE_STATE_DISABLED == state_)
       << state_;
@@ -1090,7 +1091,7 @@ int64_t ServiceWorkerStorage::NewVersionId() {
 
 int64_t ServiceWorkerStorage::NewResourceId() {
   if (state_ == STORAGE_STATE_DISABLED)
-    return kInvalidServiceWorkerResourceId;
+    return ServiceWorkerConsts::kInvalidServiceWorkerResourceId;
   DCHECK_EQ(STORAGE_STATE_INITIALIZED, state_);
   return next_resource_id_++;
 }
@@ -1145,7 +1146,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
     storage::SpecialStoragePolicy* special_storage_policy)
     : next_registration_id_(blink::mojom::kInvalidServiceWorkerRegistrationId),
       next_version_id_(blink::mojom::kInvalidServiceWorkerVersionId),
-      next_resource_id_(kInvalidServiceWorkerResourceId),
+      next_resource_id_(ServiceWorkerConsts::kInvalidServiceWorkerResourceId),
       state_(STORAGE_STATE_UNINITIALIZED),
       expecting_done_with_disk_on_disable_(false),
       user_data_directory_(user_data_directory),
@@ -1154,8 +1155,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       quota_manager_proxy_(quota_manager_proxy),
       special_storage_policy_(special_storage_policy),
       is_purge_pending_(false),
-      has_checked_for_stale_resources_(false),
-      weak_factory_(this) {
+      has_checked_for_stale_resources_(false) {
   DCHECK(context_);
   database_.reset(new ServiceWorkerDatabase(GetDatabasePath()));
 }
@@ -1176,13 +1176,13 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
       .Append(kDiskCacheName);
 }
 
-bool ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
+void ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
   if (state_ == STORAGE_STATE_UNINITIALIZED ||
       state_ == STORAGE_STATE_INITIALIZING) {
     LazyInitialize(std::move(callback));
-    return false;
+    return;
   }
-  return !IsDisabled();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {

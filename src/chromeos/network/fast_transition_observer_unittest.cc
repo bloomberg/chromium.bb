@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -48,7 +48,7 @@ class FastTransitionObserverTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestingPrefServiceSimple> local_state_;
   std::unique_ptr<FastTransitionObserver> observer_;

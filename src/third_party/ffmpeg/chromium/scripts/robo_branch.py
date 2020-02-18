@@ -14,6 +14,7 @@ import check_merge
 from datetime import datetime
 import find_patches
 import os
+import re
 from robo_lib import UserInstructions
 from robo_lib import log
 from subprocess import check_output
@@ -88,18 +89,34 @@ def MergeUpstreamToSushiBranch(cfg):
     raise UserInstructions("Merge failed -- resolve conflicts manually.")
   log("Merge has completed successfully")
 
-def IsMergeCommitOnThisBranch(cfg):
-  """Return true if there's a merge commit on this branch before it joins up
-  with origin/master."""
+def GetMergeParentsIfAny(cfg):
+  """Return the set of commit sha-1s of the merge commit, if one exists, between
+  HEAD and where it joins up with origin/master.  Otherwise, return []."""
   # Get all sha1s between us and origin/master
   sha1s = check_output(["git", "log", "--format=%H",
           "origin/master..%s" % cfg.branch_name()]).split()
   for sha1 in sha1s:
     # Does |sha1| have more than one parent commit?
-    if len(check_output(["git", "show", "--no-patch", "--format=%P",
-         sha1]).split()) > 1:
-      return True
-  return False
+    parents = check_output(["git", "show", "--no-patch", "--format=%P",
+         sha1]).split()
+    if len(parents) > 1:
+      return parents
+  return []
+
+def IsMergeCommitOnThisBranch(cfg):
+  """Return true if there's a merge commit on this branch."""
+  return GetMergeParentsIfAny(cfg) != []
+
+def FindUpstreamMergeParent(cfg):
+  """Return the sha-1 of the upstream side of the merge, if there is a merge
+  commit on this branch.  Otherwise, fail."""
+  sha1s = GetMergeParentsIfAny(cfg)
+  for sha1 in sha1s:
+    # 'not' is correct -- it returns zero if it is an ancestor => upstream.
+    if not cfg.Call(["git", "merge-base", "--is-ancestor", sha1,
+                     "upstream/master"]):
+      return sha1
+  raise Exception("No upstream merge parent found.  Is the merge committed?")
 
 def MergeUpstreamToSushiBranchIfNeeded(cfg):
   """Start a merge if we've not started one before, or do nothing successfully
@@ -203,8 +220,37 @@ def IsPatchesFileDone(robo_configuration):
     return True
   return False
 
+@RequiresCleanWorkingDirectory
 def UpdatePatchesFileUnconditionally(robo_configuration):
   """Update the patches file."""
   WritePatchesReadme(robo_configuration)
   AddAndCommit(robo_configuration,
                robo_configuration.patches_commit_title())
+
+def IsChromiumReadmeDone(robo_configuration):
+  """Return False if and only if README.chromium isn't checked in."""
+  if IsCommitOnThisBranch(
+                          robo_configuration,
+                          robo_configuration.readme_chromium_commit_title()):
+    log("Skipping README.chromium file since already committed")
+    return True
+  return False
+
+@RequiresCleanWorkingDirectory
+def UpdateChromiumReadmeWithUpstream(robo_configuration):
+  """Update the upstream info in README.chromium and commit the result."""
+  log("Updating merge info in README.chromium")
+  merge_sha1 = FindUpstreamMergeParent(robo_configuration)
+  robo_configuration.chdir_to_ffmpeg_home();
+  with open("README.chromium", "r+") as f:
+    readme = f.read()
+  last_upstream_merge = "Last Upstream Merge:"
+  merge_date= check_output(["git", "log", "-1","--date=format:%b %d %Y",
+                            "--format=%cd", merge_sha1])
+  readme = re.sub(r"(Last Upstream Merge:).*\n",
+                  r"\1 %s, %s" % (merge_sha1, merge_date),
+                  readme)
+  with open("README.chromium", "w") as f:
+    f.write(readme)
+  AddAndCommit(robo_configuration,
+               robo_configuration.readme_chromium_commit_title())

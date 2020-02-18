@@ -287,9 +287,8 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
   EXPECT_FALSE(device->IsPaired());
   UUIDSet uuids = device->GetUUIDs();
-  EXPECT_TRUE(base::ContainsKey(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
-  EXPECT_TRUE(
-      base::ContainsKey(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID(kTestUUIDGenericAccess)));
+  EXPECT_TRUE(base::Contains(uuids, BluetoothUUID(kTestUUIDGenericAttribute)));
 }
 
 // Verifies that the device name can be populated by later advertisement

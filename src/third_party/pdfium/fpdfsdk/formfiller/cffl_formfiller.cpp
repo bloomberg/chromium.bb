@@ -10,11 +10,11 @@
 
 #include "constants/form_flags.h"
 #include "core/fpdfapi/page/cpdf_page.h"
+#include "core/fpdfdoc/cba_fontmap.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
-#include "fpdfsdk/formfiller/cba_fontmap.h"
 
 CFFL_FormFiller::CFFL_FormFiller(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                                  CPDFSDK_Widget* pWidget)
@@ -502,7 +502,7 @@ bool CFFL_FormFiller::CommitData(CPDFSDK_PageView* pPageView, uint32_t nFlag) {
 
   CFFL_InteractiveFormFiller* pFormFiller =
       m_pFormFillEnv->GetInteractiveFormFiller();
-  CPDFSDK_Annot::ObservedPtr pObserved(m_pWidget.Get());
+  ObservedPtr<CPDFSDK_Annot> pObserved(m_pWidget.Get());
 
   if (!pFormFiller->OnKeyStrokeCommit(&pObserved, pPageView, nFlag)) {
     if (!pObserved)

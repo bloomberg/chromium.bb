@@ -5,6 +5,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
+import("//build_overrides/build.gni")
 
 if (enable_java_templates) {
   sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"
@@ -88,6 +89,10 @@ python_library("test_runner_py") {
   data_deps = [
     ":devil_chromium_py",
   ]
+  if (build_with_chromium) {
+    data_deps +=
+        [ "//third_party/android_platform/development/scripts:stack_py" ]
+  }
   if (is_asan) {
     data_deps += [ "//tools/android/asan/third_party:asan_device_setup" ]
   }
@@ -119,7 +124,7 @@ python_library("resource_sizes_py") {
 python_library("bundle_wrapper_script_py") {
   pydeps_file = "gyp/create_bundle_wrapper_script.pydeps"
   data = [
-    "//third_party/android_build_tools/bundletool/bundletool-all-0.9.0.jar",
+    "//third_party/android_build_tools/bundletool/bundletool-all-0.10.0.jar",
   ]
 }
 

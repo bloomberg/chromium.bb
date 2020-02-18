@@ -21,6 +21,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/render_view_test.h"
+#include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -35,8 +36,10 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/ax_action_target.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/native_theme/native_theme_features.h"
 
 namespace content {
 
@@ -225,7 +228,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
       )HTML";
   LoadHTMLAndRefreshAccessibilityTree(html);
 
-  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
   // If we post another event but the tree doesn't change,
   // we should only send 1 node to the browser.
@@ -243,7 +246,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   }
 
   // If we reload the page and send a event, we should send
-  // all 4 nodes to the browser. Also double-check that we didn't
+  // all 5 nodes to the browser. Also double-check that we didn't
   // leak any of the old BrowserTreeNodes.
   LoadHTML(html);
   document = GetMainFrame()->GetDocument();
@@ -252,7 +255,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   render_accessibility().HandleAXEvent(root_obj,
                                        ax::mojom::Event::kLayoutComplete);
   render_accessibility().SendPendingAccessibilityEvents();
-  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
   // Even if the first event is sent on an element other than
   // the root, the whole tree should be updated because we know
@@ -265,7 +268,7 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
   render_accessibility().HandleAXEvent(first_child,
                                        ax::mojom::Event::kLiveRegionChanged);
   render_accessibility().SendPendingAccessibilityEvents();
-  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 }
 
 TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
@@ -283,11 +286,12 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
       </body>
       )HTML");
 
-  EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  WebAXObject node_a = root_obj.ChildAt(0);
+  WebAXObject body = root_obj.ChildAt(0);
+  WebAXObject node_a = body.ChildAt(0);
   WebAXObject node_b = node_a.ChildAt(0);
   WebAXObject node_c = node_b.ChildAt(0);
 
@@ -305,11 +309,13 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   AXContentTreeUpdate update = GetLastAccUpdate();
   ASSERT_EQ(2U, update.nodes.size());
 
-  // RenderAccessibilityImpl notices that "C" is being reparented,
-  // so it clears the subtree rooted at "A", then updates "A" and then "C".
-  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
+  // Since ignored nodes are included in the ax tree with State::kIgnored set,
+  // "C" is NOT reparented, only the changed nodes are re-serialized.
+  // "A" updates because it handled Event::kChildrenChanged
+  // "B" updates because its State::kIgnored has changed
+  EXPECT_EQ(0, update.node_id_to_clear);
   EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
-  EXPECT_EQ(node_c.AxID(), update.nodes[1].id);
+  EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
@@ -329,12 +335,14 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
       </body>
       )HTML");
 
-  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
 
   WebDocument document = GetMainFrame()->GetDocument();
   WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  WebAXObject node_a = root_obj.ChildAt(0);
-  WebAXObject node_c = node_a.ChildAt(0);
+  WebAXObject body = root_obj.ChildAt(0);
+  WebAXObject node_a = body.ChildAt(0);
+  WebAXObject node_b = node_a.ChildAt(0);
+  WebAXObject node_c = node_b.ChildAt(0);
 
   // Show node "B", then send a childrenChanged on "A".
   ExecuteJavaScriptForTests(
@@ -343,19 +351,215 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   root_obj.UpdateLayoutAndCheckValidity();
   sink_->ClearMessages();
 
-  WebAXObject node_b = node_a.ChildAt(0);
-
   render_accessibility().HandleAXEvent(node_a,
                                        ax::mojom::Event::kChildrenChanged);
   render_accessibility().SendPendingAccessibilityEvents();
   AXContentTreeUpdate update = GetLastAccUpdate();
 
-  ASSERT_EQ(3U, update.nodes.size());
-  EXPECT_EQ(node_a.AxID(), update.node_id_to_clear);
+  // Since ignored nodes are included in the ax tree with State::kIgnored set,
+  // "C" is NOT reparented, only the changed nodes are re-serialized.
+  // "A" updates because it handled Event::kChildrenChanged
+  // "B" updates because its State::kIgnored has changed
+  ASSERT_EQ(2U, update.nodes.size());
+  EXPECT_EQ(0, update.node_id_to_clear);
   EXPECT_EQ(node_a.AxID(), update.nodes[0].id);
   EXPECT_EQ(node_b.AxID(), update.nodes[1].id);
-  EXPECT_EQ(node_c.AxID(), update.nodes[2].id);
-  EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
+  EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
+}
+
+TEST_F(RenderAccessibilityImplTest, TestAXActionTargetFromNodeId) {
+  // Validate that we create the correct type of AXActionTarget for a given
+  // node id.
+  constexpr char html[] = R"HTML(
+      <body>
+      </body>
+      )HTML";
+  LoadHTMLAndRefreshAccessibilityTree(html);
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  WebAXObject body = root_obj.ChildAt(0);
+
+  // An AxID for an HTML node should produce a Blink action target.
+  std::unique_ptr<ui::AXActionTarget> body_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, body.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink, body_action_target->GetType());
+
+  // An invalid AxID should produce a null action target.
+  std::unique_ptr<ui::AXActionTarget> null_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, -1);
+  EXPECT_EQ(ui::AXActionTarget::Type::kNull, null_action_target->GetType());
+}
+
+class BlinkAXActionTargetTest : public RenderAccessibilityImplTest {
+ protected:
+  void SetUp() override {
+    // Disable overlay scrollbars to avoid DCHECK on ChromeOS.
+    feature_list_.InitAndDisableFeature(features::kOverlayScrollbar);
+
+    RenderAccessibilityImplTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(BlinkAXActionTargetTest, TestMethods) {
+  // Exercise the methods on BlinkAXActionTarget to ensure they have the
+  // expected effects.
+  constexpr char html[] = R"HTML(
+      <body>
+        <input type=checkbox>
+        <input type=range min=1 value=2 max=3 step=1>
+        <input type=text>
+        <select size=2>
+          <option>One</option>
+          <option>Two</option>
+        </select>
+        <div style='width:100px; height: 100px; overflow:scroll'>
+          <div style='width:1000px; height:900px'></div>
+          <div style='width:1000px; height:100px'></div>
+        </div>
+        <div>Text Node One</div>
+        <div>Text Node Two</div>
+      </body>
+      )HTML";
+  LoadHTMLAndRefreshAccessibilityTree(html);
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  WebAXObject body = root_obj.ChildAt(0);
+  WebAXObject input_checkbox = body.ChildAt(0);
+  WebAXObject input_range = body.ChildAt(1);
+  WebAXObject input_text = body.ChildAt(2);
+  WebAXObject option = body.ChildAt(3).ChildAt(0);
+  WebAXObject scroller = body.ChildAt(4);
+  WebAXObject scroller_child = body.ChildAt(4).ChildAt(1);
+  WebAXObject text_one = body.ChildAt(5).ChildAt(0);
+  WebAXObject text_two = body.ChildAt(6).ChildAt(0);
+
+  std::unique_ptr<ui::AXActionTarget> input_checkbox_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, input_checkbox.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            input_checkbox_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> input_range_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, input_range.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            input_range_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> input_text_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, input_text.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            input_text_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> option_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, option.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink, option_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> scroller_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, scroller.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            scroller_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> scroller_child_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, scroller_child.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            scroller_child_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> text_one_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, text_one.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            text_one_action_target->GetType());
+
+  std::unique_ptr<ui::AXActionTarget> text_two_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, text_two.AxID());
+  EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
+            text_two_action_target->GetType());
+
+  EXPECT_EQ(ax::mojom::CheckedState::kFalse, input_checkbox.CheckedState());
+  EXPECT_TRUE(input_checkbox_action_target->Click());
+  EXPECT_EQ(ax::mojom::CheckedState::kTrue, input_checkbox.CheckedState());
+
+  float value = 0.0f;
+  EXPECT_TRUE(input_range.ValueForRange(&value));
+  EXPECT_EQ(2.0f, value);
+  EXPECT_TRUE(input_range_action_target->Decrement());
+  EXPECT_TRUE(input_range.ValueForRange(&value));
+  EXPECT_EQ(1.0f, value);
+  EXPECT_TRUE(input_range_action_target->Increment());
+  EXPECT_TRUE(input_range.ValueForRange(&value));
+  EXPECT_EQ(2.0f, value);
+
+  EXPECT_FALSE(input_range.IsFocused());
+  EXPECT_TRUE(input_range_action_target->Focus());
+  EXPECT_TRUE(input_range.IsFocused());
+
+  blink::WebFloatRect expected_bounds;
+  blink::WebAXObject offset_container;
+  SkMatrix44 container_transform;
+  input_checkbox.GetRelativeBounds(offset_container, expected_bounds,
+                                   container_transform);
+  gfx::Rect actual_bounds = input_checkbox_action_target->GetRelativeBounds();
+  EXPECT_EQ(static_cast<int>(expected_bounds.x), actual_bounds.x());
+  EXPECT_EQ(static_cast<int>(expected_bounds.y), actual_bounds.y());
+  EXPECT_EQ(static_cast<int>(expected_bounds.width), actual_bounds.width());
+  EXPECT_EQ(static_cast<int>(expected_bounds.height), actual_bounds.height());
+
+  gfx::Point offset_to_set(500, 500);
+  scroller_action_target->SetScrollOffset(gfx::Point(500, 500));
+  EXPECT_EQ(offset_to_set, scroller_action_target->GetScrollOffset());
+  EXPECT_EQ(gfx::Point(0, 0), scroller_action_target->MinimumScrollOffset());
+  EXPECT_GE(scroller_action_target->MaximumScrollOffset().y(), 900);
+
+  // Android does not produce accessible items for option elements.
+#if !defined(OS_ANDROID)
+  EXPECT_EQ(blink::kWebAXSelectedStateFalse, option.IsSelected());
+  EXPECT_TRUE(option_action_target->SetSelected(true));
+  EXPECT_EQ(blink::kWebAXSelectedStateTrue, option.IsSelected());
+#endif
+
+  std::string value_to_set("test-value");
+  input_text_action_target->SetValue(value_to_set);
+  EXPECT_EQ(value_to_set, input_text.StringValue().Utf8());
+
+  // Setting selection requires layout to be clean.
+  ASSERT_TRUE(root_obj.UpdateLayoutAndCheckValidity());
+
+  EXPECT_TRUE(text_one_action_target->SetSelection(
+      text_one_action_target.get(), 3, text_two_action_target.get(), 4));
+  bool is_selection_backward;
+  blink::WebAXObject anchor_object;
+  int anchor_offset;
+  ax::mojom::TextAffinity anchor_affinity;
+  blink::WebAXObject focus_object;
+  int focus_offset;
+  ax::mojom::TextAffinity focus_affinity;
+  root_obj.Selection(is_selection_backward, anchor_object, anchor_offset,
+                     anchor_affinity, focus_object, focus_offset,
+                     focus_affinity);
+  EXPECT_EQ(text_one, anchor_object);
+  EXPECT_EQ(3, anchor_offset);
+  EXPECT_EQ(text_two, focus_object);
+  EXPECT_EQ(4, focus_offset);
+
+  scroller_action_target->SetScrollOffset(gfx::Point(0, 0));
+  EXPECT_EQ(gfx::Point(0, 0), scroller_action_target->GetScrollOffset());
+  EXPECT_TRUE(scroller_child_action_target->ScrollToMakeVisible());
+  EXPECT_GE(scroller_action_target->GetScrollOffset().y(), 900);
+
+  scroller_action_target->SetScrollOffset(gfx::Point(0, 0));
+  EXPECT_EQ(gfx::Point(0, 0), scroller_action_target->GetScrollOffset());
+  EXPECT_TRUE(scroller_child_action_target->ScrollToMakeVisibleWithSubFocus(
+      gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+  EXPECT_GE(scroller_action_target->GetScrollOffset().y(), 900);
+
+  scroller_action_target->SetScrollOffset(gfx::Point(0, 0));
+  EXPECT_EQ(gfx::Point(0, 0), scroller_action_target->GetScrollOffset());
+  EXPECT_TRUE(
+      scroller_child_action_target->ScrollToGlobalPoint(gfx::Point(0, 0)));
+  EXPECT_GE(scroller_action_target->GetScrollOffset().y(), 900);
 }
 
 //

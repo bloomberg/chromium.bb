@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
@@ -53,27 +52,22 @@
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
   // Load the first page.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Echo"]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Echo"];
 
   // Open a new Tab to have a tab to switch to.
   [ChromeEarlGreyUI openNewTab];
 
   // Load the second page in the new tab.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:self.testServer->GetURL("/defaultresponse")]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Default response"]);
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/defaultresponse")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Default response"];
 
   // Side swipe on the toolbar.
   [[EarlGrey selectElementWithMatcher:grey_kindOfClass(klass)]
       performAction:grey_swipeSlowInDirection(kGREYDirectionRight)];
 
   // Check that we swiped back to our web page.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Echo"]);
+  [ChromeEarlGrey waitForWebStateContainingText:"Echo"];
 }
 
 @end

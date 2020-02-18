@@ -283,10 +283,17 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   // Validate consistency of passed arguments.
   if (ParsedCookie::ParseTokenString(name) != name ||
       ParsedCookie::ParseValueString(value) != value ||
+      !ParsedCookie::IsValidCookieAttributeValue(name) ||
+      !ParsedCookie::IsValidCookieAttributeValue(value) ||
       ParsedCookie::ParseValueString(domain) != domain ||
       ParsedCookie::ParseValueString(path) != path) {
     return nullptr;
   }
+
+  // This validation step must happen before GetCookieDomainWithString, so it
+  // doesn't fail DCHECKs.
+  if (!cookie_util::DomainIsHostOnly(url.host()))
+    return nullptr;
 
   std::string cookie_domain;
   if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain))
@@ -298,6 +305,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
   if (!path.empty() && cookie_path != path)
     return nullptr;
+
+  if (!IsCookiePrefixValid(GetCookiePrefix(name), url, secure, domain,
+                           cookie_path)) {
+    return nullptr;
+  }
 
   if (!last_access_time.is_null() && creation_time.is_null())
     return nullptr;
@@ -327,7 +339,6 @@ bool CanonicalCookie::IsEquivalentForSecureCookieMatching(
 }
 
 bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
-
   // A zero length would be unsafe for our trailing '/' checks, and
   // would also make no sense for our prefix match.  The code that
   // creates a CanonicalCookie should make sure the path is never zero length,
@@ -492,39 +503,6 @@ bool CanonicalCookie::PartialCompare(const CanonicalCookie& other) const {
   return PartialCookieOrdering(*this, other) < 0;
 }
 
-bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
-  // Do the partial comparison first.
-  int diff = PartialCookieOrdering(*this, other);
-  if (diff != 0)
-    return diff < 0;
-
-  DCHECK(IsEquivalent(other));
-
-  // Compare other fields.
-  diff = Value().compare(other.Value());
-  if (diff != 0)
-    return diff < 0;
-
-  if (CreationDate() != other.CreationDate())
-    return CreationDate() < other.CreationDate();
-
-  if (ExpiryDate() != other.ExpiryDate())
-    return ExpiryDate() < other.ExpiryDate();
-
-  if (LastAccessDate() != other.LastAccessDate())
-    return LastAccessDate() < other.LastAccessDate();
-
-  if (IsSecure() != other.IsSecure())
-    return IsSecure();
-
-  if (IsHttpOnly() != other.IsHttpOnly())
-    return IsHttpOnly();
-
-  // TODO(chlily): This should also compare the SameSite attribute.
-
-  return Priority() < other.Priority();
-}
-
 bool CanonicalCookie::IsCanonical() const {
   // Not checking domain or path against ParsedCookie as it may have
   // come purely from the URL.
@@ -619,11 +597,23 @@ void CanonicalCookie::RecordCookiePrefixMetrics(
 bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
                                           const GURL& url,
                                           const ParsedCookie& parsed_cookie) {
+  return CanonicalCookie::IsCookiePrefixValid(
+      prefix, url, parsed_cookie.IsSecure(),
+      parsed_cookie.HasDomain() ? parsed_cookie.Domain() : "",
+      parsed_cookie.HasPath() ? parsed_cookie.Path() : "");
+}
+
+bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
+                                          const GURL& url,
+                                          bool secure,
+                                          const std::string& domain,
+                                          const std::string& path) {
   if (prefix == CanonicalCookie::COOKIE_PREFIX_SECURE)
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic();
+    return secure && url.SchemeIsCryptographic();
   if (prefix == CanonicalCookie::COOKIE_PREFIX_HOST) {
-    return parsed_cookie.IsSecure() && url.SchemeIsCryptographic() &&
-           !parsed_cookie.HasDomain() && parsed_cookie.Path() == "/";
+    const bool domain_valid =
+        domain.empty() || (url.HostIsIPAddress() && url.host() == domain);
+    return secure && url.SchemeIsCryptographic() && domain_valid && path == "/";
   }
   return true;
 }

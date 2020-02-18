@@ -194,6 +194,7 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/x-mpegurl", "m3u8"},
     {"application/x-shockwave-flash", "swf,swl"},
     {"application/x-tar", "tar"},
+    {"application/x-x509-ca-cert", "cer,crt"},
     {"application/zip", "zip"},
     {"audio/mpeg", "mp3"},
     // This is the platform mapping on recent versions of Windows 10.

@@ -28,6 +28,8 @@
 #include "chrome/test/chromedriver/session.h"
 #include "third_party/zlib/google/zip.h"
 
+const char kWindowHandlePrefix[] = "CDwindow-";
+
 std::string GenerateId() {
   uint64_t msb = base::RandUint64();
   uint64_t lsb = base::RandUint64();
@@ -546,4 +548,18 @@ bool SetSafeInt(base::DictionaryValue* dict,
     return dict->SetInteger(path, in_value_64);
   else
     return dict->SetDouble(path, in_value_64);
+}
+
+std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
+  return kWindowHandlePrefix + web_view_id;
+}
+
+bool WindowHandleToWebViewId(const std::string& window_handle,
+                             std::string* web_view_id) {
+  if (!base::StartsWith(window_handle, kWindowHandlePrefix,
+                        base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  *web_view_id = window_handle.substr(sizeof(kWindowHandlePrefix) - 1);
+  return true;
 }

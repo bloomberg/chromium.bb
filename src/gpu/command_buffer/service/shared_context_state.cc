@@ -17,6 +17,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/create_gr_gl_interface.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -48,8 +49,9 @@ SharedContextState::SharedContextState(
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
-      surface_(std::move(surface)),
-      weak_ptr_factory_(this) {
+      surface_(std::move(surface)) {
+  raster::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes_, &glyph_cache_max_texture_bytes_);
   if (GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     gr_context_ = vk_context_provider_->GetGrContext();
@@ -142,23 +144,24 @@ void SharedContextState::InitializeGrContext(
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
     options.fDisableCoverageCountingPaths = true;
-    size_t max_resource_cache_bytes = 0u;
-    raster::DetermineGrCacheLimitsFromAvailableMemory(
-        &max_resource_cache_bytes, &glyph_cache_max_texture_bytes_);
     options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     options.fDisallowGLSLBinaryCaching = workarounds.disable_program_disk_cache;
+    // TODO(csmartdalton): enable internal multisampling after the related Skia
+    // rolls are in.
+    options.fInternalMultisampleCount = 0;
     owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
-    if (!gr_context_) {
-      LOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                    "failed.";
-    } else {
-      constexpr int kMaxGaneshResourceCacheCount = 16384;
-      gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                          max_resource_cache_bytes);
-    }
+  }
+
+  if (!gr_context_) {
+    LOG(ERROR) << "OOP raster support disabled: GrContext creation "
+                  "failed.";
+  } else {
+    constexpr int kMaxGaneshResourceCacheCount = 16384;
+    gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
+                                        max_resource_cache_bytes_);
   }
   transfer_cache_ = std::make_unique<ServiceTransferCache>();
 }
@@ -211,6 +214,18 @@ bool SharedContextState::InitializeGL(
   context_state_->InitCapabilities(nullptr);
   context_state_->InitState(nullptr);
 
+  GLenum driver_status = real_context_->CheckStickyGraphicsResetStatus();
+  if (driver_status != GL_NO_ERROR) {
+    // If the context was lost at any point before or during initialization,
+    // the values queried from the driver could be bogus, and potentially
+    // inconsistent between various ContextStates on the same underlying real
+    // GL context. Make sure to report the failure early, to not allow
+    // virtualized context switches in that case.
+    feature_info_ = nullptr;
+    context_state_ = nullptr;
+    return false;
+  }
+
   if (use_virtualized_gl_contexts_) {
     auto virtual_context = base::MakeRefCounted<GLContextVirtual>(
         share_group_.get(), real_context_.get(),
@@ -223,11 +238,20 @@ bool SharedContextState::InitializeGL(
     context_ = std::move(virtual_context);
     MakeCurrent(nullptr);
   }
+
+  // Swiftshader GL and Vulkan report supporting external objects extensions,
+  // but they don't.
+  support_vulkan_external_object_ =
+      !gl::g_current_gl_version->is_swiftshader &&
+      gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNative &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd &&
+      gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd;
+
   return true;
 }
 
-bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
-  if (!GrContextIsGL())
+bool SharedContextState::MakeCurrent(gl::GLSurface* surface, bool needs_gl) {
+  if (!GrContextIsGL() && !needs_gl)
     return true;
 
   if (context_lost_)

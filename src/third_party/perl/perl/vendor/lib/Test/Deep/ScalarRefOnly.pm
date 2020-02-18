@@ -7,30 +7,30 @@ use Test::Deep::Cmp;
 
 sub init
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $val = shift;
+  my $val = shift;
 
-	$self->{val} = $val;
+  $self->{val} = $val;
 }
 
 sub descend
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $got = shift;
+  my $got = shift;
 
-	my $exp = $self->{val};
+  my $exp = $self->{val};
 
-	return Test::Deep::descend($$got, $$exp);
+  return Test::Deep::descend($$got, $$exp);
 }
 
 sub render_stack
 {
-	my $self = shift;
-	my ($var, $data) = @_;
+  my $self = shift;
+  my ($var, $data) = @_;
 
-	return "\${$var}";
+  return "\${$var}";
 }
 
 1;

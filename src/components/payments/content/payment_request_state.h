@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/initialization_task.h"
@@ -67,6 +68,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     virtual void OnPaymentResponseAvailable(
         mojom::PaymentResponsePtr response) = 0;
 
+    // Called when the invoked payment app failed.
+    virtual void OnPaymentResponseError(const std::string& error_message) = 0;
+
     // Called when the shipping option has changed to |shipping_option_id|.
     virtual void OnShippingOptionIdSelected(std::string shipping_option_id) = 0;
 
@@ -99,6 +103,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   };
 
   using StatusCallback = base::OnceCallback<void(bool)>;
+  using MethodsSupportedCallback =
+      base::OnceCallback<void(bool methods_supported,
+                              const std::string& error_message)>;
 
   PaymentRequestState(content::WebContents* web_contents,
                       const GURL& top_level_origin,
@@ -114,6 +121,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
       mojom::PaymentResponsePtr payment_response) override;
+  void OnPaymentResponseError(const std::string& error_message) override;
 
   // PaymentRequestSpec::Observer
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override {}
@@ -132,7 +140,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Checks if the payment methods that the merchant website have
   // requested are supported asynchronously. For example, may return true for
   // "basic-card", but false for "https://bobpay.com".
-  void AreRequestedMethodsSupported(StatusCallback callback);
+  void AreRequestedMethodsSupported(MethodsSupportedCallback callback);
 
   // Returns authenticated user email, or empty string.
   std::string GetAuthenticatedEmail() const;
@@ -254,6 +262,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Selects the default shipping address.
   void SelectDefaultShippingAddressAndNotifyObservers();
 
+  base::WeakPtr<PaymentRequestState> AsWeakPtr();
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
@@ -289,7 +299,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       const GURL& top_level_origin,
       const GURL& frame_origin,
       content::PaymentAppProvider::PaymentApps apps,
-      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps);
+      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
+      const std::string& error_message);
 
   // The ServiceWorkerPaymentInstrument::ValidateCanMakePaymentCallback.
   void OnSWPaymentInstrumentValidated(
@@ -308,7 +319,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // Checks if the payment methods that the merchant website have
   // requested are supported and call the |callback| to return the result.
-  void CheckRequestedMethodsSupported(StatusCallback callback);
+  void CheckRequestedMethodsSupported(MethodsSupportedCallback callback);
 
   void OnAddressNormalized(bool success,
                            const autofill::AutofillProfile& normalized_profile);
@@ -337,8 +348,9 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;
-  StatusCallback are_requested_methods_supported_callback_;
+  MethodsSupportedCallback are_requested_methods_supported_callback_;
   bool are_requested_methods_supported_;
+  std::string get_all_payment_apps_error_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_shipping_option_error_profile_;
@@ -369,7 +381,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   base::ObserverList<Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestState);
 };

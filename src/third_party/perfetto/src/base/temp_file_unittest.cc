@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/temp_file.h"
+#include "perfetto/ext/base/temp_file.h"
 
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace base {

@@ -78,12 +78,13 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the canMakePayment events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.CAN_MAKE_PAYMENT_TRUE
                 | Event.HAS_ENROLLED_INSTRUMENT_FALSE | Event.REQUEST_METHOD_BASIC_CARD
-                | Event.REQUEST_METHOD_OTHER;
+                | Event.REQUEST_METHOD_OTHER | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -126,7 +127,8 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
         int expectedSample = Event.SHOWN | Event.PAY_CLICKED | Event.RECEIVED_INSTRUMENT_DETAILS
                 | Event.COMPLETED | Event.CAN_MAKE_PAYMENT_TRUE
                 | Event.HAS_ENROLLED_INSTRUMENT_FALSE | Event.REQUEST_METHOD_BASIC_CARD
-                | Event.REQUEST_METHOD_OTHER | Event.SELECTED_CREDIT_CARD;
+                | Event.REQUEST_METHOD_OTHER | Event.SELECTED_CREDIT_CARD
+                | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -244,11 +246,12 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
                 () -> mPaymentRequestTestRule.getPaymentRequestUI().getDialogForTest()
                         .onBackPressed());
         mPaymentRequestTestRule.getDismissed().waitForCallback(callCount);
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure no canMakePayment events were logged.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_METHOD_BASIC_CARD
-                | Event.REQUEST_METHOD_OTHER;
+                | Event.REQUEST_METHOD_OTHER | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));

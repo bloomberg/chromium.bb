@@ -6,13 +6,14 @@
 
 #include <utility>
 
-#include "core/fxcodec/codec/cfx_codec_memory.h"
+#include "core/fxcodec/cfx_codec_memory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace fxcodec {
 
 class CFX_GifContextForTest final : public CFX_GifContext {
  public:
-  CFX_GifContextForTest(CCodec_GifModule* gif_module,
-                        CCodec_GifModule::Delegate* delegate)
+  CFX_GifContextForTest(GifModule* gif_module, GifModule::Delegate* delegate)
       : CFX_GifContext(gif_module, delegate) {}
   ~CFX_GifContextForTest() override {}
 
@@ -302,3 +303,5 @@ TEST(CFX_GifContext, ReadHeader) {
     context.SetTestInputBuffer({});
   }
 }
+
+}  // namespace fxcodec

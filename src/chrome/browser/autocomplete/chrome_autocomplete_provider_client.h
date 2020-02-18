@@ -36,7 +36,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   InMemoryURLIndex* GetInMemoryURLIndex() override;
   TemplateURLService* GetTemplateURLService() override;
   const TemplateURLService* GetTemplateURLService() const override;
-  ContextualSuggestionsService* GetContextualSuggestionsService(
+  RemoteSuggestionsService* GetRemoteSuggestionsService(
       bool create_if_necessary) const override;
   DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const override;
@@ -52,11 +52,15 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   // GetCurrentVisitTimestamp is only implemented for desktop users. For mobile
   // users, the function returns base::Time().
   base::Time GetCurrentVisitTimestamp() const override;
+  component_updater::ComponentUpdateService* GetComponentUpdateService()
+      override;
+
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
   bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
   bool IsSyncActive() const override;
+  std::string ProfileUserName() const override;
   void Classify(
       const base::string16& text,
       bool prefer_keyword,
@@ -69,8 +73,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
       const base::string16& term) override;
   void PrefetchImage(const GURL& url) override;
   void StartServiceWorker(const GURL& destination_url) override;
-  void OnAutocompleteControllerResultReady(
-      AutocompleteController* controller) override;
   bool IsTabOpenWithURL(const GURL& url,
                         const AutocompleteInput* input) override;
   bool IsBrowserUpdateAvailable() const override;
@@ -85,6 +87,13 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
                             const AutocompleteInput* input) const;
 
  private:
+  // Like StrippedURLsAreEqual(), but second URL is already stripped. The
+  // input corresponds to this second URL. This is a small optimization when
+  // comparing lots of URLs to a single one.
+  bool IsURLEqualToStrippedURL(const GURL& url1,
+                               const GURL& stripped_url2,
+                               const AutocompleteInput& input) const;
+
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;

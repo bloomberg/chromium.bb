@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -48,7 +49,6 @@ using EchoCancellationType =
 namespace {
 
 using webrtc::AudioProcessing;
-using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
 
 constexpr int kAudioProcessingNumberOfChannels = 1;
 constexpr int kBuffersPerSecond = 100;  // 10 ms per buffer.
@@ -78,19 +78,6 @@ AudioProcessing::ChannelLayout ChannelsToLayout(int num_channels) {
       NOTREACHED() << "Channels not supported: " << num_channels;
       return AudioProcessing::kMono;
   }
-}
-
-// Used by UMA histograms and entries shouldn't be re-ordered or removed.
-enum AudioTrackProcessingStates {
-  AUDIO_PROCESSING_ENABLED = 0,
-  AUDIO_PROCESSING_DISABLED,
-  AUDIO_PROCESSING_IN_WEBRTC,
-  AUDIO_PROCESSING_MAX
-};
-
-void RecordProcessingState(AudioTrackProcessingStates state) {
-  UMA_HISTOGRAM_ENUMERATION("Media.AudioTrackProcessingStates",
-                            state, AUDIO_PROCESSING_MAX);
 }
 
 // Checks if the default minimum starting volume value for the AGC is overridden
@@ -270,26 +257,20 @@ class MediaStreamAudioFifo {
 
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::AudioProcessingProperties& properties,
-    WebRtcPlayoutDataSource* playout_data_source)
+    blink::WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       audio_delay_stats_reporter_(kBuffersPerSecond),
       playout_data_source_(playout_data_source),
       main_thread_runner_(base::ThreadTaskRunnerHandle::Get()),
       audio_mirroring_(false),
       typing_detected_(false),
-      aec_dump_message_filter_(AecDumpMessageFilter::Get()),
+      aec_dump_agent_impl_(AecDumpAgentImpl::Create(this)),
       stopped_(false) {
   DCHECK(main_thread_runner_);
   DETACH_FROM_THREAD(capture_thread_checker_);
   DETACH_FROM_THREAD(render_thread_checker_);
 
   InitializeAudioProcessingModule(properties);
-
-  // In unit tests not creating a message filter, |aec_dump_message_filter_|
-  // will be null. We can just ignore that. Other unit tests and browser tests
-  // ensure that we do get the filter when we should.
-  if (aec_dump_message_filter_.get())
-    aec_dump_message_filter_->AddDelegate(this);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -370,10 +351,7 @@ void MediaStreamAudioProcessor::Stop() {
 
   stopped_ = true;
 
-  if (aec_dump_message_filter_.get()) {
-    aec_dump_message_filter_->RemoveDelegate(this);
-    aec_dump_message_filter_ = nullptr;
-  }
+  aec_dump_agent_impl_.reset();
 
   if (!audio_processing_.get())
     return;
@@ -395,12 +373,10 @@ const media::AudioParameters& MediaStreamAudioProcessor::OutputFormat() const {
   return output_format_;
 }
 
-void MediaStreamAudioProcessor::OnAecDumpFile(
-    const IPC::PlatformFileForTransit& file_handle) {
+void MediaStreamAudioProcessor::OnStartDump(base::File dump_file) {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
 
-  base::File file = IPC::PlatformFileForTransitToFile(file_handle);
-  DCHECK(file.IsValid());
+  DCHECK(dump_file.IsValid());
 
   if (audio_processing_) {
     if (!worker_queue_) {
@@ -410,14 +386,17 @@ void MediaStreamAudioProcessor::OnAecDumpFile(
     // Here tasks will be posted on the |worker_queue_|. It must be
     // kept alive until StopEchoCancellationDump is called or the
     // webrtc::AudioProcessing instance is destroyed.
-    blink::StartEchoCancellationDump(audio_processing_.get(), std::move(file),
-                                     worker_queue_.get());
+    blink::StartEchoCancellationDump(audio_processing_.get(),
+                                     std::move(dump_file), worker_queue_.get());
   } else {
-    file.Close();
+    // Post the file close to avoid blocking the main thread.
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::TaskPriority::LOWEST, base::MayBlock()},
+        base::BindOnce([](base::File) {}, std::move(dump_file)));
   }
 }
 
-void MediaStreamAudioProcessor::OnDisableAecDump() {
+void MediaStreamAudioProcessor::OnStopDump() {
   DCHECK(main_thread_runner_->BelongsToCurrentThread());
   if (audio_processing_)
     blink::StopEchoCancellationDump(audio_processing_.get());
@@ -425,11 +404,6 @@ void MediaStreamAudioProcessor::OnDisableAecDump() {
   // Note that deleting an rtc::TaskQueue has to be done from the
   // thread that created it.
   worker_queue_.reset(nullptr);
-}
-
-void MediaStreamAudioProcessor::OnIpcClosing() {
-  DCHECK(main_thread_runner_->BelongsToCurrentThread());
-  aec_dump_message_filter_ = nullptr;
 }
 
 // static
@@ -469,7 +443,6 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int audio_delay_milliseconds) {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
-  DCHECK_LE(audio_bus->channels(), 2);
   int frames_per_10_ms = sample_rate / 100;
   if (audio_bus->frames() != frames_per_10_ms) {
     if (unsupported_buffer_size_log_count_ < 10) {
@@ -486,15 +459,22 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  std::vector<const float*> channel_ptrs(audio_bus->channels());
-  for (int i = 0; i < audio_bus->channels(); ++i)
+  // Limit the number of channels to two (stereo) now when multi-channel audio
+  // sources are supported. We still want to prevent the AEC from "seeing" the
+  // full signal.
+  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
+  // supported.
+  int channels = std::min(2, audio_bus->channels());
+
+  std::vector<const float*> channel_ptrs(channels);
+  for (int i = 0; i < channels; ++i)
     channel_ptrs[i] = audio_bus->channel(i);
 
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
       channel_ptrs.data(), audio_bus->frames(), sample_rate,
-      ChannelsToLayout(audio_bus->channels()));
+      ChannelsToLayout(channels));
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="
@@ -518,8 +498,7 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;
-  stats.typing_noise_detected =
-      (base::subtle::Acquire_Load(&typing_detected_) != false);
+  stats.typing_noise_detected = base::subtle::Acquire_Load(&typing_detected_);
   stats.apm_statistics = audio_processing_->GetStatistics(has_remote_tracks);
   return stats;
 }
@@ -553,7 +532,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
     DCHECK_EQ(audio_mirroring_, WouldModifyAudio(properties));
-    RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
 
@@ -609,16 +587,11 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     playout_data_source_->AddPlayoutSink(this);
   }
 
-  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
-  // webrtc::AudioProcessing::Config, crbug.com/895814.
-  base::Optional<double> pre_amplifier_fixed_gain_factor,
-      gain_control_compression_gain_db;
-  blink::GetExtraGainConfig(audio_processing_platform_config_json,
-                            &pre_amplifier_fixed_gain_factor,
-                            &gain_control_compression_gain_db);
-
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
-  apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
+  base::Optional<double> gain_control_compression_gain_db;
+  blink::PopulateApmConfig(&apm_config, properties,
+                           audio_processing_platform_config_json,
+                           &gain_control_compression_gain_db);
 
   if (properties.goog_auto_gain_control ||
       properties.goog_experimental_auto_gain_control) {
@@ -642,22 +615,14 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
         use_peaks_not_rms, saturation_margin, gain_control_compression_gain_db);
   }
 
-  blink::ConfigPreAmplifier(&apm_config, pre_amplifier_fixed_gain_factor);
   if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
     // is enabled by default.
     typing_detector_.reset(new webrtc::TypingDetection());
     blink::EnableTypingDetection(&apm_config, typing_detector_.get());
   }
-  if (properties.goog_noise_suppression) {
-    blink::EnableNoiseSuppression(&apm_config, NoiseSuppression::kHigh);
-  }
-  if (properties.EchoCancellationIsWebRtcProvided()) {
-    blink::EnableEchoCancellation(&apm_config);
-  }
-  audio_processing_->ApplyConfig(apm_config);
 
-  RecordProcessingState(AUDIO_PROCESSING_ENABLED);
+  audio_processing_->ApplyConfig(apm_config);
 }
 
 void MediaStreamAudioProcessor::InitializeCaptureFifo(
@@ -753,7 +718,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                "capture_delay_ms", capture_delay_ms, "render_delay_ms",
                render_delay_ms);
 
-  const int total_delay_ms = capture_delay_ms + render_delay_ms;
+  const int total_delay_ms =
+      static_cast<int>(capture_delay_ms) + render_delay_ms;
   if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";

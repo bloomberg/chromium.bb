@@ -276,6 +276,9 @@ message InstallLinuxPackageRequest {
   // Package ID to install in the form "package_name;version;arch;data". Used
   // when |file_path| is empty.
   string package_id = 5;
+
+  // Command identifier to track installation progress.
+  string command_uuid = 6;
 }
 
 // Response sent back from a InstallLinuxPackage call.
@@ -337,6 +340,10 @@ message InstallLinuxPackageProgressSignal {
   // some cases (that's how it comes out of PackageKit, for example in the case
   // of an unsatisfiable dependency).
   string failure_details = 6;
+
+  // Command identifier that is specified in |InstallLinuxPackageRequest| to
+  // track installation progress.
+  string command_uuid = 7;
 }
 
 // Request to uninstall the package owning the indicated file. Identifying the
@@ -854,6 +861,40 @@ message ExportLxdContainerResponse {
   string failure_reason = 2;
 }
 
+message CancelExportLxdContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // The owner of the VM and container.
+  string owner_id = 2;
+
+  // The container name of the in-progress export.
+  string in_progress_container_name = 3;
+}
+
+message CancelExportLxdContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // The cancel for the in-progress request has been queued.
+    // The in-progress request may yet complete before the cancel is processed.
+    CANCEL_QUEUED = 1;
+
+    // No in-progress request was found with that container name.
+    OPERATION_NOT_FOUND = 2;
+
+    // One or more steps failed and the cancel could not be scheduled.
+    FAILED = 3;
+  }
+
+  // The status of the cancellation.
+  Status status = 1;
+
+  // Details relating to the failure state.
+  string failure_reason = 2;
+}
+
 message ExportLxdContainerProgressSignal {
   // Name of the VM the container is in.
   string vm_name = 1;
@@ -874,32 +915,52 @@ message ExportLxdContainerProgressSignal {
     // One or more steps failed and the container could not be exported.
     FAILED = 2;
 
-    // Deprecated.  The container is exporting into a tar file.
-    EXPORTING_TAR = 3;
+    // Deprecated. The container is exporting into a tar file.
+    EXPORTING_TAR = 3 [deprecated = true];
 
-    // Deprecated.  The container tar file is being compressed into an image
+    // Deprecated. The container tar file is being compressed into an image
     // file.
-    EXPORTING_COMPRESS = 4;
+    EXPORTING_COMPRESS = 4 [deprecated = true];
 
-    // The exported image file is being downloaded.
-    EXPORTING_DOWNLOAD = 5;
+    // Deprecated. The exported image file is being downloaded.
+    EXPORTING_DOWNLOAD = 5 [deprecated = true];
 
-    // The exported image file is being packed.  This is equivalent to
-    // tar/compress.
-    EXPORTING_PACK = 6;
+    // Deprecated. The exported image file is being packed. This is equivalent
+    // to tar/compress.
+    EXPORTING_PACK = 6 [deprecated = true];
+
+    // EXPORTING_PACK and EXPORTING_DOWNLOAD have been combined into
+    // EXPORTING_STREAMING. The exported image file is being tar'd, compressed'd
+    // and download'd out of the container.
+    EXPORTING_STREAMING = 7;
+
+    // The export was cancelled by a CancelExportLxdContainerRequest.
+    CANCELLED = 8;
   }
 
   // Container status.
   Status status = 4;
 
-  // Percentage progress for the current stage given in status.
-  uint32 progress_percent = 5;
+  // Deprecated. Percentage progress for the current stage given in status.
+  uint32 progress_percent = 5 [deprecated = true];
 
-  // Speed (bytes per second) for the current stage given in status.
-  uint64 progress_speed = 6;
+  // Deprecated. Speed (bytes per second) for the current stage given in status.
+  uint64 progress_speed = 6 [deprecated = true];
 
   // Details relating to the failure state.
   string failure_reason = 7;
+
+  // Total number of files in the input container.
+  uint32 total_input_files = 8;
+
+  // Total size of the files in the input container.
+  uint64 total_input_bytes = 9;
+
+  // Number of files in the input container that have been downloaded.
+  uint32 input_files_streamed = 10;
+
+  // Size of the files in the input container that have been downloaded.
+  uint64 input_bytes_streamed = 11;
 }
 
 message ImportLxdContainerRequest {
@@ -939,6 +1000,40 @@ message ImportLxdContainerResponse {
   string failure_reason = 2;
 }
 
+message CancelImportLxdContainerRequest {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // The owner of the VM and container.
+  string owner_id = 2;
+
+  // The container name of the in-progress import.
+  string in_progress_container_name = 3;
+}
+
+message CancelImportLxdContainerResponse {
+  enum Status {
+    // The result is unknown.
+    UNKNOWN = 0;
+
+    // The cancel for the in-progress request has been queued.
+    // The in-progress request may yet complete before the cancel is processed.
+    CANCEL_QUEUED = 1;
+
+    // No in-progress request was found with that container name.
+    OPERATION_NOT_FOUND = 2;
+
+    // One or more steps failed and the cancel could not be scheduled.
+    FAILED = 3;
+  }
+
+  // The status of the cancellation.
+  Status status = 1;
+
+  // Details relating to the failure state.
+  string failure_reason = 2;
+}
+
 message ImportLxdContainerProgressSignal {
   // Name of the VM the container is in.
   string vm_name = 1;
@@ -965,8 +1060,14 @@ message ImportLxdContainerProgressSignal {
     // The image is being unpacked to create a container.
     IMPORTING_UNPACK = 4;
 
-    // The container could be imported due to mismatched architecture.
+    // The container could not be imported due to mismatched architecture.
     FAILED_ARCHITECTURE = 5;
+
+    // The container could not be imported due to insufficient space.
+    FAILED_SPACE = 6;
+
+    // The import was cancelled by a CancelImportLxdContainerRequest.
+    CANCELLED = 7;
   }
 
   // Container status.
@@ -987,6 +1088,12 @@ message ImportLxdContainerProgressSignal {
   // Architecture of container which failed to import.
   // Set when status is FAILED_ARCHITECTURE.
   string architecture_container = 9;
+
+  // Available space for import.  Set when status is FAILED_SPACE.
+  uint64 available_space = 10;
+
+  // Minimum required space for import.  Set when status is FAILED_SPACE.
+  uint64 min_required_space = 11;
 }
 
 message PendingAppListUpdatesSignal {

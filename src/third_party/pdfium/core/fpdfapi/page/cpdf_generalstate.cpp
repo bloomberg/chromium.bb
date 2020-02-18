@@ -7,8 +7,6 @@
 #include "core/fpdfapi/page/cpdf_generalstate.h"
 
 #include "core/fpdfapi/parser/cpdf_document.h"
-#include "core/fpdfapi/render/cpdf_dibbase.h"
-#include "core/fpdfapi/render/cpdf_docrenderdata.h"
 #include "core/fpdfapi/render/cpdf_transferfunc.h"
 
 namespace {
@@ -264,10 +262,12 @@ CPDF_GeneralState::StateData::StateData(const StateData& that)
     : m_BlendMode(that.m_BlendMode),
       m_BlendType(that.m_BlendType),
       m_pSoftMask(that.m_pSoftMask),
+      m_SMaskMatrix(that.m_SMaskMatrix),
       m_StrokeAlpha(that.m_StrokeAlpha),
       m_FillAlpha(that.m_FillAlpha),
       m_pTR(that.m_pTR),
       m_pTransferFunc(that.m_pTransferFunc),
+      m_Matrix(that.m_Matrix),
       m_RenderIntent(that.m_RenderIntent),
       m_StrokeAdjust(that.m_StrokeAdjust),
       m_AlphaSource(that.m_AlphaSource),
@@ -279,25 +279,11 @@ CPDF_GeneralState::StateData::StateData(const StateData& that)
       m_pUCR(that.m_pUCR),
       m_pHT(that.m_pHT),
       m_Flatness(that.m_Flatness),
-      m_Smoothness(that.m_Smoothness) {
-  m_Matrix = that.m_Matrix;
-  m_SMaskMatrix = that.m_SMaskMatrix;
+      m_Smoothness(that.m_Smoothness) {}
 
-  if (that.m_pTransferFunc && that.m_pTransferFunc->GetDocument()) {
-    CPDF_DocRenderData* pDocCache =
-        that.m_pTransferFunc->GetDocument()->GetRenderData();
-    if (pDocCache)
-      m_pTransferFunc = pDocCache->GetTransferFunc(m_pTR.Get());
-  }
-}
+CPDF_GeneralState::StateData::~StateData() = default;
 
-CPDF_GeneralState::StateData::~StateData() {
-  if (m_pTransferFunc && m_pTransferFunc->GetDocument()) {
-    CPDF_DocRenderData* pDocCache =
-        m_pTransferFunc->GetDocument()->GetRenderData();
-    if (pDocCache) {
-      m_pTransferFunc.Reset();  // Give up our reference first.
-      pDocCache->MaybePurgeTransferFunc(m_pTR.Get());
-    }
-  }
+RetainPtr<CPDF_GeneralState::StateData> CPDF_GeneralState::StateData::Clone()
+    const {
+  return pdfium::MakeRetain<CPDF_GeneralState::StateData>(*this);
 }

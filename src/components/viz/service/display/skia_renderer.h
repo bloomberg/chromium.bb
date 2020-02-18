@@ -201,7 +201,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   // Interface used for drawing. Common among different draw modes.
   sk_sp<SkSurface> root_surface_;
-  sk_sp<SkSurface> non_root_surface_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkSurface* current_surface_ = nullptr;

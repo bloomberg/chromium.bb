@@ -244,7 +244,7 @@ std::vector<FormData> FormCache::ExtractNewForms() {
     if (num_fields_seen > form_util::kMaxParseableFields)
       return forms;
 
-    if (!base::ContainsKey(parsed_forms_, form) &&
+    if (!base::Contains(parsed_forms_, form) &&
         IsFormInteresting(form, num_editable_elements)) {
       for (auto it = parsed_forms_.begin(); it != parsed_forms_.end(); ++it) {
         if (it->SameFormAs(form)) {
@@ -556,7 +556,7 @@ bool FormCache::ShouldShowAutocompleteConsoleWarnings(
            actual_autocomplete, " ", base::WhitespaceHandling::TRIM_WHITESPACE,
            base::SplitResult::SPLIT_WANT_NONEMPTY)) {
     // If we recognize the value but it's not correct, show a warning.
-    if (base::ContainsValue(kSupportedAutocompleteTypes, actual) &&
+    if (base::Contains(kSupportedAutocompleteTypes, actual) &&
         actual != predicted_autocomplete) {
       return true;
     }

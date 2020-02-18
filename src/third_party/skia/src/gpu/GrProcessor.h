@@ -11,12 +11,12 @@
 #include "include/core/SkMath.h"
 #include "include/core/SkString.h"
 #include "include/gpu/GrSamplerState.h"
-#include "include/private/GrColor.h"
-#include "include/private/GrTextureProxy.h"
+#include "src/gpu/GrColor.h"
 #include "src/gpu/GrGpuBuffer.h"
 #include "src/gpu/GrProcessorUnitTest.h"
 #include "src/gpu/GrShaderVar.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
+#include "src/gpu/GrTextureProxy.h"
 
 class GrContext;
 class GrResourceProvider;
@@ -66,7 +66,6 @@ public:
         kCircleGeometryProcessor_ClassID,
         kCircularRRectEffect_ClassID,
         kClockwiseTestProcessor_ClassID,
-        kColorMatrixEffect_ClassID,
         kColorTableEffect_ClassID,
         kComposeOneFragmentProcessor_ClassID,
         kComposeTwoFragmentProcessor_ClassID,
@@ -94,6 +93,7 @@ public:
         kGrCircleBlurFragmentProcessor_ClassID,
         kGrCircleEffect_ClassID,
         kGrClampedGradientEffect_ClassID,
+        kGrColorMatrixFragmentProcessor_ClassID,
         kGrColorSpaceXformEffect_ClassID,
         kGrComposeLerpEffect_ClassID,
         kGrComposeLerpRedEffect_ClassID,
@@ -114,6 +114,7 @@ public:
         kGrGaussianConvolutionFragmentProcessor_ClassID,
         kGrGSCoverageProcessor_ClassID,
         kGrImprovedPerlinNoiseEffect_ClassID,
+        kGrIncrDecrWindingCountXP_ClassID,
         kGrLightingEffect_ClassID,
         kGrLinearGradient_ClassID,
         kGrLinearGradientLayout_ClassID,
@@ -135,11 +136,13 @@ public:
         kGrRectBlurEffect_ClassID,
         kGrRRectBlurEffect_ClassID,
         kGrRRectShadowGeoProc_ClassID,
+        kGrResolveWindingCountXP_ClassID,
         kGrSimpleTextureEffect_ClassID,
         kGrSingleIntervalGradientColorizer_ClassID,
         kGrSkSLFP_ClassID,
         kGrSpecularLightingEffect_ClassID,
         kGrSRGBEffect_ClassID,
+        kGrSampleMaskProcessor_ClassID,
         kGrSweepGradient_ClassID,
         kGrSweepGradientLayout_ClassID,
         kGrTextureDomainEffect_ClassID,
@@ -165,6 +168,7 @@ public:
         kSampleLocationsTestProcessor_ClassID,
         kSeriesFragmentProcessor_ClassID,
         kShaderPDXferProcessor_ClassID,
+        kStencilResolveProcessor_ClassID,
         kFwidthSquircleTestProcessor_ClassID,
         kSwizzleFragmentProcessor_ClassID,
         kTestFP_ClassID,
@@ -227,6 +231,7 @@ protected:
     GrProcessor& operator=(const GrProcessor&) = delete;
 
     void setWillUseCustomFeature(CustomFeatures feature) { fRequestedFeatures |= feature; }
+    void resetCustomFeatures() { fRequestedFeatures = CustomFeatures::kNone; }
 
     const ClassID fClassID;
     CustomFeatures fRequestedFeatures = CustomFeatures::kNone;

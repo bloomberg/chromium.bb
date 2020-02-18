@@ -219,21 +219,21 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
     if (info.origin == kOrigin1) {
       EXPECT_FALSE(test_hosts_found[0]);
       test_hosts_found[0] = true;
-      EXPECT_FALSE(base::ContainsKey(info.usage_map, kPersistent));
-      EXPECT_TRUE(base::ContainsKey(info.usage_map, kTemporary));
+      EXPECT_FALSE(base::Contains(info.usage_map, kPersistent));
+      EXPECT_TRUE(base::Contains(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize,
                 info.usage_map.at(storage::kFileSystemTypeTemporary));
     } else if (info.origin == kOrigin2) {
       EXPECT_FALSE(test_hosts_found[1]);
       test_hosts_found[1] = true;
-      EXPECT_TRUE(base::ContainsKey(info.usage_map, kPersistent));
-      EXPECT_FALSE(base::ContainsKey(info.usage_map, kTemporary));
+      EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
+      EXPECT_FALSE(base::Contains(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
     } else if (info.origin == kOrigin3) {
       EXPECT_FALSE(test_hosts_found[2]);
       test_hosts_found[2] = true;
-      EXPECT_TRUE(base::ContainsKey(info.usage_map, kPersistent));
-      EXPECT_TRUE(base::ContainsKey(info.usage_map, kTemporary));
+      EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
+      EXPECT_TRUE(base::Contains(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kTemporary));
     } else {
@@ -259,8 +259,8 @@ TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
   BrowsingDataFileSystemHelper::FileSystemInfo info =
       *(file_system_info_list_->begin());
   EXPECT_EQ(kOrigin3, info.origin);
-  EXPECT_TRUE(base::ContainsKey(info.usage_map, kPersistent));
-  EXPECT_TRUE(base::ContainsKey(info.usage_map, kTemporary));
+  EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
+  EXPECT_TRUE(base::Contains(info.usage_map, kTemporary));
   EXPECT_EQ(kEmptyFileSystemSize, info.usage_map[kPersistent]);
   EXPECT_EQ(kEmptyFileSystemSize, info.usage_map[kTemporary]);
 }
@@ -286,13 +286,13 @@ TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
   EXPECT_EQ(2U, file_system_info_list_->size());
   auto info = file_system_info_list_->begin();
   EXPECT_EQ(kOrigin1, info->origin);
-  EXPECT_FALSE(base::ContainsKey(info->usage_map, kPersistent));
-  EXPECT_FALSE(base::ContainsKey(info->usage_map, kTemporary));
+  EXPECT_FALSE(base::Contains(info->usage_map, kPersistent));
+  EXPECT_FALSE(base::Contains(info->usage_map, kTemporary));
 
   info++;
   EXPECT_EQ(kOrigin2, info->origin);
-  EXPECT_FALSE(base::ContainsKey(info->usage_map, kPersistent));
-  EXPECT_FALSE(base::ContainsKey(info->usage_map, kTemporary));
+  EXPECT_FALSE(base::Contains(info->usage_map, kPersistent));
+  EXPECT_FALSE(base::Contains(info->usage_map, kTemporary));
 }
 
 // Verifies that the CannedBrowsingDataFileSystemHelper correctly ignores

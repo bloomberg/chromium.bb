@@ -1337,6 +1337,7 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
     double time1 = current_event->Time();
 
     switch (current_event->GetType()) {
+      case ParamEvent::kCancelValues:
       case ParamEvent::kLinearRampToValue:
       case ParamEvent::kExponentialRampToValue:
       case ParamEvent::kSetValueCurveEnd:
@@ -1398,9 +1399,8 @@ AudioParamTimeline::HandleCancelValues(const ParamEvent* current_event,
         // done.
         break;
       case ParamEvent::kSetTarget:
-      case ParamEvent::kCancelValues:
-        // Nothing special needs to be done for SetTarget or
-        // CancelValues followed by CancelValues.
+        // Nothing special needs to be done for SetTarget
+        // followed by CancelValues.
         break;
       case ParamEvent::kLastType:
         NOTREACHED();

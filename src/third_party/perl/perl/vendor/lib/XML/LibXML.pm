@@ -11,6 +11,8 @@
 package XML::LibXML;
 
 use strict;
+use warnings;
+
 use vars qw($VERSION $ABI_VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS
             $skipDTD $skipXMLDeclaration $setTagCompression
             $MatchCB $ReadCB $OpenCB $CloseCB %PARSER_FLAGS
@@ -27,7 +29,7 @@ use XML::LibXML::XPathContext;
 use IO::Handle; # for FH reads called as methods
 
 BEGIN {
-$VERSION = "1.98"; # VERSION TEMPLATE: DO NOT CHANGE
+$VERSION = "2.0200"; # VERSION TEMPLATE: DO NOT CHANGE
 $ABI_VERSION = 2;
 require Exporter;
 require DynaLoader;
@@ -243,9 +245,9 @@ use constant {
   XML_PARSE_PEDANTIC	  => 128,      # pedantic error reporting
   XML_PARSE_NOBLANKS	  => 256,      # remove blank nodes
   XML_PARSE_SAX1	  => 512,      # use the SAX1 interface internally
-  XML_PARSE_XINCLUDE	  => 1024,     # Implement XInclude substitition
+  XML_PARSE_XINCLUDE	  => 1024,     # Implement XInclude substitution
   XML_PARSE_NONET	  => 2048,     # Forbid network access
-  XML_PARSE_NODICT	  => 4096,     # Do not reuse the context dictionnary
+  XML_PARSE_NODICT	  => 4096,     # Do not reuse the context dictionary
   XML_PARSE_NSCLEAN	  => 8192,     # remove redundant namespaces declarations
   XML_PARSE_NOCDATA	  => 16384,    # merge CDATA as text nodes
   XML_PARSE_NOXINCNODE	  => 32768,    # do not generate XINCLUDE START/END nodes
@@ -255,9 +257,11 @@ use constant {
   XML_PARSE_NOBASEFIX	  => 262144,   # do not fixup XINCLUDE xml#base uris
   XML_PARSE_HUGE	  => 524288,   # relax any hardcoded limit from the parser
   XML_PARSE_OLDSAX	  => 1048576,  # parse using SAX2 interface from before 2.7.0
+  HTML_PARSE_RECOVER => (1<<0),       # suppress error reports
+  HTML_PARSE_NOERROR  => (1<<5),       # suppress error reports
 };
 
-$XML_LIBXML_PARSE_DEFAULTS = ( XML_PARSE_NODICT | XML_PARSE_HUGE | XML_PARSE_DTDLOAD | XML_PARSE_NOENT );
+$XML_LIBXML_PARSE_DEFAULTS = ( XML_PARSE_NODICT | XML_PARSE_DTDLOAD | XML_PARSE_NOENT );
 
 # this hash is made global so that applications can add names for new
 # libxml2 parser flags as temporary workaround
@@ -389,11 +393,14 @@ sub _clone {
   my ($self)=@_;
   my $new = ref($self)->new({
       recover => $self->{XML_LIBXML_RECOVER},
-      line_nubers => $self->{XML_LIBXML_LINENUMBERS},
+      line_numbers => $self->{XML_LIBXML_LINENUMBERS},
       base_uri => $self->{XML_LIBXML_BASE_URI},
       gdome => $self->{XML_LIBXML_GDOME},
-      set_parser_flags => $self->{XML_LIBXML_PARSER_OPTIONS},
     });
+  # The parser options may contain some options that were zeroed from the
+  # defaults so set_parser_flags won't work here. We need to assign them
+  # explicitly.
+  $new->{XML_LIBXML_PARSER_OPTIONS} = $self->{XML_LIBXML_PARSER_OPTIONS};
   $new->input_callbacks($self->input_callbacks());
   return $new;
 }
@@ -611,7 +618,10 @@ sub recover {
 sub recover_silently {
     my $self = shift;
     my $arg = shift;
-    (($arg == 1) ? $self->recover(2) : $self->recover($arg)) if defined($arg);
+    if ( defined($arg) )
+    {
+        $self->recover(($arg == 1) ? 2 : $arg);
+    }
     return (($self->recover()||0) == 2) ? 1 : 0;
 }
 
@@ -1050,11 +1060,23 @@ sub _html_options {
   $opts = {} unless ref $opts;
   #  return (undef,undef) unless ref $opts;
   my $flags = 0;
-  $flags |=     1 if exists $opts->{recover} ? $opts->{recover} : $self->recover;
+  {
+    my $recover = exists $opts->{recover} ? $opts->{recover} : $self->recover;
+
+    if ($recover)
+    {
+      $flags |= HTML_PARSE_RECOVER;
+      if ($recover == 2)
+      {
+        $flags |= HTML_PARSE_NOERROR;
+      }
+    }
+  }
+
   $flags |=     4 if $opts->{no_defdtd}; # default is ON: injects DTD as needed
   $flags |=    32 if exists $opts->{suppress_errors} ? $opts->{suppress_errors} : $self->get_option('suppress_errors');
   # This is to fix https://rt.cpan.org/Ticket/Display.html?id=58024 :
-  # <quote> 
+  # <quote>
   # In XML::LibXML, warnings are not suppressed when specifying the recover
   # or recover_silently flags as per the following excerpt from the manpage:
   # </quote>
@@ -1088,10 +1110,10 @@ sub parse_html_string {
     my $result;
 
     $self->_init_callbacks();
-    eval { 
+    eval {
       $result = $self->_parse_html_string( $str,
 					   $self->_html_options($opts)
-					  ); 
+					  );
     };
     my $err = $@;
     $self->{_State_} = 0;
@@ -1124,7 +1146,7 @@ sub parse_html_file {
       $self->_cleanup_callbacks();
       croak $err;
     }
-    
+
     $self->_cleanup_callbacks();
 
     return $result;
@@ -1138,7 +1160,7 @@ sub parse_html_fh {
 
     my $result;
     $self->_init_callbacks();
-    eval { $result = $self->_parse_html_fh( $fh, 
+    eval { $result = $self->_parse_html_fh( $fh,
 					    $self->_html_options($opts)
 					   ); };
     my $err = $@;
@@ -1175,7 +1197,7 @@ sub push {
     my $self = shift;
 
     $self->_init_callbacks();
-    
+
     if ( not defined $self->{CONTEXT} ) {
         $self->init_push();
     }
@@ -1245,6 +1267,16 @@ sub finish_push {
 # XML::LibXML::Node Interface                                             #
 #-------------------------------------------------------------------------#
 package XML::LibXML::Node;
+
+use Carp qw(croak);
+
+use overload
+    '""'   => sub { $_[0]->toString() },
+    'bool' => sub { 1 },
+    '0+'   => sub { Scalar::Util::refaddr($_[0]) },
+    fallback => 1,
+    ;
+
 
 sub CLONE_SKIP {
   return $XML::LibXML::__threads_shared ? 0 : 1;
@@ -1333,25 +1365,43 @@ sub toStringC14N {
 				 (defined $xpc ? $xpc : undef)
 				);
 }
+
+{
+my $C14N_version_1_dot_1_val = 2;
+
+sub toStringC14N_v1_1 {
+    my ($self, $comments, $xpath, $xpc) = @_;
+
+    return $self->_toStringC14N(
+        $comments || 0,
+        (defined $xpath ? $xpath : undef),
+        $C14N_version_1_dot_1_val,
+        undef,
+        (defined $xpc ? $xpc : undef)
+    );
+}
+
+}
+
 sub toStringEC14N {
     my ($self, $comments, $xpath, $xpc, $inc_prefix_list) = @_;
     unless (UNIVERSAL::isa($xpc,'XML::LibXML::XPathContext')) {
-      if ($inc_prefix_list) {
-	croak("toStringEC14N: 3rd argument is not an XML::LibXML::XPathContext");
-      } else {
-	$inc_prefix_list=$xpc;
-	$xpc=undef;
-      }
+        if ($inc_prefix_list) {
+            croak("toStringEC14N: 3rd argument is not an XML::LibXML::XPathContext");
+        } else {
+            $inc_prefix_list=$xpc;
+            $xpc=undef;
+        }
     }
     if (defined($inc_prefix_list) and !UNIVERSAL::isa($inc_prefix_list,'ARRAY')) {
-      croak("toStringEC14N: inclusive_prefix_list must be undefined or ARRAY");
+        croak("toStringEC14N: inclusive_prefix_list must be undefined or ARRAY");
     }
     return $self->_toStringC14N( $comments || 0,
-				 (defined $xpath ? $xpath : undef),
-				 1,
-				 (defined $inc_prefix_list ? $inc_prefix_list : undef),
-				 (defined $xpc ? $xpc : undef)
-				);
+        (defined $xpath ? $xpath : undef),
+        1,
+        (defined $inc_prefix_list ? $inc_prefix_list : undef),
+        (defined $xpc ? $xpc : undef)
+    );
 }
 
 *serialize_c14n = \&toStringC14N;
@@ -1447,7 +1497,7 @@ sub insertPI {
 
 #-------------------------------------------------------------------------#
 # DOM L3 Document functions.
-# added after robins implicit feature requst
+# added after robins implicit feature request
 #-------------------------------------------------------------------------#
 *getElementsByTagName = \&XML::LibXML::Element::getElementsByTagName;
 *getElementsByTagNameNS = \&XML::LibXML::Element::getElementsByTagNameNS;
@@ -1493,9 +1543,9 @@ use Scalar::Util qw(blessed);
 
 use overload
     '%{}'  => 'getAttributeHash',
-    'bool' => sub { 1 },
     'eq' => '_isSameNodeLax', '==' => '_isSameNodeLax',
     'ne' => '_isNotSameNodeLax', '!=' => '_isNotSameNodeLax',
+    fallback => 1,
     ;
 
 sub _isNotSameNodeLax {
@@ -1504,12 +1554,12 @@ sub _isNotSameNodeLax {
     return ((not $self->_isSameNodeLax($other)) ? 1 : '');
 }
 
-sub _isSameNodeLax { 
+sub _isSameNodeLax {
     my ($self, $other) = @_;
 
-    if (blessed($other) and $other->isa('XML::LibXML::Element')) 
-    { 
-        return ($self->isSameNode($other) ? 1 : ''); 
+    if (blessed($other) and $other->isa('XML::LibXML::Element'))
+    {
+        return ($self->isSameNode($other) ? 1 : '');
     }
     else
     {
@@ -1518,39 +1568,21 @@ sub _isSameNodeLax {
 }
 
 {
-    # Note that we could generate a new hashref each time this
-    # is called. However, that breaks "each %$element" and
-    # "keys %$element". So instead we consistently return the
-    # same reference to the same (tied) hash. To do that, we
-    # need to use a fieldhash. Hash::FieldHash requires at least
-    # Perl 5.8, but XML-LibXML already dropped support for older
-    # Perls since XML-LibXML-1.77.
-    #
-    # If Hash::FieldHash isn't available we can sort of do the
-    # same thing by relying upon the stringification of non-scalar
-    # hash keys, and performing a bit of cleanup in DESTROY.
-    #
     my %tiecache;
-    BEGIN
+
+    sub __destroy_tiecache
     {
-        if (eval { require Hash::FieldHash; 1 })
-        {
-            Hash::FieldHash::fieldhashes(\%tiecache);
-            *__destroy_tiecache = sub {};
-        }
-        else
-        {
-            *__destroy_tiecache = sub { delete $tiecache{ $_[0] } };
-        }
-    };
+        delete $tiecache{ 0+$_[0] };
+    }
+
     sub getAttributeHash
     {
         my $self = shift;
-        if (!exists $tiecache{ $self }) {
+        if (!exists $tiecache{ 0+$self }) {
             tie my %attr, 'XML::LibXML::AttributeHash', $self, weaken => 1;
-            $tiecache{ $self } = \%attr;
+            $tiecache{ 0+$self } = \%attr;
         }
-        return $tiecache{ $self };
+        return $tiecache{ 0+$self };
     }
     sub DESTROY
     {
@@ -1562,7 +1594,7 @@ sub _isSameNodeLax {
 
 sub setNamespace {
     my $self = shift;
-    my $n = $self->nodeName;
+    my $n = $self->localname;
     if ( $self->_setNamespace(@_) ){
         if ( scalar @_ < 3 || $_[2] == 1 ){
             $self->setNodeName( $n );
@@ -1743,7 +1775,7 @@ package XML::LibXML::Text;
 use vars qw(@ISA);
 @ISA = ('XML::LibXML::Node');
 
-sub attributes { return undef; }
+sub attributes { return; }
 
 sub deleteDataString {
     my ($node, $string, $all) = @_;
@@ -1806,7 +1838,7 @@ use vars qw( @ISA ) ;
 
 sub setNamespace {
     my ($self,$href,$prefix) = @_;
-    my $n = $self->nodeName;
+    my $n = $self->localname;
     if ( $self->_setNamespace($href,$prefix) ) {
         $self->setNodeName($n);
         return 1;
@@ -1862,7 +1894,7 @@ package XML::LibXML::Namespace;
 
 sub CLONE_SKIP { 1 }
 
-# this is infact not a node!
+# In fact, this is not a node!
 sub prefix { return "xmlns"; }
 sub getPrefix { return "xmlns"; }
 sub getNamespaceURI { return "http://www.w3.org/2000/xmlns/" };
@@ -2093,7 +2125,7 @@ sub new {
   my $class = shift;
   my ($pattern,$ns_map)=@_;
   my $self = undef;
-  
+
   unless (UNIVERSAL::can($class,'_compilePattern')) {
     croak("Cannot create XML::LibXML::Pattern - ".
 	  "your libxml2 is compiled without pattern support!");
@@ -2167,14 +2199,14 @@ sub _callback_match {
     my $uri = shift;
     my $retval = 0;
 
-    # loop through the callbacks and and find the first matching
-    # The callbacks are stored in execution order (reverse stack order)
-    # any new global callbacks are shifted to the callback stack.
+    # loop through the callbacks, and find the first matching one.
+    # The callbacks are stored in execution order (reverse stack order).
+    # Any new global callbacks are shifted to the callback stack.
     foreach my $cb ( @_GLOBAL_CALLBACKS ) {
 
-        # callbacks have to return 1, 0 or undef, while 0 and undef 
-        # are handled the same way. 
-        # in fact, if callbacks return other values, the global match 
+        # callbacks have to return 1, 0 or undef, while 0 and undef
+        # are handled the same way.
+        # in fact, if callbacks return other values, the global match
         # assumes silently that the callback failed.
 
         $retval = $cb->[0]->($uri);
@@ -2182,7 +2214,7 @@ sub _callback_match {
         if ( defined $retval and $retval == 1 ) {
             # make the other callbacks use this callback
             $_CUR_CB = $cb;
-            unshift @_CB_STACK, $cb; 
+            unshift @_CB_STACK, $cb;
             last;
         }
     }
@@ -2193,22 +2225,22 @@ sub _callback_match {
 sub _callback_open {
     my $uri = shift;
     my $retval = undef;
-    
-    # the open callback has to return a defined value. 
-    # if one works on files this can be a file handle. But 
-    # depending on the needs of the callback it also can be a 
+
+    # the open callback has to return a defined value.
+    # if one works on files this can be a file handle. But
+    # depending on the needs of the callback it also can be a
     # database handle or a integer labeling a certain dataset.
 
     if ( defined $_CUR_CB ) {
         $retval = $_CUR_CB->[1]->( $uri );
-        
+
         # reset the callbacks, if one callback cannot open an uri
         if ( not defined $retval or $retval == 0 ) {
             shift @_CB_STACK;
             $_CUR_CB = $_CB_STACK[0];
         }
     }
-    
+
     return $retval;
 }
 
@@ -2228,7 +2260,7 @@ sub _callback_read {
 sub _callback_close {
     my $fh = shift;
     my $retval = 0;
-    
+
     if ( defined $_CUR_CB ) {
         $retval = $_CUR_CB->[3]->( $fh );
         shift @_CB_STACK;
@@ -2252,7 +2284,7 @@ sub new {
 sub register_callbacks {
     my $self = shift;
     my $cbset = shift;
-    
+
     # test if callback set is complete
     if ( ref $cbset eq "ARRAY" and scalar( @$cbset ) == 4 ) {
         unshift @{$self->{_CALLBACKS}}, $cbset;
@@ -2272,7 +2304,7 @@ sub unregister_callbacks {
     }
 }
 
-# make libxml2 use the callbacks 
+# make libxml2 use the callbacks
 sub init_callbacks {
     my $self = shift;
     my $parser = shift;
@@ -2292,7 +2324,7 @@ sub init_callbacks {
     $_CUR_CB           = undef;
     @_CB_STACK         = ();
     @_GLOBAL_CALLBACKS = @{ $self->{_CALLBACKS} };
-    
+
     #attach parser specific callbacks
     if($parser) {
         my $mcb = $parser->match_callback();
@@ -2305,9 +2337,9 @@ sub init_callbacks {
     }
 
     #attach global callbacks
-    if ( defined $XML::LibXML::match_cb and 
-         defined $XML::LibXML::open_cb  and 
-         defined $XML::LibXML::read_cb  and 
+    if ( defined $XML::LibXML::match_cb and
+         defined $XML::LibXML::open_cb  and
+         defined $XML::LibXML::read_cb  and
          defined $XML::LibXML::close_cb ) {
         push @_GLOBAL_CALLBACKS, [$XML::LibXML::match_cb,
                                   $XML::LibXML::open_cb,

@@ -40,20 +40,19 @@ std::string GetSuperdomain(const std::string& domain) {
 
 }  // namespace
 
-ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context,
-                                       PersistentReportingStore* store)
-    : context_(context), store_(store) {
+ReportingCacheImpl::ReportingCacheImpl(ReportingContext* context)
+    : context_(context) {
   DCHECK(context_);
 }
 
 ReportingCacheImpl::~ReportingCacheImpl() {
-  base::TimeTicks now = tick_clock()->NowTicks();
+  base::TimeTicks now = tick_clock().NowTicks();
 
   // Mark all undoomed reports as erased at shutdown, and record outcomes of
   // all remaining reports (doomed or not).
   for (auto it = reports_.begin(); it != reports_.end(); ++it) {
     ReportingReport* report = it->second.get();
-    if (!base::ContainsKey(doomed_reports_, report))
+    if (!base::Contains(doomed_reports_, report))
       report->outcome = ReportingReport::Outcome::ERASED_REPORTING_SHUT_DOWN;
     report->RecordOutcome(now);
   }
@@ -84,7 +83,7 @@ void ReportingCacheImpl::AddReport(const GURL& url,
     DCHECK_NE(nullptr, to_evict);
     // The newly-added report isn't pending, so even if all other reports are
     // pending, the cache should have a report to evict.
-    DCHECK(!base::ContainsKey(pending_reports_, to_evict));
+    DCHECK(!base::Contains(pending_reports_, to_evict));
     reports_[to_evict]->outcome = ReportingReport::Outcome::ERASED_EVICTED;
     RemoveReportInternal(to_evict);
   }
@@ -96,7 +95,7 @@ void ReportingCacheImpl::GetReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
   for (const auto& it : reports_) {
-    if (!base::ContainsKey(doomed_reports_, it.first))
+    if (!base::Contains(doomed_reports_, it.first))
       reports_out->push_back(it.second.get());
   }
 }
@@ -131,9 +130,9 @@ base::Value ReportingCacheImpl::GetReportsAsValue() const {
     if (report->body) {
       report_dict.SetKey("body", report->body->Clone());
     }
-    if (base::ContainsKey(doomed_reports_, report)) {
+    if (base::Contains(doomed_reports_, report)) {
       report_dict.SetKey("status", base::Value("doomed"));
-    } else if (base::ContainsKey(pending_reports_, report)) {
+    } else if (base::Contains(pending_reports_, report)) {
       report_dict.SetKey("status", base::Value("pending"));
     } else {
       report_dict.SetKey("status", base::Value("queued"));
@@ -147,8 +146,8 @@ void ReportingCacheImpl::GetNonpendingReports(
     std::vector<const ReportingReport*>* reports_out) const {
   reports_out->clear();
   for (const auto& it : reports_) {
-    if (!base::ContainsKey(pending_reports_, it.first) &&
-        !base::ContainsKey(doomed_reports_, it.first)) {
+    if (!base::Contains(pending_reports_, it.first) &&
+        !base::Contains(doomed_reports_, it.first)) {
       reports_out->push_back(it.second.get());
     }
   }
@@ -169,7 +168,7 @@ void ReportingCacheImpl::ClearReportsPending(
   for (const ReportingReport* report : reports) {
     size_t erased = pending_reports_.erase(report);
     DCHECK_EQ(1u, erased);
-    if (base::ContainsKey(doomed_reports_, report)) {
+    if (base::Contains(doomed_reports_, report)) {
       reports_to_remove.push_back(report);
       doomed_reports_.erase(report);
     }
@@ -182,7 +181,7 @@ void ReportingCacheImpl::ClearReportsPending(
 void ReportingCacheImpl::IncrementReportsAttempts(
     const std::vector<const ReportingReport*>& reports) {
   for (const ReportingReport* report : reports) {
-    DCHECK(base::ContainsKey(reports_, report));
+    DCHECK(base::Contains(reports_, report));
     reports_[report]->attempts++;
   }
 
@@ -216,10 +215,10 @@ void ReportingCacheImpl::RemoveReports(
     ReportingReport::Outcome outcome) {
   for (const ReportingReport* report : reports) {
     reports_[report]->outcome = outcome;
-    if (base::ContainsKey(pending_reports_, report)) {
+    if (base::Contains(pending_reports_, report)) {
       doomed_reports_.insert(report);
     } else {
-      DCHECK(!base::ContainsKey(doomed_reports_, report));
+      DCHECK(!base::Contains(doomed_reports_, report));
       RemoveReportInternal(report);
     }
   }
@@ -232,7 +231,7 @@ void ReportingCacheImpl::RemoveAllReports(ReportingReport::Outcome outcome) {
   for (auto it = reports_.begin(); it != reports_.end(); ++it) {
     ReportingReport* report = it->second.get();
     report->outcome = outcome;
-    if (!base::ContainsKey(pending_reports_, report))
+    if (!base::Contains(pending_reports_, report))
       reports_to_remove.push_back(report);
     else
       doomed_reports_.insert(report);
@@ -250,12 +249,12 @@ size_t ReportingCacheImpl::GetFullReportCountForTesting() const {
 
 bool ReportingCacheImpl::IsReportPendingForTesting(
     const ReportingReport* report) const {
-  return base::ContainsKey(pending_reports_, report);
+  return base::Contains(pending_reports_, report);
 }
 
 bool ReportingCacheImpl::IsReportDoomedForTesting(
     const ReportingReport* report) const {
-  return base::ContainsKey(doomed_reports_, report);
+  return base::Contains(doomed_reports_, report);
 }
 
 void ReportingCacheImpl::OnParsedHeader(
@@ -264,12 +263,13 @@ void ReportingCacheImpl::OnParsedHeader(
   SanityCheckClients();
 
   OriginClient new_client(origin);
-  base::Time now = clock()->Now();
+  base::Time now = clock().Now();
   new_client.last_used = now;
+
+  std::map<ReportingEndpointGroupKey, std::set<GURL>> endpoints_per_group;
 
   for (const auto& parsed_endpoint_group : parsed_header) {
     new_client.endpoint_group_names.insert(parsed_endpoint_group.name);
-    new_client.endpoint_count += parsed_endpoint_group.endpoints.size();
 
     // Creates an endpoint group and sets its |last_used| to |now|.
     CachedReportingEndpointGroup new_group(new_client.origin,
@@ -278,6 +278,7 @@ void ReportingCacheImpl::OnParsedHeader(
     std::set<GURL> new_endpoints;
     for (const auto& parsed_endpoint_info : parsed_endpoint_group.endpoints) {
       new_endpoints.insert(parsed_endpoint_info.url);
+      endpoints_per_group[new_group.group_key].insert(parsed_endpoint_info.url);
       ReportingEndpoint new_endpoint(origin, parsed_endpoint_group.name,
                                      std::move(parsed_endpoint_info));
       AddOrUpdateEndpoint(std::move(new_endpoint));
@@ -288,6 +289,14 @@ void ReportingCacheImpl::OnParsedHeader(
     RemoveEndpointsInGroupOtherThan(new_group.group_key, new_endpoints);
 
     AddOrUpdateEndpointGroup(std::move(new_group));
+  }
+
+  // Compute the total endpoint count for this origin. We can't just count the
+  // number of endpoints per group because there may be duplicate endpoint URLs,
+  // which we ignore. See http://crbug.com/983000 for discussion.
+  // TODO(crbug.com/983000): Allow duplicate endpoint URLs.
+  for (const auto& group_key_and_endpoint_set : endpoints_per_group) {
+    new_client.endpoint_count += group_key_and_endpoint_set.second.size();
   }
 
   // Remove endpoint groups that may have been configured for an existing client
@@ -324,10 +333,17 @@ void ReportingCacheImpl::RemoveClient(const url::Origin& origin) {
 
 void ReportingCacheImpl::RemoveAllClients() {
   SanityCheckClients();
-  origin_clients_.clear();
-  endpoint_groups_.clear();
-  endpoints_.clear();
-  endpoint_its_by_url_.clear();
+
+  auto remove_it = origin_clients_.begin();
+  while (remove_it != origin_clients_.end()) {
+    remove_it = RemoveClientInternal(remove_it);
+  }
+
+  DCHECK(origin_clients_.empty());
+  DCHECK(endpoint_groups_.empty());
+  DCHECK(endpoints_.empty());
+  DCHECK(endpoint_its_by_url_.empty());
+
   SanityCheckClients();
   context_->NotifyCachedClientsUpdated();
 }
@@ -382,11 +398,103 @@ void ReportingCacheImpl::RemoveEndpointsForUrl(const GURL& url) {
   context_->NotifyCachedClientsUpdated();
 }
 
+// Reconstruct an OriginClient from the loaded endpoint groups, and add the
+// loaded endpoints and endpoint groups into the cache.
+void ReportingCacheImpl::AddClientsLoadedFromStore(
+    std::vector<ReportingEndpoint> loaded_endpoints,
+    std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups) {
+  DCHECK(context_->IsClientDataPersisted());
+
+  std::sort(loaded_endpoints.begin(), loaded_endpoints.end(),
+            [](const ReportingEndpoint& a, const ReportingEndpoint& b) -> bool {
+              return a.group_key < b.group_key;
+            });
+  std::sort(loaded_endpoint_groups.begin(), loaded_endpoint_groups.end(),
+            [](const CachedReportingEndpointGroup& a,
+               const CachedReportingEndpointGroup& b) -> bool {
+              return a.group_key < b.group_key;
+            });
+
+  // If using a persistent store, cache should be empty before loading finishes.
+  DCHECK(origin_clients_.empty());
+  DCHECK(endpoint_groups_.empty());
+  DCHECK(endpoints_.empty());
+  DCHECK(endpoint_its_by_url_.empty());
+
+  // |loaded_endpoints| and |loaded_endpoint_groups| should both be sorted by
+  // origin and group name.
+  auto endpoints_it = loaded_endpoints.begin();
+  auto endpoint_groups_it = loaded_endpoint_groups.begin();
+
+  base::Optional<OriginClient> origin_client;
+
+  while (endpoint_groups_it != loaded_endpoint_groups.end() &&
+         endpoints_it != loaded_endpoints.end()) {
+    const CachedReportingEndpointGroup& group = *endpoint_groups_it;
+    const ReportingEndpointGroupKey& group_key = group.group_key;
+
+    if (group_key < endpoints_it->group_key) {
+      // This endpoint group has no associated endpoints, so move on to the next
+      // endpoint group.
+      ++endpoint_groups_it;
+      continue;
+    } else if (group_key > endpoints_it->group_key) {
+      // This endpoint has no associated endpoint group, so move on to the next
+      // endpoint.
+      ++endpoints_it;
+      continue;
+    }
+
+    DCHECK(group_key == endpoints_it->group_key);
+
+    size_t cur_group_endpoints_count = 0;
+
+    // Insert the endpoints corresponding to this group.
+    while (endpoints_it != loaded_endpoints.end() &&
+           endpoints_it->group_key == group_key) {
+      EndpointMap::iterator inserted = endpoints_.insert(
+          std::make_pair(group_key, std::move(*endpoints_it)));
+      endpoint_its_by_url_.insert(
+          std::make_pair(inserted->second.info.url, inserted));
+      ++cur_group_endpoints_count;
+      ++endpoints_it;
+    }
+
+    if (!origin_client || origin_client->origin != group_key.origin) {
+      // Store the old origin_client and start a new one.
+      if (origin_client) {
+        OriginClientMap::iterator client_it =
+            origin_clients_.insert(std::make_pair(origin_client->origin.host(),
+                                                  std::move(*origin_client)));
+        EnforcePerOriginAndGlobalEndpointLimits(client_it->second.origin);
+      }
+      origin_client.emplace(group_key.origin);
+    }
+    DCHECK(origin_client.has_value());
+    origin_client->endpoint_group_names.insert(group_key.group_name);
+    origin_client->endpoint_count += cur_group_endpoints_count;
+    origin_client->last_used =
+        std::max(origin_client->last_used, group.last_used);
+
+    endpoint_groups_.insert(std::make_pair(group_key, std::move(group)));
+
+    ++endpoint_groups_it;
+  }
+
+  if (origin_client) {
+    OriginClientMap::iterator client_it = origin_clients_.insert(std::make_pair(
+        origin_client->origin.host(), std::move(*origin_client)));
+    EnforcePerOriginAndGlobalEndpointLimits(client_it->second.origin);
+  }
+
+  SanityCheckClients();
+}
+
 std::vector<ReportingEndpoint>
 ReportingCacheImpl::GetCandidateEndpointsForDelivery(
     const url::Origin& origin,
     const std::string& group_name) {
-  base::Time now = clock()->Now();
+  base::Time now = clock().Now();
   SanityCheckClients();
 
   // Look for an exact origin match for |origin| and |group|.
@@ -411,7 +519,7 @@ ReportingCacheImpl::GetCandidateEndpointsForDelivery(
       // Client for a superdomain of |origin|
       const OriginClient& client = client_it->second;
       // Check if |client| has a group with the requested name.
-      if (!base::ContainsKey(client.endpoint_group_names, group_name))
+      if (!base::Contains(client.endpoint_group_names, group_name))
         continue;
 
       ReportingEndpointGroupKey group_key(client.origin, group_name);
@@ -503,7 +611,7 @@ void ReportingCacheImpl::SetEndpointForTesting(
         origin_clients_.insert(std::make_pair(domain, std::move(new_client)));
   }
 
-  base::Time now = clock()->Now();
+  base::Time now = clock().Now();
 
   ReportingEndpointGroupKey group_key(origin, group_name);
   EndpointGroupMap::iterator group_it = FindEndpointGroupIt(group_key);
@@ -557,16 +665,8 @@ ReportingCacheImpl::OriginClient::OriginClient(OriginClient&& other) = default;
 
 ReportingCacheImpl::OriginClient::~OriginClient() = default;
 
-bool ReportingCacheImpl::IsReportDataPersisted() const {
-  return store_ && context_->policy().persist_reports_across_restarts;
-}
-
-bool ReportingCacheImpl::IsClientDataPersisted() const {
-  return store_ && context_->policy().persist_clients_across_restarts;
-}
-
 void ReportingCacheImpl::RemoveReportInternal(const ReportingReport* report) {
-  reports_[report]->RecordOutcome(tick_clock()->NowTicks());
+  reports_[report]->RecordOutcome(tick_clock().NowTicks());
   size_t erased = reports_.erase(report);
   DCHECK_EQ(1u, erased);
 }
@@ -576,7 +676,7 @@ const ReportingReport* ReportingCacheImpl::FindReportToEvict() const {
 
   for (const auto& it : reports_) {
     const ReportingReport* report = it.first;
-    if (base::ContainsKey(pending_reports_, report))
+    if (base::Contains(pending_reports_, report))
       continue;
     if (!earliest_queued || report->queued < earliest_queued->queued) {
       earliest_queued = report;
@@ -601,7 +701,7 @@ void ReportingCacheImpl::SanityCheckClients() const {
     total_endpoint_group_count += SanityCheckOriginClient(domain, client);
 
     // We have not seen a duplicate client with the same origin.
-    DCHECK(!base::ContainsKey(origins_in_cache, client.origin));
+    DCHECK(!base::Contains(origins_in_cache, client.origin));
     origins_in_cache.insert(client.origin);
   }
 
@@ -634,6 +734,7 @@ size_t ReportingCacheImpl::SanityCheckOriginClient(
   for (const std::string& group_name : client.endpoint_group_names) {
     ++endpoint_group_count_in_client;
     ReportingEndpointGroupKey group_key(client.origin, group_name);
+    DCHECK(endpoint_groups_.find(group_key) != endpoint_groups_.end());
     const CachedReportingEndpointGroup& group = endpoint_groups_.at(group_key);
     endpoint_count_in_client += SanityCheckEndpointGroup(group_key, group);
   }
@@ -672,7 +773,7 @@ size_t ReportingCacheImpl::SanityCheckEndpointGroup(
 
     // We have not seen a duplicate endpoint with the same URL in this
     // group.
-    DCHECK(!base::ContainsKey(endpoint_urls_in_group, endpoint.info.url));
+    DCHECK(!base::Contains(endpoint_urls_in_group, endpoint.info.url));
     endpoint_urls_in_group.insert(endpoint.info.url);
 
     ++endpoint_count_in_group;
@@ -693,14 +794,14 @@ void ReportingCacheImpl::SanityCheckEndpoint(
   DCHECK_LE(0, endpoint.info.weight);
 
   // The endpoint is in the |endpoint_its_by_url_| index.
-  DCHECK(base::ContainsKey(endpoint_its_by_url_, endpoint.info.url));
+  DCHECK(base::Contains(endpoint_its_by_url_, endpoint.info.url));
   auto url_range = endpoint_its_by_url_.equal_range(endpoint.info.url);
   std::vector<EndpointMap::iterator> endpoint_its_for_url;
   for (auto index_it = url_range.first; index_it != url_range.second;
        ++index_it) {
     endpoint_its_for_url.push_back(index_it->second);
   }
-  DCHECK(base::ContainsValue(endpoint_its_for_url, endpoint_it));
+  DCHECK(base::Contains(endpoint_its_for_url, endpoint_it));
 #endif  // DCHECK_IS_ON()
 }
 
@@ -762,6 +863,9 @@ void ReportingCacheImpl::AddOrUpdateEndpointGroup(
 
   // Add a new endpoint group for this origin and group name.
   if (group_it == endpoint_groups_.end()) {
+    if (context_->IsClientDataPersisted())
+      store()->AddReportingEndpointGroup(new_group);
+
     endpoint_groups_.insert(
         std::make_pair(new_group.group_key, std::move(new_group)));
     return;
@@ -773,6 +877,9 @@ void ReportingCacheImpl::AddOrUpdateEndpointGroup(
   old_group.expires = new_group.expires;
   old_group.last_used = new_group.last_used;
 
+  if (context_->IsClientDataPersisted())
+    store()->UpdateReportingEndpointGroupDetails(new_group);
+
   // Note: SanityCheckClients() may fail here because we have not yet
   // added/updated the OriginClient for |origin| yet.
 }
@@ -783,6 +890,9 @@ void ReportingCacheImpl::AddOrUpdateEndpoint(ReportingEndpoint new_endpoint) {
 
   // Add a new endpoint for this origin, group, and url.
   if (endpoint_it == endpoints_.end()) {
+    if (context_->IsClientDataPersisted())
+      store()->AddReportingEndpoint(new_endpoint);
+
     url::Origin origin = new_endpoint.group_key.origin;
     EndpointMap::iterator endpoint_it = endpoints_.insert(
         std::make_pair(new_endpoint.group_key, std::move(new_endpoint)));
@@ -800,6 +910,9 @@ void ReportingCacheImpl::AddOrUpdateEndpoint(ReportingEndpoint new_endpoint) {
   old_endpoint.info.priority = new_endpoint.info.priority;
   old_endpoint.info.weight = new_endpoint.info.weight;
   // |old_endpoint.stats| stays the same.
+
+  if (context_->IsClientDataPersisted())
+    store()->UpdateReportingEndpointDetails(new_endpoint);
 
   // Note: SanityCheckClients() may fail here because we have not yet
   // added/updated the OriginClient for |origin| yet.
@@ -822,7 +935,7 @@ void ReportingCacheImpl::RemoveEndpointsInGroupOtherThan(
 
   const auto group_range = endpoints_.equal_range(group_key);
   for (auto it = group_range.first; it != group_range.second;) {
-    if (base::ContainsKey(endpoints_to_keep_urls, it->second.info.url)) {
+    if (base::Contains(endpoints_to_keep_urls, it->second.info.url)) {
       ++it;
       continue;
     }
@@ -878,6 +991,8 @@ void ReportingCacheImpl::MarkEndpointGroupAndClientUsed(
     base::Time now) {
   group_it->second.last_used = now;
   client_it->second.last_used = now;
+  if (context_->IsClientDataPersisted())
+    store()->UpdateReportingEndpointGroupAccessTime(group_it->second);
 }
 
 base::Optional<ReportingCacheImpl::EndpointMap::iterator>
@@ -902,6 +1017,8 @@ ReportingCacheImpl::RemoveEndpointInternal(OriginClientMap::iterator client_it,
   DCHECK_GT(client_it->second.endpoint_count, 1u);
   RemoveEndpointItFromIndex(endpoint_it);
   --client_it->second.endpoint_count;
+  if (context_->IsClientDataPersisted())
+    store()->DeleteReportingEndpoint(endpoint_it->second);
   return endpoints_.erase(endpoint_it);
 }
 
@@ -922,6 +1039,9 @@ ReportingCacheImpl::RemoveEndpointGroupInternal(
   if (num_endpoints_removed)
     *num_endpoints_removed += endpoints_removed;
   for (auto it = group_range.first; it != group_range.second; ++it) {
+    if (context_->IsClientDataPersisted())
+      store()->DeleteReportingEndpoint(it->second);
+
     RemoveEndpointItFromIndex(it);
   }
   endpoints_.erase(group_range.first, group_range.second);
@@ -934,6 +1054,9 @@ ReportingCacheImpl::RemoveEndpointGroupInternal(
   size_t erased_from_client =
       client.endpoint_group_names.erase(group_key.group_name);
   DCHECK_EQ(1u, erased_from_client);
+
+  if (context_->IsClientDataPersisted())
+    store()->DeleteReportingEndpointGroup(group_it->second);
 
   base::Optional<EndpointGroupMap::iterator> rv =
       endpoint_groups_.erase(group_it);
@@ -955,10 +1078,16 @@ ReportingCacheImpl::RemoveClientInternal(OriginClientMap::iterator client_it) {
   // Erase all groups in this client, and all endpoints in those groups.
   for (const std::string& group_name : client.endpoint_group_names) {
     ReportingEndpointGroupKey group_key(client.origin, group_name);
-    endpoint_groups_.erase(group_key);
+    EndpointGroupMap::iterator group_it = FindEndpointGroupIt(group_key);
+    if (context_->IsClientDataPersisted())
+      store()->DeleteReportingEndpointGroup(group_it->second);
+    endpoint_groups_.erase(group_it);
 
     const auto group_range = endpoints_.equal_range(group_key);
     for (auto it = group_range.first; it != group_range.second; ++it) {
+      if (context_->IsClientDataPersisted())
+        store()->DeleteReportingEndpoint(it->second);
+
       RemoveEndpointItFromIndex(it);
     }
     endpoints_.erase(group_range.first, group_range.second);
@@ -1078,7 +1207,7 @@ void ReportingCacheImpl::EvictEndpointFromGroup(
 bool ReportingCacheImpl::RemoveExpiredOrStaleGroups(
     OriginClientMap::iterator client_it,
     size_t* num_endpoints_removed) {
-  base::Time now = clock()->Now();
+  base::Time now = clock().Now();
   // Make a copy of this because |client_it| may be invalidated.
   std::set<std::string> groups_in_client_names(
       client_it->second.endpoint_group_names);

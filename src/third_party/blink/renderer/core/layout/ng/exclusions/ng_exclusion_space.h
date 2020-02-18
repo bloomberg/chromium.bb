@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -107,9 +107,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     if (!other.derived_geometry_)
       return;
 
-    track_shape_exclusions_ = other.track_shape_exclusions_;
-    derived_geometry_ = std::move(other.derived_geometry_);
-    other.derived_geometry_ = nullptr;
+    MoveDerivedGeometry(other);
 
     // Iterate through all the exclusions which were added by the layout, and
     // update the DerivedGeometry.
@@ -126,6 +124,16 @@ class CORE_EXPORT NGExclusionSpaceInternal {
 
       derived_geometry_->Add(exclusion);
     }
+  }
+
+  // See |NGExclusionSpace::MoveDerivedGeometry|.
+  void MoveDerivedGeometry(const NGExclusionSpaceInternal& other) {
+    if (!other.derived_geometry_)
+      return;
+
+    track_shape_exclusions_ = other.track_shape_exclusions_;
+    derived_geometry_ = std::move(other.derived_geometry_);
+    other.derived_geometry_ = nullptr;
   }
 
   // See |NGExclusionSpace::MergeExclusionSpaces|.
@@ -352,6 +360,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     template <typename LambdaFunc>
     void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
                                        const LayoutUnit available_inline_size,
+                                       bool is_inline_level,
                                        const LambdaFunc&) const;
 
     // See |NGShelf| for a broad description of what shelves are. We always
@@ -479,13 +488,22 @@ class CORE_EXPORT NGExclusionSpace {
     exclusion_space_->PreInitialize(*other.exclusion_space_);
   }
 
-  // Shifts the DerivedGeometry data-structure to this exclusion space, and
+  // Shifts the |DerivedGeometry| data-structure to this exclusion space, and
   // adds any new exclusions.
   void MoveAndUpdateDerivedGeometry(const NGExclusionSpace& other) const {
     if (!exclusion_space_ || !other.exclusion_space_)
       return;
 
     exclusion_space_->MoveAndUpdateDerivedGeometry(*other.exclusion_space_);
+  }
+
+  // Shifts the |DerivedGeometry| data-structure to this exclusion space.
+  void MoveDerivedGeometry(const NGExclusionSpace& other) const {
+    DCHECK(*this == other);
+    if (!exclusion_space_ || !other.exclusion_space_)
+      return;
+
+    exclusion_space_->MoveDerivedGeometry(*other.exclusion_space_);
   }
 
   // This produces a new exclusion space for a |NGLayoutResult| which is being

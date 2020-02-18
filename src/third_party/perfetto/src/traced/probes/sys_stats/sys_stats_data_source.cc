@@ -21,17 +21,18 @@
 
 #include <algorithm>
 #include <array>
+#include <bitset>
 #include <limits>
 #include <utility>
 
-#include "perfetto/base/file_utils.h"
-#include "perfetto/base/metatrace.h"
-#include "perfetto/base/scoped_file.h"
-#include "perfetto/base/string_splitter.h"
 #include "perfetto/base/task_runner.h"
-#include "perfetto/base/time.h"
-#include "perfetto/base/utils.h"
-#include "perfetto/traced/sys_stats_counters.h"
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/metatrace.h"
+#include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/string_splitter.h"
+#include "perfetto/ext/base/time.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/traced/sys_stats_counters.h"
 
 #include "perfetto/common/sys_stats_counters.pbzero.h"
 #include "perfetto/config/sys_stats/sys_stats_config.pbzero.h"
@@ -88,24 +89,46 @@ SysStatsDataSource::SysStatsDataSource(base::TaskRunner* task_runner,
   // Build a lookup map that allows to quickly translate strings like "MemTotal"
   // into the corresponding enum value, only for the counters enabled in the
   // config.
+
   using protos::pbzero::SysStatsConfig;
   SysStatsConfig::Decoder cfg(ds_config.sys_stats_config_raw());
+
+  constexpr size_t kMaxMeminfoEnum = protos::pbzero::MeminfoCounters_MAX;
+  std::bitset<kMaxMeminfoEnum + 1> meminfo_counters_enabled{};
+  if (!cfg.has_meminfo_counters())
+    meminfo_counters_enabled.set();
   for (auto counter = cfg.meminfo_counters(); counter; ++counter) {
-    for (size_t i = 0; i < base::ArraySize(kMeminfoKeys); i++) {
-      const auto& k = kMeminfoKeys[i];
-      if (k.id == counter->as_int32())
-        meminfo_counters_.emplace(k.str, k.id);
+    if (counter->as_uint32() > 0 && counter->as_uint32() <= kMaxMeminfoEnum) {
+      meminfo_counters_enabled.set(counter->as_uint32());
+    } else {
+      PERFETTO_DFATAL("Meminfo counter out of bounds %u", counter->as_uint32());
     }
   }
+  for (size_t i = 0; i < base::ArraySize(kMeminfoKeys); i++) {
+    const auto& k = kMeminfoKeys[i];
+    if (meminfo_counters_enabled[static_cast<size_t>(k.id)])
+      meminfo_counters_.emplace(k.str, k.id);
+  }
 
+  constexpr size_t kMaxVmstatEnum = protos::pbzero::VmstatCounters_MAX;
+  std::bitset<kMaxVmstatEnum + 1> vmstat_counters_enabled{};
+  if (!cfg.has_vmstat_counters())
+    vmstat_counters_enabled.set();
   for (auto counter = cfg.vmstat_counters(); counter; ++counter) {
-    for (size_t i = 0; i < base::ArraySize(kVmstatKeys); i++) {
-      const auto& k = kVmstatKeys[i];
-      if (k.id == counter->as_int32())
-        vmstat_counters_.emplace(k.str, k.id);
+    if (counter->as_uint32() > 0 && counter->as_uint32() <= kMaxVmstatEnum) {
+      vmstat_counters_enabled.set(counter->as_uint32());
+    } else {
+      PERFETTO_DFATAL("Vmstat counter out of bounds %u", counter->as_uint32());
     }
   }
+  for (size_t i = 0; i < base::ArraySize(kVmstatKeys); i++) {
+    const auto& k = kVmstatKeys[i];
+    if (vmstat_counters_enabled[static_cast<size_t>(k.id)])
+      vmstat_counters_.emplace(k.str, k.id);
+  }
 
+  if (!cfg.has_stat_counters())
+    stat_enabled_fields_ = ~0u;
   for (auto counter = cfg.stat_counters(); counter; ++counter) {
     stat_enabled_fields_ |= 1ul << counter->as_uint32();
   }
@@ -160,7 +183,7 @@ void SysStatsDataSource::Tick(base::WeakPtr<SysStatsDataSource> weak_this) {
 SysStatsDataSource::~SysStatsDataSource() = default;
 
 void SysStatsDataSource::ReadSysStats() {
-  PERFETTO_METATRACE("ReadSysStats", 0);
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, READ_SYS_STATS);
   auto packet = writer_->NewTracePacket();
 
   packet->set_timestamp(static_cast<uint64_t>(base::GetBootTimeNs().count()));
@@ -174,6 +197,9 @@ void SysStatsDataSource::ReadSysStats() {
 
   if (stat_ticks_ && tick_ % stat_ticks_ == 0)
     ReadStat(sys_stats);
+
+  sys_stats->set_collection_end_timestamp(
+      static_cast<uint64_t>(base::GetBootTimeNs().count()));
 
   tick_++;
 }
@@ -260,7 +286,7 @@ void SysStatsDataSource::ReadStat(protos::pbzero::SysStats* sys_stats) {
         auto v = static_cast<uint64_t>(strtoll(words.cur_token(), nullptr, 10));
         if (i == 0) {
           sys_stats->set_num_irq_total(v);
-        } else {
+        } else if (v > 0) {
           auto* irq_stat = sys_stats->add_num_irq();
           irq_stat->set_irq(static_cast<int32_t>(i - 1));
           irq_stat->set_count(v);

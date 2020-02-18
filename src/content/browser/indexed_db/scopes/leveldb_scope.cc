@@ -302,12 +302,11 @@ std::pair<leveldb::Status, LevelDBScope::Mode> LevelDBScope::Commit() {
       break;
     default:
       NOTREACHED();
-      return std::make_pair(
-          leveldb::Status::NotSupported("Unknown scopes mode."), mode_);
+      return {leveldb::Status::NotSupported("Unknown scopes mode."), mode_};
   }
   locks_.clear();
   committed_ = true;
-  return std::make_pair(s, mode_);
+  return {s, mode_};
 }
 
 void LevelDBScope::AddUndoPutTask(std::string key, std::string value) {

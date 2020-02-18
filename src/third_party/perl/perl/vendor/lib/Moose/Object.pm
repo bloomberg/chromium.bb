@@ -1,11 +1,5 @@
-
 package Moose::Object;
-BEGIN {
-  $Moose::Object::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Object::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -15,6 +9,8 @@ use Devel::GlobalDestruction ();
 use MRO::Compat ();
 use Scalar::Util ();
 use Try::Tiny ();
+
+use Moose::Util ();
 
 use if ( not our $__mx_is_compiled ), 'Moose::Meta::Class';
 use if ( not our $__mx_is_compiled ), metaclass => 'Moose::Meta::Class';
@@ -32,9 +28,7 @@ sub BUILDARGS {
     my $class = shift;
     if ( scalar @_ == 1 ) {
         unless ( defined $_[0] && ref $_[0] eq 'HASH' ) {
-            Class::MOP::class_of($class)->throw_error(
-                "Single parameters to new() must be a HASH ref",
-                data => $_[0] );
+            Moose::Util::throw_exception( "SingleParamsToNewMustBeHashRef" );
         }
         return { %{ $_[0] } };
     }
@@ -45,7 +39,7 @@ sub BUILDARGS {
         return { @_, undef };
     }
     else {
-        return {@_};
+        return { @_ };
     }
 }
 
@@ -55,6 +49,7 @@ sub BUILDALL {
     # extra meta level calls
     return unless $_[0]->can('BUILD');
     my ($self, $params) = @_;
+    return if $params->{__no_BUILD__};
     foreach my $method (reverse Class::MOP::class_of($self)->find_all_methods_by_name('BUILD')) {
         $method->{code}->execute($self, $params);
     }
@@ -94,6 +89,10 @@ sub DESTROY {
 
     local $?;
 
+    # < doy> if the destructor is being called because an exception is thrown, then $@ will be set
+    # < doy> but if DEMOLISH does an eval which succeeds, that will clear $@
+    # < doy> which is broken
+    # < doy> try::tiny implicitly localizes $@ in the try block, which fixes that
     Try::Tiny::try {
         $self->DEMOLISHALL(Devel::GlobalDestruction::in_global_destruction);
     }
@@ -115,13 +114,13 @@ BEGIN {
 }
 
 # new does() methods will be created
-# as appropiate see Moose::Meta::Role
+# as appropriate see Moose::Meta::Role
 sub does {
     my ($self, $role_name) = @_;
     my $class = Scalar::Util::blessed($self) || $self;
     my $meta = Class::MOP::Class->initialize($class);
     (defined $role_name)
-        || $meta->throw_error("You must supply a role name to does()");
+        || Moose::Util::throw_exception( DoesRequiresRoleName => class_name => $meta->name );
     return 1 if $meta->can('does_role') && $meta->does_role($role_name);
     return 0;
 }
@@ -137,9 +136,11 @@ sub dump {
 
 # ABSTRACT: The base object for Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -147,7 +148,7 @@ Moose::Object - The base object for Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -164,16 +165,14 @@ but it makes it easier to take advantage of all of Moose's features.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Object->new(%params|$params) >>
+=head2 Moose::Object->new(%params|$params)
 
 This method calls C<< $class->BUILDARGS(@_) >>, and then creates a new
 instance of the appropriate class. Once the instance is created, it
 calls C<< $instance->BUILD($params) >> for each C<BUILD> method in the
 inheritance hierarchy.
 
-=item B<< Moose::Object->BUILDARGS(%params|$params) >>
+=head2 Moose::Object->BUILDARGS(%params|$params)
 
 The default implementation of this method accepts a hash or hash
 reference of named parameters. If it receives a single argument that
@@ -184,13 +183,13 @@ options passed to the constructor.
 
 This method should always return a hash reference of named options.
 
-=item B<< $object->does($role_name) >>
+=head2 $object->does($role_name)
 
 This returns true if the object does the given role.
 
-=item B<< $object->DOES($class_or_role_name) >>
+=head2 $object->DOES($class_or_role_name)
 
-This is a a Moose role-aware implementation of L<UNIVERSAL/DOES>.
+This is a Moose role-aware implementation of L<UNIVERSAL/DOES>.
 
 This is effectively the same as writing:
 
@@ -199,36 +198,74 @@ This is effectively the same as writing:
 This method will work with Perl 5.8, which did not implement
 C<UNIVERSAL::DOES>.
 
-=item B<< $object->dump($maxdepth) >>
+=head2 $object->dump($maxdepth)
 
-This is a handy utility for C<Data::Dumper>ing an object. By default,
-the maximum depth is 1, to avoid making a mess.
+=for stopwords ing
 
-=item B<< $object->DESTROY >>
+This is a handy utility for L<Data::Dumper>ing an object. By default,
+there is no maximum depth.
+
+=head2 $object->DESTROY
 
 A default destructor is provided, which calls
 C<< $instance->DEMOLISH($in_global_destruction) >> for each C<DEMOLISH>
 method in the inheritance hierarchy.
 
-=back
-
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

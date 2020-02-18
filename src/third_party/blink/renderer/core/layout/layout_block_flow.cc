@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
@@ -69,6 +68,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -381,9 +381,9 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
   // text control are known, so they don't get layout until their parent has had
   // layout - this is unique in the layout tree and means when we call
   // isSelfCollapsingBlock on them we find that they still need layout.
-  DCHECK(!NeedsLayout() || (GetNode() && GetNode()->IsElementNode() &&
-                            ToElement(GetNode())->ShadowPseudoId() ==
-                                "-webkit-input-placeholder"));
+  auto* element = DynamicTo<Element>(GetNode());
+  DCHECK(!NeedsLayout() ||
+         (element && element->ShadowPseudoId() == "-webkit-input-placeholder"));
 
   if (LogicalHeight() > LayoutUnit() ||
       StyleRef().LogicalMinHeight().IsPositive() ||
@@ -540,8 +540,7 @@ void LayoutBlockFlow::UpdateBlockLayout(bool relayout_children) {
   if (IsHTMLDialogElement(GetNode()) && IsOutOfFlowPositioned())
     PositionDialog();
 
-  // Only clear child dirty bits, if we allowed child layout.
-  ClearNeedsLayout(!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  ClearNeedsLayout();
   UpdateIsSelfCollapsing();
   NotifyDisplayLockDidLayout(DisplayLockContext::kSelf);
 }
@@ -2647,6 +2646,12 @@ void LayoutBlockFlow::DeleteLineBoxTree() {
     floating_objects_->ClearLineBoxTreePointers();
 
   line_boxes_.DeleteLineBoxTree();
+
+  // This function is called when children are moved to different parent. Clear
+  // NGPaintFragment now, because clearing NGPaintFragment clears associations
+  // between LayoutObject and NGPaintFragment. It needs to happen before moved
+  // children are laid out and associated.
+  SetPaintFragment(nullptr, nullptr);
 }
 
 int LayoutBlockFlow::LineCount(
@@ -3798,6 +3803,26 @@ void LayoutBlockFlow::RemoveFloatingObjectsBelow(FloatingObject* last_float,
   }
 }
 
+FloatingObject* LayoutBlockFlow::LastPlacedFloat(
+    FloatingObjectSetIterator* iterator) const {
+  const FloatingObjectSet& floating_object_set = floating_objects_->Set();
+  FloatingObjectSetIterator it = floating_object_set.end();
+  --it;  // Go to last item.
+  FloatingObjectSetIterator begin = floating_object_set.begin();
+  FloatingObject* last_placed_floating_object = nullptr;
+  while (it != begin) {
+    --it;
+    if ((*it)->IsPlaced()) {
+      last_placed_floating_object = it->get();
+      ++it;
+      break;
+    }
+  }
+  if (iterator)
+    *iterator = it;
+  return last_placed_floating_object;
+}
+
 bool LayoutBlockFlow::PlaceNewFloats(LayoutUnit logical_top_margin_edge,
                                      LineWidth* width) {
   if (!floating_objects_)
@@ -3814,18 +3839,8 @@ bool LayoutBlockFlow::PlaceNewFloats(LayoutUnit logical_top_margin_edge,
   // Move backwards through our floating object list until we find a float that
   // has already been positioned. Then we'll be able to move forward,
   // positioning all of the new floats that need it.
-  FloatingObjectSetIterator it = floating_object_set.end();
-  --it;  // Go to last item.
-  FloatingObjectSetIterator begin = floating_object_set.begin();
-  FloatingObject* last_placed_floating_object = nullptr;
-  while (it != begin) {
-    --it;
-    if ((*it)->IsPlaced()) {
-      last_placed_floating_object = it->get();
-      ++it;
-      break;
-    }
-  }
+  FloatingObjectSetIterator it;
+  FloatingObject* last_placed_floating_object = LastPlacedFloat(&it);
 
   // The float cannot start above the top position of the last positioned float.
   if (last_placed_floating_object) {
@@ -4173,33 +4188,30 @@ Node* LayoutBlockFlow::NodeForHitTest() const {
                                         : LayoutBlock::NodeForHitTest();
 }
 
-bool LayoutBlockFlow::HitTestChildren(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
-    HitTestAction hit_test_action) {
-  LayoutPoint scrolled_offset(HasOverflowClip()
-                                  ? accumulated_offset - ScrolledContentOffset()
-                                  : accumulated_offset);
+bool LayoutBlockFlow::HitTestChildren(HitTestResult& result,
+                                      const HitTestLocation& hit_test_location,
+                                      const PhysicalOffset& accumulated_offset,
+                                      HitTestAction hit_test_action) {
+  PhysicalOffset scrolled_offset = accumulated_offset;
+  if (HasOverflowClip())
+    scrolled_offset -= PhysicalOffset(ScrolledContentOffset());
 
   if (hit_test_action == kHitTestFloat && !IsLayoutNGObject()) {
     // Hit-test the floats using the FloatingObjects list if we're in legacy
     // layout. LayoutNG, on the other hand, just hit-tests floats in regular
     // tree order.
-    if (HitTestFloats(result, location_in_container, scrolled_offset))
+    if (HitTestFloats(result, hit_test_location, scrolled_offset))
       return true;
   }
 
   if (ChildrenInline()) {
-    if (line_boxes_.HitTest(LineLayoutBoxModel(this), result,
-                            location_in_container, scrolled_offset,
-                            hit_test_action)) {
-      UpdateHitTestResult(
-          result, DeprecatedFlipForWritingMode(ToLayoutPoint(
-                      location_in_container.Point() - accumulated_offset)));
+    if (line_boxes_.HitTest(LineLayoutBoxModel(this), result, hit_test_location,
+                            scrolled_offset, hit_test_action)) {
+      UpdateHitTestResult(result,
+                          hit_test_location.Point() - accumulated_offset);
       return true;
     }
-  } else if (LayoutBlock::HitTestChildren(result, location_in_container,
+  } else if (LayoutBlock::HitTestChildren(result, hit_test_location,
                                           accumulated_offset,
                                           hit_test_action)) {
     return true;
@@ -4208,10 +4220,9 @@ bool LayoutBlockFlow::HitTestChildren(
   return false;
 }
 
-bool LayoutBlockFlow::HitTestFloats(
-    HitTestResult& result,
-    const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset) {
+bool LayoutBlockFlow::HitTestFloats(HitTestResult& result,
+                                    const HitTestLocation& hit_test_location,
+                                    const PhysicalOffset& accumulated_offset) {
   if (!floating_objects_)
     return false;
 
@@ -4223,16 +4234,16 @@ bool LayoutBlockFlow::HitTestFloats(
     if (floating_object.ShouldPaint() &&
         // TODO(wangxianzhu): Should this be a DCHECK?
         !floating_object.GetLayoutObject()->HasSelfPaintingLayer()) {
-      LayoutUnit x_offset = XPositionForFloatIncludingMargin(floating_object) -
-                            floating_object.GetLayoutObject()->Location().X();
-      LayoutUnit y_offset = YPositionForFloatIncludingMargin(floating_object) -
-                            floating_object.GetLayoutObject()->Location().Y();
-      LayoutPoint child_point = FlipFloatForWritingModeForChild(
-          floating_object, accumulated_offset + LayoutSize(x_offset, y_offset));
+      PhysicalOffset child_accumulated_offset = accumulated_offset;
+      child_accumulated_offset +=
+          PhysicalOffset(XPositionForFloatIncludingMargin(floating_object),
+                         YPositionForFloatIncludingMargin(floating_object));
       if (floating_object.GetLayoutObject()->HitTestAllPhases(
-              result, location_in_container, child_point)) {
-        UpdateHitTestResult(
-            result, location_in_container.Point() - ToLayoutSize(child_point));
+              result, hit_test_location, child_accumulated_offset)) {
+        PhysicalOffset result_offset =
+            child_accumulated_offset -
+            floating_object.GetLayoutObject()->PhysicalLocation();
+        UpdateHitTestResult(result, hit_test_location.Point() - result_offset);
         return true;
       }
     }
@@ -4535,7 +4546,7 @@ void LayoutBlockFlow::PositionDialog() {
 
 void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   DCHECK(ChildrenInline());
-  ListHashSet<RootInlineBox*> line_boxes;
+  LinkedHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* o = walker.Current().GetLayoutObject();
@@ -4555,7 +4566,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
   // FIXME: Glyph overflow will get lost in this case, but not really a big
   // deal.
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
-  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
+  for (LinkedHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
        it != line_boxes.end(); ++it) {
     RootInlineBox* box = *it;
     box->ComputeOverflow(box->LineTop(), box->LineBottom(), text_box_data_map);
@@ -4565,7 +4576,7 @@ void LayoutBlockFlow::SimplifiedNormalFlowInlineLayout() {
 bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   DCHECK(ChildrenInline());
   bool children_layout_overflow_changed = false;
-  ListHashSet<RootInlineBox*> line_boxes;
+  LinkedHashSet<RootInlineBox*> line_boxes;
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
@@ -4585,7 +4596,7 @@ bool LayoutBlockFlow::RecalcInlineChildrenLayoutOverflow() {
   // FIXME: Glyph overflow will get lost in this case, but not really a big
   // deal.
   GlyphOverflowAndFallbackFontsMap text_box_data_map;
-  for (ListHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
+  for (LinkedHashSet<RootInlineBox*>::const_iterator it = line_boxes.begin();
        it != line_boxes.end(); ++it) {
     RootInlineBox* box = *it;
     box->ClearKnownToHaveNoOverflow();
@@ -4615,7 +4626,7 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (IsAtomicInlineLevel()) {
     PositionWithAffinity position =
         PositionForPointIfOutsideAtomicInlineLevel(point);
@@ -4625,9 +4636,9 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   if (!ChildrenInline())
     return LayoutBlock::PositionForPoint(point);
 
-  LayoutPoint point_in_contents = point;
+  PhysicalOffset point_in_contents = point;
   OffsetForContents(point_in_contents);
-  LayoutPoint point_in_logical_contents(point_in_contents);
+  LayoutPoint point_in_logical_contents = FlipForWritingMode(point_in_contents);
   if (!IsHorizontalWritingMode())
     point_in_logical_contents = point_in_logical_contents.TransposedPoint();
 
@@ -4722,7 +4733,8 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
       if (!IsHorizontalWritingMode())
         point = point.TransposedPoint();
       return PositionForPointRespectingEditingBoundaries(
-          LineLayoutBox(closest_box->GetLineLayoutItem()), point);
+          LineLayoutBox(closest_box->GetLineLayoutItem()),
+          FlipForWritingMode(point));
     }
 
     // pass the box a top position that is inside it
@@ -4730,7 +4742,8 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
                       closest_box->Root().BlockDirectionPointInLine());
     if (!IsHorizontalWritingMode())
       point = point.TransposedPoint();
-    return closest_box->GetLineLayoutItem().PositionForPoint(point);
+    return closest_box->GetLineLayoutItem().PositionForPoint(
+        FlipForWritingMode(point));
   }
 
   if (last_root_box_with_children) {
@@ -4765,7 +4778,7 @@ void LayoutBlockFlow::ShowLineTreeAndMark(const InlineBox* marked_box1,
     root->DumpLineTreeAndMark(string_blockflow, marked_box1, marked_label1,
                               marked_box2, marked_label2, obj, 1);
   }
-  DLOG(INFO) << "\n" << string_blockflow.ToString().Utf8().data();
+  DLOG(INFO) << "\n" << string_blockflow.ToString().Utf8();
 }
 
 #endif

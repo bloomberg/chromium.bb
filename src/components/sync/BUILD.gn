@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
@@ -312,6 +311,8 @@ jumbo_static_library("rest_of_sync") {
     "model_impl/syncable_service_based_bridge.h",
     "nigori/cryptographer.cc",
     "nigori/cryptographer.h",
+    "nigori/forwarding_model_type_processor.cc",
+    "nigori/forwarding_model_type_processor.h",
     "nigori/keystore_keys_handler.h",
     "nigori/nigori.cc",
     "nigori/nigori.h",
@@ -449,16 +450,12 @@ static_library("test_support_engine") {
     "engine/mock_sync_engine.h",
     "engine/sync_engine_host_stub.cc",
     "engine/sync_engine_host_stub.h",
-    "engine/sync_manager_factory_for_profile_sync_test.cc",
-    "engine/sync_manager_factory_for_profile_sync_test.h",
     "engine/test_engine_components_factory.cc",
     "engine/test_engine_components_factory.h",
     "engine_impl/cycle/mock_debug_info_getter.cc",
     "engine_impl/cycle/mock_debug_info_getter.h",
     "engine_impl/cycle/test_util.cc",
     "engine_impl/cycle/test_util.h",
-    "engine_impl/sync_manager_for_profile_sync_test.cc",
-    "engine_impl/sync_manager_for_profile_sync_test.h",
     "engine_impl/test_entry_factory.cc",
     "engine_impl/test_entry_factory.h",
     "syncable/test_user_share.cc",
@@ -566,6 +563,7 @@ source_set("unit_tests") {
     "base/sync_prefs_unittest.cc",
     "base/system_encryptor_unittest.cc",
     "base/unique_position_unittest.cc",
+    "base/user_demographics_unittest.cc",
     "base/weak_handle_unittest.cc",
     "driver/about_sync_util_unittest.cc",
     "driver/async_directory_type_controller_unittest.cc",
@@ -673,7 +671,8 @@ source_set("unit_tests") {
     "//components/invalidation/impl",
     "//components/os_crypt:test_support",
     "//components/prefs:test_support",
-    "//components/signin/core/browser:internals_test_support",
+    "//components/signin/public/base:test_support",
+    "//components/signin/public/identity_manager:test_support",
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
     "//components/sync/js:test_support",
@@ -686,7 +685,6 @@ source_set("unit_tests") {
     "//google_apis:test_support",
     "//net",
     "//net:test_support",
-    "//services/identity/public/cpp:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//sql",

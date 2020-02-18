@@ -372,6 +372,10 @@ void MultiplexRouter::SetMasterInterfaceName(const char* name) {
   connector_.SetWatcherHeapProfilerTag(name);
 }
 
+void MultiplexRouter::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  connector_.SetConnectionGroup(std::move(ref));
+}
+
 InterfaceId MultiplexRouter::AssociateInterface(
     ScopedInterfaceEndpointHandle handle_to_send) {
   if (!handle_to_send.pending_association())
@@ -386,7 +390,7 @@ InterfaceId MultiplexRouter::AssociateInterface(
       id = next_interface_id_value_++;
       if (set_interface_id_namespace_bit_)
         id |= kInterfaceIdNamespaceMask;
-    } while (base::ContainsKey(endpoints_, id));
+    } while (base::Contains(endpoints_, id));
 
     InterfaceEndpoint* endpoint = new InterfaceEndpoint(this, id);
     endpoints_[id] = endpoint;
@@ -438,7 +442,7 @@ void MultiplexRouter::CloseEndpointHandle(
     return;
 
   MayAutoLock locker(&lock_);
-  DCHECK(base::ContainsKey(endpoints_, id));
+  DCHECK(base::Contains(endpoints_, id));
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   DCHECK(!endpoint->client());
   DCHECK(!endpoint->closed());
@@ -462,7 +466,7 @@ InterfaceEndpointController* MultiplexRouter::AttachEndpointClient(
   DCHECK(client);
 
   MayAutoLock locker(&lock_);
-  DCHECK(base::ContainsKey(endpoints_, id));
+  DCHECK(base::Contains(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->AttachClient(client, std::move(runner));
@@ -481,7 +485,7 @@ void MultiplexRouter::DetachEndpointClient(
   DCHECK(IsValidInterfaceId(id));
 
   MayAutoLock locker(&lock_);
-  DCHECK(base::ContainsKey(endpoints_, id));
+  DCHECK(base::Contains(endpoints_, id));
 
   InterfaceEndpoint* endpoint = endpoints_[id].get();
   endpoint->DetachClient();
@@ -549,7 +553,7 @@ bool MultiplexRouter::HasAssociatedEndpoints() const {
   if (endpoints_.size() == 0)
     return false;
 
-  return !base::ContainsKey(endpoints_, kMasterInterfaceId);
+  return !base::Contains(endpoints_, kMasterInterfaceId);
 }
 
 void MultiplexRouter::EnableBatchDispatch() {

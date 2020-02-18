@@ -145,8 +145,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
       force_immediate_dispatch_(!EnableTaskPerMessage()),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
-      nesting_observer_(RunLoopNestingObserver::GetForThread()),
-      weak_factory_(this) {
+      nesting_observer_(RunLoopNestingObserver::GetForThread()) {
   if (config == MULTI_THREADED_SEND)
     lock_.emplace();
 
@@ -207,6 +206,10 @@ void Connector::RaiseError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   HandleError(true, true);
+}
+
+void Connector::SetConnectionGroup(ConnectionGroup::Ref ref) {
+  connection_group_ = std::move(ref);
 }
 
 bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
@@ -505,6 +508,8 @@ bool Connector::DispatchMessage(Message message) {
   TRACE_EVENT0("mojom", heap_profiler_tag_);
 #endif
 
+  if (connection_group_)
+    message.set_receiver_connection_group(&connection_group_);
   bool receiver_result =
       incoming_receiver_ && incoming_receiver_->Accept(&message);
   if (!weak_self)

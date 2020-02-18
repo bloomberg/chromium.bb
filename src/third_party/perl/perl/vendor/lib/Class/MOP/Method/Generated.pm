@@ -1,28 +1,21 @@
-
 package Class::MOP::Method::Generated;
-BEGIN {
-  $Class::MOP::Method::Generated::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Method::Generated::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp 'confess';
 use Eval::Closure;
 
-use base 'Class::MOP::Method';
+use parent 'Class::MOP::Method';
 
 ## accessors
 
 sub new {
-    confess __PACKAGE__ . " is an abstract base class, you must provide a constructor.";
+    $_[0]->_throw_exception( CannotCallAnAbstractBaseMethod => package_name => __PACKAGE__ );
 }
 
 sub _initialize_body {
-    confess "No body to initialize, " . __PACKAGE__ . " is an abstract base class";
+    $_[0]->_throw_exception( NoBodyToInitializeInAnAbstractBaseClass => package_name => __PACKAGE__ );
 }
 
 sub _generate_description {
@@ -71,9 +64,11 @@ sub _compile_code {
 
 # ABSTRACT: Abstract base class for generated methods
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -81,7 +76,7 @@ Class::MOP::Method::Generated - Abstract base class for generated methods
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -91,20 +86,57 @@ C<Class::MOP::Method::Constructor>.
 
 It is not intended to be used directly.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

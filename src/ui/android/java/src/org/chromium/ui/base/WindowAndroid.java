@@ -279,7 +279,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) recomputeSupportedRefreshRates();
 
         // Temporary solution for flaky tests, see https://crbug.com/767624 for context
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             mVSyncMonitor =
                     new VSyncMonitor(context, mVSyncListener, mDisplayAndroid.getRefreshRate());
             mAccessibilityManager =
@@ -990,10 +990,28 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     @SuppressLint("NewApi")
     @CalledByNative
     private void setPreferredRefreshRate(float preferredRefreshRate) {
-        if (mSupportedRefreshRateModes == null) return;
+        // Using this setting is gated to Q due to bugs on Razer phones which can freeze the device
+        // if the API is used. See crbug.com/990646.
+        if (mSupportedRefreshRateModes == null || !BuildInfo.isAtLeastQ()) return;
+
+        int preferredModeId = getPreferredModeId(preferredRefreshRate);
+        Window window = getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+        if (params.preferredDisplayModeId == preferredModeId) return;
+
+        params.preferredDisplayModeId = preferredModeId;
+        window.setAttributes(params);
+    }
+
+    @SuppressLint("NewApi")
+    // mSupportedRefreshRateModes should only be set if Display.Mode is available.
+    @TargetApi(Build.VERSION_CODES.M)
+    private int getPreferredModeId(float preferredRefreshRate) {
+        if (preferredRefreshRate == 0) return 0;
 
         Display.Mode preferredMode = null;
         float preferredModeDelta = Float.MAX_VALUE;
+
         for (int i = 0; i < mSupportedRefreshRateModes.size(); ++i) {
             Display.Mode mode = mSupportedRefreshRateModes.get(i);
             float delta = Math.abs(preferredRefreshRate - mode.getRefreshRate());
@@ -1005,15 +1023,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
         if (preferredModeDelta > MAX_REFRESH_RATE_DELTA) {
             Log.e(TAG, "Refresh rate not supported : " + preferredRefreshRate);
-            return;
+            return 0;
         }
 
-        Window window = getWindow();
-        WindowManager.LayoutParams params = window.getAttributes();
-        if (params.preferredDisplayModeId == preferredMode.getModeId()) return;
-
-        params.preferredDisplayModeId = preferredMode.getModeId();
-        window.setAttributes(params);
+        return preferredMode.getModeId();
     }
 
     private native long nativeInit(

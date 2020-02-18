@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/android/android_hardware_buffer_compat.h"
@@ -17,8 +18,7 @@
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
-#include "device/vr/vr_display_impl.h"
-#include "jni/NonPresentingGvrContext_jni.h"
+#include "device/vr/jni_headers/NonPresentingGvrContext_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -31,7 +31,7 @@ namespace device {
 namespace {
 
 // Default downscale factor for computing the recommended WebVR/WebXR
-// renderWidth/Height from the 1:1 pixel mapped size. Using a rather
+// render_width/render_height from the 1:1 pixel mapped size. Using a rather
 // aggressive downscale due to the high overhead of copying pixels
 // twice before handing off to GVR. For comparison, the polyfill
 // uses approximately 0.55 on a Pixel XL.
@@ -47,7 +47,7 @@ gfx::Size GetMaximumWebVrSize(gvr::GvrApi* gvr_api) {
   // based on the optimal 1:1 render resolution. A scalar will be applied to
   // this value in the renderer to reduce the render load. This size will also
   // be reported to the client via CreateVRDisplayInfo as the
-  // client-recommended renderWidth/renderHeight and for the GVR
+  // client-recommended render_width/render_height and for the GVR
   // framebuffer. If the client chooses a different size or resizes it
   // while presenting, we'll resize the transfer surface and GVR
   // framebuffer to match.
@@ -57,7 +57,7 @@ gfx::Size GetMaximumWebVrSize(gvr::GvrApi* gvr_api) {
   gfx::Size webvr_size(render_target_size.width, render_target_size.height);
 
   // Ensure that the width is an even number so that the eyes each
-  // get the same size, the recommended renderWidth is per eye
+  // get the same size, the recommended render_width is per eye
   // and the client will use the sum of the left and right width.
   //
   // TODO(klausw,crbug.com/699350): should we round the recommended
@@ -73,23 +73,21 @@ mojom::VREyeParametersPtr CreateEyeParamater(
     const gvr::BufferViewportList& buffers,
     const gfx::Size& maximum_size) {
   mojom::VREyeParametersPtr eye_params = mojom::VREyeParameters::New();
-  eye_params->fieldOfView = mojom::VRFieldOfView::New();
-  eye_params->offset.resize(3);
-  eye_params->renderWidth = maximum_size.width() / 2;
-  eye_params->renderHeight = maximum_size.height();
+  eye_params->field_of_view = mojom::VRFieldOfView::New();
+  eye_params->render_width = maximum_size.width() / 2;
+  eye_params->render_height = maximum_size.height();
 
   gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
   buffers.GetBufferViewport(eye, &eye_viewport);
   gvr::Rectf eye_fov = eye_viewport.GetSourceFov();
-  eye_params->fieldOfView->upDegrees = eye_fov.top;
-  eye_params->fieldOfView->downDegrees = eye_fov.bottom;
-  eye_params->fieldOfView->leftDegrees = eye_fov.left;
-  eye_params->fieldOfView->rightDegrees = eye_fov.right;
+  eye_params->field_of_view->up_degrees = eye_fov.top;
+  eye_params->field_of_view->down_degrees = eye_fov.bottom;
+  eye_params->field_of_view->left_degrees = eye_fov.left;
+  eye_params->field_of_view->right_degrees = eye_fov.right;
 
   gvr::Mat4f eye_mat = gvr_api->GetEyeFromHeadMatrix(eye);
-  eye_params->offset[0] = -eye_mat.m[0][3];
-  eye_params->offset[1] = -eye_mat.m[1][3];
-  eye_params->offset[2] = -eye_mat.m[2][3];
+  eye_params->offset =
+      gfx::Vector3dF(-eye_mat.m[0][3], -eye_mat.m[1][3], -eye_mat.m[2][3]);
   return eye_params;
 }
 
@@ -102,23 +100,23 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
   device->id = device_id;
 
   device->capabilities = mojom::VRDisplayCapabilities::New();
-  device->capabilities->hasPosition = false;
-  device->capabilities->hasExternalDisplay = false;
-  device->capabilities->canPresent = true;
+  device->capabilities->has_position = false;
+  device->capabilities->has_external_display = false;
+  device->capabilities->can_present = true;
 
   std::string vendor = gvr_api->GetViewerVendor();
   std::string model = gvr_api->GetViewerModel();
-  device->displayName = vendor + " " + model;
+  device->display_name = vendor + " " + model;
 
   gvr::BufferViewportList gvr_buffer_viewports =
       gvr_api->CreateEmptyBufferViewportList();
   gvr_buffer_viewports.SetToRecommendedBufferViewports();
 
   gfx::Size maximum_size = GetMaximumWebVrSize(gvr_api);
-  device->leftEye = CreateEyeParamater(gvr_api, GVR_LEFT_EYE,
-                                       gvr_buffer_viewports, maximum_size);
-  device->rightEye = CreateEyeParamater(gvr_api, GVR_RIGHT_EYE,
+  device->left_eye = CreateEyeParamater(gvr_api, GVR_LEFT_EYE,
                                         gvr_buffer_viewports, maximum_size);
+  device->right_eye = CreateEyeParamater(gvr_api, GVR_RIGHT_EYE,
+                                         gvr_buffer_viewports, maximum_size);
 
   // This scalar will be applied in the renderer to the recommended render
   // target sizes. For WebVR it will always be applied, for WebXR it can be
@@ -173,10 +171,7 @@ void GvrDevice::RequestSession(
   pending_request_session_callback_ = std::move(callback);
 
   if (!gvr_api_) {
-    int render_process_id = options->render_process_id;
-    int render_frame_id = options->render_frame_id;
-    Init(render_process_id, render_frame_id,
-         base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
+    Init(base::BindOnce(&GvrDevice::OnInitRequestSessionFinished,
                         base::Unretained(this), std::move(options)));
     return;
   }
@@ -252,12 +247,9 @@ void GvrDevice::ResumeTracking() {
   }
 }
 
-void GvrDevice::EnsureInitialized(int render_process_id,
-                                  int render_frame_id,
-                                  EnsureInitializedCallback callback) {
-  Init(render_process_id, render_frame_id,
-       base::BindOnce([](EnsureInitializedCallback callback,
-                         bool success) { std::move(callback).Run(); },
+void GvrDevice::EnsureInitialized(EnsureInitializedCallback callback) {
+  Init(base::BindOnce([](EnsureInitializedCallback callback,
+                         bool) { std::move(callback).Run(); },
                       std::move(callback)));
 }
 
@@ -278,36 +270,7 @@ void GvrDevice::Activate(mojom::VRDisplayEventReason reason,
   OnActivate(reason, std::move(on_handled));
 }
 
-void GvrDevice::Init(int render_process_id,
-                     int render_frame_id,
-                     base::OnceCallback<void(bool)> on_finished) {
-  if (!module_delegate_) {
-    VrModuleDelegateFactory* factory = VrModuleDelegateFactory::Get();
-    if (factory) {
-      module_delegate_ =
-          factory->CreateDelegate(render_process_id, render_frame_id);
-    }
-  }
-
-  if (!module_delegate_) {
-    std::move(on_finished).Run(false);
-    return;
-  }
-  if (!module_delegate_->ModuleInstalled()) {
-    module_delegate_->InstallModule(
-        base::BindOnce(&GvrDevice::OnVrModuleInstalled,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(on_finished)));
-    return;
-  }
-  OnVrModuleInstalled(std::move(on_finished), true);
-}
-
-void GvrDevice::OnVrModuleInstalled(base::OnceCallback<void(bool)> on_finished,
-                                    bool success) {
-  if (!success) {
-    std::move(on_finished).Run(false);
-    return;
-  }
+void GvrDevice::Init(base::OnceCallback<void(bool)> on_finished) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice()) {
     std::move(on_finished).Run(false);

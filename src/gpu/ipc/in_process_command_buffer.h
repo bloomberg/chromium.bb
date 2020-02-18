@@ -43,6 +43,7 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/service/context_url.h"
+#include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -86,7 +87,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       public GpuControl,
       public CommandBufferServiceClient,
       public DecoderClient,
-      public ImageTransportSurfaceDelegate {
+      public ImageTransportSurfaceDelegate,
+      public DisplayContext {
  public:
   InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor,
                          const GURL& active_url);
@@ -152,6 +154,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 
+  // DisplayContext implementation (called on gpu thread):
+  void MarkContextLost() override;
+
   // DecoderClient implementation (called on gpu thread):
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
@@ -172,8 +177,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
-  void AddFilter(IPC::MessageFilter* message_filter) override;
-  int32_t GetRouteID() const override;
   viz::GpuVSyncCallback GetGpuVSyncCallback() override;
 
   // Upstream this function to GpuControl if needs arise. Can be called on any
@@ -373,7 +376,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
   CommandBufferTaskExecutor* const task_executor_;
-  std::unique_ptr<CommandBufferTaskExecutor::Sequence> task_sequence_;
+  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
   std::unique_ptr<SharedImageInterface> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.
@@ -401,8 +404,10 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Don't use |client_thread_weak_ptr_factory_| on GPU thread.  Use the cached
   // |client_thread_weak_ptr_| instead.
-  base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_;
-  base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_;
+  base::WeakPtrFactory<InProcessCommandBuffer> client_thread_weak_ptr_factory_{
+      this};
+  base::WeakPtrFactory<InProcessCommandBuffer> gpu_thread_weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(InProcessCommandBuffer);
 };

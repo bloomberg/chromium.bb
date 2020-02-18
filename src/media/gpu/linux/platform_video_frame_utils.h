@@ -5,12 +5,14 @@
 #ifndef MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_UTILS_H_
 #define MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_UTILS_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gfx {
 struct GpuMemoryBufferHandle;
+class NativePixmapDmaBuf;
 }  // namespace gfx
 
 namespace media {
@@ -25,9 +27,23 @@ MEDIA_GPU_EXPORT scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     base::TimeDelta timestamp,
     gfx::BufferUsage buffer_usage);
 
+// Get VideoFrameLayout of platform dependent video frame with |pixel_format|,
+// |coded_size| and |buffer_usage|. This function is not cost-free as this
+// allocates a platform dependent video frame.
+MEDIA_GPU_EXPORT base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    gfx::BufferUsage buffer_usage);
+
 // Create a shared GPU memory handle to the |video_frame|'s data.
 MEDIA_GPU_EXPORT gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     const VideoFrame* video_frame);
+
+// Create a NativePixmap that references the DMA Bufs of |video_frame|. The
+// returned pixmap is only a DMA Buf container and should not be used for
+// compositing/scanout.
+MEDIA_GPU_EXPORT scoped_refptr<gfx::NativePixmapDmaBuf>
+CreateNativePixmapDmaBuf(const VideoFrame* video_frame);
 
 }  // namespace media
 

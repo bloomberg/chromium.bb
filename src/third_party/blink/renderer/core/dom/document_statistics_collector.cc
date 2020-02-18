@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 
 namespace blink {
 
@@ -205,7 +205,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
 
   features.is_mobile_friendly = IsMobileFriendly(document);
 
-  TimeTicks start_time = CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   // This should be cheap since collectStatistics is only called right after
   // layout.
@@ -215,7 +215,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::CollectStatistics(
   CollectFeatures(*body, features);
   features.open_graph = HasOpenGraphArticle(*head);
 
-  TimeDelta elapsed_time = CurrentTimeTicks() - start_time;
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, distillability_histogram,
                       ("WebCore.DistillabilityUs", 1, 1000000, 50));

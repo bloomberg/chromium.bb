@@ -1,22 +1,39 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!/bin/env perl 
-#line 15
-#!d:\perl\bin\perl.exe 
+#!/usr/bin/env perl
+#line 29
+#!d:\perl\bin\perl.exe
 
 # -- SOAP::Lite -- soaplite.com -- Copyright (C) 2001 Paul Kulchenko --
 
 use strict;
+
+our $VERSION = '1.27'; # VERSION
+
 use SOAP::Lite;
 use Data::Dumper; $Data::Dumper::Terse = 1; $Data::Dumper::Indent = 1;
 
@@ -65,20 +82,20 @@ or
 =head1 DESCRIPTION
 
 SOAPsh.pl is a shell for making SOAP calls. It takes two parameters:
-mandatory endpoint and optional uri (actually it will tell you about it 
+mandatory endpoint and optional uri (actually it will tell you about it
 if you try to run it). Additional commands can follow.
 
-After that you'll be able to run any methods of SOAP::Lite, like autotype, 
-readable, encoding, etc. You can run it the same way as you do it in 
+After that you'll be able to run any methods of SOAP::Lite, like autotype,
+readable, encoding, etc. You can run it the same way as you do it in
 your Perl script. You'll see output from method, result of SOAP call,
 detailed info on SOAP faulure or transport error.
 
 For full list of available methods see documentation for SOAP::Lite.
 
-Along with methods of SOAP::Lite you'll be able (and that's much more 
+Along with methods of SOAP::Lite you'll be able (and that's much more
 interesting) run any SOAP methods you know about on remote server and
-see processed results. You can even switch on debugging (with call 
-something like: C<on_debug(sub{print@_})>) and see SOAP code with 
+see processed results. You can even switch on debugging (with call
+something like: C<on_debug(sub{print@_})>) and see SOAP code with
 headers sent and received.
 
 =head1 COPYRIGHT

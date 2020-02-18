@@ -44,6 +44,12 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
+  void CreateNativePixmapAsync(gfx::AcceleratedWidget widget,
+                               VkDevice vk_device,
+                               gfx::Size size,
+                               gfx::BufferFormat format,
+                               gfx::BufferUsage usage,
+                               NativePixmapCallback callback) override;
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> CreateVulkanImplementation()
       override;
@@ -76,9 +82,9 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       fidl::InterfaceRequest<fuchsia::ui::scenic::Session> session_request,
       fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener);
 
-  // Links a surface to its parent in the host process.
-  void LinkSurfaceToParent(gfx::AcceleratedWidget widget,
-                           mojo::ScopedHandle export_token_mojo);
+  // Links a surface to its parent window in the host process.
+  void AttachSurfaceToWindow(gfx::AcceleratedWidget window,
+                             mojo::ScopedHandle surface_export_token_mojo);
 
   base::flat_map<gfx::AcceleratedWidget, ScenicSurface*> surface_map_
       GUARDED_BY(surface_lock_);

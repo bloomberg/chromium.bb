@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_messaging_proxy.h"
@@ -29,9 +30,8 @@ int NextId() {
 }
 }  // namespace
 
-const wtf_size_t PaintWorklet::kNumGlobalScopes = 2u;
+const wtf_size_t PaintWorklet::kNumGlobalScopesPerThread = 2u;
 const size_t kMaxPaintCountToSwitch = 30u;
-DocumentPaintDefinition* const kInvalidDocumentPaintDefinition = nullptr;
 
 // static
 PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
@@ -94,22 +94,22 @@ int PaintWorklet::GetPaintsBeforeSwitching() {
 }
 
 wtf_size_t PaintWorklet::SelectNewGlobalScope() {
-  return static_cast<wtf_size_t>(base::RandGenerator(kNumGlobalScopes));
+  return static_cast<wtf_size_t>(
+      base::RandGenerator(kNumGlobalScopesPerThread));
 }
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const FloatSize& container_size,
-                                         const CSSStyleValueVector* data) {
-  DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-
+                                         const CSSStyleValueVector* data,
+                                         float device_scale_factor) {
   if (!document_definition_map_.Contains(name))
     return nullptr;
 
   // Check if the existing document definition is valid or not.
   DocumentPaintDefinition* document_definition =
       document_definition_map_.at(name);
-  if (document_definition == kInvalidDocumentPaintDefinition)
+  if (!document_definition)
     return nullptr;
 
   PaintWorkletGlobalScopeProxy* proxy =
@@ -121,14 +121,15 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   const LayoutObject& layout_object =
       static_cast<const LayoutObject&>(observer);
   float zoom = layout_object.StyleRef().EffectiveZoom();
+
   StylePropertyMapReadOnly* style_map =
       MakeGarbageCollected<PrepopulatedComputedStylePropertyMap>(
           layout_object.GetDocument(), layout_object.StyleRef(),
           layout_object.GetNode(),
           paint_definition->NativeInvalidationProperties(),
           paint_definition->CustomInvalidationProperties());
-  sk_sp<PaintRecord> paint_record =
-      paint_definition->Paint(container_size, zoom, style_map, data);
+  sk_sp<PaintRecord> paint_record = paint_definition->Paint(
+      container_size, zoom, style_map, data, device_scale_factor);
   if (!paint_record)
     return nullptr;
   return PaintGeneratedImage::Create(paint_record, container_size);
@@ -139,34 +140,113 @@ const char PaintWorklet::kSupplementName[] = "PaintWorklet";
 
 void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);
-  visitor->Trace(document_definition_map_);
   visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
+}
+
+void PaintWorklet::RegisterCSSPaintDefinition(const String& name,
+                                              CSSPaintDefinition* definition,
+                                              ExceptionState& exception_state) {
+  if (document_definition_map_.Contains(name)) {
+    DocumentPaintDefinition* existing_document_definition =
+        document_definition_map_.at(name);
+    if (!existing_document_definition)
+      return;
+    if (!existing_document_definition->RegisterAdditionalPaintDefinition(
+            *definition)) {
+      document_definition_map_.Set(name, nullptr);
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "A class with name:'" + name +
+              "' was registered with a different definition.");
+      return;
+    }
+    // Notify the generator ready only when register paint is called the
+    // second time with the same |name| (i.e. there is already a document
+    // definition associated with |name|
+    //
+    // We are looking for kNumGlobalScopesPerThread number of definitions
+    // regiserered from RegisterCSSPaintDefinition and one extra definition from
+    // RegisterMainThreadDocumentPaintDefinition if OffMainThreadCSSPaintEnabled
+    // is true.
+    unsigned required_registered_count =
+        RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
+            ? kNumGlobalScopesPerThread + 1
+            : kNumGlobalScopesPerThread;
+    if (existing_document_definition->GetRegisteredDefinitionCount() ==
+        required_registered_count)
+      pending_generator_registry_->NotifyGeneratorReady(name);
+  } else {
+    auto document_definition = std::make_unique<DocumentPaintDefinition>(
+        definition->NativeInvalidationProperties(),
+        definition->CustomInvalidationProperties(),
+        definition->InputArgumentTypes(),
+        definition->GetPaintRenderingContext2DSettings()->alpha());
+    document_definition_map_.insert(name, std::move(document_definition));
+  }
 }
 
 void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
     const String& name,
     Vector<CSSPropertyID> native_properties,
     Vector<String> custom_properties,
+    Vector<CSSSyntaxDescriptor> input_argument_types,
     double alpha) {
-  DCHECK(!main_thread_document_definition_map_.Contains(name));
-  auto definition = std::make_unique<MainThreadDocumentPaintDefinition>(
-      std::move(native_properties), std::move(custom_properties), alpha);
-  main_thread_document_definition_map_.insert(name, std::move(definition));
-  pending_generator_registry_->NotifyGeneratorReady(name);
+  if (document_definition_map_.Contains(name)) {
+    DocumentPaintDefinition* document_definition =
+        document_definition_map_.at(name);
+    if (!document_definition)
+      return;
+    if (!document_definition->RegisterAdditionalPaintDefinition(
+            native_properties, custom_properties, input_argument_types,
+            alpha)) {
+      document_definition_map_.Set(name, nullptr);
+      return;
+    }
+  } else {
+    // Because this method is called cross-thread, |custom_properties| cannot be
+    // an AtomicString. Instead, convert to AtomicString now that we are on the
+    // main thread.
+    Vector<AtomicString> new_custom_properties;
+    new_custom_properties.ReserveInitialCapacity(custom_properties.size());
+    for (const String& property : custom_properties)
+      new_custom_properties.push_back(AtomicString(property));
+    auto document_definition = std::make_unique<DocumentPaintDefinition>(
+        std::move(native_properties), std::move(new_custom_properties),
+        std::move(input_argument_types), alpha);
+    document_definition_map_.insert(name, std::move(document_definition));
+  }
+  DocumentPaintDefinition* document_definition =
+      document_definition_map_.at(name);
+  // We are looking for kNumGlobalScopesPerThread number of definitions
+  // registered from RegisterCSSPaintDefinition and one extra definition from
+  // RegisterMainThreadDocumentPaintDefinition
+  if (document_definition->GetRegisteredDefinitionCount() ==
+      kNumGlobalScopesPerThread + 1)
+    pending_generator_registry_->NotifyGeneratorReady(name);
 }
 
 bool PaintWorklet::NeedsToCreateGlobalScope() {
-  return GetNumberOfGlobalScopes() < kNumGlobalScopes;
+  wtf_size_t num_scopes_needed = kNumGlobalScopesPerThread;
+  // If we are running off main thread, we will need twice as many global scopes
+  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    num_scopes_needed *= 2;
+  return GetNumberOfGlobalScopes() < num_scopes_needed;
 }
 
 WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
   DCHECK(NeedsToCreateGlobalScope());
-  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+  // The main thread global scopes must be created first so that they are at the
+  // front of the vector.  This is because SelectNewGlobalScope selects global
+  // scopes from the beginning of the vector.  If this code is changed to put
+  // the main thread global scopes at the end, then SelectNewGlobalScope must
+  // also be changed.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled() ||
+      GetNumberOfGlobalScopes() < kNumGlobalScopesPerThread) {
     return MakeGarbageCollected<PaintWorkletGlobalScopeProxy>(
         To<Document>(GetExecutionContext())->GetFrame(), ModuleResponsesMap(),
-        pending_generator_registry_, GetNumberOfGlobalScopes() + 1);
+        GetNumberOfGlobalScopes() + 1);
   }
 
   if (!proxy_client_) {

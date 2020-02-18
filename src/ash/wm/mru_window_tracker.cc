@@ -73,7 +73,7 @@ bool IsWindowConsideredActivatable(aura::Window* window) {
 // built for cycling through windows (alt + tab).
 bool CanIncludeWindowInCycleList(aura::Window* window) {
   return CanIncludeWindowInMruList(window) &&
-         !wm::ShouldExcludeForCycleList(window);
+         !window_util::ShouldExcludeForCycleList(window);
 }
 
 // Returns a list of windows ordered by their stacking order such that the most
@@ -101,7 +101,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
       // Exclude windows in non-switchable containers and those which should not
       // be included.
       if (window->parent()) {
-        if (!wm::IsSwitchableContainer(window->parent()))
+        if (!IsSwitchableContainer(window->parent()))
           continue;
 
         if (active_desk_only) {
@@ -147,7 +147,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     // IDs sorted such that the ID of the top-most container comes last. Hence,
     // we iterate in reverse order so the top-most windows are added first.
     const auto switachable_containers =
-        wm::GetSwitchableContainersForRoot(root, active_desk_only);
+        GetSwitchableContainersForRoot(root, active_desk_only);
     for (auto* container : base::Reversed(switachable_containers)) {
       for (auto* child : base::Reversed(container->children())) {
         // Only add windows that the predicate allows.
@@ -156,7 +156,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 
         // Only add windows that have not been added previously from
         // |mru_windows| (if available).
-        if (mru_windows && base::ContainsValue(*mru_windows, child))
+        if (mru_windows && base::Contains(*mru_windows, child))
           continue;
 
         windows.emplace_back(child);
@@ -170,8 +170,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
 }  // namespace
 
 bool CanIncludeWindowInMruList(aura::Window* window) {
-  return ::wm::CanActivateWindow(window) &&
-         !wm::GetWindowState(window)->IsPip();
+  return wm::CanActivateWindow(window) && !WindowState::Get(window)->IsPip();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -211,7 +210,7 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
   // If no longer ignoring window activations, move currently active window
   // to front.
   if (!ignore)
-    SetActiveWindow(wm::GetActiveWindow());
+    SetActiveWindow(window_util::GetActiveWindow());
 }
 
 void MruWindowTracker::AddObserver(Observer* observer) {

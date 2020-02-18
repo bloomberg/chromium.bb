@@ -41,7 +41,6 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/common/features/feature_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -64,6 +63,7 @@
 #include "extensions/renderer/display_source_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extension_interaction_provider.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
 #include "extensions/renderer/guest_view/guest_view_internal_custom_bindings.h"
@@ -101,11 +101,11 @@
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_script_controller.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -115,7 +115,6 @@
 #include "v8/include/v8.h"
 
 using blink::WebDocument;
-using blink::WebScopedUserGesture;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebView;
@@ -184,6 +183,19 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
     }
     args.GetReturnValue().Set(chrome);
   }
+};
+
+class HandleScopeHelper {
+ public:
+  HandleScopeHelper(ScriptContext* script_context)
+      : handle_scope_(script_context->isolate()),
+        context_scope_(script_context->v8_context()) {}
+
+ private:
+  v8::HandleScope handle_scope_;
+  v8::Context::Scope context_scope_;
+
+  DISALLOW_COPY_AND_ASSIGN(HandleScopeHelper);
 };
 
 base::LazyInstance<WorkerScriptContextSet>::DestructorAtExit
@@ -283,11 +295,9 @@ void Dispatcher::DidCreateScriptContext(
   if (context->context_type() == Feature::CONTENT_SCRIPT_CONTEXT)
     InitOriginPermissions(context->extension());
 
-  {
-    std::unique_ptr<ModuleSystem> module_system(
-        new ModuleSystem(context, &source_map_));
-    context->SetModuleSystem(std::move(module_system));
-  }
+  context->SetModuleSystem(
+      std::make_unique<ModuleSystem>(context, &source_map_));
+
   ModuleSystem* module_system = context->module_system();
 
   // Enable natives in startup.
@@ -313,6 +323,9 @@ void Dispatcher::DidCreateScriptContext(
                           elapsed);
       break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
+      // For service workers this is handled in
+      // DidInitializeServiceWorkerContextOnWorkerThread().
+      DCHECK(!context->IsForServiceWorker());
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Blessed", elapsed);
       break;
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
@@ -333,10 +346,6 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::WEBUI_CONTEXT:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
       break;
-    case Feature::SERVICE_WORKER_CONTEXT:
-      // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
-      NOTREACHED();
-      break;
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       UMA_HISTOGRAM_TIMES(
           "Extensions.DidCreateScriptContext_LockScreenExtension", elapsed);
@@ -347,12 +356,15 @@ void Dispatcher::DidCreateScriptContext(
 }
 
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
+    blink::WebServiceWorkerContextProxy* context_proxy,
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
+  // TODO(crbug/961821): We may want to give service workers not registered
+  // by extensions minimal bindings, the same as other webpage-like contexts.
   if (!script_url.SchemeIs(kExtensionScheme)) {
     // Early-out if this isn't a chrome-extension:// scheme, because looking up
     // the extension registry is unnecessary if it's not. Checking this will
@@ -388,14 +400,21 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     return;
   }
 
+  // Only the script specific in the manifest's background data gets bindings.
+  //
+  // TODO(crbug/961821): We may want to give other service workers registered
+  // by extensions minimal bindings, just as we might want to give them to
+  // service workers that aren't registered by extensions.
   ScriptContext* context = new ScriptContext(
-      v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
-      extension, Feature::SERVICE_WORKER_CONTEXT);
+      v8_context, nullptr, extension, Feature::BLESSED_EXTENSION_CONTEXT,
+      extension, Feature::BLESSED_EXTENSION_CONTEXT);
   context->set_url(script_url);
   context->set_service_worker_scope(service_worker_scope);
   context->set_service_worker_version_id(service_worker_version_id);
 
-  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+  if (ExtensionsRendererClient::Get()
+          ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                      script_url)) {
     WorkerThreadDispatcher* worker_dispatcher = WorkerThreadDispatcher::Get();
     std::unique_ptr<IPCMessageSender> ipc_sender =
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
@@ -403,6 +422,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     worker_dispatcher->AddWorkerData(
         service_worker_version_id, context,
         CreateBindingsSystem(std::move(ipc_sender)));
+    worker_thread_util::SetWorkerContextProxy(context_proxy);
 
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
@@ -493,11 +513,9 @@ void Dispatcher::DidStartServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!script_url.SchemeIs(kExtensionScheme)) {
-    // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    return;
-  }
-  if (!ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
+  if (!ExtensionsRendererClient::Get()
+           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                       script_url))
     return;
 
   DCHECK(worker_thread_util::IsWorkerThread());
@@ -511,12 +529,13 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!script_url.SchemeIs(kExtensionScheme)) {
-    // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
-    return;
-  }
-
-  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+  if (!ExtensionsRendererClient::Get()
+           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
+                                                       script_url)) {
+    // If extension APIs in service workers aren't enabled, we just need to
+    // remove the context.
+    g_worker_script_context_set.Get().Remove(v8_context, script_url);
+  } else {
     // TODO(lazyboy/devlin): Should this cleanup happen in a worker class, like
     // WorkerThreadDispatcher? If so, we should move the initialization as well.
     ScriptContext* script_context = WorkerThreadDispatcher::GetScriptContext();
@@ -530,10 +549,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     // the associated bindings system.
     g_worker_script_context_set.Get().Remove(v8_context, script_url);
     WorkerThreadDispatcher::Get()->RemoveWorkerData(service_worker_version_id);
-  } else {
-    // If extension APIs in service workers aren't enabled, we just need to
-    // remove the context.
-    g_worker_script_context_set.Get().Remove(v8_context, script_url);
+    worker_thread_util::SetWorkerContextProxy(nullptr);
   }
 }
 
@@ -686,7 +702,7 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
 
       {"keep_alive", IDR_KEEP_ALIVE_JS},
       {"mojo_bindings", IDR_MOJO_MOJO_BINDINGS_JS},
-      {"extensions/common/mojo/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
+      {"extensions/common/mojom/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
 
       // Custom bindings.
       {"automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS},
@@ -968,7 +984,10 @@ void Dispatcher::OnDispatchEvent(
   content::RenderFrame* background_frame =
       ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
 
-  std::unique_ptr<WebScopedUserGesture> web_user_gesture;
+  // Required for |web_user_gesture|.
+  std::unique_ptr<HandleScopeHelper> v8_handle_scope;
+
+  std::unique_ptr<InteractionProvider::Scope> web_user_gesture;
   // Synthesize a user gesture if this was in response to user action; this is
   // necessary if the gesture was e.g. by clicking on the extension toolbar
   // icon, context menu entry, etc.
@@ -983,8 +1002,9 @@ void Dispatcher::OnDispatchEvent(
         ScriptContextSet::GetMainWorldContextForFrame(background_frame);
     if (background_context && bindings_system_->HasEventListenerInContext(
                                   params.event_name, background_context)) {
-      web_user_gesture.reset(
-          new WebScopedUserGesture(background_frame->GetWebFrame()));
+      v8_handle_scope = std::make_unique<HandleScopeHelper>(background_context);
+      web_user_gesture = ExtensionInteractionProvider::Scope::ForFrame(
+          background_frame->GetWebFrame());
     }
   }
 
@@ -1010,11 +1030,9 @@ void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
   SetCurrentFeatureSessionType(session_type);
   script_context_set_->set_is_lock_screen_context(is_lock_screen_context);
 
-  if (feature_util::ExtensionServiceWorkersEnabled()) {
-    // chrome-extension: resources should be allowed to register ServiceWorkers.
-    blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
-        blink::WebString::FromUTF8(extensions::kExtensionScheme));
-  }
+  // chrome-extension: resources should be allowed to register ServiceWorkers.
+  blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingServiceWorkers(
+      blink::WebString::FromUTF8(extensions::kExtensionScheme));
 
   blink::WebSecurityPolicy::RegisterURLSchemeAsAllowingWasmEvalCSP(
       blink::WebString::FromUTF8(extensions::kExtensionScheme));
@@ -1147,13 +1165,6 @@ void Dispatcher::OnUpdatePermissions(
   extension->permissions_data()->SetPermissions(std::move(active),
                                                 std::move(withheld));
   UpdateOriginPermissions(*extension);
-
-  if (params.uses_default_policy_host_restrictions) {
-    extension->permissions_data()->SetUsesDefaultHostRestrictions();
-  } else {
-    extension->permissions_data()->SetPolicyHostRestrictions(
-        params.policy_blocked_hosts, params.policy_allowed_hosts);
-  }
 
   bindings_system_->OnExtensionPermissionsUpdated(params.extension_id);
   UpdateBindings(extension->id());
@@ -1335,7 +1346,6 @@ bool Dispatcher::IsWithinPlatformApp() {
 }
 
 void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
-  Feature::Context context_type = context->context_type();
   ModuleSystem* module_system = context->module_system();
   bool requires_guest_view_module = false;
 
@@ -1390,7 +1400,8 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // error-providing custom elements for the GuestView types that are not
   // available, and thus all of those types must have been checked and loaded
   // (or not loaded) beforehand.
-  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+  if (context->context_type() == Feature::BLESSED_EXTENSION_CONTEXT &&
+      !context->IsForServiceWorker()) {
     module_system->Require("guestViewDeny");
   }
 }

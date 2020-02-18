@@ -190,6 +190,13 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
   return frame->GetSettings()->GetPrefersReducedMotion();
 }
 
+ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  DCHECK(frame->GetDocument());
+  return frame->GetDocument()->GetStyleEngine().GetForcedColors();
+}
+
 bool MediaValues::ComputeLengthImpl(double value,
                                     CSSPrimitiveValue::UnitType type,
                                     unsigned default_font_size,

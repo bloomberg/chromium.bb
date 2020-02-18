@@ -92,8 +92,10 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
   static std::unique_ptr<PageNodeImpl> Create(
       GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
-      bool is_visible = false) {
-    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible);
+      bool is_visible = false,
+      bool is_audible = false) {
+    return std::make_unique<PageNodeImpl>(graph, wc_proxy, is_visible,
+                                          is_audible);
   }
 };
 
@@ -116,7 +118,7 @@ template <>
 class TestNodeWrapper<SystemNodeImpl> {
  public:
   static TestNodeWrapper<SystemNodeImpl> Create(GraphImpl* graph) {
-    return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNode());
+    return TestNodeWrapper<SystemNodeImpl>(graph->FindOrCreateSystemNodeImpl());
   }
 
   explicit TestNodeWrapper(SystemNodeImpl* impl) : impl_(impl) {}
@@ -150,7 +152,8 @@ class GraphTestHarness : public ::testing::Test {
   }
 
   TestNodeWrapper<SystemNodeImpl> GetSystemNode() {
-    return TestNodeWrapper<SystemNodeImpl>(graph()->FindOrCreateSystemNode());
+    return TestNodeWrapper<SystemNodeImpl>(
+        graph()->FindOrCreateSystemNodeImpl());
   }
 
   // testing::Test:

@@ -90,7 +90,7 @@ void TestBrowserThreadBundle::Init() {
   auto browser_ui_thread_scheduler = BrowserUIThreadScheduler::CreateForTesting(
       sequence_manager(), GetTimeDomain());
   auto default_ui_task_runner =
-      browser_ui_thread_scheduler->GetHandle().GetDefaultTaskRunner();
+      browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
   auto browser_io_task_environment =
       real_io_thread_
           ? std::make_unique<BrowserIOTaskEnvironment>()
@@ -103,8 +103,7 @@ void TestBrowserThreadBundle::Init() {
 
   if (HasIOMainLoop()) {
     CHECK(base::MessageLoopCurrentForIO::IsSet());
-  } else if (main_thread_type() == MainThreadType::UI ||
-             main_thread_type() == MainThreadType::UI_MOCK_TIME) {
+  } else if (main_thread_type() == MainThreadType::UI) {
     CHECK(base::MessageLoopCurrentForUI::IsSet());
   }
 

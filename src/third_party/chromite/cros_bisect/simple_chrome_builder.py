@@ -180,9 +180,7 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
       if result.returncode:
         error_step = 'gn gen'
       else:
-        result = self.chrome_sdk.Ninja(
-            targets=['chrome', 'nacl_helper'],
-            run_args=self.log_output_args)
+        result = self.chrome_sdk.Ninja(run_args=self.log_output_args)
         if result.returncode:
           error_step = 'ninja'
       if error_step:

@@ -8,10 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "call/degraded_call.h"
+
 #include <utility>
 
 #include "absl/memory/memory.h"
-#include "call/degraded_call.h"
 #include "rtc_base/location.h"
 
 namespace webrtc {
@@ -193,12 +194,6 @@ DegradedCall::GetTransportControllerSend() {
 
 Call::Stats DegradedCall::GetStats() const {
   return call_->GetStats();
-}
-
-void DegradedCall::SetBitrateAllocationStrategy(
-    std::unique_ptr<rtc::BitrateAllocationStrategy>
-        bitrate_allocation_strategy) {
-  call_->SetBitrateAllocationStrategy(std::move(bitrate_allocation_strategy));
 }
 
 void DegradedCall::SignalChannelNetworkState(MediaType media,

@@ -12,8 +12,8 @@
 #include "base/android/jni_string.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
+#include "chrome/android/chrome_jni_headers/WebApkPostShareTargetNavigator_jni.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/WebApkPostShareTargetNavigator_jni.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -52,7 +52,11 @@ void AddFile(const std::string& value_name,
   mime_header.append("--" + boundary + delimiter);
   // Next line is the Content-disposition.
   mime_header.append("Content-Disposition: form-data; name=\"" + value_name +
-                     "\"; filename=\"" + file_name + "\"" + delimiter);
+                     "\"");
+  if (!file_name.empty()) {
+    mime_header.append("; filename=\"" + file_name + "\"");
+  }
+  mime_header.append(delimiter);
 
   if (!content_type.empty()) {
     // If Content-type is specified, the next line is that.

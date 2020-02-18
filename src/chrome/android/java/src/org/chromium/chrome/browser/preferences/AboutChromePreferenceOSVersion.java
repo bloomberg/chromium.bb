@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.preference.Preference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -26,11 +27,11 @@ public class AboutChromePreferenceOSVersion extends Preference {
     }
 
     @Override
-    protected void onBindView(View view) {
-        super.onBindView(view);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
         // Show additional information only if the OS version is not supported.
         if (VersionNumberGetter.isCurrentOsVersionSupported()) return;
 
-        view.findViewById(R.id.os_deprecation_warning).setVisibility(View.VISIBLE);
+        holder.findViewById(R.id.os_deprecation_warning).setVisibility(View.VISIBLE);
     }
 }

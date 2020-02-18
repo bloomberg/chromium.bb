@@ -110,8 +110,13 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
     }
 
     ctx->params->frameNumThreads = avctx->thread_count;
-    ctx->params->fpsNum          = avctx->time_base.den;
-    ctx->params->fpsDenom        = avctx->time_base.num * avctx->ticks_per_frame;
+    if (avctx->framerate.num > 0 && avctx->framerate.den > 0) {
+        ctx->params->fpsNum      = avctx->framerate.num;
+        ctx->params->fpsDenom    = avctx->framerate.den;
+    } else {
+        ctx->params->fpsNum      = avctx->time_base.den;
+        ctx->params->fpsDenom    = avctx->time_base.num * avctx->ticks_per_frame;
+    }
     ctx->params->sourceWidth     = avctx->width;
     ctx->params->sourceHeight    = avctx->height;
     ctx->params->bEnablePsnr     = !!(avctx->flags & AV_CODEC_FLAG_PSNR);
@@ -128,6 +133,14 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
         return AVERROR(EINVAL);
     }
 
+
+    ctx->params->vui.bEnableVideoSignalTypePresentFlag = 1;
+
+    ctx->params->vui.bEnableVideoFullRangeFlag = avctx->pix_fmt == AV_PIX_FMT_YUVJ420P ||
+                                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ422P ||
+                                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ444P ||
+                                                 avctx->color_range == AVCOL_RANGE_JPEG;
+
     if ((avctx->color_primaries <= AVCOL_PRI_SMPTE432 &&
          avctx->color_primaries != AVCOL_PRI_UNSPECIFIED) ||
         (avctx->color_trc <= AVCOL_TRC_ARIB_STD_B67 &&
@@ -135,7 +148,6 @@ static av_cold int libx265_encode_init(AVCodecContext *avctx)
         (avctx->colorspace <= AVCOL_SPC_ICTCP &&
          avctx->colorspace != AVCOL_SPC_UNSPECIFIED)) {
 
-        ctx->params->vui.bEnableVideoSignalTypePresentFlag  = 1;
         ctx->params->vui.bEnableColorDescriptionPresentFlag = 1;
 
         // x265 validates the parameters internally
@@ -304,27 +316,36 @@ static av_cold int libx265_encode_set_roi(libx265Context *ctx, const AVFrame *fr
             int mb_size = (ctx->params->rc.qgSize == 8) ? 8 : 16;
             int mbx = (frame->width + mb_size - 1) / mb_size;
             int mby = (frame->height + mb_size - 1) / mb_size;
+            int qp_range = 51 + 6 * (pic->bitDepth - 8);
             int nb_rois;
-            AVRegionOfInterest *roi;
+            const AVRegionOfInterest *roi;
+            uint32_t roi_size;
             float *qoffsets;         /* will be freed after encode is called. */
+
+            roi = (const AVRegionOfInterest*)sd->data;
+            roi_size = roi->self_size;
+            if (!roi_size || sd->size % roi_size != 0) {
+                av_log(ctx, AV_LOG_ERROR, "Invalid AVRegionOfInterest.self_size.\n");
+                return AVERROR(EINVAL);
+            }
+            nb_rois = sd->size / roi_size;
+
             qoffsets = av_mallocz_array(mbx * mby, sizeof(*qoffsets));
             if (!qoffsets)
                 return AVERROR(ENOMEM);
 
-            nb_rois = sd->size / sizeof(AVRegionOfInterest);
-            roi = (AVRegionOfInterest*)sd->data;
-            for (int count = 0; count < nb_rois; count++) {
-                int starty = FFMIN(mby, roi->top / mb_size);
-                int endy   = FFMIN(mby, (roi->bottom + mb_size - 1)/ mb_size);
-                int startx = FFMIN(mbx, roi->left / mb_size);
-                int endx   = FFMIN(mbx, (roi->right + mb_size - 1)/ mb_size);
+            // This list must be iterated in reverse because the first
+            // region in the list applies when regions overlap.
+            for (int i = nb_rois - 1; i >= 0; i--) {
+                int startx, endx, starty, endy;
                 float qoffset;
 
-                if (roi->self_size == 0) {
-                    av_free(qoffsets);
-                    av_log(ctx, AV_LOG_ERROR, "AVRegionOfInterest.self_size must be set to sizeof(AVRegionOfInterest).\n");
-                    return AVERROR(EINVAL);
-                }
+                roi = (const AVRegionOfInterest*)(sd->data + roi_size * i);
+
+                starty = FFMIN(mby, roi->top / mb_size);
+                endy   = FFMIN(mby, (roi->bottom + mb_size - 1)/ mb_size);
+                startx = FFMIN(mbx, roi->left / mb_size);
+                endx   = FFMIN(mbx, (roi->right + mb_size - 1)/ mb_size);
 
                 if (roi->qoffset.den == 0) {
                     av_free(qoffsets);
@@ -332,18 +353,11 @@ static av_cold int libx265_encode_set_roi(libx265Context *ctx, const AVFrame *fr
                     return AVERROR(EINVAL);
                 }
                 qoffset = roi->qoffset.num * 1.0f / roi->qoffset.den;
-                qoffset = av_clipf(qoffset, -1.0f, 1.0f);
-
-                /* qp range of x265 is from 0 to 51, just choose 25 as the scale value,
-                 * so the range of final qoffset is [-25.0, 25.0].
-                 */
-                qoffset = qoffset * 25;
+                qoffset = av_clipf(qoffset * qp_range, -qp_range, +qp_range);
 
                 for (int y = starty; y < endy; y++)
                     for (int x = startx; x < endx; x++)
                         qoffsets[x + y*mbx] = qoffset;
-
-                roi = (AVRegionOfInterest*)((char*)roi + roi->self_size);
             }
 
             pic->quantOffsets = qoffsets;
@@ -449,8 +463,11 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
 static const enum AVPixelFormat x265_csp_eight[] = {
     AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ420P,
     AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUVJ422P,
     AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ444P,
     AV_PIX_FMT_GBRP,
     AV_PIX_FMT_GRAY8,
     AV_PIX_FMT_NONE
@@ -458,8 +475,11 @@ static const enum AVPixelFormat x265_csp_eight[] = {
 
 static const enum AVPixelFormat x265_csp_ten[] = {
     AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ420P,
     AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUVJ422P,
     AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ444P,
     AV_PIX_FMT_GBRP,
     AV_PIX_FMT_YUV420P10,
     AV_PIX_FMT_YUV422P10,
@@ -472,8 +492,11 @@ static const enum AVPixelFormat x265_csp_ten[] = {
 
 static const enum AVPixelFormat x265_csp_twelve[] = {
     AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUVJ420P,
     AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUVJ422P,
     AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ444P,
     AV_PIX_FMT_GBRP,
     AV_PIX_FMT_YUV420P10,
     AV_PIX_FMT_YUV422P10,

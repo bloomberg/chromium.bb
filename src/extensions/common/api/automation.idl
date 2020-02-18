@@ -21,20 +21,21 @@
     checkedStateChanged,
     childrenChanged,
     clicked,
+    controlsChanged,
     documentSelectionChanged,
     documentTitleChanged,
     endOfTest,
     expandedChanged,
     focus,
     focusContext,
-    imageFrameUpdated,
     hide,
     hitTestResult,
     hover,
+    imageFrameUpdated,
     invalidStatusChanged,
     layoutComplete,
-    liveRegionCreated,
     liveRegionChanged,
+    liveRegionCreated,
     loadComplete,
     loadStart,
     locationChanged,
@@ -67,6 +68,7 @@
     textSelectionChanged,
     windowActivated,
     windowDeactivated,
+    windowVisibilityChanged,
     treeChanged,
     valueChanged
   };
@@ -505,6 +507,22 @@
     DOMString description;
   };
 
+  // The string which the indices are relative to is not included in this
+  // structure. See documentation on $(ref:languageAnnotationForStringAttribute)
+  // for details on how to associate this object with a string.
+  // Also, the start and end indices always point to the first code unit of a
+  // valid code-point.
+  dictionary LanguageSpan {
+    // Inclusive start index of substring that contains language.
+    long startIndex;
+    // Exclusive end index of substring that contains language.
+    long endIndex;
+    // Detected language for substring.
+    DOMString language;
+    // Probability that language is correct.
+    double probability;
+  };
+
   // A single node in an Automation tree.
   [nocompile, noinline_doc] dictionary AutomationNode {
     // The root node of the tree containing this AutomationNode.
@@ -571,6 +589,16 @@
     // The start and end index of each word in an inline text box.
     long[]? wordStarts;
     long[]? wordEnds;
+
+    // The start index of each word within the node's name. This is different
+    // from wordStarts because it is not restricted to inline text boxes and can
+    // be used for any type of element.
+    long[]? nonInlineTextWordStarts;
+
+    // The end index of each word within the node's name. This is different
+    // from wordEnds because it is not restricted to inline text boxes and can
+    // be used for any type of element.
+    long[]? nonInlineTextWordEnds;
 
     // The nodes, if any, which this node is specified to control via
     // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
@@ -1126,5 +1154,16 @@
     // the value where the selection starts or ends, respectively.
     [nocompile] static void setDocumentSelection(
         SetDocumentSelectionParams params);
+
+    // Returns the detected languages for the provided string attribute as an
+    // array of LanguageSpan objects. There are several guarantees about the
+    // format of the LanguageSpan array:
+    // 1. Is either empty or contains LanguageSpans that cover all indices in
+    // the associated string attribute value.
+    // 2. Is sorted by increasing startIndex (those with smaller startIndex
+    // appear first).
+    // 3. LanguageSpans are non-overlapping and contain exactly one language.
+    [nocompile] LanguageSpan[] languageAnnotationForStringAttribute(
+        DOMString attribute);
   };
 };

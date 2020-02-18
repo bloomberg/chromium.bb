@@ -33,12 +33,6 @@
 
 namespace media_router {
 
-// Matcher for objects that uses Equals() member function for equality check.
-// Use only for comparing base::MockCallback.
-MATCHER_P(Equals, other, "") {
-  return arg.Equals(other);
-}
-
 // Matcher for IssueInfo title.
 MATCHER_P(IssueTitleEquals, title, "") {
   return arg.info().title == title;

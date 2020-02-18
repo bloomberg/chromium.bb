@@ -22,8 +22,7 @@ namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device)
-    : BrowserCompositorOutputSurface(std::move(software_device)),
-      weak_factory_(this) {}
+    : BrowserCompositorOutputSurface(std::move(software_device)) {}
 
 SoftwareBrowserCompositorOutputSurface::
     ~SoftwareBrowserCompositorOutputSurface() {
@@ -67,9 +66,9 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   base::TimeTicks swap_time = base::TimeTicks::Now();
   for (auto& latency : frame.latency_info) {
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, swap_time, 1);
+        ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, swap_time);
     latency.AddLatencyNumberWithTimestamp(
-        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_time, 1);
+        ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_time);
   }
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
@@ -81,14 +80,15 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 
   software_device()->OnSwapBuffers(base::BindOnce(
       &SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback,
-      weak_factory_.GetWeakPtr(), frame.latency_info));
+      weak_factory_.GetWeakPtr(), frame.latency_info, swap_time));
 }
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
     const std::vector<ui::LatencyInfo>& latency_info,
+    const base::TimeTicks& swap_time,
     const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck({swap_time, swap_time});
 #if defined(USE_X11)
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);

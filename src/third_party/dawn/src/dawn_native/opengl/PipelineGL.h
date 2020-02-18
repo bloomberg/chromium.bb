@@ -17,13 +17,13 @@
 
 #include "dawn_native/Pipeline.h"
 
-#include "glad/glad.h"
+#include "dawn_native/opengl/opengl_platform.h"
 
 #include <vector>
 
 namespace dawn_native { namespace opengl {
 
-    class Device;
+    struct OpenGLFunctions;
     class PersistentPipelineState;
     class PipelineLayout;
     class ShaderModule;
@@ -32,22 +32,21 @@ namespace dawn_native { namespace opengl {
       public:
         PipelineGL();
 
-        void Initialize(const PipelineLayout* layout, const PerStage<const ShaderModule*>& modules);
+        void Initialize(const OpenGLFunctions& gl,
+                        const PipelineLayout* layout,
+                        const PerStage<const ShaderModule*>& modules);
 
-        using GLPushConstantInfo = std::array<GLint, kMaxPushConstants>;
         using BindingLocations =
             std::array<std::array<GLint, kMaxBindingsPerGroup>, kMaxBindGroups>;
 
-        const GLPushConstantInfo& GetGLPushConstants(dawn::ShaderStage stage) const;
         const std::vector<GLuint>& GetTextureUnitsForSampler(GLuint index) const;
         const std::vector<GLuint>& GetTextureUnitsForTextureView(GLuint index) const;
         GLuint GetProgramHandle() const;
 
-        void ApplyNow();
+        void ApplyNow(const OpenGLFunctions& gl);
 
       private:
         GLuint mProgram;
-        PerStage<GLPushConstantInfo> mGlPushConstants;
         std::vector<std::vector<GLuint>> mUnitsForSamplers;
         std::vector<std::vector<GLuint>> mUnitsForTextures;
     };

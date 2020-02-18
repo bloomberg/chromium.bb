@@ -33,6 +33,7 @@
 #include "chrome/test/chromedriver/session_thread_map.h"
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/version.h"
+#include "chrome/test/chromedriver/webauthn_commands.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -115,18 +116,14 @@ CommandMapping::~CommandMapping() {}
 HttpHandler::HttpHandler(const std::string& url_base)
     : url_base_(url_base),
       received_shutdown_(false),
-      command_map_(new CommandMap()),
-      weak_ptr_factory_(this) {}
+      command_map_(new CommandMap()) {}
 
 HttpHandler::HttpHandler(
     const base::Closure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& url_base,
     int adb_port)
-    : quit_func_(quit_func),
-      url_base_(url_base),
-      received_shutdown_(false),
-      weak_ptr_factory_(this) {
+    : quit_func_(quit_func), url_base_(url_base), received_shutdown_(false) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
@@ -191,6 +188,9 @@ HttpHandler::HttpHandler(
       CommandMapping(
           kDelete, "session/:sessionId/window",
           WrapToCommand("CloseWindow", base::BindRepeating(&ExecuteClose))),
+      CommandMapping(
+          kPost, "session/:sessionId/window/new",
+          WrapToCommand("NewWindow", base::BindRepeating(&ExecuteNewWindow))),
       CommandMapping(
           kPost, "session/:sessionId/window",
           WrapToCommand("SwitchToWindow",
@@ -511,20 +511,6 @@ HttpHandler::HttpHandler(
                                    base::BindRepeating(&ExecuteGetElementSize),
                                    false /*w3c_standard_command*/)),
 
-      // No W3C equivalent.
-      CommandMapping(
-          kGet, "session/:sessionId/orientation",
-          WrapToCommand("GetScreenOrientation",
-                        base::BindRepeating(&ExecuteGetScreenOrientation),
-                        false /*w3c_standard_command*/)),
-
-      // No W3C equivalent.
-      CommandMapping(
-          kPost, "session/:sessionId/orientation",
-          WrapToCommand("SetScreenOrientation",
-                        base::BindRepeating(&ExecuteSetScreenOrientation),
-                        false /*w3c_standard_command*/)),
-
       // Similar to W3C GET /session/:sessionId/alert/text.
       CommandMapping(
           kGet, "session/:sessionId/alert_text",
@@ -753,6 +739,23 @@ HttpHandler::HttpHandler(
           WrapToCommand("SetNetworkConnection",
                         base::BindRepeating(&ExecuteSetNetworkConnection))),
 
+      // Extension for WebAuthn API:
+      // TODO(nsatragno): Update the link to the official spec once it lands.
+      // https://github.com/w3c/webauthn/pull/1256
+      CommandMapping(kPost, "session/:sessionId/webauthn/authenticator",
+                     WrapToCommand("AddVirtualAuthenticator",
+                                   base::BindRepeating(
+                                       &ExecuteWebAuthnCommand,
+                                       base::BindRepeating(
+                                           &ExecuteAddVirtualAuthenticator)))),
+      CommandMapping(
+          kDelete, "session/:sessionId/webauthn/authenticator/:authenticatorId",
+          WrapToCommand(
+              "RemoveVirtualAuthenticator",
+              base::BindRepeating(
+                  &ExecuteWebAuthnCommand,
+                  base::BindRepeating(&ExecuteRemoveVirtualAuthenticator)))),
+
       //
       // Non-standard extension commands
       //
@@ -766,6 +769,30 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/se/log/types",
           WrapToCommand("GetLogTypes",
                         base::BindRepeating(&ExecuteGetAvailableLogTypes))),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kPost, "session/:sessionId/file",
+          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
+      // Command is used by Ruby OSS mode
+      // No W3C equivalent.
+      CommandMapping(kGet, "session/:sessionId/element/:id/value",
+                     WrapToCommand("GetElementValue",
+                                   base::BindRepeating(&ExecuteGetElementValue),
+                                   false /*w3c_standard_command*/)),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kGet, kShutdownPath,
+          base::BindRepeating(
+              &ExecuteQuitAll,
+              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
+              &session_thread_map_)),
+      // Command is used by Selenium Java tests
+      CommandMapping(
+          kPost, kShutdownPath,
+          base::BindRepeating(
+              &ExecuteQuitAll,
+              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
+              &session_thread_map_)),
 
       //
       // ChromeDriver specific extension commands.
@@ -826,7 +853,8 @@ HttpHandler::HttpHandler(
                         base::BindRepeating(&ExecuteGetIssueMessage))),
 
       //
-      // Commands of unknown origins.
+      // Commands used for internal testing only.
+      // They are used in run_py_tests.py
       //
 
       CommandMapping(kGet, "session/:sessionId/alert",
@@ -835,46 +863,9 @@ HttpHandler::HttpHandler(
                                        &ExecuteAlertCommand,
                                        base::BindRepeating(&ExecuteGetAlert)))),
       CommandMapping(
-          kPost, "session/:sessionId/file",
-          WrapToCommand("UploadFile", base::BindRepeating(&ExecuteUploadFile))),
-      CommandMapping(
-          kGet, "session/:sessionId/element/:id/value",
-          WrapToCommand("GetElementValue",
-                        base::BindRepeating(&ExecuteGetElementValue))),
-      CommandMapping(
-          kPost, "session/:sessionId/element/:id/hover",
-          WrapToCommand("HoverElement",
-                        base::BindRepeating(&ExecuteHoverOverElement))),
-      CommandMapping(
-          kDelete, "session/:sessionId/orientation",
-          WrapToCommand("DeleteScreenOrientation",
-                        base::BindRepeating(&ExecuteDeleteScreenOrientation))),
-      CommandMapping(
-          kGet, kShutdownPath,
-          base::BindRepeating(
-              &ExecuteQuitAll,
-              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
-              &session_thread_map_)),
-      CommandMapping(
-          kPost, kShutdownPath,
-          base::BindRepeating(
-              &ExecuteQuitAll,
-              WrapToCommand("QuitAll", base::BindRepeating(&ExecuteQuit, true)),
-              &session_thread_map_)),
-      CommandMapping(
           kGet, "session/:sessionId/is_loading",
           WrapToCommand("IsLoading", base::BindRepeating(&ExecuteIsLoading))),
-      CommandMapping(
-          kGet, "session/:sessionId/autoreport",
-          WrapToCommand("IsAutoReporting",
-                        base::BindRepeating(&ExecuteIsAutoReporting))),
-      CommandMapping(
-          kPost, "session/:sessionId/autoreport",
-          WrapToCommand("SetAutoReporting",
-                        base::BindRepeating(&ExecuteSetAutoReporting))),
-      CommandMapping(
-          kPost, "session/:sessionId/touch/pinch",
-          WrapToCommand("TouchPinch", base::BindRepeating(&ExecuteTouchPinch))),
+
   };
   command_map_.reset(new CommandMap(commands, commands + base::size(commands)));
 }

@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 
-#include <array>
-
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -43,12 +41,12 @@
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/assigned_nodes_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -157,8 +155,8 @@ const HeapVector<Member<Node>> HTMLSlotElement::AssignedNodesForBinding(
 const HeapVector<Member<Element>> HTMLSlotElement::AssignedElements() {
   HeapVector<Member<Element>> elements;
   for (auto& node : AssignedNodes()) {
-    if (Element* element = ToElementOrNull(node))
-      elements.push_back(element);
+    if (auto* element = DynamicTo<Element>(node.Get()))
+      elements.push_back(*element);
   }
   return elements;
 }
@@ -167,8 +165,8 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
     const AssignedNodesOptions* options) {
   HeapVector<Member<Element>> elements;
   for (auto& node : AssignedNodesForBinding(options)) {
-    if (Element* element = ToElementOrNull(node))
-      elements.push_back(element);
+    if (auto* element = DynamicTo<Element>(node.Get()))
+      elements.push_back(*element);
   }
   return elements;
 }
@@ -184,15 +182,11 @@ void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
 
 void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
   DCHECK(host_child.IsSlotable());
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
-    assigned_nodes_index_.insert(&host_child, assigned_nodes_.size());
   assigned_nodes_.push_back(&host_child);
 }
 
 void HTMLSlotElement::ClearAssignedNodes() {
   assigned_nodes_.clear();
-  if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled())
-    assigned_nodes_index_.clear();
 }
 
 void HTMLSlotElement::ClearAssignedNodesAndFlatTreeChildren() {
@@ -249,32 +243,6 @@ void HTMLSlotElement::DispatchSlotChangeEvent() {
   DispatchScopedEvent(*event);
 }
 
-Node* HTMLSlotElement::AssignedNodeNextTo(const Node& node) const {
-  DCHECK(!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled());
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-
-  auto it = assigned_nodes_index_.find(&node);
-  DCHECK(it != assigned_nodes_index_.end());
-  unsigned index = it->value;
-  if (index + 1 == assigned_nodes_.size())
-    return nullptr;
-  return assigned_nodes_[index + 1].Get();
-}
-
-Node* HTMLSlotElement::AssignedNodePreviousTo(const Node& node) const {
-  DCHECK(!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled());
-  DCHECK(SupportsAssignment());
-  ContainingShadowRoot()->GetSlotAssignment().RecalcAssignment();
-
-  auto it = assigned_nodes_index_.find(&node);
-  DCHECK(it != assigned_nodes_index_.end());
-  unsigned index = it->value;
-  if (index == 0)
-    return nullptr;
-  return assigned_nodes_[index - 1].Get();
-}
-
 AtomicString HTMLSlotElement::GetName() const {
   return NormalizeSlotName(FastGetAttribute(kNameAttr));
 }
@@ -283,7 +251,15 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
   if (SupportsAssignment()) {
+    LayoutObject* layout_object = GetLayoutObject();
     AttachContext children_context(context);
+    const ComputedStyle* style = GetComputedStyle();
+    if (layout_object || !style || style->IsEnsuredInDisplayNone()) {
+      children_context.previous_in_flow = nullptr;
+      children_context.parent = layout_object;
+      children_context.next_sibling = nullptr;
+      children_context.next_sibling_valid = true;
+    }
 
     for (auto& node : AssignedNodes())
       node->AttachLayoutTree(children_context);
@@ -292,25 +268,23 @@ void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
   }
 }
 
-void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
+void HTMLSlotElement::DetachLayoutTree(bool performing_reattach) {
   if (SupportsAssignment()) {
     const HeapVector<Member<Node>>& flat_tree_children = assigned_nodes_;
     for (auto& node : flat_tree_children)
-      node->DetachLayoutTree(context);
+      node->DetachLayoutTree(performing_reattach);
   }
-  HTMLElement::DetachLayoutTree(context);
+  HTMLElement::DetachLayoutTree(performing_reattach);
 }
 
 void HTMLSlotElement::RebuildDistributedChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
-  if (!SupportsAssignment())
-    return;
-
-  const HeapVector<Member<Node>>& assigned_nodes = AssignedNodes();
+  DCHECK(SupportsAssignment());
 
   // This loop traverses the nodes from right to left for the same reason as the
   // one described in ContainerNode::RebuildChildrenLayoutTrees().
-  for (auto it = assigned_nodes.rbegin(); it != assigned_nodes.rend(); ++it) {
+  for (auto it = flat_tree_children_.rbegin(); it != flat_tree_children_.rend();
+       ++it) {
     RebuildLayoutTreeForChild(*it, whitespace_attacher);
   }
 }
@@ -412,8 +386,8 @@ void HTMLSlotElement::DidRecalcStyle(const StyleRecalcChange change) {
   for (auto& node : assigned_nodes_) {
     if (!change.TraverseChild(*node))
       continue;
-    if (node->IsElementNode())
-      ToElement(node)->RecalcStyle(change);
+    if (auto* element = DynamicTo<Element>(node.Get()))
+      element->RecalcStyle(change);
     else if (auto* text_node = DynamicTo<Text>(node.Get()))
       text_node->RecalcTextStyle(change);
   }
@@ -423,14 +397,15 @@ void HTMLSlotElement::NotifySlottedNodesOfFlatTreeChangeByDynamicProgramming(
     const HeapVector<Member<Node>>& old_slotted,
     const HeapVector<Member<Node>>& new_slotted) {
   // Use dynamic programming to minimize the number of nodes being reattached.
-  using LCSTable = std::array<std::array<wtf_size_t, kLCSTableSizeLimit>,
-                              kLCSTableSizeLimit>;
+  using LCSTable =
+      Vector<LCSArray<wtf_size_t, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
   using Backtrack = std::pair<wtf_size_t, wtf_size_t>;
   using BacktrackTable =
-      std::array<std::array<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
+      Vector<LCSArray<Backtrack, kLCSTableSizeLimit>, kLCSTableSizeLimit>;
 
-  DEFINE_STATIC_LOCAL(LCSTable*, lcs_table, (new LCSTable));
-  DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table, (new BacktrackTable));
+  DEFINE_STATIC_LOCAL(LCSTable*, lcs_table, (new LCSTable(kLCSTableSizeLimit)));
+  DEFINE_STATIC_LOCAL(BacktrackTable*, backtrack_table,
+                      (new BacktrackTable(kLCSTableSizeLimit)));
 
   FillLongestCommonSubsequenceDynamicProgrammingTable(
       old_slotted, new_slotted, *lcs_table, *backtrack_table);
@@ -556,21 +531,12 @@ bool HTMLSlotElement::HasAssignedNodesSlow() const {
   return assignment.FindHostChildBySlotName(GetName());
 }
 
-bool HTMLSlotElement::FindHostChildWithSameSlotName() const {
-  ShadowRoot* root = ContainingShadowRoot();
-  DCHECK(root);
-  DCHECK(root->IsV1());
-  SlotAssignment& assignment = root->GetSlotAssignment();
-  return assignment.FindHostChildBySlotName(GetName());
-}
-
 int HTMLSlotElement::tabIndex() const {
   return Element::tabIndex();
 }
 
 void HTMLSlotElement::Trace(Visitor* visitor) {
   visitor->Trace(assigned_nodes_);
-  visitor->Trace(assigned_nodes_index_);
   visitor->Trace(flat_tree_children_);
   visitor->Trace(assigned_nodes_candidates_);
   HTMLElement::Trace(visitor);

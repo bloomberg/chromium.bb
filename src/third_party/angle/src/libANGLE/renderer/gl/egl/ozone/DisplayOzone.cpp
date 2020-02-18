@@ -487,7 +487,7 @@ egl::Error DisplayOzone::initialize(egl::Display *display)
         "EGL_EXT_image_dma_buf_import",
         "EGL_KHR_surfaceless_context",
     };
-    for (auto &ext : necessaryExtensions)
+    for (const char *ext : necessaryExtensions)
     {
         if (!mEGL->hasExtension(ext))
         {
@@ -1073,9 +1073,14 @@ WorkerContext *DisplayOzone::createWorkerContext(std::string *infoLog,
     return new WorkerContextOzone(context, mEGL);
 }
 
+void DisplayOzone::initializeFrontendFeatures(angle::FrontendFeatures *features) const
+{
+    mRenderer->initializeFrontendFeatures(features);
+}
+
 void DisplayOzone::populateFeatureList(angle::FeatureList *features)
 {
-    mRenderer->getWorkarounds().populateFeatureList(features);
+    mRenderer->getFeatures().populateFeatureList(features);
 }
 
 }  // namespace rx

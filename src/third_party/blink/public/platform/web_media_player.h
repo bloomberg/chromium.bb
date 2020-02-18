@@ -34,11 +34,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/surface_id.h"
-#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -54,7 +54,6 @@ class GLES2Interface;
 
 namespace blink {
 
-class WebAudioSourceProvider;
 class WebContentDecryptionModule;
 class WebMediaPlayerSource;
 class WebString;
@@ -215,6 +214,10 @@ class WebMediaPlayer {
   virtual uint64_t AudioDecodedByteCount() const = 0;
   virtual uint64_t VideoDecodedByteCount() const = 0;
 
+  // Returns true if the player has a frame available for presentation. Usually
+  // this just means the first frame has been delivered.
+  virtual bool HasAvailableVideoFrame() const = 0;
+
   // |already_uploaded_id| indicates the unique_id of the frame last uploaded
   //   to this destination. It should only be set by the caller if the contents
   //   of the destination are known not to have changed since that upload.
@@ -337,7 +340,9 @@ class WebMediaPlayer {
     return false;
   }
 
-  virtual WebAudioSourceProvider* GetAudioSourceProvider() { return nullptr; }
+  virtual scoped_refptr<WebAudioSourceProviderImpl> GetAudioSourceProvider() {
+    return nullptr;
+  }
 
   virtual void SetContentDecryptionModule(
       WebContentDecryptionModule* cdm,

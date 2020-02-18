@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -21,17 +22,17 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
 
@@ -56,7 +57,7 @@ class ASH_EXPORT AppListControllerImpl
       public ash::ShellObserver,
       public OverviewObserver,
       public TabletModeObserver,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public WallpaperControllerObserver,
       public DefaultVoiceInteractionObserver,
       public WindowTreeHostManager::Observer,
@@ -75,6 +76,7 @@ class ASH_EXPORT AppListControllerImpl
 
   // app_list::AppListController:
   void SetClient(app_list::AppListClient* client) override;
+  app_list::AppListClient* GetClient() override;
   void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) override;
   void AddItemToFolder(std::unique_ptr<ash::AppListItemMetadata> app_item,
                        const std::string& folder_id) override;
@@ -125,6 +127,7 @@ class ASH_EXPORT AppListControllerImpl
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppListAndSwitchToState(ash::AppListState state) override;
   void ShowAppList() override;
+  aura::Window* GetWindow() override;
 
   // app_list::AppListModelObserver:
   void OnAppListItemAdded(app_list::AppListItem* item) override;
@@ -182,18 +185,26 @@ class ASH_EXPORT AppListControllerImpl
                     AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
                            GetContextMenuModelCallback callback) override;
+  ui::ImplicitAnimationObserver* GetAnimationObserver(
+      ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
   bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
                                   const gfx::Point& screen_location) override;
   bool KeyboardTraversalEngaged() override;
   bool CanProcessEventsOnApplistViews() override;
+  bool ShouldDismissImmediately() override;
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  int GetTargetYForAppListHide(aura::Window* root_window) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
+  void NotifySearchResultsForLogging(
+      const base::string16& raw_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
@@ -202,6 +213,7 @@ class ASH_EXPORT AppListControllerImpl
       ash::AppListViewState state) override;
   void GetAppLaunchedMetricParams(
       app_list::AppLaunchedMetricParams* metric_params) override;
+  gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
@@ -211,6 +223,7 @@ class ASH_EXPORT AppListControllerImpl
   void NotifyAppListTargetVisibilityChanged(bool visible);
 
   // ShellObserver:
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
   void OnShellDestroying() override;
 
   // OverviewObserver:
@@ -221,7 +234,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnTabletModeEnded() override;
 
   // KeyboardControllerObserver:
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
   // WallpaperControllerObserver:
   void OnWallpaperColorsChanged() override;
@@ -261,8 +274,6 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
-  bool ShouldShowShelfOnHomeScreen() const override;
-  bool ShouldShowStatusAreaOnHomeScreen() const override;
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
                                              bool launcher_will_show) override;
 
@@ -273,22 +284,21 @@ class ASH_EXPORT AppListControllerImpl
 
   void SetKeyboardTraversalMode(bool engaged);
 
-  // Handles app list button press event. (Search key should trigger the same
+  // Handles home button press event. (Search key should trigger the same
   // behavior.) All three parameters are only used in clamshell mode.
   // |display_id| is the id of display where app list should toggle.
   // |show_source| is the source of the event. |event_time_stamp| records the
   // event timestamp.
-  ash::ShelfAction OnAppListButtonPressed(
-      int64_t display_id,
-      app_list::AppListShowSource show_source,
-      base::TimeTicks event_time_stamp);
+  ash::ShelfAction OnHomeButtonPressed(int64_t display_id,
+                                       app_list::AppListShowSource show_source,
+                                       base::TimeTicks event_time_stamp);
 
   // Returns current visibility of the Assistant page.
   bool IsShowingEmbeddedAssistantUI() const;
 
   // Get updated app list view state after dragging from shelf.
   ash::AppListViewState CalculateStateAfterShelfDrag(
-      const ui::GestureEvent& gesture_in_screen,
+      const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
   void SetAppListModelForTest(std::unique_ptr<app_list::AppListModel> model);
@@ -302,6 +312,20 @@ class ASH_EXPORT AppListControllerImpl
   void RecordShelfAppLaunched(
       base::Optional<AppListViewState> recorded_app_list_view_state,
       base::Optional<bool> home_launcher_shown);
+
+  // Updates which container the launcher window should be in.
+  void UpdateLauncherContainer(
+      base::Optional<int64_t> display_id = base::nullopt);
+
+  // Gets the container which should contain the AppList.
+  int GetContainerId() const;
+
+  // Returns whether the launcher should show behinds apps or infront of them.
+  bool ShouldLauncherShowBehindApps() const;
+
+  // Returns the parent window of the applist for a |display_id|.
+  aura::Window* GetContainerForDisplayId(
+      base::Optional<int64_t> display_id = base::nullopt);
 
  private:
   // HomeScreenDelegate:
@@ -323,9 +347,6 @@ class ASH_EXPORT AppListControllerImpl
   int64_t GetDisplayIdToShowAppListOn();
 
   void ResetHomeLauncherIfShown();
-
-  // Updates which container the launcher window should be in.
-  void UpdateLauncherContainer();
 
   // Returns the length of the most recent query.
   int GetLastQueryLength();
@@ -353,6 +374,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // True if Shutdown() has been called.
   bool is_shutdown_ = false;
+
+  // Whether to immediately dismiss the AppListView.
+  bool should_dismiss_immediately_ = false;
 
   // Used in mojo callings to specify the profile whose app list data is
   // read/written by Ash side through IPC. Notice that in multi-profile mode,

@@ -12,8 +12,6 @@ jumbo_source_set("render") {
     "cpdf_charposlist.h",
     "cpdf_devicebuffer.cpp",
     "cpdf_devicebuffer.h",
-    "cpdf_dibbase.cpp",
-    "cpdf_dibbase.h",
     "cpdf_dibtransferfunc.cpp",
     "cpdf_dibtransferfunc.h",
     "cpdf_docrenderdata.cpp",
@@ -24,10 +22,10 @@ jumbo_source_set("render") {
     "cpdf_imageloader.h",
     "cpdf_imagerenderer.cpp",
     "cpdf_imagerenderer.h",
-    "cpdf_occontext.cpp",
-    "cpdf_occontext.h",
     "cpdf_pagerendercache.cpp",
     "cpdf_pagerendercache.h",
+    "cpdf_pagerendercontext.cpp",
+    "cpdf_pagerendercontext.h",
     "cpdf_progressiverenderer.cpp",
     "cpdf_progressiverenderer.h",
     "cpdf_rendercontext.cpp",
@@ -42,12 +40,10 @@ jumbo_source_set("render") {
     "cpdf_textrenderer.h",
     "cpdf_transferfunc.cpp",
     "cpdf_transferfunc.h",
-    "cpdf_transparency.cpp",
-    "cpdf_transparency.h",
     "cpdf_type3cache.cpp",
     "cpdf_type3cache.h",
-    "cpdf_type3glyphs.cpp",
-    "cpdf_type3glyphs.h",
+    "cpdf_type3glyphmap.cpp",
+    "cpdf_type3glyphmap.h",
   ]
   configs += [ "../../../:pdfium_core_config" ]
   deps = [
@@ -59,10 +55,7 @@ jumbo_source_set("render") {
     "../page",
     "../parser",
   ]
-  allow_circular_includes_from = [
-    "../parser",
-    "../page",
-  ]
+  allow_circular_includes_from = [ "../page" ]
   visibility = [ "../../../*" ]
 }
 

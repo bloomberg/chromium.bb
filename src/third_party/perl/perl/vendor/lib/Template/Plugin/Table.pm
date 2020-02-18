@@ -36,7 +36,7 @@ our $AUTOLOAD;
 # It calculates the shape of the permutation table based on the ROWS
 # or COLS parameters specified in the $args hash reference.  The
 # OVERLAP parameter may be provided to specify the number of common
-# items that should be shared between subseqent columns.
+# items that should be shared between subsequent columns.
 #------------------------------------------------------------------------
 
 sub new {

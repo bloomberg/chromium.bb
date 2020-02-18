@@ -13,6 +13,15 @@
 import sys, os
 import xml.etree.ElementTree as etree
 
+xml_inputs = [
+    'gl.xml',
+    'gl_angle_ext.xml',
+    'egl.xml',
+    'egl_angle_ext.xml',
+    'wgl.xml',
+    'registry_xml.py',
+]
+
 angle_extensions = [
     # ANGLE extensions
     "GL_CHROMIUM_bind_uniform_location",
@@ -24,6 +33,7 @@ angle_extensions = [
     "GL_ANGLE_request_extension",
     "GL_ANGLE_robust_client_memory",
     "GL_ANGLE_copy_texture_3d",
+    "GL_ANGLE_texture_external_update",
 ]
 
 gles1_extensions = [
@@ -36,7 +46,7 @@ gles1_extensions = [
     "GL_OES_texture_cube_map",
 ]
 
-supported_extensions = sorted(angle_extensions + gles1_extensions + [
+gles_extensions = [
     # ES2+
     "GL_ANGLE_framebuffer_blit",
     "GL_ANGLE_framebuffer_multisample",
@@ -64,6 +74,7 @@ supported_extensions = sorted(angle_extensions + gles1_extensions + [
     "GL_OES_EGL_image",
     "GL_OES_get_program_binary",
     "GL_OES_mapbuffer",
+    "GL_OES_texture_3D",
     "GL_OES_texture_border_clamp",
     "GL_OES_texture_storage_multisample_2d_array",
     "GL_OES_vertex_array_object",
@@ -71,21 +82,25 @@ supported_extensions = sorted(angle_extensions + gles1_extensions + [
     "GL_OVR_multiview2",
     "GL_KHR_parallel_shader_compile",
     "GL_ANGLE_multi_draw",
-])
+]
+
+supported_extensions = sorted(angle_extensions + gles1_extensions + gles_extensions)
 
 supported_egl_extensions = [
     "EGL_ANDROID_blob_cache",
     "EGL_ANDROID_get_frame_timestamps",
+    "EGL_ANDROID_get_native_client_buffer",
+    "EGL_ANDROID_native_fence_sync",
     "EGL_ANDROID_presentation_time",
     "EGL_ANGLE_d3d_share_handle_client_buffer",
     "EGL_ANGLE_device_creation",
     "EGL_ANGLE_device_d3d",
+    "EGL_ANGLE_feature_control",
     "EGL_ANGLE_program_cache_control",
     "EGL_ANGLE_query_surface_pointer",
     "EGL_ANGLE_stream_producer_d3d_texture",
     "EGL_ANGLE_surface_d3d_texture_2d_share_handle",
     "EGL_ANGLE_window_fixed_size",
-    "EGL_ANGLE_workaround_control",
     "EGL_CHROMIUM_get_sync_values",
     "EGL_EXT_create_context_robustness",
     "EGL_EXT_device_query",

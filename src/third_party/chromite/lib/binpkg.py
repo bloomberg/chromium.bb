@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import collections
 import cStringIO
+import math
 import operator
 import os
 import tempfile
@@ -185,6 +186,15 @@ class PackageIndex(object):
     self._ReadHeader(pkgfile)
     self._ReadBody(pkgfile)
 
+  def ReadFilePath(self, pkgfile_path):
+    """Read the packages file path.
+
+    Args:
+      pkgfile_path (str): The path to the file.
+    """
+    with open(pkgfile_path) as f:
+      self.Read(f)
+
   def RemoveFilteredPackages(self, filter_fn):
     """Remove packages which match filter_fn.
 
@@ -254,7 +264,7 @@ class PackageIndex(object):
       path_prefix: Path prefix to use for all current packages in the file.
         This will be added to the beginning of the path for every package.
     """
-    self.header['URI'] = base_uri
+    self.header['URI'] = base_uri.rstrip('/')
     for pkg in self.packages:
       path = pkg['CPV'] + '.tbz2'
       pkg['PATH'] = '%s/%s' % (path_prefix.rstrip('/'), path)
@@ -299,7 +309,7 @@ class PackageIndex(object):
 
   def _ModifiedHeaderUpdate(self):
     if self.modified:
-      self.header['TIMESTAMP'] = str(long(time.time()))
+      self.header['TIMESTAMP'] = str(math.trunc(time.time()))
       self.header['PACKAGES'] = str(len(self.packages))
       self.modified = False
 
@@ -385,10 +395,9 @@ def GrabLocalPackageIndex(package_path):
   Returns:
     A PackageIndex object.
   """
-  packages_file = file(os.path.join(package_path, 'Packages'))
-  pkgindex = PackageIndex()
-  pkgindex.Read(packages_file)
-  packages_file.close()
+  with open(os.path.join(package_path, 'Packages')) as f:
+    pkgindex = PackageIndex()
+    pkgindex.Read(f)
 
   # List all debug symbols available in package_path.
   symbols = set()
@@ -443,7 +452,7 @@ def FetchTarballs(binhost_urls, pkgdir):
       fetches[cpv] = uri
 
   with parallel.BackgroundTaskRunner(_DownloadURLs) as queue:
-    for category, urls in categories.iteritems():
+    for category, urls in categories.items():
       category_dir = os.path.join(pkgdir, category)
       if not os.path.exists(category_dir):
         os.makedirs(category_dir)

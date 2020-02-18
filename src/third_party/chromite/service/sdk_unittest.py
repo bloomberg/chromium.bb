@@ -103,22 +103,6 @@ class CreateTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(expected_args)
     self.assertEqual(expected_version, version)
 
-  def testCreateExisting(self):
-    """Test the create doesn't make the call when it already exists."""
-    arguments = sdk.CreateArguments()
-    arguments.paths.chroot_path = self.tempdir
-    expected_args = ['--arg', '--other', '--with-value', 'value']
-    expected_version = 1
-
-    self.PatchObject(arguments, 'GetArgList', return_value=expected_args)
-    self.PatchObject(sdk, 'GetChrootVersion', return_value=expected_version)
-    self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
-
-    version = sdk.Create(arguments)
-
-    self.assertCommandContains(expected_args, expected=False)
-    self.assertEqual(expected_version, version)
-
   def testCreateInsideFails(self):
     """Test Create raises an error when called inside the chroot."""
     # Make sure it fails inside the chroot.

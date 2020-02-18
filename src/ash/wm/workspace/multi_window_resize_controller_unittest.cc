@@ -83,8 +83,7 @@ class MultiWindowResizeControllerTest : public AshTestBase {
         resize_controller_->windows_.window2 == window) {
       return true;
     }
-    return base::ContainsValue(resize_controller_->windows_.other_windows,
-                               window);
+    return base::Contains(resize_controller_->windows_.other_windows, window);
   }
 
   bool IsOverWindows(const gfx::Point& loc) {
@@ -320,7 +319,25 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   gfx::Rect bounds(resize_widget()->GetWindowBoundsInScreen());
   generator->MoveMouseTo(bounds.x() + 1, bounds.y() + 1);
   generator->PressLeftButton();
+
+  // Test that when drag starts, drag details are created for each window.
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w3.get())->is_dragged());
+  // Test the window components for each window.
+  EXPECT_EQ(WindowState::Get(w1.get())->drag_details()->window_component,
+            HTRIGHT);
+  EXPECT_EQ(WindowState::Get(w2.get())->drag_details()->window_component,
+            HTLEFT);
+  EXPECT_EQ(WindowState::Get(w3.get())->drag_details()->window_component,
+            HTLEFT);
+
   generator->MoveMouseTo(bounds.x() + 11, bounds.y() + 10);
+
+  // Drag details should exist during dragging.
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w3.get())->is_dragged());
 
   EXPECT_TRUE(HasTarget(w3.get()));
 
@@ -328,6 +345,12 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   // press should not trigger a DCHECK.
   generator->ReleaseLeftButton();
   EXPECT_TRUE(IsShowing());
+
+  // Test that drag details are correctly deleted after dragging.
+  EXPECT_FALSE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(w3.get())->is_dragged());
+
   generator->PressLeftButton();
 }
 
@@ -413,7 +436,7 @@ TEST_F(MultiWindowResizeControllerTest, WindowStateChange) {
 
   // When entering tablet mode, the windows will be maximized, thus the resizer
   // widget should be dismissed.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_FALSE(IsShowing());
 }
 
@@ -530,12 +553,12 @@ TEST_F(MultiWindowResizeControllerTest, MakeWindowNonResizeable) {
 
 namespace {
 
-class TestWindowStateDelegate : public wm::WindowStateDelegate {
+class TestWindowStateDelegate : public WindowStateDelegate {
  public:
   TestWindowStateDelegate() = default;
   ~TestWindowStateDelegate() override = default;
 
-  // wm::WindowStateDelegate:
+  // WindowStateDelegate:
   void OnDragStarted(int component) override { component_ = component; }
   void OnDragFinished(bool cancel, const gfx::Point& location) override {
     location_ = location;
@@ -570,16 +593,16 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
       &delegate1, -1, gfx::Rect(100, 100, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
-  wm::WindowState* w1_state = wm::GetWindowState(w1.get());
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  WindowState* w1_state = WindowState::Get(w1.get());
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   w1_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   aura::test::TestWindowDelegate delegate2;
   std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
       &delegate2, -2, gfx::Rect(100, 100, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
-  wm::WindowState* w2_state = wm::GetWindowState(w2.get());
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  WindowState* w2_state = WindowState::Get(w2.get());
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   w2_state->OnWMEvent(&snap_right);
   EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(0.5f, *w1_state->snapped_width_ratio());
@@ -622,7 +645,7 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
 
   // Dragging should call the WindowStateDelegate.
   EXPECT_EQ(HTRIGHT, window_state_delegate1->GetComponentAndReset());
-  EXPECT_EQ(gfx::Point(300, bottom_inset - 75),
+  EXPECT_EQ(gfx::Point(300, resize_widget_center.y()),
             window_state_delegate1->GetLocationAndReset());
 }
 

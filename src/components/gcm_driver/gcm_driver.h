@@ -17,10 +17,19 @@
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/web_push_sender.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
+}
+
+namespace crypto {
+class ECPrivateKey;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace gcm {
@@ -91,9 +100,11 @@ class GCMDriver {
   using SendCallback = base::Callback<void(const std::string& message_id,
                                            GCMClient::Result result)>;
   using GetEncryptionInfoCallback =
-      base::Callback<void(const std::string&, const std::string&)>;
+      base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
+  using SendWebPushMessageCallback =
+      base::OnceCallback<void(base::Optional<std::string>)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -104,7 +115,8 @@ class GCMDriver {
 
   GCMDriver(
       const base::FilePath& store_path,
-      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~GCMDriver();
 
   // Registers |sender_ids| for an app. A registration ID will be returned by
@@ -153,12 +165,33 @@ class GCMDriver {
             const OutgoingMessage& message,
             const SendCallback& callback);
 
+  // Sends a WebPushMessage via Firebase Cloud Messaging (FCM) Web Push with
+  // end-to-end encryption.
+  // |app_id|: application ID.
+  // |authorized_entity|: authorization entity.
+  // |p256dh|: public encryption key of receiver device.
+  // |auth_secret|: authentcaition secret of receiver device.
+  // |fcm_token|: FCM registration token for receiving end.
+  // |vapid_key|: Private key to sign Voluntary Application Server
+  // Identification for Web Push header.
+  // |message|: WebPushMessage to be sent.
+  // |callback|: To be invoked with message_id if asynchronous operation
+  // succeeded, or base::nullopt if operation failed.
+  virtual void SendWebPushMessage(const std::string& app_id,
+                                  const std::string& authorized_entity,
+                                  const std::string& p256dh,
+                                  const std::string& auth_secret,
+                                  const std::string& fcm_token,
+                                  crypto::ECPrivateKey* vapid_key,
+                                  WebPushMessage message,
+                                  SendWebPushMessageCallback callback);
+
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
   // created. The |callback| will be invoked when it is available. Only use with
   // GCM registrations; use InstanceID::GetEncryptionInfo for InstanceID tokens.
-  void GetEncryptionInfo(const std::string& app_id,
-                         const GetEncryptionInfoCallback& callback);
+  virtual void GetEncryptionInfo(const std::string& app_id,
+                                 GetEncryptionInfoCallback callback);
 
   const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
 
@@ -235,7 +268,7 @@ class GCMDriver {
   // The InstanceIDHandler provides an implementation for the InstanceID system.
   virtual InstanceIDHandler* GetInstanceIDHandlerInternal() = 0;
   // Allows the InstanceID system to integrate with GCM encryption storage.
-  GCMEncryptionProvider* GetEncryptionProviderInternal();
+  virtual GCMEncryptionProvider* GetEncryptionProviderInternal();
 
   // Adds or removes a custom client requested heartbeat interval. If multiple
   // components set that setting, the lowest setting will be used. If the
@@ -334,6 +367,14 @@ class GCMDriver {
       UnregisterCallback unregister_callback,
       GCMClient::Result result);
 
+  // Called after webpush message is encrypted.
+  void OnMessageEncrypted(const std::string& fcm_token,
+                          crypto::ECPrivateKey* vapid_key,
+                          WebPushMessage message,
+                          SendWebPushMessageCallback callback,
+                          GCMEncryptionResult result,
+                          std::string payload);
+
   // Callback map (from app_id to callback) for Register.
   std::map<std::string, RegisterCallback> register_callbacks_;
 
@@ -350,7 +391,10 @@ class GCMDriver {
   // App handler map (from app_id to handler pointer). The handler is not owned.
   GCMAppHandlerMap app_handlers_;
 
-  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
+  // Sender for Web Push messages.
+  WebPushSender web_push_sender_;
+
+  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMDriver);
 };

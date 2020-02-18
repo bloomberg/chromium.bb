@@ -58,6 +58,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("FEEDBACK_PANEL_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kEnableFileManagerFeedbackPanel));
+  dict->SetBoolean("FORMAT_DIALOG_ENABLED",
+                   base::FeatureList::IsEnabled(
+                       chromeos::features::kEnableFileManagerFormatDialog));
   dict->SetBoolean(
       "MY_FILES_VOLUME_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));

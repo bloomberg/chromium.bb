@@ -4,7 +4,7 @@
 
 #include "streaming/cast/rtp_time.h"
 
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace cast_streaming {

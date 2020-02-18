@@ -159,7 +159,7 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
     std::unique_ptr<ArcSyncItem> sync_item(
         CreateSyncItemFromSyncData(sync_data));
     const std::string& package_name = sync_item->package_name;
-    if (!base::ContainsKey(local_package_set, package_name)) {
+    if (!base::Contains(local_package_set, package_name)) {
       pending_install_items_[package_name] = std::move(sync_item);
       InstallPackage(pending_install_items_[package_name].get());
     } else {
@@ -171,7 +171,7 @@ syncer::SyncMergeResult ArcPackageSyncableService::MergeDataAndStartSyncing(
   // Creates sync items for local unsynced packages.
   syncer::SyncChangeList change_list;
   for (const auto& local_package_name : local_packages) {
-    if (base::ContainsKey(sync_items_, local_package_name))
+    if (base::Contains(sync_items_, local_package_name))
       continue;
 
     if (!ShouldSyncPackage(local_package_name))
@@ -454,7 +454,12 @@ void ArcPackageSyncableService::UninstallPackage(const ArcSyncItem* sync_item) {
   if (!instance)
     return;
 
-  instance->UninstallPackage(sync_item->package_name);
+  // Make a copy of the package name string instead of handing out a reference
+  // to |sync_item->package_name|. The reason is that |sync_item| may get
+  // destroyed as a result of this call, making any references to it invalid.
+  // See crbug.com/970063.
+  std::string package_name = sync_item->package_name;
+  instance->UninstallPackage(package_name);
 }
 
 bool ArcPackageSyncableService::ShouldSyncPackage(

@@ -155,6 +155,11 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
                      context_->mutable_memory_controller()->GetWeakPtr()));
 }
 
+storage::BlobStorageContext* ChromeBlobStorageContext::context() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return context_.get();
+}
+
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
     const char* data,
     size_t length,

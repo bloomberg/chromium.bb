@@ -14,7 +14,6 @@
 #include "tools/sk_app/Window.h"
 
 class SkCanvas;
-class AnimTimer;
 class SkMetaData;
 
 class Slide : public SkRefCnt {
@@ -24,14 +23,14 @@ public:
     virtual SkISize getDimensions() const = 0;
 
     virtual void draw(SkCanvas* canvas) = 0;
-    virtual bool animate(const AnimTimer&) { return false; }
+    virtual bool animate(double nanos) { return false; }
     virtual void load(SkScalar winWidth, SkScalar winHeight) {}
     virtual void resize(SkScalar winWidth, SkScalar winHeight) {}
     virtual void unload() {}
 
     virtual bool onChar(SkUnichar c) { return false; }
-    virtual bool onMouse(SkScalar x, SkScalar y, sk_app::Window::InputState state,
-                         uint32_t modifiers) { return false; }
+    virtual bool onMouse(SkScalar x, SkScalar y, InputState state,
+                         ModifierKey modifiers) { return false; }
 
     virtual bool onGetControls(SkMetaData*) { return false; }
     virtual void onSetControls(const SkMetaData&) {}

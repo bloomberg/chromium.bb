@@ -29,11 +29,9 @@ represent base-16 numbers.
 use strict;
 use PPI::Token::Number ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token::Number';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token::Number";
 
 =pod
 
@@ -43,7 +41,7 @@ Returns the base for the number: 16.
 
 =cut
 
-sub base () { 16 }
+sub base() { 16 }
 
 =pod
 
@@ -57,7 +55,7 @@ sub literal {
 	my $self = shift;
 	my $str = $self->_literal;
 	my $neg = $str =~ s/^\-//;
-	my $val = hex $str;
+	my $val = hex lc( $str ); # lc for compatibility with perls before 5.14
 	return $neg ? -$val : $val;
 }
 
@@ -76,7 +74,7 @@ sub __TOKENIZER__on_char {
 	# Allow underscores straight through
 	return 1 if $char eq '_';
 
-	if ( $char =~ /[\da-f]/ ) {
+	if ( $char =~ /[[:xdigit:]]/ ) {
 		return 1;
 	}
 

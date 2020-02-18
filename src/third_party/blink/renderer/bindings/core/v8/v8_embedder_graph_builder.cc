@@ -10,8 +10,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -87,6 +88,14 @@ class EmbedderRootNode : public EmbedderNode {
       : EmbedderNode(name, nullptr, DomTreeState::kUnknown) {}
   // Graph::Node override.
   bool IsRootNode() override { return true; }
+
+  void AddEdgeName(std::unique_ptr<const char> edge_name) {
+    edge_names_.insert(std::move(edge_name));
+  }
+
+ private:
+  // Storage to hold edge names until they have been internalized by V8.
+  HashSet<std::unique_ptr<const char>> edge_names_;
 };
 
 class NodeBuilder final {
@@ -168,6 +177,7 @@ class GC_PLUGIN_IGNORE(
       const v8::TracedGlobal<v8::Value>& value) override;
 
   // Visitor overrides.
+  void VisitRoot(void*, TraceDescriptor, const base::Location&) final;
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
   void Visit(void*, TraceDescriptor) final;
   void VisitBackingStoreStrongly(void* object,
@@ -241,11 +251,24 @@ class GC_PLUGIN_IGNORE(
         node_->UpdateDomTreeState(dom_tree_state_);
     }
 
+    void AddEdge(State* destination, std::string edge_name) {
+      auto result = named_edges_.insert(destination, std::move(edge_name));
+      DCHECK(result.is_new_entry);
+    }
+
+    std::string EdgeName(State* destination) {
+      auto it = named_edges_.find(destination);
+      if (it != named_edges_.end())
+        return it->value;
+      return std::string();
+    }
+
    private:
     EmbedderNode* node_ = nullptr;
     Traceable traceable_ = nullptr;
     const char* name_ = nullptr;
     DomTreeState dom_tree_state_;
+    HashMap<State* /*destination*/, std::string> named_edges_;
     bool visited_ = false;
     bool pending_ = false;
   };
@@ -305,9 +328,7 @@ class GC_PLUGIN_IGNORE(
 
     void Process(V8EmbedderGraphBuilder* builder) final {
       if (parent() && to_process()->HasNode()) {
-        NodeBuilder* node_builder = builder->node_builder_;
-        builder->graph_->AddEdge(parent()->GetOrCreateNode(node_builder),
-                                 to_process()->GetOrCreateNode(node_builder));
+        builder->AddEdge(parent(), to_process());
       }
       to_process()->UnmarkPending();
     }
@@ -339,8 +360,9 @@ class GC_PLUGIN_IGNORE(
     states_.insert(node, new State(node));
   }
 
-  void VisitPersistentHandleInternal(v8::Local<v8::Object>, uint16_t);
+  void AddEdge(State*, State*);
 
+  void VisitPersistentHandleInternal(v8::Local<v8::Object>, uint16_t);
   void VisitPendingActivities();
   void VisitBlinkRoots();
   void VisitTransitiveClosure();
@@ -400,10 +422,9 @@ V8EmbedderGraphBuilder::~V8EmbedderGraphBuilder() {
 
 void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   isolate_->VisitHandlesWithClassIds(this);
-  v8::EmbedderHeapTracer* tracer =
-      V8PerIsolateData::From(isolate_)->GetEmbedderHeapTracer();
-  if (tracer)
-    tracer->IterateTracedGlobalHandles(this);
+  v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
+      ThreadState::Current()->unified_heap_controller());
+  tracer->IterateTracedGlobalHandles(this);
 // At this point we collected ScriptWrappables in three groups:
 // attached, detached, and unknown.
 #if DCHECK_IS_ON()
@@ -519,6 +540,21 @@ void V8EmbedderGraphBuilder::Visit(
   }
 }
 
+void V8EmbedderGraphBuilder::VisitRoot(void* object,
+                                       TraceDescriptor wrapper_descriptor,
+                                       const base::Location& location) {
+  // Extract edge name if |location| is set.
+  if (location.has_source_info()) {
+    const void* traceable = wrapper_descriptor.base_object_payload;
+    State* const parent = GetStateNotNull(current_parent_);
+    State* const current = GetOrCreateState(
+        traceable, HeapObjectHeader::FromPayload(traceable)->Name(),
+        parent->GetDomTreeState());
+    parent->AddEdge(current, location.ToString());
+  }
+  Visit(object, wrapper_descriptor);
+}
+
 void V8EmbedderGraphBuilder::Visit(void* object,
                                    TraceDescriptor wrapper_descriptor) {
   const void* traceable = wrapper_descriptor.base_object_payload;
@@ -532,8 +568,7 @@ void V8EmbedderGraphBuilder::Visit(void* object,
   if (current->IsPending()) {
     if (parent->HasNode()) {
       // Backedge in currently processed graph.
-      graph_->AddEdge(parent->GetOrCreateNode(node_builder_),
-                      current->GetOrCreateNode(node_builder_));
+      AddEdge(parent, current);
     }
     return;
   }
@@ -552,10 +587,31 @@ void V8EmbedderGraphBuilder::Visit(void* object,
     // Edge into an already processed subgraph.
     if (current->HasNode()) {
       // Create an edge in case the current node has already been visited.
-      graph_->AddEdge(parent->GetOrCreateNode(node_builder_),
-                      current->GetOrCreateNode(node_builder_));
+      AddEdge(parent, current);
     }
   }
+}
+
+void V8EmbedderGraphBuilder::AddEdge(State* parent, State* current) {
+  EmbedderNode* parent_node = parent->GetOrCreateNode(node_builder_);
+  EmbedderNode* current_node = current->GetOrCreateNode(node_builder_);
+  if (parent_node->IsRootNode()) {
+    const std::string edge_name = parent->EdgeName(current);
+    if (!edge_name.empty()) {
+      // V8's API is based on raw C strings. Allocate and temporarily keep the
+      // edge name alive from the corresponding node.
+      const size_t len = edge_name.length();
+      char* raw_location_string = new char[len + 1];
+      strncpy(raw_location_string, edge_name.c_str(), len);
+      raw_location_string[len] = 0;
+      std::unique_ptr<const char> holder(raw_location_string);
+      graph_->AddEdge(parent_node, current_node, holder.get());
+      static_cast<EmbedderRootNode*>(parent_node)
+          ->AddEdgeName(std::move(holder));
+      return;
+    }
+  }
+  graph_->AddEdge(parent_node, current_node);
 }
 
 void V8EmbedderGraphBuilder::VisitBackingStoreStrongly(void* object,
@@ -609,6 +665,9 @@ void V8EmbedderGraphBuilder::VisitTransitiveClosure() {
 void EmbedderGraphBuilder::BuildEmbedderGraphCallback(v8::Isolate* isolate,
                                                       v8::EmbedderGraph* graph,
                                                       void*) {
+  // Synchronize with concurrent sweepers before taking a snapshot.
+  ThreadState::Current()->CompleteSweep();
+
   NodeBuilder node_builder(graph);
   V8EmbedderGraphBuilder builder(isolate, graph, &node_builder);
   builder.BuildEmbedderGraph();

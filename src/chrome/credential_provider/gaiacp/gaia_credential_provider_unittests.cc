@@ -274,11 +274,9 @@ TEST_F(GcpCredentialProviderTest, AutoLogonBeforeUserRefresh) {
 }
 
 TEST_F(GcpCredentialProviderTest, AddPersonAfterUserRemove) {
-  // Set up such that MDM is enabled, mulit-users is not, and a user already
+  // Set up such that multi-users is not enabled, and a user already
   // exists.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
-  GoogleMdmEnrolledStatusForTesting forced_status(true);
 
   const wchar_t kDummyUsername[] = L"username";
   const wchar_t kDummyPassword[] = L"password";
@@ -369,8 +367,7 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
   const bool valid_token_handles = std::get<0>(GetParam());
   const CREDENTIAL_PROVIDER_USAGE_SCENARIO cpus = std::get<1>(GetParam());
 
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  GoogleMdmEnrolledStatusForTesting forced_status(true);
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
 
   CComBSTR first_sid;
   constexpr wchar_t first_username[] = L"username";
@@ -434,61 +431,6 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON)));
 
-// Tests the effect of the MDM settings on the credential provider.
-// Parameters:
-//    bool: whether the MDM URL is configured.
-//    int: whether multi-users is supported:
-//        0: set registry to 0
-//        1: set registry to 1
-//        2: don't set at all
-//    bool: whether an existing user exists.
-class GcpCredentialProviderMdmTest
-    : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, int, bool>> {};
-
-TEST_P(GcpCredentialProviderMdmTest, Basic) {
-  const bool config_mdm_url = std::get<0>(GetParam());
-  const int supports_multi_users = std::get<1>(GetParam());
-  const bool user_exists = std::get<2>(GetParam());
-  const DWORD expected_credential_count =
-      config_mdm_url && supports_multi_users != 1 && user_exists ? 0 : 1;
-
-  bool mdm_enrolled = false;
-  if (config_mdm_url) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-    mdm_enrolled = true;
-  }
-
-  GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
-
-  if (supports_multi_users != 2) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser,
-                                            supports_multi_users));
-  }
-
-  if (user_exists) {
-    CComBSTR sid;
-    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                        L"username", L"password", L"full name", L"comment",
-                        L"gaia-id", L"foo@gmail.com", &sid));
-  }
-
-  CComPtr<ICredentialProviderCredential> cred;
-  CComPtr<ICredentialProvider> provider;
-  DWORD count = 0;
-  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
-
-  ASSERT_EQ(expected_credential_count, count);
-
-  // Deactivate the CP.
-  ASSERT_EQ(S_OK, provider->UnAdvise());
-}
-
-INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
-                         GcpCredentialProviderMdmTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Range(0, 3),
-                                            ::testing::Bool()));
 
 // Check that reauth credentials only exist when the token handle for the
 // associated user is no longer valid and internet is available.
@@ -497,23 +439,43 @@ INSTANTIATE_TEST_SUITE_P(GcpCredentialProviderMdmTest,
 // 2. bool - is the token handle for the fake user valid (i.e. the fetch of
 // the token handle info from win_http_url_fetcher returns a valid json).
 // 3. bool - is internet available.
+// 4. bool - is active directory user.
 
 class GcpCredentialProviderWithGaiaUsersTest
     : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
+ protected:
+  void SetUp() override;
+};
+
+void GcpCredentialProviderWithGaiaUsersTest::SetUp() {
+  GcpCredentialProviderTest::SetUp();
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_ad_association", 0));
+}
 
 TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   const bool has_token_handle = std::get<0>(GetParam());
   const bool valid_token_handle = std::get<1>(GetParam());
   const bool has_internet = std::get<2>(GetParam());
+  const bool is_ad_user = std::get<3>(GetParam());
   fake_internet_checker()->SetHasInternetConnection(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
 
   CComBSTR sid;
-  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                      L"username", L"password", L"full name", L"comment",
-                      L"gaia-id", L"foo@gmail.com", &sid));
+  if (is_ad_user) {
+    // Add an AD user. Note that this covers the scenario where
+    // enable_ad_association is set to false.
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        L"username", L"password", L"full name", L"comment",
+                        L"gaia-id", L"foo@gmail.com", L"domain", &sid));
+
+  } else {
+    // Add a local user.
+    ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                        L"username", L"password", L"full name", L"comment",
+                        L"gaia-id", L"foo@gmail.com", &sid));
+  }
 
   if (!has_token_handle)
     ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle, L""));
@@ -544,6 +506,120 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
 INSTANTIATE_TEST_SUITE_P(,
                          GcpCredentialProviderWithGaiaUsersTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
+
+// Check that reauth credentials only exists when either user is an AD user or
+// the token handle for the associated user is no longer valid when internet is
+// available.
+// Parameters are:
+// 1. bool - has an user_id and token handle in the registry.
+// 2. bool - is the token handle for the fake user valid (i.e. the fetch of
+// the token handle info from win_http_url_fetcher returns a valid json).
+// 3. bool - is the fake user an AD user.
+// 4. bool - is internet available.
+class GcpCredentialProviderWithADUsersTest
+    : public GcpCredentialProviderTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
+ protected:
+  void SetUp() override;
+};
+
+void GcpCredentialProviderWithADUsersTest::SetUp() {
+  GcpCredentialProviderTest::SetUp();
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_ad_association", 1));
+}
+
+TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
+  const bool has_user_id = std::get<0>(GetParam());
+  const bool valid_token_handle = std::get<1>(GetParam());
+  const bool is_ad_user = std::get<2>(GetParam());
+  const bool has_internet = std::get<3>(GetParam());
+
+  if (!has_user_id && !is_ad_user) {
+    // This is not a valid test scenario as the token handle wouldn't
+    // exist when user id mapping is not available in the registry.
+    return;
+  }
+
+  fake_internet_checker()->SetHasInternetConnection(
+      has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
+                   : FakeInternetAvailabilityChecker::kHicForceNo);
+
+  CComBSTR local_user_sid;
+  // Always create local user to make sure that the co-existence scenarios
+  // work fine.
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"username-local", L"password", L"full name", L"comment",
+                      L"gaia-id", L"foolocal@gmail.com", &local_user_sid));
+
+  CComBSTR sid;
+  DWORD error;
+  base::string16 domain;
+  if (is_ad_user) {
+    // Add an AD user.
+    ASSERT_EQ(S_OK, fake_os_user_manager()->AddUser(
+                        L"username", L"password", L"full name", L"comment",
+                        true, L"domain", &sid, &error));
+  } else {
+    // Add a local user.
+    ASSERT_EQ(S_OK, fake_os_user_manager()->AddUser(L"username", L"password",
+                                                    L"full name", L"comment",
+                                                    true, &sid, &error));
+  }
+
+  if (has_user_id) {
+    base::string16 test_user_id(L"12345");
+    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserId, test_user_id));
+    // Set token handle to a non-empty value in registry.
+    ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle,
+                                    L"non-empty-token-handle"));
+  }
+
+  CComPtr<ICredentialProviderCredential> cred;
+  CComPtr<ICredentialProvider> provider;
+  DWORD count = 0;
+  SetDefaultTokenHandleResponse(valid_token_handle
+                                    ? kDefaultValidTokenHandleResponse
+                                    : kDefaultInvalidTokenHandleResponse);
+  ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
+
+  bool should_reauth_user =
+      has_internet && ((!has_user_id && is_ad_user) || !valid_token_handle);
+
+  // Check if there is a IReauthCredential depending on the state of the token
+  // handle.
+  if (valid_token_handle) {
+    ASSERT_EQ(should_reauth_user ? 2u : 1u, count);
+  } else {
+    // When token handle is invalid. Then we expect two reauth credentials
+    // (i.e 1 for local user and 1 for AD/Local user) and one anonymous
+    // credential if should_reauth_user is true.
+    ASSERT_EQ(should_reauth_user ? 3u : 1u, count);
+  }
+
+  if (should_reauth_user) {
+    CComPtr<ICredentialProviderCredential> cred;
+    ASSERT_EQ(S_OK, provider->GetCredentialAt(1, &cred));
+    CComPtr<IReauthCredential> reauth;
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+  }
+
+  // When there are two reauth credentials, validate that the second one
+  // is also a reauth credential.
+  if (should_reauth_user && !valid_token_handle) {
+    CComPtr<ICredentialProviderCredential> cred;
+    ASSERT_EQ(S_OK, provider->GetCredentialAt(2, &cred));
+    CComPtr<IReauthCredential> reauth;
+    EXPECT_EQ(S_OK, cred.QueryInterface(&reauth));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         GcpCredentialProviderWithADUsersTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
 

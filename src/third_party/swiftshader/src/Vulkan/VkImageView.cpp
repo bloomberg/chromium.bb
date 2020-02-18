@@ -56,7 +56,7 @@ namespace vk
 std::atomic<uint32_t> ImageView::nextID(1);
 
 ImageView::ImageView(const VkImageViewCreateInfo* pCreateInfo, void* mem, const vk::SamplerYcbcrConversion *ycbcrConversion) :
-	image(Cast(pCreateInfo->image)), viewType(pCreateInfo->viewType), format(pCreateInfo->format),
+	image(vk::Cast(pCreateInfo->image)), viewType(pCreateInfo->viewType), format(pCreateInfo->format),
 	components(ResolveComponentMapping(pCreateInfo->components, format)),
 	subresourceRange(ResolveRemainingLevelsLayers(pCreateInfo->subresourceRange, image)),
 	ycbcrConversion(ycbcrConversion)
@@ -181,7 +181,7 @@ void ImageView::resolve(ImageView* resolveAttachment)
 	region.extent = image->getMipLevelExtent(static_cast<VkImageAspectFlagBits>(subresourceRange.aspectMask),
 	                                         subresourceRange.baseMipLevel);
 
-	image->copyTo(*(resolveAttachment->image), region);
+	image->copyTo(resolveAttachment->image, region);
 }
 
 const Image* ImageView::getImage(Usage usage) const

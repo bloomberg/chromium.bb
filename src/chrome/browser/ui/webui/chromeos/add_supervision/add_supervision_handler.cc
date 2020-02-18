@@ -9,31 +9,39 @@
 #include <vector>
 
 #include "base/stl_util.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/identity_manager.h"
+
+namespace chromeos {
 
 AddSupervisionHandler::AddSupervisionHandler(
     add_supervision::mojom::AddSupervisionHandlerRequest request,
-    content::WebUI* web_ui)
-    : binding_(this, std::move(request)),
-      web_ui_(web_ui),
+    content::WebUI* web_ui,
+    Delegate* delegate)
+    : web_ui_(web_ui),
       identity_manager_(
-          IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))) {}
+          IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui))),
+      binding_(this, std::move(request)),
+      delegate_(delegate) {}
 
 AddSupervisionHandler::~AddSupervisionHandler() = default;
 
-void AddSupervisionHandler::LogOut(LogOutCallback callback) {
-  chrome::AttemptUserExit();
+void AddSupervisionHandler::RequestClose(RequestCloseCallback callback) {
+  bool dialog_closed = delegate_->CloseDialog();
+  std::move(callback).Run(dialog_closed);
 }
 
 void AddSupervisionHandler::GetInstalledArcApps(
@@ -64,20 +72,33 @@ void AddSupervisionHandler::GetInstalledArcApps(
 
 void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
   identity::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kKidFamilyOAuth2Scope);
+  scopes.insert(GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope);
+  scopes.insert(GaiaConstants::kPeopleApiReadOnlyOAuth2Scope);
+  scopes.insert(GaiaConstants::kAccountsReauthOAuth2Scope);
 
   oauth2_access_token_fetcher_ =
       identity_manager_->CreateAccessTokenFetcherForAccount(
           identity_manager_->GetPrimaryAccountId(), "add_supervision", scopes,
           base::BindOnce(&AddSupervisionHandler::OnAccessTokenFetchComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          signin::AccessTokenFetcher::Mode::kImmediate);
+}
+
+void AddSupervisionHandler::LogOut() {
+  chrome::AttemptUserExit();
+}
+
+void AddSupervisionHandler::NotifySupervisionEnabled() {
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_));
+
+  service->set_signout_required_after_supervision_enabled();
 }
 
 void AddSupervisionHandler::OnAccessTokenFetchComplete(
     GetOAuthTokenCallback callback,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   oauth2_access_token_fetcher_.reset();
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(ERROR) << "AddSupervisionHandler: OAuth2 token request failed. "
@@ -91,3 +112,5 @@ void AddSupervisionHandler::OnAccessTokenFetchComplete(
                             access_token_info.token);
   }
 }
+
+}  // namespace chromeos

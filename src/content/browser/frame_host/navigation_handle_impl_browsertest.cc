@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -175,8 +176,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
         will_redirect_result_(will_redirect_result),
         will_fail_result_(will_fail_result),
         will_process_result_(will_process_result),
-        expected_start_url_(expected_start_url),
-        weak_factory_(this) {}
+        expected_start_url_(expected_start_url) {}
   ~TestNavigationThrottleInstaller() override {}
 
   // Installs a TestNavigationThrottle whose |method| method will return
@@ -333,7 +333,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
 
   // The throttle installer can be deleted before all tasks posted by its
   // throttles are run, so it must be referenced via weak pointers.
-  base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_;
+  base::WeakPtrFactory<TestNavigationThrottleInstaller> weak_factory_{this};
 };
 
 // Same as above, but installs NavigationThrottles that do not directly return
@@ -704,13 +704,13 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySrcdoc) {
   GURL url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_srcdoc_frame.html"));
   NavigationHandleObserver observer(shell()->web_contents(),
-                                    GURL(kAboutSrcDocURL));
+                                    GURL("about:srcdoc"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_error());
-  EXPECT_EQ(GURL(kAboutSrcDocURL), observer.last_committed_url());
+  EXPECT_TRUE(observer.last_committed_url().IsAboutSrcdoc());
 }
 
 // Ensure that the IsSameDocument() method on NavigationHandle behaves
@@ -1445,7 +1445,12 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
             starting_site_instance);
   // Because of the sad tab, this is actually the b.com SiteInstance, which
   // commits immediately after starting the navigation and has a process.
-  EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(static_cast<SiteInstanceImpl*>(starting_site_instance.get())
+                    ->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(GURL("http://b.com"), starting_site_instance->GetSiteURL());
+  }
   EXPECT_TRUE(starting_site_instance->HasProcess());
 
   // In https://crbug.com/949977, we used the a.com SiteInstance here and didn't
@@ -2816,6 +2821,24 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBackForwardBrowserTest,
   // The second navigation replaces the current navigation entry and should have
   // offset of zero.
   EXPECT_THAT(offsets_, testing::ElementsAre(1, 0));
+}
+
+// Tests that the correct net::AuthChallengeInfo is exposed from the
+// NavigationHandle when the page requests authentication.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, AuthChallengeInfo) {
+  GURL url(embedded_test_server()->GetURL("/auth-basic"));
+  NavigationHandleObserver observer(shell()->web_contents(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  EXPECT_TRUE(observer.has_committed());
+  ASSERT_TRUE(observer.auth_challenge_info().has_value());
+  EXPECT_FALSE(observer.auth_challenge_info()->is_proxy);
+  EXPECT_EQ(url::Origin::Create(url),
+            observer.auth_challenge_info()->challenger);
+  EXPECT_EQ("basic", observer.auth_challenge_info()->scheme);
+  EXPECT_EQ("testrealm", observer.auth_challenge_info()->realm);
+  EXPECT_EQ("Basic realm=\"testrealm\"",
+            observer.auth_challenge_info()->challenge);
+  EXPECT_EQ("/auth-basic", observer.auth_challenge_info()->path);
 }
 
 }  // namespace content

@@ -166,7 +166,9 @@ class TestRTTAndThroughputEstimatesObserver
 
 class NetworkQualityTrackerTest : public testing::Test {
  public:
-  NetworkQualityTrackerTest() {
+  NetworkQualityTrackerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
     network::mojom::NetworkServicePtr network_service_ptr;
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);

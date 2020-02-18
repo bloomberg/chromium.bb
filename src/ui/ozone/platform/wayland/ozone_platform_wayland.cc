@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
@@ -28,6 +28,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -61,7 +62,9 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // Ozone/Wayland relies on the mojo communication when running in
     // !single_process.
     // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
-    /*requires_mojo=*/true};
+    /*requires_mojo=*/true,
+
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_DEFAULT};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:
@@ -97,15 +100,6 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    // Some unit tests may try to set custom input method context factory
-    // after InitializeUI. Thus instead of creating factory in InitializeUI
-    // it is set at this point if none exists
-    if (!LinuxInputMethodContextFactory::instance() &&
-        !wayland_input_method_context_factory_) {
-      wayland_input_method_context_factory_.reset(
-          new WaylandInputMethodContextFactory(connection_.get()));
-    }
-
     auto window = std::make_unique<WaylandWindow>(delegate, connection_.get());
     if (!window->Initialize(std::move(properties)))
       return nullptr;
@@ -128,6 +122,21 @@ class OzonePlatformWayland : public OzonePlatform {
   PlatformClipboard* GetPlatformClipboard() override {
     DCHECK(connection_);
     return connection_->clipboard();
+  }
+
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    // Some unit tests may try to set custom input method context factory
+    // after InitializeUI. Thus instead of creating factory in InitializeUI
+    // it is set at this point if none exists
+    if (!LinuxInputMethodContextFactory::instance() &&
+        !input_method_context_factory_) {
+      auto* factory = new WaylandInputMethodContextFactory(connection_.get());
+      input_method_context_factory_.reset(factory);
+      LinuxInputMethodContextFactory::SetInstance(factory);
+    }
+
+    return std::make_unique<InputMethodAuraLinux>(delegate);
   }
 
   bool IsNativePixmapConfigSupported(gfx::BufferFormat format,
@@ -169,11 +178,9 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeGPU(const InitParams& args) override {
-    surface_factory_ =
-        std::make_unique<WaylandSurfaceFactory>(connection_.get());
-    buffer_manager_ =
-        std::make_unique<WaylandBufferManagerGpu>(surface_factory_.get());
-    surface_factory_->SetBufferManager(buffer_manager_.get());
+    buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
+    surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
+        connection_.get(), buffer_manager_.get());
 #if defined(WAYLAND_GBM)
     const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
     if (drm_node_path.empty()) {
@@ -216,7 +223,7 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<WaylandInputMethodContextFactory>
-      wayland_input_method_context_factory_;
+      input_method_context_factory_;
   std::unique_ptr<WaylandBufferManagerConnector> buffer_manager_connector_;
 
 #if BUILDFLAG(USE_XKBCOMMON)

@@ -261,6 +261,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
       }
       if (flags & kFlagLoadForLoginScreen)
         browser_test_flags |= ExtensionBrowserTest::kFlagLoadForLoginScreen;
+      if (flags & kFlagRunAsServiceWorkerBasedExtension) {
+        browser_test_flags |=
+            ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
+      }
+
       extension = LoadExtensionWithFlags(extension_path, browser_test_flags);
     }
     if (!extension) {
@@ -288,9 +293,10 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
     else
       ui_test_utils::NavigateToURL(browser(), url);
   } else if (launch_platform_app) {
-    AppLaunchParams params(browser()->profile(), extension,
-                           LAUNCH_CONTAINER_NONE,
-                           WindowOpenDisposition::NEW_WINDOW, SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension->id(),
+                           LaunchContainer::kLaunchContainerNone,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           AppLaunchSource::kSourceTest);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

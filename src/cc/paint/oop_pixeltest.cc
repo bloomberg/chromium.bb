@@ -18,8 +18,8 @@
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_source.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_implementation.h"
@@ -78,7 +78,7 @@ class OopPixelTest : public testing::Test,
   void SetUp() override {
     InitializeOOPContext();
     gles2_context_provider_ =
-        base::MakeRefCounted<TestInProcessContextProvider>(
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/true);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -103,7 +103,7 @@ class OopPixelTest : public testing::Test,
       oop_image_cache_.reset();
 
     raster_context_provider_ =
-        base::MakeRefCounted<TestInProcessContextProvider>(
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/true, /*support_locking=*/true,
             &gr_shader_cache_, &activity_flags_);
     gpu::ContextResult result = raster_context_provider_->BindToCurrentThread();
@@ -153,7 +153,7 @@ class OopPixelTest : public testing::Test,
   SkBitmap Raster(scoped_refptr<DisplayItemList> display_item_list,
                   const RasterOptions& options) {
     GURL url("https://example.com/foo");
-    TestInProcessContextProvider::ScopedRasterContextLock lock(
+    viz::TestInProcessContextProvider::ScopedRasterContextLock lock(
         raster_context_provider_.get(), url.possibly_invalid_spec().c_str());
 
     PlaybackImageProvider image_provider(oop_image_cache_.get(),
@@ -258,7 +258,7 @@ class OopPixelTest : public testing::Test,
   SkBitmap RasterExpectedBitmap(
       scoped_refptr<DisplayItemList> display_item_list,
       const RasterOptions& options) {
-    TestInProcessContextProvider::ScopedRasterContextLock lock(
+    viz::TestInProcessContextProvider::ScopedRasterContextLock lock(
         gles2_context_provider_.get());
     gles2_context_provider_->GrContext()->resetContext();
 
@@ -344,8 +344,8 @@ class OopPixelTest : public testing::Test,
 
  protected:
   enum { kWorkingSetSize = 64 * 1024 * 1024 };
-  scoped_refptr<TestInProcessContextProvider> raster_context_provider_;
-  scoped_refptr<TestInProcessContextProvider> gles2_context_provider_;
+  scoped_refptr<viz::TestInProcessContextProvider> raster_context_provider_;
+  scoped_refptr<viz::TestInProcessContextProvider> gles2_context_provider_;
   std::unique_ptr<GpuImageDecodeCache> gpu_image_cache_;
   std::unique_ptr<GpuImageDecodeCache> oop_image_cache_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;

@@ -157,7 +157,6 @@ void TranslateInfoBarDelegate::UpdateTargetLanguage(
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  DCHECK_NE(original_language_code(), target_language_code());
   ui_delegate_.Translate();
 }
 

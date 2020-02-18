@@ -11,7 +11,6 @@ declare_args() {
   extra_ldflags = []
 
   malloc = ""
-  werror = false
 }
 
 if (is_ios) {
@@ -64,12 +63,8 @@ config("default") {
       "NOMINMAX",
     ]
 
-    if (msvc == 2015) {
-      _include_dirs = [ "$win_vc/include" ]
-    } else {  # 2017
-      _include_dirs = [ "$win_vc/Tools/MSVC/$win_toolchain_version/include" ]
-    }
-    _include_dirs += [
+    _include_dirs = [
+      "$win_vc/Tools/MSVC/$win_toolchain_version/include",
       "$win_sdk/Include/$win_sdk_version/shared",
       "$win_sdk/Include/$win_sdk_version/ucrt",
       "$win_sdk/Include/$win_sdk_version/um",
@@ -90,17 +85,8 @@ config("default") {
     lib_dirs = [
       "$win_sdk/Lib/$win_sdk_version/ucrt/$target_cpu",
       "$win_sdk/Lib/$win_sdk_version/um/$target_cpu",
+      "$win_vc/Tools/MSVC/$win_toolchain_version/lib/$target_cpu",
     ]
-    if (msvc == 2015) {
-      if (target_cpu == "x86") {
-        lib_dirs += [ "$win_vc/lib" ]
-      } else {
-        lib_dirs += [ "$win_vc/lib/amd64" ]
-      }
-    } else {  # 2017
-      lib_dirs +=
-          [ "$win_vc/Tools/MSVC/$win_toolchain_version/lib/$target_cpu" ]
-    }
   } else {
     cflags += [
       "-fstrict-aliasing",
@@ -154,35 +140,9 @@ config("default") {
   }
 
   if (is_android) {
-    asmflags += [ "--target=$ndk_target" ]
-    cflags += [
-      "--sysroot=$ndk/sysroot",
-      "-isystem$ndk/sysroot/usr/include/$ndk_target",
-      "-D__ANDROID_API__=$ndk_api",
-      "--target=$ndk_target",
-    ]
-    cflags_cc += [
-      "-isystem$ndk/sources/cxx-stl/llvm-libc++/include",
-      "-isystem$ndk/sources/cxx-stl/llvm-libc++abi/include",
-      "-isystem$ndk/sources/android/support/include",
-    ]
-    ldflags += [
-      "--sysroot=$ndk/platforms/$ndk_platform",
-      "--target=$ndk_target",
-      "-B$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/$ndk_target/bin",
-    ]
-    lib_dirs = [
-      "$ndk/sources/cxx-stl/llvm-libc++/libs/$ndk_stdlib",
-      "$ndk/toolchains/$ndk_gccdir-4.9/prebuilt/$ndk_host/lib/gcc/$ndk_target/4.9.x",
-    ]
-
-    libs += [
-      "c++_static",
-      "c++abi",
-    ]
-    if (ndk_api < 21) {
-      libs += [ "android_support" ]
-    }
+    cflags += [ "--sysroot=$ndk/sysroot" ]
+    cflags_cc += [ "-isystem$ndk/sources/cxx-stl/llvm-libc++/include" ]
+    ldflags += [ "-static-libstdc++" ]
   }
 
   if (is_ios) {
@@ -475,14 +435,14 @@ config("optimize") {
       "/OPT:REF",
     ]
   } else {
-    cflags = [
-      "-O3",
-      "-fdata-sections",
-      "-ffunction-sections",
-    ]
+    cflags = [ "-O3" ]
     if (is_mac || is_ios) {
       ldflags = [ "-dead_strip" ]
     } else {
+      cflags += [
+        "-fdata-sections",
+        "-ffunction-sections",
+      ]
       ldflags = [ "-Wl,--gc-sections" ]
     }
     if (target_cpu == "wasm") {

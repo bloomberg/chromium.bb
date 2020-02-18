@@ -635,8 +635,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       password_store->stored_passwords();
   GURL www_url = https_test_server().GetURL("www.example.com", "/");
   EXPECT_EQ(2U, passwords.size());
-  EXPECT_TRUE(base::ContainsKey(passwords, psl_url.spec()));
-  EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
+  EXPECT_TRUE(base::Contains(passwords, psl_url.spec()));
+  EXPECT_TRUE(base::Contains(passwords, www_url.spec()));
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
@@ -682,8 +682,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
       password_store->stored_passwords();
   GURL www_url = https_test_server().GetURL("www.example.com", "/");
   EXPECT_EQ(2U, passwords.size());
-  EXPECT_TRUE(base::ContainsKey(passwords, psl_url.spec()));
-  EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
+  EXPECT_TRUE(base::Contains(passwords, psl_url.spec()));
+  EXPECT_TRUE(base::Contains(passwords, www_url.spec()));
   EXPECT_EQ(base::ASCIIToUTF16("user"),
             passwords[psl_url.spec()].front().username_value);
   EXPECT_EQ(base::ASCIIToUTF16("password"),

@@ -13,23 +13,19 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
+#include "content/public/browser/background_sync_registration.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/background_sync_launcher_android.h"
 #endif
-
-namespace {
-
-// Default min time gap between two periodic sync events for a given
-// Periodic Background Sync registration.
-constexpr base::TimeDelta kMinGapBetweenPeriodicSyncEvents =
-    base::TimeDelta::FromHours(12);
-
-}  // namespace
 
 // static
 const char BackgroundSyncControllerImpl::kFieldTrialName[] = "BackgroundSync";
@@ -47,9 +43,12 @@ const char BackgroundSyncControllerImpl::kMinSyncRecoveryTimeName[] =
     "min_recovery_time_sec";
 const char BackgroundSyncControllerImpl::kMaxSyncEventDurationName[] =
     "max_sync_event_duration_sec";
+const char BackgroundSyncControllerImpl::kMinPeriodicSyncEventsInterval[] =
+    "min_periodic_sync_events_interval_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
-    : profile_(profile),
+    : SiteEngagementObserver(SiteEngagementService::Get(profile)),
+      profile_(profile),
       site_engagement_service_(SiteEngagementService::Get(profile)),
       background_sync_metrics_(
           ukm::UkmBackgroundRecorderFactory::GetForProfile(profile_)) {
@@ -59,8 +58,38 @@ BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
 
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
 
+void BackgroundSyncControllerImpl::OnEngagementEvent(
+    content::WebContents* web_contents,
+    const GURL& url,
+    double score,
+    SiteEngagementService::EngagementType engagement_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (score == 0.0)
+    return;
+
+  auto origin = url::Origin::Create(url);
+  auto iter = suspended_periodic_sync_origins_.find(origin);
+  if (iter == suspended_periodic_sync_origins_.end())
+    return;
+
+  suspended_periodic_sync_origins_.erase(iter);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, url, /* can_create= */ false);
+  if (!storage_partition)
+    return;
+
+  auto* background_sync_context = storage_partition->GetBackgroundSyncContext();
+  if (!background_sync_context)
+    return;
+
+  background_sync_context->RevivePeriodicBackgroundSyncRegistrations(
+      std::move(origin));
+}
+
 void BackgroundSyncControllerImpl::GetParameterOverrides(
-    content::BackgroundSyncParameters* parameters) const {
+    content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_ANDROID)
@@ -78,8 +107,8 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     parameters->disable = true;
   }
 
-  if (base::ContainsKey(field_params,
-                        kMaxAttemptsWithNotificationPermissionParameterName)) {
+  if (base::Contains(field_params,
+                     kMaxAttemptsWithNotificationPermissionParameterName)) {
     int max_attempts;
     if (base::StringToInt(
             field_params[kMaxAttemptsWithNotificationPermissionParameterName],
@@ -88,7 +117,7 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
-  if (base::ContainsKey(field_params, kMaxAttemptsParameterName)) {
+  if (base::Contains(field_params, kMaxAttemptsParameterName)) {
     int max_attempts;
     if (base::StringToInt(field_params[kMaxAttemptsParameterName],
                           &max_attempts)) {
@@ -96,7 +125,7 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
-  if (base::ContainsKey(field_params, kInitialRetryParameterName)) {
+  if (base::Contains(field_params, kInitialRetryParameterName)) {
     int initial_retry_delay_sec;
     if (base::StringToInt(field_params[kInitialRetryParameterName],
                           &initial_retry_delay_sec)) {
@@ -105,7 +134,7 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
-  if (base::ContainsKey(field_params, kRetryDelayFactorParameterName)) {
+  if (base::Contains(field_params, kRetryDelayFactorParameterName)) {
     int retry_delay_factor;
     if (base::StringToInt(field_params[kRetryDelayFactorParameterName],
                           &retry_delay_factor)) {
@@ -113,7 +142,7 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
-  if (base::ContainsKey(field_params, kMinSyncRecoveryTimeName)) {
+  if (base::Contains(field_params, kMinSyncRecoveryTimeName)) {
     int min_sync_recovery_time_sec;
     if (base::StringToInt(field_params[kMinSyncRecoveryTimeName],
                           &min_sync_recovery_time_sec)) {
@@ -122,7 +151,7 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
-  if (base::ContainsKey(field_params, kMaxSyncEventDurationName)) {
+  if (base::Contains(field_params, kMaxSyncEventDurationName)) {
     int max_sync_event_duration_sec;
     if (base::StringToInt(field_params[kMaxSyncEventDurationName],
                           &max_sync_event_duration_sec)) {
@@ -131,44 +160,79 @@ void BackgroundSyncControllerImpl::GetParameterOverrides(
     }
   }
 
+  if (base::Contains(field_params, kMinPeriodicSyncEventsInterval)) {
+    int min_periodic_sync_events_interval_sec;
+    if (base::StringToInt(field_params[kMinPeriodicSyncEventsInterval],
+                          &min_periodic_sync_events_interval_sec)) {
+      parameters->min_periodic_sync_events_interval =
+          base::TimeDelta::FromSeconds(min_periodic_sync_events_interval_sec);
+    }
+  }
+
   return;
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncRegistered(
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncRegistered(
     const url::Origin& origin,
     bool can_fire,
     bool is_reregistered) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordRegistrationEvent(origin, can_fire,
-                                                        is_reregistered);
+  background_sync_metrics_.MaybeRecordOneShotSyncRegistrationEvent(
+      origin, can_fire, is_reregistered);
 }
 
-void BackgroundSyncControllerImpl::NotifyBackgroundSyncCompleted(
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncRegistered(
+    const url::Origin& origin,
+    int min_interval,
+    bool is_reregistered) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncRegistrationEvent(
+      origin, min_interval, is_reregistered);
+}
+
+void BackgroundSyncControllerImpl::NotifyOneShotBackgroundSyncCompleted(
     const url::Origin& origin,
     blink::ServiceWorkerStatusCode status_code,
     int num_attempts,
     int max_attempts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  background_sync_metrics_.MaybeRecordCompletionEvent(
+  background_sync_metrics_.MaybeRecordOneShotSyncCompletionEvent(
       origin, status_code, num_attempts, max_attempts);
 }
 
-void BackgroundSyncControllerImpl::RunInBackground() {
+void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncCompleted(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode status_code,
+    int num_attempts,
+    int max_attempts) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  background_sync_metrics_.MaybeRecordPeriodicSyncEventCompletion(
+      origin, status_code, num_attempts, max_attempts);
+}
+
+void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
+    blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile_->IsOffTheRecord())
     return;
+
 #if defined(OS_ANDROID)
-  BackgroundSyncLauncherAndroid::LaunchBrowserIfStopped();
+  BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(sync_type);
 #endif
 }
 
-int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
-    const GURL& url) const {
+int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(const GURL& url) {
   blink::mojom::EngagementLevel engagement_level =
       site_engagement_service_->GetEngagementLevel(url);
+  if (engagement_level == blink::mojom::EngagementLevel::NONE) {
+    suspended_periodic_sync_origins_.insert(
+        url::Origin::Create(url.GetOrigin()));
+  }
 
   switch (engagement_level) {
     case blink::mojom::EngagementLevel::NONE:
@@ -190,30 +254,44 @@ int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
   return kEngagementLevelNonePenalty;
 }
 
-base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
-    const url::Origin& origin,
+base::TimeDelta BackgroundSyncControllerImpl::SnapToMaxOriginFrequency(
     int64_t min_interval,
-    int num_attempts,
-    blink::mojom::BackgroundSyncType sync_type,
-    content::BackgroundSyncParameters* parameters) const {
+    int64_t min_gap_for_origin) {
+  DCHECK_GE(min_gap_for_origin, 0);
+  DCHECK_GE(min_interval, 0);
+
+  if (min_interval < min_gap_for_origin)
+    return base::TimeDelta::FromMilliseconds(min_gap_for_origin);
+  if (min_interval % min_gap_for_origin == 0)
+    return base::TimeDelta::FromMilliseconds(min_interval);
+  return base::TimeDelta::FromMilliseconds(
+      (min_interval / min_gap_for_origin + 1) * min_gap_for_origin);
+}
+
+base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
+    const content::BackgroundSyncRegistration& registration,
+    content::BackgroundSyncParameters* parameters) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(parameters);
 
+  int num_attempts = registration.num_attempts();
+
   if (!num_attempts) {
     // First attempt.
-    switch (sync_type) {
+    switch (registration.sync_type()) {
       case blink::mojom::BackgroundSyncType::ONE_SHOT:
         return base::TimeDelta();
       case blink::mojom::BackgroundSyncType::PERIODIC:
-        int site_engagement_factor = GetSiteEngagementPenalty(origin.GetURL());
+        int site_engagement_factor =
+            GetSiteEngagementPenalty(registration.origin().GetURL());
         if (!site_engagement_factor)
           return base::TimeDelta::Max();
 
         int64_t effective_gap_ms =
             site_engagement_factor *
-            kMinGapBetweenPeriodicSyncEvents.InMilliseconds();
-        return base::TimeDelta::FromMilliseconds(
-            std::max(min_interval, effective_gap_ms));
+            parameters->min_periodic_sync_events_interval.InMilliseconds();
+        return SnapToMaxOriginFrequency(registration.options()->min_interval,
+                                        effective_gap_ms);
     }
   }
 
@@ -243,3 +321,11 @@ BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
 BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
     ~BackgroundSyncEventKeepAliveImpl() = default;
 #endif
+
+void BackgroundSyncControllerImpl::NoteSuspendedPeriodicSyncOrigins(
+    std::set<url::Origin> suspended_origins) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (auto& origin : suspended_origins)
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+}

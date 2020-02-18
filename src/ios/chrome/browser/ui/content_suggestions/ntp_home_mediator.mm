@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -52,12 +53,11 @@
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -82,7 +82,7 @@ const char kNTPHelpURL[] =
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
   // Observes changes in identity and updates the Identity Disc.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
   // Used to load URLs.
   UrlLoadingService* _urlLoadingService;
@@ -110,7 +110,7 @@ const char kNTPHelpURL[] =
                   templateURLService:(TemplateURLService*)templateURLService
                    urlLoadingService:(UrlLoadingService*)urlLoadingService
                          authService:(AuthenticationService*)authService
-                     identityManager:(identity::IdentityManager*)identityManager
+                     identityManager:(signin::IdentityManager*)identityManager
                           logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
@@ -121,7 +121,7 @@ const char kNTPHelpURL[] =
     _urlLoadingService = urlLoadingService;
     _authService = authService;
     _identityObserverBridge.reset(
-        new identity::IdentityManagerObserverBridge(identityManager, self));
+        new signin::IdentityManagerObserverBridge(identityManager, self));
     // Listen for default search engine changes.
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);

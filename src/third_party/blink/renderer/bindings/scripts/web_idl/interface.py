@@ -3,11 +3,24 @@
 # found in the LICENSE file.
 
 import exceptions
-from .idl_definition import IdlDefinition
+
+from .attribute import Attribute
+from .common import WithCodeGeneratorInfo
+from .common import WithComponent
+from .common import WithDebugInfo
+from .common import WithExposure
+from .common import WithExtendedAttributes
+from .constant import Constant
+from .identifier_ir_map import IdentifierIRMap
 from .idl_member import IdlMember
+from .idl_type import IdlType
+from .operation import Operation
+from .reference import RefById
+from .user_defined_type import UserDefinedType
 
 
-class Interface(IdlDefinition):
+class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
+                WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
     """A summarized interface definition in IDL.
 
     Interface provides information about an interface, partial interfaces,
@@ -15,6 +28,94 @@ class Interface(IdlDefinition):
     gathered in an interface.
     https://heycam.github.io/webidl/#idl-interfaces
     """
+
+    class IR(IdentifierIRMap.IR, WithExtendedAttributes, WithExposure,
+             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+        def __init__(self,
+                     identifier,
+                     is_partial,
+                     is_mixin,
+                     inherited=None,
+                     attributes=None,
+                     constants=None,
+                     operations=None,
+                     iterable=None,
+                     maplike=None,
+                     setlike=None,
+                     extended_attributes=None,
+                     exposures=None,
+                     code_generator_info=None,
+                     component=None,
+                     components=None,
+                     debug_info=None):
+            assert isinstance(is_partial, bool)
+            assert isinstance(is_mixin, bool)
+            assert inherited is None or isinstance(inherited, RefById)
+            assert attributes is None or isinstance(attributes, (list, tuple))
+            assert constants is None or isinstance(constants, (list, tuple))
+            assert operations is None or isinstance(operations, (list, tuple))
+            assert iterable is None or isinstance(iterable, Iterable)
+            assert maplike is None or isinstance(maplike, Maplike)
+            assert setlike is None or isinstance(setlike, Setlike)
+
+            attributes = attributes or []
+            constants = constants or []
+            operations = operations or []
+            assert all(
+                isinstance(attribute, Attribute.IR)
+                for attribute in attributes)
+            assert all(
+                isinstance(constant, Constant.IR) for constant in constants)
+            assert all(
+                isinstance(operation, Operation.IR)
+                for operation in operations)
+
+            kind = None
+            if is_partial:
+                if is_mixin:
+                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN
+                else:
+                    kind = IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE
+            else:
+                if is_mixin:
+                    kind = IdentifierIRMap.IR.Kind.INTERFACE_MIXIN
+                else:
+                    kind = IdentifierIRMap.IR.Kind.INTERFACE
+            IdentifierIRMap.IR.__init__(self, identifier=identifier, kind=kind)
+            WithExtendedAttributes.__init__(self, extended_attributes)
+            WithExposure.__init__(self, exposures)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithComponent.__init__(
+                self, component=component, components=components)
+            WithDebugInfo.__init__(self, debug_info)
+
+            self.is_partial = is_partial
+            self.is_mixin = is_mixin
+            self.inherited = inherited
+            self.attributes = list(attributes)
+            self.constants = list(constants)
+            self.operations = list(operations)
+            self.iterable = iterable
+            self.maplike = maplike
+            self.setlike = setlike
+
+        def make_copy(self):
+            return Interface.IR(
+                identifier=self.identifier,
+                is_partial=self.is_partial,
+                is_mixin=self.is_mixin,
+                inherited=self.inherited,
+                attributes=map(Attribute.IR.make_copy, self.attributes),
+                constants=map(Constant.IR.make_copy, self.constants),
+                operations=map(Operation.IR.make_copy, self.operations),
+                iterable=self.iterable,
+                maplike=self.maplike,
+                setlike=self.setlike,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
+
 
     @property
     def inherited_interface(self):
@@ -130,29 +231,70 @@ class Interface(IdlDefinition):
         """
         raise exceptions.NotImplementedError()
 
+    # UserDefinedType overrides
+    @property
+    def is_interface(self):
+        return True
 
-class Iterable(IdlMember):
+
+class Iterable(WithCodeGeneratorInfo, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-iterable"""
+
+    def __init__(self,
+                 key_type=None,
+                 value_type=None,
+                 code_generator_info=None,
+                 debug_info=None):
+        assert key_type is None or isinstance(key_type, IdlType)
+        # iterable is declared in either form of
+        #     iterable<value_type>
+        #     iterable<key_type, value_type>
+        # thus |value_type| can't be None.  However, we put it after |key_type|
+        # to be consistent with the format of IDL.
+        assert isinstance(value_type, IdlType), "value_type must be specified"
+
+        WithCodeGeneratorInfo.__init__(self, code_generator_info)
+        WithDebugInfo.__init__(self, debug_info)
+
+        self._key_type = key_type
+        self._value_type = value_type
 
     @property
     def key_type(self):
         """
-        Returns its key type or None.
+        Returns the key type or None.
         @return IdlType?
         """
-        raise exceptions.NotImplementedError()
+        return self._key_type
 
     @property
     def value_type(self):
         """
-        Returns its value type.
+        Returns the value type.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        return self._value_type
 
 
-class Maplike(object):
+class Maplike(WithCodeGeneratorInfo, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-maplike"""
+
+    def __init__(self,
+                 key_type,
+                 value_type,
+                 is_readonly=False,
+                 code_generator_info=None,
+                 debug_info=None):
+        assert isinstance(key_type, IdlType)
+        assert isinstance(value_type, IdlType)
+        assert isinstance(is_readonly, bool)
+
+        WithCodeGeneratorInfo.__init__(self, code_generator_info)
+        WithDebugInfo.__init__(self, debug_info)
+
+        self._key_type = key_type
+        self._value_type = value_type
+        self._is_readonly = is_readonly
 
     @property
     def key_type(self):
@@ -160,7 +302,7 @@ class Maplike(object):
         Returns its key type.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        return self._key_type
 
     @property
     def value_type(self):
@@ -168,7 +310,7 @@ class Maplike(object):
         Returns its value type.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        return self._value_type
 
     @property
     def is_readonly(self):
@@ -176,19 +318,33 @@ class Maplike(object):
         Returns True if it's readonly.
         @return bool
         """
-        raise exceptions.NotImplementedError()
+        return self._is_readonly
 
 
-class Setlike(object):
+class Setlike(WithCodeGeneratorInfo, WithDebugInfo):
     """https://heycam.github.io/webidl/#idl-setlike"""
 
+    def __init__(self,
+                 value_type,
+                 is_readonly=False,
+                 code_generator_info=None,
+                 debug_info=None):
+        assert isinstance(value_type, IdlType)
+        assert isinstance(is_readonly, bool)
+
+        WithCodeGeneratorInfo.__init__(self, code_generator_info)
+        WithDebugInfo.__init__(self, debug_info)
+
+        self._value_type = value_type
+        self._is_readonly = is_readonly
+
     @property
     def value_type(self):
         """
         Returns its value type.
         @return IdlType
         """
-        raise exceptions.NotImplementedError()
+        return self._value_type
 
     @property
     def is_readonly(self):
@@ -196,7 +352,7 @@ class Setlike(object):
         Returns True if it's readonly.
         @return bool
         """
-        raise exceptions.NotImplementedError()
+        return self._is_readonly
 
 
 class IndexedPropertyHandler(IdlMember):

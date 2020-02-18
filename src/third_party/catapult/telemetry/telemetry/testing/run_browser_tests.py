@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import fnmatch
 import os
 import sys
 import json
@@ -220,10 +219,6 @@ def _CreateTestArgParsers():
   return parser
 
 
-def _SkipMatch(name, skipGlobs):
-  return any(fnmatch.fnmatch(name, glob) for glob in skipGlobs)
-
-
 def _GetClassifier(typ_runner):
   def _SeriallyExecutedBrowserTestCaseClassifer(test_set, test):
     # Do not pick up tests that do not inherit from
@@ -297,6 +292,7 @@ def RunTests(args):
   typ_runner.args.path = options.path
   typ_runner.args.quiet = options.quiet
   typ_runner.args.repeat = options.repeat
+  typ_runner.args.repository_absolute_path = options.repository_absolute_path
   typ_runner.args.retry_limit = options.retry_limit
   typ_runner.args.retry_only_retry_on_failure_tests = (
       options.retry_only_retry_on_failure_tests)

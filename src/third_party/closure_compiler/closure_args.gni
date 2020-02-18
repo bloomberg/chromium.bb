@@ -7,11 +7,6 @@ common_closure_args = [
   "extra_annotation_name=attribute",
   "extra_annotation_name=demo",
   "extra_annotation_name=element",
-  "extra_annotation_name=group",
-  "extra_annotation_name=hero",
-  "extra_annotation_name=homepage",
-  "extra_annotation_name=status",
-  "extra_annotation_name=submodule",
 ]
 
 strict_error_checking_closure_args = [
@@ -24,6 +19,7 @@ strict_error_checking_closure_args = [
   "jscomp_error=externsValidation",
   "jscomp_error=globalThis",
   "jscomp_error=invalidCasts",
+  "jscomp_error=misplacedTypeAnnotation",
   "jscomp_error=missingProperties",
   "jscomp_error=missingReturn",
   "jscomp_error=nonStandardJsDocs",
@@ -46,6 +42,9 @@ checking_closure_args = strict_error_checking_closure_args + [
                           "polymer_pass",
 
                           "jscomp_off=duplicate",
+
+                          "js_module_root=../../ui/webui/resources/",
+                          "js_module_root=gen/ui/webui/resources/",
                         ]
 
 # Additional closure arguments for minifying

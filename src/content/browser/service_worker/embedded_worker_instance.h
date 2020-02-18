@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -363,7 +364,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   const scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
-  base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_;
+  // Remote interface to talk to a running service worker. Used to update
+  // subresource loader factories in the service worker.
+  mojo::Remote<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      subresource_loader_updater_;
+
+  base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstance);
 };

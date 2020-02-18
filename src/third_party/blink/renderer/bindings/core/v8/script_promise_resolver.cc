@@ -20,14 +20,17 @@ ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
-      resolver_(script_state) {
+      resolver_(script_state),
+      keep_alive_(PERSISTENT_FROM_HERE) {
   if (GetExecutionContext()->IsContextDestroyed()) {
     state_ = kDetached;
     resolver_.Clear();
   }
 }
 
-ScriptPromiseResolver::~ScriptPromiseResolver() {
+ScriptPromiseResolver::~ScriptPromiseResolver() = default;
+
+void ScriptPromiseResolver::Dispose() {
 #if DCHECK_IS_ON()
   // This assertion fails if:
   //  - promise() is called at least once and
@@ -50,6 +53,9 @@ ScriptPromiseResolver::~ScriptPromiseResolver() {
         << create_stack_trace_.ToString();
   }
 #endif
+  deferred_resolve_task_.Cancel();
+  resolver_.Clear();
+  value_.Clear();
 }
 
 void ScriptPromiseResolver::Reject(ExceptionState& exception_state) {

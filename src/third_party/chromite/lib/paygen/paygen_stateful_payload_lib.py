@@ -24,7 +24,9 @@ def GenerateStatefulPayload(image_path, output_directory):
   Args:
     image_path: Full path to the image.
     output_directory: Path to the directory to leave the resulting output.
-    logging: logging instance.
+
+  Returns:
+    str: The full path to the generated file.
   """
   logging.info('Generating stateful update file.')
 
@@ -54,3 +56,5 @@ def GenerateStatefulPayload(image_path, output_directory):
       raise
 
   logging.info('Successfully generated %s', output_gz)
+
+  return output_gz

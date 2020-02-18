@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -53,6 +54,7 @@ class SkBitmap;
 
 namespace cc {
 struct ElementId;
+class ScopedDeferMainFrameUpdate;
 class PaintImage;
 struct ViewportLayers;
 }
@@ -71,6 +73,7 @@ struct WebCursorInfo;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFloatSize;
+class WebLocalFrame;
 
 class WebWidgetClient {
  public:
@@ -99,6 +102,7 @@ class WebWidgetClient {
   // Show or hide compositor debug visualizations.
   virtual void SetShowFPSCounter(bool) {}
   virtual void SetShowPaintRects(bool) {}
+  virtual void SetShowLayoutShiftRegions(bool) {}
   virtual void SetShowDebugBorders(bool) {}
   virtual void SetShowScrollBottleneckRects(bool) {}
   virtual void SetShowHitTestBorders(bool) {}
@@ -142,12 +146,14 @@ class WebWidgetClient {
   // Called when a tooltip should be shown at the current cursor position.
   virtual void SetToolTipText(const WebString&, WebTextDirection hint) {}
 
-  // Requests to lock the mouse cursor. If true is returned, the success
-  // result will be asynchronously returned via a single call to
-  // WebWidget::didAcquirePointerLock() or
+  // Requests to lock the mouse cursor for the |requester_frame| in the
+  // widget. If true is returned, the success result will be asynchronously
+  // returned via a single call to WebWidget::didAcquirePointerLock() or
   // WebWidget::didNotAcquirePointerLock().
   // If false, the request has been denied synchronously.
-  virtual bool RequestPointerLock() { return false; }
+  virtual bool RequestPointerLock(WebLocalFrame* requester_frame) {
+    return false;
+  }
 
   // Cause the pointer lock to be released. This may be called at any time,
   // including when a lock is pending but not yet acquired.
@@ -185,10 +191,13 @@ class WebWidgetClient {
   virtual void SetOverscrollBehavior(const cc::OverscrollBehavior&) {}
 
   // Called to update if pointerrawupdate events should be sent.
-  virtual void HasPointerRawUpdateEventHandlers(bool) {}
+  virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
 
   // Called to update if touch events should be sent.
-  virtual void HasTouchEventHandlers(bool) {}
+  virtual void SetHasTouchEventHandlers(bool) {}
+
+  // Called to update if scroll events should be sent.
+  virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
@@ -215,6 +224,14 @@ class WebWidgetClient {
   // becomes DSF times larger than window coordinates.
   // TODO(oshima): Update the comment when the migration is completed.
   virtual void ConvertViewportToWindow(WebRect* rect) {}
+
+  // Converts the |rect| from Blink's Viewport coordinates to the
+  // coordinates in the native window used to display the content, in
+  // DIP.  They're identical in tradional world, but will differ when
+  // use-zoom-for-dsf feature is eanbled, and Viewport coordinates
+  // becomes DSF times larger than window coordinates.
+  // TODO(oshima): Update the comment when the migration is completed.
+  virtual void ConvertViewportToWindow(WebFloatRect* rect) {}
 
   // Converts the |rect| from the coordinates in native window in
   // DIP to Blink's Viewport coordinates. They're identical in
@@ -274,6 +291,10 @@ class WebWidgetClient {
                                        float new_page_scale,
                                        double duration_sec) {}
 
+  // For when the embedder itself change scales on the page (e.g. devtools)
+  // and wants all of the content at the new scale to be crisp.
+  virtual void ForceRecalculateRasterScales() {}
+
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger
   // pushing the decode through the compositor.
@@ -300,6 +321,33 @@ class WebWidgetClient {
   // submitted (still called "swapped") to the display compositor (either with
   // DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
+
+  // Set or get what event handlers exist in the document contained in the
+  // WebWidget in order to inform the compositor thread if it is able to handle
+  // an input event, or it needs to pass it to the main thread to be handled.
+  // The class is the type of input event, and for each class there is a
+  // properties defining if the compositor thread can handle the event.
+  virtual void SetEventListenerProperties(cc::EventListenerClass,
+                                          cc::EventListenerProperties) {}
+  virtual cc::EventListenerProperties EventListenerProperties(
+      cc::EventListenerClass) const {
+    return cc::EventListenerProperties::kNone;
+  }
+
+  // Prevents any updates to the input for the layer tree, and the layer tree
+  // itself, and the layer tree from becoming visible.
+  virtual std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+  DeferMainFrameUpdate() {
+    return nullptr;
+  }
+
+  // Start deferring commits to the compositor, allowing document lifecycle
+  // updates without committing the layer tree. Commits are deferred
+  // until at most the given |timeout| has passed. If multiple calls are made
+  // when deferal is active then the initial timeout applies.
+  virtual void StartDeferringCommits(base::TimeDelta timeout) {}
+  // Immediately stop deferring commits.
+  virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
 };
 
 }  // namespace blink

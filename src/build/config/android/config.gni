@@ -63,13 +63,6 @@ if (is_android || is_chromeos) {
     }
   }
 
-  if (!defined(extra_chrome_shared_library_configs)) {
-    extra_chrome_shared_library_configs = []
-  }
-  if (!defined(extra_chrome_shared_library_deps)) {
-    extra_chrome_shared_library_deps = []
-  }
-
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_ndk"
     default_android_ndk_version = "r16"
@@ -214,10 +207,9 @@ if (is_android || is_chromeos) {
     android_sdk_tools_bundle_aapt2_dir =
         "//third_party/android_build_tools/aapt2"
 
-    # Use R8 for Java optimization rather than ProGuard for all targets. R8 is
-    # already used as the default for public targets. This will evenutally be
-    # the default. https://crbug.com/908988
-    use_r8 = false
+    # Use R8 for Java optimization rather than any progaurd_jar_path provided
+    # for all targets. Proguard support may be dropped in the near future.
+    use_r8 = true
 
     # Checks that proguard flags have not changed (!is_java_debug only).
     check_android_configuration = false
@@ -229,10 +221,10 @@ if (is_android || is_chromeos) {
     # once P builds are no longer supported. https://crbug.com/943637
     trichrome_shared_assets = android_sdk_release == "q"
 
-    # Whether Developer Tools should be split into a separate DFM.
+    # Whether Developer UIs should be split into a separate DFM.
     # TODO(huangs): Move this flag to its own buildflags.gni file once we
     # determine where the file should go.
-    dfmify_devtools = false
+    dfmify_dev_ui = false
   }
 
   if (notouch_build && defined(extra_keymappings)) {

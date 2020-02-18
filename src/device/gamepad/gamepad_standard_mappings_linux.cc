@@ -18,12 +18,22 @@ namespace {
 // The hid-sony driver in newer kernels uses an alternate mapping for Sony
 // Playstation 3 and Playstation 4 gamepads than in older kernels. To allow
 // applications to distinguish between the old mapping and the new mapping,
-// hid-sony sets the high bit of the device's version number.
+// hid-sony sets the high bit of the bcdHID value.
 // Dualshock 4 devices are patched in 4.10:
 // https://github.com/torvalds/linux/commit/9131f8cc2b4eaf7c08d402243429e0bfba9aa0d6
 // Dualshock 3 and SIXAXIS devices are patched in 4.12:
 // https://github.com/torvalds/linux/commit/e19a267b9987135c00155a51e683e434b9abb56b
-const uint16_t kDualshockPatchedVersion = 0x8111;
+const uint16_t kDualshockPatchedBcdHidMask = 0x8000;
+
+// Older versions of the Stadia Controller firmware use an alternate mapping
+// function.
+const uint16_t kStadiaControllerOldFirmwareVersion = 0x0001;
+
+enum StadiaGamepadButtons {
+  STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
+  STADIA_GAMEPAD_BUTTON_EXTRA2,
+  STADIA_GAMEPAD_BUTTON_COUNT
+};
 
 void MapperXInputStyleGamepad(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
@@ -590,12 +600,7 @@ void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
-  enum StadiaGamepadButtons {
-    STADIA_GAMEPAD_BUTTON_EXTRA = BUTTON_INDEX_COUNT,
-    STADIA_GAMEPAD_BUTTON_EXTRA2,
-    STADIA_GAMEPAD_BUTTON_COUNT
-  };
+void MapperStadiaControllerOldFirmware(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
   mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
@@ -609,6 +614,26 @@ void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
       AxisPositiveAsButton(input.axes[6]);
   mapped->buttons[BUTTON_INDEX_META] = input.buttons[7];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[11];
+  mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[12];
+  mapped->buttons_length = STADIA_GAMEPAD_BUTTON_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperStadiaController(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[8];
   mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA] = input.buttons[11];
   mapped->buttons[STADIA_GAMEPAD_BUTTON_EXTRA2] = input.buttons[12];
   mapped->buttons_length = STADIA_GAMEPAD_BUTTON_COUNT;
@@ -683,42 +708,16 @@ constexpr struct MappingData {
 } AvailableMappings[] = {
     // DragonRise Generic USB
     {GamepadId::kDragonRiseProduct0006, MapperDragonRiseGeneric},
-    // Xbox 360 Wired
-    {GamepadId::kMicrosoftProduct028e, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct028f, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct02a1, MapperXInputStyleGamepad},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct0291, MapperXInputStyleGamepad},
-    // Xbox One Wired
-    {GamepadId::kMicrosoftProduct02d1, MapperXInputStyleGamepad},
-    // Xbox One Wired (2015 FW)
-    {GamepadId::kMicrosoftProduct02dd, MapperXInputStyleGamepad},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02e0, MapperXboxOneS},
-    // Xbox One Elite Wired
-    {GamepadId::kMicrosoftProduct02e3, MapperXInputStyleGamepad},
-    // Xbox One S (USB)
-    {GamepadId::kMicrosoftProduct02ea, MapperXInputStyleGamepad},
     // Xbox One S (Bluetooth)
     {GamepadId::kMicrosoftProduct02fd, MapperXboxOneS2016Firmware},
-    // Xbox 360 Wireless
-    {GamepadId::kMicrosoftProduct0719, MapperXInputStyleGamepad},
-    // Xbox Adaptive Controller
-    {GamepadId::kMicrosoftProduct0b0a, MapperXInputStyleGamepad},
     // Logitech F310 D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510 D-mode
     {GamepadId::kLogitechProductc218, MapperLogitechDInput},
     // Logitech F710 D-mode
     {GamepadId::kLogitechProductc219, MapperLogitechDInput},
-    // Logitech F310 X-mode
-    {GamepadId::kLogitechProductc21d, MapperXInputStyleGamepad},
-    // Logitech F510 X-mode
-    {GamepadId::kLogitechProductc21e, MapperXInputStyleGamepad},
-    // Logitech F710 X-mode
-    {GamepadId::kLogitechProductc21f, MapperXInputStyleGamepad},
     // Samsung Gamepad EI-GP20
     {GamepadId::kSamsungElectronicsProducta000, MapperSamsung_EI_GP20},
     // Dualshock 3 / SIXAXIS
@@ -778,7 +777,7 @@ constexpr struct MappingData {
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype
-    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaController},
+    {GamepadId::kPrototypeVendorProduct9401, MapperStadiaControllerOldFirmware},
 };
 
 }  // namespace
@@ -786,6 +785,7 @@ constexpr struct MappingData {
 GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
     const uint16_t vendor_id,
     const uint16_t product_id,
+    const uint16_t hid_specification_version,
     const uint16_t version_number,
     GamepadBusType bus_type) {
   GamepadId gamepad_id =
@@ -799,13 +799,13 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
       (find_it == end) ? nullptr : find_it->function;
 
   // The Linux kernel was updated in version 4.10 to better support Dualshock 4
-  // and Dualshock 3/SIXAXIS gamepads. The driver patches the hardware version
-  // when using the new mapping to allow downstream users to distinguish them.
+  // and Dualshock 3/SIXAXIS gamepads. The driver patches the bcdHID value when
+  // using the new mapping to allow downstream users to distinguish them.
   if (mapper == MapperDualshock4 &&
-      version_number == kDualshockPatchedVersion) {
+      (hid_specification_version & kDualshockPatchedBcdHidMask)) {
     mapper = MapperDualshock4New;
   } else if (mapper == MapperDualshock3SixAxis &&
-             version_number == kDualshockPatchedVersion) {
+             (hid_specification_version & kDualshockPatchedBcdHidMask)) {
     mapper = MapperDualshock3SixAxisNew;
   }
 
@@ -824,6 +824,22 @@ GamepadStandardMappingFunction GetGamepadStandardMappingFunction(
   if (gamepad_id == GamepadId::kNintendoProduct200e &&
       mapper == MapperSwitchPro && bus_type != GAMEPAD_BUS_USB) {
     mapper = MapperSwitchComposite;
+  }
+
+  // Use an alternate mapping function if the Stadia controller is using an old
+  // firmware version.
+  if (gamepad_id == GamepadId::kGoogleProduct9400 &&
+      mapper == MapperStadiaController &&
+      version_number == kStadiaControllerOldFirmwareVersion) {
+    mapper = MapperStadiaControllerOldFirmware;
+  }
+
+  // If no mapper was found, check if the device is a known XInput gamepad.
+  if (mapper == nullptr) {
+    XInputType xtype =
+        GamepadIdList::Get().GetXInputType(vendor_id, product_id);
+    if (xtype == kXInputTypeXbox360 || xtype == kXInputTypeXboxOne)
+      mapper = MapperXInputStyleGamepad;
   }
 
   return mapper;

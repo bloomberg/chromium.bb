@@ -33,8 +33,11 @@ extern const char kOverrideModelGeoValue[];
 extern const char kOverrideModelDefaultValue[];
 extern const char kBackoffThresholdKey[];
 
+// Notify sync to update data on language determined.
+extern const base::Feature kNotifySyncOnLanguageDetermined;
+
 // This feature uses the existing UI for translate bubble.
-extern const base::Feature kUseButtonTranslateBubbleUI;
+extern const base::Feature kUseButtonTranslateBubbleUi;
 
 // These feature params controls what translate bubble UI to display.
 extern const char kTranslateUIBubbleKey[];
@@ -79,7 +82,7 @@ bool IsForceTriggerBackoffThresholdReached(int force_trigger_count);
 
 // Returns which translate bubble UI to use depending on selection in
 // kTranslateUIBubbleKey.
-TranslateUIBubbleModel GetTranslateUIBubbleModel();
+TranslateUIBubbleModel GetTranslateUiBubbleModel();
 }  // namespace language
 
 #endif  // COMPONENTS_LANGUAGE_CORE_COMMON_LANGUAGE_EXPERIMENTS_H_

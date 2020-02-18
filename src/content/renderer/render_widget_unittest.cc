@@ -13,13 +13,11 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/trees/layer_tree_host.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -89,9 +87,7 @@ enum {
 
 class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
  public:
-  MockWidgetInputHandlerHost(
-      mojo::InterfaceRequest<mojom::WidgetInputHandlerHost> request)
-      : binding_(this, std::move(request)) {}
+  MockWidgetInputHandlerHost() {}
 #if defined(OS_ANDROID)
   MOCK_METHOD4(FallbackCursorModeLockCursor, void(bool, bool, bool, bool));
 
@@ -116,8 +112,13 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
 
   MOCK_METHOD1(SetMouseCapture, void(bool));
 
+  mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
  private:
-  mojo::Binding<mojom::WidgetInputHandlerHost> binding_;
+  mojo::Receiver<mojom::WidgetInputHandlerHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandlerHost);
 };
@@ -191,12 +192,11 @@ class InteractiveRenderWidget : public RenderWidget {
         always_overscroll_(false) {
     InitForPopup(base::NullCallback(), &mock_page_popup_);
 
-    mojom::WidgetInputHandlerHostPtr widget_input_handler;
-    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>(
-        mojo::MakeRequest(&widget_input_handler));
+    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
     widget_input_handler_manager_->AddInterface(
-        nullptr, std::move(widget_input_handler));
+        mojo::PendingReceiver<mojom::WidgetInputHandler>(),
+        mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
 
   void SendInputEvent(const blink::WebInputEvent& event,
@@ -296,7 +296,7 @@ class RenderWidgetUnittest : public testing::Test {
 
 TEST_F(RenderWidgetUnittest, CursorChange) {
   blink::WebCursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::Type::kTypePointer;
+  cursor_info.type = ui::CursorType::kPointer;
 
   widget()->DidChangeCursor(cursor_info);
   EXPECT_EQ(widget()->sink()->message_count(), 1U);
@@ -552,6 +552,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}
+  void ResizeVisualViewportForWidget(const gfx::Size& viewport_size) override {}
 };
 
 // Tests that the value of VisualProperties::is_pinch_gesture_active is
@@ -678,21 +679,7 @@ TEST(RenderWidgetTest, LargeScreensUseMoreMemory) {
 #endif
 
 #if defined(OS_ANDROID)
-class RenderWidgetSurfaceSyncUnittest : public RenderWidgetUnittest {
- public:
-  RenderWidgetSurfaceSyncUnittest() = default;
-  ~RenderWidgetSurfaceSyncUnittest() override = default;
-
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kEnableSurfaceSynchronization);
-    RenderWidgetUnittest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(RenderWidgetSurfaceSyncUnittest, ForceSendMetadataOnInput) {
+TEST_F(RenderWidgetUnittest, ForceSendMetadataOnInput) {
   auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());
@@ -727,35 +714,56 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     color_layer->SetBackgroundColor(SK_ColorRED);
   }
 
-  base::TimeTicks CompositeAndReturnSwapTimestamp() {
+  // |swap_to_presentation| determines how long after swap should presentation
+  // happen. This can be negative, positive, or zero. If zero, an invalid (null)
+  // presentation time is used.
+  void CompositeAndWaitForPresentation(base::TimeDelta swap_to_presentation) {
+    base::RunLoop swap_run_loop;
+    base::RunLoop presentation_run_loop;
+
+    // Register callbacks for swap time and presentation time.
     base::TimeTicks swap_time;
-    base::RunLoop run_loop;
-    widget()->NotifySwapTime(base::BindOnce(
-        [](base::OnceClosure callback, base::TimeTicks* swap_time,
-           blink::WebWidgetClient::SwapResult result,
-           base::TimeTicks timestamp) {
-          *swap_time = timestamp;
-          std::move(callback).Run();
-        },
-        run_loop.QuitClosure(), &swap_time));
+    widget()->NotifySwapAndPresentationTime(
+        base::BindOnce(
+            [](base::OnceClosure swap_quit_closure, base::TimeTicks* swap_time,
+               blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              *swap_time = timestamp;
+              std::move(swap_quit_closure).Run();
+            },
+            swap_run_loop.QuitClosure(), &swap_time),
+        base::BindOnce(
+            [](base::OnceClosure presentation_quit_closure,
+               blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks timestamp) {
+              DCHECK(!timestamp.is_null());
+              std::move(presentation_quit_closure).Run();
+            },
+            presentation_run_loop.QuitClosure()));
+
+    // Composite and wait for the swap to complete.
     widget()->layer_tree_view()->layer_tree_host()->Composite(
-        base::TimeTicks::Now(), /*raster=*/true);
-    // The swap time notify comes as a posted task.
-    run_loop.Run();
-    return swap_time;
+        base::TimeTicks::Now(),
+        /*raster=*/true);
+    swap_run_loop.Run();
+
+    // Present and wait for it to complete.
+    base::TimeTicks presentation_time;
+    if (!swap_to_presentation.is_zero())
+      presentation_time = swap_time + swap_to_presentation;
+    widget()->layer_tree_view()->DidPresentCompositorFrame(
+        1, gfx::PresentationFeedback(presentation_time,
+                                     base::TimeDelta::FromMilliseconds(16), 0));
+    presentation_run_loop.Run();
   }
 };
 
 TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampValid) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(2));
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback(
-             swap_time + base::TimeDelta::FromMilliseconds(2),
-             base::TimeDelta::FromMilliseconds(16), 0));
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(true, 1)));
@@ -768,11 +776,8 @@ TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampValid) {
 TEST_F(NotifySwapTimesRenderWidgetUnittest, PresentationTimestampInvalid) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta());
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback());
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(false, 1)));
@@ -786,13 +791,8 @@ TEST_F(NotifySwapTimesRenderWidgetUnittest,
        PresentationTimestampEarlierThanSwaptime) {
   base::HistogramTester histograms;
 
-  base::TimeTicks swap_time = CompositeAndReturnSwapTimestamp();
-  ASSERT_FALSE(swap_time.is_null());
+  CompositeAndWaitForPresentation(base::TimeDelta::FromMilliseconds(-2));
 
-  widget()->layer_tree_view()->DidPresentCompositorFrame(
-      1, gfx::PresentationFeedback(
-             swap_time - base::TimeDelta::FromMilliseconds(2),
-             base::TimeDelta::FromMilliseconds(16), 0));
   EXPECT_THAT(histograms.GetAllSamples(
                   "PageLoad.Internal.Renderer.PresentationTime.Valid"),
               testing::ElementsAre(base::Bucket(false, 1)));

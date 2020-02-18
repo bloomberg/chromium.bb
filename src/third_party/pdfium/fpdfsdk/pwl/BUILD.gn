@@ -44,13 +44,11 @@ jumbo_source_set("pwl") {
     "../../:pdfium_public_headers",
     "../../constants",
     "../../core/fpdfapi/font",
-    "../../core/fpdfapi/page",
     "../../core/fpdfapi/parser",
     "../../core/fpdfapi/render",
     "../../core/fpdfdoc",
     "../../core/fxcrt",
     "../../core/fxge",
-    "../formfiller:fontmap",
   ]
   visibility = [ "../../*" ]
 }

@@ -81,7 +81,7 @@ class CORE_EXPORT ProcessingInstruction final : public CharacterData,
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
-  void DetachLayoutTree(const AttachContext&) final {}
+  void DetachLayoutTree(bool performing_reattach) final {}
 
   bool CheckStyleSheet(String& href, String& charset);
   void Process(const String& href, const String& charset);

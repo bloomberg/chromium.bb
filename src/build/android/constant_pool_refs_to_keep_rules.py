@@ -19,6 +19,17 @@ import sys
 # system APIs and are already included in ProGuard configs.
 _IGNORED_PACKAGES = ['java', 'android', 'org.w3c', 'org.xml', 'dalvik']
 
+# Classes in _WHITELIST_PACKAGES are support libraries compiled into chrome
+# that must bypass the _IGNORED_PACKAGES.
+_WHITELIST_PACKAGES = ['android.support']
+
+# TODO(https://crbug.com/968769): Filter may be too broad.
+# Classes in _DFM_FEATURES will be excluded from "keep all members" rule.
+_DFM_FEATURES = [
+    'org.chromium.chrome.autofill_assistant', 'org.chromium.chrome.tab_ui',
+    'org.chromium.chrome.browser.tasks.tab_management', 'org.chromium.chrome.vr'
+]
+
 # Mapping for translating Java bytecode type identifiers to source code type
 # identifiers.
 _TYPE_IDENTIFIER_MAP = {
@@ -91,6 +102,22 @@ def add_to_refs(class_name, keep_entry, dep_refs):
     dep_refs[class_name] = [keep_entry]
 
 
+def should_include_class_path(class_path):
+  """ Check whether a class_path should be added as keep rule.
+      Conditions:
+        - Class is auto-generated (Lambdas/Nested, for example $)
+        - Class is not in a DFM Module
+        - Class is not in a black/white listed package
+    """
+  nested_class = '$' in class_path
+  not_in_dfm = all(not class_path.startswith(f) for f in _DFM_FEATURES)
+  allowed_packages = not (any(
+      class_path.startswith(p)
+      for p in _IGNORED_PACKAGES) and all(not class_path.startswith(p)
+                                          for p in _WHITELIST_PACKAGES))
+  return nested_class or (not_in_dfm and allowed_packages)
+
+
 def main(argv):
   dep_refs = defaultdict(list)
   extended_and_implemented_classes = set()
@@ -109,8 +136,10 @@ def main(argv):
   with open(args.input_file, 'r') as constant_pool_refs:
     for line in constant_pool_refs:
       line = line.rstrip().replace('/', '.')
-      # Ignore any references specified by the list of _IGNORED_PACKAGES.
-      if any(line.startswith(package) for package in _IGNORED_PACKAGES):
+      # Ignore any references specified by the list of
+      # _IGNORED_PACKAGES and not in _WHITELIST_PACKAGES.
+      if (any(line.startswith(p) for p in _IGNORED_PACKAGES)
+          and all(not line.startswith(p) for p in _WHITELIST_PACKAGES)):
         continue
 
       reflist = line.split(',')
@@ -139,6 +168,11 @@ def main(argv):
       if class_name.startswith('['):
         continue
 
+      # Ignore R(esources) files that are from the same module.
+      if ('$' in class_name
+          and any(class_name.startswith(f) for f in _DFM_FEATURES)):
+        continue
+
       # If member_info starts with '(', member is a method, otherwise member
       # is a field.
       # Format keep entries as per ProGuard documentation
@@ -151,6 +185,18 @@ def main(argv):
           return_type = ''
         else:
           return_type = translate_single_type(return_type)[0]
+
+        # Include types of function arguments.
+        for arg_type in args_list:
+          if should_include_class_path(arg_type):
+            extended_and_implemented_classes.add(arg_type)
+
+        # Include the actual class when it's a constructor.
+        if member_name == '<init>':
+          if should_include_class_path(class_name):
+            extended_and_implemented_classes.add(class_name)
+          continue
+
         keep_entry = '%s %s(%s);' % (return_type, member_name,
                                      ', '.join(args_list))
       else:
@@ -162,14 +208,14 @@ def main(argv):
   with open(args.output_file, 'w') as keep_rules:
     # Write super classes and implemented interfaces to keep rules.
     for super_class in sorted(extended_and_implemented_classes):
-      keep_rules.write(
-          '-keep,allowobfuscation class %s { *; }\n' % (super_class.rstrip()))
+      keep_rules.write('-keep class %s { *; }\n' % (super_class.rstrip()))
       keep_rules.write('\n')
     # Write all other class references to keep rules.
     for c in sorted(dep_refs.iterkeys()):
+      if c in extended_and_implemented_classes:
+        continue
       class_keeps = '\n  '.join(dep_refs[c])
-      keep_rules.write(
-          '-keep,allowobfuscation class %s {\n  %s\n}\n' % (c, class_keeps))
+      keep_rules.write('-keep class %s {\n  %s\n}\n' % (c, class_keeps))
       keep_rules.write('\n')
 
 

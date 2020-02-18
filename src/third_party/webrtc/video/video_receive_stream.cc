@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+
 #include <algorithm>
 #include <set>
 #include <string>
@@ -41,7 +42,6 @@
 #include "rtc_base/experiments/keyframe_interval_settings.h"
 #include "rtc_base/location.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/platform_file.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/system/thread_registry.h"
 #include "rtc_base/time_utils.h"
@@ -191,6 +191,7 @@ VideoReceiveStream::VideoReceiveStream(
                      "DecodingThread",
                      rtc::kHighestPriority),
       call_stats_(call_stats),
+      source_tracker_(clock_),
       stats_proxy_(&config_, clock_),
       rtp_receive_statistics_(
           ReceiveStatistics::Create(clock_, &stats_proxy_, &stats_proxy_)),
@@ -503,6 +504,7 @@ void VideoReceiveStream::OnFrame(const VideoFrame& video_frame) {
   }
   config_.renderer->OnFrame(video_frame);
 
+  source_tracker_.OnFrameDelivered(video_frame.packet_infos());
   // TODO(tommi): OnRenderFrame grabs a lock too.
   stats_proxy_.OnRenderedFrame(video_frame);
 }
@@ -512,8 +514,9 @@ void VideoReceiveStream::SetFrameDecryptor(
   rtp_video_stream_receiver_.SetFrameDecryptor(std::move(frame_decryptor));
 }
 
-void VideoReceiveStream::SendNack(
-    const std::vector<uint16_t>& sequence_numbers) {
+void VideoReceiveStream::SendNack(const std::vector<uint16_t>& sequence_numbers,
+                                  bool buffering_allowed) {
+  RTC_DCHECK(buffering_allowed);
   rtp_video_stream_receiver_.RequestPacketRetransmit(sequence_numbers);
 }
 
@@ -736,7 +739,7 @@ void VideoReceiveStream::UpdatePlayoutDelays() const {
 }
 
 std::vector<webrtc::RtpSource> VideoReceiveStream::GetSources() const {
-  return rtp_video_stream_receiver_.GetSources();
+  return source_tracker_.GetSources();
 }
 
 }  // namespace internal

@@ -32,6 +32,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_color.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
@@ -45,6 +48,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -68,8 +72,10 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
     const InterpolableList* list =
         ToInterpolableList(&typed_value->GetInterpolableValue());
-    EXPECT_FLOAT_EQ(expected_value,
-                    ToInterpolableNumber(list->Get(0))->Value());
+    // Lengths are computed in logical units, which are quantized to 64ths of
+    // a pixel.
+    EXPECT_NEAR(expected_value, ToInterpolableNumber(list->Get(0))->Value(),
+                /*abs_error=*/0.02);
   }
 
   void ExpectNonInterpolableValue(const String& expected_value,
@@ -112,21 +118,51 @@ StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
 
 StringKeyframeVector KeyframesAtZeroAndOne(
     AtomicString property_name,
-    const PropertyRegistry* property_registry,
     const String& zero_value,
     const String& one_value) {
   StringKeyframeVector keyframes(2);
   keyframes[0] = MakeGarbageCollected<StringKeyframe>();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetCSSPropertyValue(
-      property_name, property_registry, zero_value,
-      SecureContextMode::kInsecureContext, nullptr);
+      property_name, zero_value, SecureContextMode::kInsecureContext, nullptr);
   keyframes[1] = MakeGarbageCollected<StringKeyframe>();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetCSSPropertyValue(property_name, property_registry, one_value,
-                                    SecureContextMode::kInsecureContext,
-                                    nullptr);
+  keyframes[1]->SetCSSPropertyValue(
+      property_name, one_value, SecureContextMode::kInsecureContext, nullptr);
   return keyframes;
+}
+
+const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
+    const AtomicString& property_name,
+    const AtomicString& type,
+    Document* document,
+    Element* element,
+    const String& zero_value,
+    const String& one_value,
+    ExceptionState& exception_state) {
+  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
+  property_descriptor->setName(property_name);
+  property_descriptor->setSyntax(type);
+  property_descriptor->setInitialValue(zero_value);
+  property_descriptor->setInherits(false);
+  PropertyRegistration::registerProperty(document, property_descriptor,
+                                         exception_state);
+
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(property_name, zero_value, one_value);
+
+  element->style()->setProperty(document, property_name, zero_value,
+                                g_empty_string, exception_state);
+
+  auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+
+  auto style = document->EnsureStyleResolver().StyleForElement(element);
+
+  // Snapshot should update first time after construction
+  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
+      *element, *style, nullptr));
+
+  return *effect->GetPropertySpecificKeyframes(PropertyHandle(property_name));
 }
 
 void ExpectProperty(CSSPropertyID property,
@@ -204,10 +240,11 @@ TEST_F(AnimationKeyframeEffectModel, CompositeEaseIn) {
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   HeapVector<Member<Interpolation>> values;
+  // CubicBezier(0.42, 0, 1, 1)(0.6) = 0.4291197695757142.
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectLengthValue(3.8579516, values.at(0));
+  ExpectLengthValue(3.85824, values.at(0));
   effect->Sample(0, 0.6, kDuration * 100, values);
-  ExpectLengthValue(3.8582394, values.at(0));
+  ExpectLengthValue(3.85824, values.at(0));
 }
 
 TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
@@ -216,12 +253,13 @@ TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Create(0.42, 0, 0.58, 1));
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
+  // CubicBezier(0.42, 0, 0.58, 1)(0.6) = 0.6681161300485039.
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   HeapVector<Member<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectLengthValue(4.3363357, values.at(0));
+  ExpectLengthValue(4.336232, values.at(0));
   effect->Sample(0, 0.6, kDuration * 1000, values);
-  ExpectLengthValue(4.3362322, values.at(0));
+  ExpectLengthValue(4.336232, values.at(0));
 }
 
 TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {
@@ -572,7 +610,7 @@ TEST_F(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
 
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   const StringPropertySpecificKeyframeVector& property_specific_keyframes =
-      effect->GetPropertySpecificKeyframes(
+      *effect->GetPropertySpecificKeyframes(
           PropertyHandle(GetCSSPropertyLeft()));
   EXPECT_EQ(3U, property_specific_keyframes.size());
   EXPECT_DOUBLE_EQ(0.0, property_specific_keyframes[0]->Offset());
@@ -598,10 +636,9 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
   const CompositorKeyframeValue* value;
 
   // Compositor keyframe value should be empty before snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& empty_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = empty_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_FALSE(value);
 
   // Snapshot should update first time after construction
@@ -616,10 +653,9 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
       *element, *style, nullptr));
 
   // Compositor keyframe value should be available after snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& available_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = available_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 }
@@ -637,10 +673,9 @@ TEST_F(AnimationKeyframeEffectModel,
       *element, *style, nullptr));
 
   const CompositorKeyframeValue* value;
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 
@@ -651,10 +686,9 @@ TEST_F(AnimationKeyframeEffectModel,
   // Snapshot should update after changing keyframes
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyFilter()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& updated_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyFilter()));
+  value = updated_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsFilterOperations());
 }
@@ -662,39 +696,95 @@ TEST_F(AnimationKeyframeEffectModel,
 TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateCustomProperty) {
   ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
   DummyExceptionStateForTesting exception_state;
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName("--foo");
-  property_descriptor->setSyntax("<number>");
-  property_descriptor->setInitialValue("0");
-  property_descriptor->setInherits(false);
-  PropertyRegistration::registerProperty(&GetDocument(), property_descriptor,
-                                         exception_state);
-  EXPECT_FALSE(exception_state.HadException());
-
-  StringKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AtomicString("--foo"), GetDocument().GetPropertyRegistry(), "0", "100");
-
-  element->style()->setProperty(&GetDocument(), "--foo", "0", g_empty_string,
-                                exception_state);
-  EXPECT_FALSE(exception_state.HadException());
-
-  auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
-
-  auto style = GetDocument().EnsureStyleResolver().StyleForElement(element);
-
-  const CompositorKeyframeValue* value;
-
-  // Snapshot should update first time after construction
-  EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
-      *element, *style, nullptr));
 
   // Compositor keyframe value available after snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(AtomicString("--foo")))[0]
-              ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value =
+      ConstructEffectAndGetKeyframes("--foo", "<number>", &GetDocument(),
+                                     element, "0", "100", exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  ASSERT_FALSE(exception_state.HadException());
+
+  // Test value holds the correct number type
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
+  EXPECT_EQ(ToCompositorKeyframeDouble(value)->ToDouble(), 100);
+}
+
+TEST_F(AnimationKeyframeEffectModel, CompositorUpdateColorProperty) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+  DummyExceptionStateForTesting exception_state;
+
+  element->style()->setProperty(&GetDocument(), "color", "rgb(0, 255, 0)",
+                                g_empty_string, exception_state);
+
+  // Compositor keyframe value available after snapshot
+  const CompositorKeyframeValue* value_rgb =
+      ConstructEffectAndGetKeyframes("--rgb", "<color>", &GetDocument(),
+                                     element, "rgb(0, 0, 0)", "rgb(0, 255, 0)",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_hsl =
+      ConstructEffectAndGetKeyframes("--hsl", "<color>", &GetDocument(),
+                                     element, "hsl(0, 0%, 0%)",
+                                     "hsl(120, 100%, 50%)", exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_name =
+      ConstructEffectAndGetKeyframes("--named", "<color>", &GetDocument(),
+                                     element, "black", "lime",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_hex =
+      ConstructEffectAndGetKeyframes("--hex", "<color>", &GetDocument(),
+                                     element, "#000000", "#00FF00",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_curr =
+      ConstructEffectAndGetKeyframes("--curr", "<color>", &GetDocument(),
+                                     element, "#000000", "currentcolor",
+                                     exception_state)[1]
+          ->GetCompositorKeyframeValue();
+  const PropertySpecificKeyframeVector& values_mixed =
+      ConstructEffectAndGetKeyframes("--mixed", "<color>", &GetDocument(),
+                                     element, "#000000", "lime",
+                                     exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  // Test rgb color input
+  EXPECT_TRUE(value_rgb);
+  EXPECT_TRUE(value_rgb->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_rgb)->ToColor(), SK_ColorGREEN);
+
+  // Test hsl color input
+  EXPECT_TRUE(value_hsl);
+  EXPECT_TRUE(value_hsl->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_hsl)->ToColor(), SK_ColorGREEN);
+
+  // Test named color input
+  EXPECT_TRUE(value_name);
+  EXPECT_TRUE(value_name->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_name)->ToColor(), SK_ColorGREEN);
+
+  // Test hex color input
+  EXPECT_TRUE(value_hex);
+  EXPECT_TRUE(value_hex->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_hex)->ToColor(), SK_ColorGREEN);
+
+  // currentcolor is a CSSIdentifierValue not a color
+  EXPECT_FALSE(value_curr);
+
+  // Ensure both frames are consistent when values are mixed
+  const CompositorKeyframeValue* value_mixed0 =
+      values_mixed[0]->GetCompositorKeyframeValue();
+  const CompositorKeyframeValue* value_mixed1 =
+      values_mixed[1]->GetCompositorKeyframeValue();
+
+  EXPECT_TRUE(value_mixed0);
+  EXPECT_TRUE(value_mixed0->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed0)->ToColor(), SK_ColorBLACK);
+
+  EXPECT_TRUE(value_mixed1);
+  EXPECT_TRUE(value_mixed1->IsColor());
+  EXPECT_EQ(ToCompositorKeyframeColor(value_mixed1)->ToColor(), SK_ColorGREEN);
 }
 
 }  // namespace blink

@@ -1,23 +1,22 @@
 #!perl -w
 
-# use strict fails
-#Can't use string ("main::glob") as a symbol ref while "strict refs" in use at /usr/lib/perl5/5.005/File/DosGlob.pm line 191.
-
 #
 # Documentation at the __END__
 #
 
 package File::DosGlob;
 
-our $VERSION = '1.06';
+our $VERSION = '1.12';
 use strict;
 use warnings;
+
+require XSLoader;
+XSLoader::load();
 
 sub doglob {
     my $cond = shift;
     my @retval = ();
     my $fix_drive_relative_paths;
-    #print "doglob: ", join('|', @_), "\n";
   OUTER:
     for my $pat (@_) {
 	my @matched = ();
@@ -41,7 +40,6 @@ sub doglob {
 	}
 	if ($pat =~ m|^(.*)([\\/])([^\\/]*)\z|s) {
 	    ($head, $sepchr, $tail) = ($1,$2,$3);
-	    #print "div: |$head|$sepchr|$tail|\n";
 	    push (@retval, $pat), next OUTER if $tail eq '';
 	    if ($head =~ /[*?]/) {
 		@globdirs = doglob('d', $head);
@@ -64,6 +62,13 @@ sub doglob {
 	opendir(D, $head) or next OUTER;
 	my @leaves = readdir D;
 	closedir D;
+
+	# VMS-format filespecs, especially if they contain extended characters,
+	# are unlikely to match patterns correctly, so Unixify them.
+	if ($^O eq 'VMS') {
+	    require VMS::Filespec;
+	    @leaves = map {$_ =~ s/\.$//; VMS::Filespec::unixify($_)} @leaves;
+        }
 	$head = '' if $head eq '.';
 	$head .= $sepchr unless $head eq '' or substr($head,-1) eq $sepchr;
 
@@ -73,7 +78,6 @@ sub doglob {
 	$pat =~ s/\*/.*/g;
 	$pat =~ s/\?/.?/g;
 
-	#print "regex: '$pat', head: '$head'\n";
 	my $matchsub = sub { $_[0] =~ m|^$pat\z|is };
       INNER:
 	for my $e (@leaves) {
@@ -106,17 +110,14 @@ sub doglob {
 #
 
 # context (keyed by second cxix arg provided by core)
-my %entries;
+our %entries;
 
 sub glob {
-    my($pat,$cxix) = @_;
+    my($pat,$cxix) = ($_[0], _callsite());
     my @pat;
 
     # glob without args defaults to $_
     $pat = $_ unless defined $pat;
-
-    # assume global context if not provided one
-    $cxix = '_G_' unless defined $cxix;
 
     # if we're just beginning, do it all first
     if (!$entries{$cxix}) {
@@ -142,7 +143,6 @@ sub glob {
 		#print "Got: \n\t$start\n\t$match\n\t$end\n";
 		my $tmp = "$start$match$end";
 		while ( $tmp =~ s/^(.*?)(?<!\\)\{(?:.*(?<!\\)\,)?(.*\Q$match\E.*?)(?:(?<!\\)\,.*)?(?<!\\)\}(.*)$/$1$2$3/ ) {
-		    #print "Striped: $tmp\n";
 		    #  these expansions will be performed by the original,
 		    #  when we call REHASH.
 		}
@@ -156,11 +156,10 @@ sub glob {
 	    }
 	    #print "Sould have "GOT" vs "Got"!\n";
 		#FIXME: There should be checking for this.
-		#  How or what should be done about failure is beond me.
+		#  How or what should be done about failure is beyond me.
 	}
 	if ( $#appendpat != -1
 		) {
-	    #print "LOOP\n";
 	    #FIXME: Max loop, no way! :")
 	    for ( @appendpat ) {
 	        push @pat, $_;
@@ -169,11 +168,8 @@ sub glob {
 	}
       }
       for ( @pat ) {
-	s/\\{/{/g;
-	s/\\}/}/g;
-	s/\\,/,/g;
+	s/\\([{},])/$1/g;
       }
-      #print join ("\n", @pat). "\n";
  
       $entries{$cxix} = [doglob(1,@pat)];
     }
@@ -236,7 +232,7 @@ It is largely compatible with perlglob.exe (the M$ setargv.obj
 version) in all but one respect--it understands wildcards in
 directory components.
 
-For example, C<<..\\l*b\\file/*glob.p?>> will work as expected (in
+For example, C<< <..\\l*b\\file/*glob.p?> >> will work as expected (in
 that it will find something like '..\lib\File/DosGlob.pm' alright).
 Note that all path components are case-insensitive, and that
 backslashes and forward slashes are both accepted, and preserved.
@@ -261,7 +257,7 @@ glob()
 =head1 BUGS
 
 Should probably be built into the core, and needs to stop
-pandering to DOS habits.  Needs a dose of optimizium too.
+pandering to DOS habits.  Needs a dose of optimization too.
 
 =head1 AUTHOR
 

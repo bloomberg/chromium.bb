@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_media_view_util.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -74,6 +75,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -168,11 +170,14 @@ struct AddEntriesMessage {
     CROSTINI_VOLUME,
     USB_VOLUME,
     ANDROID_FILES_VOLUME,
-    DOCUMENTS_PROVIDER_VOLUME
+    DOCUMENTS_PROVIDER_VOLUME,
+    MEDIA_VIEW_AUDIO,
+    MEDIA_VIEW_IMAGES,
+    MEDIA_VIEW_VIDEOS
   };
 
   // Represents the different types of entries (e.g. file, folder).
-  enum EntryType { FILE, DIRECTORY, TEAM_DRIVE, COMPUTER };
+  enum EntryType { FILE, DIRECTORY, LINK, TEAM_DRIVE, COMPUTER };
 
   // Represents whether an entry appears in 'Share with Me' or not.
   enum SharedOption { NONE, SHARED, SHARED_WITH_ME, NESTED_SHARED_WITH_ME };
@@ -216,6 +221,12 @@ struct AddEntriesMessage {
       *volume = ANDROID_FILES_VOLUME;
     else if (value == "documents_provider")
       *volume = DOCUMENTS_PROVIDER_VOLUME;
+    else if (value == "media_view_audio")
+      *volume = MEDIA_VIEW_AUDIO;
+    else if (value == "media_view_images")
+      *volume = MEDIA_VIEW_IMAGES;
+    else if (value == "media_view_videos")
+      *volume = MEDIA_VIEW_VIDEOS;
     else
       return false;
     return true;
@@ -398,6 +409,8 @@ struct AddEntriesMessage {
         *type = FILE;
       else if (value == "directory")
         *type = DIRECTORY;
+      else if (value == "link")
+        *type = LINK;
       else if (value == "team_drive")
         *type = TEAM_DRIVE;
       else if (value == "Computer")
@@ -597,6 +610,40 @@ struct ExpectFileTasksMessage {
   file_tasks::FileTasksObserver::OpenType open_type;
 };
 
+struct GetHistogramCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetHistogramCountMessage* message) {
+    base::JSONValueConverter<GetHistogramCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetHistogramCountMessage>* converter) {
+    converter->RegisterStringField("histogramName",
+                                   &GetHistogramCountMessage::histogram_name);
+    converter->RegisterIntField("value", &GetHistogramCountMessage::value);
+  }
+
+  std::string histogram_name;
+  int value = 0;
+};
+
+struct GetUserActionCountMessage {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetUserActionCountMessage* message) {
+    base::JSONValueConverter<GetUserActionCountMessage> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetUserActionCountMessage>* converter) {
+    converter->RegisterStringField(
+        "userActionName", &GetUserActionCountMessage::user_action_name);
+  }
+
+  std::string user_action_name;
+};
+
 }  // anonymous namespace
 
 class FileManagerBrowserTestBase::MockFileTasksObserver
@@ -657,6 +704,11 @@ class LocalTestVolume : public TestVolume {
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
         break;
+      case AddEntriesMessage::LINK:
+        ASSERT_TRUE(base::CreateSymbolicLink(
+            base::FilePath(entry.source_file_name), target_path))
+            << "Failed to create a symlink: " << target_path.value();
+        break;
       case AddEntriesMessage::TEAM_DRIVE:
         NOTREACHED() << "Can't create a team drive in a local volume: "
                      << target_path.value();
@@ -697,91 +749,6 @@ class LocalTestVolume : public TestVolume {
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalTestVolume);
-};
-
-// Removable TestVolume: local test volume for external media devices.
-class RemovableTestVolume : public LocalTestVolume {
- public:
-  RemovableTestVolume(const std::string& name,
-                      VolumeType volume_type,
-                      chromeos::DeviceType device_type,
-                      const base::FilePath& device_path,
-                      const std::string& drive_label)
-      : LocalTestVolume(name),
-        volume_type_(volume_type),
-        device_type_(device_type),
-        device_path_(device_path),
-        drive_label_(drive_label) {}
-  ~RemovableTestVolume() override = default;
-
-  bool PreparePartitionTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Create fake file on the removable volume.
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
-                                                 "text.txt", "hello.txt")
-                    .SetMimeType("text/plain"));
-
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
-                                                 "", "Folder"));
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  bool PrepareUsbTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Create fake file on the removable volume.
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::FILE,
-                                                 "text.txt", "hello.txt")
-                    .SetMimeType("text/plain"));
-    CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
-                                                 "", "Folder"));
-
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  bool Mount(Profile* profile) override {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Revoke name() mount point first, then re-add its mount point.
-    GetMountPoints()->RevokeFileSystem(name());
-    const bool added = GetMountPoints()->RegisterFileSystem(
-        name(), storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), root_path());
-    if (!added)
-      return false;
-
-    // Expose the mount point with the given volume and device type.
-    VolumeManager::Get(profile)->AddVolumeForTesting(
-        root_path(), volume_type_, device_type_, read_only_, device_path_,
-        drive_label_);
-    base::RunLoop().RunUntilIdle();
-    return true;
-  }
-
-  void Unmount(Profile* profile) {
-    VolumeManager::Get(profile)->RemoveVolumeForTesting(
-        root_path(), volume_type_, device_type_, read_only_, device_path_,
-        drive_label_);
-  }
-
- private:
-  storage::ExternalMountPoints* GetMountPoints() {
-    return storage::ExternalMountPoints::GetSystemInstance();
-  }
-
-  const VolumeType volume_type_;
-  const chromeos::DeviceType device_type_;
-  const base::FilePath device_path_;
-  const bool read_only_ = false;
-  const std::string drive_label_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
 
 // DownloadsTestVolume: local test volume for the "Downloads" directory.
@@ -928,15 +895,7 @@ class FakeTestVolume : public LocalTestVolume {
   }
 
   bool Mount(Profile* profile) override {
-    if (!CreateRootDirectory(profile))
-      return false;
-
-    // Revoke name() mount point first, then re-add its mount point.
-    GetMountPoints()->RevokeFileSystem(name());
-    const bool added = GetMountPoints()->RegisterFileSystem(
-        name(), storage::kFileSystemTypeNativeLocal,
-        storage::FileSystemMountOption(), root_path());
-    if (!added)
+    if (!MountSetup(profile))
       return false;
 
     // Expose the mount point with the given volume and device type.
@@ -951,16 +910,73 @@ class FakeTestVolume : public LocalTestVolume {
         root_path(), volume_type_, device_type_, read_only_);
   }
 
- private:
+ protected:
   storage::ExternalMountPoints* GetMountPoints() {
     return storage::ExternalMountPoints::GetSystemInstance();
+  }
+
+  bool MountSetup(Profile* profile) {
+    if (!CreateRootDirectory(profile))
+      return false;
+
+    // Revoke name() mount point first, then re-add its mount point.
+    GetMountPoints()->RevokeFileSystem(name());
+    const bool added = GetMountPoints()->RegisterFileSystem(
+        name(), storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(), root_path());
+    if (!added)
+      return false;
+
+    return true;
   }
 
   const VolumeType volume_type_;
   const chromeos::DeviceType device_type_;
   const bool read_only_ = false;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(FakeTestVolume);
+};
+
+// Removable TestVolume: local test volume for external media devices.
+class RemovableTestVolume : public FakeTestVolume {
+ public:
+  RemovableTestVolume(const std::string& name,
+                      VolumeType volume_type,
+                      chromeos::DeviceType device_type,
+                      const base::FilePath& device_path,
+                      const std::string& drive_label,
+                      const std::string& file_system_type)
+      : FakeTestVolume(name, volume_type, device_type),
+        device_path_(device_path),
+        drive_label_(drive_label),
+        file_system_type_(file_system_type) {}
+  ~RemovableTestVolume() override = default;
+
+  bool Mount(Profile* profile) override {
+    if (!MountSetup(profile))
+      return false;
+
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_, file_system_type_);
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_, device_path_,
+        drive_label_, file_system_type_);
+  }
+
+ private:
+  const base::FilePath device_path_;
+  const std::string drive_label_;
+  const std::string file_system_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovableTestVolume);
 };
 
 // DriveTestVolume: test volume for Google Drive.
@@ -1031,12 +1047,17 @@ class DriveTestVolume : public TestVolume {
                 entry.shared_option == AddEntriesMessage::SHARED_WITH_ME,
             file_capabilities);
         break;
+      case AddEntriesMessage::LINK:
+        NOTREACHED() << "Can't create a link in a drive test volume: "
+                     << entry.computer_name;
+        break;
       case AddEntriesMessage::TEAM_DRIVE:
         CreateTeamDrive(entry.team_drive_name, team_drive_capabilities);
         break;
       case AddEntriesMessage::COMPUTER:
         NOTREACHED() << "Can't create a computer in a drive test volume: "
                      << entry.computer_name;
+        break;
     }
 
     // Any file or directory created above, will only appear in Drive after
@@ -1218,6 +1239,12 @@ class DriveFsTestVolume : public DriveTestVolume {
       case AddEntriesMessage::DIRECTORY:
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
+        break;
+      case AddEntriesMessage::LINK:
+        ASSERT_TRUE(base::CreateSymbolicLink(
+            base::FilePath(entry.source_file_name), target_path))
+            << "Failed to create a symlink from " << entry.source_file_name
+            << " to " << target_path.value();
         break;
       case AddEntriesMessage::TEAM_DRIVE:
         ASSERT_TRUE(base::CreateDirectory(target_path))
@@ -1536,6 +1563,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
         arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
+  if (IsFormatDialogTest()) {
+    enabled_features.emplace_back(
+        chromeos::features::kEnableFileManagerFormatDialog);
+  }
+
   feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
@@ -1696,6 +1728,10 @@ bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
 }
 
 bool FileManagerBrowserTestBase::GetEnableDocumentsProvider() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetEnableFormatDialog() const {
   return false;
 }
 
@@ -1917,6 +1953,27 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             LOG(FATAL) << "Add entry: but no DocumentsProvider volume.";
           }
           break;
+        case AddEntriesMessage::MEDIA_VIEW_AUDIO:
+          if (media_view_audio_) {
+            media_view_audio_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Audio volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_IMAGES:
+          if (media_view_images_) {
+            media_view_images_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Images volume.";
+          }
+          break;
+        case AddEntriesMessage::MEDIA_VIEW_VIDEOS:
+          if (media_view_videos_) {
+            media_view_videos_->CreateEntry(*message.entries[i]);
+          } else {
+            LOG(FATAL) << "Add entry: but no MediaView Videos volume.";
+          }
+          break;
       }
     }
 
@@ -1925,9 +1982,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "mountFakeUsb" || name == "mountFakeUsbEmpty" ||
       name == "mountFakeUsbDcim") {
-    usb_volume_ = std::make_unique<FakeTestVolume>(
+    std::string file_system = "ext4";
+    const std::string* file_system_param = value.FindStringKey("filesystem");
+    if (file_system_param) {
+      file_system = *file_system_param;
+    }
+    usb_volume_ = std::make_unique<RemovableTestVolume>(
         "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB);
+        chromeos::DEVICE_TYPE_USB, base::FilePath(), "FAKEUSB", file_system);
 
     if (name == "mountFakeUsb")
       ASSERT_TRUE(usb_volume_->PrepareTestEntries(profile()));
@@ -1941,6 +2003,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "unmountUsb") {
     DCHECK(usb_volume_);
     usb_volume_->Unmount(profile());
+    return;
   }
 
   if (name == "mountUsbWithPartitions") {
@@ -1953,14 +2016,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     // Create partition volumes with the same device path and drive label.
     partition_1_ = std::make_unique<RemovableTestVolume>(
         "partition-1", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ext4");
     partition_2_ = std::make_unique<RemovableTestVolume>(
         "partition-2", VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
-        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label");
+        chromeos::DEVICE_TYPE_USB, device_path, "Drive Label", "ext4");
 
     // Create fake entries on partitions.
-    ASSERT_TRUE(partition_1_->PreparePartitionTestEntries(profile()));
-    ASSERT_TRUE(partition_2_->PreparePartitionTestEntries(profile()));
+    ASSERT_TRUE(partition_1_->PrepareTestEntries(profile()));
+    ASSERT_TRUE(partition_2_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(partition_1_->Mount(profile()));
     ASSERT_TRUE(partition_2_->Mount(profile()));
@@ -2091,7 +2154,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         extensions::AppWindowRegistry::Get(profile())->app_windows();
     ASSERT_FALSE(app_windows.empty());
     app_windows.front()->GetNativeWindow()->GetHost()->DispatchKeyEventPostIME(
-        &key_event, base::NullCallback());
+        &key_event);
     *output = "mediaKeyDispatched";
     return;
   }
@@ -2115,8 +2178,24 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       host = app_windows.front()->GetNativeWindow()->GetHost();
     }
     ASSERT_TRUE(host);
-    host->DispatchKeyEventPostIME(&key_event, base::NullCallback());
+    host->DispatchKeyEventPostIME(&key_event);
     *output = "tabKeyDispatched";
+    return;
+  }
+
+  if (name == "simulateClick") {
+    int click_x;
+    int click_y;
+    ASSERT_TRUE(value.GetInteger("clickX", &click_x));
+    ASSERT_TRUE(value.GetInteger("clickY", &click_y));
+
+    const auto& app_windows =
+        extensions::AppWindowRegistry::Get(profile())->app_windows();
+    auto* last_window = app_windows.front();
+
+    SimulateMouseClickAt(last_window->web_contents(), 0 /* modifiers */,
+                         blink::WebMouseEvent::Button::kLeft,
+                         gfx::Point(click_x, click_y));
     return;
   }
 
@@ -2186,7 +2265,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "enableTabletMode") {
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
     *output = "tabletModeEnabled";
     return;
   }
@@ -2202,6 +2281,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isSmbEnabled") {
     *output = IsNativeSmbTest() ? "true" : "false";
+    return;
+  }
+
+  if (name == "switchLanguage") {
+    std::string language;
+    ASSERT_TRUE(value.GetString("language", &language));
+    base::RunLoop run_loop;
+    chromeos::locale_util::SwitchLanguage(
+        language, true, false,
+        base::BindRepeating(
+            [](base::RunLoop* run_loop,
+               const chromeos::locale_util::LanguageSwitchResult&) {
+              run_loop->Quit();
+            },
+            &run_loop),
+        profile());
+    run_loop.Run();
     return;
   }
 
@@ -2246,6 +2342,26 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
           *file_tasks_observer_,
           OnFilesOpenedImpl(testing::HasSubstr(*file_name), message.open_type));
     }
+    return;
+  }
+
+  if (name == "getHistogramCount") {
+    GetHistogramCountMessage message;
+    ASSERT_TRUE(GetHistogramCountMessage::ConvertJSONValue(value, &message));
+    base::JSONWriter::Write(base::Value(histograms_.GetBucketCount(
+                                message.histogram_name, message.value)),
+                            output);
+
+    return;
+  }
+
+  if (name == "getUserActionCount") {
+    GetUserActionCountMessage message;
+    ASSERT_TRUE(GetUserActionCountMessage::ConvertJSONValue(value, &message));
+    base::JSONWriter::Write(
+        base::Value(user_actions_.GetActionCount(message.user_action_name)),
+        output);
+
     return;
   }
 

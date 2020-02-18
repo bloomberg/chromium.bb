@@ -40,8 +40,10 @@ DawnEnum AsDawnEnum(const WTF::String& webgpu_enum);
 DawnColor AsDawnType(const GPUColor*);
 DawnExtent3D AsDawnType(const GPUExtent3D*);
 DawnOrigin3D AsDawnType(const GPUOrigin3D*);
-std::tuple<DawnPipelineStageDescriptor, CString> AsDawnType(
-    const GPUPipelineStageDescriptor*);
+
+using OwnedPipelineStageDescriptor =
+    std::tuple<DawnPipelineStageDescriptor, std::unique_ptr<char[]>>;
+OwnedPipelineStageDescriptor AsDawnType(const GPUPipelineStageDescriptor*);
 
 // WebGPU objects are converted to Dawn objects by getting the opaque handle
 // which can be passed to Dawn.

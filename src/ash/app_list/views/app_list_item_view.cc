@@ -31,6 +31,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -101,8 +102,7 @@ constexpr SkColor kIconShadowColor = SkColorSetA(SK_ColorBLACK, 31);
 class ClippedFolderIconImageSource : public gfx::CanvasImageSource {
  public:
   explicit ClippedFolderIconImageSource(const gfx::ImageSkia& image)
-      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size(),
-                               false),
+      : gfx::CanvasImageSource(AppListConfig::instance().folder_icon_size()),
         image_(image) {}
   ~ClippedFolderIconImageSource() override = default;
 
@@ -139,36 +139,57 @@ class AppListItemView::IconImageView : public views::ImageView {
   ~IconImageView() override = default;
 
   // views::View:
+  const char* GetClassName() const override {
+    return "AppListItemView::IconImageView";
+  }
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     views::ImageView::OnBoundsChanged(previous_bounds);
-    if (icon_mask_)
-      icon_mask_->layer()->SetBounds(GetLocalBounds());
+    if (size() != previous_bounds.size() && !insets_.IsEmpty())
+      SetRoundedCornerAndInsets(corner_radius_, insets_);
   }
 
   // ui::LayerOwner:
   std::unique_ptr<ui::Layer> RecreateLayer() override {
     std::unique_ptr<ui::Layer> old_layer = views::View::RecreateLayer();
 
-    // ui::Layer::Clone() does not copy mask layer, so set it explicitly here.
-    if (mask_corner_radius_ != 0 || !mask_insets_.IsEmpty())
-      SetRoundedRectMaskLayer(mask_corner_radius_, mask_insets_);
+    // ui::Layer::Clone() does not copy the clip rect, so set it explicitly
+    // here.
+    if (corner_radius_ != 0 || !insets_.IsEmpty())
+      SetRoundedCornerAndInsets(corner_radius_, insets_);
     return old_layer;
   }
 
-  // Sets a rounded rect mask layer with |corner_radius| and |insets| to clip
-  // the icon.
-  void SetRoundedRectMaskLayer(int corner_radius, const gfx::Insets& insets) {
+  // Update the rounded corner and insets with animation. |show| is true when
+  // the target rounded corner radius and insets are for showing the indicator
+  // circle.
+  void AnimateRoundedCornerAndInsets(bool show) {
+    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kDraggedViewHoverAnimationDurationForFolder));
+
+    SetRoundedCornerAndInsets(
+        show ? AppListConfig::instance().folder_unclipped_icon_dimension() / 2
+             : AppListConfig::instance().folder_icon_dimension() / 2,
+        show ? gfx::Insets()
+             : gfx::Insets(AppListConfig::instance().folder_icon_insets()));
+  }
+
+  // Sets the rounded corner and the clip insets.
+  void SetRoundedCornerAndInsets(int corner_radius, const gfx::Insets& insets) {
     EnsureLayer();
-    icon_mask_ = views::Painter::CreatePaintedLayer(
-        views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK,
-                                                    corner_radius, insets));
-    icon_mask_->layer()->SetFillsBoundsOpaquely(false);
-    icon_mask_->layer()->SetBounds(GetLocalBounds());
-    layer()->SetMaskLayer(icon_mask_->layer());
+    layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
+    if (insets.IsEmpty()) {
+      layer()->SetClipRect(GetLocalBounds());
+    } else {
+      gfx::Rect bounds = GetLocalBounds();
+      bounds.Inset(insets);
+      layer()->SetClipRect(bounds);
+    }
 
     // Save the attributes in case the layer is recreated.
-    mask_corner_radius_ = corner_radius;
-    mask_insets_ = insets;
+    corner_radius_ = corner_radius;
+    insets_ = insets;
   }
 
   // Ensure that the view has a layer.
@@ -180,14 +201,11 @@ class AppListItemView::IconImageView : public views::ImageView {
   }
 
  private:
-  // The owner of a mask layer to clip the icon into circle.
-  std::unique_ptr<ui::LayerOwner> icon_mask_;
+  // The rounded corner radius.
+  int corner_radius_ = 0;
 
-  // The corner radius of mask layer.
-  int mask_corner_radius_ = 0;
-
-  // The insets of the mask layer.
-  gfx::Insets mask_insets_;
+  // The insets to be clipped.
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(IconImageView);
 };
@@ -221,7 +239,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     // smoothness.
     if (apps_grid_view_->IsTabletMode())
       SetBackgroundBlurEnabled(true);
-    icon_->SetRoundedRectMaskLayer(
+    icon_->SetRoundedCornerAndInsets(
         AppListConfig::instance().folder_icon_radius(),
         gfx::Insets(AppListConfig::instance().folder_icon_insets()));
   }
@@ -238,15 +256,16 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetHandlesTooltips(false);
   title_->SetFontList(AppListConfig::instance().app_title_font());
-  title_->SetLineHeight(AppListConfig::instance().app_title_max_line_height());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetEnabledColor(apps_grid_view_->is_in_folder()
                               ? kFolderGridTitleColor
                               : AppListConfig::instance().grid_title_color());
   if (!is_in_folder) {
-    title_->SetShadows(
-        gfx::ShadowValues(1, gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur,
-                                              kTitleShadowColor)));
+    gfx::ShadowValues title_shadow = gfx::ShadowValues(
+        1,
+        gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur, kTitleShadowColor));
+    title_->SetShadows(title_shadow);
+    title_shadow_margins_ = gfx::ShadowValue::GetMargin(title_shadow);
   }
 
   AddChildView(icon_);
@@ -264,9 +283,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   SetAnimationDuration(0);
 
   preview_circle_radius_ = 0;
-
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
 }
 
 AppListItemView::~AppListItemView() {
@@ -327,6 +343,8 @@ void AppListItemView::SetUIState(UIState ui_state) {
 }
 
 void AppListItemView::ScaleAppIcon(bool scale_up) {
+  if (!layer())
+    return;
   const gfx::Rect bounds(layer()->bounds().size());
   gfx::Transform transform =
       gfx::GetScaleTransform(bounds.CenterPoint(), kDragDropAppIconScale);
@@ -608,8 +626,13 @@ void AppListItemView::Layout() {
         GetIconBoundsForTargetViewBounds(rect, icon_shadow_->GetImage().size());
     icon_shadow_->SetBoundsRect(icon_shadow_bounds);
   }
-  title_->SetBoundsRect(
-      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize()));
+
+  gfx::Rect title_bounds =
+      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize());
+  if (!apps_grid_view_->is_in_folder())
+    title_bounds.Inset(title_shadow_margins_);
+  title_->SetBoundsRect(title_bounds);
+
   progress_bar_->SetBoundsRect(GetProgressBarBoundsForTargetViewBounds(
       rect, progress_bar_->GetPreferredSize()));
 }
@@ -754,11 +777,19 @@ base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
 }
 
 void AppListItemView::OnDraggedViewEnter() {
+  if (is_folder_) {
+    icon_->AnimateRoundedCornerAndInsets(true);
+    return;
+  }
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Show();
 }
 
 void AppListItemView::OnDraggedViewExit() {
+  if (is_folder_) {
+    icon_->AnimateRoundedCornerAndInsets(false);
+    return;
+  }
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Hide();
 }
@@ -771,19 +802,15 @@ void AppListItemView::SetBackgroundBlurEnabled(bool enabled) {
       enabled ? AppListConfig::instance().blur_radius() : 0);
 }
 
-void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
-  if (is_folder_) {
-    // Animate the folder icon via changing mask layer's corner radius and
-    // insets.
-    const double progress = animation->GetCurrentValue();
-    const int corner_radius = gfx::Tween::IntValueBetween(
-        progress, AppListConfig::instance().folder_icon_dimension() / 2,
-        AppListConfig::instance().folder_unclipped_icon_dimension() / 2);
-    const int insets = gfx::Tween::IntValueBetween(
-        progress, AppListConfig::instance().folder_icon_insets(), 0);
-    icon_->SetRoundedRectMaskLayer(corner_radius, gfx::Insets(insets));
+void AppListItemView::EnsureLayer() {
+  if (layer())
     return;
-  }
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+}
+
+void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
+  DCHECK(!is_folder_);
 
   preview_circle_radius_ = gfx::Tween::IntValueBetween(
       animation->GetCurrentValue(), 0,
@@ -866,7 +893,8 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
   gfx::Rect rect(target_bounds);
   rect.Inset(AppListConfig::instance().grid_title_horizontal_padding(),
              AppListConfig::instance().grid_title_top_padding(),
-             AppListConfig::instance().grid_title_horizontal_padding(), 0);
+             AppListConfig::instance().grid_title_horizontal_padding(),
+             AppListConfig::instance().grid_title_bottom_padding());
   rect.ClampToCenteredSize(title_size);
   return rect;
 }
@@ -911,14 +939,15 @@ int AppListItemView::GetPreviewCircleRadius() const {
 }
 
 void AppListItemView::CreateDraggedViewHoverAnimation() {
+  DCHECK(!is_folder_);
+
   if (dragged_view_hover_animation_)
     return;
 
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
-      is_folder_ ? kDraggedViewHoverAnimationDurationForFolder
-                 : kDraggedViewHoverAnimationDuration);
+      kDraggedViewHoverAnimationDuration);
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {

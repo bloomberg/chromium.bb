@@ -59,7 +59,11 @@ cron:
 - description: Poll luci-config for sheriff configurations.
   url: /configs/update
   schedule: every 1 minutes
-  target: sheriff-config
+
+- description: Poll the Pinpoint FIFO scheduler.
+  url: /cron/fifo-scheduler
+  schedule: every 1 minutes
+  target: pinpoint
 
 # The backup cron job is disabled temporarily in order to check whether
 # it is responsible for increased cost on the weekends.

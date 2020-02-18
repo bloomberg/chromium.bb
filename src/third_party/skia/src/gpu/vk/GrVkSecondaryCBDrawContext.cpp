@@ -32,6 +32,7 @@ sk_sp<GrVkSecondaryCBDrawContext> GrVkSecondaryCBDrawContext::Make(GrContext* ct
 
     sk_sp<GrRenderTargetContext> rtc(
             ctx->priv().makeVulkanSecondaryCBRenderTargetContext(imageInfo, vkInfo, props));
+    SkASSERT(rtc->asSurfaceProxy()->isInstantiated());
 
     int width = rtc->width();
     int height = rtc->height();
@@ -88,21 +89,23 @@ bool GrVkSecondaryCBDrawContext::characterize(SkSurfaceCharacterization* charact
     // We current don't support textured GrVkSecondaryCBDrawContexts.
     SkASSERT(!rtc->asTextureProxy());
 
-    // TODO: the addition of colorType to the surfaceContext should remove this calculation
-    SkColorType ct;
-    if (!GrPixelConfigToColorType(rtc->colorSpaceInfo().config(), &ct)) {
+    SkColorType ct = GrColorTypeToSkColorType(rtc->colorSpaceInfo().colorType());
+    if (ct == kUnknown_SkColorType) {
         return false;
     }
 
     SkImageInfo ii = SkImageInfo::Make(rtc->width(), rtc->height(), ct, kPremul_SkAlphaType,
                                        rtc->colorSpaceInfo().refColorSpace());
 
-    characterization->set(ctx->threadSafeProxy(), maxResourceBytes, ii, rtc->origin(),
-                          rtc->colorSpaceInfo().config(), rtc->fsaaType(), rtc->numStencilSamples(),
+    GrBackendFormat format = rtc->asRenderTargetProxy()->backendFormat();
+
+    characterization->set(ctx->threadSafeProxy(), maxResourceBytes, ii, format,
+                          rtc->origin(), rtc->numSamples(),
                           SkSurfaceCharacterization::Textureable(false),
                           SkSurfaceCharacterization::MipMapped(false),
                           SkSurfaceCharacterization::UsesGLFBO0(false),
                           SkSurfaceCharacterization::VulkanSecondaryCBCompatible(true),
+                          GrProtected(rtc->asRenderTargetProxy()->isProtected()),
                           this->props());
 
     return true;
@@ -137,23 +140,25 @@ bool GrVkSecondaryCBDrawContext::isCompatible(
         return false;
     }
 
-    // TODO: the addition of colorType to the surfaceContext should remove this calculation
-    SkColorType rtcColorType;
-    if (!GrPixelConfigToColorType(rtc->colorSpaceInfo().config(), &rtcColorType)) {
+    SkColorType rtColorType = GrColorTypeToSkColorType(rtc->colorSpaceInfo().colorType());
+    if (rtColorType == kUnknown_SkColorType) {
         return false;
     }
+
+    GrBackendFormat rtcFormat = rtc->asRenderTargetProxy()->backendFormat();
+    GrProtected isProtected = GrProtected(rtc->asRenderTargetProxy()->isProtected());
 
     return characterization.contextInfo() && characterization.contextInfo()->priv().matches(ctx) &&
            characterization.cacheMaxResourceBytes() <= maxResourceBytes &&
            characterization.origin() == rtc->origin() &&
-           characterization.config() == rtc->colorSpaceInfo().config() &&
+           characterization.backendFormat() == rtcFormat &&
            characterization.width() == rtc->width() &&
            characterization.height() == rtc->height() &&
-           characterization.colorType() == rtcColorType &&
-           characterization.fsaaType() == rtc->fsaaType() &&
-           characterization.stencilCount() == rtc->numStencilSamples() &&
+           characterization.colorType() == rtColorType &&
+           characterization.sampleCount() == rtc->numSamples() &&
            SkColorSpace::Equals(characterization.colorSpace(),
                                 rtc->colorSpaceInfo().colorSpace()) &&
+           characterization.isProtected() == isProtected &&
            characterization.surfaceProps() == rtc->surfaceProps();
 }
 

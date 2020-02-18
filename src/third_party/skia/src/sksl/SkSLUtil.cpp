@@ -7,13 +7,15 @@
 
 #include "src/sksl/SkSLUtil.h"
 
+#include "src/sksl/SkSLStringStream.h"
+
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
 
 namespace SkSL {
 
-#ifdef SKSL_STANDALONE
+#if defined(SKSL_STANDALONE) || !SK_SUPPORT_GPU
 StandaloneShaderCaps standaloneCaps;
 #endif
 

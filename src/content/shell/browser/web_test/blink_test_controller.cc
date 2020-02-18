@@ -326,8 +326,7 @@ BlinkTestController::BlinkTestController()
       test_phase_(BETWEEN_TESTS),
       crash_when_leak_found_(false),
       pending_layout_dumps_(0),
-      render_process_host_observer_(this),
-      weak_factory_(this) {
+      render_process_host_observer_(this) {
   CHECK(!instance_);
   instance_ = this;
 
@@ -966,7 +965,7 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
 
   // Is this the 1st time this renderer contains parts of the main test window?
   if (main_window &&
-      !base::ContainsKey(main_window_render_process_hosts_, process_host)) {
+      !base::Contains(main_window_render_process_hosts_, process_host)) {
     main_window_render_process_hosts_.insert(process_host);
 
     // Make sure the new renderer process_host has a test configuration shared

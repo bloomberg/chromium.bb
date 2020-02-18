@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -93,15 +94,12 @@ class AudioContextAutoplayTest
 
   void SetUp() override {
     helper_.Initialize();
-    frame_test_helpers::LoadFrame(helper_.LocalMainFrame(),
-                                  "data:text/html,<iframe></iframe>");
-
-    GetDocument().UpdateSecurityOrigin(
-        SecurityOrigin::Create("https", "example.com", 80));
-
-    ChildDocument().UpdateSecurityOrigin(
-        SecurityOrigin::Create("https", "cross-origin.com", 80));
-
+    frame_test_helpers::LoadHTMLString(helper_.LocalMainFrame(),
+                                       "<iframe></iframe>",
+                                       WebURL(KURL("https://example.com")));
+    frame_test_helpers::LoadHTMLString(
+        To<WebLocalFrameImpl>(helper_.LocalMainFrame()->FirstChild()), "",
+        WebURL(KURL("https://cross-origin.com")));
     GetDocument().GetSettings()->SetAutoplayPolicy(GetParam());
     ChildDocument().GetSettings()->SetAutoplayPolicy(GetParam());
 
@@ -135,9 +133,9 @@ class AudioContextAutoplayTest
   }
 
  private:
+  ScopedTestingPlatformSupport<AudioContextAutoplayTestPlatform> platform_;
   frame_test_helpers::WebViewHelper helper_;
   std::unique_ptr<HistogramTester> histogram_tester_;
-  ScopedTestingPlatformSupport<AudioContextAutoplayTestPlatform> platform_;
 };
 
 // Creates an AudioContext without a gesture inside a x-origin child frame.
@@ -613,10 +611,11 @@ TEST_P(AudioContextAutoplayTest,
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
       GetHistogramTester()->ExpectBucketCount(
-          kAutoplayMetric, AutoplayStatus::kAutoplayStatusFailed, 1);
+          kAutoplayMetric, AutoplayStatus::kAutoplayStatusSucceeded, 1);
       GetHistogramTester()->ExpectTotalCount(kAutoplayMetric, 1);
       GetHistogramTester()->ExpectBucketCount(
-          kAutoplayCrossOriginMetric, AutoplayStatus::kAutoplayStatusFailed, 1);
+          kAutoplayCrossOriginMetric, AutoplayStatus::kAutoplayStatusSucceeded,
+          1);
       GetHistogramTester()->ExpectTotalCount(kAutoplayCrossOriginMetric, 1);
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:

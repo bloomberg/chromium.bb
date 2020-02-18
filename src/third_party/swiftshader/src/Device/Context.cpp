@@ -24,33 +24,9 @@
 
 namespace sw
 {
-	bool booleanFaceRegister = false;
-	bool fullPixelPositionRegister = false;
-
-	bool forceWindowed = false;
-	bool quadLayoutEnabled = false;
-	bool postBlendSRGB = false;
-	bool exactColorRounding = false;
-	TransparencyAntialiasing transparencyAntialiasing = TRANSPARENCY_NONE;
-	bool forceClearRegisters = false;
-
 	Context::Context()
 	{
 		init();
-	}
-
-	Context::~Context()
-	{
-	}
-
-	void *Context::operator new(size_t bytes)
-	{
-		return allocate((unsigned int)bytes);
-	}
-
-	void Context::operator delete(void *pointer, size_t bytes)
-	{
-		deallocate(pointer);
 	}
 
 	bool Context::isDrawPoint() const
@@ -110,7 +86,7 @@ namespace sw
 	void Context::init()
 	{
 		// Set vertex streams to null stream
-		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
+		for(int i = 0; i < MAX_INTERFACE_COMPONENTS/4; i++)
 		{
 			input[i].defaults();
 		}
@@ -123,7 +99,6 @@ namespace sw
 		stencilBuffer = nullptr;
 
 		stencilEnable = false;
-		twoSidedStencil = false;
 		frontStencil = {};
 		backStencil = {};
 
@@ -143,8 +118,8 @@ namespace sw
 		destBlendFactorStateAlpha = VK_BLEND_FACTOR_ZERO;
 		blendOperationStateAlpha = VK_BLEND_OP_ADD;
 
-		cullMode = CULL_CLOCKWISE;
-		frontFacingCCW = true;
+		cullMode = VK_CULL_MODE_FRONT_BIT;
+		frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 		depthBias = 0.0f;
 		slopeDepthBias = 0.0f;
@@ -169,37 +144,11 @@ namespace sw
 		alphaToCoverage = false;
 	}
 
-	bool Context::setDepthBufferEnable(bool depthBufferEnable)
-	{
-		bool modified = (Context::depthBufferEnable != depthBufferEnable);
-		Context::depthBufferEnable = depthBufferEnable;
-		return modified;
-	}
-
-	bool Context::setAlphaBlendEnable(bool alphaBlendEnable)
-	{
-		bool modified = (Context::alphaBlendEnable != alphaBlendEnable);
-		Context::alphaBlendEnable = alphaBlendEnable;
-		return modified;
-	}
-
-	bool Context::setColorWriteMask(int index, int colorWriteMask)
-	{
-		bool modified = (Context::colorWriteMask[index] != colorWriteMask);
-		Context::colorWriteMask[index] = colorWriteMask;
-		return modified;
-	}
-
 	bool Context::depthWriteActive() const
 	{
 		if(!depthBufferActive()) return false;
 
 		return depthWriteEnable;
-	}
-
-	bool Context::alphaTestActive() const
-	{
-		return transparencyAntialiasing != TRANSPARENCY_NONE;
 	}
 
 	bool Context::depthBufferActive() const
@@ -589,6 +538,6 @@ namespace sw
 
 	bool Context::colorUsed() const
 	{
-		return colorWriteActive() || alphaTestActive() || (pixelShader && pixelShader->getModes().ContainsKill);
+		return colorWriteActive() || (pixelShader && pixelShader->getModes().ContainsKill);
 	}
 }

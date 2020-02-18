@@ -11,7 +11,6 @@
 #include "include/core/SkSurface.h"
 #include "samplecode/Sample.h"
 #include "tools/Resources.h"
-#include "tools/timer/AnimTimer.h"
 #include "tools/timer/Timer.h"
 
 #include <stdio.h>
@@ -81,20 +80,12 @@ public:
         fXform[currIndex] = SkRSXform::MakeFromRadians(0.5f, SK_ScalarPI*0.5f,
                                                        kWidth*0.5f, kHeight*0.5f, anchorX, anchorY);
 
-        fCurrentTime = 0;
-        fTimer.start();
     }
 
     ~DrawShipView() override {}
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, fName);
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString(fName); }
 
     void onDrawContent(SkCanvas* canvas) override {
         const float kCosDiff = 0.99984769515f;
@@ -107,27 +98,6 @@ protected:
         SkPaint paint;
         paint.setFilterQuality(kLow_SkFilterQuality);
         paint.setColor(SK_ColorWHITE);
-
-        SkFont font;
-        font.setSize(15.0f);
-
-        fTimer.end();
-
-        fTimes[fCurrentTime] = (float)(fTimer.fWall);
-        fCurrentTime = (fCurrentTime + 1) & 0x1f;
-
-        float meanTime = 0.0f;
-        for (int i = 0; i < 32; ++i) {
-            meanTime += fTimes[i];
-        }
-        meanTime /= 32.f;
-        SkString outString("fps: ");
-        SkScalar fps = 1000.f/meanTime;
-        outString.appendScalar(fps);
-        outString.append(" ms: ");
-        outString.appendScalar(meanTime);
-
-        fTimer.start();
 
         SkScalar anchorX = fAtlas->width()*0.5f;
         SkScalar anchorY = fAtlas->height()*0.5f;
@@ -148,20 +118,14 @@ protected:
         }
 
         fProc(canvas, fAtlas.get(), fXform, fTex, nullptr, kGrid*kGrid+1, nullptr, &paint);
-        paint.setColor(SK_ColorBLACK);
-        canvas->drawRect(SkRect::MakeXYWH(0, 0, 200, 24), paint);
-        paint.setColor(SK_ColorWHITE);
-        canvas->drawString(outString, 5, 15, font, paint);
     }
 
-#if 0
-    // TODO: switch over to use this for our animation
-    bool onAnimate(const AnimTimer& timer) override {
-        SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
-        fAnimatingDrawable->setSweep(angle);
+    bool onAnimate(double nanos) override {
+        //TODO: use nanos
+        //SkScalar angle = SkDoubleToScalar(fmod(1e-9 * nanos * 360 / 24, 360));
+        //fAnimatingDrawable->setSweep(angle);
         return true;
     }
-#endif
 
 private:
     const char*         fName;
@@ -170,10 +134,6 @@ private:
     sk_sp<SkImage> fAtlas;
     SkRSXform   fXform[kGrid*kGrid+1];
     SkRect      fTex[kGrid*kGrid+1];
-    WallTimer   fTimer;
-    float       fTimes[32];
-    int         fCurrentTime;
-
 
     typedef Sample INHERITED;
 };

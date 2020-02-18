@@ -355,6 +355,15 @@ class AsyncSocket {
   virtual void OnDataProviderDestroyed() = 0;
 };
 
+class SocketDataPrinter {
+ public:
+  ~SocketDataPrinter() = default;
+
+  // Prints the write in |data| using some sort of protocol-specific
+  // format.
+  virtual std::string PrintWrite(const std::string& data) = 0;
+};
+
 // StaticSocketDataHelper manages a list of reads and writes.
 class StaticSocketDataHelper {
  public:
@@ -377,7 +386,7 @@ class StaticSocketDataHelper {
   // Returns true if |data| is valid data for the next write. In order
   // to support short writes, the next write may be longer than |data|
   // in which case this method will still return true.
-  bool VerifyWriteData(const std::string& data);
+  bool VerifyWriteData(const std::string& data, SocketDataPrinter* printer);
 
   size_t read_index() const { return read_index_; }
   size_t write_index() const { return write_index_; }
@@ -424,11 +433,14 @@ class StaticSocketDataProvider : public SocketDataProvider {
   size_t read_count() const { return helper_.read_count(); }
   size_t write_count() const { return helper_.write_count(); }
 
+  void set_printer(SocketDataPrinter* printer) { printer_ = printer; }
+
  private:
   // From SocketDataProvider:
   void Reset() override;
 
   StaticSocketDataHelper helper_;
+  SocketDataPrinter* printer_ = nullptr;
   bool paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
@@ -482,7 +494,8 @@ struct SSLSocketDataProvider {
   uint16_t expected_ssl_version_max;
   base::Optional<bool> expected_send_client_cert;
   scoped_refptr<X509Certificate> expected_client_cert;
-  base::Optional<bool> expected_false_start_enabled;
+  base::Optional<HostPortPair> expected_host_and_port;
+  base::Optional<NetworkIsolationKey> expected_network_isolation_key;
 
   bool is_connect_data_consumed = false;
   bool is_confirm_data_consumed = false;
@@ -542,6 +555,8 @@ class SequencedSocketData : public SocketDataProvider {
     busy_before_sync_reads_ = busy_before_sync_reads;
   }
 
+  void set_printer(SocketDataPrinter* printer) { printer_ = printer; }
+
  private:
   // Defines the state for the read or write path.
   enum IoState {
@@ -562,6 +577,7 @@ class SequencedSocketData : public SocketDataProvider {
   void MaybePostWriteCompleteTask();
 
   StaticSocketDataHelper helper_;
+  SocketDataPrinter* printer_ = nullptr;
   int sequence_number_;
   IoState read_state_;
   IoState write_state_;
@@ -571,7 +587,7 @@ class SequencedSocketData : public SocketDataProvider {
   // Used by RunUntilPaused.  NULL at all other times.
   std::unique_ptr<base::RunLoop> run_until_paused_run_loop_;
 
-  base::WeakPtrFactory<SequencedSocketData> weak_factory_;
+  base::WeakPtrFactory<SequencedSocketData> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SequencedSocketData);
 };
@@ -649,10 +665,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override;
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override;
+      const SSLConfig& ssl_config) override;
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<StreamSocket> stream_socket,
       const std::string& user_agent,
@@ -735,7 +751,7 @@ class MockClientSocket : public TransportClientSocket {
   NetLogWithSource net_log_;
 
  private:
-  base::WeakPtrFactory<MockClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
 };
@@ -896,7 +912,7 @@ class MockProxyClientSocket : public AsyncSocket, public ProxyClientSocket {
   ProxyClientSocketDataProvider* data_;
   scoped_refptr<HttpAuthController> auth_controller_;
 
-  base::WeakPtrFactory<MockProxyClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockProxyClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockProxyClientSocket);
 };
@@ -978,7 +994,7 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;
 
-  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };
@@ -1085,7 +1101,7 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
   bool data_transferred_ = false;
   bool tagged_before_data_transferred_ = true;
 
-  base::WeakPtrFactory<MockUDPClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockUDPClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockUDPClientSocket);
 };

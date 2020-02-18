@@ -15,6 +15,41 @@ namespace net {
 class CertPathErrors;
 class CertNetFetcher;
 
+// Baseline Requirements 1.6.5, section 4.9.7:
+//     For the status of Subscriber Certificates: If the CA publishes a CRL,
+//     then the CA SHALL update and reissue CRLs at least once every seven
+//     days, and the value of the nextUpdate field MUST NOT be more than ten
+//     days beyond the value of the thisUpdate field.
+//
+// Baseline Requirements 1.6.5, section 4.9.10:
+//     For the status of Subscriber Certificates: The CA SHALL update
+//     information provided via an Online Certificate Status Protocol at least
+//     every four days.  OCSP responses from this service MUST have a maximum
+//     expiration time of ten days.
+//
+// Use 7 days as the max allowable leaf revocation status age, which is
+// sufficient for both CRL and OCSP, and which aligns with Microsoft policies.
+constexpr base::TimeDelta kMaxRevocationLeafUpdateAge =
+    base::TimeDelta::FromDays(7);
+
+// Baseline Requirements 1.6.5, section 4.9.7:
+//     For the status of Subordinate CA Certificates: The CA SHALL update and
+//     reissue CRLs at least (i) once every twelve months and (ii) within 24
+//     hours after revoking a Subordinate CA Certificate, and the value of the
+//     nextUpdate field MUST NOT be more than twelve months beyond the value of
+//     the thisUpdate field.
+//
+// Baseline Requirements 1.6.5, section 4.9.10:
+//     For the status of Subordinate CA Certificates: The CA SHALL update
+//     information provided via an Online Certificate Status Protocol at least
+//     (i) every twelve months and (ii) within 24 hours after revoking a
+//     Subordinate CA Certificate.
+//
+// Use 366 days to allow for leap years, though it is overly permissive in
+// other years.
+constexpr base::TimeDelta kMaxRevocationIntermediateUpdateAge =
+    base::TimeDelta::FromDays(366);
+
 // RevocationPolicy describes how revocation should be carried out for a
 // particular chain.
 struct NET_EXPORT_PRIVATE RevocationPolicy {

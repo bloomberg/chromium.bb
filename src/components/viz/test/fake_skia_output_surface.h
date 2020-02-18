@@ -49,9 +49,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                bool has_alpha,
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
+  void ScheduleOverlays(OverlayCandidateList overlays) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-  std::unique_ptr<OverlayCandidateValidator> TakeOverlayCandidateValidator()
-      override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -102,6 +101,10 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // calls.
   void SetOutOfOrderCallbacks(bool out_of_order_callbacks);
 
+  void ScheduleGpuTaskForTesting(
+      base::OnceClosure callback,
+      std::vector<gpu::SyncToken> sync_tokesn) override;
+
  private:
   explicit FakeSkiaOutputSurface(
       scoped_refptr<ContextProvider> context_provider);
@@ -126,7 +129,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
 
   THREAD_CHECKER(thread_checker_);
 
-  base::WeakPtrFactory<FakeSkiaOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeSkiaOutputSurface> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeSkiaOutputSurface);
 };

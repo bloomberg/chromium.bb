@@ -57,7 +57,6 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -659,7 +658,7 @@ class FakeWebSocketHandshakeStreamCreateHelper
 // Returns true if |entry| is not one of the log types paid attention to in this
 // test. Note that HTTP_CACHE_WRITE_INFO and HTTP_CACHE_*_DATA are
 // ignored.
-bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
+bool ShouldIgnoreLogEntry(const NetLogEntry& entry) {
   switch (entry.type) {
     case NetLogEventType::HTTP_CACHE_GET_BACKEND:
     case NetLogEventType::HTTP_CACHE_OPEN_OR_CREATE_ENTRY:
@@ -674,21 +673,18 @@ bool ShouldIgnoreLogEntry(const TestNetLogEntry& entry) {
   }
 }
 
-// Modifies |entries| to only include log entries created by the cache layer and
-// asserted on in these tests.
-void FilterLogEntries(TestNetLogEntry::List* entries) {
-  base::EraseIf(*entries, ShouldIgnoreLogEntry);
+// Gets the entries from |net_log| created by the cache layer and asserted on in
+// these tests.
+std::vector<NetLogEntry> GetFilteredNetLogEntries(
+    const BoundTestNetLog& net_log) {
+  auto entries = net_log.GetEntries();
+  base::EraseIf(entries, ShouldIgnoreLogEntry);
+  return entries;
 }
 
 bool LogContainsEventType(const BoundTestNetLog& log,
                           NetLogEventType expected) {
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  for (size_t i = 0; i < entries.size(); i++) {
-    if (entries[i].type == expected)
-      return true;
-  }
-  return false;
+  return !log.GetEntriesWithType(expected).empty();
 }
 
 }  // namespace
@@ -733,6 +729,24 @@ class HttpCacheIOCallbackTest : public HttpCacheTest {
 
   void DeactivateEntry(HttpCache* cache, ActiveEntry* entry) {
     cache->DeactivateEntry(entry);
+  }
+};
+
+class HttpSplitCacheKeyTest : public HttpCacheTest {
+ public:
+  HttpSplitCacheKeyTest() {}
+  ~HttpSplitCacheKeyTest() override = default;
+
+  std::string ComputeCacheKey(const std::string& url_string) {
+    GURL url(url_string);
+    const auto kOrigin = url::Origin::Create(url);
+    net::HttpRequestInfo request_info;
+    request_info.url = url;
+    request_info.method = "GET";
+    request_info.network_isolation_key =
+        net::NetworkIsolationKey(kOrigin, kOrigin);
+    MockHttpCache cache;
+    return cache.http_cache()->GenerateCacheKeyForTest(&request_info);
   }
 };
 
@@ -786,9 +800,7 @@ TEST_F(HttpCacheTest, SimpleGETNoDiskCache) {
 
   // Check that the NetLog was filled as expected.
   // (We attempted to OpenOrCreate entries, but fail).
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(4u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -955,9 +967,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
                                  log.bound(), &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -985,8 +995,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadOnlyFromCache_Hit) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -1260,9 +1269,7 @@ TEST_F(HttpCacheTest, SimpleGET_LoadBypassCache) {
                                  &load_timing_info);
 
   // Check that the NetLog was filled as expected.
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  FilterLogEntries(&entries);
+  auto entries = GetFilteredNetLogEntries(log);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0,
@@ -5809,7 +5816,8 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205) {
 // with cache split by top-frame origin.
 TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
   url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
   url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
 
@@ -5818,14 +5826,14 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   AddMockTransaction(&transaction);
   MockHttpRequest req1(transaction);
-  req1.network_isolation_key = NetworkIsolationKey(origin_a);
+  req1.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
 
   // Attempt to populate the cache.
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1, nullptr);
 
   // Same for a different origin.
   MockHttpRequest req1b(transaction);
-  req1b.network_isolation_key = NetworkIsolationKey(origin_b);
+  req1b.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req1b,
                                 nullptr);
 
@@ -5842,7 +5850,7 @@ TEST_F(HttpCacheTest, SimplePOST_Invalidate_205_SplitCache) {
   transaction.status = "HTTP/1.1 205 No Content";
   MockHttpRequest req2(transaction);
   req2.upload_data_stream = &upload_data_stream;
-  req2.network_isolation_key = NetworkIsolationKey(origin_a);
+  req2.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
 
   RunTransactionTestWithRequest(cache.http_cache(), transaction, req2, nullptr);
 
@@ -9597,10 +9605,12 @@ TEST_F(HttpCacheTest, UpdatesRequestResponseTimeOn304) {
 
   RemoveMockTransaction(&mock_network_response);
 }
-
-TEST_F(HttpCacheTest, SplitCache) {
+TEST_F(HttpCacheTest, SplitCacheWithFrameOrigin) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+  feature_list.InitWithFeatures(
+      {net::features::kSplitCacheByNetworkIsolationKey,
+       net::features::kAppendFrameOriginToNetworkIsolationKey},
+      {});
 
   base::HistogramTester histograms;
   MockHttpCache cache;
@@ -9611,33 +9621,23 @@ TEST_F(HttpCacheTest, SplitCache) {
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
 
-  // A request without a top frame origin is not cached at all.
   MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+  // Request with a.com as the top frame and subframe origins. It shouldn't be
+  // cached.
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
-  histograms.ExpectUniqueSample("HttpCache.TopFrameOriginPresent", false, 1);
-
-  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
-                                trans_info, &response);
-  EXPECT_FALSE(response.was_cached);
-
-  // Now request with a.com as the top frame origin. It shouldn't be cached
-  // since the cached resource has a different top frame origin.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
-  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
-                                trans_info, &response);
-  EXPECT_FALSE(response.was_cached);
-  histograms.ExpectBucketCount("HttpCache.TopFrameOriginPresent", true, 1);
-  histograms.ExpectTotalCount("HttpCache.TopFrameOriginPresent", 3);
+  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 1);
 
   // The second request should be cached.
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
 
-  // Now request with b.com as the top frame origin. It shouldn't be cached.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_b);
+  // Now request with b.com as the subframe origin. It shouldn't be cached.
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_b);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -9648,14 +9648,14 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // a.com should still be cached.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_a);
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
 
-  // Now make a request with an opaque top frame origin.  It shouldn't be
+  // Now make a request with an opaque subframe origin.  It shouldn't be
   // cached.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_data);
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_data);
   EXPECT_TRUE(trans_info.network_isolation_key.ToString().empty());
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
@@ -9676,7 +9676,96 @@ TEST_F(HttpCacheTest, SplitCache) {
                                               kUploadId);
 
   MockHttpRequest post_info = MockHttpRequest(kSimplePOST_Transaction);
-  post_info.network_isolation_key = NetworkIsolationKey(origin_a);
+  post_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  post_info.upload_data_stream = &upload_data_stream;
+
+  RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
+                                post_info, &response);
+  EXPECT_FALSE(response.was_cached);
+}
+
+TEST_F(HttpCacheTest, SplitCache) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
+
+  base::HistogramTester histograms;
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+  url::Origin origin_data =
+      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
+
+  // A request without a top frame origin is not cached at all.
+  MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+  histograms.ExpectUniqueSample("HttpCache.NetworkIsolationKeyPresent", false,
+                                1);
+
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // Now request with a.com as the top frame origin. It shouldn't be cached
+  // since the cached resource has a different top frame origin.
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 3);
+
+  // The second request should be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Now request with b.com as the top frame origin. It shouldn't be cached.
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_b, origin_b);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // The second request should be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // a.com should still be cached.
+  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_b);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Now make a request with an opaque top frame origin.  It shouldn't be
+  // cached.
+  trans_info.network_isolation_key =
+      NetworkIsolationKey(origin_data, origin_data);
+  EXPECT_TRUE(trans_info.network_isolation_key.ToString().empty());
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // On the second request, it still shouldn't be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // Verify that a post transaction with a data stream uses a separate key.
+  const int64_t kUploadId = 1;  // Just a dummy value.
+
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      std::make_unique<UploadBytesElementReader>("hello", 5));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers),
+                                              kUploadId);
+
+  MockHttpRequest post_info = MockHttpRequest(kSimplePOST_Transaction);
+  post_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
   post_info.upload_data_stream = &upload_data_stream;
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
@@ -9687,7 +9776,7 @@ TEST_F(HttpCacheTest, SplitCache) {
 TEST_F(HttpCacheTest, NonSplitCache) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
-      net::features::kSplitCacheByTopFrameOrigin);
+      net::features::kSplitCacheByNetworkIsolationKey);
 
   base::HistogramTester histograms;
   MockHttpCache cache;
@@ -9706,176 +9795,13 @@ TEST_F(HttpCacheTest, NonSplitCache) {
 
   // Now request with a.com as the top frame origin. It should use the same
   // cached object.
-  trans_info.network_isolation_key =
-      NetworkIsolationKey(url::Origin::Create(GURL("http://a.com/")));
+  const auto kOriginA = url::Origin::Create(GURL("http://a.com/"));
+  trans_info.network_isolation_key = NetworkIsolationKey(kOriginA, kOriginA);
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
-  histograms.ExpectBucketCount("HttpCache.TopFrameOriginPresent", true, 1);
-  histograms.ExpectTotalCount("HttpCache.TopFrameOriginPresent", 3);
-}
-
-// Tests that we can write metadata to an entry.
-TEST_F(HttpCacheTest, WriteMetadata_OK) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  MockHttpCache cache;
-
-  // Write to the cache
-  HttpResponseInfo response;
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  // Trivial call.
-  cache.http_cache()->WriteMetadata(GURL("foo"), DEFAULT_PRIORITY, Time::Now(),
-                                    nullptr, 0);
-
-  // Write meta data to the same entry.
-  scoped_refptr<IOBufferWithSize> buf =
-      base::MakeRefCounted<IOBufferWithSize>(50);
-  memset(buf->data(), 0, buf->size());
-  base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
-                                    DEFAULT_PRIORITY, response.response_time,
-                                    buf.get(), buf->size());
-
-  // Release the buffer before the operation takes place.
-  buf = nullptr;
-
-  // Makes sure we finish pending operations.
-  base::RunLoop().RunUntilIdle();
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  ASSERT_TRUE(response.metadata.get() != nullptr);
-  EXPECT_EQ(50, response.metadata->size());
-  EXPECT_EQ(0, strcmp(response.metadata->data(), "Hi there"));
-
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(2, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-}
-
-// Tests that we don't read metadata when IsolatedCodeCache is enabled.
-TEST_F(HttpCacheTest, ReadMetadata_IsolatedCache) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  MockHttpCache cache;
-
-  // Write to the cache
-  HttpResponseInfo response;
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  // Trivial call.
-  cache.http_cache()->WriteMetadata(GURL("foo"), DEFAULT_PRIORITY, Time::Now(),
-                                    nullptr, 0);
-
-  // Write meta data to the same entry.
-  scoped_refptr<IOBufferWithSize> buf =
-      base::MakeRefCounted<IOBufferWithSize>(50);
-  memset(buf->data(), 0, buf->size());
-  base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
-                                    DEFAULT_PRIORITY, response.response_time,
-                                    buf.get(), buf->size());
-
-  // Release the buffer before the operation takes place.
-  buf = nullptr;
-
-  // Makes sure we finish pending operations.
-  base::RunLoop().RunUntilIdle();
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  ASSERT_TRUE(response.metadata.get() == nullptr);
-
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(2, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-}
-
-// Tests that we only write metadata to an entry if the time stamp matches.
-TEST_F(HttpCacheTest, WriteMetadata_Fail) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  MockHttpCache cache;
-
-  // Write to the cache
-  HttpResponseInfo response;
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  // Attempt to write meta data to the same entry.
-  scoped_refptr<IOBufferWithSize> buf =
-      base::MakeRefCounted<IOBufferWithSize>(50);
-  memset(buf->data(), 0, buf->size());
-  base::strlcpy(buf->data(), "Hi there", buf->size());
-  base::Time expected_time = response.response_time -
-                             base::TimeDelta::FromMilliseconds(20);
-  cache.http_cache()->WriteMetadata(GURL(kSimpleGET_Transaction.url),
-                                    DEFAULT_PRIORITY, expected_time, buf.get(),
-                                    buf->size());
-
-  // Makes sure we finish pending operations.
-  base::RunLoop().RunUntilIdle();
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
-                                     &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(2, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-}
-
-// Tests that we ignore VARY checks when writing metadata since the request
-// headers for the WriteMetadata transaction are made up.
-TEST_F(HttpCacheTest, WriteMetadata_IgnoreVary) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  MockHttpCache cache;
-
-  // Write to the cache
-  HttpResponseInfo response;
-  ScopedMockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "accept-encoding: gzip\r\n";
-  transaction.response_headers =
-      "Vary: accept-encoding\n"
-      "Cache-Control: max-age=10000\n";
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
-                                     &response);
-  EXPECT_FALSE(response.metadata);
-
-  // Attempt to write meta data to the same entry.
-  scoped_refptr<IOBufferWithSize> buf =
-      base::MakeRefCounted<IOBufferWithSize>(50);
-  memset(buf->data(), 0, buf->size());
-  base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(transaction.url), DEFAULT_PRIORITY,
-                                    response.response_time, buf.get(),
-                                    buf->size());
-
-  // Makes sure we finish pending operations.
-  base::RunLoop().RunUntilIdle();
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
-                                     &response);
-  ASSERT_TRUE(response.metadata);
-  EXPECT_EQ(50, response.metadata->size());
-  EXPECT_EQ(0, strcmp(response.metadata->data(), "Hi there"));
-
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(2, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 3);
 }
 
 TEST_F(HttpCacheTest, SkipVaryCheck) {
@@ -9967,72 +9893,6 @@ TEST_F(HttpCacheTest, InvalidLoadFlagCombination) {
   transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_BYPASS_CACHE;
   transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
-}
-
-// Tests that we can read metadata after validating the entry and with READ mode
-// transactions.
-TEST_F(HttpCacheTest, ReadMetadata) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(net::features::kIsolatedCodeCache);
-  ASSERT_FALSE(base::FeatureList::IsEnabled(net::features::kIsolatedCodeCache));
-  MockHttpCache cache;
-
-  // Write to the cache
-  HttpResponseInfo response;
-  RunTransactionTestWithResponseInfo(cache.http_cache(),
-                                     kTypicalGET_Transaction, &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  // Write meta data to the same entry.
-  scoped_refptr<IOBufferWithSize> buf =
-      base::MakeRefCounted<IOBufferWithSize>(50);
-  memset(buf->data(), 0, buf->size());
-  base::strlcpy(buf->data(), "Hi there", buf->size());
-  cache.http_cache()->WriteMetadata(GURL(kTypicalGET_Transaction.url),
-                                    DEFAULT_PRIORITY, response.response_time,
-                                    buf.get(), buf->size());
-
-  // Makes sure we finish pending operations.
-  base::RunLoop().RunUntilIdle();
-
-  // Start with a READ mode transaction.
-  MockTransaction trans1(kTypicalGET_Transaction);
-  trans1.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_CACHE_VALIDATION;
-
-  RunTransactionTestWithResponseInfo(cache.http_cache(), trans1, &response);
-  ASSERT_TRUE(response.metadata.get() != nullptr);
-  EXPECT_EQ(50, response.metadata->size());
-  EXPECT_EQ(0, strcmp(response.metadata->data(), "Hi there"));
-
-  EXPECT_EQ(1, cache.network_layer()->transaction_count());
-  EXPECT_EQ(2, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-  base::RunLoop().RunUntilIdle();
-
-  // Now make sure that the entry is re-validated with the server.
-  trans1.load_flags = LOAD_VALIDATE_CACHE;
-  trans1.status = "HTTP/1.1 304 Not Modified";
-  AddMockTransaction(&trans1);
-
-  response.metadata = nullptr;
-  RunTransactionTestWithResponseInfo(cache.http_cache(), trans1, &response);
-  EXPECT_TRUE(response.metadata.get() != nullptr);
-
-  EXPECT_EQ(2, cache.network_layer()->transaction_count());
-  EXPECT_EQ(3, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
-  base::RunLoop().RunUntilIdle();
-  RemoveMockTransaction(&trans1);
-
-  // Now return 200 when validating the entry so the metadata will be lost.
-  MockTransaction trans2(kTypicalGET_Transaction);
-  trans2.load_flags = LOAD_VALIDATE_CACHE;
-  RunTransactionTestWithResponseInfo(cache.http_cache(), trans2, &response);
-  EXPECT_TRUE(response.metadata.get() == nullptr);
-
-  EXPECT_EQ(3, cache.network_layer()->transaction_count());
-  EXPECT_EQ(4, cache.disk_cache()->open_count());
-  EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
 // Tests that we don't mark entries as truncated when a filter detects the end
@@ -11341,6 +11201,21 @@ TEST_F(HttpCacheTest, CacheEntryStatusCantConditionalize) {
   EXPECT_TRUE(response_info.network_accessed);
   EXPECT_EQ(CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE,
             response_info.cache_entry_status);
+}
+
+TEST_F(HttpSplitCacheKeyTest, GetResourceURLFromKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitCacheByNetworkIsolationKey);
+  MockHttpCache cache;
+  std::string urls[] = {"http://www.a.com/", "https://b.com/example.html",
+                        "http://example.com/Some Path/Some Leaf?some query"};
+
+  for (const std::string& url : urls) {
+    std::string key = ComputeCacheKey(url);
+    EXPECT_EQ(GURL(url).spec(),
+              cache.http_cache()->GetResourceURLFromHttpCacheKey(key));
+  }
 }
 
 class TestCompletionCallbackForHttpCache : public TestCompletionCallbackBase {

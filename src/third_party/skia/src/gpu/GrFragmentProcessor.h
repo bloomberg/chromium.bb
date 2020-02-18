@@ -8,7 +8,6 @@
 #ifndef GrFragmentProcessor_DEFINED
 #define GrFragmentProcessor_DEFINED
 
-#include "include/private/GrProxyRef.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/ops/GrOp.h"
 
@@ -123,9 +122,7 @@ public:
 
     const GrFragmentProcessor& childProcessor(int index) const { return *fChildProcessors[index]; }
 
-    bool instantiate(GrResourceProvider*) const;
-
-    void markPendingExecution() const;
+    SkDEBUGCODE(bool isInstantiated() const;)
 
     /** Do any of the coordtransforms for this processor require local coords? */
     bool usesLocalCoords() const { return SkToBool(fFlags & kUsesLocalCoords_Flag); }
@@ -414,7 +411,7 @@ public:
      * in pending execution state.
      */
     explicit TextureSampler(const TextureSampler& that)
-            : fProxyRef(sk_ref_sp(that.fProxyRef.get()), that.fProxyRef.ioType())
+            : fProxy(that.fProxy)
             , fSamplerState(that.fSamplerState) {}
 
     TextureSampler(sk_sp<GrTextureProxy>, const GrSamplerState&);
@@ -437,30 +434,23 @@ public:
 
     bool operator!=(const TextureSampler& other) const { return !(*this == other); }
 
-    // 'instantiate' should only ever be called at flush time.
-    // TODO: this can go away once explicit allocation has stuck
-    bool instantiate(GrResourceProvider* resourceProvider) const {
-        return fProxyRef.get()->isInstantiated();
-    }
+    SkDEBUGCODE(bool isInstantiated() const { return fProxy->isInstantiated(); })
 
     // 'peekTexture' should only ever be called after a successful 'instantiate' call
     GrTexture* peekTexture() const {
-        SkASSERT(fProxyRef.get()->peekTexture());
-        return fProxyRef.get()->peekTexture();
+        SkASSERT(fProxy->isInstantiated());
+        return fProxy->peekTexture();
     }
 
-    GrTextureProxy* proxy() const { return fProxyRef.get(); }
+    GrTextureProxy* proxy() const { return fProxy.get(); }
     const GrSamplerState& samplerState() const { return fSamplerState; }
+    const GrSwizzle& swizzle() const { return this->proxy()->textureSwizzle(); }
 
-    bool isInitialized() const { return SkToBool(fProxyRef.get()); }
-    /**
-     * For internal use by GrFragmentProcessor.
-     */
-    const GrTextureProxyRef* proxyRef() const { return &fProxyRef; }
+    bool isInitialized() const { return SkToBool(fProxy.get()); }
 
 private:
-    GrTextureProxyRef fProxyRef;
-    GrSamplerState fSamplerState;
+    sk_sp<GrTextureProxy> fProxy;
+    GrSamplerState        fSamplerState;
 };
 
 //////////////////////////////////////////////////////////////////////////////

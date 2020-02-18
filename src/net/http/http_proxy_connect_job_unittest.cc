@@ -57,14 +57,8 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
  protected:
   HttpProxyConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         field_trial_list_(nullptr) {
-    // Set an initial delay to ensure that calls to TimeTicks::Now() do not
-    // return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-
     // Used a mock HostResolver that does not have a cache.
     session_deps_.host_resolver = std::make_unique<MockHostResolver>();
 
@@ -125,7 +119,7 @@ class HttpProxyConnectJobTest : public ::testing::TestWithParam<HttpProxyType>,
         base::MakeRefCounted<TransportSocketParams>(
             HostPortPair(kHttpsProxyHost, 443), OnHostResolutionCallback()),
         nullptr, nullptr, HostPortPair(kHttpsProxyHost, 443), SSLConfig(),
-        PRIVACY_MODE_DISABLED);
+        PRIVACY_MODE_DISABLED, NetworkIsolationKey());
   }
 
   // Returns a correctly constructed HttpProxyParams for the HTTP or HTTPS

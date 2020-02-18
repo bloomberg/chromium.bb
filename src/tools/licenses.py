@@ -14,8 +14,10 @@ Commands:
 
 (You can also import this as a module.)
 """
+from __future__ import print_function
 
 import argparse
+import codecs
 import cgi
 import json
 import os
@@ -36,7 +38,7 @@ PRUNE_PATHS = set([
     # Placeholder directory only, not third-party code.
     os.path.join('third_party','adobe'),
 
-    # Already covered by //third_party/android_tools.
+    # Will remove it once converted private sdk using cipd.
     os.path.join('third_party','android_tools_internal'),
 
     # Build files only, not third-party code.
@@ -103,8 +105,8 @@ PRUNE_DIRS = (VCS_METADATA_DIRS +
                'layout_tests'))            # lots of subdirs
 
 # A third_party directory can define this file, containing a list of
-# subdirectories to process instead of itself. Intended for directories that
-# contain multiple others as transitive dependencies.
+# subdirectories to process in addition to itself. Intended for directories
+# that contain multiple others as transitive dependencies.
 ADDITIONAL_PATHS_FILENAME = 'additional_readme_paths.json'
 
 ADDITIONAL_PATHS = (
@@ -150,6 +152,12 @@ SPECIAL_CASES = {
         "Name": "Almost Native Graphics Layer Engine",
         "URL": "http://code.google.com/p/angleproject/",
         "License": "BSD",
+    },
+    os.path.join('third_party', 'angle', 'third_party', 'vulkan-headers'): {
+        "Name": "Vulkan-Headers",
+        "URL": "https://github.com/KhronosGroup/Vulkan-Headers",
+        "License": "Apache 2.0",
+        "License File": "src/LICENSE.txt",
     },
     os.path.join('third_party', 'cros_system_api'): {
         "Name": "Chromium OS system API",
@@ -372,7 +380,6 @@ def AbsolutePath(path, filename, root):
 
 def ParseDir(path, root, require_license_file=True, optional_keys=None):
     """Examine a third_party/foo component and extract its metadata."""
-
     # Parse metadata fields out of README.chromium.
     # We examine "LICENSE" for the license file by default.
     metadata = {
@@ -398,14 +405,14 @@ def ParseDir(path, root, require_license_file=True, optional_keys=None):
             line = line.strip()
             if not line:
                 break
-            for key in metadata.keys() + optional_keys:
+            for key in list(metadata.keys()) + optional_keys:
                 field = key + ": "
                 if line.startswith(field):
                     metadata[key] = line[len(field):]
 
     # Check that all expected metadata is present.
     errors = []
-    for key, value in metadata.iteritems():
+    for key, value in metadata.items():
         if not value:
             errors.append("couldn't find '" + key + "' line "
                           "in README.chromium or licences.py "
@@ -474,13 +481,13 @@ def FindThirdPartyDirs(prune_paths, root):
                 dirpath = os.path.join(path, dir)
                 additional_paths_file = os.path.join(
                     root, dirpath, ADDITIONAL_PATHS_FILENAME)
+                if dirpath not in prune_paths:
+                    third_party_dirs.add(dirpath)
                 if os.path.exists(additional_paths_file):
                     with open(additional_paths_file) as paths_file:
                         extra_paths = json.load(paths_file)
                         third_party_dirs.update([
                                 os.path.join(dirpath, p) for p in extra_paths])
-                elif dirpath not in prune_paths:
-                    third_party_dirs.add(dirpath)
 
             # Don't recurse into any subdirs from here.
             dirs[:] = []
@@ -507,7 +514,7 @@ def FindThirdPartyDirsWithFiles(root):
 # //buildtools.
 def _GnBinary():
     exe = 'gn'
-    if sys.platform == 'linux2':
+    if sys.platform.startswith('linux'):
         subdir = 'linux64'
     elif sys.platform == 'darwin':
         subdir = 'mac'
@@ -566,6 +573,8 @@ def FindThirdPartyDeps(gn_out_dir, gn_target, target_os):
         gn_deps = subprocess.check_output([
             _GnBinary(), "desc", tmp_dir, gn_target,
             "deps", "--as=buildfile", "--all"])
+        if isinstance(gn_deps, bytes):
+            gn_deps = gn_deps.decode("utf-8")
     finally:
         if tmp_dir and os.path.exists(tmp_dir):
             shutil.rmtree(tmp_dir)
@@ -583,12 +592,12 @@ def ScanThirdPartyDirs(root=None):
     for path in sorted(third_party_dirs):
         try:
             metadata = ParseDir(path, root)
-        except LicenseError, e:
+        except LicenseError as e:
             errors.append((path, e.args[0]))
             continue
 
     for path, error in sorted(errors):
-        print path + ": " + error
+        print(path + ": " + error)
 
     return len(errors) == 0
 
@@ -689,7 +698,7 @@ def GenerateCredits(
         with open(output_file, 'w') as output:
           output.write(template_contents)
     else:
-      print template_contents
+      print(template_contents)
 
     if depfile:
       assert output_file
@@ -715,7 +724,7 @@ def _ReadFile(path):
     Returns:
       The contents of the file as a string.
     """
-    with open(os.path.join(_REPOSITORY_ROOT, path), 'rb') as f:
+    with codecs.open(os.path.join(_REPOSITORY_ROOT, path), 'r', 'utf-8') as f:
         return f.read()
 
 
@@ -746,12 +755,11 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
     content_text = '\n'.join(content)
 
     if output_file:
-        with open(output_file, 'w') as output:
+        with codecs.open(output_file, 'w', 'utf-8') as output:
             output.write(content_text)
     else:
-        print content_text
+        print(content_text)
 
-    return True
 
 
 def main():
@@ -781,12 +789,15 @@ def main():
                                args.gn_out_dir, args.gn_target, args.depfile):
             return 1
     elif args.command == 'license_file':
-        if not GenerateLicenseFile(
+        try:
+            GenerateLicenseFile(
                 args.output_file, args.gn_out_dir, args.gn_target,
-                args.target_os):
+                args.target_os)
+        except LicenseError as e:
+            print("Failed to parse README.chromium: {}".format(e))
             return 1
     else:
-        print __doc__
+        print(__doc__)
         return 1
 
 

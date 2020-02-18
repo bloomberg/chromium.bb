@@ -30,7 +30,6 @@
 // <include src="oobe_buttons.js">
 // <include src="oobe_change_picture.js">
 // <include src="oobe_dialog.js">
-// <include src="oobe_enrollment.js">
 // <include src="oobe_eula.js">
 // <include src="oobe_hid_detection.js">
 // <include src="oobe_reset.js">
@@ -45,6 +44,7 @@
 // <include src="arc_terms_of_service.js">
 // <include src="oobe_supervision_transition.js">
 // <include src="enrollment_license_card.js">
+// <include src="enterprise_enrollment.js">
 // <include src="sync_consent.js">
 // <include src="fingerprint_setup.js">
 // <include src="demo_setup.js">
@@ -55,4 +55,4 @@
 // <include src="marketing_opt_in.js">
 // <include src="../assistant_optin/assistant_optin_flow.js">
 // <include src="multidevice_setup_first_run.js">
-// <include src="supervision_onboarding.js">
+// <include src="security_token_pin.js">

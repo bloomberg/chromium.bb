@@ -68,6 +68,20 @@ static OriginSet& TrustworthyOriginSafelist() {
   return safelist;
 }
 
+network::mojom::ReferrerPolicy ReferrerPolicyResolveDefault(
+    network::mojom::ReferrerPolicy referrer_policy) {
+  if (referrer_policy == network::mojom::ReferrerPolicy::kDefault) {
+    if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
+      return network::mojom::ReferrerPolicy::
+          kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
+    } else {
+      return network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
+    }
+  }
+
+  return referrer_policy;
+}
+
 void SecurityPolicy::Init() {
   TrustworthyOriginSafelist();
 }
@@ -93,16 +107,8 @@ Referrer SecurityPolicy::GenerateReferrer(
     network::mojom::ReferrerPolicy referrer_policy,
     const KURL& url,
     const String& referrer) {
-  network::mojom::ReferrerPolicy referrer_policy_no_default = referrer_policy;
-  if (referrer_policy_no_default == network::mojom::ReferrerPolicy::kDefault) {
-    if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
-      referrer_policy_no_default = network::mojom::ReferrerPolicy::
-          kNoReferrerWhenDowngradeOriginWhenCrossOrigin;
-    } else {
-      referrer_policy_no_default =
-          network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade;
-    }
-  }
+  network::mojom::ReferrerPolicy referrer_policy_no_default =
+      ReferrerPolicyResolveDefault(referrer_policy);
   if (referrer == Referrer::NoReferrer())
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
   DCHECK(!referrer.IsEmpty());
@@ -253,9 +259,9 @@ void SecurityPolicy::AddOriginAccessAllowListEntry(
     const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddAllowListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), port, domain_match_mode,
-      port_match_mode, priority);
+      source_origin.ToUrlOrigin(), destination_protocol.Utf8(),
+      destination_domain.Utf8(), port, domain_match_mode, port_match_mode,
+      priority);
 }
 
 void SecurityPolicy::AddOriginAccessBlockListEntry(
@@ -268,9 +274,9 @@ void SecurityPolicy::AddOriginAccessBlockListEntry(
     const network::mojom::CorsOriginAccessMatchPriority priority) {
   MutexLocker lock(GetMutex());
   GetOriginAccessList().AddBlockListEntryForOrigin(
-      source_origin.ToUrlOrigin(), WebString(destination_protocol).Utf8(),
-      WebString(destination_domain).Utf8(), port, domain_match_mode,
-      port_match_mode, priority);
+      source_origin.ToUrlOrigin(), destination_protocol.Utf8(),
+      destination_domain.Utf8(), port, domain_match_mode, port_match_mode,
+      priority);
 }
 
 void SecurityPolicy::ClearOriginAccessListForOrigin(

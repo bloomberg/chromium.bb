@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -50,7 +51,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                     quic::QuicPacketNumber original_packet_number,
                     quic::TransmissionType transmission_type,
                     quic::QuicTime sent_time) override;
-  void OnIncomingAck(const quic::QuicAckFrame& frame,
+  void OnIncomingAck(quic::QuicPacketNumber ack_packet_number,
+                     const quic::QuicAckFrame& frame,
                      quic::QuicTime ack_receive_time,
                      quic::QuicPacketNumber largest_observed,
                      bool rtt_updated,
@@ -81,8 +83,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnPublicResetPacket(const quic::QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
       const quic::QuicVersionNegotiationPacket& packet) override;
-  void OnConnectionClosed(quic::QuicErrorCode error,
-                          const std::string& error_details,
+  void OnConnectionClosed(const quic::QuicConnectionCloseFrame& frame,
                           quic::ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;

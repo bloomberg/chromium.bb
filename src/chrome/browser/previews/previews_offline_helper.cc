@@ -27,6 +27,7 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 
 namespace {
 // Pref key for the available hashed pages kept in class.
@@ -132,8 +133,7 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     content::BrowserContext* browser_context)
     : pref_service_(nullptr),
       available_pages_(std::make_unique<base::DictionaryValue>()),
-      offline_page_model_(nullptr),
-      weak_factory_(this) {
+      offline_page_model_(nullptr) {
   if (!browser_context || browser_context->IsOffTheRecord())
     return;
 
@@ -160,7 +160,10 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     // expensive DB query doesn't occur during startup or during other user
     // visible actions.
     base::PostDelayedTaskWithTraits(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::LOWEST},
+        FROM_HERE,
+        {base::MayBlock(), content::BrowserThread::UI,
+         base::TaskPriority::LOWEST,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&PreviewsOfflineHelper::RequestDBUpdate,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(30));
@@ -271,11 +274,10 @@ void PreviewsOfflineHelper::OfflinePageAdded(
 
 void PreviewsOfflineHelper::OfflinePageDeleted(
     const offline_pages::OfflinePageItem& deleted_page) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Has no effect if the url was never in the dictionary.
-  available_pages_->RemoveKey(HashURL(deleted_page.url));
-  UpdatePref();
+  // Do nothing. OfflinePageModel calls |OfflinePageDeleted| when pages are
+  // refreshed, but because we only key on URL and not the offline page id, it
+  // is difficult to tell when this happens. So instead, it's ok if we
+  // over-trigger for a few pages until the next DB query.
 }
 
 void PreviewsOfflineHelper::UpdatePref() {

@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 
 #include "absl/types/optional.h"
@@ -60,6 +61,8 @@ class QualityScaler {
   // Inform the QualityScaler of the last seen QP.
   void ReportQp(int qp, int64_t time_sent_us);
 
+  void SetQpThresholds(VideoEncoder::QpThresholds thresholds);
+
   // The following members declared protected for testing purposes.
  protected:
   QualityScaler(rtc::TaskQueue* task_queue,
@@ -80,7 +83,7 @@ class QualityScaler {
   AdaptationObserverInterface* const observer_ RTC_GUARDED_BY(&task_checker_);
   SequenceChecker task_checker_;
 
-  const VideoEncoder::QpThresholds thresholds_;
+  VideoEncoder::QpThresholds thresholds_ RTC_GUARDED_BY(&task_checker_);
   const int64_t sampling_period_ms_;
   bool fast_rampup_ RTC_GUARDED_BY(&task_checker_);
   rtc::MovingAverage average_qp_ RTC_GUARDED_BY(&task_checker_);

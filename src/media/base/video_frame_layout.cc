@@ -48,7 +48,6 @@ size_t VideoFrameLayout::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_ABGR:
@@ -96,10 +95,8 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::Create(
 base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithStrides(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
-    std::vector<int32_t> strides,
-    std::vector<size_t> buffer_sizes) {
-  return CreateWithPlanes(format, coded_size, PlanesFromStrides(strides),
-                          std::move(buffer_sizes));
+    std::vector<int32_t> strides) {
+  return CreateWithPlanes(format, coded_size, PlanesFromStrides(strides));
 }
 
 // static
@@ -107,7 +104,6 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
     std::vector<Plane> planes,
-    std::vector<size_t> buffer_sizes,
     size_t buffer_addr_align,
     uint64_t modifier) {
   // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
@@ -115,22 +111,37 @@ base::Optional<VideoFrameLayout> VideoFrameLayout::CreateWithPlanes(
   // if (format != PIXEL_FORMAT_UNKNOWN || !coded_sizes.IsEmpty())
   // TODO(crbug.com/896135): Return base::nullopt,
   // if (planes.size() != NumPlanes(format))
-  // TODO(crbug.com/896135): Return base::nullopt,
-  // if (buffer_sizes.size() > planes.size())
   return VideoFrameLayout(format, coded_size, std::move(planes),
-                          std::move(buffer_sizes), buffer_addr_align, modifier);
+                          false /*is_multi_planar */, buffer_addr_align,
+                          modifier);
+}
+
+base::Optional<VideoFrameLayout> VideoFrameLayout::CreateMultiPlanar(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size,
+    std::vector<Plane> planes,
+    size_t buffer_addr_align,
+    uint64_t modifier) {
+  // NOTE: Even if format is UNKNOWN, it is valid if coded_sizes is not Empty().
+  // TODO(crbug.com/896135): Return base::nullopt,
+  // if (format != PIXEL_FORMAT_UNKNOWN || !coded_sizes.IsEmpty())
+  // TODO(crbug.com/896135): Return base::nullopt,
+  // if (planes.size() != NumPlanes(format))
+  return VideoFrameLayout(format, coded_size, std::move(planes),
+                          true /*is_multi_planar */, buffer_addr_align,
+                          modifier);
 }
 
 VideoFrameLayout::VideoFrameLayout(VideoPixelFormat format,
                                    const gfx::Size& coded_size,
                                    std::vector<Plane> planes,
-                                   std::vector<size_t> buffer_sizes,
+                                   bool is_multi_planar,
                                    size_t buffer_addr_align,
                                    uint64_t modifier)
     : format_(format),
       coded_size_(coded_size),
       planes_(std::move(planes)),
-      buffer_sizes_(std::move(buffer_sizes)),
+      is_multi_planar_(is_multi_planar),
       buffer_addr_align_(buffer_addr_align),
       modifier_(modifier) {}
 
@@ -140,19 +151,16 @@ VideoFrameLayout::VideoFrameLayout(VideoFrameLayout&&) = default;
 VideoFrameLayout& VideoFrameLayout::operator=(const VideoFrameLayout&) =
     default;
 
-size_t VideoFrameLayout::GetTotalBufferSize() const {
-  return std::accumulate(buffer_sizes_.begin(), buffer_sizes_.end(), 0u);
-}
-
 std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout::Plane& plane) {
-  ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  ostream << "(" << plane.stride << ", " << plane.offset << ", " << plane.size
+          << ")";
   return ostream;
 }
 
 bool VideoFrameLayout::Plane::operator==(
     const VideoFrameLayout::Plane& rhs) const {
-  return stride == rhs.stride && offset == rhs.offset;
+  return stride == rhs.stride && offset == rhs.offset && size == rhs.size;
 }
 
 bool VideoFrameLayout::Plane::operator!=(
@@ -162,7 +170,7 @@ bool VideoFrameLayout::Plane::operator!=(
 
 bool VideoFrameLayout::operator==(const VideoFrameLayout& rhs) const {
   return format_ == rhs.format_ && coded_size_ == rhs.coded_size_ &&
-         planes_ == rhs.planes_ && buffer_sizes_ == rhs.buffer_sizes_ &&
+         planes_ == rhs.planes_ && is_multi_planar_ == rhs.is_multi_planar_ &&
          buffer_addr_align_ == rhs.buffer_addr_align_ &&
          modifier_ == rhs.modifier_;
 }
@@ -175,8 +183,10 @@ std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout& layout) {
   ostream << "VideoFrameLayout(format: " << layout.format()
           << ", coded_size: " << layout.coded_size().ToString()
-          << ", planes (stride, offset): " << VectorToString(layout.planes())
-          << ", buffer_sizes: " << VectorToString(layout.buffer_sizes())
+          << ", planes (stride, offset, size): "
+          << VectorToString(layout.planes())
+          << ", is_multi_planar: " << layout.is_multi_planar()
+          << ", buffer_addr_align: " << layout.buffer_addr_align()
           << ", modifier: " << layout.modifier() << ")";
   return ostream;
 }

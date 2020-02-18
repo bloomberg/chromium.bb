@@ -77,7 +77,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
@@ -101,6 +100,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
@@ -177,17 +177,17 @@ bool IsTransportSocketPoolStalled(HttpNetworkSession* session) {
 
 // Takes in a Value created from a NetLogHttpResponseParameter, and returns
 // a JSONified list of headers as a single string.  Uses single quotes instead
-// of double quotes for easier comparison.  Returns false on failure.
-bool GetHeaders(base::DictionaryValue* params, std::string* headers) {
-  if (!params)
-    return false;
-  base::ListValue* header_list;
-  if (!params->GetList("headers", &header_list))
-    return false;
-  std::string double_quote_headers;
-  base::JSONWriter::Write(*header_list, &double_quote_headers);
-  base::ReplaceChars(double_quote_headers, "\"", "'", headers);
-  return true;
+// of double quotes for easier comparison.
+std::string GetHeaders(const base::Value& params) {
+  if (!params.is_dict())
+    return "";
+  const base::Value* header_list = params.FindListKey("headers");
+  if (!header_list)
+    return "";
+  std::string headers;
+  base::JSONWriter::Write(*header_list, &headers);
+  base::ReplaceChars(headers, "\"", "'", &headers);
+  return headers;
 }
 
 // Tests LoadTimingInfo in the case a socket is reused and no PAC script is
@@ -360,6 +360,11 @@ class TestSSLConfigService : public SSLConfigService {
     return false;
   }
 
+  void UpdateSSLConfigAndNotify(const SSLConfig& config) {
+    config_ = config;
+    NotifySSLConfigChange();
+  }
+
  private:
   SSLConfig config_;
 };
@@ -381,9 +386,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
  protected:
   HttpNetworkTransactionTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         dummy_connect_job_params_(
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,
@@ -394,8 +397,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             nullptr /* net_log */,
@@ -511,8 +513,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     rv = ReadTransaction(&trans, &out.response_data);
     EXPECT_THAT(rv, IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_REQUEST_HEADERS,
         NetLogEventPhase::NONE);
@@ -520,9 +521,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
         entries, pos, NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
         NetLogEventPhase::NONE);
 
-    std::string line;
-    EXPECT_TRUE(entries[pos].GetStringValue("line", &line));
-    EXPECT_EQ("GET / HTTP/1.1\r\n", line);
+    EXPECT_EQ("GET / HTTP/1.1\r\n",
+              GetStringValueFromParams(entries[pos], "line"));
 
     HttpRequestHeaders request_headers;
     EXPECT_TRUE(trans.GetFullRequestHeaders(&request_headers));
@@ -532,10 +532,8 @@ class HttpNetworkTransactionTest : public PlatformTest,
     EXPECT_TRUE(request_headers.GetHeader("Connection", &value));
     EXPECT_EQ("keep-alive", value);
 
-    std::string response_headers;
-    EXPECT_TRUE(GetHeaders(entries[pos].params.get(), &response_headers));
     EXPECT_EQ("['Host: www.example.org','Connection: keep-alive']",
-              response_headers);
+              GetHeaders(entries[pos].params));
 
     out.total_received_bytes = trans.GetTotalReceivedBytes();
     // The total number of sent bytes should not have changed.
@@ -807,6 +805,9 @@ bool CheckNTLMProxyAuth(
 #endif  // defined(NTLM_PORTABLE)
 
 }  // namespace
+
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
 
 TEST_F(HttpNetworkTransactionTest, Basic) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -1884,7 +1885,7 @@ void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
 }
 
 // Test that we do not retry indefinitely when a server sends an error like
-// ERR_SPDY_PING_FAILED, ERR_SPDY_SERVER_REFUSED_STREAM,
+// ERR_HTTP2_PING_FAILED, ERR_HTTP2_SERVER_REFUSED_STREAM,
 // ERR_QUIC_HANDSHAKE_FAILED or ERR_QUIC_PROTOCOL_ERROR.
 TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   HttpRequestInfo request;
@@ -1923,7 +1924,7 @@ TEST_F(HttpNetworkTransactionTest, FiniteRetriesOnIOError) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_SPDY_SERVER_REFUSED_STREAM));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_SERVER_REFUSED_STREAM));
 }
 
 TEST_F(HttpNetworkTransactionTest, RetryTwiceOnIOError) {
@@ -3361,8 +3362,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp10) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3486,8 +3486,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -3609,8 +3608,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp10) {
     int rv = trans.Start(&request, callback1.callback(), log.bound());
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -3720,8 +3718,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     int rv = trans.Start(&request, callback1.callback(), log.bound());
     EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-    TestNetLogEntry::List entries;
-    log.GetEntries(&entries);
+    auto entries = log.GetEntries();
     size_t pos = ExpectLogContainsSomewhere(
         entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
         NetLogEventPhase::NONE);
@@ -3846,8 +3843,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveExtraData) {
   int rv = trans->Start(&request, callback1.callback(), log.bound());
   EXPECT_THAT(callback1.GetResult(rv), IsOk());
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -4197,8 +4193,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsServerRequestsProxyAuthThroughProxy) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_UNEXPECTED_PROXY_AUTH));
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -9969,8 +9964,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -12191,7 +12185,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
       test_server, alternative_service, expiration,
-      session->params().quic_supported_versions);
+      session->params().quic_params.supported_versions);
   EXPECT_EQ(
       1u,
       http_server_properties->GetAlternativeServiceInfos(test_server).size());
@@ -12344,7 +12338,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetQuicAlternativeService(
       server, alternative_service, expiration,
-      HttpNetworkSession::Params().quic_supported_versions);
+      HttpNetworkSession::Params().quic_params.supported_versions);
   // Mark the QUIC alternative service as broken.
   http_server_properties->MarkAlternativeServiceBroken(alternative_service);
 
@@ -12409,12 +12403,12 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service1, expiration,
-          session->params().quic_supported_versions));
+          session->params().quic_params.supported_versions));
   AlternativeService alternative_service2(kProtoQUIC, alternative2);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
           alternative_service2, expiration,
-          session->params().quic_supported_versions));
+          session->params().quic_params.supported_versions));
 
   http_server_properties->SetAlternativeServices(
       server, alternative_service_info_vector);
@@ -14832,8 +14826,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGet) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -14913,8 +14906,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetIPv6) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -14986,8 +14978,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
 
   rv = callback1.WaitForResult();
   EXPECT_THAT(rv, IsError(ERR_EMPTY_RESPONSE));
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   size_t pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_SEND_TUNNEL_HEADERS,
       NetLogEventPhase::NONE);
@@ -15097,7 +15088,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_NoFalseStart) {
   request_info.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
+  auto cert_request = base::MakeRefCounted<SSLCertRequestInfo>();
   cert_request->host_and_port = HostPortPair("www.example.com", 443);
 
   // [ssl_]data1 contains the data for the first SSL handshake. When a
@@ -15202,7 +15193,7 @@ TEST_F(HttpNetworkTransactionTest, ClientAuthCertCache_Direct_FalseStart) {
   request_info.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  scoped_refptr<SSLCertRequestInfo> cert_request(new SSLCertRequestInfo());
+  auto cert_request = base::MakeRefCounted<SSLCertRequestInfo>();
   cert_request->host_and_port = HostPortPair("www.example.com", 443);
 
   // When TLS False Start is used, SSLClientSocket::Connect() calls will
@@ -15818,8 +15809,7 @@ TEST_F(HttpNetworkTransactionTest, RetryWithoutConnectionPooling) {
   ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
+  auto entries = log.GetEntries();
   ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP_TRANSACTION_RESTART_MISDIRECTED_REQUEST,
       NetLogEventPhase::NONE);
@@ -20198,7 +20188,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy1(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_proxy1.cert_request_info = cert_request_info_proxy.get();
   ssl_proxy1.expected_send_client_cert = false;
-  ssl_proxy1.expected_false_start_enabled = true;
   StaticSocketDataProvider data1;
   session_deps_.socket_factory->AddSocketDataProvider(&data1);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
@@ -20208,8 +20197,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
   ssl_proxy2.expected_send_client_cert = true;
   ssl_proxy2.expected_client_cert = identity_proxy->certificate();
-  // Proxy connections with client certs disable False Start.
-  ssl_proxy2.expected_false_start_enabled = false;
   // The client attempts an HTTP CONNECT, but the proxy requests basic auth.
   std::vector<MockWrite> mock_writes2;
   std::vector<MockRead> mock_reads2;
@@ -20232,9 +20219,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   // The origin requests client certificates.
   SSLSocketDataProvider ssl_origin2(ASYNC, ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
   ssl_origin2.cert_request_info = cert_request_info_origin.get();
-  // The origin connection is eligible for False Start, despite the proxy
-  // connection disabling it.
-  ssl_origin2.expected_false_start_enabled = true;
   StaticSocketDataProvider data2(mock_reads2, mock_writes2);
   session_deps_.socket_factory->AddSocketDataProvider(&data2);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
@@ -20245,8 +20229,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_proxy3(ASYNC, OK);
   ssl_proxy3.expected_send_client_cert = true;
   ssl_proxy3.expected_client_cert = identity_proxy->certificate();
-  // Proxy connections with client certs disable False Start.
-  ssl_proxy3.expected_false_start_enabled = false;
   std::vector<MockWrite> mock_writes3;
   std::vector<MockRead> mock_reads3;
   mock_writes3.emplace_back(
@@ -20259,9 +20241,6 @@ TEST_F(HttpNetworkTransactionTest, AuthEverything) {
   SSLSocketDataProvider ssl_origin3(ASYNC, OK);
   ssl_origin3.expected_send_client_cert = true;
   ssl_origin3.expected_client_cert = identity_origin->certificate();
-  // The origin connection is eligible for False Start, despite the proxy
-  // connection disabling it.
-  ssl_origin3.expected_false_start_enabled = true;
   // The client sends the origin HTTP request, which results in another HTTP
   // auth request.
   mock_writes3.emplace_back(
@@ -20746,10 +20725,10 @@ TEST_F(HttpNetworkTransactionTest, ClientCertSocketReuse) {
 // same key, the second a different one. Checks that the requests are
 // partitioned across sockets as expected.
 TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
-  NetworkIsolationKey network_isolation_key1(
-      url::Origin::Create(GURL("http://origin1/")));
-  NetworkIsolationKey network_isolation_key2(
-      url::Origin::Create(GURL("http://origin2/")));
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
+  NetworkIsolationKey network_isolation_key2(kOrigin2, kOrigin2);
 
   for (bool partition_connections : {false, true}) {
     SCOPED_TRACE(partition_connections);
@@ -20894,10 +20873,10 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolation) {
 }
 
 TEST_F(HttpNetworkTransactionTest, NetworkIsolationH2) {
-  NetworkIsolationKey network_isolation_key1(
-      url::Origin::Create(GURL("http://origin1/")));
-  NetworkIsolationKey network_isolation_key2(
-      url::Origin::Create(GURL("http://origin2/")));
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
+  NetworkIsolationKey network_isolation_key2(kOrigin2, kOrigin2);
 
   // Whether to use an H2 proxy. When false, uses HTTPS H2 requests without a
   // proxy, when true, uses HTTP requests over an H2 proxy. It's unnecessary to
@@ -21107,6 +21086,492 @@ TEST_F(HttpNetworkTransactionTest, NetworkIsolationH2) {
       trans3.reset();
     }
   }
+}
+
+// Preconnect two sockets with different NetworkIsolationKeys when
+// features::kPartitionConnectionsByNetworkIsolationKey is enabled. Then issue a
+// request and make sure the correct socket is used. Loops three times,
+// expecting to use the first preconnect, second preconnect, and neither.
+TEST_F(HttpNetworkTransactionTest, NetworkIsolationPreconnect) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  enum class TestCase {
+    kUseFirstPreconnect,
+    kUseSecondPreconnect,
+    kDontUsePreconnect,
+  };
+
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  const auto kOrigin3 = url::Origin::Create(GURL("http://origin3/"));
+  NetworkIsolationKey preconnect1_isolation_key(kOrigin1, kOrigin1);
+  NetworkIsolationKey preconnect2_isolation_key(kOrigin2, kOrigin2);
+  NetworkIsolationKey not_preconnected_isolation_key(kOrigin3, kOrigin3);
+
+  // Test that only preconnects with
+  for (TestCase test_case :
+       {TestCase::kUseFirstPreconnect, TestCase::kUseSecondPreconnect,
+        TestCase::kDontUsePreconnect}) {
+    SpdySessionDependencies session_deps;
+    // Make DNS lookups completely synchronously, so preconnects complete
+    // immediately.
+    session_deps.host_resolver->set_synchronous_mode(true);
+
+    const MockWrite kMockWrites[] = {
+        MockWrite(ASYNC, 0,
+                  "GET / HTTP/1.1\r\n"
+                  "Host: www.foo.com\r\n"
+                  "Connection: keep-alive\r\n\r\n"),
+    };
+
+    const MockRead kMockReads[] = {
+        MockRead(ASYNC, 1,
+                 "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n"
+                 "hello"),
+    };
+
+    // Used for the socket that will actually be used, which may or may not be
+    // one of the preconnects
+    SequencedSocketData used_socket_data(MockConnect(SYNCHRONOUS, OK),
+                                         kMockReads, kMockWrites);
+
+    // Used for the preconnects that won't actually be used.
+    SequencedSocketData preconnect1_data(MockConnect(SYNCHRONOUS, OK),
+                                         base::span<const MockRead>(),
+                                         base::span<const MockWrite>());
+    SequencedSocketData preconnect2_data(MockConnect(SYNCHRONOUS, OK),
+                                         base::span<const MockRead>(),
+                                         base::span<const MockWrite>());
+
+    NetworkIsolationKey network_isolation_key_for_request;
+
+    switch (test_case) {
+      case TestCase::kUseFirstPreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect2_data);
+        network_isolation_key_for_request = preconnect1_isolation_key;
+        break;
+      case TestCase::kUseSecondPreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect1_data);
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        network_isolation_key_for_request = preconnect2_isolation_key;
+        break;
+      case TestCase::kDontUsePreconnect:
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect1_data);
+        session_deps.socket_factory->AddSocketDataProvider(&preconnect2_data);
+        session_deps.socket_factory->AddSocketDataProvider(&used_socket_data);
+        network_isolation_key_for_request = not_preconnected_isolation_key;
+        break;
+    }
+
+    std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps));
+
+    // Preconnect sockets.
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.foo.com/");
+    request.traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    request.network_isolation_key = preconnect1_isolation_key;
+    session->http_stream_factory()->PreconnectStreams(1, request);
+
+    request.network_isolation_key = preconnect2_isolation_key;
+    session->http_stream_factory()->PreconnectStreams(1, request);
+
+    request.network_isolation_key = network_isolation_key_for_request;
+
+    EXPECT_EQ(2, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+    // Make the request.
+    TestCompletionCallback callback;
+
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
+
+    int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+    EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+    rv = callback.WaitForResult();
+    EXPECT_THAT(rv, IsOk());
+
+    const HttpResponseInfo* response = trans.GetResponseInfo();
+    ASSERT_TRUE(response);
+    ASSERT_TRUE(response->headers);
+    EXPECT_EQ(200, response->headers->response_code());
+
+    std::string response_data;
+    rv = ReadTransaction(&trans, &response_data);
+    EXPECT_THAT(rv, IsOk());
+    EXPECT_EQ("hello", response_data);
+
+    if (test_case != TestCase::kDontUsePreconnect) {
+      EXPECT_EQ(2, GetIdleSocketCountInTransportSocketPool(session.get()));
+    } else {
+      EXPECT_EQ(3, GetIdleSocketCountInTransportSocketPool(session.get()));
+    }
+  }
+}
+
+// Test that the NetworkIsolationKey is passed down to SSLConfig so the session
+// cache is isolated.
+TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kPartitionSSLSessionsByNetworkIsolationKey},
+      {});
+
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // The server always sends Connection: close, so each request goes over a
+  // distinct socket.
+
+  const MockWrite kWrites1[] = {
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: close\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "1")};
+
+  const MockWrite kWrites2[] = {
+      MockWrite("GET /2 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: close\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "2")};
+
+  const MockWrite kWrites3[] = {
+      MockWrite("GET /3 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads3[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: close\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "3")};
+
+  StaticSocketDataProvider data1(kReads1, kWrites1);
+  StaticSocketDataProvider data2(kReads2, kWrites2);
+  StaticSocketDataProvider data3(kReads3, kWrites3);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data3);
+
+  SSLSocketDataProvider ssl_data1(ASYNC, OK);
+  ssl_data1.expected_host_and_port = HostPortPair("foo.test", 443);
+  ssl_data1.expected_network_isolation_key = kNetworkIsolationKey1;
+  SSLSocketDataProvider ssl_data2(ASYNC, OK);
+  ssl_data2.expected_host_and_port = HostPortPair("foo.test", 443);
+  ssl_data2.expected_network_isolation_key = kNetworkIsolationKey2;
+  SSLSocketDataProvider ssl_data3(ASYNC, OK);
+  ssl_data3.expected_host_and_port = HostPortPair("foo.test", 443);
+  ssl_data3.expected_network_isolation_key = kNetworkIsolationKey1;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data2);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data3);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://foo.test/1");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request1.network_isolation_key = kNetworkIsolationKey1;
+  auto trans1 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data1;
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+  EXPECT_EQ("1", response_data1);
+  trans1.reset();
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://foo.test/2");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request2.network_isolation_key = kNetworkIsolationKey2;
+  auto trans2 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data2;
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+  EXPECT_EQ("2", response_data2);
+  trans2.reset();
+
+  HttpRequestInfo request3;
+  request3.method = "GET";
+  request3.url = GURL("https://foo.test/3");
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request3.network_isolation_key = kNetworkIsolationKey1;
+  auto trans3 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans3->Start(&request3, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data3;
+  EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
+  EXPECT_EQ("3", response_data3);
+  trans3.reset();
+}
+
+// Test that the NetworkIsolationKey is passed down to SSLConfig so the session
+// cache is isolated, for both origins and proxies.
+TEST_F(HttpNetworkTransactionTest, NetworkIsolationSSLProxy) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kPartitionSSLSessionsByNetworkIsolationKey},
+      {});
+
+  session_deps_.proxy_resolution_service = ProxyResolutionService::CreateFixed(
+      "https://myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Make both a tunneled and non-tunneled request.
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://foo.test/1");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request1.network_isolation_key = kNetworkIsolationKey1;
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("http://foo.test/2");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  request2.network_isolation_key = kNetworkIsolationKey2;
+
+  const MockWrite kWrites1[] = {
+      MockWrite("CONNECT foo.test:443 HTTP/1.1\r\n"
+                "Host: foo.test:443\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads1[] = {
+      MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: close\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "1")};
+
+  const MockWrite kWrites2[] = {
+      MockWrite("GET http://foo.test/2 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Proxy-Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: close\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "2")};
+
+  StaticSocketDataProvider data1(kReads1, kWrites1);
+  StaticSocketDataProvider data2(kReads2, kWrites2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  SSLSocketDataProvider ssl_proxy1(ASYNC, OK);
+  ssl_proxy1.expected_host_and_port = HostPortPair("myproxy", 70);
+  ssl_proxy1.expected_network_isolation_key = kNetworkIsolationKey1;
+  SSLSocketDataProvider ssl_origin1(ASYNC, OK);
+  ssl_origin1.expected_host_and_port = HostPortPair("foo.test", 443);
+  ssl_origin1.expected_network_isolation_key = kNetworkIsolationKey1;
+  SSLSocketDataProvider ssl_proxy2(ASYNC, OK);
+  ssl_proxy2.expected_host_and_port = HostPortPair("myproxy", 70);
+  ssl_proxy2.expected_network_isolation_key = kNetworkIsolationKey2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_origin1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_proxy2);
+
+  TestCompletionCallback callback;
+  auto trans1 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data1;
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+  EXPECT_EQ("1", response_data1);
+  trans1.reset();
+
+  auto trans2 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data2;
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+  EXPECT_EQ("2", response_data2);
+  trans2.reset();
+}
+
+// Test that SSLConfig changes from SSLConfigService are picked up even when
+// there are live sockets.
+TEST_F(HttpNetworkTransactionTest, SSLConfigChanged) {
+  SSLConfig ssl_config;
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
+
+  session_deps_.ssl_config_service = std::move(ssl_config_service);
+
+  // Make three requests. Between the second and third, the SSL config will
+  // change.
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://foo.test/1");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://foo.test/2");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpRequestInfo request3;
+  request3.method = "GET";
+  request3.url = GURL("https://foo.test/3");
+  request3.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  const MockWrite kWrites1[] = {
+      MockWrite("GET /1 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+      MockWrite("GET /2 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  const MockRead kReads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "1"),
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "2"),
+  };
+
+  // The third request goes on a different socket because the SSL config has
+  // changed.
+  const MockWrite kWrites2[] = {
+      MockWrite("GET /3 HTTP/1.1\r\n"
+                "Host: foo.test\r\n"
+                "Connection: keep-alive\r\n\r\n")};
+
+  const MockRead kReads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 1\r\n\r\n"
+               "3")};
+
+  StaticSocketDataProvider data1(kReads1, kWrites1);
+  StaticSocketDataProvider data2(kReads2, kWrites2);
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  SSLSocketDataProvider ssl1(ASYNC, OK);
+  ssl1.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl1);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  TestCompletionCallback callback;
+  auto trans1 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans1->Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data1;
+  EXPECT_THAT(ReadTransaction(trans1.get(), &response_data1), IsOk());
+  EXPECT_EQ("1", response_data1);
+  trans1.reset();
+
+  auto trans2 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans2->Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data2;
+  EXPECT_THAT(ReadTransaction(trans2.get(), &response_data2), IsOk());
+  EXPECT_EQ("2", response_data2);
+  trans2.reset();
+
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+
+  auto trans3 =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  rv = trans3->Start(&request3, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+  std::string response_data3;
+  EXPECT_THAT(ReadTransaction(trans3.get(), &response_data3), IsOk());
+  EXPECT_EQ("3", response_data3);
+  trans3.reset();
+}
+
+TEST_F(HttpNetworkTransactionTest, SSLConfigChangedPendingConnect) {
+  SSLConfig ssl_config;
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  auto ssl_config_service = std::make_unique<TestSSLConfigService>(ssl_config);
+  TestSSLConfigService* ssl_config_service_raw = ssl_config_service.get();
+
+  session_deps_.ssl_config_service = std::move(ssl_config_service);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("https://foo.test/1");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  // Make a socket which never connects.
+  StaticSocketDataProvider data({}, {});
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, ERR_IO_PENDING);
+  ssl_data.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+
+  std::unique_ptr<HttpNetworkSession> session = CreateSession(&session_deps_);
+
+  TestCompletionCallback callback;
+  auto trans =
+      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
+  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_raw->UpdateSSLConfigAndNotify(ssl_config);
+
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_NETWORK_CHANGED));
 }
 
 }  // namespace net

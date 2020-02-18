@@ -126,7 +126,6 @@ class FakeUpgradeDetector : public UpgradeDetector {
 class StubPowerMonitorSource : public base::PowerMonitorSource {
  public:
   // base::PowerMonitorSource:
-  void Shutdown() override {}
   bool IsOnBatteryPowerImpl() override { return false; }
 };
 
@@ -138,16 +137,20 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
  protected:
   RelaunchNotificationControllerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()),
         upgrade_detector_(scoped_task_environment_.GetMockClock(),
                           scoped_task_environment_.GetMockTickClock()) {
     auto mock_power_monitor_source = std::make_unique<StubPowerMonitorSource>();
     mock_power_monitor_source_ = mock_power_monitor_source.get();
-    power_monitor_ = std::make_unique<base::PowerMonitor>(
-        std::move(mock_power_monitor_source));
+    base::PowerMonitor::Initialize(std::move(mock_power_monitor_source));
   }
+
+  ~RelaunchNotificationControllerTest() override {
+    base::PowerMonitor::ShutdownForTesting();
+  }
+
   UpgradeDetector* upgrade_detector() { return &upgrade_detector_; }
   FakeUpgradeDetector& fake_upgrade_detector() { return upgrade_detector_; }
 
@@ -176,7 +179,6 @@ class RelaunchNotificationControllerTest : public ::testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
   // Owned by power_monitor_. Use this to simulate a power suspend and resume.
   StubPowerMonitorSource* mock_power_monitor_source_ = nullptr;
   base::test::ScopedTaskEnvironment scoped_task_environment_;

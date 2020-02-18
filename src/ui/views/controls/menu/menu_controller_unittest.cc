@@ -184,7 +184,7 @@ class TestDragDropClient : public aura::client::DragDropClient {
   ~TestDragDropClient() override = default;
 
   // aura::client::DragDropClient:
-  int StartDragAndDrop(const ui::OSExchangeData& data,
+  int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
                        const gfx::Point& screen_location,
@@ -205,7 +205,7 @@ class TestDragDropClient : public aura::client::DragDropClient {
 };
 
 int TestDragDropClient::StartDragAndDrop(
-    const ui::OSExchangeData& data,
+    std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
     aura::Window* source_window,
     const gfx::Point& screen_location,
@@ -1291,7 +1291,7 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   SubmenuView* source = menu_item()->GetSubmenu();
   MenuItemView* target = source->GetMenuItemAt(0);
 
-  SetDropMenuItem(target, MenuDelegate::DropPosition::DROP_AFTER);
+  SetDropMenuItem(target, MenuDelegate::DropPosition::kAfter);
 
   ui::OSExchangeData drop_data;
   gfx::PointF location(target->origin());
@@ -1898,14 +1898,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
 }
 
 // Tests that menus without parent widgets do not crash in MenuPreTargetHandler.
-// This is generally true, except on Chrome OS running with the window service.
-// In that case, a DCHECK fires to ensure menus can consume parents' key events.
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
-#if defined(OS_CHROMEOS)
-  if (::features::IsUsingWindowService())
-    return;
-#endif  // OS_CHROMEOS
-
   ExitMenuRun();
   MenuController* controller = menu_controller();
   controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
@@ -2257,12 +2250,6 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
 }
 
 TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
-  class DummyButtonListener : public ButtonListener {
-   public:
-    ~DummyButtonListener() override = default;
-    void ButtonPressed(Button* sender, const ui::Event& event) override {}
-  };
-
   MenuItemView* const item1 = menu_item()->GetSubmenu()->GetMenuItemAt(0);
   MenuItemView* const item2 = menu_item()->GetSubmenu()->GetMenuItemAt(1);
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
@@ -2277,13 +2264,11 @@ TEST_F(MenuControllerTest, SetSelectionIndices_NestedButtons) {
   container_view->AddChildView(new Label());
 
   // Add two focusable buttons (buttons in menus are always focusable).
-  Button* const button1 =
-      new LabelButton(new DummyButtonListener(), base::string16());
+  Button* const button1 = new LabelButton(nullptr, base::string16());
   button1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   button1->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   container_view->AddChildView(button1);
-  Button* const button2 =
-      new LabelButton(new DummyButtonListener(), base::string16());
+  Button* const button2 = new LabelButton(nullptr, base::string16());
   button2->GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
   button2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   container_view->AddChildView(button2);

@@ -100,8 +100,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
   }
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   PaginationBreakability GetPaginationBreakability() const final;

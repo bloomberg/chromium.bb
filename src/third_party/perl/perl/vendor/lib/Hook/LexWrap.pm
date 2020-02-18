@@ -1,9 +1,13 @@
-package Hook::LexWrap;
-use 5.006;
 use strict;
 use warnings;
-our $VERSION = '0.24';
-use Carp;
+package Hook::LexWrap; # git description: v0.25-14-g33c34e7
+# vi: noet sts=8 sw=8 ts=8 :
+# ABSTRACT: Lexically scoped subroutine wrappers
+# KEYWORDS: subroutine function modifier wrapper lexical scope
+
+our $VERSION = '0.26';
+
+use Carp ();
 
 {
 no warnings 'redefine';
@@ -12,7 +16,11 @@ no warnings 'redefine';
 	my $i=1;
 	my $name_cache;
 	while (1) {
-		my @caller = CORE::caller($i++) or return;
+		my @caller = CORE::caller() eq 'DB'
+			? do { package	# line break to foil [Git::Describe]
+				DB; CORE::caller($i++) }
+			: CORE::caller($i++);
+		return if not @caller;
 		$caller[3] = $name_cache if $name_cache;
 		$name_cache = $caller[0] eq 'Hook::LexWrap' ? $caller[3] : '';
 		next if $name_cache || $height-- != 0;
@@ -33,9 +41,9 @@ sub wrap (*@) {  ## no critic Prototypes
 	        no strict 'refs';
 	        $original = ref $typeglob eq 'CODE' && $typeglob
 		     || *$typeglob{CODE}
-		     || croak "Can't wrap non-existent subroutine ", $typeglob;
+		     || Carp::croak "Can't wrap non-existent subroutine ", $typeglob;
 	}
-	croak "'$_' value is not a subroutine reference"
+	Carp::croak "'$_' value is not a subroutine reference"
 		foreach grep {$wrapper{$_} && ref $wrapper{$_} ne 'CODE'}
 			qw(pre post);
 	no warnings 'redefine';
@@ -76,7 +84,7 @@ sub wrap (*@) {  ## no critic Prototypes
 	};
 	ref $typeglob eq 'CODE' and return defined wantarray
 		? $imposter
-		: carp "Uselessly wrapped subroutine reference in void context";
+		: Carp::carp "Uselessly wrapped subroutine reference in void context";
 	{
 	        no strict 'refs';
 	        *{$typeglob} = $imposter;
@@ -85,7 +93,8 @@ sub wrap (*@) {  ## no critic Prototypes
 	return bless sub{ $unwrap=1 }, 'Hook::LexWrap::Cleanup';
 }
 
-package Hook::LexWrap::Cleanup;
+package  # hide from PAUSE
+	Hook::LexWrap::Cleanup;
 
 sub DESTROY { $_[0]->() }
 use overload 
@@ -98,6 +107,9 @@ use overload
 
 __END__
 
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -105,7 +117,7 @@ Hook::LexWrap - Lexically scoped subroutine wrappers
 
 =head1 VERSION
 
-This document describes version 0.23 of Hook::LexWrap.
+version 0.26
 
 =head1 SYNOPSIS
 
@@ -114,11 +126,11 @@ This document describes version 0.23 of Hook::LexWrap.
 	sub doit { print "[doit:", caller, "]"; return {my=>"data"} }
 
 	SCOPED: {
-		wrap doit,
+		wrap doit =>
 			pre  => sub { print "[pre1: @_]\n" },
 			post => sub { print "[post1:@_]\n"; $_[1]=9; };
 
-		my $temporarily = wrap doit,
+		my $temporarily = wrap doit =>
 			post => sub { print "[post2:@_]\n" },
 			pre  => sub { print "[pre2: @_]\n  "};
 
@@ -128,7 +140,6 @@ This document describes version 0.23 of Hook::LexWrap.
 
 	@args = (4,5,6);
 	doit(@args);		# pre1->doit->post1
-
 
 =head1 DESCRIPTION
 
@@ -178,7 +189,6 @@ and after the subroutine itself, and will be passed the same argument list.
 The pre- and post-wrappers and the original subroutine also all see the same
 (correct!) values from C<caller> and C<wantarray>.
 
-
 =head2 Short-circuiting and long-circuiting return values
 
 The pre- and post-wrappers both receive an extra argument in their @_
@@ -205,19 +215,17 @@ Access to the arguments and return value is useful for implementing
 techniques such as memoization:
 
         my %cache;
-        wrap fibonacci,
+        wrap fibonacci =>
                 pre  => sub { $_[-1] = $cache{$_[0]} if $cache{$_[0]} },
                 post => sub { $cache{$_[0]} = $_[-1] };
-
 
 or for converting arguments and return values in a consistent manner:
 
 	# set_temp expects and returns degrees Fahrenheit,
 	# but we want to use Celsius
-        wrap set_temp,
+        wrap set_temp =>
                 pre   => sub { splice @_, 0, 1, $_[0] * 1.8 + 32 },
                 post  => sub { $_[-1] = ($_[0] - 32) / 1.8 };
-
 
 =head2 Lexically scoped wrappers
 
@@ -239,7 +247,6 @@ when it is explicitly destroyed (C<$lexical-E<gt>DESTROY>) --
 the corresponding wrapper is removed from around
 the original subroutine. Note, however, that all other wrappers around the
 subroutine are preserved.
-
 
 =head2 Anonymous wrappers
 
@@ -275,7 +282,6 @@ For example:
         # Show effects...
         original();             #   now prints "fa..ray..mi"
         $anon_wrapped->();      # still prints "do...ray"
-
 
 =head1 DIAGNOSTICS
 
@@ -313,15 +319,13 @@ subroutine reference.
 
 =back
 
-=head1 AUTHOR
-
-Damian Conway (damian@conway.org)
-
-
 =head1 BLAME
 
 Schwern made me do this (by implying it wasn't possible ;-)
 
+=head1 SEE ALSO
+
+Sub::Prepend
 
 =head1 BUGS
 
@@ -329,13 +333,38 @@ There are undoubtedly serious bugs lurking somewhere in code this funky :-)
 
 Bug reports and other feedback are most welcome.
 
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=Hook-LexWrap>
+(or L<bug-Hook-LexWrap@rt.cpan.org|mailto:bug-Hook-LexWrap@rt.cpan.org>).
 
-=head1 SEE ALSO
+=head1 AUTHOR
 
-Sub::Prepend
+Damian Conway <damian@conway.org>
 
-=head1 COPYRIGHT
+=head1 CONTRIBUTORS
 
-      Copyright (c) 2001, Damian Conway. All Rights Reserved.
-    This module is free software. It may be used, redistributed
-        and/or modified under the same terms as Perl itself.
+=for stopwords Karen Etheridge Alexandr Ciornii Father Chrysostomos
+
+=over 4
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Alexandr Ciornii <alexchorny@gmail.com>
+
+=item *
+
+Father Chrysostomos <sprout@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2001 by Damian Conway.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

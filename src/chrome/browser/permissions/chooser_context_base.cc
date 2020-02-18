@@ -146,7 +146,7 @@ void ChooserContextBase::GrantObjectPermission(
   }
 
   auto& object_list = objects->GetList();
-  if (!base::ContainsValue(object_list, object))
+  if (!base::Contains(object_list, object))
     object_list.push_back(std::move(object));
 
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));

@@ -6,6 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
@@ -55,6 +58,11 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // request Picture-in-Picture.
   Status IsDocumentAllowed() const;
 
+  // Returns whether the combination of element and options can be in
+  // Picture-in-Picture.
+  Status VerifyElementAndOptions(const HTMLElement&,
+                                 const PictureInPictureOptions*) const;
+
   // Returns element currently in Picture-in-Picture if any. Null otherwise.
   Element* PictureInPictureElement() const;
   Element* PictureInPictureElement(TreeScope&) const;
@@ -92,16 +100,16 @@ class MODULES_EXPORT PictureInPictureControllerImpl
 
   void Trace(blink::Visitor*) override;
 
-  mojo::Binding<mojom::blink::PictureInPictureSessionObserver>&
-  GetSessionObserverBindingForTesting() {
-    return session_observer_binding_;
+  bool IsSessionObserverReceiverBoundForTesting() {
+    return session_observer_receiver_.is_bound();
   }
 
  private:
-  void OnEnteredPictureInPicture(HTMLVideoElement*,
-                                 ScriptPromiseResolver*,
-                                 mojom::blink::PictureInPictureSessionPtr,
-                                 const WebSize&);
+  void OnEnteredPictureInPicture(
+      HTMLVideoElement*,
+      ScriptPromiseResolver*,
+      mojo::PendingRemote<mojom::blink::PictureInPictureSession>,
+      const WebSize&);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
 
   // Makes sure the `picture_in_picture_service_` is set. Returns whether it was
@@ -123,14 +131,16 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   Member<PictureInPictureWindow> picture_in_picture_window_;
 
   // Mojo bindings for the session observer interface implemented by |this|.
-  mojo::Binding<mojom::blink::PictureInPictureSessionObserver>
-      session_observer_binding_;
+  mojo::Receiver<mojom::blink::PictureInPictureSessionObserver>
+      session_observer_receiver_;
 
   // Picture-in-Picture service living in the browser process.
-  mojom::blink::PictureInPictureServicePtr picture_in_picture_service_;
+  mojo::Remote<mojom::blink::PictureInPictureService>
+      picture_in_picture_service_;
 
   // Instance of the Picture-in-Picture session sent back by the service.
-  mojom::blink::PictureInPictureSessionPtr picture_in_picture_session_;
+  mojo::Remote<mojom::blink::PictureInPictureSession>
+      picture_in_picture_session_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureControllerImpl);
 };

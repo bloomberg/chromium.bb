@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display_embedder/output_surface_provider_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -14,10 +15,11 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
-#include "components/viz/service/display_embedder/skia_output_surface_impl_non_ddl.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -35,17 +37,14 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
-#include "components/viz/service/display_embedder/gl_output_surface_win.h"
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
-#include "components/viz/service/display_embedder/gl_output_surface_buffer_queue_android.h"
 #endif
 
 #if defined(OS_MACOSX)
-#include "components/viz/service/display_embedder/gl_output_surface_mac.h"
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif
@@ -55,12 +54,16 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "components/viz/service/display_embedder/output_surface_unified.h"
 #endif
 
 namespace viz {
@@ -96,6 +99,11 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
     const RendererSettings& renderer_settings) {
+#if defined(OS_CHROMEOS)
+  if (surface_handle == gpu::kNullSurfaceHandle)
+    return std::make_unique<OutputSurfaceUnified>();
+#endif
+
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
@@ -103,42 +111,26 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client));
-  } else if (renderer_settings.use_skia_renderer ||
-             renderer_settings.use_skia_renderer_non_ddl) {
+  } else if (renderer_settings.use_skia_renderer) {
 #if defined(OS_MACOSX)
     // TODO(penghuang): Support SkiaRenderer for all platforms.
     NOTIMPLEMENTED();
     return nullptr;
 #else
-    if (renderer_settings.use_skia_renderer_non_ddl) {
-      DCHECK_EQ(gl::GetGLImplementation(), gl::kGLImplementationEGLGLES2)
-          << "SkiaRendererNonDDL is only supported with GLES2.";
-      auto gl_surface = gpu::ImageTransportSurface::CreateNativeSurface(
-          nullptr, surface_handle, gl::GLSurfaceFormat());
-      if (!shared_context_state_) {
-        auto gl_share_group = base::MakeRefCounted<gl::GLShareGroup>();
-        auto gl_context = gl::init::CreateGLContext(
-            gl_share_group.get(), gl_surface.get(), gl::GLContextAttribs());
-        gl_context->MakeCurrent(gl_surface.get());
-        shared_context_state_ = base::MakeRefCounted<gpu::SharedContextState>(
-            std::move(gl_share_group), gl_surface, std::move(gl_context),
-            false /* use_virtualized_gl_contexts */, base::DoNothing::Once(),
-            nullptr /* vulkan_context_provider */);
-        shared_context_state_->InitializeGrContext(
-            gpu::GpuDriverBugWorkarounds(), nullptr /* gr_shader_cache */);
-        mailbox_manager_ = gpu::gles2::CreateMailboxManager(
-            gpu_service_impl_->gpu_preferences());
-        DCHECK(mailbox_manager_->UsesSync());
-      }
-      output_surface = std::make_unique<SkiaOutputSurfaceImplNonDDL>(
-          std::move(gl_surface), shared_context_state_, mailbox_manager_.get(),
-          gpu_service_impl_->shared_image_manager(),
-          gpu_service_impl_->sync_point_manager(),
-          true /* need_swapbuffers_ack */);
-
-    } else {
-      output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-          gpu_service_impl_, surface_handle, renderer_settings);
+    output_surface = SkiaOutputSurfaceImpl::Create(
+        std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service_impl_,
+                                                          surface_handle),
+        renderer_settings);
+    if (!output_surface) {
+#if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
+      // GPU compositing is expected to always work on Chrome OS so we should
+      // never encounter fatal context error. This could be an unrecoverable
+      // hardware error or a bug.
+      LOG(FATAL) << "Unexpected fatal context error";
+#elif !defined(OS_ANDROID)
+      gpu_service_impl_->DisableGpuCompositing();
+#endif
+      return nullptr;
     }
 #endif
   } else {
@@ -169,9 +161,10 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 
       if (IsFatalOrSurfaceFailure(context_result)) {
 #if defined(OS_CHROMEOS) || defined(IS_CHROMECAST)
-        // TODO(kylechar): Chrome OS can't disable GPU compositing. This needs
-        // to be handled similar to Android.
-        CHECK(false);
+        // GL compositing is expected to always work on Chrome OS so we should
+        // never encounter fatal context error. This could be an unrecoverable
+        // hardware error or a bug.
+        LOG(FATAL) << "Unexpected fatal context error";
 #elif !defined(OS_ANDROID)
         gpu_service_impl_->DisableGpuCompositing();
 #endif
@@ -184,19 +177,19 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
           std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-      output_surface = std::make_unique<GLOutputSurfaceOzone>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           gpu_memory_buffer_manager_.get(),
-          renderer_settings.overlay_strategies);
+          display::DisplaySnapshot::PrimaryFormat());
 #elif defined(OS_MACOSX)
-      output_surface = std::make_unique<GLOutputSurfaceMac>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
-          gpu_memory_buffer_manager_.get(), renderer_settings.allow_overlays);
+          gpu_memory_buffer_manager_.get(), gfx::BufferFormat::RGBA_8888);
 #elif defined(OS_ANDROID)
       auto buffer_format = context_provider->UseRGB565PixelFormat()
                                ? gfx::BufferFormat::BGR_565
                                : gfx::BufferFormat::RGBA_8888;
-      output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
+      output_surface = std::make_unique<GLOutputSurfaceBufferQueue>(
           std::move(context_provider), surface_handle,
           gpu_memory_buffer_manager_.get(), buffer_format);
 #else
@@ -204,32 +197,14 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
     } else {
 #if defined(OS_WIN)
-      const auto& capabilities = context_provider->ContextCapabilities();
-      const bool use_overlays_for_sw_protected_video =
-          base::FeatureList::IsEnabled(
-              features::kUseDCOverlaysForSoftwareProtectedVideo);
-      const bool use_overlays =
-          capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
-                                     use_overlays_for_sw_protected_video);
-      output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), use_overlays);
+      output_surface = std::make_unique<GLOutputSurface>(
+          std::move(context_provider), surface_handle);
 #elif defined(OS_ANDROID)
-      // When SurfaceControl is enabled, any resource backed by an
-      // AHardwareBuffer can be marked as an overlay candidate but it requires
-      // that we use a SurfaceControl backed GLSurface. If we're creating a
-      // native window backed GLSurface, the overlay processing code will
-      // incorrectly assume these resources can be overlayed. So we disable all
-      // overlay processing for this OutputSurface.
-      const bool allow_overlays =
-          task_executor_->gpu_feature_info()
-              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] !=
-          gpu::kGpuFeatureStatusEnabled;
-
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), allow_overlays);
+          std::move(context_provider), surface_handle);
 #else
-      output_surface =
-          std::make_unique<GLOutputSurface>(std::move(context_provider));
+      output_surface = std::make_unique<GLOutputSurface>(
+          std::move(context_provider), surface_handle);
 #endif
     }
   }

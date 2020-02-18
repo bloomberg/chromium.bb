@@ -4,7 +4,7 @@ require Exporter;
 require DynaLoader;
 @ISA = qw(Exporter DynaLoader);
 
-$VERSION = '0.14';
+$VERSION = '0.16';
 
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
@@ -215,5 +215,10 @@ The following additional constants are exported by request only:
 	ABOVE_NORMAL_PRIORITY_CLASS
 	BELOW_NORMAL_PRIORITY_CLASS
 	STILL_ACTIVE
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =cut

@@ -33,6 +33,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/use_counter_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
@@ -59,6 +61,7 @@
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
@@ -348,14 +351,23 @@ static void FailedAccessCheckCallbackInMainThread(v8::Local<v8::Object> holder,
                                         WrapperTypeInfo::Unwrap(data), holder);
 }
 
-static bool CodeGenerationCheckCallbackInMainThread(
+// Check whether Content Security Policy allows script execution.
+static bool ContentSecurityPolicyCodeGenerationCheck(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> source) {
   if (ExecutionContext* execution_context = ToExecutionContext(context)) {
     DCHECK(execution_context->IsDocument() ||
            execution_context->IsMainThreadWorkletGlobalScope());
+
+    v8::Context::Scope scope(context);
+
+    // Note this callback is only triggered for contexts which have eval
+    // disabled. Hence we don't need to handle the case of isolated world
+    // contexts with no CSP specified. (They should be exempt from the page CSP.
+    // See crbug.com/982388.)
+
     if (ContentSecurityPolicy* policy =
-            execution_context->GetContentSecurityPolicy()) {
+            execution_context->GetContentSecurityPolicyForWorld()) {
       v8::String::Value source_str(context->GetIsolate(), source);
       UChar snippet[ContentSecurityPolicy::kMaxSampleLength + 1];
       size_t len = std::min((sizeof(snippet) / sizeof(UChar)) - 1,
@@ -368,6 +380,53 @@ static bool CodeGenerationCheckCallbackInMainThread(
     }
   }
   return false;
+}
+
+static v8::MaybeLocal<v8::String> TrustedTypesCodeGenerationCheck(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value> source) {
+  ExceptionState exception_state(context->GetIsolate(),
+                                 ExceptionState::kExecutionContext, "eval", "");
+  StringOrTrustedScript string_or_trusted_script;
+  V8StringOrTrustedScript::ToImpl(
+      context->GetIsolate(), source, string_or_trusted_script,
+      UnionTypeConversionMode::kNotNullable, exception_state);
+
+  String modified_source = GetStringFromTrustedScript(
+      string_or_trusted_script, ToExecutionContext(context), exception_state);
+  if (exception_state.HadException()) {
+    exception_state.ClearException();
+    return v8::MaybeLocal<v8::String>();
+  }
+
+  return V8String(context->GetIsolate(), modified_source);
+}
+
+static v8::MaybeLocal<v8::String> CodeGenerationCheckCallbackInMainThread(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Value> source) {
+  bool allowed_by_csp =
+      source->IsString() && ContentSecurityPolicyCodeGenerationCheck(
+                                context, source.As<v8::String>());
+  // Without trusted types, we decide based on CSP.
+  if (!RequireTrustedTypesCheck(ToExecutionContext(context))) {
+    if (allowed_by_csp)
+      return source.As<v8::String>();
+    return v8::MaybeLocal<v8::String>();
+  }
+
+  // With Trusted Types, we pass when either CSP or TT allow the value.
+  // We will always run the TT check because of reporting, and because a
+  // default policy might want to modify the string.
+  v8::MaybeLocal<v8::String> trusted_types_string =
+      TrustedTypesCodeGenerationCheck(context, source);
+  if (allowed_by_csp || !trusted_types_string.IsEmpty()) {
+    if (trusted_types_string.IsEmpty()) {
+      return source.As<v8::String>();
+    }
+    return trusted_types_string;
+  }
+  return v8::MaybeLocal<v8::String>();
 }
 
 static bool WasmCodeGenerationCheckCallbackInMainThread(
@@ -546,10 +605,14 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
 }
 
 static void InitializeV8Common(v8::Isolate* isolate) {
+  // Set up garbage collection before setting up anything else as V8 may trigger
+  // GCs during Blink setup.
   isolate->AddGCPrologueCallback(V8GCController::GcPrologue);
   isolate->AddGCEpilogueCallback(V8GCController::GcEpilogue);
-  isolate->SetEmbedderHeapTracer(static_cast<v8::EmbedderHeapTracer*>(
-      V8PerIsolateData::From(isolate)->GetUnifiedHeapController()));
+  ThreadState::Current()->AttachToIsolate(
+      isolate, V8GCController::TraceDOMWrappers,
+      EmbedderGraphBuilder::BuildEmbedderGraphCallback);
+
   isolate->SetMicrotasksPolicy(v8::MicrotasksPolicy::kScoped);
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
@@ -633,8 +696,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   // over to Blink.
   DCHECK(ThreadState::MainThreadState());
 
-  ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
-      isolate, V8GCController::TraceDOMWrappers);
   InitializeV8Common(isolate);
 
   isolate->SetOOMErrorHandler(ReportOOMErrorInMainThread);
@@ -647,7 +708,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
           v8::Isolate::kMessageLog);
   isolate->SetFailedAccessCheckCallbackFunction(
       FailedAccessCheckCallbackInMainThread);
-  isolate->SetAllowCodeGenerationFromStringsCallback(
+  isolate->SetModifyCodeGenerationFromStringsCallback(
       CodeGenerationCheckCallbackInMainThread);
   isolate->SetAllowWasmCodeGenerationCallback(
       WasmCodeGenerationCheckCallbackInMainThread);
@@ -657,11 +718,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   }
 
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
-
-  if (v8::HeapProfiler* profiler = isolate->GetHeapProfiler()) {
-    profiler->AddBuildEmbedderGraphCallback(
-        &EmbedderGraphBuilder::BuildEmbedderGraphCallback, nullptr);
-  }
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
       std::make_unique<MainThreadDebugger>(isolate));
@@ -680,8 +736,6 @@ static void ReportFatalErrorInWorker(const char* location,
 static const int kWorkerMaxStackSize = 500 * 1024;
 
 void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
-  ThreadState::Current()->RegisterTraceDOMWrappers(
-      isolate, V8GCController::TraceDOMWrappers);
   InitializeV8Common(isolate);
 
   isolate->AddMessageListenerWithErrorLevel(

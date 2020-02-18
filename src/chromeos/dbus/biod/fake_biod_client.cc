@@ -97,7 +97,7 @@ void FakeBiodClient::SendAuthScanDone(const std::string& fingerprint,
   // more than five entries.
   for (const auto& entry : records_) {
     const std::unique_ptr<FakeRecord>& record = entry.second;
-    if (base::ContainsValue(record->fake_fingerprint, fingerprint)) {
+    if (base::Contains(record->fake_fingerprint, fingerprint)) {
       const std::string& user_id = record->user_id;
       matches[user_id].push_back(entry.first);
     }

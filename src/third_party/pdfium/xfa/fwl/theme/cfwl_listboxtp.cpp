@@ -7,15 +7,16 @@
 #include "xfa/fwl/theme/cfwl_listboxtp.h"
 
 #include "build/build_config.h"
+#include "core/fxge/render_defines.h"
 #include "xfa/fwl/cfwl_listbox.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_widget.h"
 #include "xfa/fxgraphics/cxfa_gecolor.h"
 #include "xfa/fxgraphics/cxfa_gepath.h"
 
-CFWL_ListBoxTP::CFWL_ListBoxTP() {}
+CFWL_ListBoxTP::CFWL_ListBoxTP() = default;
 
-CFWL_ListBoxTP::~CFWL_ListBoxTP() {}
+CFWL_ListBoxTP::~CFWL_ListBoxTP() = default;
 
 void CFWL_ListBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {

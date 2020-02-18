@@ -430,23 +430,22 @@ bool InlineTextBox::IsLineBreak() const {
 }
 
 bool InlineTextBox::NodeAtPoint(HitTestResult& result,
-                                const HitTestLocation& location_in_container,
-                                const LayoutPoint& accumulated_offset,
+                                const HitTestLocation& hit_test_location,
+                                const PhysicalOffset& accumulated_offset,
                                 LayoutUnit /* lineTop */,
                                 LayoutUnit /*lineBottom*/) {
   if (IsLineBreak() || truncation_ == kCFullTruncation)
     return false;
 
-  LayoutPoint box_origin = PhysicalLocation();
-  box_origin.MoveBy(accumulated_offset);
-  LayoutRect rect(box_origin, Size());
+  PhysicalOffset box_origin = PhysicalLocation();
+  box_origin += accumulated_offset;
+  PhysicalRect rect(box_origin, Size());
   if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      location_in_container.Intersects(rect)) {
+      hit_test_location.Intersects(rect)) {
     GetLineLayoutItem().UpdateHitTestResult(
-        result, FlipForWritingMode(location_in_container.Point() -
-                                   ToLayoutSize(accumulated_offset)));
+        result, hit_test_location.Point() - accumulated_offset);
     if (result.AddNodeToListBasedTestResult(GetLineLayoutItem().GetNode(),
-                                            location_in_container,
+                                            hit_test_location,
                                             rect) == kStopHitTesting)
       return true;
   }
@@ -711,7 +710,7 @@ void InlineTextBox::DumpBox(StringBuilder& string_inlinetextbox) const {
   while (string_inlinetextbox.length() < kLayoutObjectCharacterOffset)
     string_inlinetextbox.Append(' ');
   string_inlinetextbox.AppendFormat("(%d,%d) \"%s\"", Start(), Start() + Len(),
-                                    value.Utf8().data());
+                                    value.Utf8().c_str());
 }
 
 #endif

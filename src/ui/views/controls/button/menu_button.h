@@ -23,7 +23,7 @@ class MenuButtonListener;
 ////////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT MenuButton : public LabelButton {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(MenuButton);
 
   // How much padding to put on the left and right of the menu marker.
   static constexpr int kMenuMarkerPaddingLeft = 3;
@@ -40,12 +40,6 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   }
 
   bool Activate(const ui::Event* event);
-
-  // TODO(cyan): Remove this method and move into MenuButtonController.
-  virtual bool IsTriggerableEventType(const ui::Event& event);
-
-  // View:
-  const char* GetClassName() const override;
 
  protected:
   // Button:

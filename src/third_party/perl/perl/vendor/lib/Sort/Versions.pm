@@ -1,22 +1,19 @@
-#!/usr/bin/perl
-
-# $Id: Versions.pm,v 1.9 2003/08/24 22:58:14 ed Exp $
-
+package Sort::Versions;
+$Sort::Versions::VERSION = '1.62';
 # Copyright (c) 1996, Kenneth J. Albanowski. All rights reserved.  This
 # program is free software; you can redistribute it and/or modify it under
 # the same terms as Perl itself.
 
-package Sort::Versions;
-use vars '$VERSION';
-$VERSION = '1.5';
+use 5.006;
+use strict;
+use warnings;
 
 require Exporter;
-@ISA=qw(Exporter);
+our @ISA        = qw(Exporter);
+our @EXPORT     = qw(&versions &versioncmp);
+our @EXPORT_OK  = qw();
 
-@EXPORT=qw(&versions &versioncmp);
-@EXPORT_OK=qw();
-
-sub versioncmp( $$ ) {
+sub versioncmp ($$) {
     my @A = ($_[0] =~ /([-.]|\d+|[^-.\d]+)/g);
     my @B = ($_[1] =~ /([-.]|\d+|[^-.\d]+)/g);
 
@@ -51,13 +48,15 @@ sub versioncmp( $$ ) {
     @A <=> @B;
 }
 
-sub versions() {
+sub versions () {
     my $callerpkg = (caller)[0];
     my $caller_a = "${callerpkg}::a";
     my $caller_b = "${callerpkg}::b";
     no strict 'refs';
     return versioncmp($$caller_a, $$caller_b);
 }
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -72,9 +71,9 @@ Sort::Versions - a perl 5 module for sorting of revision-like numbers
 
 	use Sort::Versions;
 	print 'lower' if versioncmp('1.2', '1.2a') == -1;
-	
+
 	...
-	
+
 	use Sort::Versions;
 	%h = (1 => 'd', 2 => 'c', 3 => 'b', 4 => 'a');
 	@h = sort { versioncmp($h{$a}, $h{$b}) } keys %h;
@@ -88,7 +87,7 @@ shared libraries. It can also be applied to applications that intersperse
 variable-width numeric fields within text. Other applications can
 undoubtedly be found.
 
-For an explanation of the algorithm, itE<39>s simplest to look at these examples:
+For an explanation of the algorithm, it's simplest to look at these examples:
 
   1.1   <  1.2
   1.1a  <  1.2
@@ -134,16 +133,28 @@ With perl 5.6 or later, you can also use this function directly in sorting:
 The function C<versions()> can be used directly as a sort function even on
 perl 5.005 and earlier, but its use is deprecated.
 
+=head1 SEE ALSO
+
+L<version>, L<CPAN::Version> which is part of the L<CPAN> distribution.
+
+
+=head1 REPOSITORY
+
+L<https://github.com/neilb/Sort-Versions>
+
 =head1 AUTHOR
 
 Ed Avis <ed@membled.com> and Matt Johnson <mwj99@doc.ic.ac.uk> for
 recent releases; the original author is Kenneth J. Albanowski
-<kjahds@kjahds.com>.  Thanks to Hack Kampbjørn and Slaven Rezic for
+<kjahds@kjahds.com>.  Thanks to Hack KampbjÃ¸rn and Slaven Rezic for
 patches and bug reports.
 
-Copyright (c) 1996, Kenneth J. Albanowski. All rights reserved.  This
-program is free software; you can redistribute it and/or modify it under the
-same terms as Perl itself.
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 1996 by Kenneth J. Albanowski.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
 

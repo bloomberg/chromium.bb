@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/css/selector_filter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -55,6 +56,7 @@ class StyleRuleUsageTracker;
 class PropertyHandle;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
+enum ApplyMask { kApplyMaskRegular = 1 << 0, kApplyMaskVisited = 1 << 1 };
 
 // This class selects a ComputedStyle for a given element in a document based on
 // the document's collection of stylesheets (user styles, author styles, UA
@@ -88,8 +90,8 @@ class CORE_EXPORT StyleResolver final
       const ComputedStyle* parent_style,
       const ComputedStyle* layout_parent_style);
 
-  scoped_refptr<ComputedStyle> StyleForPage(int page_index);
-  scoped_refptr<ComputedStyle> StyleForText(Text*);
+  scoped_refptr<const ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<const ComputedStyle> StyleForText(Text*);
 
   static scoped_refptr<ComputedStyle> StyleForViewport(Document&);
 
@@ -120,7 +122,7 @@ class CORE_EXPORT StyleResolver final
       unsigned rules_to_include = kAllButEmptyCSSRules);
   StyleRuleList* StyleRulesForElement(Element*, unsigned rules_to_include);
 
-  void ComputeFont(ComputedStyle*, const CSSPropertyValueSet&);
+  void ComputeFont(Element&, ComputedStyle*, const CSSPropertyValueSet&);
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
   void InvalidateMatchedPropertiesCache();
@@ -233,9 +235,30 @@ class CORE_EXPORT StyleResolver final
                                           const CacheSuccess&,
                                           bool& apply_inherited_only,
                                           NeedsApplyPass&);
+  void ApplyMatchedLowPriorityProperties(StyleResolverState&,
+                                         const MatchResult&,
+                                         const CacheSuccess&,
+                                         bool& apply_inherited_only,
+                                         NeedsApplyPass&);
   void ApplyMatchedProperties(StyleResolverState&,
                               const MatchResult&,
                               const Element* animating_element);
+
+  void CascadeAndApplyMatchedProperties(StyleResolverState&,
+                                        const MatchResult&,
+                                        const Element* animating_element);
+  void CascadeMatchResult(StyleResolverState&,
+                          StyleCascade&,
+                          const MatchResult&);
+  void CascadeRange(StyleResolverState&,
+                    StyleCascade&,
+                    const MatchedPropertiesRange&,
+                    StyleCascade::Origin);
+  void CascadeTransitions(StyleResolverState&, StyleCascade&);
+  void CascadeAnimations(StyleResolverState&, StyleCascade&);
+  void CascadeInterpolations(StyleCascade&,
+                             const ActiveInterpolationsMap&,
+                             StyleCascade::Origin);
 
   void CalculateAnimationUpdate(StyleResolverState&,
                                 const Element* animating_element);
@@ -256,7 +279,8 @@ class CORE_EXPORT StyleResolver final
                        bool is_important,
                        bool inherited_only,
                        NeedsApplyPass&,
-                       ValidPropertyFilter = ValidPropertyFilter::kNoFilter);
+                       ValidPropertyFilter,
+                       unsigned apply_mask);
   template <CSSPropertyPriority priority>
   void ApplyAnimatedStandardProperties(StyleResolverState&,
                                        const ActiveInterpolationsMap&);
@@ -264,7 +288,8 @@ class CORE_EXPORT StyleResolver final
   void ApplyAllProperty(StyleResolverState&,
                         const CSSValue&,
                         bool inherited_only,
-                        ValidPropertyFilter);
+                        ValidPropertyFilter,
+                        unsigned apply_mask);
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,

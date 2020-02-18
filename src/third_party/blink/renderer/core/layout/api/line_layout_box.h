@@ -29,6 +29,9 @@ class LineLayoutBox : public LineLayoutBoxModel {
   LineLayoutBox() = default;
 
   LayoutPoint Location() const { return ToBox()->Location(); }
+  PhysicalOffset PhysicalLocation() const {
+    return ToBox()->PhysicalLocation();
+  }
 
   LayoutSize Size() const { return ToBox()->Size(); }
 
@@ -50,12 +53,6 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   LayoutPoint FlipForWritingMode(const LayoutPoint& point) const {
     return ToBox()->DeprecatedFlipForWritingMode(point);
-  }
-
-  LayoutPoint FlipForWritingModeForChild(const LineLayoutBox& child,
-                                         LayoutPoint child_point) const {
-    return ToBox()->FlipForWritingModeForChild(
-        ToLayoutBox(child.GetLayoutObject()), child_point);
   }
 
   void MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
@@ -81,7 +78,7 @@ class LineLayoutBox : public LineLayoutBoxModel {
 
   void SetSize(const LayoutSize& size) { return ToBox()->SetSize(size); }
 
-  IntSize ScrolledContentOffset() const {
+  LayoutSize ScrolledContentOffset() const {
     return ToBox()->ScrolledContentOffset();
   }
 

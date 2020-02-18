@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -68,6 +68,6 @@ class ShutdownClientApp : public Service,
 }  // namespace service_manager
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   service_manager::ShutdownClientApp(std::move(request)).RunUntilTermination();
 }

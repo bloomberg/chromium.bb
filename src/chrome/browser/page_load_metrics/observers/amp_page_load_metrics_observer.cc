@@ -34,18 +34,18 @@ const char kHistogramAMPSubframeFirstContentfulPaint[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe";
 const char kHistogramAMPSubframeFirstContentfulPaintFullNavigation[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLargestContentPaint[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe";
-const char kHistogramAMPSubframeLargestContentPaintFullNavigation[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLargestContentfulPaint[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe";
+const char kHistogramAMPSubframeLargestContentfulPaintFullNavigation[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe.FullNavigation";
 const char kHistogramAMPSubframeFirstInputDelay[] =
-    "InteractiveTiming.FirstInputDelay3.Subframe";
+    "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
-    "InteractiveTiming.FirstInputDelay3.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLayoutStabilityJankScore[] =
-    "Experimental.LayoutStability.JankScore.Subframe";
-const char kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation[] =
-    "Experimental.LayoutStability.JankScore.Subframe.FullNavigation";
+    "InteractiveTiming.FirstInputDelay4.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScore[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe.FullNavigation";
 
 GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
   if (!url.has_ref())
@@ -191,7 +191,9 @@ void AMPPageLoadMetricsObserver::OnSubFrameRenderDataUpdate(
   if (it == amp_subframe_info_.end())
     return;
 
-  it->second.render_data.layout_jank_score += render_data.layout_jank_delta;
+  it->second.render_data.layout_shift_score += render_data.layout_shift_delta;
+  it->second.render_data.layout_shift_score_before_input_or_scroll +=
+      render_data.layout_shift_delta_before_input_or_scroll;
 }
 
 void AMPPageLoadMetricsObserver::OnComplete(
@@ -227,6 +229,8 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* subframe_rfh,
     int behavior_flags,
     const page_load_metrics::PageLoadExtraInfo& info) {
+  RecordLoadingBehaviorObserved(info);
+
   if (subframe_rfh == nullptr)
     return;
 
@@ -253,6 +257,31 @@ void AMPPageLoadMetricsObserver::OnLoadingBehaviorObserved(
       subframe_info.viewer_url == current_main_frame_nav_info_->url) {
     current_main_frame_nav_info_->subframe_rfh = subframe_rfh;
   }
+}
+
+void AMPPageLoadMetricsObserver::RecordLoadingBehaviorObserved(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  ukm::builders::AmpPageLoad builder(info.source_id);
+  bool should_record = false;
+  if (!observed_amp_main_frame_ &&
+      (info.main_frame_metadata.behavior_flags &
+       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
+          0) {
+    builder.SetMainFrameAmpPageLoad(true);
+    observed_amp_main_frame_ = true;
+    should_record = true;
+  }
+
+  if (!observed_amp_sub_frame_ &&
+      (info.subframe_metadata.behavior_flags &
+       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded) !=
+          0) {
+    builder.SetSubFrameAmpPageLoad(true);
+    observed_amp_sub_frame_ = true;
+    should_record = true;
+  }
+  if (should_record)
+    builder.Record(ukm::UkmRecorder::Get());
 }
 
 void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
@@ -345,7 +374,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     if (AssignTimeAndSizeForLargestContentfulPaint(
             subframe_info.timing->paint_timing, &largest_content_paint_time,
             &largest_content_paint_size, &largest_content_type)) {
-      builder.SetSubFrame_PaintTiming_NavigationToLargestContentPaint(
+      builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint(
           largest_content_paint_time.value().InMilliseconds());
 
       // Adjust by the navigation_input_delta.
@@ -354,19 +383,20 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       if (current_main_frame_nav_info_->is_same_document_navigation) {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaint),
+                .append(kHistogramAMPSubframeLargestContentfulPaint),
             largest_content_paint_time.value());
       } else {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaintFullNavigation),
+                .append(
+                    kHistogramAMPSubframeLargestContentfulPaintFullNavigation),
             largest_content_paint_time.value());
       }
     }
 
     if (subframe_info.timing->interactive_timing->first_input_delay
             .has_value()) {
-      builder.SetSubFrame_InteractiveTiming_FirstInputDelay3(
+      builder.SetSubFrame_InteractiveTiming_FirstInputDelay4(
           subframe_info.timing->interactive_timing->first_input_delay.value()
               .InMilliseconds());
 
@@ -389,26 +419,33 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   }
 
   // Clamp the score to a max of 10, which is equivalent to a frame with 10
-  // full-frame janks.
-  float clamped_jank_score =
-      std::min(subframe_info.render_data.layout_jank_score, 10.0f);
+  // full-frame layout shifts.
+  float clamped_shift_score =
+      std::min(subframe_info.render_data.layout_shift_score, 10.0f);
+  float clamped_shift_score_before_input_or_scroll = std::min(
+      subframe_info.render_data.layout_shift_score_before_input_or_scroll,
+      10.0f);
 
-  // For UKM, report (jank_score * 100) as an int in the range [0, 1000].
-  builder.SetSubFrame_LayoutStability_JankScore(
-      static_cast<int>(roundf(clamped_jank_score * 100.0f)));
+  // For UKM, report (shift_score * 100) as an int in the range [0, 1000].
+  builder
+      .SetSubFrame_LayoutInstability_CumulativeShiftScore(
+          static_cast<int>(roundf(clamped_shift_score * 100.0f)))
+      .SetSubFrame_LayoutInstability_CumulativeShiftScore_BeforeInputOrScroll(
+          static_cast<int>(
+              roundf(clamped_shift_score_before_input_or_scroll * 100.0f)));
 
-  // For UMA, report (jank_score * 10) an an int in the range [0,100].
-  int32_t uma_value = static_cast<int>(roundf(clamped_jank_score * 10.0f));
+  // For UMA, report (shift_score * 10) an an int in the range [0,100].
+  int32_t uma_value = static_cast<int>(roundf(clamped_shift_score * 10.0f));
   if (current_main_frame_nav_info_->is_same_document_navigation) {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
-            .append(kHistogramAMPSubframeLayoutStabilityJankScore),
+            .append(kHistogramAMPSubframeLayoutInstabilityShiftScore),
         uma_value);
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
-                kHistogramAMPSubframeLayoutStabilityJankScoreFullNavigation),
+                kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation),
         uma_value);
   }
 

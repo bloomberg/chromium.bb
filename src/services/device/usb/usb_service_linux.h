@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -34,13 +35,7 @@ class UsbServiceLinux final : public UsbService {
   class BlockingTaskRunnerHelper;
 
   void OnDeviceAdded(const std::string& device_path,
-                     const UsbDeviceDescriptor& descriptor,
-                     const std::string& manufacturer,
-                     const std::string& product,
-                     const std::string& serial_number,
-                     uint8_t active_configuration,
-                     uint32_t bus_number,
-                     uint32_t port_number);
+                     std::unique_ptr<UsbDeviceDescriptor> descriptor);
   void DeviceReady(scoped_refptr<UsbDeviceLinux> device, bool success);
   void OnDeviceRemoved(const std::string& device_path);
   void HelperStarted();
@@ -62,7 +57,7 @@ class UsbServiceLinux final : public UsbService {
   std::unique_ptr<BlockingTaskRunnerHelper, base::OnTaskRunnerDeleter> helper_;
   DeviceMap devices_by_path_;
 
-  base::WeakPtrFactory<UsbServiceLinux> weak_factory_;
+  base::WeakPtrFactory<UsbServiceLinux> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbServiceLinux);
 };

@@ -9,15 +9,18 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_app_registrar.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -39,14 +42,14 @@ const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
 const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
 const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
-InstallOptions GetWindowedInstallOptions() {
-  InstallOptions options(kAppUrl1, LaunchContainer::kWindow,
-                         InstallSource::kSystemInstalled);
+ExternalInstallOptions GetWindowedInstallOptions() {
+  ExternalInstallOptions options(kAppUrl1, LaunchContainer::kWindow,
+                                 ExternalInstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
   options.bypass_service_worker_check = true;
-  options.always_update = true;
+  options.force_reinstall = true;
   return options;
 }
 
@@ -54,42 +57,45 @@ InstallOptions GetWindowedInstallOptions() {
 
 class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  SystemWebAppManagerTest()
-      : test_web_app_provider_creator_(
-            base::BindOnce(&SystemWebAppManagerTest::CreateWebAppProvider,
-                           base::Unretained(this))) {
+  SystemWebAppManagerTest() {
     scoped_feature_list_.InitWithFeatures({features::kSystemWebApps}, {});
   }
 
   ~SystemWebAppManagerTest() override = default;
 
-  std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile) {
-    auto provider = std::make_unique<TestWebAppProvider>(profile);
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
 
-    auto test_pending_app_manager = std::make_unique<TestPendingAppManager>();
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+
+    auto test_app_registrar = std::make_unique<TestAppRegistrar>();
+    test_app_registrar_ = test_app_registrar.get();
+    provider->SetRegistrar(std::move(test_app_registrar));
+
+    auto test_pending_app_manager =
+        std::make_unique<TestPendingAppManager>(test_app_registrar_);
     test_pending_app_manager_ = test_pending_app_manager.get();
     provider->SetPendingAppManager(std::move(test_pending_app_manager));
 
-    auto system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
-        profile, test_pending_app_manager_);
+    auto system_web_app_manager =
+        std::make_unique<TestSystemWebAppManager>(profile());
     system_web_app_manager_ = system_web_app_manager.get();
     provider->SetSystemWebAppManager(std::move(system_web_app_manager));
 
-    return provider;
+    auto ui_manager = std::make_unique<TestWebAppUiManager>();
+    ui_manager_ = ui_manager.get();
+    provider->SetWebAppUiManager(std::move(ui_manager));
+
+    provider->Start();
   }
 
-  void SimulatePreviouslyInstalledApp(
-      GURL url,
-      InstallSource install_source) {
-    std::string id =
-        crx_file::id_util::GenerateId("fake_app_id_for:" + url.spec());
-    extensions::ExtensionRegistry::Get(profile())->AddEnabled(
-        extensions::ExtensionBuilder("Dummy Name").SetID(id).Build());
-
-    ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
-        .Insert(url, id, install_source);
-
+  void SimulatePreviouslyInstalledApp(GURL url,
+                                      ExternalInstallSource install_source) {
     pending_app_manager()->SimulatePreviouslyInstalledApp(url, install_source);
+  }
+
+  bool IsInstalled(const GURL& install_url) {
+    return test_app_registrar_->LookupExternalAppId(install_url).has_value();
   }
 
  protected:
@@ -101,11 +107,14 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     return system_web_app_manager_;
   }
 
+  TestWebAppUiManager* ui_manager() { return ui_manager_; }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestWebAppProviderCreator test_web_app_provider_creator_;
+  TestAppRegistrar* test_app_registrar_ = nullptr;
   TestPendingAppManager* test_pending_app_manager_ = nullptr;
   TestSystemWebAppManager* system_web_app_manager_ = nullptr;
+  TestWebAppUiManager* ui_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerTest);
 };
@@ -115,10 +124,11 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl1,
+                                 ExternalInstallSource::kSystemInstalled);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -135,9 +145,9 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -151,11 +161,14 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
 TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(kAppUrl1, InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl2, InstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl3, InstallSource::kInternal);
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  SimulatePreviouslyInstalledApp(kAppUrl1,
+                                 ExternalInstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl2,
+                                 ExternalInstallSource::kSystemInstalled);
+  SimulatePreviouslyInstalledApp(kAppUrl3,
+                                 ExternalInstallSource::kInternalDefault);
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -163,7 +176,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the System App list.
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
   EXPECT_EQ(pending_app_manager()->install_requests(),
             expected_install_options_list);
@@ -178,8 +191,8 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -190,7 +203,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
 
@@ -216,35 +229,49 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager()->install_requests();
+
   system_web_app_manager()->SetUpdatePolicy(
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] = kAppUrl1;
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
   system_web_app_manager()->SetSystemApps(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
   system_web_app_manager()->Start();
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
-  // Create another app. The version hasn't changed so the install won't
-  // process.
-  system_apps[SystemAppType::DISCOVER] = kAppUrl2;
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].force_reinstall);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+
+  // Create another app. The version hasn't changed, but we should immediately
+  // install anyway, as if a user flipped a chrome://flag. The first app won't
+  // force reinstall.
+  system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
   system_web_app_manager()->SetSystemApps(system_apps);
   system_web_app_manager()->Start();
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, pending_app_manager()->install_requests().size());
 
-  // Bump the version number, and the install will trigger, and request
-  // installation of both apps.
+  EXPECT_EQ(3u, install_requests.size());
+  EXPECT_FALSE(install_requests[1].force_reinstall);
+  EXPECT_FALSE(install_requests[2].force_reinstall);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation of both apps.
   system_web_app_manager()->set_current_version(base::Version("2.0.0.0"));
   system_web_app_manager()->Start();
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(3u, pending_app_manager()->install_requests().size());
+
+  EXPECT_EQ(5u, install_requests.size());
+  EXPECT_TRUE(install_requests[3].force_reinstall);
+  EXPECT_TRUE(install_requests[4].force_reinstall);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
 
   {
     // Disabling System Web Apps uninstalls even without a version change.
@@ -252,16 +279,72 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
     system_web_app_manager()->Start();
-
     base::RunLoop().RunUntilIdle();
+
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
+    EXPECT_FALSE(IsInstalled(kAppUrl1));
+    EXPECT_FALSE(IsInstalled(kAppUrl2));
   }
 
   // Re-enabling System Web Apps installs even without a version change.
   system_web_app_manager()->Start();
-
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(5u, pending_app_manager()->install_requests().size());
+
+  EXPECT_EQ(7u, install_requests.size());
+  EXPECT_FALSE(install_requests[5].force_reinstall);
+  EXPECT_FALSE(install_requests[6].force_reinstall);
+  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+
+  // Changing the install URL of a system app propagates even without a version
+  // change.
+  system_apps[SystemAppType::SETTINGS] = {kAppUrl3};
+  system_web_app_manager()->SetSystemApps(system_apps);
+  system_web_app_manager()->Start();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(9u, install_requests.size());
+  EXPECT_FALSE(install_requests[7].force_reinstall);
+  EXPECT_FALSE(install_requests[8].force_reinstall);
+  EXPECT_FALSE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(kAppUrl2));
+  EXPECT_TRUE(IsInstalled(kAppUrl3));
+}
+
+TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
+  base::HistogramTester histograms;
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+    system_web_app_manager()->SetSystemApps(system_apps);
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 0);
+    system_web_app_manager()->Start();
+    base::RunLoop().RunUntilIdle();
+
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 1);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kSuccess, 1);
+  }
+  {
+    base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+    system_apps[SystemAppType::SETTINGS] = {kAppUrl1};
+    system_apps[SystemAppType::DISCOVER] = {kAppUrl2};
+    system_web_app_manager()->SetSystemApps(system_apps);
+    pending_app_manager()->SetInstallResultCode(
+        InstallResultCode::kInstallManagerDestroyed);
+
+    system_web_app_manager()->Start();
+    base::RunLoop().RunUntilIdle();
+    histograms.ExpectTotalCount(
+        SystemWebAppManager::kInstallResultHistogramName, 3);
+    histograms.ExpectBucketCount(
+        SystemWebAppManager::kInstallResultHistogramName,
+        InstallResultCode::kInstallManagerDestroyed, 2);
+  }
 }
 
 }  // namespace web_app

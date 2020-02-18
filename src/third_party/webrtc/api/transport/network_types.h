@@ -11,6 +11,7 @@
 #ifndef API_TRANSPORT_NETWORK_TYPES_H_
 #define API_TRANSPORT_NETWORK_TYPES_H_
 #include <stdint.h>
+
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -102,6 +103,7 @@ struct SentPacket {
 };
 
 struct ReceivedPacket {
+  Timestamp send_time = Timestamp::MinusInfinity();
   Timestamp receive_time = Timestamp::PlusInfinity();
   DataSize size = DataSize::Zero();
 };
@@ -130,6 +132,11 @@ struct TransportLossReport {
 // Packet level feedback
 
 struct PacketResult {
+  class ReceiveTimeOrder {
+   public:
+    bool operator()(const PacketResult& lhs, const PacketResult& rhs);
+  };
+
   PacketResult();
   PacketResult(const PacketResult&);
   ~PacketResult();
@@ -155,6 +162,7 @@ struct TransportPacketsFeedback {
   std::vector<PacketResult> ReceivedWithSendInfo() const;
   std::vector<PacketResult> LostWithSendInfo() const;
   std::vector<PacketResult> PacketsWithFeedback() const;
+  std::vector<PacketResult> SortedByReceiveTime() const;
 };
 
 // Network estimation
@@ -220,18 +228,31 @@ struct ProcessInterval {
 
 // Under development, subject to change without notice.
 struct NetworkStateEstimate {
-  Timestamp last_feed_time = Timestamp::MinusInfinity();
+  double confidence = NAN;
+  // The time the estimate was received/calculated.
+  Timestamp update_time = Timestamp::MinusInfinity();
+  Timestamp last_receive_time = Timestamp::MinusInfinity();
   Timestamp last_send_time = Timestamp::MinusInfinity();
-  TimeDelta time_delta = TimeDelta::MinusInfinity();
+
+  // Total estimated link capacity.
   DataRate link_capacity = DataRate::MinusInfinity();
-  DataRate link_capacity_std_dev = DataRate::MinusInfinity();
-  DataRate link_capacity_min = DataRate::MinusInfinity();
-  double cross_traffic_ratio = NAN;
+  // Used as a safe measure of available capacity.
+  DataRate link_capacity_lower = DataRate::MinusInfinity();
+  // Used as limit for increasing bitrate.
+  DataRate link_capacity_upper = DataRate::MinusInfinity();
+
   TimeDelta pre_link_buffer_delay = TimeDelta::MinusInfinity();
   TimeDelta post_link_buffer_delay = TimeDelta::MinusInfinity();
   TimeDelta propagation_delay = TimeDelta::MinusInfinity();
+
+  // Only for debugging
+  TimeDelta time_delta = TimeDelta::MinusInfinity();
+  Timestamp last_feed_time = Timestamp::MinusInfinity();
   double cross_delay_rate = NAN;
   double spike_delay_rate = NAN;
+  DataRate link_capacity_std_dev = DataRate::MinusInfinity();
+  DataRate link_capacity_min = DataRate::MinusInfinity();
+  double cross_traffic_ratio = NAN;
 };
 }  // namespace webrtc
 

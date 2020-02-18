@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
+import copy
 
 from .extended_attribute import ExtendedAttributes
 from .exposure import Exposure
@@ -16,6 +16,7 @@ class WithIdentifier(object):
     identifier."""
 
     def __init__(self, identifier):
+        assert isinstance(identifier, Identifier)
         self._identifier = identifier
 
     @property
@@ -33,6 +34,8 @@ class WithExtendedAttributes(object):
     class can have extended attributes."""
 
     def __init__(self, extended_attributes=None):
+        assert (extended_attributes is None
+                or isinstance(extended_attributes, ExtendedAttributes))
         self._extended_attributes = extended_attributes or ExtendedAttributes()
 
     @property
@@ -44,7 +47,9 @@ class WithExtendedAttributes(object):
         return self._extended_attributes
 
 
-CodeGeneratorInfo = dict
+class CodeGeneratorInfo(dict):
+    def make_copy(self):
+        return copy.deepcopy(self)
 
 
 class WithCodeGeneratorInfo(object):
@@ -52,6 +57,8 @@ class WithCodeGeneratorInfo(object):
     provide some information for code generators."""
 
     def __init__(self, code_generator_info=None):
+        assert (code_generator_info is None
+                or isinstance(code_generator_info, CodeGeneratorInfo))
         self._code_generator_info = code_generator_info or CodeGeneratorInfo()
 
     @property
@@ -87,18 +94,32 @@ Component = str
 
 
 class WithComponent(object):
-    """WithComponent class is an interface to show which components this
-    object belongs to."""
+    """
+    Implements |components| which is a Blink-specific layering concept of
+    components, such as 'core' and 'modules'.
 
-    # The order of |_COMPONENTS| shows the order of their dependencies.
-    # DO NOT change the order.
-    _COMPONENTS = (
-        'core',
-        'modules',
-    )
+    A single IDL definition such as 'interface' may consist from multiple IDL
+    fragments like partial interfaces and mixins, which may exist across
+    Blink components.  |components| is a list of Blink components of IDL
+    fragments that are involved into this object.
+    """
 
-    def __init__(self, components):
-        self._components = components
+    def __init__(self, component=None, components=None):
+        """
+        Args:
+            component:
+            components: Either of |component| or |components| must be given.
+        """
+        assert component is None or isinstance(component, Component)
+        assert components is None or (isinstance(components, (list, tuple))
+                                      and all(
+                                          isinstance(component, Component)
+                                          for component in components))
+        assert (component or components) and not (component and components)
+        if components:
+            self._components = list(components)
+        else:
+            self._components = [component]
 
     @property
     def components(self):
@@ -106,30 +127,99 @@ class WithComponent(object):
         Returns a list of components' names where this definition is defined
         @return tuple(Component)
         """
-        return self._components
+        return tuple(self._components)
+
+    def add_components(self, components):
+        assert isinstance(components, (list, tuple)) and all(
+            isinstance(component, Component) for component in components)
+        for component in components:
+            if component not in self.components:
+                self._components.append(component)
+
+
+class Location(object):
+    def __init__(self, filepath=None, line_number=None, position=None):
+        assert filepath is None or isinstance(filepath, str)
+        assert line_number is None or isinstance(line_number, int)
+        assert position is None or isinstance(position, int)
+        self._filepath = filepath
+        self._line_number = line_number
+        self._position = position  # Position number in a file
+
+    def __str__(self):
+        text = '{}'.format(self._filepath or '<<unknown path>>')
+        if self._line_number:
+            text += ':{}'.format(self._line_number)
+        return text
+
+    def make_copy(self):
+        return Location(
+            filepath=self._filepath,
+            line_number=self._line_number,
+            position=self._position)
+
+    @property
+    def filepath(self):
+        return self._filepath
+
+    @property
+    def line_number(self):
+        return self._line_number
+
+    @property
+    def position_in_file(self):
+        return self._position
 
 
 class DebugInfo(object):
-    """DebugInfo provides some information for debugging."""
+    """Provides information useful for debugging."""
 
-    def __init__(self, filepaths):
-        self._filepaths = tuple(filepaths)
+    def __init__(self, location=None, locations=None):
+        assert location is None or isinstance(location, Location)
+        assert locations is None or (isinstance(locations, (list, tuple))
+                                     and all(
+                                         isinstance(location, Location)
+                                         for location in locations))
+        assert not (location and locations)
+        # The first entry is the primary location, e.g. location of non-partial
+        # interface.  The rest is secondary locations, e.g. location of partial
+        # interfaces and mixins.
+        if locations:
+            self._locations = locations
+        else:
+            self._locations = [location or Location()]
+
+    def make_copy(self):
+        return DebugInfo(locations=map(Location.make_copy, self._locations))
 
     @property
-    def filepaths(self):
+    def location(self):
         """
-        Returns a list of filepaths where this IDL definition comes from.
-        @return tuple(FilePath)
+        Returns the primary location, i.e. location of the main definition.
         """
-        return self._filepaths
+        return self._locations[0]
+
+    @property
+    def all_locations(self):
+        """
+        Returns a list of locations of all related IDL definitions, including
+        partial definitions and mixins.
+        """
+        return tuple(self._locations)
+
+    def add_locations(self, locations):
+        assert isinstance(locations, (list, tuple)) and all(
+            isinstance(location, Location) for location in locations)
+        self._locations.extend(locations)
 
 
 class WithDebugInfo(object):
-    """WithDebugInfo class is an interface that its inheritances can have DebugInfo."""
+    """WithDebugInfo class is an interface that its inheritances can have
+    DebugInfo."""
 
     def __init__(self, debug_info=None):
-        self._debug_info = debug_info or DebugInfo(
-            filepaths=('<<unspecified>>', ))
+        assert debug_info is None or isinstance(debug_info, DebugInfo)
+        self._debug_info = debug_info or DebugInfo()
 
     @property
     def debug_info(self):
@@ -144,6 +234,7 @@ class WithOwner(object):
     it points a function like object."""
 
     def __init__(self, owner):
+        assert isinstance(owner, object)  # None is okay
         self._owner = owner
 
     @property

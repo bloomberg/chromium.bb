@@ -10,8 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "osp_base/error.h"
+#include "absl/strings/string_view.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace mdns {
@@ -63,9 +64,7 @@ struct DomainName {
   bool IsEmpty() const { return domain_name_.size() == 1 && !domain_name_[0]; }
 
   Error Append(const DomainName& after);
-  // TODO: If there's significant use of this, we would rather have string_span
-  // or similar for this so we could use iterators for zero-copy.
-  std::vector<std::string> GetLabels() const;
+  std::vector<absl::string_view> GetLabels() const;
 
   const std::vector<uint8_t>& domain_name() const { return domain_name_; }
 

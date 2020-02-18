@@ -8,6 +8,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "mojo/core/embedder/embedder.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -60,6 +61,8 @@ void ShellDialogsTestSuite::Shutdown() {
 
 int main(int argc, char** argv) {
   ShellDialogsTestSuite test_suite(argc, argv);
+
+  mojo::core::Init();
 
   return base::LaunchUnitTests(argc, argv,
                                base::BindOnce(&ShellDialogsTestSuite::Run,

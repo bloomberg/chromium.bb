@@ -42,6 +42,7 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   views::View* GetFolderNameViewForTest() const;
 

@@ -83,8 +83,6 @@ def dm_flags(api, bot):
   # These bots run out of memory easily.
   if 'Chromecast' in bot or 'MotoG4' in bot or 'Nexus7' in bot:
     thread_limit = MAIN_THREAD_ONLY
-  if 'NexusPlayer' in bot:
-    thread_limit = 2
 
   # Avoid issues with dynamically exceeding resource cache limits.
   if 'Test' in bot and 'DISCARDABLE' in bot:
@@ -97,8 +95,7 @@ def dm_flags(api, bot):
   # SIGINT, in an effort to free up resources. If requested, that signal
   # is ignored and dm will keep attempting to proceed until we actually
   # exhaust the available resources.
-  if ('NexusPlayer' in bot or
-      'Chromecast' in bot):
+  if 'Chromecast' in bot:
     args.append('--ignoreSigInt')
 
   if 'SwiftShader' in api.vars.extra_tokens:
@@ -130,7 +127,9 @@ def dm_flags(api, bot):
       if 'NVIDIA_Shield' not in bot:
         gl_prefix = 'gles'
     elif 'Intel' in bot:
-      sample_count = ''
+      # We don't want to test MSAA on older Intel chipsets. These are all newer (Gen9).
+      if 'Iris655' not in bot and 'Iris640' not in bot and 'Iris540' not in bot:
+        sample_count = ''
     elif 'ChromeOS' in bot:
       gl_prefix = 'gles'
 
@@ -143,10 +142,8 @@ def dm_flags(api, bot):
       if sample_count:
         configs.append(gl_prefix + 'msaa' + sample_count)
 
-    # The NP produces a long error stream when we run with MSAA. The Tegra3 just
-    # doesn't support it.
-    if ('NexusPlayer' in bot or
-        'Tegra3'      in bot or
+    # The Tegra3 doesn't support MSAA
+    if ('Tegra3'      in bot or
         # We aren't interested in fixing msaa bugs on current iOS devices.
         'iPad4' in bot or
         'iPadPro' in bot or
@@ -156,10 +153,6 @@ def dm_flags(api, bot):
         'IntelHD530'   in bot or
         'IntelIris540' in bot):
       configs = [x for x in configs if 'msaa' not in x]
-
-    # The NP produces different images for dft on every run.
-    if 'NexusPlayer' in bot:
-      configs = [x for x in configs if 'dft' not in x]
 
     # We want to test both the OpenGL config and the GLES config on Linux Intel:
     # GL is used by Chrome, GLES is used by ChromeOS.
@@ -222,10 +215,13 @@ def dm_flags(api, bot):
       blacklist('_ test _ GLPrograms')
       blacklist('_ test _ ProcessorOptimizationValidationTest')
 
+    if 'CommandBuffer' in bot and 'MacBook10.1-' in bot:
+      # skbug.com/9235
+      blacklist('_ test _ GLPrograms')
+
     # skbug.com/9033 - these devices run out of memory on this test
     # when opList splitting reduction is enabled
     if 'GPU' in bot and ('Nexus7' in bot or
-                         'NexusPlayer' in bot or
                          'NVIDIA_Shield' in bot or
                          'Nexus5x' in bot or
                          ('Win10' in bot and 'GTX660' in bot and 'Vulkan' in bot) or
@@ -250,7 +246,7 @@ def dm_flags(api, bot):
 
     if 'Vulkan' in bot:
       configs = ['vk']
-      if 'Android' in bot or 'iOS' in bot:
+      if 'Android' in bot:
         configs.append('vkmsaa4')
       else:
         # skbug.com/9023
@@ -259,6 +255,12 @@ def dm_flags(api, bot):
 
     if 'Metal' in bot:
       configs = ['mtl']
+      if 'iOS' in bot:
+        configs.append('mtlmsaa4')
+      else:
+        # We don't want to test MSAA on older (pre-Gen9) Intel chipsets.
+        if 'IntelHD6000' not in bot:
+          configs.append('mtlmsaa8')
 
     # Test 1010102 on our Linux/NVIDIA bots and the persistent cache config
     # on the GL bots.
@@ -298,17 +300,22 @@ def dm_flags(api, bot):
       configs = [c for c in configs if c == 'gl' or c == 'gles']
       args.extend(['--pr', 'ccpr', '--cc', 'true', '--cachePathMasks', 'false'])
 
+    # Test non-nvpr on NVIDIA.
+    if 'NonNVPR' in bot:
+      configs = ['gl', 'glmsaa4']
+      args.extend(['--pr', '~nvpr'])
+
     # DDL is a GPU-only feature
     if 'DDL1' in bot:
       # This bot generates gl and vk comparison images for the large skps
-      configs = [c for c in configs if c == 'gl' or c == 'vk']
+      configs = [c for c in configs if c == 'gl' or c == 'vk' or c == 'mtl']
       args.extend(['--skpViewportSize', "2048"])
       args.extend(['--pr', '~small'])
     if 'DDL3' in bot:
       # This bot generates the ddl-gl and ddl-vk images for the
       # large skps and the gms
-      ddl_configs = ['ddl-' + c for c in configs if c == 'gl' or c == 'vk']
-      ddl2_configs = ['ddl2-' + c for c in configs if c == 'gl' or c == 'vk']
+      ddl_configs = ['ddl-' + c for c in configs if c == 'gl' or c == 'vk' or c == 'mtl']
+      ddl2_configs = ['ddl2-' + c for c in configs if c == 'gl' or c == 'vk' or c == 'mtl']
       configs = ddl_configs + ddl2_configs
       args.extend(['--skpViewportSize', "2048"])
       args.extend(['--gpuThreads', "0"])
@@ -391,6 +398,8 @@ def dm_flags(api, bot):
     blacklist('pdf skp _ desk_baidu.skp')
     blacklist('pdf skp _ desk_wikipedia.skp')
     blacklist('_ svg _ _')
+    # skbug.com/9171 and 8847
+    blacklist('_ test _ InitialTextureClear')
 
   if 'iOS' in bot:
     blacklist(gl_prefix + ' skp _ _')
@@ -488,7 +497,11 @@ def dm_flags(api, bot):
                        'fontmgr_match',
                        'fontmgr_iter',
                        'imagemasksubset',
-                       'wacky_yuv_formats_domain']
+                       'wacky_yuv_formats_domain',
+                       'imagemakewithfilter',
+                       'imagemakewithfilter_crop',
+                       'imagemakewithfilter_crop_ref',
+                       'imagemakewithfilter_ref']
 
   # skia:5589
   bad_serialize_gms.extend(['bitmapfilters',
@@ -695,6 +708,9 @@ def dm_flags(api, bot):
   if api.vars.is_linux and 'IntelIris640' in bot:
     match.extend(['~GLPrograms']) # skia:7849
 
+  if 'IntelIris640' in bot or 'IntelHD615' in bot or 'IntelHDGraphics615' in bot:
+    match.append('~^SRGBReadWritePixels$') # skia:9225
+
   if 'Vulkan' in bot and api.vars.is_linux and 'IntelHD405' in bot:
     # skia:7322
     blacklist(['vk', 'gm', '_', 'skbug_257'])
@@ -717,6 +733,10 @@ def dm_flags(api, bot):
     # skbug.com/8047
     match.append('~FloatingPointTextureTest$')
 
+  if 'Metal' in bot and 'HD8870M' in bot and 'Mac' in bot:
+    # skia:9255
+    match.append('~WritePixelsNonTextureMSAA_Gpu')
+
   if 'MoltenVK' in bot:
     # skbug.com/7959
     blacklist(['_', 'gm', '_', 'vertices_scaled_shader'])
@@ -728,6 +748,9 @@ def dm_flags(api, bot):
     match.append('~^TextureStripAtlasManagerColorFilterTest$')
     match.append('~^WritePixelsNonTextureMSAA_Gpu$')
     match.append('~^AsyncReadPixels$')
+    match.append('~^VkBackendAllocationTest$')
+    match.append('~^ColorTypeBackendAllocationTest$')
+    match.append('~^GrTestingBackendTextureUploadTest$')
 
   if 'ANGLE' in bot:
     # skia:7835
@@ -761,12 +784,6 @@ def dm_flags(api, bot):
     # skia:7603
     match.append('~^GrMeshTest$')
 
-  if 'Wuffs' in api.vars.extra_tokens:
-    # skia:8750
-    blacklist(['_', 'tests', '_', 'Codec_partial'])
-    # skia:8762
-    blacklist(['_', 'tests', '_', 'Codec_gif'])
-
   if 'LenovoYogaC630' in bot and 'ANGLE' in api.vars.extra_tokens:
     # skia:8976
     blacklist(['_', 'tests', '_', 'GrDefaultPathRendererTest'])
@@ -783,7 +800,7 @@ def dm_flags(api, bot):
 
   # These bots run out of memory running RAW codec tests. Do not run them in
   # parallel
-  if 'NexusPlayer' in bot or 'Nexus5' in bot or 'Nexus9' in bot:
+  if 'Nexus5' in bot or 'Nexus9' in bot:
     args.append('--noRAW_threading')
 
   if 'FSAA' in bot:
@@ -923,7 +940,11 @@ def test_steps(api):
 
     args.extend(['--svgs', api.flavor.device_dirs.svg_dir])
     if 'Lottie' in api.vars.builder_cfg.get('extra_config', ''):
-      args.extend(['--lotties', api.flavor.device_dirs.lotties_dir])
+      args.extend([
+        '--lotties',
+        api.flavor.device_path_join(
+            api.flavor.device_dirs.resource_dir, 'skottie'),
+        api.flavor.device_dirs.lotties_dir])
 
   args.append('--key')
   keys = key_params(api)
@@ -995,7 +1016,6 @@ TEST_BUILDERS = [
   'Test-Android-Clang-NVIDIA_Shield-GPU-TegraX1-arm64-Debug-All-Android_CCPR',
   'Test-Android-Clang-Nexus5-GPU-Adreno330-arm-Release-All-Android',
   'Test-Android-Clang-Nexus7-CPU-Tegra3-arm-Release-All-Android',
-  'Test-Android-Clang-NexusPlayer-GPU-PowerVRG6430-x86-Release-All-Android',
   'Test-Android-Clang-Pixel-GPU-Adreno530-arm64-Debug-All-Android_Vulkan',
   'Test-Android-Clang-Pixel-GPU-Adreno530-arm-Debug-All-Android_ASAN',
   'Test-Android-Clang-Pixel3-GPU-Adreno630-arm64-Debug-All-Android_Vulkan',
@@ -1009,7 +1029,6 @@ TEST_BUILDERS = [
   'Test-Debian9-Clang-GCE-CPU-AVX2-x86_64-Debug-All-MSAN',
   ('Test-Debian9-Clang-GCE-CPU-AVX2-x86_64-Debug-All'
    '-SK_USE_DISCARDABLE_SCALEDIMAGECACHE'),
-  'Test-Debian9-Clang-GCE-CPU-AVX2-x86_64-Debug-All-Wuffs',
   'Test-Debian9-Clang-GCE-CPU-AVX2-x86_64-Release-All-Lottie',
   ('Test-Debian9-Clang-GCE-CPU-AVX2-x86_64-Release-All'
    '-SK_FORCE_RASTER_PIPELINE_BLITTER'),
@@ -1017,6 +1036,7 @@ TEST_BUILDERS = [
   'Test-Debian9-Clang-GCE-GPU-SwiftShader-x86_64-Release-All-SwiftShader',
   'Test-Debian9-Clang-NUC5PPYH-GPU-IntelHD405-x86_64-Release-All-Vulkan',
   'Test-Debian9-Clang-NUC7i5BNK-GPU-IntelIris640-x86_64-Debug-All-Vulkan',
+  'Test-iOS-Clang-iPhone6-GPU-PowerVRGX6450-arm64-Release-All-Metal',
   ('Test-Mac10.13-Clang-MacBook10.1-GPU-IntelHD615-x86_64-Release-All'
    '-NativeFonts'),
   'Test-Mac10.13-Clang-MacBookPro11.5-CPU-AVX2-x86_64-Release-All',
@@ -1035,6 +1055,7 @@ TEST_BUILDERS = [
   'Test-Ubuntu17-Clang-Golo-GPU-QuadroP400-x86_64-Debug-All-DDL3',
   'Test-Ubuntu17-Clang-Golo-GPU-QuadroP400-x86_64-Debug-All-Lottie',
   'Test-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-BonusConfigs',
+  'Test-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Debug-All-NonNVPR',
   ('Test-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All'
    '-ReleaseAndAbandonGpuContext'),
   'Test-Win10-Clang-NUC5i7RYH-CPU-AVX2-x86_64-Debug-All-NativeFonts_GDI',
@@ -1048,6 +1069,7 @@ TEST_BUILDERS = [
   'Test-Win2016-MSVC-GCE-CPU-AVX2-x86_64-Debug-All-MSRTC',
   'Test-iOS-Clang-iPadPro-GPU-PowerVRGT7800-arm64-Release-All',
   'Test-Android-Clang-Nexus5x-GPU-Adreno418-arm-Release-All-Android_Vulkan',
+  'Test-Mac10.13-Clang-MacBook10.1-GPU-IntelHD615-x86_64-Debug-All-CommandBuffer',
 ]
 
 
@@ -1162,8 +1184,7 @@ def GenTests(api):
     api.step_data('get uninteresting hashes', retcode=1)
   )
 
-  builder = ('Test-Android-Clang-NexusPlayer-CPU-Moorefield-x86-'
-             'Debug-All-Android')
+  builder = 'Test-Android-Clang-Nexus7-GPU-Tegra3-arm-Debug-All-Android'
   yield (
     api.test('failed_push') +
     api.properties(buildername=builder,
@@ -1189,7 +1210,6 @@ def GenTests(api):
                   '/sdcard/revenge_of_the_skiabot/resources', retcode=1)
   )
 
-  builder = 'Test-Android-Clang-Nexus7-GPU-Tegra3-arm-Debug-All-Android'
   retry_step_name = 'adb pull.pull /sdcard/revenge_of_the_skiabot/dm_out'
   yield (
     api.test('failed_pull') +

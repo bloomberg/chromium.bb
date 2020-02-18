@@ -6,8 +6,10 @@
 
 #include <vector>
 
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace syncer {
 
@@ -17,9 +19,8 @@ SyncAccountInfo::SyncAccountInfo(const CoreAccountInfo& account_info,
                                  bool is_primary)
     : account_info(account_info), is_primary(is_primary) {}
 
-SyncAccountInfo DetermineAccountToUse(
-    identity::IdentityManager* identity_manager,
-    bool allow_secondary_accounts) {
+SyncAccountInfo DetermineAccountToUse(signin::IdentityManager* identity_manager,
+                                      bool allow_secondary_accounts) {
   // If there is a "primary account", i.e. the user explicitly chose to
   // sign-in to Chrome, then always use that account.
   if (identity_manager->HasPrimaryAccount()) {

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -20,7 +21,6 @@ enum class PushRegistrationStatus;
 enum class PushUnregistrationReason;
 enum class PushUnregistrationStatus;
 }  // namespace mojom
-struct WebPushSubscriptionOptions;
 }  // namespace blink
 
 namespace content {
@@ -33,6 +33,7 @@ class CONTENT_EXPORT PushMessagingService {
  public:
   using RegisterCallback =
       base::OnceCallback<void(const std::string& registration_id,
+                              const GURL& endpoint,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth,
                               blink::mojom::PushRegistrationStatus status)>;
@@ -40,6 +41,7 @@ class CONTENT_EXPORT PushMessagingService {
       base::OnceCallback<void(blink::mojom::PushUnregistrationStatus)>;
   using SubscriptionInfoCallback =
       base::Callback<void(bool is_valid,
+                          const GURL& endpoint,
                           const std::vector<uint8_t>& p256dh,
                           const std::vector<uint8_t>& auth)>;
   using StringCallback = base::Callback<void(const std::string& data,
@@ -48,12 +50,7 @@ class CONTENT_EXPORT PushMessagingService {
 
   virtual ~PushMessagingService() {}
 
-  // Returns the absolute URL to the endpoint of the push service where messages
-  // should be posted to. Should return an endpoint compatible with the Web Push
-  // Protocol when |standard_protocol| is true.
-  virtual GURL GetEndpoint(bool standard_protocol) const = 0;
-
-  // Subscribe the given |options.sender_info| with the push messaging service
+  // Subscribes the given |options->sender_info| with the push messaging service
   // in a document context. The frame is known and a permission UI may be
   // displayed to the user. It's safe to call this method multiple times for
   // the same registration information, in which case the existing subscription
@@ -63,19 +60,19 @@ class CONTENT_EXPORT PushMessagingService {
       int64_t service_worker_registration_id,
       int renderer_id,
       int render_frame_id,
-      const blink::WebPushSubscriptionOptions& options,
+      blink::mojom::PushSubscriptionOptionsPtr options,
       bool user_gesture,
       RegisterCallback callback) = 0;
 
-  // Subscribe the given |options.sender_info| with the push messaging service.
-  // The frame is not known so if permission was not previously granted by the
-  // user this request should fail. It's safe to call this method multiple times
-  // for the same registration information, in which case the existing
-  // subscription will be returned by the server.
+  // Subscribes the given |options->sender_info| with the push messaging
+  // service. The frame is not known so if permission was not previously granted
+  // by the user this request should fail. It's safe to call this method
+  // multiple times for the same registration information, in which case the
+  // existing subscription will be returned by the server.
   virtual void SubscribeFromWorker(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
-      const blink::WebPushSubscriptionOptions& options,
+      blink::mojom::PushSubscriptionOptionsPtr options,
       RegisterCallback callback) = 0;
 
   // Retrieves the subscription associated with |origin| and

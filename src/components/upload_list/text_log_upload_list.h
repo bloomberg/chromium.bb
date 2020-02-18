@@ -30,7 +30,6 @@ class TextLogUploadList : public UploadList {
   ~TextLogUploadList() override;
 
   // UploadList:
-  base::TaskTraits LoadingTaskTraits() override;
   std::vector<UploadList::UploadInfo> LoadUploadList() override;
   void ClearUploadList(const base::Time& begin, const base::Time& end) override;
 

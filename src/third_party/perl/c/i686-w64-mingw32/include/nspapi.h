@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _NSPAPI_INCLUDED
@@ -25,7 +25,7 @@ extern "C" {
 #ifndef GUID_DEFINED
 #define GUID_DEFINED
   typedef struct _GUID {
-    unsigned long Data1;
+    unsigned __LONG32 Data1;
     unsigned short Data2;
     unsigned short Data3;
     unsigned char Data4[8];
@@ -75,12 +75,22 @@ extern "C" {
 #define NS_DNS (12)
 #define NS_NETBT (13)
 #define NS_WINS (14)
+#define NS_NLA (15)
+#if (_WIN32_WINNT >= 0x0600)
+#define NS_BTH (16)
+#endif
 
 #define NS_NBP (20)
 
 #define NS_MS (30)
 #define NS_STDA (31)
 #define NS_NTDS (32)
+
+#if (_WIN32_WINNT >= 0x0600)
+#define NS_EMAIL (37)
+#define NS_PNRPNAME (38)
+#define NS_PNRPCLOUD (39)
+#endif
 
 #define NS_X500 (40)
 #define NS_NIS (41)

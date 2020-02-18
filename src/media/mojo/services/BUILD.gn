@@ -91,7 +91,6 @@ jumbo_component("services") {
     "//gpu/ipc/service",
     "//media",
     "//media:shared_memory_support",
-    "//media/cdm:cdm_manager",
     "//media/gpu",
     "//media/gpu:buildflags",
     "//media/gpu/ipc/service",

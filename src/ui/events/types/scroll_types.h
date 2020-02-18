@@ -9,7 +9,7 @@ namespace ui {
 
 namespace input_types {
 
-enum class ScrollGranularity {
+enum class ScrollGranularity : uint8_t {
   kScrollByPrecisePixel = 0,
   kFirstScrollGranularity = kScrollByPrecisePixel,
   kScrollByPixel,

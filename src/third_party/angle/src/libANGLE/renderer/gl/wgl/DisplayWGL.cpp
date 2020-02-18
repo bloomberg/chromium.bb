@@ -127,7 +127,7 @@ egl::Error DisplayWGL::initializeImpl(egl::Display *display)
 {
     mDisplayAttributes = display->getAttributeMap();
 
-    mOpenGLModule = LoadLibraryA("opengl32.dll");
+    mOpenGLModule = LoadLibraryExA("opengl32.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (!mOpenGLModule)
     {
         return egl::EglNotInitialized() << "Failed to load OpenGL library.";
@@ -1058,9 +1058,14 @@ WorkerContext *DisplayWGL::createWorkerContext(std::string *infoLog,
     return new WorkerContextWGL(mFunctionsWGL, workerPbuffer, workerDeviceContext, workerContext);
 }
 
+void DisplayWGL::initializeFrontendFeatures(angle::FrontendFeatures *features) const
+{
+    mRenderer->initializeFrontendFeatures(features);
+}
+
 void DisplayWGL::populateFeatureList(angle::FeatureList *features)
 {
-    mRenderer->getWorkarounds().populateFeatureList(features);
+    mRenderer->getFeatures().populateFeatureList(features);
 }
 
 }  // namespace rx

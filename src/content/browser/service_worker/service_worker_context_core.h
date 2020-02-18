@@ -113,9 +113,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
       URLLoaderFactoryGetter* url_loader_factory_getter,
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          non_network_loader_factory_bundle_info_for_update_check,
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
           observer_list,
       ServiceWorkerContextWrapper* wrapper);
+  // TODO(https://crbug.com/877356): Remove this copy mechanism.
   ServiceWorkerContextCore(
       ServiceWorkerContextCore* old_context,
       ServiceWorkerContextWrapper* wrapper);
@@ -161,8 +164,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Returns a ProviderHost iterator for all service worker clients for the
   // |origin|. If |include_reserved_clients| is false, this only returns clients
-  // that are execution ready (i.e., for windows, the navigation has been
-  // committed and for workers, the final response after redirects has been
+  // that are execution ready (i.e., for windows, the document has been
+  // created and for workers, the final response after redirects has been
   // delivered).
   std::unique_ptr<ProviderHostIterator> GetClientProviderHostIterator(
       const GURL& origin,
@@ -281,6 +284,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   int GetNextEmbeddedWorkerId();
 
+  // Called when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  // Returns a factory bundle suitable for the browser process to use to fetch
+  // a non-installed service worker main script or imported script during an
+  // update check. It must not be sent to a renderer process. The bundle does
+  // not support reconnection to the network service, so it should be used for
+  // only a single service worker update check.
+  scoped_refptr<blink::URLLoaderFactoryBundle>
+  GetLoaderFactoryBundleForUpdateCheck();
+
  private:
   friend class ServiceWorkerContextCoreTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextCoreTest, FailureInfo);
@@ -348,6 +360,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
 
+  scoped_refptr<blink::URLLoaderFactoryBundle>
+      loader_factory_bundle_for_update_check_;
+
   bool force_update_on_page_load_;
   // Set in RegisterServiceWorker(), cleared in ClearAllServiceWorkersForTest().
   // This is used to avoid unnecessary disk read operation in tests. This value
@@ -359,7 +374,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   int next_embedded_worker_id_ = 0;
 
-  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

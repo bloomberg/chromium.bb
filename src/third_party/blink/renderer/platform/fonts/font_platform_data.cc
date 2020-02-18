@@ -114,7 +114,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
 #if !defined(OS_WIN) && !defined(OS_MACOSX)
                        src.family_.data(),
 #else
-                       CString(),
+                       std::string(),
 #endif
                        text_size,
                        src.synthetic_bold_,
@@ -123,7 +123,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
 }
 
 FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
-                                   const CString& family,
+                                   const std::string& family,
                                    float text_size,
                                    bool synthetic_bold,
                                    bool synthetic_italic,
@@ -285,7 +285,7 @@ bool FontPlatformData::FontContainsCharacter(UChar32 character) {
 #if !defined(OS_MACOSX) && !defined(OS_WIN)
 // static
 WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
-    const CString& family,
+    const std::string& family,
     float text_size,
     SkFontStyle font_style) {
   WebFontRenderStyle result;

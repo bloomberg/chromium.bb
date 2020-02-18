@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -126,7 +127,7 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT bool IsSuspended() const;
 
   // Returns whether the session has Pepper instances.
-  bool HasPepper() const;
+  CONTENT_EXPORT bool HasPepper() const;
 
   // WebContentsObserver implementation
   void WebContentsDestroyed() override;
@@ -135,6 +136,7 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsFocused(RenderWidgetHost*) override;
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
+  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override;
 
   // MediaSessionService-related methods
 
@@ -220,7 +222,8 @@ class MediaSessionImpl : public MediaSession,
 
   // Adds a mojo based observer to listen to events related to this session.
   void AddObserver(
-      media_session::mojom::MediaSessionObserverPtr observer) override;
+      mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer)
+      override;
 
   // Called by |AudioFocusDelegate| when an async audio focus request is
   // completed.
@@ -252,6 +255,12 @@ class MediaSessionImpl : public MediaSession,
 
   // Returns whether the action should be routed to |routed_service_|.
   bool ShouldRouteAction(media_session::mojom::MediaSessionAction action) const;
+
+  // Seek the media session to a specific time.
+  void SeekTo(base::TimeDelta seek_time) override {}
+
+  // Scrub ("fast seek") the media session to a specific time.
+  void ScrubTo(base::TimeDelta seek_time) override {}
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
@@ -418,7 +427,7 @@ class MediaSessionImpl : public MediaSession,
   // Bindings for Mojo pointers to |this| held by media route providers.
   mojo::BindingSet<media_session::mojom::MediaSession> bindings_;
 
-  mojo::InterfacePtrSet<media_session::mojom::MediaSessionObserver> observers_;
+  mojo::RemoteSet<media_session::mojom::MediaSessionObserver> observers_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -12,15 +12,14 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/variations/net/variations_http_headers.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
@@ -30,6 +29,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "components/signin/core/browser/chrome_connected_header_helper.h"
+#include "components/signin/core/browser/signin_header_helper.h"
+#endif
 
 namespace {
 
@@ -268,8 +272,8 @@ OneGoogleBarLoaderImpl::OneGoogleBarLoaderImpl(
     : url_loader_factory_(url_loader_factory),
       google_url_tracker_(google_url_tracker),
       application_locale_(application_locale),
-      account_consistency_mirror_required_(account_consistency_mirror_required),
-      weak_ptr_factory_(this) {}
+      account_consistency_mirror_required_(
+          account_consistency_mirror_required) {}
 
 OneGoogleBarLoaderImpl::~OneGoogleBarLoaderImpl() = default;
 
@@ -334,8 +338,7 @@ void OneGoogleBarLoaderImpl::LoadDone(
   }
 
   data_decoder::SafeJsonParser::Parse(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      response,
+      content::GetSystemConnector(), response,
       base::BindOnce(&OneGoogleBarLoaderImpl::JsonParsed,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&OneGoogleBarLoaderImpl::JsonParseFailed,

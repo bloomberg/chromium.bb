@@ -25,16 +25,18 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwFirebaseConfig;
+import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwProxyController;
 import org.chromium.android_webview.AwQuotaManagerBridge;
-import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.R;
 import org.chromium.android_webview.ScopedSysTraceEvent;
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
+import org.chromium.android_webview.common.AwResource;
 import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
@@ -53,6 +55,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Class controlling the Chromium initialization for WebView.
@@ -139,6 +142,9 @@ public class WebViewChromiumAwInit {
             BuildInfo.setFirebaseAppId(AwFirebaseConfig.getFirebaseAppId());
 
             JNIUtils.setClassLoader(WebViewChromiumAwInit.class.getClassLoader());
+
+            ResourceBundle.setAvailablePakLocales(
+                    new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
 
             // We are rewriting Java resources in the background.
             // NOTE: Any reference to Java resources will cause a crash.
@@ -248,7 +254,8 @@ public class WebViewChromiumAwInit {
                 packageName = webViewPackageInfo.applicationInfo.metaData.getString(
                         "com.android.webview.WebViewDonorPackage", packageName);
             }
-            ResourceRewriter.rewriteRValues(mFactory.getWebViewDelegate().getPackageId(
+
+            R.onResourcesLoaded(mFactory.getWebViewDelegate().getPackageId(
                     context.getResources(), packageName));
 
             AwResource.setResources(context.getResources());

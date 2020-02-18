@@ -28,6 +28,8 @@ import time
 import traceback
 import types
 
+import six
+
 from chromite.lib import constants
 from chromite.lib import cros_collections
 from chromite.lib import cros_logging as logging
@@ -309,7 +311,7 @@ def SudoRunCommand(cmd, user='root', preserve_env=False, **kwargs):
     if var not in extra_env and var in os.environ:
       extra_env[var] = os.environ[var]
 
-  sudo_cmd.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
+  sudo_cmd.extend('%s=%s' % (k, v) for k, v in extra_env.items())
 
   # Finally, block people from passing options to sudo.
   sudo_cmd.append('--')
@@ -581,7 +583,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       wrapper += chroot_args
 
     if extra_env:
-      wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
+      wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.items())
 
     cmd = wrapper + ['--'] + cmd
 
@@ -1036,7 +1038,13 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
 
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
-  return raw_input(prompt)
+  # We have people use GetInput() so they don't have to use these bad builtins
+  # themselves or deal with version skews.
+  # pylint: disable=bad-builtin,input-builtin,raw_input-builtin
+  if sys.version_info.major < 3:
+    return raw_input(prompt)
+  else:
+    return input(prompt)
 
 
 def GetChoice(title, options, group_size=0):
@@ -1361,7 +1369,7 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   # option; assume 0:0 (ie, initial state).
   major = minor = 0
   if api.returncode == 0:
-    major, minor = map(int, api.output.strip().split('.', 1))
+    major, minor = (int(x) for x in api.output.strip().split('.', 1))
 
   if validate_version and major != constants.REEXEC_API_MAJOR:
     raise ApiMismatchError(
@@ -1680,8 +1688,8 @@ class FrozenAttributesClass(type):
   This metaclass can be used by any class to add the ability to
   freeze attribute values with the Freeze method.
 
-  Use by adding this line in a class:
-    __metaclass__ = FrozenAttributesClass
+  Use by adding this line before a class:
+    @six.add_metaclass(FrozenAttributesClass)
   """
   _FROZEN_ERR_MSG = 'Attribute values are frozen, cannot alter %s.'
 
@@ -1721,6 +1729,7 @@ class FrozenAttributesClass(type):
     return cls
 
 
+@six.add_metaclass(FrozenAttributesClass)
 class FrozenAttributesMixin(object):
   """Alternate mechanism for freezing attributes in a class.
 
@@ -1728,7 +1737,6 @@ class FrozenAttributesMixin(object):
   use the FrozenAttributesClass metaclass directly.  Simply use this class
   as a mixin instead to accomplish the same thing.
   """
-  __metaclass__ = FrozenAttributesClass
 
 
 def GetIPv4Address(dev=None, global_ip=True):

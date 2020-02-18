@@ -64,9 +64,9 @@ class MockVideoCaptureControllerEventHandler
 
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
  public:
-  MOCK_METHOD2(Opened, void(blink::MediaStreamType, int));
-  MOCK_METHOD2(Closed, void(blink::MediaStreamType, int));
-  MOCK_METHOD2(Aborted, void(blink::MediaStreamType, int));
+  MOCK_METHOD2(Opened, void(blink::mojom::MediaStreamType, int));
+  MOCK_METHOD2(Closed, void(blink::mojom::MediaStreamType, int));
+  MOCK_METHOD2(Aborted, void(blink::mojom::MediaStreamType, int));
 };
 
 using DeviceIndex = size_t;
@@ -187,8 +187,8 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     ASSERT_TRUE(params_.device_index_to_use < descriptors.size());
     const auto& descriptor = descriptors[params_.device_index_to_use];
     blink::MediaStreamDevice media_stream_device(
-        blink::MEDIA_DEVICE_VIDEO_CAPTURE, descriptor.device_id,
-        descriptor.display_name(), descriptor.facing);
+        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+        descriptor.device_id, descriptor.display_name(), descriptor.facing);
     session_id_ = video_capture_manager_->Open(media_stream_device);
     media::VideoCaptureParams capture_params;
     capture_params.requested_format = media::VideoCaptureFormat(

@@ -4,9 +4,7 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/stream_info.h"
 
 namespace content {
 
@@ -27,18 +25,6 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     bool is_new_request,
     std::vector<std::unique_ptr<ResourceThrottle>>* throttles) {}
 
-bool ResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
-    net::URLRequest* request,
-    const std::string& mime_type,
-    GURL* origin,
-    std::string* payload) {
-  return false;
-}
-
-void ResourceDispatcherHostDelegate::OnStreamCreated(
-    net::URLRequest* request,
-    std::unique_ptr<content::StreamInfo> stream) {}
-
 void ResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     ResourceContext* resource_context,
@@ -57,10 +43,5 @@ void ResourceDispatcherHostDelegate::RequestComplete(
 // Deprecated.
 void ResourceDispatcherHostDelegate::RequestComplete(
     net::URLRequest* url_request) {}
-
-NavigationData* ResourceDispatcherHostDelegate::GetNavigationData(
-    net::URLRequest* request) const {
-  return nullptr;
-}
 
 }  // namespace content

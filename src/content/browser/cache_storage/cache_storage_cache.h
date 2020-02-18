@@ -54,7 +54,12 @@ class CONTENT_EXPORT CacheStorageCache {
   // The stream index for a cache Entry. This cannot be extended without changes
   // in the Entry implementation. INDEX_SIDE_DATA is used for storing any
   // additional data, such as response side blobs or request bodies.
-  enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY, INDEX_SIDE_DATA };
+  enum EntryIndex {
+    INDEX_INVALID = -1,
+    INDEX_HEADERS = 0,
+    INDEX_RESPONSE_BODY,
+    INDEX_SIDE_DATA
+  };
 
   // Create a handle that will hold the CacheStorageCache alive. Client code
   // should hold one of these handles while waiting for operation callbacks to
@@ -137,6 +142,11 @@ class CONTENT_EXPORT CacheStorageCache {
       blink::mojom::CacheQueryOptionsPtr match_options,
       int64_t trace_id,
       CacheEntriesCallback callback) = 0;
+
+  // Try to determine the initialization state of the cache.  Unknown may be
+  // returned for cross-sequence clients using the cross-sequence wrappers.
+  enum class InitState { Unknown, Initializing, Initialized };
+  virtual InitState GetInitState() const = 0;
 
  protected:
   virtual ~CacheStorageCache() = default;

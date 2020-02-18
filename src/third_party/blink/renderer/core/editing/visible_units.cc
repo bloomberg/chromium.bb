@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -473,7 +474,8 @@ PositionWithAffinity PositionForContentsPointRespectingEditingBoundary(
     LocalFrame* frame) {
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
                            HitTestRequest::kActive |
-                           HitTestRequest::kIgnoreClipping;
+                           HitTestRequest::kIgnoreClipping |
+                           HitTestRequest::kRetargetForInert;
   HitTestLocation location(contents_point);
   HitTestResult result(request, location);
   frame->GetDocument()->GetLayoutView()->HitTest(location, result);
@@ -653,6 +655,9 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*current_node))
+      continue;
+
     if (rule == kCanCrossEditingBoundary && boundary_crossed) {
       last_visible = current_pos;
       break;
@@ -728,7 +733,8 @@ bool HasInvisibleFirstLetter(const Node* node) {
       ToLayoutTextFragmentOrNull(AssociatedLayoutObjectOf(*node, 0));
   if (!first_letter || first_letter == remaining_text)
     return false;
-  return first_letter->StyleRef().Visibility() != EVisibility::kVisible;
+  return first_letter->StyleRef().Visibility() != EVisibility::kVisible ||
+         DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
 }
 }  // namespace
 
@@ -797,6 +803,9 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
         AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
+      continue;
+
+    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*current_node))
       continue;
 
     if (rule == kCanCrossEditingBoundary && boundary_crossed)
@@ -891,6 +900,9 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
     return false;
 
   if (layout_object->Style()->Visibility() != EVisibility::kVisible)
+    return false;
+
+  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*anchor_node))
     return false;
 
   if (layout_object->IsBR()) {

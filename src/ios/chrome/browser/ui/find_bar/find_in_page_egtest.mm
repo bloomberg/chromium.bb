@@ -12,10 +12,8 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -157,7 +155,7 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
   // Wait for UI to finish loading screen, before programatically verifying
   // accessibility.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 #pragma mark - Steps.
@@ -222,11 +220,10 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 - (void)navigateToTestPage {
   // Navigate to a page with some text.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:self.testURL]);
+  [ChromeEarlGrey loadURL:self.testURL];
 
   // Verify web page finished loading.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse]);
+  [ChromeEarlGrey waitForWebStateContainingText:kFindInPageResponse];
 }
 
 @end

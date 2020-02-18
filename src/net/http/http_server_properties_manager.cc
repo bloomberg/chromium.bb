@@ -73,11 +73,6 @@ void AddAlternativeServiceFieldsToDictionaryValue(
                   NextProtoToString(alternative_service.protocol));
 }
 
-base::Value NetLogCallback(const base::Value* http_server_properties_dict,
-                           NetLogCaptureMode capture_mode) {
-  return http_server_properties_dict->Clone();
-}
-
 // A local or temporary data structure to hold preferences for a server.
 // This is used only in UpdatePrefs.
 struct ServerPref {
@@ -140,17 +135,6 @@ HttpServerPropertiesManager::~HttpServerPropertiesManager() {
   UpdatePrefsFromCache(base::OnceClosure());
 }
 
-// static
-void HttpServerPropertiesManager::SetVersion(
-    base::DictionaryValue* http_server_properties_dict,
-    int version_number) {
-  if (version_number < 0)
-    version_number = kVersionNumber;
-  DCHECK_LE(version_number, kVersionNumber);
-  if (version_number <= kVersionNumber)
-    http_server_properties_dict->SetInteger(kVersionKey, version_number);
-}
-
 void HttpServerPropertiesManager::Clear(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -179,7 +163,7 @@ void HttpServerPropertiesManager::SetSupportsSpdy(
   http_server_properties_impl_->SetSupportsSpdy(server, support_spdy);
   bool new_support_spdy = http_server_properties_impl_->GetSupportsSpdy(server);
   if (old_support_spdy != new_support_spdy)
-    ScheduleUpdatePrefs(SUPPORTS_SPDY);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::RequiresHTTP11(const HostPortPair& server) {
@@ -192,7 +176,7 @@ void HttpServerPropertiesManager::SetHTTP11Required(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   http_server_properties_impl_->SetHTTP11Required(server);
-  ScheduleUpdatePrefs(HTTP_11_REQUIRED);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
@@ -216,7 +200,7 @@ bool HttpServerPropertiesManager::SetHttp2AlternativeService(
   const bool changed = http_server_properties_impl_->SetHttp2AlternativeService(
       origin, alternative_service, expiration);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -230,7 +214,7 @@ bool HttpServerPropertiesManager::SetQuicAlternativeService(
   const bool changed = http_server_properties_impl_->SetQuicAlternativeService(
       origin, alternative_service, expiration, advertised_versions);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -242,7 +226,7 @@ bool HttpServerPropertiesManager::SetAlternativeServices(
   const bool changed = http_server_properties_impl_->SetAlternativeServices(
       origin, alternative_service_info_vector);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -252,7 +236,7 @@ void HttpServerPropertiesManager::MarkAlternativeServiceBroken(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_server_properties_impl_->MarkAlternativeServiceBroken(
       alternative_service);
-  ScheduleUpdatePrefs(MARK_ALTERNATIVE_SERVICE_BROKEN);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::
@@ -262,8 +246,7 @@ void HttpServerPropertiesManager::
   http_server_properties_impl_
       ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
           alternative_service);
-  ScheduleUpdatePrefs(
-      MARK_ALTERNATIVE_SERVICE_BROKEN_UNTIL_DEFAULT_NETWORK_CHANGES);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
@@ -271,7 +254,7 @@ void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_server_properties_impl_->MarkAlternativeServiceRecentlyBroken(
       alternative_service);
-  ScheduleUpdatePrefs(MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN);
+  ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::IsAlternativeServiceBroken(
@@ -299,14 +282,14 @@ void HttpServerPropertiesManager::ConfirmAlternativeService(
   // For persisting, we only care about the value returned by
   // IsAlternativeServiceBroken. If that value changes, then call persist.
   if (old_value != new_value)
-    ScheduleUpdatePrefs(CONFIRM_ALTERNATIVE_SERVICE);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::OnDefaultNetworkChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool changed = http_server_properties_impl_->OnDefaultNetworkChanged();
   if (changed)
-    ScheduleUpdatePrefs(ON_DEFAULT_NETWORK_CHANGED);
+    ScheduleUpdatePrefs();
   return changed;
 }
 
@@ -337,7 +320,7 @@ void HttpServerPropertiesManager::SetSupportsQuic(bool used_quic,
   IPAddress new_last_quic_addr;
   http_server_properties_impl_->GetSupportsQuic(&new_last_quic_addr);
   if (old_last_quic_addr != new_last_quic_addr)
-    ScheduleUpdatePrefs(SET_SUPPORTS_QUIC);
+    ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::SetServerNetworkStats(
@@ -353,7 +336,7 @@ void HttpServerPropertiesManager::SetServerNetworkStats(
   ServerNetworkStats new_stats =
       *(http_server_properties_impl_->GetServerNetworkStats(server));
   if (old_stats != new_stats)
-    ScheduleUpdatePrefs(SET_SERVER_NETWORK_STATS);
+    ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::ClearServerNetworkStats(
@@ -363,7 +346,7 @@ void HttpServerPropertiesManager::ClearServerNetworkStats(
       http_server_properties_impl_->GetServerNetworkStats(server) != nullptr;
   http_server_properties_impl_->ClearServerNetworkStats(server);
   if (need_update)
-    ScheduleUpdatePrefs(CLEAR_SERVER_NETWORK_STATS);
+    ScheduleUpdatePrefs();
 }
 
 const ServerNetworkStats* HttpServerPropertiesManager::GetServerNetworkStats(
@@ -385,7 +368,7 @@ bool HttpServerPropertiesManager::SetQuicServerInfo(
   bool changed =
       http_server_properties_impl_->SetQuicServerInfo(server_id, server_info);
   if (changed)
-    ScheduleUpdatePrefs(SET_QUIC_SERVER_INFO);
+    ScheduleUpdatePrefs();
   return changed;
 }
 
@@ -467,65 +450,35 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
 
   bool detected_corrupted_prefs = false;
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_CACHE,
-                    base::Bind(&NetLogCallback, http_server_properties_dict));
-  int version = kMissingVersion;
-  if (!http_server_properties_dict->GetIntegerWithoutPathExpansion(kVersionKey,
-                                                                   &version)) {
-    DVLOG(1) << "Missing version. Clearing all properties.";
+                    [&] { return http_server_properties_dict->Clone(); });
+  int version_number = kMissingVersion;
+  if (!http_server_properties_dict->GetIntegerWithoutPathExpansion(
+          kVersionKey, &version_number) ||
+      version_number != kVersionNumber) {
+    DVLOG(1) << "Missing or unsupported. Clearing all properties. "
+             << version_number;
     return;
   }
 
   const base::DictionaryValue* servers_dict = nullptr;
   const base::ListValue* servers_list = nullptr;
-  if (version < 4) {
-    // The properties for a given server is in
-    // http_server_properties_dict["servers"][server].
-    // Before Version 4, server data was stored in the following format in
-    // alphabetical order.
-    //
-    //   "http_server_properties": {
-    //      "servers": {
-    //         "0-edge-chat.facebook.com:443" : {...},
-    //         "0.client-channel.google.com:443" : {...},
-    //         "yt3.ggpht.com:80" : {...},
-    //         ...
-    //      }, ...
-    // },
-    if (!http_server_properties_dict->GetDictionaryWithoutPathExpansion(
-            kServersKey, &servers_dict)) {
-      DVLOG(1) << "Malformed http_server_properties for servers.";
-      return;
-    }
-  } else {
-    // For Version 4, data was stored in the following format.
-    // |servers| are saved in MRU order.
-    //
-    // "http_server_properties": {
-    //      "servers": [
-    //          {"yt3.ggpht.com:443" : {...}},
-    //          {"0.client-channel.google.com:443" : {...}},
-    //          {"0-edge-chat.facebook.com:80" : {...}},
-    //          ...
-    //      ], ...
-    // },
-    // For Version 5, data was stored in the following format.
-    // |servers| are saved in MRU order. |servers| are in the format flattened
-    // representation of (scheme/host/port) where port might be ignored if is
-    // default with scheme.
-    //
-    // "http_server_properties": {
-    //      "servers": [
-    //          {"https://yt3.ggpht.com" : {...}},
-    //          {"http://0.client-channel.google.com:443" : {...}},
-    //          {"http://0-edge-chat.facebook.com" : {...}},
-    //          ...
-    //      ], ...
-    // },
-    if (!http_server_properties_dict->GetListWithoutPathExpansion(
-            kServersKey, &servers_list)) {
-      DVLOG(1) << "Malformed http_server_properties for servers list.";
-      return;
-    }
+  // For Version 5, data is stored in the following format.
+  // |servers| are saved in MRU order. |servers| are in the format flattened
+  // representation of (scheme/host/port) where port might be ignored if is
+  // default with scheme.
+  //
+  // "http_server_properties": {
+  //      "servers": [
+  //          {"https://yt3.ggpht.com" : {...}},
+  //          {"http://0.client-channel.google.com:443" : {...}},
+  //          {"http://0-edge-chat.facebook.com" : {...}},
+  //          ...
+  //      ], ...
+  // },
+  if (!http_server_properties_dict->GetListWithoutPathExpansion(
+          kServersKey, &servers_list)) {
+    DVLOG(1) << "Malformed http_server_properties for servers list.";
+    return;
   }
 
   std::unique_ptr<IPAddress> addr = std::make_unique<IPAddress>();
@@ -542,28 +495,20 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
       std::make_unique<QuicServerInfoMap>(
           max_server_configs_stored_in_properties());
 
-  if (version < 4) {
+  // Iterate servers list in reverse MRU order so that entries are inserted
+  // into |spdy_servers_map|, |alternative_service_map|, and
+  // |server_network_stats_map| from oldest to newest.
+  for (auto it = servers_list->end(); it != servers_list->begin();) {
+    --it;
+    if (!it->GetAsDictionary(&servers_dict)) {
+      DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
+      detected_corrupted_prefs = true;
+      continue;
+    }
     if (!AddServersData(*servers_dict, spdy_servers_map.get(),
                         alternative_service_map.get(),
-                        server_network_stats_map.get(), version)) {
+                        server_network_stats_map.get())) {
       detected_corrupted_prefs = true;
-    }
-  } else {
-    // Iterate servers list in reverse MRU order so that entries are inserted
-    // into |spdy_servers_map|, |alternative_service_map|, and
-    // |server_network_stats_map| from oldest to newest.
-    for (auto it = servers_list->end(); it != servers_list->begin();) {
-      --it;
-      if (!it->GetAsDictionary(&servers_dict)) {
-        DVLOG(1) << "Malformed http_server_properties for servers dictionary.";
-        detected_corrupted_prefs = true;
-        continue;
-      }
-      if (!AddServersData(*servers_dict, spdy_servers_map.get(),
-                          alternative_service_map.get(),
-                          server_network_stats_map.get(), version)) {
-        detected_corrupted_prefs = true;
-      }
     }
   }
 
@@ -642,7 +587,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
 
   // Update the prefs with what we have read (delete all corrupted prefs).
   if (detected_corrupted_prefs)
-    ScheduleUpdatePrefs(DETECTED_CORRUPTED_PREFS);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
@@ -713,17 +658,12 @@ bool HttpServerPropertiesManager::AddServersData(
     const base::DictionaryValue& servers_dict,
     SpdyServersMap* spdy_servers_map,
     AlternativeServiceMap* alternative_service_map,
-    ServerNetworkStatsMap* network_stats_map,
-    int version) {
+    ServerNetworkStatsMap* network_stats_map) {
   for (base::DictionaryValue::Iterator it(servers_dict); !it.IsAtEnd();
        it.Advance()) {
     // Get server's scheme/host/pair.
     const std::string& server_str = it.key();
     std::string spdy_server_url = server_str;
-    if (version < 5) {
-      // For old version disk data, always use HTTPS as the scheme.
-      spdy_server_url.insert(0, "https://");
-    }
     url::SchemeHostPort spdy_server((GURL(spdy_server_url)));
     if (spdy_server.host().empty()) {
       DVLOG(1) << "Malformed http_server_properties for server: " << server_str;
@@ -999,10 +939,7 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
   return !detected_corrupted_prefs;
 }
 
-//
-// Update Preferences with data from the cached data.
-//
-void HttpServerPropertiesManager::ScheduleUpdatePrefs(Location location) {
+void HttpServerPropertiesManager::ScheduleUpdatePrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Do not schedule a new update if there is already one scheduled.
   if (network_prefs_update_timer_.IsRunning())
@@ -1012,10 +949,6 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefs(Location location) {
       FROM_HERE, kUpdatePrefsDelay,
       base::Bind(&HttpServerPropertiesManager::UpdatePrefsFromCache,
                  base::Unretained(this), base::Passed(base::OnceClosure())));
-
-  // TODO(rtenneti): Delete the following histogram after collecting some data.
-  UMA_HISTOGRAM_ENUMERATION("Net.HttpServerProperties.UpdatePrefs", location,
-                            HttpServerPropertiesManager::NUM_LOCATIONS);
 }
 
 void HttpServerPropertiesManager::UpdatePrefsFromCache(
@@ -1127,7 +1060,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache(
   http_server_properties_dict.SetWithoutPathExpansion(kServersKey,
                                                       std::move(servers_list));
 
-  SetVersion(&http_server_properties_dict, kVersionNumber);
+  http_server_properties_dict.SetInteger(kVersionKey, kVersionNumber);
 
   IPAddress last_quic_addr;
   if (http_server_properties_impl_->GetSupportsQuic(&last_quic_addr)) {
@@ -1150,7 +1083,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCache(
   setting_prefs_ = false;
 
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_PREFS,
-                    base::Bind(&NetLogCallback, &http_server_properties_dict));
+                    [&] { return http_server_properties_dict.Clone(); });
 }
 
 void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(

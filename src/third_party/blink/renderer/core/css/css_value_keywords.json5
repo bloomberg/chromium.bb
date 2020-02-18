@@ -755,6 +755,10 @@
     "ease-in",
     "ease-out",
     "ease-in-out",
+    "jump-both",
+    "jump-end",
+    "jump-none",
+    "jump-start",
     "step-start",
     "step-end",
     "steps",
@@ -1103,8 +1107,13 @@
     "ray",
     "sides",
 
+    // math functions
+    // https://drafts.csswg.org/css-values-4/#math
     "calc",
     "-webkit-calc",
+    "min",
+    "max",
+    "clamp",
 
     // scroll-snap-type
     // none
@@ -1172,6 +1181,10 @@
     // pan-down
     // none
 
+    // @property
+    "true",
+    "false",
+
     // (prefers-*:) media features
     "no-preference",
 
@@ -1184,5 +1197,9 @@
 
     // (prefers-reduced-motion:) media feature
     "reduce",
+
+    // (forced-colors:) media feature
+    // none
+    "active",
   ],
 }

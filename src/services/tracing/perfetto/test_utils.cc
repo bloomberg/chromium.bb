@@ -8,10 +8,10 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/test_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
@@ -19,10 +19,19 @@
 
 namespace tracing {
 
+// static
+std::unique_ptr<TestDataSource> TestDataSource::CreateAndRegisterDataSource(
+    const std::string& data_source_name,
+    size_t send_packet_count) {
+  auto data_source = std::unique_ptr<TestDataSource>(
+      new TestDataSource(data_source_name, send_packet_count));
+  PerfettoTracedProcess::Get()->AddDataSource(data_source.get());
+  return data_source;
+}
+
 TestDataSource::TestDataSource(const std::string& data_source_name,
                                size_t send_packet_count)
     : DataSourceBase(data_source_name), send_packet_count_(send_packet_count) {
-  PerfettoTracedProcess::Get()->AddDataSource(this);
 }
 
 TestDataSource::~TestDataSource() = default;
@@ -43,7 +52,6 @@ void TestDataSource::WritePacketBigly() {
 void TestDataSource::StartTracing(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
-  producer_ = producer;
   config_ = data_source_config;
 
   if (send_packet_count_ > 0) {
@@ -55,9 +63,14 @@ void TestDataSource::StartTracing(
       writer->NewTracePacket()->set_for_testing()->set_str(kPerfettoTestString);
     }
   }
+  if (!start_tracing_callback_.is_null()) {
+    std::move(start_tracing_callback_).Run();
+  }
 }
 
 void TestDataSource::StopTracing(base::OnceClosure stop_complete_callback) {
+  CHECK(producer_);
+  producer_ = nullptr;
   std::move(stop_complete_callback).Run();
 }
 
@@ -66,11 +79,17 @@ void TestDataSource::Flush(base::RepeatingClosure flush_complete_callback) {
     flush_complete_callback.Run();
   }
 }
+void TestDataSource::set_start_tracing_callback(
+    base::OnceClosure start_tracing_callback) {
+  start_tracing_callback_ = std::move(start_tracing_callback);
+}
 
 MockProducerClient::MockProducerClient(
+    uint32_t num_data_sources,
     base::OnceClosure client_enabled_callback,
     base::OnceClosure client_disabled_callback)
     : ProducerClient(PerfettoTracedProcess::Get()->GetTaskRunner()),
+      num_data_sources_expected_(num_data_sources),
       client_enabled_callback_(std::move(client_enabled_callback)),
       client_disabled_callback_(std::move(client_disabled_callback)) {
   // We want to set the ProducerClient to this mock, but that 'requires' passing
@@ -99,7 +118,9 @@ void MockProducerClient::StartDataSource(
   ProducerClient::StartDataSource(id, std::move(data_source_config),
                                   std::move(callback));
 
-  if (client_enabled_callback_) {
+  CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
+  if (client_enabled_callback_ &&
+      ++num_data_sources_active_ == num_data_sources_expected_) {
     std::move(client_enabled_callback_).Run();
   }
 }
@@ -108,7 +129,8 @@ void MockProducerClient::StopDataSource(uint64_t id,
                                         StopDataSourceCallback callback) {
   ProducerClient::StopDataSource(id, std::move(callback));
 
-  if (client_disabled_callback_) {
+  CHECK_GT(num_data_sources_active_, 0u);
+  if (client_disabled_callback_ && --num_data_sources_active_ == 0) {
     std::move(client_disabled_callback_).Run();
   }
 }
@@ -138,36 +160,44 @@ void MockProducerClient::SetAgentDisabledCallback(
   client_disabled_callback_ = std::move(client_disabled_callback);
 }
 
-MockConsumer::MockConsumer(std::string data_source_name,
+MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
                            perfetto::TracingService* service,
                            PacketReceivedCallback packet_received_callback)
     : packet_received_callback_(packet_received_callback),
-      data_source_name_(data_source_name) {
+      data_source_names_(data_source_names) {
+  CHECK(!data_source_names_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
+  CHECK(consumer_endpoint_);
 }
 
 MockConsumer::~MockConsumer() = default;
 
 void MockConsumer::ReadBuffers() {
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->ReadBuffers();
 }
 
 void MockConsumer::StopTracing() {
   ReadBuffers();
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->DisableTracing();
 }
 
 void MockConsumer::StartTracing() {
   perfetto::TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(1024 * 32);
-  auto* ds_config = trace_config.add_data_sources()->mutable_config();
-  ds_config->set_name(data_source_name_);
-  ds_config->set_target_buffer(0);
+  for (const auto& name : data_source_names_) {
+    auto* ds_config = trace_config.add_data_sources()->mutable_config();
+    ds_config->set_name(name);
+    ds_config->set_target_buffer(0);
+  }
 
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->EnableTracing(trace_config);
 }
 
 void MockConsumer::FreeBuffers() {
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->FreeBuffers();
 }
 
@@ -250,10 +280,19 @@ MockProducer::MockProducer(const std::string& producer_name,
                            base::OnceClosure on_datasource_registered,
                            base::OnceClosure on_tracing_started,
                            size_t num_packets) {
-  data_source_ =
-      std::make_unique<TestDataSource>(data_source_name, num_packets);
-  producer_client_ =
-      std::make_unique<MockProducerClient>(std::move(on_tracing_started));
+  // Construct MockProducerClient before TestDataSource to avoid a race.
+  //
+  // TestDataSource calls AddDataSource on the global PerfettoTracedProcess,
+  // which PostTasks to the threadpool in the task it will access the
+  // |producer_client_| pointer that the PerfettoTracedProcess owns. However in
+  // the constructor for MockProducerClient we will set the |producer_client_|
+  // from the real client to the mock, however this is done on a different
+  // sequence and thus we have a race. By setting the pointer before we
+  // construct the data source the TestDataSource can not race.
+  producer_client_ = std::make_unique<MockProducerClient>(
+      /* num_data_sources = */ 1, std::move(on_tracing_started));
+  data_source_ = TestDataSource::CreateAndRegisterDataSource(data_source_name,
+                                                             num_packets);
 
   producer_host_ = std::make_unique<MockProducerHost>(
       producer_name, data_source_name, service, producer_client_.get(),

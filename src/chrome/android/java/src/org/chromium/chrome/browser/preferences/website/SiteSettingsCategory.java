@@ -16,9 +16,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
-import android.preference.Preference;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v7.preference.Preference;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 
@@ -40,7 +40,7 @@ public class SiteSettingsCategory {
     @IntDef({Type.ALL_SITES, Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.AUTOPLAY,
             Type.BACKGROUND_SYNC, Type.CAMERA, Type.CLIPBOARD, Type.COOKIES, Type.DEVICE_LOCATION,
             Type.JAVASCRIPT, Type.MICROPHONE, Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA,
-            Type.SENSORS, Type.SOUND, Type.USE_STORAGE, Type.USB})
+            Type.SENSORS, Type.SOUND, Type.USE_STORAGE, Type.USB, Type.BLUETOOTH_SCANNING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
@@ -64,10 +64,11 @@ public class SiteSettingsCategory {
         int USE_STORAGE = 15;
         int USB = 16;
         int AUTOMATIC_DOWNLOADS = 17;
+        int BLUETOOTH_SCANNING = 18;
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 18;
+        int NUM_ENTRIES = 19;
     }
 
     // The id of this category.
@@ -137,6 +138,8 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
             case Type.BACKGROUND_SYNC:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
+            case Type.BLUETOOTH_SCANNING:
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING;
             case Type.CAMERA:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
             case Type.CLIPBOARD:
@@ -196,6 +199,8 @@ public class SiteSettingsCategory {
                 return "autoplay";
             case Type.BACKGROUND_SYNC:
                 return "background_sync";
+            case Type.BLUETOOTH_SCANNING:
+                return "bluetooth_scanning";
             case Type.CAMERA:
                 return "camera";
             case Type.CLIPBOARD:
@@ -311,7 +316,6 @@ public class SiteSettingsCategory {
      *                       calling this method, if osWarningExtra has no title, the preference
      *                       should not be added to the preference screen.
      * @param activity The current activity.
-     * @param category The category associated with the warnings.
      * @param specificCategory Whether the warnings refer to a single category or is an aggregate
      *                         for many permissions.
      */

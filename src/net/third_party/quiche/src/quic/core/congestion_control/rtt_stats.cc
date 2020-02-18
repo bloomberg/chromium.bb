@@ -14,8 +14,6 @@ namespace quic {
 
 namespace {
 
-// Default initial rtt used before any samples are received.
-const int kInitialRttMs = 100;
 const float kAlpha = 0.125f;
 const float kOneMinusAlpha = (1 - kAlpha);
 const float kBeta = 0.25f;
@@ -31,6 +29,7 @@ RttStats::RttStats()
       mean_deviation_(QuicTime::Delta::Zero()),
       initial_rtt_(QuicTime::Delta::FromMilliseconds(kInitialRttMs)),
       max_ack_delay_(QuicTime::Delta::Zero()),
+      last_update_time_(QuicTime::Zero()),
       ignore_max_ack_delay_(false) {}
 
 void RttStats::ExpireSmoothedMetrics() {
@@ -51,6 +50,8 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
         << send_delta.ToMicroseconds();
     return;
   }
+
+  last_update_time_ = now;
 
   // Update min_rtt_ first. min_rtt_ does not use an rtt_sample corrected for
   // ack_delay but the raw observed send_delta, since poor clock granularity at

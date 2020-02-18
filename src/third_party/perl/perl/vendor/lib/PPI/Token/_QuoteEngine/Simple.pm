@@ -5,11 +5,9 @@ package PPI::Token::_QuoteEngine::Simple;
 use strict;
 use PPI::Token::_QuoteEngine ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token::_QuoteEngine';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = 'PPI::Token::_QuoteEngine';
 
 sub new {
 	my $class     = shift;

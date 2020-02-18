@@ -15,11 +15,12 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/device/public/cpp/usb/usb_ids.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
@@ -130,10 +131,9 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
                          CONTENT_SETTINGS_TYPE_USB_GUARD,
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
       is_incognito_(profile->IsOffTheRecord()),
-      client_binding_(this),
-      weak_factory_(this) {
-  usb_policy_allowed_devices_.reset(
-      new UsbPolicyAllowedDevices(profile->GetPrefs()));
+      client_binding_(this) {
+  usb_policy_allowed_devices_.reset(new UsbPolicyAllowedDevices(
+      profile->GetPrefs(), g_browser_process->local_state()));
 }
 
 // static
@@ -180,10 +180,8 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
     return;
 
   // Request UsbDeviceManagerPtr from DeviceService.
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&device_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
 
   SetUpDeviceManagerConnection();
 }
@@ -245,7 +243,7 @@ UsbChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
         // always be called after device initialization in UsbChooserController
         // which always returns after the device list initialization in this
         // class.
-        DCHECK(base::ContainsKey(devices_, guid));
+        DCHECK(base::Contains(devices_, guid));
         objects.push_back(std::make_unique<ChooserContextBase::Object>(
             requesting_origin, embedding_origin,
             DeviceInfoToValue(*devices_[guid]),
@@ -325,7 +323,7 @@ UsbChooserContext::GetAllGrantedObjects() {
       continue;
 
     for (const std::string& guid : map_entry.second) {
-      DCHECK(base::ContainsKey(devices_, guid));
+      DCHECK(base::Contains(devices_, guid));
       objects.push_back(std::make_unique<ChooserContextBase::Object>(
           requesting_origin, embedding_origin,
           DeviceInfoToValue(*devices_[guid]),
@@ -439,7 +437,7 @@ bool UsbChooserContext::HasDevicePermission(
   auto it = ephemeral_devices_.find(
       std::make_pair(requesting_origin, embedding_origin));
   if (it != ephemeral_devices_.end() &&
-      base::ContainsKey(it->second, device_info.guid)) {
+      base::Contains(it->second, device_info.guid)) {
     return true;
   }
 
@@ -542,7 +540,7 @@ void UsbChooserContext::OnDeviceAdded(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   devices_.insert(std::make_pair(device_info->guid, device_info->Clone()));
 
   // Notify all observers.
@@ -554,7 +552,7 @@ void UsbChooserContext::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  DCHECK(base::Contains(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
   // Notify all device observers.

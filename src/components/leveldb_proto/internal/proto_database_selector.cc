@@ -72,6 +72,13 @@ void ProtoDatabaseSelector::InitUniqueOrShared(
   unique_database_dir_ = db_dir;
   client_name_ = client_name;
 
+  if (unique_database_dir_.empty()) {
+    DCHECK(!use_shared_db) << "Opening in memory shared db is not supported";
+    // In case we set up field trials by mistake, ignore the use shared flag and
+    // return unique db.
+    use_shared_db = false;
+  }
+
   auto unique_options = unique_db_options;
   // There are two Init methods, one that receives Options for its unique DB and
   // another that uses CreateSimpleOptions() to open the unique DB. In case a
@@ -115,8 +122,9 @@ void ProtoDatabaseSelector::OnInitUniqueDB(
     unique_db.reset();
 
   // If no SharedProtoDatabaseProvider is set then we use the unique DB (if it
-  // opened correctly).
-  if (!db_provider_) {
+  // opened correctly). If in memory db is requested then do not try to migrate
+  // data from shared db, which was the behavior when only unique db existed.
+  if (!db_provider_ || unique_database_dir_.empty()) {
     db_ = std::move(unique_db);
     std::move(callback).Run(status);
     OnInitDone();

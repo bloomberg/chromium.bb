@@ -31,9 +31,9 @@ Test::Deep::NoTest - Use Test::Deep outside of the testing framework
 
   use Test::Deep::NoTest;
 
-  if eq_deeply($a, $b) {
+  if (eq_deeply($a, $b)) {
     print "they were deeply equal\n";
-  };
+  }
 
 =head1 DESCRIPTION
 

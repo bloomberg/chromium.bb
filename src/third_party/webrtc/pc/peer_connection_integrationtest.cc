@@ -23,24 +23,20 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/memory/memory.h"
-#include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/media_stream_interface.h"
 #include "api/peer_connection_interface.h"
 #include "api/peer_connection_proxy.h"
+#include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/rtp_receiver_interface.h"
+#include "api/task_queue/default_task_queue_factory.h"
 #include "api/test/loopback_media_transport.h"
 #include "api/uma_metrics.h"
-#include "api/video_codecs/builtin_video_decoder_factory.h"
-#include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/video_codecs/sdp_video_format.h"
 #include "call/call.h"
 #include "logging/rtc_event_log/fake_rtc_event_log_factory.h"
-#include "logging/rtc_event_log/rtc_event_log_factory.h"
-#include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "media/engine/fake_webrtc_video_engine.h"
 #include "media/engine/webrtc_media_engine.h"
-#include "modules/audio_processing/include/audio_processing.h"
+#include "media/engine/webrtc_media_engine_defaults.h"
 #include "p2p/base/mock_async_resolver.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/port_interface.h"
@@ -565,6 +561,9 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
   const cricket::Candidate& last_candidate_gathered() const {
     return last_candidate_gathered_;
   }
+  const cricket::IceCandidateErrorEvent& error_event() const {
+    return error_event_;
+  }
 
   // Sets the mDNS responder for the owned fake network manager and keeps a
   // reference to the responder.
@@ -607,22 +606,23 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
     pc_factory_dependencies.network_thread = network_thread;
     pc_factory_dependencies.worker_thread = worker_thread;
     pc_factory_dependencies.signaling_thread = signaling_thread;
+    pc_factory_dependencies.task_queue_factory =
+        webrtc::CreateDefaultTaskQueueFactory();
+    cricket::MediaEngineDependencies media_deps;
+    media_deps.task_queue_factory =
+        pc_factory_dependencies.task_queue_factory.get();
+    media_deps.adm = fake_audio_capture_module_;
+    webrtc::SetMediaEngineDefaults(&media_deps);
     pc_factory_dependencies.media_engine =
-        cricket::WebRtcMediaEngineFactory::Create(
-            rtc::scoped_refptr<webrtc::AudioDeviceModule>(
-                fake_audio_capture_module_),
-            webrtc::CreateBuiltinAudioEncoderFactory(),
-            webrtc::CreateBuiltinAudioDecoderFactory(),
-            webrtc::CreateBuiltinVideoEncoderFactory(),
-            webrtc::CreateBuiltinVideoDecoderFactory(), nullptr,
-            webrtc::AudioProcessingBuilder().Create());
+        cricket::CreateMediaEngine(std::move(media_deps));
     pc_factory_dependencies.call_factory = webrtc::CreateCallFactory();
     if (event_log_factory) {
       event_log_factory_ = event_log_factory.get();
       pc_factory_dependencies.event_log_factory = std::move(event_log_factory);
     } else {
       pc_factory_dependencies.event_log_factory =
-          webrtc::CreateRtcEventLogFactory();
+          absl::make_unique<webrtc::RtcEventLogFactory>(
+              pc_factory_dependencies.task_queue_factory.get());
     }
     if (media_transport_factory) {
       pc_factory_dependencies.media_transport_factory =
@@ -958,6 +958,13 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
     SendIceMessage(candidate->sdp_mid(), candidate->sdp_mline_index(), ice_sdp);
     last_candidate_gathered_ = candidate->candidate();
   }
+  void OnIceCandidateError(const std::string& host_candidate,
+                           const std::string& url,
+                           int error_code,
+                           const std::string& error_text) override {
+    error_event_ = cricket::IceCandidateErrorEvent(host_candidate, url,
+                                                   error_code, error_text);
+  }
   void OnDataChannel(
       rtc::scoped_refptr<DataChannelInterface> data_channel) override {
     RTC_LOG(LS_INFO) << debug_name_ << ": OnDataChannel";
@@ -990,6 +997,7 @@ class PeerConnectionWrapper : public webrtc::PeerConnectionObserver,
   int signaling_delay_ms_ = 0;
   bool signal_ice_candidates_ = true;
   cricket::Candidate last_candidate_gathered_;
+  cricket::IceCandidateErrorEvent error_event_;
 
   // Store references to the video sources we've created, so that we can stop
   // them, if required.
@@ -1580,6 +1588,11 @@ class PeerConnectionIntegrationBaseTest : public ::testing::Test {
     return expectations_correct;
   }
 
+  void ClosePeerConnections() {
+    caller()->pc()->Close();
+    callee()->pc()->Close();
+  }
+
   void TestNegotiatedCipherSuite(
       const PeerConnectionFactory::Options& caller_options,
       const PeerConnectionFactory::Options& callee_options,
@@ -1801,6 +1814,31 @@ TEST_P(PeerConnectionIntegrationTest, EndToEndCallWithSdes) {
                                           webrtc::kEnumCounterKeyProtocolSdes));
   EXPECT_EQ(0, webrtc::metrics::NumEvents("WebRTC.PeerConnection.KeyProtocol",
                                           webrtc::kEnumCounterKeyProtocolDtls));
+}
+
+// Basic end-to-end test specifying the |enable_encrypted_rtp_header_extensions|
+// option to offer encrypted versions of all header extensions alongside the
+// unencrypted versions.
+TEST_P(PeerConnectionIntegrationTest,
+       EndToEndCallWithEncryptedRtpHeaderExtensions) {
+  CryptoOptions crypto_options;
+  crypto_options.srtp.enable_encrypted_rtp_header_extensions = true;
+  PeerConnectionInterface::RTCConfiguration config;
+  config.crypto_options = crypto_options;
+  // Note: This allows offering >14 RTP header extensions.
+  config.offer_extmap_allow_mixed = true;
+  ASSERT_TRUE(CreatePeerConnectionWrappersWithConfig(config, config));
+  ConnectFakeSignaling();
+
+  // Do normal offer/answer and wait for some frames to be received in each
+  // direction.
+  caller()->AddAudioVideoTracks();
+  callee()->AddAudioVideoTracks();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  MediaExpectations media_expectations;
+  media_expectations.ExpectBidirectionalAudioAndVideo();
+  ASSERT_TRUE(ExpectNewFrames(media_expectations));
 }
 
 // Tests that the GetRemoteAudioSSLCertificate method returns the remote DTLS
@@ -2695,6 +2733,12 @@ TEST_P(PeerConnectionIntegrationTest, NewGetStatsManyAudioAndManyVideoStreams) {
   for (const auto& stat : outbound_stream_stats) {
     ASSERT_TRUE(stat->bytes_sent.is_defined());
     EXPECT_LT(0u, *stat->bytes_sent);
+    if (*stat->kind == "video") {
+      ASSERT_TRUE(stat->key_frames_encoded.is_defined());
+      EXPECT_GT(*stat->key_frames_encoded, 0u);
+      ASSERT_TRUE(stat->frames_encoded.is_defined());
+      EXPECT_GE(*stat->frames_encoded, *stat->key_frames_encoded);
+    }
     ASSERT_TRUE(stat->track_id.is_defined());
     const auto* track_stat =
         caller_report->GetAs<webrtc::RTCMediaStreamTrackStats>(*stat->track_id);
@@ -2713,6 +2757,12 @@ TEST_P(PeerConnectionIntegrationTest, NewGetStatsManyAudioAndManyVideoStreams) {
   for (const auto& stat : inbound_stream_stats) {
     ASSERT_TRUE(stat->bytes_received.is_defined());
     EXPECT_LT(0u, *stat->bytes_received);
+    if (*stat->kind == "video") {
+      ASSERT_TRUE(stat->key_frames_decoded.is_defined());
+      EXPECT_GT(*stat->key_frames_decoded, 0u);
+      ASSERT_TRUE(stat->frames_decoded.is_defined());
+      EXPECT_GE(*stat->frames_decoded, *stat->key_frames_decoded);
+    }
     ASSERT_TRUE(stat->track_id.is_defined());
     const auto* track_stat =
         callee_report->GetAs<webrtc::RTCMediaStreamTrackStats>(*stat->track_id);
@@ -3207,8 +3257,7 @@ TEST_P(PeerConnectionIntegrationTest,
   // Closing the PeerConnections destroys the ports before the ScopedFakeClock.
   // If this is not done a DCHECK can be hit in ports.cc, because a large
   // negative number is calculated for the rtt due to the global clock changing.
-  caller()->pc()->Close();
-  callee()->pc()->Close();
+  ClosePeerConnections();
 }
 
 // This test sets up a call between two parties with audio, video and but only
@@ -4498,8 +4547,7 @@ TEST_P(PeerConnectionIntegrationTest, EndToEndConnectionTimeWithTurnTurnPair) {
   // Closing the PeerConnections destroys the ports before the ScopedFakeClock.
   // If this is not done a DCHECK can be hit in ports.cc, because a large
   // negative number is calculated for the rtt due to the global clock changing.
-  caller()->pc()->Close();
-  callee()->pc()->Close();
+  ClosePeerConnections();
 }
 
 // Verify that a TurnCustomizer passed in through RTCConfiguration
@@ -4815,6 +4863,7 @@ TEST_P(PeerConnectionIntegrationTest, GetSourcesVideo) {
   ASSERT_EQ(receiver->media_type(), cricket::MEDIA_TYPE_VIDEO);
   auto sources = receiver->GetSources();
   ASSERT_GT(receiver->GetParameters().encodings.size(), 0u);
+  ASSERT_GT(sources.size(), 0u);
   EXPECT_EQ(receiver->GetParameters().encodings[0].ssrc,
             sources[0].source_id());
   EXPECT_EQ(webrtc::RtpSourceType::SSRC, sources[0].source_type());
@@ -5020,8 +5069,7 @@ TEST_P(PeerConnectionIntegrationTest, ClosingConnectionStopsPacketFlow) {
   media_expectations.CalleeExpectsSomeAudioAndVideo();
   ASSERT_TRUE(ExpectNewFrames(media_expectations));
   // Close PeerConnections.
-  caller()->pc()->Close();
-  callee()->pc()->Close();
+  ClosePeerConnections();
   // Pump messages for a second, and ensure no new packets end up sent.
   uint32_t sent_packets_a = virtual_socket_server()->sent_packets();
   WAIT(false, 1000);
@@ -5084,8 +5132,6 @@ TEST_P(PeerConnectionIntegrationTest,
 }
 
 TEST_P(PeerConnectionIntegrationTest, RegatherAfterChangingIceTransportType) {
-  webrtc::test::ScopedFieldTrials field_trials(
-      "WebRTC-GatherOnCandidateFilterChanged/Enabled/");
   static const rtc::SocketAddress turn_server_internal_address{"88.88.88.0",
                                                                3478};
   static const rtc::SocketAddress turn_server_external_address{"88.88.88.1", 0};
@@ -5101,11 +5147,13 @@ TEST_P(PeerConnectionIntegrationTest, RegatherAfterChangingIceTransportType) {
   caller_config.servers.push_back(ice_server);
   caller_config.type = webrtc::PeerConnectionInterface::kRelay;
   caller_config.continual_gathering_policy = PeerConnection::GATHER_CONTINUALLY;
+  caller_config.surface_ice_candidates_on_ice_transport_type_changed = true;
 
   PeerConnectionInterface::RTCConfiguration callee_config;
   callee_config.servers.push_back(ice_server);
   callee_config.type = webrtc::PeerConnectionInterface::kRelay;
   callee_config.continual_gathering_policy = PeerConnection::GATHER_CONTINUALLY;
+  callee_config.surface_ice_candidates_on_ice_transport_type_changed = true;
 
   ASSERT_TRUE(
       CreatePeerConnectionWrappersWithConfig(caller_config, callee_config));
@@ -5147,6 +5195,44 @@ TEST_P(PeerConnectionIntegrationTest, RegatherAfterChangingIceTransportType) {
   callee()->pc()->SetConfiguration(callee_config);
   EXPECT_EQ_WAIT(cricket::LOCAL_PORT_TYPE,
                  callee()->last_candidate_gathered().type(), kDefaultTimeout);
+}
+
+TEST_P(PeerConnectionIntegrationTest, OnIceCandidateError) {
+  static const rtc::SocketAddress turn_server_internal_address{"88.88.88.0",
+                                                               3478};
+  static const rtc::SocketAddress turn_server_external_address{"88.88.88.1", 0};
+
+  CreateTurnServer(turn_server_internal_address, turn_server_external_address);
+
+  webrtc::PeerConnectionInterface::IceServer ice_server;
+  ice_server.urls.push_back("turn:88.88.88.0:3478");
+  ice_server.username = "test";
+  ice_server.password = "123";
+
+  PeerConnectionInterface::RTCConfiguration caller_config;
+  caller_config.servers.push_back(ice_server);
+  caller_config.type = webrtc::PeerConnectionInterface::kRelay;
+  caller_config.continual_gathering_policy = PeerConnection::GATHER_CONTINUALLY;
+
+  PeerConnectionInterface::RTCConfiguration callee_config;
+  callee_config.servers.push_back(ice_server);
+  callee_config.type = webrtc::PeerConnectionInterface::kRelay;
+  callee_config.continual_gathering_policy = PeerConnection::GATHER_CONTINUALLY;
+
+  ASSERT_TRUE(
+      CreatePeerConnectionWrappersWithConfig(caller_config, callee_config));
+
+  // Do normal offer/answer and wait for ICE to complete.
+  ConnectFakeSignaling();
+  caller()->AddAudioVideoTracks();
+  callee()->AddAudioVideoTracks();
+  caller()->CreateAndSetAndSignalOffer();
+  ASSERT_TRUE_WAIT(SignalingStateStable(), kDefaultTimeout);
+  EXPECT_EQ_WAIT(401, caller()->error_event().error_code, kDefaultTimeout);
+  EXPECT_EQ("Unauthorized", caller()->error_event().error_text);
+  EXPECT_EQ("turn:88.88.88.0:3478?transport=udp", caller()->error_event().url);
+  EXPECT_NE(std::string::npos,
+            caller()->error_event().host_candidate.find(":"));
 }
 
 INSTANTIATE_TEST_SUITE_P(PeerConnectionIntegrationTest,

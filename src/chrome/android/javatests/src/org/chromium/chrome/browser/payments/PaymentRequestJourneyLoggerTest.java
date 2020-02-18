@@ -578,7 +578,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.triggerUIAndWait("ccBuy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -612,11 +613,14 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "ccBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
-        // Make sure the events were logged correctly.
+        // Make sure the events were logged correctly. Since the added credit card is using the same
+        // incomplete profile for billing address, NEEDS_COMPLETION_PAYMENT is also set.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
-                | Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_BASIC_CARD
+                | Event.NEEDS_COMPLETION_PAYMENT | Event.NEEDS_COMPLETION_SHIPPING;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -645,11 +649,13 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "ccBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
-                | Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_BASIC_CARD
+                | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -679,11 +685,12 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "ccBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -711,11 +718,12 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "ccBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_BASIC_CARD;
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -743,11 +751,13 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER;
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER
+                | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -774,7 +784,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -808,12 +819,15 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
-        // Make sure the events were logged correctly.
+        // Make sure the events were logged correctly. Since the added credit card is using the same
+        // incomplete profile, NEEDS_COMPLETION_PAYMENT is also set.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
                 | Event.REQUEST_SHIPPING | Event.REQUEST_METHOD_BASIC_CARD
-                | Event.REQUEST_METHOD_OTHER;
+                | Event.REQUEST_METHOD_OTHER | Event.NEEDS_COMPLETION_PAYMENT
+                | Event.NEEDS_COMPLETION_SHIPPING;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -843,7 +857,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         // The user cancels the Payment Request (trigger the logs).
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -876,7 +891,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         // The user cancels the Payment Request (trigger the logs).
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -912,7 +928,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         // The user cancels the Payment Request (trigger the logs).
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.HAD_INITIAL_FORM_OF_PAYMENT
@@ -944,11 +961,13 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         // The user cancels the Payment Request (trigger the logs).
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"Request cancelled"});
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"User closed the Payment Request UI."});
 
         // Make sure the events were logged correctly.
         int expectedSample = Event.SHOWN | Event.USER_ABORTED | Event.REQUEST_SHIPPING
-                | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER;
+                | Event.REQUEST_METHOD_BASIC_CARD | Event.REQUEST_METHOD_OTHER
+                | Event.NEEDS_COMPLETION_PAYMENT;
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         "PaymentRequest.Events", expectedSample));
@@ -1072,7 +1091,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
         mPaymentRequestTestRule.expectResultContains(
-                new String[] {"The payment method", "not supported"});
+                new String[] {"Payment method not supported"});
 
         // Make sure that no journey metrics were logged.
         Assert.assertEquals(0,

@@ -186,6 +186,13 @@ class ExtensionPrefs : public KeyedService {
   ExtensionIdList GetToolbarOrder() const;
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
+  // Get/Set the set of extensions that are pinned to the toolbar. Only used
+  // when the experiment ExtensionsMenu is active."
+  // TODO(crbug.com/943702): Remove reference to experiment when it launches or
+  // remove code if it does not.
+  ExtensionIdList GetPinnedExtensions() const;
+  void SetPinnedExtensions(const ExtensionIdList& extension_ids);
+
   // Called when an extension is installed, so that prefs get created.
   // If |page_ordinal| is invalid then a page will be found for the App.
   // |install_flags| are a bitmask of extension::InstallFlags.
@@ -571,9 +578,9 @@ class ExtensionPrefs : public KeyedService {
   int GetCorruptedDisableCount() const;
   void IncrementCorruptedDisableCount();
 
-  // Whether the extension with the given |id| needs to be synced. This is set
-  // when the state (such as enabled/disabled or allowed in incognito) is
-  // changed before Sync is ready.
+  // Whether the extension with the given |extension_id| needs to be synced.
+  // This is set when the state (such as enabled/disabled or allowed in
+  // incognito) is changed before Sync is ready.
   bool NeedsSync(const std::string& extension_id) const;
   void SetNeedsSync(const std::string& extension_id, bool needs_sync);
 
@@ -600,11 +607,26 @@ class ExtensionPrefs : public KeyedService {
   // Returns the set of allowed pages for the given |extension_id|.
   URLPatternSet GetDNRAllowedPages(const ExtensionId& extension_id) const;
 
+  // Whether the extension with the given |extension_id| is using its ruleset's
+  // matched action count for the badge text. This is set via the
+  // setActionCountAsBadgeText API call.
+  bool GetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id) const;
+  void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
+                                       bool use_action_count_as_badge_text);
+
+  // Iterates over the extension pref entries and removes any obsolete keys. We
+  // need to do this here specially (rather than in
+  // MigrateObsoleteProfilePrefs()) because these entries are subkeys of the
+  // extension's dictionary, which is keyed on the extension ID.
+  void MigrateObsoleteExtensionPrefs();
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();
 
   void ClearExternalUninstallForTesting(const ExtensionId& id);
+
+  static const char kFakeObsoletePrefForTesting[];
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.

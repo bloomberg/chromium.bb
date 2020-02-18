@@ -98,12 +98,24 @@ public class HostInfo {
         }
     }
 
+    /**
+     *
+     * @return true if the host is incomplete, meaning the host may be newly registered and doesn't
+     * have some required fields.
+     */
+    public boolean isIncomplete() {
+        return ftlId.isEmpty() || publicKey.isEmpty();
+    }
+
     public String getHostOfflineReasonText(Context context) {
         if (TextUtils.isEmpty(hostOfflineReason)) {
             return context.getString(R.string.host_offline_tooltip);
         }
-        return context.getString(
-                getHostOfflineReasonResourceId(hostOfflineReason.toLowerCase(Locale.ENGLISH)));
+        int resource_id =
+                getHostOfflineReasonResourceId(hostOfflineReason.toLowerCase(Locale.ENGLISH));
+        return resource_id == R.string.offline_reason_unknown
+                ? context.getString(resource_id, hostOfflineReason)
+                : context.getString(resource_id);
     }
 
     public ArrayList<String> getTokenUrlPatterns() {

@@ -4,9 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
-#include <string>
-#include <vector>
-
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -65,10 +62,10 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -180,9 +177,8 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &fp_service_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &fp_service_);
 
   device::mojom::FingerprintObserverPtr observer;
   fingerprint_observer_binding_.Bind(mojo::MakeRequest(&observer));
@@ -247,8 +243,7 @@ void ScreenLocker::OnAuthFailure(const AuthFailure& error) {
 }
 
 void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
-  CHECK(!base::ContainsKey(users_with_disabled_auth_,
-                           user_context.GetAccountId()))
+  CHECK(!base::Contains(users_with_disabled_auth_, user_context.GetAccountId()))
       << "Authentication is disabled for this user.";
 
   incorrect_passwords_count_ = 0;
@@ -338,8 +333,7 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
       << "Invalid user trying to unlock.";
 
   // Do not attempt authentication if it is disabled for the user.
-  if (base::ContainsKey(users_with_disabled_auth_,
-                        user_context.GetAccountId())) {
+  if (base::Contains(users_with_disabled_auth_, user_context.GetAccountId())) {
     VLOG(1) << "Authentication disabled for user.";
     if (auth_status_consumer_)
       auth_status_consumer_->OnAuthFailure(
@@ -357,6 +351,19 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   if (user_context.IsUsingPin())
     unlock_attempt_type_ = AUTH_PIN;
 
+  // TODO(crbug.com/826417): Remove this, and instead add a new UI control that
+  // calls ScreenLocker via a separate code path.
+  if (ChallengeResponseAuthKeysLoader::CanAuthenticateUser(
+          user_context.GetAccountId())) {
+    unlock_attempt_type_ = AUTH_CHALLENGE_RESPONSE;
+    challenge_response_auth_keys_loader_.LoadAvailableKeys(
+        user_context.GetAccountId(),
+        base::BindOnce(&ScreenLocker::OnChallengeResponseKeysPrepared,
+                       weak_factory_.GetWeakPtr(), user_context));
+    // OnChallengeResponseKeysPrepared will call ContinueAuthenticate.
+    return;
+  }
+
   const user_manager::User* user = FindUnlockUser(user_context.GetAccountId());
   if (user) {
     // Check to see if the user submitted a PIN and it is valid.
@@ -371,6 +378,21 @@ void ScreenLocker::Authenticate(const UserContext& user_context,
   }
 
   ContinueAuthenticate(user_context);
+}
+
+void ScreenLocker::OnChallengeResponseKeysPrepared(
+    const UserContext& user_context,
+    std::vector<ChallengeResponseKey> challenge_response_keys) {
+  if (challenge_response_keys.empty()) {
+    // TODO(crbug.com/826417): Indicate the error in the UI.
+    if (on_auth_complete_)
+      std::move(on_auth_complete_).Run(false /* auth_success */);
+    return;
+  }
+  UserContext new_user_context = user_context;
+  *new_user_context.GetMutableChallengeResponseKeys() =
+      std::move(challenge_response_keys);
+  ContinueAuthenticate(new_user_context);
 }
 
 void ScreenLocker::OnPinAttemptDone(const UserContext& user_context,
@@ -603,7 +625,7 @@ void ScreenLocker::SaveSyncPasswordHash(const UserContext& user_context) {
 }
 
 bool ScreenLocker::IsAuthEnabledForUser(const AccountId& account_id) {
-  return !base::ContainsKey(users_with_disabled_auth_, account_id);
+  return !base::Contains(users_with_disabled_auth_, account_id);
 }
 
 void ScreenLocker::SetAuthenticatorsForTesting(
@@ -708,8 +730,7 @@ void ScreenLocker::OnAuthScanDone(
       quick_unlock::QuickUnlockFactory::GetForUser(active_user);
   if (!quick_unlock_storage ||
       !quick_unlock_storage->IsFingerprintAuthenticationAvailable() ||
-      base::ContainsKey(users_with_disabled_auth_,
-                        active_user->GetAccountId())) {
+      base::Contains(users_with_disabled_auth_, active_user->GetAccountId())) {
     return;
   }
 
@@ -724,7 +745,7 @@ void ScreenLocker::OnAuthScanDone(
   }
 
   UserContext user_context(*active_user);
-  if (!base::ContainsKey(matches, active_user->username_hash())) {
+  if (!base::Contains(matches, active_user->username_hash())) {
     LOG(ERROR) << "Fingerprint unlock failed because it does not match active"
                << " user's record";
     OnFingerprintAuthFailure(*active_user);

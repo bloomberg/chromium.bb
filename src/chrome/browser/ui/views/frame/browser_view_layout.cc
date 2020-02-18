@@ -30,6 +30,7 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -124,25 +125,8 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
-BrowserViewLayout::BrowserViewLayout()
-    : browser_(nullptr),
-      browser_view_(nullptr),
-      top_container_(nullptr),
-      tab_strip_(nullptr),
-      toolbar_(nullptr),
-      bookmark_bar_(nullptr),
-      infobar_container_(nullptr),
-      contents_container_(nullptr),
-      download_shelf_(nullptr),
-      immersive_mode_controller_(nullptr),
-      dialog_host_(new WebContentsModalDialogHostViews(this)),
-      web_contents_modal_dialog_top_y_(-1) {}
-
-BrowserViewLayout::~BrowserViewLayout() {
-}
-
-void BrowserViewLayout::Init(
-    BrowserViewLayoutDelegate* delegate,
+BrowserViewLayout::BrowserViewLayout(
+    std::unique_ptr<BrowserViewLayoutDelegate> delegate,
     Browser* browser,
     views::ClientView* browser_view,
     views::View* top_container,
@@ -151,18 +135,20 @@ void BrowserViewLayout::Init(
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    ImmersiveModeController* immersive_mode_controller) {
-  delegate_.reset(delegate);
-  browser_ = browser;
-  browser_view_ = browser_view;
-  top_container_ = top_container;
-  tab_strip_region_view_ = tab_strip_region_view;
-  tab_strip_ = tab_strip;
-  toolbar_ = toolbar;
-  infobar_container_ = infobar_container;
-  contents_container_ = contents_container;
-  immersive_mode_controller_ = immersive_mode_controller;
-}
+    ImmersiveModeController* immersive_mode_controller)
+    : delegate_(std::move(delegate)),
+      browser_(browser),
+      browser_view_(browser_view),
+      top_container_(top_container),
+      tab_strip_region_view_(tab_strip_region_view),
+      toolbar_(toolbar),
+      infobar_container_(infobar_container),
+      contents_container_(contents_container),
+      immersive_mode_controller_(immersive_mode_controller),
+      tab_strip_(tab_strip),
+      dialog_host_(std::make_unique<WebContentsModalDialogHostViews>(this)) {}
+
+BrowserViewLayout::~BrowserViewLayout() = default;
 
 WebContentsModalDialogHost*
     BrowserViewLayout::GetWebContentsModalDialogHost() {
@@ -352,6 +338,14 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   UpdateTopContainerBounds();
 
   LayoutContentsContainerView(top, LayoutDownloadShelf(browser_view->height()));
+
+  if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
+    gfx::Point contents_top_left;
+    views::View::ConvertPointToScreen(contents_container_, &contents_top_left);
+    contents_border_widget_->SetBounds(
+        gfx::Rect(contents_top_left.x(), contents_top_left.y(),
+                  contents_container_->width(), contents_container_->height()));
+  }
 
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar

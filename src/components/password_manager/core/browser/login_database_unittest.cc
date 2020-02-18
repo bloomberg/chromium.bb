@@ -283,6 +283,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Verify the database is empty.
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+  EXPECT_TRUE(db().IsEmpty());
 
   EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
   EXPECT_EQ(0U, key_to_form_map.size());
@@ -299,6 +300,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   ASSERT_EQ(1U, result.size());
   EXPECT_EQ(form, *result[0]);
+  EXPECT_FALSE(db().IsEmpty());
   result.clear();
 
   EXPECT_EQ(db().GetAllLogins(&key_to_form_map), FormRetrievalResult::kSuccess);
@@ -391,6 +393,7 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_EQ(2, changes[0].primary_key());
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(0U, result.size());
+  EXPECT_TRUE(db().IsEmpty());
 }
 
 TEST_F(LoginDatabaseTest, AddLoginReturnsPrimaryKey) {
@@ -1010,56 +1013,8 @@ TEST_F(LoginDatabaseTest, ClearPrivateData_SavedPasswords) {
   EXPECT_EQ(0U, result.size());
 }
 
-TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
-  std::vector<std::unique_ptr<PasswordForm>> result;
-
-  base::Time now = base::Time::Now();
-  base::TimeDelta one_day = base::TimeDelta::FromDays(1);
-
-  // Create one with a 0 time.
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://1.com", "foo1", base::Time(), false));
-  // Create one for now and +/- 1 day.
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://2.com", "foo2", now - one_day, false));
-  EXPECT_TRUE(AddTimestampedLogin(&db(), "http://3.com", "foo3", now, false));
-  EXPECT_TRUE(
-      AddTimestampedLogin(&db(), "http://4.com", "foo4", now + one_day, false));
-
-  // Verify inserts worked.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  EXPECT_EQ(4U, result.size());
-  result.clear();
-
-  // Delete everything from today's date and on.
-  PasswordStoreChangeList changes;
-  EXPECT_TRUE(db().RemoveLoginsSyncedBetween(now, base::Time(), &changes));
-  ASSERT_EQ(2U, changes.size());
-  EXPECT_EQ("http://3.com", changes[0].form().signon_realm);
-  EXPECT_EQ(3, changes[0].primary_key());
-  EXPECT_EQ("http://4.com", changes[1].form().signon_realm);
-  EXPECT_EQ(4, changes[1].primary_key());
-
-  // Should have deleted half of what we inserted.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  ASSERT_EQ(2U, result.size());
-  EXPECT_EQ("http://1.com", result[0]->signon_realm);
-  EXPECT_EQ("http://2.com", result[1]->signon_realm);
-  result.clear();
-
-  // Delete with 0 date (should delete all).
-  db().RemoveLoginsSyncedBetween(base::Time(), now, &changes);
-  ASSERT_EQ(2U, changes.size());
-  EXPECT_EQ(1, changes[0].primary_key());
-  EXPECT_EQ(2, changes[1].primary_key());
-
-  // Verify nothing is left.
-  EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  EXPECT_EQ(0U, result.size());
-}
-
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
-  std::vector<std::unique_ptr<PasswordForm>> result;
+  PrimaryKeyToFormMap key_to_form_map;
 
   GURL origin("https://example.com");
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin));
@@ -1067,14 +1022,14 @@ TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3", origin));
   EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin));
 
-  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
-  EXPECT_EQ(4U, result.size());
-  for (const auto& form : result)
-    EXPECT_FALSE(form->skip_zero_click);
+  EXPECT_TRUE(db().GetAutoSignInLogins(&key_to_form_map));
+  EXPECT_EQ(4U, key_to_form_map.size());
+  for (const auto& pair : key_to_form_map)
+    EXPECT_FALSE(pair.second->skip_zero_click);
 
   EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin));
-  EXPECT_TRUE(db().GetAutoSignInLogins(&result));
-  EXPECT_EQ(0U, result.size());
+  EXPECT_TRUE(db().GetAutoSignInLogins(&key_to_form_map));
+  EXPECT_EQ(0U, key_to_form_map.size());
 }
 
 TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
@@ -1335,7 +1290,7 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = ASCIIToUTF16("my_new_password");
   form.preferred = false;
-  form.other_possible_usernames.push_back(autofill::ValueElementPair(
+  form.all_possible_usernames.push_back(autofill::ValueElementPair(
       ASCIIToUTF16("my_new_username"), ASCIIToUTF16("new_username_id")));
   form.times_used = 20;
   form.submit_element = ASCIIToUTF16("submit_element");
@@ -1423,15 +1378,9 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
 
   password_form.origin = GURL("https://sixth.example.com/");
   password_form.signon_realm = "https://sixth.example.com/";
-  password_form.username_value = ASCIIToUTF16("");
+  password_form.username_value = ASCIIToUTF16("my_username");
   password_form.password_value = ASCIIToUTF16("my_password");
   password_form.blacklisted_by_user = false;
-  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
-
-  password_form.username_element = ASCIIToUTF16("some_other_input");
-  EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
-
-  password_form.username_value = ASCIIToUTF16("my_username");
   EXPECT_EQ(AddChangeForForm(password_form), db().AddLogin(password_form));
 
   password_form.origin = GURL();
@@ -1489,13 +1438,13 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.ByType.UserCreated."
       "WithoutCustomPassphrase",
-      9, 1);
+      7, 1);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 1,
-      2);
+      3);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountsPerSite.UserCreated.WithoutCustomPassphrase", 2,
-      3);
+      2);
   histogram_tester.ExpectBucketCount(
       "PasswordManager.TimesPasswordUsed.UserCreated.WithoutCustomPassphrase",
       0, 1);
@@ -1516,7 +1465,7 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.WithScheme.Http", 5, 1);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.TotalAccountsHiRes.WithScheme.Https", 3, 1);
+      "PasswordManager.TotalAccountsHiRes.WithScheme.Https", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.TotalAccountsHiRes.WithScheme.Other", 0, 1);
   histogram_tester.ExpectUniqueSample(
@@ -1529,9 +1478,7 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       "PasswordManager.TimesPasswordUsed.AutoGenerated.WithoutCustomPassphrase",
       4, 1);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.EmptyUsernames.CountInDatabase", 3, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty", 1, 1);
+      "PasswordManager.EmptyUsernames.CountInDatabase", 1, 1);
   histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
                                       0, 1);
 #if !defined(OS_IOS) && !defined(OS_ANDROID)

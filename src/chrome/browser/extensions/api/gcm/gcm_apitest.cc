@@ -126,8 +126,8 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
 
   const std::vector<std::string>& sender_ids =
       service()->last_registered_sender_ids();
-  EXPECT_TRUE(base::ContainsValue(sender_ids, "Sender1"));
-  EXPECT_TRUE(base::ContainsValue(sender_ids, "Sender2"));
+  EXPECT_TRUE(base::Contains(sender_ids, "Sender1"));
+  EXPECT_TRUE(base::Contains(sender_ids, "Sender2"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, Unregister) {

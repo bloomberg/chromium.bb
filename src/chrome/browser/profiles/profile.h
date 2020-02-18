@@ -137,6 +137,16 @@ class Profile : public content::BrowserContext {
 
   // content::BrowserContext implementation ------------------------------------
 
+  // Returns the path of the directory where this context's data is stored.
+  base::FilePath GetPath() override = 0;
+  virtual base::FilePath GetPath() const = 0;
+
+  // Return whether this context is off the record. Default is false.
+  // Note that for Chrome this does not imply Incognito as Guest sessions are
+  // also off the record.
+  bool IsOffTheRecord() override = 0;
+  virtual bool IsOffTheRecord() const = 0;
+
   // Typesafe upcast.
   virtual TestingProfile* AsTestingProfile();
 
@@ -211,11 +221,6 @@ class Profile : public content::BrowserContext {
 
   // Returns the main request context.
   virtual net::URLRequestContextGetter* GetRequestContext() = 0;
-
-  // Returns a callback (which must be executed on the IO thread) that returns
-  // the cookie store for the chrome-extensions:// scheme.
-  virtual base::OnceCallback<net::CookieStore*()>
-  GetExtensionsCookieStoreGetter() = 0;
 
   // Returns the main URLLoaderFactory.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -318,6 +323,14 @@ class Profile : public content::BrowserContext {
   // Returns whether it is an Incognito profile. An Incognito profile is an
   // off-the-record profile that is not a guest profile.
   bool IsIncognitoProfile() const;
+
+  // Returns true if this is an off the record profile that is independent from
+  // its original regular profile. This covers OTR profiles that are directly
+  // created using CreateOffTheRecordProfile() (such as done by
+  // IndependentOTRProfileManager). Calling GetOffTheRecordProfile on their
+  // GetOriginProfile will not point to themselves.
+  // This type of usage is not recommended.
+  virtual bool IsIndependentOffTheRecordProfile() = 0;
 
   // Returns whether it is a guest session. This covers both the guest profile
   // and its parent.

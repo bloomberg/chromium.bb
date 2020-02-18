@@ -210,6 +210,34 @@ class TestGitClBasic(unittest.TestCase):
       'Gnarly-Dude: beans',
     ])
 
+  def test_set_preserve_tryjobs(self):
+    d = git_cl.ChangeDescription('Simple.')
+    d.set_preserve_tryjobs()
+    self.assertEqual(d.description.splitlines(), [
+      'Simple.',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: true',
+    ])
+    before = d.description
+    d.set_preserve_tryjobs()
+    self.assertEqual(before, d.description)
+
+    d = git_cl.ChangeDescription('\n'.join([
+      'One is enough',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: dups not encouraged, but don\'t hurt',
+      'Change-Id: Ideadbeef',
+    ]))
+    d.set_preserve_tryjobs()
+    self.assertEqual(d.description.splitlines(), [
+      'One is enough',
+      '',
+      'Cq-Do-Not-Cancel-Tryjobs: dups not encouraged, but don\'t hurt',
+      'Change-Id: Ideadbeef',
+      'Cq-Do-Not-Cancel-Tryjobs: true',
+    ])
+
+
   def test_get_bug_line_values(self):
     f = lambda p, bugs: list(git_cl._get_bug_line_values(p, bugs))
     self.assertEqual(f('', ''), [])
@@ -894,6 +922,13 @@ class TestGitCl(TestCase):
 
     calls += [
       ((['git', 'config', 'user.email'],), 'me@example.com'),
+      (('time.time',), 1000,),
+      (('time.time',), 3000,),
+      (('add_repeated', 'sub_commands', {
+          'execution_time': 2000,
+          'command': 'presubmit',
+          'exit_code': 0
+      }), None,),
       ((['git', 'diff', '--no-ext-diff', '--stat', '-l100000', '-C50'] +
          ([custom_cl_base] if custom_cl_base else
           [ancestor_revision, 'HEAD']),),

@@ -63,14 +63,16 @@ class TestOverlayWindow : public OverlayWindow {
     return std::unique_ptr<OverlayWindow>(new TestOverlayWindow());
   }
 
-  bool IsActive() const override { return false; }
+  bool IsActive() override { return false; }
   void Close() override {}
   void ShowInactive() override {}
   void Hide() override {}
-  bool IsVisible() const override { return false; }
-  bool IsAlwaysOnTop() const override { return false; }
-  gfx::Rect GetBounds() const override { return gfx::Rect(); }
-  void UpdateVideoSize(const gfx::Size& natural_size) override {}
+  bool IsVisible() override { return false; }
+  bool IsAlwaysOnTop() override { return false; }
+  gfx::Rect GetBounds() override { return gfx::Rect(size_); }
+  void UpdateVideoSize(const gfx::Size& natural_size) override {
+    size_ = natural_size;
+  }
   void SetPlaybackState(PlaybackState playback_state) override {}
   void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
   void SetMutedState(MutedState muted_state) override {}
@@ -81,6 +83,8 @@ class TestOverlayWindow : public OverlayWindow {
   cc::Layer* GetLayerForTesting() override { return nullptr; }
 
  private:
+  gfx::Size size_;
+
   DISALLOW_COPY_AND_ASSIGN(TestOverlayWindow);
 };
 
@@ -311,7 +315,7 @@ bool WebTestContentBrowserClient::CanCreateWindow(
   return !block_popups_ || user_gesture;
 }
 
-bool WebTestContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRunWebTests);
 }

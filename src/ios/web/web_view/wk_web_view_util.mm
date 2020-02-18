@@ -37,10 +37,19 @@ bool RequiresContentFilterBlockingWorkaround() {
   if (!GetWebClient()->IsSlimNavigationManagerEnabled())
     return false;
 
+  // This is fixed in iOS13 beta 7.
+  if (@available(iOS 13, *))
+    return false;
+
   if (@available(iOS 12.2, *))
     return true;
 
   return false;
 }
 
+bool RequiresProvisionalNavigationFailureWorkaround() {
+  if (@available(iOS 12.2, *))
+    return true;
+  return false;
+}
 }  // namespace web

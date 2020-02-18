@@ -20,9 +20,9 @@
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -225,7 +225,7 @@ AudioWorkletNode::AudioWorkletNode(
   for (const auto& param_info : param_info_list) {
     String param_name = param_info.Name().IsolatedCopy();
     AudioParam* audio_param = AudioParam::Create(
-        context, kParamTypeAudioWorklet,
+        context, Uuid(), AudioParamHandler::kParamTypeAudioWorklet,
         param_info.DefaultValue(), AudioParamHandler::AutomationRate::kAudio,
         AudioParamHandler::AutomationRateMode::kVariable, param_info.MinValue(),
         param_info.MaxValue());

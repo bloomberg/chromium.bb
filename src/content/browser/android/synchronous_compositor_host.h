@@ -18,8 +18,8 @@
 #include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -54,7 +54,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
       const std::vector<viz::ReturnedResource>& resources) override;
-  void DidPresentCompositorFrames(viz::PresentationFeedbackMap feedbacks,
+  void DidPresentCompositorFrames(viz::FrameTimingDetailsMap timing_details,
                                   uint32_t frame_token) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidBecomeActive() override;
@@ -67,7 +67,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
   void BeginFrame(ui::WindowAndroid* window_android,
                   const viz::BeginFrameArgs& args,
-                  const viz::PresentationFeedbackMap& feedbacks);
+                  const viz::FrameTimingDetailsMap& timing_details);
   void SetBeginFramePaused(bool paused);
 
   // Called by SynchronousCompositorSyncCallBridge.
@@ -116,8 +116,9 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   const int process_id_;
   const int routing_id_;
   const bool use_in_process_zero_copy_software_draw_;
-  mojom::SynchronousCompositorAssociatedPtr sync_compositor_;
-  mojo::AssociatedBinding<mojom::SynchronousCompositorHost> host_binding_;
+  mojo::AssociatedRemote<mojom::SynchronousCompositor> sync_compositor_;
+  mojo::AssociatedReceiver<mojom::SynchronousCompositorHost> host_receiver_{
+      this};
 
   bool registered_with_filter_ = false;
 

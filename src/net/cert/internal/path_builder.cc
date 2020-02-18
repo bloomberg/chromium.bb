@@ -9,6 +9,7 @@
 #include <unordered_set>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/sha2.h"
 #include "net/base/net_errors.h"
@@ -53,6 +54,11 @@ std::string PathDebugString(const ParsedCertificateList& certs) {
     s += " " + CertDebugString(cert.get());
   }
   return s;
+}
+
+void RecordIterationCountHistogram(uint32_t iteration_count) {
+  base::UmaHistogramCounts10000("Net.CertVerifier.PathBuilderIterationCount",
+                                iteration_count);
 }
 
 // This structure describes a certificate and its trust level. Note that |cert|
@@ -372,6 +378,7 @@ class CertPathIter {
   // returns false.
   bool GetNextPath(ParsedCertificateList* out_certs,
                    CertificateTrust* out_last_cert_trust,
+                   const base::TimeTicks deadline,
                    uint32_t* iteration_count,
                    const uint32_t max_iteration_count);
 
@@ -405,9 +412,13 @@ void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
 
 bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
                                CertificateTrust* out_last_cert_trust,
+                               const base::TimeTicks deadline,
                                uint32_t* iteration_count,
                                const uint32_t max_iteration_count) {
   while (true) {
+    if (!deadline.is_null() && base::TimeTicks::Now() > deadline)
+      return false;
+
     if (!next_issuer_.cert) {
       if (cur_path_.Empty()) {
         DVLOG(1) << "CertPathIter exhausted all paths...";
@@ -565,6 +576,10 @@ void CertPathBuilder::SetIterationLimit(uint32_t limit) {
   max_iteration_count_ = limit;
 }
 
+void CertPathBuilder::SetDeadline(base::TimeTicks deadline) {
+  deadline_ = deadline;
+}
+
 void CertPathBuilder::Run() {
   uint32_t iteration_count = 0;
 
@@ -573,12 +588,16 @@ void CertPathBuilder::Run() {
         std::make_unique<CertPathBuilderResultPath>();
 
     if (!cert_path_iter_->GetNextPath(&result_path->certs,
-                                      &result_path->last_cert_trust,
+                                      &result_path->last_cert_trust, deadline_,
                                       &iteration_count, max_iteration_count_)) {
       // No more paths to check.
       if (max_iteration_count_ > 0 && iteration_count > max_iteration_count_) {
         out_result_->exceeded_iteration_limit = true;
       }
+      if (!deadline_.is_null() && base::TimeTicks::Now() > deadline_) {
+        out_result_->exceeded_deadline = true;
+      }
+      RecordIterationCountHistogram(iteration_count);
       return;
     }
 
@@ -600,6 +619,7 @@ void CertPathBuilder::Run() {
     AddResultPath(std::move(result_path));
 
     if (path_is_good) {
+      RecordIterationCountHistogram(iteration_count);
       // Found a valid path, return immediately.
       // TODO(mattm): add debug/test mode that tries all possible paths.
       return;

@@ -26,6 +26,11 @@
 #define GRPC_CUSTOM_SOCKET
 #endif
 #endif
+/* This needs to be separate from the other conditions because it needs to
+ * apply to custom sockets too */
+#ifdef GPR_WINDOWS
+#define GRPC_ARES_RESOLVE_LOCALHOST_MANUALLY 1
+#endif
 #if defined(GRPC_CUSTOM_SOCKET)
 // Do Nothing
 #elif defined(GPR_MANYLINUX1)
@@ -44,6 +49,7 @@
 #elif defined(GPR_WINDOWS)
 #define GRPC_WINSOCK_SOCKET 1
 #define GRPC_WINDOWS_SOCKETUTILS 1
+#define GRPC_WINDOWS_SOCKET_ARES_EV_DRIVER 1
 #elif defined(GPR_ANDROID)
 #define GRPC_HAVE_IPV6_RECVPKTINFO 1
 #define GRPC_HAVE_IP_PKTINFO 1
@@ -88,6 +94,15 @@
 #ifdef LINUX_VERSION_CODE
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
 #define GRPC_HAVE_TCP_USER_TIMEOUT
+#ifdef __GLIBC_PREREQ
+#if !(__GLIBC_PREREQ(2, 17))
+/*
+ * TCP_USER_TIMEOUT wasn't imported to glibc until 2.17. Use Linux system
+ * header instead.
+ */
+#define GRPC_LINUX_TCP_H 1
+#endif /* __GLIBC_PREREQ(2, 17) */
+#endif /* ifdef __GLIBC_PREREQ */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37) */
 #endif /* LINUX_VERSION_CODE */
 #ifndef __GLIBC__
@@ -170,6 +185,22 @@
 #define GRPC_POSIX_SOCKET 1
 #define GRPC_POSIX_SOCKETUTILS 1
 #define GRPC_POSIX_WAKEUP_FD 1
+#elif defined(GPR_FUCHSIA)
+#define GRPC_HAVE_IFADDRS 1
+#define GRPC_HAVE_IPV6_RECVPKTINFO 1
+#define GRPC_HAVE_IP_PKTINFO 1
+// Zircon does not support the MSG_NOSIGNAL flag since it doesn't support
+// signals.
+#undef GRPC_HAVE_MSG_NOSIGNAL
+#define GRPC_HAVE_UNIX_SOCKET 1
+#define GRPC_POSIX_WAKEUP_FD 1
+// TODO(rudominer) Check that this does something we want.
+#define GRPC_POSIX_NO_SPECIAL_WAKEUP_FD 1
+#define GRPC_POSIX_SOCKET 1
+#define GRPC_POSIX_SOCKETADDR 1
+// TODO(rudominer) Check this does something we want.
+#define GRPC_POSIX_SOCKETUTILS 1
+#define GRPC_TIMER_USE_GENERIC 1
 #elif !defined(GPR_NO_AUTODETECT_PLATFORM)
 #error "Platform not recognized"
 #endif

@@ -1,6 +1,6 @@
 package attributes;
 
-our $VERSION = 0.19;
+our $VERSION = 0.33;
 
 @EXPORT_OK = qw(get reftype);
 @EXPORT = ();
@@ -18,29 +18,33 @@ sub carp {
     goto &Carp::carp;
 }
 
+# Hash of SV type (CODE, SCALAR, etc.) to regex matching deprecated
+# attributes for that type.
 my %deprecated;
-$deprecated{CODE} = qr/\A-?(locked)\z/;
-$deprecated{ARRAY} = $deprecated{HASH} = $deprecated{SCALAR}
-    = qr/\A-?(unique)\z/;
+
+my %msg = (
+    lvalue => 'lvalue attribute applied to already-defined subroutine',
+   -lvalue => 'lvalue attribute removed from already-defined subroutine',
+    const  => 'Useless use of attribute "const"',
+);
 
 sub _modify_attrs_and_deprecate {
     my $svtype = shift;
-    # Now that we've removed handling of locked from the XS code, we need to
+    # After we've removed a deprecated attribute from the XS code, we need to
     # remove it here, else it ends up in @badattrs. (If we do the deprecation in
     # XS, we can't control the warning based on *our* caller's lexical settings,
     # and the warned line is in this package)
     grep {
 	$deprecated{$svtype} && /$deprecated{$svtype}/ ? do {
 	    require warnings;
-	    warnings::warnif('deprecated', "Attribute \"$1\" is deprecated");
+	    warnings::warnif('deprecated', "Attribute \"$1\" is deprecated, " .
+                                           "and will disappear in Perl 5.28");
 	    0;
-	} : $svtype eq 'CODE' && /^-?lvalue\z/ ? do {
+	} : $svtype eq 'CODE' && exists $msg{$_} ? do {
 	    require warnings;
 	    warnings::warnif(
 		'misc',
-		"lvalue attribute "
-		   . (/^-/ ? "removed from" : "applied to")
-		   . " already-defined subroutine"
+		 $msg{$_}
 	    );
 	    0;
 	} : 1
@@ -238,11 +242,36 @@ Indicates that the referenced subroutine
 is a method.  A subroutine so marked
 will not trigger the "Ambiguous call resolved as CORE::%s" warning.
 
-=item locked
+=item prototype(..)
 
-The "locked" attribute has no effect in
-5.10.0 and later.  It was used as part
-of the now-removed "Perl 5.005 threads".
+The "prototype" attribute is an alternate means of specifying a prototype
+on a sub.  The desired prototype is within the parens.
+
+The prototype from the attribute is assigned to the sub immediately after
+the prototype from the sub, which means that if both are declared at the
+same time, the traditionally defined prototype is ignored.  In other words,
+C<sub foo($$) : prototype(@) {}> is indistinguishable from C<sub foo(@){}>.
+
+If illegalproto warnings are enabled, the prototype declared inside this
+attribute will be sanity checked at compile time.
+
+=item const
+
+This experimental attribute, introduced in Perl 5.22, only applies to
+anonymous subroutines.  It causes the subroutine to be called as soon as
+the C<sub> expression is evaluated.  The return value is captured and
+turned into a constant subroutine.
+
+=back
+
+The following are the built-in attributes for variables:
+
+=over 4
+
+=item shared
+
+Indicates that the referenced variable can be shared across different threads
+when used in conjunction with the L<threads> and L<threads::shared> modules.
 
 =back
 

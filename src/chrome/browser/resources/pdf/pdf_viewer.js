@@ -240,6 +240,7 @@ function PDFViewer(browserApi) {
 
   // Setup the button event listeners.
   this.zoomToolbar_ = $('zoom-toolbar');
+  this.zoomToolbar_.setIsPrintPreview(this.isPrintPreview_);
   this.zoomToolbar_.addEventListener(
       'fit-to-changed', this.fitToChanged_.bind(this));
   this.zoomToolbar_.addEventListener(
@@ -746,7 +747,7 @@ PDFViewer.prototype = {
   sendBackgroundColorForPrintPreview_: function() {
     this.pluginController_.postMessage({
       type: 'backgroundColorChanged',
-      backgroundColor: document.documentElement.hasAttribute('dark') ?
+      backgroundColor: this.dark_ ?
           PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR :
           PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR,
     });
@@ -776,7 +777,8 @@ PDFViewer.prototype = {
     $('toolbar').strings = strings;
     $('toolbar').pdfAnnotationsEnabled =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
-    $('zoom-toolbar').strings = strings;
+    $('toolbar').printingEnabled = loadTimeData.getBoolean('printingEnabled');
+    $('zoom-toolbar').setStrings(strings);
     $('password-screen').strings = strings;
     $('error-screen').strings = strings;
     if ($('form-warning')) {
@@ -1014,7 +1016,7 @@ PDFViewer.prototype = {
         this.toolbarManager_.resetKeyboardNavigationAndHideToolbars();
         return true;
       case 'darkModeChanged':
-        document.documentElement.toggleAttribute('dark', message.data.darkMode);
+        this.dark_ = message.data.darkMode;
         if (this.isPrintPreview_) {
           this.sendBackgroundColorForPrintPreview_();
         }
@@ -1089,10 +1091,6 @@ PDFViewer.prototype = {
     // can dismiss the password screen.
     if (this.passwordScreen_.active) {
       this.passwordScreen_.close();
-    }
-
-    if (this.pageIndicator_) {
-      this.pageIndicator_.initialFadeIn();
     }
 
     if (this.toolbar_) {
@@ -1621,9 +1619,6 @@ class PluginController extends ContentController {
         break;
       case 'scrollBy':
         this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
-        break;
-      case 'cancelStreamUrl':
-        chrome.mimeHandlerPrivate.abortStream();
         break;
       case 'metadata':
         this.viewer_.setDocumentMetadata(

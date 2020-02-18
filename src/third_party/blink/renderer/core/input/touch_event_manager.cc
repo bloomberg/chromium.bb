@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -277,8 +277,7 @@ WebCoalescedInputEvent TouchEventManager::GenerateWebCoalescedInputEvent() {
   } timestamp_based_event_comparison;
   std::sort(all_coalesced_events.begin(), all_coalesced_events.end(),
             timestamp_based_event_comparison);
-  WebCoalescedInputEvent result(event, std::vector<const WebInputEvent*>(),
-                                std::vector<const WebInputEvent*>());
+  WebCoalescedInputEvent result(event, {}, {});
   for (const auto& web_pointer_event : all_coalesced_events) {
     if (web_pointer_event.GetType() == WebInputEvent::kPointerDown) {
       // TODO(crbug.com/732842): Technically we should never receive the
@@ -529,7 +528,7 @@ void TouchEventManager::UpdateTouchAttributeMapsForPointerDown(
   if (touch_sequence_document_ &&
       (!touch_node || &touch_node->GetDocument() != touch_sequence_document_)) {
     if (touch_sequence_document_->GetFrame()) {
-      HitTestLocation location(LayoutPoint(
+      HitTestLocation location(PhysicalOffset::FromFloatPointRound(
           touch_sequence_document_->GetFrame()->View()->ConvertFromRootFrame(
               event.PositionInWidget())));
       result = event_handling_util::HitTestResultInFrame(

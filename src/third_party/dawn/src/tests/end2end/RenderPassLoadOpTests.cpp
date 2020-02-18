@@ -26,10 +26,10 @@ class DrawQuad {
         DrawQuad() {}
         DrawQuad(dawn::Device device, const char* vsSource, const char* fsSource)
             : device(device) {
-                vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vsSource);
-                fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fsSource);
+            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vsSource);
+            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fsSource);
 
-                pipelineLayout = utils::MakeBasicPipelineLayout(device, nullptr);
+            pipelineLayout = utils::MakeBasicPipelineLayout(device, nullptr);
             }
 
         void Draw(dawn::RenderPassEncoder* pass) {
@@ -64,9 +64,10 @@ class RenderPassLoadOpTests : public DawnTest {
             descriptor.size.depth = 1;
             descriptor.arrayLayerCount = 1;
             descriptor.sampleCount = 1;
-            descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+            descriptor.format = dawn::TextureFormat::RGBA8Unorm;
             descriptor.mipLevelCount = 1;
-            descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+            descriptor.usage =
+                dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
             renderTarget = device.CreateTexture(&descriptor);
 
             renderTargetView = renderTarget.CreateDefaultView();

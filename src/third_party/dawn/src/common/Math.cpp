@@ -17,6 +17,7 @@
 #include "common/Assert.h"
 
 #include <algorithm>
+#include <cmath>
 
 #if defined(DAWN_COMPILER_MSVC)
 #    include <intrin.h>
@@ -43,6 +44,26 @@ uint32_t Log2(uint32_t value) {
     return firstBitIndex;
 #else
     return 31 - static_cast<uint32_t>(__builtin_clz(value));
+#endif
+}
+
+uint32_t Log2(uint64_t value) {
+    ASSERT(value != 0);
+#if defined(DAWN_COMPILER_MSVC)
+    unsigned long firstBitIndex = 0ul;
+    unsigned char ret = _BitScanReverse64(&firstBitIndex, value);
+    ASSERT(ret != 0);
+    return firstBitIndex;
+#else
+    return 63 - static_cast<uint32_t>(__builtin_clzll(value));
+#endif
+}
+
+uint64_t NextPowerOfTwo(uint64_t x) {
+#if defined(DAWN_COMPILER_MSVC)
+    return x == 1 ? 1 : 1ull << (64 - __lzcnt64(x - 1));
+#else
+    return x == 1 ? 1 : 1ull << (64 - __builtin_clzll(x - 1));
 #endif
 }
 
@@ -85,8 +106,10 @@ uint16_t Float32ToFloat16(float fp32) {
     uint32_t sign16 = (fp32i & 0x80000000) >> 16;
     uint32_t mantissaAndExponent = fp32i & 0x7FFFFFFF;
 
-    if (mantissaAndExponent > 0x47FFEFFF) {  // Infinity
-        return static_cast<uint16_t>(sign16 | 0x7FFF);
+    if (mantissaAndExponent > 0x7F800000) {  // NaN
+        return 0x7FFF;
+    } else if (mantissaAndExponent > 0x47FFEFFF) {  // Infinity
+        return static_cast<uint16_t>(sign16 | 0x7C00);
     } else if (mantissaAndExponent < 0x38800000) {  // Denormal
         uint32_t mantissa = (mantissaAndExponent & 0x007FFFFF) | 0x00800000;
         int32_t exponent = 113 - (mantissaAndExponent >> 23);
@@ -103,5 +126,25 @@ uint16_t Float32ToFloat16(float fp32) {
         return static_cast<uint16_t>(sign16 | (mantissaAndExponent + 0xC8000000 + 0x00000FFF +
                                                ((mantissaAndExponent >> 13) & 1)) >>
                                                   13);
+    }
+}
+
+bool IsFloat16NaN(uint16_t fp16) {
+    return (fp16 & 0x7FFF) > 0x7C00;
+}
+
+// Based on the Khronos Data Format Specification 1.2 Section 13.3 sRGB transfer functions
+float SRGBToLinear(float srgb) {
+    // sRGB is always used in unsigned normalized formats so clamp to [0.0, 1.0]
+    if (srgb <= 0.0f) {
+        return 0.0f;
+    } else if (srgb > 1.0f) {
+        return 1.0f;
+    }
+
+    if (srgb < 0.04045f) {
+        return srgb / 12.92f;
+    } else {
+        return std::pow((srgb + 0.055f) / 1.055f, 2.4f);
     }
 }

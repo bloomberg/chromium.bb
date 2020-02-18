@@ -53,9 +53,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void Initialize(
       mojom::RendererClientAssociatedPtrInfo client,
       base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
-      const base::Optional<GURL>& media_url,
-      const base::Optional<GURL>& site_for_cookies,
-      bool allow_credentials,
+      mojom::MediaUrlParamsPtr media_url_params,
       InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;
   void StartPlayingFrom(base::TimeDelta time_delta) final;
@@ -82,13 +80,13 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void OnError(PipelineStatus status) final;
   void OnEnded() final;
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
-  void OnBufferingStateChange(BufferingState state) final;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) final;
   void OnWaiting(WaitingReason reason) final;
   void OnAudioConfigChange(const AudioDecoderConfig& config) final;
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
   void OnVideoNaturalSizeChange(const gfx::Size& size) final;
   void OnVideoOpacityChange(bool opaque) final;
-  void OnRemotePlayStateChange(MediaStatus::State state) final;
 
   // Called when the MediaResourceShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.
@@ -139,7 +137,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   base::Closure bad_message_cb_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
-  base::WeakPtrFactory<MojoRendererService> weak_factory_;
+  base::WeakPtrFactory<MojoRendererService> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MojoRendererService);
 };

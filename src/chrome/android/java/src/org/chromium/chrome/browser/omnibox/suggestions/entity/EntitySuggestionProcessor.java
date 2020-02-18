@@ -13,8 +13,9 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -49,6 +50,14 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
     private static final int LOW_MEMORY_THRESHOLD_KB =
             (int) (1.5 * ConversionUtils.KILOBYTES_PER_GIGABYTE);
 
+    // These values are used with UMA to report Omnibox.RichEntity.DecorationType histograms, and
+    // should therefore be treated as append-only.
+    // See http://cs.chromium.org/Omnibox.RichEntity.DecorationType.
+    private static final int DECORATION_TYPE_ICON = 0;
+    private static final int DECORATION_TYPE_COLOR = 1;
+    private static final int DECORATION_TYPE_IMAGE = 2;
+    private static final int DECORATION_TYPE_TOTAL_COUNT = 3;
+
     /**
      * @param context An Android context.
      * @param suggestionHost A handle to the object using the suggestions.
@@ -78,8 +87,8 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void onNativeInitialized() {
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                ImageFetcherConfig.IN_MEMORY_ONLY, ChromeApplication.getReferencePool());
+        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_ONLY,
+                GlobalDiscardableReferencePool.getReferencePool());
     }
 
     @Override
@@ -89,7 +98,17 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
-        // Not used.
+        int decorationType = DECORATION_TYPE_ICON;
+
+        if (model.get(EntitySuggestionViewProperties.IMAGE_BITMAP) != null) {
+            decorationType = DECORATION_TYPE_IMAGE;
+        } else if (model.get(EntitySuggestionViewProperties.IMAGE_DOMINANT_COLOR)
+                != EntitySuggestionViewBinder.NO_DOMINANT_COLOR) {
+            decorationType = DECORATION_TYPE_COLOR;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(
+                "Omnibox.RichEntity.DecorationType", decorationType, DECORATION_TYPE_TOTAL_COUNT);
     }
 
     @Override
@@ -114,8 +133,8 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
         models.add(model);
         mPendingImageRequests.put(url, models);
 
-        mImageFetcher.fetchImage(url, "EntitySuggestionProcessor", mEntityImageSizePx,
-                mEntityImageSizePx, (Bitmap bitmap) -> {
+        mImageFetcher.fetchImage(url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME,
+                mEntityImageSizePx, mEntityImageSizePx, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
 
                     final List<PropertyModel> pendingModels = mPendingImageRequests.remove(url);

@@ -35,7 +35,7 @@ FrameConnectedBluetoothDevices::~FrameConnectedBluetoothDevices() {
 }
 
 bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
-    const WebBluetoothDeviceId& device_id) {
+    const blink::WebBluetoothDeviceId& device_id) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter == device_id_to_connection_map_.end()) {
     return false;
@@ -45,7 +45,7 @@ bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
 }
 
 void FrameConnectedBluetoothDevices::Insert(
-    const WebBluetoothDeviceId& device_id,
+    const blink::WebBluetoothDeviceId& device_id,
     std::unique_ptr<device::BluetoothGattConnection> connection,
     blink::mojom::WebBluetoothServerClientAssociatedPtr client) {
   if (device_id_to_connection_map_.find(device_id) !=
@@ -71,7 +71,7 @@ void FrameConnectedBluetoothDevices::Insert(
 }
 
 void FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithId(
-    const WebBluetoothDeviceId& device_id) {
+    const blink::WebBluetoothDeviceId& device_id) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter == device_id_to_connection_map_.end()) {
     return;
@@ -82,14 +82,14 @@ void FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithId(
   DecrementDevicesConnectedCount();
 }
 
-base::Optional<WebBluetoothDeviceId>
+base::Optional<blink::WebBluetoothDeviceId>
 FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithAddress(
     const std::string& device_address) {
   auto device_address_iter = device_address_to_id_map_.find(device_address);
   if (device_address_iter == device_address_to_id_map_.end()) {
     return base::nullopt;
   }
-  WebBluetoothDeviceId device_id = device_address_iter->second;
+  blink::WebBluetoothDeviceId device_id = device_address_iter->second;
   auto device_id_iter = device_id_to_connection_map_.find(device_id);
   CHECK(device_id_iter != device_id_to_connection_map_.end());
   device_id_iter->second->server_client->GATTServerDisconnected();

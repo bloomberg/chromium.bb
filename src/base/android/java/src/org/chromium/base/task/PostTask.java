@@ -82,7 +82,7 @@ public class PostTask {
      */
     public static void postDelayedTask(TaskTraits taskTraits, Runnable task, long delay) {
         synchronized (sLock) {
-            if (sPreNativeTaskRunners != null) {
+            if (sPreNativeTaskRunners != null || taskTraits.mIsChoreographerFrame) {
                 getTaskExecutorForTraits(taskTraits).postDelayedTask(taskTraits, task, delay);
             } else {
                 nativePostDelayedTask(taskTraits.mPrioritySetExplicitly, taskTraits.mPriority,
@@ -239,10 +239,11 @@ public class PostTask {
     @CalledByNative
     private static void onNativeSchedulerReady() {
         synchronized (sLock) {
-            for (TaskRunner taskRunner : sPreNativeTaskRunners) {
+            Set<TaskRunner> preNativeTaskRunners = sPreNativeTaskRunners;
+            sPreNativeTaskRunners = null;
+            for (TaskRunner taskRunner : preNativeTaskRunners) {
                 taskRunner.initNativeTaskRunner();
             }
-            sPreNativeTaskRunners = null;
         }
     }
 

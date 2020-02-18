@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
@@ -30,7 +31,13 @@ PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(
     const std::vector<std::pair<std::string, std::string>>& headers)
     : content(content), content_type(content_type), headers(headers) {}
 
+PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(ResponseEntry&& other) =
+    default;
+
 PrefetchBrowserTestBase::ResponseEntry::~ResponseEntry() = default;
+
+PrefetchBrowserTestBase::ResponseEntry& PrefetchBrowserTestBase::ResponseEntry::
+operator=(ResponseEntry&& other) = default;
 
 PrefetchBrowserTestBase::ScopedSignedExchangeHandlerFactory::
     ScopedSignedExchangeHandlerFactory(SignedExchangeHandlerFactory* factory) {
@@ -50,19 +57,26 @@ void PrefetchBrowserTestBase::SetUpOnMainThread() {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext()));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
-          base::RetainedRef(partition->GetPrefetchURLLoaderService()),
-          base::BindRepeating(
-              &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
-              base::Unretained(this))));
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    partition->GetPrefetchURLLoaderService()
+        ->RegisterPrefetchLoaderCallbackForTest(base::BindRepeating(
+            &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
+            base::Unretained(this)));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
+            base::RetainedRef(partition->GetPrefetchURLLoaderService()),
+            base::BindRepeating(
+                &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
+                base::Unretained(this))));
+  }
 }
 
 void PrefetchBrowserTestBase::RegisterResponse(const std::string& url,
-                                               const ResponseEntry& entry) {
-  response_map_[url] = entry;
+                                               ResponseEntry&& entry) {
+  response_map_[url] = std::move(entry);
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
@@ -82,30 +96,17 @@ PrefetchBrowserTestBase::ServeResponses(
   return nullptr;
 }
 
-void PrefetchBrowserTestBase::WatchURLAndRunClosure(
-    const std::string& relative_url,
-    int* visit_count,
-    base::OnceClosure closure,
-    const net::test_server::HttpRequest& request) {
-  if (request.relative_url == relative_url) {
-    (*visit_count)++;
-    if (closure)
-      std::move(closure).Run();
-  }
-}
-
 void PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled() {
+  DCHECK_CURRENTLY_ON(
+      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  base::AutoLock lock(lock_);
   prefetch_url_loader_called_++;
 }
 
-void PrefetchBrowserTestBase::RegisterRequestMonitor(
-    net::EmbeddedTestServer* test_server,
-    const std::string& path,
-    int* count,
-    base::RunLoop* waiter) {
-  test_server->RegisterRequestMonitor(base::BindRepeating(
-      &PrefetchBrowserTestBase::WatchURLAndRunClosure, base::Unretained(this),
-      path, count, waiter ? waiter->QuitClosure() : base::RepeatingClosure()));
+int PrefetchBrowserTestBase::GetPrefetchURLLoaderCallCount() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::AutoLock lock(lock_);
+  return prefetch_url_loader_called_;
 }
 
 void PrefetchBrowserTestBase::RegisterRequestHandler(
@@ -149,6 +150,42 @@ new Promise((resolve) => {
                                                      url.spec().c_str()),
                                   &result));
   ASSERT_TRUE(result);
+}
+
+// static
+scoped_refptr<PrefetchBrowserTestBase::RequestCounter>
+PrefetchBrowserTestBase::RequestCounter::CreateAndMonitor(
+    net::EmbeddedTestServer* test_server,
+    const std::string& path,
+    base::RunLoop* waiter) {
+  auto counter = base::MakeRefCounted<RequestCounter>(path, waiter);
+  test_server->RegisterRequestMonitor(
+      base::BindRepeating(&RequestCounter::OnRequest, counter));
+  return counter;
+}
+
+PrefetchBrowserTestBase::RequestCounter::RequestCounter(const std::string& path,
+                                                        base::RunLoop* waiter)
+    : waiter_closure_(waiter ? waiter->QuitClosure() : base::OnceClosure()),
+      path_(path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+PrefetchBrowserTestBase::RequestCounter::~RequestCounter() = default;
+
+int PrefetchBrowserTestBase::RequestCounter::GetRequestCount() {
+  base::AutoLock lock(lock_);
+  return request_count_;
+}
+
+void PrefetchBrowserTestBase::RequestCounter::OnRequest(
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != path_)
+    return;
+  base::AutoLock lock(lock_);
+  ++request_count_;
+  if (waiter_closure_)
+    std::move(waiter_closure_).Run();
 }
 
 }  // namespace content

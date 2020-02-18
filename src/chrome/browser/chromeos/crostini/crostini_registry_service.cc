@@ -18,6 +18,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -377,6 +378,18 @@ bool CrostiniRegistryService::Registration::NoDisplay() const {
   if (no_display)
     return no_display->GetBool();
   return false;
+}
+
+std::string CrostiniRegistryService::Registration::PackageId() const {
+  if (is_terminal_app_)
+    return std::string();
+  if (pref_.is_none())
+    return std::string();
+  const base::Value* package_id =
+      pref_.FindKeyOfType(kAppPackageIdKey, base::Value::Type::STRING);
+  if (!package_id)
+    return std::string();
+  return package_id->GetString();
 }
 
 bool CrostiniRegistryService::Registration::CanUninstall() const {
@@ -932,9 +945,9 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
 void CrostiniRegistryService::OnContainerAppIcon(
     const std::string& app_id,
     ui::ScaleFactor scale_factor,
-    CrostiniResult result,
+    bool success,
     const std::vector<Icon>& icons) {
-  if (result != CrostiniResult::SUCCESS) {
+  if (!success) {
     // Add this to the list of retryable icon requests so we redo this when
     // we get feedback from the container that it's available.
     retry_icon_requests_[app_id] |= (1 << scale_factor);

@@ -23,17 +23,17 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#import "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
+#import "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
-#include "components/remote_cocoa/common/bridge_factory.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget.mojom.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/common/application.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window.mojom.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
 namespace {
 
@@ -324,21 +324,22 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
   return ns_window;
 }
 
-views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
+remote_cocoa::ApplicationHost*
+BrowserFrameMac::GetRemoteCocoaApplicationHost() {
   if (auto* host = GetHostForBrowser(browser_view_->browser()))
-    return host->GetViewsBridgeFactoryHost();
+    return host->GetRemoteCocoaApplicationHost();
   return nullptr;
 }
 
 void BrowserFrameMac::OnWindowInitialized() {
-  if (bridge_impl()) {
-    bridge_impl()->SetCommandDispatcher(
+  if (auto* bridge = GetInProcessNSWindowBridge()) {
+    bridge->SetCommandDispatcher(
         [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
         [[[BrowserWindowCommandHandler alloc] init] autorelease]);
   } else {
     if (auto* host = GetHostForBrowser(browser_view_->browser())) {
       host->GetAppShim()->CreateCommandDispatcherForWidget(
-          bridge_host()->bridged_native_widget_id());
+          GetNSWindowHost()->bridged_native_widget_id());
     }
   }
 }
@@ -408,5 +409,5 @@ bool BrowserFrameMac::HandleKeyboardEvent(
 
   // Redispatch the event. If it's a keyEquivalent:, this gives
   // CommandDispatcher the opportunity to finish passing the event to consumers.
-  return bridge_host()->RedispatchKeyEvent(event.os_event);
+  return GetNSWindowHost()->RedispatchKeyEvent(event.os_event);
 }

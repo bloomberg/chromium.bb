@@ -12,11 +12,15 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 class GoogleServiceAuthError;
+
+namespace signin {
+struct AccessTokenInfo;
+}
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -41,10 +45,10 @@ class AccountIdFetcher;
 // 2. Add/Remove and SignIn/SignOut pairs are always generated in order.
 // 3. SignIn follows Add, and there will be a SignOut between SignIn & Remove.
 // 4. If there is no primary account, there are no other accounts.
-class AccountTracker : public identity::IdentityManager::Observer {
+class AccountTracker : public signin::IdentityManager::Observer {
  public:
   AccountTracker(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~AccountTracker() override;
 
@@ -76,7 +80,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
     bool is_signed_in;
   };
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
@@ -105,7 +109,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
   void StartFetchingUserInfo(const std::string& account_key);
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
@@ -116,7 +120,7 @@ class AccountTracker : public identity::IdentityManager::Observer {
 class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
  public:
   AccountIdFetcher(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       AccountTracker* tracker,
       const std::string& account_key);
@@ -127,7 +131,7 @@ class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
   void Start();
 
   void AccessTokenFetched(GoogleServiceAuthError error,
-                          identity::AccessTokenInfo access_token_info);
+                          signin::AccessTokenInfo access_token_info);
 
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetUserIdResponse(const std::string& gaia_id) override;
@@ -135,12 +139,12 @@ class AccountIdFetcher : public gaia::GaiaOAuthClient::Delegate {
   void OnNetworkError(int response_code) override;
 
  private:
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   AccountTracker* tracker_;
   const std::string account_key_;
 
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 

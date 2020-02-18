@@ -28,7 +28,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operation.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -70,6 +70,14 @@ class PLATFORM_EXPORT TransformOperations {
       if (operation->Is3DOperation())
         return true;
     return false;
+  }
+
+  bool PreservesAxisAlignment() const {
+    for (auto& operation : operations_) {
+      if (!operation->PreservesAxisAlignment())
+        return false;
+    }
+    return true;
   }
 
   // Returns true if any operation has a non-trivial component in the Z

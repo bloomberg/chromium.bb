@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -73,6 +74,7 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            DragDropVirtualFilesOriginateFromRenderer);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropUrlData);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
 
   class WindowObserver;
 
@@ -191,7 +193,20 @@ class CONTENT_EXPORT WebContentsViewAura
   void OnDragEntered(const ui::DropTargetEvent& event) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override;
+  void DragEnteredCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<DropData> drop_data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
+  void DragUpdatedCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<DropData> drop_data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
+  void PerformDropCallback(ui::DropTargetEvent event,
+                           std::unique_ptr<ui::OSExchangeData> data,
+                           base::WeakPtr<RenderWidgetHostViewBase> target,
+                           base::Optional<gfx::PointF> transformed_pt);
 
   // Completes a drop operation by communicating the drop data to the renderer
   // process.
@@ -212,6 +227,10 @@ class CONTENT_EXPORT WebContentsViewAura
                               bool drop_allowed)>;
   void RegisterDropCallbackForTesting(DropCallbackForTesting callback);
 
+  void SetDragDestDelegateForTesting(WebDragDestDelegate* delegate) {
+    drag_dest_delegate_ = delegate;
+  }
+
 #if defined(OS_WIN)
   // Callback for asynchronous retrieval of virtual files.
   void OnGotVirtualFilesAsTempFiles(
@@ -226,6 +245,10 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<AsyncDropTempFileDeleter> async_drop_temp_file_deleter_;
 #endif
   DropCallbackForTesting drop_callback_for_testing_;
+
+  // If this callback is initialized it must be run after the drop operation is
+  // done to send dragend event in EndDrag function.
+  base::ScopedClosureRunner end_drag_runner_;
 
   std::unique_ptr<aura::Window> window_;
 
@@ -268,13 +291,16 @@ class CONTENT_EXPORT WebContentsViewAura
   // Responsible for handling gesture-nav and pull-to-refresh UI.
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;
 
+  // This is true when the drag is in process from the perspective of this
+  // class. It means it gets true when drag enters and gets reset when either
+  // drop happens or drag exits.
+  bool drag_in_progress_;
+
   bool init_rwhv_with_null_parent_for_testing_;
 
-#if defined(OS_WIN)
-  // Used to ensure that the virtual files retrieval callback bound to this
-  // object is canceled when this object is destroyed.
+  // Used to ensure the drag and drop callbacks bound to this
+  // object are canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

@@ -21,12 +21,12 @@
 #include <algorithm>
 #include <utility>
 
-#include "perfetto/base/file_utils.h"
-#include "perfetto/base/metatrace.h"
-#include "perfetto/base/scoped_file.h"
-#include "perfetto/base/string_splitter.h"
 #include "perfetto/base/task_runner.h"
-#include "perfetto/base/time.h"
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/metatrace.h"
+#include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/string_splitter.h"
+#include "perfetto/ext/base/time.h"
 #include "perfetto/tracing/core/data_source_config.h"
 
 #include "perfetto/config/process_stats/process_stats_config.pbzero.h"
@@ -138,8 +138,11 @@ base::WeakPtr<ProcessStatsDataSource> ProcessStatsDataSource::GetWeakPtr()
 }
 
 void ProcessStatsDataSource::WriteAllProcesses() {
-  PERFETTO_METATRACE("WriteAllProcesses", 0);
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_WRITE_ALL_PROCESSES);
   PERFETTO_DCHECK(!cur_ps_tree_);
+
+  CacheProcFsScanStartTimestamp();
+
   base::ScopedDir proc_dir = OpenProcDir();
   if (!proc_dir)
     return;
@@ -168,20 +171,23 @@ void ProcessStatsDataSource::WriteAllProcesses() {
 }
 
 void ProcessStatsDataSource::OnPids(const std::vector<int32_t>& pids) {
-  PERFETTO_METATRACE("OnPids", 0);
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_ON_PIDS);
   if (!enable_on_demand_dumps_)
     return;
   PERFETTO_DCHECK(!cur_ps_tree_);
+  int pids_scanned = 0;
   for (int32_t pid : pids) {
     if (seen_pids_.count(pid) || pid == 0)
       continue;
     WriteProcessOrThread(pid);
+    pids_scanned++;
   }
   FinalizeCurPacket();
+  PERFETTO_METATRACE_COUNTER(TAG_PROC_POLLERS, PS_PIDS_SCANNED, pids_scanned);
 }
 
 void ProcessStatsDataSource::OnRenamePids(const std::vector<int32_t>& pids) {
-  PERFETTO_METATRACE("OnRenamePids", 0);
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_ON_RENAME_PIDS);
   if (!enable_on_demand_dumps_)
     return;
   PERFETTO_DCHECK(!cur_ps_tree_);
@@ -203,6 +209,9 @@ void ProcessStatsDataSource::Flush(FlushRequestID,
 }
 
 void ProcessStatsDataSource::WriteProcessOrThread(int32_t pid) {
+  // In case we're called from outside WriteAllProcesses()
+  CacheProcFsScanStartTimestamp();
+
   std::string proc_status = ReadProcPidFile(pid, "status");
   if (proc_status.empty())
     return;
@@ -284,8 +293,7 @@ void ProcessStatsDataSource::StartNewPacketIfNeeded() {
   if (cur_packet_)
     return;
   cur_packet_ = writer_->NewTracePacket();
-  uint64_t now = static_cast<uint64_t>(base::GetBootTimeNs().count());
-  cur_packet_->set_timestamp(now);
+  cur_packet_->set_timestamp(CacheProcFsScanStartTimestamp());
 
   if (did_clear_incremental_state_) {
     cur_packet_->set_incremental_state_cleared(true);
@@ -323,9 +331,17 @@ ProcessStatsDataSource::GetOrCreateStatsProcess(int32_t pid) {
 void ProcessStatsDataSource::FinalizeCurPacket() {
   PERFETTO_DCHECK(!cur_ps_tree_ || cur_packet_);
   PERFETTO_DCHECK(!cur_ps_stats_ || cur_packet_);
-  cur_ps_tree_ = nullptr;
-  cur_ps_stats_ = nullptr;
+  uint64_t now = static_cast<uint64_t>(base::GetBootTimeNs().count());
+  if (cur_ps_tree_) {
+    cur_ps_tree_->set_collection_end_timestamp(now);
+    cur_ps_tree_ = nullptr;
+  }
+  if (cur_ps_stats_) {
+    cur_ps_stats_->set_collection_end_timestamp(now);
+    cur_ps_stats_ = nullptr;
+  }
   cur_ps_stats_process_ = nullptr;
+  cur_procfs_scan_start_timestamp_ = 0;
   cur_packet_ = TraceWriter::TracePacketHandle{};
 }
 
@@ -353,7 +369,8 @@ void ProcessStatsDataSource::WriteAllProcessStats() {
   // TODO(primiano): Have a pid cache to avoid wasting cycles reading kthreads
   // proc files over and over. Same for non-whitelist processes (see above).
 
-  PERFETTO_METATRACE("WriteAllProcessStats", 0);
+  CacheProcFsScanStartTimestamp();
+  PERFETTO_METATRACE_SCOPED(TAG_PROC_POLLERS, PS_WRITE_ALL_PROCESS_STATS);
   base::ScopedDir proc_dir = OpenProcDir();
   if (!proc_dir)
     return;
@@ -507,6 +524,13 @@ bool ProcessStatsDataSource::WriteMemCounters(int32_t pid,
     }
   }
   return proc_status_has_mem_counters;
+}
+
+uint64_t ProcessStatsDataSource::CacheProcFsScanStartTimestamp() {
+  if (!cur_procfs_scan_start_timestamp_)
+    cur_procfs_scan_start_timestamp_ =
+        static_cast<uint64_t>(base::GetBootTimeNs().count());
+  return cur_procfs_scan_start_timestamp_;
 }
 
 void ProcessStatsDataSource::ClearIncrementalState() {

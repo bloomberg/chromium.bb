@@ -7,13 +7,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
-#include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;
@@ -57,9 +56,13 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
         sink->OnRenderThreadChanged();
     }
 #endif
-    if (!playing_) {
+    if (!playing_ || audio_bus->channels() > 8) {
       // Force silence to AudioBus after stopping playout in case
-      // there is lingering audio data in AudioBus.
+      // there is lingering audio data in AudioBus or if the audio device has
+      // more than eight channels (which is not supported by the channel mixer
+      // in WebRTC).
+      // See http://crbug.com/986415 for details on why the extra check for
+      // number of channels is required.
       audio_bus->Zero();
       return;
     }
@@ -71,7 +74,7 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   const int frames_per_10_ms = sample_rate / 100;
   DCHECK_EQ(audio_bus->frames(), frames_per_10_ms);
   DCHECK_GE(audio_bus->channels(), 1);
-  DCHECK_LE(audio_bus->channels(), 2);
+  DCHECK_LE(audio_bus->channels(), 8);
 
   // Get 10ms audio and copy result to temporary byte buffer.
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
@@ -102,7 +105,8 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
     sink->OnPlayoutData(audio_bus, sample_rate, audio_delay_milliseconds);
 }
 
-void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
+void WebRtcAudioDeviceImpl::RemoveAudioRenderer(
+    blink::WebRtcAudioRenderer* renderer) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(renderer, renderer_.get());
@@ -334,7 +338,8 @@ int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   return 0;
 }
 
-bool WebRtcAudioDeviceImpl::SetAudioRenderer(WebRtcAudioRenderer* renderer) {
+bool WebRtcAudioDeviceImpl::SetAudioRenderer(
+    blink::WebRtcAudioRenderer* renderer) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   DCHECK(renderer);
 
@@ -379,7 +384,7 @@ void WebRtcAudioDeviceImpl::AddAudioCapturer(
   DCHECK(!capturer->device().id.empty());
 
   base::AutoLock auto_lock(lock_);
-  DCHECK(!base::ContainsValue(capturers_, capturer));
+  DCHECK(!base::Contains(capturers_, capturer));
   capturers_.push_back(capturer);
   capturer->SetOutputDeviceForAec(output_device_id_for_aec_);
 }
@@ -394,17 +399,19 @@ void WebRtcAudioDeviceImpl::RemoveAudioCapturer(
 }
 
 void WebRtcAudioDeviceImpl::AddPlayoutSink(
-    WebRtcPlayoutDataSource::Sink* sink) {
+    blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DVLOG(1) << "WebRtcAudioDeviceImpl::AddPlayoutSink()";
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
-  DCHECK(!base::ContainsValue(playout_sinks_, sink));
+  DCHECK(!base::Contains(playout_sinks_, sink));
   playout_sinks_.push_back(sink);
 }
 
 void WebRtcAudioDeviceImpl::RemovePlayoutSink(
-    WebRtcPlayoutDataSource::Sink* sink) {
+    blink::WebRtcPlayoutDataSource::Sink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DVLOG(1) << "WebRtcAudioDeviceImpl::RemovePlayoutSink()";
   DCHECK(sink);
   base::AutoLock auto_lock(lock_);
   playout_sinks_.remove(sink);

@@ -73,7 +73,7 @@ class TestFindVolumeGroupForDevice(cros_test_lib.MockTempDirTestCase):
   wrong_vg1\t/dev/sda1
 %s
   wrong_vg2\t/dev/loop0
-''' % '\n'.join(['  cros_chroot_%03d\t/dev/any' % i for i in xrange(1000)]))
+''' % '\n'.join(['  cros_chroot_%03d\t/dev/any' % i for i in range(1000)]))
       vg = cros_sdk_lib.FindVolumeGroupForDevice('/chroot', '')
       self.assertIsNone(vg)
 

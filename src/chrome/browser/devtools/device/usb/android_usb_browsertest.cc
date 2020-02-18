@@ -423,7 +423,7 @@ class FakeAndroidUsbManager : public FakeUsbDeviceManager {
   void GetDevice(const std::string& guid,
                  device::mojom::UsbDeviceRequest device_request,
                  device::mojom::UsbDeviceClientPtr device_client) override {
-    DCHECK(base::ContainsKey(devices(), guid));
+    DCHECK(base::Contains(devices(), guid));
     FakeAndroidUsbDevice::Create(devices()[guid], std::move(device_request),
                                  std::move(device_client));
   }

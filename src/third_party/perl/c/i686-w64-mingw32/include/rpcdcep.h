@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __RPCDCEP_H__
@@ -24,7 +24,7 @@ extern "C" {
 
   typedef struct _RPC_MESSAGE {
     RPC_BINDING_HANDLE Handle;
-    unsigned long DataRepresentation;
+    unsigned __LONG32 DataRepresentation;
     void *Buffer;
     unsigned int BufferLength;
     unsigned int ProcNum;
@@ -33,7 +33,7 @@ extern "C" {
     void *ReservedForRuntime;
     RPC_MGR_EPV *ManagerEpv;
     void *ImportContext;
-    unsigned long RpcFlags;
+    unsigned __LONG32 RpcFlags;
   } RPC_MESSAGE,*PRPC_MESSAGE;
 
   typedef RPC_STATUS RPC_ENTRY RPC_FORWARD_FUNCTION(UUID *InterfaceId,RPC_VERSION *InterfaceVersion,UUID *ObjectId,unsigned char *Rpcpro,void **ppDestEndpoint);
@@ -46,10 +46,10 @@ extern "C" {
 
 #define RPC_CONTEXT_HANDLE_DEFAULT_GUARD ((void *) -4083)
 
-#define RPC_CONTEXT_HANDLE_DEFAULT_FLAGS 0x00000000UL
-#define RPC_CONTEXT_HANDLE_FLAGS 0x30000000UL
-#define RPC_CONTEXT_HANDLE_SERIALIZE 0x10000000UL
-#define RPC_CONTEXT_HANDLE_DONT_SERIALIZE 0x20000000UL
+#define RPC_CONTEXT_HANDLE_DEFAULT_FLAGS __MSABI_LONG(0x00000000U)
+#define RPC_CONTEXT_HANDLE_FLAGS __MSABI_LONG(0x30000000U)
+#define RPC_CONTEXT_HANDLE_SERIALIZE __MSABI_LONG(0x10000000U)
+#define RPC_CONTEXT_HANDLE_DONT_SERIALIZE __MSABI_LONG(0x20000000U)
 
 #define RPC_NCA_FLAGS_DEFAULT 0x00000000
 #define RPC_NCA_FLAGS_IDEMPOTENT 0x00000001
@@ -62,15 +62,15 @@ extern "C" {
 #define RPC_BUFFER_ASYNC 0x00008000
 #define RPC_BUFFER_NONOTIFY 0x00010000
 
-#define RPCFLG_MESSAGE 0x01000000UL
-#define RPCFLG_AUTO_COMPLETE 0x08000000UL
-#define RPCFLG_LOCAL_CALL 0x10000000UL
-#define RPCFLG_INPUT_SYNCHRONOUS 0x20000000UL
-#define RPCFLG_ASYNCHRONOUS 0x40000000UL
-#define RPCFLG_NON_NDR 0x80000000UL
+#define RPCFLG_MESSAGE __MSABI_LONG(0x01000000U)
+#define RPCFLG_AUTO_COMPLETE __MSABI_LONG(0x08000000U)
+#define RPCFLG_LOCAL_CALL __MSABI_LONG(0x10000000U)
+#define RPCFLG_INPUT_SYNCHRONOUS __MSABI_LONG(0x20000000U)
+#define RPCFLG_ASYNCHRONOUS __MSABI_LONG(0x40000000U)
+#define RPCFLG_NON_NDR __MSABI_LONG(0x80000000U)
 
-#define RPCFLG_HAS_MULTI_SYNTAXES 0x02000000UL
-#define RPCFLG_HAS_CALLBACK 0x04000000UL
+#define RPCFLG_HAS_MULTI_SYNTAXES __MSABI_LONG(0x02000000U)
+#define RPCFLG_HAS_CALLBACK __MSABI_LONG(0x04000000U)
 
 #define RPC_FLAGS_VALID_BIT 0x00008000
 
@@ -136,8 +136,8 @@ extern "C" {
   RPCRTAPI void RPC_ENTRY I_RpcDeleteMutex(I_RPC_MUTEX Mutex);
   RPCRTAPI void *RPC_ENTRY I_RpcAllocate(unsigned int Size);
   RPCRTAPI void RPC_ENTRY I_RpcFree(void *Object);
-  RPCRTAPI void RPC_ENTRY I_RpcPauseExecution(unsigned long Milliseconds);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcGetExtendedError();
+  RPCRTAPI void RPC_ENTRY I_RpcPauseExecution(unsigned __LONG32 Milliseconds);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcGetExtendedError(void);
 
   typedef void (__RPC_API *PRPC_RUNDOWN)(void *AssociationContext);
 
@@ -147,16 +147,16 @@ extern "C" {
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcGetAssociationContext(RPC_BINDING_HANDLE BindingHandle,void **AssociationContext);
   RPCRTAPI void *RPC_ENTRY I_RpcGetServerContextList(RPC_BINDING_HANDLE BindingHandle);
   RPCRTAPI void RPC_ENTRY I_RpcSetServerContextList(RPC_BINDING_HANDLE BindingHandle,void *ServerContextList);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsInterfaceExported(unsigned long EntryNameSyntax,unsigned short *EntryName,RPC_SERVER_INTERFACE *RpcInterfaceInformation);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsInterfaceUnexported(unsigned long EntryNameSyntax,unsigned short *EntryName,RPC_SERVER_INTERFACE *RpcInterfaceInformation);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsInterfaceExported(unsigned __LONG32 EntryNameSyntax,unsigned short *EntryName,RPC_SERVER_INTERFACE *RpcInterfaceInformation);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsInterfaceUnexported(unsigned __LONG32 EntryNameSyntax,unsigned short *EntryName,RPC_SERVER_INTERFACE *RpcInterfaceInformation);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingToStaticStringBindingW(RPC_BINDING_HANDLE Binding,unsigned short **StringBinding);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqSecurityContext(RPC_BINDING_HANDLE Binding,void **SecurityContextHandle);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqWireIdForSnego(RPC_BINDING_HANDLE Binding,RPC_CSTR WireId);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqMarshalledTargetInfo (RPC_BINDING_HANDLE Binding,unsigned long *MarshalledTargetInfoLength,RPC_CSTR *MarshalledTargetInfo);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqLocalClientPID(RPC_BINDING_HANDLE Binding,unsigned long *Pid);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqMarshalledTargetInfo (RPC_BINDING_HANDLE Binding,unsigned __LONG32 *MarshalledTargetInfoLength,RPC_CSTR *MarshalledTargetInfo);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingInqLocalClientPID(RPC_BINDING_HANDLE Binding,unsigned __LONG32 *Pid);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingHandleToAsyncHandle(RPC_BINDING_HANDLE Binding,void **AsyncHandle);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsBindingSetEntryNameW(RPC_BINDING_HANDLE Binding,unsigned long EntryNameSyntax,RPC_WSTR EntryName);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsBindingSetEntryNameA(RPC_BINDING_HANDLE Binding,unsigned long EntryNameSyntax,RPC_CSTR EntryName);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsBindingSetEntryNameW(RPC_BINDING_HANDLE Binding,unsigned __LONG32 EntryNameSyntax,RPC_WSTR EntryName);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcNsBindingSetEntryNameA(RPC_BINDING_HANDLE Binding,unsigned __LONG32 EntryNameSyntax,RPC_CSTR EntryName);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerUseProtseqEp2A(RPC_CSTR NetworkAddress,RPC_CSTR Protseq,unsigned int MaxCalls,RPC_CSTR Endpoint,void *SecurityDescriptor,void *Policy);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerUseProtseqEp2W(RPC_WSTR NetworkAddress,RPC_WSTR Protseq,unsigned int MaxCalls,RPC_WSTR Endpoint,void *SecurityDescriptor,void *Policy);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerUseProtseq2W(RPC_WSTR NetworkAddress,RPC_WSTR Protseq,unsigned int MaxCalls,void *SecurityDescriptor,void *Policy);
@@ -192,11 +192,11 @@ extern "C" {
 #define RPC_P_ADDR_FORMAT_TCP_IPV4 1
 #define RPC_P_ADDR_FORMAT_TCP_IPV6 2
 
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerInqLocalConnAddress(RPC_BINDING_HANDLE Binding,void *Buffer,unsigned long *BufferSize,unsigned long *AddressFormat);
-  RPCRTAPI void RPC_ENTRY I_RpcSessionStrictContextHandle();
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerInqLocalConnAddress(RPC_BINDING_HANDLE Binding,void *Buffer,unsigned __LONG32 *BufferSize,unsigned __LONG32 *AddressFormat);
+  RPCRTAPI void RPC_ENTRY I_RpcSessionStrictContextHandle(void);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcTurnOnEEInfoPropagation(void);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcConnectionInqSockBuffSize(unsigned long *RecvBuffSize,unsigned long *SendBuffSize);
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcConnectionSetSockBuffSize(unsigned long RecvBuffSize,unsigned long SendBuffSize);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcConnectionInqSockBuffSize(unsigned __LONG32 *RecvBuffSize,unsigned __LONG32 *SendBuffSize);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcConnectionSetSockBuffSize(unsigned __LONG32 RecvBuffSize,unsigned __LONG32 SendBuffSize);
 
   typedef void (*RPCLT_PDU_FILTER_FUNC)(void *Buffer,unsigned int BufferLength,int fDatagram);
   typedef void (__cdecl *RPC_SETFILTER_FUNC)(RPCLT_PDU_FILTER_FUNC pfnFilter);
@@ -209,18 +209,18 @@ extern "C" {
 
 #define I_RpcServerUnregisterEndpoint __MINGW_NAME_AW(I_RpcServerUnregisterEndpoint)
 
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingSetAsync(RPC_BINDING_HANDLE Binding,RPC_BLOCKING_FN BlockingFn,unsigned long ServerTid);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcBindingSetAsync(RPC_BINDING_HANDLE Binding,RPC_BLOCKING_FN BlockingFn,unsigned __LONG32 ServerTid);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcSetThreadParams(int fClientFree,void *Context,void *hWndClient);
-  RPCRTAPI unsigned int RPC_ENTRY I_RpcWindowProc(void *hWnd,unsigned int Message,unsigned int wParam,unsigned long lParam);
+  RPCRTAPI unsigned int RPC_ENTRY I_RpcWindowProc(void *hWnd,unsigned int Message,unsigned int wParam,unsigned __LONG32 lParam);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerUnregisterEndpointA(RPC_CSTR Protseq,RPC_CSTR Endpoint);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerUnregisterEndpointW(RPC_WSTR Protseq,RPC_WSTR Endpoint);
 #endif
 
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcServerInqTransportType(unsigned int *Type);
-  RPCRTAPI long RPC_ENTRY I_RpcMapWin32Status(RPC_STATUS Status);
+  RPCRTAPI __LONG32 RPC_ENTRY I_RpcMapWin32Status(RPC_STATUS Status);
 
   typedef struct _RPC_C_OPT_METADATA_DESCRIPTOR {
-    unsigned long BufferSize;
+    unsigned __LONG32 BufferSize;
     char *Buffer;
   } RPC_C_OPT_METADATA_DESCRIPTOR;
 
@@ -243,9 +243,9 @@ extern "C" {
     void *CertContext;
   } RDR_CALLOUT_STATE;
 
-  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyIsValidMachineFn)(char *pszMachine,char *pszDotMachine,unsigned long dwPortNumber);
-  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyGetClientAddressFn)(void *Context,char *Buffer,unsigned long *BufferLength);
-  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyGetConnectionTimeoutFn)(unsigned long *ConnectionTimeout);
+  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyIsValidMachineFn)(char *pszMachine,char *pszDotMachine,unsigned __LONG32 dwPortNumber);
+  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyGetClientAddressFn)(void *Context,char *Buffer,unsigned __LONG32 *BufferLength);
+  typedef RPC_STATUS (RPC_ENTRY *I_RpcProxyGetConnectionTimeoutFn)(unsigned __LONG32 *ConnectionTimeout);
   typedef RPC_STATUS (RPC_ENTRY *I_RpcPerformCalloutFn)(void *Context,RDR_CALLOUT_STATE *CallOutState,RPC_HTTP_REDIRECTOR_STAGE Stage);
   typedef void (RPC_ENTRY *I_RpcFreeCalloutStateFn)(RDR_CALLOUT_STATE *CallOutState);
 
@@ -260,7 +260,7 @@ extern "C" {
 #define RPC_PROXY_CONNECTION_TYPE_IN_PROXY 0
 #define RPC_PROXY_CONNECTION_TYPE_OUT_PROXY 1
 
-  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcProxyNewConnection(unsigned long ConnectionType,unsigned short *ServerAddress,unsigned short *ServerPort,unsigned short *MinConnTimeout,void *ConnectionParameter,RDR_CALLOUT_STATE *CallOutState,I_RpcProxyCallbackInterface *ProxyCallbackInterface);
+  RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcProxyNewConnection(unsigned __LONG32 ConnectionType,unsigned short *ServerAddress,unsigned short *ServerPort,unsigned short *MinConnTimeout,void *ConnectionParameter,RDR_CALLOUT_STATE *CallOutState,I_RpcProxyCallbackInterface *ProxyCallbackInterface);
   RPCRTAPI RPC_STATUS RPC_ENTRY I_RpcReplyToClientWithStatus(void *ConnectionParameter,RPC_STATUS RpcStatus);
   RPCRTAPI void RPC_ENTRY I_RpcRecordCalloutFailure(RPC_STATUS RpcStatus,RDR_CALLOUT_STATE *CallOutState,unsigned short *DllName);
 

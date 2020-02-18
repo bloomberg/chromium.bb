@@ -139,7 +139,7 @@ void LayoutGeometryMap::DumpSteps() const {
           accumulated_offset_.left.ToInt(), accumulated_offset_.top.ToInt());
   for (int i = mapping_.size() - 1; i >= 0; --i) {
     fprintf(stderr, " [%d] %s: offset=%d,%d", i,
-            mapping_[i].layout_object_->DebugName().Ascii().data(),
+            mapping_[i].layout_object_->DebugName().Ascii().c_str(),
             mapping_[i].offset_.left.ToInt(), mapping_[i].offset_.top.ToInt());
     if (mapping_[i].flags_ & kContainsFixedPosition)
       fprintf(stderr, " containsFixedPosition");

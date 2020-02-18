@@ -18,7 +18,7 @@ class ASH_EXPORT ArcCustomTab {
  public:
   // Creates a new ArcCustomTab instance. Returns null when the arguments are
   // invalid.
-  static std::unique_ptr<ArcCustomTab> Create(int32_t task_id,
+  static std::unique_ptr<ArcCustomTab> Create(aura::Window* arc_app_window,
                                               int32_t surface_id,
                                               int32_t top_margin);
 
@@ -26,6 +26,10 @@ class ASH_EXPORT ArcCustomTab {
   virtual ~ArcCustomTab();
 
   virtual void Attach(gfx::NativeView view) = 0;
+
+  // Returns the view against which a view or dialog is positioned and parented
+  // in an ArcCustomTab.
+  virtual gfx::NativeView GetHostView() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcCustomTab);

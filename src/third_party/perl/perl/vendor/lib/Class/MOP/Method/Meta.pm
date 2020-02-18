@@ -1,11 +1,5 @@
-
 package Class::MOP::Method::Meta;
-BEGIN {
-  $Class::MOP::Method::Meta::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Method::Meta::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -15,7 +9,7 @@ use Scalar::Util 'blessed', 'weaken';
 
 use constant DEBUG_NO_META => $ENV{DEBUG_NO_META} ? 1 : 0;
 
-use base 'Class::MOP::Method';
+use parent 'Class::MOP::Method';
 
 sub _is_caller_mop_internal {
     my $self = shift;
@@ -54,7 +48,9 @@ sub wrap {
 
     unshift @args, 'body' if @args % 2 == 1;
     my %params = @args;
-    confess "Overriding the body of meta methods is not allowed"
+    $class->_throw_exception( CannotOverrideBodyOfMetaMethods => params => \%params,
+                                                                     class  => $class
+                                )
         if $params{body};
 
     my $metaclass_class = $params{associated_metaclass}->meta;
@@ -85,9 +81,11 @@ sub _make_compatible_with {
 
 # ABSTRACT: Method Meta Object for C<meta> methods
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -95,7 +93,7 @@ Class::MOP::Method::Meta - Method Meta Object for C<meta> methods
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -115,20 +113,57 @@ accepted by L<Class::MOP::Method>, except that C<body> cannot be passed
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

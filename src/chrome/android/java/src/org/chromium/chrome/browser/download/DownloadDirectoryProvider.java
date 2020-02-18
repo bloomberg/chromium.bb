@@ -10,9 +10,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Environment;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
@@ -35,6 +37,44 @@ import java.util.ArrayList;
  * options accordingly.
  */
 public class DownloadDirectoryProvider {
+    private static final String TAG = "DownloadDirectory";
+
+    /**
+     * Delegate class to query directories from Android API. Should be created on main thread
+     * and used on background thread in {@link AsyncTask}.
+     */
+    public interface Delegate {
+        /**
+         * Get the primary download directory in public external storage. The directory will be
+         * created if it doesn't exist. Should be called on background thread.
+         * @return The download directory. Can be an invalid directory if failed to create the
+         *         directory.
+         */
+        File getPrimaryDownloadDirectory();
+
+        /**
+         * Get external files directories for {@link Environment#DIRECTORY_DOWNLOADS}.
+         * @return A list of directories.
+         */
+        File[] getExternalFilesDirs();
+    }
+
+    /**
+     * Class that calls Android API to get download directories.
+     */
+    public static class DownloadDirectoryProviderDelegate implements Delegate {
+        @Override
+        public File getPrimaryDownloadDirectory() {
+            return DownloadDirectoryProvider.getPrimaryDownloadDirectory();
+        }
+
+        @Override
+        public File[] getExternalFilesDirs() {
+            return ContextUtils.getApplicationContext().getExternalFilesDirs(
+                    Environment.DIRECTORY_DOWNLOADS);
+        }
+    }
+
     /**
      * Asynchronous task to retrieve all download directories on a background thread. Only one task
      * can exist at the same time.
@@ -43,12 +83,18 @@ public class DownloadDirectoryProvider {
      * {@link PathUtils#getAllPrivateDownloadsDirectories}.
      */
     private class AllDirectoriesTask extends AsyncTask<ArrayList<DirectoryOption>> {
+        private DownloadDirectoryProvider.Delegate mDelegate;
+
+        AllDirectoriesTask(DownloadDirectoryProvider.Delegate delegate) {
+            mDelegate = delegate;
+        }
+
         @Override
         protected ArrayList<DirectoryOption> doInBackground() {
             ArrayList<DirectoryOption> dirs = new ArrayList<>();
 
             // Retrieve default directory.
-            File defaultDirectory = DownloadUtils.getPrimaryDownloadDirectory();
+            File defaultDirectory = mDelegate.getPrimaryDownloadDirectory();
 
             // If no default directory, return an error option.
             if (defaultDirectory == null) {
@@ -67,8 +113,7 @@ public class DownloadDirectoryProvider {
             File[] files;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                files = ContextUtils.getApplicationContext().getExternalFilesDirs(
-                        Environment.DIRECTORY_DOWNLOADS);
+                files = mDelegate.getExternalFilesDirs();
             } else {
                 files = new File[] {Environment.getExternalStorageDirectory()};
             }
@@ -192,11 +237,47 @@ public class DownloadDirectoryProvider {
         return null;
     }
 
+    /**
+     * Get the primary download directory in public external storage. The directory will be created
+     * if it doesn't exist. Should be called on background thread.
+     * @return The download directory. Can be an invalid directory if failed to create the
+     *         directory.
+     */
+    public static File getPrimaryDownloadDirectory() {
+        File downloadDir =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+        // Create the directory if needed.
+        if (!downloadDir.exists()) {
+            try {
+                downloadDir.mkdirs();
+            } catch (SecurityException e) {
+                Log.e(TAG, "Exception when creating download directory.", e);
+            }
+        }
+        return downloadDir;
+    }
+
+    /**
+     * Returns whether the downloaded file path is on an external SD card.
+     * @param filePath The download file path.
+     */
+    public static boolean isDownloadOnSDCard(String filePath) {
+        File[] dirs = ContextUtils.getApplicationContext().getExternalFilesDirs(
+                Environment.DIRECTORY_DOWNLOADS);
+        if (dirs.length <= 1 || TextUtils.isEmpty(filePath)) return false;
+        for (int i = 1; i < dirs.length; ++i) {
+            if (dirs[i] == null) continue;
+            if (filePath.startsWith(dirs[i].getAbsolutePath())) return true;
+        }
+        return false;
+    }
+
     private void updateDirectories() {
         // If asynchronous task is pending, wait for its result.
         if (mAllDirectoriesTask != null) return;
 
-        mAllDirectoriesTask = new AllDirectoriesTask();
+        mAllDirectoriesTask = new AllDirectoriesTask(new DownloadDirectoryProviderDelegate());
         mAllDirectoriesTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

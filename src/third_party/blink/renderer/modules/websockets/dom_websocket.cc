@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -56,7 +55,8 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
@@ -66,8 +66,8 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 static const size_t kMaxByteSizeForHistogram = 100 * 1000 * 1000;
@@ -460,8 +460,6 @@ void DOMWebSocket::ReleaseChannel() {
 
 void DOMWebSocket::send(const String& message,
                         ExceptionState& exception_state) {
-  CString encoded_message = message.Utf8();
-
   NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending String "
                    << message;
   if (state_ == kConnecting) {
@@ -470,6 +468,7 @@ void DOMWebSocket::send(const String& message,
   }
   // No exception is raised if the connection was once established but has
   // subsequently been closed.
+  std::string encoded_message = message.Utf8();
   if (state_ == kClosing || state_ == kClosed) {
     UpdateBufferedAmountAfterClose(encoded_message.length());
     return;
@@ -593,8 +592,8 @@ void DOMWebSocket::CloseInternal(int code,
     }
     // Bindings specify USVString, so unpaired surrogates are already replaced
     // with U+FFFD.
-    CString utf8 = reason.Utf8();
-    if (utf8.length() > kMaxReasonSizeInBytes) {
+    StringUTF8Adaptor utf8(reason);
+    if (utf8.size() > kMaxReasonSizeInBytes) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,
           "The message must not be greater than " +
@@ -602,10 +601,10 @@ void DOMWebSocket::CloseInternal(int code,
       return;
     }
     if (!reason.IsEmpty() && !reason.Is8Bit()) {
-      DCHECK_GT(utf8.length(), 0u);
+      DCHECK_GT(utf8.size(), 0u);
       // reason might contain unpaired surrogates. Reconstruct it from
       // utf8.
-      cleansed_reason = String::FromUTF8(utf8.data(), utf8.length());
+      cleansed_reason = String::FromUTF8(utf8.data(), utf8.size());
     }
   }
 
@@ -734,9 +733,13 @@ void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
 }
 
 void DOMWebSocket::DidReceiveBinaryMessage(
-    std::unique_ptr<Vector<char>> binary_data) {
+    const Vector<base::span<const char>>& data) {
+  size_t size = 0;
+  for (const auto& span : data) {
+    size += span.size();
+  }
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidReceiveBinaryMessage() "
-                   << binary_data->size() << " byte binary message";
+                   << size << " byte binary message";
   ReflectBufferedAmountConsumption();
   DCHECK(!origin_string_.IsNull());
 
@@ -746,11 +749,10 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
   switch (binary_type_) {
     case kBinaryTypeBlob: {
-      size_t size = binary_data->size();
-      scoped_refptr<RawData> raw_data = RawData::Create();
-      binary_data->swap(*raw_data->MutableData());
       auto blob_data = std::make_unique<BlobData>();
-      blob_data->AppendData(std::move(raw_data));
+      for (const auto& span : data) {
+        blob_data->AppendBytes(span.data(), span.size());
+      }
       Blob* blob =
           Blob::Create(BlobDataHandle::Create(std::move(blob_data), size));
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeBlob);
@@ -760,11 +762,9 @@ void DOMWebSocket::DidReceiveBinaryMessage(
     }
 
     case kBinaryTypeArrayBuffer:
-      DOMArrayBuffer* array_buffer =
-          DOMArrayBuffer::Create(binary_data->data(), binary_data->size());
+      DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(data);
       RecordReceiveTypeHistogram(kWebSocketReceiveTypeArrayBuffer);
-      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer,
-                                        binary_data->size());
+      RecordReceiveMessageSizeHistogram(kWebSocketReceiveTypeArrayBuffer, size);
       event_queue_->Dispatch(
           MessageEvent::Create(array_buffer, origin_string_));
       break;

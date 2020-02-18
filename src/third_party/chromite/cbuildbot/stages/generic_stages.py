@@ -526,7 +526,7 @@ class BuilderStage(object):
           constants.METADATA_EXPERIMENTAL_BUILDERS, [])
       slave_config_map = {
           k: v
-          for k, v in slave_config_map.iteritems()
+          for k, v in slave_config_map.items()
           if k not in experimental_builders
       }
     return slave_config_map

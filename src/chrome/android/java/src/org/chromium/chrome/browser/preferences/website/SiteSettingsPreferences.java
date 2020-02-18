@@ -5,11 +5,10 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
-import android.widget.ListView;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -17,6 +16,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,20 +31,18 @@ import java.util.List;
  * version/experiment so the organization of this menu should be simplified, probably by moving
  * Media to its own dedicated PreferenceFragment rather than sharing this one.
  */
-public class SiteSettingsPreferences extends PreferenceFragment
-        implements OnPreferenceClickListener {
+public class SiteSettingsPreferences
+        extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
     // The keys for each category shown on the Site Settings page
     // are defined in the SiteSettingsCategory, additional keys
     // are listed here.
     static final String MEDIA_KEY = "media";
-    static final String TRANSLATE_KEY = "translate";
 
     // Whether this class is handling showing the Media sub-menu (and not the main menu).
     boolean mMediaSubMenu;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.site_settings_preferences);
         getActivity().setTitle(R.string.prefs_site_settings);
 
@@ -64,7 +62,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((ListView) getView().findViewById(android.R.id.list)).setDivider(null);
+        setDivider(null);
     }
 
     private Preference findPreference(@Type int type) {
@@ -80,7 +78,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
                 getPreferenceScreen().removePreference(findPreference(i));
             }
             getPreferenceScreen().removePreference(findPreference(MEDIA_KEY));
-            getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
         } else {
             // These will be tucked under the Media subkey, so don't show them on the main menu.
             getPreferenceScreen().removePreference(findPreference(Type.AUTOPLAY));
@@ -91,7 +88,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            getPreferenceScreen().removePreference(findPreference(TRANSLATE_KEY));
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SENSOR_CONTENT_SETTING)) {
                 getPreferenceScreen().removePreference(findPreference(Type.SENSORS));
             }
@@ -99,15 +95,15 @@ public class SiteSettingsPreferences extends PreferenceFragment
             if (FeatureUtilities.isNoTouchModeEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
             }
+            CommandLine commandLine = CommandLine.getInstance();
+            if (!commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+                getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
+            }
         }
     }
 
     private void updatePreferenceStates() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
-
-        // Translate preference.
-        Preference translatePref = findPreference(TRANSLATE_KEY);
-        if (translatePref != null) setTranslateStateSummary(translatePref);
 
         // Preferences that navigate to Website Settings.
         List<Integer> websitePrefs = new ArrayList<Integer>();
@@ -120,6 +116,10 @@ public class SiteSettingsPreferences extends PreferenceFragment
             }
             websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
             websitePrefs.add(Type.BACKGROUND_SYNC);
+            CommandLine commandLine = CommandLine.getInstance();
+            if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+                websitePrefs.add(Type.BLUETOOTH_SCANNING);
+            }
             websitePrefs.add(Type.CAMERA);
             if (!FeatureUtilities.isNoTouchModeEnabled()) {
                 websitePrefs.add(Type.CLIPBOARD);
@@ -216,12 +216,5 @@ public class SiteSettingsPreferences extends PreferenceFragment
         preference.getExtras().putString(SingleCategoryPreferences.EXTRA_TITLE,
                 preference.getTitle().toString());
         return false;
-    }
-
-    private void setTranslateStateSummary(Preference translatePref) {
-        boolean translateEnabled = PrefServiceBridge.getInstance().isTranslateEnabled();
-        translatePref.setSummary(translateEnabled
-                ? R.string.website_settings_category_ask
-                : R.string.website_settings_category_blocked);
     }
 }

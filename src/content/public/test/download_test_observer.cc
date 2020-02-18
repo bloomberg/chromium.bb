@@ -69,9 +69,7 @@ DownloadTestObserver::DownloadTestObserver(
       wait_count_(wait_count),
       finished_downloads_at_construction_(0),
       waiting_(false),
-      dangerous_download_action_(dangerous_download_action),
-      weak_factory_(this) {
-}
+      dangerous_download_action_(dangerous_download_action) {}
 
 DownloadTestObserver::~DownloadTestObserver() {
   for (DownloadSet::iterator it = downloads_observed_.begin();
@@ -140,7 +138,7 @@ void DownloadTestObserver::OnDownloadDestroyed(
 void DownloadTestObserver::OnDownloadUpdated(download::DownloadItem* download) {
   // Real UI code gets the user's response after returning from the observer.
   if (download->IsDangerous() &&
-      !base::ContainsKey(dangerous_downloads_seen_, download->GetId())) {
+      !base::Contains(dangerous_downloads_seen_, download->GetId())) {
     dangerous_downloads_seen_.insert(download->GetId());
 
     // Calling ValidateDangerousDownload() at this point will

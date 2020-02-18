@@ -42,12 +42,6 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/base/resource/resource_handle.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
-#include "chrome/common/chrome_features.h"
-#include "components/prefs/pref_service.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
@@ -381,6 +375,10 @@ void BaseWebUIBrowserTest::set_loader_file(const std::string& loader_file) {
   loader_file_ = loader_file;
 }
 
+void BaseWebUIBrowserTest::set_webui_host(const std::string& webui_host) {
+  test_factory_->set_webui_host(webui_host);
+}
+
 namespace {
 
 // DataSource for the dummy URL.  If no data source is provided then an error
@@ -393,7 +391,7 @@ class MockWebUIDataSource : public content::URLDataSource {
   ~MockWebUIDataSource() override {}
 
  private:
-  std::string GetSource() const override { return "dummyurl"; }
+  std::string GetSource() override { return "dummyurl"; }
 
   void StartDataRequest(
       const std::string& path,
@@ -405,14 +403,14 @@ class MockWebUIDataSource : public content::URLDataSource {
     callback.Run(response.get());
   }
 
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) override {
     return "text/html";
   }
 
   // Append 'unsave-eval' to the default script-src CSP policy, since it is
   // needed by some tests using chrome://dummyurl (because they depend on
   // Mock4JS, see crbug.com/844820).
-  std::string GetContentSecurityPolicyScriptSrc() const override {
+  std::string GetContentSecurityPolicyScriptSrc() override {
     return "script-src chrome://resources 'self' 'unsafe-eval';";
   }
 
@@ -470,12 +468,6 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
                                     mock_provider_.Pointer());
   test_factory_->AddFactoryOverride(content::kChromeUIResourcesHost,
                                     mock_provider_.Pointer());
-
-#if defined(OS_CHROMEOS)
-  scoped_feature_list_.InitAndEnableFeature(features::kCrostini);
-  browser()->profile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kCrostiniEnabled, true);
-#endif
 }
 
 void BaseWebUIBrowserTest::TearDownOnMainThread() {

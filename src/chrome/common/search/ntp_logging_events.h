@@ -22,17 +22,11 @@ enum NTPLoggingEventType {
   // Deleted: NTP_EXTERNAL_TILE_FALLBACK = 8,
   // Deleted: NTP_MOUSEOVER = 9
   // Deleted: NTP_TILE_LOADED = 10,
+  // Deleted: NTP_ALL_TILES_RECEIVED = 12,
 
   // All NTP tiles have finished loading (successfully or failing). Logged only
   // by the single-iframe version of the NTP.
   NTP_ALL_TILES_LOADED = 11,
-
-  // The data for all NTP tiles (title, URL, etc, but not the thumbnail image)
-  // has been received by the most visited iframe. In contrast to
-  // NTP_ALL_TILES_LOADED, this is recorded before the actual DOM elements have
-  // loaded (in particular the thumbnail images). Logged only by the
-  // single-iframe version of the NTP.
-  NTP_ALL_TILES_RECEIVED = 12,
 
   // Activated by clicking on the fakebox icon. Logged by Voice Search.
   NTP_VOICE_ACTION_ACTIVATE_FAKEBOX = 13,
@@ -133,7 +127,56 @@ enum NTPLoggingEventType {
   // A promo link was clicked.
   NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED = 61,
 
-  NTP_EVENT_TYPE_LAST = NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED
+  // The shortcut type displayed (i.e. Most Visited or custom links) was
+  // changed.
+  NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE = 62,
+  // The visibility of shortcuts was changed.
+  NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY = 63,
+
+  // The richer picker was opened.
+  NTP_CUSTOMIZATION_MENU_OPENED = 64,
+  // 'Cancel' was clicked in the richer picker.
+  NTP_CUSTOMIZATION_MENU_CANCEL = 65,
+  // 'Done' was clicked in the richer picker.
+  NTP_CUSTOMIZATION_MENU_DONE = 66,
+
+  // 'Upload from device' was selected in the richer picker.
+  NTP_BACKGROUND_UPLOAD_FROM_DEVICE = 67,
+  // A collection tile was selected in the richer picker.
+  NTP_BACKGROUND_OPEN_COLLECTION = 68,
+  // A image tile was selected in the richer picker.
+  NTP_BACKGROUND_SELECT_IMAGE = 69,
+  // A image tile was deselected in the richer picker.
+  NTP_BACKGROUND_DESELECT_IMAGE = 70,
+  // An image was set as the NTP background.
+  NTP_BACKGROUND_IMAGE_SET = 71,
+  // The back arrow was clicked in the richer picker.
+  NTP_BACKGROUND_BACK_CLICK = 72,
+  // The 'No background' tile was selected in the richer picker.
+  NTP_BACKGROUND_DEFAULT_SELECTED = 73,
+  // The 'No background' tile was deselected in the richer picker.
+  NTP_BACKGROUND_DEFAULT_DESELECTED = 74,
+  // 'Cancel' was clicked in the image selection dialog.
+  NTP_BACKGROUND_UPLOAD_CANCEL = 75,
+  // 'Done' was clicked in the image selection dialog.
+  NTP_BACKGROUND_UPLOAD_DONE = 76,
+  // The NTP background image was reset in the richer picker.
+  NTP_BACKGROUND_IMAGE_RESET = 77,
+
+  // The 'My shortcuts' (i.e. custom links) option was clicked in the richer
+  // picker.
+  NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED = 78,
+  // The 'Most visited sites' option was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED = 79,
+  // The 'Hide shortcuts' toggle was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED = 80,
+
+  // The 'refresh daily' toggle was licked in the richer picker.
+  NTP_BACKGROUND_REFRESH_TOGGLE_CLICKED = 81,
+  // Daily refresh was enabled by clicked 'Done' in the richer picker.
+  NTP_BACKGROUND_DAILY_REFRESH_ENABLED = 82,
+
+  NTP_EVENT_TYPE_LAST = NTP_BACKGROUND_DAILY_REFRESH_ENABLED
 };
 
 // The different types of events that are logged for NTP search suggestions,

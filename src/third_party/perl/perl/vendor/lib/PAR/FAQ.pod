@@ -1,3 +1,5 @@
+=encoding utf8
+
 =head1 NAME
 
 PAR::FAQ - Frequently Asked Questions about PAR
@@ -5,7 +7,6 @@ PAR::FAQ - Frequently Asked Questions about PAR
 =head1 SYNOPSIS
 
 This is the Frequently Asked Questions list for the Perl Archive Toolkit.
-You can edit this document at L<http://par.perl.org/wiki/FAQ> online.
 This (included) FAQ list might be outdated. The Wiki version at the above URL
 is guaranteed to be up to date.
 
@@ -29,7 +30,7 @@ and wait for the script to download and extract PAR and its dependencies. If you
 
 =head3 ppm
 
-If you are using ActivePerl from ActiveState, you can use the 'ppm' program that comes with the ActiveState Perl. Instructions can be found below. PAR is availlable from various PPM repositories and some packages are compatible with some versions of ActivePerl and not with others. There is an incomplete PAR-Win32 Binary Compatibility List at L<http://par.wikia.com/wiki/PAR_PPM_Compatibility_List> There are at least three relevant PPM repositories: The default ActiveState one, the bribes repository which is used in the example below and Randy Kobes' repository at L<http://theoryx5.uwinnipeg.ca/ppms/>.
+If you are using ActivePerl from ActiveState, you can use the 'ppm' program that comes with the ActiveState Perl. Instructions can be found below. PAR is available from various PPM repositories and some packages are compatible with some versions of ActivePerl and not with others. There is an incomplete PAR-Win32 Binary Compatibility List at L<http://par.wikia.com/wiki/PAR_PPM_Compatibility_List> There are at least three relevant PPM repositories: The default ActiveState one, the bribes repository which is used in the example below and Randy Kobes' repository at L<http://theoryx5.uwinnipeg.ca/ppms/>.
 
     C:\> ppm3
     # activestate was out of date compared to this one
@@ -98,11 +99,17 @@ Answer from: Steffen Mueller, 16 August 2006
 
 I<Note:> Is this still a problem?
 
-Comment out the line that starts with " unless (caller) ", and compile it again. Note that this is considered a bug; clearing the caller stack is a development in progress. See: L<http://par.perl.org/wiki/Development_in_progress>
+Comment out the line that starts with " unless (caller) ", and compile it again. Note that this is considered a bug; clearing the caller stack is a development in progress.
 
 =head2 I get a link error '/usr/bin/ld: cannot find -lperl' during the 'make' step of the installation on Debian. What's wrong?
 
-This is a common problem when building compiled libraries on Debian distribution installations with the default perl package. To fix this problem, create a symbolic link from libperl.so.5.6.1 to libperl.so in /usr/lib (cd /usr/lib; ln -s libperl.so.5.6.1 libperl.so) and re-run the 'make' step of the installation. Or install libperl-dev
+Install the C<libperl-dev> package. 
+
+Note that Debian provides (usually up-to-date) packages of the modules 
+in the PAR ecosystem: L<Module::Scandeps>, L<PAR>,
+L<PAR::Dist> and L<PAR::Packer>; the corresponding packages are called
+C<libmodule-scandeps-perl>,  C<libpar-dist-perl>, C<libpar-perl>
+and C<libpar-packer-perl>.
 
 =head2 I specify a .ico file with --icon for Win32, but the icon is still the black and white camel. What's wrong?
 
@@ -212,7 +219,7 @@ When searching for an answer to this myself, I found many references to using "e
 
 =head2 How can I change the icon of the generated .exe file under Windows?
 
-There is another not-completely-documented switch that only works on windows, â€“icon MyIcon.ico. So just use this:
+There is another not-completely-documented switch that only works on windows, --icon MyIcon.ico. So just use this:
 
     % pp --icon "c:\path to\MyIcon.ico" -o file.exe file.pl.
 
@@ -220,7 +227,7 @@ There is another not-completely-documented switch that only works on windows, â€
 
 =head2 The command line parameters (@ARGV) of a pp-ed binary called from another pp-ed binary are missing or broken. What the...?
 
-This was a bug in releases up to and incuding PAR-0.90. Please upgrade to PAR 0.91 or later and the problem will go away.
+This was a bug in releases up to and including PAR-0.90. Please upgrade to PAR 0.91 or later and the problem will go away.
 
 =head2 I want to include a pp-ed binary in an RPM package. How can I make this work?
 
@@ -250,7 +257,7 @@ After quite some time, it seems like the smart folks at Redhat found the culprit
   this won't work.
 
 Much praise to all who helped track this down! The discussion can be found in the following RT tickets:
-L<http://rt.cpan.org/Public/Bug/Display.html?id=18536 #18536> and L<http://rt.cpan.org/Public/Bug/Display.html?id=19609 #19609>.
+L<http://rt.cpan.org/Public/Bug/Display.html?id=18536|#18536> and L<http://rt.cpan.org/Public/Bug/Display.html?id=19609|#19609>.
 
 -- Steffen Mueller, 22 July 2006
 
@@ -340,7 +347,7 @@ L<PAR>, L<PAR::Tutorial>
 Audrey Tang E<lt>cpan@audreyt.orgE<gt>, 
 Steffen Mueller E<lt>smueller@cpan.orgE<gt>
 
-L<http://par.perl.org/> is the official PAR website.  You can write
+You can write
 to the mailing list at E<lt>par@perl.orgE<gt>, or send an empty mail to
 E<lt>par-subscribe@perl.orgE<gt> to participate in the discussion.
 
@@ -353,6 +360,6 @@ Copyright 2003-2008 by Audrey Tang E<lt>cpan@audreyt.orgE<gt>.
 This document is free documentation; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<LICENSE>.
 
 =cut

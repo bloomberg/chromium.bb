@@ -18,8 +18,9 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
@@ -164,14 +165,12 @@ TEST_P(WebStateTest, LoadingProgress) {
 TEST_P(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindRepeating(^bool(const base::DictionaryValue&, const GURL&,
-                                /*interacted*/ bool, /*is_main_frame*/ bool,
-                                /*sender_frame*/ web::WebFrame*) {
+  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
+      ^(const base::DictionaryValue&, const GURL&,
+        /*interacted*/ bool, /*is_main_frame*/ web::WebFrame*) {
         message_received = true;
-        return true;
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   // Load the page which overrides window.webkit object and wait until the
   // test message is received.
@@ -184,7 +183,6 @@ TEST_P(WebStateTest, OverridingWebKitObject) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
 }
 
 // Tests that reload with web::ReloadType::NORMAL is no-op when navigation
@@ -232,7 +230,7 @@ TEST_P(WebStateTest, Snapshot) {
   CGRect rect = [web_state()->GetView() bounds];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
   web_state()->TakeSnapshot(
-      gfx::RectF(rect), base::BindOnce(^(const gfx::Image& snapshot) {
+      gfx::RectF(rect), base::BindRepeating(^(const gfx::Image& snapshot) {
         ASSERT_FALSE(snapshot.IsEmpty());
         EXPECT_GT(snapshot.Width(), 0);
         EXPECT_GT(snapshot.Height(), 0);
@@ -262,15 +260,14 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
-  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& value, const GURL&,
-            bool user_interacted, bool is_main_frame, WebFrame* sender_frame) {
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+                            bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
-        message_from_main_frame = is_main_frame;
+        message_from_main_frame = sender_frame->IsMainFrame();
         message_value = value.Clone();
-        return true;
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   ASSERT_TRUE(LoadHtml(
       "<script>"
@@ -280,7 +277,6 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
   EXPECT_TRUE(message_from_main_frame);
   EXPECT_TRUE(message_value.is_dict());
   EXPECT_EQ(message_value.DictSize(), size_t(1));
@@ -297,15 +293,14 @@ TEST_P(WebStateTest, MessageFromIFrame) {
   __block bool message_received = false;
   __block bool message_from_main_frame = false;
   __block base::Value message_value;
-  const web::WebState::ScriptCommandCallback callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& value, const GURL&,
-            bool user_interacted, bool is_main_frame, WebFrame* sender_frame) {
+  const web::WebState::ScriptCommandCallback callback =
+      base::BindRepeating(^(const base::DictionaryValue& value, const GURL&,
+                            bool user_interacted, WebFrame* sender_frame) {
         message_received = true;
-        message_from_main_frame = is_main_frame;
+        message_from_main_frame = sender_frame->IsMainFrame();
         message_value = value.Clone();
-        return true;
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   ASSERT_TRUE(LoadHtml(
       "<iframe srcdoc='"
@@ -317,7 +312,6 @@ TEST_P(WebStateTest, MessageFromIFrame) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
   EXPECT_FALSE(message_from_main_frame);
   EXPECT_TRUE(message_value.is_dict());
   EXPECT_EQ(message_value.DictSize(), size_t(1));

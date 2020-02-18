@@ -29,7 +29,8 @@ class NET_EXPORT_PRIVATE DnsConfigService {
   // ReadConfig() and WatchConfig().
   typedef base::Callback<void(const DnsConfig& config)> CallbackType;
 
-  // Creates the platform-specific DnsConfigService.
+  // Creates the platform-specific DnsConfigService. May return |nullptr| if
+  // reading system DNS settings is not supported on the current platform.
   static std::unique_ptr<DnsConfigService> CreateSystemService();
 
   DnsConfigService();
@@ -44,6 +45,11 @@ class NET_EXPORT_PRIVATE DnsConfigService {
   // changes from last call or has to be withdrawn. Can be called at most once.
   // Might require MessageLoopForIO.
   void WatchConfig(const CallbackType& callback);
+
+  // Triggers invalidation and re-read of the current configuration (followed by
+  // invocation of the callback). For use only on platforms expecting
+  // network-stack-external notifications of DNS config changes.
+  virtual void RefreshConfig();
 
  protected:
   enum WatchStatus {

@@ -17,7 +17,6 @@ import logging
 import os
 import subprocess
 import sys
-import tempfile
 
 import merge_lib as coverage_merger
 
@@ -44,6 +43,13 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--profdata-dir', required=True, help='where to store the merged data')
   parser.add_argument(
       '--llvm-profdata', required=True, help='path to llvm-profdata executable')
+  parser.add_argument(
+      '--java-coverage-dir', help='directory for Java coverage data')
+  parser.add_argument(
+      '--jacococli-path', help='path to jacococli.jar.')
+  parser.add_argument(
+      '--merged-jacoco-filename',
+      help='filename used to uniquely name the merged exec file.')
   return parser
 
 
@@ -51,6 +57,19 @@ def main():
   desc = "Merge profraw files in <--task-output-dir> into a single profdata."
   parser = _MergeAPIArgumentParser(description=desc)
   params = parser.parse_args()
+
+  if params.java_coverage_dir:
+    if not params.jacococli_path:
+      parser.error('--jacococli-path required when merging Java coverage')
+    if not params.merged_jacoco_filename:
+      parser.error(
+          '--merged-jacoco-filename required when merging Java coverage')
+
+    output_path = os.path.join(
+        params.java_coverage_dir, '%s.exec' % params.merged_jacoco_filename)
+    logging.info('Merging JaCoCo .exec files to %s', output_path)
+    coverage_merger.merge_java_exec_files(
+        params.task_output_dir, output_path, params.jacococli_path)
 
   # NOTE: The coverage data merge script must make sure that the profraw files
   # are deleted from the task output directory after merging, otherwise, other
@@ -84,24 +103,6 @@ def main():
         params.output_json,
     ]
 
-    # TODO(crbug.com/960994): Without specifying an output directory, the layout
-    # merge script will use the CWD as the output directory and then tries to
-    # wipe out the content in that directory, and unfortunately, the CWD is a
-    # temporary directory that has been used to hold the coverage profdata, so
-    # without the following hack, the merge script will deletes all the profdata
-    # files and lead to build failures.
-    #
-    # This temporary workaround is only used for evaluating the stability of the
-    # linux-coverage-rel trybot, it should be removed before merging into
-    # linxu-rel as it's not reliable enough, for example, things could break if
-    # the name or arguments of the script are changed.
-    if params.additional_merge_script.endswith('merge_web_test_results.py'):
-      new_args.extend([
-        '--output-directory',
-        tempfile.mkdtemp(),
-        '--allow-existing-output-directory',
-      ])
-
     if params.additional_merge_script_args:
       new_args += json.loads(params.additional_merge_script_args)
 
@@ -113,17 +114,51 @@ def main():
       failed = True
       logging.warning('Additional merge script %s exited with %s' %
                       (params.additional_merge_script, rc))
+    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
+                        params.summary_json, params.output_json)
   elif len(params.jsons_to_merge) == 1:
     logging.info("Only one output needs to be merged; directly copying it.")
     with open(params.jsons_to_merge[0]) as f_read:
       with open(params.output_json, 'w') as f_write:
         f_write.write(f_read.read())
+    mark_invalid_shards(coverage_merger.get_shards_to_retry(invalid_profiles),
+                        params.summary_json, params.output_json)
   else:
     logging.warning(
         "This script was told to merge %d test results, but no additional "
         "merge script was given.")
 
   return 1 if (failed or bool(invalid_profiles)) else 0
+
+def mark_invalid_shards(bad_shards, summary_file, output_file):
+  if not bad_shards:
+    return
+  shard_indices = []
+  try:
+    with open(summary_file) as f:
+      summary = json.load(f)
+  except (OSError, ValueError):
+    logging.warning('Could not read summary.json, not marking invalid shards')
+    return
+
+  for i in range(len(summary['shards'])):
+    shard_info = summary['shards'][i]
+    shard_id = (shard_info['task_id']
+                if shard_info and 'task_id' in shard_info
+                else 'unknown')
+    if shard_id in bad_shards or shard_id == 'unknown':
+      shard_indices.append(i)
+
+  try:
+    with open(output_file) as f:
+      output = json.load(f)
+  except (OSError, ValueError):
+    logging.warning('Invalid/missing output.json, overwriting')
+    output = {}
+  output.setdefault('missing_shards', [])
+  output['missing_shards'].extend(shard_indices)
+  with open(output_file, 'w') as f:
+    json.dump(output, f)
 
 
 if __name__ == '__main__':

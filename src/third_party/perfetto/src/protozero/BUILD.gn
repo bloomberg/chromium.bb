@@ -24,8 +24,8 @@ source_set("protozero") {
   ]
   deps = [
     "../../gn:default_deps",
-    "../../gn:gtest_prod_config",
-    "../base",
+    "../../include/perfetto/base",
+    "../../include/perfetto/ext/base",  # TODO(primiano): remove this
   ]
   sources = [
     "message.cc",
@@ -52,7 +52,7 @@ source_set("unittests") {
     ":testing_messages_lite",
     ":testing_messages_zero",
     "../../gn:default_deps",
-    "../../gn:gtest_deps",
+    "../../gn:gtest_and_gmock",
     "../base",
     "../base:test_support",
   ]
@@ -98,5 +98,6 @@ perfetto_fuzzer_test("protozero_decoder_fuzzer") {
   deps = [
     ":protozero",
     "../../gn:default_deps",
+    "../base",
   ]
 }

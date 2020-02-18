@@ -42,7 +42,7 @@
 #include "base/auto_reset.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
@@ -97,7 +97,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
@@ -111,7 +111,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -156,9 +156,11 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // header and instead use a separate member. See https://crbug.com/850813.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        frame_->GetDocument()->GetReferrerPolicy(),
-        frame_->GetDocument()->Url(),
-        frame_->GetDocument()->OutgoingReferrer()));
+                                frame_->GetDocument()->GetReferrerPolicy(),
+                                frame_->GetDocument()->Url(),
+                                frame_->GetDocument()->OutgoingReferrer()),
+                            ResourceRequest::SetHttpReferrerLocation::
+                                kFrameLoaderResourceRequestForReload);
   }
 
   request.SetSkipServiceWorker(frame_load_type ==
@@ -204,6 +206,14 @@ void FrameLoader::Init() {
       frame_, kWebNavigationTypeOther, std::move(navigation_params),
       nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
+  WillCommitNavigation();
+  if (!DetachDocument())
+    return;
+
+  CommitDocumentLoader(provisional_document_loader_.Release());
+
+  // Load the document if needed.
+  document_loader_->StartLoadingResponse();
 
   frame_->GetDocument()->CancelParsing();
 
@@ -299,21 +309,18 @@ void FrameLoader::DispatchUnloadEvent() {
         provisional_document_loader_
             ? &provisional_document_loader_->GetTiming()
             : nullptr);
-    // Don't remove event listeners from a transitional empty document (see
-    // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
-    bool keep_event_listeners =
-        provisional_document_loader_ &&
-        ShouldReuseDefaultView(
-            SecurityOrigin::Create(provisional_document_loader_->Url()),
-            provisional_document_loader_->GetContentSecurityPolicy());
-    if (!keep_event_listeners)
+    // Remove event listeners if we're firing unload events for a reason other
+    // than committing a navigation. In the commit case, we'll determine whether
+    // event listeners should be retained when choosing whether to reuse the
+    // LocalDOMWindow.
+    if (!provisional_document_loader_)
       document->RemoveAllEventListenersRecursively();
   }
 }
 
 void FrameLoader::DidExplicitOpen() {
   probe::LifecycleEvent(frame_, GetDocumentLoader(), "init",
-                        CurrentTimeTicksInSeconds());
+                        base::TimeTicks::Now().since_origin().InSecondsF());
   // Calling document.open counts as committing the first real document load.
   if (!state_machine_.CommittedFirstRealDocumentLoad())
     state_machine_.AdvanceTo(FrameLoaderStateMachine::kCommittedFirstRealLoad);
@@ -328,44 +335,6 @@ void FrameLoader::DidExplicitOpen() {
       progress_tracker_->ProgressStarted();
     }
   }
-}
-
-// This is only called by ScriptController::executeScriptIfJavaScriptURL and
-// always contains the result of evaluating a javascript: url. This is the
-// <iframe src="javascript:'html'"> case.
-void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
-    const String& source,
-    Document* owner_document) {
-  Document* document = frame_->GetDocument();
-  if (!document_loader_ ||
-      document->PageDismissalEventBeingDispatched() != Document::kNoDismissal)
-    return;
-
-  UseCounter::Count(*document, WebFeature::kReplaceDocumentViaJavaScriptURL);
-
-  const KURL& url = document->Url();
-
-  document_loader_->StopLoading();
-
-  // Don't allow any new child frames to load in this frame: attaching a new
-  // child frame during or after detaching children results in an attached
-  // frame on a detached DOM tree, which is bad.
-  SubframeLoadingDisabler disabler(document);
-  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
-  // The ignore-opens-during-unload counter of the parent Document must be
-  // incremented when unloading its descendants.
-  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(document);
-  frame_->DetachChildren();
-
-  // detachChildren() potentially detaches or navigates this frame. The load
-  // cannot continue in those cases.
-  if (!frame_->IsAttached() || document != frame_->GetDocument())
-    return;
-
-  frame_->GetDocument()->Shutdown();
-  Client()->TransitionToCommittedForNewPage();
-  document_loader_->ReplaceDocumentWhileExecutingJavaScriptURL(
-      url, owner_document, source);
 }
 
 void FrameLoader::FinishedParsing() {
@@ -574,10 +543,6 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
         ((frame_->Owner()->GetFramePolicy().sandbox_flags &
           WebSandboxFlags::kOrigin) != WebSandboxFlags::kNone))
       return false;
-
-    frame_->GetDocument()->ProcessJavaScriptUrl(
-        url, request.ShouldCheckMainWorldContentSecurityPolicy());
-    return false;
   }
 
   if (!request.OriginDocument()->GetSecurityOrigin()->CanDisplay(url)) {
@@ -760,6 +725,12 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     return;
   }
 
+  if (url.ProtocolIsJavaScript()) {
+    frame_->GetDocument()->ProcessJavaScriptUrl(
+        url, request.ShouldCheckMainWorldContentSecurityPolicy());
+    return;
+  }
+
   bool has_transient_activation =
       LocalFrame::HasTransientUserActivation(frame_);
   // TODO(csharrison): In M71 when UserActivation v2 should ship, we can remove
@@ -815,27 +786,25 @@ static void FillStaticResponseIfNeeded(WebNavigationParams* params,
     // - use it here instead of re-reading from the owner.
     // This way we will get rid of extra dependency between starting and
     // committing navigation.
-    CString encoded_srcdoc;
+    String srcdoc;
     HTMLFrameOwnerElement* owner_element = frame->DeprecatedLocalOwner();
     if (!IsHTMLIFrameElement(owner_element) ||
         !owner_element->FastHasAttribute(html_names::kSrcdocAttr)) {
       // Cannot retrieve srcdoc content anymore (perhaps, the attribute was
       // cleared) - load empty instead.
     } else {
-      String srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
+      srcdoc = owner_element->FastGetAttribute(html_names::kSrcdocAttr);
       DCHECK(!srcdoc.IsNull());
-      encoded_srcdoc = srcdoc.Utf8();
     }
-    WebNavigationParams::FillStaticResponse(
-        params, "text/html", "UTF-8",
-        base::make_span(encoded_srcdoc.data(), encoded_srcdoc.length()));
+    WebNavigationParams::FillStaticResponse(params, "text/html", "UTF-8",
+                                            StringUTF8Adaptor(srcdoc));
     return;
   }
 
   MHTMLArchive* archive = nullptr;
   if (auto* parent = DynamicTo<LocalFrame>(frame->Tree().Parent()))
     archive = parent->Loader().GetDocumentLoader()->Archive();
-  if (archive) {
+  if (archive && !url.ProtocolIsData()) {
     // If we have an archive loaded in some ancestor frame, we should
     // retrieve document content from that archive. This is different from
     // loading an archive into this frame, which will be handled separately
@@ -882,7 +851,8 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
 
 void FrameLoader::CommitNavigation(
     std::unique_ptr<WebNavigationParams> navigation_params,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
+    bool is_javascript_url) {
   DCHECK(frame_->GetDocument());
   DCHECK(Client()->HasWebView());
 
@@ -947,19 +917,36 @@ void FrameLoader::CommitNavigation(
   DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
       frame_, navigation_type, std::move(navigation_params),
       std::move(extra_data));
-  if (history_item)
-    provisional_document_loader->SetItemForHistoryNavigation(history_item);
 
-  progress_tracker_->ProgressStarted();
-  provisional_document_loader_ = provisional_document_loader;
-  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   {
-    FrameNavigationDisabler navigation_disabler(*frame_);
-    Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+    base::AutoReset<bool> scoped_committing(&committing_navigation_, true);
+    if (history_item)
+      provisional_document_loader->SetItemForHistoryNavigation(history_item);
+    if (is_javascript_url)
+      provisional_document_loader->SetLoadingJavaScriptUrl();
+
+    progress_tracker_->ProgressStarted();
+    provisional_document_loader_ = provisional_document_loader;
+    frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+    {
+      FrameNavigationDisabler navigation_disabler(*frame_);
+      Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
+    }
+    probe::DidStartProvisionalLoad(frame_);
+    virtual_time_pauser_.PauseVirtualTime();
+
+    provisional_document_loader_->StartLoading();
+    WillCommitNavigation();
+
+    if (!DetachDocument())
+      return;
   }
-  probe::DidStartProvisionalLoad(frame_);
-  virtual_time_pauser_.PauseVirtualTime();
-  provisional_document_loader_->StartLoading();
+
+  CommitDocumentLoader(provisional_document_loader_.Release());
+
+  // Load the document if needed.
+  document_loader_->StartLoadingResponse();
+
   TakeObjectSnapshot();
 }
 
@@ -1018,7 +1005,7 @@ void FrameLoader::DidAccessInitialDocument() {
   }
 }
 
-bool FrameLoader::PrepareForCommit() {
+bool FrameLoader::DetachDocument() {
   PluginScriptForbiddenScope forbid_plugin_destructor_scripting;
   DocumentLoader* pdl = provisional_document_loader_;
 
@@ -1066,16 +1053,12 @@ bool FrameLoader::PrepareForCommit() {
   // domWindow) since the doc is now detached?
   if (frame_->GetDocument())
     frame_->GetDocument()->Shutdown();
-  document_loader_ = provisional_document_loader_.Release();
-  if (document_loader_)
-    document_loader_->MarkAsCommitted();
-
-  TakeObjectSnapshot();
+  document_loader_ = nullptr;
 
   return true;
 }
 
-void FrameLoader::CommitProvisionalLoad() {
+void FrameLoader::WillCommitNavigation() {
   DCHECK(Client()->HasWebView());
 
   // Check if the destination page is allowed to access the previous page's
@@ -1088,9 +1071,14 @@ void FrameLoader::CommitProvisionalLoad() {
             security_origin->CanRequest(frame_->GetDocument()->Url()));
   }
   virtual_time_pauser_.UnpauseVirtualTime();
+}
 
-  if (!PrepareForCommit())
-    return;
+void FrameLoader::CommitDocumentLoader(DocumentLoader* document_loader) {
+  document_loader_ = document_loader;
+  CHECK(document_loader_);
+  document_loader_->MarkAsCommitted();
+
+  TakeObjectSnapshot();
 
   Client()->TransitionToCommittedForNewPage();
 }
@@ -1225,6 +1213,7 @@ void FrameLoader::Detach() {
     DetachDocumentLoader(provisional_document_loader_);
   }
   ClearClientNavigation();
+  committing_navigation_ = false;
   DidFinishNavigation();
 
   if (progress_tracker_) {

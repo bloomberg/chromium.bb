@@ -72,9 +72,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
   QueueingConnectionFilter(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       std::unique_ptr<service_manager::BinderRegistry> registry)
-      : io_task_runner_(io_task_runner),
-        registry_(std::move(registry)),
-        weak_factory_(this) {
+      : io_task_runner_(io_task_runner), registry_(std::move(registry)) {
     // This will be reattached by any of the IO thread functions on first call.
     io_thread_checker_.DetachFromThread();
   }
@@ -159,7 +157,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
   viz::VizMainImpl* viz_main_ = nullptr;
 #endif
 
-  base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_;
+  base::WeakPtrFactory<QueueingConnectionFilter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QueueingConnectionFilter);
 };
@@ -208,8 +206,7 @@ GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
       viz_main_(this,
                 CreateVizMainDependencies(GetConnector()),
                 std::move(gpu_init)),
-      quit_closure_(std::move(quit_closure)),
-      weak_factory_(this) {
+      quit_closure_(std::move(quit_closure)) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kSingleProcess) ||
@@ -261,8 +258,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 }
 
 void GpuChildThread::CreateVizMainService(
-    viz::mojom::VizMainAssociatedRequest request) {
-  viz_main_.BindAssociated(std::move(request));
+    mojo::PendingAssociatedReceiver<viz::mojom::VizMain> pending_receiver) {
+  viz_main_.BindAssociated(std::move(pending_receiver));
 }
 
 bool GpuChildThread::in_process_gpu() const {

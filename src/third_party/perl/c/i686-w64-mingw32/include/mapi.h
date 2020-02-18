@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef MAPI_H
@@ -14,8 +14,8 @@ extern "C" {
 #define EXPORT
 #endif
 
-  typedef unsigned long *LPULONG;
-  typedef unsigned long FLAGS;
+  typedef unsigned __LONG32 *LPULONG;
+  typedef unsigned __LONG32 FLAGS;
 
 #ifndef __LHANDLE
 #define __LHANDLE

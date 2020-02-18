@@ -152,7 +152,7 @@ void LocalPrinterHandlerChromeos::GetDefaultPrinter(DefaultPrinterCallback cb) {
 }
 
 void LocalPrinterHandlerChromeos::StartGetPrinters(
-    const AddedPrintersCallback& added_printers_callback,
+    AddedPrintersCallback added_printers_callback,
     GetPrintersDoneCallback done_callback) {
   // SyncedPrintersManager is not thread safe and must be called from the UI
   // thread.
@@ -172,7 +172,7 @@ void LocalPrinterHandlerChromeos::StartGetPrinters(
   AddPrintersToList(printers_manager_->GetPrinters(PrinterClass::kAutomatic),
                     &printer_list);
 
-  ConvertPrinterListForCallback(added_printers_callback,
+  ConvertPrinterListForCallback(std::move(added_printers_callback),
                                 std::move(done_callback), printer_list);
 }
 
@@ -288,7 +288,6 @@ void LocalPrinterHandlerChromeos::StartPrint(
     settings.SetKey(
         kSettingUsername,
         base::Value(username.empty() ? kUsernamePlaceholder : username));
-    settings.SetKey(kSettingJobTitle, base::Value(job_title));
     settings.SetKey(kSettingSendUserInfo, base::Value(true));
   }
   StartLocalPrint(std::move(settings), std::move(print_data),

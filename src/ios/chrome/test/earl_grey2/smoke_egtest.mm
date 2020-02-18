@@ -9,7 +9,6 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/earl_grey2/chrome_earl_grey_edo.h"
@@ -177,6 +176,20 @@
   GREYAssertEqualObjects(@0, actualResult,
                          @"Actual JavaScript execution result: %@",
                          actualResult);
+}
+
+// Tests typed URL converted helpers in chrome_earl_grey.h.
+- (void)testTypedURLHelpers {
+  const GURL mockURL("http://not-a-real-site.test/");
+
+  [ChromeEarlGrey addHistoryServiceTypedURL:mockURL];
+  [ChromeEarlGrey deleteHistoryServiceTypedURL:mockURL];
+}
+
+// Tests accessibility util converted helper in chrome_earl_grey.h.
+- (void)testAccessibilityUtil {
+  [ChromeEarlGrey loadURL:GURL("chrome://version")];
+  [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
 }
 
 @end

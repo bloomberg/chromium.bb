@@ -28,6 +28,7 @@ const char kResetVmMethod[] = "ResetVm";
 const char kShowVmMethod[] = "ShowVm";
 
 const char kVmStateChangedSignal[] = "VmStateChanged";
+const char kVmToolsStateChangedSignal[] = "VmToolsStateChanged";
 
 }  // namespace plugin_dispatcher
 }  // namespace vm_tools

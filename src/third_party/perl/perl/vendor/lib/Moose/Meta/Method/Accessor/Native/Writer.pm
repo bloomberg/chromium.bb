@@ -1,15 +1,11 @@
 package Moose::Meta::Method::Accessor::Native::Writer;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Writer::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Writer::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use List::MoreUtils qw( any );
+use List::Util 1.33 qw( any );
+use Moose::Util;
 
 use Moose::Role;
 
@@ -85,18 +81,27 @@ sub _constraint_must_be_checked {
     my $attr = $self->associated_attribute;
 
     return $attr->has_type_constraint
-        && (!$self->_is_root_type( $attr->type_constraint )
-         || ( $attr->should_coerce && $attr->type_constraint->has_coercion)
-           );
+        && ( !$self->_is_root_type( $attr->type_constraint )
+        || ( $attr->should_coerce && $attr->type_constraint->has_coercion ) );
 }
 
 sub _is_root_type {
     my $self = shift;
-    my ($type) = @_;
+    my $type = shift;
 
-    my $name = $type->name;
-
-    return any { $name eq $_ } @{ $self->root_types };
+    if (   blessed($type)
+        && $type->can('does')
+        && $type->does('Specio::Constraint::Role::Interface') )
+    {
+        require Specio::Library::Builtins;
+        return
+            any { $type->is_same_type_as( Specio::Library::Builtins::t($_) ) }
+        @{ $self->root_types };
+    }
+    else {
+        my $name = $type->name;
+        return any { $name eq $_ } @{ $self->root_types };
+    }
 }
 
 sub _inline_copy_native_value {

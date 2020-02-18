@@ -202,7 +202,7 @@ module GRPC
     # forcing an abrupt exit to each thread.
     #
     # * connect_md_proc:
-    # when non-nil is a proc for determining metadata to to send back the client
+    # when non-nil is a proc for determining metadata to send back the client
     # on receiving an invocation req.  The proc signature is:
     #   {key: val, ..} func(method_name, {key: val, ...})
     #
@@ -210,7 +210,7 @@ module GRPC
     # A server arguments hash to be passed down to the underlying core server
     #
     # * interceptors:
-    # Am array of GRPC::ServerInterceptor objects that will be used for
+    # An array of GRPC::ServerInterceptor objects that will be used for
     # intercepting server handlers to provide extra functionality.
     # Interceptors are an EXPERIMENTAL API.
     #

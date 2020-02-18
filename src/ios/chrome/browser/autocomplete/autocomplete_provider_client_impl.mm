@@ -11,6 +11,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "ios/chrome/browser/application_context.h"
@@ -30,7 +31,6 @@
 #import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -99,8 +99,8 @@ AutocompleteProviderClientImpl::GetTemplateURLService() const {
   return ios::TemplateURLServiceFactory::GetForBrowserState(browser_state_);
 }
 
-ContextualSuggestionsService*
-AutocompleteProviderClientImpl::GetContextualSuggestionsService(
+RemoteSuggestionsService*
+AutocompleteProviderClientImpl::GetRemoteSuggestionsService(
     bool create_if_necessary) const {
   return nullptr;
 }
@@ -165,6 +165,11 @@ base::Time AutocompleteProviderClientImpl::GetCurrentVisitTimestamp() const {
   return base::Time();
 }
 
+component_updater::ComponentUpdateService*
+AutocompleteProviderClientImpl::GetComponentUpdateService() {
+  return GetApplicationContext()->GetComponentUpdateService();
+}
+
 bool AutocompleteProviderClientImpl::IsOffTheRecord() const {
   return browser_state_->IsOffTheRecord();
 }
@@ -179,7 +184,7 @@ bool AutocompleteProviderClientImpl::IsPersonalizedUrlDataCollectionActive()
 }
 
 bool AutocompleteProviderClientImpl::IsAuthenticated() const {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state_);
   return identity_manager != nullptr && identity_manager->HasPrimaryAccount();
 }
@@ -209,11 +214,6 @@ void AutocompleteProviderClientImpl::DeleteMatchingURLsForKeywordFromHistory(
 }
 
 void AutocompleteProviderClientImpl::PrefetchImage(const GURL& url) {}
-
-void AutocompleteProviderClientImpl::OnAutocompleteControllerResultReady(
-    AutocompleteController* controller) {
-  // iOS currently has no client for this event.
-}
 
 bool AutocompleteProviderClientImpl::IsTabOpenWithURL(
     const GURL& url,

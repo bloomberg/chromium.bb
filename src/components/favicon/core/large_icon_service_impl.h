@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -26,6 +27,8 @@ namespace favicon {
 
 class FaviconService;
 class FaviconServerFetcherParams;
+
+extern const base::Feature kLargeIconServiceFetchingFeature;
 
 // Implementation class for LargeIconService.
 class LargeIconServiceImpl : public LargeIconService {
@@ -95,7 +98,7 @@ class LargeIconServiceImpl : public LargeIconService {
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
-  base::WeakPtrFactory<LargeIconServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<LargeIconServiceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconServiceImpl);
 };

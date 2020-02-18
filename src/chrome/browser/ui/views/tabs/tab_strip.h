@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -138,8 +139,10 @@ class TabStrip : public views::AccessiblePaneView,
   // Sets |stacked_layout_| and animates if necessary.
   void SetStackedLayout(bool stacked_layout);
 
-  // Returns the bounds of the new tab button.
-  gfx::Rect new_tab_button_bounds() const { return new_tab_button_bounds_; }
+  // Returns the ideal bounds of the new tab button.
+  gfx::Rect new_tab_button_ideal_bounds() const {
+    return new_tab_button_ideal_bounds_;
+  }
 
   // Adds a tab at the specified index.
   void AddTabAt(int model_index, TabRendererData data, bool is_active);
@@ -179,6 +182,7 @@ class TabStrip : public views::AccessiblePaneView,
   void SetTabNeedsAttention(int model_index, bool attention);
 
   // Retrieves the ideal bounds for the Tab at the specified index.
+  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   const gfx::Rect& ideal_bounds(int tab_data_index) const {
     return tabs_.ideal_bounds(tab_data_index);
   }
@@ -247,7 +251,7 @@ class TabStrip : public views::AccessiblePaneView,
   const Tab* GetAdjacentTab(const Tab* tab, int offset) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
-  void UpdateHoverCard(Tab* tab, bool should_show) override;
+  void UpdateHoverCard(Tab* tab) override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
   bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
   int GetStrokeThickness() const override;
@@ -277,7 +281,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // views::AccessiblePaneView:
   void Layout() override;
-  bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
@@ -334,8 +337,14 @@ class TabStrip : public views::AccessiblePaneView,
 
   void Init();
 
+  views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
+
+  std::map<TabGroupId, TabGroupHeader*> GetGroupHeaders();
+
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index);
+  void StartInsertTabAnimation(int model_index,
+                               TabAnimationState::TabActiveness activeness,
+                               TabAnimationState::TabPinnedness pinnedness);
 
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
@@ -344,6 +353,7 @@ class TabStrip : public views::AccessiblePaneView,
   // Animates all the views to their ideal bounds.
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
+  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void AnimateToIdealBounds();
 
   // Returns whether the close button should be highlighted after a remove.
@@ -361,7 +371,10 @@ class TabStrip : public views::AccessiblePaneView,
   bool TitlebarBackgroundIsTransparent() const;
 
   // Invoked from Layout if the size changes or layout is really needed.
-  void DoLayout();
+  void CompleteAnimationAndLayout();
+
+  // Invoked to re-layout the tabs as animations progress.
+  void LayoutToCurrentBounds();
 
   // Sets the visibility state of all tabs based on ShouldTabBeVisible().
   void SetTabVisibility();
@@ -395,7 +408,11 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
   // code and is not a general-purpose method.
-  void RemoveAndDeleteTab(Tab* tab);
+  void OnTabCloseAnimationCompleted(Tab* tab);
+
+  // Cleans up the TabGroupHeader for |group| from the TabStrip. This is called
+  // from the tab animation code and is not a general-purpose method.
+  void OnGroupCloseAnimationCompleted(TabGroupId group);
 
   // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
   // >= |index| to have a new index of |index + delta|.
@@ -456,11 +473,13 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Generates and sets the ideal bounds for each of the tabs as well as the new
   // tab button.
+  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   void UpdateIdealBounds();
 
   // Generates and sets the ideal bounds for the pinned tabs. Returns the index
   // to position the first non-pinned tab and sets |first_non_pinned_index| to
   // the index of the first non-pinned tab.
+  // TODO(958173): The notion of ideal bounds is going away. Delete this.
   int UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
 
   // Starts various types of TabStrip animations.
@@ -562,11 +581,16 @@ class TabStrip : public views::AccessiblePaneView,
 
   std::unique_ptr<TabStripLayoutHelper> layout_helper_;
 
+  // Responsible for animating tabs in response to model changes.
+  // Deprecated; https://crbug.com/958173 tracks migrating animations from
+  // |bounds_animator_| to |TabStripLayoutHelper::animator_|.
+  views::BoundsAnimator bounds_animator_{this};
+
   // The "New Tab" button.
   NewTabButton* new_tab_button_ = nullptr;
 
   // Ideal bounds of the new tab button.
-  gfx::Rect new_tab_button_bounds_;
+  gfx::Rect new_tab_button_ideal_bounds_;
 
   // If this value is nonnegative, it is used as the width to lay out tabs
   // (instead of tab_area_width()). Most of the time this will be -1, but while
@@ -588,8 +612,6 @@ class TabStrip : public views::AccessiblePaneView,
   // . When a mouse is used and the layout dynamically adjusts and is currently
   //   stacked (|stacked_layout_| is true).
   std::unique_ptr<views::MouseWatcher> mouse_watcher_;
-
-  views::BoundsAnimator bounds_animator_{this};
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;
@@ -615,10 +637,6 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Number of mouse moves.
   int mouse_move_count_ = 0;
-
-  // Accumulatated offsets from thumb wheel. Used to throttle horizontal
-  // scroll from thumb wheel.
-  int accumulated_horizontal_scroll_ = 0;
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.

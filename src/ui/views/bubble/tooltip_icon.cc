@@ -28,10 +28,6 @@ TooltipIcon::~TooltipIcon() {
   HideBubble();
 }
 
-const char* TooltipIcon::GetClassName() const {
-  return "TooltipIcon";
-}
-
 void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_inside_ = true;
   show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150), this,
@@ -112,5 +108,9 @@ void TooltipIcon::OnWidgetDestroyed(Widget* widget) {
   mouse_watcher_.reset();
   bubble_ = nullptr;
 }
+
+BEGIN_METADATA(TooltipIcon)
+METADATA_PARENT_CLASS(ImageView)
+END_METADATA()
 
 }  // namespace views

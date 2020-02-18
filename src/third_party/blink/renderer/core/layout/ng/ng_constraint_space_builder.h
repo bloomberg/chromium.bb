@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -83,9 +83,22 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
+  // Set percentage resolution size. Prior to calling this method,
+  // SetAvailableSize() must have been called, since we'll compare the input
+  // against the available size set, because if they are equal in either
+  // dimension, we won't have to store the values separately.
   NGConstraintSpaceBuilder& SetPercentageResolutionSize(
       LogicalSize percentage_resolution_size);
 
+  // Set percentage resolution size for replaced content (a special quirk inside
+  // tables). Only honored if the writing modes (container vs. child) are
+  // parallel. In orthogonal writing modes, we'll use whatever regular
+  // percentage resolution size is already set. Prior to calling this method,
+  // SetAvailableSize() must have been called, since we'll compare the input
+  // against the available size set, because if they are equal in either
+  // dimension, we won't have to store the values separately. Additionally,
+  // SetPercentageResolutionSize() must have been called, since we'll override
+  // with that value on orthogonal writing mode roots.
   NGConstraintSpaceBuilder& SetReplacedPercentageResolutionSize(
       LogicalSize replaced_percentage_resolution_size);
 
@@ -189,9 +202,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     return *this;
   }
 
-  NGConstraintSpaceBuilder& SetAdjoiningFloatTypes(NGFloatTypes floats) {
-    if (!is_new_fc_)
-      space_.bitfields_.adjoining_floats = static_cast<unsigned>(floats);
+  NGConstraintSpaceBuilder& SetAdjoiningObjectTypes(
+      NGAdjoiningObjectTypes adjoining_object_types) {
+    if (!is_new_fc_) {
+      space_.bitfields_.adjoining_object_types =
+          static_cast<unsigned>(adjoining_object_types);
+    }
 
     return *this;
   }
@@ -217,13 +233,28 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
     return *this;
   }
+
+  NGConstraintSpaceBuilder& SetOptimisticBfcBlockOffset(
+      LayoutUnit optimistic_bfc_block_offset) {
+#if DCHECK_IS_ON()
+    DCHECK(!is_optimistic_bfc_block_offset_set_);
+    is_optimistic_bfc_block_offset_set_ = true;
+#endif
+    if (LIKELY(!is_new_fc_)) {
+      space_.EnsureRareData()->optimistic_bfc_block_offset =
+          optimistic_bfc_block_offset;
+    }
+
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetForcedBfcBlockOffset(
-      const base::Optional<LayoutUnit>& forced_bfc_block_offset) {
+      LayoutUnit forced_bfc_block_offset) {
 #if DCHECK_IS_ON()
     DCHECK(!is_forced_bfc_block_offset_set_);
     is_forced_bfc_block_offset_set_ = true;
 #endif
-    if (LIKELY(!is_new_fc_ && forced_bfc_block_offset != base::nullopt)) {
+    if (LIKELY(!is_new_fc_)) {
       space_.EnsureRareData()->forced_bfc_block_offset =
           forced_bfc_block_offset;
     }
@@ -280,7 +311,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     to_constraint_space_called_ = true;
 #endif
 
-    DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_floats);
+    DCHECK(!is_new_fc_ || !space_.bitfields_.adjoining_object_types);
     DCHECK_EQ(space_.HasFlag(NGConstraintSpace::kOrthogonalWritingModeRoot),
               !is_in_parallel_flow_ || force_orthogonal_writing_mode_root_);
 
@@ -313,10 +344,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
 #if DCHECK_IS_ON()
   bool is_available_size_set_ = false;
+  bool is_percentage_resolution_size_set_ = false;
   bool is_fragmentainer_block_size_set_ = false;
   bool is_fragmentainer_space_at_bfc_start_set_ = false;
   bool is_block_direction_fragmentation_type_set_ = false;
   bool is_margin_strut_set_ = false;
+  bool is_optimistic_bfc_block_offset_set_ = false;
   bool is_forced_bfc_block_offset_set_ = false;
   bool is_clearance_offset_set_ = false;
 

@@ -12,6 +12,7 @@
 
 #include "constants/form_fields.h"
 #include "constants/form_flags.h"
+#include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/parser/cfdf_document.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -297,7 +298,7 @@ FormFieldType CPDF_FormField::GetFieldType() const {
 }
 
 CPDF_AAction CPDF_FormField::GetAdditionalAction() const {
-  const CPDF_Object* pObj =
+  CPDF_Object* pObj =
       FPDF_GetFieldAttr(m_pDict.Get(), pdfium::form_fields::kAA);
   return CPDF_AAction(pObj ? pObj->GetDict() : nullptr);
 }
@@ -634,7 +635,7 @@ void CPDF_FormField::SetItemSelectionUnselected(int index,
       pArray->AddNew<CPDF_String>(GetOptionValue(i));
   }
   if (pArray->size() > 0) {
-    m_pDict->SetFor(pdfium::form_fields::kV, std::move(pArray));
+    m_pDict->SetFor(pdfium::form_fields::kV, pArray);
   }
 }
 
@@ -911,7 +912,8 @@ void CPDF_FormField::LoadDA() {
   if (!pFontDict)
     return;
 
-  m_pFont = m_pForm->GetDocument()->LoadFont(pFontDict);
+  auto* pData = CPDF_DocPageData::FromDocument(m_pForm->GetDocument());
+  m_pFont = pData->GetFont(pFontDict);
 }
 
 bool CPDF_FormField::NotifyBeforeSelectionChange(const WideString& value) {

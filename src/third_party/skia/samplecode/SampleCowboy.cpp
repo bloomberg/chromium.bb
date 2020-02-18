@@ -20,37 +20,36 @@
 #include "tools/Resources.h"
 
 namespace {
-
-class CowboyView : public Sample {
-public:
-    CowboyView()
-        : fLabel("SampleCowboy")
-        , fState(kZoomIn)
-        , fAnimationLoop(kAnimationIterations)
-        , fDelta(1) {}
-    ~CowboyView() override = default;
-
-protected:
+class AnimatedSVGSample : public Sample {
     static constexpr auto kAnimationIterations = 5;
-
     enum State {
         kZoomIn,
         kScroll,
         kZoomOut
     };
+    sk_sp<SkSVGDOM> fDom;
+    const char*     fResource = nullptr;
+    const char*     fName = nullptr;
+    State           fState = kZoomIn;
+    int             fAnimationLoop = kAnimationIterations;
+    SkScalar        fDelta = 1;
 
+public:
+    AnimatedSVGSample(const char* r, const char* n) : fResource(r), fName(n) {}
+
+private:
     void onOnceBeforeDraw() override {
-        constexpr char path[] = "Cowboy.svg";
-        auto data = GetResourceAsData(path);
+        SkASSERT(fResource);
+        auto data = GetResourceAsData(fResource);
         if (!data) {
-            SkDebugf("file not found: \"%s\"\n", path);
+            SkDebugf("Resource not found: \"%s\"\n", fResource);
             return;
         }
         SkMemoryStream svgStream(std::move(data));
 
         SkDOM xmlDom;
         if (!xmlDom.build(svgStream)) {
-            SkDebugf("XML parsing failed: \"path\"\n", fPath.c_str());
+            SkDebugf("XML parsing failed: \"%s\"\n", fResource);
             return;
         }
 
@@ -92,20 +91,11 @@ protected:
         if (fDom) {
             fDom->setContainerSize(SkSize::Make(this->width(), this->height()));
         }
-
-        this->INHERITED::onSizeChange();
     }
 
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, fLabel.c_str());
-            return true;
-        }
+    SkString name() override { return SkASSERT(fName), SkString(fName); }
 
-        return this->INHERITED::onQuery(evt);
-    }
-
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(double nanos) override {
         if (!fDom) {
             return false;
         }
@@ -130,20 +120,9 @@ protected:
         }
         return true;
     }
-
-private:
-    sk_sp<SkSVGDOM> fDom;
-    SkString        fPath;
-    SkString        fLabel;
-    State           fState;
-    int             fAnimationLoop;
-    SkScalar        fDelta;
-
-    typedef Sample INHERITED;
 };
+} // namespace
 
-} // anonymous namespace
-
-DEF_SAMPLE( return new CowboyView(); )
+DEF_SAMPLE( return new AnimatedSVGSample("Cowboy.svg", "SampleCowboy"); )
 
 #endif  // SK_XML

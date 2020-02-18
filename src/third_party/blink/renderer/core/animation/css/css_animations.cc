@@ -65,13 +65,13 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/animation_event.h"
 #include "third_party/blink/renderer/core/events/transition_event.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
@@ -376,7 +376,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
       Timing specified_timing = timing;
       scoped_refptr<TimingFunction> keyframe_timing_function =
           timing.timing_function;
-      timing.timing_function = Timing::Defaults().timing_function;
+      timing.timing_function = Timing().timing_function;
 
       StyleRuleKeyframes* keyframes_rule =
           resolver->FindKeyframesRule(element_for_scoping, name);
@@ -494,12 +494,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   previous_active_interpolations_for_standard_animations_.swap(
       pending_update_.ActiveInterpolationsForStandardAnimations());
 
-  // FIXME: cancelling, pausing, unpausing animations all query
-  // compositingState, which is not necessarily up to date here
-  // since we call this from recalc style.
-  // https://code.google.com/p/chromium/issues/detail?id=339847
-  DisableCompositingQueryAsserts disabler;
-
   for (wtf_size_t paused_index :
        pending_update_.AnimationIndicesWithPauseToggled()) {
     Animation& animation = *running_animations_[paused_index]->animation;
@@ -565,7 +559,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     Animation* animation = transitions_.Take(property).animation;
     KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
-    if (effect->HasActiveAnimationsOnCompositor(property) &&
+    if (effect && effect->HasActiveAnimationsOnCompositor(property) &&
         pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
@@ -677,7 +671,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
       state.update.CancelTransition(property);
       KeyframeEffect* effect =
           ToKeyframeEffect(running_transition->animation->effect());
-      if (effect->HasActiveAnimationsOnCompositor())
+      if (effect && effect->HasActiveAnimationsOnCompositor())
         retargeted_compositor_transition = running_transition;
       DCHECK(!state.animating_element->GetElementAnimations() ||
              !state.animating_element->GetElementAnimations()
@@ -1142,21 +1136,21 @@ bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
 
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
-  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
+  const Timing::Phase current_phase = animation_node.GetPhase();
   const double current_iteration = animation_node.CurrentIteration();
 
   if (previous_phase_ != current_phase &&
-      (current_phase == AnimationEffect::kPhaseActive ||
-       current_phase == AnimationEffect::kPhaseAfter) &&
-      (previous_phase_ == AnimationEffect::kPhaseNone ||
-       previous_phase_ == AnimationEffect::kPhaseBefore)) {
+      (current_phase == Timing::kPhaseActive ||
+       current_phase == Timing::kPhaseAfter) &&
+      (previous_phase_ == Timing::kPhaseNone ||
+       previous_phase_ == Timing::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
     MaybeDispatch(Document::kAnimationStartListener,
                   event_type_names::kAnimationstart, elapsed_time);
   }
 
-  if (current_phase == AnimationEffect::kPhaseActive &&
+  if (current_phase == Timing::kPhaseActive &&
       previous_phase_ == current_phase &&
       previous_iteration_ != current_iteration) {
     // We fire only a single event for all iterations that terminate
@@ -1171,11 +1165,11 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   elapsed_time.InSecondsF());
   }
 
-  if (current_phase == AnimationEffect::kPhaseAfter &&
-      previous_phase_ != AnimationEffect::kPhaseAfter) {
+  if (current_phase == Timing::kPhaseAfter &&
+      previous_phase_ != Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
-                  animation_node.RepeatedDuration());
+                  animation_node.SpecifiedTiming().ActiveDuration());
   }
 
   previous_phase_ = current_phase;
@@ -1193,12 +1187,12 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
-  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
+  const Timing::Phase current_phase = animation_node.GetPhase();
   if (current_phase == previous_phase_)
     return;
 
   if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
-    if (previous_phase_ == AnimationEffect::kPhaseNone) {
+    if (previous_phase_ == Timing::kPhaseNone) {
       EnqueueEvent(
           event_type_names::kTransitionrun,
           StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
@@ -1206,16 +1200,16 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionStartListener)) {
-    if ((current_phase == AnimationEffect::kPhaseActive ||
-         current_phase == AnimationEffect::kPhaseAfter) &&
-        (previous_phase_ == AnimationEffect::kPhaseNone ||
-         previous_phase_ == AnimationEffect::kPhaseBefore)) {
+    if ((current_phase == Timing::kPhaseActive ||
+         current_phase == Timing::kPhaseAfter) &&
+        (previous_phase_ == Timing::kPhaseNone ||
+         previous_phase_ == Timing::kPhaseBefore)) {
       EnqueueEvent(
           event_type_names::kTransitionstart,
           StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
-    } else if ((current_phase == AnimationEffect::kPhaseActive ||
-                current_phase == AnimationEffect::kPhaseBefore) &&
-               previous_phase_ == AnimationEffect::kPhaseAfter) {
+    } else if ((current_phase == Timing::kPhaseActive ||
+                current_phase == Timing::kPhaseBefore) &&
+               previous_phase_ == Timing::kPhaseAfter) {
       // If the transition is progressing backwards it is considered to have
       // started at the end position.
       EnqueueEvent(
@@ -1225,16 +1219,16 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionEndListener)) {
-    if (current_phase == AnimationEffect::kPhaseAfter &&
-        (previous_phase_ == AnimationEffect::kPhaseActive ||
-         previous_phase_ == AnimationEffect::kPhaseBefore ||
-         previous_phase_ == AnimationEffect::kPhaseNone)) {
+    if (current_phase == Timing::kPhaseAfter &&
+        (previous_phase_ == Timing::kPhaseActive ||
+         previous_phase_ == Timing::kPhaseBefore ||
+         previous_phase_ == Timing::kPhaseNone)) {
       EnqueueEvent(
           event_type_names::kTransitionend,
           animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
-    } else if (current_phase == AnimationEffect::kPhaseBefore &&
-               (previous_phase_ == AnimationEffect::kPhaseActive ||
-                previous_phase_ == AnimationEffect::kPhaseAfter)) {
+    } else if (current_phase == Timing::kPhaseBefore &&
+               (previous_phase_ == Timing::kPhaseActive ||
+                previous_phase_ == Timing::kPhaseAfter)) {
       // If the transition is progressing backwards it is considered to have
       // ended at the start position.
       EnqueueEvent(
@@ -1244,13 +1238,13 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
-    if (current_phase == AnimationEffect::kPhaseNone) {
+    if (current_phase == Timing::kPhaseNone) {
       // Per the css-transitions-2 spec, transitioncancel is fired with the
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
       double cancel_active_time = CalculateActiveTime(
-          animation_node.RepeatedDuration(), Timing::FillMode::BOTH,
-          animation_node.LocalTime(), previous_phase_,
+          animation_node.SpecifiedTiming().ActiveDuration(),
+          Timing::FillMode::BOTH, animation_node.LocalTime(), previous_phase_,
           animation_node.SpecifiedTiming());
       EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
     }

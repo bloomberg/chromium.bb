@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
+#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -60,7 +61,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     container_builder_.SetIsSelfCollapsing();
   if (result.IsPushedByFloats())
     container_builder_.SetIsPushedByFloats();
-  container_builder_.AddAdjoiningFloatTypes(result.AdjoiningFloatTypes());
+  container_builder_.SetAdjoiningObjectTypes(result.AdjoiningObjectTypes());
 
   for (const auto& request : ConstraintSpace().BaselineRequests()) {
     base::Optional<LayoutUnit> baseline = physical_fragment.Baseline(request);
@@ -84,11 +85,16 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
 }
 
 scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
+  // Since simplified layout's |Layout()| function deals with laying out
+  // children, we can early out if we are display-locked.
+  if (Node().LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return container_builder_.ToBoxFragment();
+
   const auto previous_child_fragments =
       To<NGPhysicalBoxFragment>(previous_result_.PhysicalFragment()).Children();
 
-  const auto* it = previous_child_fragments.begin();
-  const auto* end = previous_child_fragments.end();
+  auto it = previous_child_fragments.begin();
+  auto end = previous_child_fragments.end();
 
   // We may have a list-marker as our first child. This may have been
   // propagated up to this container by an arbitrary child. As we don't know
@@ -141,16 +147,19 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     const NGPhysicalContainerFragment& fragment = result->PhysicalFragment();
     AddChildFragment(*it, fragment);
 
-    const ComputedStyle& child_style = child.Style();
+    // Update the static block-offset for any OOF-positioned children.
+    // Only consider inflow children (floats don't contribute to the intrinsic
+    // block-size).
+    if (!child.IsFloating()) {
+      const ComputedStyle& child_style = child.Style();
+      NGBoxStrut child_margins = ComputeMarginsFor(
+          child_style, child_available_inline_size_, writing_mode_, direction_);
 
-    // Calculate the static block-offset for any OOF-positioned children.
-    NGMarginStrut margin_strut = result->EndMarginStrut();
-    NGBoxStrut child_margins = ComputeMarginsFor(
-        child_style, child_available_inline_size_, writing_mode_, direction_);
-    margin_strut.Append(child_margins.block_end,
-                        child_style.HasMarginBeforeQuirk());
-
-    static_block_offset_ += margin_strut.Sum();
+      NGMarginStrut margin_strut = result->EndMarginStrut();
+      margin_strut.Append(child_margins.block_end,
+                          child_style.HasMarginBeforeQuirk());
+      static_block_offset_ += margin_strut.Sum();
+    }
 
     // Only take exclusion spaces from children which don't establish their own
     // formatting context.
@@ -177,9 +186,8 @@ void NGSimplifiedLayoutAlgorithm::HandleOutOfFlowPositioned(
     NGBfcOffset origin_bfc_offset = {
         container_builder_.BfcLineOffset() +
             border_scrollbar_padding_.LineLeft(direction_),
-        (container_builder_.BfcBlockOffset()
-             ? *container_builder_.BfcBlockOffset()
-             : ConstraintSpace().BfcOffset().block_offset) +
+        container_builder_.BfcBlockOffset().value_or(
+            ConstraintSpace().ExpectedBfcBlockOffset()) +
             static_block_offset_};
 
     static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
@@ -203,11 +211,50 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
       writing_mode_, direction_, previous_physical_container_size_,
       physical_child_size);
 
-  // Add the new fragemnt to the builder.
+  // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset);
 
-  // Update the static block-offset for any OOF-positioned children.
-  static_block_offset_ = child_offset.block_offset + child_size.block_size;
+  if (!new_fragment.IsFloating()) {
+    // Update the static block-offset for any OOF-positioned children.
+    // Only consider inflow children (floats don't contribute to the intrinsic
+    // block-size).
+    static_block_offset_ = child_offset.block_offset + child_size.block_size;
+  } else {
+    // We need to add the float to the exclusion space so that any inline-level
+    // OOF-positioned nodes can correctly determine their static-position.
+    const ComputedStyle& child_style = new_fragment.Style();
+    NGBoxStrut child_margins = ComputeMarginsFor(
+        child_style, child_available_inline_size_, writing_mode_, direction_);
+
+    LayoutUnit child_line_offset = IsLtr(direction_)
+                                       ? child_offset.inline_offset
+                                       : container_builder_.InlineSize() -
+                                             child_size.inline_size -
+                                             child_offset.inline_offset;
+
+    NGBfcOffset container_bfc_offset = {
+        container_builder_.BfcLineOffset(),
+        container_builder_.BfcBlockOffset().value_or(
+            ConstraintSpace().ExpectedBfcBlockOffset())};
+
+    // Determine the offsets for the exclusion (the margin-box of the float).
+    NGBfcOffset start_offset = {
+        container_bfc_offset.line_offset + child_line_offset -
+            child_margins.LineLeft(direction_),
+        container_bfc_offset.block_offset + child_offset.block_offset -
+            child_margins.block_start};
+    NGBfcOffset end_offset = {
+        start_offset.line_offset +
+            (child_size.inline_size + child_margins.InlineSum())
+                .ClampNegativeToZero(),
+        start_offset.block_offset +
+            (child_size.block_size + child_margins.BlockSum())
+                .ClampNegativeToZero()};
+
+    exclusion_space_.Add(
+        NGExclusion::Create(NGBfcRect(start_offset, end_offset),
+                            ResolvedFloating(child_style, Style()), nullptr));
+  }
 }
 
 }  // namespace blink

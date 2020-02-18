@@ -18,6 +18,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -25,9 +27,11 @@
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 #include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 
-using device::mojom::BluetoothSystem;
+using device::mojom::BluetoothDeviceBatteryInfo;
+using device::mojom::BluetoothDeviceBatteryInfoPtr;
 using device::mojom::BluetoothDeviceInfo;
 using device::mojom::BluetoothDeviceInfoPtr;
+using device::mojom::BluetoothSystem;
 
 namespace ash {
 namespace {
@@ -36,6 +40,8 @@ namespace {
 const int kMaximumDevicesShown = 50;
 
 void RecordUserInitiatedReconnectionAttemptResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result", success);
   UMA_HISTOGRAM_BOOLEAN(
       "Bluetooth.ChromeOS.UserInitiatedReconnectionAttempt.Result.SystemTray",
       success);
@@ -94,6 +100,10 @@ BluetoothDeviceInfoPtr GetBluetoothDeviceInfo(device::BluetoothDevice* device) {
   info->address = AddressStrToBluetoothAddress(device->GetAddress());
   info->name = device->GetName();
   info->is_paired = device->IsPaired();
+  if (device->battery_percentage()) {
+    info->battery_info =
+        BluetoothDeviceBatteryInfo::New(device->battery_percentage().value());
+  }
 
   switch (device->GetDeviceType()) {
     case device::BluetoothDeviceType::UNKNOWN:
@@ -179,6 +189,8 @@ void TrayBluetoothHelperLegacy::Initialize() {
 }
 
 void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
+  discovery_start_timestamp_ = base::DefaultClock::GetInstance()->Now();
+
   if (HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "Already have active Bluetooth device discovery session.";
     return;
@@ -192,6 +204,8 @@ void TrayBluetoothHelperLegacy::StartBluetoothDiscovering() {
 }
 
 void TrayBluetoothHelperLegacy::StopBluetoothDiscovering() {
+  discovery_start_timestamp_ = base::Time();
+
   should_run_discovery_ = false;
   if (!HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "No active Bluetooth device discovery session.";
@@ -209,6 +223,14 @@ void TrayBluetoothHelperLegacy::ConnectToBluetoothDevice(
   if (!device || device->IsConnecting() ||
       (device->IsConnected() && device->IsPaired())) {
     return;
+  }
+
+  if (!discovery_start_timestamp_.is_null()) {
+    device::RecordDeviceSelectionDuration(
+        base::DefaultClock::GetInstance()->Now() - discovery_start_timestamp_,
+        device::BluetoothUiSurface::kSystemTray, device->IsPaired(),
+        device->GetType());
+    discovery_start_timestamp_ = base::Time();
   }
 
   // Extra consideration taken for already paired devices, for metrics

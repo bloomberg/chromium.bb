@@ -13,7 +13,7 @@ our %EXPORT_TAGS = ( 'all' => [ qw(
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 require XSLoader;
 XSLoader::load('Compress::unLZMA', $VERSION);
@@ -96,14 +96,14 @@ From SDK lzma.txt file:
 
 =item $data = uncompress($content)
 
-Uncompress $data. if successfull, it returns the uncompressed data.
+Uncompress $data. if successful, it returns the uncompressed data.
 Otherwise it returns undef and $@ contains the error message.
 
 The source buffer can be either be a scalar or a scalar reference.
 
 =item $data = uncompressfile($file)
 
-Uncompress the file $file. if successfull, it returns the uncompressed data.
+Uncompress the file $file. if successful, it returns the uncompressed data.
 Otherwise it returns undef and $@ contains the error message.
 
 =back

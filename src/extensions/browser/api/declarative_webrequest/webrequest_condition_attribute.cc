@@ -32,7 +32,6 @@
 #include "net/base/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request.h"
 
 using base::CaseInsensitiveCompareASCII;
 using base::DictionaryValue;
@@ -183,7 +182,7 @@ bool WebRequestConditionAttributeResourceType::IsFulfilled(
     const WebRequestData& request_data) const {
   if (!(request_data.stage & GetStages()))
     return false;
-  return base::ContainsValue(types_, request_data.request->web_request_type);
+  return base::Contains(types_, request_data.request->web_request_type);
 }
 
 WebRequestConditionAttribute::Type
@@ -266,9 +265,9 @@ bool WebRequestConditionAttributeContentType::IsFulfilled(
       content_type, &mime_type, &charset, &had_charset, NULL);
 
   if (inclusive_) {
-    return base::ContainsValue(content_types_, mime_type);
+    return base::Contains(content_types_, mime_type);
   } else {
-    return !base::ContainsValue(content_types_, mime_type);
+    return !base::Contains(content_types_, mime_type);
   }
 }
 

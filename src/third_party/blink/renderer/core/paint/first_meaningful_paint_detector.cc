@@ -4,14 +4,15 @@
 
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 
+#include "base/time/default_tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -21,6 +22,7 @@ namespace {
 // Meaningful Paint.
 const int kBlankCharactersThreshold = 200;
 
+const base::TickClock* g_clock = nullptr;
 }  // namespace
 
 FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
@@ -30,7 +32,10 @@ FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::From(
 
 FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
     PaintTiming* paint_timing)
-    : paint_timing_(paint_timing) {}
+    : paint_timing_(paint_timing) {
+  if (!g_clock)
+    g_clock = base::DefaultTickClock::GetInstance();
+}
 
 Document* FirstMeaningfulPaintDetector::GetDocument() {
   return paint_timing_->GetSupplementable();
@@ -46,7 +51,7 @@ void FirstMeaningfulPaintDetector::MarkNextPaintAsMeaningfulIfNeeded(
     int contents_height_before_layout,
     int contents_height_after_layout,
     int visible_height) {
-  if (network0_quiet_reached_ && network2_quiet_reached_)
+  if (network_quiet_reached_)
     return;
 
   unsigned delta = counter.Count() - prev_layout_object_count_;
@@ -84,14 +89,14 @@ void FirstMeaningfulPaintDetector::NotifyPaint() {
   // Skip document background-only paints.
   if (paint_timing_->FirstPaintRendered().is_null())
     return;
-  provisional_first_meaningful_paint_ = CurrentTimeTicks();
+  provisional_first_meaningful_paint_ = g_clock->NowTicks();
   next_paint_is_meaningful_ = false;
 
-  if (network2_quiet_reached_)
+  if (network_quiet_reached_)
     return;
 
   had_user_input_before_provisional_first_meaningful_paint_ = had_user_input_;
-  provisional_first_meaningful_paint_swap_ = TimeTicks();
+  provisional_first_meaningful_paint_swap_ = base::TimeTicks();
   RegisterNotifySwapTime(PaintEvent::kProvisionalFirstMeaningfulPaint);
 }
 
@@ -103,44 +108,27 @@ void FirstMeaningfulPaintDetector::NotifyInputEvent() {
   had_user_input_ = kHadUserInput;
 }
 
-void FirstMeaningfulPaintDetector::OnNetwork0Quiet() {
-  network0_quiet_reached_ = true;
-  if (!GetDocument() || paint_timing_->FirstContentfulPaintRendered().is_null())
-    return;
-
-  if (!provisional_first_meaningful_paint_.is_null()) {
-    // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
-    first_meaningful_paint0_quiet_ =
-        std::max(provisional_first_meaningful_paint_,
-                 paint_timing_->FirstContentfulPaintRendered());
-  }
-  ReportHistograms();
-}
-
 void FirstMeaningfulPaintDetector::OnNetwork2Quiet() {
-  if (!GetDocument() || network2_quiet_reached_ ||
+  if (!GetDocument() || network_quiet_reached_ ||
       paint_timing_->FirstContentfulPaintRendered().is_null())
     return;
-  network2_quiet_reached_ = true;
+  network_quiet_reached_ = true;
 
   if (!provisional_first_meaningful_paint_.is_null()) {
-    TimeTicks first_meaningful_paint2_quiet_swap;
+    base::TimeTicks first_meaningful_paint_swap;
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
     if (provisional_first_meaningful_paint_ <
         paint_timing_->FirstContentfulPaintRendered()) {
-      first_meaningful_paint2_quiet_ =
-          paint_timing_->FirstContentfulPaintRendered();
-      first_meaningful_paint2_quiet_swap =
-          paint_timing_->FirstContentfulPaint();
+      first_meaningful_paint_ = paint_timing_->FirstContentfulPaintRendered();
+      first_meaningful_paint_swap = paint_timing_->FirstContentfulPaint();
       // It's possible that this timer fires between when the first contentful
       // paint is set and its SwapPromise is fulfilled. If this happens, defer
       // until NotifyFirstContentfulPaint() is called.
-      if (first_meaningful_paint2_quiet_swap.is_null())
+      if (first_meaningful_paint_swap.is_null())
         defer_first_meaningful_paint_ = kDeferFirstContentfulPaintNotSet;
     } else {
-      first_meaningful_paint2_quiet_ = provisional_first_meaningful_paint_;
-      first_meaningful_paint2_quiet_swap =
-          provisional_first_meaningful_paint_swap_;
+      first_meaningful_paint_ = provisional_first_meaningful_paint_;
+      first_meaningful_paint_swap = provisional_first_meaningful_paint_swap_;
       // We might still be waiting for one or more swap promises, in which case
       // we want to defer reporting first meaningful paint until they complete.
       // Otherwise, we would either report the wrong swap timestamp or none at
@@ -151,53 +139,8 @@ void FirstMeaningfulPaintDetector::OnNetwork2Quiet() {
     if (defer_first_meaningful_paint_ == kDoNotDefer) {
       // Report FirstMeaningfulPaint when the page reached network 2-quiet if
       // we aren't waiting for a swap timestamp.
-      SetFirstMeaningfulPaint(first_meaningful_paint2_quiet_swap);
+      SetFirstMeaningfulPaint(first_meaningful_paint_swap);
     }
-  }
-  ReportHistograms();
-}
-
-void FirstMeaningfulPaintDetector::ReportHistograms() {
-  // This enum backs an UMA histogram, and should be treated as append-only.
-  enum HadNetworkQuiet {
-    kHadNetwork0Quiet,
-    kHadNetwork2Quiet,
-    kHadNetworkQuietEnumMax
-  };
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, had_network_quiet_histogram,
-                      ("PageLoad.Internal.Renderer."
-                       "FirstMeaningfulPaintDetector.HadNetworkQuiet",
-                       kHadNetworkQuietEnumMax));
-
-  // This enum backs an UMA histogram, and should be treated as append-only.
-  enum FMPOrderingEnum {
-    kFMP0QuietFirst,
-    kFMP2QuietFirst,
-    kFMP0QuietEqualFMP2Quiet,
-    kFMPOrderingEnumMax
-  };
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, first_meaningful_paint_ordering_histogram,
-      ("PageLoad.Internal.Renderer.FirstMeaningfulPaintDetector."
-       "FirstMeaningfulPaintOrdering",
-       kFMPOrderingEnumMax));
-
-  if (!first_meaningful_paint0_quiet_.is_null() &&
-      !first_meaningful_paint2_quiet_.is_null()) {
-    int sample;
-    if (first_meaningful_paint2_quiet_ < first_meaningful_paint0_quiet_) {
-      sample = kFMP0QuietFirst;
-    } else if (first_meaningful_paint2_quiet_ >
-               first_meaningful_paint0_quiet_) {
-      sample = kFMP2QuietFirst;
-    } else {
-      sample = kFMP0QuietEqualFMP2Quiet;
-    }
-    first_meaningful_paint_ordering_histogram.Count(sample);
-  } else if (!first_meaningful_paint0_quiet_.is_null()) {
-    had_network_quiet_histogram.Count(kHadNetwork0Quiet);
-  } else if (!first_meaningful_paint2_quiet_.is_null()) {
-    had_network_quiet_histogram.Count(kHadNetwork2Quiet);
   }
 }
 
@@ -245,23 +188,23 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
 
   if (defer_first_meaningful_paint_ == kDeferOutstandingSwapPromises &&
       outstanding_swap_promise_count_ == 0) {
-    DCHECK(!first_meaningful_paint2_quiet_.is_null());
+    DCHECK(!first_meaningful_paint_.is_null());
     SetFirstMeaningfulPaint(provisional_first_meaningful_paint_swap_);
   }
 }
 
 void FirstMeaningfulPaintDetector::NotifyFirstContentfulPaint(
-    TimeTicks swap_stamp) {
+    base::TimeTicks swap_stamp) {
   if (defer_first_meaningful_paint_ != kDeferFirstContentfulPaintNotSet)
     return;
   SetFirstMeaningfulPaint(swap_stamp);
 }
 
 void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
-    TimeTicks swap_stamp) {
+    base::TimeTicks swap_stamp) {
   DCHECK(paint_timing_->FirstMeaningfulPaint().is_null());
   DCHECK(!swap_stamp.is_null());
-  DCHECK(network2_quiet_reached_);
+  DCHECK(network_quiet_reached_);
 
   double swap_time_seconds = swap_stamp.since_origin().InSecondsF();
   probe::PaintTiming(GetDocument(), "firstMeaningfulPaint", swap_time_seconds);
@@ -273,6 +216,12 @@ void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
 
   paint_timing_->SetFirstMeaningfulPaint(
       swap_stamp, had_user_input_before_provisional_first_meaningful_paint_);
+}
+
+// static
+void FirstMeaningfulPaintDetector::SetTickClockForTesting(
+    const base::TickClock* clock) {
+  g_clock = clock;
 }
 
 void FirstMeaningfulPaintDetector::Trace(blink::Visitor* visitor) {

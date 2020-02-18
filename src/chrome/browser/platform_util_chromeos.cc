@@ -4,8 +4,8 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "url/gurl.h"
 
@@ -129,10 +128,8 @@ bool IsBrowserLockedFullscreen(const Browser* browser) {
   // |window| can be nullptr inside of unit tests.
   if (!window)
     return false;
-  if (features::IsUsingWindowService())
-    window = window->GetRootWindow();
   return window->GetProperty(ash::kWindowPinTypeKey) ==
-         ash::mojom::WindowPinType::TRUSTED_PINNED;
+         ash::WindowPinType::kTrustedPinned;
 }
 
 }  // namespace platform_util

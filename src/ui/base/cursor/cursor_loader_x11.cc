@@ -27,6 +27,10 @@ const char* CursorCssNameFromId(ui::CursorType id) {
   switch (id) {
     case ui::CursorType::kMiddlePanning:
       return "all-scroll";
+    case ui::CursorType::kMiddlePanningVertical:
+      return "v-scroll";
+    case ui::CursorType::kMiddlePanningHorizontal:
+      return "h-scroll";
     case ui::CursorType::kEastPanning:
       return "e-resize";
     case ui::CursorType::kNorthPanning:
@@ -187,6 +191,8 @@ static const struct {
     { "wait",        nullptr,           XC_watch },
     { "cell",        nullptr,           XC_plus },
     { "all-scroll",  nullptr,           XC_fleur},
+    { "v-scroll",    "all-scroll",      XC_fleur},
+    { "h-scroll",    "all-scroll",      XC_fleur},
     { "crosshair",   nullptr,           XC_cross },
     { "text",        nullptr,           XC_xterm },
     { "not-allowed", "crossed_circle",  x11::None },

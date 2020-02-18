@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import json
 import mock
 import os
 import sys
@@ -22,6 +23,7 @@ from chromite.cbuildbot.stages import build_stages_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
@@ -131,7 +133,7 @@ class UploadPrebuiltsStageTest(
     self.RunStage()
     public_prefix = [self.cmd] + (public_args or [])
     private_prefix = [self.cmd] + (private_args or [])
-    for board, public in board_map.iteritems():
+    for board, public in board_map.items():
       if public or public_args:
         public_cmd = public_prefix + ['--slave-board', board]
         self.assertCommandContains(public_cmd, expected=public)
@@ -532,6 +534,16 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   RELEASE_TAG = ''
 
+  _VALID_CLANG_VERSION_SHA = 'de7a0a152648d1a74cf4319920b1848aa00d1ca3'
+  _VALID_CLANG_VERSION_STRING = (
+      'Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 '
+      '(/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project '
+      'de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)\n'
+      'Target: x86_64-pc-linux-gnu\n'
+      'Thread model: posix\n'
+      'InstalledDir: /usr/bin\n'
+  )
+
   # pylint: disable=protected-access
 
   def setUp(self):
@@ -545,6 +557,102 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     return artifact_stages.CollectPGOProfilesStage(self._run, self.buildstore,
                                                    self._current_board)
 
+  def testParseLLVMHeadSHA(self):
+    stage = self.ConstructStage()
+    actual_sha = stage._ParseLLVMHeadSHA(self._VALID_CLANG_VERSION_STRING)
+    self.assertEqual(actual_sha, self._VALID_CLANG_VERSION_SHA)
+
+  def _MetadataMultiDispatch(self, equery_uses_fn, clang_version_fn):
+    def result(command, enter_chroot, redirect_stdout):
+      self.assertTrue(enter_chroot)
+      self.assertTrue(redirect_stdout)
+
+      if command == ['equery', '-C', '-N', 'uses', 'sys-devel/llvm']:
+        stdout = equery_uses_fn()
+      elif command == ['clang', '--version']:
+        stdout = clang_version_fn()
+      else:
+        raise ValueError('Unexpected command: %s' % command)
+
+      return cros_build_lib.CommandResult(output=stdout)
+
+    return result
+
+  def testCollectLLVMMetadataRaisesOnAnInvalidVersionString(self):
+    stage = self.ConstructStage()
+
+    def equery_uses():
+      return ' - + llvm_pgo_generate :'
+
+    def clang_version():
+      valid_version_lines = self._VALID_CLANG_VERSION_STRING.splitlines()
+      valid_version_lines[0] = 'clang version 8.0.1\n'
+      return ''.join(valid_version_lines)
+
+    with patch(cros_build_lib, 'RunCommand') as run_command:
+      run_command.side_effect = self._MetadataMultiDispatch(
+          equery_uses_fn=equery_uses,
+          clang_version_fn=clang_version)
+
+      with self.assertRaises(ValueError) as raised:
+        stage._CollectLLVMMetadata()
+
+      self.assertIn('version string', raised.exception.message)
+
+  def testCollectLLVMMetadataRaisesIfClangIsntPGOGenerated(self):
+    stage = self.ConstructStage()
+
+    def clang_version():
+      return self._VALID_CLANG_VERSION_STRING
+
+    with patch(cros_build_lib, 'RunCommand') as run_command:
+      for uses in ['', ' - - llvm_pgo_generate :']:
+        def equery_uses():
+          # We're using a loop var on purpose; this function should die by the
+          # end of the current iteration.
+          # pylint: disable=cell-var-from-loop
+          return uses
+
+        run_command.side_effect = self._MetadataMultiDispatch(
+            equery_uses_fn=equery_uses,
+            clang_version_fn=clang_version)
+
+        with self.assertRaises(ValueError) as raised:
+          stage._CollectLLVMMetadata()
+
+        self.assertIn('pgo_generate flag', raised.exception.message)
+
+  def testCollectLLVMMetadataFunctionsInASimpleCase(self):
+    def clang_version():
+      return self._VALID_CLANG_VERSION_STRING
+
+    def equery_uses():
+      return ' - + llvm_pgo_generate :'
+
+    stage = self.ConstructStage()
+
+    run_command = self.PatchObject(cros_build_lib, 'RunCommand')
+    run_command.side_effect = self._MetadataMultiDispatch(equery_uses,
+                                                          clang_version)
+    write_file = self.PatchObject(osutils, 'WriteFile')
+    upload_queue_put = self.PatchObject(stage._upload_queue, 'put')
+    stage._CollectLLVMMetadata()
+
+    write_file.assert_called_once()
+    upload_queue_put.assert_called_once()
+
+    (written_file, metadata_json), kwargs = write_file.call_args
+    self.assertEqual(kwargs, {})
+
+    expected_metadata = {
+        'head_sha': self._VALID_CLANG_VERSION_SHA,
+    }
+
+    given_metadata = json.loads(metadata_json)
+    self.assertEqual(given_metadata, expected_metadata)
+
+    upload_queue_put.assert_called_with([written_file])
+
   def testCollectPGOProfiles(self):
     """Test that the sysroot generation was called correctly."""
     stage = self.ConstructStage()
@@ -555,9 +663,10 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertEqual('No profile directories found.', str(msg.exception))
 
     # Create profiles directory
-    out_sys_devel = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
-    os.makedirs(os.path.join(out_sys_devel, 'profiles'))
+    cov_path = 'build/%s/build/coverage_data' % stage._current_board
+    out_cov_path = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', cov_path))
+    os.makedirs(os.path.join(out_cov_path, 'raw_profiles'))
 
     # No profraw files
     with self.assertRaises(Exception) as msg:
@@ -566,31 +675,23 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
                      str(msg.exception))
 
     # Create profraw file
-    profraw = os.path.join(out_sys_devel, 'profiles', 'a.profraw')
+    profraw = os.path.join(out_cov_path, 'raw_profiles', 'a.profraw')
     with open(profraw, 'a') as f:
       f.write('123')
 
     # Check uploading tarball
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
     stage._CollectPGOProfiles()
-    llvm_profdata = os.path.join(self.build_root, 'chroot', stage.archive_path,
-                                 'llvm.profdata')
-    self.assertEqual(['llvm-profdata', 'merge', '-output', llvm_profdata,
-                      os.path.join(out_sys_devel, 'profiles', 'a.profraw')],
+    llvm_profdata = path_util.ToChrootPath(
+        os.path.join(stage.archive_path, 'llvm.profdata'))
+    profraw_list = path_util.ToChrootPath(
+        os.path.join(stage.archive_path, 'profraw_list'))
+    self.assertEqual(['llvm-profdata', 'merge',
+                      '-output', llvm_profdata,
+                      '-f', profraw_list],
                      stage._merge_cmd)
     tarball = stage.PROFDATA_TAR
     stage._upload_queue.put.assert_called_with([tarball])
-
-    # Check multiple profiles directories
-    out_sys_devel = os.path.abspath(
-        os.path.join(self.build_root, 'chroot', stage.SYS_DEVEL_DIR))
-    os.makedirs(os.path.join(out_sys_devel, 'another/profiles'))
-    with self.assertRaises(Exception) as msg:
-      stage._CollectPGOProfiles()
-    dirs = os.path.join(out_sys_devel, 'another/profiles') + ' ' + \
-           os.path.join(out_sys_devel, 'profiles')
-    self.assertEqual('More than one profile directories are found: %s' % dirs,
-                     str(msg.exception))
 
 
 class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
@@ -598,6 +699,10 @@ class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
   """Test GenerateOrderfileStage functionality."""
 
   RELEASE_TAG = ''
+
+  @staticmethod
+  def _fakeGSExists(_, path):
+    return bool('dummy.tar.1' in path)
 
   # pylint: disable=protected-access
 
@@ -612,30 +717,54 @@ class GenerateOrderfileStageTest(generic_stages_unittest.AbstractStageTestCase,
     return artifact_stages.GenerateOrderfileStage(self._run, self.buildstore,
                                                   self._current_board)
 
-  def testGenerateOrderfile(self):
+  def testUploadOrderfile(self):
+    stage = self.ConstructStage()
+    tar_list = ['dummy.tar.1', 'dummy.tar.2', 'dummy.tar.3']
+
+    out_chroot_path = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', stage.archive_path))
+
+    # Test tarball not existing raising exception
+    with self.assertRaises(Exception) as context:
+      stage._UploadOrderfile(out_chroot_path, tar_list)
+    self.assertIn('does not exist for uploading', str(context.exception))
+
+    # Test only uploading files not on cloud
+    self.PatchObject(gs.GSContext, 'Exists', new=self._fakeGSExists)
+    self.PatchObject(os.path, 'exists', return_value=True, autospec=True)
+    mock_copy_into = self.PatchObject(gs.GSContext, 'CopyInto')
+    mock_upload_queue = self.PatchObject(stage._upload_queue, 'put',
+                                         autospec=True)
+    stage._UploadOrderfile(out_chroot_path, tar_list)
+
+    # Make sure to upload all three tarballs to build bucket
+    self.assertEqual(mock_upload_queue.call_count, 3)
+    # Make sure to upload only two tarballs to GS bucket,
+    # because one is already there
+    self.assertEqual(mock_copy_into.call_count, 2)
+    out_dir = os.path.join(self.build_root, 'chroot', stage.archive_path)
+    calls = [
+        mock.call(os.path.join(out_dir, x), stage.GS_URL, acl='public-read')
+        for x in tar_list
+    ]
+    mock_copy_into.assert_has_calls(calls[1:])
+
+  def testGenerateOrderfileSuccess(self):
+    """Check GenerateOrderfileStage._GenerateOrderfile working properly."""
     stage = self.ConstructStage()
 
-    # Check no orderfile generated causes exception
-    with self.assertRaises(Exception) as msg:
-      stage._GenerateOrderfile()
-      self.assertEqual('No orderfile generated in the builder.',
-                       str(msg.exception))
+    output_path = os.path.abspath(
+        os.path.join(self.build_root, 'chroot', stage.archive_path))
+    tar_list = ['dummy.tar.1', 'dummy.tar.2', 'dummy.tar.3']
 
-    # Create a dummy orderfile
-    chroot_path = os.path.join(self.build_root, 'chroot')
-    orderfile_path = os.path.abspath(
-        os.path.join(chroot_path, 'build',
-                     self._current_board, 'opt/google/chrome'))
-    os.makedirs(orderfile_path)
-    orderfile = os.path.join(orderfile_path, 'chrome.orderfile.txt')
-    with open(orderfile, 'w') as f:
-      f.write('Empty orderfile')
+    mock_command = self.PatchObject(
+        commands, 'GenerateChromeOrderfileArtifacts',
+        return_value=[os.path.join(output_path, f) for f in tar_list])
+    mock_upload = self.PatchObject(stage, '_UploadOrderfile')
 
-    # Check uploading tarball
-    self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
-    self.PatchObject(stage._upload_queue, 'put', autospec=True)
-    output_path = os.path.abspath(os.path.join(chroot_path, 'tmp'))
-    os.makedirs(output_path)
     stage._GenerateOrderfile()
-    target = os.path.join(output_path, stage.ORDERFILE_TAR)
-    stage._upload_queue.put.assert_called_with([target])
+    mock_command.assert_called_with(self.build_root,
+                                    self._current_board,
+                                    output_path)
+    mock_upload.assert_called_with(output_path,
+                                   tar_list)

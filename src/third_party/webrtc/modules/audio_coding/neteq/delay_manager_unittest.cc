@@ -39,8 +39,8 @@ constexpr int kMaxIat = 64;
 constexpr int kForgetFactor = 32745;
 }  // namespace
 
-using ::testing::Return;
 using ::testing::_;
+using ::testing::Return;
 
 class DelayManagerTest : public ::testing::Test {
  protected:
@@ -683,7 +683,7 @@ TEST_F(DelayManagerTest, DelayHistogramFieldTrial) {
     EXPECT_EQ(DelayManager::HistogramMode::RELATIVE_ARRIVAL_DELAY,
               dm_->histogram_mode());
     EXPECT_EQ(kDefaultHistogramQuantile,
-              dm_->histogram_quantile());                      // 0.95 in Q30.
+              dm_->histogram_quantile());  // 0.95 in Q30.
     EXPECT_EQ(
         kForgetFactor,
         dm_->histogram()->base_forget_factor_for_testing());  // 0.9993 in Q15.
@@ -696,7 +696,7 @@ TEST_F(DelayManagerTest, DelayHistogramFieldTrial) {
     EXPECT_EQ(DelayManager::HistogramMode::INTER_ARRIVAL_TIME,
               dm_->histogram_mode());
     EXPECT_EQ(kDefaultHistogramQuantile,
-              dm_->histogram_quantile());                      // 0.95 in Q30.
+              dm_->histogram_quantile());  // 0.95 in Q30.
     EXPECT_EQ(
         kForgetFactor,
         dm_->histogram()->base_forget_factor_for_testing());  // 0.9993 in Q15.
@@ -847,6 +847,29 @@ TEST_F(DelayManagerTest, DecelerationTargetLevelOffset) {
     // Default behaviour of taking 75% of target level.
     EXPECT_EQ(target_level_ms * 3 / 4, lower);
     EXPECT_EQ(target_level_ms, higher);
+  }
+}
+
+TEST_F(DelayManagerTest, ExtraDelay) {
+  {
+    // Default behavior. Insert two packets so that a new target level is
+    // calculated.
+    SetPacketAudioLength(kFrameSizeMs);
+    InsertNextPacket();
+    IncreaseTime(kFrameSizeMs);
+    InsertNextPacket();
+    EXPECT_EQ(dm_->TargetLevel(), 1 << 8);
+  }
+  {
+    // Add 80 ms extra delay and calculate a new target level.
+    test::ScopedFieldTrials field_trial(
+        "WebRTC-Audio-NetEqExtraDelay/Enabled-80/");
+    RecreateDelayManager();
+    SetPacketAudioLength(kFrameSizeMs);
+    InsertNextPacket();
+    IncreaseTime(kFrameSizeMs);
+    InsertNextPacket();
+    EXPECT_EQ(dm_->TargetLevel(), 5 << 8);
   }
 }
 

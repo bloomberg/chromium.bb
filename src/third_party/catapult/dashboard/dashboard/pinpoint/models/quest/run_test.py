@@ -13,9 +13,11 @@ from __future__ import absolute_import
 
 import collections
 import json
+import logging
 import re
 import shlex
 
+from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models.quest import execution as execution_module
 from dashboard.pinpoint.models.quest import quest
 from dashboard.services import swarming
@@ -72,30 +74,6 @@ _VPYTHON_PARAMS = {
         },
     ],
 }
-
-
-class RunTestError(execution_module.InformationalError):
-  pass
-
-
-class SwarmingExpiredError(execution_module.FatalError):
-  """Raised when the Swarming task expires before running.
-
-  This error is fatal, and stops the entire Job. If this error happens, the
-  results will be incorrect, and we should stop the Job quickly to avoid
-  overloading the bots even further."""
-
-
-class SwarmingTaskError(RunTestError):
-  """Raised when the Swarming task failed and didn't complete.
-
-  If the test completes but fails, that is a SwarmingTestError, not a
-  SwarmingTaskError. This error could be something like the bot died, the test
-  timed out, or the task was manually canceled."""
-
-
-class SwarmingTestError(RunTestError):
-  """Raised when the test fails."""
 
 
 class RunTest(quest.Quest):
@@ -246,9 +224,11 @@ class _RunTestExecution(execution_module.Execution):
       self._StartTask()
       return
 
+    logging.debug('_RunTestExecution Polling swarming: %s', self._task_id)
     swarming_task = swarming.Swarming(self._swarming_server).Task(self._task_id)
 
     result = swarming_task.Result()
+    logging.debug('swarming response: %s', result)
 
     if 'bot_id' in result:
       # Set bot_id to pass the info back to the Quest.
@@ -258,21 +238,17 @@ class _RunTestExecution(execution_module.Execution):
       return
 
     if result['state'] == 'EXPIRED':
-      raise SwarmingExpiredError('The swarming task expired. The bots are '
-                                 'likely overloaded, dead, or misconfigured.')
+      raise errors.SwarmingExpired()
 
     if result['state'] != 'COMPLETED':
-      raise SwarmingTaskError('The swarming task failed with '
-                              'state "%s".' % result['state'])
+      raise errors.SwarmingTaskError(result['state'])
 
     if result['failure']:
       exception_string = _ParseException(swarming_task.Stdout()['output'])
       if exception_string:
-        raise SwarmingTestError("The test failed. The test's error "
-                                'message was:\n%s' % exception_string)
+        raise errors.SwarmingTaskFailed(exception_string)
       else:
-        raise SwarmingTestError('The test failed. No Python '
-                                'exception was found in the log.')
+        raise errors.SwarmingTaskFailedNoException()
 
     result_arguments = {
         'isolate_server': result['outputs_ref']['isolatedserver'],
@@ -283,28 +259,13 @@ class _RunTestExecution(execution_module.Execution):
 
   def _StartTask(self):
     """Kick off a Swarming task to run a test."""
-    if self._previous_execution and not self._previous_execution.bot_id:
-      if self._previous_execution.failed:
-        # If the previous Execution fails before it gets a bot ID, it's likely
-        # it couldn't find any device to run on. Subsequent Executions probably
-        # wouldn't have any better luck, and failing fast is less complex than
-        # handling retries.
-        raise RunTestError('There are no bots available to run the test.')
-      else:
-        return
-
-    pool_dimension = None
-    for dimension in self._dimensions:
-      if dimension['key'] == 'pool':
-        pool_dimension = dimension
-
-    if self._previous_execution:
-      dimensions = [
-          pool_dimension,
-          {'key': 'id', 'value': self._previous_execution.bot_id}
-      ]
-    else:
-      dimensions = self._dimensions
+    if (self._previous_execution and not self._previous_execution.bot_id
+        and self._previous_execution.failed):
+      # If the previous Execution fails before it gets a bot ID, it's likely
+      # it couldn't find any device to run on. Subsequent Executions probably
+      # wouldn't have any better luck, and failing fast is less complex than
+      # handling retries.
+      raise errors.SwarmingNoBots()
 
     properties = {
         'inputs_ref': {
@@ -312,9 +273,9 @@ class _RunTestExecution(execution_module.Execution):
             'isolated': self._isolate_hash,
         },
         'extra_args': self._extra_args,
-        'dimensions': dimensions,
+        'dimensions': self._dimensions,
         'execution_timeout_secs': '21600',  # 6 hours, for rendering.mobile.
-        'io_timeout_secs': '1200',  # 20 minutes, to match the perf bots.
+        'io_timeout_secs': '14400',  # 4 hours, to match the perf bots.
     }
     properties.update(_VPYTHON_PARAMS)
     body = {
@@ -327,7 +288,12 @@ class _RunTestExecution(execution_module.Execution):
     if self._swarming_tags:
       body['tags'] = [
           '%s:%s' % (k, self._swarming_tags[k]) for k in self._swarming_tags]
+
+    logging.debug('Requesting swarming task with parameters: %s', body)
+
     response = swarming.Swarming(self._swarming_server).Tasks().New(body)
+
+    logging.debug('Response: %s', response)
 
     self._task_id = response['task_id']
 

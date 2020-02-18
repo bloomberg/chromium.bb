@@ -5,6 +5,7 @@
 from telemetry.internal.forwarders import do_nothing_forwarder
 from telemetry.internal.platform import network_controller_backend
 from telemetry.internal.platform import tracing_controller_backend
+from telemetry.testing import test_utils
 
 
 # pylint: disable=unused-argument
@@ -127,18 +128,6 @@ class PlatformBackend(object):
   def GetSystemTotalPhysicalMemory(self):
     raise NotImplementedError()
 
-  def GetCpuStats(self, pid):
-    return {}
-
-  def GetCpuTimestamp(self):
-    return {}
-
-  def GetChildPids(self, pid):
-    raise NotImplementedError()
-
-  def GetCommandLine(self, pid):
-    raise NotImplementedError()
-
   def GetDeviceTypeName(self):
     raise NotImplementedError()
 
@@ -179,25 +168,10 @@ class PlatformBackend(object):
   def StartActivity(self, intent, blocking):
     raise NotImplementedError()
 
-  def IsApplicationRunning(self, application):
-    raise NotImplementedError()
-
   def CanLaunchApplication(self, application):
     return False
 
   def InstallApplication(self, application):
-    raise NotImplementedError()
-
-  def CanMonitorPower(self):
-    return False
-
-  def CanMeasurePerApplicationPower(self):
-    return False
-
-  def StartMonitoringPower(self, browser):
-    raise NotImplementedError()
-
-  def StopMonitoringPower(self):
     raise NotImplementedError()
 
   def CanTakeScreenshot(self):
@@ -243,3 +217,7 @@ class PlatformBackend(object):
 
   def WaitForCpuTemperature(self, temp):
     pass
+
+  def GetTypExpectationsTags(self):
+    return test_utils.sanitizeTypExpectationsTags(
+        [self.GetOSName(), self.GetOSVersionName()])

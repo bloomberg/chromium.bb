@@ -8,9 +8,9 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/serial_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,7 +24,7 @@ class SerialRunnerTest : public ::testing::Test {
   ~SerialRunnerTest() override = default;
 
   void RunSerialRunner() {
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SerialRunnerTest::StartRunnerInternal,
                                   base::Unretained(this), bound_fns_));
     base::RunLoop().RunUntilIdle();
@@ -119,7 +119,7 @@ class SerialRunnerTest : public ::testing::Test {
 
   void CancelSerialRunner(const PipelineStatusCB& status_cb) {
     // Tasks run by |runner_| shouldn't reset it, hence we post a task to do so.
-    message_loop_.task_runner()->PostTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&SerialRunnerTest::ResetSerialRunner,
                                   base::Unretained(this)));
     status_cb.Run(PIPELINE_OK);
@@ -129,7 +129,7 @@ class SerialRunnerTest : public ::testing::Test {
     runner_.reset();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   SerialRunner::Queue bound_fns_;
   std::unique_ptr<SerialRunner> runner_;
 

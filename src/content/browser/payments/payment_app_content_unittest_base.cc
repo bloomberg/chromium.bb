@@ -224,7 +224,7 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   // Find a last registered payment manager.
   for (const auto& candidate_manager :
        payment_app_context()->payment_managers_) {
-    if (!base::ContainsKey(existing_managers, candidate_manager.first)) {
+    if (!base::Contains(existing_managers, candidate_manager.first)) {
       candidate_manager.first->Init(sw_script_url, scope_url.spec());
       base::RunLoop().RunUntilIdle();
       return candidate_manager.first;

@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // https://fetch.spec.whatwg.org/#main-fetch.
   static network::mojom::FetchResponseType CalculateResponseTainting(
       const GURL& url,
-      mojom::FetchRequestMode request_mode,
+      mojom::RequestMode request_mode,
       const base::Optional<url::Origin>& origin,
       bool cors_flag,
       bool tainted_origin,
@@ -175,7 +175,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   PreflightController* preflight_controller_;
 
   // Used to run asynchronous class instance bound callbacks safely.
-  base::WeakPtrFactory<CorsURLLoader> weak_factory_;
+  base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CorsURLLoader);
 };

@@ -40,17 +40,22 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsInterpolable() const { return flags_ & kInterpolable; }
   bool IsCompositableProperty() const { return flags_ & kCompositableProperty; }
   bool IsDescriptor() const { return flags_ & kDescriptor; }
-  bool SupportsPercentage() const { return flags_ & kSupportsPercentage; }
   bool IsProperty() const { return flags_ & kProperty; }
-  bool IsValidForVisitedLink() const { return flags_ & kValidForVisitedLink; }
   bool IsShorthand() const { return flags_ & kShorthand; }
   bool IsLonghand() const { return flags_ & kLonghand; }
   bool IsInherited() const { return flags_ & kInherited; }
+  bool IsVisited() const { return flags_ & kVisited; }
+  bool IsInternal() const { return flags_ & kInternal; }
+  bool IsAffectedByForcedColors() const {
+    return flags_ & kIsAffectedByForcedColors;
+  }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
 
-  virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
+  virtual bool IsAffectedByAll() const {
+    return IsWebExposed() && IsProperty();
+  }
   virtual bool IsLayoutDependentProperty() const { return false; }
   virtual bool IsLayoutDependent(const ComputedStyle* style,
                                  LayoutObject* layout_object) const {
@@ -61,40 +66,48 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
       const ComputedStyle&,
       const SVGComputedStyle&,
       const LayoutObject*,
-      Node*,
+      const Node*,
       bool allow_visited_style) const {
     return nullptr;
   }
   // TODO: Resolve computed auto alignment in applyProperty/ComputedStyle and
-  // remove this non-const Node parameter.
+  // remove this const Node parameter.
   const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
                                             const LayoutObject*,
-                                            Node*,
+                                            const Node*,
                                             bool allow_visited_style) const;
   virtual std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromComputedStyle(const ComputedStyle& computed_style,
                                          const LayoutObject* layout_object,
-                                         Node* node,
+                                         const Node* styled_node,
                                          bool allow_visited_style) const;
   virtual const CSSProperty& ResolveDirectionAwareProperty(TextDirection,
                                                            WritingMode) const {
     return *this;
   }
-  static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
-                                                   size_t length,
-                                                   Vector<const CSSProperty*>&);
+  virtual const CSSProperty* GetVisitedProperty() const { return nullptr; }
+  virtual const CSSProperty* GetUnvisitedProperty() const { return nullptr; }
+  static void FilterWebExposedCSSPropertiesIntoVector(
+      const CSSPropertyID*,
+      size_t length,
+      Vector<const CSSProperty*>&);
 
  protected:
   enum Flag : uint16_t {
     kInterpolable = 1 << 0,
     kCompositableProperty = 1 << 1,
     kDescriptor = 1 << 2,
-    kSupportsPercentage = 1 << 3,
-    kProperty = 1 << 4,
-    kValidForVisitedLink = 1 << 5,
-    kShorthand = 1 << 6,
-    kLonghand = 1 << 7,
-    kInherited = 1 << 8
+    kProperty = 1 << 3,
+    kShorthand = 1 << 4,
+    kLonghand = 1 << 5,
+    kInherited = 1 << 6,
+    // Visited properties are internal counterparts to properties that
+    // are permitted in :visited styles. They are used to handle and store the
+    // computed value as seen by painting (as opposed to the computed value
+    // seen by CSSOM, which is represented by the unvisited property).
+    kVisited = 1 << 7,
+    kInternal = 1 << 8,
+    kIsAffectedByForcedColors = 1 << 9
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

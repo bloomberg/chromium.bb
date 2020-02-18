@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,7 +26,7 @@
 - (void)testShowPageInfoAndDismissOnDeviceRotation {
   // TODO(crbug.com/652465): Enable the test for iPad when rotation bug is
   // fixed.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to device rotation bug.");
   }
 
@@ -36,7 +35,7 @@
                              errorOrNil:nil];
   }
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:GURL("https://invalid")]);
+  [ChromeEarlGrey loadURL:GURL("https://invalid")];
   [ChromeEarlGreyUI openToolsMenu];
   [[[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityID(

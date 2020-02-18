@@ -172,8 +172,8 @@ std::ostream& operator<<(std::ostream& ostream, const IntRect& rect) {
 }
 
 String IntRect::ToString() const {
-  return String::Format("%s %s", Location().ToString().Ascii().data(),
-                        Size().ToString().Ascii().data());
+  return String::Format("%s %s", Location().ToString().Ascii().c_str(),
+                        Size().ToString().Ascii().c_str());
 }
 
 bool IntRect::IsValid() const {

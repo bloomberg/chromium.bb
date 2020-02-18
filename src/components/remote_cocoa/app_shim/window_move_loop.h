@@ -10,13 +10,13 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
-namespace views {
-class BridgedNativeWidgetImpl;
+namespace remote_cocoa {
+class NativeWidgetNSWindowBridge;
 
-// Used by views::BridgedNativeWidgetImpl when dragging detached tabs.
+// Used by NativeWidgetNSWindowBridge when dragging detached tabs.
 class CocoaWindowMoveLoop {
  public:
-  CocoaWindowMoveLoop(BridgedNativeWidgetImpl* owner,
+  CocoaWindowMoveLoop(NativeWidgetNSWindowBridge* owner,
                       const NSPoint& initial_mouse_in_screen);
   ~CocoaWindowMoveLoop();
 
@@ -32,7 +32,7 @@ class CocoaWindowMoveLoop {
     WINDOW_DESTROYED,
   };
 
-  BridgedNativeWidgetImpl* owner_;  // Weak. Owns this.
+  NativeWidgetNSWindowBridge* owner_;  // Weak. Owns this.
 
   // Initial mouse location at the time before the CocoaWindowMoveLoop is
   // created.
@@ -48,6 +48,6 @@ class CocoaWindowMoveLoop {
   DISALLOW_COPY_AND_ASSIGN(CocoaWindowMoveLoop);
 };
 
-}  // namespace views
+}  // namespace remote_cocoa
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_WINDOW_MOVE_LOOP_H_

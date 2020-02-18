@@ -14,6 +14,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.containsString;
 
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.isTransformed;
+import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 
@@ -21,7 +22,6 @@ import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,24 +29,24 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper;
 import org.chromium.chrome.browser.keyboard_accessory.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.TimeoutException;
+
 /**
  * Integration tests for password accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@RetryOnFailure
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PasswordAccessoryIntegrationTest {
+@DisableIf
+        .Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
+        @RetryOnFailure
+        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+        public class PasswordAccessoryIntegrationTest {
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -60,7 +60,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     public void testPasswordSheetIsAvailable() throws InterruptedException {
         mHelper.loadTestPage(false);
 
@@ -71,17 +70,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @DisableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    public void testPasswordSheetUnavailableWithoutFeature() throws InterruptedException {
-        mHelper.loadTestPage(false);
-
-        Assert.assertNull("Password Sheet should not have been created.",
-                mHelper.getOrCreatePasswordAccessorySheet());
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testPasswordSheetDisplaysProvidedItems()
             throws InterruptedException, TimeoutException {
@@ -100,7 +88,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     public void testPasswordSheetDisplaysOptions() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
@@ -116,8 +103,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
     public void testFillsPasswordOnTap() throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         mHelper.cacheCredentials("mpark@abc.com", "ShorterPassword");
@@ -126,6 +111,7 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
 
         // Click the suggestion.
         whenDisplayed(withText("ShorterPassword")).perform(click());
@@ -137,7 +123,6 @@ public class PasswordAccessoryIntegrationTest {
 
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY})
     public void testDisplaysEmptyStateMessageWithoutSavedPasswords()
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);

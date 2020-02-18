@@ -14,8 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcodec/jbig2/JBig2_ArithDecoder.h"
 #include "core/fxcodec/jbig2/JBig2_BitStream.h"
 #include "core/fxcodec/jbig2/JBig2_GrdProc.h"
@@ -51,24 +49,30 @@ static const size_t kSymbolDictCacheMaxSize = 2;
 static_assert(kSymbolDictCacheMaxSize > 0,
               "Symbol Dictionary Cache must have non-zero size");
 
-CJBig2_Context::CJBig2_Context(const RetainPtr<CPDF_StreamAcc>& pGlobalStream,
-                               const RetainPtr<CPDF_StreamAcc>& pSrcStream,
+// static
+std::unique_ptr<CJBig2_Context> CJBig2_Context::Create(
+    pdfium::span<const uint8_t> pGlobalSpan,
+    uint32_t dwGlobalObjNum,
+    pdfium::span<const uint8_t> pSrcSpan,
+    uint32_t dwSrcObjNum,
+    std::list<CJBig2_CachePair>* pSymbolDictCache) {
+  auto result = pdfium::WrapUnique(
+      new CJBig2_Context(pSrcSpan, dwSrcObjNum, pSymbolDictCache, false));
+  if (!pGlobalSpan.empty()) {
+    result->m_pGlobalContext = pdfium::WrapUnique(new CJBig2_Context(
+        pGlobalSpan, dwGlobalObjNum, pSymbolDictCache, true));
+  }
+  return result;
+}
+
+CJBig2_Context::CJBig2_Context(pdfium::span<const uint8_t> pSrcSpan,
+                               uint32_t dwObjNum,
                                std::list<CJBig2_CachePair>* pSymbolDictCache,
                                bool bIsGlobal)
-    : m_pStream(pdfium::MakeUnique<CJBig2_BitStream>(pSrcStream)),
+    : m_pStream(pdfium::MakeUnique<CJBig2_BitStream>(pSrcSpan, dwObjNum)),
       m_HuffmanTables(CJBig2_HuffmanTable::kNumHuffmanTables),
-      m_bInPage(false),
-      m_bBufSpecified(false),
-      m_PauseStep(10),
-      m_ProcessingStatus(FXCODEC_STATUS_FRAME_READY),
-      m_dwOffset(0),
-      m_pSymbolDictCache(pSymbolDictCache),
-      m_bIsGlobal(bIsGlobal) {
-  if (pGlobalStream && pGlobalStream->GetSize() > 0) {
-    m_pGlobalContext = pdfium::MakeUnique<CJBig2_Context>(
-        nullptr, pGlobalStream, pSymbolDictCache, true);
-  }
-}
+      m_bIsGlobal(bIsGlobal),
+      m_pSymbolDictCache(pSymbolDictCache) {}
 
 CJBig2_Context::~CJBig2_Context() {}
 
@@ -422,7 +426,7 @@ JBig2_Result CJBig2_Context::ParseSymbolDict(CJBig2_Segment* pSegment) {
       CJBig2_Segment* pSeg =
           FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
       if (pSeg->m_cFlags.s.type == 0) {
-        const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict.get();
+        const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict;
         for (size_t j = 0; j < dict.NumImages(); ++j)
           SDINSYMS.get()[dwTemp + j] = dict.GetImage(j);
         dwTemp += dict.NumImages();
@@ -636,7 +640,7 @@ JBig2_Result CJBig2_Context::ParseTextRegion(CJBig2_Segment* pSegment) {
       CJBig2_Segment* pSeg =
           FindSegmentByNumber(pSegment->m_Referred_to_segment_numbers[i]);
       if (pSeg->m_cFlags.s.type == 0) {
-        const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict.get();
+        const CJBig2_SymbolDict& dict = *pSeg->m_SymbolDict;
         for (size_t j = 0; j < dict.NumImages(); ++j)
           SBSYMS.get()[dwTemp + j] = dict.GetImage(j);
         dwTemp += dict.NumImages();

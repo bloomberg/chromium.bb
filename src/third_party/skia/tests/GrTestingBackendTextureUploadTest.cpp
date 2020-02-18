@@ -5,12 +5,10 @@
  * found in the LICENSE file.
  */
 
-#include "include/core/SkTypes.h"
-
-#include "include/gpu/GrTexture.h"
-#include "src/core/SkConvertPixels.h"
+#include "src/core/SkAutoPixmapStorage.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrGpu.h"
+#include "src/gpu/GrSurfaceContext.h"
 #include "src/gpu/SkGr.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -20,59 +18,73 @@ void testing_only_texture_test(skiatest::Reporter* reporter, GrContext* context,
 
     const int kWidth = 16;
     const int kHeight = 16;
-    SkAutoTMalloc<GrColor> srcBuffer;
-    if (doDataUpload) {
-        srcBuffer.reset(kWidth * kHeight);
-        fill_pixel_data(kWidth, kHeight, srcBuffer.get());
-    }
-    SkAutoTMalloc<GrColor> dstBuffer(kWidth * kHeight);
+
+    SkImageInfo ii = SkImageInfo::Make(kWidth, kHeight, ct, kPremul_SkAlphaType);
+
+    SkAutoPixmapStorage expectedPixels, actualPixels;
+    expectedPixels.alloc(ii);
+    actualPixels.alloc(ii);
 
     const GrCaps* caps = context->priv().caps();
-    GrGpu* gpu = context->priv().getGpu();
-
-    GrPixelConfig config = SkColorType2GrPixelConfig(ct);
-    if (!caps->isConfigTexturable(config)) {
-        return;
-    }
 
     GrColorType grCT = SkColorTypeToGrColorType(ct);
-    if (GrColorType::kUnknown == grCT) {
+
+    GrBackendFormat backendFormat = caps->getBackendFormatFromColorType(grCT);
+    if (!caps->isFormatTexturable(grCT, backendFormat)) {
         return;
     }
 
-    if (caps->supportedReadPixelsColorType(config, grCT) != grCT) {
-        return;
-    }
+    GrBackendTexture backendTex;
 
-    GrBackendTexture backendTex = gpu->createTestingOnlyBackendTexture(
-                                        kWidth, kHeight, ct,
-                                        mipMapped, renderable, srcBuffer);
+    if (doDataUpload) {
+        SkASSERT(GrMipMapped::kNo == mipMapped);
+
+        fill_pixel_data(kWidth, kHeight, expectedPixels.writable_addr32(0, 0));
+
+        backendTex = context->priv().createBackendTexture(&expectedPixels, 1,
+                                                          renderable, GrProtected::kNo);
+    } else {
+        backendTex = context->createBackendTexture(kWidth, kHeight, ct, SkColors::kTransparent,
+                                                   mipMapped, renderable, GrProtected::kNo);
+
+        size_t allocSize = SkAutoPixmapStorage::AllocSize(ii, nullptr);
+        // createBackendTexture will fill the texture with 0's if no data is provided, so
+        // we set the expected result likewise.
+        memset(expectedPixels.writable_addr32(0, 0), 0, allocSize);
+    }
     if (!backendTex.isValid()) {
         return;
     }
+    // skbug.com/9165
+    auto supportedRead =
+            caps->supportedReadPixelsColorType(grCT, backendTex.getBackendFormat(), grCT);
+    if (supportedRead.fColorType != grCT || supportedRead.fSwizzle != GrSwizzle("rgba")) {
+        return;
+    }
 
-    sk_sp<GrTexture> wrappedTex;
+    sk_sp<GrTextureProxy> wrappedProxy;
     if (GrRenderable::kYes == renderable) {
-        wrappedTex = gpu->wrapRenderableBackendTexture(
-                backendTex, 1, GrWrapOwnership::kAdopt_GrWrapOwnership, GrWrapCacheable::kNo);
+        wrappedProxy = context->priv().proxyProvider()->wrapRenderableBackendTexture(
+                backendTex, kTopLeft_GrSurfaceOrigin, 1, grCT, kAdopt_GrWrapOwnership,
+                GrWrapCacheable::kNo);
     } else {
-        wrappedTex = gpu->wrapBackendTexture(backendTex, GrWrapOwnership::kAdopt_GrWrapOwnership,
-                                             GrWrapCacheable::kNo, kRead_GrIOType);
+        wrappedProxy = context->priv().proxyProvider()->wrapBackendTexture(
+                backendTex, grCT, kTopLeft_GrSurfaceOrigin, kAdopt_GrWrapOwnership,
+                GrWrapCacheable::kNo, GrIOType::kRW_GrIOType);
     }
-    REPORTER_ASSERT(reporter, wrappedTex);
+    REPORTER_ASSERT(reporter, wrappedProxy);
 
-    int rowBytes = GrColorTypeBytesPerPixel(grCT) * kWidth;
-    bool result = gpu->readPixels(wrappedTex.get(), 0, 0, kWidth,
-                                  kHeight, grCT, dstBuffer, rowBytes);
+    auto surfaceContext = context->priv().makeWrappedSurfaceContext(std::move(wrappedProxy), grCT,
+                                                                    kPremul_SkAlphaType);
+    REPORTER_ASSERT(reporter, surfaceContext);
 
-    if (!doDataUpload) {
-        // createTestingOnlyBackendTexture will fill the texture with 0's if no data is provided, so
-        // we set the expected result likewise.
-        srcBuffer.reset(kWidth * kHeight);
-        memset(srcBuffer, 0, kWidth * kHeight * sizeof(GrColor));
-    }
+    bool result = surfaceContext->readPixels({grCT, kPremul_SkAlphaType, nullptr, kWidth, kHeight},
+                                             actualPixels.writable_addr(), actualPixels.rowBytes(),
+                                             {0, 0}, context);
+
     REPORTER_ASSERT(reporter, result);
-    REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(srcBuffer, dstBuffer,
+    REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(expectedPixels.addr32(),
+                                                                     actualPixels.addr32(),
                                                                      kWidth, kHeight));
 }
 

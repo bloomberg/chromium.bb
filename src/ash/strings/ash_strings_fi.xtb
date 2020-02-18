@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Laitteesi toimivat entistä paremmin yhdessä</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
 <translation id="1153356358378277386">Laiteparit</translation>
+<translation id="1175572348579024023">Vieritä</translation>
 <translation id="1178581264944972037">Tauko</translation>
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
-<translation id="123828989343052515">Uusi työtila</translation>
 <translation id="1247372569136754018">Mikrofoni (sisäinen)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> lataa laitetta.</translation>
 <translation id="1255033239764210633">Miltä päivän sää näyttää?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Järjestelmänvalvoja on määrittänyt syöttötavat.</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="1761222317188459878">Ota verkkoyhteys käyttöön tai poista se käytöstä. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Vieritä oikealle</translation>
 <translation id="1812997170047690955">Mitä näytölläni näkyy?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> on poistettu käytöstä tähän laitteeseen liittyvän käytännön vuoksi. Ota yhteyttä järjestelmänvalvojaan, jos haluat pyytää muutoksia.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (ladataan…)</translation>
 <translation id="1850504506766569011">Wi-Fi ei ole käytössä.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Määritä kieli</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Tekstinsyöttö</translation>
 <translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="2067602449040652523">Näppäimistön kirkkaus</translation>
 <translation id="209965399369889474">Ei verkkoyhteyttä</translation>
+<translation id="2126242104232412123">Uusi työpöytä</translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
 <translation id="2135456203358955318">Kiinnitetty suurennus</translation>
 <translation id="2144487987174258011">Päivitä Adobe Flash Player käynnistämällä uudelleen.</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google Assistantia ei voi käyttää julkisella käyttökerralla.</translation>
 <translation id="2575685495496069081">Useille tileille kirjautuminen on poistettu käytöstä</translation>
 <translation id="2582112259361606227">Päivitä käynnistämällä uudelleen</translation>
-<translation id="2597972630681408282">Yövalo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortti on lukittu.</translation>
+<translation id="2651765386227849097">Google Assistantin käyttö on estetty tällä laitteella.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2658778018866295321">Klikkaa ja vedä</translation>
 <translation id="2700493154570097719">Määritä näppäimistö</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> muuta</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
+<translation id="3249513730522716925">Ikkuna <ph name="WINDOW_TITLE" /> siirretty työpöydältä <ph name="ACTIVE_DESK" /> työpöydälle <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Mitä osaat tehdä?</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> voi silti kirjautua sisään myöhemmin.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3576141592585647168">Muuta aikavyöhykettä</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
+<translation id="3604801046548457007">Työpöytä <ph name="DESK_TITILE" /> luotu</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Akkua ladataan, varaus nyt <ph name="PERCENTAGE" /> %</translation>
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
+<translation id="4021716437419160885">Vieritä alas</translation>
 <translation id="4042660782729322247">Jaat näyttösi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
@@ -220,8 +227,7 @@
 <translation id="4296136865091727875">Poista kaikki <ph name="COUNT" /> ilmoitusta</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Chrome-käyttöjärjestelmä</translation>
 <translation id="4338109981321384717">Suurennuslasi</translation>
 <translation id="4351433414020964307">Assistantia ladataan…</translation>
 <translation id="435527878592612277">Valitse valokuva</translation>
@@ -259,9 +265,11 @@
 <translation id="4895488851634969361">Akku on täynnä.</translation>
 <translation id="490375751687810070">Pystysuora</translation>
 <translation id="4905614135390995787">Suuren kontrastin tilan pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
+<translation id="490788395437447240">Akku: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Vahva</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="4924411785043111640">Käynnistä uudelleen ja palauta</translation>
+<translation id="495046168593986294">Vieritä ylös</translation>
 <translation id="4961318399572185831">Suoratoista näyttö</translation>
 <translation id="5030687792513154421">Aika on lopussa</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yhdistetty uuteen puhelimeen</translation>
@@ -295,6 +303,7 @@
 <translation id="5648021990716966815">Mikrofoniliitäntä</translation>
 <translation id="5669267381087807207">Aktivoidaan</translation>
 <translation id="5673434351075758678">Muutos asetusten synkronoinnin yhteydessä: <ph name="FROM_LOCALE" /> – <ph name="TO_LOCALE" /></translation>
+<translation id="5682642926269496722">Google Assistantia ei voi käyttää nykyisellä käyttäjätilillä.</translation>
 <translation id="5691772641933328258">Sormenjälkeä ei tunnistettu</translation>
 <translation id="5710450975648804523">Älä häiritse ‑tila on käytössä</translation>
 <translation id="574392208103952083">Keskikoko</translation>
@@ -319,6 +328,8 @@
 <translation id="598882571027504733">Voit asentaa päivityksen käynnistämällä Chromebookisi uudelleen niin, että näppäimistö on kytkettynä.</translation>
 <translation id="5992218262414051481">Suuri kontrasti ‑tila on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + H.</translation>
 <translation id="6018164090099858612">Poistutaan peilitilasta</translation>
+<translation id="602001110135236999">Vieritä vasemmalle</translation>
+<translation id="6040143037577758943">Sulje</translation>
 <translation id="6043212731627905357">Näyttö ja <ph name="DEVICE_TYPE" /> eivät sovi yhteen (näyttöä ei tueta).</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
@@ -326,6 +337,7 @@
 <translation id="6064337552080329342">Salasanasi vahvistaminen epäonnistui. Yritä uudelleen.</translation>
 <translation id="607652042414456612">Lähellä olevat Bluetooth-laitteet voivat löytää tietokoneesi. Tietokoneesi nimi on <ph name="NAME" /> ja osoite <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Ladataan laitetta <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google Assistantia ei voi käyttää Vierailija-käyttökerralla.</translation>
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="6164005077879661055">Kaikki valvottuun käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan
  pysyvästi, kun tämä valvottu käyttäjä poistetaan. Vieraillut verkkosivustot ja
@@ -369,7 +381,9 @@
 <translation id="6713285437468012787">Bluetooth-laitteeseen <ph name="DEVICE_NAME" /> on nyt muodostettu laitepariyhteys, ja se on kaikkien käyttäjien saatavilla. Voit poistaa laiteparin Asetuksien kautta.</translation>
 <translation id="6715542151869432661">Mobiililaitteita ei löytynyt.</translation>
 <translation id="6723839937902243910">Virta</translation>
+<translation id="6727969043791803658">Yhdistetty, akun taso <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Tehokkuuden seuranta on käytössä</translation>
+<translation id="6752912906630585008">Työpöytä <ph name="REMOVED_DESK" /> poistettu ja yhdistetty työpöytään <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Toista</translation>
 <translation id="6803622936009808957">Näyttöjen peilaaminen ei onnistunut, sillä tuettua resoluutiota ei löytynyt. Sen sijaan valittiin työpöydän laajennus.</translation>
 <translation id="6820676911989879663">Pidä tauko</translation>
@@ -427,6 +441,7 @@
 <translation id="7692480393933218409">Ladataan yhdistettyjä C-tyypin USB-laitteita</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 ilmoitus}other{# ilmoitusta}}</translation>
+<translation id="7749443890790263709">Työpöytiä on enimmäismäärä.</translation>
 <translation id="776344839111254542">Klikkaa nähdäksesi päivityksen tiedot</translation>
 <translation id="7780159184141939021">Käännä näyttö</translation>
 <translation id="7796353162336583443">Napauttamalla hyllyn näyttökynäpainiketta voit tehdä muistiinpanoja, tallentaa kuvakaappauksen ja käyttää Google Assistantia, laserosoitinta tai suurennuslasia.</translation>
@@ -470,6 +485,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Luo muistiinpano</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> muodostaa yhteyden puhelimeesi automaattisesti</translation>
+<translation id="8388750414311082622">Viimeistä työpöytää ei voi poistaa.</translation>
 <translation id="8392451568018454956">Tilin <ph name="USER_EMAIL_ADDRESS" /> vaihtoehtovalikko</translation>
 <translation id="8394567579869570560">Vanhempasi lukitsi tämän laitteen</translation>
 <translation id="8406981827175133772">Koko näytön suurennus</translation>
@@ -478,6 +494,7 @@
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8433186206711564395">Verkkoasetukset</translation>
 <translation id="8433977262951327081">Hyllyn syöttöasetukset näyttävä valikkokupla on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
+<translation id="8444246603146515890">Työpöytä <ph name="DESK_TITILE" /> aktivoitu</translation>
 <translation id="8452135315243592079">SIM-kortti puuttuu.</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
 <translation id="847056008324733326">Näytön skaalauksen asetukset</translation>

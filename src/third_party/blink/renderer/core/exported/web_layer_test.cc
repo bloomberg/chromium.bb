@@ -272,6 +272,15 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
     return Compositor().layer_tree_view().layer_tree_host()->property_trees();
   }
 
+  cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
+    return GetPropertyTrees()->transform_tree.Node(
+        layer->transform_tree_index());
+  }
+
+  cc::EffectNode* GetEffectNode(const cc::Layer* layer) {
+    return GetPropertyTrees()->effect_tree.Node(layer->effect_tree_index());
+  }
+
   PaintArtifactCompositor* paint_artifact_compositor() {
     return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
   }
@@ -474,20 +483,29 @@ TEST_P(WebLayerListSimTest, LayerSubtreeTransformPropertyChanged) {
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(outer_element_layer)->transform_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 
   // Modifying the transform style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr,
                               "transform: rotate(10deg)");
   UpdateAllLifecyclePhases();
+  // This is still set by the traditional GraphicsLayer::SetTransform().
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  // Set by blink::PropertyTreeManager.
+  EXPECT_TRUE(GetTransformNode(outer_element_layer)->transform_changed);
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 
   // After a frame the |subtree_property_changed| value should be reset.
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(outer_element_layer)->transform_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetTransformNode(inner_element_layer)->transform_changed);
 }
 
 // When a property tree change occurs that affects layer transform in a simple
@@ -551,6 +569,91 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
   // After a frame the |transform_changed| value should be reset.
   Compositor().BeginFrame();
   EXPECT_FALSE(transform_node->transform_changed);
+}
+
+// This test is similar to |DirectTransformPropertyUpdate| but tests that
+// the changed value of a directly updated transform is still set if some other
+// change causes PaintArtifactCompositor to run and do non-direct updates.
+TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdateCausesChange) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #outer {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          transform: translate(1px, 2px);
+        }
+        #inner {
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+          background: lightblue;
+          transform: translate(3px, 4px);
+        }
+      </style>
+      <div id='outer'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* outer_element = GetElementById("outer");
+  auto* outer_element_layer = ContentLayerAt(ContentLayerCount() - 2);
+  DCHECK_EQ(outer_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                outer_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto outer_transform_tree_index = outer_element_layer->transform_tree_index();
+  auto* outer_transform_node =
+      GetPropertyTrees()->transform_tree.Node(outer_transform_tree_index);
+
+  auto* inner_element = GetElementById("inner");
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(inner_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                inner_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto inner_transform_tree_index = inner_element_layer->transform_tree_index();
+  auto* inner_transform_node =
+      GetPropertyTrees()->transform_tree.Node(inner_transform_tree_index);
+
+  // Initially, the transforms should be unchanged.
+  EXPECT_FALSE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the outer transform in a simple way should allow for a direct
+  // update of the outer transform. Modifying the inner transform in a
+  // non-simple way should not allow for a direct update of the inner transform.
+  outer_element->setAttribute(html_names::kStyleAttr,
+                              "transform: translate(5px, 6px)");
+  inner_element->setAttribute(html_names::kStyleAttr,
+                              "transform: rotate(30deg)");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
+  EXPECT_TRUE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a PaintArtifactCompositor update, which was needed due to the inner
+  // element's transform change, both the inner and outer transform nodes
+  // should be marked as changed to ensure they result in damage.
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(outer_transform_node->transform_changed);
+  EXPECT_TRUE(inner_transform_node->transform_changed);
+
+  // After a frame the |transform_changed| values should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(outer_transform_node->transform_changed);
+  EXPECT_FALSE(inner_transform_node->transform_changed);
 }
 
 // This test ensures that the correct transform nodes are created and bits set
@@ -719,19 +822,28 @@ TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
 
   // Initially, no layer should have |subtree_property_changed| set.
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(outer_element_layer)->effect_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 
   // Modifying the filter style should set |subtree_property_changed| on
   // both layers.
   outer_element->setAttribute(html_names::kStyleAttr, "filter: blur(20px)");
   UpdateAllLifecyclePhases();
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(outer_element_layer->subtree_property_changed());
+  // Set by blink::PropertyTreeManager.
+  EXPECT_TRUE(GetEffectNode(outer_element_layer)->effect_changed);
+  // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 
   // After a frame the |subtree_property_changed| value should be reset.
   Compositor().BeginFrame();
   EXPECT_FALSE(outer_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(outer_element_layer)->effect_changed);
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+  EXPECT_FALSE(GetEffectNode(inner_element_layer)->effect_changed);
 }
 
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
@@ -853,6 +965,52 @@ TEST_P(WebLayerListSimTest, LayerSubtreeOverflowClipPropertyChanged) {
   EXPECT_FALSE(inner_element_layer->subtree_property_changed());
 }
 
+// This test is similar to |LayerSubtreeClipPropertyChanged| but for cases when
+// the clip node itself does not change but the clip node associated with a
+// layer changes.
+TEST_P(WebLayerListSimTest, LayerClipPropertyChanged) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #outer {
+          width: 100px;
+          height: 100px;
+        }
+        #inner {
+          width: 50px;
+          height: 200px;
+          backface-visibility: hidden;
+          background: lightblue;
+        }
+      </style>
+      <div id='outer' style='overflow: hidden;'>
+        <div id='inner'></div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->double_sided());
+
+  // Initially, no layer should have |subtree_property_changed| set.
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+
+  // Removing overflow: hidden on the outer div should set
+  // |subtree_property_changed| on the inner div's cc::Layer.
+  auto* outer_element = GetElementById("outer");
+  outer_element->setAttribute(html_names::kStyleAttr, "");
+  UpdateAllLifecyclePhases();
+
+  inner_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  EXPECT_FALSE(inner_element_layer->double_sided());
+  EXPECT_TRUE(inner_element_layer->subtree_property_changed());
+
+  // After a frame the |subtree_property_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(inner_element_layer->subtree_property_changed());
+}
+
 TEST_P(WebLayerListSimTest, SafeOpaqueBackgroundColorGetsSet) {
   // TODO(crbug.com/765003): CAP may make different layerization decisions and
   // we cannot guarantee that both divs will be composited in this test. When
@@ -969,6 +1127,39 @@ TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   auto* effect_node = GetPropertyTrees()->effect_tree.Node(effect_tree_index);
   EXPECT_EQ(effect_node->opacity, 0.5f);
   EXPECT_FALSE(effect_node->HasRenderSurface());
+}
+
+TEST_P(WebLayerListSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes translation {
+          0% { transform: translate(10px, 11px); }
+          100% { transform: translate(20px, 21px); }
+        }
+        .animate {
+          animation-name: translation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          overflow: hidden;
+        }
+        .compchild {
+          height: 200px;
+          width: 10px;
+          background: lightblue;
+          will-change: transform;
+        }
+      </style>
+      <div class="animate"><div class="compchild"></div></div>
+  )HTML");
+  Compositor().BeginFrame();
+  // No effect node with kClipAxisAlignment should be created because the
+  // animation is axis-aligned.
+  for (const auto& effect_node : GetPropertyTrees()->effect_tree.nodes()) {
+    EXPECT_NE(cc::RenderSurfaceReason::kClipAxisAlignment,
+              effect_node.render_surface_reason);
+  }
 }
 
 }  // namespace blink

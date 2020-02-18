@@ -27,10 +27,6 @@ class ExtensionsClient;
 class ExtensionsBrowserClient;
 }  // namespace extensions
 
-namespace net {
-class NetLog;
-}
-
 #if defined(USE_AURA)
 namespace views {
 class ViewsDelegate;
@@ -73,9 +69,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
                        CastContentBrowserClient* cast_content_browser_client);
   ~CastBrowserMainParts() override;
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
-#endif
   media::MediaCapsImpl* media_caps();
   content::BrowserContext* browser_context();
 
@@ -87,9 +81,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
+  void PostCreateThreads() override;
   void PostDestroyThreads() override;
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override;
 
  private:
   std::unique_ptr<CastBrowserProcess> cast_browser_process_;
@@ -97,7 +90,6 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   // Caches a pointer of the CastContentBrowserClient.
   CastContentBrowserClient* const cast_content_browser_client_ = nullptr;
   URLRequestContextFactory* const url_request_context_factory_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
 
@@ -115,13 +107,13 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<base::RepeatingTimer> crash_reporter_timer_;
 #endif
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // Tracks all media pipeline backends.
   std::unique_ptr<media::MediaPipelineBackendManager>
       media_pipeline_backend_manager_;
 
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   std::unique_ptr<CastMemoryPressureMonitor> memory_pressure_monitor_;
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionsClient> extensions_client_;
@@ -134,6 +126,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 #if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
 #endif
+
+  bool run_message_loop_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);
 };

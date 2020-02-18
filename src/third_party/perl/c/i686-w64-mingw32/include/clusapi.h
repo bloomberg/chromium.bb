@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _CLUSTER_API_
@@ -100,9 +100,9 @@ extern "C" {
   } CLUSCTL_RESOURCE_STATE_CHANGE_REASON_STRUCT,*PCLUSCTL_RESOURCE_STATE_CHANGE_REASON_STRUCT;
 #endif
 
-#define CLUSAPI_READ_ACCESS 0x00000001L
-#define CLUSAPI_CHANGE_ACCESS 0x00000002L
-#define CLUSAPI_NO_ACCESS 0x00000004L
+#define CLUSAPI_READ_ACCESS __MSABI_LONG(0x00000001)
+#define CLUSAPI_CHANGE_ACCESS __MSABI_LONG(0x00000002)
+#define CLUSAPI_NO_ACCESS __MSABI_LONG(0x00000004)
 #define CLUSAPI_ALL_ACCESS (CLUSAPI_READ_ACCESS | CLUSAPI_CHANGE_ACCESS)
 
   typedef enum CLUSTER_SET_PASSWORD_FLAGS {

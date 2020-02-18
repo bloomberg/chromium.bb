@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/data_decoder/public/mojom/xml_parser.mojom.h"
@@ -16,6 +17,10 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+
+#ifdef OS_CHROMEOS
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
+#endif  // OS_CHROMEOS
 
 namespace data_decoder {
 
@@ -35,9 +40,15 @@ class DataDecoderService : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
+  void BindBundledExchangesParserFactory(
+      mojom::BundledExchangesParserFactoryRequest request);
   void BindImageDecoder(mojom::ImageDecoderRequest request);
   void BindJsonParser(mojom::JsonParserRequest request);
   void BindXmlParser(mojom::XmlParserRequest request);
+
+#ifdef OS_CHROMEOS
+  void BindBleScanParser(mojom::BleScanParserRequest request);
+#endif  // OS_CHROMEOS
 
   service_manager::ServiceBinding binding_{this};
   service_manager::ServiceKeepalive keepalive_;

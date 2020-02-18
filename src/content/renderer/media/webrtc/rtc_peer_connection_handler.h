@@ -113,10 +113,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       server_configuration,
                   const blink::WebMediaConstraints& options) override;
 
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebMediaConstraints& options) override;
-  std::vector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
+  blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>> CreateOffer(
       const blink::WebRTCSessionDescriptionRequest& request,
       const blink::WebRTCOfferOptions& options) override;
 
@@ -151,10 +151,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
+  void RestartIce() override;
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(blink::WebRTCStatsReportCallback callback,
-                const std::vector<webrtc::NonStandardGroupId>&
+                const blink::WebVector<webrtc::NonStandardGroupId>&
                     exposed_group_ids) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
   AddTransceiverWithTrack(const blink::WebMediaStreamTrack& web_track,
@@ -242,6 +243,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                       int sdp_mline_index,
                       int component,
                       int address_family);
+  void OnIceCandidateError(const std::string& host_candidate,
+                           const std::string& url,
+                           int error_code,
+                           const std::string& error_text);
   void OnInterestingUsage(int usage_pattern);
 
  private:
@@ -407,7 +412,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_;
+  base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
 };

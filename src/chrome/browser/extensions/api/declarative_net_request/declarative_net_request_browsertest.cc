@@ -197,8 +197,8 @@ class RulesetCountWaiter : public RulesetManager::TestObserver {
 class ScopedRulesetManagerTestObserver {
  public:
   ScopedRulesetManagerTestObserver(RulesetManager::TestObserver* observer,
-                                   scoped_refptr<InfoMap> info_map)
-      : info_map_(std::move(info_map)) {
+                                   content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {
     SetRulesetManagerTestObserver(observer);
   }
 
@@ -208,17 +208,12 @@ class ScopedRulesetManagerTestObserver {
 
  private:
   void SetRulesetManagerTestObserver(RulesetManager::TestObserver* observer) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            [](RulesetManager::TestObserver* observer, InfoMap* info_map) {
-              info_map->GetRulesetManager()->SetObserverForTest(observer);
-            },
-            observer, base::RetainedRef(info_map_)));
-    content::RunAllTasksUntilIdle();
+    declarative_net_request::RulesMonitorService::Get(browser_context_)
+        ->ruleset_manager()
+        ->SetObserverForTest(observer);
   }
 
-  scoped_refptr<InfoMap> info_map_;
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRulesetManagerTestObserver);
 };
@@ -239,7 +234,7 @@ class WarningServiceObserver : public WarningService::Observer {
   // WarningService::TestObserver override:
   void ExtensionWarningsChanged(
       const ExtensionIdSet& affected_extensions) override {
-    if (!base::ContainsKey(affected_extensions, extension_id_))
+    if (!base::Contains(affected_extensions, extension_id_))
       return;
 
     run_loop_.Quit();
@@ -1337,6 +1332,100 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
   }
 }
 
+// Test that upgradeScheme rules will change the scheme of matching requests to
+// https.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
+  auto get_url_for_host = [this](std::string hostname, const char* scheme) {
+    GURL url = embedded_test_server()->GetURL(hostname,
+                                              "/pages_with_script/index.html");
+
+    url::Replacements<char> replacements;
+    replacements.SetScheme(scheme, url::Component(0, strlen(scheme)));
+
+    return url.ReplaceComponents(replacements);
+  };
+
+  GURL google_url = get_url_for_host("google.com", url::kHttpScheme);
+  struct {
+    std::string url_filter;
+    int id;
+    int priority;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"exa*", 1, 4, "upgradeScheme", base::nullopt},
+      {"|http:*yahoo", 2, 100, "redirect", "http://other.com"},
+      // Since the test server can only display http requests, redirect all
+      // https requests to google.com in the end.
+      // TODO(crbug.com/985104): Add a https test server to display https pages
+      // so this redirect rule can be removed.
+      {"|https*", 3, 6, "redirect", google_url.spec()},
+      {"exact.com", 4, 1, "block", base::nullopt},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.id = rule_data.id;
+    rule.priority = rule_data.priority;
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect_url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      rules, "test_extension", {URLPattern::kAllUrlsPattern}));
+
+  // Now load an extension with another ruleset, except this extension has no
+  // host permissions.
+  TestRule upgrade_rule = CreateGenericRule();
+  upgrade_rule.condition->url_filter = "yahoo";
+  upgrade_rule.id = kMinValidID;
+  upgrade_rule.priority = kMinValidPriority;
+  upgrade_rule.condition->resource_types =
+      std::vector<std::string>({"main_frame"});
+  upgrade_rule.action->type = "upgradeScheme";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
+      std::vector<TestRule>({upgrade_rule}), "test_extension_2", {}));
+
+  struct {
+    std::string hostname;
+    const char* scheme;
+    // |expected_final_url| is null if the request is expected to be blocked.
+    base::Optional<GURL> expected_final_url;
+  } test_cases[] = {
+      {"exact.com", url::kHttpScheme, base::nullopt},
+      // http://example.com -> https://example.com/ -> http://google.com
+      {"example.com", url::kHttpScheme, google_url},
+      // test_extension_2 should upgrade the scheme for http://yahoo.com
+      // despite having no host permissions. Note that this request is not
+      // matched with test_extension_1's ruleset as test_extension_2 is
+      // installed more recently.
+      // http://yahoo.com -> https://yahoo.com/ -> http://google.com
+      {"yahoo.com", url::kHttpScheme, google_url},
+  };
+
+  for (const auto& test_case : test_cases) {
+    GURL url = get_url_for_host(test_case.hostname, test_case.scheme);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    if (!test_case.expected_final_url) {
+      EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
+    } else {
+      EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+
+      const GURL& final_url = web_contents()->GetLastCommittedURL();
+      EXPECT_EQ(*test_case.expected_final_url, final_url);
+    }
+  }
+}
+
 // Tests that only extensions enabled in incognito mode affect network requests
 // from an incognito context.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
@@ -1466,9 +1555,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   // script.js.
   URLRequestMonitor script_monitor(
       embedded_test_server()->GetURL("example.com", "/cached/script.js"));
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &script_monitor,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&script_monitor, profile());
 
   GURL url = embedded_test_server()->GetURL(
       "example.com", "/cached/page_with_cacheable_script.html");
@@ -1478,10 +1565,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
 
-  // NOTE: When the Network Service is enabled, the RulesetMatcher will not see
-  // network requests if no rulesets are active.
+  // NOTE: RulesetMatcher will not see network requests if no rulesets are
+  // active.
   bool expect_request_seen =
-      !base::FeatureList::IsEnabled(network::features::kNetworkService) ||
       base::FeatureList::IsEnabled(
           extensions_features::kForceWebRequestProxyForTest);
   EXPECT_EQ(expect_request_seen, script_monitor.GetAndResetRequestSeen(false));
@@ -1689,7 +1775,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     // The EmbeddedTestServer sees requests after the hostname has been
     // resolved.
     bool did_see_script_request =
-        base::ContainsKey(GetAndResetRequestsToServer(), script_url);
+        base::Contains(GetAndResetRequestsToServer(), script_url);
     EXPECT_EQ(expect_script_load, did_see_script_request);
   };
 
@@ -1788,11 +1874,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       // Request to |expected_requested_url| should be seen by the server iff we
       // expect the page to load.
       if (expect_load) {
-        EXPECT_TRUE(base::ContainsKey(requests_seen, expected_request_url))
+        EXPECT_TRUE(base::Contains(requests_seen, expected_request_url))
             << expected_request_url.spec()
             << " was not requested from the server.";
       } else {
-        EXPECT_FALSE(base::ContainsKey(requests_seen, expected_request_url))
+        EXPECT_FALSE(base::Contains(requests_seen, expected_request_url))
             << expected_request_url.spec() << " request seen unexpectedly.";
       }
     }
@@ -1935,9 +2021,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Set-up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
   set_has_background_script(true);
 
@@ -2083,8 +2168,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(profile());
+  const auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
   // Mimic extension prefs corruption by overwriting the indexed ruleset
@@ -2134,9 +2219,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("*");
@@ -2144,8 +2228,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ruleset_count_waiter.WaitForRulesetCount(1);
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(profile());
+  const auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
   // Add a dynamic rule.
@@ -2228,9 +2312,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
     std::set<GURL> seen_requests = GetAndResetRequestsToServer();
     EXPECT_EQ(!expect_script_redirected,
-              base::ContainsKey(seen_requests, requested_script_url));
+              base::Contains(seen_requests, requested_script_url));
     EXPECT_EQ(expect_script_redirected,
-              base::ContainsKey(seen_requests, redirected_script_url));
+              base::Contains(seen_requests, redirected_script_url));
 
     ExtensionActionRunner* runner =
         ExtensionActionRunner::GetForWebContents(web_contents());
@@ -2464,24 +2548,26 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
-  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
-                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_FALSE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
   ruleset_count_waiter.WaitForRulesetCount(1);
   content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(ExtensionWebRequestEventRouter::GetInstance()
-                  ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_TRUE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   test_referrer_blocked(true);
 
   DisableExtension(last_loaded_extension_id());
   ruleset_count_waiter.WaitForRulesetCount(0);
   content::RunAllTasksUntilIdle();
-  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
-                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_FALSE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   test_referrer_blocked(false);
 }
 

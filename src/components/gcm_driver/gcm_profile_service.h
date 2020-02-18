@@ -26,7 +26,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -49,7 +49,8 @@ class GCMProfileService : public KeyedService {
 #if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   GCMProfileService(
       base::FilePath path,
-      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
+      scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 #else
   GCMProfileService(
       PrefService* prefs,
@@ -62,7 +63,7 @@ class GCMProfileService : public KeyedService {
       network::NetworkConnectionTracker* network_connection_tracker,
       version_info::Channel channel,
       const std::string& product_category_for_subtypes,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       std::unique_ptr<GCMClientFactory> gcm_client_factory,
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
@@ -89,7 +90,7 @@ class GCMProfileService : public KeyedService {
   std::unique_ptr<GCMDriver> driver_;
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -109,4 +110,3 @@ class GCMProfileService : public KeyedService {
 }  // namespace gcm
 
 #endif  // COMPONENTS_GCM_DRIVER_GCM_PROFILE_SERVICE_H_
-

@@ -27,7 +27,6 @@ class TestOverviewDelegate : public OverviewDelegate {
   ~TestOverviewDelegate() override = default;
 
   // OverviewDelegate:
-  void EndOverview() override {}
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override {
     animation_observer->SetOwner(this);
@@ -61,16 +60,9 @@ class TestOverviewDelegate : public OverviewDelegate {
 
 class ForceDelayObserverTest : public AshTestBase {
  public:
-  ForceDelayObserverTest() {
-    DestroyScopedTaskEnvironment();
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
-  }
+  ForceDelayObserverTest()
+      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ForceDelayObserverTest() override = default;
-
- protected:
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ForceDelayObserverTest);

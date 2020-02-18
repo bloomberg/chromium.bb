@@ -5,7 +5,7 @@
 #include "content/browser/loader/sec_fetch_site_resource_handler.h"
 
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "services/network/sec_fetch_site.h"
+#include "services/network/sec_header_helpers.h"
 
 namespace content {
 

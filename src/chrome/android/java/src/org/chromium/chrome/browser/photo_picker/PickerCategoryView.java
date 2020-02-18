@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -62,11 +63,11 @@ public class PickerCategoryView extends RelativeLayout
      * photo picker (the data we store in the cache).
      */
     static public class Thumbnail {
-        public Bitmap bitmap;
+        public List<Bitmap> bitmaps;
         public String videoDuration;
 
-        Thumbnail(Bitmap bitmap, String videoDuration) {
-            this.bitmap = bitmap;
+        Thumbnail(List<Bitmap> bitmaps, String videoDuration) {
+            this.bitmaps = bitmaps;
             this.videoDuration = videoDuration;
         }
     }
@@ -443,6 +444,12 @@ public class PickerCategoryView extends RelativeLayout
 
         if (mWorkerTask != null) {
             mWorkerTask.cancel(true);
+        }
+
+        // TODO(finnur): Remove once we figure out the cause of crbug.com/950024.
+        if (!mActivity.getWindowAndroid().hasPermission(
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            throw new RuntimeException("Bitmap enumeration without storage read permission");
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();

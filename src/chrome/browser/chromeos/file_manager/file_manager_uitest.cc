@@ -99,8 +99,4 @@ IN_PROC_BROWSER_TEST_F(FileManagerUITest, ProgressCenter) {
   RunTest("progressCenter");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, UMA) {
-  RunTest("uma");
-}
-
 }  // namespace file_manager

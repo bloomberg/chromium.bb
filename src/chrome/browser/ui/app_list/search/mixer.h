@@ -8,11 +8,13 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 
 class AppListModelUpdater;
 class ChromeSearchResult;
@@ -59,7 +61,7 @@ class Mixer {
   SearchResultRanker* GetNonAppSearchResultRanker();
 
   // Handle a training signal.
-  void Train(const std::string& id, RankingItemType type);
+  void Train(const AppLaunchData& app_launch_data);
 
   // Used for sorting and mixing results.
   struct SortData {

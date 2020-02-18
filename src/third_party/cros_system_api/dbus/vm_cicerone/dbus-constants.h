@@ -33,6 +33,8 @@ const char kSetUpLxdContainerUserMethod[] = "SetUpLxdContainerUser";
 const char kAppSearchMethod[] = "AppSearch";
 const char kExportLxdContainerMethod[] = "ExportLxdContainer";
 const char kImportLxdContainerMethod[] = "ImportLxdContainer";
+const char kCancelExportLxdContainerMethod[] = "CancelExportLxdContainer";
+const char kCancelImportLxdContainerMethod[] = "CancelImportLxdContainer";
 
 // Methods to be called from debugd.
 const char kGetDebugInformationMethod[] = "GetDebugInformation";

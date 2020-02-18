@@ -88,7 +88,7 @@ constexpr int kTopBottomPadding = 6;
 constexpr int kMinimumVerticalPadding = 2 + kTopBottomPadding;
 
 // The normal height of the item which may be exceeded if text is large.
-constexpr int kDefaultHeight = 48;
+constexpr int kDefaultDownloadItemHeight = 48;
 
 // Amount of time between accessible alert events.
 constexpr base::TimeDelta kAccessibleAlertInterval =
@@ -123,12 +123,27 @@ class SeparatorBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
 };
 
+base::string16 SplitStringWithNewLineAtPosition(const base::string16& text,
+                                                size_t pos) {
+  base::string16 new_text = text;
+  // This can be a low surrogate codepoint, but u_isUWhiteSpace will
+  // return false and inserting a new line after a surrogate pair
+  // is perfectly ok.
+  base::char16 line_end_char = text[pos - 1];
+  if (u_isUWhiteSpace(line_end_char))
+    new_text.replace(pos - 1, 1, 1, base::char16('\n'));
+  else
+    new_text.insert(pos, 1, base::char16('\n'));
+  return new_text;
+}
+
 }  // namespace
 
 DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
                                    DownloadShelfView* parent,
                                    views::View* accessible_alert)
-    : shelf_(parent),
+    : AnimationDelegateViews(this),
+      shelf_(parent),
       dropdown_state_(NORMAL),
       mode_(NORMAL_MODE),
       dragging_(false),
@@ -141,8 +156,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       creation_time_(base::Time::Now()),
       time_download_warning_shown_(base::Time()),
       accessible_alert_(accessible_alert),
-      announce_accessible_alert_soon_(false),
-      weak_ptr_factory_(this) {
+      announce_accessible_alert_soon_(false) {
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
   model_->AddObserver(this);
   set_context_menu_controller(this);
@@ -429,7 +443,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
   if (mode_ != DANGEROUS_MODE)
     width += dropdown_button_->GetPreferredSize().width();
 
-  return gfx::Size(width, std::max(kDefaultHeight,
+  return gfx::Size(width, std::max(kDefaultDownloadItemHeight,
                                    2 * kMinimumVerticalPadding + child_height));
 }
 
@@ -610,7 +624,7 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 
 int DownloadItemView::GetYForFilenameText() const {
   int text_height = font_list_.GetBaseline();
-  if (!status_label_->text().empty())
+  if (!status_label_->GetText().empty())
     text_height += kVerticalTextPadding + status_font_list_.GetBaseline();
   return (height() - text_height) / 2;
 }
@@ -942,6 +956,8 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
         return gfx::CreateVectorIcon(vector_icons::kWarningIcon,
                                      kWarningIconSize, gfx::kGoogleRed700);
       }
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
@@ -982,7 +998,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   if (size.width() <= 200)
     return size;
 
-  base::string16 label_text = label->text();
+  base::string16 label_text = label->GetText();
   base::TrimWhitespace(label_text, base::TRIM_ALL, &label_text);
   DCHECK_EQ(base::string16::npos, label_text.find('\n'));
 
@@ -1001,23 +1017,69 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   bool status = iter.Init();
   DCHECK(status);
 
+  // Create strings with line break position before and after the mid point, and
+  // compare the width to determine whether the best break position is before or
+  // after them.
+  base::string16 prev_text = original_text;
+  std::vector<size_t> break_points;
+
+  while (iter.pos() < original_text.length() / 2) {
+    iter.Advance();
+    break_points.emplace_back(iter.pos());
+  }
+
+  size_t pos = iter.pos();
+  bool searching_backward = false;
+  gfx::Size min_width_size = size;
+  // First add a line break after the mid point. If there is a very long
+  // word in the text, |pos| could reach the end of the text.
+  if (pos < original_text.length()) {
+    searching_backward = true;
+    prev_text = SplitStringWithNewLineAtPosition(original_text, pos);
+    label->SetText(prev_text);
+    min_width_size = label->GetPreferredSize();
+  }
+
+  pos = iter.prev();
+  base::string16 current_text;
+  if (pos != 0) {
+    base::string16 current_text =
+        SplitStringWithNewLineAtPosition(original_text, pos);
+    label->SetText(current_text);
+    size = label->GetPreferredSize();
+
+    if (size.width() == min_width_size.width()) {
+      // We found the best line break position.
+      label->SetText(prev_text);
+      return size;
+    } else if (size.width() > min_width_size.width()) {
+      // The best line break position is after |pos|.
+      label->SetText(prev_text);
+    } else {
+      // The best line break position is before |prev|.
+      searching_backward = false;
+      prev_text = current_text;
+      min_width_size = size;
+      break_points.pop_back();
+    }
+  }
+
   // Go through the string and try each line break (starting with no line break)
   // searching for the optimal line break position. Stop if we find one that
   // yields minimum label width.
-  base::string16 prev_text = original_text;
-  for (gfx::Size min_width_size = size; iter.Advance(); min_width_size = size) {
-    size_t pos = iter.pos();
-    if (pos >= original_text.length())
-      break;
-    base::string16 current_text = original_text;
-    // This can be a low surrogate codepoint, but u_isUWhiteSpace will
-    // return false and inserting a new line after a surrogate pair
-    // is perfectly ok.
-    base::char16 line_end_char = current_text[pos - 1];
-    if (u_isUWhiteSpace(line_end_char))
-      current_text.replace(pos - 1, 1, 1, base::char16('\n'));
-    else
-      current_text.insert(pos, 1, base::char16('\n'));
+  while (true) {
+    if (searching_backward) {
+      iter.Advance();
+      pos = iter.pos();
+      if (pos >= original_text.length())
+        break;
+    } else {
+      break_points.pop_back();
+      if (break_points.empty())
+        break;
+      pos = break_points.back();
+    }
+    current_text = SplitStringWithNewLineAtPosition(original_text, pos);
     label->SetText(current_text);
     size = label->GetPreferredSize();
 
@@ -1027,6 +1089,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
       return min_width_size;
     }
     prev_text = current_text;
+    min_width_size = size;
   }
   return size;
 }
@@ -1045,9 +1108,9 @@ void DownloadItemView::ReleaseDropdown() {
 void DownloadItemView::UpdateAccessibleName() {
   base::string16 new_name;
   if (IsShowingWarningDialog()) {
-    new_name = dangerous_download_label_->text();
+    new_name = dangerous_download_label_->GetText();
   } else {
-    new_name = status_label_->text() + base::char16(' ') +
+    new_name = status_label_->GetText() + base::char16(' ') +
                model_->GetFileNameToReportUser().LossyDisplayName();
   }
 

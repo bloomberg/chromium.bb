@@ -31,7 +31,6 @@
 #include "url/gurl.h"
 
 namespace blink {
-class WebApplicationCacheHost;
 class WebSharedWorker;
 }  // namespace blink
 
@@ -61,10 +60,9 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       const blink::mojom::RendererPreferences& renderer_preferences,
       blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       const base::UnguessableToken& appcache_host_id,
-      network::mojom::URLLoaderFactoryPtr main_script_loader_factory,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factory_bundle_info,
@@ -79,12 +77,8 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerContextClosed() override;
   void WorkerContextDestroyed() override;
   void WorkerReadyForInspection() override;
-  void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void WorkerScriptEvaluated(bool success) override;
-  void SelectAppCacheID(int64_t, base::OnceClosure) override;
-  std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
-      blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
@@ -121,30 +115,23 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       std::pair<int /* connection_request_id */, blink::MessagePortChannel>;
   std::vector<PendingChannel> pending_channels_;
 
-  const base::UnguessableToken appcache_host_id_;
-  blink::WebApplicationCacheHost* app_cache_host_ = nullptr;  // Not owned.
-
   // The info needed to connect to the ServiceWorkerProviderHost on the browser.
-  blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info_;
 
-  // NetworkService: The URLLoaderFactory used for loading the shared worker
-  // main script.
-  network::mojom::URLLoaderFactoryPtr main_script_loader_factory_;
-
-  // NetworkService:
   blink::mojom::ControllerServiceWorkerInfoPtr controller_info_;
 
   // The factory bundle used for loading subresources for this shared worker.
   scoped_refptr<ChildURLLoaderFactoryBundle> subresource_loader_factory_bundle_;
 
-  // NetworkService (PlzWorker): The response override parameters used for
-  // taking a resource pre-requested by the browser process.
+  // The response override parameters used for taking a resource pre-requested
+  // by the browser process.
   std::unique_ptr<NavigationResponseOverrideParameters> response_override_;
 
   // Out-of-process NetworkService:
   // Detects disconnection from the default factory of the loader factory bundle
   // used by this worker (typically the network service).
+  // TODO(crbug.com/955171): Replace this with Remote.
   network::mojom::URLLoaderFactoryPtr
       default_factory_connection_error_handler_holder_;
 

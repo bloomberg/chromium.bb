@@ -182,8 +182,7 @@ BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     std::unique_ptr<DelayBasedTimeSource> time_source)
     : SyntheticBeginFrameSource(kNotRestartableId),
       time_source_(std::move(time_source)),
-      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber),
-      weak_factory_(this) {
+      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber) {
   time_source_->SetClient(this);
   // The time_source_ ticks immediately, so we SetActive(true) for a single
   // tick when we need it, and keep it as SetActive(false) otherwise.
@@ -194,7 +193,7 @@ BackToBackBeginFrameSource::~BackToBackBeginFrameSource() = default;
 
 void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(!base::ContainsKey(observers_, obs));
+  DCHECK(!base::Contains(observers_, obs));
   observers_.insert(obs);
   pending_begin_frame_observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
@@ -203,7 +202,7 @@ void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(base::ContainsKey(observers_, obs));
+  DCHECK(base::Contains(observers_, obs));
   observers_.erase(obs);
   pending_begin_frame_observers_.erase(obs);
   if (pending_begin_frame_observers_.empty())
@@ -211,7 +210,7 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
 }
 
 void BackToBackBeginFrameSource::DidFinishFrame(BeginFrameObserver* obs) {
-  if (base::ContainsKey(observers_, obs)) {
+  if (base::Contains(observers_, obs)) {
     pending_begin_frame_observers_.insert(obs);
     time_source_->SetActive(true);
   }
@@ -299,7 +298,7 @@ BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(!base::ContainsKey(observers_, obs));
+  DCHECK(!base::Contains(observers_, obs));
 
   observers_.insert(obs);
   obs->OnBeginFrameSourcePausedChanged(false);
@@ -326,7 +325,7 @@ void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void DelayBasedBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(base::ContainsKey(observers_, obs));
+  DCHECK(base::Contains(observers_, obs));
 
   observers_.erase(obs);
   if (observers_.empty())
@@ -397,7 +396,7 @@ void ExternalBeginFrameSource::AsValueInto(
 
 void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(!base::ContainsKey(observers_, obs));
+  DCHECK(!base::Contains(observers_, obs));
 
   bool observers_was_empty = observers_.empty();
   observers_.insert(obs);
@@ -415,7 +414,7 @@ void ExternalBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
 
 void ExternalBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(obs);
-  DCHECK(base::ContainsKey(observers_, obs));
+  DCHECK(base::Contains(observers_, obs));
 
   observers_.erase(obs);
   if (observers_.empty())

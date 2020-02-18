@@ -26,12 +26,13 @@ import org.chromium.mojo.system.MojoException;
 /**
  * Android implementation of the authenticator.mojom interface.
  */
-public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback {
+public class AuthenticatorImpl extends HandlerResponseCallback implements Authenticator {
     private final RenderFrameHost mRenderFrameHost;
     private final WebContents mWebContents;
 
     private static final String GMSCORE_PACKAGE_NAME = "com.google.android.gms";
     private static final int GMSCORE_MIN_VERSION = 12800000;
+    private static final int GMSCORE_MIN_VERSION_ISUVPAA = 16200000;
 
     /** Ensures only one request is processed at a time. */
     private boolean mIsOperationPending;
@@ -40,6 +41,8 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, GetAssertionAuthenticatorResponse> mGetAssertionCallback;
+    private org.chromium.mojo.bindings.Callbacks
+            .Callback1<Boolean> mIsUserVerifyingPlatformAuthenticatorAvailableCallback;
 
     /**
      * Builds the Authenticator service implementation.
@@ -98,11 +101,6 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
         // ChromeActivity could be null.
         if (context == null) {
             callback.call(false);
-        }
-
-        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME) < GMSCORE_MIN_VERSION
-                || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            callback.call(false);
             return;
         }
 
@@ -111,14 +109,26 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
             return;
         }
 
-        FingerprintManager fingerprintManager =
-                (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
-        callback.call(fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
+        if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                >= GMSCORE_MIN_VERSION_ISUVPAA) {
+            mIsUserVerifyingPlatformAuthenticatorAvailableCallback = callback;
+            Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
+                    mRenderFrameHost, this);
+        } else if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
+                        >= GMSCORE_MIN_VERSION
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            FingerprintManager fingerprintManager =
+                    (FingerprintManager) context.getSystemService(Context.FINGERPRINT_SERVICE);
+            callback.call(
+                    fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints());
+        } else {
+            callback.call(false);
+        }
     }
 
     @Override
     public void cancel() {
-        onError(AuthenticatorStatus.NOT_IMPLEMENTED);
+        // Not implemented, ignored because request sent to gmscore fido cannot be cancelled.
         return;
     }
 
@@ -140,8 +150,15 @@ public class AuthenticatorImpl implements Authenticator, HandlerResponseCallback
     }
 
     @Override
+    public void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA) {
+        assert mIsUserVerifyingPlatformAuthenticatorAvailableCallback != null;
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallback.call(isUVPAA);
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallback = null;
+    }
+
+    @Override
     public void onError(Integer status) {
-        assert((mMakeCredentialCallback != null && mGetAssertionCallback == null)
+        assert ((mMakeCredentialCallback != null && mGetAssertionCallback == null)
                 || (mMakeCredentialCallback == null && mGetAssertionCallback != null));
         if (mMakeCredentialCallback != null) {
             mMakeCredentialCallback.call(status, null);

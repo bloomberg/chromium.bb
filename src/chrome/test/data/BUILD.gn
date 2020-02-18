@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
-import("//tools/grit/grit_rule.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//tools/grit/grit_rule.gni")
 
 grit("webui_test_resources") {
   source = "webui_test_resources.grd"

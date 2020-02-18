@@ -13,11 +13,11 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/cfx_renderdevice.h"
 #include "core/fxge/fx_dib.h"
 #include "xfa/fgas/layout/cfx_txtbreak.h"
 
 class CFGAS_GEFont;
+class TextCharPos;
 
 struct FDE_TEXTEDITPIECE {
   FDE_TEXTEDITPIECE();

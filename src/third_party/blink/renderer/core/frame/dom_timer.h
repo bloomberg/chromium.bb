@@ -45,19 +45,20 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
                                    public TimerBase,
                                    public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMTimer);
+  USING_PRE_FINALIZER(DOMTimer, Dispose);
 
  public:
   // Creates a new timer owned by the ExecutionContext, starts it and returns
   // its ID.
   static int Install(ExecutionContext*,
                      ScheduledAction*,
-                     TimeDelta timeout,
+                     base::TimeDelta timeout,
                      bool single_shot);
   static void RemoveByID(ExecutionContext*, int timeout_id);
 
   DOMTimer(ExecutionContext*,
            ScheduledAction*,
-           TimeDelta interval,
+           base::TimeDelta interval,
            bool single_shot,
            int timeout_id);
   ~DOMTimer() override;
@@ -65,11 +66,12 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  // Eager finalization is needed to promptly stop this Timer object.
+  // Pre finalizer is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for
   // destruction (when lazily swept), but some of its members (m_action) may
   // already have been finalized & must not be accessed.
-  EAGERLY_FINALIZE();
+  void Dispose();
+  
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
@@ -85,7 +87,6 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   int timeout_id_;
   int nesting_level_;
   Member<ScheduledAction> action_;
-  scoped_refptr<UserGestureToken> user_gesture_token_;
 };
 
 }  // namespace blink

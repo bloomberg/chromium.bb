@@ -19,14 +19,12 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_client_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
@@ -52,7 +50,7 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
  public:
   CryptoFramerVisitor() : error_(false) {}
 
-  void OnError(CryptoFramer* framer) override { error_ = true; }
+  void OnError(CryptoFramer* /*framer*/) override { error_ = true; }
 
   void OnHandshakeMessage(const CryptoHandshakeMessage& message) override {
     messages_.push_back(message);
@@ -143,9 +141,7 @@ class FullChloGenerator {
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false, TestConnectionId(1), server_addr_,
         client_addr_, AllSupportedVersions().front(), AllSupportedVersions(),
-        /*use_stateless_rejects=*/true,
-        /*server_designated_connection_id=*/TestConnectionId(2), clock_,
-        QuicRandom::GetInstance(), compressed_certs_cache_, params_,
+        clock_, QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
         GetProcessClientHelloCallback());
   }
@@ -154,12 +150,12 @@ class FullChloGenerator {
    public:
     explicit ProcessClientHelloCallback(FullChloGenerator* generator)
         : generator_(generator) {}
-    void Run(
-        QuicErrorCode error,
-        const std::string& error_details,
-        std::unique_ptr<CryptoHandshakeMessage> message,
-        std::unique_ptr<DiversificationNonce> diversification_nonce,
-        std::unique_ptr<ProofSource::Details> proof_source_details) override {
+    void Run(QuicErrorCode /*error*/,
+             const std::string& /*error_details*/,
+             std::unique_ptr<CryptoHandshakeMessage> message,
+             std::unique_ptr<DiversificationNonce> /*diversification_nonce*/,
+             std::unique_ptr<ProofSource::Details> /*proof_source_details*/)
+        override {
       generator_->ProcessClientHelloDone(std::move(message));
     }
 
@@ -221,8 +217,7 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
 
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
-      ProofSourceForTesting(), KeyExchangeSource::Default(),
-      TlsServerHandshaker::CreateSslCtx());
+      ProofSourceForTesting(), KeyExchangeSource::Default());
   QuicCompressedCertsCache compressed_certs_cache(
       QuicCompressedCertsCache::kQuicCompressedCertsCacheSize);
   SetupCryptoServerConfigForTest(
@@ -273,8 +268,7 @@ int HandshakeWithFakeClient(MockQuicConnectionHelper* helper,
   // Advance the time, because timers do not like uninitialized times.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
 
-  QuicCryptoClientConfig crypto_config(ProofVerifierForTesting(),
-                                       TlsClientHandshaker::CreateSslCtx());
+  QuicCryptoClientConfig crypto_config(ProofVerifierForTesting());
   TestQuicSpdyClientSession client_session(client_conn, DefaultQuicConfig(),
                                            supported_versions, server_id,
                                            &crypto_config);
@@ -309,7 +303,7 @@ void SetupCryptoServerConfigForTest(const QuicClock* clock,
 
 void SendHandshakeMessageToStream(QuicCryptoStream* stream,
                                   const CryptoHandshakeMessage& message,
-                                  Perspective perspective) {
+                                  Perspective /*perspective*/) {
   const QuicData& data = message.GetSerialized();
   QuicSession* session = QuicStreamPeer::session(stream);
   if (!QuicVersionUsesCryptoFrames(

@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_user_settings_mock.h"
@@ -54,6 +54,8 @@ class MockSyncService : public SyncService {
   MOCK_METHOD1(TriggerRefresh, void(const ModelTypeSet& types));
   MOCK_METHOD1(ReadyForStartChanged, void(syncer::ModelType type));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool enabled));
+  MOCK_METHOD1(GetUserNoisedBirthYearAndGender,
+               UserDemographicsResult(base::Time now));
 
   MOCK_METHOD1(AddObserver, void(SyncServiceObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(SyncServiceObserver* observer));

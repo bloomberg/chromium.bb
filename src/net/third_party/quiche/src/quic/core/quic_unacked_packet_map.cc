@@ -32,13 +32,7 @@ QuicUnackedPacketMap::QuicUnackedPacketMap(Perspective perspective)
       last_crypto_packet_sent_time_(QuicTime::Zero()),
       session_notifier_(nullptr),
       session_decides_what_to_write_(false),
-      use_uber_loss_algorithm_(
-          GetQuicReloadableFlag(quic_use_uber_loss_algorithm)),
-      supports_multiple_packet_number_spaces_(false) {
-  if (use_uber_loss_algorithm_) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_use_uber_loss_algorithm);
-  }
-}
+      supports_multiple_packet_number_spaces_(false) {}
 
 QuicUnackedPacketMap::~QuicUnackedPacketMap() {
   for (QuicTransmissionInfo& transmission_info : unacked_packets_) {
@@ -83,12 +77,8 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
   if (set_in_flight) {
     bytes_in_flight_ += bytes_sent;
     info.in_flight = true;
-    if (use_uber_loss_algorithm_) {
-      largest_sent_retransmittable_packets_[GetPacketNumberSpace(
-          info.encryption_level)] = packet_number;
-    } else {
-      largest_sent_retransmittable_packet_ = packet_number;
-    }
+    largest_sent_retransmittable_packets_[GetPacketNumberSpace(
+        info.encryption_level)] = packet_number;
   }
   unacked_packets_.push_back(info);
   // Swap the retransmittable frames to avoid allocations.
@@ -231,7 +221,6 @@ void QuicUnackedPacketMap::IncreaseLargestAcked(
 void QuicUnackedPacketMap::MaybeUpdateLargestAckedOfPacketNumberSpace(
     PacketNumberSpace packet_number_space,
     QuicPacketNumber packet_number) {
-  DCHECK(use_uber_loss_algorithm_);
   largest_acked_packets_[packet_number_space].UpdateMax(packet_number);
 }
 
@@ -387,7 +376,6 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
-  DCHECK(!GetQuicReloadableFlag(quic_optimize_inflight_check));
   for (auto it = unacked_packets_.rbegin(); it != unacked_packets_.rend();
        ++it) {
     if (it->in_flight && HasRetransmittableFrames(*it)) {
@@ -407,13 +395,14 @@ void QuicUnackedPacketMap::SetSessionNotifier(
 }
 
 bool QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
-                                             QuicTime::Delta ack_delay) {
+                                             QuicTime::Delta ack_delay,
+                                             QuicTime receive_timestamp) {
   if (session_notifier_ == nullptr) {
     return false;
   }
   bool new_data_acked = false;
   for (const QuicFrame& frame : info.retransmittable_frames) {
-    if (session_notifier_->OnFrameAcked(frame, ack_delay)) {
+    if (session_notifier_->OnFrameAcked(frame, ack_delay, receive_timestamp)) {
       new_data_acked = true;
     }
   }
@@ -421,7 +410,7 @@ bool QuicUnackedPacketMap::NotifyFramesAcked(const QuicTransmissionInfo& info,
 }
 
 void QuicUnackedPacketMap::NotifyFramesLost(const QuicTransmissionInfo& info,
-                                            TransmissionType type) {
+                                            TransmissionType /*type*/) {
   DCHECK(session_decides_what_to_write_);
   for (const QuicFrame& frame : info.retransmittable_frames) {
     session_notifier_->OnFrameLost(frame);
@@ -436,7 +425,8 @@ void QuicUnackedPacketMap::RetransmitFrames(const QuicTransmissionInfo& info,
 
 void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
     const QuicTransmissionInfo& info,
-    QuicTime::Delta ack_delay) {
+    QuicTime::Delta ack_delay,
+    QuicTime receive_timestamp) {
   if (session_notifier_ == nullptr) {
     return;
   }
@@ -468,7 +458,7 @@ void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
 
     NotifyAggregatedStreamFrameAcked(ack_delay);
     if (frame.type != STREAM_FRAME || frame.stream_frame.fin) {
-      session_notifier_->OnFrameAcked(frame, ack_delay);
+      session_notifier_->OnFrameAcked(frame, ack_delay, receive_timestamp);
       continue;
     }
 
@@ -488,22 +478,23 @@ void QuicUnackedPacketMap::NotifyAggregatedStreamFrameAcked(
     // Aggregated stream frame is empty.
     return;
   }
+  // Note: there is no receive_timestamp for an aggregated stream frame.  The
+  // frames that are aggregated may not have been received at the same time.
   session_notifier_->OnFrameAcked(QuicFrame(aggregated_stream_frame_),
-                                  ack_delay);
+                                  ack_delay,
+                                  /*receive_timestamp=*/QuicTime::Zero());
   // Clear aggregated stream frame.
   aggregated_stream_frame_.stream_id = -1;
 }
 
 PacketNumberSpace QuicUnackedPacketMap::GetPacketNumberSpace(
     QuicPacketNumber packet_number) const {
-  DCHECK(use_uber_loss_algorithm_);
   return GetPacketNumberSpace(
       GetTransmissionInfo(packet_number).encryption_level);
 }
 
 PacketNumberSpace QuicUnackedPacketMap::GetPacketNumberSpace(
     EncryptionLevel encryption_level) const {
-  DCHECK(use_uber_loss_algorithm_);
   if (supports_multiple_packet_number_spaces_) {
     return QuicUtils::GetPacketNumberSpace(encryption_level);
   }
@@ -517,7 +508,6 @@ PacketNumberSpace QuicUnackedPacketMap::GetPacketNumberSpace(
 
 QuicPacketNumber QuicUnackedPacketMap::GetLargestAckedOfPacketNumberSpace(
     PacketNumberSpace packet_number_space) const {
-  DCHECK(use_uber_loss_algorithm_);
   if (packet_number_space >= NUM_PACKET_NUMBER_SPACES) {
     QUIC_BUG << "Invalid packet number space: " << packet_number_space;
     return QuicPacketNumber();
@@ -528,7 +518,6 @@ QuicPacketNumber QuicUnackedPacketMap::GetLargestAckedOfPacketNumberSpace(
 QuicPacketNumber
 QuicUnackedPacketMap::GetLargestSentRetransmittableOfPacketNumberSpace(
     PacketNumberSpace packet_number_space) const {
-  DCHECK(use_uber_loss_algorithm_);
   if (packet_number_space >= NUM_PACKET_NUMBER_SPACES) {
     QUIC_BUG << "Invalid packet number space: " << packet_number_space;
     return QuicPacketNumber();

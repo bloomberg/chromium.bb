@@ -61,13 +61,12 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/file_handlers/app_file_handler_util.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/event_router_factory.h"
@@ -352,7 +351,7 @@ DeveloperPrivateAPI* DeveloperPrivateAPI::Get(
 }
 
 DeveloperPrivateAPI::DeveloperPrivateAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_factory_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   RegisterNotifications();
 }
 
@@ -366,8 +365,7 @@ DeveloperPrivateEventRouter::DeveloperPrivateEventRouter(Profile* profile)
       extension_management_observer_(this),
       command_service_observer_(this),
       profile_(profile),
-      event_router_(EventRouter::Get(profile_)),
-      weak_factory_(this) {
+      event_router_(EventRouter::Get(profile_)) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   error_console_observer_.Add(ErrorConsole::Get(profile));
   process_manager_observer_.Add(ProcessManager::Get(profile));
@@ -1220,9 +1218,8 @@ DeveloperPrivateInstallDroppedFileFunction::Run() {
 
   ExtensionService* service = GetExtensionService(browser_context());
   if (path.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-    ZipFileInstaller::Create(
-        content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-        MakeRegisterInExtensionServiceCallback(service))
+    ZipFileInstaller::Create(content::GetSystemConnector(),
+                             MakeRegisterInExtensionServiceCallback(service))
         ->LoadFromZipFile(path);
   } else {
     auto prompt = std::make_unique<ExtensionInstallPrompt>(web_contents);
@@ -1882,7 +1879,7 @@ DeveloperPrivateRepairExtensionFunction::Run() {
   // Also note that if we let |reinstaller| continue with the repair, this would
   // have uninstalled the extension but then we would have failed to reinstall
   // it for policy check (see PolicyCheck::Start()).
-  if (ContentVerifier::ShouldRepairIfCorrupted(management_policy, extension))
+  if (management_policy->ShouldRepairIfCorrupted(extension))
     return RespondNow(Error(kCannotRepairPolicyExtension));
 
   content::WebContents* web_contents = GetSenderWebContents();

@@ -63,8 +63,10 @@ public class TouchlessDialogPresenter extends Presenter {
             return;
         }
 
+        boolean fullscreen = isFullscreen(model);
+
         // If not fullscreen don't use a predefined style.
-        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+        if (!fullscreen) {
             mDialog = new Dialog(mActivity);
             mDialog.getWindow().setGravity(Gravity.BOTTOM);
             mDialog.getWindow().setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
@@ -90,7 +92,7 @@ public class TouchlessDialogPresenter extends Presenter {
         });
         ViewGroup dialogView = (ViewGroup) LayoutInflater.from(mDialog.getContext())
                 .inflate(R.layout.touchless_dialog_view, null);
-        ModelListAdapter adapter = new ModelListAdapter(mActivity);
+        ModelListAdapter adapter = new ModelListAdapter();
         adapter.registerType(ListItemType.DEFAULT,
                 () -> LayoutInflater.from(mActivity).inflate(R.layout.dialog_list_item, null),
                 TouchlessDialogPresenter::bindListItem);
@@ -103,13 +105,23 @@ public class TouchlessDialogPresenter extends Presenter {
 
         // If the modal dialog is not specified to be fullscreen, wrap content and place at the
         // bottom of the screen. This needs to be done after content is added to the dialog.
-        if (!model.get(TouchlessDialogProperties.IS_FULLSCREEN)) {
+        if (!fullscreen) {
             mDialog.getWindow().setLayout(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
         mDialog.show();
         dialogView.announceForAccessibility(getContentDescription(model));
+    }
+
+    private boolean isFullscreen(PropertyModel model) {
+        if (!model.getAllSetProperties().contains(TouchlessDialogProperties.IS_FULLSCREEN)) {
+            // We should have this property set. This code is meant to guard against cases
+            // where we've forgotten to add this property.
+            assert false;
+            return false;
+        }
+        return model.get(TouchlessDialogProperties.IS_FULLSCREEN);
     }
 
     @Override
@@ -135,6 +147,8 @@ public class TouchlessDialogPresenter extends Presenter {
             PropertyModel model, Pair<ViewGroup, ModelListAdapter> view, PropertyKey propertyKey) {
         ViewGroup dialogView = view.first;
         ModelListAdapter optionsAdapter = view.second;
+        assert !model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY);
+        assert propertyKey != ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY;
         // TODO(mdjones): If the default buttons are used assert no list items and convert the
         //                buttons to list items.
         if (TouchlessDialogProperties.IS_FULLSCREEN == propertyKey) {
@@ -204,6 +218,11 @@ public class TouchlessDialogPresenter extends Presenter {
                 listener.setIsMultiClickable(model.get(DialogListItemProperties.MULTI_CLICKABLE));
                 model.set(DialogListItemProperties.CLICK_LISTENER, listener);
                 view.setOnClickListener(listener);
+            } else {
+                ClickThrottlingListener listener = (ClickThrottlingListener) model.get(
+                        DialogListItemProperties.CLICK_LISTENER);
+                listener.resetWasClicked();
+                view.setOnClickListener(listener);
             }
         } else if (DialogListItemProperties.MULTI_CLICKABLE == propertyKey) {
             View.OnClickListener listener = model.get(DialogListItemProperties.CLICK_LISTENER);
@@ -230,6 +249,10 @@ public class TouchlessDialogPresenter extends Presenter {
 
         private void setIsMultiClickable(boolean isMultiClickable) {
             mIsMultiClickable = isMultiClickable;
+        }
+
+        private void resetWasClicked() {
+            mWasClicked = false;
         }
 
         @Override

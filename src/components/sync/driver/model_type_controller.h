@@ -38,6 +38,12 @@ class ModelTypeController : public DataTypeController {
       std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory);
   ~ModelTypeController() override;
 
+  // Steals the activation response, only used for Nigori.
+  // TODO(crbug.com/967677): Once all datatypes are in USS, we should redesign
+  // or remove RegisterWithBackend, and expose the activation response via
+  // LoadModels(), which is more natural in USS.
+  std::unique_ptr<DataTypeActivationResponse> ActivateManuallyForNigori();
+
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void BeforeLoadModels(ModelTypeConfigurer* configurer) override;

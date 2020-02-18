@@ -49,6 +49,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace chrome_service_worker_browser_test {
 
@@ -719,7 +720,7 @@ class StaticURLDataSource : public content::URLDataSource {
   ~StaticURLDataSource() override = default;
 
   // content::URLDataSource:
-  std::string GetSource() const override { return source_; }
+  std::string GetSource() override { return source_; }
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -727,10 +728,10 @@ class StaticURLDataSource : public content::URLDataSource {
     std::string data(content_);
     callback.Run(base::RefCountedString::TakeString(&data));
   }
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) override {
     return "application/javascript";
   }
-  bool ShouldAddContentSecurityPolicy() const override { return false; }
+  bool ShouldAddContentSecurityPolicy() override { return false; }
 
  private:
   const std::string source_;

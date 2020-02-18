@@ -37,6 +37,7 @@ class GlsRunnerTestBase : public ::testing::Test {
       UiExitCodes default_exit_code,
       const std::string& gls_email,
       const std::string& gaia_id_override,
+      const std::string& gaia_password,
       const base::string16& start_gls_event_name,
       bool ignore_expected_gaia_id,
       base::CommandLine* command_line);
@@ -57,6 +58,9 @@ class GlsRunnerTestBase : public ::testing::Test {
   }
   FakeAssociatedUserValidator* fake_associated_user_validator() {
     return &fake_associated_user_validator_;
+  }
+  FakePasswordRecoveryManager* fake_password_recovery_manager() {
+    return &fake_password_recovery_manager_;
   }
   FakeCredentialProviderEvents* fake_provider_events() {
     return &fake_provider_events_;
@@ -120,6 +124,11 @@ class GlsRunnerTestBase : public ::testing::Test {
   // on |testing_credential_| to succeed and start a GLS process or not.
   // If false, we will check that an appropriate error has been returned.
   HRESULT StartLogonProcess(bool succeeds);
+  // The below method provides additional control of expecting a specific
+  // error message whenever the logon process is expected to fail.
+  // The |expected_error_message| is the id of the error message defined
+  // under gaia_resources.grd file.
+  HRESULT StartLogonProcess(bool succeeds, int expected_error_message);
 
   // Waits for the GLS process that was started in StartLogonProcess to
   // complete and returns.
@@ -167,6 +176,7 @@ class GlsRunnerTestBase : public ::testing::Test {
   FakeScopedUserProfileFactory fake_scoped_user_profile_factory_;
   FakeInternetAvailabilityChecker fake_internet_checker_;
   FakeAssociatedUserValidator fake_associated_user_validator_;
+  FakePasswordRecoveryManager fake_password_recovery_manager_;
   FakeWinHttpUrlFetcherFactory fake_http_url_fetcher_factory_;
   FakeCredentialProviderEvents fake_provider_events_;
   FakeCredentialProviderUserArray fake_user_array_;

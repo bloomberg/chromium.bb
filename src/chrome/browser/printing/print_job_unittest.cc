@@ -26,10 +26,9 @@ namespace {
 
 class TestPrintJobWorker : public PrintJobWorker {
  public:
-  explicit TestPrintJobWorker(PrinterQuery* query)
+  TestPrintJobWorker()
       : PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
-                       content::ChildProcessHost::kInvalidUniqueID,
-                       query) {}
+                       content::ChildProcessHost::kInvalidUniqueID) {}
   friend class TestQuery;
 };
 
@@ -39,10 +38,13 @@ class TestQuery : public PrinterQuery {
       : PrinterQuery(content::ChildProcessHost::kInvalidUniqueID,
                      content::ChildProcessHost::kInvalidUniqueID) {}
 
-  void GetSettingsDone(const PrintSettings& new_settings,
+  void GetSettingsDone(base::OnceClosure callback,
+                       const PrintSettings& new_settings,
                        PrintingContext::Result result) override {
     FAIL();
   }
+
+  ~TestQuery() override {}
 
   std::unique_ptr<PrintJobWorker> DetachWorker() override {
     {
@@ -52,7 +54,7 @@ class TestQuery : public PrinterQuery {
 
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
-    auto worker = std::make_unique<TestPrintJobWorker>(this);
+    auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
     settings_ = worker->printing_context()->settings();
@@ -63,8 +65,6 @@ class TestQuery : public PrinterQuery {
   const PrintSettings& settings() const override { return settings_; }
 
  private:
-  ~TestQuery() override {}
-
   PrintSettings settings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestQuery);
@@ -102,8 +102,7 @@ TEST(PrintJobTest, SimplePrint) {
                 content::NotificationService::AllSources());
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
-  scoped_refptr<TestQuery> query = base::MakeRefCounted<TestQuery>();
-  job->Initialize(query.get(), base::string16(), 1);
+  job->Initialize(std::make_unique<TestQuery>(), base::string16(), 1);
   job->Stop();
   while (job->document()) {
     base::RunLoop().RunUntilIdle();

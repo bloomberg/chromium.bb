@@ -39,6 +39,8 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
   void Bind(mojom::RenderFrameMetadataObserverClientRequest client_request,
             mojom::RenderFrameMetadataObserverPtr observer);
 
+  const cc::RenderFrameMetadata& LastRenderFrameMetadata() override;
+
 #if defined(OS_ANDROID)
   // Notifies the renderer to begin sending a notification on all root scroll
   // changes, which is needed for accessibility on Android.
@@ -47,9 +49,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 
   // Notifies the renderer to begin sending a notification on all frame
   // submissions.
-  void ReportAllFrameSubmissionsForTesting(bool enabled) override;
-
-  const cc::RenderFrameMetadata& LastRenderFrameMetadata() const override;
+  void ReportAllFrameSubmissionsForTesting(bool enabled);
 
  private:
   friend class FakeRenderWidgetHostViewAura;
@@ -93,7 +93,7 @@ class CONTENT_EXPORT RenderFrameMetadataProviderImpl
 #endif
   base::Optional<bool> pending_report_all_frame_submission_for_testing_;
 
-  base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_;
+  base::WeakPtrFactory<RenderFrameMetadataProviderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameMetadataProviderImpl);
 };

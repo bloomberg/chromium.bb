@@ -13,6 +13,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,8 +26,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "net/log/net_log_util.h"
 #include "services/network/network_service.h"
@@ -50,6 +51,14 @@ constexpr char kKrb5ConfEnvName[] = "KRB5_CONFIG";
 bool g_force_create_network_service_directly = false;
 network::mojom::NetworkServicePtr* g_network_service_ptr = nullptr;
 network::NetworkConnectionTracker* g_network_connection_tracker;
+bool g_network_service_is_responding = false;
+base::Time g_last_network_service_crash;
+
+std::deque<std::pair<std::string, base::Time>>& GetDebugEvents() {
+  static base::NoDestructor<std::deque<std::pair<std::string, base::Time>>>
+      debug_events;
+  return *debug_events;
+}
 
 std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
   static base::NoDestructor<
@@ -96,8 +105,8 @@ void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
     return;
   }
 
-  GetLocalNetworkService() = std::make_unique<network::NetworkService>(
-      nullptr, std::move(request), GetContentClient()->browser()->GetNetLog());
+  GetLocalNetworkService() =
+      std::make_unique<network::NetworkService>(nullptr, std::move(request));
 }
 
 void BindNetworkChangeManagerRequest(
@@ -115,7 +124,43 @@ void OnNetworkServiceCrash() {
   DCHECK(g_network_service_ptr);
   DCHECK(g_network_service_ptr->is_bound());
   DCHECK(g_network_service_ptr->encountered_error());
+  g_last_network_service_crash = base::Time::Now();
   GetCrashHandlersList().Notify();
+  AddNetworkServiceDebugEvent("ONSC");
+}
+
+// Parses the desired granularity of NetLog capturing specified by the command
+// line.
+net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
+    const base::CommandLine& command_line) {
+  base::StringPiece switch_name = network::switches::kNetLogCaptureMode;
+
+  if (command_line.HasSwitch(switch_name)) {
+    std::string value = command_line.GetSwitchValueASCII(switch_name);
+
+    if (value == "Default")
+      return net::NetLogCaptureMode::kDefault;
+    if (value == "IncludeSensitive")
+      return net::NetLogCaptureMode::kIncludeSensitive;
+    if (value == "Everything")
+      return net::NetLogCaptureMode::kEverything;
+
+    // Warn when using the old command line switches.
+    if (value == "IncludeCookiesAndCredentials") {
+      LOG(ERROR) << "Deprecated value for --" << switch_name
+                 << ". Use IncludeSensitive instead";
+      return net::NetLogCaptureMode::kIncludeSensitive;
+    }
+    if (value == "IncludeSocketBytes") {
+      LOG(ERROR) << "Deprecated value for --" << switch_name
+                 << ". Use Everything instead";
+      return net::NetLogCaptureMode::kEverything;
+    }
+
+    LOG(ERROR) << "Unrecognized value for --" << switch_name;
+  }
+
+  return net::NetLogCaptureMode::kDefault;
 }
 
 }  // namespace
@@ -123,9 +168,9 @@ void OnNetworkServiceCrash() {
 network::mojom::NetworkService* GetNetworkService() {
   service_manager::Connector* connector = nullptr;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      ServiceManagerConnection::GetForProcess() &&  // null in unit tests.
+      GetSystemConnector() &&  // null in unit tests.
       !g_force_create_network_service_directly) {
-    connector = ServiceManagerConnection::GetForProcess()->GetConnector();
+    connector = GetSystemConnector();
   }
   return GetNetworkServiceFromConnector(connector);
 }
@@ -168,12 +213,30 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
                            mojo::MakeRequest(g_network_service_ptr)));
       }
 
+      AddNetworkServiceDebugEvent("START");
       network::mojom::NetworkServiceClientPtr client_ptr;
       auto client_request = mojo::MakeRequest(&client_ptr);
       // Call SetClient before creating NetworkServiceClient, as the latter
       // might make requests to NetworkService that depend on initialization.
       (*g_network_service_ptr)
           ->SetClient(std::move(client_ptr), CreateNetworkServiceParams());
+      g_network_service_is_responding = false;
+      g_network_service_ptr->QueryVersion(base::BindRepeating(
+          [](base::Time start_time, uint32_t) {
+            AddNetworkServiceDebugEvent("RESP");
+            g_network_service_is_responding = true;
+            base::TimeDelta delta = base::Time::Now() - start_time;
+            UMA_HISTOGRAM_MEDIUM_TIMES("NetworkService.TimeToFirstResponse",
+                                       delta);
+            if (g_last_network_service_crash.is_null()) {
+              UMA_HISTOGRAM_MEDIUM_TIMES(
+                  "NetworkService.TimeToFirstResponse.OnStartup", delta);
+            } else {
+              UMA_HISTOGRAM_MEDIUM_TIMES(
+                  "NetworkService.TimeToFirstResponse.AfterCrash", delta);
+            }
+          },
+          base::Time::Now()));
 
       delete g_client;  // In case we're recreating the network service.
       g_client = new NetworkServiceClient(std::move(client_request));
@@ -191,14 +254,11 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
           base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
                                         base::File::FLAG_WRITE);
           if (!file.IsValid()) {
-            LOG(ERROR) << "Failed opening: " << log_path.value();
+            LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
           } else {
-            net::NetLogCaptureMode capture_mode =
-                net::GetNetCaptureModeFromCommandLine(
-                    *command_line, network::switches::kNetLogCaptureMode);
-
             (*g_network_service_ptr)
-                ->StartNetLog(std::move(file), capture_mode,
+                ->StartNetLog(std::move(file),
+                              GetNetCaptureModeFromCommandLine(*command_line),
                               std::move(client_constants));
           }
         }
@@ -248,8 +308,8 @@ network::NetworkService* GetNetworkServiceImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   if (!GetLocalNetworkService()) {
-    GetLocalNetworkService() = std::make_unique<network::NetworkService>(
-        nullptr, nullptr, GetContentClient()->browser()->GetNetLog());
+    GetLocalNetworkService() =
+        std::make_unique<network::NetworkService>(nullptr, nullptr);
   }
 
   return GetLocalNetworkService().get();
@@ -328,6 +388,56 @@ void ForceCreateNetworkServiceDirectlyForTesting() {
 void ResetNetworkServiceForTesting() {
   delete g_network_service_ptr;
   g_network_service_ptr = nullptr;
+}
+
+NetworkServiceAvailability GetNetworkServiceAvailability() {
+  if (!g_network_service_ptr)
+    return NetworkServiceAvailability::NOT_CREATED;
+  else if (!g_network_service_ptr->is_bound())
+    return NetworkServiceAvailability::NOT_BOUND;
+  else if (g_network_service_ptr->encountered_error())
+    return NetworkServiceAvailability::ENCOUNTERED_ERROR;
+  else if (!g_network_service_is_responding)
+    return NetworkServiceAvailability::NOT_RESPONDING;
+  else
+    return NetworkServiceAvailability::AVAILABLE;
+}
+
+base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
+  if (g_last_network_service_crash.is_null())
+    return base::TimeDelta();
+  return base::Time::Now() - g_last_network_service_crash;
+}
+
+void PingNetworkService(base::OnceClosure closure) {
+  GetNetworkService();
+  // Unfortunately, QueryVersion requires a RepeatingCallback.
+  g_network_service_ptr->QueryVersion(base::BindRepeating(
+      [](base::OnceClosure closure, uint32_t) {
+        if (closure)
+          std::move(closure).Run();
+      },
+      base::Passed(std::move(closure))));
+}
+
+void AddNetworkServiceDebugEvent(const std::string& event) {
+  auto& events = GetDebugEvents();
+  events.push_front({event, base::Time::Now()});
+  // Keep at most 20 most recent events.
+  if (events.size() > 20)
+    events.pop_back();
+}
+
+std::string GetNetworkServiceDebugEventsString() {
+  auto& events = GetDebugEvents();
+  if (events.empty())
+    return std::string();
+  std::stringstream stream;
+  base::Time now = base::Time::Now();
+  for (const auto& info : events) {
+    stream << info.first << ":" << (now - info.second).InSecondsF() << ",";
+  }
+  return stream.str();
 }
 
 }  // namespace content

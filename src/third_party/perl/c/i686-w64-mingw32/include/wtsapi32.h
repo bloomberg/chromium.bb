@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_WTSAPI
@@ -255,6 +255,8 @@ typedef struct _WTSINFOW {
   DWORD                  SessionId;
   DWORD                  IncomingBytes;
   DWORD                  OutgoingBytes;
+  DWORD                  IncomingFrames;
+  DWORD                  OutgoingFrames;
   DWORD                  IncomingCompressedBytes;
   DWORD                  OutgoingCompressedBytes;
   WCHAR                  WinStationName[WINSTATIONNAME_LENGTH];
@@ -272,6 +274,8 @@ typedef struct _WTSINFOA {
   DWORD                  SessionId;
   DWORD                  IncomingBytes;
   DWORD                  OutgoingBytes;
+  DWORD                  IncomingFrames;
+  DWORD                  OutgoingFrames;
   DWORD                  IncomingCompressedBytes;
   DWORD                  OutgoingCompressedBytes;
   CHAR                   WinStationName[WINSTATIONNAME_LENGTH];

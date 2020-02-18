@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -61,7 +61,7 @@ class MultiplexRouterTest : public testing::Test {
   ScopedInterfaceEndpointHandle endpoint1_;
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {

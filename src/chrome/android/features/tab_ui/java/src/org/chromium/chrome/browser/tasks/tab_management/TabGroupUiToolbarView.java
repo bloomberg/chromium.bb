@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.support.v4.widget.TextViewCompat;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -50,10 +52,6 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mRightButton.setOnClickListener(listener);
     }
 
-    void setTitleOnClickListener(OnClickListener listener) {
-        mTitleTextView.setOnClickListener(listener);
-    }
-
     ViewGroup getViewContainer() {
         return mContainerView;
     }
@@ -83,5 +81,20 @@ public class TabGroupUiToolbarView extends FrameLayout {
         ApiCompatibilityUtils.setImageTintList(mLeftButton, tint);
         ApiCompatibilityUtils.setImageTintList(mRightButton, tint);
         if (mTitleTextView != null) mTitleTextView.setTextColor(tint);
+    }
+
+    /**
+     * Setup a TabGridDialog-specific toolbar. It is different from the toolbar for TabGridSheet.
+     */
+    void setupDialogToolbarLayout() {
+        Context context = getContext();
+        mLeftButton.setImageResource(org.chromium.chrome.R.drawable.ic_arrow_back_24dp);
+        int topicMargin =
+                (int) context.getResources().getDimension(R.dimen.tab_group_toolbar_topic_margin);
+        MarginLayoutParams params = (MarginLayoutParams) mTitleTextView.getLayoutParams();
+        params.setMarginStart(topicMargin);
+        mTitleTextView.setGravity(Gravity.START);
+        TextViewCompat.setTextAppearance(
+                mTitleTextView, org.chromium.chrome.R.style.TextAppearance_BlackHeadline);
     }
 }

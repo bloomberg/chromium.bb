@@ -69,6 +69,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1385214448885562192">Prima Enter para aceitar ou escape para cancelar, seta para baixo para seguinte e seta para cima para anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Anunciar atributos de texto rico</translation>
 <translation id="1405567553485452995">Verde-claro</translation>
 <translation id="1417889266572670458">Azul-marinho</translation>
 <translation id="1431911867058218151">Ameixa</translation>
@@ -319,11 +320,11 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="3232388865800379423">Um botão pop-up</translation>
 <translation id="3241052487511142956">Link visitado anterior</translation>
 <translation id="3241638166094654466">Células em cada linha:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">retrato</translation>
 <translation id="3286390186030710347">Controlo de deslize</translation>
 <translation id="3299925995433437805">Não existe nenhum link visitado seguinte.</translation>
 <translation id="3300348286427369683">Suporte de texto formatado. Agora, o ChromeVox é compatível com campos de texto formatado, incluindo comandos de avanço, encaminhamento do cursor braille, seleção e muito mais.</translation>
-<translation id="3304756947457041303">Personalizar a indicação de texto rico</translation>
 <translation id="3307886118343381874">Ir para o fim da tabela</translation>
 <translation id="3311969765485641742">Prima Alt+Shift+A para consultar os alertas</translation>
 <translation id="3312997241656799641">Link visitado seguinte</translation>

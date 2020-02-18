@@ -19,8 +19,8 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -379,6 +379,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   subtitleLabel.adjustsFontForContentSizeCategory = YES;
 
   UIButton* learnMoreButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  learnMoreButton.accessibilityTraits = UIAccessibilityTraitLink;
   [learnMoreButton
       setTitle:l10n_util::GetNSString(IDS_NEW_TAB_OTR_LEARN_MORE_LINK)
       forState:UIControlStateNormal];

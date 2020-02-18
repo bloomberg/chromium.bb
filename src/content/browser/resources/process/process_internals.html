@@ -2,7 +2,7 @@
    Use of this source code is governed by a BSD-style license that can be
    found in the LICENSE file.-->
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<html dir="ltr" lang="en">
 <head>
   <meta charset="utf-8">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
@@ -32,7 +32,10 @@
       <div class="content-header">General info</div>
       <div id="general-info">
         <div id="site-isolation-mode">Site Isolation mode: <span id='isolation-mode'>unknown</span></div>
-        <div id="isolated-origins-container">Number of isolated origins: <span id='isolated-origins'></span></div>
+        <div id="isolated-origins-container">
+          <div id="user-triggered-isolated-origins"></div>
+          <div id="global-isolated-origins"></div>
+        </div>
       </div>
     </div>
     <div id="web-contents">

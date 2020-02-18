@@ -12,6 +12,7 @@
 #include "content/public/common/url_loader_throttle.h"
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 }
 
@@ -30,6 +31,10 @@ class PluginResponseInterceptorURLLoaderThrottle
       content::ResourceContext* resource_context,
       int resource_type,
       int frame_tree_node_id);
+  PluginResponseInterceptorURLLoaderThrottle(
+      content::BrowserContext* browser_context,
+      int resource_type,
+      int frame_tree_node_id);
   ~PluginResponseInterceptorURLLoaderThrottle() override;
 
  private:
@@ -41,12 +46,13 @@ class PluginResponseInterceptorURLLoaderThrottle
   // layer chance to initialize its browser side state.
   void ResumeLoad();
 
-  content::ResourceContext* const resource_context_;
+  content::ResourceContext* const resource_context_ = nullptr;
+  content::BrowserContext* const browser_context_ = nullptr;
   const int resource_type_;
   const int frame_tree_node_id_;
 
   base::WeakPtrFactory<PluginResponseInterceptorURLLoaderThrottle>
-      weak_factory_;
+      weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PluginResponseInterceptorURLLoaderThrottle);
 };

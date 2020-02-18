@@ -231,7 +231,9 @@ class ChromeDriver(object):
 
     params = {
         'goog:chromeOptions': options,
-        'goog:loggingPrefs': logging_prefs
+        'se:options': {
+            'loggingPrefs': logging_prefs
+        }
     }
 
     if page_load_strategy:
@@ -460,10 +462,6 @@ class ChromeDriver(object):
     }
     self.ExecuteCommand(Command.TOUCH_FLICK, params)
 
-  def TouchPinch(self, x, y, scale):
-    params = {'x': x, 'y': y, 'scale': scale}
-    self.ExecuteCommand(Command.TOUCH_PINCH, params)
-
   def PerformActions(self, actions):
     """
     actions: a dictionary containing the specified actions users wish to perform
@@ -520,6 +518,10 @@ class ChromeDriver(object):
                                {'windowHandle': 'current'})
     return [size['width'], size['height']]
 
+  def NewWindow(self, window_type="window"):
+    return self.ExecuteCommand(Command.NEW_WINDOW,
+                               {'type': window_type})
+
   def GetWindowRect(self):
     rect = self.ExecuteCommand(Command.GET_WINDOW_RECT)
     return [rect['width'], rect['height'], rect['x'], rect['y']]
@@ -558,12 +560,6 @@ class ChromeDriver(object):
   def GetAvailableLogTypes(self):
     return self.ExecuteCommand(Command.GET_AVAILABLE_LOG_TYPES)
 
-  def IsAutoReporting(self):
-    return self.ExecuteCommand(Command.IS_AUTO_REPORTING)
-
-  def SetAutoReporting(self, enabled):
-    self.ExecuteCommand(Command.SET_AUTO_REPORTING, {'enabled': enabled})
-
   def SetNetworkConditions(self, latency, download_throughput,
                            upload_throughput, offline=False):
     # Until http://crbug.com/456324 is resolved, we'll always set 'offline' to
@@ -601,26 +597,9 @@ class ChromeDriver(object):
     params = {'parameters': {'type': connection_type}}
     return self.ExecuteCommand(Command.SET_NETWORK_CONNECTION, params)
 
-  def SendCommand(self, cmd, cmd_params):
-    params = {'parameters': {'cmd': cmd, 'params': cmd_params}};
-    return self.ExecuteCommand(Command.SEND_COMMAND, params)
-
   def SendCommandAndGetResult(self, cmd, cmd_params):
     params = {'cmd': cmd, 'params': cmd_params};
     return self.ExecuteCommand(Command.SEND_COMMAND_AND_GET_RESULT, params)
-
-  def GetScreenOrientation(self):
-    screen_orientation = self.ExecuteCommand(Command.GET_SCREEN_ORIENTATION)
-    return {
-       'orientation': screen_orientation['orientation']
-    }
-
-  def SetScreenOrientation(self, orientation_type):
-    params = {'parameters': {'orientation': orientation_type}}
-    self.ExecuteCommand(Command.SET_SCREEN_ORIENTATION, params)
-
-  def DeleteScreenOrientationLock(self):
-    self.ExecuteCommand(Command.DELETE_SCREEN_ORIENTATION)
 
   def SendKeys(self, *values):
     typing = []
@@ -633,3 +612,24 @@ class ChromeDriver(object):
 
   def GenerateTestReport(self, message):
     self.ExecuteCommand(Command.GENERATE_TEST_REPORT, {'message': message})
+
+  def AddVirtualAuthenticator(self, protocol=None, transport=None,
+                              hasResidentKey=None, hasUserVerification=None,
+                              isUserVerified=None):
+    options = {}
+    if protocol is not None:
+      options['protocol'] = protocol
+    if transport is not None:
+      options['transport'] = transport
+    if hasResidentKey is not None:
+      options['hasResidentKey'] = hasResidentKey
+    if hasUserVerification is not None:
+      options['hasUserVerification'] = hasUserVerification
+    if isUserVerified is not None:
+      options['isUserVerified'] = isUserVerified
+
+    return self.ExecuteCommand(Command.ADD_VIRTUAL_AUTHENTICATOR, options)
+
+  def RemoveVirtualAuthenticator(self, authenticatorId):
+    params = {'authenticatorId': authenticatorId}
+    return self.ExecuteCommand(Command.REMOVE_VIRTUAL_AUTHENTICATOR, params)

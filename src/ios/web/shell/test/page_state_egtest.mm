@@ -7,6 +7,7 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
@@ -74,13 +75,21 @@ void ScrollLongPageToTop(const GURL& url) {
 - (void)setUp {
   [super setUp];
 
-  _server.ServeFilesFromSourceDirectory(base::FilePath(FILE_PATH_LITERAL(".")));
+  NSString* bundlePath = [NSBundle bundleForClass:[self class]].resourcePath;
+  _server.ServeFilesFromDirectory(
+      base::FilePath(base::SysNSStringToUTF8(bundlePath)));
   GREYAssert(_server.Start(), @"EmbeddedTestServer failed to start.");
 }
 
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
 - (void)testScrollPositionRestoring {
+  // grey_scrollInDirection scrolls incorrect distance on iOS 13.
+  // TODO(crbug.com/983144): Enable this test on iOS 13.
+  if (@available(iOS 13, *)) {
+    return;
+  }
+
   // Scroll the first page and verify the offset.
   ScrollLongPageToTop(_server.GetURL(kLongPage1));
   [[EarlGrey selectElementWithMatcher:web::WebViewScrollView()]

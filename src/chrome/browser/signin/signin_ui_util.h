@@ -12,14 +12,14 @@
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_buildflags.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 class Profile;
 class Browser;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -33,7 +33,7 @@ const int kUpgradeWelcomeTutorialShowMax = 1;
 // Returns the username of the authenticated user or an empty string if there is
 // no authenticated user.
 base::string16 GetAuthenticatedUsername(
-    const identity::IdentityManager* identity_manager);
+    const signin::IdentityManager* identity_manager);
 
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);

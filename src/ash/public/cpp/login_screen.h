@@ -8,11 +8,17 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/callback_forward.h"
+
+class AccountId;
 
 namespace ash {
 
 class LoginScreenClient;
 class LoginScreenModel;
+class ScopedGuestButtonBlocker;
+
+enum class ParentAccessRequestReason;
 
 // Allows clients (e.g. the browser process) to send messages to the ash
 // login/lock/user-add screens.
@@ -54,9 +60,29 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // Shows or hides the parent access button on the login shelf.
   virtual void ShowParentAccessButton(bool show) = 0;
 
+  // Shows a standalone Parent Access dialog. If |child_account_id| is valid, it
+  // validates the parent access code for that child only, when it is  empty it
+  // validates the code for any child signed in the device. |callback| is
+  // invoked when the back button is clicked or the correct code was entered.
+  // |reason| contains information about why the parent access view is
+  // necessary, it is used to modify the view appearance by changing the title
+  // and description strings and background color. The parent access widget is a
+  // modal and already contains a dimmer, use |extra_dimmer| when another modal
+  // needs to instantiate it. Note: this is intended for children only. If a non
+  // child account id is provided, the validation will necessarily fail.
+  virtual void ShowParentAccessWidget(
+      const AccountId& child_account_id,
+      base::RepeatingCallback<void(bool success)> callback,
+      ParentAccessRequestReason reason,
+      bool extra_dimmer = false) = 0;
+
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   virtual void SetAllowLoginAsGuest(bool allow_guest) = 0;
+
+  // Returns scoped object to temporarily disable Browse as Guest button.
+  virtual std::unique_ptr<ScopedGuestButtonBlocker>
+  GetScopedGuestButtonBlocker() = 0;
 
  protected:
   LoginScreen();

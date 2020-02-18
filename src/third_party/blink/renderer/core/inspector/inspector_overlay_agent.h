@@ -76,7 +76,7 @@ class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
  public:
   virtual ~InspectTool() = default;
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);
-  virtual CString GetDataResourceName();
+  virtual String GetDataResourceName();
   virtual bool HandleInputEvent(LocalFrameView* frame_view,
                                 const WebInputEvent& input_event,
                                 bool* swallow_next_mouse_up);
@@ -122,6 +122,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response disable() override;
   protocol::Response setShowAdHighlights(bool) override;
   protocol::Response setShowPaintRects(bool) override;
+  protocol::Response setShowLayoutShiftRegions(bool) override;
   protocol::Response setShowDebugBorders(bool) override;
   protocol::Response setShowFPSCounter(bool) override;
   protocol::Response setShowScrollBottleneckRects(bool) override;
@@ -157,6 +158,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   protocol::Response getHighlightObjectForTest(
       int node_id,
       protocol::Maybe<bool> include_distance,
+      protocol::Maybe<bool> include_style,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
   // InspectorBaseAgent overrides.
@@ -214,7 +216,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   Member<WebLocalFrameImpl> frame_impl_;
   Member<InspectedFrames> inspected_frames_;
   Member<Page> overlay_page_;
-  CString frame_resource_name_;
+  String frame_resource_name_;
   Member<InspectorOverlayChromeClient> overlay_chrome_client_;
   Member<InspectorOverlayHost> overlay_host_;
   bool resize_timer_active_;
@@ -232,12 +234,13 @@ class CORE_EXPORT InspectorOverlayAgent final
   InspectorAgentState::Boolean show_debug_borders_;
   InspectorAgentState::Boolean show_fps_counter_;
   InspectorAgentState::Boolean show_paint_rects_;
+  InspectorAgentState::Boolean show_layout_shift_regions_;
   InspectorAgentState::Boolean show_scroll_bottleneck_rects_;
   InspectorAgentState::Boolean show_hit_test_borders_;
   InspectorAgentState::Boolean show_size_on_resize_;
   InspectorAgentState::String paused_in_debugger_message_;
   InspectorAgentState::String inspect_mode_;
-  InspectorAgentState::String inspect_mode_protocol_config_;
+  InspectorAgentState::Bytes inspect_mode_protocol_config_;
   DISALLOW_COPY_AND_ASSIGN(InspectorOverlayAgent);
 };
 

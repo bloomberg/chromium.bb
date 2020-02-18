@@ -20,6 +20,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
@@ -38,6 +39,9 @@
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_document_interface_broker.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -218,11 +222,19 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   visual_properties.is_fullscreen_granted = false;
 
   WidgetMsg_SynchronizeVisualProperties resize_message(0, visual_properties);
-  frame_widget()->OnMessageReceived(resize_message);
 
-  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+  // The main frame's widget will receive the resize message before the
+  // subframe's widget, and it will set the size for the WebView.
+  RenderWidget* main_frame_widget =
+      GetMainRenderFrame()->GetLocalRootRenderWidget();
+  main_frame_widget->OnMessageReceived(resize_message);
   EXPECT_EQ(view_->GetWebView()->MainFrameWidget()->Size(),
             blink::WebSize(size));
+  EXPECT_NE(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
+
+  // The subframe sets the size only for itself.
+  frame_widget()->OnMessageReceived(resize_message);
+  EXPECT_EQ(frame_widget()->GetWebWidget()->Size(), blink::WebSize(size));
 }
 
 // Verify a subframe RenderWidget properly processes a WasShown message.
@@ -275,53 +287,6 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   EXPECT_FALSE(frame_widget()->is_hidden());
   EXPECT_TRUE(observer.visible());
-}
-
-// Test that LoFi state only updates for new main frame documents. Subframes
-// inherit from the main frame and should not change at commit time.
-TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
-  SetPreviewsState(GetMainRenderFrame(), SERVER_LOFI_ON);
-  SetPreviewsState(frame(), SERVER_LOFI_ON);
-  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-
-  blink::WebHistoryItem item;
-  item.Initialize();
-
-  // The main frame's and subframe's LoFi states should stay the same on
-  // same-document navigations.
-  frame()->DidFinishSameDocumentNavigation(item, blink::kWebStandardCommit,
-                                           false /* content_initiated */);
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-  GetMainRenderFrame()->DidFinishSameDocumentNavigation(
-      item, blink::kWebStandardCommit, false /* content_initiated */);
-  EXPECT_EQ(SERVER_LOFI_ON, GetMainRenderFrame()->GetPreviewsState());
-
-  // The subframe's LoFi state should not be reset on commit.
-  NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-      frame()->GetWebFrame()->GetDocumentLoader());
-  navigation_state->set_was_within_same_document(false);
-
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker;
-  frame()->DidCommitProvisionalLoad(
-      item, blink::kWebStandardCommit,
-      mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
-  EXPECT_EQ(SERVER_LOFI_ON, frame()->GetPreviewsState());
-
-  // The main frame's LoFi state should be reset to off on commit.
-  navigation_state = NavigationState::FromDocumentLoader(
-      GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
-  navigation_state->set_was_within_same_document(false);
-
-  // Calling didCommitProvisionalLoad is not representative of a full navigation
-  // but serves the purpose of testing the LoFi state logic.
-  GetMainRenderFrame()->DidCommitProvisionalLoad(
-      item, blink::kWebStandardCommit,
-      mojo::MakeRequest(&stub_document_interface_broker).PassMessagePipe());
-  EXPECT_EQ(PREVIEWS_UNSPECIFIED, GetMainRenderFrame()->GetPreviewsState());
-  // The subframe would be deleted here after a cross-document navigation. It
-  // happens to be left around in this test because this does not simulate the
-  // frame detach.
 }
 
 // Test that effective connection type only updates for new main frame
@@ -498,7 +463,8 @@ TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
       1, "foo", true /* match_case */, true /* forward */,
       false /* find_next */, true /* force */, false /* wrap_within_frame */);
 
-  FrameMsg_Delete delete_message(0, FrameDeleteIntention::kNotMainFrame);
+  UnfreezableFrameMsg_Delete delete_message(
+      0, FrameDeleteIntention::kNotMainFrame);
   frame()->OnMessageReceived(delete_message);
 }
 
@@ -550,79 +516,13 @@ TEST_F(RenderFrameImplTest, TestOverlayRoutingTokenSendsNow) {
 }
 #endif
 
-TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
-  const struct {
-    PreviewsState frame_previews_state;
-    WebURLRequest::PreviewsState initial_request_previews_state;
-    WebURLRequest::PreviewsState expected_final_request_previews_state;
-  } tests[] = {
-      // With no previews enabled for the frame, no previews should be
-      // activated.
-      {PREVIEWS_UNSPECIFIED, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kPreviewsOff},
-
-      // If the request already has a previews state set, then it shouldn't be
-      // overridden.
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsNoTransform,
-       WebURLRequest::kPreviewsNoTransform},
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsOff,
-       WebURLRequest::kPreviewsOff},
-
-      // Server Lo-Fi and Server Lite Pages should be enabled for the request
-      // when they're enabled for the frame.
-      {SERVER_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLoFiOn},
-      {SERVER_LITE_PAGE_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLitePageOn},
-      {SERVER_LITE_PAGE_ON | SERVER_LOFI_ON,
-       WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLitePageOn | WebURLRequest::kServerLoFiOn},
-
-      // The CLIENT_LOFI_ON frame flag should be ignored at this point in the
-      // request.
-      {CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kPreviewsOff},
-      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kPreviewsUnspecified,
-       WebURLRequest::kServerLoFiOn},
-
-      // A request that's using Client Lo-Fi should continue using Client Lo-Fi.
-      {SERVER_LOFI_ON | CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-      {CLIENT_LOFI_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-      {SERVER_LITE_PAGE_ON, WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kClientLoFiOn},
-  };
-
-  for (const auto& test : tests) {
-    SetPreviewsState(frame(), test.frame_previews_state);
-
-    WebURLRequest request;
-    request.SetUrl(GURL("http://example.com"));
-    request.SetPreviewsState(test.initial_request_previews_state);
-
-    frame()->WillSendRequest(request);
-
-    EXPECT_EQ(test.expected_final_request_previews_state,
-              request.GetPreviewsState())
-        << (&test - tests);
-  }
-}
-
 TEST_F(RenderFrameImplTest, GetPreviewsStateForFrame) {
-  SetPreviewsState(frame(), CLIENT_LOFI_ON | SERVER_LOFI_ON);
-  EXPECT_EQ(WebURLRequest::kClientLoFiOn | WebURLRequest::kServerLoFiOn,
-            frame()->GetPreviewsStateForFrame());
-
   SetPreviewsState(frame(), PREVIEWS_OFF);
   EXPECT_EQ(WebURLRequest::kPreviewsOff, frame()->GetPreviewsStateForFrame());
 
   SetPreviewsState(frame(), PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM);
   EXPECT_EQ(WebURLRequest::kPreviewsOff | WebURLRequest::kPreviewsNoTransform,
             frame()->GetPreviewsStateForFrame());
-
-  SetPreviewsState(frame(), CLIENT_LOFI_ON | PREVIEWS_OFF);
-  EXPECT_DCHECK_DEATH(frame()->GetPreviewsStateForFrame());
 }
 
 TEST_F(RenderFrameImplTest, AutoplayFlags) {
@@ -715,12 +615,13 @@ struct SourceAnnotation {
 class BlinkFrameHostTestInterfaceImpl
     : public blink::mojom::FrameHostTestInterface {
  public:
-  BlinkFrameHostTestInterfaceImpl() : binding_(this) {}
+  BlinkFrameHostTestInterfaceImpl() {}
   ~BlinkFrameHostTestInterfaceImpl() override {}
 
-  void BindAndFlush(blink::mojom::FrameHostTestInterfaceRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.WaitForIncomingMethodCall();
+  void BindAndFlush(
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.WaitForIncomingCall();
   }
 
   const base::Optional<SourceAnnotation>& ping_source() const {
@@ -737,7 +638,7 @@ class BlinkFrameHostTestInterfaceImpl
   }
 
  private:
-  mojo::Binding<blink::mojom::FrameHostTestInterface> binding_;
+  mojo::Receiver<blink::mojom::FrameHostTestInterface> receiver_{this};
   base::Optional<SourceAnnotation> ping_source_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkFrameHostTestInterfaceImpl);
@@ -753,9 +654,10 @@ class FrameHostTestDocumentInterfaceBroker
                                     std::move(request)) {}
 
   void GetFrameHostTestInterface(
-      blink::mojom::FrameHostTestInterfaceRequest request) override {
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
+      override {
     BlinkFrameHostTestInterfaceImpl impl;
-    impl.BindAndFlush(std::move(request));
+    impl.BindAndFlush(std::move(receiver));
   }
 };
 
@@ -765,9 +667,9 @@ TEST_F(RenderFrameImplTest, TestDocumentInterfaceBrokerOverride) {
       frame()->GetDocumentInterfaceBroker(), mojo::MakeRequest(&doc));
   frame()->SetDocumentInterfaceBrokerForTesting(std::move(doc));
 
-  blink::mojom::FrameHostTestInterfacePtr frame_test;
+  mojo::Remote<blink::mojom::FrameHostTestInterface> frame_test;
   frame()->GetDocumentInterfaceBroker()->GetFrameHostTestInterface(
-      mojo::MakeRequest(&frame_test));
+      frame_test.BindNewPipeAndPassReceiver());
   frame_test->GetName(base::BindOnce([](const std::string& result) {
     EXPECT_EQ(result, kGetNameTestResponse);
   }));
@@ -839,7 +741,7 @@ class TestSimpleDocumentInterfaceBrokerImpl
     : public blink::mojom::DocumentInterfaceBroker {
  public:
   using BinderCallback = base::RepeatingCallback<void(
-      blink::mojom::FrameHostTestInterfaceRequest)>;
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>)>;
   TestSimpleDocumentInterfaceBrokerImpl(BinderCallback binder_callback)
       : binding_(this), binder_callback_(binder_callback) {}
   void BindAndFlush(blink::mojom::DocumentInterfaceBrokerRequest request) {
@@ -851,20 +753,25 @@ class TestSimpleDocumentInterfaceBrokerImpl
  private:
   // blink::mojom::DocumentInterfaceBroker
   void GetFrameHostTestInterface(
-      blink::mojom::FrameHostTestInterfaceRequest request) override {
-    binder_callback_.Run(std::move(request));
+      mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
+      override {
+    binder_callback_.Run(std::move(receiver));
   }
   void GetAudioContextManager(
-      blink::mojom::AudioContextManagerRequest) override {}
+      mojo::PendingReceiver<blink::mojom::AudioContextManager>) override {}
   void GetCredentialManager(
-      blink::mojom::CredentialManagerRequest request) override {}
-  void GetAuthenticator(blink::mojom::AuthenticatorRequest request) override {}
+      mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
+  void GetAuthenticator(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override {}
+  void GetPushMessaging(
+      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}
   void GetVirtualAuthenticatorManager(
-      blink::test::mojom::VirtualAuthenticatorManagerRequest request) override {
-  }
-  void RegisterAppCacheHost(blink::mojom::AppCacheHostRequest host_request,
-                            blink::mojom::AppCacheFrontendPtr frontend,
-                            const base::UnguessableToken& id) override {}
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver) override {}
+  void RegisterAppCacheHost(
+      mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
+      mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+      const base::UnguessableToken& id) override {}
 
   mojo::Binding<blink::mojom::DocumentInterfaceBroker> binding_;
   BinderCallback binder_callback_;
@@ -874,12 +781,13 @@ class TestSimpleDocumentInterfaceBrokerImpl
 
 class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
  public:
-  FrameHostTestInterfaceImpl() : binding_(this) {}
+  FrameHostTestInterfaceImpl() = default;
   ~FrameHostTestInterfaceImpl() override {}
 
-  void BindAndFlush(mojom::FrameHostTestInterfaceRequest request) {
-    binding_.Bind(std::move(request));
-    binding_.WaitForIncomingMethodCall();
+  void BindAndFlush(
+      mojo::PendingReceiver<mojom::FrameHostTestInterface> receiver) {
+    receiver_.Bind(std::move(receiver));
+    receiver_.WaitForIncomingCall();
   }
 
   const base::Optional<SourceAnnotation>& ping_source() const {
@@ -892,7 +800,7 @@ class FrameHostTestInterfaceImpl : public mojom::FrameHostTestInterface {
   }
 
  private:
-  mojo::Binding<mojom::FrameHostTestInterface> binding_;
+  mojo::Receiver<mojom::FrameHostTestInterface> receiver_{this};
   base::Optional<SourceAnnotation> ping_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameHostTestInterfaceImpl);
@@ -907,22 +815,22 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
       : RenderFrameObserver(render_frame) {}
 
   void RequestTestInterfaceOnFrameEvent(const std::string& event) {
-    mojom::FrameHostTestInterfacePtr ptr;
+    mojo::Remote<mojom::FrameHostTestInterface> remote;
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&ptr));
+        remote.BindNewPipeAndPassReceiver());
 
     blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
-    ptr->Ping(
+    remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
         event);
 
-    blink::mojom::FrameHostTestInterfacePtr blink_ptr;
+    mojo::Remote<blink::mojom::FrameHostTestInterface> blink_remote;
     blink::mojom::DocumentInterfaceBroker* document_interface_broker =
         render_frame()->GetDocumentInterfaceBroker();
     DCHECK(document_interface_broker);
     document_interface_broker->GetFrameHostTestInterface(
-        mojo::MakeRequest(&blink_ptr));
-    blink_ptr->Ping(
+        blink_remote.BindNewPipeAndPassReceiver());
+    blink_remote->Ping(
         !document.IsNull() ? GURL(document.Url()) : GURL(kNoDocumentMarkerURL),
         event);
   }
@@ -1129,7 +1037,8 @@ void ExpectPendingInterfaceRequestsFromSources(
           [&sources](mojo::ScopedMessagePipeHandle handle) {
             FrameHostTestInterfaceImpl impl;
             impl.BindAndFlush(
-                mojom::FrameHostTestInterfaceRequest(std::move(handle)));
+                mojo::PendingReceiver<mojom::FrameHostTestInterface>(
+                    std::move(handle)));
             ASSERT_TRUE(impl.ping_source().has_value());
             sources.push_back(impl.ping_source().value());
           }));
@@ -1140,9 +1049,10 @@ void ExpectPendingInterfaceRequestsFromSources(
   ASSERT_TRUE(document_interface_broker_request.is_pending());
   TestSimpleDocumentInterfaceBrokerImpl broker(base::BindLambdaForTesting(
       [&document_interface_broker_sources](
-          blink::mojom::FrameHostTestInterfaceRequest request) {
+          mojo::PendingReceiver<blink::mojom::FrameHostTestInterface>
+              receiver) {
         BlinkFrameHostTestInterfaceImpl impl;
-        impl.BindAndFlush(std::move(request));
+        impl.BindAndFlush(std::move(receiver));
         ASSERT_TRUE(impl.ping_source().has_value());
         document_interface_broker_sources.push_back(impl.ping_source().value());
       }));

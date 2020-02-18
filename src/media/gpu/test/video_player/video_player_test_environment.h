@@ -24,8 +24,12 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
       const base::FilePath& video_metadata_path,
       bool enable_validator,
       bool output_frames,
+      const base::FilePath& output_folder,
       bool use_vd);
   ~VideoPlayerTestEnvironment() override;
+
+  // Set up video test environment, called once for entire test run.
+  void SetUp() override;
 
   // Get the video the tests will be ran on.
   const media::test::Video* Video() const;
@@ -33,19 +37,27 @@ class VideoPlayerTestEnvironment : public VideoTestEnvironment {
   bool IsValidatorEnabled() const;
   // Check whether outputting frames is enabled.
   bool IsFramesOutputEnabled() const;
+  // Get the output folder.
+  const base::FilePath& OutputFolder() const;
   // Check whether we should use VD-based video decoders instead of VDA-based.
   bool UseVD() const;
+  // Whether import mode is supported, valid after SetUp() has been called.
+  bool ImportSupported() const;
 
  private:
   VideoPlayerTestEnvironment(std::unique_ptr<media::test::Video> video,
                              bool enable_validator,
                              bool output_frames,
+                             const base::FilePath& output_folder,
                              bool use_vd);
 
   const std::unique_ptr<media::test::Video> video_;
   const bool enable_validator_;
   const bool output_frames_;
+  const base::FilePath output_folder_;
   const bool use_vd_;
+  // TODO(dstaessens): Remove this once all allocate-only platforms reached EOL.
+  bool import_supported_ = false;
 };
 }  // namespace test
 }  // namespace media

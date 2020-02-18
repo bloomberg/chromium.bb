@@ -2,14 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
 config("chromium_quic_config") {
   cflags_cc = [
     "-Wno-error=attributes",
     "-Wno-unused-const-variable",
   ]
 
-  if (is_linux) {
-    cflags_cc += [ "-Wno-defaulted-function-deleted" ]
+  if (is_clang) {
+    cflags_cc += [
+      "-Wno-defaulted-function-deleted",
+      "-Wno-c++98-compat-extra-semi",
+      "-Wno-extra-semi",
+    ]
+
+    # The clang version on the Mac OS X build bots is old, causing them to
+    # not recognize the defaulted-function-deleted warning. This flag allows
+    # us to build on both older and newer Mac OS X Clang toolchains.
+    if (is_mac) {
+      cflags_cc += [ "-Wno-unknown-warning-option" ]
+    }
   }
 
   if (is_gcc) {
@@ -24,22 +37,14 @@ config("chromium_quic_config") {
     ]
   }
 
+  configs = [ "//third_party/protobuf:protobuf_config" ]
+
   include_dirs = [
     "//third_party/chromium_quic/src",
     "../boringssl/src/include",
-    "//third_party/chromium_quic/src/third_party/protobuf/src",
     "$root_gen_dir/third_party/chromium_quic/src",
     "build/",
     "//",
-  ]
-
-  # Random code includes headers that then include generated protobuf code
-  # which requires these defines. Doing this here is simpler than passing
-  # "public_deps" everywhere and/or using the discouraged
-  # "all_dependent_config".
-  defines = [
-    "GOOGLE_PROTOBUF_NO_RTTI",
-    "GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER",
   ]
 }
 
@@ -208,7 +213,10 @@ source_set("core") {
   #   "src/net/third_party/quic/core/quic_packet_reader.h",
   # ]
   configs -= [ "//build:default_include_dirs" ]
-  configs += [ ":chromium_quic_config" ]
+  configs += [
+    ":chromium_quic_config",
+    "//third_party/protobuf:using_proto",
+  ]
 
   deps = [
     ":chromium_other",
@@ -426,49 +434,14 @@ source_set("frames") {
 #   configs += [ ":chromium_quic_config" ]
 # }
 
-# TODO(btolsch): General proto_library rule?
-action("proto_gen") {
-  script = "src/tools/protoc_wapper/protoc_wrapper.py"
+proto_library("proto") {
   sources = [
     "src/net/third_party/quic/core/proto/cached_network_parameters.proto",
     "src/net/third_party/quic/core/proto/source_address_token.proto",
   ]
-  outputs = [
-    "$target_gen_dir/src/net/third_party/quic/core/proto/cached_network_parameters.pb.cc",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/cached_network_parameters.pb.h",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/source_address_token.pb.cc",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/source_address_token.pb.h",
-  ]
 
-  args = rebase_path(sources, get_path_info(sources[0], "dir"))
-  args += [
-    "--protoc",
-    "./protoc",
-    "--proto-in-dir",
-    rebase_path(get_path_info(sources[0], "dir"), root_build_dir),
-    "--cc-out-dir",
-    rebase_path(get_path_info(outputs[0], "dir"), root_build_dir),
-  ]
-
-  deps = [
-    "src/third_party/protobuf:protoc",
-  ]
-}
-
-source_set("proto") {
-  sources = [
-    "$target_gen_dir/src/net/third_party/quic/core/proto/cached_network_parameters.pb.cc",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/cached_network_parameters.pb.h",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/source_address_token.pb.cc",
-    "$target_gen_dir/src/net/third_party/quic/core/proto/source_address_token.pb.h",
-  ]
-  deps = [
-    ":proto_gen",
-    "src/third_party/protobuf:protobuf_full",
-  ]
-
-  configs -= [ "//build:default_include_dirs" ]
-  configs += [ ":chromium_quic_config" ]
+  removed_configs = [ "//build:default_include_dirs" ]
+  extra_configs = [ ":chromium_quic_config" ]
 }
 
 source_set("quartc") {

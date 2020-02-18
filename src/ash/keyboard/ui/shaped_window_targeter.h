@@ -5,6 +5,9 @@
 #ifndef ASH_KEYBOARD_UI_SHAPED_WINDOW_TARGETER_H_
 #define ASH_KEYBOARD_UI_SHAPED_WINDOW_TARGETER_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/macros.h"
 #include "ui/aura/window_targeter.h"
 
@@ -14,7 +17,7 @@ namespace keyboard {
 // list of rectangles.
 class ShapedWindowTargeter : public aura::WindowTargeter {
  public:
-  explicit ShapedWindowTargeter(const std::vector<gfx::Rect>& hit_test_rects);
+  explicit ShapedWindowTargeter(std::vector<gfx::Rect> hit_test_rects);
   ~ShapedWindowTargeter() override;
 
  private:

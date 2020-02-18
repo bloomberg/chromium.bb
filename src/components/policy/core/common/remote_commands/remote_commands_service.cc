@@ -24,7 +24,7 @@ namespace em = enterprise_management;
 RemoteCommandsService::RemoteCommandsService(
     std::unique_ptr<RemoteCommandsFactory> factory,
     CloudPolicyClient* client)
-    : factory_(std::move(factory)), client_(client), weak_factory_(this) {
+    : factory_(std::move(factory)), client_(client) {
   DCHECK(client_);
   queue_.AddObserver(this);
 }
@@ -95,7 +95,7 @@ void RemoteCommandsService::EnqueueCommand(
   }
 
   // If the command is already fetched, ignore it.
-  if (base::ContainsValue(fetched_command_ids_, command.command_id()))
+  if (base::Contains(fetched_command_ids_, command.command_id()))
     return;
 
   fetched_command_ids_.push_back(command.command_id());

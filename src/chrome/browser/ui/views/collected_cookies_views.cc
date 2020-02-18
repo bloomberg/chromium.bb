@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 
 #include <map>
-#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -27,16 +25,12 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cookies/canonical_cookie.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -219,7 +213,7 @@ class InfobarView : public views::View {
                                   DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
                               dialog_insets.right());
     content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, layout_insets,
+        views::BoxLayout::Orientation::kHorizontal, layout_insets,
         ChromeLayoutProvider::Get()->GetDistanceMetric(
             DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
     content_->AddChildView(info_image_);
@@ -269,25 +263,29 @@ class InfobarView : public views::View {
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, public:
 
-CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
-    : web_contents_(web_contents),
-      allowed_label_(NULL),
-      blocked_label_(NULL),
-      allowed_cookies_tree_(NULL),
-      blocked_cookies_tree_(NULL),
-      block_allowed_button_(NULL),
-      delete_allowed_button_(NULL),
-      allow_blocked_button_(NULL),
-      for_session_blocked_button_(NULL),
-      cookie_info_view_(NULL),
-      infobar_(NULL),
-      status_changed_(false) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-                 content::Source<TabSpecificContentSettings>(content_settings));
-  constrained_window::ShowWebModalDialogViews(this, web_contents);
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
+CollectedCookiesViews::~CollectedCookiesViews() {
+  if (!destroying_) {
+    // The owning WebContents is being destroyed before the Widget. Close the
+    // widget pronto.
+    destroying_ = true;
+    GetWidget()->CloseNow();
+  }
+
+  allowed_cookies_tree_->SetModel(nullptr);
+  blocked_cookies_tree_->SetModel(nullptr);
+}
+
+// static
+void CollectedCookiesViews::CreateAndShowForWebContents(
+    content::WebContents* web_contents) {
+  CollectedCookiesViews* instance = FromWebContents(web_contents);
+  if (instance) {
+    web_modal::WebContentsModalDialogManager::FromWebContents(web_contents)
+        ->FocusTopmostDialog();
+    return;
+  }
+
+  CreateForWebContents(web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -328,11 +326,20 @@ bool CollectedCookiesViews::ShouldShowCloseButton() const {
   return false;
 }
 
-views::View* CollectedCookiesViews::CreateExtraView() {
+void CollectedCookiesViews::DeleteDelegate() {
+  if (!destroying_) {
+    // The associated Widget is being destroyed before the owning WebContents.
+    // Tell the owner to delete |this|.
+    destroying_ = true;
+    web_contents_->RemoveUserData(UserDataKey());
+  }
+}
+
+std::unique_ptr<views::View> CollectedCookiesViews::CreateExtraView() {
   // The code in |Init|, which runs before this does, needs the button pane to
   // already exist, so it is created there and this class holds ownership until
   // this method is called.
-  return buttons_pane_.release();
+  return std::move(buttons_pane_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -390,14 +397,15 @@ void CollectedCookiesViews::ViewHierarchyChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, private:
 
-CollectedCookiesViews::~CollectedCookiesViews() {
-  allowed_cookies_tree_->SetModel(NULL);
-  blocked_cookies_tree_->SetModel(NULL);
+CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::COLLECTED_COOKIES);
 }
 
 void CollectedCookiesViews::Init() {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   // Add margin above the content. The left, right, and bottom margins are added
@@ -413,9 +421,9 @@ void CollectedCookiesViews::Init() {
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
-  views::TabbedPane* tabbed_pane = new views::TabbedPane();
+  views::TabbedPane* tabbed_pane =
+      layout->AddView(std::make_unique<views::TabbedPane>());
 
-  layout->AddView(tabbed_pane);
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
   base::string16 label_allowed = l10n_util::GetStringUTF16(
       IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL);
@@ -427,12 +435,10 @@ void CollectedCookiesViews::Init() {
   tabbed_pane->set_listener(this);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
-  cookie_info_view_ = new CookieInfoView();
-  layout->AddView(cookie_info_view_);
+  cookie_info_view_ = layout->AddView(std::make_unique<CookieInfoView>());
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
-  infobar_ = new InfobarView();
-  layout->AddView(infobar_);
+  infobar_ = layout->AddView(std::make_unique<InfobarView>());
 
   buttons_pane_ = CreateButtonsPane();
 
@@ -440,15 +446,15 @@ void CollectedCookiesViews::Init() {
   ShowCookieInfo();
 }
 
-views::View* CollectedCookiesViews::CreateAllowedPane() {
+std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
 
   // Create the controls that go into the pane.
-  allowed_label_ = new views::Label(
+  auto allowed_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL),
       CONTEXT_BODY_TEXT_LARGE);
-  allowed_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  allowed_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   allowed_cookies_tree_model_ =
       content_settings->allowed_local_shared_objects().CreateCookiesTreeModel();
@@ -466,9 +472,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
 
-  views::View* pane = new views::View();
+  auto pane = std::make_unique<views::View>();
   views::GridLayout* layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
@@ -483,15 +489,15 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
                         1.0, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
-  layout->AddView(allowed_label_);
+  allowed_label_ = layout->AddView(std::move(allowed_label));
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
 
   layout->StartRow(1.0, single_column_layout_id);
 
   allowed_cookies_tree_ = allowed_cookies_tree.get();
-  layout->AddView(CreateScrollView(std::move(allowed_cookies_tree)).release(),
-                  1, 1, views::GridLayout::FILL, views::GridLayout::FILL,
+  layout->AddView(CreateScrollView(std::move(allowed_cookies_tree)), 1, 1,
+                  views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
@@ -499,24 +505,24 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   return pane;
 }
 
-views::View* CollectedCookiesViews::CreateBlockedPane() {
+std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  PrefService* prefs = profile->GetPrefs();
+  auto cookie_settings = CookieSettingsFactory::GetForProfile(profile);
 
   // Create the controls that go into the pane.
-  blocked_label_ = new views::Label(
+  auto blocked_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
-          prefs->GetBoolean(prefs::kBlockThirdPartyCookies)
+          cookie_settings->ShouldBlockThirdPartyCookies()
               ? IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED
               : IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL),
       CONTEXT_BODY_TEXT_LARGE);
-  blocked_label_->SetMultiLine(true);
-  blocked_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  blocked_label_->SizeToFit(kTreeViewWidth);
+  blocked_label->SetMultiLine(true);
+  blocked_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  blocked_label->SizeToFit(kTreeViewWidth);
   blocked_cookies_tree_model_ =
       content_settings->blocked_local_shared_objects().CreateCookiesTreeModel();
   std::unique_ptr<CookiesTreeViewDrawingProvider> blocked_drawing_provider =
@@ -533,9 +539,9 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
 
-  views::View* pane = new views::View();
+  auto pane = std::make_unique<views::View>();
   views::GridLayout* layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
+      pane->SetLayoutManager(std::make_unique<views::GridLayout>());
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
@@ -549,16 +555,17 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
                         1.0, views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
-  layout->AddView(blocked_label_, 1, 1, views::GridLayout::FILL,
-                  views::GridLayout::FILL);
+  blocked_label_ =
+      layout->AddView(std::move(blocked_label), 1, 1, views::GridLayout::FILL,
+                      views::GridLayout::FILL);
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
 
   layout->StartRow(1.0, single_column_layout_id);
 
   blocked_cookies_tree_ = blocked_cookies_tree.get();
-  layout->AddView(CreateScrollView(std::move(blocked_cookies_tree)).release(),
-                  1, 1, views::GridLayout::FILL, views::GridLayout::FILL,
+  layout->AddView(CreateScrollView(std::move(blocked_cookies_tree)), 1, 1,
+                  views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         unrelated_vertical_distance);
@@ -572,42 +579,41 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
 
   {
     auto allowed = std::make_unique<views::View>();
-    views::GridLayout* layout = allowed->SetLayoutManager(
-        std::make_unique<views::GridLayout>(allowed.get()));
+    views::GridLayout* layout =
+        allowed->SetLayoutManager(std::make_unique<views::GridLayout>());
 
-    block_allowed_button_ =
+    std::unique_ptr<views::LabelButton> block_allowed_button =
         views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON))
-            .release();
-    delete_allowed_button_ =
+            this,
+            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
+    std::unique_ptr<views::LabelButton> delete_allowed_button =
         views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL))
-            .release();
+            this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
     StartNewButtonColumnSet(layout, 0);
-    layout->AddView(block_allowed_button_);
-    layout->AddView(delete_allowed_button_);
+    block_allowed_button_ = layout->AddView(std::move(block_allowed_button));
+    delete_allowed_button_ = layout->AddView(std::move(delete_allowed_button));
 
     allowed_buttons_pane_ = view->AddChildView(std::move(allowed));
   }
 
   {
     auto blocked = std::make_unique<views::View>();
-    views::GridLayout* layout = blocked->SetLayoutManager(
-        std::make_unique<views::GridLayout>(blocked.get()));
+    views::GridLayout* layout =
+        blocked->SetLayoutManager(std::make_unique<views::GridLayout>());
     blocked->SetVisible(false);
 
-    allow_blocked_button_ =
+    std::unique_ptr<views::LabelButton> allow_blocked_button =
         views::MdTextButton::CreateSecondaryUiButton(
-            this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON))
-            .release();
-    for_session_blocked_button_ =
+            this,
+            l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
+    std::unique_ptr<views::LabelButton> for_session_blocked_button =
         views::MdTextButton::CreateSecondaryUiButton(
             this, l10n_util::GetStringUTF16(
-                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON))
-            .release();
+                      IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
     StartNewButtonColumnSet(layout, 0);
-    layout->AddView(allow_blocked_button_);
-    layout->AddView(for_session_blocked_button_);
+    allow_blocked_button_ = layout->AddView(std::move(allow_blocked_button));
+    for_session_blocked_button_ =
+        layout->AddView(std::move(for_session_blocked_button));
 
     blocked_buttons_pane_ = view->AddChildView(std::move(blocked));
   }
@@ -692,13 +698,4 @@ void CollectedCookiesViews::AddContentException(views::TreeView* tree_view,
   tree_view->SchedulePaint();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CollectedCookiesViews, content::NotificationObserver implementation:
-
-void CollectedCookiesViews::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN, type);
-  GetWidget()->Close();
-}
+WEB_CONTENTS_USER_DATA_KEY_IMPL(CollectedCookiesViews)

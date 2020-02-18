@@ -161,13 +161,13 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
             self.partial_new_version
         ],
     }
-    for build_type, builds in builds.iteritems():
+    for build_type, builds in builds.items():
       url = self.makeSrcTargetUrl(self.targets[build_type][0])
       builds = '\n'.join(os.path.join(url, version) for version in builds)
       self.gs_mock.AddCmdResult(['ls', '--', url], output=builds)
 
     for version in [self.old_version, self.old2_version, self.new_version]:
-      for key in self.targets.iterkeys():
+      for key in self.targets.keys():
         self.setupMockBuild(key, version)
     self.new_subpaths = {
         'ARM': 'linux-cheets_arm-user100',
@@ -203,7 +203,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                         valid=False)
     self.setupMockBuild('SDK_TOOLS', self.partial_new_version)
 
-    for key in self.targets.iterkeys():
+    for key in self.targets.keys():
       self.setupMockBuild(key, self.not_new_version, False)
 
 
@@ -423,7 +423,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
             ('sdk_google_cheets_x86-target_files-25.zip',
              'cheets_sdk_google_x86_userdebug-target_files-25.zip'),
     }
-    for build, (src, dst) in build_targets.iteritems():
+    for build, (src, dst) in build_targets.items():
       self.assertEquals(self._AuxGetArcBasename(build, src), dst)
 
     # More generic name patterns.
@@ -436,7 +436,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     build_targets['SDK_GOOGLE_X86_USERDEBUG'] = (
         ('cheets_-XXX', 'cheets_sdk_google_x86_userdebug-XXX')
     )
-    for build, (src, dst) in build_targets.iteritems():
+    for build, (src, dst) in build_targets.items():
       self.assertEquals(self._AuxGetArcBasename(build, src), dst)
 
     # Check bertha also.
@@ -449,7 +449,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     build_targets['SDK_GOOGLE_X86_USERDEBUG'] = (
         ('bertha_-XXX', 'bertha_sdk_google_x86_userdebug-XXX')
     )
-    for build, (src, dst) in build_targets.iteritems():
+    for build, (src, dst) in build_targets.items():
       self.assertEquals(self._AuxGetArcBasename(build, src), dst)
 
   def testGetArcBasenameRenameInvalid(self):
@@ -480,7 +480,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
   def testInternalPatternExclusiveness(self):
     """Test exclusiveness of internal pattern."""
-    for _, (_, pattern) in self.targets.iteritems():
+    for _, (_, pattern) in self.targets.items():
       if pattern == constants.ANDROID_INTERNAL_PATTERN:
         self.assertTrue(re.search(pattern, 'file.zip.internal'))
         self.assertFalse(re.search(pattern, 'file.zip'))

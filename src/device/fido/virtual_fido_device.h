@@ -70,6 +70,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   // necessary in order to provide continuity between requests.
   class COMPONENT_EXPORT(DEVICE_FIDO) State : public base::RefCounted<State> {
    public:
+    using RegistrationsMap = std::map<std::vector<uint8_t>,
+                                      RegistrationData,
+                                      fido_parsing_utils::RangeLess>;
+    using SimulatePressCallback =
+        base::RepeatingCallback<bool(VirtualFidoDevice*)>;
+
     State();
 
     // The common name in the attestation certificate.
@@ -80,14 +86,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     std::string individual_attestation_cert_common_name;
 
     // Registered keys. Keyed on key handle (a.k.a. "credential ID").
-    std::map<std::vector<uint8_t>,
-             RegistrationData,
-             fido_parsing_utils::RangeLess>
-        registrations;
+    RegistrationsMap registrations;
 
-    // If set, this callback is called whenever a "press" is required. It allows
-    // tests to change the state of the world during processing.
-    base::RepeatingCallback<void(void)> simulate_press_callback;
+    // If set, this callback is called whenever a "press" is required. Returning
+    // `true` will simulate a press and continue the request, returning `false`
+    // simulates the user not pressing the device and leaves the request idle.
+    SimulatePressCallback simulate_press_callback;
 
     // If true, causes the response from the device to be invalid.
     bool simulate_invalid_response = false;
@@ -121,6 +125,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
 
     // Whether a device with bio enrollment support has been provisioned.
     bool bio_enrollment_provisioned = false;
+    // Current template ID being enrolled, if any.
+    base::Optional<uint8_t> bio_current_template_id;
+    // Number of remaining samples in current enrollment.
+    uint8_t bio_remaining_samples = 4;
+    // Backing storage for enrollments and their friendly names.
+    std::map<uint8_t, std::string> bio_templates;
 
     // pending_assertions contains the second and subsequent assertions
     // resulting from a GetAssertion call. These values are awaiting a
@@ -152,10 +162,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // (RP ID, user ID) pair, or for the same credential ID. Otherwise returns
     // true.
     bool InjectResidentKey(base::span<const uint8_t> credential_id,
+                           device::PublicKeyCredentialRpEntity rp,
+                           device::PublicKeyCredentialUserEntity user);
+
+    // Version of InjectResidentKey that takes values for constructing an RP and
+    // user entity.
+    bool InjectResidentKey(base::span<const uint8_t> credential_id,
                            const std::string& relying_party_id,
                            base::span<const uint8_t> user_id,
-                           const std::string& name,
-                           const std::string& display_name);
+                           const std::string& user_name,
+                           const std::string& user_display_name);
 
    private:
     friend class base::RefCounted<State>;

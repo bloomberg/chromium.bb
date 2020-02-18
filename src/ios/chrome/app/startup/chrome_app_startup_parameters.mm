@@ -383,9 +383,15 @@ enum SearchExtensionAction {
   if ([_secureSourceApp
           isEqualToString:app_group::kOpenCommandSourceContentExtension])
     return CALLER_APP_GOOGLE_CHROME_CONTENT_EXTENSION;
+  if ([_secureSourceApp
+          isEqualToString:app_group::kOpenCommandSourceShareExtension])
+    return CALLER_APP_GOOGLE_CHROME_SHARE_EXTENSION;
 
   if (![_declaredSourceApp length])
     return CALLER_APP_NOT_AVAILABLE;
+  if ([_declaredSourceApp
+          isEqualToString:[[NSBundle mainBundle] bundleIdentifier]])
+    return CALLER_APP_GOOGLE_CHROME;
   if ([_declaredSourceApp isEqualToString:@"com.google.GoogleMobile"])
     return CALLER_APP_GOOGLE_SEARCH;
   if ([_declaredSourceApp isEqualToString:@"com.google.Gmail"])

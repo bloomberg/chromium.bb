@@ -35,6 +35,7 @@
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/extras/sqlite/sqlite_persistent_store_backend_base.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -45,9 +46,9 @@ using base::Time;
 
 namespace {
 
-base::Value CookieKeyedLoadNetLogCallback(const std::string& key,
-                                          net::NetLogCaptureMode capture_mode) {
-  if (!capture_mode.include_cookies_and_credentials())
+base::Value CookieKeyedLoadNetLogParams(const std::string& key,
+                                        net::NetLogCaptureMode capture_mode) {
+  if (!net::NetLogCaptureIncludesSensitive(capture_mode))
     return base::Value();
   base::DictionaryValue dict;
   dict.SetString("key", key);
@@ -257,7 +258,6 @@ class SQLitePersistentCookieStore::Backend
                                          std::move(client_task_runner)),
         num_pending_(0),
         restore_old_session_cookies_(restore_old_session_cookies),
-        num_cookies_read_(0),
         num_priority_waiting_(0),
         total_priority_requests_(0),
         crypto_(crypto_delegate) {}
@@ -271,7 +271,6 @@ class SQLitePersistentCookieStore::Backend
 
   // Steps through all results of |smt|, makes a cookie from each, and adds the
   // cookie to |cookies|. Returns true if everything loaded successfully.
-  // Always updates |num_cookies_read_|.
   bool MakeCookiesFromSQLStatement(
       std::vector<std::unique_ptr<CanonicalCookie>>* cookies,
       sql::Statement* statement);
@@ -414,11 +413,6 @@ class SQLitePersistentCookieStore::Backend
   // The cumulative time spent loading the cookies on the background runner.
   // Incremented and reported from the background runner.
   base::TimeDelta cookie_load_duration_;
-
-  // The total number of cookies read. Incremented and reported on the
-  // background runner.  Includes those that were malformed, not decrypted
-  // correctly, etc.
-  int num_cookies_read_;
 
   // Guards the following metrics-related properties (only accessed when
   // starting/completing priority loads or completing the total load).
@@ -724,9 +718,6 @@ void SQLitePersistentCookieStore::Backend::ReportMetrics() {
 
     UMA_HISTOGRAM_COUNTS_100("Cookie.PriorityLoadCount",
                              total_priority_requests_);
-
-    UMA_HISTOGRAM_COUNTS_10000("Cookie.NumberOfLoadedCookies",
-                               num_cookies_read_);
   }
 }
 
@@ -765,8 +756,6 @@ bool SQLitePersistentCookieStore::Backend::CreateDatabaseSchema() {
 bool SQLitePersistentCookieStore::Backend::DoInitializeDatabase() {
   DCHECK(db());
 
-  base::Time start = base::Time::Now();
-
   // Retrieve all the domains
   sql::Statement smt(
       db()->GetUniqueStatement("SELECT DISTINCT host_key FROM cookies"));
@@ -780,29 +769,12 @@ bool SQLitePersistentCookieStore::Backend::DoInitializeDatabase() {
   while (smt.Step())
     host_keys.push_back(smt.ColumnString(0));
 
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeLoadDomains",
-                             base::Time::Now() - start,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
-
-  base::Time start_parse = base::Time::Now();
-
   // Build a map of domain keys (always eTLD+1) to domains.
   for (size_t idx = 0; idx < host_keys.size(); ++idx) {
     const std::string& domain = host_keys[idx];
     std::string key = CookieMonster::GetKey(domain);
     keys_to_load_[key].insert(domain);
   }
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeParseDomains",
-                             base::Time::Now() - start_parse,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Cookie.TimeInitializeDomainMap",
-                             base::Time::Now() - start,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(1), 50);
 
   if (!restore_old_session_cookies_)
     DeleteSessionCookiesOnStartup();
@@ -913,7 +885,6 @@ bool SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
   sql::Statement& smt = *statement;
   bool ok = true;
   while (smt.Step()) {
-    ++num_cookies_read_;
     std::string value;
     std::string encrypted_value = smt.ColumnString(4);
     if (!encrypted_value.empty() && crypto_) {
@@ -1386,7 +1357,9 @@ void SQLitePersistentCookieStore::LoadCookiesForKey(
     LoadedCallback loaded_callback) {
   DCHECK(!loaded_callback.is_null());
   net_log_.AddEvent(NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_STARTED,
-                    base::BindRepeating(CookieKeyedLoadNetLogCallback, key));
+                    [&](NetLogCaptureMode capture_mode) {
+                      return CookieKeyedLoadNetLogParams(key, capture_mode);
+                    });
   // Note that |backend_| keeps |this| alive by keeping a reference count.
   // If this class is ever converted over to a WeakPtr<> pattern (as TODO it
   // should be) this will need to be replaced by a more complex pattern that
@@ -1428,9 +1401,9 @@ size_t SQLitePersistentCookieStore::GetQueueLengthForTesting() {
 }
 
 SQLitePersistentCookieStore::~SQLitePersistentCookieStore() {
-  net_log_.AddEvent(
-      NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED,
-      NetLog::StringCallback("type", "SQLitePersistentCookieStore"));
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::COOKIE_PERSISTENT_STORE_CLOSED, "type",
+      "SQLitePersistentCookieStore");
   backend_->Close();
 }
 
@@ -1445,8 +1418,9 @@ void SQLitePersistentCookieStore::CompleteKeyedLoad(
     const std::string& key,
     LoadedCallback callback,
     std::vector<std::unique_ptr<CanonicalCookie>> cookie_list) {
-  net_log_.AddEvent(NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED,
-                    NetLog::StringCallback("domain", &key));
+  net_log_.AddEventWithStringParams(
+      NetLogEventType::COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED, "domain",
+      key);
   std::move(callback).Run(std::move(cookie_list));
 }
 

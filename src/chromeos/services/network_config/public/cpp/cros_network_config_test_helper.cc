@@ -4,6 +4,7 @@
 
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 
+#include "chromeos/network/network_device_handler.h"
 #include "chromeos/services/network_config/cros_network_config.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"
@@ -13,12 +14,30 @@ namespace chromeos {
 namespace network_config {
 
 CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
-  cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
-      network_state_helper_.network_state_handler());
+  SetupCrosNetworkConfig();
+  // Create a local service manager connector to handle requests.
+  service_manager::mojom::ConnectorRequest request;
+  owned_connector_ = service_manager::Connector::Create(&request);
+  connector_ = owned_connector_.get();
+  SetupService();
+}
+
+CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper(
+    service_manager::Connector* connector)
+    : connector_(connector) {
+  SetupCrosNetworkConfig();
   SetupService();
 }
 
 CrosNetworkConfigTestHelper::~CrosNetworkConfigTestHelper() = default;
+
+void CrosNetworkConfigTestHelper::SetupCrosNetworkConfig() {
+  network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
+      network_state_helper_.network_state_handler());
+  cros_network_config_impl_ = std::make_unique<CrosNetworkConfig>(
+      network_state_helper_.network_state_handler(),
+      network_device_handler_.get());
+}
 
 void CrosNetworkConfigTestHelper::SetupServiceInterface() {
   DCHECK(connector_);
@@ -33,9 +52,6 @@ void CrosNetworkConfigTestHelper::SetupObserver() {
 }
 
 void CrosNetworkConfigTestHelper::SetupService() {
-  // Create a local service manager connector to handle requests.
-  service_manager::mojom::ConnectorRequest request;
-  connector_ = service_manager::Connector::Create(&request);
   connector_->OverrideBinderForTesting(
       service_manager::ServiceFilter::ByName(
           chromeos::network_config::mojom::kServiceName),

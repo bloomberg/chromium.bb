@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -912,9 +912,9 @@ extern "C" {
   public:
     virtual HRESULT WINAPI GetProviderCardId(BSTR bstrCardName,LPGUID *ppguidProviderId) = 0;
     virtual HRESULT WINAPI ListCardInterfaces(BSTR bstrCardName,LPSAFEARRAY *ppInterfaceGuids) = 0;
-    virtual HRESULT WINAPI ListCards(LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,long localeId,LPSAFEARRAY *ppCardNames) = 0;
-    virtual HRESULT WINAPI ListReaderGroups(long localeId,LPSAFEARRAY *ppReaderGroups) = 0;
-    virtual HRESULT WINAPI ListReaders(long localeId,LPSAFEARRAY *ppReaders) = 0;
+    virtual HRESULT WINAPI ListCards(LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,__LONG32 localeId,LPSAFEARRAY *ppCardNames) = 0;
+    virtual HRESULT WINAPI ListReaderGroups(__LONG32 localeId,LPSAFEARRAY *ppReaderGroups) = 0;
+    virtual HRESULT WINAPI ListReaders(__LONG32 localeId,LPSAFEARRAY *ppReaders) = 0;
   };
 #else
   typedef struct ISCardDatabaseVtbl {
@@ -928,9 +928,9 @@ extern "C" {
       HRESULT (WINAPI *Invoke)(ISCardDatabase *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
       HRESULT (WINAPI *GetProviderCardId)(ISCardDatabase *This,BSTR bstrCardName,LPGUID *ppguidProviderId);
       HRESULT (WINAPI *ListCardInterfaces)(ISCardDatabase *This,BSTR bstrCardName,LPSAFEARRAY *ppInterfaceGuids);
-      HRESULT (WINAPI *ListCards)(ISCardDatabase *This,LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,long localeId,LPSAFEARRAY *ppCardNames);
-      HRESULT (WINAPI *ListReaderGroups)(ISCardDatabase *This,long localeId,LPSAFEARRAY *ppReaderGroups);
-      HRESULT (WINAPI *ListReaders)(ISCardDatabase *This,long localeId,LPSAFEARRAY *ppReaders);
+      HRESULT (WINAPI *ListCards)(ISCardDatabase *This,LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,__LONG32 localeId,LPSAFEARRAY *ppCardNames);
+      HRESULT (WINAPI *ListReaderGroups)(ISCardDatabase *This,__LONG32 localeId,LPSAFEARRAY *ppReaderGroups);
+      HRESULT (WINAPI *ListReaders)(ISCardDatabase *This,__LONG32 localeId,LPSAFEARRAY *ppReaders);
     END_INTERFACE
   } ISCardDatabaseVtbl;
   struct ISCardDatabase {
@@ -955,11 +955,11 @@ extern "C" {
   void __RPC_STUB ISCardDatabase_GetProviderCardId_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI ISCardDatabase_ListCardInterfaces_Proxy(ISCardDatabase *This,BSTR bstrCardName,LPSAFEARRAY *ppInterfaceGuids);
   void __RPC_STUB ISCardDatabase_ListCardInterfaces_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ISCardDatabase_ListCards_Proxy(ISCardDatabase *This,LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,long localeId,LPSAFEARRAY *ppCardNames);
+  HRESULT WINAPI ISCardDatabase_ListCards_Proxy(ISCardDatabase *This,LPBYTEBUFFER pAtr,LPSAFEARRAY pInterfaceGuids,__LONG32 localeId,LPSAFEARRAY *ppCardNames);
   void __RPC_STUB ISCardDatabase_ListCards_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ISCardDatabase_ListReaderGroups_Proxy(ISCardDatabase *This,long localeId,LPSAFEARRAY *ppReaderGroups);
+  HRESULT WINAPI ISCardDatabase_ListReaderGroups_Proxy(ISCardDatabase *This,__LONG32 localeId,LPSAFEARRAY *ppReaderGroups);
   void __RPC_STUB ISCardDatabase_ListReaderGroups_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI ISCardDatabase_ListReaders_Proxy(ISCardDatabase *This,long localeId,LPSAFEARRAY *ppReaders);
+  HRESULT WINAPI ISCardDatabase_ListReaders_Proxy(ISCardDatabase *This,__LONG32 localeId,LPSAFEARRAY *ppReaders);
   void __RPC_STUB ISCardDatabase_ListReaders_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
 #endif
 #endif
@@ -1056,18 +1056,18 @@ extern "C" {
 #endif
 #endif
 
-  unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-  unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-  unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-  void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-  unsigned long __RPC_API HGLOBAL_UserSize(unsigned long *,unsigned long,HGLOBAL *);
-  unsigned char *__RPC_API HGLOBAL_UserMarshal(unsigned long *,unsigned char *,HGLOBAL *);
-  unsigned char *__RPC_API HGLOBAL_UserUnmarshal(unsigned long *,unsigned char *,HGLOBAL *);
-  void __RPC_API HGLOBAL_UserFree(unsigned long *,HGLOBAL *);
-  unsigned long __RPC_API LPSAFEARRAY_UserSize(unsigned long *,unsigned long,LPSAFEARRAY *);
-  unsigned char *__RPC_API LPSAFEARRAY_UserMarshal(unsigned long *,unsigned char *,LPSAFEARRAY *);
-  unsigned char *__RPC_API LPSAFEARRAY_UserUnmarshal(unsigned long *,unsigned char *,LPSAFEARRAY *);
-  void __RPC_API LPSAFEARRAY_UserFree(unsigned long *,LPSAFEARRAY *);
+  ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+  unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+  unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+  void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+  ULONG __RPC_API HGLOBAL_UserSize(ULONG *,ULONG,HGLOBAL *);
+  unsigned char *__RPC_API HGLOBAL_UserMarshal(ULONG *,unsigned char *,HGLOBAL *);
+  unsigned char *__RPC_API HGLOBAL_UserUnmarshal(ULONG *,unsigned char *,HGLOBAL *);
+  void __RPC_API HGLOBAL_UserFree(ULONG *,HGLOBAL *);
+  ULONG __RPC_API LPSAFEARRAY_UserSize(ULONG *,ULONG,LPSAFEARRAY *);
+  unsigned char *__RPC_API LPSAFEARRAY_UserMarshal(ULONG *,unsigned char *,LPSAFEARRAY *);
+  unsigned char *__RPC_API LPSAFEARRAY_UserUnmarshal(ULONG *,unsigned char *,LPSAFEARRAY *);
+  void __RPC_API LPSAFEARRAY_UserFree(ULONG *,LPSAFEARRAY *);
 
 #ifdef __cplusplus
 }

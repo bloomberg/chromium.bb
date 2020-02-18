@@ -24,6 +24,8 @@
       <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../renderer/core/html/resources/input_multiple_fields.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../renderer/core/html/resources/win.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../renderer/core/html/resources/win_quirks.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS" file="../renderer/core/html/resources/controls_refresh.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_FORCED_COLORS_CSS" file="../renderer/core/html/resources/forced_colors.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_SVG_CSS" file="../renderer/core/css/svg.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_MATHML_CSS" file="../renderer/core/css/mathml.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../renderer/core/css/fullscreen.css" type="BINDATA" compress="gzip"/>
@@ -50,8 +52,11 @@
         <include name="IDR_PICKER_BUTTON_CSS" file="../renderer/core/html/forms/resources/pickerButton.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_SUGGESTION_PICKER_CSS" file="../renderer/core/html/forms/resources/suggestionPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_SUGGESTION_PICKER_JS" file="../renderer/core/html/forms/resources/suggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_PICKER_COMMON_JS" file="../renderer/core/html/forms/resources/color_picker_common.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../renderer/core/html/forms/resources/colorSuggestionPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../renderer/core/html/forms/resources/colorSuggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_PICKER_CSS" file="../renderer/core/html/forms/resources/color_picker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_PICKER_JS" file="../renderer/core/html/forms/resources/color_picker.js" type="BINDATA" compress="gzip"/>
         <include name="IDR_LIST_PICKER_CSS" file="../renderer/core/html/forms/resources/listPicker.css" type="BINDATA" compress="gzip"/>
         <include name="IDR_LIST_PICKER_JS" file="../renderer/core/html/forms/resources/listPicker.js" type="BINDATA" compress="gzip"/>
       </if>

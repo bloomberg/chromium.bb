@@ -25,15 +25,17 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/string_view.h"
-#include "perfetto/base/utils.h"
+#include "perfetto/ext/base/string_view.h"
+#include "perfetto/ext/base/utils.h"
 #include "src/trace_processor/json_trace_utils.h"
 #include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/slice_tracker.h"
 #include "src/trace_processor/trace_processor_context.h"
 
-#if !PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
-#error The JSON trace parser is supported only in the standalone build for now.
+#if !PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD) && \
+    !PERFETTO_BUILD_WITH_CHROMIUM
+#error The JSON trace parser is supported only in the standalone and \
+Chromium builds for now.
 #endif
 
 namespace perfetto {
@@ -88,11 +90,11 @@ void JsonTraceParser::ParseTracePacket(int64_t timestamp,
 
   switch (phase) {
     case 'B': {  // TRACE_EVENT_BEGIN.
-      slice_tracker->Begin(timestamp, utid, cat_id, name_id);
+      slice_tracker->Begin(timestamp, utid, RefType::kRefUtid, cat_id, name_id);
       break;
     }
     case 'E': {  // TRACE_EVENT_END.
-      slice_tracker->End(timestamp, utid, cat_id, name_id);
+      slice_tracker->End(timestamp, utid, RefType::kRefUtid, cat_id, name_id);
       break;
     }
     case 'X': {  // TRACE_EVENT (scoped event).
@@ -100,19 +102,22 @@ void JsonTraceParser::ParseTracePacket(int64_t timestamp,
           json_trace_utils::CoerceToNs(value["dur"]);
       if (!opt_dur.has_value())
         return;
-      slice_tracker->Scoped(timestamp, utid, cat_id, name_id, opt_dur.value());
+      slice_tracker->Scoped(timestamp, utid, RefType::kRefUtid, cat_id, name_id,
+                            opt_dur.value());
       break;
     }
     case 'M': {  // Metadata events (process and thread names).
-      if (strcmp(value["name"].asCString(), "thread_name") == 0) {
+      if (strcmp(value["name"].asCString(), "thread_name") == 0 &&
+          !value["args"]["name"].empty()) {
         const char* thread_name = value["args"]["name"].asCString();
         auto thread_name_id = context_->storage->InternString(thread_name);
         procs->UpdateThreadName(tid, thread_name_id);
         break;
       }
-      if (strcmp(value["name"].asCString(), "process_name") == 0) {
+      if (strcmp(value["name"].asCString(), "process_name") == 0 &&
+          !value["args"]["name"].empty()) {
         const char* proc_name = value["args"]["name"].asCString();
-        procs->UpdateProcess(pid, base::nullopt, proc_name);
+        procs->SetProcessMetadata(pid, base::nullopt, proc_name);
         break;
       }
     }

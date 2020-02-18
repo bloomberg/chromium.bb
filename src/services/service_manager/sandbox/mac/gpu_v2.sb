@@ -9,8 +9,11 @@
 
 (allow-cvms-blobs)
 
+(allow ipc-posix-shm)
+
 ; Allow communication between the GPU process and the UI server.
 (allow mach-lookup
+  (global-name "com.apple.cfprefsd.agent")
   (global-name "com.apple.cfprefsd.daemon")
   (global-name "com.apple.CoreServices.coreservicesd")
   (global-name "com.apple.coreservices.launchservicesd")
@@ -88,4 +91,9 @@
   (subpath "/Library/GPUBundles")
   (subpath "/Library/Video/Plug-Ins")
   (subpath "/System/Library/Video/Plug-Ins")
+)
+
+; crbug.com/980134
+(allow file-read* file-write*
+  (subpath (param darwin-user-cache-dir))
 )

@@ -27,8 +27,10 @@
 
 #include "perfetto/tracing/core/trace_config.h"
 
-#include "perfetto/config/data_source_config.pb.h"
 #include "perfetto/config/trace_config.pb.h"
+
+#include "perfetto/config/data_source_config.pb.h"
+#include "perfetto/tracing/core/data_source_config.h"
 
 namespace perfetto {
 
@@ -57,12 +59,15 @@ bool TraceConfig::operator==(const TraceConfig& other) const {
          (deferred_start_ == other.deferred_start_) &&
          (flush_period_ms_ == other.flush_period_ms_) &&
          (flush_timeout_ms_ == other.flush_timeout_ms_) &&
+         (data_source_stop_timeout_ms_ == other.data_source_stop_timeout_ms_) &&
          (notify_traceur_ == other.notify_traceur_) &&
          (trigger_config_ == other.trigger_config_) &&
          (activate_triggers_ == other.activate_triggers_) &&
          (incremental_state_config_ == other.incremental_state_config_) &&
          (allow_user_build_tracing_ == other.allow_user_build_tracing_) &&
-         (unique_session_name_ == other.unique_session_name_);
+         (unique_session_name_ == other.unique_session_name_) &&
+         (compression_type_ == other.compression_type_) &&
+         (incident_report_config_ == other.incident_report_config_);
 }
 #pragma GCC diagnostic pop
 
@@ -85,7 +90,7 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
     data_sources_.back().FromProto(field);
   }
 
-  builtin_data_sources_.FromProto(proto.builtin_data_sources());
+  builtin_data_sources_->FromProto(proto.builtin_data_sources());
 
   static_assert(sizeof(duration_ms_) == sizeof(proto.duration_ms()),
                 "size mismatch");
@@ -107,7 +112,7 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
     producers_.back().FromProto(field);
   }
 
-  statsd_metadata_.FromProto(proto.statsd_metadata());
+  statsd_metadata_->FromProto(proto.statsd_metadata());
 
   static_assert(sizeof(write_into_file_) == sizeof(proto.write_into_file()),
                 "size mismatch");
@@ -126,7 +131,7 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
   max_file_size_bytes_ =
       static_cast<decltype(max_file_size_bytes_)>(proto.max_file_size_bytes());
 
-  guardrail_overrides_.FromProto(proto.guardrail_overrides());
+  guardrail_overrides_->FromProto(proto.guardrail_overrides());
 
   static_assert(sizeof(deferred_start_) == sizeof(proto.deferred_start()),
                 "size mismatch");
@@ -143,12 +148,19 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
   flush_timeout_ms_ =
       static_cast<decltype(flush_timeout_ms_)>(proto.flush_timeout_ms());
 
+  static_assert(sizeof(data_source_stop_timeout_ms_) ==
+                    sizeof(proto.data_source_stop_timeout_ms()),
+                "size mismatch");
+  data_source_stop_timeout_ms_ =
+      static_cast<decltype(data_source_stop_timeout_ms_)>(
+          proto.data_source_stop_timeout_ms());
+
   static_assert(sizeof(notify_traceur_) == sizeof(proto.notify_traceur()),
                 "size mismatch");
   notify_traceur_ =
       static_cast<decltype(notify_traceur_)>(proto.notify_traceur());
 
-  trigger_config_.FromProto(proto.trigger_config());
+  trigger_config_->FromProto(proto.trigger_config());
 
   activate_triggers_.clear();
   for (const auto& field : proto.activate_triggers()) {
@@ -160,7 +172,7 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
         static_cast<decltype(activate_triggers_)::value_type>(field);
   }
 
-  incremental_state_config_.FromProto(proto.incremental_state_config());
+  incremental_state_config_->FromProto(proto.incremental_state_config());
 
   static_assert(sizeof(allow_user_build_tracing_) ==
                     sizeof(proto.allow_user_build_tracing()),
@@ -173,6 +185,13 @@ void TraceConfig::FromProto(const perfetto::protos::TraceConfig& proto) {
       "size mismatch");
   unique_session_name_ =
       static_cast<decltype(unique_session_name_)>(proto.unique_session_name());
+
+  static_assert(sizeof(compression_type_) == sizeof(proto.compression_type()),
+                "size mismatch");
+  compression_type_ =
+      static_cast<decltype(compression_type_)>(proto.compression_type());
+
+  incident_report_config_->FromProto(proto.incident_report_config());
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -189,7 +208,7 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
     it.ToProto(entry);
   }
 
-  builtin_data_sources_.ToProto(proto->mutable_builtin_data_sources());
+  builtin_data_sources_->ToProto(proto->mutable_builtin_data_sources());
 
   static_assert(sizeof(duration_ms_) == sizeof(proto->duration_ms()),
                 "size mismatch");
@@ -213,7 +232,7 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
     it.ToProto(entry);
   }
 
-  statsd_metadata_.ToProto(proto->mutable_statsd_metadata());
+  statsd_metadata_->ToProto(proto->mutable_statsd_metadata());
 
   static_assert(sizeof(write_into_file_) == sizeof(proto->write_into_file()),
                 "size mismatch");
@@ -234,7 +253,7 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
       static_cast<decltype(proto->max_file_size_bytes())>(
           max_file_size_bytes_));
 
-  guardrail_overrides_.ToProto(proto->mutable_guardrail_overrides());
+  guardrail_overrides_->ToProto(proto->mutable_guardrail_overrides());
 
   static_assert(sizeof(deferred_start_) == sizeof(proto->deferred_start()),
                 "size mismatch");
@@ -251,12 +270,19 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
   proto->set_flush_timeout_ms(
       static_cast<decltype(proto->flush_timeout_ms())>(flush_timeout_ms_));
 
+  static_assert(sizeof(data_source_stop_timeout_ms_) ==
+                    sizeof(proto->data_source_stop_timeout_ms()),
+                "size mismatch");
+  proto->set_data_source_stop_timeout_ms(
+      static_cast<decltype(proto->data_source_stop_timeout_ms())>(
+          data_source_stop_timeout_ms_));
+
   static_assert(sizeof(notify_traceur_) == sizeof(proto->notify_traceur()),
                 "size mismatch");
   proto->set_notify_traceur(
       static_cast<decltype(proto->notify_traceur())>(notify_traceur_));
 
-  trigger_config_.ToProto(proto->mutable_trigger_config());
+  trigger_config_->ToProto(proto->mutable_trigger_config());
 
   for (const auto& it : activate_triggers_) {
     proto->add_activate_triggers(
@@ -265,7 +291,7 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
                   "size mismatch");
   }
 
-  incremental_state_config_.ToProto(proto->mutable_incremental_state_config());
+  incremental_state_config_->ToProto(proto->mutable_incremental_state_config());
 
   static_assert(sizeof(allow_user_build_tracing_) ==
                     sizeof(proto->allow_user_build_tracing()),
@@ -280,6 +306,13 @@ void TraceConfig::ToProto(perfetto::protos::TraceConfig* proto) const {
   proto->set_unique_session_name(
       static_cast<decltype(proto->unique_session_name())>(
           unique_session_name_));
+
+  static_assert(sizeof(compression_type_) == sizeof(proto->compression_type()),
+                "size mismatch");
+  proto->set_compression_type(
+      static_cast<decltype(proto->compression_type())>(compression_type_));
+
+  incident_report_config_->ToProto(proto->mutable_incident_report_config());
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 
@@ -360,7 +393,7 @@ void TraceConfig::DataSource::ParseRawProto(const std::string& raw) {
 
 void TraceConfig::DataSource::FromProto(
     const perfetto::protos::TraceConfig_DataSource& proto) {
-  config_.FromProto(proto.config());
+  config_->FromProto(proto.config());
 
   producer_name_filter_.clear();
   for (const auto& field : proto.producer_name_filter()) {
@@ -378,7 +411,7 @@ void TraceConfig::DataSource::ToProto(
     perfetto::protos::TraceConfig_DataSource* proto) const {
   proto->Clear();
 
-  config_.ToProto(proto->mutable_config());
+  config_->ToProto(proto->mutable_config());
 
   for (const auto& it : producer_name_filter_) {
     proto->add_producer_name_filter(
@@ -847,6 +880,86 @@ void TraceConfig::IncrementalStateConfig::ToProto(
                 "size mismatch");
   proto->set_clear_period_ms(
       static_cast<decltype(proto->clear_period_ms())>(clear_period_ms_));
+  *(proto->mutable_unknown_fields()) = unknown_fields_;
+}
+
+TraceConfig::IncidentReportConfig::IncidentReportConfig() = default;
+TraceConfig::IncidentReportConfig::~IncidentReportConfig() = default;
+TraceConfig::IncidentReportConfig::IncidentReportConfig(
+    const TraceConfig::IncidentReportConfig&) = default;
+TraceConfig::IncidentReportConfig& TraceConfig::IncidentReportConfig::operator=(
+    const TraceConfig::IncidentReportConfig&) = default;
+TraceConfig::IncidentReportConfig::IncidentReportConfig(
+    TraceConfig::IncidentReportConfig&&) noexcept = default;
+TraceConfig::IncidentReportConfig& TraceConfig::IncidentReportConfig::operator=(
+    TraceConfig::IncidentReportConfig&&) = default;
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
+bool TraceConfig::IncidentReportConfig::operator==(
+    const TraceConfig::IncidentReportConfig& other) const {
+  return (destination_package_ == other.destination_package_) &&
+         (destination_class_ == other.destination_class_) &&
+         (privacy_level_ == other.privacy_level_) &&
+         (skip_dropbox_ == other.skip_dropbox_);
+}
+#pragma GCC diagnostic pop
+
+void TraceConfig::IncidentReportConfig::ParseRawProto(const std::string& raw) {
+  perfetto::protos::TraceConfig_IncidentReportConfig proto;
+  proto.ParseFromString(raw);
+  FromProto(proto);
+}
+
+void TraceConfig::IncidentReportConfig::FromProto(
+    const perfetto::protos::TraceConfig_IncidentReportConfig& proto) {
+  static_assert(
+      sizeof(destination_package_) == sizeof(proto.destination_package()),
+      "size mismatch");
+  destination_package_ =
+      static_cast<decltype(destination_package_)>(proto.destination_package());
+
+  static_assert(sizeof(destination_class_) == sizeof(proto.destination_class()),
+                "size mismatch");
+  destination_class_ =
+      static_cast<decltype(destination_class_)>(proto.destination_class());
+
+  static_assert(sizeof(privacy_level_) == sizeof(proto.privacy_level()),
+                "size mismatch");
+  privacy_level_ = static_cast<decltype(privacy_level_)>(proto.privacy_level());
+
+  static_assert(sizeof(skip_dropbox_) == sizeof(proto.skip_dropbox()),
+                "size mismatch");
+  skip_dropbox_ = static_cast<decltype(skip_dropbox_)>(proto.skip_dropbox());
+  unknown_fields_ = proto.unknown_fields();
+}
+
+void TraceConfig::IncidentReportConfig::ToProto(
+    perfetto::protos::TraceConfig_IncidentReportConfig* proto) const {
+  proto->Clear();
+
+  static_assert(
+      sizeof(destination_package_) == sizeof(proto->destination_package()),
+      "size mismatch");
+  proto->set_destination_package(
+      static_cast<decltype(proto->destination_package())>(
+          destination_package_));
+
+  static_assert(
+      sizeof(destination_class_) == sizeof(proto->destination_class()),
+      "size mismatch");
+  proto->set_destination_class(
+      static_cast<decltype(proto->destination_class())>(destination_class_));
+
+  static_assert(sizeof(privacy_level_) == sizeof(proto->privacy_level()),
+                "size mismatch");
+  proto->set_privacy_level(
+      static_cast<decltype(proto->privacy_level())>(privacy_level_));
+
+  static_assert(sizeof(skip_dropbox_) == sizeof(proto->skip_dropbox()),
+                "size mismatch");
+  proto->set_skip_dropbox(
+      static_cast<decltype(proto->skip_dropbox())>(skip_dropbox_));
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 

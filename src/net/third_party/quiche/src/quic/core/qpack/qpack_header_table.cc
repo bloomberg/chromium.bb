@@ -9,16 +9,6 @@
 
 namespace quic {
 
-namespace {
-
-const uint64_t kEntrySizeOverhead = 32;
-
-uint64_t EntrySize(QuicStringPiece name, QuicStringPiece value) {
-  return name.size() + value.size() + kEntrySizeOverhead;
-}
-
-}  // anonymous namespace
-
 QpackHeaderTable::QpackHeaderTable()
     : static_entries_(ObtainQpackStaticTable().GetStaticEntries()),
       static_index_(ObtainQpackStaticTable().GetStaticIndex()),
@@ -102,7 +92,7 @@ QpackHeaderTable::MatchType QpackHeaderTable::FindHeaderField(
 
 const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
                                                 QuicStringPiece value) {
-  const uint64_t entry_size = EntrySize(name, value);
+  const uint64_t entry_size = QpackEntry::Size(name, value);
   if (entry_size > dynamic_table_capacity_) {
     return nullptr;
   }
@@ -140,6 +130,14 @@ const QpackEntry* QpackHeaderTable::InsertEntry(QuicStringPiece name,
     CHECK(result.second);
   }
 
+  // Notify and deregister observers whose threshold is met, if any.
+  while (!observers_.empty() &&
+         observers_.top().required_insert_count <= inserted_entry_count()) {
+    Observer* observer = observers_.top().observer;
+    observers_.pop();
+    observer->OnInsertCountReachedThreshold();
+  }
+
   return new_entry;
 }
 
@@ -169,12 +167,23 @@ void QpackHeaderTable::SetMaximumDynamicTableCapacity(
   max_entries_ = maximum_dynamic_table_capacity / 32;
 }
 
+void QpackHeaderTable::RegisterObserver(Observer* observer,
+                                        uint64_t required_insert_count) {
+  DCHECK_GT(required_insert_count, 0u);
+  observers_.push({observer, required_insert_count});
+}
+
+bool QpackHeaderTable::ObserverWithThreshold::operator>(
+    const ObserverWithThreshold& other) const {
+  return required_insert_count > other.required_insert_count;
+}
+
 void QpackHeaderTable::EvictDownToCurrentCapacity() {
   while (dynamic_table_size_ > dynamic_table_capacity_) {
     DCHECK(!dynamic_entries_.empty());
 
     QpackEntry* const entry = &dynamic_entries_.front();
-    const uint64_t entry_size = EntrySize(entry->name(), entry->value());
+    const uint64_t entry_size = entry->Size();
 
     DCHECK_GE(dynamic_table_size_, entry_size);
     dynamic_table_size_ -= entry_size;

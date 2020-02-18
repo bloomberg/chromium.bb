@@ -5,11 +5,14 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/field_trial.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -21,7 +24,6 @@ class FilePath;
 }
 
 namespace content {
-
 class BrowserMainParts;
 class WebContents;
 
@@ -50,7 +52,7 @@ class BrowserTestBase : public testing::Test {
   virtual void SetUpCommandLine(base::CommandLine* command_line) {}
 
   // Override this to disallow accesses to be production-compatible.
-  virtual bool AllowFileAccessFromFiles() const;
+  virtual bool AllowFileAccessFromFiles();
 
   // Crash the Network Service process. Should only be called when
   // out-of-process Network Service is enabled. Re-applies any added host
@@ -152,6 +154,12 @@ class BrowserTestBase : public testing::Test {
   void SetInitialWebContents(WebContents* web_contents);
 
  private:
+#if defined(OS_ANDROID)
+  // Android browser tests need to wait for async initialization in Java code.
+  // This waits for those to complete before we can continue with the test.
+  void WaitUntilJavaIsReady(base::OnceClosure quit_closure);
+#endif
+  // Performs a bunch of setup, and then runs the browser test body.
   void ProxyRunTestOnMainThreadLoop();
 
   // When using the network process, update the host resolver rules that were
@@ -188,6 +196,8 @@ class BrowserTestBase : public testing::Test {
   // class to ensure that SetUp was called. If it's not called, the test will
   // not run and report a false positive result.
   bool set_up_called_;
+
+  std::unique_ptr<NoRendererCrashesAssertion> no_renderer_crashes_assertion_;
 
   bool initialized_network_process_ = false;
 

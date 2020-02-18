@@ -63,6 +63,13 @@ class _BaseVRBenchmark(perf_benchmark.PerfBenchmark):
              'to use whatever version is already installed on the device '
              'instead of installing whatever is in the test APKs directory.')
     parser.add_option(
+        '--remove-system-vrcore',
+        action='store_true',
+        default=False,
+        help='Removes the system version of VrCore if it is installed. This '
+             'is required if the system version is not already removed and '
+             '--disable-vrcore-install is not passed.')
+    parser.add_option(
         '--recording-wpr',
         action='store_true',
         default=False,
@@ -109,11 +116,6 @@ class _BaseWebVRWebXRBenchmark(_BaseVRBenchmark):
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())
     return options
-
-  @classmethod
-  def ShouldAddValue(cls, name, from_first_story_run):
-    del from_first_story_run  # unused
-    return memory.DefaultShouldAddValueForMemoryMeasurement(name)
 
 
 class _BaseWebVRBenchmark(_BaseWebVRWebXRBenchmark):
@@ -203,7 +205,7 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
 
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
     for category in self.COMMON_TRACE_CATEGORIES:
       category_filter.AddFilter(category)

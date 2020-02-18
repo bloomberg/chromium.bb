@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
+#include "chrome/browser/performance_manager/graph/graph_impl_operations.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
@@ -40,6 +41,9 @@
 using base::trace_event::MemoryAllocatorDump;
 using memory_instrumentation::GlobalMemoryDump;
 using ukm::builders::Memory_Experimental;
+
+const base::Feature kMemoryMetricsOldTiming{"MemoryMetricsOldTiming",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -747,8 +751,8 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
-        } else if (base::ContainsValue(pmd.service_names(),
-                                       content::mojom::kNetworkServiceName)) {
+        } else if (base::Contains(pmd.service_names(),
+                                  content::mojom::kNetworkServiceName)) {
           EmitNetworkServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
@@ -769,17 +773,31 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
   }
 
   if (emit_metrics_for_all_processes) {
-    size_t native_resident_kb =
-        global_dump_->aggregated_metrics().native_library_resident_kb();
+    const auto& metrics = global_dump_->aggregated_metrics();
+    int32_t native_resident_kb = metrics.native_library_resident_kb();
+    int32_t native_library_resident_not_ordered_kb =
+        metrics.native_library_resident_not_ordered_kb();
+    int32_t native_library_not_resident_ordered_kb =
+        metrics.native_library_not_resident_ordered_kb();
 
     // |native_resident_kb| is only calculated for android devices that support
-    // code ordering. Otherwise it is equal to zero and should not be reported.
-    if (native_resident_kb != 0) {
+    // code ordering.
+    if (native_resident_kb != metrics.kInvalid) {
       // Size of the native library on android is ~40MB.
       // More precision is needed in the middle buckets, hence the range.
       base::UmaHistogramCustomCounts(
           "Memory.NativeLibrary.MappedAndResidentMemoryFootprint2",
           native_resident_kb, 1000, 100000, 100);
+      if (native_library_not_resident_ordered_kb != metrics.kInvalid) {
+        base::UmaHistogramCustomCounts(
+            "Memory.NativeLibrary.NotResidentOrderedCodeMemoryFootprint",
+            native_library_not_resident_ordered_kb, 1000, 100000, 100);
+      }
+      if (native_library_resident_not_ordered_kb != metrics.kInvalid) {
+        base::UmaHistogramCustomCounts(
+            "Memory.NativeLibrary.ResidentNotOrderedCodeMemoryFootprint",
+            native_library_resident_not_ordered_kb, 1000, 100000, 100);
+      }
     }
 
     UMA_HISTOGRAM_MEMORY_LARGE_MB(
@@ -817,7 +835,7 @@ namespace {
 // main-frame of the given |page|.
 bool HostsMainFrame(performance_manager::ProcessNodeImpl* process,
                     performance_manager::PageNodeImpl* page) {
-  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNode();
+  performance_manager::FrameNodeImpl* main_frame = page->GetMainFrameNodeImpl();
   if (main_frame == nullptr) {
     // |process| can't host a frame that doesn't exist.
     return false;
@@ -833,7 +851,7 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     performance_manager::GraphImpl* graph) {
   std::vector<ProcessInfo> process_infos;
   std::vector<performance_manager::ProcessNodeImpl*> process_nodes =
-      graph->GetAllProcessNodes();
+      graph->GetAllProcessNodeImpls();
   for (auto* process_node : process_nodes) {
     if (process_node->process_id() == base::kNullProcessId)
       continue;
@@ -843,7 +861,8 @@ void ProcessMemoryMetricsEmitter::GetProcessToPageInfoMap(
     process_info.launch_time = process_node->launch_time();
 
     base::flat_set<performance_manager::PageNodeImpl*> page_nodes =
-        process_node->GetAssociatedPageNodes();
+        performance_manager::GraphImplOperations::GetAssociatedPageNodes(
+            process_node);
     for (performance_manager::PageNodeImpl* page_node : page_nodes) {
       if (page_node->ukm_source_id() == ukm::kInvalidSourceId)
         continue;

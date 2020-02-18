@@ -54,7 +54,7 @@ def ToStructure(value):
 
   elif isinstance(value, dict):
     ret = {}
-    for k, v in value.iteritems():
+    for k, v in value.items():
       v = ToStructure(v)
       if v is not None:
         ret[k] = v

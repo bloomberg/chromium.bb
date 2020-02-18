@@ -200,13 +200,17 @@ WebURLLoadTiming WebURLLoadTiming::DeepCopy() const {
   return private_->DeepCopy();
 }
 
-CrossThreadCopier<WebURLLoadTiming>::Type
-CrossThreadCopier<WebURLLoadTiming>::Copy(const WebURLLoadTiming& timing) {
-  return timing.DeepCopy();
-}
-
 bool WebURLLoadTiming::operator==(const WebURLLoadTiming& other) const {
   return *private_ == *other.private_;
 }
 
 }  // namespace blink
+
+namespace WTF {
+
+CrossThreadCopier<blink::WebURLLoadTiming>::Type CrossThreadCopier<
+    blink::WebURLLoadTiming>::Copy(const blink::WebURLLoadTiming& timing) {
+  return timing.DeepCopy();
+}
+
+}  // namespace WTF

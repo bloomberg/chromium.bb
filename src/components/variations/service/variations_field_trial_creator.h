@@ -22,6 +22,21 @@
 
 namespace variations {
 
+enum LoadPermanentConsistencyCountryResult {
+  LOAD_COUNTRY_NO_PREF_NO_SEED = 0,
+  LOAD_COUNTRY_NO_PREF_HAS_SEED,
+  LOAD_COUNTRY_INVALID_PREF_NO_SEED,
+  LOAD_COUNTRY_INVALID_PREF_HAS_SEED,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_EQ,
+  LOAD_COUNTRY_HAS_PREF_NO_SEED_VERSION_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_EQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_EQ,
+  LOAD_COUNTRY_HAS_BOTH_VERSION_NEQ_COUNTRY_NEQ,
+  LOAD_COUNTRY_HAS_PERMANENT_OVERRIDDEN_COUNTRY,
+  LOAD_COUNTRY_MAX,
+};
+
 class PlatformFieldTrials;
 class SafeSeedManager;
 class VariationsServiceClient;
@@ -87,6 +102,10 @@ class VariationsFieldTrialCreator {
   void StorePermanentCountry(const base::Version& version,
                              const std::string& country);
 
+  // Sets the stored permanent variations overridden country pref for this
+  // client.
+  void StoreVariationsOverriddenCountry(const std::string& country);
+
   // Records the time of the most recent successful fetch.
   void RecordLastFetchTime();
 
@@ -104,8 +123,8 @@ class VariationsFieldTrialCreator {
   const std::string& application_locale() const { return application_locale_; }
 
   // Returns the short hardware class value used to evaluate variations hardware
-  // class filters. Only implemented on CrOS - returns empty string on other
-  // platforms.
+  // class filters. Only implemented on CrOS and Android - returns empty string
+  // on other platforms.
   static std::string GetShortHardwareClass();
 
  private:

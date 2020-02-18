@@ -29,7 +29,7 @@
 // One MediaCodecLoop instance owns a single MediaCodec(Bridge) instance, and
 // drives it to perform decoding in conjunction with a MediaCodecLoop::Client.
 // The Client provides the input data and consumes the output data.  A typical
-// example is AndroidVideoDecodeAccelerator.
+// example is MediaCodecAudioDecoder.
 
 // Implementation notes.
 //
@@ -293,9 +293,6 @@ class MEDIA_EXPORT MediaCodecLoop {
 
   // Helper method to change the state.
   void SetState(State new_state);
-
-  // Helper method to tell us if MediaCodecBridge::Flush() doesn't work.
-  bool CodecNeedsFlushWorkaround() const;
 
   // A helper function for logging.
   static const char* AsString(State state);

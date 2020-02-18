@@ -407,10 +407,10 @@ class FlattenUniformVisitor : public sh::VariableNameVisitor
                             const std::string &name,
                             const std::string &mappedName) override
     {
-        bool isSampler                              = IsSamplerType(variable.type);
-        bool isImage                                = IsImageType(variable.type);
-        bool isAtomicCounter                        = IsAtomicCounterType(variable.type);
-        std::vector<gl::LinkedUniform> *uniformList = mUniforms;
+        bool isSampler                          = IsSamplerType(variable.type);
+        bool isImage                            = IsImageType(variable.type);
+        bool isAtomicCounter                    = IsAtomicCounterType(variable.type);
+        std::vector<LinkedUniform> *uniformList = mUniforms;
         if (isSampler)
         {
             uniformList = mSamplerUniforms;
@@ -468,7 +468,10 @@ class FlattenUniformVisitor : public sh::VariableNameVisitor
             linkedUniform.mappedName = fullMappedNameWithArrayIndex;
             linkedUniform.active     = mMarkActive;
             linkedUniform.staticUse  = mMarkStaticUse;
-            linkedUniform.setParentArrayIndex(variable.parentArrayIndex());
+            if (variable.hasParentArrayIndex())
+            {
+                linkedUniform.setParentArrayIndex(variable.parentArrayIndex());
+            }
             if (mMarkActive)
             {
                 linkedUniform.setActive(mShaderType, true);
@@ -618,7 +621,7 @@ bool InterfaceBlockInfo::getBlockSize(const std::string &name,
                                       size_t *sizeOut)
 {
     size_t nameLengthWithoutArrayIndex;
-    gl::ParseArrayIndex(name, &nameLengthWithoutArrayIndex);
+    ParseArrayIndex(name, &nameLengthWithoutArrayIndex);
     std::string baseName = name.substr(0u, nameLengthWithoutArrayIndex);
     auto sizeIter        = mBlockSizes.find(baseName);
     if (sizeIter == mBlockSizes.end())
@@ -699,7 +702,7 @@ bool UniformLinker::validateGraphicsUniforms(InfoLog &infoLog) const
     // Check that uniforms defined in the graphics shaders are identical
     std::map<std::string, ShaderUniform> linkedUniforms;
 
-    for (ShaderType shaderType : kAllGraphicsShaderTypes)
+    for (const ShaderType shaderType : kAllGraphicsShaderTypes)
     {
         Shader *currentShader = mState.getAttachedShader(shaderType);
         if (currentShader)
@@ -988,7 +991,7 @@ bool UniformLinker::flattenUniformsAndCheckCaps(const Caps &caps, InfoLog &infoL
     std::vector<LinkedUniform> atomicCounterUniforms;
     std::vector<UnusedUniform> unusedUniforms;
 
-    for (ShaderType shaderType : AllShaderTypes())
+    for (const ShaderType shaderType : AllShaderTypes())
     {
         Shader *shader = mState.getAttachedShader(shaderType);
         if (!shader)
@@ -1050,7 +1053,7 @@ void InterfaceBlockLinker::linkBlocks(const GetBlockSizeFunc &getBlockSize,
 
     std::set<std::string> visitedList;
 
-    for (ShaderType shaderType : AllShaderTypes())
+    for (const ShaderType shaderType : AllShaderTypes())
     {
         if (!mShaderBlocks[shaderType])
         {
@@ -1242,14 +1245,14 @@ ProgramLinkedResources::ProgramLinkedResources(
 
 ProgramLinkedResources::~ProgramLinkedResources() = default;
 
-void ProgramLinkedResourcesLinker::linkResources(const gl::ProgramState &programState,
-                                                 const gl::ProgramLinkedResources &resources) const
+void ProgramLinkedResourcesLinker::linkResources(const ProgramState &programState,
+                                                 const ProgramLinkedResources &resources) const
 {
     // Gather uniform interface block info.
     InterfaceBlockInfo uniformBlockInfo(mCustomEncoderFactory);
-    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    for (const ShaderType shaderType : AllShaderTypes())
     {
-        gl::Shader *shader = programState.getAttachedShader(shaderType);
+        Shader *shader = programState.getAttachedShader(shaderType);
         if (shader)
         {
             uniformBlockInfo.getShaderBlockInfo(shader->getUniformBlocks());
@@ -1272,9 +1275,9 @@ void ProgramLinkedResourcesLinker::linkResources(const gl::ProgramState &program
 
     // Gather storage bufer interface block info.
     InterfaceBlockInfo shaderStorageBlockInfo(mCustomEncoderFactory);
-    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    for (const ShaderType shaderType : AllShaderTypes())
     {
-        gl::Shader *shader = programState.getAttachedShader(shaderType);
+        Shader *shader = programState.getAttachedShader(shaderType);
         if (shader)
         {
             shaderStorageBlockInfo.getShaderBlockInfo(shader->getShaderStorageBlocks());
@@ -1303,12 +1306,12 @@ void ProgramLinkedResourcesLinker::linkResources(const gl::ProgramState &program
 }
 
 void ProgramLinkedResourcesLinker::getAtomicCounterBufferSizeMap(
-    const gl::ProgramState &programState,
+    const ProgramState &programState,
     std::map<int, unsigned int> &sizeMapOut) const
 {
     for (unsigned int index : programState.getAtomicCounterUniformRange())
     {
-        const gl::LinkedUniform &glUniform = programState.getUniforms()[index];
+        const LinkedUniform &glUniform = programState.getUniforms()[index];
 
         auto &bufferDataSize = sizeMapOut[glUniform.binding];
 

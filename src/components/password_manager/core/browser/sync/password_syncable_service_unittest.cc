@@ -180,8 +180,8 @@ class PasswordSyncableServiceWrapper {
         new PasswordSyncableService(password_store_->GetSyncInterface()));
 
     ON_CALL(*password_store_, AddLoginImpl(HasDateSynced(), _))
-        .WillByDefault([&](const autofill::PasswordForm& form,
-                           password_manager::AddLoginError* error) {
+        .WillByDefault([](const autofill::PasswordForm& form,
+                          password_manager::AddLoginError* error) {
           if (error) {
             *error = AddLoginError::kNone;
           }
@@ -189,8 +189,14 @@ class PasswordSyncableServiceWrapper {
         });
     ON_CALL(*password_store_, RemoveLoginImpl(_))
         .WillByDefault(Return(PasswordStoreChangeList()));
-    ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced()))
-        .WillByDefault(Return(PasswordStoreChangeList()));
+    ON_CALL(*password_store_, UpdateLoginImpl(HasDateSynced(), _))
+        .WillByDefault([](const autofill::PasswordForm& form,
+                          password_manager::UpdateLoginError* error) {
+          if (error) {
+            *error = UpdateLoginError::kNone;
+          }
+          return PasswordStoreChangeList();
+        });
     EXPECT_CALL(*password_store(), NotifyLoginsChanged(_)).Times(AnyNumber());
   }
 
@@ -330,7 +336,7 @@ TEST_F(PasswordSyncableServiceTest, Merge) {
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(AppendForm(form1));
   EXPECT_CALL(*password_store(), FillBlacklistLogins(_)).WillOnce(Return(true));
-  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(form2)));
+  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(form2), _));
   EXPECT_CALL(*processor_, ProcessSyncChanges(_, IsEmpty()));
 
   service()->MergeDataAndStartSyncing(
@@ -401,7 +407,7 @@ TEST_F(PasswordSyncableServiceTest, ProcessSyncChanges) {
   list.push_back(
       CreateSyncChange(deleted_form, syncer::SyncChange::ACTION_DELETE));
   EXPECT_CALL(*password_store(), AddLoginImpl(PasswordIs(new_from_sync), _));
-  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(updated_form)));
+  EXPECT_CALL(*password_store(), UpdateLoginImpl(PasswordIs(updated_form), _));
   EXPECT_CALL(*password_store(), RemoveLoginImpl(PasswordIs(deleted_form)));
   service()->ProcessSyncChanges(FROM_HERE, list);
 }

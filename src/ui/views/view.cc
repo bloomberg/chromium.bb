@@ -25,7 +25,6 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/clip_recorder.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/paint_context.h"
@@ -114,9 +113,6 @@ class ScopedChildrenLock {
 #endif
 
 }  // namespace internal
-
-// static
-const char View::kViewClassName[] = "View";
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
@@ -546,8 +542,7 @@ void View::DestroyLayer() {
 
 void View::AddLayerBeneathView(ui::Layer* new_layer) {
   DCHECK(new_layer);
-  DCHECK(!base::ContainsValue(layers_beneath_, new_layer))
-      << "Layer already added.";
+  DCHECK(!base::Contains(layers_beneath_, new_layer)) << "Layer already added.";
 
   new_layer->AddObserver(this);
   new_layer->SetVisible(GetVisible());
@@ -557,7 +552,9 @@ void View::AddLayerBeneathView(ui::Layer* new_layer) {
   // correctly. If not, this will happen on layer creation.
   if (layer()) {
     ui::Layer* parent_layer = layer()->parent();
-    if (parent_layer)
+    // Note that |new_layer| may have already been added to the parent, for
+    // example when the layer of a LayerOwner is recreated.
+    if (parent_layer && parent_layer != new_layer->parent())
       parent_layer->Add(new_layer);
     new_layer->SetBounds(gfx::Rect(new_layer->size()) +
                          layer()->bounds().OffsetFromOrigin());
@@ -571,18 +568,37 @@ void View::AddLayerBeneathView(ui::Layer* new_layer) {
 }
 
 void View::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  RemoveLayerBeneathViewKeepInLayerTree(old_layer);
+
+  // Note that |old_layer| may have already been removed from its parent.
+  ui::Layer* parent_layer = layer()->parent();
+  if (parent_layer && parent_layer == old_layer->parent())
+    parent_layer->Remove(old_layer);
+
+  CreateOrDestroyLayer();
+}
+
+void View::RemoveLayerBeneathViewKeepInLayerTree(ui::Layer* old_layer) {
   auto layer_pos =
       std::find(layers_beneath_.begin(), layers_beneath_.end(), old_layer);
   DCHECK(layer_pos != layers_beneath_.end())
       << "Attempted to remove a layer that was never added.";
   layers_beneath_.erase(layer_pos);
   old_layer->RemoveObserver(this);
+}
 
-  ui::Layer* parent_layer = layer()->parent();
-  if (parent_layer)
-    parent_layer->Remove(old_layer);
+std::vector<ui::Layer*> View::GetLayersInOrder() {
+  // If not painting to a layer, there are no layers immediately related to this
+  // view.
+  if (!layer())
+    return {};
 
-  CreateOrDestroyLayer();
+  std::vector<ui::Layer*> result;
+  for (ui::Layer* layer_beneath : layers_beneath_)
+    result.push_back(layer_beneath);
+  result.push_back(layer());
+
+  return result;
 }
 
 void View::LayerDestroyed(ui::Layer* layer) {
@@ -683,10 +699,6 @@ void View::SetLayoutManager(std::nullptr_t) {
 }
 
 // Attributes ------------------------------------------------------------------
-
-const char* View::GetClassName() const {
-  return kViewClassName;
-}
 
 const View* View::GetAncestorWithClassName(const std::string& name) const {
   for (const View* view = this; view; view = view->parent_) {
@@ -980,8 +992,9 @@ void View::Paint(const PaintInfo& parent_paint_info) {
                                paint_info.paint_recording_scale_y(),
                                &paint_cache_);
     gfx::Canvas* canvas = recorder.canvas();
-    gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, width(),
-                                           flip_canvas_on_paint_for_rtl_ui_);
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    if (flip_canvas_on_paint_for_rtl_ui_)
+      scoped_canvas.FlipIfRTL(width());
 
     // Delegate painting the contents of the View to the virtual OnPaint method.
     OnPaint(canvas);
@@ -998,6 +1011,17 @@ void View::SetBackground(std::unique_ptr<Background> b) {
 
 void View::SetBorder(std::unique_ptr<Border> b) {
   border_ = std::move(b);
+
+  // Conceptually, this should be PreferredSizeChanged(), but for some view
+  // hierarchies that triggers synchronous add/remove operations that are unsafe
+  // in some contexts where SetBorder is called.
+  //
+  // InvalidateLayout() still triggers a re-layout of the view, which should
+  // include re-querying its preferred size so in practice this is both safe and
+  // has the intended effect.
+  InvalidateLayout();
+
+  SchedulePaint();
 }
 
 const ui::ThemeProvider* View::GetThemeProvider() const {
@@ -1264,7 +1288,7 @@ void View::AddAccelerator(const ui::Accelerator& accelerator) {
   if (!accelerators_)
     accelerators_ = std::make_unique<std::vector<ui::Accelerator>>();
 
-  if (!base::ContainsValue(*accelerators_, accelerator))
+  if (!base::Contains(*accelerators_, accelerator))
     accelerators_->push_back(accelerator);
 
   RegisterPendingAccelerators();
@@ -1675,14 +1699,11 @@ void View::UpdateParentLayer() {
     return;
 
   ui::Layer* parent_layer = nullptr;
-  gfx::Vector2d offset(GetMirroredX(), y());
 
-  if (parent_) {
-    offset +=
-        parent_->CalculateOffsetToAncestorWithLayer(&parent_layer).offset();
-  }
+  if (parent_)
+    parent_->CalculateOffsetToAncestorWithLayer(&parent_layer);
 
-  ReparentLayer(offset, parent_layer);
+  ReparentLayer(parent_layer);
 }
 
 void View::MoveLayerToParent(ui::Layer* parent_layer,
@@ -1963,6 +1984,7 @@ void View::HandlePropertyChangeEffects(PropertyEffects effects) {
     InvalidateLayout();
   if (effects & kPropertyEffectsPaint)
     SchedulePaint();
+  OnHandlePropertyChangeEffects(effects);
 }
 
 PropertyChangedSubscription View::AddPropertyChangedCallback(
@@ -2168,6 +2190,11 @@ void View::AddChildViewAtImpl(View* view, int index) {
       view->PropagateThemeChanged();
   }
 
+  // Need to notify the layout manager because one of the callbacks below might
+  // want to know the view's new preferred size, minimum size, etc.
+  if (layout_manager_)
+    layout_manager_->ViewAdded(this, view);
+
   ViewHierarchyChangedDetails details(true, this, view, parent);
 
   for (View* v = this; v; v = v->parent_)
@@ -2183,9 +2210,6 @@ void View::AddChildViewAtImpl(View* view, int index) {
     if (view->GetVisible())
       view->SchedulePaint();
   }
-
-  if (layout_manager_)
-    layout_manager_->ViewAdded(this, view);
 
   for (ViewObserver& observer : observers_)
     observer.OnChildViewAdded(this, view);
@@ -2230,6 +2254,11 @@ void View::DoRemoveChildView(View* view,
   if (widget)
     widget->LayerTreeChanged();
 
+  // Need to notify the layout manager because one of the callbacks below might
+  // want to know the view's new preferred size, minimum size, etc.
+  if (layout_manager_)
+    layout_manager_->ViewRemoved(this, view);
+
   view->PropagateRemoveNotifications(this, new_parent, is_removed_from_widget);
   view->parent_ = nullptr;
 
@@ -2243,9 +2272,6 @@ void View::DoRemoveChildView(View* view,
 
   if (update_tool_tip)
     UpdateTooltip();
-
-  if (layout_manager_)
-    layout_manager_->ViewRemoved(this, view);
 
   for (ViewObserver& observer : observers_)
     observer.OnChildViewRemoved(this, view);
@@ -2353,10 +2379,6 @@ void View::SnapLayerToPixelBoundary(const LayerOffsetData& offset_data) {
       for (ui::Layer* layer_beneath : layers_beneath_)
         layer_beneath->SetSubpixelPositionOffset(
             offset_data.GetSubpixelOffset());
-    } else {
-      ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer());
-      for (ui::Layer* layer_beneath : layers_beneath_)
-        ui::SnapLayerToPhysicalPixelBoundary(layer()->parent(), layer_beneath);
     }
   } else {
     // Reset the offset.
@@ -2432,12 +2454,17 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
 void View::SetLayerBounds(const gfx::Size& size,
                           const LayerOffsetData& offset_data) {
   const gfx::Rect bounds = gfx::Rect(size) + offset_data.offset();
+  const bool bounds_changed = (bounds != layer()->GetTargetBounds());
   layer()->SetBounds(bounds);
   for (ui::Layer* layer_beneath : layers_beneath_) {
     layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) +
                              bounds.OffsetFromOrigin());
   }
   SnapLayerToPixelBoundary(offset_data);
+  if (bounds_changed) {
+    for (ViewObserver& observer : observers_)
+      observer.OnLayerTargetBoundsChanged(this);
+  }
 }
 
 // Transformations -------------------------------------------------------------
@@ -2572,11 +2599,7 @@ void View::OrphanLayers() {
     child->OrphanLayers();
 }
 
-void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
-  layer()->SetBounds(GetLocalBounds() + offset);
-  for (ui::Layer* layer_beneath : layers_beneath_)
-    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) + offset);
-
+void View::ReparentLayer(ui::Layer* parent_layer) {
   DCHECK_NE(layer(), parent_layer);
   if (parent_layer) {
     // Adding the main layer can trigger a call to |SnapLayerToPixelBoundary()|.
@@ -2586,6 +2609,13 @@ void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
       parent_layer->Add(layer_beneath);
     parent_layer->Add(layer());
   }
+  // Update the layer bounds; this needs to be called after this layer is added
+  // to the new parent layer since snapping to pixel boundary will be affected
+  // by the layer hierarchy.
+  LayerOffsetData offset =
+      parent_ ? parent_->CalculateOffsetToAncestorWithLayer(nullptr)
+              : LayerOffsetData(layer()->device_scale_factor());
+  SetLayerBounds(size(), offset + GetMirroredBounds().OffsetFromOrigin());
   layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
 }
@@ -2830,14 +2860,15 @@ bool View::DoDrag(const ui::LocatedEvent& event,
   if (widget->dragged_view())
     return false;
 
-  OSExchangeData data;
-  WriteDragData(press_pt, &data);
+  std::unique_ptr<OSExchangeData> data(std::make_unique<OSExchangeData>());
+  WriteDragData(press_pt, data.get());
 
   // Message the RootView to do the drag and drop. That way if we're removed
   // the RootView can detect it and avoid calling us back.
   gfx::Point widget_location(event.location());
   ConvertPointToWidget(this, &widget_location);
-  widget->RunShellDrag(this, data, widget_location, drag_operations, source);
+  widget->RunShellDrag(this, std::move(data), widget_location, drag_operations,
+                       source);
   // WARNING: we may have been deleted.
   return true;
 }

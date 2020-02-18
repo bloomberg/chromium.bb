@@ -33,7 +33,7 @@
 #include "src/core/lib/debug/stats.h"
 #include "src/core/lib/debug/trace.h"
 #include "src/core/lib/gprpp/fork.h"
-#include "src/core/lib/gprpp/mutex_lock.h"
+#include "src/core/lib/gprpp/sync.h"
 #include "src/core/lib/http/parser.h"
 #include "src/core/lib/iomgr/call_combiner.h"
 #include "src/core/lib/iomgr/combiner.h"
@@ -73,6 +73,7 @@ static void do_basic_init(void) {
   g_shutting_down = false;
   grpc_register_built_in_plugins();
   grpc_cq_global_init();
+  gpr_time_init();
   g_initializations = 0;
 }
 
@@ -132,8 +133,6 @@ void grpc_init(void) {
     }
     grpc_core::Fork::GlobalInit();
     grpc_fork_handlers_auto_register();
-    gpr_time_init();
-    gpr_arena_init();
     grpc_stats_init();
     grpc_slice_intern_init();
     grpc_mdctx_global_init();
@@ -155,7 +154,7 @@ void grpc_init(void) {
      * at the appropriate time */
     grpc_register_security_filters();
     register_builtin_channel_init();
-    grpc_tracer_init("GRPC_TRACE");
+    grpc_tracer_init();
     /* no more changes to channel init pipelines */
     grpc_channel_init_finalize();
     grpc_iomgr_start();

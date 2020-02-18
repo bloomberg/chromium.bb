@@ -219,13 +219,13 @@ bool Extension::ResourceMatches(const URLPatternSet& pattern_set,
 }
 
 ExtensionResource Extension::GetResource(
-    const std::string& relative_path) const {
-  std::string new_path = relative_path;
+    base::StringPiece relative_path) const {
   // We have some legacy data where resources have leading slashes.
   // See: http://crbug.com/121164
-  if (!new_path.empty() && new_path.at(0) == '/')
-    new_path.erase(0, 1);
-  base::FilePath relative_file_path = base::FilePath::FromUTF8Unsafe(new_path);
+  if (!relative_path.empty() && relative_path[0] == '/')
+    relative_path.remove_prefix(1);
+  base::FilePath relative_file_path =
+      base::FilePath::FromUTF8Unsafe(relative_path);
   if (ContainsReservedCharacters(relative_file_path))
     return ExtensionResource();
   ExtensionResource r(id(), path(), relative_file_path);

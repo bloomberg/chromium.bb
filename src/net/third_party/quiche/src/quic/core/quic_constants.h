@@ -74,14 +74,18 @@ const uint32_t kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
 const QuicByteCount kStreamReceiveWindowLimit = 16 * 1024 * 1024;   // 16 MB
 const QuicByteCount kSessionReceiveWindowLimit = 24 * 1024 * 1024;  // 24 MB
 
-// Default limit on the size of uncompressed headers.
+// Default limit on the size of uncompressed headers,
+// communicated via SETTINGS_MAX_HEADER_LIST_SIZE.
+// TODO(bnc): Move this constant to quic/core/http/.
 const QuicByteCount kDefaultMaxUncompressedHeaderSize = 16 * 1024;  // 16 KB
+
+// Default maximum dynamic table capacity, communicated via
+// SETTINGS_QPACK_MAX_TABLE_CAPACITY.
+// TODO(bnc): Move this constant to quic/core/http/.
+const QuicByteCount kDefaultQpackMaxDynamicTableCapacity = 64 * 1024;  // 64 KB
 
 // Minimum size of the CWND, in packets, when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
-
-// Maximum number of tracked packets.
-const QuicPacketCount kMaxTrackedPackets = 10000;
 
 // Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 1024 * 1024;
@@ -235,6 +239,9 @@ const size_t kMinRandomBytesLengthInStatelessReset = 24;
 
 // Maximum length allowed for the token in a NEW_TOKEN frame.
 const size_t kMaxNewTokenTokenLength = 0xffff;
+
+// Default initial rtt used before any samples are received.
+const int kInitialRttMs = 100;
 
 // Packet number of first sending packet of a connection. Please note, this
 // cannot be used as first received packet because peer can choose its starting

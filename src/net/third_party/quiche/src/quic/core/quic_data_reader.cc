@@ -146,11 +146,35 @@ bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id,
     return true;
   }
 
-  const bool ok = ReadBytes(connection_id->mutable_data(), length);
-  if (ok) {
-    connection_id->set_length(length);
+  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
+    const bool ok = ReadBytes(connection_id->mutable_data(), length);
+    if (ok) {
+      connection_id->set_length(length);
+    }
+    return ok;
   }
+  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 6, 6);
+
+  if (BytesRemaining() < length) {
+    return false;
+  }
+
+  connection_id->set_length(length);
+  const bool ok = ReadBytes(connection_id->mutable_data(), length);
+  DCHECK(ok);
   return ok;
+}
+
+bool QuicDataReader::ReadLengthPrefixedConnectionId(
+    QuicConnectionId* connection_id) {
+  uint8_t connection_id_length;
+  if (!ReadUInt8(&connection_id_length)) {
+    return false;
+  }
+  if (connection_id_length > kQuicMaxConnectionIdLength) {
+    return false;
+  }
+  return ReadConnectionId(connection_id, connection_id_length);
 }
 
 bool QuicDataReader::ReadTag(uint32_t* tag) {

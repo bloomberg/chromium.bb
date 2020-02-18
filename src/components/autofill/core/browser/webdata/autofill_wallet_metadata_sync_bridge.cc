@@ -104,7 +104,7 @@ std::unique_ptr<EntityData> CreateEntityDataFromAutofillMetadata(
     const AutofillMetadata& local_metadata) {
   auto entity_data = std::make_unique<EntityData>();
   std::string specifics_id = GetSpecificsIdForMetadataId(local_metadata.id);
-  entity_data->non_unique_name = GetClientTagForSpecificsId(type, specifics_id);
+  entity_data->name = GetClientTagForSpecificsId(type, specifics_id);
 
   WalletMetadataSpecifics* remote_metadata =
       entity_data->specifics.mutable_wallet_metadata();
@@ -330,8 +330,7 @@ AutofillWalletMetadataSyncBridge::AutofillWalletMetadataSyncBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       web_data_backend_(web_data_backend),
       scoped_observer_(this),
-      track_wallet_data_(false),
-      weak_ptr_factory_(this) {
+      track_wallet_data_(false) {
   DCHECK(web_data_backend_);
   scoped_observer_.Add(web_data_backend_);
 
@@ -587,8 +586,7 @@ void AutofillWalletMetadataSyncBridge::GetDataImpl(
     const AutofillMetadata& metadata = pair.second;
     TypeAndMetadataId parsed_storage_key =
         ParseWalletMetadataStorageKey(storage_key);
-    if (!storage_keys_set ||
-        base::ContainsKey(*storage_keys_set, storage_key)) {
+    if (!storage_keys_set || base::Contains(*storage_keys_set, storage_key)) {
       batch->Put(storage_key, CreateEntityDataFromAutofillMetadata(
                                   parsed_storage_key.type, metadata));
     }

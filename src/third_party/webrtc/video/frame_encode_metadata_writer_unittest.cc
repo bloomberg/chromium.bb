@@ -103,7 +103,7 @@ std::vector<std::vector<FrameType>> GetTimingFrames(
       bool dropped = i % (5 + si) == 0;
 
       EncodedImage image;
-      image.Allocate(max_frame_size);
+      image.SetEncodedData(EncodedImageBuffer::Create(max_frame_size));
       image.set_size(FrameSize(min_frame_size, max_frame_size, si, i));
       image.capture_time_ms_ = current_timestamp;
       image.SetTimestamp(static_cast<uint32_t>(current_timestamp * 90));
@@ -197,8 +197,7 @@ TEST(FrameEncodeMetadataWriterTest, NoTimingFrameIfNoEncodeStartTime) {
   int64_t timestamp = 1;
   constexpr size_t kFrameSize = 500;
   EncodedImage image;
-  image.Allocate(kFrameSize);
-  image.set_size(kFrameSize);
+  image.SetEncodedData(EncodedImageBuffer::Create(kFrameSize));
   image.capture_time_ms_ = timestamp;
   image.SetTimestamp(static_cast<uint32_t>(timestamp * 90));
 
@@ -238,8 +237,7 @@ TEST(FrameEncodeMetadataWriterTest,
 
   int64_t timestamp = 1;
   EncodedImage image;
-  image.Allocate(kFrameSize);
-  image.set_size(kFrameSize);
+  image.SetEncodedData(EncodedImageBuffer::Create(kFrameSize));
   image.capture_time_ms_ = timestamp;
   image.SetTimestamp(static_cast<uint32_t>(timestamp * 90));
 
@@ -435,6 +433,31 @@ TEST(FrameEncodeMetadataWriterTest, CopiesColorSpace) {
   encode_timer.FillTimingInfo(0, &image);
   ASSERT_NE(image.ColorSpace(), nullptr);
   EXPECT_EQ(color_space, *image.ColorSpace());
+}
+
+TEST(FrameEncodeMetadataWriterTest, CopiesPacketInfos) {
+  EncodedImage image;
+  const int64_t kTimestampMs = 123456;
+  FakeEncodedImageCallback sink;
+
+  FrameEncodeMetadataWriter encode_timer(&sink);
+  encode_timer.OnEncoderInit(VideoCodec(), false);
+  // Any non-zero bitrate needed to be set before the first frame.
+  VideoBitrateAllocation bitrate_allocation;
+  bitrate_allocation.SetBitrate(0, 0, 500000);
+  encode_timer.OnSetRates(bitrate_allocation, 30);
+
+  RtpPacketInfos packet_infos = CreatePacketInfos(3);
+  image.SetTimestamp(static_cast<uint32_t>(kTimestampMs * 90));
+  VideoFrame frame = VideoFrame::Builder()
+                         .set_timestamp_ms(kTimestampMs)
+                         .set_timestamp_rtp(kTimestampMs * 90)
+                         .set_packet_infos(packet_infos)
+                         .set_video_frame_buffer(kFrameBuffer)
+                         .build();
+  encode_timer.OnEncodeStarted(frame);
+  encode_timer.FillTimingInfo(0, &image);
+  EXPECT_EQ(image.PacketInfos().size(), 3U);
 }
 
 TEST(FrameEncodeMetadataWriterTest, DoesNotRewriteBitstreamWithoutCodecInfo) {

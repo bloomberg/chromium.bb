@@ -12,16 +12,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_response_type.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -45,34 +45,34 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
         ServiceWorkerControlleeRequestHandlerTest* test,
         const GURL& url,
         ResourceType type,
-        network::mojom::FetchRequestMode fetch_type =
-            network::mojom::FetchRequestMode::kNoCors)
+        network::mojom::RequestMode request_mode =
+            network::mojom::RequestMode::kNoCors)
         : resource_type_(type),
           request_(test->url_request_context_.CreateRequest(
               url,
               net::DEFAULT_PRIORITY,
               &test->url_request_delegate_,
               TRAFFIC_ANNOTATION_FOR_TESTS)),
-          handler_(new ServiceWorkerControlleeRequestHandler(
+          handler_(std::make_unique<ServiceWorkerControlleeRequestHandler>(
               test->context()->AsWeakPtr(),
               test->provider_host_,
-              fetch_type,
-              network::mojom::FetchCredentialsMode::kOmit,
-              network::mojom::FetchRedirectMode::kFollow,
-              std::string() /* integrity */,
-              false /* keepalive */,
               type,
-              blink::mojom::RequestContextType::HYPERLINK,
-              scoped_refptr<network::ResourceRequestBody>())) {}
+              /*skip_service_worker=*/false)) {}
 
-    ServiceWorkerNavigationLoader* MaybeCreateLoader() {
+    void MaybeCreateLoader() {
       network::ResourceRequest resource_request;
       resource_request.url = request_->url();
       resource_request.resource_type = static_cast<int>(resource_type_);
       resource_request.headers = request()->extra_request_headers();
-      handler_->MaybeCreateLoader(resource_request, nullptr,
+      handler_->MaybeCreateLoader(resource_request, nullptr, nullptr,
                                   base::DoNothing(), base::DoNothing());
-      return handler_->loader();
+    }
+
+    ServiceWorkerNavigationLoader* loader() { return handler_->loader(); }
+
+    void SetHandler(
+        std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler) {
+      handler_ = std::move(handler);
     }
 
     void ResetHandler() { handler_.reset(nullptr); }
@@ -157,6 +157,7 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
@@ -191,16 +192,12 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Basic) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
-  EXPECT_FALSE(version_->HasControllee());
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_TRUE(loader->ShouldForwardToServiceWorker());
+  EXPECT_TRUE(test_resources.loader());
   EXPECT_TRUE(version_->HasControllee());
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LookupRegistration.MainResource.Time.Exists", 1);
@@ -218,8 +215,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DoesNotExist) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  EXPECT_FALSE(loader);
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
 
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LookupRegistration.MainResource.Time.DoesNotExist", 1);
@@ -239,8 +236,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, Error) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  EXPECT_FALSE(loader);
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
 
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LookupRegistration.MainResource.Time.Error", 1);
@@ -265,17 +262,13 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  ASSERT_TRUE(loader);
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
 
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
-  EXPECT_FALSE(version_->HasControllee());
   base::RunLoop().RunUntilIdle();
 
   // Verify we did not use the worker.
-  EXPECT_TRUE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
 
   SetBrowserClientForTesting(old_browser_client);
@@ -296,17 +289,13 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InsecureContext) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  ASSERT_TRUE(loader);
-
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
   base::RunLoop().RunUntilIdle();
 
   // Verify we did not use the worker.
-  EXPECT_TRUE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
 }
 
@@ -323,18 +312,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  ASSERT_TRUE(loader);
-
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
 
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version_->status());
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_TRUE(loader->ShouldForwardToServiceWorker());
+  EXPECT_TRUE(test_resources.loader());
   EXPECT_TRUE(version_->HasControllee());
 
   test_resources.ResetHandler();
@@ -352,7 +337,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* job = test_resources.MaybeCreateLoader();
+  test_resources.MaybeCreateLoader();
 
   base::RunLoop().RunUntilIdle();
 
@@ -360,7 +345,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // provider host should not be controlled. However it should add the
   // registration as a matching registration so it can be used for .ready and
   // claim().
-  EXPECT_FALSE(job);
+  EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
   EXPECT_FALSE(provider_host_->controller());
   EXPECT_EQ(registration_.get(), provider_host_->MatchRegistration());
@@ -383,19 +368,94 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Conduct a main resource load.
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-  ASSERT_TRUE(loader);
-
-  EXPECT_FALSE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
 
   // Shouldn't crash if the ProviderHost is deleted prior to completion of
   // the database lookup.
   context()->RemoveProviderHost(provider_host_->provider_id());
   EXPECT_FALSE(provider_host_.get());
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(loader->ShouldFallbackToNetwork());
-  EXPECT_FALSE(loader->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(test_resources.loader());
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
+  // Store an activated worker.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  base::RunLoop loop;
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Create an interceptor that skips service workers.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  test_resources.SetHandler(
+      std::make_unique<ServiceWorkerControlleeRequestHandler>(
+          context()->AsWeakPtr(), provider_host_, ResourceType::kMainFrame,
+          /*skip_service_worker=*/true));
+
+  // Conduct a main resource load.
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify we did not use the worker.
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  // The host should still have the correct URL.
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
+}
+
+// Tests interception after the context core has been destroyed and the provider
+// host is transferred to a new context.
+// TODO(crbug.com/877356): Remove this test when transferring contexts is
+// removed.
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
+  // Store an activated worker.
+  version_->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+  base::RunLoop loop;
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::BindLambdaForTesting(
+          [&loop](blink::ServiceWorkerStatusCode status) { loop.Quit(); }));
+  loop.Run();
+
+  // Create an interceptor.
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
+  test_resources.SetHandler(
+      std::make_unique<ServiceWorkerControlleeRequestHandler>(
+          context()->AsWeakPtr(), provider_host_, ResourceType::kMainFrame,
+          /*skip_service_worker=*/false));
+
+  // Destroy the context and make a new one.
+  helper_->context_wrapper()->DeleteAndStartOver();
+  base::RunLoop().RunUntilIdle();
+
+  // Conduct a main resource load. The loader won't be created because the
+  // interceptor's context is now null.
+  test_resources.MaybeCreateLoader();
+  EXPECT_FALSE(test_resources.loader());
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify we did not use the worker.
+  EXPECT_FALSE(test_resources.loader());
+  EXPECT_FALSE(version_->HasControllee());
+
+  // The host should still have the correct URL.
+  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -415,9 +475,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
   // Sets an offline header to indicate force loading offline page.
   test_resources.request()->SetExtraRequestHeaderByName(
       "X-Chrome-offline", "reason=download", true);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-
-  EXPECT_FALSE(loader);
+  test_resources.MaybeCreateLoader();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(test_resources.loader());
 }
 
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
@@ -436,9 +496,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
   // Empty offline header value should not cause fallback.
   test_resources.request()->SetExtraRequestHeaderByName("X-Chrome-offline", "",
                                                         true);
-  ServiceWorkerNavigationLoader* loader = test_resources.MaybeCreateLoader();
-
-  EXPECT_TRUE(loader);
+  test_resources.MaybeCreateLoader();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_resources.loader());
 }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGE)
 

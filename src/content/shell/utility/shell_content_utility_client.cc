@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/test_service.mojom.h"
 #include "content/public/utility/utility_thread.h"
 #include "content/shell/common/power_monitor_test_impl.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -110,9 +112,7 @@ bool ShellContentUtilityClient::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
   std::unique_ptr<service_manager::Service> service;
-  if (service_name == echo::mojom::kServiceName) {
-    service = std::make_unique<echo::EchoService>(std::move(request));
-  } else if (service_name == kTestServiceUrl) {
+  if (service_name == kTestServiceUrl) {
     service = std::make_unique<TestService>(std::move(request));
   }
 
@@ -125,6 +125,15 @@ bool ShellContentUtilityClient::HandleServiceRequest(
   }
 
   return false;
+}
+
+void ShellContentUtilityClient::RunIOThreadService(
+    mojo::GenericPendingReceiver* receiver) {
+  if (auto echo_receiver = receiver->As<echo::mojom::EchoService>()) {
+    static base::NoDestructor<echo::EchoService> service(
+        std::move(echo_receiver));
+    return;
+  }
 }
 
 void ShellContentUtilityClient::RegisterNetworkBinders(

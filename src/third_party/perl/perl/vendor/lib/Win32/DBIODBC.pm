@@ -1,7 +1,7 @@
 package			# hide this package from CPAN indexer
 	Win32::ODBC;
 
-#use strict;
+use strict;
 
 use DBI;
 
@@ -96,7 +96,7 @@ sub Sql
 		$self->{'DBI_NAME'} = $sth->{NAME};
 	}
 
-# [R] provide compatibility with Win32::ODBC's way of identifying erraneous SQL statements
+# [R] provide compatibility with Win32::ODBC's way of identifying erroneous SQL statements
  	return ($self->{'DBI_ERR'})?1:undef;
 # -[R]-
 }
@@ -116,7 +116,7 @@ sub FetchRow
 	 	if (scalar(@row)>0)
 	 	{
 			#-- the row of result is not nul
-			#-- return somthing nothing will be return else
+			#-- return something nothing will be return else
 			return 1;
 	 	} 	
 	}

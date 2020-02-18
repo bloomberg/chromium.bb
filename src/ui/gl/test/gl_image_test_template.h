@@ -33,6 +33,21 @@
 #include "base/mac/mac_util.h"
 #endif
 
+// TODO(crbug.com/969798): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_Create DISABLED_Create
+#else
+#define MAYBE_Create Create
+#endif
+
+// TYPED_TEST_P() and REGISTER_TYPED_TEST_SUITE_P() don't do macro expansion on
+// their parameters, making the MAYBE_ technique above not work -- these macros
+// are a workaround.
+#define TYPED_TEST_P_WITH_EXPANSION(SuiteName, TestName) \
+  TYPED_TEST_P(SuiteName, TestName)
+#define REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION(SuiteName, ...) \
+  REGISTER_TYPED_TEST_SUITE_P(SuiteName, __VA_ARGS__)
+
 namespace gl {
 
 namespace internal {
@@ -75,7 +90,7 @@ class GLImageTest : public testing::Test {
 
 TYPED_TEST_SUITE_P(GLImageTest);
 
-TYPED_TEST_P(GLImageTest, Create) {
+TYPED_TEST_P_WITH_EXPANSION(GLImageTest, MAYBE_Create) {
   if (this->delegate_.SkipTest())
     return;
 
@@ -104,7 +119,7 @@ TYPED_TEST_P(GLImageTest, Create) {
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_SUITE_P(GLImageTest, Create);
+REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION(GLImageTest, MAYBE_Create);
 
 template <typename GLImageTestDelegate>
 class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
@@ -112,7 +127,7 @@ class GLImageOddSizeTest : public GLImageTest<GLImageTestDelegate> {};
 // This test verifies that odd-sized GLImages can be created and destroyed.
 TYPED_TEST_SUITE_P(GLImageOddSizeTest);
 
-TYPED_TEST_P(GLImageOddSizeTest, Create) {
+TYPED_TEST_P_WITH_EXPANSION(GLImageOddSizeTest, MAYBE_Create) {
   if (this->delegate_.SkipTest())
     return;
 
@@ -131,7 +146,7 @@ TYPED_TEST_P(GLImageOddSizeTest, Create) {
 
 // The GLImageTest test case verifies the behaviour that is expected from a
 // GLImage in order to be conformant.
-REGISTER_TYPED_TEST_SUITE_P(GLImageOddSizeTest, Create);
+REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION(GLImageOddSizeTest, MAYBE_Create);
 
 template <typename GLImageTestDelegate>
 class GLImageZeroInitializeTest : public GLImageTest<GLImageTestDelegate> {};
@@ -310,5 +325,10 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 REGISTER_TYPED_TEST_SUITE_P(GLImageCopyTest, CopyTexImage);
 
 }  // namespace gl
+
+// Avoid polluting source files that include this header.
+#undef MAYBE_Create
+#undef TYPED_TEST_P_WITH_EXPANSION
+#undef REGISTER_TYPED_TEST_SUITE_P_WITH_EXPANSION
 
 #endif  // UI_GL_TEST_GL_IMAGE_TEST_TEMPLATE_H_

@@ -9,9 +9,8 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
-#include "jni/PlatformSensorProvider_jni.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
+#include "services/device/generic_sensor/jni_headers/PlatformSensorProvider_jni.h"
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
 #include "services/device/generic_sensor/orientation_euler_angles_fusion_algorithm_using_quaternion.h"
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
@@ -23,13 +22,6 @@ using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 
 namespace device {
-
-// static
-PlatformSensorProviderAndroid* PlatformSensorProviderAndroid::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderAndroid,
-      base::LeakySingletonTraits<PlatformSensorProviderAndroid>>::get();
-}
 
 PlatformSensorProviderAndroid::PlatformSensorProviderAndroid() {
   JNIEnv* env = AttachCurrentThread();

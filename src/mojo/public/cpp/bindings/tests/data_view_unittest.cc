@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -23,7 +23,7 @@ namespace {
 
 class DataViewTest : public testing::Test {
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 struct DataViewHolder {

@@ -1,6 +1,10 @@
 =head1 NAME
 
-perlfaq - frequently asked questions about Perl
+perlfaq - Frequently asked questions about Perl
+
+=head1 VERSION
+
+version 5.20190126
 
 =head1 DESCRIPTION
 
@@ -94,6 +98,10 @@ What is Perl 6?
 =item *
 
 How stable is Perl?
+
+=item *
+
+How often are new versions of Perl released?
 
 =item *
 
@@ -689,15 +697,15 @@ How can I use a filehandle indirectly?
 
 =item *
 
+How can I open a filehandle to a string?
+
+=item *
+
 How can I set up a footer format to be used with write()?
 
 =item *
 
 How can I write() into a string?
-
-=item *
-
-How can I open a filehandle to a string?
 
 =item *
 
@@ -717,7 +725,7 @@ Why do I sometimes get an "Argument list too long" when I use E<lt>*E<gt>?
 
 =item *
 
-How can I open a file with a leading "E<gt>" or trailing blanks?
+How can I open a file named with a leading "E<gt>" or trailing blanks?
 
 =item *
 
@@ -1049,6 +1057,10 @@ How can I use a variable as a variable name?
 
 What does "bad interpreter" mean?
 
+=item *
+
+Do I need to recompile XS modules when there is a change in the C library?
+
 =back
 
 
@@ -1256,6 +1268,10 @@ How do I add a directory to my include path (@INC) at runtime?
 
 =item *
 
+Where are modules installed?
+
+=item *
+
 What is socket.ph and where do I get it?
 
 =back
@@ -1358,7 +1374,7 @@ How can I do RPC in Perl?
 =head1 CREDITS
 
 Tom Christiansen wrote the original perlfaq then expanded it with the
-help of Nat Torkington. brian d foy substantialy edited and expanded
+help of Nat Torkington. brian d foy substantially edited and expanded
 the perlfaq. perlfaq-workers and others have also supplied feedback,
 patches and corrections over the years.
 

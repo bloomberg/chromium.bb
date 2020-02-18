@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/trace_event_args_whitelist.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
@@ -58,6 +59,7 @@ TraceEventAgent::TraceEventAgent()
 
   PerfettoTracedProcess::Get()->AddDataSource(
       TraceEventDataSource::GetInstance());
+  TracingSamplerProfiler::RegisterDataSource();
 }
 
 TraceEventAgent::~TraceEventAgent() = default;
@@ -74,15 +76,7 @@ void TraceEventAgent::AddMetadataGeneratorFunction(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   metadata_generator_functions_.push_back(generator);
 
-  // Instantiate and register the metadata data source on the first
-  // call.
-  static TraceEventMetadataSource* metadata_source = []() {
-    static base::NoDestructor<TraceEventMetadataSource> instance;
-    PerfettoTracedProcess::Get()->AddDataSource(instance.get());
-    return instance.get();
-  }();
-
-  metadata_source->AddGeneratorFunction(generator);
+  TraceEventMetadataSource::GetInstance()->AddGeneratorFunction(generator);
 }
 
 void TraceEventAgent::StartTracing(const std::string& config,

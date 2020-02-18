@@ -26,6 +26,11 @@ namespace quic {
 
 namespace {
 
+using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
+using ::testing::Gt;
+using ::testing::Pair;
+
 constexpr QuicTime::Delta kPropagationDelay =
     QuicTime::Delta::FromMilliseconds(10);
 // Propagation delay and a bit, but no more than full RTT.
@@ -85,8 +90,9 @@ class QuartcSessionTest : public QuicTest {
 
   // Note that input session config will apply to both server and client.
   // Perspective and packet_transport will be overwritten.
-  void CreateClientAndServerSessions(const QuartcSessionConfig& session_config,
-                                     bool init = true) {
+  void CreateClientAndServerSessions(
+      const QuartcSessionConfig& /*session_config*/,
+      bool init = true) {
     if (init) {
       Init();
     }
@@ -180,6 +186,10 @@ class QuartcSessionTest : public QuicTest {
     EXPECT_THAT(server_session_delegate_->sent_datagram_ids(),
                 testing::ElementsAre(server_datagram_id));
 
+    EXPECT_THAT(
+        server_session_delegate_->acked_datagram_id_to_receive_timestamp(),
+        ElementsAre(Pair(server_datagram_id, Gt(QuicTime::Zero()))));
+
     // Send message from peer 2 to peer 1.
     message = CreateMemSliceVector("Message from client");
     ASSERT_TRUE(
@@ -196,6 +206,10 @@ class QuartcSessionTest : public QuicTest {
 
     EXPECT_THAT(client_session_delegate_->sent_datagram_ids(),
                 testing::ElementsAre(client_datagram_id));
+
+    EXPECT_THAT(
+        client_session_delegate_->acked_datagram_id_to_receive_timestamp(),
+        ElementsAre(Pair(client_datagram_id, Gt(QuicTime::Zero()))));
   }
 
   // Test for sending multiple messages that also result in queueing.
@@ -240,8 +254,14 @@ class QuartcSessionTest : public QuicTest {
     // Wait for peer 2 to receive all messages.
     RunTasks();
 
+    std::vector<testing::Matcher<std::pair<int64_t, QuicTime>>> ack_matchers;
+    for (int64_t id : sent_datagram_ids) {
+      ack_matchers.push_back(Pair(id, Gt(QuicTime::Zero())));
+    }
     EXPECT_EQ(delegate_receiving->incoming_messages(), sent_messages);
     EXPECT_EQ(delegate_sending->sent_datagram_ids(), sent_datagram_ids);
+    EXPECT_THAT(delegate_sending->acked_datagram_id_to_receive_timestamp(),
+                ElementsAreArray(ack_matchers));
   }
 
   // Test sending long messages:
@@ -313,16 +333,44 @@ TEST_F(QuartcSessionTest, SendReceiveStreams) {
 }
 
 TEST_F(QuartcSessionTest, SendReceiveMessages) {
+  // TODO(b/134175506): Remove when IETF QUIC supports receive timestamps.
+  SetQuicReloadableFlag(quic_enable_version_99, false);
+
   CreateClientAndServerSessions(QuartcSessionConfig());
   AwaitHandshake();
   TestSendReceiveMessage();
 }
 
 TEST_F(QuartcSessionTest, SendReceiveQueuedMessages) {
+  // TODO(b/134175506): Remove when IETF QUIC supports receive timestamps.
+  SetQuicReloadableFlag(quic_enable_version_99, false);
+
   CreateClientAndServerSessions(QuartcSessionConfig());
   AwaitHandshake();
   TestSendReceiveQueuedMessages(/*direction_from_server=*/true);
   TestSendReceiveQueuedMessages(/*direction_from_server=*/false);
+}
+
+TEST_F(QuartcSessionTest, SendMultiMemSliceMessage) {
+  CreateClientAndServerSessions(QuartcSessionConfig());
+  AwaitHandshake();
+  ASSERT_TRUE(server_peer_->CanSendMessage());
+
+  std::vector<std::pair<char*, size_t>> buffers;
+  char first_piece[] = "Hello, ";
+  char second_piece[] = "world!";
+  buffers.emplace_back(first_piece, 7);
+  buffers.emplace_back(second_piece, 6);
+  test::QuicTestMemSliceVector message(buffers);
+  ASSERT_TRUE(
+      server_peer_->SendOrQueueMessage(message.span(), /*datagram_id=*/1));
+
+  // Wait for the client to receive the message.
+  RunTasks();
+
+  // The message is not fragmented along MemSlice boundaries.
+  EXPECT_THAT(client_session_delegate_->incoming_messages(),
+              testing::ElementsAre("Hello, world!"));
 }
 
 TEST_F(QuartcSessionTest, SendMessageFails) {
@@ -355,6 +403,9 @@ TEST_F(QuartcSessionTest, TestCryptoHandshakeCanWriteTriggers) {
 }
 
 TEST_F(QuartcSessionTest, PreSharedKeyHandshake) {
+  // TODO(b/134175506): Remove when IETF QUIC supports receive timestamps.
+  SetQuicReloadableFlag(quic_enable_version_99, false);
+
   QuartcSessionConfig config;
   config.pre_shared_key = "foo";
   CreateClientAndServerSessions(config);
@@ -495,6 +546,54 @@ TEST_F(QuartcSessionTest, StreamRetransmissionDisabled) {
             QUIC_STREAM_CANCELLED);
   EXPECT_EQ(server_stream_delegate_->stream_error(stream_id),
             QUIC_STREAM_CANCELLED);
+}
+
+TEST_F(QuartcSessionTest, LostDatagramNotifications) {
+  // TODO(b/134175506): Remove when IETF QUIC supports receive timestamps.
+  SetQuicReloadableFlag(quic_enable_version_99, false);
+
+  // Disable tail loss probe, otherwise test maybe flaky because dropped
+  // message will be retransmitted to detect tail loss.
+  QuartcSessionConfig session_config;
+  session_config.enable_tail_loss_probe = false;
+  CreateClientAndServerSessions(session_config);
+
+  // Disable probing retransmissions, otherwise test maybe flaky because dropped
+  // message will be retransmitted to to probe for more bandwidth.
+  client_peer_->connection()->set_fill_up_link_during_probing(false);
+  server_peer_->connection()->set_fill_up_link_during_probing(false);
+
+  AwaitHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  // The client sends an ACK for the crypto handshake next.  This must be
+  // flushed before we set the filter to drop the next packet, in order to
+  // ensure that the filter drops a data-bearing packet instead of just an ack.
+  RunTasks();
+
+  // Drop the next packet.
+  client_filter_->set_packets_to_drop(1);
+
+  test::QuicTestMemSliceVector message =
+      CreateMemSliceVector("This message will be lost");
+  ASSERT_TRUE(client_peer_->SendOrQueueMessage(message.span(), 1));
+
+  RunTasks();
+
+  // Send another packet to elicit an ack and trigger loss detection.
+  message = CreateMemSliceVector("This message will arrive");
+  ASSERT_TRUE(client_peer_->SendOrQueueMessage(message.span(), 2));
+
+  RunTasks();
+
+  EXPECT_THAT(server_session_delegate_->incoming_messages(),
+              ElementsAre("This message will arrive"));
+  EXPECT_THAT(client_session_delegate_->sent_datagram_ids(), ElementsAre(1, 2));
+  EXPECT_THAT(
+      client_session_delegate_->acked_datagram_id_to_receive_timestamp(),
+      ElementsAre(Pair(2, Gt(QuicTime::Zero()))));
+  EXPECT_THAT(client_session_delegate_->lost_datagram_ids(), ElementsAre(1));
 }
 
 TEST_F(QuartcSessionTest, ServerRegistersAsWriteBlocked) {

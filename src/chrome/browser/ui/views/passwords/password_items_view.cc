@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 
 #include <numeric>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -116,7 +117,7 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
     const autofill::PasswordForm& form) {
   std::vector<base::string16> usernames = {form.username_value};
   for (const autofill::ValueElementPair& other_possible_username_pair :
-       form.other_possible_usernames) {
+       form.all_possible_usernames) {
     if (other_possible_username_pair.first != form.username_value)
       usernames.push_back(other_possible_username_pair.first);
   }
@@ -125,7 +126,7 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
   });
   bool display_arrow = !usernames.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(usernames),
+      std::make_unique<ui::SimpleComboboxModel>(std::move(usernames)),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
       views::style::STYLE_PRIMARY, display_arrow);
@@ -204,8 +205,8 @@ void PasswordItemsView::PasswordRow::AddUndoRow(views::GridLayout* layout) {
       CreateUndoButton(this, GetDisplayUsername(*password_form_));
 
   StartRow(layout, UNDO_COLUMN_SET);
-  layout->AddView(text.release());
-  layout->AddView(undo_button.release());
+  layout->AddView(std::move(text));
+  layout->AddView(std::move(undo_button));
 }
 
 void PasswordItemsView::PasswordRow::AddPasswordRow(views::GridLayout* layout) {
@@ -216,9 +217,9 @@ void PasswordItemsView::PasswordRow::AddPasswordRow(views::GridLayout* layout) {
   std::unique_ptr<views::ImageButton> delete_button =
       CreateDeleteButton(this, GetDisplayUsername(*password_form_));
   StartRow(layout, PASSWORD_COLUMN_SET);
-  layout->AddView(username_label.release());
-  layout->AddView(password_label.release());
-  layout->AddView(delete_button.release());
+  layout->AddView(std::move(username_label));
+  layout->AddView(std::move(password_label));
+  layout->AddView(std::move(delete_button));
 }
 
 void PasswordItemsView::PasswordRow::ButtonPressed(views::Button* sender,
@@ -261,7 +262,7 @@ void PasswordItemsView::RecreateLayout() {
   RemoveAllChildViews(true);
 
   views::GridLayout* grid_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int vertical_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_CONTROL_LIST_VERTICAL);
@@ -289,12 +290,11 @@ void PasswordItemsView::NotifyPasswordFormAction(
   model()->OnPasswordAction(password_form, action);
 }
 
-views::View* PasswordItemsView::CreateExtraView() {
+std::unique_ptr<views::View> PasswordItemsView::CreateExtraView() {
   auto view = views::MdTextButton::CreateSecondaryUiButton(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS_BUTTON));
-
-  return view.release();
+  return view;
 }
 
 int PasswordItemsView::GetDialogButtons() const {

@@ -34,6 +34,7 @@ const char kTestICMP[] = "TestICMP";
 const char kTestICMPWithOptions[] = "TestICMPWithOptions";
 const char kLogKernelTaskStates[] = "LogKernelTaskStates";
 const char kUploadCrashes[] = "UploadCrashes";
+const char kUploadSingleCrash[] = "UploadSingleCrash";
 const char kRemoveRootfsVerification[] = "RemoveRootfsVerification";
 const char kEnableChromeRemoteDebugging[] = "EnableChromeRemoteDebugging";
 const char kEnableBootFromUsb[] = "EnableBootFromUsb";

@@ -49,8 +49,10 @@
         transition: opacity 150ms;
       }
 
-      :host-context([dark]) iron-icon {
-        fill: var(--google-grey-refresh-500);
+      @media (prefers-color-scheme: dark) {
+        iron-icon {
+          fill: var(--google-grey-refresh-500);
+        }
       }
 
       .name {

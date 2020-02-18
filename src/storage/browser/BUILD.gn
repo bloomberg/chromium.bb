@@ -207,10 +207,6 @@ jumbo_component("browser") {
     "quota/quota_temporary_storage_evictor.h",
     "quota/special_storage_policy.cc",
     "quota/special_storage_policy.h",
-    "quota/storage_monitor.cc",
-    "quota/storage_monitor.h",
-    "quota/storage_observer.cc",
-    "quota/storage_observer.h",
     "quota/usage_tracker.cc",
     "quota/usage_tracker.h",
   ]
@@ -222,7 +218,7 @@ jumbo_component("browser") {
   ]
 
   public_deps = [
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//storage/common",
   ]
   deps = [
@@ -316,7 +312,6 @@ source_set("unittests") {
     "quota/quota_manager_unittest.cc",
     "quota/quota_settings_unittest.cc",
     "quota/quota_temporary_storage_evictor_unittest.cc",
-    "quota/storage_monitor_unittest.cc",
     "quota/usage_tracker_unittest.cc",
     "test/mock_quota_manager_unittest.cc",
   ]
@@ -325,7 +320,7 @@ source_set("unittests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
-    "//components/services/filesystem/public/interfaces",
+    "//components/services/filesystem/public/mojom",
     "//mojo/core/embedder",
     "//net:test_support",
     "//services/network/public/cpp",
@@ -345,6 +340,8 @@ jumbo_static_library("test_support") {
     "test/async_file_test_helper.h",
     "test/fake_blob.cc",
     "test/fake_blob.h",
+    "test/fake_blob_data_handle.cc",
+    "test/fake_blob_data_handle.h",
     "test/fake_progress_client.cc",
     "test/fake_progress_client.h",
     "test/fileapi_test_file_set.cc",

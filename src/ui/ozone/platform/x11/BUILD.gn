@@ -20,12 +20,12 @@ source_set("x11") {
     "gl_surface_glx_ozone.h",
     "ozone_platform_x11.cc",
     "ozone_platform_x11.h",
+    "x11_clipboard.cc",
+    "x11_clipboard.h",
     "x11_cursor_factory_ozone.cc",
     "x11_cursor_factory_ozone.h",
     "x11_cursor_ozone.cc",
     "x11_cursor_ozone.h",
-    "x11_display_fetcher_ozone.cc",
-    "x11_display_fetcher_ozone.h",
     "x11_screen_ozone.cc",
     "x11_screen_ozone.h",
     "x11_surface_factory.cc",
@@ -41,6 +41,7 @@ source_set("x11") {
     "//gpu/vulkan:buildflags",
     "//skia",
     "//ui/base",
+    "//ui/base/ime",
     "//ui/base/x",
     "//ui/display/fake",
     "//ui/events",
@@ -58,6 +59,10 @@ source_set("x11") {
     "//ui/platform_window",
     "//ui/platform_window/x11",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//ui/base/ime/chromeos" ]
+  }
 
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan/x" ]
@@ -83,6 +88,7 @@ source_set("x11_unittests") {
     ":x11",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base/x",
     "//ui/events:test_support",
     "//ui/events/devices/x11",
     "//ui/events/platform/x11",

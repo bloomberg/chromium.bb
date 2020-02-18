@@ -39,6 +39,13 @@ class ValidationTest(unittest.TestCase):
     # dependency on the proto definition.
     response = self.client.get('/service-metadata')
 
+    # We also want to ensure that we're forcing HTTPS.
+    self.assertEqual(response.status_code, 302)
+
+    # Try again, but this time act like we're behind a proxy, for testing.
+    response = self.client.get(
+        '/service-metadata', headers={'X-Forwarded-Proto': 'https'})
+
     # First, ensure that the response is valid json.
     config = json.loads(response.data)
 
@@ -47,11 +54,11 @@ class ValidationTest(unittest.TestCase):
     self.assertIn('url', config['validation'])
     self.assertEqual(
         config['validation']['url'],
-        'https://sheriff-config-dot-chromeperf.appspot.com/validate')
+        'https://sheriff-config-dot-chromeperf.appspot.com/configs/validate')
 
   def testValidationPropagatesError(self):
     response = self.client.post(
-        '/validate',
+        '/configs/validate',
         json={
             'config_set':
                 'project:some-project',
@@ -61,7 +68,8 @@ class ValidationTest(unittest.TestCase):
                 base64.standard_b64encode(
                     bytearray('subscriptions: [{name: "something"}]',
                               'utf-8')).decode('utf-8')
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
 
     self.assertEqual(response.status_code, 200)
     response_proto = response.get_json()
@@ -72,7 +80,7 @@ class ValidationTest(unittest.TestCase):
 
   def testValidationSucceedsSilently(self):
     response = self.client.post(
-        '/validate',
+        '/configs/validate',
         json={
             'config_set':
                 'project:some-project',
@@ -100,7 +108,8 @@ class ValidationTest(unittest.TestCase):
                                 }]
                             }]
                         }]""", 'utf-8')).decode('utf-8')
-        })
+        },
+        headers={'X-Forwarded-Proto': 'https'})
     self.assertEqual(response.status_code, 200)
     response_proto = response.get_json()
     self.assertNotIn('messages', response_proto)

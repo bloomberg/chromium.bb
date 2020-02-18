@@ -30,6 +30,10 @@ namespace ui {
 class Accelerator;
 }  // namespace ui
 
+namespace ui_devtools {
+class PageAgentViews;
+}
+
 namespace views {
 
 class BubbleFrameView;
@@ -39,8 +43,7 @@ class Button;
 class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
                                               public WidgetObserver {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(BubbleDialogDelegateView);
 
   enum class CloseReason {
     DEACTIVATION,
@@ -58,7 +61,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool ShouldShowCloseButton() const override;
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
-  const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // WidgetObserver:
@@ -81,8 +83,18 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // The anchor rect is used in the absence of an assigned anchor view.
   const gfx::Rect& anchor_rect() const { return anchor_rect_; }
 
-  // Set the desired arrow for the bubble. The arrow will be mirrored for RTL.
+  // Set the desired arrow for the bubble and updates the bubble's bounds
+  // accordingly. The arrow will be mirrored for RTL.
   void SetArrow(BubbleBorder::Arrow arrow);
+
+  // Sets the arrow without recaluclating or updating bounds. This could be used
+  // proceeding another function call which also sets bounds, so that bounds are
+  // not set multiple times in a row. When animating bounds changes, setting
+  // bounds twice in a row can make the widget position jump.
+  // TODO(crbug.com/982880) It would be good to be able to re-target the
+  // animation rather than expet callers to use SetArrowWithoutResizing if they
+  // are also changing the anchor rect, or similar.
+  void SetArrowWithoutResizing(BubbleBorder::Arrow arrow);
 
   BubbleBorder::Shadow GetShadow() const;
   void set_shadow(BubbleBorder::Shadow shadow) { shadow_ = shadow; }
@@ -184,6 +196,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
  private:
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
+  friend class ui_devtools::PageAgentViews;
 
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
@@ -201,6 +214,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // view set in |highlighted_button_tracker_|. This can be overridden to
   // provide different highlight effects.
   virtual void UpdateHighlightedButton(bool highlighted);
+
+  // Set from UI DevTools to prevent bubbles from closing in
+  // OnWidgetActivationChanged().
+  static bool devtools_dismiss_override_;
 
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;

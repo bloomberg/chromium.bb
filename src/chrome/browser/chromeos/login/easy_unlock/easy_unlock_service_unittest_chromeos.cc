@@ -31,7 +31,7 @@
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -48,9 +48,7 @@ namespace chromeos {
 
 namespace {
 
-// Emails for fake users used in tests.
-const char kTestUserPrimary[] = "primary_user@nowhere.com";
-const char kTestUserSecondary[] = "secondary_user@nowhere.com";
+const char kTestUserEmail[] = "user@nowhere.com";
 
 class MockEasyUnlockNotificationController
     : public EasyUnlockNotificationController {
@@ -83,14 +81,10 @@ GetDefaultMultiDeviceSetupClient() {
 // EasyUnlockService factory function injected into testing profiles.
 std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
     content::BrowserContext* context) {
-  std::unique_ptr<EasyUnlockServiceRegular> service(
-      new EasyUnlockServiceRegular(
-          Profile::FromBrowserContext(context),
-          nullptr /* secure_channel_client */,
-          std::make_unique<MockEasyUnlockNotificationController>(),
-          GetDefaultDeviceSyncClient(), GetDefaultMultiDeviceSetupClient()));
-  service->Initialize();
-  return std::move(service);
+  return std::make_unique<EasyUnlockServiceRegular>(
+      Profile::FromBrowserContext(context), nullptr /* secure_channel_client */,
+      std::make_unique<MockEasyUnlockNotificationController>(),
+      GetDefaultDeviceSyncClient(), GetDefaultMultiDeviceSetupClient());
 }
 
 }  // namespace
@@ -120,7 +114,7 @@ class EasyUnlockServiceTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_pref_service_);
     RegisterLocalState(local_pref_service_.registry());
 
-    profile_ = SetUpProfile(kTestUserPrimary, &profile_gaia_id_);
+    profile_ = SetUpProfile(kTestUserEmail, &profile_gaia_id_);
   }
 
   void TearDown() override {
@@ -151,9 +145,7 @@ class EasyUnlockServiceTest : public testing::Test {
                   base::BindRepeating(&CreateEasyUnlockServiceForTest)}});
 
     // Note: This can simply be a local variable as the test does not need to
-    // interact with IdentityTestEnvironment outside of this method. If that
-    // ever changes, there will need to be distinct instance variables for the
-    // environments associated with |profile_| and |secondary_profile_|.
+    // interact with IdentityTestEnvironment outside of this method.
     IdentityTestEnvironmentProfileAdaptor identity_test_env_adaptor(
         profile.get());
     CoreAccountInfo account_info =
@@ -165,12 +157,11 @@ class EasyUnlockServiceTest : public testing::Test {
         AccountId::FromUserEmailGaiaId(email, *gaia_id));
     profile.get()->set_profile_name(email);
 
-    return profile;
-  }
+    // Only initialize the service once the profile is completely ready. If done
+    // earlier, indirect usage of user_manager::KnownUser would crash.
+    EasyUnlockService::Get(profile.get())->Initialize();
 
-  void SetUpSecondaryProfile() {
-    secondary_profile_ =
-        SetUpProfile(kTestUserSecondary, &secondary_profile_gaia_id_);
+    return profile;
   }
 
   // Must outlive TestingProfiles.
@@ -178,8 +169,6 @@ class EasyUnlockServiceTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   std::string profile_gaia_id_;
-  std::unique_ptr<TestingProfile> secondary_profile_;
-  std::string secondary_profile_gaia_id_;
   MockUserManager* mock_user_manager_;
 
   user_manager::ScopedUserManager scoped_user_manager_;
@@ -211,13 +200,8 @@ TEST_F(EasyUnlockServiceTest, NotAllowedForEphemeralAccounts) {
 }
 
 TEST_F(EasyUnlockServiceTest, GetAccountId) {
-  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserPrimary, profile_gaia_id_),
+  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserEmail, profile_gaia_id_),
             EasyUnlockService::Get(profile_.get())->GetAccountId());
-
-  SetUpSecondaryProfile();
-  EXPECT_EQ(AccountId::FromUserEmailGaiaId(kTestUserSecondary,
-                                           secondary_profile_gaia_id_),
-            EasyUnlockService::Get(secondary_profile_.get())->GetAccountId());
 }
 
 }  // namespace chromeos

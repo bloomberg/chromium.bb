@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
@@ -72,6 +72,15 @@ class DrmThread : public base::Thread,
                     uint32_t flags,
                     std::unique_ptr<GbmBuffer>* buffer,
                     scoped_refptr<DrmFramebuffer>* framebuffer);
+  using CreateBufferAsyncCallback =
+      base::OnceCallback<void(std::unique_ptr<GbmBuffer>,
+                              scoped_refptr<DrmFramebuffer>)>;
+  void CreateBufferAsync(gfx::AcceleratedWidget widget,
+                         const gfx::Size& size,
+                         gfx::BufferFormat format,
+                         gfx::BufferUsage usage,
+                         uint32_t flags,
+                         CreateBufferAsyncCallback callback);
   void CreateBufferFromHandle(gfx::AcceleratedWidget widget,
                               const gfx::Size& size,
                               gfx::BufferFormat format,
@@ -79,7 +88,6 @@ class DrmThread : public base::Thread,
                               std::unique_ptr<GbmBuffer>* buffer,
                               scoped_refptr<DrmFramebuffer>* framebuffer);
   void SetClearOverlayCacheCallback(base::RepeatingClosure callback);
-  void AddBindingCursorDevice(ozone::mojom::DeviceCursorRequest request);
   void AddBindingDrmDevice(ozone::mojom::DrmDeviceRequest request);
 
   // DrmWindowProxy (on GPU thread) is the client for these methods.
@@ -91,7 +99,6 @@ class DrmThread : public base::Thread,
   void IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic);
 
   // ozone::mojom::DrmDevice
-  void StartDrmDevice(StartDrmDeviceCallback callback) override;
   void CreateWindow(gfx::AcceleratedWidget widget) override;
   void DestroyWindow(gfx::AcceleratedWidget widget) override;
   void SetWindowBounds(gfx::AcceleratedWidget widget,
@@ -129,6 +136,8 @@ class DrmThread : public base::Thread,
       base::OnceCallback<void(gfx::AcceleratedWidget,
                               const OverlaySurfaceCandidateList&,
                               const OverlayStatusList&)> callback) override;
+  void GetDeviceCursor(
+      ozone::mojom::DeviceCursorAssociatedRequest cursor) override;
 
   // ozone::mojom::DeviceCursor
   void SetCursor(gfx::AcceleratedWidget widget,
@@ -153,13 +162,13 @@ class DrmThread : public base::Thread,
 
   base::OnceClosure complete_early_binding_requests_;
 
-  // The mojo implementation requires a BindingSet because the DrmThread serves
-  // requests from two different client threads.
-  mojo::BindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
+  // The mojo implementation requires an AssociatedBindingSet because the
+  // DrmThread serves requests from two different client threads.
+  mojo::AssociatedBindingSet<ozone::mojom::DeviceCursor> cursor_bindings_;
 
-  // The mojo implementation of DrmDevice requires a BindingSet because the
-  // DrmThread services requests from different client threads when operating in
-  // mus mode
+  // This is a BindingSet because the regular Binding causes the sequence
+  // checker in InterfaceEndpointClient to fail during teardown.
+  // TODO(samans): Figure out why.
   mojo::BindingSet<ozone::mojom::DrmDevice> drm_bindings_;
 
   base::WeakPtrFactory<DrmThread> weak_ptr_factory_;

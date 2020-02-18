@@ -77,6 +77,8 @@ RESOURCES = \
 	src/images/browser_button_delete.svg \
 	src/images/browser_button_export.svg \
 	src/images/browser_button_print.svg \
+	src/images/camera_button_fps_30.svg \
+	src/images/camera_button_fps_60.svg \
 	src/images/camera_button_grid_off.svg \
 	src/images/camera_button_grid_on.svg \
 	src/images/camera_button_mic_off.svg \
@@ -115,13 +117,17 @@ RESOURCES = \
 	src/images/settings_timer_duration.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
+	src/js/browser_proxy/browser_proxy.js \
+	src/js/device/camera3_device_info.js \
+	src/js/device/constraints_preferrer.js \
+	src/js/device/device_info_updater.js \
 	src/js/gallerybutton.js \
 	src/js/google-analytics-bundle.js \
 	src/js/main.js \
 	src/js/metrics.js \
-	src/js/models/gallery.js \
 	src/js/models/filenamer.js \
 	src/js/models/filesystem.js \
+	src/js/models/gallery.js \
 	src/js/mojo/imagecapture.js \
 	src/js/nav.js \
 	src/js/resolution_event_broker.js \
@@ -138,7 +144,6 @@ RESOURCES = \
 	src/js/views/camera/options.js \
 	src/js/views/camera/preview.js \
 	src/js/views/camera/recordtime.js \
-	src/js/views/camera/resolution_preference.js \
 	src/js/views/camera/timertick.js \
 	src/js/views/dialog.js \
 	src/js/views/gallery_base.js \

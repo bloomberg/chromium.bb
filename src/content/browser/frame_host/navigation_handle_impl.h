@@ -26,7 +26,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
@@ -37,8 +36,6 @@
 
 namespace content {
 
-class AppCacheNavigationHandle;
-class ChromeAppCacheService;
 class NavigationUIData;
 class NavigatorDelegate;
 class ServiceWorkerContextWrapper;
@@ -92,7 +89,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                         const std::string& header_value) override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
-  const base::Optional<net::SSLInfo> GetSSLInfo() override;
+  const base::Optional<net::SSLInfo>& GetSSLInfo() override;
+  const base::Optional<net::AuthChallengeInfo>& GetAuthChallengeInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
@@ -107,12 +105,14 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsFormSubmission() override;
   bool WasInitiatedByLinkClick() override;
   bool IsSignedExchangeInnerResponse() override;
+  bool HasPrefetchedAlternativeSubresourceSignedExchange() override;
   bool WasResponseCached() override;
   const net::ProxyServer& GetProxyServer() override;
   const std::string& GetHrefTranslate() override;
   const base::Optional<url::Origin>& GetInitiatorOrigin() override;
   bool IsSameProcess() override;
   int GetNavigationEntryOffset() override;
+  bool FromDownloadCrossOriginRedirect() override;
 
   // Returns the NavigationRequest which owns this NavigationHandle.
   NavigationRequest* navigation_request() { return navigation_request_; }
@@ -123,7 +123,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // deferring NavigationThrottle do the resuming.
   void CallResumeForTesting();
 
-  NavigationData* GetNavigationData() override;
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
@@ -159,22 +158,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // will not have a NavigationEntry associated with it, and this will return 0.
   int pending_nav_entry_id() const { return pending_nav_entry_id_; }
 
-  void set_net_error_code(net::Error net_error_code) {
-    net_error_code_ = net_error_code;
-  }
-
   void InitServiceWorkerHandle(
       ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
     return service_worker_handle_.get();
   }
-
-  void InitAppCacheHandle(ChromeAppCacheService* appcache_service);
-  AppCacheNavigationHandle* appcache_handle() const {
-    return appcache_handle_.get();
-  }
-
-  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
 
   typedef base::OnceCallback<void(NavigationThrottle::ThrottleCheckResult)>
       ThrottleChecksFinishedCallback;
@@ -184,22 +172,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->frame_tree_node();
   }
 
-  // Called when the navigation is ready to be committed. This will update the
-  // |state_| and inform the delegate.
-  void ReadyToCommitNavigation(bool is_error);
-
-  // Called during commit. Takes ownership of the embedder's NavigationData
-  // instance. This NavigationData may have been cloned prior to being added
-  // here.
-  void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
-    navigation_data_ = std::move(navigation_data);
-  }
-
   NavigationUIData* navigation_ui_data() const {
     return navigation_request_->navigation_ui_data();
   }
-
-  const GURL& base_url() { return navigation_request_->base_url(); }
 
   NavigationType navigation_type() {
     return navigation_request_->navigation_type();
@@ -210,11 +185,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     response_headers_for_testing_ = response_headers;
   }
 
-  void set_complete_callback_for_testing(
-      ThrottleChecksFinishedCallback callback) {
-    complete_callback_for_testing_ = std::move(callback);
-  }
-
   CSPDisposition should_check_main_world_csp() const {
     return navigation_request_->common_params()
         .initiator_csp_info.should_check_main_world_csp;
@@ -222,10 +192,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   const base::Optional<SourceLocation>& source_location() const {
     return navigation_request_->common_params().source_location;
-  }
-
-  void set_proxy_server(const net::ProxyServer& proxy_server) {
-    proxy_server_ = proxy_server;
   }
 
   std::vector<std::string> TakeRemovedRequestHeaders() {
@@ -239,11 +205,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationThrottle* GetDeferringThrottleForTesting() const {
     return navigation_request_->GetDeferringThrottleForTesting();
   }
-
-  // Whether the navigation was sent to be committed in a renderer by the
-  // RenderFrameHost. This can either be for the commit of a successful
-  // navigation or an error page.
-  bool IsWaitingToCommit();
 
   // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
   // default value if |timeout| is zero.
@@ -264,14 +225,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        int pending_nav_entry_id,
                        net::HttpRequestHeaders request_headers);
 
-  // Helper function to run and reset the |complete_callback_|. This marks the
-  // end of a round of NavigationThrottleChecks.
-  void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
-
-  void SetCompleteCallback(ThrottleChecksFinishedCallback callback) {
-    complete_callback_ = std::move(callback);
-  }
-
   NavigationRequest::NavigationHandleState state() const {
     return navigation_request_->handle_state();
   }
@@ -287,15 +240,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void StopCommitTimeout();
   void RestartCommitTimeout();
 
-  // TODO(zetamoo): Remove once |ready_to_commit_time_| is owned by
-  // NavigationRequest.
-  base::TimeTicks ready_to_commit_time() const { return ready_to_commit_time_; }
-
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
-
-  // See NavigationHandle for a description of those member variables.
-  net::Error net_error_code_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -306,9 +252,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // request.
   std::vector<std::string> removed_request_headers_;
   net::HttpRequestHeaders modified_request_headers_;
-
-  // The time this navigation was ready to commit.
-  base::TimeTicks ready_to_commit_time_;
 
   // Timer for detecting an unexpectedly long time to commit a navigation.
   base::OneShotTimer commit_timeout_timer_;
@@ -321,30 +264,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
 
-  // This callback will be run when all throttle checks have been performed. Be
-  // careful about relying on it as the member may be removed as part of the
-  // PlzNavigate refactoring.
-  ThrottleChecksFinishedCallback complete_callback_;
-
-  // This test-only callback will be run when all throttle checks have been
-  // performed.
-  // TODO(clamy): Revisit the unit test architecture when PlzNavigate ships.
-  ThrottleChecksFinishedCallback complete_callback_for_testing_;
-
   // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
-
-  // Manages the lifetime of a pre-created AppCacheHost until a browser side
-  // navigation is ready to be committed, i.e we have a renderer process ready
-  // to service the navigation request.
-  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
-
-  // Embedder data from the IO thread tied to this navigation.
-  std::unique_ptr<NavigationData> navigation_data_;
-
-  // The unique id to identify this to navigation with.
-  int64_t navigation_id_;
 
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
@@ -352,17 +274,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Stores the restore type, or NONE it it's not a restore.
   RestoreType restore_type_;
 
-  // Which proxy server was used for this navigation, if any.
-  net::ProxyServer proxy_server_;
-
-  // Set in ReadyToCommitNavigation.
-  bool is_same_process_;
-
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.
   scoped_refptr<net::HttpResponseHeaders> response_headers_for_testing_;
 
-  base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
+  base::WeakPtrFactory<NavigationHandleImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

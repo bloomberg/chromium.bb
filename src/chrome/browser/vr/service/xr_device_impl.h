@@ -23,20 +23,20 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-namespace device {
-class VRDisplayImpl;
-}  // namespace device
-
 namespace vr {
 
+class XRRuntimeManager;
 class BrowserXRRuntime;
 
-// The browser-side host for a device::VRDisplayImpl. Controls access to VR
+// The browser-side host for VR services. Controls access to VR
 // APIs like poses and presentation.
 class XRDeviceImpl : public device::mojom::XRDevice {
  public:
+  static bool IsXrDeviceConsentPromptDisabledForTesting();
+
   XRDeviceImpl(content::RenderFrameHost* render_frame_host,
-               device::mojom::XRDeviceRequest device_request);
+               device::mojom::XRDeviceRequest device_request,
+               scoped_refptr<XRRuntimeManager> runtime_manager);
   ~XRDeviceImpl() override;
 
   // device::mojom::XRDevice
@@ -109,6 +109,8 @@ class XRDeviceImpl : public device::mojom::XRDevice {
 
   bool in_focused_frame_ = false;
 
+  scoped_refptr<XRRuntimeManager> runtime_manager_;
+
   content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::XRDevice> binding_;
   mojo::InterfacePtrSet<device::mojom::XRSessionClient> session_clients_;
@@ -117,7 +119,7 @@ class XRDeviceImpl : public device::mojom::XRDevice {
 
   InterfaceSet<device::mojom::XRSessionControllerPtr> magic_window_controllers_;
 
-  base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<XRDeviceImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(XRDeviceImpl);
 };

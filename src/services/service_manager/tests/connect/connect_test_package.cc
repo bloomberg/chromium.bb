@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -158,7 +158,7 @@ class ProvidedService : public Service,
 
   // base::SimpleThread:
   void Run() override {
-    base::MessageLoop message_loop;
+    base::SingleThreadTaskExecutor main_task_executor;
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
     service_binding_.Bind(std::move(request_));
@@ -271,6 +271,6 @@ class ConnectTestService : public Service,
 }  // namespace service_manager
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   service_manager::ConnectTestService(std::move(request)).RunUntilTermination();
 }

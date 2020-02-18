@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
@@ -235,8 +236,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_ptr_(std::move(area)),
       binding_(this),
-      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
-      weak_factory_(this) {
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
   mojo_area_->AddObserver(std::move(ptr_info));
@@ -257,8 +257,7 @@ CachedStorageArea::CachedStorageArea(
       mojo_area_(area.get()),
       mojo_area_associated_ptr_(std::move(area)),
       binding_(this),
-      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()),
-      weak_factory_(this) {
+      areas_(MakeGarbageCollected<HeapHashMap<WeakMember<Source>, String>>()) {
   mojom::blink::StorageAreaObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info), std::move(ipc_runner));
   mojo_area_->AddObserver(std::move(ptr_info));
@@ -368,12 +367,11 @@ bool CachedStorageArea::OnMemoryDump(
       "site_storage/%s/0x%" PRIXPTR "/cache_size",
       IsSessionStorage() ? "session_storage" : "local_storage",
       reinterpret_cast<uintptr_t>(this));
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8().data());
+  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name.Utf8());
   dump->AddScalar(MemoryAllocatorDump::kNameSize,
                   MemoryAllocatorDump::kUnitsBytes, memory_used());
-  pmd->AddSuballocation(
-      dump->guid(),
-      String(WTF::Partitions::kAllocatedObjectPoolName).Utf8().data());
+  pmd->AddSuballocation(dump->guid(),
+                        WTF::Partitions::kAllocatedObjectPoolName);
   return true;
 }
 
@@ -629,8 +627,8 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
       if (input.Is8Bit()) {
         // This code is copied from WTF::String::Utf8(), except the vector
         // doesn't have a stack-allocated capacity.
-        // We do this because there isn't a way to transform the CString we get
-        // from WTF::String::Utf8() to a Vector without an extra copy.
+        // We do this because there isn't a way to transform the std::string we
+        // get from WTF::String::Utf8() to a Vector without an extra copy.
         if (length > std::numeric_limits<unsigned>::max() / 3)
           return Vector<uint8_t>();
         Vector<uint8_t> buffer_vector(length * 3);
@@ -651,10 +649,10 @@ Vector<uint8_t> CachedStorageArea::StringToUint8Vector(
 
       // TODO(dmurph): Figure out how to avoid a copy here.
       // TODO(dmurph): Handle invalid UTF16 better. https://crbug.com/873280.
-      CString utf8 = input.Utf8(
-          WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
-      Vector<uint8_t> result(utf8.length());
-      std::memcpy(result.data(), utf8.data(), utf8.length());
+      StringUTF8Adaptor utf8(
+          input, WTF::kStrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
+      Vector<uint8_t> result(utf8.size());
+      std::memcpy(result.data(), utf8.data(), utf8.size());
       return result;
     }
     case FormatOption::kLocalStorageDetectFormat: {

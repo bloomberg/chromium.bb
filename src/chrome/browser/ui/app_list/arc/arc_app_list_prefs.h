@@ -116,15 +116,15 @@ class ArcAppListPrefs : public KeyedService,
   };
 
   struct PackageInfo {
-    PackageInfo(
-        const std::string& package_name,
-        int32_t package_version,
-        int64_t last_backup_android_id,
-        int64_t last_backup_time,
-        bool should_sync,
-        bool system,
-        bool vpn_provider,
-        const base::flat_map<arc::mojom::AppPermission, bool>& permissions);
+    PackageInfo(const std::string& package_name,
+                int32_t package_version,
+                int64_t last_backup_android_id,
+                int64_t last_backup_time,
+                bool should_sync,
+                bool system,
+                bool vpn_provider,
+                base::flat_map<arc::mojom::AppPermission,
+                               arc::mojom::PermissionStatePtr> permissions);
     ~PackageInfo();
 
     std::string package_name;
@@ -134,8 +134,9 @@ class ArcAppListPrefs : public KeyedService,
     bool should_sync;
     bool system;
     bool vpn_provider;
-    // Maps app permission to boolean values
-    base::flat_map<arc::mojom::AppPermission, bool> permissions;
+    // Maps app permission to permission states
+    base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
+        permissions;
   };
 
   class Observer {

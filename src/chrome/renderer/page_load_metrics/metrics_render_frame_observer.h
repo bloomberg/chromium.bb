@@ -48,8 +48,7 @@ class MetricsRenderFrameObserver
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(int css_property,
                                      bool is_animated) override;
-  void DidObserveLayoutJank(double jank_fraction,
-                            bool after_input_or_scroll) override;
+  void DidObserveLayoutShift(double score, bool after_input_or_scroll) override;
   void DidObserveLazyLoadBehavior(
       blink::WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) override;
   void DidStartResponse(const GURL& response_url,
@@ -63,6 +62,11 @@ class MetricsRenderFrameObserver
       int request_id,
       const network::URLLoaderCompletionStatus& status) override;
   void DidCancelResponse(int request_id) override;
+  void DidLoadResourceFromMemoryCache(const GURL& response_url,
+                                      int request_id,
+                                      int64_t encoded_body_length,
+                                      const std::string& mime_type,
+                                      bool from_archive) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;

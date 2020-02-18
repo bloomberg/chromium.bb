@@ -1,245 +1,222 @@
 package bigrat;
-use 5.006;
 
-$VERSION = '0.29';
-require Exporter;
-@ISA		= qw( bigint );
-@EXPORT_OK 	= qw( PI e bpi bexp );
-@EXPORT		= qw( inf NaN );
-
+use 5.010;
 use strict;
+use warnings;
+
+our $VERSION = '0.51';
+
+use Exporter;
+our @ISA            = qw( bigint );
+our @EXPORT_OK      = qw( PI e bpi bexp hex oct );
+our @EXPORT         = qw( inf NaN );
+
 use overload;
-require bigint;		# no "use" to avoid callind import
+use bigint ();
 
-############################################################################## 
+##############################################################################
 
-BEGIN 
-  {
-  *inf = \&bigint::inf;
-  *NaN = \&bigint::NaN;
-  }
+BEGIN {
+    *inf = \&bigint::inf;
+    *NaN = \&bigint::NaN;
+    *hex = \&bigint::hex;
+    *oct = \&bigint::oct;
+}
 
 # These are all alike, and thus faked by AUTOLOAD
 
 my @faked = qw/round_mode accuracy precision div_scale/;
-use vars qw/$VERSION $AUTOLOAD $_lite/;		# _lite for testsuite
+our ($AUTOLOAD, $_lite);        # _lite for testsuite
 
-sub AUTOLOAD
-  {
-  my $name = $AUTOLOAD;
+sub AUTOLOAD {
+    my $name = $AUTOLOAD;
 
-  $name =~ s/.*:://;    # split package
-  no strict 'refs';
-  foreach my $n (@faked)
-    {
-    if ($n eq $name)
-      {
-      *{"bigrat::$name"} = sub 
-        {
-        my $self = shift;
-        no strict 'refs';
-        if (defined $_[0])
-          {
-          Math::BigInt->$name($_[0]);
-          Math::BigFloat->$name($_[0]);
-          return Math::BigRat->$name($_[0]);
-          }
-        return Math::BigInt->$name();
-        };
-      return &$name;
-      }
+    $name =~ s/.*:://;          # split package
+    no strict 'refs';
+    foreach my $n (@faked) {
+        if ($n eq $name) {
+            *{"bigrat::$name"} =
+              sub {
+                  my $self = shift;
+                  no strict 'refs';
+                  if (defined $_[0]) {
+                      Math::BigInt->$name($_[0]);
+                      Math::BigFloat->$name($_[0]);
+                      return Math::BigRat->$name($_[0]);
+                  }
+                  return Math::BigInt->$name();
+              };
+            return &$name;
+        }
     }
- 
-  # delayed load of Carp and avoid recursion
-  require Carp;
-  Carp::croak ("Can't call bigrat\-\>$name, not a valid method");
-  }
 
-sub unimport
-  {
-  $^H{bigrat} = undef;					# no longer in effect
-  overload::remove_constant('binary','','float','','integer');
-  }
+    # delayed load of Carp and avoid recursion
+    require Carp;
+    Carp::croak ("Can't call bigrat\-\>$name, not a valid method");
+}
 
-sub in_effect
-  {
-  my $level = shift || 0;
-  my $hinthash = (caller($level))[10];
-  $hinthash->{bigrat};
-  }
+sub unimport {
+    $^H{bigrat} = undef;        # no longer in effect
+    overload::remove_constant('binary', '', 'float', '', 'integer');
+}
+
+sub in_effect {
+    my $level = shift || 0;
+    my $hinthash = (caller($level))[10];
+    $hinthash->{bigrat};
+}
 
 #############################################################################
-# the following two routines are for Perl 5.9.4 or later and are lexical
 
-sub _hex
-  {
-  return CORE::hex($_[0]) unless in_effect(1);
-  my $i = $_[0];
-  $i = '0x'.$i unless $i =~ /^0x/;
-  Math::BigInt->new($i);
-  }
+sub import {
+    my $self = shift;
 
-sub _oct
-  {
-  return CORE::oct($_[0]) unless in_effect(1);
-  my $i = $_[0];
-  return Math::BigInt->from_oct($i) if $i =~ /^0[0-7]/;
-  Math::BigInt->new($i);
-  }
+    # see also bignum->import() for additional comments
 
-sub import 
-  {
-  my $self = shift;
+    $^H{bigrat} = 1;                            # we are in effect
 
-  # see also bignum->import() for additional comments
-
-  $^H{bigrat} = 1;					# we are in effect
-
-  my ($hex,$oct);
-  # for newer Perls always override hex() and oct() with a lexical version:
-  if ($] > 5.009004)
-    {
-    $oct = \&_oct;
-    $hex = \&_hex;
+    # for newer Perls always override hex() and oct() with a lexical version:
+    if ($] > 5.009004) {
+        bigint::_override();
     }
-  # some defaults
-  my $lib = ''; my $lib_kind = 'try'; my $upgrade = 'Math::BigFloat';
+    # some defaults
+    my $lib      = '';
+    my $lib_kind = 'try';
+    my $upgrade  = 'Math::BigFloat';
 
-  my @import = ( ':constant' );				# drive it w/ constant
-  my @a = @_; my $l = scalar @_; my $j = 0;
-  my ($a,$p);
-  my ($ver,$trace);					# version? trace?
-  for ( my $i = 0; $i < $l ; $i++,$j++ )
-    {
-    if ($_[$i] eq 'upgrade')
-      {
-      # this causes upgrading
-      $upgrade = $_[$i+1];		# or undef to disable
-      my $s = 2; $s = 1 if @a-$j < 2;	# avoid "can not modify non-existent..."
-      splice @a, $j, $s; $j -= $s;
-      }
-    elsif ($_[$i] =~ /^(l|lib|try|only)$/)
-      {
-      # this causes a different low lib to take care...
-      $lib_kind = $1; $lib_kind = 'lib' if $lib_kind eq 'l';
-      $lib = $_[$i+1] || '';
-      my $s = 2; $s = 1 if @a-$j < 2;	# avoid "can not modify non-existent..."
-      splice @a, $j, $s; $j -= $s; $i++;
-      }
-    elsif ($_[$i] =~ /^(a|accuracy)$/)
-      {
-      $a = $_[$i+1];
-      my $s = 2; $s = 1 if @a-$j < 2;   # avoid "can not modify non-existent..."
-      splice @a, $j, $s; $j -= $s; $i++;
-      }
-    elsif ($_[$i] =~ /^(p|precision)$/)
-      {
-      $p = $_[$i+1];
-      my $s = 2; $s = 1 if @a-$j < 2;   # avoid "can not modify non-existent..."
-      splice @a, $j, $s; $j -= $s; $i++;
-      }
-    elsif ($_[$i] =~ /^(v|version)$/)
-      {
-      $ver = 1;
-      splice @a, $j, 1; $j --;
-      }
-    elsif ($_[$i] =~ /^(t|trace)$/)
-      {
-      $trace = 1;
-      splice @a, $j, 1; $j --;
-      }
-    elsif ($_[$i] eq 'hex')
-      {
-      splice @a, $j, 1; $j --;
-      $hex = \&bigint::_hex_global;
-      }
-    elsif ($_[$i] eq 'oct')
-      {
-      splice @a, $j, 1; $j --;
-      $oct = \&bigint::_oct_global;
-      }
-    elsif ($_[$i] !~ /^(PI|e|bpi|bexp)\z/)
-      {
-      die ("unknown option $_[$i]");
-      }
-    }
-  my $class;
-  $_lite = 0;                                   # using M::BI::L ?
-  if ($trace)
-    {
-    require Math::BigInt::Trace; $class = 'Math::BigInt::Trace';
-    $upgrade = 'Math::BigFloat::Trace';
-    }
-  else
-    {
-    # see if we can find Math::BigInt::Lite
-    if (!defined $a && !defined $p)             # rounding won't work to well
-      {
-      eval 'require Math::BigInt::Lite;';
-      if ($@ eq '')
-        {
-        @import = ( );                          # :constant in Lite, not MBI
-        Math::BigInt::Lite->import( ':constant' );
-        $_lite= 1;                              # signal okay
+    my @import = (':constant');                 # drive it w/ constant
+    my @a = @_;
+    my $l = scalar @_;
+    my $j = 0;
+    my ($a, $p);
+    my ($ver, $trace);                          # version? trace?
+    for (my $i = 0; $i < $l ; $i++, $j++) {
+        if ($_[$i] eq 'upgrade') {
+            # this causes upgrading
+            $upgrade = $_[$i + 1];              # or undef to disable
+            my $s = 2;
+            $s = 1 if @a - $j < 2;  # avoid "can not modify non-existent..."
+            splice @a, $j, $s;
+            $j -= $s;
         }
-      }
-    require Math::BigInt if $_lite == 0;        # not already loaded?
-    $class = 'Math::BigInt';                    # regardless of MBIL or not
+        elsif ($_[$i] =~ /^(l|lib|try|only)$/) {
+            # this causes a different low lib to take care...
+            $lib_kind = $1;
+            $lib_kind = 'lib' if $lib_kind eq 'l';
+            $lib = $_[$i + 1] || '';
+            my $s = 2;
+            $s = 1 if @a - $j < 2;  # avoid "can not modify non-existent..."
+            splice @a, $j, $s;
+            $j -= $s;
+            $i++;
+        }
+        elsif ($_[$i] =~ /^(a|accuracy)$/) {
+            $a = $_[$i + 1];
+            my $s = 2;
+            $s = 1 if @a - $j < 2;  # avoid "can not modify non-existent..."
+            splice @a, $j, $s;
+            $j -= $s;
+            $i++;
+        }
+        elsif ($_[$i] =~ /^(p|precision)$/) {
+            $p = $_[$i + 1];
+            my $s = 2;
+            $s = 1 if @a - $j < 2;  # avoid "can not modify non-existent..."
+            splice @a, $j, $s;
+            $j -= $s;
+            $i++;
+        }
+        elsif ($_[$i] =~ /^(v|version)$/) {
+            $ver = 1;
+            splice @a, $j, 1;
+            $j--;
+        }
+        elsif ($_[$i] =~ /^(t|trace)$/) {
+            $trace = 1;
+            splice @a, $j, 1;
+            $j--;
+        }
+        elsif ($_[$i] !~ /^(PI|e|bpi|bexp|hex|oct)\z/) {
+            die ("unknown option $_[$i]");
+        }
     }
-  push @import, $lib_kind => $lib if $lib ne ''; 
-  # Math::BigInt::Trace or plain Math::BigInt
-  $class->import(@import, upgrade => $upgrade);
+    my $class;
+    $_lite = 0;                                 # using M::BI::L ?
+    if ($trace) {
+        require Math::BigInt::Trace;
+        $class   = 'Math::BigInt::Trace';
+        $upgrade = 'Math::BigFloat::Trace';
+    }
+    else {
+        # see if we can find Math::BigInt::Lite
+        if (!defined $a && !defined $p) {       # rounding won't work to well
+            local @INC = @INC;
+            pop @INC if $INC[-1] eq '.';
+            if (eval { require Math::BigInt::Lite; 1 }) {
+                @import = ();                   # :constant in Lite, not MBI
+                Math::BigInt::Lite->import(':constant');
+                $_lite = 1;                     # signal okay
+            }
+        }
+        require Math::BigInt if $_lite == 0;    # not already loaded?
+        $class = 'Math::BigInt';                # regardless of MBIL or not
+    }
+    push @import, $lib_kind => $lib if $lib ne '';
+    # Math::BigInt::Trace or plain Math::BigInt
+    $class->import(@import, upgrade => $upgrade);
 
-  require Math::BigFloat;
-  Math::BigFloat->import( upgrade => 'Math::BigRat', ':constant' );
-  require Math::BigRat;
+    require Math::BigFloat;
+    Math::BigFloat->import(upgrade => 'Math::BigRat', ':constant');
+    require Math::BigRat;
+    Math::BigRat->import(@import);
 
-  bigrat->accuracy($a) if defined $a;
-  bigrat->precision($p) if defined $p;
-  if ($ver)
-    {
-    print "bigrat\t\t\t v$VERSION\n";
-    print "Math::BigInt::Lite\t v$Math::BigInt::Lite::VERSION\n" if $_lite;  
-    print "Math::BigInt\t\t v$Math::BigInt::VERSION";
-    my $config = Math::BigInt->config();
-    print " lib => $config->{lib} v$config->{lib_version}\n";
-    print "Math::BigFloat\t\t v$Math::BigFloat::VERSION\n";
-    print "Math::BigRat\t\t v$Math::BigRat::VERSION\n";
-    exit;
+    bigrat->accuracy($a)  if defined $a;
+    bigrat->precision($p) if defined $p;
+    if ($ver) {
+        print "bigrat\t\t\t v$VERSION\n";
+        print "Math::BigInt::Lite\t v$Math::BigInt::Lite::VERSION\n" if $_lite;
+        print "Math::BigInt\t\t v$Math::BigInt::VERSION";
+        my $config = Math::BigInt->config();
+        print " lib => $config->{lib} v$config->{lib_version}\n";
+        print "Math::BigFloat\t\t v$Math::BigFloat::VERSION\n";
+        print "Math::BigRat\t\t v$Math::BigRat::VERSION\n";
+        exit;
     }
 
-  # Take care of octal/hexadecimal constants
-  overload::constant binary => sub { bigint::_binary_constant(shift) };
+    # Take care of octal/hexadecimal constants
+    overload::constant binary =>
+        sub {
+            bigint::_binary_constant(shift);
+          };
 
-  # if another big* was already loaded:
-  my ($package) = caller();
+    # if another big* was already loaded:
+    my ($package) = caller();
 
-  no strict 'refs';
-  if (!defined *{"${package}::inf"})
-    {
-    $self->export_to_level(1,$self,@a);           # export inf and NaN
+    no strict 'refs';
+    if (!defined *{"${package}::inf"}) {
+        $self->export_to_level(1, $self, @a);   # export inf and NaN
     }
-  {
-    no warnings 'redefine';
-    *CORE::GLOBAL::oct = $oct if $oct;
-    *CORE::GLOBAL::hex = $hex if $hex;
-  }
-  }
+}
 
 sub PI () { Math::BigFloat->new('3.141592653589793238462643383279502884197'); }
-sub e () { Math::BigFloat->new('2.718281828459045235360287471352662497757'); }
+sub e  () { Math::BigFloat->new('2.718281828459045235360287471352662497757'); }
 
-sub bpi ($) { local $Math::BigFloat::upgrade; Math::BigFloat::bpi(@_); }
+sub bpi ($) {
+    local $Math::BigFloat::upgrade;
+    Math::BigFloat->bpi(@_);
+}
 
-sub bexp ($$)
-  {
-  local $Math::BigFloat::upgrade;
-  my $x = Math::BigFloat->new($_[0]); $x->bexp($_[1]);
-  }
+sub bexp ($$) {
+    local $Math::BigFloat::upgrade;
+    my $x = Math::BigFloat->new($_[0]);
+    $x->bexp($_[1]);
+}
 
 1;
 
 __END__
+
+=pod
 
 =head1 NAME
 
@@ -249,15 +226,15 @@ bigrat - Transparent BigNumber/BigRational support for Perl
 
   use bigrat;
 
-  print 2 + 4.5,"\n";			# BigFloat 6.5
-  print 1/3 + 1/4,"\n";			# produces 7/12
+  print 2 + 4.5,"\n";                   # BigFloat 6.5
+  print 1/3 + 1/4,"\n";                 # produces 7/12
 
   {
     no bigrat;
-    print 1/3,"\n";			# 0.33333...
+    print 1/3,"\n";                     # 0.33333...
   }
 
-  # Note that this will make hex() and oct() be globally overridden:
+  # Import into current package:
   use bigrat qw/hex oct/;
   print hex("0x1234567890123490"),"\n";
   print oct("01234567890123490"),"\n";
@@ -289,7 +266,7 @@ The following modules are currently used by bignum:
 Math with the numbers is done (by default) by a module called
 Math::BigInt::Calc. This is equivalent to saying:
 
-	use bigrat lib => 'Calc';
+        use bigrat lib => 'Calc';
 
 You can change this by using:
 
@@ -298,7 +275,7 @@ You can change this by using:
 The following would first try to find Math::BigInt::Foo, then
 Math::BigInt::Bar, and when this also fails, revert to Math::BigInt::Calc:
 
-	use bigrat lib => 'Foo,Math::BigInt::Bar';
+        use bigrat lib => 'Foo,Math::BigInt::Bar';
 
 Using C<lib> warns if none of the specified libraries can be found and
 L<Math::BigInt> did fall back to one of the default libraries.
@@ -342,37 +319,36 @@ handle bareword C<NaN> properly.
 
 =item e
 
-	# perl -Mbigrat=e -wle 'print e'
+        # perl -Mbigrat=e -wle 'print e'
 
 Returns Euler's number C<e>, aka exp(1).
 
 =item PI
 
-	# perl -Mbigrat=PI -wle 'print PI'
+        # perl -Mbigrat=PI -wle 'print PI'
 
 Returns PI.
 
 =item bexp()
 
-	bexp($power,$accuracy);
-
+        bexp($power,$accuracy);
 
 Returns Euler's number C<e> raised to the appropriate power, to
 the wanted accuracy.
 
 Example:
 
-	# perl -Mbigrat=bexp -wle 'print bexp(1,80)'
+        # perl -Mbigrat=bexp -wle 'print bexp(1,80)'
 
 =item bpi()
 
-	bpi($accuracy);
+        bpi($accuracy);
 
 Returns PI to the wanted accuracy.
 
 Example:
 
-	# perl -Mbigrat=bpi -wle 'print bpi(80)'
+        # perl -Mbigrat=bpi -wle 'print bpi(80)'
 
 =item upgrade()
 
@@ -381,13 +357,13 @@ C<$Math::BigInt::upgrade>.
 
 =item in_effect()
 
-	use bigrat;
+        use bigrat;
 
-	print "in effect\n" if bigrat::in_effect;	# true
-	{
-	  no bigrat;
-	  print "in effect\n" if bigrat::in_effect;	# false
-	}
+        print "in effect\n" if bigrat::in_effect;       # true
+        {
+          no bigrat;
+          print "in effect\n" if bigrat::in_effect;     # false
+        }
 
 Returns true or false if C<bigrat> is in effect in the current scope.
 
@@ -409,7 +385,7 @@ only a shallow copy will be made.
 
 If you want to make a real copy, use the following:
 
-	$y = $x->copy();
+        $y = $x->copy();
 
 Using the copy or the original with overloaded math is okay, e.g. the
 following work:
@@ -450,7 +426,7 @@ The following options exist:
 This sets the accuracy for all math operations. The argument must be greater
 than or equal to zero. See Math::BigInt's bround() function for details.
 
-	perl -Mbigrat=a,50 -le 'print sqrt(20)'
+        perl -Mbigrat=a,50 -le 'print sqrt(20)'
 
 Note that setting precision and accuracy at the same time is not possible.
 
@@ -461,7 +437,7 @@ integer. Negative values mean a fixed number of digits after the dot, while
 a positive value rounds to this digit left from the dot. 0 or 1 mean round to
 integer. See Math::BigInt's bfround() function for details.
 
-	perl -Mbigrat=p,-50 -le 'print sqrt(20)'
+        perl -Mbigrat=p,-50 -le 'print sqrt(20)'
 
 Note that setting precision and accuracy at the same time is not possible.
 
@@ -474,38 +450,63 @@ Math::BigInt/Math::BigFloat.
 
 Load a different math lib, see L<MATH LIBRARY>.
 
-	perl -Mbigrat=l,GMP -e 'print 2 ** 512'
+        perl -Mbigrat=l,GMP -e 'print 2 ** 512'
 
 Currently there is no way to specify more than one library on the command
 line. This means the following does not work:
 
-	perl -Mbignum=l,GMP,Pari -e 'print 2 ** 512'
+        perl -Mbignum=l,GMP,Pari -e 'print 2 ** 512'
 
 This will be hopefully fixed soon ;)
 
 =item hex
 
 Override the built-in hex() method with a version that can handle big
-integers. Note that under Perl v5.9.4 or ealier, this will be global
-and cannot be disabled with "no bigint;".
+numbers. This overrides it by exporting it to the current package. Under
+Perl v5.10.0 and higher, this is not so necessary, as hex() is lexically
+overridden in the current scope whenever the bigrat pragma is active.
 
 =item oct
 
 Override the built-in oct() method with a version that can handle big
-integers. Note that under Perl v5.9.4 or earlier, this will be global
-and cannot be disabled with "no bigint;".
+numbers. This overrides it by exporting it to the current package. Under
+Perl v5.10.0 and higher, this is not so necessary, as oct() is lexically
+overridden in the current scope whenever the bigrat pragma is active.
 
 =item v or version
 
 This prints out the name and version of all modules used and then exits.
 
-	perl -Mbigrat=v
+        perl -Mbigrat=v
 
 =back
 
 =head1 CAVEATS
 
 =over 2
+
+=item Operator vs literal overloading
+
+C<bigrat> works by overloading handling of integer and floating point
+literals, converting them to L<Math::BigInt> or L<Math::BigRat>
+objects.
+
+This means that arithmetic involving only string values or string
+literals will be performed using Perl's built-in operators.
+
+For example:
+
+    use bigrat;
+    my $x = "900000000000000009";
+    my $y = "900000000000000007";
+    print $x - $y;
+
+will output C<0> on default 32-bit builds, since C<bigrat> never sees
+the string literals.  To ensure the expression is all treated as
+C<Math::BigInt> or C<Math::BigRat> objects, use a literal number in
+the expression:
+
+    print +(0+$x) - $y;
 
 =item in_effect()
 
@@ -519,33 +520,51 @@ will not happen unless you specifically ask for it with the two
 import tags "hex" and "oct" - and then it will be global and cannot be
 disabled inside a scope with "no bigint":
 
-	use bigint qw/hex oct/;
+        use bigint qw/hex oct/;
 
-	print hex("0x1234567890123456");
-	{
-		no bigint;
-		print hex("0x1234567890123456");
-	}
+        print hex("0x1234567890123456");
+        {
+                no bigint;
+                print hex("0x1234567890123456");
+        }
 
 The second call to hex() will warn about a non-portable constant.
 
 Compare this to:
 
-	use bigint;
+        use bigint;
 
-	# will warn only under Perl older than v5.9.4
-	print hex("0x1234567890123456");
+        # will warn only under Perl older than v5.9.4
+        print hex("0x1234567890123456");
 
 =back
 
 =head1 EXAMPLES
 
-	perl -Mbigrat -le 'print sqrt(33)'
-	perl -Mbigrat -le 'print 2*255'
-	perl -Mbigrat -le 'print 4.5+2*255'
-	perl -Mbigrat -le 'print 3/7 + 5/7 + 8/3'
-	perl -Mbigrat -le 'print 12->is_odd()';
-	perl -Mbignum=l,GMP -le 'print 7 ** 7777'
+        perl -Mbigrat -le 'print sqrt(33)'
+        perl -Mbigrat -le 'print 2*255'
+        perl -Mbigrat -le 'print 4.5+2*255'
+        perl -Mbigrat -le 'print 3/7 + 5/7 + 8/3'
+        perl -Mbigrat -le 'print 12->is_odd()';
+        perl -Mbignum=l,GMP -le 'print 7 ** 7777'
+
+=head1 BUGS
+
+For information about bugs and how to report them, see the BUGS section in the
+documentation available with the perldoc command.
+
+    perldoc bignum
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc bigrat
+
+For more information, see the SUPPORT section in the documentation available
+with the perldoc command.
+
+    perldoc bignum
 
 =head1 LICENSE
 
@@ -554,13 +573,23 @@ the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Especially L<bignum>.
+L<bignum> and L<bigint>.
 
-L<Math::BigFloat>, L<Math::BigInt>, L<Math::BigRat> and L<Math::Big> as well
-as L<Math::BigInt::BitVect>, L<Math::BigInt::Pari> and  L<Math::BigInt::GMP>.
+L<Math::BigInt>, L<Math::BigFloat>, L<Math::BigRat> and L<Math::Big> as well as
+L<Math::BigInt::FastCalc>, L<Math::BigInt::Pari> and L<Math::BigInt::GMP>.
 
 =head1 AUTHORS
 
+=over 4
+
+=item *
+
 (C) by Tels L<http://bloodgate.com/> in early 2002 - 2007.
+
+=item *
+
+Peter John Acklam E<lt>pjacklam@gmail.com<gt>, 2014-.
+
+=back
 
 =cut

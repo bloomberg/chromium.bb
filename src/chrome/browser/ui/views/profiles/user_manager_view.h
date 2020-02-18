@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_VIEWS_PROFILES_USER_MANAGER_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/window/dialog_delegate.h"
 

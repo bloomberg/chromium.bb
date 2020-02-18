@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="1409544243779336081">Рекомендовані додатки</translation>
+<translation id="1498028757988366001">Ви раніше це шукали. Якщо видалити запит "<ph name="QUERY" />" з історії, він назавжди зникне з вашого облікового запису на всіх пристроях.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвилина та }one{# хвилина та }few{# хвилини та }many{# хвилин і }other{# хвилини та }}</translation>
 <translation id="1643823602425662293">Сповіщення</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Торкніться елементів для дотику на екрані.</translation>
 <translation id="2295140143284145483">Опитування</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек.</translation>
+<translation id="2388990488038464401">Здійснювати виклики на цей номер із вашого телефона?</translation>
 <translation id="24452542372838207">Розгорнути сповіщення</translation>
 <translation id="2445449901874883781">Використовувати високу щільність</translation>
+<translation id="2451871130406122810">Надіслано на пристрій</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2497284189126895209">Усі файли</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">Калібрування завершено</translation>
 <translation id="252373100621549798">Невідомий дисплей</translation>
+<translation id="2545651323591713692">Відкласти</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{через 1 год}one{через # год}few{через # год}many{через # год}other{через # год}}</translation>
 <translation id="2583543531130364912">Відкалібруйте сенсорний екран</translation>
 <translation id="2666092431469916601">Верх</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Прокрутка до цього місця</translation>
 <translation id="3234408098842461169">Курсор униз</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 день}one{# день}few{# дні}many{# днів}other{# дня}}</translation>
+<translation id="3295886253693811851">Зателефонувати через</translation>
 <translation id="335581015389089642">Speech</translation>
 <translation id="3443810440409579745">Вкладку отримано.</translation>
 <translation id="3479552764303398839">Не зараз</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 місяць тому}one{# місяць тому}few{# місяці тому}many{# місяців тому}other{# місяця тому}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">УСІ ДОДАТКИ</translation>
+<translation id="4467014365953759647">Не вдалося надіслати номер</translation>
 <translation id="4588090240171750605">Прокрутка вправо</translation>
 <translation id="4690510401873698237">Полицю розміщено внизу</translation>
 <translation id="4724120544754982507">Центр сповіщень, непрочитаних сповіщень: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Трикутник відкривання</translation>
 <translation id="5278860589123563674">Не вдалося надіслати</translation>
 <translation id="528468243742722775">Завершити</translation>
+<translation id="5327567770033251652">увімкніть синхронізацію</translation>
 <translation id="5329858601952122676">&amp;Видалити</translation>
 <translation id="5395308026110844773"><ph name="DRAGGED_APP_NAME" /> перетягнено на додаток <ph name="IN_PLACE_APP" />. Відпустіть, щоб створити папку.</translation>
 <translation id="5463830097259460683">Смайли та символи</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Зберегти файл</translation>
 <translation id="6699343763173986273">Наступна композиція</translation>
 <translation id="673773751041746814">Видалення</translation>
+<translation id="6779314412797872738">Щоб надіслати номер на телефон Android, <ph name="TROUBLESHOOT_LINK" /> для обох пристроїв у налаштуваннях.</translation>
 <translation id="6786750046913594791">Закрити папку</translation>
 <translation id="6808150112686056157">Зупинити</translation>
 <translation id="6845383723252244143">Вибір папки</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Панель запуску, частковий перегляд</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 хв тому}one{# хв тому}few{# хв тому}many{# хв тому}other{# хв тому}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Перевірте з'єднання телефона й повторіть спробу</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Залишилась 1 хвилина}one{Залишилася # хвилина}few{Залишилося # хвилини}many{Залишилося # хвилин}other{Залишилося # хвилини}}</translation>
+<translation id="7430878839542012341">Видалити цей пошуковий запит з історії?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
 <translation id="7507604095951736240">Смайли</translation>
 <translation id="7658239707568436148">Скасувати</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Ваші пошукові запити виконуються за технологією Google Асистента. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />: автозавершення</translation>
 <translation id="815598010540052116">Прокрутка вниз</translation>
-<translation id="8170087467028567933">Якщо видалити цю пропозицію, вона не з’являтиметься в обліковому записі на всіх ваших пристроях.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Сторінка вниз</translation>
 <translation id="8245914219290430011">Tab</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">установити прапорець</translation>
 <translation id="8393700583063109961">Надіслати повідомлення</translation>
 <translation id="8394908167088220973">Відтворити чи призупинити</translation>
-<translation id="8420205633584771378">Видалити цю пропозицію?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 р.}one{# р.}few{# р.}many{# р.}other{# р.}}</translation>
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Полицю завжди видно</translation>

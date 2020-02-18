@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "osp/impl/quic/quic_connection_impl.h"
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
-#include "platform/base/event_loop.h"
+#include "platform/base/error.h"
+#include "platform/impl/event_loop.h"
 #include "third_party/chromium_quic/src/base/location.h"
 #include "third_party/chromium_quic/src/base/task_runner.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/core/quic_constants.h"
@@ -129,34 +129,35 @@ void QuicConnectionFactoryImpl::RunTasks() {
     // QuicConnectionFactoryImpl.
     OSP_DCHECK(std::find_if(sockets_.begin(), sockets_.end(),
                             [&packet](const platform::UdpSocketUniquePtr& s) {
-                              return s.get() == packet.socket;
+                              return s.get() == packet.socket();
                             }) != sockets_.end());
 
     // TODO(btolsch): We will need to rethink this both for ICE and connection
     // migration support.
-    auto conn_it = connections_.find(packet.source);
+    auto conn_it = connections_.find(packet.source());
     if (conn_it == connections_.end()) {
       if (server_delegate_) {
-        OSP_VLOG << __func__ << ": spawning connection from " << packet.source;
+        OSP_VLOG << __func__ << ": spawning connection from "
+                 << packet.source();
         auto transport =
-            std::make_unique<UdpTransport>(packet.socket, packet.source);
+            std::make_unique<UdpTransport>(packet.socket(), packet.source());
         ::quic::QuartcSessionConfig session_config;
         session_config.perspective = ::quic::Perspective::IS_SERVER;
         session_config.packet_transport = transport.get();
 
         auto result = std::make_unique<QuicConnectionImpl>(
-            this, server_delegate_->NextConnectionDelegate(packet.source),
+            this, server_delegate_->NextConnectionDelegate(packet.source()),
             std::move(transport),
             quartc_factory_->CreateQuartcSession(session_config));
         auto* result_ptr = result.get();
-        connections_.emplace(packet.source,
-                             OpenConnection{result_ptr, packet.socket});
+        connections_.emplace(packet.source(),
+                             OpenConnection{result_ptr, packet.socket()});
         server_delegate_->OnIncomingConnection(std::move(result));
         result_ptr->OnDataReceived(packet);
       }
     } else {
       OSP_VLOG << __func__ << ": data for existing connection from "
-               << packet.source;
+               << packet.source();
       conn_it->second.connection->OnDataReceived(packet);
     }
   }

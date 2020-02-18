@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -115,6 +116,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -145,7 +147,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -1599,8 +1600,9 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   // Start the platform app, causing it to open a window.
   run_loop_.reset(new base::RunLoop);
   OpenApplication(AppLaunchParams(
-      profile, app, extensions::LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+      profile, app->id(), extensions::LaunchContainer::kLaunchContainerNone,
+      WindowOpenDisposition::NEW_WINDOW,
+      extensions::AppLaunchSource::kSourceTest));
   run_loop_->Run();
   EXPECT_EQ(1U, app_window_registry->app_windows().size());
 
@@ -2540,11 +2542,13 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, WhitelistedExtension) {
 IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, NetworkCertificate) {
   SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
 
-  // Install and refresh the device policy now. This will also fetch the initial
-  // user policy for the device-local account now.
+  device_local_account_policy_.payload()
+      .mutable_opennetworkconfiguration()
+      ->set_value(kFakeOncWithCertificate);
+
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
-  AddNetworkCertificateToDevicePolicy();
+
   WaitForPolicy();
 
   const user_manager::User* user =
@@ -2797,5 +2801,20 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
 INSTANTIATE_TEST_SUITE_P(TermsOfServiceDownloadTestInstance,
                          TermsOfServiceDownloadTest,
                          testing::Bool());
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, WebAppsInPublicSession) {
+  UploadAndInstallDeviceLocalAccountPolicy();
+  // Add an account with DeviceLocalAccount::Type::TYPE_PUBLIC_SESSION.
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  StartLogin(std::string(), std::string());
+  WaitForSessionStart();
+
+  // WebAppProvider should be enabled for TYPE_PUBLIC_SESSION user account.
+  Profile* profile = GetProfileForTest();
+  ASSERT_TRUE(profile);
+  EXPECT_TRUE(web_app::WebAppProvider::Get(profile));
+}
 
 }  // namespace policy

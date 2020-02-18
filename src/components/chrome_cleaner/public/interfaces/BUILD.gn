@@ -4,6 +4,13 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+# TODO(crbug.com/969139): This target uses a non-standard name because it is
+# mirrored at
+# https://chromium.googlesource.com/chromium/src/components/chrome_cleaner so
+# that it can be used from the internal Chrome Cleanup tool repo which is
+# released on a different schedule from Chrome. Coordinating the renaming from
+# interfaces -> mojom in the internal repo is tricky. Once crbug.com/969139 is
+# implemented we we will delete this interface anyway.
 mojom("interfaces") {
   sources = [
     "chrome_prompt.mojom",

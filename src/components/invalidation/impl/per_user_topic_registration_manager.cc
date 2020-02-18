@@ -139,6 +139,17 @@ void PerUserTopicRegistrationManager::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kActiveRegistrationTokens);
 }
 
+// static
+void PerUserTopicRegistrationManager::RegisterPrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kTypeRegisteredForInvalidationsDeprecated);
+  registry->RegisterStringPref(kActiveRegistrationTokenDeprecated,
+                               std::string());
+
+  registry->RegisterDictionaryPref(kTypeRegisteredForInvalidations);
+  registry->RegisterDictionaryPref(kActiveRegistrationTokens);
+}
+
 struct PerUserTopicRegistrationManager::RegistrationEntry {
   RegistrationEntry(const Topic& id,
                     SubscriptionFinishedCallback completion_callback,
@@ -418,7 +429,7 @@ void PerUserTopicRegistrationManager::RequestAccessToken() {
   if (access_token_fetcher_ != nullptr)
     return;
   request_access_token_retry_timer_.Stop();
-  OAuth2TokenService::ScopeSet oauth2_scopes = {kFCMOAuthScope};
+  OAuth2AccessTokenManager::ScopeSet oauth2_scopes = {kFCMOAuthScope};
   // Invalidate previous token, otherwise the identity provider will return the
   // same token again.
   identity_provider_->InvalidateAccessToken(oauth2_scopes, access_token_);

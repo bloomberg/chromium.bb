@@ -197,12 +197,11 @@ base::FilePath WriteFileContentsToTempFile(const base::FilePath& suggested_name,
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  base::FilePath temp_path = base::FilePath();
-
   if (!hdata)
-    return temp_path;
+    return base::FilePath();
 
-  temp_path = CreateTemporaryFileWithSuggestedName(suggested_name);
+  base::FilePath temp_path =
+      CreateTemporaryFileWithSuggestedName(suggested_name);
 
   if (!temp_path.empty()) {
     base::win::ScopedHGlobal<char*> data(hdata);
@@ -374,7 +373,7 @@ struct FileGroupDescriptorData<FILEGROUPDESCRIPTORA> {
 };
 
 // Retrieves display names of virtual files, making sure they are unique.
-// Use template parameter of FILEGROUPDESCRIPTORW for retrieving unicode data
+// Use template parameter of FILEGROUPDESCRIPTORW for retrieving Unicode data
 // and FILEGROUPDESCRIPTORA for ascii.
 template <typename FileGroupDescriptorType>
 bool GetVirtualFilenames(IDataObject* data_object,
@@ -401,7 +400,6 @@ bool GetVirtualFilenames(IDataObject* data_object,
     unsigned int uniquifier = 1;
 
     for (size_t i = 0; i < num_files; i++) {
-      base::FilePath display_name;
       // Folder entries not currently supported--skip this item.
       if ((fgd->fgd[i].dwFlags & FD_ATTRIBUTES) &&
           (fgd->fgd[i].dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -410,7 +408,7 @@ bool GetVirtualFilenames(IDataObject* data_object,
                       << "' refers to a directory (not supported).";
         continue;
       }
-      display_name = GetUniqueVirtualFilename(
+      base::FilePath display_name = GetUniqueVirtualFilename(
           ConvertString(fgd->fgd[i].cFileName), *filenames, &uniquifier);
 
       filenames->push_back(display_name);
@@ -502,7 +500,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
   if (GetData(data_object, ClipboardFormatType::GetMozUrlType(), &store) ||
       GetData(data_object, ClipboardFormatType::GetUrlWType(), &store)) {
     {
-      // Mozilla URL format or unicode URL
+      // Mozilla URL format or Unicode URL
       base::win::ScopedHGlobal<wchar_t*> data(store.hGlobal);
       SplitUrlAndTitle(data.get(), url, title);
     }
@@ -512,7 +510,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetUrlType(), &store)) {
     {
-      // URL using ascii
+      // URL using ASCII
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
       SplitUrlAndTitle(base::UTF8ToWide(data.get()), url, title);
     }
@@ -560,7 +558,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetFilenameWType(), &medium)) {
     {
-      // filename using unicode
+      // filename using Unicode
       base::win::ScopedHGlobal<wchar_t*> data(medium.hGlobal);
       if (data.get() && data.get()[0])
         filenames->push_back(data.get());
@@ -571,7 +569,7 @@ bool ClipboardUtil::GetFilenames(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetFilenameType(), &medium)) {
     {
-      // filename using ascii
+      // filename using ASCII
       base::win::ScopedHGlobal<char*> data(medium.hGlobal);
       if (data.get() && data.get()[0])
         filenames->push_back(base::SysNativeMBToWide(data.get()));
@@ -591,10 +589,10 @@ bool ClipboardUtil::GetVirtualFilenames(
     return false;
 
   // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-  // ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-  // check for both the ANSI and UNICODE file group descriptors.
+  // ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+  // check for both the ANSI and Unicode file group descriptors.
   if (ui::GetVirtualFilenames<FILEGROUPDESCRIPTORW>(data_object, filenames)) {
-    // file group descriptor using unicode.
+    // file group descriptor using Unicode.
     return true;
   }
 
@@ -653,7 +651,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
 
   if (GetData(data_object, ClipboardFormatType::GetPlainTextType(), &store)) {
     {
-      // ascii text
+      // ASCII text
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
       plain_text->assign(base::UTF8ToWide(data.get()));
     }
@@ -726,11 +724,11 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   }
 
   // Nothing prevents the drag source app from using the CFSTR_FILEDESCRIPTORA
-  // ANSI format (e.g., it could be that it doesn't support UNICODE). So need to
-  // check for both the ANSI and UNICODE file group descriptors.
+  // ANSI format (e.g., it could be that it doesn't support Unicode). So need to
+  // check for both the ANSI and Unicode file group descriptors.
   if (GetFileNameFromFirstDescriptor<FILEGROUPDESCRIPTORW>(data_object,
                                                            filename)) {
-    // file group descriptor using unicode.
+    // file group descriptor using Unicode.
     return true;
   }
 
@@ -834,13 +832,13 @@ std::string ClipboardUtil::HtmlToCFHtml(const std::string& html,
                                           start_fragment_offset,
                                           end_fragment_offset);
   if (!base_url.empty()) {
-    result.append(source_url_prefix);
-    result.append(base_url);
-    result.append("\r\n");
+    result += source_url_prefix;
+    result += base_url;
+    result += "\r\n";
   }
-  result.append(start_markup);
-  result.append(html);
-  result.append(end_markup);
+  result += start_markup;
+  result += html;
+  result += end_markup;
 
   #undef MAX_DIGITS
   #undef MAKE_NUMBER_FORMAT_1
@@ -857,8 +855,8 @@ void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
   size_t fragment_start = std::string::npos;
   size_t fragment_end = std::string::npos;
 
-  ClipboardUtil::CFHtmlExtractMetadata(
-      cf_html, base_url, NULL, &fragment_start, &fragment_end);
+  ClipboardUtil::CFHtmlExtractMetadata(cf_html, base_url, nullptr,
+                                       &fragment_start, &fragment_end);
 
   if (html &&
       fragment_start != std::string::npos &&

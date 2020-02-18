@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -23,7 +23,6 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/auto_reset.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "ui/aura/client/aura_constants.h"
@@ -73,23 +72,64 @@ bool InOverviewSession() {
   return overview_controller && overview_controller->InOverviewSession();
 }
 
+// Returns the bottom-most snapped window in the given |desk_container|, and
+// nullptr if no such window was found.
+aura::Window* GetBottomMostSnappedWindowForDeskContainer(
+    aura::Window* desk_container) {
+  DCHECK(desks_util::IsDeskContainer(desk_container));
+  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  // For the active desk, only use the windows snapped in SplitViewController if
+  // SplitView mode is active.
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (desks_util::IsActiveDeskContainer(desk_container) &&
+      split_view_controller->InSplitViewMode()) {
+    aura::Window* left_window = split_view_controller->left_window();
+    aura::Window* right_window = split_view_controller->right_window();
+    for (auto* child : desk_container->children()) {
+      if (child == left_window || child == right_window)
+        return child;
+    }
+
+    return nullptr;
+  }
+
+  // For the inactive desks, we can't use the SplitViewController, since it only
+  // tracks left/right snapped windows in the active desk only.
+  // TODO(afakhry|xdai): SplitViewController should be changed to track snapped
+  // windows per desk per display.
+  for (auto* child : desk_container->children()) {
+    if (WindowState::Get(child)->IsSnapped())
+      return child;
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->accessibility_controller()->AddObserver(this);
-  Shell::Get()->wallpaper_controller()->AddObserver(this);
+  auto* shell = Shell::Get();
+  shell->AddShellObserver(this);
+  shell->overview_controller()->AddObserver(this);
+  shell->accessibility_controller()->AddObserver(this);
+  shell->wallpaper_controller()->AddObserver(this);
+  shell->tablet_mode_controller()->AddObserver(this);
 }
 
 BackdropController::~BackdropController() {
-  Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
-  if (Shell::Get()->overview_controller())
-    Shell::Get()->overview_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
+  auto* shell = Shell::Get();
+  // Shell destroys the TabletModeController before destroying all root windows.
+  if (shell->tablet_mode_controller())
+    shell->tablet_mode_controller()->RemoveObserver(this);
+  shell->accessibility_controller()->RemoveObserver(this);
+  shell->wallpaper_controller()->RemoveObserver(this);
+  if (shell->overview_controller())
+    shell->overview_controller()->RemoveObserver(this);
+  shell->RemoveShellObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide(/*destroy=*/true);
@@ -128,12 +168,6 @@ void BackdropController::OnDeskContentChanged() {
   UpdateBackdropInternal();
 }
 
-void BackdropController::SetBackdropDelegate(
-    std::unique_ptr<BackdropDelegate> delegate) {
-  delegate_ = std::move(delegate);
-  UpdateBackdrop();
-}
-
 void BackdropController::UpdateBackdrop() {
   // Skip updating while overview mode is active, since the backdrop is hidden.
   if (pause_update_ || InOverviewSession())
@@ -153,7 +187,7 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
     if (window->type() != aura::client::WINDOW_TYPE_NORMAL)
       continue;
 
-    auto* window_state = wm::GetWindowState(window);
+    auto* window_state = WindowState::Get(window);
     if (window_state->IsMinimized())
       continue;
 
@@ -164,7 +198,7 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
       if (!window->layer()->GetTargetVisibility())
         continue;
 
-      if (!::wm::CanActivateWindow(window))
+      if (!wm::CanActivateWindow(window))
         continue;
     }
 
@@ -207,7 +241,9 @@ void BackdropController::OnAccessibilityStatusChanged() {
 
 void BackdropController::OnSplitViewStateChanged(SplitViewState previous_state,
                                                  SplitViewState state) {
-  UpdateBackdrop();
+  // Force the update of the backdrop, even if overview is active, so that the
+  // backdrop shows up properly in the mini_views.
+  UpdateBackdropInternal();
 }
 
 void BackdropController::OnSplitViewDividerPositionChanged() {
@@ -215,11 +251,19 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
 }
 
 void BackdropController::OnWallpaperPreviewStarted() {
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (active_window) {
     active_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
   }
+  UpdateBackdrop();
+}
+
+void BackdropController::OnTabletModeStarted() {
+  UpdateBackdrop();
+}
+
+void BackdropController::OnTabletModeEnded() {
   UpdateBackdrop();
 }
 
@@ -250,8 +294,8 @@ void BackdropController::UpdateBackdropInternal() {
 
   // Update the animation type of |backdrop_window_| based on current top most
   // window with backdrop.
-  SetBackdropAnimationType(wm::GetWindowState(window)->CanMaximize()
-                               ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
+  SetBackdropAnimationType(WindowState::Get(window)->CanMaximize()
+                               ? WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
                                : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   Show();
@@ -266,9 +310,10 @@ void BackdropController::EnsureBackdropWidget() {
   if (backdrop_)
     return;
 
-  backdrop_ = new views::Widget;
+  backdrop_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = container_->GetBoundsInScreen();
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.name = "Backdrop";
@@ -285,7 +330,7 @@ void BackdropController::EnsureBackdropWidget() {
   AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
   backdrop_window_->layer()->SetColor(SK_ColorBLACK);
 
-  wm::GetWindowState(backdrop_window_)->set_allow_set_bounds_direct(true);
+  WindowState::Get(backdrop_window_)->set_allow_set_bounds_direct(true);
 }
 
 void BackdropController::UpdateAccessibilityMode() {
@@ -324,7 +369,25 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
     return true;
   }
 
-  return delegate_ ? delegate_->HasBackdrop(window) : false;
+  if (!desks_util::IsDeskContainer(container_))
+    return false;
+
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  // Don't show the backdrop in tablet mode for PIP windows.
+  auto* state = WindowState::Get(window);
+  if (state->IsPip())
+    return false;
+
+  if (!state->IsSnapped())
+    return true;
+
+  auto* bottom_most_snapped_window =
+      GetBottomMostSnappedWindowForDeskContainer(container_);
+  if (!bottom_most_snapped_window)
+    return true;
+  return window == bottom_most_snapped_window;
 }
 
 void BackdropController::Show() {
@@ -347,7 +410,7 @@ void BackdropController::Hide(bool destroy, bool animate) {
   ++window_iter;
   if (window_iter != windows.end()) {
     aura::Window* window_above_backdrop = *window_iter;
-    wm::WindowState* window_state = wm::GetWindowState(window_above_backdrop);
+    WindowState* window_state = WindowState::Get(window_above_backdrop);
     if (!animate || (window_state && window_state->CanMaximize()))
       backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
   } else {
@@ -357,8 +420,9 @@ void BackdropController::Hide(bool destroy, bool animate) {
   }
 
   if (destroy) {
-    backdrop_->Close();
-    backdrop_ = nullptr;
+    // The |backdrop_| widget owns the |backdrop_window_| so it will also be
+    // deleted.
+    backdrop_.reset();
     backdrop_window_ = nullptr;
     original_event_handler_ = nullptr;
     backdrop_event_handler_.reset();
@@ -368,6 +432,8 @@ void BackdropController::Hide(bool destroy, bool animate) {
 }
 
 bool BackdropController::BackdropShouldFullscreen() {
+  // TODO(afakhry): Define the correct behavior and revise this in a follow-up
+  // CL.
   aura::Window* window = GetTopmostWindowWithBackdrop();
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();

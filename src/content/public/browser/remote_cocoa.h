@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
-namespace content {
+namespace remote_cocoa {
 
 // Create the NSView for a RenderWidgetHostView or WebContentsView. This is
 // called in the app shim process through an interface in remote_cocoa. These
@@ -24,6 +24,6 @@ void CONTENT_EXPORT CreateWebContentsNSView(
     mojo::ScopedInterfaceEndpointHandle host_handle,
     mojo::ScopedInterfaceEndpointHandle view_request_handle);
 
-}  // namespace content
+}  // namespace remote_cocoa
 
 #endif  // CONTENT_PUBLIC_BROWSER_REMOTE_COCOA_H_

@@ -51,7 +51,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -274,7 +273,7 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
 // UserManagerScreenHandler ---------------------------------------------------
 
-UserManagerScreenHandler::UserManagerScreenHandler() : weak_ptr_factory_(this) {
+UserManagerScreenHandler::UserManagerScreenHandler() {
   profile_attributes_storage_observer_.reset(
       new UserManagerScreenHandler::ProfileUpdateObserver(
           g_browser_process->profile_manager(), this));

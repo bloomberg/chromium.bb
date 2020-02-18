@@ -102,8 +102,10 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
+MEDIA_EXPORT extern const base::Feature kFFmpegDecodeOpaqueVP8;
 MEDIA_EXPORT extern const base::Feature kFailUrlProvisionFetcherForTesting;
 MEDIA_EXPORT extern const base::Feature kFallbackAfterDecodeError;
+MEDIA_EXPORT extern const base::Feature kGlobalMediaControls;
 MEDIA_EXPORT extern const base::Feature kHardwareMediaKeyHandling;
 MEDIA_EXPORT extern const base::Feature kHardwareSecureDecryption;
 MEDIA_EXPORT extern const base::Feature kInternalMediaSession;
@@ -114,6 +116,7 @@ MEDIA_EXPORT extern const base::Feature kMediaEngagementBypassAutoplayPolicies;
 MEDIA_EXPORT extern const base::Feature kMediaEngagementHTTPSOnly;
 MEDIA_EXPORT extern const base::Feature kMediaLearningExperiment;
 MEDIA_EXPORT extern const base::Feature kMemoryPressureBasedSourceBufferGC;
+MEDIA_EXPORT extern const base::Feature kChromeosVideoDecoder;
 MEDIA_EXPORT extern const base::Feature kNewEncodeCpuLoadEstimator;
 MEDIA_EXPORT extern const base::Feature kOverflowIconsForMediaControls;
 MEDIA_EXPORT extern const base::Feature kOverlayFullscreenVideo;
@@ -131,9 +134,11 @@ MEDIA_EXPORT extern const base::Feature kUseAndroidOverlayAggressively;
 MEDIA_EXPORT extern const base::Feature kUseNewMediaCache;
 MEDIA_EXPORT extern const base::Feature kUseR16Texture;
 MEDIA_EXPORT extern const base::Feature kUseSurfaceLayerForVideo;
+MEDIA_EXPORT extern const base::Feature kVaapiH264AMDEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiLowPowerEncoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP8Encoder;
 MEDIA_EXPORT extern const base::Feature kVaapiVP9Encoder;
+MEDIA_EXPORT extern const base::Feature kVp9kSVCHWDecoding;
 MEDIA_EXPORT extern const base::Feature kVideoBlitColorAccuracy;
 MEDIA_EXPORT extern const base::Feature kWidevineAv1;
 
@@ -145,6 +150,7 @@ MEDIA_EXPORT extern const base::Feature kMediaDrmPreprovisioningAtStartup;
 MEDIA_EXPORT extern const base::Feature kAImageReaderVideoOutput;
 MEDIA_EXPORT extern const base::Feature kDisableSurfaceLayerForVideo;
 MEDIA_EXPORT extern const base::Feature kCanPlayHls;
+MEDIA_EXPORT extern const base::Feature kPictureInPictureAPI;
 MEDIA_EXPORT extern const base::Feature kHlsPlayer;
 #endif  // defined(OS_ANDROID)
 

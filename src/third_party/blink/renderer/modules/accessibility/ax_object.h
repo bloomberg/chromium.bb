@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
@@ -76,6 +77,8 @@ enum class AOMRelationListProperty;
 class AXSparseAttributeClient {
  public:
   virtual void AddBoolAttribute(AXBoolAttribute, bool) = 0;
+  virtual void AddIntAttribute(AXIntAttribute, int32_t) = 0;
+  virtual void AddUIntAttribute(AXUIntAttribute, uint32_t) = 0;
   virtual void AddStringAttribute(AXStringAttribute, const String&) = 0;
   virtual void AddObjectAttribute(AXObjectAttribute, AXObject&) = 0;
   virtual void AddObjectVectorAttribute(AXObjectVectorAttribute,
@@ -478,6 +481,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return kGrabbedStateUndefined;
   }
   virtual bool IsHovered() const { return false; }
+  virtual bool IsLineBreakingObject() const { return false; }
   virtual bool IsLinked() const { return false; }
   virtual bool IsLoaded() const { return false; }
   virtual bool IsModal() const { return false; }
@@ -497,8 +501,17 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool CanSetFocusAttribute() const;
   bool CanSetValueAttribute() const;
 
-  // Whether objects are ignored, i.e. not included in the tree.
+  // Whether objects are ignored, i.e. hidden from the AT.
   bool AccessibilityIsIgnored() const;
+  // Whether objects are ignored but included in the tree.
+  bool AccessibilityIsIgnoredButIncludedInTree() const;
+
+  // Whether objects are included in the tree. Nodes that are included in the
+  // tree are serialized, even if they are ignored. This allows browser-side
+  // accessibility code to have a more accurate representation of the tree. e.g.
+  // inspect hidden nodes referenced by labeled-by, know where line breaking
+  // elements are, etc.
+  bool AccessibilityIsIncludedInTree() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
   virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
     return true;
@@ -513,10 +526,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool IsDescendantOfLeafNode() const;
   AXObject* LeafNodeAncestor() const;
   bool IsDescendantOfDisabledNode() const;
+  bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
   const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
   const AXObject* DisabledAncestor() const;
   bool LastKnownIsIgnoredValue() const;
   void SetLastKnownIsIgnoredValue(bool);
+  bool LastKnownIsIgnoredButIncludedInTreeValue() const;
+  void SetLastKnownIsIgnoredButIncludedInTreeValue(bool);
   bool HasInheritedPresentationalRole() const;
   bool IsPresentationalChild() const;
   bool CanBeActiveDescendant() const;
@@ -649,6 +665,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return AXObjectVector();
   }
   virtual KURL Url() const { return KURL(); }
+  virtual AXObject* ChooserPopup() const { return nullptr; }
 
   // Load inline text boxes for just this node, even if
   // settings->inlineTextBoxAccessibilityEnabled() is false.
@@ -782,24 +799,81 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   int ChildCount() const;
   const AXObjectVector& Children() const;
   const AXObjectVector& Children();
+  // Returns the first child for this object.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* FirstChild() const;
+  // Returns the last child for this object.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* LastChild() const;
+  // Returns the deepest first child for this object.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* DeepestFirstChild() const;
+  // Returns the deepest last child for this object.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* DeepestLastChild() const;
   bool IsAncestorOf(const AXObject&) const;
   bool IsDescendantOf(const AXObject&) const;
+  // Next sibling for this object, where the sibling may be
+  // an accessibility ignored object.
+  // Works for all nodes that are included in the accessibility tree,
+  // and may return nodes that are accessibility ignored.
+  AXObject* NextSiblingIncludingIgnored() const;
+  // Previous sibling for this object, where the sibling may be
+  // an accessibility ignored object.
+  // Works for all nodes that are included in the accessibility tree,
+  // and may return nodes that are accessibility ignored.
+  AXObject* PreviousSiblingIncludingIgnored() const;
+  // Returns the next object in tree using depth-first pre-order traversal,
+  // optionally staying within a specified AXObject.
+  // Works for all nodes that are included in the accessibility tree,
+  // and may return nodes that are accessibility ignored.
+  AXObject* NextInPreOrderIncludingIgnored(
+      const AXObject* within = nullptr) const;
+  // Returns the previous object in tree using depth-first pre-order traversal,
+  // optionally staying within a specified AXObject.
+  // Works for all nodes that are included in the accessibility tree,
+  // and may return nodes that are accessibility ignored.
+  AXObject* PreviousInPreOrderIncludingIgnored(
+      const AXObject* within = nullptr) const;
+  // Returns the previous object in tree using depth-first post-order traversal,
+  // optionally staying within a specified AXObject.
+  // Works for all nodes that are included in the accessibility tree,
+  // and may return nodes that are accessibility ignored.
+  AXObject* PreviousInPostOrderIncludingIgnored(
+      const AXObject* within = nullptr) const;
+  // Next sibling for this object that's not accessibility ignored.
+  // Flattens accessibility ignored nodes, so the sibling will have the
+  // same unignored parent, but may have a different parent in tree.
+  // Doesn't work with nodes that are accessibility ignored.
   AXObject* NextSibling() const;
+  // Previous sibling for this object that's not accessibility ignored.
+  // Flattens accessibility ignored nodes, so the sibling will have the
+  // same unignored parent, but may have a different parent in tree.
+  // Doesn't work with nodes that are accessibility ignored.
   AXObject* PreviousSibling() const;
-  // Next object in tree using depth-first pre-order traversal.
-  AXObject* NextInTreeObject(bool can_wrap_to_first_element = false) const;
-  // Previous object in tree using depth-first pre-order traversal.
-  AXObject* PreviousInTreeObject(bool can_wrap_to_last_element = false) const;
+  // Next object in tree using depth-first pre-order traversal that's
+  // not accessibility ignored.
+  // Doesn't work with nodes that are accessibility ignored.
+  AXObject* NextInTreeObject() const;
+  // Previous object in tree using depth-first pre-order traversal that's
+  // not accessibility ignored.
+  // Doesn't work with nodes that are accessibility ignored.
+  AXObject* PreviousInTreeObject() const;
+  // Get or create the parent of this object.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* ParentObject() const;
+  // Get the parent of this object if it has already been created.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* ParentObjectIfExists() const;
   virtual AXObject* ComputeParent() const = 0;
   virtual AXObject* ComputeParentIfExists() const { return nullptr; }
   AXObject* CachedParentObject() const { return parent_; }
+  // Get or create the first ancestor that's not accessibility ignored.
+  // Works for all nodes.
   AXObject* ParentObjectUnignored() const;
+  // Get or create the first ancestor that's included in the accessibility tree.
+  // Works for all nodes, and may return nodes that are accessibility ignored.
+  AXObject* ParentObjectIncludedInTree() const;
   AXObject* ContainerWidget() const;
   bool IsContainerWidget() const;
 
@@ -893,7 +967,10 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool RequestIncrementAction();
   bool RequestScrollToGlobalPointAction(const IntPoint&);
   bool RequestScrollToMakeVisibleAction();
-  bool RequestScrollToMakeVisibleWithSubFocusAction(const IntRect&);
+  bool RequestScrollToMakeVisibleWithSubFocusAction(
+      const IntRect&,
+      blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::ScrollAlignment vertical_scroll_alignment);
   bool RequestSetSelectedAction(bool);
   bool RequestSetSequentialFocusNavigationStartingPointAction();
   bool RequestSetValueAction(const String&);
@@ -915,7 +992,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool OnNativeScrollToGlobalPointAction(const IntPoint&) const;
   virtual bool OnNativeScrollToMakeVisibleAction() const;
   virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&) const;
+      const IntRect&,
+      blink::ScrollAlignment horizontal_scroll_alignment,
+      blink::ScrollAlignment vertical_scroll_alignment) const;
   virtual bool OnNativeSetSelectedAction(bool);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);
@@ -959,6 +1038,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   ax::mojom::Role role_;
   ax::mojom::Role aria_role_;
   mutable AXObjectInclusion last_known_is_ignored_value_;
+  mutable AXObjectInclusion last_known_is_ignored_but_included_in_tree_value_;
   LayoutRect explicit_element_rect_;
   AXID explicit_container_id_;
 
@@ -1028,6 +1108,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable int last_modification_count_;
   mutable RGBA32 cached_background_color_;
   mutable bool cached_is_ignored_ : 1;
+  mutable bool cached_is_ignored_but_included_in_tree_ : 1;
+
   mutable bool cached_is_inert_or_aria_hidden_ : 1;
   mutable bool cached_is_descendant_of_leaf_node_ : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;
@@ -1046,6 +1128,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   void UpdateCachedAttributeValuesIfNeeded() const;
 
  private:
+  void UpdateDistributionForFlatTreeTraversal() const;
   bool IsARIAControlledByTextboxWithActiveDescendant() const;
   bool AncestorExposesActiveDescendant() const;
   bool IsCheckable() const;

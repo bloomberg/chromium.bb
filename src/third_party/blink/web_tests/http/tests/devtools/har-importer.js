@@ -199,8 +199,7 @@ const harJson = {
           '_blocked_proxy': 0.4910000000000001
         },
         'serverIPAddress': '[::1]',
-        '_initiator':
-            {'type': 'parser', 'url': 'http://localhost/', 'lineNumber': 1},
+        '_initiator': 'bad_initiator_string',
         '_priority': 'Low',
         'connection': '2945',
         'pageref': 'page_1'

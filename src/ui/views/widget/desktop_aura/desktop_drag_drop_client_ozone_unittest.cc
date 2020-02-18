@@ -45,14 +45,13 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   void Minimize() override {}
   void Restore() override {}
   ui::PlatformWindowState GetPlatformWindowState() const override {
-    return ui::PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+    return ui::PlatformWindowState::kNormal;
   }
+  void Activate() override {}
+  void Deactivate() override {}
   void SetCursor(ui::PlatformCursor cursor) override {}
   void MoveCursorTo(const gfx::Point& location) override {}
   void ConfineCursorToBounds(const gfx::Rect& bounds) override {}
-  ui::PlatformImeController* GetPlatformImeController() override {
-    return nullptr;
-  }
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override {}
   gfx::Rect GetRestoredBoundsInPixels() const override { return gfx::Rect(); }
 

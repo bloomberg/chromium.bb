@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/credential.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -136,7 +136,7 @@ static const CGFloat NoMultiplier = 1.0;
 
   [self.usernameButton setTitle:@"" forState:UIControlStateNormal];
   self.usernameButton.enabled = YES;
-  [self.usernameButton setTitleColor:UIColor.cr_manualFillChipDarkTextColor
+  [self.usernameButton setTitleColor:UIColor.cr_labelColor
                             forState:UIControlStateNormal];
 
   [self.passwordButton setTitle:@"" forState:UIControlStateNormal];
@@ -168,7 +168,7 @@ static const CGFloat NoMultiplier = 1.0;
         [[NSMutableAttributedString alloc]
             initWithString:credential.siteName ? credential.siteName : @""
                 attributes:@{
-                  NSForegroundColorAttributeName : UIColor.blackColor,
+                  NSForegroundColorAttributeName : UIColor.cr_labelColor,
                   NSFontAttributeName :
                       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
                 }];
@@ -177,7 +177,7 @@ static const CGFloat NoMultiplier = 1.0;
       NSString* hostString =
           [NSString stringWithFormat:@" –– %@", credential.host];
       NSDictionary* attributes = @{
-        NSForegroundColorAttributeName : UIColor.lightGrayColor,
+        NSForegroundColorAttributeName : UIColor.cr_secondaryLabelColor,
         NSFontAttributeName :
             [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
       };
@@ -199,7 +199,7 @@ static const CGFloat NoMultiplier = 1.0;
     NSString* titleString =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NO_USERNAME);
     [self.usernameButton setTitle:titleString forState:UIControlStateNormal];
-    [self.usernameButton setTitleColor:UIColor.lightGrayColor
+    [self.usernameButton setTitleColor:UIColor.cr_secondaryLabelColor
                               forState:UIControlStateNormal];
     self.usernameButton.enabled = NO;
   }

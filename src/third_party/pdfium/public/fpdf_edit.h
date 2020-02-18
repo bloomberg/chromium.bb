@@ -219,7 +219,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFPageObj_Destroy(FPDF_PAGEOBJECT page_obj);
 //
 //   page_object - handle to a page object.
 //
-// Returns TRUE if |pageObject| contains transparency.
+// Returns TRUE if |page_object| contains transparency.
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
 FPDFPageObj_HasTransparency(FPDF_PAGEOBJECT page_object);
 
@@ -582,13 +582,14 @@ FPDFImageObj_LoadJpegFileInline(FPDF_PAGE* pages,
 // and used to scale, rotate, shear and translate the image.
 //
 // Returns TRUE on success.
-FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFImageObj_GetMatrix(FPDF_PAGEOBJECT path,
-                                                           double* a,
-                                                           double* b,
-                                                           double* c,
-                                                           double* d,
-                                                           double* e,
-                                                           double* f);
+FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV
+FPDFImageObj_GetMatrix(FPDF_PAGEOBJECT image_object,
+                       double* a,
+                       double* b,
+                       double* c,
+                       double* d,
+                       double* e,
+                       double* f);
 
 // Set the transform matrix of |image_object|.
 //
@@ -645,8 +646,8 @@ FPDFImageObj_GetBitmap(FPDF_PAGEOBJECT image_object);
 // the decoded image data.
 //
 //   image_object - handle to an image object.
-//   buffer       - buffer for holding the decoded image data in raw bytes.
-//   buflen       - length of the buffer.
+//   buffer       - buffer for holding the decoded image data.
+//   buflen       - length of the buffer in bytes.
 //
 // Returns the length of the decoded image data.
 FPDF_EXPORT unsigned long FPDF_CALLCONV
@@ -659,8 +660,8 @@ FPDFImageObj_GetImageDataDecoded(FPDF_PAGEOBJECT image_object,
 // |buflen| is longer than the length of the raw image data.
 //
 //   image_object - handle to an image object.
-//   buffer       - buffer for holding the raw image data in raw bytes.
-//   buflen       - length of the buffer.
+//   buffer       - buffer for holding the raw image data.
+//   buflen       - length of the buffer in bytes.
 //
 // Returns the length of the raw image data.
 FPDF_EXPORT unsigned long FPDF_CALLCONV

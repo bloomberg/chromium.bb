@@ -5,15 +5,14 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_search_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -29,11 +28,6 @@
 #endif
 
 @implementation ToolbarButtonFactory
-
-@synthesize toolbarConfiguration = _toolbarConfiguration;
-@synthesize style = _style;
-@synthesize dispatcher = _dispatcher;
-@synthesize visibilityConfiguration = _visibilityConfiguration;
 
 - (instancetype)initWithStyle:(ToolbarStyle)style {
   self = [super init];
@@ -52,8 +46,8 @@
                                  imageFlippedForRightToLeftLayoutDirection]];
   [self configureButton:backButton width:kAdaptiveToolbarButtonWidth];
   backButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
-  [backButton addTarget:self.dispatcher
-                 action:@selector(goBack)
+  [backButton addTarget:self.actionHandler
+                 action:@selector(backAction)
        forControlEvents:UIControlEventTouchUpInside];
   backButton.visibilityMask = self.visibilityConfiguration.backButtonVisibility;
   return backButton;
@@ -69,8 +63,8 @@
       self.visibilityConfiguration.forwardButtonVisibility;
   forwardButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
-  [forwardButton addTarget:self.dispatcher
-                    action:@selector(goForward)
+  [forwardButton addTarget:self.actionHandler
+                    action:@selector(forwardAction)
           forControlEvents:UIControlEventTouchUpInside];
   return forwardButton;
 }
@@ -81,11 +75,11 @@
   [self configureButton:tabGridButton width:kAdaptiveToolbarButtonWidth];
   SetA11yLabelAndUiAutomationName(tabGridButton, IDS_IOS_TOOLBAR_SHOW_TABS,
                                   kToolbarStackButtonIdentifier);
-  [tabGridButton addTarget:self.dispatcher
-                    action:@selector(prepareTabSwitcher)
+  [tabGridButton addTarget:self.actionHandler
+                    action:@selector(tabGridTouchDown)
           forControlEvents:UIControlEventTouchDown];
-  [tabGridButton addTarget:self.dispatcher
-                    action:@selector(displayTabSwitcher)
+  [tabGridButton addTarget:self.actionHandler
+                    action:@selector(tabGridTouchUp)
           forControlEvents:UIControlEventTouchUpInside];
   tabGridButton.visibilityMask =
       self.visibilityConfiguration.tabGridButtonVisibility;
@@ -102,8 +96,8 @@
   [toolsMenuButton.heightAnchor
       constraintEqualToConstant:kAdaptiveToolbarButtonWidth]
       .active = YES;
-  [toolsMenuButton addTarget:self.dispatcher
-                      action:@selector(showToolsMenuPopup)
+  [toolsMenuButton addTarget:self.actionHandler
+                      action:@selector(toolsMenuAction)
             forControlEvents:UIControlEventTouchUpInside];
   toolsMenuButton.visibilityMask =
       self.visibilityConfiguration.toolsMenuButtonVisibility;
@@ -117,8 +111,8 @@
   SetA11yLabelAndUiAutomationName(shareButton, IDS_IOS_TOOLS_MENU_SHARE,
                                   kToolbarShareButtonIdentifier);
   shareButton.titleLabel.text = @"Share";
-  [shareButton addTarget:self.dispatcher
-                  action:@selector(sharePage)
+  [shareButton addTarget:self.actionHandler
+                  action:@selector(shareAction)
         forControlEvents:UIControlEventTouchUpInside];
   shareButton.visibilityMask =
       self.visibilityConfiguration.shareButtonVisibility;
@@ -132,8 +126,8 @@
   [self configureButton:reloadButton width:kAdaptiveToolbarButtonWidth];
   reloadButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_ACCNAME_RELOAD);
-  [reloadButton addTarget:self.dispatcher
-                   action:@selector(reload)
+  [reloadButton addTarget:self.actionHandler
+                   action:@selector(reloadAction)
          forControlEvents:UIControlEventTouchUpInside];
   reloadButton.visibilityMask =
       self.visibilityConfiguration.reloadButtonVisibility;
@@ -145,8 +139,8 @@
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_stop"]];
   [self configureButton:stopButton width:kAdaptiveToolbarButtonWidth];
   stopButton.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_STOP);
-  [stopButton addTarget:self.dispatcher
-                 action:@selector(stopLoading)
+  [stopButton addTarget:self.actionHandler
+                 action:@selector(stopAction)
        forControlEvents:UIControlEventTouchUpInside];
   stopButton.visibilityMask = self.visibilityConfiguration.stopButtonVisibility;
   return stopButton;
@@ -163,8 +157,8 @@
       setImage:[bookmarkButton imageForState:UIControlStateHighlighted]
       forState:UIControlStateSelected];
   bookmarkButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
-  [bookmarkButton addTarget:self.dispatcher
-                     action:@selector(bookmarkPage)
+  [bookmarkButton addTarget:self.actionHandler
+                     action:@selector(bookmarkAction)
            forControlEvents:UIControlEventTouchUpInside];
 
   bookmarkButton.visibilityMask =
@@ -172,25 +166,39 @@
   return bookmarkButton;
 }
 
-- (ToolbarButton*)omniboxButton {
-  ToolbarSearchButton* omniboxButton = [ToolbarSearchButton
-      toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
+- (ToolbarButton*)searchButton {
+  UIImage* buttonImage = nil;
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    buttonImage = [UIImage imageNamed:@"toolbar_new_tab_page"];
+  } else {
+    buttonImage = [UIImage imageNamed:@"toolbar_search"];
+  }
+  ToolbarSearchButton* searchButton =
+      [ToolbarSearchButton toolbarButtonWithImage:buttonImage];
 
-  [self configureButton:omniboxButton width:kOmniboxButtonWidth];
-  [omniboxButton addTarget:self.dispatcher
-                    action:@selector(closeFindInPage)
-          forControlEvents:UIControlEventTouchUpInside];
-  [omniboxButton addTarget:self.dispatcher
-                    action:@selector(focusOmniboxFromSearchButton)
-          forControlEvents:UIControlEventTouchUpInside];
+  [searchButton addTarget:self.actionHandler
+                   action:@selector(searchAction:)
+         forControlEvents:UIControlEventTouchUpInside];
+  if (base::FeatureList::IsEnabled(kToolbarNewTabButton)) {
+    BOOL isIncognito = self.style == INCOGNITO;
 
-  omniboxButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
-  omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
+    [self configureButton:searchButton width:kAdaptiveToolbarButtonWidth];
 
-  omniboxButton.visibilityMask =
-      self.visibilityConfiguration.omniboxButtonVisibility;
-  return omniboxButton;
+    searchButton.accessibilityLabel = l10n_util::GetNSString(
+        isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
+                    : IDS_IOS_TOOLS_MENU_NEW_TAB);
+  } else {
+    [self configureButton:searchButton width:kSearchButtonWidth];
+
+    searchButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
+  }
+
+  searchButton.accessibilityIdentifier = kToolbarSearchButtonIdentifier;
+
+  searchButton.visibilityMask =
+      self.visibilityConfiguration.searchButtonVisibility;
+  return searchButton;
 }
 
 - (UIButton*)cancelButton {
@@ -201,7 +209,7 @@
                                : [UIColor whiteColor];
   [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
                 forState:UIControlStateNormal];
-  [cancelButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
+  [cancelButton setContentHuggingPriority:UILayoutPriorityRequired
                                   forAxis:UILayoutConstraintAxisHorizontal];
   [cancelButton
       setContentCompressionResistancePriority:UILayoutPriorityRequired
@@ -209,8 +217,8 @@
   cancelButton.contentEdgeInsets = UIEdgeInsetsMake(
       0, kCancelButtonHorizontalInset, 0, kCancelButtonHorizontalInset);
   cancelButton.hidden = YES;
-  [cancelButton addTarget:self.dispatcher
-                   action:@selector(cancelOmniboxEdit)
+  [cancelButton addTarget:self.actionHandler
+                   action:@selector(cancelOmniboxFocusAction)
          forControlEvents:UIControlEventTouchUpInside];
   cancelButton.accessibilityIdentifier =
       kToolbarCancelOmniboxEditButtonIdentifier;

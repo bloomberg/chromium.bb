@@ -70,7 +70,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         var polyfill = new WebXRPolyfill();
       }
 
-      // Temporary
+      // If requested, don't display the frame rate info.
       let hideStats = QueryArgs.getBool('hideStats', false);
 
       const DEFAULT_HEIGHT = 1.5;
@@ -297,6 +297,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               if (audioContext.state == 'running') {
                 pauseAudio();
               } else {
+                if("userActivation" in navigator) {
+                  console.debug(navigator.userActivation);
+                }
                 playAudio();
               }
             });
@@ -373,8 +376,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }, (e) => {
           if (!session.mode.startsWith('immersive')) {
             // If we're in inline mode, our underlying platform may not support
-            // the stationary reference space, but an identity space is guaranteed.
-            return session.requestReferenceSpace('viewer');
+            // the local-floor reference space, but a viewer space is guaranteed.
+            return session.requestReferenceSpace('viewer').then((viewerRefSpace) => {
+              // Adjust the viewer space for an estimated user height. Otherwise,
+              // the poses queried with this space will originate from the floor.
+              let xform = new XRRigidTransform({x: 0, y: -1.5, z: 0});
+              return viewerRefSpace.getOffsetReferenceSpace(xform);
+            });
           } else {
             throw e;
           }

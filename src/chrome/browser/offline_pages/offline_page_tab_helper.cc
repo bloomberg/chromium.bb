@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -266,7 +267,7 @@ void OfflinePageTabHelper::ReportPrefetchMetrics(
 
   if (offline_page()) {
     // Report prefetch usage.
-    if (policy_controller_.IsSuggested(offline_page()->client_id.name_space))
+    if (GetPolicy(offline_page()->client_id.name_space).is_suggested)
       metrics_collector->OnPrefetchedPageOpened();
     // Note that navigation to offline page may happen even if network is
     // connected. For the purposes of collecting offline usage statistics,
@@ -322,12 +323,14 @@ void OfflinePageTabHelper::TryLoadingOfflinePageOnNetError(
     return;
   }
 
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PageCriteria criteria;
   criteria.url = navigation_handle->GetURL();
   criteria.pages_for_tab_id = tab_id;
   criteria.maximum_matches = 1;
   OfflinePageUtils::SelectPagesWithCriteria(
-      web_contents()->GetBrowserContext(), criteria,
+      profile->GetProfileKey(), criteria,
       base::BindOnce(&OfflinePageTabHelper::SelectPagesForURLDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }

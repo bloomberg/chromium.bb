@@ -37,7 +37,7 @@
 
 namespace blink {
 
-base::TimeDelta ResourceRequest::default_timeout_interval_ =
+const base::TimeDelta ResourceRequest::default_timeout_interval_ =
     base::TimeDelta::Max();
 
 ResourceRequest::ResourceRequest() : ResourceRequest(NullURL()) {}
@@ -61,16 +61,16 @@ ResourceRequest::ResourceRequest(const KURL& url)
       cache_mode_(mojom::FetchCacheMode::kDefault),
       skip_service_worker_(false),
       download_to_cache_only_(false),
-      priority_(ResourceLoadPriority::kLowest),
+      priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       requestor_id_(0),
       plugin_child_id_(-1),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
-      fetch_request_mode_(network::mojom::FetchRequestMode::kNoCors),
+      mode_(network::mojom::RequestMode::kNoCors),
       fetch_importance_mode_(mojom::FetchImportanceMode::kImportanceAuto),
-      fetch_credentials_mode_(network::mojom::FetchCredentialsMode::kInclude),
-      fetch_redirect_mode_(network::mojom::FetchRedirectMode::kFollow),
+      credentials_mode_(network::mojom::CredentialsMode::kInclude),
+      redirect_mode_(network::mojom::RedirectMode::kFollow),
       referrer_string_(Referrer::ClientReferrerString()),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       did_set_http_referrer_(false),
@@ -103,7 +103,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy));
+  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy),
+                           SetHttpReferrerLocation::kCreateRedirectRequest);
   request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
@@ -112,8 +113,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetUseStreamOnResponse(UseStreamOnResponse());
   request->SetRequestContext(GetRequestContext());
   request->SetShouldResetAppCache(ShouldResetAppCache());
-  request->SetFetchRequestMode(GetFetchRequestMode());
-  request->SetFetchCredentialsMode(GetFetchCredentialsMode());
+  request->SetMode(GetMode());
+  request->SetCredentialsMode(GetCredentialsMode());
   request->SetKeepalive(GetKeepalive());
   request->SetPriority(Priority());
 
@@ -129,6 +130,9 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetPurposeHeader(GetPurposeHeader());
   request->SetUkmSourceId(GetUkmSourceId());
   request->SetInspectorId(InspectorId());
+  request->SetFromOriginDirtyStyleSheet(IsFromOriginDirtyStyleSheet());
+  request->SetSignedExchangePrefetchCacheEnabled(
+      IsSignedExchangePrefetchCacheEnabled());
 
   return request;
 }
@@ -217,7 +221,10 @@ void ResourceRequest::SetHttpHeaderField(const AtomicString& name,
   http_header_fields_.Set(name, value);
 }
 
-void ResourceRequest::SetHttpReferrer(const Referrer& referrer) {
+void ResourceRequest::SetHttpReferrer(
+    const Referrer& referrer,
+    SetHttpReferrerLocation set_http_referrer_location) {
+  set_http_referrer_location_ = set_http_referrer_location;
   if (referrer.referrer.IsEmpty())
     http_header_fields_.Remove(http_names::kReferer);
   else
@@ -279,6 +286,10 @@ ResourceLoadPriority ResourceRequest::Priority() const {
 
 int ResourceRequest::IntraPriorityValue() const {
   return intra_priority_value_;
+}
+
+bool ResourceRequest::PriorityHasBeenSet() const {
+  return priority_ != ResourceLoadPriority::kUnresolved;
 }
 
 void ResourceRequest::SetPriority(ResourceLoadPriority priority,

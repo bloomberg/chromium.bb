@@ -43,6 +43,9 @@ class AudioInputProviderImpl : public assistant_client::AudioInputProvider {
   // Setting the hotword input device with hardware based hotword detection.
   void SetHotwordDeviceId(const std::string& device_id);
 
+  // Setting the hotword locale for the input device with DSP support.
+  void SetDspHotwordLocale(std::string pref_locale);
+
  private:
   AudioInputImpl audio_input_;
 

@@ -7,6 +7,7 @@
 #ifndef FPDFSDK_CPDFSDK_HELPERS_H_
 #define FPDFSDK_CPDFSDK_HELPERS_H_
 
+#include "build/build_config.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
@@ -17,7 +18,7 @@
 #include "core/fxcrt/fx_stream.h"
 #endif  // PDF_ENABLE_XFA
 
-#ifdef _WIN32
+#if defined(OS_WIN)
 #include <math.h>
 #include <tchar.h>
 #endif
@@ -31,7 +32,6 @@ class CPDF_Font;
 class CPDF_LinkExtract;
 class CPDF_PageObject;
 class CPDF_PageRenderContext;
-class CPDF_PathObject;
 class CPDF_Stream;
 class CPDF_StructElement;
 class CPDF_StructTree;
@@ -56,11 +56,11 @@ FPDF_DOCUMENT FPDFDocumentFromCPDFDocument(CPDF_Document* doc);
 CPDF_Document* CPDFDocumentFromFPDFDocument(FPDF_DOCUMENT doc);
 
 // Conversions to/from incomplete FPDF_ API types.
-inline FPDF_ACTION FPDFActionFromCPDFDictionary(const CPDF_Dictionary* action) {
+inline FPDF_ACTION FPDFActionFromCPDFDictionary(CPDF_Dictionary* action) {
   return reinterpret_cast<FPDF_ACTION>(action);
 }
-inline const CPDF_Dictionary* CPDFDictionaryFromFPDFAction(FPDF_ACTION action) {
-  return reinterpret_cast<const CPDF_Dictionary*>(action);
+inline CPDF_Dictionary* CPDFDictionaryFromFPDFAction(FPDF_ACTION action) {
+  return reinterpret_cast<CPDF_Dictionary*>(action);
 }
 
 inline FPDF_ANNOTATION FPDFAnnotationFromCPDFAnnotContext(
@@ -86,13 +86,11 @@ inline CFX_DIBitmap* CFXDIBitmapFromFPDFBitmap(FPDF_BITMAP bitmap) {
   return reinterpret_cast<CFX_DIBitmap*>(bitmap);
 }
 
-inline FPDF_BOOKMARK FPDFBookmarkFromCPDFDictionary(
-    const CPDF_Dictionary* bookmark) {
+inline FPDF_BOOKMARK FPDFBookmarkFromCPDFDictionary(CPDF_Dictionary* bookmark) {
   return reinterpret_cast<FPDF_BOOKMARK>(bookmark);
 }
-inline const CPDF_Dictionary* CPDFDictionaryFromFPDFBookmark(
-    FPDF_BOOKMARK bookmark) {
-  return reinterpret_cast<const CPDF_Dictionary*>(bookmark);
+inline CPDF_Dictionary* CPDFDictionaryFromFPDFBookmark(FPDF_BOOKMARK bookmark) {
+  return reinterpret_cast<CPDF_Dictionary*>(bookmark);
 }
 
 inline FPDF_CLIPPATH FPDFClipPathFromCPDFClipPath(CPDF_ClipPath* path) {
@@ -102,11 +100,11 @@ inline CPDF_ClipPath* CPDFClipPathFromFPDFClipPath(FPDF_CLIPPATH path) {
   return reinterpret_cast<CPDF_ClipPath*>(path);
 }
 
-inline FPDF_DEST FPDFDestFromCPDFArray(const CPDF_Array* dest) {
+inline FPDF_DEST FPDFDestFromCPDFArray(CPDF_Array* dest) {
   return reinterpret_cast<FPDF_DEST>(dest);
 }
-inline const CPDF_Array* CPDFArrayFromFPDFDest(FPDF_DEST dest) {
-  return reinterpret_cast<const CPDF_Array*>(dest);
+inline CPDF_Array* CPDFArrayFromFPDFDest(FPDF_DEST dest) {
+  return reinterpret_cast<CPDF_Array*>(dest);
 }
 
 inline FPDF_FONT FPDFFontFromCPDFFont(CPDF_Font* font) {
@@ -148,11 +146,11 @@ inline CPDF_ContentMarkItem* CPDFContentMarkItemFromFPDFPageObjectMark(
   return reinterpret_cast<CPDF_ContentMarkItem*>(mark);
 }
 
-inline FPDF_PAGERANGE FPDFPageRangeFromCPDFArray(const CPDF_Array* range) {
+inline FPDF_PAGERANGE FPDFPageRangeFromCPDFArray(CPDF_Array* range) {
   return reinterpret_cast<FPDF_PAGERANGE>(range);
 }
-inline const CPDF_Array* CPDFArrayFromFPDFPageRange(FPDF_PAGERANGE range) {
-  return reinterpret_cast<const CPDF_Array*>(range);
+inline CPDF_Array* CPDFArrayFromFPDFPageRange(FPDF_PAGERANGE range) {
+  return reinterpret_cast<CPDF_Array*>(range);
 }
 
 inline FPDF_PATHSEGMENT FPDFPathSegmentFromFXPathPoint(
@@ -243,6 +241,19 @@ CFX_Matrix CFXMatrixFromFSMatrix(const FS_MATRIX& matrix);
 unsigned long Utf16EncodeMaybeCopyAndReturnLength(const WideString& text,
                                                   void* buffer,
                                                   unsigned long buflen);
+
+// Returns the length of the raw stream data from |stream|. The raw data is the
+// stream's data as stored in the PDF without applying any filters. If |buffer|
+// is non-nullptr and |buflen| is large enough to contain the raw data, then
+// the raw data is copied into |buffer|.
+unsigned long GetRawStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
+                                                   void* buffer,
+                                                   unsigned long buflen);
+
+// Return the length of the decoded stream data of |stream|. The decoded data is
+// the uncompressed stream data, i.e. the raw stream data after having all
+// filters applied. If |buffer| is non-nullptr and |buflen| is large enough to
+// contain the decoded data, then the decoded data is copied into |buffer|.
 unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
                                                    void* buffer,
                                                    unsigned long buflen);
@@ -265,10 +276,10 @@ void RenderPageWithContext(CPDF_PageRenderContext* pContext,
 void ReportUnsupportedFeatures(CPDF_Document* pDoc);
 void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot);
 
-#ifndef _WIN32
+#if !defined(OS_WIN)
 void SetLastError(int err);
 int GetLastError();
-#endif  // _WIN32
+#endif
 
 void ProcessParseError(CPDF_Parser::Error err);
 

@@ -47,11 +47,9 @@ L<PPI::Element>.
 use strict;
 use PPI::Statement ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Statement';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Statement";
 
 # Once we've hit a naked unmatched brace we can never truly be complete.
 # So instead we always just call it a day...

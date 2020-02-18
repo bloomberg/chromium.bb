@@ -6,6 +6,7 @@
 import logging
 import multiprocessing
 import os
+import shutil
 import subprocess
 
 logging.basicConfig(
@@ -160,6 +161,33 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
     logging.warning('Validating and converting %r to %r failed with output: %r',
                     profraw_file, output_profdata_file, error.output)
     invalid_profraw_files.append(profraw_file)
+    if os.path.exists(output_profdata_file):
+      # The output file may be created before llvm-profdata determines the
+      # input is invalid. Delete it so that it does not leak and affect other
+      # merge scripts.
+      os.remove(output_profdata_file)
+
+def merge_java_exec_files(input_dir, output_path, jacococli_path):
+  """Merges generated .exec files to output_path.
+
+  Args:
+    input_dir (str): The path to traverse to find input files.
+    output_path (str): Where to write the merged .exec file.
+    jacococli_path: The path to jacococli.jar.
+
+  Raises:
+    CalledProcessError: merge command failed.
+  """
+  exec_input_file_paths = _get_profile_paths(input_dir, '.exec')
+  if not exec_input_file_paths:
+    logging.info('No exec file found under %s', input_dir)
+    return
+
+  cmd = ['java', '-jar', jacococli_path, 'merge']
+  cmd.extend(exec_input_file_paths)
+  cmd.extend(['--destfile', output_path])
+  output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+  logging.info('Merge succeeded with output: %r', output)
 
 
 def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
@@ -207,3 +235,29 @@ def merge_profiles(input_dir, output_file, input_extension, profdata_tool_path):
     os.remove(input_file)
 
   return invalid_profraw_files + invalid_profdata_files
+
+# We want to retry shards that contain one or more profiles that cannot be
+# merged (typically due to corruption described in crbug.com/937521).
+def get_shards_to_retry(bad_profiles):
+  bad_shard_ids = set()
+
+  def is_task_id(s):
+    # Swarming task ids are 16 hex chars. The pythonic way to validate this is
+    # to cast to int and catch a value error.
+    try:
+      assert len(s) == 16, 'Swarming task IDs are expected be of length 16'
+      _int_id = int(s, 16)
+      return True
+    except (AssertionError, ValueError):
+      return False
+
+  for profile in bad_profiles:
+    # E.g. /b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw
+    _base_path, task_id, _profraw, _filename = os.path.normpath(profile).rsplit(
+        os.path.sep, 3)
+    # Since we are getting a task_id from a file path, which is less than ideal,
+    # do some checking to at least verify that the snippet looks like a valid
+    # task id.
+    assert is_task_id(task_id)
+    bad_shard_ids.add(task_id)
+  return bad_shard_ids

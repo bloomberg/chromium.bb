@@ -17,18 +17,6 @@
 
 #include "System/Types.hpp"
 
-#define PERF_HUD 0       // Display time spent on vertex, setup and pixel processing for each thread
-#define PERF_PROFILE 0   // Profile various pipeline stages and display the timing in SwiftConfig
-
-#define ASTC_SUPPORT 0
-
-// Worker thread count when not set by SwiftConfig
-// 0 = process affinity count (recommended)
-// 1 = rendering on main thread (no worker threads), useful for debugging
-#ifndef DEFAULT_THREAD_COUNT
-#define DEFAULT_THREAD_COUNT 0
-#endif
-
 namespace sw
 {
 	enum
@@ -53,22 +41,6 @@ namespace sw
 		int framesSec;
 		int framesTotal;
 		double FPS;
-
-		#if PERF_PROFILE
-		double cycles[PERF_TIMERS];
-
-		int64_t ropOperations;
-		int64_t ropOperationsTotal;
-		int64_t ropOperationsFrame;
-
-		int64_t texOperations;
-		int64_t texOperationsTotal;
-		int64_t texOperationsFrame;
-
-		int64_t compressedTex;
-		int64_t compressedTexTotal;
-		int64_t compressedTexFrame;
-		#endif
 	};
 
 	extern Profiler profiler;
@@ -77,14 +49,6 @@ namespace sw
 	{
 		OUTLINE_RESOLUTION = 8192,   // Maximum vertical resolution of the render target
 		MIPMAP_LEVELS = 14,
-		FRAGMENT_UNIFORM_VECTORS = 264,
-		VERTEX_UNIFORM_VECTORS = 259,
-		MAX_VERTEX_INPUTS = 32,
-		MAX_VERTEX_OUTPUTS = 34,
-		MAX_FRAGMENT_INPUTS = 32,
-		MAX_FRAGMENT_UNIFORM_BLOCKS = 12,
-		MAX_VERTEX_UNIFORM_BLOCKS = 12,
-		MAX_UNIFORM_BUFFER_BINDINGS = MAX_FRAGMENT_UNIFORM_BLOCKS + MAX_VERTEX_UNIFORM_BLOCKS,   // Limited to 127 by SourceParameter.bufferIndex in Shader.hpp
 		MAX_UNIFORM_BLOCK_SIZE = 16384,
 		MAX_CLIP_PLANES = 6,
 		MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS = 64,
@@ -93,8 +57,7 @@ namespace sw
 		MAX_PROGRAM_TEXEL_OFFSET = 7,
 		MAX_TEXTURE_LOD = MIPMAP_LEVELS - 2,   // Trilinear accesses lod+1
 		RENDERTARGETS = 8,
-		NUM_TEMPORARY_REGISTERS = 4096,
-		MAX_INTERFACE_COMPONENTS = 32 * 4,
+		MAX_INTERFACE_COMPONENTS = 16 * 4,  // Must be multiple of 4 for 16-byte alignment.
 	};
 }
 

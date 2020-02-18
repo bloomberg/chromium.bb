@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/heap/worklist.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
@@ -57,6 +57,7 @@ class IncrementalMarkingScopeBase;
 class AddressCache;
 class ThreadHeapStatsCollector;
 class PagePool;
+class ProcessHeapReporter;
 class RegionTree;
 
 struct MarkingItem {
@@ -74,6 +75,10 @@ using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
 using WeakCallbackWorklist =
     Worklist<CustomCallbackItem, 256 /* local entries */>;
+// Using large local segments here (sized 512 entries) to avoid throughput
+// regressions.
+using MovableReferenceWorklist =
+    Worklist<MovableReference*, 512 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -212,17 +217,22 @@ class PLATFORM_EXPORT ThreadHeap {
     return weak_callback_worklist_.get();
   }
 
+  MovableReferenceWorklist* GetMovableReferenceWorklist() const {
+    return movable_reference_worklist_.get();
+  }
+
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
 
   // Heap compaction registration methods:
 
-  // Register |slot| as containing a reference to a movable heap object.
+  // Checks whether we need to register |slot| as containing a reference to
+  // a movable heap object.
   //
   // When compaction moves the object pointed to by |*slot| to |newAddress|,
   // |*slot| must be updated to hold |newAddress| instead.
-  void RegisterMovingObjectReference(MovableReference*);
+  bool ShouldRegisterMovingObjectReference(MovableReference*);
 
   // Register a callback to be invoked upon moving the object starting at
   // |reference|; see |MovingObjectCallback| documentation for details.
@@ -254,7 +264,7 @@ class PLATFORM_EXPORT ThreadHeap {
                                uint32_t gc_info_index,
                                const char* type_name);
   template <typename T>
-  static Address Allocate(size_t, bool eagerly_sweep = false);
+  static Address Allocate(size_t);
 
   void WeakProcessing(Visitor*);
 
@@ -266,7 +276,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // Marks not fully constructed objects.
   void MarkNotFullyConstructedObjects(MarkingVisitor*);
   // Marks the transitive closure including ephemerons.
-  bool AdvanceMarking(MarkingVisitor*, TimeTicks deadline);
+  bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
   // Conservatively checks whether an address is a pointer in any of the
@@ -359,10 +369,13 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void Compact();
 
-  bool AdvanceLazySweep(TimeTicks deadline);
+  bool AdvanceLazySweep(base::TimeTicks deadline);
+
+  void ConcurrentSweep();
 
   void PrepareForSweep();
   void RemoveAllPages();
+  void InvokeFinalizersOnSweptPages();
   void CompleteSweep();
 
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
@@ -372,13 +385,7 @@ class PLATFORM_EXPORT ThreadHeap {
     return heap_stats_collector_.get();
   }
 
-  void IncreaseAllocatedObjectSize(size_t);
-  void DecreaseAllocatedObjectSize(size_t);
-  void IncreaseAllocatedSpace(size_t);
-  void DecreaseAllocatedSpace(size_t);
-
 #if defined(ADDRESS_SANITIZER)
-  void PoisonEagerArena();
   void PoisonAllHeaps();
 #endif
 
@@ -396,8 +403,9 @@ class PLATFORM_EXPORT ThreadHeap {
  private:
   static int ArenaIndexForObjectSize(size_t);
 
-  void CommitCallbackStacks();
-  void DecommitCallbackStacks();
+  void SetupWorklists();
+  void DestroyMarkingWorklists(BlinkGC::StackState);
+  void DestroyCompactionWorklists();
 
   void InvokeEphemeronCallbacks(Visitor*);
 
@@ -406,6 +414,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<AddressCache> address_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
+  std::unique_ptr<ProcessHeapReporter> process_heap_reporter_;
 
   // All objects on this worklist have been fully initialized and assigned a
   // trace callback for iterating the body of the object. This worklist should
@@ -428,6 +437,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // Worklist of weak callbacks accumulated for objects. Such callbacks are
   // processed after finishing marking objects.
   std::unique_ptr<WeakCallbackWorklist> weak_callback_worklist_;
+
+  // The worklist is to remember slots that are traced during
+  // marking phases. The mapping between the slots and the backing stores are
+  // created at the atomic pause phase.
+  std::unique_ptr<MovableReferenceWorklist> movable_reference_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
@@ -458,25 +472,6 @@ class PLATFORM_EXPORT ThreadHeap {
 };
 
 template <typename T>
-struct IsEagerlyFinalizedType {
-  STATIC_ONLY(IsEagerlyFinalizedType);
-
- private:
-  typedef char YesType;
-  struct NoType {
-    char padding[8];
-  };
-
-  template <typename U>
-  static YesType CheckMarker(typename U::IsEagerlyFinalizedMarker*);
-  template <typename U>
-  static NoType CheckMarker(...);
-
- public:
-  static const bool value = sizeof(CheckMarker<T>(nullptr)) == sizeof(YesType);
-};
-
-template <typename T>
 class GarbageCollected {
   IS_GARBAGE_COLLECTED_TYPE();
 
@@ -498,13 +493,13 @@ class GarbageCollected {
 
   void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
 
-  static void* AllocateObject(size_t size, bool eagerly_sweep) {
+  static void* AllocateObject(size_t size) {
     if (IsGarbageCollectedMixin<T>::value) {
       // Ban large mixin so we can use PageFromObject() on them.
       CHECK_GE(kLargeObjectSizeThreshold, size)
           << "GarbageCollectedMixin may not be a large object";
     }
-    return ThreadHeap::Allocate<T>(size, eagerly_sweep);
+    return ThreadHeap::Allocate<T>(size);
   }
 
   void operator delete(void* p) { NOTREACHED(); }
@@ -521,11 +516,11 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T), IsEagerlyFinalizedType<T>::value);
+  void* memory = T::AllocateObject(sizeof(T));
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed();
+  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
   return object;
 }
 
@@ -541,12 +536,11 @@ template <typename T, typename... Args>
 T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
   static_assert(WTF::IsGarbageCollectedType<T>::value,
                 "T needs to be a garbage collected object");
-  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value,
-                                   IsEagerlyFinalizedType<T>::value);
+  void* memory = T::AllocateObject(sizeof(T) + additional_bytes.value);
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(memory);
   // Placement new as regular operator new() is deleted.
   T* object = ::new (memory) T(std::forward<Args>(args)...);
-  header->MarkFullyConstructed();
+  header->MarkFullyConstructed<HeapObjectHeader::AccessMode::kAtomic>();
   return object;
 }
 
@@ -559,14 +553,6 @@ T* MakeGarbageCollected(AdditionalBytes additional_bytes, Args&&... args) {
 // but it's not practical to prepare dedicated arenas for all types.
 // Thus we group objects by their sizes, hoping that this will approximately
 // group objects by their types.
-//
-// An exception to the use of sized arenas is made for class types that
-// require prompt finalization after a garbage collection. That is, their
-// instances have to be finalized early and cannot be delayed until lazy
-// sweeping kicks in for their heap and page. The EAGERLY_FINALIZE()
-// macro is used to declare a class (and its derived classes) as being
-// in need of eager finalization. Must be defined with 'public' visibility
-// for a class.
 //
 
 inline int ThreadHeap::ArenaIndexForObjectSize(size_t size) {
@@ -585,30 +571,6 @@ inline bool ThreadHeap::IsNormalArenaIndex(int index) {
          index <= BlinkGC::kNormalPage4ArenaIndex;
 }
 
-#define IS_EAGERLY_FINALIZED()                    \
-  (PageFromObject(this)->Arena()->ArenaIndex() == \
-   BlinkGC::kEagerSweepArenaIndex)
-#if DCHECK_IS_ON()
-class VerifyEagerFinalization {
-  DISALLOW_NEW();
-
- public:
-  ~VerifyEagerFinalization() {
-    DCHECK(IS_EAGERLY_FINALIZED());
-  }
-};
-#define EAGERLY_FINALIZE()                            \
- private:                                             \
-  VerifyEagerFinalization verify_eager_finalization_; \
-                                                      \
- public:                                              \
-  typedef int IsEagerlyFinalizedMarker
-#else
-#define EAGERLY_FINALIZE() \
- public:                   \
-  typedef int IsEagerlyFinalizedMarker
-#endif
-
 inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
                                                 size_t size,
                                                 int arena_index,
@@ -624,13 +586,11 @@ inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
 }
 
 template <typename T>
-Address ThreadHeap::Allocate(size_t size, bool eagerly_sweep) {
+Address ThreadHeap::Allocate(size_t size) {
   ThreadState* state = ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
   const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(T);
   return state->Heap().AllocateOnArenaIndex(
-      state, size,
-      eagerly_sweep ? BlinkGC::kEagerSweepArenaIndex
-                    : ThreadHeap::ArenaIndexForObjectSize(size),
+      state, size, ThreadHeap::ArenaIndexForObjectSize(size),
       GCInfoTrait<T>::Index(), type_name);
 }
 

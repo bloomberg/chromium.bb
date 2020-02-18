@@ -15,6 +15,8 @@ import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A collection of utility functions for dealing with bitmaps.
@@ -72,22 +74,26 @@ class BitmapUtils {
 
     /**
      * Given a FileDescriptor, decodes the video and returns a bitmap of dimensions |size|x|size|.
+     * @param retriever The MediaMetadataRetriever to use (must have source already set).
      * @param descriptor The FileDescriptor for the file to read.
      * @param size The width and height of the bitmap to return.
-     * @return The resulting bitmap.
+     * @param frames The number of frames to extract.
+     * @param intervalMs The interval between frames (in milliseconds).
+     * @return A list of extracted frames.
      */
-    public static Bitmap decodeVideoFromFileDescriptor(
-            MediaMetadataRetriever retriever, FileDescriptor descriptor, int size) {
-        try {
-            retriever.setDataSource(descriptor);
-        } catch (RuntimeException exception) {
-            return null;
+    public static List<Bitmap> decodeVideoFromFileDescriptor(MediaMetadataRetriever retriever,
+            FileDescriptor descriptor, int size, int frames, long intervalMs) {
+        List<Bitmap> bitmaps = new ArrayList<Bitmap>();
+        Bitmap bitmap = null;
+        for (int frame = 0; frame < frames; ++frame) {
+            bitmap = retriever.getFrameAtTime(frame * intervalMs * 1000);
+            if (bitmap == null) continue;
+
+            bitmap = sizeBitmap(bitmap, size, descriptor);
+            bitmaps.add(bitmap);
         }
 
-        Bitmap bitmap = retriever.getFrameAtTime();
-        if (bitmap == null) return null;
-
-        return sizeBitmap(bitmap, size, descriptor);
+        return bitmaps;
     }
 
     /**

@@ -341,10 +341,10 @@ class VertexFormatTest : public DawnTest {
         vs << "}\n";
 
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vs.str().c_str());
+            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs.str().c_str());
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) in vec4 color;
                 layout(location = 0) out vec4 fragColor;
@@ -362,9 +362,9 @@ class VertexFormatTest : public DawnTest {
         utils::ComboRenderPipelineDescriptor descriptor(device);
         descriptor.cVertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
-        descriptor.cVertexInput.numBuffers = 1;
+        descriptor.cVertexInput.bufferCount = 1;
         descriptor.cVertexInput.cBuffers[0].stride = strideBytes;
-        descriptor.cVertexInput.numAttributes = 1;
+        descriptor.cVertexInput.cBuffers[0].attributeCount = 1;
         descriptor.cVertexInput.cAttributes[0].format = format;
         descriptor.cColorStates[0]->format = renderPass.colorFormat;
 

@@ -51,7 +51,7 @@ static inline bool IsFontPresent(const UChar* font_name,
                                  SkFontMgr* font_manager) {
   String family = font_name;
   sk_sp<SkTypeface> tf(
-      font_manager->matchFamilyStyle(family.Utf8().data(), SkFontStyle()));
+      font_manager->matchFamilyStyle(family.Utf8().c_str(), SkFontStyle()));
   if (!tf)
     return false;
 

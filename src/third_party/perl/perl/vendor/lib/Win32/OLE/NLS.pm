@@ -591,7 +591,7 @@ subsystem seems to cache locale information.
 
 =item MAKELANGID(LANG,SUBLANG)
 
-Creates a lnguage identifier from a primary language and a sublanguage.
+Creates a language identifier from a primary language and a sublanguage.
 
 =item PRIMARYLANGID(LANGID)
 

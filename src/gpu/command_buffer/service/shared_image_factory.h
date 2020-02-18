@@ -74,6 +74,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                          const gfx::ColorSpace& color_space,
                          uint32_t usage);
   bool UpdateSharedImage(const Mailbox& mailbox);
+  bool UpdateSharedImage(const Mailbox& mailbox,
+                         std::unique_ptr<gfx::GpuFence> in_fence);
   bool DestroySharedImage(const Mailbox& mailbox);
   bool HasImages() const { return !shared_images_.empty(); }
   void DestroyAllSharedImages(bool have_context);
@@ -94,6 +96,9 @@ class GPU_GLES2_EXPORT SharedImageFactory {
                     uint64_t client_tracing_id);
   bool RegisterBacking(std::unique_ptr<SharedImageBacking> backing,
                        bool allow_legacy_mailbox);
+
+  void RegisterSharedImageBackingFactoryForTesting(
+      SharedImageBackingFactory* factory);
 
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
@@ -126,6 +131,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // Used for creating DXGI Swap Chain.
   std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
 #endif  // OS_WIN
+
+  SharedImageBackingFactory* backing_factory_for_testing_ = nullptr;
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationFactory {

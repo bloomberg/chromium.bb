@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
@@ -59,6 +60,9 @@ constexpr char kSwitchNameStoragePath[] = "storage-path";
 constexpr char kSwitchNamePin[] = "pin";
 constexpr char kSwitchNameHostId[] = "host-id";
 constexpr char kSwitchNameUseChromotocol[] = "use-chromotocol";
+
+// Delay to allow sending session-terminate before tearing down.
+constexpr base::TimeDelta kTearDownDelay = base::TimeDelta::FromSeconds(2);
 
 const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
   switch (error) {
@@ -154,12 +158,11 @@ void FtlSignalingPlayground::AcceptIncoming(base::OnceClosure on_done) {
   std::string host_owner = cmd->HasSwitch(kSwitchNameHostOwner)
                                ? cmd->GetSwitchValueASCII(kSwitchNameHostOwner)
                                : user_email;
-  std::string host_owner_email = host_owner;
   HOST_LOG << "Using host owner: " << host_owner;
   bool is_service_account =
       test::TestOAuthTokenGetter::IsServiceAccount(user_email);
   auto factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-      is_service_account, host_owner, host_owner_email, cert, key_pair,
+      is_service_account, host_owner, cert, key_pair,
       /* domain_list */ {}, pin_hash, /* pairing_registry */ {});
   session_manager_->set_authenticator_factory(std::move(factory));
   HOST_LOG << "Waiting for incoming session...";
@@ -253,7 +256,6 @@ void FtlSignalingPlayground::InitializeTransport() {
   protocol::NetworkSettings network_settings(
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
   auto transport_context = base::MakeRefCounted<protocol::TransportContext>(
-      signal_strategy_.get(),
       std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
       std::make_unique<ChromiumUrlRequestFactory>(
           url_loader_factory_owner_->GetURLLoaderFactory()),
@@ -343,11 +345,12 @@ void FtlSignalingPlayground::OnSessionStateChange(
       break;
   }
 
-  TearDownAndRunCallback();
+  AsyncTearDownAndRunCallback();
 }
 
 void FtlSignalingPlayground::AsyncTearDownAndRunCallback() {
-  tear_down_timer_.Start(FROM_HERE, base::TimeDelta(), this,
+  HOST_LOG << "Tearing down in " << kTearDownDelay;
+  tear_down_timer_.Start(FROM_HERE, kTearDownDelay, this,
                          &FtlSignalingPlayground::TearDownAndRunCallback);
 }
 

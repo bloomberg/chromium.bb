@@ -201,6 +201,7 @@ class FilteredVolumeManager extends cr.EventTarget {
     if (!this.volumeManager_) {
       return;
     }
+    // TODO(crbug.com/972849): Consider using EventTracker instead.
     this.volumeManager_.removeEventListener(
         'drive-connection-changed', this.onEventBound_);
     this.volumeManager_.removeEventListener(
@@ -216,20 +217,25 @@ class FilteredVolumeManager extends cr.EventTarget {
    * @private
    */
   onEvent_(event) {
+    // Note: Can not re-dispatch the same |event| object, because it throws a
+    // runtime "The event is already being dispatched." error.
     switch (event.type) {
       case 'drive-connection-changed':
         if (this.isAllowedVolumeType_(VolumeManagerCommon.VolumeType.DRIVE)) {
-          this.dispatchEvent(event);
+          cr.dispatchSimpleEvent(this, 'drive-connection-changed');
         }
         break;
       case 'externally-unmounted':
         event = /** @type {!ExternallyUnmountedEvent} */ (event);
         if (this.isAllowedVolume_(event.detail)) {
-          this.dispatchEvent(event);
+          this.dispatchEvent(
+              new CustomEvent('externally-unmount', {detail: event.detail}));
         }
         break;
       case VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE:
-        this.dispatchEvent(event);
+        this.dispatchEvent(new CustomEvent(
+            VolumeManagerCommon.ARCHIVE_OPENED_EVENT_TYPE,
+            {detail: event.detail}));
         break;
     }
   }

@@ -138,7 +138,7 @@ void CPPCodeGenerator::writeIndexExpression(const IndexExpression& i) {
             }
             int64_t index = ((IntLiteral&) *i.fIndex).fValue;
             fFormatArgs.push_back("        fragBuilder->getProgramBuilder()->samplerVariable("
-                                            "args.fTexSamplers[" + to_string(index) + "]).c_str()");
+                                            "args.fTexSamplers[" + to_string(index) + "])");
             return;
         }
     }
@@ -206,6 +206,12 @@ void CPPCodeGenerator::writeRuntimeValue(const Type& type, const Layout& layout,
                 fFormatArgs.push_back(cppCode + ".fG");
                 fFormatArgs.push_back(cppCode + ".fB");
                 fFormatArgs.push_back(cppCode + ".fA");
+                break;
+            case Layout::CType::kSkVector4:
+                fFormatArgs.push_back(cppCode + ".fData[0]");
+                fFormatArgs.push_back(cppCode + ".fData[1]");
+                fFormatArgs.push_back(cppCode + ".fData[2]");
+                fFormatArgs.push_back(cppCode + ".fData[3]");
                 break;
             case Layout::CType::kSkRect: // fall through
             case Layout::CType::kDefault:
@@ -300,7 +306,7 @@ void CPPCodeGenerator::writeVariableReference(const VariableReference& ref) {
             if (ref.fVariable.fType.kind() == Type::kSampler_Kind) {
                 this->write("%s");
                 fFormatArgs.push_back("fragBuilder->getProgramBuilder()->samplerVariable(" +
-                                      this->getSamplerHandle(ref.fVariable) + ").c_str()");
+                                      this->getSamplerHandle(ref.fVariable) + ")");
                 return;
             }
             if (ref.fVariable.fModifiers.fFlags & Modifiers::kUniform_Flag) {
@@ -309,7 +315,7 @@ void CPPCodeGenerator::writeVariableReference(const VariableReference& ref) {
                 String var = String::printf("args.fUniformHandler->getUniformCStr(%sVar)",
                                             HCodeGenerator::FieldName(name.c_str()).c_str());
                 String code;
-                if (ref.fVariable.fModifiers.fLayout.fWhen.size()) {
+                if (ref.fVariable.fModifiers.fLayout.fWhen.fLength) {
                     code = String::printf("%sVar.isValid() ? %s : \"%s\"",
                                           HCodeGenerator::FieldName(name.c_str()).c_str(),
                                           var.c_str(),
@@ -555,14 +561,14 @@ void CPPCodeGenerator::addUniform(const Variable& var) {
         ABORT("unsupported uniform type: %s %s;\n", String(var.fType.fName).c_str(),
               String(var.fName).c_str());
     }
-    if (var.fModifiers.fLayout.fWhen.size()) {
-        this->writef("        if (%s) {\n    ", var.fModifiers.fLayout.fWhen.c_str());
+    if (var.fModifiers.fLayout.fWhen.fLength) {
+        this->writef("        if (%s) {\n    ", String(var.fModifiers.fLayout.fWhen).c_str());
     }
     String name(var.fName);
     this->writef("        %sVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, %s, "
                  "\"%s\");\n", HCodeGenerator::FieldName(name.c_str()).c_str(), type,
                  name.c_str());
-    if (var.fModifiers.fLayout.fWhen.size()) {
+    if (var.fModifiers.fLayout.fWhen.fLength) {
         this->write("        }\n");
     }
 }
@@ -1095,64 +1101,85 @@ void CPPCodeGenerator::writeGetKey() {
     this->writef("void %s::onGetGLSLProcessorKey(const GrShaderCaps& caps, "
                                                 "GrProcessorKeyBuilder* b) const {\n",
                  fFullName.c_str());
-    for (const auto& param : fSectionAndParameterHelper.getParameters()) {
-        String nameString(param->fName);
-        const char* name = nameString.c_str();
-        if (param->fModifiers.fLayout.fKey != Layout::kNo_Key &&
-            (param->fModifiers.fFlags & Modifiers::kUniform_Flag)) {
-            fErrors.error(param->fOffset,
-                          "layout(key) may not be specified on uniforms");
-        }
-        switch (param->fModifiers.fLayout.fKey) {
-            case Layout::kKey_Key:
-                if (param->fModifiers.fLayout.fWhen.size()) {
-                    this->writef("if (%s) {", param->fModifiers.fLayout.fWhen.c_str());
+    for (const auto& p : fProgram) {
+        if (ProgramElement::kVar_Kind == p.fKind) {
+            const VarDeclarations& decls = (const VarDeclarations&) p;
+            for (const auto& raw : decls.fVars) {
+                const VarDeclaration& decl = (VarDeclaration&) *raw;
+                const Variable& var = *decl.fVar;
+                String nameString(var.fName);
+                const char* name = nameString.c_str();
+                if (var.fModifiers.fLayout.fKey != Layout::kNo_Key &&
+                    (var.fModifiers.fFlags & Modifiers::kUniform_Flag)) {
+                    fErrors.error(var.fOffset,
+                                  "layout(key) may not be specified on uniforms");
                 }
-                if (param->fType == *fContext.fFloat4x4_Type) {
-                    ABORT("no automatic key handling for float4x4\n");
-                } else if (param->fType == *fContext.fFloat2_Type) {
-                    this->writef("    b->add32(%s.fX);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    b->add32(%s.fY);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                } else if (param->fType == *fContext.fFloat4_Type) {
-                    this->writef("    b->add32(%s.x());\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    b->add32(%s.y());\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    b->add32(%s.width());\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    b->add32(%s.height());\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                } else if (param->fType == *fContext.fHalf4_Type) {
-                    this->writef("    uint16_t red = SkFloatToHalf(%s.fR);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    uint16_t green = SkFloatToHalf(%s.fG);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    uint16_t blue = SkFloatToHalf(%s.fB);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->writef("    uint16_t alpha = SkFloatToHalf(%s.fA);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
-                    this->write("    b->add32(((uint32_t)red << 16) | green);\n");
-                    this->write("    b->add32(((uint32_t)blue << 16) | alpha);\n");
-                } else {
-                    this->writef("    b->add32((int32_t) %s);\n",
-                                 HCodeGenerator::FieldName(name).c_str());
+                switch (var.fModifiers.fLayout.fKey) {
+                    case Layout::kKey_Key:
+                        if (is_private(var)) {
+                            this->writef("%s %s =",
+                                         HCodeGenerator::FieldType(fContext, var.fType,
+                                                                   var.fModifiers.fLayout).c_str(),
+                                         String(var.fName).c_str());
+                            if (decl.fValue) {
+                                fCPPMode = true;
+                                this->writeExpression(*decl.fValue, kAssignment_Precedence);
+                                fCPPMode = false;
+                            } else {
+                                this->writef("%s", default_value(var).c_str());
+                            }
+                            this->write(";\n");
+                        }
+                        if (var.fModifiers.fLayout.fWhen.fLength) {
+                            this->writef("if (%s) {", String(var.fModifiers.fLayout.fWhen).c_str());
+                        }
+                        if (var.fType == *fContext.fFloat4x4_Type) {
+                            ABORT("no automatic key handling for float4x4\n");
+                        } else if (var.fType == *fContext.fFloat2_Type) {
+                            this->writef("    b->add32(%s.fX);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    b->add32(%s.fY);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                        } else if (var.fType == *fContext.fFloat4_Type) {
+                            this->writef("    b->add32(%s.x());\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    b->add32(%s.y());\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    b->add32(%s.width());\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    b->add32(%s.height());\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                        } else if (var.fType == *fContext.fHalf4_Type) {
+                            this->writef("    uint16_t red = SkFloatToHalf(%s.fR);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    uint16_t green = SkFloatToHalf(%s.fG);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    uint16_t blue = SkFloatToHalf(%s.fB);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->writef("    uint16_t alpha = SkFloatToHalf(%s.fA);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                            this->write("    b->add32(((uint32_t)red << 16) | green);\n");
+                            this->write("    b->add32(((uint32_t)blue << 16) | alpha);\n");
+                        } else {
+                            this->writef("    b->add32((int32_t) %s);\n",
+                                         HCodeGenerator::FieldName(name).c_str());
+                        }
+                        if (var.fModifiers.fLayout.fWhen.fLength) {
+                            this->write("}");
+                        }
+                        break;
+                    case Layout::kIdentity_Key:
+                        if (var.fType.kind() != Type::kMatrix_Kind) {
+                            fErrors.error(var.fOffset,
+                                          "layout(key=identity) requires matrix type");
+                        }
+                        this->writef("    b->add32(%s.isIdentity() ? 1 : 0);\n",
+                                     HCodeGenerator::FieldName(name).c_str());
+                        break;
+                    case Layout::kNo_Key:
+                        break;
                 }
-                if (param->fModifiers.fLayout.fWhen.size()) {
-                    this->write("}");
-                }
-                break;
-            case Layout::kIdentity_Key:
-                if (param->fType.kind() != Type::kMatrix_Kind) {
-                    fErrors.error(param->fOffset,
-                                  "layout(key=identity) requires matrix type");
-                }
-                this->writef("    b->add32(%s.isIdentity() ? 1 : 0);\n",
-                             HCodeGenerator::FieldName(name).c_str());
-                break;
-            case Layout::kNo_Key:
-                break;
+            }
         }
     }
     this->write("}\n");

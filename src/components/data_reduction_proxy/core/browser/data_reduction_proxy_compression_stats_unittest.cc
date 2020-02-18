@@ -1106,7 +1106,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  base::Time fifteen_mins_ago = now - base::TimeDelta::FromMinutes(15);
 
   RecordDataUsage("https://www.foo.com", 1000, 1250, fifteen_mins_ago);
 
@@ -1146,7 +1146,7 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  base::Time fifteen_mins_ago = now - base::TimeDelta::FromMinutes(15);
 
   RecordDataUsage("https://www.foo.com", 1000, 1250, fifteen_mins_ago);
 
@@ -1174,7 +1174,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteHistoricalDataUsage) {
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  base::Time fifteen_mins_ago = now - base::TimeDelta::FromMinutes(15);
   // Fake record to be from 15 minutes ago so that it is flushed to storage.
   RecordDataUsage("https://www.bar.com", 900, 1100, fifteen_mins_ago);
 
@@ -1199,7 +1199,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, DeleteBrowsingHistory) {
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  base::Time fifteen_mins_ago = now - base::TimeDelta::FromMinutes(15);
 
   // Fake record to be from 15 minutes ago so that it is flushed to storage.
   RecordDataUsage("https://www.bar.com", 900, 1100, fifteen_mins_ago);
@@ -1247,7 +1247,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, ClearDataSavingStatistics) {
   base::RunLoop().RunUntilIdle();
 
   base::Time now = base::Time::Now();
-  base::Time fifteen_mins_ago = now - TimeDelta::FromMinutes(15);
+  base::Time fifteen_mins_ago = now - base::TimeDelta::FromMinutes(15);
   // Fake record to be from 15 minutes ago so that it is flushed to storage.
   RecordDataUsage("https://www.bar.com", 900, 1100, fifteen_mins_ago);
 

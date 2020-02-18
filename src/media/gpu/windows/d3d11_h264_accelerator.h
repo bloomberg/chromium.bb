@@ -16,6 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/windows/d3d11_com_defs.h"
 #include "media/gpu/windows/d3d11_video_context_wrapper.h"
 #include "media/gpu/windows/d3d11_video_decoder_client.h"
 #include "media/gpu/windows/return_on_failure.h"
@@ -36,8 +37,8 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   D3D11H264Accelerator(D3D11VideoDecoderClient* client,
                        MediaLog* media_log,
                        CdmProxyContext* cdm_proxy_context,
-                       Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
-                       Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+                       ComD3D11VideoDecoder video_decoder,
+                       ComD3D11VideoDevice video_device,
                        std::unique_ptr<VideoContextWrapper> video_context);
   ~D3D11H264Accelerator() override;
 
@@ -91,8 +92,8 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   MediaLog* media_log_ = nullptr;
   CdmProxyContext* const cdm_proxy_context_;
 
-  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;
-  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  ComD3D11VideoDecoder video_decoder_;
+  ComD3D11VideoDevice video_device_;
   std::unique_ptr<VideoContextWrapper> video_context_;
 
   // This information set at the beginning of a frame and saved for processing

@@ -77,4 +77,22 @@ suite('cr-icon-button', function() {
     button = document.body.querySelector('cr-icon-button');
     assertEquals('-1', button.getAttribute('tabindex'));
   });
+
+  test('ripple is a circle with background icon or single iron-icon', () => {
+    const ripple = button.getRipple();
+    assertEquals(undefined, button.ironIcon);
+    assertTrue(ripple.classList.contains('circle'));
+    button.ironIcon = 'icon';
+    assertTrue(ripple.classList.contains('circle'));
+    button.ironIcon = 'icon,icon';
+    assertFalse(ripple.classList.contains('circle'));
+  });
+
+  test('multiple iron icons', () => {
+    button.ironIcon = 'icon1,icon2';
+    const elements = button.shadowRoot.querySelectorAll('iron-icon');
+    assertEquals(2, elements.length);
+    assertEquals('icon1', elements[0].icon);
+    assertEquals('icon2', elements[1].icon);
+  });
 });

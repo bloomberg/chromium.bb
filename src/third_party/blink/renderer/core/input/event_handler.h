@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -104,8 +104,9 @@ class CORE_EXPORT EventHandler final
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
-      HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
-                                                    HitTestRequest::kActive,
+      HitTestRequest::HitTestRequestType hit_type =
+          HitTestRequest::kReadOnly | HitTestRequest::kActive |
+          HitTestRequest::kRetargetForInert,
       const LayoutObject* stop_node = nullptr,
       bool no_lifecycle_update = false);
 
@@ -276,7 +277,9 @@ class CORE_EXPORT EventHandler final
                      ScrollGranularity,
                      Node* start_node = nullptr);
 
-  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
+  bool IsPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
+
+  LocalFrame* DetermineActivePointerTrackerFrame(PointerId pointer_id) const;
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
@@ -293,6 +296,10 @@ class CORE_EXPORT EventHandler final
   void MarkHoverStateDirty();
 
   void SetIsFallbackCursorModeOn(bool is_on);
+
+  // Reset the last mouse position so that movement after unlock will be
+  // restart from the lock position.
+  void ResetMousePositionForPointerUnlock();
 
  private:
   enum NoCursorChangeType { kNoCursorChange };
@@ -327,13 +334,6 @@ class CORE_EXPORT EventHandler final
 
   // Updates the event, location and result to the adjusted target.
   void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
-  WebInputEventResult HandleGestureTapDown(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureTap(const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongPress(
-      const GestureEventWithHitTestResults&);
-  WebInputEventResult HandleGestureLongTap(
-      const GestureEventWithHitTestResults&);
 
   void PerformHitTest(const HitTestLocation& location,
                       HitTestResult&,
@@ -363,8 +363,9 @@ class CORE_EXPORT EventHandler final
 
   Element* EffectiveMouseEventTargetElement(Element*);
 
-  // Dispatches ME after corresponding PE provided the PE has not been canceled.
-  // The |mouse_event_type| arg must be one of {mousedown, mousemove, mouseup}.
+  // Dispatches ME after corresponding PE provided the PE has not been
+  // canceled. The |mouse_event_type| arg must be one of {mousedown,
+  // mousemove, mouseup}.
   WebInputEventResult DispatchMousePointerEvent(
       const WebInputEvent::Type,
       Element* target,
@@ -405,7 +406,7 @@ class CORE_EXPORT EventHandler final
 
   bool ShouldBrowserControlsConsumeScroll(FloatSize) const;
 
-  bool RootFrameTouchPointerActiveInCurrentFrame(PointerId pointer_id) const;
+  bool RootFrameTrackedActivePointerInCurrentFrame(PointerId pointer_id) const;
 
   void CaptureMouseEventsToWidget(bool);
 
@@ -466,12 +467,11 @@ class CORE_EXPORT EventHandler final
 
   TaskRunnerTimer<EventHandler> active_interval_timer_;
 
-  // last_show_press_timestamp_ prevents the active state rewrited by following
-  // events too soon (less than 0.15s).
-  // It is ok we only record last_show_press_timestamp_ in root frame since
-  // root frame will have subframe as active element if subframe has active
-  // element.
-  base::Optional<WTF::TimeTicks> last_show_press_timestamp_;
+  // last_show_press_timestamp_ prevents the active state rewrited by
+  // following events too soon (less than 0.15s). It is ok we only record
+  // last_show_press_timestamp_ in root frame since root frame will have
+  // subframe as active element if subframe has active element.
+  base::Optional<base::TimeTicks> last_show_press_timestamp_;
   Member<Element> last_deferred_tap_element_;
 
   // Set on GestureTapDown if unique_touch_event_id_ matches cached adjusted

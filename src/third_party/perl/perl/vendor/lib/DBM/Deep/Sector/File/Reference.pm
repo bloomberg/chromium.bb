@@ -423,9 +423,7 @@ sub data {
         });
 
         $$cache_entry{ $trans_id } = $obj;
-        if($engine->{external_refs}) {
-            Scalar::Util::weaken($$cache_entry{ $trans_id });
-        }
+        Scalar::Util::weaken($$cache_entry{ $trans_id });
     }
     else {
         $obj = $$cache_entry{ $trans_id };
@@ -469,7 +467,8 @@ sub free {
       my $off = $self->offset;
       if(  exists $cache->{ $off }
        and exists $cache->{ $off }{ my $trans_id = $e->trans_id } ) {
-        bless $cache->{ $off }{ $trans_id }, 'DBM::Deep::Null';
+        bless $cache->{ $off }{ $trans_id }, 'DBM::Deep::Null'
+         if defined $cache->{ $off }{ $trans_id };
         delete $cache->{ $off }{ $trans_id };
       }
     }

@@ -93,3 +93,22 @@ class RestrictedAttrDict(dict):
     """
     if self[key] == default:
       self[key] = None
+
+
+def ReadLsbRelease(sysroot):
+  """Reads the /etc/lsb-release file out of the given sysroot.
+
+  Args:
+    sysroot: The path to sysroot of an image to read sysroot/etc/lsb-release.
+
+  Returns:
+    The lsb-release file content in a dictionary of key/values.
+  """
+  lsb_release_file = os.path.join(sysroot, 'etc', 'lsb-release')
+  lsb_release = {}
+  with open(lsb_release_file, 'r') as f:
+    for line in f:
+      tokens = line.strip().split('=')
+      lsb_release[tokens[0]] = tokens[1]
+
+  return lsb_release

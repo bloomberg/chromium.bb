@@ -7,37 +7,37 @@ use Test::Deep::Ref;
 
 sub init
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $val = shift;
+  my $val = shift;
 
-	$self->{val} = $val;
+  $self->{val} = $val;
 }
 
 sub descend
 {
-	my $self = shift;
+  my $self = shift;
 
-	my $got = shift;
+  my $got = shift;
 
-	my $exp = $self->{val};
+  my $exp = $self->{val};
 
-	return $got eq $exp;
+  return $got eq $exp;
 }
 
 sub render_stack
 {
-	my $self = shift;
-	my ($var, $data) = @_;
+  my $self = shift;
+  my ($var, $data) = @_;
 
-	return "m/$var/";
+  return "m/$var/";
 }
 
 sub renderGot
 {
-	my $self = shift;
+  my $self = shift;
 
-	return shift()."";
+  return shift()."";
 }
 
 1;

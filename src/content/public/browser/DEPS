@@ -7,11 +7,11 @@ include_rules = [
   "+device/fido",
   "+services/device/public",
   "+services/media_session/public",
+  "+services/metrics/public/cpp",
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/video_capture/public/mojom",
-  "+services/ws/public/cpp/host",
-  "+services/ws/public/mojom",
+  "+services/viz/public/interfaces",
 ]
 
 specific_include_rules = {

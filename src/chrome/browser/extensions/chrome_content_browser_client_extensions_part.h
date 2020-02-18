@@ -70,6 +70,7 @@ class ChromeContentBrowserClientExtensionsPart
       const GURL& new_url);
   static bool AllowServiceWorker(const GURL& scope,
                                  const GURL& first_party_url,
+                                 const GURL& script_url,
                                  content::ResourceContext* context);
   static void OverrideNavigationParams(
       content::SiteInstance* site_instance,
@@ -77,6 +78,7 @@ class ChromeContentBrowserClientExtensionsPart
       bool* is_renderer_initiated,
       content::Referrer* referrer,
       base::Optional<url::Origin>* initiator_origin);
+  static std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
 
   // Similiar to ChromeContentBrowserClient::ShouldAllowOpenURL(), but the
   // return value indicates whether to use |result| or not.
@@ -92,11 +94,6 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static void LogInitiatorSchemeBypassingDocumentBlocking(
-      const url::Origin& initiator_origin,
-      int render_process_id,
-      content::ResourceType resource_type);
-
   static network::mojom::URLLoaderFactoryPtrInfo
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
@@ -109,31 +106,7 @@ class ChromeContentBrowserClientExtensionsPart
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
-                           ShouldAllowOpenURLMetricsForEmptySiteURL);
-  FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
-                           ShouldAllowOpenURLMetricsForKnownSchemes);
-  FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
                            IsolatedOriginsAndHostedAppWebExtents);
-
-  // Specifies reasons why web-accessible resource checks in ShouldAllowOpenURL
-  // might fail.
-  //
-  // This enum backs an UMA histogram.  The order of existing values
-  // should not be changed, and new values should only be added before
-  // FAILURE_LAST.
-  enum ShouldAllowOpenURLFailureReason {
-    FAILURE_FILE_SYSTEM_URL = 0,
-    FAILURE_BLOB_URL,
-    FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION,
-    FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
-    FAILURE_LAST,
-  };
-
-  // Records metrics when ShouldAllowOpenURL blocks a load.  |site_url|
-  // corresponds to the SiteInstance that initiated the blocked load.
-  static void RecordShouldAllowOpenURLFailure(
-      ShouldAllowOpenURLFailureReason reason,
-      const GURL& site_url);
 
   // ChromeContentBrowserClientParts:
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
@@ -155,7 +128,6 @@ class ChromeContentBrowserClientExtensionsPart
       base::CommandLine* command_line,
       content::RenderProcessHost* process,
       Profile* profile) override;
-  void ResourceDispatcherHostCreated() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientExtensionsPart);
 };

@@ -274,6 +274,14 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   ASSERT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
 }
 
+TEST_F(MediaSessionImplServiceRoutingTest, NotifyMockPositionData) {
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  // Verify that the default/mock position data is received by the observer.
+  observer.WaitForNonEmptyPosition();
+}
+
 TEST_F(MediaSessionImplServiceRoutingTest,
        DontNotifyMetadataAndActionsChangeWhenUncontrollable) {
   media_session::test::MockMediaSessionMojoObserver observer(
@@ -420,7 +428,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   EXPECT_CALL(*GetPlayerForFrame(sub_frame_), OnSuspend(_));
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kPause))
+              DidReceiveAction(MediaSessionAction::kPause, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(MediaSessionAction::kPause);
@@ -442,7 +450,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_));
   EXPECT_CALL(*GetClientForFrame(sub_frame_),
-              DidReceiveAction(MediaSessionAction::kPause))
+              DidReceiveAction(MediaSessionAction::kPause, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[sub_frame_]->EnableAction(MediaSessionAction::kPause);
@@ -475,7 +483,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kPreviousTrack))
+              DidReceiveAction(MediaSessionAction::kPreviousTrack, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(MediaSessionAction::kPreviousTrack);
@@ -494,7 +502,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   CreateServiceForFrame(main_frame_);
 
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kNextTrack))
+              DidReceiveAction(MediaSessionAction::kNextTrack, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(MediaSessionAction::kNextTrack);
@@ -513,7 +521,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, TestSeekBackwardBehaviourDefault) {
               OnSeekBackward(_, kDefaultSeekTime))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kSeekBackward))
+              DidReceiveAction(MediaSessionAction::kSeekBackward, _))
       .Times(0);
 
   MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime * -1);
@@ -529,7 +537,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSeekBackward(_, _)).Times(0);
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kSeekBackward))
+              DidReceiveAction(MediaSessionAction::kSeekBackward, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(MediaSessionAction::kSeekBackward);
@@ -548,7 +556,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, TestSeekForwardBehaviourDefault) {
               OnSeekForward(_, kDefaultSeekTime))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kSeekForward))
+              DidReceiveAction(MediaSessionAction::kSeekForward, _))
       .Times(0);
 
   MediaSessionImpl::Get(contents())->Seek(kDefaultSeekTime);
@@ -564,7 +572,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 
   EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSeekForward(_, _)).Times(0);
   EXPECT_CALL(*GetClientForFrame(main_frame_),
-              DidReceiveAction(MediaSessionAction::kSeekForward))
+              DidReceiveAction(MediaSessionAction::kSeekForward, _))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
 
   services_[main_frame_]->EnableAction(MediaSessionAction::kSeekForward);
@@ -869,6 +877,39 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   std::vector<media_session::MediaImage> empty_images;
   observer.WaitForExpectedImagesOfType(MediaSessionImageType::kArtwork,
                                        empty_images);
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, StopBehaviourDefault) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kStop, _))
+      .Times(0);
+
+  MediaSessionImpl::Get(contents())->Stop(MediaSession::SuspendType::kUI);
+  run_loop.Run();
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest, StopBehaviourWhenActionEnabled) {
+  base::RunLoop run_loop;
+
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  EXPECT_CALL(*GetPlayerForFrame(main_frame_), OnSuspend(_));
+  EXPECT_CALL(*GetClientForFrame(main_frame_),
+              DidReceiveAction(MediaSessionAction::kStop, _))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  services_[main_frame_]->EnableAction(MediaSessionAction::kStop);
+
+  MediaSessionImpl::Get(contents())->Stop(MediaSession::SuspendType::kUI);
+  run_loop.Run();
 }
 
 }  // namespace content

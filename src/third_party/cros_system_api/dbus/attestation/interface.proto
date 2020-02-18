@@ -82,7 +82,7 @@ message GetEndorsementInfoReply {
 }
 
 message GetAttestationKeyInfoRequest {
-  optional KeyType key_type = 1;
+  reserved 1;
   // What kind of ACA to use.
   optional ACAType aca_type = 2;
 }
@@ -102,7 +102,7 @@ message GetAttestationKeyInfoReply {
 }
 
 message ActivateAttestationKeyRequest {
-  optional KeyType key_type = 1;
+  reserved 1;
   optional EncryptedIdentityCredential encrypted_certificate = 2;
   // Whether, on success, the decrypted certificate should be retained in
   // association with the attestation key. When using an ACA, this is normally
@@ -277,6 +277,8 @@ message CreateCertificateRequestRequest {
   optional string request_origin = 3;
   // What kind of ACA to use.
   optional ACAType aca_type = 4;
+  // The key algorithm of certified key.
+  optional KeyType key_type = 5;
 }
 
 message CreateCertificateRequestReply {
@@ -418,4 +420,16 @@ message GetEnrollmentIdRequest {
 message GetEnrollmentIdReply {
   optional AttestationStatus status = 1;
   optional string enrollment_id = 2;
+}
+
+message GetCertifiedNvIndexRequest {
+  optional int32 nv_index = 1;
+  optional int32 nv_size = 2;
+}
+
+message GetCertifiedNvIndexReply {
+  optional AttestationStatus status = 1;
+  optional bytes certified_data = 2;
+  optional bytes signature = 3;
+  optional bytes identity_certificate = 4;
 }

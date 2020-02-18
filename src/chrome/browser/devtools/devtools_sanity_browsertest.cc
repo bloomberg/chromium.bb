@@ -358,13 +358,10 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
       before_unload_observer.Wait();
     }
     {
-      content::WindowedNotificationObserver close_observer(
-          chrome::NOTIFICATION_BROWSER_CLOSED,
-          content::Source<Browser>(browser()));
       close_method.Run();
       AcceptModalDialog();
       if (wait_for_browser_close)
-        close_observer.Wait();
+        ui_test_utils::WaitForBrowserToClose(browser());
     }
     runner->Run();
   }
@@ -808,13 +805,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   }
   // Try to exit application.
   {
-    content::WindowedNotificationObserver close_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(browser()));
     chrome::CloseAllBrowsers();
     AcceptModalDialog();
     AcceptModalDialog();
-    close_observer.Wait();
+    ui_test_utils::WaitForBrowserToClose(browser());
   }
   for (auto& close_observer : close_observers)
     close_observer->Wait();
@@ -1777,7 +1771,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
   observer_->CloseAllSync();
 }
 
-class DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
+// Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_DevToolsReattachAfterCrashTest \
+  DISABLED_DevToolsReattachAfterCrashTest
+#else
+#define MAYBE_DevToolsReattachAfterCrashTest DevToolsReattachAfterCrashTest
+#endif
+class MAYBE_DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
  protected:
   void RunTestWithPanel(const char* panel_name) {
     OpenDevToolsWindow("about:blank", false);
@@ -1795,12 +1796,12 @@ class DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
                        TestReattachAfterCrashOnTimeline) {
   RunTestWithPanel("timeline");
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
                        TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
 }
@@ -2116,7 +2117,7 @@ class StaticURLDataSource : public content::URLDataSource {
   ~StaticURLDataSource() override = default;
 
   // content::URLDataSource:
-  std::string GetSource() const override { return source_; }
+  std::string GetSource() override { return source_; }
   void StartDataRequest(
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
@@ -2124,10 +2125,10 @@ class StaticURLDataSource : public content::URLDataSource {
     std::string data(content_);
     callback.Run(base::RefCountedString::TakeString(&data));
   }
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetMimeType(const std::string& path) override {
     return "text/html";
   }
-  bool ShouldAddContentSecurityPolicy() const override { return false; }
+  bool ShouldAddContentSecurityPolicy() override { return false; }
 
  private:
   const std::string source_;
@@ -2185,15 +2186,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
 }
 
-void AddHSTSHost(scoped_refptr<net::URLRequestContextGetter> context,
-                 std::string host) {
-  net::TransportSecurityState* transport_security_state =
-      context->GetURLRequestContext()->transport_security_state();
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-  bool include_subdomains = false;
-  transport_security_state->AddHSTS(host, expiry, include_subdomains);
-}
-
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
@@ -2202,25 +2194,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestRawHeadersWithRedirectAndHSTS) {
   https_test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   ASSERT_TRUE(https_test_server.Start());
   GURL https_url = https_test_server.GetURL("localhost", "/devtools/image.png");
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            AddHSTSHost,
-            base::RetainedRef(browser()->profile()->GetRequestContext()),
-            https_url.host()));
-  } else {
-    base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-    bool include_subdomains = false;
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    content::StoragePartition* partition =
-        content::BrowserContext::GetDefaultStoragePartition(
-            browser()->profile());
-    base::RunLoop run_loop;
-    partition->GetNetworkContext()->AddHSTS(
-        https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  base::RunLoop run_loop;
+  partition->GetNetworkContext()->AddHSTS(
+      https_url.host(), expiry, include_subdomains, run_loop.QuitClosure());
+  run_loop.Run();
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   OpenDevToolsWindow(std::string(), false);
@@ -2359,11 +2342,9 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, BrowserCloseWithBeforeUnload) {
       "window.addEventListener('beforeunload',"
       "function(event) { event.returnValue = 'Foo'; });"));
   content::PrepContentsForBeforeUnloadTest(tab);
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
   BrowserHandler handler(nullptr, std::string());
   handler.Close();
-  close_observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser());
 }
 
 // Flaky on Mus. See https://crbug.com/819285.
@@ -2395,8 +2376,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
+// See https://crbug.com/971241
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
-                       ExtensionWebSocketUserAgentOverride) {
+                       DISABLED_ExtensionWebSocketUserAgentOverride) {
   net::SpawnedTestServer websocket_server(
       net::SpawnedTestServer::TYPE_WS,
       base::FilePath(FILE_PATH_LITERAL("net/data/websocket")));

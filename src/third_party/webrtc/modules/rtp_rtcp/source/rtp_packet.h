@@ -10,6 +10,7 @@
 #ifndef MODULES_RTP_RTCP_SOURCE_RTP_PACKET_H_
 #define MODULES_RTP_RTCP_SOURCE_RTP_PACKET_H_
 
+#include <string>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -17,10 +18,8 @@
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "rtc_base/copy_on_write_buffer.h"
-#include "rtc_base/deprecation.h"
 
 namespace webrtc {
-class Random;
 
 class RtpPacket {
  public:
@@ -40,6 +39,9 @@ class RtpPacket {
   RtpPacket& operator=(const RtpPacket&) = default;
 
   // Parse and copy given buffer into Packet.
+  // Does not require extension map to be registered (map is only required to
+  // read or allocate extensions in methods GetExtension, AllocateExtension,
+  // etc.)
   bool Parse(const uint8_t* buffer, size_t size);
   bool Parse(rtc::ArrayView<const uint8_t> packet);
 
@@ -87,6 +89,16 @@ class RtpPacket {
   void SetTimestamp(uint32_t timestamp);
   void SetSsrc(uint32_t ssrc);
 
+  // Copies the buffer with zero-ed mutable extensions,
+  // which are modified after FEC protection is generated.
+  void CopyAndZeroMutableExtensions(rtc::ArrayView<uint8_t> buffer) const;
+
+  // Removes extension of given |type|, returns false is extension was not
+  // registered in packet's extension map or not present in the packet. Only
+  // extension that should be removed must be registered, other extensions may
+  // not be registered and will be preserved as is.
+  bool RemoveExtension(ExtensionType type);
+
   // Writes csrc list. Assumes:
   // a) There is enough room left in buffer.
   // b) Extension headers, payload or padding data has not already been added.
@@ -96,6 +108,10 @@ class RtpPacket {
   template <typename Extension>
   bool HasExtension() const;
   bool HasExtension(ExtensionType type) const;
+
+  template <typename Extension>
+  bool IsExtensionReserved() const;
+  bool IsExtensionReserved(ExtensionType type) const;
 
   template <typename Extension, typename FirstValue, typename... Values>
   bool GetExtension(FirstValue, Values...) const;
@@ -125,12 +141,11 @@ class RtpPacket {
   uint8_t* SetPayloadSize(size_t size_bytes);
   // Same as SetPayloadSize but doesn't guarantee to keep current payload.
   uint8_t* AllocatePayload(size_t size_bytes);
-  RTC_DEPRECATED
-  bool SetPadding(uint8_t size_bytes, Random* random) {
-    return SetPadding(size_bytes);
-  }
 
   bool SetPadding(size_t padding_size);
+
+  // Returns debug string of RTP packet (without detailed extension info).
+  std::string ToString() const;
 
  private:
   struct ExtensionInfo {
@@ -166,6 +181,7 @@ class RtpPacket {
 
   uint8_t* WriteAt(size_t offset) { return buffer_.data() + offset; }
   void WriteAt(size_t offset, uint8_t byte) { buffer_.data()[offset] = byte; }
+  const uint8_t* ReadAt(size_t offset) const { return buffer_.data() + offset; }
 
   // Header.
   bool marker_;
@@ -186,6 +202,11 @@ class RtpPacket {
 template <typename Extension>
 bool RtpPacket::HasExtension() const {
   return HasExtension(Extension::kId);
+}
+
+template <typename Extension>
+bool RtpPacket::IsExtensionReserved() const {
+  return IsExtensionReserved(Extension::kId);
 }
 
 template <typename Extension, typename FirstValue, typename... Values>

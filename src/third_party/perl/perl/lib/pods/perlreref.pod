@@ -21,7 +21,7 @@ false if the match succeeds, and true if it fails.
 
     $var !~ /foo/;
 
-C<m/pattern/msixpogcdual> searches a string for a pattern match,
+C<m/pattern/msixpogcdualn> searches a string for a pattern match,
 applying the given options.
 
     m  Multiline mode - ^ and $ match internal lines
@@ -39,13 +39,14 @@ applying the given options.
     u  match according to Unicode rules
     d  match according to native rules unless something indicates
        Unicode
+    n  Non-capture mode. Don't let () fill in $1, $2, etc...
 
 If 'pattern' is an empty string, the last I<successfully> matched
 regex is used. Delimiters other than '/' may be used for both this
 operator and the following ones. The leading C<m> can be omitted
 if the delimiter is '/'.
 
-C<qr/pattern/msixpodual> lets you store a regex in a variable,
+C<qr/pattern/msixpodualn> lets you store a regex in a variable,
 or pass one around. Modifiers as for C<m//>, and are stored
 within the regex.
 
@@ -59,7 +60,7 @@ with two additions:
 'e' may be specified multiple times. 'replacement' is interpreted
 as a double quoted string unless a single-quote (C<'>) is the delimiter.
 
-C<?pattern?> is like C<m/pattern/> but matches only once. No alternate
+C<m?pattern?> is like C<m/pattern/> but matches only once. No alternate
 delimiters can be used.  Must be reset with reset().
 
 =head2 SYNTAX
@@ -134,16 +135,15 @@ and L<perlunicode> for details.
    \W      A non-word character
    \s      A whitespace character
    \S      A non-whitespace character
-   \h      An horizontal whitespace
+   \h      A horizontal whitespace
    \H      A non horizontal whitespace
-   \N      A non newline (when not followed by '{NAME}'; experimental;
+   \N      A non newline (when not followed by '{NAME}';;
            not valid in a character class; equivalent to [^\n]; it's
            like '.' without /s modifier)
    \v      A vertical whitespace
    \V      A non vertical whitespace
    \R      A generic newline           (?>\v|\x0D\x0A)
 
-   \C      Match a byte (with Unicode, '.' matches a character)
    \pP     Match P-named (Unicode) property
    \p{...} Match Unicode property with name longer than 1 character
    \PP     Match non-P
@@ -157,7 +157,7 @@ POSIX character classes and their Unicode and Perl equivalents:
  [[:...:]]  \p{...}        \p{...}   sequence    Description
 
  -----------------------------------------------------------------------
- alnum   PosixAlnum       XPosixAlnum            Alpha plus Digit
+ alnum   PosixAlnum       XPosixAlnum            'alpha' plus 'digit'
  alpha   PosixAlpha       XPosixAlpha            Alphabetic characters
  ascii   ASCII                                   Any ASCII character
  blank   PosixBlank       XPosixBlank   \h       Horizontal whitespace;
@@ -167,19 +167,18 @@ POSIX character classes and their Unicode and Perl equivalents:
                                                    extension)
  cntrl   PosixCntrl       XPosixCntrl            Control characters
  digit   PosixDigit       XPosixDigit   \d       Decimal digits
- graph   PosixGraph       XPosixGraph            Alnum plus Punct
+ graph   PosixGraph       XPosixGraph            'alnum' plus 'punct'
  lower   PosixLower       XPosixLower            Lowercase characters
- print   PosixPrint       XPosixPrint            Graph plus Print, but
-                                                   not any Cntrls
+ print   PosixPrint       XPosixPrint            'graph' plus 'space',
+                                                   but not any Controls
  punct   PosixPunct       XPosixPunct            Punctuation and Symbols
                                                    in ASCII-range; just
                                                    punct outside it
- space   PosixSpace       XPosixSpace            [\s\cK]
-         PerlSpace        XPerlSpace    \s       Perl's whitespace def'n
+ space   PosixSpace       XPosixSpace   \s       Whitespace
  upper   PosixUpper       XPosixUpper            Uppercase characters
- word    PosixWord        XPosixWord    \w       Alnum + Unicode marks +
-                                                   connectors, like '_'
-                                                   (Perl extension)
+ word    PosixWord        XPosixWord    \w       'alnum' + Unicode marks
+                                                    + connectors, like
+                                                    '_' (Perl extension)
  xdigit  ASCII_Hex_Digit  XPosixDigit            Hexadecimal digit,
                                                     ASCII-range is
                                                     [0-9A-Fa-f]
@@ -199,6 +198,8 @@ All are zero-width assertions.
 
    ^  Match string start (or line, if /m is used)
    $  Match string end (or line, if /m is used) or before newline
+   \b{} Match boundary of type specified within the braces
+   \B{} Match wherever \b{} doesn't match
    \b Match word boundary (between \w and \W)
    \B Match except at word boundary (between \w and \w or \W and \W)
    \A Match string start (regardless of /m)
@@ -233,14 +234,20 @@ There is no quantifier C<{,n}>. That's interpreted as a literal string.
    (?:...)           Groups subexpressions without capturing (cluster)
    (?pimsx-imsx:...) Enable/disable option (as per m// modifiers)
    (?=...)           Zero-width positive lookahead assertion
+   (?*pla:...)       Same; avail experimentally starting in 5.28
    (?!...)           Zero-width negative lookahead assertion
+   (?*nla:...)       Same; avail experimentally starting in 5.28
    (?<=...)          Zero-width positive lookbehind assertion
+   (?*plb:...)       Same; avail experimentally starting in 5.28
    (?<!...)          Zero-width negative lookbehind assertion
+   (?*nlb:...)       Same; avail experimentally starting in 5.28
    (?>...)           Grab what we can, prohibit backtracking
+   (?*atomic:...)    Same; avail experimentally starting in 5.28
    (?|...)           Branch reset
    (?<name>...)      Named capture
    (?'name'...)      Named capture
    (?P<name>...)     Named capture (python syntax)
+   (?[...])          Extended bracketed character class
    (?{ code })       Embedded code, return value becomes $^R
    (??{ code })      Dynamic regex, return value used as regex
    (?N)              Recurse into subpattern number N
@@ -249,11 +256,11 @@ There is no quantifier C<{,n}>. That's interpreted as a literal string.
    (?&name)          Recurse into a named subpattern
    (?P>name)         Recurse into a named subpattern (python syntax)
    (?(cond)yes|no)
-   (?(cond)yes)      Conditional expression, where "cond" can be:
-                     (?=pat)   look-ahead
-                     (?!pat)   negative look-ahead
-                     (?<=pat)  look-behind
-                     (?<!pat)  negative look-behind
+   (?(cond)yes)      Conditional expression, where "(cond)" can be:
+                     (?=pat)   lookahead
+                     (?!pat)   negative lookahead
+                     (?<=pat)  lookbehind
+                     (?<!pat)  negative lookbehind
                      (N)       subpattern N has matched something
                      (<name>)  named subpattern has matched something
                      ('name')  named subpattern has matched something
@@ -275,6 +282,7 @@ There is no quantifier C<{,n}>. That's interpreted as a literal string.
    ${^MATCH}      Entire matched string
    ${^POSTMATCH}  Everything after to matched string
 
+Note to those still using Perl 5.18 or earlier:
 The use of C<$`>, C<$&> or C<$'> will slow down B<all> regex use
 within your program. Consult L<perlvar> for C<@->
 to see equivalent expressions that won't cause slow down.
@@ -282,6 +290,7 @@ See also L<Devel::SawAmpersand>. Starting with Perl 5.10, you
 can also use the equivalent variables C<${^PREMATCH}>, C<${^MATCH}>
 and C<${^POSTMATCH}>, but for them to be defined, you have to
 specify the C</p> (preserve) modifier on your regular expression.
+In Perl 5.20, the use of C<$`>, C<$&> and C<$'> makes no speed difference.
 
    $1, $2 ...  hold the Xth captured expr
    $+    Last parenthesized pattern match
@@ -304,7 +313,7 @@ Captured groups are numbered according to their I<opening> paren.
 
    pos         Return or set current match position
    quotemeta   Quote metacharacters
-   reset       Reset ?pattern? status
+   reset       Reset m?pattern? status
    study       Analyze string for optimizing matching
 
    split       Use a regex to split a string into parts
@@ -323,7 +332,7 @@ certain characters like the German "sharp s" there is a difference.
 =head3 Foldcase
 
 Unicode form that is useful when comparing strings regardless of case,
-as certain characters have compex one-to-many case mappings. Primarily a
+as certain characters have complex one-to-many case mappings. Primarily a
 variant of lowercase.
 
 =head1 AUTHOR
@@ -389,7 +398,7 @@ for details on regexes and internationalisation.
 =item *
 
 I<Mastering Regular Expressions> by Jeffrey Friedl
-(F<http://oreilly.com/catalog/9780596528126/>) for a thorough grounding and
+(L<http://oreilly.com/catalog/9780596528126/>) for a thorough grounding and
 reference on the topic.
 
 =back

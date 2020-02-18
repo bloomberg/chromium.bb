@@ -50,7 +50,8 @@ static size_t kKeywordSuggestionIndent = 70;
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
     int model_index)
-    : popup_contents_view_(popup_contents_view),
+    : AnimationDelegateViews(this),
+      popup_contents_view_(popup_contents_view),
       model_index_(model_index),
       is_hovered_(false),
       animation_(new gfx::SlideAnimation(this)) {
@@ -120,7 +121,7 @@ void OmniboxResultView::ShowKeyword(bool show_keyword) {
     animation_->Hide();
 }
 
-void OmniboxResultView::Invalidate() {
+void OmniboxResultView::Invalidate(bool force_reapply_styles) {
   bool high_contrast =
       GetNativeTheme() && GetNativeTheme()->UsesHighContrastColors();
   // TODO(tapted): Consider using background()->SetNativeControlColor() and
@@ -190,7 +191,7 @@ void OmniboxResultView::Invalidate() {
     // Normally, OmniboxTextView caches its appearance, but in high contrast,
     // selected-ness changes the text colors, so the styling of the text part of
     // the results needs to be recomputed.
-    if (high_contrast) {
+    if (high_contrast || force_reapply_styles) {
       suggestion_view_->content()->ReapplyStyling();
       suggestion_view_->description()->ReapplyStyling();
     }
@@ -212,6 +213,14 @@ void OmniboxResultView::Invalidate() {
 
 void OmniboxResultView::OnSelected() {
   DCHECK(IsSelected());
+
+  // Immediately before notifying screen readers that the selected item has
+  // changed, we want to update the name of the newly-selected item so that any
+  // cached values get updated prior to the selection change.
+  EmitTextChangedAccessiblityEvent();
+
+  // Send accessibility event on the popup box that its selection has changed.
+  EmitSelectedChildrenChangedAccessibilityEvent();
 
   // The text is also accessible via text/value change events in the omnibox but
   // this selection event allows the screen reader to get more details about the
@@ -379,7 +388,7 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
                              model_index_ + 1);
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                             int{popup_contents_view_->children().size()});
+                             popup_contents_view_->model()->result().size());
 
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
                               IsSelected());
@@ -395,7 +404,7 @@ gfx::Size OmniboxResultView::CalculatePreferredSize() const {
 }
 
 void OmniboxResultView::OnThemeChanged() {
-  Invalidate();
+  Invalidate(true);
   SchedulePaint();
 }
 
@@ -463,6 +472,26 @@ void OmniboxResultView::ProvideButtonFocusHint() {
 
 void OmniboxResultView::RemoveSuggestion() const {
   popup_contents_view_->model()->TryDeletingLine(model_index_);
+}
+
+void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
+  if (!popup_contents_view_->IsOpen())
+    return;
+
+  // The omnibox results list reuses the same items, but the text displayed for
+  // these items is updated as the value of omnibox changes. The displayed text
+  // for a given item is exposed to screen readers as the item's name/label.
+  base::string16 current_name = AutocompleteMatchType::ToAccessibilityLabel(
+      match_, match_.contents, false);
+  if (accessible_name_ != current_name) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+    accessible_name_ = current_name;
+  }
+}
+
+void OmniboxResultView::EmitSelectedChildrenChangedAccessibilityEvent() {
+  popup_contents_view_->NotifyAccessibilityEvent(
+      ax::mojom::Event::kSelectedChildrenChanged, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -99,6 +99,10 @@ const AXTreeData& TestAXNodeWrapper::GetTreeData() const {
   return tree_->data();
 }
 
+const AXTree::Selection TestAXNodeWrapper::GetUnignoredSelection() const {
+  return tree_->GetUnignoredSelection();
+}
+
 AXNodePosition::AXPositionInstance TestAXNodeWrapper::CreateTextPositionAt(
     int offset,
     ax::mojom::TextAffinity affinity) const {
@@ -114,14 +118,11 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetParent() {
 }
 
 int TestAXNodeWrapper::GetChildCount() {
-  return int{node_->children().size()};
+  return InternalChildCount();
 }
 
 gfx::NativeViewAccessible TestAXNodeWrapper::ChildAtIndex(int index) {
-  CHECK_GE(index, 0);
-  CHECK_LT(index, GetChildCount());
-  TestAXNodeWrapper* child_wrapper =
-      GetOrCreate(tree_, node_->children()[size_t{index}]);
+  TestAXNodeWrapper* child_wrapper = InternalGetChild(index);
   return child_wrapper ?
       child_wrapper->ax_platform_node()->GetNativeViewAccessible() :
       nullptr;
@@ -134,7 +135,7 @@ gfx::Rect TestAXNodeWrapper::GetBoundsRect(
   switch (coordinate_system) {
     case AXCoordinateSystem::kScreen: {
       // We could optionally add clipping here if ever needed.
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
@@ -153,24 +154,23 @@ gfx::Rect TestAXNodeWrapper::GetInnerTextRangeBoundsRect(
     AXOffscreenResult* offscreen_result) const {
   switch (coordinate_system) {
     case AXCoordinateSystem::kScreen: {
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
-      bounds.Offset(g_offset);
-      if (GetData().HasIntListAttribute(
-              ax::mojom::IntListAttribute::kCharacterOffsets)) {
-        const std::vector<int32_t>& offsets = GetData().GetIntListAttribute(
-            ax::mojom::IntListAttribute::kCharacterOffsets);
-        int32_t x = bounds.x();
-        int32_t width = 0;
-        for (int i = 0; i < static_cast<int>(offsets.size()); i++) {
-          if (i < start_offset)
-            x += offsets[i];
-          else if (i < end_offset)
-            width += offsets[i];
-          else
-            break;
+      gfx::RectF bounds = GetLocation();
+      // This implementation currently only deals with text node that has role
+      // kInlineTextBox and kStaticText.
+      // For test purposes, assume node with kStaticText always has a single
+      // child with role kInlineTextBox.
+      if (GetData().role == ax::mojom::Role::kInlineTextBox) {
+        bounds = GetInlineTextRect(start_offset, end_offset);
+      } else if (GetData().role == ax::mojom::Role::kStaticText &&
+                 InternalChildCount() > 0) {
+        TestAXNodeWrapper* child = InternalGetChild(0);
+        if (child != nullptr &&
+            child->GetData().role == ax::mojom::Role::kInlineTextBox) {
+          bounds = child->GetInlineTextRect(start_offset, end_offset);
         }
-        bounds = gfx::RectF(x, bounds.y(), width, bounds.height());
       }
+
+      bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
     case AXCoordinateSystem::kRootFrame:
@@ -190,7 +190,7 @@ gfx::Rect TestAXNodeWrapper::GetHypertextRangeBoundsRect(
     case AXCoordinateSystem::kScreen: {
       // Ignoring start, len, and clipped, as there's no clean way to map these
       // via unit tests.
-      gfx::RectF bounds = GetData().relative_bounds.bounds;
+      gfx::RectF bounds = GetLocation();
       bounds.Offset(g_offset);
       return gfx::ToEnclosingRect(bounds);
     }
@@ -238,6 +238,10 @@ gfx::NativeViewAccessible TestAXNodeWrapper::GetFocus() {
   return nullptr;
 }
 
+bool TestAXNodeWrapper::IsMinimized() const {
+  return minimized_;
+}
+
 // Walk the AXTree and ensure that all wrappers are created
 void TestAXNodeWrapper::BuildAllWrappers(AXTree* tree, AXNode* node) {
   for (auto* child : node->children()) {
@@ -265,7 +269,7 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
-int TestAXNodeWrapper::GetIndexInParent() const {
+int TestAXNodeWrapper::GetIndexInParent() {
   return node_ ? int{node_->index_in_parent()} : -1;
 }
 
@@ -352,47 +356,47 @@ bool TestAXNodeWrapper::IsTable() const {
   return node_->IsTable();
 }
 
-int TestAXNodeWrapper::GetTableRowCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableRowCount() const {
   return node_->GetTableRowCount();
 }
 
-int TestAXNodeWrapper::GetTableColCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableColCount() const {
   return node_->GetTableColCount();
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaRowCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableAriaRowCount() const {
   return node_->GetTableAriaRowCount();
 }
 
-base::Optional<int32_t> TestAXNodeWrapper::GetTableAriaColCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableAriaColCount() const {
   return node_->GetTableAriaColCount();
 }
 
-int TestAXNodeWrapper::GetTableCellCount() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellCount() const {
   return node_->GetTableCellCount();
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
+std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
   std::vector<int32_t> header_ids;
   node_->GetTableCellColHeaderNodeIds(&header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
-    int32_t col_index) const {
+std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
+    int col_index) const {
   std::vector<int32_t> header_ids;
   node_->GetTableColHeaderNodeIds(col_index, &header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
+std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
   std::vector<int32_t> header_ids;
   node_->GetTableCellRowHeaderNodeIds(&header_ids);
   return header_ids;
 }
 
-const std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
-    int32_t row_index) const {
+std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
+    int row_index) const {
   std::vector<int32_t> header_ids;
   node_->GetTableRowHeaderNodeIds(row_index, &header_ids);
   return header_ids;
@@ -402,7 +406,7 @@ bool TestAXNodeWrapper::IsTableRow() const {
   return node_->IsTableRow();
 }
 
-int TestAXNodeWrapper::GetTableRowRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableRowRowIndex() const {
   return node_->GetTableRowRowIndex();
 }
 
@@ -410,41 +414,40 @@ bool TestAXNodeWrapper::IsTableCellOrHeader() const {
   return node_->IsTableCellOrHeader();
 }
 
-int TestAXNodeWrapper::GetTableCellIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellIndex() const {
   return node_->GetTableCellIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellColIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellColIndex() const {
   return node_->GetTableCellColIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellRowIndex() const {
   return node_->GetTableCellRowIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellColSpan() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellColSpan() const {
   return node_->GetTableCellColSpan();
 }
 
-int TestAXNodeWrapper::GetTableCellRowSpan() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellRowSpan() const {
   return node_->GetTableCellRowSpan();
 }
 
-int TestAXNodeWrapper::GetTableCellAriaColIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellAriaColIndex() const {
   return node_->GetTableCellAriaColIndex();
 }
 
-int TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
+base::Optional<int> TestAXNodeWrapper::GetTableCellAriaRowIndex() const {
   return node_->GetTableCellAriaRowIndex();
 }
 
-int32_t TestAXNodeWrapper::GetCellId(int32_t row_index,
-                                     int32_t col_index) const {
-  ui::AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
-  if (cell)
-    return cell->id();
-
-  return -1;
+base::Optional<int32_t> TestAXNodeWrapper::GetCellId(int row_index,
+                                                     int col_index) const {
+  AXNode* cell = node_->GetTableCellFromCoords(row_index, col_index);
+  if (!cell)
+    return base::nullopt;
+  return cell->id();
 }
 
 gfx::AcceleratedWidget
@@ -452,11 +455,11 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return native_event_target_;
 }
 
-int32_t TestAXNodeWrapper::CellIndexToId(int32_t cell_index) const {
-  ui::AXNode* cell = node_->GetTableCellFromIndex(cell_index);
-  if (cell)
-    return cell->id();
-  return -1;
+base::Optional<int32_t> TestAXNodeWrapper::CellIndexToId(int cell_index) const {
+  AXNode* cell = node_->GetTableCellFromIndex(cell_index);
+  if (!cell)
+    return base::nullopt;
+  return cell->id();
 }
 
 bool TestAXNodeWrapper::IsCellOrHeaderOfARIATable() const {
@@ -629,12 +632,26 @@ bool TestAXNodeWrapper::IsOrderedSet() const {
   return node_->IsOrderedSet();
 }
 
-int32_t TestAXNodeWrapper::GetPosInSet() const {
+base::Optional<int> TestAXNodeWrapper::GetPosInSet() const {
   return node_->GetPosInSet();
 }
 
-int32_t TestAXNodeWrapper::GetSetSize() const {
+base::Optional<int> TestAXNodeWrapper::GetSetSize() const {
   return node_->GetSetSize();
+}
+
+gfx::RectF TestAXNodeWrapper::GetLocation() const {
+  return GetData().relative_bounds.bounds;
+}
+
+int TestAXNodeWrapper::InternalChildCount() const {
+  return int{node_->children().size()};
+}
+
+TestAXNodeWrapper* TestAXNodeWrapper::InternalGetChild(int index) const {
+  CHECK_GE(index, 0);
+  CHECK_LT(index, InternalChildCount());
+  return GetOrCreate(tree_, node_->children()[size_t{index}]);
 }
 
 // Recursive helper function for GetDescendants. Aggregates all of the
@@ -657,6 +674,34 @@ const std::vector<gfx::NativeViewAccessible> TestAXNodeWrapper::GetDescendants()
   std::vector<gfx::NativeViewAccessible> descendants;
   Descendants(node_, &descendants);
   return descendants;
+}
+
+gfx::RectF TestAXNodeWrapper::GetInlineTextRect(const int start_offset,
+                                                const int end_offset) const {
+  DCHECK(start_offset >= 0 && end_offset >= 0 && start_offset <= end_offset);
+  const std::vector<int32_t>& character_offsets = GetData().GetIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets);
+  gfx::RectF location = GetLocation();
+  gfx::RectF bounds;
+
+  switch (static_cast<ax::mojom::TextDirection>(
+      GetData().GetIntAttribute(ax::mojom::IntAttribute::kTextDirection))) {
+    // Currently only kNone and kLtr are supported text direction.
+    case ax::mojom::TextDirection::kNone:
+    case ax::mojom::TextDirection::kLtr: {
+      int start_pixel_offset =
+          start_offset > 0 ? character_offsets[start_offset - 1] : location.x();
+      int end_pixel_offset =
+          end_offset > 0 ? character_offsets[end_offset - 1] : location.x();
+      bounds =
+          gfx::RectF(start_pixel_offset, location.y(),
+                     end_pixel_offset - start_pixel_offset, location.height());
+      break;
+    }
+    default:
+      NOTIMPLEMENTED();
+  }
+  return bounds;
 }
 
 }  // namespace ui

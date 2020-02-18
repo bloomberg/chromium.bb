@@ -93,8 +93,12 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING;
     case SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_MALWARE;
+    case SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+      return ClientSafeBrowsingReportRequest::BLOCKED_AD_POPUP;
     case SB_THREAT_TYPE_AD_SAMPLE:
       return ClientSafeBrowsingReportRequest::AD_SAMPLE;
+    case SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
+      return ClientSafeBrowsingReportRequest::BLOCKED_AD_REDIRECT;
     case SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
     case SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
       return ClientSafeBrowsingReportRequest::URL_PASSWORD_PROTECTION_PHISHING;
@@ -112,6 +116,7 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
     case SB_THREAT_TYPE_API_ABUSE:
     case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
     case SB_THREAT_TYPE_CSD_WHITELIST:
+    case SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
     case DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type: "
@@ -242,7 +247,7 @@ void TrimElements(const std::set<int> target_ids,
     // Otherwise, insert the parent ID into the list of ids to keep. This will
     // capture the parent and siblings of the target element, as well as each of
     // their children.
-    if (!base::ContainsValue(element_ids_to_keep, parent_id)) {
+    if (!base::Contains(element_ids_to_keep, parent_id)) {
       element_ids_to_keep.push_back(parent_id);
 
       // Check if this element has a resource. If so, remember to also keep the
@@ -285,12 +290,12 @@ void TrimElements(const std::set<int> target_ids,
     const HTMLElement& element = *element_iter->second;
 
     // Delete any elements that we do not want to keep.
-    if (!base::ContainsValue(element_ids_to_keep, element.id())) {
+    if (!base::Contains(element_ids_to_keep, element.id())) {
       // If this element has a resource then maybe delete the resouce too. Some
       // resources may be shared between kept and trimmed elements, and those
       // ones should not be deleted.
       if (element.has_resource_id() &&
-          !base::ContainsValue(kept_resource_ids, element.resource_id())) {
+          !base::Contains(kept_resource_ids, element.resource_id())) {
         const std::string& resource_url =
             resource_id_to_url[element.resource_id()];
         resources->erase(resource_url);
@@ -381,8 +386,7 @@ ThreatDetails::ThreatDetails(
       cache_collector_(new ThreatDetailsCacheCollector),
       done_callback_(done_callback),
       all_done_expected_(false),
-      is_all_done_(false),
-      weak_factory_(this) {
+      is_all_done_(false) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
@@ -397,11 +401,10 @@ ThreatDetails::ThreatDetails()
       ambiguous_dom_(false),
       trim_to_ad_tags_(false),
       all_done_expected_(false),
-      is_all_done_(false),
-      weak_factory_(this) {}
+      is_all_done_(false) {}
 
 ThreatDetails::~ThreatDetails() {
-  DCHECK(all_done_expected_ == is_all_done_);
+  DCHECK_EQ(all_done_expected_, is_all_done_);
 }
 
 bool ThreatDetails::IsReportableUrl(const GURL& url) const {
@@ -488,6 +491,7 @@ void ThreatDetails::AddDomElement(
     const std::string& tagname,
     const int parent_element_node_id,
     const std::vector<mojom::AttributeNameValuePtr> attributes,
+    const std::string& inner_html,
     const ClientSafeBrowsingReportRequest::Resource* resource) {
   // Create the element. It should not exist already since this function should
   // only be called once for each element.
@@ -512,6 +516,10 @@ void ThreatDetails::AddDomElement(
     }
   }
 
+  if (!inner_html.empty()) {
+    cur_element->set_inner_html(inner_html);
+  }
+
   if (resource) {
     cur_element->set_resource_id(resource->id());
   }
@@ -531,7 +539,7 @@ void ThreatDetails::AddDomElement(
     // of our current frame. We can easily lookup our parent.
     const std::string& parent_key =
         GetElementKey(frame_tree_node_id, parent_element_node_id);
-    if (base::ContainsKey(elements_, parent_key)) {
+    if (base::Contains(elements_, parent_key)) {
       parent_element = elements_[parent_key].get();
     }
   }
@@ -718,7 +726,8 @@ void ThreatDetails::AddDOMDetails(
     // Check for a tag_name to avoid adding the summary node to the DOM.
     if (!node.tag_name.empty()) {
       AddDomElement(frame_tree_node_id, node.node_id, node.tag_name,
-                    node.parent_node_id, std::move(node.attributes), resource);
+                    node.parent_node_id, std::move(node.attributes),
+                    node.inner_html, resource);
     }
   }
 }
@@ -739,7 +748,7 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
   for (auto& element_pair : elements_) {
     const std::string& element_key = element_pair.first;
     HTMLElement* element = element_pair.second.get();
-    if (base::ContainsKey(iframe_key_to_frame_tree_id_map_, element_key)) {
+    if (base::Contains(iframe_key_to_frame_tree_id_map_, element_key)) {
       int frame_tree_id_of_iframe_renderer =
           iframe_key_to_frame_tree_id_map_[element_key];
       const std::unordered_set<int>& child_ids =
@@ -796,7 +805,6 @@ void ThreatDetails::OnCacheCollectionReady() {
       return;
     }
   }
-
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
   for (auto& resource_pair : resources_) {
     ClientSafeBrowsingReportRequest::Resource* pb_resource =

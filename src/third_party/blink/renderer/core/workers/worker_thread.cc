@@ -47,9 +47,8 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -57,8 +56,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
-#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -70,7 +69,8 @@ using ExitCode = WorkerThread::ExitCode;
 namespace {
 
 // TODO(nhiroki): Adjust the delay based on UMA.
-constexpr TimeDelta kForcibleTerminationDelay = TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kForcibleTerminationDelay =
+    base::TimeDelta::FromSeconds(2);
 
 }  // namespace
 
@@ -213,7 +213,7 @@ void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
@@ -313,8 +313,9 @@ void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
   // metrics for microtasks are counted as a part of the preceding task.
   // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
   // WorkletGlobalScope take a proper Agent.
-  if (Agent* agent = GlobalScope()->GetAgent())
+  if (Agent* agent = GlobalScope()->GetAgent()) {
     agent->event_loop()->PerformMicrotaskCheckpoint();
+  }
 
   // Microtask::PerformCheckpoint() runs microtasks and its completion hooks for
   // the default microtask queue. The default queue may contain the microtasks
@@ -378,7 +379,7 @@ HashSet<WorkerThread*>& WorkerThread::WorkerThreads() {
 }
 
 PlatformThreadId WorkerThread::GetPlatformThreadId() {
-  return GetWorkerBackingThread().BackingThread().PlatformThread().ThreadId();
+  return GetWorkerBackingThread().BackingThread().ThreadId();
 }
 
 bool WorkerThread::IsForciblyTerminated() {
@@ -432,7 +433,7 @@ void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
 }
 
 WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
-    : time_origin_(CurrentTimeTicks()),
+    : time_origin_(base::TimeTicks::Now()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       worker_reporting_proxy_(worker_reporting_proxy),
@@ -500,9 +501,8 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
     base::WaitableEvent* waitable_event) {
   DCHECK(IsCurrentThread());
   DCHECK(!worker_scheduler_);
-  scheduler::WorkerThread& worker_thread =
-      static_cast<scheduler::WorkerThread&>(
-          GetWorkerBackingThread().BackingThread().PlatformThread());
+  auto& worker_thread = static_cast<scheduler::WorkerThread&>(
+      GetWorkerBackingThread().BackingThread());
   worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
       static_cast<scheduler::WorkerThreadScheduler*>(
           worker_thread.GetNonMainThreadScheduler()),
@@ -612,7 +612,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(outside_resource_timing_notifier);
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like

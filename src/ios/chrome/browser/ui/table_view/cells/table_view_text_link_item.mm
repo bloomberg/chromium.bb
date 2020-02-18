@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/string_util.h"
 #include "url/gurl.h"
 
@@ -41,7 +42,6 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
   TableViewTextLinkCell* cell =
       base::mac::ObjCCastStrict<TableViewTextLinkCell>(tableCell);
   cell.textLabel.text = self.text;
-  cell.textLabel.backgroundColor = styler.tableViewBackgroundColor;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
   [cell setLinkURL:self.linkURL];
 }
@@ -72,8 +72,7 @@ const CGFloat kTextCellLinkColor = 0x1A73E8;
     _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
-    _textLabel.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    _textLabel.textColor = UIColor.cr_secondaryLabelColor;
 
     // Add subviews to View Hierarchy.
     [self.contentView addSubview:_textLabel];

@@ -1,0 +1,17 @@
+{
+  "sandbox": {
+    "features": [
+      "root-ssl-certificates",
+      "deprecated-ambient-replace-as-executable"
+    ],
+    "services": [
+      "fuchsia.deprecatedtimezone.Timezone",
+      "fuchsia.device.NameProvider",
+      "fuchsia.logger.LogSink",
+      "fuchsia.net.NameLookup",
+      "fuchsia.net.SocketProvider",
+      "fuchsia.netstack.Netstack",
+      "fuchsia.posix.socket.Provider"
+    ]
+  }
+}

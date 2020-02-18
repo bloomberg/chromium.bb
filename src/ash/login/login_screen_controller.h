@@ -20,6 +20,7 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class ParentAccessWidget;
 class SystemTrayNotifier;
 
 // LoginScreenController implements LoginScreen and wraps the LoginScreenClient
@@ -91,6 +92,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void ShowFeedback();
   void ShowResetScreen();
   void ShowAccountAccessHelpApp();
+  void ShowLockScreenNotificationSettings();
   void FocusOobeDialog();
   void NotifyUserActivity();
 
@@ -112,7 +114,14 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void EnableShutdownButton(bool enable) override;
   void ShowGuestButtonInOobe(bool show) override;
   void ShowParentAccessButton(bool show) override;
+  void ShowParentAccessWidget(
+      const AccountId& child_account_id,
+      base::RepeatingCallback<void(bool success)> callback,
+      ParentAccessRequestReason reason,
+      bool extra_dimmer) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
+  std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
+      override;
 
   // KioskAppMenu:
   void SetKioskApps(
@@ -145,6 +154,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
 
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
+
+  std::unique_ptr<ParentAccessWidget> parent_access_widget_;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_;
 

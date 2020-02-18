@@ -53,8 +53,8 @@ void AddBookmarksToIndex(BookmarkLoadDetails* details,
     if (node->url().is_valid())
       details->index()->Add(node);
   } else {
-    for (int i = 0; i < node->child_count(); ++i)
-      AddBookmarksToIndex(details, node->GetChild(i));
+    for (const auto& child : node->children())
+      AddBookmarksToIndex(details, child.get());
   }
 }
 
@@ -70,8 +70,8 @@ void PopulateNumNodesPerUrlHash(
   if (!node->is_folder())
     (*num_nodes_per_url_hash)[std::hash<std::string>()(node->url().spec())]++;
 
-  for (int i = 0; i < node->child_count(); ++i)
-    PopulateNumNodesPerUrlHash(node->GetChild(i), num_nodes_per_url_hash);
+  for (const auto& child : node->children())
+    PopulateNumNodesPerUrlHash(child.get(), num_nodes_per_url_hash);
 }
 
 // Computes the number of bookmarks (excluding folders) with a URL that is used
@@ -102,8 +102,8 @@ int GetNumNodesWithEmptyTitle(const BookmarkNode* node) {
   if (!node->is_root() && node->GetTitle().empty())
     ++num_nodes_with_empty_title;
 
-  for (int i = 0; i < node->child_count(); ++i)
-    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(node->GetChild(i));
+  for (const auto& child : node->children())
+    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(child.get());
 
   return num_nodes_with_empty_title;
 }
@@ -157,7 +157,7 @@ void LoadBookmarks(const base::FilePath& path,
     }
   }
 
-  if (details->LoadExtraNodes())
+  if (details->LoadManagedNode())
     load_index = true;
 
   // Load any extra root nodes now, after the IDs have been potentially
@@ -199,7 +199,7 @@ void LoadBookmarks(const base::FilePath& path,
 // BookmarkLoadDetails ---------------------------------------------------------
 
 BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
-    : load_extra_callback_(client->GetLoadExtraNodesCallback()),
+    : load_managed_node_callback_(client->GetLoadManagedNodeCallback()),
       index_(std::make_unique<TitledUrlIndex>()),
       model_sync_transaction_version_(
           BookmarkNode::kInvalidSyncTransactionVersion) {
@@ -219,19 +219,17 @@ BookmarkLoadDetails::BookmarkLoadDetails(BookmarkClient* client)
 BookmarkLoadDetails::~BookmarkLoadDetails() {
 }
 
-bool BookmarkLoadDetails::LoadExtraNodes() {
-  if (!load_extra_callback_)
+bool BookmarkLoadDetails::LoadManagedNode() {
+  if (!load_managed_node_callback_)
     return false;
 
-  BookmarkPermanentNodeList extra_nodes =
-      std::move(load_extra_callback_).Run(&max_id_);
-  bool has_non_empty_node = false;
-  for (auto& node : extra_nodes) {
-    if (node->child_count() != 0)
-      has_non_empty_node = true;
-    root_node_->Add(std::move(node), root_node_->child_count());
-  }
-  return has_non_empty_node;
+  std::unique_ptr<BookmarkPermanentNode> managed_node =
+      std::move(load_managed_node_callback_).Run(&max_id_);
+  if (!managed_node)
+    return false;
+  bool has_children = !managed_node->children().empty();
+  root_node_->Add(std::move(managed_node));
+  return has_children;
 }
 
 void BookmarkLoadDetails::CreateUrlIndex() {
@@ -244,8 +242,7 @@ BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
   DCHECK(type == BookmarkNode::BOOKMARK_BAR ||
          type == BookmarkNode::OTHER_NODE || type == BookmarkNode::MOBILE);
   std::unique_ptr<BookmarkPermanentNode> node =
-      std::make_unique<BookmarkPermanentNode>(max_id_++);
-  node->set_type(type);
+      std::make_unique<BookmarkPermanentNode>(max_id_++, type);
   node->set_visible(client->IsPermanentNodeVisible(node.get()));
 
   int title_id;
@@ -266,7 +263,7 @@ BookmarkPermanentNode* BookmarkLoadDetails::CreatePermanentNode(
   }
   node->SetTitle(l10n_util::GetStringUTF16(title_id));
   BookmarkPermanentNode* permanent_node = node.get();
-  root_node_->Add(std::move(node), root_node_->child_count());
+  root_node_->Add(std::move(node));
   return permanent_node;
 }
 
@@ -281,8 +278,7 @@ BookmarkStorage::BookmarkStorage(
               sequenced_task_runner,
               base::TimeDelta::FromMilliseconds(kSaveDelayMS),
               "BookmarkStorage"),
-      sequenced_task_runner_(sequenced_task_runner),
-      weak_factory_(this) {}
+      sequenced_task_runner_(sequenced_task_runner) {}
 
 BookmarkStorage::~BookmarkStorage() {
   if (writer_.HasPendingWrite())

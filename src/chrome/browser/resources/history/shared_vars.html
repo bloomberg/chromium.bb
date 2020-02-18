@@ -32,13 +32,15 @@
     --toolbar-height: 56px;
   }
 
-  html[dark] {
-    --card-border-color: var(--cr-separator-color);
-    --history-item-time-color: var(--cr-secondary-text-color);
-    --interactive-color: var(--google-blue-refresh-300);
-    --separator-color: var(--cr-separator-color);
-    --sidebar-footer-text-color: rgba(255, 255, 255, 0.6);
-    --sidebar-unselected-color: var(--cr-secondary-text-color);
+  @media (prefers-color-scheme: dark) {
+    html {
+      --card-border-color: var(--cr-separator-color);
+      --history-item-time-color: var(--cr-secondary-text-color);
+      --interactive-color: var(--google-blue-refresh-300);
+      --separator-color: var(--cr-separator-color);
+      --sidebar-footer-text-color: rgba(255, 255, 255, 0.6);
+      --sidebar-unselected-color: var(--cr-secondary-text-color);
+    }
   }
 </style>
 </custom-style>

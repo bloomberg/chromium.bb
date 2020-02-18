@@ -8,10 +8,10 @@
 #include <tuple>
 
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
@@ -162,7 +162,7 @@ class WebAppDatabaseTest : public testing::Test {
 
  protected:
   // Must be created before TestWebAppDatabaseFactory.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
@@ -206,20 +206,17 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
+  const std::string name = "Name";
 
   auto app = std::make_unique<WebApp>(app_id);
-
+  // Required fields:
   app->SetLaunchUrl(launch_url);
-  EXPECT_TRUE(app->name().empty());
+  app->SetName(name);
+  // Let optional fields be empty:
   EXPECT_TRUE(app->description().empty());
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
-
-  // |icons| is mandatory data member for a representation in DB. If no icons,
-  // WebAppDatabase::CreateWebApp(from_proto) returns nullptr.
-  WebApp::Icons icons;
-  icons.push_back({GURL("https://example.com/icon"), 512});
-  app->SetIcons(std::move(icons));
+  EXPECT_TRUE(app->icons().empty());
   registrar_->RegisterApp(std::move(app));
 
   Registry registry = ReadRegistry();
@@ -227,15 +224,15 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
 
-  // Mandatory members.
+  // Required fields were serialized:
   EXPECT_EQ(app_id, app_copy->app_id());
   EXPECT_EQ(launch_url, app_copy->launch_url());
-
-  // No optional members.
-  EXPECT_TRUE(app_copy->name().empty());
+  EXPECT_EQ(name, app_copy->name());
+  // No optional fields.
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
+  EXPECT_TRUE(app_copy->icons().empty());
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {

@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -63,8 +63,7 @@ template <typename NGInputNodeType,
           typename NGBoxFragmentBuilderType,
           typename NGBreakTokenType>
 class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
-  USING_FAST_MALLOC(NGLayoutAlgorithm);
-
+  STACK_ALLOCATED();
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
                     scoped_refptr<const ComputedStyle> style,

@@ -24,9 +24,8 @@ class MemoryPurgeManagerTest : public testing::Test {
  public:
   MemoryPurgeManagerTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::UI,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         memory_purge_manager_(
             scoped_task_environment_.GetMainThreadTaskRunner()),
         observed_memory_pressure_(false) {}
@@ -36,10 +35,6 @@ class MemoryPurgeManagerTest : public testing::Test {
         std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
             &MemoryPurgeManagerTest::OnMemoryPressure, base::Unretained(this)));
     base::MemoryPressureListener::SetNotificationsSuppressed(false);
-
-    // Set an initial delay to ensure that the first call to TimeTicks::Now()
-    // before incrementing the counter does not return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   void TearDown() override {

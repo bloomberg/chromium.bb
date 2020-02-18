@@ -54,7 +54,8 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig&, const AddTextTrackDoneCB&));
@@ -64,8 +65,8 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
   MOCK_METHOD1(OnVideoOpacityChange, void(bool));
   MOCK_METHOD0(OnVideoAverageKeyframeDistanceUpdate, void());
-  MOCK_METHOD1(OnAudioDecoderChange, void(const std::string&));
-  MOCK_METHOD1(OnVideoDecoderChange, void(const std::string&));
+  MOCK_METHOD1(OnAudioDecoderChange, void(const PipelineDecoderInfo&));
+  MOCK_METHOD1(OnVideoDecoderChange, void(const PipelineDecoderInfo&));
   MOCK_METHOD1(OnRemotePlayStateChange, void(MediaStatus::State state));
 };
 
@@ -183,6 +184,7 @@ class MockDemuxerStream : public DemuxerStream {
   Type type() const override;
   Liveness liveness() const override;
   MOCK_METHOD1(Read, void(const ReadCB& read_cb));
+  MOCK_CONST_METHOD0(IsReadPending, bool());
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
@@ -279,7 +281,8 @@ class MockRendererClient : public RendererClient {
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnStatisticsUpdate, void(const PipelineStatistics&));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));

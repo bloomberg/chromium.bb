@@ -32,7 +32,7 @@
 
 #include <stddef.h>
 #include <memory>
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_array_buffer.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_impl.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -82,7 +81,7 @@ WebString WebPepperSocketImpl::Subprotocol() {
 
 bool WebPepperSocketImpl::SendText(const WebString& message) {
   String core_message = message;
-  CString encoded_message = core_message.Utf8();
+  std::string encoded_message = core_message.Utf8();
   size_t size = encoded_message.length();
   buffered_amount_ += size;
   if (is_closing_or_closed_)

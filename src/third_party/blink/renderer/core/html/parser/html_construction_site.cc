@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
@@ -65,6 +64,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
@@ -124,12 +124,10 @@ static inline void ExecuteInsertTask(HTMLConstructionSiteTask& task) {
   DCHECK_EQ(task.operation, HTMLConstructionSiteTask::kInsert);
 
   Insert(task);
-
-  if (task.child->IsElementNode()) {
-    Element& child = ToElement(*task.child);
-    child.BeginParsingChildren();
+  if (auto* child = DynamicTo<Element>(task.child.Get())) {
+    child->BeginParsingChildren();
     if (task.self_closing)
-      child.FinishParsingChildren();
+      child->FinishParsingChildren();
   }
 }
 
@@ -295,8 +293,9 @@ void HTMLConstructionSite::QueueTask(const HTMLConstructionSiteTask& task) {
 void HTMLConstructionSite::AttachLater(ContainerNode* parent,
                                        Node* child,
                                        bool self_closing) {
-  DCHECK(ScriptingContentIsAllowed(parser_content_policy_) ||
-         !child->IsElementNode() || !ToElement(child)->IsScriptElement());
+  auto* element = DynamicTo<Element>(child);
+  DCHECK(ScriptingContentIsAllowed(parser_content_policy_) || !element ||
+         !element->IsScriptElement());
   DCHECK(PluginContentIsAllowed(parser_content_policy_) ||
          !IsHTMLPlugInElement(child));
 

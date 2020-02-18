@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_STAT
@@ -10,7 +10,7 @@
 #error Only Win32 target is supported!
 #endif
 
-#include <_mingw.h>
+#include <crtdefs.h>
 #include <io.h>
 
 #pragma pack(push,_CRT_PACKING)
@@ -152,6 +152,16 @@ extern "C" {
 #define	S_IRUSR		_S_IRUSR
 #define	_S_IRUSR	_S_IREAD
 
+#define S_IRGRP    (S_IRUSR >> 3)
+#define S_IWGRP    (S_IWUSR >> 3)
+#define S_IXGRP    (S_IXUSR >> 3)
+#define S_IRWXG    (S_IRWXU >> 3)
+
+#define S_IROTH    (S_IRGRP >> 3)
+#define S_IWOTH    (S_IWGRP >> 3)
+#define S_IXOTH    (S_IXGRP >> 3)
+#define S_IRWXO    (S_IRWXG >> 3)
+
 #define	S_ISDIR(m)	(((m) & S_IFMT) == S_IFDIR)
 #define	S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 #define	S_ISCHR(m)	(((m) & S_IFMT) == S_IFCHR)
@@ -161,9 +171,20 @@ extern "C" {
 #endif
 
 #if !defined (RC_INVOKED) && !defined (NO_OLDNAMES)
-int __cdecl stat(const char *_Filename,struct stat *_Stat);
 int __cdecl fstat(int _Desc,struct stat *_Stat);
+#if __MSVCRT_VERSION__ >= 0x1400
+  __mingw_ovr int __cdecl stat(const char *_Filename,struct stat *_Stat)
+  {
+    return _stat(_Filename, (struct _stat *)_Stat);
+  }
+  __mingw_ovr int __cdecl wstat(const wchar_t *_Filename,struct stat *_Stat)
+  {
+    return _wstat(_Filename, (struct _stat *)_Stat);
+  }
+#else
+int __cdecl stat(const char *_Filename,struct stat *_Stat);
 int __cdecl wstat(const wchar_t *_Filename,struct stat *_Stat);
+#endif
 
 #ifndef __CRT__NO_INLINE
 #ifdef _USE_32BIT_TIME_T

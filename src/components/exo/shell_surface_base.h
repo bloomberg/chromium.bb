@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ash/display/window_tree_host_manager.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
@@ -28,9 +29,7 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
-namespace wm {
 class WindowState;
-}
 }  // namespace ash
 
 namespace base {
@@ -254,9 +253,12 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool has_grab_ = false;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ShellSurfaceTest,
+                           HostWindowBoundsUpdatedAfterCommitWidget);
+
   // Called on widget creation to initialize its window state.
   // TODO(reveman): Remove virtual functions below to avoid FBC problem.
-  virtual void InitializeWindowState(ash::wm::WindowState* window_state) = 0;
+  virtual void InitializeWindowState(ash::WindowState* window_state) = 0;
 
   // Returns the scale of the surface tree relative to the shell surface.
   virtual float GetScale() const;

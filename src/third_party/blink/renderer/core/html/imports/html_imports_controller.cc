@@ -31,12 +31,12 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_tree_root.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {

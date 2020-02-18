@@ -142,7 +142,7 @@ ShellSurface::ShellSurface(Surface* surface)
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   if (widget_)
-    ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
+    ash::WindowState::Get(widget_->GetNativeWindow())->RemoveObserver(this);
 }
 
 void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
@@ -285,8 +285,8 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
     if (!widget_)
       return;
 
-    ash::wm::WindowState* window_state =
-        ash::wm::GetWindowState(widget_->GetNativeWindow());
+    ash::WindowState* window_state =
+        ash::WindowState::Get(widget_->GetNativeWindow());
     if (window_state->is_dragged())
       return;
 
@@ -306,7 +306,7 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurfaceBase overrides:
 
-void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
+void ShellSurface::InitializeWindowState(ash::WindowState* window_state) {
   window_state->AddObserver(this);
   window_state->set_allow_set_bounds_direct(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);
@@ -409,11 +409,10 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::wm::WindowStateObserver overrides:
+// ash::WindowStateObserver overrides:
 
-void ShellSurface::OnPreWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
-    ash::WindowStateType old_type) {
+void ShellSurface::OnPreWindowStateTypeChange(ash::WindowState* window_state,
+                                              ash::WindowStateType old_type) {
   ash::WindowStateType new_type = window_state->GetStateType();
   if (ash::IsMinimizedWindowStateType(old_type) ||
       ash::IsMinimizedWindowStateType(new_type)) {
@@ -444,9 +443,8 @@ void ShellSurface::OnPreWindowStateTypeChange(
   }
 }
 
-void ShellSurface::OnPostWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
-    ash::WindowStateType old_type) {
+void ShellSurface::OnPostWindowStateTypeChange(ash::WindowState* window_state,
+                                               ash::WindowStateType old_type) {
   ash::WindowStateType new_type = window_state->GetStateType();
   if (ash::IsMaximizedOrFullscreenOrPinnedWindowStateType(new_type)) {
     Configure();
@@ -459,6 +457,23 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
   // Re-enable animations if they were disabled in pre state change handler.
   scoped_animations_disabled_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// wm::ActivationChangeObserver overrides:
+
+void ShellSurface::OnWindowActivated(ActivationReason reason,
+                                     aura::Window* gained_active,
+                                     aura::Window* lost_active) {
+  ShellSurfaceBase::OnWindowActivated(reason, gained_active, lost_active);
+
+  if (!widget_)
+    return;
+
+  if (gained_active == widget_->GetNativeWindow() ||
+      lost_active == widget_->GetNativeWindow()) {
+    Configure();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -482,7 +497,8 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
 bool ShellSurface::OnPreWidgetCommit() {
   if (!widget_ && GetEnabled()) {
     // Defer widget creation and commit until surface has contents.
-    if (host_window()->bounds().IsEmpty()) {
+    if (host_window()->bounds().IsEmpty() &&
+        root_surface()->surface_hierarchy_content_bounds().IsEmpty()) {
       Configure();
       return false;
     }
@@ -502,23 +518,6 @@ bool ShellSurface::OnPreWidgetCommit() {
 }
 
 void ShellSurface::OnPostWidgetCommit() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// wm::ActivationChangeObserver overrides:
-
-void ShellSurface::OnWindowActivated(ActivationReason reason,
-                                     aura::Window* gained_active,
-                                     aura::Window* lost_active) {
-  ShellSurfaceBase::OnWindowActivated(reason, gained_active, lost_active);
-
-  if (!widget_)
-    return;
-
-  if (gained_active == widget_->GetNativeWindow() ||
-      lost_active == widget_->GetNativeWindow()) {
-    Configure();
-  }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
@@ -568,7 +567,7 @@ void ShellSurface::Configure(bool ends_drag) {
   pending_origin_offset_accumulator_ = gfx::Vector2d();
 
   auto* window_state =
-      widget_ ? ash::wm::GetWindowState(widget_->GetNativeWindow()) : nullptr;
+      widget_ ? ash::WindowState::Get(widget_->GetNativeWindow()) : nullptr;
   int resize_component = HTCAPTION;
   // If surface is being resized, save the resize direction.
   if (window_state && window_state->is_dragged() && !ends_drag)
@@ -604,8 +603,8 @@ void ShellSurface::Configure(bool ends_drag) {
 }
 
 void ShellSurface::AttemptToStartDrag(int component) {
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  ash::WindowState* window_state =
+      ash::WindowState::Get(widget_->GetNativeWindow());
 
   // Ignore if surface is already being dragged.
   if (window_state->is_dragged())

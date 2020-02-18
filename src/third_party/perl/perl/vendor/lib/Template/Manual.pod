@@ -31,7 +31,7 @@ The L<Template::Manual::Intro> page provides an introduction to the Template Too
 
 =head2 Template::Manual::Syntax
 
-The L<Template::Manual::Syntax> desribes the syntax and structure of 
+The L<Template::Manual::Syntax> describes the syntax and structure of 
 templates and the directive tags embedded within them.
 
 =head2 Template::Manual::Directives

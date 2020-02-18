@@ -34,27 +34,6 @@ public final class EventConstants {
      */
     public static final String PULL_TO_REFRESH = "pull_to_refresh";
 
-    /** The contextual suggestions button was shown to the user. */
-    public static final String CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN =
-            "contextual_suggestions_button_shown";
-
-    /**
-     * The contextual suggestions bottom sheet was explicitly dismissed via a tap on its close
-     * button.
-     */
-    public static final String CONTEXTUAL_SUGGESTIONS_DISMISSED =
-            "contextual_suggestions_dismissed";
-
-    /**
-     * The contextual suggestions bottom sheet was opened.
-     */
-    public static final String CONTEXTUAL_SUGGESTIONS_OPENED = "contextual_suggestions_opened";
-
-    /**
-     * A contextual suggestion was clicked, opened in a new tab or downloaded.
-     */
-    public static final String CONTEXTUAL_SUGGESTION_TAKEN = "contextual_suggestion_taken";
-
     /**
      * Screenshot is taken with Chrome in the foreground.
      */
@@ -177,6 +156,9 @@ public final class EventConstants {
 
     /** The Explore Sites tile was tapped. */
     public static final String EXPLORE_SITES_TILE_TAPPED = "explore_sites_tile_tapped";
+
+    /** User has finished drop-to-merge to create a group. */
+    public static final String TAB_DRAG_AND_DROP_TO_GROUP = "tab_drag_and_drop_to_group";
 
     /**
      * Do not instantiate.

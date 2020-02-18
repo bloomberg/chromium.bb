@@ -111,6 +111,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter reason
 [Worker]     getter wasClean
 [Worker]     method constructor
+[Worker] interface ContentIndex
+[Worker]     attribute @@toStringTag
+[Worker]     method add
+[Worker]     method constructor
+[Worker]     method delete
+[Worker]     method getDescriptions
 [Worker] interface CountQueuingStrategy
 [Worker]     method constructor
 [Worker]     method size
@@ -334,6 +340,24 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
+[Worker]     method constructor
+[Worker] interface DetectedBarcode
+[Worker]     attribute @@toStringTag
+[Worker]     getter boundingBox
+[Worker]     getter cornerPoints
+[Worker]     getter format
+[Worker]     getter rawValue
+[Worker]     method constructor
+[Worker] interface DetectedFace
+[Worker]     attribute @@toStringTag
+[Worker]     getter boundingBox
+[Worker]     getter landmarks
+[Worker]     method constructor
+[Worker] interface DetectedText
+[Worker]     attribute @@toStringTag
+[Worker]     getter boundingBox
+[Worker]     getter cornerPoints
+[Worker]     getter rawValue
 [Worker]     method constructor
 [Worker] interface ErrorEvent : Event
 [Worker]     attribute @@toStringTag
@@ -690,6 +714,26 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method decodingInfo
 [Worker]     method encodingInfo
+[Worker] interface MediaSource : EventTarget
+[Worker]     static method isTypeSupported
+[Worker]     attribute @@toStringTag
+[Worker]     getter activeSourceBuffers
+[Worker]     getter duration
+[Worker]     getter onsourceclose
+[Worker]     getter onsourceended
+[Worker]     getter onsourceopen
+[Worker]     getter readyState
+[Worker]     getter sourceBuffers
+[Worker]     method addSourceBuffer
+[Worker]     method clearLiveSeekableRange
+[Worker]     method constructor
+[Worker]     method endOfStream
+[Worker]     method removeSourceBuffer
+[Worker]     method setLiveSeekableRange
+[Worker]     setter duration
+[Worker]     setter onsourceclose
+[Worker]     setter onsourceended
+[Worker]     setter onsourceopen
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1
@@ -936,12 +980,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method set
 [Worker] interface Performance : EventTarget
 [Worker]     attribute @@toStringTag
-[Worker]     getter onelementtimingbufferfull
-[Worker]     getter oneventtimingbufferfull
 [Worker]     getter onresourcetimingbufferfull
 [Worker]     getter timeOrigin
-[Worker]     method clearElementTimings
-[Worker]     method clearEventTimings
 [Worker]     method clearMarks
 [Worker]     method clearMeasures
 [Worker]     method clearResourceTimings
@@ -953,12 +993,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method measure
 [Worker]     method now
 [Worker]     method profile
-[Worker]     method setElementTimingBufferMaxSize
-[Worker]     method setEventTimingBufferMaxSize
 [Worker]     method setResourceTimingBufferSize
 [Worker]     method toJSON
-[Worker]     setter onelementtimingbufferfull
-[Worker]     setter oneventtimingbufferfull
 [Worker]     setter onresourcetimingbufferfull
 [Worker] interface PerformanceEntry
 [Worker]     attribute @@toStringTag
@@ -1018,6 +1054,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter name
 [Worker]     method constructor
 [Worker]     method toJSON
+[Worker] interface PeriodicSyncManager
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method getTags
+[Worker]     method register
+[Worker]     method unregister
 [Worker] interface PermissionStatus : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onchange
@@ -1078,6 +1120,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method pipeThrough
 [Worker]     method pipeTo
 [Worker]     method tee
+[Worker] interface ReadableStreamDefaultReader
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     method cancel
+[Worker]     method constructor
+[Worker]     method read
+[Worker]     method releaseLock
 [Worker] interface Request
 [Worker]     attribute @@toStringTag
 [Worker]     getter bodyUsed
@@ -1126,13 +1175,21 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter content
 [Worker]     method constructor
-[Worker] interface SMSReceiver : EventTarget
+[Worker] interface SecurityPolicyViolationEvent : Event
 [Worker]     attribute @@toStringTag
-[Worker]     getter onchange
-[Worker]     getter sms
+[Worker]     getter blockedURI
+[Worker]     getter columnNumber
+[Worker]     getter disposition
+[Worker]     getter documentURI
+[Worker]     getter effectiveDirective
+[Worker]     getter lineNumber
+[Worker]     getter originalPolicy
+[Worker]     getter referrer
+[Worker]     getter sample
+[Worker]     getter sourceFile
+[Worker]     getter statusCode
+[Worker]     getter violatedDirective
 [Worker]     method constructor
-[Worker]     method start
-[Worker]     setter onchange
 [Worker] interface Serial : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter onconnect
@@ -1143,8 +1200,9 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     setter ondisconnect
 [Worker] interface SerialPort
 [Worker]     attribute @@toStringTag
-[Worker]     getter in
-[Worker]     getter out
+[Worker]     getter readable
+[Worker]     getter writable
+[Worker]     method clearReadError
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method open
@@ -1152,10 +1210,12 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter active
 [Worker]     getter backgroundFetch
+[Worker]     getter index
 [Worker]     getter installing
 [Worker]     getter navigationPreload
 [Worker]     getter onupdatefound
 [Worker]     getter paymentManager
+[Worker]     getter periodicSync
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync
@@ -1223,6 +1283,20 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter readable
 [Worker]     getter writable
 [Worker]     method constructor
+[Worker] interface TextMetrics
+[Worker]     attribute @@toStringTag
+[Worker]     getter actualBoundingBoxAscent
+[Worker]     getter actualBoundingBoxDescent
+[Worker]     getter actualBoundingBoxLeft
+[Worker]     getter actualBoundingBoxRight
+[Worker]     getter advances
+[Worker]     getter emHeightAscent
+[Worker]     getter emHeightDescent
+[Worker]     getter fontBoundingBoxAscent
+[Worker]     getter fontBoundingBoxDescent
+[Worker]     getter width
+[Worker]     method constructor
+[Worker]     method getBaselines
 [Worker] interface TimestampTrigger
 [Worker]     attribute @@toStringTag
 [Worker]     getter timestamp
@@ -1384,6 +1458,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter bytesWritten
 [Worker]     getter status
 [Worker]     method constructor
+[Worker] interface UserActivation
+[Worker]     attribute @@toStringTag
+[Worker]     getter hasBeenActive
+[Worker]     getter isActive
+[Worker]     method constructor
+[Worker] interface WakeLock
+[Worker]     static method request
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
 [Worker] interface WebGL2ComputeRenderingContext
 [Worker]     attribute @@toStringTag
 [Worker]     attribute ACTIVE_ATOMIC_COUNTER_BUFFERS
@@ -1498,6 +1581,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute DEPTH_STENCIL_ATTACHMENT
 [Worker]     attribute DEPTH_TEST
 [Worker]     attribute DEPTH_WRITEMASK
+[Worker]     attribute DISPATCH_INDIRECT_BUFFER
+[Worker]     attribute DISPATCH_INDIRECT_BUFFER_BINDING
 [Worker]     attribute DITHER
 [Worker]     attribute DONT_CARE
 [Worker]     attribute DRAW_BUFFER0
@@ -1527,7 +1612,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute ELEMENT_ARRAY_BUFFER
 [Worker]     attribute ELEMENT_ARRAY_BUFFER_BINDING
 [Worker]     attribute EQUAL
-[Worker]     attribute FALSE
 [Worker]     attribute FASTEST
 [Worker]     attribute FLOAT
 [Worker]     attribute FLOAT_32_UNSIGNED_INT_24_8_REV
@@ -1958,7 +2042,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute TRIANGLES
 [Worker]     attribute TRIANGLE_FAN
 [Worker]     attribute TRIANGLE_STRIP
-[Worker]     attribute TRUE
 [Worker]     attribute TYPE
 [Worker]     attribute UNIFORM
 [Worker]     attribute UNIFORM_ARRAY_STRIDE
@@ -2106,6 +2189,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method disable
 [Worker]     method disableVertexAttribArray
 [Worker]     method dispatchCompute
+[Worker]     method dispatchComputeIndirect
 [Worker]     method drawArrays
 [Worker]     method drawArraysInstanced
 [Worker]     method drawBuffers
@@ -3655,6 +3739,16 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method abort
 [Worker]     method constructor
 [Worker]     method getWriter
+[Worker] interface WritableStreamDefaultWriter
+[Worker]     attribute @@toStringTag
+[Worker]     getter closed
+[Worker]     getter desiredSize
+[Worker]     getter ready
+[Worker]     method abort
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method releaseLock
+[Worker]     method write
 [Worker] interface XMLHttpRequest : XMLHttpRequestEventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     attribute DONE

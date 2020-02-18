@@ -19,7 +19,7 @@
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 class Profile;
 
@@ -27,9 +27,9 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -46,7 +46,7 @@ class ArcFetcherBase;
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
-                       public identity::IdentityManager::Observer,
+                       public signin::IdentityManager::Observer,
                        public ArcSessionManager::Observer {
  public:
   using GetGoogleAccountsInArcCallback =
@@ -182,7 +182,9 @@ class ArcAuthService : public KeyedService,
   void DeletePendingTokenRequest(ArcFetcherBase* fetcher);
 
   // Triggers an async push of the accounts in IdentityManager to ARC.
-  void TriggerAccountsPushToArc();
+  // If |filter_primary_account| is set to |true|, the Primary Account in Chrome
+  // OS Account Manager will not be pushed to ARC as part of this call.
+  void TriggerAccountsPushToArc(bool filter_primary_account);
 
   // Issues a request to ARC, which will complete callback with the list of
   // Google accounts in ARC.
@@ -190,7 +192,7 @@ class ArcAuthService : public KeyedService,
 
   // Non-owning pointers.
   Profile* const profile_;
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
   ArcBridgeService* const arc_bridge_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

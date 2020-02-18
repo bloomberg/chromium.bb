@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="1409544243779336081">Recomanació d'aplicació</translation>
+<translation id="1498028757988366001">Ja has fet aquesta cerca anteriorment. En suprimir "<ph name="QUERY" />" de l'historial, també se suprimirà permanentment del teu compte en tots els dispositius.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut i }other{# minuts i }}</translation>
 <translation id="1643823602425662293">Notificació</translation>
 <translation id="169515659049020177">Maj</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">Toca els elements tàctils a la pantalla.</translation>
 <translation id="2295140143284145483">Enquesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">Vols trucar a aquest número des del telèfon?</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2445449901874883781">Utilitza una densitat alta</translation>
+<translation id="2451871130406122810">S'ha enviat al dispositiu</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">S'ha acabat de calibrar</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
+<translation id="2545651323591713692">Posposa</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{d'aquí a 1 h}other{d'aquí a # h}}</translation>
 <translation id="2583543531130364912">Calibra la pantalla tàctil</translation>
 <translation id="2666092431469916601">Superior</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">Desplaçament fins aquí</translation>
 <translation id="3234408098842461169">Fletxa avall</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 dia}other{# dies}}</translation>
+<translation id="3295886253693811851">Fes una trucada amb</translation>
 <translation id="335581015389089642">Veu</translation>
 <translation id="3443810440409579745">S'ha rebut una pestanya.</translation>
 <translation id="3479552764303398839">Ara no</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Fa 1 mes}other{Fa # mesos}}</translation>
 <translation id="4289300219472526559">Comença a parlar</translation>
 <translation id="4316910396681052118">TOTES LES APLICACIONS</translation>
+<translation id="4467014365953759647">No es pot enviar el número</translation>
 <translation id="4588090240171750605">Desplaçament a la dreta</translation>
 <translation id="4690510401873698237">El prestatge és a la part inferior</translation>
 <translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">Triangle desplegable</translation>
 <translation id="5278860589123563674">No s'ha pogut enviar</translation>
 <translation id="528468243742722775">Finalitza</translation>
+<translation id="5327567770033251652">activa la sincronització</translation>
 <translation id="5329858601952122676">&amp;Suprimeix</translation>
 <translation id="5395308026110844773">L'aplicació <ph name="DRAGGED_APP_NAME" /> és a sobre de l'aplicació <ph name="IN_PLACE_APP" />. Deixa-la anar per crear una carpeta.</translation>
 <translation id="5463830097259460683">Emojis i símbols</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">Desa el fitxer</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
 <translation id="673773751041746814">Supressió</translation>
+<translation id="6779314412797872738">Per enviar un número des d'aquest dispositiu al telèfon Android, <ph name="TROUBLESHOOT_LINK" /> a la configuració de tots dos dispositius.</translation>
 <translation id="6786750046913594791">Tanca la carpeta</translation>
 <translation id="6808150112686056157">Fitxer multimèdia: atura</translation>
 <translation id="6845383723252244143">Selecció d'una carpeta</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">Menú d'aplicacions, visualització parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">Comprova la connexió del telèfon i torna-ho a provar</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>
+<translation id="7430878839542012341">Vols suprimir aquesta cerca de l'historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emojis</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Les cerques es duen a terme amb la tecnologia de l'Assistent de Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, compleció automàtica</translation>
 <translation id="815598010540052116">Desplaçament avall</translation>
-<translation id="8170087467028567933">Si suprimeixes aquest suggeriment, s'amagarà del teu compte en tots els dispositius.</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8210608804940886430">Av Pàg</translation>
 <translation id="8245914219290430011">Tabulador</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">marca</translation>
 <translation id="8393700583063109961">Envia el missatge</translation>
 <translation id="8394908167088220973">Fitxer multimèdia: reprodueix/posa en pausa</translation>
-<translation id="8420205633584771378">Vols suprimir aquest suggeriment?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 a}other{# a}}</translation>
 <translation id="8602707065186045623">Fitxer <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">El prestatge es mostra sempre</translation>

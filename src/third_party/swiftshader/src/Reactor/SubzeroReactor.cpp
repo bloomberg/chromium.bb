@@ -55,6 +55,18 @@
 
 namespace
 {
+	// Default configuration settings. Must be accessed under mutex lock.
+	std::mutex defaultConfigLock;
+	rr::Config &defaultConfig()
+	{
+		// This uses a static in a function to avoid the cost of a global static
+		// initializer. See http://neugierig.org/software/chromium/notes/2011/08/static-initializers.html
+		static rr::Config config = rr::Config::Edit()
+			.set(rr::Optimization::Level::Default)
+			.apply({});
+		return config;
+	}
+
 	Ice::GlobalContext *context = nullptr;
 	Ice::Cfg *function = nullptr;
 	Ice::CfgNode *basicBlock = nullptr;
@@ -76,6 +88,19 @@ namespace
 	#if !defined(__x86_64__) && (defined(_M_AMD64) || defined (_M_X64))
 		#define __x86_64__ 1
 	#endif
+
+	static Ice::OptLevel toIce(rr::Optimization::Level level)
+	{
+		switch (level)
+		{
+			case rr::Optimization::Level::None:       return Ice::Opt_0;
+			case rr::Optimization::Level::Less:       return Ice::Opt_1;
+			case rr::Optimization::Level::Default:    return Ice::Opt_2;
+			case rr::Optimization::Level::Aggressive: return Ice::Opt_2;
+			default: UNREACHABLE("Unknown Optimization Level %d", int(level));
+		}
+		return Ice::Opt_2;
+	}
 
 	class CPUID
 	{
@@ -203,8 +228,6 @@ namespace rr
 
 		return Ice::typeWidthInBytes(T(type));
 	}
-
-	Optimization optimization[10] = {InstructionCombining, Disabled};
 
 	using ElfHeader = std::conditional<sizeof(void*) == 8, Elf64_Ehdr, Elf32_Ehdr>::type;
 	using SectionHeader = std::conditional<sizeof(void*) == 8, Elf64_Shdr, Elf32_Shdr>::type;
@@ -548,7 +571,7 @@ namespace rr
 			Flags.setTargetInstructionSet(CPUID::SSE4_1 ? Ice::X86InstructionSet_SSE4_1 : Ice::X86InstructionSet_SSE2);
 		#endif
 		Flags.setOutFileType(Ice::FT_Elf);
-		Flags.setOptLevel(Ice::Opt_2);
+		Flags.setOptLevel(toIce(getDefaultConfig().getOptimization().getLevel()));
 		Flags.setApplicationBinaryInterface(Ice::ABI_Platform);
 		Flags.setVerbose(false ? Ice::IceV_Most : Ice::IceV_None);
 		Flags.setDisableHybridAssembly(true);
@@ -585,7 +608,26 @@ namespace rr
 		::codegenMutex.unlock();
 	}
 
-	Routine *Nucleus::acquireRoutine(const char *name, bool runOptimizations)
+	void Nucleus::setDefaultConfig(const Config &cfg)
+	{
+		std::unique_lock<std::mutex> lock(::defaultConfigLock);
+		::defaultConfig() = cfg;
+	}
+
+	void Nucleus::adjustDefaultConfig(const Config::Edit &cfgEdit)
+	{
+		std::unique_lock<std::mutex> lock(::defaultConfigLock);
+		auto &config = ::defaultConfig();
+		config = cfgEdit.apply(config);
+	}
+
+	Config Nucleus::getDefaultConfig()
+	{
+		std::unique_lock<std::mutex> lock(::defaultConfigLock);
+		return ::defaultConfig();
+	}
+
+	Routine *Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
 	{
 		if(basicBlock->getInsts().empty() || basicBlock->getInsts().back().getKind() != Ice::Inst::Ret)
 		{
@@ -594,7 +636,7 @@ namespace rr
 
 		::function->setFunctionName(Ice::GlobalString::createWithString(::context, name));
 
-		optimize();
+		rr::optimize(::function);
 
 		::function->translate();
 		ASSERT(!::function->hasError());
@@ -622,11 +664,6 @@ namespace rr
 		::routine = nullptr;
 
 		return handoffRoutine;
-	}
-
-	void Nucleus::optimize()
-	{
-		rr::optimize(::function);
 	}
 
 	Value *Nucleus::allocateStackVariable(Type *t, int arraySize)
@@ -3465,10 +3502,20 @@ namespace rr
 		return V(ret);
 	}
 
+	void Breakpoint()
+	{
+		const Ice::Intrinsics::IntrinsicInfo intrinsic = {Ice::Intrinsics::Trap, Ice::Intrinsics::SideEffects_F, Ice::Intrinsics::ReturnsTwice_F, Ice::Intrinsics::MemoryWrite_F};
+		auto target = ::context->getConstantUndef(Ice::IceType_i32);
+		auto trap = Ice::InstIntrinsicCall::create(::function, 0, nullptr, target, intrinsic);
+		::basicBlock->appendInst(trap);
+	}
+
 	// Below are functions currently unimplemented for the Subzero backend.
 	// They are stubbed to satisfy the linker.
 	void Nucleus::createFence(std::memory_order memoryOrder) { UNIMPLEMENTED("Subzero createFence()"); }
-	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createGather()"); return nullptr; }
+	Value *Nucleus::createMaskedLoad(Value *ptr, Type *elTy, Value *mask, unsigned int alignment, bool zeroMaskedLanes) { UNIMPLEMENTED("Subzero createMaskedLoad()"); return nullptr; }
+	void Nucleus::createMaskedStore(Value *ptr, Value *val, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createMaskedStore()"); }
+	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment, bool zeroMaskedLanes) { UNIMPLEMENTED("Subzero createGather()"); return nullptr; }
 	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createScatter()"); }
 	RValue<Float4> Sin(RValue<Float4> x) { UNIMPLEMENTED("Subzero Sin()"); return Float4(0); }
 	RValue<Float4> Cos(RValue<Float4> x) { UNIMPLEMENTED("Subzero Cos()"); return Float4(0); }
@@ -3496,7 +3543,7 @@ namespace rr
 	void FlushDebug() {}
 
 	void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params) { UNIMPLEMENTED("createCoroutine"); }
-	Routine* Nucleus::acquireCoroutine(const char *name, bool runOptimizations) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
+	Routine* Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
 	void Nucleus::yield(Value* val) { UNIMPLEMENTED("Yield"); }
 
 }

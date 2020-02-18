@@ -93,13 +93,15 @@ TEST_F(WebElementTest, IsAutonomousCustomElement) {
   )JS");
   GetDocument().body()->appendChild(script);
   auto* v0typeext = GetDocument().body()->lastChild();
-  EXPECT_FALSE(WebElement(ToElement(v0typeext)).IsAutonomousCustomElement());
+  EXPECT_FALSE(WebElement(To<Element>(v0typeext)).IsAutonomousCustomElement());
   auto* v0autonomous = v0typeext->previousSibling();
-  EXPECT_TRUE(WebElement(ToElement(v0autonomous)).IsAutonomousCustomElement());
+  EXPECT_TRUE(
+      WebElement(To<Element>(v0autonomous)).IsAutonomousCustomElement());
   auto* v1builtin = v0autonomous->previousSibling();
-  EXPECT_FALSE(WebElement(ToElement(v1builtin)).IsAutonomousCustomElement());
+  EXPECT_FALSE(WebElement(To<Element>(v1builtin)).IsAutonomousCustomElement());
   auto* v1autonomous = v1builtin->previousSibling();
-  EXPECT_TRUE(WebElement(ToElement(v1autonomous)).IsAutonomousCustomElement());
+  EXPECT_TRUE(
+      WebElement(To<Element>(v1autonomous)).IsAutonomousCustomElement());
 }
 
 TEST_F(WebElementTest, ShadowRoot) {

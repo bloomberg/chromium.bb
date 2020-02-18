@@ -6,10 +6,13 @@
 list.
 '''
 
+from __future__ import print_function
+
 import types
 
 from grit.gather import interface
 from grit import clique
+from grit import exception
 from grit import tclib
 
 

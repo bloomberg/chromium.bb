@@ -17,9 +17,9 @@
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace views {
-class BridgeFactoryHost;
-}  // namespace views
+namespace remote_cocoa {
+class ApplicationHost;
+}  // namespace remote_cocoa
 
 class AppShimHostBootstrap;
 
@@ -68,7 +68,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   std::string GetAppId() const;
 
   // Return the factory to use to create new widgets in the same process.
-  views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const;
+  remote_cocoa::ApplicationHost* GetRemoteCocoaApplicationHost() const;
 
   // Return the app shim interface.
   chrome::mojom::AppShim* GetAppShim() const;
@@ -115,7 +115,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
 
   std::unique_ptr<AppShimHostBootstrap> bootstrap_;
 
-  std::unique_ptr<views::BridgeFactoryHost> views_bridge_factory_host_;
+  std::unique_ptr<remote_cocoa::ApplicationHost> remote_cocoa_application_host_;
 
   std::string app_id_;
   base::FilePath profile_path_;

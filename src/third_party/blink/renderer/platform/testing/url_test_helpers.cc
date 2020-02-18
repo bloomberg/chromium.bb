@@ -50,8 +50,7 @@ WebURL RegisterMockedURLLoadFromBase(const WebString& base_url,
                                      const WebString& file_name,
                                      const WebString& mime_type) {
   // fullURL = baseURL + fileName.
-  std::string full_url = std::string(base_url.Utf8().data()) +
-                         std::string(file_name.Utf8().data());
+  std::string full_url = base_url.Utf8() + file_name.Utf8();
 
   // filePath = basePath + ("/" +) fileName.
   base::FilePath file_path =

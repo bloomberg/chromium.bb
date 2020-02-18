@@ -479,7 +479,7 @@ TEST(PSLMatchingUtilsTest,
   for (int chr = 0; chr <= 255; ++chr) {
     const auto percent_encoded = base::StringPrintf("http://a%%%02Xb.hu/", chr);
     const GURL url(percent_encoded);
-    if (isalnum(chr) || base::ContainsValue(kExpectedNonAlnumChars, chr)) {
+    if (isalnum(chr) || base::Contains(kExpectedNonAlnumChars, chr)) {
       ASSERT_TRUE(url.is_valid());
       const auto percent_decoded = base::StringPrintf(
           "http://a%cb.hu/", base::ToLowerASCII(static_cast<char>(chr)));

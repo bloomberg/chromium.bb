@@ -9,12 +9,12 @@ my $Singleton = __PACKAGE__->SUPER::new;
 
 sub new
 {
-	return $Singleton;
+  return $Singleton;
 }
 
 sub descend
 {
-	return 1;
+  return 1;
 }
 
 1;

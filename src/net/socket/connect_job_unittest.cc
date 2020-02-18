@@ -90,7 +90,7 @@ class ConnectJobTest : public testing::Test {
  public:
   ConnectJobTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
         common_connect_job_params_(
             nullptr /* client_socket_factory */,
             nullptr /* host_resolver */,
@@ -101,8 +101,7 @@ class ConnectJobTest : public testing::Test {
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             &net_log_,
@@ -184,8 +183,7 @@ TEST_F(ConnectJobTest, TimedOut) {
   // Have to delete the job for it to log the end event.
   job.reset();
 
-  TestNetLogEntry::List entries;
-  net_log_.GetEntries(&entries);
+  auto entries = net_log_.GetEntries();
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(LogContainsBeginEvent(entries, 0, NetLogEventType::CONNECT_JOB));

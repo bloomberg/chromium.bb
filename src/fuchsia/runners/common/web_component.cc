@@ -21,7 +21,11 @@ WebComponent::WebComponent(
         controller_request)
     : runner_(runner),
       startup_context_(std::move(context)),
-      controller_binding_(this) {
+      controller_binding_(this),
+      module_context_(
+          startup_context()
+              ->incoming_services()
+              ->ConnectToService<fuchsia::modular::ModuleContext>()) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it
@@ -33,12 +37,19 @@ WebComponent::WebComponent(
           << " ComponentController disconnected";
       // Teardown the component with dummy values, since ComponentController
       // channel isn't there to receive them.
-      DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+      DestroyComponent(0, fuchsia::sys::TerminationReason::UNKNOWN);
     });
   }
 
   // Create the underlying Frame and get its NavigationController.
   runner_->context()->CreateFrame(frame_.NewRequest());
+
+  // If the Frame unexpectedly disconnect us then tear-down this Component.
+  frame_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
+        << " Frame disconnected";
+    DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+  });
 
   if (startup_context()->public_services()) {
     // Publish services before returning control to the message-loop, to ensure
@@ -54,12 +65,18 @@ WebComponent::WebComponent(
 }
 
 WebComponent::~WebComponent() {
+  // If Modular is available, request to be removed from the Story.
+  if (module_context_)
+    module_context_->RemoveSelfFromStory();
+
   // Send process termination details to the client.
   controller_binding_.events().OnTerminated(termination_exit_code_,
                                             termination_reason_);
 }
 
-void WebComponent::LoadUrl(const GURL& url) {
+void WebComponent::LoadUrl(
+    const GURL& url,
+    std::vector<fuchsia::net::http::Header> extra_headers) {
   DCHECK(url.is_valid());
   fuchsia::web::NavigationControllerPtr navigation_controller;
   frame()->GetNavigationController(navigation_controller.NewRequest());
@@ -69,6 +86,8 @@ void WebComponent::LoadUrl(const GURL& url) {
   // content.
   fuchsia::web::LoadUrlParams params;
   params.set_was_user_activated(true);
+  if (!extra_headers.empty())
+    params.set_headers(std::move(extra_headers));
 
   navigation_controller->LoadUrl(
       url.spec(), std::move(params),

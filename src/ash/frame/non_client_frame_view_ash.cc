@@ -15,12 +15,12 @@
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
@@ -51,14 +51,14 @@ DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
 // This helper enables and disables immersive mode in response to state such as
 // tablet mode and fullscreen changing. For legacy reasons, it's only
 // instantiated for windows that have no WindowStateDelegate provided.
-class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
+class NonClientFrameViewAshImmersiveHelper : public WindowStateObserver,
                                              public aura::WindowObserver,
                                              public TabletModeObserver {
  public:
   NonClientFrameViewAshImmersiveHelper(views::Widget* widget,
                                        NonClientFrameViewAsh* custom_frame_view)
       : widget_(widget),
-        window_state_(wm::GetWindowState(widget->GetNativeWindow())) {
+        window_state_(WindowState::Get(widget->GetNativeWindow())) {
     window_state_->window()->AddObserver(this);
     window_state_->AddObserver(this);
 
@@ -105,8 +105,8 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
     window_state_ = nullptr;
   }
 
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state->window());
@@ -125,8 +125,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
       ImmersiveFullscreenController::EnableForWidget(widget_, false);
 
     if (window_state->IsFullscreen() &&
-        window_state->window()->GetProperty(
-            ash::kImmersiveImpliedByFullscreen)) {
+        window_state->window()->GetProperty(kImmersiveImpliedByFullscreen)) {
       ImmersiveFullscreenController::EnableForWidget(widget_, true);
     }
   }
@@ -139,7 +138,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
   }
 
   views::Widget* widget_;
-  wm::WindowState* window_state_;
+  WindowState* window_state_;
   std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
@@ -240,7 +239,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
       header_view_(new HeaderView(frame)),
       overlay_view_(new OverlayView(header_view_)) {
   aura::Window* frame_window = frame->GetNativeWindow();
-  wm::InstallResizeHandleWindowTargeterForWindow(frame_window);
+  window_util::InstallResizeHandleWindowTargeterForWindow(frame_window);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
@@ -248,7 +247,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   // A delegate may be set which takes over the responsibilities of the
   // NonClientFrameViewAshImmersiveHelper. This is the case for container apps
   // such as ARC++, and in some tests.
-  wm::WindowState* window_state = wm::GetWindowState(frame_window);
+  WindowState* window_state = WindowState::Get(frame_window);
   // A window may be created as a child window of the toplevel (captive portal).
   // TODO(oshima): It should probably be a transient child rather than normal
   // child. Investigate if we can remove this check.
@@ -256,18 +255,11 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
     immersive_helper_ =
         std::make_unique<NonClientFrameViewAshImmersiveHelper>(frame, this);
   }
-  Shell::Get()->overview_controller()->AddObserver(this);
-  Shell::Get()->split_view_controller()->AddObserver(this);
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
 }
 
-NonClientFrameViewAsh::~NonClientFrameViewAsh() {
-  if (Shell::Get()->overview_controller())
-    Shell::Get()->overview_controller()->RemoveObserver(this);
-  if (Shell::Get()->split_view_controller())
-    Shell::Get()->split_view_controller()->RemoveObserver(this);
-}
+NonClientFrameViewAsh::~NonClientFrameViewAsh() = default;
 
 // static
 NonClientFrameViewAsh* NonClientFrameViewAsh::Get(aura::Window* window) {
@@ -282,8 +274,8 @@ void NonClientFrameViewAsh::InitImmersiveFullscreenControllerForView(
 void NonClientFrameViewAsh::SetFrameColors(SkColor active_frame_color,
                                            SkColor inactive_frame_color) {
   aura::Window* frame_window = frame_->GetNativeWindow();
-  frame_window->SetProperty(ash::kFrameActiveColorKey, active_frame_color);
-  frame_window->SetProperty(ash::kFrameInactiveColorKey, inactive_frame_color);
+  frame_window->SetProperty(kFrameActiveColorKey, active_frame_color);
+  frame_window->SetProperty(kFrameInactiveColorKey, inactive_frame_color);
 }
 
 void NonClientFrameViewAsh::SetCaptionButtonModel(
@@ -431,45 +423,15 @@ const views::View* NonClientFrameViewAsh::GetAvatarIconViewForTest() const {
 }
 
 SkColor NonClientFrameViewAsh::GetActiveFrameColorForTest() const {
-  return frame_->GetNativeWindow()->GetProperty(ash::kFrameActiveColorKey);
+  return frame_->GetNativeWindow()->GetProperty(kFrameActiveColorKey);
 }
 
 SkColor NonClientFrameViewAsh::GetInactiveFrameColorForTest() const {
-  return frame_->GetNativeWindow()->GetProperty(ash::kFrameInactiveColorKey);
-}
-
-void NonClientFrameViewAsh::UpdateHeaderView() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  if (in_overview_ && split_view_controller->InSplitViewMode() &&
-      split_view_controller->GetDefaultSnappedWindow() ==
-          frame_->GetNativeWindow()) {
-    // TODO(sammiequon): This works for now, but we may have to check if
-    // |frame_|'s native window is in the overview list instead.
-    SetShouldPaintHeader(true);
-  } else {
-    SetShouldPaintHeader(!in_overview_);
-  }
+  return frame_->GetNativeWindow()->GetProperty(kFrameInactiveColorKey);
 }
 
 void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
-}
-
-void NonClientFrameViewAsh::OnOverviewModeStarting() {
-  in_overview_ = true;
-  UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::OnOverviewModeEnded() {
-  in_overview_ = false;
-  UpdateHeaderView();
-}
-
-void NonClientFrameViewAsh::OnSplitViewStateChanged(
-    SplitViewState /* previous_state */,
-    SplitViewState /* current_state */) {
-  UpdateHeaderView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

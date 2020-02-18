@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
@@ -41,14 +42,6 @@ static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
     case CSSPropertyID::kPaddingLeft:
     case CSSPropertyID::kPaddingRight:
     case CSSPropertyID::kPaddingTop:
-    case CSSPropertyID::kScrollMarginBlockEnd:
-    case CSSPropertyID::kScrollMarginBlockStart:
-    case CSSPropertyID::kScrollMarginBottom:
-    case CSSPropertyID::kScrollMarginInlineEnd:
-    case CSSPropertyID::kScrollMarginInlineStart:
-    case CSSPropertyID::kScrollMarginLeft:
-    case CSSPropertyID::kScrollMarginRight:
-    case CSSPropertyID::kScrollMarginTop:
     case CSSPropertyID::kScrollPaddingBlockEnd:
     case CSSPropertyID::kScrollPaddingBlockStart:
     case CSSPropertyID::kScrollPaddingBottom:
@@ -152,7 +145,7 @@ static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
   if (number < 0 && !accepts_negative_numbers)
     return nullptr;
 
-  return CSSPrimitiveValue::Create(number, unit);
+  return CSSNumericLiteralValue::Create(number, unit);
 }
 
 static inline bool IsColorPropertyID(CSSPropertyID property_id) {
@@ -631,6 +624,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
               (value_id == CSSValueID::kInlineStart ||
                value_id == CSSValueID::kInlineEnd)) ||
              value_id == CSSValueID::kNone;
+    case CSSPropertyID::kForcedColorAdjust:
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
     case CSSPropertyID::kImageRendering:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kWebkitOptimizeContrast ||
@@ -662,11 +657,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kOverflowWrap:
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakWord;
+    case CSSPropertyID::kOverflowBlock:
+    case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowX:
-      return value_id == CSSValueID::kVisible ||
-             value_id == CSSValueID::kHidden ||
-             value_id == CSSValueID::kScroll || value_id == CSSValueID::kAuto ||
-             value_id == CSSValueID::kOverlay;
     case CSSPropertyID::kOverflowY:
       return value_id == CSSValueID::kVisible ||
              value_id == CSSValueID::kHidden ||
@@ -967,9 +960,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kBreakWord;
     case CSSPropertyID::kScrollSnapStop:
       return value_id == CSSValueID::kNormal || value_id == CSSValueID::kAlways;
+    case CSSPropertyID::kOverscrollBehaviorInline:
+    case CSSPropertyID::kOverscrollBehaviorBlock:
     case CSSPropertyID::kOverscrollBehaviorX:
-      return value_id == CSSValueID::kAuto ||
-             value_id == CSSValueID::kContain || value_id == CSSValueID::kNone;
     case CSSPropertyID::kOverscrollBehaviorY:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kContain || value_id == CSSValueID::kNone;
@@ -1006,6 +999,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kEmptyCells:
     case CSSPropertyID::kFillRule:
     case CSSPropertyID::kFloat:
+    case CSSPropertyID::kForcedColorAdjust:
     case CSSPropertyID::kHyphens:
     case CSSPropertyID::kImageRendering:
     case CSSPropertyID::kListStylePosition:
@@ -1014,6 +1008,8 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kObjectFit:
     case CSSPropertyID::kOutlineStyle:
     case CSSPropertyID::kOverflowAnchor:
+    case CSSPropertyID::kOverflowBlock:
+    case CSSPropertyID::kOverflowInline:
     case CSSPropertyID::kOverflowWrap:
     case CSSPropertyID::kOverflowX:
     case CSSPropertyID::kOverflowY:
@@ -1024,6 +1020,8 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyID::kPosition:
     case CSSPropertyID::kResize:
     case CSSPropertyID::kScrollBehavior:
+    case CSSPropertyID::kOverscrollBehaviorInline:
+    case CSSPropertyID::kOverscrollBehaviorBlock:
     case CSSPropertyID::kOverscrollBehaviorX:
     case CSSPropertyID::kOverscrollBehaviorY:
     case CSSPropertyID::kShapeRendering:
@@ -1157,7 +1155,7 @@ static bool ParseTransformTranslateArguments(
     if (unit != CSSPrimitiveValue::UnitType::kPixels &&
         (number || unit != CSSPrimitiveValue::UnitType::kNumber))
       return false;
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         number, CSSPrimitiveValue::UnitType::kPixels));
     pos += argument_length + 1;
     --expected_count;
@@ -1180,7 +1178,7 @@ static bool ParseTransformNumberArguments(CharType*& pos,
     double number = CharactersToDouble(pos, argument_length, &ok);
     if (!ok)
       return false;
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         number, CSSPrimitiveValue::UnitType::kNumber));
     pos += argument_length + 1;
     --expected_count;

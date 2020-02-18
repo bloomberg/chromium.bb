@@ -30,15 +30,13 @@ class TestInstantServiceObserver : public InstantServiceObserver {
 
   void WaitForThemeApplied(bool theme_installed);
 
-  void WaitForDarkModeApplied(bool dark_mode);
-
   bool IsUsingDefaultTheme();
 
  private:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
 
-  void MostVisitedItemsChanged(const std::vector<InstantMostVisitedItem>& items,
-                               bool is_custom_links) override;
+  void MostVisitedInfoChanged(
+      const InstantMostVisitedInfo& most_visited_info) override;
 
   InstantService* const service_;
 
@@ -52,12 +50,10 @@ class TestInstantServiceObserver : public InstantServiceObserver {
   std::string expected_attribution_1_;
   std::string expected_attribution_2_;
   std::string expected_attribution_action_url_;
-  bool expected_dark_mode_ = false;
 
   base::OnceClosure quit_closure_most_visited_;
   base::OnceClosure quit_closure_custom_background_;
   base::OnceClosure quit_closure_theme_;
-  base::OnceClosure quit_closure_dark_mode_;
 };
 
 // Base class for dark mode tests on the local NTP. Provides helper functions to

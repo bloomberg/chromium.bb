@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "ui/views/layout/flex_layout_types.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Insets;
@@ -23,95 +24,13 @@ class SizeBounds;
 
 namespace internal {
 
-// Represents insets in a single dimension.
-class Inset1D {
- public:
-  constexpr Inset1D() = default;
-  constexpr explicit Inset1D(int all) : leading_(all), trailing_(all) {}
-  constexpr Inset1D(int leading, int trailing)
-      : leading_(leading), trailing_(trailing) {}
-
-  constexpr int leading() const { return leading_; }
-  void set_leading(int leading) { leading_ = leading; }
-
-  constexpr int trailing() const { return trailing_; }
-  void set_trailing(int trailing) { trailing_ = trailing; }
-
-  constexpr int size() const { return leading_ + trailing_; }
-
-  void SetInsets(int leading, int trailing);
-  void Expand(int delta_leading, int delta_trailing);
-
-  constexpr bool is_empty() const { return leading_ == 0 && trailing_ == 0; }
-  bool operator==(const Inset1D& other) const;
-  bool operator!=(const Inset1D& other) const;
-  bool operator<(const Inset1D& other) const;
-
-  std::string ToString() const;
-
- private:
-  int leading_ = 0;
-  int trailing_ = 0;
-};
-
-// Represents a line segment in one dimension with a starting point and length.
-class Span {
- public:
-  constexpr Span() = default;
-  constexpr Span(int start, int length) : start_(start), length_(length) {}
-
-  constexpr int start() const { return start_; }
-  void set_start(int start) { start_ = start; }
-
-  constexpr int length() const { return length_; }
-  void set_length(int length) {
-    DCHECK_GE(length, 0);
-    length_ = length;
-  }
-
-  constexpr int end() const { return start_ + length_; }
-  void set_end(int end) {
-    DCHECK_GE(end, start_);
-    length_ = end - start_;
-  }
-
-  void SetSpan(int start, int length);
-
-  // Expands the span by |leading| at the front (reducing the value of start()
-  // if |leading| is positive) and by |trailing| at the end (increasing the
-  // value of end() if |trailing| is positive).
-  void Expand(int leading, int trailing);
-
-  // Opposite of Expand(). Shrinks each end of the span by the specified amount.
-  void Inset(int leading, int trailing);
-  void Inset(const Inset1D& insets);
-
-  // Centers the span in another span, with optional margins.
-  // Overflow is handled gracefully.
-  void Center(const Span& container, const Inset1D& margins = Inset1D());
-
-  // Aligns the span in another span, with optional margins, using the specified
-  // alignment. Overflow is handled gracefully.
-  void Align(const Span& container,
-             LayoutAlignment alignment,
-             const Inset1D& margins = Inset1D());
-
-  constexpr bool is_empty() const { return length_ == 0; }
-  bool operator==(const Span& other) const;
-  bool operator!=(const Span& other) const;
-  bool operator<(const Span& other) const;
-
-  std::string ToString() const;
-
- private:
-  int start_ = 0;
-  int length_ = 0;
-};
+// NOTE: classes in this namespace are marked as VIEWS_EXPORT for unit testing
+// purposes only and should not be used outside the views library.
 
 // Represents a point in layout space - that is, a point on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedPoint {
+class VIEWS_EXPORT NormalizedPoint {
  public:
   constexpr NormalizedPoint() = default;
   constexpr NormalizedPoint(int main, int cross) : main_(main), cross_(cross) {}
@@ -139,7 +58,7 @@ class NormalizedPoint {
 // Represents a size in layout space - that is, a size on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedSize {
+class VIEWS_EXPORT NormalizedSize {
  public:
   constexpr NormalizedSize() = default;
   constexpr NormalizedSize(int main, int cross) : main_(main), cross_(cross) {}
@@ -173,7 +92,7 @@ class NormalizedSize {
 // Represents insets in layout space - that is, insets on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
-class NormalizedInsets {
+class VIEWS_EXPORT NormalizedInsets {
  public:
   constexpr NormalizedInsets() = default;
   constexpr explicit NormalizedInsets(int all) : main_(all), cross_(all) {}
@@ -230,7 +149,7 @@ class NormalizedInsets {
 // Represents size bounds in layout space - that is, a set of size bounds using
 // the main and cross axes of the layout (regardless of whether it is vertically
 // or horizontally oriented).
-class NormalizedSizeBounds {
+class VIEWS_EXPORT NormalizedSizeBounds {
  public:
   NormalizedSizeBounds();
   NormalizedSizeBounds(const base::Optional<int>& main,
@@ -245,6 +164,7 @@ class NormalizedSizeBounds {
   void set_cross(const base::Optional<int>& cross) { cross_ = cross; }
 
   void Expand(int main, int cross);
+  void Inset(const NormalizedInsets& insets);
 
   bool operator==(const NormalizedSizeBounds& other) const;
   bool operator!=(const NormalizedSizeBounds& other) const;
@@ -260,7 +180,7 @@ class NormalizedSizeBounds {
 // Represents a rectangle in layout space - that is, a rectangle whose
 // dimensions align with the main and cross axis of the layout (regardless of
 // whether the layout is vertically or horizontally oriented).
-class NormalizedRect {
+class VIEWS_EXPORT NormalizedRect {
  public:
   constexpr NormalizedRect() = default;
   constexpr NormalizedRect(const NormalizedPoint& origin,

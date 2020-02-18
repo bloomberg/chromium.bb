@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 #include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -23,7 +23,9 @@ class CORE_EXPORT FragmentData {
   USING_FAST_MALLOC(FragmentData);
 
  public:
-  FragmentData* NextFragment() const { return next_fragment_.get(); }
+  FragmentData* NextFragment() const {
+    return rare_data_ ? rare_data_->next_fragment_.get() : nullptr;
+  }
   FragmentData& EnsureNextFragment();
   void ClearNextFragment() { DestroyTail(); }
 
@@ -227,13 +229,17 @@ class CORE_EXPORT FragmentData {
   void MapRectToFragment(const FragmentData& fragment, IntRect&) const;
 
   ~FragmentData() {
-    if (next_fragment_)
+    if (NextFragment())
       DestroyTail();
   }
 
  private:
   friend class FragmentDataTest;
 
+  // We could let the compiler generate code to automatically destroy the
+  // next_fragment_ chain, but the code would cause stack overflow in some
+  // cases (e.g. fast/multicol/infinitely-tall-content-in-outer-crash.html).
+  // This function destroy the next_fragment_ chain non-recursively.
   void DestroyTail();
 
   // Contains rare data that that is not needed on all fragments.
@@ -260,6 +266,7 @@ class CORE_EXPORT FragmentData {
     bool is_clip_path_cache_valid = false;
     base::Optional<IntRect> clip_path_bounding_box;
     scoped_refptr<const RefCountedPath> clip_path_path;
+    std::unique_ptr<FragmentData> next_fragment_;
 
     DISALLOW_COPY_AND_ASSIGN(RareData);
   };
@@ -270,7 +277,6 @@ class CORE_EXPORT FragmentData {
   PhysicalOffset paint_offset_;
 
   std::unique_ptr<RareData> rare_data_;
-  std::unique_ptr<FragmentData> next_fragment_;
 };
 
 }  // namespace blink

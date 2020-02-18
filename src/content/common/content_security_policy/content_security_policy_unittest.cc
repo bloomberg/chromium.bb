@@ -22,7 +22,7 @@ class CSPContextTest : public CSPContext {
   }
 
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
-    return base::ContainsValue(scheme_to_bypass_, scheme);
+    return base::Contains(scheme_to_bypass_, scheme);
   }
 
  private:

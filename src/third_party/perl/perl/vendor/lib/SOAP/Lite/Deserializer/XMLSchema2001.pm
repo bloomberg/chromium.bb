@@ -1,6 +1,9 @@
 package SOAP::Lite::Deserializer::XMLSchema2001;
 
 use strict;
+
+our $VERSION = '1.27'; # VERSION
+
 use SOAP::Lite::Deserializer::XMLSchema1999;
 use SOAP::Lite::Deserializer::XMLSchemaSOAP1_1;
 use SOAP::Lite::Deserializer::XMLSchemaSOAP1_2;
@@ -21,8 +24,7 @@ BEGIN {
         century gMonthDay gDay duration recurringDuration
         language integer nonPositiveInteger negativeInteger long int short
         byte nonNegativeInteger unsignedLong unsignedInt unsignedShort
-        unsignedByte positiveInteger date time dateTime
-        QName
+        unsignedByte positiveInteger date time QName
     )) {
         my $name = 'as_' . $method;
         *$name = sub { $_[1] }

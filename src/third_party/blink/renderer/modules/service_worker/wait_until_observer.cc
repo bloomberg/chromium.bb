@@ -29,10 +29,10 @@ namespace {
 const unsigned kWindowInteractionTimeout = 10;
 const unsigned kWindowInteractionTimeoutForTest = 1;
 
-TimeDelta WindowInteractionTimeout() {
-  return TimeDelta::FromSeconds(WebTestSupport::IsRunningWebTest()
-                                    ? kWindowInteractionTimeoutForTest
-                                    : kWindowInteractionTimeout);
+base::TimeDelta WindowInteractionTimeout() {
+  return base::TimeDelta::FromSeconds(WebTestSupport::IsRunningWebTest()
+                                          ? kWindowInteractionTimeoutForTest
+                                          : kWindowInteractionTimeout);
 }
 
 }  // anonymous namespace
@@ -294,6 +294,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
     case kPush:
       service_worker_global_scope->DidHandlePushEvent(event_id_, status);
       break;
+    case kPushSubscriptionChange:
+      service_worker_global_scope->DidHandlePushSubscriptionChangeEvent(
+          event_id_, status);
+      break;
     case kSync:
       service_worker_global_scope->DidHandleSyncEvent(event_id_, status);
       break;
@@ -320,6 +324,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
     case kBackgroundFetchSuccess:
       service_worker_global_scope->DidHandleBackgroundFetchSuccessEvent(
           event_id_, status);
+      break;
+    case kContentDelete:
+      service_worker_global_scope->DidHandleContentDeleteEvent(event_id_,
+                                                               status);
       break;
   }
 }

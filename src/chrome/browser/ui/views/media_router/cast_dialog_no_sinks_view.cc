@@ -36,9 +36,9 @@
 namespace media_router {
 
 CastDialogNoSinksView::CastDialogNoSinksView(Profile* profile)
-    : profile_(profile), weak_factory_(this) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    : profile_(profile) {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   looking_for_sinks_view_ = CreateLookingForSinksView();
   AddChildView(looking_for_sinks_view_);
 

@@ -56,8 +56,6 @@ SampleApplication::SampleApplication(std::string name,
       mEGLWindow(nullptr),
       mOSWindow(nullptr)
 {
-    mPlatformParams.majorVersion = glesMajorVersion;
-    mPlatformParams.minorVersion = glesMinorVersion;
     mPlatformParams.renderer     = EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE;
 
     if (argc > 1 && strncmp(argv[1], kUseAngleArg, strlen(kUseAngleArg)) == 0)
@@ -66,7 +64,8 @@ SampleApplication::SampleApplication(std::string name,
     }
 
     // Load EGL library so we can initialize the display.
-    mEntryPointsLib.reset(angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME));
+    mEntryPointsLib.reset(
+        angle::OpenSharedLibrary(ANGLE_EGL_LIBRARY_NAME, angle::SearchType::ApplicationDir));
 
     mEGLWindow = EGLWindow::New(glesMajorVersion, glesMinorVersion);
     mTimer.reset(CreateTimer());

@@ -9,11 +9,13 @@
 #include <algorithm>
 #include <utility>
 
-#include "core/fxcodec/codec/ccodec_gifmodule.h"
-#include "core/fxcodec/codec/cfx_codec_memory.h"
+#include "core/fxcodec/cfx_codec_memory.h"
 #include "core/fxcodec/gif/cfx_gif.h"
+#include "core/fxcodec/gif/gifmodule.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
+
+namespace fxcodec {
 
 namespace {
 
@@ -21,8 +23,8 @@ constexpr int32_t kGifInterlaceStep[4] = {8, 8, 4, 2};
 
 }  // namespace
 
-CFX_GifContext::CFX_GifContext(CCodec_GifModule* gif_module,
-                               CCodec_GifModule::Delegate* delegate)
+CFX_GifContext::CFX_GifContext(GifModule* gif_module,
+                               GifModule::Delegate* delegate)
     : gif_module_(gif_module), delegate_(delegate) {}
 
 CFX_GifContext::~CFX_GifContext() = default;
@@ -547,3 +549,5 @@ bool CFX_GifContext::ScanForTerminalMarker() {
 
   return true;
 }
+
+}  // namespace fxcodec

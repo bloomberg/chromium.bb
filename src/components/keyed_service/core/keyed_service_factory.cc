@@ -83,7 +83,7 @@ KeyedService* KeyedServiceFactory::GetServiceForContext(void* context,
 KeyedService* KeyedServiceFactory::Associate(
     void* context,
     std::unique_ptr<KeyedService> service) {
-  DCHECK(!base::ContainsKey(mapping_, context));
+  DCHECK(!base::Contains(mapping_, context));
   auto iterator = mapping_.emplace(context, std::move(service)).first;
   return iterator->second.get();
 }
@@ -117,5 +117,5 @@ void KeyedServiceFactory::SetEmptyTestingFactory(void* context) {
 }
 
 bool KeyedServiceFactory::HasTestingFactory(void* context) {
-  return base::ContainsKey(testing_factories_, context);
+  return base::Contains(testing_factories_, context);
 }

@@ -59,7 +59,7 @@ extern const char kSyncWifiConfigurations[];
 extern const char kSyncWifiCredentials[];
 
 extern const char kSyncManaged[];
-extern const char kSyncSuppressStart[];
+extern const char kSyncRequested[];
 
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
@@ -70,15 +70,19 @@ extern const char kSyncBagOfChips[];
 
 extern const char kSyncPassphrasePrompted[];
 
-extern const char kSyncMemoryPressureWarningCount[];
-extern const char kSyncShutdownCleanly[];
-
 extern const char kSyncInvalidationVersions[];
 
 extern const char kSyncLastRunVersion[];
 
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
+
+extern const char kSyncDemographics[];
+extern const char kSyncDemographicsBirthYearOffset[];
+
+// These are not prefs, they are paths inside of kSyncDemographics.
+extern const char kSyncDemographics_BirthYearPath[];
+extern const char kSyncDemographics_GenderPath[];
 
 }  // namespace prefs
 

@@ -1,10 +1,11 @@
-package Moose::Manual::MooseX;
-
+# PODNAME: Moose::Manual::MooseX
 # ABSTRACT: Recommended Moose extensions
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::MooseX - Recommended Moose extensions
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 MooseX?
 
@@ -72,7 +73,7 @@ silently ignored.
 =head1 L<MooseX::Params::Validate>
 
 We have high hopes for the future of L<MooseX::Method::Signatures> and
-L<MooseX::Declare>. However, these modules, while used regularly in
+L<Moops>. However, these modules, while used regularly in
 production by some of the more insane members of the community, are
 still marked alpha just in case backwards incompatible changes need to
 be made.
@@ -159,16 +160,18 @@ endorse just yet.
 
 =head2 L<MooseX::Declare>
 
-Extends Perl with Moose-based keywords using C<Devel::Declare>. Very
-cool, but still new and experimental.
+MooseX::Declare is based on L<Devel::Declare>, a giant bag of crack
+originally implemented by mst with the goal of upsetting the perl core
+developers so much by its very existence that they implemented proper
+keyword handling in the core.
 
-  class User {
+As of perl5 version 14, this goal has been achieved, and modules such
+as L<Devel::CallParser>, L<Function::Parameters>, and L<Keyword::Simple> provide
+mechanisms to mangle perl syntax that don't require hallucinogenic
+drugs to interpret the error messages they produce.
 
-      has 'name'  => ( ... );
-      has 'email' => ( ... );
-
-      method login (Str $password) { ... }
-  }
+If you want to use declarative syntax in new code, please for the love
+of kittens get yourself a recent perl and look at L<Moops> instead.
 
 =head2 L<MooseX::Types>
 
@@ -267,19 +270,57 @@ setting up proper inheritance from Moose::Object and installing
 (and inlining, at make_immutable time) a constructor that makes sure things
 like BUILD methods are called.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

@@ -20,7 +20,6 @@
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/browser/cache_storage/scoped_writable_entry.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
@@ -163,6 +162,8 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
                             blink::mojom::CacheQueryOptionsPtr match_options,
                             int64_t trace_id,
                             CacheEntriesCallback callback) override;
+
+  InitState GetInitState() const override;
 
   // Async operations in progress will cancel and not run their callbacks.
   ~LegacyCacheStorageCache() override;
@@ -513,8 +514,8 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   // as long this cache object is also referenced.
   CacheStorageHandle cache_storage_handle_;
 
+  const scoped_refptr<base::SequencedTaskRunner> scheduler_task_runner_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   BackendState backend_state_ = BACKEND_UNINITIALIZED;
   std::unique_ptr<CacheStorageScheduler> scheduler_;
   bool initializing_ = false;
@@ -540,7 +541,7 @@ class CONTENT_EXPORT LegacyCacheStorageCache : public CacheStorageCache {
   base::OnceClosure post_backend_closed_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_;
+  base::WeakPtrFactory<LegacyCacheStorageCache> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LegacyCacheStorageCache);
 };

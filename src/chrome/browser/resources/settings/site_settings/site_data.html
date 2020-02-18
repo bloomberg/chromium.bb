@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -37,11 +38,10 @@
     </style>
     <div class="settings-box continuation">
       <paper-spinner-lite active="[[isLoading_]]"></paper-spinner-lite>
-      <paper-button class="secondary-button"
-          disabled$="[[isLoading_]]" id="removeShowingSites"
+      <cr-button disabled$="[[isLoading_]]" id="removeShowingSites"
           on-click="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
-      </paper-button>
+      </cr-button>
     </div>
     <iron-list id="list" items="[[sites]]" preserve-focus
         scroll-target="[[subpageScrollTarget]]" class="cr-separators">
@@ -63,12 +63,12 @@
       </div>
       <div slot="body">$i18n{siteSettingsCookieRemoveMultipleConfirmation}</div>
       <div slot="button-container">
-        <paper-button class="cancel-button" on-click="onCloseDialog_">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
           $i18n{cancel}
-        </paper-button>
-        <paper-button class="action-button" on-click="onConfirmDelete_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onConfirmDelete_">
           $i18n{siteSettingsCookiesClearAll}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

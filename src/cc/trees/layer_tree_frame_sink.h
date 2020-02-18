@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -127,7 +128,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
 
   // viz::SharedBitmapReporter implementation.
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override = 0;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override = 0;
 
@@ -154,7 +155,7 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
  private:
   THREAD_CHECKER(thread_checker_);
-  base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_;
+  base::WeakPtrFactory<LayerTreeFrameSink> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

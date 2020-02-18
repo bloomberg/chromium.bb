@@ -239,6 +239,10 @@ _PARCEL_RESULT_RE = re.compile(
 _EBUSY_RE = re.compile(
     r'mkdir failed for ([^,]*), Device or resource busy')
 
+# http://bit.ly/2WLZhUF added a timeout to adb wait-for-device. We sometimes
+# want to wait longer than the implicit call within adb root allows.
+_WAIT_FOR_DEVICE_TIMEOUT_STR = 'timeout expired while waiting for device'
+
 _WEBVIEW_SYSUPDATE_CURRENT_PKG_RE = re.compile(
     r'Current WebView package.*:.*\(([a-z.]*),')
 _WEBVIEW_SYSUPDATE_NULL_PKG_RE = re.compile(
@@ -397,7 +401,7 @@ class DeviceUtils(object):
     assert hasattr(self, decorators.DEFAULT_TIMEOUT_ATTR)
     assert hasattr(self, decorators.DEFAULT_RETRIES_ATTR)
 
-    self._ClearCache()
+    self.ClearCache()
 
   @property
   def serial(self):
@@ -481,6 +485,10 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
     try:
+      if self.build_type == 'eng':
+        # 'eng' builds have root enabled by default and the adb session cannot
+        # be unrooted.
+        return True
       if self.product_name in _SPECIAL_ROOT_DEVICE_LIST:
         return self.GetProp('service.adb.root') == '1'
       self.RunShellCommand(['ls', '/root'], check_return=True)
@@ -544,17 +552,22 @@ class DeviceUtils(object):
 
     try:
       self.adb.Root()
-    except device_errors.AdbCommandFailedError:
+    except device_errors.AdbCommandFailedError as e:
       if self.IsUserBuild():
         raise device_errors.CommandFailedError(
             'Unable to root device with user build.', str(self))
+      elif e.output and _WAIT_FOR_DEVICE_TIMEOUT_STR in e.output:
+        # adb 1.0.41 added a call to wait-for-device *inside* root
+        # with a timeout that can be too short in some cases.
+        # If we hit that timeout, ignore it & do our own wait below.
+        pass
       else:
         raise  # Failed probably due to some other reason.
 
     def device_online_with_root():
       try:
         self.adb.WaitForDevice()
-        return self.GetProp('service.adb.root', cache=False) == '1'
+        return self.HasRoot()
       except (device_errors.AdbCommandFailedError,
               device_errors.DeviceUnreachableError):
         return False
@@ -869,12 +882,12 @@ class DeviceUtils(object):
       return not self.IsOnline()
 
     self.adb.Reboot()
-    self._ClearCache()
+    self.ClearCache()
     timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
       self.WaitUntilFullyBooted(wifi=wifi)
 
-  INSTALL_DEFAULT_TIMEOUT = 4 * _DEFAULT_TIMEOUT
+  INSTALL_DEFAULT_TIMEOUT = 8 * _DEFAULT_TIMEOUT
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1001,8 +1014,10 @@ class DeviceUtils(object):
         logger.warning('Error calculating md5: %s', e)
         apks_to_install, host_checksums = all_apks, None
       if apks_to_install and not reinstall:
-        self.Uninstall(package_name)
         apks_to_install = all_apks
+
+    if device_apk_paths and apks_to_install and not reinstall:
+      self.Uninstall(package_name)
 
     if apks_to_install:
       # Assume that we won't know the resulting device state.
@@ -2863,7 +2878,29 @@ class DeviceUtils(object):
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def SetWebViewFallbackLogic(self, enabled, timeout=None, retries=None):
-    """Select the WebView implementation to the specified package.
+    """Set whether WebViewUpdateService's "fallback logic" should be enabled.
+
+    WebViewUpdateService has nonintuitive "fallback logic" for devices where
+    Monochrome (Chrome Stable) is preinstalled as the WebView provider, with a
+    "stub" (little-to-no code) implementation of standalone WebView.
+
+    "Fallback logic" (enabled by default) is designed, in the case where the
+    user has disabled Chrome, to fall back to the stub standalone WebView by
+    enabling the package. The implementation plumbs through the Chrome APK until
+    Play Store installs an update with the full implementation.
+
+    A surprising side-effect of "fallback logic" is that, immediately after
+    sideloading WebView, WebViewUpdateService re-disables the package and
+    uninstalls the update. This can prevent successfully using standalone
+    WebView for development, although "fallback logic" can be disabled on
+    userdebug/eng devices.
+
+    Because this is only relevant for devices with the standalone WebView stub,
+    this command is only relevant on N-P (inclusive).
+
+    You can determine if "fallback logic" is currently enabled by checking
+    FallbackLogicEnabled in the dictionary returned by
+    GetWebViewUpdateServiceDump.
 
     Args:
       enabled: bool - True for enabled, False for disabled
@@ -2876,8 +2913,8 @@ class DeviceUtils(object):
       DeviceUnreachableError on missing device.
     """
 
-    # command is not available pre-monochrome, treat as no-op
-    if self.build_version_sdk < version_codes.NOUGAT:
+    # Command is only available on devices which preinstall stub WebView.
+    if not version_codes.NOUGAT <= self.build_version_sdk <= version_codes.PIE:
       return
 
     # redundant-packages is the opposite of fallback logic
@@ -2966,7 +3003,7 @@ class DeviceUtils(object):
       self._client_caches[client_name] = {}
     return self._client_caches[client_name]
 
-  def _ClearCache(self):
+  def ClearCache(self):
     """Clears all caches."""
     for client in self._client_caches:
       self._client_caches[client].clear()

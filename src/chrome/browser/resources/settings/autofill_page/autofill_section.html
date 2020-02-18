@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
@@ -46,12 +47,11 @@
     </template>
     <div class="settings-box continuation">
       <h2 class="start">$i18n{addresses}</h2>
-      <paper-button id="addAddress"
-          class="secondary-button header-aligned-button"
+      <cr-button id="addAddress" class="header-aligned-button"
           on-click="onAddAddressTap_"
           hidden$="[[!prefs.autofill.profile_enabled.value]]">
         $i18n{add}
-      </paper-button>
+      </cr-button>
     </div>
     <div class="list-frame">
       <div id="addressList" class="vertical-list">

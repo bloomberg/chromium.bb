@@ -212,10 +212,9 @@ payments::mojom::blink::PaymentAddressPtr BuildPaymentAddressForTest() {
   return result;
 }
 
-void MakePaymentRequestOriginSecure(Document& document) {
-  document.SetSecurityOrigin(
-      SecurityOrigin::Create(KURL("https://www.example.com/")));
-  document.SetSecureContextStateForTesting(SecureContextState::kSecure);
+PaymentRequestV8TestingScope::PaymentRequestV8TestingScope()
+    : V8TestingScope(KURL("https://www.example.com/")) {
+  GetDocument().SetSecureContextStateForTesting(SecureContextState::kSecure);
 }
 
 PaymentRequestMockFunctionScope::PaymentRequestMockFunctionScope(

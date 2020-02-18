@@ -29,7 +29,7 @@ scoped_refptr<StylePath> StylePath::Create(
   return base::AdoptRef(new StylePath(std::move(path_byte_stream)));
 }
 
-StylePath* StylePath::EmptyPath() {
+const StylePath* StylePath::EmptyPath() {
   DEFINE_STATIC_REF(StylePath, empty_path,
                     StylePath::Create(std::make_unique<SVGPathByteStream>()));
   return empty_path;

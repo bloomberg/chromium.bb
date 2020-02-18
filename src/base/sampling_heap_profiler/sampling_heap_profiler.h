@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_id_name_manager.h"
 
 namespace base {
 
@@ -25,7 +26,8 @@ class NoDestructor;
 // record samples.
 // The recorded samples can then be retrieved using GetSamples method.
 class BASE_EXPORT SamplingHeapProfiler
-    : private PoissonAllocationSampler::SamplesObserver {
+    : private PoissonAllocationSampler::SamplesObserver,
+      public base::ThreadIdNameManager::Observer {
  public:
   class BASE_EXPORT Sample {
    public:
@@ -94,6 +96,9 @@ class BASE_EXPORT SamplingHeapProfiler
 
   static void Init();
   static SamplingHeapProfiler* Get();
+
+  // ThreadIdNameManager::Observer implementation:
+  void OnThreadNameChanged(const char* name) override;
 
  private:
   SamplingHeapProfiler();

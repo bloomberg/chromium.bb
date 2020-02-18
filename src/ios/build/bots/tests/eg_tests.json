@@ -10,13 +10,6 @@
       "xctest": true
     },
     {
-      "app": "ios_chrome_manual_fill_egtests",
-      "test args": [
-        "--enable-features=AutofillManualFallback,AutofillManualFallbackPhaseTwo,WebFrameMessaging"
-      ],
-      "xctest": true
-    },
-    {
       "app": "ios_chrome_web_egtests",
       "xctest": true
     },
@@ -27,9 +20,6 @@
     },
     {
       "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS"
-      ],
       "xctest": true,
       "xcode parallelization": true
     },
@@ -41,10 +31,6 @@
       "app": "ios_showcase_egtests",
       "xctest": true,
       "xcode parallelization": true
-    },
-    {
-      "app": "ios_chrome_unified_consent_egtests",
-      "xctest": true
     }
   ]
 }

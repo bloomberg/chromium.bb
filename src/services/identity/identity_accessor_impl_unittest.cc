@@ -6,12 +6,11 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/mojom/account.mojom.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -44,9 +43,20 @@ class IdentityAccessorImplTest : public testing::Test {
 
   void OnReceivedPrimaryAccountInfo(
       base::RepeatingClosure quit_closure,
-      const base::Optional<CoreAccountInfo>& account_info,
+      const base::Optional<CoreAccountId>& account_id,
+      const base::Optional<std::string>& gaia,
+      const base::Optional<std::string>& email,
       const AccountState& account_state) {
-    primary_account_info_ = account_info;
+    base::Optional<CoreAccountInfo> received_info;
+
+    if (account_id) {
+      received_info = CoreAccountInfo();
+      received_info->account_id = account_id.value();
+      received_info->gaia = gaia.value();
+      received_info->email = email.value();
+    }
+
+    primary_account_info_ = received_info;
     primary_account_state_ = account_state;
     quit_closure.Run();
   }
@@ -54,17 +64,14 @@ class IdentityAccessorImplTest : public testing::Test {
   void OnPrimaryAccountAvailable(base::RepeatingClosure quit_closure,
                                  CoreAccountInfo* caller_account_info,
                                  AccountState* caller_account_state,
-                                 const CoreAccountInfo& account_info,
+                                 const CoreAccountId& account_id,
+                                 const std::string& gaia,
+                                 const std::string& email,
                                  const AccountState& account_state) {
-    *caller_account_info = account_info;
+    caller_account_info->account_id = account_id;
+    caller_account_info->gaia = gaia;
+    caller_account_info->email = email;
     *caller_account_state = account_state;
-    quit_closure.Run();
-  }
-
-  void OnGotAccounts(base::RepeatingClosure quit_closure,
-                     std::vector<mojom::AccountPtr>* output,
-                     std::vector<mojom::AccountPtr> accounts) {
-    *output = std::move(accounts);
     quit_closure.Run();
   }
 
@@ -109,12 +116,12 @@ class IdentityAccessorImplTest : public testing::Test {
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
-  IdentityTestEnvironment* identity_test_environment() {
+  signin::IdentityTestEnvironment* identity_test_environment() {
     return &identity_test_environment_;
   }
 
  private:
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   IdentityService service_;
 

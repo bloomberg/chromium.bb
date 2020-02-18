@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_macros.h"
@@ -264,8 +265,8 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
   ASSERT_TRUE(clipboard);
   base::string16 paste_text = base::ASCIIToUTF16("Clippy!");
   for (ui::ClipboardType type :
-       {ui::CLIPBOARD_TYPE_COPY_PASTE, ui::CLIPBOARD_TYPE_SELECTION,
-        ui::CLIPBOARD_TYPE_DRAG}) {
+       {ui::ClipboardType::kCopyPaste, ui::ClipboardType::kSelection,
+        ui::ClipboardType::kDrag}) {
     if (!ui::Clipboard::IsSupportedClipboardType(type))
       continue;
     {
@@ -470,6 +471,8 @@ class CrashReporterTest : public HeadlessBrowserTest,
 #define MAYBE_GenerateMinidump DISABLED_GenerateMinidump
 #endif  // defined(HEADLESS_USE_BREAKPAD) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(CrashReporterTest, MAYBE_GenerateMinidump) {
+  content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+
   // Navigates a tab to chrome://crash and checks that a minidump is generated.
   // Note that we only test renderer crashes here -- browser crashes need to be
   // tested with a separate harness.

@@ -8,8 +8,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.format.DateUtils;
 
 import org.chromium.chrome.R;
@@ -24,7 +24,7 @@ import java.util.Calendar;
  * Settings fragment that displays information about Chrome.
  */
 public class AboutChromePreferences
-        extends PreferenceFragment implements Preference.OnPreferenceClickListener {
+        extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener {
     private static final int TAPS_FOR_DEVELOPER_PREFERENCES = 7;
 
     private static final String PREF_APPLICATION_VERSION = "application_version";
@@ -46,8 +46,7 @@ public class AboutChromePreferences
     private Toast mToast;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle bundle, String s) {
         getActivity().setTitle(R.string.prefs_about_chrome);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.about_chrome_preferences);
 

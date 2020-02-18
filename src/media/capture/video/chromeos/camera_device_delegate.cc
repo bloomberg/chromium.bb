@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/numerics/ranges.h"
 #include "base/posix/safe_strerror.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
@@ -120,7 +121,7 @@ std::string StreamTypeToString(StreamType stream_type) {
       return std::string("StreamType::kYUVOutput");
     default:
       return std::string("Unknown StreamType value: ") +
-             std::to_string(static_cast<int32_t>(stream_type));
+             base::NumberToString(static_cast<int32_t>(stream_type));
   }
 }  // namespace media
 
@@ -163,7 +164,6 @@ CameraDeviceDelegate::CameraDeviceDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
     ReprocessManager* reprocess_manager)
     : device_descriptor_(device_descriptor),
-      camera_id_(std::stoi(device_descriptor.device_id)),
       camera_hal_delegate_(std::move(camera_hal_delegate)),
       ipc_task_runner_(std::move(ipc_task_runner)),
       reprocess_manager_(reprocess_manager),
@@ -180,17 +180,48 @@ void CameraDeviceDelegate::AllocateAndStart(
   device_context_ = device_context;
   device_context_->SetState(CameraDeviceContext::State::kStarting);
 
-  // We need to get the static camera metadata of the camera device first.
-  camera_hal_delegate_->GetCameraInfo(
-      camera_id_, BindToCurrentLoop(base::BindOnce(
-                      &CameraDeviceDelegate::OnGotCameraInfo, GetWeakPtr())));
+  auto camera_info = camera_hal_delegate_->GetCameraInfoFromDeviceId(
+      device_descriptor_.device_id);
+  if (camera_info.is_null()) {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToGetCameraInfo,
+        FROM_HERE, "Failed to get camera info");
+    return;
+  }
+
+  SortCameraMetadata(&camera_info->static_camera_characteristics);
+  static_metadata_ = std::move(camera_info->static_camera_characteristics);
+
+  auto sensor_orientation = GetMetadataEntryAsSpan<int32_t>(
+      static_metadata_,
+      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION);
+  if (sensor_orientation.empty()) {
+    device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateMissingSensorOrientationInfo,
+        FROM_HERE, "Camera is missing required sensor orientation info");
+    return;
+  }
+  device_context_->SetSensorOrientation(sensor_orientation[0]);
+
+  // |device_ops_| is bound after the MakeRequest call.
+  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
+      mojo::MakeRequest(&device_ops_);
+  device_ops_.set_connection_error_handler(base::BindOnce(
+      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
+  camera_hal_delegate_->OpenDevice(
+      camera_hal_delegate_->GetCameraIdFromDeviceId(
+          device_descriptor_.device_id),
+      std::move(device_ops_request),
+      BindToCurrentLoop(
+          base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
 }
 
 void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
-  reprocess_manager_->FlushReprocessOptions(device_descriptor_.device_id);
+  reprocess_manager_->Flush(device_descriptor_.device_id);
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -209,13 +240,15 @@ void CameraDeviceDelegate::StopAndDeAllocate(
 
   device_close_callback_ = std::move(device_close_callback);
   device_context_->SetState(CameraDeviceContext::State::kStopping);
-  if (!device_ops_.is_bound()) {
-    // The device delegate is in the process of opening the camera device.
-    return;
+  if (device_ops_.is_bound()) {
+    device_ops_->Close(
+        base::BindOnce(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
   }
-  request_manager_->StopPreview(base::NullCallback());
-  device_ops_->Close(
-      base::BindOnce(&CameraDeviceDelegate::OnClosed, GetWeakPtr()));
+  // |request_manager_| might be still uninitialized if StopAndDeAllocate() is
+  // called before the device is opened.
+  if (request_manager_) {
+    request_manager_->StopPreview(base::NullCallback());
+  }
 }
 
 void CameraDeviceDelegate::TakePhoto(
@@ -411,58 +444,17 @@ void CameraDeviceDelegate::ResetMojoInterface() {
   request_manager_.reset();
 }
 
-void CameraDeviceDelegate::OnGotCameraInfo(
-    int32_t result,
-    cros::mojom::CameraInfoPtr camera_info) {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-
-  if (device_context_->GetState() != CameraDeviceContext::State::kStarting) {
-    DCHECK_EQ(device_context_->GetState(),
-              CameraDeviceContext::State::kStopping);
-    OnClosed(0);
-    return;
-  }
-
-  if (result) {
-    device_context_->SetErrorState(
-        media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToGetCameraInfo,
-        FROM_HERE, "Failed to get camera info");
-    return;
-  }
-
-  reprocess_manager_->UpdateCameraInfo(device_descriptor_.device_id,
-                                       camera_info);
-  SortCameraMetadata(&camera_info->static_camera_characteristics);
-  static_metadata_ = std::move(camera_info->static_camera_characteristics);
-
-  const cros::mojom::CameraMetadataEntryPtr* sensor_orientation =
-      GetMetadataEntry(
-          static_metadata_,
-          cros::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION);
-  if (sensor_orientation) {
-    device_context_->SetSensorOrientation(
-        *reinterpret_cast<int32_t*>((*sensor_orientation)->data.data()));
-  } else {
-    device_context_->SetErrorState(
-        media::VideoCaptureError::
-            kCrosHalV3DeviceDelegateMissingSensorOrientationInfo,
-        FROM_HERE, "Camera is missing required sensor orientation info");
-    return;
-  }
-
-  // |device_ops_| is bound after the MakeRequest call.
-  cros::mojom::Camera3DeviceOpsRequest device_ops_request =
-      mojo::MakeRequest(&device_ops_);
-  device_ops_.set_connection_error_handler(base::BindOnce(
-      &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
-  camera_hal_delegate_->OpenDevice(
-      camera_id_, std::move(device_ops_request),
-      BindToCurrentLoop(
-          base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
-}
-
 void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  if (device_context_ == nullptr) {
+    // The OnOpenedDevice() might be called after the camera device already
+    // closed by StopAndDeAllocate(), because |camera_hal_delegate_| and
+    // |device_ops_| are on different IPC channels. In such case,
+    // OnMojoConnectionError() might call OnClosed() and the
+    // |device_context_| is cleared, so we just return here.
+    return;
+  }
 
   if (device_context_->GetState() != CameraDeviceContext::State::kStarting) {
     if (device_context_->GetState() == CameraDeviceContext::State::kError) {
@@ -496,7 +488,8 @@ void CameraDeviceDelegate::Initialize() {
   request_manager_ = std::make_unique<RequestManager>(
       std::move(callback_ops_request),
       std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
-      device_context_, std::make_unique<CameraBufferFactory>(),
+      device_context_, chrome_capture_params_.buffer_type,
+      std::make_unique<CameraBufferFactory>(),
       base::BindRepeating(&RotateAndBlobify), ipc_task_runner_);
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
@@ -545,6 +538,7 @@ void CameraDeviceDelegate::ConfigureStreams(
       chrome_capture_params_.requested_format.frame_size.height();
   preview_stream->format =
       cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888;
+  preview_stream->usage = cros::mojom::GRALLOC_USAGE_HW_COMPOSER;
   preview_stream->data_space = 0;
   preview_stream->rotation =
       cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;
@@ -660,7 +654,7 @@ void CameraDeviceDelegate::OnConfiguredStreams(
             kCrosHalV3DeviceDelegateWrongNumberOfStreamsConfigured,
         FROM_HERE,
         std::string("Wrong number of streams configured: ") +
-            std::to_string(updated_config->streams.size()));
+            base::NumberToString(updated_config->streams.size()));
     return;
   }
 
@@ -788,17 +782,13 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
         FROM_HERE, "Failed to get default request settings");
     return;
   }
-  device_context_->SetState(CameraDeviceContext::State::kCapturing);
-  camera_3a_controller_->SetAutoFocusModeForStillCapture();
-  request_manager_->StartPreview(std::move(settings));
-
-  if (!take_photo_callbacks_.empty()) {
-    TakePhotoImpl();
-  }
-
-  if (set_photo_option_callback_) {
-    std::move(set_photo_option_callback_).Run(true);
-  }
+  reprocess_manager_->GetFpsRange(
+      device_descriptor_.device_id,
+      chrome_capture_params_.requested_format.frame_size.width(),
+      chrome_capture_params_.requested_format.frame_size.height(),
+      media::BindToCurrentLoop(
+          base::BindOnce(&CameraDeviceDelegate::OnGotFpsRange, GetWeakPtr(),
+                         std::move(settings))));
 }
 
 void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
@@ -816,6 +806,42 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
                                                 request_manager_->GetWeakPtr(),
                                                 settings.Clone())));
     take_photo_callbacks_.pop();
+  }
+}
+
+void CameraDeviceDelegate::OnGotFpsRange(
+    cros::mojom::CameraMetadataPtr settings,
+    base::Optional<gfx::Range> specified_fps_range) {
+  device_context_->SetState(CameraDeviceContext::State::kCapturing);
+  camera_3a_controller_->SetAutoFocusModeForStillCapture();
+  if (specified_fps_range.has_value()) {
+    const int32_t entry_length = 2;
+
+    // CameraMetadata is represented as an uint8 array. According to the
+    // definition of the FPS metadata tag, its data type is int32, so we
+    // reinterpret_cast here.
+    std::vector<uint8_t> fps_range(sizeof(int32_t) * entry_length);
+    auto* fps_ptr = reinterpret_cast<int32_t*>(fps_range.data());
+    fps_ptr[0] = specified_fps_range->GetMin();
+    fps_ptr[1] = specified_fps_range->GetMax();
+    cros::mojom::CameraMetadataEntryPtr e =
+        cros::mojom::CameraMetadataEntry::New();
+    e->tag =
+        cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_TARGET_FPS_RANGE;
+    e->type = cros::mojom::EntryType::TYPE_INT32;
+    e->count = entry_length;
+    e->data = std::move(fps_range);
+
+    AddOrUpdateMetadataEntry(&settings, std::move(e));
+  }
+  request_manager_->StartPreview(std::move(settings));
+
+  if (!take_photo_callbacks_.empty()) {
+    TakePhotoImpl();
+  }
+
+  if (set_photo_option_callback_) {
+    std::move(set_photo_option_callback_).Run(true);
   }
 }
 

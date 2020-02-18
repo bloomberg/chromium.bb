@@ -61,10 +61,6 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "IdleTask";
     case TaskType::kMiscPlatformAPI:
       return "MiscPlatformAPI";
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-      return "ExperimentalWebSchedulingUserInteraction";
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      return "ExperimentalWebSchedulingBackground";
     case TaskType::kFontLoading:
       return "FontLoading";
     case TaskType::kApplicationLifeCycle:
@@ -75,6 +71,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "Permission";
     case TaskType::kServiceWorkerClientMessage:
       return "ServiceWorkerClientMessage";
+    case TaskType::kWebLocks:
+      return "WebLocks";
     case TaskType::kInternalDefault:
       return "InternalDefault";
     case TaskType::kInternalLoading:
@@ -131,6 +129,10 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalContentCapture";
     case TaskType::kInternalNavigationAssociated:
       return "InternalNavigationAssociated";
+    case TaskType::kInternalFreezableIPC:
+      return "InternalFreezableIPC";
+    case TaskType::kInternalContinueScriptLoading:
+      return "InternalContinueScriptLoading";
     case TaskType::kCount:
       return "Count";
   }

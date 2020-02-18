@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 
 namespace base {
@@ -46,12 +47,12 @@ class BASE_EXPORT LockFreeAddressHashSet {
 
   // Checks if the |key| is in the set. Can be executed concurrently with
   // |Insert|, |Remove|, and |Contains| operations.
-  bool Contains(void* key) const;
+  ALWAYS_INLINE bool Contains(void* key) const;
 
   // Removes the |key| from the set. The key must be present in the set before
   // the invocation.
   // Concurrent execution of |Insert|, |Remove|, or |Copy| is not supported.
-  void Remove(void* key);
+  ALWAYS_INLINE void Remove(void* key);
 
   // Inserts the |key| into the set. The key must not be present in the set
   // before the invocation.
@@ -73,28 +74,29 @@ class BASE_EXPORT LockFreeAddressHashSet {
   friend class LockFreeAddressHashSetTest;
 
   struct Node {
-    Node(void* key, Node* next);
+    ALWAYS_INLINE Node(void* key, Node* next);
     std::atomic<void*> key;
     Node* next;
   };
 
-  static uint32_t Hash(void* key);
-  Node* FindNode(void* key) const;
+  ALWAYS_INLINE static uint32_t Hash(void* key);
+  ALWAYS_INLINE Node* FindNode(void* key) const;
 
   std::vector<std::atomic<Node*>> buckets_;
   int size_ = 0;
   const size_t bucket_mask_;
 };
 
-inline LockFreeAddressHashSet::Node::Node(void* key, Node* next) : next(next) {
+ALWAYS_INLINE LockFreeAddressHashSet::Node::Node(void* key, Node* next)
+    : next(next) {
   this->key.store(key, std::memory_order_relaxed);
 }
 
-inline bool LockFreeAddressHashSet::Contains(void* key) const {
+ALWAYS_INLINE bool LockFreeAddressHashSet::Contains(void* key) const {
   return FindNode(key) != nullptr;
 }
 
-inline void LockFreeAddressHashSet::Remove(void* key) {
+ALWAYS_INLINE void LockFreeAddressHashSet::Remove(void* key) {
   Node* node = FindNode(key);
   DCHECK_NE(node, nullptr);
   // We can never delete the node, nor detach it from the current bucket
@@ -104,7 +106,7 @@ inline void LockFreeAddressHashSet::Remove(void* key) {
   --size_;
 }
 
-inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
+ALWAYS_INLINE LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
     void* key) const {
   DCHECK_NE(key, nullptr);
   const std::atomic<Node*>& bucket = buckets_[Hash(key) & bucket_mask_];
@@ -122,7 +124,7 @@ inline LockFreeAddressHashSet::Node* LockFreeAddressHashSet::FindNode(
 }
 
 // static
-inline uint32_t LockFreeAddressHashSet::Hash(void* key) {
+ALWAYS_INLINE uint32_t LockFreeAddressHashSet::Hash(void* key) {
   // A simple fast hash function for addresses.
   constexpr uintptr_t random_bits = static_cast<uintptr_t>(0x4bfdb9df5a6f243b);
   uint64_t k = reinterpret_cast<uintptr_t>(key);

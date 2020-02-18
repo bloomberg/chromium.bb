@@ -34,10 +34,10 @@
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "extensions/common/extension_builder.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -58,6 +58,7 @@ const int kDBusError = 1;
 const int kUserRejected = 2;
 const int kGetCertificateFailed = 3;
 const int kResetRequired = 4;
+const int kPrepareKeyAttestationUnsupported = 5;
 
 const char kUserEmail[] = "test@google.com";
 
@@ -201,11 +202,11 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   }
 
   // Derived classes can override this method to set the required authenticated
-  // user in the SigninManager class.
+  // user in the IdentityManager class.
   virtual void SetAuthenticatedUser() {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager, kUserEmail);
+    signin::MakePrimaryAccountAvailable(identity_manager, kUserEmail);
   }
 
   chromeos::FakeCryptohomeClient cryptohome_client_;
@@ -331,6 +332,15 @@ TEST_F(EPKPChallengeMachineKeyTest, AttestationNotPrepared) {
   cryptohome_client_.set_tpm_attestation_is_prepared(false);
 
   EXPECT_EQ(GetCertificateError(kResetRequired),
+            utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
+}
+
+// Test that we get proper error message in case we don't have TPM.
+TEST_F(EPKPChallengeMachineKeyTest, AttestationUnsupported) {
+  cryptohome_client_.set_tpm_attestation_is_prepared(false);
+  cryptohome_client_.set_tpm_is_enabled(false);
+
+  EXPECT_EQ(GetCertificateError(kPrepareKeyAttestationUnsupported),
             utils::RunFunctionAndReturnError(func_.get(), kArgs, browser()));
 }
 
@@ -579,8 +589,8 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
   void SetAuthenticatedUser() override {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager,
-                                          account_id_.GetUserEmail());
+    signin::MakePrimaryAccountAvailable(identity_manager,
+                                        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -592,7 +602,7 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
   const std::string kOtherEmail = "test@chromium.com";
   const AccountId account_id_ = AccountId::FromUserEmailGaiaId(
       kOtherEmail,
-      identity::GetTestGaiaIdForEmail(kOtherEmail));
+      signin::GetTestGaiaIdForEmail(kOtherEmail));
 };
 
 TEST_F(EPKPChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
@@ -605,8 +615,8 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
   void SetAuthenticatedUser() override {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager,
-                                          account_id_.GetUserEmail());
+    signin::MakePrimaryAccountAvailable(identity_manager,
+                                        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -618,7 +628,7 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
   const std::string kOtherEmail = "test@chromium.com";
   const AccountId account_id_ = AccountId::FromUserEmailGaiaId(
       kOtherEmail,
-      identity::GetTestGaiaIdForEmail(kOtherEmail));
+      signin::GetTestGaiaIdForEmail(kOtherEmail));
 };
 
 TEST_F(EPKPChallengeUserKeyUnmanagedUserTest, UserNotManaged) {

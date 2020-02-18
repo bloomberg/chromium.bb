@@ -12,10 +12,6 @@
 #include <utility>
 
 #include "core/fpdfapi/font/cpdf_font.h"
-#include "core/fpdfapi/page/cpdf_pageobject.h"
-#include "core/fpdfapi/page/cpdf_pageobjectholder.h"
-#include "core/fpdfapi/page/cpdf_pathobject.h"
-#include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
 #include "core/fpdfapi/render/cpdf_textrenderer.h"
 #include "core/fpdfdoc/cpvt_word.h"
@@ -51,8 +47,7 @@ void DrawTextString(CFX_RenderDevice* pDevice,
   ASSERT(ro.GetOptions().bClearType);
   ro.SetColorMode(CPDF_RenderOptions::kNormal);
   CPDF_TextRenderer::DrawTextString(pDevice, pos.x, pos.y, pFont, fFontSize,
-                                    mtUser2Device, str, crTextFill, nullptr,
-                                    &ro);
+                                    mtUser2Device, str, crTextFill, ro);
 }
 
 }  // namespace
@@ -210,11 +205,16 @@ bool CPWL_EditImpl_Undo::CanUndo() const {
 }
 
 void CPWL_EditImpl_Undo::Undo() {
+  ASSERT(!m_bWorking);
   m_bWorking = true;
-  if (CanUndo()) {
-    m_UndoItemStack[m_nCurUndoPos - 1]->Undo();
+  int nUndoRemain = 1;
+  while (CanUndo() && nUndoRemain > 0) {
+    nUndoRemain += m_UndoItemStack[m_nCurUndoPos - 1]->Undo();
     m_nCurUndoPos--;
+    nUndoRemain--;
   }
+  ASSERT(nUndoRemain == 0);
+  ASSERT(m_bWorking);
   m_bWorking = false;
 }
 
@@ -223,11 +223,16 @@ bool CPWL_EditImpl_Undo::CanRedo() const {
 }
 
 void CPWL_EditImpl_Undo::Redo() {
+  ASSERT(!m_bWorking);
   m_bWorking = true;
-  if (CanRedo()) {
-    m_UndoItemStack[m_nCurUndoPos]->Redo();
+  int nRedoRemain = 1;
+  while (CanRedo() && nRedoRemain > 0) {
+    nRedoRemain += m_UndoItemStack[m_nCurUndoPos]->Redo();
     m_nCurUndoPos++;
+    nRedoRemain--;
   }
+  ASSERT(nRedoRemain == 0);
+  ASSERT(m_bWorking);
   m_bWorking = false;
 }
 
@@ -269,16 +274,18 @@ CFXEU_InsertWord::CFXEU_InsertWord(CPWL_EditImpl* pEdit,
 
 CFXEU_InsertWord::~CFXEU_InsertWord() {}
 
-void CFXEU_InsertWord::Redo() {
+int CFXEU_InsertWord::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpOld);
   m_pEdit->InsertWord(m_Word, m_nCharset, false, true);
+  return 0;
 }
 
-void CFXEU_InsertWord::Undo() {
+int CFXEU_InsertWord::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpNew);
   m_pEdit->Backspace(false, true);
+  return 0;
 }
 
 CFXEU_InsertReturn::CFXEU_InsertReturn(CPWL_EditImpl* pEdit,
@@ -290,16 +297,43 @@ CFXEU_InsertReturn::CFXEU_InsertReturn(CPWL_EditImpl* pEdit,
 
 CFXEU_InsertReturn::~CFXEU_InsertReturn() {}
 
-void CFXEU_InsertReturn::Redo() {
+int CFXEU_InsertReturn::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpOld);
   m_pEdit->InsertReturn(false, true);
+  return 0;
 }
 
-void CFXEU_InsertReturn::Undo() {
+int CFXEU_InsertReturn::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpNew);
   m_pEdit->Backspace(false, true);
+  return 0;
+}
+
+CFXEU_ReplaceSelection::CFXEU_ReplaceSelection(CPWL_EditImpl* pEdit,
+                                               bool bIsEnd)
+    : m_pEdit(pEdit), m_bEnd(bIsEnd) {
+  ASSERT(m_pEdit);
+}
+
+CFXEU_ReplaceSelection::~CFXEU_ReplaceSelection() {}
+
+int CFXEU_ReplaceSelection::Redo() {
+  m_pEdit->SelectNone();
+  if (IsEnd())
+    return 0;
+  // Redo ClearSelection, InsertText and ReplaceSelection's end marker
+  return 3;
+}
+
+int CFXEU_ReplaceSelection::Undo() {
+  m_pEdit->SelectNone();
+  if (!IsEnd())
+    return 0;
+  // Undo InsertText, ClearSelection and ReplaceSelection's beginning
+  // marker
+  return 3;
 }
 
 CFXEU_Backspace::CFXEU_Backspace(CPWL_EditImpl* pEdit,
@@ -317,19 +351,21 @@ CFXEU_Backspace::CFXEU_Backspace(CPWL_EditImpl* pEdit,
 
 CFXEU_Backspace::~CFXEU_Backspace() {}
 
-void CFXEU_Backspace::Redo() {
+int CFXEU_Backspace::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpOld);
   m_pEdit->Backspace(false, true);
+  return 0;
 }
 
-void CFXEU_Backspace::Undo() {
+int CFXEU_Backspace::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpNew);
   if (m_wpNew.nSecIndex != m_wpOld.nSecIndex)
     m_pEdit->InsertReturn(false, true);
   else
     m_pEdit->InsertWord(m_Word, m_nCharset, false, true);
+  return 0;
 }
 
 CFXEU_Delete::CFXEU_Delete(CPWL_EditImpl* pEdit,
@@ -349,19 +385,21 @@ CFXEU_Delete::CFXEU_Delete(CPWL_EditImpl* pEdit,
 
 CFXEU_Delete::~CFXEU_Delete() {}
 
-void CFXEU_Delete::Redo() {
+int CFXEU_Delete::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpOld);
   m_pEdit->Delete(false, true);
+  return 0;
 }
 
-void CFXEU_Delete::Undo() {
+int CFXEU_Delete::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpNew);
   if (m_bSecEnd)
     m_pEdit->InsertReturn(false, true);
   else
     m_pEdit->InsertWord(m_Word, m_nCharset, false, true);
+  return 0;
 }
 
 CFXEU_Clear::CFXEU_Clear(CPWL_EditImpl* pEdit,
@@ -373,17 +411,19 @@ CFXEU_Clear::CFXEU_Clear(CPWL_EditImpl* pEdit,
 
 CFXEU_Clear::~CFXEU_Clear() {}
 
-void CFXEU_Clear::Redo() {
+int CFXEU_Clear::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetSelection(m_wrSel.BeginPos, m_wrSel.EndPos);
   m_pEdit->Clear(false, true);
+  return 0;
 }
 
-void CFXEU_Clear::Undo() {
+int CFXEU_Clear::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wrSel.BeginPos);
   m_pEdit->InsertText(m_swText, FX_CHARSET_Default, false, true);
   m_pEdit->SetSelection(m_wrSel.BeginPos, m_wrSel.EndPos);
+  return 0;
 }
 
 CFXEU_InsertText::CFXEU_InsertText(CPWL_EditImpl* pEdit,
@@ -401,16 +441,18 @@ CFXEU_InsertText::CFXEU_InsertText(CPWL_EditImpl* pEdit,
 
 CFXEU_InsertText::~CFXEU_InsertText() {}
 
-void CFXEU_InsertText::Redo() {
+int CFXEU_InsertText::Redo() {
   m_pEdit->SelectNone();
   m_pEdit->SetCaret(m_wpOld);
   m_pEdit->InsertText(m_swText, m_nCharset, false, true);
+  return 0;
 }
 
-void CFXEU_InsertText::Undo() {
+int CFXEU_InsertText::Undo() {
   m_pEdit->SelectNone();
   m_pEdit->SetSelection(m_wpOld, m_wpNew);
   m_pEdit->Clear(false, true);
+  return 0;
 }
 
 // static
@@ -1684,6 +1726,13 @@ void CPWL_EditImpl::PaintInsertText(const CPVT_WordPlace& wpOld,
     SetCaretOrigin();
     SetCaretInfo();
   }
+}
+
+void CPWL_EditImpl::ReplaceSelection(const WideString& text) {
+  AddEditUndoItem(pdfium::MakeUnique<CFXEU_ReplaceSelection>(this, false));
+  ClearSelection();
+  InsertText(text, FX_CHARSET_Default);
+  AddEditUndoItem(pdfium::MakeUnique<CFXEU_ReplaceSelection>(this, true));
 }
 
 bool CPWL_EditImpl::Redo() {

@@ -5,7 +5,7 @@
 #ifndef CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 #define CONTENT_TEST_STUB_LAYER_TREE_VIEW_DELEGATE_H_
 
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
 
 namespace cc {
@@ -18,8 +18,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
  public:
   // LayerTreeViewDelegate implementation.
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs&) override {}
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override {}
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override {}

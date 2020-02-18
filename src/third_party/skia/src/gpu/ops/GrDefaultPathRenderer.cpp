@@ -12,17 +12,18 @@
 #include "src/core/SkGeometry.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkTraceEvent.h"
+#include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
 #include "src/gpu/GrDrawOpTest.h"
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrMesh.h"
 #include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrPathUtils.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrSurfaceContextPriv.h"
+#include "src/gpu/geometry/GrPathUtils.h"
+#include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
 
@@ -387,14 +388,15 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
+            GrClampType clampType) override {
         GrProcessorAnalysisCoverage gpCoverage =
                 this->coverage() == 0xFF ? GrProcessorAnalysisCoverage::kNone
                                          : GrProcessorAnalysisCoverage::kSingleChannel;
         // This Op uses uniform (not vertex) color, so doesn't need to track wide color.
         return fHelper.finalizeProcessors(
-                caps, clip, fsaaType, clampType, gpCoverage, &fColor, nullptr);
+                caps, clip, hasMixedSampledCoverage, clampType, gpCoverage, &fColor, nullptr);
     }
 
 private:
@@ -645,7 +647,7 @@ GrDefaultPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
         return CanDrawPath::kNo;
     }
     // If antialiasing is required, we only support MSAA.
-    if (AATypeFlags::kNone != args.fAATypeFlags && !(AATypeFlags::kMSAA & args.fAATypeFlags)) {
+    if (GrAAType::kNone != args.fAAType && GrAAType::kMSAA != args.fAAType) {
         return CanDrawPath::kNo;
     }
     // This can draw any path with any simple fill style.
@@ -659,9 +661,7 @@ GrDefaultPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
 bool GrDefaultPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
                               "GrDefaultPathRenderer::onDrawPath");
-    GrAAType aaType = (AATypeFlags::kNone != args.fAATypeFlags)
-            ? GrAAType::kMSAA
-            : GrAAType::kNone;
+    GrAAType aaType = (GrAAType::kNone != args.fAAType) ? GrAAType::kMSAA : GrAAType::kNone;
 
     return this->internalDrawPath(
             args.fRenderTargetContext, std::move(args.fPaint), aaType, *args.fUserStencilSettings,
@@ -703,7 +703,7 @@ GR_DRAW_OP_TEST_DEFINE(DefaultPathOp) {
     viewMatrix.mapRect(&bounds);
     uint8_t coverage = GrRandomCoverage(random);
     GrAAType aaType = GrAAType::kNone;
-    if (GrFSAAType::kUnifiedMSAA == fsaaType && random->nextBool()) {
+    if (numSamples > 1 && random->nextBool()) {
         aaType = GrAAType::kMSAA;
     }
     return DefaultPathOp::Make(context, std::move(paint), path, srcSpaceTol, coverage, viewMatrix,

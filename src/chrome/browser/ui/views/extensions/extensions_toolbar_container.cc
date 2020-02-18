@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/views/widget/widget_observer.h"
 
 ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
     : ToolbarIconContainerView(/*uses_highlight=*/true),
@@ -17,14 +19,31 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
   model_observer_.Add(model_);
-  AddMainView(extensions_button_);
+  AddMainButton(extensions_button_);
   CreateActions();
 }
 
-ExtensionsToolbarContainer::~ExtensionsToolbarContainer() = default;
+ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
+  if (active_bubble_)
+    active_bubble_->GetWidget()->Close();
+  // We should synchronously receive the OnWidgetClosing() event, so we should
+  // always have cleared the active bubble by now.
+  DCHECK(!active_bubble_);
+}
 
 void ExtensionsToolbarContainer::UpdateAllIcons() {
   extensions_button_->UpdateIcon();
+
+  for (const auto& action : actions_)
+    action->UpdateState();
+}
+
+ToolbarActionView* ExtensionsToolbarContainer::GetViewForId(
+    const std::string& id) {
+  auto it = icons_.find(id);
+  if (it == icons_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 ToolbarActionViewController* ExtensionsToolbarContainer::GetActionForId(
@@ -43,7 +62,10 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
-  return false;
+  return model_->IsActionPinned(action->GetId()) ||
+         action == popped_out_action_ ||
+         (active_bubble_ &&
+          action->GetId() == active_bubble_->GetAnchorActionId());
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -91,6 +113,34 @@ void ExtensionsToolbarContainer::PopOutAction(
   closure.Run();
 }
 
+void ExtensionsToolbarContainer::ShowToolbarActionBubble(
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
+  // TODO(pbos): Make sure we finish animations before showing the bubble.
+
+  auto iter = icons_.find(controller->GetAnchorActionId());
+
+  views::View* const anchor_view = iter != icons_.end()
+                                       ? static_cast<View*>(iter->second.get())
+                                       : extensions_button_;
+
+  anchor_view->SetVisible(true);
+
+  active_bubble_ = new ToolbarActionsBarBubbleViews(
+      anchor_view, gfx::Point(), anchor_view != extensions_button_,
+      std::move(controller));
+  views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
+      ->AddObserver(this);
+  active_bubble_->Show();
+}
+
+void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ExtensionsToolbarContainer::ShowToolbarActionBubble,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(bubble)));
+}
+
 void ExtensionsToolbarContainer::OnToolbarActionAdded(
     const ToolbarActionsModel::ActionId& action_id,
     int index) {
@@ -135,8 +185,17 @@ void ExtensionsToolbarContainer::OnToolbarModelInitialized() {
   CreateActions();
 }
 
+void ExtensionsToolbarContainer::OnToolbarPinnedActionsChanged() {
+  for (auto& it : icons_)
+    it.second->SetVisible(IsActionVisibleOnToolbar(GetActionForId(it.first)));
+  ReorderViews();
+}
+
 void ExtensionsToolbarContainer::ReorderViews() {
   // TODO(pbos): Reorder pinned actions here once they exist.
+  const auto& pinned_action_ids = model_->pinned_action_ids();
+  for (size_t i = 0; i < pinned_action_ids.size(); ++i)
+    ReorderChildView(icons_[pinned_action_ids[i]].get(), i);
 
   // Popped out actions should be at the end.
   if (popped_out_action_)
@@ -168,6 +227,8 @@ void ExtensionsToolbarContainer::CreateActionForId(
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
   icon->set_owned_by_client();
   icon->SetVisible(IsActionVisibleOnToolbar(actions_.back().get()));
+  icon->AddButtonObserver(this);
+  icon->AddObserver(this);
   AddChildView(icon.get());
 
   icons_[action_id] = std::move(icon);
@@ -208,4 +269,28 @@ bool ExtensionsToolbarContainer::CanStartDragForView(View* sender,
                                                      const gfx::Point& p) {
   // TODO(pbos): Implement
   return false;
+}
+
+void ExtensionsToolbarContainer::OnWidgetClosing(views::Widget* widget) {
+  ClearActiveBubble(widget);
+}
+
+void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
+  ClearActiveBubble(widget);
+}
+
+void ExtensionsToolbarContainer::ClearActiveBubble(views::Widget* widget) {
+  DCHECK(active_bubble_);
+  DCHECK_EQ(active_bubble_->GetWidget(), widget);
+  ToolbarActionViewController* const action =
+      GetActionForId(active_bubble_->GetAnchorActionId());
+  // TODO(pbos): Note that this crashes if a bubble anchors to the menu and not
+  // to an extension that gets popped out. This should be fixed, but a test
+  // should first be added to make sure that it's covered.
+  CHECK(action);
+  active_bubble_ = nullptr;
+  widget->RemoveObserver(this);
+  // Note that we only hide this view if it's not visible for other reasons
+  // than displaying the bubble.
+  icons_[action->GetId()]->SetVisible(IsActionVisibleOnToolbar(action));
 }

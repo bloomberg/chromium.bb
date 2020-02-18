@@ -33,10 +33,10 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/wtf/text/line_ending.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -226,7 +226,7 @@ void FormData::AppendFromElement(const String& name, const String& value) {
       MakeGarbageCollected<Entry>(Normalize(name), Normalize(value)));
 }
 
-CString FormData::Encode(const String& string) const {
+std::string FormData::Encode(const String& string) const {
   return encoding_.Encode(string, WTF::kEntitiesForUnencodables);
 }
 
@@ -307,8 +307,8 @@ scoped_refptr<EncodedFormData> FormData::EncodeMultiPartFormData() {
                               entry->GetBlob()->GetBlobDataHandle());
       }
     } else {
-      CString encoded_value = Encode(entry->Value());
-      form_data->AppendData(encoded_value.data(), encoded_value.length());
+      std::string encoded_value = Encode(entry->Value());
+      form_data->AppendData(encoded_value.c_str(), encoded_value.length());
     }
     form_data->AppendData("\r\n", 2);
   }
@@ -359,7 +359,7 @@ File* FormData::Entry::GetFile() const {
   String filename = filename_;
   if (filename.IsNull())
     filename = "blob";
-  return File::Create(filename, CurrentTimeMS(),
+  return File::Create(filename, base::Time::Now().ToDoubleT() * 1000.0,
                       GetBlob()->GetBlobDataHandle());
 }
 

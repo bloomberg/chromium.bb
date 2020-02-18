@@ -556,7 +556,7 @@ class EventFilterRecorder : public ui::EventHandler {
   }
 
   bool HasReceivedEvent(ui::EventType type) {
-    return base::ContainsValue(events_, type);
+    return base::Contains(events_, type);
   }
 
   bool LastTouchMayCauseScrolling() const {

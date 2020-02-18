@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
 #include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -59,10 +60,10 @@ class AnalyserNode;
 class AudioBuffer;
 class AudioBufferSourceNode;
 class AudioContextOptions;
+class AudioGraphTracer;
 class AudioListener;
 class AudioWorklet;
 class BiquadFilterNode;
-class BaseAudioContextTracker;
 class ChannelMergerNode;
 class ChannelSplitterNode;
 class ConstantSourceNode;
@@ -169,11 +170,10 @@ class MODULES_EXPORT BaseAudioContext
 
   // Handles the promise and callbacks when |decodeAudioData| is finished
   // decoding.
-  void HandleDecodeAudioData(
-      AudioBuffer*,
-      ScriptPromiseResolver*,
-      V8PersistentCallbackFunction<V8DecodeSuccessCallback>*,
-      V8PersistentCallbackFunction<V8DecodeErrorCallback>*);
+  void HandleDecodeAudioData(AudioBuffer*,
+                             ScriptPromiseResolver*,
+                             V8DecodeSuccessCallback*,
+                             V8DecodeErrorCallback*);
 
   AudioListener* listener() { return listener_; }
 
@@ -249,7 +249,7 @@ class MODULES_EXPORT BaseAudioContext
   //   - The return value indicates whether the context needs to be suspended or
   //   not after rendering.
   virtual bool HandlePreRenderTasks(const AudioIOPosition* output_position,
-                                    const AudioIOCallbackMetric* metric) = 0;
+                                    const AudioCallbackMetric* metric) = 0;
 
   // Called at the end of each render quantum.
   virtual void HandlePostRenderTasks() = 0;
@@ -328,10 +328,6 @@ class MODULES_EXPORT BaseAudioContext
   // occurs preventing us from determining the count.
   int32_t CallbackBufferSize();
 
-  // Returns the render capacity, which is the time spend on render divided by
-  // the hardware callback interval. Glitches happen when it goes beyond 1.0.
-  virtual double RenderCapacity() = 0;
-
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
 
@@ -381,7 +377,7 @@ class MODULES_EXPORT BaseAudioContext
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  BaseAudioContextTracker* Tracker();
+  AudioGraphTracer* GraphTracer();
 
  private:
   // Unique ID for each context.

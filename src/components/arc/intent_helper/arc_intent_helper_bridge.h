@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 #define COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -29,13 +29,13 @@ class BrowserContext;
 namespace arc {
 
 class ArcBridgeService;
+class FactoryResetDelegate;
 class IntentFilter;
 class OpenUrlDelegate;
 
 // Receives intents from ARC.
-class ArcIntentHelperBridge
-    : public KeyedService,
-      public mojom::IntentHelperHost {
+class ArcIntentHelperBridge : public KeyedService,
+                              public mojom::IntentHelperHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -51,6 +51,8 @@ class ArcIntentHelperBridge
 
   static void SetOpenUrlDelegate(OpenUrlDelegate* delegate);
 
+  static void SetFactoryResetDelegate(FactoryResetDelegate* delegate);
+
   ArcIntentHelperBridge(content::BrowserContext* context,
                         ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
@@ -58,6 +60,10 @@ class ArcIntentHelperBridge
   void AddObserver(ArcIntentHelperObserver* observer);
   void RemoveObserver(ArcIntentHelperObserver* observer);
   bool HasObserver(ArcIntentHelperObserver* observer) const;
+
+  void OnCameraIntentHandled(uint32_t intent_id,
+                             bool is_success,
+                             const std::vector<uint8_t>& captured_data);
 
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;
@@ -74,8 +80,14 @@ class ArcIntentHelperBridge
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
   void OpenVolumeControl() override;
+  void FactoryResetArc() override;
   void OnOpenWebApp(const std::string& url) override;
   void RecordShareFilesMetrics(mojom::ShareFiles flag) override;
+  void LaunchCameraApp(arc::mojom::CameraIntentMode mode,
+                       bool should_handle_result,
+                       bool should_down_scale,
+                       bool is_secure,
+                       LaunchCameraAppCallback callback) override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.
@@ -120,9 +132,10 @@ class ArcIntentHelperBridge
 
   base::ObserverList<ArcIntentHelperObserver>::Unchecked observer_list_;
 
-  // about: and chrome://settings pages assistant requires to launch via
-  // OnOpenChromePage.
-  const std::map<mojom::ChromePage, std::string> allowed_chrome_pages_map_;
+  base::flat_map<uint32_t, LaunchCameraAppCallback>
+      launch_camera_app_callback_map_;
+
+  uint32_t camera_intent_id_;
 
   // Schemes that ARC is known to send via OnOpenUrl.
   const std::set<std::string> allowed_arc_schemes_;

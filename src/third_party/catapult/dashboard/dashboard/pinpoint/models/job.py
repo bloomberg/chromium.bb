@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 import datetime
+import logging
 import os
 import sys
 import traceback
@@ -24,6 +25,7 @@ from dashboard.models import histogram
 from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import results2
+from dashboard.pinpoint.models import scheduler
 from dashboard.services import gerrit_service
 from dashboard.services import issue_tracker_service
 
@@ -36,6 +38,7 @@ _TASK_INTERVAL = 60
 
 
 _CRYING_CAT_FACE = u'\U0001f63f'
+_INFINITY = u'\u221e'
 _RIGHT_ARROW = u'\u2192'
 _ROUND_PUSHPIN = u'\U0001f4cd'
 
@@ -101,21 +104,58 @@ class Job(ndb.Model):
   # to be able to modify the Job without changing the Job's completion time.
   updated = ndb.DateTimeProperty(required=True, auto_now_add=True)
 
-  completed = ndb.ComputedProperty(lambda self: not self.task)
-  failed = ndb.ComputedProperty(lambda self: bool(self.exception))
+  started = ndb.BooleanProperty(default=True)
+  completed = ndb.ComputedProperty(lambda self: self.started and not self.task)
+  failed = ndb.ComputedProperty(lambda self: bool(self.exception_details_dict))
+  running = ndb.ComputedProperty(lambda self: self.started and not self.
+                                 cancelled and self.task and len(self.task) > 0)
+  cancelled = ndb.BooleanProperty(default=False)
+  cancel_reason = ndb.TextProperty()
 
   # The name of the Task Queue task this job is running on. If it's present, the
   # job is running. The task is also None for Task Queue retries.
   task = ndb.StringProperty()
 
-  # The string contents of any Exception that was thrown to the top level.
+  # The contents of any Exception that was thrown to the top level.
   # If it's present, the job failed.
   exception = ndb.TextProperty()
+  exception_details = ndb.JsonProperty()
 
   difference_count = ndb.IntegerProperty()
 
   retry_count = ndb.IntegerProperty(default=0)
 
+  # We expose the configuration as a first-class property of the Job.
+  configuration = ndb.ComputedProperty(
+      lambda self: self.arguments.get('configuration'))
+
+  # TODO(simonhatch): After migrating all Pinpoint entities, this can be
+  # removed.
+  # crbug.com/971370
+  @classmethod
+  def _post_get_hook(cls, key, future):  # pylint: disable=unused-argument
+    e = future.get_result()
+    if not e:
+      return
+
+    if not getattr(e, 'exception_details'):
+      e.exception_details = e.exception_details_dict
+
+  # TODO(simonhatch): After migrating all Pinpoint entities, this can be
+  # removed.
+  # crbug.com/971370
+  @property
+  def exception_details_dict(self):
+    if hasattr(self, 'exception_details'):
+      if self.exception_details:
+        return self.exception_details
+
+    if hasattr(self, 'exception'):
+      exc = self.exception
+      if exc:
+        return {'message': exc.splitlines()[-1], 'traceback': exc}
+
+    return None
 
   @classmethod
   def New(cls, quests, changes, arguments=None, bug_id=None,
@@ -151,7 +191,7 @@ class Job(ndb.Model):
     job = cls(state=state, arguments=arguments or {}, bug_id=bug_id,
               comparison_mode=comparison_mode, gerrit_server=gerrit_server,
               gerrit_change_id=gerrit_change_id,
-              name=name, tags=tags, user=user)
+              name=name, tags=tags, user=user, started=False, cancelled=False)
 
     for c in changes:
       job.AddChange(c)
@@ -165,13 +205,20 @@ class Job(ndb.Model):
 
   @property
   def status(self):
-    if not self.completed:
-      return 'Running'
-
     if self.failed:
       return 'Failed'
 
-    return 'Completed'
+    if self.cancelled:
+      return 'Cancelled'
+
+    if self.completed:
+      return 'Completed'
+
+    if self.running:
+      return 'Running'
+
+    # By default, we assume that the Job is queued.
+    return 'Queued'
 
   @property
   def url(self):
@@ -202,8 +249,8 @@ class Job(ndb.Model):
     else:
       name = 'Try job'
 
-    if 'configuration' in self.arguments:
-      name += ' on ' + self.arguments['configuration']
+    if self.configuration:
+      name += ' on ' + self.configuration
       if 'benchmark' in self.arguments:
         name += '/' + self.arguments['benchmark']
 
@@ -220,6 +267,7 @@ class Job(ndb.Model):
     anything. It also posts a bug comment, and updates the Datastore.
     """
     self._Schedule()
+    self.started = True
     self.put()
 
     title = _ROUND_PUSHPIN + ' Pinpoint job started.'
@@ -229,16 +277,18 @@ class Job(ndb.Model):
         _retry_options=RETRY_OPTIONS)
 
   def _Complete(self):
+    logging.debug('Job [%s]: Completed', self.job_id)
     if self.comparison_mode:
       self.difference_count = len(self.state.Differences())
 
     try:
       results2.ScheduleResults2Generation(self)
-    except taskqueue.Error:
-      pass
+    except taskqueue.Error as e:
+      logging.debug('Failed ScheduleResults2Generation: %s', str(e))
 
     self._FormatAndPostBugCommentOnComplete()
     self._UpdateGerritIfNeeded()
+    scheduler.Complete(self)
 
   def _FormatAndPostBugCommentOnComplete(self):
     if not self.comparison_mode:
@@ -260,6 +310,7 @@ class Job(ndb.Model):
       return
 
     difference_details = []
+    authors_with_deltas = {}
     commit_infos = []
     for change_a, change_b in differences:
       if change_b.patch:
@@ -273,11 +324,14 @@ class Job(ndb.Model):
                                            self.state.metric)
       difference_details.append(difference)
       commit_infos.append(commit_info)
+      if values_a and values_b:
+        authors_with_deltas[commit_info['author']] = job_state.Mean(
+            values_b) - job_state.Mean(values_a)
 
     deferred.defer(
         _UpdatePostAndMergeDeferred,
-        difference_details, commit_infos, self.bug_id, self.tags, self.url,
-        _retry_options=RETRY_OPTIONS)
+        difference_details, commit_infos, authors_with_deltas, self.bug_id,
+        self.tags, self.url, _retry_options=RETRY_OPTIONS)
 
   def _UpdateGerritIfNeeded(self):
     if self.gerrit_server and self.gerrit_change_id:
@@ -289,25 +343,26 @@ class Job(ndb.Model):
           _retry_options=RETRY_OPTIONS)
 
   def Fail(self, exception=None):
-    if exception:
-      self.exception = exception
-    else:
-      self.exception = traceback.format_exc()
-
+    tb = traceback.format_exc() or ''
     title = _CRYING_CAT_FACE + ' Pinpoint job stopped with an error.'
     exc_info = sys.exc_info()
     exc_message = ''
-    if exc_info[1]:
+    if exception:
+      exc_message = exception
+    elif exc_info[1]:
       exc_message = sys.exc_info()[1].message
-    elif self.exception:
-      exc_message = self.exception.splitlines()[-1]
 
+    self.exception_details = {
+        'message': exc_message,
+        'traceback': tb,
+    }
     self.task = None
 
     comment = '\n'.join((title, self.url, '', exc_message))
     deferred.defer(
         _PostBugCommentDeferred, self.bug_id, comment,
         _retry_options=RETRY_OPTIONS)
+    scheduler.Complete(self)
 
   def _Schedule(self, countdown=_TASK_INTERVAL):
     # Set a task name to deduplicate retries. This adds some latency, but we're
@@ -347,7 +402,7 @@ class Job(ndb.Model):
     Changes as needed. If there are any incomplete tasks, schedules another
     Run() call on the task queue.
     """
-    self.exception = None  # In case the Job succeeds on retry.
+    self.exception_details = None # In case the Job succeeds on retry.
     self.task = None  # In case an exception is thrown.
 
     try:
@@ -363,9 +418,11 @@ class Job(ndb.Model):
 
       self.retry_count = 0
     except errors.RecoverableError:
-      if not self._MaybeScheduleRetry():
-        self.Fail()
-        raise
+      try:
+        if not self._MaybeScheduleRetry():
+          self.Fail(errors.RETRY_LIMIT)
+      except errors.RecoverableError:
+        self.Fail(errors.RETRY_FAILED)
     except BaseException:
       self.Fail()
       raise
@@ -397,6 +454,7 @@ class Job(ndb.Model):
   def AsDict(self, options=None):
     d = {
         'job_id': self.job_id,
+        'configuration': self.configuration,
         'results_url': self.results_url,
 
         'arguments': self.arguments,
@@ -408,9 +466,11 @@ class Job(ndb.Model):
         'created': self.created.isoformat(),
         'updated': self.updated.isoformat(),
         'difference_count': self.difference_count,
-        'exception': self.exception,
+        'exception': self.exception_details_dict,
         'status': self.status,
+        'cancel_reason': self.cancel_reason,
     }
+
     if not options:
       return d
 
@@ -419,6 +479,30 @@ class Job(ndb.Model):
     if OPTION_TAGS in options:
       d['tags'] = {'tags': self.tags}
     return d
+
+  def Cancel(self, user, reason):
+    # We cannot cancel an already cancelled job.
+    if self.cancelled:
+      logging.warning(
+          'Attempted to cancel a cancelled job "%s"; user = %s, reason = %s',
+          self.job_id, user, reason)
+      raise errors.CancelError('Job already cancelled.')
+
+    if not scheduler.Cancel(self):
+      raise errors.CancelError('Scheduler failed to cancel job.')
+
+    self.cancelled = True
+    self.cancel_reason = '{}: {}'.format(user, reason)
+
+    # Remove any "task" identifiers.
+    self.task = None
+    self.put()
+
+    title = _ROUND_PUSHPIN + ' Pinpoint job cancelled.'
+    comment = u'{}\n{}\n\nCancelled by {}, reason given: {}'.format(
+        title, self.url, user, reason)
+    deferred.defer(_PostBugCommentDeferred, self.bug_id, comment,
+                   send_email=False, _retry_options=RETRY_OPTIONS)
 
 
 def _GetBugStatus(issue_tracker, bug_id):
@@ -459,13 +543,17 @@ def _GenerateCommitCacheKey(commit_infos):
   return commit_cache_key
 
 
-def _ComputePostOwnerSheriffCCList(commit_infos):
+def _ComputePostOwnerSheriffCCList(commit_infos, authors_with_deltas):
   owner = None
   sheriff = None
   cc_list = set()
+
+  if authors_with_deltas:
+    owner, _ = max(authors_with_deltas.items(), key=lambda i: abs(i[1]))
+
   for cur_commit in commit_infos:
-    # TODO: Assign the largest difference, not the last one.
-    owner = cur_commit['author']
+    if not owner:
+      owner = cur_commit['author']
     sheriff = utils.GetSheriffForAutorollCommit(owner, cur_commit['message'])
     cc_list.add(cur_commit['author'])
     if sheriff:
@@ -474,14 +562,15 @@ def _ComputePostOwnerSheriffCCList(commit_infos):
 
 
 def _UpdatePostAndMergeDeferred(
-    difference_details, commit_infos, bug_id, tags, url):
+    difference_details, commit_infos, authors_deltas, bug_id, tags, url):
   if not bug_id:
     return
 
   commit_cache_key = _GenerateCommitCacheKey(commit_infos)
 
   # Bring it all together.
-  owner, sheriff, cc_list = _ComputePostOwnerSheriffCCList(commit_infos)
+  owner, sheriff, cc_list = _ComputePostOwnerSheriffCCList(commit_infos,
+                                                           authors_deltas)
   comment = _FormatComment(difference_details, commit_infos, sheriff, tags, url)
 
   issue_tracker = issue_tracker_service.IssueTrackerService(
@@ -538,6 +627,10 @@ def _FormatDifferenceForBug(commit_info, values_a, values_b, metric):
   difference = '%s%s %s %s' % (metric, formatted_a, _RIGHT_ARROW, formatted_b)
   if values_a and values_b:
     difference += ' (%+.4g)' % (mean_b - mean_a)
+    if mean_a:
+      difference += ' (%+.4g%%)' % ((mean_b - mean_a) / mean_a * 100)
+    else:
+      difference += ' (+%s%%)' % _INFINITY
 
   return '\n'.join((subject, commit_info['url'], difference))
 

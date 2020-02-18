@@ -7,16 +7,16 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 namespace sequence_manager {
@@ -72,20 +72,12 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   // Return the loading control task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
 
-  // Return the inspector task queue and create it if it doesn't exist.
-  scoped_refptr<MainThreadTaskQueue> InspectorTaskQueue();
-
   // Return the best effort task queue and create it if it doesn't exist.
   scoped_refptr<MainThreadTaskQueue> BestEffortTaskQueue();
 
-  enum WebSchedulingTaskQueueType : unsigned {
-    kWebSchedulingUserVisiblePriority,
-    kWebSchedulingBestEffortPriority,
-    kWebSchedulingPriorityCount
-  };
-  // Return the Scheduling API task queue for the given priority.
-  scoped_refptr<MainThreadTaskQueue> ExperimentalWebSchedulingTaskQueue(
-      WebSchedulingTaskQueueType);
+  // Return the continue script loading task queue and create it if it doesn't
+  // exist.
+  scoped_refptr<MainThreadTaskQueue> VeryHighPriorityTaskQueue();
 
   // Return the non-loading task queue associated with the given queue traits,
   // and created it if it doesn't exist.
@@ -95,8 +87,7 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   scoped_refptr<MainThreadTaskQueue> NewResourceLoadingTaskQueue();
 
   // Get the list of all task queue and voter pairs.
-  const std::vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters()
-      const;
+  const Vector<TaskQueueAndEnabledVoterPair>& GetAllTaskQueuesAndVoters() const;
 
   // Gets the associated QueueEnabledVoter for the given task queue, or nullptr
   // if one doesn't exist.
@@ -119,7 +110,6 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   void CreateLoadingTaskQueue();
   void CreateLoadingControlTaskQueue();
-  void CreateWebSchedulingTaskQueue(WebSchedulingTaskQueueType task_queue_type);
   void CreateNonLoadingTaskQueue(MainThreadTaskQueue::QueueTraits);
 
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
@@ -141,14 +131,9 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
   scoped_refptr<MainThreadTaskQueue> loading_control_task_queue_;
 
-  // Keep the inspector queue separately. It needs to mimic the IPC task queue
-  // behavior as far as virtual time is concerned.
-  scoped_refptr<MainThreadTaskQueue> inspector_task_queue_;
-
   scoped_refptr<MainThreadTaskQueue> best_effort_task_queue_;
 
-  scoped_refptr<MainThreadTaskQueue>
-      web_scheduling_task_queues_[kWebSchedulingPriorityCount];
+  scoped_refptr<MainThreadTaskQueue> very_high_priority_task_queue_;
 
   using NonLoadingTaskQueueMap =
       WTF::HashMap<MainThreadTaskQueue::QueueTraitsKeyType,
@@ -171,7 +156,7 @@ class PLATFORM_EXPORT FrameTaskQueueController {
 
   // The list of all task queue and voter pairs for all QueueTypeInternal queue
   // types.
-  std::vector<TaskQueueAndEnabledVoterPair> all_task_queues_and_voters_;
+  Vector<TaskQueueAndEnabledVoterPair> all_task_queues_and_voters_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTaskQueueController);
 };

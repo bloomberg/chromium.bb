@@ -20,16 +20,16 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/task_runner.h"
-#include "perfetto/base/utils.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/tracing/core/producer.h"
+#include "perfetto/ext/tracing/core/trace_writer.h"
+#include "perfetto/ext/tracing/ipc/default_socket.h"
+#include "perfetto/ext/tracing/ipc/producer_ipc_client.h"
+#include "perfetto/ext/tracing/ipc/service_ipc_host.h"
 #include "perfetto/trace/test_event.pbzero.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-#include "perfetto/tracing/core/producer.h"
-#include "perfetto/tracing/core/trace_writer.h"
-#include "perfetto/tracing/ipc/producer_ipc_client.h"
-#include "perfetto/tracing/ipc/service_ipc_host.h"
 #include "src/base/test/test_task_runner.h"
-#include "src/tracing/ipc/default_socket.h"
 #include "test/task_runner_thread.h"
 #include "test/task_runner_thread_delegates.h"
 #include "test/test_helper.h"
@@ -98,7 +98,7 @@ class FakeProducer : public Producer {
   void StopDataSource(DataSourceInstanceID) override {}
   void OnTracingSetup() override {}
   void Flush(FlushRequestID, const DataSourceInstanceID*, size_t) override {}
-  void ClearIncrementalState(const DataSourceInstanceID*, size_t) {}
+  void ClearIncrementalState(const DataSourceInstanceID*, size_t) override {}
 
  private:
   const std::string name_;

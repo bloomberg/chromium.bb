@@ -65,7 +65,7 @@
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -240,11 +240,14 @@ template <typename Function>
 static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
                                          const Function& function) {
   // Don't recurse into display-locked elements.
-  if (layer.Client().PaintBlockedByDisplayLock())
+  if (layer.Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
     return;
+  }
 
   if (layer.PaintsContentOrHitTest())
     function(layer);
+
   for (auto* child : layer.Children())
     ForAllPaintingGraphicsLayers(*child, function);
 }

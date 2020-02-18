@@ -180,9 +180,9 @@ public class ChromePreferenceManager {
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
-     * Whether or not TabPersistentStore is using a TaskRunner instead of SERIAL_EXECUTOR.
-     * Default value is false.
+     * Deprecated in M77. This value may still exist in shared preferences file. Do not reuse.
      */
+    @Deprecated
     public static final String TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY =
             "tab_persistent_store_task_runner_enabled";
 
@@ -384,6 +384,12 @@ public class ChromePreferenceManager {
      */
     public static final String NETWORK_SERVICE_WARM_UP_ENABLED_KEY =
             "network_service_warm_up_enabled";
+
+    /**
+     * Contains a trial group that was used to determine whether the reached code profiler should be
+     * enabled.
+     */
+    public static final String REACHED_CODE_PROFILER_GROUP_KEY = "reached_code_profiler_group";
 
     /**
      * Key to cache whether immersive ui mode is enabled.
@@ -704,7 +710,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference.
      */
     public int readInt(String key) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getInt(key, 0);
         }
     }
@@ -741,7 +747,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public long readLong(String key, long defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getLong(key, defaultValue);
         }
     }
@@ -766,7 +772,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public boolean readBoolean(String key, boolean defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getBoolean(key, defaultValue);
         }
     }
@@ -791,7 +797,7 @@ public class ChromePreferenceManager {
      * @return The value of the preference if stored; defaultValue otherwise.
      */
     public String readString(String key, @Nullable String defaultValue) {
-        try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return mSharedPreferences.getString(key, defaultValue);
         }
     }

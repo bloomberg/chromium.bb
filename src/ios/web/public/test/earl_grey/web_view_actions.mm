@@ -29,9 +29,8 @@ using web::test::ExecuteJavaScript;
 
 namespace {
 
-// Long press duration to trigger context menu.  EarlGrey LongPress action uses
-// 0.7 secs.  Use the same number to be consistent.
-const NSTimeInterval kContextMenuLongPressDuration = 0.7;
+// Long press duration to trigger context menu.
+const NSTimeInterval kContextMenuLongPressDuration = 1.0;
 
 // Duration to wait for verification of JavaScript action.
 // TODO(crbug.com/670910): Reduce duration if the time required for verification
@@ -41,12 +40,11 @@ const NSTimeInterval kWaitForVerificationTimeout = 8.0;
 // Generic verification injector. Injects one-time mousedown verification into
 // |web_state| that will set the boolean pointed to by |verified| to true when
 // |web_state|'s webview registers the mousedown event.
-// RemoveVerifierWithPrefix should be called after this to ensure
-// future tests can add verifiers with the same prefix.
-bool AddVerifierToElementWithPrefix(web::WebState* web_state,
-                                    ElementSelector* selector,
-                                    const std::string& prefix,
-                                    bool* verified) {
+std::unique_ptr<web::WebState::ScriptCommandSubscription>
+AddVerifierToElementWithPrefix(web::WebState* web_state,
+                               ElementSelector* selector,
+                               const std::string& prefix,
+                               bool* verified) {
   const char kCallbackCommand[] = "verified";
   const std::string kCallbackInvocation = prefix + '.' + kCallbackCommand;
 
@@ -92,28 +90,17 @@ bool AddVerifierToElementWithPrefix(web::WebState* web_state,
       });
 
   if (!success)
-    return false;
+    return nullptr;
 
   // The callback doesn't care about any of the parameters, just whether it is
   // called or not.
   auto callback = base::BindRepeating(
-      ^bool(const base::DictionaryValue& /* json */,
-            const GURL& /* origin_url */, bool /* user_is_interacting */,
-            bool /* is_main_frame */, web::WebFrame* /* sender_frame */) {
+      ^(const base::DictionaryValue& /* json */, const GURL& /* origin_url */,
+        bool /* user_is_interacting */, web::WebFrame* /* sender_frame */) {
         *verified = true;
-        return true;
       });
 
-  static_cast<web::WebStateImpl*>(web_state)->AddScriptCommandCallback(callback,
-                                                                       prefix);
-  return true;
-}
-
-// Removes the injected callback.
-void RemoveVerifierWithPrefix(web::WebState* web_state,
-                              const std::string& prefix) {
-  static_cast<web::WebStateImpl*>(web_state)->RemoveScriptCommandCallback(
-      prefix);
+  return web_state->AddScriptCommandCallback(callback, prefix);
 }
 
 // Returns a no element found error.
@@ -180,15 +167,10 @@ id<GREYAction> WebViewVerifiedActionOnElement(WebState* state,
     // reference.
     __block bool verified = false;
 
-    // Ensure that RemoveVerifierWithPrefix() is run regardless of how
-    // the block exits.
-    base::ScopedClosureRunner cleanup(
-        base::BindOnce(&RemoveVerifierWithPrefix, state, prefix));
-
     // Inject the verifier.
-    bool verifier_added =
+    std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription =
         AddVerifierToElementWithPrefix(state, selector, prefix, &verified);
-    if (!verifier_added) {
+    if (!subscription) {
       NSString* description = [NSString
           stringWithFormat:@"It wasn't possible to add the verification "
                            @"javascript for element %@",

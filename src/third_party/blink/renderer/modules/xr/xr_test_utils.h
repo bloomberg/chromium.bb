@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_TEST_UTILS_H_
 
 #include <memory>
-#include <vector>
 
 #include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
@@ -17,7 +16,7 @@ namespace blink {
 
 constexpr double kEpsilon = 0.0001;
 
-std::vector<double> GetMatrixDataForTest(const TransformationMatrix& matrix);
+Vector<double> GetMatrixDataForTest(const TransformationMatrix& matrix);
 DOMPointInit* MakePointForTest(double x, double y, double z, double w);
 
 }  // namespace blink

@@ -292,6 +292,7 @@ async function addEntries(volumeNames, entries, opt_callback) {
 var EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory',
+  LINK: 'link',
   SHARED_DRIVE: 'team_drive',
   COMPUTER: 'Computer'
 });
@@ -574,11 +575,10 @@ var ENTRIES = {
     typeText: 'PNG image'
   }),
 
-  // An image file without an extension, to confirm that file type detection
-  // using mime types works fine.
   image2: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'image2.png',
+    // No file extension.
     targetPath: 'image2',
     mimeType: 'image/png',
     lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
@@ -609,11 +609,32 @@ var ENTRIES = {
     typeText: 'JPEG image'
   }),
 
-  // An ogg file without a mime type, to confirm that file type detection using
-  // file extensions works fine.
+  exifImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'exif.jpg',
+    // No mime type.
+    targetPath: 'exif.jpg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'exif.jpg',
+    sizeText: '31 KB',
+    typeText: 'JPEG image'
+  }),
+
+  rawImage: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'raw.orf',
+    // No mime type.
+    targetPath: 'raw.orf',
+    lastModifiedTime: 'May 20, 2019, 10:10 AM',
+    nameText: 'raw.orf',
+    sizeText: '214 KB',
+    typeText: 'ORF image'
+  }),
+
   beautiful: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'music.ogg',
+    // No mime type.
     targetPath: 'Beautiful Song.ogg',
     lastModifiedTime: 'Nov 12, 2086, 12:00 PM',
     nameText: 'Beautiful Song.ogg',
@@ -670,6 +691,17 @@ var ENTRIES = {
     lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
     nameText: 'tall.txt',
     sizeText: '546 bytes',
+    typeText: 'Plain text',
+  }),
+
+  plainText: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'plaintext',
+    // No mime type, no file extension.
+    targetPath: 'plaintext',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'plaintext',
+    sizeText: '32 bytes',
     typeText: 'Plain text',
   }),
 
@@ -768,6 +800,48 @@ var ENTRIES = {
     targetPath: 'D/E/F',
     lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
     nameText: 'F',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  deeplyBurriedSmallJpeg: new TestEntryInfo({
+    type: EntryType.FILE,
+    targetPath: 'A/B/C/deep.jpg',
+    sourceFileName: 'small.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'deep.jpg',
+    sizeText: '886 bytes',
+    typeText: 'JPEG image'
+  }),
+
+  linkGtoB: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'G',
+    sourceFileName: 'A/B',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'G',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
+
+  linkHtoFile: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'H.jpg',
+    sourceFileName: 'A/B/C/deep.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'H.jpg',
+    sizeText: '886 bytes',
+    typeText: 'JPEG image'
+  }),
+
+  linkTtoTransitiveDirectory: new TestEntryInfo({
+    type: EntryType.LINK,
+    targetPath: 'T',
+    sourceFileName: 'G/C',
+    lastModifiedTime: 'Jan 1, 2000, 1:00 AM',
+    nameText: 'T',
     sizeText: '--',
     typeText: 'Folder'
   }),
@@ -1230,3 +1304,48 @@ var ENTRIES = {
     typeText: 'CRDOWNLOAD file'
   }),
 };
+
+/**
+ * Returns the count for |value| for the histogram |name|.
+ * @param {string} name The histogram to be queried.
+ * @param {number} value The value within that histogram to query.
+ * @return {!Promise<number>} A promise fulfilled with the count.
+ */
+async function getHistogramCount(name, value) {
+  return JSON.parse(await sendTestMessage({
+    'name': 'getHistogramCount',
+    'histogramName': name,
+    'value': value,
+  }));
+}
+
+/**
+ * Returns the count for the user action |name|.
+ * @param {string} name The user action to be queried.
+ * @return {!Promise<number>} A promise fulfilled with the count.
+ */
+async function getUserActionCount(name) {
+  return JSON.parse(await sendTestMessage({
+    'name': 'getUserActionCount',
+    'userActionName': name,
+  }));
+}
+
+/**
+ * Simulate Click in the UI in the middle of the element.
+ * @param{string} appId ID of the app that contains the element. NOTE: The click
+ *     is simulated on most recent window in the window system.
+ * @param {string|!Array<string>} query Query to the element to be clicked.
+ * @return {!Promise} A promise fulfilled after the click event.
+ */
+async function simulateUiClick(appId, query) {
+  const element =
+      await remoteCall.waitForElementStyles(appId, query, ['display']);
+  chrome.test.assertTrue(!!element, 'element for simulateUiClick not found');
+
+  // Find the middle of the element.
+  const x = Math.floor(element.renderedLeft + (element.renderedWidth / 2));
+  const y = Math.floor(element.renderedTop + (element.renderedHeight / 2));
+
+  return sendTestMessage({name: 'simulateClick', 'clickX': x, 'clickY': y});
+}

@@ -145,6 +145,7 @@ class LoadingPredictor : public KeyedService,
   friend class LoadingPredictorTest;
   friend class LoadingPredictorPreconnectTest;
   friend class LoadingPredictorTabHelperTest;
+  friend class LoadingPredictorTabHelperTestCollectorTest;
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestMainFrameResponseCancelsHint);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
@@ -161,7 +162,7 @@ class LoadingPredictor : public KeyedService,
                            TestDontTrackNonPrefetchableUrls);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest, TestDontPredictOmniboxHints);
 
-  base::WeakPtrFactory<LoadingPredictor> weak_factory_;
+  base::WeakPtrFactory<LoadingPredictor> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictor);
 };

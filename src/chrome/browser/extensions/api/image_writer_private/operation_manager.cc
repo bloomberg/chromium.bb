@@ -20,7 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -39,9 +39,7 @@ namespace image_writer {
 using content::BrowserThread;
 
 OperationManager::OperationManager(content::BrowserContext* context)
-    : browser_context_(context),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+    : browser_context_(context), extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   registrar_.Add(this,
@@ -247,9 +245,7 @@ void OperationManager::OnExtensionUnloaded(
 
 std::unique_ptr<service_manager::Connector>
 OperationManager::CreateConnector() {
-  return content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->Clone();
+  return content::GetSystemConnector()->Clone();
 }
 
 void OperationManager::Observe(int type,

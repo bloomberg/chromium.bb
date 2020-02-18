@@ -53,7 +53,7 @@ void AddAccessibilityModeFlags(ui::AXMode mode_flags) {
 //
 
 BrowserAccessibilityComWin::WinAttributes::WinAttributes()
-    : ia_role(0), ia_state(0), ia2_role(0), ia2_state(0) {}
+    : ignored(false), ia_role(0), ia_state(0), ia2_role(0), ia2_state(0) {}
 
 BrowserAccessibilityComWin::WinAttributes::~WinAttributes() {}
 
@@ -1292,7 +1292,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_firstChild(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetChild(0))
+  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetFirstChild())
               ->NewReference();
   return S_OK;
 }
@@ -1311,8 +1311,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_lastChild(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetChild(owner()->PlatformChildCount() - 1))
+  *node = ToBrowserAccessibilityComWin(owner()->PlatformGetLastChild())
               ->NewReference();
   return S_OK;
 }
@@ -1331,9 +1330,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_previousSibling(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetParent()->InternalGetChild(
-                  GetIndexInParent() - 1))
+  *node = ToBrowserAccessibilityComWin(owner()->InternalGetPreviousSibling())
               ->NewReference();
   return S_OK;
 }
@@ -1355,9 +1352,7 @@ IFACEMETHODIMP BrowserAccessibilityComWin::get_nextSibling(
     return S_FALSE;
   }
 
-  *node = ToBrowserAccessibilityComWin(
-              owner()->PlatformGetParent()->InternalGetChild(
-                  GetIndexInParent() + 1))
+  *node = ToBrowserAccessibilityComWin(owner()->InternalGetNextSibling())
               ->NewReference();
   return S_OK;
 }
@@ -1650,8 +1645,10 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
   }
 
   int start_offset = 0;
-  for (size_t i = 0; i < owner()->PlatformChildCount(); ++i) {
-    auto* child = ToBrowserAccessibilityComWin(owner()->PlatformGetChild(i));
+  for (BrowserAccessibility::PlatformChildIterator it =
+           owner()->PlatformChildrenBegin();
+       it != owner()->PlatformChildrenEnd(); ++it) {
+    auto* child = ToBrowserAccessibilityComWin(it.get());
     DCHECK(child);
     std::vector<base::string16> attributes(child->ComputeTextAttributes());
 
@@ -1720,6 +1717,8 @@ void BrowserAccessibilityComWin::UpdateStep1ComputeWinAttributes() {
       owner()->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
 
   win_attributes_->value = GetValue();
+
+  win_attributes_->ignored = owner()->HasState(ax::mojom::State::kIgnored);
 }
 
 void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
@@ -1729,21 +1728,18 @@ void BrowserAccessibilityComWin::UpdateStep2ComputeHypertext() {
 void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     bool is_subtree_creation) {
   int32_t state = MSAAState();
+  const bool ignored = owner()->HasState(ax::mojom::State::kIgnored);
+
+  // Suppress all of these events when the node is ignored, or when the ignored
+  // state has changed.
+  if (ignored || (old_win_attributes_->ignored != ignored))
+    return;
 
   // The rest of the events only fire on changes, not on new objects.
 
-  bool did_fire_namechange = false;
-
   if (old_win_attributes_->ia_role != 0 ||
       !old_win_attributes_->role_name.empty()) {
-    // Fire an event if the name, description, help, or value changes.
-    if (name() != old_win_attributes_->name &&
-        GetData().GetNameFrom() != ax::mojom::NameFrom::kContents) {
-      // Only fire name changes when the name comes from an attribute, otherwise
-      // name changes are redundant with text removed/inserted events.
-      FireNativeEvent(EVENT_OBJECT_NAMECHANGE);
-      did_fire_namechange = true;
-    }
+    // Fire an event if the description, help, or value changes.
     if (description() != old_win_attributes_->description)
       FireNativeEvent(EVENT_OBJECT_DESCRIPTIONCHANGE);
 
@@ -1767,10 +1763,11 @@ void BrowserAccessibilityComWin::UpdateStep3FireEvents(
     }
 
     // Fire hypertext-related events.
-    // Do not fire removed/inserted when a name change event was also fired, as
-    // they are providing redundant information and will lead to duplicate
-    // announcements.
-    if (!did_fire_namechange) {
+    // Do not fire removed/inserted when a name change event will be fired by
+    // AXEventGenerator, as they are providing redundant information and will
+    // lead to duplicate announcements.
+    if (name() == old_win_attributes_->name ||
+        GetData().GetNameFrom() == ax::mojom::NameFrom::kContents) {
       size_t start, old_len, new_len;
       ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
       if (old_len > 0) {
@@ -1810,52 +1807,6 @@ void BrowserAccessibilityComWin::Destroy() {
 void BrowserAccessibilityComWin::Init(ui::AXPlatformNodeDelegate* delegate) {
   owner_ = static_cast<BrowserAccessibilityWin*>(delegate);
   AXPlatformNodeWin::Init(delegate);
-}
-
-base::string16 BrowserAccessibilityComWin::GetInvalidValue() const {
-  const BrowserAccessibilityWin* target = owner();
-  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
-  // a range matching the visual underline representing the error.
-  if (static_cast<ax::mojom::InvalidState>(
-          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
-          ax::mojom::InvalidState::kNone &&
-      target->IsTextOnlyObject() && target->PlatformGetParent()) {
-    // Text nodes need to reflect the invalid state of their parent object,
-    // otherwise spelling and grammar errors communicated through aria-invalid
-    // won't be reflected in text attributes.
-    target = static_cast<BrowserAccessibilityWin*>(target->PlatformGetParent());
-  }
-
-  base::string16 invalid_value;
-  // Note: spelling+grammar errors case is disallowed and not supported. It
-  // could possibly arise with aria-invalid on the ancestor of a spelling error,
-  // but this is not currently described in any spec and no real-world use cases
-  // have been found.
-  switch (static_cast<ax::mojom::InvalidState>(
-      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      break;
-    case ax::mojom::InvalidState::kTrue:
-      return invalid_value = L"true";
-    case ax::mojom::InvalidState::kSpelling:
-      return invalid_value = L"spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return base::ASCIIToUTF16("grammar");
-    case ax::mojom::InvalidState::kOther: {
-      base::string16 aria_invalid_value;
-      if (target->GetString16Attribute(
-              ax::mojom::StringAttribute::kAriaInvalidValue,
-              &aria_invalid_value)) {
-        SanitizeStringAttributeForIA2(aria_invalid_value, &aria_invalid_value);
-        invalid_value = aria_invalid_value;
-      } else {
-        // Set the attribute to L"true", since we cannot be more specific.
-        invalid_value = L"true";
-      }
-    }
-  }
-  return invalid_value;
 }
 
 std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
@@ -1943,7 +1894,7 @@ std::vector<base::string16> BrowserAccessibilityComWin::ComputeTextAttributes()
   // Screen readers look at the text attributes to determine if something is
   // misspelled, so we need to propagate any spelling attributes from immediate
   // parents of text-only objects.
-  base::string16 invalid_value = GetInvalidValue();
+  base::string16 invalid_value = base::UTF8ToUTF16(GetInvalidValue());
   if (!invalid_value.empty())
     attributes.push_back(L"invalid:" + invalid_value);
 
@@ -2004,13 +1955,25 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
     const std::vector<int>& marker_ends =
         owner()->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds);
     for (size_t i = 0; i < marker_types.size(); ++i) {
-      if (!(marker_types[i] &
-            static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)))
+      bool isSpellingError =
+          (marker_types[i] &
+           static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)) != 0;
+      bool isGrammarError =
+          (marker_types[i] &
+           static_cast<int32_t>(ax::mojom::MarkerType::kGrammar)) != 0;
+      base::string16 invalid_str;
+      if (isSpellingError && isGrammarError)
+        invalid_str = L"invalid:spelling,grammar";
+      else if (isSpellingError)
+        invalid_str = L"invalid:spelling";
+      else if (isGrammarError)
+        invalid_str = L"invalid:grammar";
+      else
         continue;
       int start_offset = marker_starts[i];
       int end_offset = marker_ends[i];
       std::vector<base::string16> start_attributes;
-      start_attributes.push_back(L"invalid:spelling");
+      start_attributes.push_back(invalid_str);
       spelling_attributes[start_offset] = start_attributes;
       spelling_attributes[end_offset] = std::vector<base::string16>();
     }
@@ -2019,8 +1982,8 @@ BrowserAccessibilityComWin::GetSpellingAttributes() {
     int start_offset = 0;
     for (BrowserAccessibility* static_text =
              BrowserAccessibilityManager::NextTextOnlyObject(
-                 owner()->InternalGetChild(0));
-         static_text; static_text = static_text->GetNextSibling()) {
+                 owner()->InternalGetFirstChild());
+         static_text; static_text = static_text->InternalGetNextSibling()) {
       auto* text_win = ToBrowserAccessibilityComWin(static_text);
       if (text_win) {
         std::map<int, std::vector<base::string16>> text_spelling_attributes =

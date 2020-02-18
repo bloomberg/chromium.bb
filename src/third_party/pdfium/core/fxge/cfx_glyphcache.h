@@ -12,9 +12,9 @@
 #include <tuple>
 
 #include "core/fxcrt/fx_string.h"
-#include "core/fxcrt/observable.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "core/fxge/fx_freetype.h"
+#include "core/fxge/cfx_face.h"
 
 #if defined _SKIA_SUPPORT_ || _SKIA_SUPPORT_PATHS_
 #include "core/fxge/fx_font.h"
@@ -26,7 +26,7 @@ class CFX_GlyphBitmap;
 class CFX_Matrix;
 class CFX_PathData;
 
-class CFX_GlyphCache : public Retainable, public Observable<CFX_GlyphCache> {
+class CFX_GlyphCache : public Retainable, public Observable {
  public:
   template <typename T, typename... Args>
   friend RetainPtr<T> pdfium::MakeRetain(Args&&... args);
@@ -44,12 +44,15 @@ class CFX_GlyphCache : public Retainable, public Observable<CFX_GlyphCache> {
                                     uint32_t glyph_index,
                                     uint32_t dest_width);
 
+  RetainPtr<CFX_Face> GetFace() { return m_Face; }
+  FXFT_FaceRec* GetFaceRec() { return m_Face ? m_Face->GetRec() : nullptr; }
+
 #if defined _SKIA_SUPPORT_ || _SKIA_SUPPORT_PATHS_
   CFX_TypeFace* GetDeviceCache(const CFX_Font* pFont);
 #endif
 
  private:
-  explicit CFX_GlyphCache(FXFT_Face face);
+  explicit CFX_GlyphCache(RetainPtr<CFX_Face> face);
 
   using SizeGlyphCache = std::map<uint32_t, std::unique_ptr<CFX_GlyphBitmap>>;
   // <glyph_index, width, weight, angle, vertical>
@@ -77,7 +80,7 @@ class CFX_GlyphCache : public Retainable, public Observable<CFX_GlyphCache> {
   void InitPlatform();
   void DestroyPlatform();
 
-  FXFT_Face const m_Face;
+  RetainPtr<CFX_Face> const m_Face;
   std::map<ByteString, SizeGlyphCache> m_SizeMap;
   std::map<PathMapKey, std::unique_ptr<CFX_PathData>> m_PathMap;
 #if defined _SKIA_SUPPORT_ || _SKIA_SUPPORT_PATHS_

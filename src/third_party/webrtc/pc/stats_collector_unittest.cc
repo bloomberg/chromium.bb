@@ -8,7 +8,10 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "pc/stats_collector.h"
+
 #include <stdio.h>
+
 #include <memory>
 
 #include "absl/algorithm/container.h"
@@ -24,7 +27,6 @@
 #include "pc/data_channel.h"
 #include "pc/media_stream.h"
 #include "pc/media_stream_track.h"
-#include "pc/stats_collector.h"
 #include "pc/test/fake_peer_connection_for_stats.h"
 #include "pc/test/fake_video_track_source.h"
 #include "pc/test/mock_rtp_receiver_internal.h"
@@ -562,8 +564,6 @@ void InitVoiceReceiverInfo(cricket::VoiceReceiverInfo* voice_receiver_info) {
   voice_receiver_info->add_ssrc(kSsrcOfTrack);
   voice_receiver_info->bytes_rcvd = 110;
   voice_receiver_info->packets_rcvd = 111;
-  voice_receiver_info->packets_lost = 112;
-  voice_receiver_info->fraction_lost = 113;
   voice_receiver_info->packets_lost = 114;
   voice_receiver_info->ext_seqnum = 115;
   voice_receiver_info->jitter_ms = 116;

@@ -30,9 +30,9 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -49,7 +49,7 @@ constexpr gfx::Size kMaxResolution(1920, 1080);
 namespace {
 
 void CreateVideoCaptureHostOnIO(const std::string& device_id,
-                                blink::MediaStreamType type,
+                                blink::mojom::MediaStreamType type,
                                 media::mojom::VideoCaptureHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
@@ -66,20 +66,20 @@ void CreateVideoCaptureHostOnIO(const std::string& device_id,
       std::move(request));
 }
 
-blink::MediaStreamType ConvertVideoStreamType(
+blink::mojom::MediaStreamType ConvertVideoStreamType(
     content::DesktopMediaID::Type type) {
   switch (type) {
     case content::DesktopMediaID::TYPE_NONE:
-      return blink::MediaStreamType::MEDIA_NO_SERVICE;
+      return blink::mojom::MediaStreamType::NO_SERVICE;
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
-      return blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE;
+      return blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE;
     case content::DesktopMediaID::TYPE_SCREEN:
     case content::DesktopMediaID::TYPE_WINDOW:
-      return blink::MediaStreamType::MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+      return blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE;
   }
 
   // To suppress compiler warning on Windows.
-  return blink::MediaStreamType::MEDIA_NO_SERVICE;
+  return blink::mojom::MediaStreamType::NO_SERVICE;
 }
 
 // Get the content::WebContents associated with the given |id|.
@@ -187,9 +187,8 @@ void CastMirroringServiceHost::Start(
   }
 
   // Connect to the Mirroring Service.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(mojom::kServiceName, &mirroring_service_);
+  content::GetSystemConnector()->BindInterface(mojom::kServiceName,
+                                               &mirroring_service_);
   mojom::ResourceProviderPtr provider;
   resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
   mirroring_service_->Start(
@@ -319,7 +318,8 @@ void CastMirroringServiceHost::ShowCaptureIndicator() {
   media_stream_ui_ = MediaCaptureDevicesDispatcher::GetInstance()
                          ->GetMediaStreamCaptureIndicator()
                          ->RegisterMediaStream(web_contents(), {device});
-  media_stream_ui_->OnStarted(base::OnceClosure(), base::RepeatingClosure());
+  media_stream_ui_->OnStarted(base::OnceClosure(),
+                              content::MediaStreamUI::SourceCallback());
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

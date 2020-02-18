@@ -4,12 +4,14 @@
 
 #include "components/payments/content/payment_request.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_details_converter.h"
@@ -19,6 +21,7 @@
 #include "components/payments/core/can_make_payment_query.h"
 #include "components/payments/core/error_strings.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_validation.h"
 #include "components/payments/core/payment_instrument.h"
@@ -46,6 +49,27 @@ bool IsGooglePaymentMethodInstrumentSelected(const std::string& method_name) {
          method_name == kAndroidPayMethodName;
 }
 
+std::string GetNotSupportedErrorMessage(PaymentRequestSpec* spec) {
+  if (!spec || spec->payment_method_identifiers_set().empty())
+    return errors::kGenericPaymentMethodNotSupportedMessage;
+
+  std::vector<std::string> method_names(
+      spec->payment_method_identifiers_set().size());
+  std::transform(
+      spec->payment_method_identifiers_set().begin(),
+      spec->payment_method_identifiers_set().end(), method_names.begin(),
+      [](const std::string& method_name) { return "\"" + method_name + "\""; });
+
+  std::string output;
+  bool replaced = base::ReplaceChars(
+      method_names.size() == 1
+          ? errors::kSinglePaymentMethodNotSupportedFormat
+          : errors::kMultiplePaymentMethodsNotSupportedFormat,
+      "$", base::JoinString(method_names, ", "), &output);
+  DCHECK(replaced);
+  return output;
+}
+
 }  // namespace
 
 PaymentRequest::PaymentRequest(
@@ -70,8 +94,7 @@ PaymentRequest::PaymentRequest(
           render_frame_host->GetLastCommittedURL())),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
-                      ukm::GetSourceIdForWebContentsDocument(web_contents)),
-      weak_ptr_factory_(this) {
+                      ukm::GetSourceIdForWebContentsDocument(web_contents)) {
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
@@ -105,20 +128,25 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
     return;
   }
 
+  // TODO(crbug.com/978471): Improve architecture for handling prohibited
+  // origins and invalid SSL certificates.
   bool allowed_origin =
       UrlUtil::IsOriginAllowedToUseWebPaymentApis(last_committed_url);
   if (!allowed_origin) {
-    log_.Error(errors::kProhibitedOrigin);
+    reject_show_error_message_ = errors::kProhibitedOrigin;
   }
 
-  bool invalid_ssl = last_committed_url.SchemeIsCryptographic() &&
-                     !delegate_->IsSslCertificateValid();
-  if (invalid_ssl) {
-    log_.Error(errors::kInvalidSslCertificate);
+  bool invalid_ssl = false;
+  if (last_committed_url.SchemeIsCryptographic()) {
+    DCHECK(reject_show_error_message_.empty());
+    reject_show_error_message_ =
+        delegate_->GetInvalidSslCertificateErrorMessage();
+    invalid_ssl = !reject_show_error_message_.empty();
   }
 
   if (!allowed_origin || invalid_ssl) {
     // Intentionally don't set |spec_| and |state_|, so the UI is never shown.
+    log_.Error(reject_show_error_message_);
     log_.Error(errors::kProhibitedOriginOrInvalidSslExplanation);
     return;
   }
@@ -161,10 +189,9 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   journey_logger_.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/!spec_->supported_card_networks().empty(),
       /*requested_method_google=*/
-      base::ContainsValue(spec_->url_payment_method_identifiers(),
-                          google_pay_url) ||
-          base::ContainsValue(spec_->url_payment_method_identifiers(),
-                              android_pay_url),
+      base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
+          base::Contains(spec_->url_payment_method_identifiers(),
+                         android_pay_url),
       /*requested_method_other=*/non_google_it !=
           spec_->url_payment_method_identifiers().end());
 }
@@ -192,7 +219,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
-    client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING);
+    client_->OnError(mojom::PaymentErrorReason::ALREADY_SHOWING,
+                     errors::kAnotherUiShowing);
     OnConnectionTerminated();
     return;
   }
@@ -202,7 +230,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     DCHECK(!has_recorded_completion_);
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(JourneyLogger::NOT_SHOWN_REASON_OTHER);
-    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
+                     errors::kCannotShowInBackgroundTab);
     OnConnectionTerminated();
     return;
   }
@@ -210,7 +239,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   if (!state_) {
     // SSL is not valid. Reject show with NotSupportedError, disconnect the
     // mojo pipe, and destroy this object.
-    AreRequestedMethodsSupportedCallback(false);
+    AreRequestedMethodsSupportedCallback(false, reject_show_error_message_);
     return;
   }
 
@@ -221,6 +250,11 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     // This method does not block.
     spec_->StartWaitingForUpdateWith(
         PaymentRequestSpec::UpdateReason::INITIAL_PAYMENT_DETAILS);
+  } else {
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, false /*completed*/);
   }
 
   display_handle_->Show(this);
@@ -246,7 +280,7 @@ void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
   if (!PaymentsValidators::IsValidPaymentValidationErrorsFormat(errors,
                                                                 &error)) {
     log_.Error(error);
-    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+    client_->OnError(mojom::PaymentErrorReason::USER_CANCEL, error);
     OnConnectionTerminated();
     return;
   }
@@ -289,7 +323,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
         PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
             details, base::BindRepeating(
                          &PaymentInstrument::IsValidForPaymentMethodIdentifier,
-                         base::Unretained(state()->selected_instrument()))));
+                         state()->selected_instrument()->AsWeakPtr())));
   }
 
   bool is_resolving_promise_passed_into_show_method = !spec_->IsInitialized();
@@ -297,6 +331,10 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   spec_->UpdateWith(std::move(details));
 
   if (is_resolving_promise_passed_into_show_method) {
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, false /*completed*/);
     if (SatisfiesSkipUIConstraints()) {
       Pay();
     } else if (spec_->request_shipping()) {
@@ -381,6 +419,10 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
     DCHECK(!has_recorded_completion_);
     journey_logger_.SetCompleted();
     has_recorded_completion_ = true;
+    DCHECK(spec_->details().total);
+    journey_logger_.RecordTransactionAmount(
+        spec_->details().total->amount->currency,
+        spec_->details().total->amount->value, true /*completed*/);
 
     delegate_->GetPrefService()->SetBoolean(kPaymentsFirstTransactionCompleted,
                                             true);
@@ -450,7 +492,8 @@ bool PaymentRequest::ChangePaymentMethod(const std::string& method_name,
 }
 
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
-    bool methods_supported) {
+    bool methods_supported,
+    const std::string& error_message) {
   if (methods_supported) {
     if (SatisfiesSkipUIConstraints())
       Pay();
@@ -459,7 +502,9 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
     has_recorded_completion_ = true;
     journey_logger_.SetNotShown(
         JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
-    client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED);
+    client_->OnError(mojom::PaymentErrorReason::NOT_SUPPORTED,
+                     GetNotSupportedErrorMessage(spec_.get()) +
+                         (error_message.empty() ? "" : " " + error_message));
     if (observer_for_testing_)
       observer_for_testing_->OnNotSupportedError();
     OnConnectionTerminated();
@@ -479,7 +524,7 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
   // Only allowing URL base payment apps to skip the payment sheet.
   skipped_payment_request_ui_ =
       (spec()->url_payment_method_identifiers().size() == 1 ||
-       skip_ui_for_non_url_payment_method_identifiers_for_test_) &&
+       delegate_->SkipUiForBasicCard()) &&
       base::FeatureList::IsEnabled(features::kWebPaymentsSingleAppUiSkip) &&
       base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps) &&
       is_show_user_gesture_ && state()->IsInitialized() &&
@@ -499,16 +544,11 @@ bool PaymentRequest::SatisfiesSkipUIConstraints() {
 
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
+  DCHECK(!response->method_name.empty());
+  DCHECK(!response->stringified_details.empty());
+
   journey_logger_.SetEventOccurred(
       JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
-
-  // Do not send invalid response to client.
-  if (response->method_name.empty() || response->stringified_details.empty()) {
-    RecordFirstAbortReason(
-        JourneyLogger::ABORT_REASON_INSTRUMENT_DETAILS_ERROR);
-    delegate_->ShowErrorMessage();
-    return;
-  }
 
   // Log the correct "selected instrument" metric according to its type and
   // the method name in response.
@@ -540,6 +580,17 @@ void PaymentRequest::OnPaymentResponseAvailable(
     delegate_->ShowProcessingSpinner();
 
   client_->OnPaymentResponse(std::move(response));
+}
+
+void PaymentRequest::OnPaymentResponseError(const std::string& error_message) {
+  journey_logger_.SetEventOccurred(
+      JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
+  RecordFirstAbortReason(JourneyLogger::ABORT_REASON_INSTRUMENT_DETAILS_ERROR);
+
+  reject_show_error_message_ = error_message;
+  delegate_->ShowErrorMessage();
+  // When the user dismisses the error message, UserCancelled() will reject
+  // PaymentRequest.show() with |reject_show_error_message_|.
 }
 
 void PaymentRequest::OnShippingOptionIdSelected(
@@ -574,7 +625,10 @@ void PaymentRequest::UserCancelled() {
   RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_USER);
 
   // This sends an error to the renderer, which informs the API user.
-  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL);
+  client_->OnError(mojom::PaymentErrorReason::USER_CANCEL,
+                   !reject_show_error_message_.empty()
+                       ? reject_show_error_message_
+                       : errors::kUserCancelled);
 
   // We close all bindings and ask to be destroyed.
   client_.reset();

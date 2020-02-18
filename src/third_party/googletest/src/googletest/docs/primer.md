@@ -1,15 +1,13 @@
 # Googletest Primer
 
-
 ## Introduction: Why googletest?
 
 *googletest* helps you write better C++ tests.
 
-googletest is a testing framework developed by the Testing
-Technology team with Google's specific
-requirements and constraints in mind. No matter whether you work on Linux,
-Windows, or a Mac, if you write C++ code, googletest can help you. And it
-supports *any* kind of tests, not just unit tests.
+googletest is a testing framework developed by the Testing Technology team with
+Google's specific requirements and constraints in mind. No matter whether you
+work on Linux, Windows, or a Mac, if you write C++ code, googletest can help
+you. And it supports *any* kind of tests, not just unit tests.
 
 So what makes a good test, and how does googletest fit in? We believe:
 
@@ -18,15 +16,14 @@ So what makes a good test, and how does googletest fit in? We believe:
     tests by running each of them on a different object. When a test fails,
     googletest allows you to run it in isolation for quick debugging.
 1.  Tests should be well *organized* and reflect the structure of the tested
-    code. googletest groups related tests into test cases that can share data
+    code. googletest groups related tests into test suites that can share data
     and subroutines. This common pattern is easy to recognize and makes tests
     easy to maintain. Such consistency is especially helpful when people switch
     projects and start to work on a new code base.
 1.  Tests should be *portable* and *reusable*. Google has a lot of code that is
     platform-neutral, its tests should also be platform-neutral. googletest
-    works on different OSes, with different compilers (gcc, icc, and MSVC), with
-    or without exceptions, so googletest tests can easily work with a variety of
-    configurations.
+    works on different OSes, with different compilers, with or without
+    exceptions, so googletest tests can work with a variety of configurations.
 1.  When tests fail, they should provide as much *information* about the problem
     as possible. googletest doesn't stop at the first test failure. Instead, it
     only stops the current test and continues with the next. You can also set up
@@ -71,9 +68,9 @@ and refactored away
 
 So please be aware of the different definitions of the terms:
 
-Meaning                                                                              | googletest Term                                                                                            | [ISTQB](http://www.istqb.org/) Term
-:----------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------- | :----------------------------------
-Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests)                                                                                    | [Test Case](http://glossary.istqb.org/search/test%20case)
+Meaning                                                                              | googletest Term         | [ISTQB](http://www.istqb.org/) Term
+:----------------------------------------------------------------------------------- | :---------------------- | :----------------------------------
+Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests) | [Test Case](http://glossary.istqb.org/search/test%20case)
 
 ## Basic Concepts
 
@@ -85,15 +82,15 @@ current function; otherwise the program continues normally.
 *Tests* use assertions to verify the tested code's behavior. If a test crashes
 or has a failed assertion, then it *fails*; otherwise it *succeeds*.
 
-A *test case* contains one or many tests. You should group your tests into test
-cases that reflect the structure of the tested code. When multiple tests in a
-test case need to share common objects and subroutines, you can put them into a
+A *test suite* contains one or many tests. You should group your tests into test
+suites that reflect the structure of the tested code. When multiple tests in a
+test suite need to share common objects and subroutines, you can put them into a
 *test fixture* class.
 
-A *test program* can contain multiple test cases.
+A *test program* can contain multiple test suites.
 
 We'll now explain how to write a test program, starting at the individual
-assertion level and building up to tests and test cases.
+assertion level and building up to tests and test suites.
 
 ## Assertions
 
@@ -167,7 +164,7 @@ you'll get a compiler error. We used to require the arguments to support the
 `<<` is supported, it will be called to print the arguments when the assertion
 fails; otherwise googletest will attempt to print them in the best way it can.
 For more details and how to customize the printing of the arguments, see
-gMock [recipe](../../googlemock/docs/CookBook.md#teaching-google-mock-how-to-print-your-values).).
+[documentation](../../googlemock/docs/cook_book.md#teaching-gmock-how-to-print-your-values)
 
 These assertions can work with a user-defined type, but only if you define the
 corresponding comparison operator (e.g. `==`, `<`, etc). Since this is
@@ -196,8 +193,7 @@ objects, you should use `ASSERT_EQ`.
 
 When doing pointer comparisons use `*_EQ(ptr, nullptr)` and `*_NE(ptr, nullptr)`
 instead of `*_EQ(ptr, NULL)` and `*_NE(ptr, NULL)`. This is because `nullptr` is
-typed while `NULL` is not. See [FAQ](faq.md#why-does-googletest-support-expect_eqnull-ptr-and-assert_eqnull-ptr-but-not-expect_nenull-ptr-and-assert_nenull-ptr)
-for more details.
+typed while `NULL` is not. See [FAQ](faq.md)for more details.
 
 If you're working with floating point numbers, you may want to use the floating
 point variations of some of these macros in order to avoid problems caused by
@@ -217,12 +213,18 @@ as `ASSERT_EQ(expected, actual)`, so lots of existing code uses this order. Now
 The assertions in this group compare two **C strings**. If you want to compare
 two `string` objects, use `EXPECT_EQ`, `EXPECT_NE`, and etc instead.
 
-| Fatal assertion                 | Nonfatal assertion              | Verifies                                                 |
-| ------------------------------- | ------------------------------- | -------------------------------------------------------- |
-| `ASSERT_STREQ(str1, str2);`     | `EXPECT_STREQ(str1, str2);`     | the two C strings have the same content                  |
-| `ASSERT_STRNE(str1, str2);`     | `EXPECT_STRNE(str1, str2);`     | the two C strings have different contents                |
-| `ASSERT_STRCASEEQ(str1, str2);` | `EXPECT_STRCASEEQ(str1, str2);` | the two C strings have the same content, ignoring case   |
-| `ASSERT_STRCASENE(str1, str2);` | `EXPECT_STRCASENE(str1, str2);` | the two C strings have different contents, ignoring case |
+| Fatal assertion         | Nonfatal assertion      | Verifies               |
+| ----------------------- | ----------------------- | ---------------------- |
+| `ASSERT_STREQ(str1,     | `EXPECT_STREQ(str1,     | the two C strings have |
+: str2);`                 : str2);`                 : the same content       :
+| `ASSERT_STRNE(str1,     | `EXPECT_STRNE(str1,     | the two C strings have |
+: str2);`                 : str2);`                 : different contents     :
+| `ASSERT_STRCASEEQ(str1, | `EXPECT_STRCASEEQ(str1, | the two C strings have |
+: str2);`                 : str2);`                 : the same content,      :
+:                         :                         : ignoring case          :
+| `ASSERT_STRCASENE(str1, | `EXPECT_STRCASENE(str1, | the two C strings have |
+: str2);`                 : str2);`                 : different contents,    :
+:                         :                         : ignoring case          :
 
 Note that "CASE" in an assertion name means that case is ignored. A `NULL`
 pointer and an empty string are considered *different*.
@@ -256,10 +258,10 @@ TEST(TestSuiteName, TestName) {
 ```
 
 `TEST()` arguments go from general to specific. The *first* argument is the name
-of the test case, and the *second* argument is the test's name within the test
+of the test suite, and the *second* argument is the test's name within the test
 case. Both names must be valid C++ identifiers, and they should not contain
-underscore (`_`). A test's *full name* consists of its containing test case and
-its individual name. Tests from different test cases can have the same
+underscore (`_`). A test's *full name* consists of its containing test suite and
+its individual name. Tests from different test suites can have the same
 individual name.
 
 For example, let's take a simple integer function:
@@ -268,7 +270,7 @@ For example, let's take a simple integer function:
 int Factorial(int n);  // Returns the factorial of n
 ```
 
-A test case for this function might look like:
+A test suite for this function might look like:
 
 ```c++
 // Tests factorial of 0.
@@ -285,15 +287,15 @@ TEST(FactorialTest, HandlesPositiveInput) {
 }
 ```
 
-googletest groups the test results by test cases, so logically-related tests
-should be in the same test case; in other words, the first argument to their
+googletest groups the test results by test suites, so logically-related tests
+should be in the same test suite; in other words, the first argument to their
 `TEST()` should be the same. In the above example, we have two tests,
-`HandlesZeroInput` and `HandlesPositiveInput`, that belong to the same test case
-`FactorialTest`.
+`HandlesZeroInput` and `HandlesPositiveInput`, that belong to the same test
+suite `FactorialTest`.
 
-When naming your test cases and tests, you should follow the same convention as
-for [naming functions and
-classes](https://google.github.io/styleguide/cppguide.html#Function_Names).
+When naming your test suites and tests, you should follow the same convention as
+for
+[naming functions and classes](https://google.github.io/styleguide/cppguide.html#Function_Names).
 
 **Availability**: Linux, Windows, Mac.
 
@@ -315,21 +317,21 @@ To create a fixture:
 1.  If necessary, write a destructor or `TearDown()` function to release any
     resources you allocated in `SetUp()` . To learn when you should use the
     constructor/destructor and when you should use `SetUp()/TearDown()`, read
-    this [FAQ](faq.md#should-i-use-the-constructordestructor-of-the-test-fixture-or-setupteardown) entry.
+    the [FAQ](faq.md).
 1.  If needed, define subroutines for your tests to share.
 
 When using a fixture, use `TEST_F()` instead of `TEST()` as it allows you to
 access objects and subroutines in the test fixture:
 
 ```c++
-TEST_F(TestSuiteName, TestName) {
+TEST_F(TestFixtureName, TestName) {
   ... test body ...
 }
 ```
 
-Like `TEST()`, the first argument is the test case name, but for `TEST_F()` this
-must be the name of the test fixture class. You've probably guessed: `_F` is for
-fixture.
+Like `TEST()`, the first argument is the test suite name, but for `TEST_F()`
+this must be the name of the test fixture class. You've probably guessed: `_F`
+is for fixture.
 
 Unfortunately, the C++ macro system does not allow us to create a single macro
 that can handle both types of tests. Using the wrong macro causes a compiler
@@ -342,7 +344,7 @@ declaration`".
 For each test defined with `TEST_F()` , googletest will create a *fresh* test
 fixture at runtime, immediately initialize it via `SetUp()` , run the test,
 clean up by calling `TearDown()` , and then delete the test fixture. Note that
-different tests in the same test case have different test fixture objects, and
+different tests in the same test suite have different test fixture objects, and
 googletest always deletes a test fixture before it creates the next one.
 googletest does **not** reuse the same test fixture for multiple tests. Any
 changes one test makes to the fixture do not affect other tests.
@@ -414,7 +416,7 @@ The above uses both `ASSERT_*` and `EXPECT_*` assertions. The rule of thumb is
 to use `EXPECT_*` when you want the test to continue to reveal more errors after
 the assertion failure, and use `ASSERT_*` when continuing after failure doesn't
 make sense. For example, the second assertion in the `Dequeue` test is
-=ASSERT_NE(nullptr, n)=, as we need to dereference the pointer `n` later, which
+`ASSERT_NE(nullptr, n)`, as we need to dereference the pointer `n` later, which
 would lead to a segfault when `n` is `NULL`.
 
 When these tests run, the following happens:
@@ -429,7 +431,6 @@ When these tests run, the following happens:
 
 **Availability**: Linux, Windows, Mac.
 
-
 ## Invoking the Tests
 
 `TEST()` and `TEST_F()` implicitly register their tests with googletest. So,
@@ -439,11 +440,11 @@ your defined tests in order to run them.
 After defining your tests, you can run them with `RUN_ALL_TESTS()` , which
 returns `0` if all the tests are successful, or `1` otherwise. Note that
 `RUN_ALL_TESTS()` runs *all tests* in your link unit -- they can be from
-different test cases, or even different source files.
+different test suites, or even different source files.
 
 When invoked, the `RUN_ALL_TESTS()` macro:
 
-1. Saves the state of all googletest flags
+*   Saves the state of all googletest flags
 
 *   Creates a test fixture object for the first test.
 
@@ -455,7 +456,7 @@ When invoked, the `RUN_ALL_TESTS()` macro:
 
 *   Deletes the fixture.
 
-* Restores the state of all googletest flags
+*   Restores the state of all all googletest flags
 
 *   Repeats the above steps for the next test, until all tests have run.
 
@@ -468,15 +469,17 @@ If a fatal failure happens the subsequent steps will be skipped.
 > return the value of `RUN_ALL_TESTS()`.
 >
 > Also, you should call `RUN_ALL_TESTS()` only **once**. Calling it more than
-> once conflicts with some advanced googletest features (e.g. thread-safe [death
-> tests](advanced.md#death-tests)) and thus is not supported.
+> once conflicts with some advanced googletest features (e.g. thread-safe
+> [death tests](advanced.md#death-tests)) and thus is not supported.
 
 **Availability**: Linux, Windows, Mac.
 
 ## Writing the main() Function
 
-Write your own main() function, which should
-return the value of `RUN_ALL_TESTS()`
+Write your own main() function, which should return the value of
+`RUN_ALL_TESTS()`
+
+You can start from this boilerplate:
 
 ```c++
 #include "this/package/foo.h"
@@ -511,7 +514,7 @@ class FooTest : public ::testing::Test {
      // before the destructor).
   }
 
-  // Objects declared here can be used by all tests in the test case for Foo.
+  // Objects declared here can be used by all tests in the test suite for Foo.
 };
 
 // Tests that the Foo::Bar() method does Abc.
@@ -535,7 +538,6 @@ int main(int argc, char **argv) {
 }
 ```
 
-
 The `::testing::InitGoogleTest()` function parses the command line for
 googletest flags, and removes all recognized flags. This allows the user to
 control a test program's behavior via various flags, which we'll cover in
@@ -551,7 +553,6 @@ implementation of main(). If it fits your needs, then just link your test with
 gtest\_main library and you are good to go.
 
 NOTE: `ParseGUnitFlags()` is deprecated in favor of `InitGoogleTest()`.
-
 
 ## Known Limitations
 

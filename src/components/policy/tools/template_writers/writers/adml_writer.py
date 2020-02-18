@@ -15,7 +15,7 @@ def GetWriter(config):
   GetWriter method because the TemplateFormatter uses this method to
   instantiate a Writer.
   '''
-  return ADMLWriter(['win'], config)
+  return ADMLWriter(['win', 'win7'], config)
 
 
 class ADMLWriter(xml_formatted_writer.XMLFormattedWriter,
@@ -161,6 +161,8 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter,
     the ADMX file but not related to any specific Policy-Group or Policy.
     '''
     self._AddString(self.config['win_supported_os'],
+                    self.messages['win_supported_all']['text'])
+    self._AddString(self.config['win_supported_os_win7'],
                     self.messages['win_supported_win7']['text'])
     categories = self.winconfig['mandatory_category_path'] + \
                   self.winconfig['recommended_category_path']
@@ -252,7 +254,7 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter,
     # Map of all strings seen.
     self.strings_seen = {}
     # Shortcut to platform-specific ADMX/ADM specific configuration.
-    assert len(self.platforms) == 1
+    assert len(self.platforms) <= 2
     self.winconfig = self.config['win_config'][self.platforms[0]]
 
   def GetTemplateText(self):

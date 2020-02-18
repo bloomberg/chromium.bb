@@ -16,6 +16,7 @@
 #include "sql/initialization.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs_file.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -125,13 +126,13 @@ String StringFromFullPath(const char* full_path) {
 }
 
 // SQLite measures time according to the Julian calendar.
-WTF::Time SqliteEpoch() {
+base::Time SqliteEpoch() {
   constexpr const double kMicroSecondsPerDay = 24 * 60 * 60 * 1000;
   // The ".5" is intentional -- days in the Julian calendar start at noon.
   // The offset is in the SQLite source code (os_unix.c) multiplied by 10.
   constexpr const double kUnixEpochAsJulianDay = 2440587.5;
 
-  return WTF::Time::FromJsTime(-kUnixEpochAsJulianDay * kMicroSecondsPerDay);
+  return base::Time::FromJsTime(-kUnixEpochAsJulianDay * kMicroSecondsPerDay);
 }
 
 }  // namespace
@@ -160,7 +161,7 @@ std::tuple<int, sqlite3*> SandboxedVfs::OpenDatabase(const String& filename) {
   sqlite3* connection;
   constexpr int open_flags =
       SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_PRIVATECACHE;
-  int status = sqlite3_open_v2(filename.Utf8().data(), &connection, open_flags,
+  int status = sqlite3_open_v2(filename.Utf8().c_str(), &connection, open_flags,
                                kSqliteVfsName);
   if (status != SQLITE_OK) {
     // SQLite creates a connection handle in most cases where open fails.
@@ -189,7 +190,8 @@ int SandboxedVfs::Open(const char* full_path,
   //               is asynchronous, so we could open all the needed files (DB,
   //               journal, etc.) asynchronously, and store them in a hash table
   //               that would be used here.
-  base::File file = platform_->DatabaseOpenFile(file_name, requested_flags);
+  base::File file =
+      WebDatabaseHost::GetInstance().OpenFile(file_name, requested_flags);
 
   if (!file.IsValid()) {
     // TODO(pwnall): Figure out if we can remove the fallback to read-only.
@@ -214,14 +216,15 @@ int SandboxedVfs::Open(const char* full_path,
 
 int SandboxedVfs::Delete(const char* full_path, int sync_dir) {
   DCHECK(full_path);
-  return platform_->DatabaseDeleteFile(StringFromFullPath(full_path), sync_dir);
+  return WebDatabaseHost::GetInstance().DeleteFile(
+      StringFromFullPath(full_path), sync_dir);
 }
 
 int SandboxedVfs::Access(const char* full_path, int flags, int* result) {
   DCHECK(full_path);
   DCHECK(result);
-  int32_t attributes =
-      platform_->DatabaseGetFileAttributes(StringFromFullPath(full_path));
+  int32_t attributes = WebDatabaseHost::GetInstance().GetFileAttributes(
+      StringFromFullPath(full_path));
 
   // TODO(pwnall): Make the mojo interface portable across OSes, instead of
   //               messing around with OS-dependent constants here.
@@ -290,7 +293,7 @@ int SandboxedVfs::Randomness(int result_size, char* result) {
 
 int SandboxedVfs::Sleep(int microseconds) {
   DCHECK_GE(microseconds, 0);
-  base::PlatformThread::Sleep(WTF::TimeDelta::FromMicroseconds(microseconds));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(microseconds));
   return SQLITE_OK;
 }
 
@@ -311,7 +314,7 @@ int SandboxedVfs::GetLastError(int message_size, char* message) const {
 int SandboxedVfs::CurrentTimeInt64(sqlite3_int64* result_ms) {
   DCHECK(result_ms);
 
-  WTF::TimeDelta delta = WTF::Time::Now() - sqlite_epoch_;
+  base::TimeDelta delta = base::Time::Now() - sqlite_epoch_;
   *result_ms = delta.InMilliseconds();
   return SQLITE_OK;
 }

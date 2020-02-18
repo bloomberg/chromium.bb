@@ -36,12 +36,13 @@ struct LayerData {
   // or minimized windows' layers, should all be skipped.
   bool should_skip_layer = false;
 
-  // If true, we will reset the mirrored layer transform to identity. This is
-  // because windows are transformed in overview mode to position them in their
-  // places in the overview mode grid. However, in the desk's mini_view, we
-  // should show those windows in their original locations on the screen as if
-  // overview mode is inactive.
-  bool should_reset_transform = false;
+  // If true, we will force the mirror layers to be visible even if the source
+  // layers are not, and we will disable visibility change synchronization
+  // between the source and mirror layers.
+  // This is used, for example, for the desks container windows whose mirrors
+  // should always be visible (even for inactive desks) to be able to see their
+  // contents in the mini_views.
+  bool should_force_mirror_visible = false;
 };
 
 // Returns true if |window| can be shown in the desk's preview according to its
@@ -64,7 +65,10 @@ bool CanShowWindowForMultiProfile(aura::Window* window) {
 
 // Recursively mirrors |source_layer| and its children and adds them as children
 // of |parent|, taking into account the given |layers_data|.
-void MirrorLayerTree(ui::Layer* source_layer,
+// The transforms of the mirror layers of the direct children of
+// |desk_container_layer| will be reset to identity.
+void MirrorLayerTree(ui::Layer* desk_container_layer,
+                     ui::Layer* source_layer,
                      ui::Layer* parent,
                      const base::flat_map<ui::Layer*, LayerData>& layers_data) {
   const auto iter = layers_data.find(source_layer);
@@ -77,16 +81,19 @@ void MirrorLayerTree(ui::Layer* source_layer,
   parent->Add(mirror);
 
   for (auto* child : source_layer->children())
-    MirrorLayerTree(child, mirror, layers_data);
+    MirrorLayerTree(desk_container_layer, child, mirror, layers_data);
 
-  // Force the mirrored layers to be visible (in order to show windows on
-  // inactive desks).
-  // TODO(afakhry): See if we need to avoid this in certain cases.
-  mirror->SetVisible(true);
-  mirror->SetOpacity(1);
   mirror->set_sync_bounds_with_source(true);
+  if (layer_data.should_force_mirror_visible) {
+    mirror->SetVisible(true);
+    mirror->SetOpacity(1);
+    mirror->set_sync_visibility_with_source(false);
+  }
 
-  if (layer_data.should_reset_transform)
+  // Windows in overview mode are transformed into their positions in the grid,
+  // but we want to show a preview of the windows in their untransformed state
+  // outside of overview mode.
+  if (source_layer->parent() == desk_container_layer)
     mirror->SetTransform(gfx::Transform());
 }
 
@@ -106,7 +113,7 @@ void GetLayersData(aura::Window* window,
   }
 
   // Minimized windows should not show up in the mini_view.
-  auto* window_state = wm::GetWindowState(window);
+  auto* window_state = WindowState::Get(window);
   if (window_state && window_state->IsMinimized()) {
     layer_data.should_skip_layer = true;
     return;
@@ -120,8 +127,8 @@ void GetLayersData(aura::Window* window,
   // Windows transformed into position in the overview mode grid should be
   // mirrored and the transforms of the mirrored layers should be reset to
   // identity.
-  if (window->GetProperty(kIsShowingInOverviewKey))
-    layer_data.should_reset_transform = true;
+  if (window->GetProperty(kForceVisibleInMiniViewKey))
+    layer_data.should_force_mirror_visible = true;
 
   for (auto* child : window->children())
     GetLayersData(child, out_layers_data);
@@ -186,8 +193,9 @@ void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
   mirrored_content_root_layer->set_name("mirrored contents root layer");
   base::flat_map<ui::Layer*, LayerData> layers_data;
   GetLayersData(desk_container, &layers_data);
-  MirrorLayerTree(desk_container->layer(), mirrored_content_root_layer.get(),
-                  layers_data);
+  auto* desk_container_layer = desk_container->layer();
+  MirrorLayerTree(desk_container_layer, desk_container_layer,
+                  mirrored_content_root_layer.get(), layers_data);
 
   // Add the root of the mirrored layer tree as a child of the
   // |desk_mirrored_contents_view_|'s layer.

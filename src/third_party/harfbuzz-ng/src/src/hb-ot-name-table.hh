@@ -63,7 +63,7 @@ struct NameRecord
 
 #ifndef HB_NO_OT_NAME_LANGUAGE_AAT
     if (p == 0)
-      return _hb_aat_language_get (face, l);
+      return face->table.ltag->get_language (l);
 #endif
 
 #endif
@@ -104,7 +104,7 @@ struct NameRecord
     TRACE_SERIALIZE (this);
     auto *out = c->embed (this);
     if (unlikely (!out)) return_trace (nullptr);
-    out->offset.serialize_copy (c, src_base + offset, dst_base, length);
+    out->offset.serialize_copy (c, offset, src_base, dst_base, length);
     return_trace (out);
   }
 
@@ -186,13 +186,13 @@ struct name
 
     auto snap = c->snapshot ();
     this->nameRecordZ.serialize (c, this->count);
-    this->stringOffset = c->length ();
+    if (unlikely (!c->check_assign (this->stringOffset, c->length ()))) return_trace (false);
     c->revert (snap);
 
     const void *dst_string_pool = &(this + this->stringOffset);
 
     + it
-    | hb_apply ([&] (const NameRecord& _) { c->copy (_, src_string_pool, dst_string_pool); })
+    | hb_apply ([=] (const NameRecord& _) { c->copy (_, src_string_pool, dst_string_pool); })
     ;
 
     if (unlikely (c->ran_out_of_room)) return_trace (false);

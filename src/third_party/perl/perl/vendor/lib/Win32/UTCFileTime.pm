@@ -7,17 +7,19 @@
 #   Win32.
 #
 # COPYRIGHT
-#   Copyright (C) 2003-2008, 2012 Steve Hay.  All rights reserved.
+#   Copyright (C) 2003-2008, 2012-2014 Steve Hay.  All rights reserved.
 #
 # LICENCE
-#   You may distribute under the terms of either the GNU General Public License
-#   or the Artistic License, as specified in the LICENCE file.
+#   This module is free software; you can redistribute it and/or modify it under
+#   the same terms as Perl itself, i.e. under the terms of either the GNU
+#   General Public License or the Artistic License, as specified in the LICENCE
+#   file.
 #
 #===============================================================================
 
 package Win32::UTCFileTime;
 
-use 5.006000;
+use 5.008001;
 
 use strict;
 use warnings;
@@ -26,10 +28,13 @@ use Carp qw(croak);
 use Exporter qw();
 use XSLoader qw();
 
+## no critic (Subroutines::ProhibitSubroutinePrototypes)
+
 sub stat(;$);
 sub lstat(;$);
 sub alt_stat(;$);
 sub utime(@);
+sub _fixup_file($);
 
 #===============================================================================
 # MODULE INITIALIZATION
@@ -51,7 +56,7 @@ BEGIN {
         alt_stat
     );
     
-    $VERSION = '1.55';
+    $VERSION = '1.59';
 
     XSLoader::load(__PACKAGE__, $VERSION);
 }
@@ -67,13 +72,13 @@ our $Try_Alt_Stat = 0;
 # PUBLIC API
 #===============================================================================
 
-# Autoload the SEM_* flags from the constant() XS fuction.
+# Autoload the SEM_* flags from the constant() XS function.
 
 sub AUTOLOAD {
     our $AUTOLOAD;
 
     # Get the name of the constant to generate a subroutine for.
-    (my $constant = $AUTOLOAD) =~ s/^.*:://;
+    (my $constant = $AUTOLOAD) =~ s/^.*:://o;
 
     # Avoid deep recursion on AUTOLOAD() if constant() is not defined.
     croak('Unexpected error in AUTOLOAD(): constant() is not defined')
@@ -86,8 +91,8 @@ sub AUTOLOAD {
 
     # Generate an in-line subroutine returning the required value.
     {
-        no strict 'refs';
-        *$AUTOLOAD = sub { return $value };
+    no strict 'refs'; ## no critic (TestingAndDebugging::ProhibitNoStrict)
+    *$AUTOLOAD = sub { return $value };
     }
 
     # Switch to the subroutine that we have just generated.
@@ -96,36 +101,41 @@ sub AUTOLOAD {
 
 # Specialized import() method to handle the ':globally' pseudo-symbol.
 # This method is based on the import() method in the standard library module
-# File::Glob (version 1.01).
+# File::Glob (version 1.23).
 
 sub import {
-    my $i = 1;
-    while ($i < @_) {
-        # If the ':globally' pseudo-symbol is found in the list of symbols to
-        # export then remove it and export stat(), lstat() and utime() to the
-        # special CORE::GLOBAL package.
-        if ($_[$i] =~ /^:globally$/io) {
-            splice @_, $i, 1;
-            {
-                no warnings 'once';
-                *CORE::GLOBAL::stat  = \&Win32::UTCFileTime::stat;
-                *CORE::GLOBAL::lstat = \&Win32::UTCFileTime::lstat;
-                *CORE::GLOBAL::utime = \&Win32::UTCFileTime::utime;
-            }
-            next;
+    # If the ':globally' pseudo-symbol is found in the list of symbols to export
+    # then export stat(), lstat() and utime() to the special CORE::GLOBAL
+    # package.
+    my @args = grep {
+        my $passthrough;
+        if ($_ eq ':globally') {
+            no warnings 'redefine';
+            *CORE::GLOBAL::stat  = \&Win32::UTCFileTime::stat;
+            *CORE::GLOBAL::lstat = \&Win32::UTCFileTime::lstat;
+            *CORE::GLOBAL::utime = \&Win32::UTCFileTime::utime;
         }
-        $i++;
-    }
+        else {
+            $passthrough = 1;
+        }
+        $passthrough;
+    } @_;
 
-    # Switch to Exporter's import() method to handle any remaining symbols to
-    # export.
-    goto &Exporter::import;
+    # Don't call Exporter's import() if there are no more arguments left than
+    # our own module name: import() is not called for "use MODULE ()" so we
+    # should not continue if we are now in that case.
+    return if scalar @_ > 1 and scalar @args == 1;
+
+    local $Exporter::ExportLevel = $Exporter::ExportLevel + 1;
+    Exporter::import(@args);
 }
 
 sub stat(;$) {
     my $file = @_ ? shift : $_;
 
     $ErrStr = '';
+
+    $file = _fixup_file($file);
 
     # Make sure we do not display a message box asking the user to insert a
     # floppy disk or CD-ROM.
@@ -177,6 +187,8 @@ sub lstat(;$) {
 
     $ErrStr = '';
 
+    $link = _fixup_file($link);
+
     # Make sure we do not display a message box asking the user to insert a
     # floppy disk or CD-ROM.
     my $old_umode = _set_error_mode(SEM_FAILCRITICALERRORS());
@@ -227,6 +239,8 @@ sub alt_stat(;$) {
 
     $ErrStr = '';
 
+    $file = _fixup_file($file);
+
     # Make sure we do not display a message box asking the user to insert a
     # floppy disk or CD-ROM.
     my $old_umode = _set_error_mode(SEM_FAILCRITICALERRORS());
@@ -261,6 +275,25 @@ sub utime(@) {
     }
 
     return $count;
+}
+
+#===============================================================================
+# PRIVATE API
+#===============================================================================
+
+# This function is based on code taken from the win32_stat() function in Perl
+# (version 5.19.10).
+
+sub _fixup_file($) {
+    my $file = shift;
+
+    # Remove trailing slashes or backslashes.
+    $file =~ s/[\/\\]+$//o;
+
+    # Add a backslash if we only have a drive letter.
+    $file .= '\\' if $file =~ /^[a-z]:$/io;
+
+    return $file;
 }
 
 1;
@@ -343,6 +376,11 @@ structure-conversion without converting to local time), and C<mktime(3)> for
 local time to UTC conversion, applying a DST correction or not as instructed by
 one of the fields in its C<struct tm> argument.
 
+Additionally, if you build perl with Visual Studio 2013 (VC12) then perl's
+C<utime()> function will suffer from a new bug introduced into the C RTL DLL's
+C<utime(2)> function, which Microsoft do not intend to fix until a future
+version of Visual Studio.
+
 See L<"BACKGROUND REFERENCE"> for more details.
 
 The replacement C<stat()> and C<lstat()> functions provided by this module
@@ -369,30 +407,10 @@ in the lists thus obtained with the corrected values.  In this way, all of the
 extra things done by Perl's built-in functions besides simply calling the
 underlying C C<stat(2)> function are inherited by this module.
 
-In obtaining these file time fields, these replacement functions actually
-incorporate one slight improvement over the built-in functions (as of Perl
-5.8.0): They work better on directories specified with trailing slashes or
-backslashes under Windows NT platforms.
-
-(As described in the L<"BACKGROUND REFERENCE"> section, the Microsoft C library
-C<stat(2)> function, and hence Perl's built-in C<stat()> function, calls the
-Win32 API function C<FindFirstFile()>.  That function is documented to fail on
-directories that are specified with a trailing slash or backslash, so the
-built-in function will not succeed.  It fact, it falls back on another Win32 API
-function, C<GetFileAttributes()>, to set up the C<st_mode> field and then
-returns success in such cases, but leaving the other fields set to zero.
-
-The replacement functions call a different Win32 API function, C<CreateFile()>,
-which can open directories specified with a trailing slash or backslash, but
-only under Windows NT platforms.  The file time fields will thus be set
-correctly by these replacement functions on Windows NT platforms.  (Under
-Windows 95 platforms, they are set to zero and the functions succeed, as per the
-Perl built-ins.)  Note, however, that the other fields, left over from the
-original call to Perl's built-in C<stat()> or C<lstat()> function, will still be
-zero.  For a complete alternative C<stat()> function that only uses
-C<CreateFile()>, and will thus set all fields correctly even for directories
-specified with a trailing slash or backslash, albeit only under Windows NT
-platforms, use the C<alt_stat()> function.)
+(The replacement functions also incorporate one slight improvement to the
+built-in functions that was introduced in Perl 5.8.9 (namely, that they work
+correctly on directories specified with trailing slashes or backslashes), thus
+making this improvement available even when using an older version of Perl.)
 
 The replacement C<utime()> function provided by this module behaves identically
 to Perl's built-in function of the same name, except that:
@@ -491,24 +509,20 @@ Behaves almost identically to C<stat()> above, but uses this module's own
 implementation of the standard C library C<stat(2)> function that can succeed in
 some cases where Microsoft's implementation fails.
 
-As mentioned in the main L<"DESCRIPTION"> above, Microsoft's C<stat(2)>, and
-hence Perl's built-in C<stat()> and the replacement C<stat()> function above,
-calls the Win32 API function C<FindFirstFile()>.  That function is used to
-search a directory for a file, and thus requires the process to have "List
-Folder Contents" permission on the directory containing the $file in question.
-If that permission is denied then C<stat()> will fail.  It also has the
-disadvantage mentioned above that it will fail on directories specified with a
-trailing slash or backslash.
+Microsoft's C<stat(2)>, and hence Perl's built-in C<stat()> and the replacement
+C<stat()> function above, calls the Win32 API function C<FindFirstFile()>.  That
+function is used to search a directory for a file, and thus requires the process
+to have "List Folder Contents" permission on the directory containing the $file
+in question.  If that permission is denied then C<stat()> will fail.
 
-C<alt_stat()> avoids both of these problems by using a different Win32 API
-function, C<CreateFile()>, instead.  That function opens a file directly and
-hence does not require the process to have "List Folder Contents" permission on
-the parent directory.  It can also open directories specified with trailing
-slash or backslash, but only under Windows NT platforms.  B<In fact, under
-Windows 95 platforms, it cannot open directories at all and will only set the
-C<st_mode> field correctly;> the other fields will be set to zero, like the Perl
-built-in C<stat()> and C<lstat()> functions do for directories specified with a
-trailing slash or backslash.
+C<alt_stat()> avoids this problem by using a different Win32 API function,
+C<CreateFile()>, instead.  That function opens a file directly and hence does
+not require the process to have "List Folder Contents" permission on the parent
+directory.  B<However, on Windows 95 platforms, it cannot open directories at
+all and will only set the C<st_mode> field correctly;> the other fields will be
+set to zero, like the Perl built-in C<stat()> and C<lstat()> functions do for
+directories on which C<stat(2)> fails (which can also happen in that case, e.g.
+on sharenames).
 
 The main disadvantage with using this function is that the entire C<struct stat>
 has to be built by hand by it, rather than simply inheriting most of it from the
@@ -588,13 +602,6 @@ as follows (a la L<perldiag>):
 
 =over 4
 
-=item Can't close file descriptor '%d' for file '%s': %s
-
-(W) The specified file descriptor for the specified file could not be closed
-after failing to obtain the associated operating-system file handle from it.
-The system error message corresponding to the standard C library C<errno>
-variable is also given.
-
 =item Can't close file descriptor '%d' for file '%s' after updating: %s
 
 (W) The specified file descriptor for the specified file could not be closed
@@ -673,6 +680,12 @@ File information could not be read from an open file handle on the specified
 file.  The system error message corresponding to the Win32 API last error code
 is also given.
 
+=item Can't get file object handle after opening file '%s' for updating as file descriptor '%d': %s",
+
+A file object handle could not be obtained for the specified file descriptor,
+which the specified file has been opened as for updating.  The system error
+message corresponding to the standard C library C<errno> variable is also given.
+
 =item Can't open file '%s' for reading: %s
 
 The specified file could not be opened for reading the file information.  The
@@ -713,23 +726,23 @@ shown first, C<$^E> underneath):
 
 =over 4
 
-=item EACCES (Permission denied)
+=item C<EACCES> (Permission denied)
 
-=item ERROR_ACCESS_DENIED (Access is denied)
+=item C<ERROR_ACCESS_DENIED> (Access is denied)
 
 [C<utime()> only.]  One or more of the @files is read-only.  (The process must
 have write access to each file to be able to update its file times.)
 
-=item EMFILE (Too many open files)
+=item C<EMFILE> (Too many open files)
 
-=item ERROR_TOO_MANY_OPEN_FILES (The system cannot open the file)
+=item C<ERROR_TOO_MANY_OPEN_FILES> (The system cannot open the file)
 
 The maximum number of file descriptors has been reached.  (Each file must be
 opened in order to read file information from it or to update its file times.)
 
-=item ENOENT (No such file or directory)
+=item C<ENOENT> (No such file or directory)
 
-=item ERROR_FILE_NOT_FOUND (The system cannot find the file specified)
+=item C<ERROR_FILE_NOT_FOUND> (The system cannot find the file specified)
 
 The filename or path in $file was not found.
 
@@ -778,20 +791,20 @@ As these articles themselves emphasize, the behaviour in question is by design,
 not a bug.  As an aside, another Microsoft Knowledge Base article (214661: FIX:
 Daylight Savings Time Bug in C Run-Time Library) refers to a different problem
 involving the Microsoft C library that was confirmed as a bug and was fixed in
-Visual Studio 6.0 Service Pack 3, so it is worth ensuring that your edition of
-Visual Studio is upgraded to at least that Service Pack level when you build
-Perl and this module.  (At the time of writing, Service Pack 6 is the latest
-available for Visual Studio 6.0.)
+Visual C++ 6.0 Service Pack 3, so it is worth ensuring that your edition of
+Visual C++ is upgraded to at least that Service Pack level when you build perl
+and this module.  (At the time of writing, Service Pack 6 is the latest
+available for Visual C++ 6.0.)
 
 An excellent overview of the problem with Microsoft's C<stat(2)> was written by
 Jonathan M Gilligan and posted on the Code Project website
-(F<http://www.codeproject.com/>).  He has kindly granted permission to use his
+(L<http://www.codeproject.com/>).  He has kindly granted permission to use his
 article here to describe the problem more fully.  A slightly edited version of
 it now follows; the original article can be found at the URL
-F<http://www.codeproject.com/datetime/dstbugs.asp>.
+L<http://www.codeproject.com/datetime/dstbugs.asp>.
 
 (The article was accompanied by a C library, adapted from code written for CVSNT
-(F<http://www.cvsnt.org/>) by Jonathan and Tony M Hoyle, which implemented the
+(L<http://www.cvsnt.org/>) by Jonathan and Tony M Hoyle, which implemented the
 solution outlined at the end of his article.  The solution provided by this
 module is partly based on that library and the original CVSNT code itself
 (version 2.0.4), which both authors kindly granted permission to use under the
@@ -922,7 +935,7 @@ such as "leap seconds."  TAI measures raw atomic time.  UTC measures time
 coordinated to the motion of the earth (i.e., so we don't end up having midnight
 while the sun is shining or January in midsummer).  Details of what UTC really
 means, together with a more detailed history of timekeeping, can be found at
-F<http://ecco.bsee.swin.edu.au/chronos/GMT-explained.html>.
+L<http://ecco.bsee.swin.edu.au/chronos/GMT-explained.html>.
 
 =head2 UTC, time zones, and Windows file times
 
@@ -1307,8 +1320,8 @@ way.
 
 (Incidentally, the source code of Microsoft's implementation of C<stat(2)> can
 be found in F<C:\Program Files\Microsoft Visual Studio\VC98\CRT\SRC\STAT.C> if
-you installed Microsoft Visual C++ 6.0 in its default location and selected the
-"VC++ Runtime Libraries -E<gt> CRT Source Code" option when installing.)
+you installed Visual C++ 6.0 in its default location and selected the "VC++
+Runtime Libraries -E<gt> CRT Source Code" option when installing.)
 
 =head2 More problems: utime()
 
@@ -1409,6 +1422,27 @@ The solution to this problem implemented by this module is as simple as that to
 the C<stat(2)> problem: just use the appropriate Win32 API function instead (in
 this case, C<SetFileTime()>).
 
+=head2 One More Sting in the Tail
+
+This whole sorry saga still has one more sting in the tail.  In Visual Studio
+2013 (VC12) some changes were made to the C<stat(2)> function to resolve the
+subtle DST bug in it, but the C<utime(2)> function did not have corresponding
+changes made to it so that calling the C<utime(2)> function to set the specified
+file access and modification times and then calling the C<stat(2)> function to
+retrieve those times can yield different times than were specified.
+
+Specifically, the times returned by C<stat(2)> can be one hour different to the
+times passed to C<utime(2)> depending on DST values.  The roundtrip fails for
+dates and times with the opposite DST value to the computer's current date and
+time, which was not the case in previous versions of Visual Studio since
+C<stat(2)> used to have the same DST bug as C<utime(2)>, thus at least yielding
+consistent results.
+
+Details of this problem can be found here: L<https://connect.microsoft.com/VisualStudio/feedback/details/811534/utime-sometimes-fails-to-set-the-correct-file-times-in-visual-c-2013>.
+
+Fortunately, the replacement C<utime()> function provided by this module fixes
+this problem too.
+
 =head1 EXPORTS
 
 The following symbols are, or can be, exported by this module:
@@ -1468,20 +1502,23 @@ even become redundant.
 
 Patches, bug reports, suggestions or any other feedback is welcome.
 
-Bugs can be reported on the CPAN Request Tracker at
-F<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Win32-UTCFileTime>.
+Patches can be sent as GitHub pull requests at
+L<https://github.com/steve-m-hay/Win32-UTCFileTime/pulls>.
 
-Open bugs on the CPAN Request Tracker can be viewed at
-F<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Win32-UTCFileTime>.
+Bug reports and suggestions can be made on the CPAN Request Tracker at
+L<https://rt.cpan.org/Public/Bug/Report.html?Queue=Win32-UTCFileTime>.
 
-Please test this distribution.  See CPAN Testers at F<http://testers.cpan.org/>
-for details of how to get involved.
+Currently active requests on the CPAN Request Tracker can be viewed at
+L<https://rt.cpan.org/Public/Dist/Display.html?Status=Active;Queue=Win32-UTCFileTime>.
+
+Please test this distribution.  See CPAN Testers Reports at
+L<http://www.cpantesters.org/> for details of how to get involved.
 
 Previous test results on CPAN Testers can be viewed at
-F<http://testers.cpan.org/search?request=dist&dist=Win32-UTCFileTime>.
+L<http://www.cpantesters.org/distro/W/Win32-UTCFileTime.html>.
 
 Please rate this distribution on CPAN Ratings at
-F<http://cpanratings.perl.org/rate/?distribution=Win32-UTCFileTime>.
+L<http://cpanratings.perl.org/rate/?distribution=Win32-UTCFileTime>.
 
 =head1 SEE ALSO
 
@@ -1494,35 +1531,45 @@ L<Win32::FileTime>.
 
 =head1 ACKNOWLEDGEMENTS
 
-Many thanks to Jonathan M Gilligan E<lt>jonathan.gilligan@vanderbilt.eduE<gt>
-and Tony M Hoyle E<lt>tmh@nodomain.orgE<gt> who wrote much of the C code that
-this module is based on and granted permission to use it under the terms of the
-Perl Artistic License as well as the GNU GPL.  Extra thanks to Jonathan for also
-granting permission to use his article describing the problem and his solution
-to it in the L<"BACKGROUND REFERENCE"> section of this manpage.
+Many thanks to Jonathan M Gilligan
+E<lt>L<jonathan.gilligan@vanderbilt.edu|mailto:jonathan.gilligan@vanderbilt.edu>E<gt>
+and Tony M Hoyle E<lt>L<tmh@nodomain.org|mailto:tmh@nodomain.org>E<gt> who wrote
+much of the C code that this module is based on and granted permission to use it
+under the terms of the Perl Artistic License as well as the GNU GPL.  Extra
+thanks to Jonathan for also granting permission to use his article describing
+the problem and his solution to it in the L<"BACKGROUND REFERENCE"> section of
+this manpage.
 
 Credit is also due to Slaven Rezic for finding Jonathan's work on the Code
-Project website (F<http://www.codeproject.com/>) in response to my bug report
-([perl #18513] on the Perl Bugs website, F<http://bugs.perl.org/>).
+Project website (L<http://www.codeproject.com/>) in response to my bug report
+(Perl RT#18513).
 
 The custom C<import()> method is based on that in the standard library module
-File::Glob (version 1.01), written by Nathan Torkington and others.
+File::Glob (version 1.23), written by Nathan Torkington and others.
+
+The private C<_fixup_file()> function is based on code taken from the
+C<win32_stat()> function in Perl (version 5.19.10).
 
 The C<alt_stat()> function is based on code taken from the C<wnt_stat()>
 function in CVSNT (version 2.0.4) and the C<win32_stat()> and C<pp_stat()>
-functions in Perl (version 5.8.0).
+functions in Perl (version 5.19.10).
 
-The C<_StrWinError()> function used by the XS code is based on the
-C<win32_str_os_error()> function in Perl (version 5.8.5).
+The C<Win32UTCFileTime_StrWinError()> function used by the XS code is based on
+the C<win32_str_os_error()> function in Perl (version 5.19.10).
 
 =head1 AVAILABILITY
 
 The latest version of this module is available from CPAN (see
 L<perlmodlib/"CPAN"> for details) at
 
-F<http://www.cpan.org/authors/id/S/SH/SHAY/> or
+L<https://metacpan.org/release/Win32-UTCFileTime> or
 
-F<http://www.cpan.org/modules/by-module/Win32/>.
+L<http://www.cpan.org/authors/id/S/SH/SHAY/> or
+
+L<http://www.cpan.org/modules/by-module/Win32/>.
+
+The latest source code is available from GitHub at
+L<https://github.com/steve-m-hay/Win32-UTCFileTime>.
 
 =head1 INSTALLATION
 
@@ -1530,11 +1577,11 @@ See the F<INSTALL> file.
 
 =head1 AUTHOR
 
-Steve Hay E<lt>shay@cpan.orgE<gt>
+Steve Hay E<lt>L<shay@cpan.org|mailto:shay@cpan.org>E<gt>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2003-2008, 2012 Steve Hay.  All rights reserved.
+Copyright (C) 2003-2008, 2012-2015 Steve Hay.  All rights reserved.
 
 Portions Copyright (C) 2001 Jonathan M Gilligan.  Used with permission.
 
@@ -1548,11 +1595,11 @@ License or the Artistic License, as specified in the F<LICENCE> file.
 
 =head1 VERSION
 
-Version 1.55
+Version 1.59
 
 =head1 DATE
 
-20 Mar 2012
+31 Jul 2018
 
 =head1 HISTORY
 

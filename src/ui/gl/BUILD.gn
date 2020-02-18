@@ -32,11 +32,9 @@ if (is_android) {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  use_egl_on_mac = use_egl && is_mac
   flags = [
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
     "USE_DAWN=$use_dawn",
-    "USE_EGL_ON_MAC=$use_egl_on_mac",
     "USE_STATIC_ANGLE=$use_static_angle",
   ]
 }
@@ -85,6 +83,8 @@ jumbo_component("gl") {
     "gl_enums.h",
     "gl_enums_implementation_autogen.h",
     "gl_export.h",
+    "gl_features.cc",
+    "gl_features.h",
     "gl_fence.cc",
     "gl_fence.h",
     "gl_fence_arb.cc",
@@ -142,6 +142,8 @@ jumbo_component("gl") {
     "scoped_binders.h",
     "scoped_make_current.cc",
     "scoped_make_current.h",
+    "shader_tracking.cc",
+    "shader_tracking.h",
     "sync_control_vsync_provider.cc",
     "sync_control_vsync_provider.h",
     "trace_util.cc",
@@ -305,6 +307,7 @@ jumbo_component("gl") {
       "gl_wgl_api_implementation.h",
       "swap_chain_presenter.cc",
       "swap_chain_presenter.h",
+      "vsync_observer.h",
       "vsync_provider_win.cc",
       "vsync_provider_win.h",
       "vsync_thread_win.cc",
@@ -496,7 +499,6 @@ source_set("run_all_unittests") {
     deps += [
       "//mojo/core/embedder",
       "//services/service_manager/public/cpp/test:test_support",
-      "//services/ws/public/mojom:constants",
       "//ui/ozone",
     ]
   }
@@ -588,7 +590,6 @@ group("gl_unittests_ozone") {
 
 if (is_android) {
   generate_jar_jni("surface_jni_headers") {
-    jni_package = "ui/gl"
     classes = [ "android/view/Surface.class" ]
     always_mangle = true
   }
@@ -601,6 +602,5 @@ if (is_android) {
     public_deps = [
       ":surface_jni_headers",
     ]
-    jni_package = "ui/gl"
   }
 }

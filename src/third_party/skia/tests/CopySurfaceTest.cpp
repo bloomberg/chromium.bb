@@ -12,14 +12,15 @@
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrContext.h"
 #include "include/gpu/GrTypes.h"
-#include "include/private/GrSurfaceProxy.h"
-#include "include/private/GrTextureProxy.h"
 #include "include/private/GrTypesPriv.h"
 #include "include/private/SkTemplates.h"
 #include "src/core/SkUtils.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrSurfaceProxy.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
@@ -76,11 +77,11 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(CopySurface, reporter, ctxInfo) {
                         for (auto dstPoint : kDstPoints) {
                             for (auto ii: kImageInfos) {
                                 auto src = sk_gpu_test::MakeTextureProxyFromData(
-                                        context, sRenderable, kW, kH, ii.colorType(), sOrigin,
-                                        srcPixels.get(), kRowBytes);
+                                        context, sRenderable, kW, kH, ii.colorType(),
+                                        ii.alphaType(), sOrigin, srcPixels.get(), kRowBytes);
                                 auto dst = sk_gpu_test::MakeTextureProxyFromData(
-                                        context, dRenderable, kW, kH, ii.colorType(), dOrigin,
-                                        dstPixels.get(), kRowBytes);
+                                        context, dRenderable, kW, kH, ii.colorType(),
+                                        ii.alphaType(), dOrigin, dstPixels.get(), kRowBytes);
 
                                 // Should always work if the color type is RGBA, but may not work
                                 // for BGRA
@@ -104,9 +105,19 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(CopySurface, reporter, ctxInfo) {
                                 }
 
                                 sk_sp<GrSurfaceContext> dstContext =
-                                        context->priv().makeWrappedSurfaceContext(std::move(dst));
+                                        context->priv().makeWrappedSurfaceContext(
+                                                std::move(dst),
+                                                SkColorTypeToGrColorType(ii.colorType()),
+                                                ii.alphaType());
 
-                                bool result = dstContext->copy(src.get(), srcRect, dstPoint);
+                                bool result = false;
+                                if (sOrigin == dOrigin) {
+                                    result = dstContext->testCopy(src.get(), srcRect, dstPoint);
+                                } else if (dRenderable == GrRenderable::kYes) {
+                                    SkASSERT(dstContext->asRenderTargetContext());
+                                    result = dstContext->asRenderTargetContext()->blitTexture(
+                                            src.get(), srcRect, dstPoint);
+                                }
 
                                 bool expectedResult = true;
                                 SkIPoint dstOffset = { dstPoint.fX - srcRect.fLeft,
@@ -132,6 +143,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(CopySurface, reporter, ctxInfo) {
                                     !copiedDstRect.intersect(SkIRect::MakeWH(kW, kH))) {
                                     expectedResult = false;
                                 }
+                                if (sOrigin != dOrigin && dRenderable == GrRenderable::kNo) {
+                                    expectedResult = false;
+                                }
+
                                 // To make the copied src rect correct we would apply any dst
                                 // clipping back to the src rect, but we don't use it again so
                                 // don't bother.
@@ -146,7 +161,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(CopySurface, reporter, ctxInfo) {
                                 }
 
                                 sk_memset32(read.get(), 0, kW * kH);
-                                if (!dstContext->readPixels(ii, read.get(), kRowBytes, 0, 0)) {
+                                if (!dstContext->readPixels(ii, read.get(), kRowBytes, {0, 0})) {
                                     ERRORF(reporter, "Error calling readPixels");
                                     continue;
                                 }

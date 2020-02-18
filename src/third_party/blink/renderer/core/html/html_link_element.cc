@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
 #include "third_party/blink/renderer/core/html/link_manifest.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/link_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -192,9 +192,6 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
           (Href().Protocol() == "chrome" ||
            Href().Protocol() == "chrome-extension");
       if (!imports_enabled) {
-        // Ensure the origin trial context is created, as the enabled check will
-        // return false if the context doesn't exist yet.
-        OriginTrialContext::FromOrCreate(&GetDocument());
         imports_enabled =
             RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument());
       }
@@ -302,10 +299,16 @@ bool HTMLLinkElement::StyleSheetIsLoading() const {
 }
 
 void HTMLLinkElement::LinkLoaded() {
+  if (rel_attribute_.IsLinkPrefetch()) {
+    UseCounter::Count(GetDocument(), WebFeature::kLinkPrefetchLoadEvent);
+  }
   DispatchEvent(*Event::Create(event_type_names::kLoad));
 }
 
 void HTMLLinkElement::LinkLoadingErrored() {
+  if (rel_attribute_.IsLinkPrefetch()) {
+    UseCounter::Count(GetDocument(), WebFeature::kLinkPrefetchErrorEvent);
+  }
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 

@@ -1,0 +1,121 @@
+=encoding utf8
+
+=head1 NAME
+
+Mail::Send - Simple electronic mail interface
+
+=head1 SYNOPSIS
+
+  require Mail::Send;
+
+  $msg = Mail::Send->new;
+  $msg = Mail::Send->new(Subject => 'example', To => 'timbo');
+
+  $msg->to('user@host');
+  $msg->to('user@host', 'user2@example.com');
+  $msg->subject('example subject');
+  $msg->cc('user@host');
+  $msg->bcc('someone@else');
+
+  $msg->set($header, @values);
+  $msg->add($header, @values);
+  $msg->delete($header);
+
+  # Launch mailer and set headers. The filehandle returned
+  # by open() is an instance of the Mail::Mailer class.
+  # Arguments to the open() method are passed to the Mail::Mailer
+  # constructor.
+
+  $fh = $msg->open;   # some default mailer
+  $fh = $msg->open('sendmail'); # explicit
+  print $fh "Body of message";
+  $fh->close          # complete the message and send it
+      or die "couldn't send whole message: $!\n";
+
+=head1 DESCRIPTION
+
+L<Mail::Send|Mail::Send> creates e-mail messages without using the L<Mail::Header|Mail::Header>
+knowledge, which means that all escaping and folding must be done by
+you!  Also: do not forget to escape leading dots.  Simplicity has its price.
+
+When you have time, take a look at Mail::Transport which is part of
+the MailBox suite.
+
+=head1 METHODS
+
+=head2 Constructors
+
+=over 4
+
+=item Mail::Send-E<gt>B<new>(PAIRS)
+
+A list of header fields (provided as key-value PAIRS) can be used to
+initialize the object, limited to the few provided as method: C<to>,
+C<subject>, C<cc>, and C<bcc>.  For other header fields, use L<add()|Mail::Send/"Header fields">.
+
+=back
+
+=head2 Header fields
+
+=over 4
+
+=item $obj-E<gt>B<add>($fieldname, @values)
+
+Add values to the list of defined values for the $fieldname.
+
+=item $obj-E<gt>B<bcc>(@values)
+
+=item $obj-E<gt>B<cc>(@values)
+
+=item $obj-E<gt>B<delete>($fieldname)
+
+=item $obj-E<gt>B<set>($fieldname, @values)
+
+The @values will replace the old values for the $fieldname.  Returned is
+the LIST of values after modification.
+
+=item $obj-E<gt>B<subject>(@values)
+
+=item $obj-E<gt>B<to>(@values)
+
+=back
+
+=head2 Sending
+
+=over 4
+
+=item $obj-E<gt>B<open>(%options)
+
+The %options are used to initiate a mailer object via
+L<Mail::Mailer::new()|Mail::Mailer/"Constructors">.  Then L<Mail::Mailer::open()|Mail::Mailer/"Constructors"> is called
+with the knowledge collected in this C<Mail::Send> object.
+
+Be warned: this module implements raw smtp, which means that you have
+to escape lines which start with a dot, by adding one in front.
+
+=back
+
+=head1 SEE ALSO
+
+This module is part of the MailTools distribution,
+F<http://perl.overmeer.net/mailtools/>.
+
+=head1 AUTHORS
+
+The MailTools bundle was developed by Graham Barr.  Later, Mark
+Overmeer took over maintenance without commitment to further development.
+
+Mail::Cap by Gisle Aas E<lt>aas@oslonett.noE<gt>.
+Mail::Field::AddrList by Peter Orbaek E<lt>poe@cit.dkE<gt>.
+Mail::Mailer and Mail::Send by Tim Bunce E<lt>Tim.Bunce@ig.co.ukE<gt>.
+For other contributors see ChangeLog.
+
+=head1 LICENSE
+
+Copyrights 1995-2000 Graham Barr E<lt>gbarr@pobox.comE<gt> and
+2001-2017 Mark Overmeer E<lt>perl@overmeer.netE<gt>.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://www.perl.com/perl/misc/Artistic.html>
+

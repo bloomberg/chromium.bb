@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_visibility_state.h"
+#include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -74,10 +75,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
   // Globally allows for injecting JavaScript into the main world. This feature
-  // is present only to support Android WebView and Fuchsia web.Contexts, and
-  // must not be used in other configurations.
+  // is present only to support Android WebView, Fuchsia web.Contexts, and
+  // CastOS content shell. It must not be used in other configurations.
   static void AllowInjectingJavaScript();
 #endif
 
@@ -199,14 +200,17 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       int world_id) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
-  virtual void ExecuteJavaScriptForTests(const base::string16& javascript,
-                                         JavaScriptResultCallback callback) = 0;
+  virtual void ExecuteJavaScriptForTests(
+      const base::string16& javascript,
+      JavaScriptResultCallback callback,
+      int world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
   // This version adds a fake UserGestureIndicator to test functionality that
   // requires such a user gesture. https://crbug.com/408426
   virtual void ExecuteJavaScriptWithUserGestureForTests(
-      const base::string16& javascript) = 0;
+      const base::string16& javascript,
+      int world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
   // Send a message to the RenderFrame to trigger an action on an
   // accessibility object.
@@ -281,11 +285,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual bool HasSelection() = 0;
 
   // Text surrounding selection.
-  typedef base::Callback<
-      void(const base::string16& content, int start_offset, int end_offset)>
+  typedef base::OnceCallback<void(const base::string16& content,
+                                  uint32_t start_offset,
+                                  uint32_t end_offset)>
       TextSurroundingSelectionCallback;
   virtual void RequestTextSurroundingSelection(
-      const TextSurroundingSelectionCallback& callback,
+      TextSurroundingSelectionCallback callback,
       int max_length) = 0;
 
   // Tell the render frame to enable a set of javascript bindings. The argument
@@ -405,6 +410,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // returns blink::FrameOwnerElementType::kNone if the RenderFrameHost is a
   // main frame.
   virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
+
+  // Returns the transient bit of the User Activation v2 state of the
+  // FrameTreeNode associated with this RenderFrameHost.
+  virtual bool HasTransientUserActivation() = 0;
 
  private:
   // This interface should only be implemented inside content.

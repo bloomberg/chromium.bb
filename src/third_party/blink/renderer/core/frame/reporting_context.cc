@@ -15,8 +15,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_observer.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -156,7 +156,7 @@ void ReportingContext::SendToReportingAPI(Report* report,
     const DeprecationReportBody* body =
         static_cast<DeprecationReportBody*>(report->body());
     base::Optional<base::Time> anticipated_removal =
-        WTF::Time::FromDoubleT(body->anticipatedRemoval(is_null));
+        base::Time::FromDoubleT(body->anticipatedRemoval(is_null));
     if (is_null)
       anticipated_removal = base::nullopt;
     GetReportingService()->QueueDeprecationReport(

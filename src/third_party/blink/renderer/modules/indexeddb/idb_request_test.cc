@@ -101,7 +101,7 @@ class BackendDatabaseWithMockedClose
            int64_t index_id,
            mojom::blink::IDBKeyRangePtr key_range,
            bool key_only,
-           mojom::blink::IDBCallbacksAssociatedPtrInfo callbacks) override {}
+           mojom::blink::IDBDatabase::GetCallback callback) override {}
   void GetAll(int64_t transaction_id,
               int64_t object_store_id,
               int64_t index_id,

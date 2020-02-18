@@ -109,14 +109,14 @@
       <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
           Show keyboard
       </message>
-      <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_ADDRESS" desc="Text in In-Product-Help bubble suggesting to fill an address with Chrome.">
-          Tap to fill address with Chrome
+      <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_ADDRESS" desc="Text in In-Product-Help bubble suggesting to fill a physical address with Chrome.">
+          Fill address
       </message>
       <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_PASSWORD" desc="Text in In-Product-Help bubble suggesting to fill a password with Chrome.">
-          Tap to fill password with Chrome
+          Fill password
       </message>
       <message name="IDS_IPH_KEYBOARD_ACCESSORY_FILL_PAYMENT" desc="Text in In-Product-Help bubble suggesting to fill a credit card with Chrome.">
-          Tap to fill credit card with Chrome
+          Fill payment method
       </message>
       <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
           Suggest strong password
@@ -138,6 +138,12 @@
       </message>
       <message name="IDS_ADDRESS_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening an address bottom sheet containing saved addresses.">
           Showing saved addresses
+      </message>
+      <message name="IDS_CREDIT_CARD_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the payment method accessory sheet, where users' saved payment methods (e.g., credit cards) are shown for use when filling web forms.">
+        Show payment methods
+      </message>
+      <message name="IDS_CREDIT_CARD_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening a sheet containing users' saved payment methods (e.g., credit cards) for use when filling web forms.">
+        Showing saved payment methods
       </message>
     </messages>
   </release>

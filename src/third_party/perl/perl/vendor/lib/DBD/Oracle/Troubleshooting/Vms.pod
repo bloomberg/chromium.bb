@@ -1,0 +1,130 @@
+#PODNAME: DBD::Oracle::Troubleshooting::Vms
+#ABSTRACT: Tips and Hints to Troubleshoot DBD::Oracle on Vms
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+DBD::Oracle::Troubleshooting::Vms - Tips and Hints to Troubleshoot DBD::Oracle on Vms
+
+=head1 VERSION
+
+version 1.76
+
+=head1 General Info
+
+This is related to Oracle RDBMS 9.2 and later, since Oracle
+made fundamental changes to oracle installation requirements
+and factual installation with this release.
+
+Oracle's goal was to make VMS installation be more like on
+*nix and Windows, with an all new Oracle Home structure too,
+requiring an ODS-5 disk to install Oracle Home on instead of
+the good old ODS-2.
+
+Another major change is the introduction of an Oracle generated
+logical name table for oracle logical names like ORA_ROOT and all
+its derivatives like ORA_PROGINT etc. And that this logical name
+table is inserted in LNM$FILE_DEV in LNM$PROCESS_DIRECTORY.
+
+    (LNM$PROCESS_DIRECTORY)
+
+    "LNM$FILE_DEV" = "SERVER_810111112"
+            = "LNM$PROCESS"
+            = "LNM$JOB"
+            = "LNM$GROUP"
+            = "LNM$SYSTEM"
+            = "DECW$LOGICAL_NAMES"
+
+This ensures that any process that needs to have access to
+oracle gets the environment by just adding one logical name table
+to a central process specific mechanism.
+
+But as it is inserted at the very top of LNM$FILE_DEV it also
+represents a source of misfortune - especially if a user with
+enough privilege to update the oracle table does so (presumably
+unintentionally), as an example by changing NLS_LANG.
+
+PERL has the ability to define, redefine and undefine (deassign)
+logical names, but if not told otherwise by the user does it
+in the first table in above list, and not as one would normally
+expect in the process table.
+
+Installing DBI and DBD::Oracle has influence upon this since in
+both cases a few environment variables are read or set in the
+test phase.
+For DBI it is the logical SYS$SCRATCH, which is a JOB logical.
+For DBD-Oracle it is when testing a new feature in the Oracle
+RDBMS: UTF8 and UTF16 character set functionality, and in order
+to do this it sets and unsets the related environment variables
+NLS_NCHAR and NLS_LANG.
+
+If one is not careful this changes the values set in the oracle
+table - and in the worst case stays active until the next major
+system reset. It can also be a very hard error to track down
+since it happens in a place where one normally never looks.
+
+Furthermore, it is very possibly that some or all of the UTF tests
+fails, since if one have a variable like NLS_LANG in his process
+table, then even though 'mms test' sets it in the wrong table
+it is not invoked as it is overruled by the process logical...
+
+The way to ensure that no logicals are set in the oracle table and
+that the UTF tests get the best environment to test in, and that
+DBI correctly translates the SYS$SCRATCH logical, use the
+logical
+
+      PERL_ENV_TABLES
+
+to ensure that PERL's behavior is to leave the oracle table alone and
+use the process table instead:
+
+      $ DEFINE PERL_ENV_TABLES LNM$PROCESS, LNM$JOB
+
+This tells PERL to use the LNM$PROCESS table as the default place to
+set and unset variables so that only the perl users environment
+is affected when installing DBD::Oracle, and ensures that the
+LNM$JOB table is read when SYS$SCRATCH is to be translated.
+
+PERL_ENV_TABLES is well documented in the PERLVMS man page.
+
+Oracle8 releases are not affected, as they don't have the
+oracle table implementation, and no UTF support.
+
+Oracle 9.0 is uncertain, since testing has not been possible yet,
+but the remedy will not hurt :)
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Tim Bunce <timb@cpan.org>
+
+=item *
+
+John Scoles <byterock@cpan.org>
+
+=item *
+
+Yanick Champoux <yanick@cpan.org>
+
+=item *
+
+Martin J. Evans <mjevans@cpan.org>
+
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2018, 2014, 2013, 2012, 2011, 2010 by Tim Bunce.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

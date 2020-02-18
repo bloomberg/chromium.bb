@@ -8,8 +8,6 @@ include_rules = [
   "+chrome/services/isolated_xr_device",
   "+chrome/services/media_gallery_util/media_gallery_util_service.h",
   "+chrome/services/media_gallery_util/public/mojom",
-  "+chrome/services/noop/noop_service.h",
-  "+chrome/services/noop/public/cpp",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
   # when Cloud print chrome/service is removed.
   "+chrome/services/printing/pdf_to_emf_converter_factory.h",
@@ -17,7 +15,7 @@ include_rules = [
   "+chrome/services/printing/public/mojom",
   "+chrome/services/removable_storage_writer/removable_storage_writer_service.h",
   "+chrome/services/removable_storage_writer/public/mojom",
-  "+chrome/services/util_win/util_win_service.h",
+  "+chrome/services/util_win/util_win_impl.h",
   "+chrome/services/util_win/public/mojom",
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",
@@ -31,7 +29,7 @@ include_rules = [
   "+components/payments/content/utility",
   "+components/services/patch",
   "+components/services/pdf_compositor/public/cpp",
-  "+components/services/pdf_compositor/public/interfaces",
+  "+components/services/pdf_compositor/public/mojom",
   "+components/services/quarantine/quarantine_service.h",
   "+components/services/quarantine/public",
   "+components/services/unzip",

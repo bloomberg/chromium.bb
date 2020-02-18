@@ -43,7 +43,6 @@
 #include "services/media_session/public/cpp/features.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/views/controls/button/image_button.h"
@@ -69,11 +68,10 @@ class MockPictureInPictureWindowController
   MockPictureInPictureWindowController() = default;
 
   // PictureInPictureWindowController:
-  MOCK_METHOD0(Show, gfx::Size());
+  MOCK_METHOD0(Show, void());
   MOCK_METHOD1(Close, void(bool));
   MOCK_METHOD0(CloseAndFocusInitiator, void());
   MOCK_METHOD0(OnWindowDestroyed, void());
-  MOCK_METHOD2(EmbedSurface, void(const viz::SurfaceId&, const gfx::Size&));
   MOCK_METHOD0(GetWindowForTesting, content::OverlayWindow*());
   MOCK_METHOD0(UpdateLayerBounds, void());
   MOCK_METHOD0(IsPlayerActive, bool());
@@ -1380,11 +1378,10 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   {
     WidgetBoundsChangeWaiter waiter(overlay_window);
 
-    window_controller()->EmbedSurface(
-        viz::SurfaceId(
-            viz::FrameSinkId(1, 1),
-            viz::LocalSurfaceId(9, base::UnguessableToken::Create())),
-        gfx::Size(200, 100));
+    overlay_window->SetSurfaceId(viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(9, base::UnguessableToken::Create())));
+    overlay_window->UpdateVideoSize(gfx::Size(200, 100));
 
     waiter.Wait();
   }
@@ -3139,4 +3136,63 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   // Video should no longer be in Picture-in-Picture.
   ExpectLeavePictureInPicture(active_web_contents);
+}
+
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       UpdateMaxSize) {
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(nullptr, active_web_contents);
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+
+  // Size should be half the work area.
+  gfx::Size window_size(100, 100);
+  window_size = overlay_window->UpdateMaxSize(gfx::Rect(100, 100), window_size);
+  EXPECT_EQ(gfx::Size(50, 50), window_size);
+  EXPECT_EQ(gfx::Size(50, 50), overlay_window->GetMaximumSize());
+
+  // If the max size increases then we should keep the existing window size.
+  window_size = overlay_window->UpdateMaxSize(gfx::Rect(200, 200), window_size);
+  EXPECT_EQ(gfx::Size(50, 50), window_size);
+  EXPECT_EQ(gfx::Size(100, 100), overlay_window->GetMaximumSize());
+
+  // If the max size decreases then we should shrink to fit.
+  window_size = overlay_window->UpdateMaxSize(gfx::Rect(50, 50), window_size);
+  EXPECT_EQ(gfx::Size(25, 25), window_size);
+  EXPECT_EQ(gfx::Size(25, 25), overlay_window->GetMaximumSize());
+}
+
+// Tests that play/pause video playback is toggled if there are no focus
+// afforfances on the Picture-in-Picture window buttons when user hits space
+// keyboard key.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       SpaceKeyTogglePlayPause) {
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "addPauseEventListener();"));
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->GetFocusManager()->GetFocusedView());
+
+  ui::KeyEvent space_key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_SPACE,
+                                 ui::DomCode::SPACE, ui::EF_NONE);
+  overlay_window->OnKeyEvent(&space_key_pressed);
+
+  base::string16 expected_title = base::ASCIIToUTF16("pause");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
 }

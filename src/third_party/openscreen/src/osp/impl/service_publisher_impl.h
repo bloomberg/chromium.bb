@@ -5,9 +5,9 @@
 #ifndef OSP_IMPL_SERVICE_PUBLISHER_IMPL_H_
 #define OSP_IMPL_SERVICE_PUBLISHER_IMPL_H_
 
+#include "osp/impl/with_destruction_callback.h"
 #include "osp/public/service_publisher.h"
-#include "osp_base/macros.h"
-#include "osp_base/with_destruction_callback.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

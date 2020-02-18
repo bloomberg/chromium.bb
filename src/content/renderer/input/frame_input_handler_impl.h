@@ -78,8 +78,8 @@ class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
   void MoveCaret(const gfx::Point& point) override;
   void GetWidgetInputHandler(
-      mojom::WidgetInputHandlerAssociatedRequest interface_request,
-      mojom::WidgetInputHandlerHostPtr host) override;
+      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
 
  private:
   ~FrameInputHandlerImpl() override;
@@ -116,7 +116,7 @@ class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::WeakPtr<FrameInputHandlerImpl> weak_this_;
-  base::WeakPtrFactory<FrameInputHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<FrameInputHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameInputHandlerImpl);
 };

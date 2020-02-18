@@ -27,8 +27,7 @@ namespace views {
 /////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT ImageView : public ImageViewBase {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(ImageView);
 
   ImageView();
   ~ImageView() override;
@@ -47,7 +46,6 @@ class VIEWS_EXPORT ImageView : public ImageViewBase {
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
 
  protected:
   // Overridden from ImageViewBase:

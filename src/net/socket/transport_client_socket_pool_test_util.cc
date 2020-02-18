@@ -194,8 +194,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
       : should_connect_(should_connect),
         is_connected_(false),
         addrlist_(addrlist),
-        net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)),
-        weak_factory_(this) {}
+        net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {}
 
   // Call this method to get a closure which will trigger the connect callback
   // when called. The closure can be called even after the socket is deleted; it
@@ -322,7 +321,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
   CompletionOnceCallback callback_;
   ConnectionAttempts connection_attempts_;
 
-  base::WeakPtrFactory<MockTriggerableClientSocket> weak_factory_;
+  base::WeakPtrFactory<MockTriggerableClientSocket> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockTriggerableClientSocket);
 };
@@ -444,12 +443,12 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
 
 std::unique_ptr<SSLClientSocket>
 MockTransportClientSocketFactory::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   NOTIMPLEMENTED();
-  return std::unique_ptr<SSLClientSocket>();
+  return nullptr;
 }
 
 std::unique_ptr<ProxyClientSocket>

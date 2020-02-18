@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_D3D12_TEXTURED3D12_H_
 #define DAWNNATIVE_D3D12_TEXTURED3D12_H_
 
+#include "common/Serial.h"
 #include "dawn_native/Texture.h"
 
 #include "dawn_native/d3d12/d3d12_platform.h"
@@ -33,26 +34,42 @@ namespace dawn_native { namespace d3d12 {
 
         DXGI_FORMAT GetD3D12Format() const;
         ID3D12Resource* GetD3D12Resource() const;
-
+        bool TransitionUsageAndGetResourceBarrier(D3D12_RESOURCE_BARRIER* barrier,
+                                                  dawn::TextureUsageBit newUsage);
         void TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
                                 dawn::TextureUsageBit usage);
         void TransitionUsageNow(ComPtr<ID3D12GraphicsCommandList> commandList,
                                 D3D12_RESOURCE_STATES newState);
 
-        uint32_t GetSubresourceIndex(uint32_t mipmapLevel, uint32_t arraySlice) const;
-        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor(uint32_t mipSlice,
-                                                       uint32_t arrayLayers,
-                                                       uint32_t baseArrayLayer) const;
+        D3D12_RENDER_TARGET_VIEW_DESC GetRTVDescriptor(uint32_t baseMipLevel,
+                                                       uint32_t baseArrayLayer,
+                                                       uint32_t layerCount) const;
+        D3D12_DEPTH_STENCIL_VIEW_DESC GetDSVDescriptor(uint32_t baseMipLevel) const;
+        void EnsureSubresourceContentInitialized(ComPtr<ID3D12GraphicsCommandList> commandList,
+                                                 uint32_t baseMipLevel,
+                                                 uint32_t levelCount,
+                                                 uint32_t baseArrayLayer,
+                                                 uint32_t layerCount);
 
       private:
         // Dawn API
         void DestroyImpl() override;
+        void ClearTexture(ComPtr<ID3D12GraphicsCommandList> commandList,
+                          uint32_t baseMipLevel,
+                          uint32_t levelCount,
+                          uint32_t baseArrayLayer,
+                          uint32_t layerCount);
 
         UINT16 GetDepthOrArraySize();
 
-        ComPtr<ID3D12Resource> mResource = {};
-        ID3D12Resource* mResourcePtr = nullptr;
+        bool TransitionUsageAndGetResourceBarrier(D3D12_RESOURCE_BARRIER* barrier,
+                                                  D3D12_RESOURCE_STATES newState);
+
+        ComPtr<ID3D12Resource> mResource;
         D3D12_RESOURCE_STATES mLastState = D3D12_RESOURCE_STATES::D3D12_RESOURCE_STATE_COMMON;
+
+        Serial mLastUsedSerial = UINT64_MAX;
+        bool mValidToDecay = false;
     };
 
     class TextureView : public TextureViewBase {

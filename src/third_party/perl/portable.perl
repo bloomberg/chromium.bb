@@ -5,8 +5,8 @@ CPAN:
   ftp: ''
   histfile: cpan/histfile
   keep_source_where: cpan/sources
-  make: c/bin/dmake.exe
-  make_install_make_command: c/bin/dmake.exe
+  make: c/bin/gmake.exe
+  make_install_make_command: c/bin/gmake.exe
   makepl_arg: ''
   patch: c/bin/patch.exe
   prefs_dir: cpan/prefs
@@ -19,6 +19,7 @@ minicpan:
 HomeDir:
   my_home: data
   my_data: data
+  my_documents: data
 Config:
   archlib: perl/lib
   archlibexp: perl/lib
@@ -26,7 +27,6 @@ Config:
   binexp: perl/bin
   incpath: c/include
   installarchlib: perl/lib
-  installbin: perl/bin
   installbin: perl/bin
   installhtml1dir: ''
   installhtml3dir: ''
@@ -39,13 +39,13 @@ Config:
   installprivlib: perl/lib
   installscript: perl/bin
   installsitearch: perl/site/lib
-  installsitebin: perl/bin
+  installsitebin: perl/site/bin
   installsitehtml1dir: ''
   installsitehtml3dir: ''
   installsitelib: perl/site/lib
   installsiteman1dir: ''
   installsiteman3dir: ''
-  installsitescript: 'perl/bin'
+  installsitescript: 'perl/site/bin'
   installstyle: perl/lib
   installusrbinperl: ~
   installvendorarch: 'perl/vendor/lib'
@@ -59,10 +59,11 @@ Config:
   ld: g++.exe
   _libpthfix_part1: c/lib
   _libpthfix_part2: c/i686-w64-mingw32/lib
+  _libpthfix_part3: c/lib/gcc/i686-w64-mingw32/8.3.0
   lddlflags: '-mdll -s -L"$archlib\CORE" -L"$_libpthfix_part1"'
   ldflags: '-s -L"$archlib\CORE" -L"$_libpthfix_part1"'
   ldflags_nolargefiles: '-s -L"$archlib\CORE" -L"$_libpthfix_part1"'
-  libpth: $_libpthfix_part1 $_libpthfix_part2
+  libpth: $_libpthfix_part1 $_libpthfix_part2 $_libpthfix_part3
   perlpath: perl/bin/perl.exe
   prefix: perl
   prefixexp: perl
@@ -72,8 +73,8 @@ Config:
   scriptdirexp: perl/bin
   sitearch: perl/site/lib
   sitearchexp: perl/site/lib
-  sitebin: perl/bin
-  sitebinexp: perl/bin
+  sitebin: perl/site/bin
+  sitebinexp: perl/site/bin
   sitelib: perl/site/lib
   sitelibexp: perl/site/lib
   siteprefix: perl/site
@@ -94,9 +95,9 @@ Config:
   vendorman3dir: ''
   vendorprefix: perl/vendor
   vendorprefixexp: perl/vendor
-  vendorscript: ''
-  sitescript: perl/bin
-  sitescriptexp: perl/bin
+  vendorscript: perl/bin
+  sitescript: perl/site/bin
+  sitescriptexp: perl/site/bin
   vendorscriptexp: perl/bin
   usrinc: c/include
 Env:

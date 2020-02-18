@@ -55,7 +55,7 @@ void MessageCenterImpl::RemoveObserver(MessageCenterObserver* observer) {
 
 void MessageCenterImpl::AddNotificationBlocker(NotificationBlocker* blocker) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (base::ContainsValue(blockers_, blocker))
+  if (base::Contains(blockers_, blocker))
     return;
 
   blocker->AddObserver(this);

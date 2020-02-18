@@ -31,10 +31,7 @@ use strict;
 use Params::Util   qw{_STRING};
 use PPI::Transform ();
 
-use vars qw{$VERSION};
-BEGIN {
-	$VERSION = '1.215';
-}
+our $VERSION = '1.269'; # VERSION
 
 
 

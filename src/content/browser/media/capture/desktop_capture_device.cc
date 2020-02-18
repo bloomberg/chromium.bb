@@ -30,8 +30,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_capture.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/capture_resolution_chooser.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -77,11 +77,8 @@ bool IsFrameUnpackedOrInverted(webrtc::DesktopFrame* frame) {
 std::unique_ptr<service_manager::Connector> GetServiceConnector() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-
-  DCHECK(connector);
-  return connector->Clone();
+  DCHECK(GetSystemConnector());
+  return GetSystemConnector()->Clone();
 }
 
 int GetMaximumCpuConsumptionPercentage() {
@@ -200,7 +197,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // screen from sleeping for the drive-by web.
   device::mojom::WakeLockPtr wake_lock_;
 
-  base::WeakPtrFactory<Core> weak_factory_;
+  base::WeakPtrFactory<Core> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -216,8 +213,7 @@ DesktopCaptureDevice::Core::Core(
       capture_in_progress_(false),
       first_capture_returned_(false),
       first_permanent_error_logged(false),
-      capturer_type_(type),
-      weak_factory_(this) {}
+      capturer_type_(type) {}
 
 DesktopCaptureDevice::Core::~Core() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -444,7 +440,8 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
       media::VideoCaptureFormat(
           gfx::Size(output_size.width(), output_size.height()),
           requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
-      frame_color_space, 0, now, now - first_ref_time_);
+      frame_color_space, 0 /* clockwise_rotation */, false /* flip_y */, now,
+      now - first_ref_time_);
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {

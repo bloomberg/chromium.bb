@@ -78,11 +78,14 @@ class FCMInvalidationListener : public InvalidationListener,
 
   void DoRegistrationUpdate();
 
-  void RequestDetailedStatus(
+  virtual void RequestDetailedStatus(
       const base::RepeatingCallback<void(const base::DictionaryValue&)>&
           callback) const;
 
   void StopForTest();
+  void StartForTest(Delegate* delegate);
+  void EmitStateChangeForTest(InvalidatorState state);
+  void EmitSavedInvalidationsForTest(const TopicInvalidationMap& to_emit);
 
   Topics GetRegisteredIdsForTest() const;
 
@@ -138,7 +141,7 @@ class FCMInvalidationListener : public InvalidationListener,
   // requested registration for topics.
   bool ids_update_requested_ = false;
 
-  base::WeakPtrFactory<FCMInvalidationListener> weak_factory_;
+  base::WeakPtrFactory<FCMInvalidationListener> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FCMInvalidationListener);
 };

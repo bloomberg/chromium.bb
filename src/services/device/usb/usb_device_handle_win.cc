@@ -28,12 +28,18 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/object_watcher.h"
 #include "components/device_event_log/device_event_log.h"
+#include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/usb/usb_context.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device_win.h"
 #include "services/device/usb/usb_service.h"
 
 namespace device {
+
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 namespace {
 
@@ -424,9 +430,8 @@ void UsbDeviceHandleWin::GenericTransfer(
     TransferCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  uint8_t endpoint_address = endpoint_number;
-  if (direction == UsbTransferDirection::INBOUND)
-    endpoint_address |= 0x80;
+  uint8_t endpoint_address =
+      ConvertEndpointNumberToAddress(endpoint_number, direction);
 
   auto endpoint_it = endpoints_.find(endpoint_address);
   if (endpoint_it == endpoints_.end()) {
@@ -469,7 +474,7 @@ void UsbDeviceHandleWin::GenericTransfer(
                      std::move(buffer)));
 }
 
-const UsbInterfaceDescriptor* UsbDeviceHandleWin::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* UsbDeviceHandleWin::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -490,13 +495,16 @@ UsbDeviceHandleWin::UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
   DCHECK(device_->active_configuration());
 
   for (const auto& interface : device_->active_configuration()->interfaces) {
-    if (interface.alternate_setting != 0)
-      continue;
+    for (const auto& alternate : interface->alternates) {
+      if (alternate->alternate_setting != 0)
+        continue;
 
-    Interface& interface_info = interfaces_[interface.interface_number];
-    interface_info.interface_number = interface.interface_number;
-    interface_info.first_interface = interface.first_interface;
-    RegisterEndpoints(interface);
+      Interface& interface_info = interfaces_[interface->interface_number];
+      interface_info.interface_number = interface->interface_number;
+      interface_info.first_interface = interface->first_interface;
+      RegisterEndpoints(
+          CombinedInterfaceInfo(interface.get(), alternate.get()));
+    }
   }
 }
 
@@ -556,18 +564,20 @@ bool UsbDeviceHandleWin::OpenInterfaceHandle(Interface* interface) {
 }
 
 void UsbDeviceHandleWin::RegisterEndpoints(
-    const UsbInterfaceDescriptor& interface) {
-  for (const auto& endpoint : interface.endpoints) {
-    Endpoint& endpoint_info = endpoints_[endpoint.address];
-    endpoint_info.interface = &interface;
-    endpoint_info.type = endpoint.transfer_type;
+    const CombinedInterfaceInfo& interface) {
+  DCHECK(interface.IsValid());
+  for (const auto& endpoint : interface.alternate->endpoints) {
+    Endpoint& endpoint_info =
+        endpoints_[ConvertEndpointNumberToAddress(*endpoint)];
+    endpoint_info.interface = interface.interface;
+    endpoint_info.type = endpoint->type;
   }
 }
 
 void UsbDeviceHandleWin::UnregisterEndpoints(
-    const UsbInterfaceDescriptor& interface) {
-  for (const auto& endpoint : interface.endpoints)
-    endpoints_.erase(endpoint.address);
+    const CombinedInterfaceInfo& interface) {
+  for (const auto& endpoint : interface.alternate->endpoints)
+    endpoints_.erase(ConvertEndpointNumberToAddress(*endpoint));
 }
 
 WINUSB_INTERFACE_HANDLE UsbDeviceHandleWin::GetInterfaceForControlTransfer(
@@ -697,14 +707,15 @@ void UsbDeviceHandleWin::ReportIsochronousError(
     const std::vector<uint32_t>& packet_lengths,
     IsochronousTransferCallback callback,
     UsbTransferStatus status) {
-  std::vector<IsochronousPacket> packets(packet_lengths.size());
+  std::vector<mojom::UsbIsochronousPacketPtr> packets(packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
+    packets[i] = mojom::UsbIsochronousPacket::New();
+    packets[i]->length = packet_lengths[i];
+    packets[i]->transferred_length = 0;
+    packets[i]->status = status;
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(std::move(callback), nullptr, packets));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback), nullptr,
+                                                   std::move(packets)));
 }
 
 }  // namespace device

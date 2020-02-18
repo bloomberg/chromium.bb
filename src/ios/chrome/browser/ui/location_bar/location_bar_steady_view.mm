@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,18 +61,14 @@ const CGFloat kButtonTrailingSpacing = 10;
 #pragma mark - LocationBarSteadyViewColorScheme
 
 @implementation LocationBarSteadyViewColorScheme
-@synthesize fontColor = _fontColor;
-@synthesize placeholderColor = _placeholderColor;
-@synthesize trailingButtonColor = _trailingButtonColor;
 
 + (instancetype)standardScheme {
   LocationBarSteadyViewColorScheme* scheme =
       [[LocationBarSteadyViewColorScheme alloc] init];
 
-  scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
-  scheme.placeholderColor = [UIColor colorWithWhite:0
-                                              alpha:kOmniboxPlaceholderAlpha];
-  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.45];
+  scheme.fontColor = [UIColor colorNamed:kTextPrimaryColor];
+  scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
+  scheme.trailingButtonColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
 
   return scheme;
 }
@@ -80,9 +77,13 @@ const CGFloat kButtonTrailingSpacing = 10;
   LocationBarSteadyViewColorScheme* scheme =
       [[LocationBarSteadyViewColorScheme alloc] init];
 
-  scheme.fontColor = [UIColor whiteColor];
-  scheme.placeholderColor = [UIColor colorWithWhite:1 alpha:0.5];
-  scheme.trailingButtonColor = [UIColor whiteColor];
+  // In iOS 12, the overridePreferredInterfaceStyle API is unavailable, so
+  // incognito colors need to be set specifically.
+  // TODO(crbug.com/981889): Clean up after iOS 12 support is dropped.
+  scheme.fontColor = [UIColor colorNamed:kTextPrimaryDarkColor];
+  scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderDarkColor];
+  scheme.trailingButtonColor =
+      [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
 
   return scheme;
 }
@@ -109,9 +110,7 @@ const CGFloat kButtonTrailingSpacing = 10;
                         delay:0
                       options:UIViewAnimationOptionBeginFromCurrentState
                    animations:^{
-                     CGFloat alpha = 0;
-                     if (highlighted)
-                       alpha += 0.07;
+                     CGFloat alpha = highlighted ? 0.07 : 0;
                      self.backgroundColor =
                          [UIColor colorWithWhite:0 alpha:alpha];
                    }
@@ -123,16 +122,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 #pragma mark - LocationBarSteadyView
 
 @implementation LocationBarSteadyView
-@synthesize locationButton = _locationButton;
-@synthesize locationLabel = _locationLabel;
-@synthesize locationIconImageView = _locationIconImageView;
-@synthesize trailingButton = _trailingButton;
-@synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
-@synthesize showLocationImageConstraints = _showLocationImageConstraints;
-@synthesize locationContainerView = _locationContainerView;
-@synthesize securityLevelAccessibilityString =
-    _securityLevelAccessibilityString;
-@synthesize accessibleElements = _accessibleElements;
 
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
@@ -211,9 +200,6 @@ const CGFloat kButtonTrailingSpacing = 10;
 
     // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
-      [_locationContainerView.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
-                                      constant:kLocationBarLeadingPadding],
       [_trailingButton.centerYAnchor
           constraintEqualToAnchor:self.centerYAnchor],
       [_locationContainerView.centerYAnchor
@@ -243,8 +229,19 @@ const CGFloat kButtonTrailingSpacing = 10;
         [_leadingButton.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
         [_leadingButton.leadingAnchor
             constraintEqualToAnchor:self.leadingAnchor],
+        [_leadingButton.trailingAnchor
+            constraintLessThanOrEqualToAnchor:_locationContainerView
+                                                  .leadingAnchor],
         [_leadingButton.centerYAnchor
             constraintEqualToAnchor:self.centerYAnchor],
+      ]];
+    } else {
+      // Since there is no leading button, |locationContainerView|'s
+      // leadingAnchor will be pinned to |self|.
+      [NSLayoutConstraint activateConstraints:@[
+        [_locationContainerView.leadingAnchor
+            constraintGreaterThanOrEqualToAnchor:self.leadingAnchor
+                                        constant:kLocationBarLeadingPadding],
       ]];
     }
   }
@@ -276,9 +273,13 @@ const CGFloat kButtonTrailingSpacing = 10;
 }
 
 - (void)setColorScheme:(LocationBarSteadyViewColorScheme*)colorScheme {
-  self.trailingButton.tintColor = colorScheme.trailingButtonColor;
-  self.locationLabel.textColor = colorScheme.fontColor;
-  self.locationIconImageView.tintColor = colorScheme.fontColor;
+  _colorScheme = colorScheme;
+  self.trailingButton.tintColor = self.colorScheme.trailingButtonColor;
+  // The text color is set in -setLocationLabelText: and
+  // -setLocationLabelPlaceholderText: because the two text styles have
+  // different colors. The icon should be the same color as the text, but it
+  // only appears with the regular label, so its color can be set here.
+  self.locationIconImageView.tintColor = self.colorScheme.fontColor;
 }
 
 - (void)setLocationImage:(UIImage*)locationImage {
@@ -306,8 +307,14 @@ const CGFloat kButtonTrailingSpacing = 10;
   if ([self.locationLabel.text isEqualToString:string]) {
     return;
   }
+  self.locationLabel.textColor = self.colorScheme.fontColor;
   self.locationLabel.text = string;
   [self updateAccessibility];
+}
+
+- (void)setLocationLabelPlaceholderText:(NSString*)string {
+  self.locationLabel.textColor = self.colorScheme.placeholderColor;
+  self.locationLabel.text = string;
 }
 
 - (void)setSecurityLevelAccessibilityString:(NSString*)string {
@@ -329,6 +336,11 @@ const CGFloat kButtonTrailingSpacing = 10;
     [self.accessibleElements removeObject:self.leadingButton];
   }
   [self.leadingButton displayBadge:display animated:animated];
+}
+
+- (void)enableTrailingButton:(BOOL)enabled {
+  self.trailingButton.enabled = enabled;
+  [self updateAccessibility];
 }
 
 #pragma mark - UIResponder
@@ -376,6 +388,12 @@ const CGFloat kButtonTrailingSpacing = 10;
   } else {
     self.locationButton.accessibilityValue =
         [NSString stringWithFormat:@"%@", self.locationLabel.text];
+  }
+
+  if (self.trailingButton.enabled) {
+    [self.accessibleElements addObject:self.trailingButton];
+  } else {
+    [self.accessibleElements removeObject:self.trailingButton];
   }
 }
 

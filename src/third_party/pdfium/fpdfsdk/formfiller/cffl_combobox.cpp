@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "constants/form_flags.h"
+#include "core/fpdfdoc/cba_fontmap.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
-#include "fpdfsdk/formfiller/cba_fontmap.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
 #include "fpdfsdk/pwl/cpwl_combo_box.h"
 #include "third_party/base/ptr_util.h"
@@ -110,8 +110,8 @@ void CFFL_ComboBox::SaveData(CPDFSDK_PageView* pPageView) {
     m_pWidget->SetOptionSelection(nCurSel, true,
                                   NotificationOption::kDoNotNotify);
   }
-  CPDFSDK_Widget::ObservedPtr observed_widget(m_pWidget.Get());
-  CFFL_ComboBox::ObservedPtr observed_this(this);
+  ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
+  ObservedPtr<CFFL_ComboBox> observed_this(this);
   m_pWidget->ResetFieldAppearance(true);
   if (!observed_widget)
     return;
@@ -174,7 +174,7 @@ void CFFL_ComboBox::SetActionData(CPDFSDK_PageView* pPageView,
               static_cast<CPWL_ComboBox*>(GetPDFWindow(pPageView, false))) {
         if (CPWL_Edit* pEdit = pComboBox->GetEdit()) {
           pEdit->SetSelection(fa.nSelStart, fa.nSelEnd);
-          pEdit->ReplaceSel(fa.sChange);
+          pEdit->ReplaceSelection(fa.sChange);
         }
       }
       break;

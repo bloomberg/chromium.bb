@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/api/downloads_internal/downloads_internal_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,6 +53,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_download_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -349,6 +349,7 @@ class DownloadExtensionTest : public ExtensionApiTest {
         current_browser(),
         extension_->GetResourceURL("empty.html"),
         ui::PAGE_TRANSITION_LINK);
+    EXPECT_TRUE(content::WaitForLoadStop(tab));
     EventRouter::Get(current_browser()->profile())
         ->AddEventListener(downloads::OnCreated::kEventName,
                            tab->GetMainFrame()->GetProcess(), GetExtensionId());
@@ -383,9 +384,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
   // InProcessBrowserTest
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     GoOnTheRecord();
     current_browser()->profile()->GetPrefs()->SetBoolean(
         prefs::kPromptForDownload, false);
@@ -1236,14 +1234,6 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   RunFunction(new DownloadsShowDefaultFolderFunction(),
               DownloadItemIdAsArgList(item.get()));
-}
-
-IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadsDragFunction) {
-  ScopedCancellingItem item(CreateFirstSlowTestDownload());
-  ASSERT_TRUE(item.get());
-
-  RunFunction(new DownloadsDragFunction(), DownloadItemIdAsArgList(item.get()));
 }
 #endif
 

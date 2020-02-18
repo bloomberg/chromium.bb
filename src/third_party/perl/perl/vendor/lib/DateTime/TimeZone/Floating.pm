@@ -1,10 +1,10 @@
 package DateTime::TimeZone::Floating;
-{
-  $DateTime::TimeZone::Floating::VERSION = '1.46';
-}
 
 use strict;
 use warnings;
+use namespace::autoclean;
+
+our $VERSION = '2.35';
 
 use parent 'Class::Singleton', 'DateTime::TimeZone::OffsetOnly';
 
@@ -12,6 +12,7 @@ sub new {
     return shift->instance;
 }
 
+## no critic (Subroutines::ProhibitUnusedPrivateSubroutines)
 sub _new_instance {
     my $class = shift;
 
@@ -20,13 +21,12 @@ sub _new_instance {
         offset => 0
     }, $class;
 }
+## use critic
 
 sub is_floating {1}
 
 sub STORABLE_thaw {
-    my $self       = shift;
-    my $cloning    = shift;
-    my $serialized = shift;
+    my $self = shift;
 
     my $class = ref $self || $self;
 
@@ -47,9 +47,11 @@ sub STORABLE_thaw {
 
 # ABSTRACT: A time zone that is always local
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -57,7 +59,7 @@ DateTime::TimeZone::Floating - A time zone that is always local
 
 =head1 VERSION
 
-version 1.46
+version 2.35
 
 =head1 SYNOPSIS
 
@@ -71,9 +73,19 @@ A floating time has no time zone, and has an effective offset of zero.
 
 =head1 USAGE
 
-This class has the same methods as a real time zone object, but the
-C<short_name_for_datetime()>, and C<category()> methods both return
-undef.
+This class has the same methods as a real time zone object. The
+C<short_name_for_datetime()> method returns the string "floating" and the
+C<category()> method returns C<undef>.
+
+=head1 SUPPORT
+
+Bugs may be submitted at L<https://github.com/houseabsolute/DateTime-TimeZone/issues>.
+
+I am also usually active on IRC as 'autarch' on C<irc://irc.perl.org>.
+
+=head1 SOURCE
+
+The source code repository for DateTime-TimeZone can be found at L<https://github.com/houseabsolute/DateTime-TimeZone>.
 
 =head1 AUTHOR
 
@@ -81,13 +93,12 @@ Dave Rolsky <autarch@urth.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Dave Rolsky.
+This software is copyright (c) 2019 by Dave Rolsky.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
+The full text of the license can be found in the
+F<LICENSE> file included with this distribution.
+
 =cut
-
-
-__END__
-

@@ -22,9 +22,9 @@
 #include "Blitter.hpp"
 #include "Device/Config.hpp"
 #include "System/Synchronization.hpp"
-#include "System/Thread.hpp"
 #include "Vulkan/VkDescriptorSet.hpp"
 
+#include <atomic>
 #include <list>
 #include <mutex>
 #include <thread>
@@ -40,49 +40,10 @@ namespace sw
 	struct DrawCall;
 	class PixelShader;
 	class VertexShader;
-	class SwiftConfig;
 	struct Task;
 	class TaskEvents;
 	class Resource;
 	struct Constants;
-
-	enum TranscendentalPrecision
-	{
-		APPROXIMATE,
-		PARTIAL,	// 2^-10
-		ACCURATE,
-		WHQL,		// 2^-21
-		IEEE		// 2^-23
-	};
-
-	extern TranscendentalPrecision logPrecision;
-	extern TranscendentalPrecision expPrecision;
-	extern TranscendentalPrecision rcpPrecision;
-	extern TranscendentalPrecision rsqPrecision;
-
-	struct Conventions  // FIXME(capn): Eliminate. Only support Vulkan 1.1 conventions.
-	{
-		bool halfIntegerCoordinates;
-		bool symmetricNormalizedDepth;
-		bool booleanFaceRegister;
-		bool fullPixelPositionRegister;
-	};
-
-	static const Conventions OpenGL =
-	{
-		true,    // halfIntegerCoordinates
-		true,    // symmetricNormalizedDepth
-		true,    // booleanFaceRegister
-		true,    // fullPixelPositionRegister
-	};
-
-	static const Conventions Direct3D =
-	{
-		false,   // halfIntegerCoordinates
-		false,   // symmetricNormalizedDepth
-		false,   // booleanFaceRegister
-		false,   // fullPixelPositionRegister
-	};
 
 	struct DrawData
 	{
@@ -91,8 +52,8 @@ namespace sw
 		vk::DescriptorSet::Bindings descriptorSets = {};
 		vk::DescriptorSet::DynamicOffsets descriptorDynamicOffsets = {};
 
-		const void *input[MAX_VERTEX_INPUTS];
-		unsigned int stride[MAX_VERTEX_INPUTS];
+		const void *input[MAX_INTERFACE_COMPONENTS / 4];
+		unsigned int stride[MAX_INTERFACE_COMPONENTS / 4];
 		const void *indices;
 
 		int instanceID;
@@ -102,10 +63,6 @@ namespace sw
 		PixelProcessor::Stencil stencil[2];   // clockwise, counterclockwise
 		PixelProcessor::Factor factor;
 		unsigned int occlusion[16];   // Number of pixels passing depth test
-
-		#if PERF_PROFILE
-			int64_t cycles[PERF_TIMERS][16];
-		#endif
 
 		float4 Wx16;
 		float4 Hx16;
@@ -117,7 +74,6 @@ namespace sw
 		float slopeDepthBias;
 		float depthRange;
 		float depthNear;
-		Plane clipPlane[6];
 
 		unsigned int *colorBuffer[RENDERTARGETS];
 		int colorPitchB[RENDERTARGETS];
@@ -155,9 +111,16 @@ namespace sw
 				SUSPEND
 			};
 
-			AtomicInt type;
-			AtomicInt primitiveUnit;
-			AtomicInt pixelCluster;
+			void operator=(const Task& task)
+			{
+				type = task.type.load();
+				primitiveUnit = task.primitiveUnit.load();
+				pixelCluster = task.pixelCluster.load();
+			}
+
+			std::atomic<int> type;
+			std::atomic<int> primitiveUnit;
+			std::atomic<int> pixelCluster;
 		};
 
 		struct PrimitiveProgress
@@ -171,11 +134,11 @@ namespace sw
 				references = 0;
 			}
 
-			AtomicInt drawCall;
-			AtomicInt firstPrimitive;
-			AtomicInt primitiveCount;
-			AtomicInt visible;
-			AtomicInt references;
+			std::atomic<int> drawCall;
+			std::atomic<int> firstPrimitive;
+			std::atomic<int> primitiveCount;
+			std::atomic<int> visible;
+			std::atomic<int> references;
 		};
 
 		struct PixelProgress
@@ -187,13 +150,13 @@ namespace sw
 				executing = false;
 			}
 
-			AtomicInt drawCall;
-			AtomicInt processedPrimitives;
-			AtomicInt executing;
+			std::atomic<int> drawCall;
+			std::atomic<int> processedPrimitives;
+			std::atomic<int> executing;
 		};
 
 	public:
-		Renderer(Conventions conventions, bool exactColorRounding);
+		Renderer();
 
 		virtual ~Renderer();
 
@@ -214,15 +177,6 @@ namespace sw
 		void advanceInstanceAttributes(Stream* inputs);
 
 		void synchronize();
-
-		#if PERF_HUD
-			// Performance timers
-			int getThreadCount();
-			int64_t getVertexTime(int thread);
-			int64_t getSetupTime(int thread);
-			int64_t getPixelTime(int thread);
-			void resetTimers();
-		#endif
 
 		static int getClusterCount() { return clusterCount; }
 
@@ -250,13 +204,12 @@ namespace sw
 
 		VkViewport viewport;
 		VkRect2D scissor;
-		int clipFlags;
 
 		Triangle *triangleBatch[16];
 		Primitive *primitiveBatch[16];
 
-		AtomicInt exitThreads;
-		AtomicInt threadsAwake;
+		std::atomic<int> exitThreads;
+		std::atomic<int> threadsAwake;
 		std::thread *worker[16];
 		Event *resume[16];         // Events for resuming threads
 		Event *suspend[16];        // Events for suspending threads
@@ -273,34 +226,26 @@ namespace sw
 		DrawCall *drawCall[DRAW_COUNT];
 		DrawCall *drawList[DRAW_COUNT];
 
-		AtomicInt currentDraw;
-		AtomicInt nextDraw;
+		std::atomic<int> currentDraw;
+		std::atomic<int> nextDraw;
 
 		enum {
 			TASK_COUNT = 32,   // Size of the task queue (must be power of 2)
 			TASK_COUNT_BITS = TASK_COUNT - 1,
 		};
 		Task taskQueue[TASK_COUNT];
-		AtomicInt qHead;
-		AtomicInt qSize;
+		std::atomic<int> qHead;
+		std::atomic<int> qSize;
 
-		static AtomicInt unitCount;
-		static AtomicInt clusterCount;
+		static std::atomic<int> unitCount;
+		static std::atomic<int> clusterCount;
 
 		std::mutex schedulerMutex;
 
-		#if PERF_HUD
-			int64_t vertexTime[16];
-			int64_t setupTime[16];
-			int64_t pixelTime[16];
-		#endif
-
 		VertexTask *vertexTask[16];
 
-		SwiftConfig *swiftConfig;
-
 		std::list<vk::Query*> queries;
-		Resource *sync;
+		WaitGroup sync;
 
 		VertexProcessor::State vertexState;
 		SetupProcessor::State setupState;
@@ -317,9 +262,9 @@ namespace sw
 
 		~DrawCall();
 
-		AtomicInt topology;
-		AtomicInt indexType;
-		AtomicInt batchSize;
+		std::atomic<int> topology;
+		std::atomic<int> indexType;
+		std::atomic<int> batchSize;
 
 		Routine *vertexRoutine;
 		Routine *setupRoutine;
@@ -339,9 +284,9 @@ namespace sw
 
 		std::list<vk::Query*> *queries;
 
-		AtomicInt primitive;    // Current primitive to enter pipeline
-		AtomicInt count;        // Number of primitives to render
-		AtomicInt references;   // Remaining references to this draw call, 0 when done drawing, -1 when resources unlocked and slot is free
+		std::atomic<int> primitive;    // Current primitive to enter pipeline
+		std::atomic<int> count;        // Number of primitives to render
+		std::atomic<int> references;   // Remaining references to this draw call, 0 when done drawing, -1 when resources unlocked and slot is free
 
 		DrawData *data;
 	};

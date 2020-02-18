@@ -7,9 +7,7 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -25,6 +23,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
 #include "ui/base/theme_provider.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
 class BrowserThemePack;
@@ -303,6 +302,8 @@ class ThemeService : public content::NotificationObserver,
   void SetThemePrefsForExtension(const extensions::Extension* extension);
   void SetThemePrefsForColor(SkColor color);
 
+  bool DisableExtension(const std::string& extension_id);
+
   ui::ResourceBundle& rb_;
   Profile* profile_;
 
@@ -348,7 +349,7 @@ class ThemeService : public content::NotificationObserver,
   ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
       native_theme_observer_{this};
 
-  base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
+  base::WeakPtrFactory<ThemeService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThemeService);
 };

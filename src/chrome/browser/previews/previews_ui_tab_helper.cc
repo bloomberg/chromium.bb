@@ -13,11 +13,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -26,6 +26,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_item.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
@@ -96,7 +97,7 @@ PreviewsUITabHelper::~PreviewsUITabHelper() {
 }
 
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents), weak_factory_(this) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -188,7 +189,7 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
 
 void PreviewsUITabHelper::ReloadWithoutPreviews() {
   DCHECK(previews_user_data_);
-  ReloadWithoutPreviews(previews_user_data_->committed_previews_type());
+  ReloadWithoutPreviews(previews_user_data_->CommittedPreviewsType());
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews(
@@ -211,13 +212,11 @@ void PreviewsUITabHelper::ReloadWithoutPreviews(
       web_contents()->GetController().Reload(
           content::ReloadType::ORIGINAL_REQUEST_URL, true);
       break;
-    case previews::PreviewsType::LOFI:
-      web_contents()->ReloadLoFiImages();
-      break;
     case previews::PreviewsType::NONE:
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case previews::PreviewsType::DEPRECATED_LOFI:
       NOTREACHED();
       break;
   }
@@ -230,11 +229,9 @@ void PreviewsUITabHelper::SetStalePreviewsStateForTesting(
   is_stale_reload_ = is_reload;
 }
 
-void PreviewsUITabHelper::DidStartNavigation(
+void PreviewsUITabHelper::MaybeRecordPreviewReload(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
-    return;
-  if (!navigation_handle->IsInMainFrame())
     return;
   if (!previews_user_data_)
     return;
@@ -252,6 +249,45 @@ void PreviewsUITabHelper::DidStartNavigation(
         ->previews_decider_impl()
         ->AddPreviewReload();
   }
+}
+
+void PreviewsUITabHelper::MaybeShowInfoBarForHintsFetcher() {
+  if (!base::FeatureList::IsEnabled(
+          optimization_guide::features::kOptimizationHintsFetching))
+    return;
+
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+
+  if (!previews_service)
+    return;
+
+  PreviewsHTTPSNotificationInfoBarDecider* decider =
+      previews_service->previews_https_notification_infobar_decider();
+
+  DataReductionProxyChromeSettings* drp_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          web_contents()->GetBrowserContext());
+
+  if (!drp_settings)
+    return;
+
+  if (drp_settings->IsDataReductionProxyEnabled() &&
+      decider->NeedsToNotifyUser()) {
+    decider->NotifyUser(web_contents());
+  }
+}
+
+void PreviewsUITabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  MaybeRecordPreviewReload(navigation_handle);
+
+  PreviewsTopHostProvider::MaybeUpdateTopHostBlacklist(navigation_handle);
+
+  MaybeShowInfoBarForHintsFetcher();
 }
 
 void PreviewsUITabHelper::DidFinishNavigation(
@@ -309,7 +345,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
 
   if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
     DCHECK_EQ(previews::PreviewsType::OFFLINE,
-              previews_user_data_->committed_previews_type());
+              previews_user_data_->CommittedPreviewsType());
     UMA_HISTOGRAM_BOOLEAN("Previews.Offline.CommittedErrorPage",
                           navigation_handle->IsErrorPage());
     if (navigation_handle->IsErrorPage()) {
@@ -352,11 +388,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Check for committed main frame preview.
-  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType() &&
-      previews_user_data_->coin_flip_holdback_result() !=
-          previews::CoinFlipHoldbackResult::kHoldback) {
+  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
-        previews_user_data_->committed_previews_type();
+        previews_user_data_->CommittedPreviewsType();
     if (main_frame_preview != previews::PreviewsType::NONE) {
       if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
         const net::HttpResponseHeaders* headers =

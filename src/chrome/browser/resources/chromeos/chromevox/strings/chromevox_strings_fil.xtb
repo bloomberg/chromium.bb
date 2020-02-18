@@ -69,6 +69,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1385214448885562192">Pindutin ang enter upang tanggapin o escape upang kanselahin, down para sa susunod at up para sa nakaraan.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Ianunsyo ang mga attribute ng rich text</translation>
 <translation id="1405567553485452995">Light Green</translation>
 <translation id="1417889266572670458">Navy</translation>
 <translation id="1431911867058218151">Plum</translation>
@@ -319,11 +320,11 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="3232388865800379423">Isang pop up na button</translation>
 <translation id="3241052487511142956">Nakaraang binisitang link</translation>
 <translation id="3241638166094654466">Mga cell sa bawat linya:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">Walang sunod na binisitang link.</translation>
 <translation id="3300348286427369683">Suporta sa rich text. Sinusuportahan na ng ChromeVox ang mga field ng rich text kabilang ang mga jump command, pag-route ng braille cursor, pagpili, at higit pa.</translation>
-<translation id="3304756947457041303">I-customize ang palatandaan ng rich text</translation>
 <translation id="3307886118343381874">Pumunta sa dulo ng talahanayan</translation>
 <translation id="3311969765485641742">Pindutin ang Alt+Shift+A upang suriin ang mga alerto</translation>
 <translation id="3312997241656799641">Sunod na binisitang link</translation>
@@ -444,7 +445,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4161104397932142764">{COUNT,plural, =1{segundo}one{segundo}other{na segundo}}</translation>
 <translation id="4161663686871496107">Handa na ang sinasalitang feedback ng ChromeVox</translation>
 <translation id="4173994908659439270">Walang susunod na na-e-edit na field ng text.</translation>
-<translation id="4176463684765177261">Hindi Pinagana</translation>
+<translation id="4176463684765177261">Hindi pinapaganana</translation>
 <translation id="4187322598335821254">Mag-swipe pataas o pababa para lumipat ng linya</translation>
 <translation id="4188530942454211480">Nakaraang Pangungusap</translation>
 <translation id="4191918948604314587">Isang button</translation>

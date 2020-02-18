@@ -34,7 +34,6 @@
 #include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
 #include "third_party/blink/renderer/core/loader/link_load_parameters.h"
 #include "third_party/blink/renderer/core/loader/link_loader_client.h"
@@ -43,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -133,10 +133,14 @@ LinkLoader::~LinkLoader() = default;
 void LinkLoader::NotifyFinished() {
   DCHECK(finish_observer_);
   Resource* resource = finish_observer_->GetResource();
-  if (resource->ErrorOccurred())
+  if (resource->ErrorOccurred() ||
+      (resource->IsLinkPreload() &&
+       resource->IntegrityDisposition() ==
+           ResourceIntegrityDisposition::kFailed)) {
     client_->LinkLoadingErrored();
-  else
+  } else {
     client_->LinkLoaded();
+  }
 }
 
 // https://html.spec.whatwg.org/C/#link-type-modulepreload
@@ -222,7 +226,9 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
                                 Document& document,
                                 ResourceClient* link_client) {
   ResourceRequest resource_request(document.CompleteURL(params.href));
-  resource_request.SetReferrerPolicy(params.referrer_policy);
+  resource_request.SetReferrerPolicy(
+      params.referrer_policy,
+      ResourceRequest::SetReferrerPolicyLocation::kLoadStylesheet);
 
   mojom::FetchImportanceMode importance_mode =
       GetFetchImportanceAttributeValue(params.importance);

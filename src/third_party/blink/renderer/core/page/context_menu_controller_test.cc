@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -72,11 +73,20 @@ class ContextMenuControllerTest : public testing::Test {
         WebWidget::LifecycleUpdateReason::kTest);
   }
 
-  bool ShowContextMenu(const LayoutPoint& location, WebMenuSourceType source) {
+  bool ShowContextMenu(const PhysicalOffset& location,
+                       WebMenuSourceType source) {
     return web_view_helper_.GetWebView()
         ->GetPage()
         ->GetContextMenuController()
         .ShowContextMenu(GetDocument()->GetFrame(), location, source);
+  }
+
+  bool ShowContextMenuForElement(Element* element, WebMenuSourceType source) {
+    const DOMRect* rect = element->getBoundingClientRect();
+    PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                            LayoutUnit((rect->top() + rect->bottom()) / 2));
+    ContextMenuAllowedScope context_menu_allowed_scope;
+    return ShowContextMenu(location, source);
   }
 
   Document* GetDocument() {
@@ -85,6 +95,10 @@ class ContextMenuControllerTest : public testing::Test {
   }
 
   Page* GetPage() { return web_view_helper_.GetWebView()->GetPage(); }
+  WebLocalFrameImpl* LocalMainFrame() {
+    return web_view_helper_.LocalMainFrame();
+  }
+  void LoadAhem() { web_view_helper_.LoadAhem(); }
 
   const TestWebFrameClientImpl& GetWebFrameClient() const {
     return web_frame_client_;
@@ -125,8 +139,8 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
       .WillRepeatedly(Return(false));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -135,7 +149,7 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -186,8 +200,8 @@ TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -196,7 +210,7 @@ TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeAudio, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -243,8 +257,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -253,7 +267,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -300,8 +314,8 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -310,7 +324,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -359,8 +373,8 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
       .WillRepeatedly(Return(true));
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -368,7 +382,7 @@ TEST_F(ContextMenuControllerTest, MediaStreamVideoLoaded) {
       GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -421,8 +435,8 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
   DurationChanged(video.Get());
 
   DOMRect* rect = video->getBoundingClientRect();
-  LayoutPoint location((rect->left() + rect->right()) / 2,
-                       (rect->top() + rect->bottom()) / 2);
+  PhysicalOffset location(LayoutUnit((rect->left() + rect->right()) / 2),
+                          LayoutUnit((rect->top() + rect->bottom()) / 2));
   EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
 
   // Context menu info are sent to the WebLocalFrameClient.
@@ -431,7 +445,7 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
   EXPECT_EQ(WebContextMenuData::kMediaTypeVideo, context_menu_data.media_type);
   EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
 
-  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+  const Vector<std::pair<WebContextMenuData::MediaFlags, bool>>
       expected_media_flags = {
           {WebContextMenuData::kMediaInError, false},
           {WebContextMenuData::kMediaPaused, true},
@@ -453,6 +467,80 @@ TEST_F(ContextMenuControllerTest, InfiniteDurationVideoLoaded) {
               !!(context_menu_data.media_flags & expected_media_flag.first))
         << "Flag 0x" << std::hex << expected_media_flag.first;
   }
+}
+
+TEST_F(ContextMenuControllerTest, EditingActionsEnabledInSVGDocument) {
+  frame_test_helpers::LoadFrame(LocalMainFrame(), R"SVG(data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg'
+         xmlns:h='http://www.w3.org/1999/xhtml'
+         font-family='Ahem'>
+      <text y='20' id='t'>Copyable text</text>
+      <foreignObject y='30' width='100' height='200'>
+        <h:div id='e' style='width: 100px; height: 50px'
+               contenteditable='true'>
+          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+        </h:div>
+      </foreignObject>
+    </svg>
+  )SVG");
+  LoadAhem();
+
+  Document* document = GetDocument();
+  ASSERT_TRUE(document->IsSVGDocument());
+
+  Element* text_element = document->getElementById("t");
+  document->UpdateStyleAndLayout();
+  FrameSelection& selection = document->GetFrame()->Selection();
+
+  // <text> element
+  selection.SelectSubString(*text_element, 4, 8);
+  EXPECT_TRUE(ShowContextMenuForElement(text_element, kMenuSourceMouse));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.selected_text, "able tex");
+
+  // <div contenteditable=true>
+  Element* editable_element = document->getElementById("e");
+  selection.SelectSubString(*editable_element, 0, 42);
+  EXPECT_TRUE(ShowContextMenuForElement(editable_element, kMenuSourceMouse));
+
+  context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags,
+            WebContextMenuData::kCanCut | WebContextMenuData::kCanCopy |
+                WebContextMenuData::kCanPaste | WebContextMenuData::kCanDelete |
+                WebContextMenuData::kCanEditRichly);
+}
+
+TEST_F(ContextMenuControllerTest, EditingActionsEnabledInXMLDocument) {
+  frame_test_helpers::LoadFrame(LocalMainFrame(), R"XML(data:text/xml,
+    <root>
+      <style xmlns="http://www.w3.org/1999/xhtml">
+        root { color: blue; }
+      </style>
+      <text id="t">Blue text</text>
+    </root>
+  )XML");
+
+  Document* document = GetDocument();
+  ASSERT_TRUE(document->IsXMLDocument());
+  ASSERT_FALSE(document->IsHTMLDocument());
+
+  Element* text_element = document->getElementById("t");
+  document->UpdateStyleAndLayout();
+  FrameSelection& selection = document->GetFrame()->Selection();
+
+  selection.SelectAll();
+  EXPECT_TRUE(ShowContextMenuForElement(text_element, kMenuSourceMouse));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, WebContextMenuData::kMediaTypeNone);
+  EXPECT_EQ(context_menu_data.edit_flags, WebContextMenuData::kCanCopy);
+  EXPECT_EQ(context_menu_data.selected_text, "Blue text");
 }
 
 }  // namespace blink

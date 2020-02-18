@@ -2,8 +2,9 @@ package Unicode::Collate::CJK::Stroke;
 
 use 5.006;
 use strict;
+use warnings;
 
-our $VERSION = '0.85';
+our $VERSION = '1.27';
 
 my %u2p;
 my $wt = 0x8000;
@@ -2502,6 +2503,12 @@ C<Unicode::Collate::CJK::Stroke> provides C<weightStroke()>,
 that is adequate for C<overrideCJK> of C<Unicode::Collate>
 and makes tailoring of CJK Unified Ideographs in the order
 of CLDR's stroke ordering.
+
+=head1 CAVEAT
+
+The stroke ordering includes some characters that are not
+CJK Unified Ideographs and can't utilize C<weightStroke()>
+for collation. For them, use C<entry> instead.
 
 =head1 SEE ALSO
 

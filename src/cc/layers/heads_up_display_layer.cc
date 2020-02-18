@@ -82,6 +82,7 @@ void HeadsUpDisplayLayer::PushPropertiesTo(LayerImpl* layer) {
 
   layer_impl->SetHUDTypeface(typeface_);
   layer_impl->SetLayoutShiftRects(layout_shift_rects_);
+  layout_shift_rects_.clear();
 }
 
 }  // namespace cc

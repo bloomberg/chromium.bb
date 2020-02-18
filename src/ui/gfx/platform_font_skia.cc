@@ -37,6 +37,8 @@ const char* kFallbackFontFamilyName = "serif";
 const char* kFallbackFontFamilyName = "sans";
 #endif
 
+constexpr SkGlyphID kUnsupportedGlyph = 0;
+
 // The default font, used for the default constructor.
 base::LazyInstance<scoped_refptr<PlatformFontSkia>>::Leaky g_default_font =
     LAZY_INSTANCE_INITIALIZER;
@@ -112,7 +114,7 @@ bool PlatformFontSkia::InitDefaultFont() {
 
   bool success = false;
   std::string family = kFallbackFontFamilyName;
-  int size_pixels = 12;
+  int size_pixels = PlatformFont::kDefaultBaseFontSize;
   int style = Font::NORMAL;
   Font::Weight weight = Font::Weight::NORMAL;
   FontRenderParams params;
@@ -139,6 +141,8 @@ bool PlatformFontSkia::InitDefaultFont() {
 #else
     NOTREACHED();
 #endif
+  } else {
+    params = gfx::GetFontRenderParams(FontRenderParamsQuery(), nullptr);
   }
 
   sk_sp<SkTypeface> typeface =
@@ -321,7 +325,16 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     metrics_need_computation_ = false;
 
     SkFont font(typeface_, font_size_pixels_);
-    font.setEdging(SkFont::Edging::kAlias);
+    const FontRenderParams& params = GetFontRenderParams();
+    if (!params.antialiasing) {
+      font.setEdging(SkFont::Edging::kAlias);
+    } else if (params.subpixel_rendering ==
+               FontRenderParams::SUBPIXEL_RENDERING_NONE) {
+      font.setEdging(SkFont::Edging::kAntiAlias);
+    } else {
+      font.setEdging(SkFont::Edging::kSubpixelAntiAlias);
+    }
+
     font.setEmbolden(weight_ >= Font::Weight::BOLD && !typeface_->isBold());
     font.setSkewX((Font::ITALIC & style_) && !typeface_->isItalic()
                       ? -SK_Scalar1 / 4
@@ -331,7 +344,33 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
     cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
-    average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
+
+    if (metrics.fAvgCharWidth) {
+      average_width_pixels_ = SkScalarToDouble(metrics.fAvgCharWidth);
+    } else {
+      // Some Skia fonts manager do not compute the average character size
+      // (e.g. Direct Write). The following code computes the average character
+      // width the same way Blink (e.g. SimpleFontData) does. Use the width of
+      // the letter 'x' when available, otherwise use the max character width.
+      SkGlyphID glyph = typeface_->unicharToGlyph('x');
+      if (glyph != kUnsupportedGlyph) {
+        SkScalar sk_width;
+        font.getWidths(&glyph, 1, &sk_width);
+        average_width_pixels_ = SkScalarToDouble(sk_width);
+      }
+      if (!average_width_pixels_) {
+        if (metrics.fMaxCharWidth) {
+          average_width_pixels_ = SkScalarToDouble(metrics.fMaxCharWidth);
+        } else {
+          // Older version of the DirectWrite API doesn't implement support for
+          // max char width. Fall back on a multiple of the ascent. This is
+          // entirely arbitrary but comes pretty close to the expected value in
+          // most cases.
+          average_width_pixels_ = ascent_pixels_ * 2;
+        }
+      }
+    }
+    DCHECK_NE(average_width_pixels_, 0);
   }
 }
 

@@ -5,6 +5,7 @@
 #include "content/browser/devtools/protocol/system_info_handler.h"
 
 #include <stdint.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -37,6 +38,13 @@ using SystemInfo::GPUDevice;
 using SystemInfo::GPUInfo;
 using GetInfoCallback = SystemInfo::Backend::GetInfoCallback;
 
+std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
+    const gfx::Size& size) {
+  return SystemInfo::Size::Create()
+      .SetWidth(size.width())
+      .SetHeight(size.height())
+      .Build();
+}
 // Give the GPU process a few seconds to provide GPU info.
 // Linux Debug builds need more time -- see Issue 796437.
 // Windows builds need more time -- see Issue 873112.
@@ -122,13 +130,74 @@ std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
                             .Build();
 }
 
+std::unique_ptr<SystemInfo::VideoDecodeAcceleratorCapability>
+VideoDecodeAcceleratorSupportedProfileToProtocol(
+    const gpu::VideoDecodeAcceleratorSupportedProfile& profile) {
+  return SystemInfo::VideoDecodeAcceleratorCapability::Create()
+      .SetProfile(media::GetProfileName(
+          static_cast<media::VideoCodecProfile>(profile.profile)))
+      .SetMaxResolution(GfxSizeToSystemInfoSize(profile.max_resolution))
+      .SetMinResolution(GfxSizeToSystemInfoSize(profile.min_resolution))
+      .Build();
+}
+
+std::unique_ptr<SystemInfo::VideoEncodeAcceleratorCapability>
+VideoEncodeAcceleratorSupportedProfileToProtocol(
+    const gpu::VideoEncodeAcceleratorSupportedProfile& profile) {
+  return SystemInfo::VideoEncodeAcceleratorCapability::Create()
+      .SetProfile(media::GetProfileName(
+          static_cast<media::VideoCodecProfile>(profile.profile)))
+      .SetMaxResolution(GfxSizeToSystemInfoSize(profile.max_resolution))
+      .SetMaxFramerateNumerator(profile.max_framerate_numerator)
+      .SetMaxFramerateDenominator(profile.max_framerate_denominator)
+      .Build();
+}
+
+std::unique_ptr<SystemInfo::ImageDecodeAcceleratorCapability>
+ImageDecodeAcceleratorSupportedProfileToProtocol(
+    const gpu::ImageDecodeAcceleratorSupportedProfile& profile) {
+  auto subsamplings = std::make_unique<protocol::Array<std::string>>();
+  for (const auto subsampling : profile.subsamplings) {
+    switch (subsampling) {
+      case gpu::ImageDecodeAcceleratorSubsampling::k420:
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv420);
+        break;
+      case gpu::ImageDecodeAcceleratorSubsampling::k422:
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv422);
+        break;
+      case gpu::ImageDecodeAcceleratorSubsampling::k444:
+        subsamplings->emplace_back(SystemInfo::SubsamplingFormatEnum::Yuv444);
+        break;
+    }
+  }
+
+  SystemInfo::ImageType image_type;
+  switch (profile.image_type) {
+    case gpu::ImageDecodeAcceleratorType::kJpeg:
+      image_type = SystemInfo::ImageTypeEnum::Jpeg;
+      break;
+    case gpu::ImageDecodeAcceleratorType::kWebP:
+      image_type = SystemInfo::ImageTypeEnum::Webp;
+      break;
+    case gpu::ImageDecodeAcceleratorType::kUnknown:
+      image_type = SystemInfo::ImageTypeEnum::Unknown;
+      break;
+  }
+
+  return SystemInfo::ImageDecodeAcceleratorCapability::Create()
+      .SetImageType(image_type)
+      .SetMaxDimensions(GfxSizeToSystemInfoSize(profile.max_encoded_dimensions))
+      .SetMinDimensions(GfxSizeToSystemInfoSize(profile.min_encoded_dimensions))
+      .SetSubsamplings(std::move(subsamplings))
+      .Build();
+}
+
 void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
   gpu::GPUInfo gpu_info = GpuDataManagerImpl::GetInstance()->GetGPUInfo();
-  std::unique_ptr<protocol::Array<GPUDevice>> devices =
-      protocol::Array<GPUDevice>::create();
-  devices->addItem(GPUDeviceToProtocol(gpu_info.gpu));
+  auto devices = std::make_unique<protocol::Array<GPUDevice>>();
+  devices->emplace_back(GPUDeviceToProtocol(gpu_info.gpu));
   for (const auto& device : gpu_info.secondary_gpus)
-    devices->addItem(GPUDeviceToProtocol(device));
+    devices->emplace_back(GPUDeviceToProtocol(device));
 
   std::unique_ptr<protocol::DictionaryValue> aux_attributes =
       protocol::DictionaryValue::create();
@@ -144,17 +213,43 @@ void SendGetInfoResponse(std::unique_ptr<GetInfoCallback> callback) {
       protocol::DictionaryValue::cast(
           protocol::toProtocolValue(base_feature_status.get(), 1000));
 
-  std::unique_ptr<protocol::Array<std::string>> driver_bug_workarounds =
-      protocol::Array<std::string>::create();
-  for (const std::string& s : GetDriverBugWorkarounds())
-      driver_bug_workarounds->addItem(s);
+  auto driver_bug_workarounds =
+      std::make_unique<protocol::Array<std::string>>(GetDriverBugWorkarounds());
 
-  std::unique_ptr<GPUInfo> gpu = GPUInfo::Create()
-      .SetDevices(std::move(devices))
-      .SetAuxAttributes(std::move(aux_attributes))
-      .SetFeatureStatus(std::move(feature_status))
-      .SetDriverBugWorkarounds(std::move(driver_bug_workarounds))
-      .Build();
+  auto decoding_profiles = std::make_unique<
+      protocol::Array<SystemInfo::VideoDecodeAcceleratorCapability>>();
+  for (const auto& profile :
+       gpu_info.video_decode_accelerator_capabilities.supported_profiles) {
+    decoding_profiles->emplace_back(
+        VideoDecodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  auto encoding_profiles = std::make_unique<
+      protocol::Array<SystemInfo::VideoEncodeAcceleratorCapability>>();
+  for (const auto& profile :
+       gpu_info.video_encode_accelerator_supported_profiles) {
+    encoding_profiles->emplace_back(
+        VideoEncodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  auto image_profiles = std::make_unique<
+      protocol::Array<SystemInfo::ImageDecodeAcceleratorCapability>>();
+  for (const auto& profile :
+       gpu_info.image_decode_accelerator_supported_profiles) {
+    image_profiles->emplace_back(
+        ImageDecodeAcceleratorSupportedProfileToProtocol(profile));
+  }
+
+  std::unique_ptr<GPUInfo> gpu =
+      GPUInfo::Create()
+          .SetDevices(std::move(devices))
+          .SetAuxAttributes(std::move(aux_attributes))
+          .SetFeatureStatus(std::move(feature_status))
+          .SetDriverBugWorkarounds(std::move(driver_bug_workarounds))
+          .SetVideoDecoding(std::move(decoding_profiles))
+          .SetVideoEncoding(std::move(encoding_profiles))
+          .SetImageDecoding(std::move(image_profiles))
+          .Build();
 
   base::CommandLine* command = base::CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)
@@ -174,8 +269,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
  public:
   explicit SystemInfoHandlerGpuObserver(
       std::unique_ptr<GetInfoCallback> callback)
-      : callback_(std::move(callback)),
-        weak_factory_(this) {
+      : callback_(std::move(callback)) {
     base::PostDelayedTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&SystemInfoHandlerGpuObserver::ObserverWatchdogCallback,
@@ -217,7 +311,7 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
 
  private:
   std::unique_ptr<GetInfoCallback> callback_;
-  base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_;
+  base::WeakPtrFactory<SystemInfoHandlerGpuObserver> weak_factory_{this};
 };
 
 SystemInfoHandler::SystemInfoHandler()
@@ -268,7 +362,8 @@ void AddBrowserProcessInfo(
     protocol::Array<protocol::SystemInfo::ProcessInfo>* process_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  process_info->addItem(MakeProcessInfo(base::Process::Current(), "browser"));
+  process_info->emplace_back(
+      MakeProcessInfo(base::Process::Current(), "browser"));
 }
 
 void AddRendererProcessInfo(
@@ -279,7 +374,8 @@ void AddRendererProcessInfo(
        !it.IsAtEnd(); it.Advance()) {
     RenderProcessHost* host = it.GetCurrentValue();
     if (host->GetProcess().IsValid()) {
-      process_info->addItem(MakeProcessInfo(host->GetProcess(), "renderer"));
+      process_info->emplace_back(
+          MakeProcessInfo(host->GetProcess(), "renderer"));
     }
   }
 }
@@ -294,7 +390,7 @@ AddChildProcessInfo(
     const ChildProcessData& process_data = it.GetData();
     const base::Process& process = process_data.GetProcess();
     if (process.IsValid()) {
-      process_info->addItem(
+      process_info->emplace_back(
           MakeProcessInfo(process, process_data.metrics_name));
     }
   }
@@ -306,8 +402,8 @@ AddChildProcessInfo(
 
 void SystemInfoHandler::GetProcessInfo(
     std::unique_ptr<GetProcessInfoCallback> callback) {
-  std::unique_ptr<protocol::Array<protocol::SystemInfo::ProcessInfo>>
-      process_info = protocol::Array<SystemInfo::ProcessInfo>::create();
+  auto process_info =
+      std::make_unique<protocol::Array<SystemInfo::ProcessInfo>>();
 
   // Collect browser and renderer processes info on the UI thread.
   AddBrowserProcessInfo(process_info.get());

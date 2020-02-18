@@ -22,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -147,7 +148,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   // WebUIFactory implementation.
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a new instance.
     if (should_create_webui_ && HasWebUIScheme(url))
@@ -156,7 +157,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   }
 
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
+                             const GURL& url) override {
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a mock WebUI type.
     if (should_create_webui_ && HasWebUIScheme(url)) {
@@ -166,12 +167,12 @@ class RenderFrameHostManagerTestWebUIControllerFactory
   }
 
   bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return HasWebUIScheme(url);
   }
 
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 
@@ -332,6 +333,19 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
+
+    if (AreDefaultSiteInstancesEnabled()) {
+      // Isolate |isolated_cross_site_url()| so we can't get a default
+      // SiteInstance for it.
+      ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
+          {url::Origin::Create(isolated_cross_site_url())},
+          ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
+          browser_context());
+
+      // Reset the WebContents so the isolated origin will be honored by
+      // all BrowsingInstances used in the test.
+      SetContents(CreateTestWebContents());
+    }
   }
 
   void TearDown() override {
@@ -344,6 +358,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   }
 
   void set_webui_type(int type) { factory_.set_webui_type(type); }
+
+  GURL isolated_cross_site_url() const {
+    return GURL("http://isolated-cross-site.com");
+  }
 
   // Creates a test RenderViewHost that's swapped out.
   void CreateSwappedOutRenderViewHost() {
@@ -459,7 +477,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
 // then do that same thing in another tab, that the two resulting pages have
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
-TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
+TEST_F(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
   set_should_create_webui(true);
   const GURL kChromeUrl(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
@@ -503,8 +521,8 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
   EXPECT_FALSE(dest_rfh2->GetSiteInstance()->IsRelatedSiteInstance(
                    contents()->GetMainFrame()->GetSiteInstance()));
 
-  // Navigate both to the new tab page, and verify that they share a
-  // RenderProcessHost (not a SiteInstance).
+  // Navigate both to a chrome://... URL, and verify that they have a separate
+  // RenderProcessHost and a separate SiteInstance.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeUrl);
   EXPECT_FALSE(contents()->GetPendingMainFrame());
 
@@ -513,7 +531,7 @@ TEST_F(RenderFrameHostManagerTest, NewTabPageProcesses) {
 
   EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance(),
             contents2->GetMainFrame()->GetSiteInstance());
-  EXPECT_EQ(contents()->GetMainFrame()->GetSiteInstance()->GetProcess(),
+  EXPECT_NE(contents()->GetMainFrame()->GetSiteInstance()->GetProcess(),
             contents2->GetMainFrame()->GetSiteInstance()->GetProcess());
 }
 
@@ -694,12 +712,18 @@ TEST_F(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
   TestRenderFrameHost* rfh2 = main_test_rfh();
   SiteInstanceImpl* instance2 = rfh2->GetSiteInstance();
 
-  // rvh2 is on chromium.org which is different from google.com on
-  // which other tabs are.
-  EXPECT_EQ(instance2->active_frame_count(), 1U);
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
+    EXPECT_EQ(instance1->active_frame_count(), 3U);
+    EXPECT_EQ(instance1, instance2);
+  } else {
+    // rvh2 is on chromium.org which is different from google.com on
+    // which other tabs are.
+    EXPECT_EQ(instance2->active_frame_count(), 1U);
 
-  // There are two active views on google.com now.
-  EXPECT_EQ(instance1->active_frame_count(), 2U);
+    // There are two active views on google.com now.
+    EXPECT_EQ(instance1->active_frame_count(), 2U);
+  }
 
   // Navigate to the original origin (google.com).
   contents()->NavigateAndCommit(kUrl1);
@@ -867,9 +891,9 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
-      nullptr /* instance */, kUrl1, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl1, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -889,10 +913,12 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
 
   // 2) Navigate to next site. -------------------------
   const GURL kUrl2("http://www.google.com/foo");
+  const url::Origin kInitiatorOrigin =
+      url::Origin::Create(GURL("https://initiator.example.com"));
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
-      base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
+      kInitiatorOrigin, base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, &entry2);
 
@@ -915,7 +941,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(
       nullptr /* instance */, kUrl3,
-      Referrer(kUrl2, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrl2, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, &entry3);
@@ -966,9 +992,9 @@ TEST_F(RenderFrameHostManagerTest, WebContentVisibilityHiddenBeforeCommit) {
   // Start navigation.
   const GURL kUrl(GetWebUIURL("foo"));
   NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host = NavigateToEntry(manager, &entry);
 
   // Hide the web contents before commit.
@@ -1000,9 +1026,9 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   const GURL kUrl(GetWebUIURL("foo"));
   NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host = NavigateToEntry(manager, &entry);
 
   // We commit the pending RenderFrameHost immediately because the previous
@@ -1056,9 +1082,9 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Navigate to a WebUI page.
   const GURL kUrl1(GetWebUIURL("foo"));
   NavigationEntryImpl entry1(
-      nullptr /* instance */, kUrl1, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl1, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host1 = NavigateToEntry(manager1, &entry1);
 
   // We should have a pending navigation to the WebUI RenderViewHost.
@@ -1087,10 +1113,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
   const GURL kUrl2(GetWebUIURL("foo/bar"));
+  const url::Origin kInitiatorOrigin =
+      url::Origin::Create(GURL("https://initiator.example.com"));
   NavigationEntryImpl entry2(
-      nullptr /* instance */, kUrl2, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_LINK, true /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl2, Referrer(), kInitiatorOrigin,
+      base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
+      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host2 = NavigateToEntry(manager2, &entry2);
 
   // No cross-process transition happens because we are already in the right
@@ -1141,7 +1169,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 // See http://crbug.com/93427.
 TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to two pages.
   contents()->NavigateAndCommit(kUrl1);
@@ -1179,7 +1207,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 // JavaScript calls (http://crbug.com/99202).
 TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
   const GURL kChromeUrl(GetWebUIURL("foo"));
 
   // Navigate to an initial URL.
@@ -1189,6 +1217,8 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
   RenderFrameDeletedObserver rfh1_deleted_observer(rfh1);
   TestRenderViewHost* rvh1 = test_rvh();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create 2 new tabs and simulate them being the opener chain for the main
   // tab.  They should be in the same SiteInstance.
@@ -1253,12 +1283,14 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
 // Test that a page can disown the opener of the WebContents.
 TEST_F(RenderFrameHostManagerTest, DisownOpener) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1304,12 +1336,14 @@ TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
 // in progress.
 TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       main_test_rfh()->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1347,12 +1381,14 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 // commits.
 TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       main_test_rfh()->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1383,7 +1419,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
 // those associated RenderViews crashes. http://crbug.com/258993
 TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
@@ -1494,6 +1530,8 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
+  EXPECT_TRUE(instance->GetSiteURL().SchemeIs(kGuestScheme));
+
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
   RenderFrameHostImpl* host = nullptr;
@@ -1501,9 +1539,9 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
-      nullptr /* instance */, kUrl1, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl1, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1522,10 +1560,12 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   // 2) Navigate to a different domain. -------------------------
   // Guests stay in the same process on navigation.
   const GURL kUrl2("http://www.chromium.org");
+  const url::Origin kInitiatorOrigin =
+      url::Origin::Create(GURL("https://initiator.example.com"));
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
-      base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
+      kInitiatorOrigin, base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host = NavigateToEntry(manager, &entry2);
 
@@ -1577,9 +1617,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
-      nullptr /* instance */, kUrl1, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl1, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1601,9 +1641,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   // 2) Cross-site navigate to next site. -------------------------
   const GURL kUrl2("http://www.example.com");
   NavigationEntryImpl entry2(
-      nullptr /* instance */, kUrl2, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl2, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host2 = NavigateToEntry(manager, &entry2);
 
   // A new RenderFrameHost should be created.
@@ -1627,7 +1667,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
 
 TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   CloseWebContentsDelegate close_delegate;
   contents()->SetDelegate(&close_delegate);
@@ -1786,7 +1826,7 @@ TEST_F(RenderFrameHostManagerTest,
 TEST_F(RenderFrameHostManagerTest,
        CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
   RenderFrameHostImpl* pending_rfh = nullptr;
   base::TimeTicks now = base::TimeTicks::Now();
 
@@ -1879,9 +1919,9 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 
   // 1) The first navigation.
   NavigationEntryImpl entryA(
-      nullptr /* instance */, kUrlA, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrlA, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* host1 = NavigateToEntry(iframe1, &entryA);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1899,7 +1939,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   // 2) Cross-site navigate both frames to next site.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   host1 = NavigateToEntry(iframe1, &entryB);
@@ -2014,7 +2054,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
       nullptr /* instance */, kUrl2,
-      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* cross_site = NavigateToEntry(iframe, &entry);
@@ -2071,7 +2111,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // pending RVH has bindings.
   const GURL kWebUIUrl(GetWebUIURL("foo"));
   NavigationEntryImpl webui_entry(
-      nullptr /* instance */, kWebUIUrl, Referrer(),
+      nullptr /* instance */, kWebUIUrl, Referrer(), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostManager* main_rfhm = contents()->GetRenderManagerForTesting();
@@ -2083,7 +2123,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   // should not grant WebUI bindings to the subframe's RVH.
   const GURL kSubframeUrl("http://bar.com");
   NavigationEntryImpl subframe_entry(
-      nullptr /* instance */, kSubframeUrl, Referrer(),
+      nullptr /* instance */, kSubframeUrl, Referrer(), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   RenderFrameHostImpl* bar_rfh =
@@ -2095,12 +2135,14 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
 // chain.
 TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create 2 new tabs and construct the opener chain as follows:
   //
@@ -2158,12 +2200,14 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
 // to itself.
 TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create an opener tab, and simulate that its opener points to itself.
   std::unique_ptr<TestWebContents> opener(
@@ -2359,7 +2403,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // Navigate first two subframes to B.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host1 =
@@ -2374,7 +2418,7 @@ TEST_F(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   // Navigate the third subframe to C.
   NavigationEntryImpl entryC(
       nullptr /* instance */, kUrlC,
-      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* host3 =
@@ -2456,7 +2500,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate subframe to B.
   NavigationEntryImpl entryB(
       nullptr /* instance */, kUrlB,
-      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* hostB =
@@ -2471,7 +2515,7 @@ TEST_F(RenderFrameHostManagerTest,
   // Navigate the subframe to C.
   NavigationEntryImpl entryC(
       nullptr /* instance */, kUrlC,
-      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault),
+      Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_LINK,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   TestRenderFrameHost* hostC =
@@ -2507,8 +2551,9 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
-          kInitUrl, Referrer(), ui::PAGE_TRANSITION_TYPED, false, std::string(),
-          browser_context(), nullptr /* blob_url_loader_factory */);
+          kInitUrl, Referrer(), base::nullopt, ui::PAGE_TRANSITION_TYPED, false,
+          std::string(), browser_context(),
+          nullptr /* blob_url_loader_factory */);
   entries.push_back(std::move(new_entry));
   controller.Restore(0, RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
   ASSERT_EQ(0u, entries.size());
@@ -2521,7 +2566,7 @@ TEST_F(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
 
   // Navigation request to an entry from a previous browsing session.
   NavigationEntryImpl entry(
-      nullptr /* instance */, kInitUrl, Referrer(),
+      nullptr /* instance */, kInitUrl, Referrer(), base::nullopt,
       base::string16() /* title */, ui::PAGE_TRANSITION_RELOAD,
       false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   entry.set_restore_type(RestoreType::LAST_SESSION_EXITED_CLEANLY);
@@ -2858,9 +2903,9 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   // Navigation request.
   const GURL kUrl(GetWebUIURL("foo"));
   NavigationEntryImpl entry(
-      nullptr /* instance */, kUrl, Referrer(), base::string16() /* title */,
-      ui::PAGE_TRANSITION_TYPED, false /* is_renderer_init */,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* instance */, kUrl, Referrer(), base::nullopt,
+      base::string16() /* title */, ui::PAGE_TRANSITION_TYPED,
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
   FrameTreeNode* frame_tree_node =
       manager->current_frame_host()->frame_tree_node();
@@ -3220,16 +3265,21 @@ TEST_F(RenderFrameHostManagerTest,
   const GURL kFooUrl("https://foo.com");
   const GURL kOriginalUrl("https://original.com");
   const GURL kTranslatedUrl("https://translated.com");
-  EffectiveURLContentBrowserClient modified_client(kOriginalUrl,
-                                                   kTranslatedUrl);
+  EffectiveURLContentBrowserClient modified_client(
+      kOriginalUrl, kTranslatedUrl, /* requires_dedicated_process */ true);
   ContentBrowserClient* regular_client =
       SetBrowserClientForTesting(&modified_client);
 
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kFooUrl);
   scoped_refptr<SiteInstanceImpl> initial_instance =
       main_test_rfh()->GetSiteInstance();
-  EXPECT_EQ(kFooUrl, initial_instance->original_url());
-  EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(initial_instance->IsDefaultSiteInstance());
+  } else {
+    EXPECT_FALSE(initial_instance->IsDefaultSiteInstance());
+    EXPECT_EQ(kFooUrl, initial_instance->original_url());
+    EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+  }
 
   // Simulate a browser-initiated navigation to an app URL, which should swap
   // processes and create a new SiteInstance in a new BrowsingInstance.

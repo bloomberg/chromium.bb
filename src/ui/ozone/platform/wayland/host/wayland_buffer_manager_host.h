@@ -94,6 +94,12 @@ class WaylandBufferManagerHost : ozone::mojom::WaylandBufferManagerHost {
                     uint32_t buffer_id,
                     const gfx::Rect& damage_region) override;
 
+  // When a surface is hidden, the client may want to detach the buffer attached
+  // to the surface backed by |widget| to ensure Wayland does not present those
+  // contents and do not composite in a wrong way. Otherwise, users may see the
+  // contents of a hidden surface on their screens.
+  void ResetSurfaceContents(gfx::AcceleratedWidget widget);
+
  private:
   // This is an internal representation of a real surface, which holds a pointer
   // to WaylandWindow. Also, this object holds buffers, frame callbacks and

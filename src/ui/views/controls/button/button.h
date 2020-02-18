@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
@@ -45,8 +45,10 @@ class VIEWS_EXPORT ButtonListener {
 // not be part of the focus chain, unless in accessibility mode (see
 // SetFocusForPlatform()).
 class VIEWS_EXPORT Button : public InkDropHostView,
-                            public gfx::AnimationDelegate {
+                            public AnimationDelegateViews {
  public:
+  METADATA_HEADER(Button);
+
   ~Button() override;
 
   // Button states for various button sub-types.
@@ -71,9 +73,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     CLICK_ON_KEY_RELEASE,
     CLICK_NONE,
   };
-
-  // The menu button's class name.
-  static const char kViewClassName[];
 
   static const Button* AsButton(const View* view);
   static Button* AsButton(View* view);
@@ -165,7 +164,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void RemoveButtonObserver(ButtonObserver* observer);
 
   // Overridden from View:
-  const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -198,7 +196,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   SkColor GetInkDropBaseColor() const override;
 
-  // Overridden from gfx::AnimationDelegate:
+  // Overridden from views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Returns the click action for the given key event.

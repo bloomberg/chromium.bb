@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -110,6 +110,7 @@ class ASH_EXPORT HeaderView : public views::View,
   void OnImmersiveFullscreenExited() override;
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
+  void Relayout() override;
 
   DefaultFrameHeader* GetFrameHeader() { return frame_header_.get(); }
 

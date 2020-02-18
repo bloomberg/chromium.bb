@@ -27,6 +27,10 @@ class MemoryAllocatorDump;
 }  // namespace trace_event
 }  // namespace base
 
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
+
 namespace gpu {
 class MailboxManager;
 class SharedContextState;
@@ -74,7 +78,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // unintiailized pixels.
   virtual void SetCleared() = 0;
 
-  virtual void Update() = 0;
+  virtual void Update(std::unique_ptr<gfx::GpuFence> in_fence) = 0;
 
   // Destroys the underlying backing. Must be called before destruction.
   virtual void Destroy() = 0;

@@ -32,7 +32,9 @@
 
 #include <memory>
 
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
@@ -41,30 +43,28 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_storage_namespace.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
-#include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instance_counters_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
+#include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/memory_pressure_listener.h"
-#include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/webrtc/api/async_resolver_factory.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
@@ -87,6 +87,41 @@ class DefaultConnector {
 
  private:
   std::unique_ptr<service_manager::Connector> connector_;
+};
+
+class IdleDelayedTaskHelper : public base::SingleThreadTaskRunner {
+  USING_FAST_MALLOC(IdleDelayedTaskHelper);
+
+ public:
+  IdleDelayedTaskHelper() = default;
+
+  bool RunsTasksInCurrentSequence() const override { return IsMainThread(); }
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    ThreadScheduler::Current()->PostDelayedIdleTask(
+        from_here, delay,
+        base::BindOnce([](base::OnceClosure task,
+                          base::TimeTicks deadline) { std::move(task).Run(); },
+                       std::move(task)));
+    return true;
+  }
+
+ protected:
+  ~IdleDelayedTaskHelper() override = default;
+
+ private:
+  THREAD_CHECKER(thread_checker_);
+  DISALLOW_COPY_AND_ASSIGN(IdleDelayedTaskHelper);
 };
 
 }  // namespace
@@ -219,6 +254,10 @@ void Platform::InitializeCommon(Platform* platform,
       base::ThreadTaskRunnerHandle::Get());
 
   RendererResourceCoordinator::MaybeInitialize();
+  // Use a delayed idle task as this is low priority work that should stop when
+  // the main thread is not doing any work.
+  WTF::Partitions::StartPeriodicReclaim(
+      base::MakeRefCounted<IdleDelayedTaskHelper>());
 }
 
 void Platform::SetCurrentPlatformForTesting(Platform* platform) {
@@ -256,15 +295,6 @@ service_manager::Connector* Platform::GetConnector() {
 
 InterfaceProvider* Platform::GetInterfaceProvider() {
   return InterfaceProvider::GetEmptyInterfaceProvider();
-}
-
-std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
-  return nullptr;
-}
-
-std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
-    base::StringPiece namespace_id) {
-  return nullptr;
 }
 
 std::unique_ptr<Thread> Platform::CreateThread(
@@ -316,11 +346,6 @@ std::unique_ptr<cricket::PortAllocator> Platform::CreateWebRtcPortAllocator(
 
 std::unique_ptr<webrtc::AsyncResolverFactory>
 Platform::CreateWebRtcAsyncResolverFactory() {
-  return nullptr;
-}
-
-std::unique_ptr<WebMediaRecorderHandler> Platform::CreateMediaRecorderHandler(
-    scoped_refptr<base::SingleThreadTaskRunner>) {
   return nullptr;
 }
 

@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _LMSERVER_
@@ -753,7 +753,7 @@ extern "C" {
 #define SV_TYPE_DOMAIN_ENUM 0x80000000
 #define SV_TYPE_ALL 0xFFFFFFFF
 
-#define SV_NODISC (-1L)
+#define SV_NODISC (__MSABI_LONG(-1))
 
 #define SV_USERSECURITY 1
 #define SV_SHARESECURITY 0

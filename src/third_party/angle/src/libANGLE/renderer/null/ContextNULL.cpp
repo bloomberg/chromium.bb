@@ -81,17 +81,18 @@ ContextNULL::ContextNULL(const gl::State &state,
     mExtensions.debugMarker            = true;
     mExtensions.translatedShaderSource = true;
 
-    mExtensions.textureStorage             = true;
-    mExtensions.rgb8rgba8                  = true;
-    mExtensions.textureCompressionDXT1     = true;
-    mExtensions.textureCompressionDXT3     = true;
-    mExtensions.textureCompressionDXT5     = true;
-    mExtensions.textureCompressionS3TCsRGB = true;
-    mExtensions.textureCompressionASTCHDR  = true;
-    mExtensions.textureCompressionASTCLDR  = true;
-    mExtensions.compressedETC1RGB8Texture  = true;
-    mExtensions.lossyETCDecode             = true;
-    mExtensions.geometryShader             = true;
+    mExtensions.textureStorage               = true;
+    mExtensions.rgb8rgba8                    = true;
+    mExtensions.textureCompressionDXT1       = true;
+    mExtensions.textureCompressionDXT3       = true;
+    mExtensions.textureCompressionDXT5       = true;
+    mExtensions.textureCompressionS3TCsRGB   = true;
+    mExtensions.textureCompressionASTCHDRKHR = true;
+    mExtensions.textureCompressionASTCLDRKHR = true;
+    mExtensions.textureCompressionASTCOES    = true;
+    mExtensions.compressedETC1RGB8Texture    = true;
+    mExtensions.lossyETCDecode               = true;
+    mExtensions.geometryShader               = true;
 
     mExtensions.eglImage                  = true;
     mExtensions.eglImageExternal          = true;
@@ -117,30 +118,6 @@ angle::Result ContextNULL::flush(const gl::Context *context)
 }
 
 angle::Result ContextNULL::finish(const gl::Context *context)
-{
-    return angle::Result::Continue;
-}
-
-angle::Result ContextNULL::waitSemaphore(const gl::Context *context,
-                                         const gl::Semaphore *semaphore,
-                                         GLuint numBufferBarriers,
-                                         const GLuint *buffers,
-                                         GLuint numTextureBarriers,
-                                         const GLuint *textures,
-                                         const GLenum *srcLayouts
-
-)
-{
-    return angle::Result::Continue;
-}
-
-angle::Result ContextNULL::signalSemaphore(const gl::Context *context,
-                                           const gl::Semaphore *semaphore,
-                                           GLuint numBufferBarriers,
-                                           const GLuint *buffers,
-                                           GLuint numTextureBarriers,
-                                           const GLuint *textures,
-                                           const GLenum *dstLayouts)
 {
     return angle::Result::Continue;
 }

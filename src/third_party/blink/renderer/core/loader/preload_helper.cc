@@ -12,9 +12,10 @@
 #include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 #include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
@@ -31,6 +32,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -280,7 +282,9 @@ Resource* PreloadHelper::PreloadIfNeeded(
   resource_request.SetRequestContext(ResourceFetcher::DetermineRequestContext(
       resource_type.value(), ResourceFetcher::kImageNotImageSet));
 
-  resource_request.SetReferrerPolicy(params.referrer_policy);
+  resource_request.SetReferrerPolicy(
+      params.referrer_policy,
+      ResourceRequest::SetReferrerPolicyLocation::kPreloadIfNeeded);
 
   resource_request.SetFetchImportanceMode(
       GetFetchImportanceAttributeValue(params.importance));
@@ -295,6 +299,33 @@ Resource* PreloadHelper::PreloadIfNeeded(
     link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),
                                                   params.cross_origin);
   }
+
+  const String& integrity_attr = params.integrity;
+  // TODO(crbug.com/981419): Honor the integrity attribute value for all
+  // supported preload destinations, not just the destinations that support SRI
+  // in the first place.
+  if (resource_type == ResourceType::kScript ||
+      resource_type == ResourceType::kCSSStyleSheet) {
+    if (!integrity_attr.IsEmpty()) {
+      IntegrityMetadataSet metadata_set;
+      SubresourceIntegrity::ParseIntegrityAttribute(
+          integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+          metadata_set);
+      link_fetch_params.SetIntegrityMetadata(metadata_set);
+      link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
+          integrity_attr);
+    }
+  } else {
+    if (!integrity_attr.IsEmpty()) {
+      document.AddConsoleMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning,
+          String("The `integrity` attribute is currently ignored for preload "
+                 "destinations that do not support subresource integrity. See "
+                 "https://crbug.com/981419 for more information")));
+    }
+  }
+
   link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {
@@ -387,7 +418,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
 
   // Step 6. "Let credentials mode be the module script credentials mode for the
   // crossorigin attribute." [spec text]
-  network::mojom::FetchCredentialsMode credentials_mode =
+  network::mojom::CredentialsMode credentials_mode =
       ScriptLoader::ModuleScriptCredentialsMode(params.cross_origin);
 
   // Step 7. "Let cryptographic nonce be the value of the nonce attribute, if it
@@ -450,7 +481,9 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
     UseCounter::Count(document, WebFeature::kLinkRelPrefetch);
 
     ResourceRequest resource_request(params.href);
-    resource_request.SetReferrerPolicy(params.referrer_policy);
+    resource_request.SetReferrerPolicy(
+        params.referrer_policy,
+        ResourceRequest::SetReferrerPolicyLocation::kPrefetchIfNeeded);
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
 
@@ -462,6 +495,11 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
       link_fetch_params.SetCrossOriginAccessControl(
           document.GetSecurityOrigin(), params.cross_origin);
     }
+    link_fetch_params.SetSignedExchangePrefetchCacheEnabled(
+        RuntimeEnabledFeatures::
+            SignedExchangePrefetchCacheForNavigationsEnabled() ||
+        RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+            &document));
     return LinkFetchResource::Fetch(ResourceType::kLinkPrefetch,
                                     link_fetch_params, document.Fetcher());
   }
@@ -490,14 +528,22 @@ void PreloadHelper::LoadLinksFromHeader(
     if (media_policy == kOnlyLoadNonMedia && header.IsViewportDependent())
       continue;
 
+    // TODO(domfarolino): Remove the following UseCounter-related lines when
+    // data on link stylesheet headers has been collected. See
+    // https://crbug.com/19237.
+    DCHECK_EQ(header.Rel(), header.Rel().DeprecatedLower());
+    if (header.Rel() == "stylesheet")
+      UseCounter::Count(document, WebFeature::kLinkHeaderStylesheet);
+
     LinkLoadParameters params(header, base_url);
     if (alternate_resource_info && params.rel.IsLinkPreload()) {
-      DCHECK(
-          RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
+      DCHECK(document);
+      DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
+          document));
       KURL url = params.href;
       base::Optional<ResourceType> resource_type =
           PreloadHelper::GetResourceTypeFromAsAttribute(params.as);
-      if (document && resource_type == ResourceType::kImage &&
+      if (resource_type == ResourceType::kImage &&
           !params.image_srcset.IsEmpty()) {
         // |media_values| is created based on the viewport dimensions of the
         // current page that prefetched SXGs, not on the viewport of the SXG
@@ -510,9 +556,12 @@ void PreloadHelper::LoadLinksFromHeader(
                                  params.image_srcset, params.image_sizes);
       }
       const auto* alternative_resource =
-          alternate_resource_info->FindMatchingEntry(url);
+          alternate_resource_info->FindMatchingEntry(
+              url, resource_type, frame.DomWindow()->navigator()->languages());
       if (alternative_resource &&
           alternative_resource->alternative_url().IsValid()) {
+        UseCounter::Count(document,
+                          WebFeature::kSignedExchangeSubresourcePrefetch);
         params.href = alternative_resource->alternative_url();
         // Change the rel to "prefetch" to trigger the prefetch logic. This
         // request will be handled by a PrefetchURLLoader in the browser
@@ -526,8 +575,7 @@ void PreloadHelper::LoadLinksFromHeader(
         // undesirable alternative resource association that affects the next
         // navigation, but can only populate things in the cache that can be
         // used by the next navigation only when they requested the same URL
-        // with the same association mapping. TODO(crbug.com/935267): Implement
-        // this logic.
+        // with the same association mapping.
         params.rel = LinkRelAttribute("prefetch");
       }
     }

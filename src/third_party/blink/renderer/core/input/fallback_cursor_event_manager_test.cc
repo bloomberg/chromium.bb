@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace {
 
@@ -58,13 +59,13 @@ class FallbackCursorChromeClient : public RenderingTestChromeClient {
   DISALLOW_COPY_AND_ASSIGN(FallbackCursorChromeClient);
 };
 
-class FallbackCursorEventManagerTest : public RenderingTest {
+class FallbackCursorEventManagerTest : public RenderingTest,
+                                       private ScopedFallbackCursorModeForTest {
  protected:
   FallbackCursorEventManagerTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
-        chrome_client_(MakeGarbageCollected<FallbackCursorChromeClient>()) {
-    RuntimeEnabledFeatures::SetFallbackCursorModeEnabled(true);
-  }
+        ScopedFallbackCursorModeForTest(true),
+        chrome_client_(MakeGarbageCollected<FallbackCursorChromeClient>()) {}
 
   ~FallbackCursorEventManagerTest() override {}
 
@@ -84,7 +85,7 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(scale);
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
@@ -102,7 +103,7 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     WebMouseEvent event(WebInputEvent::kMouseMove, root_frame_point,
                         root_frame_point,
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1.0f);
     GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
         event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
@@ -112,7 +113,7 @@ class FallbackCursorEventManagerTest : public RenderingTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }

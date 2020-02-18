@@ -151,9 +151,6 @@ static_library("common") {
     "mac/staging_watcher.mm",
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
-    "media/webrtc_logging_message_data.cc",
-    "media/webrtc_logging_message_data.h",
-    "media/webrtc_logging_messages.h",
     "media_galleries/metadata_types.h",
     "multi_process_lock.h",
     "multi_process_lock_linux.cc",
@@ -185,6 +182,8 @@ static_library("common") {
     "secure_origin_whitelist.h",
     "ssl_insecure_content.cc",
     "ssl_insecure_content.h",
+
+    # TODO(asvitkine): Move the next four entries to chrome/common/profiler/.
     "stack_sampling_configuration.cc",
     "stack_sampling_configuration.h",
     "thread_profiler.cc",
@@ -240,6 +239,7 @@ static_library("common") {
     "//components/gcm_driver/common",
     "//components/metrics",
     "//components/metrics:net",
+    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
     "//components/nacl/common:buildflags",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
@@ -349,6 +349,8 @@ static_library("common") {
       "extensions/manifest_handlers/linked_app_icons.h",
       "extensions/manifest_handlers/minimum_chrome_version_checker.cc",
       "extensions/manifest_handlers/minimum_chrome_version_checker.h",
+      "extensions/manifest_handlers/natively_connectable_handler.cc",
+      "extensions/manifest_handlers/natively_connectable_handler.h",
       "extensions/manifest_handlers/settings_overrides_handler.cc",
       "extensions/manifest_handlers/settings_overrides_handler.h",
       "extensions/manifest_handlers/theme_handler.cc",
@@ -413,7 +415,12 @@ static_library("common") {
       "//components/printing/common",
       "//printing",
     ]
-    if (enable_print_preview && !is_chromeos) {
+    if (enable_print_preview && !is_chromeos && !is_android) {
+      # |enable_print_preview| should be false if |is_android| is true.
+      # However, that is somewhat indirect. Part of The service_process_util
+      # code below is based on a model where the cloud print service is a
+      # long-lived process independent of chrome, which is not appropriate
+      # on android. To make that explicit |!is_android| is used above.
       sources += [
         "service_process_util.cc",
         "service_process_util.h",
@@ -536,6 +543,7 @@ static_library("non_code_constants") {
     ":buildflags",
     ":version_header",
     "//base",
+    "//build:branding_buildflags",
     "//ppapi/buildflags",
   ]
 
@@ -591,6 +599,7 @@ static_library("constants") {
     ":buildflags",
     ":chrome_features",
     ":non_code_constants",
+    "//build:branding_buildflags",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
   ]
@@ -609,6 +618,10 @@ static_library("constants") {
     "//printing/buildflags",
     "//third_party/widevine/cdm:buildflags",
   ]
+
+  if (enable_extensions) {
+    public_deps += [ "//components/services/app_service/public/mojom" ]
+  }
 
   if (is_android) {
     # This dependency must only be added for Android.
@@ -706,6 +719,7 @@ mojom("mojo_bindings") {
     "chrome_render_frame.mojom",
     "constants.mojom",
     "content_settings_renderer.mojom",
+    "media/webrtc_logging.mojom",
     "navigation_corrector.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",

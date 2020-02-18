@@ -12,7 +12,10 @@ use warnings;
 
 # mro.pm versions < 1.00 reserved for MRO::Compat
 #  for partial back-compat to 5.[68].x
-our $VERSION = '1.09';
+our $VERSION = '1.22';
+
+require XSLoader;
+XSLoader::load('mro');
 
 sub import {
     mro::set_mro(scalar(caller), $_[1]) if $_[1];
@@ -36,9 +39,6 @@ sub method {
     goto &$method if defined $method;
     return;
 }
-
-require XSLoader;
-XSLoader::load('mro');
 
 1;
 
@@ -202,10 +202,10 @@ This integer normally starts off at a value of C<1>
 when a package stash is instantiated.  Calling it
 on packages whose stashes do not exist at all will
 return C<0>.  If a package stash is completely
-deleted (not a normal occurence, but it can happen
+deleted (not a normal occurrence, but it can happen
 if someone does something like C<undef %PkgName::>),
 the number will be reset to either C<0> or C<1>,
-depending on how completely package was wiped out.
+depending on how completely the package was wiped out.
 
 =head2 next::method
 
@@ -308,7 +308,7 @@ works (like C<goto &maybe::next::method>);
 
 =over 4
 
-=item L<http://www.webcom.com/haahr/dylan/linearization-oopsla96.html>
+=item L<http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.19.3910&rep=rep1&type=pdf>
 
 =back
 

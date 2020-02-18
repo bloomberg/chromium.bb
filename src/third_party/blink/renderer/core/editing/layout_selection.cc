@@ -910,8 +910,8 @@ void PrintSelectionStatus(std::ostream& ostream, const Node& node) {
   ostream << (void*)&node;
   if (node.IsTextNode())
     ostream << "#text";
-  else if (const Element* element = ToElementOrNull(node))
-    ostream << element->tagName().Utf8().data();
+  else if (const auto* element = DynamicTo<Element>(node))
+    ostream << element->tagName().Utf8();
   LayoutObject* layout_object = node.GetLayoutObject();
   if (!layout_object) {
     ostream << " <null LayoutObject>";

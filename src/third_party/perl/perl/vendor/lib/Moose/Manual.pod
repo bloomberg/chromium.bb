@@ -1,10 +1,11 @@
-package Moose::Manual;
-
+# PODNAME: Moose::Manual
 # ABSTRACT: What is Moose, and how do I use it?
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual - What is Moose, and how do I use it?
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 WHAT IS MOOSE?
 
@@ -105,6 +106,21 @@ This is a I<complete and usable> class definition!
   no Moose;
   __PACKAGE__->meta->make_immutable;
 
+When ready to instantiate your class in an application, use it in the
+"traditional" Perl manner:
+
+  use User;
+
+  my $user = User->new(
+    first_name => 'Example',
+    last_name  => 'User',
+    password   => 'letmein',
+  );
+
+  $user->login('letmein');
+
+  say $user->date_of_last_login;
+
 We'll leave the line-by-line explanation of this code to other
 documentation, but you can see how Moose reduces common OO idioms to
 simple declarative constructs.
@@ -184,6 +200,10 @@ and using them consistently makes everyone's life easier.
 
 Frequently asked questions about Moose.
 
+=item L<Moose::Manual::Resources>
+
+Links to various tutorials, videos, blogs, presentations, interviews, etc...
+
 =item L<Moose::Manual::Contributing>
 
 Interested in hacking on Moose? Read this.
@@ -258,19 +278,57 @@ Nuff Said.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

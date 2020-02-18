@@ -11,11 +11,13 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "content/public/browser/system_connector.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 using metrics::ChromeOSAppListLaunchEventProto;
@@ -74,14 +77,21 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
           profile->GetPath(),
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       list_controller_(list_controller) {
-  mixer_->SetNonAppSearchResultRanker(
-      std::make_unique<SearchResultRanker>(profile));
+  std::unique_ptr<SearchResultRanker> ranker =
+      std::make_unique<SearchResultRanker>(
+          profile,
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS),
+          content::GetSystemConnector());
+  ranker->InitializeRankers();
+  mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
 
 SearchController::~SearchController() {}
 
 void SearchController::Start(const base::string16& query) {
   dispatching_query_ = true;
+  RecordLauncherIssuedSearchQueryLength(query.length());
   for (const auto& provider : providers_)
     provider->Start(query);
 
@@ -191,11 +201,11 @@ int SearchController::GetLastQueryLength() const {
   return last_query_.size();
 }
 
-void SearchController::Train(const std::string& id, RankingItemType type) {
+void SearchController::Train(AppLaunchData&& app_launch_data) {
   if (app_list_features::IsAppListLaunchRecordingEnabled()) {
     ChromeOSAppListLaunchEventProto::LaunchType launch_type;
-    if (type == RankingItemType::kApp ||
-        type == RankingItemType::kArcAppShortcut) {
+    if (app_launch_data.ranking_item_type == RankingItemType::kApp ||
+        app_launch_data.ranking_item_type == RankingItemType::kArcAppShortcut) {
       launch_type = ChromeOSAppListLaunchEventProto::APP_TILES;
     } else {
       launch_type = ChromeOSAppListLaunchEventProto::RESULTS_LIST;
@@ -203,21 +213,24 @@ void SearchController::Train(const std::string& id, RankingItemType type) {
 
     // TODO(951287): Record the last-used domain.
     AppListLaunchRecorder::GetInstance()->Record(
-        {launch_type, NormalizeId(id), base::UTF16ToUTF8(last_query_),
-         std::string(), last_launched_app_id_});
+        {launch_type, NormalizeId(app_launch_data.id),
+         base::UTF16ToUTF8(last_query_), std::string(), last_launched_app_id_});
 
     // Only record the last launched app if the hashed logging feature flag is
     // enabled, because it is only used by hashed logging.
-    if (type == RankingItemType::kApp) {
-      last_launched_app_id_ = NormalizeId(id);
-    } else if (type == RankingItemType::kArcAppShortcut) {
-      last_launched_app_id_ = RemoveAppShortcutLabel(NormalizeId(id));
+    if (app_launch_data.ranking_item_type == RankingItemType::kApp) {
+      last_launched_app_id_ = NormalizeId(app_launch_data.id);
+    } else if (app_launch_data.ranking_item_type ==
+               RankingItemType::kArcAppShortcut) {
+      last_launched_app_id_ =
+          RemoveAppShortcutLabel(NormalizeId(app_launch_data.id));
     }
   }
 
   for (const auto& provider : providers_)
-    provider->Train(id, type);
-  mixer_->Train(id, type);
+    provider->Train(app_launch_data.id, app_launch_data.ranking_item_type);
+  app_launch_data.query = base::UTF16ToUTF8(last_query_);
+  mixer_->Train(app_launch_data);
 }
 
 }  // namespace app_list

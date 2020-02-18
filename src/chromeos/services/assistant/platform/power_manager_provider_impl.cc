@@ -53,12 +53,11 @@ PowerManagerProviderImpl::AlarmId PowerManagerProviderImpl::AddWakeAlarm(
     uint64_t relative_time_ms,
     uint64_t max_delay_ms,
     assistant_client::Callback0 callback) {
-  DVLOG(1) << __func__ << " ExpirationTime= "
+  const AlarmId id = next_id_++;
+  DVLOG(1) << __func__ << "Add alarm ID " << id << " for "
            << base::Time::Now() +
                   base::TimeDelta::FromMilliseconds(relative_time_ms);
 
-  AlarmId id = next_id_;
-  next_id_++;
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&PowerManagerProviderImpl::AddWakeAlarmOnMainThread,
@@ -110,7 +109,8 @@ void PowerManagerProviderImpl::AddWakeAlarmOnMainThread(
   // Once the timer is created successfully, start the timer and store
   // associated data. The stored |callback| will be called in
   // |OnTimerFiredOnMainThread|.
-  DVLOG(1) << "Starting timer with ID " << id;
+  DVLOG(1) << "Starting timer with ID " << id << " for "
+           << absolute_expiration_time;
   timer->Start(
       absolute_expiration_time,
       base::BindOnce(&PowerManagerProviderImpl::OnTimerFiredOnMainThread,

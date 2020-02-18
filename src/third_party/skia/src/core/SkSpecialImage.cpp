@@ -18,11 +18,11 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
 #include "include/private/GrRecordingContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/image/SkImage_Gpu.h"
 #endif
 
@@ -53,12 +53,16 @@ public:
     virtual sk_sp<GrTextureProxy> onAsTextureProxyRef(GrRecordingContext* context) const = 0;
 #endif
 
+    // This subset is relative to the backing store's coordinate frame, it has already been mapped
+    // from the content rect by the non-virtual makeSubset().
     virtual sk_sp<SkSpecialImage> onMakeSubset(const SkIRect& subset) const = 0;
 
     virtual sk_sp<SkSpecialSurface> onMakeSurface(const SkImageFilter::OutputProperties& outProps,
                                                   const SkISize& size, SkAlphaType at,
                                                   const SkSurfaceProps* = nullptr) const = 0;
 
+    // This subset (when not null) is relative to the backing store's coordinate frame, it has
+    // already been mapped from the content rect by the non-virtual asImage().
     virtual sk_sp<SkImage> onAsImage(const SkIRect* subset) const = 0;
 
     virtual sk_sp<SkSurface> onMakeTightSurface(const SkImageFilter::OutputProperties& outProps,
@@ -165,11 +169,17 @@ sk_sp<SkSurface> SkSpecialImage::makeTightSurface(const SkImageFilter::OutputPro
 }
 
 sk_sp<SkSpecialImage> SkSpecialImage::makeSubset(const SkIRect& subset) const {
-    return as_SIB(this)->onMakeSubset(subset);
+    SkIRect absolute = subset.makeOffset(this->subset().x(), this->subset().y());
+    return as_SIB(this)->onMakeSubset(absolute);
 }
 
 sk_sp<SkImage> SkSpecialImage::asImage(const SkIRect* subset) const {
-    return as_SIB(this)->onAsImage(subset);
+    if (subset) {
+        SkIRect absolute = subset->makeOffset(this->subset().x(), this->subset().y());
+        return as_SIB(this)->onAsImage(&absolute);
+    } else {
+        return as_SIB(this)->onAsImage(nullptr);
+    }
 }
 
 #if defined(SK_DEBUG) || SK_SUPPORT_GPU
@@ -236,8 +246,7 @@ public:
     }
 
     bool onGetROPixels(SkBitmap* bm) const override {
-        *bm = fBitmap;
-        return true;
+        return fBitmap.extractSubset(bm, this->subset());
     }
 
     SkColorSpace* onGetColorSpace() const override {
@@ -265,15 +274,8 @@ public:
     }
 
     sk_sp<SkSpecialImage> onMakeSubset(const SkIRect& subset) const override {
-        SkBitmap subsetBM;
-
-        if (!fBitmap.extractSubset(&subsetBM, subset)) {
-            return nullptr;
-        }
-
-        return SkSpecialImage::MakeFromRaster(SkIRect::MakeWH(subset.width(), subset.height()),
-                                              subsetBM,
-                                              &this->props());
+        // No need to extract subset, onGetROPixels handles that when needed
+        return SkSpecialImage::MakeFromRaster(subset, fBitmap, &this->props());
     }
 
     sk_sp<SkImage> onAsImage(const SkIRect* subset) const override {
@@ -431,13 +433,14 @@ public:
             return false;
         }
         sk_sp<GrSurfaceContext> sContext = fContext->priv().makeWrappedSurfaceContext(
-                fTextureProxy, fColorSpace);
+                fTextureProxy, SkColorTypeToGrColorType(info.colorType()), this->alphaType(),
+                fColorSpace);
         if (!sContext) {
             return false;
         }
 
         if (!sContext->readPixels(info, pmap.writable_addr(), pmap.rowBytes(),
-                                  this->subset().left(), this->subset().top())) {
+                                  {this->subset().left(), this->subset().top()})) {
             return false;
         }
 
@@ -457,13 +460,9 @@ public:
             return nullptr;
         }
 
-        GrBackendFormat format =
-            fContext->priv().caps()->getBackendFormatFromColorType(outProps.colorType());
-
-        return SkSpecialSurface::MakeRenderTarget(
-            fContext, format, size.width(), size.height(),
-            SkColorType2GrPixelConfig(outProps.colorType()), sk_ref_sp(outProps.colorSpace()),
-            props);
+        return SkSpecialSurface::MakeRenderTarget(fContext, size.width(), size.height(),
+                                                  SkColorTypeToGrColorType(outProps.colorType()),
+                                                  sk_ref_sp(outProps.colorSpace()), props);
     }
 
     sk_sp<SkSpecialImage> onMakeSubset(const SkIRect& subset) const override {

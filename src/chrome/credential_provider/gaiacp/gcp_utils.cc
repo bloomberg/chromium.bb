@@ -29,10 +29,12 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
@@ -697,16 +699,50 @@ base::string16 GetSelectedLanguage() {
 }
 
 void SecurelyClearDictionaryValue(base::Optional<base::Value>* value) {
+  SecurelyClearDictionaryValueWithKey(value, kKeyPassword);
+}
+
+void SecurelyClearDictionaryValueWithKey(base::Optional<base::Value>* value,
+                                         const std::string& password_key) {
   if (!value || !(*value) || !((*value)->is_dict()))
     return;
 
-  const std::string* password_value = (*value)->FindStringKey(kKeyPassword);
+  const std::string* password_value = (*value)->FindStringKey(password_key);
   if (password_value) {
-    ::RtlSecureZeroMemory(const_cast<char*>(password_value->data()),
-                          password_value->size());
+    SecurelyClearString(*const_cast<std::string*>(password_value));
   }
 
   (*value).reset();
+}
+
+void SecurelyClearString(base::string16& str) {
+  SecurelyClearBuffer(const_cast<wchar_t*>(str.data()),
+                      str.size() * sizeof(decltype(str[0])));
+}
+
+void SecurelyClearString(std::string& str) {
+  SecurelyClearBuffer(const_cast<char*>(str.data()), str.size());
+}
+
+void SecurelyClearBuffer(void* buffer, size_t length) {
+  if (buffer)
+    ::RtlSecureZeroMemory(buffer, length);
+}
+
+std::string SearchForKeyInStringDictUTF8(
+    const std::string& json_string,
+    const std::initializer_list<base::StringPiece>& path) {
+  DCHECK(path.size() > 0);
+
+  base::Optional<base::Value> json_obj =
+      base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!json_obj || !json_obj->is_dict()) {
+    LOGFN(ERROR) << "base::JSONReader::Read failed to translate to JSON";
+    return std::string();
+  }
+  const std::string* value =
+      json_obj->FindStringPath(base::JoinString(path, "."));
+  return value ? *value : std::string();
 }
 
 base::string16 GetDictString(const base::Value& dict, const char* name) {

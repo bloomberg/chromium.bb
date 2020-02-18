@@ -29,6 +29,8 @@ class ScrollBar;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT BaseScrollBarThumb : public View {
  public:
+  METADATA_HEADER(BaseScrollBarThumb);
+
   explicit BaseScrollBarThumb(ScrollBar* scroll_bar);
   ~BaseScrollBarThumb() override;
 

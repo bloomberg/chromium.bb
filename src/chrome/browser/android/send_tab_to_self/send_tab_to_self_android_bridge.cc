@@ -9,6 +9,8 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/SendTabToSelfAndroidBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/TargetDeviceInfo_jni.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_entry_bridge.h"
 #include "chrome/browser/android/send_tab_to_self/send_tab_to_self_infobar.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,8 +24,6 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/SendTabToSelfAndroidBridge_jni.h"
-#include "jni/TargetDeviceInfo_jni.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -91,13 +91,12 @@ static void JNI_SendTabToSelfAndroidBridge_GetAllTargetDeviceInfos(
   if (!model->IsReady()) {
     return;
   }
-  std::map<std::string, TargetDeviceInfo> all_infos =
-      model->GetTargetDeviceNameToCacheInfoMap();
-  for (std::map<std::string, TargetDeviceInfo>::iterator it = all_infos.begin();
-       it != all_infos.end(); ++it) {
+  std::vector<TargetDeviceInfo> all_infos =
+      model->GetTargetDeviceInfoSortedList();
+  for (auto it = all_infos.begin(); it != all_infos.end(); ++it) {
     Java_SendTabToSelfAndroidBridge_addToTargetDeviceInfoList(
         env, j_device_info_list_obj,
-        CreateJavaTargetDeviceInfo(env, it->first, it->second));
+        CreateJavaTargetDeviceInfo(env, it->device_name, *it));
   }
 }
 

@@ -44,8 +44,6 @@ class DeclarativeNetRequestUpdateAllowedPagesFunction
   bool PreRunValidation(std::string* error) override;
 
  private:
-  void OnAllowedPagesUpdated();
-
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateAllowedPagesFunction);
 };
 
@@ -178,6 +176,40 @@ class DeclarativeNetRequestGetDynamicRulesFunction
       declarative_net_request::ReadJSONRulesResult read_json_result);
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetDynamicRulesFunction);
+};
+
+class DeclarativeNetRequestGetMatchedRulesFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestGetMatchedRulesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getMatchedRules",
+                             DECLARATIVENETREQUEST_GETMATCHEDRULES)
+
+ protected:
+  ~DeclarativeNetRequestGetMatchedRulesFunction() override;
+
+  // ExtensionFunction override:
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetMatchedRulesFunction);
+};
+
+class DeclarativeNetRequestSetActionCountAsBadgeTextFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DeclarativeNetRequestSetActionCountAsBadgeTextFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.setActionCountAsBadgeText",
+                             DECLARATIVENETREQUEST_SETACTIONCOUNTASBADGETEXT)
+
+ protected:
+  ~DeclarativeNetRequestSetActionCountAsBadgeTextFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      DeclarativeNetRequestSetActionCountAsBadgeTextFunction);
 };
 
 }  // namespace extensions

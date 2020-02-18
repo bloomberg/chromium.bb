@@ -35,6 +35,7 @@ enum Event {
   kCheckedStateChanged,    // Implicit
   kChildrenChanged,
   kClicked,
+  kControlsChanged,
   kDocumentSelectionChanged,
   kDocumentTitleChanged,
   kEndOfTest,        // Sentinel value indicating the end of a test
@@ -78,8 +79,9 @@ enum Event {
   kShow,                     // Remove: http://crbug.com/392502
   kStateChanged,             // Native / Automation
   kTextChanged,
-  kWindowActivated,    // Native
-  kWindowDeactivated,  // Native
+  kWindowActivated,             // Native
+  kWindowDeactivated,           // Native
+  kWindowVisibilityChanged,     // Native
   kTextSelectionChanged,
   kTreeChanged,  // Accessibility tree changed. Don't
                  // explicitly fire an accessibility event,
@@ -417,6 +419,19 @@ enum ActionFlags {
   kRequestInlineTextBoxes,
 };
 
+// A list of valid values for the horizontal and vertical scroll alignment
+// arguments in |AXActionData|. These values control where a node is scrolled
+// in the viewport.
+enum ScrollAlignment {
+  kNone,
+  kScrollAlignmentCenter,
+  kScrollAlignmentTop,
+  kScrollAlignmentBottom,
+  kScrollAlignmentLeft,
+  kScrollAlignmentRight,
+  kScrollAlignmentClosestEdge
+};
+
 // A list of valid values for the |AXIntAttribute| |default_action_verb|.
 // These will describe the action that will be performed on a given node when
 // executing the default action, which is a click.
@@ -505,8 +520,10 @@ enum IntAttribute {
   // aria_col* and aria_row* attributes
   kAriaColumnCount,
   kAriaCellColumnIndex,
+  kAriaCellColumnSpan,
   kAriaRowCount,
   kAriaCellRowIndex,
+  kAriaCellRowSpan,
 
   // Table attributes.
   kTableRowCount,
@@ -682,6 +699,10 @@ enum BoolAttribute {
   // Indicates whether this node can be grabbed for drag-and-drop operation.
   // Note: aria-grabbed is deprecated in WAI-ARIA 1.1.
   kGrabbed,
+
+  // Indicates whether this node causes a hard line-break
+  // (e.g. block level elements, or <br>)
+  kIsLineBreakingObject,
 };
 
 enum IntListAttribute {
@@ -851,8 +872,6 @@ enum InvalidState {
   kNone,
   kFalse,
   kTrue,
-  kSpelling,
-  kGrammar,
   kOther,
 };
 

@@ -25,6 +25,8 @@ component("gamepad") {
     "dualshock4_controller_win.h",
     "game_controller_data_fetcher_mac.h",
     "game_controller_data_fetcher_mac.mm",
+    "gamepad_blocklist.cc",
+    "gamepad_blocklist.h",
     "gamepad_consumer.cc",
     "gamepad_consumer.h",
     "gamepad_data_fetcher.cc",
@@ -164,6 +166,7 @@ static_library("test_helpers") {
   public_deps = [
     ":gamepad",
     "//base",
+    "//base/test:test_support",
     "//device/gamepad/public/cpp:shared_with_blink",
     "//third_party/blink/public:blink_headers",
   ]
@@ -174,7 +177,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/device/gamepad/GamepadList.java",
     ]
-    jni_package = "gamepad"
   }
 
   android_library("java") {

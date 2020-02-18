@@ -16,7 +16,6 @@
 #include "include/private/SkMacros.h"
 #include "tools/Registry.h"
 
-class AnimTimer;
 class GrContext;
 class GrRenderTargetContext;
 class SkCanvas;
@@ -144,15 +143,13 @@ namespace skiagm {
             fCanvasIsDeferred = isDeferred;
         }
 
-        bool animate(const AnimTimer&);
-        bool handleKey(SkUnichar uni) {
-            return this->onHandleKey(uni);
-        }
+        bool animate(double /*nanos*/);
+        virtual bool onChar(SkUnichar);
 
         bool getControls(SkMetaData* controls) { return this->onGetControls(controls); }
         void setControls(const SkMetaData& controls) { this->onSetControls(controls); }
 
-        virtual void modifyGrContextOptions(GrContextOptions* options);
+        virtual void modifyGrContextOptions(GrContextOptions*);
 
     protected:
         virtual void onOnceBeforeDraw();
@@ -162,8 +159,7 @@ namespace skiagm {
         virtual SkISize onISize() = 0;
         virtual SkString onShortName() = 0;
 
-        virtual bool onAnimate(const AnimTimer&);
-        virtual bool onHandleKey(SkUnichar uni);
+        virtual bool onAnimate(double /*nanos*/);
         virtual bool onGetControls(SkMetaData*);
         virtual void onSetControls(const SkMetaData&);
 

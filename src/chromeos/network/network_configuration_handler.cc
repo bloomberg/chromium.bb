@@ -403,7 +403,7 @@ void NetworkConfigurationHandler::RemoveConfigurationFromProfile(
     const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
-  if (base::ContainsKey(profile_entry_deleters_, service_path)) {
+  if (base::Contains(profile_entry_deleters_, service_path)) {
     InvokeErrorCallback(service_path, error_callback,
                         "RemoveConfigurationInProgress");
     return;
@@ -528,10 +528,8 @@ void NetworkConfigurationHandler::ConfigurationCompleted(
 
   // |configure_callbacks_| will get triggered when NetworkStateHandler
   // notifies this that a state list update has occurred. |service_path|
-  // is unique per configuration. In the unlikely case that an existing
-  // configuration is reconfigured twice without a NetworkStateHandler update,
-  // (the UI should prevent that) the first callback will not get called.
-  configure_callbacks_[service_path.value()] = callback;
+  // is unique per configuration.
+  configure_callbacks_.insert(std::make_pair(service_path.value(), callback));
 }
 
 void NetworkConfigurationHandler::ProfileEntryDeleterCompleted(

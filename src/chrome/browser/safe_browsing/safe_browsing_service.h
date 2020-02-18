@@ -27,7 +27,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
 #if defined(FULL_SAFE_BROWSING)
@@ -42,16 +41,12 @@ namespace content {
 class DownloadManager;
 }
 
-namespace net {
-class URLRequest;
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 namespace mojom {
 class NetworkContext;
 }
 class SharedURLLoaderFactory;
+class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
 namespace prefs {
@@ -66,16 +61,15 @@ class SafeBrowsingPrivateApiUnitTest;
 
 namespace safe_browsing {
 class PingManager;
+class VerdictCacheManager;
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
-struct ResourceRequestInfo;
 class SafeBrowsingDatabaseManager;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingNetworkContext;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
-class SafeBrowsingURLRequestContextGetter;
 class TriggerManager;
 
 // Construction needs to happen on the main thread.
@@ -127,8 +121,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
     return services_delegate_->GetDownloadService();
   }
 
-  scoped_refptr<net::URLRequestContextGetter> url_request_context();
-
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
   // Called on UI thread.
   network::mojom::NetworkContext* GetNetworkContext();
@@ -136,10 +128,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Flushes above two interfaces to avoid races in tests.
   void FlushNetworkInterfaceForTesting();
-
-  // Called to get a SharedURLLoaderFactory that can be used on the IO thread.
-  scoped_refptr<network::SharedURLLoaderFactory>
-  GetURLLoaderFactoryOnIOThread();
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
@@ -172,10 +160,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Adds |download_manager| to the set monitored by safe browsing.
   void AddDownloadManager(content::DownloadManager* download_manager);
 
-  // Observes resource requests made by the renderer and reports suspicious
-  // activity.
-  void OnResourceRequest(const net::URLRequest* request);
-
   // Type for subscriptions to SafeBrowsing service state.
   typedef base::CallbackList<void(void)>::Subscription StateSubscription;
   typedef base::CallbackList<void(void)>::Subscription ShutdownSubscription;
@@ -191,6 +175,9 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Create the default v4 protocol config struct.
   virtual V4ProtocolConfig GetV4ProtocolConfig() const;
+
+  // Get the cache manager by profile.
+  VerdictCacheManager* GetVerdictCacheManager(Profile* profile) const;
 
  protected:
   // Creates the safe browsing service.  Need to initialize before using.
@@ -228,7 +215,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.
-  void StartOnIOThread();
+  void StartOnIOThread(
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory);
 
   // Called to stop or shutdown operations on the io_thread. This may be called
   // multiple times to stop during the life of the SafeBrowsingService. If
@@ -261,38 +249,17 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // starts or stops the service accordingly.
   void RefreshState();
 
-  // Process the observed resource requests on the UI thread.
-  void ProcessResourceRequest(const ResourceRequestInfo& request);
-
   void CreateTriggerManager();
-
-  // Called on the UI thread to create a URLLoaderFactory interface ptr for
-  // the IO thread.
-  void CreateURLLoaderFactoryForIO(
-      network::mojom::URLLoaderFactoryRequest request);
 
   // Creates a configured NetworkContextParams when the network service is in
   // use.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
 
-  // The SafeBrowsingURLRequestContextGetter used to access
-  // |url_request_context_|. Accessed on UI thread.
-  // This is only valid if the network service is disabled.
-  scoped_refptr<SafeBrowsingURLRequestContextGetter>
-      url_request_context_getter_;
-
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 
-  // If the network service is disabled, this is a wrapper around
-  // |url_request_context_getter_|. Otherwise it's what owns the
-  // URLRequestContext inside the network service. This is used by
+  // This owns the URLRequestContext inside the network service. This is used by
   // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
-
-  // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      shared_url_loader_factory_on_io_;
 
   // Provides phishing and malware statistics. Accessed on UI thread.
   std::unique_ptr<PingManager> ping_manager_;

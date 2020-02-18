@@ -35,8 +35,7 @@ namespace net {
 namespace {
 
 // Callback for TYPE_URL_REQUEST_FILTERS_SET net-internals event.
-base::Value SourceStreamSetCallback(SourceStream* source_stream,
-                                    NetLogCaptureMode /* capture_mode */) {
+base::Value SourceStreamSetParams(SourceStream* source_stream) {
   base::Value event_params(base::Value::Type::DICTIONARY);
   event_params.SetStringKey("filters", source_stream->Description());
   return event_params;
@@ -87,9 +86,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       expected_content_size_(-1),
       network_delegate_(network_delegate),
       last_notified_total_received_bytes_(0),
-      last_notified_total_sent_bytes_(0),
-      weak_factory_(this) {
-}
+      last_notified_total_sent_bytes_(0) {}
 
 URLRequestJob::~URLRequestJob() {
 }
@@ -433,6 +430,22 @@ void URLRequestJob::NotifyHeadersComplete() {
     }
   }
 
+  NotifyFinalHeadersReceived();
+  // |this| may be destroyed at this point.
+}
+
+void URLRequestJob::NotifyFinalHeadersReceived() {
+  DCHECK(!NeedsAuth() || !GetAuthChallengeInfo());
+
+  if (has_handled_response_)
+    return;
+
+  // While the request's status is normally updated in NotifyHeadersComplete(),
+  // URLRequestHttpJob::CancelAuth() posts a task to invoke this method
+  // directly, which bypasses that logic.
+  if (request_->status().is_io_pending())
+    request_->set_status(URLRequestStatus());
+
   has_handled_response_ = true;
   if (request_->status().is_success()) {
     DCHECK(!source_stream_);
@@ -457,13 +470,11 @@ void URLRequestJob::NotifyHeadersComplete() {
     } else {
       request_->net_log().AddEvent(
           NetLogEventType::URL_REQUEST_FILTERS_SET,
-          base::Bind(&SourceStreamSetCallback,
-                     base::Unretained(source_stream_.get())));
+          [&] { return SourceStreamSetParams(source_stream_.get()); });
     }
   }
 
   request_->NotifyResponseStarted(URLRequestStatus());
-
   // |this| may be destroyed at this point.
 }
 
@@ -710,10 +721,10 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
   if (request_->context()->network_quality_estimator()) {
     if (prefilter_bytes_read() == bytes_read) {
       request_->context()->network_quality_estimator()->NotifyHeadersReceived(
-          *request_);
+          *request_, prefilter_bytes_read());
     } else {
       request_->context()->network_quality_estimator()->NotifyBytesRead(
-          *request_);
+          *request_, prefilter_bytes_read());
     }
   }
 

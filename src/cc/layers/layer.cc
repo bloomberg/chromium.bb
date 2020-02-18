@@ -23,8 +23,8 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
-#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
@@ -71,7 +71,8 @@ Layer::Inputs::Inputs(int layer_id)
       has_will_change_transform_hint(false),
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
-      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto) {}
+      overscroll_behavior(OverscrollBehavior::kOverscrollBehaviorTypeAuto),
+      mirror_count(0) {}
 
 Layer::Inputs::~Inputs() = default;
 
@@ -101,6 +102,7 @@ Layer::Layer()
       may_contain_video_(false),
       needs_show_scrollbars_(false),
       has_transform_node_(false),
+      has_clip_node_(false),
       subtree_has_copy_request_(false),
       safe_opaque_background_color_(0),
       compositing_reasons_(0),
@@ -214,7 +216,7 @@ bool Layer::IsPropertyChangeAllowed() const {
 }
 
 void Layer::CaptureContent(const gfx::Rect& rect,
-                           std::vector<NodeHolder>* content) {}
+                           std::vector<NodeId>* content) {}
 
 sk_sp<SkPicture> Layer::GetPicture() const {
   return nullptr;
@@ -535,10 +537,63 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
   SetSubtreePropertyChanged();
 }
 
+void Layer::SetClipRect(const gfx::Rect& clip_rect) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.clip_rect == clip_rect)
+    return;
+  inputs_.clip_rect = clip_rect;
+
+  // If the clip bounds have been cleared, the property trees needs a rebuild.
+  const bool force_rebuild = clip_rect.IsEmpty() || !has_clip_node_;
+
+  SetSubtreePropertyChanged();
+  if (clip_tree_index() != ClipTree::kInvalidNodeId && !force_rebuild) {
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
+    gfx::RectF effective_clip_rect = EffectiveClipRect();
+    if (ClipNode* node = property_trees->clip_tree.Node(clip_tree_index())) {
+      node->clip = effective_clip_rect;
+      node->clip += offset_to_transform_parent();
+      property_trees->clip_tree.set_needs_update(true);
+    }
+    if (HasRoundedCorner() &&
+        effect_tree_index() != EffectTree::kInvalidNodeId) {
+      if (EffectNode* node =
+              property_trees->effect_tree.Node(effect_tree_index())) {
+        node->rounded_corner_bounds =
+            gfx::RRectF(effective_clip_rect, corner_radii());
+        node->effect_changed = true;
+        property_trees->effect_tree.set_needs_update(true);
+      }
+    }
+  } else {
+    SetPropertyTreesNeedRebuild();
+  }
+  SetNeedsCommit();
+}
+
+gfx::RectF Layer::EffectiveClipRect() {
+  // If this does not have a clip rect set, then the subtree is clipped by
+  // the bounds.
+  const gfx::RectF layer_bounds = gfx::RectF(gfx::SizeF(bounds()));
+  if (clip_rect().IsEmpty())
+    return layer_bounds;
+
+  const gfx::RectF clip_rect_f(clip_rect());
+
+  // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
+  // two to get the effective clip.
+  if (masks_to_bounds() || mask_layer() || filters().HasFilterThatMovesPixels())
+    return gfx::IntersectRects(layer_bounds, clip_rect_f);
+
+  // Clip rect is the only clip effecting the layer.
+  return clip_rect_f;
+}
+
 void Layer::SetMaskLayer(PictureLayer* mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.mask_layer.get() == mask_layer)
     return;
+  DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
   if (inputs_.mask_layer.get()) {
     DCHECK_EQ(this, inputs_.mask_layer->parent());
     inputs_.mask_layer->RemoveFromParent();
@@ -551,15 +606,8 @@ void Layer::SetMaskLayer(PictureLayer* mask_layer) {
     inputs_.mask_layer->RemoveFromParent();
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
-    if (inputs_.filters.IsEmpty() && inputs_.backdrop_filters.IsEmpty() &&
-        (!layer_tree_host_ ||
-         layer_tree_host_->GetSettings().enable_mask_tiling)) {
-      inputs_.mask_layer->SetLayerMaskType(
-          Layer::LayerMaskType::MULTI_TEXTURE_MASK);
-    } else {
-      inputs_.mask_layer->SetLayerMaskType(
-          Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
-    }
+    inputs_.mask_layer->SetLayerMaskType(
+        Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();
@@ -570,10 +618,6 @@ void Layer::SetFilters(const FilterOperations& filters) {
   if (inputs_.filters == filters)
     return;
   inputs_.filters = filters;
-  if (inputs_.mask_layer && !filters.IsEmpty()) {
-    inputs_.mask_layer->SetLayerMaskType(
-        Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
-  }
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
@@ -585,13 +629,6 @@ void Layer::SetBackdropFilters(const FilterOperations& filters) {
     return;
   inputs_.backdrop_filters = filters;
 
-  // We will not set the mask type to MULTI_TEXTURE_MASK if the mask layer's
-  // filters are removed, because we do not want to reraster if the filters are
-  // being animated.
-  if (inputs_.mask_layer && !filters.IsEmpty()) {
-    inputs_.mask_layer->SetLayerMaskType(
-        Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
-  }
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
@@ -627,7 +664,17 @@ void Layer::SetRoundedCorner(const gfx::RoundedCornersF& corner_radii) {
   inputs_.corner_radii = corner_radii;
   SetSubtreePropertyChanged();
   SetNeedsCommit();
-  SetPropertyTreesNeedRebuild();
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  EffectNode* node = nullptr;
+  if (effect_tree_index() != EffectTree::kInvalidNodeId &&
+      (node = property_trees->effect_tree.Node(effect_tree_index()))) {
+    node->rounded_corner_bounds =
+        gfx::RRectF(EffectiveClipRect(), corner_radii);
+    node->effect_changed = true;
+    property_trees->effect_tree.set_needs_update(true);
+  } else {
+    SetPropertyTreesNeedRebuild();
+  }
 }
 
 void Layer::SetIsFastRoundedCorner(bool enable) {
@@ -1140,6 +1187,23 @@ void Layer::SetCacheRenderSurface(bool cache) {
   SetNeedsCommit();
 }
 
+RenderSurfaceReason Layer::GetRenderSurfaceReason() const {
+  if (!layer_tree_host_)
+    return RenderSurfaceReason::kNone;
+  PropertyTrees* property_trees = layer_tree_host_->property_trees();
+  DCHECK(!property_trees->needs_rebuild);
+  EffectNode* effect_node =
+      property_trees->effect_tree.Node(this->effect_tree_index());
+
+  // Effect node can also be the effect node of an ancestor layer.
+  // Check if this effect node was created for this layer specifically.
+  if (!effect_node ||
+      (parent_ && this->effect_tree_index() == parent_->effect_tree_index())) {
+    return RenderSurfaceReason::kNone;
+  }
+  return effect_node->render_surface_reason;
+}
+
 void Layer::SetForceRenderSurfaceForTesting(bool force) {
   DCHECK(IsPropertyChangeAllowed());
   if (force_render_surface_for_testing_ == force)
@@ -1244,6 +1308,7 @@ void Layer::SetOffsetToTransformParent(gfx::Vector2dF offset) {
     return;
   offset_to_transform_parent_ = offset;
   SetNeedsPushProperties();
+  SetSubtreePropertyChanged();
 }
 
 void Layer::InvalidatePropertyTreesIndices() {
@@ -1458,6 +1523,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
   layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
   layer->SetTouchActionRegion(inputs_.touch_action_region);
+  layer->SetMirrorCount(inputs_.mirror_count);
   // TODO(sunxd): Pass the correct region for wheel event handlers, see
   // https://crbug.com/841364.
   EventListenerProperties mouse_wheel_props =
@@ -1649,6 +1715,27 @@ void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
   // it flattens transforms.
   SetSubtreePropertyChanged();
   SetNeedsCommit();
+}
+
+void Layer::IncrementMirrorCount() {
+  SetMirrorCount(mirror_count() + 1);
+}
+
+void Layer::DecrementMirrorCount() {
+  SetMirrorCount(mirror_count() - 1);
+}
+
+void Layer::SetMirrorCount(int mirror_count) {
+  if (inputs_.mirror_count == mirror_count)
+    return;
+
+  DCHECK_LE(0, mirror_count);
+  bool was_mirrored = inputs_.mirror_count > 0;
+  inputs_.mirror_count = mirror_count;
+  bool is_mirrored = inputs_.mirror_count > 0;
+  if (was_mirrored != is_mirrored)
+    SetPropertyTreesNeedRebuild();
+  SetNeedsPushProperties();
 }
 
 ElementListType Layer::GetElementTypeForAnimation() const {

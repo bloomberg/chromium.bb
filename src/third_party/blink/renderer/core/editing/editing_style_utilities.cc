@@ -118,7 +118,7 @@ EditingStyle* EditingStyleUtilities::CreateWrappingStyleForSerialization(
       break;
     if (node.IsStyledElement() && !IsMailHTMLBlockquoteElement(&node)) {
       wrapping_style->MergeInlineAndImplicitStyleOfElement(
-          ToElement(&node), EditingStyle::kDoNotOverrideValues,
+          To<Element>(&node), EditingStyle::kDoNotOverrideValues,
           EditingStyle::kEditingPropertiesInEffect);
     }
   }
@@ -232,7 +232,7 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
         MakeGarbageCollected<CSSComputedStyleDeclaration>(ancestor);
     if (!HasTransparentBackgroundColor(ancestor_style)) {
       return ancestor_style->GetPropertyCSSValue(
-          GetCSSPropertyBackgroundColor());
+          CSSPropertyID::kBackgroundColor);
     }
   }
   return nullptr;

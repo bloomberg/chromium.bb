@@ -56,7 +56,7 @@ class CORE_EXPORT ScriptLoader final
  public:
   ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
   ~ScriptLoader() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }
 
   enum LegacyTypeSupport {
@@ -78,7 +78,7 @@ class CORE_EXPORT ScriptLoader final
 
   static bool BlockForNoModule(mojom::ScriptType, bool nomodule);
 
-  static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
+  static network::mojom::CredentialsMode ModuleScriptCredentialsMode(
       CrossOriginAttributeValue);
 
   // https://html.spec.whatwg.org/C/#prepare-a-script
@@ -96,6 +96,7 @@ class CORE_EXPORT ScriptLoader final
   bool WillExecuteWhenDocumentFinishedParsing() const {
     return will_execute_when_document_finished_parsing_;
   }
+  bool IsForceDeferred() const { return force_deferred_; }
   bool IsParserInserted() const { return parser_inserted_; }
   bool AlreadyStarted() const { return already_started_; }
   bool IsNonBlocking() const { return non_blocking_; }
@@ -145,33 +146,27 @@ class CORE_EXPORT ScriptLoader final
   // https://html.spec.whatwg.org/C/#script-processing-model
   // "A script element has several associated pieces of state.":
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#already-started">
-  // ... Initially, script elements must have this flag unset ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#already-started">... Initially,
+  // script elements must have this flag unset ...</spec>
   bool already_started_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#parser-inserted">
-  // ... Initially, script elements must have this flag unset. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... Initially,
+  // script elements must have this flag unset. ...</spec>
   bool parser_inserted_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#non-blocking">
-  // ... Initially, script elements must have this flag set. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... Initially,
+  // script elements must have this flag set. ...</spec>
   bool non_blocking_ = true;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
+  // <spec href="https://html.spec.whatwg.org/C/#ready-to-be-parser-executed">
   // ... Initially, script elements must have this flag unset ...</spec>
   bool ready_to_be_parser_executed_ = false;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#concept-script-type">
-  // ... It is determined when the script is prepared, ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-type">... It is
+  // determined when the script is prepared, ...</spec>
   mojom::ScriptType script_type_ = mojom::ScriptType::kClassic;
 
-  // <spec
-  // href="https://html.spec.whatwg.org/C/#concept-script-external">
+  // <spec href="https://html.spec.whatwg.org/C/#concept-script-external">
   // ... It is determined when the script is prepared, ...</spec>
   bool is_external_script_ = false;
 
@@ -179,6 +174,9 @@ class CORE_EXPORT ScriptLoader final
   bool will_be_parser_executed_;
 
   bool will_execute_when_document_finished_parsing_;
+
+  // The script will be force deferred (https://crbug.com/976061).
+  bool force_deferred_;
 
   // A PendingScript is first created in PrepareScript() and stored in
   // |prepared_pending_script_|.

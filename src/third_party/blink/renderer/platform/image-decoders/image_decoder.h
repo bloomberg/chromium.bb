@@ -214,7 +214,7 @@ class PLATFORM_EXPORT ImageDecoder {
   bool IsDecodedSizeAvailable() const { return !failed_ && size_available_; }
 
   virtual IntSize Size() const { return size_; }
-  virtual std::vector<SkISize> GetSupportedDecodeSizes() const { return {}; }
+  virtual Vector<SkISize> GetSupportedDecodeSizes() const { return {}; }
 
   // Decoders which downsample images should override this method to
   // return the actual decoded size.
@@ -278,7 +278,9 @@ class PLATFORM_EXPORT ImageDecoder {
 
   // Duration for displaying a frame. This method is only used by animated
   // images.
-  virtual TimeDelta FrameDurationAtIndex(size_t) const { return TimeDelta(); }
+  virtual base::TimeDelta FrameDurationAtIndex(size_t) const {
+    return base::TimeDelta();
+  }
 
   // Number of bytes in the decoded frame. Returns 0 if the decoder doesn't
   // have this frame cached (either because it hasn't been decoded, or because
@@ -501,7 +503,6 @@ class PLATFORM_EXPORT ImageDecoder {
   bool size_available_ = false;
   bool is_all_data_received_ = false;
   bool failed_ = false;
-  bool has_histogrammed_color_space_ = false;
 
   std::unique_ptr<ColorProfile> embedded_color_profile_;
   sk_sp<SkColorSpace> color_space_for_sk_images_;

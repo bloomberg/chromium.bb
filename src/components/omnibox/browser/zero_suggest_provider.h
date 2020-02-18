@@ -45,6 +45,14 @@ class PrefRegistrySyncable;
 // omnibox text and suggestions.
 class ZeroSuggestProvider : public BaseSearchProvider {
  public:
+  // Fixed parameter values corresponding to each possible ZeroSuggestVariant,
+  // which also corresponds to each ZeroSuggestProvider::ResultType.
+  // Public for testing.
+  static const char kNoneVariant[];
+  static const char kRemoteNoUrlVariant[];
+  static const char kRemoteSendUrlVariant[];
+  static const char kMostVisitedVariant[];
+
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
                                      HistoryURLProvider* history_url_provider,
@@ -63,7 +71,15 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Sets |field_trial_triggered_| to false.
   void ResetSession() override;
 
+  // Calling |Start()| will reset the page classification. This is mainly
+  // intended for unit testing TypeOfResultToRun().
+  void SetPageClassificationForTesting(
+      metrics::OmniboxEventProto::PageClassification classification) {
+    current_page_classification_ = classification;
+  }
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
                            TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
@@ -76,12 +92,19 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // at any time.
   enum ResultType {
     NONE,
-    DEFAULT_SERP,          // The default search provider is queried for
-                           // zero-suggest suggestions.
-    DEFAULT_SERP_FOR_URL,  // The default search provider is queried for
-                           // zero-suggest suggestions that are specific
-                           // to the visited URL.
-    MOST_VISITED
+
+    // A remote endpoint (usually the default search provider) is queried for
+    // suggestions. The endpoint is sent the user's authentication state, but
+    // not sent the current URL.
+    REMOTE_NO_URL,
+
+    // A remote endpoint (usually the default search provider) is queried for
+    // suggestions. The endpoint is sent the user's authentication state and
+    // the current URL.
+    REMOTE_SEND_URL,
+
+    // Gets the most visited sites from local history.
+    MOST_VISITED,
   };
 
   // BaseSearchProvider:
@@ -134,11 +157,11 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   void OnMostVisitedUrlsAvailable(size_t request_num,
                                   const history::MostVisitedURLList& urls);
 
-  // When the user is in the contextual omnibox suggestions field trial, we ask
-  // the ContextualSuggestionsService for a loader to retrieve recommendations.
-  // When the loader has started, the contextual suggestion service then calls
+  // When the user is in the remote omnibox suggestions field trial, we ask
+  // the RemoteSuggestionsService for a loader to retrieve recommendations.
+  // When the loader has started, the remote suggestion service then calls
   // back to this function with the |loader| to pass its ownership to |this|.
-  void OnContextualSuggestionsLoaderAvailable(
+  void OnRemoteSuggestionsLoaderAvailable(
       std::unique_ptr<network::SimpleURLLoader> loader);
 
   // Whether zero suggest suggestions are allowed in the given context.
@@ -177,7 +200,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // The type of page the user is viewing (a search results page doing search
   // term replacement, an arbitrary URL, etc.).
-  metrics::OmniboxEventProto::PageClassification current_page_classification_;
+  metrics::OmniboxEventProto::PageClassification current_page_classification_ =
+      metrics::OmniboxEventProto::INVALID_SPEC;
 
   // Copy of OmniboxEditModel::permanent_text_.
   base::string16 permanent_text_;
@@ -195,7 +219,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   history::MostVisitedURLList most_visited_urls_;
 
   // For callbacks that may be run after destruction.
-  base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_;
+  base::WeakPtrFactory<ZeroSuggestProvider> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProvider);
 };

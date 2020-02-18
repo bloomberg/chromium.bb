@@ -52,7 +52,7 @@ void GetAtomIntersection(const std::vector< ::Atom>& desired,
                          const std::vector< ::Atom>& offered,
                          std::vector< ::Atom>* output) {
   for (const auto& desired_atom : desired) {
-    if (base::ContainsValue(offered, desired_atom))
+    if (base::Contains(offered, desired_atom))
       output->push_back(desired_atom);
   }
 }

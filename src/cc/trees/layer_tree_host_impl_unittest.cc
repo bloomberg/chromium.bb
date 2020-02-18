@@ -55,6 +55,8 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
+#include "cc/test/test_paint_worklet_layer_painter.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
@@ -81,7 +83,6 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/fake_skia_output_surface.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -135,6 +136,7 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_redraw_(false),
         did_request_next_frame_(false),
         did_request_prepare_tiles_(false),
+        did_prepare_tiles_(false),
         did_complete_page_scale_animation_(false),
         reduce_memory_result_(true),
         did_request_impl_side_invalidation_(false) {
@@ -159,6 +161,13 @@ class LayerTreeHostImplTest : public testing::Test,
         host_impl_->active_tree()->GetDeviceViewport().size());
     pending_tree->SetDeviceScaleFactor(
         host_impl_->active_tree()->device_scale_factor());
+    // Normally a pending tree will not be fully painted until the commit has
+    // happened and any PaintWorklets have been resolved. However many of the
+    // unittests never actually commit the pending trees that they create, so to
+    // enable them to still treat the tree as painted we forcibly override the
+    // state here. Note that this marks a distinct departure from reality in the
+    // name of easier testing.
+    host_impl_->set_pending_tree_fully_painted_for_testing(true);
   }
 
   void TearDown() override {
@@ -189,6 +198,7 @@ class LayerTreeHostImplTest : public testing::Test,
   void PostAnimationEventsToMainThreadOnImplThread(
       std::unique_ptr<MutatorEvents> events) override {}
   bool IsInsideDraw() override { return false; }
+  bool IsBeginMainFrameExpected() override { return true; }
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                             base::TimeDelta delay) override {
@@ -203,7 +213,7 @@ class LayerTreeHostImplTest : public testing::Test,
             base::TimeTicks::Now()));
   }
   void WillPrepareTiles() override {}
-  void DidPrepareTiles() override {}
+  void DidPrepareTiles() override { did_prepare_tiles_ = true; }
   void DidCompletePageScaleAnimationOnImplThread() override {
     did_complete_page_scale_animation_ = true;
   }
@@ -229,6 +239,8 @@ class LayerTreeHostImplTest : public testing::Test,
       const gfx::PresentationFeedback& feedback) override {}
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
@@ -796,6 +808,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_redraw_;
   bool did_request_next_frame_;
   bool did_request_prepare_tiles_;
+  bool did_prepare_tiles_;
   bool did_complete_page_scale_animation_;
   bool reduce_memory_result_;
   bool did_request_impl_side_invalidation_;
@@ -852,7 +865,8 @@ class TestInputHandlerClient : public InputHandlerClient {
     min_page_scale_factor_ = min_page_scale_factor;
     max_page_scale_factor_ = max_page_scale_factor;
   }
-  void DeliverInputForBeginFrame() override {}
+  void DeliverInputForBeginFrame(const viz::BeginFrameArgs& args) override {}
+  void DeliverInputForHighLatencyMode() override {}
 
   gfx::ScrollOffset last_set_scroll_offset() { return last_set_scroll_offset_; }
 
@@ -1095,14 +1109,11 @@ TEST_F(LayerTreeHostImplTest, ScrollRootCallsCommitAndRedraw) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, 10)));
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_commit_);
 }
@@ -1374,16 +1385,14 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
             status.main_thread_scrolling_reasons);
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
 
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(25, 25)).get(),
                                    InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNonFastScrollableRegion,
             status.main_thread_scrolling_reasons);
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(25, 25), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
 
   // All scroll types outside this region should succeed.
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
@@ -1392,26 +1401,21 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionBasic) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(25, 25), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(25, 25)));
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
 
   status = host_impl_->ScrollBegin(BeginState(gfx::Point(75, 75)).get(),
                                    InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
   host_impl_->ScrollEnd(EndState().get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-      gfx::Point(75, 75), InputHandler::TOUCHSCREEN));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(75, 75)));
 }
 
 TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
@@ -1434,8 +1438,7 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
   EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
             status.main_thread_scrolling_reasons);
 
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(40, 10),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(40, 10)));
   host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 1)).get());
   host_impl_->ScrollEnd(EndState().get());
 
@@ -10410,7 +10413,88 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_FALSE(host_impl_->EvictedUIResourcesExist());
 }
 
-class FrameSinkClient : public viz::TestLayerTreeFrameSinkClient {
+TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
+  LayerTreeSettings msaaSettings = DefaultSettings();
+  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
+
+  // gpu raster, msaa on
+  {
+    bool msaa_is_slow = false;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl_->use_oop_rasterization());
+    EXPECT_TRUE(host_impl_->use_msaa());
+  }
+
+  // gpu raster, msaa off
+  {
+    bool msaa_is_slow = true;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::ON,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl_->use_oop_rasterization());
+    EXPECT_FALSE(host_impl_->use_msaa());
+  }
+
+  // oop raster, msaa on
+  {
+    bool msaa_is_slow = false;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForOopRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl_->use_oop_rasterization());
+    EXPECT_TRUE(host_impl_->use_msaa());
+  }
+
+  // oop raster, msaa off
+  {
+    bool msaa_is_slow = true;
+    EXPECT_TRUE(CreateHostImpl(
+        msaaSettings,
+        FakeLayerTreeFrameSink::Create3dForOopRasterization(
+            msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
+
+    host_impl_->SetHasGpuRasterizationTrigger(true);
+    host_impl_->SetContentHasSlowPaths(true);
+    host_impl_->CommitComplete();
+
+    EXPECT_EQ(GpuRasterizationStatus::ON,
+              host_impl_->gpu_rasterization_status());
+    EXPECT_TRUE(host_impl_->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl_->use_oop_rasterization());
+    EXPECT_FALSE(host_impl_->use_msaa());
+  }
+}
+
+class FrameSinkClient : public TestLayerTreeFrameSinkClient {
  public:
   explicit FrameSinkClient(
       scoped_refptr<viz::ContextProvider> display_context_provider)
@@ -10464,7 +10548,7 @@ TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   constexpr double refresh_rate = 60.0;
   viz::RendererSettings renderer_settings = viz::RendererSettings();
   renderer_settings.use_skia_renderer = renderer_type() == RENDERER_SKIA;
-  auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
+  auto layer_tree_frame_sink = std::make_unique<TestLayerTreeFrameSink>(
       context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
       renderer_settings, base::ThreadTaskRunnerHandle::Get().get(),
       synchronous_composite, disable_display_vsync, refresh_rate);
@@ -11611,16 +11695,14 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
                   ->ScrollBegin(BeginState(gfx::Point()).get(),
                                 InputHandler::TOUCHSCREEN)
                   .thread);
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     // Scroll near the edge of the outer viewport.
     gfx::Vector2d scroll_delta(inner_viewport.width() / 2.f,
                                inner_viewport.height() / 2.f);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), scroll_delta).get());
     inner_expected += scroll_delta;
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(outer_expected, outer_scroll->CurrentScrollOffset());
@@ -11630,13 +11712,11 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
     // and outer viewport layers is perfect.
     host_impl_->ScrollBy(
         UpdateState(gfx::Point(), gfx::ScaleVector2d(scroll_delta, 2)).get());
-    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
     outer_expected += scroll_delta;
     inner_expected += scroll_delta;
     host_impl_->ScrollEnd(EndState().get());
-    EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
-        gfx::Point(), InputHandler::TOUCHSCREEN));
+    EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
     EXPECT_VECTOR_EQ(inner_expected, inner_scroll->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(outer_expected, outer_scroll->CurrentScrollOffset());
@@ -12452,16 +12532,13 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
       host_impl_
           ->ScrollBegin(BeginState(gfx::Point(0, y)).get(), InputHandler::WHEEL)
           .thread);
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y)));
   host_impl_->ScrollBy(
       UpdateState(gfx::Point(0, y), gfx::Vector2d(0, 50)).get());
-  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50),
-                                                      InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50)));
   std::unique_ptr<ScrollState> scroll_state_end = EndState();
   host_impl_->ScrollEnd(scroll_state_end.get());
-  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
-                                                       InputHandler::WHEEL));
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point()));
 
   // The instant scroll should have marked the smooth scroll animation as
   // aborted.
@@ -12851,7 +12928,7 @@ TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   layer->SetDrawsContent(true);
   layer->tilings()->AddTiling(gfx::AxisTransform2d(), raster_source_with_tiles);
   layer->UpdateRasterSource(raster_source_with_tiles, &empty_invalidation,
-                            nullptr);
+                            nullptr, nullptr);
   layer->tilings()->tiling_at(0)->set_resolution(
       TileResolution::HIGH_RESOLUTION);
   layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();
@@ -13447,9 +13524,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   CreateScrollAndContentsLayers(host_impl_->pending_tree(),
                                 gfx::Size(100, 100));
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
-  LOG(ERROR) << "ACTIVATE SYNC TREE";
   host_impl_->ActivateSyncTree();
-  LOG(ERROR) << "DONE ACTIVATE SYNC TREE";
   DrawFrame();
 
   CreatePendingTree();
@@ -13475,9 +13550,7 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
           page_scale_layer->transform_tree_index());
   EXPECT_EQ(pending_tree_node->post_local_scale_factor, 2.f);
 
-  LOG(ERROR) << "2 ACTIVATE SYNC TREE";
   host_impl_->ActivateSyncTree();
-  LOG(ERROR) << "DONE 2 ACTIVATE SYNC TREE";
   host_impl_->active_tree()->UpdateDrawProperties();
   active_tree_node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
@@ -14837,6 +14910,195 @@ TEST_F(LayerTreeHostImplTest, TouchScrollOnAndroidScrollbar) {
   InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
       BeginState(gfx::Point(350, 50)).get(), InputHandler::TOUCHSCREEN);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
+       CommitWithNoPaintWorkletLayerPainter) {
+  ASSERT_FALSE(host_impl_->GetPaintWorkletLayerPainterForTesting());
+  host_impl_->CreatePendingTree();
+
+  // When there is no PaintWorkletLayerPainter registered, commits should finish
+  // immediately and move onto preparing tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithNoPaintWorklets) {
+  host_impl_->SetPaintWorkletLayerPainter(
+      std::make_unique<TestPaintWorkletLayerPainter>());
+  host_impl_->CreatePendingTree();
+
+  // When there are no PaintWorklets in the committed display lists, commits
+  // should finish immediately and move onto preparing tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest, CommitWithDirtyPaintWorklets) {
+  auto painter_owned = std::make_unique<TestPaintWorkletLayerPainter>();
+  TestPaintWorkletLayerPainter* painter = painter_owned.get();
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter_owned));
+
+  // Setup the pending tree with a PictureLayerImpl that will contain
+  // PaintWorklets.
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add a PaintWorkletInput to the PictureLayerImpl.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Since we have dirty PaintWorklets, committing will not cause tile
+  // preparation to happen. Instead, it will be delayed until the callback
+  // passed to the PaintWorkletLayerPainter is called.
+  did_prepare_tiles_ = false;
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(did_prepare_tiles_);
+
+  // Set up a result to have been 'painted'.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  scoped_refptr<PaintWorkletInput> input =
+      root->GetPaintWorkletRecordMap().begin()->first;
+  int worklet_id = input->WorkletId();
+
+  PaintWorkletJob painted_job(worklet_id, input);
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  painted_job.SetOutput(record);
+
+  auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+  painted_job_vector->data.push_back(std::move(painted_job));
+  PaintWorkletJobMap painted_job_map;
+  painted_job_map[worklet_id] = std::move(painted_job_vector);
+
+  // Finally, 'paint' the content. This should unlock tile preparation and
+  // update the PictureLayerImpl's map.
+  std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
+       CommitWithNoDirtyPaintWorklets) {
+  host_impl_->SetPaintWorkletLayerPainter(
+      std::make_unique<TestPaintWorkletLayerPainter>());
+
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add some PaintWorklets.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Pretend that our worklets were already painted.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  root->SetPaintWorkletRecord(root->GetPaintWorkletRecordMap().begin()->first,
+                              sk_make_sp<PaintRecord>());
+
+  // Since there are no dirty PaintWorklets, the commit should immediately
+  // prepare tiles.
+  ASSERT_FALSE(did_prepare_tiles_);
+  host_impl_->CommitComplete();
+  EXPECT_TRUE(did_prepare_tiles_);
+}
+
+class ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest
+    : public CommitToPendingTreeLayerTreeHostImplTest {
+ public:
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override {
+    if (state == Scheduler::PaintWorkletState::IDLE) {
+      // Pretend a force activation happened.
+      host_impl_->ActivateSyncTree();
+      ASSERT_FALSE(host_impl_->pending_tree());
+    }
+  }
+};
+
+TEST_F(ForceActivateAfterPaintWorkletPaintLayerTreeHostImplTest,
+       ForceActivationAfterPaintWorkletsFinishPainting) {
+  auto painter_owned = std::make_unique<TestPaintWorkletLayerPainter>();
+  TestPaintWorkletLayerPainter* painter = painter_owned.get();
+  host_impl_->SetPaintWorkletLayerPainter(std::move(painter_owned));
+
+  // Setup the pending tree with a PictureLayerImpl that will contain
+  // PaintWorklets.
+  host_impl_->CreatePendingTree();
+  std::unique_ptr<PictureLayerImpl> root_owned = PictureLayerImpl::Create(
+      host_impl_->pending_tree(), 1, Layer::LayerMaskType::NOT_MASK);
+  PictureLayerImpl* root = root_owned.get();
+  host_impl_->pending_tree()->SetRootLayerForTesting(std::move(root_owned));
+
+  root->SetBounds(gfx::Size(100, 100));
+  root->test_properties()->force_render_surface = true;
+  root->SetNeedsPushProperties();
+
+  // Add a PaintWorkletInput to the PictureLayerImpl.
+  scoped_refptr<RasterSource> raster_source_with_pws(
+      FakeRasterSource::CreateFilledWithPaintWorklet(root->bounds()));
+  Region empty_invalidation;
+  root->UpdateRasterSource(raster_source_with_pws, &empty_invalidation, nullptr,
+                           nullptr);
+
+  host_impl_->pending_tree()->SetElementIdsForTesting();
+  host_impl_->pending_tree()->BuildPropertyTreesForTesting();
+
+  // Since we have dirty PaintWorklets, committing will not cause tile
+  // preparation to happen. Instead, it will be delayed until the callback
+  // passed to the PaintWorkletLayerPainter is called.
+  did_prepare_tiles_ = false;
+  host_impl_->CommitComplete();
+  EXPECT_FALSE(did_prepare_tiles_);
+
+  // Set up a result to have been 'painted'.
+  ASSERT_EQ(root->GetPaintWorkletRecordMap().size(), 1u);
+  scoped_refptr<PaintWorkletInput> input =
+      root->GetPaintWorkletRecordMap().begin()->first;
+  int worklet_id = input->WorkletId();
+
+  PaintWorkletJob painted_job(worklet_id, input);
+  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
+  painted_job.SetOutput(record);
+
+  auto painted_job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+  painted_job_vector->data.push_back(std::move(painted_job));
+  PaintWorkletJobMap painted_job_map;
+  painted_job_map[worklet_id] = std::move(painted_job_vector);
+
+  // Finally, 'paint' the content. The test class causes a forced activation
+  // during NotifyPaintWorkletStateChange. The PictureLayerImpl should still be
+  // updated, but since the tree was force activated there should be no tile
+  // preparation.
+  std::move(painter->TakeDoneCallback()).Run(std::move(painted_job_map));
+  EXPECT_EQ(root->GetPaintWorkletRecordMap().find(input)->second, record);
+  EXPECT_FALSE(did_prepare_tiles_);
 }
 
 }  // namespace

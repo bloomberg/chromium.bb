@@ -20,7 +20,6 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/common/tracing_sampler_profiler.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -36,6 +35,7 @@
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
@@ -82,6 +82,9 @@ std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
   // needs to be backed by a Foundation-level loop to process NSTimers. See
   // http://crbug.com/306348#c24 for details.
   return base::MessagePump::Create(base::MessagePump::Type::NS_RUNLOOP);
+#elif defined(OS_FUCHSIA)
+  // Allow FIDL APIs on renderer main thread.
+  return base::MessagePump::Create(base::MessagePump::Type::IO);
 #else
   return base::MessagePump::Create(base::MessagePump::Type::DEFAULT);
 #endif
@@ -187,8 +190,7 @@ int RendererMain(const MainFunctionParams& parameters) {
                          std::move(main_thread_scheduler));
 
     // Setup tracing sampler profiler as early as possible.
-    auto tracing_sampler_profiler =
-        tracing::TracingSamplerProfiler::CreateOnMainThread();
+    tracing::TracingSamplerProfiler::CreateForCurrentThread();
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();

@@ -19,10 +19,10 @@ import time
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
+from chromite.utils import memoize
 
 
 _path = os.path.dirname(os.path.realpath(__file__))
@@ -1036,7 +1036,7 @@ class RemoteDevice(object):
 
       new_cmd = []
       flat_vars = ['%s=%s' % (k, cros_build_lib.ShellQuote(v))
-                   for k, v in extra_env.iteritems()]
+                   for k, v in extra_env.items()]
 
       # If the vars are too large for the command line, do it indirectly.
       # We pick 32k somewhat arbitrarily -- the kernel should accept this

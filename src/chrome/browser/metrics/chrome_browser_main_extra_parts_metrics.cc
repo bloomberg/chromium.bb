@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 
+#include <cmath>
 #include <string>
 
 #include "base/bind.h"
@@ -13,6 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -22,12 +24,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/metrics/bluetooth_available_utility.h"
+#include "chrome/browser/metrics/process_memory_metrics_emitter.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/vr/service/xr_runtime_manager.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/screen.h"
@@ -55,8 +58,8 @@
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(USE_OZONE) || defined(USE_X11)
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
-#include "ui/events/devices/input_device_manager.h"
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
 #if defined(OS_WIN)
@@ -66,6 +69,34 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
+void RecordMemoryMetrics();
+
+// Records memory metrics after a delay, with a fixed mean interval but randomly
+// distributed samples using a poisson process.
+void RecordMemoryMetricsAfterDelay() {
+#if defined(OS_ANDROID)
+  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(5);
+#else
+  base::TimeDelta mean_time = base::TimeDelta::FromMinutes(30);
+#endif
+
+  // Compute the actual delay before sampling using a Poisson process.
+  double uniform = base::RandDouble();
+  base::TimeDelta delay = -std::log(uniform) * mean_time;
+
+  base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                                  base::BindOnce(&RecordMemoryMetrics), delay);
+}
+
+// Records memory metrics, and then triggers memory colleciton after a delay.
+void RecordMemoryMetrics() {
+  scoped_refptr<ProcessMemoryMetricsEmitter> emitter(
+      new ProcessMemoryMetricsEmitter);
+  emitter->FetchAndEmitProcessMemoryMetrics();
+
+  RecordMemoryMetricsAfterDelay();
+}
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -194,8 +225,6 @@ void RecordStartupMetrics() {
   UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
                             os_info.Kernel32Version(),
                             base::win::Version::WIN_LAST);
-  UMA_HISTOGRAM_BOOLEAN("Windows.InCompatibilityMode",
-                        os_info.version() != os_info.Kernel32Version());
 
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());
@@ -448,15 +477,15 @@ class AsynchronousTouchEventStateRecorder
 };
 
 AsynchronousTouchEventStateRecorder::AsynchronousTouchEventStateRecorder() {
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 AsynchronousTouchEventStateRecorder::~AsynchronousTouchEventStateRecorder() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
 }
 
 void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   RecordTouchEventState();
 }
 
@@ -487,10 +516,9 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
 // Records the pinned state of the current executable into a histogram. Should
 // be called on a background thread, with low priority, to avoid slowing down
 // startup.
-void RecordIsPinnedToTaskbarHistogram(
-    std::unique_ptr<service_manager::Connector> connector) {
+void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
-      std::move(connector), base::Bind(&OnShellHandlerConnectionError),
+      base::Bind(&OnShellHandlerConnectionError),
       base::Bind(&OnIsPinnedToTaskbarResult));
 }
 
@@ -531,6 +559,8 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
+  if (!base::FeatureList::IsEnabled(kMemoryMetricsOldTiming))
+    RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
   UMA_HISTOGRAM_ENUMERATION("Linux.WindowManager", GetLinuxWindowManager(),
@@ -549,7 +579,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // The touch event state for X11 and Ozone based event sub-systems are based
   // on device scans that happen asynchronously. So we may need to attach an
   // observer to wait until these scans complete.
-  if (ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete()) {
+  if (ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
     RecordTouchEventState();
   } else {
     input_device_event_observer_.reset(
@@ -577,15 +607,11 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // TODO(isherman): The delay below is currently needed to avoid (flakily)
   // breaking some tests, including all of the ProcessMemoryMetricsEmitterTest
   // tests. Figure out why there is a dependency and fix the tests.
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-
   auto background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits(background_task_traits);
 
   background_task_runner->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&RecordIsPinnedToTaskbarHistogram, connector->Clone()),
+      FROM_HERE, base::BindOnce(&RecordIsPinnedToTaskbarHistogram),
       base::TimeDelta::FromSeconds(45));
 
   // TODO(billorr): This should eventually be done on all platforms that support

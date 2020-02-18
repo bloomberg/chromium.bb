@@ -156,7 +156,8 @@ class VideoCaptureTest : public testing::Test,
       base::RunLoop run_loop;
       media_stream_manager_->OpenDevice(
           render_process_id, render_frame_id, requester_id, page_request_id,
-          video_devices[0].device_id, blink::MEDIA_DEVICE_VIDEO_CAPTURE,
+          video_devices[0].device_id,
+          blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
           MediaDeviceSaltAndOrigin{browser_context_.GetMediaDeviceIDSalt(),
                                    browser_context_.GetMediaDeviceIDSalt(),
                                    security_origin},

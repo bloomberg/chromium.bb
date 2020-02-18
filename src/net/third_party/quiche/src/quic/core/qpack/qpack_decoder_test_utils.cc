@@ -14,10 +14,7 @@ namespace quic {
 namespace test {
 
 void NoopEncoderStreamErrorDelegate::OnEncoderStreamError(
-    QuicStringPiece error_message) {}
-
-void NoopDecoderStreamSenderDelegate::WriteDecoderStreamData(
-    QuicStringPiece data) {}
+    QuicStringPiece /*error_message*/) {}
 
 TestHeadersHandler::TestHeadersHandler()
     : decoding_completed_(false), decoding_error_detected_(false) {}
@@ -43,6 +40,7 @@ void TestHeadersHandler::OnDecodingErrorDetected(
   ASSERT_FALSE(decoding_error_detected_);
 
   decoding_error_detected_ = true;
+  error_message_.assign(error_message.data(), error_message.size());
 }
 
 spdy::SpdyHeaderBlock TestHeadersHandler::ReleaseHeaderList() {
@@ -60,16 +58,21 @@ bool TestHeadersHandler::decoding_error_detected() const {
   return decoding_error_detected_;
 }
 
+const std::string& TestHeadersHandler::error_message() const {
+  DCHECK(decoding_error_detected_);
+  return error_message_;
+}
+
 void QpackDecode(
     QpackDecoder::EncoderStreamErrorDelegate* encoder_stream_error_delegate,
-    QpackDecoderStreamSender::Delegate* decoder_stream_sender_delegate,
+    QpackStreamSenderDelegate* decoder_stream_sender_delegate,
     QpackProgressiveDecoder::HeadersHandlerInterface* handler,
     const FragmentSizeGenerator& fragment_size_generator,
     QuicStringPiece data) {
   QpackDecoder decoder(encoder_stream_error_delegate,
                        decoder_stream_sender_delegate);
   auto progressive_decoder =
-      decoder.DecodeHeaderBlock(/* stream_id = */ 1, handler);
+      decoder.CreateProgressiveDecoder(/* stream_id = */ 1, handler);
   while (!data.empty()) {
     size_t fragment_size = std::min(fragment_size_generator(), data.size());
     progressive_decoder->Decode(data.substr(0, fragment_size));

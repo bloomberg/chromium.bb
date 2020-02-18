@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -53,13 +54,24 @@ struct PaymentRequestOptions {
   bool request_payer_phone = false;
   bool request_shipping = false;
   bool request_payment_method = false;
-  bool request_terms_and_conditions = true;
+
+  bool require_billing_postal_code = false;
+  std::string billing_postal_code_missing_text;
+
+  // If empty, terms and conditions should not be shown.
+  std::string accept_terms_and_conditions_text;
+  bool show_terms_as_checkbox = false;
+
   std::vector<std::string> supported_basic_card_networks;
   std::string default_email;
-  std::string confirm_button_text;
+  UserActionProto confirm_action;
+  std::vector<UserActionProto> additional_actions;
   TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;
 
-  base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback;
+  base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
+      confirm_callback;
+  base::OnceCallback<void(int)> additional_actions_callback;
+  base::OnceCallback<void(int)> terms_link_callback;
 };
 
 }  // namespace autofill_assistant

@@ -103,7 +103,8 @@ void RTCDTMFSender::insertDTMF(const String& tones,
     return;
   }
   // Spec: Throw on illegal characters
-  if (strspn(tones.Ascii().data(), "0123456789abcdABCD#*,") != tones.length()) {
+  if (strspn(tones.Ascii().c_str(), "0123456789abcdABCD#*,") !=
+      tones.length()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidCharacterError,
         "Illegal characters in InsertDTMF tone argument");

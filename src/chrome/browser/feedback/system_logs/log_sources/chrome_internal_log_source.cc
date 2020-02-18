@@ -36,11 +36,10 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
 #endif
 
@@ -68,7 +67,6 @@ constexpr char kArcStatusKey[] = "CHROMEOS_ARC_STATUS";
 constexpr char kMonitorInfoKey[] = "monitor_info";
 constexpr char kAccountTypeKey[] = "account_type";
 constexpr char kDemoModeConfigKey[] = "demo_mode_config";
-constexpr char kKioskNextKey[] = "kiosk_next";
 #else
 constexpr char kOsVersionTag[] = "OS VERSION";
 #endif
@@ -199,9 +197,8 @@ void PopulateEntriesAsync(SystemLogsResponse* response) {
 ChromeInternalLogSource::ChromeInternalLogSource()
     : SystemLogsSource("ChromeInternal") {
 #if defined(OS_CHROMEOS)
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &cros_display_config_ptr_);
+  content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                               &cros_display_config_ptr_);
 #endif
 }
 
@@ -248,11 +245,6 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
   response->emplace(kDemoModeConfigKey,
                     chromeos::DemoSession::DemoConfigToString(
                         chromeos::DemoSession::GetDemoConfig()));
-  response->emplace(
-      kKioskNextKey,
-      KioskNextShellClient::Get() && KioskNextShellClient::Get()->has_launched()
-          ? "enabled"
-          : "disabled");
   PopulateLocalStateSettings(response.get());
 
   // Chain asynchronous fetchers: PopulateMonitorInfoAsync, PopulateEntriesAsync

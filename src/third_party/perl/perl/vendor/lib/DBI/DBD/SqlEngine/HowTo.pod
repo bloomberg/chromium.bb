@@ -30,8 +30,15 @@ L<DBI::DBD/CREATING A NEW DRIVER>.
 
 =head1 CREATING DRIVER CLASSES
 
-Do you have an entry in DBI's DBD registry? For this guide, a prefix of
-C<foo_> is assumed.
+Do you have an entry in DBI's DBD registry? DBI::DBD::SqlEngine expect
+having a unique prefix for every driver class in inheritance chain.
+
+It's easy to get a prefix - just drop the DBI team a note
+(L<DBI/GETTING_HELP>). If you want for some reason hide your work, take
+a look at L<Class::Method::Modifiers> how to wrap a private prefix method
+around existing C<driver_prefix>.
+
+For this guide, a prefix of C<foo_> is assumed.
 
 =head2 Sample Skeleton
 
@@ -120,7 +127,7 @@ C<init_valid_attributes> to your db class:
 	};
 	$dbh->{foo_readonly_attrs} = {
 	    foo_version 	=> 1,	# ensure no-one modifies the driver version
-	    foo_valid_attrs	=> 1,	# do not permit to add more valid attributes ...
+	    foo_valid_attrs	=> 1,	# do not permit one to add more valid attributes ...
 	    foo_readonly_attrs	=> 1,	# ... or make the immutable mutable
 	    foo_manager		=> 1,	# manager is set internally only
 	};
@@ -179,6 +186,110 @@ stuff for peace on earth and alike attributes. But in fact, the driver
 still can't do anything. It can do less than nothing - meanwhile it's
 not a stupid storage area anymore.
 
+=head2 User comfort
+
+C<DBI::DBD::SqlEngine> since C<0.05> consolidates all persistent meta data
+of a table into a single structure stored in C<< $dbh->{sql_meta} >>. While
+DBI::DBD::SqlEngine provides only readonly access to this structure,
+modifications are still allowed.
+
+Primarily DBI::DBD::SqlEngine provides access via the setters
+C<new_sql_engine_meta>, C<get_sql_engine_meta>, C<get_single_table_meta>,
+C<set_single_table_meta>, C<set_sql_engine_meta> and C<clear_sql_engine_meta>.
+Those methods are easily accessible by the users via the C<< $dbh->func () >>
+interface provided by DBI. Well, many users don't feel comfortize when calling
+
+    # don't require extension for tables cars
+    $dbh->func ("cars", "f_ext", ".csv", "set_sql_engine_meta");
+
+DBI::DBD::SqlEngine will inject a method into your driver to increase the
+user comfort to allow:
+
+    # don't require extension for tables cars
+    $dbh->foo_set_meta ("cars", "f_ext", ".csv");
+
+Better, but here and there users likes to do:
+
+    # don't require extension for tables cars
+    $dbh->{foo_tables}->{cars}->{f_ext} = ".csv";
+
+This interface is provided when derived DBD's define following in
+C<init_valid_attributes> (re-capture L</Deal with own attributes>):
+
+    sub init_valid_attributes
+    {
+	my $dbh = $_[0];
+
+	$dbh->SUPER::init_valid_attributes ();
+
+	$dbh->{foo_valid_attrs} = {
+	    foo_version 	=> 1,	# contains version of this driver
+	    foo_valid_attrs	=> 1,	# contains the valid attributes of foo drivers
+	    foo_readonly_attrs	=> 1,	# contains immutable attributes of foo drivers
+	    foo_bar		=> 1,	# contains the bar attribute
+	    foo_baz		=> 1,   # contains the baz attribute
+	    foo_manager		=> 1,	# contains the manager of the driver instance
+	    foo_manager_type	=> 1,	# contains the manager class of the driver instance
+	    foo_meta            => 1,   # contains the public interface to modify table meta attributes
+	};
+	$dbh->{foo_readonly_attrs} = {
+	    foo_version 	=> 1,	# ensure no-one modifies the driver version
+	    foo_valid_attrs	=> 1,	# do not permit one to add more valid attributes ...
+	    foo_readonly_attrs	=> 1,	# ... or make the immutable mutable
+	    foo_manager		=> 1,	# manager is set internally only
+	    foo_meta            => 1,   # ensure public interface to modify table meta attributes are immutable
+	};
+
+	$dbh->{foo_meta} = "foo_tables";
+
+	return $dbh;
+    }
+
+This provides a tied hash in C<< $dbh->{foo_tables} >> and a tied hash for
+each table's meta data in C<< $dbh->{foo_tables}->{$table_name} >>.
+Modifications on the table meta attributes are done using the table
+methods:
+
+    sub get_table_meta_attr { ... }
+    sub set_table_meta_attr { ... }
+
+Both methods can adjust the attribute name for compatibility reasons, e.g.
+when former versions of the DBD allowed different names to be used for the
+same flag:
+
+    my %compat_map = (
+		       abc => 'foo_abc',
+		       xyz => 'foo_xyz',
+		     );
+    __PACKAGE__->register_compat_map( \%compat_map );
+
+If any user modification on a meta attribute needs reinitialization of
+the meta structure (in case of C<DBI::DBD::SqlEngine> these are the attributes
+C<f_file>, C<f_dir>, C<f_ext> and C<f_lockfile>), inform DBI::DBD::SqlEngine by
+doing 
+
+    my %reset_on_modify = (
+			    foo_xyz => "foo_bar",
+			    foo_abc => "foo_bar",
+			  );
+    __PACKAGE__->register_reset_on_modify( \%reset_on_modify );
+
+The next access to the table meta data will force DBI::DBD::SqlEngine to re-do the
+entire meta initialization process.
+
+Any further action which needs to be taken can handled in
+C<table_meta_attr_changed>:
+
+    sub table_meta_attr_changed
+    {
+	my ($class, $meta, $attrib, $value) = @_;
+	...
+	$class->SUPER::table_meta_attr_changed ($meta, $attrib, $value);
+    }
+
+This is done before the new value is set in C<$meta>, so the attribute
+changed handler can act depending on the old value.
+
 =head2 Dealing with Tables
 
 Let's put some life into it - it's going to be time for it.
@@ -187,6 +298,10 @@ This is a good point where a quick side step to L<SQL::Statement::Embed>
 will help to shorten the next paragraph. The documentation in
 SQL::Statement::Embed regarding embedding in own DBD's works pretty
 fine with SQL::Statement and DBI::SQL::Nano.
+
+Second look should go to L<DBI::DBD::SqlEngine::Developers> to get a
+picture over the driver part of the table API. Usually there isn't much
+to do for an easy driver.
 
 =head2 Testing
 

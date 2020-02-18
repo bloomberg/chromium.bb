@@ -44,10 +44,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::BrowserThread;
+using content::RenderFrameHostTester;
+using content::WebContents;
 using ::testing::_;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 using ::testing::Eq;
+using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -57,9 +61,6 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
-using content::BrowserThread;
-using content::RenderFrameHostTester;
-using content::WebContents;
 
 namespace {
 
@@ -103,18 +104,6 @@ MATCHER(CallbackIsNull, "") {
 ACTION(QuitUIMessageLoop) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
-}
-
-ACTION_P(InvokeDoneCallback, verdict) {
-  std::unique_ptr<ClientPhishingRequest> request(std::get<1>(args));
-  request->CopyFrom(*verdict);
-  std::get<2>(args).Run(true, std::move(request));
-}
-
-ACTION_P(InvokeMalwareCallback, verdict) {
-  std::unique_ptr<ClientMalwareRequest> request(std::get<1>(args));
-  request->CopyFrom(*verdict);
-  std::get<2>(args).Run(true, std::move(request));
 }
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
@@ -189,13 +178,13 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
 
   MOCK_METHOD3(ExtractFeatures,
                void(const BrowseInfo*,
-                    ClientPhishingRequest*,
-                    const BrowserFeatureExtractor::DoneCallback&));
+                    std::unique_ptr<ClientPhishingRequest>,
+                    BrowserFeatureExtractor::DoneCallback));
 
   MOCK_METHOD3(ExtractMalwareFeatures,
                void(BrowseInfo*,
-                    ClientMalwareRequest*,
-                    const BrowserFeatureExtractor::MalwareDoneCallback&));
+                    std::unique_ptr<ClientMalwareRequest>,
+                    BrowserFeatureExtractor::MalwareDoneCallback));
 };
 
 }  // namespace
@@ -531,7 +520,12 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneNotPhishing) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeDoneCallback(&verdict));
+      .WillOnce(Invoke([&](const BrowseInfo* into,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        request->CopyFrom(verdict);
+        std::move(callback).Run(true, std::move(request));
+      }));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _, _))
@@ -563,7 +557,12 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneDisabled) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeDoneCallback(&verdict));
+      .WillOnce(Invoke([&](const BrowseInfo* info,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        request->CopyFrom(verdict);
+        std::move(callback).Run(true, std::move(request));
+      }));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _, _))
@@ -596,7 +595,12 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneShowInterstitial) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeDoneCallback(&verdict));
+      .WillOnce(Invoke([&](const BrowseInfo* info,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        request->CopyFrom(verdict);
+        std::move(callback).Run(true, std::move(request));
+      }));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _, _))
@@ -647,7 +651,12 @@ TEST_F(ClientSideDetectionHostTest, PhishingDetectionDoneMultiplePings) {
   verdict.set_is_phishing(true);
 
   EXPECT_CALL(*mock_extractor, ExtractFeatures(_, _, _))
-      .WillOnce(InvokeDoneCallback(&verdict));
+      .WillOnce(Invoke([&](const BrowseInfo* info,
+                           std::unique_ptr<ClientPhishingRequest> request,
+                           BrowserFeatureExtractor::DoneCallback callback) {
+        request->CopyFrom(verdict);
+        std::move(callback).Run(true, std::move(request));
+      }));
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
                   Pointee(PartiallyEqualVerdict(verdict)), _, _))
@@ -894,7 +903,12 @@ TEST_F(ClientSideDetectionHostTest,
 
   ClientSideDetectionService::ClientReportMalwareRequestCallback cb;
   EXPECT_CALL(*mock_extractor, ExtractMalwareFeatures(_, _, _))
-      .WillOnce(InvokeMalwareCallback(&malware_verdict));
+      .WillOnce(Invoke(
+          [&](BrowseInfo* info, std::unique_ptr<ClientMalwareRequest> request,
+              BrowserFeatureExtractor::MalwareDoneCallback callback) {
+            request->CopyFrom(malware_verdict);
+            std::move(callback).Run(true, std::move(request));
+          }));
   EXPECT_CALL(*csd_service_,
               SendClientReportMalwareRequest(
                   Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))

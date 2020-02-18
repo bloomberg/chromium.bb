@@ -10,6 +10,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/task/thread_pool/pooled_parallel_task_runner.h"
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,6 +18,64 @@
 namespace base {
 namespace internal {
 namespace test {
+
+namespace {
+
+// A task runner that posts each task as a MockJobTaskSource that runs a single
+// task. This is used to run ThreadGroupTests which require a TaskRunner with
+// kJob execution mode. Delayed tasks are not supported.
+class MockJobTaskRunner : public TaskRunner {
+ public:
+  MockJobTaskRunner(const TaskTraits& traits,
+                    PooledTaskRunnerDelegate* pooled_task_runner_delegate)
+      : traits_(traits),
+        pooled_task_runner_delegate_(pooled_task_runner_delegate) {}
+
+  // TaskRunner:
+  bool PostDelayedTask(const Location& from_here,
+                       OnceClosure closure,
+                       TimeDelta delay) override;
+
+  bool RunsTasksInCurrentSequence() const override;
+
+ private:
+  ~MockJobTaskRunner() override;
+
+  const TaskTraits traits_;
+  PooledTaskRunnerDelegate* const pooled_task_runner_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockJobTaskRunner);
+};
+
+bool MockJobTaskRunner::PostDelayedTask(const Location& from_here,
+                                        OnceClosure closure,
+                                        TimeDelta delay) {
+  DCHECK_EQ(delay, TimeDelta());  // Jobs doesn't support delayed tasks.
+
+  if (!PooledTaskRunnerDelegate::Exists())
+    return false;
+
+  scoped_refptr<MockJobTaskSource> task_source =
+      MakeRefCounted<test::MockJobTaskSource>(from_here, std::move(closure),
+                                              traits_);
+  return pooled_task_runner_delegate_->EnqueueJobTaskSource(
+      std::move(task_source));
+}
+
+bool MockJobTaskRunner::RunsTasksInCurrentSequence() const {
+  return pooled_task_runner_delegate_->IsRunningPoolWithTraits(traits_);
+}
+
+MockJobTaskRunner::~MockJobTaskRunner() = default;
+
+scoped_refptr<TaskRunner> CreateJobTaskRunner(
+    const TaskTraits& traits,
+    MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
+  return MakeRefCounted<MockJobTaskRunner>(traits,
+                                           mock_pooled_task_runner_delegate);
+}
+
+}  // namespace
 
 MockWorkerThreadObserver::MockWorkerThreadObserver()
     : on_main_exit_cv_(lock_.CreateConditionVariable()) {}
@@ -62,11 +121,12 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
     const TaskTraits& traits) {
   switch (execution_mode) {
     case TaskSourceExecutionMode::kParallel:
-      return CreateTaskRunnerWithTraits(traits,
-                                        mock_pooled_task_runner_delegate);
+      return CreateTaskRunner(traits, mock_pooled_task_runner_delegate);
     case TaskSourceExecutionMode::kSequenced:
-      return CreateSequencedTaskRunnerWithTraits(
-          traits, mock_pooled_task_runner_delegate);
+      return CreateSequencedTaskRunner(traits,
+                                       mock_pooled_task_runner_delegate);
+    case TaskSourceExecutionMode::kJob:
+      return CreateJobTaskRunner(traits, mock_pooled_task_runner_delegate);
     default:
       // Fall through.
       break;
@@ -75,14 +135,14 @@ scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
   return nullptr;
 }
 
-scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
+scoped_refptr<TaskRunner> CreateTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
   return MakeRefCounted<PooledParallelTaskRunner>(
       traits, mock_pooled_task_runner_delegate);
 }
 
-scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
+scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunner(
     const TaskTraits& traits,
     MockPooledTaskRunnerDelegate* mock_pooled_task_runner_delegate) {
   return MakeRefCounted<PooledSequencedTaskRunner>(
@@ -157,6 +217,23 @@ void MockPooledTaskRunnerDelegate::PostTaskWithSequenceNow(
   }
 }
 
+bool MockPooledTaskRunnerDelegate::EnqueueJobTaskSource(
+    scoped_refptr<JobTaskSource> task_source) {
+  // |thread_group_| must be initialized with SetThreadGroup() before
+  // proceeding.
+  DCHECK(thread_group_);
+  DCHECK(task_source);
+
+  auto registered_task_source =
+      task_tracker_->WillQueueTaskSource(std::move(task_source));
+  if (!registered_task_source)
+    return false;
+  auto transaction = registered_task_source->BeginTransaction();
+  thread_group_->PushTaskSourceAndWakeUpWorkers(
+      {std::move(registered_task_source), std::move(transaction)});
+  return true;
+}
+
 bool MockPooledTaskRunnerDelegate::IsRunningPoolWithTraits(
     const TaskTraits& traits) const {
   // |thread_group_| must be initialized with SetThreadGroup() before
@@ -179,11 +256,54 @@ void MockPooledTaskRunnerDelegate::SetThreadGroup(ThreadGroup* thread_group) {
   thread_group_ = thread_group;
 }
 
+MockJobTaskSource::~MockJobTaskSource() = default;
+
+MockJobTaskSource::MockJobTaskSource(const Location& from_here,
+                                     base::RepeatingClosure worker_task,
+                                     const TaskTraits& traits,
+                                     size_t num_tasks_to_run,
+                                     size_t max_concurrency)
+    : JobTaskSource(FROM_HERE,
+                    BindLambdaForTesting([this, worker_task]() {
+                      worker_task.Run();
+                      size_t before = remaining_num_tasks_to_run_.fetch_sub(1);
+                      DCHECK_GT(before, 0U);
+                    }),
+                    traits),
+      remaining_num_tasks_to_run_(num_tasks_to_run),
+      max_concurrency_(max_concurrency) {}
+
+MockJobTaskSource::MockJobTaskSource(const Location& from_here,
+                                     base::OnceClosure worker_task,
+                                     const TaskTraits& traits)
+    : JobTaskSource(FROM_HERE,
+                    base::BindRepeating(
+                        [](MockJobTaskSource* self,
+                           base::OnceClosure&& worker_task) mutable {
+                          std::move(worker_task).Run();
+                          size_t before =
+                              self->remaining_num_tasks_to_run_.fetch_sub(1);
+                          DCHECK_EQ(before, 1U);
+                        },
+                        Unretained(this),
+                        base::Passed(std::move(worker_task))),
+                    traits),
+      remaining_num_tasks_to_run_(1),
+      max_concurrency_(1) {}
+
+size_t MockJobTaskSource::GetMaxConcurrency() const {
+  return std::min(remaining_num_tasks_to_run_.load(), max_concurrency_);
+}
+
 RegisteredTaskSource QueueAndRunTaskSource(
     TaskTracker* task_tracker,
     scoped_refptr<TaskSource> task_source) {
+  auto registered_task_source =
+      task_tracker->WillQueueTaskSource(std::move(task_source));
+  EXPECT_TRUE(registered_task_source);
+  auto run_intent = registered_task_source->WillRunTask();
   return task_tracker->RunAndPopNextTask(
-      task_tracker->WillQueueTaskSource(std::move(task_source)));
+      {std::move(registered_task_source), std::move(run_intent)});
 }
 
 void ShutdownTaskTracker(TaskTracker* task_tracker) {

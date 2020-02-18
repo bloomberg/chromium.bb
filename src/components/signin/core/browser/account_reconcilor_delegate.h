@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/multilogin_parameters.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -43,6 +43,13 @@ class AccountReconcilorDelegate {
   // changes to the accounts are made. Defaults to false.
   virtual bool IsAccountConsistencyEnforced() const;
 
+  // Computes inconsistency reason and uploads it to UMA.
+  virtual void MaybeLogInconsistencyReason(
+      const CoreAccountId& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      bool first_execution) const;
+
   // Returns the value to set in the "source" parameter for Gaia API calls.
   virtual gaia::GaiaSource GetGaiaApiSource() const;
 
@@ -57,17 +64,17 @@ class AccountReconcilorDelegate {
   // |will_logout| is true if the reconcilor will perform a logout no matter
   // what is returned by this function.
   // Only used with MergeSession.
-  virtual std::string GetFirstGaiaAccountForReconcile(
-      const std::vector<std::string>& chrome_accounts,
+  virtual CoreAccountId GetFirstGaiaAccountForReconcile(
+      const std::vector<CoreAccountId>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const std::string& primary_account,
+      const CoreAccountId& primary_account,
       bool first_execution,
       bool will_logout) const;
 
   // Returns a pair of mode and accounts to send to Mutilogin endpoint.
   MultiloginParameters CalculateParametersForMultilogin(
-      const std::vector<std::string>& chrome_accounts,
-      const std::string& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const CoreAccountId& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       bool first_execution,
       bool primary_has_error) const;
@@ -88,7 +95,7 @@ class AccountReconcilorDelegate {
   // |OnReconcileFinished| is always called at the end of reconciliation, even
   // when there is an error (except in cases where reconciliation times out
   // before finishing, see |GetReconcileTimeout|).
-  virtual void OnReconcileFinished(const std::string& first_account,
+  virtual void OnReconcileFinished(const CoreAccountId& first_account,
                                    bool reconcile_is_noop) {}
 
   // Returns the desired timeout for account reconciliation. If reconciliation
@@ -125,17 +132,17 @@ class AccountReconcilorDelegate {
   //   Aplhabetical order is used to break ties.
   // Note: the input order of the accounts in |chrome_accounts| does not matter
   // (different orders yield to the same result).
-  std::vector<std::string> ReorderChromeAccountsForReconcile(
-      const std::vector<std::string>& chrome_accounts,
-      const std::string& first_account,
+  std::vector<CoreAccountId> ReorderChromeAccountsForReconcile(
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const CoreAccountId& first_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts) const;
 
  private:
   // Reorders chrome accounts in the order they should appear in cookies with
   // respect to existing cookies.
-  virtual std::vector<std::string> GetChromeAccountsForReconcile(
-      const std::vector<std::string>& chrome_accounts,
-      const std::string& primary_account,
+  virtual std::vector<CoreAccountId> GetChromeAccountsForReconcile(
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const CoreAccountId& primary_account,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const gaia::MultiloginMode mode) const;
 
@@ -143,7 +150,7 @@ class AccountReconcilorDelegate {
   // accounts (e.g. on mobile or on stratup). Default is UPDATE.
   virtual gaia::MultiloginMode CalculateModeForReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts,
-      const std::string primary_account,
+      const CoreAccountId& primary_account,
       bool first_execution,
       bool primary_has_error) const;
 

@@ -21,13 +21,16 @@ namespace blink {
 class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
   FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl,
-                                   cc::ImageDecodeCache* cache = nullptr)
+                                   cc::ImageDecodeCache* cache = nullptr,
+                                   GrContext* gr_context = nullptr)
       : gl_(gl),
         image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
-    GrMockOptions mockOptions;
-    mockOptions.fConfigOptions[kBGRA_8888_GrPixelConfig] =
-        mockOptions.fConfigOptions[kRGBA_8888_GrPixelConfig];
-    gr_context_ = GrContext::MakeMock(&mockOptions);
+    if (gr_context) {
+      gr_context_ = sk_ref_sp<GrContext>(gr_context);
+    } else {
+      GrMockOptions mockOptions;
+      gr_context_ = GrContext::MakeMock(&mockOptions);
+    }
     // enable all gpu features.
     for (unsigned feature = 0; feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES;
          ++feature) {
@@ -66,6 +69,9 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   viz::TestSharedImageInterface* SharedImageInterface() override {
     return &test_shared_image_interface_;
   }
+  void CopyVideoFrame(media::PaintCanvasVideoRenderer* video_render,
+                      media::VideoFrame* video_frame,
+                      cc::PaintCanvas* canvas) override {}
 
  private:
   cc::StubDecodeCache stub_image_decode_cache_;

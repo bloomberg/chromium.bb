@@ -61,7 +61,15 @@ void StubWindow::Minimize() {}
 void StubWindow::Restore() {}
 
 PlatformWindowState StubWindow::GetPlatformWindowState() const {
-  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  return PlatformWindowState::kUnknown;
+}
+
+void StubWindow::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void StubWindow::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void StubWindow::SetCursor(PlatformCursor cursor) {}
@@ -69,10 +77,6 @@ void StubWindow::SetCursor(PlatformCursor cursor) {}
 void StubWindow::MoveCursorTo(const gfx::Point& location) {}
 
 void StubWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
-
-PlatformImeController* StubWindow::GetPlatformImeController() {
-  return nullptr;
-}
 
 void StubWindow::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {}
 

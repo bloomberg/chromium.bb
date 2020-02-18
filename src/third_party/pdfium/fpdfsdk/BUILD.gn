@@ -63,6 +63,7 @@ jumbo_source_set("fpdfsdk") {
     "fpdf_structtree.cpp",
     "fpdf_sysfontinfo.cpp",
     "fpdf_text.cpp",
+    "fpdf_thumbnail.cpp",
     "fpdf_transformpage.cpp",
     "fpdf_view.cpp",
     "ipdfsdk_annothandler.h",
@@ -83,17 +84,16 @@ jumbo_source_set("fpdfsdk") {
     "../core/fpdfapi/render",
     "../core/fpdfdoc",
     "../core/fpdftext",
+    "../core/fxcodec",
     "../core/fxcrt",
     "../core/fxge",
     "../fxjs",
     "formfiller",
-    "formfiller:fontmap",
     "pwl",
   ]
   allow_circular_includes_from = [
     "../fxjs",
     "formfiller",
-    "formfiller:fontmap",
     "pwl",
   ]
   visibility = [ "../*" ]
@@ -129,7 +129,9 @@ pdfium_unittest_source_set("unittests") {
     ":fpdfsdk",
     "../:pdfium_public_headers",
     "../core/fpdfapi",
+    "../core/fpdfapi/page",
     "../core/fpdfapi/parser",
+    "../core/fpdfapi/render",
     "../core/fpdfdoc",
   ]
   pdfium_root_dir = "../"
@@ -154,6 +156,7 @@ pdfium_embeddertest_source_set("embeddertests") {
     "fpdf_structtree_embeddertest.cpp",
     "fpdf_sysfontinfo_embeddertest.cpp",
     "fpdf_text_embeddertest.cpp",
+    "fpdf_thumbnail_embeddertest.cpp",
     "fpdf_transformpage_embeddertest.cpp",
     "fpdf_view_c_api_test.c",
     "fpdf_view_c_api_test.h",

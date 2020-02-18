@@ -4,9 +4,10 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_drag_event_rewriter.h"
 #include "ash/autoclick/autoclick_ring_handler.h"
+#include "ash/autoclick/autoclick_scroll_position_handler.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -14,11 +15,12 @@
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/root_window_finder.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
@@ -35,6 +37,9 @@ namespace {
 // total amount of time of the dwell.
 const float kStartGestureDelayRatio = 1 / 6.0;
 
+// How much distance to travel with each generated scroll event.
+const int kScrollDelta = 10;
+
 bool IsModifierKey(const ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
          key_code == ui::VKEY_CONTROL || key_code == ui::VKEY_LCONTROL ||
@@ -44,6 +49,20 @@ bool IsModifierKey(const ui::KeyboardCode key_code) {
 
 base::TimeDelta CalculateStartGestureDelay(base::TimeDelta total_delay) {
   return total_delay * kStartGestureDelayRatio;
+}
+
+views::Widget::InitParams CreateAutoclickOverlayWidgetParams(
+    aura::Window* target) {
+  aura::Window* root_window = target->GetRootWindow();
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.accept_events = false;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
+  return params;
 }
 
 }  // namespace
@@ -66,6 +85,7 @@ AutoclickController::AutoclickController()
 
 AutoclickController::~AutoclickController() {
   // Clean up UI.
+  HideScrollPosition();
   menu_bubble_controller_ = nullptr;
   CancelAutoclickAction();
 
@@ -106,6 +126,10 @@ void AutoclickController::SetEnabled(bool enabled,
     // is on.
     menu_bubble_controller_ = std::make_unique<AutoclickMenuBubbleController>();
     menu_bubble_controller_->ShowBubble(event_type_, menu_position_);
+    if (event_type_ == AutoclickEventType::kScroll) {
+      InitializeScrollLocation();
+      UpdateScrollPosition(scroll_location_);
+    }
     enabled_ = enabled;
   } else {
     if (show_confirmation_dialog) {
@@ -125,15 +149,20 @@ void AutoclickController::SetEnabled(bool enabled,
           // Callback for if the user cancels the dialog - marks the
           // feature as enabled again in prefs.
           base::BindOnce([]() {
-            AccessibilityController* controller =
-                Shell::Get()->accessibility_controller();
             // If they cancel, ensure autoclick is enabled.
-            controller->SetAutoclickEnabled(true);
+            Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
           }));
       disable_dialog_ = dialog->GetWeakPtr();
     } else {
+      HideScrollPosition();
       Shell::Get()->RemovePreTargetHandler(this);
       menu_bubble_controller_ = nullptr;
+      // Set the click type to left-click. This is the most useful click type
+      // and users will want this type when they re-enable. If users were to
+      // re-enable in scroll, or right-click, they would need to use the bubble
+      // menu to change types.
+      Shell::Get()->accessibility_controller()->SetAutoclickEventType(
+          AutoclickEventType::kLeftClick);
       enabled_ = enabled;
     }
   }
@@ -155,10 +184,18 @@ void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   }
 }
 
-void AutoclickController::SetAutoclickEventType(
-    mojom::AutoclickEventType type) {
+void AutoclickController::SetAutoclickEventType(AutoclickEventType type) {
   if (menu_bubble_controller_)
     menu_bubble_controller_->SetEventType(type);
+
+  if (type == AutoclickEventType::kScroll) {
+    InitializeScrollLocation();
+    UpdateScrollPosition(scroll_location_);
+  } else {
+    over_scroll_button_ = false;
+    HideScrollPosition();
+  }
+
   if (event_type_ == type)
     return;
   CancelAutoclickAction();
@@ -170,10 +207,82 @@ void AutoclickController::SetMovementThreshold(int movement_threshold) {
   UpdateRingSize();
 }
 
-void AutoclickController::SetMenuPosition(
-    mojom::AutoclickMenuPosition menu_position) {
+void AutoclickController::SetMenuPosition(AutoclickMenuPosition menu_position) {
   menu_position_ = menu_position;
   UpdateAutoclickMenuBoundsIfNeeded();
+}
+
+void AutoclickController::DoScrollAction(ScrollPadAction action) {
+  if (action == ScrollPadAction::kScrollClose) {
+    // Set the scroll_location_ back to the default.
+    scroll_location_ = gfx::Point(-kDefaultAutoclickMovementThreshold,
+                                  -kDefaultAutoclickMovementThreshold);
+
+    // Return to left click.
+    event_type_ = AutoclickEventType::kLeftClick;
+    Shell::Get()->accessibility_controller()->SetAutoclickEventType(
+        event_type_);
+    return;
+  }
+  // Otherwise, do a scroll action at the current scroll target point.
+  float scroll_x = 0.0f;
+  float scroll_y = 0.0f;
+  switch (action) {
+    case ScrollPadAction::kScrollUp:
+      scroll_y = kScrollDelta;
+      break;
+    case ScrollPadAction::kScrollDown:
+      scroll_y = -kScrollDelta;
+      break;
+    case ScrollPadAction::kScrollLeft:
+      scroll_x = kScrollDelta;
+      break;
+    case ScrollPadAction::kScrollRight:
+      scroll_x = -kScrollDelta;
+      break;
+    case ScrollPadAction::kScrollClose:
+      NOTREACHED();
+  }
+
+  // Generate a scroll event at the current scroll location.
+  aura::Window* root_window = window_util::GetRootWindowAt(scroll_location_);
+  gfx::Point location_in_pixels(scroll_location_);
+  ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
+  aura::WindowTreeHost* host = root_window->GetHost();
+  host->ConvertDIPToPixels(&location_in_pixels);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::PointF(location_in_pixels),
+                         gfx::PointF(location_in_pixels), ui::EventTimeForNow(),
+                         mouse_event_flags_, scroll_x, scroll_y,
+                         0 /* x_offset_ordinal */, 0 /* y_offset_ordinal */,
+                         2 /* finger_count */);
+  ui::MouseWheelEvent wheel(scroll);
+  ignore_result(host->event_sink()->OnEventFromSource(&wheel));
+}
+
+void AutoclickController::OnEnteredScrollButton() {
+  if (start_gesture_timer_)
+    start_gesture_timer_->Stop();
+  if (autoclick_timer_)
+    autoclick_timer_->Stop();
+  autoclick_ring_handler_->StopGesture();
+  over_scroll_button_ = true;
+}
+
+void AutoclickController::OnExitedScrollButton() {
+  over_scroll_button_ = false;
+  // Reset the anchor_location_ so that gestures could begin immediately.
+  anchor_location_ = gfx::Point(-kDefaultAutoclickMovementThreshold,
+                                -kDefaultAutoclickMovementThreshold);
+}
+
+void AutoclickController::OnAutoclickScrollableBoundsFound(
+    gfx::Rect& bounds_in_screen) {
+  // The very first time scrollable bounds are found, the default first
+  // position of the scrollbar to be next to the menu bubble.
+  if (is_initial_scroll_location_)
+    return;
+  menu_bubble_controller_->SetScrollPosition(bounds_in_screen,
+                                             scroll_location_);
 }
 
 void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
@@ -183,26 +292,25 @@ void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
 
 void AutoclickController::CreateAutoclickRingWidget(
     const gfx::Point& point_in_screen) {
-  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
-  aura::Window* root_window = target->GetRootWindow();
-  widget_.reset(new views::Widget);
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.accept_events = false;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
-  widget_->Init(params);
-  widget_->SetOpacity(1.f);
+  ring_widget_.reset(new views::Widget);
+  ring_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
+  ring_widget_->SetOpacity(1.f);
 }
 
-void AutoclickController::UpdateAutoclickRingWidget(
+void AutoclickController::CreateAutoclickScrollPositionWidget(
+    const gfx::Point& point_in_screen) {
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
+  SetTapDownTarget(target);
+  scroll_position_widget_.reset(new views::Widget);
+  scroll_position_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
+}
+
+void AutoclickController::UpdateAutoclickWidgetPosition(
     views::Widget* widget,
     const gfx::Point& point_in_screen) {
-  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
   aura::Window* root_window = target->GetRootWindow();
   if (widget->GetNativeView()->GetRootWindow() != root_window) {
@@ -215,7 +323,8 @@ void AutoclickController::UpdateAutoclickRingWidget(
 void AutoclickController::DoAutoclickAction() {
   // The gesture_anchor_location_ is the position at which the animation is
   // anchored, and where the click should occur.
-  aura::Window* root_window = wm::GetRootWindowAt(gesture_anchor_location_);
+  aura::Window* root_window =
+      window_util::GetRootWindowAt(gesture_anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   // But if the thing that would be acted upon is an autoclick menu button, do a
@@ -234,8 +343,28 @@ void AutoclickController::DoAutoclickAction() {
 
   // Set the in-progress event type locally so that if the event type is updated
   // in the middle of this event being executed it doesn't change execution.
-  mojom::AutoclickEventType in_progress_event_type = event_type_;
+  AutoclickEventType in_progress_event_type = event_type_;
   RecordUserAction(in_progress_event_type);
+
+  if (in_progress_event_type == AutoclickEventType::kScroll) {
+    // A dwell during a scroll.
+    // Check if the event is over the scroll bubble controller, and if it is,
+    // click on the scroll bubble.
+    if (AutoclickScrollContainsPoint(gesture_anchor_location_)) {
+      menu_bubble_controller_->ClickOnScrollBubble(gesture_anchor_location_,
+                                                   mouse_event_flags_);
+    } else {
+      scroll_location_ = gesture_anchor_location_;
+      is_initial_scroll_location_ = false;
+      UpdateScrollPosition(scroll_location_);
+      Shell::Get()
+          ->accessibility_controller()
+          ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
+      base::RecordAction(
+          base::UserMetricsAction("Accessibility.Autoclick.ChangeScrollPoint"));
+    }
+    return;
+  }
 
   gfx::Point location_in_pixels(gesture_anchor_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
@@ -243,18 +372,17 @@ void AutoclickController::DoAutoclickAction() {
   host->ConvertDIPToPixels(&location_in_pixels);
 
   bool drag_start =
-      in_progress_event_type == mojom::AutoclickEventType::kDragAndDrop &&
+      in_progress_event_type == AutoclickEventType::kDragAndDrop &&
       !drag_event_rewriter_->IsEnabled();
   bool drag_stop = DragInProgress();
 
-  if (in_progress_event_type == mojom::AutoclickEventType::kLeftClick ||
-      in_progress_event_type == mojom::AutoclickEventType::kRightClick ||
-      in_progress_event_type == mojom::AutoclickEventType::kDoubleClick ||
+  if (in_progress_event_type == AutoclickEventType::kLeftClick ||
+      in_progress_event_type == AutoclickEventType::kRightClick ||
+      in_progress_event_type == AutoclickEventType::kDoubleClick ||
       drag_start || drag_stop) {
-    int button =
-        in_progress_event_type == mojom::AutoclickEventType::kRightClick
-            ? ui::EF_RIGHT_MOUSE_BUTTON
-            : ui::EF_LEFT_MOUSE_BUTTON;
+    int button = in_progress_event_type == AutoclickEventType::kRightClick
+                     ? ui::EF_RIGHT_MOUSE_BUTTON
+                     : ui::EF_LEFT_MOUSE_BUTTON;
 
     ui::EventDispatchDetails details;
     if (!drag_stop) {
@@ -281,7 +409,7 @@ void AutoclickController::DoAutoclickAction() {
     details = host->event_sink()->OnEventFromSource(&release_event);
 
     // Now a single click, or half the drag & drop, has been completed.
-    if (in_progress_event_type != mojom::AutoclickEventType::kDoubleClick ||
+    if (in_progress_event_type != AutoclickEventType::kDoubleClick ||
         details.dispatcher_destroyed) {
       OnActionCompleted(in_progress_event_type);
       return;
@@ -306,7 +434,7 @@ void AutoclickController::DoAutoclickAction() {
 }
 
 void AutoclickController::StartAutoclickGesture() {
-  if (event_type_ == mojom::AutoclickEventType::kNoAction) {
+  if (event_type_ == AutoclickEventType::kNoAction) {
     // If we are set to "no action" and the gesture wouldn't occur over
     // the autoclick menu, cancel and return early rather than starting the
     // gesture.
@@ -322,7 +450,7 @@ void AutoclickController::StartAutoclickGesture() {
   anchor_location_ = gesture_anchor_location_;
   autoclick_ring_handler_->StartGesture(
       delay_ - CalculateStartGestureDelay(delay_), anchor_location_,
-      widget_.get());
+      ring_widget_.get());
   autoclick_timer_->Reset();
 }
 
@@ -343,16 +471,15 @@ void AutoclickController::CancelAutoclickAction() {
 }
 
 void AutoclickController::OnActionCompleted(
-    mojom::AutoclickEventType completed_event_type) {
+    AutoclickEventType completed_event_type) {
   // No need to change to left click if the setting is not enabled or the
   // event that just executed already was a left click.
-  if (!revert_to_left_click_ ||
-      event_type_ == mojom::AutoclickEventType::kLeftClick ||
-      completed_event_type == mojom::AutoclickEventType::kLeftClick)
+  if (!revert_to_left_click_ || event_type_ == AutoclickEventType::kLeftClick ||
+      completed_event_type == AutoclickEventType::kLeftClick)
     return;
   // Change the preference, but set it locally so we do not reset any state when
   // AutoclickController::SetAutoclickEventType is called.
-  event_type_ = mojom::AutoclickEventType::kLeftClick;
+  event_type_ = AutoclickEventType::kLeftClick;
   Shell::Get()->accessibility_controller()->SetAutoclickEventType(event_type_);
 }
 
@@ -374,10 +501,10 @@ void AutoclickController::InitClickTimers() {
 }
 
 void AutoclickController::UpdateRingWidget(const gfx::Point& point_in_screen) {
-  if (!widget_) {
+  if (!ring_widget_) {
     CreateAutoclickRingWidget(point_in_screen);
   } else {
-    UpdateAutoclickRingWidget(widget_.get(), point_in_screen);
+    UpdateAutoclickWidgetPosition(ring_widget_.get(), point_in_screen);
   }
 }
 
@@ -385,8 +512,47 @@ void AutoclickController::UpdateRingSize() {
   autoclick_ring_handler_->SetSize(movement_threshold_);
 }
 
+void AutoclickController::InitializeScrollLocation() {
+  // Sets the scroll location to the center of the root window.
+  scroll_location_ = ash::Shell::Get()
+                         ->GetPrimaryRootWindow()
+                         ->GetBoundsInScreen()
+                         .CenterPoint();
+  is_initial_scroll_location_ = true;
+  Shell::Get()
+      ->accessibility_controller()
+      ->RequestAutoclickScrollableBoundsForPoint(scroll_location_);
+}
+
+void AutoclickController::UpdateScrollPosition(
+    const gfx::Point& point_in_screen) {
+  if (!enabled_)
+    return;
+  if (!scroll_position_widget_) {
+    CreateAutoclickScrollPositionWidget(point_in_screen);
+    autoclick_scroll_position_handler_ =
+        std::make_unique<AutoclickScrollPositionHandler>(
+            scroll_location_, scroll_position_widget_.get());
+  } else {
+    UpdateAutoclickWidgetPosition(scroll_position_widget_.get(),
+                                  point_in_screen);
+    autoclick_scroll_position_handler_->SetCenter(
+        scroll_location_, scroll_position_widget_.get());
+  }
+}
+
+void AutoclickController::HideScrollPosition() {
+  // Hide the scroll position UI if it exists.
+  if (autoclick_scroll_position_handler_)
+    autoclick_scroll_position_handler_.reset();
+  if (scroll_position_widget_)
+    scroll_position_widget_.reset();
+
+  // TODO(katie): Clear any Autoclick scroll focus rings here.
+}
+
 bool AutoclickController::DragInProgress() const {
-  return event_type_ == mojom::AutoclickEventType::kDragAndDrop &&
+  return event_type_ == AutoclickEventType::kDragAndDrop &&
          drag_event_rewriter_->IsEnabled();
 }
 
@@ -396,22 +562,28 @@ bool AutoclickController::AutoclickMenuContainsPoint(
          menu_bubble_controller_->ContainsPointInScreen(point);
 }
 
+bool AutoclickController::AutoclickScrollContainsPoint(
+    const gfx::Point& point) const {
+  return menu_bubble_controller_ &&
+         menu_bubble_controller_->ScrollBubbleContainsPointInScreen(point);
+}
+
 void AutoclickController::RecordUserAction(
-    mojom::AutoclickEventType event_type) const {
+    AutoclickEventType event_type) const {
   switch (event_type) {
-    case mojom::AutoclickEventType::kLeftClick:
+    case AutoclickEventType::kLeftClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.LeftClick"));
       return;
-    case mojom::AutoclickEventType::kRightClick:
+    case AutoclickEventType::kRightClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.RightClick"));
       return;
-    case mojom::AutoclickEventType::kDoubleClick:
+    case AutoclickEventType::kDoubleClick:
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DoubleClick"));
       return;
-    case mojom::AutoclickEventType::kDragAndDrop:
+    case AutoclickEventType::kDragAndDrop:
       // Only log drag-and-drop once per drag-and-drop. It takes two "dwells"
       // to complete a full drag-and-drop cycle, which could lead to double
       // the events logged.
@@ -420,8 +592,10 @@ void AutoclickController::RecordUserAction(
       base::RecordAction(
           base::UserMetricsAction("Accessibility.Autoclick.DragAndDrop"));
       return;
-    case mojom::AutoclickEventType::kNoAction:
-      // No action shouldn't have a UserAction, so we return null.
+    case AutoclickEventType::kScroll:
+      // Scroll users actions will be recorded from AutoclickScrollView.
+    case AutoclickEventType::kNoAction:
+      // No action shouldn't have a UserAction, so we return.
       return;
   }
 }
@@ -431,6 +605,8 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
     return;
   last_mouse_location_ = event->target()->GetScreenLocation(*event);
+  if (over_scroll_button_)
+    return;
   if (!(event->flags() & ui::EF_IS_SYNTHESIZED) &&
       (event->type() == ui::ET_MOUSE_MOVED ||
        (event->type() == ui::ET_MOUSE_DRAGGED &&
@@ -464,7 +640,7 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       // center with each mouse move event.
       gesture_anchor_location_ = last_mouse_location_;
       autoclick_ring_handler_->SetGestureCenter(last_mouse_location_,
-                                                widget_.get());
+                                                ring_widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
              event->type() == ui::ET_MOUSE_RELEASED ||
@@ -513,8 +689,8 @@ void AutoclickController::OnCursorVisibilityChanged(bool is_visible) {
   // TODO(katie): Check that the display which is fullscreen is the same as the
   // one containing the bubble, to determine whether to hide the bubble.
   // Currently just checking if the display under the mouse is fullscreen.
-  aura::Window* window = wm::GetWindowForFullscreenModeInRoot(
-      wm::GetRootWindowAt(last_mouse_location_));
+  aura::Window* window = GetWindowForFullscreenModeInRoot(
+      window_util::GetRootWindowAt(last_mouse_location_));
   bool is_fullscreen = window != nullptr;
 
   // Hide the bubble when the cursor is gone in fullscreen mode.

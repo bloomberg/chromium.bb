@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
@@ -97,8 +96,7 @@ bool StringImpl::IsSafeToSendToAnotherThread() const {
 
 #if DCHECK_IS_ON()
 std::string StringImpl::AsciiForDebugging() const {
-  CString ascii = String(IsolatedCopy()->Substring(0, 128)).Ascii();
-  return std::string(ascii.data(), ascii.length());
+  return String(IsolatedCopy()->Substring(0, 128)).Ascii();
 }
 #endif
 
@@ -584,103 +582,6 @@ scoped_refptr<StringImpl> StringImpl::UpperASCII() {
     data16[i] = IsASCIILower(c) ? ToASCIIUpper(c) : c;
   }
   return new_impl;
-}
-
-static inline bool LocaleIdMatchesLang(const AtomicString& locale_id,
-                                       const StringView& lang) {
-  CHECK_GE(lang.length(), 2u);
-  CHECK_LE(lang.length(), 3u);
-  if (!locale_id.Impl() || !locale_id.Impl()->StartsWithIgnoringCase(lang))
-    return false;
-  if (locale_id.Impl()->length() == lang.length())
-    return true;
-  const UChar maybe_delimiter = (*locale_id.Impl())[lang.length()];
-  return maybe_delimiter == '-' || maybe_delimiter == '_' ||
-         maybe_delimiter == '@';
-}
-
-typedef int32_t (*icuCaseConverter)(UChar*,
-                                    int32_t,
-                                    const UChar*,
-                                    int32_t,
-                                    const char*,
-                                    UErrorCode*);
-
-static scoped_refptr<StringImpl> CaseConvert(const UChar* source16,
-                                             wtf_size_t length,
-                                             icuCaseConverter converter,
-                                             const char* locale,
-                                             StringImpl* original_string) {
-  UChar* data16;
-  wtf_size_t target_length = length;
-  scoped_refptr<StringImpl> output =
-      StringImpl::CreateUninitialized(length, data16);
-  do {
-    UErrorCode status = U_ZERO_ERROR;
-    target_length =
-        converter(data16, target_length, source16, length, locale, &status);
-    if (U_SUCCESS(status)) {
-      if (length > 0)
-        return output->Substring(0, target_length);
-      return output;
-    }
-    if (status != U_BUFFER_OVERFLOW_ERROR)
-      return original_string;
-    // Expand the buffer.
-    output = StringImpl::CreateUninitialized(target_length, data16);
-  } while (true);
-}
-
-scoped_refptr<StringImpl> StringImpl::LowerUnicode(
-    const AtomicString& locale_identifier) {
-  // Use the more optimized code path most of the time.
-  // Only Turkic (tr and az) languages and Lithuanian requires
-  // locale-specific lowercasing rules. Even though CLDR has el-Lower,
-  // it's identical to the locale-agnostic lowercasing. Context-dependent
-  // handling of Greek capital sigma is built into the common lowercasing
-  // function in ICU.
-  const char* locale_for_conversion = nullptr;
-  if (LocaleIdMatchesLang(locale_identifier, "tr") ||
-      LocaleIdMatchesLang(locale_identifier, "az"))
-    locale_for_conversion = "tr";
-  else if (LocaleIdMatchesLang(locale_identifier, "lt"))
-    locale_for_conversion = "lt";
-  else
-    return LowerUnicode();
-
-  CHECK_LE(length_, static_cast<wtf_size_t>(numeric_limits<int32_t>::max()));
-  int length = length_;
-
-  scoped_refptr<StringImpl> upconverted = UpconvertedString();
-  const UChar* source16 = upconverted->Characters16();
-  return CaseConvert(source16, length, u_strToLower, locale_for_conversion,
-                     this);
-}
-
-scoped_refptr<StringImpl> StringImpl::UpperUnicode(
-    const AtomicString& locale_identifier) {
-  // Use the more-optimized code path most of the time.
-  // Only Turkic (tr and az) languages, Greek and Lithuanian require
-  // locale-specific uppercasing rules.
-  const char* locale_for_conversion = nullptr;
-  if (LocaleIdMatchesLang(locale_identifier, "tr") ||
-      LocaleIdMatchesLang(locale_identifier, "az"))
-    locale_for_conversion = "tr";
-  else if (LocaleIdMatchesLang(locale_identifier, "el"))
-    locale_for_conversion = "el";
-  else if (LocaleIdMatchesLang(locale_identifier, "lt"))
-    locale_for_conversion = "lt";
-  else
-    return UpperUnicode();
-
-  CHECK_LE(length_, static_cast<wtf_size_t>(numeric_limits<int32_t>::max()));
-  int length = length_;
-
-  scoped_refptr<StringImpl> upconverted = UpconvertedString();
-  const UChar* source16 = upconverted->Characters16();
-
-  return CaseConvert(source16, length, u_strToUpper, locale_for_conversion,
-                     this);
 }
 
 scoped_refptr<StringImpl> StringImpl::Fill(UChar character) {
@@ -1946,10 +1847,10 @@ bool EqualIgnoringNullity(StringImpl* a, StringImpl* b) {
 }
 
 template <typename CharacterType1, typename CharacterType2>
-int CodePointCompareIgnoringASCIICase(wtf_size_t l1,
-                                      wtf_size_t l2,
-                                      const CharacterType1* c1,
-                                      const CharacterType2* c2) {
+int CodeUnitCompareIgnoringASCIICase(wtf_size_t l1,
+                                     wtf_size_t l2,
+                                     const CharacterType1* c1,
+                                     const CharacterType2* c2) {
   const wtf_size_t lmin = l1 < l2 ? l1 : l2;
   wtf_size_t pos = 0;
   while (pos < lmin && ToASCIILower(*c1) == ToASCIILower(*c2)) {
@@ -1967,8 +1868,8 @@ int CodePointCompareIgnoringASCIICase(wtf_size_t l1,
   return (l1 > l2) ? 1 : -1;
 }
 
-int CodePointCompareIgnoringASCIICase(const StringImpl* string1,
-                                      const LChar* string2) {
+int CodeUnitCompareIgnoringASCIICase(const StringImpl* string1,
+                                     const LChar* string2) {
   wtf_size_t length1 = string1 ? string1->length() : 0;
   wtf_size_t length2 = SafeCast<wtf_size_t>(
       string2 ? strlen(reinterpret_cast<const char*>(string2)) : 0);
@@ -1979,28 +1880,12 @@ int CodePointCompareIgnoringASCIICase(const StringImpl* string1,
   if (!string2)
     return length1 > 0 ? 1 : 0;
 
-  if (string1->Is8Bit())
-    return CodePointCompareIgnoringASCIICase(length1, length2,
-                                             string1->Characters8(), string2);
-  return CodePointCompareIgnoringASCIICase(length1, length2,
-                                           string1->Characters16(), string2);
-}
-
-UChar32 ToUpper(UChar32 c, const AtomicString& locale_identifier) {
-  if (!locale_identifier.IsNull()) {
-    if (LocaleIdMatchesLang(locale_identifier, "tr") ||
-        LocaleIdMatchesLang(locale_identifier, "az")) {
-      if (c == 'i')
-        return kLatinCapitalLetterIWithDotAbove;
-      if (c == kLatinSmallLetterDotlessI)
-        return 'I';
-    } else if (LocaleIdMatchesLang(locale_identifier, "lt")) {
-      // TODO(rob.buis) implement upper-casing rules for lt
-      // like in StringImpl::upper(locale).
-    }
+  if (string1->Is8Bit()) {
+    return CodeUnitCompareIgnoringASCIICase(length1, length2,
+                                            string1->Characters8(), string2);
   }
-
-  return unicode::ToUpper(c);
+  return CodeUnitCompareIgnoringASCIICase(length1, length2,
+                                          string1->Characters16(), string2);
 }
 
 }  // namespace WTF

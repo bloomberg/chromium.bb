@@ -82,6 +82,9 @@ vpx_codec_err_t vpx_codec_enc_init_multi_ver(
     res = VPX_CODEC_INCAPABLE;
   else {
     int i;
+#if CONFIG_MULTI_RES_ENCODING
+    int mem_loc_owned = 0;
+#endif
     void *mem_loc = NULL;
 
     if (iface->enc.mr_get_mem_loc == NULL) return VPX_CODEC_INCAPABLE;
@@ -100,12 +103,6 @@ vpx_codec_err_t vpx_codec_enc_init_multi_ver(
           mr_cfg.mr_encoder_id = num_enc - 1 - i;
           mr_cfg.mr_down_sampling_factor.num = dsf->num;
           mr_cfg.mr_down_sampling_factor.den = dsf->den;
-
-          /* Force Key-frame synchronization. Namely, encoder at higher
-           * resolution always use the same frame_type chosen by the
-           * lowest-resolution encoder.
-           */
-          if (mr_cfg.mr_encoder_id) cfg->kf_mode = VPX_KF_DISABLED;
 
           ctx->iface = iface;
           ctx->name = iface->name;
@@ -129,13 +126,17 @@ vpx_codec_err_t vpx_codec_enc_init_multi_ver(
             i--;
           }
 #if CONFIG_MULTI_RES_ENCODING
-          assert(mem_loc);
-          free(((LOWER_RES_FRAME_INFO *)mem_loc)->mb_info);
-          free(mem_loc);
+          if (!mem_loc_owned) {
+            assert(mem_loc);
+            free(((LOWER_RES_FRAME_INFO *)mem_loc)->mb_info);
+            free(mem_loc);
+          }
 #endif
           return SAVE_STATUS(ctx, res);
         }
-
+#if CONFIG_MULTI_RES_ENCODING
+        mem_loc_owned = 1;
+#endif
         ctx++;
         cfg++;
         dsf++;

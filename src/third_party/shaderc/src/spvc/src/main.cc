@@ -18,6 +18,7 @@
 #include <sstream>
 #include <vector>
 
+#include "libshaderc_util/args.h"
 #include "libshaderc_util/string_piece.h"
 #include "shaderc/env.h"
 #include "shaderc/spvc.hpp"
@@ -40,7 +41,9 @@ Options:
   --help                   Display available options.
   -v                       Display compiler version information.
   -o <output file>         '-' means standard output.
-  --validate=<env>         Validate SPIR-V source with given environment
+  --no-validate            Disable validating input and intermediate source.
+                             Validation is by default enabled.
+  --source-env=<env>       Execution environment of the input source.
                              <env> is vulkan1.0 (the default), vulkan1.1,
                              or webgpu0
   --entry=<name>           Specify entry point.
@@ -50,8 +53,19 @@ Options:
                              Default is 450 if not detected from input.
   --msl-version=<ver>      Specify MSL output language version, e.g. 100
                              Default is 10200.
-  --transform-from-webgpu  Attempt to translate the input from WebGPU
-                           compatible SPIR-V before cross compiling.
+  --target-env=<env>       Target intermediate execution environment to
+                           transform the source to before cross-compiling.
+                           Defaults to the value set for source-env.
+                           <env> must be one of the legal values for source-env.
+
+                           If target-env and source-env are the same, then no
+                           transformation is performed.
+                           If there is no defined transformation between source
+                           and target the operation will fail.
+                           Defined transforms:
+                             webgpu0 -> vulkan1.1
+                             vulkan1.1 -> webgpu0
+
 
   The following flags behave as in spirv-cross:
 
@@ -59,61 +73,24 @@ Options:
   --vulkan-semantics
   --separate-shader-objects
   --flatten-ubo
+  --flatten-multidimensional-arrays
+  --es
+  --no-es
+  --glsl-emit-push-constant-as-ubo
+  --msl-swizzle-texture-samples
+  --msl-platform=ios|macos
+  --msl-pad-fragment-output
+  --msl-capture-output
+  --msl-domain-lower-left
+  --msl-argument-buffers
+  --msl-discrete-descriptor-set=<number>
+  --hlsl-enable-compat
   --shader-model=<model>
 )";
 }
 
-// TODO(fjhenigman): factor out with glslc
-// Gets the option argument for the option at *index in argv in a way consistent
-// with clang/gcc. On success, returns true and writes the parsed argument into
-// *option_argument. Returns false if any errors occur. After calling this
-// function, *index will be the index of the last command line argument
-// consumed.
-bool GetOptionArgument(int argc, char** argv, int* index,
-                       const std::string& option,
-                       string_piece* option_argument) {
-  const string_piece arg = argv[*index];
-  assert(arg.starts_with(option));
-  if (arg.size() != option.size()) {
-    *option_argument = arg.substr(option.size());
-    return true;
-  }
-  if (option.back() == '=') {
-    *option_argument = "";
-    return true;
-  }
-  if (++(*index) >= argc)
-    return false;
-  *option_argument = argv[*index];
-  return true;
-
-}
-
-// TODO(fjhenigman): factor out with glslc
-// Parses the given string as a number of the specified type.  Returns true
-// if parsing succeeded, and stores the parsed value via |value|.
-bool ParseUint32(const std::string& str, uint32_t* value) {
-  std::istringstream iss(str);
-
-  iss >> std::setbase(0);
-  iss >> *value;
-
-  // We should have read something.
-  bool ok = !str.empty() && !iss.bad();
-  // It should have been all the text.
-  ok = ok && iss.eof();
-  // It should have been in range.
-  ok = ok && !iss.fail();
-
-  // Work around a bugs in various C++ standard libraries.
-  // Count any negative number as an error, including "-0".
-  ok = ok && (str[0] != '-');
-
-  return ok;
-}
-
 const char kBuildVersion[] = ""
-    // TODO(fjhenigman): #include "build-version.inc"
+    // TODO(bug 653): #include "build-version.inc"
     ;
 
 bool ReadFile(const std::string& path, std::vector<uint32_t>* out) {
@@ -144,8 +121,11 @@ int main(int argc, char** argv) {
   shaderc_spvc::Compiler compiler;
   shaderc_spvc::CompileOptions options;
   std::vector<uint32_t> input;
+  std::vector<uint32_t> msl_discrete_descriptor;
   string_piece output_path;
   string_piece output_language;
+  string_piece source_env = "vulkan1.0";
+  string_piece target_env = "";
 
   for (int i = 1; i < argc; ++i) {
     const string_piece arg = argv[i];
@@ -158,7 +138,8 @@ int main(int argc, char** argv) {
                 << std::endl;
       return 0;
     } else if (arg.starts_with("-o")) {
-      if (!GetOptionArgument(argc, argv, &i, "-o", &output_path)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-o",
+                                           &output_path)) {
         std::cerr
             << "spvc: error: argument to '-o' is missing (expected 1 value)"
             << std::endl;
@@ -166,13 +147,14 @@ int main(int argc, char** argv) {
       }
     } else if (arg.starts_with("--entry=")) {
       string_piece entry_point;
-      GetOptionArgument(argc, argv, &i, "--entry=", &entry_point);
+      shaderc_util::GetOptionArgument(argc, argv, &i, "--entry=", &entry_point);
       options.SetEntryPoint(entry_point.data());
     } else if (arg.starts_with("--glsl-version=")) {
       string_piece version_str;
-      GetOptionArgument(argc, argv, &i, "--glsl-version=", &version_str);
+      shaderc_util::GetOptionArgument(argc, argv, &i,
+                                      "--glsl-version=", &version_str);
       uint32_t version_num;
-      if (!ParseUint32(version_str.str(), &version_num)) {
+      if (!shaderc_util::ParseUint32(version_str.str(), &version_num)) {
         std::cerr << "spvc: error: invalid value '" << version_str
                   << "' in --glsl-version=" << std::endl;
         return 1;
@@ -180,16 +162,18 @@ int main(int argc, char** argv) {
       options.SetGLSLLanguageVersion(version_num);
     } else if (arg.starts_with("--msl-version=")) {
       string_piece version_str;
-      GetOptionArgument(argc, argv, &i, "--msl-version=", &version_str);
+      shaderc_util::GetOptionArgument(argc, argv, &i,
+                                      "--msl-version=", &version_str);
       uint32_t version_num;
-      if (!ParseUint32(version_str.str(), &version_num)) {
+      if (!shaderc_util::ParseUint32(version_str.str(), &version_num)) {
         std::cerr << "spvc: error: invalid value '" << version_str
                   << "' in --msl-version=" << std::endl;
         return 1;
       }
       options.SetMSLLanguageVersion(version_num);
     } else if (arg.starts_with("--language=")) {
-      GetOptionArgument(argc, argv, &i, "--language=", &output_language);
+      shaderc_util::GetOptionArgument(argc, argv, &i,
+                                      "--language=", &output_language);
       if (!(output_language == "glsl" || output_language == "msl" ||
             output_language == "hlsl")) {
         std::cerr << "spvc: error: invalid value '" << output_language
@@ -205,28 +189,65 @@ int main(int argc, char** argv) {
     } else if (arg == "--flatten-ubo") {
       options.SetFlattenUbo(true);
     } else if (arg == "--flatten-multidimensional-arrays") {
-      // TODO(fjhenigman)
+      options.SetFlattenMultidimensionalArrays(true);
     } else if (arg == "--es") {
-      // TODO(fjhenigman)
+      options.SetES(true);
+    } else if (arg == "--no-es") {
+      options.SetES(false);
     } else if (arg == "--hlsl-enable-compat") {
-      // TODO(fjhenigman)
+      options.SetHLSLPointSizeCompat(true);
+      options.SetHLSLPointCoordCompat(true);
     } else if (arg == "--glsl-emit-push-constant-as-ubo") {
-      // TODO(fjhenigman)
+      options.SetGLSLEmitPushConstantAsUBO(true);
+    } else if (arg == "--msl-swizzle-texture-samples") {
+      options.SetMSLSwizzleTextureSamples(true);
+    } else if (arg.starts_with("--msl-platform=")) {
+      string_piece platform;
+      GetOptionArgument(argc, argv, &i, "--msl-platform=", &platform);
+      if (platform == "ios") {
+        options.SetMSLPlatform(shaderc_spvc_msl_platform_ios);
+      } else if (platform == "macos") {
+        options.SetMSLPlatform(shaderc_spvc_msl_platform_macos);
+      } else {
+        std::cerr << "spvc: error: invalid value '" << platform
+                  << "' in --msl-platform=" << std::endl;
+        return 1;
+      }
+    } else if (arg == "--msl-pad-fragment-output") {
+      options.SetMSLPadFragmentOutput(true);
+    } else if (arg == "--msl-capture-output") {
+      options.SetMSLCapture(true);
+    } else if (arg == "--msl-domain-lower-left") {
+      options.SetMSLDomainLowerLeft(true);
+    } else if (arg == "--msl-argument-buffers") {
+      options.SetMSLArgumentBuffers(true);
+    } else if (arg.starts_with("--msl-discrete-descriptor-set=")) {
+      string_piece descriptor_str;
+      GetOptionArgument(argc, argv, &i,
+                        "--msl-discrete-descriptor-set=", &descriptor_str);
+      uint32_t descriptor_num;
+      if (!shaderc_util::ParseUint32(descriptor_str.str(), &descriptor_num)) {
+        std::cerr << "spvc: error: invalid value '" << descriptor_str
+                  << "' in --msl-discrete-descriptor-set=" << std::endl;
+        return 1;
+      }
+      msl_discrete_descriptor.push_back(descriptor_num);
     } else if (arg.starts_with("--shader-model=")) {
       string_piece shader_model_str;
-      GetOptionArgument(argc, argv, &i, "--shader-model=", &shader_model_str);
+      shaderc_util::GetOptionArgument(argc, argv, &i,
+                                      "--shader-model=", &shader_model_str);
       uint32_t shader_model_num;
-      if (!ParseUint32(shader_model_str.str(), &shader_model_num)) {
+      if (!shaderc_util::ParseUint32(shader_model_str.str(),
+                                     &shader_model_num)) {
         std::cerr << "spvc: error: invalid value '" << shader_model_str
                   << "' in --shader-model=" << std::endl;
         return 1;
       }
-      options.SetShaderModel(shader_model_num);
-    } else if (arg.starts_with("--validate=")) {
-      // TODO(zoddicus): Actually set the validate bit here, once the API is
-      // exposed.
+      options.SetHLSLShaderModel(shader_model_num);
+    } else if (arg.starts_with("--source-env=")) {
       string_piece env;
-      GetOptionArgument(argc, argv, &i, "--validate=", &env);
+      shaderc_util::GetOptionArgument(argc, argv, &i, "--source-env=", &env);
+      source_env = env;
       if (env == "vulkan1.0") {
         options.SetSourceEnvironment(shaderc_target_env_vulkan,
                                      shaderc_env_version_vulkan_1_0);
@@ -238,13 +259,27 @@ int main(int argc, char** argv) {
                                      shaderc_env_version_webgpu);
       } else {
         std::cerr << "spvc: error: invalid value '" << env
-                  << "' in --validate=" << std::endl;
+                  << "' in --source-env=" << std::endl;
         return 1;
       }
-    } else if (arg.starts_with("--transform-from-webgpu")) {
-      options.SetSourceEnvironment(shaderc_target_env_webgpu,
-                                   shaderc_env_version_webgpu);
-      options.SetWebGPUToVulkan(true);
+    } else if (arg.starts_with("--target-env=")) {
+      string_piece env;
+      shaderc_util::GetOptionArgument(argc, argv, &i, "--target-env=", &env);
+      target_env = env;
+      if (env == "vulkan1.0") {
+        options.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                     shaderc_env_version_vulkan_1_0);
+      } else if (env == "vulkan1.1") {
+        options.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                     shaderc_env_version_vulkan_1_1);
+      } else if (env == "webgpu0") {
+        options.SetTargetEnvironment(shaderc_target_env_webgpu,
+                                     shaderc_env_version_webgpu);
+      } else {
+        std::cerr << "spvc: error: invalid value '" << env
+                  << "' in --target-env=" << std::endl;
+        return 1;
+      }
     } else {
       if (!ReadFile(arg.str(), &input)) {
         std::cerr << "spvc: error: could not read file" << std::endl;
@@ -252,6 +287,26 @@ int main(int argc, char** argv) {
       }
     }
   }
+
+  if (target_env == "") {
+    if (source_env == "vulkan1.0") {
+      options.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                   shaderc_env_version_vulkan_1_0);
+    } else if (source_env == "vulkan1.1") {
+      options.SetTargetEnvironment(shaderc_target_env_vulkan,
+                                   shaderc_env_version_vulkan_1_1);
+    } else if (source_env == "webgpu0") {
+      options.SetTargetEnvironment(shaderc_target_env_webgpu,
+                                   shaderc_env_version_webgpu);
+    } else {
+      // This should be caught above when parsing --source-target=
+      std::cerr << "spvc: error: invalid value '" << source_env
+                << "' in --source-env=" << std::endl;
+      return 1;
+    }
+  }
+
+  options.SetMSLDiscreteDescriptorSets(msl_discrete_descriptor);
 
   shaderc_spvc::CompilationResult result;
   if (output_language == "glsl") {

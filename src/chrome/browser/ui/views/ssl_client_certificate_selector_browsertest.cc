@@ -31,9 +31,6 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
 
@@ -63,7 +60,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
         certs_dir, "client_2.pem", "client_2.pk8");
     ASSERT_TRUE(cert_identity_2_);
 
-    cert_request_info_ = new net::SSLCertRequestInfo;
+    cert_request_info_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_->host_and_port = net::HostPortPair("foo", 123);
   }
 
@@ -117,13 +114,6 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
  protected:
-  std::unique_ptr<net::URLRequest> MakeURLRequest(
-      net::URLRequestContextGetter* context_getter) {
-    return context_getter->GetURLRequestContext()->CreateRequest(
-        GURL("https://example"), net::DEFAULT_PRIORITY, NULL,
-        TRAFFIC_ANNOTATION_FOR_TESTS);
-  }
-
   base::WaitableEvent io_loop_finished_event_;
 
   std::unique_ptr<net::FakeClientCertIdentity> cert_identity_1_;
@@ -140,10 +130,10 @@ class SSLClientCertificateSelectorMultiTabTest
   void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
-    cert_request_info_1_ = new net::SSLCertRequestInfo;
+    cert_request_info_1_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_1_->host_and_port = net::HostPortPair("bar", 123);
 
-    cert_request_info_2_ = new net::SSLCertRequestInfo;
+    cert_request_info_2_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_2_->host_and_port = net::HostPortPair("bar", 123);
   }
 
@@ -225,7 +215,7 @@ class SSLClientCertificateSelectorMultiProfileTest
   void SetUpInProcessBrowserTestFixture() override {
     SSLClientCertificateSelectorTest::SetUpInProcessBrowserTestFixture();
 
-    cert_request_info_1_ = new net::SSLCertRequestInfo;
+    cert_request_info_1_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info_1_->host_and_port = net::HostPortPair("foo", 123);
   }
 

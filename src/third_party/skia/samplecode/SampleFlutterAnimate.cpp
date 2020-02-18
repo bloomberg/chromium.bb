@@ -14,7 +14,6 @@
 #include "include/core/SkTypeface.h"
 #include "include/utils/SkRandom.h"
 #include "samplecode/Sample.h"
-#include "tools/timer/AnimTimer.h"
 #include "tools/timer/Timer.h"
 
 #if SK_SUPPORT_GPU
@@ -33,14 +32,7 @@ protected:
         initChars();
     }
 
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "FlutterAnimate");
-            return true;
-        }
-
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("FlutterAnimate"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         SkFont font(fTypeface, 50);
@@ -64,11 +56,11 @@ protected:
         }
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        fCurrTime = timer.secs() - fResetTime;
+    bool onAnimate(double nanos) override {
+        fCurrTime = 1e-9 * nanos - fResetTime;
         if (fCurrTime > kDuration) {
             this->initChars();
-            fResetTime = timer.secs();
+            fResetTime = 1e-9 * nanos;
             fCurrTime = 0;
         }
 

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/display/window_tree_host_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -49,8 +48,7 @@ class Pointer : public SurfaceTreeHost,
                 public ui::EventHandler,
                 public aura::client::CaptureClientObserver,
                 public aura::client::CursorClientObserver,
-                public aura::client::FocusChangeObserver,
-                public ash::WindowTreeHostManager::Observer {
+                public aura::client::FocusChangeObserver {
  public:
   explicit Pointer(PointerDelegate* delegate);
   ~Pointer() override;
@@ -93,9 +91,6 @@ class Pointer : public SurfaceTreeHost,
   // Overridden from aura::client::FocusChangeObserver;
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
-
-  // Overridden from ash::WindowTreeHostManager::Observer:
-  void OnDisplayConfigurationChanged() override;
 
   // Relative motion registration.
   void RegisterRelativePointerDelegate(RelativePointerDelegate* delegate);

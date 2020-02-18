@@ -21,7 +21,7 @@ bool HasLightBackground(const LayoutView& root) {
   const ComputedStyle& style = root.StyleRef();
   if (style.HasBackground()) {
     Color color = style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
-    return IsLight(color, style.Opacity());
+    return IsLight(color);
   }
 
   // If we can't easily determine the background color, default to inverting the
@@ -53,7 +53,10 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   dark_mode_settings.grayscale = frame_settings.GetDarkModeGrayscale();
   dark_mode_settings.contrast = frame_settings.GetDarkModeContrast();
   dark_mode_settings.image_policy = frame_settings.GetDarkModeImagePolicy();
-  dark_mode_settings.text_policy = frame_settings.GetDarkModeTextPolicy();
+  dark_mode_settings.text_brightness_threshold =
+      frame_settings.GetDarkModeTextBrightnessThreshold();
+  dark_mode_settings.background_brightness_threshold =
+      frame_settings.GetDarkModeBackgroundBrightnessThreshold();
   dark_mode_settings.image_grayscale_percent =
       frame_settings.GetDarkModeImageGrayscale();
   return dark_mode_settings;

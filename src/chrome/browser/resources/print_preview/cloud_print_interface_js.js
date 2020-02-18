@@ -18,8 +18,9 @@ cr.define('cloudprint', function() {
      *     Auth2 tokens.
      * @param {boolean} isInAppKioskMode Whether the print preview is in App
      *     Kiosk mode.
+     * @param {string} uiLocale The UI locale.
      */
-    constructor(baseUrl, nativeLayer, isInAppKioskMode) {
+    constructor(baseUrl, nativeLayer, isInAppKioskMode, uiLocale) {
       /**
        * The base URL of the Google Cloud Print API.
        * @private {string}
@@ -38,6 +39,13 @@ cr.define('cloudprint', function() {
        * @private {boolean}
        */
       this.isInAppKioskMode_ = isInAppKioskMode;
+
+      /**
+       * The UI locale, used to get printer information in the correct locale
+       * from Google Cloud Print.
+       * @private {string}
+       */
+      this.uiLocale_ = uiLocale;
 
       /**
        * Currently logged in users (identified by email) mapped to the Google
@@ -198,29 +206,35 @@ cr.define('cloudprint', function() {
      * @private
      */
     buildRequest_(method, action, params, origin, account, callback) {
-      let url = this.baseUrl_ + '/' + action + '?xsrf=';
+      const url = new URL(this.baseUrl_ + '/' + action);
+      const searchParams = url.searchParams;
       if (origin == print_preview.DestinationOrigin.COOKIES) {
         const xsrfToken = this.xsrfTokens_[account];
         if (!xsrfToken) {
+          searchParams.append('xsrf', '');
           // TODO(rltoscano): Should throw an error if not a read-only action or
           // issue an xsrf token request.
         } else {
-          url = url + xsrfToken;
+          searchParams.append('xsrf', xsrfToken);
         }
         if (account) {
           const index = this.userSessionIndex_[account] || 0;
           if (index > 0) {
-            url += '&authuser=' + index;
+            searchParams.append('authuser', index.toString());
           }
         }
+      } else {
+        searchParams.append('xsrf', '');
       }
+
+      // Add locale
+      searchParams.append('hl', this.uiLocale_);
       let body = null;
       if (params) {
         if (method == 'GET') {
-          url = params.reduce(function(partialUrl, param) {
-            return partialUrl + '&' + param.name + '=' +
-                encodeURIComponent(param.value);
-          }, url);
+          params.forEach(param => {
+            searchParams.append(param.name, encodeURIComponent(param.value));
+          });
         } else if (method == 'POST') {
           body = params.reduce(function(partialBody, param) {
             return partialBody + 'Content-Disposition: form-data; name=\"' +
@@ -239,7 +253,7 @@ cr.define('cloudprint', function() {
       }
 
       const xhr = new XMLHttpRequest();
-      xhr.open(method, url, true);
+      xhr.open(method, url.toString(), true);
       xhr.withCredentials = (origin == print_preview.DestinationOrigin.COOKIES);
       for (const header in headers) {
         xhr.setRequestHeader(header, headers[header]);
@@ -325,10 +339,15 @@ cr.define('cloudprint', function() {
     setUsers_(request) {
       if (request.origin == print_preview.DestinationOrigin.COOKIES) {
         const users = request.result['request']['users'] || [];
-        this.userSessionIndex_ = {};
-        for (let i = 0; i < users.length; i++) {
-          this.userSessionIndex_[users[i]] = i;
-        }
+        this.setUsers(users);
+      }
+    }
+
+    /** @param {!Array<string>} users */
+    setUsers(users) {
+      this.userSessionIndex_ = {};
+      for (let i = 0; i < users.length; i++) {
+        this.userSessionIndex_[users[i]] = i;
       }
     }
 
@@ -551,13 +570,13 @@ cr.define('cloudprint', function() {
       // this point, whether printer was found or not.
       if (request.origin == print_preview.DestinationOrigin.COOKIES &&
           request.result && request.result['request']['user'] &&
-          request.result['request']['users'] &&
-          request.account != request.result['request']['user']) {
+          request.result['request']['users']) {
         const users = request.result['request']['users'];
         this.setUsers_(request);
         // In case the user account is known, but not the primary one,
         // activate it.
-        if (this.userSessionIndex_[request.account] > 0 && request.account) {
+        if (request.account != request.result['request']['user'] &&
+            this.userSessionIndex_[request.account] > 0 && request.account) {
           this.dispatchUserUpdateEvent_(request.account, users);
           // Repeat the request for the newly activated account.
           this.printer(

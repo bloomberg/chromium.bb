@@ -26,6 +26,8 @@ const char* ToString(ax::mojom::Event event) {
       return "childrenChanged";
     case ax::mojom::Event::kClicked:
       return "clicked";
+    case ax::mojom::Event::kControlsChanged:
+      return "controlsChanged";
     case ax::mojom::Event::kDocumentSelectionChanged:
       return "documentSelectionChanged";
     case ax::mojom::Event::kDocumentTitleChanged:
@@ -118,6 +120,8 @@ const char* ToString(ax::mojom::Event event) {
       return "windowActivated";
     case ax::mojom::Event::kWindowDeactivated:
       return "windowDeactivated";
+    case ax::mojom::Event::kWindowVisibilityChanged:
+      return "windowVisibilityChanged";
     case ax::mojom::Event::kTreeChanged:
       return "treeChanged";
     case ax::mojom::Event::kValueChanged:
@@ -146,6 +150,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kChildrenChanged;
   if (0 == strcmp(event, "clicked"))
     return ax::mojom::Event::kClicked;
+  if (0 == strcmp(event, "controlsChanged"))
+    return ax::mojom::Event::kControlsChanged;
   if (0 == strcmp(event, "documentSelectionChanged"))
     return ax::mojom::Event::kDocumentSelectionChanged;
   if (0 == strcmp(event, "documentTitleChanged"))
@@ -238,6 +244,8 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kWindowActivated;
   if (0 == strcmp(event, "windowDeactivated"))
     return ax::mojom::Event::kWindowDeactivated;
+  if (0 == strcmp(event, "windowVisibilityChanged"))
+    return ax::mojom::Event::kWindowVisibilityChanged;
   if (0 == strcmp(event, "treeChanged"))
     return ax::mojom::Event::kTreeChanged;
   if (0 == strcmp(event, "valueChanged"))
@@ -1209,6 +1217,46 @@ ax::mojom::ActionFlags ParseActionFlags(const char* action_flags) {
   return ax::mojom::ActionFlags::kNone;
 }
 
+const char* ToString(ax::mojom::ScrollAlignment scroll_alignment) {
+  switch (scroll_alignment) {
+    case ax::mojom::ScrollAlignment::kNone:
+      return "none";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
+      return "scrollAlignmentCenter";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
+      return "scrollAlignmentTop";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
+      return "scrollAlignmentBottom";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
+      return "scrollAlignmentLeft";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
+      return "scrollAlignmentRight";
+    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
+      return "scrollAlignmentClosestEdge";
+  }
+
+  NOTREACHED() << scroll_alignment;
+  return "";
+}
+
+ax::mojom::ScrollAlignment ParseScrollAlignment(const char* scroll_alignment) {
+  if (0 == strcmp(scroll_alignment, "none"))
+    return ax::mojom::ScrollAlignment::kNone;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentCenter"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentTop"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentTop;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentBottom"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentBottom;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentLeft"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentLeft;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentRight"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentRight;
+  if (0 == strcmp(scroll_alignment, "scrollAlignmentClosestEdge"))
+    return ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge;
+  return ax::mojom::ScrollAlignment::kNone;
+}
+
 const char* ToString(ax::mojom::DefaultActionVerb default_action_verb) {
   switch (default_action_verb) {
     case ax::mojom::DefaultActionVerb::kNone:
@@ -1435,10 +1483,14 @@ const char* ToString(ax::mojom::IntAttribute int_attribute) {
       return "ariaColumnCount";
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
       return "ariaCellColumnIndex";
+    case ax::mojom::IntAttribute::kAriaCellColumnSpan:
+      return "ariaCellColumnSpan";
     case ax::mojom::IntAttribute::kAriaRowCount:
       return "ariaRowCount";
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
       return "ariaCellRowIndex";
+    case ax::mojom::IntAttribute::kAriaCellRowSpan:
+      return "ariaCellRowSpan";
     case ax::mojom::IntAttribute::kTableRowCount:
       return "tableRowCount";
     case ax::mojom::IntAttribute::kTableColumnCount:
@@ -1557,10 +1609,14 @@ ax::mojom::IntAttribute ParseIntAttribute(const char* int_attribute) {
     return ax::mojom::IntAttribute::kAriaColumnCount;
   if (0 == strcmp(int_attribute, "ariaCellColumnIndex"))
     return ax::mojom::IntAttribute::kAriaCellColumnIndex;
+  if (0 == strcmp(int_attribute, "ariaCellColumnSpan"))
+    return ax::mojom::IntAttribute::kAriaCellColumnSpan;
   if (0 == strcmp(int_attribute, "ariaRowCount"))
     return ax::mojom::IntAttribute::kAriaRowCount;
   if (0 == strcmp(int_attribute, "ariaCellRowIndex"))
     return ax::mojom::IntAttribute::kAriaCellRowIndex;
+  if (0 == strcmp(int_attribute, "ariaCellRowSpan"))
+    return ax::mojom::IntAttribute::kAriaCellRowSpan;
   if (0 == strcmp(int_attribute, "tableRowCount"))
     return ax::mojom::IntAttribute::kTableRowCount;
   if (0 == strcmp(int_attribute, "tableColumnCount"))
@@ -1721,6 +1777,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "selected";
     case ax::mojom::BoolAttribute::kSupportsTextLocation:
       return "supportsTextLocation";
+    case ax::mojom::BoolAttribute::kIsLineBreakingObject:
+      return "isLineBreakingObject";
   }
 
   return "";
@@ -1757,6 +1815,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kSelected;
   if (0 == strcmp(bool_attribute, "supportsTextLocation"))
     return ax::mojom::BoolAttribute::kSupportsTextLocation;
+  if (0 == strcmp(bool_attribute, "isLineBreakingObject"))
+    return ax::mojom::BoolAttribute::kIsLineBreakingObject;
   return ax::mojom::BoolAttribute::kNone;
 }
 
@@ -2250,10 +2310,6 @@ const char* ToString(ax::mojom::InvalidState invalid_state) {
       return "false";
     case ax::mojom::InvalidState::kTrue:
       return "true";
-    case ax::mojom::InvalidState::kSpelling:
-      return "spelling";
-    case ax::mojom::InvalidState::kGrammar:
-      return "grammar";
     case ax::mojom::InvalidState::kOther:
       return "other";
   }
@@ -2268,10 +2324,6 @@ ax::mojom::InvalidState ParseInvalidState(const char* invalid_state) {
     return ax::mojom::InvalidState::kFalse;
   if (0 == strcmp(invalid_state, "true"))
     return ax::mojom::InvalidState::kTrue;
-  if (0 == strcmp(invalid_state, "spelling"))
-    return ax::mojom::InvalidState::kSpelling;
-  if (0 == strcmp(invalid_state, "grammar"))
-    return ax::mojom::InvalidState::kGrammar;
   if (0 == strcmp(invalid_state, "other"))
     return ax::mojom::InvalidState::kOther;
   return ax::mojom::InvalidState::kNone;

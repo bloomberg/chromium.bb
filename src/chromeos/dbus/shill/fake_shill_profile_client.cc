@@ -102,17 +102,19 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const base::Closure& callback,
                                          const ErrorCallback& error_callback) {
   ProfileProperties* profile = GetProfile(profile_path, error_callback);
-  if (!profile)
+  if (!profile) {
+    error_callback.Run("Error.InvalidProfile", profile_path.value());
     return;
+  }
 
   if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
     error_callback.Run("Error.InvalidProfileEntry", entry_path);
     return;
   }
 
-  base::Value profile_path_value("");
-  ShillServiceClient::Get()->GetTestInterface()->SetServiceProperty(
-      entry_path, shill::kProfileProperty, profile_path_value);
+  ShillServiceClient::Get()
+      ->GetTestInterface()
+      ->ClearConfiguredServiceProperties(entry_path);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }

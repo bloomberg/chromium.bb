@@ -97,6 +97,7 @@ if (is_chromeos) {
     "input_ime.json",
     "input_method_private.json",
     "launcher_search_provider.idl",
+    "login.idl",
     "login_screen_ui.idl",
     "platform_keys.idl",
     "platform_keys_internal.idl",
@@ -123,9 +124,12 @@ if (enable_service_discovery) {
 }
 
 uncompiled_sources_ = [
+  "action.json",
+  "browser_action.json",
   "browsing_data.json",
   "extension.json",
   "idltest.idl",
+  "page_action.json",
   "top_sites.json",
 ]
 

@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Der kunne ikke logges ind på din arbejdskonto. Sørg for, at computeren har internetforbindelse, og prøv igen.</translation>
 <translation id="2595469428674600431">Din Windows-adgangskode kunne desværre ikke bekræftes. Prøv igen.</translation>
 <translation id="3306357053520292004">Der er allerede tilføjet en bruger ved hjælp af denne konto på denne computer. Log ind med en anden konto.</translation>
+<translation id="3643125608647220913">Google-loginskærmen kan ikke indlæses. Kontakt din administrator.</translation>
 <translation id="369030246015333661">Din konto er blevet låst. Kontakt en systemadministrator.</translation>
+<translation id="3968372833844047539">Kun G Suite Enterprise-brugere har tilladelse til at logge ind.</translation>
 <translation id="4057329986137569701">Der opstod en intern fejl.</translation>
+<translation id="4267670563222825190">Der blev ikke fundet nogen domænebruger for din konto. Kontakt din administrator.</translation>
 <translation id="4300229033992784001">Adgangskoden til din konto er ændret. Angiv din nuværende Windows-adgangskode for at synkronisere din Windows-konto med din arbejdskonto.</translation>
 <translation id="4706454071748629324">Det var ikke muligt at tilføje en ny bruger. Denne computer giver kun mulighed for at oprette én bruger med en arbejdskonto.</translation>
 <translation id="6292766200512304540">Bruger, der er oprettet fra en arbejdskonto</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">Adgangskode</translation>
 <translation id="7536769223115622137">Tilføj arbejdskonto</translation>
 <translation id="7856245195110636219">Det er ikke muligt at fortsætte, før den aktuelle adgangskode til Windows angives. Kontakt en systemadministrator.</translation>
+<translation id="7996763357529480810">Log ind med din G Suite-arbejdskonto.</translation>
 <translation id="8474372283141585908">Google Loginhåndtering</translation>
 <translation id="8639729688781680518">Glemt adgangskode til Windows</translation>
 <translation id="866458870819756755">En bruger kunne ikke oprettes.</translation>

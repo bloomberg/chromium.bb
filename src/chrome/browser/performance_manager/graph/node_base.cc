@@ -4,16 +4,14 @@
 
 #include "chrome/browser/performance_manager/graph/node_base.h"
 
-#include <utility>
-
-#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
-#include "chrome/browser/performance_manager/graph/page_node_impl.h"
-#include "chrome/browser/performance_manager/graph/process_node_impl.h"
-#include "chrome/browser/performance_manager/graph/system_node_impl.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/public/graph/node.h"
 
 namespace performance_manager {
+
+// static
+const uintptr_t NodeBase::kNodeBaseType =
+    reinterpret_cast<uintptr_t>(&kNodeBaseType);
 
 NodeBase::NodeBase(NodeTypeEnum node_type, GraphImpl* graph)
     : graph_(graph), type_(node_type) {}
@@ -37,20 +35,16 @@ int64_t NodeBase::GetSerializationId(NodeBase* node) {
   return node->serialization_id_;
 }
 
-// TODO(chrisha): Remove this!
-void NodeBase::RemoveObserver(GraphObserver* observer) {
-  switch (type()) {
-    case NodeTypeEnum::kFrame:
-      return FrameNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kPage:
-      return PageNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kProcess:
-      return ProcessNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kSystem:
-      return SystemNodeImpl::FromNodeBase(this)->RemoveObserver(observer);
-    case NodeTypeEnum::kInvalidType:
-      NOTREACHED();
-  }
+// static
+const NodeBase* NodeBase::FromNode(const Node* node) {
+  CHECK_EQ(kNodeBaseType, node->GetImplType());
+  return reinterpret_cast<const NodeBase*>(node->GetImpl());
+}
+
+// static
+NodeBase* NodeBase::FromNode(Node* node) {
+  CHECK_EQ(kNodeBaseType, node->GetImplType());
+  return reinterpret_cast<NodeBase*>(const_cast<void*>(node->GetImpl()));
 }
 
 void NodeBase::JoinGraph() {

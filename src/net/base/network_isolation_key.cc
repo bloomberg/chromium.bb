@@ -3,14 +3,32 @@
 // found in the LICENSE file.
 
 #include "net/base/network_isolation_key.h"
+#include "base/feature_list.h"
+#include "net/base/features.h"
 
 namespace net {
 
-NetworkIsolationKey::NetworkIsolationKey(
-    const base::Optional<url::Origin>& top_frame_origin)
-    : top_frame_origin_(top_frame_origin) {}
+namespace {
 
-NetworkIsolationKey::NetworkIsolationKey() = default;
+std::string GetOriginDebugString(const base::Optional<url::Origin>& origin) {
+  return origin ? origin->GetDebugString() : "null";
+}
+
+}  // namespace
+
+NetworkIsolationKey::NetworkIsolationKey(const url::Origin& top_frame_origin,
+                                         const url::Origin& frame_origin)
+    : use_frame_origin_(base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey)),
+      top_frame_origin_(top_frame_origin) {
+  if (use_frame_origin_) {
+    frame_origin_ = frame_origin;
+  }
+}
+
+NetworkIsolationKey::NetworkIsolationKey()
+    : use_frame_origin_(base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey)) {}
 
 NetworkIsolationKey::NetworkIsolationKey(
     const NetworkIsolationKey& network_isolation_key) = default;
@@ -24,25 +42,37 @@ NetworkIsolationKey& NetworkIsolationKey::operator=(
     NetworkIsolationKey&& network_isolation_key) = default;
 
 std::string NetworkIsolationKey::ToString() const {
-  if (top_frame_origin_ && !top_frame_origin_->opaque())
-    return top_frame_origin_->Serialize();
-  return std::string();
+  if (IsTransient())
+    return "";
+
+  return top_frame_origin_->Serialize() +
+         (use_frame_origin_ ? " " + frame_origin_->Serialize() : "");
 }
 
 std::string NetworkIsolationKey::ToDebugString() const {
-  if (!top_frame_origin_)
-    return "null";
-  return top_frame_origin_->GetDebugString();
+  // The space-separated serialization of |top_frame_origin_| and
+  // |frame_origin_|.
+  std::string return_string = GetOriginDebugString(top_frame_origin_);
+  if (use_frame_origin_) {
+    return_string += " " + GetOriginDebugString(frame_origin_);
+  }
+  return return_string;
 }
 
 bool NetworkIsolationKey::IsFullyPopulated() const {
-  return top_frame_origin_.has_value();
+  return top_frame_origin_.has_value() &&
+         (!use_frame_origin_ || frame_origin_.has_value());
 }
 
 bool NetworkIsolationKey::IsTransient() const {
   if (!IsFullyPopulated())
     return true;
-  return top_frame_origin_->opaque();
+  return top_frame_origin_->opaque() ||
+         (use_frame_origin_ && frame_origin_->opaque());
+}
+
+bool NetworkIsolationKey::IsEmpty() const {
+  return !top_frame_origin_.has_value();
 }
 
 }  // namespace net

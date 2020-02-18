@@ -22,7 +22,7 @@
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
-#include "ui/display/mojo/display_struct_traits.h"
+#include "ui/display/mojom/display_mojom_traits.h"
 #include "ui/display/screen.h"
 
 namespace ash {
@@ -259,10 +259,8 @@ mojom::DisplayUnitInfoPtr GetDisplayUnitInfo(const display::Display& display,
   bool has_accelerometer_support =
       display.accelerometer_support() ==
       display::Display::AccelerometerSupport::AVAILABLE;
-  info->is_tablet_mode =
-      has_accelerometer_support && Shell::Get()
-                                       ->tablet_mode_controller()
-                                       ->IsTabletModeWindowManagerEnabled();
+  info->is_tablet_mode = has_accelerometer_support &&
+                         Shell::Get()->tablet_mode_controller()->InTabletMode();
   info->has_touch_support =
       display.touch_support() == display::Display::TouchSupport::AVAILABLE;
   info->has_accelerometer_support = has_accelerometer_support;
@@ -557,7 +555,7 @@ mojom::DisplayConfigResult SetDisplayLayouts(
     if (root_id == display::kInvalidDisplayId) {
       // Look for a display with no layout info to use as the root.
       for (int64_t id : display_ids) {
-        if (!base::ContainsKey(layout_ids, id)) {
+        if (!base::Contains(layout_ids, id)) {
           root_id = id;
           break;
         }
@@ -662,9 +660,7 @@ void CrosDisplayConfig::SetDisplayProperties(
   if (properties->rotation) {
     display::Display::Rotation rotation =
         display::Display::Rotation(properties->rotation->rotation);
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled() &&
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         display.id() == display::Display::InternalDisplayId()) {
       Shell::Get()->screen_orientation_controller()->SetLockToRotation(
           rotation);

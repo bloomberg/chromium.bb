@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "core/fpdfapi/cmaps/cmap_int.h"
-#include "core/fpdfapi/cpdf_modulemgr.h"
-#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_simple_parser.h"
@@ -113,7 +111,7 @@ void CPDF_CMapParser::ParseWord(ByteStringView word) {
       size_t nSegs = code_ranges.size() + m_PendingRanges.size();
       if (nSegs == 1) {
         const auto& first_range =
-            code_ranges.size() > 0 ? code_ranges[0] : m_PendingRanges[0];
+            !code_ranges.empty() ? code_ranges[0] : m_PendingRanges[0];
         m_pCMap->SetCodingScheme((first_range.m_CharSize == 2)
                                      ? CPDF_CMap::TwoBytes
                                      : CPDF_CMap::OneByte);

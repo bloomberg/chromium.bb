@@ -22,9 +22,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
+#include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
+#include "content/renderer/accessibility/blink_ax_action_target.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -138,8 +141,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
       plugin_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
-      reset_token_(0),
-      weak_factory_(this) {
+      reset_token_(0) {
   ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
@@ -192,6 +194,7 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
+  is_initial_load_processed_ = false;
   has_injected_stylesheet_ = false;
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
@@ -205,14 +208,13 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   ax_image_annotator_.release();
 }
 
-void RenderAccessibilityImpl::AccessibilityModeChanged() {
+void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
   ui::AXMode old_mode = tree_source_.accessibility_mode();
-  ui::AXMode new_mode = render_frame_->accessibility_mode();
-  if (old_mode == new_mode)
+  if (old_mode == mode)
     return;
-  tree_source_.SetAccessibilityMode(new_mode);
+  tree_source_.SetAccessibilityMode(mode);
 
-  SetAccessibilityCrashKey(new_mode);
+  SetAccessibilityCrashKey(mode);
 
 #if !defined(OS_ANDROID)
   // Inline text boxes can be enabled globally on all except Android.
@@ -223,7 +225,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
     if (web_view) {
       WebSettings* settings = web_view->GetSettings();
       if (settings) {
-        if (new_mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
+        if (mode.has_mode(ui::AXMode::kInlineTextBoxes)) {
           settings->SetInlineTextBoxAccessibilityEnabled(true);
           tree_source_.GetRoot().LoadInlineTextBoxes();
         } else {
@@ -237,7 +239,7 @@ void RenderAccessibilityImpl::AccessibilityModeChanged() {
   serializer_.Reset();
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
-    StartOrStopLabelingImages(old_mode, new_mode);
+    StartOrStopLabelingImages(old_mode, mode);
 
     // If there are any events in flight, |HandleAXEvent| will refuse to process
     // our new event.
@@ -256,7 +258,6 @@ bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
 
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_EventBundle_ACK, OnEventsAck)
-    IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_FatalError, OnFatalError)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -518,8 +519,43 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
 
     // If it's ignored, find the first ancestor that's not ignored.
-    while (!obj.IsDetached() && obj.AccessibilityIsIgnored())
+    while (!obj.IsDetached() && obj.AccessibilityIsIgnored()) {
+      // There are 3 states of nodes that we care about here.
+      // (x) Unignored, included in tree
+      // [x] Ignored, included in tree
+      // <x> Ignored, excluded from tree
+      //
+      // Consider the following tree :
+      // ++(0) Role::kRootWebArea
+      // ++++<1> Role::kIgnored
+      // ++++++[2] Role::kGenericContainer <body>
+      // ++++++++[3] Role::kGenericContainer with 'visibility: hidden'
+      //
+      // If we modify [3] to be 'visibility: visible', we will receive
+      // Event::kChildrenChanged here for the Ignored parent [2].
+      // We must re-serialize the Unignored parent node (0) due to this
+      // change, but we must also re-serialize [2] since its children
+      // have changed. <1> was never part of the ax tree, and therefore
+      // does not need to be serialized.
+      //
+      // So on the way to the Unignored parent, ancestors that are
+      // included in the tree must also be serialized.
+      // Note that [3] will be serialized to (3) during :
+      // |AXTreeSerializer<>::SerializeChangedNodes| when node [2] is
+      // being serialized, since it will detect the Ignored state had
+      // changed.
+      //
+      // Similarly, during Event::kTextChanged, if any Ignored,
+      // but included in tree ancestor uses NameFrom::kContents,
+      // they must also be re-serialized in case the name changed.
+      if (obj.AccessibilityIsIncludedInTree()) {
+        DirtyObject dirty_object;
+        dirty_object.obj = obj;
+        dirty_object.event_from = event.event_from;
+        dirty_objects.push_back(dirty_object);
+      }
       obj = obj.ParentObject();
+    }
 
     // Make sure it's a descendant of our root node - exceptions include the
     // scroll area that's the parent of the main document (we ignore it), and
@@ -606,6 +642,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     // ids to locations.
     for (size_t j = 0; j < update.nodes.size(); ++j) {
       ui::AXNodeData& src = update.nodes[j];
+      // TODO(accessibility) What if location hasn't been set yet?
+      // Get cached location for this node or create a new entry if none exists.
       ui::AXRelativeBounds& dst = locations_[update.nodes[j].id];
       dst = src.relative_bounds;
     }
@@ -625,11 +663,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
                                             ack_token_));
   reset_token_ = 0;
 
-  if (had_layout_complete_messages)
+  if (had_layout_complete_messages && is_initial_load_processed_)
     SendLocationChanges();
 
-  if (had_load_complete_messages)
+  if (had_load_complete_messages) {
     has_injected_stylesheet_ = false;
+    is_initial_load_processed_ = true;
+  }
 
   if (image_annotation_debugging_)
     AddImageAnnotationDebuggingAttributes(bundle.updates);
@@ -703,25 +743,28 @@ void RenderAccessibilityImpl::OnPerformAction(
   if (!root.UpdateLayoutAndCheckValidity())
     return;
 
-  auto target = WebAXObject::FromWebDocumentByID(document, data.target_node_id);
-  auto anchor = WebAXObject::FromWebDocumentByID(document, data.anchor_node_id);
-  auto focus = WebAXObject::FromWebDocumentByID(document, data.focus_node_id);
+  std::unique_ptr<ui::AXActionTarget> target =
+      AXActionTargetFactory::CreateFromNodeId(document, data.target_node_id);
+  std::unique_ptr<ui::AXActionTarget> anchor =
+      AXActionTargetFactory::CreateFromNodeId(document, data.anchor_node_id);
+  std::unique_ptr<ui::AXActionTarget> focus =
+      AXActionTargetFactory::CreateFromNodeId(document, data.focus_node_id);
 
   switch (data.action) {
     case ax::mojom::Action::kBlur:
       root.Focus();
       break;
     case ax::mojom::Action::kClearAccessibilityFocus:
-      target.ClearAccessibilityFocus();
+      target->ClearAccessibilityFocus();
       break;
     case ax::mojom::Action::kDecrement:
-      target.Decrement();
+      target->Decrement();
       break;
     case ax::mojom::Action::kDoDefault:
-      target.Click();
+      target->Click();
       break;
     case ax::mojom::Action::kGetImageData:
-      OnGetImageData(target, data.target_rect.size());
+      OnGetImageData(target.get(), data.target_rect.size());
       break;
     case ax::mojom::Action::kHitTest:
       DCHECK(data.hit_test_event_to_fire != ax::mojom::Event::kNone);
@@ -729,43 +772,42 @@ void RenderAccessibilityImpl::OnPerformAction(
                 data.request_id);
       break;
     case ax::mojom::Action::kIncrement:
-      target.Increment();
+      target->Increment();
       break;
     case ax::mojom::Action::kScrollToMakeVisible:
-      target.ScrollToMakeVisibleWithSubFocus(
-          WebRect(data.target_rect.x(), data.target_rect.y(),
-                  data.target_rect.width(), data.target_rect.height()));
+      target->ScrollToMakeVisibleWithSubFocus(data.target_rect,
+                                              data.horizontal_scroll_alignment,
+                                              data.vertical_scroll_alignment);
       break;
     case ax::mojom::Action::kScrollToPoint:
-      target.ScrollToGlobalPoint(
-          WebPoint(data.target_point.x(), data.target_point.y()));
+      target->ScrollToGlobalPoint(data.target_point);
       break;
     case ax::mojom::Action::kLoadInlineTextBoxes:
-      OnLoadInlineTextBoxes(target);
+      OnLoadInlineTextBoxes(target.get());
       break;
     case ax::mojom::Action::kFocus:
-      target.Focus();
+      target->Focus();
       break;
     case ax::mojom::Action::kSetAccessibilityFocus:
-      target.SetAccessibilityFocus();
+      target->SetAccessibilityFocus();
       break;
     case ax::mojom::Action::kSetScrollOffset:
-      target.SetScrollOffset(
+      target->SetScrollOffset(
           WebPoint(data.target_point.x(), data.target_point.y()));
       break;
     case ax::mojom::Action::kSetSelection:
-        anchor.SetSelection(anchor, data.anchor_offset, focus,
-                            data.focus_offset);
+      anchor->SetSelection(anchor.get(), data.anchor_offset, focus.get(),
+                           data.focus_offset);
       HandleAXEvent(root, ax::mojom::Event::kLayoutComplete);
       break;
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
-      target.SetSequentialFocusNavigationStartingPoint();
+      target->SetSequentialFocusNavigationStartingPoint();
       break;
     case ax::mojom::Action::kSetValue:
-      target.SetValue(blink::WebString::FromUTF8(data.value));
+      target->SetValue(data.value);
       break;
     case ax::mojom::Action::kShowContextMenu:
-      target.ShowContextMenu();
+      target->ShowContextMenu();
       break;
     case ax::mojom::Action::kScrollBackward:
     case ax::mojom::Action::kScrollForward:
@@ -773,7 +815,7 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kScrollDown:
     case ax::mojom::Action::kScrollLeft:
     case ax::mojom::Action::kScrollRight:
-      Scroll(target, data.action);
+      Scroll(target.get(), data.action);
       break;
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kReplaceSelectedText:
@@ -842,8 +884,24 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
   if (data.HasContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID) ||
       data.HasContentIntAttribute(
           AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID)) {
+    gfx::Point transformed_point = point;
+    bool is_remote_frame = RenderFrameProxy::FromRoutingID(
+        data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID));
+    if (is_remote_frame) {
+      // Remote frames don't have access to the information from the visual
+      // viewport regarding the visual viewport offset, so we adjust the
+      // coordinates before sending them to the remote renderer.
+      WebRect rect = obj.GetBoundsInFrameCoordinates();
+      // The following transformation of the input point is naive, but works
+      // fairly well. It will fail with CSS transforms that rotate or shear.
+      // https://crbug.com/981959.
+      WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+      blink::WebFloatPoint viewport_offset = web_view->VisualViewportOffset();
+      transformed_point += gfx::Vector2d(viewport_offset.x, viewport_offset.y) -
+                           gfx::Rect(rect).OffsetFromOrigin();
+    }
     Send(new AccessibilityHostMsg_ChildFrameHitTestResult(
-        routing_id(), action_request_id, point,
+        routing_id(), action_request_id, transformed_point,
         data.GetContentIntAttribute(AX_CONTENT_ATTR_CHILD_ROUTING_ID),
         data.GetContentIntAttribute(
             AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID),
@@ -856,7 +914,14 @@ void RenderAccessibilityImpl::OnHitTest(const gfx::Point& point,
                 action_request_id);
 }
 
-void RenderAccessibilityImpl::OnLoadInlineTextBoxes(const WebAXObject& obj) {
+void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
+    const ui::AXActionTarget* target) {
+  const BlinkAXActionTarget* blink_target =
+      BlinkAXActionTarget::FromAXActionTarget(target);
+  if (!blink_target)
+    return;
+  const WebAXObject& obj = blink_target->WebAXObject();
+
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   if (tree_source_.ShouldLoadInlineTextBoxes(obj))
     return;
@@ -875,8 +940,14 @@ void RenderAccessibilityImpl::OnLoadInlineTextBoxes(const WebAXObject& obj) {
   HandleAXEvent(obj, ax::mojom::Event::kTreeChanged);
 }
 
-void RenderAccessibilityImpl::OnGetImageData(const WebAXObject& obj,
+void RenderAccessibilityImpl::OnGetImageData(const ui::AXActionTarget* target,
                                              const gfx::Size& max_size) {
+  const BlinkAXActionTarget* blink_target =
+      BlinkAXActionTarget::FromAXActionTarget(target);
+  if (!blink_target)
+    return;
+  const WebAXObject& obj = blink_target->WebAXObject();
+
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   if (tree_source_.image_data_node_id() == obj.AxID())
     return;
@@ -1000,63 +1071,59 @@ void RenderAccessibilityImpl::MarkAllAXObjectsDirty(ax::mojom::Role role) {
   }
 }
 
-void RenderAccessibilityImpl::Scroll(const WebAXObject& target,
+void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
                                      ax::mojom::Action scroll_action) {
-  WebAXObject offset_container;
-  WebFloatRect bounds;
-  SkMatrix44 container_transform;
-  target.GetRelativeBounds(offset_container, bounds, container_transform);
-
+  gfx::Rect bounds = target->GetRelativeBounds();
   if (bounds.IsEmpty())
     return;
 
-  WebPoint initial = target.GetScrollOffset();
-  WebPoint min = target.MinimumScrollOffset();
-  WebPoint max = target.MaximumScrollOffset();
+  gfx::Point initial = target->GetScrollOffset();
+  gfx::Point min = target->MinimumScrollOffset();
+  gfx::Point max = target->MaximumScrollOffset();
 
   // TODO(anastasi): This 4/5ths came from the Android implementation, revisit
   // to find the appropriate modifier to keep enough context onscreen after
   // scrolling.
-  int page_x = std::max((int)(bounds.width * 4 / 5), 1);
-  int page_y = std::max((int)(bounds.height * 4 / 5), 1);
+  int page_x = std::max((int)(bounds.width() * 4 / 5), 1);
+  int page_y = std::max((int)(bounds.height() * 4 / 5), 1);
 
   // Forward/backward defaults to down/up unless it can only be scrolled
   // horizontally.
   if (scroll_action == ax::mojom::Action::kScrollForward)
-    scroll_action = max.y > min.y ? ax::mojom::Action::kScrollDown
-                                  : ax::mojom::Action::kScrollRight;
+    scroll_action = max.y() > min.y() ? ax::mojom::Action::kScrollDown
+                                      : ax::mojom::Action::kScrollRight;
   if (scroll_action == ax::mojom::Action::kScrollBackward)
-    scroll_action = max.y > min.y ? ax::mojom::Action::kScrollUp
-                                  : ax::mojom::Action::kScrollLeft;
+    scroll_action = max.y() > min.y() ? ax::mojom::Action::kScrollUp
+                                      : ax::mojom::Action::kScrollLeft;
 
-  int x = initial.x;
-  int y = initial.y;
+  int x = initial.x();
+  int y = initial.y();
   switch (scroll_action) {
     case ax::mojom::Action::kScrollUp:
-      if (initial.y == min.y)
+      if (initial.y() == min.y())
         return;
-      y = std::max(initial.y - page_y, min.y);
+      y = std::max(initial.y() - page_y, min.y());
       break;
     case ax::mojom::Action::kScrollDown:
-      if (initial.y == max.y)
+      if (initial.y() == max.y())
         return;
-      y = std::min(initial.y + page_y, max.y);
+      y = std::min(initial.y() + page_y, max.y());
       break;
     case ax::mojom::Action::kScrollLeft:
-      if (initial.x == min.x)
+      if (initial.x() == min.x())
         return;
-      x = std::max(initial.x - page_x, min.x);
+      x = std::max(initial.x() - page_x, min.x());
       break;
     case ax::mojom::Action::kScrollRight:
-      if (initial.x == max.x)
+      if (initial.x() == max.x())
         return;
-      x = std::min(initial.x + page_x, max.x);
+      x = std::min(initial.x() + page_x, max.x());
       break;
     default:
       NOTREACHED();
   }
 
-  target.SetScrollOffset(WebPoint(x, y));
+  target->SetScrollOffset(gfx::Point(x, y));
 }
 
 void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {

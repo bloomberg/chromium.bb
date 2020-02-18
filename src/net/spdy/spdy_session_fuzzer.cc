@@ -5,7 +5,6 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/fuzzed_data_provider.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -19,6 +18,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
@@ -59,22 +59,22 @@ namespace {
 class FuzzedSocketFactoryWithMockSSLData : public FuzzedSocketFactory {
  public:
   explicit FuzzedSocketFactoryWithMockSSLData(
-      base::FuzzedDataProvider* data_provider);
+      FuzzedDataProvider* data_provider);
 
   void AddSSLSocketDataProvider(SSLSocketDataProvider* socket);
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> nested_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override;
+      const SSLConfig& ssl_config) override;
 
  private:
   SocketDataProviderArray<SSLSocketDataProvider> mock_ssl_data_;
 };
 
 FuzzedSocketFactoryWithMockSSLData::FuzzedSocketFactoryWithMockSSLData(
-    base::FuzzedDataProvider* data_provider)
+    FuzzedDataProvider* data_provider)
     : FuzzedSocketFactory(data_provider) {}
 
 void FuzzedSocketFactoryWithMockSSLData::AddSSLSocketDataProvider(
@@ -84,10 +84,10 @@ void FuzzedSocketFactoryWithMockSSLData::AddSSLSocketDataProvider(
 
 std::unique_ptr<SSLClientSocket>
 FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> nested_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   return std::make_unique<MockSSLClientSocket>(std::move(nested_socket),
                                                host_and_port, ssl_config,
                                                mock_ssl_data_.GetNext());
@@ -102,7 +102,7 @@ FuzzedSocketFactoryWithMockSSLData::CreateSSLClientSocket(
 // |data| is used to create a FuzzedServerSocket.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::BoundTestNetLog bound_test_net_log;
-  base::FuzzedDataProvider data_provider(data, size);
+  FuzzedDataProvider data_provider(data, size);
   net::FuzzedSocketFactoryWithMockSSLData socket_factory(&data_provider);
   socket_factory.set_fuzz_connect_result(false);
 

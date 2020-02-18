@@ -45,9 +45,10 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   void Minimize() override;
   void Restore() override;
   PlatformWindowState GetPlatformWindowState() const override;
+  void Activate() override;
+  void Deactivate() override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
 
@@ -92,7 +93,7 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
   base::flat_set<::Atom> window_properties_;
 
   // Stores current state of this window.
-  ui::PlatformWindowState state_;
+  PlatformWindowState state_;
 
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;

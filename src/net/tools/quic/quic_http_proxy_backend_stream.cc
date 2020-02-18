@@ -12,6 +12,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 
@@ -52,8 +53,7 @@ QuicHttpProxyBackendStream::QuicHttpProxyBackendStream(
       buf_(base::MakeRefCounted<IOBuffer>(kBufferSize)),
       response_completed_(false),
       headers_set_(false),
-      quic_response_(new quic::QuicBackendResponse()),
-      weak_factory_(this) {}
+      quic_response_(new quic::QuicBackendResponse()) {}
 
 QuicHttpProxyBackendStream::~QuicHttpProxyBackendStream() {}
 
@@ -147,7 +147,7 @@ void QuicHttpProxyBackendStream::CopyHeaders(
     // Ignore the spdy headers
     if (!key.empty() && key[0] != ':') {
       // Remove hop-by-hop headers
-      if (base::ContainsKey(kHopHeaders, key)) {
+      if (base::Contains(kHopHeaders, key)) {
         LOG(INFO) << "QUIC Proxy Ignoring Hop-by-hop Request Header: " << key
                   << ":" << value;
       } else {
@@ -188,7 +188,7 @@ void QuicHttpProxyBackendStream::SetUpload(
 void QuicHttpProxyBackendStream::SendRequestOnBackendThread() {
   DCHECK(quic_proxy_task_runner_->BelongsToCurrentThread());
   url_request_ = proxy_context_->GetURLRequestContext()->CreateRequest(
-      url_, net::DEFAULT_PRIORITY, this);
+      url_, net::DEFAULT_PRIORITY, this, MISSING_TRAFFIC_ANNOTATION);
   url_request_->set_method(method_type_);
   url_request_->SetExtraRequestHeaders(request_headers_);
   if (upload_) {
@@ -371,7 +371,7 @@ spdy::SpdyHeaderBlock QuicHttpProxyBackendStream::getAsQuicHeaders(
       if (header_name.compare("status") != 0) {
         if (header_name.compare("content-encoding") != 0) {
           // Remove hop-by-hop headers
-          if (base::ContainsKey(kHopHeaders, header_name)) {
+          if (base::Contains(kHopHeaders, header_name)) {
             LOG(INFO) << "Quic Proxy Ignoring Hop-by-hop Response Header: "
                       << header_name << ":" << header_value;
           } else {

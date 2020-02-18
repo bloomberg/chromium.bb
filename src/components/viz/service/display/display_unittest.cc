@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
@@ -142,18 +143,11 @@ class DisplayTest : public testing::Test {
                                      std::move(output_surface));
   }
 
-  void SetUpGpuDisplay(const RendererSettings& settings,
-                       std::unique_ptr<TestGLES2Interface> context = nullptr) {
-    std::unique_ptr<FakeOutputSurface> output_surface;
-    scoped_refptr<TestContextProvider> provider;
-    if (context) {
-      provider = TestContextProvider::Create(std::move(context));
-
-    } else {
-      provider = TestContextProvider::Create();
-    }
+  void SetUpGpuDisplay(const RendererSettings& settings) {
+    scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
     provider->BindToCurrentThread();
-    output_surface = FakeOutputSurface::Create3d(std::move(provider));
+    std::unique_ptr<FakeOutputSurface> output_surface =
+        FakeOutputSurface::Create3d(std::move(provider));
     output_surface_ = output_surface.get();
 
     CreateDisplaySchedulerAndDisplay(settings, kArbitraryFrameSinkId,
@@ -200,7 +194,7 @@ class DisplayTest : public testing::Test {
   void UpdateBeginFrameTime(CompositorFrameSinkSupport* support,
                             base::TimeTicks frame_time) {
     support->last_frame_time_ = frame_time;
-    support->presentation_feedbacks_.clear();
+    support->frame_timing_details_.clear();
   }
 
  protected:
@@ -237,14 +231,13 @@ class DisplayTest : public testing::Test {
 TEST_F(DisplayTest, DisplayDamaged) {
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  settings.finish_rendering_on_resize = true;
   SetUpSoftwareDisplay(settings);
   gfx::ColorSpace color_space_1 = gfx::ColorSpace::CreateXYZD50();
   gfx::ColorSpace color_space_2 = gfx::ColorSpace::CreateSCRGBLinear();
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
-  display_->SetColorSpace(color_space_1, color_space_1);
+  display_->SetColorSpace(color_space_1);
 
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -307,7 +300,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     scheduler_->swapped = false;
     EXPECT_EQ(color_space_1, output_surface_->last_reshape_color_space());
-    display_->SetColorSpace(color_space_2, color_space_2);
+    display_->SetColorSpace(color_space_2);
     display_->DrawAndSwap();
     EXPECT_EQ(color_space_2, output_surface_->last_reshape_color_space());
     EXPECT_TRUE(scheduler_->swapped);
@@ -458,7 +451,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(4u, output_surface_->num_sent_frames());
   }
 
-  // Resize should cause a swap if no frame was swapped at the previous size.
+  // DisableSwapUntilResize() should cause a swap if no frame was swapped at the
+  // previous size.
   {
     id_allocator_.GenerateId();
     display_->SetLocalSurfaceId(
@@ -484,6 +478,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_FALSE(scheduler_->has_new_root_surface);
 
     scheduler_->swapped = false;
+    display_->DisableSwapUntilResize(base::OnceClosure());
     display_->Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler_->swapped);
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
@@ -530,9 +525,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
 // Verifies latency info is stored only up to a limit if a swap fails.
 void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
-  RendererSettings settings;
-  settings.finish_rendering_on_resize = true;
-  SetUpSoftwareDisplay(settings);
+  SetUpSoftwareDisplay(RendererSettings());
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -582,6 +575,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   CompositorFrame frame3 =
       CompositorFrameBuilder().AddRenderPass(kOutputRect, kDamageRect).Build();
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame3));
+  EXPECT_TRUE(display_->DrawAndSwap());
 
   // Verify whether or not LatencyInfo was dropped.
   size_t expected_size = 1;  // The Display adds its own latency info.
@@ -602,12 +596,7 @@ TEST_F(DisplayTest, OverLatencyInfoCap) {
   LatencyInfoCapTest(true);
 }
 
-class MockedGLES2Interface : public TestGLES2Interface {
- public:
-  MOCK_METHOD0(ShallowFinishCHROMIUM, void());
-};
-
-TEST_F(DisplayTest, Finish) {
+TEST_F(DisplayTest, DisableSwapUntilResize) {
   id_allocator_.GenerateId();
   LocalSurfaceId local_surface_id1(
       id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
@@ -617,13 +606,8 @@ TEST_F(DisplayTest, Finish) {
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  settings.finish_rendering_on_resize = true;
 
-  auto gl = std::make_unique<MockedGLES2Interface>();
-  MockedGLES2Interface* gl_ptr = gl.get();
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
-
-  SetUpGpuDisplay(settings, std::move(gl));
+  SetUpGpuDisplay(settings);
 
   StubDisplayClient client;
   display_->Initialize(&client, manager_.surface_manager());
@@ -643,22 +627,26 @@ TEST_F(DisplayTest, Finish) {
     SubmitCompositorFrame(&pass_list, local_surface_id1);
   }
 
-  display_->DrawAndSwap();
+  EXPECT_FALSE(scheduler_->swapped);
 
-  // First resize and draw shouldn't finish.
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  // DisableSwapUntilResize() should trigger a swap because we have a frame of
+  // the correct size and haven't swapped at that size yet.
+  bool swap_callback_run = false;
+  display_->DisableSwapUntilResize(base::BindLambdaForTesting(
+      [&swap_callback_run]() { swap_callback_run = true; }));
+  EXPECT_TRUE(scheduler_->swapped);
+  EXPECT_TRUE(swap_callback_run);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
   display_->Resize(gfx::Size(150, 150));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  scheduler_->swapped = false;
 
-  // Another resize without a swap doesn't need to finish.
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
+  // DisableSwapUntilResize() won't trigger a swap because there is no frame
+  // of the correct size to draw.
   display_->SetLocalSurfaceId(local_surface_id2, 1.f);
+  display_->DisableSwapUntilResize(base::OnceClosure());
+  EXPECT_FALSE(scheduler_->swapped);
   display_->Resize(gfx::Size(200, 200));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM()).Times(0);
   {
     RenderPassList pass_list;
     auto pass = RenderPass::Create();
@@ -670,13 +658,16 @@ TEST_F(DisplayTest, Finish) {
     SubmitCompositorFrame(&pass_list, local_surface_id2);
   }
 
+  // DrawAndSwap() should trigger a swap at current size.
   display_->DrawAndSwap();
+  EXPECT_TRUE(scheduler_->swapped);
+  scheduler_->swapped = false;
 
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
+  // DisableSwapUntilResize() won't trigger another swap because we already
+  // swapped a frame at the current size.
+  display_->DisableSwapUntilResize(base::OnceClosure());
+  EXPECT_FALSE(scheduler_->swapped);
 
-  EXPECT_CALL(*gl_ptr, ShallowFinishCHROMIUM());
-  display_->Resize(gfx::Size(250, 250));
-  testing::Mock::VerifyAndClearExpectations(gl_ptr);
   TearDownDisplay();
 }
 
@@ -2578,7 +2569,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
                                SkBlendMode::kSrcOver, 0);
     quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
     quad1->SetNew(shared_quad_state2, rect1, rect1, render_pass_id,
-                  mask_resource_id, gfx::RectF(), gfx::Size(),
+                  mask_resource_id, gfx::RectF(), gfx::Size(), false,
                   gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                   1.0f);
     EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
@@ -2824,10 +2815,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect4, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect2, rect2, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect4, rect4, SK_ColorBLACK, false);
@@ -2872,10 +2863,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect6, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect6, rect6, SK_ColorBLACK, false);
@@ -2919,10 +2910,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect7, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(),
+               mask_resource_id, gfx::RectF(), gfx::Size(), false,
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect7, rect7, SK_ColorBLACK, false);
@@ -3363,9 +3354,9 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     RunAllPendingInMessageLoop();
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
-    ASSERT_EQ(2u, sub_support->presentation_feedbacks().size());
-    EXPECT_EQ(sub_support->presentation_feedbacks().count(frame_token_1), 1u);
-    EXPECT_EQ(sub_support->presentation_feedbacks().count(frame_token_2), 1u);
+    ASSERT_EQ(2u, sub_support->timing_details().size());
+    EXPECT_EQ(sub_support->timing_details().count(frame_token_1), 1u);
+    EXPECT_EQ(sub_support->timing_details().count(frame_token_2), 1u);
   }
 
   {
@@ -3396,52 +3387,37 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   support_->SetNeedsBeginFrame(true);
 
   // Helper fn to submit a CF.
-  auto submit_frame = [this](RenderPassList* pass_list) {
+  auto submit_frame = [this]() {
+    RenderPassList pass_list;
     auto pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 1, 1);
     pass->id = 1u;
-    pass_list->push_back(std::move(pass));
+    pass_list.push_back(std::move(pass));
 
     SubmitCompositorFrame(
-        pass_list,
+        &pass_list,
         id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
   };
 
-  // BeginFrame should not be throttled when the client has not submitted any
-  // compositor frames.
-  base::TimeTicks frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  // Submit the first frame for the client. Begin-frame should still not be
-  // throttled since it has not been embedded yet.
-  RenderPassList pass_list;
-  submit_frame(&pass_list);
+  // Submit kUndrawnFrameLimit+1 frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+  }
   frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  display_->DrawAndSwap();
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-
-  // Submit a second frame. This frame should not be throttled, even after
-  // presentation-feedbacks, as we allow up to two undrawn frames.
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-
-  // Submit a third frame. This frame should be throttled after
-  // presentation-feedbacks, as we throttle at two undrawn frames.
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
   EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Drawing should unthrottle begin-frames.
   display_->DrawAndSwap();
@@ -3449,22 +3425,192 @@ TEST_F(DisplayTest, BeginFrameThrottling) {
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
   UpdateBeginFrameTime(support_.get(), frame_time);
 
-  // Submit two more frames. Begin-frame should be throttled after the
-  // begin-frame for presenatation-feedback.
-  submit_frame(&pass_list);
+  // Verify that throttling starts again after kUndrawnFrameLimit+1 frames.
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    // This clears the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(support_.get(), frame_time);
+  }
   frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
-  submit_frame(&pass_list);
-  frame_time = base::TimeTicks::Now();
-  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
-  UpdateBeginFrameTime(support_.get(), frame_time);
   EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
 
   // Instead of doing a draw, forward time by ~1 seconds. That should unthrottle
   // the begin-frame.
   frame_time += base::TimeDelta::FromSecondsD(1.1);
   EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, BeginFrameThrottlingMultipleSurfaces) {
+  id_allocator_.GenerateId();
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  support_->SetNeedsBeginFrame(true);
+
+  // Helper fn to submit a CF.
+  auto submit_frame = [this]() {
+    RenderPassList pass_list;
+    auto pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 1, 1);
+    pass->id = 1u;
+    pass_list.push_back(std::move(pass));
+
+    SubmitCompositorFrame(
+        &pass_list,
+        id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+  };
+
+  // Submit kUndrawnFrameLimit frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Generate a new LocalSurfaceId for the next submission.
+    id_allocator_.GenerateId();
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // This only draws the first surface, so we should only be able to send one
+  // more BeginFrame.
+  display_->DrawAndSwap();
+  frame_time = base::TimeTicks::Now();
+  EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // After this frame submission, we are throttled again.
+  submit_frame();
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  // Now the last surface is drawn. This should unblock us to submit
+  // kUndrawnFrameLimit+1 frames again.
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  display_->DrawAndSwap();
+  id_allocator_.GenerateId();
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(support_.get(), frame_time));
+    UpdateBeginFrameTime(support_.get(), frame_time);
+    submit_frame();
+    // Generate a new LocalSurfaceId for the next submission.
+    id_allocator_.GenerateId();
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(support_.get(), frame_time));
+  UpdateBeginFrameTime(support_.get(), frame_time);
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, DontThrottleWhenParentBlocked) {
+  id_allocator_.GenerateId();
+  SetUpGpuDisplay(RendererSettings());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  support_->SetNeedsBeginFrame(true);
+
+  // Create frame sink for a sub surface.
+  const LocalSurfaceId sub_local_surface_id(6,
+                                            base::UnguessableToken::Create());
+  const LocalSurfaceId sub_local_surface_id2(7,
+                                             base::UnguessableToken::Create());
+  const SurfaceId sub_surface_id2(kAnotherFrameSinkId, sub_local_surface_id2);
+
+  MockCompositorFrameSinkClient sub_client;
+
+  auto sub_support = std::make_unique<CompositorFrameSinkSupport>(
+      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
+      true /* needs_sync_points */);
+  sub_support->SetNeedsBeginFrame(true);
+
+  // Submit kUndrawnFrameLimit+1 frames. BeginFrames should be throttled only
+  // after the last frame.
+  base::TimeTicks frame_time;
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit + 1;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id,
+                                       MakeDefaultCompositorFrame());
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+  }
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
+
+  // Make the display block on |sub_local_surface_id2|.
+  CompositorFrame frame =
+      CompositorFrameBuilder()
+          .AddDefaultRenderPass()
+          .SetActivationDependencies({sub_surface_id2})
+          .SetDeadline(FrameDeadline(base::TimeTicks::Now(),
+                                     std::numeric_limits<uint32_t>::max(),
+                                     base::TimeDelta::FromSeconds(1), false))
+          .Build();
+  support_->SubmitCompositorFrame(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      std::move(frame));
+
+  for (uint32_t i = 0; i < CompositorFrameSinkSupport::kUndrawnFrameLimit * 3;
+       ++i) {
+    frame_time = base::TimeTicks::Now();
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id,
+                                       MakeDefaultCompositorFrame());
+    // Immediately after submitting frame, because there is presentation
+    // feedback queued up, ShouldSendBeginFrame should always return true.
+    EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+    // Clear the presentation feedbacks.
+    UpdateBeginFrameTime(sub_support.get(), frame_time);
+  }
+
+  // Now submit to |sub_local_surface_id2|. This should unblock the parent and
+  // throttling will resume.
+  frame_time = base::TimeTicks::Now();
+  EXPECT_TRUE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
+  sub_support->SubmitCompositorFrame(sub_local_surface_id2,
+                                     MakeDefaultCompositorFrame());
+  frame_time = base::TimeTicks::Now();
+  EXPECT_FALSE(ShouldSendBeginFrame(sub_support.get(), frame_time));
+  UpdateBeginFrameTime(sub_support.get(), frame_time);
 
   TearDownDisplay();
 }

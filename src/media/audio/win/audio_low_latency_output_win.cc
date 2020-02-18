@@ -68,6 +68,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   DVLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
   DVLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
        << "Core Audio (WASAPI) EXCLUSIVE MODE is enabled.";
+  DVLOG(1) << params.AsHumanReadableString();
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
   bool avrt_init = avrt::Initialize();
@@ -93,6 +94,7 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   format_.Samples.wValidBitsPerSample = format->wBitsPerSample;
   format_.dwChannelMask = CoreAudioUtil::GetChannelConfig(device_id, eRender);
   format_.SubFormat = KSDATAFORMAT_SUBTYPE_IEEE_FLOAT;
+  DVLOG(1) << "Format: " << CoreAudioUtil::WaveFormatToString(&format_);
 
   // Store size (in different units) of audio packets which we expect to
   // get from the audio endpoint device in each render event.
@@ -599,7 +601,9 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
 
     audio_bus_->Scale(volume_);
-    audio_bus_->ToInterleaved<Float32SampleTypeTraits>(
+
+    // We skip clipping since that occurs at the shared memory boundary.
+    audio_bus_->ToInterleaved<Float32SampleTypeTraitsNoClip>(
         frames_filled, reinterpret_cast<float*>(audio_data));
 
     // Release the buffer space acquired in the GetBuffer() call.

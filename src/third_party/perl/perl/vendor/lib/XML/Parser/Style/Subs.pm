@@ -23,7 +23,7 @@ __END__
 
 =head1 NAME
 
-XML::Parser::Style::Subs
+XML::Parser::Style::Subs - glue for handling element callbacks
 
 =head1 SYNOPSIS
 

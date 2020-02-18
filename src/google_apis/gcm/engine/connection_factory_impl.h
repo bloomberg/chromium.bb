@@ -35,7 +35,7 @@ class GCM_EXPORT ConnectionFactoryImpl
       const std::vector<GURL>& mcs_endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
       GetProxyResolvingFactoryCallback get_socket_factory_callback,
-      // need task runner here.
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder,
       network::NetworkConnectionTracker* network_connection_tracker);
   ~ConnectionFactoryImpl() override;
@@ -180,6 +180,9 @@ class GCM_EXPORT ConnectionFactoryImpl
 
   // Builder for generating new login requests.
   BuildLoginRequestCallback request_builder_;
+
+  // Task runner.
+  const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;

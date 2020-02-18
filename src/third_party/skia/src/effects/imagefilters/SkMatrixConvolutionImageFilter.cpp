@@ -17,7 +17,7 @@
 
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
-#include "include/private/GrTextureProxy.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrMatrixConvolutionEffect.h"
 #endif
 
@@ -349,10 +349,14 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilter::onFilterImage(SkSpecialIma
         sk_sp<GrTextureProxy> inputProxy(input->asTextureProxyRef(context));
         SkASSERT(inputProxy);
 
+        const auto isProtected = inputProxy->isProtected();
+
         offset->fX = dstBounds.left();
         offset->fY = dstBounds.top();
         dstBounds.offset(-inputOffset);
         srcBounds.offset(-inputOffset);
+        // Map srcBounds from input's logical image domain to that of the proxy
+        srcBounds.offset(input->subset().x(), input->subset().y());
 
         auto fp = GrMatrixConvolutionEffect::Make(std::move(inputProxy),
                                                   srcBounds,
@@ -367,12 +371,12 @@ sk_sp<SkSpecialImage> SkMatrixConvolutionImageFilter::onFilterImage(SkSpecialIma
             return nullptr;
         }
 
-        return DrawWithFP(context, std::move(fp), dstBounds, ctx.outputProperties());
+        return DrawWithFP(context, std::move(fp), dstBounds, ctx.outputProperties(),
+                          isProtected ? GrProtected::kYes : GrProtected::kNo);
     }
 #endif
 
     SkBitmap inputBM;
-
     if (!input->getROPixels(&inputBM)) {
         return nullptr;
     }

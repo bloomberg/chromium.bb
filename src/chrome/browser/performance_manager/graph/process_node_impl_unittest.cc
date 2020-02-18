@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
 #include "base/process/process.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_test_harness.h"
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
@@ -19,11 +20,13 @@ class ProcessNodeImplTest : public GraphTestHarness {};
 
 }  // namespace
 
-TEST_F(ProcessNodeImplTest, GetIndexingKey) {
+TEST_F(ProcessNodeImplTest, SafeDowncast) {
   auto process = CreateNode<ProcessNodeImpl>();
-  EXPECT_EQ(
-      process->GetIndexingKey(),
-      static_cast<const void*>(static_cast<const NodeBase*>(process.get())));
+  ProcessNode* node = process.get();
+  EXPECT_EQ(process.get(), ProcessNodeImpl::FromNode(node));
+  NodeBase* base = process.get();
+  EXPECT_EQ(base, NodeBase::FromNode(node));
+  EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
@@ -105,6 +108,138 @@ TEST_F(ProcessNodeImplTest, GetPageNodeIfExclusive) {
     EXPECT_EQ(g.other_page.get(),
               g.other_process.get()->GetPageNodeIfExclusive());
   }
+}
+
+namespace {
+
+class LenientMockObserver : public ProcessNodeImpl::Observer {
+ public:
+  LenientMockObserver() {}
+  ~LenientMockObserver() override {}
+
+  MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
+  MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
+  MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
+  MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
+  MOCK_METHOD1(OnAllFramesInProcessFrozen, void(const ProcessNode*));
+
+  void SetNotifiedProcessNode(const ProcessNode* process_node) {
+    notified_process_node_ = process_node;
+  }
+
+  const ProcessNode* TakeNotifiedProcessNode() {
+    const ProcessNode* node = notified_process_node_;
+    notified_process_node_ = nullptr;
+    return node;
+  }
+
+ private:
+  const ProcessNode* notified_process_node_ = nullptr;
+};
+
+using MockObserver = ::testing::StrictMock<LenientMockObserver>;
+
+using testing::_;
+using testing::Invoke;
+
+}  // namespace
+
+TEST_F(ProcessNodeImplTest, ObserverWorks) {
+  MockObserver obs;
+  graph()->AddProcessNodeObserver(&obs);
+
+  // Create a page node and expect a matching call to "OnProcessNodeAdded".
+  EXPECT_CALL(obs, OnProcessNodeAdded(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  auto process_node = CreateNode<ProcessNodeImpl>();
+  const ProcessNode* raw_process_node = process_node.get();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnMainThreadTaskLoadIsLow(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->SetMainThreadTaskLoadIsLow(true);
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  EXPECT_CALL(obs, OnAllFramesInProcessFrozen(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node->OnAllFramesInProcessFrozenForTesting();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  // Release the page node and expect a call to "OnBeforeProcessNodeRemoved".
+  EXPECT_CALL(obs, OnBeforeProcessNodeRemoved(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
+  process_node.reset();
+  EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  graph()->RemoveProcessNodeObserver(&obs);
+}
+
+TEST_F(ProcessNodeImplTest, PublicInterface) {
+  auto process_node = CreateNode<ProcessNodeImpl>();
+  const ProcessNode* public_process_node = process_node.get();
+
+  // Create a small frame-tree so that GetFrameNodes can be well tested.
+  auto page_node = CreateNode<PageNodeImpl>();
+  auto main_frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
+  auto child_frame_node = CreateNode<FrameNodeImpl>(
+      process_node.get(), page_node.get(), main_frame_node.get());
+
+  // Simply test that the public interface impls yield the same result as their
+  // private counterpart.
+
+  const base::Process self = base::Process::Current();
+  const base::Time launch_time = base::Time::Now();
+  process_node->SetProcess(self.Duplicate(), launch_time);
+  EXPECT_EQ(process_node->process_id(), public_process_node->GetProcessId());
+  EXPECT_EQ(&process_node->process(), &public_process_node->GetProcess());
+  EXPECT_EQ(process_node->launch_time(), public_process_node->GetLaunchTime());
+
+  constexpr int32_t kExitStatus = 0xF00;
+  process_node->SetProcessExitStatus(kExitStatus);
+  EXPECT_EQ(process_node->exit_status(), public_process_node->GetExitStatus());
+
+  const auto& frame_nodes = process_node->frame_nodes();
+  auto public_frame_nodes = public_process_node->GetFrameNodes();
+  EXPECT_EQ(frame_nodes.size(), public_frame_nodes.size());
+  for (const auto* frame_node : frame_nodes) {
+    const FrameNode* public_frame_node = frame_node;
+    EXPECT_TRUE(base::Contains(public_frame_nodes, public_frame_node));
+  }
+
+  decltype(public_frame_nodes) visited_frame_nodes;
+  public_process_node->VisitFrameNodes(base::BindLambdaForTesting(
+      [&visited_frame_nodes](const FrameNode* frame_node) -> bool {
+        visited_frame_nodes.insert(frame_node);
+        return true;
+      }));
+  EXPECT_EQ(public_frame_nodes, visited_frame_nodes);
+
+  process_node->SetExpectedTaskQueueingDuration(
+      base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(process_node->expected_task_queueing_duration(),
+            public_process_node->GetExpectedTaskQueueingDuration());
+
+  process_node->SetMainThreadTaskLoadIsLow(true);
+  EXPECT_EQ(process_node->main_thread_task_load_is_low(),
+            public_process_node->GetMainThreadTaskLoadIsLow());
+
+  process_node->SetCPUUsage(0.5);
+  EXPECT_EQ(process_node->cpu_usage(), public_process_node->GetCpuUsage());
+
+  process_node->set_cumulative_cpu_usage(base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(process_node->cumulative_cpu_usage(),
+            public_process_node->GetCumulativeCpuUsage());
+
+  process_node->set_private_footprint_kb(628);
+  EXPECT_EQ(process_node->private_footprint_kb(),
+            public_process_node->GetPrivateFootprintKb());
 }
 
 }  // namespace performance_manager

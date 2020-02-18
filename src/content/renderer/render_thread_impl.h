@@ -32,7 +32,6 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/frame_sink_provider.mojom.h"
-#include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -56,8 +55,8 @@
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
@@ -105,21 +104,16 @@ class Extension;
 
 namespace viz {
 class BeginFrameSource;
-class RasterContextProvider;
-class SyntheticBeginFrameSource;
-}
-
-namespace ws {
 class ContextProviderCommandBuffer;
 class Gpu;
-}  // namespace ws
+class RasterContextProvider;
+class SyntheticBeginFrameSource;
+}  // namespace viz
 
 namespace content {
-class AecDumpMessageFilter;
 class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
-class DomStorageDispatcher;
 class GpuVideoAcceleratorFactoriesImpl;
 class LowMemoryModeController;
 class P2PSocketDispatcher;
@@ -291,10 +285,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return compositor_task_runner_;
   }
 
-  DomStorageDispatcher* dom_storage_dispatcher() const {
-    return dom_storage_dispatcher_.get();
-  }
-
   ResourceDispatcher* resource_dispatcher() const {
     return resource_dispatcher_.get();
   }
@@ -336,7 +326,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return low_memory_mode_controller_.get();
   }
 
-  mojom::RenderFrameMessageFilter* render_frame_message_filter();
   mojom::RenderMessageFilter* render_message_filter();
 
   // Get the GPU channel. Returns NULL if the channel is not established or
@@ -366,7 +355,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<ws::ContextProviderCommandBuffer>
+  scoped_refptr<viz::ContextProviderCommandBuffer>
   SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
@@ -378,6 +367,30 @@ class CONTENT_EXPORT RenderThreadImpl
   void PreCacheFontCharacters(const LOGFONT& log_font,
                               const base::string16& str);
 #endif
+
+  class UnfreezableMessageFilter : public IPC::MessageFilter {
+   public:
+    explicit UnfreezableMessageFilter(RenderThreadImpl* render_thread_impl);
+    bool OnMessageReceived(const IPC::Message& message) override;
+
+    // Adds |unfreezable_task_runner| for the task to be executed later.
+    void AddListenerUnfreezableTaskRunner(
+        int32_t routing_id,
+        scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner);
+
+    // Called on the I/O thread.
+    // Returns the unfreezable task runner associated with |routing_id|.
+    scoped_refptr<base::SingleThreadTaskRunner> GetUnfreezableTaskRunner(
+        int32_t routing_id);
+
+   private:
+    ~UnfreezableMessageFilter() override;
+    RenderThreadImpl* render_thread_impl_;
+    base::Lock unfreezable_task_runners_lock_;
+    // Map of routing_id and listener's thread unfreezable task runner.
+    std::map<int32_t, scoped_refptr<base::SingleThreadTaskRunner>>
+        unfreezable_task_runners_ GUARDED_BY(unfreezable_task_runners_lock_);
+  };
 
   // For producing custom V8 histograms. Custom histograms are produced if all
   // RenderViews share the same host, and the host is in the pre-specified set
@@ -405,6 +418,7 @@ class CONTENT_EXPORT RenderThreadImpl
     FRIEND_TEST_ALL_PREFIXES(RenderThreadImplUnittest,
                              IdentifyAlexaTop10NonGoogleSite);
     friend class RenderThreadImplUnittest;
+    friend class UnfreezableMessageFilter;
 
     // Converts a host name to a suffix for histograms
     std::string HostToCustomHistogramSuffix(const std::string& host);
@@ -438,7 +452,6 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id,
       mojom::FrameRequest frame);
 
-  blink::mojom::StoragePartitionService* GetStoragePartitionService();
   mojom::RendererHost* GetRendererHost();
 
   struct RendererMemoryMetrics {
@@ -561,7 +574,6 @@ class CONTENT_EXPORT RenderThreadImpl
       discardable_shared_memory_manager_;
 
   // These objects live solely on the render thread.
-  std::unique_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
@@ -578,11 +590,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Dispatches all P2P sockets.
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
 
-  // Used for communicating registering AEC dump consumers with the browser and
-  // receving AEC dump file handles when AEC dump is enabled. An AEC dump is
-  // diagnostic audio data for WebRTC stored locally when enabled by the user in
-  // chrome://webrtc-internals.
-  scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
+  // Filter out unfreezable messages and pass it to unfreezable task runners.
+  scoped_refptr<UnfreezableMessageFilter> unfreezable_message_filter_;
 
   // Provides AudioInputIPC objects for audio input devices. Initialized in
   // Init.
@@ -634,7 +643,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver>::Unchecked observers_;
 
@@ -653,7 +662,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // memory saving mode.
   std::unique_ptr<LowMemoryModeController> low_memory_mode_controller_;
 
-  std::unique_ptr<ws::Gpu> gpu_;
+  std::unique_ptr<viz::Gpu> gpu_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
@@ -701,14 +710,12 @@ class CONTENT_EXPORT RenderThreadImpl
       std::map<int, scoped_refptr<PendingFrameCreate>>;
   PendingFrameCreateMap pending_frame_creates_;
 
-  blink::mojom::StoragePartitionServicePtr storage_partition_service_;
   mojom::RendererHostAssociatedPtr renderer_host_;
 
   blink::AssociatedInterfaceRegistry associated_interfaces_;
 
   mojo::AssociatedBinding<mojom::Renderer> renderer_binding_;
 
-  mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
@@ -731,7 +738,7 @@ class CONTENT_EXPORT RenderThreadImpl
   base::TimeTicks init_start_;
   base::TimeTicks init_end_;
 
-  base::WeakPtrFactory<RenderThreadImpl> weak_factory_;
+  base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

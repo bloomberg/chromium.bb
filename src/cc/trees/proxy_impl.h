@@ -94,6 +94,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void PostAnimationEventsToMainThreadOnImplThread(
       std::unique_ptr<MutatorEvents> events) override;
   bool IsInsideDraw() override;
+  bool IsBeginMainFrameExpected() override;
   void RenewTreePriority() override;
   void PostDelayedAnimationTaskOnImplThread(base::OnceClosure task,
                                             base::TimeDelta delay) override;
@@ -112,6 +113,8 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType element_list_type) override;
+  void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) override;
 
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;

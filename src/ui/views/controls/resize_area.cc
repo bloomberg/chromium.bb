@@ -12,18 +12,12 @@
 
 namespace views {
 
-const char ResizeArea::kViewClassName[] = "ResizeArea";
-
 ResizeArea::ResizeArea(ResizeAreaDelegate* delegate)
     : delegate_(delegate),
       initial_position_(0) {
 }
 
 ResizeArea::~ResizeArea() = default;
-
-const char* ResizeArea::GetClassName() const {
-  return kViewClassName;
-}
 
 gfx::NativeCursor ResizeArea::GetCursor(const ui::MouseEvent& event) {
   return GetEnabled() ? GetNativeEastWestResizeCursor() : gfx::kNullCursor;
@@ -84,5 +78,9 @@ void ResizeArea::SetInitialPosition(int event_x) {
   View::ConvertPointToScreen(this, &point);
   initial_position_ = point.x();
 }
+
+BEGIN_METADATA(ResizeArea)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

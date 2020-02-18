@@ -16,12 +16,12 @@
 #include "chrome/browser/sync/sync_startup_tracker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 
 class Browser;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -196,7 +196,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
 
   std::unique_ptr<Delegate> delegate_;
   Profile* profile_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   const signin_metrics::AccessPoint signin_access_point_;
   const signin_metrics::PromoAction signin_promo_action_;
   const signin_metrics::Reason signin_reason_;
@@ -222,7 +222,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
 
-  base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_;
+  base::WeakPtrFactory<DiceTurnSyncOnHelper> weak_pointer_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelper);
 };
 

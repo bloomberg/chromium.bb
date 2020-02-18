@@ -24,6 +24,17 @@ e.g.
 
     tpage --define author="Andy Wardley" skeleton.pm > MyModule.pm
 
+=head2 The F<.tpagerc> Configuration File
+
+You can use a F<.tpagerc> file in your home directory.
+
+The purpose of this file is to set any I<global> configuration options
+that you want applied I<every> time F<tpage> is run. For example, you
+can use the C<include_path> to use template files from a generic template
+directory.
+
+Run C<tpage -h> for a summary of the options available.
+
 See L<Template> for general information about the Perl Template 
 Toolkit and the template language and features.
 

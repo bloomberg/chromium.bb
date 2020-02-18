@@ -62,6 +62,7 @@ class RTPSenderVideo {
                  const WebRtcKeyValueConfig& field_trials);
   virtual ~RTPSenderVideo();
 
+  // expected_retransmission_time_ms.has_value() -> retransmission allowed.
   bool SendVideo(VideoFrameType frame_type,
                  int8_t payload_type,
                  uint32_t capture_timestamp,
@@ -70,7 +71,7 @@ class RTPSenderVideo {
                  size_t payload_size,
                  const RTPFragmentationHeader* fragmentation,
                  const RTPVideoHeader* video_header,
-                 int64_t expected_retransmission_time_ms);
+                 absl::optional<int64_t> expected_retransmission_time_ms);
 
   void RegisterPayloadType(int8_t payload_type,
                            absl::string_view payload_name,
@@ -142,8 +143,7 @@ class RTPSenderVideo {
                                   bool protect_media_packet);
 
   bool LogAndSendToNetwork(std::unique_ptr<RtpPacketToSend> packet,
-                           StorageType storage,
-                           RtpPacketSender::Priority priority);
+                           StorageType storage);
 
   bool red_enabled() const RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_) {
     return red_payload_type_ >= 0;

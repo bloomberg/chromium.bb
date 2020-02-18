@@ -8,19 +8,38 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_
 
 #include "base/callback.h"
+#include "base/test/scoped_task_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/trace_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
-void PreciselyCollectGarbage();
-void ConservativelyCollectGarbage(
-    BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
-void ClearOutOldGarbage();
-void CompleteSweepingIfNeeded();
+class TestSupportingGC : public testing::Test {
+ public:
+  // Performs a precise garbage collection with eager sweeping.
+  static void PreciselyCollectGarbage(
+      BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
+
+  // Performs a conservative garbage collection.
+  static void ConservativelyCollectGarbage(
+      BlinkGC::SweepingType sweeping_type = BlinkGC::kEagerSweeping);
+
+  // Performs multiple rounds of garbage collections until no more memory can be
+  // freed. This is useful to avoid other garbage collections having to deal
+  // with stale memory.
+  void ClearOutOldGarbage();
+
+  // Completes sweeping if it is currently running.
+  void CompleteSweepingIfNeeded();
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+};
 
 template <typename T>
 class ObjectWithCallbackBeforeInitializer
@@ -104,6 +123,22 @@ class ObjectWithMixinWithCallbackBeforeInitializer
       : Mixin(std::move(cb)) {}
 
   void Trace(Visitor* visitor) override { Mixin::Trace(visitor); }
+};
+
+// Simple linked object to be used in tests.
+class LinkedObject : public GarbageCollected<LinkedObject> {
+ public:
+  LinkedObject() = default;
+  explicit LinkedObject(LinkedObject* next) : next_(next) {}
+
+  void set_next(LinkedObject* next) { next_ = next; }
+  LinkedObject* next() const { return next_; }
+  Member<LinkedObject>& next_ref() { return next_; }
+
+  void Trace(Visitor* visitor) { visitor->Trace(next_); }
+
+ private:
+  Member<LinkedObject> next_;
 };
 
 }  // namespace blink

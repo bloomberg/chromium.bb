@@ -9,7 +9,6 @@ per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
 achuith@chromium.org
 alemate@chromium.org
-derat@chromium.org
 oshima@chromium.org
 rkc@chromium.org
 satorux@chromium.org

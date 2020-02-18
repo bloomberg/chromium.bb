@@ -23,7 +23,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -48,7 +48,6 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
-#include "chrome/browser/policy/cloud/policy_header_service_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -117,6 +116,7 @@
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/cups_proxy_service_manager_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
@@ -133,7 +133,7 @@
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/bookmark/bookmark_tracker_factory.h"
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
@@ -147,7 +147,6 @@
 #include "chrome/browser/extensions/browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
-#include "chrome/browser/ui/web_applications/web_app_ui_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate_factory.h"
 #include "extensions/browser/browser_context_keyed_service_factories.h"
@@ -253,7 +252,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   ContentSuggestionsServiceFactory::GetInstance();
   CookieSettingsFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
-  data_use_measurement::ChromeDataUseAscriberServiceFactory::GetInstance();
   dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadCoreServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
@@ -269,6 +267,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::AccountManagerMigratorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::CupsPrintersManagerFactory::GetInstance();
+  chromeos::CupsProxyServiceManagerFactory::GetInstance();
   chromeos::SyncedPrintersManagerFactory::GetInstance();
   chromeos::smb_client::SmbServiceFactory::GetInstance();
   crostini::CrostiniRegistryServiceFactory::GetInstance();
@@ -276,7 +275,8 @@ void ChromeBrowserMainExtraPartsProfiles::
   extensions::VerifyTrustAPI::GetFactoryInstance();
 #endif
   FaviconServiceFactory::GetInstance();
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+  HistoryUiFaviconRequestHandlerFactory::GetInstance();
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::BookmarkTrackerFactory::GetInstance();
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance();
   feature_engagement::NewTabTrackerFactory::GetInstance();
@@ -354,7 +354,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #else  // !defined(OS_CHROMEOS)
   policy::UserPolicySigninServiceFactory::GetInstance();
 #endif
-  policy::PolicyHeaderServiceFactory::GetInstance();
   policy::UserCloudPolicyInvalidatorFactory::GetInstance();
   predictors::AutocompleteActionPredictorFactory::GetInstance();
   predictors::PredictorDatabaseFactory::GetInstance();
@@ -405,7 +404,6 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   web_app::WebAppProviderFactory::GetInstance();
-  web_app::WebAppUiServiceFactory::GetInstance();
   web_app::WebAppMetricsFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();

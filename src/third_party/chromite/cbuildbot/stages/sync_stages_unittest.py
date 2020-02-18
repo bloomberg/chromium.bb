@@ -1340,8 +1340,8 @@ pre-cq-configs: grunt-pre-cq
     action_history = self.fake_db.GetActionsForChanges(changes)
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     build_ids_per_config = {}
-    for change, change_status_dict in progress_map.iteritems():
-      for config, pre_cq_progress_tuple in change_status_dict.iteritems():
+    for change, change_status_dict in progress_map.items():
+      for config, pre_cq_progress_tuple in change_status_dict.items():
         if (pre_cq_progress_tuple.status == constants
             .CL_PRECQ_CONFIG_STATUS_LAUNCHED):
           if not config in build_ids_per_config:

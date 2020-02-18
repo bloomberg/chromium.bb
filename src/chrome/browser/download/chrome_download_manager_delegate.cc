@@ -52,6 +52,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
@@ -102,7 +103,6 @@
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "services/network/public/cpp/features.h"
 #endif
 
 using content::BrowserThread;
@@ -250,11 +250,13 @@ void CheckCanDownload(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     CanDownloadCallback can_download_cb) {
   DownloadRequestLimiter* limiter =
       g_browser_process->download_request_limiter();
   if (limiter) {
     limiter->CanDownload(web_contents_getter, url, request_method,
+                         std::move(request_initiator),
                          base::BindOnce(std::move(can_download_cb), true));
   }
 }
@@ -266,11 +268,12 @@ void OnDownloadAcquireFileAccessPermissionDone(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     CanDownloadCallback can_download_cb,
     bool granted) {
   if (granted) {
     CheckCanDownload(web_contents_getter, url, request_method,
-                     std::move(can_download_cb));
+                     std::move(request_initiator), std::move(can_download_cb));
   } else {
     std::move(can_download_cb).Run(false, false);
   }
@@ -309,8 +312,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      is_file_picker_showing_(false),
-      weak_ptr_factory_(this) {
+      is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
   location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
 #endif
@@ -585,20 +587,18 @@ bool ChromeDownloadManagerDelegate::InterceptDownloadIfApplicable(
     bool is_transient,
     content::WebContents* web_contents) {
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    // For background service downloads we don't want offline pages backend to
-    // intercept the download. |is_transient| flag is used to determine whether
-    // the download corresponds to background service.
-    if (!is_transient &&
-        offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
-                                                                  mime_type)) {
-      offline_pages::OfflinePageUtils::ScheduleDownload(
-          web_contents, offline_pages::kDownloadNamespace, url,
-          offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
-          request_origin);
-      return true;
-    }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // For background service downloads we don't want offline pages backend to
+  // intercept the download. |is_transient| flag is used to determine whether
+  // the download corresponds to background service.
+  if (!is_transient &&
+      offline_pages::OfflinePageUtils::CanDownloadAsOfflinePage(url,
+                                                                mime_type)) {
+    offline_pages::OfflinePageUtils::ScheduleDownload(
+        web_contents, offline_pages::kDownloadNamespace, url,
+        offline_pages::OfflinePageUtils::DownloadUIActionFlags::ALL,
+        request_origin);
+    return true;
   }
 #endif
   return false;
@@ -775,7 +775,7 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
 }
 
 std::string
-ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() {
   return std::string(chrome::kApplicationClientIDStringForAVScanning);
 }
 
@@ -1138,11 +1138,14 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   DVLOG(2) << __func__ << "() download = " << item->DebugString(false)
            << " verdict = " << static_cast<int>(result);
+  bool is_pending_scanning = false;
+
   // We only mark the content as being dangerous if the download's safety state
   // has not been set to DANGEROUS yet.  We don't want to show two warnings.
   if (item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
       item->GetDangerType() ==
-          download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) {
+          download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT ||
+      item->GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
     download::DownloadDangerType danger_type =
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
     switch (result) {
@@ -1182,6 +1185,13 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
       case safe_browsing::DownloadCheckResult::WHITELISTED_BY_POLICY:
         danger_type = download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
         break;
+      case safe_browsing::DownloadCheckResult::ASYNC_SCANNING:
+        is_pending_scanning = true;
+        danger_type = download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING;
+        break;
+      case safe_browsing::DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED;
+        break;
     }
     DCHECK_NE(danger_type,
               download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
@@ -1200,9 +1210,11 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     }
   }
 
-  SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
-      item->GetUserData(&kSafeBrowsingUserDataKey));
-  state->CompleteDownload();
+  if (!is_pending_scanning) {
+    SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
+        item->GetUserData(&kSafeBrowsingUserDataKey));
+    state->CompleteDownload();
+  }
 }
 #endif  // FULL_SAFE_BROWSING
 
@@ -1395,6 +1407,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CanDownloadCallback cb = base::BindOnce(
@@ -1404,9 +1417,11 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
       base::Bind(&OnDownloadAcquireFileAccessPermissionDone,
-                 web_contents_getter, url, request_method, base::Passed(&cb)));
+                 web_contents_getter, url, request_method,
+                 std::move(request_initiator), base::Passed(&cb)));
 #else
-  CheckCanDownload(web_contents_getter, url, request_method, std::move(cb));
+  CheckCanDownload(web_contents_getter, url, request_method,
+                   std::move(request_initiator), std::move(cb));
 #endif
 }
 

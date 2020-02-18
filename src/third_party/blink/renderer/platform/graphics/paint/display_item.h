@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
@@ -28,7 +28,7 @@ class PLATFORM_EXPORT DisplayItem {
  public:
   enum {
     // Must be kept in sync with core/paint/PaintPhase.h.
-    kPaintPhaseMax = 10,
+    kPaintPhaseMax = 11,
   };
 
   // A display item type uniquely identifies a display item of a client.

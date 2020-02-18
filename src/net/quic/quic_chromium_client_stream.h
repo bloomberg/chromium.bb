@@ -192,7 +192,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
 
     NetLogWithSource net_log_;
 
-    base::WeakPtrFactory<Handle> weak_factory_;
+    base::WeakPtrFactory<Handle> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(Handle);
   };
@@ -204,7 +204,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
       const NetLogWithSource& net_log,
       const NetworkTrafficAnnotationTag& traffic_annotation);
   QuicChromiumClientStream(
-      quic::PendingStream pending,
+      quic::PendingStream* pending,
       quic::QuicSpdyClientSessionBase* session,
       quic::StreamType type,
       const NetLogWithSource& net_log,
@@ -311,7 +311,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream
   // Length of the HEADERS frame containing trailing headers.
   size_t trailing_headers_frame_len_;
 
-  base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientStream);
 };

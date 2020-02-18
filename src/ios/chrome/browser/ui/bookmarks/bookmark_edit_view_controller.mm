@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -34,6 +35,7 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -71,9 +73,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeInvalidURLFooter,
 };
 
-// The text color for the invalid URL label.
-const CGFloat kInvalidURLTextColor = 0xEA4335;
-
 // Estimated Table Row height.
 const CGFloat kEstimatedTableRowHeight = 50;
 // Estimated TableSection Footer height.
@@ -108,6 +107,9 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 @property(nonatomic, strong) BookmarkFolderViewController* folderViewController;
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
 
 // Cancel button item in navigation bar.
 @property(nonatomic, strong) UIBarButtonItem* cancelItem;
@@ -175,7 +177,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 #pragma mark - Lifecycle
 
 - (instancetype)initWithBookmark:(const BookmarkNode*)bookmark
-                    browserState:(ios::ChromeBrowserState*)browserState {
+                    browserState:(ios::ChromeBrowserState*)browserState
+                      dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(bookmark);
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
@@ -194,6 +197,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
         new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
 
     _browserState = browserState;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -257,7 +261,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                            target:nil
                            action:nil];
 
-  deleteButton.tintColor = [UIColor redColor];
+  deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
   // Setting the image to nil will cause the default shadowImage to be used,
   // we need to create a new one.
   [self.navigationController.toolbar setShadowImage:[UIImage new]
@@ -320,9 +324,10 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
     [self.delegate bookmarkEditorWillCommitTitleOrUrlChange:self];
   }
 
-  bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
-      self.bookmark, [self inputBookmarkName], url, self.folder,
-      self.bookmarkModel, self.browserState);
+  [self.dispatcher showSnackbarMessage:
+                       bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
+                           self.bookmark, [self inputBookmarkName], url,
+                           self.folder, self.bookmarkModel, self.browserState)];
 }
 
 - (void)changeFolder:(const BookmarkNode*)folder {
@@ -422,8 +427,9 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
       // removes the current node.
       nodes.insert(self.bookmark);
     }
-    bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarkModel,
-                                                     self.browserState);
+    [self.dispatcher
+        showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
+                                nodes, self.bookmarkModel, self.browserState)];
     self.bookmark = nil;
   }
   [self.delegate bookmarkEditorWantsDismissal:self];
@@ -441,7 +447,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                allowsNewFolders:YES
                     editedNodes:editedNodes
                    allowsCancel:NO
-                 selectedFolder:self.folder];
+                 selectedFolder:self.folder
+                     dispatcher:self.dispatcher];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
   self.folderViewController.navigationItem.largeTitleDisplayMode =
@@ -541,7 +548,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
         base::mac::ObjCCastStrict<UITableViewHeaderFooterView>(footerView);
     headerFooterView.textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
-    headerFooterView.textLabel.textColor = UIColorFromRGB(kInvalidURLTextColor);
+    headerFooterView.textLabel.textColor =
+        [UIColor colorNamed:kDestructiveTintColor];
   }
   return footerView;
 }

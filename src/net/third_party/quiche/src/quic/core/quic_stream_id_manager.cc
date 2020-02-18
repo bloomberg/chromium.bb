@@ -63,7 +63,7 @@ bool QuicStreamIdManager::OnMaxStreamsFrame(const QuicMaxStreamsFrame& frame) {
   // available.
   if (outgoing_stream_count_ == current_outgoing_max_streams &&
       current_outgoing_max_streams < outgoing_max_streams_) {
-    session_->OnCanCreateNewOutgoingStream();
+    session_->OnCanCreateNewOutgoingStream(unidirectional_);
   }
   return true;
 }
@@ -229,7 +229,7 @@ QuicStreamId QuicStreamIdManager::GetNextOutgoingStreamId() {
 }
 
 bool QuicStreamIdManager::CanOpenNextOutgoingStream() {
-  DCHECK_EQ(QUIC_VERSION_99, transport_version());
+  DCHECK(VersionHasIetfQuicFrames(transport_version()));
   if (outgoing_stream_count_ < outgoing_max_streams_) {
     return true;
   }
@@ -239,7 +239,8 @@ bool QuicStreamIdManager::CanOpenNextOutgoingStream() {
   return false;
 }
 
-bool QuicStreamIdManager::RegisterStaticStream(QuicStreamId stream_id) {
+bool QuicStreamIdManager::RegisterStaticStream(QuicStreamId stream_id,
+                                               bool stream_already_counted) {
   DCHECK_NE(QuicUtils::IsBidirectionalStreamId(stream_id), unidirectional_);
   if (IsIncomingStream(stream_id)) {
     // This code is predicated on static stream ids being allocated densely, in
@@ -267,7 +268,10 @@ bool QuicStreamIdManager::RegisterStaticStream(QuicStreamId stream_id) {
         QuicUtils::GetMaxStreamCount(unidirectional_, perspective())) {
       incoming_advertised_max_streams_++;
     }
-    incoming_stream_count_++;
+
+    if (!stream_already_counted) {
+      incoming_stream_count_++;
+    }
     incoming_static_stream_count_++;
     return true;
   }
@@ -398,8 +402,7 @@ Perspective QuicStreamIdManager::perspective() const {
 }
 
 Perspective QuicStreamIdManager::peer_perspective() const {
-  return (perspective() == Perspective::IS_SERVER) ? Perspective::IS_CLIENT
-                                                   : Perspective::IS_SERVER;
+  return QuicUtils::InvertPerspective(perspective());
 }
 
 QuicTransportVersion QuicStreamIdManager::transport_version() const {

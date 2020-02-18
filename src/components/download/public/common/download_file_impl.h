@@ -28,8 +28,13 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_save_info.h"
 #include "components/download/public/common/rate_estimator.h"
+#include "components/services/quarantine/public/mojom/quarantine.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+
+namespace service_manager {
+class Connector;
+}
 
 namespace download {
 
@@ -67,6 +72,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
                          const std::string& client_guid,
                          const GURL& source_url,
                          const GURL& referrer_url,
+                         std::unique_ptr<service_manager::Connector> connector,
                          const RenameCompletionCallback& callback) override;
   void Detach() override;
   void Cancel() override;
@@ -77,11 +83,12 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   void Resume() override;
 
 #if defined(OS_ANDROID)
-  void CreateIntermediateUriForPublish(
+  void RenameToIntermediateUri(
       const GURL& original_url,
       const GURL& referrer_url,
       const base::FilePath& file_name,
       const std::string& mime_type,
+      const base::FilePath& current_path,
       const RenameCompletionCallback& callback) override;
   void PublishDownload(const RenameCompletionCallback& callback) override;
   base::FilePath GetDisplayName() override;
@@ -227,6 +234,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     std::string client_guid;  // See BaseFile::AnnotateWithSourceInformation()
     GURL source_url;          // See BaseFile::AnnotateWithSourceInformation()
     GURL referrer_url;        // See BaseFile::AnnotateWithSourceInformation()
+    std::unique_ptr<service_manager::Connector> connector;
     int retries_left;         // RenameWithRetryInternal() will
                               // automatically retry until this
                               // count reaches 0. Each attempt
@@ -241,9 +249,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   void RenameWithRetryInternal(std::unique_ptr<RenameParameters> parameters);
 
   // Called after |file_| was renamed.
-  void OnRenameComplete(DownloadInterruptReason reason,
-                        const base::FilePath& content_path,
-                        const RenameCompletionCallback& callback);
+  void OnRenameComplete(const base::FilePath& content_path,
+                        const RenameCompletionCallback& callback,
+                        DownloadInterruptReason reason);
 
   // Send an update on our progress.
   void SendUpdate();
@@ -370,7 +378,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtr<DownloadDestinationObserver> observer_;
-  base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
+  base::WeakPtrFactory<DownloadFileImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

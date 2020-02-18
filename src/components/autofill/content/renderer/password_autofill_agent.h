@@ -13,20 +13,23 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/content/renderer/provisionally_saved_password_form.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_input_element.h"
 
@@ -112,19 +115,21 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                         blink::AssociatedInterfaceRegistry* registry);
   ~PasswordAutofillAgent() override;
 
-  void BindRequest(mojom::PasswordAutofillAgentAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordAutofillAgent>
+          pending_receiver);
 
   void SetAutofillAgent(AutofillAgent* autofill_agent);
 
   void SetPasswordGenerationAgent(PasswordGenerationAgent* generation_agent);
 
-  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
+  const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
+  GetPasswordManagerDriver();
 
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(const PasswordFormFillData& form_data) override;
   void FillIntoFocusedField(bool is_password,
-                            const base::string16& credential,
-                            FillIntoFocusedFieldCallback callback) override;
+                            const base::string16& credential) override;
   void SetLoggingState(bool active) override;
   void AutofillUsernameAndPasswordDataReceived(
       const FormsPredictionsMap& predictions) override;
@@ -135,7 +140,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;
-  void OnInferredFormSubmission(SubmissionSource source) override;
+  void OnInferredFormSubmission(mojom::SubmissionSource source) override;
 
   // WebLocalFrameClient editor related calls forwarded by AutofillAgent.
   // If they return true, it indicates the event was consumed and should not
@@ -174,8 +179,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Returns whether the element is a username or password textfield.
   bool IsUsernameOrPasswordField(const blink::WebInputElement& element);
 
-  // Returns whether the agent has fill data stored for |control_element|.
-  bool HasFillData(const blink::WebFormControlElement& control_element) const;
+  // Asks the agent to show the touch to fill UI for |control_element|. Returns
+  // whether the agent was able to do so.
+  bool TryToShowTouchToFill(
+      const blink::WebFormControlElement& control_element);
 
   // Shows an Autofill popup with username suggestions for |element|. If
   // |show_all| is |true|, will show all possible suggestions for that element,
@@ -415,7 +422,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                   RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
-  void FireSubmissionIfFormDisappear(SubmissionIndicatorEvent event);
+  void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
 
   void OnFrameDetached();
   void OnWillSubmitForm(const blink::WebFormElement& form);
@@ -525,9 +532,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   PagePasswordsAnalyser page_passwords_analyser_;
 #endif
 
-  mojom::PasswordManagerDriverAssociatedPtr password_manager_driver_;
+  mojo::AssociatedRemote<mojom::PasswordManagerDriver> password_manager_driver_;
 
-  mojo::AssociatedBinding<mojom::PasswordAutofillAgent> binding_;
+  mojo::AssociatedReceiver<mojom::PasswordAutofillAgent> receiver_{this};
 
   bool prefilled_username_metrics_logged_ = false;
 

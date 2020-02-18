@@ -35,6 +35,7 @@ class MediaStream final : public DemuxerStream {
 
   // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   DemuxerStream::Type type() const override;
@@ -103,7 +104,7 @@ class MediaStream final : public DemuxerStream {
   AudioDecoderConfig next_audio_decoder_config_;
   VideoDecoderConfig next_video_decoder_config_;
 
-  base::WeakPtrFactory<MediaStream> weak_factory_;
+  base::WeakPtrFactory<MediaStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStream);
 };
@@ -116,8 +117,7 @@ MediaStream::MediaStream(RpcBroker* rpc_broker,
       type_(type),
       remote_handle_(remote_handle),
       rpc_handle_(rpc_broker_->GetUniqueHandle()),
-      error_callback_(error_callback),
-      weak_factory_(this) {
+      error_callback_(error_callback) {
   DCHECK(remote_handle_ != RpcBroker::kInvalidHandle);
   rpc_broker_->RegisterMessageReceiverCallback(
       rpc_handle_,
@@ -315,6 +315,10 @@ void MediaStream::Read(const ReadCB& read_cb) {
   CompleteRead(DemuxerStream::kOk);
 }
 
+bool MediaStream::IsReadPending() const {
+  return !read_complete_callback_.is_null();
+}
+
 void MediaStream::CompleteRead(DemuxerStream::Status status) {
   DVLOG(3) << __func__ << ": " << status;
   switch (status) {
@@ -388,9 +392,7 @@ void MediaStream::OnError(const std::string& error) {
 
 StreamProvider::StreamProvider(RpcBroker* rpc_broker,
                                const base::Closure& error_callback)
-    : rpc_broker_(rpc_broker),
-      error_callback_(error_callback),
-      weak_factory_(this) {}
+    : rpc_broker_(rpc_broker), error_callback_(error_callback) {}
 
 StreamProvider::~StreamProvider() = default;
 

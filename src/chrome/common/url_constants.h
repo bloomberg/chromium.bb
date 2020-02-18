@@ -56,10 +56,16 @@ extern const char kChooserUsbOverviewURL[];
 // Link to the forum for Chrome Beta.
 extern const char kChromeBetaForumURL[];
 
+// Link to the release notes page managed by marketing.
+extern const char kChromeReleaseNotesURL[];
+
 // General help links for Chrome, opened using various actions.
 extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];
 extern const char kChromeHelpViaWebUIURL[];
+#if defined(OS_CHROMEOS)
+extern const char kChromeOsHelpViaWebUIURL[];
+#endif
 
 // The chrome-native: scheme is used show pages rendered with platform specific
 // widgets instead of using HTML.
@@ -257,6 +263,9 @@ extern const char kGoogleNameserversLearnMoreURL[];
 
 // The URL for the "learn more" link for Instant Tethering.
 extern const char kInstantTetheringLearnMoreURL[];
+
+// The URL for the "Learn more" link for Kerberos accounts.
+extern const char kKerberosAccountsLearnMoreURL[];
 
 // The URL for the "Learn more" link in the connected devices.
 extern const char kMultiDeviceLearnMoreURL[];

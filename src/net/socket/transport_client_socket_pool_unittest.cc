@@ -94,17 +94,11 @@ class SOCKS5MockData {
 class TransportClientSocketPoolTest : public ::testing::Test,
                                       public WithScopedTaskEnvironment {
  protected:
-  // Default constructor.
-  TransportClientSocketPoolTest()
-      : TransportClientSocketPoolTest(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::NowSource::REAL_TIME) {}
-
   // Constructor that allows mocking of the time.
-  TransportClientSocketPoolTest(
-      base::test::ScopedTaskEnvironment::MainThreadType type,
-      base::test::ScopedTaskEnvironment::NowSource now_source)
-      : WithScopedTaskEnvironment(type, now_source),
+  explicit TransportClientSocketPoolTest(
+      base::test::ScopedTaskEnvironment::TimeSource time_source =
+          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
+      : WithScopedTaskEnvironment(time_source),
         connect_backup_jobs_enabled_(
             TransportClientSocketPool::set_connect_backup_jobs_enabled(true)),
         group_id_(HostPortPair("www.google.com", 80),
@@ -2174,13 +2168,7 @@ class TransportClientSocketPoolMockNowSourceTest
  protected:
   TransportClientSocketPoolMockNowSourceTest()
       : TransportClientSocketPoolTest(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {
-    // Forward the clock by a non-zero amount to avoid triggering DCHECKs that
-    // verify that certain timestamps are non-null.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-  }
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);

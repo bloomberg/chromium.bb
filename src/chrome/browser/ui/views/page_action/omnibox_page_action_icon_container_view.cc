@@ -3,15 +3,19 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/native_file_system/native_file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
 #include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
+#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -27,7 +31,7 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           params.between_icon_spacing));
   // Right align to clip the leftmost items first when not enough space.
   layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
@@ -56,6 +60,12 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(pwa_install_view_);
         break;
+      case PageActionIconType::kReaderMode:
+        DCHECK(params.command_updater);
+        reader_mode_icon_ = new ReaderModeIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(reader_mode_icon_);
+        break;
       case PageActionIconType::kTranslate:
         DCHECK(params.command_updater);
         translate_icon_ = new TranslateIconView(
@@ -71,6 +81,16 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
             new send_tab_to_self::SendTabToSelfIconView(
                 params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(send_tab_to_self_icon_view_);
+        break;
+      case PageActionIconType::kNativeFileSystemAccess:
+        native_file_system_icon_ = new NativeFileSystemAccessIconView(
+            params.page_action_icon_delegate);
+        page_action_icons_.push_back(native_file_system_icon_);
+        break;
+      case PageActionIconType::kClickToCall:
+        click_to_call_icon_view_ =
+            new ClickToCallIconView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(click_to_call_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
@@ -108,12 +128,18 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return intent_picker_view_;
     case PageActionIconType::kPwaInstall:
       return pwa_install_view_;
+    case PageActionIconType::kReaderMode:
+      return reader_mode_icon_;
     case PageActionIconType::kTranslate:
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
     case PageActionIconType::kSendTabToSelf:
       return send_tab_to_self_icon_view_;
+    case PageActionIconType::kNativeFileSystemAccess:
+      return native_file_system_icon_;
+    case PageActionIconType::kClickToCall:
+      return click_to_call_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

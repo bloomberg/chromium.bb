@@ -109,6 +109,12 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       jint type,
       jint index);
 
+  void ReorderChildren(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_bookmark_id_obj,
+      jlongArray arr);
+
   // Get the number of bookmarks in the sub tree of the specified bookmark node.
   // The specified node must be of folder type.
   jint GetTotalBookmarkCount(JNIEnv* env,
@@ -233,15 +239,15 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
-                         int new_index) override;
+                         size_t new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkAllUserNodesRemoved(bookmarks::BookmarkModel* model,

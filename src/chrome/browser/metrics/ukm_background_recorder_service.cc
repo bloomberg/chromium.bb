@@ -20,8 +20,7 @@ namespace ukm {
 UkmBackgroundRecorderService::UkmBackgroundRecorderService(Profile* profile)
     : history_service_(HistoryServiceFactory::GetForProfile(
           profile,
-          ServiceAccessType::EXPLICIT_ACCESS)),
-      weak_ptr_factory_(this) {
+          ServiceAccessType::EXPLICIT_ACCESS)) {
   DCHECK(history_service_);
 }
 
@@ -39,18 +38,14 @@ void UkmBackgroundRecorderService::GetBackgroundSourceIdIfAllowed(
       weak_ptr_factory_.GetWeakPtr(), origin, std::move(callback));
 
   history_service_->GetVisibleVisitCountToHost(
-      origin.GetURL(),
-      base::AdaptCallbackForRepeating(std::move(visit_callback)),
-      &task_tracker_);
+      origin.GetURL(), std::move(visit_callback), &task_tracker_);
 }
 
 void UkmBackgroundRecorderService::DidGetVisibleVisitCount(
     const url::Origin& origin,
     GetBackgroundSourceIdCallback callback,
-    bool did_determine,
-    int num_visits,
-    base::Time first_visit_time) {
-  if (!did_determine || !num_visits) {
+    history::VisibleVisitCountToHostResult result) {
+  if (!result.success || !result.count) {
     std::move(callback).Run(base::nullopt);
     return;
   }

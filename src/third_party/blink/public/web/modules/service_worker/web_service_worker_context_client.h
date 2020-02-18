@@ -153,10 +153,14 @@ class WebServiceWorkerContextClient {
   // DidInitializeWorkerContext(), but it's not clear when the context would
   // already be initialized.)
   //
+  // |context_proxy| is valid until WillDestroyWorkerContext() is called.
+  //
   // This function is used to support service workers in Chrome extensions.
   //
   // TODO(nhiroki): Can you clarify this code and comment?
-  virtual void DidInitializeWorkerContext(v8::Local<v8::Context> context) {}
+  virtual void DidInitializeWorkerContext(
+      WebServiceWorkerContextProxy* context_proxy,
+      v8::Local<v8::Context> v8_context) {}
 
   // WorkerGlobalScope is about to be destroyed. The client should clear
   // the WebServiceWorkerGlobalScopeProxy when this is called.
@@ -192,17 +196,25 @@ class WebServiceWorkerContextClient {
   // timeout.
   virtual void RequestTermination(RequestTerminationCallback) {}
 
-  // Called on the main thread.
+  // On-main-thread start up:
+  // Creates a network provider for the main script fetch.
+  // This is called on the main thread.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProviderOnMainThread() = 0;
 
-  // Creates a WebWorkerFetchContext for a service worker. This is called on the
-  // main thread.
+  // On-main-thread start up:
+  // Creates a WebWorkerFetchContext for subresource fetches on a service
+  // worker. This is called on the main thread.
   virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateServiceWorkerFetchContextOnMainThread(
-      WebServiceWorkerNetworkProvider*) {
+  CreateWorkerFetchContextOnMainThreadLegacy(WebServiceWorkerNetworkProvider*) {
     return nullptr;
   }
+
+  // Off-main-thread start up:
+  // Creates a WebWorkerFetchContext for subresource fetches on a service
+  // worker. This is called on the main thread.
+  virtual scoped_refptr<blink::WebWorkerFetchContext>
+  CreateWorkerFetchContextOnMainThread() = 0;
 };
 
 }  // namespace blink

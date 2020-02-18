@@ -16,10 +16,10 @@
 
 #include <jni.h>
 
-#include "perfetto/traced/traced.h"
+#include "perfetto/ext/traced/traced.h"
+#include "perfetto/ext/tracing/ipc/default_socket.h"
 
 #include "src/base/test/test_task_runner.h"
-#include "src/tracing/ipc/default_socket.h"
 
 #include "test/fake_producer.h"
 

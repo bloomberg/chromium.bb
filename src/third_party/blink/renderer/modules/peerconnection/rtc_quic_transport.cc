@@ -124,7 +124,8 @@ RTCQuicTransport* RTCQuicTransport::Create(
     return nullptr;
   }
   for (const auto& certificate : certificates) {
-    if (certificate->expires() < ConvertSecondsToDOMTimeStamp(CurrentTime())) {
+    if (certificate->expires() <
+        ConvertSecondsToDOMTimeStamp(base::Time::Now().ToDoubleT())) {
       exception_state.ThrowTypeError(
           "Cannot construct an RTCQuicTransport with an expired "
           "certificate.");
@@ -263,8 +264,8 @@ static quic::Perspective QuicPerspectiveFromIceRole(cricket::IceRole ice_role) {
 
 static std::unique_ptr<rtc::SSLFingerprint> RTCDtlsFingerprintToSSLFingerprint(
     const RTCDtlsFingerprint* dtls_fingerprint) {
-  std::string algorithm = WebString(dtls_fingerprint->algorithm()).Utf8();
-  std::string value = WebString(dtls_fingerprint->value()).Utf8();
+  std::string algorithm = dtls_fingerprint->algorithm().Utf8();
+  std::string value = dtls_fingerprint->value().Utf8();
   std::unique_ptr<rtc::SSLFingerprint> rtc_fingerprint =
       rtc::SSLFingerprint::CreateUniqueFromRfc4572(algorithm, value);
   DCHECK(rtc_fingerprint);
@@ -282,7 +283,7 @@ void RTCQuicTransport::start(RTCQuicParameters* remote_parameters,
   remote_parameters_ = remote_parameters;
   start_reason_ = StartReason::kP2PWithRemoteFingerprints;
   if (transport_->IsStarted()) {
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
+    Vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
     for (const RTCDtlsFingerprint* fingerprint :
          remote_parameters_->fingerprints()) {
       rtc_fingerprints.push_back(
@@ -302,7 +303,7 @@ void RTCQuicTransport::StartConnection(
   state_ = RTCQuicTransportState::kConnecting;
   // We don't create the underlying transports until we are starting
   // to connect.
-  std::vector<rtc::scoped_refptr<rtc::RTCCertificate>> rtc_certificates;
+  Vector<rtc::scoped_refptr<rtc::RTCCertificate>> rtc_certificates;
   for (const auto& certificate : certificates_) {
     rtc_certificates.push_back(certificate->Certificate());
   }
@@ -322,7 +323,7 @@ void RTCQuicTransport::OnIceTransportStarted() {
   // since start() determines its quic::Perspective based upon ICE.
   if (start_reason_ == StartReason::kP2PWithRemoteFingerprints) {
     DCHECK(remote_parameters_);
-    std::vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
+    Vector<std::unique_ptr<rtc::SSLFingerprint>> rtc_fingerprints;
     for (const RTCDtlsFingerprint* fingerprint :
          remote_parameters_->fingerprints()) {
       rtc_fingerprints.push_back(

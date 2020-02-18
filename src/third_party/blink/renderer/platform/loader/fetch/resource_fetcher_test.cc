@@ -34,8 +34,8 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -71,7 +71,7 @@
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
 #include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -118,6 +118,7 @@ class ResourceFetcherTest : public testing::Test {
   class TestResourceLoadObserver final : public ResourceLoadObserver {
    public:
     // ResourceLoadObserver implementation.
+    void DidStartRequest(const FetchParameters&, ResourceType) override {}
     void WillSendRequest(uint64_t identifier,
                          const ResourceRequest& request,
                          const ResourceResponse& redirect_response,
@@ -139,11 +140,10 @@ class ResourceFetcherTest : public testing::Test {
                                       int transfer_size_diff) override {}
     void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override {}
     void DidFinishLoading(uint64_t identifier,
-                          TimeTicks finish_time,
+                          base::TimeTicks finish_time,
                           int64_t encoded_data_length,
                           int64_t decoded_body_length,
-                          bool should_report_corb_blocking,
-                          ResponseSource) override {}
+                          bool should_report_corb_blocking) override {}
     void DidFailLoading(const KURL&,
                         uint64_t identifier,
                         const ResourceError&,
@@ -294,7 +294,7 @@ TEST_F(ResourceFetcherTest, Vary) {
 
 TEST_F(ResourceFetcherTest, ResourceTimingInfo) {
   auto info = ResourceTimingInfo::Create(fetch_initiator_type_names::kDocument,
-                                         CurrentTimeTicks());
+                                         base::TimeTicks::Now());
   info->AddFinalTransferSize(5);
   EXPECT_EQ(info->TransferSize(), static_cast<uint64_t>(5));
   ResourceResponse redirect_response(KURL("https://example.com/original"));
@@ -660,7 +660,7 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
   Resource* preload_scanner_resource =
       MockResource::Fetch(fetch_params_preload_scanner, fetcher, nullptr);
   EXPECT_EQ(resource, preload_scanner_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 
   // Resource created by parser
   FetchParameters fetch_params{ResourceRequest(url)};
@@ -668,7 +668,7 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
       MakeGarbageCollected<MockResourceClient>();
   Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, client);
   EXPECT_EQ(resource, new_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 
   // DCL reached
   fetcher->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
@@ -695,7 +695,7 @@ TEST_F(ResourceFetcherTest, PreloadMatchWithBypassingCache) {
   Resource* second_resource =
       MockResource::Fetch(fetch_params_second, fetcher, nullptr);
   EXPECT_EQ(resource, second_resource);
-  EXPECT_FALSE(resource->IsLinkPreload());
+  EXPECT_TRUE(resource->IsLinkPreload());
 }
 
 TEST_F(ResourceFetcherTest, CrossFramePreloadMatchIsNotAllowed) {
@@ -788,7 +788,7 @@ TEST_F(ResourceFetcherTest, RepetitiveSpeculativePreloadShouldBeMerged) {
   EXPECT_FALSE(resource1->IsUnusedPreload());
 }
 
-TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
+TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkPreload) {
   auto* fetcher = CreateFetcher();
 
   KURL url("http://127.0.0.1:8000/foo.png");
@@ -823,7 +823,7 @@ TEST_F(ResourceFetcherTest, SpeculativePreloadShouldBePromotedToLinkePreload) {
   EXPECT_EQ(resource1, resource3);
   EXPECT_FALSE(fetcher->ContainsAsPreload(resource1));
   EXPECT_FALSE(resource1->IsUnusedPreload());
-  EXPECT_FALSE(resource1->IsLinkPreload());
+  EXPECT_TRUE(resource1->IsLinkPreload());
 }
 
 TEST_F(ResourceFetcherTest, Revalidate304) {
@@ -996,66 +996,66 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
   ResourceRequest request(KURL("https://www.example.com/"));
 
   {
-    // Subframe depriotization is disabled (main frame case).
+    // Subframe deprioritization is disabled (main frame case).
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(false);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is disabled (nested frame case).
+    // Subframe deprioritization is disabled (nested frame case).
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(false);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is enabled (main frame case), kHigh.
+    // Subframe deprioritization is enabled (main frame case), kHigh.
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kHigh);
   }
 
   {
-    // Subframe depriotization is enabled (nested frame case), kHigh => kLow.
+    // Subframe deprioritization is enabled (nested frame case), kHigh => kLow.
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kScript, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLow);
   }
   {
-    // Subframe depriotization is enabled (main frame case), kMedium.
+    // Subframe deprioritization is enabled (main frame case), kMedium.
     properties.SetIsMainFrame(true);
     properties.SetIsSubframeDeprioritizationEnabled(true);
     const auto priority = fetcher->ComputeLoadPriorityForTesting(
         ResourceType::kMock, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kMedium);
   }
 
   {
-    // Subframe depriotization is enabled (nested frame case), kMedium =>
+    // Subframe deprioritization is enabled (nested frame case), kMedium =>
     // kLowest.
     properties.SetIsMainFrame(false);
     properties.SetIsSubframeDeprioritizationEnabled(true);
@@ -1063,7 +1063,7 @@ TEST_F(ResourceFetcherTest, DeprioritizeSubframe) {
         ResourceType::kMock, request, ResourcePriority::kNotVisible,
         FetchParameters::DeferOption::kNoDefer,
         FetchParameters::SpeculativePreloadType::kNotSpeculative,
-        false /* is_link_preload */, false /* is_stale_revalidation */);
+        false /* is_link_preload */);
     EXPECT_EQ(priority, ResourceLoadPriority::kLowest);
   }
 }

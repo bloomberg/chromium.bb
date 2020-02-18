@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_logging.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/installable/installable_task_queue.h"
 #include "content/public/browser/service_worker_context.h"
@@ -40,6 +39,14 @@ class InstallableManager
   // Returns the minimum icon size in pixels for a site to be installable.
   static int GetMinimumIconSizeInPx();
 
+  // Returns true if the overall security state of |web_contents| is sufficient
+  // to be considered installable.
+  static bool IsContentSecure(content::WebContents* web_contents);
+
+  // Returns true for localhost and URLs that have been explicitly marked as
+  // secure via a flag.
+  static bool IsOriginConsideredSecure(const GURL& url);
+
   // Get the installable data, fetching the resources specified in |params|.
   // |callback| is invoked synchronously (i.e. not via PostTask on the UI thread
   // when the data is ready; the synchronous execution ensures that the
@@ -58,21 +65,6 @@ class InstallableManager
   // during the run. The list is empty if no errors were encountered.
   void GetAllErrors(
       base::OnceCallback<void(std::vector<std::string> errors)> callback);
-
-  // Called via AppBannerManagerAndroid to record metrics on how often the
-  // installable check is completed when the menu or add to homescreen menu item
-  // is opened on Android.
-  void RecordMenuOpenHistogram();
-  void RecordMenuItemAddToHomescreenHistogram();
-
-  // Called via AddToHomescreenDataFetcher to record metrics on how often the
-  // installable check is completed before timing out when a user is shown the
-  // add to homescreen dialog for a shortcut or PWA on Android.
-  void RecordAddToHomescreenNoTimeout();
-  void RecordAddToHomescreenManifestAndIconTimeout();
-  void RecordAddToHomescreenInstallabilityTimeout();
-
-  bool IsContentSecureForTesting();
 
  protected:
   // For mocking in tests.
@@ -177,8 +169,6 @@ class InstallableManager
   // Returns true if |params| requires no more work to be done.
   bool IsComplete(const InstallableParams& params) const;
 
-  void ResolveMetrics(const InstallableParams& params, bool check_passed);
-
   // Resets members to empty and removes all queued tasks.
   // Called when navigating to a new page or if the WebContents is destroyed
   // whilst waiting for a callback.
@@ -199,9 +189,11 @@ class InstallableManager
   void OnDidGetManifest(const GURL& manifest_url,
                         const blink::Manifest& manifest);
 
-  void CheckManifestValid(bool check_webapp_manifest_display);
+  void CheckManifestValid(bool check_webapp_manifest_display,
+                          bool prefer_maskable_icon);
   bool IsManifestValidForWebApp(const blink::Manifest& manifest,
-                                bool check_webapp_manifest_display);
+                                bool check_webapp_manifest_display,
+                                bool prefer_maskable_icon);
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
@@ -227,7 +219,6 @@ class InstallableManager
   bool has_worker();
 
   InstallableTaskQueue task_queue_;
-  std::unique_ptr<InstallableMetrics> metrics_;
 
   // Installable properties cached on this object.
   std::unique_ptr<EligiblityProperty> eligibility_;
@@ -244,7 +235,7 @@ class InstallableManager
   // which queries the full PWA parameters.
   bool has_pwa_check_;
 
-  base::WeakPtrFactory<InstallableManager> weak_factory_;
+  base::WeakPtrFactory<InstallableManager> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

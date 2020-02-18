@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -35,6 +36,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -43,7 +45,6 @@ using namespace css_test_helpers;
 class StyleEngineTest : public testing::Test {
  protected:
   void SetUp() override;
-  void TearDown() override;
 
   Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
   StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
@@ -67,15 +68,10 @@ class StyleEngineTest : public testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  RuntimeEnabledFeatures::Backup features_backup_;
 };
 
 void StyleEngineTest::SetUp() {
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
-}
-
-void StyleEngineTest::TearDown() {
-  features_backup_.Restore();
 }
 
 StyleEngineTest::RuleSetInvalidation
@@ -1490,7 +1486,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
-  RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
+  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
@@ -1516,7 +1512,7 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorSchemeForcedDarkMode) {
-  RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
+  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
 
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
   GetDocument().GetSettings()->SetPreferredColorScheme(
@@ -1559,6 +1555,96 @@ TEST_F(StyleEngineTest, MediaQueriesChangePrefersReducedMotion) {
   GetDocument().GetSettings()->SetPrefersReducedMotion(true);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
+  ScopedForcedColorsForTest scoped_feature(true);
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @media (forced-colors: none) {
+        body { color: red }
+      }
+      @media (forced-colors: active) {
+        body { color: green }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
+  ScopedForcedColorsForTest scoped_feature(true);
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @media (forced-colors: none) and (prefers-color-scheme: light) {
+        body { color: red }
+      }
+      @media (forced-colors: none) and (prefers-color-scheme: dark) {
+        body { color: green }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: no-preference) {
+        body { color: yellow }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: dark) {
+        body { color: orange }
+      }
+      @media (forced-colors: active) and (prefers-color-scheme: light) {
+        body { color: blue }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  // ForcedColors = kNone, PreferredColorScheme = kLight
+  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kNone);
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kNone, PreferredColorScheme = kDark
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kDark);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kDark
+  GetDocument().GetSettings()->SetForcedColors(ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 165, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kNoPreference
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kNoPreference);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 255, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  // ForcedColors = kActive, PreferredColorScheme = kLight
+  GetDocument().GetSettings()->SetPreferredColorScheme(
+      PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 0, 255),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 }

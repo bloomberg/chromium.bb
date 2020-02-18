@@ -34,9 +34,11 @@ class TestIsolationContextMetrics : public IsolationContextMetrics {
   using IsolationContextMetrics::GetProcessDataState;
   using IsolationContextMetrics::kBrowsingInstanceDataByPageTimeHistogramName;
   using IsolationContextMetrics::kBrowsingInstanceDataByTimeHistogramName;
+  using IsolationContextMetrics::kFramesPerRendererByTimeHistogram;
   using IsolationContextMetrics::kProcessDataByProcessHistogramName;
   using IsolationContextMetrics::kProcessDataByTimeHistogramName;
   using IsolationContextMetrics::kReportingInterval;
+  using IsolationContextMetrics::kSiteInstancesPerRendererByTimeHistogram;
   using IsolationContextMetrics::ProcessData;
   using IsolationContextMetrics::ProcessDataState;
 
@@ -49,10 +51,8 @@ class IsolationContextMetricsTest : public GraphTestHarness {
  public:
   IsolationContextMetricsTest()
       : GraphTestHarness(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
 
   ~IsolationContextMetricsTest() override = default;
 
@@ -75,16 +75,15 @@ class IsolationContextMetricsTest : public GraphTestHarness {
   static constexpr int32_t kSID3 = 3;
 
   void SetUp() override {
-    metrics_ = std::make_unique<TestIsolationContextMetrics>();
+    metrics_ = new TestIsolationContextMetrics();
     PerformanceManagerClock::SetClockForTesting(task_env().GetMockTickClock());
 
     // Sets a valid starting time.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
-    graph()->RegisterObserver(metrics_.get());
+    graph()->PassToGraph(base::WrapUnique(metrics_));
   }
 
   void TearDown() override {
-    graph()->UnregisterObserver(metrics_.get());
     PerformanceManagerClock::ResetClockForTesting();
   }
 
@@ -126,7 +125,7 @@ class IsolationContextMetricsTest : public GraphTestHarness {
   }
 
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<TestIsolationContextMetrics> metrics_;
+  TestIsolationContextMetrics* metrics_;
 };
 
 // static
@@ -150,7 +149,7 @@ TEST_F(IsolationContextMetricsTest, GetProcessDataState) {
   // Make up a site instance with one frame.
   data.site_instance_frame_count[kSID1] = 1;
   EXPECT_EQ(1u, data.site_instance_frame_count.size());
-  EXPECT_EQ(ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+  EXPECT_EQ(ProcessDataState::kOnlyOneFrameExists,
             TestIsolationContextMetrics::GetProcessDataState(&data));
 
   // Make up another site instance with one frame.
@@ -191,7 +190,7 @@ TEST_F(IsolationContextMetricsTest, GetProcessDataState) {
   // Erase the first site instance.
   data.site_instance_frame_count.erase(kSID1);
   EXPECT_EQ(1u, data.site_instance_frame_count.size());
-  EXPECT_EQ(ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+  EXPECT_EQ(ProcessDataState::kOnlyOneFrameExists,
             TestIsolationContextMetrics::GetProcessDataState(&data));
 }
 
@@ -210,10 +209,12 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
   // Expect the ProcessData to exist and be correctly filled out.
   auto* data1 = ProcessData::GetOrCreate(process.get());
   EXPECT_EQ(1u, data1->site_instance_frame_count.size());
+  EXPECT_EQ(1, data1->frame_count);
   EXPECT_EQ(0, data1->multi_frame_site_instance_count);
+  EXPECT_FALSE(data1->has_hosted_multiple_frames);
   EXPECT_FALSE(data1->has_hosted_multiple_frames_with_same_site_instance);
   EXPECT_EQ(task_env().NowTicks(), data1->last_reported);
-  EXPECT_EQ(ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+  EXPECT_EQ(ProcessDataState::kOnlyOneFrameExists,
             TestIsolationContextMetrics::GetProcessDataState(data1));
 
   // Expect no metrics to have been emitted.
@@ -221,6 +222,10 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
                                      0);
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 0);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 0);
 
   FastForwardUntilTimerFires();
 
@@ -228,31 +233,49 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
   EXPECT_EQ(task_env().NowTicks(), data1->last_reported);
   histogram_tester_.ExpectUniqueSample(
       metrics_->kProcessDataByTimeHistogramName,
-      ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+      ProcessDataState::kOnlyOneFrameExists,
       metrics_->kReportingInterval.InSeconds());
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectUniqueSample(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds());
+  histogram_tester_.ExpectUniqueSample(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds());
 
   {
-    // Advance time and add another frame to the same site instance, as a child
+    // Advance time and add another frame to a new site instance, as a child
     // of |frame1|.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
     auto frame2 =
-        CreateFrameNode(process.get(), page.get(), kBID1, kSID1, frame1.get());
-    EXPECT_EQ(1u, data1->site_instance_frame_count.size());
-    EXPECT_EQ(1, data1->multi_frame_site_instance_count);
-    EXPECT_TRUE(data1->has_hosted_multiple_frames_with_same_site_instance);
-    EXPECT_EQ(ProcessDataState::kSomeFramesHaveSameSiteInstance,
+        CreateFrameNode(process.get(), page.get(), kBID1, kSID2, frame1.get());
+    EXPECT_EQ(2u, data1->site_instance_frame_count.size());
+    EXPECT_EQ(2, data1->frame_count);
+    EXPECT_EQ(0, data1->multi_frame_site_instance_count);
+    EXPECT_TRUE(data1->has_hosted_multiple_frames);
+    EXPECT_FALSE(data1->has_hosted_multiple_frames_with_same_site_instance);
+    EXPECT_EQ(ProcessDataState::kAllFramesHaveDistinctSiteInstances,
               TestIsolationContextMetrics::GetProcessDataState(data1));
 
     // Expect metrics to have been reported on the state change.
     EXPECT_EQ(task_env().NowTicks(), data1->last_reported);
     histogram_tester_.ExpectUniqueSample(
         metrics_->kProcessDataByTimeHistogramName,
-        ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+        ProcessDataState::kOnlyOneFrameExists,
         metrics_->kReportingInterval.InSeconds() + 1);
     histogram_tester_.ExpectTotalCount(
         metrics_->kProcessDataByProcessHistogramName, 0);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds());
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 2, 1);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds());
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
     // Advance time.
     task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
@@ -266,13 +289,95 @@ TEST_F(IsolationContextMetricsTest, ProcessDataReporting) {
       metrics_->kReportingInterval.InSeconds() + 2);
   histogram_tester_.ExpectBucketCount(
       metrics_->kProcessDataByTimeHistogramName,
-      ProcessDataState::kAllFramesHaveDistinctSiteInstances,
+      ProcessDataState::kAllFramesHaveDistinctSiteInstances, 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kProcessDataByTimeHistogramName,
+      ProcessDataState::kOnlyOneFrameExists,
       metrics_->kReportingInterval.InSeconds() + 1);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 2, 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
+
+  {
+    // Advance time and add another frame to the same site instance, as a child
+    // of |frame1|.
+    task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+    auto frame2 =
+        CreateFrameNode(process.get(), page.get(), kBID1, kSID1, frame1.get());
+    EXPECT_EQ(1u, data1->site_instance_frame_count.size());
+    EXPECT_EQ(2, data1->frame_count);
+    EXPECT_EQ(1, data1->multi_frame_site_instance_count);
+    EXPECT_TRUE(data1->has_hosted_multiple_frames);
+    EXPECT_TRUE(data1->has_hosted_multiple_frames_with_same_site_instance);
+    EXPECT_EQ(ProcessDataState::kSomeFramesHaveSameSiteInstance,
+              TestIsolationContextMetrics::GetProcessDataState(data1));
+
+    // Expect metrics to have been reported on the state change.
+    EXPECT_EQ(task_env().NowTicks(), data1->last_reported);
+    histogram_tester_.ExpectTotalCount(
+        metrics_->kProcessDataByTimeHistogramName,
+        metrics_->kReportingInterval.InSeconds() + 3);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kProcessDataByTimeHistogramName,
+        ProcessDataState::kAllFramesHaveDistinctSiteInstances, 1);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kProcessDataByTimeHistogramName,
+        ProcessDataState::kOnlyOneFrameExists,
+        metrics_->kReportingInterval.InSeconds() + 2);
+    histogram_tester_.ExpectTotalCount(
+        metrics_->kProcessDataByProcessHistogramName, 0);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds() + 1);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kFramesPerRendererByTimeHistogram, 2, 2);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+        metrics_->kReportingInterval.InSeconds() + 2);
+    histogram_tester_.ExpectBucketCount(
+        metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
+
+    // Advance time.
+    task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+
+  // The second frame will be destroyed as it goes out of scope. Expect another
+  // flush of metrics.
+  EXPECT_EQ(task_env().NowTicks(), data1->last_reported);
+  histogram_tester_.ExpectTotalCount(
+      metrics_->kProcessDataByTimeHistogramName,
+      metrics_->kReportingInterval.InSeconds() + 4);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kProcessDataByTimeHistogramName,
+      ProcessDataState::kAllFramesHaveDistinctSiteInstances, 1);
   histogram_tester_.ExpectBucketCount(
       metrics_->kProcessDataByTimeHistogramName,
       ProcessDataState::kSomeFramesHaveSameSiteInstance, 1);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kProcessDataByTimeHistogramName,
+      ProcessDataState::kOnlyOneFrameExists,
+      metrics_->kReportingInterval.InSeconds() + 2);
   histogram_tester_.ExpectTotalCount(
       metrics_->kProcessDataByProcessHistogramName, 0);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 2);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kFramesPerRendererByTimeHistogram, 2, 2);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 1,
+      metrics_->kReportingInterval.InSeconds() + 3);
+  histogram_tester_.ExpectBucketCount(
+      metrics_->kSiteInstancesPerRendererByTimeHistogram, 2, 1);
 
   // Destroy the other frame and the page. No metrics should be flushed.
   {

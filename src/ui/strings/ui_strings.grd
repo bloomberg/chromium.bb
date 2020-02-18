@@ -758,6 +758,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP" desc="The tooltip text for the close button in a notification.">
         Close
       </message>
+      <message name="IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP" desc="The tooltip and spoken feedback text for the snooze button in a notification. Usually 'button' is suffixed to this text automatically during spoken feedback.">
+        Snooze
+      </message>
       <message name="IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME" desc="The spoken feedback text for the settings button in a notification. Usually 'button' is suffixed to this text automatically.">
         Notification settings
       </message>
@@ -865,10 +868,10 @@ need to be translated for each locale.-->
         Shelf auto hidden
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
-        Remove this suggestion?
+        Delete this search from your history?
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing zero state suggestion">
-        Removing this suggestion will hide it from your account across all your devices.
+        You searched for this before. Deleting "<ph name="query">$1<ex>Previously Searched Query</ex></ph>" from your history will permanently remove it from your account across all your devices.
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Remove
@@ -964,6 +967,29 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_SEND_TAB_TO_SELF_INFOBAR_MESSAGE_URL" desc="Clickable text displayed as part of a URL in the inforbar displayed when a user receives a shared tab from another device.">
         Open
+      </message>
+
+      <!-- Browser sharing messages -->
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_LABEL" desc="The label to be shown as the title of the dialog when user click on a phone number, which means which device from the dialog to use for telephony service.">
+        Make a call from
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES" desc="The label to be shown as the title of the dialog when user click on a phone number, if there are no phones or apps to choose from.">
+        Call this number from your phone?
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND" desc="The label to be shown as the title of the dialog when user click on a phone number, if sending it to a device failed.">
+        Can't send number
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from here to your Android phone, <ph name="TROUBLESHOOT_LINK">$1<ex>turn on sync</ex></ph> for both devices in settings.
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
+        turn on sync
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number, if sending it to a device failed.">
+        Check your phone's connection and try again
+      </message>
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS" desc="The label to be shown next to the omnibox icon after a phone number got sent to a users device.">
+        Sent to device
       </message>
     </messages>
   </release>

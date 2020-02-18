@@ -367,8 +367,8 @@ bool GpuCommandBufferTestEGL::InitializeEGLGLES2(int width, int height) {
   if (gl::GetGLImplementation() !=
       gl::GLImplementation::kGLImplementationEGLGLES2) {
     const auto impls = gl::init::GetAllowedGLImplementations();
-    if (!base::ContainsValue(impls,
-          gl::GLImplementation::kGLImplementationEGLGLES2)) {
+    if (!base::Contains(impls,
+                        gl::GLImplementation::kGLImplementationEGLGLES2)) {
       LOG(INFO) << "Skip test, implementation EGLGLES2 is not available";
       return false;
     }

@@ -105,6 +105,9 @@ extern const char kMediaRouterStableExtensionId[];
 // The extension id of the Chrome Reporting extension.
 extern const char kCloudReportingExtensionId[];
 
+// A list of all the first party extension IDs, last entry is null.
+extern const char* const kBuiltInFirstPartyExtensionIds[];
+
 // The buckets used for app launches.
 enum AppLaunchBucket {
   // Launch from NTP apps section while maximized.
@@ -194,6 +197,11 @@ enum AppLaunchBucket {
 #if defined(OS_CHROMEOS)
 // The extension id of the Assessment Assistant extension.
 extern const char kAssessmentAssistantExtensionId[];
+// The extension id of the Automatic Clicks extension.
+extern const char kAutoclickExtensionId[];
+// Path to preinstalled Automatic Clicks extension (relative to
+// |chrome::DIR_RESOURCES|).
+extern const char kAutoclickExtensionPath[];
 // Path to preinstalled ChromeVox screen reader extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kChromeVoxExtensionPath[];

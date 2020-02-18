@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier_posix.h"
 #include "net/dns/dns_config_service_posix.h"
+#include "net/dns/system_dns_config_change_notifier.h"
 
 #if defined(OS_ANDROID)
 #include "net/android/network_change_notifier_android.h"
@@ -18,65 +19,21 @@
 
 namespace net {
 
-// DNS config services on Chrome OS and Android are signalled by the network
-// state handler rather than relying on watching files in /etc.
-class NetworkChangeNotifierPosix::DnsConfigService
-    : public net::internal::DnsConfigServicePosix {
- public:
-  DnsConfigService() = default;
-  ~DnsConfigService() override = default;
-
-  // net::internal::DnsConfigService() overrides.
-  bool StartWatching() override {
-    CreateReaders();
-    // DNS config changes are handled and notified by the network
-    // state handlers.
-    return true;
-  }
-
-  void OnNetworkChange() {
-    InvalidateConfig();
-    InvalidateHosts();
-    ReadNow();
-  }
-};
-
 NetworkChangeNotifierPosix::NetworkChangeNotifierPosix(
     NetworkChangeNotifier::ConnectionType initial_connection_type,
     NetworkChangeNotifier::ConnectionSubtype initial_connection_subtype)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsPosix()),
-      dns_config_service_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      dns_config_service_(
-          new DnsConfigService(),
-          // Ensure DnsConfigService lives on |dns_config_service_runner_|
-          // to prevent races where NetworkChangeNotifierPosix outlives
-          // ScopedTaskEnvironment. https://crbug.com/938126
-          base::OnTaskRunnerDeleter(dns_config_service_runner_)),
       connection_type_(initial_connection_type),
       max_bandwidth_mbps_(
           NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
-              initial_connection_subtype)) {
-  dns_config_service_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &NetworkChangeNotifierPosix::DnsConfigService::WatchConfig,
-          base::Unretained(dns_config_service_.get()),
-          base::BindRepeating(&NetworkChangeNotifier::SetDnsConfig)));
-  OnDNSChanged();
-}
+              initial_connection_subtype)) {}
 
 NetworkChangeNotifierPosix::~NetworkChangeNotifierPosix() {
   ClearGlobalPointer();
 }
 
 void NetworkChangeNotifierPosix::OnDNSChanged() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  dns_config_service_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &NetworkChangeNotifierPosix::DnsConfigService::OnNetworkChange,
-          base::Unretained(dns_config_service_.get())));
+  system_dns_config_notifier()->RefreshConfig();
 }
 
 void NetworkChangeNotifierPosix::OnIPAddressChanged() {

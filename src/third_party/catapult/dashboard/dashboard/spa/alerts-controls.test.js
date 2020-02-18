@@ -4,14 +4,14 @@
 */
 'use strict';
 
-import AlertsControls from './alerts-controls.js';
-import ReportNamesRequest from './report-names-request.js';
-import SheriffsRequest from './sheriffs-request.js';
-import findElements from './find-elements.js';
+import {AlertsControls} from './alerts-controls.js';
 import {CHAIN, ENSURE, TOGGLE, UPDATE} from './simple-redux.js';
+import {ReportNamesRequest} from './report-names-request.js';
 import {STORE} from './element-base.js';
+import {SheriffsRequest} from './sheriffs-request.js';
 import {afterRender, timeout} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
 
 suite('alerts-controls', function() {
   let originalFetch;
@@ -55,7 +55,7 @@ suite('alerts-controls', function() {
     await afterRender();
     assert.isDefined(findElements(controls, e => /aaa/.test(e.textContent))[0]);
     assert.isDefined(findElements(controls, e =>
-      e.tagName === 'A' && e.href === 'http://crbug.com/42' &&
+      e.matches('a') && e.href === 'http://crbug.com/42' &&
       e.textContent.trim() === '42')[0]);
     assert.isDefined(findElements(controls, e => /bbb/.test(e.textContent))[0]);
     assert.isDefined(findElements(controls, e => /ccc/.test(e.textContent))[0]);
@@ -76,22 +76,26 @@ suite('alerts-controls', function() {
     await afterRender();
 
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /ccc/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /ccc/.test(e.textContent))[0].click();
     await afterRender();
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
     sources = [];
 
-    controls.$['min-revision'].value = '10';
-    controls.$['min-revision'].dispatchEvent(new CustomEvent('keyup'));
+    const minRevision = findElements(controls, e =>
+      e.id === 'min-revision')[0];
+    minRevision.value = '10';
+    minRevision.dispatchEvent(new CustomEvent('keyup'));
     await timeout(AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
     assert.strictEqual(10, sources[0].min_end_revision);
     sources = [];
 
-    controls.$['max-revision'].value = '20';
-    controls.$['max-revision'].dispatchEvent(new CustomEvent('keyup'));
+    const maxRevision = findElements(controls, e =>
+      e.id === 'max-revision')[0];
+    maxRevision.value = '20';
+    maxRevision.dispatchEvent(new CustomEvent('keyup'));
     await timeout(AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.lengthOf(sources, 1);
     assert.strictEqual('ccc', sources[0].sheriff);
@@ -100,7 +104,7 @@ suite('alerts-controls', function() {
     assert.isFalse(sources[0].is_improvement);
     sources = [];
 
-    controls.$.improvements.click();
+    findElements(controls, e => e.matches('#improvements'))[0].click();
     await timeout(AlertsControls.TYPING_DEBOUNCE_MS + 10);
     assert.strictEqual('ccc', sources[0].sheriff);
     assert.isTrue(sources[0].is_improvement);
@@ -108,7 +112,7 @@ suite('alerts-controls', function() {
     assert.strictEqual(20, sources[0].max_start_revision);
 
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /ddd/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /ddd/.test(e.textContent))[0].click();
     await afterRender();
     assert.lengthOf(sources, 2);
     assert.strictEqual('ccc', sources[0].sheriff);
@@ -119,11 +123,11 @@ suite('alerts-controls', function() {
     assert.strictEqual(20, sources[1].max_start_revision);
 
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /ccc/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /ccc/.test(e.textContent))[0].click();
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /ddd/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /ddd/.test(e.textContent))[0].click();
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /aaa/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /aaa/.test(e.textContent))[0].click();
     await afterRender();
     assert.lengthOf(sources, 1);
     assert.strictEqual(42, sources[0].report);
@@ -131,13 +135,12 @@ suite('alerts-controls', function() {
     assert.strictEqual(20, sources[0].max_start_revision);
 
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /aaa/.test(e.textContent))[0].click();
-    controls.$.bug.dispatchEvent(new CustomEvent('input-keyup', {
-      detail: {value: '123'},
-    }));
+      e.matches('chops-checkbox') && /aaa/.test(e.textContent))[0].click();
+    findElements(controls, e => e.matches('#bug'))[0].dispatchEvent(
+        new CustomEvent('input-keyup', {detail: {value: '123'}}));
     await afterRender();
     findElements(controls, e =>
-      e.matches('cp-checkbox') && /123/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /123/.test(e.textContent))[0].click();
     await afterRender();
     assert.lengthOf(sources, 1);
     assert.strictEqual('123', sources[0].bug_id);

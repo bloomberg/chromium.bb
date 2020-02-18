@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/payments/core/autofill_card_validation.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
@@ -42,8 +44,7 @@ AutofillPaymentInstrument::AutofillPaymentInstrument(
       billing_profiles_(billing_profiles),
       app_locale_(app_locale),
       delegate_(nullptr),
-      payment_request_delegate_(payment_request_delegate),
-      weak_ptr_factory_(this) {}
+      payment_request_delegate_(payment_request_delegate) {}
 AutofillPaymentInstrument::~AutofillPaymentInstrument() {}
 
 void AutofillPaymentInstrument::InvokePaymentApp(
@@ -80,9 +81,34 @@ void AutofillPaymentInstrument::InvokePaymentApp(
 bool AutofillPaymentInstrument::IsCompleteForPayment() const {
   // COMPLETE or EXPIRED cards are considered valid for payment. The user will
   // be prompted to enter the new expiration at the CVC step.
-  return autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                              billing_profiles_) <=
-         autofill::CREDIT_CARD_EXPIRED;
+  return GetCompletionStatusForCard(credit_card_, app_locale_,
+                                    billing_profiles_) <= CREDIT_CARD_EXPIRED;
+}
+
+uint32_t AutofillPaymentInstrument::GetCompletenessScore() const {
+  return ::payments::GetCompletenessScore(credit_card_, app_locale_,
+                                          billing_profiles_);
+}
+
+bool AutofillPaymentInstrument::CanPreselect() const {
+  return IsCompleteForPayment() && matches_merchant_card_type_exactly_;
+}
+
+void AutofillPaymentInstrument::RecordMissingFieldsForInstrument() const {
+  CreditCardCompletionStatus completion_status =
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
+  if (completion_status == CREDIT_CARD_COMPLETE &&
+      matches_merchant_card_type_exactly_) {
+    return;
+  }
+
+  // Record cases that the card type does not match the requested type(s) in
+  // addititon to missing fields from card completion status.
+  base::UmaHistogramSparse(
+      "PaymentRequest.MissingPaymentFields",
+      completion_status |
+          (matches_merchant_card_type_exactly_ ? 0
+                                               : CREDIT_CARD_TYPE_MISMATCH));
 }
 
 bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
@@ -90,19 +116,17 @@ bool AutofillPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
 }
 
 base::string16 AutofillPaymentInstrument::GetMissingInfoLabel() const {
-  return autofill::GetCompletionMessageForCard(
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                           billing_profiles_));
+  return GetCompletionMessageForCard(
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_));
 }
 
 bool AutofillPaymentInstrument::IsValidForCanMakePayment() const {
-  autofill::CreditCardCompletionStatus status =
-      autofill::GetCompletionStatusForCard(credit_card_, app_locale_,
-                                           billing_profiles_);
+  CreditCardCompletionStatus status =
+      GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
   // Card has to have a cardholder name and number for the purposes of
   // CanMakePayment. An expired card is still valid at this stage.
-  return !(status & autofill::CREDIT_CARD_NO_CARDHOLDER ||
-           status & autofill::CREDIT_CARD_NO_NUMBER);
+  return !(status & CREDIT_CARD_NO_CARDHOLDER ||
+           status & CREDIT_CARD_NO_NUMBER);
 }
 
 void AutofillPaymentInstrument::RecordUse() {
@@ -126,7 +150,9 @@ bool AutofillPaymentInstrument::IsValidForModifier(
     const std::set<std::string>& supported_networks,
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
-  if (!IsValidForPaymentMethodIdentifier(method))
+  bool is_valid = false;
+  IsValidForPaymentMethodIdentifier(method, &is_valid);
+  if (!is_valid)
     return false;
 
   // If supported_types is not specified and this instrument matches the method,
@@ -157,10 +183,15 @@ bool AutofillPaymentInstrument::IsValidForModifier(
   return true;
 }
 
-bool AutofillPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier) const {
+void AutofillPaymentInstrument::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier,
+    bool* is_valid) const {
   // This instrument only matches basic-card.
-  return payment_method_identifier == "basic-card";
+  *is_valid = payment_method_identifier == "basic-card";
+}
+
+base::WeakPtr<PaymentInstrument> AutofillPaymentInstrument::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void AutofillPaymentInstrument::OnFullCardRequestSucceeded(

@@ -44,6 +44,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"  // nogncheck
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -52,8 +53,10 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
-#include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -74,6 +77,27 @@ bool IsPrivilegedCrosSetting(const std::string& pref_name) {
   // controlled or owner controlled.
   return true;
 }
+
+bool IsRestrictedCrosSettingForChildUser(Profile* profile,
+                                         const std::string& pref_name) {
+  if (!profile->IsChild())
+    return false;
+
+  return SupervisedUserServiceFactory::GetForProfile(profile)
+      ->IsRestrictedCrosSettingForChildUser(pref_name);
+}
+
+const base::Value* GetRestrictedCrosSettingValueForChildUser(
+    Profile* profile,
+    const std::string& pref_name) {
+  // Make sure that profile belongs to a child and the preference is
+  // pre-set.
+  DCHECK(IsRestrictedCrosSettingForChildUser(profile, pref_name));
+
+  return SupervisedUserServiceFactory::GetForProfile(profile)
+      ->GetRestrictedCrosSettingValueForChildUser(pref_name);
+}
+
 #endif
 
 bool IsSettingReadOnly(const std::string& pref_name) {
@@ -128,6 +152,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[bookmarks::prefs::kShowBookmarkBar] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   (*s_whitelist)[::prefs::kUseCustomChromeFrame] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -288,6 +313,20 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   // Accessibility.
   (*s_whitelist)[::prefs::kAccessibilityImageLabelsEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextSize] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextFont] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextColor] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextOpacity] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsBackgroundColor] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsTextShadow] =
+      settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kAccessibilityCaptionsBackgroundOpacity] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
 
 #if defined(OS_CHROMEOS)
   // Accounts / Users / People.
@@ -355,6 +394,22 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessSelectSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessNextKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessNextSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes] =
+      settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessPreviousSetting] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs] =
+      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityVirtualKeyboardEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kAccessibilityMonoAudioEnabled] =
@@ -370,34 +425,36 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kTextToSpeechVolume] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
-  // Crostini
+  // Guest OS
   (*s_whitelist)[crostini::prefs::kCrostiniEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[crostini::prefs::kGuestOSPathsSharedToVms] =
-      settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_whitelist)[crostini::prefs::kCrostiniSharedUsbDevices] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniContainers] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[guest_os::prefs::kGuestOSPathsSharedToVms] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Google Assistant.
-  (*s_whitelist)[::assistant::prefs::kAssistantConsentStatus] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantConsentStatus] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantDisabledByPolicy] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kVoiceInteractionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kVoiceInteractionContextEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[arc::prefs::kVoiceInteractionHotwordAlwaysOn] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantHotwordAlwaysOn] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[arc::prefs::kVoiceInteractionHotwordEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[arc::prefs::kVoiceInteractionNotificationEnabled] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantLaunchWithMicOpen] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[arc::prefs::kVoiceInteractionLaunchWithMicOpen] =
+  (*s_whitelist)[chromeos::assistant::prefs::kAssistantNotificationEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Misc.
@@ -412,6 +469,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[chromeos::kAttestationForContentProtectionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[prefs::kRestoreLastLockScreenNote] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[ash::prefs::kLockScreenMediaKeysEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Bluetooth & Internet settings.
@@ -449,8 +508,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Ash settings.
-  (*s_whitelist)[ash::prefs::kKioskNextShellEnabled] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kEnableStylusTools] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kLaunchPaletteOnEjectEvent] =
@@ -557,6 +614,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   (*s_whitelist)[::prefs::kMediaRouterEnableCloudServices] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kUserFeedbackAllowed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -709,6 +768,15 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     pref_object->controlled_by_name.reset(new std::string(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
+    return pref_object;
+  }
+
+  if (IsRestrictedCrosSettingForChildUser(profile_, name)) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTIONS;
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->value = std::make_unique<base::Value>(
+        GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());
     return pref_object;
   }
 #endif

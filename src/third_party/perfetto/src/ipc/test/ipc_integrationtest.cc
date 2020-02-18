@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
-#include "perfetto/ipc/client.h"
-#include "perfetto/ipc/host.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "perfetto/ext/ipc/client.h"
+#include "perfetto/ext/ipc/host.h"
 #include "src/base/test/test_task_runner.h"
 #include "src/ipc/test/test_socket.h"
 

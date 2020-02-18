@@ -9,21 +9,19 @@
 
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
-using DawnCallbackUserdata = uint64_t;
-
 namespace blink {
 
 // DawnCallback<Callback> is a heap-allocated version of
 // base::OnceCallback or base::RepeatingCallback.
 // It is allocated on the heap so that it can be reinterpret_cast to/from
-// DawnCallbackUserdata and passed to Dawn C callbacks.
+// void* and passed to Dawn C callbacks.
 //
 // Example:
 //   DawnCallback<F>* callback =
 //     CreateDawnCallback(WTF::Bind(func, arg1));
 //
 //   // |someDawnFunction| expects callback function with arguments:
-//   //    Args... args, DawnCallbackUserdata userdata.
+//   //    Args... args, void* userdata.
 //   // When it is called, it will forward to func(arg1, args...).
 //   GetProcs().someDawnFunction(
 //     callback->UnboundCallback(), callback->AsUserdata());
@@ -35,7 +33,7 @@ template <template <typename> class BaseCallbackTemplate,
           typename... Args>
 class DawnCallback<BaseCallbackTemplate<R(Args...)>> {
   using BaseCallback = BaseCallbackTemplate<R(Args...)>;
-  using UnboundCallbackFunction = R (*)(Args..., DawnCallbackUserdata);
+  using UnboundCallbackFunction = R (*)(Args..., void*);
 
   static_assert(
       std::is_same<BaseCallback, base::OnceCallback<R(Args...)>>::value ||
@@ -57,15 +55,14 @@ class DawnCallback<BaseCallbackTemplate<R(Args...)>> {
 
   void Reset() { callback_.Reset(); }
 
-  static R CallUnboundCallback(Args... args, DawnCallbackUserdata handle) {
+  static R CallUnboundCallback(Args... args, void* handle) {
     // After this non-repeating callback is run, it should delete itself.
     auto callback =
         std::unique_ptr<DawnCallback>(DawnCallback::FromUserdata(handle));
     return std::move(*callback).Run(std::forward<Args>(args)...);
   }
 
-  static R CallUnboundRepeatingCallback(Args... args,
-                                        DawnCallbackUserdata handle) {
+  static R CallUnboundRepeatingCallback(Args... args, void* handle) {
     return DawnCallback::FromUserdata(handle)->Run(std::forward<Args>(args)...);
   }
 
@@ -75,12 +72,10 @@ class DawnCallback<BaseCallbackTemplate<R(Args...)>> {
     return CallUnboundRepeatingCallback;
   }
 
-  DawnCallbackUserdata AsUserdata() {
-    return static_cast<DawnCallbackUserdata>(reinterpret_cast<uintptr_t>(this));
-  }
+  void* AsUserdata() { return static_cast<void*>(this); }
 
-  static DawnCallback* FromUserdata(DawnCallbackUserdata userdata) {
-    return reinterpret_cast<DawnCallback*>(static_cast<uintptr_t>(userdata));
+  static DawnCallback* FromUserdata(void* userdata) {
+    return static_cast<DawnCallback*>(userdata);
   }
 
  private:

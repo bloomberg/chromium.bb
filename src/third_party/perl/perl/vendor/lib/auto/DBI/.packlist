@@ -21,6 +21,7 @@ C:\strawberry\perl\vendor\lib\DBD\Gofer\Transport\corostream.pm
 C:\strawberry\perl\vendor\lib\DBD\Gofer\Transport\null.pm
 C:\strawberry\perl\vendor\lib\DBD\Gofer\Transport\pipeone.pm
 C:\strawberry\perl\vendor\lib\DBD\Gofer\Transport\stream.pm
+C:\strawberry\perl\vendor\lib\DBD\Mem.pm
 C:\strawberry\perl\vendor\lib\DBD\NullP.pm
 C:\strawberry\perl\vendor\lib\DBD\Proxy.pm
 C:\strawberry\perl\vendor\lib\DBD\Sponge.pm
@@ -35,7 +36,6 @@ C:\strawberry\perl\vendor\lib\DBI\DBD\Metadata.pm
 C:\strawberry\perl\vendor\lib\DBI\DBD\SqlEngine.pm
 C:\strawberry\perl\vendor\lib\DBI\DBD\SqlEngine\Developers.pod
 C:\strawberry\perl\vendor\lib\DBI\DBD\SqlEngine\HowTo.pod
-C:\strawberry\perl\vendor\lib\DBI\FAQ.pm
 C:\strawberry\perl\vendor\lib\DBI\Gofer\Execute.pm
 C:\strawberry\perl\vendor\lib\DBI\Gofer\Request.pm
 C:\strawberry\perl\vendor\lib\DBI\Gofer\Response.pm
@@ -57,8 +57,7 @@ C:\strawberry\perl\vendor\lib\DBI\Util\CacheMemory.pm
 C:\strawberry\perl\vendor\lib\DBI\Util\_accessor.pm
 C:\strawberry\perl\vendor\lib\DBI\W32ODBC.pm
 C:\strawberry\perl\vendor\lib\Win32\DBIODBC.pm
-C:\strawberry\perl\vendor\lib\auto\DBI\DBI.bs
-C:\strawberry\perl\vendor\lib\auto\DBI\DBI.dll
+C:\strawberry\perl\vendor\lib\auto\DBI\DBI.xs.dll
 C:\strawberry\perl\vendor\lib\auto\DBI\DBIXS.h
 C:\strawberry\perl\vendor\lib\auto\DBI\Driver.xst
 C:\strawberry\perl\vendor\lib\auto\DBI\Driver_xst.h

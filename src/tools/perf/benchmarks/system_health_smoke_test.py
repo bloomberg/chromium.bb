@@ -34,6 +34,9 @@ def GetSystemHealthBenchmarksToSmokeTest():
 
 
 _DISABLED_TESTS = frozenset({
+  # crbug.com/983326 - flaky.
+  'system_health.memory_desktop/browse_accessibility:media:youtube',
+
   # crbug.com/878390 - These stories are already covered by their 2018 versions
   # and will later be removed.
   'system_health.memory_mobile/browse:tech:discourse_infinite_scroll',
@@ -137,6 +140,9 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/937006
   'system_health.memory_mobile/browse:news:toi',
+
+  # crbug.com/978358
+  'system_health.memory_desktop/browse:news:flipboard:2018',
 
   # The following tests are disabled because they are disabled on the perf
   # waterfall (using tools/perf/expectations.config) on one platform or another.

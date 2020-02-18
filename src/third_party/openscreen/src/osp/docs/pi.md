@@ -25,11 +25,11 @@ Either of the flash instructions below will make a bootable microSD card.
 
 ### Flashing via commandline
 
-TODO: Write a script
+TODO(mfoltz): Write a script
 
 ### Logging in and configuring WiFi
 
-TODO: Figure this out
+TODO(mfoltz): Figure this out
 
 ## Compiling for Raspberry Pi
 

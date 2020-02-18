@@ -16,9 +16,9 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager_observer.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -143,7 +143,7 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
       FROM_HERE, base::BindOnce(DestroyInstallTask, std::move(install_task)));
 }
 
-void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
+void SetBookmarkAppHelperOptions(const web_app::ExternalInstallOptions& options,
                                  BookmarkAppHelper* helper) {
   switch (options.launch_container) {
     case web_app::LaunchContainer::kDefault:
@@ -159,17 +159,17 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
   switch (options.install_source) {
     // TODO(nigeltao/ortuno): should these two cases lead to different
     // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-    case web_app::InstallSource::kInternal:
-    case web_app::InstallSource::kExternalDefault:
+    case web_app::ExternalInstallSource::kInternalDefault:
+    case web_app::ExternalInstallSource::kExternalDefault:
       helper->set_is_default_app();
       break;
-    case web_app::InstallSource::kExternalPolicy:
+    case web_app::ExternalInstallSource::kExternalPolicy:
       helper->set_is_policy_installed_app();
       break;
-    case web_app::InstallSource::kSystemInstalled:
+    case web_app::ExternalInstallSource::kSystemInstalled:
       helper->set_is_system_app();
       break;
-    case web_app::InstallSource::kArc:
+    case web_app::ExternalInstallSource::kArc:
       NOTREACHED();
       break;
   }
@@ -190,10 +190,11 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
     helper->set_require_manifest();
 }
 
-void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
-                             std::unique_ptr<InstallTask> install_task,
-                             const web_app::InstallOptions& install_options,
-                             std::unique_ptr<WebApplicationInfo> web_app_info) {
+void OnGetWebApplicationInfo(
+    const BookmarkAppInstallManager* install_manager,
+    std::unique_ptr<InstallTask> install_task,
+    const web_app::ExternalInstallOptions& install_options,
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (!web_app_info) {
     install_task->CallInstallCallback(
         web_app::AppId(),
@@ -205,8 +206,9 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
     return;
   }
 
-  WebappInstallSource metrics_install_source =
-      web_app::ConvertOptionsToMetricsInstallSource(install_options);
+  WebappInstallSource install_source =
+      web_app::ConvertExternalInstallSourceToInstallSource(
+          install_options.install_source);
 
   Profile* profile = Profile::FromBrowserContext(
       install_task->web_contents()->GetBrowserContext());
@@ -214,7 +216,7 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 
   auto bookmark_app_helper = install_manager->bookmark_app_helper_factory().Run(
       profile, std::move(web_app_info), install_task->web_contents(),
-      metrics_install_source);
+      install_source);
 
   BookmarkAppHelper* helper_ptr = bookmark_app_helper.get();
   SetBookmarkAppHelperOptions(install_options, bookmark_app_helper.get());
@@ -228,10 +230,8 @@ void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
 
 }  // namespace
 
-BookmarkAppInstallManager::BookmarkAppInstallManager(
-    Profile* profile,
-    web_app::InstallFinalizer* finalizer)
-    : InstallManager(profile), finalizer_(finalizer) {
+BookmarkAppInstallManager::BookmarkAppInstallManager(Profile* profile)
+    : InstallManager(profile) {
   bookmark_app_helper_factory_ = base::BindRepeating(
       [](Profile* profile, std::unique_ptr<WebApplicationInfo> web_app_info,
          content::WebContents* web_contents,
@@ -330,7 +330,7 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
 
 void BookmarkAppInstallManager::InstallWebAppWithOptions(
     content::WebContents* web_contents,
-    const web_app::InstallOptions& install_options,
+    const web_app::ExternalInstallOptions& install_options,
     OnceInstallCallback callback) {
   auto data_retriever = data_retriever_factory_.Run();
 
@@ -358,7 +358,7 @@ void BookmarkAppInstallManager::InstallOrUpdateWebAppFromSync(
       ExtensionSystem::Get(profile())->extension_service();
   DCHECK(extension_service);
 
-  if (finalizer_->CanSkipAppUpdateForSync(app_id, *web_application_info))
+  if (finalizer()->CanSkipAppUpdateForSync(app_id, *web_application_info))
     return;
 
 #if defined(OS_CHROMEOS)

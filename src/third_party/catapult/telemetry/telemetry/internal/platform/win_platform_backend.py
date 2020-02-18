@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
 import contextlib
 import ctypes
 import logging
@@ -10,7 +9,6 @@ import platform
 import re
 import subprocess
 import sys
-import time
 
 from telemetry.core import exceptions
 from telemetry.core import os_version as os_version_module
@@ -65,17 +63,6 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
     performance_info = self._GetPerformanceInfo()
     return performance_info.PhysicalTotal * performance_info.PageSize / 1024
 
-  def GetCpuStats(self, pid):
-    cpu_info = self._GetWin32ProcessInfo(win32process.GetProcessTimes, pid)
-    # Convert 100 nanosecond units to seconds
-    cpu_time = (cpu_info['UserTime'] / 1e7 +
-                cpu_info['KernelTime'] / 1e7)
-    return {'CpuProcessTime': cpu_time}
-
-  def GetCpuTimestamp(self):
-    """Return current timestamp in seconds."""
-    return {'TotalTime': time.time()}
-
   def KillProcess(self, pid, kill_process_tree=False):
     # os.kill for Windows is Python 2.7.
     cmd = ['taskkill', '/F', '/PID', str(pid)]
@@ -107,33 +94,6 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
       pi['CommandLine'] = ','.join(parts[1:-4])
       process_info.append(pi)
     return process_info
-
-  def GetChildPids(self, pid):
-    """Retunds a list of child pids of |pid|."""
-    ppid_map = collections.defaultdict(list)
-    creation_map = {}
-    for pi in self.GetSystemProcessInfo():
-      ppid_map[pi['ParentProcessId']].append(pi['ProcessId'])
-      if pi['CreationDate']:
-        creation_map[pi['ProcessId']] = pi['CreationDate']
-
-    def _InnerGetChildPids(pid):
-      if not pid or pid not in ppid_map:
-        return []
-      ret = [p for p in ppid_map[pid] if creation_map[p] >= creation_map[pid]]
-      for child in ret:
-        if child == pid:
-          continue
-        ret.extend(_InnerGetChildPids(child))
-      return ret
-
-    return _InnerGetChildPids(pid)
-
-  def GetCommandLine(self, pid):
-    for pi in self.GetSystemProcessInfo():
-      if pid == pi['ProcessId']:
-        return pi['CommandLine']
-    raise exceptions.ProcessGoneException()
 
   @decorators.Cache
   def GetArchName(self):
@@ -260,12 +220,6 @@ class WinPlatformBackend(desktop_platform_backend.DesktopPlatformBackend):
           None, application + ' ' + parameters, None, None, False,
           win32process.CREATE_NO_WINDOW, None, None, win32process.STARTUPINFO())
       return handle
-
-  def CanMonitorPower(self):
-    return False
-
-  def CanMeasurePerApplicationPower(self):
-    return False
 
   def IsCooperativeShutdownSupported(self):
     return True

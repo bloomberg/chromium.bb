@@ -210,6 +210,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void ClearCachedDataForContextID(ContextID context_id);
 
+  // Clears all on-demand favicons from thumbnail database.
+  void ClearAllOnDemandFavicons();
+
   // Gets the counts and last last time of URLs that belong to |origins| in the
   // history database. Origins that are not in the history database will be in
   // the map with a count and time of 0.
@@ -252,15 +255,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // then calling this function with url=C would fill redirects with {B, A}.
   RedirectList QueryRedirectsTo(const GURL& url);
 
-  void GetVisibleVisitCountToHost(const GURL& url,
-                                  VisibleVisitCountToHostResult* result);
+  VisibleVisitCountToHostResult GetVisibleVisitCountToHost(const GURL& url);
 
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  void QueryMostVisitedURLs(int result_count,
-                            int days_back,
-                            MostVisitedURLList* result);
+  MostVisitedURLList QueryMostVisitedURLs(int result_count, int days_back);
 
   // Statistics ----------------------------------------------------------------
 
@@ -276,36 +276,31 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Favicon -------------------------------------------------------------------
 
-  void GetFavicon(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFavicon(
       const GURL& icon_url,
       favicon_base::IconType icon_type,
-      const std::vector<int>& desired_sizes,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      const std::vector<int>& desired_sizes);
 
-  void GetLargestFaviconForURL(
+  favicon_base::FaviconRawBitmapResult GetLargestFaviconForURL(
       const GURL& page_url,
       const std::vector<favicon_base::IconTypeSet>& icon_types_list,
-      int minimum_size_in_pixels,
-      favicon_base::FaviconRawBitmapResult* bitmap_result);
+      int minimum_size_in_pixels);
 
-  void GetFaviconsForURL(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFaviconsForURL(
       const GURL& page_url,
       const favicon_base::IconTypeSet& icon_types,
       const std::vector<int>& desired_sizes,
-      bool fallback_to_host,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      bool fallback_to_host);
 
-  void GetFaviconForID(
+  std::vector<favicon_base::FaviconRawBitmapResult> GetFaviconForID(
       favicon_base::FaviconID favicon_id,
-      int desired_size,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+      int desired_size);
 
-  void UpdateFaviconMappingsAndFetch(
-      const base::flat_set<GURL>& page_urls,
-      const GURL& icon_url,
-      favicon_base::IconType icon_type,
-      const std::vector<int>& desired_sizes,
-      std::vector<favicon_base::FaviconRawBitmapResult>* bitmap_results);
+  std::vector<favicon_base::FaviconRawBitmapResult>
+  UpdateFaviconMappingsAndFetch(const base::flat_set<GURL>& page_urls,
+                                const GURL& icon_url,
+                                favicon_base::IconType icon_type,
+                                const std::vector<int>& desired_sizes);
 
   void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
                              favicon_base::IconType icon_type);
@@ -345,7 +340,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Downloads -----------------------------------------------------------------
 
   uint32_t GetNextDownloadId();
-  void QueryDownloads(std::vector<DownloadRow>* rows);
+  std::vector<DownloadRow> QueryDownloads();
   void UpdateDownload(const DownloadRow& data, bool should_commit_immediately);
   bool CreateDownload(const DownloadRow& history_info);
   void RemoveDownloads(const std::set<uint32_t>& ids);

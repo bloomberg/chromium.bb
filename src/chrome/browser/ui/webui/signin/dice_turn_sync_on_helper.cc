@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -31,18 +32,16 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/storage_partition.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 
 namespace {
 
@@ -72,7 +71,7 @@ class DiceTurnSyncOnHelperShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelperShutdownNotifierFactory);
 };
 
-AccountInfo GetAccountInfo(identity::IdentityManager* identity_manager,
+AccountInfo GetAccountInfo(signin::IdentityManager* identity_manager,
                            const std::string& account_id) {
   auto maybe_account_info =
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
@@ -81,7 +80,7 @@ AccountInfo GetAccountInfo(identity::IdentityManager* identity_manager,
                                         : AccountInfo();
 }
 
-class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
+class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
  public:
   // Calls |callback| when tokens are loaded.
   static void RunWhenLoaded(Profile* profile,
@@ -100,7 +99,7 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
   }
 
  private:
-  TokensLoadedCallbackRunner(identity::IdentityManager* identity_manager,
+  TokensLoadedCallbackRunner(signin::IdentityManager* identity_manager,
                              KeyedServiceShutdownNotifier* shutdown_notifier,
                              base::OnceClosure callback)
       : identity_manager_(identity_manager),
@@ -113,7 +112,7 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
     scoped_identity_manager_observer_.Add(identity_manager_);
   }
 
-  // identity::IdentityManager::Observer implementation:
+  // signin::IdentityManager::Observer implementation:
   void OnRefreshTokensLoaded() override {
     std::move(callback_).Run();
     delete this;
@@ -121,8 +120,8 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
 
   void OnShutdown() { delete this; }
 
-  identity::IdentityManager* identity_manager_;
-  ScopedObserver<identity::IdentityManager, TokensLoadedCallbackRunner>
+  signin::IdentityManager* identity_manager_;
+  ScopedObserver<signin::IdentityManager, TokensLoadedCallbackRunner>
       scoped_identity_manager_observer_;
   base::OnceClosure callback_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
@@ -153,8 +152,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
           DiceTurnSyncOnHelperShutdownNotifierFactory::GetInstance()
               ->Get(profile)
               ->Subscribe(base::Bind(&DiceTurnSyncOnHelper::AbortAndDelete,
-                                     base::Unretained(this)))),
-      weak_pointer_factory_(this) {
+                                     base::Unretained(this)))) {
   DCHECK(delegate_);
   DCHECK(profile_);
   // Should not start syncing if the profile is already authenticated
@@ -501,7 +499,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
           identity_manager_->GetPrimaryAccountMutator();
       DCHECK(primary_account_mutator);
       primary_account_mutator->ClearPrimaryAccount(
-          identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       AbortAndDelete();

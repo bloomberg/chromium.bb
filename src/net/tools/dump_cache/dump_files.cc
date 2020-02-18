@@ -20,9 +20,9 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/single_thread_task_executor.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
@@ -61,8 +61,8 @@ int GetMajorVersionFromFile(const base::FilePath& name) {
 
 // Dumps the contents of the Stats record.
 void DumpStats(const base::FilePath& path, disk_cache::CacheAddr addr) {
-  // We need a message loop, although we really don't run any task.
-  base::MessageLoopForIO loop;
+  // We need a task executor, although we really don't run any task.
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
 
   disk_cache::BlockFiles block_files(path);
   if (!block_files.Init(false)) {
@@ -445,8 +445,8 @@ int DumpContents(const base::FilePath& input_path) {
   if (!print_csv)
     DumpIndexHeader(input_path.Append(kIndexName), nullptr);
 
-  // We need a message loop, although we really don't run any task.
-  base::MessageLoopForIO loop;
+  // We need a task executor, although we really don't run any task.
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   CacheDumper dumper(input_path);
   if (!dumper.Init())
     return -1;
@@ -481,8 +481,8 @@ int DumpLists(const base::FilePath& input_path) {
   if (!ReadHeader(index_name, reinterpret_cast<char*>(&header), sizeof(header)))
     return -1;
 
-  // We need a message loop, although we really don't run any task.
-  base::MessageLoopForIO loop;
+  // We need a task executor, although we really don't run any task.
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   CacheDumper dumper(input_path);
   if (!dumper.Init())
     return -1;
@@ -534,8 +534,8 @@ int DumpEntryAt(const base::FilePath& input_path, const std::string& at) {
   if (!ReadHeader(index_name, reinterpret_cast<char*>(&header), sizeof(header)))
     return -1;
 
-  // We need a message loop, although we really don't run any task.
-  base::MessageLoopForIO loop;
+  // We need a task executor, although we really don't run any task.
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   CacheDumper dumper(input_path);
   if (!dumper.Init())
     return -1;

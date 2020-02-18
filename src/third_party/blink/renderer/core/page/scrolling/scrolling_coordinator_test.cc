@@ -127,9 +127,8 @@ class ScrollingCoordinatorTest : public testing::Test,
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
-
-  WebLayerTreeView* GetWebLayerTreeView() const {
-    return GetWebView()->LayerTreeView();
+  frame_test_helpers::TestWebWidgetClient* GetWidgetClient() const {
+    return helper_.GetWebWidgetClient();
   }
 
   void LoadAhem() { helper_.LoadAhem(); }
@@ -165,10 +164,10 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
   ASSERT_TRUE(root_scroll_layer->scrollable());
   ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
   ASSERT_EQ(cc::EventListenerProperties::kNone,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
   ASSERT_EQ(cc::EventListenerProperties::kNone,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kMouseWheel));
 
   cc::Layer* inner_viewport_scroll_layer =
@@ -456,7 +455,7 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandler) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kBlocking,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
 }
 
@@ -484,7 +483,7 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandlerPassive) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kPassive,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
 }
 
@@ -529,7 +528,7 @@ TEST_P(ScrollingCoordinatorTest, touchEventHandlerBoth) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kBlockingAndPassive,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
 }
 
@@ -539,7 +538,7 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandler) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kBlocking,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kMouseWheel));
 }
 
@@ -549,7 +548,7 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandlerPassive) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kPassive,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kMouseWheel));
 }
 
@@ -559,7 +558,7 @@ TEST_P(ScrollingCoordinatorTest, wheelEventHandlerBoth) {
   ForceFullCompositingUpdate();
 
   ASSERT_EQ(cc::EventListenerProperties::kBlockingAndPassive,
-            GetWebLayerTreeView()->EventListenerProperties(
+            GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kMouseWheel));
 }
 
@@ -568,7 +567,7 @@ TEST_P(ScrollingCoordinatorTest, scrollEventHandler) {
   NavigateTo(base_url_ + "scroll-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_TRUE(GetWebLayerTreeView()->HaveScrollEventHandlers());
+  ASSERT_TRUE(GetWidgetClient()->HaveScrollEventHandlers());
 }
 
 TEST_P(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown) {

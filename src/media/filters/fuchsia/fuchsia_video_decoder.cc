@@ -19,6 +19,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/cdm_context.h"
+#include "media/base/decryptor.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -56,7 +58,7 @@ zx::vmo CreateContiguousVmo(size_t size, const zx::handle& bti_handle) {
 
 zx::vmo CreateVmo(size_t size) {
   zx::vmo vmo;
-  zx_status_t status = zx::vmo::create(size, ZX_VMO_NON_RESIZABLE, &vmo);
+  zx_status_t status = zx::vmo::create(size, 0, &vmo);
   if (status != ZX_OK) {
     ZX_DLOG(ERROR, status) << "zx_vmo_create";
     return zx::vmo();
@@ -377,10 +379,29 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  auto done_callback = BindToCurrentLoop(std::move(init_cb));
+
+  if (config.is_encrypted()) {
+    // Caller makes sure |cdm_context| is available if the stream is encrypted.
+    if (!cdm_context) {
+      LOG(ERROR) << "No cdm context for encrypted stream.";
+      std::move(done_callback).Run(false);
+      return;
+    }
+
+    // If decryptor is decrypt only, return false here to allow decoder selector
+    // to choose DecryptingDemuxerStream, which will handle the decryption and
+    // pass the clear stream to this decoder.
+    Decryptor* decryptor = cdm_context->GetDecryptor();
+    if (decryptor && decryptor->CanAlwaysDecrypt()) {
+      DVLOG(1) << "Decryptor can always decrypt, return false.";
+      std::move(done_callback).Run(false);
+      return;
+    }
+  }
+
   output_cb_ = output_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
-
-  auto done_callback = BindToCurrentLoop(std::move(init_cb));
 
   fuchsia::mediacodec::CreateDecoder_Params codec_params;
   codec_params.mutable_input_details()->set_format_details_version_ordinal(0);
@@ -628,10 +649,14 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
           PIXEL_FORMAT_NV12, coded_size,
           std::vector<VideoFrameLayout::Plane>{
               VideoFrameLayout::Plane(output_format_.primary_line_stride_bytes,
-                                      output_format_.primary_start_offset),
+                                      output_format_.primary_start_offset,
+                                      output_format_.primary_line_stride_bytes *
+                                          output_format_.primary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.secondary_start_offset)});
+                  output_format_.secondary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels)});
       DCHECK(layout);
       break;
 
@@ -640,14 +665,19 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
           PIXEL_FORMAT_YV12, coded_size,
           std::vector<VideoFrameLayout::Plane>{
               VideoFrameLayout::Plane(output_format_.primary_line_stride_bytes,
-                                      output_format_.primary_start_offset),
+                                      output_format_.primary_start_offset,
+                                      output_format_.primary_line_stride_bytes *
+                                          output_format_.primary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.secondary_start_offset),
+                  output_format_.secondary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels),
               VideoFrameLayout::Plane(
                   output_format_.secondary_line_stride_bytes,
-                  output_format_.tertiary_start_offset),
-          });
+                  output_format_.tertiary_start_offset,
+                  output_format_.secondary_line_stride_bytes *
+                      output_format_.secondary_height_pixels)});
       DCHECK(layout);
       break;
 

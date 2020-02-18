@@ -14,16 +14,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autofill/accessory_controller.h"
-#include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
-
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
 
 // Interface for password-specific keyboard accessory controller between the
 // ManualFillingController and PasswordManagerClient.
@@ -48,7 +44,8 @@ class PasswordAccessoryController
   // function is called. Only valid to be called if
   // |PasswordAccessoryController::AllowedForWebContents(web_contents)|.
   static PasswordAccessoryController* GetOrCreate(
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      password_manager::CredentialCache* credential_cache);
 
   // Returns a reference to the unique PasswordAccessoryController associated
   // with |web_contents|. Returns null if no such instance exists.
@@ -59,22 +56,17 @@ class PasswordAccessoryController
   // Methods called by the client:
   // -----------------------------
 
-  // Saves credentials for an origin so that they can be used in the sheet.
-  virtual void SavePasswordsForOrigin(
-      const std::map<base::string16, const autofill::PasswordForm*>&
-          best_matches,
-      const url::Origin& origin) = 0;
-
-
-  // Completes a filling attempt by recording metrics, giving feedback to the
-  // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
-
   // Makes sure, that all shown suggestions are appropriate for the currently
   // focused field and for fields that lost the focus.
   virtual void RefreshSuggestionsForField(
       autofill::mojom::FocusedFieldType focused_field_type,
       bool is_manual_generation_available) = 0;
+
+  // Signals that generation was requested from the accessory. |type|
+  // indicates whether generation was requested via the manual fallback or from
+  // the automatically provided button.
+  virtual void OnGenerationRequested(
+      autofill::password_generation::PasswordGenerationType type) = 0;
 
   // Reacts to a navigation on the main frame, e.g. by clearing caches.
   virtual void DidNavigateMainFrame() = 0;

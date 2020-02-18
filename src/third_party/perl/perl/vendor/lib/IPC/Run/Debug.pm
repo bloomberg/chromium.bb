@@ -29,7 +29,7 @@ but the numbers shown are still supported for backwards compatibility:
 
    0  none         disabled (special, see below)
    1  basic        what's running
-   2  data         what's being sent/recieved
+   2  data         what's being sent/received
    3  details      what's going on in more detail
    4  gory         way too much detail for most uses
    10 all          use this when submitting bug reports
@@ -69,37 +69,35 @@ Both of those are untested.
 use strict;
 use Exporter;
 use vars qw{$VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS};
+
 BEGIN {
-	$VERSION = '0.90';
-	@ISA     = qw( Exporter );
-	@EXPORT  = qw(
-		_debug
-		_debug_desc_fd
-		_debugging
-		_debugging_data
-		_debugging_details
-		_debugging_gory_details
-		_debugging_not_optimized
-		_set_child_debug_name
-	);
-	
-	@EXPORT_OK = qw(
-		_debug_init
-		_debugging_level
-		_map_fds
-	);
-	%EXPORT_TAGS = (
-		default => \@EXPORT,
-		all     => [ @EXPORT, @EXPORT_OK ],
-	);
+    $VERSION = '20180523.0';
+    @ISA     = qw( Exporter );
+    @EXPORT  = qw(
+      _debug
+      _debug_desc_fd
+      _debugging
+      _debugging_data
+      _debugging_details
+      _debugging_gory_details
+      _debugging_not_optimized
+      _set_child_debug_name
+    );
+
+    @EXPORT_OK = qw(
+      _debug_init
+      _debugging_level
+      _map_fds
+    );
+    %EXPORT_TAGS = (
+        default => \@EXPORT,
+        all => [ @EXPORT, @EXPORT_OK ],
+    );
 }
 
-my $disable_debugging =
-   defined $ENV{IPCRUNDEBUG}
-   && (
-      ! $ENV{IPCRUNDEBUG}
-      || lc $ENV{IPCRUNDEBUG} eq "none"
-   );
+my $disable_debugging = defined $ENV{IPCRUNDEBUG}
+  && ( !$ENV{IPCRUNDEBUG}
+    || lc $ENV{IPCRUNDEBUG} eq "none" );
 
 eval( $disable_debugging ? <<'STUBS' : <<'SUBS' ) or die $@;
 sub _map_fds()                 { "" }
@@ -117,7 +115,7 @@ sub _debugging_not_optimized() { 0 }
 1;
 STUBS
 
-use POSIX;
+use POSIX ();
 
 sub _map_fds {
    my $map = '';
@@ -125,7 +123,7 @@ sub _map_fds {
    my $in_use;
    my $dummy;
    for my $fd (0..63) {
-      ## I'd like a quicker way (less user, cpu & expecially sys and kernal
+      ## I'd like a quicker way (less user, cpu & especially sys and kernel
       ## calls) to detect open file descriptors.  Let me know...
       ## Hmmm, could do a 0 length read and check for bad file descriptor...
       ## but that segfaults on Win32
@@ -144,7 +142,7 @@ use vars qw( $parent_pid );
 
 $parent_pid = $$;
 
-## TODO: move debugging to it's own module and make it compile-time
+## TODO: move debugging to its own module and make it compile-time
 ## optimizable.
 
 ## Give kid process debugging nice names

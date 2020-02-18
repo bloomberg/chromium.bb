@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -22,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,8 +52,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       should_uninstall_on_failure_(false),
       force_bypass_cache_(false),
       skip_script_comparison_(false),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      weak_factory_(this) {}
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -70,8 +69,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       should_uninstall_on_failure_(false),
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
-      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      weak_factory_(this) {
+      promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
   internal_.registration = registration;
 }
 
@@ -332,13 +330,14 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
   version_to_update->script_cache_map()->GetResources(&resources);
   int64_t script_resource_id =
       version_to_update->script_cache_map()->LookupResourceId(script_url_);
-  DCHECK_NE(script_resource_id, kInvalidServiceWorkerResourceId);
+  DCHECK_NE(script_resource_id,
+            ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
       std::move(resources), script_url_, script_resource_id, version_to_update,
-      context_->loader_factory_getter()->GetNetworkFactory(),
-      force_bypass_cache_, registration()->update_via_cache(),
-      time_since_last_check);
+      context_->GetLoaderFactoryBundleForUpdateCheck(), force_bypass_cache_,
+      registration()->update_via_cache(), time_since_last_check,
+      context_.get());
   update_checker_->Start(std::move(callback));
 }
 
@@ -349,12 +348,31 @@ ServiceWorkerRegisterJob::GetUpdateCheckType() const {
              : UpdateCheckType::kMainScriptDuringStartWorker;
 }
 
-void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
+void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
+    ServiceWorkerSingleScriptUpdateChecker::Result result,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info) {
   DCHECK_EQ(GetUpdateCheckType(),
             UpdateCheckType::kAllScriptsBeforeStartWorker);
+
+  // Update check failed.
+  if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
+    DCHECK(failure_info);
+    ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
+        failure_info->status, /*has_found_update=*/false);
+    ResolvePromise(failure_info->status, failure_info->error_message, nullptr);
+    // This terminates the current job (|this|).
+    Complete(failure_info->status, failure_info->error_message);
+    return;
+  }
+
+  // Update the last update check time.
   BumpLastUpdateCheckTimeIfNeeded();
-  if (!script_changed) {
-    // TODO(momohatt): Set phase correctly.
+
+  // Update check succeeded.
+  if (result == ServiceWorkerSingleScriptUpdateChecker::Result::kIdentical) {
+    ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
+        blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/false);
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
                    registration());
     // This terminates the current job (|this|).
@@ -363,6 +381,8 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(bool script_changed) {
     return;
   }
 
+  ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
+      blink::ServiceWorkerStatusCode::kOk, /*has_found_update=*/true);
   compared_script_info_map_ = update_checker_->TakeComparedResults();
   update_checker_.reset();
   StartWorkerForUpdate();
@@ -511,7 +531,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
     message = new_version()->script_cache_map()->main_script_status_message();
     if (message.empty())
-      message = kServiceWorkerFetchScriptError;
+      message = ServiceWorkerConsts::kServiceWorkerFetchScriptError;
   }
   Complete(status, message);
 }

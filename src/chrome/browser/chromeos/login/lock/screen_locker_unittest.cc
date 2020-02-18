@@ -4,18 +4,20 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
+#include <memory>
+
 #include "ash/public/cpp/login_screen_model.h"
 #include "ash/public/cpp/login_types.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/test_accessibility_focus_ring_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/accessibility/fake_accessibility_controller.h"
+#include "chrome/browser/ui/ash/assistant/assistant_client.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
@@ -35,7 +37,7 @@
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -68,14 +70,14 @@ class ScreenLockerUnitTest : public testing::Test {
         std::make_unique<SessionControllerClientImpl>();
     session_controller_client_->Init();
 
+    // Initialize AssistantClient:
+    assistant_client_ = std::make_unique<AssistantClient>();
+
     // Initialize AccessibilityManager and dependencies:
     observer_ = std::make_unique<audio::TestObserver>((base::DoNothing()));
     audio::AudioStreamHandler::SetObserverForTesting(observer_.get());
 
-    audio::SoundsManager::Create(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone());
+    audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
     input_method::InputMethodManager::Initialize(
         // Owned by InputMethodManager
         new input_method::MockInputMethodManagerImpl());
@@ -96,6 +98,7 @@ class ScreenLockerUnitTest : public testing::Test {
   void TearDown() override {
     input_method::InputMethodManager::Shutdown();
     audio::SoundsManager::Shutdown();
+    assistant_client_.reset();
     session_controller_client_.reset();
     LoginState::Shutdown();
     CryptohomeClient::Shutdown();
@@ -123,8 +126,6 @@ class ScreenLockerUnitTest : public testing::Test {
   // ScreenLocker dependencies:
   // * AccessibilityManager dependencies:
   FakeAccessibilityController fake_accessibility_controller_;
-  TestAccessibilityFocusRingController
-      test_accessibility_focus_ring_controller_;
   // * LoginScreenClient dependencies:
   session_manager::SessionManager session_manager_;
   TestLoginScreen test_login_screen_;
@@ -138,6 +139,7 @@ class ScreenLockerUnitTest : public testing::Test {
   ScopedDeviceSettingsTestHelper device_settings_test_helper_;
   TestSessionController test_session_controller_;
   std::unique_ptr<SessionControllerClientImpl> session_controller_client_;
+  std::unique_ptr<AssistantClient> assistant_client_;
   chromeos::SessionTerminationManager session_termination_manager_;
 
   std::unique_ptr<audio::TestObserver> observer_;

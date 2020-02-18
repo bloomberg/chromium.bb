@@ -17,7 +17,6 @@
 #import "RTCMediaConstraints+Private.h"
 #import "RTCMediaStream+Private.h"
 #import "RTCMediaStreamTrack+Private.h"
-#import "RTCPeerConnection+Native.h"
 #import "RTCPeerConnectionFactory+Private.h"
 #import "RTCRtpReceiver+Private.h"
 #import "RTCRtpSender+Private.h"
@@ -30,7 +29,9 @@
 
 #include "api/jsep_ice_candidate.h"
 #include "api/media_transport_interface.h"
+#include "api/rtc_event_log_output_file.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/numerics/safe_conversions.h"
 
 NSString * const kRTCPeerConnectionErrorDomain =
     @"org.webrtc.RTCPeerConnection";
@@ -177,6 +178,16 @@ void PeerConnectionDelegateAdapter::OnIceConnectionChange(
     PeerConnectionInterface::IceConnectionState new_state) {
   RTCIceConnectionState state = [RTCPeerConnection iceConnectionStateForNativeState:new_state];
   [peer_connection_.delegate peerConnection:peer_connection_ didChangeIceConnectionState:state];
+}
+
+void PeerConnectionDelegateAdapter::OnStandardizedIceConnectionChange(
+    PeerConnectionInterface::IceConnectionState new_state) {
+  if ([peer_connection_.delegate
+          respondsToSelector:@selector(peerConnection:didChangeStandardizedIceConnectionState:)]) {
+    RTCIceConnectionState state = [RTCPeerConnection iceConnectionStateForNativeState:new_state];
+    [peer_connection_.delegate peerConnection:peer_connection_
+        didChangeStandardizedIceConnectionState:state];
+  }
 }
 
 void PeerConnectionDelegateAdapter::OnConnectionChange(
@@ -510,11 +521,6 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
   return _peerConnection->SetBitrate(params).ok();
 }
 
-- (void)setBitrateAllocationStrategy:
-        (std::unique_ptr<rtc::BitrateAllocationStrategy>)bitrateAllocationStrategy {
-  _peerConnection->SetBitrateAllocationStrategy(std::move(bitrateAllocationStrategy));
-}
-
 - (BOOL)startRtcEventLogWithFilePath:(NSString *)filePath
                       maxSizeInBytes:(int64_t)maxSizeInBytes {
   RTC_DCHECK(filePath.length);
@@ -524,14 +530,17 @@ void PeerConnectionDelegateAdapter::OnRemoveTrack(
     RTCLogError(@"Event logging already started.");
     return NO;
   }
-  int fd = open(filePath.UTF8String, O_WRONLY | O_CREAT | O_TRUNC,
-                S_IRUSR | S_IWUSR);
-  if (fd < 0) {
+  FILE *f = fopen(filePath.UTF8String, "wb");
+  if (!f) {
     RTCLogError(@"Error opening file: %@. Error: %d", filePath, errno);
     return NO;
   }
-  _hasStartedRtcEventLog =
-      _peerConnection->StartRtcEventLog(fd, maxSizeInBytes);
+  // TODO(eladalon): It would be better to not allow negative values into PC.
+  const size_t max_size = (maxSizeInBytes < 0) ? webrtc::RtcEventLog::kUnlimitedOutput :
+                                                 rtc::saturated_cast<size_t>(maxSizeInBytes);
+
+  _hasStartedRtcEventLog = _peerConnection->StartRtcEventLog(
+      absl::make_unique<webrtc::RtcEventLogOutputFile>(f, max_size));
   return _hasStartedRtcEventLog;
 }
 

@@ -156,5 +156,9 @@ class alignas(kNativeVkHandleAlignment) VkNonDispatchableHandle {
 #if defined(DAWN_PLATFORM_WINDOWS)
 #    include "common/windows_with_undefs.h"
 #endif
+// Remove X11/Xlib.h macros after vulkan_platform's include of it.
+#if defined(DAWN_PLATFORM_LINUX)
+#    include "common/xlib_with_undefs.h"
+#endif
 
 #endif  // COMMON_VULKANPLATFORM_H_

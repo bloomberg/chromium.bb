@@ -145,13 +145,6 @@ void DispatchOnStartupEventImpl(
       ->DispatchEventToExtension(extension_id, std::move(event));
 }
 
-void SetUninstallURL(ExtensionPrefs* prefs,
-                     const std::string& extension_id,
-                     const std::string& url_string) {
-  prefs->UpdateExtensionPref(extension_id, kUninstallUrl,
-                             std::make_unique<base::Value>(url_string));
-}
-
 std::string GetUninstallURL(ExtensionPrefs* prefs,
                             const std::string& extension_id) {
   std::string url_string;
@@ -192,8 +185,7 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
           kMinDurationBetweenSuccessiveRestartsHours)),
       dispatch_chrome_updated_event_(false),
       did_read_delayed_restart_preferences_(false),
-      was_last_restart_due_to_delayed_restart_api_(false),
-      weak_ptr_factory_(this) {
+      was_last_restart_due_to_delayed_restart_api_(false) {
   // RuntimeAPI is redirected in incognito, so |browser_context_| is never
   // incognito.
   DCHECK(!browser_context_->IsOffTheRecord());
@@ -628,14 +620,16 @@ ExtensionFunction::ResponseAction RuntimeOpenOptionsPageFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {
-  std::string url_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
+  std::unique_ptr<api::runtime::SetUninstallURL::Params> params(
+      api::runtime::SetUninstallURL::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!params->url.empty() && !GURL(params->url).SchemeIsHTTPOrHTTPS())
+    return RespondNow(Error(kInvalidUrlError, params->url));
 
-  if (!url_string.empty() && !GURL(url_string).SchemeIsHTTPOrHTTPS()) {
-    return RespondNow(Error(kInvalidUrlError, url_string));
-  }
-  SetUninstallURL(
-      ExtensionPrefs::Get(browser_context()), extension_id(), url_string);
+  ExtensionPrefs::Get(browser_context())
+      ->UpdateExtensionPref(
+          extension_id(), kUninstallUrl,
+          std::make_unique<base::Value>(std::move(params->url)));
   return RespondNow(NoArguments());
 }
 

@@ -27,13 +27,14 @@
 namespace extensions {
 
 ExtensionCacheImpl::ExtensionCacheImpl(
-    std::unique_ptr<ChromeOSExtensionCacheDelegate> delegate)
+    std::unique_ptr<ChromeOSExtensionCacheDelegate> delegate,
+    base::TaskPriority task_priority)
     : cache_(new LocalExtensionCache(
           delegate->GetCacheDir(),
           delegate->GetMaximumCacheSize(),
           delegate->GetMaximumCacheAge(),
           base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+              {base::MayBlock(), task_priority,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}))),
       weak_ptr_factory_(this) {
   notification_registrar_.Add(
@@ -88,7 +89,7 @@ void ExtensionCacheImpl::PutExtension(const std::string& id,
 }
 
 bool ExtensionCacheImpl::CachingAllowed(const std::string& id) {
-  return base::ContainsKey(allowed_extensions_, id);
+  return base::Contains(allowed_extensions_, id);
 }
 
 void ExtensionCacheImpl::OnCacheInitialized() {

@@ -9,6 +9,8 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
       'smbMount',
       'startDiscovery',
     ]);
+    /** @type{!SmbMountResult} */
+    this.smbMountResult = SmbMountResult.SUCCESS;
   }
 
   /** @override */
@@ -16,7 +18,7 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'smbMount',
         [smbUrl, smbName, username, password, authMethod, inSettings]);
-    return Promise.resolve(SmbMountResult.SUCCESS);
+    return Promise.resolve(this.smbMountResult);
   }
 
   /** @override */
@@ -137,6 +139,7 @@ suite('AddSmbShareDialogTests', function() {
     addDialog.authenticationMethod_ = expectedAuthMethod;
     addDialog.shouldOpenFileManagerAfterMount = expectedShouldOpenFileManager;
 
+    smbBrowserProxy.resetResolver('smbMount');
     addButton.click();
     return smbBrowserProxy.whenCalled('smbMount').then(function(args) {
       expectEquals(expectedSmbUrl, args[0]);
@@ -209,12 +212,16 @@ suite('AddSmbShareDialogTests', function() {
 
     page = document.createElement('settings-smb-shares-page');
     page.prefs = {
-      network_file_shares: {most_recently_used_url: {value: expectedSmbUrl}},
+      network_file_shares: {
+        most_recently_used_url: {value: expectedSmbUrl},
+        allowed: {value: true},
+      },
     };
     document.body.appendChild(page);
 
     const button = page.$$('#addShare');
     assertTrue(!!button);
+    assertFalse(button.disabled);
     button.click();
 
     Polymer.dom.flush();
@@ -230,4 +237,45 @@ suite('AddSmbShareDialogTests', function() {
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
     expectEquals(expectedSmbUrl, addDialog.mountUrl_);
   });
+
+  test('InvalidUrlErrorDisablesAddButton', function() {
+    const url = addDialog.$.address;
+    const addButton = addDialog.$$('.action-button');
+
+    // Invalid URL, but passes regex test.
+    url.value = 'smb://foo\\\\/bar';
+    expectFalse(addButton.disabled);
+
+    smbBrowserProxy.smbMountResult = SmbMountResult.INVALID_URL;
+    addButton.click();
+
+    return new Promise((resolve, reject) => {
+      const pollFunc = () => {
+        if (url.errorMessage && addButton.disabled) {
+          resolve();
+          return;
+        }
+        setTimeout(pollFunc, 100);
+      };
+      // url.errorMessage can't be observed for a change, so instead, poll.
+      pollFunc();
+    });
+  });
+
+  test('LoadingBarDuringDiscovery', async function() {
+    const url = addDialog.$.address;
+    // Loading bar is shown when the page loads.
+    expectTrue(url.showLoading);
+
+    await smbBrowserProxy.whenCalled('startDiscovery');
+
+    cr.webUIListenerCallback('on-shares-found', ['smb://foo/bar'], false);
+    expectTrue(url.showLoading);
+
+    cr.webUIListenerCallback('on-shares-found', ['smb://foo/bar2'], true);
+    expectFalse(url.showLoading);
+
+    expectEquals(2, url.items.length);
+  });
+
 });

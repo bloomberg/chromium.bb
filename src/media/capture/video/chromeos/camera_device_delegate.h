@@ -16,6 +16,7 @@
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/range/range.h"
 
 namespace media {
 
@@ -115,9 +116,6 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   // Resets the Mojo interface and bindings.
   void ResetMojoInterface();
 
-  // Sets |static_metadata_| from |camera_info|.
-  void OnGotCameraInfo(int32_t result, cros::mojom::CameraInfoPtr camera_info);
-
   // Creates the Mojo connection to the camera device.
   void OnOpenedDevice(int32_t result);
 
@@ -162,6 +160,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   void OnConstructedDefaultStillCaptureRequestSettings(
       cros::mojom::CameraMetadataPtr settings);
 
+  void OnGotFpsRange(cros::mojom::CameraMetadataPtr settings,
+                     base::Optional<gfx::Range> specified_fps_range);
+
   // StreamCaptureInterface implementations.  These methods are called by
   // |stream_buffer_manager_| on |ipc_task_runner_|.
   void ProcessCaptureRequest(cros::mojom::Camera3CaptureRequestPtr request,
@@ -172,8 +173,6 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
       const std::vector<mojom::Point2DPtr>& points_of_interest);
 
   const VideoCaptureDeviceDescriptor device_descriptor_;
-
-  int32_t camera_id_;
 
   // Current configured resolution of BLOB stream.
   gfx::Size current_blob_resolution_;

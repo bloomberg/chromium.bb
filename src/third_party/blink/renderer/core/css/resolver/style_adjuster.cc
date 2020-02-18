@@ -41,7 +41,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -58,6 +57,7 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -353,6 +353,13 @@ static void AdjustOverflow(ComputedStyle& style) {
 static void AdjustStyleForDisplay(ComputedStyle& style,
                                   const ComputedStyle& layout_parent_style,
                                   Document* document) {
+  // Blockify the children of flex, grid or LayoutCustom containers.
+  if (layout_parent_style.BlockifiesChildren()) {
+    style.SetIsInBlockifyingDisplay();
+    if (style.Display() != EDisplay::kContents)
+      style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+  }
+
   if (style.Display() == EDisplay::kBlock && !style.IsFloating())
     return;
 
@@ -413,7 +420,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
 
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);
-    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // We want to count vertical percentage paddings/margins on flex items
     // because our current behavior is different from the spec and we want to
@@ -427,9 +433,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
         style.MarginAfter().IsPercentOrCalc()) {
       UseCounter::Count(document, WebFeature::kFlexboxPercentageMarginVertical);
     }
-  } else if (layout_parent_style.IsDisplayLayoutCustomBox()) {
-    // Blockify the children of a LayoutCustom.
-    style.SetDisplay(EquivalentBlockDisplay(style.Display()));
   }
 }
 
@@ -671,6 +674,18 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       // https://crbug.com/814954
       style.SetTextOverflow(text_control->ValueForTextOverflow());
     }
+  }
+
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    // When establishing a block fragmentation context for LayoutNG, we require
+    // that everything fragmentable inside can be laid out by NG natively, since
+    // NG and legacy layout cannot cooperate within the same fragmentation
+    // context. Set a flag, so that we can quickly determine whether we need to
+    // check that an element is compatible with the NG block fragmentation
+    // machinery.
+    if (style.SpecifiesColumns() ||
+        (element && element->GetDocument().Printing()))
+      style.SetInsideNGFragmentationContext(true);
   }
 }
 }  // namespace blink

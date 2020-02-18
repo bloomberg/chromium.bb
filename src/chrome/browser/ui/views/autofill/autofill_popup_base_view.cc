@@ -38,12 +38,12 @@ SkColor AutofillPopupBaseView::GetBackgroundColor() {
 
 SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor);
+      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+      ui::NativeTheme::kColorId_BubbleFooterBackground);
 }
 
 SkColor AutofillPopupBaseView::GetSeparatorColor() {
@@ -59,9 +59,7 @@ SkColor AutofillPopupBaseView::GetWarningColor() {
 AutofillPopupBaseView::AutofillPopupBaseView(
     AutofillPopupViewDelegate* delegate,
     views::Widget* parent_widget)
-    : delegate_(delegate),
-      parent_widget_(parent_widget),
-      weak_ptr_factory_(this) {}
+    : delegate_(delegate), parent_widget_(parent_widget) {}
 
 AutofillPopupBaseView::~AutofillPopupBaseView() {
   if (delegate_) {

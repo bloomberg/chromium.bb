@@ -62,9 +62,6 @@ TEST_F(PrefsTest, TestIndex) {
   EXPECT_EQ(prefs::kUsageStatsEnabled, GetPrefName(USAGE_STATS_ENABLED));
   EXPECT_EQ(offline_pages::prefetch_prefs::kUserSettingEnabled,
             GetPrefName(OFFLINE_PREFETCH_USER_SETTING_ENABLED));
-  EXPECT_EQ(
-      offline_pages::prefetch_prefs::kContentSuggestionsNotificationsEnabled,
-      GetPrefName(CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED));
   EXPECT_EQ(prefs::kSafeBrowsingExtendedReportingOptInAllowed,
             GetPrefName(SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED));
 

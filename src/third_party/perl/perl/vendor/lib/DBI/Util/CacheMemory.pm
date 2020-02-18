@@ -1,6 +1,6 @@
 package DBI::Util::CacheMemory;
 
-#   $Id: CacheMemory.pm 10314 2007-11-26 22:25:33Z timbo $
+#   $Id: CacheMemory.pm 10314 2007-11-26 22:25:33Z Tim $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -60,7 +60,7 @@ If it's not listed above, it's not supported.
 
 =cut
 
-our $VERSION = sprintf("0.%06d", q$Revision: 10314 $ =~ /(\d+)/o);
+our $VERSION = "0.010315";
 
 my %cache;
 

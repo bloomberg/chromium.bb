@@ -23,8 +23,8 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -39,9 +39,32 @@ constexpr int kTokensFileMaxSizeInBytes = 100000;  // ~100 KB.
 constexpr char kNumAccountsMetricName[] = "AccountManager.NumAccounts";
 constexpr int kMaxNumAccountsMetric = 10;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Note: Enums labels are at |AccountManagerTokenLoadStatus|.
+enum class TokenLoadStatus {
+  kSuccess = 0,
+  kFileReadError = 1,
+  kFileParseError = 2,
+  kAccountCorruptionDetected = 3,
+  kMaxValue = kAccountCorruptionDetected,
+};
+
 void RecordNumAccountsMetric(const int num_accounts) {
   base::UmaHistogramExactLinear(kNumAccountsMetricName, num_accounts,
                                 kMaxNumAccountsMetric + 1);
+}
+
+void RecordTokenLoadStatus(const TokenLoadStatus& token_load_status) {
+  base::UmaHistogramEnumeration("AccountManager.TokenLoadStatus",
+                                token_load_status);
+}
+
+void RecordInitializationTime(
+    const base::TimeTicks& initialization_start_time) {
+  base::UmaHistogramMicrosecondsTimes(
+      "AccountManager.InitializationTime",
+      base::TimeTicks::Now() - initialization_start_time);
 }
 
 }  // namespace
@@ -51,7 +74,7 @@ const char AccountManager::kActiveDirectoryDummyToken[] = "dummy_ad_token";
 
 // static
 const char* const AccountManager::kInvalidToken =
-    OAuth2TokenServiceDelegate::kInvalidRefreshToken;
+    GaiaConstants::kInvalidRefreshToken;
 
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:
@@ -158,6 +181,7 @@ void AccountManager::Initialize(
     PrefService* pref_service) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const base::TimeTicks initialization_start_time = base::TimeTicks::Now();
 
   if (init_state_ != InitializationState::kNotStarted) {
     // |Initialize| has already been called once. To help diagnose possible race
@@ -181,7 +205,7 @@ void AccountManager::Initialize(
       base::BindOnce(&AccountManager::LoadAccountsFromDisk, writer_->path()),
       base::BindOnce(
           &AccountManager::InsertAccountsAndRunInitializationCallbacks,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), initialization_start_time));
 }
 
 // static
@@ -197,6 +221,7 @@ AccountManager::AccountMap AccountManager::LoadAccountsFromDisk(
     if (base::PathExists(tokens_file_path)) {
       // The file exists but cannot be read from.
       LOG(ERROR) << "Unable to read accounts from disk";
+      RecordTokenLoadStatus(TokenLoadStatus::kFileReadError);
     }
     return accounts;
   }
@@ -205,9 +230,11 @@ AccountManager::AccountMap AccountManager::LoadAccountsFromDisk(
   success = accounts_proto.ParseFromString(token_file_data);
   if (!success) {
     LOG(ERROR) << "Failed to parse tokens from file";
+    RecordTokenLoadStatus(TokenLoadStatus::kFileParseError);
     return accounts;
   }
 
+  bool is_any_account_corrupt = false;
   for (const auto& account : accounts_proto.accounts()) {
     AccountManager::AccountKey account_key{account.id(),
                                            account.account_type()};
@@ -215,21 +242,29 @@ AccountManager::AccountMap AccountManager::LoadAccountsFromDisk(
     if (!account_key.IsValid()) {
       LOG(WARNING) << "Ignoring invalid account_key load from disk: "
                    << account_key;
+      is_any_account_corrupt = true;
       continue;
     }
     accounts[account_key] = AccountInfo{account.raw_email(), account.token()};
   }
+  if (is_any_account_corrupt) {
+    RecordTokenLoadStatus(TokenLoadStatus::kAccountCorruptionDetected);
+    return accounts;
+  }
 
+  RecordTokenLoadStatus(TokenLoadStatus::kSuccess);
   return accounts;
 }
 
 void AccountManager::InsertAccountsAndRunInitializationCallbacks(
+    const base::TimeTicks& initialization_start_time,
     const AccountMap& accounts) {
   VLOG(1) << "AccountManager::RunInitializationCallbacks";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   accounts_.insert(accounts.begin(), accounts.end());
   init_state_ = InitializationState::kInitialized;
+  RecordInitializationTime(initialization_start_time);
 
   for (auto& cb : initialization_callbacks_) {
     std::move(cb).Run();

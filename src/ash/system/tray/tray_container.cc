@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -52,7 +52,7 @@ gfx::Rect TrayContainer::GetAnchorBoundsInScreen() const {
     // When the virtual keyboard is up, any anchored widgets should anchor to
     // the virtual keyboard instead because it will cover the shelf.
     const gfx::Rect occluded_bounds =
-        keyboard::KeyboardController::Get()
+        keyboard::KeyboardUIController::Get()
             ->GetWorkspaceOccludedBoundsInScreen();
     if (!occluded_bounds.IsEmpty())
       return occluded_bounds;
@@ -70,11 +70,12 @@ void TrayContainer::UpdateLayout() {
   // Adjust the size of status tray dark background by adding additional
   // empty border.
   views::BoxLayout::Orientation orientation =
-      is_horizontal ? views::BoxLayout::kHorizontal
-                    : views::BoxLayout::kVertical;
+      is_horizontal ? views::BoxLayout::Orientation::kHorizontal
+                    : views::BoxLayout::Orientation::kVertical;
 
-  gfx::Insets insets(is_horizontal ? gfx::Insets(0, kHitRegionPadding)
-                                   : gfx::Insets(kHitRegionPadding, 0));
+  gfx::Insets insets(is_horizontal
+                         ? gfx::Insets(0, TrayConstants::hit_region_padding())
+                         : gfx::Insets(TrayConstants::hit_region_padding(), 0));
   SetBorder(views::CreateEmptyBorder(insets));
 
   int horizontal_margin = main_axis_margin_;

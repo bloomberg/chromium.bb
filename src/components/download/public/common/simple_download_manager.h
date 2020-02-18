@@ -49,12 +49,24 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManager {
   virtual bool CanDownload(DownloadUrlParameters* parameters) = 0;
 
   using DownloadVector = std::vector<DownloadItem*>;
-  // Add all download items to |downloads|, no matter the type or state, without
-  // clearing |downloads| first.
+  // Add all initialized download items to |downloads|, no matter the type or
+  // state, without clearing |downloads| first. If active downloads are not
+  // initialized, this call will not return them. Caller should call
+  // GetUninitializedActiveDownloadsIfAny() below to retrieve uninitialized
+  // active downloads.
   virtual void GetAllDownloads(DownloadVector* downloads) = 0;
+
+  // Gets all the active downloads that are initialized yet.
+  virtual void GetUninitializedActiveDownloadsIfAny(DownloadVector* downloads) {
+  }
 
   // Get the download item for |guid|.
   virtual DownloadItem* GetDownloadByGuid(const std::string& guid) = 0;
+
+  // Checks whether downloaded files still exist. Updates state of downloads
+  // that refer to removed files. The check runs in the background and may
+  // finish asynchronously after this method returns.
+  virtual void CheckForHistoryFilesRemoval() {}
 
  protected:
   // Called when the manager is initailized.

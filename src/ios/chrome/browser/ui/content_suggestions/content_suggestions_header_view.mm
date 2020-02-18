@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
@@ -40,8 +41,8 @@ const CGFloat kBackgroundLandscapeInset = 169;
 // Fakebox highlight animation duration.
 const CGFloat kFakeboxHighlightDuration = 0.4;
 
-// Fakebox highlight background alpha increase.
-const CGFloat kFakeboxHighlightIncrease = 0.06;
+// Fakebox highlight background alpha.
+const CGFloat kFakeboxHighlightAlpha = 0.06;
 
 // Returns the height of the toolbar based on the preferred content size of the
 // application.
@@ -76,6 +77,8 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 // Layout constraints for Identity Disc that need to be adjusted based on
 // device size class changes.
 @property(nonatomic, strong) NSLayoutConstraint* identityDiscTopConstraint;
+// View used to add on-touch highlight to the fake omnibox.
+@property(nonatomic, strong) UIView* fakeLocationBarHighlightView;
 
 @end
 
@@ -130,30 +133,19 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   // Fake Toolbar.
   ToolbarButtonFactory* buttonFactory =
       [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
-  UIBlurEffect* blurEffect = buttonFactory.toolbarConfiguration.blurEffect;
-  UIView* fakeToolbar = nil;
-  UIView* fakeToolbarContentView;
-  if (blurEffect) {
-    UIVisualEffectView* visualEffectView =
-        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    fakeToolbar = visualEffectView;
-    fakeToolbarContentView = visualEffectView.contentView;
-  } else {
-    fakeToolbar = [[UIView alloc] init];
-    fakeToolbarContentView = fakeToolbar;
-  }
+  UIView* fakeToolbar = [[UIView alloc] init];
   fakeToolbar.backgroundColor =
-      buttonFactory.toolbarConfiguration.blurBackgroundColor;
+      buttonFactory.toolbarConfiguration.backgroundColor;
   [searchField insertSubview:fakeToolbar atIndex:0];
   fakeToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 
   // Fake location bar.
-  [fakeToolbarContentView addSubview:self.fakeLocationBar];
+  [fakeToolbar addSubview:self.fakeLocationBar];
 
   // Omnibox, used for animations.
   // TODO(crbug.com/936811): See if it is possible to share some initialization
   // code with the real Omnibox.
-  UIColor* color = [UIColor colorWithWhite:0 alpha:kOmniboxPlaceholderAlpha];
+  UIColor* color = [UIColor colorNamed:kTextfieldPlaceholderColor];
   OmniboxContainerView* omnibox =
       [[OmniboxContainerView alloc] initWithFrame:CGRectZero
                                         textColor:color
@@ -261,7 +253,7 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
 
   self.separator = [[UIView alloc] init];
   self.separator.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kToolbarSeparatorAlpha];
+      [UIColor colorNamed:@"tab_toolbar_shadow_color"];
   self.separator.alpha = 0;
   self.separator.translatesAutoresizingMaskIntoConstraints = NO;
   [searchField addSubview:self.separator];
@@ -335,7 +327,7 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
     self.separator.alpha = percent;
   }
 
-  // Grow the blur to cover the safeArea top.
+  // Grow the background to cover the safeArea top.
   self.fakeToolbarTopConstraint.constant = -safeAreaInsets.top * percent;
 
   CGFloat toolbarExpandedHeight = ToolbarHeight();
@@ -387,10 +379,8 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
                         delay:0
                       options:UIViewAnimationOptionCurveEaseOut
                    animations:^{
-                     CGFloat alpha = kAdaptiveLocationBarBackgroundAlpha;
-                     if (highlighted)
-                       alpha += kFakeboxHighlightIncrease;
-                     self.fakeLocationBar.backgroundColor =
+                     CGFloat alpha = highlighted ? kFakeboxHighlightAlpha : 0;
+                     self.fakeLocationBarHighlightView.backgroundColor =
                          [UIColor colorWithWhite:0 alpha:alpha];
                    }
                    completion:nil];
@@ -423,9 +413,18 @@ CGFloat IdentityDiscToolbarOffset(id<UITraitEnvironment> environment) {
   if (!_fakeLocationBar) {
     _fakeLocationBar = [[UIView alloc] init];
     _fakeLocationBar.userInteractionEnabled = NO;
+    _fakeLocationBar.clipsToBounds = YES;
     _fakeLocationBar.backgroundColor =
-        [UIColor colorWithWhite:0 alpha:kAdaptiveLocationBarBackgroundAlpha];
+        [UIColor colorNamed:kTextfieldBackgroundColor];
     _fakeLocationBar.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _fakeLocationBarHighlightView = [[UIView alloc] init];
+    _fakeLocationBarHighlightView.userInteractionEnabled = NO;
+    _fakeLocationBarHighlightView.backgroundColor = UIColor.clearColor;
+    _fakeLocationBarHighlightView.translatesAutoresizingMaskIntoConstraints =
+        NO;
+    [_fakeLocationBar addSubview:_fakeLocationBarHighlightView];
+    AddSameConstraints(_fakeLocationBar, _fakeLocationBarHighlightView);
   }
   return _fakeLocationBar;
 }

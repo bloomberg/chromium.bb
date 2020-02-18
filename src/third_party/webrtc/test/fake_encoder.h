@@ -13,9 +13,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <vector>
 
+#include "api/fec_controller_override.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_bitrate_allocation.h"
@@ -40,9 +42,11 @@ class FakeEncoder : public VideoEncoder {
   // Sets max bitrate. Not thread-safe, call before registering the encoder.
   void SetMaxBitrate(int max_kbps);
 
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) override;
+
   int32_t InitEncode(const VideoCodec* config,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override;
+                     const Settings& settings) override;
   int32_t Encode(const VideoFrame& input_image,
                  const std::vector<VideoFrameType>* frame_types) override;
   int32_t RegisterEncodeCompleteCallback(
@@ -139,8 +143,7 @@ class MultithreadedFakeH264Encoder : public test::FakeH264Encoder {
   virtual ~MultithreadedFakeH264Encoder() = default;
 
   int32_t InitEncode(const VideoCodec* config,
-                     int32_t number_of_cores,
-                     size_t max_payload_size) override;
+                     const Settings& settings) override;
 
   int32_t Encode(const VideoFrame& input_image,
                  const std::vector<VideoFrameType>* frame_types) override;

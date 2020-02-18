@@ -61,14 +61,15 @@ foreach bitdepth : ['8', '16']
 endforeach
 
 # ASM option
-is_asm_enabled = (get_option('build_asm') == true and
+is_asm_enabled = (get_option('enable_asm') == true and
     (host_machine.cpu_family().startswith('x86') or
      host_machine.cpu_family() == 'aarch64'      or
-     host_machine.cpu_family().startswith('arm')))
+     host_machine.cpu_family().startswith('arm') or
+     host_machine.cpu() == 'ppc64le'))
 cdata.set10('HAVE_ASM', is_asm_enabled)
 
 if is_asm_enabled and get_option('b_sanitize') == 'memory'
-    error('asm causes false positive with memory sanitizer. Use \'-Dbuild_asm=false\'.')
+    error('asm causes false positive with memory sanitizer. Use \'-Denable_asm=false\'.')
 endif
 
 # Logging option
@@ -160,7 +161,8 @@ elif cc.has_function('memalign', prefix : '#include <malloc.h>', args : test_arg
 endif
 
 if (host_machine.cpu_family() == 'aarch64' or
-    host_machine.cpu_family().startswith('arm'))
+    host_machine.cpu_family().startswith('arm') or
+    host_machine.cpu() == 'ppc64le')
     if cc.has_function('getauxval', prefix : '#include <sys/auxv.h>', args : test_args)
         cdata.set('HAVE_GETAUXVAL', 1)
     endif
@@ -180,16 +182,23 @@ endif
 # Compiler flags that should be set
 # But when the compiler does not supports them
 # it is not an error and silently tolerated
-optional_arguments += [
-  '-Wundef',
-  '-Werror=vla',
-  '-Wno-maybe-uninitialized',
-  '-Wno-missing-field-initializers',
-  '-Wno-unused-parameter',
-  '-Werror=missing-prototypes',
-  '-Wshorten-64-to-32',
-]
-if cc.get_id() == 'msvc'
+if cc.get_id() != 'msvc'
+    optional_arguments += [
+      '-Wundef',
+      '-Werror=vla',
+      '-Wno-maybe-uninitialized',
+      '-Wno-missing-field-initializers',
+      '-Wno-unused-parameter',
+      '-Werror=missing-prototypes',
+      '-Wshorten-64-to-32',
+    ]
+    if host_machine.cpu_family() == 'x86'
+        optional_arguments += [
+          '-msse2',
+          '-mfpmath=sse',
+        ]
+    endif
+else
     optional_arguments += [
       '-wd4028', # parameter different from declaration
       '-wd4996'  # use of POSIX functions
@@ -286,25 +295,17 @@ if (is_asm_enabled and
     endif
 endif
 
+cdata.set10('ARCH_X86', host_machine.cpu_family().startswith('x86'))
+cdata.set10('ARCH_X86_64', host_machine.cpu_family() == 'x86_64')
+cdata.set10('ARCH_X86_32', host_machine.cpu_family() == 'x86')
+
 if host_machine.cpu_family().startswith('x86')
-    cdata.set10('ARCH_X86', true)
-    if host_machine.cpu_family() == 'x86_64'
-        cdata_asm.set10('ARCH_X86_64', true)
-        cdata.set10('ARCH_X86_64', true)
-        cdata_asm.set10('ARCH_X86_32', false)
-        cdata.set10('ARCH_X86_32', false)
-    else
-        cdata_asm.set10('ARCH_X86_64', false)
-        cdata.set10('ARCH_X86_64', false)
-        cdata_asm.set10('ARCH_X86_32', true)
-        cdata.set10('ARCH_X86_32', true)
-        cdata_asm.set10('PIC', true)
-    endif
-else
-    cdata.set10('ARCH_X86', false)
-    cdata.set10('ARCH_X86_64', false)
-    cdata.set10('ARCH_X86_32', false)
+    cdata_asm.set10('ARCH_X86_64', host_machine.cpu_family() == 'x86_64')
+    cdata_asm.set10('ARCH_X86_32', host_machine.cpu_family() == 'x86')
+    cdata_asm.set10('PIC', true)
 endif
+
+cdata.set10('ARCH_PPC64LE', host_machine.cpu() == 'ppc64le')
 
 if cc.symbols_have_underscore_prefix()
     cdata.set10('PREFIX', true)
@@ -332,6 +333,11 @@ if is_asm_enabled and host_machine.cpu_family().startswith('x86')
     # check NASM version
     if nasm.found()
         nasm_r = run_command(nasm, '-v')
+
+        if nasm_r.returncode() != 0
+            error('failed running nasm to obtain its version')
+        endif
+
         out = nasm_r.stdout().strip().split()
         if out[1].to_lower() == 'version'
             if out[2].version_compare('<2.13.02')

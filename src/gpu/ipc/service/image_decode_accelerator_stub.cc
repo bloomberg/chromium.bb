@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <new>
 #include <utility>
 #include <vector>
@@ -17,6 +18,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -26,6 +29,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_context.h"
+#include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
@@ -45,6 +49,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -167,14 +172,6 @@ void ImageDecodeAcceleratorStub::OnScheduleImageDecode(
     return;
   }
 
-  // TODO(andrescj): for now, reject requests that need mipmaps until we support
-  // generating mipmap chains.
-  if (decode_params.needs_mips) {
-    DLOG(ERROR) << "Generating mipmaps is not supported";
-    OnError();
-    return;
-  }
-
   // Start the actual decode.
   worker_->Decode(
       std::move(decode_params.encoded_data), decode_params.output_size,
@@ -243,13 +240,19 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
 
   std::vector<sk_sp<SkImage>> plane_sk_images;
+  base::Optional<base::ScopedClosureRunner> notify_gl_state_changed;
 #if defined(OS_CHROMEOS)
-  // Right now, we only support YUV 4:2:0 for the output of the decoder.
+  // Right now, we only support YUV 4:2:0 for the output of the decoder (either
+  // as YV12 or NV12).
   //
   // TODO(andrescj): change to gfx::BufferFormat::YUV_420 once
   // https://crrev.com/c/1573718 lands.
-  DCHECK_EQ(gfx::BufferFormat::YVU_420, completed_decode->buffer_format);
-  DCHECK_EQ(3u, completed_decode->handle.native_pixmap_handle.planes.size());
+  DCHECK(completed_decode->buffer_format == gfx::BufferFormat::YVU_420 ||
+         completed_decode->buffer_format ==
+             gfx::BufferFormat::YUV_420_BIPLANAR);
+  DCHECK_EQ(
+      gfx::NumberOfPlanesForLinearBufferFormat(completed_decode->buffer_format),
+      completed_decode->handle.native_pixmap_handle.planes.size());
 
   // Calculate the dimensions of each of the planes.
   const gfx::Size y_plane_size = completed_decode->visible_size;
@@ -269,9 +272,23 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
   }
   gfx::Size uv_plane_size = gfx::Size(uv_width, uv_height);
 
+  // We should notify the SharedContextState that we or Skia may have modified
+  // the driver's GL state. We should also notify Skia that we may have modified
+  // the graphics API state outside of Skia. We put this in a
+  // ScopedClosureRunner so that if we return early, both the SharedContextState
+  // and Skia end up in a consistent state.
+  notify_gl_state_changed.emplace(base::BindOnce(
+      [](scoped_refptr<SharedContextState> scs) {
+        scs->set_need_context_state_reset(true);
+        scs->PessimisticallyResetGrContext();
+      },
+      shared_context_state));
+
   // Create a gl::GLImage for each plane and attach it to a texture.
-  plane_sk_images.resize(3u);
-  for (size_t plane = 0u; plane < 3u; plane++) {
+  const size_t num_planes =
+      completed_decode->handle.native_pixmap_handle.planes.size();
+  plane_sk_images.resize(num_planes);
+  for (size_t plane = 0u; plane < num_planes; plane++) {
     // |resource_cleaner| will be called to delete textures and GLImages that we
     // create in this section in case of an early return.
     CleanUpContext* resource = new CleanUpContext{};
@@ -292,25 +309,33 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     gfx::Size plane_size = plane == 0 ? y_plane_size : uv_plane_size;
 
     // Extract the plane out of |completed_decode->handle| and put it in its own
-    // gfx::GpuMemoryBufferHandle so that we can create an R_8 image for the
+    // gfx::GpuMemoryBufferHandle so that we can create a GL image for the
     // plane.
     gfx::GpuMemoryBufferHandle plane_handle;
     plane_handle.type = completed_decode->handle.type;
     plane_handle.native_pixmap_handle.planes.push_back(
         std::move(completed_decode->handle.native_pixmap_handle.planes[plane]));
+    // Note that the buffer format for the plane is R_8 for all planes if the
+    // result of the decode is in YV12. For NV12, the first plane (luma) is R_8
+    // and the second plane (chroma) is RG_88.
+    const bool is_nv12_chroma_plane = completed_decode->buffer_format ==
+                                          gfx::BufferFormat::YUV_420_BIPLANAR &&
+                                      plane == 1u;
+    const auto plane_format = is_nv12_chroma_plane ? gfx::BufferFormat::RG_88
+                                                   : gfx::BufferFormat::R_8;
     scoped_refptr<gl::GLImage> plane_image;
     if (external_image_factory_for_testing_) {
       plane_image =
           external_image_factory_for_testing_->CreateImageForGpuMemoryBuffer(
-              std::move(plane_handle), plane_size, gfx::BufferFormat::R_8,
+              std::move(plane_handle), plane_size, plane_format,
               -1 /* client_id */, kNullSurfaceHandle);
     } else {
       auto plane_pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
-          plane_size, gfx::BufferFormat::R_8,
+          plane_size, plane_format,
           std::move(plane_handle.native_pixmap_handle));
       auto plane_image_native_pixmap =
           base::MakeRefCounted<gl::GLImageNativePixmap>(plane_size,
-                                                        gfx::BufferFormat::R_8);
+                                                        plane_format);
       if (plane_image_native_pixmap->Initialize(plane_pixmap))
         plane_image = std::move(plane_image_native_pixmap);
     }
@@ -326,14 +351,23 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
       return;
     }
 
+    // Notify Skia that we have changed the driver's GL state outside of Skia.
+    shared_context_state->PessimisticallyResetGrContext();
+
     // Create a SkImage using the texture.
+    // TODO(crbug.com/985458): ideally, we use GL_RG8_EXT for the NV12 chroma
+    // plane. However, Skia does not have a corresponding SkColorType. Revisit
+    // this when it's supported.
     const GrBackendTexture plane_backend_texture(
         plane_size.width(), plane_size.height(), GrMipMapped::kNo,
-        GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES, resource->texture, GL_R8_EXT});
+        GrGLTextureInfo{GL_TEXTURE_EXTERNAL_OES, resource->texture,
+                        is_nv12_chroma_plane ? GL_RGBA8_EXT : GL_R8_EXT});
     plane_sk_images[plane] = SkImage::MakeFromTexture(
         shared_context_state->gr_context(), plane_backend_texture,
-        kTopLeft_GrSurfaceOrigin, kGray_8_SkColorType, kOpaque_SkAlphaType,
-        nullptr /* colorSpace */, CleanUpResource, resource);
+        kTopLeft_GrSurfaceOrigin,
+        is_nv12_chroma_plane ? kRGBA_8888_SkColorType : kAlpha_8_SkColorType,
+        kOpaque_SkAlphaType, nullptr /* colorSpace */, CleanUpResource,
+        resource);
     if (!plane_sk_images[plane]) {
       DLOG(ERROR) << "Could not create planar SkImage";
       OnError();
@@ -376,22 +410,40 @@ void ImageDecodeAcceleratorStub::ProcessCompletedDecode(
     OnError();
     return;
   }
-  DCHECK(shared_context_state->transfer_cache());
-  if (!shared_context_state->transfer_cache()
-           ->CreateLockedHardwareDecodedImageEntry(
-               command_buffer->decoder_context()->GetRasterDecoderId(),
-               params.transfer_cache_entry_id,
-               ServiceDiscardableHandle(std::move(handle_buffer),
-                                        params.discardable_handle_shm_offset,
-                                        params.discardable_handle_shm_id),
-               shared_context_state->gr_context(), std::move(plane_sk_images),
-               completed_decode->buffer_byte_size, params.needs_mips,
-               params.target_color_space.ToSkColorSpace())) {
-    DLOG(ERROR) << "Could not create and insert the transfer cache entry";
-    OnError();
-    return;
+
+  {
+    auto* gr_shader_cache = channel_->gpu_channel_manager()->gr_shader_cache();
+    base::Optional<raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (gr_shader_cache)
+      cache_use.emplace(gr_shader_cache,
+                        base::strict_cast<int32_t>(channel_->client_id()));
+    DCHECK(shared_context_state->transfer_cache());
+    // TODO(andrescj): |params.target_color_space| is not needed because Skia
+    // knows where it's drawing, so it can handle color space conversion without
+    // us having to specify the target color space. However, we are currently
+    // assuming that the color space of the image is sRGB. This means we don't
+    // support images with embedded color profiles. We could rename
+    // |params.target_color_space| to |params.image_color_space| and we can send
+    // the embedded color profile from the renderer using that field.
+    if (!shared_context_state->transfer_cache()
+             ->CreateLockedHardwareDecodedImageEntry(
+                 command_buffer->decoder_context()->GetRasterDecoderId(),
+                 params.transfer_cache_entry_id,
+                 ServiceDiscardableHandle(std::move(handle_buffer),
+                                          params.discardable_handle_shm_offset,
+                                          params.discardable_handle_shm_id),
+                 shared_context_state->gr_context(), std::move(plane_sk_images),
+                 completed_decode->buffer_format == gfx::BufferFormat::YVU_420
+                     ? cc::YUVDecodeFormat::kYVU3
+                     : cc::YUVDecodeFormat::kYUV2,
+                 completed_decode->buffer_byte_size, params.needs_mips)) {
+      DLOG(ERROR) << "Could not create and insert the transfer cache entry";
+      OnError();
+      return;
+    }
   }
-  shared_context_state->set_need_context_state_reset(true);
+  DCHECK(notify_gl_state_changed);
+  notify_gl_state_changed->RunAndReset();
 
   // All done! The decoded image can now be used for rasterization, so we can
   // release the decode sync token.

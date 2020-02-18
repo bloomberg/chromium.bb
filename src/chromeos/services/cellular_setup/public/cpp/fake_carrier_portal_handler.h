@@ -27,13 +27,12 @@ class FakeCarrierPortalHandler : public mojom::CarrierPortalHandler {
     return status_updates_;
   }
 
- private:
   // mojom::CarrierPortalHandler:
   void OnCarrierPortalStatusChange(
       mojom::CarrierPortalStatus carrier_portal_status) override;
 
+ private:
   std::vector<mojom::CarrierPortalStatus> status_updates_;
-
   mojo::BindingSet<mojom::CarrierPortalHandler> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCarrierPortalHandler);

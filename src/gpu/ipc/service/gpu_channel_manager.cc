@@ -90,8 +90,7 @@ GpuChannelManager::GpuChannelManager(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
-      metal_context_provider_(metal_context_provider),
-      weak_factory_(this) {
+      metal_context_provider_(metal_context_provider) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
@@ -472,7 +471,7 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   if (gl::GLContext::LosesAllContextsOnContextLost() ||
       (shared_context_state_ &&
        shared_context_state_->use_virtualized_gl_contexts())) {
-    LoseAllContexts();
+    delegate_->LoseAllContexts();
   }
 }
 

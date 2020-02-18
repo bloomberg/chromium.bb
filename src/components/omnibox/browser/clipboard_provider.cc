@@ -44,8 +44,7 @@ ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
       history_url_provider_(history_url_provider),
       current_url_suggested_times_(0),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
-      callback_weak_ptr_factory_(this) {
+      field_trial_triggered_in_session_(false) {
   DCHECK(clipboard_content_);
 }
 
@@ -232,18 +231,18 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
     return false;
   }
 
+  base::Optional<gfx::Image> optional_image =
+      clipboard_content_->GetRecentImageFromClipboard();
+  if (!optional_image) {
+    return false;
+  }
+
   // Make sure current provider supports image search
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
 
   if (!default_url || default_url->image_url().empty() ||
       !default_url->image_url_ref().IsValid(url_service->search_terms_data())) {
-    return false;
-  }
-
-  base::Optional<gfx::Image> optional_image =
-      clipboard_content_->GetRecentImageFromClipboard();
-  if (!optional_image) {
     return false;
   }
 

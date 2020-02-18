@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
@@ -183,7 +183,7 @@ class CORE_EXPORT WorkerGlobalScope
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
-      network::mojom::FetchCredentialsMode) = 0;
+      network::mojom::CredentialsMode) = 0;
 
   void ReceiveMessage(BlinkTransferableMessage);
   base::TimeTicks TimeOrigin() const { return time_origin_; }
@@ -219,10 +219,10 @@ class CORE_EXPORT WorkerGlobalScope
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
 
-  // Notifies that the top-level classic script is ready to evaluate.
+  // Notifies that the top-level worker script is ready to evaluate.
   // Worker top-level script is evaluated after it is fetched and
-  // ReadyToRunClassicScript() is called.
-  void ReadyToRunClassicScript();
+  // ReadyToRunWorkerScript() is called.
+  void ReadyToRunWorkerScript();
 
   void InitializeURL(const KURL& url);
 
@@ -274,12 +274,12 @@ class CORE_EXPORT WorkerGlobalScope
 
   // State transition about worker-toplevel script evaluation.
   enum class ScriptEvalState {
-    // Initial state: ReadyToRunClassicScript() is not yet called.
+    // Initial state: ReadyToRunWorkerScript() is not yet called.
     // Worker top-level script fetch might or might not completed, and even when
     // the fetch completes in this state, script evaluation will be deferred to
-    // when ReadyToRunClassicScript() is called later.
+    // when ReadyToRunWorkerScript() is called later.
     kPauseAfterFetch,
-    // ReadyToRunClassicScript() is already called.
+    // ReadyToRunWorkerScript() is already called.
     kReadyToEvaluate,
     // The worker top-level script is evaluated.
     kEvaluated,

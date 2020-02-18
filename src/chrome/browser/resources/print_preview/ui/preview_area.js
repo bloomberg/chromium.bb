@@ -25,7 +25,12 @@ print_preview.PreviewAreaState = {
 Polymer({
   is: 'print-preview-preview-area',
 
-  behaviors: [WebUIListenerBehavior, SettingsBehavior, I18nBehavior],
+  behaviors: [
+    WebUIListenerBehavior,
+    SettingsBehavior,
+    I18nBehavior,
+    print_preview.DarkModeBehavior,
+  ],
 
   properties: {
     /** @type {print_preview.Destination} */
@@ -89,6 +94,7 @@ Polymer({
   },
 
   observers: [
+    'onDarkModeChanged_(inDarkMode)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
     'onStateOrErrorChange_(state, error)',
   ],
@@ -113,17 +119,17 @@ Polymer({
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
-    if (this.newPrintPreviewLayout) {
-      this.addWebUIListener(
-          'dark-mode-changed', this.onDarkModeChanged_.bind(this));
-    }
 
-    this.pluginProxy_ = print_preview.PluginProxy.getInstance();
     if (!this.pluginProxy_.checkPluginCompatibility(assert(
             this.$$('.preview-area-compatibility-object-out-of-process')))) {
       this.error = print_preview.Error.NO_PLUGIN;
       this.previewState = print_preview.PreviewAreaState.ERROR;
     }
+  },
+
+  /** @override */
+  created: function() {
+    this.pluginProxy_ = print_preview.PluginProxy.getInstance();
   },
 
   /**
@@ -311,17 +317,17 @@ Polymer({
   onPreviewStart_: function(previewUid, index) {
     if (!this.pluginProxy_.pluginReady()) {
       const plugin = this.pluginProxy_.createPlugin(previewUid, index);
-      plugin.setKeyEventCallback(this.keyEventCallback_);
+      this.pluginProxy_.setKeyEventCallback(this.keyEventCallback_);
       this.$$('.preview-area-plugin-wrapper')
           .appendChild(
               /** @type {Node} */ (plugin));
-      plugin.setLoadCallback(this.onPluginLoad_.bind(this));
-      plugin.setViewportChangedCallback(
+      this.pluginProxy_.setLoadCallback(this.onPluginLoad_.bind(this));
+      this.pluginProxy_.setViewportChangedCallback(
           this.onPreviewVisualStateChange_.bind(this));
     }
 
     this.pluginLoaded_ = false;
-    if (inDarkMode() && this.newPrintPreviewLayout) {
+    if (this.inDarkMode && this.newPrintPreviewLayout) {
       this.pluginProxy_.darkModeChanged(true);
     }
     this.pluginProxy_.resetPrintPreviewMode(
@@ -359,6 +365,10 @@ Polymer({
    */
   onPreviewVisualStateChange_: function(
       pageX, pageY, pageWidth, viewportWidth, viewportHeight) {
+    // Ensure the PDF viewer isn't tabbable if the window is small enough that
+    // the zoom toolbar isn't displayed.
+    const tabindex = viewportWidth < 300 || viewportHeight < 200 ? '-1' : '0';
+    this.$$('.preview-area-plugin').setAttribute('tabindex', tabindex);
     this.$.marginControlContainer.updateTranslationTransform(
         new print_preview.Coordinate2d(pageX, pageY));
     this.$.marginControlContainer.updateScaleTransform(
@@ -396,13 +406,14 @@ Polymer({
     }
   },
 
-  /**
-   * @param {boolean} darkMode Whether the page is now in dark mode.
-   * @private
-   */
-  onDarkModeChanged_: function(darkMode) {
+  /** @private */
+  onDarkModeChanged_: function() {
+    if (!this.newPrintPreviewLayout) {
+      return;
+    }
+
     if (this.pluginProxy_.pluginReady()) {
-      this.pluginProxy_.darkModeChanged(darkMode);
+      this.pluginProxy_.darkModeChanged(this.inDarkMode);
     }
 
     if (this.previewState === print_preview.PreviewAreaState.DISPLAY_PREVIEW) {

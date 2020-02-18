@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 
 =head1 NAME
 
-DBM::Deep::Null
+DBM::Deep::Null - NULL object
 
 =head1 PURPOSE
 

@@ -51,14 +51,24 @@ QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
     QuicTransportVersion version,
     QuicConnectionId connection_id) {
   DCHECK(QuicUtils::IsConnectionIdValidForVersion(connection_id, version));
+  QuicVariableLengthIntegerLength retry_token_length_length =
+      VARIABLE_LENGTH_INTEGER_LENGTH_1;
+  QuicVariableLengthIntegerLength length_length =
+      VARIABLE_LENGTH_INTEGER_LENGTH_2;
+  if (!QuicVersionHasLongHeaderLengths(version) &&
+      GetQuicReloadableFlag(quic_fix_get_packet_header_size)) {
+    retry_token_length_length = VARIABLE_LENGTH_INTEGER_LENGTH_0;
+    length_length = VARIABLE_LENGTH_INTEGER_LENGTH_0;
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_get_packet_header_size, 2, 3);
+  }
   return QuicPacketCreator::StreamFramePacketOverhead(
       version, static_cast<QuicConnectionIdLength>(connection_id.length()),
       PACKET_0BYTE_CONNECTION_ID,
       /*include_version=*/true,
       /*include_diversification_nonce=*/true,
-      version > QUIC_VERSION_43 ? PACKET_4BYTE_PACKET_NUMBER
-                                : PACKET_1BYTE_PACKET_NUMBER,
-      VARIABLE_LENGTH_INTEGER_LENGTH_1, VARIABLE_LENGTH_INTEGER_LENGTH_2,
+      VersionHasIetfInvariantHeader(version) ? PACKET_4BYTE_PACKET_NUMBER
+                                             : PACKET_1BYTE_PACKET_NUMBER,
+      retry_token_length_length, length_length,
       /*offset=*/0);
 }
 
@@ -171,10 +181,10 @@ void QuicCryptoStream::WriteCryptoData(EncryptionLevel level,
 }
 
 void QuicCryptoStream::OnSuccessfulVersionNegotiation(
-    const ParsedQuicVersion& version) {}
+    const ParsedQuicVersion& /*version*/) {}
 
 bool QuicCryptoStream::OnCryptoFrameAcked(const QuicCryptoFrame& frame,
-                                          QuicTime::Delta ack_delay_time) {
+                                          QuicTime::Delta /*ack_delay_time*/) {
   QuicByteCount newly_acked_length = 0;
   if (!substreams_[frame.level].send_buffer.OnStreamDataAcked(
           frame.offset, frame.data_length, &newly_acked_length)) {

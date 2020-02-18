@@ -17,13 +17,11 @@
 
 namespace ui {
 
-class WaylandSurfaceFactory;
 class WaylandBufferManagerGpu;
 
 class GbmPixmapWayland : public gfx::NativePixmap {
  public:
-  GbmPixmapWayland(WaylandSurfaceFactory* surface_manager,
-                   WaylandBufferManagerGpu* buffer_manager,
+  GbmPixmapWayland(WaylandBufferManagerGpu* buffer_manager,
                    gfx::AcceleratedWidget widget);
 
   // Creates a buffer object and initializes the pixmap buffer.
@@ -34,8 +32,10 @@ class GbmPixmapWayland : public gfx::NativePixmap {
   // gfx::NativePixmap overrides:
   bool AreDmaBufFdsValid() const override;
   int GetDmaBufFd(size_t plane) const override;
-  int GetDmaBufPitch(size_t plane) const override;
-  int GetDmaBufOffset(size_t plane) const override;
+  uint32_t GetDmaBufPitch(size_t plane) const override;
+  size_t GetDmaBufOffset(size_t plane) const override;
+  size_t GetDmaBufPlaneSize(size_t plane) const override;
+  size_t GetNumberOfPlanes() const override;
   uint64_t GetBufferFormatModifier() const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
@@ -57,8 +57,6 @@ class GbmPixmapWayland : public gfx::NativePixmap {
 
   // gbm_bo wrapper for struct gbm_bo.
   std::unique_ptr<GbmBuffer> gbm_bo_;
-
-  WaylandSurfaceFactory* const surface_manager_;
 
   // Represents a connection to Wayland.
   WaylandBufferManagerGpu* const buffer_manager_;

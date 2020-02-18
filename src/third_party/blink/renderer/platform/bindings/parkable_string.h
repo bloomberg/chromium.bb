@@ -5,16 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_PARKABLE_STRING_H_
 
-#include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -42,14 +40,6 @@ struct CompressionTaskParams;
 class PLATFORM_EXPORT ParkableStringImpl final
     : public RefCounted<ParkableStringImpl> {
  public:
-  // Histogram buckets, exported for testing.
-  enum class ParkingAction {
-    kParkedInBackground = 0,
-    kUnparkedInBackground = 1,
-    kUnparkedInForeground = 2,
-    kMaxValue = kUnparkedInForeground
-  };
-
   enum class ParkableState { kParkable, kNotParkable };
   enum class ParkingMode { kIfCompressedDataExists, kAlways };
   enum class AgeOrParkResult {

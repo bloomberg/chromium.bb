@@ -12,10 +12,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -175,8 +175,7 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
   Internal(scoped_refptr<ThreadSafeScriptContainer> script_container,
            scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : script_container_(std::move(script_container)),
-        task_runner_(std::move(task_runner)),
-        weak_factory_(this) {}
+        task_runner_(std::move(task_runner)) {}
 
   ~Internal() override {
     DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
@@ -233,7 +232,7 @@ class Internal : public mojom::blink::ServiceWorkerInstalledScriptsManager {
   HashMap<KURL, std::unique_ptr<BundledReceivers>> running_receivers_;
   scoped_refptr<ThreadSafeScriptContainer> script_container_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<Internal> weak_factory_;
+  base::WeakPtrFactory<Internal> weak_factory_{this};
 };
 
 std::unique_ptr<TracedValue> UrlToTracedValue(const KURL& url) {

@@ -119,6 +119,16 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
             new Resources.BackgroundServiceTreeElement(panel, Protocol.BackgroundService.ServiceName.Notifications);
         backgroundServiceTreeElement.appendChild(this.notificationsTreeElement);
       }
+      if (Runtime.experiments.isEnabled('backgroundServicesPaymentHandler')) {
+        this.paymentHandlerTreeElement =
+            new Resources.BackgroundServiceTreeElement(panel, Protocol.BackgroundService.ServiceName.PaymentHandler);
+        backgroundServiceTreeElement.appendChild(this.paymentHandlerTreeElement);
+      }
+      if (Runtime.experiments.isEnabled('backgroundServicesPeriodicBackgroundSync')) {
+        this.periodicBackgroundSyncTreeElement = new Resources.BackgroundServiceTreeElement(
+            panel, Protocol.BackgroundService.ServiceName.PeriodicBackgroundSync);
+        backgroundServiceTreeElement.appendChild(this.periodicBackgroundSyncTreeElement);
+      }
       if (Runtime.experiments.isEnabled('backgroundServicesPushMessaging')) {
         this.pushMessagingTreeElement =
             new Resources.BackgroundServiceTreeElement(panel, Protocol.BackgroundService.ServiceName.PushMessaging);
@@ -245,6 +255,10 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
       this.backgroundSyncTreeElement._initialize(backgroundServiceModel);
       if (Runtime.experiments.isEnabled('backgroundServicesNotifications'))
         this.notificationsTreeElement._initialize(backgroundServiceModel);
+      if (Runtime.experiments.isEnabled('backgroundServicesPaymentHandler'))
+        this.paymentHandlerTreeElement._initialize(backgroundServiceModel);
+      if (Runtime.experiments.isEnabled('backgroundServicesPeriodicBackgroundSync'))
+        this.periodicBackgroundSyncTreeElement._initialize(backgroundServiceModel);
       if (Runtime.experiments.isEnabled('backgroundServicesPushMessaging'))
         this.pushMessagingTreeElement._initialize(backgroundServiceModel);
     }
@@ -762,6 +776,10 @@ Resources.BackgroundServiceTreeElement = class extends Resources.BaseStorageTree
         return 'mediumicon-cloud';
       case Protocol.BackgroundService.ServiceName.Notifications:
         return 'mediumicon-bell';
+      case Protocol.BackgroundService.ServiceName.PaymentHandler:
+        return 'mediumicon-payment';
+      case Protocol.BackgroundService.ServiceName.PeriodicBackgroundSync:
+        return 'mediumicon-schedule';
       default:
         console.error(`Service ${this._serviceName} does not have a dedicated icon`);
         return 'mediumicon-table';
@@ -1376,9 +1394,10 @@ Resources.IDBDatabaseTreeElement = class extends Resources.BaseStorageTreeElemen
   }
 
   _updateTooltip() {
-    this.tooltip = Common.UIString('Version') + ': ' + this._database.version;
     if (Object.keys(this._idbObjectStoreTreeElements).length === 0)
-      this.tooltip += ls` (empty)`;
+      this.tooltip = ls`Version: ${this._database.version} (empty)`;
+    else
+      this.tooltip = ls`Version: ${this._database.version}`;
   }
 
   /**
@@ -1510,7 +1529,7 @@ Resources.IDBObjectStoreTreeElement = class extends Resources.BaseStorageTreeEle
 
   _updateTooltip() {
     const keyPathString = this._objectStore.keyPathString;
-    let tooltipString = keyPathString !== null ? (Common.UIString('Key path: ') + keyPathString) : '';
+    let tooltipString = keyPathString !== null ? ls`Key path: ${keyPathString}` : '';
     if (this._objectStore.autoIncrement)
       tooltipString += '\n' + Common.UIString('autoIncrement');
     this.tooltip = tooltipString;
@@ -1603,7 +1622,7 @@ Resources.IDBIndexTreeElement = class extends Resources.BaseStorageTreeElement {
   _updateTooltip() {
     const tooltipLines = [];
     const keyPathString = this._index.keyPathString;
-    tooltipLines.push(Common.UIString('Key path: ') + keyPathString);
+    tooltipLines.push(ls`Key path: ${keyPathString}`);
     if (this._index.unique)
       tooltipLines.push(Common.UIString('unique'));
     if (this._index.multiEntry)
@@ -1687,7 +1706,7 @@ Resources.CookieTreeElement = class extends Resources.BaseStorageTreeElement {
     super(storagePanel, cookieDomain ? cookieDomain : Common.UIString('Local Files'), false);
     this._target = frame.resourceTreeModel().target();
     this._cookieDomain = cookieDomain;
-    this.tooltip = ls`cookies used by frames from ` + cookieDomain;
+    this.tooltip = ls`cookies used by frames from ${cookieDomain}`;
     const icon = UI.Icon.create('mediumicon-cookie', 'resource-tree-item');
     this.setLeadingIcons([icon]);
   }

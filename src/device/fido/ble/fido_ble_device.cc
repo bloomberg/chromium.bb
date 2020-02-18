@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "components/apdu/apdu_response.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/fido/ble/fido_ble_frames.h"
 #include "device/fido/ble/fido_ble_uuids.h"
 #include "device/fido/fido_constants.h"
@@ -49,8 +49,8 @@ void FidoBleDevice::SendPing(std::vector<uint8_t> data,
 }
 
 // static
-std::string FidoBleDevice::GetId(base::StringPiece address) {
-  return std::string("ble:").append(address.begin(), address.end());
+std::string FidoBleDevice::GetIdForAddress(const std::string& address) {
+  return "ble:" + address;
 }
 
 void FidoBleDevice::Cancel(CancelToken token) {
@@ -75,7 +75,7 @@ void FidoBleDevice::Cancel(CancelToken token) {
 }
 
 std::string FidoBleDevice::GetId() const {
-  return GetId(connection_->address());
+  return GetIdForAddress(connection_->address());
 }
 
 base::string16 FidoBleDevice::GetDisplayName() const {
@@ -116,7 +116,7 @@ bool FidoBleDevice::IsInPairingMode() const {
 
   return !fido_service_data->empty() &&
          (fido_service_data->front() &
-          static_cast<int>(FidoServiceDataFlags::kPairingMode)) != 0;
+          static_cast<uint8_t>(FidoServiceDataFlags::kPairingMode)) != 0;
 }
 
 bool FidoBleDevice::IsPaired() const {
@@ -125,6 +125,21 @@ bool FidoBleDevice::IsPaired() const {
     return false;
 
   return ble_device->IsPaired();
+}
+
+bool FidoBleDevice::RequiresBlePairingPin() const {
+  const BluetoothDevice* const ble_device = connection_->GetBleDevice();
+  if (!ble_device)
+    return true;
+
+  const std::vector<uint8_t>* const fido_service_data =
+      ble_device->GetServiceDataForUUID(BluetoothUUID(kFidoServiceUUID));
+  if (!fido_service_data)
+    return true;
+
+  return !fido_service_data->empty() &&
+         (fido_service_data->front() &
+          static_cast<uint8_t>(FidoServiceDataFlags::kPasskeyEntry));
 }
 
 FidoBleConnection::ReadCallback FidoBleDevice::GetReadCallbackForTesting() {
@@ -280,6 +295,7 @@ void FidoBleDevice::StopTimeout() {
 }
 
 void FidoBleDevice::OnTimeout() {
+  FIDO_LOG(ERROR) << "FIDO BLE device timeout for " << GetId();
   state_ = State::kDeviceError;
   Transition();
 }

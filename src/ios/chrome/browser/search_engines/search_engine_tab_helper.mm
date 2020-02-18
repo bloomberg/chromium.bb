@@ -12,10 +12,10 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/web/public/favicon_status.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#include "ios/web/public/favicon/favicon_status.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -77,7 +77,7 @@ SearchEngineTabHelper::~SearchEngineTabHelper() {}
 SearchEngineTabHelper::SearchEngineTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
   web_state->AddObserver(this);
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(&SearchEngineTabHelper::OnJsMessage,
                           base::Unretained(this)),
       kCommandPrefix);
@@ -87,7 +87,6 @@ SearchEngineTabHelper::SearchEngineTabHelper(web::WebState* web_state)
 }
 
 void SearchEngineTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
   web_state->RemoveObserver(this);
   web_state_ = nullptr;
   favicon_driver_observer_.RemoveAll();
@@ -125,37 +124,33 @@ void SearchEngineTabHelper::DidFinishNavigation(
   }
 }
 
-bool SearchEngineTabHelper::OnJsMessage(const base::DictionaryValue& message,
+void SearchEngineTabHelper::OnJsMessage(const base::DictionaryValue& message,
                                         const GURL& page_url,
-                                        bool has_user_gesture,
-                                        bool form_in_main_frame,
+                                        bool user_is_interacting,
                                         web::WebFrame* sender_frame) {
   const base::Value* cmd = message.FindKey("command");
   if (!cmd || !cmd->is_string()) {
-    return false;
+    return;
   }
   std::string cmd_str = cmd->GetString();
   if (cmd_str == kCommandOpenSearch) {
     const base::Value* document_url = message.FindKey(kOpenSearchPageUrlKey);
     if (!document_url || !document_url->is_string())
-      return false;
+      return;
     const base::Value* osdd_url = message.FindKey(kOpenSearchOsddUrlKey);
     if (!osdd_url || !osdd_url->is_string())
-      return false;
+      return;
     AddTemplateURLByOSDD(GURL(document_url->GetString()),
                          GURL(osdd_url->GetString()));
   } else if (cmd_str == kCommandSearchableUrl) {
     const base::Value* url = message.FindKey(kSearchableUrlUrlKey);
     if (!url || !url->is_string())
-      return false;
+      return;
     // Save |url| to |searchable_url_| when generated from <form> submission,
     // and create the TemplateURL when the submission did lead to a successful
     // navigation.
     searchable_url_ = GURL(url->GetString());
-  } else {
-    return false;
   }
-  return true;
 }
 
 // Creates a new TemplateURL by OSDD. The TemplateURL will be added to

@@ -20,7 +20,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
@@ -168,9 +168,7 @@ class CastDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
       tracing::PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
-    DCHECK(!producer_);
     DCHECK(!session_);
-    producer_ = producer;
     target_buffer_ = data_source_config.target_buffer();
     session_ = std::make_unique<CastSystemTracingSession>(worker_task_runner_);
     session_->StartTracing(data_source_config.chrome_config().trace_config(),
@@ -259,7 +257,6 @@ class CastDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
   base::OnceClosure stop_complete_callback_;
   uint32_t target_buffer_ = 0;
-  tracing::PerfettoProducer* producer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CastDataSource);
 };

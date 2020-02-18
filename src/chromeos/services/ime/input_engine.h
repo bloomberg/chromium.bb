@@ -42,18 +42,24 @@ class InputEngine : public mojom::InputChannel {
                            mojo::PendingRemote<mojom::InputChannel> remote,
                            const std::vector<uint8_t>& extra);
 
-  // Returns whether the given ime_spec is supported by this engine.
-  virtual bool IsImeSupported(const std::string& ime_spec);
-
-  // mojom::MessageChannel overrides:
+  // mojom::InputChannel overrides:
   void ProcessText(const std::string& message,
                    ProcessTextCallback callback) override;
   void ProcessMessage(const std::vector<uint8_t>& message,
                       ProcessMessageCallback callback) override;
+  void ProcessKeypressForRulebased(
+      mojom::KeypressInfoForRulebasedPtr keypress_info,
+      ProcessKeypressForRulebasedCallback callback) override;
+  void ResetForRulebased() override;
+  void GetRulebasedKeypressCountForTesting(
+      GetRulebasedKeypressCountForTestingCallback callback) override;
 
   // TODO(https://crbug.com/837156): Implement a state for the interface.
 
  private:
+  // Returns whether the given ime_spec is supported by rulebased engine.
+  bool IsImeSupportedByRulebased(const std::string& ime_spec);
+
   std::string Process(const std::string& message,
                       const InputEngineContext* context);
 

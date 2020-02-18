@@ -46,7 +46,7 @@ InfoMap::ExtraData::ExtraData()
 
 InfoMap::ExtraData::~ExtraData() {}
 
-InfoMap::InfoMap() : ruleset_manager_(this) {}
+InfoMap::InfoMap() {}
 
 const ExtensionSet& InfoMap::extensions() const {
   CheckOnValidThread();
@@ -203,17 +203,6 @@ QuotaService* InfoMap::GetQuotaService() {
   return quota_service_.get();
 }
 
-declarative_net_request::RulesetManager* InfoMap::GetRulesetManager() {
-  CheckOnValidThread();
-  return &ruleset_manager_;
-}
-
-const declarative_net_request::RulesetManager* InfoMap::GetRulesetManager()
-    const {
-  CheckOnValidThread();
-  return &ruleset_manager_;
-}
-
 void InfoMap::SetNotificationsDisabled(
     const std::string& extension_id,
     bool notifications_disabled) {
@@ -238,11 +227,6 @@ void InfoMap::SetIsLockScreenContext(bool is_lock_screen_context) {
   process_map_.set_is_lock_screen_context(is_lock_screen_context);
 }
 
-InfoMap::~InfoMap() {
-  if (quota_service_) {
-    BrowserThread::DeleteSoon(
-        BrowserThread::IO, FROM_HERE, quota_service_.release());
-  }
-}
+InfoMap::~InfoMap() = default;
 
 }  // namespace extensions

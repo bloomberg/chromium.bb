@@ -7,21 +7,21 @@
 
 #include <memory>
 
+#include "gmock/gmock.h"
 #include "osp/impl/quic/quic_client.h"
 #include "osp/impl/quic/quic_server.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
-#include "osp/impl/testing/fake_clock.h"
 #include "osp/public/message_demuxer.h"
 #include "osp/public/network_metrics.h"
 #include "osp/public/protocol_connection_client.h"
 #include "osp/public/protocol_connection_server.h"
-#include "osp_base/ip_address.h"
 #include "platform/api/time.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
+#include "platform/base/ip_address.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 
-class MockServiceObserver final : public ProtocolConnectionServiceObserver {
+class MockServiceObserver : public ProtocolConnectionServiceObserver {
  public:
   ~MockServiceObserver() override = default;
 
@@ -31,7 +31,7 @@ class MockServiceObserver final : public ProtocolConnectionServiceObserver {
   MOCK_METHOD1(OnError, void(const Error& error));
 };
 
-class MockServerObserver final : public ProtocolConnectionServer::Observer {
+class MockServerObserver : public ProtocolConnectionServer::Observer {
  public:
   ~MockServerObserver() override = default;
 
@@ -65,8 +65,8 @@ class FakeQuicBridge {
   std::unique_ptr<QuicClient> quic_client;
   std::unique_ptr<QuicServer> quic_server;
   std::unique_ptr<FakeQuicConnectionFactoryBridge> fake_bridge;
-  MockServiceObserver mock_client_observer;
-  MockServerObserver mock_server_observer;
+  ::testing::NiceMock<MockServiceObserver> mock_client_observer;
+  ::testing::NiceMock<MockServerObserver> mock_server_observer;
 };
 
 }  // namespace openscreen

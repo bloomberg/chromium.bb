@@ -23,4 +23,8 @@ Imager::Font::Win32 - uses Win32 GDI services for text output
 
 This module is obsolete.
 
+=head1 AUTHOR
+
+Tony Cook <tonyc@cpan.org>
+
 =cut

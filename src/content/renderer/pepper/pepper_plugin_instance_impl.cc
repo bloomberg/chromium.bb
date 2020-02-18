@@ -117,7 +117,6 @@
 #include "third_party/blink/public/web/web_print_params.h"
 #include "third_party/blink/public/web/web_print_preset_options.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
-#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -177,14 +176,12 @@ using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPrintParams;
 using blink::WebPrintScalingOption;
-using blink::WebScopedUserGesture;
 using blink::WebString;
 using blink::WebURLError;
 using blink::WebAssociatedURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
 using blink::WebUserGestureIndicator;
-using blink::WebUserGestureToken;
 using blink::WebView;
 using blink::WebWidget;
 
@@ -221,71 +218,70 @@ const char kHeight[] = "height";
 const char kBorder[] = "border";  // According to w3c, deprecated.
 const char kStyle[] = "style";
 
-#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, np_name)       \
-  static_assert(static_cast<int>(WebCursorInfo::webkit_name) == \
-                static_cast<int>(np_name),                      \
+#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, np_name)        \
+  static_assert(static_cast<int>(ui::CursorType::webkit_name) == \
+                    static_cast<int>(np_name),                   \
                 "mismatching enums: " #webkit_name)
 
-STATIC_ASSERT_MATCHING_ENUM(kTypePointer, PP_MOUSECURSOR_TYPE_POINTER);
-STATIC_ASSERT_MATCHING_ENUM(kTypeCross, PP_MOUSECURSOR_TYPE_CROSS);
-STATIC_ASSERT_MATCHING_ENUM(kTypeHand, PP_MOUSECURSOR_TYPE_HAND);
-STATIC_ASSERT_MATCHING_ENUM(kTypeIBeam, PP_MOUSECURSOR_TYPE_IBEAM);
-STATIC_ASSERT_MATCHING_ENUM(kTypeWait, PP_MOUSECURSOR_TYPE_WAIT);
-STATIC_ASSERT_MATCHING_ENUM(kTypeHelp, PP_MOUSECURSOR_TYPE_HELP);
-STATIC_ASSERT_MATCHING_ENUM(kTypeEastResize, PP_MOUSECURSOR_TYPE_EASTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthResize, PP_MOUSECURSOR_TYPE_NORTHRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthEastResize,
+STATIC_ASSERT_MATCHING_ENUM(kPointer, PP_MOUSECURSOR_TYPE_POINTER);
+STATIC_ASSERT_MATCHING_ENUM(kCross, PP_MOUSECURSOR_TYPE_CROSS);
+STATIC_ASSERT_MATCHING_ENUM(kHand, PP_MOUSECURSOR_TYPE_HAND);
+STATIC_ASSERT_MATCHING_ENUM(kIBeam, PP_MOUSECURSOR_TYPE_IBEAM);
+STATIC_ASSERT_MATCHING_ENUM(kWait, PP_MOUSECURSOR_TYPE_WAIT);
+STATIC_ASSERT_MATCHING_ENUM(kHelp, PP_MOUSECURSOR_TYPE_HELP);
+STATIC_ASSERT_MATCHING_ENUM(kEastResize, PP_MOUSECURSOR_TYPE_EASTRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kNorthResize, PP_MOUSECURSOR_TYPE_NORTHRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kNorthEastResize,
                             PP_MOUSECURSOR_TYPE_NORTHEASTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthWestResize,
+STATIC_ASSERT_MATCHING_ENUM(kNorthWestResize,
                             PP_MOUSECURSOR_TYPE_NORTHWESTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthResize, PP_MOUSECURSOR_TYPE_SOUTHRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthEastResize,
+STATIC_ASSERT_MATCHING_ENUM(kSouthResize, PP_MOUSECURSOR_TYPE_SOUTHRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kSouthEastResize,
                             PP_MOUSECURSOR_TYPE_SOUTHEASTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthWestResize,
+STATIC_ASSERT_MATCHING_ENUM(kSouthWestResize,
                             PP_MOUSECURSOR_TYPE_SOUTHWESTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeWestResize, PP_MOUSECURSOR_TYPE_WESTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthSouthResize,
+STATIC_ASSERT_MATCHING_ENUM(kWestResize, PP_MOUSECURSOR_TYPE_WESTRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kNorthSouthResize,
                             PP_MOUSECURSOR_TYPE_NORTHSOUTHRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeEastWestResize,
+STATIC_ASSERT_MATCHING_ENUM(kEastWestResize,
                             PP_MOUSECURSOR_TYPE_EASTWESTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthEastSouthWestResize,
+STATIC_ASSERT_MATCHING_ENUM(kNorthEastSouthWestResize,
                             PP_MOUSECURSOR_TYPE_NORTHEASTSOUTHWESTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthWestSouthEastResize,
+STATIC_ASSERT_MATCHING_ENUM(kNorthWestSouthEastResize,
                             PP_MOUSECURSOR_TYPE_NORTHWESTSOUTHEASTRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeColumnResize,
-                            PP_MOUSECURSOR_TYPE_COLUMNRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeRowResize, PP_MOUSECURSOR_TYPE_ROWRESIZE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeMiddlePanning,
-                            PP_MOUSECURSOR_TYPE_MIDDLEPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeEastPanning, PP_MOUSECURSOR_TYPE_EASTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthPanning,
-                            PP_MOUSECURSOR_TYPE_NORTHPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthEastPanning,
+STATIC_ASSERT_MATCHING_ENUM(kColumnResize, PP_MOUSECURSOR_TYPE_COLUMNRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kRowResize, PP_MOUSECURSOR_TYPE_ROWRESIZE);
+STATIC_ASSERT_MATCHING_ENUM(kMiddlePanning, PP_MOUSECURSOR_TYPE_MIDDLEPANNING);
+STATIC_ASSERT_MATCHING_ENUM(kEastPanning, PP_MOUSECURSOR_TYPE_EASTPANNING);
+STATIC_ASSERT_MATCHING_ENUM(kNorthPanning, PP_MOUSECURSOR_TYPE_NORTHPANNING);
+STATIC_ASSERT_MATCHING_ENUM(kNorthEastPanning,
                             PP_MOUSECURSOR_TYPE_NORTHEASTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNorthWestPanning,
+STATIC_ASSERT_MATCHING_ENUM(kNorthWestPanning,
                             PP_MOUSECURSOR_TYPE_NORTHWESTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthPanning,
-                            PP_MOUSECURSOR_TYPE_SOUTHPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthEastPanning,
+STATIC_ASSERT_MATCHING_ENUM(kSouthPanning, PP_MOUSECURSOR_TYPE_SOUTHPANNING);
+STATIC_ASSERT_MATCHING_ENUM(kSouthEastPanning,
                             PP_MOUSECURSOR_TYPE_SOUTHEASTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeSouthWestPanning,
+STATIC_ASSERT_MATCHING_ENUM(kSouthWestPanning,
                             PP_MOUSECURSOR_TYPE_SOUTHWESTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeWestPanning, PP_MOUSECURSOR_TYPE_WESTPANNING);
-STATIC_ASSERT_MATCHING_ENUM(kTypeMove, PP_MOUSECURSOR_TYPE_MOVE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeVerticalText,
-                            PP_MOUSECURSOR_TYPE_VERTICALTEXT);
-STATIC_ASSERT_MATCHING_ENUM(kTypeCell, PP_MOUSECURSOR_TYPE_CELL);
-STATIC_ASSERT_MATCHING_ENUM(kTypeContextMenu, PP_MOUSECURSOR_TYPE_CONTEXTMENU);
-STATIC_ASSERT_MATCHING_ENUM(kTypeAlias, PP_MOUSECURSOR_TYPE_ALIAS);
-STATIC_ASSERT_MATCHING_ENUM(kTypeProgress, PP_MOUSECURSOR_TYPE_PROGRESS);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNoDrop, PP_MOUSECURSOR_TYPE_NODROP);
-STATIC_ASSERT_MATCHING_ENUM(kTypeCopy, PP_MOUSECURSOR_TYPE_COPY);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNone, PP_MOUSECURSOR_TYPE_NONE);
-STATIC_ASSERT_MATCHING_ENUM(kTypeNotAllowed, PP_MOUSECURSOR_TYPE_NOTALLOWED);
-STATIC_ASSERT_MATCHING_ENUM(kTypeZoomIn, PP_MOUSECURSOR_TYPE_ZOOMIN);
-STATIC_ASSERT_MATCHING_ENUM(kTypeZoomOut, PP_MOUSECURSOR_TYPE_ZOOMOUT);
-STATIC_ASSERT_MATCHING_ENUM(kTypeGrab, PP_MOUSECURSOR_TYPE_GRAB);
-STATIC_ASSERT_MATCHING_ENUM(kTypeGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
+STATIC_ASSERT_MATCHING_ENUM(kWestPanning, PP_MOUSECURSOR_TYPE_WESTPANNING);
+STATIC_ASSERT_MATCHING_ENUM(kMove, PP_MOUSECURSOR_TYPE_MOVE);
+STATIC_ASSERT_MATCHING_ENUM(kVerticalText, PP_MOUSECURSOR_TYPE_VERTICALTEXT);
+STATIC_ASSERT_MATCHING_ENUM(kCell, PP_MOUSECURSOR_TYPE_CELL);
+STATIC_ASSERT_MATCHING_ENUM(kContextMenu, PP_MOUSECURSOR_TYPE_CONTEXTMENU);
+STATIC_ASSERT_MATCHING_ENUM(kAlias, PP_MOUSECURSOR_TYPE_ALIAS);
+STATIC_ASSERT_MATCHING_ENUM(kProgress, PP_MOUSECURSOR_TYPE_PROGRESS);
+STATIC_ASSERT_MATCHING_ENUM(kNoDrop, PP_MOUSECURSOR_TYPE_NODROP);
+STATIC_ASSERT_MATCHING_ENUM(kCopy, PP_MOUSECURSOR_TYPE_COPY);
+STATIC_ASSERT_MATCHING_ENUM(kNone, PP_MOUSECURSOR_TYPE_NONE);
+STATIC_ASSERT_MATCHING_ENUM(kNotAllowed, PP_MOUSECURSOR_TYPE_NOTALLOWED);
+STATIC_ASSERT_MATCHING_ENUM(kZoomIn, PP_MOUSECURSOR_TYPE_ZOOMIN);
+STATIC_ASSERT_MATCHING_ENUM(kZoomOut, PP_MOUSECURSOR_TYPE_ZOOMOUT);
+STATIC_ASSERT_MATCHING_ENUM(kGrab, PP_MOUSECURSOR_TYPE_GRAB);
+STATIC_ASSERT_MATCHING_ENUM(kGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
+STATIC_ASSERT_MATCHING_ENUM(kMiddlePanningVertical,
+                            PP_MOUSECURSOR_TYPE_MIDDLEPANNINGVERTICAL);
+STATIC_ASSERT_MATCHING_ENUM(kMiddlePanningHorizontal,
+                            PP_MOUSECURSOR_TYPE_MIDDLEPANNINGHORIZONTAL);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
@@ -539,15 +535,12 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       text_input_type_(kPluginDefaultTextInputType),
       selection_caret_(0),
       selection_anchor_(0),
-      pending_user_gesture_(0.0),
       document_loader_(nullptr),
       external_document_load_(false),
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
-      audio_controller_(std::make_unique<PepperAudioController>(this)),
-      view_change_weak_ptr_factory_(this),
-      weak_factory_(this) {
+      audio_controller_(std::make_unique<PepperAudioController>(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -891,7 +884,7 @@ bool PepperPluginInstanceImpl::Initialize(
     message_channel_->Start();
 
   if (success)
-    AccessibilityModeChanged();
+    HandleAccessibilityChange();
 
   initialized_ = success;
   return success;
@@ -1176,23 +1169,6 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         CreateInputEventData(*event_in_dip.get(), &events);
       else
         CreateInputEventData(event, &events);
-
-      // Allow the user gesture to be pending after the plugin handles the
-      // event. This allows out-of-process plugins to respond to the user
-      // gesture after processing has finished here.
-      if (WebUserGestureIndicator::IsProcessingUserGesture(
-              render_frame_->GetWebFrame())) {
-        auto user_gesture_token =
-            WebUserGestureIndicator::CurrentUserGestureToken();
-        // Checking user_gesture_token.HasGestures() to make sure we are
-        // processing user geasture.
-        if (user_gesture_token.HasGestures()) {
-          pending_user_gesture_ =
-              ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-          pending_user_gesture_token_ = user_gesture_token;
-          WebUserGestureIndicator::ExtendTimeout();
-        }
-      }
 
       // Each input event may generate more than one PP_InputEvent.
       for (size_t i = 0; i < events.size(); i++) {
@@ -2121,8 +2097,6 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   desired_fullscreen_state_ = fullscreen;
 
   if (fullscreen) {
-    // Create the user gesture in case we're processing one that's pending.
-    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     // WebKit does not resize the plugin to fill the screen in fullscreen mode,
     // so we will tweak plugin's attributes to support the expected behavior.
     KeepSizeAttributesBeforeFullscreen();
@@ -2150,14 +2124,11 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
   bool old_plugin_focus = PluginHasFocus();
   flash_fullscreen_ = flash_fullscreen;
   if (is_mouselock_pending && !IsMouseLocked()) {
-    if (!IsProcessingUserGesture() &&
+    if (!HasTransientUserActivation() &&
         !module_->permissions().HasPermission(
             ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
       lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
     } else {
-      // Open a user gesture here so the Webkit user gesture checks will succeed
-      // for out-of-process plugins.
-      WebScopedUserGesture user_gesture(CurrentUserGestureToken());
       if (!LockMouse())
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
@@ -2257,11 +2228,9 @@ bool PepperPluginInstanceImpl::PrepareTransferableResource(
       bitmap_registrar, transferable_resource, release_callback);
 }
 
-void PepperPluginInstanceImpl::AccessibilityModeChanged() {
-  if (render_frame_ && render_frame_->render_accessibility() &&
-      LoadPdfInterface()) {
-    plugin_pdf_interface_->EnableAccessibility(pp_instance());
-  }
+void PepperPluginInstanceImpl::AccessibilityModeChanged(
+    const ui::AXMode& mode) {
+  HandleAccessibilityChange();
 }
 
 void PepperPluginInstanceImpl::OnDestruct() {
@@ -2295,18 +2264,9 @@ void PepperPluginInstanceImpl::RemovePluginObject(PluginObject* plugin_object) {
   live_plugin_objects_.erase(plugin_object);
 }
 
-bool PepperPluginInstanceImpl::IsProcessingUserGesture() const {
-  PP_TimeTicks now = ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
-  // Give a lot of slack so tests won't be flaky.
-  const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
-  return pending_user_gesture_token_.HasGestures() &&
-         (now - pending_user_gesture_ < kUserGestureDurationInSeconds);
-}
-
-WebUserGestureToken PepperPluginInstanceImpl::CurrentUserGestureToken() {
-  if (!IsProcessingUserGesture())
-    pending_user_gesture_token_ = WebUserGestureToken();
-  return pending_user_gesture_token_;
+bool PepperPluginInstanceImpl::HasTransientUserActivation() const {
+  return WebUserGestureIndicator::IsProcessingUserGesture(
+      render_frame_->GetWebFrame());
 }
 
 void PepperPluginInstanceImpl::OnLockMouseACK(bool succeeded) {
@@ -2550,8 +2510,7 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
   blink::WebScriptSource script(
       blink::WebString::FromUTF8(script_string.c_str()));
   v8::Local<v8::Value> result;
-  if (IsProcessingUserGesture()) {
-    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
+  if (HasTransientUserActivation()) {
     result = frame->ExecuteScriptAndReturnValue(script);
   } else {
     result = frame->ExecuteScriptAndReturnValue(script);
@@ -2749,8 +2708,8 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   if (type != PP_MOUSECURSOR_TYPE_CUSTOM) {
-    DoSetCursor(std::make_unique<WebCursorInfo>(
-        static_cast<WebCursorInfo::Type>(type)));
+    DoSetCursor(
+        std::make_unique<WebCursorInfo>(static_cast<ui::CursorType>(type)));
     return PP_TRUE;
   }
 
@@ -2764,8 +2723,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
   if (!auto_mapper.is_valid())
     return PP_FALSE;
 
-  auto custom_cursor =
-      std::make_unique<WebCursorInfo>(WebCursorInfo::kTypeCustom);
+  auto custom_cursor = std::make_unique<WebCursorInfo>(ui::CursorType::kCustom);
   custom_cursor->hot_spot.x = hot_spot->x;
   custom_cursor->hot_spot.y = hot_spot->y;
 
@@ -2794,15 +2752,12 @@ int32_t PepperPluginInstanceImpl::LockMouse(
   if (!CanAccessMainFrame())
     return PP_ERROR_NOACCESS;
 
-  if (!IsProcessingUserGesture())
+  if (!HasTransientUserActivation())
     return PP_ERROR_NO_USER_GESTURE;
 
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
   if (!FlashIsFullscreenOrPending() || flash_fullscreen_) {
-    // Open a user gesture here so the Webkit user gesture checks will succeed
-    // for out-of-process plugins.
-    WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     if (!LockMouse())
       return PP_ERROR_FAILED;
   }
@@ -3181,7 +3136,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_FAILED;
   }
   web_request.SetSiteForCookies(document.SiteForCookies());
-  if (IsProcessingUserGesture())
+  if (HasTransientUserActivation())
     web_request.SetHasUserGesture(true);
 
   GURL gurl(web_request.Url());
@@ -3195,7 +3150,6 @@ int32_t PepperPluginInstanceImpl::Navigate(
 
     // TODO(viettrungluu): NPAPI sends the result back to the plugin -- do we
     // need that?
-    blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
     WebString result = container_->ExecuteScriptURL(gurl, false);
     return result.IsNull() ? PP_ERROR_FAILED : PP_OK;
   }
@@ -3205,7 +3159,6 @@ int32_t PepperPluginInstanceImpl::Navigate(
     return PP_ERROR_BADARGUMENT;
 
   WebString target_str = WebString::FromUTF8(target);
-  blink::WebScopedUserGesture user_gesture(CurrentUserGestureToken());
   container_->LoadFrameRequest(web_request, target_str);
   return PP_OK;
 }
@@ -3303,7 +3256,7 @@ bool PepperPluginInstanceImpl::SetFullscreenCommon(bool fullscreen) const {
       return false;
     }
 
-    if (!IsProcessingUserGesture())
+    if (!HasTransientUserActivation())
       return false;
   }
   return true;
@@ -3315,7 +3268,9 @@ bool PepperPluginInstanceImpl::IsMouseLocked() {
 }
 
 bool PepperPluginInstanceImpl::LockMouse() {
-  return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter());
+  WebLocalFrame* requester_frame = container_->GetDocument().GetFrame();
+  return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter(),
+                                             requester_frame);
 }
 
 MouseLockDispatcher::LockTarget*
@@ -3435,6 +3390,13 @@ bool PepperPluginInstanceImpl::IsTextureInUse(
                      return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   return it != texture_ref_counts_.end();
+}
+
+void PepperPluginInstanceImpl::HandleAccessibilityChange() {
+  if (render_frame_ && render_frame_->render_accessibility() &&
+      LoadPdfInterface()) {
+    plugin_pdf_interface_->EnableAccessibility(pp_instance());
+  }
 }
 
 }  // namespace content

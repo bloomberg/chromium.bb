@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Уређаји заједно функционишу још боље</translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
 <translation id="1153356358378277386">Упарени уређаји</translation>
+<translation id="1175572348579024023">Померај</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="1195412055398077112">ивично подручје екрана</translation>
 <translation id="119944043368869598">Обриши све</translation>
-<translation id="123828989343052515">Нов радни сто</translation>
 <translation id="1247372569136754018">Микрофон (интерни)</translation>
 <translation id="1252999807265626933">Пуњење из уређаја <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какво је време?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Методе уноса конфигурише администратор.</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1761222317188459878">Укључите/искључите мрежну везу. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Помери надесно</translation>
 <translation id="1812997170047690955">Шта је на екрану?</translation>
+<translation id="1820355135508821526">Функција <ph name="FEATURE_NAME" /> је онемогућена у складу са смерницама које се примењују на овај уређај. Затражите од администратора да то промени.</translation>
 <translation id="1823873187264960516">Етернет: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Помоћник (учитава се...)</translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Подесите језик</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Унос текста</translation>
 <translation id="1993072747612765854">Сазнајте више о најновијем ажурирању за: <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Искључи</translation>
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
 <translation id="209965399369889474">Нисте повезани на мрежу</translation>
+<translation id="2126242104232412123">Нови радни простор</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="2135456203358955318">Монтирана лупа екрана</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google помоћник није доступан у јавној сесији.</translation>
 <translation id="2575685495496069081">Онемогућено је вишеструко пријављивање</translation>
 <translation id="2582112259361606227">Рестартујте да бисте ажурирали</translation>
-<translation id="2597972630681408282">Ноћно светло: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
+<translation id="2651765386227849097">Google помоћник је онемогућен на овом уређају.</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2658778018866295321">Кликните и превуците</translation>
 <translation id="2700493154570097719">Подесите тастатуру</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Повезани сте са једним уређајем}one{Повезани сте са # уређајем}few{Повезани сте са # уређаја}other{Повезани сте са # уређаја}}</translation>
 <translation id="3226991577105957773">и још <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
+<translation id="3249513730522716925">Прозор <ph name="WINDOW_TITLE" /> је премештен са радне површине <ph name="ACTIVE_DESK" /> на радну површину <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Шта можеш да радиш?</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ће и даље моћи да се пријави касније.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3576141592585647168">Промените временску зону</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
+<translation id="3604801046548457007">Радна површина <ph name="DESK_TITILE" /> је направљена</translation>
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
 <translation id="3621202678540785336">Улаз</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Батерија је на <ph name="PERCENTAGE" />% и пуни се.</translation>
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
+<translation id="4021716437419160885">Помери надоле</translation>
 <translation id="4042660782729322247">Делите екран</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Батерија је пуна.</translation>
 <translation id="490375751687810070">Вертикално</translation>
 <translation id="4905614135390995787">Пречица за укључивање и искључивање режима високог контраста је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4924411785043111640">Рестартуј и ресетуј</translation>
+<translation id="495046168593986294">Помери нагоре</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
 <translation id="5030687792513154421">Време је истекло</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> се повезао са новим телефоном</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Утикач за микрофон</translation>
 <translation id="5669267381087807207">Активирање</translation>
 <translation id="5673434351075758678">Са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ после синхронизације уређаја.</translation>
+<translation id="5682642926269496722">Google није доступан за актуелни кориснички налог.</translation>
 <translation id="5691772641933328258">Отисак прста није препознат</translation>
 <translation id="5710450975648804523">Режим Не узнемиравај је укључен</translation>
 <translation id="574392208103952083">Средња</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Да бисте преузели ажурирање, рестартујте Chromebook са прикљученом тастастуром.</translation>
 <translation id="5992218262414051481">Режим високог контраста је омогућен. Притисните Ctrl + тастер за претрагу + H поново да бисте га искључили.</translation>
 <translation id="6018164090099858612">Излазак из режима са пресликавањем</translation>
+<translation id="602001110135236999">Помери налево</translation>
+<translation id="6040143037577758943">Затвори</translation>
 <translation id="6043212731627905357">Овај монитор није компатибилан са уређајем <ph name="DEVICE_TYPE" /> (монитор није подржан).</translation>
 <translation id="6043994281159824495">Одјави ме одмах</translation>
 <translation id="6047696787498798094">Дељење екрана ће се прекинути када пребаците на другог корисника. Желите ли да наставите?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Жао нам је, верификација лозинке није успела. Пробајте поново.</translation>
 <translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME" />“ са адресом <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Пуњење уређаја <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google помоћник није доступан у сесији госта.</translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
 <translation id="6715542151869432661">Није пронађен ниједан мобилни уређај.</translation>
 <translation id="6723839937902243910">Енергија</translation>
+<translation id="6727969043791803658">Повезано, ниво батерије је <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
+<translation id="6752912906630585008">Радна површина <ph name="REMOVED_DESK" /> је уклоњена и спојена са радном површином <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="6820676911989879663">Направите паузу!</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Пуњење повезаних уређаја са USB прикључком типа C</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 обавештење}one{# обавештење}few{# обавештења}other{# обавештења}}</translation>
+<translation id="7749443890790263709">Достигли сте максималан број радних површина.</translation>
 <translation id="776344839111254542">Кликните за приказ детаља ажурирања</translation>
 <translation id="7780159184141939021">Ротирајте екран</translation>
 <translation id="7796353162336583443">Додирните дугме писаљке на полици да бисте направили белешку и снимак екрана и да бисте користили Google помоћник, ласерски показивач или лупу.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8375916635258623388">Овај <ph name="DEVICE_NAME" /> и телефон ће се аутоматски повезати</translation>
+<translation id="8388750414311082622">Не можемо да уклонимо последњу радну површину.</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Родитељ је закључао овај уређај</translation>
 <translation id="8406981827175133772">Лупа за цео екран</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433186206711564395">Мрежна подешавања</translation>
 <translation id="8433977262951327081">Промењена је пречица за приказивање облачића за мени Опције уноса на полици. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Радна површина <ph name="DESK_TITILE" /> је активирана</translation>
 <translation id="8452135315243592079">SIM картица недостаје</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="847056008324733326">Подешавања размере приказа</translation>

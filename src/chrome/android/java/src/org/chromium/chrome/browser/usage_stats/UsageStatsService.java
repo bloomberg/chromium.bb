@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import android.app.Activity;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
@@ -31,6 +32,7 @@ public class UsageStatsService {
     private static UsageStatsService sInstance;
 
     private EventTracker mEventTracker;
+    private NotificationSuspender mNotificationSuspender;
     private SuspensionTracker mSuspensionTracker;
     private TokenTracker mTokenTracker;
     private UsageStatsBridge mBridge;
@@ -42,8 +44,14 @@ public class UsageStatsService {
     private DigitalWellbeingClient mClient;
     private boolean mOptInState;
 
+    /** Returns if the UsageStatsService is enabled on this device */
+    public static boolean isEnabled() {
+        return BuildInfo.isAtLeastQ() && ChromeFeatureList.isEnabled(ChromeFeatureList.USAGE_STATS);
+    }
+
     /** Get the global instance of UsageStatsService */
     public static UsageStatsService getInstance() {
+        assert isEnabled();
         if (sInstance == null) {
             sInstance = new UsageStatsService();
         }
@@ -56,15 +64,20 @@ public class UsageStatsService {
         Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
         mBridge = new UsageStatsBridge(profile, this);
         mEventTracker = new EventTracker(mBridge);
-        mSuspensionTracker = new SuspensionTracker(mBridge);
+        mNotificationSuspender = new NotificationSuspender(profile);
+        mSuspensionTracker = new SuspensionTracker(mBridge, mNotificationSuspender);
         mTokenTracker = new TokenTracker(mBridge);
         mPageViewObservers = new ArrayList<>();
+        mClient = AppHooks.get().createDigitalWellbeingClient();
 
         mSuspensionTracker.getAllSuspendedWebsites().then(
                 (suspendedSites) -> { notifyObserversOfSuspensions(suspendedSites, true); });
 
         mOptInState = getOptInState();
-        mClient = AppHooks.get().createDigitalWellbeingClient();
+    }
+
+    /* package */ NotificationSuspender getNotificationSuspender() {
+        return mNotificationSuspender;
     }
 
     /**
@@ -192,6 +205,18 @@ public class UsageStatsService {
             // Retry once; if the subsequent attempt fails, log the failure and move on.
             mEventTracker.clearRange(startTimeMs, endTimeMs).except((exceptionInner) -> {
                 Log.e(TAG, "Failed to clear range of events for history deletion");
+            });
+        });
+    }
+
+    public void onHistoryDeletedForDomains(List<String> fqdns) {
+        ThreadUtils.assertOnUiThread();
+        UsageStatsMetricsReporter.reportMetricsEvent(UsageStatsMetricsEvent.CLEAR_HISTORY_DOMAIN);
+        mClient.notifyHistoryDeletion(fqdns);
+        mEventTracker.clearDomains(fqdns).except((exception) -> {
+            // Retry once; if the subsequent attempt fails, log the failure and move on.
+            mEventTracker.clearDomains(fqdns).except((exceptionInner) -> {
+                Log.e(TAG, "Failed to clear domain events for history deletion");
             });
         });
     }

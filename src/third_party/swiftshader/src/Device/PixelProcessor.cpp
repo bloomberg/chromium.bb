@@ -20,30 +20,21 @@
 #include "Vulkan/VkDebug.hpp"
 #include "Vulkan/VkImageView.hpp"
 
-#include <string.h>
+#include <cstring>
 
 namespace sw
 {
-	extern TransparencyAntialiasing transparencyAntialiasing;
-
-	bool precachePixel = false;
-
-	unsigned int PixelProcessor::States::computeHash()
+	uint32_t PixelProcessor::States::computeHash()
 	{
-		unsigned int *state = (unsigned int*)this;
-		unsigned int hash = 0;
+		uint32_t *state = reinterpret_cast<uint32_t*>(this);
+		uint32_t hash = 0;
 
-		for(unsigned int i = 0; i < sizeof(States) / 4; i++)
+		for(unsigned int i = 0; i < sizeof(States) / sizeof(uint32_t); i++)
 		{
 			hash ^= state[i];
 		}
 
 		return hash;
-	}
-
-	PixelProcessor::State::State()
-	{
-		memset(this, 0, sizeof(State));
 	}
 
 	bool PixelProcessor::State::operator==(const State &state) const
@@ -53,6 +44,7 @@ namespace sw
 			return false;
 		}
 
+		static_assert(is_memcmparable<State>::value, "Cannot memcmp State");
 		return memcmp(static_cast<const States*>(this), static_cast<const States*>(&state), sizeof(States)) == 0;
 	}
 
@@ -71,10 +63,10 @@ namespace sw
 	void PixelProcessor::setBlendConstant(const Color<float> &blendConstant)
 	{
 		// FIXME: Compact into generic function   // FIXME: Clamp
-		short blendConstantR = iround(65535 * blendConstant.r);
-		short blendConstantG = iround(65535 * blendConstant.g);
-		short blendConstantB = iround(65535 * blendConstant.b);
-		short blendConstantA = iround(65535 * blendConstant.a);
+		short blendConstantR = static_cast<short>(iround(65535 * blendConstant.r));
+		short blendConstantG = static_cast<short>(iround(65535 * blendConstant.g));
+		short blendConstantB = static_cast<short>(iround(65535 * blendConstant.b));
+		short blendConstantA = static_cast<short>(iround(65535 * blendConstant.a));
 
 		factor.blendConstant4W[0][0] = blendConstantR;
 		factor.blendConstant4W[0][1] = blendConstantR;
@@ -97,10 +89,10 @@ namespace sw
 		factor.blendConstant4W[3][3] = blendConstantA;
 
 		// FIXME: Compact into generic function   // FIXME: Clamp
-		short invBlendConstantR = iround(65535 * (1 - blendConstant.r));
-		short invBlendConstantG = iround(65535 * (1 - blendConstant.g));
-		short invBlendConstantB = iround(65535 * (1 - blendConstant.b));
-		short invBlendConstantA = iround(65535 * (1 - blendConstant.a));
+		short invBlendConstantR = static_cast<short>(iround(65535 * (1 - blendConstant.r)));
+		short invBlendConstantG = static_cast<short>(iround(65535 * (1 - blendConstant.g)));
+		short invBlendConstantB = static_cast<short>(iround(65535 * (1 - blendConstant.b)));
+		short invBlendConstantA = static_cast<short>(iround(65535 * (1 - blendConstant.a)));
 
 		factor.invBlendConstant4W[0][0] = invBlendConstantR;
 		factor.invBlendConstant4W[0][1] = invBlendConstantR;
@@ -188,7 +180,6 @@ namespace sw
 		if(context->stencilActive())
 		{
 			state.stencilActive = true;
-			state.twoSidedStencil = context->twoSidedStencil;
 			state.frontStencil = context->frontStencil;
 			state.backStencil = context->backStencil;
 		}
@@ -229,7 +220,7 @@ namespace sw
 			state.centroid = context->pixelShader->getModes().NeedsCentroid;
 		}
 
-		state.frontFaceCCW = context->frontFacingCCW;
+		state.frontFace = context->frontFace;
 
 		state.hash = state.computeHash();
 

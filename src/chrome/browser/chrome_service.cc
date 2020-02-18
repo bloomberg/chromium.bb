@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -22,9 +23,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 
-#if defined(OS_CHROMEOS)
-#include "services/ws/public/cpp/input_devices/input_device_controller.h"
-#endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
@@ -39,9 +37,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
         base::CreateSingleThreadTaskRunnerWithTraits(
             {content::BrowserThread::UI});
 
-#if defined(OS_CHROMEOS)
-    input_device_controller_.AddInterface(&registry_, ui_task_runner);
-#endif
     registry_.AddInterface(base::BindRepeating(
         &startup_metric_utils::StartupMetricHostImpl::Create));
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -109,10 +104,6 @@ class ChromeService::IOThreadContext : public service_manager::Service {
       const service_manager::BindSourceInfo&>
       registry_with_source_info_;
 
-#if defined(OS_CHROMEOS)
-  ws::InputDeviceController input_device_controller_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(IOThreadContext);
 };
 
@@ -122,15 +113,14 @@ class ChromeService::ExtraParts : public ChromeBrowserMainExtraParts {
   ~ExtraParts() override = default;
 
  private:
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override {
+  void PostCreateThreads() override {
     // Initializing the connector asynchronously configures the Connector on the
     // IO thread. This needs to be done before WarmService() is called or
     // ChromeService::BindConnector() can race with ChromeService::OnStart().
     ChromeService::GetInstance()->InitConnector();
 
     // TODO(https://crbug.com/904148): This should not use |WarmService()|.
-    connection->GetConnector()->WarmService(
+    content::GetSystemConnector()->WarmService(
         service_manager::ServiceFilter::ByName(chrome::mojom::kServiceName));
   }
 

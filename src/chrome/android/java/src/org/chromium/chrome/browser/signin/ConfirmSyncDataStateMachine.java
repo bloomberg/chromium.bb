@@ -102,7 +102,8 @@ public class ConfirmSyncDataStateMachine
         mContext = context;
         mCallback = callback;
 
-        mCurrentlyManaged = SigninManager.get().getManagementDomain() != null;
+        mCurrentlyManaged =
+                IdentityServicesProvider.getSigninManager().getManagementDomain() != null;
 
         mDelegate = new ConfirmSyncDataStateMachineDelegate(mFragmentManager);
 
@@ -192,7 +193,8 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void requestNewAccountManagementStatus() {
-        SigninManager.get().isUserManaged(mNewAccountName, this::setIsNewAccountManaged);
+        IdentityServicesProvider.getSigninManager().isAccountManaged(
+                mNewAccountName, this::setIsNewAccountManaged);
     }
 
     private void setIsNewAccountManaged(Boolean isManaged) {
@@ -279,4 +281,3 @@ public class ConfirmSyncDataStateMachine
         cancel(false);
     }
 }
-

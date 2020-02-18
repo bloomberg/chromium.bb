@@ -62,8 +62,6 @@ __END__
 
 =head1 SEE ALSO
 
-The PAR homepage at L<http://par.perl.org>.
-
 L<PAR>, L<PAR::Environment>
 
 =head1 AUTHORS
@@ -71,7 +69,7 @@ L<PAR>, L<PAR::Environment>
 Audrey Tang E<lt>cpan@audreyt.orgE<gt>,
 Steffen Mueller E<lt>smueller@cpan.orgE<gt>
 
-L<http://par.perl.org/> is the official PAR website.  You can write
+You can write
 to the mailing list at E<lt>par@perl.orgE<gt>, or send an empty mail to
 E<lt>par-subscribe@perl.orgE<gt> to participate in the discussion.
 
@@ -88,7 +86,7 @@ Copyright 2006-2010 by Steffen Mueller E<lt>smueller@cpan.orgE<gt>.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<LICENSE>.
 
 =cut
 

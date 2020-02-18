@@ -194,6 +194,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicStream : public WebSocketStream {
   CompletionOnceCallback read_callback_;
 };
 
+NET_EXPORT extern const char kWebSocketReadBufferSize[];
+
 }  // namespace net
 
 #endif  // NET_WEBSOCKETS_WEBSOCKET_BASIC_STREAM_H_

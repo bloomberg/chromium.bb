@@ -15,9 +15,9 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -105,8 +105,11 @@ class NavigatorShareTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    GetDocument().SetSecurityOrigin(
-        SecurityOrigin::Create(KURL("https://example.com")));
+    GetFrame().Loader().CommitNavigation(
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
+                                                  KURL("https://example.com")),
+        nullptr /* extra_data */);
+    test::RunPendingTasks();
 
     service_manager::InterfaceProvider::TestApi test_api(
         &GetFrame().GetInterfaceProvider());

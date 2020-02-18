@@ -961,7 +961,7 @@ bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
   bool blocked_by_policy =
       !network->IsManagedByPolicy() &&
       (OnlyManagedWifiNetworksAllowed() ||
-       base::ContainsValue(blacklisted_hex_ssids_, network->GetHexSsid()));
+       base::Contains(blacklisted_hex_ssids_, network->GetHexSsid()));
   network->set_blocked_by_policy(blocked_by_policy);
   return prev_blocked_by_policy != blocked_by_policy;
 }
@@ -1195,7 +1195,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   std::map<std::string, std::unique_ptr<ManagedState>> managed_map;
   for (auto& item : *managed_list) {
     std::string path = item->path();
-    DCHECK(!base::ContainsKey(managed_map, path));
+    DCHECK(!base::Contains(managed_map, path));
     managed_map[path] = std::move(item);
   }
   // Clear the list (objects are temporarily owned by managed_map).
@@ -1730,10 +1730,11 @@ NetworkStateHandler::MaybeCreateDefaultCellularNetwork() {
   if (!device || device->IsSimAbsent())
     return nullptr;
   // Create a default Cellular network. Properties from the associated Device
-  // will be provided to the UI.
+  // will be provided to the UI. Note that the network's name is left empty; UI
+  // surfaces which attempt to show the network name will fall back to showing
+  // the network type (i.e., "Cellular") instead.
   std::unique_ptr<NetworkState> network =
       NetworkState::CreateDefaultCellular(device->path());
-  network->set_name(device->GetName());
   UpdateGuid(network.get());
   return network;
 }

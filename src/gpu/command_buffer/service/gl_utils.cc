@@ -1025,6 +1025,7 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
       source_internal_format == GL_BGRA8_EXT ||
       source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
       source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
+      source_internal_format == GL_RGB_YCBCR_P010_CHROMIUM ||
       source_internal_format == GL_R16_EXT ||
       source_internal_format == GL_RGB10_A2;
   if (!valid_source_format) {
@@ -1039,6 +1040,78 @@ bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
   }
 
   return true;
+}
+
+GLenum GetTextureBindingQuery(GLenum texture_type) {
+  switch (texture_type) {
+    case GL_TEXTURE_2D:
+      return GL_TEXTURE_BINDING_2D;
+    case GL_TEXTURE_2D_ARRAY:
+      return GL_TEXTURE_BINDING_2D_ARRAY;
+    case GL_TEXTURE_2D_MULTISAMPLE:
+      return GL_TEXTURE_BINDING_2D_MULTISAMPLE;
+    case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
+      return GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY;
+    case GL_TEXTURE_3D:
+      return GL_TEXTURE_BINDING_3D;
+    case GL_TEXTURE_EXTERNAL_OES:
+      return GL_TEXTURE_BINDING_EXTERNAL_OES;
+    case GL_TEXTURE_RECTANGLE:
+      return GL_TEXTURE_BINDING_RECTANGLE;
+    case GL_TEXTURE_CUBE_MAP:
+      return GL_TEXTURE_BINDING_CUBE_MAP;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
+gfx::OverlayTransform GetGFXOverlayTransform(GLenum plane_transform) {
+  switch (plane_transform) {
+    case GL_OVERLAY_TRANSFORM_NONE_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_NONE;
+    case GL_OVERLAY_TRANSFORM_FLIP_HORIZONTAL_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL;
+    case GL_OVERLAY_TRANSFORM_FLIP_VERTICAL_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL;
+    case GL_OVERLAY_TRANSFORM_ROTATE_90_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_90;
+    case GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_180;
+    case GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM:
+      return gfx::OVERLAY_TRANSFORM_ROTATE_270;
+    default:
+      return gfx::OVERLAY_TRANSFORM_INVALID;
+  }
+}
+
+bool GetGFXBufferFormat(GLenum internal_format, gfx::BufferFormat* out_format) {
+  switch (internal_format) {
+    case GL_RGBA8_OES:
+      *out_format = gfx::BufferFormat::RGBA_8888;
+      return true;
+    case GL_BGRA8_EXT:
+      *out_format = gfx::BufferFormat::BGRA_8888;
+      return true;
+    case GL_RGBA16F_EXT:
+      *out_format = gfx::BufferFormat::RGBA_F16;
+      return true;
+    case GL_R8_EXT:
+      *out_format = gfx::BufferFormat::R_8;
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool GetGFXBufferUsage(GLenum buffer_usage, gfx::BufferUsage* out_usage) {
+  switch (buffer_usage) {
+    case GL_SCANOUT_CHROMIUM:
+      *out_usage = gfx::BufferUsage::SCANOUT;
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace gles2

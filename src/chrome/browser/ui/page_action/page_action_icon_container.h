@@ -13,10 +13,13 @@ enum class PageActionIconType {
   kManagePasswords,
   kIntentPicker,
   kPwaInstall,
+  kReaderMode,
   kSaveCard,
   kSendTabToSelf,
   kTranslate,
   kZoom,
+  kNativeFileSystemAccess,
+  kClickToCall,
 };
 
 class PageActionIconContainer {

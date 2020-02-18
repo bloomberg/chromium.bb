@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_VFW
@@ -62,27 +62,27 @@ extern "C" {
 #endif
 
 #ifndef ICERR_OK
-#define ICERR_OK 0L
-#define ICERR_DONTDRAW 1L
-#define ICERR_NEWPALETTE 2L
-#define ICERR_GOTOKEYFRAME 3L
-#define ICERR_STOPDRAWING 4L
+#define ICERR_OK __MSABI_LONG(0)
+#define ICERR_DONTDRAW __MSABI_LONG(1)
+#define ICERR_NEWPALETTE __MSABI_LONG(2)
+#define ICERR_GOTOKEYFRAME __MSABI_LONG(3)
+#define ICERR_STOPDRAWING __MSABI_LONG(4)
 
-#define ICERR_UNSUPPORTED -1L
-#define ICERR_BADFORMAT -2L
-#define ICERR_MEMORY -3L
-#define ICERR_INTERNAL -4L
-#define ICERR_BADFLAGS -5L
-#define ICERR_BADPARAM -6L
-#define ICERR_BADSIZE -7L
-#define ICERR_BADHANDLE -8L
-#define ICERR_CANTUPDATE -9L
-#define ICERR_ABORT -10L
-#define ICERR_ERROR -100L
-#define ICERR_BADBITDEPTH -200L
-#define ICERR_BADIMAGESIZE -201L
+#define ICERR_UNSUPPORTED __MSABI_LONG(-1)
+#define ICERR_BADFORMAT __MSABI_LONG(-2)
+#define ICERR_MEMORY __MSABI_LONG(-3)
+#define ICERR_INTERNAL __MSABI_LONG(-4)
+#define ICERR_BADFLAGS __MSABI_LONG(-5)
+#define ICERR_BADPARAM __MSABI_LONG(-6)
+#define ICERR_BADSIZE __MSABI_LONG(-7)
+#define ICERR_BADHANDLE __MSABI_LONG(-8)
+#define ICERR_CANTUPDATE __MSABI_LONG(-9)
+#define ICERR_ABORT __MSABI_LONG(-10)
+#define ICERR_ERROR __MSABI_LONG(-100)
+#define ICERR_BADBITDEPTH __MSABI_LONG(-200)
+#define ICERR_BADIMAGESIZE __MSABI_LONG(-201)
 
-#define ICERR_CUSTOM -400L
+#define ICERR_CUSTOM __MSABI_LONG(-400)
 #endif
 
 #ifndef ICMODE_COMPRESS
@@ -94,9 +94,9 @@ extern "C" {
 #define ICMODE_DRAW 8
 #endif
 
-#define AVIIF_LIST 0x00000001L
-#define AVIIF_TWOCC 0x00000002L
-#define AVIIF_KEYFRAME 0x00000010L
+#define AVIIF_LIST __MSABI_LONG(0x00000001)
+#define AVIIF_TWOCC __MSABI_LONG(0x00000002)
+#define AVIIF_KEYFRAME __MSABI_LONG(0x00000010)
 
 #define ICQUALITY_LOW 0
 #define ICQUALITY_HIGH 10000
@@ -216,7 +216,7 @@ extern "C" {
 #define VIDCF_FASTTEMPORALD 0x0080
 #define VIDCF_FASTTEMPORAL	(VIDCF_FASTTEMPORALC|VIDCF_FASTTEMPORALD)
 
-#define ICCOMPRESS_KEYFRAME 0x00000001L
+#define ICCOMPRESS_KEYFRAME __MSABI_LONG(0x00000001)
 
   typedef struct {
     DWORD dwFlags;
@@ -267,11 +267,11 @@ extern "C" {
     LONG (CALLBACK *Status)(LPARAM lParam,UINT message,LONG l);
   } ICSETSTATUSPROC;
 
-#define ICDECOMPRESS_HURRYUP 0x80000000L
-#define ICDECOMPRESS_UPDATE 0x40000000L
-#define ICDECOMPRESS_PREROLL 0x20000000L
-#define ICDECOMPRESS_NULLFRAME 0x10000000L
-#define ICDECOMPRESS_NOTKEYFRAME 0x08000000L
+#define ICDECOMPRESS_HURRYUP __MSABI_LONG(0x80000000)
+#define ICDECOMPRESS_UPDATE __MSABI_LONG(0x40000000)
+#define ICDECOMPRESS_PREROLL __MSABI_LONG(0x20000000)
+#define ICDECOMPRESS_NULLFRAME __MSABI_LONG(0x10000000)
+#define ICDECOMPRESS_NOTKEYFRAME __MSABI_LONG(0x08000000)
 
   typedef struct {
     DWORD dwFlags;
@@ -299,15 +299,15 @@ extern "C" {
     int dySrc;
   } ICDECOMPRESSEX;
 
-#define ICDRAW_QUERY 0x00000001L
-#define ICDRAW_FULLSCREEN 0x00000002L
-#define ICDRAW_HDC 0x00000004L
-#define ICDRAW_ANIMATE 0x00000008L
-#define ICDRAW_CONTINUE 0x00000010L
-#define ICDRAW_MEMORYDC 0x00000020L
-#define ICDRAW_UPDATING 0x00000040L
-#define ICDRAW_RENDER 0x00000080L
-#define ICDRAW_BUFFER 0x00000100L
+#define ICDRAW_QUERY __MSABI_LONG(0x00000001)
+#define ICDRAW_FULLSCREEN __MSABI_LONG(0x00000002)
+#define ICDRAW_HDC __MSABI_LONG(0x00000004)
+#define ICDRAW_ANIMATE __MSABI_LONG(0x00000008)
+#define ICDRAW_CONTINUE __MSABI_LONG(0x00000010)
+#define ICDRAW_MEMORYDC __MSABI_LONG(0x00000020)
+#define ICDRAW_UPDATING __MSABI_LONG(0x00000040)
+#define ICDRAW_RENDER __MSABI_LONG(0x00000080)
+#define ICDRAW_BUFFER __MSABI_LONG(0x00000100)
 
   typedef struct {
     DWORD dwFlags;
@@ -327,11 +327,11 @@ extern "C" {
     DWORD dwScale;
   } ICDRAWBEGIN;
 
-#define ICDRAW_HURRYUP 0x80000000L
-#define ICDRAW_UPDATE 0x40000000L
-#define ICDRAW_PREROLL 0x20000000L
-#define ICDRAW_NULLFRAME 0x10000000L
-#define ICDRAW_NOTKEYFRAME 0x08000000L
+#define ICDRAW_HURRYUP __MSABI_LONG(0x80000000)
+#define ICDRAW_UPDATE __MSABI_LONG(0x40000000)
+#define ICDRAW_PREROLL __MSABI_LONG(0x20000000)
+#define ICDRAW_NULLFRAME __MSABI_LONG(0x10000000)
+#define ICDRAW_NOTKEYFRAME __MSABI_LONG(0x08000000)
 
   typedef struct {
     DWORD dwFlags;
@@ -377,9 +377,9 @@ extern "C" {
 #define ICMF_ABOUT_QUERY 0x00000001
 
 #define ICQueryAbout(hic) (ICSendMessage(hic,ICM_ABOUT,(DWORD_PTR) -1,ICMF_ABOUT_QUERY)==ICERR_OK)
-#define ICAbout(hic,hwnd) ICSendMessage(hic,ICM_ABOUT,(DWORD_PTR)(UINT_PTR)(hwnd),0)
+#define ICAbout(hic,hwnd) ICSendMessage(hic,ICM_ABOUT,(DWORD_PTR)(UINT_PTR)(hwnd),(DWORD_PTR)0)
 #define ICQueryConfigure(hic) (ICSendMessage(hic,ICM_CONFIGURE,(DWORD_PTR) -1,ICMF_CONFIGURE_QUERY)==ICERR_OK)
-#define ICConfigure(hic,hwnd) ICSendMessage(hic,ICM_CONFIGURE,(DWORD_PTR)(UINT_PTR)(hwnd),0)
+#define ICConfigure(hic,hwnd) ICSendMessage(hic,ICM_CONFIGURE,(DWORD_PTR)(UINT_PTR)(hwnd),(DWORD_PTR)0)
 #define ICGetState(hic,pv,cb) ICSendMessage(hic,ICM_GETSTATE,(DWORD_PTR)(LPVOID)(pv),(DWORD_PTR)(cb))
 #define ICSetState(hic,pv,cb) ICSendMessage(hic,ICM_SETSTATE,(DWORD_PTR)(LPVOID)(pv),(DWORD_PTR)(cb))
 #define ICGetStateSize(hic) (DWORD) ICGetState(hic,NULL,0)
@@ -397,8 +397,8 @@ extern "C" {
 #define ICCompressGetFormat(hic,lpbiInput,lpbiOutput) ICSendMessage(hic,ICM_COMPRESS_GET_FORMAT,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD_PTR)(LPVOID)(lpbiOutput))
 #define ICCompressGetFormatSize(hic,lpbi) (DWORD) ICCompressGetFormat(hic,lpbi,NULL)
 #define ICCompressGetSize(hic,lpbiInput,lpbiOutput) (DWORD) ICSendMessage(hic,ICM_COMPRESS_GET_SIZE,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD_PTR)(LPVOID)(lpbiOutput))
-#define ICCompressEnd(hic) ICSendMessage(hic,ICM_COMPRESS_END,0,0)
-#define ICDECOMPRESS_HURRYUP 0x80000000L
+#define ICCompressEnd(hic) ICSendMessage(hic,ICM_COMPRESS_END,(DWORD_PTR)0,(DWORD_PTR)0)
+#define ICDECOMPRESS_HURRYUP __MSABI_LONG(0x80000000)
 
   DWORD WINAPIV ICDecompress(HIC hic,DWORD dwFlags,LPBITMAPINFOHEADER lpbiFormat,LPVOID lpData,LPBITMAPINFOHEADER lpbi,LPVOID lpBits);
 
@@ -407,8 +407,8 @@ extern "C" {
 #define ICDecompressGetFormat(hic,lpbiInput,lpbiOutput) ((LONG) ICSendMessage(hic,ICM_DECOMPRESS_GET_FORMAT,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD_PTR)(LPVOID)(lpbiOutput)))
 #define ICDecompressGetFormatSize(hic,lpbi) ICDecompressGetFormat(hic,lpbi,NULL)
 #define ICDecompressGetPalette(hic,lpbiInput,lpbiOutput) ICSendMessage(hic,ICM_DECOMPRESS_GET_PALETTE,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD_PTR)(LPVOID)(lpbiOutput))
-#define ICDecompressSetPalette(hic,lpbiPalette) ICSendMessage(hic,ICM_DECOMPRESS_SET_PALETTE,(DWORD_PTR)(LPVOID)(lpbiPalette),0)
-#define ICDecompressEnd(hic) ICSendMessage(hic,ICM_DECOMPRESS_END,0,0)
+#define ICDecompressSetPalette(hic,lpbiPalette) ICSendMessage(hic,ICM_DECOMPRESS_SET_PALETTE,(DWORD_PTR)(LPVOID)(lpbiPalette),(DWORD_PTR)0)
+#define ICDecompressEnd(hic) ICSendMessage(hic,ICM_DECOMPRESS_END,(DWORD_PTR)0,(DWORD_PTR)0)
 
 #ifndef __CRT__NO_INLINE
   __CRT_INLINE LRESULT WINAPI ICDecompressEx(HIC hic,DWORD dwFlags,LPBITMAPINFOHEADER lpbiSrc,LPVOID lpSrc,int xSrc,int ySrc,int dxSrc,int dySrc,LPBITMAPINFOHEADER lpbiDst,LPVOID lpDst,int xDst,int yDst,int dxDst,int dyDst) {
@@ -466,16 +466,16 @@ extern "C" {
   }
 #endif /* !__CRT__NO_INLINE */
 
-#define ICDecompressExEnd(hic) ICSendMessage(hic,ICM_DECOMPRESSEX_END,0,0)
+#define ICDecompressExEnd(hic) ICSendMessage(hic,ICM_DECOMPRESSEX_END,(DWORD_PTR)0,(DWORD_PTR)0)
 
-#define ICDRAW_QUERY 0x00000001L
-#define ICDRAW_FULLSCREEN 0x00000002L
-#define ICDRAW_HDC 0x00000004L
+#define ICDRAW_QUERY __MSABI_LONG(0x00000001)
+#define ICDRAW_FULLSCREEN __MSABI_LONG(0x00000002)
+#define ICDRAW_HDC __MSABI_LONG(0x00000004)
 
   DWORD WINAPIV ICDrawBegin(HIC hic,DWORD dwFlags,HPALETTE hpal,HWND hwnd,HDC hdc,int xDst,int yDst,int dxDst,int dyDst,LPBITMAPINFOHEADER lpbi,int xSrc,int ySrc,int dxSrc,int dySrc,DWORD dwRate,DWORD dwScale);
 
-#define ICDRAW_HURRYUP 0x80000000L
-#define ICDRAW_UPDATE 0x40000000L
+#define ICDRAW_HURRYUP __MSABI_LONG(0x80000000)
+#define ICDRAW_UPDATE __MSABI_LONG(0x40000000)
 
   DWORD WINAPIV ICDraw(HIC hic,DWORD dwFlags,LPVOID lpFormat,LPVOID lpData,DWORD cbData,LONG lTime);
 
@@ -493,19 +493,19 @@ extern "C" {
   }
 #endif /* !__CRT__NO_INLINE */
 
-#define ICDrawQuery(hic,lpbiInput) ICSendMessage(hic,ICM_DRAW_QUERY,(DWORD_PTR)(LPVOID)(lpbiInput),0L)
-#define ICDrawChangePalette(hic,lpbiInput) ICSendMessage(hic,ICM_DRAW_CHANGEPALETTE,(DWORD_PTR)(LPVOID)(lpbiInput),0L)
-#define ICGetBuffersWanted(hic,lpdwBuffers) ICSendMessage(hic,ICM_GETBUFFERSWANTED,(DWORD_PTR)(LPVOID)(lpdwBuffers),0)
-#define ICDrawEnd(hic) ICSendMessage(hic,ICM_DRAW_END,0,0)
-#define ICDrawStart(hic) ICSendMessage(hic,ICM_DRAW_START,0,0)
+#define ICDrawQuery(hic,lpbiInput) ICSendMessage(hic,ICM_DRAW_QUERY,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD)0)
+#define ICDrawChangePalette(hic,lpbiInput) ICSendMessage(hic,ICM_DRAW_CHANGEPALETTE,(DWORD_PTR)(LPVOID)(lpbiInput),(DWORD)0)
+#define ICGetBuffersWanted(hic,lpdwBuffers) ICSendMessage(hic,ICM_GETBUFFERSWANTED,(DWORD_PTR)(LPVOID)(lpdwBuffers),(DWORD_PTR)0)
+#define ICDrawEnd(hic) ICSendMessage(hic,ICM_DRAW_END,(DWORD_PTR)0,(DWORD_PTR)0)
+#define ICDrawStart(hic) ICSendMessage(hic,ICM_DRAW_START,(DWORD_PTR)0,(DWORD_PTR)0)
 #define ICDrawStartPlay(hic,lFrom,lTo) ICSendMessage(hic,ICM_DRAW_START_PLAY,(DWORD_PTR)(lFrom),(DWORD_PTR)(lTo))
-#define ICDrawStop(hic) ICSendMessage(hic,ICM_DRAW_STOP,0,0)
-#define ICDrawStopPlay(hic) ICSendMessage(hic,ICM_DRAW_STOP_PLAY,0,0)
-#define ICDrawGetTime(hic,lplTime) ICSendMessage(hic,ICM_DRAW_GETTIME,(DWORD_PTR)(LPVOID)(lplTime),0)
-#define ICDrawSetTime(hic,lTime) ICSendMessage(hic,ICM_DRAW_SETTIME,(DWORD_PTR)lTime,0)
+#define ICDrawStop(hic) ICSendMessage(hic,ICM_DRAW_STOP,(DWORD_PTR)0,(DWORD_PTR)0)
+#define ICDrawStopPlay(hic) ICSendMessage(hic,ICM_DRAW_STOP_PLAY,(DWORD_PTR)0,(DWORD_PTR)0)
+#define ICDrawGetTime(hic,lplTime) ICSendMessage(hic,ICM_DRAW_GETTIME,(DWORD_PTR)(LPVOID)(lplTime),(DWORD_PTR)0)
+#define ICDrawSetTime(hic,lTime) ICSendMessage(hic,ICM_DRAW_SETTIME,(DWORD_PTR)lTime,(DWORD_PTR)0)
 #define ICDrawRealize(hic,hdc,fBackground) ICSendMessage(hic,ICM_DRAW_REALIZE,(DWORD_PTR)(UINT_PTR)(HDC)(hdc),(DWORD_PTR)(WINBOOL)(fBackground))
-#define ICDrawFlush(hic) ICSendMessage(hic,ICM_DRAW_FLUSH,0,0)
-#define ICDrawRenderBuffer(hic) ICSendMessage(hic,ICM_DRAW_RENDERBUFFER,0,0)
+#define ICDrawFlush(hic) ICSendMessage(hic,ICM_DRAW_FLUSH,(DWORD_PTR)0,(DWORD_PTR)0)
+#define ICDrawRenderBuffer(hic) ICSendMessage(hic,ICM_DRAW_RENDERBUFFER,(DWORD_PTR)0,(DWORD_PTR)0)
 
 #ifndef __CRT__NO_INLINE
   __CRT_INLINE LRESULT WINAPI ICSetStatusProc(HIC hic,DWORD dwFlags,LRESULT lParam,LONG (CALLBACK *fpfnStatus)(LPARAM,UINT,LONG)) {
@@ -655,7 +655,7 @@ extern "C" {
 
 #define ckidAVINEWINDEX mmioFOURCC('i','d','x','1')
 
-#define streamtypeANY 0UL
+#define streamtypeANY __MSABI_LONG(0U)
 #define streamtypeVIDEO mmioFOURCC('v','i','d','s')
 #define streamtypeAUDIO mmioFOURCC('a','u','d','s')
 #define streamtypeMIDI mmioFOURCC('m','i','d','s')
@@ -719,14 +719,14 @@ extern "C" {
     RECT rcFrame;
   } AVIStreamHeader;
 
-#define AVIIF_LIST 0x00000001L
-#define AVIIF_KEYFRAME 0x00000010L
-#define AVIIF_FIRSTPART 0x00000020L
-#define AVIIF_LASTPART 0x00000040L
+#define AVIIF_LIST __MSABI_LONG(0x00000001)
+#define AVIIF_KEYFRAME __MSABI_LONG(0x00000010)
+#define AVIIF_FIRSTPART __MSABI_LONG(0x00000020)
+#define AVIIF_LASTPART __MSABI_LONG(0x00000040)
 #define AVIIF_MIDPART (AVIIF_LASTPART|AVIIF_FIRSTPART)
 
-#define AVIIF_NOTIME 0x00000100L
-#define AVIIF_COMPUSE 0x0FFF0000L
+#define AVIIF_NOTIME __MSABI_LONG(0x00000100)
+#define AVIIF_COMPUSE __MSABI_LONG(0x0FFF0000)
 
   typedef struct {
     DWORD ckid;
@@ -766,7 +766,7 @@ extern "C" {
 #endif
 
 #ifndef streamtypeVIDEO
-#define streamtypeANY 0UL
+#define streamtypeANY __MSABI_LONG(0U)
 #define streamtypeVIDEO mmioFOURCC('v','i','d','s')
 #define streamtypeAUDIO mmioFOURCC('a','u','d','s')
 #define streamtypeMIDI mmioFOURCC('m','i','d','s')
@@ -774,7 +774,7 @@ extern "C" {
 #endif
 
 #ifndef AVIIF_KEYFRAME
-#define AVIIF_KEYFRAME 0x00000010L
+#define AVIIF_KEYFRAME __MSABI_LONG(0x00000010)
 #endif
 
 #define AVIGETFRAMEF_BESTDISPLAYFMT 1
@@ -1042,7 +1042,7 @@ extern "C" {
   STDAPI AVIStreamReadData (PAVISTREAM pavi,DWORD fcc,LPVOID lp,LONG *lpcb);
   STDAPI AVIStreamWriteData (PAVISTREAM pavi,DWORD fcc,LPVOID lp,LONG cb);
   STDAPI AVIStreamRead (PAVISTREAM pavi,LONG lStart,LONG lSamples,LPVOID lpBuffer,LONG cbBuffer,LONG *plBytes,LONG *plSamples);
-#define AVISTREAMREAD_CONVENIENT (-1L)
+#define AVISTREAMREAD_CONVENIENT (__MSABI_LONG(-1))
   STDAPI AVIStreamWrite (PAVISTREAM pavi,LONG lStart,LONG lSamples,LPVOID lpBuffer,LONG cbBuffer,DWORD dwFlags,LONG *plSampWritten,LONG *plBytesWritten);
   STDAPI_(LONG) AVIStreamStart (PAVISTREAM pavi);
   STDAPI_(LONG) AVIStreamLength (PAVISTREAM pavi);
@@ -1057,22 +1057,22 @@ extern "C" {
   STDAPI AVIStreamOpenFromFileW(PAVISTREAM *ppavi,LPCWSTR szFile,DWORD fccType,LONG lParam,UINT mode,CLSID *pclsidHandler);
   STDAPI AVIStreamCreate(PAVISTREAM *ppavi,LONG lParam1,LONG lParam2,CLSID *pclsidHandler);
 
-#define FIND_DIR 0x0000000FL
-#define FIND_NEXT 0x00000001L
-#define FIND_PREV 0x00000004L
-#define FIND_FROM_START 0x00000008L
+#define FIND_DIR __MSABI_LONG(0x0000000F)
+#define FIND_NEXT __MSABI_LONG(0x00000001)
+#define FIND_PREV __MSABI_LONG(0x00000004)
+#define FIND_FROM_START __MSABI_LONG(0x00000008)
 
-#define FIND_TYPE 0x000000F0L
-#define FIND_KEY 0x00000010L
-#define FIND_ANY 0x00000020L
-#define FIND_FORMAT 0x00000040L
+#define FIND_TYPE __MSABI_LONG(0x000000F0)
+#define FIND_KEY __MSABI_LONG(0x00000010)
+#define FIND_ANY __MSABI_LONG(0x00000020)
+#define FIND_FORMAT __MSABI_LONG(0x00000040)
 
-#define FIND_RET 0x0000F000L
-#define FIND_POS 0x00000000L
-#define FIND_LENGTH 0x00001000L
-#define FIND_OFFSET 0x00002000L
-#define FIND_SIZE 0x00003000L
-#define FIND_INDEX 0x00004000L
+#define FIND_RET __MSABI_LONG(0x0000F000)
+#define FIND_POS __MSABI_LONG(0x00000000)
+#define FIND_LENGTH __MSABI_LONG(0x00001000)
+#define FIND_OFFSET __MSABI_LONG(0x00002000)
+#define FIND_SIZE __MSABI_LONG(0x00003000)
+#define FIND_INDEX __MSABI_LONG(0x00004000)
 
 #define AVIStreamFindKeyFrame AVIStreamFindSample
 #define FindKeyFrame FindSample
@@ -1106,7 +1106,7 @@ extern "C" {
 #define AVIStreamLengthTime(pavi) AVIStreamSampleToTime(pavi,AVIStreamLength(pavi))
 #define AVIStreamEnd(pavi) (AVIStreamStart(pavi) + AVIStreamLength(pavi))
 #define AVIStreamEndTime(pavi) AVIStreamSampleToTime(pavi,AVIStreamEnd(pavi))
-#define AVIStreamSampleSize(pavi,lPos,plSize) AVIStreamRead(pavi,lPos,1,NULL,0,plSize,NULL)
+#define AVIStreamSampleSize(pavi,lPos,plSize) AVIStreamRead(pavi,lPos,1,NULL,(LONG)0,plSize,NULL)
 #define AVIStreamFormatSize(pavi,lPos,plSize) AVIStreamReadFormat(pavi,lPos,NULL,plSize)
 #define AVIStreamDataSize(pavi,fcc,plSize) AVIStreamReadData(pavi,fcc,NULL,plSize)
 
@@ -1148,7 +1148,7 @@ extern "C" {
   STDAPI EditStreamSetInfoA(PAVISTREAM pavi,LPAVISTREAMINFOA lpInfo,LONG cbInfo);
 
 #ifndef AVIERR_OK
-#define AVIERR_OK 0L
+#define AVIERR_OK __MSABI_LONG(0)
 
 #define MAKE_AVIERR(error) MAKE_SCODE(SEVERITY_ERROR,FACILITY_ITF,0x4000 + error)
 
@@ -1218,96 +1218,96 @@ extern "C" {
 #define MCIWNDF_NOERRORDLG 0x4000
 #define MCIWNDF_NOOPEN 0x8000
 
-#define MCIWndCanPlay(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_PLAY,0,0)
-#define MCIWndCanRecord(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_RECORD,0,0)
-#define MCIWndCanSave(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_SAVE,0,0)
-#define MCIWndCanWindow(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_WINDOW,0,0)
-#define MCIWndCanEject(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_EJECT,0,0)
-#define MCIWndCanConfig(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_CONFIG,0,0)
-#define MCIWndPaletteKick(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_PALETTEKICK,0,0)
+#define MCIWndCanPlay(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_PLAY,(WPARAM)0,(LPARAM)0)
+#define MCIWndCanRecord(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_RECORD,(WPARAM)0,(LPARAM)0)
+#define MCIWndCanSave(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_SAVE,(WPARAM)0,(LPARAM)0)
+#define MCIWndCanWindow(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_WINDOW,(WPARAM)0,(LPARAM)0)
+#define MCIWndCanEject(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_EJECT,(WPARAM)0,(LPARAM)0)
+#define MCIWndCanConfig(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_CAN_CONFIG,(WPARAM)0,(LPARAM)0)
+#define MCIWndPaletteKick(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_PALETTEKICK,(WPARAM)0,(LPARAM)0)
 
-#define MCIWndSave(hwnd,szFile) (LONG)MCIWndSM(hwnd,MCI_SAVE,0,(LPARAM)(LPVOID)(szFile))
+#define MCIWndSave(hwnd,szFile) (LONG)MCIWndSM(hwnd,MCI_SAVE,(WPARAM)0,(LPARAM)(LPVOID)(szFile))
 #define MCIWndSaveDialog(hwnd) MCIWndSave(hwnd,-1)
 
-#define MCIWndNew(hwnd,lp) (LONG)MCIWndSM(hwnd,MCIWNDM_NEW,0,(LPARAM)(LPVOID)(lp))
+#define MCIWndNew(hwnd,lp) (LONG)MCIWndSM(hwnd,MCIWNDM_NEW,(WPARAM)0,(LPARAM)(LPVOID)(lp))
 
-#define MCIWndRecord(hwnd) (LONG)MCIWndSM(hwnd,MCI_RECORD,0,0)
+#define MCIWndRecord(hwnd) (LONG)MCIWndSM(hwnd,MCI_RECORD,(WPARAM)0,(LPARAM)0)
 #define MCIWndOpen(hwnd,sz,f) (LONG)MCIWndSM(hwnd,MCIWNDM_OPEN,(WPARAM)(UINT)(f),(LPARAM)(LPVOID)(sz))
 #define MCIWndOpenDialog(hwnd) MCIWndOpen(hwnd,-1,0)
-#define MCIWndClose(hwnd) (LONG)MCIWndSM(hwnd,MCI_CLOSE,0,0)
-#define MCIWndPlay(hwnd) (LONG)MCIWndSM(hwnd,MCI_PLAY,0,0)
-#define MCIWndStop(hwnd) (LONG)MCIWndSM(hwnd,MCI_STOP,0,0)
-#define MCIWndPause(hwnd) (LONG)MCIWndSM(hwnd,MCI_PAUSE,0,0)
-#define MCIWndResume(hwnd) (LONG)MCIWndSM(hwnd,MCI_RESUME,0,0)
-#define MCIWndSeek(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCI_SEEK,0,(LPARAM)(LONG)(lPos))
-#define MCIWndEject(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_EJECT,0,0)
+#define MCIWndClose(hwnd) (LONG)MCIWndSM(hwnd,MCI_CLOSE,(WPARAM)0,(LPARAM)0)
+#define MCIWndPlay(hwnd) (LONG)MCIWndSM(hwnd,MCI_PLAY,(WPARAM)0,(LPARAM)0)
+#define MCIWndStop(hwnd) (LONG)MCIWndSM(hwnd,MCI_STOP,(WPARAM)0,(LPARAM)0)
+#define MCIWndPause(hwnd) (LONG)MCIWndSM(hwnd,MCI_PAUSE,(WPARAM)0,(LPARAM)0)
+#define MCIWndResume(hwnd) (LONG)MCIWndSM(hwnd,MCI_RESUME,(WPARAM)0,(LPARAM)0)
+#define MCIWndSeek(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCI_SEEK,(WPARAM)0,(LPARAM)(LONG)(lPos))
+#define MCIWndEject(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_EJECT,(WPARAM)0,(LPARAM)0)
 
 #define MCIWndHome(hwnd) MCIWndSeek(hwnd,MCIWND_START)
 #define MCIWndEnd(hwnd) MCIWndSeek(hwnd,MCIWND_END)
 
-#define MCIWndGetSource(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_GET_SOURCE,0,(LPARAM)(LPRECT)(prc))
-#define MCIWndPutSource(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_PUT_SOURCE,0,(LPARAM)(LPRECT)(prc))
+#define MCIWndGetSource(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_GET_SOURCE,(WPARAM)0,(LPARAM)(LPRECT)(prc))
+#define MCIWndPutSource(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_PUT_SOURCE,(WPARAM)0,(LPARAM)(LPRECT)(prc))
 
-#define MCIWndGetDest(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_GET_DEST,0,(LPARAM)(LPRECT)(prc))
-#define MCIWndPutDest(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_PUT_DEST,0,(LPARAM)(LPRECT)(prc))
+#define MCIWndGetDest(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_GET_DEST,(WPARAM)0,(LPARAM)(LPRECT)(prc))
+#define MCIWndPutDest(hwnd,prc) (LONG)MCIWndSM(hwnd,MCIWNDM_PUT_DEST,(WPARAM)0,(LPARAM)(LPRECT)(prc))
 
-#define MCIWndPlayReverse(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYREVERSE,0,0)
-#define MCIWndPlayFrom(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYFROM,0,(LPARAM)(LONG)(lPos))
-#define MCIWndPlayTo(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYTO,0,(LPARAM)(LONG)(lPos))
+#define MCIWndPlayReverse(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYREVERSE,(WPARAM)0,(LPARAM)0)
+#define MCIWndPlayFrom(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYFROM,(WPARAM)0,(LPARAM)(LONG)(lPos))
+#define MCIWndPlayTo(hwnd,lPos) (LONG)MCIWndSM(hwnd,MCIWNDM_PLAYTO,(WPARAM)0,(LPARAM)(LONG)(lPos))
 #define MCIWndPlayFromTo(hwnd,lStart,lEnd) (MCIWndSeek(hwnd,lStart),MCIWndPlayTo(hwnd,lEnd))
 
-#define MCIWndGetDeviceID(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETDEVICEID,0,0)
-#define MCIWndGetAlias(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETALIAS,0,0)
+#define MCIWndGetDeviceID(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETDEVICEID,(WPARAM)0,(LPARAM)0)
+#define MCIWndGetAlias(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETALIAS,(WPARAM)0,(LPARAM)0)
 #define MCIWndGetMode(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETMODE,(WPARAM)(UINT)(len),(LPARAM)(LPTSTR)(lp))
-#define MCIWndGetPosition(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETPOSITION,0,0)
+#define MCIWndGetPosition(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETPOSITION,(WPARAM)0,(LPARAM)0)
 #define MCIWndGetPositionString(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETPOSITION,(WPARAM)(UINT)(len),(LPARAM)(LPTSTR)(lp))
-#define MCIWndGetStart(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETSTART,0,0)
-#define MCIWndGetLength(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETLENGTH,0,0)
-#define MCIWndGetEnd(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETEND,0,0)
+#define MCIWndGetStart(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETSTART,(WPARAM)0,(LPARAM)0)
+#define MCIWndGetLength(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETLENGTH,(WPARAM)0,(LPARAM)0)
+#define MCIWndGetEnd(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETEND,(WPARAM)0,(LPARAM)0)
 
-#define MCIWndStep(hwnd,n) (LONG)MCIWndSM(hwnd,MCI_STEP,0,(LPARAM)(long)(n))
+#define MCIWndStep(hwnd,n) (LONG)MCIWndSM(hwnd,MCI_STEP,(WPARAM)0,(LPARAM)(__LONG32)(n))
 
-#define MCIWndDestroy(hwnd) (VOID)MCIWndSM(hwnd,WM_CLOSE,0,0)
-#define MCIWndSetZoom(hwnd,iZoom) (VOID)MCIWndSM(hwnd,MCIWNDM_SETZOOM,0,(LPARAM)(UINT)(iZoom))
-#define MCIWndGetZoom(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETZOOM,0,0)
-#define MCIWndSetVolume(hwnd,iVol) (LONG)MCIWndSM(hwnd,MCIWNDM_SETVOLUME,0,(LPARAM)(UINT)(iVol))
-#define MCIWndGetVolume(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETVOLUME,0,0)
-#define MCIWndSetSpeed(hwnd,iSpeed) (LONG)MCIWndSM(hwnd,MCIWNDM_SETSPEED,0,(LPARAM)(UINT)(iSpeed))
-#define MCIWndGetSpeed(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETSPEED,0,0)
-#define MCIWndSetTimeFormat(hwnd,lp) (LONG)MCIWndSM(hwnd,MCIWNDM_SETTIMEFORMAT,0,(LPARAM)(LPTSTR)(lp))
+#define MCIWndDestroy(hwnd) (VOID)MCIWndSM(hwnd,WM_CLOSE,(WPARAM)0,(LPARAM)0)
+#define MCIWndSetZoom(hwnd,iZoom) (VOID)MCIWndSM(hwnd,MCIWNDM_SETZOOM,(WPARAM)0,(LPARAM)(UINT)(iZoom))
+#define MCIWndGetZoom(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETZOOM,(WPARAM)0,(LPARAM)0)
+#define MCIWndSetVolume(hwnd,iVol) (LONG)MCIWndSM(hwnd,MCIWNDM_SETVOLUME,(WPARAM)0,(LPARAM)(UINT)(iVol))
+#define MCIWndGetVolume(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETVOLUME,(WPARAM)0,(LPARAM)0)
+#define MCIWndSetSpeed(hwnd,iSpeed) (LONG)MCIWndSM(hwnd,MCIWNDM_SETSPEED,(WPARAM)0,(LPARAM)(UINT)(iSpeed))
+#define MCIWndGetSpeed(hwnd) (LONG)MCIWndSM(hwnd,MCIWNDM_GETSPEED,(WPARAM)0,(LPARAM)0)
+#define MCIWndSetTimeFormat(hwnd,lp) (LONG)MCIWndSM(hwnd,MCIWNDM_SETTIMEFORMAT,(WPARAM)0,(LPARAM)(LPTSTR)(lp))
 #define MCIWndGetTimeFormat(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETTIMEFORMAT,(WPARAM)(UINT)(len),(LPARAM)(LPTSTR)(lp))
-#define MCIWndValidateMedia(hwnd) (VOID)MCIWndSM(hwnd,MCIWNDM_VALIDATEMEDIA,0,0)
+#define MCIWndValidateMedia(hwnd) (VOID)MCIWndSM(hwnd,MCIWNDM_VALIDATEMEDIA,(WPARAM)0,(LPARAM)0)
 
-#define MCIWndSetRepeat(hwnd,f) (void)MCIWndSM(hwnd,MCIWNDM_SETREPEAT,0,(LPARAM)(WINBOOL)(f))
-#define MCIWndGetRepeat(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_GETREPEAT,0,0)
+#define MCIWndSetRepeat(hwnd,f) (void)MCIWndSM(hwnd,MCIWNDM_SETREPEAT,(WPARAM)0,(LPARAM)(WINBOOL)(f))
+#define MCIWndGetRepeat(hwnd) (WINBOOL)MCIWndSM(hwnd,MCIWNDM_GETREPEAT,(WPARAM)0,(LPARAM)0)
 
 #define MCIWndUseFrames(hwnd) MCIWndSetTimeFormat(hwnd,TEXT("frames"))
 #define MCIWndUseTime(hwnd) MCIWndSetTimeFormat(hwnd,TEXT("ms"))
 
-#define MCIWndSetActiveTimer(hwnd,active) (VOID)MCIWndSM(hwnd,MCIWNDM_SETACTIVETIMER,(WPARAM)(UINT)(active),0L)
-#define MCIWndSetInactiveTimer(hwnd,inactive) (VOID)MCIWndSM(hwnd,MCIWNDM_SETINACTIVETIMER,(WPARAM)(UINT)(inactive),0L)
+#define MCIWndSetActiveTimer(hwnd,active) (VOID)MCIWndSM(hwnd,MCIWNDM_SETACTIVETIMER,(WPARAM)(UINT)(active),(LPARAM)0)
+#define MCIWndSetInactiveTimer(hwnd,inactive) (VOID)MCIWndSM(hwnd,MCIWNDM_SETINACTIVETIMER,(WPARAM)(UINT)(inactive),(LPARAM)0)
 #define MCIWndSetTimers(hwnd,active,inactive) (VOID)MCIWndSM(hwnd,MCIWNDM_SETTIMERS,(WPARAM)(UINT)(active),(LPARAM)(UINT)(inactive))
-#define MCIWndGetActiveTimer(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETACTIVETIMER,0,0L);
-#define MCIWndGetInactiveTimer(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETINACTIVETIMER,0,0L);
+#define MCIWndGetActiveTimer(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETACTIVETIMER,(WPARAM)0,(LPARAM)0);
+#define MCIWndGetInactiveTimer(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETINACTIVETIMER,(WPARAM)0,(LPARAM)0);
 
-#define MCIWndRealize(hwnd,fBkgnd) (LONG)MCIWndSM(hwnd,MCIWNDM_REALIZE,(WPARAM)(WINBOOL)(fBkgnd),0)
+#define MCIWndRealize(hwnd,fBkgnd) (LONG)MCIWndSM(hwnd,MCIWNDM_REALIZE,(WPARAM)(WINBOOL)(fBkgnd),(LPARAM)0)
 
-#define MCIWndSendString(hwnd,sz) (LONG)MCIWndSM(hwnd,MCIWNDM_SENDSTRING,0,(LPARAM)(LPTSTR)(sz))
+#define MCIWndSendString(hwnd,sz) (LONG)MCIWndSM(hwnd,MCIWNDM_SENDSTRING,(WPARAM)0,(LPARAM)(LPTSTR)(sz))
 #define MCIWndReturnString(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_RETURNSTRING,(WPARAM)(UINT)(len),(LPARAM)(LPVOID)(lp))
 #define MCIWndGetError(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETERROR,(WPARAM)(UINT)(len),(LPARAM)(LPVOID)(lp))
 
-#define MCIWndGetPalette(hwnd) (HPALETTE)MCIWndSM(hwnd,MCIWNDM_GETPALETTE,0,0)
-#define MCIWndSetPalette(hwnd,hpal) (LONG)MCIWndSM(hwnd,MCIWNDM_SETPALETTE,(WPARAM)(HPALETTE)(hpal),0)
+#define MCIWndGetPalette(hwnd) (HPALETTE)MCIWndSM(hwnd,MCIWNDM_GETPALETTE,(WPARAM)0,(LPARAM)0)
+#define MCIWndSetPalette(hwnd,hpal) (LONG)MCIWndSM(hwnd,MCIWNDM_SETPALETTE,(WPARAM)(HPALETTE)(hpal),(LPARAM)0)
 
 #define MCIWndGetFileName(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETFILENAME,(WPARAM)(UINT)(len),(LPARAM)(LPVOID)(lp))
 #define MCIWndGetDevice(hwnd,lp,len) (LONG)MCIWndSM(hwnd,MCIWNDM_GETDEVICE,(WPARAM)(UINT)(len),(LPARAM)(LPVOID)(lp))
 
-#define MCIWndGetStyles(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETSTYLES,0,0L)
+#define MCIWndGetStyles(hwnd) (UINT)MCIWndSM(hwnd,MCIWNDM_GETSTYLES,(WPARAM)0,(LPARAM)0)
 #define MCIWndChangeStyles(hwnd,mask,value) (LONG)MCIWndSM(hwnd,MCIWNDM_CHANGESTYLES,(WPARAM)(UINT)(mask),(LPARAM)(LONG)(value))
 
-#define MCIWndOpenInterface(hwnd,pUnk) (LONG)MCIWndSM(hwnd,MCIWNDM_OPENINTERFACE,0,(LPARAM)(LPUNKNOWN)(pUnk))
+#define MCIWndOpenInterface(hwnd,pUnk) (LONG)MCIWndSM(hwnd,MCIWNDM_OPENINTERFACE,(WPARAM)0,(LPARAM)(LPUNKNOWN)(pUnk))
 
-#define MCIWndSetOwner(hwnd,hwndP) (LONG)MCIWndSM(hwnd,MCIWNDM_SETOWNER,(WPARAM)(hwndP),0)
+#define MCIWndSetOwner(hwnd,hwndP) (LONG)MCIWndSM(hwnd,MCIWNDM_SETOWNER,(WPARAM)(hwndP),(LPARAM)0)
 
 #define MCIWNDM_GETDEVICEID (WM_USER + 100)
 #define MCIWNDM_GETSTART (WM_USER + 103)
@@ -1675,73 +1675,73 @@ extern "C" {
 #define WM_CAP_UNICODE_END WM_CAP_PAL_SAVEW
 #define WM_CAP_END WM_CAP_UNICODE_END
 
-#define capSetCallbackOnError(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_ERROR,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnStatus(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_STATUS,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnYield(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_YIELD,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnFrame(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_FRAME,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnVideoStream(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_VIDEOSTREAM,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnWaveStream(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_WAVESTREAM,0,(LPARAM)(LPVOID)(fpProc)))
-#define capSetCallbackOnCapControl(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_CAPCONTROL,0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnError(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_ERROR,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnStatus(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_STATUS,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnYield(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_YIELD,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnFrame(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_FRAME,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnVideoStream(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_VIDEOSTREAM,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnWaveStream(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_WAVESTREAM,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnCapControl(hwnd,fpProc) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_CALLBACK_CAPCONTROL,(WPARAM)0,(LPARAM)(LPVOID)(fpProc)))
 
-#define capSetUserData(hwnd,lUser) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_USER_DATA,0,(LPARAM)lUser))
-#define capGetUserData(hwnd) (AVICapSM(hwnd,WM_CAP_GET_USER_DATA,0,0))
+#define capSetUserData(hwnd,lUser) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_USER_DATA,(WPARAM)0,(LPARAM)lUser))
+#define capGetUserData(hwnd) (AVICapSM(hwnd,WM_CAP_GET_USER_DATA,(WPARAM)0,(LPARAM)0))
 
-#define capDriverConnect(hwnd,i) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_CONNECT,(WPARAM)(i),0L))
-#define capDriverDisconnect(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_DISCONNECT,(WPARAM)0,0L))
+#define capDriverConnect(hwnd,i) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_CONNECT,(WPARAM)(i),(LPARAM)0))
+#define capDriverDisconnect(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_DISCONNECT,(WPARAM)0,(LPARAM)0))
 #define capDriverGetName(hwnd,szName,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_GET_NAME,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPTSTR)(szName)))
 #define capDriverGetVersion(hwnd,szVer,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_GET_VERSION,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPTSTR)(szVer)))
 #define capDriverGetCaps(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DRIVER_GET_CAPS,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPCAPDRIVERCAPS)(s)))
 
-#define capFileSetCaptureFile(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SET_CAPTURE_FILE,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capFileSetCaptureFile(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SET_CAPTURE_FILE,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
 #define capFileGetCaptureFile(hwnd,szName,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_GET_CAPTURE_FILE,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPTSTR)(szName)))
-#define capFileAlloc(hwnd,dwSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_ALLOCATE,0,(LPARAM)(DWORD)(dwSize)))
-#define capFileSaveAs(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SAVEAS,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capFileAlloc(hwnd,dwSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_ALLOCATE,(WPARAM)0,(LPARAM)(DWORD)(dwSize)))
+#define capFileSaveAs(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SAVEAS,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
 #define capFileSetInfoChunk(hwnd,lpInfoChunk) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SET_INFOCHUNK,(WPARAM)0,(LPARAM)(LPCAPINFOCHUNK)(lpInfoChunk)))
-#define capFileSaveDIB(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SAVEDIB,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capFileSaveDIB(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_FILE_SAVEDIB,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
 
-#define capEditCopy(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_EDIT_COPY,0,0L))
+#define capEditCopy(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_EDIT_COPY,(WPARAM)0,(LPARAM)0))
 
 #define capSetAudioFormat(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_AUDIOFORMAT,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPWAVEFORMATEX)(s)))
 #define capGetAudioFormat(hwnd,s,wSize) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_AUDIOFORMAT,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPWAVEFORMATEX)(s)))
-#define capGetAudioFormatSize(hwnd) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_AUDIOFORMAT,(WPARAM)0,(LPARAM)0L))
+#define capGetAudioFormatSize(hwnd) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_AUDIOFORMAT,(WPARAM)0,(LPARAM)0))
 
-#define capDlgVideoFormat(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOFORMAT,0,0L))
-#define capDlgVideoSource(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOSOURCE,0,0L))
-#define capDlgVideoDisplay(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEODISPLAY,0,0L))
-#define capDlgVideoCompression(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOCOMPRESSION,0,0L))
+#define capDlgVideoFormat(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOFORMAT,(WPARAM)0,(LPARAM)0))
+#define capDlgVideoSource(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOSOURCE,(WPARAM)0,(LPARAM)0))
+#define capDlgVideoDisplay(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEODISPLAY,(WPARAM)0,(LPARAM)0))
+#define capDlgVideoCompression(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_DLG_VIDEOCOMPRESSION,(WPARAM)0,(LPARAM)0))
 
 #define capGetVideoFormat(hwnd,s,wSize) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_VIDEOFORMAT,(WPARAM)(wSize),(LPARAM)(LPVOID)(s)))
-#define capGetVideoFormatSize(hwnd) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_VIDEOFORMAT,0,0L))
+#define capGetVideoFormatSize(hwnd) ((DWORD)AVICapSM(hwnd,WM_CAP_GET_VIDEOFORMAT,(WPARAM)0,(LPARAM)0))
 #define capSetVideoFormat(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_VIDEOFORMAT,(WPARAM)(wSize),(LPARAM)(LPVOID)(s)))
 
-#define capPreview(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_PREVIEW,(WPARAM)(WINBOOL)(f),0L))
-#define capPreviewRate(hwnd,wMS) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_PREVIEWRATE,(WPARAM)(wMS),0))
-#define capOverlay(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_OVERLAY,(WPARAM)(WINBOOL)(f),0L))
-#define capPreviewScale(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_SCALE,(WPARAM)(WINBOOL)f,0L))
+#define capPreview(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_PREVIEW,(WPARAM)(WINBOOL)(f),(LPARAM)0))
+#define capPreviewRate(hwnd,wMS) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_PREVIEWRATE,(WPARAM)(wMS),(LPARAM)0))
+#define capOverlay(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_OVERLAY,(WPARAM)(WINBOOL)(f),(LPARAM)0))
+#define capPreviewScale(hwnd,f) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_SCALE,(WPARAM)(WINBOOL)f,(LPARAM)0))
 #define capGetStatus(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GET_STATUS,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPCAPSTATUS)(s)))
 #define capSetScrollPos(hwnd,lpP) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_SCROLL,(WPARAM)0,(LPARAM)(LPPOINT)(lpP)))
 
-#define capGrabFrame(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GRAB_FRAME,(WPARAM)0,(LPARAM)0L))
-#define capGrabFrameNoStop(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GRAB_FRAME_NOSTOP,(WPARAM)0,(LPARAM)0L))
+#define capGrabFrame(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GRAB_FRAME,(WPARAM)0,(LPARAM)0))
+#define capGrabFrameNoStop(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GRAB_FRAME_NOSTOP,(WPARAM)0,(LPARAM)0))
 
-#define capCaptureSequence(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SEQUENCE,(WPARAM)0,(LPARAM)0L))
-#define capCaptureSequenceNoFile(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SEQUENCE_NOFILE,(WPARAM)0,(LPARAM)0L))
-#define capCaptureStop(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_STOP,(WPARAM)0,(LPARAM)0L))
-#define capCaptureAbort(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_ABORT,(WPARAM)0,(LPARAM)0L))
+#define capCaptureSequence(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SEQUENCE,(WPARAM)0,(LPARAM)0))
+#define capCaptureSequenceNoFile(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SEQUENCE_NOFILE,(WPARAM)0,(LPARAM)0))
+#define capCaptureStop(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_STOP,(WPARAM)0,(LPARAM)0))
+#define capCaptureAbort(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_ABORT,(WPARAM)0,(LPARAM)0))
 
-#define capCaptureSingleFrameOpen(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME_OPEN,(WPARAM)0,(LPARAM)0L))
-#define capCaptureSingleFrameClose(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME_CLOSE,(WPARAM)0,(LPARAM)0L))
-#define capCaptureSingleFrame(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME,(WPARAM)0,(LPARAM)0L))
+#define capCaptureSingleFrameOpen(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME_OPEN,(WPARAM)0,(LPARAM)0))
+#define capCaptureSingleFrameClose(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME_CLOSE,(WPARAM)0,(LPARAM)0))
+#define capCaptureSingleFrame(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SINGLE_FRAME,(WPARAM)0,(LPARAM)0))
 
 #define capCaptureGetSetup(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GET_SEQUENCE_SETUP,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
 #define capCaptureSetSetup(hwnd,s,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_SEQUENCE_SETUP,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
 
-#define capSetMCIDeviceName(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_MCI_DEVICE,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capSetMCIDeviceName(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_SET_MCI_DEVICE,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
 #define capGetMCIDeviceName(hwnd,szName,wSize) ((WINBOOL)AVICapSM(hwnd,WM_CAP_GET_MCI_DEVICE,(WPARAM)(wSize),(LPARAM)(LPVOID)(LPTSTR)(szName)))
 
-#define capPaletteOpen(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_OPEN,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
-#define capPaletteSave(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_SAVE,0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
-#define capPalettePaste(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_PASTE,(WPARAM) 0,(LPARAM)0L))
+#define capPaletteOpen(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_OPEN,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capPaletteSave(hwnd,szName) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_SAVE,(WPARAM)0,(LPARAM)(LPVOID)(LPTSTR)(szName)))
+#define capPalettePaste(hwnd) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_PASTE,(WPARAM) 0,(LPARAM)0))
 #define capPaletteAuto(hwnd,iFrames,iColors) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_AUTOCREATE,(WPARAM)(iFrames),(LPARAM)(DWORD)(iColors)))
 #define capPaletteManual(hwnd,fGrab,iColors) ((WINBOOL)AVICapSM(hwnd,WM_CAP_PAL_MANUALCREATE,(WPARAM)(fGrab),(LPARAM)(DWORD)(iColors)))
 

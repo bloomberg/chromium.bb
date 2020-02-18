@@ -179,6 +179,12 @@ void InputControllerEvdev::GetTouchEventLog(const base::FilePath& out_dir,
     std::move(reply).Run(std::vector<base::FilePath>());
 }
 
+void InputControllerEvdev::GetGesturePropertiesService(
+    ozone::mojom::GesturePropertiesServiceRequest request) {
+  if (input_device_factory_)
+    input_device_factory_->GetGesturePropertiesService(std::move(request));
+}
+
 void InputControllerEvdev::ScheduleUpdateDeviceSettings() {
   if (!input_device_factory_ || settings_update_pending_)
     return;

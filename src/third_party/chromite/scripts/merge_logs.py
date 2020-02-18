@@ -293,9 +293,9 @@ def ParseFileContents(filename, content):
   # determined.
   if first_dt is None:
     first_dt = Now()
-  for i in xrange(len(logs)):
-    if logs[i].date is None:
-      logs[i].date = first_dt
+  for log in logs:
+    if log.date is None:
+      log.date = first_dt
 
   return logs
 
@@ -408,7 +408,7 @@ def main(argv):
   if options.filelist:
     with open(options.filelist) as f:
       found = [l.strip() for l in f.readlines()]
-    files.extend(filter(bool, found))
+    files.extend(x for x in found if x)
   if options.base:
     files = [os.path.join(options.base, f) for f in files]
 

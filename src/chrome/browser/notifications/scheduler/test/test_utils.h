@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/notifications/scheduler/impression_history_tracker.h"
-#include "chrome/browser/notifications/scheduler/impression_types.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
+#include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
+#include "chrome/browser/notifications/scheduler/internal/impression_types.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
 namespace notifications {
 
@@ -50,11 +50,23 @@ void AddImpressionTestData(
     const std::vector<ImpressionTestData>& test_data,
     std::vector<std::unique_ptr<ClientState>>* client_states);
 
+// Creates an impression.
+Impression CreateImpression(const base::Time& create_time,
+                            UserFeedback feedback,
+                            ImpressionResult impression,
+                            bool integrated,
+                            SchedulerTaskTime task_time,
+                            const std::string& guid,
+                            SchedulerClientType type);
+
 // Generates a debug string to print details of |data|.
-std::string DebugString(NotificationData* data);
+std::string DebugString(const NotificationData* data);
 
 // Generates a debug string to print details of |entry|.
-std::string DebugString(NotificationEntry* entry);
+std::string DebugString(const NotificationEntry* entry);
+
+// Generates a debug string to print details of |client_state|.
+std::string DebugString(const ClientState* client_state);
 
 }  // namespace test
 }  // namespace notifications

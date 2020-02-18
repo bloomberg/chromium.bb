@@ -1,12 +1,3 @@
-set noparent
+include ../OWNERS.ci
 
-andrewlamb@chromium.org
-dburger@chromium.org
-dhanyaganesh@chromium.org
-evanhernandez@chromium.org
-jclinton@chromium.org
-mikenichols@chromium.org
-seanabraham@chromium.org
-
-per-file afdo.py=llozano@chromium.org
-per-file afdo_unittest.py=llozano@chromium.org
+per-file afdo*=file:chromiumos/third_party/toolchain-utils:OWNERS.toolchain

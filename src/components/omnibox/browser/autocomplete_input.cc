@@ -72,7 +72,7 @@ void PopulateTermsPrefixedByHttpOrHttps(
 AutocompleteInput::AutocompleteInput()
     : cursor_position_(base::string16::npos),
       current_page_classification_(metrics::OmniboxEventProto::INVALID_SPEC),
-      type_(metrics::OmniboxInputType::INVALID),
+      type_(metrics::OmniboxInputType::EMPTY),
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
@@ -148,7 +148,7 @@ AutocompleteInput::~AutocompleteInput() {
 // static
 std::string AutocompleteInput::TypeToString(metrics::OmniboxInputType type) {
   switch (type) {
-    case metrics::OmniboxInputType::INVALID:
+    case metrics::OmniboxInputType::EMPTY:
       return "invalid";
     case metrics::OmniboxInputType::UNKNOWN:
       return "unknown";
@@ -174,7 +174,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     GURL* canonicalized_url) {
   size_t first_non_white = text.find_first_not_of(base::kWhitespaceUTF16, 0);
   if (first_non_white == base::string16::npos)
-    return metrics::OmniboxInputType::INVALID;  // All whitespace.
+    return metrics::OmniboxInputType::EMPTY;  // All whitespace.
 
   // Ask our parsing back-end to help us understand what the user typed.  We
   // use the URLFixerUpper here because we want to be smart about what we
@@ -215,7 +215,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
   }
 
   // Treat javascript: scheme queries followed by things that are unlikely to
-  // be code as QUERY, rather than script to execute (URL).
+  // be code as UNKNOWN, rather than script to execute (URL).
   if (RE2::FullMatch(base::UTF16ToUTF8(text), "(?i)javascript:([^;=().\"]*)")) {
     return metrics::OmniboxInputType::UNKNOWN;
   }
@@ -231,7 +231,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
       !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
     metrics::OmniboxInputType type =
         scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
-    if (type != metrics::OmniboxInputType::INVALID)
+    if (type != metrics::OmniboxInputType::EMPTY)
       return type;
 
     // We don't know about this scheme.  It might be that the user typed a
@@ -493,11 +493,12 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   *host = parts.host;
 
   int after_scheme_and_colon = parts.scheme.end() + 1;
-  // For the view-source scheme, we should emphasize the scheme and host of the
-  // URL qualified by the view-source prefix.
-  if (base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) &&
+  // For the view-source and blob schemes, we should emphasize the host of the
+  // URL qualified by the view-source or blob prefix.
+  if ((base::LowerCaseEqualsASCII(scheme_str, kViewSourceScheme) ||
+       base::LowerCaseEqualsASCII(scheme_str, url::kBlobScheme)) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
-    // Obtain the URL prefixed by view-source and parse it.
+    // Obtain the URL prefixed by view-source or blob and parse it.
     base::string16 real_url(text.substr(after_scheme_and_colon));
     url::Parsed real_parts;
     AutocompleteInput::Parse(real_url, std::string(), scheme_classifier,
@@ -591,7 +592,7 @@ void AutocompleteInput::Clear() {
   current_url_ = GURL();
   current_title_.clear();
   current_page_classification_ = metrics::OmniboxEventProto::INVALID_SPEC;
-  type_ = metrics::OmniboxInputType::INVALID;
+  type_ = metrics::OmniboxInputType::EMPTY;
   parts_ = url::Parsed();
   scheme_.clear();
   canonicalized_url_ = GURL();

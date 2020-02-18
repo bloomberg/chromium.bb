@@ -9,11 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -78,7 +80,6 @@ class SafeBrowsingPrivateApiUnitTest : public ExtensionServiceTestBase {
 
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateApiUnitTest);
 };
@@ -97,12 +98,6 @@ void SafeBrowsingPrivateApiUnitTest::SetUp() {
   // Initialize Safe Browsing service.
   safe_browsing::TestSafeBrowsingServiceFactory sb_service_factory;
   auto* safe_browsing_service = sb_service_factory.CreateSafeBrowsingService();
-  system_request_context_getter_ =
-      base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}));
-  TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(
-      system_request_context_getter_.get());
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
       safe_browsing_service);
   g_browser_process->safe_browsing_service()->Initialize();
@@ -119,6 +114,10 @@ void SafeBrowsingPrivateApiUnitTest::TearDown() {
   // before the NetworkService object..
   TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
+
+  // Depends on LocalState from ChromeRenderViewHostTestHarness.
+  if (SystemNetworkContextManager::GetInstance())
+    SystemNetworkContextManager::DeleteInstance();
 
   ExtensionServiceTestBase::TearDown();
 }

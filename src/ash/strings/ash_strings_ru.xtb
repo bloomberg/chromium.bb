@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Вместе ваши устройства будут работать ещё лучше</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
+<translation id="1175572348579024023">Прокрутка</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1195412055398077112">Каемка экрана</translation>
 <translation id="119944043368869598">Удалить все</translation>
-<translation id="123828989343052515">Добавить рабочий стол</translation>
 <translation id="1247372569136754018">Микрофон (встроенный)</translation>
 <translation id="1252999807265626933">Подключен источник питания: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Какая сейчас погода?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Способы ввода настраиваются администратором</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1761222317188459878">Изменить настройки сетевого подключения. <ph name="STATE_TEXT" />.</translation>
+<translation id="1771761307086386028">Вправо</translation>
 <translation id="1812997170047690955">Объекты на экране</translation>
+<translation id="1820355135508821526">Одно из правил, применяемых к этому устройству, запрещает использовать функцию "<ph name="FEATURE_NAME" />". Обратитесь к администратору.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Ассистент (загрузка…)</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Выберите язык</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Ввод текста</translation>
 <translation id="1993072747612765854">Подробнее о последнем обновлении <ph name="SYSTEM_APP_NAME" />…</translation>
 <translation id="1995660704900986789">Выключить</translation>
 <translation id="2012624427112548395">CTRL + ПОИСК + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Книжная</translation>
 <translation id="2067602449040652523">Яркость клавиатуры</translation>
 <translation id="209965399369889474">Нет подключения к сети</translation>
+<translation id="2126242104232412123">Добавить рабочий стол</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2135456203358955318">Закрепленная лупа</translation>
 <translation id="2144487987174258011">Перезагрузите, чтобы обновить Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google Ассистент не работает в сеансе общего доступа.</translation>
 <translation id="2575685495496069081">Множественный вход отключен</translation>
 <translation id="2582112259361606227">Перезагрузить и обновить</translation>
-<translation id="2597972630681408282">Ночной режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
+<translation id="2651765386227849097">Google Ассистент отключен на этом устройстве.</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2658778018866295321">Перетаскивание</translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Подключено одно устройство}one{Подключено # устройство}few{Подключено # устройства}many{Подключено # устройств}other{Подключено # устройства}}</translation>
 <translation id="3226991577105957773">Ещё <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
+<translation id="3249513730522716925">Окно "<ph name="WINDOW_TITLE" />" перемещено с рабочего стола "<ph name="ACTIVE_DESK" />" на рабочий стол "<ph name="TARGET_DESK" />".</translation>
 <translation id="3255483164551725916">Что ты умеешь?</translation>
 <translation id="3294437725009624529">Гость</translation>
 <translation id="3308453408813785101">Пользователь <ph name="USER_EMAIL_ADDRESS" /> сможет войти в аккаунт позже.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
 <translation id="3576141592585647168">Изменение часового пояса</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
+<translation id="3604801046548457007">Создан рабочий стол "<ph name="DESK_TITILE" />".</translation>
 <translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="3621202678540785336">Вход</translation>
 <translation id="3626281679859535460">Яркость</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Батарея заряжена на <ph name="PERCENTAGE" /> % и подключена к источнику питания.</translation>
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
+<translation id="4021716437419160885">Прокрутить вниз</translation>
 <translation id="4042660782729322247">Вы открыли доступ к своему экрану</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Отключить уведомления для 1 приложения}one{Отключить уведомления для # приложения}few{Отключить уведомления для # приложений}many{Отключить уведомления для # приложений}other{Отключить уведомления для # приложения}}</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Батарея полностью заряжена.</translation>
 <translation id="490375751687810070">Вертикальная ориентация</translation>
 <translation id="4905614135390995787">Изменились быстрые клавиши для управления режимом высокой контрастности. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Батарея заряжена на <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918086044614829423">Принять</translation>
 <translation id="4924411785043111640">Перезапустить и сбросить настройки</translation>
+<translation id="495046168593986294">Прокрутить вверх</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="5030687792513154421">Время вышло</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Микрофонный разъем</translation>
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
+<translation id="5682642926269496722">Google Ассистент недоступен в этом аккаунте.</translation>
 <translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
 <translation id="574392208103952083">Средний</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Чтобы выполнить обновление, перезагрузите устройство Chromebook, не отключая от него клавиатуру.</translation>
 <translation id="5992218262414051481">Режим высокой контрастности включен. Чтобы отключить его, нажмите CTRL + ПОИСК + H.</translation>
 <translation id="6018164090099858612">Выход из режима трансляции…</translation>
+<translation id="602001110135236999">Влево</translation>
+<translation id="6040143037577758943">Закрыть</translation>
 <translation id="6043212731627905357">Монитор не совместим с устройством <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Выйти</translation>
 <translation id="6047696787498798094">Если перейти к другому пользователю, доступ к экрану будет закрыт. Продолжить?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Не удалось подтвердить пароль. Повторите попытку.</translation>
 <translation id="607652042414456612">Расположенные поблизости устройства Bluetooth видят ваш компьютер под именем <ph name="NAME" /> с адресом <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> заряжается</translation>
+<translation id="612734058257491180">В рамках гостевого сеанса Google Ассистент недоступен.</translation>
 <translation id="615957422585914272">Показывать экранную клавиатуру</translation>
 <translation id="6164005077879661055">После удаления контролируемого профиля все файлы и локальные данные, связанные с ним, будут удалены. Посещенные страницы и настройки этого профиля будут видны его менеджеру на странице: <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Устройство <ph name="DEVICE_NAME" /> подключено через Bluetooth и доступно всем пользователям. Вы можете отключить его на странице настроек.</translation>
 <translation id="6715542151869432661">Мобильные устройства не найдены.</translation>
 <translation id="6723839937902243910">Питание</translation>
+<translation id="6727969043791803658">Подключено, батарея заряжена на <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Отслеживание эффективности включено.</translation>
+<translation id="6752912906630585008">Рабочий стол "<ph name="REMOVED_DESK" />" удален и объединен с рабочим столом "<ph name="RECEIVE_DESK" />".</translation>
 <translation id="6790428901817661496">Воспроизвести</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
 <translation id="6820676911989879663">Пора отдохнуть!</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Подключенные устройства USB-C заряжаются</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 уведомление}one{# уведомление}few{# уведомления}many{# уведомлений}other{# уведомления}}</translation>
+<translation id="7749443890790263709">Достигнуто максимально допустимое количество рабочих столов.</translation>
 <translation id="776344839111254542">Нажмите, чтобы просмотреть информацию об обновлении</translation>
 <translation id="7780159184141939021">Поворот экрана</translation>
 <translation id="7796353162336583443">Нажмите кнопку стилуса на панели запуска, чтобы создать заметку, запустить Ассистента либо использовать стилус в качестве лупы или лазерной указки.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Создать заметку</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> и телефон будут подключены друг к другу автоматически</translation>
+<translation id="8388750414311082622">Удалить единственный рабочий стол нельзя.</translation>
 <translation id="8392451568018454956">Меню параметров пользователя "<ph name="USER_EMAIL_ADDRESS" />"</translation>
 <translation id="8394567579869570560">Ваш родитель заблокировал это устройство.</translation>
 <translation id="8406981827175133772">Полноэкранная лупа</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433186206711564395">Настройки сети</translation>
 <translation id="8433977262951327081">Быстрые клавиши для вызова всплывающего окна с параметрами ввода на панели запуска изменились. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Рабочий стол "<ph name="DESK_TITILE" />" активирован.</translation>
 <translation id="8452135315243592079">SIM-карта не обнаружена</translation>
 <translation id="8454013096329229812">Wi-Fi включен</translation>
 <translation id="847056008324733326">Настройки масштаба экрана</translation>

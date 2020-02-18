@@ -18,7 +18,10 @@ namespace net {
 // the context on which they were made.
 class NET_EXPORT NetworkIsolationKey {
  public:
-  NetworkIsolationKey(const base::Optional<url::Origin>& top_frame_origin);
+  // Full constructor.  When a request is initiated by the top frame, it must
+  // also populate the |frame_origin| parameter when calling this constructor.
+  explicit NetworkIsolationKey(const url::Origin& top_frame_origin,
+                               const url::Origin& frame_origin);
 
   // Construct an empty key.
   NetworkIsolationKey();
@@ -31,18 +34,27 @@ class NET_EXPORT NetworkIsolationKey {
       const NetworkIsolationKey& network_isolation_key);
   NetworkIsolationKey& operator=(NetworkIsolationKey&& network_isolation_key);
 
+  // Compare keys for equality, true if all enabled fields are equal.
   bool operator==(const NetworkIsolationKey& other) const {
-    return top_frame_origin_ == other.top_frame_origin_;
+    return top_frame_origin_ == other.top_frame_origin_ &&
+           frame_origin_ == other.frame_origin_;
   }
 
+  // Compare keys for inequality, true if any enabled field varies.
+  bool operator!=(const NetworkIsolationKey& other) const {
+    return (top_frame_origin_ != other.top_frame_origin_) ||
+           (frame_origin_ != other.frame_origin_);
+  }
+
+  // Provide an ordering for keys based on all enabled fields.
   bool operator<(const NetworkIsolationKey& other) const {
-    return top_frame_origin_ < other.top_frame_origin_;
+    return top_frame_origin_ < other.top_frame_origin_ ||
+           (top_frame_origin_ == other.top_frame_origin_ &&
+            frame_origin_ < other.frame_origin_);
   }
 
-  // TODO(shivanisha): Use feature flags in the below methods to determine which
-  // parts of the key are being used based on the enabled experiment.
-
-  // Returns the string representation of the key.
+  // Returns the string representation of the key, which is the string
+  // representation of each piece of the key separated by spaces.
   std::string ToString() const;
 
   // Returns string for debugging. Difference from ToString() is that transient
@@ -56,11 +68,27 @@ class NET_EXPORT NetworkIsolationKey {
   // to persist state to disk related to it (e.g., disk cache).
   bool IsTransient() const;
 
+  // APIs for serialization to and from the mojo structure.
+  const base::Optional<url::Origin>& GetTopFrameOrigin() const {
+    return top_frame_origin_;
+  }
+
+  const base::Optional<url::Origin>& GetFrameOrigin() const {
+    return frame_origin_;
+  }
+
+  // Returns true if all parts of the key are empty.
+  bool IsEmpty() const;
+
  private:
-  // The origin of the top frame of the request (if applicable).
+  // Whether or not to use the |frame_origin_| as part of the key.
+  bool use_frame_origin_;
+
+  // The origin of the top frame of the page making the request.
   base::Optional<url::Origin> top_frame_origin_;
 
-  // TODO(crbug.com/950069): Also add initiator origin to the key.
+  // The origin of the frame that initiates the request.
+  base::Optional<url::Origin> frame_origin_;
 };
 
 }  // namespace net

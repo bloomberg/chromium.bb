@@ -6,15 +6,15 @@
 
 #include <memory>
 
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
-#include "osp/impl/testing/fake_clock.h"
 #include "osp/public/network_metrics.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/testing/message_demuxer_test_support.h"
-#include "osp_base/error.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/base/error.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace {
@@ -112,9 +112,9 @@ class QuicServerTest : public Test {
     EXPECT_EQ(received_message.message.str, message.message.str);
   }
 
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   QuicServer* server_;
 };
 

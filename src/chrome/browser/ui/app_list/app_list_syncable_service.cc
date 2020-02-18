@@ -16,6 +16,8 @@
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -87,10 +89,47 @@ syncer::SyncData GetSyncDataFromSyncItem(
                                            specifics);
 }
 
-bool AppIsDefault(extensions::ExtensionService* service,
-                  const std::string& id) {
-  return service && extensions::ExtensionPrefs::Get(service->profile())
-                        ->WasInstalledByDefault(id);
+bool AppIsDefault(Profile* profile, const std::string& id) {
+  // Querying the extension system is legacy logic from the time that we only
+  // had extension apps. The App Service is the canonical source of truth, when
+  // it is enabled, but we are not there yet (crbug.com/826982).
+  if (extensions::ExtensionPrefs::Get(profile)->WasInstalledByDefault(id))
+    return true;
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh))
+    return false;
+
+  bool result = false;
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .ForOneApp(id, [&result](const apps::AppUpdate& update) {
+        result = update.InstallSource() == apps::mojom::InstallSource::kDefault;
+      });
+  return result;
+}
+
+void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh)) {
+    extensions::ExtensionPrefs::Get(profile)->UpdateExtensionPref(
+        id, "was_installed_by_default", std::make_unique<base::Value>(true));
+    return;
+  }
+
+  apps::mojom::AppPtr delta = apps::mojom::App::New();
+  delta->app_type = apps::mojom::AppType::kExtension;
+  delta->app_id = id;
+  delta->install_source = apps::mojom::InstallSource::kDefault;
+
+  std::vector<apps::mojom::AppPtr> deltas;
+  deltas.push_back(std::move(delta));
+
+  apps::AppServiceProxyFactory::GetForProfile(profile)
+      ->AppRegistryCache()
+      .OnApps(std::move(deltas));
+}
+
+bool AppIsDefaultForExtensionService(extensions::ExtensionService* service,
+                                     const std::string& id) {
+  return service && AppIsDefault(service->profile(), id);
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
@@ -263,6 +302,18 @@ class AppListSyncableService::ModelUpdaterObserver
 void AppListSyncableService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kAppListLocalState);
+}
+
+// static
+bool AppListSyncableService::AppIsDefaultForTest(Profile* profile,
+                                                 const std::string& id) {
+  return AppIsDefault(profile, id);
+}
+
+// static
+void AppListSyncableService::SetAppIsDefaultForTest(Profile* profile,
+                                                    const std::string& id) {
+  app_list::SetAppIsDefaultForTest(profile, id);
 }
 
 AppListSyncableService::AppListSyncableService(
@@ -644,7 +695,8 @@ bool AppListSyncableService::RemoveDefaultApp(const ChromeAppListItem* item,
   // If there is an existing REMOVE_DEFAULT_APP entry, and the app is
   // installed as a Default app, uninstall the app instead of adding it.
   if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_APP &&
-      AppIsDefault(extension_system_->extension_service(), item->id())) {
+      AppIsDefaultForExtensionService(extension_system_->extension_service(),
+                                      item->id())) {
     VLOG(2) << this
             << ": HandleDefaultApp: Uninstall: " << sync_item->ToString();
     UninstallExtension(extension_system_->extension_service(), item->id());
@@ -732,7 +784,8 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   }
 
   if (type == sync_pb::AppListSpecifics::TYPE_APP &&
-      AppIsDefault(extension_system_->extension_service(), id)) {
+      AppIsDefaultForExtensionService(extension_system_->extension_service(),
+                                      id)) {
     // This is a Default app; update the entry to a REMOVE_DEFAULT entry. This
     // will overwrite any existing entry for the item.
     VLOG(2) << this
@@ -789,7 +842,7 @@ void AppListSyncableService::PruneEmptySyncFolders() {
     SyncItem* sync_item = (iter++)->second.get();
     if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_FOLDER)
       continue;
-    if (!base::ContainsKey(parent_ids, sync_item->item_id))
+    if (!base::Contains(parent_ids, sync_item->item_id))
       DeleteSyncItem(sync_item->item_id);
   }
 }
@@ -866,7 +919,8 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
       ++updated_items;
     if (specifics.item_type() != sync_pb::AppListSpecifics::TYPE_FOLDER &&
         !IsUnRemovableDefaultApp(item_id) && !AppIsOem(item_id) &&
-        !AppIsDefault(extension_system_->extension_service(), item_id)) {
+        !AppIsDefaultForExtensionService(extension_system_->extension_service(),
+                                         item_id)) {
       VLOG(2) << "Syncing non-default item: " << item_id;
       first_app_list_sync_ = false;
     }
@@ -1143,11 +1197,11 @@ AppListSyncableService::SyncItem* AppListSyncableService::FindSyncItem(
 AppListSyncableService::SyncItem* AppListSyncableService::CreateSyncItem(
     const std::string& item_id,
     sync_pb::AppListSpecifics::AppListItemType item_type) {
-  DCHECK(!base::ContainsKey(sync_items_, item_id));
+  DCHECK(!base::Contains(sync_items_, item_id));
   sync_items_[item_id] = std::make_unique<SyncItem>(item_id, item_type);
 
   // In case we have pending attributes to apply, process it asynchronously.
-  if (base::ContainsKey(pending_transfer_map_, item_id)) {
+  if (base::Contains(pending_transfer_map_, item_id)) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppListSyncableService::ApplyAppAttributes,
                                   weak_ptr_factory_.GetWeakPtr(), item_id,

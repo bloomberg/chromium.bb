@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_impl.h"
-#include "chrome/browser/notifications/scheduler/notification_schedule_service.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_client_registrar.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_context.h"
+#include "chrome/browser/notifications/scheduler/public/display_agent.h"
+#include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
+#include "chrome/browser/notifications/scheduler/public/notification_scheduler_client_registrar.h"
 #include "chrome/browser/notifications/scheduler/schedule_service_factory_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,13 +19,17 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/notifications/scheduler/display_agent_android.h"
+#include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
+#endif
+
 namespace {
 std::unique_ptr<notifications::NotificationSchedulerClientRegistrar>
 RegisterClients() {
   auto client_registrar =
       std::make_unique<notifications::NotificationSchedulerClientRegistrar>();
   // TODO(xingliu): Register clients here.
-
   return client_registrar;
 }
 
@@ -61,13 +66,21 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
   base::FilePath storage_dir =
       profile->GetPath().Append(chrome::kNotificationSchedulerStorageDirname);
   auto client_registrar = RegisterClients();
+#if defined(OS_ANDROID)
+  auto display_agent = std::make_unique<DisplayAgentAndroid>();
+  auto background_task_scheduler =
+      std::make_unique<NotificationBackgroundTaskSchedulerAndroid>();
+#else
+  auto display_agent = notifications::DisplayAgent::Create();
   auto background_task_scheduler =
       std::make_unique<NotificationBackgroundTaskSchedulerImpl>();
+#endif
   auto* db_provider = leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
       profile->GetProfileKey());
   return notifications::CreateNotificationScheduleService(
       std::move(client_registrar), std::move(background_task_scheduler),
-      db_provider, storage_dir);
+      std::move(display_agent), db_provider, storage_dir,
+      context->IsOffTheRecord());
 }
 
 content::BrowserContext*

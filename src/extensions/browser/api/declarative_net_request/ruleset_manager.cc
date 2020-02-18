@@ -19,9 +19,11 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
@@ -224,8 +226,11 @@ RulesetManager::Action::~Action() = default;
 RulesetManager::Action::Action(Action&&) = default;
 RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
 
-RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
-  DCHECK(info_map_);
+RulesetManager::RulesetManager(content::BrowserContext* browser_context)
+    : browser_context_(browser_context),
+      prefs_(ExtensionPrefs::Get(browser_context)),
+      permission_helper_(PermissionHelper::Get(browser_context)) {
+  DCHECK(browser_context_);
 
   // RulesetManager can be created on any sequence.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -243,7 +248,7 @@ void RulesetManager::AddRuleset(const ExtensionId& extension_id,
 
   bool inserted;
   std::tie(std::ignore, inserted) =
-      rulesets_.emplace(extension_id, info_map_->GetInstallTime(extension_id),
+      rulesets_.emplace(extension_id, prefs_->GetInstallTime(extension_id),
                         std::move(matcher), std::move(allowed_pages));
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
@@ -360,7 +365,7 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 6,
+  static_assert(flat::ActionIndex_count == 7,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
@@ -408,8 +413,12 @@ base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
   return base::nullopt;
 }
 
-base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
+base::Optional<RulesetManager::Action>
+RulesetManager::GetRedirectOrUpgradeAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
+    const WebRequestInfo& request,
+    const int tab_id,
+    const bool crosses_incognito,
     const RequestParams& params) const {
   DCHECK(std::is_sorted(rulesets.begin(), rulesets.end(),
                         [](const ExtensionRulesetData* a,
@@ -423,12 +432,28 @@ base::Optional<RulesetManager::Action> RulesetManager::GetRedirectAction(
   // more recently installed extensions get higher priority in choosing the
   // redirect url.
   for (const ExtensionRulesetData* ruleset : rulesets) {
-    GURL redirect_url;
-    if (ruleset->matcher->ShouldRedirectRequest(params, &redirect_url)) {
-      Action action(Action::Type::REDIRECT);
-      action.redirect_url = std::move(redirect_url);
-      return action;
+    PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
+        permission_helper_, ruleset->extension_id, request.url, tab_id,
+        crosses_incognito,
+        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
+        request.initiator, request.type);
+
+    CompositeMatcher::RedirectAction redirect_action =
+        ruleset->matcher->ShouldRedirectRequest(params, page_access);
+
+    DCHECK(!(redirect_action.redirect_url &&
+             redirect_action.notify_request_withheld));
+    if (redirect_action.notify_request_withheld) {
+      NotifyRequestWithheld(ruleset->extension_id, request);
+      continue;
     }
+
+    if (!redirect_action.redirect_url)
+      continue;
+
+    Action action(Action::Type::REDIRECT);
+    action.redirect_url = std::move(redirect_action.redirect_url);
+    return action;
   }
 
   return base::nullopt;
@@ -491,9 +516,9 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
     // DO_NOT_CHECK_HOST is strictly less restrictive than
     // REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR.
     PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
-        info_map_, ruleset.extension_id, request.url, tab_id, crosses_incognito,
-        WebRequestPermissions::DO_NOT_CHECK_HOST, request.initiator,
-        request.type);
+        permission_helper_, ruleset.extension_id, request.url, tab_id,
+        crosses_incognito, WebRequestPermissions::DO_NOT_CHECK_HOST,
+        request.initiator, request.type);
     DCHECK_NE(PageAccess::kWithheld, page_access);
     if (page_access != PageAccess::kAllowed)
       continue;
@@ -507,37 +532,10 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
   if (action)
     return std::move(*action);
 
-  // Redirecting a request requires host permissions to the request url and
-  // its initiator.
-  std::vector<const ExtensionRulesetData*>
-      rulesets_to_evaluate_with_host_permissions;
-  for (const ExtensionRulesetData* ruleset : rulesets_to_evaluate) {
-    PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
-        info_map_, ruleset->extension_id, request.url, tab_id,
-        crosses_incognito,
-        WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
-        request.initiator, request.type);
-
-    if (page_access != PageAccess::kAllowed) {
-      // Notify the web request was withheld if the extension would have
-      // redirected the request.
-      // Note: The following check should be modified if more actions needing
-      // host permissions are added.
-      GURL ignore;
-      if (page_access == PageAccess::kWithheld &&
-          ruleset->matcher->ShouldRedirectRequest(params, &ignore)) {
-        NotifyRequestWithheld(ruleset->extension_id, request);
-      }
-      continue;
-    }
-
-    rulesets_to_evaluate_with_host_permissions.push_back(ruleset);
-  }
-
   // If the request is redirected, no further modifications can happen. A new
   // request will be created and subsequently evaluated.
-  action =
-      GetRedirectAction(rulesets_to_evaluate_with_host_permissions, params);
+  action = GetRedirectOrUpgradeAction(rulesets_to_evaluate, request, tab_id,
+                                      crosses_incognito, params);
   if (action)
     return std::move(*action);
 
@@ -556,7 +554,7 @@ bool RulesetManager::ShouldEvaluateRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ensure clients filter out sensitive requests.
-  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
+  DCHECK(!WebRequestPermissions::HideRequest(permission_helper_, request));
 
   if (!IsAPIAvailable()) {
     DCHECK(rulesets_.empty());
@@ -580,7 +578,7 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   // Only extensions enabled in incognito should have access to requests in an
   // incognito context.
   if (is_incognito_context &&
-      !info_map_->IsIncognitoEnabled(ruleset.extension_id)) {
+      !util::IsIncognitoEnabled(ruleset.extension_id, browser_context_)) {
     return false;
   }
 

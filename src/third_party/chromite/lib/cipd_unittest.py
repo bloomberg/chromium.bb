@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import json
 import hashlib
+import json
+import mock
 
 from chromite.lib import cipd
 from chromite.lib import cros_test_lib
@@ -21,18 +22,30 @@ class CIPDTest(cros_test_lib.MockTestCase):
 
   def testDownloadCIPD(self):
     MockHttp = self.PatchObject(httplib2, 'Http')
-    first_body = json.dumps({
-        'client_binary': {
-            'sha1': 'bogus-sha1',
-            'fetch_url': 'http://foo'}})
-    response = {'status': '200'}
+    first_body = ')]}\'\n' + json.dumps({
+        'clientBinary': {
+            'signedUrl': 'http://example.com',
+        },
+        'clientRefAliases': [
+            {
+                'hashAlgo': 'SKIP',
+                'hexDigest': 'aaaa',
+            },
+            {
+                'hashAlgo': 'SHA256',
+                'hexDigest': 'bogus-sha256',
+            },
+        ],
+    })
+    response = mock.Mock()
+    response.status = 200
     MockHttp.return_value.request.side_effect = [
         (response, first_body),
         (response, b'bogus binary file')]
 
-    sha1 = self.PatchObject(hashlib, 'sha1')
-    sha1.return_value.hexdigest.return_value = 'bogus-sha1'
+    sha1 = self.PatchObject(hashlib, 'sha256')
+    sha1.return_value.hexdigest.return_value = 'bogus-sha256'
 
     # Access to a protected member XXX of a client class
     # pylint: disable=protected-access
-    self.assertTrue(cipd._DownloadCIPD('bogus-instance-id'))
+    self.assertTrue(cipd._DownloadCIPD('bogus-instance-sha256'))

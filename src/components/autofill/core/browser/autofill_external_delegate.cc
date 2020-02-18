@@ -24,7 +24,7 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -146,17 +146,26 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
 }
 
 bool AutofillExternalDelegate::HasActiveScreenReader() const {
+  // Note: This always returns false if ChromeVox is in use because
+  // AXPlatformNodes are not used on the ChromeOS platform.
   return ui::AXPlatformNode::GetAccessibilityMode().has_mode(
       ui::AXMode::kScreenReader);
 }
 
 void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
     bool has_suggestions) {
-  if (has_suggestions) {
-    ui::AXPlatformNode::OnInputSuggestionsAvailable();
-  } else {
-    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
-  }
+#if defined(OS_CHROMEOS)
+  // If the platform is ChromeOS, then the (un)availability of suggestions must
+  // be communicated via Blink because ChromeOS uses accessibility objects that
+  // live on both sides of the renderer-browser divide.
+  driver_->RendererShouldSetSuggestionAvailability(has_suggestions);
+#else
+  // On non-ChromeOS platforms, a static bool in AXPlatformNode is (un)set to
+  // communicate suggestions' (un)availability. This works because
+  // AXPlatformNodes reside on only the browser side.
+  has_suggestions ? ui::AXPlatformNode::OnInputSuggestionsAvailable()
+                  : ui::AXPlatformNode::OnInputSuggestionsUnavailable();
+#endif  // defined(OS_CHROMEOS)
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
@@ -227,9 +236,10 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
     manager_->OnUserAcceptedCardsFromAccountOption();
   } else {
-    if (identifier > 0)  // Denotes an Autofill suggestion.
-      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position);
-
+    if (identifier > 0) {  // Denotes an Autofill suggestion.
+      AutofillMetrics::LogAutofillSuggestionAcceptedIndex(
+          position, popup_type_, driver_->IsIncognito());
+    }
     FillAutofillFormData(identifier, false);
   }
 
@@ -283,6 +293,10 @@ PopupType AutofillExternalDelegate::GetPopupType() const {
 
 AutofillDriver* AutofillExternalDelegate::GetAutofillDriver() {
   return driver_;
+}
+
+int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
+  return query_field_.form_control_ax_id;
 }
 
 void AutofillExternalDelegate::RegisterDeletionCallback(
@@ -404,7 +418,7 @@ void AutofillExternalDelegate::InsertDataListValues(
                                          data_list_values_.end());
   base::EraseIf(*suggestions, [&data_list_set](const Suggestion& suggestion) {
     return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
-           base::ContainsKey(data_list_set, suggestion.value);
+           base::Contains(data_list_set, suggestion.value);
   });
 
 #if !defined(OS_ANDROID)

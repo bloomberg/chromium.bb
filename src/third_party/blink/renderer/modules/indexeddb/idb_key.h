@@ -35,7 +35,7 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -159,7 +159,11 @@ class MODULES_EXPORT IDBKey {
   size_t size_estimate_;
 };
 
-using IDBIndexKeys = std::pair<int64_t, Vector<std::unique_ptr<IDBKey>>>;
+// An index id, and corresponding set of keys to insert.
+struct IDBIndexKeys {
+  int64_t id;
+  Vector<std::unique_ptr<IDBKey>> keys;
+};
 
 }  // namespace blink
 

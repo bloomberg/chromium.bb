@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -96,8 +95,9 @@
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -127,8 +127,8 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
 
 // The amount of time to wait for a cursor update on style and layout changes
 // Set to 50Hz, no need to be faster than common screen refresh rate
-static constexpr TimeDelta kCursorUpdateInterval =
-    TimeDelta::FromMilliseconds(20);
+static constexpr base::TimeDelta kCursorUpdateInterval =
+    base::TimeDelta::FromMilliseconds(20);
 
 static const int kMaximumCursorSize = 128;
 
@@ -144,7 +144,8 @@ static const double kMinimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
 // This is roughly 9 frames, which should be long enough to be noticeable.
-constexpr TimeDelta kMinimumActiveInterval = TimeDelta::FromSecondsD(0.15);
+constexpr base::TimeDelta kMinimumActiveInterval =
+    base::TimeDelta::FromSecondsD(0.15);
 
 EventHandler::EventHandler(LocalFrame& frame)
     : frame_(frame),
@@ -241,9 +242,21 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (!controller)
     return;
+  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(layout_object);
+  Page* page = frame_->GetPage();
+  bool vertical_scroll_offset = false;
+  bool horizontal_scroll_offset = false;
+  if (page) {
+    ScrollOffset maximum_scroll_offset =
+        page->GetVisualViewport().MaximumScrollOffset();
+    vertical_scroll_offset = maximum_scroll_offset.Height() > 0;
+    horizontal_scroll_offset = maximum_scroll_offset.Width() > 0;
+  }
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(), LastKnownMousePositionInRootFrame(),
-      mouse_event_manager_->LastKnownMouseScreenPosition());
+      mouse_event_manager_->LastKnownMouseScreenPosition(),
+      scrollable->HasScrollableOverflowY() || vertical_scroll_offset,
+      scrollable->HasScrollableOverflowX() || horizontal_scroll_offset);
   mouse_event_manager_->InvalidateClick();
 }
 
@@ -297,20 +310,18 @@ HitTestResult EventHandler::HitTestResultAtLocation(
           DCHECK(location.IsRectilinear());
           if (hit_type & HitTestRequest::kHitTestVisualOverflow) {
             // Apply ancestor transforms to location rect
-            PhysicalRect local_rect =
-                PhysicalRectToBeNoop(location.BoundingBox());
+            PhysicalRect local_rect = location.BoundingBox();
             PhysicalRect main_frame_rect =
                 frame_view->GetLayoutView()->LocalToAncestorRect(
                     local_rect, main_view->GetLayoutView(),
                     kTraverseDocumentBoundaries);
-            adjusted_location = HitTestLocation(main_frame_rect.ToLayoutRect());
+            adjusted_location = HitTestLocation(main_frame_rect);
           } else {
             // Don't apply ancestor transforms to bounding box
-            LayoutPoint main_content_point =
-                main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
-                    location.BoundingBox().Location()));
+            PhysicalOffset main_content_point = main_view->ConvertFromRootFrame(
+                frame_view->ConvertToRootFrame(location.BoundingBox().offset));
             adjusted_location = HitTestLocation(
-                LayoutRect(main_content_point, location.BoundingBox().Size()));
+                PhysicalRect(main_content_point, location.BoundingBox().size));
           }
         } else {
           adjusted_location = HitTestLocation(main_view->ConvertFromRootFrame(
@@ -480,8 +491,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
 
   if (layout_object) {
     Cursor override_cursor;
-    switch (layout_object->GetCursor(RoundedIntPoint(result.LocalPoint()),
-                                     override_cursor)) {
+    switch (layout_object->GetCursor(result.LocalPoint(), override_cursor)) {
       case kSetCursorBasedOnStyle:
         break;
       case kSetCursor:
@@ -658,11 +668,12 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
-  HitTestRequest request(HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   // Save the document point we generate in case the window coordinate is
   // invalidated by what happens when we dispatch the event.
-  LayoutPoint document_point = frame_->View()->ConvertFromRootFrame(
-      FlooredIntPoint(mouse_event.PositionInRootFrame()));
+  PhysicalOffset document_point = frame_->View()->ConvertFromRootFrame(
+      PhysicalOffset(FlooredIntPoint(mouse_event.PositionInRootFrame())));
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   if (!mev.InnerNode()) {
     mouse_event_manager_->InvalidateClick();
@@ -700,6 +711,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     mouse_event_manager_->InvalidateClick();
     return result;
   }
+
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
+                                                            *frame_))
+    return WebInputEventResult::kHandledSuppressed;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(frame_);
@@ -758,8 +773,10 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   // dragging if we keep the selection in case of mousedown. FireFox also has
   // the same behavior and it's more compatible with other browsers.
   GetSelectionController().InitializeSelectionState();
+
   HitTestResult hit_test_result = event_handling_util::HitTestResultInFrame(
-      frame_, HitTestLocation(document_point), HitTestRequest::kReadOnly);
+      frame_, HitTestLocation(document_point),
+      HitTestRequest::kReadOnly | HitTestRequest::kRetargetForInert);
   InputDeviceCapabilities* source_capabilities =
       frame_->GetDocument()
           ->domWindow()
@@ -771,7 +788,9 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
                                                           source_capabilities);
   }
 
-  if (event_result == WebInputEventResult::kNotHandled || mev.GetScrollbar()) {
+  if ((!RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled() &&
+       event_result == WebInputEventResult::kNotHandled) ||
+      mev.GetScrollbar()) {
     mouse_event_manager_->SetCapturesDragging(true);
     // Main frames don't implicitly capture mouse input on MouseDown, just
     // subframes do (regardless of whether local or remote).
@@ -789,7 +808,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (event_result == WebInputEventResult::kNotHandled) {
     if (ShouldRefetchEventTarget(mev)) {
       HitTestRequest read_only_request(HitTestRequest::kReadOnly |
-                                       HitTestRequest::kActive);
+                                       HitTestRequest::kActive |
+                                       HitTestRequest::kRetargetForInert);
       mev = frame_->GetDocument()->PerformMouseEventHitTest(
           read_only_request, document_point, mouse_event);
     }
@@ -906,7 +926,8 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kMove;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kMove | HitTestRequest::kRetargetForInert;
   if (mouse_event_manager_->MousePressed()) {
     hit_type |= HitTestRequest::kActive;
   } else if (only_update_scrollbars) {
@@ -923,7 +944,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   if (pointer_event_manager_->IsAnyTouchActive() && !force_leave)
     hit_type |= HitTestRequest::kActive | HitTestRequest::kReadOnly;
   HitTestRequest request(hit_type);
-  HitTestLocation out_location((LayoutPoint()));
+  HitTestLocation out_location((PhysicalOffset()));
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(
       mouse_event, out_location, HitTestResult(request, out_location));
 
@@ -1069,7 +1090,8 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   // Mouse events simulated from touch should not hit-test again.
   DCHECK(!mouse_event.FromTouch());
-  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
+  HitTestRequest::HitTestRequestType hit_type =
+      HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(
@@ -1078,28 +1100,33 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   if (subframe)
     return PassMouseReleaseEventToSubframe(mev, subframe);
 
-  // Mouse events will be associated with the Document where mousedown
-  // occurred. If, e.g., there is a mousedown, then a drag to a different
-  // Document and mouseup there, the mouseup's gesture will be associated with
-  // the mousedown's Document. It's not absolutely certain that this is the
-  // correct behavior.
-  std::unique_ptr<UserGestureIndicator> gesture_indicator;
-  if (frame_->LocalFrameRoot()
-          .GetEventHandler()
-          .last_mouse_down_user_gesture_token_) {
-    gesture_indicator = std::make_unique<UserGestureIndicator>(
-        std::move(frame_->LocalFrameRoot()
-                      .GetEventHandler()
-                      .last_mouse_down_user_gesture_token_));
-  } else {
-    gesture_indicator = LocalFrame::NotifyUserActivation(frame_);
-  }
+  WebInputEventResult event_result = WebInputEventResult::kNotHandled;
 
-  WebInputEventResult event_result = DispatchMousePointerEvent(
-      WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
-      mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
-      (GetSelectionController().HasExtendedSelection() &&
-       IsSelectionOverLink(mev)));
+  std::unique_ptr<UserGestureIndicator> gesture_indicator;
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(mev.Event(),
+                                                            *frame_)) {
+    event_result = WebInputEventResult::kHandledSuppressed;
+  } else {
+    // Mouse events will be associated with the Document where mousedown
+    // occurred. If, e.g., there is a mousedown, then a drag to a different
+    // Document and mouseup there, the mouseup's gesture will be associated with
+    // the mousedown's Document. It's not absolutely certain that this is the
+    // correct behavior.
+    if (frame_->LocalFrameRoot()
+            .GetEventHandler()
+            .last_mouse_down_user_gesture_token_) {
+      gesture_indicator = std::make_unique<UserGestureIndicator>(
+          std::move(frame_->LocalFrameRoot()
+                        .GetEventHandler()
+                        .last_mouse_down_user_gesture_token_));
+    }
+
+    event_result = DispatchMousePointerEvent(
+        WebInputEvent::kPointerUp, mev.InnerElement(), mev.CanvasRegionId(),
+        mev.Event(), Vector<WebMouseEvent>(), Vector<WebMouseEvent>(),
+        (GetSelectionController().HasExtendedSelection() &&
+         IsSelectionOverLink(mev)));
+  }
 
   scroll_manager_->ClearResizeScrollableArea(false);
 
@@ -1127,7 +1154,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
   if (!frame_->View())
     return event_result;
 
-  HitTestRequest request(HitTestRequest::kReadOnly);
+  HitTestRequest request(HitTestRequest::kReadOnly |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
@@ -1273,48 +1301,104 @@ Element* EventHandler::EffectiveMouseEventTargetElement(
   return new_element_under_mouse;
 }
 
-bool EventHandler::IsTouchPointerIdActiveOnFrame(PointerId pointer_id,
-                                                 LocalFrame* frame) const {
-  DCHECK_EQ(frame_, &frame_->LocalFrameRoot());
-  return pointer_event_manager_->IsTouchPointerIdActiveOnFrame(pointer_id,
-                                                               frame);
+bool EventHandler::IsPointerIdActiveOnFrame(PointerId pointer_id,
+                                            LocalFrame* frame) const {
+  DCHECK(frame_ == &frame_->LocalFrameRoot() || frame_ == frame);
+  return pointer_event_manager_->IsPointerIdActiveOnFrame(pointer_id, frame);
 }
 
-bool EventHandler::RootFrameTouchPointerActiveInCurrentFrame(
+bool EventHandler::RootFrameTrackedActivePointerInCurrentFrame(
     PointerId pointer_id) const {
   return frame_ != &frame_->LocalFrameRoot() &&
-         frame_->LocalFrameRoot()
-             .GetEventHandler()
-             .IsTouchPointerIdActiveOnFrame(pointer_id, frame_);
+         frame_->LocalFrameRoot().GetEventHandler().IsPointerIdActiveOnFrame(
+             pointer_id, frame_);
 }
 
 bool EventHandler::IsPointerEventActive(PointerId pointer_id) {
   return pointer_event_manager_->IsActive(pointer_id) ||
-         RootFrameTouchPointerActiveInCurrentFrame(pointer_id);
+         RootFrameTrackedActivePointerInCurrentFrame(pointer_id);
+}
+
+LocalFrame* EventHandler::DetermineActivePointerTrackerFrame(
+    PointerId pointer_id) const {
+  // If pointer_id is active on current |frame_|, pointer states are in
+  // current frame's PEM; otherwise, check if it's a touch-like pointer that
+  // have its active states in the local frame root's PEM.
+  if (IsPointerIdActiveOnFrame(pointer_id, frame_))
+    return frame_;
+  if (RootFrameTrackedActivePointerInCurrentFrame(pointer_id))
+    return &frame_->LocalFrameRoot();
+  return nullptr;
 }
 
 void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot().GetEventHandler().SetPointerCapture(pointer_id,
-                                                                 target);
-  } else {
-    if (pointer_event_manager_->SetPointerCapture(pointer_id, target) &&
-        pointer_id == PointerEventFactory::kMouseId)
-      CaptureMouseEventsToWidget(true);
+  LocalFrame* tracking_frame = DetermineActivePointerTrackerFrame(pointer_id);
+
+  bool captured =
+      tracking_frame &&
+      tracking_frame->GetEventHandler()
+          .pointer_event_manager_->SetPointerCapture(pointer_id, target);
+
+  if (captured && pointer_id == PointerEventFactory::kMouseId) {
+    CaptureMouseEventsToWidget(true);
+
+    // TODO(crbug.com/919908) This is a temporary approach to make pointer
+    // capture work across in-process frames while mouse subframe capture
+    // disabled. It's to experiment removing the frame capture logic. This
+    // must be re-write before the flag enabled.
+    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
+      LocalFrame* frame = frame_;
+      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
+      while (parent) {
+        Element* subframe_element = nullptr;
+        if (frame->OwnerLayoutObject() &&
+            frame->OwnerLayoutObject()->GetNode()) {
+          subframe_element =
+              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
+        }
+
+        parent->GetEventHandler().capturing_subframe_element_ =
+            subframe_element;
+        frame = parent;
+        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
+      }
+    }
   }
 }
 
 void EventHandler::ReleasePointerCapture(PointerId pointer_id,
                                          Element* target) {
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    frame_->LocalFrameRoot().GetEventHandler().ReleasePointerCapture(pointer_id,
-                                                                     target);
-  } else {
-    if (pointer_event_manager_->ReleasePointerCapture(pointer_id, target) &&
-        pointer_id == PointerEventFactory::kMouseId)
-      CaptureMouseEventsToWidget(false);
+  LocalFrame* tracking_frame = DetermineActivePointerTrackerFrame(pointer_id);
+
+  bool released =
+      tracking_frame &&
+      tracking_frame->GetEventHandler()
+          .pointer_event_manager_->ReleasePointerCapture(pointer_id, target);
+
+  if (released && pointer_id == PointerEventFactory::kMouseId) {
+    CaptureMouseEventsToWidget(false);
+
+    // TODO(crbug/919908) same as SetPointerCapture, this is temporary
+    // approach for removing mouse subframe capture. It must be re-write
+    // before enable the flag.
+    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
+      LocalFrame* frame = frame_;
+      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
+      while (parent) {
+        Element* subframe_element = nullptr;
+        if (frame->OwnerLayoutObject() &&
+            frame->OwnerLayoutObject()->GetNode()) {
+          subframe_element =
+              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
+        }
+
+        parent->GetEventHandler().capturing_subframe_element_ = nullptr;
+        frame = parent;
+        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
+      }
+    }
   }
 }
 
@@ -1324,18 +1408,22 @@ void EventHandler::ReleaseMousePointerCapture() {
 
 bool EventHandler::HasPointerCapture(PointerId pointer_id,
                                      const Element* target) const {
-  if (RootFrameTouchPointerActiveInCurrentFrame(pointer_id)) {
-    return frame_->LocalFrameRoot().GetEventHandler().HasPointerCapture(
-        pointer_id, target);
-  } else {
-    return pointer_event_manager_->HasPointerCapture(pointer_id, target);
+  if (LocalFrame* tracking_frame =
+          DetermineActivePointerTrackerFrame(pointer_id)) {
+    return tracking_frame->GetEventHandler()
+        .pointer_event_manager_->HasPointerCapture(pointer_id, target);
   }
+  return false;
 }
 
 void EventHandler::ElementRemoved(Element* target) {
   pointer_event_manager_->ElementRemoved(target);
   if (target)
     mouse_wheel_event_manager_->ElementRemoved(target);
+}
+
+void EventHandler::ResetMousePositionForPointerUnlock() {
+  pointer_event_manager_->RemoveLastMousePosition();
 }
 
 WebInputEventResult EventHandler::DispatchMousePointerEvent(
@@ -1409,7 +1497,7 @@ WebInputEventResult EventHandler::HandleGestureEvent(
   DCHECK(!targeted_event.Event().IsScrollEvent());
 
   if (targeted_event.Event().GetType() == WebInputEvent::kGestureShowPress)
-    last_show_press_timestamp_ = CurrentTimeTicks();
+    last_show_press_timestamp_ = base::TimeTicks::Now();
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
@@ -1429,6 +1517,10 @@ WebInputEventResult EventHandler::HandleGestureEvent(
 
 WebInputEventResult EventHandler::HandleGestureEventInFrame(
     const GestureEventWithHitTestResults& targeted_event) {
+  if (event_handling_util::ShouldDiscardEventTargetingFrame(
+          targeted_event.Event(), *frame_)) {
+    return WebInputEventResult::kHandledSuppressed;
+  }
   return gesture_manager_->HandleGestureEventInFrame(targeted_event);
 }
 
@@ -1724,7 +1816,7 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
 
   HitTestRequest::HitTestRequestType hit_type =
       gesture_manager_->GetHitTypeForGestureType(gesture_event.GetType());
-  TimeDelta active_interval;
+  base::TimeDelta active_interval;
   bool should_keep_active_for_min_interval = false;
   if (read_only) {
     hit_type |= HitTestRequest::kReadOnly;
@@ -1733,7 +1825,8 @@ GestureEventWithHitTestResults EventHandler::TargetGestureEvent(
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
-    active_interval = CurrentTimeTicks() - last_show_press_timestamp_.value();
+    active_interval =
+        base::TimeTicks::Now() - last_show_press_timestamp_.value();
     should_keep_active_for_min_interval =
         active_interval < kMinimumActiveInterval;
     if (should_keep_active_for_min_interval)
@@ -1768,6 +1861,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // disabled). Note that we don't yet apply hover/active state here because
   // we need to resolve touch adjustment first so that we apply hover/active
   // it to the final adjusted node.
+  hit_type |= HitTestRequest::kRetargetForInert;
   hit_type |= HitTestRequest::kReadOnly;
   WebGestureEvent adjusted_event = gesture_event;
   LayoutSize hit_rect_size;
@@ -1793,9 +1887,10 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   } else {
-    LayoutPoint top_left(adjusted_event.PositionInRootFrame());
-    top_left.Move(-hit_rect_size * 0.5f);
-    location = HitTestLocation(LayoutRect(top_left, hit_rect_size));
+    PhysicalOffset top_left = PhysicalOffset::FromFloatPointRound(
+        adjusted_event.PositionInRootFrame());
+    top_left -= PhysicalOffset(hit_rect_size * 0.5f);
+    location = HitTestLocation(PhysicalRect(top_left, hit_rect_size));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   }
@@ -1823,15 +1918,6 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // candidates.
   DCHECK(!location.IsRectBasedTest());
 
-  if (ShouldApplyTouchAdjustment(gesture_event) &&
-      (gesture_event.GetType() == WebInputEvent::kGestureTap ||
-       gesture_event.GetType() == WebInputEvent::kGestureLongPress)) {
-    float adjusted_distance = FloatSize(adjusted_event.PositionInRootFrame() -
-                                        gesture_event.PositionInRootFrame())
-                                  .DiagonalLength();
-    UMA_HISTOGRAM_COUNTS_100("Event.Touch.TouchAdjustment.AdjustDistance",
-                             static_cast<int>(adjusted_distance));
-  }
   return GestureEventWithHitTestResults(adjusted_event, location,
                                         hit_test_result);
 }
@@ -1866,7 +1952,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
   // FIXME: We should do this even when no candidate matches the node filter.
   // crbug.com/398914
   if (adjusted) {
-    LayoutPoint point = frame_->View()->ConvertFromRootFrame(adjusted_point);
+    PhysicalOffset point(frame_->View()->ConvertFromRootFrame(adjusted_point));
     DCHECK(location.ContainsPoint(FloatPoint(point)));
     DCHECK(location.IsRectBasedTest());
     location = hit_test_result->ResolveRectBasedTest(adjusted_node, point);
@@ -1888,9 +1974,10 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   if (last_scrollbar_under_mouse_)
     last_scrollbar_under_mouse_->MouseUp(event);
 
-  LayoutPoint position_in_contents =
-      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame()));
-  HitTestRequest request(HitTestRequest::kActive);
+  PhysicalOffset position_in_contents(
+      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame())));
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(
           request, position_in_contents, event);
@@ -1977,7 +2064,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     target_node = doc;
 
   // Use the focused node as the target for hover and active.
-  HitTestRequest request(HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(location_in_root_frame);
   HitTestResult result(request, location);
   result.SetInnerNode(target_node);
@@ -1996,7 +2084,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       WebFloatPoint(location_in_root_frame.X(), location_in_root_frame.Y()),
       WebFloatPoint(global_position.X(), global_position.Y()),
       WebPointerProperties::Button::kNoButton, /* clickCount */ 0,
-      WebInputEvent::kNoModifiers, CurrentTimeTicks(), source_type);
+      WebInputEvent::kNoModifiers, base::TimeTicks::Now(), source_type);
 
   // TODO(dtapuska): Transition the mouseEvent to be created really in viewport
   // coordinates instead of root frame coordinates.
@@ -2009,7 +2097,7 @@ void EventHandler::ScheduleHoverStateUpdate() {
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!hover_timer_.IsActive() &&
       !mouse_event_manager_->IsMousePositionUnknown())
-    hover_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+    hover_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void EventHandler::ScheduleCursorUpdate() {
@@ -2034,7 +2122,7 @@ void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     return;
   }
   mouse_event_manager_->MayUpdateHoverWhenContentUnderMouseChanged(
@@ -2063,7 +2151,8 @@ void EventHandler::HoverTimerFired(TimerBase*) {
 
   if (auto* layout_object = frame_->ContentLayoutObject()) {
     if (LocalFrameView* view = frame_->View()) {
-      HitTestRequest request(HitTestRequest::kMove);
+      HitTestRequest request(HitTestRequest::kMove |
+                             HitTestRequest::kRetargetForInert);
       HitTestLocation location(view->ViewportToFrame(
           mouse_event_manager_->LastKnownMousePositionInViewport()));
       HitTestResult result(request, location);
@@ -2081,7 +2170,8 @@ void EventHandler::ActiveIntervalTimerFired(TimerBase*) {
     // FIXME: Enable condition when http://crbug.com/226842 lands
     // m_lastDeferredTapElement.get() == m_frame->document()->activeElement()
     HitTestRequest request(HitTestRequest::kTouchEvent |
-                           HitTestRequest::kRelease);
+                           HitTestRequest::kRelease |
+                           HitTestRequest::kRetargetForInert);
     frame_->GetDocument()->UpdateHoverActiveState(
         request.Active(), !request.Move(), last_deferred_tap_element_.Get());
   }
@@ -2121,7 +2211,8 @@ void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
                                      DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an
   // opportunity for Layer to update the :hover and :active pseudoclasses.
-  HitTestRequest request(HitTestRequest::kRelease);
+  HitTestRequest request(HitTestRequest::kRelease |
+                         HitTestRequest::kRetargetForInert);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
@@ -2274,8 +2365,9 @@ void EventHandler::CaptureMouseEventsToWidget(bool capture) {
 MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     const HitTestRequest& request,
     const WebMouseEvent& event) {
-  LayoutPoint document_point = event_handling_util::ContentPointFromRootFrame(
-      frame_, event.PositionInRootFrame());
+  PhysicalOffset document_point =
+      event_handling_util::ContentPointFromRootFrame(
+          frame_, event.PositionInRootFrame());
 
   // TODO(eirage): This does not handle chorded buttons yet.
   if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
@@ -2293,16 +2385,9 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
 
     if (capture_target) {
       LayoutObject* layout_object = capture_target->GetLayoutObject();
-
-      // TODO(eirage): Is kIgnoreTransforms correct here?
-      LayoutPoint local_point =
-          layout_object ? layout_object
-                              ->AbsoluteToLocalPoint(
-                                  PhysicalOffsetToBeNoop(document_point),
-                                  kIgnoreTransforms)
-                              .ToLayoutPoint()
+      PhysicalOffset local_point =
+          layout_object ? layout_object->AbsoluteToLocalPoint(document_point)
                         : document_point;
-
       result.SetNodeAndPosition(capture_target, local_point);
 
       result.SetScrollbar(last_scrollbar_under_mouse_);

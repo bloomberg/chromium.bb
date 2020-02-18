@@ -51,13 +51,19 @@
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
+#if defined(OS_CHROMEOS)
+#include "crypto/scoped_nss_types.h"
+#endif
+
 namespace base {
 class UnguessableToken;
 }  // namespace base
 
 namespace net {
+class CertNetFetcher;
 class CertNetFetcherImpl;
 class CertVerifier;
+class CertVerifyProc;
 class HostPortPair;
 class ReportSender;
 class StaticHttpUserAgentSettings;
@@ -181,7 +187,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResetURLLoaderFactories() override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
-                                  const url::Origin& origin) override;
+                                  mojom::RestrictedCookieManagerRole role,
+                                  const url::Origin& origin,
+                                  bool is_service_worker,
+                                  int32_t process_id,
+                                  int32_t routing_id) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
@@ -195,11 +205,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void NotifyExternalCacheHit(
       const GURL& url,
       const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin) override;
-  void WriteCacheMetadata(const GURL& url,
-                          net::RequestPriority priority,
-                          base::Time expected_response_time,
-                          mojo_base::BigBuffer data) override;
+      const base::Optional<url::Origin>& top_frame_origin,
+      const url::Origin& frame_origin) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
@@ -272,11 +279,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::ProxyLookupClientPtr proxy_lookup_client) override;
   void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
   void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
-  void CreateWebSocket(mojom::WebSocketRequest request,
+  void CreateWebSocket(const GURL& url,
+                       const std::vector<std::string>& requested_protocols,
+                       const GURL& site_for_cookies,
+                       std::vector<mojom::HttpHeaderPtr> additional_headers,
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
                        uint32_t options,
+                       mojom::WebSocketHandshakeClientPtr handshake_client,
+                       mojom::WebSocketClientPtr client,
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
@@ -319,10 +331,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const std::string& ocsp_response,
       const std::string& sct_list,
       VerifyCertificateForTestingCallback callback) override;
-  void PreconnectSockets(uint32_t num_streams,
-                         const GURL& url,
-                         int32_t load_flags,
-                         bool privacy_mode_enabled) override;
+  void PreconnectSockets(
+      uint32_t num_streams,
+      const GURL& url,
+      int32_t load_flags,
+      bool privacy_mode_enabled,
+      const net::NetworkIsolationKey& network_isolation_key) override;
   void CreateP2PSocketManager(
       mojom::P2PTrustedSocketManagerClientPtr client,
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
@@ -346,6 +360,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SaveHttpAuthCache(SaveHttpAuthCacheCallback callback) override;
   void LoadHttpAuthCache(const base::UnguessableToken& cache_key,
                          LoadHttpAuthCacheCallback callback) override;
+  void AddAuthCacheEntry(const net::AuthChallengeInfo& challenge,
+                         const net::AuthCredentials& credentials,
+                         AddAuthCacheEntryCallback callback) override;
   void LookupBasicAuthCredentials(
       const GURL& url,
       LookupBasicAuthCredentialsCallback callback) override;
@@ -380,7 +397,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   }
 
   NetworkServiceProxyDelegate* proxy_delegate() const {
-    return proxy_delegate_.get();
+    return proxy_delegate_;
   }
 
   void set_network_qualities_pref_delegate_for_testing(
@@ -397,12 +414,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Returns true if reports should unconditionally be sent without first
   // consulting NetworkContextClient.OnCanSendReportingReports()
   bool SkipReportingPermissionCheck() const;
-
-  // Reports and gather CORS preflight cache size metric.
-  cors::PreflightCache::Metrics ReportAndGatherCorsPreflightCacheSizeMetric();
-
-  // Gather active URLLoader count.
-  size_t GatherActiveLoaderCount();
 
   // Creates a new url loader factory bound to this network context. For use
   // inside the network service.
@@ -445,6 +456,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
 #if defined(OS_CHROMEOS)
   void TrustAnchorUsed();
+
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProcForUser(
+      scoped_refptr<net::CertNetFetcher> net_fetcher,
+      crypto::ScopedPK11Slot user_public_slot);
+
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProcWithoutUserSlots(
+      scoped_refptr<net::CertNetFetcher> net_fetcher);
 #endif
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
@@ -571,7 +589,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            base::UniquePtrComparator>
       host_resolvers_;
 
-  std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
+  NetworkServiceProxyDelegate* proxy_delegate_ = nullptr;
 
   // Used for Signed Exchange certificate verification.
   int next_cert_verify_id_ = 0;

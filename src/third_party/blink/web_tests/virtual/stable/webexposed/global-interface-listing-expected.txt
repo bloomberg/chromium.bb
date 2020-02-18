@@ -737,6 +737,7 @@ interface CanvasPattern
 interface CanvasRenderingContext2D
     attribute @@toStringTag
     getter canvas
+    getter direction
     getter fillStyle
     getter filter
     getter font
@@ -798,6 +799,7 @@ interface CanvasRenderingContext2D
     method strokeText
     method transform
     method translate
+    setter direction
     setter fillStyle
     setter filter
     setter font
@@ -1300,6 +1302,7 @@ interface Document : Node
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter onfreeze
     getter onfullscreenchange
     getter onfullscreenerror
@@ -1335,6 +1338,7 @@ interface Document : Node
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -1482,6 +1486,7 @@ interface Document : Node
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter onfreeze
     setter onfullscreenchange
     setter onfullscreenerror
@@ -1517,6 +1522,7 @@ interface Document : Node
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -1602,6 +1608,7 @@ interface Element : Node
     getter clientLeft
     getter clientTop
     getter clientWidth
+    getter elementTiming
     getter firstElementChild
     getter id
     getter innerHTML
@@ -1683,6 +1690,7 @@ interface Element : Node
     method webkitRequestFullscreen
     setter classList
     setter className
+    setter elementTiming
     setter id
     setter innerHTML
     setter onbeforecopy
@@ -1698,6 +1706,18 @@ interface Element : Node
     setter scrollLeft
     setter scrollTop
     setter slot
+interface ElementInternals
+    attribute @@toStringTag
+    getter form
+    getter labels
+    getter validationMessage
+    getter validity
+    getter willValidate
+    method checkValidity
+    method constructor
+    method reportValidity
+    method setFormValue
+    method setValidity
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow
@@ -1854,6 +1874,10 @@ interface FormData
     method keys
     method set
     method values
+interface FormDataEvent : Event
+    attribute @@toStringTag
+    getter formData
+    method constructor
 interface GainNode : AudioNode
     attribute @@toStringTag
     getter gain
@@ -2176,6 +2200,7 @@ interface HTMLElement : Element
     getter dataset
     getter dir
     getter draggable
+    getter enterKeyHint
     getter hidden
     getter innerText
     getter inputMode
@@ -2213,6 +2238,7 @@ interface HTMLElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -2243,6 +2269,7 @@ interface HTMLElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -2272,6 +2299,7 @@ interface HTMLElement : Element
     getter tabIndex
     getter title
     getter translate
+    method attachInternals
     method blur
     method click
     method constructor
@@ -2281,6 +2309,7 @@ interface HTMLElement : Element
     setter contentEditable
     setter dir
     setter draggable
+    setter enterKeyHint
     setter hidden
     setter innerText
     setter inputMode
@@ -2312,6 +2341,7 @@ interface HTMLElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -2342,6 +2372,7 @@ interface HTMLElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -2555,6 +2586,7 @@ interface HTMLIFrameElement : HTMLElement
     getter featurePolicy
     getter frameBorder
     getter height
+    getter loading
     getter longDesc
     getter marginHeight
     getter marginWidth
@@ -2574,6 +2606,7 @@ interface HTMLIFrameElement : HTMLElement
     setter csp
     setter frameBorder
     setter height
+    setter loading
     setter longDesc
     setter marginHeight
     setter marginWidth
@@ -2596,6 +2629,7 @@ interface HTMLImageElement : HTMLElement
     getter height
     getter hspace
     getter isMap
+    getter loading
     getter longDesc
     getter lowsrc
     getter name
@@ -2620,6 +2654,7 @@ interface HTMLImageElement : HTMLElement
     setter height
     setter hspace
     setter isMap
+    setter loading
     setter longDesc
     setter lowsrc
     setter name
@@ -3616,6 +3651,7 @@ interface Image
     getter height
     getter hspace
     getter isMap
+    getter loading
     getter longDesc
     getter lowsrc
     getter name
@@ -3640,6 +3676,7 @@ interface Image
     setter height
     setter hspace
     setter isMap
+    setter loading
     setter longDesc
     setter lowsrc
     setter name
@@ -3756,6 +3793,23 @@ interface KeyframeEffect : AnimationEffect
     getter target
     method constructor
     setter target
+interface LargestContentfulPaint : PerformanceEntry
+    attribute @@toStringTag
+    getter element
+    getter id
+    getter loadTime
+    getter renderTime
+    getter size
+    getter url
+    method constructor
+    method toJSON
+interface LayoutShift : PerformanceEntry
+    attribute @@toStringTag
+    getter hadRecentInput
+    getter lastInputTime
+    getter value
+    method constructor
+    method toJSON
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
@@ -4628,6 +4682,19 @@ interface Performance : EventTarget
     method setResourceTimingBufferSize
     method toJSON
     setter onresourcetimingbufferfull
+interface PerformanceElementTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter element
+    getter id
+    getter identifier
+    getter intersectionRect
+    getter loadTime
+    getter naturalHeight
+    getter naturalWidth
+    getter renderTime
+    getter url
+    method constructor
+    method toJSON
 interface PerformanceEntry
     attribute @@toStringTag
     getter duration
@@ -4807,6 +4874,7 @@ interface PointerEvent : MouseEvent
     getter width
     method constructor
     method getCoalescedEvents
+    method getPredictedEvents
 interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
@@ -5034,6 +5102,7 @@ interface RTCPeerConnection : EventTarget
     getter onconnectionstatechange
     getter ondatachannel
     getter onicecandidate
+    getter onicecandidateerror
     getter oniceconnectionstatechange
     getter onicegatheringstatechange
     getter onnegotiationneeded
@@ -5064,6 +5133,7 @@ interface RTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -5071,12 +5141,20 @@ interface RTCPeerConnection : EventTarget
     setter onconnectionstatechange
     setter ondatachannel
     setter onicecandidate
+    setter onicecandidateerror
     setter oniceconnectionstatechange
     setter onicegatheringstatechange
     setter onnegotiationneeded
     setter onremovestream
     setter onsignalingstatechange
     setter ontrack
+interface RTCPeerConnectionIceErrorEvent : Event
+    attribute @@toStringTag
+    getter errorCode
+    getter errorText
+    getter hostCandidate
+    getter url
+    method constructor
 interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
@@ -5461,6 +5539,7 @@ interface SVGElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -5491,6 +5570,7 @@ interface SVGElement : Element
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawupdate
     getter onpointerup
     getter onprogress
     getter onratechange
@@ -5548,6 +5628,7 @@ interface SVGElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -5578,6 +5659,7 @@ interface SVGElement : Element
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawupdate
     setter onpointerup
     setter onprogress
     setter onratechange
@@ -6583,6 +6665,7 @@ interface SpeechSynthesisErrorEvent : SpeechSynthesisEvent
 interface SpeechSynthesisEvent : Event
     attribute @@toStringTag
     getter charIndex
+    getter charLength
     getter elapsedTime
     getter name
     getter utterance
@@ -6758,6 +6841,10 @@ interface TextEvent : UIEvent
     method initTextEvent
 interface TextMetrics
     attribute @@toStringTag
+    getter actualBoundingBoxAscent
+    getter actualBoundingBoxDescent
+    getter actualBoundingBoxLeft
+    getter actualBoundingBoxRight
     getter width
     method constructor
 interface TextTrack : EventTarget
@@ -8631,6 +8718,7 @@ interface webkitRTCPeerConnection : EventTarget
     getter onconnectionstatechange
     getter ondatachannel
     getter onicecandidate
+    getter onicecandidateerror
     getter oniceconnectionstatechange
     getter onicegatheringstatechange
     getter onnegotiationneeded
@@ -8661,6 +8749,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -8668,6 +8757,7 @@ interface webkitRTCPeerConnection : EventTarget
     setter onconnectionstatechange
     setter ondatachannel
     setter onicecandidate
+    setter onicecandidateerror
     setter oniceconnectionstatechange
     setter onicegatheringstatechange
     setter onnegotiationneeded
@@ -8847,6 +8937,7 @@ interface webkitURL
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter ongotpointercapture
     getter onhashchange
     getter oninput
@@ -8884,6 +8975,7 @@ interface webkitURL
     getter onpointermove
     getter onpointerout
     getter onpointerover
+    getter onpointerrawupdate
     getter onpointerup
     getter onpopstate
     getter onprogress
@@ -9031,6 +9123,7 @@ interface webkitURL
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter ongotpointercapture
     setter onhashchange
     setter oninput
@@ -9068,6 +9161,7 @@ interface webkitURL
     setter onpointermove
     setter onpointerout
     setter onpointerover
+    setter onpointerrawupdate
     setter onpointerup
     setter onpopstate
     setter onprogress

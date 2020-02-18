@@ -3,14 +3,9 @@ package Portable::Config;
 use 5.008;
 use strict;
 use warnings;
-use Carp            ();
-use File::Spec 3.29 ();
+use Portable::FileSpec;
 
-our $VERSION = '1.17';
-
-
-
-
+our $VERSION = '1.22';
 
 #####################################################################
 # Constructor
@@ -19,7 +14,7 @@ sub new {
 	my $class  = shift;
 	my $parent = shift;
 	unless ( Portable::_HASH($parent->portable_config) ) {
-		Carp::croak('Missing or invalid config key in portable.perl');
+		die('Missing or invalid config key in portable.perl');
 	}
 
 	# Create the object
@@ -37,10 +32,13 @@ sub new {
 			$self->{$key} = $conf->{$key};
 			next;
 		}
-		my $method = ($key eq 'perlpath') ? 'catfile' : 'catdir';
-		$self->{$key} = File::Spec->$method(
-			$root, split /\//, $conf->{$key},
-		); #join path to directory of portable perl with value from config file
+		#join path to directory of portable perl with value from config file
+		if ($key eq 'perlpath') {
+		  $self->{$key} = Portable::FileSpec::catfile($root, split /\//, $conf->{$key});
+		}
+		else {
+		  $self->{$key} = Portable::FileSpec::catdir($root, split /\//, $conf->{$key});
+		}
 	}
 	foreach my $key ( grep { /^ld|^libpth$/ } keys %$self ) { 
 		#special handling of linker config variables and libpth
@@ -85,7 +83,7 @@ sub apply {
 	my $volume = quotemeta $parent->dist_volume;
 	foreach my $key ( sort keys %Config::Config ) {
 		next unless defined $Config::Config{$key};
-		next if     $Config::Config{$key} =~ /$volume/;
+		next if     $Config::Config{$key} =~ /$volume/i;
 		next unless $Config::Config{$key} =~ /\b[a-z]\:/i;
 		die "Failed to localize \$Config::Config{$key} ($Config::Config{$key})";
 	}

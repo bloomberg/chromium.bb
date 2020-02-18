@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 
 class GURL;
-@class OpenNewTabCommand;
 @class ReadingListAddCommand;
 @class SendTabToSelfCommand;
 
@@ -91,6 +90,9 @@ class GURL;
 // Shows the bookmarks manager.
 - (void)showBookmarksManager;
 
+// Shows the dialog for sending the current tab between a user's devices.
+- (void)showSendTabToSelfUI;
+
 // Requests the "desktop" version of the current page in the active tab.
 - (void)requestDesktopSite;
 
@@ -109,6 +111,10 @@ class GURL;
 
 // Sends the tab to another of the user's devices using the data in |command|.
 - (void)sendTabToSelf:(SendTabToSelfCommand*)command;
+
+// Show/Hide the activity indicator overlay that appears over the view to
+// prevent interaction with the web page.
+- (void)showActivityOverlay:(BOOL)shown;
 
 @end
 

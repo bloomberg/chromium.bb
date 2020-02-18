@@ -44,12 +44,6 @@ constexpr base::TimeDelta kLowBufferThresholdMediaSource(
 constexpr base::TimeDelta kHighBufferThresholdMediaSource(
     base::TimeDelta::FromMilliseconds(1000));
 
-// Buffering parameters when load_type is kLoadTypeCommunication.
-constexpr base::TimeDelta kLowBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(0));
-constexpr base::TimeDelta kHighBufferThresholdCommunication(
-    base::TimeDelta::FromMilliseconds(20));
-
 // Interval between two updates of the media time.
 constexpr base::TimeDelta kTimeUpdateInterval(
     base::TimeDelta::FromMilliseconds(250));
@@ -133,9 +127,6 @@ void MediaPipelineImpl::Initialize(
     if (load_type == kLoadTypeMediaSource) {
       low_threshold = kLowBufferThresholdMediaSource;
       high_threshold = kHighBufferThresholdMediaSource;
-    } else if (load_type == kLoadTypeCommunication) {
-      low_threshold = kLowBufferThresholdCommunication;
-      high_threshold = kHighBufferThresholdCommunication;
     }
     scoped_refptr<BufferingConfig> buffering_config(
         new BufferingConfig(low_threshold, high_threshold));
@@ -407,7 +398,12 @@ void MediaPipelineImpl::OnBufferingNotification(bool is_buffering) {
     // state:
     // HAVE_NOTHING -> HAVE_CURRENT_DATA
     // HAVE_ENOUGH -> HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA
-    client_.buffering_state_cb.Run(state);
+    // DEMUXER_UNDERFLOW is the only possible reason. We pass encoded audio to
+    // the vendor-specific backend. Our buffering controller only reports a
+    // buffering state change based on based on the difference between the
+    // current playout PTS reported by the vendor backed and the most recent
+    // encoded buffer.
+    client_.buffering_state_cb.Run(state, ::media::DEMUXER_UNDERFLOW);
   }
 
   if (is_buffering && (backend_state_ == BACKEND_STATE_PLAYING)) {

@@ -11,13 +11,13 @@
 #include "include/core/SkMatrix.h"
 #include "include/core/SkStrokeRec.h"
 #include "include/core/SkTypes.h"
-#include "include/private/GrOpList.h"
 #include "include/private/SkTArray.h"
 #include "src/core/SkArenaAlloc.h"
 #include "src/core/SkClipStack.h"
 #include "src/core/SkStringUtils.h"
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrAppliedClip.h"
+#include "src/gpu/GrOpList.h"
 #include "src/gpu/GrPathRendering.h"
 #include "src/gpu/GrPrimitiveProcessor.h"
 #include "src/gpu/ops/GrDrawOp.h"
@@ -128,7 +128,7 @@ private:
     bool onIsUsed(GrSurfaceProxy*) const override;
 
     // Must only be called if native stencil buffer clearing is enabled
-    void setStencilLoadOp(GrLoadOp op);
+    void setStencilLoadOp(GrLoadOp op) { fStencilLoadOp = op; }
     // Must only be called if native color buffer clearing is enabled.
     void setColorLoadOp(GrLoadOp op, const SkPMColor4f& color);
     // Sets the clear color to transparent black
@@ -137,10 +137,15 @@ private:
         this->setColorLoadOp(op, kDefaultClearColor);
     }
 
+    enum class CanDiscardPreviousOps : bool {
+        kYes = true,
+        kNo = false
+    };
+
     // Perform book-keeping for a fullscreen clear, regardless of how the clear is implemented later
     // (i.e. setColorLoadOp(), adding a ClearOp, or adding a GrFillRectOp that covers the device).
     // Returns true if the clear can be converted into a load op (barring device caps).
-    bool resetForFullscreenClear();
+    bool resetForFullscreenClear(CanDiscardPreviousOps);
 
     void deleteOps();
 

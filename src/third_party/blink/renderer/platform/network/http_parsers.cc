@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -141,9 +140,8 @@ bool IsValidHTTPToken(const String& characters) {
 }
 
 bool IsContentDispositionAttachment(const String& content_disposition) {
-  CString cstring(content_disposition.Utf8());
-  std::string string(cstring.data(), cstring.length());
-  return net::HttpContentDisposition(string, std::string()).is_attachment();
+  return net::HttpContentDisposition(content_disposition.Utf8(), std::string())
+      .is_attachment();
 }
 
 // https://html.spec.whatwg.org/C/#attr-meta-http-equiv-refresh
@@ -214,7 +212,7 @@ bool ParseHTTPRefresh(const String& refresh,
 }
 
 double ParseDate(const String& value) {
-  return ParseDateFromNullTerminatedCharacters(value.Utf8().data());
+  return ParseDateFromNullTerminatedCharacters(value.Utf8().c_str());
 }
 
 AtomicString ExtractMIMETypeFromMediaType(const AtomicString& media_type) {

@@ -23,6 +23,22 @@ source_set("gfx_export") {
   ]
 }
 
+# Used for color generation at build time without importing all the gfx.
+jumbo_component("color_utils") {
+  sources = [
+    "color_palette.h",
+    "color_utils.cc",
+    "color_utils.h",
+  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
+  public_deps = [
+    ":gfx_export",
+    "//base",
+    "//skia",
+    "//ui/gfx/geometry",
+  ]
+}
+
 jumbo_component("geometry_skia") {
   sources = [
     "geometry_skia_export.h",
@@ -53,11 +69,8 @@ jumbo_component("gfx") {
     "break_list.h",
     "color_analysis.cc",
     "color_analysis.h",
-    "color_palette.h",
     "color_transform.cc",
     "color_transform.h",
-    "color_utils.cc",
-    "color_utils.h",
     "decorated_text.cc",
     "decorated_text.h",
     "decorated_text_mac.h",
@@ -168,6 +181,7 @@ jumbo_component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
+    "video_types.h",
     "vsync_provider.cc",
     "vsync_provider.h",
     "win/crash_id_helper.cc",
@@ -241,6 +255,7 @@ jumbo_component("gfx") {
 
   public_deps = [
     ":color_space",
+    ":color_utils",
     ":geometry_skia",
     ":gfx_switches",
     ":memory_buffer_sources",
@@ -305,6 +320,13 @@ jumbo_component("gfx") {
     sources += [
       "font_fallback_skia.cc",
       "font_render_params_skia.cc",
+    ]
+  }
+
+  if (is_android || is_fuchsia || is_win) {
+    sources += [
+      "font_fallback_skia_impl.cc",
+      "font_fallback_skia_impl.h",
     ]
   }
 
@@ -626,6 +648,13 @@ jumbo_static_library("test_support") {
 
     deps += [ "//third_party:freetype_harfbuzz" ]
   }
+
+  if (is_win) {
+    sources += [
+      "test/font_fallback_test_data.cc",
+      "test/font_fallback_test_data.h",
+    ]
+  }
 }
 
 test("gfx_unittests") {
@@ -706,6 +735,7 @@ test("gfx_unittests") {
       "sequential_id_generator_unittest.cc",
       "shadow_value_unittest.cc",
       "skbitmap_operations_unittest.cc",
+      "skia_util_unittest.cc",
       "skia_vector_animation_unittest.cc",
       "skrect_conversion_unittest.cc",
       "transform_util_unittest.cc",
@@ -832,7 +862,6 @@ if (is_android) {
       "../android/java/src/org/chromium/ui/gfx/BitmapHelper.java",
       "../android/java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
     ]
-    jni_package = "gfx"
   }
 }
 

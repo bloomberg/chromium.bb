@@ -49,8 +49,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
 
   void VerifyControllerSize(size_t expected,
                             const std::string& presentationId) {
-    EXPECT_TRUE(
-        base::ContainsKey(manager_.local_presentations_, presentationId));
+    EXPECT_TRUE(base::Contains(manager_.local_presentations_, presentationId));
     EXPECT_EQ(expected, manager_.local_presentations_[presentationId]
                             ->pending_controllers_.size());
   }

@@ -51,23 +51,50 @@ CommandUtil.getCommandEntry = (fileManager, element) => {
  * @return {!Array<!Entry>} Entries of the found node.
  */
 CommandUtil.getCommandEntries = (fileManager, element) => {
+  // DirectoryItem has "entry" attribute.
   if (element && element.entry) {
-    // DirectoryItem has "entry" attribute.
     return [element.entry];
-  } else if (element.selectedItem && element.selectedItem.entry) {
-    // DirectoryTree has the selected item.
+  }
+
+  // DirectoryTree has the selected item.
+  if (element.selectedItem && element.selectedItem.entry) {
     return [element.selectedItem.entry];
-  } else if (element.selectedItems && element.selectedItems.length) {
-    // File list (cr.ui.List).
+  }
+
+  // The event target could still be a descendant of a DirectoryItem element
+  // (e.g. the eject button).
+  if (fileManager.ui.directoryTree.contains(/** @type {Node} */ (element))) {
+    const treeItem = element.closest('.tree-item');
+    if (treeItem && treeItem.entry) {
+      return [treeItem.entry];
+    }
+  }
+
+  // File list (cr.ui.List).
+  if (element.selectedItems && element.selectedItems.length) {
     const entries = element.selectedItems;
     // Check if it is Entry or not by checking for toURL().
     return entries.filter(entry => ('toURL' in entry));
-  } else if (fileManager.ui.actionbar.contains(/** @type {Node} */ (element))) {
-    // Commands in the action bar can only act in the currently selected files.
-    return fileManager.getSelection().entries;
-  } else {
-    return [];
   }
+
+  // Commands in the action bar can only act in the currently selected files.
+  if (fileManager.ui.actionbar.contains(/** @type {Node} */ (element))) {
+    return fileManager.getSelection().entries;
+  }
+
+  // Context Menu: redirect to the element the context menu is displayed for.
+  if (element.contextElement) {
+    return CommandUtil.getCommandEntries(fileManager, element.contextElement);
+  }
+
+  // Context Menu Item: redirect to the element the context menu is displayed
+  // for.
+  if (element.parentElement.contextElement) {
+    return CommandUtil.getCommandEntries(
+        fileManager, element.parentElement.contextElement);
+  }
+
+  return [];
 };
 
 /**
@@ -346,6 +373,9 @@ class CommandHandler {
      */
     this.commands_ = {};
 
+    /** @private {?Element} */
+    this.lastFocusedElement_ = null;
+
     // Decorate command tags in the document.
     const commands = fileManager.document.querySelectorAll('command');
     for (let i = 0; i < commands.length; i++) {
@@ -359,10 +389,10 @@ class CommandHandler {
     fileManager.document.addEventListener(
         'canExecute', this.onCanExecute_.bind(this));
 
-    // TODO(lucmult): Try to remove this event listener to avoid flickering.
-    selectionHandler.addEventListener(
-        FileSelectionHandler.EventType.CHANGE_THROTTLED,
-        this.updateAvailability.bind(this));
+    cr.ui.contextMenuHandler.addEventListener(
+        'show', this.onContextMenuShow_.bind(this));
+    cr.ui.contextMenuHandler.addEventListener(
+        'hide', this.onContextMenuHide_.bind(this));
 
     chrome.commandLinePrivate.hasSwitch(
         'disable-zip-archiver-packer', disabled => {
@@ -370,12 +400,27 @@ class CommandHandler {
         });
   }
 
-  /**
-   * Updates the availability of all commands.
-   */
-  updateAvailability() {
-    for (const id in this.commands_) {
-      this.commands_[id].canExecuteChange();
+  /** @param {!Event} event */
+  onContextMenuShow_(event) {
+    this.lastFocusedElement_ = document.activeElement;
+    const menu = event.menu;
+    // Set focus asynchronously to give time for menu "show" event to finish and
+    // have all items set up before focusing.
+    setTimeout(() => {
+      if (!menu.hidden) {
+        menu.focusSelectedItem();
+      }
+    }, 0);
+  }
+
+  /** @param {!Event} event */
+  onContextMenuHide_(event) {
+    if (this.lastFocusedElement_) {
+      const activeElement = document.activeElement;
+      if (activeElement && activeElement.tagName === 'BODY') {
+        this.lastFocusedElement_.focus();
+      }
+      this.lastFocusedElement_ = null;
     }
   }
 
@@ -418,9 +463,10 @@ CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
  * Supported disk file system types for renaming.
  * @private @const {!Array<!VolumeManagerCommon.FileSystemType>}
  */
-CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_ = [
+CommandHandler.RENAME_DISK_FILE_SYSTEM_SUPPORT_ = [
   VolumeManagerCommon.FileSystemType.EXFAT,
-  VolumeManagerCommon.FileSystemType.VFAT
+  VolumeManagerCommon.FileSystemType.VFAT,
+  VolumeManagerCommon.FileSystemType.NTFS,
 ];
 
 /**
@@ -527,10 +573,9 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     // Find volumes to unmount.
     let volumes = [];
     let label = '';
-    const element = event.target;
-    if (element instanceof EntryListItem) {
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
+    if (entry instanceof EntryList) {
       // The element is a group of removable partitions.
-      const entry = element.entry;
       if (!entry) {
         errorCallback();
         return;
@@ -540,13 +585,14 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
       label = entry.label || '';
     } else {
       // The element is a removable volume with no partitions.
-      const volumeInfo = CommandUtil.getElementVolumeInfo(element, fileManager);
+      const volumeInfo =
+          CommandUtil.getElementVolumeInfo(event.target, fileManager);
       if (!volumeInfo) {
         errorCallback();
         return;
       }
       volumes.push(volumeInfo);
-      label = element.label || '';
+      label = volumeInfo.label || '';
     }
 
     // Eject volumes of which there may be multiple.
@@ -561,16 +607,15 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
   canExecute(event, fileManager) {
     const volumeInfo =
         CommandUtil.getElementVolumeInfo(event.target, fileManager);
-    const entry = event.target.entry;
+    const entry = CommandUtil.getCommandEntry(fileManager, event.target);
     if (!volumeInfo && !entry) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    const volumeType = (event.target instanceof EntryListItem) ?
-        entry.rootType :
-        volumeInfo.volumeType;
+    const volumeType =
+        (entry instanceof EntryList) ? entry.rootType : volumeInfo.volumeType;
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
@@ -595,7 +640,15 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
 CommandHandler.COMMANDS_['format'] = new class extends Command {
   execute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(fileManager, event.target);
+    let root;
+    if (fileManager.ui.directoryTree.contains(
+            /** @type {Node} */ (event.target))) {
+      // The command is executed from the directory tree context menu.
+      root = CommandUtil.getCommandEntry(fileManager, event.target);
+    } else {
+      // The command is executed from the gear menu.
+      root = directoryModel.getCurrentDirEntry();
+    }
     // If an entry is not found from the event target, use the current
     // directory. This can happen for the format button for unsupported and
     // unrecognized volumes.
@@ -605,18 +658,33 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
 
     const volumeInfo = fileManager.volumeManager.getVolumeInfo(assert(root));
     if (volumeInfo) {
-      fileManager.ui.confirmDialog.show(
-          loadTimeData.getString('FORMATTING_WARNING'),
-          chrome.fileManagerPrivate.formatVolume.bind(
-              null, volumeInfo.volumeId),
-          null, null);
+      if (loadTimeData.getBoolean('FORMAT_DIALOG_ENABLED')) {
+        fileManager.ui.formatDialog.showModal(volumeInfo);
+      } else {
+        fileManager.ui.confirmDialog.show(
+            loadTimeData.getString('FORMATTING_WARNING'),
+            chrome.fileManagerPrivate.formatVolume.bind(
+                null, volumeInfo.volumeId,
+                chrome.fileManagerPrivate.FormatFileSystemType.VFAT,
+                'UNTITLED'),
+            null, null);
+      }
     }
   }
 
   /** @override */
   canExecute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(fileManager, event.target);
+    let root;
+    if (fileManager.ui.directoryTree.contains(
+            /** @type {Node} */ (event.target))) {
+      // The command is executed from the directory tree context menu.
+      root = CommandUtil.getCommandEntry(fileManager, event.target);
+    } else {
+      // The command is executed from the gear menu.
+      root = directoryModel.getCurrentDirEntry();
+    }
+
     // |root| is null for unrecognized volumes. Enable format command for such
     // volumes.
     const isUnrecognizedVolume = (root == null);
@@ -627,6 +695,8 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
     const location = root && fileManager.volumeManager.getLocationInfo(root);
     const writable = location && !location.isReadOnly;
     const isRoot = location && location.isRootEntry;
+
+    // Enable the command if this is a removable device (e.g. a USB drive).
     const removableRoot = location && isRoot &&
         location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
     event.canExecute = removableRoot && (isUnrecognizedVolume || writable);
@@ -918,7 +988,11 @@ CommandHandler.COMMANDS_['delete'] = new class extends Command {
         !this.containsReadOnlyEntry_(entries, fileManager) &&
         !fileManager.directoryModel.isReadOnly() &&
         CommandUtil.hasCapability(entries, 'canDelete');
-    event.command.setHidden(false);
+
+    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // space in the file list.
+    const noEntries = entries.length === 0;
+    event.command.setHidden(noEntries);
   }
 
   /**
@@ -1037,6 +1111,15 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
 
   /** @override */
   canExecute(event, fileManager) {
+    const fileTransferController = fileManager.fileTransferController;
+
+    if (!fileTransferController) {
+      // File Open and SaveAs dialogs do not have a fileTransferController.
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
+    }
+
     const command = event.command;
     const target = event.target;
     const isMove = command.id === 'cut';
@@ -1088,6 +1171,7 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
       if (CommandUtil.shouldIgnoreEvents(assert(fileManager.document))) {
         return false;
       }
+
       if (!fileManager.getSelection().entries.every(
               CommandUtil.shouldShowMenuItemsForEntry.bind(
                   null, volumeManager))) {
@@ -1102,7 +1186,6 @@ CommandHandler.cutCopyCommand_ = new class extends Command {
         return false;
       }
 
-      const fileTransferController = fileManager.fileTransferController;
       return isMove ? fileTransferController.canCutOrDrag() :
                       fileTransferController.canCopyOrDrag();
     }
@@ -1181,7 +1264,7 @@ CommandHandler.COMMANDS_['rename'] = new class extends Command {
           const removable =
               location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
           event.canExecute = removable && writable &&
-              CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
+              CommandHandler.RENAME_DISK_FILE_SYSTEM_SUPPORT_.indexOf(
                   volumeInfo.diskFileSystemType) > -1;
           event.command.setHidden(!removable);
           return removable;
@@ -1481,7 +1564,6 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new class extends Command {
         });
   }
 
-
   /** @override */
   canExecute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
@@ -1573,7 +1655,11 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
       return;
     }
 
-    event.command.setHidden(false);
+    // Hide if there isn't anything selected, meaning user clicked in an empty
+    // space in the file list.
+    const noEntries = selection.entries.length === 0;
+    event.command.setHidden(noEntries);
+
     const isOnEligibleLocation =
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
         true :
@@ -1591,6 +1677,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
 CommandHandler.COMMANDS_['share'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -1600,7 +1687,7 @@ CommandHandler.COMMANDS_['share'] = new class extends Command {
           const action =
               actionsModel.getAction(ActionsModel.CommonActionId.SHARE);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -1650,6 +1737,7 @@ CommandHandler.COMMANDS_['share'] = new class extends Command {
 CommandHandler.COMMANDS_['manage-in-drive'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -1659,7 +1747,7 @@ CommandHandler.COMMANDS_['manage-in-drive'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.MANAGE_IN_DRIVE);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -1942,9 +2030,11 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] =
 /**
  * Creates a shortcut of the selected folder (single only).
  */
-CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
+CommandHandler.COMMANDS_['pin-folder'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
+
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
           if (!actionsModel) {
@@ -1953,7 +2043,7 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.CREATE_FOLDER_SHORTCUT);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }
@@ -2002,9 +2092,10 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = new class extends Command {
 /**
  * Removes the folder shortcut.
  */
-CommandHandler.COMMANDS_['remove-folder-shortcut'] = new class extends Command {
+CommandHandler.COMMANDS_['unpin-folder'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    const actionsController = fileManager.actionsController;
 
     fileManager.actionsController.getActionsForEntries(entries).then(
         (/** ?ActionsModel */ actionsModel) => {
@@ -2014,7 +2105,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = new class extends Command {
           const action = actionsModel.getAction(
               ActionsModel.InternalActionId.REMOVE_FOLDER_SHORTCUT);
           if (action) {
-            action.execute();
+            actionsController.executeAction(action);
           }
         });
   }

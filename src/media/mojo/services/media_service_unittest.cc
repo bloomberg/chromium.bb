@@ -99,7 +99,8 @@ class MockRendererClient : public mojom::RendererClient {
                void(base::TimeDelta time,
                     base::TimeDelta max_time,
                     base::TimeTicks capture_time));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState state));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState state, BufferingStateChangeReason reason));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
@@ -266,8 +267,7 @@ class MediaServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .WillOnce(QuitLoop(&run_loop));
     renderer_->Initialize(
-        std::move(client_ptr_info), std::move(streams), base::nullopt,
-        base::nullopt, /* allow_credentials */ false,
+        std::move(client_ptr_info), std::move(streams), nullptr,
         base::BindOnce(&MediaServiceTest::OnRendererInitialized,
                        base::Unretained(this)));
     run_loop.Run();

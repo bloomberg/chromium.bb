@@ -43,17 +43,16 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER) || BUILDFLAG(CLANG_COVERAGE)
-      terminate_child_on_shutdown_(false),
+      terminate_child_on_shutdown_(false)
 #else
-      terminate_child_on_shutdown_(terminate_on_shutdown),
+      terminate_child_on_shutdown_(terminate_on_shutdown)
 #endif
-      weak_factory_(this) {
+{
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 
-  helper_ = new ChildProcessLauncherHelper(
-      child_process_id, client_thread_id_, std::move(command_line),
-      std::move(delegate), weak_factory_.GetWeakPtr(), terminate_on_shutdown,
+  helper_ = base::MakeRefCounted<ChildProcessLauncherHelper>(
+      child_process_id, std::move(command_line), std::move(delegate),
+      weak_factory_.GetWeakPtr(), terminate_on_shutdown,
 #if defined(OS_ANDROID)
       client_->CanUseWarmUpConnection(),
 #endif

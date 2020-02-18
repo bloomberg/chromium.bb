@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 
@@ -50,11 +49,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [super setUp];
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:profile]);
+  [self addAutofillProfile:profile];
 
   autofill::CreditCard localCard = autofill::test::GetCreditCard();  // Visa.
   localCard.set_billing_address_id(profile.guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:localCard]);
+  [self addCreditCard:localCard];
 }
 
 #pragma mark - Tests
@@ -62,11 +61,9 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // Tests when PaymentRequest.show() is called without a promise the payment
 // sheet is displayed with the payment details.
 - (void)testBuyWithNoPromise {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"buyWithNoPromise"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buyWithNoPromise"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -87,8 +84,7 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // the promise resolves, the payment sheet displays the payment details and the
 // Buy button is enabled.
 - (void)testBuyWithResolvingPromise {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
   // Disable EarlGrey's synchronization. Needed likely due to
   // MDCActivityIndicator being present on the payment request view.
@@ -96,8 +92,7 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"buyWithResolvingPromise"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buyWithResolvingPromise"];
 
   // Wait until the payment request view shows.
   ConditionBlock condition = ^{
@@ -141,8 +136,7 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 // is initially displayed with a spinner and the Buy button is not enabled. Once
 // the promise rejects, the payment is aborted.
 - (void)testBuyWithRejectingPromise {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kShowPromisePage)];
 
   // Disable EarlGrey's synchronization. Needed likely due to
   // MDCActivityIndicator being present on the payment request view.
@@ -150,8 +144,7 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
           setValue:@NO
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"buyWithRejectingPromise"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buyWithRejectingPromise"];
 
   // Wait until the payment request view shows.
   ConditionBlock condition = ^{

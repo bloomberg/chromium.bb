@@ -29,6 +29,20 @@
     You're viewing the source of a web page
   </message>
 
+  <!-- Safety Tip summary strings -->
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_NAME" desc="Name of safety tips, displayed in bold as part of the title of the safety tip bubble.">
+    Safety tip:
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE" desc="Title of Safety Tip bubble when triggered.">
+    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious behavior
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION" desc="Body of message to display in the page info bubble when you are viewing a page that triggered a safety tip.">
+    This page might try to trick you, steal personal information, or harm your device. Be cautious when entering personal information or opening downloaded files.
+  </message>
+  <message name="IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON" desc="Text of button to leave a suspicious page shown on the safety tip page info bubble.">
+    Leave this site
+  </message>
+
   <!-- Viewing file strings -->
   <message name="IDS_PAGE_INFO_FILE_PAGE" desc="Message to display in the page info bubble when the page the user has navigated to is a file:// page">
     You're viewing a local or shared file
@@ -150,8 +164,8 @@
     <message name="IDS_PAGE_INFO_PARTIAL_ADDRESS" desc="Locality with missing state as reported in the EV identity text.">
       <ph name="CITY">$1<ex>Mountain View</ex></ph>, <ph name="COUNTRY">$2<ex>US</ex></ph>
     </message>
-    <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="The text of the identity section when the page is secured with a valid EV cert.">
-      The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>.
+    <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="Describes the legal entity that the current page's HTTPS certificate was issued to. Shown in the certificate area in the Page Info bubble when a HTTPS site with a valid EV certificate is loaded.">
+      Issued to: <ph name="ORGANIZATION">$1<ex>Google LLC</ex></ph> [<ph name="JURISDICTION">$2<ex>US</ex></ph>]
     </message>
 
     <!-- Certificate Viewer link -->

@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -110,10 +110,10 @@ class CORE_EXPORT DisplayLockContext final
   void DidStyle(LifecycleTarget);
   bool ShouldLayout(LifecycleTarget) const;
   void DidLayout(LifecycleTarget);
-  bool ShouldPrePaint() const;
-  void DidPrePaint();
-  bool ShouldPaint() const;
-  void DidPaint();
+  bool ShouldPrePaint(LifecycleTarget) const;
+  void DidPrePaint(LifecycleTarget);
+  bool ShouldPaint(LifecycleTarget) const;
+  void DidPaint(LifecycleTarget);
 
   // Returns true if the last style recalc traversal was blocked at this
   // element, either for itself, its children or its descendants.
@@ -164,6 +164,18 @@ class CORE_EXPORT DisplayLockContext final
         std::max(blocked_style_traversal_type_, type);
   }
 
+  void NotifyReattachLayoutTreeWasBlocked() {
+    reattach_layout_tree_was_blocked_ = true;
+  }
+
+  void NotifyChildLayoutWasBlocked() { child_layout_was_blocked_ = true; }
+
+  // Inform the display lock that it needs a graphics layer collection when it
+  // needs to paint.
+  void NotifyNeedsGraphicsLayerCollection() {
+    needs_graphics_layer_collection_ = true;
+  }
+
   // Notify this element will be disconnected.
   void NotifyWillDisconnect();
 
@@ -175,12 +187,12 @@ class CORE_EXPORT DisplayLockContext final
   }
 
   LayoutUnit GetLockedContentLogicalWidth() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Width()
-                                       : locked_content_logical_size_->Height();
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Width()
+                                       : locked_content_logical_size_.Height();
   }
   LayoutUnit GetLockedContentLogicalHeight() const {
-    return is_horizontal_writing_mode_ ? locked_content_logical_size_->Height()
-                                       : locked_content_logical_size_->Width();
+    return is_horizontal_writing_mode_ ? locked_content_logical_size_.Height()
+                                       : locked_content_logical_size_.Width();
   }
 
  private:
@@ -219,7 +231,7 @@ class CORE_EXPORT DisplayLockContext final
   // as well if needed. They return true if the element or its subtree were
   // dirty, and false otherwise.
   bool MarkForStyleRecalcIfNeeded();
-  bool MarkAncestorsForLayoutIfNeeded();
+  bool MarkForLayoutIfNeeded();
   bool MarkAncestorsForPrePaintIfNeeded();
   bool MarkPaintLayerNeedsRepaint();
 
@@ -252,6 +264,8 @@ class CORE_EXPORT DisplayLockContext final
 
   // Helper functions to resolve the update/commit promises.
   enum ResolverState { kResolve, kReject, kDetach };
+  void MakeResolver(ScriptState*, Member<ScriptPromiseResolver>*);
+  bool HasResolver();
   void FinishUpdateResolver(ResolverState, const char* reject_reason = nullptr);
   void FinishCommitResolver(ResolverState, const char* reject_reason = nullptr);
   void FinishAcquireResolver(ResolverState,
@@ -277,6 +291,12 @@ class CORE_EXPORT DisplayLockContext final
   // when acquiring this lock should immediately resolve the acquire promise.
   bool ConnectedToView() const;
 
+  bool ShouldPerformUpdatePhase(DisplayLockBudget::Phase phase) const;
+
+  // During an attempt to commit, clean up state and reject pending resolver
+  // promises if the lock is not connected to the tree.
+  bool CleanupAndRejectCommitIfNotConnected();
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> commit_resolver_;
@@ -295,18 +315,27 @@ class CORE_EXPORT DisplayLockContext final
   HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
-  base::Optional<LayoutSize> locked_content_logical_size_;
+  LayoutSize locked_content_logical_size_;
 
   bool update_forced_ = false;
-  bool in_lifecycle_update_ = false;
   bool activatable_ = false;
 
   bool is_locked_after_connect_ = false;
   StyleType blocked_style_traversal_type_ = kStyleUpdateNotRequired;
+  // Signifies whether we've blocked a layout tree reattachment on |element_|'s
+  // descendants or not, so that we can mark |element_| for reattachment when
+  // needed.
+  bool reattach_layout_tree_was_blocked_ = false;
 
   bool needs_effective_allowed_touch_action_update_ = false;
   bool needs_prepaint_subtree_walk_ = false;
   bool is_horizontal_writing_mode_ = true;
+  bool needs_graphics_layer_collection_ = false;
+  // Will be true if child traversal was blocked on a previous layout run on the
+  // locked element. We need to keep track of this to ensure that on the next
+  // layout run where the descendants of the locked element are allowed to be
+  // traversed into, we will traverse to the children of the locked element.
+  bool child_layout_was_blocked_ = false;
 
   TaskHandle timeout_task_handle_;
 };

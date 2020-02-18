@@ -21,6 +21,8 @@ class DummyObserver {
 
   MOCK_METHOD1(NotifyAlways, void(DummyNode*));
   MOCK_METHOD1(NotifyOnlyOnChanges, void(DummyNode*));
+  MOCK_METHOD1(NotifyAlwaysConst, void(const DummyNode*));
+  MOCK_METHOD1(NotifyOnlyOnChangesConst, void(const DummyNode*));
 };
 
 class DummyNode {
@@ -30,11 +32,14 @@ class DummyNode {
 
   void AddObserver(DummyObserver* observer) {
     observers_.AddObserver(observer);
+    new_observers_.push_back(observer);
   }
 
   base::ObserverList<DummyObserver>::Unchecked& observers() {
     return observers_;
   }
+
+  const std::vector<DummyObserver*>& GetObservers() { return new_observers_; }
 
   bool observed_always() const { return observed_always_.value(); }
   bool observed_only_on_changes() const {
@@ -49,15 +54,21 @@ class DummyNode {
   }
 
  private:
-  using ObservedProperty = ObservedPropertyImpl<DummyNode, DummyObserver>;
+  using ObservedProperty =
+      ObservedPropertyImpl<DummyNode, DummyObserver, DummyNode, DummyObserver>;
 
-  ObservedProperty::NotifiesAlways<bool, &DummyObserver::NotifyAlways>
+  ObservedProperty::NotifiesAlways<bool,
+                                   &DummyObserver::NotifyAlways,
+                                   &DummyObserver::NotifyAlwaysConst>
       observed_always_{false};
-  ObservedProperty::NotifiesOnlyOnChanges<bool,
-                                          &DummyObserver::NotifyOnlyOnChanges>
+  ObservedProperty::NotifiesOnlyOnChanges<
+      bool,
+      &DummyObserver::NotifyOnlyOnChanges,
+      &DummyObserver::NotifyOnlyOnChangesConst>
       observed_only_on_changes_{false};
 
   base::ObserverList<DummyObserver>::Unchecked observers_;
+  std::vector<DummyObserver*> new_observers_;
 };
 
 class GraphPropertiesTest : public ::testing::Test {
@@ -80,16 +91,19 @@ TEST_F(GraphPropertiesTest, ObservedAlwaysProperty) {
   EXPECT_EQ(false, node_.observed_always());
 
   EXPECT_CALL(observer_, NotifyAlways(&node_));
+  EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(false);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(false, node_.observed_always());
 
   EXPECT_CALL(observer_, NotifyAlways(&node_));
+  EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(true);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(true, node_.observed_always());
 
   EXPECT_CALL(observer_, NotifyAlways(&node_));
+  EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(true);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(true, node_.observed_always());
@@ -104,6 +118,7 @@ TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesProperty) {
   EXPECT_EQ(false, node_.observed_only_on_changes());
 
   EXPECT_CALL(observer_, NotifyOnlyOnChanges(&node_));
+  EXPECT_CALL(observer_, NotifyOnlyOnChangesConst(&node_));
   EXPECT_TRUE(node_.SetObservedOnlyOnChanges(true));
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(true, node_.observed_only_on_changes());

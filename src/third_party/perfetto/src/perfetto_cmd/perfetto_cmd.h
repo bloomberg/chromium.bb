@@ -24,20 +24,23 @@
 #include <time.h>
 
 #include "perfetto/base/build_config.h"
-#include "perfetto/base/event.h"
-#include "perfetto/base/scoped_file.h"
-#include "perfetto/base/unix_task_runner.h"
-#include "perfetto/tracing/core/consumer.h"
-#include "perfetto/tracing/ipc/consumer_ipc_client.h"
+#include "perfetto/ext/base/event_fd.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/unix_task_runner.h"
+#include "perfetto/ext/tracing/core/consumer.h"
+#include "perfetto/ext/tracing/ipc/consumer_ipc_client.h"
 #include "src/perfetto_cmd/rate_limiter.h"
 
 #include "src/perfetto_cmd/perfetto_cmd_state.pb.h"
 
 #if PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
-#include "perfetto/base/android_task_runner.h"
+#include "perfetto/ext/base/android_task_runner.h"
 #endif  // PERFETTO_BUILDFLAG(PERFETTO_ANDROID_BUILD)
 
 namespace perfetto {
+
+class PacketWriter;
 
 // Temporary directory for DropBox traces. Note that this is automatically
 // created by the system by setting setprop persist.traced.enable=1.
@@ -70,17 +73,23 @@ class PerfettoCmd : public Consumer {
   void SetupCtrlCSignalHandler();
   void FinalizeTraceAndExit();
   int PrintUsage(const char* argv0);
+  void PrintServiceState(bool success, const TracingServiceState&);
   void OnTimeout();
   bool is_detach() const { return !detach_key_.empty(); }
   bool is_attach() const { return !attach_key_.empty(); }
+  void SaveOutputToDropboxOrCrash();
+  void SaveOutputToIncidentTraceOrCrash();
 
   PlatformTaskRunner task_runner_;
   std::unique_ptr<perfetto::TracingService::ConsumerEndpoint>
       consumer_endpoint_;
   std::unique_ptr<TraceConfig> trace_config_;
+
+  std::unique_ptr<PacketWriter> packet_writer_;
   base::ScopedFstream trace_out_stream_;
+
   std::string trace_out_path_;
-  base::Event ctrl_c_evt_;
+  base::EventFd ctrl_c_evt_;
   std::string dropbox_tag_;
   bool did_process_full_trace_ = false;
   uint64_t bytes_written_ = 0;
@@ -88,6 +97,8 @@ class PerfettoCmd : public Consumer {
   std::string attach_key_;
   bool stop_trace_once_attached_ = false;
   bool redetach_once_attached_ = false;
+  bool query_service_ = false;
+  bool query_service_output_raw_ = false;
 };
 
 }  // namespace perfetto

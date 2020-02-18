@@ -1009,7 +1009,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   for (size_t i = 0; i < type_strings_to_prepopulate.size(); ++i) {
     const std::string type_string = type_strings_to_prepopulate[i];
     // Only handles known types.
-    if (!base::ContainsKey(known_type_strings_, type_string))
+    if (!base::Contains(known_type_strings_, type_string))
       continue;
     base::File::Error error = base::File::FILE_ERROR_FAILED;
     base::FilePath path = GetDirectoryForOriginAndType(

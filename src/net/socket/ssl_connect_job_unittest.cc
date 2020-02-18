@@ -78,18 +78,11 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
  public:
   SSLConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
         session_(CreateNetworkSession()),
-        ssl_client_socket_context_(&cert_verifier_,
-                                   &transport_security_state_,
-                                   &ct_verifier_,
-                                   &ct_policy_enforcer_,
-                                   nullptr /* ssl_client_session_cache */),
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),
                                       OnHostResolutionCallback())),
@@ -112,10 +105,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       NetworkIsolationKey())),
         common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
     ssl_config_service_->GetSSLConfig(&ssl_config_);
-
-    // Set an initial delay to ensure that the first call to TimeTicks::Now()
-    // before incrementing the counter does not return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
   }
 
   ~SSLConnectJobTest() override = default;
@@ -135,7 +124,8 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                             : nullptr,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : nullptr,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : nullptr,
-        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED);
+        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED,
+        NetworkIsolationKey());
   }
 
   void AddAuthToCache() {
@@ -175,7 +165,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpServerPropertiesImpl http_server_properties_;
   const std::unique_ptr<HttpNetworkSession> session_;
-  SSLClientSocketContext ssl_client_socket_context_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
 

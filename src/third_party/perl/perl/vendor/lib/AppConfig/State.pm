@@ -37,10 +37,11 @@
 #============================================================================
 
 package AppConfig::State;
+use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.65';
+our $VERSION = '1.71';
 our $DEBUG   = 0;
 our $AUTOLOAD;
 
@@ -74,7 +75,7 @@ my @GLOBAL_OK = qw( DEFAULT EXPAND VALIDATE ACTION ARGS ARGCOUNT );
 
 sub new {
     my $class = shift;
-    
+
     my $self = {
         # internal hash arrays to store variable specification information
         VARIABLE   => { },     # variable values
@@ -87,7 +88,7 @@ sub new {
         VALIDATE   => { },     # validation regexen or functions
         ACTION     => { },     # callback functions for when variable is set
         GLOBAL     => { },     # default global settings for new variables
-        
+
         # other internal data
         CREATE     => 0,       # auto-create variables when set
         CASE       => 0,       # case sensitivity flag (1 = sensitive)
@@ -97,7 +98,7 @@ sub new {
     };
 
     bless $self, $class;
-        
+
     # configure if first param is a config hash ref
     $self->_configure(shift)
         if ref($_[0]) eq 'HASH';
@@ -172,64 +173,64 @@ sub define {
         # examine each variable configuration parameter
         while (($opt, $val) = each %$cfg) {
             $opt = uc $opt;
-            
+
             # DEFAULT, VALIDATE, EXPAND, ARGS and ARGCOUNT are stored as 
             # they are;
             $opt =~ /^DEFAULT|VALIDATE|EXPAND|ARGS|ARGCOUNT$/ && do {
                 $self->{ $opt }->{ $var } = $val;
                 next;
             };
-            
+
             # CMDARG has been deprecated
             $opt eq 'CMDARG' && do {
                 $self->_error("CMDARG has been deprecated.  "
                               . "Please use an ALIAS if required.");
                 next;
             };
-            
+
             # ACTION should be a code ref
             $opt eq 'ACTION' && do {
                 unless (ref($val) eq 'CODE') {
                     $self->_error("'$opt' value is not a code reference");
                     next;
                 };
-                
+
                 # store code ref, forcing keyword to upper case
                 $self->{ ACTION }->{ $var } = $val;
-                
+
                 next;
             };
-            
+
             # ALIAS creates alias links to the variable name
             $opt eq 'ALIAS' && do {
-                
+
                 # coerce $val to an array if not already so
                 $val = [ split(/\|/, $val) ]
                     unless ref($val) eq 'ARRAY';
-                
+
                 # fold to lower case unless CASE sensitivity set
                 unless ($self->{ CASE }) {
                     @$val = map { lc } @$val;
                 }
-                
+
                 # store list of aliases...
                 $self->{ ALIASES }->{ $var } = $val;
-                
+
                 # ...and create ALIAS => VARIABLE lookup hash entries
                 foreach my $a (@$val) {
                     $self->{ ALIAS }->{ $a } = $var;
                 }
-                
+
                 next;
             };
-            
+
             # default 
             $self->_error("$opt is not a valid configuration item");
         }
-        
+
         # set variable to default value
         $self->_default($var);
-        
+
         # DEBUG: dump new variable definition
         if ($DEBUG) {
             print STDERR "Variable defined:\n";
@@ -311,7 +312,7 @@ sub set {
         if (defined $create
             && ($create eq '1' || $variable =~ /$create/)) {
             $self->define($variable);
-            
+
             print STDERR "Auto-created $variable\n" if $DEBUG;
         }
         else {
@@ -319,13 +320,13 @@ sub set {
             return 0;
         }
     }
-    
+
     # call the validate($variable, $value) method to perform any validation
     unless ($self->_validate($variable, $value)) {
         $self->_error("$variable: invalid value: $value");
         return 0;
     }
-    
+
     # DEBUG
     print STDERR "$self->set($variable, ", 
     defined $value
@@ -333,7 +334,7 @@ sub set {
         : "<undef>",
         ")\n"
         if $DEBUG;
-    
+
 
     # set the variable value depending on its ARGCOUNT
     my $argcount = $self->{ ARGCOUNT }->{ $variable };
@@ -400,7 +401,7 @@ sub varlist {
     return %set;
 }
 
-    
+
 #------------------------------------------------------------------------
 # AUTOLOAD
 #
@@ -436,7 +437,7 @@ sub AUTOLOAD {
     # a leading underscore_
     if (($attrib = $variable) =~ s/_//g) {
         $attrib = uc $attrib;
-        
+
         if (exists $METHFLAGS{ $attrib }) {
             return $self->{ $attrib };
         }
@@ -445,17 +446,17 @@ sub AUTOLOAD {
             # next parameter should be variable name
             $variable = shift;
             $variable = $self->_varname($variable);
-            
+
             # check we've got a valid variable
 #           $self->_error("$variable: no such variable or method"), 
 #                   return undef
 #               unless exists($self->{ VARIABLE }->{ $variable });
-            
+
             # return attribute
             return $self->{ $attrib }->{ $variable };
         }
     }
-    
+
     # set a new value if a parameter was supplied or return the old one
     return defined($_[0])
            ? $self->set($variable, shift)
@@ -497,13 +498,13 @@ sub _configure {
 
                 # continue if the attribute is ok to be GLOBAL 
                 next if ($global =~ /(^$global_ok$)/io);
-                         
+
                 $self->_error( "\U$global\E parameter cannot be GLOBAL");
             }
             $self->{ GLOBAL } = $cfg->{ $opt };
             next;
         };
-            
+
         # CASE, CREATE and PEDANTIC are stored as they are
         $opt =~ /^CASE|CREATE|PEDANTIC$/i && do {
             $self->{ uc $opt } = $cfg->{ $opt };
@@ -521,7 +522,7 @@ sub _configure {
             $self->_debug($cfg->{ $opt });
             next;
         };
-            
+
         # warn about invalid options
         $self->_error("\U$opt\E is not a valid configuration option");
     }
@@ -577,7 +578,7 @@ sub _varname {
             }
         }
     }
-    
+
     # return the variable name
     $variable;
 }
@@ -603,7 +604,7 @@ sub _default {
         # hash array, depending on its ARGCOUNT value
         my $argcount = $self->{ ARGCOUNT }->{ $variable };
         $argcount = AppConfig::ARGCOUNT_ONE unless defined $argcount;
-        
+
         if ($argcount == AppConfig::ARGCOUNT_NONE) {
             return $self->{ VARIABLE }->{ $variable } 
                  = $self->{ DEFAULT }->{ $variable } || 0;
@@ -612,7 +613,7 @@ sub _default {
             my $deflist = $self->{ DEFAULT }->{ $variable };
             return $self->{ VARIABLE }->{ $variable } = 
                 [ ref $deflist eq 'ARRAY' ? @$deflist : ( ) ];
-            
+
         }
         elsif ($argcount == AppConfig::ARGCOUNT_HASH) {
             my $defhash = $self->{ DEFAULT }->{ $variable };
@@ -690,7 +691,7 @@ sub _validate {
         # not a ref - assume it's a regex
         return $value =~ /$validator/;
     };
-    
+
     # validation failed
     return 0;
 }
@@ -748,7 +749,7 @@ sub _ehandler {
         # check this is a code reference
         if (ref($handler) eq 'CODE') {
             $self->{ EHANDLER } = $handler;
-            
+
             # DEBUG
             print STDERR "installed new ERROR handler: $handler\n" if $DEBUG;
         }
@@ -756,7 +757,7 @@ sub _ehandler {
             $self->_error("ERROR handler parameter is not a code ref");
         }
     }
-   
+
     return $previous;
 }
 
@@ -847,7 +848,7 @@ sub _dump {
     print STDERR 
         "Status of AppConfig::State (version $VERSION) object:\n\t$self\n";
 
-    
+
     print STDERR "- " x 36, "\nINTERNAL STATE:\n";
     foreach (qw( CREATE CASE PEDANTIC EHANDLER ERROR )) {
         printf STDERR "    %-12s => %s\n", $_, 
@@ -888,7 +889,7 @@ AppConfig::State - application configuration state
 
     $state->set("foo", 123);          # trivial set/get examples
     $state->get("foo");      
-    
+
     $state->foo();                    # shortcut variable access 
     $state->foo(456);                 # shortcut variable update 
 
@@ -912,12 +913,12 @@ appear in your Perl script:
 
 The AppConfig::State module is loaded automatically by the new()
 constructor of the AppConfig module.
-      
+
 AppConfig::State is implemented using object-oriented methods.  A 
 new AppConfig::State object is created and initialised using the 
 new() method.  This returns a reference to a new AppConfig::State 
 object.
-       
+
     my $state = AppConfig::State->new();
 
 This will create a reference to a new AppConfig::State with all 
@@ -968,7 +969,7 @@ In a config file:
 
     [define]
     name = fred           # define_name gets created automatically
-    
+
     [other]
     name = john           # other_name doesn't - warning raised
 
@@ -1086,12 +1087,12 @@ a string of names separated by vertical bars, '|'.  e.g.:
     $state->define("name", {
             ALIAS => [ 'person', 'user', 'uid' ],
         });
-    
+
     # or
     $state->define("name", {
             ALIAS => 'person|user|uid',
         });
-    
+
     $state->user('abw');     # equivalent to $state->name('abw');
 
 =item ARGCOUNT
@@ -1268,8 +1269,6 @@ Be aware that calling C<$state-E<gt>set()> to update the same variable
 from within the ACTION function will cause a recursive loop as the
 ACTION function is repeatedly called.  
 
-=item 
-
 =back
 
 =head2 DEFINING VARIABLES USING THE COMPACT FORMAT
@@ -1320,6 +1319,27 @@ a parameter is specified, the variable is set to that value and the
 result of the set() operation is returned.
 
     $state->age(29);        # sets 'age' to 29, returns 1 (ok)
+
+=head2 VARLIST
+
+The varlist() method can be used to extract a number of variables into
+a hash array.  The first parameter should be a regular expression
+used for matching against the variable names.
+
+    my %vars = $state->varlist("^file");   # all "file*" variables
+
+A second parameter may be specified (any true value) to indicate that
+the part of the variable name matching the regex should be removed
+when copied to the target hash.
+
+    $state->file_name("/tmp/file");
+    $state->file_path("/foo:/bar:/baz");
+
+    my %vars = $state->varlist("^file_", 1);
+
+    # %vars:
+    #    name => /tmp/file
+    #    path => "/foo:/bar:/baz"
 
 =head2 INTERNAL METHODS
 

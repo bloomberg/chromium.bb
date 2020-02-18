@@ -13,11 +13,15 @@
 
 namespace blink {
 
-using ScrollTimelineTest = RenderingTest;
+class ScrollTimelineTest : public RenderingTest {
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+};
 
 TEST_F(ScrollTimelineTest,
        AttachingAndDetachingAnimationCausesCompositingUpdate) {
-  EnableCompositing();
 
   SetBodyInnerHTML(R"HTML(
     <style>#scroller { overflow: scroll; width: 100px; height: 100px; }</style>
@@ -47,13 +51,13 @@ TEST_F(ScrollTimelineTest,
   EXPECT_EQ(kNotComposited, scroller->Layer()->GetCompositingState());
 
   // Now attach an animation. This should require a compositing update.
-  scroll_timeline->AttachAnimation();
+  scroll_timeline->AnimationAttached(nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NE(scroller->Layer()->GetCompositingState(), kNotComposited);
 
   // Now detach an animation. This should again require a compositing update.
-  scroll_timeline->DetachAnimation();
+  scroll_timeline->AnimationDetached(nullptr);
 
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(scroller->Layer()->GetCompositingState(), kNotComposited);
@@ -231,7 +235,7 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   CSSPrimitiveValue* start_scroll_offset = nullptr;
   CSSPrimitiveValue* end_scroll_offset = nullptr;
   ScrollTimeline* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      scroll_source, ScrollTimeline::Block, start_scroll_offset,
+      &GetDocument(), scroll_source, ScrollTimeline::Block, start_scroll_offset,
       end_scroll_offset, 100, Timing::FillMode::NONE);
 
   // Sanity checks.
@@ -239,8 +243,8 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   ASSERT_EQ(scroll_timeline->ResolvedScrollSource(), nullptr);
 
   // These calls should be no-ops in this mode, and shouldn't crash.
-  scroll_timeline->AttachAnimation();
-  scroll_timeline->DetachAnimation();
+  scroll_timeline->AnimationAttached(nullptr);
+  scroll_timeline->AnimationDetached(nullptr);
 }
 
 }  //  namespace blink

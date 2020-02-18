@@ -24,7 +24,6 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,7 +37,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/child_process_host.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
-#include "ui/base/mojo/window_open_disposition.mojom.h"
+#include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -575,6 +574,8 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
   blink::mojom::ServiceWorkerClientType client_type =
       provider_host->client_type();
   DCHECK(client_type == blink::mojom::ServiceWorkerClientType::kWindow ||
+         client_type ==
+             blink::mojom::ServiceWorkerClientType::kDedicatedWorker ||
          client_type == blink::mojom::ServiceWorkerClientType::kSharedWorker)
       << client_type;
 

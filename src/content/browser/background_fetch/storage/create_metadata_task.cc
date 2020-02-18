@@ -21,7 +21,7 @@
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/fetch/fetch_api_request_proto.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -45,10 +45,7 @@ class CanCreateRegistrationTask : public DatabaseTask {
   CanCreateRegistrationTask(DatabaseTaskHost* host,
                             const url::Origin& origin,
                             CanCreateRegistrationCallback callback)
-      : DatabaseTask(host),
-        origin_(origin),
-        callback_(std::move(callback)),
-        weak_factory_(this) {}
+      : DatabaseTask(host), origin_(origin), callback_(std::move(callback)) {}
 
   ~CanCreateRegistrationTask() override = default;
 
@@ -122,8 +119,8 @@ class CanCreateRegistrationTask : public DatabaseTask {
   // The number of existing registrations found for |origin_|.
   size_t num_active_registrations_ = 0u;
 
-  base::WeakPtrFactory<CanCreateRegistrationTask>
-      weak_factory_;  // Keep as last.
+  base::WeakPtrFactory<CanCreateRegistrationTask> weak_factory_{
+      this};  // Keep as last.
 };
 
 }  // namespace
@@ -142,8 +139,7 @@ CreateMetadataTask::CreateMetadataTask(
       options_(std::move(options)),
       icon_(icon),
       start_paused_(start_paused),
-      callback_(std::move(callback)),
-      weak_factory_(this) {}
+      callback_(std::move(callback)) {}
 
 CreateMetadataTask::~CreateMetadataTask() = default;
 
@@ -339,7 +335,7 @@ void CreateMetadataTask::StoreMetadata() {
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
     pending_request_proto.set_serialized_request(
-        ServiceWorkerUtils::SerializeFetchRequestToString(*requests_[i]));
+        SerializeFetchRequestToString(*requests_[i]));
     if (requests_[i]->blob)
       pending_request_proto.set_request_body_size(requests_[i]->blob->size);
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),

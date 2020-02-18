@@ -109,7 +109,6 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -475,7 +474,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #endif
       first_update_visual_state_after_hidden_(false),
       was_shown_time_(base::TimeTicks::Now()),
-      current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
@@ -666,7 +664,14 @@ bool RenderWidget::Send(IPC::Message* message) {
     delete message;
     return false;
   }
-  if (is_frozen_ && !SwappedOutMessages::CanSendWhileSwappedOut(message)) {
+  // TODO(danakj): We believe that we should be able to not block IPC sending.
+  // When there's a provisional main frame using this widget, we should not be
+  // sending messages with the RenderWidget yet. And when the widget is frozen
+  // because there is no local main frame, there should be no code using
+  // RenderWidget and sending messages through it.
+  // We should CHECK() that the RenderWidget is not frozen and that the frame
+  // attached to it is not provisional, instead of dropping messages.
+  if (is_frozen_) {
     delete message;
     return false;
   }
@@ -1072,13 +1077,10 @@ void RenderWidget::ApplyViewportChanges(
   GetWebWidget()->ApplyViewportChanges(args);
 }
 
-void RenderWidget::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
+void RenderWidget::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!GetWebWidget())
     return;
-  GetWebWidget()->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                                    has_scrolled_by_touch);
+  GetWebWidget()->RecordManipulationTypeCounts(info);
 }
 
 void RenderWidget::SendOverscrollEventFromImplSide(
@@ -1106,10 +1108,15 @@ void RenderWidget::BeginMainFrame(base::TimeTicks frame_time) {
       !!compositor_deps_->GetCompositorImplThreadTaskRunner();
   if (input_event_queue_) {
     base::Optional<ScopedUkmRafAlignedInputTimer> ukm_timer;
-    if (record_main_frame_metrics)
+    if (record_main_frame_metrics) {
       ukm_timer.emplace(GetWebWidget());
+    }
     input_event_queue_->DispatchRafAlignedInput(frame_time);
   }
+
+  // The input handler wants to know about the main frame for metric purposes
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->MarkBeginMainFrame();
 
   GetWebWidget()->BeginFrame(frame_time, record_main_frame_metrics);
 }
@@ -1185,6 +1192,10 @@ void RenderWidget::DidCommitAndDrawCompositorFrame() {
   // tab_capture_performancetest.cc.
   TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
 
+  // The input handler wants to know about the commit for metric purposes
+  DCHECK(widget_input_handler_manager_);
+  widget_input_handler_manager_->MarkCompositorCommit();
+
   for (auto& observer : render_frames_)
     observer.DidCommitAndDrawCompositorFrame();
 
@@ -1237,6 +1248,13 @@ void RenderWidget::SetShowFPSCounter(bool show) {
   cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
   cc::LayerTreeDebugState debug_state = host->GetDebugState();
   debug_state.show_fps_counter = show;
+  host->SetDebugState(debug_state);
+}
+
+void RenderWidget::SetShowLayoutShiftRegions(bool show) {
+  cc::LayerTreeHost* host = layer_tree_view_->layer_tree_host();
+  cc::LayerTreeDebugState debug_state = host->GetDebugState();
+  debug_state.show_layout_shift_regions = show;
   host->SetDebugState(debug_state);
 }
 
@@ -1354,8 +1372,10 @@ void RenderWidget::WillBeginCompositorFrame() {
   UpdateTextInputState();
   UpdateSelectionBounds();
 
-  for (auto& observer : render_frame_proxies_)
-    observer.WillBeginCompositorFrame();
+  if (auto* frame_widget = GetFrameWidget()) {
+    frame_widget->UpdateRenderThrottlingStatus(is_throttled_,
+                                               subtree_throttled_);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1632,7 +1652,12 @@ void RenderWidget::SynchronizeVisualProperties(const VisualProperties& params) {
       visual_viewport_size = gfx::ScaleToCeiledSize(
           visual_viewport_size, GetOriginalScreenInfo().device_scale_factor);
     }
-    GetWebWidget()->ResizeVisualViewport(visual_viewport_size);
+    // When this function is invoked for a main frame widget, it is only if
+    // (i) we are initializing the widget, or (ii) the widget supports a local
+    // mainframe. For widgets supporting a remote main frame, the visual
+    // viewport is updated through the RenderView.
+    if (delegate())
+      delegate()->ResizeVisualViewportForWidget(visual_viewport_size);
 
     // NOTE: We may have entered fullscreen mode without changing our size.
     SetIsFullscreen(params.is_fullscreen_granted);
@@ -1777,7 +1802,6 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportSize(), screen_info_);
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is frozen, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -2315,6 +2339,9 @@ void RenderWidget::OnSetInheritedEffectiveTouchAction(
 
 void RenderWidget::OnUpdateRenderThrottlingStatus(bool is_throttled,
                                                   bool subtree_throttled) {
+  is_throttled_ = is_throttled;
+  subtree_throttled_ = subtree_throttled;
+
   if (auto* frame_widget = GetFrameWidget())
     frame_widget->UpdateRenderThrottlingStatus(is_throttled, subtree_throttled);
 }
@@ -2461,6 +2488,15 @@ void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
     rect->y = window_rect.y();
     rect->width = window_rect.width();
     rect->height = window_rect.height();
+  }
+}
+
+void RenderWidget::ConvertViewportToWindow(blink::WebFloatRect* rect) {
+  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
+    rect->x /= GetOriginalScreenInfo().device_scale_factor;
+    rect->y /= GetOriginalScreenInfo().device_scale_factor;
+    rect->width /= GetOriginalScreenInfo().device_scale_factor;
+    rect->height /= GetOriginalScreenInfo().device_scale_factor;
   }
 }
 
@@ -2814,10 +2850,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.commit_to_active_tree = !is_threaded;
   settings.is_layer_tree_for_subframe = is_for_subframe;
-
-  // For web contents, layer transforms should scale up the contents of layers
-  // to keep content always crisp when possible.
-  settings.layer_transforms_should_scale_layer_contents = true;
 
   settings.main_frame_before_activation_enabled =
       cmd.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation);
@@ -3256,12 +3288,12 @@ cc::ManagedMemoryPolicy RenderWidget::GetGpuMemoryPolicy(
   return actual;
 }
 
-void RenderWidget::HasPointerRawUpdateEventHandlers(bool has_handlers) {
+void RenderWidget::SetHasPointerRawUpdateEventHandlers(bool has_handlers) {
   if (input_event_queue_)
     input_event_queue_->HasPointerRawUpdateEventHandlers(has_handlers);
 }
 
-void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
+void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
   if (has_touch_handlers_ && *has_touch_handlers_ == has_handlers)
     return;
 
@@ -3269,6 +3301,11 @@ void RenderWidget::HasTouchEventHandlers(bool has_handlers) {
   if (render_widget_scheduling_state_)
     render_widget_scheduling_state_->SetHasTouchHandler(has_handlers);
   Send(new WidgetHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
+}
+
+void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
+  layer_tree_view_->layer_tree_host()->SetHaveScrollEventHandlers(
+      have_handlers);
 }
 
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
@@ -3363,6 +3400,10 @@ void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
       target_offset, use_anchor, new_page_scale, duration);
 }
 
+void RenderWidget::ForceRecalculateRasterScales() {
+  layer_tree_view_->layer_tree_host()->SetNeedsRecalculateRasterScales();
+}
+
 void RenderWidget::RequestDecode(const cc::PaintImage& image,
                                  base::OnceCallback<void(bool)> callback) {
   layer_tree_view_->layer_tree_host()->QueueImageDecode(image,
@@ -3375,10 +3416,12 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   using ReportTimeCallback = blink::WebWidgetClient::ReportTimeCallback;
 
  public:
-  ReportTimeSwapPromise(ReportTimeCallback callback,
+  ReportTimeSwapPromise(ReportTimeCallback swap_time_callback,
+                        ReportTimeCallback presentation_time_callback,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         base::WeakPtr<RenderWidget> render_widget)
-      : callback_(std::move(callback)),
+      : swap_time_callback_(std::move(swap_time_callback)),
+        presentation_time_callback_(std::move(presentation_time_callback)),
         task_runner_(std::move(task_runner)),
         render_widget_(std::move(render_widget)) {}
   ~ReportTimeSwapPromise() override = default;
@@ -3394,21 +3437,10 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   void DidSwap() override {
     DCHECK_GT(frame_token_, 0u);
     task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](base::TimeTicks timestamp, ReportTimeCallback callback,
-               base::WeakPtr<RenderWidget> render_widget, int frame_token) {
-              std::move(callback).Run(
-                  blink::WebWidgetClient::SwapResult::kDidSwap, timestamp);
-              if (render_widget) {
-                render_widget->layer_tree_view()->AddPresentationCallback(
-                    frame_token,
-                    base::BindOnce(&RecordSwapTimeToPresentationTime,
-                                   timestamp));
-              }
-            },
-            base::TimeTicks::Now(), std::move(callback_), render_widget_,
-            frame_token_));
+        FROM_HERE, base::BindOnce(&RunCallbackAfterSwap, base::TimeTicks::Now(),
+                                  std::move(swap_time_callback_),
+                                  std::move(presentation_time_callback_),
+                                  std::move(render_widget_), frame_token_));
   }
 
   cc::SwapPromise::DidNotSwapAction DidNotSwap(
@@ -3432,14 +3464,45 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     // using presentation or swap timestamps.
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(callback_), result, base::TimeTicks::Now()));
+        base::BindOnce(
+            [](blink::WebWidgetClient::SwapResult result,
+               base::TimeTicks swap_time, ReportTimeCallback swap_time_callback,
+               ReportTimeCallback presentation_time_callback) {
+              ReportTime(std::move(swap_time_callback), result, swap_time);
+              ReportTime(std::move(presentation_time_callback), result,
+                         swap_time);
+            },
+            result, base::TimeTicks::Now(), std::move(swap_time_callback_),
+            std::move(presentation_time_callback_)));
     return DidNotSwapAction::BREAK_PROMISE;
   }
 
   int64_t TraceId() const override { return 0; }
 
  private:
-  static void RecordSwapTimeToPresentationTime(
+  static void RunCallbackAfterSwap(
+      base::TimeTicks swap_time,
+      ReportTimeCallback swap_time_callback,
+      ReportTimeCallback presentation_time_callback,
+      base::WeakPtr<RenderWidget> render_widget,
+      int frame_token) {
+    if (render_widget) {
+      render_widget->layer_tree_view()->AddPresentationCallback(
+          frame_token,
+          base::BindOnce(&RunCallbackAfterPresentation,
+                         std::move(presentation_time_callback), swap_time));
+      ReportTime(std::move(swap_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+    } else {
+      ReportTime(std::move(swap_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+      ReportTime(std::move(presentation_time_callback),
+                 blink::WebWidgetClient::SwapResult::kDidSwap, swap_time);
+    }
+  }
+
+  static void RunCallbackAfterPresentation(
+      ReportTimeCallback presentation_time_callback,
       base::TimeTicks swap_time,
       base::TimeTicks presentation_time) {
     DCHECK(!swap_time.is_null());
@@ -3453,9 +3516,20 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
           "PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime",
           presentation_time - swap_time);
     }
+    ReportTime(std::move(presentation_time_callback),
+               blink::WebWidgetClient::SwapResult::kDidSwap,
+               presentation_time_is_valid ? presentation_time : swap_time);
   }
 
-  ReportTimeCallback callback_;
+  static void ReportTime(ReportTimeCallback callback,
+                         blink::WebWidgetClient::SwapResult result,
+                         base::TimeTicks time) {
+    if (callback)
+      std::move(callback).Run(result, time);
+  }
+
+  ReportTimeCallback swap_time_callback_;
+  ReportTimeCallback presentation_time_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<RenderWidget> render_widget_;
   uint32_t frame_token_ = 0;
@@ -3464,11 +3538,43 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 };
 
 void RenderWidget::NotifySwapTime(ReportTimeCallback callback) {
+  NotifySwapAndPresentationTime(base::NullCallback(), std::move(callback));
+}
+
+void RenderWidget::SetEventListenerProperties(
+    cc::EventListenerClass event_class,
+    cc::EventListenerProperties properties) {
+  layer_tree_view_->layer_tree_host()->SetEventListenerProperties(event_class,
+                                                                  properties);
+}
+
+cc::EventListenerProperties RenderWidget::EventListenerProperties(
+    cc::EventListenerClass event_class) const {
+  return layer_tree_view_->layer_tree_host()->event_listener_properties(
+      event_class);
+}
+
+std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
+RenderWidget::DeferMainFrameUpdate() {
+  return layer_tree_view_->layer_tree_host()->DeferMainFrameUpdate();
+}
+
+void RenderWidget::StartDeferringCommits(base::TimeDelta timeout) {
+  layer_tree_view_->layer_tree_host()->StartDeferringCommits(timeout);
+}
+
+void RenderWidget::StopDeferringCommits(cc::PaintHoldingCommitTrigger trigger) {
+  layer_tree_view_->layer_tree_host()->StopDeferringCommits(trigger);
+}
+
+void RenderWidget::NotifySwapAndPresentationTime(
+    ReportTimeCallback swap_time_callback,
+    ReportTimeCallback presentation_time_callback) {
   cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
   // When the WebWidget is closed we cancel any pending SwapPromise that would
   // call back into blink, so we use |close_weak_ptr_factory_|.
   layer_tree_host->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
-      std::move(callback),
+      std::move(swap_time_callback), std::move(presentation_time_callback),
       layer_tree_host->GetTaskRunnerProvider()->MainThreadTaskRunner(),
       close_weak_ptr_factory_.GetWeakPtr()));
 }
@@ -3544,8 +3650,9 @@ gfx::Point RenderWidget::ConvertWindowPointToViewport(const gfx::Point& point) {
   return gfx::ToRoundedPoint(ConvertWindowPointToViewport(gfx::PointF(point)));
 }
 
-bool RenderWidget::RequestPointerLock() {
-  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get());
+bool RenderWidget::RequestPointerLock(WebLocalFrame* requester_frame) {
+  return mouse_lock_dispatcher_->LockMouse(webwidget_mouse_lock_target_.get(),
+                                           requester_frame);
 }
 
 void RenderWidget::RequestPointerUnlock() {
@@ -3572,10 +3679,6 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                      image_offset, possible_drag_event_info_));
 }
 
-uint32_t RenderWidget::GetContentSourceId() {
-  return current_content_source_id_;
-}
-
 void RenderWidget::DidNavigate() {
   // Blink may be navigating still between the Close IPC and the task that
   // actually closes this class, and for a main frame that would come through
@@ -3583,8 +3686,6 @@ void RenderWidget::DidNavigate() {
   if (closing_)
     return;
 
-  ++current_content_source_id_;
-  layer_tree_view_->SetContentSourceId(current_content_source_id_);
   layer_tree_view_->ClearCachesOnNextCommit();
 }
 
@@ -3606,9 +3707,9 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
 }
 
 void RenderWidget::SetupWidgetInputHandler(
-    mojom::WidgetInputHandlerRequest request,
-    mojom::WidgetInputHandlerHostPtr host) {
-  widget_input_handler_manager_->AddInterface(std::move(request),
+    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+  widget_input_handler_manager_->AddInterface(std::move(receiver),
                                               std::move(host));
 }
 
@@ -3655,7 +3756,10 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
     visible_viewport_size =
         gfx::ScaleToCeiledSize(visible_viewport_size, factor);
   }
-  GetWebWidget()->ResizeVisualViewport(visible_viewport_size);
+
+  DCHECK(delegate()) << "Resizing the viewport for a cross-process subframe "
+                        "must be done via the RenderView.";
+  delegate()->ResizeVisualViewportForWidget(visible_viewport_size);
 
   // Make sure the DSF override stays for future VisualProperties updates, and
   // that includes overriding the VisualProperties'

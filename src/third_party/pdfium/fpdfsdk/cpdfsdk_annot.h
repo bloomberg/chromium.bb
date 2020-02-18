@@ -10,10 +10,9 @@
 #include "core/fpdfdoc/cpdf_aaction.h"
 #include "core/fpdfdoc/cpdf_annot.h"
 #include "core/fpdfdoc/cpdf_defaultappearance.h"
-#include "core/fxcrt/observable.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cfx_systemhandler.h"
-#include "fpdfsdk/cpdfsdk_helpers.h"
 
 class CFX_Matrix;
 class CFX_RenderDevice;
@@ -21,12 +20,14 @@ class CPDF_Page;
 class CPDF_RenderOptions;
 class CPDFSDK_BAAnnot;
 class CPDFSDK_PageView;
+class CPDFXFA_Page;
+class IPDF_Page;
 
 #ifdef PDF_ENABLE_XFA
 class CXFA_FFWidget;
 #endif  // PDF_ENABLE_XFA
 
-class CPDFSDK_Annot : public Observable<CPDFSDK_Annot> {
+class CPDFSDK_Annot : public Observable {
  public:
   explicit CPDFSDK_Annot(CPDFSDK_PageView* pPageView);
   virtual ~CPDFSDK_Annot();

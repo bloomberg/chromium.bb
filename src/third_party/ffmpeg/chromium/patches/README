@@ -808,38 +808,6 @@ Affects:
     libavformat/mov.c
 
 ------------------------------------------------------------------
-commit d17a8c9b951d5c4cc8fd2027db48b657deec290f
-Author: Dan Sanders <sandersd@chromium.org>
-Date:   Fri Apr 19 14:52:58 2019 -0700
-
-    libavformat/mov: limit nb_frames_for_fps to INT_MAX
-
-    Bug: 827894
-    Change-Id: I0de1422ba7c8bfb4d66675552d5704bb86ea1fe2
-    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1575672
-    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
-
-Affects:
-    libavformat/mov.c
-
-------------------------------------------------------------------
-commit d82e355b42a185683ce8c19ccb27e162c9ff66e8
-Author: Dan Sanders <sandersd@chromium.org>
-Date:   Mon Apr 22 11:08:48 2019 -0700
-
-    libavformat/mov: limit nb_frames_for_fps to INT_MAX
-
-    Part 2.
-
-    Bug: 827894
-    Change-Id: Icf597a26f817f342cf120f0c9c17a95122a45797
-    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1577698
-    Reviewed-by: Chrome Cunningham <chcunningham@chromium.org>
-
-Affects:
-    libavformat/mov.c
-
-------------------------------------------------------------------
 commit 68f1932090d5e35d958434d0588a33986cd3d65d
 Author: Felicia Lim <flim@chromium.org>
 Date:   Thu May 9 17:40:11 2019 -0700
@@ -861,9 +829,25 @@ Affects:
     libavcodec/libopusdec.c
 
 ------------------------------------------------------------------
-commit 4267885f5c532b54fa7ee40c9915fa452dd1dfc5
+commit feb5456cf973a819ace9a5001256f168631b6788
+Merge: 464c195d8b 81d3d7dd44
 Author: Matt Wolenetz <wolenetz@chromium.org>
-Date:   Wed Jul 24 16:38:05 2019 -0700
+Date:   Fri Jul 12 15:20:19 2019 -0700
+
+    Merge remote-tracking branch 'upstream/master' into sushi-2019-07-12-14-09-15
+
+    Manually resolved conflicts:
+            .gitignore
+            configure
+            libavformat/matroskadec.c
+
+Affects:
+    libavformat/matroskadec.c
+
+------------------------------------------------------------------
+commit dfc85c1198d09a2e3c3e3aa6cba330894d8a94c4
+Author: Matt Wolenetz <wolenetz@chromium.org>
+Date:   Wed Jul 24 16:28:05 2019 -0700
 
     wavdec: Fail bext parsing on incomplete reads
 
@@ -878,11 +862,6 @@ Date:   Wed Jul 24 16:38:05 2019 -0700
     broken case.
 
     BUG=987270
-
-    Change-Id: I5b2fc654b865195a7c5e3932fd2e3a3eaeff04f7
-    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/1717599
-    Reviewed-by: Frank Liberato <liberato@chromium.org>
-    (cherry picked from commit e0e3133c40fbca0032a2d9400da736e4b933882f)
 
 Affects:
     libavformat/wavdec.c

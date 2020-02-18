@@ -1,12 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _TIMEB_H_
 #define _TIMEB_H_
 
-#include <_mingw.h>
+#include <crtdefs.h>
 
 #ifndef _WIN32
 #error Only Win32 target is supported!
@@ -76,13 +76,14 @@ extern "C" {
 #endif
 
   _CRTIMP void __cdecl _ftime64(struct __timeb64 *_Time);
+  _CRTIMP void __cdecl _ftime32(struct __timeb32 *_Time);
 
-#ifdef _WIN64
+#ifndef _USE_32BIT_TIME_T
 #define _timeb __timeb64
-  _CRTIMP void __cdecl _ftime(struct __timeb64 *);
+#define _ftime _ftime64
 #else
 #define _timeb __timeb32
-  _CRTIMP void __cdecl _ftime(struct __timeb32 *);
+#define _ftime _ftime32
 #endif
 
 #ifndef _TIMESPEC_DEFINED
@@ -109,7 +110,7 @@ struct itimerspec {
   }
 #else
   __CRT_INLINE void __cdecl ftime(struct timeb *_Tmb) {
-    _ftime((struct __timeb32 *)_Tmb);
+    _ftime32((struct __timeb32 *)_Tmb);
   }
 #endif /* _USE_32BIT_TIME_T */
 #endif /* !__CRT__NO_INLINE */

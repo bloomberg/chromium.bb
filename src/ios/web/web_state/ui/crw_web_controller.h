@@ -60,10 +60,6 @@ class WebStateImpl;
 @property(weak, nonatomic, readonly) id<CRWWebViewNavigationProxy>
     webViewNavigationProxy;
 
-// The view that generates print data when printing. It is nil if printing
-// is not supported.
-@property(weak, nonatomic, readonly) UIView* viewForPrinting;
-
 // The fraction of the page load that has completed as a number between 0.0
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;
@@ -109,15 +105,6 @@ class WebStateImpl;
 // Please reconsider before using this method.
 - (void)removeWebView;
 
-// Call to stop the CRWWebController from doing stuff, in particular to
-// stop all network requests. Called as part of the close sequence if it hasn't
-// already been halted; also called from [Tab halt] as part of the shutdown
-// sequence (which doesn't call -close).
-- (void)terminateNetworkActivity;
-
-// Dismisses all modals owned by the web view or native view.
-- (void)dismissModals;
-
 // Call when the CRWWebController needs go away. Caller must reset the delegate
 // before calling.
 - (void)close;
@@ -129,6 +116,7 @@ class WebStateImpl;
 - (BOOL)isViewAlive;
 
 // Returns YES if the current live view is a web view with HTML.
+// TODO(crbug.com/949651): Remove once JSFindInPageManager is removed.
 - (BOOL)contentIsHTML;
 
 // Returns the CRWWebController's view of the current URL. Moreover, this method
@@ -196,7 +184,7 @@ class WebStateImpl;
 // Takes snapshot of web view with |rect|. |rect| should be in self.view's
 // coordinate system.  |completion| is always called, but |snapshot| may be nil.
 // Prior to iOS 11, |completion| is called with a nil
-// snapshot.
+// snapshot. |completion| may be called more than once.
 - (void)takeSnapshotWithRect:(CGRect)rect
                   completion:(void (^)(UIImage* snapshot))completion;
 

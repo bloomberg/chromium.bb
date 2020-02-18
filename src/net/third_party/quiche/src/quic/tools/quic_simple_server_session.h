@@ -78,12 +78,12 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
       QuicStreamId original_stream_id,
       const spdy::SpdyHeaderBlock& original_request_headers);
 
-  void OnCanCreateNewOutgoingStream() override;
+  void OnCanCreateNewOutgoingStream(bool unidirectional) override;
 
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
-  QuicSpdyStream* CreateIncomingStream(PendingStream pending) override;
+  QuicSpdyStream* CreateIncomingStream(PendingStream* pending) override;
   QuicSimpleServerStream* CreateOutgoingBidirectionalStream() override;
   QuicSimpleServerStream* CreateOutgoingUnidirectionalStream() override;
   // Override to return true for locally preserved server push stream.

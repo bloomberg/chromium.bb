@@ -58,9 +58,9 @@ SpinButtonElement::SpinButtonElement(Document& document,
   setAttribute(kIdAttr, shadow_element_names::SpinButton());
 }
 
-void SpinButtonElement::DetachLayoutTree(const AttachContext& context) {
+void SpinButtonElement::DetachLayoutTree(bool performing_reattach) {
   ReleaseCapture(kEventDispatchDisallowed);
-  HTMLDivElement::DetachLayoutTree(context);
+  HTMLDivElement::DetachLayoutTree(performing_reattach);
 }
 
 void SpinButtonElement::DefaultEventHandler(Event& event) {
@@ -236,10 +236,10 @@ void SpinButtonElement::RepeatingTimerFired(TimerBase*) {
     Step(up_down_state_ == kUp ? 1 : -1);
 }
 
-void SpinButtonElement::SetHovered(bool flag) {
-  if (!flag)
+void SpinButtonElement::SetHovered(bool hovered) {
+  if (!hovered)
     up_down_state_ = kIndeterminate;
-  HTMLDivElement::SetHovered(flag);
+  HTMLDivElement::SetHovered(hovered);
 }
 
 bool SpinButtonElement::ShouldRespondToMouseEvents() {

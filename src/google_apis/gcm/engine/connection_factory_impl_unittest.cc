@@ -160,6 +160,7 @@ TestConnectionFactoryImpl::TestConnectionFactoryImpl(
           BuildEndpoints(),
           net::BackoffEntry::Policy(),
           get_socket_factory_callback,
+          base::ThreadTaskRunnerHandle::Get(),
           &dummy_recorder_,
           network::TestNetworkConnectionTracker::GetInstance()),
       connect_result_(net::ERR_UNEXPECTED),

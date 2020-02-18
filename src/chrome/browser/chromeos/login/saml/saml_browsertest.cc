@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -85,6 +85,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -496,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   content::ExecuteScriptAsync(
       GetLoginUI()->GetWebContents(),
       test::GetOobeElementPath({"gaia-signin", "signin-back-button"}) +
-          ".fire('tap');");
+          ".fire('click');");
 
   // Auth flow should change back to Gaia.
   std::string message;
@@ -536,6 +537,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
                 SystemSaltGetter::ConvertRawSaltToHexString(
                     FakeCryptohomeClient::GetStubSystemSalt()));
   EXPECT_EQ(key.GetSecret(), cryptohome_client_->salted_hashed_secret());
+
+  EXPECT_TRUE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the single password scraped flow.
@@ -568,6 +573,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
   } while (message != "\"fake_password\"");
 
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests password scraping from a dynamically created password field.
@@ -594,6 +603,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
       content::NotificationService::AllSources());
   SigninFrameJS().TapOn("Submit");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the multiple password scraped flow.
@@ -619,6 +632,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
       content::NotificationService::AllSources());
   SendConfirmPassword("password1");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Tests the no password scraped flow.
@@ -645,6 +662,10 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
       content::NotificationService::AllSources());
   SetManualPasswords("Test1", "Test1");
   session_start_waiter.Wait();
+
+  EXPECT_FALSE(user_manager::known_user::GetIsUsingSAMLPrincipalsAPI(
+      AccountId::FromUserEmailGaiaId(kFirstSAMLUserEmail,
+                                     kFirstSAMLUserGaiaId)));
 }
 
 // Types |bob@corp.example.com| into the GAIA login form but then authenticates
@@ -834,7 +855,7 @@ SAMLEnrollmentTest::SAMLEnrollmentTest() {
   guest_view::GuestViewManager::set_factory_for_testing(
       &guest_view_manager_factory_);
   gaia_frame_parent_ = "oauth-enroll-auth-view";
-  authenticator_id_ = "$('oauth-enrollment').authenticator_";
+  authenticator_id_ = "$('enterprise-enrollment').authenticator_";
 }
 
 SAMLEnrollmentTest::~SAMLEnrollmentTest() {}
@@ -1100,7 +1121,7 @@ void SAMLPolicyTest::ShowGAIALoginForm() {
       "$('gaia-signin').authenticator_.addEventListener('ready', function() {"
       "  window.domAutomationController.send('ready');"
       "});"));
-  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
@@ -1129,7 +1150,7 @@ void SAMLPolicyTest::ShowSAMLInterstitial() {
 
   content::DOMMessageQueue message_queue;
   ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
-  ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+  ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
 
   std::string message;
   do {
@@ -1432,17 +1453,21 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
 
   // Mic should always be blocked.
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url1, blink::MEDIA_DEVICE_AUDIO_CAPTURE));
+      web_contents->GetMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE));
 
   // Camera should be allowed if allowed by the whitelist, otherwise blocked.
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url1, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url1,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_TRUE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url2, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url2,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url3, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url3,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 
   // Camera should be blocked in the login screen, even if it's allowed via
   // content setting.
@@ -1454,7 +1479,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TestLoginMediaPermission) {
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   EXPECT_FALSE(web_contents_delegate->CheckMediaAccessPermission(
-      web_contents->GetMainFrame(), url3, blink::MEDIA_DEVICE_VIDEO_CAPTURE));
+      web_contents->GetMainFrame(), url3,
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE));
 }
 
 class SAMLPasswordAttributesTest : public SAMLPolicyTest,

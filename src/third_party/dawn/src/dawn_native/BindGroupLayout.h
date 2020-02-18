@@ -42,6 +42,8 @@ namespace dawn_native {
         struct LayoutBindingInfo {
             std::array<dawn::ShaderStageBit, kMaxBindingsPerGroup> visibilities;
             std::array<dawn::BindingType, kMaxBindingsPerGroup> types;
+            std::bitset<kMaxBindingsPerGroup> dynamic;
+            std::bitset<kMaxBindingsPerGroup> multisampled;
             std::bitset<kMaxBindingsPerGroup> mask;
         };
         const LayoutBindingInfo& GetBindingInfo() const;

@@ -475,6 +475,18 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectChildAndParent) {
     EXPECT_TRUE(ATK_IS_OBJECT(result));
     EXPECT_EQ(result, root_obj);
   }
+
+  // Test invalid indices.
+  AtkObject* result = atk_object_ref_accessible_child(root_obj, -1);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, -88);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 3);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 1000);
+  EXPECT_EQ(result, nullptr);
+  result = atk_object_ref_accessible_child(root_obj, 828282);
+  EXPECT_EQ(result, nullptr);
 }
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectIndexInParent) {
@@ -620,20 +632,20 @@ TEST_F(AXPlatformNodeAuraLinuxTest, DISABLED_TestAtkObjectIntAttributes) {
 
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkComponentRefAtPoint) {
   AXNodeData root;
-  root.id = 0;
-  root.child_ids.push_back(1);
-  root.child_ids.push_back(2);
+  root.id = 1;
   root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
 
   AXNodeData node1;
-  node1.id = 1;
+  node1.id = 2;
   node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
+  root.child_ids.push_back(node1.id);
 
   AXNodeData node2;
-  node2.id = 2;
+  node2.id = 3;
   node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
   node2.SetName("Name2");
+  root.child_ids.push_back(node2.id);
 
   Init(root, node1, node2);
 
@@ -994,6 +1006,40 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkHyperlink) {
 // AtkText interface
 //
 //
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextGetText) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTextField;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kValue, "A string.");
+  Init(root);
+
+  AtkObject* root_obj(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_obj));
+  g_object_ref(root_obj);
+
+  ASSERT_TRUE(ATK_IS_TEXT(root_obj));
+  AtkText* atk_text = ATK_TEXT(root_obj);
+
+  auto verify_text = [&](const char* expected, int start, int end) {
+    char* actual = atk_text_get_text(atk_text, start, end);
+    EXPECT_STREQ(expected, actual);
+    g_free(actual);
+  };
+
+  verify_text("A string.", 0, -1);
+  verify_text("A string.", 0, 20);
+  verify_text("A string", 0, 8);
+  verify_text("str", 2, 5);
+  verify_text(".", 8, 9);
+  verify_text("", 0, 0);
+  verify_text(nullptr, -1, -1);
+  verify_text(nullptr, 5, 2);
+  verify_text(nullptr, 10, 20);
+
+  g_object_unref(root_obj);
+}
+
 TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCharacterGranularity) {
   AXNodeData root;
   root.id = 1;
@@ -1488,6 +1534,61 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowActive) {
     EXPECT_FALSE(tester.IsActivatedInStateSet());
     EXPECT_FALSE(saw_active_focus_state_change);
   }
+
+  g_object_unref(root_atk_object);
+}
+
+//
+// AtkWindow interface and iconified state
+//
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowMinimized) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  Init(root);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
+
+  AtkStateSet* state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  GetRootWrapper()->set_minimized(true);
+
+  state_set = atk_object_ref_state_set(root_atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  EXPECT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
+  g_object_unref(state_set);
+
+  bool saw_state_change = false;
+  g_signal_connect(root_atk_object, "state-change",
+                   G_CALLBACK(+[](AtkObject* atkobject, gchar* state_changed,
+                                  gboolean new_value, bool* flag) {
+                     if (!g_strcmp0(state_changed, "iconified"))
+                       *flag = true;
+                   }),
+                   &saw_state_change);
+
+  AXPlatformNodeAuraLinux* root_node = GetRootPlatformNode();
+  static_cast<AXPlatformNodeAuraLinux*>(root_node)->NotifyAccessibilityEvent(
+      ax::mojom::Event::kWindowVisibilityChanged);
+
+  EXPECT_TRUE(saw_state_change);
+
+  saw_state_change = false;
+  static_cast<AXPlatformNodeAuraLinux*>(root_node)->NotifyAccessibilityEvent(
+      ax::mojom::Event::kWindowVisibilityChanged);
+  EXPECT_FALSE(saw_state_change);
+
+  GetRootWrapper()->set_minimized(false);
+  static_cast<AXPlatformNodeAuraLinux*>(root_node)->NotifyAccessibilityEvent(
+      ax::mojom::Event::kWindowVisibilityChanged);
+  EXPECT_TRUE(saw_state_change);
 
   g_object_unref(root_atk_object);
 }

@@ -29,7 +29,7 @@
 #include <memory>
 
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -234,23 +234,11 @@ sk_sp<SkData> SharedBuffer::GetAsSkData() const {
   return data;
 }
 
-void SharedBuffer::OnMemoryDump(const String& dump_prefix,
-                                WebProcessMemoryDump* memory_dump) const {
-  if (buffer_.size()) {
-    WebMemoryAllocatorDump* dump =
-        memory_dump->CreateMemoryAllocatorDump(dump_prefix + "/shared_buffer");
-    dump->AddScalar("size", "bytes", buffer_.size());
-    memory_dump->AddSuballocation(
-        dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
-  } else {
-    // If there is data in the segments, then it should have been allocated
-    // using fastMalloc.
-    const String data_dump_name = dump_prefix + "/segments";
-    auto* dump = memory_dump->CreateMemoryAllocatorDump(data_dump_name);
-    dump->AddScalar("size", "bytes", size_);
-    memory_dump->AddSuballocation(
-        dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
-  }
+void SharedBuffer::GetMemoryDumpNameAndSize(String& dump_name,
+                                            size_t& dump_size) const {
+  size_t buffer_size = buffer_.size();
+  dump_name = buffer_size ? "/shared_buffer" : "/segments";
+  dump_size = buffer_size ? buffer_size : size_;
 }
 
 SharedBuffer::DeprecatedFlatData::DeprecatedFlatData(

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
@@ -36,28 +37,24 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 }  // namespace
 
 // Controls whether to enable Chrome OS Account Manager.
+// Rollout controlled by Finch.
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to enable Chrome OS Add Child Account Supervision flow.
-const base::Feature kAddSupervision{"ChromeOSAddSupervision",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls whether to enable the Parental Controls section of settings.
+const base::Feature kParentalControlsSettings{
+    "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to enable Google Assistant feature.
 const base::Feature kAssistantFeature{"ChromeOSAssistant",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kShowLanguageToggleInDemoMode{
-    "ShowLanguageToggleInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether to enable Ambient mode feature.
+const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kShowSplashScreenInDemoMode{
-    "ShowSplashScreenInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kSupportCountryCustomizationInDemoMode{
-    "SupportCountryCustomizationInDemoMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Please keep the order of these switches synchronized with the header file
 // (i.e. in alphabetical order).
@@ -348,6 +345,11 @@ const char kFakeDriveFsLauncherChrootPath[] =
 const char kFakeDriveFsLauncherSocketPath[] =
     "fake-drivefs-launcher-socket-path";
 
+// Forces Chrome to use CertVerifyProcBuiltin for verification of server
+// certificates, ignoring the status of
+// net::features::kCertVerifierBuiltinFeature.
+const char kForceCertVerifierBuiltin[] = "force-cert-verifier-builtin";
+
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
@@ -402,6 +404,11 @@ const char kHomedir[] = "homedir";
 // turn on multi-profile feature on ChromeOS.
 const char kIgnoreUserProfileMappingForTests[] =
     "ignore-user-profile-mapping-for-tests";
+
+// If set, the Chrome settings will not expose the option to enable crostini
+// unless the enable-experimental-kernel-vm-support flag is set in
+// chrome://flags
+const char kKernelnextRestrictVMs[] = "kernelnext-restrict-vms";
 
 // Enables Chrome-as-a-login-manager behavior.
 const char kLoginManager[] = "login-manager";
@@ -460,8 +467,17 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // fixed.
 const char kSamlPasswordChangeUrl[] = "saml-password-change-url";
 
+// Smaller, denser shelf in clamshell mode.
+const char kShelfDenseClamshell[] = "shelf-dense-clamshell";
+
+// New modular design for the shelf with apps separated into a hotseat UI.
+const char kShelfHotseat[] = "shelf-hotseat";
+
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
+
+// Scrollable list of apps on the shelf.
+const char kShelfScrollable[] = "shelf-scrollable";
 
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
@@ -478,11 +494,6 @@ const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 // If true, the developer tool overlay will be shown for the login/lock screen.
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
-
-// Url prefix for the Supervision Onboarding remote web pages.
-// This makes it easier to test with fake HTTP servers or local dev versions.
-const char kSupervisionOnboardingUrlPrefix[] =
-    "supervision-onboarding-url-prefix";
 
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
@@ -530,23 +541,6 @@ bool MemoryPressureHandlingEnabled() {
   return true;
 }
 
-base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
-GetMemoryPressureThresholds() {
-  using MemoryPressureMonitor = base::chromeos::MemoryPressureMonitor;
-
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kMemoryPressureExperimentName);
-  if (group_name == kConservativeThreshold)
-    return MemoryPressureMonitor::THRESHOLD_CONSERVATIVE;
-  if (group_name == kAggressiveCacheDiscardThreshold)
-    return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_CACHE_DISCARD;
-  if (group_name == kAggressiveTabDiscardThreshold)
-    return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE_TAB_DISCARD;
-  if (group_name == kAggressiveThreshold)
-    return MemoryPressureMonitor::THRESHOLD_AGGRESSIVE;
-  return MemoryPressureMonitor::THRESHOLD_DEFAULT;
-}
-
 bool IsGaiaIdMigrationStarted() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kTestCrosGaiaIdMigration))
@@ -564,8 +558,8 @@ bool IsAccountManagerEnabled() {
   return base::FeatureList::IsEnabled(kAccountManager);
 }
 
-bool IsAddSupervisionEnabled() {
-  return base::FeatureList::IsEnabled(kAddSupervision);
+bool IsParentalControlsSettingsEnabled() {
+  return base::FeatureList::IsEnabled(kParentalControlsSettings);
 }
 
 bool IsAssistantFlagsEnabled() {
@@ -574,6 +568,10 @@ bool IsAssistantFlagsEnabled() {
 
 bool IsAssistantEnabled() {
   return IsAssistantFlagsEnabled();
+}
+
+bool IsAmbientModeEnabled() {
+  return base::FeatureList::IsEnabled(kAmbientModeFeature);
 }
 
 bool IsSigninFrameClientCertsEnabled() {
@@ -586,8 +584,21 @@ bool IsSigninFrameClientCertUserSelectionEnabled() {
       kDisableSigninFrameClientCertUserSelection);
 }
 
+bool ShouldShowShelfDenseClamshell() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kShelfDenseClamshell);
+}
+
+bool ShouldShowShelfHotseat() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHotseat);
+}
+
 bool ShouldShowShelfHoverPreviews() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
+}
+
+bool ShouldShowScrollableShelf() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

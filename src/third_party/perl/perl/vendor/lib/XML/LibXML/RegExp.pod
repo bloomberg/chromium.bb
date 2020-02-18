@@ -27,7 +27,7 @@ which are used e.g. for validation of XML Schema simple types (pattern facet).
   $compiled_re = XML::LibXML::RegExp->new( $regexp_str );
 
 The constructor takes a string containing a regular expression and returns a
-compiled regexp object. 
+compiled regexp object.
 
 
 =item matches($string)
@@ -51,14 +51,14 @@ otherwise. (See the definition of determinism in the XML spec (L<<<<<< http://ww
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -69,3 +69,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

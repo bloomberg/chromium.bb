@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -30,8 +31,8 @@
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_dialog.h"
 #include "components/payments/core/payment_prefs.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_contents.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
@@ -108,10 +109,6 @@ bool ChromePaymentRequestDelegate::IsIncognito() const {
   return profile && profile->IsIncognitoProfile();
 }
 
-bool ChromePaymentRequestDelegate::IsSslCertificateValid() {
-  return SslValidityChecker::IsSslCertificateValid(web_contents_);
-}
-
 const GURL& ChromePaymentRequestDelegate::GetLastCommittedURL() const {
   return web_contents_->GetLastCommittedURL();
 }
@@ -147,7 +144,7 @@ std::string ChromePaymentRequestDelegate::GetAuthenticatedEmail() const {
   // authenticated.
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager && identity_manager->HasPrimaryAccount())
     return identity_manager->GetPrimaryAccountInfo().email;
@@ -192,6 +189,16 @@ void ChromePaymentRequestDelegate::EmbedPaymentHandlerWindow(
 
 bool ChromePaymentRequestDelegate::IsInteractive() const {
   return shown_dialog_ && shown_dialog_->IsInteractive();
+}
+
+std::string
+ChromePaymentRequestDelegate::GetInvalidSslCertificateErrorMessage() {
+  return SslValidityChecker::GetInvalidSslCertificateErrorMessage(
+      web_contents_);
+}
+
+bool ChromePaymentRequestDelegate::SkipUiForBasicCard() const {
+  return false;  // Only tests do this.
 }
 
 }  // namespace payments

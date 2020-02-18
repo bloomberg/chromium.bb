@@ -104,6 +104,43 @@ class AXContentNodeDataSparseAttributeAdapter
     }
   }
 
+  void AddIntAttribute(blink::WebAXIntAttribute attribute,
+                       int32_t value) override {
+    switch (attribute) {
+      case blink::WebAXIntAttribute::kAriaColumnCount:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount, value);
+        break;
+      case blink::WebAXIntAttribute::kAriaRowCount:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaRowCount, value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AddUIntAttribute(blink::WebAXUIntAttribute attribute,
+                        uint32_t value) override {
+    switch (attribute) {
+      case blink::WebAXUIntAttribute::kAriaColumnIndex:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaColumnSpan:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnSpan,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaRowIndex:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
+                              value);
+        break;
+      case blink::WebAXUIntAttribute::kAriaRowSpan:
+        dst_->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowSpan, value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
   void AddStringAttribute(blink::WebAXStringAttribute attribute,
                           const blink::WebString& value) override {
     switch (attribute) {
@@ -161,7 +198,7 @@ class AXContentNodeDataSparseAttributeAdapter
 
 WebAXObject ParentObjectUnignored(WebAXObject child) {
   WebAXObject parent = child.ParentObject();
-  while (!parent.IsDetached() && parent.AccessibilityIsIgnored())
+  while (!parent.IsDetached() && !parent.AccessibilityIsIncludedInTree())
     parent = parent.ParentObject();
   return parent;
 }
@@ -344,7 +381,7 @@ bool BlinkAXTreeSource::ShouldLoadInlineTextBoxes(
   WebAXObject ancestor = obj;
   while (!ancestor.IsDetached()) {
     int32_t ancestor_id = ancestor.AxID();
-    if (base::ContainsKey(load_inline_text_boxes_ids_, ancestor_id) ||
+    if (base::Contains(load_inline_text_boxes_ids_, ancestor_id) ||
         (ancestor_id == focus_id && ancestor.IsEditable())) {
       return true;
     }
@@ -483,9 +520,13 @@ WebAXObject BlinkAXTreeSource::GetParent(WebAXObject node) const {
     if (node.Equals(root()))
       return WebAXObject();
     node = node.ParentObject();
-  } while (!node.IsDetached() && node.AccessibilityIsIgnored());
+  } while (!node.IsDetached() && !node.AccessibilityIsIncludedInTree());
 
   return node;
+}
+
+bool BlinkAXTreeSource::IsIgnored(WebAXObject node) const {
+  return node.AccessibilityIsIgnored();
 }
 
 bool BlinkAXTreeSource::IsValid(WebAXObject node) const {
@@ -541,8 +582,23 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (clips_children)
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
 
+  if (src.IsLineBreakingObject()) {
+    dst->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                          true);
+  }
+
   AXContentNodeDataSparseAttributeAdapter sparse_attribute_adapter(dst);
   src.GetSparseAXAttributes(sparse_attribute_adapter);
+
+  WebAXObject chooser_popup = src.ChooserPopup();
+  if (!chooser_popup.IsNull()) {
+    int32_t chooser_popup_id = chooser_popup.AxID();
+    auto controls_ids =
+        dst->GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
+    controls_ids.push_back(chooser_popup_id);
+    dst->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
+                             controls_ids);
+  }
 
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 
 #include "base/memory/ptr_util.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -55,8 +55,8 @@ ExtensionsMenuView::ExtensionsMenuView(
 
   EnableUpDownKeyboardAccelerators();
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   Repopulate();
 }
 
@@ -95,14 +95,14 @@ void ExtensionsMenuView::Repopulate() {
   constexpr int kMaxExtensionButtonsHeightDp = 600;
   auto scroll_view = std::make_unique<views::ScrollView>();
   scroll_view->ClipHeightTo(0, kMaxExtensionButtonsHeightDp);
-  scroll_view->set_draw_overflow_indicator(false);
-  scroll_view->set_hide_horizontal_scrollbar(true);
+  scroll_view->SetDrawOverflowIndicator(false);
+  scroll_view->SetHideHorizontalScrollBar(true);
   scroll_view->SetContents(std::move(extension_buttons));
   AddChildView(std::move(scroll_view));
 
   AddChildView(std::make_unique<views::Separator>());
   auto icon_view = CreateFixedSizeIconView();
-  icon_view->SetImage(CreateVectorIcon(kSettingsIcon));
+  icon_view->SetImage(CreateVectorIcon(vector_icons::kSettingsIcon));
   auto footer = std::make_unique<HoverButton>(
       this, std::move(icon_view),
       l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSION), base::string16());
@@ -140,8 +140,8 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
 
   auto extension_buttons = std::make_unique<views::View>();
   extension_menu_button_container_for_testing_ = extension_buttons.get();
-  extension_buttons->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  extension_buttons->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   auto add_group =
       [this, &extension_buttons](
@@ -199,29 +199,40 @@ void ExtensionsMenuView::OnToolbarActionAdded(
     int index) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionRemoved(
     const ToolbarActionsModel::ActionId& action_id) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionMoved(
     const ToolbarActionsModel::ActionId& action_id,
     int index) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionLoadFailed() {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarActionUpdated(
     const ToolbarActionsModel::ActionId& action_id) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarVisibleCountChanged() {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarHighlightModeChanged(bool is_highlighting) {
   Repopulate();
 }
+
 void ExtensionsMenuView::OnToolbarModelInitialized() {
+  Repopulate();
+}
+
+void ExtensionsMenuView::OnToolbarPinnedActionsChanged() {
   Repopulate();
 }
 

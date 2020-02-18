@@ -4,7 +4,6 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -70,25 +69,6 @@ void OverviewButtonTray::SnapRippleToActivated() {
   GetInkDrop()->SnapToActivated();
 }
 
-void OverviewButtonTray::UpdateIconVisibility() {
-  // The visibility of the OverviewButtonTray has diverged from
-  // OverviewController::CanSelect. The visibility of the button should
-  // not change during transient times in which CanSelect is false. Such as when
-  // a modal dialog is present.
-  SessionControllerImpl* session_controller =
-      Shell::Get()->session_controller();
-
-  bool kiosk_next = Shell::Get()->kiosk_next_shell_controller()->IsEnabled();
-  bool events_blocked = Shell::Get()
-                            ->tablet_mode_controller()
-                            ->AreInternalInputDeviceEventsBlocked();
-  bool active_session = session_controller->GetSessionState() ==
-                        session_manager::SessionState::ACTIVE;
-  bool app_mode = session_controller->IsRunningInAppMode();
-
-  SetVisible(!kiosk_next && events_blocked && active_session && !app_mode);
-}
-
 void OverviewButtonTray::OnGestureEvent(ui::GestureEvent* event) {
   Button::OnGestureEvent(event);
   if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
@@ -118,10 +98,10 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
 
     // Switch to the second most recently used window (most recent is the
     // current window) if it exists, unless splitview mode is active. Do not
-    // switch we entered overview mode will all windows minimized.
+    // switch if we entered overview mode with all windows minimized.
     if (mru_window_list.size() > 1u &&
         overview_controller->overview_session()->enter_exit_overview_type() !=
-            OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
+            OverviewSession::EnterExitOverviewType::kSlideInEnter) {
       aura::Window* new_active_window = mru_window_list[1];
 
       // In splitview mode, quick switch will only affect the windows on the non
@@ -141,7 +121,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       }
 
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-      ::wm::ActivateWindow(new_active_window);
+      wm::ActivateWindow(new_active_window);
       last_press_event_time_ = base::nullopt;
       return true;
     }
@@ -158,7 +138,11 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   // Note: Toggling overview mode will fail if there is no window to show, the
   // screen is locked, a modal dialog is open or is running in kiosk app
   // session.
-  bool performed = controller->ToggleOverview();
+  bool performed;
+  if (controller->InOverviewSession())
+    performed = controller->EndOverview();
+  else
+    performed = controller->StartOverview();
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
   return performed;
 }
@@ -192,6 +176,23 @@ void OverviewButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
 
 const char* OverviewButtonTray::GetClassName() const {
   return "OverviewButtonTray";
+}
+
+void OverviewButtonTray::UpdateIconVisibility() {
+  // The visibility of the OverviewButtonTray has diverged from
+  // OverviewController::CanSelect. The visibility of the button should
+  // not change during transient times in which CanSelect is false. Such as when
+  // a modal dialog is present.
+  SessionControllerImpl* session_controller =
+      Shell::Get()->session_controller();
+  bool active_session = session_controller->GetSessionState() ==
+                        session_manager::SessionState::ACTIVE;
+  bool app_mode = session_controller->IsRunningInAppMode();
+
+  bool should_show =
+      Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
+
+  SetVisible(should_show && active_session && !app_mode);
 }
 
 }  // namespace ash

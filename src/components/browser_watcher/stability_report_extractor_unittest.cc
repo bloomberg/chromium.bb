@@ -203,7 +203,7 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectSuccess) {
     EXPECT_EQ(Activity::ACT_EVENT_WAIT, activity.type());
     EXPECT_EQ(kEventAddress, activity.event_address());
     ASSERT_EQ(1U, activity.user_data().size());
-    ASSERT_TRUE(base::ContainsKey(activity.user_data(), "some_int"));
+    ASSERT_TRUE(base::Contains(activity.user_data(), "some_int"));
     EXPECT_EQ(TypedValue::kSignedValue,
               activity.user_data().at("some_int").value_case());
     EXPECT_EQ(42, activity.user_data().at("some_int").signed_value());
@@ -348,37 +348,37 @@ TEST_F(StabilityReportExtractorTest, ProcessUserDataCollection) {
   const auto& collected_data = report.process_states(0).data();
   ASSERT_EQ(kInternalProcessDatums + 8U, collected_data.size());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "raw"));
+  ASSERT_TRUE(base::Contains(collected_data, "raw"));
   EXPECT_EQ(TypedValue::kBytesValue, collected_data.at("raw").value_case());
   EXPECT_EQ("foo", collected_data.at("raw").bytes_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "string"));
+  ASSERT_TRUE(base::Contains(collected_data, "string"));
   EXPECT_EQ(TypedValue::kStringValue, collected_data.at("string").value_case());
   EXPECT_EQ("bar", collected_data.at("string").string_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "char"));
+  ASSERT_TRUE(base::Contains(collected_data, "char"));
   EXPECT_EQ(TypedValue::kCharValue, collected_data.at("char").value_case());
   EXPECT_EQ("9", collected_data.at("char").char_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "int"));
+  ASSERT_TRUE(base::Contains(collected_data, "int"));
   EXPECT_EQ(TypedValue::kSignedValue, collected_data.at("int").value_case());
   EXPECT_EQ(-9999, collected_data.at("int").signed_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "uint"));
+  ASSERT_TRUE(base::Contains(collected_data, "uint"));
   EXPECT_EQ(TypedValue::kUnsignedValue, collected_data.at("uint").value_case());
   EXPECT_EQ(9999U, collected_data.at("uint").unsigned_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "bool"));
+  ASSERT_TRUE(base::Contains(collected_data, "bool"));
   EXPECT_EQ(TypedValue::kBoolValue, collected_data.at("bool").value_case());
   EXPECT_TRUE(collected_data.at("bool").bool_value());
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "ref"));
+  ASSERT_TRUE(base::Contains(collected_data, "ref"));
   EXPECT_EQ(TypedValue::kBytesReference, collected_data.at("ref").value_case());
   const TypedValue::Reference& ref = collected_data.at("ref").bytes_reference();
   EXPECT_EQ(reinterpret_cast<uintptr_t>(string1), ref.address());
   EXPECT_EQ(strlen(string1), static_cast<uint64_t>(ref.size()));
 
-  ASSERT_TRUE(base::ContainsKey(collected_data, "sref"));
+  ASSERT_TRUE(base::Contains(collected_data, "sref"));
   EXPECT_EQ(TypedValue::kStringReference,
             collected_data.at("sref").value_case());
   const TypedValue::Reference& sref =
@@ -412,7 +412,7 @@ TEST_F(StabilityReportExtractorTest, FieldTrialCollection) {
   // Expect 1 key/value pair.
   const auto& collected_data = report.process_states(0).data();
   EXPECT_EQ(kInternalProcessDatums + 1U, collected_data.size());
-  EXPECT_TRUE(base::ContainsKey(collected_data, "string"));
+  EXPECT_TRUE(base::Contains(collected_data, "string"));
 }
 
 TEST_F(StabilityReportExtractorTest, ModuleCollection) {

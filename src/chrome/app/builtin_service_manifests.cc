@@ -9,7 +9,6 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/services/file_util/public/cpp/manifest.h"
-#include "chrome/services/noop/public/cpp/manifest.h"
 #include "components/services/patch/public/cpp/manifest.h"
 #include "components/services/quarantine/public/cpp/manifest.h"
 #include "components/services/unzip/public/cpp/manifest.h"
@@ -19,18 +18,15 @@
 #include "extensions/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/preferences/public/cpp/local_state_manifest.h"
-#include "services/proxy_resolver/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/manifest.h"
 #include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
-#include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chromeos/services/cellular_setup/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
-#include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -39,7 +35,6 @@
 
 #if defined(OS_WIN)
 #include "base/feature_list.h"
-#include "chrome/services/util_win/public/cpp/manifest.h"
 #include "chrome/services/wifi_util_win/public/cpp/manifest.h"
 #endif
 
@@ -64,7 +59,7 @@
 #include "chrome/services/printing/public/cpp/manifest.h"
 #endif
 
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 #include "chrome/services/isolated_xr_device/manifest.h"
 #endif
 
@@ -97,38 +92,11 @@ const service_manager::Manifest& GetChromeManifest() {
 #endif
                               spellcheck::mojom::SpellCheckHost,
                               startup_metric_utils::mojom::StartupMetricHost>())
-#if defined(OS_CHROMEOS)
-        // Only used in the classic Ash case.
-        .ExposeCapability("input_device_controller",
-                          service_manager::Manifest::InterfaceList<
-                              ws::mojom::InputDeviceController>())
-#endif
         .RequireCapability(chrome::mojom::kRendererServiceName, "browser")
         .Build()
   };
   return *manifest;
 }
-
-#if defined(OS_ANDROID)
-const service_manager::Manifest& GetAndroidDownloadManagerManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .WithServiceName("download_manager")
-          .WithDisplayName("Download Manager")
-          .WithOptions(
-              service_manager::ManifestOptionsBuilder()
-                  .WithExecutionMode(service_manager::Manifest::ExecutionMode::
-                                         kInProcessBuiltin)
-                  .WithInstanceSharingPolicy(
-                      service_manager::Manifest::InstanceSharingPolicy::
-                          kSingleton)
-                  .Build())
-          .RequireCapability("network", "network_service")
-          .RequireCapability("device", "device:wake_lock")
-          .Build()};
-  return *manifest;
-}
-#endif
 
 }  // namespace
 
@@ -137,10 +105,8 @@ GetChromeBuiltinServiceManifests() {
   static base::NoDestructor<std::vector<service_manager::Manifest>> manifests{{
       GetChromeManifest(),
       GetFileUtilManifest(),
-      GetNoopManifest(),
       patch::GetManifest(),
       unzip::GetManifest(),
-      proxy_resolver::GetManifest(),
       prefs::GetLocalStateManifest(),
       quarantine::GetQuarantineManifest(),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -156,30 +122,26 @@ GetChromeBuiltinServiceManifests() {
     (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
       GetChromePrintingManifest(),
 #endif
-#if BUILDFLAG(ENABLE_ISOLATED_XR_SERVICE)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
       GetXrDeviceServiceManifest(),
 #endif
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS)
       simple_browser::GetManifest(),
 #endif
 #if defined(OS_WIN)
-      GetUtilWinManifest(),
       GetWifiUtilWinManifest(),
 #endif
-#if defined(OS_ANDROID)
-      GetAndroidDownloadManagerManifest(),
-#else
+#if !defined(OS_ANDROID)
       mirroring::GetManifest(),
       GetProfileImportManifest(),
 #endif
 #if defined(OS_CHROMEOS)
       ash::GetManifest(),
-      GetCupsIppParserManifest(),
       chromeos::cellular_setup::GetManifest(),
-      chromeos::printing::GetCupsProxyManifest(),
       chromeos::ime::GetManifest(),
       chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
+      GetCupsIppParserManifest(),
 #endif
   }};
   return *manifests;

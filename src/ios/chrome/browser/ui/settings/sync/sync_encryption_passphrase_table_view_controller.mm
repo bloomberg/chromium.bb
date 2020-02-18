@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -33,7 +34,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -60,7 +60,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   NSString* savedTitle_;
   UIBarButtonItem* savedLeftButton_;
   std::unique_ptr<SyncObserverBridge> syncObserver_;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       identityManagerObserver_;
   UITextField* passphrase_;
 }
@@ -109,7 +109,7 @@ const CGFloat kSpinnerButtonPadding = 18;
     _footerMessage = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
     identityManagerObserver_ =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(browserState_), self);
   }
   return self;

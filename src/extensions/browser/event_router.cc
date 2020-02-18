@@ -137,28 +137,17 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                                         int worker_thread_id,
                                         int64_t service_worker_version_id,
                                         std::unique_ptr<ListValue> event_args,
-                                        UserGestureState user_gesture,
                                         const EventFilteringInfo& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int event_id = g_extension_event_id.GetNext();
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DoDispatchEventToSenderBookkeepingOnUI(
-        browser_context_id, extension_id, event_id, render_process_id,
-        service_worker_version_id, histogram_value, event_name);
-  } else {
-    // This is called from WebRequest API.
-    // TODO(lazyboy): Skip this entirely: http://crbug.com/488747.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
-                       browser_context_id, extension_id, event_id,
-                       render_process_id, service_worker_version_id,
-                       histogram_value, event_name));
-  }
+  DoDispatchEventToSenderBookkeepingOnUI(
+      browser_context_id, extension_id, event_id, render_process_id,
+      service_worker_version_id, histogram_value, event_name);
 
   DispatchExtensionMessage(ipc_sender, worker_thread_id, browser_context_id,
                            extension_id, event_id, event_name, event_args.get(),
-                           user_gesture, info);
+                           UserGestureState::USER_GESTURE_UNKNOWN, info);
 }
 
 // static.
@@ -181,8 +170,7 @@ EventRouter::EventRouter(BrowserContext* browser_context,
       extension_prefs_(extension_prefs),
       extension_registry_observer_(this),
       listeners_(this),
-      lazy_event_dispatch_util_(browser_context_),
-      weak_factory_(this) {
+      lazy_event_dispatch_util_(browser_context_) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 

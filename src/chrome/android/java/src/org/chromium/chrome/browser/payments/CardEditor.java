@@ -273,8 +273,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         mCalendar.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        mIsIncognito = activity != null && activity.getCurrentTabModel() != null
-                && activity.getCurrentTabModel().isIncognito();
+        mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
     }
 
     private boolean isCardNumberLengthMaximum(@Nullable CharSequence value) {
@@ -311,9 +310,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     public void addAcceptedPaymentMethodIfRecognized(PaymentMethodData data) {
         assert data != null;
         String method = data.supportedMethod;
-        if (mCardIssuerNetworks.containsKey(method)) {
-            addAcceptedNetwork(method);
-        } else if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
+        if (BasicCardUtils.BASIC_CARD_METHOD_NAME.equals(method)) {
             Set<String> basicCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             mAcceptedBasicCardIssuerNetworks.addAll(basicCardNetworks);
             for (String network : basicCardNetworks) {

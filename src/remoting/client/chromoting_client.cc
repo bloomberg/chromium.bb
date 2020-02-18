@@ -90,9 +90,7 @@ void ChromotingClient::Start(
 #endif
     } else {
       DCHECK(protocol_config_->ice_supported());
-      bool use_turn_api = SignalingAddress(host_jid).channel() ==
-                          SignalingAddress::Channel::FTL;
-      connection_.reset(new protocol::IceConnectionToHost(use_turn_api));
+      connection_.reset(new protocol::IceConnectionToHost());
     }
   }
   connection_->set_client_stub(this);
@@ -127,6 +125,11 @@ void ChromotingClient::Start(
       signal_strategy_->Connect();
       break;
   }
+}
+
+void ChromotingClient::Close() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  connection_->Disconnect(protocol::OK);
 }
 
 void ChromotingClient::SetCapabilities(
@@ -247,7 +250,7 @@ void ChromotingClient::OnSignalStrategyStateChange(
     VLOG(1) << "Signaling connection closed.";
     mouse_input_scaler_.set_input_stub(nullptr);
     connection_.reset();
-    user_interface_->OnConnectionState(protocol::ConnectionToHost::CLOSED,
+    user_interface_->OnConnectionState(protocol::ConnectionToHost::FAILED,
                                        protocol::SIGNALING_ERROR);
   }
 }

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
 
 class AppListControllerDelegate;
 class AppListModelUpdater;
@@ -51,11 +52,11 @@ class SearchController {
   // Takes ownership of |provider| and associates it with given mixer group.
   void AddProvider(size_t group_id, std::unique_ptr<SearchProvider> provider);
 
-  ChromeSearchResult* FindSearchResult(const std::string& result_id);
+  virtual ChromeSearchResult* FindSearchResult(const std::string& result_id);
   ChromeSearchResult* GetResultByTitleForTest(const std::string& title);
 
   // Sends training signal to each |providers_|
-  void Train(const std::string& id, RankingItemType type);
+  void Train(AppLaunchData&& app_launch_data);
 
   // Gets the search result ranker owned by this object that is used for ranking
   // apps.

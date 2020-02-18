@@ -79,14 +79,6 @@ bssl::UniquePtr<SSL_SESSION> SSLClientSessionCache::Lookup(
   return session;
 }
 
-void SSLClientSessionCache::ResetLookupCount(const std::string& cache_key) {
-  // It's possible that the cached session for this key was deleted after the
-  // Lookup. If that's the case, don't do anything.
-  auto iter = cache_.Get(cache_key);
-  if (iter == cache_.end())
-    return;
-}
-
 void SSLClientSessionCache::Insert(const std::string& cache_key,
                                    bssl::UniquePtr<SSL_SESSION> session) {
   if (IsTLS13(session.get())) {
@@ -115,7 +107,11 @@ bool SSLClientSessionCache::IsExpired(SSL_SESSION* session, time_t now) {
   if (now < 0)
     return true;
   uint64_t now_u64 = static_cast<uint64_t>(now);
-  return now_u64 < SSL_SESSION_get_time(session) ||
+
+  // now_u64 may be slightly behind because of differences in how
+  // time is calculated at this layer versus BoringSSL.
+  // Add a second of wiggle room to account for this.
+  return now_u64 < SSL_SESSION_get_time(session) - 1 ||
          now_u64 >=
              SSL_SESSION_get_time(session) + SSL_SESSION_get_timeout(session);
 }

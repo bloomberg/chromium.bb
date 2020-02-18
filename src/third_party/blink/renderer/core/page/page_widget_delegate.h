@@ -34,7 +34,7 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 class LocalFrame;
@@ -50,8 +50,8 @@ class CORE_EXPORT PageWidgetEventHandler {
  public:
   virtual void HandleMouseMove(LocalFrame& main_frame,
                                const WebMouseEvent&,
-                               const std::vector<const WebInputEvent*>&,
-                               const std::vector<const WebInputEvent*>&);
+                               const WebVector<const WebInputEvent*>&,
+                               const WebVector<const WebInputEvent*>&);
   virtual void HandleMouseLeave(LocalFrame& main_frame, const WebMouseEvent&);
   virtual void HandleMouseDown(LocalFrame& main_frame, const WebMouseEvent&);
   virtual void HandleMouseUp(LocalFrame& main_frame, const WebMouseEvent&);
@@ -63,8 +63,8 @@ class CORE_EXPORT PageWidgetEventHandler {
   virtual WebInputEventResult HandlePointerEvent(
       LocalFrame& main_frame,
       const WebPointerEvent&,
-      const std::vector<const WebInputEvent*>&,
-      const std::vector<const WebInputEvent*>&);
+      const WebVector<const WebInputEvent*>&,
+      const WebVector<const WebInputEvent*>&);
   virtual ~PageWidgetEventHandler() {}
 };
 

@@ -21,15 +21,16 @@
 #include <sstream>
 #include <vector>
 
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/tracing/core/basic_types.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/protozero/proto_utils.h"
-#include "perfetto/tracing/core/basic_types.h"
-#include "perfetto/tracing/core/shared_memory_abi.h"
-#include "perfetto/tracing/core/trace_packet.h"
 #include "src/tracing/core/trace_buffer.h"
 #include "src/tracing/test/fake_packet.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 
@@ -805,6 +806,29 @@ TEST_F(TraceBufferTest, Fragments_PreserveUID) {
               ElementsAre(FakePacketFragment(10, 'd')));
   ASSERT_EQ(22u, sequence_properties.producer_uid_trusted);
 
+  ASSERT_THAT(ReadPacket(), IsEmpty());
+}
+
+TEST_F(TraceBufferTest, Fragments_DiscardedOnPacketSizeDropPacket) {
+  ResetBuffer(4096);
+  // Set up a fragmented packet in the first chunk, which continues in the
+  // second chunk with kPacketSizeDropPacket size. The corrupted fragmented
+  // packet should be skipped.
+  CreateChunk(ProducerID(1), WriterID(1), ChunkID(0))
+      .AddPacket(10, 'a')
+      .AddPacket(10, 'b', kContOnNextChunk)
+      .CopyIntoTraceBuffer();
+  CreateChunk(ProducerID(1), WriterID(1), ChunkID(1))
+      .SetFlags(kContFromPrevChunk)
+      // Var-int encoded TraceWriterImpl::kPacketSizeDropPacket.
+      .AddPacket({0xff, 0xff, 0xff, 0x7f})
+      .CopyIntoTraceBuffer();
+  CreateChunk(ProducerID(1), WriterID(1), ChunkID(2))
+      .AddPacket(10, 'd')
+      .CopyIntoTraceBuffer();
+  trace_buffer()->BeginRead();
+  ASSERT_THAT(ReadPacket(), ElementsAre(FakePacketFragment(10, 'a')));
+  ASSERT_THAT(ReadPacket(), ElementsAre(FakePacketFragment(10, 'd')));
   ASSERT_THAT(ReadPacket(), IsEmpty());
 }
 

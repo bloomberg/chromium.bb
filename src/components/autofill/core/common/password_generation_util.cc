@@ -12,20 +12,30 @@
 namespace autofill {
 namespace password_generation {
 
-
 PasswordGenerationUIData::PasswordGenerationUIData(
     const gfx::RectF& bounds,
     int max_length,
     const base::string16& generation_element,
+    uint32_t generation_element_id,
     base::i18n::TextDirection text_direction,
     const autofill::PasswordForm& password_form)
     : bounds(bounds),
       max_length(max_length),
       generation_element(generation_element),
+      generation_element_id(generation_element_id),
       text_direction(text_direction),
       password_form(password_form) {}
 
 PasswordGenerationUIData::PasswordGenerationUIData() = default;
+PasswordGenerationUIData::PasswordGenerationUIData(
+    const PasswordGenerationUIData& rhs) = default;
+PasswordGenerationUIData::PasswordGenerationUIData(
+    PasswordGenerationUIData&& rhs) = default;
+
+PasswordGenerationUIData& PasswordGenerationUIData::operator=(
+    const PasswordGenerationUIData& rhs) = default;
+PasswordGenerationUIData& PasswordGenerationUIData::operator=(
+    PasswordGenerationUIData&& rhs) = default;
 
 PasswordGenerationUIData::~PasswordGenerationUIData() = default;
 

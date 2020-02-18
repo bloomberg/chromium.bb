@@ -71,6 +71,12 @@ extern const int kGridDarkThemeCellSelectionColor;
 extern const int kGridDarkThemeCellCloseButtonTintColor;
 extern const CGFloat kGridDarkThemeCellHighlightColorAlpha;
 extern const int kGridDarkThemeCellSeparatorColor;
+// TODO (crbug.com/981889): remove with iOS 12.
+// Extra dark theme colors until iOS 12 gets removed.
+extern const int kGridDarkThemeCellDetailColor;
+extern const CGFloat kGridDarkThemeCellDetailAlpha;
+extern const int kGridDarkThemeCellTintColor;
+extern const int kGridDarkThemeCellSolidButtonTextColor;
 
 // GridCell dimensions.
 extern const CGSize kGridCellSizeSmall;

@@ -6,15 +6,14 @@
 #include <third_party/blink/renderer/modules/storage/storage_controller.h>
 
 #include "base/task/post_task.h"
-#include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/uuid.h"
 
 namespace blink {
 namespace {
@@ -35,12 +34,8 @@ class StorageNamespaceTest : public testing::Test {
  public:
   const size_t kTestCacheLimit = 100;
 
-  StorageNamespaceTest() {
-    features_.InitAndEnableFeature(features::kOnionSoupDOMStorage);
-  }
+  StorageNamespaceTest() {}
   ~StorageNamespaceTest() override {}
-
-  base::test::ScopedFeatureList features_;
 };
 
 TEST_F(StorageNamespaceTest, BasicStorageAreas) {

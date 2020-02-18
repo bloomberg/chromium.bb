@@ -83,9 +83,11 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -94,8 +96,9 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/net_buildflags.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/favicon_size.h"
@@ -106,7 +109,6 @@
 #include "chrome/browser/android/webapps/webapp_registry.h"
 #include "components/feed/buildflags.h"
 #else  // !defined(OS_ANDROID)
-#include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "content/public/browser/host_zoom_map.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -311,12 +313,6 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
  public:
   RemoveSafeBrowsingCookieTester()
       : browser_process_(TestingBrowserProcess::GetGlobal()) {
-    system_request_context_getter_ =
-        base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {content::BrowserThread::IO}));
-    browser_process_->SetSystemRequestContext(
-        system_request_context_getter_.get());
     // TODO(crbug/925153): Port consumers of the |sb_service| to use the
     // interface in components/safe_browsing, and remove this cast.
     scoped_refptr<safe_browsing::SafeBrowsingService> sb_service =
@@ -349,7 +345,6 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
  private:
   TestingBrowserProcess* browser_process_;
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveSafeBrowsingCookieTester);
 };
@@ -584,21 +579,6 @@ class RemovePasswordsTester {
   password_manager::MockPasswordStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(RemovePasswordsTester);
-};
-
-// Implementation of the TestingProfile that has the neccessary services for
-// BrowsingDataRemover.
-class BrowsingDataTestingProfile : public TestingProfile {
- public:
-  BrowsingDataTestingProfile() {}
-  ~BrowsingDataTestingProfile() override {}
-
-  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return ChromeSSLHostStateDelegateFactory::GetForProfile(this);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataTestingProfile);
 };
 
 class RemovePermissionPromptCountsTest {
@@ -1026,28 +1006,25 @@ class StrikeDatabaseTester {
 
 class ClearReportingCacheTester {
  public:
-  ClearReportingCacheTester(TestingProfile* profile, bool create_service)
-      : profile_(profile) {
+  ClearReportingCacheTester(network::NetworkContext* network_context,
+                            bool create_service)
+      : url_request_context_(network_context->url_request_context()) {
     if (create_service)
       service_ = std::make_unique<MockReportingService>();
 
-    net::URLRequestContext* request_context =
-        profile_->GetRequestContext()->GetURLRequestContext();
-    old_service_ = request_context->reporting_service();
-    request_context->set_reporting_service(service_.get());
+    old_service_ = url_request_context_->reporting_service();
+    url_request_context_->set_reporting_service(service_.get());
   }
 
   ~ClearReportingCacheTester() {
-    net::URLRequestContext* request_context =
-        profile_->GetRequestContext()->GetURLRequestContext();
-    DCHECK_EQ(service_.get(), request_context->reporting_service());
-    request_context->set_reporting_service(old_service_);
+    DCHECK_EQ(service_.get(), url_request_context_->reporting_service());
+    url_request_context_->set_reporting_service(old_service_);
   }
 
   const MockReportingService& mock() { return *service_; }
 
  private:
-  TestingProfile* profile_;
+  net::URLRequestContext* url_request_context_;
   std::unique_ptr<MockReportingService> service_;
   net::ReportingService* old_service_;
 };
@@ -1099,28 +1076,25 @@ class MockNetworkErrorLoggingService : public net::NetworkErrorLoggingService {
 
 class ClearNetworkErrorLoggingTester {
  public:
-  ClearNetworkErrorLoggingTester(TestingProfile* profile, bool create_service)
-      : profile_(profile) {
+  ClearNetworkErrorLoggingTester(network::NetworkContext* network_context,
+                                 bool create_service)
+      : url_request_context_(network_context->url_request_context()) {
     if (create_service)
       service_ = std::make_unique<MockNetworkErrorLoggingService>();
 
-    net::URLRequestContext* request_context =
-        profile_->GetRequestContext()->GetURLRequestContext();
-
-    request_context->set_network_error_logging_service(service_.get());
+    url_request_context_->set_network_error_logging_service(service_.get());
   }
 
   ~ClearNetworkErrorLoggingTester() {
-    net::URLRequestContext* request_context =
-        profile_->GetRequestContext()->GetURLRequestContext();
-    DCHECK_EQ(service_.get(), request_context->network_error_logging_service());
-    request_context->set_network_error_logging_service(nullptr);
+    DCHECK_EQ(service_.get(),
+              url_request_context_->network_error_logging_service());
+    url_request_context_->set_network_error_logging_service(nullptr);
   }
 
   const MockNetworkErrorLoggingService& mock() { return *service_; }
 
  private:
-  TestingProfile* profile_;
+  net::URLRequestContext* url_request_context_;
   std::unique_ptr<MockNetworkErrorLoggingService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearNetworkErrorLoggingTester);
@@ -1149,6 +1123,17 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   ChromeBrowsingDataRemoverDelegateTest()
       : profile_(new BrowsingDataRemoverTestingProfile()) {
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
+
+    // Make sure the Network Service is started before making a NetworkContext.
+    content::GetNetworkService();
+    thread_bundle_.RunUntilIdle();
+
+    auto network_context = std::make_unique<network::NetworkContext>(
+        network::NetworkService::GetNetworkServiceForTesting(),
+        mojo::MakeRequest(&network_context_ptr_),
+        network::mojom::NetworkContextParams::New());
+    network_context_ = network_context.get();
+    profile_->SetNetworkContext(std::move(network_context));
 
     ProtocolHandlerRegistryFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildProtocolHandlerRegistry));
@@ -1230,6 +1215,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     return remover_->GetLastUsedOriginTypeMask();
   }
 
+  network::NetworkContext* network_context() { return network_context_; }
+
   TestingProfile* GetProfile() {
     return profile_.get();
   }
@@ -1246,6 +1233,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   content::BrowsingDataRemover* remover_;
 
   content::TestBrowserThreadBundle thread_bundle_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
+  network::NetworkContext* network_context_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowsingDataRemoverDelegateTest);
@@ -1582,11 +1571,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
   bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
                          base::ASCIIToUTF16("a"), bookmarked_page);
-  EXPECT_EQ(1, bookmark_model->bookmark_bar_node()->child_count());
+  EXPECT_EQ(1u, bookmark_model->bookmark_bar_node()->children().size());
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS, false);
-  EXPECT_EQ(0, bookmark_model->bookmark_bar_node()->child_count());
+  EXPECT_EQ(0u, bookmark_model->bookmark_bar_node()->children().size());
 }
 
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
@@ -2426,9 +2415,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 // Test that removing passwords clears HTTP auth data.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        ClearHttpAuthCache_RemovePasswords) {
-  net::HttpNetworkSession* http_session = GetProfile()
-                                              ->GetRequestContext()
-                                              ->GetURLRequestContext()
+  net::HttpNetworkSession* http_session = network_context()
+                                              ->url_request_context()
                                               ->http_transaction_factory()
                                               ->GetSession();
   DCHECK(http_session);
@@ -2768,7 +2756,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, OriginTypeMasksNoPolicy) {
 
 #if BUILDFLAG(ENABLE_REPORTING)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache_NoService) {
-  ClearReportingCacheTester tester(GetProfile(), false);
+  ClearReportingCacheTester tester(network_context(), false);
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -2779,7 +2767,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache_NoService) {
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache) {
-  ClearReportingCacheTester tester(GetProfile(), true);
+  ClearReportingCacheTester tester(network_context(), true);
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -2797,7 +2785,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ReportingCache) {
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
        DISABLED_ReportingCache_WithFilter) {
-  ClearReportingCacheTester tester(GetProfile(), true);
+  ClearReportingCacheTester tester(network_context(), true);
 
   std::unique_ptr<BrowsingDataFilterBuilder> builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -2816,7 +2804,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_NoDelegate) {
-  ClearNetworkErrorLoggingTester tester(GetProfile(), false);
+  ClearNetworkErrorLoggingTester tester(network_context(), false);
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -2828,7 +2816,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_NoDelegate) {
 
 // This would use an origin filter, but history isn't yet filterable.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_History) {
-  ClearNetworkErrorLoggingTester tester(GetProfile(), true);
+  ClearNetworkErrorLoggingTester tester(network_context(), true);
 
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
@@ -2856,13 +2844,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 #if !defined(OS_ANDROID)
   auto* history_service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
-  // Create a PasswordProtectionService that will handle deletion of
-  // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries. The mock is sufficient
-  // as we don't need to rely any functionality of the Chrome* implementation.
-  safe_browsing::MockPasswordProtectionService password_protection_service(
-      nullptr, nullptr, history_service, map);
-  EXPECT_CALL(password_protection_service,
-              RemoveUnhandledSyncPasswordReuseOnURLsDeleted(true, _));
+  // Create a safe_browsing::VerdictCacheManager that will handle deletion of
+  // CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION entries.
+  safe_browsing::VerdictCacheManager sb_cache_manager(history_service, map);
 #endif  // !defined(OS_ANDROID)
 
   GURL url("https://example.com");
@@ -2883,7 +2867,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // Set a value for every WebsiteSetting.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::ContainsValue(whitelisted_types, info->type()))
+    if (base::Contains(whitelisted_types, info->type()))
       continue;
     base::Value some_value;
     auto* content_setting = content_setting_registry->Get(info->type());
@@ -2928,7 +2912,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
 
   // All settings should be deleted now.
   for (const content_settings::WebsiteSettingsInfo* info : *registry) {
-    if (base::ContainsValue(whitelisted_types, info->type()))
+    if (base::Contains(whitelisted_types, info->type()))
       continue;
     std::unique_ptr<base::Value> value =
         map->GetWebsiteSetting(url, url, info->type(), std::string(), nullptr);

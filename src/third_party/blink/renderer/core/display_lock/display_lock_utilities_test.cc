@@ -10,23 +10,16 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class DisplayLockUtilitiesTest : public RenderingTest {
+class DisplayLockUtilitiesTest : public RenderingTest,
+                                 private ScopedDisplayLockingForTest {
  public:
   DisplayLockUtilitiesTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
-
-  void SetUp() override {
-    RenderingTest::SetUp();
-    RuntimeEnabledFeatures::SetDisplayLockingEnabled(true);
-  }
-
-  void TearDown() override {
-    RenderingTest::TearDown();
-    RuntimeEnabledFeatures::SetDisplayLockingEnabled(false);
-  }
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
+        ScopedDisplayLockingForTest(true) {}
 };
 
 TEST_F(DisplayLockUtilitiesTest, ActivatableLockedInclusiveAncestors) {

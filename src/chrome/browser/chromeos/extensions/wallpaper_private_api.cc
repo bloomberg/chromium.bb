@@ -23,7 +23,8 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/extensions/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
+#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
+#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -190,6 +191,20 @@ std::vector<std::string> GetImagePaths(const base::FilePath& path) {
   return image_paths;
 }
 
+// Helper function to parse the data from a |backdrop::Image| object and save it
+// to |image_info_out|.
+void ParseImageInfo(
+    const backdrop::Image& image,
+    extensions::api::wallpaper_private::ImageInfo* image_info_out) {
+  // The info of each image should contain image url, action url and display
+  // text.
+  image_info_out->image_url = image.image_url();
+  image_info_out->action_url = image.action_url();
+  // Display text may have more than one strings.
+  for (int i = 0; i < image.attribution_size(); ++i)
+    image_info_out->display_text.push_back(image.attribution()[i].text());
+}
+
 }  // namespace
 
 ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
@@ -231,6 +246,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   SET_STRING("setSuccessfullyMessage",
              IDS_WALLPAPER_MANAGER_SET_SUCCESSFULLY_MESSAGE);
   SET_STRING("defaultWallpaperLabel", IDS_DEFAULT_WALLPAPER_ACCESSIBLE_LABEL);
+  SET_STRING("backButton", IDS_ACCNAME_BACK);
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
@@ -668,11 +684,19 @@ WallpaperPrivateGetCollectionsInfoFunction::Run() {
 
 void WallpaperPrivateGetCollectionsInfoFunction::OnCollectionsInfoFetched(
     bool success,
-    const std::vector<extensions::api::wallpaper_private::CollectionInfo>&
-        collections_info_list) {
+    const std::vector<backdrop::Collection>& collections) {
   if (!success) {
     Respond(Error("Collection names are not available."));
     return;
+  }
+
+  std::vector<extensions::api::wallpaper_private::CollectionInfo>
+      collections_info_list;
+  for (const auto& collection : collections) {
+    extensions::api::wallpaper_private::CollectionInfo collection_info;
+    collection_info.collection_name = collection.collection_name();
+    collection_info.collection_id = collection.collection_id();
+    collections_info_list.push_back(std::move(collection_info));
   }
   Respond(ArgumentList(
       get_collections_info::Results::Create(collections_info_list)));
@@ -699,11 +723,17 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetImagesInfoFunction::Run() {
 
 void WallpaperPrivateGetImagesInfoFunction::OnImagesInfoFetched(
     bool success,
-    const std::vector<extensions::api::wallpaper_private::ImageInfo>&
-        images_info_list) {
+    const std::vector<backdrop::Image>& images) {
   if (!success) {
     Respond(Error("Images info is not available."));
     return;
+  }
+
+  std::vector<extensions::api::wallpaper_private::ImageInfo> images_info_list;
+  for (const auto& image : images) {
+    extensions::api::wallpaper_private::ImageInfo image_info;
+    ParseImageInfo(image, &image_info);
+    images_info_list.push_back(std::move(image_info));
   }
   Respond(ArgumentList(get_images_info::Results::Create(images_info_list)));
 }
@@ -843,12 +873,15 @@ WallpaperPrivateGetSurpriseMeImageFunction::Run() {
 
 void WallpaperPrivateGetSurpriseMeImageFunction::OnSurpriseMeImageFetched(
     bool success,
-    const extensions::api::wallpaper_private::ImageInfo& image_info,
+    const backdrop::Image& image,
     const std::string& next_resume_token) {
   if (!success) {
     Respond(Error("Image not available."));
     return;
   }
+
+  extensions::api::wallpaper_private::ImageInfo image_info;
+  ParseImageInfo(image, &image_info);
   Respond(TwoArguments(image_info.ToValue(),
                        std::make_unique<Value>(next_resume_token)));
 }

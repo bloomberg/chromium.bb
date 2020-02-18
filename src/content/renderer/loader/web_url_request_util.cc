@@ -225,17 +225,10 @@ std::string GetWebURLRequestHeadersAsString(
 
 WebHTTPBody GetWebHTTPBodyForRequestBody(
     const network::ResourceRequestBody& input) {
-  return GetWebHTTPBodyForRequestBodyWithBlobPtrs(input, {});
-}
-
-WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
-    const network::ResourceRequestBody& input,
-    std::vector<blink::mojom::BlobPtrInfo> blob_ptrs) {
   WebHTTPBody http_body;
   http_body.Initialize();
   http_body.SetIdentifier(input.identifier());
   http_body.SetContainsPasswordData(input.contains_sensitive_info());
-  auto blob_ptr_iter = blob_ptrs.begin();
   for (auto& element : *input.elements()) {
     switch (element.type()) {
       case network::mojom::DataElementType::kBytes:
@@ -250,14 +243,7 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
             element.expected_modification_time().ToDoubleT());
         break;
       case network::mojom::DataElementType::kBlob:
-        if (blob_ptrs.empty()) {
           http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()));
-        } else {
-          DCHECK(blob_ptr_iter != blob_ptrs.end());
-          blink::mojom::BlobPtrInfo& blob = *blob_ptr_iter++;
-          http_body.AppendBlob(WebString::FromASCII(element.blob_uuid()),
-                               element.length(), blob.PassHandle());
-        }
         break;
       case network::mojom::DataElementType::kDataPipe: {
         http_body.AppendDataPipe(
@@ -272,25 +258,6 @@ WebHTTPBody GetWebHTTPBodyForRequestBodyWithBlobPtrs(
     }
   }
   return http_body;
-}
-
-std::vector<blink::mojom::BlobPtrInfo> GetBlobPtrsForRequestBody(
-    const network::ResourceRequestBody& input) {
-  std::vector<blink::mojom::BlobPtrInfo> blob_ptrs;
-  blink::mojom::BlobRegistryPtr blob_registry;
-  for (auto& element : *input.elements()) {
-    if (element.type() == network::mojom::DataElementType::kBlob) {
-      blink::mojom::BlobPtrInfo blob_ptr;
-      if (!blob_registry) {
-        blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
-            mojo::MakeRequest(&blob_registry));
-      }
-      blob_registry->GetBlobFromUUID(mojo::MakeRequest(&blob_ptr),
-                                     element.blob_uuid());
-      blob_ptrs.push_back(std::move(blob_ptr));
-    }
-  }
-  return blob_ptrs;
 }
 
 scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebURLRequest(

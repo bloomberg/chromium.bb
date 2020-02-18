@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "osp_base/stringprintf.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 namespace mdns {
@@ -42,7 +42,7 @@ ErrorOr<DomainName> DomainName::Append(const DomainName& first,
   return result;
 }
 
-DomainName::DomainName() : domain_name_{'\0'} {}
+DomainName::DomainName() : domain_name_{0u} {}
 DomainName::DomainName(std::vector<uint8_t>&& domain_name)
     : domain_name_(std::move(domain_name)) {
   OSP_CHECK_LE(domain_name_.size(), kDomainNameMaxLength);
@@ -54,8 +54,15 @@ DomainName& DomainName::operator=(const DomainName& domain_name) = default;
 DomainName& DomainName::operator=(DomainName&& domain_name) = default;
 
 bool DomainName::operator==(const DomainName& other) const {
-  // TODO: case-insensitive comparison
-  return domain_name_ == other.domain_name_;
+  if (domain_name_.size() != other.domain_name_.size()) {
+    return false;
+  }
+  for (int i = 0; i < domain_name_.size(); ++i) {
+    if (tolower(domain_name_[i]) != tolower(other.domain_name_[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool DomainName::operator!=(const DomainName& other) const {
@@ -74,7 +81,7 @@ bool DomainName::EndsWithLocalDomain() const {
 
 Error DomainName::Append(const DomainName& after) {
   OSP_CHECK(after.domain_name_.size());
-  OSP_DCHECK_EQ(after.domain_name_.back(), '\0');
+  OSP_DCHECK_EQ(after.domain_name_.back(), 0u);
 
   if ((domain_name_.size() + after.domain_name_.size() - 1) >
       kDomainNameMaxLength) {
@@ -86,15 +93,19 @@ Error DomainName::Append(const DomainName& after) {
   return Error::None();
 }
 
-std::vector<std::string> DomainName::GetLabels() const {
+std::vector<absl::string_view> DomainName::GetLabels() const {
   OSP_DCHECK_GT(domain_name_.size(), 0u);
-  std::vector<std::string> result;
-  auto it = domain_name_.begin();
-  while (*it != 0) {
-    OSP_DCHECK_LT(it - domain_name_.begin(), kDomainNameMaxLength);
-    OSP_DCHECK_LT((it + 1 + *it) - domain_name_.begin(), kDomainNameMaxLength);
-    result.emplace_back(it + 1, it + 1 + *it);
-    it += 1 + *it;
+  OSP_DCHECK_LT(domain_name_.size(), kDomainNameMaxLength);
+
+  std::vector<absl::string_view> result;
+  const uint8_t* data = domain_name_.data();
+  while (*data != 0) {
+    const size_t label_length = *data;
+    OSP_DCHECK_LT(label_length, kDomainNameMaxLabelLength);
+
+    ++data;
+    result.emplace_back(reinterpret_cast<const char*>(data), label_length);
+    data += label_length;
   }
   return result;
 }

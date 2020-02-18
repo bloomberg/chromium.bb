@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+const uint64_t DAWN_WHOLE_SIZE = 0xffffffffffffffffULL; // UINT64_MAX
+
 {% for type in by_category["object"] %}
     typedef struct {{as_cType(type.name)}}Impl* {{as_cType(type.name)}};
 {% endfor %}
@@ -48,12 +50,19 @@
 {% endfor %}
 
 // Custom types depending on the target language
-typedef uint64_t DawnCallbackUserdata;
-typedef void (*DawnDeviceErrorCallback)(const char* message, DawnCallbackUserdata userdata);
-typedef void (*DawnBufferMapReadCallback)(DawnBufferMapAsyncStatus status, const void* data, uint64_t dataLength, DawnCallbackUserdata userdata);
-typedef void (*DawnBufferMapWriteCallback)(DawnBufferMapAsyncStatus status, void* data, uint64_t dataLength, DawnCallbackUserdata userdata);
-typedef void (*DawnFenceOnCompletionCallback)(DawnFenceCompletionStatus status,
-                                              DawnCallbackUserdata userdata);
+typedef void (*DawnDeviceErrorCallback)(const char* message, void* userdata);
+typedef void (*DawnBufferCreateMappedCallback)(DawnBufferMapAsyncStatus status,
+                                               DawnCreateBufferMappedResult result,
+                                               void* userdata);
+typedef void (*DawnBufferMapReadCallback)(DawnBufferMapAsyncStatus status,
+                                          const void* data,
+                                          uint64_t dataLength,
+                                          void* userdata);
+typedef void (*DawnBufferMapWriteCallback)(DawnBufferMapAsyncStatus status,
+                                           void* data,
+                                           uint64_t dataLength,
+                                           void* userdata);
+typedef void (*DawnFenceOnCompletionCallback)(DawnFenceCompletionStatus status, void* userdata);
 
 #ifdef __cplusplus
 extern "C" {

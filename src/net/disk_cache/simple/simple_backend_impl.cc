@@ -23,12 +23,12 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -61,48 +61,12 @@ namespace {
 // Maximum fraction of the cache that one entry can consume.
 const int kMaxFileRatio = 8;
 
+// Native code entries can be large. Rather than increasing the overall cache
+// size, allow an individual entry to occupy up to half of the cache.
+const int kMaxNativeCodeFileRatio = 2;
+
 // Overrides the above.
 const int64_t kMinFileSizeLimit = 5 * 1024 * 1024;
-
-bool g_fd_limit_histogram_has_been_populated = false;
-
-void MaybeHistogramFdLimit() {
-  if (g_fd_limit_histogram_has_been_populated)
-    return;
-
-  // Used in histograms; add new entries at end.
-  enum FdLimitStatus {
-    FD_LIMIT_STATUS_UNSUPPORTED = 0,
-    FD_LIMIT_STATUS_FAILED      = 1,
-    FD_LIMIT_STATUS_SUCCEEDED   = 2,
-    FD_LIMIT_STATUS_MAX         = 3
-  };
-  FdLimitStatus fd_limit_status = FD_LIMIT_STATUS_UNSUPPORTED;
-  int soft_fd_limit = 0;
-  int hard_fd_limit = 0;
-
-#if defined(OS_POSIX)
-  struct rlimit nofile;
-  if (!getrlimit(RLIMIT_NOFILE, &nofile)) {
-    soft_fd_limit = nofile.rlim_cur;
-    hard_fd_limit = nofile.rlim_max;
-    fd_limit_status = FD_LIMIT_STATUS_SUCCEEDED;
-  } else {
-    fd_limit_status = FD_LIMIT_STATUS_FAILED;
-  }
-#endif
-
-  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimitStatus",
-                            fd_limit_status, FD_LIMIT_STATUS_MAX);
-  if (fd_limit_status == FD_LIMIT_STATUS_SUCCEEDED) {
-    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitSoft",
-                             soft_fd_limit);
-    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitHard",
-                             hard_fd_limit);
-  }
-
-  g_fd_limit_histogram_has_been_populated = true;
-}
 
 // Global context of all the files we have open --- this permits some to be
 // closed on demand if too many FDs are being used, to avoid running out.
@@ -247,7 +211,8 @@ SimpleBackendImpl::SimpleBackendImpl(
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       orig_max_size_(max_bytes),
       entry_operations_mode_((cache_type == net::DISK_CACHE ||
-                              cache_type == net::GENERATED_CODE_CACHE)
+                              cache_type == net::GENERATED_BYTE_CODE_CACHE ||
+                              cache_type == net::GENERATED_NATIVE_CODE_CACHE)
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
                                  : SimpleEntryImpl::NON_OPTIMISTIC_OPERATIONS),
       net_log_(net_log) {
@@ -255,7 +220,6 @@ SimpleBackendImpl::SimpleBackendImpl(
   // backends, as default (if first call).
   if (orig_max_size_ < 0)
     orig_max_size_ = 0;
-  MaybeHistogramFdLimit();
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -281,7 +245,7 @@ net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
       base::MakeRefCounted<net::PrioritizedTaskRunner>(worker_pool);
 
   index_ = std::make_unique<SimpleIndex>(
-      base::ThreadTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
+      base::SequencedTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
       GetCacheType(),
       std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
                                         GetCacheType(), path_));
@@ -306,8 +270,11 @@ bool SimpleBackendImpl::SetMaxSize(int64_t max_bytes) {
 }
 
 int64_t SimpleBackendImpl::MaxFileSize() const {
+  uint64_t file_size_ratio = GetCacheType() == net::GENERATED_NATIVE_CODE_CACHE
+                                 ? kMaxNativeCodeFileRatio
+                                 : kMaxFileRatio;
   return std::max(
-      base::saturated_cast<int64_t>(index_->max_size() / kMaxFileRatio),
+      base::saturated_cast<int64_t>(index_->max_size() / file_size_ratio),
       kMinFileSizeLimit);
 }
 
@@ -591,9 +558,7 @@ int64_t SimpleBackendImpl::CalculateSizeOfEntriesBetween(
 class SimpleBackendImpl::SimpleIterator final : public Iterator {
  public:
   explicit SimpleIterator(base::WeakPtr<SimpleBackendImpl> backend)
-      : backend_(backend),
-        weak_factory_(this) {
-  }
+      : backend_(backend) {}
 
   // From Backend::Iterator:
   net::Error OpenNextEntry(Entry** next_entry,
@@ -657,7 +622,7 @@ class SimpleBackendImpl::SimpleIterator final : public Iterator {
  private:
   base::WeakPtr<SimpleBackendImpl> backend_;
   std::unique_ptr<std::vector<uint64_t>> hashes_to_enumerate_;
-  base::WeakPtrFactory<SimpleIterator> weak_factory_;
+  base::WeakPtrFactory<SimpleIterator> weak_factory_{this};
 };
 
 std::unique_ptr<Backend::Iterator> SimpleBackendImpl::CreateIterator() {
@@ -811,12 +776,19 @@ SimpleBackendImpl::DiskStatResult SimpleBackendImpl::InitCacheStructureOnDisk(
   } else {
     bool mtime_result =
         disk_cache::simple_util::GetMTime(path, &result.cache_dir_mtime);
-    DCHECK(mtime_result);
-    if (!result.max_size) {
+    if (!mtime_result) {
+      // Something deleted the directory between when we set it up and the
+      // mstat; this is not uncommon on some test fixtures which erase their
+      // tempdir while some worker threads may still be running.
+      LOG(ERROR) << "Simple Cache Backend: cache directory inaccessible right "
+                    "after creation; path: "
+                 << path.LossyDisplayName();
+      result.net_error = net::ERR_FAILED;
+    } else if (!result.max_size) {
       int64_t available = base::SysInfo::AmountOfFreeDiskSpace(path);
       result.max_size = disk_cache::PreferredCacheSize(available);
+      DCHECK(result.max_size);
     }
-    DCHECK(result.max_size);
   }
   return result;
 }

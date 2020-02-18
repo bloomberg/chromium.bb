@@ -8,10 +8,6 @@ import("//extensions/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 
-if (is_chromeos) {
-  import("//chrome/browser/chromeos/kiosk_next_home/kiosk_next.gni")
-}
-
 # Generates a rule to repack a set of resources, substituting a given string
 # in for the percentage (e.g. "100", "200"). It generates the repacked files in
 # the "gen" directory, and then introduces a copy rule to copy it to the root
@@ -101,6 +97,7 @@ template("chrome_extra_paks") {
       "$root_gen_dir/chrome/invalidations_resources.pak",
       "$root_gen_dir/chrome/net_internals_resources.pak",
       "$root_gen_dir/chrome/quota_internals_resources.pak",
+      "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
       "$root_gen_dir/components/components_resources.pak",
       "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
       "$root_gen_dir/content/content_resources.pak",
@@ -116,6 +113,7 @@ template("chrome_extra_paks") {
       "//chrome/browser/resources:net_internals_resources",
       "//chrome/browser/resources:quota_internals_resources",
       "//chrome/common:resources",
+      "//components/autofill/core/browser:autofill_address_rewriter_resources",
       "//components/resources",
       "//content:resources",
       "//content/browser/tracing:resources",
@@ -156,6 +154,7 @@ template("chrome_extra_paks") {
     if (is_chromeos) {
       sources += [
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
+        "$root_gen_dir/chrome/camera_resources.pak",
         "$root_gen_dir/chrome/cellular_setup_resources.pak",
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chrome/os_settings_resources.pak",
@@ -166,16 +165,13 @@ template("chrome_extra_paks") {
       deps += [
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
         "//chrome/browser/resources:os_settings_resources",
+        "//chrome/browser/resources/chromeos:camera_resources",
         "//chrome/browser/resources/chromeos:cellular_setup_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
         "//chromeos/resources",
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]
-      if (enable_kiosk_next && is_chrome_branded) {
-        sources += [ "$root_gen_dir/chrome/kiosk_next_internal_resources.pak" ]
-        deps += [ "//chrome/browser/resources:kiosk_next_internal_resources" ]
-      }
     }
     if (!is_android && !is_chromeos) {
       sources += [ "$root_gen_dir/chrome/onboarding_welcome_resources.pak" ]

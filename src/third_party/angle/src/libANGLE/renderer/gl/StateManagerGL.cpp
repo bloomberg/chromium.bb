@@ -38,8 +38,10 @@ StateManagerGL::IndexedBufferBinding::IndexedBufferBinding() : offset(0), size(0
 
 StateManagerGL::StateManagerGL(const FunctionsGL *functions,
                                const gl::Caps &rendererCaps,
-                               const gl::Extensions &extensions)
+                               const gl::Extensions &extensions,
+                               const angle::FeaturesGL &features)
     : mFunctions(functions),
+      mFeatures(features),
       mProgram(0),
       mVAO(0),
       mVertexAttribCurrentValues(rendererCaps.maxVertexAttributes),
@@ -400,6 +402,15 @@ void StateManagerGL::bindTexture(gl::TextureType type, GLuint texture)
         mFunctions->bindTexture(ToGLenum(type), texture);
         mLocalDirtyBits.set(gl::State::DIRTY_BIT_TEXTURE_BINDINGS);
     }
+}
+
+void StateManagerGL::invalidateTexture(gl::TextureType type)
+{
+    // Assume the tracked texture binding is incorrect, query the real bound texture from GL.
+    GLint boundTexture = 0;
+    mFunctions->getIntegerv(nativegl::GetTextureBindingQuery(type), &boundTexture);
+    mTextures[type][mTextureUnitIndex] = static_cast<GLuint>(boundTexture);
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_TEXTURE_BINDINGS);
 }
 
 void StateManagerGL::bindSampler(size_t unit, GLuint sampler)
@@ -1007,25 +1018,22 @@ void StateManagerGL::setViewport(const gl::Rectangle &viewport)
 
 void StateManagerGL::setDepthRange(float near, float far)
 {
-    if (mNear != near || mFar != far)
+    mNear = near;
+    mFar  = far;
+
+    // The glDepthRangef function isn't available until OpenGL 4.1.  Prefer it when it is
+    // available because OpenGL ES only works in floats.
+    if (mFunctions->depthRangef)
     {
-        mNear = near;
-        mFar  = far;
-
-        // The glDepthRangef function isn't available until OpenGL 4.1.  Prefer it when it is
-        // available because OpenGL ES only works in floats.
-        if (mFunctions->depthRangef)
-        {
-            mFunctions->depthRangef(mNear, mFar);
-        }
-        else
-        {
-            ASSERT(mFunctions->depthRange);
-            mFunctions->depthRange(mNear, mFar);
-        }
-
-        mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_RANGE);
+        mFunctions->depthRangef(mNear, mFar);
     }
+    else
+    {
+        ASSERT(mFunctions->depthRange);
+        mFunctions->depthRange(mNear, mFar);
+    }
+
+    mLocalDirtyBits.set(gl::State::DIRTY_BIT_DEPTH_RANGE);
 }
 
 void StateManagerGL::setBlendEnabled(bool enabled)
@@ -1466,9 +1474,26 @@ void StateManagerGL::setClearDepth(float clearDepth)
 
 void StateManagerGL::setClearColor(const gl::ColorF &clearColor)
 {
-    if (mClearColor != clearColor)
+    gl::ColorF modifiedClearColor = clearColor;
+    if (mFeatures.clearToZeroOrOneBroken.enabled &&
+        (clearColor.red == 1.0f || clearColor.red == 0.0f) &&
+        (clearColor.green == 1.0f || clearColor.green == 0.0f) &&
+        (clearColor.blue == 1.0f || clearColor.blue == 0.0f) &&
+        (clearColor.alpha == 1.0f || clearColor.alpha == 0.0f))
     {
-        mClearColor = clearColor;
+        if (clearColor.alpha == 1.0f)
+        {
+            modifiedClearColor.alpha = 2.0f;
+        }
+        else
+        {
+            modifiedClearColor.alpha = -1.0f;
+        }
+    }
+
+    if (mClearColor != modifiedClearColor)
+    {
+        mClearColor = modifiedClearColor;
         mFunctions->clearColor(mClearColor.red, mClearColor.green, mClearColor.blue,
                                mClearColor.alpha);
 

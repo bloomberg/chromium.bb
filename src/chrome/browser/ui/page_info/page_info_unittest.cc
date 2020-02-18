@@ -18,6 +18,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -440,8 +442,8 @@ TEST_F(PageInfoTest, Malware) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_MALWARE,
-            page_info()->site_identity_status());
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_MALWARE,
+            page_info()->safe_browsing_status());
 }
 
 TEST_F(PageInfoTest, SocialEngineering) {
@@ -452,8 +454,8 @@ TEST_F(PageInfoTest, SocialEngineering) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
-            page_info()->site_identity_status());
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING,
+            page_info()->safe_browsing_status());
 }
 
 TEST_F(PageInfoTest, UnwantedSoftware) {
@@ -464,8 +466,8 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
-            page_info()->site_identity_status());
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE,
+            page_info()->safe_browsing_status());
 }
 
 #if defined(FULL_SAFE_BROWSING)
@@ -477,8 +479,8 @@ TEST_F(PageInfoTest, SignInPasswordReuse) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE,
-            page_info()->site_identity_status());
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE,
+            page_info()->safe_browsing_status());
 }
 
 TEST_F(PageInfoTest, EnterprisePasswordReuse) {
@@ -489,8 +491,8 @@ TEST_F(PageInfoTest, EnterprisePasswordReuse) {
 
   EXPECT_EQ(PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED,
             page_info()->site_connection_status());
-  EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE,
-            page_info()->site_identity_status());
+  EXPECT_EQ(PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE,
+            page_info()->safe_browsing_status());
 }
 #endif
 
@@ -763,6 +765,8 @@ TEST_F(PageInfoTest, HTTPSEVCert) {
   EXPECT_EQ(PageInfo::SITE_IDENTITY_STATUS_EV_CERT,
             page_info()->site_identity_status());
   EXPECT_EQ(base::UTF8ToUTF16("Google Inc"), page_info()->organization_name());
+  EXPECT_EQ(base::UTF8ToUTF16("Issued to: Google Inc [US]"),
+            page_info()->site_details_message());
 }
 
 TEST_F(PageInfoTest, HTTPSRevocationError) {
@@ -927,9 +931,9 @@ TEST_F(PageInfoTest, InternalPage) {
 }
 #endif
 
-// Tests that metrics for the "Re-Enable Warnings" button on PageInfo are being
-// logged correctly.
-TEST_F(PageInfoTest, ReEnableWarningsMetrics) {
+// Tests that "Re-Enable Warnings" button on PageInfo both removes certificate
+// exceptions and logs metrics correctly.
+TEST_F(PageInfoTest, ReEnableWarnings) {
   struct TestCase {
     const std::string url;
     const bool button_visible;
@@ -945,25 +949,22 @@ TEST_F(PageInfoTest, ReEnableWarningsMetrics) {
       "interstitial.ssl.did_user_revoke_decisions2";
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
+    ChromeSSLHostStateDelegate* ssl_state =
+        ChromeSSLHostStateDelegateFactory::GetForProfile(profile());
+    const std::string host = GURL(test.url).host();
+
+    ssl_state->RevokeUserAllowExceptionsHard(host);
     ResetMockUI();
     SetURL(test.url);
     if (test.button_visible) {
       // In the case where the button should be visible, add an exception to
       // the profile settings for the site (since the exception is what
       // will make the button visible).
-      HostContentSettingsMap* content_settings =
-          HostContentSettingsMapFactory::GetForProfile(profile());
-      std::unique_ptr<base::DictionaryValue> dict =
-          std::unique_ptr<base::DictionaryValue>(new base::DictionaryValue());
-      dict->SetKey(
-          "testkey",
-          base::Value(content::SSLHostStateDelegate::CertJudgment::ALLOWED));
-      content_settings->SetWebsiteSettingDefaultScope(
-          url(), GURL(), CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-          std::string(), std::move(dict));
+      ssl_state->AllowCert(host, *cert(), net::ERR_CERT_DATE_INVALID);
       page_info();
       if (test.button_clicked) {
         page_info()->OnRevokeSSLErrorBypassButtonPressed();
+        EXPECT_FALSE(ssl_state->HasAllowException(host));
         ClearPageInfo();
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
@@ -973,6 +974,7 @@ TEST_F(PageInfoTest, ReEnableWarningsMetrics) {
             1);
       } else {  // Case where button is visible but not clicked.
         ClearPageInfo();
+        EXPECT_TRUE(ssl_state->HasAllowException(host));
         histograms.ExpectTotalCount(kGenericHistogram, 1);
         histograms.ExpectBucketCount(
             kGenericHistogram,
@@ -983,6 +985,7 @@ TEST_F(PageInfoTest, ReEnableWarningsMetrics) {
     } else {
       page_info();
       ClearPageInfo();
+      EXPECT_FALSE(ssl_state->HasAllowException(host));
       // Button is not visible, so check histogram is empty after opening and
       // closing page info.
       histograms.ExpectTotalCount(kGenericHistogram, 0);

@@ -12,7 +12,7 @@ String LinearTimingFunction::ToString() const {
   return "linear";
 }
 
-double LinearTimingFunction::Evaluate(double fraction, double) const {
+double LinearTimingFunction::Evaluate(double fraction) const {
   return fraction;
 }
 
@@ -73,9 +73,8 @@ String CubicBezierTimingFunction::ToString() const {
   }
 }
 
-double CubicBezierTimingFunction::Evaluate(double fraction,
-                                           double accuracy) const {
-  return bezier_->bezier().SolveWithEpsilon(fraction, accuracy);
+double CubicBezierTimingFunction::Evaluate(double fraction) const {
+  return bezier_->bezier().Solve(fraction);
 }
 
 void CubicBezierTimingFunction::Range(double* min_value,
@@ -106,8 +105,25 @@ String StepsTimingFunction::ToString() const {
     case StepPosition::START:
       position_string = "start";
       break;
+
     case StepPosition::END:
       // do not specify step position in output
+      break;
+
+    case StepPosition::JUMP_BOTH:
+      position_string = "jump-both";
+      break;
+
+    case StepPosition::JUMP_END:
+      // do not specify step position in output
+      break;
+
+    case StepPosition::JUMP_NONE:
+      position_string = "jump-none";
+      break;
+
+    case StepPosition::JUMP_START:
+      position_string = "jump-start";
       break;
   }
 
@@ -128,13 +144,12 @@ void StepsTimingFunction::Range(double* min_value, double* max_value) const {
 }
 
 double StepsTimingFunction::Evaluate(double fraction,
-                                     LimitDirection limit_direction,
-                                     double) const {
+                                     LimitDirection limit_direction) const {
   return steps_->GetPreciseValue(fraction, limit_direction);
 }
 
-double StepsTimingFunction::Evaluate(double fraction, double) const {
-  NOTREACHED() << "Use Evaluate(fraction, limit_direction, ...) instead.";
+double StepsTimingFunction::Evaluate(double fraction) const {
+  NOTREACHED() << "Use Evaluate(fraction, limit_direction) instead.";
   return steps_->GetPreciseValue(fraction, LimitDirection::RIGHT);
 }
 

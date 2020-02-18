@@ -55,7 +55,8 @@ Node* ParentNode(const Node& node) {
 
 HitTestResult HitTest(LayoutView* layout_view, const IntPoint& point_in_root) {
   HitTestRequest request(HitTestRequest::kReadOnly |
-                         HitTestRequest::kAllowChildFrameContent);
+                         HitTestRequest::kAllowChildFrameContent |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(point_in_root);
   HitTestResult result(request, location);
   layout_view->HitTest(location, result);
@@ -75,11 +76,9 @@ IntSize ScrollableAreaClipSizeInRootFrame(const ScrollableArea& scrollable) {
   LocalFrameView* view = box->GetFrameView();
   DCHECK(view);
 
-  LayoutRect layout_rect =
-      LayoutRect(scrollable.VisibleContentRect(blink::kIncludeScrollbars));
-  layout_rect = view->DocumentToFrame(layout_rect);
-  IntRect rect = view->ConvertToRootFrame(EnclosedIntRect(layout_rect));
-  return rect.Size();
+  PhysicalRect rect(scrollable.VisibleContentRect(blink::kIncludeScrollbars));
+  rect = view->DocumentToFrame(rect);
+  return view->ConvertToRootFrame(EnclosedIntRect(FloatRect(rect))).Size();
 }
 
 IntPoint RootFrameLocationToScrollable(const IntPoint& location_in_root_frame,
@@ -342,7 +341,8 @@ void FallbackCursorEventManager::ComputeLockCursor(
 
 void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
   DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
-  DCHECK(is_fallback_cursor_mode_on_);
+  // TODO(crbug.com/953393): reenable after bug is fixed.
+  // DCHECK(is_fallback_cursor_mode_on_);
 
   InvalidateCurrentScrollableIfNeeded();
   ScrollableArea* scrollable = CurrentScrollingScrollableArea();
@@ -382,7 +382,8 @@ void FallbackCursorEventManager::HandleMouseMoveEvent(const WebMouseEvent& e) {
 
 void FallbackCursorEventManager::HandleMousePressEvent(const WebMouseEvent& e) {
   DCHECK(RuntimeEnabledFeatures::FallbackCursorModeEnabled());
-  DCHECK(is_fallback_cursor_mode_on_);
+  // TODO(crbug.com/953393): reenable after bug is fixed.
+  // DCHECK(is_fallback_cursor_mode_on_);
 
   ResetCurrentScrollable();
 

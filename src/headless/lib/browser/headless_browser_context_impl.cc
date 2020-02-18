@@ -22,7 +22,6 @@
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_permission_manager.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "net/url_request/url_request_context.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
@@ -165,11 +164,11 @@ HeadlessBrowserContextImpl::CreateZoomLevelDelegate(
   return std::unique_ptr<content::ZoomLevelDelegate>();
 }
 
-base::FilePath HeadlessBrowserContextImpl::GetPath() const {
+base::FilePath HeadlessBrowserContextImpl::GetPath() {
   return path_;
 }
 
-bool HeadlessBrowserContextImpl::IsOffTheRecord() const {
+bool HeadlessBrowserContextImpl::IsOffTheRecord() {
   return context_options_->incognito_mode();
 }
 
@@ -231,28 +230,13 @@ HeadlessBrowserContextImpl::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* HeadlessBrowserContextImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return request_context_manager_->CreateRequestContext(
-      protocol_handlers, std::move(request_interceptors));
-}
-
-net::URLRequestContextGetter*
-HeadlessBrowserContextImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
+  NOTREACHED();
   return nullptr;
 }
 
 net::URLRequestContextGetter*
 HeadlessBrowserContextImpl::CreateMediaRequestContext() {
-  return request_context_manager_->url_request_context_getter();
-}
-
-net::URLRequestContextGetter*
-HeadlessBrowserContextImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
+  NOTREACHED();
   return nullptr;
 }
 
@@ -306,7 +290,7 @@ const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
   return context_options_.get();
 }
 
-const std::string& HeadlessBrowserContextImpl::Id() const {
+const std::string& HeadlessBrowserContextImpl::Id() {
   return UniqueId();
 }
 

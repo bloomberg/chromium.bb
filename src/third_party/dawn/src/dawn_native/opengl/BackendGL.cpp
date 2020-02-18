@@ -14,35 +14,172 @@
 
 #include "dawn_native/opengl/BackendGL.h"
 
+#include "common/Constants.h"
+#include "dawn_native/Instance.h"
 #include "dawn_native/OpenGLBackend.h"
 #include "dawn_native/opengl/DeviceGL.h"
 
+#include <cstring>
+#include <iostream>
+
 namespace dawn_native { namespace opengl {
+
+    namespace {
+
+        struct Vendor {
+            const char* vendorName;
+            uint32_t vendorId;
+        };
+
+        const Vendor kVendors[] = {{"ATI", kVendorID_AMD},
+                                   {"ARM", kVendorID_ARM},
+                                   {"Imagination", kVendorID_ImgTec},
+                                   {"Intel", kVendorID_Intel},
+                                   {"NVIDIA", kVendorID_Nvidia},
+                                   {"Qualcomm", kVendorID_Qualcomm}};
+
+        uint32_t GetVendorIdFromVendors(const char* vendor) {
+            uint32_t vendorId = 0;
+            for (const auto& it : kVendors) {
+                // Matching vendor name with vendor string
+                if (strstr(vendor, it.vendorName) != nullptr) {
+                    vendorId = it.vendorId;
+                    break;
+                }
+            }
+            return vendorId;
+        }
+
+        void KHRONOS_APIENTRY OnGLDebugMessage(GLenum source,
+                                               GLenum type,
+                                               GLuint id,
+                                               GLenum severity,
+                                               GLsizei length,
+                                               const GLchar* message,
+                                               const void* userParam) {
+            const char* sourceText;
+            switch (source) {
+                case GL_DEBUG_SOURCE_API:
+                    sourceText = "OpenGL";
+                    break;
+                case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+                    sourceText = "Window System";
+                    break;
+                case GL_DEBUG_SOURCE_SHADER_COMPILER:
+                    sourceText = "Shader Compiler";
+                    break;
+                case GL_DEBUG_SOURCE_THIRD_PARTY:
+                    sourceText = "Third Party";
+                    break;
+                case GL_DEBUG_SOURCE_APPLICATION:
+                    sourceText = "Application";
+                    break;
+                case GL_DEBUG_SOURCE_OTHER:
+                    sourceText = "Other";
+                    break;
+                default:
+                    sourceText = "UNKNOWN";
+                    break;
+            }
+
+            const char* severityText;
+            switch (severity) {
+                case GL_DEBUG_SEVERITY_HIGH:
+                    severityText = "High";
+                    break;
+                case GL_DEBUG_SEVERITY_MEDIUM:
+                    severityText = "Medium";
+                    break;
+                case GL_DEBUG_SEVERITY_LOW:
+                    severityText = "Low";
+                    break;
+                case GL_DEBUG_SEVERITY_NOTIFICATION:
+                    severityText = "Notification";
+                    break;
+                default:
+                    severityText = "UNKNOWN";
+                    break;
+            }
+
+            if (type == GL_DEBUG_TYPE_ERROR) {
+                std::cout << "OpenGL error:" << std::endl;
+                std::cout << "    Source: " << sourceText << std::endl;
+                std::cout << "    ID: " << id << std::endl;
+                std::cout << "    Severity: " << severityText << std::endl;
+                std::cout << "    Message: " << message << std::endl;
+
+                // Abort on an error when in Debug mode.
+                UNREACHABLE();
+            }
+        }
+
+    }  // anonymous namespace
 
     // The OpenGL backend's Adapter.
 
     class Adapter : public AdapterBase {
       public:
-        Adapter(InstanceBase* instance, const AdapterDiscoveryOptions* options)
-            : AdapterBase(instance, BackendType::OpenGL) {
-            // Use getProc to populate GLAD.
-            gladLoadGLLoader(reinterpret_cast<GLADloadproc>(options->getProc));
+        Adapter(InstanceBase* instance) : AdapterBase(instance, BackendType::OpenGL) {
+        }
+
+        MaybeError Initialize(const AdapterDiscoveryOptions* options) {
+            // Use getProc to populate the dispatch table
+            DAWN_TRY(mFunctions.Initialize(options->getProc));
+
+            // Use the debug output functionality to get notified about GL errors
+            // TODO(cwallez@chromium.org): add support for the KHR_debug and ARB_debug_output
+            // extensions
+            bool hasDebugOutput = mFunctions.IsAtLeastGL(4, 3) || mFunctions.IsAtLeastGLES(3, 2);
+
+            if (GetInstance()->IsBackendValidationEnabled() && hasDebugOutput) {
+                mFunctions.Enable(GL_DEBUG_OUTPUT);
+                mFunctions.Enable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+                // Any GL error; dangerous undefined behavior; any shader compiler and linker errors
+                mFunctions.DebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH,
+                                               0, nullptr, GL_TRUE);
+
+                // Severe performance warnings; GLSL or other shader compiler and linker warnings;
+                // use of currently deprecated behavior
+                mFunctions.DebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
+                                               0, nullptr, GL_TRUE);
+
+                // Performance warnings from redundant state changes; trivial undefined behavior
+                // This is disabled because we do an incredible amount of redundant state changes.
+                mFunctions.DebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0,
+                                               nullptr, GL_FALSE);
+
+                // Any message which is not an error or performance concern
+                mFunctions.DebugMessageControl(GL_DONT_CARE, GL_DONT_CARE,
+                                               GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr,
+                                               GL_FALSE);
+                mFunctions.DebugMessageCallback(&OnGLDebugMessage, nullptr);
+            }
 
             // Set state that never changes between devices.
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_SCISSOR_TEST);
-            glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
-            glEnable(GL_MULTISAMPLE);
+            mFunctions.Enable(GL_DEPTH_TEST);
+            mFunctions.Enable(GL_SCISSOR_TEST);
+            mFunctions.Enable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+            mFunctions.Enable(GL_MULTISAMPLE);
 
-            mPCIInfo.name = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+            mPCIInfo.name = reinterpret_cast<const char*>(mFunctions.GetString(GL_RENDERER));
+
+            // Workaroud to find vendor id from vendor name
+            const char* vendor = reinterpret_cast<const char*>(mFunctions.GetString(GL_VENDOR));
+            mPCIInfo.vendorId = GetVendorIdFromVendors(vendor);
+
+            return {};
         }
-        virtual ~Adapter() = default;
+
+        ~Adapter() override = default;
 
       private:
+        OpenGLFunctions mFunctions;
+
         ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
             // There is no limit on the number of devices created from this adapter because they can
             // all share the same backing OpenGL context.
-            return {new Device(this, descriptor)};
+            return {new Device(this, descriptor, mFunctions)};
         }
     };
 
@@ -58,9 +195,8 @@ namespace dawn_native { namespace opengl {
 
     ResultOrError<std::vector<std::unique_ptr<AdapterBase>>> Backend::DiscoverAdapters(
         const AdapterDiscoveryOptionsBase* optionsBase) {
-        // TODO(cwallez@chromium.org): For now we can only create a single adapter because glad uses
-        // static variables to store the pointers to OpenGL procs. Also, if we could create
-        // multiple adapters, we would need to figure out what to do about MakeCurrent.
+        // TODO(cwallez@chromium.org): For now only create a single OpenGL adapter because don't
+        // know how to handle MakeCurrent.
         if (mCreatedAdapter) {
             return DAWN_VALIDATION_ERROR("The OpenGL backend can only create a single adapter");
         }
@@ -73,10 +209,12 @@ namespace dawn_native { namespace opengl {
             return DAWN_VALIDATION_ERROR("AdapterDiscoveryOptions::getProc must be set");
         }
 
-        std::vector<std::unique_ptr<AdapterBase>> adapters;
-        adapters.push_back(std::make_unique<Adapter>(GetInstance(), options));
+        std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance());
+        DAWN_TRY(adapter->Initialize(options));
 
         mCreatedAdapter = true;
+        std::vector<std::unique_ptr<AdapterBase>> adapters;
+        adapters.push_back(std::unique_ptr<AdapterBase>(adapter.release()));
         return std::move(adapters);
     }
 

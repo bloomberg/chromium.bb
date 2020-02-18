@@ -4,7 +4,7 @@
 
 #include "media/base/android/media_service_throttler.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/android/media_server_crash_listener.h"
 #include "media/base/fake_single_thread_task_runner.h"
@@ -60,7 +60,7 @@ class MediaServiceThrottlerTest : public testing::Test {
   scoped_refptr<FakeSingleThreadTaskRunner> test_task_runner_;
 
   // Necessary, or else base::ThreadTaskRunnerHandle::Get() fails.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaServiceThrottlerTest);

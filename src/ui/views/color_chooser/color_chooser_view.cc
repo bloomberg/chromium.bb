@@ -4,6 +4,9 @@
 
 #include "ui/views/color_chooser/color_chooser_view.h"
 
+#include <memory>
+#include <utility>
+
 #include <stdint.h>
 
 #include "base/logging.h"
@@ -366,21 +369,21 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   DCHECK(listener_);
 
   SetBackground(CreateSolidBackground(SK_ColorLTGRAY));
-  SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kVertical, gfx::Insets(kMarginWidth), kMarginWidth));
+  SetLayoutManager(
+      std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
+                                  gfx::Insets(kMarginWidth), kMarginWidth));
 
-  View* container = new View();
+  auto container = std::make_unique<View>();
   container->SetLayoutManager(std::make_unique<BoxLayout>(
-      BoxLayout::kHorizontal, gfx::Insets(), kMarginWidth));
-  saturation_value_ = new SaturationValueView(this);
-  container->AddChildView(saturation_value_);
-  hue_ = new HueView(this);
-  container->AddChildView(hue_);
-  AddChildView(container);
+      BoxLayout::Orientation::kHorizontal, gfx::Insets(), kMarginWidth));
+  saturation_value_ =
+      container->AddChildView(std::make_unique<SaturationValueView>(this));
+  hue_ = container->AddChildView(std::make_unique<HueView>(this));
+  AddChildView(std::move(container));
 
-  View* container2 = new View();
-  GridLayout* layout = container2->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container2));
+  auto container2 = std::make_unique<View>();
+  GridLayout* layout =
+      container2->SetLayoutManager(std::make_unique<views::GridLayout>());
   ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(
       GridLayout::LEADING, GridLayout::FILL, 0, GridLayout::USE_PREF, 0, 0);
@@ -388,15 +391,15 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   columns->AddColumn(
       GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  textfield_ = new Textfield();
-  textfield_->set_controller(this);
-  textfield_->SetDefaultWidthInChars(kTextfieldLengthInChars);
-  textfield_->SetAccessibleName(
+  auto textfield = std::make_unique<Textfield>();
+  textfield->set_controller(this);
+  textfield->SetDefaultWidthInChars(kTextfieldLengthInChars);
+  textfield->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_COLOR_CHOOSER_HEX_INPUT));
-  layout->AddView(textfield_);
-  selected_color_patch_ = new SelectedColorPatchView();
-  layout->AddView(selected_color_patch_);
-  AddChildView(container2);
+  textfield_ = layout->AddView(std::move(textfield));
+  selected_color_patch_ =
+      layout->AddView(std::make_unique<SelectedColorPatchView>());
+  AddChildView(std::move(container2));
 
   OnColorChanged(initial_color);
 }

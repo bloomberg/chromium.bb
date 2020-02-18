@@ -27,11 +27,24 @@ from telemetry.core import util
 from py_utils import discover
 
 
+def _GetGroupingLabel(story):
+  """Computes the label used to group values when summarizing.
+
+  This used to be the 'tir_label' of the value, but that is now an obsolete
+  concept after the deprecation of TBMv1 metrics.
+  """
+  if story is not None and story.grouping_keys:
+    # We sort by key name to make building the grouping_label deterministic.
+    return '_'.join(v for _, v in sorted(story.grouping_keys.iteritems()))
+  else:
+    return None
+
+
 class Value(object):
   """An abstract value produced by a telemetry page test.
   """
   def __init__(self, page, name, units, important, description,
-               tir_label, grouping_keys):
+               grouping_label=None):
     """A generic Value object.
 
     Args:
@@ -45,9 +58,9 @@ class Value(object):
           by default in downstream UIs.
       description: A string explaining in human-understandable terms what this
           value represents.
-      tir_label: The string label of the TimelineInteractionRecord with
-          which this value is associated.
-      grouping_keys: A dict that maps grouping key names to grouping keys.
+      grouping_label: An optional label used for grouping. Can only be used
+          for summary values (i.e. when page is None); otherwise the label
+          is computed from the page.grouping_keys.
     """
     # TODO(eakuefner): Check story here after migration (crbug.com/442036)
     if not isinstance(name, basestring):
@@ -58,29 +71,27 @@ class Value(object):
       raise ValueError('important field of Value must be bool.')
     if not ((description is None) or isinstance(description, basestring)):
       raise ValueError('description field of Value must absent or string.')
-    if not ((tir_label is None) or
-            isinstance(tir_label, basestring)):
-      raise ValueError('tir_label field of Value must absent or '
-                       'string.')
-    if not ((grouping_keys is None) or isinstance(grouping_keys, dict)):
-      raise ValueError('grouping_keys field of Value must be absent or dict')
-
-    if grouping_keys is None:
-      grouping_keys = {}
 
     self.page = page
     self.name = name
     self.units = units
     self.important = important
     self.description = description
-    self.tir_label = tir_label
-    self.grouping_keys = grouping_keys
+    self._grouping_label = grouping_label
+    if self.page is not None:
+      assert grouping_label is None, (
+          'grouping_label should not be provided for page values')
+      self._grouping_label = _GetGroupingLabel(self.page)
 
   def __eq__(self, other):
     return hash(self) == hash(other)
 
   def __hash__(self):
     return hash(str(self))
+
+  @property
+  def grouping_label(self):
+    return self._grouping_label
 
   def IsMergableWith(self, that):
     # pylint: disable=unidiomatic-typecheck
@@ -126,14 +137,6 @@ class Value(object):
     """
     raise NotImplementedError()
 
-  @property
-  def name_suffix(self):
-    """Returns the string after a . in the name, or the full name otherwise."""
-    if '.' in self.name:
-      return self.name.split('.', 1)[1]
-    else:
-      return self.name
-
   @staticmethod
   def GetJSONTypeName():
     """Gets the typename for serialization to JSON using AsDict."""
@@ -154,125 +157,13 @@ class Value(object):
     if self.description:
       d['description'] = self.description
 
-    if self.tir_label:
-      d['tir_label'] = self.tir_label
+    if self.grouping_label:
+      # TODO(crbug.com/974237): Clients still expect to find this
+      # grouping_label under the legacy name of 'tir_label'. Switch to the
+      # new name when all clients support it.
+      d['tir_label'] = self.grouping_label
 
     if self.page:
       d['page_id'] = self.page.id
 
-    if self.grouping_keys:
-      d['grouping_keys'] = self.grouping_keys
-
     return d
-
-  @staticmethod
-  def FromDict(value_dict, page_dict):
-    """Produces a value from a value dict and a page dict.
-
-    Value dicts are produced by serialization to JSON, and must be accompanied
-    by a dict mapping page IDs to pages, also produced by serialization, in
-    order to be completely deserialized. If deserializing multiple values, use
-    ListOfValuesFromListOfDicts instead.
-
-    value_dict: a dictionary produced by AsDict() on a value subclass.
-    page_dict: a dictionary mapping IDs to page objects.
-    """
-    return Value.ListOfValuesFromListOfDicts([value_dict], page_dict)[0]
-
-  @staticmethod
-  def ListOfValuesFromListOfDicts(value_dicts, page_dict):
-    """Takes a list of value dicts to values.
-
-    Given a list of value dicts produced by AsDict, this method
-    deserializes the dicts given a dict mapping page IDs to pages.
-    This method performs memoization for deserializing a list of values
-    efficiently, where FromDict is meant to handle one-offs.
-
-    values: a list of value dicts produced by AsDict() on a value subclass.
-    page_dict: a dictionary mapping IDs to page objects.
-    """
-    value_dir = os.path.dirname(__file__)
-    value_classes = discover.DiscoverClasses(
-        value_dir, util.GetTelemetryDir(),
-        Value, index_by_class_name=True)
-
-    value_json_types = dict(
-        (value_classes[x].GetJSONTypeName(), x) for x in value_classes)
-
-    values = []
-    for value_dict in value_dicts:
-      value_class = value_classes[value_json_types[value_dict['type']]]
-      assert 'FromDict' in value_class.__dict__, \
-             'Subclass doesn\'t override FromDict'
-      values.append(value_class.FromDict(value_dict, page_dict))
-
-    return values
-
-  @staticmethod
-  def GetConstructorKwArgs(value_dict, page_dict):
-    """Produces constructor arguments from a value dict and a page dict.
-
-    Takes a dict parsed from JSON and an index of pages and recovers the
-    keyword arguments to be passed to the constructor for deserializing the
-    dict.
-
-    value_dict: a dictionary produced by AsDict() on a value subclass.
-    page_dict: a dictionary mapping IDs to page objects.
-    """
-    d = {
-        'name': value_dict['name'],
-        'units': value_dict['units']
-    }
-
-    description = value_dict.get('description', None)
-    if description:
-      d['description'] = description
-    else:
-      d['description'] = None
-
-    page_id = value_dict.get('page_id', None)
-    if page_id is not None:
-      d['page'] = page_dict[int(page_id)]
-    else:
-      d['page'] = None
-
-    d['important'] = False
-
-    tir_label = value_dict.get('tir_label', None)
-    if tir_label:
-      d['tir_label'] = tir_label
-    else:
-      d['tir_label'] = None
-
-    grouping_keys = value_dict.get('grouping_keys', None)
-    if grouping_keys:
-      d['grouping_keys'] = grouping_keys
-    else:
-      d['grouping_keys'] = None
-
-    return d
-
-
-def MergedTirLabel(values):
-  """Returns the tir_label that should be applied to a merge of values.
-
-  As of TBMv2, we encounter situations where we need to merge values with
-  different tir_labels because Telemetry's tir_label field is being used to
-  store story keys for system health stories. As such, when merging, we want to
-  take the common tir_label if all values share the same label (legacy
-  behavior), or have no tir_label if not.
-
-  Args:
-    values: a list of Value instances
-
-  Returns:
-    The tir_label that would be set on the merge of |values|.
-  """
-  assert len(values) > 0
-  v0 = values[0]
-
-  first_tir_label = v0.tir_label
-  if all(v.tir_label == first_tir_label for v in values):
-    return first_tir_label
-  else:
-    return None

@@ -13,6 +13,10 @@
 #include "include/private/GrTypesPriv.h"
 #include "src/sksl/ir/SkSLProgram.h"
 
+#if !__has_feature(objc_arc)
+#error This file must be compiled with Arc. Use -fobjc-arc flag
+#endif
+
 class GrMtlGpu;
 class GrSurface;
 
@@ -36,20 +40,27 @@ class GrSurface;
 bool GrPixelConfigToMTLFormat(GrPixelConfig config, MTLPixelFormat* format);
 
 /**
- * Returns a id<MTLTexture> to the MTLTexture pointed at by the const void*. Will use
- * __bridge_transfer if we are adopting ownership.
+ * Returns a id<MTLTexture> to the MTLTexture pointed at by the const void*.
  */
-id<MTLTexture> GrGetMTLTexture(const void* mtlTexture, GrWrapOwnership);
+SK_ALWAYS_INLINE id<MTLTexture> GrGetMTLTexture(const void* mtlTexture)  {
+    return (__bridge id<MTLTexture>)mtlTexture;
+}
 
 /**
- * Returns a const void* to whatever the id object is pointing to. Always uses __bridge.
+ * Returns a const void* to whatever the id object is pointing to.
  */
-const void* GrGetPtrFromId(id idObject);
+SK_ALWAYS_INLINE const void* GrGetPtrFromId(id idObject) {
+    return (__bridge const void*)idObject;
+}
 
 /**
- * Returns a const void* to whatever the id object is pointing to. Always uses __bridge_retained.
+ * Returns a const void* to whatever the id object is pointing to.
+ * Will call CFRetain on the object.
  */
-const void* GrReleaseId(id idObject);
+SK_ALWAYS_INLINE const void* GrRetainPtrFromId(id idObject) {
+    return (__bridge_retained const void*)idObject;
+}
+
 
 /**
  * Returns a MTLTextureDescriptor which describes the MTLTexture. Useful when creating a duplicate
@@ -67,8 +78,20 @@ id<MTLLibrary> GrCompileMtlShaderLibrary(const GrMtlGpu* gpu,
                                          SkSL::Program::Inputs* outInputs);
 
 /**
- * Returns a MTLTexture corresponding to the GrSurface. Optionally can do a resolve.
+ * Replacement for newLibraryWithSource:options:error that has a timeout.
  */
-id<MTLTexture> GrGetMTLTextureFromSurface(GrSurface* surface, bool doResolve);
+id<MTLLibrary> GrMtlNewLibraryWithSource(id<MTLDevice>, NSString* mslCode,
+                                         MTLCompileOptions*, bool* timedout);
+
+/**
+ * Replacement for newRenderPipelineStateWithDescriptor:error that has a timeout.
+ */
+id<MTLRenderPipelineState> GrMtlNewRenderPipelineStateWithDescriptor(
+        id<MTLDevice>, MTLRenderPipelineDescriptor*, bool* timedout);
+
+/**
+ * Returns a MTLTexture corresponding to the GrSurface.
+ */
+id<MTLTexture> GrGetMTLTextureFromSurface(GrSurface* surface);
 
 #endif

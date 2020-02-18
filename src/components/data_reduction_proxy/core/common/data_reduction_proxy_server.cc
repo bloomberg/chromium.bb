@@ -17,11 +17,6 @@ bool DataReductionProxyServer::operator==(
   return proxy_server_ == other.proxy_server_;
 }
 
-bool DataReductionProxyServer::SupportsResourceType(
-    ResourceTypeProvider::ContentType content_type) const {
-  return true;
-}
-
 // static
 std::vector<net::ProxyServer>
 DataReductionProxyServer::ConvertToNetProxyServers(

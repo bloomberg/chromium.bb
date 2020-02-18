@@ -22,18 +22,14 @@ last index of an array, such as C<$#array>.
 There are no additional methods beyond those provided by the parent
 L<PPI::Token> and L<PPI::Element> classes.
 
-Got any ideas for methods? Submit a report to rt.cpan.org!
-
 =cut
 
 use strict;
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -46,8 +42,8 @@ sub __TOKENIZER__on_char {
 	my $t = $_[1];
 
 	# Suck in till the end of the arrayindex
-	my $line = substr( $t->{line}, $t->{line_cursor} );
-	if ( $line =~ /^([\w:']+)/ ) {
+	pos $t->{line} = $t->{line_cursor};
+	if ( $t->{line} =~ m/\G([\w:']+)/gc ) {
 		$t->{token}->{content} .= $1;
 		$t->{line_cursor} += length $1;
 	}

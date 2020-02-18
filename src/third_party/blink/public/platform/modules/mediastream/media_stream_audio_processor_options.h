@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIASTREAM_MEDIA_STREAM_AUDIO_PROCESSOR_OPTIONS_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -90,15 +89,6 @@ struct BLINK_PLATFORM_EXPORT AudioProcessingProperties {
   bool goog_experimental_auto_gain_control = true;
 };
 
-// Enables the echo cancellation.
-BLINK_PLATFORM_EXPORT void EnableEchoCancellation(
-    AudioProcessing::Config* apm_config);
-
-// Enables the noise suppression with the given level.
-BLINK_PLATFORM_EXPORT void EnableNoiseSuppression(
-    AudioProcessing::Config* apm_config,
-    AudioProcessing::Config::NoiseSuppression::Level ns_level);
-
 // Enables the typing detection with the given detector.
 BLINK_PLATFORM_EXPORT void EnableTypingDetection(
     AudioProcessing::Config* apm_config,
@@ -119,12 +109,6 @@ BLINK_PLATFORM_EXPORT void StartEchoCancellationDump(
 BLINK_PLATFORM_EXPORT void StopEchoCancellationDump(
     AudioProcessing* audio_processing);
 
-// Loads fixed gains for pre-amplifier and gain control from config JSON string.
-BLINK_PLATFORM_EXPORT void GetExtraGainConfig(
-    const base::Optional<std::string>& audio_processing_platform_config_json,
-    base::Optional<double>* pre_amplifier_fixed_gain_factor,
-    base::Optional<double>* gain_control_compression_gain_db);
-
 // Enables automatic gain control with flags and optional configures.
 BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
     AudioProcessing::Config* apm_config,
@@ -135,10 +119,11 @@ BLINK_PLATFORM_EXPORT void ConfigAutomaticGainControl(
     base::Optional<int> hybrid_agc_saturation_margin,
     base::Optional<double> compression_gain_db);
 
-// Enables pre-amplifier with given gain factor if the optional |factor| is set.
-BLINK_PLATFORM_EXPORT void ConfigPreAmplifier(
+BLINK_PLATFORM_EXPORT void PopulateApmConfig(
     AudioProcessing::Config* apm_config,
-    base::Optional<double> fixed_gain_factor);
+    const AudioProcessingProperties& properties,
+    const base::Optional<std::string>& audio_processing_platform_config_json,
+    base::Optional<double>* gain_control_compression_gain_db);
 
 }  // namespace blink
 

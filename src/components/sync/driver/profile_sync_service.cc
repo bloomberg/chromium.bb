@@ -15,8 +15,11 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/invalidation/public/invalidation_service.h"
-#include "components/signin/core/browser/account_info.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/stop_source.h"
@@ -38,8 +41,6 @@
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
@@ -160,9 +161,7 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       network_resources_(std::make_unique<HttpBridgeNetworkResources>()),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
-      is_stopping_and_clearing_(false),
-      sync_enabled_weak_factory_(this),
-      weak_factory_(this) {
+      is_stopping_and_clearing_(false) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sync_client_);
   DCHECK(IsLocalSyncEnabled() || identity_manager_ != nullptr);
@@ -196,10 +195,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 
   if (identity_manager_)
     identity_manager_->AddObserver(this);
-
-  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
-      base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
-                          sync_enabled_weak_factory_.GetWeakPtr()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -511,8 +506,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
 
   engine_->Initialize(std::move(params));
-
-  ReportPreviousSessionMemoryWarningCount();
 }
 
 void ProfileSyncService::Shutdown() {
@@ -599,9 +592,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   }
 
   NotifyObservers();
-
-  // Mark this as a clean shutdown(without crash).
-  sync_prefs_.SetCleanShutdown(true);
 }
 
 void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
@@ -881,7 +871,7 @@ void ProfileSyncService::OnEngineInitialized(
 
   // Check for a cookie jar mismatch.
   if (identity_manager_) {
-    identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+    signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
         identity_manager_->GetAccountsInCookieJar();
     if (accounts_in_cookie_jar_info.accounts_are_fresh) {
       OnAccountsInCookieUpdated(accounts_in_cookie_jar_info,
@@ -965,7 +955,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
         // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
         DCHECK(account_mutator);
         account_mutator->ClearPrimaryAccount(
-            identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+            signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
             signin_metrics::SERVER_FORCED_DISABLE,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
@@ -1479,7 +1469,7 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
 }
 
 void ProfileSyncService::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   OnAccountsInCookieUpdatedWithCallback(
       accounts_in_cookie_jar_info.signed_in_accounts, base::Closure());
@@ -1680,6 +1670,19 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   }
 }
 
+UserDemographicsResult ProfileSyncService::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
+  // Do not provide the synced user’s birth year and gender when sync is
+  // disabled or paused because the user’s birth year and gender should only be
+  // provided when the sync prefs are synced with the sync server.
+  if (!IsSyncFeatureEnabled() || auth_manager_->IsSyncPaused()) {
+    return UserDemographicsResult::ForStatus(
+        UserDemographicsStatus::kSyncNotEnabled);
+  }
+
+  return sync_prefs_.GetUserNoisedBirthYearAndGender(now);
+}
+
 base::WeakPtr<JsController> ProfileSyncService::GetJsController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_js_controller_.AsWeakPtr();
@@ -1822,34 +1825,6 @@ void ProfileSyncService::RemoveClientFromServer() const {
     sync_stopped_reporter_->ReportSyncStopped(access_token, cache_guid,
                                               birthday);
   }
-}
-
-void ProfileSyncService::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    sync_prefs_.SetMemoryPressureWarningCount(
-        sync_prefs_.GetMemoryPressureWarningCount() + 1);
-  }
-}
-
-void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
-  int warning_received = sync_prefs_.GetMemoryPressureWarningCount();
-
-  if (-1 != warning_received) {
-    // -1 means it is new client.
-    if (!sync_prefs_.DidSyncShutdownCleanly()) {
-      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeUncleanShutdown",
-                              warning_received);
-    } else {
-      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeCleanShutdown",
-                              warning_received);
-    }
-  }
-  sync_prefs_.SetMemoryPressureWarningCount(0);
-  // Will set to true during a clean shutdown, so crash or something else will
-  // remain this as false.
-  sync_prefs_.SetCleanShutdown(false);
 }
 
 void ProfileSyncService::RecordMemoryUsageHistograms() {

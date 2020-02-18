@@ -255,7 +255,6 @@ webrtc_fuzzer_test("congestion_controller_feedback_fuzzer") {
   ]
   deps = [
     "../../logging:rtc_event_log_api",
-    "../../logging:rtc_event_log_impl_base",
     "../../modules/congestion_controller",
     "../../modules/pacing",
     "../../modules/remote_bitrate_estimator",
@@ -502,6 +501,7 @@ webrtc_fuzzer_test("audio_processing_fuzzer") {
     ":audio_processing_fuzzer_helper",
     "../../api:scoped_refptr",
     "../../api/audio:aec3_factory",
+    "../../api/task_queue:default_task_queue_factory",
     "../../modules/audio_processing",
     "../../modules/audio_processing:api",
     "../../modules/audio_processing:audio_buffer",
@@ -510,7 +510,6 @@ webrtc_fuzzer_test("audio_processing_fuzzer") {
     "../../modules/audio_processing/aec_dump:aec_dump_impl",
     "../../rtc_base:rtc_base_approved",
     "../../rtc_base:rtc_task_queue",
-    "../../rtc_base:rtc_task_queue_stdlib",
     "../../rtc_base:safe_minmax",
     "../../system_wrappers:field_trial",
     "//third_party/abseil-cpp/absl/memory",
@@ -551,6 +550,7 @@ webrtc_fuzzer_test("rtp_frame_reference_finder_fuzzer") {
     "rtp_frame_reference_finder_fuzzer.cc",
   ]
   deps = [
+    "../../api:rtp_packet_info",
     "../../api:scoped_refptr",
     "../../modules/video_coding/",
     "../../system_wrappers",

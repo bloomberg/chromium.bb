@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
+#include "chrome/browser/previews/previews_top_host_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
@@ -29,6 +30,28 @@
 
 namespace {
 
+// Returns the list of regular expressions that need to be matched against the
+// webpage URL. If there is a partial match, then the webpage is ineligible for
+// DeferAllScript preview.
+// TODO(tbansal): Consider detecting form elements within Chrome and
+// automatically reloading the webpage without preview when a form element is
+// detected.
+std::unique_ptr<previews::RegexpList> GetDenylistRegexpsForDeferAllScript() {
+  if (!previews::params::IsDeferAllScriptPreviewsEnabled())
+    return nullptr;
+
+  std::unique_ptr<previews::RegexpList> regexps =
+      std::make_unique<previews::RegexpList>();
+  // Regexes of webpages for which previews are generally not shown. Taken from
+  // http://shortn/_bGb5REgTFD.
+  regexps->emplace_back(
+      std::make_unique<re2::RE2>("(?i)(log|sign)[-_]?(in|out)"));
+  regexps->emplace_back(std::make_unique<re2::RE2>("(?i)/banking"));
+  DCHECK(regexps->back()->ok());
+
+  return regexps;
+}
+
 // Returns true if previews can be shown for |type|.
 bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   bool server_previews_enabled =
@@ -38,8 +61,8 @@ bool IsPreviewsTypeEnabled(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::IsOfflinePreviewsEnabled();
-    case previews::PreviewsType::LOFI:
-      return server_previews_enabled || previews::params::IsClientLoFiEnabled();
+    case previews::PreviewsType::DEPRECATED_LOFI:
+      return false;
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
       return previews::params::IsLitePageServerPreviewsEnabled();
     case previews::PreviewsType::LITE_PAGE:
@@ -69,8 +92,6 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
   switch (type) {
     case previews::PreviewsType::OFFLINE:
       return previews::params::OfflinePreviewsVersion();
-    case previews::PreviewsType::LOFI:
-      return previews::params::ClientLoFiVersion();
     case previews::PreviewsType::LITE_PAGE:
       return data_reduction_proxy::params::LitePageVersion();
     case previews::PreviewsType::LITE_PAGE_REDIRECT:
@@ -85,6 +106,7 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
     case previews::PreviewsType::UNSPECIFIED:
     case previews::PreviewsType::LAST:
     case previews::PreviewsType::DEPRECATED_AMP_REDIRECTION:
+    case previews::PreviewsType::DEPRECATED_LOFI:
       break;
   }
   NOTREACHED();
@@ -92,6 +114,33 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
 }
 
 }  // namespace
+
+// static
+bool PreviewsService::HasURLRedirectCycle(
+    const GURL& start_url,
+    const base::MRUCache<GURL, GURL>& redirect_history) {
+  // Using an ordered set since using an unordered set requires defining
+  // comparator operator for GURL.
+  std::set<GURL> urls_seen_so_far;
+  GURL current_url = start_url;
+
+  while (true) {
+    urls_seen_so_far.insert(current_url);
+
+    // Check if |current_url| redirects to another URL that is already visited.
+    auto it = redirect_history.Peek(current_url);
+    if (it == redirect_history.end())
+      return false;
+
+    GURL redirect_target = it->second;
+    if (urls_seen_so_far.find(redirect_target) != urls_seen_so_far.end())
+      return true;
+    current_url = redirect_target;
+  }
+
+  NOTREACHED();
+  return false;
+}
 
 // static
 blacklist::BlacklistData::AllowedTypesAndVersions
@@ -109,18 +158,22 @@ PreviewsService::GetAllowedPreviews() {
 }
 
 PreviewsService::PreviewsService(content::BrowserContext* browser_context)
-    : previews_top_host_provider_(
-          std::make_unique<previews::PreviewsTopHostProviderImpl>(
-              browser_context)),
+    : top_host_provider_(
+          std::make_unique<PreviewsTopHostProvider>(browser_context)),
       previews_lite_page_decider_(
           std::make_unique<PreviewsLitePageDecider>(browser_context)),
       previews_offline_helper_(
           std::make_unique<PreviewsOfflineHelper>(browser_context)),
       browser_context_(browser_context),
-      previews_url_loader_factory_(
+      optimization_guide_url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(
               Profile::FromBrowserContext(browser_context))
-              ->GetURLLoaderFactoryForBrowserProcess()) {
+              ->GetURLLoaderFactoryForBrowserProcess()),
+      // Set cache size to 25 entries.  This should be sufficient since the
+      // redirect loop cache is needed for only one navigation.
+      redirect_history_(25u),
+      defer_all_script_denylist_regexps_(
+          GetDenylistRegexpsForDeferAllScript()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -154,8 +207,8 @@ void PreviewsService::Initialize(
                 optimization_guide_service, ui_task_runner,
                 background_task_runner, profile_path,
                 Profile::FromBrowserContext(browser_context_)->GetPrefs(),
-                database_provider, previews_top_host_provider_.get(),
-                previews_url_loader_factory_)
+                database_provider, top_host_provider_.get(),
+                optimization_guide_url_loader_factory_)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),
@@ -177,4 +230,48 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
 
   if (previews_lite_page_decider_)
     previews_lite_page_decider_->ClearBlacklist();
+}
+
+void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(
+    const GURL& start_url,
+    const GURL& end_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  // If |start_url| has been previously marked as ineligible for the preview,
+  // then do not update the existing entry since existing entry might cause
+  // |start_url| to be no longer marked as ineligible for the preview. This may
+  // happen if marking the URL as ineligible for preview resulted in breakage of
+  // the redirect loop.
+  if (!IsUrlEligibleForDeferAllScriptPreview(start_url))
+    return;
+
+  redirect_history_.Put(start_url, end_url);
+}
+
+bool PreviewsService::IsUrlEligibleForDeferAllScriptPreview(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(previews::params::IsDeferAllScriptPreviewsEnabled());
+
+  return !HasURLRedirectCycle(url, redirect_history_);
+}
+
+bool PreviewsService::MatchesDeferAllScriptDenyListRegexp(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!defer_all_script_denylist_regexps_)
+    return false;
+
+  if (!url.is_valid())
+    return false;
+
+  std::string clean_url = base::ToLowerASCII(url.GetAsReferrer().spec());
+  for (auto& regexp : *defer_all_script_denylist_regexps_) {
+    if (re2::RE2::PartialMatch(clean_url, *regexp))
+      return true;
+  }
+
+  return false;
 }

@@ -2626,6 +2626,8 @@ TEST_F(UsageTimeLimitProcessorTest, GetStateUnlockConsecutiveLockedAllDay) {
 
 // Tests that local override changes state to unlocked during window time limit.
 TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndWindowTimeLimit) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("GMT"));
+
   // Window time limit active between 18:00 and 7:00.
   const int kWindowStart = 18;
   const int kWindowEnd = 7;
@@ -2652,10 +2654,10 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndWindowTimeLimit) {
           base::nullopt /* duration */)
           .ToDictionary();
 
-  State state = GetState(policy, &inactive_local_override,
-                         base::TimeDelta::FromMinutes(0), current_time,
-                         current_time, icu::TimeZone::createTimeZone("GMT"),
-                         base::nullopt /* previous_state */);
+  State state =
+      GetState(policy, &inactive_local_override,
+               base::TimeDelta::FromMinutes(0), current_time, current_time,
+               timezone.get(), base::nullopt /* previous_state */);
 
   base::Time monday_bedtime_end;
   ASSERT_TRUE(
@@ -2675,10 +2677,9 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndWindowTimeLimit) {
           base::nullopt /* duration */)
           .ToDictionary();
 
-  state =
-      GetState(policy, &active_local_override, base::TimeDelta::FromMinutes(0),
-               current_time, current_time, icu::TimeZone::createTimeZone("GMT"),
-               base::nullopt /* previous_state */);
+  state = GetState(policy, &active_local_override,
+                   base::TimeDelta::FromMinutes(0), current_time, current_time,
+                   timezone.get(), base::nullopt /* previous_state */);
 
   base::Time tuesday_bedtime_start;
   ASSERT_TRUE(base::Time::FromString("Tue, 2 Jan 2018 18:00 GMT",
@@ -2696,6 +2697,7 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndWindowTimeLimit) {
 // Tests that local override changes state to unlocked when locked because of
 // time usage limit.
 TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndTimeUsageLimit) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("GMT"));
   const base::TimeDelta kDailyLimit = base::TimeDelta::FromHours(2);
 
   base::Time timestamp;
@@ -2734,9 +2736,9 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndTimeUsageLimit) {
 
   const base::Time current_time = timestamp + base::TimeDelta::FromMinutes(10);
 
-  State state = GetState(
-      policy, &inactive_local_override, kDailyLimit, current_time, current_time,
-      icu::TimeZone::createTimeZone("GMT"), usage_limit_lock_state);
+  State state =
+      GetState(policy, &inactive_local_override, kDailyLimit, current_time,
+               current_time, timezone.get(), usage_limit_lock_state);
 
   // State did not change from previous state - time usage lock still active.
   AssertEqState(usage_limit_lock_state, state);
@@ -2749,8 +2751,7 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndTimeUsageLimit) {
           .ToDictionary();
 
   state = GetState(policy, &active_local_override, kDailyLimit, current_time,
-                   current_time, icu::TimeZone::createTimeZone("GMT"),
-                   usage_limit_lock_state);
+                   current_time, timezone.get(), usage_limit_lock_state);
 
   // Unlocked by local override.
   EXPECT_FALSE(state.is_locked);
@@ -2764,6 +2765,8 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndTimeUsageLimit) {
 // Tests that local override changes state to unlocked when locked by remote
 // override.
 TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndRemoteOverride) {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone("GMT"));
+
   base::Time current_time;
   ASSERT_TRUE(
       base::Time::FromString("Mon, 1 Jan 2018 15:00 GMT", &current_time));
@@ -2781,10 +2784,10 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndRemoteOverride) {
           base::nullopt /* duration */)
           .ToDictionary();
 
-  State state = GetState(policy, &inactive_local_override,
-                         base::TimeDelta::FromMinutes(0), current_time,
-                         current_time, icu::TimeZone::createTimeZone("GMT"),
-                         base::nullopt /* previous_state */);
+  State state =
+      GetState(policy, &inactive_local_override,
+               base::TimeDelta::FromMinutes(0), current_time, current_time,
+               timezone.get(), base::nullopt /* previous_state */);
 
   base::Time next_day;
   ASSERT_TRUE(base::Time::FromString("Mon, 2 Jan 2018 00:00 GMT", &next_day));
@@ -2803,10 +2806,9 @@ TEST_F(UsageTimeLimitProcessorTest, LocalOverrideAndRemoteOverride) {
           base::nullopt /* duration */)
           .ToDictionary();
 
-  state =
-      GetState(policy, &active_local_override, base::TimeDelta::FromMinutes(0),
-               current_time, current_time, icu::TimeZone::createTimeZone("GMT"),
-               base::nullopt /* previous_state */);
+  state = GetState(policy, &active_local_override,
+                   base::TimeDelta::FromMinutes(0), current_time, current_time,
+                   timezone.get(), base::nullopt /* previous_state */);
 
   // Unlocked by local override.
   EXPECT_FALSE(state.is_locked);
@@ -3010,7 +3012,7 @@ TEST_F(UsageTimeLimitProcessorTest, UpdatedPolicyTypesDifferentUsageLimit) {
   std::set<PolicyType> updated_policies =
       UpdatedPolicyTypes(old_policy, new_policy);
   ASSERT_EQ(updated_policies.size(), 1u);
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kUsageLimit));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kUsageLimit));
 }
 
 // Tests UpdatedPolicyTypes with different time window limits.
@@ -3045,7 +3047,7 @@ TEST_F(UsageTimeLimitProcessorTest, UpdatedPolicyTypesDifferentWindowLimit) {
   std::set<PolicyType> updated_policies =
       UpdatedPolicyTypes(old_policy, new_policy);
   ASSERT_EQ(updated_policies.size(), 1u);
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kFixedLimit));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kFixedLimit));
 }
 
 // Tests UpdatedPolicyTypes with different overrides with duration.
@@ -3081,7 +3083,7 @@ TEST_F(UsageTimeLimitProcessorTest,
   std::set<PolicyType> updated_policies =
       UpdatedPolicyTypes(old_policy, new_policy);
   ASSERT_EQ(updated_policies.size(), 1u);
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kOverride));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kOverride));
 }
 
 // Tests UpdatedPolicyTypes with different time window limits, time usage
@@ -3120,9 +3122,9 @@ TEST_F(UsageTimeLimitProcessorTest,
   std::set<PolicyType> updated_policies =
       UpdatedPolicyTypes(old_policy, new_policy);
   ASSERT_EQ(updated_policies.size(), 3u);
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kUsageLimit));
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kFixedLimit));
-  EXPECT_TRUE(base::ContainsKey(updated_policies, PolicyType::kOverride));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kUsageLimit));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kFixedLimit));
+  EXPECT_TRUE(base::Contains(updated_policies, PolicyType::kOverride));
 }
 
 }  // namespace usage_time_limit

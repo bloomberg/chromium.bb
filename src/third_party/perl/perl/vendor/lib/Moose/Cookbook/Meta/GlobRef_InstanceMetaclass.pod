@@ -1,10 +1,11 @@
-package Moose::Cookbook::Meta::GlobRef_InstanceMetaclass;
-
+# PODNAME: Moose::Cookbook::Meta::GlobRef_InstanceMetaclass
 # ABSTRACT: Creating a glob reference meta-instance class
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Meta::GlobRef_InstanceMetaclass - Creating a glob reference met
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -21,8 +22,7 @@ version 2.0602
   use Scalar::Util qw( weaken );
   use Symbol qw( gensym );
 
-  use Moose;
-  extends 'Moose::Meta::Instance';
+  use Moose::Role;
 
   sub create_instance {
       my $self = shift;
@@ -76,10 +76,13 @@ version 2.0602
 
   package MyApp::User;
 
-  use metaclass 'Moose::Meta::Class' =>
-      ( instance_metaclass => 'My::Meta::Instance' );
-
   use Moose;
+  Moose::Util::MetaRole::apply_metaroles(
+      for => __PACKAGE__,
+      class_metaroles => {
+          instance => ['My::Meta::Instance'],
+      },
+  );
 
   has 'name' => (
       is  => 'rw',
@@ -101,8 +104,8 @@ In this example, we're creating a meta-instance that is based on a
 glob reference rather than a hash reference. This example is largely
 based on the Piotr Roszatycki's L<MooseX::GlobRef> module.
 
-Our class is a subclass of L<Moose::Meta::Instance>, which creates
-hash reference based objects. We need to override all the methods
+Our extension is a role which will be applied to L<Moose::Meta::Instance>,
+which creates hash reference based objects. We need to override all the methods
 which make assumptions about the object's data structure.
 
 The first method we override is C<create_instance>:
@@ -151,27 +154,16 @@ get C<eval>'d once per attribute.
 
 Finally, we use this meta-instance in our C<MyApp::User> class:
 
-  use metaclass 'Moose::Meta::Class' =>
-      ( instance_metaclass => 'My::Meta::Instance' );
+  Moose::Util::MetaRole::apply_metaroles(
+      for => __PACKAGE__,
+      class_metaroles => {
+          instance => ['My::Meta::Instance'],
+      },
+  );
 
-We actually don't recommend the use of L<metaclass> in most
-cases. However, the other ways of using alternate metaclasses are more
-complex, and would complicate our example code unnecessarily.
-
-=begin testing-SETUP
-
-{
-    package My::Meta::Instance;
-    use Moose;
-
-    # This needs to be in a BEGIN block so to avoid a metaclass
-    # incompatibility error from Moose. In normal usage,
-    # My::Meta::Instance would be in a separate file from MyApp::User,
-    # and this would be a non-issue.
-    BEGIN { extends 'Moose::Meta::Instance' }
-}
-
-=end testing-SETUP
+We actually don't recommend the use of L<Moose::Util::MetaRole> directly in
+your class in most cases. Typically, this would be provided by a
+L<Moose::Exporter>-based module which handles applying the role for you.
 
 =head1 CONCLUSION
 
@@ -256,20 +248,57 @@ for my $x ( 0 .. 1 ) {
 
 =end testing
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

@@ -51,7 +51,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // Grabs the ownership of the PrintJobWorker from a PrinterQuery along with
   // the print settings. Sets the expected page count of the print job based on
   // the settings.
-  virtual void Initialize(PrinterQuery* query,
+  virtual void Initialize(std::unique_ptr<PrinterQuery> query,
                           const base::string16& name,
                           int page_count);
 
@@ -103,6 +103,9 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
+  // Access stored settings.
+  const PrintSettings& settings() const;
+
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
@@ -114,7 +117,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
 
   // The functions below are used for tests only.
   void set_job_pending(bool pending);
-  void set_settings(const PrintSettings& settings);
 
   // Updates |document_| to a new instance. Protected so that tests can access
   // it.
@@ -177,9 +179,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
   // are blocking and enters a message loop without your consent. There is one
   // worker thread per print job.
   std::unique_ptr<PrintJobWorker> worker_;
-
-  // Cache of the print context settings for access in the UI thread.
-  PrintSettings settings_;
 
   // The printed document.
   scoped_refptr<PrintedDocument> document_;

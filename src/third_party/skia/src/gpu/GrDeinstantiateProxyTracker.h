@@ -8,14 +8,14 @@
 #ifndef GrDeinstantiateProxyTracker_DEFINED
 #define GrDeinstantiateProxyTracker_DEFINED
 
-#include "include/private/GrSurfaceProxy.h"
 #include "include/private/SkTArray.h"
+#include "src/gpu/GrSurfaceProxy.h"
 
 class GrResourceCache;
 
 class GrDeinstantiateProxyTracker {
 public:
-    GrDeinstantiateProxyTracker(GrResourceCache* cache) : fCache(cache) {}
+    GrDeinstantiateProxyTracker() {}
 
     // Adds a proxy which will be deinstantiated at the end of flush. The same proxy may not be
     // added multiple times.
@@ -25,7 +25,6 @@ public:
     void deinstantiateAllProxies();
 
 private:
-    GrResourceCache* fCache;
     SkTArray<sk_sp<GrSurfaceProxy>> fProxies;
 };
 

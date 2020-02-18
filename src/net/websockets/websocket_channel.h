@@ -153,6 +153,11 @@ class NET_EXPORT WebSocketChannel {
   void OnFinishOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeResponseInfo> response);
 
+  // The renderer calls AddReceiveFlowControlQuota() to the browser per
+  // recerving this amount of data so that the browser can continue sending
+  // remaining data to the renderer.
+  static const uint64_t kReceiveQuotaThreshold = 1 << 15;
+
  private:
   class PendingReceivedFrame;
 
@@ -410,12 +415,10 @@ class NET_EXPORT WebSocketChannel {
   // message to the renderer. This can be false if the message is empty so far.
   bool initial_frame_forwarded_;
 
-  // For UMA. The time when OnConnectSuccess() method was called and |stream_|
-  // was set.
-  base::TimeTicks established_on_;
-
   DISALLOW_COPY_AND_ASSIGN(WebSocketChannel);
 };
+
+NET_EXPORT extern const char kWebSocketReceiveQuotaThreshold[];
 
 }  // namespace net
 

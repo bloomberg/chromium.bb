@@ -1,10 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
-
-# Report AppleClang separately from Clang. Their version numbers are different.
-# https://cmake.org/cmake/help/v3.0/policy/CMP0025.html
-if(POLICY CMP0025)
-  cmake_policy(SET CMP0025 NEW)
-endif()
+cmake_minimum_required(VERSION 3.0)
 
 # Defer enabling C and CXX languages.
 project(BoringSSL NONE)
@@ -369,9 +363,13 @@ if(FIPS)
   if(FIPS_BREAK_TEST)
     add_definitions("-DBORINGSSL_FIPS_BREAK_${FIPS_BREAK_TEST}=1")
   endif()
-  # Delocate does not work for ASan and MSan builds.
+  # The FIPS integrity check does not work for ASan and MSan builds.
   if(NOT ASAN AND NOT MSAN)
-    set(FIPS_DELOCATE "1")
+    if(BUILD_SHARED_LIBS)
+      set(FIPS_SHARED "1")
+    else()
+      set(FIPS_DELOCATE "1")
+    endif()
   endif()
 endif()
 
@@ -481,13 +479,6 @@ if(ANDROID AND NOT ANDROID_NDK_REVISION AND ${ARCH} STREQUAL "arm")
   set(CMAKE_ASM_FLAGS "-march=${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_ASM_FLAGS}")
 endif()
 
-if(${ARCH} STREQUAL "x86" AND APPLE AND ${CMAKE_VERSION} VERSION_LESS "3.0")
-  # With CMake 2.8.x, ${CMAKE_SYSTEM_PROCESSOR} evalutes to i386 on OS X,
-  # but clang defaults to 64-bit builds on OS X unless otherwise told.
-  # Set ARCH to x86_64 so clang and CMake agree. This is fixed in CMake 3.
-  set(ARCH "x86_64")
-endif()
-
 if(USE_CUSTOM_LIBCXX)
   if(NOT CLANG)
     message(FATAL_ERROR "USE_CUSTOM_LIBCXX only supported with Clang")
@@ -566,8 +557,9 @@ add_library(crypto_test_data OBJECT crypto_test_data.cc)
 add_subdirectory(crypto)
 add_subdirectory(ssl)
 add_subdirectory(ssl/test)
-add_subdirectory(fipstools)
 add_subdirectory(tool)
+add_subdirectory(util/fipstools/cavp)
+add_subdirectory(util/fipstools/acvp/modulewrapper)
 add_subdirectory(decrepit)
 
 if(FUZZ)

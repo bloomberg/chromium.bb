@@ -10,7 +10,7 @@
 #include "include/effects/SkPerlinNoiseShader.h"
 #include "samplecode/Sample.h"
 #include "src/utils/SkPatchUtils.h"
-#include "tools/timer/AnimTimer.h"
+#include "tools/ModifierKey.h"
 
 static void draw_control_points(SkCanvas* canvas, const SkPoint cubics[12]) {
     //draw control points
@@ -110,22 +110,17 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt)  override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "PerlinPatch");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("PerlinPatch"); }
+
+    bool onChar(SkUnichar uni) override {
             switch (uni) {
                 case 'g': fShowGrid = !fShowGrid; return true;
                 default: break;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
+    bool onAnimate(double nanos) override {
         fSeed += 0.005f;
         return true;
     }
@@ -165,30 +160,28 @@ protected:
     class PtClick : public Click {
     public:
         int fIndex;
-        PtClick(Sample* view, int index) : Click(view), fIndex(index) {}
+        PtClick(int index) : fIndex(index) {}
     };
 
     static bool hittest(const SkPoint& pt, SkScalar x, SkScalar y) {
         return SkPoint::Length(pt.fX - x, pt.fY - y) < SkIntToScalar(5);
     }
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
-        // holding down shift
-        if (1 == modi) {
-            return new PtClick(this, -1);
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) override {
+        if (ModifierKey::kShift == modi) {
+            return new PtClick(-1);
         }
-        // holding down ctrl
-        if (2 == modi) {
-            return new PtClick(this, -2);
+        if (ModifierKey::kControl == modi) {
+            return new PtClick(-2);
         }
         SkPoint clickPoint = {x, y};
         fInvMatrix.mapPoints(&clickPoint, 1);
         for (size_t i = 0; i < SK_ARRAY_COUNT(fPts); i++) {
             if (hittest(fPts[i], clickPoint.fX, clickPoint.fY)) {
-                return new PtClick(this, (int)i);
+                return new PtClick((int)i);
             }
         }
-        return this->INHERITED::onFindClickHandler(x, y, modi);
+        return nullptr;
     }
 
     bool onClick(Click* click) override {

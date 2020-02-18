@@ -226,8 +226,7 @@ SpellcheckCustomDictionary::SpellcheckCustomDictionary(
           base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       custom_dictionary_path_(
           dictionary_directory_name.Append(chrome::kCustomDictionaryFileName)),
-      is_loaded_(false),
-      weak_ptr_factory_(this) {}
+      is_loaded_(false) {}
 
 SpellcheckCustomDictionary::~SpellcheckCustomDictionary() {
 }
@@ -262,7 +261,7 @@ bool SpellcheckCustomDictionary::RemoveWord(const std::string& word) {
 }
 
 bool SpellcheckCustomDictionary::HasWord(const std::string& word) const {
-  return base::ContainsKey(words_, word);
+  return base::Contains(words_, word);
 }
 
 void SpellcheckCustomDictionary::AddObserver(Observer* observer) {
@@ -453,9 +452,9 @@ void SpellcheckCustomDictionary::OnLoaded(
     fix_invalid_file_.Reset(
         base::BindOnce(&SpellcheckCustomDictionary::FixInvalidFile,
                        weak_ptr_factory_.GetWeakPtr(), std::move(result)));
-    BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         fix_invalid_file_.callback());
   }
 }

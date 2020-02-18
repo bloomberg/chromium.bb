@@ -28,6 +28,12 @@ devtools::proto::BackgroundService ServiceNameToEnum(
   } else if (service_name ==
              BackgroundService::ServiceNameEnum::Notifications) {
     return devtools::proto::BackgroundService::NOTIFICATIONS;
+  } else if (service_name ==
+             BackgroundService::ServiceNameEnum::PaymentHandler) {
+    return devtools::proto::BackgroundService::PAYMENT_HANDLER;
+  } else if (service_name ==
+             BackgroundService::ServiceNameEnum::PeriodicBackgroundSync) {
+    return devtools::proto::BackgroundService::PERIODIC_BACKGROUND_SYNC;
   }
   return devtools::proto::BackgroundService::UNKNOWN;
 }
@@ -42,6 +48,10 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
       return BackgroundService::ServiceNameEnum::PushMessaging;
     case devtools::proto::BackgroundService::NOTIFICATIONS:
       return BackgroundService::ServiceNameEnum::Notifications;
+    case devtools::proto::BackgroundService::PAYMENT_HANDLER:
+      return BackgroundService::ServiceNameEnum::PaymentHandler;
+    case devtools::proto::BackgroundService::PERIODIC_BACKGROUND_SYNC:
+      return BackgroundService::ServiceNameEnum::PeriodicBackgroundSync;
     default:
       NOTREACHED();
   }
@@ -52,15 +62,15 @@ std::string ServiceEnumToName(devtools::proto::BackgroundService service_enum) {
 std::unique_ptr<protocol::Array<protocol::BackgroundService::EventMetadata>>
 ProtoMapToArray(
     const google::protobuf::Map<std::string, std::string>& event_metadata_map) {
-  auto metadata_array =
-      protocol::Array<protocol::BackgroundService::EventMetadata>::create();
+  auto metadata_array = std::make_unique<
+      protocol::Array<protocol::BackgroundService::EventMetadata>>();
 
   for (const auto& entry : event_metadata_map) {
     auto event_metadata = protocol::BackgroundService::EventMetadata::Create()
                               .SetKey(entry.first)
                               .SetValue(entry.second)
                               .Build();
-    metadata_array->addItem(std::move(event_metadata));
+    metadata_array->emplace_back(std::move(event_metadata));
   }
 
   return metadata_array;
@@ -86,8 +96,7 @@ ToBackgroundServiceEvent(const devtools::proto::BackgroundServiceEvent& event) {
 
 BackgroundServiceHandler::BackgroundServiceHandler()
     : DevToolsDomainHandler(BackgroundService::Metainfo::domainName),
-      devtools_context_(nullptr),
-      weak_ptr_factory_(this) {}
+      devtools_context_(nullptr) {}
 
 BackgroundServiceHandler::~BackgroundServiceHandler() {
   DCHECK(enabled_services_.empty());

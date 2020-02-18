@@ -33,39 +33,7 @@ bool HasIcon(const ContentSettingImageModel& model) {
   return !model.GetIcon(gfx::kPlaceholderColor).IsEmpty();
 }
 
-// Forward all NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED to the specified
-// ContentSettingImageModel.
-class NotificationForwarder : public content::NotificationObserver {
- public:
-  explicit NotificationForwarder(ContentSettingImageModel* model)
-      : model_(model) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-                   content::NotificationService::AllSources());
-  }
-  ~NotificationForwarder() override {}
-
-  void clear() {
-    registrar_.RemoveAll();
-  }
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
-      model_->Update(content::Source<content::WebContents>(source).ptr());
-    }
-  }
-
- private:
-  content::NotificationRegistrar registrar_;
-  ContentSettingImageModel* model_;
-
-  DISALLOW_COPY_AND_ASSIGN(NotificationForwarder);
-};
-
-class ContentSettingImageModelTest : public ChromeRenderViewHostTestHarness {
-};
+using ContentSettingImageModelTest = ChromeRenderViewHostTestHarness;
 
 TEST_F(ContentSettingImageModelTest, Update) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
@@ -104,8 +72,6 @@ TEST_F(ContentSettingImageModelTest, RPHUpdate) {
 
 TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   TabSpecificContentSettings::CreateForWebContents(web_contents());
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                  CONTENT_SETTING_BLOCK);
@@ -120,7 +86,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(
       net::CanonicalCookie::Create(origin, "A=B", base::Time::Now(), options));
   ASSERT_TRUE(cookie);
-  content_settings->OnCookieChange(origin, origin, *cookie, false);
+  web_contents()->OnCookieChange(origin, origin, *cookie, false);
   content_setting_image_model->Update(web_contents());
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
@@ -325,13 +291,12 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
 // Regression test for http://crbug.com/161854.
 TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
-  auto content_setting_image_model =
-      ContentSettingImageModel::CreateForContentType(
-          ContentSettingImageModel::ImageType::IMAGES);
-  NotificationForwarder forwarder(content_setting_image_model.get());
+  EXPECT_EQ(nullptr,
+            TabSpecificContentSettings::FromWebContents(web_contents()));
   // Should not crash.
-  TabSpecificContentSettings::CreateForWebContents(web_contents());
-  forwarder.clear();
+  ContentSettingImageModel::CreateForContentType(
+      ContentSettingImageModel::ImageType::IMAGES)
+      ->Update(web_contents());
 }
 
 TEST_F(ContentSettingImageModelTest, SubresourceFilter) {

@@ -12,6 +12,7 @@
 #include "android_webview/browser/find_helper.h"
 #include "android_webview/browser/permission/media_access_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
+#include "android_webview/native_jni/AwWebContentsDelegate_jni.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -29,9 +30,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AwWebContentsDelegate_jni.h"
 #include "net/base/filename_util.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
@@ -274,9 +275,10 @@ void AwWebContentsDelegate::RequestMediaAccessPermission(
     content::MediaResponseCallback callback) {
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
-    std::move(callback).Run(blink::MediaStreamDevices(),
-                            blink::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
-                            std::unique_ptr<content::MediaStreamUI>());
+    std::move(callback).Run(
+        blink::MediaStreamDevices(),
+        blink::mojom::MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
+        std::unique_ptr<content::MediaStreamUI>());
     return;
   }
   aw_contents->GetPermissionRequestHandler()->SendRequest(
@@ -302,7 +304,7 @@ void AwWebContentsDelegate::ExitFullscreenModeForTab(
 }
 
 bool AwWebContentsDelegate::IsFullscreenForTabOrPending(
-    const content::WebContents* web_contents) const {
+    const content::WebContents* web_contents) {
   return is_fullscreen_;
 }
 

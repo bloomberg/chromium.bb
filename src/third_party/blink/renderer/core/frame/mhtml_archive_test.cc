@@ -28,12 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <map>
-
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/date_components.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 #include "third_party/blink/renderer/platform/mhtml/serialized_resource.h"
@@ -41,6 +38,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -63,7 +61,7 @@ class MHTMLArchiveTest : public testing::Test {
  public:
   MHTMLArchiveTest() {
     file_path_ = test::CoreTestDataPath("frameserializer/css/");
-    mhtml_date_ = WTF::Time::FromJsTime(1520551829000);
+    mhtml_date_ = base::Time::FromJsTime(1520551829000);
     mhtml_date_header_ = String::FromUTF8("Thu, 8 Mar 2018 23:30:29 -0000");
   }
 
@@ -184,7 +182,7 @@ class MHTMLArchiveTest : public testing::Test {
 
   Vector<char>& mhtml_data() { return mhtml_data_; }
 
-  WTF::Time mhtml_date() const { return mhtml_date_; }
+  base::Time mhtml_date() const { return mhtml_date_; }
   const String& mhtml_date_header() const { return mhtml_date_header_; }
 
   void CheckLoadResult(const KURL url,
@@ -213,7 +211,7 @@ class MHTMLArchiveTest : public testing::Test {
   String file_path_;
   Vector<SerializedResource> resources_;
   Vector<char> mhtml_data_;
-  WTF::Time mhtml_date_;
+  base::Time mhtml_date_;
   String mhtml_date_header_;
 };
 

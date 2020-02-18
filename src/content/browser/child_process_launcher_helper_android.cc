@@ -17,13 +17,13 @@
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/posix_file_descriptor_info_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/ChildProcessLauncherHelperImpl_jni.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
-#include "jni/ChildProcessLauncherHelperImpl_jni.h"
 #include "services/service_manager/sandbox/switches.h"
 
 using base::android::AttachCurrentThread;
@@ -140,8 +140,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
       env, reinterpret_cast<intptr_t>(this), j_argv, j_file_infos,
       can_use_warm_up_connection));
   AddRef();  // Balanced by OnChildProcessStarted.
-  base::PostTaskWithTraits(
-      FROM_HERE, {client_thread_id_},
+  client_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ChildProcessLauncherHelper::set_java_peer_available_on_client_thread,
           this));

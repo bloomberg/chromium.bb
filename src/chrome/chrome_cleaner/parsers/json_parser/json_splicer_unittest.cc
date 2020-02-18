@@ -13,7 +13,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
-#include "chrome/chrome_cleaner/interfaces/parser_interface.mojom.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/parsers/json_parser/sandboxed_json_parser.h"
 #include "chrome/chrome_cleaner/parsers/target/parser_impl.h"
@@ -49,13 +49,13 @@ bool IsDaysOfWeek(const base::DictionaryValue* dictionary) {
 }
 
 bool IsDaysOfWeek(const std::vector<base::Value>& list) {
-  return base::ContainsValue(list, base::Value("sunday")) &&
-         base::ContainsValue(list, base::Value("monday")) &&
-         base::ContainsValue(list, base::Value("tuesday")) &&
-         base::ContainsValue(list, base::Value("wednesday")) &&
-         base::ContainsValue(list, base::Value("thursday")) &&
-         base::ContainsValue(list, base::Value("friday")) &&
-         base::ContainsValue(list, base::Value("saturday"));
+  return base::Contains(list, base::Value("sunday")) &&
+         base::Contains(list, base::Value("monday")) &&
+         base::Contains(list, base::Value("tuesday")) &&
+         base::Contains(list, base::Value("wednesday")) &&
+         base::Contains(list, base::Value("thursday")) &&
+         base::Contains(list, base::Value("friday")) &&
+         base::Contains(list, base::Value("saturday"));
 }
 
 class JsonSplicerImplTest : public testing::Test {

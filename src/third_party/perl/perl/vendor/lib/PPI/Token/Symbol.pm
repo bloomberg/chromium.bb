@@ -31,11 +31,9 @@ use strict;
 use Params::Util qw{_INSTANCE};
 use PPI::Token   ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 
 
@@ -61,8 +59,8 @@ variations.
 sub canonical {
 	my $symbol = shift->content;
 	$symbol =~ s/\s+//;
-	$symbol =~ s/(?<=[\$\@\%\&\*])::/main::/;
 	$symbol =~ s/\'/::/g;
+	$symbol =~ s/(?<=[\$\@\%\&\*])::/main::/;
 	$symbol;
 }
 
@@ -82,7 +80,7 @@ Returns the symbol as a string.
 
 =cut
 
-my %cast_which_trumps_braces = map { $_ => 1 } qw{ $ @ };
+my %cast_which_trumps_braces = map { $_ => 1 } qw{ $ @ % };
 
 sub symbol {
 	my $self   = shift;
@@ -90,7 +88,6 @@ sub symbol {
 
 	# Immediately return the cases where it can't be anything else
 	my $type = substr( $symbol, 0, 1 );
-	return $symbol if $type eq '%';
 	return $symbol if $type eq '&';
 
 	# Unless the next significant Element is a structure, it's correct.
@@ -114,6 +111,9 @@ sub symbol {
 
 	} elsif ( $type eq '@' ) {
 		substr( $symbol, 0, 1, '%' ) if $braces eq '{}';
+
+	} elsif ( $type eq '%' ) {
+		substr( $symbol, 0, 1, '@' ) if $braces eq '[]';
 
 	}
 
@@ -161,8 +161,8 @@ sub __TOKENIZER__on_char {
 	my $t = $_[1];
 
 	# Suck in till the end of the symbol
-	my $line = substr( $t->{line}, $t->{line_cursor} );
-	if ( $line =~ /^([\w:\']+)/ ) {
+	pos $t->{line} = $t->{line_cursor};
+	if ( $t->{line} =~ m/\G([\w:\']+)/gc ) {
 		$t->{token}->{content} .= $1;
 		$t->{line_cursor}      += length $1;
 	}
@@ -199,7 +199,7 @@ sub __TOKENIZER__on_char {
 	# Trim off anything we oversucked...
 	$content =~ /^(
 		[\$@%&*]
-		(?: : (?!:) | # Allow single-colon non-magic vars
+		(?: : (?!:) | # Allow single-colon non-magic variables
 			(?: \w+ | \' (?!\d) \w+ | \:: \w+ )
 			(?:
 				# Allow both :: and ' in namespace separators

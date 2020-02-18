@@ -30,9 +30,18 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 const base::Feature kFillOnAccountSelectHttp = {
     "FillOnAccountSelectHttp", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Forces password generation to ask user to update the password instead of
+// overwriting silently.
+const base::Feature kGenerationNoOverwrites = {
+    "GenerationNoOverwrites", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Integration with Google's Password Manager for signed-in and sync users.
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Analyses the credentials submitted by user for leak detection.
+const base::Feature kLeakDetection = {"PasswordLeakDetection",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to offer manual password generation in the accessory sheet
 // on Android.
@@ -59,13 +68,18 @@ const base::Feature kNewPasswordFormParsingForSaving = {
 const base::Feature kOnlyNewParser = {"only-new-password-form-parsing",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables editing saved passwords for Android.
+const base::Feature kPasswordEditingAndroid = {
+    "PasswordEditingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Adds password-related features to the keyboard accessory on mobile devices.
-const base::Feature kPasswordsKeyboardAccessory = {
-    "PasswordsKeyboardAccessory", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether the password manager onboarding experience is shown
+// on Android.
+const base::Feature kPasswordManagerOnboardingAndroid = {
+    "PasswordManagerOnboardingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Deletes entries from local database on Mac which cannot be decrypted when
 // merging data with Sync.
@@ -75,6 +89,10 @@ const base::Feature kRecoverPasswordsForSyncUsers = {
 // Enables the touch to fill feature for Android.
 const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables support of filling and saving on username first flow.
+const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Field trial identifier for password generation requirements.
 const char* kGenerationRequirementsFieldTrial =

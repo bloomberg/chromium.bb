@@ -1,10 +1,11 @@
-package Moose::Manual::Types;
-
+# PODNAME: Moose::Manual::Types
 # ABSTRACT: Moose's type system
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Types - Moose's type system
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 TYPES IN PERL?
 
@@ -42,26 +43,26 @@ data, and it also contributes greatly to code maintainability.
 The basic Moose type hierarchy looks like this
 
   Any
-  Item
-      Bool
-      Maybe[`a]
-      Undef
-      Defined
-          Value
-              Str
-                  Num
-                      Int
-                  ClassName
-                  RoleName
-          Ref
-              ScalarRef[`a]
-              ArrayRef[`a]
-              HashRef[`a]
-              CodeRef
-              RegexpRef
-              GlobRef
+      Item
+          Bool
+          Maybe[`a]
+          Undef
+          Defined
+              Value
+                  Str
+                      Num
+                          Int
+                      ClassName
+                      RoleName
+              Ref
+                  ScalarRef[`a]
+                  ArrayRef[`a]
+                  HashRef[`a]
+                  CodeRef
+                  RegexpRef
+                  GlobRef
                   FileHandle
-              Object
+                  Object
 
 In practice, the only difference between C<Any> and C<Item> is
 conceptual. C<Item> is used as the top-level type in the hierarchy.
@@ -81,7 +82,9 @@ C<Maybe[`a]> accepts either C<`a> or C<undef>.
 
 =item
 
-C<Num> accepts anything that perl thinks looks like a number (see L<Scalar::Util/looks_like_number>).
+C<Num> accepts integers, floating point numbers (both in decimal notation &
+exponential notation), 0, .0, 0.0 etc. It doesn't accept numbers with
+whitespace, Inf, Infinity, "0 but true", NaN & other such strings.
 
 =item
 
@@ -396,27 +399,37 @@ Moose does not provide any means of validating method
 parameters. However, there are several MooseX extensions on CPAN which
 let you do this.
 
-The simplest and least sugary is L<MooseX::Params::Validate>. This
+The simplest and least sugary is L<Params::ValidationCompiler>. This
 lets you validate a set of named parameters using Moose types:
 
-  use Moose;
-  use MooseX::Params::Validate;
+  use Moose::Util::TypeConstraints qw( find_type_constraint );
+  use Params::ValidationCompiler qw( validation_for );
 
-  sub foo {
-      my $self   = shift;
-      my %params = validated_hash(
-          \@_,
-          bar => { isa => 'Str', default => 'Moose' },
+  {
+      my $validator = validation_for(
+          params => {
+              foo => { type => find_type_constraint('Int') },
+              bar => {
+                  type     => find_type_constraint('Str'),
+                  optional => 1,
+              },
+              baz => {
+                  type    => find_type_constraint('Int'),
+                  default => 42,
+              },
+          },
       );
-      ...
-  }
 
-L<MooseX::Params::Validate> also supports coercions.
+      sub foo {
+          my %args = $validator->(@_);
+      }
+}
 
-There are several more powerful extensions that support method
-parameter validation using Moose types, including
-L<MooseX::Method::Signatures>, which gives you a full-blown C<method>
-keyword.
+L<Params::ValidationCompiler> also supports coercions.
+
+There are several more powerful extensions that support method parameter
+validation using Moose types, including L<Moops>, which gives you a full-blown
+C<method> keyword.
 
   method morning ( Str $name ) {
       $self->say("Good morning ${name}!");
@@ -432,19 +445,57 @@ In order to ameliorate this problem, we recommend defining I<all> of your
 custom types in one module, C<MyApp::Types>, and then loading this module in
 all of your other modules.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

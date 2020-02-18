@@ -89,6 +89,13 @@ be describing additional metrics about the same event.
     with non-zero bytes. Recorded when a page is destroyed or when the app is
     backgrounded on mobile.
   </summary>
+  <metric name="CpuTime.PeakWindowedPercent">
+    <summary>
+      The peak percentage of CPU utilization attributed to the frame in any 30
+      second window prior to user activation. Frames that exist for less than 30
+      seconds still use 30 seconds as the denominator for the calculation.
+    </summary>
+  </metric>
   <metric name="CpuTime.PreActivation">
     <summary>
       Wall time of tasks attributed to the frame after the frame recieved user
@@ -269,6 +276,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.InteractiveTiming.FirstInputDelay3">
+    <obsolete>
+      Removed July 2019 in favor of FirstInputDelay4.
+    </obsolete>
     <summary>
       Measures First Input Delay, the duration between the hardware timestamp
       and the start of event processing on the main thread for the first
@@ -276,7 +286,36 @@ be describing additional metrics about the same event.
       https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
     </summary>
   </metric>
+  <metric name="SubFrame.InteractiveTiming.FirstInputDelay4">
+    <summary>
+      Measures First Input Delay, the duration between the hardware timestamp
+      and the start of event processing on the main thread for the first
+      meaningful input per navigation, in the AMP subframe. See
+      https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
+    </summary>
+  </metric>
+  <metric name="SubFrame.LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred during the session, in the AMP subframe. This metric's integral
+      value is 100x the fractional cumulative layout shift score described in
+      the explainer.
+    </summary>
+  </metric>
+  <metric
+      name="SubFrame.LayoutInstability.CumulativeShiftScore.BeforeInputOrScroll">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred in the AMP subframe, before any user input or document scroll.
+      This metric's integral value is 100x the fractional cumulative layout
+      shift score described in the explainer.
+    </summary>
+  </metric>
   <metric name="SubFrame.LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of
+      SubFrame.LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred during the session, in the AMP subframe. This metric's integral
@@ -300,7 +339,18 @@ be describing additional metrics about the same event.
       A contentful paint includes a paint of text, image, SVG, or canvas.
     </summary>
   </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the AMP subframe. See
+      http://bit.ly/largest_contentful_paint_explainer for more details.
+    </summary>
+  </metric>
   <metric name="SubFrame.PaintTiming.NavigationToLargestContentPaint">
+    <obsolete>
+      Deprecated 7/2019
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -334,6 +384,12 @@ be describing additional metrics about the same event.
   <metric name="AppType">
     <summary>
       The type of app. 1: CHROME, 2: PLAY, 3: PWA/Bookmark app.
+    </summary>
+  </metric>
+  <metric name="ClickRank">
+    <summary>
+      Rank apps by total number of clicks. The app with the most clicks has rank
+      1.
     </summary>
   </metric>
   <metric name="ClicksEachHour00">
@@ -632,6 +688,237 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AppListNonAppImpression">
+  <owner>jiameng@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Records details of impressions and launches of non-apps in the ChromeOS
+    launcher, such as files, omnibox results, and answer cards.
+  </summary>
+  <metric name="Category" enum="AppListNonAppImpressionCategory">
+    <summary>
+      The kind of launcher item. Corresponds to the value of
+      ChromeSearchResult::result_[sub]type.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek">
+    <summary>
+      The day of the week that the event was logged on, in the local time zone.
+      Sunday is 0.
+    </summary>
+  </metric>
+  <metric name="DeviceMode" enum="AppListNonAppImpressionDeviceMode">
+    <summary>
+      The mode of the device.
+    </summary>
+  </metric>
+  <metric name="EventId">
+    <summary>
+      An ID linking together events within a single set of launcher search
+      results. One of these may be a launch, and the rest impressions.
+    </summary>
+  </metric>
+  <metric name="FileExtension" enum="AppListNonAppImpressionFileExtension">
+    <summary>
+      An enum representing the file extension if this event represents a local
+      or DriveFS file.
+    </summary>
+  </metric>
+  <metric name="HourOfDay">
+    <summary>
+      The hour of the day that the event was logged in. Hours measured from
+      midnight in the local timezone.
+    </summary>
+  </metric>
+  <metric name="IsLaunched" enum="Boolean">
+    <summary>
+      True if the item represented by this event was launched, false otherwise.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour00">
+    <summary>
+      The number of launches within the last 24 hours at hour 0. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour01">
+    <summary>
+      The number of launches within the last 24 hours at hour 1. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour02">
+    <summary>
+      The number of launches within the last 24 hours at hour 2. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour03">
+    <summary>
+      The number of launches within the last 24 hours at hour 3. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour04">
+    <summary>
+      The number of launches within the last 24 hours at hour 4. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour05">
+    <summary>
+      The number of launches within the last 24 hours at hour 5. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour06">
+    <summary>
+      The number of launches within the last 24 hours at hour 6. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour07">
+    <summary>
+      The number of launches within the last 24 hours at hour 7. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour08">
+    <summary>
+      The number of launches within the last 24 hours at hour 8. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour09">
+    <summary>
+      The number of launches within the last 24 hours at hour 9. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour10">
+    <summary>
+      The number of launches within the last 24 hours at hour 10. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour11">
+    <summary>
+      The number of launches within the last 24 hours at hour 11. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour12">
+    <summary>
+      The number of launches within the last 24 hours at hour 12. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour13">
+    <summary>
+      The number of launches within the last 24 hours at hour 13. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour14">
+    <summary>
+      The number of launches within the last 24 hours at hour 14. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour15">
+    <summary>
+      The number of launches within the last 24 hours at hour 15. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour16">
+    <summary>
+      The number of launches within the last 24 hours at hour 16. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour17">
+    <summary>
+      The number of launches within the last 24 hours at hour 17. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour18">
+    <summary>
+      The number of launches within the last 24 hours at hour 18. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour19">
+    <summary>
+      The number of launches within the last 24 hours at hour 19. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour20">
+    <summary>
+      The number of launches within the last 24 hours at hour 20. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour21">
+    <summary>
+      The number of launches within the last 24 hours at hour 21. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour22">
+    <summary>
+      The number of launches within the last 24 hours at hour 22. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour23">
+    <summary>
+      The number of launches within the last 24 hours at hour 23. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesThisSession">
+    <summary>
+      How many times this item has been launched during this session. Rounded
+      down to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="Position">
+    <summary>
+      The index of this item in the search results list. Indices start at 0.
+    </summary>
+  </metric>
+  <metric name="QueryLength">
+    <summary>
+      The length of the raw search query with whitespace trimmed. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="RelevanceScore">
+    <summary>
+      The raw relevance score returned by the relevant search provider for this
+      item.
+    </summary>
+  </metric>
+  <metric name="TimeOfLastLaunch">
+    <summary>
+      The hour when the previous launch of this item occurred. Hours measured
+      from midnight in the local timezone. This can be any value 0-23, as the
+      last launch could have been on a previous day.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastLaunch">
+    <summary>
+      Seconds since this item was last launched in this session. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.045. This makes
+      the bucket at 24 hour mark approximately 1 hour long.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.CardUploadDecision">
   <owner>sebsg@chromium.org</owner>
   <metric name="UploadDecision">
@@ -725,10 +1012,18 @@ be describing additional metrics about the same event.
     Recorded when Chrome validates field type predictions (on submit, on leaving
     a form, on receiving a form with autocomplete attributes).
   </summary>
-  <metric name="ActualType">
+  <metric name="ActualType" enum="AutofillServerFieldType">
     <summary>
       The observed type of the field. See: autofill::ServerFieldType
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.PredictedType"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="FieldSignature">
     <summary>
@@ -744,22 +1039,45 @@ be describing additional metrics about the same event.
     <summary>
       Time since form parse.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ValidationEvent"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="PredictedType">
+  <metric name="PredictedType" enum="AutofillServerFieldType">
     <summary>
       The predicted type of the field. See: autofill::ServerFieldType
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ActualType"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
-  <metric name="PredictionSource">
+  <metric name="PredictionSource" enum="AutofillPredictionSource">
     <summary>
       The system which generated the prediction: heuristics, server, overall.
     </summary>
   </metric>
-  <metric name="ValidationEvent">
+  <metric name="ValidationEvent" enum="AutofillQualitiyMetricType">
     <summary>
       The event which triggered the validation: Submission, Left Form, Form has
       Autocomplete attributes.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -2016,6 +2334,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="BloatedRenderer">
+  <obsolete>
+    Deprecated as of 03/2019.
+  </obsolete>
   <owner>ulan@chromium.org</owner>
   <summary>
     Metrics related to a bloated renderer that is close to out-of-memory. They
@@ -2439,6 +2760,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="DataReductionProxy" singular="True">
+  <owner>robertogden@chromium.org</owner>
+  <summary>
+    Data Reduction Proxy related metrics associated with a page load. See
+    //components/data_reduction_proxy/.
+  </summary>
+  <metric name="DataSaverPageUUID">
+    <summary>
+      A unique identifier of this page load to the proxy server. Recorded for
+      each navigation that uses the proxy.
+    </summary>
+  </metric>
+  <metric name="EstimatedOriginalNetworkBytes">
+    <summary>
+      The estimated number of bytes that would have been used if that proxy was
+      disabled on this page load. Recorded for each navigation that uses the
+      proxy.
+    </summary>
+  </metric>
+</event>
+
 <event name="Document.OutliveTimeAfterShutdown">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>keishi@chromium.org</owner>
@@ -2689,6 +3031,15 @@ be describing additional metrics about the same event.
       a given scroll gesture event sequence. If no swap was induced by the
       event, no recording is made.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -2756,6 +3107,15 @@ be describing additional metrics about the same event.
       the event, no recording is made. The first GSU of every scrolling sequence
       is excluded from this metric.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -2862,7 +3222,7 @@ be describing additional metrics about the same event.
   <summary>
     Logged when the FindInPage returns a user search request result.
   </summary>
-  <metric name="HasMatches">
+  <metric name="HasMatches" enum="Boolean">
     <summary>
       True if there were matches.
     </summary>
@@ -2873,6 +3233,45 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+</event>
+
+<event name="IOS.RendererGone">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>
+    Logged when WKWebView process is reported gone. Metrics will give
+    information of the context in which some website present sad tabs. It will
+    help debug some renderer issues either in Chrome or in WebKit.
+  </summary>
+  <metric name="AliveRecentlyRendererCount">
+    <summary>
+      The number of WKWebView alive in the last 2 seconds.
+    </summary>
+  </metric>
+  <metric name="AliveRendererCount">
+    <summary>
+      The number of WKWebView alive at the moment this renderer is gone.
+    </summary>
+  </metric>
+  <metric name="InForeground" enum="TabForegroundState">
+    <summary>
+      Whether the app/tab was in foregound or background. 0: tab in foreground,
+      app in foreground, 1: tab in background, app in foreground, 2: tab in
+      foreground, app in background, 3: tab in background, app in background.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SawMemoryWarning" enum="Boolean">
+    <summary>
+      Whether a memory warning was received less than 5 seconds before the
+      renderer process is gone.
+    </summary>
   </metric>
 </event>
 
@@ -4397,9 +4796,26 @@ be describing additional metrics about the same event.
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>
-    Recorded when a page is loaded whose main frame load used TLS 1.0 or TLS
-    1.1.
+    Recorded when a resource is loaded using TLS 1.0 or TLS 1.1.
   </summary>
+  <metric name="IsAdResource">
+    <summary>
+      Boolean value representing whether the request is for an ad resource. Only
+      set if IsSubresource is true.
+    </summary>
+  </metric>
+  <metric name="IsMainFrame">
+    <summary>
+      Boolean value representing whether the request is in the main frame or not
+      (if false, the request is from a subframe).
+    </summary>
+  </metric>
+  <metric name="IsSubresource">
+    <summary>
+      Boolean value representing whether the request is for a subresource. If
+      false, then the request was a main frame page load.
+    </summary>
+  </metric>
 </event>
 
 <event name="NoStatePrefetch" singular="True">
@@ -4548,11 +4964,12 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="OptimizationGuide">
+<event name="OptimizationGuide" singular="True">
   <owner>sophiechang@chromium.org</owner>
   <summary>
-    Optimization guide metrics associated with a page load. See
-    //components/optimization_guide/.
+    Optimization guide metrics associated with a page load. It is recorded when
+    the optimization guide was consulted in making a decision for the page load.
+    See //components/optimization_guide/.
   </summary>
   <metric name="HintGenerationTimestamp">
     <summary>
@@ -4680,6 +5097,10 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestContentPaint">
+    <obsolete>
+      Deprecated 7/2019, replaced by
+      PaintTiming.NavigationToLargestContentfulPaint.MainFrame.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -4688,6 +5109,10 @@ be describing additional metrics about the same event.
   </metric>
   <metric
       name="Experimental.PaintTiming.NavigationToLargestContentPaintAllFrames">
+    <obsolete>
+      Deprecated 7/2019, replaced by
+      PaintTiming.NavigationToLargestContentfulPaint
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -4960,7 +5385,35 @@ be describing additional metrics about the same event.
       Set to 1 if the main resource is an inner response of a signed exchange.
     </summary>
   </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred on the page (including all subframes) during the session. This
+      metric's integral value is 100x the fractional cumulative layout shift
+      score described in the explainer.
+    </summary>
+  </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore.MainFrame">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session. This metric's integral
+      value is 100x the fractional cumulative layout shift score described in
+      the explainer.
+    </summary>
+  </metric>
+  <metric
+      name="LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session, before any user input or
+      document scroll. This metric's integral value is 100x the fractional
+      cumulative layout shift score described in the explainer.
+    </summary>
+  </metric>
   <metric name="LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred on the page (including all subframes) during the session. This
@@ -4969,6 +5422,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session. This metric's integral
@@ -4976,6 +5433,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame.BeforeInputOrScroll">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session, before any user input or
@@ -5077,10 +5538,20 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Net.CacheBytes">
+    <obsolete>
+      Deprecated 06/2019 in favor of Net.CacheBytes2.
+    </obsolete>
     <summary>
       The total number of body bytes loaded from cache for all resources on the
       page. This is rounded down to the nearest exponential bucket (with a
       bucket spacing factor of 1.3).
+    </summary>
+  </metric>
+  <metric name="Net.CacheBytes2">
+    <summary>
+      The total number of body bytes loaded from cache for all resources on the
+      page. This includes the http and memory cache. This is rounded down to the
+      nearest exponential bucket (with a bucket spacing factor of 1.3).
     </summary>
   </metric>
   <metric name="Net.DownstreamKbpsEstimate.OnNavigationStart">
@@ -5196,6 +5667,22 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="PaintTiming.NavigationToLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, across all frames. See http://bit.ly/fcp_plus_plus
+      for more details.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.NavigationToLargestContentfulPaint.MainFrame">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the main frame. See http://bit.ly/fcp_plus_plus
+      for more details.
+    </summary>
+  </metric>
   <metric name="ParseTiming.NavigationToParseStart">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
@@ -5208,6 +5695,12 @@ be describing additional metrics about the same event.
     <summary>
       Measures the Site Engagement Score for the commited URL rounded to the
       nearest 10.
+    </summary>
+  </metric>
+  <metric name="ThirdPartyCookieBlockingEnabledForSite">
+    <summary>
+      Records whether third party cookie blocking was enabled for a site. Only
+      recorded for users who enabled the cookie controls ui.
     </summary>
   </metric>
   <metric name="WasCached">
@@ -5312,70 +5805,25 @@ be describing additional metrics about the same event.
       changes in form control types.
     </summary>
   </metric>
-  <metric name="Fill.FirstFillingResultInRenderer">
+  <metric name="Fill.FirstFillingResultInRenderer"
+      enum="PasswordManagerFirstRendererFillingResult">
     <summary>
       Records whether the PasswordAutofillAgent in the renderer manages to fill
       credentials as instructed by the browser or records a failure reason
       otherwise. Only the outcome of the first attempt to fill is recorded.
 
-      0: Success
-
-      1: No password element - The password element to be filled has not been
-      found.
-
-      2: Blocked by frame hierarchy - Filling only happens in iframes if all
-      parent frames PSL-match the security origin of the iframe containing the
-      password field.
-
-      3: Password element is not autocompleteable - Passwords are not filled
-      into fields that are not editable.
-
-      4: Username prefilled with incompatible value - The username field
-      contains a string that does not match the username of any available
-      credential. This typically indicates placeholder values.
-
-      5: Found no password for username - No credential was filled due to
-      mismatches with the username. This can happen in a number of cases: In
-      case the username field is empty and readonly. In case of a
-      username-first-flow where a user's credentials do contain a username but
-      the form contains only a password field and no username field. In case of
-      change password forms that contain no username field. In case the user
-      name is given on a page but only PSL matched credentials exist for this
-      username. There may be further cases.
-
-      6: Wait for username - Renderer was instructed to wait until user has
-      manually picked a credential. This happens for example if the session is
-      an incognito session, the credendial's URL matches the mainframe only via
-      the PSL, the site is on HTTP, or the form has no current password field.
-      Fill.FirstWaitForUsernameReason records the root causes.
-
-      7: No fillable elements found - No fillable elements were found, only
-      possible for the old form parser.
-
       This is replicated as PasswordManager.FirstFillingResultInRenderer in UMA.
     </summary>
   </metric>
-  <metric name="Fill.FirstWaitForUsernameReason">
+  <metric name="Fill.FirstWaitForUsernameReason"
+      enum="PasswordManagerFirstWaitForUsernameReason">
     <summary>
       This metric records why the browser instructs the renderer not to fill the
       credentials on page load but to wait for the user to confirm the
       credential to be filled. Only the value of the first decision to fill is
       recorded.
 
-      0: Don't wait
-
-      1: Incognito mode - User is browsing in incognito mode.
-
-      2: Public suffix match - A credential exists for a PSL matched site but
-      not for the current security origin.
-
-      3: Form not good for filling - Form is suspected to be a password change
-      form. (Only recorded for old form parser)
-
-      4: FOAS on HTTP - User is on an HTTP site where passwords are filled on
-      account selection (FOAS).
-
-      This is replicated PasswordManager.FirstWaitForUsernameReason in UMA.
+      This is replicated as PasswordManager.FirstWaitForUsernameReason in UMA.
     </summary>
   </metric>
   <metric name="FillOnLoad">
@@ -5493,7 +5941,8 @@ be describing additional metrics about the same event.
     <summary>
       Records the event that led the password manager to believe the submission
       was successful. Metrics is recorded only when the password is saved.
-      Recorded values correspond to the enum autofill::SubmissionIndicatorEvent.
+      Recorded values correspond to the enum
+      autofill::mojom::SubmissionIndicatorEvent.
     </summary>
   </metric>
   <metric name="Submission.Observed">
@@ -5712,6 +6161,74 @@ be describing additional metrics about the same event.
   </summary>
 </event>
 
+<event name="PeriodicBackgroundSyncEventCompleted">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A website can register to periodically update itself in the background using
+    a service worker. Updates can be done in response to the periodicsync event.
+    Logged when a periodicsync event completes and returns a status. We collect
+    information about retries of this event.
+  </summary>
+  <metric name="MaxAttempts">
+    <summary>
+      Integer value of the maximum number of allowed retries.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="NumAttempts">
+    <summary>
+      Integer value of the number of retries / sync events dispatched.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Status" enum="ServiceWorkerEventStatus">
+    <summary>
+      The enum value of the completion status, defined in
+      blink::ServiceWorkerStatusCode.
+    </summary>
+  </metric>
+</event>
+
+<event name="PeriodicBackgroundSyncRegistered">
+  <owner>nator@chromium.org</owner>
+  <owner>rayankans@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    A website can register to periodically update itself in the background using
+    a service worker. Updates can be done in response to the periodicsync event
+    after a periodic Background Sync registration has been created. Logged when
+    a periodic Background Sync registration is created. We collect information
+    about this registration request.
+  </summary>
+  <metric name="IsReregistered" enum="Boolean">
+    <summary>
+      Boolean for whether a registration with this tag has already been created.
+    </summary>
+  </metric>
+  <metric name="MinIntervalMs">
+    <summary>
+      Integer value of the minimum interval, in milliseconds, of periodicsync
+      events requested by the origin for this registration. This number is
+      exponentially bucketed and uses the UKM GetExponentialBucketMin method
+      with a value of 2.0 for spacing.
+    </summary>
+  </metric>
+</event>
+
 <event name="Permission">
   <owner>timloh@chromium.org</owner>
   <summary>
@@ -5803,6 +6320,9 @@ be describing additional metrics about the same event.
     //components/previews/.
   </summary>
   <metric name="client_lofi">
+    <obsolete>
+      Deprecated June 2019
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a client lo-fi image in a page load.
     </summary>
@@ -5814,6 +6334,20 @@ be describing additional metrics about the same event.
       attempted and was allowed to proceed by the coin flip. Set to 2 if a
       preview would have been attempted but was held back by the coin flip. Note
       that a non-zero value in this field implies previews_likely.
+    </summary>
+  </metric>
+  <metric name="defer_all_script" enum="Boolean">
+    <summary>
+      Set to 1 when a user is shown a DeferAllScript preview on a page load.
+    </summary>
+  </metric>
+  <metric name="defer_all_script_eligibility_reason"
+      enum="PreviewsEligibilityReason">
+    <summary>
+      Set to the value of the last known reason a DeferAllScript preview was not
+      eligible on this page load. The value of this metric corresponds to the
+      PreviewsEligibilityReason enum. This metric is only set when it is
+      non-zero.
     </summary>
   </metric>
   <metric name="lite_page">
@@ -5920,8 +6454,33 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="server_lofi">
+    <obsolete>
+      Deprecated June 2019
+    </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsDeferAllScript" singular="True">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Metrics associated with the intervention of deferring the execution of
+    synchronous script (typically due to a DeferAllScript Preview). This is
+    recorded when the HTML parsing of a mainframe has completed.
+  </summary>
+  <metric name="force_deferred_scripts_mainframe">
+    <summary>
+      The total number of mainframe scripts (inline and external) whose
+      execution was force deferred (i.e., that otherwise would have been render
+      blocking).
+    </summary>
+  </metric>
+  <metric name="force_deferred_scripts_mainframe_external">
+    <summary>
+      The total number of mainframe external scripts whose execution was force
+      deferred (i.e., that otherwise would have been render blocking).
     </summary>
   </metric>
 </event>
@@ -5975,6 +6534,47 @@ be describing additional metrics about the same event.
       The number of patterns that blocked at least one resource request in the
       resource loading hints based preview while the URL's document was loading.
     </summary>
+  </metric>
+</event>
+
+<event name="PWA.Visit" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    PWA usage metrics recorded during a user's interaction with the site.
+  </summary>
+  <metric name="LaunchSource" enum="LaunchFromHomeScreenSource">
+    <summary>
+      Launch source of the WebAPK (tap from homescreen, WebShareTarget,
+      deeplink, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WebAPKableSiteVisit" enum="Boolean">
+    <summary>
+      Recorded every time a non-installed &quot;WebAPKable&quot; site is
+      visited.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -6317,6 +6917,10 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="SiteIsolation.XSD.Browser.Blocked">
+  <obsolete>
+    Removed in June 2019 / M77. Some old data has been saved in a
+    Google-internal doc at go/xsdb-ukm-results (ask owners below for access).
+  </obsolete>
   <owner>creis@chromium.org</owner>
   <owner>chrome-site-isolation@google.com</owner>
   <summary>
@@ -7531,6 +8135,284 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Install" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded on Install.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user is installing.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Install" enum="Boolean">
+    <summary>
+      Recorded when this WebAPK is installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.SessionEnd" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded when the WebAPK is backgrounded.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SessionDuration">
+    <summary>
+      How long the user spent inside the WebAPK, in milliseconds. This will use
+      exponential bucketing (ie, count in 10s of milliseconds at first, then
+      100s, then seconds, 10s of seconds, minutes, 10 minutes, hours, 10 hours,
+      days, weeks, years.)
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Uninstall" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded on Uninstall.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InstalledDuration">
+    <summary>
+      How long between Install and Uninstall of a particular WebAPK, in seconds.
+      This will use exponential bucketing (ie, count in seconds at first, then
+      10s of seconds, minutes, 10 minutes, hours, 10 hours, days, weeks, years.)
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LifetimeLaunches" enum="WebApkLifetimeLaunchCount">
+    <summary>
+      Records how many times the WebAPK was launched between install and
+      uninstall (in coarse buckets).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Uninstall" enum="Boolean">
+    <summary>
+      Recorded when this WebAPK is uninstalled.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Visit" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded during a user's interaction with the site.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Launch" enum="Boolean">
+    <summary>
+      Recorded every time this WebAPK is launched.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LaunchSource" enum="LaunchFromHomeScreenSource">
+    <summary>
+      Launch source of the WebAPK.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <enumeration/>
         </statistics>

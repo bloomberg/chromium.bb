@@ -87,7 +87,7 @@ class MockManifest(object):
 
   def __init__(self, path, **kwargs):
     self.root = path
-    for key, attr in kwargs.iteritems():
+    for key, attr in kwargs.items():
       setattr(self, key, attr)
 
 
@@ -245,7 +245,7 @@ class TestSubmitChange(_Base):
     """Submit one change to gerrit, stuck on SUBMITTED."""
     # The query will be retried 1 more time than query timeout.
     results = ['SUBMITTED' for _i in
-               xrange(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
+               range(validation_pool.SUBMITTED_WAIT_TIMEOUT + 1)]
     self.assertTrue(self._TestSubmitChange(results))
 
   def testSubmitChangeSubmittedToMerged(self):
@@ -719,7 +719,7 @@ class TestCoreLogic(_Base):
           list1,
           list2,
           msg=('Comparison failed:\n list1: %r\n list2: %r' %
-               (map(mangle, list1), map(mangle, list2))))
+               ([mangle(x) for x in list1], [mangle(x) for x in list2])))
 
     compare(results[0], lcq_delegation_patches)
     self.assertEqual(len(results[1]), 0)
@@ -755,7 +755,7 @@ class TestCoreLogic(_Base):
   def _UpdatedDependencyMap(self, dependency_map):
     pool = self.MakePool()
 
-    directs = dict((k, set(v)) for (k, v) in dependency_map.iteritems())
+    directs = dict((k, set(v)) for (k, v) in dependency_map.items())
 
     keys = dependency_map.keys()
     for change in keys:
@@ -1143,7 +1143,7 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
 
   @classmethod
   def _GetTestData(cls):
-    ids = [cros_patch.MakeChangeId() for _ in xrange(3)]
+    ids = [cros_patch.MakeChangeId() for _ in range(3)]
     changes = [cls._GetCrosInternalPatch(GetTestJson(ids[0]))]
     non_os = [cls._GetCrosPatch(GetTestJson(ids[1]))]
     conflicting = [cls._GetCrosInternalPatch(GetTestJson(ids[2]))]
@@ -1225,7 +1225,8 @@ class TestCreateDisjointTransactions(_Base):
       expected_plans = [sorted(plan) for plan in expected_plans]
 
     # Verify the plans match, and that no changes were rejected.
-    self.assertEqual(set(map(str, plans)), set(map(str, expected_plans)))
+    self.assertEqual(set(str(x) for x in plans),
+                     set(str(x) for x in expected_plans))
     self.assertEqual(0, remove.call_count)
     self.assertEqual([], failed)
 
@@ -1372,9 +1373,11 @@ class BaseSubmitPoolTestCase(_Base):
         _, actually_rejected = pool.SubmitChanges(verified_cls)
 
     # Check that the right patches were submitted and rejected.
-    self.assertItemsEqual(map(str, rejected), map(str, actually_rejected))
+    self.assertItemsEqual([str(x) for x in rejected],
+                          [str(x) for x in actually_rejected])
     actually_submitted = self.pool_mock.GetSubmittedChanges()
-    self.assertEqual(map(str, submitted), map(str, actually_submitted))
+    self.assertEqual([str(x) for x in submitted],
+                     [str(x) for x in actually_submitted])
 
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.

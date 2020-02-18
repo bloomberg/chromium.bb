@@ -11,6 +11,7 @@
 #include "modules/video_coding/generic_decoder.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 
 #include "api/video/video_timing.h"
@@ -81,14 +82,14 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
   }
 
   decodedImage.set_ntp_time_ms(frameInfo->ntp_time_ms);
+  decodedImage.set_packet_infos(frameInfo->packet_infos);
   decodedImage.set_rotation(frameInfo->rotation);
 
   const int64_t now_ms = _clock->TimeInMilliseconds();
   if (!decode_time_ms) {
     decode_time_ms = now_ms - frameInfo->decodeStartTimeMs;
   }
-  _timing->StopDecodeTimer(decodedImage.timestamp(), *decode_time_ms, now_ms,
-                           frameInfo->renderTimeMs);
+  _timing->StopDecodeTimer(*decode_time_ms, now_ms);
 
   // Report timing information.
   TimingFrameInfo timing_frame_info;
@@ -116,7 +117,6 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
           1;
     }
 
-
     timing_frame_info.capture_time_ms = capture_time_ms - sender_delta_ms;
     timing_frame_info.encode_start_ms =
         frameInfo->timing.encode_start_ms - sender_delta_ms;
@@ -143,7 +143,8 @@ void VCMDecodedFrameCallback::Decoded(VideoFrame& decodedImage,
 
   decodedImage.set_timestamp_us(frameInfo->renderTimeMs *
                                 rtc::kNumMicrosecsPerMillisec);
-  _receiveCallback->FrameToRender(decodedImage, qp, frameInfo->content_type);
+  _receiveCallback->FrameToRender(decodedImage, qp, *decode_time_ms,
+                                  frameInfo->content_type);
 }
 
 void VCMDecodedFrameCallback::OnDecoderImplementationName(
@@ -203,6 +204,7 @@ int32_t VCMGenericDecoder::Decode(const VCMEncodedFrame& frame, int64_t nowMs) {
   _frameInfos[_nextFrameInfoIdx].timing = frame.video_timing();
   _frameInfos[_nextFrameInfoIdx].ntp_time_ms =
       frame.EncodedImage().ntp_time_ms_;
+  _frameInfos[_nextFrameInfoIdx].packet_infos = frame.PacketInfos();
 
   // Set correctly only for key frames. Thus, use latest key frame
   // content type. If the corresponding key frame was lost, decode will fail

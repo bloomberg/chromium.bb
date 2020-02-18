@@ -29,10 +29,10 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/extension_registry.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -129,7 +129,7 @@ void RequestOpenApp(Profile* profile) {
   DCHECK(extensions::util::IsAppLaunchable(arc::kPlayStoreAppId, profile));
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::SOURCE_CHROME_INTERNAL));
+      extensions::AppLaunchSource::kSourceChromeInternal));
 }
 
 std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {

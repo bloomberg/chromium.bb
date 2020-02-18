@@ -1964,7 +1964,7 @@ struct kernel_statfs {
         __asm__ volatile(LSS_ENTRYPOINT                                       \
                          : "=a" (__res)                                       \
                          : "0" (__NR_##name)                                  \
-                         : "esp", "memory");                                  \
+                         : "memory");                                         \
         LSS_RETURN(type,__res);                                               \
       }
     #undef  _syscall1
@@ -2405,7 +2405,7 @@ struct kernel_statfs {
                                "d"(LSS_SYSCALL_ARG(parent_tidptr)),
                                "r"(LSS_SYSCALL_ARG(newtls)),
                                "r"(LSS_SYSCALL_ARG(child_tidptr))
-                             : "rsp", "memory", "r8", "r10", "r11", "rcx");
+                             : "memory", "r8", "r10", "r11", "rcx");
       }
       LSS_RETURN(int, __res);
     }
@@ -4334,26 +4334,6 @@ struct kernel_statfs {
     return LSS_NAME(setpgid)(0, 0);
   }
 
-  LSS_INLINE int LSS_NAME(sysconf)(int name) {
-    extern int __getpagesize(void);
-    switch (name) {
-      case _SC_OPEN_MAX: {
-        struct kernel_rlimit limit;
-#if defined(__ARM_EABI__)
-        return LSS_NAME(ugetrlimit)(RLIMIT_NOFILE, &limit) < 0
-            ? 8192 : limit.rlim_cur;
-#else
-        return LSS_NAME(getrlimit)(RLIMIT_NOFILE, &limit) < 0
-            ? 8192 : limit.rlim_cur;
-#endif
-      }
-      case _SC_PAGESIZE:
-        return __getpagesize();
-      default:
-        LSS_ERRNO = ENOSYS;
-        return -1;
-    }
-  }
   #if defined(__x86_64__)
     /* Need to make sure loff_t isn't truncated to 32-bits under x32.  */
     LSS_INLINE ssize_t LSS_NAME(pread64)(int f, void *b, size_t c, loff_t o) {
@@ -4464,7 +4444,7 @@ struct kernel_statfs {
 #endif
 
 #if !defined(__NR_pipe)
-  LSS_INLINE pid_t LSS_NAME(pipe)(int *pipefd) {
+  LSS_INLINE int LSS_NAME(pipe)(int *pipefd) {
     return LSS_NAME(pipe2)(pipefd, 0);
   }
 #endif

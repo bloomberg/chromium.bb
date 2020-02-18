@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -20,11 +20,6 @@ class PLATFORM_EXPORT FetchUtils {
   static bool IsForbiddenResponseHeaderName(const String& name);
   static AtomicString NormalizeMethod(const AtomicString& method);
   static String NormalizeHeaderValue(const String& value);
-
-  // This function maps from Blink's internal "request context" concept to
-  // Fetch's notion of a request's "destination":
-  // https://fetch.spec.whatwg.org/#concept-request-destination.
-  static const char* GetDestinationFromContext(mojom::RequestContextType);
 };
 
 }  // namespace blink

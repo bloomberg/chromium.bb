@@ -65,7 +65,18 @@ class PageCaptureSaveAsMHTMLDelegate
   base::FilePath temp_file_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTML) {
+// TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_SaveAsMHTML DISABLED_SaveAsMHTML
+#define MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess \
+  DISABLED_SaveAsMHTMLWithActiveTabWithFileAccess
+#else
+#define MAYBE_SaveAsMHTML SaveAsMHTML
+#define MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess \
+  SaveAsMHTMLWithActiveTabWithFileAccess
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   ASSERT_TRUE(RunExtensionTestWithFlagsAndArg(
@@ -83,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, SaveAsMHTML) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
-                       SaveAsMHTMLWithActiveTabWithFileAccess) {
+                       MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;

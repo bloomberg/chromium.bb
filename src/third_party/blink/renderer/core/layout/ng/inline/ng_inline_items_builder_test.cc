@@ -31,6 +31,12 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     style_->GetFont().Update(nullptr);
   }
 
+  void TearDown() override {
+    for (LayoutObject* anonymous_object : anonymous_objects_)
+      anonymous_object->Destroy();
+    NGLayoutTest::TearDown();
+  }
+
   void SetWhiteSpace(EWhiteSpace whitespace) {
     style_->SetWhiteSpace(whitespace);
   }
@@ -181,7 +187,7 @@ TEST_F(NGInlineItemsBuilderTest, CollapseTabs) {
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseNewLines) {
-  String input("text\ntext \n text\n\ntext");
+  String input("text\ntext \ntext\n\ntext");
   String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNowrap);
@@ -419,6 +425,9 @@ TEST_F(NGInlineItemsBuilderTest, GenerateBreakOpportunityAfterLeadingSpaces) {
                    u"\u200B"
                    "a"),
             TestAppend({{"  a", EWhiteSpace::kPreWrap}}));
+  EXPECT_EQ(String("a\n"
+                   u" \u200B"),
+            TestAppend({{"a\n ", EWhiteSpace::kPreWrap}}));
 }
 
 TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {

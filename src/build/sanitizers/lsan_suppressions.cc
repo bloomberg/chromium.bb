@@ -21,7 +21,6 @@ char kLSanDefaultSuppressions[] =
 
     // False positives in libfontconfig. http://crbug.com/39050
     "leak:libfontconfig\n"
-    "leak:third_party/fontconfig/*\n"
     // eglibc-2.19/string/strdup.c creates false positive leak errors because of
     // the same reason as crbug.com/39050. The leak error stack trace, when
     // unwind on malloc, includes a call to libfontconfig. But the default stack
@@ -67,6 +66,9 @@ char kLSanDefaultSuppressions[] =
     // Crash keys are intentionally leaked.
     "leak:crash_reporter::(anonymous "
     "namespace)::CrashKeyBaseSupport::Allocate\n"
+
+    // Suppress leaks in CreateCdmInstance. https://crbug.com/961062
+    "leak:media::CdmAdapter::CreateCdmInstance\n"
 
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 

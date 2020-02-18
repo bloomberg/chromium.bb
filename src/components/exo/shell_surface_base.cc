@@ -9,9 +9,9 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
@@ -42,7 +42,6 @@
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -115,19 +114,6 @@ class CustomFrameView : public ash::NonClientFrameViewAsh,
       NonClientFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
-  }
-
-  // Overridden from aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    // When window bounds are changed, we need to update the header view so that
-    // the window mask layer bounds can be set correctly in function
-    // SetShouldPaintHeader(). Note: this can be removed if the layer mask in
-    // CustomFrameView becomes unnecessary.
-    // TODO(oshima): Investigate if we can eliminate this.
-    NonClientFrameViewAsh::UpdateHeaderView();
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -246,7 +232,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     // Use ash's resize handle detection logic if
     // a) ClientControlledShellSurface
     // b) xdg shell is using the server side decoration.
-    if (!ash::wm::GetWindowState(widget_->GetNativeWindow())
+    if (!ash::WindowState::Get(widget_->GetNativeWindow())
              ->allow_set_bounds_direct() &&
         !widget_->non_client_view()->frame_view()->GetVisible()) {
       return false;
@@ -286,13 +272,13 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 // A place holder to disable default implementation created by
 // ash::NonClientFrameViewAsh, which triggers immersive fullscreen etc, which
 // we don't need.
-class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate {
+class CustomWindowStateDelegate : public ash::WindowStateDelegate {
  public:
   CustomWindowStateDelegate() {}
   ~CustomWindowStateDelegate() override {}
 
-  // Overridden from ash::wm::WindowStateDelegate:
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  // Overridden from ash::WindowStateDelegate:
+  bool ToggleFullscreen(ash::WindowState* window_state) override {
     return false;
   }
 
@@ -546,7 +532,8 @@ void ShellSurfaceBase::OnSurfaceCommit() {
   if (shadow_bounds_changed_)
     host_window()->AllocateLocalSurfaceId();
 
-  SurfaceTreeHost::OnSurfaceCommit();
+  DCHECK(presentation_callbacks().empty());
+  root_surface()->CommitSurfaceHierarchy(false);
 
   if (!OnPreWidgetCommit())
     return;
@@ -773,7 +760,12 @@ gfx::Size ShellSurfaceBase::CalculatePreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return host_window()->bounds().size();
+  // The root surface's content bounds should be used instead of the host window
+  // bounds because the host window bounds are not updated until the widget is
+  // committed, meaning that if we need to calculate the preferred size before
+  // then (e.g. in OnPreWidgetCommit()), then we need to use the root surface's
+  // to ensure that we're using the correct bounds' size.
+  return root_surface()->surface_hierarchy_content_bounds().size();
 }
 
 gfx::Size ShellSurfaceBase::GetMinimumSize() const {
@@ -912,7 +904,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   InitializeWindowState(window_state);
 
   // AutoHide shelf in fullscreen state.
@@ -939,8 +931,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 }
 
 bool ShellSurfaceBase::IsResizing() const {
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  ash::WindowState* window_state =
+      ash::WindowState::Get(widget_->GetNativeWindow());
   if (!window_state->is_dragged())
     return false;
   return window_state->drag_details() &&
@@ -952,7 +944,7 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
   aura::Window* window = widget_->GetNativeWindow();
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   // Return early if the shell is currently managing the bounds of the widget.
   if (!window_state->allow_set_bounds_direct()) {
     // 1) When a window is either maximized/fullscreen/pinned.
@@ -983,11 +975,6 @@ void ShellSurfaceBase::UpdateSurfaceBounds() {
       root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
 
   host_window()->SetBounds(gfx::Rect(origin, host_window()->bounds().size()));
-  // The host window might have not been added to the widget yet.
-  if (host_window()->parent()) {
-    ui::SnapLayerToPhysicalPixelBoundary(widget_->GetNativeWindow()->layer(),
-                                         host_window()->layer());
-  }
 }
 
 void ShellSurfaceBase::UpdateShadow() {
@@ -1061,7 +1048,7 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
   aura::Window* window = widget_->GetNativeWindow();
   // ShellSurfaces always use immersive mode.
   window->SetProperty(ash::kImmersiveIsActive, true);
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   if (!frame_enabled() && !window_state->HasDelegate()) {
     window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
   }
@@ -1108,6 +1095,7 @@ void ShellSurfaceBase::CommitWidget() {
   }
 
   UpdateWidgetBounds();
+  SurfaceTreeHost::UpdateHostWindowBounds();
   UpdateShadow();
 
   // System modal container is used by clients to implement overlay

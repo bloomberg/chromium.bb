@@ -38,13 +38,12 @@ enum class CacheStorageOwner {
   kMaxValue = kBackgroundFetch
 };
 
-// Keeps track of a CacheStorage per origin. There is one
-// CacheStorageManager per ServiceWorkerContextCore.
+// Keeps track of a CacheStorage per origin. There is one CacheStorageManager
+// per CacheStorageOwner. Created and accessed from a single sequence.
 // TODO(jkarlin): Remove CacheStorage from memory once they're no
 // longer in active use.
 class CONTENT_EXPORT CacheStorageManager
-    : public base::RefCountedThreadSafe<CacheStorageManager,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCounted<CacheStorageManager> {
  public:
   // Open the CacheStorage for the given origin and owner.  A reference counting
   // handle is returned which can be stored and used similar to a weak pointer.
@@ -80,10 +79,9 @@ class CONTENT_EXPORT CacheStorageManager
   static bool IsValidQuotaOrigin(const url::Origin& origin);
 
  protected:
-  friend class base::DeleteHelper<CacheStorageManager>;
-  friend class base::RefCountedThreadSafe<CacheStorageManager>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class base::RefCounted<CacheStorageManager>;
 
+  CacheStorageManager() = default;
   virtual ~CacheStorageManager() = default;
 };
 

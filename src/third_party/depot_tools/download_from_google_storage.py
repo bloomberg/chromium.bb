@@ -169,7 +169,9 @@ def enumerate_input(input_filename, directory, recursive, ignore_errors, output,
   if sha1_file:
     if not os.path.exists(input_filename):
       if not ignore_errors:
-        raise FileNotFoundError('%s not found.' % input_filename)
+        raise FileNotFoundError(
+          '{} not found when attempting enumerate files to download.'.format(
+          input_filename))
       print('%s not found.' % input_filename, file=sys.stderr)
     with open(input_filename, 'rb') as f:
       sha1_match = re.match(b'^([A-Za-z0-9]{40})$', f.read(1024).rstrip())
@@ -603,11 +605,15 @@ def main(args):
 
   base_url = 'gs://%s' % options.bucket
 
-  return download_from_google_storage(
+  try:
+    return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
       options.sha1_file, options.verbose, options.auto_platform,
       options.extract)
+  except FileNotFoundError as e:
+    print("Fatal error: {}".format(e))
+    return 1
 
 
 if __name__ == '__main__':

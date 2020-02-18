@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/buildflags.h"
 #include "media/media_buildflags.h"
 
 class BackgroundModeManager;
@@ -28,7 +29,6 @@ class DownloadStatusUpdater;
 class GpuModeManager;
 class IconManager;
 class IntranetRedirectDetector;
-class IOThread;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
 class NotificationUIManager;
@@ -78,14 +78,6 @@ namespace metrics_services_manager {
 class MetricsServicesManager;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
-namespace net_log {
-class ChromeNetLog;
-}
-
 namespace network_time {
 class NetworkTimeTracker;
 }
@@ -129,9 +121,6 @@ class BrowserProcess {
   BrowserProcess();
   virtual ~BrowserProcess();
 
-  // Called when the ResourceDispatcherHost object is created by content.
-  virtual void ResourceDispatcherHostCreated() = 0;
-
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior
   // to normal shutdown and saves any state that must be saved before system
@@ -152,7 +141,6 @@ class BrowserProcess {
   virtual rappor::RapporServiceImpl* rappor_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
-  virtual net::URLRequestContextGetter* system_request_context() = 0;
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   shared_url_loader_factory() = 0;
   virtual variations::VariationsService* variations_service() = 0;
@@ -168,17 +156,7 @@ class BrowserProcess {
   virtual NotificationUIManager* notification_ui_manager() = 0;
   virtual NotificationPlatformBridge* notification_platform_bridge() = 0;
 
-  // Returns the state object for the thread that we perform I/O
-  // coordination on (network requests, communication with renderers,
-  // etc.
-  //
-  // Can be NULL close to startup and shutdown.
-  //
-  // NOTE: If you want to post a task to the IO thread, see
-  // browser_task_traits.h.
-  virtual IOThread* io_thread() = 0;
-
-  // Replacement for IOThread (And ChromeNetLog). It owns and manages the
+  // Replacement for IOThread. It owns and manages the
   // NetworkContext which will use the network service when the network service
   // is enabled. When the network service is not enabled, its NetworkContext is
   // backed by the IOThread's URLRequestContext.
@@ -269,12 +247,12 @@ class BrowserProcess {
   virtual void StartAutoupdateTimer() = 0;
 #endif
 
-  virtual net_log::ChromeNetLog* net_log() = 0;
-
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   virtual component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() = 0;
+#endif
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 

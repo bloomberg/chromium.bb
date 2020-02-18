@@ -491,6 +491,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   // doesn't contain any RTL characters.
   data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
   data->is_empty_inline_ = builder.IsEmptyInline();
+  data->is_block_level_ = builder.IsBlockLevel();
   data->changes_may_affect_earlier_lines_ =
       builder.ChangesMayAffectEarlierLines();
 }
@@ -889,13 +890,8 @@ void NGInlineNode::ClearAssociatedFragments(
   auto* block_flow = To<LayoutBlockFlow>(fragment.GetMutableLayoutObject());
   if (!block_flow->ChildrenInline())
     return;
+  DCHECK(AreNGBlockFlowChildrenInline(block_flow));
   NGInlineNode node = NGInlineNode(block_flow);
-#if DCHECK_IS_ON()
-  // We assume this function is called for the LayoutObject of an NGInlineNode.
-  NGLayoutInputNode first_child = NGBlockNode(block_flow).FirstChild();
-  DCHECK(first_child && first_child.IsInline());
-  DCHECK(first_child == node);
-#endif
 
   DCHECK(node.IsPrepareLayoutFinished());
   const Vector<NGInlineItem>& items = node.MaybeDirtyData().items;
@@ -924,9 +920,12 @@ void NGInlineNode::ClearAssociatedFragments(
   LayoutObject* last_object = nullptr;
   for (unsigned i = start_index; i < items.size(); i++) {
     const NGInlineItem& item = items[i];
-    if (item.Type() == NGInlineItem::kOutOfFlowPositioned ||
-        item.Type() == NGInlineItem::kListMarker)
+    if (item.Type() == NGInlineItem::kFloating ||
+        item.Type() == NGInlineItem::kOutOfFlowPositioned) {
+      // These items are not associated and that no need to clear.
+      DCHECK(!item.GetLayoutObject()->FirstInlineFragment());
       continue;
+    }
     LayoutObject* object = item.GetLayoutObject();
     if (!object || object == last_object)
       continue;
@@ -1191,7 +1190,8 @@ static LayoutUnit ComputeContentSize(
       is_after_break = true;
     }
 
-    void AddTabulationCharacters(const NGInlineItem& item) {
+    void AddTabulationCharacters(const NGInlineItem& item, unsigned length) {
+      DCHECK_GE(length, 1u);
       AddTextUntil(&item);
       DCHECK(item.Style());
       const ComputedStyle& style = *item.Style();
@@ -1199,7 +1199,6 @@ static LayoutUnit ComputeContentSize(
       const SimpleFontData* font_data = font.PrimaryFont();
       const TabSize& tab_size = style.GetTabSize();
       float advance = font.TabWidth(font_data, tab_size, position);
-      unsigned length = item.Length();
       DCHECK_GE(length, 1u);
       if (length > 1u)
         advance += font.TabWidth(font_data, tab_size) * (length - 1);
@@ -1242,7 +1241,7 @@ static LayoutUnit ComputeContentSize(
           // their widths for the max size may be different from the widths for
           // the min size. Fall back to 2 pass for now.
           if (c == kTabulationCharacter) {
-            AddTabulationCharacters(item);
+            AddTabulationCharacters(item, result.Length());
             continue;
           }
         }

@@ -10,8 +10,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
@@ -34,7 +37,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Field;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::WithArg;
 
 namespace chromeos {
@@ -43,7 +49,10 @@ namespace smb_client {
 namespace {
 
 const ProviderId kProviderId = ProviderId::CreateFromNativeId("smb");
-const char kTestDomain[] = "EXAMPLE.COM";
+constexpr char kTestUser[] = "foobar";
+constexpr char kTestDomain[] = "EXAMPLE.COM";
+constexpr char kSharePath[] = "\\\\server\\foobar";
+constexpr char kMountPath[] = "smb://server/foobar";
 
 void SaveMountResult(SmbMountResult* out, SmbMountResult result) {
   *out = result;
@@ -54,13 +63,10 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
   MockSmbProviderClient()
       : FakeSmbProviderClient(true /* should_run_synchronously */) {}
 
-  MOCK_METHOD7(Mount,
+  MOCK_METHOD4(Mount,
                void(const base::FilePath& share_path,
-                    bool ntlm_enabled,
-                    const std::string& workgroup,
-                    const std::string& username,
+                    const MountOptions& options,
                     base::ScopedFD password_fd,
-                    bool skip_connect,
                     SmbProviderClient::MountCallback callback));
   MOCK_METHOD2(SetupKerberos,
                void(const std::string& account_id,
@@ -125,6 +131,7 @@ class SmbServiceTest : public testing::Test {
                             "" /* username */, "" /* password */,
                             false /* use_chromad_kerberos */,
                             false /* should_open_file_manager_after_mount */,
+                            false /* save_credentials */,
                             base::BindOnce(&SaveMountResult, &result));
     EXPECT_EQ(result, SmbMountResult::INVALID_URL);
   }
@@ -135,8 +142,32 @@ class SmbServiceTest : public testing::Test {
                             "" /* username */, "" /* password */,
                             true /* use_chromad_kerberos */,
                             false /* should_open_file_manager_after_mount */,
+                            false /* save_credentials */,
                             base::BindOnce(&SaveMountResult, &result));
     EXPECT_EQ(result, SmbMountResult::INVALID_SSO_URL);
+  }
+
+  void WaitForSetupComplete() {
+    {
+      base::RunLoop run_loop;
+      smb_service_->OnSetupCompleteForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    {
+      // Share gathering needs to complete at least once before a share can be
+      // mounted.
+      base::RunLoop run_loop;
+      smb_service_->GatherSharesInNetwork(
+          base::DoNothing(),
+          base::BindLambdaForTesting(
+              [&run_loop](const std::vector<SmbUrl>& shares_gathered,
+                          bool done) {
+                if (done) {
+                  run_loop.Quit();
+                }
+              }));
+      run_loop.Run();
+    }
   }
 
   content::TestBrowserThreadBundle
@@ -180,10 +211,97 @@ TEST_F(SmbServiceTest, InvalidSsoUrls) {
   ExpectInvalidSsoUrl("smb://[::1]/foo");
 }
 
-TEST_F(SmbServiceTest, Remount) {
-  const char* kSharePath = "\\\\server\\foobar";
-  const char* kRemountPath = "smb://server/foobar";
+TEST_F(SmbServiceTest, Mount) {
+  CreateFspRegistry(profile_);
+  CreateService(profile_);
+  WaitForSetupComplete();
 
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
+                Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                Field(&SmbProviderClient::MountOptions::ntlm_enabled, true),
+                Field(&SmbProviderClient::MountOptions::skip_connect, false),
+                Field(&SmbProviderClient::MountOptions::save_password, false)),
+          _, _))
+      .WillOnce(
+          WithArg<3>(Invoke([](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+          })));
+
+  smb_service_->Mount(
+      {}, base::FilePath(kSharePath), kTestUser, "password",
+      false /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      false /* save_credentials */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::SUCCESS, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // If |save_credentials| is false, then the username should not be saved in
+  // the file system id.
+  const std::string file_system_id =
+      registry_->file_system_info()->file_system_id();
+  EXPECT_FALSE(IsKerberosChromadFileSystemId(file_system_id));
+  EXPECT_FALSE(GetUserFromFileSystemId(file_system_id));
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+TEST_F(SmbServiceTest, MountSaveCredentials) {
+  CreateFspRegistry(profile_);
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
+                Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                Field(&SmbProviderClient::MountOptions::ntlm_enabled, true),
+                Field(&SmbProviderClient::MountOptions::skip_connect, false),
+                Field(&SmbProviderClient::MountOptions::save_password, true),
+                Field(&SmbProviderClient::MountOptions::account_hash, Ne(""))),
+          _, _))
+      .WillOnce(
+          WithArg<3>(Invoke([](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+          })));
+
+  smb_service_->Mount(
+      {}, base::FilePath(kSharePath), kTestUser, "password",
+      false /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      true /* save_credentials */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::SUCCESS, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  const std::string file_system_id =
+      registry_->file_system_info()->file_system_id();
+  EXPECT_FALSE(IsKerberosChromadFileSystemId(file_system_id));
+  base::Optional<std::string> saved_user =
+      GetUserFromFileSystemId(file_system_id);
+  ASSERT_TRUE(saved_user);
+  EXPECT_EQ(*saved_user, kTestUser);
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+TEST_F(SmbServiceTest, Remount) {
   file_system_provider::MountOptions mount_options(
       CreateFileSystemId(base::FilePath(kSharePath),
                          false /* is_kerberos_chromad */),
@@ -196,9 +314,14 @@ TEST_F(SmbServiceTest, Remount) {
   registry_->RememberFileSystem(file_system_info, {});
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kRemountPath), _, "", "", _,
-                                   true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kMountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::skip_connect, true),
+                  Field(&SmbProviderClient::MountOptions::restore_password,
+                        false)),
+            _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
@@ -213,9 +336,6 @@ TEST_F(SmbServiceTest, Remount) {
 }
 
 TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
-  const char* kSharePath = "\\\\krbserver\\foobar";
-  const char* kRemountPath = "smb://krbserver/foobar";
-
   file_system_provider::MountOptions mount_options(
       CreateFileSystemId(base::FilePath(kSharePath),
                          true /* is_kerberos_chromad */),
@@ -235,16 +355,97 @@ TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, base::BindOnce(std::move(callback), true));
           })));
-  EXPECT_CALL(*mock_client_,
-              Mount(base::FilePath(kRemountPath), _, kTestDomain,
-                    "ad-test-user", _, true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(
+              Field(&SmbProviderClient::MountOptions::username, "ad-test-user"),
+              Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
+              Field(&SmbProviderClient::MountOptions::skip_connect, true),
+              Field(&SmbProviderClient::MountOptions::restore_password, false)),
+          _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();
           })));
 
   CreateService(ad_profile_);
+  run_loop.Run();
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+TEST_F(SmbServiceTest, Remount_SavedUser) {
+  file_system_provider::MountOptions mount_options(
+      CreateFileSystemIdForUser(base::FilePath(kSharePath),
+                                base::StrCat({kTestUser, "@", kTestDomain})),
+      "Foo");
+  ProvidedFileSystemInfo file_system_info(
+      kProviderId, mount_options, base::FilePath(kSharePath),
+      false /* configurable */, false /* watchable */,
+      extensions::SOURCE_NETWORK, chromeos::file_system_provider::IconSet());
+  CreateFspRegistry(profile_);
+  registry_->RememberFileSystem(file_system_info, {});
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(
+          base::FilePath(kMountPath),
+          AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
+                Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
+                Field(&SmbProviderClient::MountOptions::skip_connect, true),
+                Field(&SmbProviderClient::MountOptions::restore_password, true),
+                Field(&SmbProviderClient::MountOptions::account_hash, Ne(""))),
+          _, _))
+      .WillOnce(WithArg<3>(
+          Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+            run_loop.Quit();
+          })));
+
+  CreateService(profile_);
+  run_loop.Run();
+
+  // Because the mock is potentially leaked, expectations needs to be manually
+  // verified.
+  EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+TEST_F(SmbServiceTest, Remount_SavedInvalidUser) {
+  file_system_provider::MountOptions mount_options(
+      CreateFileSystemIdForUser(
+          base::FilePath(kSharePath),
+          base::StrCat({kTestUser, "@", kTestDomain, "@", kTestDomain})),
+      "Foo");
+  ProvidedFileSystemInfo file_system_info(
+      kProviderId, mount_options, base::FilePath(kSharePath),
+      false /* configurable */, false /* watchable */,
+      extensions::SOURCE_NETWORK, chromeos::file_system_provider::IconSet());
+  CreateFspRegistry(profile_);
+  registry_->RememberFileSystem(file_system_info, {});
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kMountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::username, ""),
+                  Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                  Field(&SmbProviderClient::MountOptions::skip_connect, true),
+                  Field(&SmbProviderClient::MountOptions::restore_password,
+                        false)),
+            _, _))
+      .WillOnce(WithArg<3>(
+          Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
+            std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
+            run_loop.Quit();
+          })));
+
+  CreateService(profile_);
   run_loop.Run();
 
   // Because the mock is potentially leaked, expectations needs to be manually
@@ -262,9 +463,14 @@ TEST_F(SmbServiceTest, Premount) {
                             *parsed_shares);
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*mock_client_, Mount(base::FilePath(kPremountPath), _, "", "", _,
-                                   true /* skip_connect */, _))
-      .WillOnce(WithArg<6>(
+  EXPECT_CALL(
+      *mock_client_,
+      Mount(base::FilePath(kPremountPath),
+            AllOf(Field(&SmbProviderClient::MountOptions::username, ""),
+                  Field(&SmbProviderClient::MountOptions::workgroup, ""),
+                  Field(&SmbProviderClient::MountOptions::skip_connect, true)),
+            _, _))
+      .WillOnce(WithArg<3>(
           Invoke([&run_loop](SmbProviderClient::MountCallback callback) {
             std::move(callback).Run(smbprovider::ErrorType::ERROR_OK, 7);
             run_loop.Quit();

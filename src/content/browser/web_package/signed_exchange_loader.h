@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
@@ -57,7 +58,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // redirect to the fallback URL.
   SignedExchangeLoader(
       const network::ResourceRequest& outer_request,
-      const network::ResourceResponseHead& outer_response,
+      const network::ResourceResponseHead& outer_response_head,
+      mojo::ScopedDataPipeConsumerHandle outer_response_body,
       network::mojom::URLLoaderClientPtr forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       uint32_t url_loader_options,
@@ -111,6 +113,11 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // |forwarding_client| is called. Otherwise returns nullopt.
   base::Optional<net::SHA256HashValue> ComputeHeaderIntegrity() const;
 
+  // Returns the signature expire time of the loaded signed exchange if
+  // available. This is available after OnReceiveRedirect() of
+  // |forwarding_client| is called. Otherwise returns a null Time.
+  base::Time GetSignatureExpireTime() const;
+
   // Set nullptr to reset the mocking.
   static void SetSignedExchangeHandlerFactoryForTest(
       SignedExchangeHandlerFactory* factory);
@@ -133,7 +140,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const network::ResourceRequest outer_request_;
 
   // The outer response of signed HTTP exchange which was received from network.
-  const network::ResourceResponseHead outer_response_;
+  const network::ResourceResponseHead outer_response_head_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
   network::mojom::URLLoaderClientPtr forwarding_client_;
@@ -185,7 +192,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
 
   std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 
-  base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoader);
 };

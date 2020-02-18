@@ -26,6 +26,10 @@
 
 #include "third_party/blink/renderer/platform/graphics/image.h"
 
+#include <math.h>
+
+#include <tuple>
+
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "cc/tiles/software_image_decode_cache.h"
@@ -42,18 +46,15 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
-
-#include <math.h>
-#include <tuple>
 
 namespace blink {
 
@@ -373,7 +374,7 @@ bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
   // Check if the image has already been classified.
   DarkModeClassification result = GetDarkModeClassification(src_rect);
   if (result != DarkModeClassification::kNotClassified)
-    return result == DarkModeClassification::kApplyDarkModeFilter;
+    return result == DarkModeClassification::kApplyFilter;
 
   result = ClassifyImageForDarkMode(src_rect);
 
@@ -382,7 +383,7 @@ bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
   if (ShouldCacheDarkModeClassification())
     AddDarkModeClassification(src_rect, result);
 
-  return result == DarkModeClassification::kApplyDarkModeFilter;
+  return result == DarkModeClassification::kApplyFilter;
 }
 
 }  // namespace blink

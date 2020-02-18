@@ -69,6 +69,7 @@ void BaseRenderingContext2D::RealizeSaves() {
 
 void BaseRenderingContext2D::save() {
   state_stack_.back()->Save();
+  ValidateStateStack();
 }
 
 void BaseRenderingContext2D::restore() {
@@ -124,6 +125,7 @@ void BaseRenderingContext2D::UnwindStateStack() {
         sk_canvas->restore();
     }
   }
+  ValidateStateStack();
 }
 
 void BaseRenderingContext2D::Reset() {
@@ -235,8 +237,6 @@ void BaseRenderingContext2D::setFillStyle(
     if (!origin_tainted_by_content_ && !canvas_pattern->OriginClean()) {
       SetOriginTaintedByContent();
     }
-    if (canvas_pattern->GetPattern()->IsTextureBacked())
-      DisableDeferral(kDisableDeferralReasonUsingTextureBackedPattern);
     canvas_style = CanvasStyle::CreateFromPattern(canvas_pattern);
   }
 
@@ -705,6 +705,15 @@ void BaseRenderingContext2D::fillRect(double x,
   float fwidth = clampTo<float>(width);
   float fheight = clampTo<float>(height);
 
+  // We are assuming that if the pattern is not accelerated and the current
+  // canvas is accelerated, the texture of the pattern will not be able to be
+  // moved to the texture of the canvas receiving the pattern (because if the
+  // pattern was unaccelerated is because it was not possible to hold that image
+  // in an accelerated texture - that is, into the GPU). That's why we disable
+  // the acceleration to be sure that it will work.
+  if (IsAccelerated() && GetState().HasPattern() &&
+      !GetState().PatternIsAccelerated())
+    DisableAcceleration();
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },
@@ -1125,28 +1134,9 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
         c,
         IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())),
         &image_flags);
-  }
+  };
 
   c->restoreToCount(initial_save_count);
-}
-
-bool ShouldDisableDeferral(CanvasImageSource* image_source,
-                           DisableDeferralReason* reason) {
-  DCHECK(reason);
-  DCHECK_EQ(*reason, kDisableDeferralReasonUnknown);
-
-  if (image_source->IsVideoElement()) {
-    *reason = kDisableDeferralReasonDrawImageOfVideo;
-    return true;
-  }
-  if (image_source->IsCanvasElement()) {
-    HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(image_source);
-    if (canvas->IsAnimated2d()) {
-      *reason = kDisableDeferralReasonDrawImageOfAnimated2dCanvas;
-      return true;
-    }
-  }
-  return false;
 }
 
 void BaseRenderingContext2D::SetOriginTaintedByContent() {
@@ -1218,12 +1208,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   if (src_rect.IsEmpty())
     return;
-
-  DisableDeferralReason reason = kDisableDeferralReasonUnknown;
-  if (ShouldDisableDeferral(image_source, &reason))
-    DisableDeferral(reason);
-  else if (image->IsTextureBacked())
-    DisableDeferral(kDisableDeferralDrawImageWithTextureBackedSourceImage);
 
   ValidateStateStack();
 
@@ -1313,8 +1297,11 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
       duration_histogram_name.append(".CPU");
     }
 
-    base::TimeDelta elapsed = TimeTicks::Now() - start_time;
-    base::UmaHistogramMicrosecondsTimes(duration_histogram_name, elapsed);
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+
+    // TODO(crbug.com/983261) Change this to use UmaHistogramMicrosecondsTimes.
+    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+        duration_histogram_name, elapsed);
 
     float sqrt_pixels_float =
         std::sqrt(dst_rect.Width()) * std::sqrt(dst_rect.Height());

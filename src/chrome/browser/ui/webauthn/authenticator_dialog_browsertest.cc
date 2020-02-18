@@ -58,6 +58,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "key_already_registered") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kKeyAlreadyRegistered);
+    } else if (name == "internal_unrecognized_error") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorInternalUnrecognized);
     } else if (name == "ble_power_on_manual") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
@@ -75,7 +78,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           "test_authenticator_id" /* authenticator_id */,
           base::string16() /* authenticator_display_name */,
           AuthenticatorTransport::kInternal, false /* is_in_pairing_mode */,
-          false /* is_paired */));
+          false /* is_paired */, true /* requires_ble_pairing_pin */));
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePinEntry);
     } else if (name == "ble_verifying") {
@@ -149,6 +152,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           base::Bind([](device::AuthenticatorGetAssertionResponse) {}));
     } else if (name == "request_attestation_permission") {
       model->RequestAttestationPermission(base::DoNothing());
+    } else if (name == "qr_code") {
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kQRCode);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -189,6 +194,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_key_not_registered) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_key_already_registered) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_internal_unrecognized_error) {
   ShowAndVerifyUi();
 }
 
@@ -289,5 +299,9 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_account_select) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_request_attestation_permission) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_qr_code) {
   ShowAndVerifyUi();
 }

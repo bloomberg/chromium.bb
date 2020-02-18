@@ -36,6 +36,13 @@ namespace net {
 
 namespace {
 
+// Very conservative iteration count limit.
+// TODO(https://crbug.com/634470): Make this smaller.
+constexpr uint32_t kPathBuilderIterationLimit = 25000;
+
+constexpr base::TimeDelta kMaxVerificationTime =
+    base::TimeDelta::FromSeconds(60);
+
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
 RevocationPolicy NoRevocationChecking() {
@@ -258,7 +265,9 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
 class CertVerifyProcBuiltin : public CertVerifyProc {
  public:
-  explicit CertVerifyProcBuiltin(scoped_refptr<CertNetFetcher> net_fetcher);
+  CertVerifyProcBuiltin(
+      scoped_refptr<CertNetFetcher> net_fetcher,
+      std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider);
 
   bool SupportsAdditionalTrustAnchors() const override;
 
@@ -276,11 +285,14 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
                      CertVerifyResult* verify_result) override;
 
   scoped_refptr<CertNetFetcher> net_fetcher_;
+  std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider_;
 };
 
 CertVerifyProcBuiltin::CertVerifyProcBuiltin(
-    scoped_refptr<CertNetFetcher> net_fetcher)
-    : net_fetcher_(std::move(net_fetcher)) {}
+    scoped_refptr<CertNetFetcher> net_fetcher,
+    std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider)
+    : net_fetcher_(std::move(net_fetcher)),
+      system_trust_store_provider_(std::move(system_trust_store_provider)) {}
 
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
@@ -413,6 +425,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
                   CertIssuerSourceStatic* intermediates,
                   SystemTrustStore* ssl_trust_store,
                   base::Time verification_time,
+                  base::TimeTicks deadline,
                   VerificationType verification_type,
                   SimplePathBuilderDelegate::DigestPolicy digest_policy,
                   int flags,
@@ -464,6 +477,9 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   } else {
     LOG(ERROR) << "No net_fetcher for performing AIA chasing.";
   }
+
+  path_builder.SetIterationLimit(kPathBuilderIterationLimit);
+  path_builder.SetDeadline(deadline);
 
   path_builder.Run();
 }
@@ -573,6 +589,7 @@ int CertVerifyProcBuiltin::VerifyInternal(
   // VerifyInternal() is expected to carry out verifications using the current
   // time stamp.
   base::Time verification_time = base::Time::Now();
+  base::TimeTicks deadline = base::TimeTicks::Now() + kMaxVerificationTime;
 
   // Parse the target certificate.
   scoped_refptr<ParsedCertificate> target =
@@ -589,7 +606,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
   // Parse the additional trust anchors and setup trust store.
   std::unique_ptr<SystemTrustStore> ssl_trust_store =
-      CreateSslSystemTrustStore();
+      system_trust_store_provider_
+          ? system_trust_store_provider_->CreateSystemTrustStore()
+          : CreateSslSystemTrustStore();
 
   for (const auto& x509_cert : additional_trust_anchors) {
     scoped_refptr<ParsedCertificate> cert =
@@ -634,12 +653,12 @@ int CertVerifyProcBuiltin::VerifyInternal(
 
     // Run the attempt through the path builder.
     TryBuildPath(target, &intermediates, ssl_trust_store.get(),
-                 verification_time, cur_attempt.verification_type,
+                 verification_time, deadline, cur_attempt.verification_type,
                  cur_attempt.digest_policy, flags, ocsp_response, crl_set,
                  net_fetcher_.get(), ev_metadata, &result,
                  &checked_revocation_for_some_path);
 
-    if (result.HasValidPath())
+    if (result.HasValidPath() || result.exceeded_deadline)
       break;
 
     // If this path building attempt (may have) failed due to the chain using a
@@ -676,8 +695,10 @@ int CertVerifyProcBuiltin::VerifyInternal(
 }  // namespace
 
 scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
-    scoped_refptr<CertNetFetcher> net_fetcher) {
-  return base::MakeRefCounted<CertVerifyProcBuiltin>(std::move(net_fetcher));
+    scoped_refptr<CertNetFetcher> net_fetcher,
+    std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider) {
+  return base::MakeRefCounted<CertVerifyProcBuiltin>(
+      std::move(net_fetcher), std::move(system_trust_store_provider));
 }
 
 }  // namespace net

@@ -6,7 +6,9 @@ use Test::Builder;
 use Sub::Uplevel qw( uplevel );
 use base qw( Exporter );
 
-our $VERSION = '0.31';
+our $VERSION = '0.43';
+$VERSION = eval $VERSION;
+
 our @EXPORT = qw(dies_ok lives_ok throws_ok lives_and);
 
 my $Tester = Test::Builder->new;
@@ -23,7 +25,7 @@ sub import {
 
 =head1 NAME
 
-Test::Exception - Test exception based code
+Test::Exception - Test exception-based code
 
 =head1 SYNOPSIS
 
@@ -79,6 +81,11 @@ See L<Test::More> for details.
 NOTE: Test::Exception only checks for exceptions. It will ignore other methods of stopping 
 program execution - including exit(). If you have an exit() in evalled code Test::Exception
 will not catch this with any of its testing functions.
+
+NOTE: This module uses L<Sub::Uplevel> and relies on overriding
+C<CORE::GLOBAL::caller> to hide your test blocks from the call stack.  If this
+use of global overrides concerns you, the L<Test::Fatal> module offers a more
+minimalist alternative.
 
 =cut
 
@@ -198,7 +205,7 @@ A true value is returned if the test succeeds, false otherwise. On exit $@ is gu
 
 A description of the exception being checked is used if no optional test description is passed.
 
-NOTE: Rememeber when you C<die $string_without_a_trailing_newline> perl will 
+NOTE: Remember when you C<die $string_without_a_trailing_newline> perl will 
 automatically add the current script line number, input line number and a newline. This will
 form part of the string that throws_ok regular expressions match against.
 
@@ -209,11 +216,11 @@ form part of the string that throws_ok regular expressions match against.
 sub throws_ok (&$;$) {
     my ( $coderef, $expecting, $description ) = @_;
     unless (defined $expecting) {
-      require Carp;
-      Carp::croak( "throws_ok: must pass exception class/object or regex" ); 
+        require Carp;
+        Carp::croak( "throws_ok: must pass exception class/object or regex" ); 
     }
     $description = _exception_as_string( "threw", $expecting )
-    	unless defined $description;
+        unless defined $description;
     my $exception = _try_as_caller( $coderef );
     my $regex = $Tester->maybe_regex( $expecting );
     my $ok = $regex 
@@ -296,7 +303,7 @@ sub lives_ok (&;$) {
     my ( $coderef, $description ) = @_;
     my $exception = _try_as_caller( $coderef );
     my $ok = $Tester->ok( ! _is_exception( $exception ), $description );
-	$Tester->diag( _exception_as_string( "died:", $exception ) ) unless $ok;
+    $Tester->diag( _exception_as_string( "died:", $exception ) ) unless $ok;
     $@ = $exception;
     return $ok;
 }
@@ -335,10 +342,10 @@ The test description is optional, but recommended.
 sub lives_and (&;$) {
     my ( $test, $description ) = @_;
     {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
         my $ok = \&Test::Builder::ok;
         no warnings;
         local *Test::Builder::ok = sub {
+            local $Test::Builder::Level = $Test::Builder::Level + 1;
             $_[2] = $description unless defined $_[2];
             $ok->(@_);
         };
@@ -470,7 +477,11 @@ If you can spare the time, please drop me a line if you find this module useful.
 
 Delicious links on Test::Exception.
 
-=item L<Test::Warn> & L<Test::NoWarnings>
+=item L<Test::Fatal>
+
+A slightly different interface to testing exceptions, without overriding C<CORE::caller>.
+
+=item L<Test::Warnings> & L<Test::Warn> & L<Test::NoWarnings>
 
 Modules to help test warnings.
 

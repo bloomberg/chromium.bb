@@ -22,7 +22,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       : mapped_(false),
         format_(format),
         size_(size),
-        num_planes_(gfx::NumberOfPlanesForBufferFormat(format)),
+        num_planes_(gfx::NumberOfPlanesForLinearBufferFormat(format)),
         id_(g_next_gpu_memory_buffer_id++) {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
            gfx::BufferFormat::RG_88 == format_ ||
@@ -121,11 +121,6 @@ MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
   if (shared_memory->CreateAndMapAnonymous(size))
     return shared_memory;
   return nullptr;
-}
-
-std::unique_ptr<VideoDecodeAccelerator>
-MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
-  return base::WrapUnique(DoCreateVideoDecodeAccelerator());
 }
 
 std::unique_ptr<VideoEncodeAccelerator>

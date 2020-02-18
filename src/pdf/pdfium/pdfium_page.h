@@ -99,6 +99,13 @@ class PDFiumPage {
   // Gets the number of characters in the page.
   int GetCharCount();
 
+  // Given a rectangle in page coordinates, computes the range of continuous
+  // characters which lie inside that rectangle. Returns false without
+  // modifying the out parameters if no character lies inside the rectangle.
+  bool GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
+                                     int* start_index,
+                                     uint32_t* char_len);
+
   // Converts from page coordinates to screen coordinates.
   pp::Rect PageToScreen(const pp::Point& offset,
                         double zoom,
@@ -111,7 +118,7 @@ class PDFiumPage {
   const PDFEngine::PageFeatures* GetPageFeatures();
 
   int index() const { return index_; }
-  pp::Rect rect() const { return rect_; }
+  const pp::Rect& rect() const { return rect_; }
   void set_rect(const pp::Rect& r) { rect_ = r; }
   bool available() const { return available_; }
   void set_available(bool available) { available_ = available; }

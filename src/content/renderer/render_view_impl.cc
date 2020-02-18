@@ -22,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/single_thread_task_runner.h"
@@ -120,6 +119,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -188,8 +188,6 @@
 #endif
 
 using blink::WebAXObject;
-using blink::WebApplicationCacheHost;
-using blink::WebApplicationCacheHostClient;
 using blink::WebConsoleMessage;
 using blink::WebData;
 using blink::WebDocument;
@@ -465,8 +463,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
-      session_storage_namespace_id_(params.session_storage_namespace_id),
-      weak_ptr_factory_(this) {
+      session_storage_namespace_id_(params.session_storage_namespace_id) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
   // Please put all logic in RenderViewImpl::Initialize().
@@ -790,6 +787,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   if (prefs.spatial_navigation_enabled)
     WebRuntimeFeatures::EnableKeyboardFocusableScrollers(true);
 
+  settings->SetCaretBrowsingEnabled(prefs.caret_browsing_enabled);
+
   settings->SetSelectionIncludesAltImageText(true);
 
   settings->SetV8CacheOptions(
@@ -814,6 +813,12 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetTextTrackFontVariant(
       WebString::FromASCII(prefs.text_track_font_variant));
   settings->SetTextTrackMarginPercentage(prefs.text_track_margin_percentage);
+  settings->SetTextTrackWindowColor(
+      WebString::FromASCII(prefs.text_track_window_color));
+  settings->SetTextTrackWindowPadding(
+      WebString::FromASCII(prefs.text_track_window_padding));
+  settings->SetTextTrackWindowRadius(
+      WebString::FromASCII(prefs.text_track_window_radius));
 
   // Needs to happen before SetDefaultPageScaleLimits below since that'll
   // recalculate the final page scale limits and that depends on this setting.
@@ -936,6 +941,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
   settings->SetPreferredColorScheme(prefs.preferred_color_scheme);
+  settings->SetForcedColors(prefs.forced_colors);
 
   for (const auto& ect_distance_pair :
        prefs.lazy_frame_loading_distance_thresholds_px) {
@@ -1292,7 +1298,11 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
     IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdatePageVisualProperties,
+                        OnUpdatePageVisualProperties)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
+    IPC_MESSAGE_HANDLER(PageMsg_UpdateTextAutosizerPageInfoForRemoteMainFrames,
+                        OnTextAutosizerPageInfoChanged)
 
     // Adding a new message? Add platform independent ones first, then put the
     // platform specific ones at the end.
@@ -1545,16 +1555,6 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
-  UMA_HISTOGRAM_BOOLEAN("PrintPreview.InitiatedByScript",
-                        frame->Top() == frame);
-
-  // Logging whether the top frame is remote is sufficient in this case. If
-  // the top frame is local, the printing code will function correctly and
-  // the frame itself will be printed, so the cases this histogram tracks is
-  // where printing of a subframe will fail as of now.
-  UMA_HISTOGRAM_BOOLEAN("PrintPreview.OutOfProcessSubframe",
-                        frame->Top()->IsWebRemoteFrame());
-
   RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
       GetWidget()->input_handler().handling_input_event());
 }
@@ -1850,14 +1850,16 @@ blink::WebString RenderViewImpl::AcceptLanguages() {
 // RenderView implementation ---------------------------------------------------
 
 bool RenderViewImpl::Send(IPC::Message* message) {
-  // This method is an override of IPC::Sender, but RenderWidget also has an
-  // override of IPC::Sender, so this method also overrides RenderWidget. Thus
-  // we must call to the base class, not via an upcast or virtual dispatch would
-  // go back here.
-  CHECK(message->routing_id() != MSG_ROUTING_NONE);
+  // No messages sent through RenderView come without a routing id, yay. Let's
+  // keep that up.
+  CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
 
-  // TODO(ajwong): Don't delegate to render widget. Filter here.
-  return GetWidget()->Send(message);
+  // Don't send any messages after the browser has told us to close.
+  if (GetWidget()->is_closing()) {
+    delete message;
+    return false;
+  }
+  return RenderThread::Get()->Send(message);
 }
 
 RenderWidget* RenderViewImpl::GetWidget() {
@@ -2037,9 +2039,62 @@ void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
     GetWidget()->set_screen_info(screen_info);
 }
 
+void RenderViewImpl::OnUpdatePageVisualProperties(
+    const gfx::Size& viewport_size) {
+  // Using this pathway to update the visual viewport should only happen for
+  // remote main frames. Local main frames will update the viewport size by
+  // RenderWidget calling RenderViewImpl::ResizeVisualViewport() directly.
+  if (!main_render_frame_) {
+    // Since the viewport size comes directly from the browser, we may
+    // need to adjust it for device scale factor.
+    // TODO(wjmaclean): we should look into having the browser apply this scale
+    // before sending the viewport size.
+    gfx::Size device_scale_factor_scaled_visual_viewport_size = viewport_size;
+    if (RenderThreadImpl::current()->IsUseZoomForDSFEnabled()) {
+      device_scale_factor_scaled_visual_viewport_size = gfx::ScaleToCeiledSize(
+          viewport_size, GetScreenInfo().device_scale_factor);
+    }
+    // TODO(wjmaclean): At present this makes use of the WebWidget part of
+    // WebViewImpl in order to be able to re-size the view
+    // without having to plumb through the browser-controls state. When
+    // WebViewImpl is no longer a WebWidget, then we'll need to plumb these
+    // values as well. At that time, presumably WebViewImpl::Resize() will
+    // also have migrated to the WebView API. https://crbug.com/419087
+    // Note: If WebViewImpl stops having any widget association when the
+    // main frame is remote, then this should be replaced with a direct call to
+    // webview()->ResizeVisualViewport().
+    webview()->MainFrameWidget()->Resize(
+        device_scale_factor_scaled_visual_viewport_size);
+  }
+}
+
+void RenderViewImpl::ResizeVisualViewportForWidget(
+    const gfx::Size& scaled_viewport_size) {
+  // This function is currently only called for local main frames. Once remote
+  // main frames no longer have a RenderWidget, they may also route through
+  // here via RenderViewImpl::OnUpdatePageVisualProperties(). In that case,
+  // WebViewImpl will need to implement its Size() function based on something
+  // other than the widget size.
+  webview()->ResizeVisualViewport(scaled_viewport_size);
+}
+
 void RenderViewImpl::SetPageFrozen(bool frozen) {
   if (webview())
     webview()->SetPageFrozen(frozen);
+}
+
+// This function receives TextAutosizerPageInfo from the main frame's renderer
+// and makes it available to other renderers with frames on the same page.
+void RenderViewImpl::OnTextAutosizerPageInfoChanged(
+    const blink::WebTextAutosizerPageInfo& page_info) {
+  // Only propagate the remote page info if our main frame is remote. It's
+  // possible a main frame renderer may receive this message, as SendPageMessage
+  // in RenderFrameHostManager may send to a speculative RenderFrameHost that
+  // corresponds to a local main frame. Since a local main frame will generate
+  // these values for itself, we shouldn't override them with values from
+  // another renderer.
+  if (!webview()->MainFrame()->IsWebLocalFrame())
+    webview()->SetTextAutosizePageInfo(page_info);
 }
 
 void RenderViewImpl::SetFocus(bool enable) {
@@ -2067,6 +2122,13 @@ void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {
 
   Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
                                               page_scale_factor));
+}
+
+void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
+    const blink::WebTextAutosizerPageInfo& page_info) {
+  DCHECK(webview()->MainFrame()->IsWebLocalFrame());
+  Send(new ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame(
+      GetRoutingID(), page_info));
 }
 
 void RenderViewImpl::PageImportanceSignalsChanged() {

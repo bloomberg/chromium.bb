@@ -14,33 +14,39 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 class GoogleServiceAuthError;
+class PrefChangeRegistrar;
+class PrefService;
 
 namespace base {
 class OneShotTimer;
 }  // namespace base
 
 namespace network {
-class NetworkConnectionTracker;
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
 
@@ -53,6 +59,11 @@ namespace assistant {
 
 class AssistantManagerService;
 
+// |AssistantManagerService|'s state won't update if it's currently in the
+// process of starting up. This is the delay before we will try to update
+// |AssistantManagerService| again.
+constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
+
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
     : public service_manager::Service,
       public chromeos::PowerManagerClient::Observer,
@@ -61,7 +72,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public ash::DefaultVoiceInteractionObserver {
  public:
   Service(service_manager::mojom::ServiceRequest request,
-          network::NetworkConnectionTracker* network_connection_tracker,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
               url_loader_factory_info);
   ~Service() override;
@@ -107,18 +117,19 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void SetIdentityAccessorForTesting(
       identity::mojom::IdentityAccessorPtr identity_accessor);
 
-  void SetAssistantManagerForTesting(
-      std::unique_ptr<AssistantManagerService> assistant_manager_service);
-
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
+  void SetPrefConnectionDelegateForTesting(
+      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
+
  private:
-  friend class ServiceTest;
+  friend class AssistantServiceTest;
+
   // service_manager::Service overrides
   void OnStart() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void OnConnect(const service_manager::BindSourceInfo& source_info,
+                 const std::string& interface_name,
+                 mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindAssistantConnection(mojom::AssistantRequest request);
   void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
 
@@ -130,10 +141,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
+  // Called when the hotword always on status is changed from the pref service.
+  void OnAssistantHotwordAlwaysOn();
+
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
@@ -144,12 +157,17 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // mojom::AssistantPlatform overrides:
   void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions) override;
+            mojom::DeviceActionsPtr device_actions,
+            bool is_test) override;
+
+  void OnPrefServiceConnected(std::unique_ptr<::PrefService> pref_service);
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   void GetPrimaryAccountInfoCallback(
-      const base::Optional<CoreAccountInfo>& account_info,
+      const base::Optional<CoreAccountId>& account_id,
+      const base::Optional<std::string>& gaia,
+      const base::Optional<std::string>& email,
       const identity::AccountState& account_state);
 
   void GetAccessTokenCallback(const base::Optional<std::string>& token,
@@ -187,6 +205,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_;
 
+  // Whether running inside a test environment.
+  bool is_test_ = false;
   // Whether the current user session is active.
   bool session_active_ = false;
   // Whether the lock screen is on.
@@ -208,9 +228,19 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;
 
-  network::NetworkConnectionTracker* network_connection_tracker_;
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+
+  std::unique_ptr<PrefService> pref_service_;
+
+  std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
+
+  // Observes user profile prefs for the Assistant.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  base::CancelableOnceClosure update_assistant_manager_callback_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

@@ -27,7 +27,7 @@ namespace {
 
 // Only expect precision up to 1 microsecond with an additional epsilon to
 // account for float conversion error (mainly due to timeline time getting
-// converted between float and TimeDelta).
+// converted between float and base::TimeDelta).
 static constexpr double time_error_ms = 0.001 + 1e-13;
 
 #define EXPECT_TIME_NEAR(expected, value) \
@@ -102,8 +102,9 @@ class WorkletAnimationTest : public RenderingTest {
   }
 
   void SimulateFrame(double milliseconds) {
-    base::TimeTicks tick = base::TimeTicks() + ToTimeDelta(milliseconds);
-    GetDocument().GetAnimationClock().ResetTimeForTesting(tick);
+    base::TimeTicks tick =
+        GetDocument().Timeline().ZeroTime() + ToTimeDelta(milliseconds);
+    GetDocument().GetAnimationClock().UpdateTime(tick);
     GetDocument().GetWorkletAnimationController().UpdateAnimationStates();
     GetDocument().GetWorkletAnimationController().UpdateAnimationTimings(
         kTimingUpdateForAnimationFrame);
@@ -233,10 +234,10 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Last peek request fulfilled. No need to peek.
-  std::vector<base::Optional<TimeDelta>> local_times;
-  local_times.push_back(TimeDelta());
+  WebVector<base::Optional<base::TimeDelta>> local_times;
+  local_times.emplace_back(base::TimeDelta());
   AnimationWorkletOutput::AnimationState output_with_value(id);
-  output_with_value.local_times = local_times;
+  output_with_value.local_times = local_times.ReleaseVector();
   worklet_animation_->SetOutputState(output_with_value);
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);
@@ -244,8 +245,8 @@ TEST_F(WorkletAnimationTest, MainThreadSendsPeekRequestTest) {
   state.reset(new AnimationWorkletDispatcherInput);
 
   // Input time changes. Need to peek again.
-  GetDocument().GetAnimationClock().ResetTimeForTesting(
-      base::TimeTicks() + ToTimeDelta(111.0 + 123.4));
+  GetDocument().GetAnimationClock().UpdateTime(
+      GetDocument().Timeline().ZeroTime() + ToTimeDelta(111.0 + 123.4));
 
   worklet_animation_->UpdateInputState(state.get());
   input = state->TakeWorkletState(id.worklet_id);

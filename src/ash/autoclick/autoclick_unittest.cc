@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/accessibility/autoclick_menu_view.h"
+#include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
+#include "ash/system/accessibility/autoclick_scroll_view.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
@@ -32,12 +34,19 @@
 
 namespace ash {
 
+namespace {
+const int kScrollToMenuBoundsBuffer = 18;
+}
+
 class MouseEventCapturer : public ui::EventHandler {
  public:
   MouseEventCapturer() { Reset(); }
   ~MouseEventCapturer() override = default;
 
-  void Reset() { events_.clear(); }
+  void Reset() {
+    events_.clear();
+    wheel_events_.clear();
+  }
 
   void OnMouseEvent(ui::MouseEvent* event) override {
     bool save_event = false;
@@ -58,6 +67,12 @@ class MouseEventCapturer : public ui::EventHandler {
     } else if (type == ui::ET_MOUSE_DRAGGED) {
       save_event = true;
       stop_event = false;
+    } else if (type == ui::ET_MOUSEWHEEL) {
+      // Save it immediately as a MouseWheelEvent.
+      wheel_events_.push_back(ui::MouseWheelEvent(
+          event->AsMouseWheelEvent()->offset(), event->location(),
+          event->root_location(), ui::EventTimeForNow(), event->flags(),
+          event->changed_button_flags()));
     }
     if (save_event) {
       events_.push_back(ui::MouseEvent(event->type(), event->location(),
@@ -74,21 +89,21 @@ class MouseEventCapturer : public ui::EventHandler {
   }
 
   const std::vector<ui::MouseEvent>& captured_events() const { return events_; }
+  const std::vector<ui::MouseWheelEvent>& captured_mouse_wheel_events() const {
+    return wheel_events_;
+  }
 
  private:
   std::vector<ui::MouseEvent> events_;
+  std::vector<ui::MouseWheelEvent> wheel_events_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseEventCapturer);
 };
 
 class AutoclickTest : public AshTestBase {
  public:
-  AutoclickTest() {
-    DestroyScopedTaskEnvironment();
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME);
-  }
+  AutoclickTest()
+      : AshTestBase(base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AutoclickTest() override = default;
 
   void SetUp() override {
@@ -118,6 +133,7 @@ class AutoclickTest : public AshTestBase {
 
   const std::vector<ui::MouseEvent>& WaitForMouseEvents() {
     ClearMouseEvents();
+    // TODO(katie): Consider using quit closure instead of RunUntilIdle.
     base::RunLoop().RunUntilIdle();
     return GetMouseEvents();
   }
@@ -148,6 +164,14 @@ class AutoclickTest : public AshTestBase {
         ->menu_view_;
   }
 
+  AutoclickScrollView* GetAutoclickScrollView() {
+    AutoclickScrollBubbleController* controller =
+        GetAutoclickController()
+            ->GetMenuBubbleControllerForTesting()
+            ->scroll_bubble_controller_.get();
+    return controller ? controller->scroll_view_ : nullptr;
+  }
+
   views::Widget* GetAutoclickBubbleWidget() {
     return GetAutoclickController()
         ->GetMenuBubbleControllerForTesting()
@@ -161,15 +185,25 @@ class AutoclickTest : public AshTestBase {
     return menu_view->GetViewByID(static_cast<int>(view_id));
   }
 
+  views::View* GetScrollButton(AutoclickScrollView::ButtonId view_id) {
+    AutoclickScrollView* scroll_view = GetAutoclickScrollView();
+    if (!scroll_view)
+      return nullptr;
+    return scroll_view->GetViewByID(static_cast<int>(view_id));
+  }
+
   void ClearMouseEvents() { mouse_event_capturer_.Reset(); }
 
   const std::vector<ui::MouseEvent>& GetMouseEvents() {
     return mouse_event_capturer_.captured_events();
   }
 
+  const std::vector<ui::MouseWheelEvent>& GetMouseWheelEvents() {
+    return mouse_event_capturer_.captured_mouse_wheel_events();
+  }
+
  private:
   MouseEventCapturer mouse_event_capturer_;
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickTest);
 };
@@ -210,6 +244,10 @@ TEST_F(AutoclickTest, ToggleEnabled) {
   EXPECT_FALSE(GetAutoclickController()->IsEnabled());
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
+
+  // After disable, autoclick should be set back to left click.
+  EXPECT_EQ(AutoclickEventType::kLeftClick,
+            Shell::Get()->accessibility_controller()->GetAutoclickEventType());
 }
 
 TEST_F(AutoclickTest, MouseMovement) {
@@ -490,7 +528,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kRightClick);
+      AutoclickEventType::kRightClick);
   std::vector<ui::MouseEvent> events;
 
   GetEventGenerator()->MoveMouseTo(30, 30);
@@ -504,7 +542,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   // Changing the event type cancels the event
   GetEventGenerator()->MoveMouseTo(60, 60);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kLeftClick);
+      AutoclickEventType::kLeftClick);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
 
@@ -512,7 +550,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   // kLeftClick type does not produce a double-click.
   GetEventGenerator()->MoveMouseTo(90, 90);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kLeftClick);
+      AutoclickEventType::kLeftClick);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, events[0].type());
@@ -524,7 +562,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
 
   // Double-click works as expected.
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kDoubleClick);
+      AutoclickEventType::kDoubleClick);
   GetEventGenerator()->MoveMouseTo(120, 120);
   events = WaitForMouseEvents();
   ASSERT_EQ(4u, events.size());
@@ -544,7 +582,7 @@ TEST_F(AutoclickTest, AutoclickChangeEventTypes) {
   // Pause / no action does not cause events to be generated even when the
   // mouse moves.
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kNoAction);
+      AutoclickEventType::kNoAction);
   GetEventGenerator()->MoveMouseTo(120, 120);
   events = WaitForMouseEvents();
   EXPECT_EQ(0u, events.size());
@@ -554,7 +592,7 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kDragAndDrop);
+      AutoclickEventType::kDragAndDrop);
   std::vector<ui::MouseEvent> events;
 
   GetEventGenerator()->MoveMouseTo(30, 30);
@@ -582,11 +620,82 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
   EXPECT_EQ(ui::ET_MOUSE_RELEASED, events[0].type());
 }
 
+TEST_F(AutoclickTest, AutoclickScrollEvents) {
+  UpdateDisplay("800x600");
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+  GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
+  std::vector<ui::MouseEvent> events;
+  std::vector<ui::MouseWheelEvent> wheel_events;
+
+  // Expect that the first scroll action occurs at the middle of the screen,
+  // since the position has not been set by the user.
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollUp);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
+
+  // Expect that a dwell will set the scroll location.
+  GetEventGenerator()->MoveMouseTo(90, 90);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollUp);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(90, 90), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
+
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollLeft);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(90, 90), wheel_events[0].location());
+  EXPECT_GT(wheel_events[0].x_offset(), 0);
+  ClearMouseEvents();
+
+  // Try another position, and the other two types of scroll action.
+  GetEventGenerator()->MoveMouseTo(200, 200);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollDown);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(200, 200), wheel_events[0].location());
+  EXPECT_LT(wheel_events[0].y_offset(), 0);
+  ClearMouseEvents();
+
+  GetAutoclickController()->DoScrollAction(
+      AutoclickController::ScrollPadAction::kScrollRight);
+  events = GetMouseEvents();
+  wheel_events = GetMouseWheelEvents();
+  EXPECT_EQ(0u, events.size());
+  ASSERT_EQ(1u, wheel_events.size());
+  EXPECT_EQ(ui::ET_MOUSEWHEEL, wheel_events[0].type());
+  EXPECT_EQ(gfx::Point(200, 200), wheel_events[0].location());
+  EXPECT_LT(wheel_events[0].x_offset(), 0);
+  ClearMouseEvents();
+}
+
 TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->set_revert_to_left_click(true);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kRightClick);
+      AutoclickEventType::kRightClick);
   std::vector<ui::MouseEvent> events;
 
   GetEventGenerator()->MoveMouseTo(30, 30);
@@ -598,7 +707,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   // Another event is now left-click; we've reverted to left click.
   GetEventGenerator()->MoveMouseTo(90, 90);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kLeftClick);
+      AutoclickEventType::kLeftClick);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
@@ -607,7 +716,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   // The next event is also a left click.
   GetEventGenerator()->MoveMouseTo(120, 120);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kLeftClick);
+      AutoclickEventType::kLeftClick);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
@@ -618,7 +727,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
   GetAutoclickController()->set_revert_to_left_click(false);
   GetEventGenerator()->MoveMouseTo(150, 150);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kLeftClick);
+      AutoclickEventType::kLeftClick);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
   EXPECT_TRUE(ui::EF_LEFT_MOUSE_BUTTON & events[0].flags());
@@ -626,7 +735,7 @@ TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
 
   // But we should no longer revert to left click if the type is something else.
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kRightClick);
+      AutoclickEventType::kRightClick);
   GetEventGenerator()->MoveMouseTo(180, 180);
   events = WaitForMouseEvents();
   ASSERT_EQ(2u, events.size());
@@ -705,7 +814,7 @@ TEST_F(AutoclickTest, WaitsToDrawAnimationAfterDwellBegins) {
 }
 
 TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Enable autoclick from the accessibility controller so that the bubble is
   // constructed too.
@@ -719,18 +828,18 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
   const struct {
     const std::string display_spec;
     float scale;
-    mojom::AutoclickMenuPosition position;
+    AutoclickMenuPosition position;
   } kTestCases[] = {
-      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kBottomRight},
-      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kBottomRight},
-      {"800x600", 1.0f, mojom::AutoclickMenuPosition::kTopLeft},
-      {"1024x800*2.0", 2.0f, mojom::AutoclickMenuPosition::kTopLeft},
+      {"800x600", 1.0f, AutoclickMenuPosition::kBottomRight},
+      {"1024x800*2.0", 2.0f, AutoclickMenuPosition::kBottomRight},
+      {"800x600", 1.0f, AutoclickMenuPosition::kTopLeft},
+      {"1024x800*2.0", 2.0f, AutoclickMenuPosition::kTopLeft},
   };
   for (const auto& test : kTestCases) {
     UpdateDisplay(test.display_spec);
     accessibility_controller->SetAutoclickMenuPosition(test.position);
     accessibility_controller->SetAutoclickEventType(
-        mojom::AutoclickEventType::kRightClick);
+        AutoclickEventType::kRightClick);
 
     AutoclickMenuView* menu = GetAutoclickMenuView();
     ASSERT_TRUE(menu);
@@ -755,12 +864,12 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     events = WaitForMouseEvents();
     EXPECT_EQ(0u, events.size());
     // But the event type did change with a the hover on the button.
-    EXPECT_EQ(mojom::AutoclickEventType::kDoubleClick,
+    EXPECT_EQ(AutoclickEventType::kDoubleClick,
               accessibility_controller->GetAutoclickEventType());
 
     // Change to a pause action type.
     accessibility_controller->SetAutoclickEventType(
-        mojom::AutoclickEventType::kNoAction);
+        AutoclickEventType::kNoAction);
 
     // Outside the bubble, no action occurs.
     GetEventGenerator()->MoveMouseTo(200 * test.scale, 200 * test.scale);
@@ -777,7 +886,7 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     events = WaitForMouseEvents();
     EXPECT_EQ(0u, events.size());
     // The event type did not change because we were not over any button.
-    EXPECT_EQ(mojom::AutoclickEventType::kNoAction,
+    EXPECT_EQ(AutoclickEventType::kNoAction,
               accessibility_controller->GetAutoclickEventType());
 
     // Leaving the bubble we are still paused.
@@ -794,7 +903,7 @@ TEST_F(AutoclickTest, DoesActionOnBubbleWhenInDifferentModes) {
     GetEventGenerator()->MoveMouseTo(button_location);
     events = WaitForMouseEvents();
     EXPECT_EQ(0u, events.size());
-    EXPECT_EQ(mojom::AutoclickEventType::kLeftClick,
+    EXPECT_EQ(AutoclickEventType::kLeftClick,
               accessibility_controller->GetAutoclickEventType());
   }
 }
@@ -804,9 +913,9 @@ TEST_F(AutoclickTest,
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   GetAutoclickController()->set_revert_to_left_click(false);
   GetAutoclickController()->SetAutoclickEventType(
-      mojom::AutoclickEventType::kNoAction);
+      AutoclickEventType::kNoAction);
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      mojom::AutoclickMenuPosition::kBottomRight);
+      AutoclickMenuPosition::kBottomRight);
 
   int animation_delay = 5;
   int full_delay = UpdateAnimationDelayAndGetFullDelay(animation_delay);
@@ -877,7 +986,7 @@ TEST_F(AutoclickTest, BubbleMovesWithShelfPositionChange) {
   // Set up autoclick and the shelf.
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-      mojom::AutoclickMenuPosition::kBottomRight);
+      AutoclickMenuPosition::kBottomRight);
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   EXPECT_EQ(shelf->GetVisibilityState(), SHELF_VISIBLE);
@@ -929,7 +1038,7 @@ TEST_F(AutoclickTest, AvoidsShelfBubble) {
     // Set up autoclick and the shelf.
     Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
     Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
-        mojom::AutoclickMenuPosition::kBottomRight);
+        AutoclickMenuPosition::kBottomRight);
     auto* unified_system_tray = GetPrimaryUnifiedSystemTray();
     EXPECT_FALSE(unified_system_tray->IsBubbleShown());
     AutoclickMenuView* menu = GetAutoclickMenuView();
@@ -1093,6 +1202,150 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
   EXPECT_FALSE(widget->IsActive());
   EXPECT_TRUE(popup_widget->IsActive());
   EXPECT_TRUE(GetAutoclickBubbleWidget()->IsVisible());
+}
+
+TEST_F(AutoclickTest, ScrollClosesWhenHoveredOverScrollButton) {
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+  GetAutoclickController()->SetAutoclickEventType(
+      AutoclickEventType::kLeftClick);
+  EXPECT_FALSE(GetAutoclickScrollView());
+
+  // Enable scroll.
+  GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
+  ASSERT_TRUE(GetAutoclickScrollView());
+  views::View* close_button =
+      GetScrollButton(AutoclickScrollView::ButtonId::kCloseScroll);
+  ASSERT_TRUE(close_button);
+
+  gfx::Point button_location = close_button->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->MoveMouseTo(button_location);
+  // No mouse event.
+  std::vector<ui::MouseEvent> events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
+  // Reset to left click and scroll view is gone.
+  EXPECT_EQ(AutoclickEventType::kLeftClick,
+            Shell::Get()->accessibility_controller()->GetAutoclickEventType());
+  EXPECT_FALSE(GetAutoclickScrollView());
+}
+
+TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
+  UpdateDisplay("800x600");
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+
+  // Enable scroll.
+  GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
+  ASSERT_TRUE(GetAutoclickScrollView());
+
+  // TODO: Do for all four buttons, wait a few scrolls each.
+  const struct {
+    AutoclickScrollView::ButtonId button_id;
+    int scroll_x;
+    int scroll_y;
+  } kTestCases[] = {
+      {AutoclickScrollView::ButtonId::kScrollUp, 0, 10},
+      {AutoclickScrollView::ButtonId::kScrollDown, 0, -10},
+      {AutoclickScrollView::ButtonId::kScrollLeft, 10, 0},
+      {AutoclickScrollView::ButtonId::kScrollRight, -10, 0},
+  };
+  for (auto& test : kTestCases) {
+    views::View* button = GetScrollButton(test.button_id);
+    ASSERT_TRUE(button);
+
+    gfx::Point button_location = button->GetBoundsInScreen().CenterPoint();
+    GetEventGenerator()->MoveMouseTo(button_location);
+    // No mouse event during hover, no wheel events yet.
+    FastForwardBy(AutoclickScrollView::kAutoclickScrollDelayMs - 1);
+    std::vector<ui::MouseEvent> events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    std::vector<ui::MouseWheelEvent> wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(0u, wheel_events.size());
+
+    // But we should get a scroll event after kAutoclickScrollDelayMs.
+    FastForwardBy(2);
+    wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(1u, wheel_events.size());
+    EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+    EXPECT_EQ(test.scroll_x, wheel_events[0].x_offset());
+    EXPECT_EQ(test.scroll_y, wheel_events[0].y_offset());
+    // No other events expected.
+    events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    ClearMouseEvents();
+
+    // Wait until another kAutoclickScrollDelayMs has elapsed and expect another
+    // scroll to have occurred.
+    FastForwardBy(AutoclickScrollView::kAutoclickScrollDelayMs);
+    wheel_events = GetMouseWheelEvents();
+    EXPECT_EQ(1u, wheel_events.size());
+    EXPECT_EQ(gfx::Point(400, 300), wheel_events[0].location());
+    EXPECT_EQ(test.scroll_x, wheel_events[0].x_offset());
+    EXPECT_EQ(test.scroll_y, wheel_events[0].y_offset());
+    // No other events expected.
+    events = GetMouseEvents();
+    EXPECT_EQ(0u, events.size());
+    ClearMouseEvents();
+  }
+}
+
+TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
+  UpdateDisplay("800x600");
+  GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomRight);
+  GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
+
+  ASSERT_TRUE(GetAutoclickScrollView());
+
+  // Set the bounds to be the entire window.
+  gfx::Rect display_bounds = gfx::Rect(0, 0, 800, 600);
+  GetAutoclickController()->OnAutoclickScrollableBoundsFound(display_bounds);
+
+  // The scroll bubble should start near the autoclick menu.
+  gfx::Rect scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  gfx::Rect menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // Moving the autoclick menu around the screen moves the scroll bubble too.
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomLeft);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kTopLeft);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kTopRight);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  menu_bounds = GetAutoclickMenuView()->GetBoundsInScreen();
+  EXPECT_LT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // However, if we dwell somewhere else, the autoclick scroll menu will now
+  // move out of the corner and near that point when the display bounds are
+  // found.
+  gfx::Point scroll_point = gfx::Point(0, 0);
+  GetEventGenerator()->MoveMouseTo(scroll_point);
+  base::RunLoop().RunUntilIdle();
+  GetAutoclickController()->OnAutoclickScrollableBoundsFound(display_bounds);
+  scroll_bounds = GetAutoclickScrollView()->GetBoundsInScreen();
+  EXPECT_GT(menu_bounds.ManhattanInternalDistance(scroll_bounds),
+            kScrollToMenuBoundsBuffer);
+
+  // Moving the bubble menu now does not change the scroll bubble's position,
+  // it remains near its point.
+  Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
+      AutoclickMenuPosition::kBottomRight);
+  EXPECT_EQ(GetAutoclickScrollView()->GetBoundsInScreen(), scroll_bounds);
 }
 
 }  // namespace ash

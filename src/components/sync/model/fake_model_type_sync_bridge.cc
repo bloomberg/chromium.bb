@@ -87,7 +87,7 @@ std::unique_ptr<EntityData> FakeModelTypeSyncBridge::GenerateEntityData(
   std::unique_ptr<EntityData> entity_data = std::make_unique<EntityData>();
   entity_data->client_tag_hash = TagHashFromKey(key);
   entity_data->specifics = GenerateSpecifics(key, value);
-  entity_data->non_unique_name = key;
+  entity_data->name = key;
   return entity_data;
 }
 
@@ -229,8 +229,8 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     std::string storage_key = change->storage_key();
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
-      if (base::ContainsKey(values_to_ignore_,
-                            change->data().specifics.preference().value())) {
+      if (base::Contains(values_to_ignore_,
+                         change->data().specifics.preference().value())) {
         change_processor()->UntrackEntityForClientTagHash(
             change->data().client_tag_hash);
         continue;
@@ -385,7 +385,7 @@ std::unique_ptr<EntityData> FakeModelTypeSyncBridge::CopyEntityData(
   auto new_data = std::make_unique<EntityData>();
   new_data->id = old_data.id;
   new_data->client_tag_hash = old_data.client_tag_hash;
-  new_data->non_unique_name = old_data.non_unique_name;
+  new_data->name = old_data.name;
   new_data->specifics = old_data.specifics;
   new_data->creation_time = old_data.creation_time;
   new_data->modification_time = old_data.modification_time;

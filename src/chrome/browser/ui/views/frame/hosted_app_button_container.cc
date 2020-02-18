@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -30,7 +32,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
 
 namespace {
@@ -149,7 +151,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     ContentSettingImageView::Delegate* delegate) {
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           views::LayoutProvider::Get()->GetDistanceMetric(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
   // Right align to clip the leftmost items first when not enough space.
@@ -160,7 +162,7 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   for (auto& model : models) {
     auto image_view = std::make_unique<ContentSettingImageView>(
         std::move(model), delegate,
-        views::NativeWidgetAura::GetWindowTitleFontList());
+        views::CustomFrameView::GetWindowTitleFontList());
     // Padding around content setting icons.
     constexpr int kContentSettingIconInteriorPadding = 4;
     image_view->SetBorder(views::CreateEmptyBorder(
@@ -190,7 +192,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(
 
   views::BoxLayout& layout =
       *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kHorizontal,
+          views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0,
                       right_margin.value_or(HorizontalPaddingBetweenItems())),
           HorizontalPaddingBetweenItems()));
@@ -212,6 +214,8 @@ HostedAppButtonContainer::HostedAppButtonContainer(
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   params.types_enabled.push_back(PageActionIconType::kTranslate);
   params.types_enabled.push_back(PageActionIconType::kZoom);
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
+    params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
   params.icon_size = GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE);
   params.icon_color = GetCaptionColor();
   params.between_icon_spacing = HorizontalPaddingBetweenItems();
@@ -307,6 +311,10 @@ base::Optional<int> HostedAppButtonContainer::GetMaxBrowserActionsWidth()
     const {
   // Our maximum size is 1 icon so don't specify a pixel-width max here.
   return base::Optional<int>();
+}
+
+bool HostedAppButtonContainer::CanShowIconInToolbar() const {
+  return false;
 }
 
 std::unique_ptr<ToolbarActionsBar>

@@ -112,6 +112,13 @@ bool IsDownloadAllowedBySafeBrowsing(
     case Result::DANGEROUS_HOST:
     case Result::POTENTIALLY_UNWANTED:
       return false;
+
+    // Safe Browsing should only return these results for client downloads, not
+    // for PPAPI downloads.
+    case Result::ASYNC_SCANNING:
+    case Result::BLOCKED_PASSWORD_PROTECTED:
+      NOTREACHED();
+      return true;
   }
   NOTREACHED();
   return false;

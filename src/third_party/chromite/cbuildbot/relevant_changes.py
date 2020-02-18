@@ -110,7 +110,7 @@ class RelevantChanges(object):
 
     # Convert index from build_ids to config names.
     changes_by_config = dict()
-    for k, v in changes_by_build_id.iteritems():
+    for k, v in changes_by_build_id.items():
       changes_by_config[config_map[k]] = v
 
     for config in builds_not_passed_sync_stage:
@@ -330,7 +330,7 @@ class TriageRelevantChanges(object):
     slave_buildbucket_ids = []
 
     if self.buildbucket_info_dict is not None:
-      for slave_config, bb_info in self.buildbucket_info_dict.iteritems():
+      for slave_config, bb_info in self.buildbucket_info_dict.items():
         # Set default value for all slaves, some may not have stages in CIDB.
         slave_stages_dict.setdefault(slave_config, [])
         slave_buildbucket_ids.append(bb_info.buildbucket_id)
@@ -374,7 +374,7 @@ class TriageRelevantChanges(object):
       desired_stages.
     """
     return set(build_config
-               for build_config, stages in build_stages_dict.iteritems()
+               for build_config, stages in build_stages_dict.items()
                if cls.PassedAnyOfStages(stages, desired_stages))
 
   def _GetRelevantChanges(self, slave_stages_dict):
@@ -510,7 +510,7 @@ class TriageRelevantChanges(object):
         self.metadata, self.buildbucket_client, self.builders_array,
         self.dry_run)
 
-    for build_config, bb_info in self.buildbucket_info_dict.iteritems():
+    for build_config, bb_info in self.buildbucket_info_dict.items():
       if (build_config in self.completed_builds and
           bb_info.status == constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED and
           bb_info.result != constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS):

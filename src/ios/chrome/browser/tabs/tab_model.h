@@ -11,15 +11,13 @@
 #include <memory>
 
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 
 #include "ui/base/page_transition_types.h"
 
 class GURL;
 @class SessionServiceIOS;
 @class SessionWindowIOS;
-@class Tab;
-@protocol TabModelObserver;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
@@ -48,9 +46,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // consistency between multiple views that need the current tab to be
 // synchronized.
 @interface TabModel : NSObject <SessionWindowRestoring>
-
-// Currently active tab.
-@property(nonatomic, weak) Tab* currentTab;
 
 // The delegate for sync.
 @property(nonatomic, readonly)
@@ -90,67 +85,40 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// Accesses the tab at the given index.
-- (Tab*)tabAtIndex:(NSUInteger)index;
-- (NSUInteger)indexOfTab:(Tab*)tab;
-
 // Add/modify tabs.
 
 // Opens a tab at the specified URL. For certain transition types, will consult
-// the order controller and thus may only use |index| as a hint. |parentTab| may
-// be nil if there is no parent associated with this new tab. |openedByDOM| is
-// YES if the page was opened by DOM. The |index| parameter can be set to
-// TabModelConstants::kTabPositionAutomatically if the caller doesn't have a
-// preference for the position of the tab.
-- (Tab*)insertTabWithURL:(const GURL&)URL
-                referrer:(const web::Referrer&)referrer
-              transition:(ui::PageTransition)transition
-                  opener:(Tab*)parentTab
-             openedByDOM:(BOOL)openedByDOM
-                 atIndex:(NSUInteger)index
-            inBackground:(BOOL)inBackground;
+// the order controller and thus may only use |index| as a hint.
+// |parentWebState| may be nil if there is no parent associated with this new
+// tab. |openedByDOM| is YES if the page was opened by DOM. The |index|
+// parameter can be set to TabModelConstants::kTabPositionAutomatically if the
+// caller doesn't have a preference for the position of the tab.
+- (web::WebState*)insertWebStateWithURL:(const GURL&)URL
+                               referrer:(const web::Referrer&)referrer
+                             transition:(ui::PageTransition)transition
+                                 opener:(web::WebState*)parentWebState
+                            openedByDOM:(BOOL)openedByDOM
+                                atIndex:(NSUInteger)index
+                           inBackground:(BOOL)inBackground;
 
 // As above, but using WebLoadParams to specify various optional parameters.
-- (Tab*)insertTabWithLoadParams:
-            (const web::NavigationManager::WebLoadParams&)params
-                         opener:(Tab*)parentTab
-                    openedByDOM:(BOOL)openedByDOM
-                        atIndex:(NSUInteger)index
-                   inBackground:(BOOL)inBackground;
+- (web::WebState*)insertWebStateWithLoadParams:
+                      (const web::NavigationManager::WebLoadParams&)params
+                                        opener:(web::WebState*)parentWebState
+                                   openedByDOM:(BOOL)openedByDOM
+                                       atIndex:(NSUInteger)index
+                                  inBackground:(BOOL)inBackground;
 
 // Opens a new blank tab in response to DOM window opening action. Creates a web
 // state with empty navigation manager.
-- (Tab*)insertOpenByDOMTabWithOpener:(Tab*)parentTab;
-
-// Moves |tab| to the given |index|. |index| must be valid for this tab model
-// (must be less than the current number of tabs). |tab| must already be in this
-// tab model. If |tab| is already at |index|, this method does nothing and will
-// not notify observers.
-- (void)moveTab:(Tab*)tab toIndex:(NSUInteger)index;
+- (web::WebState*)insertOpenByDOMWebStateWithOpener:
+    (web::WebState*)parentWebState;
 
 // Closes the tab at the given |index|. |index| must be valid.
 - (void)closeTabAtIndex:(NSUInteger)index;
 
-// Closes the given tab.
-- (void)closeTab:(Tab*)tab;
-
 // Closes ALL the tabs.
 - (void)closeAllTabs;
-
-// Halts all tabs (terminating active requests) without closing them. Used
-// when the app is shutting down.
-- (void)haltAllTabs;
-
-// Notifies observers that the given |tab| was changed.
-- (void)notifyTabChanged:(Tab*)tab;
-
-// Adds |observer| to the list of observers. |observer| is not retained. Does
-// nothing if |observer| is already in the list. Any added observers must be
-// explicitly removed before the TabModel is destroyed.
-- (void)addObserver:(id<TabModelObserver>)observer;
-
-// Removes |observer| from the list of observers.
-- (void)removeObserver:(id<TabModelObserver>)observer;
 
 // Resets all session counters.
 - (void)resetSessionMetrics;

@@ -52,7 +52,7 @@ void MockSSLHostStateDelegate::HostRanInsecureContent(
 bool MockSSLHostStateDelegate::DidHostRunInsecureContent(
     const std::string& host,
     int child_id,
-    InsecureContentType content_type) const {
+    InsecureContentType content_type) {
   return false;
 }
 
@@ -61,8 +61,7 @@ void MockSSLHostStateDelegate::RevokeUserAllowExceptions(
   exceptions_.erase(exceptions_.find(host));
 }
 
-bool MockSSLHostStateDelegate::HasAllowException(
-    const std::string& host) const {
+bool MockSSLHostStateDelegate::HasAllowException(const std::string& host) {
   return exceptions_.find(host) != exceptions_.end();
 }
 

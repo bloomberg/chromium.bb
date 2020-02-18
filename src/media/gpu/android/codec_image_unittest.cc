@@ -43,7 +43,7 @@ class CodecImageTest : public testing::Test {
     auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
     wrapper_ = std::make_unique<CodecWrapper>(
-        CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
+        CodecSurfacePair(std::move(codec), new CodecSurfaceBundle()),
         base::DoNothing(), base::SequencedTaskRunnerHandle::Get());
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
@@ -78,15 +78,16 @@ class CodecImageTest : public testing::Test {
   enum ImageKind { kOverlay, kTextureOwner };
   scoped_refptr<CodecImage> NewImage(
       ImageKind kind,
-      CodecImage::DestructionCb destruction_cb = base::DoNothing()) {
+      CodecImage::DestructionCB destruction_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
-    scoped_refptr<CodecImage> image = new CodecImage(
+    scoped_refptr<CodecImage> image = new CodecImage();
+    image->Initialize(
         std::move(buffer), kind == kTextureOwner ? texture_owner_ : nullptr,
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
-    image->SetDestructionCb(std::move(destruction_cb));
+    image->SetDestructionCB(std::move(destruction_cb));
     return image;
   }
 
@@ -113,8 +114,16 @@ class CodecImageTestExplicitBind : public CodecImageTest {
   bool BindsTextureOnUpdate() override { return false; }
 };
 
-TEST_F(CodecImageTest, DestructionCbRuns) {
-  base::MockCallback<CodecImage::DestructionCb> cb;
+TEST_F(CodecImageTest, NowUnusedCBRuns) {
+  base::MockCallback<CodecImage::NowUnusedCB> cb;
+  auto i = NewImage(kOverlay);
+  i->SetNowUnusedCB(cb.Get());
+  EXPECT_CALL(cb, Run(i.get()));
+  i = nullptr;
+}
+
+TEST_F(CodecImageTest, DestructionCBRuns) {
+  base::MockCallback<CodecImage::DestructionCB> cb;
   auto i = NewImage(kOverlay, cb.Get());
   EXPECT_CALL(cb, Run(i.get()));
   i = nullptr;

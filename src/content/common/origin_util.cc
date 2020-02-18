@@ -33,7 +33,7 @@ bool OriginCanAccessServiceWorkers(const GURL& url) {
   if (url.SchemeIsHTTPOrHTTPS() && IsOriginSecure(url))
     return true;
 
-  if (base::ContainsValue(GetServiceWorkerSchemes(), url.scheme())) {
+  if (base::Contains(GetServiceWorkerSchemes(), url.scheme())) {
     return true;
   }
 

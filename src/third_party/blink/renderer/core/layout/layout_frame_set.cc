@@ -581,7 +581,7 @@ bool LayoutFrameSet::IsChildAllowed(LayoutObject* child,
   return child->IsFrame() || child->IsFrameSet();
 }
 
-CursorDirective LayoutFrameSet::GetCursor(const LayoutPoint& point,
+CursorDirective LayoutFrameSet::GetCursor(const PhysicalOffset& point,
                                           Cursor& cursor) const {
   IntPoint rounded_point = RoundedIntPoint(point);
   if (CanResizeRow(rounded_point)) {

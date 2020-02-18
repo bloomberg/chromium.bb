@@ -12,8 +12,12 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/ime/ime_controller.h"
+#include "ash/ime/test_ime_controller_client.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -28,6 +32,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
+#include "ui/views/controls/textfield/textfield_test_api.h"
 
 namespace ash {
 
@@ -38,9 +43,7 @@ using ::app_list::kAppListTileLaunchIndexAndQueryLength;
 using ::app_list::SearchResultLaunchLocation;
 
 bool IsTabletMode() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 app_list::AppListView* GetAppListView() {
@@ -64,8 +67,8 @@ app_list::SearchBoxView* GetSearchBoxView() {
 
 aura::Window* GetVirtualKeyboardWindow() {
   return Shell::Get()
-      ->ash_keyboard_controller()
       ->keyboard_controller()
+      ->keyboard_ui_controller()
       ->GetKeyboardWindow();
 }
 
@@ -81,7 +84,7 @@ void DismissAppListNow() {
 }
 
 aura::Window* GetAppListViewNativeWindow() {
-  return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+  return GetAppListView()->GetWidget()->GetNativeView();
 }
 
 void SetSearchText(AppListControllerImpl* controller, const std::string& text) {
@@ -104,11 +107,28 @@ class AppListControllerImplTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
 
+// Tests that the AppList hides when shelf alignment changes. This necessary
+// because the AppList is shown with certain assumptions based on shelf
+// orientation.
+TEST_F(AppListControllerImplTest, AppListHiddenWhenShelfAlignmentChanges) {
+  Shelf* const shelf = AshTestBase::GetPrimaryShelf();
+  shelf->SetAlignment(ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM);
+
+  const std::vector<ash::ShelfAlignment> alignments(
+      {SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT, SHELF_ALIGNMENT_BOTTOM});
+  for (ash::ShelfAlignment alignment : alignments) {
+    ShowAppListNow();
+    EXPECT_TRUE(Shell::Get()->app_list_controller()->presenter()->IsVisible());
+    shelf->SetAlignment(alignment);
+    EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  }
+}
+
 // Hide the expand arrow view in tablet mode when there is no activatable window
 // (see https://crbug.com/923089).
 TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // No activatable windows. So hide the expand arrow view.
@@ -125,7 +145,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(WindowStateType::kMinimized,
-            wm::GetWindowState(w1.get())->GetStateType());
+            WindowState::Get(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
 
   // Activate w2 then close w1. w2 still exists so expand arrow view shows.
@@ -142,8 +162,8 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
 // and app list state is HALF, the rounded corners should be hidden
 // (https://crbug.com/942084).
 TEST_F(AppListControllerImplTest, HideRoundingCorners) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the app list view and click on the search box with mouse. So the
   // VirtualKeyboard is shown.
@@ -158,13 +178,13 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
   // (1) AppListView is at the top of the screen.
   // (2) AppListView's state is HALF.
   // (3) AppListBackgroundShield is translated to hide the rounded corners.
-  aura::Window* native_window =
-      GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
+  aura::Window* native_window = GetAppListView()->GetWidget()->GetNativeView();
   gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
   EXPECT_EQ(0, app_list_screen_bounds.y());
   EXPECT_EQ(ash::AppListViewState::kHalf, GetAppListView()->app_list_state());
   gfx::Transform expected_transform;
-  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
+  expected_transform.Translate(
+      0, -app_list::AppListConfig::instance().background_radius());
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
@@ -181,12 +201,52 @@ TEST_F(AppListControllerImplTest, HideRoundingCorners) {
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
 }
 
+// Verify that when the emoji panel shows and AppListView is in Peeking state,
+// AppListView's rounded corners should be hidden (see https://crbug.com/950468)
+TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
+  // Set IME client. Otherwise the emoji panel is unable to show.
+  ImeController* ime_controller = Shell::Get()->ime_controller();
+  TestImeControllerClient client;
+  ime_controller->SetClient(client.CreateInterfacePtr());
+
+  // Show the app list view and right-click on the search box with mouse. So the
+  // text field's context menu shows.
+  ShowAppListNow();
+  app_list::SearchBoxView* search_box_view =
+      GetAppListView()->app_list_main_view()->search_box_view();
+  gfx::Point center_point = search_box_view->GetBoundsInScreen().CenterPoint();
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(center_point);
+  event_generator->ClickRightButton();
+
+  // Expect that the first item in the context menu should be "Emoji". Show the
+  // emoji panel.
+  auto text_field_api =
+      std::make_unique<views::TextfieldTestApi>(search_box_view->search_box());
+  ASSERT_EQ("Emoji",
+            base::UTF16ToUTF8(
+                text_field_api->context_menu_contents()->GetLabelAt(0)));
+  text_field_api->context_menu_contents()->ActivatedAt(0);
+
+  // Wait for enough time. Then expect that AppListView is pushed up.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(gfx::Point(0, 0), GetAppListView()->GetBoundsInScreen().origin());
+
+  // AppListBackgroundShield is translated to hide the rounded corners.
+  gfx::Transform expected_transform;
+  expected_transform.Translate(
+      0, -app_list::AppListConfig::instance().background_radius());
+  EXPECT_EQ(
+      expected_transform,
+      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+}
+
 // Verifies that in clamshell mode the bounds of AppListView are correct when
 // the AppListView is in PEEKING state and the virtual keyboard is enabled (see
 // https://crbug.com/944233).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse. So the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
@@ -218,8 +278,8 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
 // Verifies that in tablet mode, the AppListView has correct bounds when the
 // virtual keyboard is dismissed (see https://crbug.com/944133).
 TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
+  Shell::Get()->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kShelfEnabled);
 
   // Show the AppListView and click on the search box with mouse so the
   // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
@@ -229,13 +289,12 @@ TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   // Turn on the tablet mode. The virtual keyboard should still show.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
   EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
 
   // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->ash_keyboard_controller()->HideKeyboard(
-      mojom::HideReason::kUser);
+  Shell::Get()->keyboard_controller()->HideKeyboard(HideReason::kUser);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
 
@@ -289,6 +348,44 @@ TEST_F(AppListControllerImplTest, CloseNotificationWithAppListShown) {
   EXPECT_TRUE(GetAppListView());
   EXPECT_EQ(
       0u, message_center::MessageCenter::Get()->GetPopupNotifications().size());
+}
+
+// Tests that full screen apps list opens when user touches on or near the
+// expand view arrow. (see https://crbug.com/906858)
+TEST_F(AppListControllerImplTest,
+       EnterFullScreenModeAfterTappingNearExpandArrow) {
+  ShowAppListNow();
+  ASSERT_EQ(ash::AppListViewState::kPeeking,
+            GetAppListView()->app_list_state());
+
+  // Get in screen bounds of arrow
+  const gfx::Rect expand_arrow = GetAppListView()
+                                     ->app_list_main_view()
+                                     ->contents_view()
+                                     ->expand_arrow_view()
+                                     ->GetBoundsInScreen();
+
+  // Tap expand arrow icon and check that full screen apps view is entered.
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  event_generator->GestureTapAt(expand_arrow.CenterPoint());
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  // Hide the AppListView. Wait until animation is finished
+  DismissAppListNow();
+  base::RunLoop().RunUntilIdle();
+
+  // Re-enter peeking mode and test that tapping near (but not directly on)
+  // the expand arrow icon still brings up full app list view.
+  ShowAppListNow();
+  ASSERT_EQ(ash::AppListViewState::kPeeking,
+            GetAppListView()->app_list_state());
+
+  event_generator->GestureTapAt(
+      gfx::Point(expand_arrow.top_right().x(), expand_arrow.top_right().y()));
+
+  ASSERT_EQ(ash::AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {
@@ -376,7 +473,7 @@ TEST_F(AppListControllerImplMetricsTest,
   base::RunLoop().RunUntilIdle();
 
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // Create a window then press the home launcher button. Expect that |w| is
@@ -392,10 +489,8 @@ TEST_F(AppListControllerImplMetricsTest,
             GetAppListView()->app_list_state());
 
   int delta_y = 1;
-  gfx::Point start = GetAppListView()
-                         ->get_fullscreen_widget_for_test()
-                         ->GetWindowBoundsInScreen()
-                         .top_right();
+  gfx::Point start =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
   // Emulate to drag the launcher downward.
@@ -451,7 +546,7 @@ TEST_F(AppListControllerImplMetricsTest,
   base::RunLoop().RunUntilIdle();
 
   // Turn on the tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_TRUE(IsTabletMode());
 
   // Create a window then press the home launcher button. Expect that |w| is
@@ -466,10 +561,8 @@ TEST_F(AppListControllerImplMetricsTest,
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
 
-  gfx::Point start = GetAppListView()
-                         ->get_fullscreen_widget_for_test()
-                         ->GetWindowBoundsInScreen()
-                         .top_right();
+  gfx::Point start =
+      GetAppListView()->GetWidget()->GetWindowBoundsInScreen().top_right();
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
   // Emulate to drag the launcher downward.
@@ -480,10 +573,10 @@ TEST_F(AppListControllerImplMetricsTest,
   GetAppListView()->OnGestureEvent(&start_event);
 
   // Turn off the tablet mode before scrolling is finished.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(GetAppListView());
+  EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
 
   // Check metrics initial values.
   histogram_tester_.ExpectTotalCount(

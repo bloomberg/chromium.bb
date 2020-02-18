@@ -26,8 +26,13 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                        LocalFrame& frame,
                                        bool same_document_navigation);
 
+  static TextFragmentAnchor* TryCreateFragmentDirective(
+      const KURL& url,
+      LocalFrame& frame,
+      bool same_document_navigation);
+
   TextFragmentAnchor(
-      const std::vector<TextFragmentSelector>& text_fragment_selectors,
+      const Vector<TextFragmentSelector>& text_fragment_selectors,
       LocalFrame& frame);
   ~TextFragmentAnchor() override = default;
 
@@ -48,13 +53,19 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   void DidFindAmbiguousMatch() override;
 
  private:
-  std::vector<TextFragmentFinder> text_fragment_finders_;
+  Vector<TextFragmentFinder> text_fragment_finders_;
 
   Member<LocalFrame> frame_;
 
   bool search_finished_ = false;
+  // Whether the user has scrolled the page.
   bool user_scrolled_ = false;
+  // Indicates that we should scroll into view the first match that we find, set
+  // to true each time the anchor is invoked if the user hasn't scrolled.
   bool first_match_needs_scroll_ = false;
+  // Whether we successfully scrolled into view a match at least once, used for
+  // metrics reporting.
+  bool did_scroll_into_view_ = false;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

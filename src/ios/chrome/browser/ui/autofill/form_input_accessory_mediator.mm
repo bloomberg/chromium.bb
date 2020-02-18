@@ -26,10 +26,10 @@
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -47,6 +47,9 @@
 // The main consumer for this mediator.
 @property(nonatomic, weak) id<FormInputAccessoryConsumer> consumer;
 
+// The delegate for this object.
+@property(nonatomic, weak) id<FormInputAccessoryMediatorDelegate> delegate;
+
 // The object that manages the currently-shown custom accessory view.
 @property(nonatomic, weak) id<FormInputSuggestionsProvider> currentProvider;
 
@@ -56,10 +59,6 @@
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
-
-// Track the use of hardware keyboard, when there's a notification of keyboard
-// use but no keyboard on the screen.
-@property(nonatomic, assign) BOOL hardwareKeyboard;
 
 // The JS manager for interacting with the underlying form.
 @property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
@@ -121,6 +120,7 @@
 
 - (instancetype)
        initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+               delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
            webStateList:(WebStateList*)webStateList
     personalDataManager:(autofill::PersonalDataManager*)personalDataManager
           passwordStore:
@@ -129,7 +129,7 @@
   if (self) {
     _consumer = consumer;
     _consumer.navigationDelegate = self;
-
+    _delegate = delegate;
     if (webStateList) {
       _webStateList = webStateList;
       _webStateListObserver =
@@ -143,7 +143,7 @@
         _JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
             [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
         [_JSSuggestionManager
-            setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+            setWebFramesManager:webState->GetWebFramesManager()];
         FormSuggestionTabHelper* tabHelper =
             FormSuggestionTabHelper::FromWebState(webState);
         if (tabHelper) {
@@ -237,18 +237,15 @@
 
 #pragma mark - KeyboardObserverHelperConsumer
 
-- (void)keyboardWillShowWithHardwareKeyboardAttached:(BOOL)isHardwareKeyboard {
-  self.hardwareKeyboard = isHardwareKeyboard;
-  [self updateSuggestionsIfNeeded];
-}
-
 - (void)keyboardDidStayOnScreen {
   [self.consumer removeAnimationsOnKeyboardView];
 }
 
-- (void)keyboardDidHide {
-  if (_webState && _webState->IsVisible()) {
-    [self reset];
+- (void)keyboardWillChangeToState:(KeyboardState)keyboardState {
+  [self updateSuggestionsIfNeeded];
+  [self.consumer keyboardWillChangeToState:keyboardState];
+  if (!keyboardState.isVisible) {
+    [self.delegate mediatorDidDetectKeyboardHide:self];
   }
 }
 
@@ -334,19 +331,7 @@
 
 - (void)webStateWasHidden:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  // On some iPhone with newers iOS (>11.3) when a view controller is presented,
-  // i.e. "all passwords", after dismissing it the keyboard appears and the last
-  // element is focused. Different devices were not consistent with minor
-  // versions changes. On iPad it always stays dismissed. It is important to
-  // reset on iPads because the accessory will stay without the keyboard, due
-  // how the it is added, On iPhones it will be hidden and reset when other text
-  // element gets the focus. On iPad the keyboard stays dismissed.
-  if (IsIPadIdiom()) {
-    [self reset];
-    [self.consumer restoreOriginalKeyboardViewAndClearReferences];
-  } else {
-    [self pauseCustomKeyboardView];
-  }
+  [self pauseCustomKeyboardView];
 }
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
@@ -456,7 +441,7 @@
     self.JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
         [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
     [self.JSSuggestionManager
-        setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+        setWebFramesManager:webState->GetWebFramesManager()];
     FormSuggestionTabHelper* tabHelper =
         FormSuggestionTabHelper::FromWebState(webState);
     if (tabHelper) {
@@ -518,8 +503,7 @@
     self.currentProvider = provider;
     // Post it to the consumer.
     [self.consumer showAccessorySuggestions:suggestions
-                           suggestionClient:provider
-                         isHardwareKeyboard:self.hardwareKeyboard];
+                           suggestionClient:provider];
   }
 }
 
@@ -538,9 +522,6 @@
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
   self.editingUIKitTextInput = NO;
   [self continueCustomKeyboardView];
-  if (IsIPadIdiom()) {
-    [self updateSuggestionsIfNeeded];
-  }
 }
 
 #pragma mark - PasswordFetcherDelegate

@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/ax_tree_manager_map.h"
 
+#include "base/stl_util.h"
+
 namespace ui {
 
 AXTreeManagerMap::AXTreeManagerMap() {}
@@ -27,10 +29,10 @@ void AXTreeManagerMap::RemoveTreeManager(AXTreeID tree_id) {
 }
 
 AXTreeManager* AXTreeManagerMap::GetManager(AXTreeID tree_id) {
-  if (tree_id == AXTreeIDUnknown())
+  if (tree_id == AXTreeIDUnknown() || !base::Contains(map_, tree_id))
     return nullptr;
 
-  return map_[tree_id];
+  return map_.at(tree_id);
 }
 
 AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
@@ -46,9 +48,13 @@ AXTreeManager* AXTreeManagerMap::GetManagerForChildTree(
   AXTreeManager* child_tree_manager =
       AXTreeManagerMap::GetInstance().GetManager(child_tree_id);
 
-  DCHECK(child_tree_manager &&
-         child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
-             parent_node.id());
+  // Some platforms do not use AXTreeManagers, so child trees don't exist in
+  // the browser process.
+  if (!child_tree_manager)
+    return nullptr;
+
+  DCHECK(child_tree_manager->GetParentNodeFromParentTreeAsAXNode()->id() ==
+         parent_node.id());
 
   return child_tree_manager;
 }

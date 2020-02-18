@@ -12,6 +12,8 @@
 
 #include <string.h>
 
+#include <utility>
+
 #include "api/video/encoded_image.h"
 #include "api/video/video_timing.h"
 #include "modules/video_coding/packet.h"
@@ -28,7 +30,8 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
                                size_t frame_size,
                                int times_nacked,
                                int64_t first_packet_received_time,
-                               int64_t last_packet_received_time)
+                               int64_t last_packet_received_time,
+                               RtpPacketInfos packet_infos)
     : packet_buffer_(packet_buffer),
       first_seq_num_(first_seq_num),
       last_seq_num_(last_seq_num),
@@ -54,7 +57,8 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
   // as of the first packet's.
   SetPlayoutDelay(first_packet->video_header.playout_delay);
 
-  AllocateBitstreamBuffer(frame_size);
+  // TODO(nisse): Change GetBitstream to return the buffer?
+  SetEncodedData(EncodedImageBuffer::Create(frame_size));
   bool bitstream_copied = packet_buffer_->GetBitstream(*this, data());
   RTC_DCHECK(bitstream_copied);
   _encodedWidth = first_packet->width();
@@ -62,6 +66,7 @@ RtpFrameObject::RtpFrameObject(PacketBuffer* packet_buffer,
 
   // EncodedFrame members
   SetTimestamp(first_packet->timestamp);
+  SetPacketInfos(std::move(packet_infos));
 
   VCMPacket* last_packet = packet_buffer_->GetPacket(last_seq_num);
   RTC_CHECK(last_packet);
@@ -164,14 +169,6 @@ absl::optional<FrameMarking> RtpFrameObject::GetFrameMarking() const {
   if (!packet)
     return absl::nullopt;
   return packet->video_header.frame_marking;
-}
-
-void RtpFrameObject::AllocateBitstreamBuffer(size_t frame_size) {
-  if (capacity() < frame_size) {
-    Allocate(frame_size);
-  }
-
-  set_size(frame_size);
 }
 
 }  // namespace video_coding

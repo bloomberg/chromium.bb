@@ -633,13 +633,25 @@ class DirectoryItem extends cr.ui.TreeItem {
   }
 
   /**
-   * Set up eject button if needed.
-   * @param {HTMLElement} rowElement The parent element for eject button.
+   * Set up eject button. It is placed as the last element of the elements that
+   * compose the tree row content.
+   * @param {!HTMLElement} rowElement Tree row element.
    * @private
    */
   setupEjectButton_(rowElement) {
     const ejectButton = cr.doc.createElement('button');
-    // Block other mouse handlers.
+
+    ejectButton.className = 'root-eject align-right-icon';
+    ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
+    ejectButton.setAttribute('tabindex', '0');
+
+    // Add paper-ripple effect on the eject button.
+    const ripple = cr.doc.createElement('paper-ripple');
+    ripple.setAttribute('fit', '');
+    ripple.className = 'circle recenteringTouch';
+    ejectButton.appendChild(ripple);
+
+    // Block mouse handlers, handle click.
     ejectButton.addEventListener('mouseup', (event) => {
       event.stopPropagation();
     });
@@ -652,19 +664,20 @@ class DirectoryItem extends cr.ui.TreeItem {
     ejectButton.addEventListener('down', (event) => {
       event.stopPropagation();
     });
-    ejectButton.className = 'root-eject align-right-icon';
-    ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
-    ejectButton.setAttribute('tabindex', '0');
     ejectButton.addEventListener('click', (event) => {
       event.stopPropagation();
       const command = cr.doc.querySelector('command#unmount');
-      // Let's make sure 'canExecute' state of the command is properly set for
-      // the root before executing it.
+      // Ensure 'canExecute' state of the command is properly setup for the
+      // root before executing it.
       command.canExecuteChange(this);
       command.execute(this);
     });
-    rowElement.appendChild(ejectButton);
-    // Mark the row as ejectable (for CSS styling positioning).
+
+    // Add the eject button as the last element of the tree row content.
+    const parent = rowElement.querySelector('.label').parentElement;
+    assert(parent).appendChild(ejectButton);
+
+    // Mark the tree row element with CSS class .ejectable.
     rowElement.classList.add('ejectable');
 
     // Disable paper-ripple on this rowElement, crbug.com/965382.
@@ -672,11 +685,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     if (rowRipple) {
       rowRipple.setAttribute('style', 'visibility:hidden');
     }
-    // Add paper-ripple effect on the eject button.
-    const ripple = cr.doc.createElement('paper-ripple');
-    ripple.setAttribute('fit', '');
-    ripple.className = 'circle recenteringTouch';
-    ejectButton.appendChild(ripple);
   }
 
   /**
@@ -1063,14 +1071,16 @@ class VolumeItem extends DirectoryItem {
   }
 
   /**
-   * Set up rename input textbox placeholder if needed.
-   * @param {HTMLElement} rowElement The parent element for placeholder.
+   * Set up rename input textbox placeholder element. Place it just after the
+   * tree row '.label' class element.
+   * @param {!HTMLElement} rowElement Tree row element.
    * @private
    */
   setupRenamePlaceholder_(rowElement) {
     const placeholder = cr.doc.createElement('span');
     placeholder.className = 'rename-placeholder';
-    rowElement.appendChild(placeholder);
+    rowElement.querySelector('.label').insertAdjacentElement(
+        'afterend', placeholder);
   }
 
   /**
@@ -1578,14 +1588,14 @@ class ShortcutItem extends cr.ui.TreeItem {
 // AndroidAppItem
 
 /**
- * A TreeItem which represents an Android picker app.
- * Android app items are displayed as top-level children of DirectoryTree.
+ * A TreeItem representing an Android picker app. These Android app items are
+ * shown as top-level volume entries of the DirectoryTree.
  */
 class AndroidAppItem extends cr.ui.TreeItem {
   /**
-   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem of
-   *     this volume.
-   * @param {!DirectoryTree} tree Current tree, which contains this item.
+   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem
+   *     associated with this volume.
+   * @param {!DirectoryTree} tree Directory tree.
    */
   constructor(modelItem, tree) {
     super();
@@ -1616,9 +1626,14 @@ class AndroidAppItem extends cr.ui.TreeItem {
       }
     }
 
+    // Create an external link icon. TODO(crbug.com/986169) does this icon
+    // element need aria-label, role, tabindex, etc?
     const externalLinkIcon = cr.doc.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
-    this.rowElement.appendChild(externalLinkIcon);
+
+    // Add the external link as the last element of the tree row content.
+    const parent = this.rowElement.querySelector('.label').parentElement;
+    assert(parent).appendChild(externalLinkIcon);
   }
 
   /**
@@ -1673,6 +1688,10 @@ class FakeItem extends cr.ui.TreeItem {
     this.labelElement.id = labelId;
     this.label = modelItem.label;
     this.directoryModel_ = tree.directoryModel;
+
+    if (tree.disabledContextMenu) {
+      cr.ui.contextMenuHandler.setContextMenu(this, tree.disabledContextMenu);
+    }
 
     const icon = queryRequiredElement('.icon', this);
     icon.classList.add('item-icon');
@@ -1927,10 +1946,6 @@ class DirectoryTree extends cr.ui.Tree {
       itemIndex++;
       modelIndex++;
     }
-
-    // if (itemIndex !== 0) {
-    //  this.hasChildren = true;
-    //}
   }
 
   /**
@@ -2250,6 +2265,7 @@ DirectoryTree.decorate =
 
 cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);
 cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
+cr.defineProperty(DirectoryTree, 'disabledContextMenu', cr.PropertyKind.JS);
 
 /**
  * Creates a new DirectoryItem based on |modelItem|.

@@ -81,7 +81,7 @@ class _PuppetRunSummary(object):
     """Return mapping of resources information."""
     resources = self._data.get('resources', {})
     total = resources.pop('total', 0)
-    resources['other'] = max(0, total - sum(resources.itervalues()))
+    resources['other'] = max(0, total - sum(resources.values()))
     return resources
 
   @property
@@ -90,7 +90,7 @@ class _PuppetRunSummary(object):
     times = self._data.get('time', {}).copy()
     times.pop('last_run', None)
     total = times.pop('total', 0)
-    times['other'] = max(0, total - sum(times.itervalues()))
+    times['other'] = max(0, total - sum(times.values()))
     return times
 
   @property
@@ -111,13 +111,13 @@ def collect_puppet_summary():
     _config_version_metric.set(summary.config_version)
     _puppet_version_metric.set(str(summary.puppet_version))
 
-    for key, value in summary.events.iteritems():
+    for key, value in summary.events.items():
       _events_metric.set(value, {'result': key})
 
-    for key, value in summary.resources.iteritems():
+    for key, value in summary.resources.items():
       _resources_metric.set(value, {'action': key})
 
-    for key, value in summary.times.iteritems():
+    for key, value in summary.times.items():
       _times_metric.set(value, {'step': key})
 
     if summary.last_run_time is not None:

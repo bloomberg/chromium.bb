@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/producer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/tracing_service.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/producer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
 namespace perfetto {
 class CommitDataRequest;
@@ -69,7 +69,8 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // This interface gets called by the per-process ProducerClients
   // to signal that there's changes to be committed to the
   // Shared Memory buffer (like finished chunks).
-  void CommitData(const perfetto::CommitDataRequest& data_request) override;
+  void CommitData(const perfetto::CommitDataRequest& data_request,
+                  CommitDataCallback callback) override;
 
   // Called by the ProducerClient to signal the Host that it can
   // provide a specific data source.

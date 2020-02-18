@@ -6,6 +6,7 @@
 #define UI_VIEWS_WINDOW_NON_CLIENT_VIEW_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
 
@@ -23,8 +24,7 @@ class ClientView;
 class VIEWS_EXPORT NonClientFrameView : public View,
                                         public ViewTargeterDelegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(NonClientFrameView);
 
   enum {
     // Various edges of the frame border have a 1 px shadow along their edges;
@@ -66,6 +66,12 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   // used.
   virtual bool GetClientMask(const gfx::Size& size, SkPath* mask) const;
 
+#if defined(OS_WIN)
+  // Returns the point in screen physical coordinates at which the system menu
+  // should be opened.
+  virtual gfx::Point GetSystemMenuScreenPixelLocation() const;
+#endif
+
   // This function must ask the ClientView to do a hittest.  We don't do this in
   // the parent NonClientView because that makes it more difficult to calculate
   // hittests for regions that are partially obscured by the ClientView, e.g.
@@ -89,7 +95,6 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 
   // View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
 
  protected:
@@ -100,6 +105,13 @@ class VIEWS_EXPORT NonClientFrameView : public View,
                          const gfx::Rect& rect) const override;
 
  private:
+#if defined(OS_WIN)
+  // Returns the y coordinate, in local coordinates, at which the system menu
+  // should be opened.  Since this is in DIP, it does not include the 1 px
+  // offset into the caption area; the caller will take care of this.
+  virtual int GetSystemMenuY() const;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameView);
 };
 
@@ -141,8 +153,7 @@ class VIEWS_EXPORT NonClientFrameView : public View,
 //
 class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
  public:
-  // Internal class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(NonClientView);
 
   NonClientView();
   ~NonClientView() override;
@@ -217,7 +228,6 @@ class VIEWS_EXPORT NonClientView : public View, public ViewTargeterDelegate {
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
 
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 

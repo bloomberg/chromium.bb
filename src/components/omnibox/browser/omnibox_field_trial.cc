@@ -223,53 +223,37 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
   return base::TimeDelta::FromMilliseconds(1500);
 }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(
+// static
+std::string OmniboxFieldTrial::GetZeroSuggestVariant(
     OmniboxEventProto::PageClassification page_classification) {
-  return InZeroSuggestMostVisitedWithoutSerpFieldTrial(page_classification) ||
-         internal::GetValueForRuleInContextByFeature(
-             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-             page_classification) == "MostVisited";
-}
+  // Note: This code is required since at this point we have no way to set the
+  // ZeroSuggestVariant parameter state with Finch Forcing groups.
+  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
+    auto result = internal::GetValueForRuleInContextByFeature(
+        omnibox::kZeroSuggestionsOnNTP, kZeroSuggestVariantRule,
+        page_classification);
+    if (!result.empty())
+      return result;
+  }
 
-bool OmniboxFieldTrial::InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-    OmniboxEventProto::PageClassification page_classification) {
-  std::string variant = internal::GetValueForRuleInContextByFeature(
+  return internal::GetValueForRuleInContextByFeature(
       omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
       page_classification);
-  if (variant == "MostVisitedWithoutSERP")
-    return true;
-#if defined(OS_ANDROID)
-  // Android defaults to MostVisitedWithoutSERP
-  return variant.empty();
-#elif defined(OS_IOS)
-  // iOS defaults to MostVisitedWithoutSERP
-  return variant.empty();
-#else
-  return false;
-#endif
 }
 
 // static
-bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial(
-    OmniboxEventProto::PageClassification page_classification) {
-  return internal::GetValueForRuleInContextByFeature(
-             omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-             page_classification) == "Personalized";
-}
-
 // static
-int OmniboxFieldTrial::GetZeroSuggestRedirectToChromeExperimentId() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kZeroSuggestRedirectToChrome,
-      kZeroSuggestRedirectToChromeExperimentIdParam,
-      /*default_value=*/-1);
-}
-
-// static
-std::string OmniboxFieldTrial::GetZeroSuggestRedirectToChromeServerAddress() {
+std::string OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointURL() {
   return base::GetFieldTrialParamValueByFeature(
-      omnibox::kZeroSuggestRedirectToChrome,
-      kZeroSuggestRedirectToChromeServerAddressParam);
+      omnibox::kOnFocusSuggestions, kOnFocusSuggestionsEndpointURLParam);
+}
+
+// static
+int OmniboxFieldTrial::GetOnFocusSuggestionsCustomEndpointExperimentId() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kOnFocusSuggestions,
+      kOnFocusSuggestionsEndpointExperimentIdParam,
+      /*default_value=*/-1);
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
@@ -720,6 +704,10 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 
+bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -795,21 +783,10 @@ const char OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam[] =
     "UIMaxAutocompleteMatchesByProvider";
 const char OmniboxFieldTrial::kUIVerticalMarginParam[] = "UIVerticalMargin";
 
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName[] =
-    "treatment";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure[] =
-    "ev-to-secure";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterSecureToLock[] =
-    "secure-to-lock";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock[] =
-    "both-to-lock";
-const char OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip[] =
-    "keep-secure-chip";
-
-const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeExperimentIdParam[] =
-    "ZeroSuggestRedirectToChromeExperimentID";
-const char OmniboxFieldTrial::kZeroSuggestRedirectToChromeServerAddressParam[] =
-    "ZeroSuggestRedirectToChromeServerAddress";
+const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointExperimentIdParam[] =
+    "CustomEndpointExperimentID";
+const char OmniboxFieldTrial::kOnFocusSuggestionsEndpointURLParam[] =
+    "CustomEndpointURL";
 
 // static
 int OmniboxFieldTrial::kDefaultMinimumTimeBetweenSuggestQueriesMs = 100;

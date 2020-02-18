@@ -1,15 +1,9 @@
 package HTML::Parser;
 
-# Copyright 1996-2009, Gisle Aas.
-# Copyright 1999-2000, Michael A. Chase.
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the same terms as Perl itself.
-
 use strict;
 use vars qw($VERSION @ISA);
 
-$VERSION = "3.69";
+$VERSION = "3.72";
 
 require HTML::Entities;
 
@@ -373,7 +367,7 @@ Empty element tags look like start tags, but end with the character
 sequence "/>" instead of ">".  When recognized by C<HTML::Parser> they
 cause an artificial end event in addition to the start event.  The
 C<text> for the artificial end event will be empty and the C<tokenpos>
-array will be undefined even though the the token array will have one
+array will be undefined even though the token array will have one
 element containing the tag name.
 
 =item $p->marked_sections
@@ -1190,7 +1184,7 @@ The result of decoding will be a mix of encoded and decoded characters
 for any entities that expand to characters with code above 127.  This
 is not a good thing.
 
-The recommened solution is to apply Encode::decode_utf8() on the data before
+The recommended solution is to apply Encode::decode_utf8() on the data before
 feeding it to the $p->parse().  For $p->parse_file() pass a file that has been
 opened in ":utf8" mode.
 
@@ -1231,7 +1225,7 @@ be found at L<http://www.is-thought.co.uk/book/sgml-8.htm>.
 
 =head1 COPYRIGHT
 
- Copyright 1996-2008 Gisle Aas. All rights reserved.
+ Copyright 1996-2016 Gisle Aas. All rights reserved.
  Copyright 1999-2000 Michael A. Chase.  All rights reserved.
 
 This library is free software; you can redistribute it and/or

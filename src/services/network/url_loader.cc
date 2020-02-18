@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -44,13 +45,14 @@
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/resource_scheduler_client.h"
-#include "services/network/sec_fetch_site.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/sec_header_helpers.h"
 #include "services/network/throttling/scoped_throttling_token.h"
 
 namespace network {
@@ -302,11 +304,31 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
 
+bool ShouldNotifyAboutCookie(
+    net::CanonicalCookie::CookieInclusionStatus status) {
+  // Notify about cookies actually used, and those blocked by preferences ---
+  // for purposes of cookie UI --- as well those pertaining to the
+  // samesite-by-default and samesite-none-must-be-secure features, in order
+  // to issue a deprecation warning for them.
+  switch (status) {
+    case net::CanonicalCookie::CookieInclusionStatus::INCLUDE:
+    case net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
+    case net::CanonicalCookie::CookieInclusionStatus::
+        EXCLUDE_SAMESITE_NONE_INSECURE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 URLLoader::URLLoader(
     net::URLRequestContext* url_request_context,
     mojom::NetworkServiceClient* network_service_client,
+    mojom::NetworkContextClient* network_context_client,
     DeleteCallback delete_callback,
     mojom::URLLoaderRequest url_loader_request,
     int32_t options,
@@ -321,6 +343,7 @@ URLLoader::URLLoader(
     mojom::TrustedURLLoaderHeaderClient* url_loader_header_client)
     : url_request_context_(url_request_context),
       network_service_client_(network_service_client),
+      network_context_client_(network_context_client),
       delete_callback_(std::move(delete_callback)),
       options_(options),
       corb_detachable_(request.corb_detachable),
@@ -353,14 +376,15 @@ URLLoader::URLLoader(
       custom_proxy_use_alternate_proxy_list_(
           request.custom_proxy_use_alternate_proxy_list),
       fetch_window_id_(request.fetch_window_id),
-      weak_ptr_factory_(this) {
+      update_network_isolation_key_on_redirect_(
+          request.update_network_isolation_key_on_redirect) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     CHECK(!url_loader_client_.internal_state()
-                    ->handle()
-                    .QuerySignalsState()
-                    .peer_remote())
+               ->handle()
+               .QuerySignalsState()
+               .peer_remote())
         << "URLLoader must not be used by the renderer when network service is "
         << "disabled, as that skips security checks in ResourceDispatcherHost. "
         << "The only acceptable usage is the browser using SimpleURLLoader.";
@@ -390,6 +414,19 @@ URLLoader::URLLoader(
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 
+  // Populate network isolation key from the factory params or from the resource
+  // request for navigation resources.
+  if (!request.trusted_network_isolation_key.IsEmpty()) {
+    DCHECK(!factory_params_->network_isolation_key);
+    url_request_->set_network_isolation_key(
+        request.trusted_network_isolation_key);
+  }
+  if (factory_params_->network_isolation_key) {
+    DCHECK(request.trusted_network_isolation_key.IsEmpty());
+    url_request_->set_network_isolation_key(
+        factory_params_->network_isolation_key.value());
+  }
+
   // |cors_excempt_headers| must be merged here to avoid breaking CORS checks.
   // They are non-empty when the values are given by the UA code, therefore
   // they should be ignored by CORS checks.
@@ -404,11 +441,10 @@ URLLoader::URLLoader(
                             std::make_unique<UnownedPointer>(this));
 
   is_nocors_corb_excluded_request_ =
-      request.corb_excluded &&
-      request.fetch_request_mode == mojom::FetchRequestMode::kNoCors &&
+      request.corb_excluded && request.mode == mojom::RequestMode::kNoCors &&
       CrossOriginReadBlocking::ShouldAllowForPlugin(
           factory_params_->process_id);
-  fetch_request_mode_ = request.fetch_request_mode;
+  request_mode_ = request.mode;
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
@@ -470,8 +506,7 @@ class URLLoader::FileOpenerForUpload {
         url_loader_(url_loader),
         process_id_(process_id),
         network_service_client_(network_service_client),
-        set_up_upload_callback_(std::move(set_up_upload_callback)),
-        weak_ptr_factory_(this) {
+        set_up_upload_callback_(std::move(set_up_upload_callback)) {
     StartOpeningNextBatch();
   }
 
@@ -552,7 +587,7 @@ class URLLoader::FileOpenerForUpload {
   // The files opened so far.
   std::vector<base::File> opened_files_;
 
-  base::WeakPtrFactory<FileOpenerForUpload> weak_ptr_factory_;
+  base::WeakPtrFactory<FileOpenerForUpload> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileOpenerForUpload);
 };
@@ -658,6 +693,34 @@ void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
     return;
   }
 
+  if (!modified_headers.IsEmpty())
+    LogConcerningRequestHeaders(modified_headers,
+                                true /* added_during_redirect */);
+
+  // See if network isolation key needs to be updated.
+  // TODO(crbug.com/979296): Consider changing this code to copy an origin
+  // instead of creating one from a URL which lacks opacity information
+  if (url_request_->network_isolation_key().IsFullyPopulated() &&
+      update_network_isolation_key_on_redirect_ !=
+          mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate) {
+    const GURL& url = new_url ? new_url.value() : *deferred_redirect_url_;
+    const url::Origin& new_origin = url::Origin::Create(url);
+
+    if (update_network_isolation_key_on_redirect_ ==
+        mojom::UpdateNetworkIsolationKeyOnRedirect::
+            kUpdateTopFrameAndFrameOrigin) {
+      url_request_->set_network_isolation_key(net::NetworkIsolationKey(
+          new_origin /* top frame origin */, new_origin /* frame origin */));
+    } else if (update_network_isolation_key_on_redirect_ ==
+               mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin) {
+      base::Optional<url::Origin> top_frame_origin =
+          url_request_->network_isolation_key().GetTopFrameOrigin();
+      DCHECK(top_frame_origin);
+      url_request_->set_network_isolation_key(
+          net::NetworkIsolationKey(top_frame_origin.value(), new_origin));
+    }
+  }
+
   deferred_redirect_url_.reset();
   new_redirect_url_ = new_url;
 
@@ -740,16 +803,22 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
     raw_response_headers_ = nullptr;
   }
 
+  ReportFlaggedResponseCookies();
+
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response->head,
-          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock,
+          factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
   }
 
+  // We may need to clear out old Sec- prefixed request headers. We'll attempt
+  // to do this before we re-add any.
+  MaybeRemoveSecHeaders(url_request_.get(), redirect_info.new_url);
   SetSecFetchSiteHeader(url_request_.get(), &redirect_info.new_url,
                         *factory_params_);
 
@@ -780,8 +849,8 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
     head.headers = url_request->response_headers();
   head.auth_challenge_info = auth_info;
   network_service_client_->OnAuthRequired(
-      factory_params_->process_id, render_frame_id_, request_id_,
-      url_request_->url(), first_auth_attempt_, auth_info, head,
+      fetch_window_id_, factory_params_->process_id, render_frame_id_,
+      request_id_, url_request_->url(), first_auth_attempt_, auth_info, head,
       std::move(auth_challenge_responder));
 
   first_auth_attempt_ = false;
@@ -844,6 +913,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
 void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   DCHECK(url_request == url_request_.get());
 
+  ReportFlaggedResponseCookies();
+
   if (net_error != net::OK) {
     NotifyCompleted(net_error);
     // |this| may have been deleted.
@@ -898,7 +969,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response_->head,
-          fetch_request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock,
+          factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -913,7 +985,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             url_request_->url(), url_request_->initiator(), response_->head,
-            factory_params_->request_initiator_site_lock, fetch_request_mode_);
+            factory_params_->request_initiator_site_lock, request_mode_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
@@ -1126,32 +1198,6 @@ int URLLoader::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  if (network_service_client_) {
-    // For now we're only using excluded/flagged cookies pertaining to the
-    // samesite-by-default and samesite-none-must-be-secure features, so the
-    // flagged cookies are being further filtered beofre sending.
-    net::CookieAndLineStatusList flagged_cookies;
-    for (const auto& cookie_line_and_status :
-         url_request_->not_stored_cookies()) {
-      if (cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-          cookie_line_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_NONE_INSECURE) {
-        flagged_cookies.emplace_back(cookie_line_and_status.cookie,
-                                     cookie_line_and_status.cookie_string,
-                                     cookie_line_and_status.status);
-      }
-    }
-
-    if (!flagged_cookies.empty()) {
-      // TODO(crbug.com/856777): add OnRawResponse once implemented
-      network_service_client_->OnFlaggedResponseCookies(
-          GetProcessId(), GetRenderFrameId(), flagged_cookies);
-    }
-  }
-
   if (header_client_) {
     header_client_->OnHeadersReceived(
         original_response_headers->raw_headers(),
@@ -1219,6 +1265,9 @@ void URLLoader::OnAuthCredentials(
   if (!credentials.has_value()) {
     url_request_->CancelAuth();
   } else {
+    // CancelAuth will proceed to the body, so cookies only need to be reported
+    // here.
+    ReportFlaggedResponseCookies();
     url_request_->SetAuth(credentials.value());
   }
 }
@@ -1359,28 +1408,37 @@ void URLLoader::SetRawResponseHeaders(
 
 void URLLoader::SetRawRequestHeadersAndNotify(
     net::HttpRawRequestHeaders headers) {
-  if (network_service_client_) {
-    // TODO(crbug.com/856777): Add OnRawRequest once implemented
+  if (network_service_client_ && devtools_request_id()) {
+    std::vector<network::mojom::HttpRawHeaderPairPtr> header_array;
+    header_array.reserve(headers.headers().size());
 
-    // For now we're only using excluded/flagged cookies pertaining to the
-    // samesite-by-default and samesite-none-must-be-secure features, so the
-    // flagged cookies are being further filtered before sending.
-    net::CookieStatusList flagged_cookies;
-    for (const auto& cookie_and_status : url_request_->not_sent_cookies()) {
-      if (cookie_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-          cookie_and_status.status ==
-              net::CanonicalCookie::CookieInclusionStatus::
-                  EXCLUDE_SAMESITE_NONE_INSECURE) {
-        flagged_cookies.push_back(
+    for (const auto& header : headers.headers()) {
+      network::mojom::HttpRawHeaderPairPtr pair =
+          network::mojom::HttpRawHeaderPair::New();
+      pair->key = header.first;
+      pair->value = header.second;
+      header_array.push_back(std::move(pair));
+    }
+
+    network_service_client_->OnRawRequest(
+        GetProcessId(), GetRenderFrameId(), devtools_request_id().value(),
+        url_request_->maybe_sent_cookies(), std::move(header_array));
+  }
+
+  if (network_context_client_) {
+    net::CookieStatusList reported_cookies;
+    for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
+      if (ShouldNotifyAboutCookie(cookie_and_status.status)) {
+        reported_cookies.push_back(
             {cookie_and_status.cookie, cookie_and_status.status});
       }
     }
 
-    if (!flagged_cookies.empty()) {
-      network_service_client_->OnFlaggedRequestCookies(
-          GetProcessId(), GetRenderFrameId(), flagged_cookies);
+    if (!reported_cookies.empty()) {
+      network_context_client_->OnCookiesRead(
+          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
+          url_request_->url(), url_request_->site_for_cookies(),
+          reported_cookies);
     }
   }
 
@@ -1543,6 +1601,60 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
       FROM_HERE,
       base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
   return kWillCancelRequest;
+}
+
+void URLLoader::ReportFlaggedResponseCookies() {
+  if (network_service_client_ && devtools_request_id() &&
+      url_request_->response_headers()) {
+    std::vector<network::mojom::HttpRawHeaderPairPtr> header_array;
+
+    size_t iterator = 0;
+    std::string name, value;
+    while (url_request_->response_headers()->EnumerateHeaderLines(
+        &iterator, &name, &value)) {
+      network::mojom::HttpRawHeaderPairPtr pair =
+          network::mojom::HttpRawHeaderPair::New();
+      pair->key = name;
+      pair->value = value;
+      header_array.push_back(std::move(pair));
+    }
+
+    // Only send the "raw" header text when the headers were actually send in
+    // text form (i.e. not QUIC or SPDY)
+    base::Optional<std::string> raw_response_headers;
+
+    const net::HttpResponseInfo& response_info = url_request_->response_info();
+
+    if (!response_info.DidUseQuic() && !response_info.was_fetched_via_spdy) {
+      raw_response_headers =
+          base::make_optional(net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+              url_request_->response_headers()->raw_headers()));
+    }
+
+    network_service_client_->OnRawResponse(
+        GetProcessId(), GetRenderFrameId(), devtools_request_id().value(),
+        url_request_->maybe_stored_cookies(), std::move(header_array),
+        raw_response_headers);
+  }
+
+  if (network_context_client_) {
+    net::CookieStatusList reported_cookies;
+    for (const auto& cookie_line_and_status :
+         url_request_->maybe_stored_cookies()) {
+      if (ShouldNotifyAboutCookie(cookie_line_and_status.status) &&
+          cookie_line_and_status.cookie) {
+        reported_cookies.push_back({cookie_line_and_status.cookie.value(),
+                                    cookie_line_and_status.status});
+      }
+    }
+
+    if (!reported_cookies.empty()) {
+      network_context_client_->OnCookiesChanged(
+          /* is_service_worker = */ false, GetProcessId(), GetRenderFrameId(),
+          url_request_->url(), url_request_->site_for_cookies(),
+          reported_cookies);
+    }
+  }
 }
 
 }  // namespace network

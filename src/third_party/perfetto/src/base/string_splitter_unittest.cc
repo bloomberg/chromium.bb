@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/string_splitter.h"
+#include "perfetto/ext/base/string_splitter.h"
 
 #include <vector>
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace base {

@@ -121,11 +121,11 @@ class WebView {
   // used as the error code instead of |kUnknownError| in appropriate cases, and
   // respects timeout.
   // |result| will never be NULL on success.
-  virtual Status CallUserSyncFunction(const std::string& frame,
-                                      const std::string& function,
-                                      const base::ListValue& args,
-                                      const base::TimeDelta& timeout,
-                                      std::unique_ptr<base::Value>* result) = 0;
+  virtual Status CallUserSyncScript(const std::string& frame,
+                                    const std::string& script,
+                                    const base::ListValue& args,
+                                    const base::TimeDelta& timeout,
+                                    std::unique_ptr<base::Value>* result) = 0;
 
   // Gets the frame ID for a frame element returned by invoking the given
   // JavaScript function. |frame| is a frame ID or an empty string for the main
@@ -193,6 +193,10 @@ class WebView {
   virtual Status OverrideNetworkConditions(
       const NetworkConditions& network_conditions) = 0;
 
+  // Overrides normal download directory with given path.
+  virtual Status OverrideDownloadDirectoryIfNeeded(
+      const std::string& download_directory) = 0;
+
   // Captures the visible portions of the web view as a base64-encoded PNG.
   virtual Status CaptureScreenshot(
       std::string* screenshot,
@@ -228,14 +232,6 @@ class WebView {
                                          int y,
                                          int xoffset,
                                          int yoffset) = 0;
-
-  virtual Status SynthesizePinchGesture(int x, int y, double scale_factor) = 0;
-
-  virtual Status GetScreenOrientation(std::string* orientation) = 0;
-
-  virtual Status SetScreenOrientation(std::string orientation) = 0;
-
-  virtual Status DeleteScreenOrientation() = 0;
 
   virtual bool IsOOPIF(const std::string& frame_id) = 0;
 

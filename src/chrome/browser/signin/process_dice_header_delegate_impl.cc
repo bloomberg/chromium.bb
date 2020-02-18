@@ -9,9 +9,9 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 namespace {
@@ -28,7 +28,7 @@ void RedirectToNtp(content::WebContents* contents) {
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     content::WebContents* web_contents,
     signin::AccountConsistencyMethod account_consistency,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
     ShowSigninErrorCallback show_signin_error_callback,

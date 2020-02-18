@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/model/clear_storage_task.h"
+#include "components/offline_pages/core/offline_page_archive_publisher.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_model_event_logger.h"
@@ -38,10 +39,9 @@ struct ClientId;
 struct OfflinePageItem;
 
 class ArchiveManager;
-class ClientPolicyController;
+class OfflinePageArchivePublisher;
 class OfflinePageArchiver;
 class OfflinePageMetadataStore;
-class SystemDownloadManager;
 
 // Implementaion of OfflinePageModel, which is a service for saving pages
 // offline. It's an entry point to get information about Offline Pages and the
@@ -65,7 +65,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   OfflinePageModelTaskified(
       std::unique_ptr<OfflinePageMetadataStore> store,
       std::unique_ptr<ArchiveManager> archive_manager,
-      std::unique_ptr<SystemDownloadManager> download_manager,
+      std::unique_ptr<OfflinePageArchivePublisher> archive_publisher,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModelTaskified() override;
 
@@ -105,11 +105,9 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
-  ClientPolicyController* GetPolicyController() override;
   OfflineEventLogger* GetLogger() override;
   void PublishInternalArchive(
       const OfflinePageItem& offline_page,
-      std::unique_ptr<OfflinePageArchiver> archiver,
       PublishPageCallback publish_done_callback) override;
 
   // Methods for testing only:
@@ -122,7 +120,6 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   }
 
  private:
-  // TODO(romax): https://crbug.com/791115, remove the friend class usage.
   friend class OfflinePageModelTaskifiedTest;
 
   // Callbacks for saving pages.
@@ -172,25 +169,22 @@ class OfflinePageModelTaskified : public OfflinePageModel,
                               ClearStorageTask::ClearStorageResult result);
   void OnPersistentPageConsistencyCheckDone(
       bool success,
-      const std::vector<int64_t>& pages_deleted);
+      const std::vector<PublishedArchiveId>& ids_of_deleted_pages);
 
   // Callback for when PublishArchive has completd.
-  void PublishArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
-                          SavePageCallback save_page_callback,
+  void PublishArchiveDone(SavePageCallback save_page_callback,
                           base::Time publish_start_time,
                           const OfflinePageItem& offline_page,
                           PublishArchiveResult publish_results);
 
   // Callback for when publishing an internal archive has completed.
-  void PublishInternalArchiveDone(std::unique_ptr<OfflinePageArchiver> archiver,
-                                  PublishPageCallback publish_done_callback,
+  void PublishInternalArchiveDone(PublishPageCallback publish_done_callback,
                                   const OfflinePageItem& offline_page,
                                   PublishArchiveResult publish_results);
 
-  // Method for unpublishing the page from the system download manager.
-  static void RemoveFromDownloadManager(
-      SystemDownloadManager* download_manager,
-      const std::vector<int64_t>& system_download_ids);
+  // Method for unpublishing the page from downloads.
+  static void Unpublish(OfflinePageArchivePublisher* publisher,
+                        const std::vector<PublishedArchiveId>& publish_ids);
 
   // Other utility methods.
   void RemovePagesMatchingUrlAndNamespace(const OfflinePageItem& page);
@@ -202,11 +196,8 @@ class OfflinePageModelTaskified : public OfflinePageModel,
   // Manager for the offline archive files and directory.
   std::unique_ptr<ArchiveManager> archive_manager_;
 
-  // Manages interaction with the OS download manager, if present.
-  std::unique_ptr<SystemDownloadManager> download_manager_;
-
-  // Controller of the client policies.
-  std::unique_ptr<ClientPolicyController> policy_controller_;
+  // Used for moving archives into public storage.
+  std::unique_ptr<OfflinePageArchivePublisher> archive_publisher_;
 
   // The observers.
   base::ObserverList<Observer>::Unchecked observers_;
@@ -233,7 +224,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageModelTaskified> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelTaskified);
 };

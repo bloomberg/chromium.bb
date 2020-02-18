@@ -32,6 +32,12 @@ class NavigationManager {
     this.textInputManager_ = new TextInputManager(this);
 
     /**
+     * Handles text navigation actions.
+     * @private {!TextNavigationManager}
+     */
+    this.textNavigationManager_ = new TextNavigationManager(this);
+
+    /**
      * The desktop node.
      * @private {!chrome.automation.AutomationNode}
      */
@@ -95,6 +101,14 @@ class NavigationManager {
     this.focusedScope_;
 
     this.init_();
+  }
+
+  /**
+   * Get the currently highlighted node.
+   * @return {!chrome.automation.AutomationNode} the current node
+   */
+  currentNode() {
+    return this.node_;
   }
 
   /**
@@ -232,6 +246,98 @@ class NavigationManager {
   }
 
   /**
+   * Moves the text caret to the beginning of the current node.
+   * @public
+   */
+  jumpToBeginningOfText() {
+    this.textNavigationManager_.jumpToBeginning();
+  }
+
+  /**
+   * Moves the text caret to the end of the current node.
+   * @public
+   */
+  jumpToEndOfText() {
+    this.textNavigationManager_.jumpToEnd();
+  }
+
+  /**
+   * Moves the text caret backward one character in the current
+   * node.
+   * @public
+   */
+  moveBackwardOneCharOfText() {
+    this.textNavigationManager_.moveBackwardOneChar();
+  }
+
+  /**
+   * Moves the text caret backward one word in the current node.
+   * @public
+   */
+  moveBackwardOneWordOfText() {
+    this.textNavigationManager_.moveBackwardOneWord();
+  }
+
+  /**
+   * Moves the text caret down one line in the current node.
+   * @public
+   */
+  moveDownOneLineOfText() {
+    this.textNavigationManager_.moveDownOneLine();
+  }
+
+  /**
+   * Moves the text caret forward one character in the current
+   * node.
+   * @public
+   */
+  moveForwardOneCharOfText() {
+    this.textNavigationManager_.moveForwardOneChar();
+  }
+
+  /**
+   * Moves the text caret forward one word in the current node.
+   * @public
+   */
+  moveForwardOneWordOfText() {
+    this.textNavigationManager_.moveForwardOneWord();
+  }
+
+  /**
+   * Moves the text caret up one line in the current node.
+   * @public
+   */
+  moveUpOneLineOfText() {
+    this.textNavigationManager_.moveUpOneLine();
+  }
+
+  /**
+   * Sets the selectionStart variable based on the selection of the current
+   * node.
+   * @public
+   */
+  setSelectStart() {
+    this.textNavigationManager_.setSelectStart();
+  }
+
+  /**
+   * Sets the selectionEnd variable based on the selection of the current node.
+   * @public
+   */
+  setSelectEnd() {
+    this.textNavigationManager_.setSelectEnd();
+  }
+
+  /**
+   * Returns whether or not the first selection index has been set.
+   * @return {boolean}
+   * @public
+   */
+  selectionStarted() {
+    return this.textNavigationManager_.isSelStartIndexSet();
+  }
+
+  /**
    * Perform the default action for the currently highlighted node. If the node
    * is the current scope, go back to the previous scope. If the node is a group
    * other than the current scope, go into that scope. If the node is
@@ -246,6 +352,13 @@ class NavigationManager {
 
     if (!this.node_.role)
       return;
+
+    if (window.switchAccess.textEditingEnabled()) {
+      if (SwitchAccessPredicate.isTextInput(this.node_)) {
+        this.node_.focus();
+        return;
+      }
+    }
 
     if (this.textInputManager_.pressKey(this.node_)) {
       return;
@@ -534,11 +647,12 @@ class NavigationManager {
    */
   updateFocusRings_() {
     const focusRect = this.node_.location;
+
     // If the scope element has not changed, we want to use the previously
     // calculated rect as the current scope rect.
-    let scopeRect = this.scope_ === this.focusedScope_ ?
-        this.scopeFocusRing_.rects[0] :
-        this.scope_.location;
+    let scopeRect = this.scope_.location;
+    if (this.scopeFocusRing_.rects.length && this.scope_ === this.focusedScope_)
+      scopeRect = this.scopeFocusRing_.rects[0];
     this.focusedScope_ = this.scope_;
 
     if (this.node_ === this.backButtonManager_.buttonNode()) {

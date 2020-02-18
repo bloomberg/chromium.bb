@@ -20,8 +20,8 @@ class SequencedTaskRunner;
 namespace media {
 
 class AndroidOverlay;
-struct AVDASurfaceBundle;
 class CodecImage;
+class CodecSurfaceBundle;
 
 // Object that lives on the GPU thread that knows about all CodecImages that
 // share the same bundle.  We are responsible for keeping the surface bundle
@@ -42,13 +42,13 @@ class MEDIA_GPU_EXPORT CodecImageGroup
   // any overlay it contains.  All other access to this class will happen on
   // |task_runner|, including destruction.
   CodecImageGroup(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                  scoped_refptr<AVDASurfaceBundle> bundle);
-
-  // Set the callback that we'll notify when any image is destroyed.
-  void SetDestructionCb(CodecImage::DestructionCb destruction_cb);
+                  scoped_refptr<CodecSurfaceBundle> bundle);
 
   // Notify us that |image| uses |surface_bundle_|.
   void AddCodecImage(CodecImage* image);
+
+  // Notify us that |image| no longer depends on |surface_bundle_|.
+  void RemoveCodecImage(CodecImage* image);
 
  protected:
   virtual ~CodecImageGroup();
@@ -63,13 +63,10 @@ class MEDIA_GPU_EXPORT CodecImageGroup
 
  private:
   // Remember that this lives on some other thread.  Do not actually use it.
-  scoped_refptr<AVDASurfaceBundle> surface_bundle_;
+  scoped_refptr<CodecSurfaceBundle> surface_bundle_;
 
   // All the images that use |surface_bundle_|.
   std::unordered_set<CodecImage*> images_;
-
-  // We'll forward CodecImage destructions to |destruction_cb_|.
-  CodecImage::DestructionCb destruction_cb_;
 
   base::WeakPtrFactory<CodecImageGroup> weak_this_factory_;
 };

@@ -27,7 +27,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_associated_remote.h"
-#include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +40,7 @@ using mojo::internal::MultiplexRouter;
 
 class IntegerSenderImpl : public IntegerSender {
  public:
+  IntegerSenderImpl() = default;
   explicit IntegerSenderImpl(PendingAssociatedReceiver<IntegerSender> receiver)
       : receiver_(this, std::move(receiver)) {}
 
@@ -58,7 +59,7 @@ class IntegerSenderImpl : public IntegerSender {
   AssociatedReceiver<IntegerSender>* receiver() { return &receiver_; }
 
  private:
-  AssociatedReceiver<IntegerSender> receiver_;
+  AssociatedReceiver<IntegerSender> receiver_{this};
   base::RepeatingCallback<void(int32_t)> notify_send_method_called_;
 };
 
@@ -71,9 +72,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   ~IntegerSenderConnectionImpl() override = default;
 
   void GetSender(PendingAssociatedReceiver<IntegerSender> receiver) override {
-    IntegerSenderImpl* sender_impl = new IntegerSenderImpl(std::move(receiver));
-    sender_impl->receiver()->set_disconnect_handler(
-        base::BindOnce(&DeleteSender, sender_impl));
+    DCHECK(receiver.is_valid());
+    senders_.Add(std::make_unique<IntegerSenderImpl>(), std::move(receiver));
   }
 
   void AsyncGetSender(AsyncGetSenderCallback callback) override {
@@ -85,9 +85,8 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
   Receiver<IntegerSenderConnection>* receiver() { return &receiver_; }
 
  private:
-  static void DeleteSender(IntegerSenderImpl* sender) { delete sender; }
-
   Receiver<IntegerSenderConnection> receiver_;
+  UniqueAssociatedReceiverSet<IntegerSender> senders_;
 };
 
 class AssociatedInterfaceTest : public testing::Test {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/mojom/url_test.mojom-blink.h"
@@ -35,7 +35,7 @@ class UrlTestImpl : public url::mojom::blink::UrlTest {
 
 // Mojo version of chrome IPC test in url/ipc/url_param_traits_unittest.cc.
 TEST(KURLSecurityOriginStructTraitsTest, Basic) {
-  base::MessageLoop message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 
   url::mojom::blink::UrlTestPtr proxy;
   UrlTestImpl impl(MakeRequest(&proxy));

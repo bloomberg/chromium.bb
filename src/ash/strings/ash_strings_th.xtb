@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">อุปกรณ์จะทำงานได้ดียิ่งขึ้นเมื่อใช้ร่วมกัน</translation>
 <translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
+<translation id="1175572348579024023">เลื่อน</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
 <translation id="1195412055398077112">โอเวอร์สแกน</translation>
 <translation id="119944043368869598">ล้างทั้งหมด</translation>
-<translation id="123828989343052515">พื้นที่ทำงานใหม่</translation>
 <translation id="1247372569136754018">ไมโครโฟน (ภายใน)</translation>
 <translation id="1252999807265626933">กำลังชาร์จจาก<ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">วันนี้อากาศเป็นยังไงบ้าง</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">ผู้ดูแลระบบเป็นคนกำหนดค่าวิธีการป้อนข้อมูล</translation>
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1761222317188459878">เปิด/ปิดการเชื่อมต่อเครือข่าย <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">เลื่อนไปทางขวา</translation>
 <translation id="1812997170047690955">รายการที่อยู่ในหน้าจอของฉัน</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" />ปิดใช้โดยนโยบายที่ใช้กับอุปกรณ์นี้ โปรดติดต่อผู้ดูแลระบบเพื่อขอให้เปลี่ยนแปลง</translation>
 <translation id="1823873187264960516">อีเทอร์เน็ต: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (กำลังโหลด...)</translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">ตั้งค่าภาษา</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">การป้อนข้อความ</translation>
 <translation id="1993072747612765854">ดูข้อมูลเพิ่มเติมเกี่ยวกับอัปเดตล่าสุดของ <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">ปิดเครื่อง</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">แนวตั้ง</translation>
 <translation id="2067602449040652523">ความสว่างของแป้นพิมพ์</translation>
 <translation id="209965399369889474">ไม่ได้เชื่อมต่อกับเครือข่าย</translation>
+<translation id="2126242104232412123">โต๊ะทำงานใหม่</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="2135456203358955318">แว่นขยายหน้าจอบางส่วน</translation>
 <translation id="2144487987174258011">รีสตาร์ทเพื่ออัปเดต Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธารณะ</translation>
 <translation id="2575685495496069081">ปิดใช้การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีอยู่</translation>
 <translation id="2582112259361606227">รีสตาร์ทเพื่ออัปเดต</translation>
-<translation id="2597972630681408282">แสงตอนกลางคืน: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">ซิมการ์ดถูกล็อก</translation>
+<translation id="2651765386227849097">มีการปิดใช้ Google Assistant ในอุปกรณ์นี้</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2658778018866295321">คลิกแล้วลาก</translation>
 <translation id="2700493154570097719">ตั้งค่าแป้นพิมพ์</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{เชื่อมต่ออุปกรณ์แล้ว 1 เครื่อง}other{เชื่อมต่ออุปกรณ์แล้ว # เครื่อง}}</translation>
 <translation id="3226991577105957773">และอีก <ph name="COUNT" /> รายการ</translation>
 <translation id="3236488194889173876">ไม่มีเครือข่ายมือถือพร้อมใช้งาน</translation>
+<translation id="3249513730522716925">ย้ายหน้าต่าง <ph name="WINDOW_TITLE" /> จากเดสก์ <ph name="ACTIVE_DESK" /> ไปยังเดสก์ <ph name="TARGET_DESK" /> แล้ว</translation>
 <translation id="3255483164551725916">เธอทำอะไรได้บ้าง</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ยังมีสิทธิ์ลงชื่อเข้าใช้ภายหลังได้</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น "<ph name="FROM_LOCALE" />" (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="3576141592585647168">เปลี่ยนแปลงเขตเวลา</translation>
 <translation id="3595596368722241419">แบตเตอรี่เต็ม</translation>
+<translation id="3604801046548457007">สร้างเดสก์ <ph name="DESK_TITILE" /> แล้ว</translation>
 <translation id="3606978283550408104">เชื่อมต่ออุปกรณ์แสดงผลอักษรเบรลล์แล้ว</translation>
 <translation id="3621202678540785336">อินพุต</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">แบตเตอรี่เหลือ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
+<translation id="4021716437419160885">เลื่อนลง</translation>
 <translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
@@ -220,8 +227,7 @@
 <translation id="4296136865091727875">ล้างการแจ้งเตือนทั้งหมด <ph name="COUNT" /> รายการ</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">คุณกดแป้นพิมพ์ลัดสำหรับคอนทราสต์สูง จะเปิดคอนทราสต์สูงไหม</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">แว่นขยาย</translation>
 <translation id="4351433414020964307">Assistant กำลังโหลด...</translation>
 <translation id="435527878592612277">เลือกรูปภาพของคุณ</translation>
@@ -259,9 +265,11 @@
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="490375751687810070">แนวตั้ง</translation>
 <translation id="4905614135390995787">มีการเปลี่ยนแปลงแป้นพิมพ์ลัดสำหรับสลับโหมดคอนทราสต์สูง โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
+<translation id="490788395437447240">แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="4924411785043111640">รีสตาร์ทและรีเซ็ต</translation>
+<translation id="495046168593986294">เลื่อนขึ้น</translation>
 <translation id="4961318399572185831">แคสต์หน้าจอ</translation>
 <translation id="5030687792513154421">หมดเวลา</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> เชื่อมต่อโทรศัพท์เครื่องใหม่แล้ว</translation>
@@ -295,6 +303,7 @@
 <translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5669267381087807207">กำลังเปิดการใช้งาน</translation>
 <translation id="5673434351075758678">เปลี่ยนจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังการซิงก์การตั้งค่า</translation>
+<translation id="5682642926269496722">Google Assistant ไม่พร้อมใช้งานกับบัญชีผู้ใช้ปัจจุบัน</translation>
 <translation id="5691772641933328258">ระบบไม่รู้จักลายนิ้วมือนี้</translation>
 <translation id="5710450975648804523">โหมดห้ามรบกวนเปิดอยู่</translation>
 <translation id="574392208103952083">ขนาดกลาง</translation>
@@ -319,6 +328,8 @@
 <translation id="598882571027504733">หากต้องการรับอัปเดต ให้รีสตาร์ท Chromebook ในขณะที่ยังเชื่อมต่อกับแป้นพิมพ์</translation>
 <translation id="5992218262414051481">เปิดใช้โหมดคอนทราสต์สูงอยู่ กด Ctrl+Search+H อีกครั้งเพื่อสลับเป็นปิด</translation>
 <translation id="6018164090099858612">กำลังออกจากโหมดมิเรอร์</translation>
+<translation id="602001110135236999">เลื่อนไปทางซ้าย</translation>
+<translation id="6040143037577758943">ปิด</translation>
 <translation id="6043212731627905357">จอภาพนี้ใช้งานไม่ได้กับ <ph name="DEVICE_TYPE" /> ของคุณ (ไม่รองรับจอภาพนี้)</translation>
 <translation id="6043994281159824495">ออกจากระบบเลย</translation>
 <translation id="6047696787498798094">การแชร์หน้าจอจะหยุดเมื่อคุณสลับไปเป็นผู้ใช้อีกรายหนึ่ง ต้องการดำเนินการต่อไหม</translation>
@@ -326,6 +337,7 @@
 <translation id="6064337552080329342">ขออภัย ยืนยันรหัสผ่านไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="607652042414456612">ค้นพบคอมพิวเตอร์ของคุณอยู่ใกล้กับอุปกรณ์บลูทูธและจะปรากฏเป็น "<ph name="NAME" />" พร้อมด้วยที่อยู่ <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">กำลังชาร์จ<ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">ใช้ Google Assistant ในเซสชันผู้เยี่ยมชมไม่ได้</translation>
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6164005077879661055">ไฟล์และข้อมูลในตัวเครื่องทั้งหมดที่เกี่ยวข้องกับผู้ใช้ภายใต้การดูแลจะถูกลบออกอย่างถาวรเมื่อผู้ใช้ภายใต้การดูแลนี้ถูกลบ เว็บไซต์ที่เข้าชมและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้อาจจะยังคงมองเห็นได้โดยผู้จัดการที่ <ph name="MANAGEMENT_URL" /></translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
@@ -367,7 +379,9 @@
 <translation id="6713285437468012787">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ได้รับการจับคู่และขณะนี้พร้อมให้บริการแก่ผู้ใช้ทุกคนแล้ว คุณสามารถลบการจับคู่นี้โดยใช้การตั้งค่า</translation>
 <translation id="6715542151869432661">ไม่พบอุปกรณ์เคลื่อนที่</translation>
 <translation id="6723839937902243910">พลังงาน</translation>
+<translation id="6727969043791803658">เชื่อมต่อแล้ว แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">การติดตามประสิทธิภาพเปิดอยู่</translation>
+<translation id="6752912906630585008">นำเดสก์ <ph name="REMOVED_DESK" /> ออกและรวมเข้ากับเดสก์ <ph name="RECEIVE_DESK" /> แล้ว</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
 <translation id="6820676911989879663">พักสายตาหน่อย</translation>
@@ -425,6 +439,7 @@
 <translation id="7692480393933218409">กำลังชาร์จอุปกรณ์ USB-C ที่เชื่อมต่ออยู่</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{การแจ้งเตือน 1 รายการ}other{การแจ้งเตือน # รายการ}}</translation>
+<translation id="7749443890790263709">มีพื้นที่ทำงานครบตามจำนวนสูงสุดแล้ว</translation>
 <translation id="776344839111254542">คลิกเพื่อดูรายละเอียดการอัปเดต</translation>
 <translation id="7780159184141939021">หมุนหน้าจอ</translation>
 <translation id="7796353162336583443">แตะปุ่มสไตลัสในชั้นวางเพื่อจดโน้ต บันทึกภาพหน้าจอ ตลอดจนใช้ Google Assistant ตัวชี้เลเซอร์ หรือแว่นขยาย</translation>
@@ -468,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">สร้างโน้ต</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> นี้และโทรศัพท์จะเชื่อมต่อกันโดยอัตโนมัติ</translation>
+<translation id="8388750414311082622">นำพื้นที่ทำงานสุดท้ายออกไม่ได้</translation>
 <translation id="8392451568018454956">เมนูตัวเลือกสำหรับ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">ผู้ปกครองของคุณล็อกอุปกรณ์นี้ไว้</translation>
 <translation id="8406981827175133772">แว่นขยายทั้งหน้าจอ</translation>
@@ -476,6 +492,7 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433186206711564395">การตั้งค่าเครือข่าย</translation>
 <translation id="8433977262951327081">มีการเปลี่ยนแปลงทางลัดที่ใช้แสดงลูกโป่งเมนูตัวเลือกการป้อนข้อมูลในชั้นวาง โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
+<translation id="8444246603146515890">เปิดใช้งานเดสก์ <ph name="DESK_TITILE" /> แล้ว</translation>
 <translation id="8452135315243592079">ไม่มีซิมการ์ด</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
 <translation id="847056008324733326">การตั้งค่าระดับการแสดงผล</translation>

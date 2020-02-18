@@ -19,21 +19,22 @@
 #include <iomanip>
 #include <iostream>
 #include <list>
-#include <tuple>
-#include <string>
 #include <sstream>
+#include <string>
+#include <tuple>
 #include <utility>
-
-#include "libshaderc_util/compiler.h"
-#include "libshaderc_util/io.h"
-#include "libshaderc_util/string_piece.h"
-#include "shaderc/shaderc.h"
-#include "spirv-tools/libspirv.h"
 
 #include "file.h"
 #include "file_compiler.h"
+#include "libshaderc_util/args.h"
+#include "libshaderc_util/compiler.h"
+#include "libshaderc_util/io.h"
+#include "libshaderc_util/string_piece.h"
 #include "resource_parse.h"
 #include "shader_stage.h"
+#include "shaderc/env.h"
+#include "shaderc/shaderc.h"
+#include "spirv-tools/libspirv.h"
 
 using shaderc_util::string_piece;
 
@@ -66,6 +67,7 @@ Options:
   -fhlsl_functionality1, -fhlsl-functionality1
                     Enable extension SPV_GOOGLE_hlsl_functionality1 for HLSL
                     compilation.
+  -finvert-y        Invert position.Y output in vertex shader.
   -fhlsl-iomap      Use HLSL IO mappings for bindings.
   -fhlsl-offsets    Use HLSL offset rules for packing members of blocks.
                     Affects only GLSL.  HLSL rules are always used for HLSL.
@@ -76,6 +78,10 @@ Options:
                     several times, only the last setting takes effect.
   -flimit-file <file>
                     Set limits as specified in the given file.
+  -fnan-clamp       Generate code for max and min builtins so that, when given
+                    a NaN operand, the other operand is returned. Similarly,
+                    the clamp builtin will favour the non-NaN operands, as if
+                    clamp were implemented as a composition of max and min.
   -fresource-set-binding [stage] <reg0> <set0> <binding0>
                         [<reg1> <set1> <binding1>...]
                     Explicitly sets the descriptor set and binding for
@@ -150,6 +156,14 @@ Options:
                         vulkan          # Same as vulkan1.0
                         opengl4.5
                         opengl          # Same as opengl4.5
+  --target-spv=<spirv-version>
+                    Set the SPIR-V version to be used for the generated SPIR-V
+                    module.  The default is the highest version of SPIR-V
+                    required to be supported for the target environment.
+                    For example, default for vulkan1.0 is spv1.0, and
+                    the default for vulkan1.1 is spv1.3.
+                    Values are:
+                        spv1.0, spv1.1, spv1.2, spv1.3, spv1.4
   --version         Display compiler version information.
   -w                Suppresses all warning messages.
   -Werror           Treat all warnings as errors.
@@ -158,29 +172,6 @@ Options:
                     For files ending in .hlsl the default is hlsl.
                     Otherwise the default is glsl.
 )";
-}
-
-// Gets the option argument for the option at *index in argv in a way consistent
-// with clang/gcc. On success, returns true and writes the parsed argument into
-// *option_argument. Returns false if any errors occur. After calling this
-// function, *index will be the index of the last command line argument consumed.
-bool GetOptionArgument(int argc, char** argv, int* index,
-                       const std::string& option,
-                       string_piece* option_argument) {
-  const string_piece arg = argv[*index];
-  assert(arg.starts_with(option));
-  if (arg.size() != option.size()) {
-    *option_argument = arg.substr(option.size());
-    return true;
-  } else {
-    if (option.back() == '=') {
-      *option_argument = "";
-      return true;
-    }
-    if (++(*index) >= argc) return false;
-    *option_argument = argv[*index];
-    return true;
-  }
 }
 
 // Sets resource limits according to the given string. The string
@@ -202,31 +193,6 @@ bool SetResourceLimits(const std::string& str, shaderc::CompileOptions* options,
 const char kBuildVersion[] =
 #include "build-version.inc"
     ;
-
-
-// Parses the given string as a number of the specified type.  Returns true
-// if parsing succeeded, and stores the parsed value via |value|.
-// (I've worked out the general case for this in
-// SPIRV-Tools source/util/parse_number.h. -- dneto)
-bool ParseUint32(const std::string& str, uint32_t* value) {
-  std::istringstream iss(str);
-
-  iss >> std::setbase(0);
-  iss >> *value;
-
-  // We should have read something.
-  bool ok = !str.empty() && !iss.bad();
-  // It should have been all the text.
-  ok = ok && iss.eof();
-  // It should have been in range.
-  ok = ok && !iss.fail();
-
-  // Work around a bugs in various C++ standard libraries.
-  // Count any negative number as an error, including "-0".
-  ok = ok && (str[0] != '-');
-
-  return ok;
-}
 
 // Gets an optional stage name followed by required offset argument.  Returns
 // false and emits a message to *errs if any errors occur.  After calling this
@@ -253,7 +219,7 @@ bool GetOptionalStageThenOffsetArgument(const shaderc_util::string_piece option,
       return false;
     }
   }
-  if (!ParseUint32(argv[argi + 1], offset)) {
+  if (!shaderc_util::ParseUint32(argv[argi + 1], offset)) {
     *errs << "glslc: error: invalid offset value " << argv[argi + 1] << " for "
           << option << std::endl;
     return false;
@@ -319,7 +285,7 @@ int main(int argc, char** argv) {
       return 0;
     } else if (arg.starts_with("-o")) {
       string_piece file_name;
-      if (!GetOptionArgument(argc, argv, &i, "-o", &file_name)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-o", &file_name)) {
         std::cerr
             << "glslc: error: argument to '-o' is missing (expected 1 value)"
             << std::endl;
@@ -344,6 +310,10 @@ int main(int argc, char** argv) {
       compiler.options().SetHlslOffsets(true);
     } else if (arg == "-fhlsl_functionality1" || arg == "-fhlsl-functionality1") {
       compiler.options().SetHlslFunctionality1(true);
+    } else if (arg == "-finvert-y") {
+      compiler.options().SetInvertY(true);
+    } else if (arg == "-fnan-clamp") {
+      compiler.options().SetNanClamp(true);
     } else if (((u_kind = shaderc_uniform_kind_image),
                 (arg == "-fimage-binding-base")) ||
                ((u_kind = shaderc_uniform_kind_texture),
@@ -378,13 +348,13 @@ int main(int argc, char** argv) {
              argv[i + 3][0] != '-') {
         seen_triple = true;
         uint32_t set = 0;
-        if (!ParseUint32(argv[i + 2], &set)) {
+        if (!shaderc_util::ParseUint32(argv[i + 2], &set)) {
           std::cerr << "glslc: error: Invalid set number: " << argv[i + 2]
                     << std::endl;
           return 1;
         }
         uint32_t binding = 0;
-        if (!ParseUint32(argv[i + 3], &binding)) {
+        if (!shaderc_util::ParseUint32(argv[i + 3], &binding)) {
           std::cerr << "glslc: error: Invalid binding number: " << argv[i + 3]
                     << std::endl;
           return 1;
@@ -412,7 +382,8 @@ int main(int argc, char** argv) {
     } else if (arg.starts_with("-flimit-file")) {
       std::string err;
       string_piece limits_file;
-      if (!GetOptionArgument(argc, argv, &i, "-flimit-file", &limits_file)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-flimit-file",
+                                           &limits_file)) {
         std::cerr << "glslc: error: argument to '-flimit-file' is missing"
                   << std::endl;
         return 1;
@@ -468,6 +439,25 @@ int main(int argc, char** argv) {
         return 1;
       }
       compiler.options().SetTargetEnvironment(target_env, version);
+    } else if (arg.starts_with("--target-spv=")) {
+      shaderc_spirv_version ver = shaderc_spirv_version_1_0;
+      const string_piece ver_str = arg.substr(std::strlen("--target-spv="));
+      if (ver_str == "spv1.0") {
+        ver = shaderc_spirv_version_1_0;
+      } else if (ver_str == "spv1.1") {
+        ver = shaderc_spirv_version_1_1;
+      } else if (ver_str == "spv1.2") {
+        ver = shaderc_spirv_version_1_2;
+      } else if (ver_str == "spv1.3") {
+        ver = shaderc_spirv_version_1_3;
+      } else if (ver_str == "spv1.4") {
+        ver = shaderc_spirv_version_1_4;
+      } else {
+        std::cerr << "glslc: error: invalid value '" << ver_str
+                  << "' in '--target-spv=" << ver_str << "'" << std::endl;
+        return 1;
+      }
+      compiler.options().SetTargetSpirv(ver);
     } else if (arg.starts_with("-mfmt=")) {
       const string_piece binary_output_format =
           arg.substr(std::strlen("-mfmt="));
@@ -487,7 +477,7 @@ int main(int argc, char** argv) {
       }
     } else if (arg.starts_with("-x")) {
       string_piece option_arg;
-      if (!GetOptionArgument(argc, argv, &i, "-x", &option_arg)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-x", &option_arg)) {
         std::cerr
             << "glslc: error: argument to '-x' is missing (expected 1 value)"
             << std::endl;
@@ -533,7 +523,8 @@ int main(int argc, char** argv) {
       }
     } else if (arg == "-MF") {
       string_piece dep_file_name;
-      if (!GetOptionArgument(argc, argv, &i, "-MF", &dep_file_name)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-MF",
+                                           &dep_file_name)) {
         std::cerr
             << "glslc: error: missing dependency info filename after '-MF'"
             << std::endl;
@@ -543,7 +534,8 @@ int main(int argc, char** argv) {
           std::string(dep_file_name.data(), dep_file_name.size()));
     } else if (arg == "-MT") {
       string_piece dep_file_name;
-      if (!GetOptionArgument(argc, argv, &i, "-MT", &dep_file_name)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-MT",
+                                           &dep_file_name)) {
         std::cerr << "glslc: error: missing dependency info target after '-MT'"
                   << std::endl;
         return 1;
@@ -589,7 +581,7 @@ int main(int argc, char** argv) {
       }
     } else if (arg.starts_with("-I")) {
       string_piece option_arg;
-      if (!GetOptionArgument(argc, argv, &i, "-I", &option_arg)) {
+      if (!shaderc_util::GetOptionArgument(argc, argv, &i, "-I", &option_arg)) {
         std::cerr
             << "glslc: error: argument to '-I' is missing (expected 1 value)"
             << std::endl;

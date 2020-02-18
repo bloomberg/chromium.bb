@@ -57,9 +57,10 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
   gfx::Size natural_size(640, 480);
   return ::media::VideoDecoderConfig(
       ::media::kCodecH264, ::media::VIDEO_CODEC_PROFILE_UNKNOWN,
-      ::media::PIXEL_FORMAT_YV12, ::media::VideoColorSpace(),
-      ::media::kNoTransformation, coded_size, visible_rect, natural_size,
-      ::media::EmptyExtraData(), ::media::Unencrypted());
+      ::media::VideoDecoderConfig::AlphaMode::kIsOpaque,
+      ::media::VideoColorSpace(), ::media::kNoTransformation, coded_size,
+      visible_rect, natural_size, ::media::EmptyExtraData(),
+      ::media::Unencrypted());
 }
 
 ::media::DemuxerStream::Type DemuxerStreamForTest::type() const {
@@ -68,6 +69,10 @@ void DemuxerStreamForTest::Read(const ReadCB& read_cb) {
 
 bool DemuxerStreamForTest::SupportsConfigChanges() {
   return true;
+}
+
+bool DemuxerStreamForTest::IsReadPending() const {
+  return has_pending_read_;
 }
 
 void DemuxerStreamForTest::DoRead(const ReadCB& read_cb) {

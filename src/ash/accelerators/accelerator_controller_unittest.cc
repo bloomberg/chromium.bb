@@ -9,7 +9,7 @@
 #include "ash/accelerators/accelerator_confirmation_dialog.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/pre_target_accelerator_handler.h"
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -20,8 +20,9 @@
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/magnifier/magnification_controller.h"
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -52,10 +53,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/cpp/test/test_media_controller.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -67,6 +69,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -461,20 +464,20 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 TEST_F(AcceleratorControllerTest, WindowSnap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
 
   window_state->Activate();
 
   {
     controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
     gfx::Rect expected_bounds =
-        wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
+        GetDefaultLeftSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
     gfx::Rect expected_bounds =
-        wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
+        GetDefaultRightSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
@@ -517,14 +520,14 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->Activate();
 
   // Snap right.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds =
-      wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
+      GetDefaultRightSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap right again ->> becomes normal.
@@ -537,7 +540,7 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   // Snap left.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
   EXPECT_TRUE(window_state->IsSnapped());
-  expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
+  expected_bounds = GetDefaultLeftSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   // Snap left again ->> becomes normal.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
@@ -550,7 +553,7 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
   display::Display::Rotation initial_rotation =
       GetActiveDisplayRotation(display.id());
   ui::test::EventGenerator* generator = GetEventGenerator();
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
 
   EXPECT_FALSE(accessibility_controller
@@ -667,7 +670,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
       aura::client::kResizeBehaviorCanMaximize);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
+  WindowState* window_state = WindowState::Get(widget->GetNativeView());
 
   // Toggling not suppressed.
   generator->PressKey(ui::VKEY_J, ui::EF_ALT_DOWN);
@@ -857,7 +860,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
 
   // The press event should not toggle the AppList, the release should instead.
@@ -1100,58 +1103,64 @@ TEST_F(AcceleratorControllerTest, SideVolumeButtonLocation) {
 
 // Tests the histogram of volume adjustment in tablet mode.
 TEST_F(AcceleratorControllerTest, TabletModeVolumeAdjustHistogram) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(
-      histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
   const ui::Accelerator kVolumeDown(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
   const ui::Accelerator kVolumeUp(ui::VKEY_VOLUME_UP, ui::EF_NONE);
-  ASSERT_FALSE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
-  // Starts with volume down but ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is disabled.
-  ProcessInController(kVolumeDown);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  EXPECT_FALSE(
-      histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapDisabled, 1);
 
-  // Starts with volume up and ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is disabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kNormalAdjustWithSwapDisabled, 1);
+  // Disable features::kSwapSideVolumeButtonsForOrientation.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        features::kSwapSideVolumeButtonsForOrientation);
+    EXPECT_FALSE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
+    EXPECT_TRUE(
+        histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
+    // Starts with volume down but ends with an overall-increased volume.
+    ProcessInController(kVolumeDown);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    EXPECT_FALSE(
+        histogram_tester.GetAllSamples(kTabletCountOfVolumeAdjustType).empty());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapDisabled, 1);
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kSwapSideVolumeButtonsForOrientation);
-  EXPECT_TRUE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
-  // Starts with volume up but ends with an overall-decreased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is enabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeDown);
-  ProcessInController(kVolumeDown);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapEnabled, 1);
+    // Starts with volume up and ends with an overall-increased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kNormalAdjustWithSwapDisabled, 1);
+  }
 
-  // Starts with volume up and ends with an overall-increased volume when
-  // features::kSwapSideVolumeButtonsForOrientation is enabled.
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  ProcessInController(kVolumeUp);
-  EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
-  histogram_tester.ExpectBucketCount(
-      kTabletCountOfVolumeAdjustType,
-      TabletModeVolumeAdjustType::kNormalAdjustWithSwapEnabled, 1);
+  // Enable features::kSwapSideVolumeButtonsForOrientation.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndEnableFeature(
+        features::kSwapSideVolumeButtonsForOrientation);
+    EXPECT_TRUE(features::IsSwapSideVolumeButtonsForOrientationEnabled());
+    // Starts with volume up but ends with an overall-decreased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeDown);
+    ProcessInController(kVolumeDown);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kAccidentalAdjustWithSwapEnabled, 1);
+
+    // Starts with volume up and ends with an overall-increased volume.
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    ProcessInController(kVolumeUp);
+    EXPECT_TRUE(test_api_->TriggerTabletModeVolumeAdjustTimer());
+    histogram_tester.ExpectBucketCount(
+        kTabletCountOfVolumeAdjustType,
+        TabletModeVolumeAdjustType::kNormalAdjustWithSwapEnabled, 1);
+  }
 }
 
 class SideVolumeButtonAcceleratorTest
@@ -1167,9 +1176,9 @@ class SideVolumeButtonAcceleratorTest
 
   void SetUp() override {
     AcceleratorControllerTest::SetUp();
-    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
     test_api_->SetSideVolumeButtonLocation(region_, side_);
-    ws::InputDeviceClientTestApi().SetUncategorizedDevices({ui::InputDevice(
+    ui::DeviceDataManagerTestApi().SetUncategorizedDevices({ui::InputDevice(
         kSideVolumeButtonId, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
         "cros_ec_buttons")});
     scoped_feature_list_.InitAndEnableFeature(
@@ -1442,8 +1451,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
   wm::ActivateWindow(w1);
 
-  wm::WMEvent fullscreen(wm::WM_EVENT_FULLSCREEN);
-  wm::WindowState* w1_state = wm::GetWindowState(w1);
+  WMEvent fullscreen(WM_EVENT_FULLSCREEN);
+  WindowState* w1_state = WindowState::Get(w1);
   w1_state->OnWMEvent(&fullscreen);
   ASSERT_TRUE(w1_state->IsFullscreen());
 
@@ -1464,10 +1473,10 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   };
 
   // A fullscreen window can consume ALT-TAB (preferred).
-  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
   press_and_release_alt_tab();
-  ASSERT_EQ(w1, wm::GetActiveWindow());
-  ASSERT_NE(w2, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
+  ASSERT_NE(w2, window_util::GetActiveWindow());
 
   // ALT-TAB is non repeatable. Press A to cancel the
   // repeat record.
@@ -1475,14 +1484,14 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
 
   // A normal window shouldn't consume preferred accelerator.
-  wm::WMEvent normal(wm::WM_EVENT_NORMAL);
+  WMEvent normal(WM_EVENT_NORMAL);
   w1_state->OnWMEvent(&normal);
   ASSERT_FALSE(w1_state->IsFullscreen());
 
-  EXPECT_EQ(w1, wm::GetActiveWindow());
+  EXPECT_EQ(w1, window_util::GetActiveWindow());
   press_and_release_alt_tab();
-  ASSERT_NE(w1, wm::GetActiveWindow());
-  ASSERT_EQ(w2, wm::GetActiveWindow());
+  ASSERT_NE(w1, window_util::GetActiveWindow());
+  ASSERT_EQ(w2, window_util::GetActiveWindow());
 }
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
@@ -1491,8 +1500,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   wm::ActivateWindow(w1);
 
   {
-    wm::WMEvent pin_event(wm::WM_EVENT_PIN);
-    wm::WindowState* w1_state = wm::GetWindowState(w1);
+    WMEvent pin_event(WM_EVENT_PIN);
+    WindowState* w1_state = WindowState::Get(w1);
     w1_state->OnWMEvent(&pin_event);
     ASSERT_TRUE(w1_state->IsPinned());
   }
@@ -1508,11 +1517,11 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
-  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
   generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   generator->ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  ASSERT_EQ(w1, wm::GetActiveWindow());
-  ASSERT_NE(w2, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
+  ASSERT_NE(w2, window_util::GetActiveWindow());
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
@@ -1616,55 +1625,64 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  TestAccessibilityControllerClient client;
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
-  accessibility_controller->SetClient(client.CreateInterfacePtrAndBind());
+  TestAccessibilityControllerClient client;
 
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  // Extract the accelerators of actions that need windows to be able to provide
+  // them to PerformActionIfEnabled(), otherwise we could hit some NOTREACHED()
+  // if we don't provide the correct keybindings.
+  std::set<AcceleratorAction> actions_needing_window;
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
+    actions_needing_window.insert(kActionsNeedingWindow[i]);
+  std::map<AcceleratorAction, ui::Accelerator> accelerators_needing_window;
+  for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
+    const auto& accelerator_data = kAcceleratorData[i];
+    auto iter = actions_needing_window.find(accelerator_data.action);
+    if (iter == actions_needing_window.end())
+      continue;
+
+    ui::Accelerator accelerator{accelerator_data.keycode,
+                                accelerator_data.modifiers};
+    if (!accelerator_data.trigger_on_press)
+      accelerator.set_key_state(ui::Accelerator::KeyState::RELEASED);
+    accelerators_needing_window[*iter] = accelerator;
+  }
+
+  for (const auto& iter : accelerators_needing_window) {
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_TRUE(
-        controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {}));
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+        AccessibilityAlert::NONE);
+    EXPECT_TRUE(controller_->PerformActionIfEnabled(iter.first, iter.second));
+    EXPECT_EQ(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Make sure we don't alert if we do have a window.
   std::unique_ptr<aura::Window> window;
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  for (const auto& iter : accelerators_needing_window) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
-    controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+        AccessibilityAlert::NONE);
+    controller_->PerformActionIfEnabled(iter.first, iter.second);
+    EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Don't alert if we have a minimized window either.
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  for (const auto& iter : accelerators_needing_window) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     controller_->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     accessibility_controller->TriggerAccessibilityAlert(
-        mojom::AccessibilityAlert::NONE);
-    accessibility_controller->FlushMojoForTest();
-    controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
-    accessibility_controller->FlushMojoForTest();
-    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
-              client.last_a11y_alert());
+        AccessibilityAlert::NONE);
+    controller_->PerformActionIfEnabled(iter.first, iter.second);
+    EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 }
 
 TEST_F(AcceleratorControllerTest, TestDialogCancel) {
   ui::Accelerator accelerator(ui::VKEY_H,
                               ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Pressing cancel on the dialog should have no effect.
   EXPECT_FALSE(
@@ -1684,7 +1702,7 @@ TEST_F(AcceleratorControllerTest, TestToggleHighContrast) {
                               ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
   // High Contrast Mode Enabled dialog and notification should be shown.
   EXPECT_FALSE(IsConfirmationDialogOpen());
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   EXPECT_FALSE(
       accessibility_controller->HasHighContrastAcceleratorDialogBeenAccepted());
@@ -1823,6 +1841,8 @@ TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
 
 namespace {
 
+constexpr char kUserEmail[] = "user@magnifier";
+
 class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
  public:
   MagnifiersAcceleratorsTester() = default;
@@ -1836,18 +1856,60 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
     return Shell::Get()->magnification_controller();
   }
 
+  PrefService* user_pref_service() {
+    return Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+        AccountId::FromUserEmail(kUserEmail));
+  }
+
+  void SetUp() override {
+    AcceleratorControllerTest::SetUp();
+
+    // Create user session and simulate its login.
+    SimulateUserLogin(kUserEmail);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
 };
 
 }  // namespace
 
+// TODO (afakhry): Remove this class after refactoring MagnificationManager.
+// Mocked chrome/browser/chromeos/accessibility/magnification_manager.cc
+class FakeMagnificationManager {
+ public:
+  FakeMagnificationManager() = default;
+
+  void SetPrefs(PrefService* prefs) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(prefs);
+    pref_change_registrar_->Add(
+        prefs::kAccessibilityScreenMagnifierEnabled,
+        base::BindRepeating(&FakeMagnificationManager::UpdateMagnifierFromPrefs,
+                            base::Unretained(this)));
+    prefs_ = prefs;
+  }
+
+  void UpdateMagnifierFromPrefs() {
+    Shell::Get()->magnification_controller()->SetEnabled(
+        prefs_->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled));
+  }
+
+ private:
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+  PrefService* prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeMagnificationManager);
+};
+
 TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
+  FakeMagnificationManager manager;
+  manager.SetPrefs(user_pref_service());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Toggle the fullscreen magnifier on/off, dialog should be shown on first use
   // of accelerator.
@@ -1889,7 +1951,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
   EXPECT_FALSE(IsConfirmationDialogOpen());
 
-  AccessibilityController* accessibility_controller =
+  AccessibilityControllerImpl* accessibility_controller =
       Shell::Get()->accessibility_controller();
   // Toggle the docked magnifier on/off, dialog should be shown on first use of
   // accelerator.
@@ -1966,8 +2028,8 @@ class MediaSessionAcceleratorTest
     client_ = std::make_unique<TestMediaClient>();
     controller_ = std::make_unique<media_session::test::TestMediaController>();
 
-    MediaController* media_controller = Shell::Get()->media_controller();
-    media_controller->SetClient(client_->CreateAssociatedPtrInfo());
+    MediaControllerImpl* media_controller = Shell::Get()->media_controller();
+    media_controller->SetClient(client_.get());
     media_controller->SetMediaSessionControllerForTest(
         controller_->CreateMediaControllerPtr());
     media_controller->SetForceMediaClientKeyHandling(
@@ -2097,7 +2159,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
 
     // Setting a window property on the target allows media keys to pass
     // through.
-    wm::GetWindowState(window.get())->SetCanConsumeSystemKeys(true);
+    WindowState::Get(window.get())->SetCanConsumeSystemKeys(true);
     {
       ui::KeyEvent press_key(ui::ET_KEY_PRESSED, key, ui::EF_NONE);
       ui::Event::DispatcherApi dispatch_helper(&press_key);

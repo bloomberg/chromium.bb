@@ -36,7 +36,7 @@ def GetColor(index):
     # Generate a color by splicing the bits to generate high contrast colors
     index -= len(BASE_COLORS) - 1
     chars = [0] * 3
-    for bit in xrange(0, 24):
+    for bit in range(0, 24):
       chars[bit % 3] |= ((index >> bit) & 0x1) << (7-bit/3)
     return "#%02x%02x%02x" % tuple(chars)
 
@@ -75,7 +75,7 @@ def GetVersionMap(input_deps):
   version_map = {}
   i = 0
   for deps_map in input_deps:
-    for full_name, dep in deps_map.iteritems():
+    for full_name, dep in deps_map.items():
       pkg = UnversionedName(dep)
       entry = version_map.setdefault(pkg, {})
       entry[i] = full_name
@@ -90,7 +90,7 @@ def GetDivergentSet(version_map, count):
   dependency graphs (or missing version altogether).
   """
   divergent_set = set()
-  for pkg, value in version_map.iteritems():
+  for pkg, value in version_map.items():
     if len(value.keys()) != count or len(set(value.values())) > 1:
       # The package doesn't exist for at least one ot the input, or there are
       # more than 2 versions.
@@ -110,7 +110,7 @@ def BuildDependencyGraph(pkg, input_deps, version_map, divergent_set):
   outer_subgraph = graph.AddNewSubgraph('source')
 
   emitted = set()
-  for i in xrange(0, len(input_deps)):
+  for i in range(0, len(input_deps)):
     try:
       pkg_name = version_map[pkg][i]
     except KeyError:

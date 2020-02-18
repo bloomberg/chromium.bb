@@ -106,9 +106,19 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
         # Wait for few seconds(the time of password typing) to have mini ARC
         # container up and running. Default is 0.
         time.sleep(self.browser_options.login_delay)
-        self.oobe.NavigateFakeLogin(
-            self._username, self._password, self._gaia_id,
-            not self.browser_options.disable_gaia_services)
+        # crbug.com/976983.
+        retries = 3
+        while True:
+          try:
+            self.oobe.NavigateFakeLogin(
+                self._username, self._password, self._gaia_id,
+                not self.browser_options.disable_gaia_services)
+            break
+          except py_utils.TimeoutException:
+            logging.error('TimeoutException %d', retries)
+            retries -= 1
+            if not retries:
+              raise
 
       try:
         self._WaitForLogin()
@@ -144,6 +154,10 @@ class CrOSBrowserBackend(chrome_browser_backend.ChromeBrowserBackend):
     return (False, 'Cannot get stack trace on CrOS')
 
   def GetMostRecentMinidumpPath(self):
+    return None
+
+  def GetRecentMinidumpPathsWithTimeout(self, timeout_s, oldest_ts):
+    del timeout_s, oldest_ts
     return None
 
   def GetAllMinidumpPaths(self):

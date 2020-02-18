@@ -32,6 +32,11 @@ enum HelpSource {
 
   // WebUI (the "About" page).
   HELP_SOURCE_WEBUI,
+
+#if defined(OS_CHROMEOS)
+  // WebUI (the OS "About" page).
+  HELP_SOURCE_WEBUI_CHROME_OS,
+#endif
 };
 
 // Sources of feedback requests.
@@ -72,6 +77,7 @@ void ShowFeedbackPage(Browser* browser,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
+void LaunchReleaseNotes(Profile* profile);
 void ShowBetaForum(Browser* browser);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);
@@ -113,6 +119,9 @@ void ShowSearchEngineSettings(Browser* browser);
 
 #if defined(OS_CHROMEOS)
 void ShowManagementPageForProfile(Profile* profile);
+
+// Constructs an OS settings GURL for the specified |sub_page|.
+GURL GetOSSettingsUrl(const std::string& sub_page);
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

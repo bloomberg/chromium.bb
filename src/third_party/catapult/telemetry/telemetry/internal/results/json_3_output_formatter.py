@@ -23,38 +23,30 @@ def _mk_dict(d, *args):
   return d
 
 
-def ResultsAsDict(page_test_results, artifacts=None):
+def ResultsAsDict(results):
   """Takes PageTestResults to a dict in the JSON test results format.
 
   To serialize results as JSON we first convert them to a dict that can be
   serialized by the json module.
 
   Args:
-    page_test_results: a PageTestResults object
-    artifacts: an ArtifactResults object.
+    results: a PageTestResults object
   """
-  telemetry_info = page_test_results.telemetry_info
   result_dict = {
-      'interrupted': telemetry_info.benchmark_interrupted,
+      'interrupted': results.benchmark_interrupted,
       'path_delimiter': '/',
       'version': 3,
-      'seconds_since_epoch': telemetry_info.benchmark_start_epoch,
+      'seconds_since_epoch': results.benchmark_start_us / 1e6,
       'tests': {},
   }
   status_counter = collections.Counter()
-  for run in page_test_results.all_page_runs:
-    expected = run.expected
-    if run.skipped:
-      status = 'SKIP'
-    elif run.failed:
-      status = 'FAIL'
-    else:
-      status = 'PASS'
+  for run in results.IterStoryRuns():
+    status = run.status
+    expected = status if run.is_expected else 'PASS'
     status_counter[status] += 1
 
     test = _mk_dict(
-        result_dict, 'tests', telemetry_info.benchmark_name,
-        run.story.name)
+        result_dict, 'tests', results.benchmark_name, run.story.name)
     if 'actual' not in test:
       test['actual'] = status
     else:
@@ -77,9 +69,18 @@ def ResultsAsDict(page_test_results, artifacts=None):
     else:
       test['times'].append(run.duration)
 
-    story_artifacts = artifacts and artifacts.GetTestArtifacts(run.story.name)
-    if story_artifacts:
-      test['artifacts'] = dict(story_artifacts)
+    for artifact in run.IterArtifacts():
+      if artifact.url is not None:
+        artifact_path = artifact.url
+      else:
+        # Paths in json format should be relative to the output directory and
+        # '/'-delimited on all platforms according to the spec.
+        relative_path = os.path.relpath(artifact.local_path,
+                                        results.output_dir)
+        artifact_path = relative_path.replace(os.sep, '/')
+
+      test.setdefault('artifacts', {}).setdefault(artifact.name, []).append(
+          artifact_path)
 
     # Shard index is really only useful for failed tests. See crbug.com/960951
     # for details.
@@ -105,17 +106,9 @@ def ResultsAsDict(page_test_results, artifacts=None):
 
 
 class JsonOutputFormatter(output_formatter.OutputFormatter):
-  def __init__(self, output_stream, artifacts=None):
-    super(JsonOutputFormatter, self).__init__(output_stream)
-    self.artifacts = artifacts
-
-  def Format(self, page_test_results):
+  def Format(self, results):
     """Serialize page test results in JSON Test Results format."""
     json.dump(
-        ResultsAsDict(page_test_results, self.artifacts),
+        ResultsAsDict(results),
         self.output_stream, indent=2, sort_keys=True, separators=(',', ': '))
     self.output_stream.write('\n')
-
-  def FormatDisabled(self, page_test_results):
-    """Serialize disabled benchmark in JSON Test Results format."""
-    self.Format(page_test_results)

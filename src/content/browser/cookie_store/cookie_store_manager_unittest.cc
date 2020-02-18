@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/bind_test_util.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -45,12 +46,10 @@ class CookieStoreSync {
     base::RunLoop run_loop;
     cookie_store_service_->AppendSubscriptions(
         service_worker_registration_id, std::move(subscriptions),
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, bool service_success) {
-              *success = service_success;
-              run_loop->Quit();
-            },
-            &run_loop, &success));
+        base::BindLambdaForTesting([&](bool service_success) {
+          success = service_success;
+          run_loop.Quit();
+        }));
     run_loop.Run();
     return success;
   }
@@ -61,14 +60,12 @@ class CookieStoreSync {
     base::RunLoop run_loop;
     cookie_store_service_->GetSubscriptions(
         service_worker_registration_id,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, base::Optional<Subscriptions>* result,
-               Subscriptions service_result, bool service_success) {
+        base::BindLambdaForTesting(
+            [&](Subscriptions service_result, bool service_success) {
               if (service_success)
-                *result = std::move(service_result);
-              run_loop->Quit();
-            },
-            &run_loop, &result));
+                result = std::move(service_result);
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return result;
   }
@@ -133,9 +130,13 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
            worker_helper_->install_subscription_batches_) {
         worker_helper_->cookie_store_service_->AppendSubscriptions(
             worker_helper_->service_worker_registration_id_,
-            std::move(subscriptions), base::BindOnce([](bool success) {
-              CHECK(success) << "AppendSubscriptions failed";
-            }));
+            std::move(subscriptions),
+            base::BindOnce(
+                [](bool expect_success, bool success) {
+                  EXPECT_EQ(expect_success, success)
+                      << "AppendSubscriptions wrong result";
+                },
+                worker_helper_->expect_subscription_success_));
       }
       worker_helper_->install_subscription_batches_.clear();
 
@@ -180,9 +181,11 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   // Sets the cookie change subscriptions requested in the next install event.
   void SetOnInstallSubscriptions(
       std::vector<CookieStoreSync::Subscriptions> subscription_batches,
-      blink::mojom::CookieStore* cookie_store_service) {
+      blink::mojom::CookieStore* cookie_store_service,
+      bool expect_subscription_success = true) {
     install_subscription_batches_ = std::move(subscription_batches);
     cookie_store_service_ = cookie_store_service;
+    expect_subscription_success_ = expect_subscription_success;
   }
 
   // Spins inside a run loop until a service worker activate event is received.
@@ -203,6 +206,7 @@ class CookieStoreWorkerTestHelper : public EmbeddedWorkerTestHelper {
   // Used to add cookie change subscriptions during OnInstallEvent().
   blink::mojom::CookieStore* cookie_store_service_ = nullptr;
   std::vector<CookieStoreSync::Subscriptions> install_subscription_batches_;
+  bool expect_subscription_success_ = true;
   int64_t service_worker_registration_id_;
 
   // Set by WaitForActivateEvent(), used in OnActivateEvent().
@@ -263,10 +267,8 @@ class CookieStoreManagerTest
                                  user_data_directory_.GetPath(), nullptr));
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       storage_partition_impl_->SetURLRequestContext(
-          worker_test_helper_->browser_context()
-              ->CreateRequestContextForStoragePartition(
-                  user_data_directory_.GetPath(), false, nullptr,
-                  URLRequestInterceptorScopedVector()));
+          worker_test_helper_->browser_context()->CreateRequestContext(
+              nullptr, URLRequestInterceptorScopedVector()));
     }
     ::network::mojom::NetworkContext* network_context =
         storage_partition_impl_->GetNetworkContext();
@@ -297,18 +299,15 @@ class CookieStoreManagerTest
     base::RunLoop run_loop;
     worker_test_helper_->context()->RegisterServiceWorker(
         GURL(script_url), options,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success, int64_t* registration_id,
-               blink::ServiceWorkerStatusCode status,
-               const std::string& status_message,
-               int64_t service_worker_registration_id) {
-              *success = (status == blink::ServiceWorkerStatusCode::kOk);
-              *registration_id = service_worker_registration_id;
-              EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
-                  << blink::ServiceWorkerStatusToString(status);
-              run_loop->Quit();
-            },
-            &run_loop, &success, &registration_id));
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status,
+                                       const std::string& status_message,
+                                       int64_t service_worker_registration_id) {
+          success = (status == blink::ServiceWorkerStatusCode::kOk);
+          registration_id = service_worker_registration_id;
+          EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status)
+              << blink::ServiceWorkerStatusToString(status);
+          run_loop.Quit();
+        }));
     run_loop.Run();
     if (!success)
       return kInvalidRegistrationId;
@@ -325,14 +324,12 @@ class CookieStoreManagerTest
     options.set_include_httponly();
     cookie_manager_->SetCanonicalCookie(
         cookie, "https", options,
-        base::BindOnce(
-            [](base::RunLoop* run_loop, bool* success,
-               net::CanonicalCookie::CookieInclusionStatus service_success) {
-              *success = (service_success ==
-                          net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-              run_loop->Quit();
-            },
-            &run_loop, &success));
+        base::BindLambdaForTesting(
+            [&](net::CanonicalCookie::CookieInclusionStatus service_success) {
+              success = (service_success ==
+                         net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+              run_loop.Quit();
+            }));
     run_loop.Run();
     return success;
   }
@@ -445,6 +442,31 @@ TEST_P(CookieStoreManagerTest, OneSubscription) {
   EXPECT_EQ(::network::mojom::CookieMatchType::STARTS_WITH,
             all_subscriptions[0]->match_type);
   EXPECT_EQ(GURL(kExampleScope), all_subscriptions[0]->url);
+}
+
+TEST_P(CookieStoreManagerTest, WrongDomainSubscription) {
+  std::vector<CookieStoreSync::Subscriptions> batches;
+  batches.emplace_back();
+
+  CookieStoreSync::Subscriptions& subscriptions = batches.back();
+  subscriptions.emplace_back(blink::mojom::CookieChangeSubscription::New());
+  subscriptions.back()->name = "cookie";
+  subscriptions.back()->match_type =
+      ::network::mojom::CookieMatchType::STARTS_WITH;
+  subscriptions.back()->url = GURL(kGoogleScope);
+
+  worker_test_helper_->SetOnInstallSubscriptions(std::move(batches),
+                                                 example_service_ptr_.get(),
+                                                 false /* expecting failure */);
+  int64_t registration_id =
+      RegisterServiceWorker(kExampleScope, kExampleWorkerScript);
+  ASSERT_NE(registration_id, kInvalidRegistrationId);
+
+  ASSERT_TRUE(
+      SetSessionCookie("cookie-name", "cookie-value", "google.com", "/"));
+  thread_bundle_.RunUntilIdle();
+
+  ASSERT_EQ(0u, worker_test_helper_->changes().size());
 }
 
 TEST_P(CookieStoreManagerTest, AppendSubscriptionsAfterEmptyInstall) {

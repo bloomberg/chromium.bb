@@ -8,7 +8,9 @@
 
 namespace autofill_assistant {
 
-FakeScriptExecutorDelegate::FakeScriptExecutorDelegate() = default;
+FakeScriptExecutorDelegate::FakeScriptExecutorDelegate()
+    : trigger_context_(TriggerContext::CreateEmpty()) {}
+
 FakeScriptExecutorDelegate::~FakeScriptExecutorDelegate() = default;
 
 const ClientSettings& FakeScriptExecutorDelegate::GetSettings() {
@@ -27,10 +29,6 @@ Service* FakeScriptExecutorDelegate::GetService() {
   return service_;
 }
 
-UiController* FakeScriptExecutorDelegate::GetUiController() {
-  return ui_controller_;
-}
-
 WebController* FakeScriptExecutorDelegate::GetWebController() {
   return web_controller_;
 }
@@ -40,7 +38,7 @@ ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
 }
 
 TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
-  return &trigger_context_;
+  return trigger_context_.get();
 }
 
 autofill::PersonalDataManager*
@@ -67,6 +65,14 @@ std::string FakeScriptExecutorDelegate::GetStatusMessage() const {
   return status_message_;
 }
 
+void FakeScriptExecutorDelegate::SetBubbleMessage(const std::string& message) {
+  status_message_ = message;
+}
+
+std::string FakeScriptExecutorDelegate::GetBubbleMessage() const {
+  return status_message_;
+}
+
 void FakeScriptExecutorDelegate::SetDetails(std::unique_ptr<Details> details) {
   details_ = std::move(details);
 }
@@ -83,9 +89,9 @@ void FakeScriptExecutorDelegate::SetProgress(int progress) {}
 
 void FakeScriptExecutorDelegate::SetProgressVisible(bool visible) {}
 
-void FakeScriptExecutorDelegate::SetChips(
-    std::unique_ptr<std::vector<Chip>> chips) {
-  chips_ = std::move(chips);
+void FakeScriptExecutorDelegate::SetUserActions(
+    std::unique_ptr<std::vector<UserAction>> user_actions) {
+  user_actions_ = std::move(user_actions);
 }
 
 void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
@@ -93,12 +99,12 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
-void FakeScriptExecutorDelegate::SetResizeViewport(bool resize_viewport) {
-  resize_viewport_ = resize_viewport;
+void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
+  viewport_mode_ = mode;
 }
 
-bool FakeScriptExecutorDelegate::GetResizeViewport() {
-  return resize_viewport_;
+ViewportMode FakeScriptExecutorDelegate::GetViewportMode() {
+  return viewport_mode_;
 }
 
 void FakeScriptExecutorDelegate::SetPeekMode(
@@ -116,6 +122,10 @@ bool FakeScriptExecutorDelegate::HasNavigationError() {
 
 bool FakeScriptExecutorDelegate::IsNavigatingToNewDocument() {
   return navigating_to_new_document_;
+}
+
+void FakeScriptExecutorDelegate::RequireUI() {
+  require_ui_ = true;
 }
 
 void FakeScriptExecutorDelegate::AddListener(Listener* listener) {

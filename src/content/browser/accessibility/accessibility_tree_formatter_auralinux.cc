@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -53,6 +54,12 @@ class AccessibilityTreeFormatterAuraLinux
       const base::StringPiece& pattern) override;
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeWithNode(
       AtspiAccessible* node);
+
+  void AddValueProperties(AtkObject* atk_object, base::DictionaryValue* dict);
+  void AddTableProperties(AtkObject* atk_object, base::DictionaryValue* dict);
+  void AddTableCellProperties(const ui::AXPlatformNodeAuraLinux* node,
+                              AtkObject* atk_object,
+                              base::DictionaryValue* dict);
 
   void RecursiveBuildAccessibilityTree(AtspiAccessible* node,
                                        base::DictionaryValue* dict);
@@ -190,13 +197,346 @@ void AccessibilityTreeFormatterAuraLinux::RecursiveBuildAccessibilityTree(
   dict->Set(kChildrenDictAttr, std::move(children));
 }
 
+// TODO(aleventhal) Remove this and use atk_role_get_name() once the following
+// GNOME bug is fixed: https://bugzilla.gnome.org/show_bug.cgi?id=795983
+const char* const kRoleNames[] = {
+    "invalid",  // ATK_ROLE_INVALID.
+    "accelerator label",
+    "alert",
+    "animation",
+    "arrow",
+    "calendar",
+    "canvas",
+    "check box",
+    "check menu item",
+    "color chooser",
+    "column header",
+    "combo box",
+    "dateeditor",
+    "desktop icon",
+    "desktop frame",
+    "dial",
+    "dialog",
+    "directory pane",
+    "drawing area",
+    "file chooser",
+    "filler",
+    "fontchooser",
+    "frame",
+    "glass pane",
+    "html container",
+    "icon",
+    "image",
+    "internal frame",
+    "label",
+    "layered pane",
+    "list",
+    "list item",
+    "menu",
+    "menu bar",
+    "menu item",
+    "option pane",
+    "page tab",
+    "page tab list",
+    "panel",
+    "password text",
+    "popup menu",
+    "progress bar",
+    "push button",
+    "radio button",
+    "radio menu item",
+    "root pane",
+    "row header",
+    "scroll bar",
+    "scroll pane",
+    "separator",
+    "slider",
+    "split pane",
+    "spin button",
+    "statusbar",
+    "table",
+    "table cell",
+    "table column header",
+    "table row header",
+    "tear off menu item",
+    "terminal",
+    "text",
+    "toggle button",
+    "tool bar",
+    "tool tip",
+    "tree",
+    "tree table",
+    "unknown",
+    "viewport",
+    "window",
+    "header",
+    "footer",
+    "paragraph",
+    "ruler",
+    "application",
+    "autocomplete",
+    "edit bar",
+    "embedded component",
+    "entry",
+    "chart",
+    "caption",
+    "document frame",
+    "heading",
+    "page",
+    "section",
+    "redundant object",
+    "form",
+    "link",
+    "input method window",
+    "table row",
+    "tree item",
+    "document spreadsheet",
+    "document presentation",
+    "document text",
+    "document web",
+    "document email",
+    "comment",
+    "list box",
+    "grouping",
+    "image map",
+    "notification",
+    "info bar",
+    "level bar",
+    "title bar",
+    "block quote",
+    "audio",
+    "video",
+    "definition",
+    "article",
+    "landmark",
+    "log",
+    "marquee",
+    "math",
+    "rating",
+    "timer",
+    "description list",
+    "description term",
+    "description value",
+    "static",
+    "math fraction",
+    "math root",
+    "subscript",
+    "superscript",
+    "footnote",  // ATK_ROLE_FOOTNOTE = 122.
+};
+
+void AccessibilityTreeFormatterAuraLinux::AddValueProperties(
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  if (!ATK_IS_VALUE(atk_object))
+    return;
+
+  auto value_properties = std::make_unique<base::ListValue>();
+  AtkValue* value = ATK_VALUE(atk_object);
+  GValue current = G_VALUE_INIT;
+  g_value_init(&current, G_TYPE_FLOAT);
+  atk_value_get_current_value(value, &current);
+  value_properties->AppendString(
+      base::StringPrintf("current=%f", g_value_get_float(&current)));
+
+  GValue minimum = G_VALUE_INIT;
+  g_value_init(&minimum, G_TYPE_FLOAT);
+  atk_value_get_minimum_value(value, &minimum);
+  value_properties->AppendString(
+      base::StringPrintf("minimum=%f", g_value_get_float(&minimum)));
+
+  GValue maximum = G_VALUE_INIT;
+  g_value_init(&maximum, G_TYPE_FLOAT);
+  atk_value_get_maximum_value(value, &maximum);
+  value_properties->AppendString(
+      base::StringPrintf("maximum=%f", g_value_get_float(&maximum)));
+  dict->Set("value", std::move(value_properties));
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddTableProperties(
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  if (!ATK_IS_TABLE(atk_object))
+    return;
+
+  // Column details.
+  AtkTable* table = ATK_TABLE(atk_object);
+  int n_cols = atk_table_get_n_columns(table);
+  auto table_properties = std::make_unique<base::ListValue>();
+  table_properties->AppendString(base::StringPrintf("cols=%i", n_cols));
+
+  std::vector<std::string> col_headers;
+  for (int i = 0; i < n_cols; i++) {
+    std::string header = atk_table_get_column_description(table, i);
+    if (!header.empty())
+      col_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+  }
+
+  if (!col_headers.size())
+    col_headers.push_back("NONE");
+
+  table_properties->AppendString(base::StringPrintf(
+      "headers=(%s);", base::JoinString(col_headers, ", ").c_str()));
+
+  // Row details.
+  int n_rows = atk_table_get_n_rows(table);
+  table_properties->AppendString(base::StringPrintf("rows=%i", n_rows));
+
+  std::vector<std::string> row_headers;
+  for (int i = 0; i < n_rows; i++) {
+    std::string header = atk_table_get_row_description(table, i);
+    if (!header.empty())
+      row_headers.push_back(base::StringPrintf("'%s'", header.c_str()));
+  }
+
+  if (!row_headers.size())
+    row_headers.push_back("NONE");
+
+  table_properties->AppendString(base::StringPrintf(
+      "headers=(%s);", base::JoinString(row_headers, ", ").c_str()));
+
+  // Caption details.
+  AtkObject* caption = atk_table_get_caption(table);
+  table_properties->AppendString(
+      base::StringPrintf("caption=%s;", caption ? "true" : "false"));
+
+  // Summarize information about the cells from the table's perspective here.
+  std::vector<std::string> span_info;
+  for (int r = 0; r < n_rows; r++) {
+    for (int c = 0; c < n_cols; c++) {
+      int row_span = atk_table_get_row_extent_at(table, r, c);
+      int col_span = atk_table_get_column_extent_at(table, r, c);
+      if (row_span != 1 || col_span != 1) {
+        span_info.push_back(base::StringPrintf("cell at %i,%i: %ix%i", r, c,
+                                               row_span, col_span));
+      }
+    }
+  }
+  if (!span_info.size())
+    span_info.push_back("all: 1x1");
+
+  table_properties->AppendString(base::StringPrintf(
+      "spans=(%s)", base::JoinString(span_info, ", ").c_str()));
+  dict->Set("table", std::move(table_properties));
+}
+
+void AccessibilityTreeFormatterAuraLinux::AddTableCellProperties(
+    const ui::AXPlatformNodeAuraLinux* node,
+    AtkObject* atk_object,
+    base::DictionaryValue* dict) {
+  AtkRole role = atk_object_get_role(atk_object);
+  if (role != ATK_ROLE_TABLE_CELL && role != ATK_ROLE_COLUMN_HEADER &&
+      role != ATK_ROLE_ROW_HEADER) {
+    return;
+  }
+
+  int row = 0, col = 0, row_span = 0, col_span = 0;
+  int n_row_headers = 0, n_column_headers = 0;
+
+  // Properties obtained via AtkTableCell, if possible. If we do not have at
+  // least ATK 2.12, use the same logic in our AtkTableCell implementation so
+  // that tests can still be run.
+  auto cell_interface = ui::AtkTableCellInterface::Get();
+  if (cell_interface.has_value()) {
+    AtkTableCell* cell = G_TYPE_CHECK_INSTANCE_CAST(
+        (atk_object), base::UnsanitizedCfiCall(*cell_interface->GetType)(),
+        AtkTableCell);
+
+    base::UnsanitizedCfiCall (*cell_interface->GetRowColumnSpan)(
+        cell, &row, &col, &row_span, &col_span);
+
+    GPtrArray* column_headers =
+        base::UnsanitizedCfiCall(*cell_interface->GetColumnHeaderCells)(cell);
+    n_column_headers = column_headers->len;
+    g_ptr_array_unref(column_headers);
+
+    GPtrArray* row_headers =
+        base::UnsanitizedCfiCall(*cell_interface->GetRowHeaderCells)(cell);
+    n_row_headers = row_headers->len;
+    g_ptr_array_unref(row_headers);
+  } else {
+    row = node->GetTableRow().value_or(-1);
+    col = node->GetTableColumn().value_or(-1);
+    row_span = node->GetTableRowSpan().value_or(0);
+    col_span = node->GetTableColumnSpan().value_or(0);
+    if (role == ATK_ROLE_TABLE_CELL) {
+      n_column_headers = node->GetDelegate()->GetColHeaderNodeIds(col).size();
+      n_row_headers = node->GetDelegate()->GetRowHeaderNodeIds(row).size();
+    }
+  }
+
+  std::vector<std::string> cell_info;
+  cell_info.push_back(base::StringPrintf("row=%i", row));
+  cell_info.push_back(base::StringPrintf("col=%i", col));
+  cell_info.push_back(base::StringPrintf("row_span=%i", row_span));
+  cell_info.push_back(base::StringPrintf("col_span=%i", col_span));
+  cell_info.push_back(base::StringPrintf("n_row_headers=%i", n_row_headers));
+  cell_info.push_back(base::StringPrintf("n_col_headers=%i", n_column_headers));
+
+  auto cell_properties = std::make_unique<base::ListValue>();
+  cell_properties->AppendString(
+      base::StringPrintf("(%s)", base::JoinString(cell_info, ", ").c_str()));
+  dict->Set("cell", std::move(cell_properties));
+}
+
 void AccessibilityTreeFormatterAuraLinux::AddProperties(
     const BrowserAccessibility& node,
     base::DictionaryValue* dict) {
   dict->SetInteger("id", node.GetId());
   BrowserAccessibilityAuraLinux* acc_obj =
       ToBrowserAccessibilityAuraLinux(const_cast<BrowserAccessibility*>(&node));
-  acc_obj->GetNode()->AddAccessibilityTreeProperties(dict);
+  DCHECK(acc_obj);
+
+  ui::AXPlatformNodeAuraLinux* ax_platform_node = acc_obj->GetNode();
+  DCHECK(ax_platform_node);
+
+  AtkObject* atk_object = ax_platform_node->GetNativeViewAccessible();
+  DCHECK(atk_object);
+
+  AtkRole role = atk_object_get_role(atk_object);
+  if (role != ATK_ROLE_UNKNOWN) {
+    int role_index = static_cast<int>(role);
+    dict->SetString("role", kRoleNames[role_index]);
+  }
+
+  const gchar* name = atk_object_get_name(atk_object);
+  if (name)
+    dict->SetString("name", std::string(name));
+  const gchar* description = atk_object_get_description(atk_object);
+  if (description)
+    dict->SetString("description", std::string(description));
+
+  AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
+  auto states = std::make_unique<base::ListValue>();
+  for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
+    AtkStateType state_type = static_cast<AtkStateType>(i);
+    if (atk_state_set_contains_state(state_set, state_type))
+      states->AppendString(atk_state_type_get_name(state_type));
+  }
+  dict->Set("states", std::move(states));
+  g_object_unref(state_set);
+
+  AtkRelationSet* relation_set = atk_object_ref_relation_set(atk_object);
+  auto relations = std::make_unique<base::ListValue>();
+  for (int i = ATK_RELATION_NULL; i < ATK_RELATION_LAST_DEFINED; i++) {
+    AtkRelationType relation_type = static_cast<AtkRelationType>(i);
+    if (atk_relation_set_contains(relation_set, relation_type))
+      relations->AppendString(atk_relation_type_get_name(relation_type));
+  }
+  dict->Set("relations", std::move(relations));
+  g_object_unref(relation_set);
+
+  AtkAttributeSet* attributes = atk_object_get_attributes(atk_object);
+  for (AtkAttributeSet* attr = attributes; attr; attr = attr->next) {
+    AtkAttribute* attribute = static_cast<AtkAttribute*>(attr->data);
+    dict->SetString(attribute->name, attribute->value);
+  }
+  atk_attribute_set_free(attributes);
+
+  // Properties obtained via AtkValue.
+  AddValueProperties(atk_object, dict);
+  AddTableProperties(atk_object, dict);
+  AddTableCellProperties(ax_platform_node, atk_object, dict);
 }
 
 void AccessibilityTreeFormatterAuraLinux::AddProperties(

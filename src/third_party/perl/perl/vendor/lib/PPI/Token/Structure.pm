@@ -15,7 +15,7 @@ PPI::Token::Structure - Token class for characters that define code structure
 =head1 DESCRIPTION
 
 The C<PPI::Token::Structure> class is used for tokens that control the
-generally tree structure or code.
+general tree structure or code.
 
 This consists of seven characters. These are the six brace characters from
 the "round", "curly" and "square" pairs, plus the semi-colon statement
@@ -31,31 +31,30 @@ L<PPI::Token> and L<PPI::Element> parent classes.
 use strict;
 use PPI::Token ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Token';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Token";
 
 # Set the matching braces, done as an array
 # for slightly faster lookups.
-use vars qw{@MATCH @OPENS @CLOSES};
-BEGIN {
-	$MATCH[ord '{']  = '}';
-	$MATCH[ord '}']  = '{';
-	$MATCH[ord '[']  = ']';
-	$MATCH[ord ']']  = '[';
-	$MATCH[ord '(']  = ')';
-	$MATCH[ord ')']  = '(';
-
-	$OPENS[ord '{']  = 1;
-	$OPENS[ord '[']  = 1;
-	$OPENS[ord '(']  = 1;
-
-	$CLOSES[ord '}'] = 1;
-	$CLOSES[ord ']'] = 1;
-	$CLOSES[ord ')'] = 1;
-}
+my %MATCH = (
+	ord '{' => '}',
+	ord '}' => '{',
+	ord '[' => ']',
+	ord ']' => '[',
+	ord '(' => ')',
+	ord ')' => '(',
+);
+my %OPENS = (
+	ord '{' => 1,
+	ord '[' => 1,
+	ord '(' => 1,
+);
+my %CLOSES = (
+	ord '}' => 1,
+	ord ']' => 1,
+	ord ')' => 1,
+);
 
 
 
@@ -86,7 +85,7 @@ sub __TOKENIZER__commit {
 
 # For a given brace, find its opposing pair
 sub __LEXER__opposite {
-	$MATCH[ord $_[0]->{content} ];
+	$MATCH{ord $_[0]->{content}};
 }
 
 
@@ -136,7 +135,7 @@ sub next_token {
 
 	# If this is an opening brace, descend down into our parent
 	# structure, if it has children.
-	if ( $OPENS[ ord $self->{content} ] ) {
+	if ( $OPENS{ ord $self->{content} } ) {
 		my $child = $structure->child(0);
 		if ( $child ) {
 			# Decend deeper, or return if it is a token
@@ -164,7 +163,7 @@ sub previous_token {
 
 	# If this is a closing brace, descend down into our parent
 	# structure, if it has children.
-	if ( $CLOSES[ ord $self->{content} ] ) {
+	if ( $CLOSES{ ord $self->{content} } ) {
 		my $child = $structure->child(-1);
 		if ( $child ) {
 			# Decend deeper, or return if it is a token
@@ -177,7 +176,7 @@ sub previous_token {
 		# Anything that slips through to here is a structure
 		# with a closing brace, but no opening brace, so we
 		# just have to go with it, and continue as we would
-		# if we started with a opening brace.
+		# if we started with an opening brace.
 	}
 
 	# We can use the default implement, if we call it from the

@@ -23,6 +23,7 @@
     },
     "infra_step": true,
     "name": "gerrit fetch current CL info",
+    "timeout": 600,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -166,6 +167,24 @@
     "~followup_annotations": [
       "@@@STEP_TEXT@INVALID_TEST_RESULTS@@@",
       "@@@SET_BUILD_PROPERTY@failure_type@\"INVALID_TEST_RESULTS\"@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "TRYJOB FAILURE (5)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@TEST_TIMEOUT@@@",
+      "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_TIMEOUT\"@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "TRYJOB FAILURE (6)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@TEST_EXPIRED@@@",
+      "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_EXPIRED\"@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },

@@ -42,11 +42,6 @@
 #include "net/base/proxy_server.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -63,7 +58,8 @@ namespace {
 // id concurrently.
 base::LazySequencedTaskRunner g_get_network_id_task_runner =
     LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(
-        base::TaskTraits(base::MayBlock(),
+        base::TaskTraits(base::ThreadPool(),
+                         base::MayBlock(),
                          base::TaskPriority::BEST_EFFORT,
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN));
 #endif
@@ -195,8 +191,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       network_connection_tracker_(network_connection_tracker),
       configurator_(configurator),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN),
-      network_properties_manager_(nullptr),
-      weak_factory_(this) {
+      network_properties_manager_(nullptr) {
   DCHECK(io_task_runner_);
   DCHECK(network_connection_tracker_);
   DCHECK(configurator);
@@ -219,15 +214,17 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   network_properties_manager_ = manager;
   network_properties_manager_->ResetWarmupURLFetchMetrics();
 
-  secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
-  warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      url_loader_factory, create_custom_proxy_config_callback,
-      base::BindRepeating(
-          &DataReductionProxyConfig::HandleWarmupFetcherResponse,
-          base::Unretained(this)),
-      base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
-                          base::Unretained(this)),
-      ui_task_runner_, user_agent));
+  if (!params::IsIncludedInHoldbackFieldTrial()) {
+    secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
+    warmup_url_fetcher_.reset(new WarmupURLFetcher(
+        create_custom_proxy_config_callback,
+        base::BindRepeating(
+            &DataReductionProxyConfig::HandleWarmupFetcherResponse,
+            base::Unretained(this)),
+        base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
+                            base::Unretained(this)),
+        ui_task_runner_, user_agent));
+  }
 
   AddDefaultProxyBypassRules();
 
@@ -270,38 +267,6 @@ DataReductionProxyConfig::FindConfiguredDataReductionProxy(
 net::ProxyList DataReductionProxyConfig::GetAllConfiguredProxies() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return config_values_->GetAllConfiguredProxies();
-}
-
-bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
-    const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(request.context());
-  DCHECK(request.context()->proxy_resolution_service());
-  net::ProxyInfo result;
-  data_reduction_proxy_config.proxy_rules().Apply(
-      request.url(), &result);
-  if (!result.proxy_server().is_valid())
-    return true;
-  if (result.proxy_server().is_direct())
-    return true;
-  return !FindConfiguredDataReductionProxy(result.proxy_server());
-}
-
-bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
-    const net::URLRequest& request,
-    const net::ProxyConfig& data_reduction_proxy_config,
-    base::TimeDelta* min_retry_delay) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (request.context() != nullptr &&
-      request.context()->proxy_resolution_service() != nullptr) {
-    return AreProxiesBypassed(
-        request.context()->proxy_resolution_service()->proxy_retry_info(),
-        data_reduction_proxy_config.proxy_rules(),
-        request.url().SchemeIsCryptographic(), min_retry_delay);
-  }
-
-  return false;
 }
 
 bool DataReductionProxyConfig::AreProxiesBypassed(
@@ -683,11 +648,17 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
 
 void DataReductionProxyConfig::SecureProxyCheck(
     SecureProxyCheckerCallback fetcher_callback) {
+  if (params::IsIncludedInHoldbackFieldTrial())
+    return;
+
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(fetcher_callback);
 }
 
 void DataReductionProxyConfig::FetchWarmupProbeURL() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (params::IsIncludedInHoldbackFieldTrial())
+    return;
 
   if (!enabled_by_user_) {
     RecordWarmupURLFetchAttemptEvent(
@@ -789,6 +760,9 @@ DataReductionProxyConfig::GetNetworkPropertiesManager() const {
 
 bool DataReductionProxyConfig::IsFetchInFlight() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!warmup_url_fetcher_)
+    return false;
   return warmup_url_fetcher_->IsFetchInFlight();
 }
 

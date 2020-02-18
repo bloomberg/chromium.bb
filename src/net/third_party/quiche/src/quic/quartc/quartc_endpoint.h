@@ -18,15 +18,6 @@
 
 namespace quic {
 
-// Private implementation of QuartcEndpoint.  Enables different implementations
-// for client and server endpoints.
-class QuartcEndpointImpl {
- public:
-  virtual ~QuartcEndpointImpl() = default;
-
-  virtual QuicStringPiece server_crypto_config() const = 0;
-};
-
 // Endpoint (client or server) in a peer-to-peer Quartc connection.
 class QuartcEndpoint {
  public:
@@ -83,11 +74,12 @@ class QuartcClientEndpoint : public QuartcEndpoint,
   void OnCongestionControlChange(QuicBandwidth bandwidth_estimate,
                                  QuicBandwidth pacing_rate,
                                  QuicTime::Delta latest_rtt) override;
-  void OnConnectionClosed(QuicErrorCode error_code,
-                          const std::string& error_details,
+  void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                           ConnectionCloseSource source) override;
   void OnMessageReceived(QuicStringPiece message) override;
   void OnMessageSent(int64_t datagram_id) override;
+  void OnMessageAcked(int64_t datagram_id, QuicTime receive_timestamp) override;
+  void OnMessageLost(int64_t datagram_id) override;
 
  private:
   friend class CreateSessionDelegate;

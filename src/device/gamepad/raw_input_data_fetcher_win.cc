@@ -211,20 +211,19 @@ void RawInputDataFetcher::EnumerateDevices() {
         pad.vibration_actuator.not_null = device->SupportsVibration();
 
         state->mapper = GetGamepadStandardMappingFunction(
-            vendor_int, product_int, version_number, GAMEPAD_BUS_UNKNOWN);
+            vendor_int, product_int, /*hid_specification_version=*/0,
+            version_number, GAMEPAD_BUS_UNKNOWN);
         state->axis_mask = 0;
         state->button_mask = 0;
 
-        swprintf(base::as_writable_wcstr(pad.id), Gamepad::kIdLengthCap,
-                 L"%ls (%lsVendor: %04x Product: %04x)", product_string.c_str(),
-                 state->mapper ? L"STANDARD GAMEPAD " : L"", vendor_int,
-                 product_int);
+        pad.SetID(base::StringPrintf(L"%ls (%lsVendor: %04x Product: %04x)",
+                                     product_string.c_str(),
+                                     state->mapper ? L"STANDARD GAMEPAD " : L"",
+                                     vendor_int, product_int));
 
-        if (state->mapper)
-          swprintf(base::as_writable_wcstr(pad.mapping),
-                   Gamepad::kMappingLengthCap, L"standard");
-        else
-          pad.mapping[0] = 0;
+        // The mapping is standard if there is a standard mapping function.
+        pad.mapping =
+            state->mapper ? GamepadMapping::kStandard : GamepadMapping::kNone;
       }
 
       enumerated_device_handles.insert(device_handle);

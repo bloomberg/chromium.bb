@@ -45,7 +45,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/PaymentValidator.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
   ]
-  jni_package = "payments"
 }
 
 android_library("java") {
@@ -69,4 +68,12 @@ android_library("java") {
     "//mojo/public/java:bindings_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
   ]
+}
+
+java_cpp_strings("error_strings_generated_srcjar") {
+  sources = [
+    "//components/payments/core/error_strings.cc",
+  ]
+
+  template = "java_templates/ErrorStrings.java.tmpl"
 }

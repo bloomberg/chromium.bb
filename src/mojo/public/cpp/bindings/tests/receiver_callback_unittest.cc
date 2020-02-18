@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -109,7 +109,7 @@ class ReceiverCallbackTest : public testing::Test {
   void PumpMessages() { base::RunLoop().RunUntilIdle(); }
 
  private:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 // Tests that the Remote and the Receiver can communicate with each other

@@ -36,6 +36,8 @@ rtc_static_library("rtc_pc_base") {
     "channel_manager.h",
     "composite_rtp_transport.cc",
     "composite_rtp_transport.h",
+    "datagram_dtls_adaptor.cc",
+    "datagram_dtls_adaptor.h",
     "dtls_srtp_transport.cc",
     "dtls_srtp_transport.h",
     "dtls_transport.cc",
@@ -71,6 +73,7 @@ rtc_static_library("rtc_pc_base") {
     "srtp_transport.h",
     "transport_stats.cc",
     "transport_stats.h",
+    "used_ids.h",
   ]
 
   deps = [
@@ -83,15 +86,18 @@ rtc_static_library("rtc_pc_base") {
     "../api:scoped_refptr",
     "../api/video:builtin_video_bitrate_allocator_factory",
     "../api/video:video_frame",
+    "../api/video:video_rtp_headers",
     "../call:call_interfaces",
     "../call:rtp_interfaces",
     "../call:rtp_receiver",
     "../common_video",
+    "../logging:ice_log",
     "../logging:rtc_event_log_api",
     "../media:rtc_data",
     "../media:rtc_h264_profile_id",
     "../media:rtc_media_base",
     "../media:rtc_media_config",
+    "../modules/rtp_rtcp:rtp_rtcp",
     "../modules/rtp_rtcp:rtp_rtcp_format",
     "../p2p:rtc_p2p",
     "../rtc_base",
@@ -99,8 +105,10 @@ rtc_static_library("rtc_pc_base") {
     "../rtc_base:deprecation",
     "../rtc_base:rtc_task_queue",
     "../rtc_base:stringutils",
+    "../rtc_base/system:file_wrapper",
     "../rtc_base/third_party/base64",
     "../rtc_base/third_party/sigslot",
+    "../system_wrappers:field_trial",
     "../system_wrappers:metrics",
     "//third_party/abseil-cpp/absl/algorithm:container",
     "//third_party/abseil-cpp/absl/memory",
@@ -214,6 +222,7 @@ rtc_static_library("peerconnection") {
     "../api/task_queue",
     "../api/video:builtin_video_bitrate_allocator_factory",
     "../api/video:video_frame",
+    "../api/video:video_rtp_headers",
     "../api/video_codecs:video_codecs_api",
     "../call:call_interfaces",
     "../common_video",
@@ -227,6 +236,8 @@ rtc_static_library("peerconnection") {
     "../rtc_base:checks",
     "../rtc_base:rtc_base_approved",
     "../rtc_base:safe_minmax",
+    "../rtc_base/experiments:field_trial_parser",
+    "../rtc_base/system:file_wrapper",
     "../rtc_base/system:rtc_export",
     "../rtc_base/third_party/base64",
     "../rtc_base/third_party/sigslot",
@@ -245,7 +256,6 @@ rtc_source_set("libjingle_peerconnection") {
   visibility = [ "*" ]
   deps = [
     ":peerconnection",
-    "../api:create_peerconnection_factory",
     "../api:libjingle_peerconnection_api",
   ]
 }
@@ -273,6 +283,7 @@ if (rtc_include_tests) {
       "srtp_transport_unittest.cc",
       "test/rtp_transport_test_util.h",
       "test/srtp_test_util.h",
+      "used_ids_unittest.cc",
     ]
 
     include_dirs = [ "//third_party/libsrtp/srtp" ]
@@ -427,6 +438,7 @@ if (rtc_include_tests) {
       "../api/task_queue:default_task_queue_factory",
       "../api/video:builtin_video_bitrate_allocator_factory",
       "../api/video:video_frame",
+      "../api/video:video_rtp_headers",
       "../api/video_codecs:builtin_video_decoder_factory",
       "../api/video_codecs:builtin_video_encoder_factory",
       "../api/video_codecs:video_codecs_api",
@@ -520,10 +532,14 @@ if (rtc_include_tests) {
       "../api:mock_rtp",
       "../api:scoped_refptr",
       "../api/audio:audio_mixer_api",
+      "../api/rtc_event_log",
+      "../api/rtc_event_log:rtc_event_log_factory",
+      "../api/task_queue:default_task_queue_factory",
       "../api/units:time_delta",
       "../api/video:builtin_video_bitrate_allocator_factory",
       "../logging:fake_rtc_event_log",
       "../media:rtc_media_config",
+      "../media:rtc_media_engine_defaults",
       "../modules/audio_device:audio_device_api",
       "../modules/audio_processing:audio_processing_statistics",
       "../modules/rtp_rtcp:rtp_rtcp_format",
@@ -561,7 +577,6 @@ if (rtc_include_tests) {
       "../api/video_codecs:video_codecs_api",
       "../call:call_interfaces",
       "../logging:rtc_event_log_api",
-      "../logging:rtc_event_log_impl_base",
       "../media:rtc_audio_video",
       "../media:rtc_data",  # TODO(phoglund): AFAIK only used for one sctp constant.
       "../media:rtc_media_base",

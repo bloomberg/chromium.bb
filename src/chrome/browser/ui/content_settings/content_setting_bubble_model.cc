@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -54,7 +53,6 @@
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -207,7 +205,9 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
 
-  static const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
+  // TODO(https://crbug.com/978882): Make the two arrays below static again once
+  // we no longer need to check base::FeatureList.
+  const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_MESSAGE},
@@ -222,7 +222,7 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
            : IDS_BLOCKED_MOTION_SENSORS_MESSAGE},
   };
   // Fields as for kBlockedMessageIDs, above.
-  static const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
+  const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
       {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
       {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_ALLOWED_CLIPBOARD_MESSAGE},
@@ -421,10 +421,7 @@ void ContentSettingRPHBubbleModel::CommitChanges() {
   // then we remove it.
   auto* settings = TabSpecificContentSettings::FromWebContents(web_contents());
   settings->ClearPendingProtocolHandler();
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-      content::Source<WebContents>(web_contents()),
-      content::NotificationService::NoDetails());
+  content_settings::UpdateLocationBarUiForWebContents(web_contents());
 }
 
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
@@ -891,11 +888,6 @@ void ContentSettingCookiesBubbleModel::CommitChanges() {
 }
 
 void ContentSettingCookiesBubbleModel::OnCustomLinkClicked() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
-      content::Source<TabSpecificContentSettings>(
-          TabSpecificContentSettings::FromWebContents(web_contents())),
-      content::NotificationService::NoDetails());
   delegate()->ShowCollectedCookiesDialog(web_contents());
 }
 
@@ -1205,13 +1197,13 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const std::string& device) {
   PrefService* prefs = GetProfile()->GetPrefs();
-  if (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
+  if (type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE) {
     prefs->SetString(prefs::kDefaultAudioCaptureDevice, device);
   } else {
-    DCHECK_EQ(blink::MEDIA_DEVICE_VIDEO_CAPTURE, type);
+    DCHECK_EQ(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, type);
     prefs->SetString(prefs::kDefaultVideoCaptureDevice, device);
   }
 }
@@ -1250,7 +1242,8 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
       mic_menu.default_device = GetMediaDeviceById(preferred_mic, microphones);
       mic_menu.selected_device = mic_menu.default_device;
     }
-    add_media_menu(blink::MEDIA_DEVICE_AUDIO_CAPTURE, mic_menu);
+    add_media_menu(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                   mic_menu);
   }
 
   if (CameraAccessed()) {
@@ -1275,7 +1268,8 @@ void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
           GetMediaDeviceById(preferred_camera, cameras);
       camera_menu.selected_device = camera_menu.default_device;
     }
-    add_media_menu(blink::MEDIA_DEVICE_VIDEO_CAPTURE, camera_menu);
+    add_media_menu(blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+                   camera_menu);
   }
 }
 
@@ -1294,15 +1288,15 @@ void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
 }
 
 void ContentSettingMediaStreamBubbleModel::OnMediaMenuClicked(
-    blink::MediaStreamType type,
+    blink::mojom::MediaStreamType type,
     const std::string& selected_device_id) {
-  DCHECK(type == blink::MEDIA_DEVICE_AUDIO_CAPTURE ||
-         type == blink::MEDIA_DEVICE_VIDEO_CAPTURE);
+  DCHECK(type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+         type == blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
   DCHECK_EQ(1U, bubble_content().media_menus.count(type));
   MediaCaptureDevicesDispatcher* dispatcher =
       MediaCaptureDevicesDispatcher::GetInstance();
   const blink::MediaStreamDevices& devices =
-      (type == blink::MEDIA_DEVICE_AUDIO_CAPTURE)
+      (type == blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE)
           ? dispatcher->GetAudioCaptureDevices()
           : dispatcher->GetVideoCaptureDevices();
   set_selected_device(GetMediaDeviceById(selected_device_id, devices));
@@ -1398,15 +1392,16 @@ ContentSettingDownloadsBubbleModel::AsDownloadsBubbleModel() {
 // Initialize the radio group by setting the appropriate labels for the
 // content type and setting the default value based on the content setting.
 void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
-  const GURL& url = web_contents()->GetURL();
-  base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
-
   DownloadRequestLimiter* download_request_limiter =
       g_browser_process->download_request_limiter();
+  const GURL& download_origin =
+      download_request_limiter->GetDownloadOrigin(web_contents());
+  base::string16 display_host =
+      url_formatter::FormatUrlForSecurityDisplay(download_origin);
   DCHECK(download_request_limiter);
 
   RadioGroup radio_group;
-  radio_group.url = url;
+  radio_group.url = download_origin;
   switch (download_request_limiter->GetDownloadUiStatus(web_contents())) {
     case DownloadRequestLimiter::DOWNLOAD_UI_ALLOWED:
       radio_group.radio_items = {
@@ -1426,7 +1421,8 @@ void ContentSettingDownloadsBubbleModel::SetRadioGroup() {
       return;
   }
   radio_group.user_managed = GetSettingManagedByUser(
-      url, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(), nullptr);
+      download_origin, CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, GetProfile(),
+      nullptr);
   set_radio_group(radio_group);
 }
 

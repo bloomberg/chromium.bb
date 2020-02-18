@@ -10,7 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/common/extension_set.h"
@@ -25,9 +25,12 @@ class ContentVerifier;
 class Extension;
 
 // Contains extension data that needs to be accessed on the IO thread. It can
-// be created/destroyed on any thread, but all other methods must be called on
-// the IO thread.
-class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
+// be created on any thread, but all other methods and destructor must be called
+// on the IO thread.
+// TODO(http://crbug.com/980774): Audit this to see what is still necessary.
+class InfoMap : public base::RefCountedThreadSafe<
+                    InfoMap,
+                    content::BrowserThread::DeleteOnIOThread> {
  public:
   InfoMap();
 
@@ -79,10 +82,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   // Returns the IO thread QuotaService. Creates the instance on first call.
   QuotaService* GetQuotaService();
 
-  // Returns the RulesetManager for the Declarative Net Request API.
-  declarative_net_request::RulesetManager* GetRulesetManager();
-  const declarative_net_request::RulesetManager* GetRulesetManager() const;
-
   // Notifications can be enabled/disabled in real time by the user.
   void SetNotificationsDisabled(const std::string& extension_id,
                                 bool notifications_disabled);
@@ -95,7 +94,9 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   void SetIsLockScreenContext(bool is_lock_screen_context);
 
  private:
-  friend class base::RefCountedThreadSafe<InfoMap>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::IO>;
+  friend class base::DeleteHelper<InfoMap>;
 
   // Extra dynamic data related to an extension.
   struct ExtraData;
@@ -117,9 +118,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
 
   // Assignment of extensions to renderer processes.
   ProcessMap process_map_;
-
-  // Manages rulesets for the Declarative Net Request API.
-  declarative_net_request::RulesetManager ruleset_manager_;
 
   scoped_refptr<ContentVerifier> content_verifier_;
 };

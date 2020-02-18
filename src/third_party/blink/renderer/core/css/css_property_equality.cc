@@ -70,7 +70,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
   switch (property.GetCSSProperty().PropertyID()) {
     case CSSPropertyID::kBackgroundColor:
       return a.BackgroundColor() == b.BackgroundColor() &&
-             a.VisitedLinkBackgroundColor() == b.VisitedLinkBackgroundColor();
+             a.InternalVisitedBackgroundColor() ==
+                 b.InternalVisitedBackgroundColor();
     case CSSPropertyID::kBackgroundImage:
       return FillLayersEqual<CSSPropertyID::kBackgroundImage>(
           a.BackgroundLayers(), b.BackgroundLayers());
@@ -87,8 +88,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.BaselineShiftValue() == b.BaselineShiftValue();
     case CSSPropertyID::kBorderBottomColor:
       return a.BorderBottomColor() == b.BorderBottomColor() &&
-             a.VisitedLinkBorderBottomColor() ==
-                 b.VisitedLinkBorderBottomColor();
+             a.InternalVisitedBorderBottomColor() ==
+                 b.InternalVisitedBorderBottomColor();
     case CSSPropertyID::kBorderBottomLeftRadius:
       return a.BorderBottomLeftRadius() == b.BorderBottomLeftRadius();
     case CSSPropertyID::kBorderBottomRightRadius:
@@ -105,17 +106,20 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.BorderImageWidth() == b.BorderImageWidth();
     case CSSPropertyID::kBorderLeftColor:
       return a.BorderLeftColor() == b.BorderLeftColor() &&
-             a.VisitedLinkBorderLeftColor() == b.VisitedLinkBorderLeftColor();
+             a.InternalVisitedBorderLeftColor() ==
+                 b.InternalVisitedBorderLeftColor();
     case CSSPropertyID::kBorderLeftWidth:
       return a.BorderLeftWidth() == b.BorderLeftWidth();
     case CSSPropertyID::kBorderRightColor:
       return a.BorderRightColor() == b.BorderRightColor() &&
-             a.VisitedLinkBorderRightColor() == b.VisitedLinkBorderRightColor();
+             a.InternalVisitedBorderRightColor() ==
+                 b.InternalVisitedBorderRightColor();
     case CSSPropertyID::kBorderRightWidth:
       return a.BorderRightWidth() == b.BorderRightWidth();
     case CSSPropertyID::kBorderTopColor:
       return a.BorderTopColor() == b.BorderTopColor() &&
-             a.VisitedLinkBorderTopColor() == b.VisitedLinkBorderTopColor();
+             a.InternalVisitedBorderTopColor() ==
+                 b.InternalVisitedBorderTopColor();
     case CSSPropertyID::kBorderTopLeftRadius:
       return a.BorderTopLeftRadius() == b.BorderTopLeftRadius();
     case CSSPropertyID::kBorderTopRightRadius:
@@ -128,18 +132,18 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return DataEquivalent(a.BoxShadow(), b.BoxShadow());
     case CSSPropertyID::kCaretColor:
       return a.CaretColor() == b.CaretColor() &&
-             a.VisitedLinkCaretColor() == b.VisitedLinkCaretColor();
+             a.InternalVisitedCaretColor() == b.InternalVisitedCaretColor();
     case CSSPropertyID::kClip:
       return a.Clip() == b.Clip();
     case CSSPropertyID::kColor:
       return a.GetColor() == b.GetColor() &&
-             a.VisitedLinkColor() == b.VisitedLinkColor();
+             a.InternalVisitedColor() == b.InternalVisitedColor();
     case CSSPropertyID::kFill: {
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.FillPaint().EqualTypeOrColor(b_svg.FillPaint()) &&
-             a_svg.VisitedLinkFillPaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkFillPaint());
+             a_svg.InternalVisitedFillPaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedFillPaint());
     }
     case CSSPropertyID::kFillOpacity:
       return a.FillOpacity() == b.FillOpacity();
@@ -218,7 +222,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Orphans() == b.Orphans();
     case CSSPropertyID::kOutlineColor:
       return a.OutlineColor() == b.OutlineColor() &&
-             a.VisitedLinkOutlineColor() == b.VisitedLinkOutlineColor();
+             a.InternalVisitedOutlineColor() == b.InternalVisitedOutlineColor();
     case CSSPropertyID::kOutlineOffset:
       return a.OutlineOffset() == b.OutlineOffset();
     case CSSPropertyID::kOutlineWidth:
@@ -247,8 +251,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       const SVGComputedStyle& a_svg = a.SvgStyle();
       const SVGComputedStyle& b_svg = b.SvgStyle();
       return a_svg.StrokePaint().EqualTypeOrColor(b_svg.StrokePaint()) &&
-             a_svg.VisitedLinkStrokePaint().EqualTypeOrColor(
-                 b_svg.VisitedLinkStrokePaint());
+             a_svg.InternalVisitedStrokePaint().EqualTypeOrColor(
+                 b_svg.InternalVisitedStrokePaint());
     }
     case CSSPropertyID::kStrokeDasharray:
       return a.StrokeDashArray() == b.StrokeDashArray();
@@ -262,8 +266,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.StrokeWidth() == b.StrokeWidth();
     case CSSPropertyID::kTextDecorationColor:
       return a.TextDecorationColor() == b.TextDecorationColor() &&
-             a.VisitedLinkTextDecorationColor() ==
-                 b.VisitedLinkTextDecorationColor();
+             a.InternalVisitedTextDecorationColor() ==
+                 b.InternalVisitedTextDecorationColor();
     case CSSPropertyID::kTextDecorationSkipInk:
       return a.TextDecorationSkipInk() == b.TextDecorationSkipInk();
     case CSSPropertyID::kTextIndent:
@@ -294,7 +298,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.RowGap() == b.RowGap();
     case CSSPropertyID::kColumnRuleColor:
       return a.ColumnRuleColor() == b.ColumnRuleColor() &&
-             a.VisitedLinkColumnRuleColor() == b.VisitedLinkColumnRuleColor();
+             a.InternalVisitedColumnRuleColor() ==
+                 b.InternalVisitedColumnRuleColor();
     case CSSPropertyID::kColumnRuleWidth:
       return a.ColumnRuleWidth() == b.ColumnRuleWidth();
     case CSSPropertyID::kColumnWidth:
@@ -329,7 +334,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
              a.PerspectiveOriginY() == b.PerspectiveOriginY();
     case CSSPropertyID::kWebkitTextStrokeColor:
       return a.TextStrokeColor() == b.TextStrokeColor() &&
-             a.VisitedLinkTextStrokeColor() == b.VisitedLinkTextStrokeColor();
+             a.InternalVisitedTextStrokeColor() ==
+                 b.InternalVisitedTextStrokeColor();
     case CSSPropertyID::kTransform:
       return a.Transform() == b.Transform();
     case CSSPropertyID::kTranslate:

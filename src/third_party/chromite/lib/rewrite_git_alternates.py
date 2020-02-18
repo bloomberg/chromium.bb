@@ -15,6 +15,7 @@ from __future__ import print_function
 __all__ = ('RebuildRepoCheckout',)
 
 import sys
+import math
 import os
 import shutil
 import errno
@@ -72,7 +73,7 @@ def _UpdateAlternatesDir(alternates_root, reference_maps, projects):
   for project in projects:
     alt_path = os.path.join(alternates_root, project)
     paths = []
-    for k, v in reference_maps.iteritems():
+    for k, v in reference_maps.items():
       if is_mirror[k]:
         # The layout when the reference is a repo mirror (--mirror).
         suffix = os.path.join(project, 'objects')
@@ -130,12 +131,13 @@ def _GetProjects(repo_root):
     if os.path.exists(path):
       times.append(os.stat(path).st_mtime)
 
-  manifest_time = long(max(times))
+  # Truncate to seconds.
+  manifest_time = math.trunc(max(times))
 
   cache_path = os.path.join(repo_root, _CACHE_NAME)
 
   try:
-    if long(os.stat(cache_path).st_mtime) == manifest_time:
+    if math.trunc(os.stat(cache_path).st_mtime) == manifest_time:
       return osutils.ReadFile(cache_path).split()
   except EnvironmentError as e:
     if e.errno != errno.ENOENT:
@@ -204,7 +206,7 @@ def WalkReferences(repo_root, max_depth=5, suppress=()):
   original_root = repo_root
   seen = set(os.path.abspath(x) for x in suppress)
 
-  for _x in xrange(0, max_depth):
+  for _x in range(0, max_depth):
     repo_root = os.path.abspath(repo_root)
 
     if repo_root in seen:

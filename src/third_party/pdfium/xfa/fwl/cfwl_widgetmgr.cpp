@@ -18,7 +18,21 @@ CFWL_WidgetMgr::CFWL_WidgetMgr(AdapterIface* pAdapterNative)
   m_mapWidgetItem[nullptr] = pdfium::MakeUnique<Item>();
 }
 
-CFWL_WidgetMgr::~CFWL_WidgetMgr() {}
+CFWL_WidgetMgr::~CFWL_WidgetMgr() = default;
+
+// static
+CFWL_Widget* CFWL_WidgetMgr::NextTab(CFWL_Widget* parent, CFWL_Widget* focus) {
+  CFWL_WidgetMgr* pMgr = parent->GetOwnerApp()->GetWidgetMgr();
+  CFWL_Widget* child = pMgr->GetFirstChildWidget(parent);
+  while (child) {
+    CFWL_Widget* bRet = NextTab(child, focus);
+    if (bRet)
+      return bRet;
+
+    child = pMgr->GetNextSiblingWidget(child);
+  }
+  return nullptr;
+}
 
 CFWL_Widget* CFWL_WidgetMgr::GetParentWidget(const CFWL_Widget* pWidget) const {
   Item* pItem = GetWidgetMgrItem(pWidget);
@@ -244,24 +258,6 @@ CFWL_Widget* CFWL_WidgetMgr::GetWidgetAtPoint(CFWL_Widget* parent,
   return parent;
 }
 
-CFWL_Widget* CFWL_WidgetMgr::NextTab(CFWL_Widget* parent,
-                                     CFWL_Widget* focus,
-                                     bool& bFind) {
-  CFWL_WidgetMgr* pMgr = parent->GetOwnerApp()->GetWidgetMgr();
-  CFWL_Widget* child = pMgr->GetFirstChildWidget(parent);
-  while (child) {
-    if (focus == child)
-      bFind = true;
-
-    CFWL_Widget* bRet = NextTab(child, focus, bFind);
-    if (bRet)
-      return bRet;
-
-    child = pMgr->GetNextSiblingWidget(child);
-  }
-  return nullptr;
-}
-
 CFWL_Widget* CFWL_WidgetMgr::GetDefaultButton(CFWL_Widget* pParent) const {
   if ((pParent->GetClassID() == FWL_Type::PushButton) &&
       (pParent->GetStates() & (1 << (FWL_WGTSTATE_MAX + 2)))) {
@@ -323,12 +319,6 @@ void CFWL_WidgetMgr::OnProcessMessageToForm(CFWL_Message* pMessage) {
 
   CFWL_NoteDriver* pNoteDriver = pDstWidget->GetOwnerApp()->GetNoteDriver();
   pNoteDriver->ProcessMessage(pMessage->Clone());
-
-#if defined(OS_MACOSX)
-  CFWL_NoteLoop* pTopLoop = pNoteDriver->GetTopLoop();
-  if (pTopLoop)
-    pNoteDriver->UnqueueMessageAndProcess(pTopLoop);
-#endif
 }
 
 void CFWL_WidgetMgr::OnDrawWidget(CFWL_Widget* pWidget,

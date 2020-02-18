@@ -11,6 +11,7 @@
 #include "modules/rtp_rtcp/source/rtp_rtcp_impl.h"
 
 #include <string.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <set>
@@ -35,11 +36,10 @@ const int64_t kRtpRtcpMaxIdleTimeProcessMs = 5;
 const int64_t kRtpRtcpRttProcessTimeMs = 1000;
 const int64_t kRtpRtcpBitrateProcessTimeMs = 10;
 const int64_t kDefaultExpectedRetransmissionTimeMs = 125;
-constexpr int32_t kDefaultVideoReportInterval = 1000;
-constexpr int32_t kDefaultAudioReportInterval = 5000;
 }  // namespace
 
 RtpRtcp::Configuration::Configuration() = default;
+RtpRtcp::Configuration::Configuration(Configuration&& rhs) = default;
 
 std::unique_ptr<RtpRtcp> RtpRtcp::Create(const Configuration& configuration) {
   RTC_DCHECK(configuration.clock);
@@ -59,29 +59,8 @@ RtpRtcp* RtpRtcp::CreateRtpRtcp(const RtpRtcp::Configuration& configuration) {
 }
 
 ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
-    : rtcp_sender_(configuration.audio,
-                   configuration.clock,
-                   configuration.receive_statistics,
-                   configuration.rtcp_packet_type_counter_observer,
-                   configuration.event_log,
-                   configuration.outgoing_transport,
-                   configuration.rtcp_report_interval_ms > 0
-                       ? configuration.rtcp_report_interval_ms
-                       : (configuration.audio ? kDefaultAudioReportInterval
-                                              : kDefaultVideoReportInterval)),
-      rtcp_receiver_(configuration.clock,
-                     configuration.receiver_only,
-                     configuration.rtcp_packet_type_counter_observer,
-                     configuration.bandwidth_callback,
-                     configuration.intra_frame_callback,
-                     configuration.rtcp_loss_notification_observer,
-                     configuration.transport_feedback_callback,
-                     configuration.bitrate_allocation_observer,
-                     configuration.rtcp_report_interval_ms > 0
-                         ? configuration.rtcp_report_interval_ms
-                         : (configuration.audio ? kDefaultAudioReportInterval
-                                                : kDefaultVideoReportInterval),
-                     this),
+    : rtcp_sender_(configuration),
+      rtcp_receiver_(configuration, this),
       clock_(configuration.clock),
       last_bitrate_process_time_(clock_->TimeInMilliseconds()),
       last_rtt_process_time_(clock_->TimeInMilliseconds()),
@@ -90,32 +69,12 @@ ModuleRtpRtcpImpl::ModuleRtpRtcpImpl(const Configuration& configuration)
       packet_overhead_(28),  // IPV4 UDP.
       nack_last_time_sent_full_ms_(0),
       nack_last_seq_number_sent_(0),
-      key_frame_req_method_(kKeyFrameReqPliRtcp),
       remote_bitrate_(configuration.remote_bitrate_estimator),
       ack_observer_(configuration.ack_observer),
       rtt_stats_(configuration.rtt_stats),
       rtt_ms_(0) {
-  FieldTrialBasedConfig default_trials;
   if (!configuration.receiver_only) {
-    rtp_sender_.reset(new RTPSender(
-        configuration.audio, configuration.clock,
-        configuration.outgoing_transport, configuration.paced_sender,
-        configuration.flexfec_sender
-            ? absl::make_optional(configuration.flexfec_sender->ssrc())
-            : absl::nullopt,
-        configuration.transport_sequence_number_allocator,
-        configuration.transport_feedback_callback,
-        configuration.send_bitrate_observer,
-        configuration.send_side_delay_observer, configuration.event_log,
-        configuration.send_packet_observer,
-        configuration.retransmission_rate_limiter,
-        configuration.overhead_observer,
-        configuration.populate_network2_timestamp,
-        configuration.frame_encryptor, configuration.require_frame_encryption,
-        configuration.extmap_allow_mixed,
-        configuration.field_trials ? *configuration.field_trials
-                                   : default_trials));
-
+    rtp_sender_.reset(new RTPSender(configuration));
     // Make sure rtcp sender use same timestamp offset as rtp sender.
     rtcp_sender_.SetTimestampOffset(rtp_sender_->TimestampOffset());
   }
@@ -417,10 +376,28 @@ RtpPacketSendResult ModuleRtpRtcpImpl::TimeToSendPacket(
                                        retransmission, pacing_info);
 }
 
+bool ModuleRtpRtcpImpl::TrySendPacket(RtpPacketToSend* packet,
+                                      const PacedPacketInfo& pacing_info) {
+  return rtp_sender_->TrySendPacket(packet, pacing_info);
+}
+
+bool ModuleRtpRtcpImpl::SupportsPadding() const {
+  return rtp_sender_->SupportsPadding();
+}
+
+bool ModuleRtpRtcpImpl::SupportsRtxPayloadPadding() const {
+  return rtp_sender_->SupportsRtxPayloadPadding();
+}
+
 size_t ModuleRtpRtcpImpl::TimeToSendPadding(
     size_t bytes,
     const PacedPacketInfo& pacing_info) {
   return rtp_sender_->TimeToSendPadding(bytes, pacing_info);
+}
+
+std::vector<std::unique_ptr<RtpPacketToSend>>
+ModuleRtpRtcpImpl::GeneratePadding(size_t target_size_bytes) {
+  return rtp_sender_->GeneratePadding(target_size_bytes);
 }
 
 size_t ModuleRtpRtcpImpl::MaxRtpPacketSize() const {
@@ -558,31 +535,6 @@ void ModuleRtpRtcpImpl::GetSendStreamDataCounters(
   rtp_sender_->GetDataCounters(rtp_counters, rtx_counters);
 }
 
-void ModuleRtpRtcpImpl::GetRtpPacketLossStats(
-    bool outgoing,
-    uint32_t ssrc,
-    struct RtpPacketLossStats* loss_stats) const {
-  if (!loss_stats)
-    return;
-  const PacketLossStats* stats_source = NULL;
-  if (outgoing) {
-    if (SSRC() == ssrc) {
-      stats_source = &send_loss_stats_;
-    }
-  } else {
-    if (rtcp_receiver_.RemoteSSRC() == ssrc) {
-      stats_source = &receive_loss_stats_;
-    }
-  }
-  if (stats_source) {
-    loss_stats->single_packet_loss_count = stats_source->GetSingleLossCount();
-    loss_stats->multiple_packet_loss_event_count =
-        stats_source->GetMultipleLossEventCount();
-    loss_stats->multiple_packet_loss_packet_count =
-        stats_source->GetMultipleLossPacketCount();
-  }
-}
-
 // Received RTCP report.
 int32_t ModuleRtpRtcpImpl::RemoteRTCPStat(
     std::vector<RTCPReportBlock>* receive_blocks) const {
@@ -624,15 +576,6 @@ int32_t ModuleRtpRtcpImpl::DeregisterSendRtpHeaderExtension(
   return rtp_sender_->DeregisterRtpHeaderExtension(type);
 }
 
-bool ModuleRtpRtcpImpl::HasBweExtensions() const {
-  return rtp_sender_->IsRtpHeaderExtensionRegistered(
-             kRtpExtensionTransportSequenceNumber) ||
-         rtp_sender_->IsRtpHeaderExtensionRegistered(
-             kRtpExtensionAbsoluteSendTime) ||
-         rtp_sender_->IsRtpHeaderExtensionRegistered(
-             kRtpExtensionTransmissionTimeOffset);
-}
-
 // (TMMBR) Temporary Max Media Bit Rate.
 bool ModuleRtpRtcpImpl::TMMBR() const {
   return rtcp_sender_.TMMBR();
@@ -649,9 +592,6 @@ void ModuleRtpRtcpImpl::SetTmmbn(std::vector<rtcp::TmmbItem> bounding_set) {
 // Send a Negative acknowledgment packet.
 int32_t ModuleRtpRtcpImpl::SendNACK(const uint16_t* nack_list,
                                     const uint16_t size) {
-  for (int i = 0; i < size; ++i) {
-    receive_loss_stats_.AddLostPacket(nack_list[i]);
-  }
   uint16_t nack_length = size;
   uint16_t start_id = 0;
   int64_t now_ms = clock_->TimeInMilliseconds();
@@ -736,28 +676,18 @@ bool ModuleRtpRtcpImpl::SendFeedbackPacket(
   return rtcp_sender_.SendFeedbackPacket(packet);
 }
 
-int32_t ModuleRtpRtcpImpl::SetKeyFrameRequestMethod(
-    const KeyFrameRequestMethod method) {
-  key_frame_req_method_ = method;
-  return 0;
-}
-
-int32_t ModuleRtpRtcpImpl::RequestKeyFrame() {
-  switch (key_frame_req_method_) {
-    case kKeyFrameReqPliRtcp:
-      return SendRTCP(kRtcpPli);
-    case kKeyFrameReqFirRtcp:
-      return SendRTCP(kRtcpFir);
-  }
-  return -1;
+bool ModuleRtpRtcpImpl::SendNetworkStateEstimatePacket(
+    const rtcp::RemoteEstimate& packet) {
+  return rtcp_sender_.SendNetworkStateEstimatePacket(packet);
 }
 
 int32_t ModuleRtpRtcpImpl::SendLossNotification(uint16_t last_decoded_seq_num,
                                                 uint16_t last_received_seq_num,
-                                                bool decodability_flag) {
+                                                bool decodability_flag,
+                                                bool buffering_allowed) {
   return rtcp_sender_.SendLossNotification(
       GetFeedbackState(), last_decoded_seq_num, last_received_seq_num,
-      decodability_flag);
+      decodability_flag, buffering_allowed);
 }
 
 void ModuleRtpRtcpImpl::SetRemoteSSRC(const uint32_t ssrc) {
@@ -788,9 +718,6 @@ void ModuleRtpRtcpImpl::OnReceivedNack(
   if (!rtp_sender_)
     return;
 
-  for (uint16_t nack_sequence_number : nack_sequence_numbers) {
-    send_loss_stats_.AddLostPacket(nack_sequence_number);
-  }
   if (!rtp_sender_->StorePackets() || nack_sequence_numbers.size() == 0) {
     return;
   }
@@ -806,10 +733,19 @@ void ModuleRtpRtcpImpl::OnReceivedRtcpReportBlocks(
     const ReportBlockList& report_blocks) {
   if (ack_observer_) {
     uint32_t ssrc = SSRC();
+    absl::optional<uint32_t> rtx_ssrc;
+    if (rtp_sender_->RtxStatus() != kRtxOff) {
+      rtx_ssrc = rtp_sender_->RtxSsrc();
+    }
 
     for (const RTCPReportBlock& report_block : report_blocks) {
       if (ssrc == report_block.source_ssrc) {
+        rtp_sender_->OnReceivedAckOnSsrc(
+            report_block.extended_highest_sequence_number);
         ack_observer_->OnReceivedAck(
+            report_block.extended_highest_sequence_number);
+      } else if (rtx_ssrc && *rtx_ssrc == report_block.source_ssrc) {
+        rtp_sender_->OnReceivedAckOnRtxSsrc(
             report_block.extended_highest_sequence_number);
       }
     }

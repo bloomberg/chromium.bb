@@ -19,6 +19,7 @@ import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
 import "services/network/public/mojom/net_log.mojom";
+import "services/network/public/mojom/network_isolation_key.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/origin_policy_manager.mojom";
 import "services/network/public/mojom/p2p.mojom";
@@ -324,6 +325,11 @@ struct NetworkContextParams {
   [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
 
+  // If true, the built-in cert verifier will be used. If false, the platform
+  // cert verifier will be used.
+  [EnableIf=is_chromeos]
+  bool use_builtin_cert_verifier = false;
+
   // Parameters for the cert verifier comparison trial. This is a temporary
   // interface and embedders should not use it.
   // See https://crbug.com/649026
@@ -449,6 +455,12 @@ struct SignedExchangeReport {
 const uint32 kBrowserProcessId = 0;
 const uint32 kInvalidProcessId = 0xffffffff;
 
+// https://mikewest.github.io/corpp/#integration-html
+enum CrossOriginEmbedderPolicy {
+  kNone,
+  kRequireCorp,
+};
+
 struct URLLoaderFactoryParams {
   // Process requesting the URLLoaderFactory.
   // Set to kBrowserProcessId to indicate the browser process.
@@ -468,6 +480,11 @@ struct URLLoaderFactoryParams {
   // mainly used by people testing their sites, via a command line switch.
   bool disable_web_security = false;
 
+  // https://mikewest.github.io/corpp/#integration-html
+  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
+      CrossOriginEmbedderPolicy.kNone;
+
   // If this is set, requests with the kURLLoadOptionUseHeaderClient option will
   // callback to the |header_client|, allowing the Cookie/Referrer request
   // headers and Cookie response headers to be modified. This has a performance
@@ -481,6 +498,9 @@ struct URLLoaderFactoryParams {
   // in order to bind the allow patterns to the factory specific initiator
   // origin.
   array<CorsOriginPattern> factory_bound_allow_patterns;
+
+  // Key used to isolate shared network resources like the cache.
+  NetworkIsolationKey? network_isolation_key;
 };
 
 // Callback interface for NetworkContext when routing identifiers aren't
@@ -505,6 +525,49 @@ interface NetworkContextClient {
                   url.mojom.Url url,
                   string header_value,
                   int32 load_flags) => ();
+
+  // Called when an attempt has been made to set cookies |cookie_list|, with the
+  // status field indicating whether the cookies as set, or blocked, and for
+  // what reason. Currently blocked cookies are included if they are blocked by
+  // user preference, or if they warrant a console deprecation warning.
+  //
+  // If the set attempt is due to a network transfer, |url| is the URL being
+  // loaded; if it's set by a script it's the URL of window or service worker
+  // script making the change.
+  //
+  // |is_service_worker| is true if the cookie is directly set by a service
+  // worker action via cookie store API; this doesn't include those
+  // set as a side effect of passed through fetches. In that case, there is
+  // no frame associated with the action, so it should be attributed by |url|.
+  //
+  // If |is_service_worker| is false, |process_id| and |routing_id| identify
+  // the relevant frame.
+  OnCookiesChanged(
+      bool is_service_worker, int32 process_id, int32 routing_id,
+      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      array<CookieWithStatus> cookie_list);
+
+  // Called when an attempt has been made to read the cookies in |cookie_list|,
+  // with the status indicating whether the cookies were actually used or
+  // blocked, and if so, gives the reason. Currently blocked cookies are
+  // included if they are blocked by user preference, or if they warrant a
+  // console deprecation warning.
+  //
+  // If the cookies are accessed by a network transfer, |url| is the URL being
+  // loaded; if they're read by a script, it's the URL of window or service
+  // worker script looking them up.
+  //
+  // |is_service_worker| is true if the cookie is directly read by a service
+  // worker action via cookie store API; this doesn't include those
+  // read as a side effect of passed through fetches. In that case, there is
+  // no frame associated with the action, so it should be attributed by |url|.
+  //
+  // If |is_service_worker| is false, |process_id| and |routing_id| identify
+  // the relevant frame.
+  OnCookiesRead(
+      bool is_service_worker, int32 process_id, int32 routing_id,
+      url.mojom.Url url, url.mojom.Url site_for_cookies,
+      array<CookieWithStatus> cookie_list);
 };
 
 // Represents a distinct context for making network requests, with its own
@@ -528,12 +591,20 @@ interface NetworkContext {
   // possible, a RestrictedCookieManager should be handed out instead.
   GetCookieManager(CookieManager& cookie_manager);
 
-  // Gets a RestrictedCookieManager scoped to a given origin.
+  // Gets a RestrictedCookieManager scoped to a given origin, and applying
+  // settings configured on the CookieManager associated with this domain.
   //
-  // This interface can be safely handed out to a process that is known to
-  // represent the given origin, such as a renderer process.
-  GetRestrictedCookieManager(RestrictedCookieManager& restricted_cookie_manager,
-                             url.mojom.Origin origin);
+  // If role == SCRIPT, this interface can be safely handed out to a process
+  // that is known to represent the given origin, such as a renderer process.
+  //
+  // |is_service_worker|, |process_id| and |routing_id| will be passed to
+  // NetworkContextClient::OnCookieChange and OnCookiesRead.
+  GetRestrictedCookieManager(
+      RestrictedCookieManager& restricted_cookie_manager,
+      RestrictedCookieManagerRole role,
+      url.mojom.Origin origin,
+      bool is_service_worker,
+      int32 process_id, int32 routing_id);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies
@@ -574,15 +645,11 @@ interface NetworkContext {
   //
   // This is being proxied by the browser because the renderer is unable to
   // directly interact with NetworkContext.
+  // TODO(crbug.com/965126): Use NetworkIsolationKey instead of top frame
+  // origin and frame origin.
   NotifyExternalCacheHit(url.mojom.Url url, string http_method,
-                         url.mojom.Origin? top_frame_origin);
-
-  // Caches |data| associated with |url| and |expected_response_time| in the
-  // HttpCache related to this NetworkContext.
-  WriteCacheMetadata(url.mojom.Url url,
-                     RequestPriority priority,
-                     mojo_base.mojom.Time expected_response_time,
-                     mojo_base.mojom.BigBuffer data);
+                         url.mojom.Origin? top_frame_origin,
+                         url.mojom.Origin frame_origin);
 
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.
@@ -781,20 +848,44 @@ interface NetworkContext {
   // Clears the list of bad proxy servers that has been cached.
   ClearBadProxiesCache() => ();
 
-  // Creates a WebSocket connection.
-  // |options| may be a combination of the kWebSocketOption* flags.
+  // Creates a WebSocket connection to |url|. |requested_protocols| is a
+  // list of tokens identifying sub-protocols the renderer would like to use,
+  // as described in RFC6455 "Subprotocols Using the WebSocket Protocol".
+  // |additional_headers| are miscellaneous HTTP headers to be added to the
+  // request. Headers semantically relevant to the WebSocket handshake such
+  // as "sec-websocket-protocol" and "origin" are handled separately, (e.g.,
+  // "sec-websocket-protocol" is constructed from  |requested_protocols| in
+  // this message). |site_for_cookies| represents the first-party origin for
+  // the request. |options| may be a combination of the kWebSocketOption* flags.
+  //
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
   // request headers and Cookie response headers to be modified. This has a
   // performance impact because of the extra process hops, so use should be
   // minimized.
-  CreateWebSocket(WebSocket& request,
-                  int32 process_id,
-                  int32 render_frame_id,
-                  url.mojom.Origin origin,
-                  uint32 options,
-                  AuthenticationHandler? auth_handler,
-                  TrustedHeaderClient? header_client);
+  //
+  // Detect mojo connection errors on |handshake_client| in the caller side.
+  // Do *NOT* interpret mojo connection errors on |auth_handler| and
+  // |header_client| as WebSocket connection errors. They are disconnected when
+  // the connection is established, and due to message ordering uncertainty we
+  // cannot know what happened. |handshake_client| doesn't have such an issue
+  // because OnConnectionEstablished will be called when the connection is
+  // established, but it is still recommended to rely only on
+  // |connection_client| because |connection_client| can be disconnected with
+  // custom reasons.
+  CreateWebSocket(
+        url.mojom.Url url,
+        array<string> requested_protocols,
+        url.mojom.Url site_for_cookies,
+        array<HttpHeader> additional_headers,
+        int32 process_id,
+        int32 render_frame_id,
+        url.mojom.Origin origin,
+        uint32 options,
+        WebSocketHandshakeClient handshake_client,
+        WebSocketClient connection_client,
+        AuthenticationHandler? auth_handler,
+        TrustedHeaderClient? header_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.
   // Note that the log is generally global, including all NetworkContexts
@@ -810,10 +901,14 @@ interface NetworkContext {
   // |privacy_mode_enabled| is also passed into the HttpRequestInfo class: if
   // it is true, then the request must be sent over a connection that cannot be
   // tracked by the server.
+  // |network_isolation_key| specifies the NetworkIsolationKey to associate
+  // with the preconnected sockets. The sockets will only be used for requests
+  // associated with the same key.
   PreconnectSockets(uint32 num_streams,
                     url.mojom.Url url,
                     int32 load_flags,
-                    bool privacy_mode_enabled);
+                    bool privacy_mode_enabled,
+                    NetworkIsolationKey network_isolation_key);
 
   // Creates a P2PSocketManager instance, used for WebRTC.
   CreateP2PSocketManager(P2PTrustedSocketManagerClient client,
@@ -903,6 +998,13 @@ interface NetworkContext {
   // Loads an HttpAuthCache previously saved by SaveHttpAuthCache, and
   // copies its contents into this NetworkContext's HttpAuthCache.
   LoadHttpAuthCache(mojo_base.mojom.UnguessableToken cache_key) => ();
+
+  // Adds an entry to the HttpAuthCache or FtpAuthCache (determined by whether
+  // the |challenger| field within |challenge| is an ftp:// URL). |challenge|
+  // may not necessarily contain a stateful challenge that requires a persistent
+  // connection, allowing the cache to be pre-populated.
+  AddAuthCacheEntry(AuthChallengeInfo challenge,
+                    AuthCredentials credentials) => ();
 
   // Looks up credentials in the HttpAuthCache using the origin and path from
   // |url|. Only supports basic auth scheme.

@@ -6,7 +6,7 @@ use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK @EXPORT_FAIL $AUTOLOAD
 	    $CP $LCID $Warn $LastError $_NewEnum $_Unique);
 
-$VERSION = '0.1709';
+$VERSION = '0.1712';
 
 use Carp;
 use Exporter;
@@ -113,7 +113,7 @@ the local process has read access to the remote registry.  The safest
 =item Win32::OLE->EnumAllObjects([CALLBACK])
 
 This class method returns the number Win32::OLE objects currently in
-existance.  It will call the optional CALLBACK function for each of
+existence.  It will call the optional CALLBACK function for each of
 these objects:
 
 	$Count = Win32::OLE->EnumAllObjects(sub {
@@ -148,7 +148,7 @@ running instance of the specified OLE automation server.  It returns
 C<undef> if the server is not currently active.  It will croak if
 the class is not even registered.  The optional DESTRUCTOR method takes
 either a method name or a code reference.  It is executed when the last
-reference to this object goes away.  It is generally considered C<impolite>
+reference to this object goes away.  It is generally considered rude
 to stop applications that you did not start yourself.
 
 =item Win32::OLE->GetObject(MONIKER[, DESTRUCTOR])
@@ -191,7 +191,7 @@ COINIT_MULTITHREADED model.
 =item OBJECT->Invoke(METHOD[, ARGS])
 
 The Invoke() object method is an alternate way to invoke OLE
-methods.  It is normally equivalent to C<$OBJECT->METHOD(@ARGS)>.  This
+methods.  It is normally equivalent to C<$OBJECT-E<gt>METHOD(@ARGS)>.  This
 function must be used if the METHOD name contains characters not valid
 in a Perl variable name (like foreign language characters).  It can
 also be used to invoke the default method of an object even if the
@@ -338,7 +338,7 @@ is resolved as
 
 	my $Sheet = $Worksheet->Item('Table1');
 
-provided that the $Worksheets object doesnot have a C<Table1> method
+provided that the $Worksheets object does not have a C<Table1> method
 or property.  This hack has been introduced to call the default method
 of collections which did not name the method in their type library.  The
 recommended way to call the "unnamed" default method is:
@@ -391,7 +391,7 @@ function returned "Member not found" (0x80020003) you can write:
 
 If COLLECTION is an OLE collection object then C<in $COLLECTION>
 returns a list of all members of the collection.  This is a shortcut
-for C<Win32::OLE::Enum->All($COLLECTION)>.  It is most commonly used in
+for C<Win32::OLE::Enum-E<gt>All($COLLECTION)>.  It is most commonly used in
 a C<foreach> loop:
 
 	foreach my $value (in $collection) {
@@ -408,7 +408,7 @@ object (through the default method) and returns the value of the object.
 	my $ValOf = valof $Object;
         $Object->{Value} = $NewValue;
 
-Now $ValOf still contains the old value wheras $RefOf would
+Now $ValOf still contains the old value whereas $RefOf would
 resolve to the $NewValue because it is still a reference to
 $Object.
 
@@ -419,7 +419,7 @@ objects to Perl values.
 
 This function provides a concise way to set the values of multiple
 properties of an object.  It iterates over its arguments doing
-C<$OBJECT->{PROPERTYNAME} = $VALUE> on each trailing pair.
+C<$OBJECT-E<gt>{PROPERTYNAME} = $VALUE> on each trailing pair.
 
 =back
 
@@ -515,7 +515,7 @@ would therefore not command the object to abort the closing action.
 =head2 Module Options
 
 The following module options can be accessed and modified with the
-C<Win32::OLE->Option> class method.  In earlier versions of the Win32::OLE
+C<Win32::OLE-E<gt>Option> class method.  In earlier versions of the Win32::OLE
 module these options were manipulated directly as class variables.  This
 practice is now deprecated.
 
@@ -531,7 +531,7 @@ CP_UTF8.  These constants are not exported by default.
 
 =item LCID
 
-This variable controls the locale idnetifier used for all OLE calls.
+This variable controls the locale identifier used for all OLE calls.
 It is set to LOCALE_NEUTRAL by default.  Please check the
 L<Win32::OLE::NLS> module for other locale related information.
 
@@ -560,7 +560,7 @@ an error happens.  Valid values are:
 	3	Carp::croak
 
 The error number and message (without Carp line/module info) are
-available through the C<Win32::OLE->LastError> class method.
+available through the C<Win32::OLE-E<gt>LastError> class method.
 
 Alternatively the Warn option can be set to a CODE reference.  E.g.
 
@@ -881,7 +881,7 @@ The package name has changed from "OLE" to "Win32::OLE".
 =item 2
 
 All functions of the form "Win32::OLEFoo" are now "Win32::OLE::Foo",
-though the old names are temporarily accomodated.  Win32::OLECreateObject()
+though the old names are temporarily accommodated.  Win32::OLECreateObject()
 was changed to Win32::OLE::CreateObject(), and is now called
 Win32::OLE::new() bowing to established convention for naming constructors.
 The old names should be considered deprecated, and will be removed in the
@@ -963,6 +963,6 @@ related questions only, of course).
 
 =head1 VERSION
 
-Version 0.1709	  17 April 2008
+Version 0.1712	  14 May 2014
 
 =cut

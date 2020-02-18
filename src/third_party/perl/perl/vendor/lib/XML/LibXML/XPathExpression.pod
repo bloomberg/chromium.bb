@@ -27,7 +27,7 @@ XML::LibXML::XPathExpression - XML::LibXML::XPathExpression - interface to libxm
 
 This is a perl interface to libxml2's pre-compiled XPath expressions.
 Pre-compiling an XPath expression can give in some performance benefit if the
-same XPath query is evaluated many times. C<<<<<< XML::LibXML::XPathExpression >>>>>> objects can be passed to all C<<<<<< find... >>>>>> functions C<<<<<< XML::LibXML >>>>>> that expect an XPath expression. 
+same XPath query is evaluated many times. C<<<<<< XML::LibXML::XPathExpression >>>>>> objects can be passed to all C<<<<<< find... >>>>>> functions C<<<<<< XML::LibXML >>>>>> that expect an XPath expression.
 
 =over 4
 
@@ -37,7 +37,7 @@ same XPath query is evaluated many times. C<<<<<< XML::LibXML::XPathExpression >
 
 The constructor takes an XPath 1.0 expression as a string and returns an object
 representing the pre-compiled expressions (the actual data structure is
-internal to libxml2). 
+internal to libxml2).
 
 
 
@@ -45,14 +45,14 @@ internal to libxml2).
 
 =head1 AUTHORS
 
-Matt Sergeant, 
-Christian Glahn, 
+Matt Sergeant,
+Christian Glahn,
 Petr Pajas
 
 
 =head1 VERSION
 
-1.98
+2.0200
 
 =head1 COPYRIGHT
 
@@ -63,3 +63,10 @@ Petr Pajas
 2006-2009, Petr Pajas.
 
 =cut
+
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it under
+the same terms as Perl itself.
+

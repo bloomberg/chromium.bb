@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/resource_tracker.h"
@@ -49,7 +49,8 @@ class ResourceTrackerTest : public testing::Test {
   ResourceTracker& resource_tracker() { return *globals_.GetResourceTracker(); }
 
  private:
-  base::MessageLoop message_loop_;  // Required to receive callbacks.
+  base::test::ScopedTaskEnvironment
+      scoped_task_environment_;  // Required to receive callbacks.
   TestGlobals globals_;
 };
 

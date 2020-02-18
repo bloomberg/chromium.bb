@@ -115,7 +115,15 @@ void DrmWindowHost::Restore() {
 }
 
 PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
-  return PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+  return PlatformWindowState::kUnknown;
+}
+
+void DrmWindowHost::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void DrmWindowHost::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
@@ -132,10 +140,6 @@ void DrmWindowHost::ConfineCursorToBounds(const gfx::Rect& bounds) {
 
   cursor_confined_bounds_ = bounds;
   cursor_->CommitBoundsChange(widget_, bounds_, bounds);
-}
-
-PlatformImeController* DrmWindowHost::GetPlatformImeController() {
-  return nullptr;
 }
 
 void DrmWindowHost::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {

@@ -24,7 +24,9 @@ static const char kAnimationIterationCountName[] = "animation-iteration-count";
 static const char kInfinite[] = "infinite";
 
 bool IsInLoadingState(blink::MediaControlsImpl& controls) {
-  return controls.State() == blink::MediaControlsImpl::kLoadingMetadata ||
+  return controls.State() == blink::MediaControlsImpl::kLoadingMetadataPaused ||
+         controls.State() ==
+             blink::MediaControlsImpl::kLoadingMetadataPlaying ||
          controls.State() == blink::MediaControlsImpl::kBuffering;
 }
 

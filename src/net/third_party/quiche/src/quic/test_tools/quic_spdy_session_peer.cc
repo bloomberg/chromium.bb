@@ -16,24 +16,13 @@ QuicHeadersStream* QuicSpdySessionPeer::GetHeadersStream(
   return session->headers_stream();
 }
 
-// static
 void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
                                            QuicHeadersStream* headers_stream) {
-  session->headers_stream_.reset(headers_stream);
-  if (headers_stream != nullptr) {
-    session->RegisterStaticStream(headers_stream->id(), headers_stream);
-  }
-}
-
-void QuicSpdySessionPeer::SetUnownedHeadersStream(
-    QuicSpdySession* session,
-    QuicHeadersStream* headers_stream) {
-  for (auto& it : session->dynamic_streams()) {
+  for (auto& it : session->stream_map()) {
     if (it.first == QuicUtils::GetHeadersStreamId(
                         session->connection()->transport_version())) {
       it.second.reset(headers_stream);
-      session->unowned_headers_stream_ =
-          static_cast<QuicHeadersStream*>(it.second.get());
+      session->headers_stream_ = static_cast<QuicHeadersStream*>(it.second.get());
       break;
     }
   }
@@ -57,10 +46,10 @@ void QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(
   session->SetHpackDecoderDebugVisitor(std::move(visitor));
 }
 
-void QuicSpdySessionPeer::SetMaxUncompressedHeaderBytes(
+void QuicSpdySessionPeer::SetMaxInboundHeaderListSize(
     QuicSpdySession* session,
-    size_t set_max_uncompressed_header_bytes) {
-  session->set_max_uncompressed_header_bytes(set_max_uncompressed_header_bytes);
+    size_t max_inbound_header_size) {
+  session->set_max_inbound_header_list_size(max_inbound_header_size);
 }
 
 // static
@@ -79,6 +68,18 @@ size_t QuicSpdySessionPeer::WriteHeadersOnHeadersStream(
 QuicStreamId QuicSpdySessionPeer::GetNextOutgoingUnidirectionalStreamId(
     QuicSpdySession* session) {
   return session->GetNextOutgoingUnidirectionalStreamId();
+}
+
+// static
+QuicReceiveControlStream* QuicSpdySessionPeer::GetReceiveControlStream(
+    QuicSpdySession* session) {
+  return session->receive_control_stream_;
+}
+
+// static
+QuicSendControlStream* QuicSpdySessionPeer::GetSendControlStream(
+    QuicSpdySession* session) {
+  return session->send_control_stream_;
 }
 
 }  // namespace test

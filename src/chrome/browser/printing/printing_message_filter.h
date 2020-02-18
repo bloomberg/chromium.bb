@@ -61,15 +61,16 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
 
   // Get the default print setting.
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
-  void OnGetDefaultPrintSettingsReply(scoped_refptr<PrinterQuery> printer_query,
-                                      IPC::Message* reply_msg);
+  void OnGetDefaultPrintSettingsReply(
+      std::unique_ptr<PrinterQuery> printer_query,
+      IPC::Message* reply_msg);
 
   // The renderer host have to show to the user the print dialog and returns
   // the selected print settings. The task is handled by the print worker
   // thread and the UI thread. The reply occurs on the IO thread.
   void OnScriptedPrint(const PrintHostMsg_ScriptedPrint_Params& params,
                        IPC::Message* reply_msg);
-  void OnScriptedPrintReply(scoped_refptr<PrinterQuery> printer_query,
+  void OnScriptedPrintReply(std::unique_ptr<PrinterQuery> printer_query,
                             IPC::Message* reply_msg);
 
   // Modify the current print settings based on |job_settings|. The task is
@@ -78,7 +79,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnUpdatePrintSettings(int document_cookie,
                              base::Value job_settings,
                              IPC::Message* reply_msg);
-  void OnUpdatePrintSettingsReply(scoped_refptr<PrinterQuery> printer_query,
+  void OnUpdatePrintSettingsReply(std::unique_ptr<PrinterQuery> printer_query,
                                   IPC::Message* reply_msg);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

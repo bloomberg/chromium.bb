@@ -21,26 +21,23 @@
 
 #include "dawn_native/dawn_platform.h"
 
+#include <vector>
+
 namespace dawn_native {
-    MaybeError ValidateTextureDescriptor(DeviceBase* device, const TextureDescriptor* descriptor);
+    MaybeError ValidateTextureDescriptor(const DeviceBase* device,
+                                         const TextureDescriptor* descriptor);
     MaybeError ValidateTextureViewDescriptor(const DeviceBase* device,
                                              const TextureBase* texture,
                                              const TextureViewDescriptor* descriptor);
 
-    uint32_t TextureFormatPixelSize(dawn::TextureFormat format);
-    bool TextureFormatHasDepth(dawn::TextureFormat format);
-    bool TextureFormatHasStencil(dawn::TextureFormat format);
-    bool TextureFormatHasDepthOrStencil(dawn::TextureFormat format);
-    bool IsColorRenderableTextureFormat(dawn::TextureFormat format);
-    bool IsDepthStencilRenderableTextureFormat(dawn::TextureFormat format);
     bool IsValidSampleCount(uint32_t sampleCount);
 
-    static constexpr dawn::TextureUsageBit kReadOnlyTextureUsages =
-        dawn::TextureUsageBit::TransferSrc | dawn::TextureUsageBit::Sampled |
-        dawn::TextureUsageBit::Present;
+    static constexpr dawn::TextureUsageBit kReadOnlyTextureUsages = dawn::TextureUsageBit::CopySrc |
+                                                                    dawn::TextureUsageBit::Sampled |
+                                                                    dawn::TextureUsageBit::Present;
 
     static constexpr dawn::TextureUsageBit kWritableTextureUsages =
-        dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Storage |
+        dawn::TextureUsageBit::CopyDst | dawn::TextureUsageBit::Storage |
         dawn::TextureUsageBit::OutputAttachment;
 
     class TextureBase : public ObjectBase {
@@ -52,17 +49,34 @@ namespace dawn_native {
         static TextureBase* MakeError(DeviceBase* device);
 
         dawn::TextureDimension GetDimension() const;
-        dawn::TextureFormat GetFormat() const;
+        const Format& GetFormat() const;
         const Extent3D& GetSize() const;
         uint32_t GetArrayLayers() const;
         uint32_t GetNumMipLevels() const;
         uint32_t GetSampleCount() const;
         dawn::TextureUsageBit GetUsage() const;
         TextureState GetTextureState() const;
+        uint32_t GetSubresourceIndex(uint32_t mipLevel, uint32_t arraySlice) const;
+        bool IsSubresourceContentInitialized(uint32_t baseMipLevel,
+                                             uint32_t levelCount,
+                                             uint32_t baseArrayLayer,
+                                             uint32_t layerCount) const;
+        void SetIsSubresourceContentInitialized(uint32_t baseMipLevel,
+                                                uint32_t levelCount,
+                                                uint32_t baseArrayLayer,
+                                                uint32_t layerCount);
 
         MaybeError ValidateCanUseInSubmitNow() const;
 
         bool IsMultisampledTexture() const;
+
+        // For a texture with non-block-compressed texture format, its physical size is always equal
+        // to its virtual size. For a texture with block compressed texture format, the physical
+        // size is the one with paddings if necessary, which is always a multiple of the block size
+        // and used in texture copying. The virtual size is the one without paddings, which is not
+        // required to be a multiple of the block size and used in texture sampling.
+        Extent3D GetMipLevelPhysicalSize(uint32_t level) const;
+        Extent3D GetMipLevelVirtualSize(uint32_t level) const;
 
         // Dawn API
         TextureViewBase* CreateDefaultView();
@@ -78,13 +92,17 @@ namespace dawn_native {
 
         MaybeError ValidateDestroy() const;
         dawn::TextureDimension mDimension;
-        dawn::TextureFormat mFormat;
+        // TODO(cwallez@chromium.org): This should be deduplicated in the Device
+        const Format& mFormat;
         Extent3D mSize;
         uint32_t mArrayLayerCount;
         uint32_t mMipLevelCount;
         uint32_t mSampleCount;
         dawn::TextureUsageBit mUsage = dawn::TextureUsageBit::None;
         TextureState mState;
+
+        // TODO(natlee@microsoft.com): Use a more optimized data structure to save space
+        std::vector<bool> mIsSubresourceContentInitializedAtIndex;
     };
 
     class TextureViewBase : public ObjectBase {
@@ -96,7 +114,7 @@ namespace dawn_native {
         const TextureBase* GetTexture() const;
         TextureBase* GetTexture();
 
-        dawn::TextureFormat GetFormat() const;
+        const Format& GetFormat() const;
         uint32_t GetBaseMipLevel() const;
         uint32_t GetLevelCount() const;
         uint32_t GetBaseArrayLayer() const;
@@ -107,7 +125,8 @@ namespace dawn_native {
 
         Ref<TextureBase> mTexture;
 
-        dawn::TextureFormat mFormat;
+        // TODO(cwallez@chromium.org): This should be deduplicated in the Device
+        const Format& mFormat;
         uint32_t mBaseMipLevel;
         uint32_t mMipLevelCount;
         uint32_t mBaseArrayLayer;

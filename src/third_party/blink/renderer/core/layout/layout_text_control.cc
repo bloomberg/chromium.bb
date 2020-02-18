@@ -126,19 +126,16 @@ void LayoutTextControl::ComputeLogicalHeight(
 
 void LayoutTextControl::HitInnerEditorElement(
     HitTestResult& result,
-    const LayoutPoint& point_in_container,
-    const LayoutPoint& accumulated_offset) {
+    const HitTestLocation& hit_test_location,
+    const PhysicalOffset& accumulated_offset) {
   HTMLElement* inner_editor = InnerEditorElement();
   if (!inner_editor->GetLayoutObject())
     return;
 
-  LayoutPoint adjusted_location = accumulated_offset + Location();
-  LayoutPoint local_point =
-      point_in_container -
-      ToLayoutSize(adjusted_location +
-                   inner_editor->GetLayoutBox()->Location());
+  PhysicalOffset local_point = hit_test_location.Point() - accumulated_offset -
+                               inner_editor->GetLayoutBox()->PhysicalLocation();
   if (HasOverflowClip())
-    local_point += ScrolledContentOffset();
+    local_point += PhysicalOffset(ScrolledContentOffset());
   result.SetNodeAndPosition(inner_editor, local_point);
 }
 

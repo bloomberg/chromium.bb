@@ -56,9 +56,9 @@ void initTextures() {
     descriptor.size.depth = 1;
     descriptor.arrayLayerCount = 1;
     descriptor.sampleCount = 1;
-    descriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+    descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
+    descriptor.usage = dawn::TextureUsageBit::CopyDst | dawn::TextureUsageBit::Sampled;
     texture = device.CreateTexture(&descriptor);
 
     dawn::SamplerDescriptor samplerDesc = utils::GetDefaultSamplerDescriptor();
@@ -70,7 +70,8 @@ void initTextures() {
         data[i] = static_cast<uint8_t>(i % 253);
     }
 
-    dawn::Buffer stagingBuffer = utils::CreateBufferFromData(device, data.data(), static_cast<uint32_t>(data.size()), dawn::BufferUsageBit::TransferSrc);
+    dawn::Buffer stagingBuffer = utils::CreateBufferFromData(
+        device, data.data(), static_cast<uint32_t>(data.size()), dawn::BufferUsageBit::CopySrc);
     dawn::BufferCopyView bufferCopyView = utils::CreateBufferCopyView(stagingBuffer, 0, 0, 0);
     dawn::TextureCopyView textureCopyView = utils::CreateTextureCopyView(texture, 0, 0, {0, 0, 0});
     dawn::Extent3D copySize = {1024, 1024, 1};
@@ -93,15 +94,15 @@ void init() {
     initBuffers();
     initTextures();
 
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
         #version 450
         layout(location = 0) in vec4 pos;
         void main() {
             gl_Position = pos;
-        })"
-    );
+        })");
 
-    dawn::ShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+    dawn::ShaderModule fsModule =
+        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
         #version 450
         layout(set = 0, binding = 0) uniform sampler mySampler;
         layout(set = 0, binding = 1) uniform texture2D myTexture;
@@ -125,12 +126,12 @@ void init() {
     descriptor.layout = utils::MakeBasicPipelineLayout(device, &bgl);
     descriptor.cVertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
-    descriptor.cVertexInput.numAttributes = 1;
-    descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float4;
-    descriptor.cVertexInput.numBuffers = 1;
+    descriptor.cVertexInput.bufferCount = 1;
     descriptor.cVertexInput.cBuffers[0].stride = 4 * sizeof(float);
+    descriptor.cVertexInput.cBuffers[0].attributeCount = 1;
+    descriptor.cVertexInput.cAttributes[0].format = dawn::VertexFormat::Float4;
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
-    descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
 
     pipeline = device.CreateRenderPipeline(&descriptor);

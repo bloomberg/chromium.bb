@@ -153,14 +153,14 @@ class DeviceTarget(target.Target):
                             stdout=subprocess.PIPE,
                             stderr=open(os.devnull, 'w'))
 
-    output = proc.communicate()[0].strip().split('\n')
+    output = set(proc.communicate()[0].strip().split('\n'))
 
     if proc.returncode != 0:
       return False
 
     if self._node_name:
       # Handle the result of "dev_finder resolve".
-      self._host = output[0].strip()
+      self._host = output.pop().strip()
 
     else:
       name_host_pairs = [x.strip().split(' ') for x in output]
@@ -224,10 +224,13 @@ class DeviceTarget(target.Target):
         bootserver_path,
         '-1',
         '--fvm',
-        EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                 'fvm.sparse.blk')),
+        EnsurePathExists(
+            boot_data.GetTargetFile('storage-sparse.blk',
+                                    self._GetTargetSdkArch(),
+                                    boot_data.TARGET_TYPE_GENERIC)),
         EnsurePathExists(boot_data.GetBootImage(self._output_dir,
-                                                self._GetTargetSdkArch()))]
+                                                self._GetTargetSdkArch(),
+                                                boot_data.TARGET_TYPE_GENERIC))]
 
     if self._node_name:
       bootserver_command += ['-n', self._node_name]

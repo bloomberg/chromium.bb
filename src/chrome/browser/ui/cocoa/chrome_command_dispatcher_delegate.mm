@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/accelerators/accelerator_manager.h"
 #include "ui/content_accelerators/accelerator_util.h"
@@ -47,7 +47,8 @@
   content::NativeWebKeyboardEvent keyboard_event(event);
   ui::Accelerator accelerator =
       ui::GetAcceleratorFromNativeWebKeyboardEvent(keyboard_event);
-  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+  auto* bridge =
+      remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
   bool was_handled = false;
   if (bridge) {
     bridge->host()->HandleAccelerator(
@@ -63,15 +64,12 @@
   // TODO(erikchen): Detect symbolic hot keys, and force control to be passed
   // back to AppKit so that it can handle it correctly.
   // https://crbug.com/846893.
-  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
 
   NSResponder* responder = [window firstResponder];
   if ([responder conformsToProtocol:@protocol(CommandDispatcherTarget)]) {
     NSObject<CommandDispatcherTarget>* target =
         static_cast<NSObject<CommandDispatcherTarget>*>(responder);
     if ([target isKeyLocked:event]) {
-      if (bridge)
-        bridge->SaveKeyEventForRedispatch(event);
       return ui::PerformKeyEquivalentResult::kUnhandled;
     }
   }
@@ -97,6 +95,8 @@
   // highlighting of the NSMenu.
   CommandForKeyEventResult result = CommandForKeyEvent(event);
   if (result.found()) {
+    auto* bridge =
+        remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
     if (bridge) {
       bool was_executed = false;
       bridge->host()->ExecuteCommand(
@@ -107,8 +107,6 @@
     }
   }
 
-  if (bridge)
-    bridge->SaveKeyEventForRedispatch(event);
   return ui::PerformKeyEquivalentResult::kUnhandled;
 }
 
@@ -129,7 +127,8 @@
   }
 
   if (result.found()) {
-    auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+    auto* bridge =
+        remote_cocoa::NativeWidgetNSWindowBridge::GetFromNativeWindow(window);
     if (bridge) {
       // postPerformKeyEquivalent: is only called on events that are not
       // reserved. We want to bypass the main menu if and only if the event is

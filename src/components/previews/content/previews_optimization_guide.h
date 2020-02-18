@@ -18,8 +18,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
+#include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
-#include "components/previews/content/hint_cache.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
@@ -33,7 +33,9 @@ class SharedURLLoaderFactory;
 }  // namespace network
 namespace optimization_guide {
 struct HintsComponentInfo;
+class HintsFetcher;
 class OptimizationGuideService;
+class TopHostProvider;
 namespace proto {
 class Hint;
 }  // namespace proto
@@ -41,9 +43,7 @@ class Hint;
 
 namespace previews {
 
-class HintsFetcher;
 class PreviewsHints;
-class PreviewsTopHostProvider;
 class PreviewsUserData;
 
 // A Previews optimization guide that makes decisions guided by hints received
@@ -60,7 +60,7 @@ class PreviewsOptimizationGuide
       const base::FilePath& profile_path,
       PrefService* pref_service,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
-      PreviewsTopHostProvider* previews_top_host_provider,
+      optimization_guide::TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~PreviewsOptimizationGuide() override;
@@ -126,9 +126,9 @@ class PreviewsOptimizationGuide
 
   // Set |hints_fetcher_| for testing.
   void SetHintsFetcherForTesting(
-      std::unique_ptr<previews::HintsFetcher> hints_fetcher);
+      std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher);
 
-  HintsFetcher* GetHintsFetcherForTesting();
+  optimization_guide::HintsFetcher* GetHintsFetcherForTesting();
 
   // Called when the hints store is initialized to determine when hints
   // should be fetched and schedules the |hints_fetch_timer_| to fire based on:
@@ -170,6 +170,12 @@ class PreviewsOptimizationGuide
   // engagement scores using |hints_fetcher_|.
   void FetchHints();
 
+  // Return the time when a hints fetch request was last attempted.
+  base::Time GetLastHintsFetchAttemptTime() const;
+
+  // Set the time when a hints fetch was last attempted to |last_attempt_time|.
+  void SetLastHintsFetchAttemptTime(base::Time last_attempt_time);
+
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
 
@@ -183,7 +189,7 @@ class PreviewsOptimizationGuide
   // PreviewsOptimizationGuide so that the existing hint cache can be reused on
   // component updates. Otherwise, a new cache and store would need to be
   // created during each component update.
-  std::unique_ptr<HintCache> hint_cache_;
+  std::unique_ptr<optimization_guide::HintCache> hint_cache_;
 
   // The current hints used for this optimization guide.
   std::unique_ptr<PreviewsHints> hints_;
@@ -193,19 +199,17 @@ class PreviewsOptimizationGuide
 
   // HintsFetcher handles making the request for updated hints from the remote
   // Optimization Guide Service.
-  std::unique_ptr<HintsFetcher> hints_fetcher_;
+  std::unique_ptr<optimization_guide::HintsFetcher> hints_fetcher_;
 
   // Timer to schedule when to fetch hints from the remote Optimization Guide
   // Service.
   base::OneShotTimer hints_fetch_timer_;
 
   // TopHostProvider that this guide can query. Not owned.
-  PreviewsTopHostProvider* previews_top_host_provider_ = nullptr;
+  optimization_guide::TopHostProvider* top_host_provider_ = nullptr;
 
   // Clock used for scheduling the |hints_fetch_timer_|.
   const base::Clock* time_clock_;
-
-  base::Time last_fetch_attempt_;
 
   // A reference to the PrefService for this profile. Not owned.
   PrefService* pref_service_ = nullptr;
@@ -214,7 +218,7 @@ class PreviewsOptimizationGuide
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
-  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_;
+  base::WeakPtrFactory<PreviewsOptimizationGuide> ui_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };

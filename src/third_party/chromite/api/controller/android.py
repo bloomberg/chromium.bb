@@ -9,11 +9,11 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import validate
 from chromite.api.gen.chromite.api import android_pb2
 # TODO(crbug/904939): implement service/android.
 from chromite.cbuildbot import commands
 from chromite.lib import constants
-from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
@@ -24,6 +24,7 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'package.mask', 'androidpin')
 
 
+@validate.require('tracking_branch', 'package_name', 'android_build_branch')
 def MarkStable(input_proto, output_proto):
   """Uprev Android, if able.
 
@@ -43,15 +44,6 @@ def MarkStable(input_proto, output_proto):
   android_gts_build_branch = input_proto.android_gts_build_branch
   boards = input_proto.boards
   buildroot = input_proto.buildroot
-
-  if not tracking_branch:
-    cros_build_lib.Die('Tracking_branch is required.')
-
-  if not package_name:
-    cros_build_lib.Die('Package_name is required.')
-
-  if not android_build_branch:
-    cros_build_lib.Die('Android_build_branch is required.')
 
   # Assume success.
   output_proto.status = android_pb2.MARK_STABLE_STATUS_SUCCESS
@@ -78,6 +70,7 @@ def MarkStable(input_proto, output_proto):
     output_proto.android_atom.version = CPV.version
   else:
     output_proto.status = android_pb2.MARK_STABLE_STATUS_EARLY_EXIT
+
 
 def UnpinVersion(_input_proto, _output_proto):
   """Unpin the Android version.

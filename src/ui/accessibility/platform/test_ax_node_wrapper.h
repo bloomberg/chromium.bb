@@ -43,6 +43,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
+  void set_minimized(bool minimized) { minimized_ = minimized; }
 
   // Test helpers.
   void BuildAllWrappers(AXTree* tree, AXNode* node);
@@ -51,6 +52,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
   const AXTreeData& GetTreeData() const override;
+  const AXTree::Selection GetUnignoredSelection() const override;
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset,
       ax::mojom::TextAffinity affinity =
@@ -75,32 +77,32 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
       AXOffscreenResult* offscreen_result) const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
+  bool IsMinimized() const override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
-  int GetIndexInParent() const override;
+  int GetIndexInParent() override;
   bool IsTable() const override;
-  int GetTableRowCount() const override;
-  int GetTableColCount() const override;
-  base::Optional<int32_t> GetTableAriaColCount() const override;
-  base::Optional<int32_t> GetTableAriaRowCount() const override;
-  int GetTableCellCount() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds() const override;
-  const std::vector<int32_t> GetColHeaderNodeIds(
-      int32_t col_index) const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  const std::vector<int32_t> GetRowHeaderNodeIds(
-      int32_t row_index) const override;
+  base::Optional<int> GetTableRowCount() const override;
+  base::Optional<int> GetTableColCount() const override;
+  base::Optional<int> GetTableAriaColCount() const override;
+  base::Optional<int> GetTableAriaRowCount() const override;
+  base::Optional<int> GetTableCellCount() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
+  std::vector<int32_t> GetRowHeaderNodeIds() const override;
+  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
   bool IsTableRow() const override;
-  int GetTableRowRowIndex() const override;
+  base::Optional<int> GetTableRowRowIndex() const override;
   bool IsTableCellOrHeader() const override;
-  int GetTableCellIndex() const override;
-  int GetTableCellColIndex() const override;
-  int GetTableCellRowIndex() const override;
-  int GetTableCellColSpan() const override;
-  int GetTableCellRowSpan() const override;
-  int GetTableCellAriaColIndex() const override;
-  int GetTableCellAriaRowIndex() const override;
-  int32_t GetCellId(int32_t row_index, int32_t col_index) const override;
-  int32_t CellIndexToId(int32_t cell_index) const override;
+  base::Optional<int> GetTableCellIndex() const override;
+  base::Optional<int> GetTableCellColIndex() const override;
+  base::Optional<int> GetTableCellRowIndex() const override;
+  base::Optional<int> GetTableCellColSpan() const override;
+  base::Optional<int> GetTableCellRowSpan() const override;
+  base::Optional<int> GetTableCellAriaColIndex() const override;
+  base::Optional<int> GetTableCellAriaRowIndex() const override;
+  base::Optional<int32_t> GetCellId(int row_index,
+                                    int col_index) const override;
+  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
   bool IsCellOrHeaderOfARIATable() const override;
   bool IsCellOrHeaderOfARIAGrid() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
@@ -118,9 +120,12 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
       ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  int32_t GetPosInSet() const override;
-  int32_t GetSetSize() const override;
+  base::Optional<int> GetPosInSet() const override;
+  base::Optional<int> GetSetSize() const override;
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
+  gfx::RectF GetLocation() const;
+  int InternalChildCount() const;
+  TestAXNodeWrapper* InternalGetChild(int index) const;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
@@ -140,11 +145,17 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   void Descendants(const AXNode* node,
                    std::vector<gfx::NativeViewAccessible>* descendants) const;
 
+  // Return the bounds of inline text in this node's coordinate system (which is
+  // relative to its container node specified in AXRelativeBounds).
+  gfx::RectF GetInlineTextRect(const int start_offset,
+                               const int end_offset) const;
+
   AXTree* tree_;
   AXNode* node_;
   ui::AXUniqueId unique_id_;
   AXPlatformNode* platform_node_;
   gfx::AcceleratedWidget native_event_target_;
+  bool minimized_ = false;
 };
 
 }  // namespace ui

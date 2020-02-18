@@ -8,6 +8,7 @@
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_test_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_test_utils.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_utils.h"
 #include "net/third_party/quiche/src/quic/core/qpack/value_splitting_header_list.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_fuzzed_data_provider.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
@@ -126,15 +127,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Encode header list.
   NoopDecoderStreamErrorDelegate decoder_stream_error_delegate;
-  NoopEncoderStreamSenderDelegate encoder_stream_sender_delegate;
-  std::string encoded_header_block = QpackEncode(
-      &decoder_stream_error_delegate, &encoder_stream_sender_delegate,
-      fragment_size_generator, &header_list);
+  NoopQpackStreamSenderDelegate encoder_stream_sender_delegate;
+  QpackEncoder encoder(&decoder_stream_error_delegate,
+                       &encoder_stream_sender_delegate);
+  std::string encoded_header_block =
+      encoder.EncodeHeaderList(/* stream_id = */ 1, &header_list);
 
   // Decode header block.
   TestHeadersHandler handler;
   NoopEncoderStreamErrorDelegate encoder_stream_error_delegate;
-  NoopDecoderStreamSenderDelegate decoder_stream_sender_delegate;
+  NoopQpackStreamSenderDelegate decoder_stream_sender_delegate;
   QpackDecode(&encoder_stream_error_delegate, &decoder_stream_sender_delegate,
               &handler, fragment_size_generator, encoded_header_block);
 
@@ -143,8 +145,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CHECK(handler.decoding_completed());
   CHECK(!handler.decoding_error_detected());
 
-  // Encoder splits |header_list| header keys along '\0' characters.  Do the
-  // same so that we get matching results.
+  // Encoder splits |header_list| header values along '\0' or ';' separators.
+  // Do the same here so that we get matching results.
   ValueSplittingHeaderList splitting_header_list(&header_list);
   spdy::SpdyHeaderBlock expected_header_list;
   for (const auto& header : splitting_header_list) {

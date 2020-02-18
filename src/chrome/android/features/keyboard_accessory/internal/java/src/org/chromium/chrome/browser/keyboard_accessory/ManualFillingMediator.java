@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
+import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY;
+import static org.chromium.chrome.browser.ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID;
+import static org.chromium.chrome.browser.ChromeFeatureList.TOUCH_TO_FILL_ANDROID;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KEYBOARD_EXTENSION_STATE;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.EXTENDING_KEYBOARD;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState.FLOATING_BAR;
@@ -41,15 +44,18 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.TouchToFillSheetCoordinator;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.WebContents;
@@ -191,29 +197,14 @@ class ManualFillingMediator extends EmptyTabObserver
                 || mWindowAndroid.getDisplay().getRotation() == Surface.ROTATION_180;
     }
 
-    void registerPasswordProvider(
+    void registerSheetDataProvider(@AccessoryTabType int tabType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
 
-        state.wrapPasswordSheetDataProvider(dataProvider);
-        PasswordAccessorySheetCoordinator accessorySheet = getOrCreatePasswordSheet();
+        state.wrapSheetDataProvider(tabType, dataProvider);
+        AccessorySheetTabCoordinator accessorySheet = getOrCreateSheet(tabType);
         if (accessorySheet == null) return; // Not available or initialized yet.
-        accessorySheet.registerDataProvider(state.getPasswordSheetDataProvider());
-    }
-
-    void registerAddressProvider(
-            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
-        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
-
-        state.wrapAddressSheetDataProvider(dataProvider);
-        AddressAccessorySheetCoordinator accessorySheet = getOrCreateAddressSheet();
-        if (accessorySheet == null) return; // Not available or initialized yet.
-        accessorySheet.registerDataProvider(state.getAddressSheetDataProvider());
-    }
-
-    void registerCreditCardProvider() {
-        CreditCardAccessorySheetCoordinator accessorySheet = getOrCreateCreditCardSheet();
-        if (accessorySheet == null) return;
+        accessorySheet.registerDataProvider(state.getSheetDataProvider(tabType));
     }
 
     void registerAutofillProvider(
@@ -265,7 +256,7 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     void showWhenKeyboardIsVisible() {
-        if (!isInitialized() || mKeyboardAccessory.empty()) return;
+        if (!isInitialized()) return;
         mModel.set(SHOW_WHEN_VISIBLE, true);
         if (is(HIDDEN)) mModel.set(KEYBOARD_EXTENSION_STATE, FLOATING_BAR);
     }
@@ -282,12 +273,12 @@ class ManualFillingMediator extends EmptyTabObserver
 
     private void onOrientationChange() {
         if (!isInitialized()) return;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)
-                || is(REPLACING_KEYBOARD) || is(FLOATING_SHEET)) {
+        if (ChromeFeatureList.isEnabled(AUTOFILL_KEYBOARD_ACCESSORY) || is(REPLACING_KEYBOARD)
+                || is(FLOATING_SHEET)) {
             mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
             // Autofill suggestions are invalidated on rotation. Dismissing all filling UI forces
             // the user to interact with the field they want to edit. This refreshes Autofill.
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
+            if (ChromeFeatureList.isEnabled(AUTOFILL_KEYBOARD_ACCESSORY)) {
                 hideSoftKeyboard();
             }
         }
@@ -396,7 +387,12 @@ class ManualFillingMediator extends EmptyTabObserver
             mAccessorySheet.hide();
             // The compositor should relayout the view when the sheet is hidden. This is necessary
             // to trigger events that rely on the relayout (like toggling the overview button):
-            mActivity.getCompositorViewHolder().requestLayout();
+            CompositorViewHolder compositorViewHolder = mActivity.getCompositorViewHolder();
+            if (compositorViewHolder != null) {
+                // The CompositorViewHolder is null when the activity is in the process of being
+                // destroyed which also renders relayouting pointless.
+                compositorViewHolder.requestLayout();
+            }
         }
     }
 
@@ -431,6 +427,9 @@ class ManualFillingMediator extends EmptyTabObserver
      */
     private boolean canExtendKeyboard() {
         if (!mModel.get(SHOW_WHEN_VISIBLE)) return false;
+
+        // When in VR mode, don't extend the keyboard
+        if (VrModuleProvider.getDelegate().isInVr()) return false;
 
         // Don't open the accessory inside the contextual search panel.
         ContextualSearchManager contextualSearch = mActivity.getContextualSearchManager();
@@ -592,84 +591,64 @@ class ManualFillingMediator extends EmptyTabObserver
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
         state.notifyObservers();
         KeyboardAccessoryData.Tab[] tabs = state.getTabs();
+        mAccessorySheet.setTabs(tabs); // Set the sheet tabs first to invalidate the tabs properly.
         mKeyboardAccessory.setTabs(tabs);
-        mAccessorySheet.setTabs(tabs);
     }
 
-    /**
-     * Returns the password sheet for the current WebContents or creates one if it doesn't exist.
-     * @return A {@link PasswordAccessorySheetCoordinator} or null if unavailable.
-     */
     @VisibleForTesting
-    @Nullable
-    PasswordAccessorySheetCoordinator getOrCreatePasswordSheet() {
-        if (!isInitialized()) return null;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
-            return null;
-        }
+    AccessorySheetTabCoordinator getOrCreateSheet(@AccessoryTabType int tabType) {
+        if (!canCreateSheet(tabType)) return null;
         WebContents webContents = mActivity.getCurrentWebContents();
         if (webContents == null) return null; // There is no active tab or it's being destroyed.
         ManualFillingState state = mStateCache.getStateFor(webContents);
-        if (state.getPasswordAccessorySheet() != null) return state.getPasswordAccessorySheet();
+        if (state.getAccessorySheet(tabType) != null) return state.getAccessorySheet(tabType);
 
-        PasswordAccessorySheetCoordinator passwordSheet = new PasswordAccessorySheetCoordinator(
-                mActivity, mAccessorySheet.getScrollListener());
-        state.setPasswordAccessorySheet(passwordSheet);
-        if (state.getPasswordSheetDataProvider() != null) {
-            passwordSheet.registerDataProvider(state.getPasswordSheetDataProvider());
+        AccessorySheetTabCoordinator sheet = createNewSheet(tabType);
+        assert sheet != null : "Cannot create sheet for type " + tabType;
+
+        state.setAccessorySheet(tabType, sheet);
+        if (state.getSheetDataProvider(tabType) != null) {
+            sheet.registerDataProvider(state.getSheetDataProvider(tabType));
         }
         refreshTabs();
-        return passwordSheet;
+        return sheet;
     }
 
-    /**
-     * Returns the address sheet for the current WebContents or creates one if it doesn't exist.
-     * @return A {@link AddressAccessorySheetCoordinator} or null if unavailable.
-     */
-    @VisibleForTesting
-    @Nullable
-    AddressAccessorySheetCoordinator getOrCreateAddressSheet() {
-        if (!isInitialized()) return null;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            return null;
+    private boolean canCreateSheet(@AccessoryTabType int tabType) {
+        if (!isInitialized()) return false;
+        switch (tabType) {
+            case AccessoryTabType.ALL: // Intentional fallthrough.
+            case AccessoryTabType.COUNT:
+                return false;
+            case AccessoryTabType.CREDIT_CARDS: // Intentional fallthrough.
+            case AccessoryTabType.ADDRESSES:
+                return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID);
+            case AccessoryTabType.PASSWORDS:
+                return true;
+            case AccessoryTabType.TOUCH_TO_FILL:
+                return ChromeFeatureList.isEnabled(TOUCH_TO_FILL_ANDROID);
         }
-        WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return null; // There is no active tab or it's being destroyed.
-        ManualFillingState state = mStateCache.getStateFor(webContents);
-        if (state.getAddressAccessorySheet() != null) return state.getAddressAccessorySheet();
-
-        AddressAccessorySheetCoordinator addressSheet = new AddressAccessorySheetCoordinator(
-                mActivity, mAccessorySheet.getScrollListener());
-        state.setAddressAccessorySheet(addressSheet);
-        if (state.getAddressSheetDataProvider() != null) {
-            addressSheet.registerDataProvider(state.getAddressSheetDataProvider());
-        }
-        refreshTabs();
-        return addressSheet;
+        return true;
     }
 
-    /**
-     * Returns the credit card sheet for the current WebContents or creates one if it doesn't exist.
-     * @return A {@link CreditCardAccessorySheetCoordinator} or null if unavailable.
-     */
-    @VisibleForTesting
-    @Nullable
-    CreditCardAccessorySheetCoordinator getOrCreateCreditCardSheet() {
-        if (!isInitialized()) return null;
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID)) {
-            return null;
+    private AccessorySheetTabCoordinator createNewSheet(@AccessoryTabType int tabType) {
+        switch (tabType) {
+            case AccessoryTabType.CREDIT_CARDS:
+                return new CreditCardAccessorySheetCoordinator(
+                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.ADDRESSES:
+                return new AddressAccessorySheetCoordinator(
+                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.PASSWORDS:
+                return new PasswordAccessorySheetCoordinator(
+                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.TOUCH_TO_FILL:
+                return new TouchToFillSheetCoordinator(
+                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.ALL: // Intentional fallthrough.
+            case AccessoryTabType.COUNT: // Intentional fallthrough.
         }
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
-            return null;
-        }
-        WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return null; // There is no active tab or it's being destroyed.
-        ManualFillingState state = mStateCache.getStateFor(webContents);
-        if (state.getCreditCardAccessorySheet() != null) return state.getCreditCardAccessorySheet();
-        state.setCreditCardAccessorySheet(new CreditCardAccessorySheetCoordinator(
-                mActivity, mAccessorySheet.getScrollListener()));
-        refreshTabs();
-        return state.getCreditCardAccessorySheet();
+        return null;
     }
 
     private boolean isFloating(@KeyboardExtensionState int state) {

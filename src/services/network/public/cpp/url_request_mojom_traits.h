@@ -17,9 +17,10 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/request_priority.h"
 #include "services/network/public/cpp/data_element.h"
+#include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/mojom/chunked_data_pipe_getter.mojom-shared.h"
+#include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 
@@ -58,6 +59,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<url::Origin>& top_frame_origin(
       const network::ResourceRequest& request) {
     return request.top_frame_origin;
+  }
+  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
+  update_network_isolation_key_on_redirect(
+      const network::ResourceRequest& request) {
+    return request.update_network_isolation_key_on_redirect;
+  }
+  static const net::NetworkIsolationKey& trusted_network_isolation_key(
+      const network::ResourceRequest& request) {
+    return request.trusted_network_isolation_key;
   }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {
@@ -132,17 +142,17 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool corb_excluded(const network::ResourceRequest& request) {
     return request.corb_excluded;
   }
-  static network::mojom::FetchRequestMode fetch_request_mode(
+  static network::mojom::RequestMode mode(
       const network::ResourceRequest& request) {
-    return request.fetch_request_mode;
+    return request.mode;
   }
-  static network::mojom::FetchCredentialsMode fetch_credentials_mode(
+  static network::mojom::CredentialsMode credentials_mode(
       const network::ResourceRequest& request) {
-    return request.fetch_credentials_mode;
+    return request.credentials_mode;
   }
-  static network::mojom::FetchRedirectMode fetch_redirect_mode(
+  static network::mojom::RedirectMode redirect_mode(
       const network::ResourceRequest& request) {
-    return request.fetch_redirect_mode;
+    return request.redirect_mode;
   }
   static const std::string& fetch_integrity(
       const network::ResourceRequest& request) {
@@ -227,6 +237,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.devtools_request_id;
   }
+  static bool is_signed_exchange_prefetch_cache_enabled(
+      const network::ResourceRequest& request) {
+    return request.is_signed_exchange_prefetch_cache_enabled;
+  }
 
   static bool Read(network::mojom::URLRequestDataView data,
                    network::ResourceRequest* out);
@@ -270,14 +284,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::DataElement& element) {
     return element.type_;
   }
-  static base::span<const uint8_t> buf(const network::DataElement& element) {
+  static std::vector<uint8_t> buf(const network::DataElement& element) {
     if (element.bytes_) {
-      return base::make_span(reinterpret_cast<const uint8_t*>(element.bytes_),
-                             element.length_);
+      return std::vector<uint8_t>(element.bytes_,
+                                  element.bytes_ + element.length_);
     }
-    return base::make_span(
-        reinterpret_cast<const uint8_t*>(element.buf_.data()),
-        element.buf_.size());
+    return std::move(element.buf_);
   }
   static const base::FilePath& path(const network::DataElement& element) {
     return element.path_;

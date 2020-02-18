@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Enhetene fungerer enda bedre sammen</translation>
 <translation id="112308213915226829">Skjul hyllen automatisk</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
+<translation id="1175572348579024023">Rull</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Fjern alle</translation>
-<translation id="123828989343052515">Nytt arbeidsområde</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Hvordan er været?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Inndatametoder konfigureres av administratoren din.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1761222317188459878">Slå av/på nettverkstilkobling. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Rull til høyre</translation>
 <translation id="1812997170047690955">Hva er på skjermen?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> er slått av på grunn av en regel som gjelder for denne enheten. Snakk med administratoren din for å spørre om endringer.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistent (laster inn …)</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Velg språk</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Tekstfelt</translation>
 <translation id="1993072747612765854">Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen</translation>
 <translation id="1995660704900986789">Slå av</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Stående</translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
 <translation id="209965399369889474">Ikke koblet til nettverket</translation>
+<translation id="2126242104232412123">Nytt skrivebord</translation>
 <translation id="2127372758936585790">Lading med lav effekt</translation>
 <translation id="2135456203358955318">Dokket lupe</translation>
 <translation id="2144487987174258011">Start på nytt for å oppdatere Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google-assistenten er ikke tilgjengelig i offentlige økter.</translation>
 <translation id="2575685495496069081">Multipålogging er slått av</translation>
 <translation id="2582112259361606227">Start på nytt for å oppdatere</translation>
-<translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
+<translation id="2651765386227849097">Google-assistenten er slått av på denne enheten.</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2658778018866295321">Klikk og dra</translation>
 <translation id="2700493154570097719">Velg tastatur</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> til</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
+<translation id="3249513730522716925">Vinduet <ph name="WINDOW_TITLE" /> ble flyttet fra skrivebord <ph name="ACTIVE_DESK" /> til skrivebord <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Hva kan du gjøre?</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3576141592585647168">Endre tidssonen</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
+<translation id="3604801046548457007">Opprettet skrivebord <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Batteriet er <ph name="PERCENTAGE" /> % fullt og lades.</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
+<translation id="4021716437419160885">Rull ned</translation>
 <translation id="4042660782729322247">Du deler skjermen din</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Hurtigtasten for å slå høykontrastmodus av eller på er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
+<translation id="495046168593986294">Rull opp</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Mikrofonkontakt</translation>
 <translation id="5669267381087807207">Aktiverer</translation>
 <translation id="5673434351075758678">Fra «<ph name="FROM_LOCALE" />» til «<ph name="TO_LOCALE" />» etter at innstillingene dine ble synkronisert.</translation>
+<translation id="5682642926269496722">Google-assistenten er ikke tilgjengelig for denne brukerkontoen.</translation>
 <translation id="5691772641933328258">Gjenkjenner ikke fingeravtrykket</translation>
 <translation id="5710450975648804523">Ikke forstyrr er på</translation>
 <translation id="574392208103952083">Medium</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">For å laste ned oppdateringen, start Chromebooken på nytt med tastaturet tilkoblet.</translation>
 <translation id="5992218262414051481">Høykontrastmodus er slått på. Trykk på Ctrl + Søk + H på nytt for å slå den av.</translation>
 <translation id="6018164090099858612">Avslutter speilingsmodus</translation>
+<translation id="602001110135236999">Rull til venstre</translation>
+<translation id="6040143037577758943">Lukk</translation>
 <translation id="6043212731627905357">Denne skjermen liker ikke <ph name="DEVICE_TYPE" /> (skjermen støttes ikke).</translation>
 <translation id="6043994281159824495">Logg av nå</translation>
 <translation id="6047696787498798094">Skjermdelingen stopper hvis du bytter til en annen bruker.</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Beklager, men passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">Lader <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">Google-assistenten er ikke tilgjengelig i gjesteøkter.</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME" />» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
 <translation id="6723839937902243910">Strøm</translation>
+<translation id="6727969043791803658">Koblet til – <ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
+<translation id="6752912906630585008">Skrivebord <ph name="REMOVED_DESK" /> ble fjernet og slått sammen med skrivebord <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 varsel}other{# varsler}}</translation>
+<translation id="7749443890790263709">Maksimalt antall skrivebord er nådd.</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>
 <translation id="7780159184141939021">Rotér skjermen</translation>
 <translation id="7796353162336583443">Trykk på pekepenn-knappen på hyllen for å gjøre et notat, ta en skjermdump eller bruke Google-assistenten, laserpekeren eller forstørrelsesglasset.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> og telefonen din kobles sammen automatisk</translation>
+<translation id="8388750414311082622">Det siste skrivebordet kan ikke fjernes.</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Forelderen din har låst denne enheten</translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433186206711564395">Nettverksinnstillinger</translation>
 <translation id="8433977262951327081">Hurtigtasten for å vise boblen med menyen for valg av inndataalternativer på hyllen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Skrivebord <ph name="DESK_TITILE" /> er aktivert</translation>
 <translation id="8452135315243592079">SIM-kort mangler</translation>
 <translation id="8454013096329229812">Wi-Fi er slått på.</translation>
 <translation id="847056008324733326">Innstillinger for visningsskala</translation>

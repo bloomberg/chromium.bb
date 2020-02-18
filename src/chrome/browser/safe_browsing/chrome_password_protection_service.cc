@@ -46,9 +46,12 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
+#include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
@@ -61,7 +64,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -80,6 +82,9 @@ using SafeBrowsingStatus =
     GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus;
 
 namespace safe_browsing {
+
+using ReusedPasswordAccountType =
+    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
 
 namespace {
 
@@ -205,18 +210,17 @@ std::unique_ptr<UserEventSpecifics> GetUserEventSpecifics(
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     SafeBrowsingService* sb_service,
     Profile* profile)
-    : PasswordProtectionService(
-          sb_service->database_manager(),
-          sb_service->GetURLLoaderFactory(),
-          HistoryServiceFactory::GetForProfile(
-              profile,
-              ServiceAccessType::EXPLICIT_ACCESS),
-          HostContentSettingsMapFactory::GetForProfile(profile)),
+    : PasswordProtectionService(sb_service->database_manager(),
+                                sb_service->GetURLLoaderFactory(),
+                                HistoryServiceFactory::GetForProfile(
+                                    profile,
+                                    ServiceAccessType::EXPLICIT_ACCESS)),
       ui_manager_(sb_service->ui_manager()),
       trigger_manager_(sb_service->trigger_manager()),
       profile_(profile),
       navigation_observer_manager_(sb_service->navigation_observer_manager()),
-      pref_change_registrar_(new PrefChangeRegistrar) {
+      pref_change_registrar_(new PrefChangeRegistrar),
+      cache_manager_(sb_service->GetVerdictCacheManager(profile)) {
   pref_change_registrar_->Init(profile_->GetPrefs());
   pref_change_registrar_->Add(
       password_manager::prefs::kPasswordHashDataList,
@@ -270,9 +274,6 @@ void ChromePasswordProtectionService::Init() {
 }
 
 ChromePasswordProtectionService::~ChromePasswordProtectionService() {
-  if (content_settings())
-    CleanUpExpiredVerdicts();
-
   if (pref_change_registrar_)
     pref_change_registrar_->RemoveAll();
 }
@@ -305,7 +306,7 @@ bool ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
 // static
 bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
     content::WebContents* web_contents,
-    ReusedPasswordType password_type) {
+    PasswordType password_type) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ChromePasswordProtectionService* service =
@@ -315,10 +316,11 @@ bool ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
   if (!service)
     return false;
 
-  if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD)
+  // TODO(crbug.com/914410): Account for non sync users.
+  if (password_type == PasswordType::ENTERPRISE_PASSWORD)
     return service->HasUnhandledEnterprisePasswordReuse(web_contents);
 
-  DCHECK_EQ(PasswordReuseEvent::SIGN_IN_PASSWORD, password_type);
+  DCHECK_EQ(PasswordType::PRIMARY_ACCOUNT_PASSWORD, password_type);
   // Otherwise, checks if there's any unhandled sync password reuses matches
   // this origin.
   auto* unhandled_sync_password_reuses = profile->GetPrefs()->GetDictionary(
@@ -386,10 +388,15 @@ std::string ChromePasswordProtectionService::GetSyncPasswordHashFromPrefs() {
 void ChromePasswordProtectionService::ShowModalWarning(
     content::WebContents* web_contents,
     const std::string& verdict_token,
-    ReusedPasswordType password_type) {
+    PasswordType password_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
+
+  bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
+  DCHECK(password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
+         password_type == PasswordType::ENTERPRISE_PASSWORD ||
+         (enable_warning_for_non_sync_users &&
+          password_type == PasswordType::OTHER_GAIA_PASSWORD));
   // Don't show warning again if there is already a modal warning showing.
   if (IsModalWarningShowingInWebContents(web_contents))
     return;
@@ -404,7 +411,7 @@ void ChromePasswordProtectionService::ShowModalWarning(
                      base::Unretained(this), web_contents, password_type,
                      WarningUIType::MODAL_DIALOG));
 
-  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD)
+  if (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD)
     OnModalWarningShownForSignInPassword(web_contents, verdict_token);
   else
     OnModalWarningShownForEnterprisePassword(web_contents, verdict_token);
@@ -414,7 +421,8 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
     content::WebContents* web_contents,
     const std::string& verdict_token) {
   LogWarningAction(WarningUIType::MODAL_DIALOG, WarningAction::SHOWN,
-                   PasswordReuseEvent::SIGN_IN_PASSWORD, GetSyncAccountType());
+                   GetPasswordProtectionReusedPasswordAccountType(
+                       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
 
   if (!IsIncognito()) {
     DictionaryPrefUpdate update(
@@ -427,33 +435,36 @@ void ChromePasswordProtectionService::OnModalWarningShownForSignInPassword(
             base::NumberToString(GetLastCommittedNavigationID(web_contents))));
   }
 
+  // TODO(crbug/914410): Account for non sync users.
   UpdateSecurityState(SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE,
-                      PasswordReuseEvent::SIGN_IN_PASSWORD, web_contents);
+                      PasswordType::PRIMARY_ACCOUNT_PASSWORD, web_contents);
 
+  // TODO(crbug/914410): Account for non sync users.
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token,
-                                    PasswordReuseEvent::SIGN_IN_PASSWORD);
+                                    PasswordType::PRIMARY_ACCOUNT_PASSWORD);
 }
 
 void ChromePasswordProtectionService::OnModalWarningShownForEnterprisePassword(
     content::WebContents* web_contents,
     const std::string& verdict_token) {
   LogWarningAction(WarningUIType::MODAL_DIALOG, WarningAction::SHOWN,
-                   PasswordReuseEvent::ENTERPRISE_PASSWORD,
-                   GetSyncAccountType());
+                   GetPasswordProtectionReusedPasswordAccountType(
+                       PasswordType::ENTERPRISE_PASSWORD));
   web_contents_with_unhandled_enterprise_reuses_.insert(web_contents);
   UpdateSecurityState(SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE,
-                      PasswordReuseEvent::ENTERPRISE_PASSWORD, web_contents);
+                      PasswordType::ENTERPRISE_PASSWORD, web_contents);
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token,
-                                    PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                                    PasswordType::ENTERPRISE_PASSWORD);
 }
 
 void ChromePasswordProtectionService::ShowInterstitial(
     content::WebContents* web_contents,
-    ReusedPasswordType password_type) {
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
+    PasswordType password_type) {
+  DCHECK(password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
+         password_type == PasswordType::ENTERPRISE_PASSWORD ||
+         password_type == PasswordType::OTHER_GAIA_PASSWORD);
   // Exit fullscreen if this |web_contents| is showing in fullscreen mode.
   if (web_contents->IsFullscreenForCurrentTab())
     web_contents->ExitFullscreen(/*will_cause_resize=*/true);
@@ -464,21 +475,25 @@ void ChromePasswordProtectionService::ShowInterstitial(
       WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
       /*is_renderer_initiated=*/false);
   params.uses_post = true;
-  std::string post_data = base::NumberToString(password_type);
+  std::string post_data = base::NumberToString(
+      static_cast<std::underlying_type_t<PasswordType>>(password_type));
   params.post_data = network::ResourceRequestBody::CreateFromBytes(
       post_data.data(), post_data.size());
   web_contents->OpenURL(params);
 
-  LogWarningAction(WarningUIType::INTERSTITIAL, WarningAction::SHOWN,
-                   password_type, GetSyncAccountType());
+  LogWarningAction(
+      WarningUIType::INTERSTITIAL, WarningAction::SHOWN,
+      GetPasswordProtectionReusedPasswordAccountType(password_type));
 }
 
 void ChromePasswordProtectionService::OnUserAction(
     content::WebContents* web_contents,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     WarningUIType ui_type,
     WarningAction action) {
-  LogWarningAction(ui_type, action, password_type, GetSyncAccountType());
+  LogWarningAction(
+      ui_type, action,
+      GetPasswordProtectionReusedPasswordAccountType(password_type));
 
   switch (ui_type) {
     case WarningUIType::PAGE_INFO:
@@ -511,13 +526,14 @@ void ChromePasswordProtectionService::RemoveObserver(Observer* observer) {
 void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
     content::WebContents* web_contents,
     const std::string& token,
-    ReusedPasswordType password_type) {
+    PasswordType password_type) {
   // |trigger_manager_| can be null in test.
   if (!trigger_manager_)
     return;
 
+  // TODO(crbug/914410): Account for non sync users.
   security_interstitials::UnsafeResource resource;
-  resource.threat_type = password_type == PasswordReuseEvent::SIGN_IN_PASSWORD
+  resource.threat_type = password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD
                              ? SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE
                              : SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE;
   resource.url = web_contents->GetLastCommittedURL();
@@ -573,7 +589,8 @@ bool ChromePasswordProtectionService::IsIncognito() {
 
 bool ChromePasswordProtectionService::IsPingingEnabled(
     LoginReputationClientRequest::TriggerType trigger_type,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
+    const std::string& username,
     RequestOutcome* reason) {
   if (!IsSafeBrowsingEnabled()) {
     *reason = RequestOutcome::SAFE_BROWSING_DISABLED;
@@ -581,14 +598,8 @@ bool ChromePasswordProtectionService::IsPingingEnabled(
   }
 
   if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT) {
-    if (password_type == PasswordReuseEvent::SAVED_PASSWORD)
+    if (password_type == PasswordType::SAVED_PASSWORD)
       return true;
-
-    if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD &&
-        GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN) {
-      *reason = RequestOutcome::USER_NOT_SIGNED_IN;
-      return false;
-    }
 
     PasswordProtectionTrigger trigger_level =
         GetPasswordProtectionWarningTriggerPref();
@@ -617,6 +628,38 @@ bool ChromePasswordProtectionService::IsHistorySyncEnabled() {
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled() &&
          sync->GetActiveDataTypes().Has(syncer::HISTORY_DELETE_DIRECTIVES);
+}
+
+bool ChromePasswordProtectionService::IsPrimaryAccountSyncing() const {
+  syncer::SyncService* sync =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  return sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled();
+}
+
+bool ChromePasswordProtectionService::IsPrimaryAccountSignedIn() const {
+  return !GetAccountInfo().account_id.empty() &&
+         !GetAccountInfo().hosted_domain.empty();
+}
+
+bool ChromePasswordProtectionService::IsPrimaryAccountGmail() const {
+  return GetAccountInfo().hosted_domain == kNoHostedDomainFound;
+}
+
+bool ChromePasswordProtectionService::IsOtherGaiaAccountSignedIn(
+    const std::string& username) const {
+  auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
+      profile_->GetOriginalProfile());
+
+  if (!identity_manager)
+    return false;
+
+  std::vector<CoreAccountInfo> signed_in_accounts =
+      identity_manager->GetAccountsWithRefreshTokens();
+
+  return std::find_if(signed_in_accounts.begin(), signed_in_accounts.end(),
+                      [username](const auto& account) {
+                        return account.email == username;
+                      }) != signed_in_accounts.end();
 }
 
 void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
@@ -689,7 +732,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDialogInteraction(
 PasswordReuseEvent::SyncAccountType
 ChromePasswordProtectionService::GetSyncAccountType() const {
   const AccountInfo account_info = GetAccountInfo();
-  if (account_info.account_id.empty() || account_info.hosted_domain.empty()) {
+  if (!IsPrimaryAccountSignedIn()) {
     return PasswordReuseEvent::NOT_SIGNED_IN;
   }
 
@@ -859,7 +902,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordCapture(bool did_log_in) {
 
 void ChromePasswordProtectionService::UpdateSecurityState(
     SBThreatType threat_type,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const GURL url = web_contents->GetLastCommittedURL();
@@ -877,7 +920,7 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     verdict.set_verdict_type(LoginReputationClientResponse::SAFE);
     verdict.set_cache_duration_sec(kOverrideVerdictCacheDurationSec);
     CacheVerdict(url, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                 password_type, &verdict, base::Time::Now());
+                 password_type, verdict, base::Time::Now());
     return;
   }
 
@@ -921,6 +964,7 @@ void ChromePasswordProtectionService::
 }
 
 void ChromePasswordProtectionService::CheckGaiaPasswordChange() {
+  // TODO(bdea): Check non-sync accounts.
   std::string new_sync_password_hash = GetSyncPasswordHashFromPrefs();
   if (sync_password_hash_ != new_sync_password_hash) {
     sync_password_hash_ = new_sync_password_hash;
@@ -937,7 +981,8 @@ void ChromePasswordProtectionService::OnGaiaPasswordChanged() {
   MaybeLogPasswordCapture(/*did_log_in=*/true);
   for (auto& observer : observer_list_)
     observer.OnGaiaPasswordChanged();
-  if (GetSyncAccountType() == PasswordReuseEvent::GSUITE)
+
+  if (!IsPrimaryAccountGmail())
     ReportPasswordChanged();
 }
 
@@ -961,7 +1006,6 @@ bool ChromePasswordProtectionService::UserClickedThroughSBInterstitial(
 AccountInfo ChromePasswordProtectionService::GetAccountInfo() const {
   auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
       profile_->GetOriginalProfile());
-
   if (!identity_manager)
     return AccountInfo();
 
@@ -1011,7 +1055,7 @@ GURL ChromePasswordProtectionService::GetDefaultChangePasswordURL() const {
 
 void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     content::WebContents* web_contents,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     WarningAction action) {
   const Origin origin = Origin::Create(web_contents->GetLastCommittedURL());
   int64_t navigation_id =
@@ -1021,7 +1065,7 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
     // Directly open enterprise change password page for enterprise password
     // reuses.
-    if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+    if (password_type == PasswordType::ENTERPRISE_PASSWORD) {
       OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
               content::Referrer(),
               /*in_new_tab=*/true);
@@ -1051,7 +1095,7 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
 
 void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
     content::WebContents* web_contents,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     WarningAction action) {
   GURL url = web_contents->GetLastCommittedURL();
   const Origin origin = Origin::Create(url);
@@ -1059,7 +1103,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   if (action == WarningAction::CHANGE_PASSWORD) {
     // Directly open enterprise change password page in a new tab for enterprise
     // reuses.
-    if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+    if (password_type == PasswordType::ENTERPRISE_PASSWORD) {
       OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),
               content::Referrer(),
               /*in_new_tab=*/true);
@@ -1077,7 +1121,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
     // TODO(vakh): There's no good enum to report this dialog interaction.
     // This needs to be investigated.
     UpdateSecurityState(SB_THREAT_TYPE_SAFE, password_type, web_contents);
-    if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+    if (password_type == PasswordType::ENTERPRISE_PASSWORD) {
       web_contents_with_unhandled_enterprise_reuses_.erase(web_contents);
     } else {
       DictionaryPrefUpdate update(
@@ -1125,16 +1169,14 @@ void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
 
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     Profile* profile,
-    scoped_refptr<HostContentSettingsMap> content_setting_map,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    StringProvider sync_password_hash_provider)
-    : PasswordProtectionService(nullptr,
-                                nullptr,
-                                nullptr,
-                                content_setting_map.get()),
+    StringProvider sync_password_hash_provider,
+    VerdictCacheManager* cache_manager)
+    : PasswordProtectionService(nullptr, nullptr, nullptr),
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
       profile_(profile),
+      cache_manager_(cache_manager),
       sync_password_hash_provider_for_testing_(sync_password_hash_provider) {
   Init();
 }
@@ -1153,23 +1195,17 @@ MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
 PasswordProtectionTrigger
 ChromePasswordProtectionService::GetPasswordProtectionWarningTriggerPref()
     const {
-  PasswordReuseEvent::SyncAccountType account_type = GetSyncAccountType();
-  switch (account_type) {
-    case (PasswordReuseEvent::GMAIL):
-      return PHISHING_REUSE;
-    case (PasswordReuseEvent::NOT_SIGNED_IN):
-    case (PasswordReuseEvent::GSUITE): {
-      bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(
-          prefs::kPasswordProtectionWarningTrigger);
-      PasswordProtectionTrigger trigger_level =
-          static_cast<PasswordProtectionTrigger>(
-              profile_->GetPrefs()->GetInteger(
-                  prefs::kPasswordProtectionWarningTrigger));
-      return is_policy_managed ? trigger_level : PHISHING_REUSE;
-    }
+  // For Gmail accounts, we only trigger for reuse on phishing sites.
+  if (IsPrimaryAccountGmail()) {
+    return PHISHING_REUSE;
+  } else {
+    bool is_policy_managed = profile_->GetPrefs()->HasPrefPath(
+        prefs::kPasswordProtectionWarningTrigger);
+    PasswordProtectionTrigger trigger_level =
+        static_cast<PasswordProtectionTrigger>(profile_->GetPrefs()->GetInteger(
+            prefs::kPasswordProtectionWarningTrigger));
+    return is_policy_managed ? trigger_level : PHISHING_REUSE;
   }
-  NOTREACHED();
-  return PASSWORD_PROTECTION_OFF;
 }
 
 bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
@@ -1201,18 +1237,23 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
 }
 
 base::string16 ChromePasswordProtectionService::GetWarningDetailText(
-    ReusedPasswordType password_type) const {
-  DCHECK(password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
-         password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD);
-  if (password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD) {
+    PasswordType password_type) const {
+  bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
+  DCHECK(password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD ||
+         password_type == PasswordType::ENTERPRISE_PASSWORD ||
+         (enable_warning_for_non_sync_users &&
+          password_type == PasswordType::OTHER_GAIA_PASSWORD));
+  if (password_type == PasswordType::ENTERPRISE_PASSWORD) {
     return l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE);
   }
-
-  if (GetSyncAccountType() !=
-      safe_browsing::LoginReputationClientRequest::PasswordReuseEvent::GSUITE) {
+  auto reused_password_account_type =
+      GetPasswordProtectionReusedPasswordAccountType(password_type);
+  if (reused_password_account_type.account_type() !=
+      ReusedPasswordAccountType::GSUITE) {
     return l10n_util::GetStringUTF16(
-        GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN
+        password_type == PasswordType::OTHER_GAIA_PASSWORD
             ? IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC
             : IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SYNC);
   }
@@ -1228,9 +1269,13 @@ base::string16 ChromePasswordProtectionService::GetWarningDetailText(
 }
 
 std::string ChromePasswordProtectionService::GetOrganizationName(
-    ReusedPasswordType password_type) const {
-  if (GetSyncAccountType() != PasswordReuseEvent::GSUITE ||
-      password_type != PasswordReuseEvent::SIGN_IN_PASSWORD) {
+    PasswordType password_type) const {
+  auto reused_password_account_type =
+      GetPasswordProtectionReusedPasswordAccountType(password_type);
+
+  if (reused_password_account_type.account_type() ==
+          ReusedPasswordAccountType::GMAIL ||
+      password_type != PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
     return std::string();
   }
 
@@ -1241,17 +1286,20 @@ std::string ChromePasswordProtectionService::GetOrganizationName(
 void ChromePasswordProtectionService::MaybeReportPasswordReuseDetected(
     content::WebContents* web_contents,
     const std::string& username,
-    ReusedPasswordType reused_password_type,
+    PasswordType password_type,
     bool is_phishing_url) {
+  auto reused_password_account_type =
+      GetPasswordProtectionReusedPasswordAccountType(password_type);
+
   // When a PasswordFieldFocus event is sent, a PasswordProtectionRequest is
   // sent which means the password reuse type is unknown. We do not want to
   // report these events as PasswordReuse events. Also do not send reports for
   // Gmail accounts.
   bool can_log_password_reuse_event =
-      (reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD ||
-       GetSyncAccountType() == PasswordReuseEvent::GSUITE) &&
-      (reused_password_type !=
-       PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN);
+      (password_type == PasswordType::ENTERPRISE_PASSWORD ||
+       reused_password_account_type.account_type() ==
+           ReusedPasswordAccountType::GSUITE) &&
+      (password_type != PasswordType::PASSWORD_TYPE_UNKNOWN);
   if (!IsIncognito() && can_log_password_reuse_event) {
     // User name should only be empty when MaybeStartPasswordFieldOnFocusRequest
     // is called.
@@ -1277,6 +1325,42 @@ bool ChromePasswordProtectionService::HasUnhandledEnterprisePasswordReuse(
          web_contents_with_unhandled_enterprise_reuses_.end();
 }
 
+// Stores |verdict| in |settings| based on its |trigger_type|, |url|,
+// reused |password_type|, |verdict| and |receive_time|.
+void ChromePasswordProtectionService::CacheVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    PasswordType password_type,
+    const LoginReputationClientResponse& verdict,
+    const base::Time& receive_time) {
+  if (!CanGetReputationOfURL(url) || IsIncognito())
+    return;
+
+  cache_manager_->CachePhishGuardVerdict(url, trigger_type, password_type,
+                                         verdict, receive_time);
+}
+
+// Looks up |settings| to find the cached verdict response. If verdict is not
+// available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
+// any thread.
+LoginReputationClientResponse::VerdictType
+ChromePasswordProtectionService::GetCachedVerdict(
+    const GURL& url,
+    LoginReputationClientRequest::TriggerType trigger_type,
+    PasswordType password_type,
+    LoginReputationClientResponse* out_response) {
+  if (!url.is_valid() || !CanGetReputationOfURL(url))
+    return LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
+
+  return cache_manager_->GetCachedPhishGuardVerdict(
+      url, trigger_type, password_type, out_response);
+}
+
+int ChromePasswordProtectionService::GetStoredVerdictCount(
+    LoginReputationClientRequest::TriggerType trigger_type) {
+  return cache_manager_->GetStoredPhishGuardVerdictCount(trigger_type);
+}
+
 void ChromePasswordProtectionService::OnWarningTriggerChanged() {
   if (GetPasswordProtectionWarningTriggerPref() != PASSWORD_PROTECTION_OFF)
     return;
@@ -1286,9 +1370,8 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS);
 
-  if (GetSyncAccountType() == PasswordReuseEvent::GSUITE) {
+  if (!IsPrimaryAccountGmail())
     password_store->ClearGaiaPasswordHash(GetAccountInfo().email);
-  }
   password_store->ClearAllEnterprisePasswordHash();
 }
 
@@ -1300,18 +1383,23 @@ void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {
 
 bool ChromePasswordProtectionService::CanShowInterstitial(
     RequestOutcome reason,
-    ReusedPasswordType password_type,
+    PasswordType password_type,
     const GURL& main_frame_url) {
+  bool enable_warning_for_non_sync_users = base::FeatureList::IsEnabled(
+      safe_browsing::kPasswordProtectionForSignedInUsers);
   // If it's not password alert mode, no need to log any metric.
   if (reason != RequestOutcome::PASSWORD_ALERT_MODE ||
-      (password_type != PasswordReuseEvent::SIGN_IN_PASSWORD &&
-       password_type != PasswordReuseEvent::ENTERPRISE_PASSWORD)) {
+      password_type == PasswordType::SAVED_PASSWORD ||
+      password_type == PasswordType::PASSWORD_TYPE_UNKNOWN ||
+      (!enable_warning_for_non_sync_users &&
+       password_type == PasswordType::OTHER_GAIA_PASSWORD)) {
     return false;
   }
 
   if (!IsURLWhitelistedForPasswordEntry(main_frame_url, &reason))
     reason = RequestOutcome::SUCCEEDED;
-  LogPasswordAlertModeOutcome(reason, password_type);
+  LogPasswordAlertModeOutcome(
+      reason, GetPasswordProtectionReusedPasswordAccountType(password_type));
   return reason == RequestOutcome::SUCCEEDED;
 }
 

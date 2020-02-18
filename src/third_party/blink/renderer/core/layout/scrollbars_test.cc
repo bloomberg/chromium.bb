@@ -49,7 +49,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(x, y),
                         WebFloatPoint(x, y),
                         WebPointerProperties::Button::kNoButton, 0,
-                        WebInputEvent::kNoModifiers, CurrentTimeTicks());
+                        WebInputEvent::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseMoveEvent(event, Vector<WebMouseEvent>(),
                                            Vector<WebMouseEvent>());
@@ -59,7 +59,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMousePressEvent(event);
   }
@@ -68,7 +68,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kNoButton, 0,
-        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().SendContextMenuEvent(event);
   }
@@ -77,7 +77,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kNoModifiers, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kNoModifiers, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseReleaseEvent(event);
   }
@@ -86,7 +86,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kMiddle, 0,
-        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMousePressEvent(event);
   }
@@ -95,7 +95,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
         WebPointerProperties::Button::kMiddle, 0,
-        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kMiddleButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseReleaseEvent(event);
   }
@@ -104,7 +104,7 @@ class ScrollbarsTest : public SimTest {
     WebMouseEvent event(
         WebInputEvent::kMouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
         WebPointerProperties::Button::kLeft, 0,
-        WebInputEvent::Modifiers::kLeftButtonDown, CurrentTimeTicks());
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
     event.SetFrameScale(1);
     GetEventHandler().HandleMouseLeaveEvent(event);
   }
@@ -125,7 +125,7 @@ class ScrollbarsTest : public SimTest {
                                 offset);
   }
 
-  Cursor::Type CursorType() {
+  ui::CursorType CursorType() {
     return GetDocument()
         .GetFrame()
         ->GetChromeClient()
@@ -142,8 +142,8 @@ class ScrollbarsTest : public SimTest {
                                               WebGestureDevice device,
                                               const IntPoint& position,
                                               ScrollOffset offset) {
-    WebGestureEvent event(type, WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                          device);
+    WebGestureEvent event(type, WebInputEvent::kNoModifiers,
+                          base::TimeTicks::Now(), device);
 
     event.SetPositionInWidget(WebFloatPoint(position.X(), position.Y()));
 
@@ -185,7 +185,7 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
 
   // Some task queues may have repeating v8 tasks that run forever so we impose
   // a hard (virtual) time limit.
-  void RunTasksForPeriod(TimeDelta delay) {
+  void RunTasksForPeriod(base::TimeDelta delay) {
     TimeAdvance();
     scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
         FROM_HERE,
@@ -243,16 +243,19 @@ class ScrollbarsWebWidgetClient
   float device_scale_factor_;
 };
 
-TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
+TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
   ScrollbarsWebWidgetClient client;
   client.set_device_scale_factor(1.f);
 
   frame_test_helpers::WebViewHelper web_view_helper;
+  // Needed so visual viewport supplies its own scrollbars. We don't support
+  // this setting changing after initialization, so we must set it through
+  // WebViewHelper.
+  web_view_helper.set_viewport_enabled(true);
+
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, nullptr, &client);
 
-  // Needed so visual viewport supplies its own scrollbars.
-  web_view_impl->GetSettings()->SetViewportEnabled(true);
   web_view_impl->MainFrameWidget()->Resize(IntSize(800, 600));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -503,9 +506,9 @@ TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
   ScrollableArea* scrollable_area =
       ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
   DCHECK(scrollable_area->VerticalScrollbar());
-  WebGestureEvent scroll_begin(WebInputEvent::kGestureScrollBegin,
-                               WebInputEvent::kNoModifiers, CurrentTimeTicks(),
-                               WebGestureDevice::kTouchpad);
+  WebGestureEvent scroll_begin(
+      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+      base::TimeTicks::Now(), WebGestureDevice::kTouchpad);
   scroll_begin.SetPositionInWidget(
       WebFloatPoint(scrollable->OffsetLeft() + scrollable->OffsetWidth() - 2,
                     scrollable->OffsetTop()));
@@ -629,7 +632,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(Cursor::Type::kPointer, CursorType());
+  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
 }
 
 // Ensure mouse cursor should be override when hovering over the custom
@@ -681,7 +684,7 @@ TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
 
   HandleMouseMoveEvent(195, 5);
 
-  EXPECT_EQ(Cursor::Type::kMove, CursorType());
+  EXPECT_EQ(ui::CursorType::kMove, CursorType());
 }
 
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
@@ -727,13 +730,13 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
   // Mouse over link. Mouse cursor should be hand.
   HandleMouseMoveEvent(a_tag->OffsetLeft(), a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kHand, CursorType());
+  EXPECT_EQ(ui::CursorType::kHand, CursorType());
 
   // Mouse over enabled overlay scrollbar. Mouse cursor should be pointer and no
   // active hover element.
   HandleMouseMoveEvent(18, a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kPointer, CursorType());
+  EXPECT_EQ(ui::CursorType::kPointer, CursorType());
 
   HandleMousePressEvent(18, a_tag->OffsetTop());
 
@@ -759,7 +762,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 
   HandleMouseMoveEvent(18, a_tag->OffsetTop());
 
-  EXPECT_EQ(Cursor::Type::kHand, CursorType());
+  EXPECT_EQ(ui::CursorType::kHand, CursorType());
 
   HandleMousePressEvent(18, a_tag->OffsetTop());
 
@@ -1332,7 +1335,8 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
 TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
 #endif
   TimeAdvance();
-  constexpr TimeDelta kMockOverlayFadeOutDelay = TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kMockOverlayFadeOutDelay =
+      base::TimeDelta::FromSeconds(5);
 
   ScrollbarTheme& theme = GetScrollbarTheme();
   // This test relies on mock overlay scrollbars.
@@ -1416,19 +1420,32 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   RunTasksForPeriod(kMockOverlayFadeOutDelay);
   EXPECT_TRUE(scrollable_area->ScrollbarsHiddenIfOverlay());
 
-  mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(TimeDelta());
+  mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(base::TimeDelta());
 }
 
-typedef bool TestParamOverlayScrollbar;
 class ScrollbarAppearanceTest
     : public SimTest,
-      public testing::WithParamInterface<TestParamOverlayScrollbar> {
+      public testing::WithParamInterface</*use_real_overlay_scrollbars=*/bool> {
  public:
-  // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
-  ScrollbarAppearanceTest() : mock_scrollbars_(false, GetParam()) {}
+  void SetUp() override {
+    SimTest::SetUp();
+    // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
+    // TODO(bokan): For some reason this has to happen *after* the WebViewImpl
+    // loads and everything or the test fails. But not doing it also fails.
+    // However this changes a runtime feature and should go *before* anything
+    // is set up!! Otherwise blink sees inconsistent values which doesn't happen
+    // in reality.
+    mock_scrollbars_ =
+        std::make_unique<UseMockScrollbarSettings>(false, GetParam());
+  }
+
+  void TearDown() override {
+    mock_scrollbars_.reset();
+    SimTest::TearDown();
+  }
 
  private:
-  UseMockScrollbarSettings mock_scrollbars_;
+  std::unique_ptr<UseMockScrollbarSettings> mock_scrollbars_;
 };
 
 class StubWebThemeEngine : public WebThemeEngine {
@@ -1444,8 +1461,8 @@ class StubWebThemeEngine : public WebThemeEngine {
     }
   }
   void GetOverlayScrollbarStyle(ScrollbarStyle* style) override {
-    style->fade_out_delay = TimeDelta();
-    style->fade_out_duration = TimeDelta();
+    style->fade_out_delay = base::TimeDelta();
+    style->fade_out_duration = base::TimeDelta();
     style->thumb_thickness = 3;
     style->scrollbar_margin = 0;
     style->color = SkColorSetARGB(128, 64, 64, 64);
@@ -2222,7 +2239,7 @@ TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(5, 5),
                       WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
                       0, WebInputEvent::Modifiers::kLeftButtonDown,
-                      CurrentTimeTicks());
+                      base::TimeTicks::Now());
   event.SetFrameScale(1);
   GetEventHandler().HandleMouseLeaveEvent(event);
   EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
@@ -2481,7 +2498,7 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
-  RunTasksForPeriod(TimeDelta::FromMilliseconds(1000));
+  RunTasksForPeriod(base::TimeDelta::FromMilliseconds(1000));
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -2527,20 +2544,20 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
   ASSERT_EQ(scrollbar->PressedPart(), ScrollbarPart::kForwardButtonEndPart);
 
   // Wait for 2 delay.
-  RunTasksForPeriod(TimeDelta::FromMilliseconds(1000));
-  RunTasksForPeriod(TimeDelta::FromMilliseconds(1000));
+  RunTasksForPeriod(base::TimeDelta::FromMilliseconds(1000));
+  RunTasksForPeriod(base::TimeDelta::FromMilliseconds(1000));
   // Change #big size.
   MainFrame().ExecuteScript(WebScriptSource(
       "document.getElementById('big').style.height = '1000px';"));
   Compositor().BeginFrame();
 
-  RunTasksForPeriod(TimeDelta::FromMilliseconds(1000));
-  RunTasksForPeriod(TimeDelta::FromMilliseconds(1000));
+  RunTasksForPeriod(base::TimeDelta::FromMilliseconds(1000));
+  RunTasksForPeriod(base::TimeDelta::FromMilliseconds(1000));
 
   // Verify that the scrollbar autopress timer requested some scrolls via
   // gestures. The button was pressed for 2 seconds and the timer fires
   // every 250ms - we should have at least 7 injected gesture updates.
-  EXPECT_GT(WebWidgetClient().InjectedGestureScrollCount(), 6);
+  EXPECT_GT(WebWidgetClient().GetInjectedScrollGestureData().size(), 6u);
 }
 
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {

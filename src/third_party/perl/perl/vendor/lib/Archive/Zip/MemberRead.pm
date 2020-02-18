@@ -40,10 +40,11 @@ use vars qw{$VERSION};
 my $nl;
 
 BEGIN {
-    $VERSION = '1.30';
+    $VERSION = '1.64';
     $VERSION = eval $VERSION;
-     # Requirement for newline conversion. Should check for e.g., DOS and OS/2 as well, but am too lazy.
-     $nl = $^O eq 'MSWin32' ? "\r\n" : "\n";
+
+# Requirement for newline conversion. Should check for e.g., DOS and OS/2 as well, but am too lazy.
+    $nl = $^O eq 'MSWin32' ? "\r\n" : "\n";
 }
 
 =item Archive::Zip::Member::readFileHandle()
@@ -62,7 +63,7 @@ calling C<readFileHandle()>:
 =cut
 
 sub Archive::Zip::Member::readFileHandle {
-    return Archive::Zip::MemberRead->new( shift() );
+    return Archive::Zip::MemberRead->new(shift());
 }
 
 =item Archive::Zip::MemberRead->new($zip, $fileName)
@@ -78,31 +79,29 @@ Construct a new Archive::Zip::MemberRead on the specified member.
 =cut
 
 sub new {
-    my ( $class, $zip, $file ) = @_;
-    my ( $self, $member );
+    my ($class, $zip, $file) = @_;
+    my ($self, $member);
 
-    if ( $zip && $file )    # zip and filename, or zip and member
+    if ($zip && $file)    # zip and filename, or zip and member
     {
         $member = ref($file) ? $file : $zip->memberNamed($file);
-    }
-    elsif ( $zip && !$file && ref($zip) )    # just member
+    } elsif ($zip && !$file && ref($zip))    # just member
     {
         $member = $zip;
-    }
-    else {
+    } else {
         die(
-'Archive::Zip::MemberRead::new needs a zip and filename, zip and member, or member'
+            'Archive::Zip::MemberRead::new needs a zip and filename, zip and member, or member'
         );
     }
 
     $self = {};
-    bless( $self, $class );
+    bless($self, $class);
     $self->set_member($member);
     return $self;
 }
 
 sub set_member {
-    my ( $self, $member ) = @_;
+    my ($self, $member) = @_;
 
     $self->{member} = $member;
     $self->set_compression(COMPRESSION_STORED);
@@ -110,7 +109,7 @@ sub set_member {
 }
 
 sub set_compression {
-    my ( $self, $compression ) = @_;
+    my ($self, $compression) = @_;
     $self->{member}->desiredCompressionMethod($compression) if $self->{member};
 }
 
@@ -119,7 +118,7 @@ sub set_compression {
 Set the line end character to use. This is set to \n by default
 except on Windows systems where it is set to \r\n. You will
 only need to set this on systems which are not Windows or Unix
-based and require a line end diffrent from \n.
+based and require a line end different from \n.
 This is a class method so call as C<Archive::Zip::MemberRead>->C<setLineEnd($nl)>
 
 =cut
@@ -154,7 +153,7 @@ sub _reset_vars {
 
 =item input_record_separator(expr)
 
-If the argumnet is given, input_record_separator for this
+If the argument is given, input_record_separator for this
 instance is set to it. The current setting (which may be
 the global $/) is always returned.
 
@@ -162,11 +161,12 @@ the global $/) is always returned.
 
 sub input_record_separator {
     my $self = shift;
-     if (@_) {
-         $self->{sep}    = shift;
-         $self->{sep_re} = _sep_as_re($self->{sep}); # Cache the RE as an optimization
-     }
-     return exists $self->{sep} ? $self->{sep} : $/;
+    if (@_) {
+        $self->{sep} = shift;
+        $self->{sep_re} =
+          _sep_as_re($self->{sep});    # Cache the RE as an optimization
+    }
+    return exists $self->{sep} ? $self->{sep} : $/;
 }
 
 # Return the input_record_separator in use as an RE fragment
@@ -176,6 +176,7 @@ sub input_record_separator {
 # know whether it has changed or not.
 sub _sep_re {
     my $self = shift;
+
     # Important to phrase this way: sep's value may be undef.
     return exists $self->{sep} ? $self->{sep_re} : _sep_as_re($/);
 }
@@ -228,12 +229,11 @@ Default is the chunk size used by Archive::Zip.
 =cut
 
 sub buffer_size {
-    my ( $self, $size ) = @_;
+    my ($self, $size) = @_;
 
-    if ( !$size ) {
+    if (!$size) {
         return $self->{chunkSize} || Archive::Zip::chunkSize();
-    }
-    else {
+    } else {
         $self->{chunkSize} = $size;
     }
 }
@@ -247,25 +247,40 @@ Returns undef on eof. All subsequent calls would return undef,
 unless a rewind() is called.
 Note: The line returned has the input_record_separator (default: newline) removed.
 
+=item getline( { preserve_line_ending => 1 } )
+
+Returns the next line including the line ending.
+
 =cut
 
 sub getline {
-    my $self = shift;
+    my ($self, $argref) = @_;
+
     my $size = $self->buffer_size();
     my $sep  = $self->_sep_re();
 
-    for (;;) {
+    my $preserve_line_ending;
+    if (ref $argref eq 'HASH') {
+        $preserve_line_ending = $argref->{'preserve_line_ending'};
+        $sep =~ s/\\([^A-Za-z_0-9])+/$1/g;
+    }
+
+    for (; ;) {
         if (   $sep
             && defined($self->{buffer})
-            && $self->{buffer} =~ s/^(.*?)$sep//s
-           ) {
+            && $self->{buffer} =~ s/^(.*?)$sep//s) {
+            my $line = $1;
             $self->{line_no}++;
-            return $1;
+            if ($preserve_line_ending) {
+                return $line . $sep;
+            } else {
+                return $line;
+            }
         } elsif ($self->{at_end}) {
             $self->{line_no}++ if $self->{buffer};
             return delete $self->{buffer};
         }
-        my ($temp,$status) = $self->{member}->readChunk($size);
+        my ($temp, $status) = $self->{member}->readChunk($size);
         if ($status != AZ_OK && $status != AZ_STREAM_END) {
             die "ERROR: Error reading chunk from archive - $status";
         }
@@ -297,14 +312,13 @@ Returns the no. of bytes read. C<undef> on error, 0 on eof, I<e.g.>:
 sub read {
     my $self = $_[0];
     my $size = $_[2];
-    my ( $temp, $status, $ret );
+    my ($temp, $status, $ret);
 
-    ( $temp, $status ) = $self->{member}->readChunk($size);
-    if ( $status != AZ_OK && $status != AZ_STREAM_END ) {
+    ($temp, $status) = $self->{member}->readChunk($size);
+    if ($status != AZ_OK && $status != AZ_STREAM_END) {
         $_[1] = undef;
         $ret = undef;
-    }
-    else {
+    } else {
         $_[1] = $$temp;
         $ret = length($$temp);
     }
@@ -317,7 +331,8 @@ sub read {
 
 =head1 AUTHOR
 
-Sreeji K. Das, <sreeji_k@yahoo.com>
+Sreeji K. Das E<lt>sreeji_k@yahoo.comE<gt>
+
 See L<Archive::Zip> by Ned Konz without which this module does not make
 any sense! 
 

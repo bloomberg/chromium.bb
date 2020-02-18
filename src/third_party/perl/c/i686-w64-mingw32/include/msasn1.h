@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __MS_ASN1_H__
@@ -16,11 +16,15 @@ extern "C" {
   typedef signed char ASN1int8_t;
   typedef unsigned short ASN1uint16_t;
   typedef signed short ASN1int16_t;
-  typedef unsigned long ASN1uint32_t;
-  typedef signed long ASN1int32_t;
+  typedef unsigned __LONG32 ASN1uint32_t;
+  typedef signed __LONG32 ASN1int32_t;
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
 #endif
 
 #define ASN1_PUBLIC __declspec(dllimport)
@@ -242,16 +246,16 @@ extern "C" {
 #define ASN1DECFREE_NON_PDU_ID ((ASN1uint32_t) -1)
 
   enum {
-    ASN1FLAGS_NONE = 0x00000000L,ASN1FLAGS_NOASSERT = 0x00001000L
+    ASN1FLAGS_NONE = 0x00000000,ASN1FLAGS_NOASSERT = 0x00001000
   };
 
   enum {
-    ASN1ENCODE_APPEND = 0x00000001L,ASN1ENCODE_REUSEBUFFER = 0x00000004L,ASN1ENCODE_SETBUFFER = 0x00000008L,ASN1ENCODE_ALLOCATEBUFFER = 0x00000010L,
+    ASN1ENCODE_APPEND = 0x00000001,ASN1ENCODE_REUSEBUFFER = 0x00000004,ASN1ENCODE_SETBUFFER = 0x00000008,ASN1ENCODE_ALLOCATEBUFFER = 0x00000010,
     ASN1ENCODE_NOASSERT = ASN1FLAGS_NOASSERT
   };
 
   enum {
-    ASN1DECODE_APPENDED = 0x00000001L,ASN1DECODE_REWINDBUFFER = 0x00000004L,ASN1DECODE_SETBUFFER = 0x00000008L,ASN1DECODE_AUTOFREEBUFFER = 0x00000010L,
+    ASN1DECODE_APPENDED = 0x00000001,ASN1DECODE_REWINDBUFFER = 0x00000004,ASN1DECODE_SETBUFFER = 0x00000008,ASN1DECODE_AUTOFREEBUFFER = 0x00000010,
     ASN1DECODE_NOASSERT = ASN1FLAGS_NOASSERT
   };
 

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/post_processing_pipeline.h"
+#include "chromecast/public/media/audio_post_processor2_shlib.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -34,8 +35,8 @@ class MockPostProcessor : public PostProcessingPipeline {
                       float current_volume,
                       bool is_silence));
   MOCK_METHOD1(SetContentType, void(AudioContentType));
-  bool SetOutputSampleRate(int sample_rate) override {
-    sample_rate_ = sample_rate;
+  bool SetOutputConfig(const AudioPostProcessor2::Config& config) override {
+    sample_rate_ = config.output_sample_rate;
     return true;
   }
   int GetInputSampleRate() const override { return sample_rate_; }

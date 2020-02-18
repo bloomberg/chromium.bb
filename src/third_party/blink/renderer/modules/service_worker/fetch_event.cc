@@ -14,12 +14,12 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 
@@ -178,7 +178,7 @@ void FetchEvent::OnNavigationPreloadError(
 
 void FetchEvent::OnNavigationPreloadComplete(
     WorkerGlobalScope* worker_global_scope,
-    TimeTicks completion_time,
+    base::TimeTicks completion_time,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {

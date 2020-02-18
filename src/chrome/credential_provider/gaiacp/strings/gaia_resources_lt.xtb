@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Nepavyko prisijungti prie darbo paskyros. Įsitikinkite, kad kompiuteris prijungtas prie interneto, tada bandykite dar kartą.</translation>
 <translation id="2595469428674600431">Deja, nepavyko patvirtinti „Windows“ slaptažodžio. Bandykite dar kartą.</translation>
 <translation id="3306357053520292004">Naudotojas šiame kompiuteryje jau pridėtas naudojant šią paskyrą. Prisijunkite naudodami kitą paskyrą.</translation>
+<translation id="3643125608647220913">Nepavyko įkelti „Google“ prisijungimo ekrano. Susisiekite su administratoriumi.</translation>
 <translation id="369030246015333661">Paskyra buvo užrakinta. Susisiekite su sistemos administratoriumi.</translation>
+<translation id="3968372833844047539">Prisijungti gali tik „G Suite Enterprise“ naudotojai.</translation>
 <translation id="4057329986137569701">Įvyko vidinė klaida.</translation>
+<translation id="4267670563222825190">Nerasta nė vieno jūsų paskyros domeno naudotojo. Susisiekite su administratoriumi.</translation>
 <translation id="4300229033992784001">Jūsų paskyros slaptažodis pakeistas. Kad galėtumėte sinchronizuoti „Windows“ paskyrą su darbo paskyra, įveskite dabartinį „Windows“ slaptažodį.</translation>
 <translation id="4706454071748629324">Nepavyko pridėti naujo naudotojo. Šiuo kompiuteriu galima sukurti tik vieną naudotoją naudojant darbo paskyrą.</translation>
 <translation id="6292766200512304540">Naudotojas sukurtas naudojant darbo paskyrą</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">„Windows“ slaptažodis</translation>
 <translation id="7536769223115622137">Pridėti darbo paskyrą</translation>
 <translation id="7856245195110636219">Negalima tęsti neįvedus dabartinio „Windows“ slaptažodžio. Susisiekite su sistemos administratoriumi.</translation>
+<translation id="7996763357529480810">Prisijunkite naudodami „G Suite“ darbo paskyrą.</translation>
 <translation id="8474372283141585908">„Google“ prisijungimo duomenų teikėjas</translation>
 <translation id="8639729688781680518">Pamiršti „Windows“ slaptažodį</translation>
 <translation id="866458870819756755">Nepavyko sukurti naudotojo.</translation>

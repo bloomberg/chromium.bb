@@ -19,7 +19,6 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
@@ -232,8 +231,7 @@ bool DisplayColorManager::SetDisplayColorMatrix(
     const display::DisplaySnapshot* display_snapshot,
     const SkMatrix44& color_matrix) {
   DCHECK(display_snapshot);
-  DCHECK(
-      base::ContainsValue(configurator_->cached_displays(), display_snapshot));
+  DCHECK(base::Contains(configurator_->cached_displays(), display_snapshot));
 
   if (!display_snapshot->has_color_correction_matrix()) {
     // This display doesn't support setting a CRTC matrix.
@@ -324,12 +322,6 @@ bool DisplayColorManager::LoadCalibrationForDisplay(
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return false;
   }
-
-  // TODO: enable QuirksManager for mash. http://crbug.com/728748. Some tests
-  // don't create the Shell when running this code, hence the
-  // Shell::HasInstance() conditional.
-  if (Shell::HasInstance() && features::IsMultiProcessMash())
-    return false;
 
   const bool valid_product_code =
       display->product_code() != display::DisplaySnapshot::kInvalidProductCode;

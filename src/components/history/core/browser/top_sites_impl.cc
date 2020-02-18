@@ -251,8 +251,8 @@ void TopSitesImpl::StartQueryForMostVisited() {
 
   history_service_->QueryMostVisitedURLs(
       num_results_to_request_from_history(), kDaysOfHistory,
-      base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
-                 base::Unretained(this)),
+      base::BindOnce(&TopSitesImpl::OnTopSitesAvailableFromHistory,
+                     base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 
@@ -469,10 +469,8 @@ void TopSitesImpl::OnGotMostVisitedURLs(
                &TopSitesImpl::StartQueryForMostVisited);
 }
 
-void TopSitesImpl::OnTopSitesAvailableFromHistory(
-    const MostVisitedURLList* pages) {
-  DCHECK(pages);
-  SetTopSites(*pages, CALL_LOCATION_FROM_OTHER_PLACES);
+void TopSitesImpl::OnTopSitesAvailableFromHistory(MostVisitedURLList pages) {
+  SetTopSites(pages, CALL_LOCATION_FROM_OTHER_PLACES);
 }
 
 void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,

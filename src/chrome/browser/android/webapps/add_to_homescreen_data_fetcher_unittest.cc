@@ -130,12 +130,9 @@ class TestInstallableManager : public InstallableManager {
       : InstallableManager(web_contents) {}
 
   // Mock out the GetData API so we can control exactly what is returned to the
-  // data fetcher. We manually call the metrics logging method which is normally
-  // called by the superclass method.
+  // data fetcher.
   void GetData(const InstallableParams& params,
                InstallableCallback callback) override {
-    metrics_->Start();
-
     InstallableStatusCode code = NO_ERROR_DETECTED;
     bool is_installable = is_installable_;
     if (params.valid_primary_icon && !primary_icon_) {
@@ -143,7 +140,8 @@ class TestInstallableManager : public InstallableManager {
       is_installable = false;
     } else if (params.valid_manifest && params.has_worker) {
       if (!IsManifestValidForWebApp(manifest_,
-                                    true /* check_webapp_manifest_display */)) {
+                                    true /* check_webapp_manifest_display */,
+                                    false /* prefer_maskable_icon */)) {
         code = valid_manifest_->errors.at(0);
         is_installable = false;
       } else if (!is_installable_) {
@@ -155,18 +153,8 @@ class TestInstallableManager : public InstallableManager {
     if (should_manifest_time_out_ ||
         (params.valid_manifest && params.has_worker &&
          should_installable_time_out_)) {
-      // Bind the metrics resolution callback. We want to test when this is
-      // and isn't called (corresponding to InstallableManager finishing work
-      // after the timeout, and when it never finishes at all).
-      queued_metrics_callback_ =
-          base::BindOnce(&InstallableManager::ResolveMetrics,
-                         base::Unretained(this), params, is_installable);
       return;
     }
-
-    // Otherwise, directly call the metrics finalisation.
-    if (params.valid_manifest && params.has_worker && is_installable)
-      ResolveMetrics(params, is_installable);
 
     std::vector<InstallableStatusCode> errors;
     if (code != NO_ERROR_DETECTED)
@@ -206,16 +194,12 @@ class TestInstallableManager : public InstallableManager {
     should_installable_time_out_ = should_time_out;
   }
 
-  void ResolveQueuedMetrics() { std::move(queued_metrics_callback_).Run(); }
-
  private:
   blink::Manifest manifest_;
   GURL primary_icon_url_;
   GURL badge_icon_url_;
   std::unique_ptr<SkBitmap> primary_icon_;
   std::unique_ptr<SkBitmap> badge_icon_;
-
-  base::OnceClosure queued_metrics_callback_;
 
   bool is_installable_ = true;
 
@@ -288,12 +272,7 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
                is_webapk_compatible);
   }
 
-  void CheckHistograms(
-      base::HistogramTester& histograms,
-      AddToHomescreenTimeoutStatus expected_status_for_histogram) {
-    histograms.ExpectUniqueSample(
-        "Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout",
-        static_cast<int>(expected_status_for_histogram), 1);
+  void CheckHistograms(base::HistogramTester& histograms) {
     histograms.ExpectTotalCount("Webapp.AddToHomescreenDialog.Timeout", 1);
   }
 
@@ -313,8 +292,6 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     installable_manager_->SetShouldInstallableTimeOut(should_time_out);
   }
 
-  void ResolveQueuedMetrics() { installable_manager_->ResolveQueuedMetrics(); }
-
  private:
   TestInstallableManager* installable_manager_;
 
@@ -328,9 +305,7 @@ TEST_F(AddToHomescreenDataFetcherTest, EmptyManifest) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
              blink::kWebDisplayModeBrowser, false);
-  CheckHistograms(
-      histograms,
-      AddToHomescreenTimeoutStatus::NO_TIMEOUT_NON_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 }
 
 TEST_F(AddToHomescreenDataFetcherTest, NoIconManifest) {
@@ -345,9 +320,7 @@ TEST_F(AddToHomescreenDataFetcherTest, NoIconManifest) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
              blink::kWebDisplayModeStandalone, false);
-  CheckHistograms(
-      histograms,
-      AddToHomescreenTimeoutStatus::NO_TIMEOUT_NON_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
   EXPECT_TRUE(fetcher->badge_icon().drawsNothing());
@@ -370,10 +343,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutPwa) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
              blink::kWebDisplayModeBrowser, false);
-  ResolveQueuedMetrics();
-  CheckHistograms(
-      histograms,
-      AddToHomescreenTimeoutStatus::TIMEOUT_MANIFEST_FETCH_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
@@ -391,10 +361,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutNonPwa) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
              blink::kWebDisplayModeBrowser, false);
-  ResolveQueuedMetrics();
-  CheckHistograms(histograms,
-                  AddToHomescreenTimeoutStatus::
-                      TIMEOUT_MANIFEST_FETCH_NON_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
@@ -412,8 +379,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutUnknown) {
   RunFetcher(fetcher.get(), waiter, kWebApplicationInfoTitle,
              blink::kWebDisplayModeBrowser, false);
   NavigateAndCommit(GURL("about:blank"));
-  CheckHistograms(histograms,
-                  AddToHomescreenTimeoutStatus::TIMEOUT_MANIFEST_FETCH_UNKNOWN);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_TRUE(fetcher->shortcut_info().best_primary_icon_url.is_empty());
@@ -435,10 +401,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutPwa) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
              blink::kWebDisplayModeStandalone, false);
-  ResolveQueuedMetrics();
-  CheckHistograms(histograms,
-                  AddToHomescreenTimeoutStatus::
-                      TIMEOUT_INSTALLABILITY_CHECK_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -457,10 +420,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutNonPwa) {
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
              blink::kWebDisplayModeStandalone, false);
-  ResolveQueuedMetrics();
-  CheckHistograms(histograms,
-                  AddToHomescreenTimeoutStatus::
-                      TIMEOUT_INSTALLABILITY_CHECK_NON_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -482,9 +442,7 @@ TEST_F(AddToHomescreenDataFetcherTest, ServiceWorkerCheckTimesOutUnknown) {
 
   // Navigate to ensure the histograms are written.
   NavigateAndCommit(GURL("about:blank"));
-  CheckHistograms(
-      histograms,
-      AddToHomescreenTimeoutStatus::TIMEOUT_INSTALLABILITY_CHECK_UNKNOWN);
+  CheckHistograms(histograms);
 
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
@@ -511,8 +469,7 @@ TEST_F(AddToHomescreenDataFetcherTest, InstallableManifest) {
   EXPECT_FALSE(fetcher->badge_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_badge_icon_url,
             GURL(kDefaultIconUrl));
-  CheckHistograms(histograms,
-                  AddToHomescreenTimeoutStatus::NO_TIMEOUT_PROGRESSIVE_WEB_APP);
+  CheckHistograms(histograms);
 }
 
 TEST_F(AddToHomescreenDataFetcherTest, ManifestNameClobbersWebApplicationName) {

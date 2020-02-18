@@ -31,8 +31,6 @@ source_set("test_support") {
     "ios_chrome_unit_test_suite.mm",
     "root_view_controller_test.h",
     "root_view_controller_test.mm",
-    "scoped_block_popups_pref.h",
-    "scoped_block_popups_pref.mm",
     "scoped_key_window.h",
     "testing_application_context.h",
     "testing_application_context.mm",
@@ -77,7 +75,7 @@ source_set("eg_test_support") {
   ]
   deps = [
     ":test_support",
-    "//base",
+    "//base:base",
     "//ios/third_party/earl_grey:earl_grey+link",
   ]
 }
@@ -144,6 +142,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/autofill/manual_fill:unit_tests",
     "//ios/chrome/browser/browser_state:unit_tests",
     "//ios/chrome/browser/browsing_data:unit_tests",
+    "//ios/chrome/browser/complex_tasks:unit_tests",
     "//ios/chrome/browser/crash_report:unit_tests",
     "//ios/chrome/browser/device_sharing:unit_tests",
     "//ios/chrome/browser/download:unit_tests",
@@ -163,6 +162,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/network_activity:unit_tests",
     "//ios/chrome/browser/ntp:unit_tests",
     "//ios/chrome/browser/omaha:unit_tests",
+    "//ios/chrome/browser/open_in:unit_tests",
     "//ios/chrome/browser/overlays:unit_tests",
     "//ios/chrome/browser/overscroll_actions:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",
@@ -225,6 +225,8 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/omnibox/popup:unit_tests",
     "//ios/chrome/browser/ui/open_in:unit_tests",
     "//ios/chrome/browser/ui/overlays:unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs:unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs:unit_tests",
     "//ios/chrome/browser/ui/payments:unit_tests",
     "//ios/chrome/browser/ui/payments/cells:unit_tests",
     "//ios/chrome/browser/ui/popup_menu:unit_tests",
@@ -238,6 +240,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/settings/autofill:unit_tests",
     "//ios/chrome/browser/ui/settings/cells:unit_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:unit_tests",
+    "//ios/chrome/browser/ui/settings/language:unit_tests",
     "//ios/chrome/browser/ui/settings/password:unit_tests",
     "//ios/chrome/browser/ui/settings/sync:unit_tests",
     "//ios/chrome/browser/ui/side_swipe:unit_tests",

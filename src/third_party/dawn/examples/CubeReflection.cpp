@@ -121,7 +121,7 @@ void init() {
 
     initBuffers();
 
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
         #version 450
         layout(set = 0, binding = 0) uniform cameraData {
             mat4 view;
@@ -136,10 +136,10 @@ void init() {
         void main() {
             f_col = col;
             gl_Position = camera.proj * camera.view * modelMatrix * vec4(pos, 1.0);
-        })"
-    );
+        })");
 
-    dawn::ShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+    dawn::ShaderModule fsModule =
+        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
         #version 450
         layout(location = 2) in vec3 f_col;
         layout(location = 0) out vec4 fragColor;
@@ -148,7 +148,7 @@ void init() {
         })");
 
     dawn::ShaderModule fsReflectionModule =
-        utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
         #version 450
         layout(location = 2) in vec3 f_col;
         layout(location = 0) out vec4 fragColor;
@@ -157,13 +157,13 @@ void init() {
         })");
 
     utils::ComboVertexInputDescriptor vertexInput;
-    vertexInput.numAttributes = 2;
+    vertexInput.cBuffers[0].attributeCount = 2;
     vertexInput.cAttributes[0].format = dawn::VertexFormat::Float3;
     vertexInput.cAttributes[1].shaderLocation = 1;
     vertexInput.cAttributes[1].offset = 3 * sizeof(float);
     vertexInput.cAttributes[1].format = dawn::VertexFormat::Float3;
 
-    vertexInput.numBuffers = 1;
+    vertexInput.bufferCount = 1;
     vertexInput.cBuffers[0].stride = 6 * sizeof(float);
 
     auto bgl = utils::MakeBindGroupLayout(
@@ -176,7 +176,7 @@ void init() {
 
     dawn::BufferDescriptor cameraBufDesc;
     cameraBufDesc.size = sizeof(CameraData);
-    cameraBufDesc.usage = dawn::BufferUsageBit::TransferDst | dawn::BufferUsageBit::Uniform;
+    cameraBufDesc.usage = dawn::BufferUsageBit::CopyDst | dawn::BufferUsageBit::Uniform;
     cameraBuffer = device.CreateBuffer(&cameraBufDesc);
 
     glm::mat4 transform(1.0);
@@ -203,7 +203,7 @@ void init() {
     descriptor.cFragmentStage.module = fsModule;
     descriptor.vertexInput = &vertexInput;
     descriptor.depthStencilState = &descriptor.cDepthStencilState;
-    descriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    descriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
     descriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
     descriptor.cDepthStencilState.depthWriteEnabled = true;
     descriptor.cDepthStencilState.depthCompare = dawn::CompareFunction::Less;
@@ -216,7 +216,7 @@ void init() {
     pDescriptor.cFragmentStage.module = fsModule;
     pDescriptor.vertexInput = &vertexInput;
     pDescriptor.depthStencilState = &pDescriptor.cDepthStencilState;
-    pDescriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    pDescriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
     pDescriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
     pDescriptor.cDepthStencilState.stencilFront.passOp = dawn::StencilOperation::Replace;
     pDescriptor.cDepthStencilState.stencilBack.passOp = dawn::StencilOperation::Replace;
@@ -230,7 +230,7 @@ void init() {
     rfDescriptor.cFragmentStage.module = fsReflectionModule;
     rfDescriptor.vertexInput = &vertexInput;
     rfDescriptor.depthStencilState = &rfDescriptor.cDepthStencilState;
-    rfDescriptor.cDepthStencilState.format = dawn::TextureFormat::D32FloatS8Uint;
+    rfDescriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;
     rfDescriptor.cColorStates[0]->format = GetPreferredSwapChainTextureFormat();
     rfDescriptor.cDepthStencilState.stencilFront.compare = dawn::CompareFunction::Equal;
     rfDescriptor.cDepthStencilState.stencilBack.compare = dawn::CompareFunction::Equal;
@@ -257,7 +257,7 @@ void frame() {
         glm::vec3(0.0f, -1.0f, 0.0f)
     );
 
-    cameraBuffer.SetSubData(0, sizeof(CameraData), reinterpret_cast<uint8_t*>(&cameraData));
+    cameraBuffer.SetSubData(0, sizeof(CameraData), &cameraData);
 
     dawn::Texture backbuffer = swapchain.GetNextTexture();
     utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},

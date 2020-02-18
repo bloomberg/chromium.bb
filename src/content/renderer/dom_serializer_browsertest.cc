@@ -134,7 +134,6 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
         contents, base_url,
         encoding_info.IsEmpty() ? "UTF-8" : encoding_info.Utf8(), GURL(),
         false /* replace_current_item */);
-    base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();
   }
 

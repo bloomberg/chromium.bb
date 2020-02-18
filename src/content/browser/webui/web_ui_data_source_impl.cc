@@ -63,8 +63,8 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   ~InternalDataSource() override {}
 
   // URLDataSource implementation.
-  std::string GetSource() const override { return parent_->GetSource(); }
-  std::string GetMimeType(const std::string& path) const override {
+  std::string GetSource() override { return parent_->GetSource(); }
+  std::string GetMimeType(const std::string& path) override {
     return parent_->GetMimeType(path);
   }
   void StartDataRequest(
@@ -73,33 +73,31 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
       const URLDataSource::GotDataCallback& callback) override {
     return parent_->StartDataRequest(path, wc_getter, callback);
   }
-  bool ShouldReplaceExistingSource() const override {
+  bool ShouldReplaceExistingSource() override {
     return parent_->replace_existing_source_;
   }
-  bool AllowCaching() const override { return false; }
-  bool ShouldAddContentSecurityPolicy() const override {
-    return parent_->add_csp_;
-  }
-  std::string GetContentSecurityPolicyScriptSrc() const override {
+  bool AllowCaching() override { return false; }
+  bool ShouldAddContentSecurityPolicy() override { return parent_->add_csp_; }
+  std::string GetContentSecurityPolicyScriptSrc() override {
     if (parent_->script_src_set_)
       return parent_->script_src_;
     return URLDataSource::GetContentSecurityPolicyScriptSrc();
   }
-  std::string GetContentSecurityPolicyObjectSrc() const override {
+  std::string GetContentSecurityPolicyObjectSrc() override {
     if (parent_->object_src_set_)
       return parent_->object_src_;
     return URLDataSource::GetContentSecurityPolicyObjectSrc();
   }
-  std::string GetContentSecurityPolicyChildSrc() const override {
+  std::string GetContentSecurityPolicyChildSrc() override {
     if (parent_->frame_src_set_)
       return parent_->frame_src_;
     return URLDataSource::GetContentSecurityPolicyChildSrc();
   }
-  bool ShouldDenyXFrameOptions() const override {
+  bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
   }
-  bool ShouldServeMimeTypeAsContentTypeHeader() const override { return true; }
-  bool IsGzipped(const std::string& path) const override {
+  bool ShouldServeMimeTypeAsContentTypeHeader() override { return true; }
+  bool IsGzipped(const std::string& path) override {
     return parent_->IsGzipped(path);
   }
 
@@ -235,7 +233,7 @@ void WebUIDataSourceImpl::EnsureLoadTimeDataDefaultsAdded() {
   AddLocalizedStrings(defaults);
 }
 
-std::string WebUIDataSourceImpl::GetSource() const {
+std::string WebUIDataSourceImpl::GetSource() {
   return source_name_;
 }
 

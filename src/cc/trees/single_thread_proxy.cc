@@ -27,6 +27,7 @@
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace cc {
 
@@ -56,9 +57,7 @@ SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
       inside_synchronous_composite_(false),
       needs_impl_frame_(false),
       layer_tree_frame_sink_creation_requested_(false),
-      layer_tree_frame_sink_lost_(true),
-      frame_sink_bound_weak_factory_(this),
-      weak_factory_(this) {
+      layer_tree_frame_sink_lost_(true) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(task_runner_provider_);
   DCHECK(task_runner_provider_->IsMainThread());
@@ -75,7 +74,7 @@ void SingleThreadProxy::Start() {
   host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
-    scheduler_settings.commit_to_active_tree = CommitToActiveTree();
+    scheduler_settings.commit_to_active_tree = true;
 
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history(
         new CompositorTimingHistory(
@@ -100,12 +99,6 @@ SingleThreadProxy::~SingleThreadProxy() {
 bool SingleThreadProxy::IsStarted() const {
   DCHECK(task_runner_provider_->IsMainThread());
   return !!host_impl_;
-}
-
-bool SingleThreadProxy::CommitToActiveTree() const {
-  // With SingleThreadProxy we skip the pending tree and commit directly to the
-  // active tree.
-  return true;
 }
 
 void SingleThreadProxy::SetVisible(bool visible) {
@@ -436,6 +429,10 @@ bool SingleThreadProxy::IsInsideDraw() {
   return inside_draw_;
 }
 
+bool SingleThreadProxy::IsBeginMainFrameExpected() {
+  return true;
+}
+
 void SingleThreadProxy::DidActivateSyncTree() {
   CommitComplete();
 }
@@ -525,12 +522,23 @@ void SingleThreadProxy::DidPresentCompositorFrameOnImplThread(
     const gfx::PresentationFeedback& feedback) {
   layer_tree_host_->DidPresentCompositorFrame(frame_token, std::move(callbacks),
                                               feedback);
+
+  if (scheduler_on_impl_thread_) {
+    scheduler_on_impl_thread_->DidPresentCompositorFrame(frame_token,
+                                                         feedback.timestamp);
+  }
 }
 
 void SingleThreadProxy::NotifyAnimationWorkletStateChange(
     AnimationWorkletMutationState state,
     ElementListType element_list_type) {
   layer_tree_host_->NotifyAnimationWorkletStateChange(state, element_list_type);
+}
+
+void SingleThreadProxy::NotifyPaintWorkletStateChange(
+    Scheduler::PaintWorkletState state) {
+  // Off-Thread PaintWorklet is only supported on the threaded compositor.
+  NOTREACHED();
 }
 
 void SingleThreadProxy::RequestBeginMainFrameNotExpected(bool new_state) {
@@ -605,6 +613,7 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time,
     if (raster) {
       LayerTreeHostImpl::FrameData frame;
       frame.begin_frame_ack = viz::BeginFrameAck(begin_frame_args, true);
+      frame.origin_begin_main_frame_args = begin_frame_args;
       DoComposite(&frame);
     }
 
@@ -666,9 +675,11 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     draw_frame = draw_result == DRAW_SUCCESS;
     if (draw_frame) {
       if (host_impl_->DrawLayers(frame)) {
-        if (scheduler_on_impl_thread_)
+        if (scheduler_on_impl_thread_) {
           // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-          scheduler_on_impl_thread_->DidSubmitCompositorFrame();
+          scheduler_on_impl_thread_->DidSubmitCompositorFrame(
+              frame->frame_token);
+        }
         single_thread_client_->DidSubmitCompositorFrame();
       }
     }
@@ -744,7 +755,7 @@ void SingleThreadProxy::ScheduledActionSendBeginMainFrame(
   task_runner_provider_->MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SingleThreadProxy::BeginMainFrame,
                                 weak_factory_.GetWeakPtr(), begin_frame_args));
-  host_impl_->DidSendBeginMainFrame();
+  host_impl_->DidSendBeginMainFrame(begin_frame_args);
 }
 
 void SingleThreadProxy::FrameIntervalUpdated(base::TimeDelta interval) {
@@ -823,8 +834,7 @@ void SingleThreadProxy::BeginMainFrame(
   // know we will commit since QueueSwapPromise itself requests a commit.
   ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
   new_latency_info.AddLatencyNumberWithTimestamp(
-      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT, begin_frame_args.frame_time,
-      1);
+      ui::LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT, begin_frame_args.frame_time);
   layer_tree_host_->QueueSwapPromise(
       std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
 
@@ -863,7 +873,9 @@ void SingleThreadProxy::BeginMainFrameAbortedOnImplThread(
   DCHECK(!host_impl_->pending_tree());
 
   std::vector<std::unique_ptr<SwapPromise>> empty_swap_promises;
-  host_impl_->BeginMainFrameAborted(reason, std::move(empty_swap_promises));
+  host_impl_->BeginMainFrameAborted(
+      reason, std::move(empty_swap_promises),
+      scheduler_on_impl_thread_->last_dispatched_begin_main_frame_args());
   scheduler_on_impl_thread_->BeginMainFrameAborted(reason);
 }
 
@@ -872,6 +884,8 @@ DrawResult SingleThreadProxy::ScheduledActionDrawIfPossible() {
   LayerTreeHostImpl::FrameData frame;
   frame.begin_frame_ack =
       scheduler_on_impl_thread_->CurrentBeginFrameAckForActiveTree();
+  frame.origin_begin_main_frame_args =
+      scheduler_on_impl_thread_->last_activate_origin_frame_args();
   return DoComposite(&frame);
 }
 

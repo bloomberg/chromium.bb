@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -91,8 +91,7 @@ class CORE_EXPORT LayoutTreeBuilderTraversal {
   static LayoutObject* NextInTopLayer(const Element&);
 
   static inline Element* ParentElement(const Node& node) {
-    ContainerNode* found = Parent(node);
-    return found && found->IsElementNode() ? ToElement(found) : nullptr;
+    return DynamicTo<Element>(Parent(node));
   }
 
  private:

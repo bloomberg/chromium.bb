@@ -34,6 +34,8 @@ namespace views {
 class VIEWS_EXPORT AnimatedImageView : public ImageViewBase,
                                        public ui::CompositorAnimationObserver {
  public:
+  METADATA_HEADER(AnimatedImageView);
+
   enum class State {
     kPlaying,  // The animation is currently playing.
     kStopped   // The animation is stopped and paint will raster the first
@@ -60,7 +62,6 @@ class VIEWS_EXPORT AnimatedImageView : public ImageViewBase,
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
-  const char* GetClassName() const override;
   void NativeViewHierarchyChanged() override;
   void RemovedFromWidget() override;
 

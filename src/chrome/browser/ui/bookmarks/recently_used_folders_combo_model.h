@@ -43,19 +43,19 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
   void BookmarkModelBeingDeleted(bookmarks::BookmarkModel* model) override;
   void BookmarkNodeMoved(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* old_parent,
-                         int old_index,
+                         size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
-                         int new_index) override;
+                         size_t new_index) override;
   void BookmarkNodeAdded(bookmarks::BookmarkModel* model,
                          const bookmarks::BookmarkNode* parent,
-                         int index) override;
+                         size_t index) override;
   void OnWillRemoveBookmarks(bookmarks::BookmarkModel* model,
                              const bookmarks::BookmarkNode* parent,
-                             int old_index,
+                             size_t old_index,
                              const bookmarks::BookmarkNode* node) override;
   void BookmarkNodeRemoved(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* parent,
-                           int old_index,
+                           size_t old_index,
                            const bookmarks::BookmarkNode* node,
                            const std::set<GURL>& removed_urls) override;
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,

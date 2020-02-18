@@ -140,9 +140,9 @@ CSSPropertyID CssPropertyInfo(const AtomicString& name) {
   if (unresolved_property == CSSPropertyID::kVariable)
     unresolved_property = CSSPropertyID::kInvalid;
   map.insert(name, unresolved_property);
-  DCHECK(
-      !isValidCSSPropertyID(unresolved_property) ||
-      CSSProperty::Get(resolveCSSPropertyID(unresolved_property)).IsEnabled());
+  DCHECK(!isValidCSSPropertyID(unresolved_property) ||
+         CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
+             .IsWebExposed());
   return unresolved_property;
 }
 
@@ -171,7 +171,7 @@ bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
     return false;
   // We create the ExceptionState manually due to performance issues: adding
   // [RaisesException] to the IDL causes the bindings layer to expensively
-  // create a CString to set the ExceptionState's |property_name| argument,
+  // create a std::string to set the ExceptionState's |property_name| argument,
   // while we can use CSSProperty::GetPropertyName() here (see bug 829408).
   ExceptionState exception_state(
       script_state->GetIsolate(), ExceptionState::kSetterContext,
@@ -195,17 +195,17 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
     for (CSSPropertyID property_id : CSSPropertyIDList()) {
       const CSSProperty& property_class =
           CSSProperty::Get(resolveCSSPropertyID(property_id));
-      if (property_class.IsEnabled())
+      if (property_class.IsWebExposed())
         property_names.push_back(property_class.GetJSPropertyName());
     }
     for (CSSPropertyID property_id : kCSSPropertyAliasList) {
       const CSSUnresolvedProperty* property_class =
           CSSUnresolvedProperty::GetAliasProperty(property_id);
-      if (property_class->IsEnabled())
+      if (property_class->IsWebExposed())
         property_names.push_back(property_class->GetJSPropertyName());
     }
     std::sort(property_names.begin(), property_names.end(),
-              WTF::CodePointCompareLessThan);
+              WTF::CodeUnitCompareLessThan);
   }
   names = property_names;
 }

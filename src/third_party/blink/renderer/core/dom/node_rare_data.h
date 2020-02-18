@@ -67,8 +67,8 @@ class NodeRenderingData {
   USING_FAST_MALLOC(NodeRenderingData);
 
  public:
-  explicit NodeRenderingData(LayoutObject*,
-                             scoped_refptr<ComputedStyle> computed_style);
+  NodeRenderingData(LayoutObject*,
+                    scoped_refptr<const ComputedStyle> computed_style);
   ~NodeRenderingData();
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
@@ -77,15 +77,17 @@ class NodeRenderingData {
     layout_object_ = layout_object;
   }
 
-  ComputedStyle* GetComputedStyle() const { return computed_style_.get(); }
-  void SetComputedStyle(scoped_refptr<ComputedStyle> computed_style);
+  const ComputedStyle* GetComputedStyle() const {
+    return computed_style_.get();
+  }
+  void SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style);
 
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
  private:
   LayoutObject* layout_object_;
-  scoped_refptr<ComputedStyle> computed_style_;
+  scoped_refptr<const ComputedStyle> computed_style_;
   DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 

@@ -17,6 +17,7 @@
 
 namespace chromecast {
 namespace media {
+namespace post_processor_test {
 
 namespace {
 
@@ -24,13 +25,18 @@ const float kEpsilon = std::numeric_limits<float>::epsilon();
 
 // Benchmark parameters.
 const float kTestDurationSec = 1.0;
-const int kBlockSizeFrames = 256;
 
 }  // namespace
 
-namespace post_processor_test {
-
 using Status = AudioPostProcessor2::Status;
+
+AudioPostProcessor2::Config MakeProcessorConfig(int sample_rate_hz) {
+  AudioPostProcessor2::Config config;
+  config.output_sample_rate = sample_rate_hz;
+  config.system_output_sample_rate = sample_rate_hz;
+  config.output_frames_per_write = kBufSizeFrames;
+  return config;
+}
 
 AlignedBuffer<float> LinearChirp(int frames,
                                  const std::vector<double>& start_frequencies,
@@ -67,7 +73,7 @@ AlignedBuffer<float> GetStereoChirp(int frames,
 void TestDelay(AudioPostProcessor2* pp,
                int output_sample_rate,
                int num_input_channels) {
-  ASSERT_TRUE(pp->SetConfig({output_sample_rate}));
+  ASSERT_TRUE(pp->SetConfig(MakeProcessorConfig(output_sample_rate)));
 
   const Status& status = pp->GetStatus();
   ASSERT_GT(status.input_sample_rate, 0);
@@ -125,7 +131,7 @@ void TestDelay(AudioPostProcessor2* pp,
 void TestRingingTime(AudioPostProcessor2* pp,
                      int sample_rate,
                      int num_input_channels) {
-  ASSERT_TRUE(pp->SetConfig({sample_rate}));
+  ASSERT_TRUE(pp->SetConfig(MakeProcessorConfig(sample_rate)));
 
   const Status& status = pp->GetStatus();
   ASSERT_GT(status.input_sample_rate, 0);
@@ -133,7 +139,7 @@ void TestRingingTime(AudioPostProcessor2* pp,
   ASSERT_GE(status.rendering_delay_frames, 0);
   ASSERT_GE(status.ringing_time_frames, 0);
 
-  const int kNumFrames = GetMaximumFrames(sample_rate);
+  const int kNumFrames = kBufSizeFrames;
   const int kSinFreq = 2000;
 
   // Send a second of data to excite the filter.
@@ -165,9 +171,8 @@ void TestRingingTime(AudioPostProcessor2* pp,
   }
 
   // Send a little more data and ensure the amplitude is < 1% the original.
-  const int probe_frames = 512;
-  data.assign(probe_frames * num_input_channels, 0);
-  pp->ProcessFrames(data.data(), probe_frames, 1.0, 0.0);
+  data.assign(kNumFrames * num_input_channels, 0);
+  pp->ProcessFrames(data.data(), kNumFrames, 1.0, 0.0);
 
   // Only look at the amplitude of the first few frames.
   EXPECT_LE(SineAmplitude(status.output_buffer, 10 * status.output_channels) /
@@ -180,7 +185,7 @@ void TestRingingTime(AudioPostProcessor2* pp,
 void TestPassthrough(AudioPostProcessor2* pp,
                      int sample_rate,
                      int num_input_channels) {
-  EXPECT_TRUE(pp->SetConfig({sample_rate}));
+  ASSERT_TRUE(pp->SetConfig(MakeProcessorConfig(sample_rate)));
 
   const Status& status = pp->GetStatus();
   ASSERT_GT(status.input_sample_rate, 0);
@@ -193,7 +198,7 @@ void TestPassthrough(AudioPostProcessor2* pp,
 
   ASSERT_EQ(status.input_sample_rate, sample_rate);
 
-  const int kNumFrames = GetMaximumFrames(sample_rate);
+  const int kNumFrames = kBufSizeFrames;
   const int kSinFreq = 2000;
 
   AlignedBuffer<float> data =
@@ -225,19 +230,19 @@ void TestPassthrough(AudioPostProcessor2* pp,
 void AudioProcessorBenchmark(AudioPostProcessor2* pp,
                              int sample_rate,
                              int num_input_channels) {
-  ASSERT_TRUE(pp->SetConfig({sample_rate}));
+  ASSERT_TRUE(pp->SetConfig(MakeProcessorConfig(sample_rate)));
 
   int test_size_frames = kTestDurationSec * pp->GetStatus().input_sample_rate;
-  // Make test_size multiple of kBlockSizeFrames and calculate effective
+  // Make test_size multiple of kBufSizeFrames and calculate effective
   // duration.
-  test_size_frames -= test_size_frames % kBlockSizeFrames;
+  test_size_frames -= test_size_frames % kBufSizeFrames;
   float effective_duration = static_cast<float>(test_size_frames) / sample_rate;
   AlignedBuffer<float> data_in = LinearChirp(
       test_size_frames, std::vector<double>(num_input_channels, 0.0),
       std::vector<double>(num_input_channels, 1.0));
   clock_t start_clock = clock();
-  for (int i = 0; i < test_size_frames; i += kBlockSizeFrames * kNumChannels) {
-    pp->ProcessFrames(&data_in[i], kBlockSizeFrames, 1.0, 0.0);
+  for (int i = 0; i < test_size_frames; i += kBufSizeFrames * kNumChannels) {
+    pp->ProcessFrames(&data_in[i], kBufSizeFrames, 1.0, 0.0);
   }
   clock_t stop_clock = clock();
   LOG(INFO) << "At " << sample_rate
@@ -250,10 +255,6 @@ void AudioProcessorBenchmark(AudioPostProcessor2* pp,
 void AudioProcessorBenchmark(AudioPostProcessor* pp, int sample_rate) {
   AudioPostProcessorWrapper wrapper(pp, kNumChannels);
   AudioProcessorBenchmark(&wrapper, sample_rate, kNumChannels);
-}
-
-int GetMaximumFrames(int sample_rate) {
-  return kMaxAudioWriteTimeMilliseconds * sample_rate / 1000;
 }
 
 template <typename T>

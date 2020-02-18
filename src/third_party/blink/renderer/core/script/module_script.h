@@ -48,7 +48,7 @@ class CORE_EXPORT ModuleScript : public Script {
   KURL ResolveModuleSpecifier(const String& module_request,
                               String* failure_reason = nullptr) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void ProduceCache() {}
 
@@ -67,6 +67,7 @@ class CORE_EXPORT ModuleScript : public Script {
     return mojom::ScriptType::kModule;
   }
   void RunScript(LocalFrame*, const SecurityOrigin*) override;
+  void RunScriptOnWorker(WorkerGlobalScope&) override;
 
   friend class ModuleTreeLinkerTestModulator;
 

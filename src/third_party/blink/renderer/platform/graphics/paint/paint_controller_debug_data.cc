@@ -161,8 +161,7 @@ void PaintController::ShowDebugDataInternal(
                     current_cached_subsequences_,
                     current_paint_artifact_->PaintChunks(), current_list_flags)
                     .ToString()
-                    .Utf8()
-                    .data();
+                    .Utf8();
 
   LOG(ERROR) << "new display item list: "
              << DisplayItemListAsJSON(
@@ -171,8 +170,7 @@ void PaintController::ShowDebugDataInternal(
                     // The clients in new_display_item_list_ are all alive.
                     flags | DisplayItemList::kClientKnownToBeAlive)
                     .ToString()
-                    .Utf8()
-                    .data();
+                    .Utf8();
 }
 
 void PaintController::ShowCompactDebugData() const {

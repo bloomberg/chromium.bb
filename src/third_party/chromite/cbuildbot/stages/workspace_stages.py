@@ -721,7 +721,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
         buildroot=self._build_root)
 
     android_packages = [p for p in packages
-                        if p.startswith('chromeos-base/android-container')]
+                        if p.startswith('chromeos-base/android-container-') or \
+                        p.startswith('chromeos-base/android-vm-')]
 
     assert len(android_packages) <= 1
 
@@ -746,8 +747,8 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     host_ebuild_path = path_util.FromChrootPath(ebuild_path,
                                                 source_path=self._build_root)
     # We assume all targets pull from the same branch and that we always
-    # have an ARM_TARGET or an AOSP_X86_USERDEBUG_TARGET.
-    targets = ['ARM_TARGET', 'AOSP_X86_USERDEBUG_TARGET']
+    # have an ARM_TARGET or an X86_USERDEBUG_TARGET.
+    targets = ['ARM_TARGET', 'X86_USERDEBUG_TARGET']
     ebuild_content = osutils.SourceEnvironment(host_ebuild_path, targets)
     logging.info('Got ebuild env: %s', ebuild_content)
     for target in targets:
@@ -799,6 +800,35 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
       # is also the last possible ABI, so returning by default.
       return 'arm'
 
+  def DetermineAndroidVariant(self, package):
+    """Returns the Android variant in use by the active container ebuild."""
+
+    all_use_flags = portage_util.GetInstalledPackageUseFlags(
+        package, self._current_board, buildroot=self._build_root)
+    for use_flags in all_use_flags.value():
+      for use_flag in use_flags:
+        if 'cheets_userdebug' in use_flag or 'cheets_sdk_userdebug' in use_flag:
+          return 'userdebug'
+        elif 'cheets_user' in use_flag or 'cheets_sdk_user' in use_flag:
+          return 'user'
+
+    # We iterated through all the flags and could not find user or userdebug.
+    # This should not be possible given that this code is only ran by
+    # builders, which will never use local images.
+    raise cbuildbot_run.NoAndroidVariantError(
+        'Android Variant cannot be determined for the packge: %s' %
+        package)
+
+  def DetermineAndroidTarget(self, package):
+    if package.startswith('chromeos-base/android-vm-'):
+      return 'bertha'
+    if package.startswith('chromeos-base/android-container-'):
+      return 'cheets'
+
+    raise cbuildbot_run.NoAndroidTargetError(
+        'Android Target cannot be determined for the package: %s' %
+        package)
+
   def DownloadAndroidSymbols(self):
     """Helper to download android container symbols, as needed.
 
@@ -816,6 +846,13 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     android_build_branch = self.DetermineAndroidBranch(android_package)
     android_version = self.DetermineAndroidVersion(android_package)
     arch = self.DetermineAndroidABI()
+    variant = self.DetermineAndroidVariant(android_package)
+    android_target = self.DetermineAndroidTarget(android_package)
+    # For user builds, there are no suffix.
+    # For userdebug builds, there is an explicit '_userdebug' suffix.
+    suffix = ''
+    if variant != 'user':
+      suffix = '_' + variant
 
     logging.info(
         'Downloading symbols of Android %s (%s)...',
@@ -823,8 +860,11 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
 
     symbols_file_url = constants.ANDROID_SYMBOLS_URL_TEMPLATE % {
         'branch': android_build_branch,
+        'target': android_target,
         'arch': arch,
-        'version': android_version}
+        'version': android_version,
+        'variant': variant,
+        'suffix': suffix}
 
     # Should be based on self.archive_path, but we need a path inside
     # the workspace chroot, not infra chroot.

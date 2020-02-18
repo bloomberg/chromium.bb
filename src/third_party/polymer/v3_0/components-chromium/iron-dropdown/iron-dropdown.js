@@ -8,15 +8,15 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 
 import {IronA11yKeysBehavior} from '../iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import {IronControlState} from '../iron-behaviors/iron-control-state.js';
 import {IronOverlayBehavior, IronOverlayBehaviorImpl} from '../iron-overlay-behavior/iron-overlay-behavior.js';
 import {NeonAnimationRunnerBehavior} from '../neon-animation/neon-animation-runner-behavior.js';
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 
 /**
 `<iron-dropdown>` is a generalized element that is useful when you have

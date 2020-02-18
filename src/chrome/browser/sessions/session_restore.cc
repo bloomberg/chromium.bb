@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -27,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -38,6 +38,8 @@
 #include "chrome/browser/sessions/tab_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
@@ -45,6 +47,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/url_constants.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -53,8 +56,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -95,7 +96,7 @@ std::set<SessionRestoreImpl*>* active_session_restorers = nullptr;
 // SessionRestoreImpl is responsible for fetching the set of tabs to create
 // from SessionService. SessionRestoreImpl deletes itself when done.
 
-class SessionRestoreImpl : public content::NotificationObserver {
+class SessionRestoreImpl : public BrowserListObserver {
  public:
   SessionRestoreImpl(Profile* profile,
                      Browser* browser,
@@ -155,10 +156,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
       return browser;
     }
 
-    if (browser_) {
-      registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
-                     content::Source<Browser>(browser_));
-    }
+    if (browser_)
+      BrowserList::AddObserver(this);
 
     return browser_;
   }
@@ -226,7 +225,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           use_new_window ? 0 : browser->tab_strip_model()->active_index() + 1;
       web_contents = chrome::AddRestoredTab(
           browser, tab.navigations, tab_index, selected_index,
-          tab.extension_app_id,
+          tab.extension_app_id, base::nullopt,
           disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB,  // selected
           tab.pinned, true, base::TimeTicks(), nullptr, tab.user_agent_override,
           true /* from_session_restore */);
@@ -252,6 +251,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   ~SessionRestoreImpl() override {
+    BrowserList::RemoveObserver(this);
     active_session_restorers->erase(this);
     if (active_session_restorers->empty()) {
       delete active_session_restorers;
@@ -259,18 +259,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
     }
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_BROWSER_CLOSED:
-        delete this;
-        return;
-
-      default:
-        NOTREACHED();
-        break;
-    }
+  // BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override {
+    if (browser == browser_)
+      delete this;
   }
 
   Profile* profile() { return profile_; }
@@ -318,7 +310,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // if the browser is deleted. Don't listen to anything. This avoid a
       // possible double delete too (if browser is closed before DeleteSoon() is
       // processed).
-      registrar_.RemoveAll();
+      BrowserList::RemoveObserver(this);
     }
 
 #if defined(OS_CHROMEOS)
@@ -531,6 +523,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
         latest_last_active_time = tab.last_active_time;
     }
 
+    // TODO(crbug.com/930991): Check that tab groups are contiguous in |window|
+    // to ensure tabs will not be reordered when restoring. This is not possible
+    // yet due the ordering of TabStripModelObserver notifications in an edge
+    // case.
+
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
       const sessions::SessionTab& tab = *(window.tabs[i]);
 
@@ -583,18 +580,20 @@ class SessionRestoreImpl : public content::NotificationObserver {
               ->RecreateSessionStorage(tab.session_storage_persistent_id);
     }
 
+    // Apply the stored group if tab groups are enabled.
+    base::Optional<base::Token> group;
+    if (base::FeatureList::IsEnabled(features::kTabGroups))
+      group = tab.group;
+
     WebContents* web_contents = chrome::AddRestoredTab(
         browser, tab.navigations, tab_index, selected_index,
-        tab.extension_app_id, is_selected_tab, tab.pinned, true,
+        tab.extension_app_id, group, is_selected_tab, tab.pinned, true,
         last_active_time, session_storage_namespace.get(),
         tab.user_agent_override, true /* from_session_restore */);
-
-    // RestoreTab can return nullptr if |tab| doesn't have valid data.
-    if (!web_contents)
-      return;
+    DCHECK(web_contents);
 
     RestoredTab restored_tab(web_contents, is_selected_tab,
-                             tab.extension_app_id.empty(), tab.pinned);
+                             tab.extension_app_id.empty(), tab.pinned, group);
     created_contents->push_back(restored_tab);
 
     // If this isn't the selected tab, there's nothing else to do.
@@ -702,8 +701,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // windows when the nested run loop exits.
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_;
   SessionID active_window_id_;
-
-  content::NotificationRegistrar registrar_;
 
   // When asynchronous it's possible for there to be no windows. To make sure
   // Chrome doesn't prematurely exit we register a KeepAlive for the lifetime

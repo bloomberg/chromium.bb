@@ -24,7 +24,8 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
      * organized in a {@link ListModel}. A specific ViewHolder is defined for each piece.
      */
     static class AccessorySheetDataPiece {
-        @IntDef({Type.TITLE, Type.PASSWORD_INFO, Type.ADDRESS_INFO, Type.FOOTER_COMMAND})
+        @IntDef({Type.TITLE, Type.PASSWORD_INFO, Type.ADDRESS_INFO, Type.CREDIT_CARD_INFO,
+                Type.TOUCH_TO_FILL_INFO, Type.FOOTER_COMMAND})
         @Retention(RetentionPolicy.SOURCE)
         @interface Type {
             /**
@@ -36,13 +37,21 @@ class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessoryS
              */
             int PASSWORD_INFO = 2;
             /**
-             * A section containing a users name, address, etc.
+             * A section containing a user's name, address, etc.
              */
             int ADDRESS_INFO = 3;
             /**
+             * A section containing a payment information.
+             */
+            int CREDIT_CARD_INFO = 4;
+            /**
+             * A section containing touch to fill information.
+             */
+            int TOUCH_TO_FILL_INFO = 5;
+            /**
              * A command at the end of the accessory sheet tab.
              */
-            int FOOTER_COMMAND = 4;
+            int FOOTER_COMMAND = 6;
         }
 
         private Object mDataPiece;

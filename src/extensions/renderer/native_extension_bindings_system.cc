@@ -28,6 +28,7 @@
 #include "extensions/renderer/content_setting.h"
 #include "extensions/renderer/declarative_content_hooks_delegate.h"
 #include "extensions/renderer/extension_frame_helper.h"
+#include "extensions/renderer/extension_interaction_provider.h"
 #include "extensions/renderer/extension_js_runner.h"
 #include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/i18n_hooks_delegate.h"
@@ -45,7 +46,6 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 
@@ -359,6 +359,7 @@ bool IsRuntimeAvailableToContext(ScriptContext* context) {
 // Logs the amount of time taken to update the bindings for a given context
 // (i.e., UpdateBindingsForContext()).
 void LogUpdateBindingsForContextTime(Feature::Context context_type,
+                                     bool is_for_service_worker,
                                      base::TimeDelta elapsed) {
   constexpr int kHistogramBucketCount = 50;
   static const int kTenSecondsInMicroseconds = 10000000;
@@ -378,19 +379,20 @@ void LogUpdateBindingsForContextTime(Feature::Context context_type,
           elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
           kHistogramBucketCount);
       break;
-    case Feature::SERVICE_WORKER_CONTEXT:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Extensions.Bindings.UpdateBindingsForContextTime."
-          "ServiceWorkerContext",
-          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
-          kHistogramBucketCount);
-      break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Extensions.Bindings.UpdateBindingsForContextTime."
-          "BlessedExtensionContext",
-          elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
-          kHistogramBucketCount);
+      if (is_for_service_worker) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Extensions.Bindings.UpdateBindingsForContextTime."
+            "ServiceWorkerContext",
+            elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+            kHistogramBucketCount);
+      } else {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Extensions.Bindings.UpdateBindingsForContextTime."
+            "BlessedExtensionContext",
+            elapsed.InMicroseconds(), 1, kTenSecondsInMicroseconds,
+            kHistogramBucketCount);
+      }
       break;
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -440,9 +442,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::BindRepeating(&IsAPIFeatureAvailable),
           base::BindRepeating(&NativeExtensionBindingsSystem::SendRequest,
                               base::Unretained(this)),
-          base::BindRepeating(
-              &NativeExtensionBindingsSystem::GetUserActivationState,
-              base::Unretained(this)),
+          std::make_unique<ExtensionInteractionProvider>(),
           base::BindRepeating(
               &NativeExtensionBindingsSystem::OnEventListenerChanged,
               base::Unretained(this)),
@@ -451,8 +451,7 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
           base::BindRepeating(&AddConsoleError),
           APILastError(base::Bind(&GetLastErrorParents),
                        base::Bind(&AddConsoleError))),
-      messaging_service_(this),
-      weak_factory_(this) {
+      messaging_service_(this) {
   api_system_.RegisterCustomType("storage.StorageArea",
                                  base::Bind(&StorageArea::CreateStorageArea));
   api_system_.RegisterCustomType("types.ChromeSetting",
@@ -544,11 +543,11 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     case Feature::BLESSED_WEB_PAGE_CONTEXT:
       is_webpage = true;
       break;
-    case Feature::SERVICE_WORKER_CONTEXT:
-      DCHECK(ExtensionsClient::Get()
-                 ->ExtensionAPIEnabledInExtensionServiceWorkers());
-      FALLTHROUGH;
     case Feature::BLESSED_EXTENSION_CONTEXT:
+      if (context->IsForServiceWorker())
+        DCHECK(ExtensionsClient::Get()
+                   ->ExtensionAPIEnabledInExtensionServiceWorkers());
+      FALLTHROUGH;
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
@@ -576,7 +575,9 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     if (IsRuntimeAvailableToContext(context) && !set_accessor("runtime"))
       LOG(ERROR) << "Failed to create API on Chrome object.";
 
-    LogUpdateBindingsForContextTime(context->context_type(), timer.Elapsed());
+    LogUpdateBindingsForContextTime(context->context_type(),
+                                    context->IsForServiceWorker(),
+                                    timer.Elapsed());
     return;
   }
 
@@ -609,7 +610,8 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
     }
   }
 
-  LogUpdateBindingsForContextTime(context->context_type(), timer.Elapsed());
+  LogUpdateBindingsForContextTime(
+      context->context_type(), context->IsForServiceWorker(), timer.Elapsed());
 }
 
 void NativeExtensionBindingsSystem::DispatchEventInContext(
@@ -849,13 +851,6 @@ void NativeExtensionBindingsSystem::SendRequest(
                                       request->thread);
 }
 
-bool NativeExtensionBindingsSystem::GetUserActivationState(
-    v8::Local<v8::Context> context) {
-  ScriptContext* script_context = GetScriptContextFromV8ContextChecked(context);
-  return blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe(
-      script_context->web_frame());
-}
-
 void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const std::string& event_name,
     binding::EventListenersChanged change,
@@ -867,10 +862,9 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
   // manually by the extension and the context is a lazy context.
   // Note: Check context_type() first to avoid accessing ExtensionFrameHelper on
   // a worker thread.
-  bool is_lazy =
-      update_lazy_listeners &&
-      (script_context->context_type() == Feature::SERVICE_WORKER_CONTEXT ||
-       ExtensionFrameHelper::IsContextForEventPage(script_context));
+  bool is_lazy = update_lazy_listeners &&
+                 (script_context->IsForServiceWorker() ||
+                  ExtensionFrameHelper::IsContextForEventPage(script_context));
 
   switch (change) {
     case binding::EventListenersChanged::

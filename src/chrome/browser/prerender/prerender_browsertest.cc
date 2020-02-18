@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -35,7 +36,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -63,6 +63,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -93,7 +95,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -106,6 +107,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -152,9 +154,6 @@ using content::TestNavigationObserver;
 using content::WebContents;
 using content::WebContentsObserver;
 using net::NetworkChangeNotifier;
-using prerender::test_utils::RequestCounter;
-using prerender::test_utils::CreateCountingInterceptorOnIO;
-using prerender::test_utils::CreateMockInterceptorOnIO;
 using prerender::test_utils::TestPrerender;
 using prerender::test_utils::TestPrerenderContents;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
@@ -446,39 +445,52 @@ class NavigationOrSwapObserver : public WebContentsObserver,
 };
 
 // Waits for a new tab to open and a navigation or swap in it.
-class NewTabNavigationOrSwapObserver {
+class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
+                                       public BrowserListObserver {
  public:
-  NewTabNavigationOrSwapObserver()
-      : new_tab_observer_(
-            chrome::NOTIFICATION_TAB_ADDED,
-            base::Bind(&NewTabNavigationOrSwapObserver::OnTabAdded,
-                       base::Unretained(this))) {
-    // Watch for NOTIFICATION_TAB_ADDED. Add a callback so that the
-    // NavigationOrSwapObserver can be attached synchronously and no events are
-    // missed.
+  NewTabNavigationOrSwapObserver() {
+    BrowserList::AddObserver(this);
+    for (const Browser* browser : *BrowserList::GetInstance())
+      tab_strip_observer_.Add(browser->tab_strip_model());
+  }
+
+  ~NewTabNavigationOrSwapObserver() override {
+    BrowserList::RemoveObserver(this);
   }
 
   void Wait() {
-    new_tab_observer_.Wait();
+    new_tab_run_loop_.Run();
     swap_observer_->Wait();
   }
 
-  bool OnTabAdded(const content::NotificationSource& source,
-                  const content::NotificationDetails& details) {
-    if (swap_observer_)
-      return true;
-    WebContents* new_tab = content::Details<WebContents>(details).ptr();
-    TabStripModel* tab_strip_model =
-        chrome::FindBrowserWithWebContents(new_tab)->tab_strip_model();
-    swap_observer_.reset(new NavigationOrSwapObserver(tab_strip_model,
-                                                      new_tab));
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted || swap_observer_)
+      return;
+
+    WebContents* new_tab = change.GetInsert()->contents[0].contents;
+    swap_observer_ =
+        std::make_unique<NavigationOrSwapObserver>(tab_strip_model, new_tab);
     swap_observer_->set_did_start_loading();
-    return true;
+
+    new_tab_run_loop_.Quit();
+  }
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override {
+    tab_strip_observer_.Add(browser->tab_strip_model());
   }
 
  private:
-  content::WindowedNotificationObserver new_tab_observer_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
+  base::RunLoop new_tab_run_loop_;
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabNavigationOrSwapObserver);
 };
 
 class FakeDevToolsClient : public content::DevToolsAgentHostClient {
@@ -1513,6 +1525,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
       "/prerender/prerender_page.html", FINAL_STATUS_RENDERER_CRASHED, 1);
 
   // Navigate to about:crash and then wait for the renderer to crash.
+  content::ScopedAllowRendererCrashes allow_renderer_crashes(
+      prerender->contents()->web_contents());
   ASSERT_TRUE(prerender->contents());
   ASSERT_TRUE(prerender->contents()->prerender_contents());
   prerender->contents()->prerender_contents()->GetController().
@@ -2059,16 +2073,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   // is partially controlled by the renderer, namely
   // ChromeContentRendererClient. This test instead relies on the Web
   // Store triggering such navigations.
-  GURL webstore_url = extension_urls::GetWebstoreLaunchURL();
-
-  // Mock out requests to the Web Store.
-  base::FilePath file(GetTestPath("prerender_page.html"));
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateMockInterceptorOnIO, webstore_url, file));
-
-  PrerenderTestURL(CreateClientRedirect(webstore_url.spec()),
-                   FINAL_STATUS_OPEN_URL, 1);
+  PrerenderTestURL(
+      CreateClientRedirect(extension_urls::GetWebstoreLaunchURL().spec()),
+      FINAL_STATUS_OPEN_URL, 1);
 }
 
 // Checks that deferred redirects in a synchronous XHR abort the prerender.
@@ -2214,20 +2221,18 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AutosigninInPrerenderer) {
   // Intercept the successful landing page where a signed in user ends up.
   // It should never load as the API is suppressed.
   GURL done_url = embedded_test_server()->GetURL("/password/done.html");
-  base::FilePath empty_file = ui_test_utils::GetTestFilePath(
-      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("empty.html")));
-  RequestCounter done_counter;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&CreateCountingInterceptorOnIO, done_url, empty_file,
-                     done_counter.AsWeakPtr()));
+  auto interceptor = std::make_unique<content::URLLoaderInterceptor>(
+      base::BindLambdaForTesting(
+          [&](content::URLLoaderInterceptor::RequestParams* params) {
+            EXPECT_NE(params->url_request.url, done_url);
+            return false;
+          }));
   // Loading may finish or be interrupted. The final result is important only.
   DisableLoadEventCheck();
   // TestPrenderContents is always created before the Autosignin JS can run, so
   // waiting for PrerenderContents to stop should be reliable.
   PrerenderTestURL("/password/autosignin.html",
                    FINAL_STATUS_CREDENTIAL_MANAGER_API, 0);
-  EXPECT_EQ(0, done_counter.count());
 }
 
 // When instantiated, mocks out the global text-to-speech engine with something
@@ -2341,17 +2346,6 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
     return GetLocationBar()->GetOmniboxView();
   }
 
-  void WaitForAutocompleteDone(OmniboxView* omnibox_view) {
-    AutocompleteController* controller =
-        omnibox_view->model()->popup_model()->autocomplete_controller();
-    while (!controller->done()) {
-      content::WindowedNotificationObserver ready_observer(
-          chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
-          content::Source<AutocompleteController>(controller));
-      ready_observer.Wait();
-    }
-  }
-
   predictors::AutocompleteActionPredictor* GetAutocompleteActionPredictor() {
     Profile* profile = current_browser()->profile();
     return predictors::AutocompleteActionPredictorFactory::GetForProfile(
@@ -2401,7 +2395,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   omnibox_view->SetUserText(base::UTF8ToUTF16(
       embedded_test_server()->GetURL("/empty.html?1").spec()));
   omnibox_view->OnAfterPossibleChange(true);
-  WaitForAutocompleteDone(omnibox_view);
+  ui_test_utils::WaitForAutocompleteDone(current_browser());
 
   // Fake an omnibox prerender for a different URL.
   std::unique_ptr<TestPrerender> prerender =
@@ -2415,7 +2409,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
   prerender->contents()->set_skip_final_checks(true);
 
   // Navigate to the URL entered.
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB, false);
+  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
 
   // Prerender should be running, but abandoned.
   EXPECT_TRUE(

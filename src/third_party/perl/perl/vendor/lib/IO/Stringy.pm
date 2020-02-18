@@ -1,7 +1,7 @@
 package IO::Stringy;
 
 use vars qw($VERSION);
-$VERSION = "2.110";
+$VERSION = "2.111";
 
 1;
 __END__
@@ -417,7 +417,7 @@ No real changes; just upgraded IO::Wrap to have a $VERSION string.
 
 =item Primary Maintainer
 
-David F. Skoll (F<dfs@roaringpenguin.com>).
+Dianne Skoll (F<dfs@roaringpenguin.com>).
 
 =item Original Author
 

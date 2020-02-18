@@ -27,14 +27,17 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "cc/tiles/decoded_image_tracker.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
+#include "cc/trees/frame_sequence_tracker.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -156,9 +159,15 @@ class LayerTreeHostImplClient {
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback) = 0;
 
+  // Returns whether the main-thread is expected to receive a BeginMainFrame.
+  virtual bool IsBeginMainFrameExpected() = 0;
+
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
+
+  virtual void NotifyPaintWorkletStateChange(
+      Scheduler::PaintWorkletState state) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() {}
@@ -187,6 +196,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     FrameData& operator=(const FrameData&) = delete;
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
+    uint32_t frame_token = 0;
+    // frame_token is populated by the LayerTreeHostImpl when submitted.
+
     std::vector<viz::SurfaceId> activation_dependencies;
     base::Optional<uint32_t> deadline_in_frames;
     bool use_default_lower_bound_deadline = false;
@@ -196,6 +208,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     bool has_no_damage = false;
     bool may_contain_video = false;
     viz::BeginFrameAck begin_frame_ack;
+    // The original BeginFrameArgs that triggered the latest update from the
+    // main thread.
+    viz::BeginFrameArgs origin_begin_main_frame_args;
+
+    // Union of visible rects of MirrorLayers in the frame, used to force damage
+    // on the surface.
+    gfx::Rect mirror_rect;
   };
 
   // A struct of data for a single UIResource, including the backing
@@ -275,8 +294,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void SetNeedsAnimateInput() override;
   bool IsCurrentlyScrollingViewport() const override;
   bool IsCurrentlyScrollingLayerAt(
-      const gfx::Point& viewport_point,
-      InputHandler::ScrollInputType type) const override;
+      const gfx::Point& viewport_point) const override;
   EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const override;
   InputHandler::TouchStartOrMoveEventListenerType
@@ -320,10 +338,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   virtual void WillSendBeginMainFrame() {}
-  virtual void DidSendBeginMainFrame() {}
+  virtual void DidSendBeginMainFrame(const viz::BeginFrameArgs& args);
   virtual void BeginMainFrameAborted(
       CommitEarlyOutReason reason,
-      std::vector<std::unique_ptr<SwapPromise>> swap_promises);
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises,
+      const viz::BeginFrameArgs& args);
   virtual void ReadyToCommit() {}  // For tests.
   virtual void BeginCommit();
   virtual void CommitComplete();
@@ -432,6 +451,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   DrawMode GetDrawMode() const;
 
+  void DidNotNeedBeginFrame();
+
   // TileManagerClient implementation.
   void NotifyReadyToActivate() override;
   void NotifyReadyToDraw() override;
@@ -471,7 +492,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
-  void DidNotNeedBeginFrame() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy) override;
@@ -506,6 +526,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                        int* max_msaa_samples,
                                        bool* supports_disable_msaa);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+  bool use_oop_rasterization() const { return use_oop_rasterization_; }
   bool use_msaa() const { return use_msaa_; }
 
   GpuRasterizationStatus gpu_rasterization_status() const {
@@ -710,19 +731,30 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   InputHandler::ScrollStatus TryScroll(const gfx::PointF& screen_space_point,
-                                       InputHandler::ScrollInputType type,
                                        const ScrollTree& scroll_tree,
                                        ScrollNode* scroll_node) const;
+
+  // Return all ScrollNode indices that have an associated layer with a non-fast
+  // region that intersects the point.
+  base::flat_set<int> NonFastScrollableNodes(
+      const gfx::PointF& device_viewport_point) const;
 
   // Returns true if a scroll offset animation is created and false if we scroll
   // by the desired amount without an animation.
   bool ScrollAnimationCreate(ScrollNode* scroll_node,
                              const gfx::Vector2dF& scroll_amount,
                              base::TimeDelta delayed_by);
+  bool AutoScrollAnimationCreate(ScrollNode* scroll_node,
+                                 const gfx::Vector2dF& scroll_amount,
+                                 float autoscroll_velocity);
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
+
   void SetPaintWorkletLayerPainter(
       std::unique_ptr<PaintWorkletLayerPainter> painter);
+  PaintWorkletLayerPainter* GetPaintWorkletLayerPainterForTesting() const {
+    return paint_worklet_painter_.get();
+  }
 
   // The viewport has two scroll nodes, corresponding to the visual and layout
   // viewports. However, when we compute the scroll chain we include only one
@@ -757,6 +789,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   CompositorFrameReportingController* compositor_frame_reporting_controller()
       const {
     return compositor_frame_reporting_controller_.get();
+  }
+
+  void set_pending_tree_fully_painted_for_testing(bool painted) {
+    pending_tree_fully_painted_ = painted;
   }
 
  protected:
@@ -810,6 +846,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::PointF& viewport_point,
       const gfx::Vector2dF& viewport_delta,
       ScrollTree* scroll_tree);
+  bool ScrollAnimationCreateInternal(ScrollNode* scroll_node,
+                                     const gfx::Vector2dF& delta,
+                                     base::TimeDelta delayed_by,
+                                     base::Optional<float> autoscroll_velocity);
 
   void CleanUpTileManagerResources();
   void CreateTileManagerResources();
@@ -823,6 +863,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // finishes or after the sync tree was created to invalidate content on the
   // impl thread.
   void UpdateSyncTreeAfterCommitOrImplSideInvalidation();
+
+  // Returns a job map for all 'dirty' PaintWorklets, e.g. PaintWorkletInputs
+  // that do not map to a PaintRecord.
+  PaintWorkletJobMap GatherDirtyPaintWorklets() const;
+
+  // Called when all PaintWorklet results are ready (i.e. have been painted) for
+  // the current pending tree.
+  void OnPaintWorkletResultsReady(PaintWorkletJobMap results);
+
+  // Called when the pending tree has been fully painted, i.e. all required data
+  // is available to raster the tree.
+  void NotifyPendingTreeFullyPainted();
 
   // Returns true if status changed.
   bool UpdateGpuRasterizationStatus();
@@ -862,7 +914,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   ScrollNode* FindScrollNodeForDeviceViewportPoint(
       const gfx::PointF& device_viewport_point,
-      InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
       uint32_t* main_thread_scrolling_reason) const;
@@ -910,7 +961,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // thread side to keep track of the frequency of scrolling with different
   // sources per page load. TODO(crbug.com/691886): Use GRC API to plumb the
   // scroll source info for Use Counters.
-  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type);
+  void UpdateScrollSourceInfo(InputHandler::ScrollInputType type,
+                              ScrollState* scroll_state);
 
   bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
   void ShowScrollbarsForImplScroll(ElementId element_id);
@@ -931,6 +983,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void AllocateLocalSurfaceId();
 
   const LayerTreeSettings settings_;
+
+  // This is set to true only if:
+  //  . The compositor is running single-threaded (i.e. there is no separate
+  //    compositor/impl thread).
+  //  . There is no scheduler (which means layer-update, composite, etc. steps
+  //    happen explicitly via. synchronous calls to appropriate functions).
+  // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
 
   const int default_color_space_id_ = gfx::ColorSpace::GetNextId();
@@ -1138,12 +1197,20 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // success) state.
   std::vector<std::pair<int, bool>> completed_image_decode_requests_;
 
-  // These are used to transfer usage of touch and wheel scrolls to the main
-  // thread.
+  // These are used to transfer usage of different types of scrolling to the
+  // main thread.
   bool has_scrolled_by_wheel_ = false;
   bool has_scrolled_by_touch_ = false;
+  bool has_scrolled_by_precisiontouchpad_ = false;
+  bool has_pinch_zoomed_ = false;
 
   ImplThreadPhase impl_thread_phase_ = ImplThreadPhase::IDLE;
+
+  // Tracks whether a BeginMainFrame is expected to be dispatched during an
+  // 'impl frame' (i.e. between WillBeginImplFrame() and DidFinishImplFrame()),
+  // and whether it was actually dispatched during the impl frame.
+  bool begin_main_frame_expected_during_impl_ = false;
+  bool begin_main_frame_sent_during_impl_ = false;
 
   ImageAnimationController image_animation_controller_;
 
@@ -1172,6 +1239,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Manages composited scrollbar hit testing.
   std::unique_ptr<ScrollbarController> scrollbar_controller_;
 
+  FrameSequenceTrackerCollection frame_trackers_;
+  std::unique_ptr<FrameSequenceTracker> pinch_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> scroll_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> compositor_animation_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> request_animation_frame_tracker_;
+  std::unique_ptr<FrameSequenceTracker> main_thread_animation_frame_tracker_;
+
   // Set to true when a scroll gesture being handled on the compositor has
   // ended. i.e. When a GSE has arrived and any ongoing scroll animation has
   // ended.
@@ -1187,9 +1261,18 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // once the animation is over.
   base::Optional<ScrollState> deferred_scroll_end_state_;
 
+  // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
+  // to the worklet thread via |paint_worklet_painter_|.
+  std::unique_ptr<PaintWorkletLayerPainter> paint_worklet_painter_;
+
+  // While PaintWorklet painting is ongoing the PendingTree is not yet fully
+  // painted and cannot be rastered or activated. This boolean tracks whether or
+  // not we are in that state.
+  bool pending_tree_fully_painted_ = false;
+
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.
-  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_;
+  base::WeakPtrFactory<LayerTreeHostImpl> weak_factory_{this};
 };
 
 }  // namespace cc

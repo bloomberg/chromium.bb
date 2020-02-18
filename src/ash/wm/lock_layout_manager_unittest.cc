@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/keyboard/ui/keyboard_controller.h"
 #include "ash/keyboard/ui/keyboard_ui.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
@@ -79,7 +79,7 @@ class LockLayoutManagerTest : public AshTestBase {
 
   // Show or hide the keyboard.
   void ShowKeyboard(bool show) {
-    auto* keyboard = keyboard::KeyboardController::Get();
+    auto* keyboard = keyboard::KeyboardUIController::Get();
     ASSERT_TRUE(keyboard->IsEnabled());
     if (show == keyboard->IsKeyboardVisible())
       return;
@@ -95,10 +95,10 @@ class LockLayoutManagerTest : public AshTestBase {
   }
 
   void SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior overscroll_behavior) {
-    auto config = keyboard::KeyboardController::Get()->keyboard_config();
+      keyboard::KeyboardOverscrollBehavior overscroll_behavior) {
+    auto config = keyboard::KeyboardUIController::Get()->keyboard_config();
     config.overscroll_behavior = overscroll_behavior;
-    keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+    keyboard::KeyboardUIController::Get()->UpdateKeyboardConfig(config);
   }
 };
 
@@ -229,9 +229,9 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
 
   // When virtual keyboard overscroll is enabled keyboard bounds should not
   // affect window bounds.
-  keyboard::KeyboardController* keyboard = keyboard::KeyboardController::Get();
-  SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kEnabled);
+  keyboard::KeyboardUIController* keyboard =
+      keyboard::KeyboardUIController::Get();
+  SetKeyboardOverscrollBehavior(keyboard::KeyboardOverscrollBehavior::kEnabled);
   ShowKeyboard(true);
   EXPECT_EQ(screen_bounds.ToString(), window->GetBoundsInScreen().ToString());
   gfx::Rect keyboard_bounds = keyboard->GetVisualBoundsInScreen();
@@ -244,7 +244,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // 1. Set up login screen defaults: VK overscroll disabled
   // 2. Show/hide keyboard, make sure that no stale keyboard bounds are cached.
   SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled);
+      keyboard::KeyboardOverscrollBehavior::kDisabled);
   ShowKeyboard(true);
   ShowKeyboard(false);
   display_manager()->SetDisplayRotation(
@@ -260,7 +260,7 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   // When virtual keyboard overscroll is disabled keyboard bounds do
   // affect window bounds.
   SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled);
+      keyboard::KeyboardOverscrollBehavior::kDisabled);
   ShowKeyboard(true);
 
   primary_display = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -271,10 +271,9 @@ TEST_F(LockLayoutManagerTest, KeyboardBounds) {
   EXPECT_EQ(target_bounds.ToString(), window->GetBoundsInScreen().ToString());
   ShowKeyboard(false);
 
-  SetKeyboardOverscrollBehavior(
-      keyboard::mojom::KeyboardOverscrollBehavior::kDefault);
+  SetKeyboardOverscrollBehavior(keyboard::KeyboardOverscrollBehavior::kDefault);
 
-  keyboard->SetContainerType(keyboard::mojom::ContainerType::kFloating,
+  keyboard->SetContainerType(keyboard::ContainerType::kFloating,
                              base::nullopt /* target_bounds */,
                              base::BindOnce([](bool success) {}));
   ShowKeyboard(true);
@@ -302,7 +301,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
 
   // Maximize the window with as the restore bounds is inside 2nd display but
@@ -363,7 +362,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
 
   // Restore window with bounds in the second display, the window should be
   // shown in the primary display.
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
 
   window_state->Restore();

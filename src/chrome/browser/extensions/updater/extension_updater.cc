@@ -147,8 +147,7 @@ ExtensionUpdater::ExtensionUpdater(
       profile_(profile),
       next_request_id_(0),
       crx_install_is_running_(false),
-      extension_cache_(cache),
-      weak_ptr_factory_(this) {
+      extension_cache_(cache) {
   DCHECK_LE(frequency_seconds, kMaxUpdateFrequencySeconds);
 #if defined(NDEBUG)
   // In Release mode we enforce that update checks don't happen too often.
@@ -273,7 +272,7 @@ void ExtensionUpdater::AddToDownloader(
     // An extension might be overwritten by policy, and have its update url
     // changed. Make sure existing extensions aren't fetched again, if a
     // pending fetch for an extension with the same id already exists.
-    if (!base::ContainsValue(pending_ids, extension_id)) {
+    if (!base::Contains(pending_ids, extension_id)) {
       if (update_service_->CanUpdate(extension_id)) {
         update_check_params->update_info[extension_id] = ExtensionUpdateData();
       } else if (downloader_->AddExtension(extension, request_id,
@@ -642,7 +641,7 @@ void ExtensionUpdater::NotifyStarted() {
 }
 
 void ExtensionUpdater::OnUpdateServiceFinished(int request_id) {
-  DCHECK(base::ContainsKey(requests_in_progress_, request_id));
+  DCHECK(base::Contains(requests_in_progress_, request_id));
   InProgressCheck& request = requests_in_progress_[request_id];
   DCHECK(request.awaiting_update_service);
   request.awaiting_update_service = false;
@@ -650,7 +649,7 @@ void ExtensionUpdater::OnUpdateServiceFinished(int request_id) {
 }
 
 void ExtensionUpdater::NotifyIfFinished(int request_id) {
-  DCHECK(base::ContainsKey(requests_in_progress_, request_id));
+  DCHECK(base::Contains(requests_in_progress_, request_id));
   InProgressCheck& request = requests_in_progress_[request_id];
   if (!request.in_progress_ids_.empty() || request.awaiting_update_service)
     return;  // This request is not done yet.

@@ -6,12 +6,13 @@ module ui.ozone.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
-import "ui/display/mojo/display_constants.mojom";
-import "ui/display/mojo/display_mode.mojom";
-import "ui/display/mojo/display_snapshot.mojom";
-import "ui/display/mojo/gamma_ramp_rgb_entry.mojom";
+import "ui/display/mojom/display_constants.mojom";
+import "ui/display/mojom/display_mode.mojom";
+import "ui/display/mojom/display_snapshot.mojom";
+import "ui/display/mojom/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
+import "ui/ozone/public/interfaces/device_cursor.mojom";
 import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
 
 
@@ -20,10 +21,6 @@ import "ui/ozone/public/interfaces/overlay_surface_candidate.mojom";
 // All functions in DrmDevice are implemented by the lower privilege viz
 // process.
 interface DrmDevice {
-  // Starts the DRM service and returns true on success.
-  [Sync]
-  StartDrmDevice() => (bool success);
-
   // Creates scanout capable DRM buffers to back |widget|.
   CreateWindow(gfx.mojom.AcceleratedWidget widget);
 
@@ -86,5 +83,10 @@ interface DrmDevice {
           (gfx.mojom.AcceleratedWidget widget,
           array<ui.ozone.mojom.OverlaySurfaceCandidate> candidates,
           array<ui.ozone.mojom.OverlayStatus> status);
+
+  // Provides a DeviceCursor interface. The provided interface needs to be
+  // associated because the AcceleratedWidgets referenced by its methods are
+  // registered via CreateWindow() in this interface.
+  GetDeviceCursor(associated DeviceCursor& cursor);
 };
 

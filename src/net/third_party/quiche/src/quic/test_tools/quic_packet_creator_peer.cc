@@ -19,7 +19,9 @@ bool QuicPacketCreatorPeer::SendVersionInPacket(QuicPacketCreator* creator) {
 void QuicPacketCreatorPeer::SetSendVersionInPacket(
     QuicPacketCreator* creator,
     bool send_version_in_packet) {
-  if (creator->framer_->transport_version() != QUIC_VERSION_99) {
+  ParsedQuicVersion version = creator->framer_->version();
+  if (!VersionHasIetfQuicFrames(version.transport_version) &&
+      version.handshake_protocol != PROTOCOL_TLS1_3) {
     creator->send_version_in_packet_ = send_version_in_packet;
     return;
   }
@@ -135,6 +137,12 @@ EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
 // static
 QuicFramer* QuicPacketCreatorPeer::framer(QuicPacketCreator* creator) {
   return creator->framer_;
+}
+
+// static
+void QuicPacketCreatorPeer::EnableGetPacketHeaderSizeBugFix(
+    QuicPacketCreator* creator) {
+  creator->fix_get_packet_header_size_ = true;
 }
 
 }  // namespace test

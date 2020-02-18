@@ -36,7 +36,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
     const sync_pb::PrinterSpecifics& specifics) {
   auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_printer() = specifics;
-  entity_data->non_unique_name =
+  entity_data->name =
       specifics.display_name().empty() ? "PRINTER" : specifics.display_name();
   return entity_data;
 }
@@ -147,10 +147,10 @@ class PrintersSyncBridge::StoreProxy {
 
 PrintersSyncBridge::PrintersSyncBridge(
     syncer::OnceModelTypeStoreFactory callback,
-    const base::RepeatingClosure& error_callback)
-    : ModelTypeSyncBridge(
-          std::make_unique<ClientTagBasedModelTypeProcessor>(syncer::PRINTERS,
-                                                             error_callback)),
+    base::RepeatingClosure error_callback)
+    : ModelTypeSyncBridge(std::make_unique<ClientTagBasedModelTypeProcessor>(
+          syncer::PRINTERS,
+          std::move(error_callback))),
       store_delegate_(std::make_unique<StoreProxy>(this, std::move(callback))),
       observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
@@ -188,7 +188,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     // appropriate metadata.
     for (const auto& entry : all_data_) {
       const std::string& local_entity_id = entry.first;
-      if (!base::ContainsKey(sync_entity_ids, local_entity_id)) {
+      if (!base::Contains(sync_entity_ids, local_entity_id)) {
         // Only local objects which were not updated are uploaded.  Objects for
         // which there was a remote copy are overwritten.
         change_processor()->Put(local_entity_id,

@@ -88,7 +88,7 @@ newAccountsController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -154,7 +154,7 @@ newSyncEncryptionPassphraseController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -171,9 +171,9 @@ newSavePasswordsController:(ios::ChromeBrowserState*)browserState
                         delegate:delegate];
   [controller navigationItem].rightBarButtonItem = [nc doneButton];
 
-  // Make sure the close button is always present, as the Save Passwords screen
+  // Make sure the cancel button is always present, as the Save Passwords screen
   // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -195,9 +195,9 @@ newImportDataController:(ios::ChromeBrowserState*)browserState
                     browserState:browserState
                         delegate:delegate];
 
-  // Make sure the close button is always present, as the Save Passwords screen
+  // Make sure the cancel button is always present, as the Save Passwords screen
   // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -215,9 +215,9 @@ newAutofillProfilleController:(ios::ChromeBrowserState*)browserState
                     browserState:browserState
                         delegate:delegate];
 
-  // Make sure the close button is always present, as the Autofill screen
+  // Make sure the cancel button is always present, as the Autofill screen
   // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -235,9 +235,9 @@ newAutofillCreditCardController:(ios::ChromeBrowserState*)browserState
                     browserState:browserState
                         delegate:delegate];
 
-  // Make sure the close button is always present, as the Autofill screen
+  // Make sure the cancel button is always present, as the Autofill screen
   // isn't just shown from Settings.
-  [controller navigationItem].leftBarButtonItem = [nc closeButton];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
   return nc;
 }
 
@@ -249,9 +249,13 @@ initWithRootViewController:(UIViewController*)rootViewController
                   delegate:(id<SettingsNavigationControllerDelegate>)delegate {
   DCHECK(browserState);
   DCHECK(!browserState->IsOffTheRecord());
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  self = [super initWithRootViewController:rootViewController];
+#else
   self = rootViewController
              ? [super initWithRootViewController:rootViewController]
              : [super init];
+#endif
   if (self) {
     mainBrowserState_ = browserState;
     delegate_ = delegate;
@@ -263,6 +267,13 @@ initWithRootViewController:(UIViewController*)rootViewController
         !unified_consent::IsUnifiedConsentFeatureEnabled();
     [self setModalPresentationStyle:UIModalPresentationFormSheet];
     [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+    // TODO(crbug.com/980037) Remove this and properly handle swipe to dismiss
+    // settings.
+    if (@available(iOS 13, *)) {
+      self.modalInPresentation = YES;
+    }
+#endif
   }
   return self;
 }
@@ -338,14 +349,14 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 #pragma mark - Private
 
-// Creates an autoreleased "Cancel" button that closes the settings when tapped.
-- (UIBarButtonItem*)closeButton {
-  UIBarButtonItem* closeButton = [[UIBarButtonItem alloc]
+// Creates an autoreleased "Cancel" button that cancels the settings when
+// tapped.
+- (UIBarButtonItem*)cancelButton {
+  UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(closeSettings)];
-  closeButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_CLOSE);
-  return closeButton;
+  return cancelButton;
 }
 
 // Pushes a GoogleServicesSettingsViewController on this settings navigation

@@ -12,14 +12,13 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
@@ -76,7 +75,7 @@ class OverviewWindowDragTest
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
     int additional_browsers = std::get<0>(GetParam()) - 1;
     bool blank_page = std::get<1>(GetParam());
@@ -157,10 +156,6 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
   ash::ShellTestApi().WaitForOverviewAnimationState(
       ash::OverviewAnimationState::kEnterAnimationComplete);
 
-  content::WindowedNotificationObserver waiter(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(chrome::FindLastActive()));
-
   gfx::Point start_point = GetStartLocation(GetDisplaySize(browser_window));
   gfx::Point end_point(start_point);
   end_point.set_y(0);
@@ -172,8 +167,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DISABLED_DragToClose) {
       /*touch=*/true);
   generator.Wait();
 
-  // Wait for the window to close.
-  waiter.Wait();
+  ui_test_utils::WaitForBrowserToClose(chrome::FindLastActive());
 }
 
 IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
@@ -197,13 +191,8 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, DragToSnap) {
   generator.Wait();
 
   Browser* active = chrome::FindLastActive();
-  LeftSnapWaiter waiter(
-      features::IsUsingWindowService()
-          ? active->window()->GetNativeWindow()->GetRootWindow()
-          : active->window()->GetNativeWindow());
-
   // Wait for the window to be snapped.
-  waiter.Wait();
+  LeftSnapWaiter(active->window()->GetNativeWindow()).Wait();
 }
 
 INSTANTIATE_TEST_SUITE_P(,

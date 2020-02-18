@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <deque>
 #include <vector>
 
@@ -78,6 +79,8 @@ class PccNetworkController : public NetworkControllerInterface {
   NetworkControlUpdate OnRoundTripTimeUpdate(RoundTripTimeUpdate msg) override;
   NetworkControlUpdate OnTransportLossReport(TransportLossReport msg) override;
   NetworkControlUpdate OnReceivedPacket(ReceivedPacket msg) override;
+  NetworkControlUpdate OnNetworkStateEstimate(
+      NetworkStateEstimate msg) override;
 
  private:
   void UpdateSendingRateAndMode();

@@ -46,6 +46,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
 
  private:
   void SwapBuffersCallback(const std::vector<ui::LatencyInfo>& latency_info,
+                           const base::TimeTicks& swap_time,
                            const gfx::Size& pixel_size);
   void UpdateVSyncCallback(const base::TimeTicks timebase,
                            const base::TimeDelta interval);
@@ -58,7 +59,8 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   bool needs_swap_size_notifications_ = false;
 #endif
 
-  base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_;
+  base::WeakPtrFactory<SoftwareBrowserCompositorOutputSurface> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareBrowserCompositorOutputSurface);
 };

@@ -14,6 +14,7 @@ Polymer({
   properties: {
     advancedOpened: {
       type: Boolean,
+      value: false,
       notify: true,
     },
 
@@ -38,6 +39,11 @@ Polymer({
     }
 
     this.setSelectedUrl_('');  // Nothing is selected.
+  },
+
+  /** @private */
+  onAdvancedButtonToggle_: function() {
+    this.advancedOpened = !this.advancedOpened;
   },
 
   /**

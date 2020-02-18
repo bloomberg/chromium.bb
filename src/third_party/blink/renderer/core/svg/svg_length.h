@@ -21,6 +21,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_H_
 
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_length_context.h"
@@ -64,9 +65,11 @@ class SVGLength final : public SVGPropertyBase {
   SVGLength* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;
 
-  CSSPrimitiveValue::UnitType TypeWithCalcResolved() const {
-    return value_->TypeWithCalcResolved();
+  CSSPrimitiveValue::UnitType NumericLiteralType() const {
+    DCHECK(value_->IsNumericLiteralValue());
+    return To<CSSNumericLiteralValue>(*value_).GetType();
   }
+
   void SetUnitType(CSSPrimitiveValue::UnitType);
   SVGLengthMode UnitMode() const {
     return static_cast<SVGLengthMode>(unit_mode_);
@@ -80,9 +83,7 @@ class SVGLength final : public SVGPropertyBase {
   void SetValueAsNumber(float);
 
   float ValueInSpecifiedUnits() const { return value_->GetFloatValue(); }
-  void SetValueInSpecifiedUnits(float value) {
-    value_ = CSSPrimitiveValue::Create(value, value_->TypeWithCalcResolved());
-  }
+  void SetValueInSpecifiedUnits(float value);
 
   const CSSPrimitiveValue& AsCSSPrimitiveValue() const { return *value_; }
 
@@ -106,12 +107,12 @@ class SVGLength final : public SVGPropertyBase {
                                const SVGLengthContext&);
 
   // Helper functions
-  bool IsRelative() const {
-    return CSSPrimitiveValue::IsRelativeUnit(value_->TypeWithCalcResolved());
-  }
+  bool IsRelative() const;
   bool IsFontRelative() const { return value_->IsFontRelativeLength(); }
   bool IsCalculated() const { return value_->IsCalculated(); }
+  bool IsPercentage() const { return value_->IsPercentage(); }
 
+  bool IsNegativeNumericLiteral() const;
   bool IsZero() const { return value_->GetFloatValue() == 0; }
 
   static SVGLengthMode LengthModeForAnimatedLengthAttribute(

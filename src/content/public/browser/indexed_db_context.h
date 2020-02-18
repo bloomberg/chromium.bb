@@ -33,7 +33,7 @@ struct StorageUsageInfo;
 class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
  public:
   // Only call the below methods by posting to this TaskRunner.
-  virtual base::SequencedTaskRunner* TaskRunner() const = 0;
+  virtual base::SequencedTaskRunner* TaskRunner() = 0;
 
   // Methods used in response to QuotaManager requests.
   virtual std::vector<StorageUsageInfo> GetAllOriginsInfo() = 0;
@@ -47,8 +47,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
                               IndexedDBContext* dest_context) = 0;
 
   // Get the file name of the local storage file for the given origin.
-  virtual base::FilePath GetFilePathForTesting(
-      const url::Origin& origin) const = 0;
+  virtual base::FilePath GetFilePathForTesting(const url::Origin& origin) = 0;
 
   // Forget the origins/sizes read from disk.
   virtual void ResetCachesForTesting() = 0;

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "core/fxge/render_defines.h"
 #include "xfa/fwl/cfwl_edit.h"
 #include "xfa/fwl/cfwl_eventmouse.h"
 #include "xfa/fwl/cfwl_messagekey.h"
@@ -17,6 +18,7 @@
 #include "xfa/fwl/cfwl_messagesetfocus.h"
 #include "xfa/fwl/cfwl_picturebox.h"
 #include "xfa/fwl/cfwl_widgetmgr.h"
+#include "xfa/fwl/fwl_widgetdef.h"
 #include "xfa/fxfa/cxfa_ffapp.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffdocview.h"
@@ -497,7 +499,9 @@ bool CXFA_FFField::OnRButtonDblClk(uint32_t dwFlags, const CFX_PointF& point) {
 }
 
 bool CXFA_FFField::OnSetFocus(CXFA_FFWidget* pOldWidget) {
-  CXFA_FFWidget::OnSetFocus(pOldWidget);
+  if (!CXFA_FFWidget::OnSetFocus(pOldWidget))
+    return false;
+
   if (!m_pNormalWidget)
     return false;
 
@@ -509,15 +513,13 @@ bool CXFA_FFField::OnSetFocus(CXFA_FFWidget* pOldWidget) {
 }
 
 bool CXFA_FFField::OnKillFocus(CXFA_FFWidget* pNewWidget) {
-  if (!m_pNormalWidget)
-    return CXFA_FFWidget::OnKillFocus(pNewWidget);
-
-  CFWL_MessageKillFocus ms(nullptr, m_pNormalWidget.get());
-  TranslateFWLMessage(&ms);
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
-  InvalidateRect();
-  CXFA_FFWidget::OnKillFocus(pNewWidget);
-  return true;
+  if (m_pNormalWidget) {
+    CFWL_MessageKillFocus ms(nullptr, m_pNormalWidget.get());
+    TranslateFWLMessage(&ms);
+    GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
+    InvalidateRect();
+  }
+  return CXFA_FFWidget::OnKillFocus(pNewWidget);
 }
 
 bool CXFA_FFField::OnKeyDown(uint32_t dwKeyCode, uint32_t dwFlags) {
@@ -547,7 +549,7 @@ bool CXFA_FFField::OnKeyUp(uint32_t dwKeyCode, uint32_t dwFlags) {
 bool CXFA_FFField::OnChar(uint32_t dwChar, uint32_t dwFlags) {
   if (!GetDoc()->GetXFADoc()->IsInteractive())
     return false;
-  if (dwChar == FWL_VKEY_Tab)
+  if (dwChar == XFA_FWL_VKEY_Tab)
     return true;
   if (!m_pNormalWidget)
     return false;

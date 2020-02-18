@@ -10,13 +10,12 @@
 
 #include "include/core/SkMatrix.h"
 #include "include/core/SkRefCnt.h"
-#include "include/private/GrColor.h"
+#include "src/gpu/GrColor.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrNonAtomicRef.h"
 #include "src/gpu/GrPendingIOResource.h"
 #include "src/gpu/GrProcessorSet.h"
 #include "src/gpu/GrProgramDesc.h"
-#include "src/gpu/GrRect.h"
 #include "src/gpu/GrScissorState.h"
 #include "src/gpu/GrUserStencilSettings.h"
 #include "src/gpu/GrWindowRectsState.h"
@@ -24,6 +23,7 @@
 #include "src/gpu/effects/GrDisableColorXP.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/effects/generated/GrSimpleTextureEffect.h"
+#include "src/gpu/geometry/GrRect.h"
 
 class GrAppliedClip;
 class GrOp;
@@ -59,8 +59,8 @@ public:
         InputFlags fInputFlags = InputFlags::kNone;
         const GrUserStencilSettings* fUserStencil = &GrUserStencilSettings::kUnused;
         const GrCaps* fCaps = nullptr;
-        GrResourceProvider* fResourceProvider = nullptr;
         GrXferProcessor::DstProxy fDstProxy;
+        GrSwizzle fOutputSwizzle;
     };
 
     /**
@@ -96,7 +96,15 @@ public:
      * must be "Porter Duff" (<= kLastCoeffMode). If using GrScissorTest::kEnabled, the caller must
      * specify a scissor rectangle through the DynamicState struct.
      **/
-    GrPipeline(GrScissorTest, SkBlendMode, InputFlags = InputFlags::kNone,
+    GrPipeline(GrScissorTest scissor, SkBlendMode blend, const GrSwizzle& outputSwizzle,
+               InputFlags flags = InputFlags::kNone,
+               const GrUserStencilSettings* stencil = &GrUserStencilSettings::kUnused)
+            : GrPipeline(scissor, GrPorterDuffXPFactory::MakeNoCoverageXP(blend), outputSwizzle,
+                         flags, stencil) {
+    }
+
+    GrPipeline(GrScissorTest, sk_sp<const GrXferProcessor>, const GrSwizzle& outputSwizzle,
+               InputFlags = InputFlags::kNone,
                const GrUserStencilSettings* = &GrUserStencilSettings::kUnused);
 
     GrPipeline(const InitArgs&, GrProcessorSet&&, GrAppliedClip&&);
@@ -136,7 +144,8 @@ public:
         if (offset) {
             *offset = fDstTextureOffset;
         }
-        return fDstTextureProxy.get();
+
+        return fDstTextureProxy ? fDstTextureProxy->asTextureProxy() : nullptr;
     }
 
     GrTexture* peekDstTexture(SkIPoint* offset = nullptr) const {
@@ -181,15 +190,18 @@ public:
     bool isStencilEnabled() const {
         return SkToBool(fFlags & Flags::kStencilEnabled);
     }
-    bool isBad() const { return SkToBool(fFlags & Flags::kIsBad); }
+    SkDEBUGCODE(bool isBad() const { return SkToBool(fFlags & Flags::kIsBad); })
 
     GrXferBarrierType xferBarrierType(GrTexture*, const GrCaps&) const;
 
     // Used by Vulkan and Metal to cache their respective pipeline objects
     uint32_t getBlendInfoKey() const;
 
+    const GrSwizzle& outputSwizzle() const { return fOutputSwizzle; }
+
 private:
-    void markAsBad() { fFlags |= Flags::kIsBad; }
+
+    SkDEBUGCODE(void markAsBad() { fFlags |= Flags::kIsBad; })
 
     static constexpr uint8_t kLastInputFlag = (uint8_t)InputFlags::kSnapVerticesToPixelCenters;
 
@@ -198,17 +210,18 @@ private:
         kHasStencilClip = (kLastInputFlag << 1),
         kStencilEnabled = (kLastInputFlag << 2),
         kScissorEnabled = (kLastInputFlag << 3),
+#ifdef SK_DEBUG
         kIsBad = (kLastInputFlag << 4),
+#endif
     };
 
     GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(Flags);
 
     friend bool operator&(Flags, InputFlags);
 
-    using DstTextureProxy = GrPendingIOResource<GrTextureProxy, kRead_GrIOType>;
     using FragmentProcessorArray = SkAutoSTArray<8, std::unique_ptr<const GrFragmentProcessor>>;
 
-    DstTextureProxy fDstTextureProxy;
+    GrProxyPendingIO fDstTextureProxy;
     SkIPoint fDstTextureOffset;
     GrWindowRectsState fWindowRectsState;
     const GrUserStencilSettings* fUserStencilSettings;
@@ -218,6 +231,8 @@ private:
 
     // This value is also the index in fFragmentProcessors where coverage processors begin.
     int fNumColorProcessors;
+
+    GrSwizzle fOutputSwizzle;
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrPipeline::InputFlags);

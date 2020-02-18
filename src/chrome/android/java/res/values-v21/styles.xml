@@ -22,7 +22,36 @@
         <!-- Overriding alertDialogTheme pre-v21 with our custom AlertDialog theme causes bad visual
              states on ListPreference because we don't use the support library ListPreference. -->
         <item name="android:alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
+        <!-- TODO(crbug.com/967022): Clean up the unnecessary preference alert dialog styles once
+             all dialog preferences are migrated to the support library. -->
+        <item name="alertDialogTheme">@style/Theme.Chromium.Preferences.AlertDialog</item>
+        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
+
+    <style name="Theme.Chromium.PreferenceFragment">
+        <item name="android:divider">?android:attr/listDivider</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragmentList">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceLayoutCompat">
+        <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
+        <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceDescriptionCompat">
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceWidgetCompat">
+        <item name="android:paddingStart">16dp</item>
+    </style>
+
     <style name="PreferenceCategoryWithButtonStyle">
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">4dp</item>
@@ -121,4 +150,11 @@
              half is way brighter than the bottom), so we use our own. -->
         <item name="android:textCursorDrawable">@drawable/text_cursor_lowend</item>
     </style>
-</resources>
+
+    <!-- This overrides the v17 style in order to use button_borderless_compat foreground -->
+    <!-- Card for General Use -->
+    <style name="Card">
+        <item name="android:background">@drawable/hairline_border_card_background</item>
+        <item name="android:foreground">@drawable/button_borderless_compat</item>
+    </style>
+  </resources>

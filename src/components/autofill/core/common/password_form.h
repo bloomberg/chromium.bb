@@ -14,13 +14,10 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
-#include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace autofill {
-
-enum class SubmissionSource;
 
 // Pair of a value and the name of the element that contained this value.
 using ValueElementPair = std::pair<base::string16, base::string16>;
@@ -149,9 +146,7 @@ struct PasswordForm {
   // This member is populated in cases where we there are multiple input
   // elements that could possibly be the username. Used when our heuristics for
   // determining the username are incorrect. Optional.
-  //
-  // When parsing an HTML form, this is typically empty.
-  ValueElementVector other_possible_usernames;
+  ValueElementVector all_possible_usernames;
 
   // This member is populated in cases where we there are multiple possible
   // password values. Used in pending password state, to populate a dropdown
@@ -287,15 +282,13 @@ struct PasswordForm {
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is not persisted and filled
   // out only for submitted forms.
-  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
+  mojom::SubmissionIndicatorEvent submission_event =
+      mojom::SubmissionIndicatorEvent::NONE;
 
   // True iff heuristics declined this form for normal saving or filling (e.g.
   // only credit card fields were found). But this form can be saved or filled
   // only with the fallback.
   bool only_for_fallback = false;
-
-  // True iff this is Gaia form which should be skipped on saving.
-  bool is_gaia_with_skip_save_password_form = false;
 
   // True iff the new password field was found with server hints or autocomplete
   // attributes. Only set on form parsing for filling, and not persisted. Used

@@ -8,76 +8,126 @@ source_set("platform") {
   sources = [
     "api/event_waiter.cc",
     "api/event_waiter.h",
-    "api/logging_util.cc",
+    "api/internal/trace_logging_internal.cc",
+    "api/internal/trace_logging_internal.h",
+    "api/internal/trace_logging_macros_internal.h",
     "api/logging.h",
+    "api/logging_util.cc",
     "api/network_interface.cc",
     "api/network_interface.h",
+    "api/network_runner.h",
+    "api/network_waiter.h",
+    "api/scoped_wake_lock.cc",
+    "api/scoped_wake_lock.h",
     "api/socket.h",
     "api/task_runner.h",
-    "api/task_runner_factory.h",
     "api/time.h",
-    "base/time.cc",
+    "api/tls_socket.h",
+    "api/tls_socket_creds.h",
+    "api/trace_logging.h",
+    "api/trace_logging_platform.cc",
+    "api/trace_logging_platform.h",
+    "api/trace_logging_types.h",
+    "api/udp_packet.h",
+    "api/udp_read_callback.h",
+    "api/udp_socket.cc",
+    "api/udp_socket.h",
+    "base/error.cc",
+    "base/error.h",
+    "base/ip_address.cc",
+    "base/ip_address.h",
+    "base/location.cc",
+    "base/location.h",
+    "impl/ssl_context.cc",
+    "impl/ssl_context.h",
   ]
 
   public_deps = [
-    "../osp_base",
     "../third_party/abseil",
+    "../third_party/boringssl",
+    "../util",
   ]
-
-  allow_circular_includes_from = [ "../osp_base" ]
 
   configs += [ "../build:allow_build_from_embedder" ]
 
   if (!build_with_chromium) {
     sources += [
-      "base/event_loop.cc",
-      "base/event_loop.h",
-      "base/task_runner_factory.cc",
-      "base/task_runner_impl.cc",
-      "base/task_runner_impl.h",
+      "impl/event_loop.cc",
+      "impl/event_loop.h",
+      "impl/network_reader.cc",
+      "impl/network_reader.h",
+      "impl/network_runner.cc",
+      "impl/network_runner.h",
+      "impl/task_runner.cc",
+      "impl/task_runner.h",
+      "impl/text_trace_logging_platform.cc",
+      "impl/text_trace_logging_platform.h",
+      "impl/time.cc",
     ]
 
     if (is_linux) {
-      sources += [ "linux/network_interface.cc" ]
+      sources += [ "impl/network_interface_linux.cc" ]
     } else if (is_mac) {
       defines = [
         # Required, to use the new IPv6 Sockets options introduced by RFC 3542.
         "__APPLE_USE_RFC_3542",
       ]
 
-      sources += [ "mac/network_interface.cc" ]
+      sources += [ "impl/network_interface_mac.cc" ]
     }
 
     if (is_posix) {
       sources += [
-        "posix/event_waiter.cc",
-        "posix/socket.cc",
-        "posix/socket.h",
+        "impl/event_waiter_posix.cc",
+        "impl/network_waiter_posix.cc",
+        "impl/network_waiter_posix.h",
+        "impl/scoped_pipe.h",
+        "impl/scoped_wake_lock_posix.cc",
+        "impl/scoped_wake_lock_posix.h",
+        "impl/udp_socket_posix.cc",
+        "impl/udp_socket_posix.h",
       ]
     }
 
     deps = [
-      ":default_logger"
+      ":default_logger",
     ]
   }
 }
 
+source_set("test") {
+  testonly = true
+  sources = [
+    "test/fake_clock.cc",
+    "test/fake_clock.h",
+    "test/fake_task_runner.cc",
+    "test/fake_task_runner.h",
+    "test/mock_udp_socket.cc",
+    "test/mock_udp_socket.h",
+  ]
+
+  configs += [ "../build:allow_build_from_embedder" ]
+
+  deps = [
+    ":platform",
+    "../third_party/googletest:gmock",
+  ]
+}
+
 source_set("default_logger") {
   sources = [
-    "base/logging.cc",
+    "impl/logging.cc",
   ]
 
   if (is_posix) {
-    sources += [
-      "posix/log_initializer.cc",
-    ]
+    sources += [ "impl/log_initializer_posix.cc" ]
   }
 
   configs += [ "../build:allow_build_from_embedder" ]
 
   deps = [
-    "../osp_base",
     "../third_party/abseil",
+    "../util",
   ]
 }
 
@@ -85,20 +135,35 @@ source_set("platform_unittests") {
   testonly = true
 
   sources = [
+    "api/internal/trace_logging_internal_unittest.cc",
     "api/time_unittest.cc",
+    "api/trace_logging_unittest.cc",
+    "api/udp_socket_unittest.cc",
+    "base/error_unittest.cc",
+    "base/ip_address_unittest.cc",
+    "base/location_unittest.cc",
+    "impl/ssl_context_unittest.cc",
   ]
 
-  # The unit tests in base/ assume the standalone implementation is being used.
+  # The unit tests in impl/ assume the standalone implementation is being used.
   # Exclude them if an embedder is providing the implementation.
   if (!build_with_chromium) {
     sources += [
-      "base/task_runner_unittest.cc",
-      "base/time_unittest.cc",
+      "impl/network_reader_unittest.cc",
+      "impl/task_runner_unittest.cc",
+      "impl/time_unittest.cc",
     ]
+    if (is_posix) {
+      sources += [
+        "impl/network_waiter_posix_unittest.cc",
+        "impl/scoped_pipe_unittest.cc",
+      ]
+    }
   }
 
   deps = [
     ":platform",
+    "../third_party/googletest:gmock",
     "../third_party/googletest:gtest",
   ]
 

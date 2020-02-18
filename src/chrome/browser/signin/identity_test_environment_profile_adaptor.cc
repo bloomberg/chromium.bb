@@ -7,8 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/identity_manager_wrapper.h"
 
 // static
 std::unique_ptr<TestingProfile> IdentityTestEnvironmentProfileAdaptor::
@@ -74,7 +72,7 @@ IdentityTestEnvironmentProfileAdaptor::BuildIdentityManagerForTests(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
+  return signin::IdentityTestEnvironment::BuildIdentityManagerForTests(
       ChromeSigninClientFactory::GetForProfile(profile), profile->GetPrefs(),
       profile->GetPath());
 }

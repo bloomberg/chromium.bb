@@ -10,11 +10,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_range.h"
@@ -60,7 +61,13 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
 
-  static const uint64_t kFrameIndexStart = 2;
+  static constexpr uint64_t kFrameIndexStart = 2;
+
+  // Determines maximum number of allowed undrawn frames. Once this limit is
+  // exceeded, we throttle sBeginFrames to 1 per second. Limit must be at least
+  // 1, as the relative ordering of renderer / browser frame submissions allows
+  // us to have one outstanding undrawn frame under normal operation.
+  static constexpr uint32_t kUndrawnFrameLimit = 3;
 
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
@@ -83,11 +90,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
-  const PresentationFeedbackMap& presentation_feedbacks() {
-    return presentation_feedbacks_;
+  const FrameTimingDetailsMap& timing_details() {
+    return frame_timing_details_;
   }
 
-  PresentationFeedbackMap TakePresentationFeedbacks() WARN_UNUSED_RESULT;
+  FrameTimingDetailsMap TakeFrameTimingDetailsMap() WARN_UNUSED_RESULT;
 
   // Viz hit-test setup is only called when |is_root_| is true (except on
   // android webview).
@@ -137,7 +144,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       base::Optional<HitTestRegionList> hit_test_region_list = base::nullopt,
       uint64_t submit_time = 0);
   // Returns false if the notification was not valid (a duplicate).
-  bool DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  bool DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const SharedBitmapId& id);
   void DidDeleteSharedBitmap(const SharedBitmapId& id);
 
@@ -288,7 +295,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
   AggregatedDamageCallback aggregated_damage_callback_;
 
-  uint64_t last_frame_index_ = kFrameIndexStart;
+  uint64_t last_frame_index_ = kFrameIndexStart - 1;
 
   // The video capture clients hooking into this instance to observe frame
   // begins and damage, and then make CopyOutputRequests on the appropriate
@@ -317,7 +324,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  PresentationFeedbackMap presentation_feedbacks_;
+  FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 
   base::TimeTicks last_frame_time_;
@@ -331,7 +338,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // The set of surfaces owned by this frame sink that have pending frame.
   base::flat_set<Surface*> pending_surfaces_;
 
-  base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_;
+  base::WeakPtrFactory<CompositorFrameSinkSupport> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameSinkSupport);
 };

@@ -402,7 +402,7 @@ bool InsertListCommand::DoApplyForSingleParagraph(
                              list_element);
       Element* outer_block =
           first_child_in_list && IsBlockFlowElement(*first_child_in_list)
-              ? ToElement(first_child_in_list)
+              ? To<Element>(first_child_in_list)
               : list_element;
 
       MoveParagraphWithClones(

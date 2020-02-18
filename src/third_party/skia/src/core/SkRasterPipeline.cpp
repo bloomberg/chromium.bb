@@ -31,6 +31,11 @@ void SkRasterPipeline::unchecked_append(StockStage stage, void* ctx) {
     fNumStages   += 1;
     fSlotsNeeded += ctx ? 2 : 1;
 }
+void SkRasterPipeline::append(StockStage stage, uintptr_t ctx) {
+    void* ptrCtx;
+    memcpy(&ptrCtx, &ctx, sizeof(ctx));
+    this->append(stage, ptrCtx);
+}
 void SkRasterPipeline::append(void* fn, void* ctx) {
     fStages = fAlloc->make<StageList>( StageList{fStages, (uint64_t) fn, ctx, true} );
     fNumStages   += 1;
@@ -239,7 +244,7 @@ void SkRasterPipeline::append_store(SkColorType ct, const SkRasterPipeline_Memor
                                         this->append(store_1010102, ctx);
                                         break;
 
-        case kGray_8_SkColorType:       this->append(luminance_to_alpha);
+        case kGray_8_SkColorType:       this->append(bt709_luminance_or_luma_to_alpha);
                                         this->append(store_a8, ctx);
                                         break;
 

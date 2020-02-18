@@ -118,7 +118,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
                            const String&) override {
 #ifndef NDEBUG
     fprintf(stderr, "CONSOLE MESSSAGE:%u: %s\n", line_number,
-            message.Utf8().data());
+            message.Utf8().c_str());
 #endif
   }
 
@@ -162,41 +162,21 @@ class PagePopupChromeClient final : public EmptyChromeClient {
       LocalFrame* frame,
       cc::EventListenerClass event_class,
       cc::EventListenerProperties properties) override {
-    DCHECK(frame->IsMainFrame());
-    WebWidgetClient* client = popup_->WidgetClient();
-    if (WebLayerTreeView* layer_tree_view = popup_->layer_tree_view_) {
-      layer_tree_view->SetEventListenerProperties(event_class, properties);
-      if (event_class == cc::EventListenerClass::kTouchStartOrMove) {
-        client->HasTouchEventHandlers(
-            properties != cc::EventListenerProperties::kNone ||
-            EventListenerProperties(
-                frame, cc::EventListenerClass::kTouchEndOrCancel) !=
-                cc::EventListenerProperties::kNone);
-      } else if (event_class == cc::EventListenerClass::kTouchEndOrCancel) {
-        client->HasTouchEventHandlers(
-            properties != cc::EventListenerProperties::kNone ||
-            EventListenerProperties(
-                frame, cc::EventListenerClass::kTouchStartOrMove) !=
-                cc::EventListenerProperties::kNone);
-      }
-    } else {
-      client->HasTouchEventHandlers(true);
-    }
+    // WebPagePopup always routes input to main thread (set up in RenderWidget),
+    // so no need to update listener properties.
   }
   cc::EventListenerProperties EventListenerProperties(
       LocalFrame*,
       cc::EventListenerClass event_class) const override {
-    if (popup_->layer_tree_view_) {
-      return popup_->layer_tree_view_->EventListenerProperties(event_class);
-    }
+    // WebPagePopup always routes input to main thread (set up in RenderWidget),
+    // so no need to update listener properties.
     return cc::EventListenerProperties::kNone;
   }
 
   void SetHasScrollEventHandlers(LocalFrame* frame,
                                  bool has_event_handlers) override {
-    DCHECK(frame->IsMainFrame());
-    if (popup_->layer_tree_view_)
-      popup_->layer_tree_view_->SetHaveScrollEventHandlers(has_event_handlers);
+    // WebPagePopup's compositor does not handle compositor thread input (set up
+    // in RenderWidget) so there is no need to signal this.
   }
 
   void SetTouchAction(LocalFrame* frame, TouchAction touch_action) override {
@@ -298,8 +278,13 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(empty_local_frame_client,
-                                                 *page_, nullptr);
+  // Creating new WindowAgentFactory because page popup content is owned by the
+  // user agent and should be isolated from the main frame.
+  auto* frame =
+      MakeGarbageCollected<LocalFrame>(empty_local_frame_client, *page_,
+                                       /* FrameOwner* */ nullptr,
+                                       /* WindowAgentFactory* */ nullptr,
+                                       /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
@@ -384,7 +369,7 @@ void WebPagePopupImpl::BeginFrame(base::TimeTicks last_frame_time, bool) {
     return;
   // FIXME: This should use lastFrameTimeMonotonic but doing so
   // breaks tests.
-  PageWidgetDelegate::Animate(*page_, CurrentTimeTicks());
+  PageWidgetDelegate::Animate(*page_, base::TimeTicks::Now());
 }
 
 void WebPagePopupImpl::UpdateLifecycle(LifecycleUpdate requested_update,

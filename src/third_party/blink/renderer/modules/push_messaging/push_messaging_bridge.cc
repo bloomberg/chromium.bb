@@ -4,10 +4,8 @@
 
 #include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
 
-#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
-#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -19,20 +17,6 @@ namespace {
 // Error message to explain that the userVisibleOnly flag must be set.
 const char kUserVisibleOnlyRequired[] =
     "Push subscriptions that don't enable userVisibleOnly are not supported.";
-
-String PermissionStatusToString(mojom::blink::PermissionStatus status) {
-  switch (status) {
-    case mojom::blink::PermissionStatus::GRANTED:
-      return "granted";
-    case mojom::blink::PermissionStatus::DENIED:
-      return "denied";
-    case mojom::blink::PermissionStatus::ASK:
-      return "prompt";
-  }
-
-  NOTREACHED();
-  return "denied";
-}
 
 }  // namespace
 

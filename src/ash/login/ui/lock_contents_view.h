@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/keyboard/ui/keyboard_controller.h"
-#include "ash/keyboard/ui/keyboard_controller_observer.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_error_bubble.h"
 #include "ash/login/ui/login_tooltip_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/public/cpp/system_tray_focus_observer.h"
 #include "ash/session/session_observer.h"
@@ -33,7 +33,7 @@
 #include "ui/views/view.h"
 
 namespace keyboard {
-class KeyboardController;
+class KeyboardUIController;
 }  // namespace keyboard
 
 namespace views {
@@ -43,6 +43,7 @@ class StyledLabel;
 
 namespace ash {
 
+class LockScreenMediaControlsView;
 class LoginAuthUserView;
 class LoginBigUserView;
 class LoginDetachableBaseModel;
@@ -66,7 +67,7 @@ class ASH_EXPORT LockContentsView
       public display::DisplayObserver,
       public views::StyledLabelListener,
       public SessionObserver,
-      public keyboard::KeyboardControllerObserver,
+      public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
@@ -78,6 +79,7 @@ class ASH_EXPORT LockContentsView
     LoginBigUserView* primary_big_view() const;
     LoginBigUserView* opt_secondary_big_view() const;
     ScrollableUsersListView* users_list() const;
+    LockScreenMediaControlsView* media_controls_view() const;
     views::View* note_action() const;
     LoginTooltipView* tooltip_bubble() const;
     LoginErrorBubble* auth_error_bubble() const;
@@ -189,13 +191,18 @@ class ASH_EXPORT LockContentsView
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
 
-  // keyboard::KeyboardControllerObserver:
-  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
+  // KeyboardControllerObserver:
+  void OnKeyboardVisibilityChanged(bool is_visible) override;
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
 
   void ShowAuthErrorMessageForDebug(int unlock_attempt);
+
+  // Called by LockScreenMediaControlsView.
+  void CreateMediaControlsLayout();
+  void HideMediaControlsLayout();
+  bool AreMediaControlsEnabled() const;
 
  private:
   class UserState {
@@ -222,6 +229,14 @@ class ASH_EXPORT LockContentsView
 
   // Focus the next/previous widget.
   void FocusNextWidget(bool reverse);
+
+  // Set |spacing_middle| to the correct size for low density layouts. If there
+  // is less spacing available than desired, use up to the available.
+  void SetLowDensitySpacing(views::View* spacing_middle,
+                            views::View* secondary_view,
+                            int landscape_dist,
+                            int portrait_dist,
+                            bool landscape);
 
   // 1-2 users.
   void CreateLowDensityLayout(const std::vector<LoginUserInfo>& users);
@@ -301,7 +316,7 @@ class ASH_EXPORT LockContentsView
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not
   // displayed in this window.
-  keyboard::KeyboardController* GetKeyboardControllerForView() const;
+  keyboard::KeyboardUIController* GetKeyboardControllerForView() const;
 
   // Called when the public account is tapped.
   void OnPublicAccountTapped(bool is_primary);
@@ -343,6 +358,9 @@ class ASH_EXPORT LockContentsView
   LoginBigUserView* primary_big_view_ = nullptr;
   LoginBigUserView* opt_secondary_big_view_ = nullptr;
   ScrollableUsersListView* users_list_ = nullptr;
+
+  // View for media controls that appear on the lock screen if user enabled.
+  std::unique_ptr<LockScreenMediaControlsView> media_controls_view_;
 
   // View that contains the note action button and the system info labels,
   // placed on the top right corner of the screen without affecting layout of

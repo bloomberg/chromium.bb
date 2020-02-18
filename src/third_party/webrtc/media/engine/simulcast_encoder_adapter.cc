@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <string.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <string>
@@ -22,6 +23,7 @@
 #include "api/video/video_codec_constants.h"
 #include "api/video/video_frame_buffer.h"
 #include "api/video/video_rotation.h"
+#include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/utility/simulcast_rate_allocator.h"
@@ -144,6 +146,11 @@ SimulcastEncoderAdapter::~SimulcastEncoderAdapter() {
   DestroyStoredEncoders();
 }
 
+void SimulcastEncoderAdapter::SetFecControllerOverride(
+    FecControllerOverride* fec_controller_override) {
+  // Ignored.
+}
+
 int SimulcastEncoderAdapter::Release() {
   RTC_DCHECK_RUN_ON(&encoder_queue_);
 
@@ -167,12 +174,13 @@ int SimulcastEncoderAdapter::Release() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int SimulcastEncoderAdapter::InitEncode(const VideoCodec* inst,
-                                        int number_of_cores,
-                                        size_t max_payload_size) {
+// TODO(eladalon): s/inst/codec_settings/g.
+int SimulcastEncoderAdapter::InitEncode(
+    const VideoCodec* inst,
+    const VideoEncoder::Settings& settings) {
   RTC_DCHECK_RUN_ON(&encoder_queue_);
 
-  if (number_of_cores < 1) {
+  if (settings.number_of_cores < 1) {
     return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
 
@@ -256,7 +264,7 @@ int SimulcastEncoderAdapter::InitEncode(const VideoCodec* inst,
           codec_.codecType == webrtc::kVideoCodecVP8 ? "VP8" : "H264"));
     }
 
-    ret = encoder->InitEncode(&stream_codec, number_of_cores, max_payload_size);
+    ret = encoder->InitEncode(&stream_codec, settings);
     if (ret < 0) {
       // Explicitly destroy the current encoder; because we haven't registered a
       // StreamInfo for it yet, Release won't do anything about it.
@@ -420,12 +428,11 @@ int SimulcastEncoderAdapter::Encode(
 
       // UpdateRect is not propagated to lower simulcast layers currently.
       // TODO(ilnik): Consider scaling UpdateRect together with the buffer.
-      VideoFrame frame = VideoFrame::Builder()
-                             .set_video_frame_buffer(dst_buffer)
-                             .set_timestamp_rtp(input_image.timestamp())
-                             .set_rotation(webrtc::kVideoRotation_0)
-                             .set_timestamp_ms(input_image.render_time_ms())
-                             .build();
+      VideoFrame frame(input_image);
+      frame.set_video_frame_buffer(dst_buffer);
+      frame.set_rotation(webrtc::kVideoRotation_0);
+      frame.set_update_rect(
+          VideoFrame::UpdateRect{0, 0, frame.width(), frame.height()});
       int ret =
           streaminfos_[stream_idx].encoder->Encode(frame, &stream_frame_types);
       if (ret != WEBRTC_VIDEO_CODEC_OK) {
@@ -456,35 +463,6 @@ void SimulcastEncoderAdapter::SetRates(
   if (parameters.framerate_fps < 1.0) {
     RTC_LOG(LS_WARNING) << "Invalid framerate: " << parameters.framerate_fps;
     return;
-  }
-
-  if (codec_.maxBitrate > 0 &&
-      parameters.bitrate.get_sum_kbps() > codec_.maxBitrate) {
-    RTC_LOG(LS_WARNING) << "Total bitrate " << parameters.bitrate.get_sum_kbps()
-                        << " exceeds max bitrate: " << codec_.maxBitrate;
-    return;
-  }
-
-  if (parameters.bitrate.get_sum_bps() > 0) {
-    // Make sure the bitrate fits the configured min bitrates. 0 is a special
-    // value that means paused, though, so leave it alone.
-    if (parameters.bitrate.get_sum_kbps() < codec_.minBitrate) {
-      RTC_LOG(LS_WARNING) << "Total bitrate "
-                          << parameters.bitrate.get_sum_kbps()
-                          << " is lower than minimum bitrate: "
-                          << codec_.minBitrate;
-      return;
-    }
-
-    if (codec_.numberOfSimulcastStreams > 0 &&
-        parameters.bitrate.get_sum_kbps() <
-            codec_.simulcastStream[0].minBitrate) {
-      RTC_LOG(LS_WARNING) << "Total bitrate "
-                          << parameters.bitrate.get_sum_kbps()
-                          << " is lower than minimum bitrate of base layer: "
-                          << codec_.simulcastStream[0].minBitrate;
-      return;
-    }
   }
 
   codec_.maxFramerate = static_cast<uint32_t>(parameters.framerate_fps + 0.5);
@@ -525,6 +503,25 @@ void SimulcastEncoderAdapter::SetRates(
     }
 
     streaminfos_[stream_idx].encoder->SetRates(stream_parameters);
+  }
+}
+
+void SimulcastEncoderAdapter::OnPacketLossRateUpdate(float packet_loss_rate) {
+  for (StreamInfo& info : streaminfos_) {
+    info.encoder->OnPacketLossRateUpdate(packet_loss_rate);
+  }
+}
+
+void SimulcastEncoderAdapter::OnRttUpdate(int64_t rtt_ms) {
+  for (StreamInfo& info : streaminfos_) {
+    info.encoder->OnRttUpdate(rtt_ms);
+  }
+}
+
+void SimulcastEncoderAdapter::OnLossNotification(
+    const LossNotification& loss_notification) {
+  for (StreamInfo& info : streaminfos_) {
+    info.encoder->OnLossNotification(loss_notification);
   }
 }
 
@@ -584,6 +581,9 @@ void SimulcastEncoderAdapter::PopulateStreamCodec(
       // Turn off denoising for all streams but the highest resolution.
       stream_codec->VP8()->denoisingOn = false;
     }
+  } else if (inst.codecType == webrtc::kVideoCodecH264) {
+    stream_codec->H264()->numberOfTemporalLayers =
+        inst.simulcastStream[stream_index].numberOfTemporalLayers;
   }
   // TODO(ronghuawu): what to do with targetBitrate.
 

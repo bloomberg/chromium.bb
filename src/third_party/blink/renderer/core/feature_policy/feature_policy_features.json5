@@ -107,7 +107,6 @@
     {
       name: "DocumentDomain",
       feature_policy_name: "document-domain",
-      depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
       name: "DocumentWrite",
@@ -253,10 +252,6 @@
       name: "Serial",
       feature_policy_name: "serial",
       depends_on: ["Serial"],
-    },
-    {
-      name: "Speaker",
-      feature_policy_name: "speaker",
     },
     {
       name: "SyncScript",

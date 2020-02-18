@@ -28,10 +28,11 @@ proto_library("lite") {
   ]
   sources = [
     "android/android_log_config.proto",
+    "android/packages_list_config.proto",
     "chrome/chrome_config.proto",
     "data_source_config.proto",
-    "data_source_descriptor.proto",
     "ftrace/ftrace_config.proto",
+    "gpu/gpu_counter_config.proto",
     "inode_file/inode_file_config.proto",
     "power/android_power_config.proto",
     "process_stats/process_stats_config.proto",
@@ -53,10 +54,11 @@ protozero_library("zero") {
   ]
   sources = [
     "android/android_log_config.proto",
+    "android/packages_list_config.proto",
     "chrome/chrome_config.proto",
     "data_source_config.proto",
-    "data_source_descriptor.proto",
     "ftrace/ftrace_config.proto",
+    "gpu/gpu_counter_config.proto",
     "inode_file/inode_file_config.proto",
     "power/android_power_config.proto",
     "process_stats/process_stats_config.proto",

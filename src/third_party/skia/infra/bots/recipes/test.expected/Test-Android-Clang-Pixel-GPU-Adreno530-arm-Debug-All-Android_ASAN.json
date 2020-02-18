@@ -50,7 +50,7 @@
       "-u",
       "\nimport os\nimport subprocess\nimport sys\nimport time\nADB = sys.argv[1]\nASAN_SETUP = sys.argv[2]\n\ndef wait_for_device():\n  while True:\n    time.sleep(5)\n    print 'Waiting for device'\n    subprocess.check_output([ADB, 'wait-for-device'])\n    bit1 = subprocess.check_output([ADB, 'shell', 'getprop',\n                                   'dev.bootcomplete'])\n    bit2 = subprocess.check_output([ADB, 'shell', 'getprop',\n                                   'sys.boot_completed'])\n    if '1' in bit1 and '1' in bit2:\n      print 'Device detected'\n      break\n\nlog = subprocess.check_output([ADB, 'root'])\n# check for message like 'adbd cannot run as root in production builds'\nprint log\nif 'cannot' in log:\n  raise Exception('adb root failed')\n\noutput = subprocess.check_output([ADB, 'disable-verity'])\nprint output\n\nif 'already disabled' not in output:\n  print 'Rebooting device'\n  subprocess.check_output([ADB, 'reboot'])\n  wait_for_device()\n\ndef installASAN(revert=False):\n  # ASAN setup script is idempotent, either it installs it or\n  # says it's installed.  Returns True on success, false otherwise.\n  out = subprocess.check_output([ADB, 'wait-for-device'])\n  print out\n  cmd = [ASAN_SETUP]\n  if revert:\n    cmd = [ASAN_SETUP, '--revert']\n  process = subprocess.Popen(cmd, env={'ADB': ADB},\n                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)\n\n  # this also blocks until command finishes\n  (stdout, stderr) = process.communicate()\n  print stdout\n  print 'Stderr: %s' % stderr\n  return process.returncode == 0\n\nif not installASAN():\n  print 'Trying to revert the ASAN install and then re-install'\n  # ASAN script sometimes has issues if it was interrupted or partially applied\n  # Try reverting it, then re-enabling it\n  if not installASAN(revert=True):\n    raise Exception('reverting ASAN install failed')\n\n  # Sleep because device does not reboot instantly\n  time.sleep(10)\n\n  if not installASAN():\n    raise Exception('Tried twice to setup ASAN and failed.')\n\n# Sleep because device does not reboot instantly\ntime.sleep(10)\nwait_for_device()\n# Sleep again to hopefully avoid error \"secure_mkdirs failed: No such file or\n# directory\" when pushing resources to the device.\ntime.sleep(60)\n",
       "/usr/bin/adb.1.0.35",
-      "[START_DIR]/android_ndk_linux/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/8.0.2/bin/asan_device_setup"
+      "[START_DIR]/android_ndk_linux/toolchains/llvm/prebuilt/linux-x86_64/lib64/clang/8.0.7/bin/asan_device_setup"
     ],
     "env": {
       "CHROME_HEADLESS": "1",
@@ -193,7 +193,11 @@
       "[START_DIR]/tmp/SKP_VERSION"
     ],
     "infra_step": true,
-    "name": "write SKP_VERSION"
+    "name": "write SKP_VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@SKP_VERSION@42@@@",
+      "@@@STEP_LOG_END@SKP_VERSION@@@"
+    ]
   },
   {
     "cmd": [
@@ -337,7 +341,11 @@
       "[START_DIR]/tmp/SK_IMAGE_VERSION"
     ],
     "infra_step": true,
-    "name": "write SK_IMAGE_VERSION"
+    "name": "write SK_IMAGE_VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@SK_IMAGE_VERSION@42@@@",
+      "@@@STEP_LOG_END@SK_IMAGE_VERSION@@@"
+    ]
   },
   {
     "cmd": [
@@ -481,7 +489,11 @@
       "[START_DIR]/tmp/SVG_VERSION"
     ],
     "infra_step": true,
-    "name": "write SVG_VERSION"
+    "name": "write SVG_VERSION",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@SVG_VERSION@42@@@",
+      "@@@STEP_LOG_END@SVG_VERSION@@@"
+    ]
   },
   {
     "cmd": [
@@ -828,7 +840,11 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "write dm.sh"
+    "name": "write dm.sh",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@dm.sh@set -x; /data/local/tmp/dm --resourcePath /sdcard/revenge_of_the_skiabot/resources --skps /sdcard/revenge_of_the_skiabot/skps --images /sdcard/revenge_of_the_skiabot/images/dm --colorImages /sdcard/revenge_of_the_skiabot/images/colorspace --nameByHash --properties gitHash abc123 builder Test-Android-Clang-Pixel-GPU-Adreno530-arm-Debug-All-Android_ASAN buildbucket_build_id 123454321 task_id task_12345 swarming_bot_id skia-bot-123 swarming_task_id 123456 --svgs /sdcard/revenge_of_the_skiabot/svgs --key arch arm compiler Clang configuration Debug cpu_or_gpu GPU cpu_or_gpu_value Adreno530 extra_config Android_ASAN model Pixel os Android style default --dont_write pdf --nocpu --config gles glesdft glessrgb glesmsaa4 --src tests gm image colorImage svg --blacklist _ svg _ svgparse_ glessrgb image _ _ _ image gen_platf error _ test _ GrShape _ image _ interlaced1.png _ image _ interlaced2.png _ image _ interlaced3.png _ image _ .arw _ image _ .cr2 _ image _ .dng _ image _ .nef _ image _ .nrw _ image _ .orf _ image _ .raf _ image _ .rw2 _ image _ .pef _ image _ .srw _ image _ .ARW _ image _ .CR2 _ image _ .DNG _ image _ .NEF _ image _ .NRW _ image _ .ORF _ image _ .RAF _ image _ .RW2 _ image _ .PEF _ image _ .SRW --match ~BadImage --nonativeFonts --verbose; echo $? >/data/local/tmp/rc@@@",
+      "@@@STEP_LOG_END@dm.sh@@@"
+    ]
   },
   {
     "cmd": [
@@ -964,7 +980,6 @@
     "name": "kill adb server"
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

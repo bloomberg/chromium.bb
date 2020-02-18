@@ -34,10 +34,12 @@ SELECT
   package_name,
   type
 FROM raw
-JOIN launching_events_helper USING(arg_set_id)
+CROSS JOIN launching_events_helper
 JOIN thread USING(utid)
 JOIN process USING(upid)
-WHERE raw.name = 'print' AND process.name = 'system_server';
+WHERE raw.arg_set_id = launching_events_helper.arg_set_id
+AND raw.name = 'print'
+AND process.name = 'system_server';
 
 -- Marks the beginning of the trace and is equivalent to when the statsd launch
 -- logging begins.
@@ -108,9 +110,11 @@ JOIN activity_intent_launch_successful AS successful
 CREATE TABLE launch_processes(launch_id INT, upid BIG INT);
 
 -- We make the (not always correct) simplification that process == package
--- TODO: We should also take process death into account here.
 INSERT INTO launch_processes
 SELECT launches.id, process.upid
-FROM launches JOIN process ON launches.package = process.name
+FROM launches
+  JOIN process ON launches.package = process.name
+  JOIN thread ON (process.upid = thread.upid AND process.pid = thread.tid)
 WHERE (process.start_ts IS NULL OR process.start_ts < launches.ts_end)
-ORDER BY start_ts DESC;
+AND (thread.end_ts IS NULL OR thread.end_ts > launches.ts_end)
+ORDER BY process.start_ts DESC;

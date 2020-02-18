@@ -25,6 +25,17 @@
 
 namespace send_tab_to_self {
 
+namespace {
+
+// The valid device button height.
+constexpr int kDeviceButtonHeight = 56;
+// Maximum number of buttons that are shown without scroll. If the device
+// number is larger than kMaximumButtons, the bubble content will be
+// scrollable.
+constexpr int kMaximumButtons = 5;
+
+}  // namespace
+
 SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     views::View* anchor_view,
     const gfx::Point& anchor_point,
@@ -32,8 +43,7 @@ SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     SendTabToSelfBubbleController* controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
       web_contents_(web_contents),
-      controller_(controller),
-      weak_factory_(this) {
+      controller_(controller) {
   DCHECK(controller);
 }
 
@@ -72,10 +82,7 @@ bool SendTabToSelfBubbleViewImpl::Close() {
 
 void SendTabToSelfBubbleViewImpl::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&SendTabToSelfBubbleViewImpl::DevicePressed,
-                     weak_factory_.GetWeakPtr(), sender->tag()));
+  DevicePressed(sender->tag());
 }
 
 gfx::Size SendTabToSelfBubbleViewImpl::CalculatePreferredSize() const {
@@ -90,16 +97,11 @@ void SendTabToSelfBubbleViewImpl::OnPaint(gfx::Canvas* canvas) {
 
 void SendTabToSelfBubbleViewImpl::Show(DisplayReason reason) {
   ShowForReason(reason);
-  // Keeps the send tab to self icon in omnibox and be highlighted while
-  // showing the bubble.
-  views::Button* highlight_button =
-      BrowserView::GetBrowserViewForBrowser(
-          chrome::FindBrowserWithWebContents(web_contents_))
-          ->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kSendTabToSelf);
-  highlight_button->SetVisible(true);
-  SetHighlightedButton(highlight_button);
+}
+
+const std::vector<std::unique_ptr<SendTabToSelfBubbleDeviceButton>>&
+SendTabToSelfBubbleViewImpl::GetDeviceButtonsForTest() {
+  return device_buttons_;
 }
 
 void SendTabToSelfBubbleViewImpl::Init() {
@@ -125,15 +127,15 @@ void SendTabToSelfBubbleViewImpl::CreateScrollView() {
 }
 
 void SendTabToSelfBubbleViewImpl::PopulateScrollView(
-    const std::map<std::string, TargetDeviceInfo> devices) {
+    const std::vector<TargetDeviceInfo>& devices) {
   device_buttons_.clear();
   auto device_list_view = std::make_unique<views::View>();
-  device_list_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  device_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   int tag = 0;
   for (const auto& device : devices) {
     auto device_button = std::make_unique<SendTabToSelfBubbleDeviceButton>(
-        this, device.first, device.second,
+        this, device,
         /** button_tag */ tag++);
     device_buttons_.push_back(std::move(device_button));
     device_list_view->AddChildView(device_buttons_.back().get());
@@ -148,8 +150,7 @@ void SendTabToSelfBubbleViewImpl::DevicePressed(size_t index) {
   if (!controller_) {
     return;
   }
-  SendTabToSelfBubbleDeviceButton* device_button =
-      device_buttons_.at(index).get();
+  SendTabToSelfBubbleDeviceButton* device_button = device_buttons_[index].get();
   controller_->OnDeviceSelected(device_button->device_name(),
                                 device_button->device_guid());
   Hide();

@@ -11,8 +11,9 @@ namespace blink {
 
 WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
                                        WebViewImpl& web_view)
-    : WebFrameWidgetBase(client), web_view_(&web_view), self_keep_alive_(this) {
-}
+    : WebFrameWidgetBase(client),
+      web_view_(&web_view),
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
@@ -33,10 +34,6 @@ WebSize WebViewFrameWidget::Size() {
 
 void WebViewFrameWidget::Resize(const WebSize& size) {
   web_view_->Resize(size);
-}
-
-void WebViewFrameWidget::ResizeVisualViewport(const WebSize& size) {
-  web_view_->ResizeVisualViewport(size);
 }
 
 void WebViewFrameWidget::DidEnterFullscreen() {
@@ -125,11 +122,9 @@ void WebViewFrameWidget::ApplyViewportChanges(
   web_view_->ApplyViewportChanges(args);
 }
 
-void WebViewFrameWidget::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
-  web_view_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
+void WebViewFrameWidget::RecordManipulationTypeCounts(
+    cc::ManipulationInfo info) {
+  web_view_->RecordManipulationTypeCounts(info);
 }
 void WebViewFrameWidget::SendOverscrollEventFromImplSide(
     const gfx::Vector2dF& overscroll_delta,
@@ -161,6 +156,10 @@ bool WebViewFrameWidget::IsAcceleratedCompositingActive() const {
 
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
+}
+
+void WebViewFrameWidget::DidDetachLocalFrameTree() {
+  web_view_->DidDetachLocalMainFrame();
 }
 
 WebInputMethodController*

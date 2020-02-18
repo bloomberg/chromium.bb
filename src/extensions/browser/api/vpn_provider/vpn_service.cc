@@ -368,7 +368,7 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
   }
 
   const std::string key = GetKey(extension_id, configuration_name);
-  if (base::ContainsKey(key_to_configuration_map_, key)) {
+  if (base::Contains(key_to_configuration_map_, key)) {
     failure.Run(std::string(), std::string("Name not unique."));
     return;
   }
@@ -414,7 +414,7 @@ void VpnService::DestroyConfiguration(const std::string& extension_id,
                                       const FailureCallback& failure) {
   // The ID is the configuration name for now. This may change in the future.
   const std::string key = GetKey(extension_id, configuration_id);
-  if (!base::ContainsKey(key_to_configuration_map_, key)) {
+  if (!base::Contains(key_to_configuration_map_, key)) {
     failure.Run(std::string(), std::string("Unauthorized access."));
     return;
   }
@@ -487,7 +487,7 @@ bool VpnService::VerifyConfigExistsForTesting(
     const std::string& extension_id,
     const std::string& configuration_name) {
   const std::string key = GetKey(extension_id, configuration_name);
-  return base::ContainsKey(key_to_configuration_map_, key);
+  return base::Contains(key_to_configuration_map_, key);
 }
 
 bool VpnService::VerifyConfigIsConnectedForTesting(
@@ -635,7 +635,7 @@ void VpnService::Bind(
         pepper_vpn_provider_proxy) {
   // The ID is the configuration name for now. This may change in the future.
   const std::string key = GetKey(extension_id, configuration_id);
-  if (!base::ContainsKey(key_to_configuration_map_, key)) {
+  if (!base::Contains(key_to_configuration_map_, key)) {
     failure.Run(std::string(),
                 std::string("Unauthorized access. "
                             "The configuration does not exist."));

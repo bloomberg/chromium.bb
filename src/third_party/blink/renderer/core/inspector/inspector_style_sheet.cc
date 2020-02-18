@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
@@ -670,7 +670,7 @@ String CanonicalCSSText(CSSRule* rule) {
     property_names.push_back(style->item(i));
 
   std::sort(property_names.begin(), property_names.end(),
-            WTF::CodePointCompareLessThan);
+            WTF::CodeUnitCompareLessThan);
 
   StringBuilder builder;
   builder.Append(style_rule->selectorText());
@@ -802,10 +802,10 @@ void InspectorStyle::PopulateAllProperties(
 }
 
 std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::StyleWithProperties() {
-  std::unique_ptr<Array<protocol::CSS::CSSProperty>> properties_object =
-      Array<protocol::CSS::CSSProperty>::create();
-  std::unique_ptr<Array<protocol::CSS::ShorthandEntry>> shorthand_entries =
-      Array<protocol::CSS::ShorthandEntry>::create();
+  auto properties_object =
+      std::make_unique<protocol::Array<protocol::CSS::CSSProperty>>();
+  auto shorthand_entries =
+      std::make_unique<protocol::Array<protocol::CSS::ShorthandEntry>>();
   HashSet<String> found_shorthands;
 
   Vector<CSSPropertySourceData> properties;
@@ -855,11 +855,11 @@ std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::StyleWithProperties() {
                   .build();
           if (!style_->getPropertyPriority(name).IsEmpty())
             entry->setImportant(true);
-          shorthand_entries->addItem(std::move(entry));
+          shorthand_entries->emplace_back(std::move(entry));
         }
       }
     }
-    properties_object->addItem(std::move(property));
+    properties_object->emplace_back(std::move(property));
   }
 
   std::unique_ptr<protocol::CSS::CSSStyle> result =
@@ -1382,8 +1382,7 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
 std::unique_ptr<protocol::Array<String>>
 InspectorStyleSheet::CollectClassNames() {
   HashSet<String> unique_names;
-  std::unique_ptr<protocol::Array<String>> result =
-      protocol::Array<String>::create();
+  auto result = std::make_unique<protocol::Array<String>>();
 
   for (wtf_size_t i = 0; i < parsed_flat_rules_.size(); ++i) {
     if (auto* style_rule =
@@ -1391,7 +1390,7 @@ InspectorStyleSheet::CollectClassNames() {
       GetClassNamesFromRule(style_rule, unique_names);
   }
   for (const String& class_name : unique_names)
-    result->addItem(class_name);
+    result->emplace_back(class_name);
   return result;
 }
 
@@ -1493,8 +1492,7 @@ std::unique_ptr<protocol::Array<protocol::CSS::Value>>
 InspectorStyleSheet::SelectorsFromSource(CSSRuleSourceData* source_data,
                                          const String& sheet_text) {
   ScriptRegexp comment("/\\*[^]*?\\*/", kTextCaseSensitive, kMultilineEnabled);
-  std::unique_ptr<protocol::Array<protocol::CSS::Value>> result =
-      protocol::Array<protocol::CSS::Value>::create();
+  auto result = std::make_unique<protocol::Array<protocol::CSS::Value>>();
   const Vector<SourceRange>& ranges = source_data->selector_ranges;
   for (wtf_size_t i = 0, size = ranges.size(); i < size; ++i) {
     const SourceRange& range = ranges.at(i);
@@ -1512,7 +1510,7 @@ InspectorStyleSheet::SelectorsFromSource(CSSRuleSourceData* source_data,
             .setText(selector.StripWhiteSpace())
             .build();
     simple_selector->setRange(BuildSourceRangeObject(range));
-    result->addItem(std::move(simple_selector));
+    result->emplace_back(std::move(simple_selector));
   }
   return result;
 }
@@ -1529,13 +1527,14 @@ InspectorStyleSheet::BuildObjectForSelectorList(CSSStyleRule* rule) {
   if (source_data) {
     selectors = SelectorsFromSource(source_data, text_);
   } else {
-    selectors = protocol::Array<protocol::CSS::Value>::create();
+    selectors = std::make_unique<protocol::Array<protocol::CSS::Value>>();
     const CSSSelectorList& selector_list = rule->GetStyleRule()->SelectorList();
     for (const CSSSelector* selector = selector_list.First(); selector;
-         selector = CSSSelectorList::Next(*selector))
-      selectors->addItem(protocol::CSS::Value::create()
-                             .setText(selector->SelectorText())
-                             .build());
+         selector = CSSSelectorList::Next(*selector)) {
+      selectors->emplace_back(protocol::CSS::Value::create()
+                                  .setText(selector->SelectorText())
+                                  .build());
+    }
   }
   return protocol::CSS::SelectorList::create()
       .setSelectors(std::move(selectors))
@@ -1858,9 +1857,9 @@ bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
 
 Element* InspectorStyleSheet::OwnerStyleElement() {
   Node* owner_node = page_style_sheet_->ownerNode();
-  if (!owner_node || !owner_node->IsElementNode())
+  auto* owner_element = DynamicTo<Element>(owner_node);
+  if (!owner_element)
     return nullptr;
-  Element* owner_element = ToElement(owner_node);
 
   if (!IsHTMLStyleElement(owner_element) && !IsSVGStyleElement(owner_element))
     return nullptr;

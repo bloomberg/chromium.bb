@@ -9,28 +9,29 @@
 
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
+#include "components/autofill_assistant/browser/user_action.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill_assistant {
 
-ShowFormAction::ShowFormAction(const ActionProto& proto)
-    : Action(proto), weak_ptr_factory_(this) {
+ShowFormAction::ShowFormAction(ActionDelegate* delegate,
+                               const ActionProto& proto)
+    : Action(delegate, proto), weak_ptr_factory_(this) {
   DCHECK(proto_.has_show_form() && proto_.show_form().has_form());
 }
 
 ShowFormAction::~ShowFormAction() {}
 
-void ShowFormAction::InternalProcessAction(ActionDelegate* delegate,
-                                           ProcessActionCallback callback) {
+void ShowFormAction::InternalProcessAction(ProcessActionCallback callback) {
   callback_ = std::move(callback);
 
   // Show the form. This will call OnFormValuesChanged with the initial result,
   // which will in turn show the "Continue" chip.
-  if (!delegate->SetForm(
+  if (!delegate_->SetForm(
           std::make_unique<FormProto>(proto_.show_form().form()),
           base::BindRepeating(&ShowFormAction::OnFormValuesChanged,
-                              weak_ptr_factory_.GetWeakPtr(), delegate))) {
+                              weak_ptr_factory_.GetWeakPtr()))) {
     // The form contains unsupported or invalid inputs.
     UpdateProcessedAction(UNSUPPORTED);
     std::move(callback_).Run(std::move(processed_action_proto_));
@@ -38,34 +39,25 @@ void ShowFormAction::InternalProcessAction(ActionDelegate* delegate,
   }
 }
 
-void ShowFormAction::OnFormValuesChanged(ActionDelegate* delegate,
-                                         const FormProto::Result* form_result) {
+void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
   // Copy the current values to the action result.
   *processed_action_proto_->mutable_form_result() = *form_result;
 
   // Show "Continue" chip.
-  // TODO(crbug.com/806868): Make this chip configurable.
-  auto chips = std::make_unique<std::vector<Chip>>();
-  bool form_is_valid = IsFormValid(proto_.show_form().form(), *form_result);
-
-  if (proto_.show_form().has_chip()) {
-    chips->emplace_back(proto_.show_form().chip());
-    SetDefaultChipType(chips.get());
-  } else {
-    chips->emplace_back();
-    chips->back().text =
+  UserAction user_action =
+      UserAction(proto_.show_form().chip(), proto_.show_form().direct_action());
+  if (user_action.chip().empty()) {
+    user_action.chip().text =
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
-    chips->back().type = HIGHLIGHTED_ACTION;
+    user_action.chip().type = HIGHLIGHTED_ACTION;
   }
+  user_action.SetEnabled(IsFormValid(proto_.show_form().form(), *form_result));
+  user_action.SetCallback(base::BindOnce(&ShowFormAction::OnButtonClicked,
+                                         weak_ptr_factory_.GetWeakPtr()));
 
-  chips->back().disabled = !form_is_valid;
-  if (form_is_valid) {
-    chips->back().callback =
-        base::BindOnce(&ShowFormAction::OnButtonClicked,
-                       weak_ptr_factory_.GetWeakPtr(), delegate);
-  }
-
-  delegate->Prompt(std::move(chips));
+  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  user_actions->emplace_back(std::move(user_action));
+  delegate_->Prompt(std::move(user_actions));
 }
 
 bool ShowFormAction::IsFormValid(const FormProto& form,
@@ -182,9 +174,9 @@ bool ShowFormAction::IsSelectionInputValid(
   return n >= min_selected;
 }
 
-void ShowFormAction::OnButtonClicked(ActionDelegate* delegate) {
+void ShowFormAction::OnButtonClicked() {
   DCHECK(callback_);
-  delegate->SetForm(nullptr, base::DoNothing());
+  delegate_->SetForm(nullptr, base::DoNothing());
   UpdateProcessedAction(ACTION_APPLIED);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }

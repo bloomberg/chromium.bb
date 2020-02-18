@@ -24,8 +24,8 @@ namespace {
 constexpr const char* usage_msg =
     "usage: video_decode_accelerator_tests\n"
     "           [-v=<level>] [--vmodule=<config>] [--disable_validator]\n"
-    "           [--output_frames] [--use_vd] [--gtest_help] [--help]\n"
-    "           [<video path>] [<video metadata path>]\n";
+    "           [--output_frames] [output_folder] [--use_vd] [--gtest_help]\n"
+    "           [--help] [<video path>] [<video metadata path>]\n";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
@@ -39,10 +39,11 @@ constexpr const char* help_msg =
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n"
-    "  --disable_validator  disable frame validation, useful on old\n"
-    "                       platforms that don't support import mode.\n"
+    "  --disable_validator  disable frame validation.\n"
     "  --output_frames      write all decoded video frames to the\n"
-    "                       \"video_frames\" folder.\n"
+    "                       \"<testname>\" folder.\n"
+    "  --output_folder      overwrite the default output folder used when\n"
+    "                       \"--output_frames\" is specified.\n"
     "  --use_vd             use the new VD-based video decoders, instead of\n"
     "                       the default VDA-based video decoders.\n"
     "  --gtest_help         display the gtest help and exit.\n"
@@ -61,18 +62,25 @@ class VideoDecoderTest : public ::testing::Test {
     LOG_ASSERT(video);
     std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors;
 
-    // Validate decoded video frames.
-    if (g_env->IsValidatorEnabled()) {
+    // Force allocate mode if import mode is not supported.
+    if (!g_env->ImportSupported())
+      config.allocation_mode = AllocationMode::kAllocate;
+
+    // Use the video frame validator to validate decoded video frames if import
+    // mode is supported and enabled.
+    if (g_env->IsValidatorEnabled() &&
+        config.allocation_mode == AllocationMode::kImport) {
       frame_processors.push_back(
           media::test::VideoFrameValidator::Create(video->FrameChecksums()));
     }
 
-    // Write decoded video frames to the 'video_frames/<test_name/>' folder.
+    // Write decoded video frames to the '<testname>' folder.
     if (g_env->IsFramesOutputEnabled()) {
       base::FilePath output_folder =
-          base::FilePath(FILE_PATH_LITERAL("video_frames"))
+          base::FilePath(g_env->OutputFolder())
               .Append(base::FilePath(g_env->GetTestName()));
       frame_processors.push_back(VideoFrameFileWriter::Create(output_folder));
+      VLOG(0) << "Writing video frames to: " << output_folder;
     }
 
     // Use the new VD-based video decoders if requested.
@@ -250,19 +258,26 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleConcurrentDecodes) {
 
 // Play a video from start to finish. Thumbnails of the decoded frames will be
 // rendered into a image, whose checksum is compared to a golden value. This
-// test is only needed on older platforms that don't support the video frame
-// validator, which requires direct access to the video frame's memory. This
-// test is only ran when --disable_validator is specified, and will be
-// deprecated in the future.
+// test is only run on older platforms that don't support the video frame
+// validator, which requires import mode. If no thumbnail checksums are present
+// in the video metadata the test will be skipped. This test will be deprecated
+// once all devices support import mode.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
-  if (g_env->IsValidatorEnabled())
+  if (!g_env->IsValidatorEnabled() || g_env->ImportSupported() ||
+      g_env->Video()->ThumbnailChecksums().empty()) {
     GTEST_SKIP();
+  }
+
+  base::FilePath output_folder =
+      base::FilePath(g_env->OutputFolder())
+          .Append(base::FilePath(g_env->GetTestName()));
 
   VideoDecoderClientConfig config;
   config.allocation_mode = AllocationMode::kAllocate;
   auto tvp = CreateVideoPlayer(
       g_env->Video(), config,
-      FrameRendererThumbnail::Create(g_env->Video()->ThumbnailChecksums()));
+      FrameRendererThumbnail::Create(g_env->Video()->ThumbnailChecksums(),
+                                     output_folder));
 
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForFlushDone());
@@ -272,6 +287,27 @@ TEST_F(VideoDecoderTest, FlushAtEndOfStream_RenderThumbnails) {
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
   EXPECT_TRUE(static_cast<FrameRendererThumbnail*>(tvp->GetFrameRenderer())
                   ->ValidateThumbnail());
+}
+
+// Play a video from start to finish, using allocate mode. This test is only run
+// on platforms that support import mode, as on allocate-mode only platforms all
+// tests are run in allocate mode. The test will be skipped when --use_vd is
+// specified as the new video decoders only support import mode.
+// TODO(dstaessens): Deprecate after switching to new VD-based video decoders.
+TEST_F(VideoDecoderTest, FlushAtEndOfStream_Allocate) {
+  if (!g_env->ImportSupported() || g_env->UseVD())
+    GTEST_SKIP();
+
+  VideoDecoderClientConfig config;
+  config.allocation_mode = AllocationMode::kAllocate;
+  auto tvp = CreateVideoPlayer(g_env->Video(), config);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
 }  // namespace test
@@ -301,6 +337,7 @@ int main(int argc, char** argv) {
   // Parse command line arguments.
   bool enable_validator = true;
   bool output_frames = false;
+  base::FilePath::StringType output_folder = base::FilePath::kCurrentDirectory;
   bool use_vd = false;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
@@ -314,6 +351,8 @@ int main(int argc, char** argv) {
       enable_validator = false;
     } else if (it->first == "output_frames") {
       output_frames = true;
+    } else if (it->first == "output_folder") {
+      output_folder = it->second;
     } else if (it->first == "use_vd") {
       use_vd = true;
     } else {
@@ -329,7 +368,7 @@ int main(int argc, char** argv) {
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, enable_validator, output_frames,
-          use_vd);
+          base::FilePath(output_folder), use_vd);
   if (!test_environment)
     return EXIT_FAILURE;
 

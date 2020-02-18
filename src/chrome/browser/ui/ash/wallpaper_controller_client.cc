@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 
-#include "ash/public/cpp/wallpaper_user_info.h"
 #include "base/bind.h"
 #include "base/hash/sha1.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -27,7 +25,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -40,28 +37,8 @@ const char kWallpaperFilesId[] = "wallpaper-files-id";
 
 WallpaperControllerClient* g_wallpaper_controller_client_instance = nullptr;
 
-// Creates a WallpaperUserInfo for the account id. Returns nullptr if user
-// manager cannot find the user.
-base::Optional<ash::WallpaperUserInfo> AccountIdToWallpaperUserInfo(
-    const AccountId& account_id) {
-  if (!account_id.is_valid()) {
-    // |account_id| may be invalid in tests.
-    return base::nullopt;
-  }
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  if (!user)
-    return base::nullopt;
-
-  ash::WallpaperUserInfo wallpaper_user_info;
-  wallpaper_user_info.account_id = account_id;
-  wallpaper_user_info.type = user->GetType();
-  wallpaper_user_info.is_ephemeral =
-      user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          account_id);
-  wallpaper_user_info.has_gaia_account = user->HasGaiaAccount();
-
-  return wallpaper_user_info;
+bool IsKnownUser(const AccountId& account_id) {
+  return user_manager::UserManager::Get()->IsKnownUser(account_id);
 }
 
 // This has once been copied from
@@ -170,6 +147,50 @@ void WallpaperControllerClient::InitForTesting(
   InitController();
 }
 
+void WallpaperControllerClient::SetInitialWallpaper() {
+  // Apply device customization.
+  namespace customization_util = chromeos::customization_wallpaper_util;
+  if (customization_util::ShouldUseCustomizedDefaultWallpaper()) {
+    base::FilePath customized_default_small_path;
+    base::FilePath customized_default_large_path;
+    if (customization_util::GetCustomizedDefaultWallpaperPaths(
+            &customized_default_small_path, &customized_default_large_path)) {
+      wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
+          customized_default_small_path, customized_default_large_path);
+    }
+  }
+
+  // Guest wallpaper should be initialized when guest logs in.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kGuestSession)) {
+    return;
+  }
+
+  // Do not set wallpaper in tests.
+  if (chromeos::WizardController::IsZeroDelayEnabled())
+    return;
+
+  // Show the wallpaper of the active user during an user session.
+  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    ShowUserWallpaper(
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
+    return;
+  }
+
+  // Show a white wallpaper during OOBE.
+  if (session_manager::SessionManager::Get()->session_state() ==
+      session_manager::SessionState::OOBE) {
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(1, 1);
+    bitmap.eraseColor(SK_ColorWHITE);
+    wallpaper_controller_->ShowOneShotWallpaper(
+        gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+    return;
+  }
+
+  ShowWallpaperOnLoginScreen();
+}
+
 // static
 WallpaperControllerClient* WallpaperControllerClient::Get() {
   return g_wallpaper_controller_client_instance;
@@ -198,12 +219,10 @@ void WallpaperControllerClient::SetCustomWallpaper(
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image,
     bool preview_mode) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
-  wallpaper_controller_->SetCustomWallpaper(user_info.value(),
-                                            wallpaper_files_id, file_name,
-                                            layout, image, preview_mode);
+  wallpaper_controller_->SetCustomWallpaper(
+      account_id, wallpaper_files_id, file_name, layout, image, preview_mode);
 }
 
 void WallpaperControllerClient::SetOnlineWallpaperIfExists(
@@ -212,11 +231,10 @@ void WallpaperControllerClient::SetOnlineWallpaperIfExists(
     ash::WallpaperLayout layout,
     bool preview_mode,
     ash::WallpaperController::SetOnlineWallpaperIfExistsCallback callback) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
   wallpaper_controller_->SetOnlineWallpaperIfExists(
-      user_info.value(), url, layout, preview_mode, std::move(callback));
+      account_id, url, layout, preview_mode, std::move(callback));
 }
 
 void WallpaperControllerClient::SetOnlineWallpaperFromData(
@@ -226,18 +244,15 @@ void WallpaperControllerClient::SetOnlineWallpaperFromData(
     ash::WallpaperLayout layout,
     bool preview_mode,
     ash::WallpaperController::SetOnlineWallpaperFromDataCallback callback) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
   wallpaper_controller_->SetOnlineWallpaperFromData(
-      user_info.value(), image_data, url, layout, preview_mode,
-      std::move(callback));
+      account_id, image_data, url, layout, preview_mode, std::move(callback));
 }
 
 void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
                                                     bool show_wallpaper) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
 
   // Postpone setting the wallpaper until we can get files id.
@@ -251,8 +266,8 @@ void WallpaperControllerClient::SetDefaultWallpaper(const AccountId& account_id,
     return;
   }
 
-  wallpaper_controller_->SetDefaultWallpaper(
-      user_info.value(), GetFilesId(account_id), show_wallpaper);
+  wallpaper_controller_->SetDefaultWallpaper(account_id, GetFilesId(account_id),
+                                             show_wallpaper);
 }
 
 void WallpaperControllerClient::SetCustomizedDefaultWallpaperPaths(
@@ -265,11 +280,7 @@ void WallpaperControllerClient::SetCustomizedDefaultWallpaperPaths(
 void WallpaperControllerClient::SetPolicyWallpaper(
     const AccountId& account_id,
     std::unique_ptr<std::string> data) {
-  if (!data)
-    return;
-
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!data || !IsKnownUser(account_id))
     return;
 
   // Postpone setting the wallpaper until we can get files id. See
@@ -281,8 +292,8 @@ void WallpaperControllerClient::SetPolicyWallpaper(
     return;
   }
 
-  wallpaper_controller_->SetPolicyWallpaper(user_info.value(),
-                                            GetFilesId(account_id), *data);
+  wallpaper_controller_->SetPolicyWallpaper(account_id, GetFilesId(account_id),
+                                            *data);
 }
 
 bool WallpaperControllerClient::SetThirdPartyWallpaper(
@@ -291,11 +302,9 @@ bool WallpaperControllerClient::SetThirdPartyWallpaper(
     const std::string& file_name,
     ash::WallpaperLayout layout,
     const gfx::ImageSkia& image) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
-    return false;
-  return wallpaper_controller_->SetThirdPartyWallpaper(
-      user_info.value(), wallpaper_files_id, file_name, layout, image);
+  return IsKnownUser(account_id) &&
+         wallpaper_controller_->SetThirdPartyWallpaper(
+             account_id, wallpaper_files_id, file_name, layout, image);
 }
 
 void WallpaperControllerClient::ConfirmPreviewWallpaper() {
@@ -309,17 +318,13 @@ void WallpaperControllerClient::CancelPreviewWallpaper() {
 void WallpaperControllerClient::UpdateCustomWallpaperLayout(
     const AccountId& account_id,
     ash::WallpaperLayout layout) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
-    return;
-  wallpaper_controller_->UpdateCustomWallpaperLayout(user_info.value(), layout);
+  if (IsKnownUser(account_id))
+    wallpaper_controller_->UpdateCustomWallpaperLayout(account_id, layout);
 }
 
 void WallpaperControllerClient::ShowUserWallpaper(const AccountId& account_id) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
-    return;
-  wallpaper_controller_->ShowUserWallpaper(user_info.value());
+  if (IsKnownUser(account_id))
+    wallpaper_controller_->ShowUserWallpaper(account_id);
 }
 
 void WallpaperControllerClient::ShowSigninWallpaper() {
@@ -337,8 +342,7 @@ void WallpaperControllerClient::RemoveAlwaysOnTopWallpaper() {
 
 void WallpaperControllerClient::RemoveUserWallpaper(
     const AccountId& account_id) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
 
   // Postpone removing the wallpaper until we can get files id.
@@ -352,14 +356,13 @@ void WallpaperControllerClient::RemoveUserWallpaper(
     return;
   }
 
-  wallpaper_controller_->RemoveUserWallpaper(user_info.value(),
+  wallpaper_controller_->RemoveUserWallpaper(account_id,
                                              GetFilesId(account_id));
 }
 
 void WallpaperControllerClient::RemovePolicyWallpaper(
     const AccountId& account_id) {
-  auto user_info = AccountIdToWallpaperUserInfo(account_id);
-  if (!user_info)
+  if (!IsKnownUser(account_id))
     return;
 
   // Postpone removing the wallpaper until we can get files id.
@@ -373,7 +376,7 @@ void WallpaperControllerClient::RemovePolicyWallpaper(
     return;
   }
 
-  wallpaper_controller_->RemovePolicyWallpaper(user_info.value(),
+  wallpaper_controller_->RemovePolicyWallpaper(account_id,
                                                GetFilesId(account_id));
 }
 
@@ -489,60 +492,11 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
   if (!extension)
     return;
 
-  OpenApplication(AppLaunchParams(
-      profile, extension, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
-}
-
-void WallpaperControllerClient::OnReadyToSetWallpaper() {
-  // Apply device customization.
-  namespace customization_util = chromeos::customization_wallpaper_util;
-  if (customization_util::ShouldUseCustomizedDefaultWallpaper()) {
-    base::FilePath customized_default_small_path;
-    base::FilePath customized_default_large_path;
-    if (customization_util::GetCustomizedDefaultWallpaperPaths(
-            &customized_default_small_path, &customized_default_large_path)) {
-      wallpaper_controller_->SetCustomizedDefaultWallpaperPaths(
-          customized_default_small_path, customized_default_large_path);
-    }
-  }
-
-  // Guest wallpaper should be initialized when guest logs in.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession)) {
-    return;
-  }
-
-  // Do not set wallpaper in tests.
-  if (chromeos::WizardController::IsZeroDelayEnabled())
-    return;
-
-  // Show the wallpaper of the active user during an user session.
-  if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    ShowUserWallpaper(
-        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
-    return;
-  }
-
-  // Show a white wallpaper during OOBE.
-  if (session_manager::SessionManager::Get()->session_state() ==
-      session_manager::SessionState::OOBE) {
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(1, 1);
-    bitmap.eraseColor(SK_ColorWHITE);
-    wallpaper_controller_->ShowOneShotWallpaper(
-        gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
-    return;
-  }
-
-  ShowWallpaperOnLoginScreen();
-}
-
-void WallpaperControllerClient::OnFirstWallpaperAnimationFinished() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  OpenApplication(
+      AppLaunchParams(profile, extension->id(),
+                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      WindowOpenDisposition::NEW_WINDOW,
+                      extensions::AppLaunchSource::kSourceChromeInternal));
 }
 
 bool WallpaperControllerClient::ShouldShowUserNamesOnLogin() const {

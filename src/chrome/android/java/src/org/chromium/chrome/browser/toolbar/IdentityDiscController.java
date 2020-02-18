@@ -15,8 +15,9 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -77,7 +78,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
         mProfileSyncService.addSyncStateChangedListener(this);
 
-        mSigninManager = SigninManager.get();
+        mSigninManager = IdentityServicesProvider.getSigninManager();
         mSigninManager.addSignInStateObserver(this);
     }
 
@@ -97,10 +98,10 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         if (shouldShowIdentityDisc == mIsIdentityDiscVisible) return;
 
         if (shouldShowIdentityDisc) {
-            mIsIdentityDiscVisible = true;
             createProfileDataCache(accountName);
             showIdentityDisc(accountName);
             maybeShowIPH();
+            mIsIdentityDiscVisible = true;
         } else {
             mIsIdentityDiscVisible = false;
             mToolbarManager.disableExperimentalButton();
@@ -131,7 +132,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         Drawable profileImage = mProfileDataCache.getProfileDataOrDefault(accountName).getImage();
         mToolbarManager.enableExperimentalButton(view -> {
             RecordUserAction.record("MobileToolbarIdentityDiscTap");
-            PreferencesLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
+            PreferencesLauncher.launchSettingsPageCompat(
+                    mContext, SyncAndServicesPreferences.class);
         }, profileImage, R.string.accessibility_toolbar_btn_identity_disc);
     }
 

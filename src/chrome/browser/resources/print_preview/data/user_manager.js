@@ -32,6 +32,12 @@ Polymer({
       notify: true,
     },
 
+    /** @type {?cloudprint.CloudPrintInterface} */
+    cloudPrintInterface: {
+      type: Object,
+      observer: 'onCloudPrintInterfaceSet_',
+    },
+
     /** @type {?print_preview.DestinationStore} */
     destinationStore: Object,
 
@@ -93,19 +99,22 @@ Polymer({
     }
   },
 
-  /** @param {!cloudprint.CloudPrintInterface} cloudPrintInterface */
-  setCloudPrintInterface: function(cloudPrintInterface) {
+  /** @private */
+  onCloudPrintInterfaceSet_: function() {
     this.tracker_.add(
-        cloudPrintInterface.getEventTarget(),
+        this.cloudPrintInterface.getEventTarget(),
         cloudprint.CloudPrintInterfaceEventType.UPDATE_USERS,
         this.onCloudPrintUpdateUsers_.bind(this));
     [cloudprint.CloudPrintInterfaceEventType.SEARCH_FAILED,
      cloudprint.CloudPrintInterfaceEventType.PRINTER_FAILED,
     ].forEach(eventType => {
       this.tracker_.add(
-          cloudPrintInterface.getEventTarget(), eventType,
+          this.cloudPrintInterface.getEventTarget(), eventType,
           this.checkCloudPrintStatus_.bind(this));
     });
+    if (this.users.length > 0) {
+      this.cloudPrintInterface.setUsers(this.users);
+    }
     assert(this.cloudPrintDisabled);
     this.cloudPrintDisabled = false;
   },
@@ -149,6 +158,9 @@ Polymer({
     const updateActiveUser = (users.length > 0 && this.users.length === 0) ||
         !users.includes(this.activeUser);
     this.users = users;
+    if (this.cloudPrintInterface) {
+      this.cloudPrintInterface.setUsers(users);
+    }
     if (updateActiveUser) {
       this.updateActiveUser(this.users[0] || '');
     }

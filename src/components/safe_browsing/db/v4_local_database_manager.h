@@ -67,6 +67,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool CheckExtensionIDs(const std::set<FullHash>& extension_ids,
                          Client* client) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
+  AsyncMatch CheckUrlForHighConfidenceAllowlist(const GURL& url,
+                                                Client* client) override;
   bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;
@@ -126,6 +128,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // This respresents the case when we're trying to determine if a URL is
     // part of the CSD whitelist.
     CHECK_CSD_WHITELIST,
+
+    // TODO(vakh): Explain this.
+    CHECK_HIGH_CONFIDENCE_ALLOWLIST,
 
     // This represents the other cases when a check is being performed
     // synchronously so a client callback isn't required. For instance, when
@@ -372,7 +377,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
 
-  base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_;
+  base::WeakPtrFactory<V4LocalDatabaseManager> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
 };  // class V4LocalDatabaseManager

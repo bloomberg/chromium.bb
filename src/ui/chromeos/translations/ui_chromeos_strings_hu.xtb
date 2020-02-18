@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Keresőcsúszka</translation>
 <translation id="1399648040768741453">Telugu billentyűzet (fonetikus)</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
+<translation id="1439494416798956626">Áthelyezve ide: <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Vietnami billentyűzet (Telex)</translation>
 <translation id="1455548678241328678">Norvég billentyűzet</translation>
 <translation id="1464724975715666883">1 hiba.</translation>
@@ -90,9 +91,9 @@
 <translation id="197560921582345123">Szerkeszthető</translation>
 <translation id="1984603991036629094">Örmény fonetikus billentyűzet</translation>
 <translation id="2001796770603320721">Kezelés a Drive-ban</translation>
+<translation id="2009067268969781306">A meghajtó formázásával törli a rajta lévő összes adatot. A művelet nem vonható vissza.</translation>
 <translation id="2028997212275086731">RAR-archívum</translation>
 <translation id="2046702855113914483">Rámen</translation>
-<translation id="204914487372604757">Parancsikon létrehozása</translation>
 <translation id="2070909990982335904">A ponttal kezdődő nevek a rendszer számára vannak fenntartva. Kérjük, válasszon másik nevet.</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2080010875307505892">Szerb billentyűzet</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Adathordozó vizsgálata…</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> fotó biztonsági mentése végrehajtva a <ph name="BEGIN_LINK" />Google Drive-on<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Másolás...</translation>
+<translation id="3473378059788601120">Átmásolva ide: <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Google-táblázat</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hiba.</translation>
 <translation id="3519867315646775981">Átírás (shalom ← שלום)</translation>
@@ -220,6 +222,7 @@
 <translation id="3620292326130836921">Mindenről készült biztonsági másolat!</translation>
 <translation id="3626281679859535460">Fényerő</translation>
 <translation id="3644896802912593514">Szélesség</translation>
+<translation id="3645531960514756307">Mappa rögzítésének feloldása</translation>
 <translation id="3678559383040232393">Máltai billentyűzet</translation>
 <translation id="3685122418104378273">A Google Drive szinkronizálása alapértelmezés szerint le van tiltva mobiladat-kapcsolat használatakor.</translation>
 <translation id="3726463242007121105">Ezt az eszközt nem lehet megnyitni, mert a fájlrendszere nem támogatott.</translation>
@@ -240,6 +243,7 @@
 <translation id="383652340667548381">szerb</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3855472144336161447">német Neo 2</translation>
+<translation id="3856075812838139784">Csak olvasható</translation>
 <translation id="3858678421048828670">Olasz billentyűzet</translation>
 <translation id="386548886866354912">Csomagolás a következővel: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Leírás</translation>
@@ -266,6 +270,7 @@
 <translation id="426015154560005552">Arab billentyűzet</translation>
 <translation id="4261901459838235729">Google-bemutató</translation>
 <translation id="4290535918735525311">1 mappa megosztva Linuxszal</translation>
+<translation id="42981349822642051">Kibontás</translation>
 <translation id="4298972503445160211">Dán billentyűzet</translation>
 <translation id="4299729908419173967">brazil</translation>
 <translation id="4309915981827077375">Általános információk</translation>
@@ -285,7 +290,9 @@
 <translation id="4568854179928172494">Módosítás ideje</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fájl</translation>
 <translation id="457386861538956877">Továbbiak...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> hozzáadva a kijelöléshez.</translation>
 <translation id="4582497162516204941">Telepítés a Linux (béta) segítségével</translation>
+<translation id="4594543368593301662">Keresési eredmények megjelenítése a következőhöz: <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Előadó</translation>
 <translation id="4656293982926141856">Ez a számítógép</translation>
 <translation id="4669606053856530811">A(z) „<ph name="SOURCE_NAME" />” tagjai elveszítik hozzáférésüket, kivéve, ha meg vannak osztva velük ezek az elemek.</translation>
@@ -338,6 +345,7 @@
 <translation id="5038625366300922036">Továbbiak...</translation>
 <translation id="5061708541166515394">Kontraszt</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911">A törlésre kerülő fájlok mérete összesen <ph name="TOTAL_FILE_SIZE" /></translation>
 <translation id="509429900233858213">Hiba történt.</translation>
 <translation id="5098629044894065541">héber</translation>
 <translation id="5123433949759960244">Kosárlabda</translation>
@@ -383,12 +391,14 @@
 <translation id="5412637665001827670">Bolgár billentyűzet</translation>
 <translation id="5418923334382419584">Mianmari billentyűzet</translation>
 <translation id="5428105026674456456">spanyol</translation>
+<translation id="5438282218546237410">Nincs találat a következő kifejezésre: <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Lengyel billentyűzet</translation>
 <translation id="5465122519792752163">Nepáli billentyűzet (InScript)</translation>
 <translation id="5469868506864199649">olasz</translation>
 <translation id="5494920125229734069">Összes kiválasztása</translation>
 <translation id="5500122897333236901">izlandi</translation>
 <translation id="5508696409934741614">Pöttyök</translation>
+<translation id="5522908512596376669">A fájllista nézete listanézetre változott.</translation>
 <translation id="5524517123096967210">A fájl nem olvasható.</translation>
 <translation id="5533102081734025921"><ph name="IMAGE_TYPE" /> kép</translation>
 <translation id="5533555070048896610">Átírás (namaste → नमस्ते)</translation>
@@ -407,6 +417,7 @@
 <translation id="5752453871435543420">Chrome OS – biztonsági másolat a felhőben</translation>
 <translation id="5756666464756035725">Magyar QWERTY</translation>
 <translation id="5771585441665576801">Átírás (geia → γεια)</translation>
+<translation id="5776325638577448643">Törlés és formázás</translation>
 <translation id="57838592816432529">Némítás</translation>
 <translation id="5788127256798019331">Play-fájlok</translation>
 <translation id="5790193330357274855">kazah</translation>
@@ -415,6 +426,7 @@
 <translation id="5819442873484330149">Hangul 3 készlet (végleges)</translation>
 <translation id="5833610766403489739">Ez a fájl elkóborolt valahová. Kérjük, ellenőrizze a letöltés helyének beállítását, és próbálja újra.</translation>
 <translation id="5838051104334203064">A Play Áruház alkalmazásai nem férhetnek hozzá ehhez az eszközhöz</translation>
+<translation id="5838451609423551646">Összes bejegyzés eltávolítva a kijelöltek közül.</translation>
 <translation id="5838825566232597749">USA „Workman” nemzetközi</translation>
 <translation id="5850516540536751549">Ez a fájltípus nem támogatott. A fájltípus megnyitására képes alkalmazás megkereséséhez látogasson el a <ph name="BEGIN_LINK" />Chrome Internetes áruházba<ph name="END_LINK" />.
         <ph name="BEGIN_LINK_HELP" />További információ<ph name="END_LINK_HELP" /></translation>
@@ -422,10 +434,12 @@
 <translation id="5857774240076772505">A Linux-alkalmazások engedélyt kapnak a(z) <ph name="FOLDER_NAME" /> mappában lévő fájlok módosítására</translation>
 <translation id="5892290200158927959">Francia BÉPO-billentyűzet</translation>
 <translation id="5911887972742538906">Hiba történt a Linux-alkalmazás telepítése során.</translation>
+<translation id="5912396950572065471">Formátum</translation>
 <translation id="5913638992615760742">A másolási művelet nem várt hiba miatt nem sikerült: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Japán bevitel (japán billentyűzethez)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">A Linux-alkalmazások engedélyt kapnak arra, hogy módosítsák az Ön fájljait a Google Drive-fiókjában. A változtatások szinkronizálása a többi eszközön is megtörténik.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elem</translation>
 <translation id="5982621672636444458">Rendezési beállítások</translation>
 <translation id="6005282720244019462">Latin-amerikai billentyűzet</translation>
 <translation id="6007237601604674381">Az áthelyezés sikertelen. <ph name="ERROR_MESSAGE" /></translation>
@@ -436,6 +450,7 @@
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6054173164583630569">Francia billentyűzet</translation>
 <translation id="6074825444536523002">Google-űrlap</translation>
+<translation id="6096979789310008754">A keresési kifejezés törölve, az összes fájl és mappa látható.</translation>
 <translation id="6111770213269631447">Átírás (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Szóköz</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> áthelyezése...</translation>
@@ -446,6 +461,7 @@
 <translation id="6189412234224385711">Megnyitás a következővel: <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Várakozás a helyinformációkra...</translation>
 <translation id="6205710420833115353">Egyes műveletek végrehajtása a vártnál tovább tart. Megszakítja őket?</translation>
+<translation id="6224253798271602650"><ph name="DRIVE_NAME" /> formázása</translation>
 <translation id="6227235786875481728">Ezt a fájlt nem lehet lejátszani.</translation>
 <translation id="6248400709929739064">Feliratok engedélyezése</translation>
 <translation id="6264347891387618177">Átírás (selam → ሰላም)</translation>
@@ -488,6 +504,7 @@
 <translation id="6820687829547641339">Gzip tömörített tar-archívum</translation>
 <translation id="6825883775269213504">orosz</translation>
 <translation id="6827236167376090743">A videó lejátszása a végtelenségig folytatódik.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> eltávolítva a kijelöltek közül.</translation>
 <translation id="6862635236584086457">Az ebbe a mappába mentett minden fájlról online biztonsági másolat készül</translation>
 <translation id="6870130893560916279">Ukrán billentyűzet</translation>
 <translation id="6876155724392614295">Kerékpár</translation>
@@ -524,6 +541,7 @@
 <translation id="719009910964971313">US Dvorak programozó billentyűzet</translation>
 <translation id="7191454237977785534">Mentés másként</translation>
 <translation id="7222624196722476520">Bolgár fonetikus billentyűzet</translation>
+<translation id="7238097264433196391">Meghajtó neve</translation>
 <translation id="7248671827512403053">Alkalmazás</translation>
 <translation id="7268659760406822741">Igénybe vehető szolgáltatások</translation>
 <translation id="7283041136720745563">Nem elegendő az Ön Google Drive-kvótája.</translation>
@@ -594,7 +612,6 @@
 <translation id="7969525169268594403">szlovén</translation>
 <translation id="7982283708762922719">Magasság</translation>
 <translation id="7987485481246785146">Sorani kurd arab alapú billentyűzet</translation>
-<translation id="799547531016638432">Parancsikon eltávolítása</translation>
 <translation id="799923393800005025">Megtekinthető</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8028993641010258682">Méret</translation>
@@ -614,11 +631,13 @@
 <translation id="8148264977957212129">Pinyin beviteli mód</translation>
 <translation id="8151638057146502721">Konfigurálás</translation>
 <translation id="8153607920959057464">Ezt a fájlt nem lehet megjeleníteni.</translation>
+<translation id="8154842056504218462">Összes bejegyzés kijelölve.</translation>
 <translation id="8157684860301034423">Nem sikerült lehívni az alkalmazásadatokat.</translation>
 <translation id="8157939133946352716">7×5</translation>
 <translation id="8160015581537295331">Spanyol billentyűzet</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Eszköz modellje</translation>
+<translation id="8208580316430297579">Grafikák</translation>
 <translation id="8223479393428528563">A fájlok offline használatra való mentéséhez lépjen fel újra az online felületre, kattintson jobb gombbal a fájlokra, és válassza a(z) <ph name="OFFLINE_CHECKBOX_NAME" /> lehetőséget.</translation>
 <translation id="8249296373107784235">Megszakítás</translation>
 <translation id="8261506727792406068">Törlés</translation>
@@ -632,6 +651,7 @@
 <translation id="8336153091935557858">Tegnap <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Izlandi billentyűzet</translation>
 <translation id="8342318071240498787">Már létezik ugyanezzel a névvel egy fájl vagy egy könyvtár.</translation>
+<translation id="8382450452152102026">Ide: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Átírás (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Méret</translation>
 <translation id="8412586565681117057">Gyors beviteli mód</translation>
@@ -650,11 +670,13 @@
 <translation id="8561206103590473338">Elefánt</translation>
 <translation id="8569764466147087991">Válassza ki a megnyitni kívánt fájlt</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elem szinkronizálása…</translation>
+<translation id="8600173386174225982">A fájllista nézete indexképnézetre változott.</translation>
 <translation id="8669949407341943408">Áthelyezés…</translation>
 <translation id="8671210955687109937">Megjegyzések fűzhetők hozzá</translation>
 <translation id="8686213429977032554">Ez a Drive-fájl még nincs megosztva</translation>
 <translation id="8698464937041809063">Google-rajz</translation>
 <translation id="8714406895390098252">Kerékpár</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> kijelölve.</translation>
 <translation id="8722421161699219904">Amerikai nemzetközi billentyűzet</translation>
 <translation id="872537912056138402">horvát</translation>
 <translation id="874420130893181774">Hagyományos pinjin beviteli mód</translation>
@@ -679,6 +701,7 @@
 <translation id="9099674669267916096">Oldalak száma</translation>
 <translation id="9110990317705400362">Folyamatosan keressük az új módszereket, hogy a böngészést biztonságosabbá tegyük. Korábban bármelyik webhely megkérhette Önt, hogy adjon hozzá egy bővítményt a böngészőjéhez. A Google Chrome legújabb verzióiban kifejezetten meg kell mondania a Chrome-nak, hogy telepíteni szeretné ezeket a bővítményeket. Ehhez a Bővítmények oldalon kell hozzáadnia őket. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodek</translation>
+<translation id="9129931661813833980">Mappa rögzítése</translation>
 <translation id="9130775360844693113">A(z) „<ph name="DESTINATION_NAME" />” tagjai hozzá fognak férni ezekhez az elemekhez.</translation>
 <translation id="9131598836763251128">Válasszon ki egy vagy több fájlt</translation>
 <translation id="9133055936679483811">A tömörítés sikertelen. <ph name="ERROR_MESSAGE" /></translation>
@@ -695,6 +718,7 @@
 <translation id="942954117721265519">Nincs kép ebben a könyvtárban.</translation>
 <translation id="943972244133411984">Módosította</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
+<translation id="947144732524271678"><ph name="ENTRY_COUNT" /> bejegyzést tartalmazó tartomány kijelölve <ph name="FROM_ENTRY_NAME" />–<ph name="TO_ENTRY_NAME" /> között.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Már van „<ph name="FILE_NAME" />” nevű fájl. Lecseréli?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> MB</translation>

@@ -10,7 +10,7 @@
 #   by Leslie Michael Orchard <deus_x@nijacode.com>
 #
 # COPYRIGHT
-#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#   Copyright (C) 1996-2014 Andy Wardley.  All Rights Reserved.
 #
 #   This module is free software; you can redistribute it and/or
 #   modify it under the same terms as Perl itself.
@@ -36,14 +36,14 @@ our $TRUNCATE_ADDON  = '...';
 # standard filters, defined in one of the following forms:
 #   name =>   \&static_filter
 #   name => [ \&subref, $is_dynamic ]
-# If the $is_dynamic flag is set then the sub-routine reference 
+# If the $is_dynamic flag is set then the sub-routine reference
 # is called to create a new filter each time it is requested;  if
 # not set, then it is a single, static sub-routine which is returned
 # for every filter request for that name.
 #------------------------------------------------------------------------
 
 our $FILTERS = {
-    # static filters 
+    # static filters
     'html'            => \&html_filter,
     'html_para'       => \&html_paragraph,
     'html_break'      => \&html_para_break,
@@ -91,11 +91,11 @@ our $PLUGIN_FILTER = 'Template::Plugin::Filter';
 #------------------------------------------------------------------------
 # fetch($name, \@args, $context)
 #
-# Attempts to instantiate or return a reference to a filter sub-routine 
-# named by the first parameter, $name, with additional constructor 
-# arguments passed by reference to a list as the second parameter, 
-# $args.  A reference to the calling Template::Context object is 
-# passed as the third paramter.
+# Attempts to instantiate or return a reference to a filter sub-routine
+# named by the first parameter, $name, with additional constructor
+# arguments passed by reference to a list as the second parameter,
+# $args.  A reference to the calling Template::Context object is
+# passed as the third parameter.
 #
 # Returns a reference to a filter sub-routine or a pair of values
 # (undef, STATUS_DECLINED) or ($error, STATUS_ERROR) to decline to
@@ -106,13 +106,13 @@ sub fetch {
     my ($self, $name, $args, $context) = @_;
     my ($factory, $is_dynamic, $filter, $error);
 
-    $self->debug("fetch($name, ", 
+    $self->debug("fetch($name, ",
                  defined $args ? ('[ ', join(', ', @$args), ' ]') : '<no args>', ', ',
-                 defined $context ? $context : '<no context>', 
+                 defined $context ? $context : '<no context>',
                  ')') if $self->{ DEBUG };
 
-    # allow $name to be specified as a reference to 
-    # a plugin filter object;  any other ref is 
+    # allow $name to be specified as a reference to
+    # a plugin filter object;  any other ref is
     # assumed to be a coderef and hence already a filter;
     # non-refs are assumed to be regular name lookups
 
@@ -141,8 +141,8 @@ sub fetch {
 
     if (ref $factory eq 'CODE') {
         if ($is_dynamic) {
-            # if the dynamic flag is set then the sub-routine is a 
-            # factory which should be called to create the actual 
+            # if the dynamic flag is set then the sub-routine is a
+            # factory which should be called to create the actual
             # filter...
             eval {
                 ($filter, $error) = &$factory($context, $args ? @$args : ());
@@ -161,8 +161,8 @@ sub fetch {
     }
 
     if ($error) {
-        return $self->{ TOLERANT } 
-               ? (undef,  Template::Constants::STATUS_DECLINED) 
+        return $self->{ TOLERANT }
+               ? (undef,  Template::Constants::STATUS_DECLINED)
                : ($error, Template::Constants::STATUS_ERROR) ;
     }
     else {
@@ -175,7 +175,7 @@ sub fetch {
 # store($name, \&filter)
 #
 # Stores a new filter in the internal FILTERS hash.  The first parameter
-# is the filter name, the second a reference to a subroutine or 
+# is the filter name, the second a reference to a subroutine or
 # array, as per the standard $FILTERS entries.
 #------------------------------------------------------------------------
 
@@ -215,7 +215,7 @@ sub _init {
 
 #------------------------------------------------------------------------
 # _dump()
-# 
+#
 # Debug method
 #------------------------------------------------------------------------
 
@@ -232,21 +232,21 @@ sub _dump {
     }
 
     my $filters = $self->{ FILTERS };
-    $filters = join('', map { 
+    $filters = join('', map {
         sprintf("    $format", $_, $filters->{ $_ });
     } keys %$filters);
     $filters = "{\n$filters    }";
-    
+
     $output .= sprintf($format, 'FILTERS (local)' => $filters);
 
     $filters = $FILTERS;
-    $filters = join('', map { 
+    $filters = join('', map {
         my $f = $filters->{ $_ };
         my ($ref, $dynamic) = ref $f eq 'ARRAY' ? @$f : ($f, 0);
         sprintf("    $format", $_, $dynamic ? 'dynamic' : 'static');
     } sort keys %$filters);
     $filters = "{\n$filters    }";
-    
+
     $output .= sprintf($format, 'FILTERS (global)' => $filters);
 
     $output .= '}';
@@ -259,52 +259,80 @@ sub _dump {
 #========================================================================
 
 #------------------------------------------------------------------------
+# uri_filter() and url_filter() below can match using either RFC3986 or
+# RFC2732.  See https://github.com/abw/Template2/issues/13
+#-----------------------------------------------------------------------
+
+our $UNSAFE_SPEC = {
+    RFC2732 => q{A-Za-z0-9\-_.~!*'()},
+    RFC3986 => q{A-Za-z0-9\-_.~},
+};
+our $UNSAFE_CHARS = $UNSAFE_SPEC->{ RFC3986 };
+our $URI_REGEX;
+our $URL_REGEX;
+our $URI_ESCAPES;
+
+sub use_rfc2732 {
+    $UNSAFE_CHARS = $UNSAFE_SPEC->{ RFC2732 };
+    $URI_REGEX = $URL_REGEX = undef;
+}
+
+sub use_rfc3986 {
+    $UNSAFE_CHARS = $UNSAFE_SPEC->{ RFC3986 };
+    $URI_REGEX = $URL_REGEX = undef;
+}
+
+sub uri_escapes {
+    return {
+        map { ( chr($_), sprintf("%%%02X", $_) ) } (0..255),
+    };
+}
+
+#------------------------------------------------------------------------
 # uri_filter()                                           [% FILTER uri %]
 #
 # URI escape a string.  This code is borrowed from Gisle Aas' URI::Escape
-# module, copyright 1995-2004.  See RFC2396 for details.
+# module, copyright 1995-2004.  See RFC2396, RFC2732 and RFC3986 for
+# details.
 #-----------------------------------------------------------------------
-
-# cache of escaped characters
-our $URI_ESCAPES;
 
 sub uri_filter {
     my $text = shift;
 
-    $URI_ESCAPES ||= {
-        map { ( chr($_), sprintf("%%%02X", $_) ) } (0..255),
-    };
+    $URI_REGEX   ||= qr/([^$UNSAFE_CHARS])/;
+    $URI_ESCAPES ||= uri_escapes();
 
     if ($] >= 5.008 && utf8::is_utf8($text)) {
         utf8::encode($text);
     }
-    
-    $text =~ s/([^A-Za-z0-9\-_.!~*'()])/$URI_ESCAPES->{$1}/eg;
+
+    $text =~ s/$URI_REGEX/$URI_ESCAPES->{$1}/eg;
     $text;
 }
+
+
 
 #------------------------------------------------------------------------
 # url_filter()                                           [% FILTER uri %]
 #
-# NOTE: the difference: url vs uri. 
-# This implements the old-style, non-strict behaviour of the uri filter 
-# which allows any valid URL characters to pass through so that 
-# http://example.com/blah.html does not get the ':' and '/' characters 
-# munged. 
+# NOTE: the difference: url vs uri.
+# This implements the old-style, non-strict behaviour of the uri filter
+# which allows any valid URL characters to pass through so that
+# http://example.com/blah.html does not get the ':' and '/' characters
+# munged.
 #-----------------------------------------------------------------------
 
 sub url_filter {
     my $text = shift;
 
-    $URI_ESCAPES ||= {
-        map { ( chr($_), sprintf("%%%02X", $_) ) } (0..255),
-    };
+    $URL_REGEX   ||= qr/([^;\/?:@&=+\$,$UNSAFE_CHARS])/;
+    $URI_ESCAPES ||= uri_escapes();
 
     if ($] >= 5.008 && utf8::is_utf8($text)) {
         utf8::encode($text);
     }
-    
-    $text =~ s/([^;\/?:@&=+\$,A-Za-z0-9\-_.!~*'()])/$URI_ESCAPES->{$1}/eg;
+
+    $text =~ s/$URL_REGEX/$URI_ESCAPES->{$1}/eg;
     $text;
 }
 
@@ -313,7 +341,7 @@ sub url_filter {
 # html_filter()                                         [% FILTER html %]
 #
 # Convert any '<', '>' or '&' characters to the HTML equivalents, '&lt;',
-# '&gt;' and '&amp;', respectively. 
+# '&gt;' and '&amp;', respectively.
 #------------------------------------------------------------------------
 
 sub html_filter {
@@ -357,7 +385,7 @@ sub xml_filter {
 
 sub html_paragraph  {
     my $text = shift;
-    return "<p>\n" 
+    return "<p>\n"
            . join("\n</p>\n\n<p>\n", split(/(?:\r?\n){2,}/, $text))
            . "</p>\n";
 }
@@ -365,7 +393,7 @@ sub html_paragraph  {
 
 #------------------------------------------------------------------------
 # html_para_break()                          [% FILTER html_para_break %]
-#                                               
+#
 # Join each paragraph of text (delimited by two or more newlines) with
 # <br><br> HTML tags.
 #------------------------------------------------------------------------
@@ -397,7 +425,7 @@ sub html_line_break  {
 #
 # Dynamic version of the static html filter which attempts to locate the
 # Apache::Util or HTML::Entities modules to perform full entity encoding
-# of the text passed.  Returns an exception if one or other of the 
+# of the text passed.  Returns an exception if one or other of the
 # modules can't be located.
 #------------------------------------------------------------------------
 
@@ -415,16 +443,16 @@ sub use_apache_util {
 sub html_entity_filter_factory {
     my $context = shift;
     my $haz;
-    
+
     # if Apache::Util is installed then we use escape_html
-    $haz = $AVAILABLE->{ HTML_ENTITY } 
+    $haz = $AVAILABLE->{ HTML_ENTITY }
        ||  eval { use_apache_util()   }
        ||  eval { use_html_entities() }
        ||  -1;      # we use -1 for "not available" because it's a true value
 
     return ref $haz eq 'CODE'
         ? $haz
-        : (undef, Template::Exception->new( 
+        : (undef, Template::Exception->new(
             html_entity => 'cannot locate Apache::Util or HTML::Entities' )
           );
 }
@@ -434,7 +462,7 @@ sub html_entity_filter_factory {
 # indent_filter_factory($pad)                    [% FILTER indent(pad) %]
 #
 # Create a filter to indent text by a fixed pad string or when $pad is
-# numerical, a number of space. 
+# numerical, a number of space.
 #------------------------------------------------------------------------
 
 sub indent_filter_factory {
@@ -555,7 +583,7 @@ sub truncate_filter_factory {
 
 #------------------------------------------------------------------------
 # eval_filter_factory                                   [% FILTER eval %]
-# 
+#
 # Create a filter to evaluate template text.
 #------------------------------------------------------------------------
 
@@ -571,8 +599,8 @@ sub eval_filter_factory {
 
 #------------------------------------------------------------------------
 # perl_filter_factory                                   [% FILTER perl %]
-# 
-# Create a filter to process Perl text iff the context EVAL_PERL flag 
+#
+# Create a filter to process Perl text iff the context EVAL_PERL flag
 # is set.
 #------------------------------------------------------------------------
 
@@ -588,8 +616,8 @@ sub perl_filter_factory {
         local($Template::Perl::context) = $context;
         local($Template::Perl::stash)   = $stash;
         my $out = eval <<EOF;
-package Template::Perl; 
-\$stash = \$context->stash(); 
+package Template::Perl;
+\$stash = \$context->stash();
 $text
 EOF
         $context->throw($@) if $@;
@@ -608,7 +636,7 @@ sub redirect_filter_factory {
     my ($context, $file, $options) = @_;
     my $outpath = $context->config->{ OUTPUT_PATH };
 
-    return (undef, Template::Exception->new('redirect', 
+    return (undef, Template::Exception->new('redirect',
                                             'OUTPUT_PATH is not set'))
         unless $outpath;
 
@@ -661,11 +689,11 @@ Template::Filters - Post-processing filters for template blocks
 =head1 SYNOPSIS
 
     use Template::Filters;
-    
+
     $filters = Template::Filters->new(\%config);
-    
+
     ($filter, $error) = $filters->fetch($name, \@args, $context);
-    
+
     if ($filter) {
         print &$filter("some text");
     }
@@ -681,16 +709,16 @@ via the L<FILTERS> configuration option.
 
 =head1 METHODS
 
-=head2 new(\%params) 
+=head2 new(\%params)
 
 Constructor method which instantiates and returns a reference to a
 C<Template::Filters> object.  A reference to a hash array of configuration
-items may be passed as a parameter.  These are described below.  
+items may be passed as a parameter.  These are described below.
 
     my $filters = Template::Filters->new({
         FILTERS => { ... },
     });
-    
+
     my $template = Template->new({
         LOAD_FILTERS => [ $filters ],
     });
@@ -716,10 +744,10 @@ object.
 
 The method returns a reference to a filter sub-routine on success.  It
 may also return C<(undef, STATUS_DECLINE)> to decline the request, to allow
-delegation onto other filter providers in the L<LOAD_FILTERS> chain of 
+delegation onto other filter providers in the L<LOAD_FILTERS> chain of
 responsibility.  On error, C<($error, STATUS_ERROR)> is returned where $error
 is an error message or L<Template::Exception> object indicating the error
-that occurred. 
+that occurred.
 
 When the C<TOLERANT> option is set, errors are automatically downgraded to
 a C<STATUS_DECLINE> response.
@@ -741,6 +769,16 @@ your system.
 
     use Template::Filters;
     Template::Filters->use_apache_util();
+
+=head2 use_rfc2732()
+
+This class method can be called to configure the C<uri> and C<url> filters to
+use the older RFC2732 standard for matching unsafe characters.
+
+=head2 use_rfc3986()
+
+This class method can be called to configure the C<uri> and C<url> filters to
+use the newer RFC3986 standard for matching unsafe characters.
 
 =head1 CONFIGURATION OPTIONS
 
@@ -775,7 +813,7 @@ debugging messages for the Template::Filters module by setting it to include
 the C<DEBUG_FILTERS> value.
 
     use Template::Constants qw( :debug );
-    
+
     my $template = Template->new({
         DEBUG => DEBUG_FILTERS | DEBUG_PLUGINS,
     });
@@ -791,7 +829,7 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2014 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -29,7 +29,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -308,73 +307,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(watcher.did_exit_normally());
 }
 
-class TestWCBeforeUnloadDelegate : public JavaScriptDialogManager,
-                                   public WebContentsDelegate {
- public:
-  explicit TestWCBeforeUnloadDelegate(WebContentsImpl* web_contents)
-      : web_contents_(web_contents) {
-    web_contents_->SetDelegate(this);
-  }
-
-  ~TestWCBeforeUnloadDelegate() override {
-    if (!callback_.is_null())
-      std::move(callback_).Run(true, base::string16());
-
-    web_contents_->SetDelegate(nullptr);
-    web_contents_->SetJavaScriptDialogManagerForTesting(nullptr);
-  }
-
-  void Wait() {
-    run_loop_->Run();
-    run_loop_ = std::make_unique<base::RunLoop>();
-  }
-
-  // WebContentsDelegate
-
-  JavaScriptDialogManager* GetJavaScriptDialogManager(
-      WebContents* source) override {
-    return this;
-  }
-
-  // JavaScriptDialogManager
-
-  void RunJavaScriptDialog(WebContents* web_contents,
-                           RenderFrameHost* render_frame_host,
-                           JavaScriptDialogType dialog_type,
-                           const base::string16& message_text,
-                           const base::string16& default_prompt_text,
-                           DialogClosedCallback callback,
-                           bool* did_suppress_message) override {
-    NOTREACHED();
-  }
-
-  void RunBeforeUnloadDialog(WebContents* web_contents,
-                             RenderFrameHost* render_frame_host,
-                             bool is_reload,
-                             DialogClosedCallback callback) override {
-    callback_ = std::move(callback);
-    run_loop_->Quit();
-  }
-
-  bool HandleJavaScriptDialog(WebContents* web_contents,
-                              bool accept,
-                              const base::string16* prompt_override) override {
-    NOTREACHED();
-    return true;
-  }
-
-  void CancelDialogs(WebContents* web_contents, bool reset_state) override {}
-
- private:
-  WebContentsImpl* web_contents_;
-
-  DialogClosedCallback callback_;
-
-  std::unique_ptr<base::RunLoop> run_loop_ = std::make_unique<base::RunLoop>();
-
-  DISALLOW_COPY_AND_ASSIGN(TestWCBeforeUnloadDelegate);
-};
-
 // This is a regression test for https://crbug.com/891423 in which tabs showing
 // beforeunload dialogs stalled navigation and triggered the "hung process"
 // dialog.
@@ -407,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       base::string16());
 
   // Hang the first contents in a beforeunload dialog.
-  TestWCBeforeUnloadDelegate test_delegate(web_contents);
+  BeforeUnloadBlockingDelegate test_delegate(web_contents);
   EXPECT_TRUE(
       ExecJs(web_contents, "window.onbeforeunload=function(e){ return 'x' }"));
   EXPECT_TRUE(ExecJs(web_contents,
@@ -1364,6 +1296,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadHandlersArePowerful) {
   RenderFrameHostImpl* A1 = web_contents()->GetMainFrame();
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
 
+  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // being deleleted before it has finished running B2 unload handler.
+  A1->DisableSwapOutTimerForTesting();
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+
   // Add an unload handler to the subframe and try in that handler to preserve
   // state that we will try to recover later.
   ASSERT_TRUE(ExecJs(B2, R"(
@@ -1450,6 +1387,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameHostImpl* B2 = A1->child_at(0)->current_frame_host();
   RenderFrameHostImpl* C3 = B2->child_at(0)->current_frame_host();
 
+  // Increase SwapOut/Unload timeout to prevent the previous document from
+  // being deleleted before it has finished running C3 unload handler.
+  A1->DisableSwapOutTimerForTesting();
+  B2->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+  C3->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+
   // Add an unload handler to the subframe and try in that handler to preserve
   // state that we will try to recover later.
   ASSERT_TRUE(ExecJs(C3, R"(
@@ -1494,21 +1437,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  RenderFrameHostImpl* A4 = web_contents()->GetMainFrame();
-  RenderFrameHostImpl* B5 = A4->child_at(0)->current_frame_host();
-  RenderFrameHostImpl* C6 = B5->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* A5 = web_contents()->GetMainFrame();
+  RenderFrameHostImpl* B6 = A5->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* C7 = B6->child_at(0)->current_frame_host();
 
   // Verify that we can recover the data that should have been persisted by the
   // unload handler.
   EXPECT_EQ("localstorage_test_value",
-            EvalJs(C6, "localStorage.localstorage_test_key"));
-  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C6, "document.cookie"));
+            EvalJs(C7, "localStorage.localstorage_test_key"));
+  EXPECT_EQ("cookie_test_key=cookie_test_value", EvalJs(C7, "document.cookie"));
 
   // TODO(lukasza): https://crbug.com/960976: Make the verification below
   // unconditional, once the bug is fixed.
   if (!AreAllSitesIsolatedForTesting()) {
     EXPECT_EQ("history_test_value",
-              EvalJs(C6, "history.state.history_test_key"));
+              EvalJs(C7, "history.state.history_test_key"));
   }
 }
 

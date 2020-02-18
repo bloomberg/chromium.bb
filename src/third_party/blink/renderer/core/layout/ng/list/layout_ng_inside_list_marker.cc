@@ -25,7 +25,7 @@ bool LayoutNGInsideListMarker::IsOfType(LayoutObjectType type) const {
 }
 
 PositionWithAffinity LayoutNGInsideListMarker::PositionForPoint(
-    const LayoutPoint&) const {
+    const PhysicalOffset&) const {
   return CreatePositionWithAffinity(0);
 }
 

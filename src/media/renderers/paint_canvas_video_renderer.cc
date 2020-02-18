@@ -12,14 +12,16 @@
 #include "base/memory/ptr_util.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -89,7 +91,7 @@ sk_sp<SkImage> YUVGrBackendTexturesToSkImage(
     gfx::ColorSpace video_color_space,
     VideoPixelFormat video_format,
     GrBackendTexture* yuv_textures,
-    GrBackendTexture* result_texture = nullptr) {
+    const GrBackendTexture& result_texture) {
   // TODO(hubbe): This should really default to rec709.
   // https://crbug.com/828599
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
@@ -97,26 +99,53 @@ sk_sp<SkImage> YUVGrBackendTexturesToSkImage(
 
   switch (video_format) {
     case PIXEL_FORMAT_NV12:
-      if (result_texture) {
-        return SkImage::MakeFromNV12TexturesCopyWithExternalBackend(
-            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
-            result_texture[0]);
-      } else {
-        return SkImage::MakeFromNV12TexturesCopy(
-            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin);
-      }
+      return SkImage::MakeFromNV12TexturesCopyWithExternalBackend(
+          gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
+          result_texture);
     case PIXEL_FORMAT_I420:
-      if (result_texture) {
-        return SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
-            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
-            result_texture[0]);
-      } else {
-        return SkImage::MakeFromYUVTexturesCopy(
-            gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin);
-      }
+      return SkImage::MakeFromYUVTexturesCopyWithExternalBackend(
+          gr_context, color_space, yuv_textures, kTopLeft_GrSurfaceOrigin,
+          result_texture);
     default:
       NOTREACHED();
       return nullptr;
+  }
+}
+
+// Helper class that begins/ends access to a mailbox within a scope. The mailbox
+// must have been imported into |texture|.
+class ScopedSharedImageAccess {
+ public:
+  ScopedSharedImageAccess(
+      gpu::gles2::GLES2Interface* gl,
+      GLuint texture,
+      const gpu::Mailbox& mailbox,
+      GLenum access = GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM)
+      : gl(gl), texture(texture), is_shared_image(mailbox.IsSharedImage()) {
+    if (is_shared_image)
+      gl->BeginSharedImageAccessDirectCHROMIUM(texture, access);
+  }
+
+  ~ScopedSharedImageAccess() {
+    if (is_shared_image)
+      gl->EndSharedImageAccessDirectCHROMIUM(texture);
+  }
+
+ private:
+  gpu::gles2::GLES2Interface* gl;
+  GLuint texture;
+  bool is_shared_image;
+};
+
+// Waits for a sync token and import the mailbox as texture.
+GLuint SynchronizeAndImportMailbox(gpu::gles2::GLES2Interface* gl,
+                                   const gpu::SyncToken& sync_token,
+                                   const gpu::Mailbox& mailbox) {
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  if (mailbox.IsSharedImage()) {
+    return gl->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+  } else {
+    return gl->CreateAndConsumeTextureCHROMIUM(mailbox.name);
   }
 }
 
@@ -125,6 +154,7 @@ struct YUVPlaneTextureInfo {
   GrGLTextureInfo texture = {0, 0};
   GLint minFilter = 0;
   GLint magFilter = 0;
+  bool is_shared_image = false;
 };
 using YUVTexturesInfo = std::array<YUVPlaneTextureInfo, kNumYUVPlanes>;
 
@@ -146,9 +176,15 @@ YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
            mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB)
         << "Unsupported texture target " << std::hex << std::showbase
         << mailbox_holder.texture_target;
-    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    yuv_textures_info[i].texture.fID =
-        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
+    yuv_textures_info[i].texture.fID = SynchronizeAndImportMailbox(
+        gl, mailbox_holder.sync_token, mailbox_holder.mailbox);
+    if (mailbox_holder.mailbox.IsSharedImage()) {
+      yuv_textures_info[i].is_shared_image = true;
+      gl->BeginSharedImageAccessDirectCHROMIUM(
+          yuv_textures_info[i].texture.fID,
+          GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+    }
+
     yuv_textures_info[i].texture.fTarget = mailbox_holder.texture_target;
     yuv_textures_info[i].texture.fFormat = skia_texture_format;
 
@@ -158,22 +194,6 @@ YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
                           &yuv_textures_info[i].minFilter);
     gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MAG_FILTER,
                           &yuv_textures_info[i].magFilter);
-    // TODO(dcastagna): avoid this copy once Skia supports native textures
-    // with a GL_TEXTURE_RECTANGLE_ARB texture target.
-    // crbug.com/505026
-    if (mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
-      unsigned texture_copy = 0;
-      gl->GenTextures(1, &texture_copy);
-      DCHECK(texture_copy);
-      gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(yuv_textures_info[i].texture.fID, 0,
-                              GL_TEXTURE_2D, texture_copy, 0, GL_RGB,
-                              GL_UNSIGNED_BYTE, false, true, false);
-
-      gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);
-      yuv_textures_info[i].texture.fID = texture_copy;
-      yuv_textures_info[i].texture.fTarget = GL_TEXTURE_2D;
-    }
   }
 
   return yuv_textures_info;
@@ -192,45 +212,10 @@ void DeleteYUVTextures(const VideoFrame* video_frame,
                       GL_TEXTURE_MIN_FILTER, yuv_textures_info[i].minFilter);
     gl->TexParameteri(yuv_textures_info[i].texture.fTarget,
                       GL_TEXTURE_MAG_FILTER, yuv_textures_info[i].magFilter);
+    if (yuv_textures_info[i].is_shared_image)
+      gl->EndSharedImageAccessDirectCHROMIUM(yuv_textures_info[i].texture.fID);
     gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);
   }
-}
-
-sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
-    const VideoFrame* video_frame,
-    viz::ContextProvider* context_provider) {
-  DCHECK(video_frame->HasTextures());
-  GrContext* gr_context = context_provider->GrContext();
-  DCHECK(gr_context);
-  // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
-  // function. (crbug.com/674185)
-  DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
-         video_frame->format() == PIXEL_FORMAT_NV12);
-
-  gfx::Size ya_tex_size = video_frame->coded_size();
-  gfx::Size uv_tex_size((ya_tex_size.width() + 1) / 2,
-                        (ya_tex_size.height() + 1) / 2);
-
-  YUVTexturesInfo yuv_textures_info =
-      GetYUVTexturesInfo(video_frame, context_provider);
-
-  GrBackendTexture yuv_textures[3] = {
-      GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
-                       GrMipMapped::kNo, yuv_textures_info[0].texture),
-      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
-                       GrMipMapped::kNo, yuv_textures_info[1].texture),
-      GrBackendTexture(uv_tex_size.width(), uv_tex_size.height(),
-                       GrMipMapped::kNo, yuv_textures_info[2].texture),
-  };
-
-  sk_sp<SkImage> img =
-      YUVGrBackendTexturesToSkImage(gr_context, video_frame->ColorSpace(),
-                                    video_frame->format(), yuv_textures);
-  gr_context->flush();
-
-  DeleteYUVTextures(video_frame, context_provider, yuv_textures_info);
-
-  return img;
 }
 
 sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
@@ -266,11 +251,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   backend_texture.fID = texture_id;
   backend_texture.fTarget = texture_target;
   backend_texture.fFormat = GL_RGBA8;
-  GrBackendTexture result_texture[1] = {
-      GrBackendTexture(video_frame->coded_size().width(),
-                       video_frame->coded_size().height(), GrMipMapped::kNo,
-                       backend_texture),
-  };
+  GrBackendTexture result_texture(video_frame->coded_size().width(),
+                                  video_frame->coded_size().height(),
+                                  GrMipMapped::kNo, backend_texture);
 
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
       gr_context, video_frame->ColorSpace(), video_frame->format(),
@@ -282,67 +265,52 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   return img;
 }
 
-// Creates a SkImage from a |video_frame| backed by native resources.
-// The SkImage will take ownership of the underlying resource.
-sk_sp<SkImage> NewSkImageFromVideoFrameNative(
-    VideoFrame* video_frame,
-    viz::ContextProvider* context_provider,
-    bool allow_wrap_texture,
-    bool* wrapped_video_frame_texture) {
+// Imports a VideoFrame that contains a single mailbox into a newly created GL
+// texture, after synchronization with the sync token. Returns the GL texture.
+// |mailbox| is set to the imported mailbox.
+GLuint ImportVideoFrameSingleMailbox(gpu::gles2::GLES2Interface* gl,
+                                     VideoFrame* video_frame,
+                                     gpu::Mailbox* mailbox) {
+  DCHECK(video_frame->HasTextures());
+  DCHECK_EQ(video_frame->NumTextures(), 1u);
+
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
-         PIXEL_FORMAT_RGB32 == video_frame->format() ||
+         PIXEL_FORMAT_ABGR == video_frame->format() ||
          PIXEL_FORMAT_NV12 == video_frame->format() ||
          PIXEL_FORMAT_UYVY == video_frame->format())
-      << "Format: " << (int)video_frame->format();
+      << "Format: " << VideoPixelFormatToString(video_frame->format());
 
   const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
   DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
          mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
          mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
-      << "Unsupported texture target " << std::hex << std::showbase
       << mailbox_holder.texture_target;
 
-  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
-  unsigned source_texture = 0;
-  gfx::ColorSpace color_space_for_skia;
-  *wrapped_video_frame_texture =
-      mailbox_holder.texture_target == GL_TEXTURE_2D && allow_wrap_texture;
-  if (*wrapped_video_frame_texture) {
-    // Fast path where we can avoid a copy, by having last_image_ directly wrap
-    // the VideoFrame texture.
-    gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
-    source_texture =
-        gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-    color_space_for_skia = video_frame->ColorSpace();
-  } else {
-    // TODO(dcastagna): At the moment Skia doesn't support targets different
-    // than GL_TEXTURE_2D.  Avoid this copy once
-    // https://code.google.com/p/skia/issues/detail?id=3868 is addressed, when
-    // we allow wrapping.
-    gl->GenTextures(1, &source_texture);
-    DCHECK(source_texture);
-    gl->BindTexture(GL_TEXTURE_2D, source_texture);
-    PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-        gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
-        GL_UNSIGNED_BYTE, 0, false, false);
-  }
-  GrGLTextureInfo source_texture_info;
-  source_texture_info.fID = source_texture;
-  source_texture_info.fTarget = GL_TEXTURE_2D;
-  // TODO(bsalomon): GrGLTextureInfo::fFormat and SkColorType passed to SkImage
-  // factory should reflect video_frame->format(). Update once Skia supports
-  // GL_RGB.
-  // skbug.com/7533
-  source_texture_info.fFormat = GL_RGBA8_OES;
-  GrBackendTexture source_backend_texture(
-      video_frame->coded_size().width(), video_frame->coded_size().height(),
-      GrMipMapped::kNo, source_texture_info);
-  return SkImage::MakeFromAdoptedTexture(
-      context_provider->GrContext(), source_backend_texture,
-      kTopLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, kPremul_SkAlphaType,
-      color_space_for_skia.ToSkColorSpace());
+  *mailbox = mailbox_holder.mailbox;
+  return SynchronizeAndImportMailbox(gl, mailbox_holder.sync_token, *mailbox);
+}
+
+// Wraps a GL RGBA texture into a SkImage.
+sk_sp<SkImage> WrapGLTexture(GLenum target,
+                             GLuint texture_id,
+                             const gfx::Size& size,
+                             const gfx::ColorSpace& color_space,
+                             viz::ContextProvider* context_provider) {
+  GrGLTextureInfo texture_info;
+  texture_info.fID = texture_id;
+  texture_info.fTarget = target;
+  // TODO(bsalomon): GrGLTextureInfo::fFormat and SkColorType passed to
+  // SkImage factory should reflect video_frame->format(). Update once
+  // Skia supports GL_RGB. skbug.com/7533
+  texture_info.fFormat = GL_RGBA8_OES;
+  GrBackendTexture backend_texture(size.width(), size.height(),
+                                   GrMipMapped::kNo, texture_info);
+  return SkImage::MakeFromTexture(
+      context_provider->GrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
+      kRGBA_8888_SkColorType, kPremul_SkAlphaType, color_space.ToSkColorSpace(),
+      nullptr, nullptr);
 }
 
 void VideoFrameCopyTextureOrSubTexture(gpu::gles2::GLES2Interface* gl,
@@ -569,16 +537,14 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 };
 
 PaintCanvasVideoRenderer::PaintCanvasVideoRenderer()
-    : last_image_deleting_timer_(
+    : cache_deleting_timer_(
           FROM_HERE,
           base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
           this,
           &PaintCanvasVideoRenderer::ResetCache),
       renderer_stable_id_(cc::PaintImage::GetNextId()) {}
 
-PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() {
-  ResetCache();
-}
+PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() = default;
 
 void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                                      cc::PaintCanvas* canvas,
@@ -612,6 +578,17 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   if (!UpdateLastImage(video_frame, context_provider,
                        false /* allow_wrap_texture */))
     return;
+  DCHECK(cache_);
+  cc::PaintImage image = cache_->paint_image;
+  DCHECK(image);
+
+  base::Optional<ScopedSharedImageAccess> source_access;
+  if (video_frame->HasTextures()) {
+    DCHECK(!cache_->source_mailbox.IsZero());
+    DCHECK(cache_->source_texture);
+    source_access.emplace(context_provider->ContextGL(), cache_->source_texture,
+                          cache_->source_mailbox);
+  }
 
   cc::PaintFlags video_flags;
   video_flags.setAlpha(flags.getAlpha());
@@ -620,7 +597,7 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
 
   const bool need_rotation = video_transformation.rotation != VIDEO_ROTATION_0;
   const bool need_scaling =
-      dest_rect.size() != gfx::SizeF(last_image_.width(), last_image_.height());
+      dest_rect.size() != gfx::SizeF(image.width(), image.height());
   const bool need_translation = !dest_rect.origin().IsOrigin();
   // TODO(tmathmeyer): apply horizontal / vertical mirroring if needed.
   bool need_transform = need_rotation || need_scaling || need_translation;
@@ -651,11 +628,10 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
       rotated_dest_size =
           gfx::SizeF(rotated_dest_size.height(), rotated_dest_size.width());
     }
-    canvas->scale(
-        SkFloatToScalar(rotated_dest_size.width() / last_image_.width()),
-        SkFloatToScalar(rotated_dest_size.height() / last_image_.height()));
-    canvas->translate(-SkFloatToScalar(last_image_.width() * 0.5f),
-                      -SkFloatToScalar(last_image_.height() * 0.5f));
+    canvas->scale(SkFloatToScalar(rotated_dest_size.width() / image.width()),
+                  SkFloatToScalar(rotated_dest_size.height() / image.height()));
+    canvas->translate(-SkFloatToScalar(image.width() * 0.5f),
+                      -SkFloatToScalar(image.height() * 0.5f));
   }
 
   // This is a workaround for crbug.com/524717. A texture backed image is not
@@ -664,14 +640,13 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   // sw image into the SkPicture. The long term solution is for Skia to provide
   // a SkPicture filter that makes a picture safe for multiple CPU raster
   // threads. (skbug.com/4321).
-  cc::PaintImage image = last_image_;
-  if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
+  if (canvas->imageInfo().colorType() == kUnknown_SkColorType &&
+      image.IsTextureBacked()) {
     sk_sp<SkImage> non_texture_image =
-        last_image_.GetSkImage()->makeNonTextureImage();
-    image =
-        cc::PaintImageBuilder::WithProperties(last_image_)
-            .set_image(std::move(non_texture_image), last_image_.content_id())
-            .TakePaintImage();
+        image.GetSkImage()->makeNonTextureImage();
+    image = cc::PaintImageBuilder::WithProperties(image)
+                .set_image(std::move(non_texture_image), image.content_id())
+                .TakePaintImage();
   }
   canvas->drawImage(image, 0, 0, &video_flags);
 
@@ -681,6 +656,7 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
   canvas->flush();
 
   if (video_frame->HasTextures()) {
+    source_access.reset();
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by canvas->flush().
     SynchronizeVideoFrameRead(std::move(video_frame),
@@ -688,9 +664,9 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                               context_provider->ContextSupport());
   }
   // Because we are not retaining a reference to the VideoFrame, it would be
-  // invalid for last_image_ to directly wrap its texture(s), as they will be
+  // invalid for the cache to directly wrap its texture(s), as they will be
   // recycled.
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
 }
 
 void PaintCanvasVideoRenderer::Copy(scoped_refptr<VideoFrame> video_frame,
@@ -1052,7 +1028,6 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_RGB24:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_ABGR:
@@ -1079,19 +1054,16 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
 
-  const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(0);
-  DCHECK(mailbox_holder.texture_target == GL_TEXTURE_2D ||
-         mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB ||
-         mailbox_holder.texture_target == GL_TEXTURE_EXTERNAL_OES)
-      << mailbox_holder.texture_target;
-
-  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+  gpu::Mailbox mailbox;
   uint32_t source_texture =
-      gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-  VideoFrameCopyTextureOrSubTexture(gl, video_frame->coded_size(),
-                                    video_frame->visible_rect(), source_texture,
-                                    target, texture, internal_format, format,
-                                    type, level, premultiply_alpha, flip_y);
+      ImportVideoFrameSingleMailbox(gl, video_frame, &mailbox);
+  {
+    ScopedSharedImageAccess access(gl, source_texture, mailbox);
+    VideoFrameCopyTextureOrSubTexture(
+        gl, video_frame->coded_size(), video_frame->visible_rect(),
+        source_texture, target, texture, internal_format, format, type, level,
+        premultiply_alpha, flip_y);
+  }
   gl->DeleteTextures(1, &source_texture);
   gl->ShallowFlushCHROMIUM();
   // The caller must call SynchronizeVideoFrameRead() after this operation, but
@@ -1126,34 +1098,25 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
       return false;
     }
 
-    GrBackendTexture backend_texture =
-        last_image_.GetSkImage()->getBackendTexture(true);
-    if (!backend_texture.isValid())
-      return false;
-    GrGLTextureInfo texture_info;
-    if (!backend_texture.getGLTextureInfo(&texture_info))
-      return false;
-
+    DCHECK(cache_);
+    DCHECK(!cache_->source_mailbox.IsZero());
     gpu::gles2::GLES2Interface* canvas_gl = context_provider->ContextGL();
-    gpu::MailboxHolder mailbox_holder;
-    mailbox_holder.texture_target = texture_info.fTarget;
-    canvas_gl->ProduceTextureDirectCHROMIUM(texture_info.fID,
-                                            mailbox_holder.mailbox.name);
 
+    gpu::SyncToken sync_token;
     // Wait for mailbox creation on canvas context before consuming it and
     // copying from it on the consumer context.
-    canvas_gl->GenUnverifiedSyncTokenCHROMIUM(
-        mailbox_holder.sync_token.GetData());
+    canvas_gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
 
-    destination_gl->WaitSyncTokenCHROMIUM(
-        mailbox_holder.sync_token.GetConstData());
-    uint32_t intermediate_texture =
-        destination_gl->CreateAndConsumeTextureCHROMIUM(
-            mailbox_holder.mailbox.name);
-
-    destination_gl->CopyTextureCHROMIUM(intermediate_texture, 0, target,
-                                        texture, level, internal_format, type,
-                                        flip_y, premultiply_alpha, false);
+    uint32_t intermediate_texture = SynchronizeAndImportMailbox(
+        destination_gl, sync_token, cache_->source_mailbox);
+    {
+      ScopedSharedImageAccess access(destination_gl, intermediate_texture,
+                                     cache_->source_mailbox);
+      VideoFrameCopyTextureOrSubTexture(
+          destination_gl, cache_->coded_size, cache_->visible_rect,
+          intermediate_texture, target, texture, internal_format, format, type,
+          level, premultiply_alpha, flip_y);
+    }
 
     destination_gl->DeleteTextures(1, &intermediate_texture);
 
@@ -1164,14 +1127,14 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     canvas_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
 
     // Because we are not retaining a reference to the VideoFrame, it would be
-    // invalid to keep last_image_ around if it directly wraps the VideoFrame
+    // invalid to keep the cache around if it directly wraps the VideoFrame
     // texture(s), as they will be recycled.
-    if (last_image_wraps_video_frame_texture_)
-      ResetCache();
+    if (cache_->wraps_video_frame_texture)
+      cache_.reset();
 
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by getBackendTexture() or CopyTextureCHROMIUM (in the
-    // case last_image_ was referencing its texture(s) directly).
+    // case the cache was referencing its texture(s) directly).
     SynchronizeVideoFrameRead(std::move(video_frame), canvas_gl,
                               context_provider->ContextSupport());
   } else {
@@ -1180,7 +1143,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         format, type, level, premultiply_alpha, flip_y);
     SynchronizeVideoFrameRead(std::move(video_frame), destination_gl, nullptr);
   }
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
 
   return true;
 }
@@ -1256,7 +1219,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
   SyncTokenClientImpl client(source_gl);
   video_frame->UpdateReleaseSyncToken(&client);
 
-  DCHECK(!last_image_wraps_video_frame_texture_);
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
   return true;
 }
 
@@ -1327,49 +1290,81 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     yuv_textures[plane] = yuv_images[plane]->getBackendTexture(false);
   }
 
-  // Decode 3 GPU-side Y,U,V SkImages into a GPU-side RGB SkImage.
-  sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
-      gr_context, video_frame.ColorSpace(), video_frame.format(), yuv_textures);
-  if (!yuv_image) {
-    return false;
+  auto* sii = context_provider->SharedImageInterface();
+  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
+
+  // We need a shared image to receive the intermediate RGB result. Try to reuse
+  // one if compatible, otherwise create a new one.
+  if (yuv_cache_.texture && yuv_cache_.size == video_frame.coded_size() &&
+      yuv_cache_.context_provider == context_provider) {
+    source_gl->WaitSyncTokenCHROMIUM(yuv_cache_.sync_token.GetConstData());
+  } else {
+    yuv_cache_.Reset();
+    yuv_cache_.context_provider = context_provider;
+    yuv_cache_.size = video_frame.coded_size();
+    yuv_cache_.mailbox = sii->CreateSharedImage(
+        viz::ResourceFormat::RGBA_8888, video_frame.coded_size(),
+        gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+    yuv_cache_.texture = SynchronizeAndImportMailbox(
+        source_gl, sii->GenUnverifiedSyncToken(), yuv_cache_.mailbox);
   }
 
-  GrGLTextureInfo src_texture_info{};
-  yuv_image->getBackendTexture(true).getGLTextureInfo(&src_texture_info);
+  // On the source GL context, do the YUV->RGB conversion using Skia.
+  gpu::SyncToken post_conversion_sync_token;
+  {
+    source_gl->BeginSharedImageAccessDirectCHROMIUM(
+        yuv_cache_.texture, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
-  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
-  gpu::MailboxHolder mailbox_holder;
-  mailbox_holder.texture_target = src_texture_info.fTarget;
-  source_gl->ProduceTextureDirectCHROMIUM(src_texture_info.fID,
-                                          mailbox_holder.mailbox.name);
+    GrGLTextureInfo backend_texture = {};
+    backend_texture.fTarget = GL_TEXTURE_2D;
+    backend_texture.fID = yuv_cache_.texture;
+    backend_texture.fFormat = GL_RGBA8;
+    GrBackendTexture result_texture(video_frame.coded_size().width(),
+                                    video_frame.coded_size().height(),
+                                    GrMipMapped::kNo, backend_texture);
 
-  // Wait for mailbox creation on source context before consuming it and
-  // copying from it on the consumer context.
-  source_gl->GenUnverifiedSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetData());
+    sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
+        gr_context, video_frame.ColorSpace(), video_frame.format(),
+        yuv_textures, result_texture);
 
-  destination_gl->WaitSyncTokenCHROMIUM(
-      mailbox_holder.sync_token.GetConstData());
-  uint32_t intermediate_texture =
-      destination_gl->CreateAndConsumeTextureCHROMIUM(
-          mailbox_holder.mailbox.name);
-  VideoFrameCopyTextureOrSubTexture(
-      destination_gl, video_frame.coded_size(), video_frame.visible_rect(),
-      intermediate_texture, target, texture, internal_format, format, type,
-      level, premultiply_alpha, flip_y);
+    gr_context->flush();
+    source_gl->EndSharedImageAccessDirectCHROMIUM(yuv_cache_.texture);
+
+    source_gl->GenUnverifiedSyncTokenCHROMIUM(
+        post_conversion_sync_token.GetData());
+
+    if (!yuv_image) {
+      // Conversion failed. Note the last use sync token for destruction.
+      yuv_cache_.sync_token = post_conversion_sync_token;
+      yuv_cache_.Reset();
+      return false;
+    }
+  }
+
+  // On the destination GL context, do a copy (with cropping) into the
+  // destination texture.
+  GLuint intermediate_texture = SynchronizeAndImportMailbox(
+      destination_gl, post_conversion_sync_token, yuv_cache_.mailbox);
+  {
+    ScopedSharedImageAccess access(destination_gl, intermediate_texture,
+                                   yuv_cache_.mailbox);
+    VideoFrameCopyTextureOrSubTexture(
+        destination_gl, video_frame.coded_size(), video_frame.visible_rect(),
+        intermediate_texture, target, texture, internal_format, format, type,
+        level, premultiply_alpha, flip_y);
+  }
   destination_gl->DeleteTextures(1, &intermediate_texture);
-
-  // Wait for destination context to consume mailbox before deleting it in
-  // source context.
-  gpu::SyncToken dest_sync_token;
-  destination_gl->GenUnverifiedSyncTokenCHROMIUM(dest_sync_token.GetData());
-  source_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
+  destination_gl->GenUnverifiedSyncTokenCHROMIUM(
+      yuv_cache_.sync_token.GetData());
 
   // video_frame->UpdateReleaseSyncToken is not necessary since the video frame
   // data we used was CPU-side (IsMappable) to begin with. If there were any
   // textures, we didn't use them.
 
   // The temporary SkImages should be automatically cleaned up here.
+
+  // Kick off a timer to release the cache.
+  cache_deleting_timer_.Reset();
   return true;
 }
 
@@ -1447,21 +1442,35 @@ bool PaintCanvasVideoRenderer::TexSubImage2D(unsigned target,
 
 void PaintCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Clear cached values.
-  last_image_ = cc::PaintImage();
-  last_id_.reset();
-  last_image_wraps_video_frame_texture_ = false;
+  cache_.reset();
+  yuv_cache_.Reset();
+}
+
+PaintCanvasVideoRenderer::Cache::Cache(int frame_id) : frame_id(frame_id) {}
+
+PaintCanvasVideoRenderer::Cache::~Cache() {
+  if (!context_provider)
+    return;
+
+  DCHECK(!source_mailbox.IsZero());
+  DCHECK(source_texture);
+  auto* gl = context_provider->ContextGL();
+  gl->DeleteTextures(1, &source_texture);
+  if (!wraps_video_frame_texture) {
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
+    auto* sii = context_provider->SharedImageInterface();
+    sii->DestroySharedImage(sync_token, source_mailbox);
+  }
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
     scoped_refptr<VideoFrame> video_frame,
     viz::ContextProvider* context_provider,
     bool allow_wrap_texture) {
-  DCHECK(!last_image_wraps_video_frame_texture_);
-  if (!last_image_ || video_frame->unique_id() != last_id_ ||
-      !last_image_.GetSkImage()->getBackendTexture(true).isValid()) {
-    ResetCache();
-
+  DCHECK(!cache_ || !cache_->wraps_video_frame_texture);
+  if (!cache_ || video_frame->unique_id() != cache_->frame_id ||
+      cache_->source_mailbox.IsZero()) {
     auto paint_image_builder =
         cc::PaintImageBuilder::WithDefault()
             .set_id(renderer_stable_id_)
@@ -1476,31 +1485,86 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
     if (video_frame->HasTextures()) {
       DCHECK(context_provider);
       DCHECK(context_provider->GrContext());
-      DCHECK(context_provider->ContextGL());
-      if (video_frame->NumTextures() > 1) {
-        paint_image_builder.set_image(NewSkImageFromVideoFrameYUVTextures(
-                                          video_frame.get(), context_provider),
-                                      cc::PaintImage::GetNextContentId());
+      auto* gl = context_provider->ContextGL();
+      DCHECK(gl);
+
+      sk_sp<SkImage> source_image;
+
+      if (allow_wrap_texture && video_frame->NumTextures() == 1) {
+        cache_.emplace(video_frame->unique_id());
+        cache_->source_texture = ImportVideoFrameSingleMailbox(
+            gl, video_frame.get(), &cache_->source_mailbox);
+        cache_->wraps_video_frame_texture = true;
+        source_image =
+            WrapGLTexture(video_frame->mailbox_holder(0).texture_target,
+                          cache_->source_texture, video_frame->coded_size(),
+                          video_frame->ColorSpace(), context_provider);
       } else {
-        paint_image_builder.set_image(
-            NewSkImageFromVideoFrameNative(
-                video_frame.get(), context_provider, allow_wrap_texture,
-                &last_image_wraps_video_frame_texture_),
-            cc::PaintImage::GetNextContentId());
+        if (cache_ && cache_->context_provider == context_provider &&
+            cache_->coded_size == video_frame->coded_size()) {
+          // We can reuse the shared image from the previous cache.
+          cache_->frame_id = video_frame->unique_id();
+        } else {
+          cache_.emplace(video_frame->unique_id());
+          auto* sii = context_provider->SharedImageInterface();
+          cache_->source_mailbox = sii->CreateSharedImage(
+              viz::ResourceFormat::RGBA_8888, video_frame->coded_size(),
+              gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+          cache_->source_texture = SynchronizeAndImportMailbox(
+              gl, sii->GenUnverifiedSyncToken(), cache_->source_mailbox);
+        }
+        ScopedSharedImageAccess dest_access(
+            gl, cache_->source_texture, cache_->source_mailbox,
+            GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+        if (video_frame->NumTextures() == 1) {
+          gpu::Mailbox mailbox;
+          GLuint frame_texture =
+              ImportVideoFrameSingleMailbox(gl, video_frame.get(), &mailbox);
+          {
+            ScopedSharedImageAccess access(gl, frame_texture, mailbox);
+            gl->CopySubTextureCHROMIUM(frame_texture, 0, GL_TEXTURE_2D,
+                                       cache_->source_texture, 0, 0, 0, 0, 0,
+                                       video_frame->coded_size().width(),
+                                       video_frame->coded_size().height(),
+                                       GL_FALSE, GL_FALSE, GL_FALSE);
+          }
+          gl->DeleteTextures(1, &frame_texture);
+          source_image = WrapGLTexture(GL_TEXTURE_2D, cache_->source_texture,
+                                       video_frame->coded_size(),
+                                       gfx::ColorSpace(), context_provider);
+        } else {
+          source_image = NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
+              video_frame.get(), context_provider, GL_TEXTURE_2D,
+              cache_->source_texture);
+        }
+        context_provider->GrContext()->flush();
       }
+      if (!source_image) {
+        // Couldn't create the SkImage.
+        cache_.reset();
+        return false;
+      }
+      cache_->context_provider = context_provider;
+      cache_->coded_size = video_frame->coded_size();
+      cache_->visible_rect = video_frame->visible_rect();
+      paint_image_builder.set_image(
+          source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect)),
+          cc::PaintImage::GetNextContentId());
     } else {
+      cache_.emplace(video_frame->unique_id());
       paint_image_builder.set_paint_image_generator(
           sk_make_sp<VideoImageGenerator>(video_frame));
     }
-    last_image_ = paint_image_builder.TakePaintImage();
-    CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
-    if (!last_image_)  // Couldn't create the SkImage.
+    cache_->paint_image = paint_image_builder.TakePaintImage();
+    if (!cache_->paint_image) {
+      // Couldn't create the SkImage.
+      cache_.reset();
       return false;
-    last_id_ = video_frame->unique_id();
+    }
   }
 
-  DCHECK(last_image_);
-  last_image_deleting_timer_.Reset();
+  DCHECK(cache_);
+  cache_deleting_timer_.Reset();
   return true;
 }
 
@@ -1509,9 +1573,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     viz::ContextProvider* context_provider,
     unsigned int textureTarget,
     unsigned int texture) {
-  // We are about to replace last_image_, make sure to reset related state such
-  // as last_id_ or last_image_wraps_video_frame_texture_.
-  ResetCache();
+  cache_.emplace(video_frame->unique_id());
   auto paint_image_builder =
       cc::PaintImageBuilder::WithDefault()
           .set_id(renderer_stable_id_)
@@ -1527,44 +1589,61 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     DCHECK(context_provider);
     DCHECK(context_provider->GrContext());
     DCHECK(context_provider->ContextGL());
+    sk_sp<SkImage> source_image;
     if (video_frame->NumTextures() > 1) {
-      paint_image_builder.set_image(
-          NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
-              video_frame.get(), context_provider, textureTarget, texture),
-          cc::PaintImage::GetNextContentId());
+      source_image = NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
+          video_frame.get(), context_provider, textureTarget, texture);
+      if (!source_image) {
+        // Couldn't create the SkImage.
+        cache_.reset();
+        return false;
+      }
     } else {
       // We don't support Android now.
+      cache_.reset();
       return false;
     }
+    cache_->coded_size = video_frame->coded_size();
+    cache_->visible_rect = video_frame->visible_rect();
+    paint_image_builder.set_image(
+        source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect)),
+        cc::PaintImage::GetNextContentId());
   } else {
     paint_image_builder.set_paint_image_generator(
         sk_make_sp<VideoImageGenerator>(video_frame));
   }
-  last_image_ = paint_image_builder.TakePaintImage();
-  CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
-  if (!last_image_)  // Couldn't create the SkImage.
-    return false;
-  last_id_ = video_frame->unique_id();
-  last_image_deleting_timer_.Reset();
-  DCHECK(!!last_image_);
+  cache_deleting_timer_.Reset();
   return true;
 }
 
-void PaintCanvasVideoRenderer::CorrectLastImageDimensions(
-    const SkIRect& visible_rect) {
-  last_image_dimensions_for_testing_ = visible_rect.size();
-  if (!last_image_)
+PaintCanvasVideoRenderer::YUVTextureCache::YUVTextureCache() = default;
+PaintCanvasVideoRenderer::YUVTextureCache::~YUVTextureCache() = default;
+
+void PaintCanvasVideoRenderer::YUVTextureCache::Reset() {
+  if (!texture)
     return;
-  SkIRect bounds = SkIRect::MakeWH(last_image_.width(), last_image_.height());
-  if (bounds.size() != visible_rect.size() && bounds.contains(visible_rect)) {
-    last_image_ = cc::PaintImageBuilder::WithCopy(std::move(last_image_))
-                      .make_subset(gfx::SkIRectToRect(visible_rect))
-                      .TakePaintImage();
-  }
+  DCHECK(context_provider);
+
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
+  gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  gl->DeleteTextures(1, &texture);
+  texture = 0;
+  gl->OrderingBarrierCHROMIUM();
+
+  auto* sii = context_provider->SharedImageInterface();
+  sii->DestroySharedImage(sync_token, mailbox);
+
+  // Kick off the GL work up to the OrderingBarrierCHROMIUM above as well as the
+  // SharedImageInterface work, to ensure the shared image memory is released in
+  // a timely fashion.
+  context_provider->ContextSupport()->FlushPendingWork();
+  context_provider.reset();
 }
 
-SkISize PaintCanvasVideoRenderer::LastImageDimensionsForTesting() {
-  return last_image_dimensions_for_testing_;
+gfx::Size PaintCanvasVideoRenderer::LastImageDimensionsForTesting() {
+  DCHECK(cache_);
+  DCHECK(cache_->paint_image);
+  return gfx::Size(cache_->paint_image.width(), cache_->paint_image.height());
 }
 
 }  // namespace media

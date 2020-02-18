@@ -14,6 +14,7 @@
 #include "libANGLE/State.h"
 #include "libANGLE/angletypes.h"
 #include "libANGLE/renderer/gl/functionsgl_typedefs.h"
+#include "platform/FeaturesGL.h"
 
 #include <map>
 
@@ -38,7 +39,8 @@ class StateManagerGL final : angle::NonCopyable
   public:
     StateManagerGL(const FunctionsGL *functions,
                    const gl::Caps &rendererCaps,
-                   const gl::Extensions &extensions);
+                   const gl::Extensions &extensions,
+                   const angle::FeaturesGL &features);
     ~StateManagerGL();
 
     void deleteProgram(GLuint program);
@@ -62,6 +64,7 @@ class StateManagerGL final : angle::NonCopyable
                          size_t size);
     void activeTexture(size_t unit);
     void bindTexture(gl::TextureType type, GLuint texture);
+    void invalidateTexture(gl::TextureType type);
     void bindSampler(size_t unit, GLuint sampler);
     void bindImageTexture(size_t unit,
                           GLuint texture,
@@ -197,6 +200,7 @@ class StateManagerGL final : angle::NonCopyable
         const gl::FramebufferState &drawFramebufferState) const;
 
     const FunctionsGL *mFunctions;
+    const angle::FeaturesGL &mFeatures;
 
     GLuint mProgram;
 

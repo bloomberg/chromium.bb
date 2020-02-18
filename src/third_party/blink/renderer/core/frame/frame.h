@@ -65,6 +65,7 @@ class Settings;
 class WindowProxy;
 class WindowProxyManager;
 struct FrameLoadRequest;
+class WindowAgentFactory;
 
 enum class FrameDetachType { kRemove, kSwap };
 
@@ -129,7 +130,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // dispatch unload events, abort XHR requests and detach the document.
   // Returns true if the frame is ready to receive the next commit, or false
   // otherwise.
-  virtual bool PrepareForCommit() = 0;
+  virtual bool DetachDocument() = 0;
 
   // LayoutObject for the element that contains this frame.
   LayoutEmbeddedContent* OwnerLayoutObject() const;
@@ -205,7 +206,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
   }
-  const CString& ToTraceValue();
+  const std::string& ToTraceValue();
 
   // TODO(dcheng): temporary for debugging https://crbug.com/838348.
   const base::debug::StackTrace& CreateStackForDebugging() {
@@ -238,8 +239,21 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
     opener_feature_state_ = state;
   }
 
+  WindowAgentFactory& window_agent_factory() const {
+    return *window_agent_factory_;
+  }
+
  protected:
-  Frame(FrameClient*, Page&, FrameOwner*, WindowProxyManager*);
+  // |inheriting_agent_factory| should basically be set to the parent frame or
+  // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from
+  // other frames (i.e. if it and its child frames shall never be script
+  // accessible from other frames), and a new WindowAgentFactory will be
+  // created.
+  Frame(FrameClient*,
+        Page&,
+        FrameOwner*,
+        WindowProxyManager*,
+        WindowAgentFactory* inheriting_agent_factory);
 
   // Perform initialization that must happen after the constructor has run so
   // that vtables are initialized.
@@ -285,10 +299,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   // frames.
   FeaturePolicy::FeatureState opener_feature_state_;
 
+  Member<WindowAgentFactory> window_agent_factory_;
+
   // TODO(sashab): Investigate if this can be represented with m_lifecycle.
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
-  base::Optional<CString> trace_value_;
+  base::Optional<std::string> trace_value_;
 
   base::debug::StackTrace create_stack_;
   base::debug::StackTrace detach_stack_;
@@ -314,8 +330,8 @@ DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Frame)
 // in a TRACE_EVENT_XXX macro. Example:
 //
 // TRACE_EVENT1("category", "event_name", "frame", ToTraceValue(GetFrame()));
-static inline CString ToTraceValue(Frame* frame) {
-  return frame ? frame->ToTraceValue() : CString();
+static inline std::string ToTraceValue(Frame* frame) {
+  return frame ? frame->ToTraceValue() : std::string();
 }
 
 }  // namespace blink

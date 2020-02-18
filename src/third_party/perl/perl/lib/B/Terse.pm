@@ -1,6 +1,6 @@
 package B::Terse;
 
-our $VERSION = '1.06';
+our $VERSION = '1.09';
 
 use strict;
 use B qw(class @specialsv_name);
@@ -30,12 +30,6 @@ sub indent {
     return "    " x $level;
 }
 
-# Don't use this, at least on OPs in subroutines: it has no way of
-# getting to the pad, and will give wrong answers or crash.
-sub B::OP::terse {
-    carp "B::OP::terse is deprecated; use B::Concise instead";
-    B::Concise::b_terse(@_);
-}
 
 sub B::SV::terse {
     my($sv, $level) = (@_, 0);
@@ -79,7 +73,7 @@ B::Terse - Walk Perl syntax tree, printing terse info about ops
 =head1 DESCRIPTION
 
 This module prints the contents of the parse tree, but without as much
-information as L<B::Debug>.  For comparison, C<print "Hello, world.">
+information as CPAN module B::Debug.  For comparison, C<print "Hello, world.">
 produced 96 lines of output from B::Debug, but only 6 from B::Terse.
 
 This module is useful for people who are writing their own back end,

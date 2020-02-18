@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/perf/performance_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "ui/aura/window.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -34,7 +34,7 @@ class ScreenRotationTest
   // UIPerformanceTest:
   void SetUpOnMainThread() override {
     UIPerformanceTest::SetUpOnMainThread();
-    ash::ShellTestApi().EnableTabletModeWindowManager(true);
+    ash::ShellTestApi().SetTabletModeEnabledForTest(true);
     auto* pref = browser()->profile()->GetPrefs();
     pref->SetBoolean(
         ash::prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted, true);

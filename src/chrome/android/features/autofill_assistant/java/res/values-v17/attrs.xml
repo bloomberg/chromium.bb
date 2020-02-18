@@ -31,5 +31,6 @@
         <attr name="secondaryTextAppearance" format="reference"/>
         <attr name="rippleColor"/>
         <attr name="chipBorderWidth" format="reference"/>
+        <attr name="verticalInset"/>
     </declare-styleable>
 </resources>

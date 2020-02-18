@@ -156,9 +156,8 @@ views::Widget* NonModalTransient::non_modal_transient_ = nullptr;
 
 template <class T>
 T* AddViewToLayout(views::GridLayout* layout, std::unique_ptr<T> view) {
-  T* result = view.get();
   layout->StartRow(0, 0);
-  layout->AddView(view.release());
+  T* result = layout->AddView(std::move(view));
   layout->AddPaddingRow(0, 5);
   return result;
 }
@@ -184,7 +183,7 @@ WindowTypeLauncher::WindowTypeLauncher(
       create_embedded_browser_callback_(
           std::move(create_embedded_browser_callback)) {
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   SetBorder(views::CreateEmptyBorder(gfx::Insets(5)));
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,

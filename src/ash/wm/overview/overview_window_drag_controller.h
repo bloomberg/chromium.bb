@@ -62,7 +62,8 @@ class ASH_EXPORT OverviewWindowDragController {
   };
 
   OverviewWindowDragController(OverviewSession* overview_session,
-                               OverviewItem* item);
+                               OverviewItem* item,
+                               bool allow_drag_to_close);
   ~OverviewWindowDragController();
 
   void InitiateDrag(const gfx::PointF& location_in_screen);
@@ -86,14 +87,16 @@ class ASH_EXPORT OverviewWindowDragController {
   DragBehavior current_drag_behavior() { return current_drag_behavior_; }
 
  private:
+  void StartDragToCloseMode();
+
   // Methods to continue and complete the drag when the drag mode is
   // kDragToClose.
-  gfx::RectF ContinueDragToClose(const gfx::PointF& location_in_screen);
+  void ContinueDragToClose(const gfx::PointF& location_in_screen);
   DragResult CompleteDragToClose(const gfx::PointF& location_in_screen);
 
   // Methods to continue and complete the drag when the drag mode is
   // kNormalDrag.
-  gfx::RectF ContinueNormalDrag(const gfx::PointF& location_in_screen);
+  void ContinueNormalDrag(const gfx::PointF& location_in_screen);
   DragResult CompleteNormalDrag(const gfx::PointF& location_in_screen);
 
   // Updates visuals for the user while dragging items around.
@@ -139,11 +142,30 @@ class ASH_EXPORT OverviewWindowDragController {
   // with the DesksBarView.
   gfx::SizeF original_scaled_size_;
 
+  // Cached values related to dragging items while the desks bar is shown.
+  // |desks_bar_bounds_| is the bounds of the desks bar in screen coordinates.
+  // |shrink_bounds_| is a rectangle around the desks bar which the items starts
+  // shrinking when the event location is contained. The item will shrink until
+  // it is contained in |desks_bar_bounds_|, at which it has reached its minimum
+  // size and will no longer shrink. |shrink_region_distance_| is a vector
+  // contained the distance from the origin of |desks_bar_bounds_| to the origin
+  // of |shrink_bounds_|. It's used to determine the size of the dragged item
+  // when it's within |shrink_bounds_|.
+  gfx::RectF desks_bar_bounds_;
+  gfx::RectF shrink_bounds_;
+  gfx::Vector2dF shrink_region_distance_;
+
+  const size_t display_count_;
+
+  // True if the drag-to-close mode is allowed (generally when the item is
+  // dragged by touch gestures).
+  const bool should_allow_drag_to_close_;
+
   // True if SplitView is enabled.
   const bool should_allow_split_view_;
 
-  // True if the Virtual Desks feature is enabled.
-  const bool virtual_desks_enabled_;
+  // True if the Virtual Desks bar is created and dragging to desks is enabled.
+  const bool virtual_desks_bar_enabled_;
 
   // False if the initial drag location was not a snap region, or if it was in
   // a snap region but the drag has since moved out.

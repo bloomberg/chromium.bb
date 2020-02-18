@@ -71,6 +71,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
     bool is_new_download,
     bool is_parallel_request,
     std::unique_ptr<service_manager::Connector> connector,
+    bool is_background_mode,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request), params->render_process_host_id(),
@@ -79,7 +80,7 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
       std::move(url_loader_factory_getter), url_security_policy,
       std::move(connector));
 
-  downloader->Start(std::move(params), is_parallel_request);
+  downloader->Start(std::move(params), is_parallel_request, is_background_mode);
   return downloader;
 }
 
@@ -94,8 +95,9 @@ ResourceDownloader::InterceptNavigationResponse(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     std::vector<GURL> url_chain,
-    const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
+    const scoped_refptr<network::ResourceResponse>& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     scoped_refptr<download::DownloadURLLoaderFactoryGetter>
         url_loader_factory_getter,
@@ -107,9 +109,9 @@ ResourceDownloader::InterceptNavigationResponse(
       site_url, tab_url, tab_referrer_url, true, task_runner,
       std::move(url_loader_factory_getter), url_security_policy,
       std::move(connector));
-  downloader->InterceptResponse(std::move(response), std::move(url_chain),
-                                cert_status,
-                                std::move(url_loader_client_endpoints));
+  downloader->InterceptResponse(
+      std::move(url_chain), cert_status, std::move(response_head),
+      std::move(response_body), std::move(url_loader_client_endpoints));
   return downloader;
 }
 
@@ -138,7 +140,7 @@ ResourceDownloader::ResourceDownloader(
       delegate_task_runner_(task_runner),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       url_security_policy_(url_security_policy),
-      weak_ptr_factory_(this) {
+      is_content_initiated_(false) {
   RequestWakeLock(connector.get());
 }
 
@@ -146,10 +148,12 @@ ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
-    bool is_parallel_request) {
+    bool is_parallel_request,
+    bool is_background_mode) {
   callback_ = download_url_parameters->callback();
   upload_callback_ = download_url_parameters->upload_callback();
   guid_ = download_url_parameters->guid();
+  is_content_initiated_ = download_url_parameters->content_initiated();
 
   // Set up the URLLoaderClient.
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
@@ -162,7 +166,8 @@ void ResourceDownloader::Start(
       download_url_parameters->request_headers(),
       download_url_parameters->request_origin(),
       download_url_parameters->download_source(),
-      std::vector<GURL>(1, resource_request_->url));
+      download_url_parameters->ignore_content_length_mismatch(),
+      std::vector<GURL>(1, resource_request_->url), is_background_mode);
   network::mojom::URLLoaderClientPtr url_loader_client_ptr;
   url_loader_client_binding_ =
       std::make_unique<mojo::Binding<network::mojom::URLLoaderClient>>(
@@ -184,9 +189,10 @@ void ResourceDownloader::Start(
 }
 
 void ResourceDownloader::InterceptResponse(
-    const scoped_refptr<network::ResourceResponse>& response,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
+    const scoped_refptr<network::ResourceResponse>& response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
   url_loader_.Bind(std::move(endpoints->url_loader));
@@ -200,11 +206,17 @@ void ResourceDownloader::InterceptResponse(
       true,  /* follow_cross_origin_redirects */
       download::DownloadUrlParameters::RequestHeadersType(),
       std::string(), /* request_origin */
-      download::DownloadSource::NAVIGATION, std::move(url_chain));
+      download::DownloadSource::NAVIGATION,
+      false /* ignore_content_length_mismatch */, std::move(url_chain),
+      false /* is_background_mode */);
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
-  response->head.cert_status = cert_status;
-  url_loader_client_->OnReceiveResponse(response->head);
+  response_head->head.cert_status = cert_status;
+  url_loader_client_->OnReceiveResponse(response_head->head);
+
+  // Available when NavigationImmediateResponse is enabled.
+  if (response_body)
+    url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.
   url_loader_client_binding_ =
@@ -225,6 +237,7 @@ void ResourceDownloader::OnResponseStarted(
   download_create_info->render_process_id = render_process_id_;
   download_create_info->render_frame_id = render_frame_id_;
   download_create_info->has_user_gesture = resource_request_->has_user_gesture;
+  download_create_info->is_content_initiated = is_content_initiated_;
 
   delegate_task_runner_->PostTask(
       FROM_HERE,

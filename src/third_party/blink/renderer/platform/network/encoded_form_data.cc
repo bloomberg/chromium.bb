@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/network/wrapped_data_pipe_getter.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
@@ -109,9 +108,10 @@ scoped_refptr<EncodedFormData> EncodedFormData::Create(const void* data,
   return result;
 }
 
-scoped_refptr<EncodedFormData> EncodedFormData::Create(const CString& string) {
+scoped_refptr<EncodedFormData> EncodedFormData::Create(
+    base::span<const char> string) {
   scoped_refptr<EncodedFormData> result = Create();
-  result->AppendData(string.data(), string.length());
+  result->AppendData(string.data(), string.size());
   return result;
 }
 

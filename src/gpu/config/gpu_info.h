@@ -80,7 +80,9 @@ enum VideoCodecProfile {
   AV1PROFILE_PROFILE_MAIN,
   AV1PROFILE_PROFILE_HIGH,
   AV1PROFILE_PROFILE_PRO,
-  VIDEO_CODEC_PROFILE_MAX = AV1PROFILE_PROFILE_PRO,
+  DOLBYVISION_PROFILE8,
+  DOLBYVISION_PROFILE9,
+  VIDEO_CODEC_PROFILE_MAX = DOLBYVISION_PROFILE9,
 };
 
 // Specification of a decoding profile supported by a hardware decoder.
@@ -114,9 +116,10 @@ using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
 enum class ImageDecodeAcceleratorType {
-  kJpeg = 0,
-  kUnknown = 1,
-  kMaxValue = kUnknown,
+  kUnknown = 0,
+  kJpeg = 1,
+  kWebP = 2,
+  kMaxValue = kWebP,
 };
 
 enum class ImageDecodeAcceleratorSubsampling {

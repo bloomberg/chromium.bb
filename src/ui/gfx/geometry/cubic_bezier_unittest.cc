@@ -185,17 +185,31 @@ TEST(CubicBezierTest, InputOutOfRange) {
   EXPECT_EQ(0.0, vertical_gradient.Solve(-1.0));
   EXPECT_EQ(1.0, vertical_gradient.Solve(2.0));
 
+  CubicBezier vertical_trailing_gradient(0.5, 0.0, 1.0, 0.5);
+  EXPECT_EQ(0.0, vertical_trailing_gradient.Solve(-1.0));
+  EXPECT_EQ(1.0, vertical_trailing_gradient.Solve(2.0));
+
   CubicBezier distinct_endpoints(0.1, 0.2, 0.8, 0.8);
   EXPECT_EQ(-2.0, distinct_endpoints.Solve(-1.0));
   EXPECT_EQ(2.0, distinct_endpoints.Solve(2.0));
 
-  CubicBezier coincident_endpoint(0.0, 0.0, 0.8, 0.8);
-  EXPECT_EQ(-1.0, coincident_endpoint.Solve(-1.0));
-  EXPECT_EQ(2.0, coincident_endpoint.Solve(2.0));
+  CubicBezier coincident_leading_endpoint(0.0, 0.0, 0.5, 1.0);
+  EXPECT_EQ(-2.0, coincident_leading_endpoint.Solve(-1.0));
+  EXPECT_EQ(1.0, coincident_leading_endpoint.Solve(2.0));
 
-  CubicBezier three_coincident_points(0.0, 0.0, 0.0, 0.0);
-  EXPECT_EQ(0, three_coincident_points.Solve(-1.0));
-  EXPECT_EQ(2.0, three_coincident_points.Solve(2.0));
+  CubicBezier coincident_trailing_endpoint(1.0, 0.5, 1.0, 1.0);
+  EXPECT_EQ(-0.5, coincident_trailing_endpoint.Solve(-1.0));
+  EXPECT_EQ(1.0, coincident_trailing_endpoint.Solve(2.0));
+
+  // Two special cases with three coincident points. Both are equivalent to
+  // linear.
+  CubicBezier all_zeros(0.0, 0.0, 0.0, 0.0);
+  EXPECT_EQ(-1.0, all_zeros.Solve(-1.0));
+  EXPECT_EQ(2.0, all_zeros.Solve(2.0));
+
+  CubicBezier all_ones(1.0, 1.0, 1.0, 1.0);
+  EXPECT_EQ(-1.0, all_ones.Solve(-1.0));
+  EXPECT_EQ(2.0, all_ones.Solve(2.0));
 }
 
 TEST(CubicBezierTest, GetPoints) {
@@ -224,6 +238,35 @@ TEST(CubicBezierTest, GetPoints) {
   EXPECT_NEAR(-1.5, cubic_oor.GetY1(), epsilon);
   EXPECT_NEAR(1.5, cubic_oor.GetX2(), epsilon);
   EXPECT_NEAR(-1.6, cubic_oor.GetY2(), epsilon);
+}
+
+void validateSolver(const CubicBezier& cubic_bezier) {
+  const double epsilon = 1e-7;
+  const double precision = 1e-5;
+  for (double t = 0; t <= 1; t += 0.05) {
+    double x = cubic_bezier.SampleCurveX(t);
+    double root = cubic_bezier.SolveCurveX(x, epsilon);
+    EXPECT_NEAR(t, root, precision);
+  }
+}
+
+TEST(CubicBezierTest, CommonEasingFunctions) {
+  validateSolver(CubicBezier(0.25, 0.1, 0.25, 1));  // ease
+  validateSolver(CubicBezier(0.42, 0, 1, 1));       // ease-in
+  validateSolver(CubicBezier(0, 0, 0.58, 1));       // ease-out
+  validateSolver(CubicBezier(0.42, 0, 0.58, 1));    // ease-in-out
+}
+
+TEST(CubicBezierTest, LinearEquivalentBeziers) {
+  validateSolver(CubicBezier(0.0, 0.0, 0.0, 0.0));
+  validateSolver(CubicBezier(1.0, 1.0, 1.0, 1.0));
+}
+
+TEST(CubicBezierTest, ControlPointsOutsideUnitSquare) {
+  validateSolver(CubicBezier(0.3, 1.5, 0.8, 1.5));
+  validateSolver(CubicBezier(0.4, -0.8, 0.7, 1.7));
+  validateSolver(CubicBezier(0.7, -2.0, 1.0, -1.5));
+  validateSolver(CubicBezier(0, 4, 1, -3));
 }
 
 }  // namespace

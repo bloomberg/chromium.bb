@@ -9,8 +9,8 @@
 
 #include "include/core/SkTypes.h"
 
-#include "include/private/GrSurfaceProxy.h"
 #include "src/gpu/GrContextPriv.h"
+#include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/SkGr.h"
 #include "tests/Test.h"
 #include "tests/TestUtils.h"
@@ -29,14 +29,16 @@ void basic_texture_test(skiatest::Reporter* reporter, GrContext* context, SkColo
     fill_pixel_data(kWidth, kHeight, srcBuffer.get());
 
     auto proxy = sk_gpu_test::MakeTextureProxyFromData(context, renderable, kWidth, kHeight, ct,
+                                                       kPremul_SkAlphaType,
                                                        kTopLeft_GrSurfaceOrigin, srcBuffer, 0);
     REPORTER_ASSERT(reporter, proxy);
     if (proxy) {
-        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(proxy);
+        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(
+                proxy, SkColorTypeToGrColorType(ct), kPremul_SkAlphaType);
 
         SkImageInfo dstInfo = SkImageInfo::Make(kWidth, kHeight, ct, kPremul_SkAlphaType);
 
-        bool result = sContext->readPixels(dstInfo, dstBuffer, 0, 0, 0);
+        bool result = sContext->readPixels(dstInfo, dstBuffer, 0, {0, 0});
         REPORTER_ASSERT(reporter, result);
         REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(srcBuffer,
                                                                          dstBuffer,
@@ -44,12 +46,12 @@ void basic_texture_test(skiatest::Reporter* reporter, GrContext* context, SkColo
                                                                          kHeight));
 
         dstInfo = SkImageInfo::Make(10, 2, ct, kPremul_SkAlphaType);
-        result = sContext->writePixels(dstInfo, srcBuffer, 0, 2, 10);
+        result = sContext->writePixels(dstInfo, srcBuffer, 0, {2, 10});
         REPORTER_ASSERT(reporter, result);
 
         memset(dstBuffer, 0, kWidth*kHeight*sizeof(GrColor));
 
-        result = sContext->readPixels(dstInfo, dstBuffer, 0, 2, 10);
+        result = sContext->readPixels(dstInfo, dstBuffer, 0, {2, 10});
         REPORTER_ASSERT(reporter, result);
 
         REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(srcBuffer,
@@ -59,14 +61,16 @@ void basic_texture_test(skiatest::Reporter* reporter, GrContext* context, SkColo
     }
 
     proxy = sk_gpu_test::MakeTextureProxyFromData(context, renderable, kWidth, kHeight, ct,
-                                                  kBottomLeft_GrSurfaceOrigin, srcBuffer, 0);
+                                                  kPremul_SkAlphaType, kBottomLeft_GrSurfaceOrigin,
+                                                  srcBuffer, 0);
     REPORTER_ASSERT(reporter, proxy);
     if (proxy) {
-        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(proxy);
+        sk_sp<GrSurfaceContext> sContext = context->priv().makeWrappedSurfaceContext(
+                proxy, SkColorTypeToGrColorType(ct), kPremul_SkAlphaType);
 
         SkImageInfo dstInfo = SkImageInfo::Make(kWidth, kHeight, ct, kPremul_SkAlphaType);
 
-        bool result = sContext->readPixels(dstInfo, dstBuffer, 0, 0, 0);
+        bool result = sContext->readPixels(dstInfo, dstBuffer, 0, {0, 0});
         REPORTER_ASSERT(reporter, result);
         REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(srcBuffer,
                                                                          dstBuffer,
@@ -74,12 +78,12 @@ void basic_texture_test(skiatest::Reporter* reporter, GrContext* context, SkColo
                                                                          kHeight));
 
         dstInfo = SkImageInfo::Make(4, 5, ct, kPremul_SkAlphaType);
-        result = sContext->writePixels(dstInfo, srcBuffer, 0, 5, 4);
+        result = sContext->writePixels(dstInfo, srcBuffer, 0, {5, 4});
         REPORTER_ASSERT(reporter, result);
 
         memset(dstBuffer, 0, kWidth*kHeight*sizeof(GrColor));
 
-        result = sContext->readPixels(dstInfo, dstBuffer, 0, 5, 4);
+        result = sContext->readPixels(dstInfo, dstBuffer, 0, {5, 4});
         REPORTER_ASSERT(reporter, result);
 
         REPORTER_ASSERT(reporter, does_full_buffer_contain_correct_color(srcBuffer,

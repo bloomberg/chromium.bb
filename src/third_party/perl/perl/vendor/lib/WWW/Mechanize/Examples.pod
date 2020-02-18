@@ -1,6 +1,19 @@
+# PODNAME: WWW::Mechanize::Examples
+# ABSTRACT: Sample programs that use WWW::Mechanize
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 WWW::Mechanize::Examples - Sample programs that use WWW::Mechanize
+
+=head1 VERSION
+
+version 1.91
 
 =head1 SYNOPSIS
 
@@ -108,7 +121,6 @@ C<get_pop_data>
       return $n;
     }
 
-
 C<plague_of_coffee>
 
     #!/usr/bin/perl -w
@@ -166,8 +178,6 @@ C<plague_of_coffee>
       die "Unknown response\n$c\n";
     }
 
-
-
 =head2 pb-upload, by John Beppu
 
 This program takes filenames of images from the command line and
@@ -214,9 +224,8 @@ WWW::Mechanize.
 =head2 listmod, by Ian Langworth
 
 Ian Langworth contributes this little gem that will bring joy to
-beleagured mailing list admins.  It discards spam messages through
+beleaguered mailing list admins.  It discards spam messages through
 mailman's web interface.
-
 
     #!/arch/unix/bin/perl
     use strict;
@@ -284,7 +293,6 @@ Steve McConnell, author of the landmark I<Code Complete> has put
 up the chapters for the 2nd edition in PDF format on his website.
 I needed to download them to take to Kinko's to have printed.  This
 little program did it for me.
-
 
     #!/usr/bin/perl -w
 
@@ -457,7 +465,6 @@ with a results page.
 
     exit(0);
 
-
 =head2 lj_friends.cgi, by Matt Cashner
 
     #!/usr/bin/perl
@@ -561,3 +568,16 @@ all the pictures.
 
         $m->back or die "can't go back";
     }
+
+=head1 AUTHOR
+
+Andy Lester <andy at petdance.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2004-2016 by Andy Lester.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut

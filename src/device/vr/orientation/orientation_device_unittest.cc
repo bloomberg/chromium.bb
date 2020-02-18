@@ -13,6 +13,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/vr/orientation/orientation_device.h"
+#include "device/vr/orientation/orientation_session.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -135,7 +136,7 @@ class VROrientationDeviceTest : public testing::Test {
 
     base::RunLoop loop;
 
-    device_->OnGetInlineFrameData(base::BindOnce(
+    device_->GetInlineFrameData(base::BindOnce(
         [](base::OnceClosure quit_closure,
            base::OnceCallback<void(mojom::VRPosePtr)> callback,
            mojom::XRFrameDataPtr ptr) {
@@ -148,6 +149,43 @@ class VROrientationDeviceTest : public testing::Test {
 
     // Ensure the pose request callback runs.
     loop.Run();
+  }
+
+  void AssertInlineFrameDataAvailable(bool expect_available) {
+    if (expect_available) {
+      device_->GetInlineFrameData(base::BindOnce(
+          [](device::mojom::XRFrameDataPtr data) { EXPECT_TRUE(data); }));
+    } else {
+      device_->GetInlineFrameData(base::BindOnce(
+          [](device::mojom::XRFrameDataPtr data) { EXPECT_FALSE(data); }));
+    }
+  }
+
+  void SetInlinePosesEnabled(bool enabled) {
+    device_->SetInlinePosesEnabled(enabled);
+  }
+
+  std::unique_ptr<VROrientationSession> MakeDisplay() {
+    mojom::XRFrameDataProviderPtr data_provider;
+    mojom::XRSessionControllerPtr controller;
+    return std::make_unique<VROrientationSession>(
+        device_.get(), mojo::MakeRequest(&data_provider),
+        mojo::MakeRequest(&controller));
+  }
+
+  void TryGetFrameData(VROrientationSession* display, bool expect_null) {
+    bool was_called = false;
+    auto callback = [](bool expect_null, bool* was_called,
+                       mojom::XRFrameDataPtr data) {
+      *was_called = true;
+      EXPECT_EQ(expect_null, !data);
+    };
+
+    static_cast<mojom::XRFrameDataProvider*>(display)->GetFrameData(
+        nullptr, base::BindOnce(callback, expect_null, &was_called));
+
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(was_called);
   }
 
   mojom::SensorInitParamsPtr FakeInitParams() {
@@ -249,20 +287,20 @@ TEST_F(VROrientationDeviceTest, OrientationDefaultForwardTest) {
   // Set forward to 0 degrees
   DeviceReadPose(gfx::Quaternion(0, 0, 0, 1),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), -0.707, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.707, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), -0.707, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.707, 0.001);
                  }));
 
   // Now a 90 degree rotation around x in device space should be default pose in
   // vr space.
   DeviceReadPose(gfx::Quaternion(0.707, 0, 0, 0.707),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 }
 
@@ -274,19 +312,19 @@ TEST_F(VROrientationDeviceTest, OrientationSetForwardTest) {
   // to be the default pose.
   DeviceReadPose(gfx::Quaternion(0.653, 0.271, 0.271, 0.653),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Now hold upright and straigt produces a 45 degree rotation to the right
   DeviceReadPose(gfx::Quaternion(0.707, 0, 0, 0.707),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), -0.383, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), -0.383, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
 }
 
@@ -299,20 +337,20 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape90Test) {
   // landscape mode.
   DeviceReadPose(gfx::Quaternion(0.5, -0.5, 0.5, 0.5),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Rotating the device 45 left from base pose should cause 45 degree left
   // rotation around y in VR space.
   DeviceReadPose(gfx::Quaternion(0.653, -0.271, 0.653, 0.271),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0.382, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0.382, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
 }
 
@@ -325,21 +363,43 @@ TEST_F(VROrientationDeviceTest, OrientationLandscape270Test) {
   // landscape mode (twist the other way from what we'd need for ROTATE_90).
   DeviceReadPose(gfx::Quaternion(0.5, 0.5, -0.5, 0.5),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 1, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 1, 0.001);
                  }));
 
   // Rotating the device 45 left from base pose should cause 45 degree left
   // rotation around y in VR space
   DeviceReadPose(gfx::Quaternion(0.271, 0.653, -0.271, 0.653),
                  base::BindOnce([](mojom::VRPosePtr ptr) {
-                   EXPECT_NEAR(ptr->orientation->at(0), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(1), 0.382, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(2), 0, 0.001);
-                   EXPECT_NEAR(ptr->orientation->at(3), 0.924, 0.001);
+                   EXPECT_NEAR(ptr->orientation->x(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->y(), 0.382, 0.001);
+                   EXPECT_NEAR(ptr->orientation->z(), 0, 0.001);
+                   EXPECT_NEAR(ptr->orientation->w(), 0.924, 0.001);
                  }));
+}
+
+TEST_F(VROrientationDeviceTest, NoMagicWindowPosesWhileBrowsing) {
+  InitializeDevice(FakeInitParams());
+
+  AssertInlineFrameDataAvailable(true);
+  SetInlinePosesEnabled(false);
+  AssertInlineFrameDataAvailable(false);
+}
+
+TEST_F(VROrientationDeviceTest, GetFrameDataHelper) {
+  InitializeDevice(FakeInitParams());
+
+  // 1) create display impl with restricted frame data
+  // 2) call GetFrameData and check behavior
+  // 3) unrestrict frame data
+  // 4) call GetFrameData and check behavior
+  std::unique_ptr<VROrientationSession> display = MakeDisplay();
+  TryGetFrameData(display.get(), true);
+  static_cast<mojom::XRSessionController*>(display.get())
+      ->SetFrameDataRestricted(false);
+  TryGetFrameData(display.get(), false);
 }
 
 }  // namespace device

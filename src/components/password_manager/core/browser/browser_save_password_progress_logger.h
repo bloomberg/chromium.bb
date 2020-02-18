@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "url/gurl.h"
@@ -15,18 +16,18 @@
 namespace autofill {
 struct FormData;
 class FormStructure;
+class LogManager;
 }
 
 namespace password_manager {
-
-class LogManager;
 
 // This is the SavePasswordProgressLogger specialization for the browser code,
 // where the LogManager can be directly called.
 class BrowserSavePasswordProgressLogger
     : public autofill::SavePasswordProgressLogger {
  public:
-  explicit BrowserSavePasswordProgressLogger(const LogManager* log_manager);
+  explicit BrowserSavePasswordProgressLogger(
+      const autofill::LogManager* log_manager);
   ~BrowserSavePasswordProgressLogger() override;
 
   // Browser-specific addition to the base class' Log* methods. The input is
@@ -49,7 +50,7 @@ class BrowserSavePasswordProgressLogger
 
   // Log a password successful submission event.
   void LogSuccessfulSubmissionIndicatorEvent(
-      autofill::SubmissionIndicatorEvent event);
+      autofill::mojom::SubmissionIndicatorEvent event);
 
   // Browser-specific addition to the base class' Log* methods. The input is
   // sanitized and passed to SendLog for display.
@@ -62,7 +63,7 @@ class BrowserSavePasswordProgressLogger
  private:
   // The LogManager to which logs can be sent for display. The log_manager must
   // outlive this logger.
-  const LogManager* const log_manager_;
+  const autofill::LogManager* const log_manager_;
 
   // Return string representation for FormStructure.
   std::string FormStructureToFieldsLogString(

@@ -18,7 +18,6 @@ namespace prefetch_prefs {
 
 extern const char kBackoff[];
 extern const char kUserSettingEnabled[];
-extern const char kContentSuggestionsNotificationsEnabled[];
 
 void RegisterPrefs(PrefRegistrySimple* registry);
 
@@ -70,6 +69,11 @@ bool IsEnabledByServerUnknown(PrefService* prefs);
 // user-controlled pref must be true in order to force the forbidden check to
 // run.
 void ResetForbiddenStateForTesting(PrefService* prefs);
+
+// Caches the GCM token across browser restarts so that it can be accessed in
+// reduced mode.
+void SetCachedPrefetchGCMToken(PrefService* prefs, const std::string& value);
+std::string GetCachedPrefetchGCMToken(PrefService* prefs);
 
 }  // namespace prefetch_prefs
 }  // namespace offline_pages

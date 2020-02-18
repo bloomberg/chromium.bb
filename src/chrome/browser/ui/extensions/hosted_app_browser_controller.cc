@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -14,7 +15,10 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -29,8 +33,6 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/management_policy.h"
-#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -41,16 +43,6 @@
 namespace extensions {
 
 namespace {
-
-// Returns true if |app_url| and |page_url| are the same origin. To avoid
-// breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
-// same domain but with "www.", this returns true if |page_url| is secure and in
-// the same origin as |app_url| with "www.".
-bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
-  return (app_url.host_piece() == page_url.host_piece() ||
-          std::string("www.") + app_url.host() == page_url.host_piece()) &&
-         app_url.port() == page_url.port();
-}
 
 // Gets the icon to use if the extension app icon is not available.
 gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
@@ -66,22 +58,17 @@ gfx::ImageSkia GetFallbackAppIcon(Browser* browser) {
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
-}  // namespace
-
-bool IsSameScope(const GURL& app_url,
-                 const GURL& page_url,
-                 content::BrowserContext* profile) {
-  const Extension* app_for_window = extensions::util::GetInstalledPwaForUrl(
-      profile, app_url, extensions::LAUNCH_CONTAINER_WINDOW);
-
-  // We don't have a scope, fall back to same origin check.
-  if (!app_for_window)
-    return IsSameHostAndPort(app_url, page_url);
-
-  return app_for_window ==
-         extensions::util::GetInstalledPwaForUrl(
-             profile, page_url, extensions::LAUNCH_CONTAINER_WINDOW);
+// Returns true if |app_url| and |page_url| are the same origin. To avoid
+// breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
+// same domain but with "www.", this returns true if |page_url| is secure and in
+// the same origin as |app_url| with "www.".
+bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
+  return (app_url.host_piece() == page_url.host_piece() ||
+          std::string("www.") + app_url.host() == page_url.host_piece()) &&
+         app_url.port() == page_url.port();
 }
+
+}  // namespace
 
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
@@ -177,18 +164,24 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
     if (url.is_empty())
       return false;
 
-    if (url.scheme_piece() != secure_page_scheme)
-      return true;
+    // Page URLs that are not within scope
+    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
+    // corresponding to |launch_url| show the toolbar.
+    bool out_of_scope = !IsUrlInAppScope(url);
+
+    if (url.scheme_piece() != secure_page_scheme) {
+      // Some origins are (such as localhost) are considered secure even when
+      // served over non-secure schemes. However, in order to hide the toolbar,
+      // the 'considered secure' origin must also be in the app's scope.
+      return out_of_scope || !InstallableManager::IsOriginConsideredSecure(url);
+    }
 
     if (IsForSystemWebApp()) {
       DCHECK_EQ(url.scheme_piece(), content::kChromeUIScheme);
       return false;
     }
 
-    // Page URLs that are not within scope
-    // (https://www.w3.org/TR/appmanifest/#dfn-within-scope) of the app
-    // corresponding to |launch_url| show the toolbar.
-    return !IsSameScope(launch_url, url, web_contents->GetBrowserContext());
+    return out_of_scope;
   };
 
   GURL visible_url = web_contents->GetVisibleURL();
@@ -203,9 +196,9 @@ bool HostedAppBrowserController::ShouldShowToolbar() const {
   }
 
   // Insecure external web sites show the toolbar.
-  // Note: IsSiteSecure is false until a url is committed.
+  // Note: IsContentSecure is false until a navigation is committed.
   if (!last_committed_url.is_empty() && !is_internal_launch_scheme &&
-      !IsSiteSecure(web_contents)) {
+      !InstallableManager::IsContentSecure(web_contents)) {
     return true;
   }
 
@@ -281,6 +274,18 @@ GURL HostedAppBrowserController::GetAppLaunchURL() const {
   return AppLaunchInfo::GetLaunchWebURL(extension);
 }
 
+bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
+  const Extension* extension = GetExtension();
+  const std::vector<UrlHandlerInfo>* url_handlers =
+      UrlHandlers::GetUrlHandlers(extension);
+
+  // We don't have a scope, fall back to same origin check.
+  if (!url_handlers)
+    return IsSameHostAndPort(GetAppLaunchURL(), url);
+
+  return UrlHandlers::CanBookmarkAppHandleUrl(extension, url);
+}
+
 const Extension* HostedAppBrowserController::GetExtension() const {
   return ExtensionRegistry::Get(browser()->profile())
       ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
@@ -300,17 +305,19 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
 }
 
 bool HostedAppBrowserController::CanUninstall() const {
-  return extensions::ExtensionSystem::Get(browser()->profile())
-      ->management_policy()
-      ->UserMayModifySettings(GetExtension(), nullptr);
+  return web_app::WebAppProvider::Get(browser()->profile())
+      ->ui_manager()
+      .dialog_manager()
+      .CanUninstallWebApp(extension_id_);
 }
 
 void HostedAppBrowserController::Uninstall() {
-  uninstall_dialog_ = ExtensionUninstallDialog::Create(
-      browser()->profile(), browser()->window()->GetNativeWindow(), this);
-  uninstall_dialog_->ConfirmUninstall(
-      GetExtension(), extensions::UNINSTALL_REASON_USER_INITIATED,
-      extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->ui_manager()
+      .dialog_manager()
+      .UninstallWebApp(extension_id_,
+                       web_app::WebAppDialogManager::UninstallSource::kAppMenu,
+                       browser()->window(), base::DoNothing());
 }
 
 bool HostedAppBrowserController::IsInstalled() const {

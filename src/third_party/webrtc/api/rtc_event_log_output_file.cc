@@ -8,26 +8,16 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "api/rtc_event_log_output_file.h"
+
 #include <limits>
 #include <utility>
 
 #include "api/rtc_event_log/rtc_event_log.h"
-#include "api/rtc_event_log_output_file.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 
 namespace webrtc {
-
-namespace {
-
-FileWrapper FileWrapperFromPlatformFile(rtc::PlatformFile platform_file) {
-  if (platform_file == rtc::kInvalidPlatformFileValue)
-    return FileWrapper();
-
-  return FileWrapper(rtc::FdopenPlatformFileForWriting(platform_file));
-}
-
-}  // namespace
 
 // Together with the assumption of no single Write() would ever be called on
 // an input with length greater-than-or-equal-to (max(size_t) / 2), this
@@ -59,11 +49,6 @@ RtcEventLogOutputFile::RtcEventLogOutputFile(FileWrapper file,
     RTC_LOG(LS_ERROR) << "Invalid file. WebRTC event log not started.";
   }
 }
-
-RtcEventLogOutputFile::RtcEventLogOutputFile(rtc::PlatformFile platform_file,
-                                             size_t max_size_bytes)
-    : RtcEventLogOutputFile(FileWrapperFromPlatformFile(platform_file),
-                            max_size_bytes) {}
 
 bool RtcEventLogOutputFile::IsActive() const {
   return IsActiveInternal();

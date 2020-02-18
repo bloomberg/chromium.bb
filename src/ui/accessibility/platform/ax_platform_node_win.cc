@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -97,6 +98,24 @@
   if (!arg4)                                               \
     return E_INVALIDARG;                                   \
   *arg4 = {};
+#define COM_OBJECT_VALIDATE_5_ARGS(arg1, arg2, arg3, arg4, arg5) \
+  if (!GetDelegate())                                            \
+    return E_FAIL;                                               \
+  if (!arg1)                                                     \
+    return E_INVALIDARG;                                         \
+  *arg1 = {};                                                    \
+  if (!arg2)                                                     \
+    return E_INVALIDARG;                                         \
+  *arg2 = {};                                                    \
+  if (!arg3)                                                     \
+    return E_INVALIDARG;                                         \
+  *arg3 = {};                                                    \
+  if (!arg4)                                                     \
+    return E_INVALIDARG;                                         \
+  *arg4 = {};                                                    \
+  if (!arg5)                                                     \
+    return E_INVALIDARG;                                         \
+  *arg5 = {};
 #define COM_OBJECT_VALIDATE_VAR_ID_AND_GET_TARGET(var_id, target) \
   if (!GetDelegate())                                             \
     return E_FAIL;                                                \
@@ -371,54 +390,88 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
   }
 }
 
+std::vector<AXPlatformNodeWin*>
+AXPlatformNodeWin::CreatePlatformNodeVectorFromRelationIdVector(
+    std::vector<int32_t>& relation_id_list) {
+  std::vector<AXPlatformNodeWin*> platform_node_list;
+
+  for (int32_t id : relation_id_list) {
+    AXPlatformNode* platform_node = GetDelegate()->GetFromNodeID(id);
+    if (IsValidUiaRelationTarget(platform_node)) {
+      platform_node_list.push_back(
+          static_cast<AXPlatformNodeWin*>(platform_node));
+    }
+  }
+
+  return platform_node_list;
+}
+
+SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsSafeArray(
+    std::vector<AXPlatformNodeWin*>& platform_node_list) {
+  if (platform_node_list.empty())
+    return nullptr;
+
+  SAFEARRAY* uia_array =
+      SafeArrayCreateVector(VT_UNKNOWN, 0, platform_node_list.size());
+  LONG i = 0;
+
+  for (AXPlatformNodeWin* platform_node : platform_node_list) {
+    // All incoming ids should already be validated to have a valid relation
+    // targets so that this function does not need to re-check before allocating
+    // the SAFEARRAY.
+    DCHECK(IsValidUiaRelationTarget(platform_node));
+    SafeArrayPutElement(uia_array, &i,
+                        static_cast<IRawElementProviderSimple*>(platform_node));
+    ++i;
+  }
+
+  return uia_array;
+}
+
+SAFEARRAY* AXPlatformNodeWin::CreateUIAControllerForArray() {
+  std::vector<int32_t> relation_id_list =
+      GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(relation_id_list);
+
+  if (GetActivePopupAxUniqueId() != base::nullopt) {
+    AXPlatformNodeWin* view_popup_node_win = static_cast<AXPlatformNodeWin*>(
+        GetFromUniqueId(GetActivePopupAxUniqueId().value()));
+
+    if (IsValidUiaRelationTarget(view_popup_node_win))
+      platform_node_list.push_back(view_popup_node_win);
+  }
+
+  return CreateUIAElementsSafeArray(platform_node_list);
+}
+
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
     const ax::mojom::IntListAttribute& attribute) {
-  std::vector<int32_t> id_list = GetIntListAttribute(attribute);
-  base::EraseIf(id_list, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  SAFEARRAY* propertyvalue = CreateUIAElementsArrayFromIdVector(id_list);
-  return propertyvalue;
+  std::vector<int32_t> relation_id_list = GetIntListAttribute(attribute);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(relation_id_list);
+
+  return CreateUIAElementsSafeArray(platform_node_list);
 }
 
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::set<AXPlatformNode*> reverse_relations =
       GetDelegate()->GetReverseRelations(attribute);
-  std::vector<int32_t> ax_platform_node_ids;
-  ax_platform_node_ids.reserve(reverse_relations.size());
-  for (AXPlatformNode* ax_platform_node : reverse_relations) {
-    if (IsValidUiaRelationTarget(ax_platform_node)) {
-      ax_platform_node_ids.push_back(
-          static_cast<AXPlatformNodeWin*>(ax_platform_node)->GetData().id);
-    }
-  }
 
-  return CreateUIAElementsArrayFromIdVector(ax_platform_node_ids);
-}
+  std::vector<int32_t> id_list;
+  std::transform(
+      reverse_relations.cbegin(), reverse_relations.cend(),
+      std::back_inserter(id_list), [](AXPlatformNode* platform_node) {
+        return static_cast<AXPlatformNodeWin*>(platform_node)->GetData().id;
+      });
 
-SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
-    std::vector<int32_t>& ids) {
-  if (ids.size() == 0)
-    return nullptr;
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(id_list);
 
-  SAFEARRAY* uia_array = SafeArrayCreateVector(VT_UNKNOWN, 0, ids.size());
-
-  LONG i = 0;
-  for (const auto& node_id : ids) {
-    AXPlatformNodeWin* node_win =
-        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
-
-    // The caller should validate that all incoming ids are valid relation
-    // targets so that this function does not need to re-check before allocating
-    // the SAFEARRAY.
-    DCHECK(IsValidUiaRelationTarget(node_win));
-    SafeArrayPutElement(uia_array, &i,
-                        static_cast<IRawElementProviderSimple*>(node_win));
-    ++i;
-  }
-
-  return uia_array;
+  return CreateUIAElementsSafeArray(platform_node_list);
 }
 
 SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
@@ -544,7 +597,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     }
   }
 
-  if (base::Optional<DWORD> native_event = MSAAEvent(event_type)) {
+  if (base::Optional<DWORD> native_event = MojoEventToMSAAEvent(event_type)) {
     HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
     if (!hwnd)
       return;
@@ -552,7 +605,19 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     ::NotifyWinEvent((*native_event), hwnd, OBJID_CLIENT, -GetUniqueId());
   }
 
-  if (base::Optional<EVENTID> uia_event = UIAEvent(event_type))
+  if (base::Optional<PROPERTYID> uia_property =
+          MojoEventToUIAProperty(event_type)) {
+    // For this event, we're not concerned with the old value.
+    base::win::ScopedVariant old_value;
+    ::VariantInit(old_value.Receive());
+    base::win::ScopedVariant new_value;
+    ::VariantInit(new_value.Receive());
+    GetPropertyValue((*uia_property), new_value.Receive());
+    ::UiaRaiseAutomationPropertyChangedEvent(this, (*uia_property), old_value,
+                                             new_value);
+  }
+
+  if (base::Optional<EVENTID> uia_event = MojoEventToUIAEvent(event_type))
     ::UiaRaiseAutomationEvent(this, (*uia_event));
 
   // Keep track of objects that are a target of an alert event.
@@ -779,13 +844,12 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
   switch (nav_dir) {
     case NAVDIR_FIRSTCHILD:
       if (GetDelegate()->GetChildCount() > 0)
-        result = GetDelegate()->ChildAtIndex(0);
+        result = GetDelegate()->GetFirstChild();
       break;
 
     case NAVDIR_LASTCHILD:
       if (GetDelegate()->GetChildCount() > 0)
-        result =
-            GetDelegate()->ChildAtIndex(GetDelegate()->GetChildCount() - 1);
+        result = GetDelegate()->GetLastChild();
       break;
 
     case NAVDIR_NEXT: {
@@ -804,11 +868,11 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_DOWN: {
       // This direction is not implemented except in tables.
-      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
+      if (!GetTableRow() || !GetTableRowSpan() || !GetTableColumn())
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next = target->GetTableCell(
-          GetTableRow() + GetTableRowSpan(), GetTableColumn());
+          *GetTableRow() + *GetTableRowSpan(), *GetTableColumn());
       if (!next)
         return S_OK;
 
@@ -818,11 +882,11 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_UP: {
       // This direction is not implemented except in tables.
-      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
+      if (!GetTableRow() || !GetTableColumn())
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next =
-          target->GetTableCell(GetTableRow() - 1, GetTableColumn());
+          target->GetTableCell(*GetTableRow() - 1, *GetTableColumn());
       if (!next)
         return S_OK;
 
@@ -832,11 +896,11 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
 
     case NAVDIR_LEFT: {
       // This direction is not implemented except in tables.
-      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
+      if (!GetTableRow() || !GetTableColumn())
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next =
-          target->GetTableCell(GetTableRow(), GetTableColumn() - 1);
+          target->GetTableCell(*GetTableRow(), *GetTableColumn() - 1);
       if (!next)
         return S_OK;
 
@@ -847,11 +911,11 @@ IFACEMETHODIMP AXPlatformNodeWin::accNavigate(LONG nav_dir,
     case NAVDIR_RIGHT: {
       // This direction is not implemented except in tables.
 
-      if (!IsTableLike(GetData().role) && !IsCellOrTableHeader(GetData().role))
+      if (!GetTableRow() || !GetTableColumn() || !GetTableColumnSpan())
         return E_NOTIMPL;
 
       AXPlatformNodeBase* next = target->GetTableCell(
-          GetTableRow(), GetTableColumn() + GetTableColumnSpan());
+          *GetTableRow(), *GetTableColumn() + *GetTableColumnSpan());
       if (!next)
         return S_OK;
 
@@ -1085,8 +1149,11 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
     if (node &&
-        node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-      selected_nodes.emplace_back(node);
+        node->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+      Microsoft::WRL::ComPtr<IDispatch> node_idispatch;
+      if (SUCCEEDED(node->QueryInterface(IID_PPV_ARGS(&node_idispatch))))
+        selected_nodes.push_back(node_idispatch);
+    }
   }
 
   if (selected_nodes.empty()) {
@@ -1367,8 +1434,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_groupPosition(
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   *group_level = GetIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel);
-  *similar_items_in_group = GetSetSize();
-  *position_in_group = GetPosInSet();
+  *similar_items_in_group = GetSetSize().value_or(0);
+  *position_in_group = GetPosInSet().value_or(0);
 
   if (!*group_level && !*similar_items_in_group && !*position_in_group)
     return S_FALSE;
@@ -1523,19 +1590,21 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectionRanges(IA2Range** ranges,
                                                       LONG* nRanges) {
   COM_OBJECT_VALIDATE_2_ARGS(ranges, nRanges);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  int32_t anchor_id = GetDelegate()->GetTreeData().sel_anchor_object_id;
+  AXTree::Selection unignored_selection =
+      GetDelegate()->GetUnignoredSelection();
+  int32_t anchor_id = unignored_selection.anchor_object_id;
   auto* anchor_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(anchor_id));
   if (!anchor_node)
     return E_FAIL;
-  int anchor_offset = int{GetDelegate()->GetTreeData().sel_anchor_offset};
+  int anchor_offset = int{unignored_selection.anchor_offset};
 
-  int32_t focus_id = GetDelegate()->GetTreeData().sel_focus_object_id;
+  int32_t focus_id = unignored_selection.focus_object_id;
   auto* focus_node =
       static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(focus_id));
   if (!focus_node)
     return E_FAIL;
-  int focus_offset = int{GetDelegate()->GetTreeData().sel_focus_offset};
+  int focus_offset = int{unignored_selection.focus_offset};
 
   if (!IsDescendant(anchor_node) || !IsDescendant(focus_node))
     return S_FALSE;  // No selection within this subtree.
@@ -1698,14 +1767,20 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
 IFACEMETHODIMP AXPlatformNodeWin::get_Column(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_COLUMN);
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableColumn();
+  base::Optional<int> column = GetTableColumn();
+  if (!column)
+    return E_FAIL;
+  *result = *column;
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_ColumnSpan(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_COLUMNSPAN);
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableColumnSpan();
+  base::Optional<int> column_span = GetTableColumnSpan();
+  if (!column_span)
+    return E_FAIL;
+  *result = *column_span;
   return S_OK;
 }
 
@@ -1727,14 +1802,20 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ContainingGrid(
 IFACEMETHODIMP AXPlatformNodeWin::get_Row(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_ROW);
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableRow();
+  base::Optional<int> row = GetTableRow();
+  if (!row)
+    return E_FAIL;
+  *result = *row;
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_RowSpan(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRIDITEM_GET_ROWSPAN);
   UIA_VALIDATE_CALL_1_ARG(result);
-  *result = GetTableRowSpan();
+  base::Optional<int> row_span = GetTableRowSpan();
+  if (!row_span)
+    return E_FAIL;
+  *result = *row_span;
   return S_OK;
 }
 
@@ -1762,10 +1843,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_RowCount(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GET_ROWCOUNT);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  base::Optional<int32_t> row_count = GetTableAriaRowCount();
+  base::Optional<int> row_count = GetTableAriaRowCount();
   if (!row_count)
     return E_UNEXPECTED;
-
   *result = *row_count;
   return S_OK;
 }
@@ -1774,10 +1854,9 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ColumnCount(int* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GRID_GET_COLUMNCOUNT);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  base::Optional<int32_t> column_count = GetTableAriaColumnCount();
+  base::Optional<int> column_count = GetTableAriaColumnCount();
   if (!column_count)
     return E_UNEXPECTED;
-
   *result = *column_count;
   return S_OK;
 }
@@ -1813,6 +1892,10 @@ IFACEMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
   AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.target_rect = r;
+  action_data.horizontal_scroll_alignment =
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
+  action_data.vertical_scroll_alignment =
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
@@ -2085,15 +2168,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLEITEM_GETCOLUMNHEADERITEMS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!IsCellOrTableHeader(GetData().role) || !GetTable())
+  base::Optional<int> column = GetTableColumn();
+  if (!column)
     return E_FAIL;
 
   std::vector<int32_t> column_header_ids =
-      GetTable()->GetDelegate()->GetColHeaderNodeIds(GetTableColumn());
-  base::EraseIf(column_header_ids, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+      GetDelegate()->GetColHeaderNodeIds(*column);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(column_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2101,15 +2186,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLEITEM_GETROWHEADERITEMS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!IsCellOrTableHeader(GetData().role) || !GetTable())
+  base::Optional<int> row = GetTableRow();
+  if (!row)
     return E_FAIL;
 
   std::vector<int32_t> row_header_ids =
-      GetTable()->GetDelegate()->GetRowHeaderNodeIds(GetTableRow());
-  base::EraseIf(row_header_ids, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+      GetDelegate()->GetRowHeaderNodeIds(*row);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(row_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2121,14 +2208,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE_GETCOLUMNHEADERS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!GetTable())
-    return E_FAIL;
-
   std::vector<int32_t> column_header_ids = GetDelegate()->GetColHeaderNodeIds();
-  base::EraseIf(column_header_ids, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(column_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2136,14 +2221,12 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TABLE_GETROWHEADERS);
   UIA_VALIDATE_CALL_1_ARG(result);
 
-  if (!GetTable())
-    return E_FAIL;
-
   std::vector<int32_t> row_header_ids = GetDelegate()->GetRowHeaderNodeIds();
-  base::EraseIf(row_header_ids, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(row_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2378,95 +2461,85 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accessibleAt(LONG row,
                                                    LONG column,
                                                    IUnknown** accessible) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACCESSIBLE_AT);
+  COM_OBJECT_VALIDATE_1_ARG(accessible);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!accessible)
+  AXPlatformNodeBase* cell = GetTableCell(int{row}, int{column});
+  if (!cell)
     return E_INVALIDARG;
 
-  AXPlatformNodeBase* cell =
-      GetTableCell(static_cast<int>(row), static_cast<int>(column));
-  if (cell) {
-    auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
-    node_win->AddRef();
-
-    *accessible = static_cast<IAccessible*>(node_win);
-    return S_OK;
-  }
-
-  *accessible = nullptr;
-  return E_INVALIDARG;
+  auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
+  return node_win->QueryInterface(IID_PPV_ARGS(accessible));
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_caption(IUnknown** accessible) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CAPTION);
+  COM_OBJECT_VALIDATE_1_ARG(accessible);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!accessible)
-    return E_INVALIDARG;
+  AXPlatformNodeBase* caption = GetTableCaption();
+  if (!caption)
+    return S_FALSE;
 
-  // TODO(dmazzoni): implement
-  *accessible = nullptr;
-  return S_FALSE;
+  auto* node_win = static_cast<AXPlatformNodeWin*>(caption);
+  return node_win->QueryInterface(IID_PPV_ARGS(accessible));
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_childIndex(LONG row,
                                                  LONG column,
                                                  LONG* cell_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_CHILD_INDEX);
+  COM_OBJECT_VALIDATE_1_ARG(cell_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!cell_index)
+  AXPlatformNodeBase* cell = GetTableCell(int{row}, int{column});
+  if (!cell)
     return E_INVALIDARG;
 
-  AXPlatformNodeBase* cell =
-      GetTableCell(static_cast<int>(row), static_cast<int>(column));
-  if (cell) {
-    *cell_index = static_cast<LONG>(cell->GetTableCellIndex());
-    return S_OK;
-  }
+  base::Optional<int> index = cell->GetTableCellIndex();
+  if (!index)
+    return E_FAIL;
 
-  *cell_index = 0;
-  return E_INVALIDARG;
+  *cell_index = LONG{*index};
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_columnDescription(LONG column,
                                                         BSTR* description) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_DESCRIPTION);
+  COM_OBJECT_VALIDATE_1_ARG(description);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!description)
+  base::Optional<int> columns = GetTableColumnCount();
+  if (!columns)
+    return E_FAIL;
+
+  if (column < 0 || column >= *columns)
     return E_INVALIDARG;
 
-  int columns = GetTableColumnCount();
-  if (column < 0 || column >= columns)
-    return E_INVALIDARG;
+  std::vector<int32_t> column_header_ids =
+      GetDelegate()->GetColHeaderNodeIds(int{column});
+  for (int32_t node_id : column_header_ids) {
+    AXPlatformNodeWin* cell =
+        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
+    if (!cell)
+      continue;
 
-  int rows = GetTableRowCount();
-  if (rows <= 0) {
-    *description = nullptr;
-    return S_FALSE;
-  }
+    base::string16 cell_name =
+        cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
+    if (!cell_name.empty()) {
+      *description = SysAllocString(cell_name.c_str());
+      return S_OK;
+    }
 
-  for (int r = 0; r < rows; ++r) {
-    AXPlatformNodeBase* cell = GetTableCell(r, column);
-    if (cell && cell->GetData().role == ax::mojom::Role::kColumnHeader) {
-      base::string16 cell_name =
-          cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
-      if (cell_name.size() > 0) {
-        *description = SysAllocString(cell_name.c_str());
-        return S_OK;
-      }
-
-      cell_name =
-          cell->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
-      if (cell_name.size() > 0) {
-        *description = SysAllocString(cell_name.c_str());
-        return S_OK;
-      }
+    cell_name =
+        cell->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
+    if (!cell_name.empty()) {
+      *description = SysAllocString(cell_name.c_str());
+      return S_OK;
     }
   }
 
-  *description = nullptr;
   return S_FALSE;
 }
 
@@ -2474,17 +2547,17 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnExtentAt(LONG row,
                                                      LONG column,
                                                      LONG* n_columns_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_EXTENT_AT);
+  COM_OBJECT_VALIDATE_1_ARG(n_columns_spanned);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!n_columns_spanned)
-    return E_INVALIDARG;
-
-  AXPlatformNodeBase* cell =
-      GetTableCell(static_cast<int>(row), static_cast<int>(column));
+  AXPlatformNodeBase* cell = GetTableCell(int{row}, int{column});
   if (!cell)
     return E_INVALIDARG;
 
-  *n_columns_spanned = cell->GetTableColumnSpan();
+  base::Optional<int> column_span = cell->GetTableColumnSpan();
+  if (!column_span)
+    return E_FAIL;
+  *n_columns_spanned = LONG{*column_span};
   return S_OK;
 }
 
@@ -2492,6 +2565,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnHeader(
     IAccessibleTable** accessible_table,
     LONG* starting_row_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_HEADER);
+  COM_OBJECT_VALIDATE_2_ARGS(accessible_table, starting_row_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   // TODO(dmazzoni): implement
@@ -2501,60 +2575,59 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnHeader(
 IFACEMETHODIMP AXPlatformNodeWin::get_columnIndex(LONG cell_index,
                                                   LONG* column_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_COLUMN_INDEX);
+  COM_OBJECT_VALIDATE_1_ARG(column_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-
-  if (!column_index)
-    return E_INVALIDARG;
 
   AXPlatformNodeBase* cell = GetTableCell(cell_index);
   if (!cell)
     return E_INVALIDARG;
-  *column_index = cell->GetTableColumn();
+
+  base::Optional<int> cell_column = cell->GetTableColumn();
+  if (!cell_column)
+    return E_FAIL;
+  *column_index = LONG{*cell_column};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nColumns(LONG* column_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_COLUMNS);
+  COM_OBJECT_VALIDATE_1_ARG(column_count);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-
-  if (!column_count)
-    return E_INVALIDARG;
-
-  *column_count = GetTableColumnCount();
+  base::Optional<int> columns = GetTableColumnCount();
+  if (!columns)
+    return E_FAIL;
+  *column_count = LONG{*columns};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nRows(LONG* row_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_ROWS);
+  COM_OBJECT_VALIDATE_1_ARG(row_count);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-
-  if (!row_count)
-    return E_INVALIDARG;
-
-  *row_count = GetTableRowCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!rows)
+    return E_FAIL;
+  *row_count = LONG{*rows};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(LONG* cell_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_CHILDREN);
+  COM_OBJECT_VALIDATE_1_ARG(cell_count);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!cell_count)
-    return E_INVALIDARG;
-  *cell_count = 0;
-
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0)
-    return S_FALSE;
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
 
   LONG result = 0;
-  for (int r = 0; r < rows; ++r) {
-    for (int c = 0; c < columns; ++c) {
+  for (int r = 0; r < *rows; ++r) {
+    for (int c = 0; c < *columns; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (cell &&
           cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-        result++;
+        ++result;
     }
   }
   *cell_count = result;
@@ -2563,29 +2636,26 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedChildren(LONG* cell_count) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(LONG* column_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_COLUMNS);
+  COM_OBJECT_VALIDATE_1_ARG(column_count);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!column_count)
-    return E_INVALIDARG;
-  *column_count = 0;
-
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0)
-    return S_FALSE;
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
 
   // If every cell in a column is selected, then that column is selected.
   LONG result = 0;
-  for (int c = 0; c < columns; ++c) {
+  for (int c = 0; c < *columns; ++c) {
     bool selected = true;
-    for (int r = 0; r < rows && selected == true; ++r) {
-      AXPlatformNodeBase* cell = GetTableCell(r, c);
+    for (int r = 0; r < *rows && selected == true; ++r) {
+      const AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (!cell || !(cell->GetData().GetBoolAttribute(
                        ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
-      result++;
+      ++result;
   }
 
   *column_count = result;
@@ -2594,29 +2664,26 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedColumns(LONG* column_count) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedRows(LONG* row_count) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_N_SELECTED_ROWS);
+  COM_OBJECT_VALIDATE_1_ARG(row_count);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!row_count)
-    return E_INVALIDARG;
-  *row_count = 0;
-
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0)
-    return S_FALSE;
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
 
   // If every cell in a row is selected, then that row is selected.
   LONG result = 0;
-  for (int r = 0; r < rows; ++r) {
+  for (int r = 0; r < *rows; ++r) {
     bool selected = true;
-    for (int c = 0; c < columns && selected == true; ++c) {
-      AXPlatformNodeBase* cell = GetTableCell(r, c);
+    for (int c = 0; c < *columns && selected == true; ++c) {
+      const AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (!cell || !(cell->GetData().GetBoolAttribute(
                        ax::mojom::BoolAttribute::kSelected)))
         selected = false;
     }
     if (selected)
-      result++;
+      ++result;
   }
 
   *row_count = result;
@@ -2626,39 +2693,39 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedRows(LONG* row_count) {
 IFACEMETHODIMP AXPlatformNodeWin::get_rowDescription(LONG row,
                                                      BSTR* description) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_DESCRIPTION);
+  COM_OBJECT_VALIDATE_1_ARG(description);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!description)
+  base::Optional<int> rows = GetTableRowCount();
+  if (!rows)
+    return E_FAIL;
+
+  if (row < 0 || row >= *rows)
     return E_INVALIDARG;
 
-  if (row < 0 || row >= GetTableRowCount())
-    return E_INVALIDARG;
+  std::vector<int32_t> row_header_ids =
+      GetDelegate()->GetRowHeaderNodeIds(int{row});
+  for (int32_t node_id : row_header_ids) {
+    AXPlatformNodeWin* cell =
+        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
+    if (!cell)
+      continue;
 
-  int columns = GetTableColumnCount();
-  if (columns <= 0) {
-    *description = nullptr;
-    return S_FALSE;
-  }
+    base::string16 cell_name =
+        cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
+    if (!cell_name.empty()) {
+      *description = SysAllocString(cell_name.c_str());
+      return S_OK;
+    }
 
-  for (int c = 0; c < columns; ++c) {
-    AXPlatformNodeBase* cell = GetTableCell(row, c);
-    if (cell && cell->GetData().role == ax::mojom::Role::kRowHeader) {
-      base::string16 cell_name =
-          cell->GetString16Attribute(ax::mojom::StringAttribute::kName);
-      if (cell_name.size() > 0) {
-        *description = SysAllocString(cell_name.c_str());
-        return S_OK;
-      }
-      cell_name =
-          cell->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
-      if (cell_name.size() > 0) {
-        *description = SysAllocString(cell_name.c_str());
-        return S_OK;
-      }
+    cell_name =
+        cell->GetString16Attribute(ax::mojom::StringAttribute::kDescription);
+    if (!cell_name.empty()) {
+      *description = SysAllocString(cell_name.c_str());
+      return S_OK;
     }
   }
 
-  *description = nullptr;
   return S_FALSE;
 }
 
@@ -2666,16 +2733,17 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowExtentAt(LONG row,
                                                   LONG column,
                                                   LONG* n_rows_spanned) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_EXTENT_AT);
+  COM_OBJECT_VALIDATE_1_ARG(n_rows_spanned);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!n_rows_spanned)
-    return E_INVALIDARG;
-
-  AXPlatformNodeBase* cell = GetTableCell(row, column);
+  const AXPlatformNodeBase* cell = GetTableCell(int{row}, int{column});
   if (!cell)
     return E_INVALIDARG;
 
-  *n_rows_spanned = GetTableRowSpan();
+  base::Optional<int> cell_row_span = cell->GetTableRowSpan();
+  if (!cell_row_span)
+    return E_FAIL;
+  *n_rows_spanned = LONG{*cell_row_span};
   return S_OK;
 }
 
@@ -2683,6 +2751,7 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowHeader(
     IAccessibleTable** accessible_table,
     LONG* starting_column_index) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ROW_HEADER);
+  COM_OBJECT_VALIDATE_2_ARGS(accessible_table, starting_column_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
   // TODO(dmazzoni): implement
@@ -2692,16 +2761,17 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowHeader(
 IFACEMETHODIMP AXPlatformNodeWin::get_rowIndex(LONG cell_index,
                                                LONG* row_index) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(row_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!row_index)
-    return E_INVALIDARG;
-
-  AXPlatformNodeBase* cell = GetTableCell(cell_index);
+  const AXPlatformNodeBase* cell = GetTableCell(cell_index);
   if (!cell)
     return E_INVALIDARG;
 
-  *row_index = cell->GetTableRow();
+  base::Optional<int> cell_row = cell->GetTableRow();
+  if (!cell_row)
+    return E_FAIL;
+  *row_index = LONG{*cell_row};
   return S_OK;
 }
 
@@ -2709,24 +2779,29 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedChildren(LONG max_children,
                                                        LONG** children,
                                                        LONG* n_children) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(children, n_children);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!children || !n_children || max_children <= 0)
+  if (max_children <= 0)
     return E_INVALIDARG;
 
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0)
-    return S_FALSE;
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
 
   std::vector<LONG> results;
-  for (int r = 0; r < rows; ++r) {
-    for (int c = 0; c < columns; ++c) {
-      AXPlatformNodeBase* cell = GetTableCell(r, c);
-      if (cell &&
-          cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
-        // index is row index * column count + column index.
-        results.push_back(r * columns + c);
+  for (int r = 0; r < *rows; ++r) {
+    for (int c = 0; c < *columns; ++c) {
+      const AXPlatformNodeBase* cell = GetTableCell(r, c);
+      if (cell && cell->GetData().GetBoolAttribute(
+                      ax::mojom::BoolAttribute::kSelected)) {
+        base::Optional<int> cell_index = cell->GetTableCellIndex();
+        if (!cell_index)
+          return E_FAIL;
+
+        results.push_back(*cell_index);
+      }
     }
   }
 
@@ -2738,21 +2813,22 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedColumns(LONG max_columns,
                                                       LONG** columns,
                                                       LONG* n_columns) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(columns, n_columns);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!columns || !n_columns || max_columns <= 0)
+  if (max_columns <= 0)
     return E_INVALIDARG;
 
-  int column_count = GetTableColumnCount();
-  int row_count = GetTableRowCount();
-  if (column_count <= 0 || row_count <= 0)
-    return S_FALSE;
+  base::Optional<int> column_count = GetTableColumnCount();
+  base::Optional<int> row_count = GetTableRowCount();
+  if (!column_count || !row_count)
+    return E_FAIL;
 
   std::vector<LONG> results;
-  for (int c = 0; c < column_count; ++c) {
+  for (int c = 0; c < *column_count; ++c) {
     bool selected = true;
-    for (int r = 0; r < row_count && selected == true; ++r) {
-      AXPlatformNodeBase* cell = GetTableCell(r, c);
+    for (int r = 0; r < *row_count && selected == true; ++r) {
+      const AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (!cell || !(cell->GetData().GetBoolAttribute(
                        ax::mojom::BoolAttribute::kSelected)))
         selected = false;
@@ -2768,20 +2844,22 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedRows(LONG max_rows,
                                                    LONG** rows,
                                                    LONG* n_rows) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(rows, n_rows);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!rows || !n_rows || max_rows <= 0)
+
+  if (max_rows <= 0)
     return E_INVALIDARG;
 
-  int column_count = GetTableColumnCount();
-  int row_count = GetTableRowCount();
-  if (column_count <= 0 || row_count <= 0)
-    return S_FALSE;
+  base::Optional<int> column_count = GetTableColumnCount();
+  base::Optional<int> row_count = GetTableRowCount();
+  if (!column_count || !row_count)
+    return E_FAIL;
 
   std::vector<LONG> results;
-  for (int r = 0; r < row_count; ++r) {
+  for (int r = 0; r < *row_count; ++r) {
     bool selected = true;
-    for (int c = 0; c < column_count && selected == true; ++c) {
-      AXPlatformNodeBase* cell = GetTableCell(r, c);
+    for (int c = 0; c < *column_count && selected == true; ++c) {
+      const AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (!cell || !(cell->GetData().GetBoolAttribute(
                        ax::mojom::BoolAttribute::kSelected)))
         selected = false;
@@ -2795,31 +2873,29 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedRows(LONG max_rows,
 
 IFACEMETHODIMP AXPlatformNodeWin::get_summary(IUnknown** accessible) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(accessible);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!accessible)
-    return E_INVALIDARG;
-
-  // TODO(dmazzoni): implement
-  *accessible = nullptr;
-  return S_FALSE;
+  // TODO(dmazzoni): implement.
+  return E_NOTIMPL;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_isColumnSelected(LONG column,
                                                        boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!is_selected)
+
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
+
+  if (column < 0 || column >= *columns)
     return E_INVALIDARG;
-  *is_selected = false;
 
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0 || column >= columns || column < 0)
-    return S_FALSE;
-
-  for (int r = 0; r < rows; ++r) {
-    AXPlatformNodeBase* cell = GetTableCell(r, column);
+  for (int r = 0; r < *rows; ++r) {
+    const AXPlatformNodeBase* cell = GetTableCell(r, column);
     if (!cell || !(cell->GetData().GetBoolAttribute(
                      ax::mojom::BoolAttribute::kSelected)))
       return S_OK;
@@ -2832,18 +2908,19 @@ IFACEMETHODIMP AXPlatformNodeWin::get_isColumnSelected(LONG column,
 IFACEMETHODIMP AXPlatformNodeWin::get_isRowSelected(LONG row,
                                                     boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!is_selected)
+
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
+
+  if (row < 0 || row >= *rows)
     return E_INVALIDARG;
-  *is_selected = false;
 
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0 || row >= rows || row < 0)
-    return S_FALSE;
-
-  for (int c = 0; c < columns; ++c) {
-    AXPlatformNodeBase* cell = GetTableCell(row, c);
+  for (int c = 0; c < *columns; ++c) {
+    const AXPlatformNodeBase* cell = GetTableCell(row, c);
     if (!cell || !(cell->GetData().GetBoolAttribute(
                      ax::mojom::BoolAttribute::kSelected)))
       return S_OK;
@@ -2857,20 +2934,19 @@ IFACEMETHODIMP AXPlatformNodeWin::get_isSelected(LONG row,
                                                  LONG column,
                                                  boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!is_selected)
+
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
+
+  const AXPlatformNodeBase* cell = GetTableCell(int{row}, int{column});
+  if (!cell)
     return E_INVALIDARG;
-  *is_selected = false;
 
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0 || row >= rows || row < 0 ||
-      column >= columns || column < 0)
-    return S_FALSE;
-
-  AXPlatformNodeBase* cell = GetTableCell(row, column);
-  if (cell &&
-      cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+  if (cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
     *is_selected = true;
 
   return S_OK;
@@ -2884,27 +2960,40 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowColumnExtentsAtIndex(
     LONG* column_extents,
     boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_5_ARGS(row, column, row_extents, column_extents,
+                             is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!row || !column || !row_extents || !column_extents || !is_selected)
-    return E_INVALIDARG;
-
-  AXPlatformNodeBase* cell = GetTableCell(index);
+  const AXPlatformNodeBase* cell = GetTableCell(index);
   if (!cell)
     return E_INVALIDARG;
 
-  *row = cell->GetTableRow();
-  *column = cell->GetTableColumn();
-  *row_extents = GetTableRowSpan();
-  *column_extents = GetTableColumnSpan();
-  *is_selected = false;  // Not supported.
+  base::Optional<int> row_index = cell->GetTableRow();
+  base::Optional<int> column_index = cell->GetTableColumn();
+  base::Optional<int> row_span = cell->GetTableRowSpan();
+  base::Optional<int> column_span = cell->GetTableColumnSpan();
+  if (!row_index || !column_index || !row_span || !column_span)
+    return E_FAIL;
 
+  *row = LONG{*row_index};
+  *column = LONG{*column_index};
+  *row_extents = LONG{*row_span};
+  *column_extents = LONG{*column_span};
+  if (cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    *is_selected = true;
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::selectRow(LONG row) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  base::Optional<int> rows = GetTableRowCount();
+  if (!rows)
+    return E_FAIL;
+
+  if (row < 0 || row >= *rows)
+    return E_INVALIDARG;
 
   return E_NOTIMPL;
 }
@@ -2913,12 +3002,26 @@ IFACEMETHODIMP AXPlatformNodeWin::selectColumn(LONG column) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
+  base::Optional<int> columns = GetTableColumnCount();
+  if (!columns)
+    return E_FAIL;
+
+  if (column < 0 || column >= *columns)
+    return E_INVALIDARG;
+
   return E_NOTIMPL;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::unselectRow(LONG row) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  base::Optional<int> rows = GetTableRowCount();
+  if (!rows)
+    return E_FAIL;
+
+  if (row < 0 || row >= *rows)
+    return E_INVALIDARG;
 
   return E_NOTIMPL;
 }
@@ -2927,12 +3030,20 @@ IFACEMETHODIMP AXPlatformNodeWin::unselectColumn(LONG column) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
+  base::Optional<int> columns = GetTableColumnCount();
+  if (!columns)
+    return E_FAIL;
+
+  if (column < 0 || column >= *columns)
+    return E_INVALIDARG;
+
   return E_NOTIMPL;
 }
 
-IFACEMETHODIMP
-AXPlatformNodeWin::get_modelChange(IA2TableModelChange* model_change) {
+IFACEMETHODIMP AXPlatformNodeWin::get_modelChange(
+    IA2TableModelChange* model_change) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(model_change);
   return E_NOTIMPL;
 }
 
@@ -2944,21 +3055,15 @@ IFACEMETHODIMP AXPlatformNodeWin::get_cellAt(LONG row,
                                              LONG column,
                                              IUnknown** cell) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(cell);
   AXPlatformNode::NotifyAddAXModeFlags(AXMode::kScreenReader);
-  if (!cell)
+
+  AXPlatformNodeBase* table_cell = GetTableCell(int{row}, int{column});
+  if (!table_cell)
     return E_INVALIDARG;
 
-  AXPlatformNodeBase* table_cell =
-      GetTableCell(static_cast<int>(row), static_cast<int>(column));
-  if (table_cell) {
-    auto* node_win = static_cast<AXPlatformNodeWin*>(table_cell);
-    node_win->AddRef();
-    *cell = static_cast<IAccessible*>(node_win);
-    return S_OK;
-  }
-
-  *cell = nullptr;
-  return E_INVALIDARG;
+  auto* node_win = static_cast<AXPlatformNodeWin*>(table_cell);
+  return node_win->QueryInterface(IID_PPV_ARGS(cell));
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedCells(LONG* cell_count) {
@@ -2971,21 +3076,17 @@ IFACEMETHODIMP AXPlatformNodeWin::get_nSelectedCells(LONG* cell_count) {
 IFACEMETHODIMP AXPlatformNodeWin::get_selectedCells(IUnknown*** cells,
                                                     LONG* n_selected_cells) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(cells, n_selected_cells);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!cells || !n_selected_cells)
-    return E_INVALIDARG;
 
-  *cells = nullptr;
-  *n_selected_cells = 0;
-
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0)
-    return S_FALSE;
+  base::Optional<int> columns = GetTableColumnCount();
+  base::Optional<int> rows = GetTableRowCount();
+  if (!columns || !rows)
+    return E_FAIL;
 
   std::vector<AXPlatformNodeBase*> selected;
-  for (int r = 0; r < rows; ++r) {
-    for (int c = 0; c < columns; ++c) {
+  for (int r = 0; r < *rows; ++r) {
+    for (int c = 0; c < *columns; ++c) {
       AXPlatformNodeBase* cell = GetTableCell(r, c);
       if (cell &&
           cell->GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
@@ -2995,22 +3096,23 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedCells(IUnknown*** cells,
 
   *n_selected_cells = static_cast<LONG>(selected.size());
   *cells = static_cast<IUnknown**>(
-      CoTaskMemAlloc((*n_selected_cells) * sizeof(cells[0])));
+      CoTaskMemAlloc(selected.size() * sizeof(IUnknown*)));
 
   for (size_t i = 0; i < selected.size(); ++i) {
     auto* node_win = static_cast<AXPlatformNodeWin*>(selected[i]);
-    node_win->AddRef();
-    (*cells)[i] = static_cast<IAccessible*>(node_win);
+    node_win->QueryInterface(IID_PPV_ARGS(&(*cells)[i]));
   }
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_selectedColumns(LONG** columns,
                                                       LONG* n_columns) {
+  // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   return get_selectedColumns(INT_MAX, columns, n_columns);
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_selectedRows(LONG** rows, LONG* n_rows) {
+  // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
   return get_selectedRows(INT_MAX, rows, n_rows);
 }
 
@@ -3020,11 +3122,13 @@ IFACEMETHODIMP AXPlatformNodeWin::get_selectedRows(LONG** rows, LONG* n_rows) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_columnExtent(LONG* n_columns_spanned) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(n_columns_spanned);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!n_columns_spanned)
-    return E_INVALIDARG;
 
-  *n_columns_spanned = GetTableColumnSpan();
+  base::Optional<int> column_span = GetTableColumnSpan();
+  if (!column_span)
+    return E_FAIL;
+  *n_columns_spanned = LONG{*column_span};
   return S_OK;
 }
 
@@ -3032,66 +3136,52 @@ IFACEMETHODIMP AXPlatformNodeWin::get_columnHeaderCells(
     IUnknown*** cell_accessibles,
     LONG* n_column_header_cells) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(cell_accessibles, n_column_header_cells);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!cell_accessibles || !n_column_header_cells)
-    return E_INVALIDARG;
 
-  *n_column_header_cells = 0;
-  if (!IsCellOrTableHeader(GetData().role))
-    return S_FALSE;
+  base::Optional<int> column = GetTableColumn();
+  if (!column)
+    return E_FAIL;
 
-  AXPlatformNodeBase* table = GetTable();
-  if (!table)
-    return S_FALSE;
-
-  int column = GetTableColumn();
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0 || column < 0 || column >= columns)
-    return S_FALSE;
-
-  for (int r = 0; r < rows; ++r) {
-    AXPlatformNodeBase* cell = GetTableCell(r, column);
-    if (cell && cell->GetData().role == ax::mojom::Role::kColumnHeader)
-      (*n_column_header_cells)++;
-  }
-
+  std::vector<int32_t> column_header_ids =
+      GetDelegate()->GetColHeaderNodeIds(*column);
   *cell_accessibles = static_cast<IUnknown**>(
-      CoTaskMemAlloc((*n_column_header_cells) * sizeof(cell_accessibles[0])));
+      CoTaskMemAlloc(column_header_ids.size() * sizeof(IUnknown*)));
   int index = 0;
-  for (int r = 0; r < rows; ++r) {
-    AXPlatformNodeBase* cell = GetTableCell(r, column);
-    if (cell && cell->GetData().role == ax::mojom::Role::kColumnHeader) {
-      auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
-      node_win->AddRef();
-
-      (*cell_accessibles)[index] = static_cast<IAccessible*>(node_win);
+  for (int32_t node_id : column_header_ids) {
+    AXPlatformNodeWin* node_win =
+        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
+    if (node_win) {
+      node_win->QueryInterface(IID_PPV_ARGS(&(*cell_accessibles)[index]));
       ++index;
     }
   }
 
+  *n_column_header_cells = LONG{column_header_ids.size()};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_columnIndex(LONG* column_index) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(column_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!column_index)
-    return E_INVALIDARG;
-
-  *column_index = GetTableColumn();
+  base::Optional<int> column = GetTableColumn();
+  if (!column)
+    return E_FAIL;
+  *column_index = LONG{*column};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_rowExtent(LONG* n_rows_spanned) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(n_rows_spanned);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!n_rows_spanned)
-    return E_INVALIDARG;
-
-  *n_rows_spanned = GetTableRowSpan();
+  base::Optional<int> row_span = GetTableRowSpan();
+  if (!row_span)
+    return E_FAIL;
+  *n_rows_spanned = LONG{*row_span};
   return S_OK;
 }
 
@@ -3099,67 +3189,50 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowHeaderCells(
     IUnknown*** cell_accessibles,
     LONG* n_row_header_cells) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_2_ARGS(cell_accessibles, n_row_header_cells);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!cell_accessibles || !n_row_header_cells)
-    return E_INVALIDARG;
+  base::Optional<int> row = GetTableRow();
+  if (!row)
+    return E_FAIL;
 
-  *n_row_header_cells = 0;
-  if (!IsCellOrTableHeader(GetData().role))
-    return S_FALSE;
-
-  AXPlatformNodeBase* table = GetTable();
-  if (!table)
-    return S_FALSE;
-
-  int row = GetTableRow();
-  int columns = GetTableColumnCount();
-  int rows = GetTableRowCount();
-  if (columns <= 0 || rows <= 0 || row < 0 || row >= rows)
-    return S_FALSE;
-
-  for (int c = 0; c < columns; ++c) {
-    AXPlatformNodeBase* cell = GetTableCell(row, c);
-    if (cell && cell->GetData().role == ax::mojom::Role::kRowHeader)
-      (*n_row_header_cells)++;
-  }
-
+  std::vector<int32_t> row_header_ids =
+      GetDelegate()->GetRowHeaderNodeIds(*row);
   *cell_accessibles = static_cast<IUnknown**>(
-      CoTaskMemAlloc((*n_row_header_cells) * sizeof(cell_accessibles[0])));
+      CoTaskMemAlloc(row_header_ids.size() * sizeof(IUnknown*)));
   int index = 0;
-  for (int c = 0; c < columns; ++c) {
-    AXPlatformNodeBase* cell = GetTableCell(row, c);
-    if (cell && cell->GetData().role == ax::mojom::Role::kRowHeader) {
-      auto* node_win = static_cast<AXPlatformNodeWin*>(cell);
-      node_win->AddRef();
-
-      (*cell_accessibles)[index] = static_cast<IAccessible*>(node_win);
+  for (int32_t node_id : row_header_ids) {
+    AXPlatformNodeWin* node_win =
+        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
+    if (node_win) {
+      node_win->QueryInterface(IID_PPV_ARGS(&(*cell_accessibles)[index]));
       ++index;
     }
   }
 
+  *n_row_header_cells = LONG{row_header_ids.size()};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_rowIndex(LONG* row_index) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(row_index);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!row_index)
-    return E_INVALIDARG;
-
-  *row_index = GetTableRow();
+  base::Optional<int> row = GetTableRow();
+  if (!row)
+    return E_FAIL;
+  *row_index = LONG{*row};
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_isSelected(boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!is_selected)
-    return E_INVALIDARG;
-
-  *is_selected = false;
+  if (GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    *is_selected = true;
   return S_OK;
 }
 
@@ -3169,42 +3242,37 @@ IFACEMETHODIMP AXPlatformNodeWin::get_rowColumnExtents(LONG* row_index,
                                                        LONG* column_extents,
                                                        boolean* is_selected) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_5_ARGS(row_index, column_index, row_extents,
+                             column_extents, is_selected);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!row_index || !column_index || !row_extents || !column_extents ||
-      !is_selected) {
-    return E_INVALIDARG;
-  }
+  base::Optional<int> row = GetTableRow();
+  base::Optional<int> column = GetTableColumn();
+  base::Optional<int> row_span = GetTableRowSpan();
+  base::Optional<int> column_span = GetTableColumnSpan();
+  if (!row || !column || !row_span || !column_span)
+    return E_FAIL;
 
-  *row_index = GetTableRow();
-  *column_index = GetTableColumn();
-  *row_extents = GetTableRowSpan();
-  *column_extents = GetTableColumnSpan();
-  *is_selected = false;  // Not supported.
-
+  *row_index = LONG{*row};
+  *column_index = LONG{*column};
+  *row_extents = LONG{*row_span};
+  *column_extents = LONG{*column_span};
+  if (GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+    *is_selected = true;
   return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_table(IUnknown** table) {
   // TODO(dougt) WIN_ACCESSIBILITY_API_HISTOGRAM?
+  COM_OBJECT_VALIDATE_1_ARG(table);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  if (!table)
-    return E_INVALIDARG;
+  AXPlatformNodeBase* table_node = GetTable();
+  if (!table_node)
+    return E_FAIL;
 
-  AXPlatformNodeBase* find_table = GetTable();
-  if (!find_table) {
-    *table = nullptr;
-    return S_FALSE;
-  }
-
-  // The IAccessibleTable interface is still on the AXPlatformNodeWin
-  // class.
-  auto* node_win = static_cast<AXPlatformNodeWin*>(find_table);
-  node_win->AddRef();
-
-  *table = static_cast<IAccessibleTable*>(node_win);
-  return S_OK;
+  auto* node_win = static_cast<AXPlatformNodeWin*>(table_node);
+  return node_win->QueryInterface(IID_PPV_ARGS(table));
 }
 
 //
@@ -3514,7 +3582,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
 
     case NavigateDirection_FirstChild:
       if (GetChildCount() > 0) {
-        neighbor = FromNativeViewAccessible(ChildAtIndex(0));
+        neighbor = GetFirstChild();
         DCHECK(neighbor);
         DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
       }
@@ -3522,7 +3590,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Navigate(
 
     case NavigateDirection_LastChild:
       if (GetChildCount() > 0) {
-        neighbor = FromNativeViewAccessible(ChildAtIndex(GetChildCount() - 1));
+        neighbor = GetLastChild();
         DCHECK(neighbor);
         DCHECK(FromNativeViewAccessible(neighbor->GetParent()) == this);
       }
@@ -3707,8 +3775,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ControllerForPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      result->parray = CreateUIAElementsArrayForRelation(
-          ax::mojom::IntListAttribute::kControlsIds);
+      result->parray = CreateUIAControllerForArray();
       break;
 
     case UIA_ControlTypePropertyId:
@@ -3965,12 +4032,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       result->boolVal = VARIANT_FALSE;
       break;
 
-    case UIA_PositionInSetPropertyId:
-      if (GetDelegate()->IsOrderedSetItem()) {
+    case UIA_PositionInSetPropertyId: {
+      base::Optional<int> pos_in_set = GetPosInSet();
+      if (pos_in_set) {
         result->vt = VT_I4;
-        result->intVal = GetDelegate()->GetPosInSet();
+        result->intVal = *pos_in_set;
       }
-      break;
+    } break;
 
     case UIA_ScrollHorizontalScrollPercentPropertyId: {
       V_VT(result) = VT_R8;
@@ -3984,13 +4052,13 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
     }
 
-    case UIA_SizeOfSetPropertyId:
-      if (data.GetIntAttribute(ax::mojom::IntAttribute::kSetSize,
-                               &int_attribute)) {
+    case UIA_SizeOfSetPropertyId: {
+      base::Optional<int> set_size = GetSetSize();
+      if (set_size) {
         result->vt = VT_I4;
-        result->intVal = int_attribute;
+        result->intVal = *set_size;
       }
-      break;
+    } break;
 
     case UIA_LandmarkTypePropertyId: {
       base::Optional<LONG> landmark_type = ComputeUIALandmarkType();
@@ -6573,7 +6641,9 @@ int AXPlatformNodeWin::MSAAState() const {
   return msaa_state;
 }
 
-base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
+// static
+base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
+    ax::mojom::Event event) {
   if (::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
     return base::nullopt;
 
@@ -6613,7 +6683,9 @@ base::Optional<DWORD> AXPlatformNodeWin::MSAAEvent(ax::mojom::Event event) {
   }
 }
 
-base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
+// static
+base::Optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
+    ax::mojom::Event event) {
   if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
     return base::nullopt;
 
@@ -6631,6 +6703,20 @@ base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
       return UIA_SelectionItem_ElementAddedToSelectionEventId;
     case ax::mojom::Event::kSelectionRemove:
       return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    default:
+      return base::nullopt;
+  }
+}
+
+// static
+base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
+    ax::mojom::Event event) {
+  if (!::switches::IsExperimentalAccessibilityPlatformUIAEnabled())
+    return base::nullopt;
+
+  switch (event) {
+    case ax::mojom::Event::kControlsChanged:
+      return UIA_ControllerForPropertyId;
     default:
       return base::nullopt;
   }
@@ -6752,7 +6838,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
     int selection_start, selection_end;
     GetSelectionOffsets(&selection_start, &selection_end);
     // TODO(nektar): Deprecate selection_start and selection_end in favor of
-    // sel_anchor_offset/sel_focus_offset. See https://crbug.com/645596.
+    // anchor_offset/focus_offset. See https://crbug.com/645596.
     if (selection_end < 0)
       *offset = 0;
     else

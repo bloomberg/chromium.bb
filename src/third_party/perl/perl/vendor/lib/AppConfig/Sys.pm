@@ -15,11 +15,12 @@
 #============================================================================
 
 package AppConfig::Sys;
+use 5.006;
 use strict;
 use warnings;
 use POSIX qw( getpwnam getpwuid );
 
-our $VERSION = '1.65';
+our $VERSION = '1.71';
 our ($AUTOLOAD, $OS, %CAN, %METHOD);
 
 
@@ -44,7 +45,7 @@ BEGIN {
             getpwnam( defined $_[0] ? shift : '' );
         };
     }
-    
+
     # try out each METHOD to see if it's supported on this platform;
     # it's important we do this before defining AUTOLOAD which would
     # otherwise catch the unresolved call
@@ -67,7 +68,7 @@ BEGIN {
 
 sub new {
     my $class = shift;
-    
+
     my $self = {
         METHOD => \%METHOD,
         CAN    => \%CAN,
@@ -279,8 +280,6 @@ determine if this function is available.
 Calls the system function getpwuid() if available and returns the result.
 Returns undef if not available.  The can_getpwuid() method can be called to
 determine if this function is available.
-
-=item 
 
 =back
 

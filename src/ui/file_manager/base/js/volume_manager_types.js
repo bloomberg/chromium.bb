@@ -43,8 +43,9 @@ VolumeManagerCommon.FileSystemType = {
  * @const
  */
 VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit = {
-  VFAT: 11,
-  EXFAT: 15,
+  'vfat': 11,
+  'exfat': 15,
+  'ntfs': 32,
 };
 
 /**

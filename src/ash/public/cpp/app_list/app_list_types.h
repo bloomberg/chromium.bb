@@ -25,6 +25,10 @@ constexpr int kAppListInvalidProfileID = -1;
 // id is only used for mojo callings between AppListController and AppListClient
 constexpr int kAppListProfileIdStartFrom = 0;
 
+// The threshold of mouse drag event. The mouse event is treated as tapping if
+// drag offset is smaller than the threshold.
+constexpr int kMouseDragThreshold = 2;
+
 // Id of OEM folder in app list.
 ASH_PUBLIC_EXPORT extern const char kOemFolderId[];
 
@@ -135,6 +139,24 @@ enum SearchResultDisplayType {
   kLast,  // Don't use over IPC
 };
 
+// Which UI container should the result be displayed in.
+enum SearchResultDisplayLocation {
+  kSuggestionChipContainer,
+  kTileListContainer,
+  kUnknown,
+};
+
+// Which index in the UI container should the result be placed in.
+enum SearchResultDisplayIndex {
+  kFirstIndex,
+  kSecondIndex,
+  kThirdIndex,
+  kFourthIndex,
+  kFifthIndex,
+  kSixthIndex,
+  kPlacementUndefined,
+};
+
 // Actions for OmniBox zero state suggestion.
 enum OmniBoxZeroStateAction {
   // Removes the zero state suggestion.
@@ -228,8 +250,22 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // The type of this result.
   SearchResultType result_type = SearchResultType::kUnknown;
 
+  // The subtype of this result. Derived search result classes can use this to
+  // represent their own subtypes. Currently, OmniboxResult sets this to
+  // indicate this is a history result, previous query, etc. A value of -1
+  // indicates no subtype has been set.
+  int result_subtype = -1;
+
   // How this result is displayed.
   SearchResultDisplayType display_type = SearchResultDisplayType::kList;
+
+  // Which UI container should the result be displayed in.
+  SearchResultDisplayLocation display_location =
+      SearchResultDisplayLocation::kUnknown;
+
+  // Which index in the UI container should the result be placed in.
+  SearchResultDisplayIndex display_index =
+      SearchResultDisplayIndex::kPlacementUndefined;
 
   // A score to determine the result display order.
   double display_score = 0;
@@ -264,6 +300,22 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // the chrome side when this result is set visible/invisible.
   bool notify_visibility_change = false;
 };
+
+// A struct holding a search result id and its corresponding position index that
+// was being shown to the user.
+struct SearchResultIdWithPositionIndex {
+  SearchResultIdWithPositionIndex(std::string result_id, int index)
+      : id(result_id), position_index(index) {}
+
+  // The id of the result.
+  std::string id;
+
+  // The position index of the result.
+  int position_index;
+};
+
+using SearchResultIdWithPositionIndices =
+    std::vector<SearchResultIdWithPositionIndex>;
 
 }  // namespace ash
 

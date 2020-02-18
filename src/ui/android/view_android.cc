@@ -14,9 +14,9 @@
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "jni/ViewAndroidDelegate_jni.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/android/event_forwarder.h"
+#include "ui/android/ui_android_jni_headers/ViewAndroidDelegate_jni.h"
 #include "ui/android/window_android.h"
 #include "ui/base/layout.h"
 #include "ui/events/android/drag_event_android.h"
@@ -32,7 +32,6 @@ namespace ui {
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using blink::WebCursorInfo;
 
 ViewAndroid::ScopedAnchorView::ScopedAnchorView(
     JNIEnv* env,
@@ -123,7 +122,7 @@ ScopedJavaLocalRef<jobject> ViewAndroid::GetEventForwarder() {
 
 void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
-  DCHECK(!base::ContainsValue(children_, child));
+  DCHECK(!base::Contains(children_, child));
   DCHECK(!RootPathHasEventForwarder(this) || !SubtreeHasEventForwarder(child))
       << "Some view tree path will have more than one event forwarder "
          "if the child is added.";
@@ -395,10 +394,10 @@ void ViewAndroid::OnCursorChanged(int type,
   if (delegate.is_null())
     return;
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (type == WebCursorInfo::kTypeCustom) {
+  if (type == static_cast<int>(ui::CursorType::kCustom)) {
     if (custom_image.drawsNothing()) {
-      Java_ViewAndroidDelegate_onCursorChanged(env, delegate,
-                                               WebCursorInfo::kTypePointer);
+      Java_ViewAndroidDelegate_onCursorChanged(
+          env, delegate, static_cast<int>(ui::CursorType::kPointer));
       return;
     }
     ScopedJavaLocalRef<jobject> java_bitmap =

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-perldelta - what is new for perl v5.16.0
+perl5160delta - what is new for perl v5.16.0
 
 =head1 DESCRIPTION
 
@@ -603,7 +603,7 @@ Thread.pm
 
 =back
 
-=head2 Platforms with no supporting programmers:
+=head2 Platforms with no supporting programmers
 
 These platforms will probably have their
 special build support removed during the

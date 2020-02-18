@@ -10,10 +10,12 @@
  */
 
 #include "media/engine/encoder_simulcast_proxy.h"
+
 #include <string>
 
 #include "api/test/mock_video_encoder.h"
 #include "api/test/mock_video_encoder_factory.h"
+#include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/vp8_temporal_layers.h"
 #include "modules/video_coding/include/video_codec_interface.h"
 #include "test/gmock.h"
@@ -22,6 +24,10 @@
 
 namespace webrtc {
 namespace testing {
+namespace {
+const VideoEncoder::Capabilities kCapabilities(false);
+const VideoEncoder::Settings kSettings(kCapabilities, 4, 1200);
+}  // namespace
 
 using ::testing::_;
 using ::testing::NiceMock;
@@ -62,7 +68,7 @@ TEST(EncoderSimulcastProxy, ChoosesCorrectImplementation) {
   NiceMock<MockVideoEncoder>* mock_encoder = new NiceMock<MockVideoEncoder>();
   NiceMock<MockVideoEncoderFactory> simulcast_factory;
 
-  EXPECT_CALL(*mock_encoder, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
   VideoEncoder::EncoderInfo encoder_info;
   encoder_info.implementation_name = kImplementationName;
@@ -76,7 +82,7 @@ TEST(EncoderSimulcastProxy, ChoosesCorrectImplementation) {
   EncoderSimulcastProxy simulcast_enabled_proxy(&simulcast_factory,
                                                 SdpVideoFormat("VP8"));
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            simulcast_enabled_proxy.InitEncode(&codec_settings, 4, 1200));
+            simulcast_enabled_proxy.InitEncode(&codec_settings, kSettings));
   EXPECT_EQ(kImplementationName,
             simulcast_enabled_proxy.GetEncoderInfo().implementation_name);
 
@@ -86,23 +92,23 @@ TEST(EncoderSimulcastProxy, ChoosesCorrectImplementation) {
   NiceMock<MockVideoEncoder>* mock_encoder4 = new NiceMock<MockVideoEncoder>();
   NiceMock<MockVideoEncoderFactory> nonsimulcast_factory;
 
-  EXPECT_CALL(*mock_encoder1, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder1, InitEncode(_, _))
       .WillOnce(
           Return(WEBRTC_VIDEO_CODEC_ERR_SIMULCAST_PARAMETERS_NOT_SUPPORTED));
   EXPECT_CALL(*mock_encoder1, GetEncoderInfo())
       .WillRepeatedly(Return(encoder_info));
 
-  EXPECT_CALL(*mock_encoder2, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder2, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
   EXPECT_CALL(*mock_encoder2, GetEncoderInfo())
       .WillRepeatedly(Return(encoder_info));
 
-  EXPECT_CALL(*mock_encoder3, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder3, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
   EXPECT_CALL(*mock_encoder3, GetEncoderInfo())
       .WillRepeatedly(Return(encoder_info));
 
-  EXPECT_CALL(*mock_encoder4, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder4, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
   EXPECT_CALL(*mock_encoder4, GetEncoderInfo())
       .WillRepeatedly(Return(encoder_info));
@@ -117,7 +123,7 @@ TEST(EncoderSimulcastProxy, ChoosesCorrectImplementation) {
   EncoderSimulcastProxy simulcast_disabled_proxy(&nonsimulcast_factory,
                                                  SdpVideoFormat("VP8"));
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            simulcast_disabled_proxy.InitEncode(&codec_settings, 4, 1200));
+            simulcast_disabled_proxy.InitEncode(&codec_settings, kSettings));
   EXPECT_EQ(kSimulcastAdaptedImplementationName,
             simulcast_disabled_proxy.GetEncoderInfo().implementation_name);
 
@@ -130,7 +136,7 @@ TEST(EncoderSimulcastProxy, ForwardsTrustedSetting) {
   NiceMock<MockVideoEncoder>* mock_encoder = new NiceMock<MockVideoEncoder>();
   NiceMock<MockVideoEncoderFactory> simulcast_factory;
 
-  EXPECT_CALL(*mock_encoder, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
 
   EXPECT_CALL(simulcast_factory, CreateVideoEncoderProxy(_))
@@ -142,7 +148,7 @@ TEST(EncoderSimulcastProxy, ForwardsTrustedSetting) {
   VideoCodec codec_settings;
   webrtc::test::CodecSettings(kVideoCodecVP8, &codec_settings);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            simulcast_enabled_proxy.InitEncode(&codec_settings, 4, 1200));
+            simulcast_enabled_proxy.InitEncode(&codec_settings, kSettings));
 
   VideoEncoder::EncoderInfo info;
   info.has_trusted_rate_controller = true;
@@ -156,7 +162,7 @@ TEST(EncoderSimulcastProxy, ForwardsHardwareAccelerated) {
   NiceMock<MockVideoEncoder>* mock_encoder = new NiceMock<MockVideoEncoder>();
   NiceMock<MockVideoEncoderFactory> simulcast_factory;
 
-  EXPECT_CALL(*mock_encoder, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
 
   EXPECT_CALL(simulcast_factory, CreateVideoEncoderProxy(_))
@@ -168,7 +174,7 @@ TEST(EncoderSimulcastProxy, ForwardsHardwareAccelerated) {
   VideoCodec codec_settings;
   webrtc::test::CodecSettings(kVideoCodecVP8, &codec_settings);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            simulcast_enabled_proxy.InitEncode(&codec_settings, 4, 1200));
+            simulcast_enabled_proxy.InitEncode(&codec_settings, kSettings));
 
   VideoEncoder::EncoderInfo info;
 
@@ -186,7 +192,7 @@ TEST(EncoderSimulcastProxy, ForwardsInternalSource) {
   NiceMock<MockVideoEncoder>* mock_encoder = new NiceMock<MockVideoEncoder>();
   NiceMock<MockVideoEncoderFactory> simulcast_factory;
 
-  EXPECT_CALL(*mock_encoder, InitEncode(_, _, _))
+  EXPECT_CALL(*mock_encoder, InitEncode(_, _))
       .WillOnce(Return(WEBRTC_VIDEO_CODEC_OK));
 
   EXPECT_CALL(simulcast_factory, CreateVideoEncoderProxy(_))
@@ -198,7 +204,7 @@ TEST(EncoderSimulcastProxy, ForwardsInternalSource) {
   VideoCodec codec_settings;
   webrtc::test::CodecSettings(kVideoCodecVP8, &codec_settings);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK,
-            simulcast_enabled_proxy.InitEncode(&codec_settings, 4, 1200));
+            simulcast_enabled_proxy.InitEncode(&codec_settings, kSettings));
 
   VideoEncoder::EncoderInfo info;
 

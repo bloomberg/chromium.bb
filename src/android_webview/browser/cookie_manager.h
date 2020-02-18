@@ -31,8 +31,6 @@ class CookieManager;
 
 namespace android_webview {
 
-class BoolCookieCallbackHolder;
-
 // CookieManager creates and owns Webview's CookieStore, in addition to handling
 // calls into the CookieStore from Java.
 //
@@ -60,11 +58,11 @@ class CookieManager {
   bool GetShouldAcceptCookies();
   void SetCookie(const GURL& host,
                  const std::string& cookie_value,
-                 std::unique_ptr<BoolCookieCallbackHolder> callback);
+                 base::OnceCallback<void(bool)> callback);
   void SetCookieSync(const GURL& host, const std::string& cookie_value);
   std::string GetCookie(const GURL& host);
-  void RemoveSessionCookies(std::unique_ptr<BoolCookieCallbackHolder> callback);
-  void RemoveAllCookies(std::unique_ptr<BoolCookieCallbackHolder> callback);
+  void RemoveSessionCookies(base::OnceCallback<void(bool)> callback);
+  void RemoveAllCookies(base::OnceCallback<void(bool)> callback);
   void RemoveAllCookiesSync();
   void RemoveSessionCookiesSync();
   void RemoveExpiredCookies();
@@ -87,9 +85,9 @@ class CookieManager {
   network::mojom::CookieManager* GetMojoCookieManager();
 
   void ExecCookieTaskSync(
-      base::OnceCallback<void(base::RepeatingCallback<void(bool)>)> task);
+      base::OnceCallback<void(base::OnceCallback<void(bool)>)> task);
   void ExecCookieTaskSync(
-      base::OnceCallback<void(base::RepeatingCallback<void(int)>)> task);
+      base::OnceCallback<void(base::OnceCallback<void(int)>)> task);
   void ExecCookieTaskSync(base::OnceCallback<void(base::OnceClosure)> task);
   void ExecCookieTask(base::OnceClosure task);
   // Runs all queued-up cookie tasks in |tasks_|.
@@ -97,7 +95,7 @@ class CookieManager {
 
   void SetCookieHelper(const GURL& host,
                        const std::string& value,
-                       base::RepeatingCallback<void(bool)> callback);
+                       base::OnceCallback<void(bool)> callback);
 
   void GotCookies(const std::vector<net::CanonicalCookie>& cookies);
   void GetCookieListAsyncHelper(const GURL& host,
@@ -108,9 +106,9 @@ class CookieManager {
                               const net::CookieList& value,
                               const net::CookieStatusList& excluded_cookies);
 
-  void RemoveSessionCookiesHelper(base::RepeatingCallback<void(bool)> callback);
-  void RemoveAllCookiesHelper(base::RepeatingCallback<void(bool)> callback);
-  void RemoveCookiesCompleted(base::RepeatingCallback<void(bool)> callback,
+  void RemoveSessionCookiesHelper(base::OnceCallback<void(bool)> callback);
+  void RemoveAllCookiesHelper(base::OnceCallback<void(bool)> callback);
+  void RemoveCookiesCompleted(base::OnceCallback<void(bool)> callback,
                               uint32_t num_deleted);
 
   void FlushCookieStoreAsyncHelper(base::OnceClosure complete);

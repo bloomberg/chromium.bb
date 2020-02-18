@@ -19,6 +19,7 @@ class CSSPrimitiveValue;
 class LocalFrame;
 enum class ColorSpaceGamut;
 enum class PreferredColorScheme;
+enum class ForcedColors;
 
 class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
  public:
@@ -79,6 +80,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   virtual ColorSpaceGamut ColorGamut() const = 0;
   virtual PreferredColorScheme GetPreferredColorScheme() const = 0;
   virtual bool PrefersReducedMotion() const = 0;
+  virtual ForcedColors GetForcedColors() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -102,6 +104,7 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static PreferredColorScheme CalculatePreferredColorScheme(LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);
+  static ForcedColors CalculateForcedColors(LocalFrame*);
 };
 
 }  // namespace blink

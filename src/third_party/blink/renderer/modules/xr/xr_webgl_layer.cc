@@ -82,8 +82,9 @@ XRWebGLLayer* XRWebGLLayer::Create(
     return nullptr;
   }
 
-  // TODO: In the future this should be communicated by the drawing buffer and
-  // indicate whether the depth buffers are being supplied to the XR compositor.
+  // TODO(crbug.com/941753): In the future this should be communicated by the
+  // drawing buffer and indicate whether the depth buffers are being supplied to
+  // the XR compositor.
   bool compositor_supports_depth_values = false;
   bool want_ignore_depth_values = initializer->ignoreDepthValues();
 

@@ -21,14 +21,14 @@ There are actually two distinct kinds of version objects:
 
 =over 4
 
-=item Decimal Versions
+=item Decimal versions
 
 Any version which "looks like a number", see L<Decimal Versions>.  This
 also includes versions with a single decimal point and a single embedded
 underscore, see L<Alpha Versions>, even though these must be quoted
 to preserve the underscore formatting.
 
-=item Dotted-Decimal Versions
+=item Dotted-Decimal versions
 
 Also referred to as "Dotted-Integer", these contains more than one decimal
 point and may have an optional embedded underscore, see L<Dotted-Decimal
@@ -129,7 +129,7 @@ was used to initialize the version object.
 =head2 Regular Expressions for Version Parsing
 
 A formalized definition of the legal forms for version strings is
-included in the main F<version.pm> file.  Primitives are included for
+included in the C<version::regex> class.  Primitives are included for
 common elements, although they are scoped to the file so they are useful
 for reference purposes only.  There are two publicly accessible scalars
 that can be used in other code (not exported):
@@ -251,7 +251,7 @@ when using version.pm methods, as this will ensure that what you type is
 what is used.
 
 Additionally, if you quote your initializer, then the quoted value that goes
-B<in> will be be exactly what comes B<out> when your $VERSION is printed
+B<in> will be exactly what comes B<out> when your $VERSION is printed
 (stringified).  If you do not quote your value, Perl's normal numeric handling
 comes into play and you may not get back what you were expecting.
 
@@ -343,7 +343,7 @@ See L<version/is_qv()>.
 =item alpha
 
 A boolean that denotes whether this is an alpha version.  NOTE: that the
-underscore can can only appear in the last position.  See L<version/is_alpha()>.
+underscore can only appear in the last position.  See L<version/is_alpha()>.
 
 =item version
 
@@ -548,7 +548,8 @@ a normalized or reduced form (no extraneous zeros), and with a leading 'v':
   print $ver->stringify;      # ditto
   print $ver;                 # ditto
   print $nver->normal;        # prints as v1.2.0
-  print $nver->stringify;     # prints as 1.002, see "Stringification"
+  print $nver->stringify;     # prints as 1.002,
+                              # see "Stringification"
 
 In order to preserve the meaning of the processed version, the
 normalized representation will always contain at least three sub terms.

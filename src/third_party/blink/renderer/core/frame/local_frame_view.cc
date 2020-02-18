@@ -84,11 +84,11 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/style_retain_scope.h"
@@ -143,7 +143,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -270,16 +270,17 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       intersection_observation_state_(kNotNeeded),
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
+      in_lifecycle_update_(false),
       tracked_object_paint_invalidations_(
           base::WrapUnique(g_initial_track_all_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr)),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
-      forced_layout_start_time_(TimeTicks()),
+      forced_layout_start_time_(base::TimeTicks()),
       paint_frame_count_(0),
       unique_id_(NewUniqueObjectId()),
-      jank_tracker_(std::make_unique<JankTracker>(this)),
+      layout_shift_tracker_(std::make_unique<LayoutShiftTracker>(this)),
       paint_timing_detector_(MakeGarbageCollected<PaintTimingDetector>(this))
 #if DCHECK_IS_ON()
       ,
@@ -396,7 +397,7 @@ void LocalFrameView::Dispose() {
   ClearPrintContext();
 
   ukm_aggregator_.reset();
-  jank_tracker_->Dispose();
+  layout_shift_tracker_->Dispose();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
@@ -847,10 +848,16 @@ void LocalFrameView::UpdateLayout() {
 
     IntSize new_size(Size());
     if (old_size != new_size) {
-      SetNeedsLayout();
       MarkViewportConstrainedObjectsForLayout(
           old_size.Width() != new_size.Width(),
           old_size.Height() != new_size.Height());
+    }
+
+    if (frame_->IsMainFrame()) {
+      if (auto* text_autosizer = frame_->GetDocument()->GetTextAutosizer()) {
+        if (text_autosizer->HasLayoutInlineSizeChanged())
+          text_autosizer->UpdatePageInfoInAllFrames(frame_);
+      }
     }
 
     if (NeedsLayout()) {
@@ -927,7 +934,7 @@ void LocalFrameView::WillStartForcedLayout() {
   forced_layout_stack_depth_++;
   if (forced_layout_stack_depth_ > 1)
     return;
-  forced_layout_start_time_ = CurrentTimeTicks();
+  forced_layout_start_time_ = base::TimeTicks::Now();
 }
 
 void LocalFrameView::DidFinishForcedLayout() {
@@ -937,7 +944,7 @@ void LocalFrameView::DidFinishForcedLayout() {
     LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
     aggregator.RecordSample(
         (size_t)LocalFrameUkmAggregator::kForcedStyleAndLayout,
-        forced_layout_start_time_, CurrentTimeTicks());
+        forced_layout_start_time_, base::TimeTicks::Now());
   }
 }
 
@@ -983,9 +990,14 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
 }
 
 FloatSize LocalFrameView::ViewportSizeForMediaQueries() const {
-  FloatSize viewport_size(GetLayoutSize());
-  if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
-    viewport_size.Scale(1 / GetFrame().PageZoomFactor());
+  FloatSize viewport_size(layout_size_);
+  if (!frame_->GetDocument()->Printing()) {
+    float zoom = GetFrame().PageZoomFactor();
+    viewport_size.SetWidth(
+        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Width(), zoom));
+    viewport_size.SetHeight(
+        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Height(), zoom));
+  }
   return viewport_size;
 }
 
@@ -1029,7 +1041,6 @@ void LocalFrameView::ForceUpdateViewportIntersections() {
   UpdateViewportIntersectionsForSubtree(
       IntersectionObservation::kImplicitRootObserversNeedUpdate |
       IntersectionObservation::kIgnoreDelay);
-  frame_->Owner()->SetNeedsOcclusionTracking(false);
 }
 
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
@@ -1215,7 +1226,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
     return;
 
   if (frame_->IsMainFrame())
-    jank_tracker_->NotifyViewportSizeChanged();
+    layout_shift_tracker_->NotifyViewportSizeChanged();
 
   auto* layout_view = GetLayoutView();
   if (layout_view) {
@@ -1244,6 +1255,9 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   if (GetFrame().GetDocument() && !IsInPerformLayout())
     MarkViewportConstrainedObjectsForLayout(width_changed, height_changed);
+
+  if (GetPaintTimingDetector().Visualizer())
+    GetPaintTimingDetector().Visualizer()->OnViewportChanged();
 }
 
 void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
@@ -1513,12 +1527,23 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
       ToLayoutBox(root).IsGridItem() || root.IsTablePart())
     return false;
 
-  // Do not pre-layout objects that are fully managed by LayoutNG; it is not
-  // necessary and may lead to double layouts. We do need to pre-layout
-  // objects whose containing block is a legacy object so that it can
-  // properly compute its intrinsic size.
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && IsManagedByLayoutNG(root))
-    return false;
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // Do not pre-layout objects that are fully managed by LayoutNG; it is not
+    // necessary and may lead to double layouts. We do need to pre-layout
+    // objects whose containing block is a legacy object so that it can
+    // properly compute its intrinsic size.
+    if (IsManagedByLayoutNG(root))
+      return false;
+
+    // If the root is legacy but has |CachedLayoutResult|, its parent is NG,
+    // which called |RunLegacyLayout()|. This parent not only needs to run
+    // pre-layout, but also clearing |NeedsLayout()| without updating
+    // |CachedLayoutResult| is harmful.
+    if (const auto* box = ToLayoutBoxOrNull(&root)) {
+      if (box->GetCachedLayoutResult())
+        return false;
+    }
+  }
 
   RemoveFloatingObjectsForSubtreeRoot(root);
   return true;
@@ -1658,8 +1683,10 @@ bool LocalFrameView::HasOpaqueBackground() const {
 }
 
 Color LocalFrameView::BaseBackgroundColor() const {
-  if (use_dark_scheme_background_)
+  if (use_dark_scheme_background_ &&
+      base_background_color_ != Color::kTransparent) {
     return Color::kBlack;
+  }
   return base_background_color_;
 }
 
@@ -1770,7 +1797,7 @@ void LocalFrameView::ScheduleUpdatePluginsIfNecessary() {
   DCHECK(!IsInPerformLayout());
   if (update_plugins_timer_.IsActive() || part_update_set_.IsEmpty())
     return;
-  update_plugins_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  update_plugins_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void LocalFrameView::PerformPostLayoutTasks() {
@@ -1793,8 +1820,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
   // send the right mouse out/over events.
   // TODO(lanwei): we should check whether the mouse is inside the frame before
   // dirtying the hover state.
-  if (RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
   } else {
     frame_->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(
@@ -1904,6 +1930,9 @@ void LocalFrameView::DidAttachDocument() {
 
     page->GlobalRootScrollerController().InitializeViewportScrollCallback(
         *root_frame_viewport, *frame_->GetDocument());
+
+    // Allow for commits to be deferred because this is a new document.
+    have_deferred_commits_ = false;
   }
 }
 
@@ -2061,6 +2090,7 @@ void LocalFrameView::ScheduleVisualUpdateForPaintInvalidationIfNeeded() {
 }
 
 void LocalFrameView::NotifyResizeObservers() {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::NotifyResizeObservers");
   // Controller exists only if ResizeObserver was created.
   if (!GetFrame().GetDocument()->GetResizeObserverController())
     return;
@@ -2190,11 +2220,19 @@ bool LocalFrameView::UpdateLifecyclePhases(
     return Lifecycle().GetState() == target_state;
   }
 
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    auto lifecycle_observers = frame_view.lifecycle_observers_;
-    for (auto& observer : lifecycle_observers)
-      observer->WillStartLifecycleUpdate(frame_view);
-  });
+  base::AutoReset<bool> in_lifecycle_scope(&in_lifecycle_update_, true);
+  lifecycle_data_.start_time = base::TimeTicks::Now();
+  ++lifecycle_data_.count;
+
+  {
+    TRACE_EVENT0("blink", "LocalFrameView::WillStartLifecycleUpdate");
+
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      auto lifecycle_observers = frame_view.lifecycle_observers_;
+      for (auto& observer : lifecycle_observers)
+        observer->WillStartLifecycleUpdate(frame_view);
+    });
+  }
 
   // If we're in PrintBrowser mode, setup a print context.
   // TODO(vmpstr): It doesn't seem like we need to do this every lifecycle
@@ -2207,11 +2245,15 @@ bool LocalFrameView::UpdateLifecyclePhases(
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
 
-  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-    auto lifecycle_observers = frame_view.lifecycle_observers_;
-    for (auto& observer : lifecycle_observers)
-      observer->DidFinishLifecycleUpdate(frame_view);
-  });
+  {
+    TRACE_EVENT0("blink", "LocalFrameView::DidFinishLifecycleUpdate");
+
+    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+      auto lifecycle_observers = frame_view.lifecycle_observers_;
+      for (auto& observer : lifecycle_observers)
+        observer->DidFinishLifecycleUpdate(frame_view);
+    });
+  }
 
   return Lifecycle().GetState() == target_state;
 }
@@ -2250,6 +2292,12 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
     if (!run_more_lifecycle_phases)
       return;
   }
+
+  // Now that we have run the lifecycle up to paint, we can reset
+  // |need_paint_phase_after_throttling_| so that the paint phase will
+  // properly see us as being throttled (if that was the only reason we remained
+  // unthrottled), and clear the painted output.
+  need_paint_phase_after_throttling_ = false;
 
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
@@ -2550,7 +2598,15 @@ static void CollectDrawableLayersForLayerListRecursively(
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
 
   if (!layer || layer->Client().ShouldThrottleRendering() ||
-      layer->Client().PaintBlockedByDisplayLock()) {
+      layer->Client().IsUnderSVGHiddenContainer()) {
+    return;
+  }
+
+  if (layer->Client().PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    // If we skip the layer, then we need to ensure to notify the
+    // display-lock, since we need to force recollect the layers when we commit.
+    layer->Client().NotifyDisplayLockNeedsGraphicsLayerCollection();
     return;
   }
 
@@ -2941,7 +2997,7 @@ void LocalFrameView::ForceLayoutForPagination(
     // cropping implementation should not do this!
     bool horizontal_writing_mode =
         layout_view->StyleRef().IsHorizontalWritingMode();
-    const LayoutRect& document_rect = LayoutRect(layout_view->DocumentRect());
+    PhysicalRect document_rect(layout_view->DocumentRect());
     LayoutUnit doc_logical_width = horizontal_writing_mode
                                        ? document_rect.Width()
                                        : document_rect.Height();
@@ -2968,8 +3024,7 @@ void LocalFrameView::ForceLayoutForPagination(
           layout_invalidation_reason::kPrintingChanged);
       UpdateLayout();
 
-      const LayoutRect& updated_document_rect =
-          LayoutRect(layout_view->DocumentRect());
+      PhysicalRect updated_document_rect(layout_view->DocumentRect());
       LayoutUnit doc_logical_height = horizontal_writing_mode
                                           ? updated_document_rect.Height()
                                           : updated_document_rect.Width();
@@ -2977,8 +3032,8 @@ void LocalFrameView::ForceLayoutForPagination(
                                        ? updated_document_rect.Y()
                                        : updated_document_rect.X();
       LayoutUnit doc_logical_right = horizontal_writing_mode
-                                         ? updated_document_rect.MaxX()
-                                         : updated_document_rect.MaxY();
+                                         ? updated_document_rect.Right()
+                                         : updated_document_rect.Bottom();
       LayoutUnit clipped_logical_left;
       if (!layout_view->StyleRef().IsLeftToRightDirection()) {
         clipped_logical_left =
@@ -3019,35 +3074,21 @@ IntRect LocalFrameView::ConvertToLayoutObject(const LayoutObject& layout_object,
 IntPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const IntPoint& layout_object_point) const {
-  return RoundedIntPoint(
-      ConvertFromLayoutObject(layout_object, LayoutPoint(layout_object_point)));
+  return RoundedIntPoint(ConvertFromLayoutObject(
+      layout_object, PhysicalOffset(layout_object_point)));
 }
 
 IntPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const IntPoint& frame_point) const {
   return RoundedIntPoint(
-      ConvertToLayoutObject(layout_object, LayoutPoint(frame_point)));
-}
-
-LayoutPoint LocalFrameView::ConvertFromLayoutObject(
-    const LayoutObject& layout_object,
-    const LayoutPoint& layout_object_point) const {
-  return layout_object.LocalToAbsolutePoint(PhysicalOffset(layout_object_point))
-      .ToLayoutPoint();
+      ConvertToLayoutObject(layout_object, PhysicalOffset(frame_point)));
 }
 
 PhysicalOffset LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const PhysicalOffset& layout_object_offset) const {
   return layout_object.LocalToAbsolutePoint(layout_object_offset);
-}
-
-LayoutPoint LocalFrameView::ConvertToLayoutObject(
-    const LayoutObject& layout_object,
-    const LayoutPoint& frame_point) const {
-  return LayoutPoint(
-      ConvertToLayoutObject(layout_object, FloatPoint(frame_point)));
 }
 
 PhysicalOffset LocalFrameView::ConvertToLayoutObject(
@@ -3117,24 +3158,14 @@ FloatPoint LocalFrameView::DocumentToFrame(
   return FloatPoint(DocumentToFrame(DoublePoint(point_in_document)));
 }
 
-LayoutPoint LocalFrameView::DocumentToFrame(
-    const LayoutPoint& point_in_document) const {
-  ScrollableArea* layout_viewport = LayoutViewport();
-  if (!layout_viewport)
-    return point_in_document;
-
-  return point_in_document - LayoutSize(layout_viewport->GetScrollOffset());
-}
-
 PhysicalOffset LocalFrameView::DocumentToFrame(
     const PhysicalOffset& offset_in_document) const {
-  return PhysicalOffset(DocumentToFrame(offset_in_document.ToLayoutPoint()));
-}
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return offset_in_document;
 
-LayoutRect LocalFrameView::DocumentToFrame(
-    const LayoutRect& rect_in_document) const {
-  return LayoutRect(DocumentToFrame(rect_in_document.Location()),
-                    rect_in_document.Size());
+  return offset_in_document -
+         PhysicalOffset::FromFloatSizeRound(layout_viewport->GetScrollOffset());
 }
 
 PhysicalRect LocalFrameView::DocumentToFrame(
@@ -3144,32 +3175,22 @@ PhysicalRect LocalFrameView::DocumentToFrame(
 }
 
 IntPoint LocalFrameView::FrameToDocument(const IntPoint& point_in_frame) const {
-  return FlooredIntPoint(FrameToDocument(LayoutPoint(point_in_frame)));
-}
-
-LayoutPoint LocalFrameView::FrameToDocument(
-    const LayoutPoint& point_in_frame) const {
-  ScrollableArea* layout_viewport = LayoutViewport();
-  if (!layout_viewport)
-    return point_in_frame;
-
-  return point_in_frame + LayoutSize(layout_viewport->GetScrollOffset());
+  return FlooredIntPoint(FrameToDocument(PhysicalOffset(point_in_frame)));
 }
 
 PhysicalOffset LocalFrameView::FrameToDocument(
     const PhysicalOffset& offset_in_frame) const {
-  return PhysicalOffset(FrameToDocument(offset_in_frame.ToLayoutPoint()));
+  ScrollableArea* layout_viewport = LayoutViewport();
+  if (!layout_viewport)
+    return offset_in_frame;
+
+  return offset_in_frame +
+         PhysicalOffset::FromFloatSizeRound(layout_viewport->GetScrollOffset());
 }
 
 IntRect LocalFrameView::FrameToDocument(const IntRect& rect_in_frame) const {
   return IntRect(FrameToDocument(rect_in_frame.Location()),
                  rect_in_frame.Size());
-}
-
-LayoutRect LocalFrameView::FrameToDocument(
-    const LayoutRect& rect_in_frame) const {
-  return LayoutRect(FrameToDocument(rect_in_frame.Location()),
-                    rect_in_frame.Size());
 }
 
 PhysicalRect LocalFrameView::FrameToDocument(
@@ -3206,24 +3227,6 @@ IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
   }
 
   return parent_rect;
-}
-
-LayoutPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
-    const LayoutPoint& local_point) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
-    auto* layout_object = GetLayoutEmbeddedContent();
-    if (!layout_object)
-      return local_point;
-
-    LayoutPoint point(local_point);
-
-    // Add borders and padding
-    point.Move((layout_object->BorderLeft() + layout_object->PaddingLeft()),
-               (layout_object->BorderTop() + layout_object->PaddingTop()));
-    return parent->ConvertFromLayoutObject(*layout_object, point);
-  }
-
-  return local_point;
 }
 
 PhysicalOffset LocalFrameView::ConvertToContainingEmbeddedContentView(
@@ -3263,16 +3266,10 @@ FloatPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
   return local_point;
 }
 
-LayoutPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
-    const LayoutPoint& parent_point) const {
-  return LayoutPoint(
-      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
-}
-
 PhysicalOffset LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const PhysicalOffset& parent_offset) const {
-  return PhysicalOffset(
-      ConvertFromContainingEmbeddedContentView(parent_offset.ToLayoutPoint()));
+  return PhysicalOffset::FromFloatPointRound(
+      ConvertFromContainingEmbeddedContentView(FloatPoint(parent_offset)));
 }
 
 FloatPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
@@ -3305,7 +3302,7 @@ DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
 IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntPoint& local_point) const {
   return RoundedIntPoint(
-      ConvertToContainingEmbeddedContentView(LayoutPoint(local_point)));
+      ConvertToContainingEmbeddedContentView(PhysicalOffset(local_point)));
 }
 
 void LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(
@@ -3351,6 +3348,10 @@ void LocalFrameView::SetTracksPaintInvalidations(
 void LocalFrameView::TrackObjectPaintInvalidation(
     const DisplayItemClient& client,
     PaintInvalidationReason reason) {
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
+                       "InvalidateDisplayItemClient", TRACE_EVENT_SCOPE_GLOBAL,
+                       "client", client.DebugName().Utf8(), "reason",
+                       PaintInvalidationReasonToString(reason));
   if (!tracked_object_paint_invalidations_)
     return;
 
@@ -3544,11 +3545,8 @@ void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {
     return;
   layout_size_ = size;
 
-  if (frame_->IsMainFrame() && frame_->GetDocument()) {
-    if (TextAutosizer* text_autosizer =
-            frame_->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
+  if (frame_->IsMainFrame() && frame_->GetDocument())
+    TextAutosizer::UpdatePageInfoInAllFrames(frame_);
 
   SetNeedsLayout();
 }
@@ -3580,8 +3578,10 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
 
 void LocalFrameView::DidChangeScrollOffset() {
   GetFrame().Client()->DidChangeScrollOffset();
-  if (GetFrame().IsMainFrame())
-    GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged();
+  if (GetFrame().IsMainFrame()) {
+    GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged(
+        GetFrame());
+  }
 }
 
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
@@ -3606,11 +3606,11 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
 }
 
 void LocalFrameView::ScrollRectToVisibleInRemoteParent(
-    const LayoutRect& rect_to_scroll,
+    const PhysicalRect& rect_to_scroll,
     const WebScrollIntoViewParams& params) {
   DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
          safe_to_propagate_scroll_to_parent_);
-  LayoutRect new_rect = ConvertToRootFrame(rect_to_scroll);
+  PhysicalRect new_rect = ConvertToRootFrame(rect_to_scroll);
   GetFrame().Client()->ScrollRectToVisibleInParentFrame(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),
@@ -3624,9 +3624,9 @@ void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {
   }
 }
 
-LayoutPoint LocalFrameView::ViewportToFrame(
-    const LayoutPoint& point_in_viewport) const {
-  LayoutPoint point_in_root_frame(
+PhysicalOffset LocalFrameView::ViewportToFrame(
+    const PhysicalOffset& point_in_viewport) const {
+  PhysicalOffset point_in_root_frame = PhysicalOffset::FromFloatPointRound(
       frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
           FloatPoint(point_in_viewport)));
   return ConvertFromRootFrame(point_in_root_frame);
@@ -3649,7 +3649,7 @@ IntRect LocalFrameView::ViewportToFrame(const IntRect& rect_in_viewport) const {
 
 IntPoint LocalFrameView::ViewportToFrame(
     const IntPoint& point_in_viewport) const {
-  return RoundedIntPoint(ViewportToFrame(LayoutPoint(point_in_viewport)));
+  return RoundedIntPoint(ViewportToFrame(PhysicalOffset(point_in_viewport)));
 }
 
 IntRect LocalFrameView::FrameToViewport(const IntRect& rect_in_frame) const {
@@ -3773,17 +3773,7 @@ IntRect LocalFrameView::ConvertToRootFrame(const IntRect& local_rect) const {
 }
 
 IntPoint LocalFrameView::ConvertToRootFrame(const IntPoint& local_point) const {
-  return RoundedIntPoint(ConvertToRootFrame(LayoutPoint(local_point)));
-}
-
-LayoutPoint LocalFrameView::ConvertToRootFrame(
-    const LayoutPoint& local_point) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
-    LayoutPoint parent_point =
-        ConvertToContainingEmbeddedContentView(local_point);
-    return parent->ConvertToRootFrame(parent_point);
-  }
-  return local_point;
+  return RoundedIntPoint(ConvertToRootFrame(PhysicalOffset(local_point)));
 }
 
 PhysicalOffset LocalFrameView::ConvertToRootFrame(
@@ -3804,17 +3794,6 @@ FloatPoint LocalFrameView::ConvertToRootFrame(
     return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
-}
-
-LayoutRect LocalFrameView::ConvertToRootFrame(
-    const LayoutRect& local_rect) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
-    LayoutPoint parent_point =
-        ConvertToContainingEmbeddedContentView(local_rect.Location());
-    LayoutRect parent_rect(parent_point, local_rect.Size());
-    return parent->ConvertToRootFrame(parent_rect);
-  }
-  return local_rect;
 }
 
 PhysicalRect LocalFrameView::ConvertToRootFrame(
@@ -3840,17 +3819,7 @@ IntRect LocalFrameView::ConvertFromRootFrame(
 IntPoint LocalFrameView::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
   return RoundedIntPoint(
-      ConvertFromRootFrame(LayoutPoint(point_in_root_frame)));
-}
-
-LayoutPoint LocalFrameView::ConvertFromRootFrame(
-    const LayoutPoint& point_in_root_frame) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
-    LayoutPoint parent_point =
-        parent->ConvertFromRootFrame(point_in_root_frame);
-    return ConvertFromContainingEmbeddedContentView(parent_point);
-  }
-  return point_in_root_frame;
+      ConvertFromRootFrame(PhysicalOffset(point_in_root_frame)));
 }
 
 PhysicalOffset LocalFrameView::ConvertFromRootFrame(
@@ -4049,6 +4018,12 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
     frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());
   }
 
+  // If we have become unthrottled, this is essentially a no-op since we're
+  // going to paint anyway. If we have become throttled, then this will force
+  // one lifecycle update to clear the painted output.
+  if (GetFrame().IsLocalRoot())
+    need_paint_phase_after_throttling_ = true;
+
 #if DCHECK_IS_ON()
   // Make sure we never have an unthrottled frame inside a throttled one.
   LocalFrameView* parent = ParentFrameView();
@@ -4150,8 +4125,10 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   bool throttled_for_global_reasons = CanThrottleRendering() &&
                                       frame_->GetDocument() &&
                                       Lifecycle().ThrottlingAllowed();
-  if (!throttled_for_global_reasons || needs_forced_compositing_update_)
+  if (!throttled_for_global_reasons || needs_forced_compositing_update_ ||
+      need_paint_phase_after_throttling_) {
     return false;
+  }
 
   // Only lifecycle phases up to layout are needed to generate an
   // intersection observation.
@@ -4210,23 +4187,26 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (document && base::FeatureList::IsEnabled(
                       blink::features::kAvoidFlashBetweenNavigation)) {
     if (document->DeferredCompositorCommitIsAllowed()) {
-      chrome_client.StartDeferringCommits(
-          GetCommitDelayForAvoidFlashBetweenNavigation());
+      // Only defer commits once. This method gets called multiple times,
+      // and we do not want to defer a second time if we have already done
+      // so once and resumed commits already.
+      if (!have_deferred_commits_) {
+        chrome_client.StartDeferringCommits(
+            GetFrame(), GetCommitDelayForAvoidFlashBetweenNavigation());
+        have_deferred_commits_ = true;
+      }
+      // We do not StopDeferringCommits in cases where we have already started.
+      // A previously started deferral may not have completed yet, and we do
+      // not want to stop it prematurely.
     } else {
       chrome_client.StopDeferringCommits(
-          cc::PaintHoldingCommitTrigger::kDisallowed);
+          GetFrame(), cc::PaintHoldingCommitTrigger::kDisallowed);
     }
   } else {
     chrome_client.StopDeferringCommits(
-        cc::PaintHoldingCommitTrigger::kFeatureDisabled);
+        GetFrame(), cc::PaintHoldingCommitTrigger::kFeatureDisabled);
   }
-  chrome_client.BeginLifecycleUpdates();
-}
-
-void LocalFrameView::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  if (GetFrame().GetPage())
-    GetFrame().GetPage()->GetChromeClient().StopDeferringCommits(trigger);
+  chrome_client.BeginLifecycleUpdates(GetFrame());
 }
 
 void LocalFrameView::SetInitialViewportSize(const IntSize& viewport_size) {

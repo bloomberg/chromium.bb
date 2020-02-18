@@ -1,7 +1,12 @@
+// Copyright (c) 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef NET_QUIC_ADDRESS_UTILS_H_
 #define NET_QUIC_ADDRESS_UTILS_H_
 
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ip_address_family.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
@@ -41,6 +46,39 @@ inline IPAddress ToIPAddress(quic::QuicIpAddress address) {
       DCHECK_EQ(address.address_family(), quic::IpAddressFamily::IP_UNSPEC);
       return IPAddress();
   }
+}
+
+inline quic::QuicSocketAddress ToQuicSocketAddress(IPEndPoint address) {
+  if (address.address().empty()) {
+    return quic::QuicSocketAddress();
+  }
+
+  sockaddr_storage result;
+  socklen_t size = sizeof(result);
+  bool success =
+      address.ToSockAddr(reinterpret_cast<sockaddr*>(&result), &size);
+  DCHECK(success);
+  return quic::QuicSocketAddress(result);
+}
+
+inline quic::QuicIpAddress ToQuicIpAddress(net::IPAddress address) {
+  if (address.IsIPv4()) {
+    in_addr result;
+    static_assert(sizeof(result) == IPAddress::kIPv4AddressSize,
+                  "Address size mismatch");
+    memcpy(&result, address.bytes().data(), IPAddress::kIPv4AddressSize);
+    return quic::QuicIpAddress(result);
+  }
+  if (address.IsIPv6()) {
+    in6_addr result;
+    static_assert(sizeof(result) == IPAddress::kIPv6AddressSize,
+                  "Address size mismatch");
+    memcpy(&result, address.bytes().data(), IPAddress::kIPv6AddressSize);
+    return quic::QuicIpAddress(result);
+  }
+
+  DCHECK(address.empty());
+  return quic::QuicIpAddress();
 }
 
 }  // namespace net

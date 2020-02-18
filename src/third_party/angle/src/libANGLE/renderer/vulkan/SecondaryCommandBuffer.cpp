@@ -39,16 +39,6 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                     vkCmdBeginQuery(cmdBuffer, params->queryPool, params->query, params->flags);
                     break;
                 }
-                case CommandID::BindComputeDescriptorSets:
-                {
-                    const BindComputeDescriptorSetParams *params =
-                        getParamPtr<BindComputeDescriptorSetParams>(currentCommand);
-                    const VkDescriptorSet *descriptorSets =
-                        Offset<VkDescriptorSet>(params, sizeof(BindComputeDescriptorSetParams));
-                    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE,
-                                            params->layout, 0, 1, descriptorSets, 0, nullptr);
-                    break;
-                }
                 case CommandID::BindComputePipeline:
                 {
                     const BindPipelineParams *params =
@@ -56,18 +46,18 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                     vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, params->pipeline);
                     break;
                 }
-                case CommandID::BindGraphicsDescriptorSets:
+                case CommandID::BindDescriptorSets:
                 {
-                    const BindGraphicsDescriptorSetParams *params =
-                        getParamPtr<BindGraphicsDescriptorSetParams>(currentCommand);
+                    const BindDescriptorSetParams *params =
+                        getParamPtr<BindDescriptorSetParams>(currentCommand);
                     const VkDescriptorSet *descriptorSets =
-                        Offset<VkDescriptorSet>(params, sizeof(BindGraphicsDescriptorSetParams));
+                        Offset<VkDescriptorSet>(params, sizeof(BindDescriptorSetParams));
                     const uint32_t *dynamicOffsets = Offset<uint32_t>(
                         descriptorSets, sizeof(VkDescriptorSet) * params->descriptorSetCount);
-                    vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            params->layout, params->firstSet,
-                                            params->descriptorSetCount, descriptorSets,
-                                            params->dynamicOffsetCount, dynamicOffsets);
+                    vkCmdBindDescriptorSets(cmdBuffer, params->pipelineBindPoint, params->layout,
+                                            params->firstSet, params->descriptorSetCount,
+                                            descriptorSets, params->dynamicOffsetCount,
+                                            dynamicOffsets);
                     break;
                 }
                 case CommandID::BindGraphicsPipeline:
@@ -170,6 +160,13 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                                   params->groupCountZ);
                     break;
                 }
+                case CommandID::DispatchIndirect:
+                {
+                    const DispatchIndirectParams *params =
+                        getParamPtr<DispatchIndirectParams>(currentCommand);
+                    vkCmdDispatchIndirect(cmdBuffer, params->buffer, params->offset);
+                    break;
+                }
                 case CommandID::Draw:
                 {
                     const DrawParams *params = getParamPtr<DrawParams>(currentCommand);
@@ -202,6 +199,21 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                 {
                     const EndQueryParams *params = getParamPtr<EndQueryParams>(currentCommand);
                     vkCmdEndQuery(cmdBuffer, params->queryPool, params->query);
+                    break;
+                }
+                case CommandID::ExecutionBarrier:
+                {
+                    const ExecutionBarrierParams *params =
+                        getParamPtr<ExecutionBarrierParams>(currentCommand);
+                    vkCmdPipelineBarrier(cmdBuffer, params->stageMask, params->stageMask, 0, 0,
+                                         nullptr, 0, nullptr, 0, nullptr);
+                    break;
+                }
+                case CommandID::FillBuffer:
+                {
+                    const FillBufferParams *params = getParamPtr<FillBufferParams>(currentCommand);
+                    vkCmdFillBuffer(cmdBuffer, params->dstBuffer, params->dstOffset, params->size,
+                                    params->data);
                     break;
                 }
                 case CommandID::ImageBarrier:
@@ -328,14 +340,11 @@ std::string SecondaryCommandBuffer::dumpCommands(const char *separator) const
                 case CommandID::BeginQuery:
                     result += "BeginQuery";
                     break;
-                case CommandID::BindComputeDescriptorSets:
-                    result += "BindComputeDescriptorSets";
-                    break;
                 case CommandID::BindComputePipeline:
                     result += "BindComputePipeline";
                     break;
-                case CommandID::BindGraphicsDescriptorSets:
-                    result += "BindGraphicsDescriptorSets";
+                case CommandID::BindDescriptorSets:
+                    result += "BindDescriptorSets";
                     break;
                 case CommandID::BindGraphicsPipeline:
                     result += "BindGraphicsPipeline";
@@ -387,6 +396,12 @@ std::string SecondaryCommandBuffer::dumpCommands(const char *separator) const
                     break;
                 case CommandID::EndQuery:
                     result += "EndQuery";
+                    break;
+                case CommandID::ExecutionBarrier:
+                    result += "ExecutionBarrier";
+                    break;
+                case CommandID::FillBuffer:
+                    result += "FillBuffer";
                     break;
                 case CommandID::ImageBarrier:
                     result += "ImageBarrier";

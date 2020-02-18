@@ -69,6 +69,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1385214448885562192">Trykk på Enter for å godta, Esc for å avbryte, ned for neste eller opp for forrige.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Les opp attributter for rik tekst</translation>
 <translation id="1405567553485452995">Lysegrønn</translation>
 <translation id="1417889266572670458">Marineblå</translation>
 <translation id="1431911867058218151">Plomme</translation>
@@ -319,11 +320,11 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3232388865800379423">En forgrunnsknapp</translation>
 <translation id="3241052487511142956">Tidligere besøkt link</translation>
 <translation id="3241638166094654466">Celler i hver linje:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">stående</translation>
 <translation id="3286390186030710347">Glidebryter</translation>
 <translation id="3299925995433437805">Ingen neste besøkte link.</translation>
 <translation id="3300348286427369683">Støtte for rik tekst. Nå støtter ChromeVox felt med rik tekst, inkludert hoppekommandoer, markørstyring for punktskrift, merking med mer.</translation>
-<translation id="3304756947457041303">Tilpass indikator for rik tekst</translation>
 <translation id="3307886118343381874">Gå til slutten av tabellen</translation>
 <translation id="3311969765485641742">Trykk på Alt+Shift+A for å gjennomgå varslene</translation>
 <translation id="3312997241656799641">Neste besøkte link</translation>

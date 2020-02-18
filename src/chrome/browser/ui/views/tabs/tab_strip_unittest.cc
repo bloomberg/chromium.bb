@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -170,7 +171,13 @@ class TabStripTest : public ChromeViewsTestBase,
     return tab_strip_->FindTabForEvent(point);
   }
 
-  void DoLayout() { tab_strip_->DoLayout(); }
+  void CompleteAnimationAndLayout() {
+    tab_strip_->CompleteAnimationAndLayout();
+  }
+
+  int TabToNewTabButtonSpacing() {
+    return tab_strip_->TabToNewTabButtonSpacing();
+  }
 
   void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
 
@@ -182,6 +189,7 @@ class TabStripTest : public ChromeViewsTestBase,
     return &tab_strip_->bounds_animator_;
   }
 
+  int GetActiveTabWidth() { return tab_strip_->GetActiveTabWidth(); }
   int GetInactiveTabWidth() { return tab_strip_->GetInactiveTabWidth(); }
 
   // End any outstanding drag and animate tabs back to their ideal bounds.
@@ -444,7 +452,7 @@ TEST_P(TabStripTest, TabForEventWhenStacked) {
 
   // Switch to stacked layout mode and force a layout to ensure tabs stack.
   tab_strip_->SetStackedLayout(true);
-  DoLayout();
+  CompleteAnimationAndLayout();
 
   gfx::Point p;
   for (int y : {0, tab_strip_->height() / 2, tab_strip_->height() - 1}) {
@@ -605,7 +613,7 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
   tab_strip_->CloseTab(tab2, CLOSE_TAB_FROM_TOUCH);
   tab2 = nullptr;
   ASSERT_TRUE(tab3->IsActive());
-  DoLayout();
+  CompleteAnimationAndLayout();
   EXPECT_FALSE(tab0->showing_close_button_);
   EXPECT_FALSE(tab1->showing_close_button_);
   EXPECT_TRUE(tab3->showing_close_button_);
@@ -750,9 +758,46 @@ TEST_P(TabStripTest, NewTabButtonStaysVisible) {
   for (int i = 0; i < 100; ++i)
     controller_->AddTab(i, (i == 0));
 
-  DoLayout();
+  CompleteAnimationAndLayout();
 
-  EXPECT_LE(tab_strip_->new_tab_button_bounds().right(), kTabStripWidth);
+  EXPECT_LE(tab_strip_->new_tab_button_ideal_bounds().right(), kTabStripWidth);
+}
+
+TEST_P(TabStripTest, NewTabButtonRightOfTabs) {
+  const int kTabStripWidth = 500;
+  tab_strip_->SetBounds(0, 0, kTabStripWidth, 20);
+
+  controller_->AddTab(0, true);
+
+  AnimateToIdealBounds();
+
+  EXPECT_EQ(tab_strip_->new_tab_button_ideal_bounds().x(),
+            tab_strip_->ideal_bounds(0).right() + TabToNewTabButtonSpacing());
+}
+
+// The cached widths are private, but if they give incorrect results it can
+// cause subtle errors in other tests. Therefore it's prudent to test them.
+TEST_P(TabStripTest, CachedWidthsReportCorrectSize) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+  controller_->AddTab(2, false);
+
+  const int standard_width = TabStyle::GetStandardWidth();
+
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+
+  EXPECT_EQ(standard_width, GetActiveTabWidth());
+  EXPECT_EQ(standard_width, GetInactiveTabWidth());
+
+  tab_strip_->SetBounds(0, 0, 240, 100);
+
+  EXPECT_LT(GetActiveTabWidth(), standard_width);
+  EXPECT_EQ(GetInactiveTabWidth(), GetActiveTabWidth());
+
+  tab_strip_->SetBounds(0, 0, 50, 100);
+
+  EXPECT_EQ(TabStyleViews::GetMinimumActiveWidth(), GetActiveTabWidth());
+  EXPECT_EQ(TabStyleViews::GetMinimumInactiveWidth(), GetInactiveTabWidth());
 }
 
 // The active tab should always be at least as wide as its minimum width.
@@ -765,11 +810,14 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
 
   // Create a lot of tabs in order to make inactive tabs tiny.
   const int min_inactive_width = TabStyleViews::GetMinimumInactiveWidth();
-  while (GetInactiveTabWidth() != min_inactive_width)
+  while (GetInactiveTabWidth() != min_inactive_width) {
     controller_->CreateNewTab();
+    CompleteAnimationAndLayout();
+  }
 
-  int active_index = controller_->GetActiveIndex();
   EXPECT_GT(tab_strip_->tab_count(), 1);
+
+  const int active_index = controller_->GetActiveIndex();
   EXPECT_EQ(tab_strip_->tab_count() - 1, active_index);
   EXPECT_LT(tab_strip_->ideal_bounds(0).width(),
             tab_strip_->ideal_bounds(active_index).width());
@@ -797,6 +845,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
   const int min_active_width = TabStyleViews::GetMinimumActiveWidth();
   while (GetInactiveTabWidth() >= (min_inactive_width + min_active_width) / 2) {
     controller_->CreateNewTab();
+    CompleteAnimationAndLayout();
   }
 
   // During mouse-based tab closure, inactive tabs shouldn't shrink
@@ -809,6 +858,7 @@ TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
     const int last_inactive_width = GetInactiveTabWidth();
     tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
                          CLOSE_TAB_FROM_MOUSE);
+    CompleteAnimationAndLayout();
     EXPECT_GE(GetInactiveTabWidth(), last_inactive_width);
   }
 }
@@ -902,7 +952,7 @@ TEST_P(TabStripTest, NewTabButtonInkDrop) {
     tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
         views::InkDropState::ACTION_TRIGGERED);
     controller_->AddTab(i, true /* is_active */);
-    DoLayout();
+    CompleteAnimationAndLayout();
     tab_strip_->new_tab_button()->AnimateInkDropToStateForTesting(
         views::InkDropState::HIDDEN);
   }
@@ -923,52 +973,6 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
 }
 
-// Switch selected tabs on horizontal scroll events.
-TEST_P(TabStripTest, HorizontalScroll) {
-  tab_strip_->SetBounds(0, 0, 200, 20);
-
-  for (int i = 0; i < 3; i++)
-    controller_->AddTab(i, true /* is_active */);
-
-  Tab* tab = tab_strip_->tab_at(0);
-  gfx::Point tab_center = tab->bounds().CenterPoint();
-
-  for (int i = 0; i < tab_strip_->tab_count(); ++i) {
-    ui::MouseWheelEvent wheel_event(
-        gfx::Vector2d(ui::MouseWheelEvent::kWheelDelta, 0), tab_center,
-        tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-    EXPECT_EQ(i, controller_->GetActiveIndex());
-  }
-
-  controller_->SelectTab(0, dummy_event_);
-  for (int i = tab_strip_->tab_count() - 1; i >= 0; --i) {
-    ui::MouseWheelEvent wheel_event(
-        gfx::Vector2d(-ui::MouseWheelEvent::kWheelDelta, 0), tab_center,
-        tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-    EXPECT_EQ(i, controller_->GetActiveIndex());
-  }
-
-  // When offset is smaller than kWheelDelta, we don't scroll immediately.
-  // We wait offset until accumulated offset gets bigger than kWheelDelta.
-  const int small_offset = ui::MouseWheelEvent::kWheelDelta / 3;
-  int next_accumulated_offset = small_offset;
-  while (next_accumulated_offset < ui::MouseWheelEvent::kWheelDelta) {
-    ui::MouseWheelEvent wheel_event(gfx::Vector2d(small_offset, 0), tab_center,
-                                    tab_center, ui::EventTimeForNow(), 0, 0);
-    tab_strip_->OnMouseWheel(wheel_event);
-
-    EXPECT_EQ(0, controller_->GetActiveIndex());
-    next_accumulated_offset += small_offset;
-  }
-
-  ui::MouseWheelEvent wheel_event(gfx::Vector2d(small_offset, 0), tab_center,
-                                  tab_center, ui::EventTimeForNow(), 0, 0);
-  tab_strip_->OnMouseWheel(wheel_event);
-  EXPECT_EQ(1, controller_->GetActiveIndex());
-}
-
 TEST_P(TabStripTest, GroupHeaderBasics) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(0);
@@ -979,6 +983,7 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
 
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
   controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
 
   std::vector<TabGroupHeader*> headers = ListGroupHeaders();
   EXPECT_EQ(1u, headers.size());
@@ -1002,6 +1007,69 @@ TEST_P(TabStripTest, GroupHeaderBetweenTabs) {
 
   TabGroupHeader* header = ListGroupHeaders()[0];
   EXPECT_EQ(header->x(), second_slot_x);
+}
+
+TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
+
+  controller_->MoveTab(1, 2);
+  CompleteAnimationAndLayout();
+
+  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
+  EXPECT_EQ(initial_tab_1_x, header->x());
+}
+
+TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(2, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
+
+  controller_->MoveTab(2, 1);
+  CompleteAnimationAndLayout();
+
+  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
+  EXPECT_EQ(initial_tab_1_x, header->x());
+}
+
+TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 4; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group);
+  controller_->MoveTabIntoGroup(2, group);
+  CompleteAnimationAndLayout();
+
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  const int initial_header_x = header->x();
+  Tab* tab1 = tab_strip_->tab_at(1);
+  const int initial_tab_1_x = tab1->x();
+  Tab* tab2 = tab_strip_->tab_at(2);
+  const int initial_tab_2_x = tab2->x();
+
+  controller_->MoveTab(1, 2);
+  CompleteAnimationAndLayout();
+
+  // Header has not moved.
+  EXPECT_EQ(initial_header_x, header->x());
+  EXPECT_EQ(initial_tab_1_x, tab2->x());
+  EXPECT_EQ(initial_tab_2_x, tab1->x());
 }
 
 // This can happen when a tab in the middle of a group starts to close.

@@ -17,12 +17,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_win.h"
-#include "content/public/common/service_manager_connection.h"
+#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
+#include "content/public/browser/system_connector.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 
 namespace performance_manager {
@@ -112,9 +114,10 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
     const WebContentsProxy& contents_proxy,
-    bool is_visible) {
+    bool is_visible,
+    bool is_audible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy, is_visible);
+                                      contents_proxy, is_visible, is_audible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
@@ -130,7 +133,7 @@ void PerformanceManager::BatchDeleteNodes(
 }
 
 void PerformanceManager::RegisterObserver(
-    std::unique_ptr<GraphObserver> observer) {
+    std::unique_ptr<GraphImplObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   graph_.RegisterObserver(observer.get());
   observers_.push_back(std::move(observer));
@@ -247,12 +250,11 @@ void PerformanceManager::BatchDeleteNodesImpl(
 void PerformanceManager::OnStart() {
   // Some tests don't initialize the service manager connection, so this class
   // tolerates its absence for tests.
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
+  auto* connector = content::GetSystemConnector();
   task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &PerformanceManager::OnStartImpl, base::Unretained(this),
-          connection ? connection->GetConnector()->Clone() : nullptr));
+      base::BindOnce(&PerformanceManager::OnStartImpl, base::Unretained(this),
+                     connector ? connector->Clone() : nullptr));
 }
 
 void PerformanceManager::CallOnGraphImpl(GraphCallback graph_callback) {
@@ -263,15 +265,14 @@ void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Register new |GraphObserver| implementations here.
-  RegisterObserver(std::make_unique<MetricsCollector>());
-  RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
-  RegisterObserver(std::make_unique<FrozenFrameAggregator>());
-  RegisterObserver(std::make_unique<IsolationContextMetrics>());
+  graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
+  graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
+  graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
+  graph_.PassToGraph(std::make_unique<MetricsCollector>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
-    RegisterObserver(std::make_unique<WorkingSetTrimmer>());
+    graph_.PassToGraph(std::make_unique<WorkingSetTrimmer>());
 #endif
 
   interface_registry_.AddInterface(base::BindRepeating(

@@ -191,13 +191,13 @@ class DelayManager {
                            // detection and streaming mode (Q0).
   // TODO(turajs) change the comment according to the implementation of
   // minimum-delay.
-  int target_level_;   // Currently preferred buffer level in (fractions)
-                       // of packets (Q8), before adding any extra delay.
-  int packet_len_ms_;  // Length of audio in each incoming packet [ms].
-  uint16_t last_seq_no_;         // Sequence number for last received packet.
-  uint32_t last_timestamp_;      // Timestamp for the last received packet.
-  int minimum_delay_ms_;         // Externally set minimum delay.
-  int maximum_delay_ms_;         // Externally set maximum allowed delay.
+  int target_level_;         // Currently preferred buffer level in (fractions)
+                             // of packets (Q8), before adding any extra delay.
+  int packet_len_ms_;        // Length of audio in each incoming packet [ms].
+  uint16_t last_seq_no_;     // Sequence number for last received packet.
+  uint32_t last_timestamp_;  // Timestamp for the last received packet.
+  int minimum_delay_ms_;     // Externally set minimum delay.
+  int maximum_delay_ms_;     // Externally set maximum allowed delay.
   DelayPeakDetector& peak_detector_;
   int last_pack_cng_or_dtmf_;
   const bool frame_length_change_experiment_;
@@ -209,6 +209,7 @@ class DelayManager {
   // impose deceleration to increase the buffer level. The value is in Q8, and
   // measured in milliseconds.
   const absl::optional<int> deceleration_target_level_offset_ms_;
+  const absl::optional<int> extra_delay_ms_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(DelayManager);
 };

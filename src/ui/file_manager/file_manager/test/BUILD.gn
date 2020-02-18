@@ -27,7 +27,6 @@ action("create_test_main") {
     "js/strings.js",
     "menu.js",
     "progress_center.js",
-    "uma.js",
   ]
   args = [ "--output=" + rebase_path(output, root_build_dir) ]
   outputs = [
@@ -45,7 +44,6 @@ js_type_check("closure_compile") {
     ":menu",
     ":plugin_vm",
     ":progress_center",
-    ":uma",
   ]
 }
 
@@ -114,13 +112,6 @@ js_library("progress_center") {
   deps = [
     "js:test_util",
     "//ui/file_manager/file_manager/common/js:progress_center_common",
-    "//ui/webui/resources/js:webui_resource_test",
-  ]
-}
-
-js_library("uma") {
-  deps = [
-    "js:test_util",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }

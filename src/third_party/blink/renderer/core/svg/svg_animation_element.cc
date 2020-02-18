@@ -25,11 +25,11 @@
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -469,10 +469,9 @@ void SVGAnimationElement::CurrentValuesForValuesAnimation(
     return;
   }
 
-  CalcMode calc_mode = this->GetCalcMode();
-  if (IsSVGAnimateElement(*this)) {
-    SVGAnimateElement& animate_element = ToSVGAnimateElement(*this);
-    if (!animate_element.AnimatedPropertyTypeSupportsAddition())
+  CalcMode calc_mode = GetCalcMode();
+  if (auto* animate_element = DynamicTo<SVGAnimateElement>(this)) {
+    if (!animate_element->AnimatedPropertyTypeSupportsAddition())
       calc_mode = kCalcModeDiscrete;
   }
   if (!key_points_.IsEmpty() && calc_mode != kCalcModePaced)
@@ -527,8 +526,8 @@ void SVGAnimationElement::StartedActiveInterval() {
       key_points_.size() != key_times_.size())
     return;
 
-  AnimationMode animation_mode = this->GetAnimationMode();
-  CalcMode calc_mode = this->GetCalcMode();
+  AnimationMode animation_mode = GetAnimationMode();
+  CalcMode calc_mode = GetCalcMode();
   if (calc_mode == kCalcModeSpline) {
     unsigned splines_count = key_splines_.size();
     if (!splines_count ||
@@ -601,8 +600,8 @@ void SVGAnimationElement::UpdateAnimation(float percent,
     return;
 
   float effective_percent;
-  CalcMode calc_mode = this->GetCalcMode();
-  AnimationMode animation_mode = this->GetAnimationMode();
+  CalcMode calc_mode = GetCalcMode();
+  AnimationMode animation_mode = GetAnimationMode();
   if (animation_mode == kValuesAnimation) {
     String from;
     String to;
@@ -627,6 +626,13 @@ void SVGAnimationElement::UpdateAnimation(float percent,
     effective_percent = percent;
 
   CalculateAnimatedValue(effective_percent, repeat_count, result_element);
+}
+
+bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() {
+  return !IsAdditive() && !IsAccumulated() &&
+         GetAnimationMode() != kToAnimation &&
+         GetAnimationMode() != kByAnimation &&
+         GetAnimationMode() != kNoAnimation;
 }
 
 }  // namespace blink

@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNALLY_INSTALLED_WEB_APP_PREFS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNALLY_INSTALLED_WEB_APP_PREFS_H_
 
+#include <map>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 class GURL;
 class PrefService;
-class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -37,17 +37,19 @@ class ExternallyInstalledWebAppPrefs {
   // |pref_service|.
   static bool HasAppIdWithInstallSource(const PrefService* pref_service,
                                         const AppId& app_id,
-                                        InstallSource install_source);
+                                        ExternalInstallSource install_source);
 
-  // Returns the URLs of the apps that were installed from |install_source|.
-  static std::vector<GURL> GetInstalledAppUrls(Profile* profile,
-                                               InstallSource install_source);
+  // Returns the URLs of the apps that have been installed from
+  // |install_source|. Will still return apps that have been uninstalled.
+  static std::map<AppId, GURL> BuildAppIdsMap(
+      const PrefService* pref_service,
+      ExternalInstallSource install_source);
 
   explicit ExternallyInstalledWebAppPrefs(PrefService* pref_service);
 
   void Insert(const GURL& url,
               const AppId& app_id,
-              InstallSource install_source);
+              ExternalInstallSource install_source);
   base::Optional<AppId> LookupAppId(const GURL& url) const;
 
   // Returns an id if there is a placeholder app for |url|. Note that nullopt

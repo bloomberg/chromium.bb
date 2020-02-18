@@ -60,6 +60,7 @@ class ExtensionsMenuView : public views::ButtonListener,
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
+  void OnToolbarPinnedActionsChanged() override;
 
   views::View* extension_menu_button_container_for_testing() {
     return extension_menu_button_container_for_testing_;

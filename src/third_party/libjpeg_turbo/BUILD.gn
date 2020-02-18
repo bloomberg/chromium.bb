@@ -151,13 +151,15 @@ static_library("simd") {
   } else if (current_cpu == "arm" && arm_version >= 7 &&
              (arm_use_neon || arm_optionally_use_neon)) {
     sources = [
-      "simd/arm/jsimd.c",
-      "simd/arm/jsimd_neon.S",
+      "simd/arm/arm/jsimd.c",
+      "simd/arm/arm/jsimd_neon.S",
+      "simd/arm/common/jdsample-neon.c",
     ]
   } else if (current_cpu == "arm64") {
     sources = [
-      "simd/arm64/jsimd.c",
-      "simd/arm64/jsimd_neon.S",
+      "simd/arm/arm64/jsimd.c",
+      "simd/arm/arm64/jsimd_neon.S",
+      "simd/arm/common/jdsample-neon.c",
     ]
   } else {
     sources = [
@@ -225,6 +227,7 @@ static_library("libjpeg") {
     "jmemmgr.c",
     "jmemnobs.c",
     "jmemsys.h",
+    "jpeg_nbits_table.c",
     "jpegint.h",
     "jquant1.c",
     "jquant2.c",

@@ -1,11 +1,5 @@
-
 package Moose::Meta::Method::Destructor;
-BEGIN {
-  $Moose::Meta::Method::Destructor::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Destructor::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -14,18 +8,24 @@ use Devel::GlobalDestruction ();
 use Scalar::Util 'blessed', 'weaken';
 use Try::Tiny;
 
-use base 'Moose::Meta::Method',
+use parent 'Moose::Meta::Method',
          'Class::MOP::Method::Inlined';
+
+use Moose::Util 'throw_exception';
 
 sub new {
     my $class   = shift;
     my %options = @_;
 
     (ref $options{options} eq 'HASH')
-        || $class->throw_error("You must pass a hash of options", data => $options{options});
+        || throw_exception( MustPassAHashOfOptions => params => \%options,
+                                                      class  => $class
+                          );
 
     ($options{package_name} && $options{name})
-        || $class->throw_error("You must supply the package_name and name parameters $Class::MOP::Method::UPGRADE_ERROR_TEXT");
+        || throw_exception( MustSupplyPackageNameAndName => params => \%options,
+                                                            class  => $class
+                          );
 
     my $self = bless {
         # from our superclass
@@ -59,16 +59,11 @@ sub is_needed {
     my $metaclass = shift;
 
     ( blessed $metaclass && $metaclass->isa('Class::MOP::Class') )
-        || $self->throw_error(
-        "The is_needed method expected a metaclass object as its arugment");
+        || throw_exception( MethodExpectedAMetaclassObject => metaclass => $metaclass,
+                                                              class     => $self
+                          );
 
     return $metaclass->find_method_by_name("DEMOLISHALL");
-}
-
-sub initialize_body {
-    Carp::cluck('The initialize_body method has been made private.'
-        . " The public version is deprecated and will be removed in a future release.\n");
-    shift->_initialize_body;
 }
 
 sub _initialize_body {
@@ -87,7 +82,6 @@ sub _initialize_body {
             'my $self = shift;',
             'return ' . $self->_generate_fallback_destructor('$self'),
                 'if Scalar::Util::blessed($self) ne \'' . $class . '\';',
-            'local $?;',
             $self->_generate_DEMOLISHALL('$self'),
             'return;',
         '}',
@@ -99,11 +93,10 @@ sub _initialize_body {
     }
     catch {
         my $source = join("\n", @source);
-        $self->throw_error(
-            "Could not eval the destructor :\n\n$source\n\nbecause :\n\n$_",
-            error => $_,
-            data  => $source,
-        );
+        throw_exception( CouldNotEvalDestructor => method_destructor_object => $self,
+                                                   source                   => $source,
+                                                   error                    => $_
+                       );
     };
 
     $self->{'body'} = $code;
@@ -124,6 +117,7 @@ sub _generate_DEMOLISHALL {
     return unless @methods;
 
     return (
+        'local $?;',
         'my $igd = Devel::GlobalDestruction::in_global_destruction;',
         'Try::Tiny::try {',
             (map { $inv . '->' . $_->{class} . '::DEMOLISH($igd);' } @methods),
@@ -139,9 +133,11 @@ sub _generate_DEMOLISHALL {
 
 # ABSTRACT: Method Meta Object for destructors
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -149,14 +145,14 @@ Moose::Meta::Method::Destructor - Method Meta Object for destructors
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
 This class is a subclass of L<Class::MOP::Method::Inlined> that
 provides Moose-specific functionality for inlining destructors.
 
-To understand this class, you should read the the
+To understand this class, you should read the
 L<Class::MOP::Method::Inlined> documentation as well.
 
 =head1 INHERITANCE
@@ -166,13 +162,11 @@ L<Moose::Meta::Method> I<and> L<Class::MOP::Method::Inlined>.
 
 =head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::Method::Destructor->new(%options) >>
+=head2 Moose::Meta::Method::Destructor->new(%options)
 
 This constructs a new object. It accepts the following options:
 
-=over 8
+=over 4
 
 =item * package_name
 
@@ -191,32 +185,67 @@ $metamethod->attach_to_class >>.
 
 =back
 
-=item B<< Moose::Meta;:Method::Destructor->is_needed($metaclass) >>
+=head2 Moose::Meta;:Method::Destructor->is_needed($metaclass)
 
 Given a L<Moose::Meta::Class> object, this method returns a boolean
 indicating whether the class needs a destructor. If the class or any
 of its parents defines a C<DEMOLISH> method, it needs a destructor.
 
-=back
-
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

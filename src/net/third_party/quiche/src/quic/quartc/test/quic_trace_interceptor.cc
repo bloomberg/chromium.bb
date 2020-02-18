@@ -53,10 +53,10 @@ void QuicTraceInterceptor::OnCongestionControlChange(
                                        latest_rtt);
 }
 
-void QuicTraceInterceptor::OnConnectionClosed(QuicErrorCode error_code,
-                                              const std::string& error_details,
-                                              ConnectionCloseSource source) {
-  delegate_->OnConnectionClosed(error_code, error_details, source);
+void QuicTraceInterceptor::OnConnectionClosed(
+    const QuicConnectionCloseFrame& frame,
+    ConnectionCloseSource source) {
+  delegate_->OnConnectionClosed(frame, source);
 }
 
 void QuicTraceInterceptor::OnMessageReceived(QuicStringPiece message) {
@@ -65,6 +65,15 @@ void QuicTraceInterceptor::OnMessageReceived(QuicStringPiece message) {
 
 void QuicTraceInterceptor::OnMessageSent(int64_t datagram_id) {
   delegate_->OnMessageSent(datagram_id);
+}
+
+void QuicTraceInterceptor::OnMessageAcked(int64_t datagram_id,
+                                          QuicTime receive_timestamp) {
+  delegate_->OnMessageAcked(datagram_id, receive_timestamp);
+}
+
+void QuicTraceInterceptor::OnMessageLost(int64_t datagram_id) {
+  delegate_->OnMessageLost(datagram_id);
 }
 
 void QuicTraceInterceptor::SetDelegate(QuartcEndpoint::Delegate* delegate) {

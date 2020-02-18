@@ -6,9 +6,9 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/win/scoped_handle.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/typed_buffer.h"
@@ -115,11 +115,12 @@ bool ChromotingModule::Run() {
     return false;
   }
 
-  // Arrange to run |message_loop| until no components depend on it.
-  base::MessageLoopForUI message_loop;
+  // Arrange to run |main_task_executor| until no components depend on it.
+  base::SingleThreadTaskExecutor main_task_executor(
+      base::MessagePump::Type::UI);
   base::RunLoop run_loop;
   g_module_task_runner.Get() = new AutoThreadTaskRunner(
-      message_loop.task_runner(), run_loop.QuitClosure());
+      main_task_executor.task_runner(), run_loop.QuitClosure());
 
   // Start accepting activations.
   result = CoResumeClassObjects();

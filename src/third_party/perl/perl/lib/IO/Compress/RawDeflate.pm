@@ -6,19 +6,18 @@ use strict ;
 use warnings;
 use bytes;
 
-
-use IO::Compress::Base 2.052 ;
-use IO::Compress::Base::Common  2.052 qw(:Status createSelfTiedObject);
-use IO::Compress::Adapter::Deflate 2.052 ;
+use IO::Compress::Base 2.086 ;
+use IO::Compress::Base::Common  2.086 qw(:Status );
+use IO::Compress::Adapter::Deflate 2.086 ;
 
 require Exporter ;
 
 our ($VERSION, @ISA, @EXPORT_OK, %DEFLATE_CONSTANTS, %EXPORT_TAGS, $RawDeflateError);
 
-$VERSION = '2.052';
+$VERSION = '2.086';
 $RawDeflateError = '';
 
-@ISA = qw(Exporter IO::Compress::Base);
+@ISA = qw(IO::Compress::Base Exporter);
 @EXPORT_OK = qw( $RawDeflateError rawdeflate ) ;
 push @EXPORT_OK, @IO::Compress::Adapter::Deflate::EXPORT_OK ;
 
@@ -49,14 +48,14 @@ sub new
 {
     my $class = shift ;
 
-    my $obj = createSelfTiedObject($class, \$RawDeflateError);
+    my $obj = IO::Compress::Base::Common::createSelfTiedObject($class, \$RawDeflateError);
 
     return $obj->_create(undef, @_);
 }
 
 sub rawdeflate
 {
-    my $obj = createSelfTiedObject(undef, \$RawDeflateError);
+    my $obj = IO::Compress::Base::Common::createSelfTiedObject(undef, \$RawDeflateError);
     return $obj->_def(@_);
 }
 
@@ -74,10 +73,10 @@ sub mkComp
     my $got = shift ;
 
     my ($obj, $errstr, $errno) = IO::Compress::Adapter::Deflate::mkCompObject(
-                                                 $got->value('CRC32'),
-                                                 $got->value('Adler32'),
-                                                 $got->value('Level'),
-                                                 $got->value('Strategy')
+                                                 $got->getValue('crc32'),
+                                                 $got->getValue('adler32'),
+                                                 $got->getValue('level'),
+                                                 $got->getValue('strategy')
                                                  );
 
    return $self->saveErrorString(undef, $errstr, $errno)
@@ -114,30 +113,24 @@ sub mkFinalTrailer
 sub getExtraParams
 {
     my $self = shift ;
-    return $self->getZlibParams();
+    return getZlibParams();
 }
 
+use IO::Compress::Base::Common  2.086 qw(:Parse);
+use Compress::Raw::Zlib  2.086 qw(Z_DEFLATED Z_DEFAULT_COMPRESSION Z_DEFAULT_STRATEGY);
+our %PARAMS = (
+            #'method'   => [IO::Compress::Base::Common::Parse_unsigned,  Z_DEFLATED],
+            'level'     => [IO::Compress::Base::Common::Parse_signed,    Z_DEFAULT_COMPRESSION],
+            'strategy'  => [IO::Compress::Base::Common::Parse_signed,    Z_DEFAULT_STRATEGY],
+
+            'crc32'     => [IO::Compress::Base::Common::Parse_boolean,   0],
+            'adler32'   => [IO::Compress::Base::Common::Parse_boolean,   0],
+            'merge'     => [IO::Compress::Base::Common::Parse_boolean,   0], 
+        );
+        
 sub getZlibParams
 {
-    my $self = shift ;
-
-    use IO::Compress::Base::Common  2.052 qw(:Parse);
-    use Compress::Raw::Zlib  2.052 qw(Z_DEFLATED Z_DEFAULT_COMPRESSION Z_DEFAULT_STRATEGY);
-
-    
-    return (
-        
-            # zlib behaviour
-            #'Method'   => [0, 1, Parse_unsigned,  Z_DEFLATED],
-            'Level'     => [0, 1, Parse_signed,    Z_DEFAULT_COMPRESSION],
-            'Strategy'  => [0, 1, Parse_signed,    Z_DEFAULT_STRATEGY],
-
-            'CRC32'     => [0, 1, Parse_boolean,   0],
-            'ADLER32'   => [0, 1, Parse_boolean,   0],
-            'Merge'     => [1, 1, Parse_boolean,   0],
-        );
-    
-    
+    return %PARAMS;    
 }
 
 sub getInverseClass
@@ -154,7 +147,7 @@ sub getFileInfo
     
 }
 
-use IO::Seekable qw(SEEK_SET);
+use Fcntl qw(SEEK_SET);
 
 sub createMerge
 {
@@ -230,14 +223,12 @@ __END__
 =head1 NAME
 
 IO::Compress::RawDeflate - Write RFC 1951 files/buffers
- 
- 
 
 =head1 SYNOPSIS
 
     use IO::Compress::RawDeflate qw(rawdeflate $RawDeflateError) ;
 
-    my $status = rawdeflate $input => $output [,OPTS] 
+    my $status = rawdeflate $input => $output [,OPTS]
         or die "rawdeflate failed: $RawDeflateError\n";
 
     my $z = new IO::Compress::RawDeflate $output [,OPTS]
@@ -257,9 +248,9 @@ IO::Compress::RawDeflate - Write RFC 1951 files/buffers
     $z->autoflush();
     $z->input_line_number();
     $z->newStream( [OPTS] );
-    
+
     $z->deflateParams();
-    
+
     $z->close() ;
 
     $RawDeflateError ;
@@ -274,7 +265,7 @@ IO::Compress::RawDeflate - Write RFC 1951 files/buffers
     binmode $z
     fileno $z
     close $z ;
-    
+ 
 
 =head1 DESCRIPTION
 
@@ -284,7 +275,7 @@ data to files or buffer as defined in RFC 1951.
 Note that RFC 1951 data is not a good choice of compression format
 to use in isolation, especially if you want to auto-detect it.
 
-For reading RFC 1951 files/buffers, see the companion module 
+For reading RFC 1951 files/buffers, see the companion module
 L<IO::Uncompress::RawInflate|IO::Uncompress::RawInflate>.
 
 =head1 Functional Interface
@@ -296,19 +287,20 @@ section.
 
     use IO::Compress::RawDeflate qw(rawdeflate $RawDeflateError) ;
 
-    rawdeflate $input => $output [,OPTS] 
+    rawdeflate $input_filename_or_reference => $output_filename_or_reference [,OPTS]
         or die "rawdeflate failed: $RawDeflateError\n";
 
 The functional interface needs Perl5.005 or better.
 
-=head2 rawdeflate $input => $output [, OPTS]
+=head2 rawdeflate $input_filename_or_reference => $output_filename_or_reference [, OPTS]
 
-C<rawdeflate> expects at least two parameters, C<$input> and C<$output>.
+C<rawdeflate> expects at least two parameters,
+C<$input_filename_or_reference> and C<$output_filename_or_reference>.
 
-=head3 The C<$input> parameter
+=head3 The C<$input_filename_or_reference> parameter
 
-The parameter, C<$input>, is used to define the source of
-the uncompressed data. 
+The parameter, C<$input_filename_or_reference>, is used to define the
+source of the uncompressed data.
 
 It can take one of the following forms:
 
@@ -316,92 +308,99 @@ It can take one of the following forms:
 
 =item A filename
 
-If the C<$input> parameter is a simple scalar, it is assumed to be a
-filename. This file will be opened for reading and the input data
-will be read from it.
+If the <$input_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename. This file will be opened for reading and the
+input data will be read from it.
 
 =item A filehandle
 
-If the C<$input> parameter is a filehandle, the input data will be
-read from it.
-The string '-' can be used as an alias for standard input.
+If the C<$input_filename_or_reference> parameter is a filehandle, the input
+data will be read from it.  The string '-' can be used as an alias for
+standard input.
 
-=item A scalar reference 
+=item A scalar reference
 
-If C<$input> is a scalar reference, the input data will be read
-from C<$$input>.
+If C<$input_filename_or_reference> is a scalar reference, the input data
+will be read from C<$$input_filename_or_reference>.
 
-=item An array reference 
+=item An array reference
 
-If C<$input> is an array reference, each element in the array must be a
-filename.
+If C<$input_filename_or_reference> is an array reference, each element in
+the array must be a filename.
 
-The input data will be read from each file in turn. 
+The input data will be read from each file in turn.
 
 The complete array will be walked to ensure that it only
 contains valid filenames before any data is compressed.
 
 =item An Input FileGlob string
 
-If C<$input> is a string that is delimited by the characters "<" and ">"
-C<rawdeflate> will assume that it is an I<input fileglob string>. The
-input is the list of files that match the fileglob.
+If C<$input_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<rawdeflate> will assume that it is an
+I<input fileglob string>. The input is the list of files that match the
+fileglob.
 
 See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$input> parameter is any other type, C<undef> will be returned.
+If the C<$input_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
-=head3 The C<$output> parameter
+=head3 The C<$output_filename_or_reference> parameter
 
-The parameter C<$output> is used to control the destination of the
-compressed data. This parameter can take one of these forms.
+The parameter C<$output_filename_or_reference> is used to control the
+destination of the compressed data. This parameter can take one of
+these forms.
 
 =over 5
 
 =item A filename
 
-If the C<$output> parameter is a simple scalar, it is assumed to be a
-filename.  This file will be opened for writing and the compressed
-data will be written to it.
+If the C<$output_filename_or_reference> parameter is a simple scalar, it is
+assumed to be a filename.  This file will be opened for writing and the
+compressed data will be written to it.
 
 =item A filehandle
 
-If the C<$output> parameter is a filehandle, the compressed data
-will be written to it.
-The string '-' can be used as an alias for standard output.
+If the C<$output_filename_or_reference> parameter is a filehandle, the
+compressed data will be written to it.  The string '-' can be used as
+an alias for standard output.
 
-=item A scalar reference 
+=item A scalar reference
 
-If C<$output> is a scalar reference, the compressed data will be
-stored in C<$$output>.
+If C<$output_filename_or_reference> is a scalar reference, the
+compressed data will be stored in C<$$output_filename_or_reference>.
 
 =item An Array Reference
 
-If C<$output> is an array reference, the compressed data will be
-pushed onto the array.
+If C<$output_filename_or_reference> is an array reference,
+the compressed data will be pushed onto the array.
 
 =item An Output FileGlob
 
-If C<$output> is a string that is delimited by the characters "<" and ">"
-C<rawdeflate> will assume that it is an I<output fileglob string>. The
-output is the list of files that match the fileglob.
+If C<$output_filename_or_reference> is a string that is delimited by the
+characters "<" and ">" C<rawdeflate> will assume that it is an
+I<output fileglob string>. The output is the list of files that match the
+fileglob.
 
-When C<$output> is an fileglob string, C<$input> must also be a fileglob
-string. Anything else is an error.
+When C<$output_filename_or_reference> is an fileglob string,
+C<$input_filename_or_reference> must also be a fileglob string. Anything
+else is an error.
 
 See L<File::GlobMapper|File::GlobMapper> for more details.
 
 =back
 
-If the C<$output> parameter is any other type, C<undef> will be returned.
+If the C<$output_filename_or_reference> parameter is any other type,
+C<undef> will be returned.
 
 =head2 Notes
 
-When C<$input> maps to multiple files/buffers and C<$output> is a single
+When C<$input_filename_or_reference> maps to multiple files/buffers and
+C<$output_filename_or_reference> is a single
 file/buffer the input files/buffers will be stored
-in C<$output> as a concatenated series of compressed data streams.
+in C<$output_filename_or_reference> as a concatenated series of compressed data streams.
 
 =head2 Optional Parameters
 
@@ -413,7 +412,7 @@ L</"Constructor Options"> section below.
 
 =item C<< AutoClose => 0|1 >>
 
-This option applies to any input or output data streams to 
+This option applies to any input or output data streams to
 C<rawdeflate> that are filehandles.
 
 If C<AutoClose> is specified, and the value is true, it will result in all
@@ -424,9 +423,7 @@ This parameter defaults to 0.
 
 =item C<< BinModeIn => 0|1 >>
 
-When reading from a file or filehandle, set C<binmode> before reading.
-
-Defaults to 0.
+This option is now a no-op. All files will be read in binmode.
 
 =item C<< Append => 0|1 >>
 
@@ -455,7 +452,7 @@ written to it.  Otherwise the file pointer will not be moved.
 
 =back
 
-When C<Append> is specified, and set to true, it will I<append> all compressed 
+When C<Append> is specified, and set to true, it will I<append> all compressed
 data to the output data stream.
 
 So when the output is a filehandle it will carry out a seek to the eof
@@ -499,7 +496,7 @@ compressed data to a buffer, C<$buffer>.
     my $input = new IO::File "<file1.txt"
         or die "Cannot open 'file1.txt': $!\n" ;
     my $buffer ;
-    rawdeflate $input => \$buffer 
+    rawdeflate $input => \$buffer
         or die "rawdeflate failed: $RawDeflateError\n";
 
 To compress all files in the directory "/my/home" that match "*.txt"
@@ -521,7 +518,7 @@ and if you want to compress each file one at a time, this will do the trick
     for my $input ( glob "/my/home/*.txt" )
     {
         my $output = "$input.1951" ;
-        rawdeflate $input => $output 
+        rawdeflate $input => $output
             or die "Error compressing '$input': $RawDeflateError\n";
     }
 
@@ -534,14 +531,14 @@ The format of the constructor for C<IO::Compress::RawDeflate> is shown below
     my $z = new IO::Compress::RawDeflate $output [,OPTS]
         or die "IO::Compress::RawDeflate failed: $RawDeflateError\n";
 
-It returns an C<IO::Compress::RawDeflate> object on success and undef on failure. 
+It returns an C<IO::Compress::RawDeflate> object on success and undef on failure.
 The variable C<$RawDeflateError> will contain an error message on failure.
 
-If you are running Perl 5.005 or better the object, C<$z>, returned from 
-IO::Compress::RawDeflate can be used exactly like an L<IO::File|IO::File> filehandle. 
-This means that all normal output file operations can be carried out 
-with C<$z>. 
-For example, to write to a compressed file/buffer you can use either of 
+If you are running Perl 5.005 or better the object, C<$z>, returned from
+IO::Compress::RawDeflate can be used exactly like an L<IO::File|IO::File> filehandle.
+This means that all normal output file operations can be carried out
+with C<$z>.
+For example, to write to a compressed file/buffer you can use either of
 these forms
 
     $z->print("hello world\n");
@@ -564,7 +561,7 @@ If the C<$output> parameter is a filehandle, the compressed data will be
 written to it.
 The string '-' can be used as an alias for standard output.
 
-=item A scalar reference 
+=item A scalar reference
 
 If C<$output> is a scalar reference, the compressed data will be stored
 in C<$$output>.
@@ -591,7 +588,7 @@ This parameter defaults to 0.
 
 =item C<< Append => 0|1 >>
 
-Opens C<$output> in append mode. 
+Opens C<$output> in append mode.
 
 The behaviour of this option is dependent on the type of C<$output>.
 
@@ -623,20 +620,20 @@ This parameter defaults to 0.
 
 This option is used to compress input data and append it to an existing
 compressed data stream in C<$output>. The end result is a single compressed
-data stream stored in C<$output>. 
+data stream stored in C<$output>.
 
 It is a fatal error to attempt to use this option when C<$output> is not an
 RFC 1951 data stream.
 
 There are a number of other limitations with the C<Merge> option:
 
-=over 5 
+=over 5
 
 =item 1
 
 This module needs to have been built with zlib 1.2.1 or better to work. A
 fatal error will be thrown if C<Merge> is used with an older version of
-zlib.  
+zlib.
 
 =item 2
 
@@ -646,7 +643,7 @@ If C<$output> is a file or a filehandle, it must be seekable.
 
 This parameter defaults to 0.
 
-=item -Level 
+=item -Level
 
 Defines the compression level used by zlib. The value should either be
 a number between 0 and 9 (0 means no compression and 9 is maximum
@@ -665,7 +662,7 @@ Note, these constants are not imported by C<IO::Compress::RawDeflate> by default
     use IO::Compress::RawDeflate qw(:constants);
     use IO::Compress::RawDeflate qw(:all);
 
-=item -Strategy 
+=item -Strategy
 
 Defines the strategy used to tune the compression. Use one of the symbolic
 constants defined below.
@@ -688,7 +685,7 @@ This is a placeholder option.
 
 TODO
 
-=head1 Methods 
+=head1 Methods
 
 =head2 print
 
@@ -806,7 +803,7 @@ This is a noop provided for completeness.
 
     $z->opened()
 
-Returns true if the object currently refers to a opened file/buffer. 
+Returns true if the object currently refers to a opened file/buffer.
 
 =head2 autoflush
 
@@ -829,7 +826,7 @@ retrieve the autoflush setting.
     $z->input_line_number()
     $z->input_line_number(EXPR)
 
-This method always returns C<undef> when compressing. 
+This method always returns C<undef> when compressing.
 
 =head2 fileno
 
@@ -848,7 +845,7 @@ C<undef>.
     $z->close() ;
     close $z ;
 
-Flushes any pending compressed data and then closes the output file/buffer. 
+Flushes any pending compressed data and then closes the output file/buffer.
 
 For most versions of Perl this method will be automatically invoked if
 the IO::Compress::RawDeflate object is destroyed (either explicitly or by the
@@ -876,7 +873,7 @@ Usage is
 
 Closes the current compressed data stream and starts a new one.
 
-OPTS consists of any of the the options that are available when creating
+OPTS consists of any of the options that are available when creating
 the C<$z> object.
 
 See the L</"Constructor Options"> section for more details.
@@ -889,9 +886,9 @@ Usage is
 
 TODO
 
-=head1 Importing 
+=head1 Importing
 
-A number of symbolic constants are required by some methods in 
+A number of symbolic constants are required by some methods in
 C<IO::Compress::RawDeflate>. None are imported by default.
 
 =over 5
@@ -939,9 +936,6 @@ These symbolic constants are used by the C<Strategy> option in the constructor.
     Z_FIXED
     Z_DEFAULT_STRATEGY
 
-    
-    
-
 =back
 
 =head1 EXAMPLES
@@ -956,7 +950,7 @@ See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
 =head1 SEE ALSO
 
-L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
+L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
 
 L<IO::Compress::FAQ|IO::Compress::FAQ>
 
@@ -964,22 +958,22 @@ L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
 L<IO::Zlib|IO::Zlib>
 
-For RFC 1950, 1951 and 1952 see 
-F<http://www.faqs.org/rfcs/rfc1950.html>,
-F<http://www.faqs.org/rfcs/rfc1951.html> and
-F<http://www.faqs.org/rfcs/rfc1952.html>
+For RFC 1950, 1951 and 1952 see
+L<http://www.faqs.org/rfcs/rfc1950.html>,
+L<http://www.faqs.org/rfcs/rfc1951.html> and
+L<http://www.faqs.org/rfcs/rfc1952.html>
 
 The I<zlib> compression library was written by Jean-loup Gailly
-F<gzip@prep.ai.mit.edu> and Mark Adler F<madler@alumni.caltech.edu>.
+C<gzip@prep.ai.mit.edu> and Mark Adler C<madler@alumni.caltech.edu>.
 
 The primary site for the I<zlib> compression library is
-F<http://www.zlib.org>.
+L<http://www.zlib.org>.
 
-The primary site for gzip is F<http://www.gzip.org>.
+The primary site for gzip is L<http://www.gzip.org>.
 
 =head1 AUTHOR
 
-This module was written by Paul Marquess, F<pmqs@cpan.org>. 
+This module was written by Paul Marquess, C<pmqs@cpan.org>.
 
 =head1 MODIFICATION HISTORY
 
@@ -987,7 +981,7 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2012 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

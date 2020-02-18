@@ -74,7 +74,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
     GrSurfaceDesc desc;
     desc.fWidth = desc.fHeight = 10;
     desc.fConfig = kRGBA_8888_GrPixelConfig;
-    auto tex = gpu->createTexture(desc, SkBudgeted::kNo);
+    auto tex = gpu->createTexture(desc, GrRenderable::kNo, 1, SkBudgeted::kNo, GrProtected::kNo);
     REPORTER_ASSERT(reporter, tex);
     context->resetGLTextureBindings();
     checkBindings();
@@ -102,7 +102,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(TextureBindingsResetTest, reporter, ctxInf
 
     if (supportExternal) {
         GrBackendTexture texture2D = context->createBackendTexture(
-                10, 10, kRGBA_8888_SkColorType, GrMipMapped::kNo, GrRenderable::kNo);
+                10, 10, kRGBA_8888_SkColorType,
+                SkColors::kTransparent, GrMipMapped::kNo, GrRenderable::kNo, GrProtected::kNo);
         GrGLTextureInfo info2D;
         REPORTER_ASSERT(reporter, texture2D.getGLTextureInfo(&info2D));
         GrEGLImage eglImage = ctxInfo.glContext()->texture2DToEGLImage(info2D.fID);

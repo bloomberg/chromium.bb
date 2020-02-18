@@ -456,6 +456,30 @@ var GetTableCellRowIndex = natives.GetTableCellRowIndex;
  */
 var GetDetectedLanguage = natives.GetDetectedLanguage;
 
+/**
+ * @param {string} axTreeId The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @param {string} attr The name of the string attribute.
+ * @return {!Array<{startIndex: number, endIndex: number, language: string,
+ * probability: number}>}
+ */
+var GetLanguageAnnotationForStringAttribute =
+    natives.GetLanguageAnnotationForStringAttribute;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetWordStartOffsets = natives.GetWordStartOffsets;
+
+/**
+ * @param {string} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {!Array<number>}
+ */
+var GetWordEndOffsets = natives.GetWordEndOffsets;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -648,6 +672,11 @@ AutomationNodeImpl.prototype = {
     return GetDetectedLanguage(this.treeID, this.id)
   },
 
+  languageAnnotationForStringAttribute: function(attributeName) {
+    return GetLanguageAnnotationForStringAttribute(this.treeID,
+        this.id, attributeName);
+  },
+
   get customActions() {
     return GetCustomActions(this.treeID, this.id);
   },
@@ -690,6 +719,14 @@ AutomationNodeImpl.prototype = {
 
   get tableCellRowIndex() {
     return GetTableCellRowIndex(this.treeID, this.id);
+  },
+
+  get nonInlineTextWordStarts() {
+    return GetWordStartOffsets(this.treeID, this.id);
+  },
+
+  get nonInlineTextWordEnds() {
+    return GetWordEndOffsets(this.treeID, this.id);
   },
 
   doDefault: function() {
@@ -1663,6 +1700,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'domQuerySelector',
     'toString',
     'boundsForRange',
+    'languageAnnotationForStringAttribute',
   ],
   readonly: $Array.concat(
       publicAttributes,
@@ -1699,6 +1737,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
         'tableCellRowHeaders',
         'tableCellColumnIndex',
         'tableCellRowIndex',
+        'nonInlineTextWordStarts',
+        'nonInlineTextWordEnds',
       ]),
 });
 

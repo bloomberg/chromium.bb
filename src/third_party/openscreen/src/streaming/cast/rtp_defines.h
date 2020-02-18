@@ -175,6 +175,16 @@ enum class RtcpSubtype : uint8_t {
 //        ...Followed by zero or more "Report Blocks"...
 constexpr int kRtcpSenderReportSize = 24;
 
+// RTCP Receiver Report:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                       SSRC of Receiver                        |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+//        ...Followed by zero or more "Report Blocks"...
+constexpr int kRtcpReceiverReportSize = 4;
+
 // RTCP Report Block. For Cast Streaming, zero or one of these accompanies a
 // Sender or Receiver Report, which is different than the RTCP spec (which
 // allows zero or more).
@@ -196,6 +206,132 @@ constexpr int kRtcpSenderReportSize = 24;
 // +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
 constexpr int kRtcpReportBlockSize = 24;
 constexpr int kRtcpCumulativePacketsFieldNumBits = 24;
+
+// Cast Feedback Message:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                       SSRC of Receiver                        |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                        SSRC of Sender                         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |               Unique identifier 'C' 'A' 'S' 'T'               |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | CkPt Frame ID | # Loss Fields | Current Playout Delay (msec)  |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr int kRtcpFeedbackHeaderSize = 16;
+constexpr uint32_t kRtcpCastIdentifierWord =
+    (uint32_t{'C'} << 24) | (uint32_t{'A'} << 16) | (uint32_t{'S'} << 8) |
+    uint32_t{'T'};
+//
+// "Checkpoint Frame ID" indicates that all frames prior to and including this
+// one have been fully received. Unfortunately, the Frame ID is truncated to its
+// lower 8 bits in the packet, and 8 bits is not really enough: If a RTCP packet
+// is received very late (e.g., more than 1.2 seconds late for 100 FPS audio),
+// the Checkpoint Frame ID here will be mis-interpreted as representing a
+// higher-numbered frame than what was intended. This could make the sender's
+// tracking of "completely received" frames inconsistent, and Cast Streaming
+// would live-lock. However, this design issue has been baked into the spec and
+// millions of deployments over several years, and so there's no changing it
+// now. See kMaxUnackedFrames in constants.h.
+//
+// "# Loss fields" indicates the number of packet-level NACK words, 0 to 255:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | w/in Frame ID | Lost Frame Packet ID          | PID BitVector |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr int kRtcpFeedbackLossFieldSize = 4;
+//
+// "Within Frame ID" is a truncated-to-8-bits frame ID field and, when
+// bit-expanded should always be interpreted to represent a value greater than
+// the Checkpoint Frame ID. "Lost Frame Packet ID" is either a specific packet
+// (within the frame) that has not been received, or kAllPacketsLost to indicate
+// none the packets for the frame have been received yet. In the former case,
+// "PID Bit Vector" then represents which of the next 8 packets are also
+// missing.
+//
+// Finally, all of the above is optionally followed by a frame-level ACK bit
+// vector:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |               Unique identifier 'C' 'S' 'T' '2'               |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |Feedback Count | # BVectOctets | ACK BitVect (2 to 254 bytes)...
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ → zero-padded to word boundary
+constexpr int kRtcpFeedbackAckHeaderSize = 6;
+constexpr uint32_t kRtcpCst2IdentifierWord =
+    (uint32_t{'C'} << 24) | (uint32_t{'S'} << 16) | (uint32_t{'T'} << 8) |
+    uint32_t{'2'};
+constexpr int kRtcpMinAckBitVectorOctets = 2;
+constexpr int kRtcpMaxAckBitVectorOctets = 254;
+//
+// "Feedback Count" is a wrap-around counter indicating the number of Cast
+// Feedbacks that have been sent before this one. "# Bit Vector Octets"
+// indicates the number of bytes of ACK bit vector following. Cast RTCP
+// alignment/padding requirements (to 4-byte boundaries) dictates the following
+// rules for generating the ACK bit vector:
+//
+//   1. There must be at least 2 bytes of ACK bit vector, if only to pad the 6
+//      byte header with two more bytes.
+//   2. If more than 2 bytes are needed, they must be added 4 at a time to
+//      maintain the 4-byte alignment of the overall RTCP packet.
+//   3. The total number of octets may not exceed 255; but, because of #2, 254
+//      is effectively the limit.
+//   4. The first bit in the first octet represents "Checkpoint Frame ID" plus
+//      two. "Plus two" and not "plus one" because otherwise the "Checkpoint
+//      Frame ID" should have been a greater value!
+
+// RTCP Extended Report:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                     SSRC of Report Author                     |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr int kRtcpExtendedReportHeaderSize = 4;
+//
+// ...followed by zero or more Blocks:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |  Block Type   | Reserved = 0  |       Block Length            |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |           ..."Block Length" words of report data...           |
+// +                                                               +
+// +                                                               +
+constexpr int kRtcpExtendedReportBlockHeaderSize = 4;
+//
+// Cast Streaming only uses Receiver Reference Time Reports:
+// https://tools.ietf.org/html/rfc3611#section-4.4. So, the entire block would
+// be:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// | Block Type=4  | Reserved = 0  |       Block Length = 2        |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                         NTP Timestamp                         |
+// |                                                               |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr uint8_t kRtcpReceiverReferenceTimeReportBlockType = 4;
+constexpr int kRtcpReceiverReferenceTimeReportBlockSize = 8;
+
+// Cast Picture Loss Indicator Message:
+//
+//  0                   1                   2                   3
+//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                       SSRC of Receiver                        |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+// |                        SSRC of Sender                         |
+// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+constexpr int kRtcpPictureLossIndicatorHeaderSize = 8;
 
 }  // namespace cast_streaming
 }  // namespace openscreen

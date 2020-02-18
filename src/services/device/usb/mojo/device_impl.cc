@@ -18,7 +18,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
-#include "services/device/usb/mojo/type_converters.h"
 #include "services/device/usb/usb_descriptors.h"
 #include "services/device/usb/usb_device.h"
 
@@ -26,6 +25,9 @@ namespace device {
 
 using mojom::UsbControlTransferParamsPtr;
 using mojom::UsbControlTransferRecipient;
+using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 namespace usb {
 
@@ -58,32 +60,28 @@ void OnTransferOut(mojom::UsbDevice::GenericTransferOutCallback callback,
 void OnIsochronousTransferIn(
     mojom::UsbDevice::IsochronousTransferInCallback callback,
     scoped_refptr<base::RefCountedBytes> buffer,
-    const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
+    std::vector<UsbIsochronousPacketPtr> packets) {
   std::vector<uint8_t> data;
   if (buffer) {
     // TODO(rockot/reillyg): Take advantage of the ability to access the
     // std::vector<uint8_t> within a base::RefCountedBytes to move instead of
     // copy.
-    uint32_t buffer_size =
-        std::accumulate(packets.begin(), packets.end(), 0u,
-                        [](const uint32_t& a,
-                           const UsbDeviceHandle::IsochronousPacket& packet) {
-                          return a + packet.length;
-                        });
+    uint32_t buffer_size = std::accumulate(
+        packets.begin(), packets.end(), 0u,
+        [](const uint32_t& a, const UsbIsochronousPacketPtr& packet) {
+          return a + packet->length;
+        });
     data.resize(buffer_size);
     std::copy(buffer->front(), buffer->front() + buffer_size, data.begin());
   }
-  std::move(callback).Run(
-      data,
-      mojo::ConvertTo<std::vector<mojom::UsbIsochronousPacketPtr>>(packets));
+  std::move(callback).Run(data, std::move(packets));
 }
 
 void OnIsochronousTransferOut(
     mojom::UsbDevice::IsochronousTransferOutCallback callback,
     scoped_refptr<base::RefCountedBytes> buffer,
-    const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-  std::move(callback).Run(
-      mojo::ConvertTo<std::vector<mojom::UsbIsochronousPacketPtr>>(packets));
+    std::vector<UsbIsochronousPacketPtr> packets) {
+  std::move(callback).Run(std::move(packets));
 }
 
 }  // namespace
@@ -103,10 +101,7 @@ DeviceImpl::~DeviceImpl() {
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
                        mojom::UsbDeviceClientPtr client)
-    : device_(std::move(device)),
-      observer_(this),
-      client_(std::move(client)),
-      weak_factory_(this) {
+    : device_(std::move(device)), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 
@@ -135,21 +130,21 @@ bool DeviceImpl::HasControlTransferPermission(
     return true;
   }
 
-  const UsbConfigDescriptor* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
   if (!config)
     return false;
 
-  const UsbInterfaceDescriptor* interface = nullptr;
+  const mojom::UsbInterfaceInfo* interface = nullptr;
   if (recipient == UsbControlTransferRecipient::ENDPOINT) {
     interface = device_handle_->FindInterfaceByEndpoint(index & 0xff);
   } else {
     auto interface_it =
         std::find_if(config->interfaces.begin(), config->interfaces.end(),
-                     [index](const UsbInterfaceDescriptor& this_iface) {
-                       return this_iface.interface_number == (index & 0xff);
+                     [index](const mojom::UsbInterfaceInfoPtr& this_iface) {
+                       return this_iface->interface_number == (index & 0xff);
                      });
     if (interface_it != config->interfaces.end())
-      interface = &*interface_it;
+      interface = interface_it->get();
   }
 
   return interface != nullptr;
@@ -223,17 +218,17 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  const UsbConfigDescriptor* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
   if (!config) {
     std::move(callback).Run(false);
     return;
   }
 
-  auto interface_it =
-      std::find_if(config->interfaces.begin(), config->interfaces.end(),
-                   [interface_number](const UsbInterfaceDescriptor& interface) {
-                     return interface.interface_number == interface_number;
-                   });
+  auto interface_it = std::find_if(
+      config->interfaces.begin(), config->interfaces.end(),
+      [interface_number](const mojom::UsbInterfaceInfoPtr& interface) {
+        return interface->interface_number == interface_number;
+      });
   if (interface_it == config->interfaces.end()) {
     std::move(callback).Run(false);
     return;

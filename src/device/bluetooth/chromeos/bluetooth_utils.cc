@@ -8,10 +8,12 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "device/base/features.h"
 
@@ -26,6 +28,9 @@ const char kHIDServiceUUID[] = "1812";
 const char kSecurityKeyServiceUUID[] = "FFFD";
 
 const size_t kLongTermKeyHexStringLength = 32;
+
+constexpr base::TimeDelta kMaxDeviceSelectionDuration =
+    base::TimeDelta::FromSeconds(30);
 
 // Get limited number of devices from |devices| and
 // prioritize paired/connecting devices over other devices.
@@ -70,6 +75,14 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
       continue;
     }
 
+    // Always filter out laptops, etc. There is no intended use case or
+    // Bluetooth profile in this context.
+    if (base::FeatureList::IsEnabled(
+            chromeos::features::kBluetoothAggressiveAppearanceFilter) &&
+        device->GetDeviceType() == BluetoothDeviceType::COMPUTER) {
+      continue;
+    }
+
     switch (device->GetType()) {
       // Device with invalid bluetooth transport is filtered out.
       case BLUETOOTH_TRANSPORT_INVALID:
@@ -77,24 +90,47 @@ BluetoothAdapter::DeviceList FilterUnknownDevices(
       // For LE devices, check the service UUID to determine if it supports HID
       // or second factor authenticator (security key).
       case BLUETOOTH_TRANSPORT_LE:
-        if (base::ContainsKey(device->GetUUIDs(),
-                              device::BluetoothUUID(kHIDServiceUUID)) ||
-            base::ContainsKey(device->GetUUIDs(),
-                              device::BluetoothUUID(kSecurityKeyServiceUUID))) {
+        if (base::Contains(device->GetUUIDs(),
+                           device::BluetoothUUID(kHIDServiceUUID)) ||
+            base::Contains(device->GetUUIDs(),
+                           device::BluetoothUUID(kSecurityKeyServiceUUID))) {
           result.push_back(device);
         }
         break;
-      // For classic and dual mode devices, only filter out if the name is empty
-      // because the device could have an unknown or even known type and still
-      // also provide audio/HID functionality.
+      // For classic mode devices, only filter out if the name is empty because
+      // the device could have an unknown or even known type and still also
+      // provide audio/HID functionality.
       case BLUETOOTH_TRANSPORT_CLASSIC:
-      case BLUETOOTH_TRANSPORT_DUAL:
         if (device->GetName())
           result.push_back(device);
+        break;
+      // For dual mode devices, a device::BluetoothDevice object without a name
+      // and type/appearance most likely signals that it is truly only a LE
+      // advertisement for a peripheral which is active, but not pairable. Many
+      // popular headphones behave in this exact way. Filter them out until they
+      // provide a type/appearance; this means they've become pairable. See
+      // https://crbug.com/1656971 for more.
+      case BLUETOOTH_TRANSPORT_DUAL:
+        if (device->GetName()) {
+          if (base::FeatureList::IsEnabled(
+                  chromeos::features::kBluetoothAggressiveAppearanceFilter) &&
+              device->GetDeviceType() == BluetoothDeviceType::UNKNOWN) {
+            continue;
+          }
+
+          result.push_back(device);
+        }
         break;
     }
   }
   return result;
+}
+
+void RecordDeviceSelectionDuration(const std::string& histogram_name,
+                                   base::TimeDelta duration) {
+  base::UmaHistogramCustomTimes(
+      histogram_name, duration, base::TimeDelta::FromMilliseconds(1) /* min */,
+      kMaxDeviceSelectionDuration /* max */, 50 /* buckets */);
 }
 
 }  // namespace
@@ -132,6 +168,53 @@ std::vector<std::vector<uint8_t>> GetBlockedLongTermKeys() {
   }
 
   return long_term_keys;
+}
+
+void RecordDeviceSelectionDuration(base::TimeDelta duration,
+                                   BluetoothUiSurface surface,
+                                   bool was_paired,
+                                   BluetoothTransport transport) {
+  // Throw out longtail results of the user taking longer than
+  // |kMaxDeviceSelectionDuration|. Assume that these thrown out results reflect
+  // the user not being actively engaged with device connection: leaving the
+  // page open for a long time, walking away from computer, etc.
+  if (duration > kMaxDeviceSelectionDuration)
+    return;
+
+  std::string base_histogram_name =
+      "Bluetooth.ChromeOS.DeviceSelectionDuration";
+  RecordDeviceSelectionDuration(base_histogram_name, duration);
+
+  std::string surface_name =
+      (surface == BluetoothUiSurface::kSettings ? "Settings" : "SystemTray");
+  std::string surface_histogram_name = base_histogram_name + "." + surface_name;
+  RecordDeviceSelectionDuration(surface_histogram_name, duration);
+
+  std::string paired_name = (was_paired ? "Paired" : "NotPaired");
+  std::string paired_histogram_name =
+      surface_histogram_name + "." + paired_name;
+  RecordDeviceSelectionDuration(paired_histogram_name, duration);
+
+  if (!was_paired) {
+    std::string transport_name;
+    switch (transport) {
+      case BLUETOOTH_TRANSPORT_CLASSIC:
+        transport_name = "Classic";
+        break;
+      case BLUETOOTH_TRANSPORT_LE:
+        transport_name = "BLE";
+        break;
+      case BLUETOOTH_TRANSPORT_DUAL:
+        transport_name = "Dual";
+        break;
+      default:
+        return;
+    }
+
+    std::string transport_histogram_name =
+        paired_histogram_name + "." + transport_name;
+    RecordDeviceSelectionDuration(transport_histogram_name, duration);
+  }
 }
 
 }  // namespace device

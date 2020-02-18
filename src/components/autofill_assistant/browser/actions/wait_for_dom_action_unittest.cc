@@ -8,15 +8,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
-#include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 namespace {
 
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Invoke;
@@ -77,8 +78,8 @@ class WaitForDomActionTest : public testing::Test {
   void Run() {
     ActionProto action_proto;
     *action_proto.mutable_wait_for_dom() = proto_;
-    WaitForDomAction action(action_proto);
-    action.ProcessAction(&mock_action_delegate_, callback_.Get());
+    WaitForDomAction action(&mock_action_delegate_, action_proto);
+    action.ProcessAction(callback_.Get());
   }
 
   MockActionDelegate mock_action_delegate_;

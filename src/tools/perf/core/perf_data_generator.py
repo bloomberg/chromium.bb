@@ -107,6 +107,30 @@ FYI_BUILDERS = {
       'device_os_flavor': 'google',
     },
   },
+  'android-pixel2-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'extra_args': [
+          # TODO(crbug.com/612455): Enable ref builds once can pass both
+          # --browser=exact (used by this bot to have it run Monochrome6432)
+          # and --browser=reference together.
+          #'--run-ref-build',
+          '--test-shard-map-filename=android-pixel2-perf-fyi_map.json',
+        ],
+        'num_shards': 4
+      }
+    ],
+    'platform': 'android-chrome',
+    'browser': 'bin/monochrome_64_32_bundle',
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'O',
+      'device_os_flavor': 'google',
+    },
+  },
   'linux-perf-fyi': {
     'tests': [
       {
@@ -129,11 +153,62 @@ FYI_BUILDERS = {
       'pool': 'chrome.tests.perf-fyi',
     },
   },
+  'win-10_laptop_low_end-perf_HP-Candidate': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 1,
+        'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename='
+            'win-10_laptop_low_end-perf_HP-Candidate_map.json',
+        ],
+      },
+    ],
+    'platform': 'win',
+    'target_bits': 64,
+    'dimension': {
+      'pool': 'chrome.tests.perf-fyi',
+      'id': 'build370-a7',
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'os': 'Windows-10',
+    },
+  },
+  'chromeos-kevin-perf-fyi': {
+    'tests': [
+      {
+        'isolate': 'performance_test_suite',
+        'num_shards': 4,
+        'extra_args': [
+            '--test-shard-map-filename=chromeos-kevin-perf-fyi_map.json',
+            # The magic hostname that resolves to a CrOS device in the test lab
+            '--remote=variable_chromeos_device_hostname',
+        ],
+      },
+    ],
+    'platform': 'chromeos',
+    'target_bits': 32,
+    'dimension': {
+      'pool': 'luci.chrome.cros-dut',
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'os': 'ChromeOS',
+      'device_type': 'kevin',
+    },
+  },
 }
 
 # These configurations are taken from chromium_perf.py in
 # build/scripts/slave/recipe_modules/chromium_tests and must be kept in sync
 # to generate the correct json for each tester
+#
+# The dimensions in pinpoint configs, excluding the dimension "pool",
+# must be kept in sync with the dimensions here.
+# This is to make sure the same type of machines are used between waterfall
+# tests and pinpoint jobs
 #
 # On desktop builders, chromedriver is added as an additional compile target.
 # The perf waterfall builds this target for each commit, and the resulting
@@ -148,13 +223,28 @@ BUILDERS = {
     ],
     'tests': [
       {
+        'name': 'resource_sizes_chrome_apk',
+        'isolate': 'resource_sizes_chrome_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
         'name': 'resource_sizes_chrome_public_apk',
         'isolate': 'resource_sizes_chrome_public_apk',
         'type': TEST_TYPES.GENERIC,
       },
       {
+        'name': 'resource_sizes_monochrome_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
         'name': 'resource_sizes_monochrome_public_minimal_apks',
         'isolate': 'resource_sizes_monochrome_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_minimal_apks',
         'type': TEST_TYPES.GENERIC,
       },
       {
@@ -165,6 +255,11 @@ BUILDERS = {
       {
         'name': 'resource_sizes_system_webview_apk',
         'isolate': 'resource_sizes_system_webview_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_google_apk',
+        'isolate': 'resource_sizes_system_webview_google_apk',
         'type': TEST_TYPES.GENERIC,
       },
     ],
@@ -185,8 +280,18 @@ BUILDERS = {
         'type': TEST_TYPES.GENERIC,
       },
       {
+        'name': 'resource_sizes_monochrome_minimal_apks',
+        'isolate': 'resource_sizes_monochrome_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
         'name': 'resource_sizes_monochrome_public_minimal_apks',
         'isolate': 'resource_sizes_monochrome_public_minimal_apks',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_chrome_modern_minimal_apks',
+        'isolate': 'resource_sizes_chrome_modern_minimal_apks',
         'type': TEST_TYPES.GENERIC,
       },
       {
@@ -197,6 +302,11 @@ BUILDERS = {
       {
         'name': 'resource_sizes_system_webview_apk',
         'isolate': 'resource_sizes_system_webview_apk',
+        'type': TEST_TYPES.GENERIC,
+      },
+      {
+        'name': 'resource_sizes_system_webview_google_apk',
+        'isolate': 'resource_sizes_system_webview_google_apk',
         'type': TEST_TYPES.GENERIC,
       },
     ],
@@ -247,7 +357,7 @@ BUILDERS = {
         'extra_args': [
             '--test-shard-map-filename=android-go_webview-perf_map.json',
         ],
-        'num_shards': 25
+        'num_shards': 13
       }
     ],
     'platform': 'android-webview-google',
@@ -413,17 +523,13 @@ BUILDERS = {
       {
         'isolate': 'performance_test_suite',
         'extra_args': [
-          # TODO(crbug.com/612455): Enable ref builds once can pass both
-          # --browser=exact (used by this bot to have it run Monochrome6432)
-          # and --browser=reference together.
-          #'--run-ref-build',
+          '--run-ref-build',
           '--test-shard-map-filename=android-pixel2-perf_map.json',
         ],
         'num_shards': 35
       }
     ],
     'platform': 'android-chrome',
-    'browser': 'bin/monochrome_64_32_bundle',
     'dimension': {
       'pool': 'chrome.tests.perf',
       'os': 'Android',
@@ -476,8 +582,12 @@ BUILDERS = {
     'target_bits': 64,
     'dimension': {
       'pool': 'chrome.tests.perf',
+      # TODO(crbug.com/966238): Add more specific windows version.
       'os': 'Windows-10',
-      'gpu': '8086:5912'
+      # TODO(crbug.com/971204): Explicitly set the gpu to None to make
+      # chromium_swarming recipe_module ignore this dimension.
+      'gpu': None,
+      'synthetic_product_name': 'OptiPlex 7050 (Dell Inc.)'
     },
   },
   'Win 7 Perf': {
@@ -763,16 +873,20 @@ GTEST_BENCHMARKS = {
 
 RESOURCE_SIZES_METADATA = BenchmarkMetadata(
     'agrieve@chromium.org, jbudorick@chromium.org, perezju@chromium.org',
-    'BUILD',
+    'Build',
     ('https://chromium.googlesource.com/chromium/src/+/HEAD/'
      'tools/binary_size/README.md#resource_sizes_py'))
 
 
 OTHER_BENCHMARKS = {
+    'resource_sizes_chrome_apk': RESOURCE_SIZES_METADATA,
     'resource_sizes_chrome_public_apk': RESOURCE_SIZES_METADATA,
+    'resource_sizes_chrome_modern_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_chrome_modern_public_minimal_apks': RESOURCE_SIZES_METADATA,
+    'resource_sizes_monochrome_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_monochrome_public_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_system_webview_apk': RESOURCE_SIZES_METADATA,
+    'resource_sizes_system_webview_google_apk': RESOURCE_SIZES_METADATA,
 }
 
 
@@ -1001,6 +1115,8 @@ def generate_telemetry_args(tester_config):
     browser_name = 'android-chromium'
   elif tester_config['platform'].startswith('android-'):
     browser_name = tester_config['platform']
+  elif tester_config['platform'] == 'chromeos':
+    browser_name = 'cros-chrome'
   elif (tester_config['platform'] == 'win'
     and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'
@@ -1088,7 +1204,11 @@ def generate_performance_test(tester_config, test):
     # to ~2 hrs.
     'hard_timeout': 10 * 60 * 60, # 10 hours timeout for full suite
     'ignore_task_failure': False,
-    'io_timeout': 30 * 60, # 30 minutes
+    # 4 hour timeout. Note that this is effectively the timeout for a
+    # benchmarking subprocess to run since we intentionally do not stream
+    # subprocess output to the task stdout.
+    # TODO(crbug.com/865538): Reduce this once we can reduce hard_timeout.
+    'io_timeout': 4 * 60 * 60,
     'dimension_sets': [
       tester_config['dimension']
     ],

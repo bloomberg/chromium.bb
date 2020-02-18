@@ -50,6 +50,8 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   }
 
   properties.bounds = params.bounds;
+  properties.activatable =
+      params.activatable == Widget::InitParams::ACTIVATABLE_YES;
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
@@ -306,13 +308,11 @@ void DesktopWindowTreeHostPlatform::SetShape(
 }
 
 void DesktopWindowTreeHostPlatform::Activate() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->Activate();
 }
 
 void DesktopWindowTreeHostPlatform::Deactivate() {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
+  platform_window()->Deactivate();
 }
 
 bool DesktopWindowTreeHostPlatform::IsActive() const {
@@ -333,26 +333,26 @@ void DesktopWindowTreeHostPlatform::Restore() {
 
 bool DesktopWindowTreeHostPlatform::IsMaximized() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+         ui::PlatformWindowState::kMaximized;
 }
 
 bool DesktopWindowTreeHostPlatform::IsMinimized() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+         ui::PlatformWindowState::kMinimized;
 }
 
 bool DesktopWindowTreeHostPlatform::HasCapture() const {
   return platform_window()->HasCapture();
 }
 
-void DesktopWindowTreeHostPlatform::SetAlwaysOnTop(bool always_on_top) {
+void DesktopWindowTreeHostPlatform::SetZOrderLevel(ui::ZOrderLevel order) {
   // TODO: needs PlatformWindow support.
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-bool DesktopWindowTreeHostPlatform::IsAlwaysOnTop() const {
+ui::ZOrderLevel DesktopWindowTreeHostPlatform::GetZOrderLevel() const {
   // TODO: needs PlatformWindow support.
-  return false;
+  return ui::ZOrderLevel::kNormal;
 }
 
 void DesktopWindowTreeHostPlatform::SetVisibleOnAllWorkspaces(
@@ -419,7 +419,7 @@ void DesktopWindowTreeHostPlatform::SetFullscreen(bool fullscreen) {
 
 bool DesktopWindowTreeHostPlatform::IsFullscreen() const {
   return platform_window()->GetPlatformWindowState() ==
-         ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+         ui::PlatformWindowState::kFullScreen;
 }
 
 void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
@@ -519,8 +519,7 @@ void DesktopWindowTreeHostPlatform::OnWindowStateChanged(
   // Propagate minimization/restore to compositor to avoid drawing 'blank'
   // frames that could be treated as previews, which show content even if a
   // window is minimized.
-  bool visible =
-      new_state != ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+  bool visible = new_state != ui::PlatformWindowState::kMinimized;
   if (visible != compositor()->IsVisible()) {
     compositor()->SetVisible(visible);
     native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);

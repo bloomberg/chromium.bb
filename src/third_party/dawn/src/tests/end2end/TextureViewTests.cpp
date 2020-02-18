@@ -23,7 +23,7 @@
 #include <array>
 
 constexpr static unsigned int kRTSize = 64;
-constexpr dawn::TextureFormat kDefaultFormat = dawn::TextureFormat::R8G8B8A8Unorm;
+constexpr dawn::TextureFormat kDefaultFormat = dawn::TextureFormat::RGBA8Unorm;
 constexpr uint32_t kBytesPerTexel = 4;
 
 namespace {
@@ -47,7 +47,7 @@ namespace {
     }
 
     dawn::ShaderModule CreateDefaultVertexShaderModule(dawn::Device device) {
-        return utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
+        return utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
             #version 450
             layout (location = 0) out vec2 o_texCoord;
             void main() {
@@ -101,7 +101,7 @@ protected:
         samplerDescriptor.addressModeW = kAddressMode;
         samplerDescriptor.lodMinClamp = kLodMin;
         samplerDescriptor.lodMaxClamp = kLodMax;
-        samplerDescriptor.compareFunction = dawn::CompareFunction::Never;
+        samplerDescriptor.compare = dawn::CompareFunction::Never;
         mSampler = device.CreateSampler(&samplerDescriptor);
 
         mPipelineLayout = utils::MakeBasicPipelineLayout(device, &mBindGroupLayout);
@@ -115,7 +115,7 @@ protected:
         const uint32_t textureWidthLevel0 = 1 << mipLevelCount;
         const uint32_t textureHeightLevel0 = 1 << mipLevelCount;
         constexpr dawn::TextureUsageBit kUsage =
-            dawn::TextureUsageBit::TransferDst | dawn::TextureUsageBit::Sampled;
+            dawn::TextureUsageBit::CopyDst | dawn::TextureUsageBit::Sampled;
         mTexture = Create2DTexture(
             device, textureWidthLevel0, textureHeightLevel0, arrayLayerCount, mipLevelCount, kUsage);
 
@@ -143,9 +143,9 @@ protected:
 
                 constexpr uint32_t kPaddedTexWidth = kPixelsPerRowPitch;
                 std::vector<RGBA8> data(kPaddedTexWidth * texHeight, RGBA8(0, 0, 0, pixelValue));
-                dawn::Buffer stagingBuffer = utils::CreateBufferFromData(
-                    device, data.data(), data.size() * sizeof(RGBA8),
-                    dawn::BufferUsageBit::TransferSrc);
+                dawn::Buffer stagingBuffer =
+                    utils::CreateBufferFromData(device, data.data(), data.size() * sizeof(RGBA8),
+                                                dawn::BufferUsageBit::CopySrc);
                 dawn::BufferCopyView bufferCopyView =
                     utils::CreateBufferCopyView(stagingBuffer, 0, kTextureRowPitchAlignment, 0);
                 dawn::TextureCopyView textureCopyView =
@@ -165,7 +165,7 @@ protected:
         });
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fragmentShader);
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fragmentShader);
 
         utils::ComboRenderPipelineDescriptor textureDescriptor(device);
         textureDescriptor.cVertexStage.module = mVSModule;
@@ -474,8 +474,8 @@ class TextureViewRenderingTest : public DawnTest {
 
         const uint32_t textureWidthLevel0 = 1 << levelCount;
         const uint32_t textureHeightLevel0 = 1 << levelCount;
-        constexpr dawn::TextureUsageBit kUsage = dawn::TextureUsageBit::OutputAttachment |
-                                                 dawn::TextureUsageBit::TransferSrc;
+        constexpr dawn::TextureUsageBit kUsage =
+            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
         dawn::Texture texture = Create2DTexture(
             device, textureWidthLevel0, textureHeightLevel0, layerCount, levelCount, kUsage);
 
@@ -503,7 +503,7 @@ class TextureViewRenderingTest : public DawnTest {
             }
         )";
         dawn::ShaderModule oneColorFsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, oneColorFragmentShader);
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, oneColorFragmentShader);
 
         utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
         pipelineDescriptor.cVertexStage.module = vsModule;

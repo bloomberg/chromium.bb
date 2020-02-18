@@ -4,53 +4,34 @@
 
 #include "ios/web/js_messaging/web_frames_manager_impl.h"
 
+#include "base/base64.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ios/web/public/js_messaging/web_frame.h"
+#include "crypto/symmetric_key.h"
+#import "ios/web/js_messaging/crw_wk_script_message_router.h"
+#include "ios/web/js_messaging/web_frame_impl.h"
 #import "ios/web/public/web_state/web_state.h"
+#import "ios/web/web_view/wk_security_origin_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 namespace {
-// Matcher for finding a WebFrame object with the given |frame_id|.
-struct FrameIdMatcher {
-  explicit FrameIdMatcher(const std::string& frame_id) : frame_id_(frame_id) {}
-
-  // Returns true if the receiver was initialized with the same frame id as
-  // |web_frame|.
-  bool operator()(web::WebFrame* web_frame) {
-    return web_frame->GetFrameId() == frame_id_;
-  }
-
- private:
-  // The frame id to match against.
-  const std::string frame_id_;
-};
+// Message command sent when a frame becomes available.
+NSString* const kFrameBecameAvailableMessageName = @"FrameBecameAvailable";
+// Message command sent when a frame is unloading.
+NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 }  // namespace
 
 namespace web {
 
-// static
-void WebFramesManagerImpl::CreateForWebState(WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state))
-    web_state->SetUserData(
-        UserDataKey(), base::WrapUnique(new WebFramesManagerImpl(web_state)));
-}
-
-// static
-WebFramesManagerImpl* WebFramesManagerImpl::FromWebState(WebState* web_state) {
-  return static_cast<WebFramesManagerImpl*>(
-      WebFramesManager::FromWebState(web_state));
-}
+WebFramesManagerImpl::WebFramesManagerImpl(WebFramesManagerDelegate& delegate)
+    : delegate_(delegate), weak_factory_(this) {}
 
 WebFramesManagerImpl::~WebFramesManagerImpl() {
   RemoveAllWebFrames();
 }
-
-WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
-    : web_state_(web_state) {}
 
 void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
   DCHECK(frame);
@@ -111,10 +92,112 @@ WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
 }
 
 void WebFramesManagerImpl::RegisterExistingFrames() {
-  web_state_->ExecuteJavaScript(
+  delegate_.GetWebState()->ExecuteJavaScript(
       base::UTF8ToUTF16("__gCrWeb.message.getExistingFrames();"));
 }
 
-WEB_STATE_USER_DATA_KEY_IMPL(WebFramesManager)
+void WebFramesManagerImpl::OnWebViewUpdated(
+    WKWebView* old_web_view,
+    WKWebView* new_web_view,
+    CRWWKScriptMessageRouter* message_router) {
+  DCHECK(old_web_view != new_web_view);
+  if (old_web_view) {
+    // TODO(crbug.com/956516): ScriptMessageHandlers should all be removed
+    // manually using |removeScriptMessageHandlerForName|, however this is not
+    // possible because of the cases where the webviewconfiguration is purged,
+    // in these cases the message router is deleted and it will not have
+    // message handlers for the web view.
+    [message_router removeAllScriptMessageHandlersForWebView:old_web_view];
+  }
+
+  // |this| is captured inside callbacks for JS messages, so the owner of
+  // WebFramesManagerImpl must call OnWebViewUpdated(last_web_view, nil) when
+  // being destroyed, so that WebFramesManagerImpl can unregister callbacks in
+  // time. This guarantees that when callbacks are invoked, |this| is always
+  // valid.
+  if (new_web_view) {
+    // TODO(crbug.com/991950): Clean up lifecycles of WebStateImpl and
+    // CRWWebController, ensure that callbacks will always be unregistered
+    // successfully during destruction. Remove WeakPtr here and use plain "this"
+    // instead.
+    base::WeakPtr<WebFramesManagerImpl> weak_ptr = weak_factory_.GetWeakPtr();
+
+    [message_router
+        setScriptMessageHandler:^(WKScriptMessage* message) {
+          if (weak_ptr) {
+            weak_ptr->OnFrameBecameAvailable(message);
+          }
+        }
+                           name:kFrameBecameAvailableMessageName
+                        webView:new_web_view];
+    [message_router
+        setScriptMessageHandler:^(WKScriptMessage* message) {
+          DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
+          if (weak_ptr) {
+            weak_ptr->OnFrameBecameUnavailable(message);
+          }
+        }
+                           name:kFrameBecameUnavailableMessageName
+                        webView:new_web_view];
+  }
+}
+
+void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
+  DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
+  // Validate all expected message components because any frame could falsify
+  // this message.
+  if (![message.body isKindOfClass:[NSDictionary class]] ||
+      ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]]) {
+    return;
+  }
+
+  std::string frame_id = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
+  if (!GetFrameWithId(frame_id)) {
+    GURL message_frame_origin =
+        web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
+
+    std::unique_ptr<crypto::SymmetricKey> frame_key;
+    if ([message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] &&
+        [message.body[@"crwFrameKey"] length] > 0) {
+      std::string decoded_frame_key_string;
+      std::string encoded_frame_key_string =
+          base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
+      base::Base64Decode(encoded_frame_key_string, &decoded_frame_key_string);
+      frame_key = crypto::SymmetricKey::Import(
+          crypto::SymmetricKey::Algorithm::AES, decoded_frame_key_string);
+    }
+
+    auto new_frame = std::make_unique<web::WebFrameImpl>(
+        frame_id, message.frameInfo.mainFrame, message_frame_origin,
+        delegate_.GetWebState());
+    if (frame_key) {
+      new_frame->SetEncryptionKey(std::move(frame_key));
+    }
+
+    NSNumber* last_sent_message_id =
+        message.body[@"crwFrameLastReceivedMessageId"];
+    if ([last_sent_message_id isKindOfClass:[NSNumber class]]) {
+      int next_message_id = std::max(0, last_sent_message_id.intValue + 1);
+      new_frame->SetNextMessageId(next_message_id);
+    }
+
+    AddFrame(std::move(new_frame));
+    delegate_.OnWebFrameAvailable(GetFrameWithId(frame_id));
+  }
+}
+
+void WebFramesManagerImpl::OnFrameBecameUnavailable(WKScriptMessage* message) {
+  DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
+  if (![message.body isKindOfClass:[NSString class]]) {
+    // WebController is being destroyed or message is invalid.
+    return;
+  }
+  std::string frame_id = base::SysNSStringToUTF8(message.body);
+  WebFrame* frame = GetFrameWithId(frame_id);
+  if (frame) {
+    delegate_.OnWebFrameUnavailable(frame);
+    RemoveFrameWithId(frame_id);
+  }
+}
 
 }  // namespace

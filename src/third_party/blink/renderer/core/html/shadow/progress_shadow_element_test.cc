@@ -34,7 +34,7 @@ TEST_F(ProgressShadowElementTest, LayoutObjectIsNeeded) {
       ToHTMLProgressElement(GetDocument().getElementById("prog"));
   ASSERT_TRUE(progress);
 
-  Element* shadow_element = ToElement(progress->GetShadowRoot()->firstChild());
+  auto* shadow_element = To<Element>(progress->GetShadowRoot()->firstChild());
   ASSERT_TRUE(shadow_element);
 
   GetDocument().View()->UpdateAllLifecyclePhases(

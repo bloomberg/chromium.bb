@@ -6,17 +6,21 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/icu_util.h"
+#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "content/browser/appcache/appcache_fuzzer.pb.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
@@ -44,7 +48,8 @@ struct Env {
 
   void InitializeAppCacheService(
       network::TestURLLoaderFactory* mock_url_loader_factory) {
-    appcache_service = new ChromeAppCacheService(/*proxy=*/nullptr);
+    appcache_service = base::MakeRefCounted<ChromeAppCacheService>(
+        /*proxy=*/nullptr, /*partition=*/nullptr);
 
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter =
         base::MakeRefCounted<URLLoaderFactoryGetter>();
@@ -54,9 +59,11 @@ struct Env {
         loader_factory_getter.get());
 
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ChromeAppCacheService::InitializeOnIOThread,
+        FROM_HERE,
+        {NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID()},
+        base::BindOnce(&ChromeAppCacheService::InitializeOnLoaderThread,
                        appcache_service, base::FilePath(),
+                       /*browser_context=*/nullptr,
                        /*resource_context=*/nullptr,
                        /*request_context_getter=*/nullptr,
                        /*special_storage_policy=*/nullptr));
@@ -123,7 +130,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   }
   HeadersToRaw(&headers);
 
-  response.headers = new net::HttpResponseHeaders(headers);
+  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
 
   // To simplify the fuzzer, we respond to all requests with a manifest.
   // When we're performing a manifest fetch, this data will affect the
@@ -148,11 +155,11 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
   auto dispatch_context =
       std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
-  blink::mojom::AppCacheBackendPtr host;
-  SingletonEnv().appcache_service->CreateBackend(/*process_id=*/1,
-                                                 mojo::MakeRequest(&host));
+  mojo::Remote<blink::mojom::AppCacheBackend> host;
+  SingletonEnv().appcache_service->CreateBackend(
+      /*process_id=*/1, host.BindNewPipeAndPassReceiver());
 
-  std::map<int, blink::mojom::AppCacheHostPtr> registered_hosts;
+  std::map<int, mojo::Remote<blink::mojom::AppCacheHost>> registered_hosts;
   std::map<int, base::UnguessableToken> registered_host_ids_;
   for (const fuzzing::proto::Command& command : session.commands()) {
     switch (command.command_case()) {
@@ -161,10 +168,11 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
         auto& host_id_token = registered_host_ids_[host_id];
         if (host_id_token.is_empty())
           host_id_token = base::UnguessableToken::Create();
-        blink::mojom::AppCacheFrontendPtr frontend;
-        mojo::MakeRequest(&frontend);
-        host->RegisterHost(mojo::MakeRequest(&registered_hosts[host_id]),
-                           std::move(frontend), host_id_token);
+        mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend;
+        ignore_result(frontend.InitWithNewPipeAndPassReceiver());
+        host->RegisterHost(
+            registered_hosts[host_id].BindNewPipeAndPassReceiver(),
+            std::move(frontend), host_id_token);
         break;
       }
       case fuzzing::proto::Command::kUnregisterHost: {

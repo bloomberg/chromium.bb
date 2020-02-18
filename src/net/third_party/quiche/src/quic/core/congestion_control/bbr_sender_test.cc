@@ -374,7 +374,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes) {
 // Test a simple long data transfer with 2 rtts of aggregation.
 TEST_F(BbrSenderTest, SimpleTransferAckDecimation) {
   // Decrease the CWND gain so extra CWND is required with stretch acks.
-  FLAGS_quic_bbr_cwnd_gain = 1.0;
+  SetQuicFlag(FLAGS_quic_bbr_cwnd_gain, 1.0);
   sender_ = new BbrSender(
       bbr_sender_.connection()->clock()->Now(), rtt_stats_,
       QuicSentPacketManagerPeer::GetUnackedPacketMap(
@@ -417,7 +417,8 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
 
   // Transfer 12MB.
   DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
-  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  EXPECT_TRUE(sender_->ExportDebugState().mode == BbrSender::PROBE_BW ||
+              sender_->ExportDebugState().mode == BbrSender::PROBE_RTT);
   // It's possible to read a bandwidth as much as 50% too high with aggregation.
   EXPECT_LE(kTestLinkBandwidth * 0.99f,
             sender_->ExportDebugState().max_bandwidth);
@@ -430,7 +431,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes20RTTWindow) {
   // The margin here is high, because the aggregation greatly increases
   // smoothed rtt.
   EXPECT_GE(kTestRtt * 4, rtt_stats_->smoothed_rtt());
-  EXPECT_APPROX_EQ(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
+  EXPECT_APPROX_EQ(kTestRtt, rtt_stats_->min_rtt(), 0.25f);
 }
 
 // Test a simple long data transfer with 2 rtts of aggregation.
@@ -444,7 +445,8 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
 
   // Transfer 12MB.
   DoSimpleTransfer(12 * 1024 * 1024, QuicTime::Delta::FromSeconds(35));
-  EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
+  EXPECT_TRUE(sender_->ExportDebugState().mode == BbrSender::PROBE_BW ||
+              sender_->ExportDebugState().mode == BbrSender::PROBE_RTT);
   // It's possible to read a bandwidth as much as 50% too high with aggregation.
   EXPECT_LE(kTestLinkBandwidth * 0.99f,
             sender_->ExportDebugState().max_bandwidth);
@@ -457,7 +459,7 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTAggregationBytes40RTTWindow) {
   // The margin here is high, because the aggregation greatly increases
   // smoothed rtt.
   EXPECT_GE(kTestRtt * 4, rtt_stats_->smoothed_rtt());
-  EXPECT_APPROX_EQ(kTestRtt, rtt_stats_->min_rtt(), 0.12f);
+  EXPECT_APPROX_EQ(kTestRtt, rtt_stats_->min_rtt(), 0.25f);
 }
 
 // Test the number of losses incurred by the startup phase in a situation when
@@ -475,7 +477,6 @@ TEST_F(BbrSenderTest, PacketLossOnSmallBufferStartup) {
 // Test the number of losses incurred by the startup phase in a situation when
 // the buffer is less than BDP, with a STARTUP CWND gain of 2.
 TEST_F(BbrSenderTest, PacketLossOnSmallBufferStartupDerivedCWNDGain) {
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBQ2);
@@ -620,7 +621,6 @@ TEST_F(BbrSenderTest, Drain) {
 // TODO(wub): Re-enable this test once default drain_gain changed to 0.75.
 // Verify that the DRAIN phase works correctly.
 TEST_F(BbrSenderTest, DISABLED_ShallowDrain) {
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   // Disable Ack Decimation on the receiver, because it can increase srtt.
   QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);
 
@@ -705,47 +705,6 @@ TEST_F(BbrSenderTest, ProbeRtt) {
       kTestRtt + QuicTime::Delta::FromMilliseconds(200);
   simulator_.RunFor(1.5 * time_to_exit_probe_rtt);
   EXPECT_EQ(BbrSender::PROBE_BW, sender_->ExportDebugState().mode);
-  EXPECT_GE(sender_->ExportDebugState().min_rtt_timestamp, probe_rtt_start);
-}
-
-// Verify that the first sample after PROBE_RTT is not used as the bandwidth,
-// because the round counter doesn't advance during PROBE_RTT.
-TEST_F(BbrSenderTest, AppLimitedRecoveryNoBandwidthDecrease) {
-  SetQuicReloadableFlag(quic_bbr_app_limited_recovery, true);
-  CreateDefaultSetup();
-  DriveOutOfStartup();
-
-  // We have no intention of ever finishing this transfer.
-  bbr_sender_.AddBytesToTransfer(100 * 1024 * 1024);
-
-  // Wait until the connection enters PROBE_RTT.
-  const QuicTime::Delta timeout = QuicTime::Delta::FromSeconds(12);
-  bool simulator_result = simulator_.RunUntilOrTimeout(
-      [this]() {
-        return sender_->ExportDebugState().mode == BbrSender::PROBE_RTT;
-      },
-      timeout);
-  ASSERT_TRUE(simulator_result);
-  ASSERT_EQ(BbrSender::PROBE_RTT, sender_->ExportDebugState().mode);
-
-  const QuicBandwidth beginning_bw = sender_->BandwidthEstimate();
-
-  // Run for most of PROBE_RTT.
-  const QuicTime probe_rtt_start = clock_->Now();
-  const QuicTime::Delta time_to_exit_probe_rtt =
-      kTestRtt + QuicTime::Delta::FromMilliseconds(200);
-  simulator_.RunFor(0.60 * time_to_exit_probe_rtt);
-  EXPECT_EQ(BbrSender::PROBE_RTT, sender_->ExportDebugState().mode);
-  // Lose a packet before exiting PROBE_RTT, which puts us in packet
-  // conservation and then continue there for a while and ensure the bandwidth
-  // estimate doesn't decrease.
-  for (int i = 0; i < 20; ++i) {
-    receiver_.DropNextIncomingPacket();
-    simulator_.RunFor(0.9 * kTestRtt);
-    // Ensure the bandwidth didn't decrease and the samples are app limited.
-    EXPECT_LE(beginning_bw, sender_->BandwidthEstimate());
-    EXPECT_TRUE(sender_->ExportDebugState().last_sample_is_app_limited);
-  }
   EXPECT_GE(sender_->ExportDebugState().min_rtt_timestamp, probe_rtt_start);
 }
 
@@ -1171,7 +1130,6 @@ TEST_F(BbrSenderTest, SimpleTransferDoubleStartupRateReduction) {
 }
 
 TEST_F(BbrSenderTest, DerivedPacingGainStartup) {
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   CreateDefaultSetup();
 
   SetConnectionOption(kBBQ1);
@@ -1199,7 +1157,6 @@ TEST_F(BbrSenderTest, DerivedPacingGainStartup) {
 }
 
 TEST_F(BbrSenderTest, DerivedCWNDGainStartup) {
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   CreateSmallBufferSetup();
 
   SetConnectionOption(kBBQ2);
@@ -1232,7 +1189,6 @@ TEST_F(BbrSenderTest, DerivedCWNDGainStartup) {
 }
 
 TEST_F(BbrSenderTest, AckAggregationInStartup) {
-  SetQuicReloadableFlag(quic_bbr_slower_startup3, true);
   // Disable Ack Decimation on the receiver to avoid loss and make results
   // consistent.
   QuicConnectionPeer::SetAckMode(receiver_.connection(), AckMode::TCP_ACKING);

@@ -27,8 +27,6 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_STATS_USAGE = 183078,
     // Showed whenever there're troubles signing in.
     HELP_CANT_ACCESS_ACCOUNT = 188036,
-    // Showed in case when account was disabled.
-    HELP_ACCOUNT_DISABLED = 188756,
     // Showed as "Learn more" about enterprise enrolled devices.
     HELP_ENTERPRISE = 2535613,
     // Shown at reset screen as "Learn more" about powerwash/rollback options.
@@ -37,6 +35,11 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_DEVICE_ATTRIBUTES = 6218780,
     // Shown as "Learn more" for TPM firmware udpate option in reset screen.
     HELP_TPM_FIRMWARE_UPDATE = 7507584,
+    // Shown as "Learn more" for Wilco notifications related to battery and
+    // charger.
+    HELP_WILCO_BATTERY_CHARGER = 9383188,
+    // Shown as "Learn more" for Wilco notifications related to dock station.
+    HELP_WILCO_DOCK = 9385025,
   };
 
   // The dialog is shown as a child of |parent_window|. If |parent_window| is

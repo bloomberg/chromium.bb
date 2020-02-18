@@ -22,21 +22,17 @@ implementations.
 =cut
 
 use strict;
-use Clone           ();
+use Clone 0.30      ();
 use Scalar::Util    qw{refaddr};
 use Params::Util    qw{_INSTANCE _ARRAY};
-use List::MoreUtils ();
+use List::Util      ();
 use PPI::Util       ();
 use PPI::Node       ();
+use PPI::Singletons '%_PARENT';
 
-use vars qw{$VERSION $errstr %_PARENT};
-BEGIN {
-	$VERSION = '1.215';
-	$errstr  = '';
+our $VERSION = '1.269'; # VERSION
 
-	# Master Child -> Parent index
-	%_PARENT = ();
-}
+our $errstr = "";
 
 use overload 'bool' => \&PPI::Util::TRUE;
 use overload '""'   => 'content';
@@ -67,7 +63,7 @@ Returns true if the Element is significant, or false it not.
 =cut
 
 ### XS -> PPI/XS.xs:_PPI_Element__significant 0.845+
-sub significant { 1 }
+sub significant() { 1 }
 
 =pod
 
@@ -122,14 +118,14 @@ Returns the basic code as a string (excluding here-doc content).
 =cut
 
 ### XS -> PPI/XS.xs:_PPI_Element__content 0.900+
-sub content { '' }
+sub content() { '' }
 
 
 
 
 
 #####################################################################
-# Naigation Methods
+# Navigation Methods
 
 =pod
 
@@ -154,45 +150,6 @@ Answers whether a C<PPI::Element> is contained within another one.
 
 C<PPI::Element>s are considered to be descendants of themselves.
 
-=begin testing descendant_of 9
-
-my $Document = PPI::Document->new( \'( [ thingy ] ); $blarg = 1' );
-isa_ok( $Document, 'PPI::Document' );
-ok(
-	$Document->descendant_of($Document),
-	'Document is a descendant of itself.',
-);
-
-my $words = $Document->find('Token::Word');
-is(scalar @{$words}, 1, 'Document contains 1 Word.');
-my $word = $words->[0];
-ok(
-	$word->descendant_of($word),
-	'Word is a descendant of itself.',
-);
-ok(
-	$word->descendant_of($Document),
-	'Word is a descendant of the Document.',
-);
-ok(
-	! $Document->descendant_of($word),
-	'Document is not a descendant of the Word.',
-);
-
-my $symbols = $Document->find('Token::Symbol');
-is(scalar @{$symbols}, 1, 'Document contains 1 Symbol.');
-my $symbol = $symbols->[0];
-ok(
-	! $word->descendant_of($symbol),
-	'Word is not a descendant the Symbol.',
-);
-ok(
-	! $symbol->descendant_of($word),
-	'Symbol is not a descendant the Word.',
-);
-
-=end testing
-
 =cut
 
 sub descendant_of {
@@ -212,45 +169,6 @@ Answers whether a C<PPI::Element> is contains another one.
 
 C<PPI::Element>s are considered to be ancestors of themselves.
 
-=begin testing ancestor_of 9
-
-my $Document = PPI::Document->new( \'( [ thingy ] ); $blarg = 1' );
-isa_ok( $Document, 'PPI::Document' );
-ok(
-	$Document->ancestor_of($Document),
-	'Document is an ancestor of itself.',
-);
-
-my $words = $Document->find('Token::Word');
-is(scalar @{$words}, 1, 'Document contains 1 Word.');
-my $word = $words->[0];
-ok(
-	$word->ancestor_of($word),
-	'Word is an ancestor of itself.',
-);
-ok(
-	! $word->ancestor_of($Document),
-	'Word is not an ancestor of the Document.',
-);
-ok(
-	$Document->ancestor_of($word),
-	'Document is an ancestor of the Word.',
-);
-
-my $symbols = $Document->find('Token::Symbol');
-is(scalar @{$symbols}, 1, 'Document contains 1 Symbol.');
-my $symbol = $symbols->[0];
-ok(
-	! $word->ancestor_of($symbol),
-	'Word is not an ancestor the Symbol.',
-);
-ok(
-	! $symbol->ancestor_of($word),
-	'Symbol is not an ancestor the Word.',
-);
-
-=end testing
-
 =cut
 
 sub ancestor_of {
@@ -267,7 +185,7 @@ sub ancestor_of {
 =head2 statement
 
 For a C<PPI::Element> that is contained (at some depth) within a
-L<PPI::Statment>, the C<statement> method will return the first parent
+L<PPI::Statement>, the C<statement> method will return the first parent
 Statement object lexically 'above' the Element.
 
 Returns a L<PPI::Statement> object, which may be the same Element if the
@@ -341,9 +259,9 @@ sub next_sibling {
 	my $parent   = $_PARENT{refaddr $self} or return '';
 	my $key      = refaddr $self;
 	my $elements = $parent->{children};
-	my $position = List::MoreUtils::firstidx {
-		refaddr $_ == $key
-		} @$elements;
+	my $position = List::Util::first {
+		refaddr $elements->[$_] == $key
+		} 0..$#$elements;
 	$elements->[$position + 1] || '';
 }
 
@@ -364,9 +282,9 @@ sub snext_sibling {
 	my $parent   = $_PARENT{refaddr $self} or return '';
 	my $key      = refaddr $self;
 	my $elements = $parent->{children};
-	my $position = List::MoreUtils::firstidx {
-		refaddr $_ == $key
-		} @$elements;
+	my $position = List::Util::first {
+		refaddr $elements->[$_] == $key
+		} 0..$#$elements;
 	while ( defined(my $it = $elements->[++$position]) ) {
 		return $it if $it->significant;
 	}
@@ -389,9 +307,9 @@ sub previous_sibling {
 	my $parent   = $_PARENT{refaddr $self} or return '';
 	my $key      = refaddr $self;
 	my $elements = $parent->{children};
-	my $position = List::MoreUtils::firstidx {
-		refaddr $_ == $key
-		} @$elements;
+	my $position = List::Util::first {
+		refaddr $elements->[$_] == $key
+		} 0..$#$elements;
 	$position and $elements->[$position - 1] or '';
 }
 
@@ -412,9 +330,9 @@ sub sprevious_sibling {
 	my $parent   = $_PARENT{refaddr $self} or return '';
 	my $key      = refaddr $self;
 	my $elements = $parent->{children};
-	my $position = List::MoreUtils::firstidx {
-		refaddr $_ == $key
-		} @$elements;
+	my $position = List::Util::first {
+		refaddr $elements->[$_] == $key
+		} 0..$#$elements;
 	while ( $position-- and defined(my $it = $elements->[$position]) ) {
 		return $it if $it->significant;
 	}
@@ -435,7 +353,7 @@ the same object.
 
 Returns a L<PPI::Token> object, or dies on error (which should be extremely
 rare and only occur if an illegal empty L<PPI::Statement> exists below the
-current Element somewhere.
+current Element somewhere.)
 
 =cut
 
@@ -463,7 +381,7 @@ the itself.
 
 Returns a L<PPI::Token> object, or dies on error (which should be extremely
 rare and only occur if an illegal empty L<PPI::Statement> exists below the
-current Element somewhere.
+current Element somewhere.)
 
 =cut
 
@@ -588,39 +506,7 @@ In future, this method may be enhanced to allow the insertion of multiple
 Elements, inline-parsed code strings or L<PPI::Document::Fragment> objects.
 
 Returns true if the Element was inserted, false if it can not be inserted,
-or C<undef> if you do not provide a L<PPI::Element> object as a parameter.
-
-=begin testing __insert_before 6
-
-my $Document = PPI::Document->new( \"print 'Hello World';" );
-isa_ok( $Document, 'PPI::Document' );
-my $semi = $Document->find_first('Token::Structure');
-isa_ok( $semi, 'PPI::Token::Structure' );
-is( $semi->content, ';', 'Got expected token' );
-my $foo = PPI::Token::Word->new('foo');
-isa_ok( $foo, 'PPI::Token::Word' );
-is( $foo->content, 'foo', 'Created Word token' );
-$semi->__insert_before( $foo );
-is( $Document->serialize, "print 'Hello World'foo;",
-	'__insert_before actually inserts' );
-
-=end testing
-
-=begin testing insert_before after __insert_before 6
-
-my $Document = PPI::Document->new( \"print 'Hello World';" );
-isa_ok( $Document, 'PPI::Document' );
-my $semi = $Document->find_first('Token::Structure');
-isa_ok( $semi, 'PPI::Token::Structure' );
-is( $semi->content, ';', 'Got expected token' );
-my $foo = PPI::Token::Word->new('foo');
-isa_ok( $foo, 'PPI::Token::Word' );
-is( $foo->content, 'foo', 'Created Word token' );
-$semi->insert_before( $foo );
-is( $Document->serialize, "print 'Hello World'foo;",
-	'insert_before actually inserts' );
-
-=end testing
+or C<undef> if you do not provide a C<PPI::Element> object as a parameter.
 
 =cut
 
@@ -645,39 +531,7 @@ In future, this method may be enhanced to allow the insertion of multiple
 Elements, inline-parsed code strings or L<PPI::Document::Fragment> objects.
 
 Returns true if the Element was inserted, false if it can not be inserted,
-or C<undef> if you do not provide a L<PPI::Element> object as a parameter.
-
-=begin testing __insert_after 6
-
-my $Document = PPI::Document->new( \"print 'Hello World';" );
-isa_ok( $Document, 'PPI::Document' );
-my $string = $Document->find_first('Token::Quote');
-isa_ok( $string, 'PPI::Token::Quote' );
-is( $string->content, "'Hello World'", 'Got expected token' );
-my $foo = PPI::Token::Word->new('foo');
-isa_ok( $foo, 'PPI::Token::Word' );
-is( $foo->content, 'foo', 'Created Word token' );
-$string->__insert_after( $foo );
-is( $Document->serialize, "print 'Hello World'foo;",
-	'__insert_after actually inserts' );
-
-=end testing
-
-=begin testing insert_after after __insert_after 6
-
-my $Document = PPI::Document->new( \"print 'Hello World';" );
-isa_ok( $Document, 'PPI::Document' );
-my $string = $Document->find_first('Token::Quote');
-isa_ok( $string, 'PPI::Token::Quote' );
-is( $string->content, "'Hello World'", 'Got expected token' );
-my $foo = PPI::Token::Word->new('foo');
-isa_ok( $foo, 'PPI::Token::Word' );
-is( $foo->content, 'foo', 'Created Word token' );
-$string->insert_after( $foo );
-is( $Document->serialize, "print 'Hello World'foo;",
-	'insert_after actually inserts' );
-
-=end testing
+or C<undef> if you do not provide a C<PPI::Element> object as a parameter.
 
 =cut
 
@@ -739,7 +593,7 @@ one being replaced.
 
 sub replace {
 	my $self    = ref $_[0] ? shift : return undef;
-	my $Element = _INSTANCE(shift, ref $self) or return undef;
+	_INSTANCE(shift, ref $self) or return undef;
 	die "The ->replace method has not yet been implemented";
 }
 
@@ -791,21 +645,6 @@ Document.
 Returns C<undef> on error, or if the L<PPI::Document> object has not been
 indexed.
 
-=begin testing line_number 3
-
-my $document = PPI::Document->new(\<<'END_PERL');
-
-
-   foo
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-my $words = $document->find('PPI::Token::Word');
-is( scalar @{$words}, 1, 'Found expected word token.' );
-is( $words->[0]->line_number, 3, 'Got correct line number.' );
-
-=end testing
-
 =cut
 
 sub line_number {
@@ -826,21 +665,6 @@ Document.
 
 Returns C<undef> on error, or if the L<PPI::Document> object has not been
 indexed.
-
-=begin testing column_number 3
-
-my $document = PPI::Document->new(\<<'END_PERL');
-
-
-   foo
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-my $words = $document->find('PPI::Token::Word');
-is( scalar @{$words}, 1, 'Found expected word token.' );
-is( $words->[0]->column_number, 4, 'Got correct column number.' );
-
-=end testing
 
 =cut
 
@@ -864,27 +688,6 @@ L<PPI::Document/"tab_width [ $width ]">.
 Returns C<undef> on error, or if the L<PPI::Document> object has not been
 indexed.
 
-=begin testing visual_column_number 3
-
-my $document = PPI::Document->new(\<<"END_PERL");
-
-
-\t foo
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-my $tab_width = 5;
-$document->tab_width($tab_width);  # don't use a "usual" value.
-my $words = $document->find('PPI::Token::Word');
-is( scalar @{$words}, 1, 'Found expected word token.' );
-is(
-	$words->[0]->visual_column_number,
-	$tab_width + 2,
-	'Got correct visual column number.',
-);
-
-=end testing
-
 =cut
 
 sub visual_column_number {
@@ -906,24 +709,6 @@ the Document, taking into account any C<#line> directives.
 Returns C<undef> on error, or if the L<PPI::Document> object has not been
 indexed.
 
-=begin testing logical_line_number 3
-
-# Double quoted so that we don't really have a "#line" at the beginning and
-# errors in this file itself aren't affected by this.
-my $document = PPI::Document->new(\<<"END_PERL");
-
-
-\#line 1 test-file
-   foo
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-my $words = $document->find('PPI::Token::Word');
-is( scalar @{$words}, 1, 'Found expected word token.' );
-is( $words->[0]->logical_line_number, 1, 'Got correct logical line number.' );
-
-=end testing
-
 =cut
 
 sub logical_line_number {
@@ -943,28 +728,6 @@ Element within the Document, taking into account any C<#line> directives.
 
 Returns C<undef> on error, or if the L<PPI::Document> object has not been
 indexed.
-
-=begin testing logical_filename 3
-
-# Double quoted so that we don't really have a "#line" at the beginning and
-# errors in this file itself aren't affected by this.
-my $document = PPI::Document->new(\<<"END_PERL");
-
-
-\#line 1 test-file
-   foo
-END_PERL
-
-isa_ok( $document, 'PPI::Document' );
-my $words = $document->find('PPI::Token::Word');
-is( scalar @{$words}, 1, 'Found expected word token.' );
-is(
-	$words->[0]->logical_filename,
-	'test-file',
-	'Got correct logical line number.',
-);
-
-=end testing
 
 =cut
 
@@ -1021,7 +784,7 @@ sub _flush_locations {
 			return 1 unless $Token->{_location};
 			next unless refaddr($Token) == refaddr($start);
 
-			# Found the start. Flush it's location
+			# Found the start. Flush its location
 			delete $$Token->{_location};
 			last;
 		}

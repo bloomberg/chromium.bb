@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
@@ -51,11 +52,7 @@ class InstanceResetter : public testing::EmptyTestEventListener {
   ~InstanceResetter() override = default;
 
   void OnTestEnd(const testing::TestInfo& test_info) override {
-    base::AutoLock locked(GetLock());
-    if (g_holder) {
-      delete g_holder;
-      g_holder = nullptr;
-    }
+    TestGpuServiceHolder::ResetInstance();
   }
 
  private:
@@ -79,12 +76,19 @@ TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
   }
 
   if (!g_holder) {
-    g_holder = new TestGpuServiceHolder(
-        gpu::gles2::ParseGpuPreferences(base::CommandLine::ForCurrentProcess()),
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kUseGpuInTests));
+    g_holder = new TestGpuServiceHolder(gpu::gles2::ParseGpuPreferences(
+        base::CommandLine::ForCurrentProcess()));
   }
   return g_holder;
+}
+
+// static
+void TestGpuServiceHolder::ResetInstance() {
+  base::AutoLock locked(GetLock());
+  if (g_holder) {
+    delete g_holder;
+    g_holder = nullptr;
+  }
 }
 
 // static
@@ -99,17 +103,16 @@ void TestGpuServiceHolder::DestroyInstanceAfterEachTest() {
 }
 
 TestGpuServiceHolder::TestGpuServiceHolder(
-    const gpu::GpuPreferences& gpu_preferences,
-    bool use_swiftshader_for_vulkan)
+    const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
   CHECK(gpu_thread_.Start());
   CHECK(io_thread_.Start());
 
   base::WaitableEvent completion;
   gpu_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
-                                base::Unretained(this), gpu_preferences,
-                                use_swiftshader_for_vulkan, &completion));
+      FROM_HERE,
+      base::BindOnce(&TestGpuServiceHolder::InitializeOnGpuThread,
+                     base::Unretained(this), gpu_preferences, &completion));
   completion.Wait();
 }
 
@@ -122,24 +125,30 @@ TestGpuServiceHolder::~TestGpuServiceHolder() {
   io_thread_.Stop();
 }
 
+void TestGpuServiceHolder::ScheduleGpuTask(base::OnceClosure callback) {
+  DCHECK(gpu_task_sequence_);
+  gpu_task_sequence_->ScheduleTask(std::move(callback), {});
+}
+
 void TestGpuServiceHolder::InitializeOnGpuThread(
     const gpu::GpuPreferences& gpu_preferences,
-    bool use_swiftshader_for_vulkan,
     base::WaitableEvent* completion) {
   DCHECK(gpu_thread_.task_runner()->BelongsToCurrentThread());
 
-  if (gpu_preferences.enable_vulkan) {
+  if (gpu_preferences.use_vulkan != gpu::VulkanImplementationName::kNone) {
 #if BUILDFLAG(ENABLE_VULKAN)
+    bool use_swiftshader = gpu_preferences.use_vulkan ==
+                           gpu::VulkanImplementationName::kSwiftshader;
+
 #ifndef USE_X11
     // TODO(samans): Support Swiftshader on more platforms.
     // https://crbug.com/963988
-    LOG_IF(ERROR, use_swiftshader_for_vulkan)
+    LOG_IF(ERROR, use_swiftshader)
         << "Unable to use Vulkan Swiftshader on this platform. Falling back to "
            "GPU.";
-    use_swiftshader_for_vulkan = false;
+    use_swiftshader = false;
 #endif
-    vulkan_implementation_ =
-        gpu::CreateVulkanImplementation(use_swiftshader_for_vulkan);
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences.disable_vulkan_surface)) {
@@ -153,7 +162,10 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
   // Always enable gpu and oop raster, regardless of platform and blacklist.
   // The latter instructs GpuChannelManager::GetSharedContextState to create a
   // GrContext, which is required by SkiaRenderer as well as OOP-R.
-  gpu::GpuFeatureInfo gpu_feature_info;
+  gpu::GPUInfo gpu_info;
+  gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
+      gpu_info, gpu_preferences, base::CommandLine::ForCurrentProcess(),
+      /*needs_more_info=*/nullptr);
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
@@ -167,6 +179,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       gpu_feature_info, gpu_preferences,
       /*gpu_info_for_hardware_gpu=*/gpu::GPUInfo(),
       /*gpu_feature_info_for_hardware_gpu=*/gpu::GpuFeatureInfo(),
+      /*gpu_extra_info=*/gpu::GpuExtraInfo(),
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_.get(),
 #else
@@ -174,9 +187,10 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
 #endif
       /*exit_callback=*/base::DoNothing());
 
-  // Use a disconnected mojo pointer, we don't need to receive any messages.
-  mojom::GpuHostPtr gpu_host_proxy;
-  mojo::MakeRequest(&gpu_host_proxy);
+  // Use a disconnected mojo remote for GpuHost, we don't need to receive any
+  // messages.
+  mojo::PendingRemote<mojom::GpuHost> gpu_host_proxy;
+  ignore_result(gpu_host_proxy.InitWithNewPipeAndPassReceiver());
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
@@ -196,11 +210,19 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       gpu_service_->gpu_channel_manager()->program_cache(),
       gpu_service_->GetContextState());
 
+  // TODO(weiliangc): Since SkiaOutputSurface should not depend on command
+  // buffer, the |gpu_task_sequence_| should be coming from
+  // SkiaOutputSurfaceDependency. SkiaOutputSurfaceDependency cannot be
+  // initialized here because the it will not have correct client thread set up
+  // when unit tests are running in parallel.
+  gpu_task_sequence_ = task_executor_->CreateSequence();
+
   completion->Signal();
 }
 
 void TestGpuServiceHolder::DeleteOnGpuThread() {
   task_executor_.reset();
+  gpu_task_sequence_.reset();
   gpu_service_.reset();
 }
 

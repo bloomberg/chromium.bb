@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/cicerone_client.h"
@@ -102,6 +104,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
                  DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse>
                      callback) override;
 
+  // Fake version of the method that gets VM enterprise reporting info. Sets
+  // get_vm_enterprise_reporting_info_called_. |callback| is called after the
+  // method call finishes.
+  void GetVmEnterpriseReportingInfo(
+      const vm_tools::concierge::GetVmEnterpriseReportingInfoRequest& request,
+      DBusMethodCallback<
+          vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback)
+      override;
+
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -137,6 +148,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
       DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
       override;
 
+  // Fake version of the method that starts ARCVM. Sets start_arc_vm_called_.
+  // |callback| is called after the method call finishes.
+  void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
+                  DBusMethodCallback<vm_tools::concierge::StartVmResponse>
+                      callback) override;
+
+  // Indicates whether WaitForServiceToBeAvailable has been called.
+  bool wait_for_service_to_be_available_called() const {
+    return wait_for_service_to_be_available_called_;
+  }
   // Indicates whether CreateDiskImage has been called
   bool create_disk_image_called() const { return create_disk_image_called_; }
   // Indicates whether DestroyDiskImage has been called
@@ -151,6 +172,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool stop_vm_called() const { return stop_vm_called_; }
   // Indicates whether GetVmInfo has been called
   bool get_vm_info_called() const { return get_vm_info_called_; }
+  // Indicates whether GetEnterpriseReportingInfo has been called
+  bool get_vm_enterprise_reporting_info_called() const {
+    return get_vm_enterprise_reporting_info_called_;
+  }
   // Indicates whether GetContainerSshKeys has been called
   bool get_container_ssh_keys_called() const {
     return get_container_ssh_keys_called_;
@@ -161,6 +186,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool detach_usb_device_called() const { return detach_usb_device_called_; }
   // Indicates whether ListUsbDevices has been called
   bool list_usb_devices_called() const { return list_usb_devices_called_; }
+  // Indicates whether StartArcVm has been called
+  bool start_arc_vm_called() const { return start_arc_vm_called_; }
   // Set ContainerStartupFailedSignalConnected state
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
@@ -169,6 +196,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
     is_disk_image_progress_signal_connected_ = connected;
   }
 
+  void set_wait_for_service_to_be_available_response(
+      bool wait_for_service_to_be_available_response) {
+    wait_for_service_to_be_available_response_ =
+        wait_for_service_to_be_available_response;
+  }
   void set_create_disk_image_response(
       const vm_tools::concierge::CreateDiskImageResponse&
           create_disk_image_response) {
@@ -209,6 +241,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void set_get_vm_info_response(
       const vm_tools::concierge::GetVmInfoResponse& get_vm_info_response) {
     get_vm_info_response_ = get_vm_info_response;
+  }
+  void set_get_vm_enterprise_reporting_info_response(
+      const vm_tools::concierge::GetVmEnterpriseReportingInfoResponse&
+          get_vm_enterprise_reporting_info_response) {
+    get_vm_enterprise_reporting_info_response_ =
+        get_vm_enterprise_reporting_info_response;
   }
   void set_container_ssh_keys_response(
       const vm_tools::concierge::ContainerSshKeysResponse&
@@ -254,6 +292,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void OnDiskImageProgress(
       const vm_tools::concierge::DiskImageStatusResponse& signal);
 
+  bool wait_for_service_to_be_available_called_ = false;
   bool create_disk_image_called_ = false;
   bool destroy_disk_image_called_ = false;
   bool import_disk_image_called_ = false;
@@ -262,13 +301,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool get_vm_info_called_ = false;
+  bool get_vm_enterprise_reporting_info_called_ = false;
   bool get_container_ssh_keys_called_ = false;
   bool attach_usb_device_called_ = false;
   bool detach_usb_device_called_ = false;
   bool list_usb_devices_called_ = false;
+  bool start_arc_vm_called_ = false;
   bool is_container_startup_failed_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
 
+  bool wait_for_service_to_be_available_response_ = true;
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
   vm_tools::concierge::DestroyDiskImageResponse destroy_disk_image_response_;
   vm_tools::concierge::ImportDiskImageResponse import_disk_image_response_;
@@ -278,6 +320,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   vm_tools::concierge::StartVmResponse start_vm_response_;
   vm_tools::concierge::StopVmResponse stop_vm_response_;
   vm_tools::concierge::GetVmInfoResponse get_vm_info_response_;
+  vm_tools::concierge::GetVmEnterpriseReportingInfoResponse
+      get_vm_enterprise_reporting_info_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
   vm_tools::concierge::AttachUsbDeviceResponse attach_usb_device_response_;
   vm_tools::concierge::DetachUsbDeviceResponse detach_usb_device_response_;

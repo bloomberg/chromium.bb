@@ -84,11 +84,9 @@
 #include "src/core/lib/backoff/backoff.h"
 #include "src/core/lib/channel/channel_args.h"
 #include "src/core/lib/channel/channel_stack.h"
-#include "src/core/lib/gpr/host_port.h"
 #include "src/core/lib/gpr/string.h"
 #include "src/core/lib/gprpp/manual_constructor.h"
 #include "src/core/lib/gprpp/memory.h"
-#include "src/core/lib/gprpp/mutex_lock.h"
 #include "src/core/lib/gprpp/orphanable.h"
 #include "src/core/lib/gprpp/ref_counted_ptr.h"
 #include "src/core/lib/iomgr/combiner.h"
@@ -119,18 +117,29 @@ namespace {
 
 constexpr char kGrpclb[] = "grpclb";
 
+class ParsedGrpcLbConfig : public LoadBalancingPolicy::Config {
+ public:
+  explicit ParsedGrpcLbConfig(
+      RefCountedPtr<LoadBalancingPolicy::Config> child_policy)
+      : child_policy_(std::move(child_policy)) {}
+  const char* name() const override { return kGrpclb; }
+
+  RefCountedPtr<LoadBalancingPolicy::Config> child_policy() const {
+    return child_policy_;
+  }
+
+ private:
+  RefCountedPtr<LoadBalancingPolicy::Config> child_policy_;
+};
+
 class GrpcLb : public LoadBalancingPolicy {
  public:
   explicit GrpcLb(Args args);
 
   const char* name() const override { return kGrpclb; }
 
-  void UpdateLocked(const grpc_channel_args& args,
-                    RefCountedPtr<Config> lb_config) override;
+  void UpdateLocked(UpdateArgs args) override;
   void ResetBackoffLocked() override;
-  void FillChildRefsForChannelz(
-      channelz::ChildRefsList* child_subchannels,
-      channelz::ChildRefsList* child_channels) override;
 
  private:
   /// Contains a call to the LB server and all the data related to the call.
@@ -151,9 +160,7 @@ class GrpcLb : public LoadBalancingPolicy {
     bool seen_serverlist() const { return seen_serverlist_; }
 
    private:
-    // So Delete() can access our private dtor.
-    template <typename T>
-    friend void grpc_core::Delete(T*);
+    GRPC_ALLOW_CLASS_TO_USE_NON_PUBLIC_DELETE
 
     ~BalancerCallState();
 
@@ -235,12 +242,19 @@ class GrpcLb : public LoadBalancingPolicy {
 
     // Returns the LB token to use for a drop, or null if the call
     // should not be dropped.
-    // Intended to be called from picker, so calls will be externally
-    // synchronized.
+    //
+    // Note: This is called from the picker, so it will be invoked in
+    // the channel's data plane combiner, NOT the control plane
+    // combiner.  It should not be accessed by any other part of the LB
+    // policy.
     const char* ShouldDrop();
 
    private:
     grpc_grpclb_serverlist* serverlist_;
+
+    // Guarded by the channel's data plane combiner, NOT the control
+    // plane combiner.  It should not be accessed by anything but the
+    // picker via the ShouldDrop() method.
     size_t drop_index_ = 0;
   };
 
@@ -254,7 +268,7 @@ class GrpcLb : public LoadBalancingPolicy {
           child_picker_(std::move(child_picker)),
           client_stats_(std::move(client_stats)) {}
 
-    PickResult Pick(PickArgs* pick, grpc_error** error) override;
+    PickResult Pick(PickArgs args) override;
 
    private:
     // Storing the address for logging, but not holding a ref.
@@ -273,12 +287,14 @@ class GrpcLb : public LoadBalancingPolicy {
     explicit Helper(RefCountedPtr<GrpcLb> parent)
         : parent_(std::move(parent)) {}
 
-    Subchannel* CreateSubchannel(const grpc_channel_args& args) override;
+    RefCountedPtr<SubchannelInterface> CreateSubchannel(
+        const grpc_channel_args& args) override;
     grpc_channel* CreateChannel(const char* target,
                                 const grpc_channel_args& args) override;
-    void UpdateState(grpc_connectivity_state state, grpc_error* state_error,
+    void UpdateState(grpc_connectivity_state state,
                      UniquePtr<SubchannelPicker> picker) override;
     void RequestReresolution() override;
+    void AddTraceEvent(TraceSeverity severity, const char* message) override;
 
     void set_child(LoadBalancingPolicy* child) { child_ = child; }
 
@@ -295,8 +311,8 @@ class GrpcLb : public LoadBalancingPolicy {
   void ShutdownLocked() override;
 
   // Helper functions used in UpdateLocked().
-  void ProcessChannelArgsLocked(const grpc_channel_args& args);
-  void ParseLbConfig(Config* grpclb_config);
+  void ProcessAddressesAndChannelArgsLocked(const ServerAddressList& addresses,
+                                            const grpc_channel_args& args);
   static void OnBalancerChannelConnectivityChangedLocked(void* arg,
                                                          grpc_error* error);
   void CancelBalancerChannelConnectivityWatchLocked();
@@ -311,7 +327,8 @@ class GrpcLb : public LoadBalancingPolicy {
   static void OnBalancerCallRetryTimerLocked(void* arg, grpc_error* error);
 
   // Methods for dealing with the child policy.
-  grpc_channel_args* CreateChildPolicyArgsLocked();
+  grpc_channel_args* CreateChildPolicyArgsLocked(
+      bool is_backend_from_grpclb_load_balancer);
   OrphanablePtr<LoadBalancingPolicy> CreateChildPolicyLocked(
       const char* name, const grpc_channel_args* args);
   void CreateOrUpdateChildPolicyLocked();
@@ -327,8 +344,6 @@ class GrpcLb : public LoadBalancingPolicy {
 
   // The channel for communicating with the LB server.
   grpc_channel* lb_channel_ = nullptr;
-  // Uuid of the lb channel. Used for channelz.
-  gpr_atm lb_channel_uuid_ = 0;
   // Response generator to inject address updates into lb_channel_.
   RefCountedPtr<FakeResolverResponseGenerator> response_generator_;
 
@@ -364,16 +379,13 @@ class GrpcLb : public LoadBalancingPolicy {
   grpc_connectivity_state lb_channel_connectivity_ = GRPC_CHANNEL_IDLE;
   grpc_closure lb_channel_on_connectivity_changed_;
 
-  // Lock held when modifying the value of child_policy_ or
-  // pending_child_policy_.
-  gpr_mu child_policy_mu_;
   // The child policy to use for the backends.
   OrphanablePtr<LoadBalancingPolicy> child_policy_;
   // When switching child policies, the new policy will be stored here
   // until it reports READY, at which point it will be moved to child_policy_.
   OrphanablePtr<LoadBalancingPolicy> pending_child_policy_;
   // The child policy config.
-  RefCountedPtr<Config> child_policy_config_;
+  RefCountedPtr<LoadBalancingPolicy::Config> child_policy_config_;
   // Child policy in state READY.
   bool child_policy_ready_ = false;
 };
@@ -540,7 +552,8 @@ const char* GrpcLb::Serverlist::ShouldDrop() {
 // GrpcLb::Picker
 //
 
-GrpcLb::PickResult GrpcLb::Picker::Pick(PickArgs* pick, grpc_error** error) {
+GrpcLb::PickResult GrpcLb::Picker::Pick(PickArgs args) {
+  PickResult result;
   // Check if we should drop the call.
   const char* drop_token = serverlist_->ShouldDrop();
   if (drop_token != nullptr) {
@@ -550,28 +563,30 @@ GrpcLb::PickResult GrpcLb::Picker::Pick(PickArgs* pick, grpc_error** error) {
     // subchannel call (and therefore no client_load_reporting filter)
     // for dropped calls.
     if (client_stats_ != nullptr) {
-      client_stats_->AddCallDroppedLocked(drop_token);
+      client_stats_->AddCallDropped(drop_token);
     }
-    return PICK_COMPLETE;
+    result.type = PickResult::PICK_COMPLETE;
+    return result;
   }
   // Forward pick to child policy.
-  PickResult result = child_picker_->Pick(pick, error);
+  result = child_picker_->Pick(args);
   // If pick succeeded, add LB token to initial metadata.
-  if (result == PickResult::PICK_COMPLETE &&
-      pick->connected_subchannel != nullptr) {
+  if (result.type == PickResult::PICK_COMPLETE &&
+      result.connected_subchannel != nullptr) {
     const grpc_arg* arg = grpc_channel_args_find(
-        pick->connected_subchannel->args(), GRPC_ARG_GRPCLB_ADDRESS_LB_TOKEN);
+        result.connected_subchannel->args(), GRPC_ARG_GRPCLB_ADDRESS_LB_TOKEN);
     if (arg == nullptr) {
       gpr_log(GPR_ERROR,
-              "[grpclb %p picker %p] No LB token for connected subchannel "
-              "pick %p",
-              parent_, this, pick);
+              "[grpclb %p picker %p] No LB token for connected subchannel %p",
+              parent_, this, result.connected_subchannel.get());
       abort();
     }
     grpc_mdelem lb_token = {reinterpret_cast<uintptr_t>(arg->value.pointer.p)};
     GPR_ASSERT(!GRPC_MDISNULL(lb_token));
+    grpc_linked_mdelem* mdelem_storage = static_cast<grpc_linked_mdelem*>(
+        args.call_state->Alloc(sizeof(grpc_linked_mdelem)));
     GPR_ASSERT(grpc_metadata_batch_add_tail(
-                   pick->initial_metadata, &pick->lb_token_mdelem_storage,
+                   args.initial_metadata, mdelem_storage,
                    GRPC_MDELEM_REF(lb_token)) == GRPC_ERROR_NONE);
     GrpcLbClientStats* client_stats = static_cast<GrpcLbClientStats*>(
         grpc_mdelem_get_user_data(lb_token, GrpcLbClientStats::Destroy));
@@ -596,7 +611,8 @@ bool GrpcLb::Helper::CalledByCurrentChild() const {
   return child_ == parent_->child_policy_.get();
 }
 
-Subchannel* GrpcLb::Helper::CreateSubchannel(const grpc_channel_args& args) {
+RefCountedPtr<SubchannelInterface> GrpcLb::Helper::CreateSubchannel(
+    const grpc_channel_args& args) {
   if (parent_->shutting_down_ ||
       (!CalledByPendingChild() && !CalledByCurrentChild())) {
     return nullptr;
@@ -614,33 +630,24 @@ grpc_channel* GrpcLb::Helper::CreateChannel(const char* target,
 }
 
 void GrpcLb::Helper::UpdateState(grpc_connectivity_state state,
-                                 grpc_error* state_error,
                                  UniquePtr<SubchannelPicker> picker) {
-  if (parent_->shutting_down_) {
-    GRPC_ERROR_UNREF(state_error);
-    return;
-  }
+  if (parent_->shutting_down_) return;
   // If this request is from the pending child policy, ignore it until
   // it reports READY, at which point we swap it into place.
   if (CalledByPendingChild()) {
-    if (grpc_lb_glb_trace.enabled()) {
+    if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       gpr_log(GPR_INFO,
               "[grpclb %p helper %p] pending child policy %p reports state=%s",
               parent_.get(), this, parent_->pending_child_policy_.get(),
               grpc_connectivity_state_name(state));
     }
-    if (state != GRPC_CHANNEL_READY) {
-      GRPC_ERROR_UNREF(state_error);
-      return;
-    }
+    if (state != GRPC_CHANNEL_READY) return;
     grpc_pollset_set_del_pollset_set(
         parent_->child_policy_->interested_parties(),
         parent_->interested_parties());
-    MutexLock lock(&parent_->child_policy_mu_);
     parent_->child_policy_ = std::move(parent_->pending_child_policy_);
   } else if (!CalledByCurrentChild()) {
     // This request is from an outdated child, so ignore it.
-    GRPC_ERROR_UNREF(state_error);
     return;
   }
   // Record whether child policy reports READY.
@@ -669,18 +676,17 @@ void GrpcLb::Helper::UpdateState(grpc_connectivity_state state,
   if (parent_->serverlist_ == nullptr ||
       (!parent_->serverlist_->ContainsAllDropEntries() &&
        state != GRPC_CHANNEL_READY)) {
-    if (grpc_lb_glb_trace.enabled()) {
+    if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       gpr_log(GPR_INFO,
               "[grpclb %p helper %p] state=%s passing child picker %p as-is",
               parent_.get(), this, grpc_connectivity_state_name(state),
               picker.get());
     }
-    parent_->channel_control_helper()->UpdateState(state, state_error,
-                                                   std::move(picker));
+    parent_->channel_control_helper()->UpdateState(state, std::move(picker));
     return;
   }
   // Cases 2 and 3a: wrap picker from the child in our own picker.
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO, "[grpclb %p helper %p] state=%s wrapping child picker %p",
             parent_.get(), this, grpc_connectivity_state_name(state),
             picker.get());
@@ -691,10 +697,9 @@ void GrpcLb::Helper::UpdateState(grpc_connectivity_state state,
     client_stats = parent_->lb_calld_->client_stats()->Ref();
   }
   parent_->channel_control_helper()->UpdateState(
-      state, state_error,
-      UniquePtr<SubchannelPicker>(
-          New<Picker>(parent_.get(), parent_->serverlist_, std::move(picker),
-                      std::move(client_stats))));
+      state, UniquePtr<SubchannelPicker>(
+                 New<Picker>(parent_.get(), parent_->serverlist_,
+                             std::move(picker), std::move(client_stats))));
 }
 
 void GrpcLb::Helper::RequestReresolution() {
@@ -704,7 +709,7 @@ void GrpcLb::Helper::RequestReresolution() {
           ? parent_->pending_child_policy_.get()
           : parent_->child_policy_.get();
   if (child_ != latest_child_policy) return;
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO,
             "[grpclb %p] Re-resolution requested from %schild policy (%p).",
             parent_.get(), CalledByPendingChild() ? "pending " : "", child_);
@@ -717,6 +722,15 @@ void GrpcLb::Helper::RequestReresolution() {
       !parent_->lb_calld_->seen_initial_response()) {
     parent_->channel_control_helper()->RequestReresolution();
   }
+}
+
+void GrpcLb::Helper::AddTraceEvent(TraceSeverity severity,
+                                   const char* message) {
+  if (parent_->shutting_down_ ||
+      (!CalledByPendingChild() && !CalledByCurrentChild())) {
+    return;
+  }
+  parent_->channel_control_helper()->AddTraceEvent(severity, message);
 }
 
 //
@@ -791,7 +805,7 @@ void GrpcLb::BalancerCallState::Orphan() {
 
 void GrpcLb::BalancerCallState::StartQuery() {
   GPR_ASSERT(lb_call_ != nullptr);
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO, "[grpclb %p] lb_calld=%p: Starting LB call %p",
             grpclb_policy_.get(), this, lb_call_);
   }
@@ -909,7 +923,7 @@ void GrpcLb::BalancerCallState::SendClientLoadReportLocked() {
   // Construct message payload.
   GPR_ASSERT(send_message_payload_ == nullptr);
   grpc_grpclb_request* request =
-      grpc_grpclb_load_report_request_create_locked(client_stats_.get());
+      grpc_grpclb_load_report_request_create(client_stats_.get());
   // Skip client load report if the counters were all zero in the last
   // report and they are still zero in this one.
   if (LoadReportCountersAreZero(request)) {
@@ -998,7 +1012,7 @@ void GrpcLb::BalancerCallState::OnBalancerMessageReceivedLocked(
       lb_calld->client_stats_report_interval_ = GPR_MAX(
           GPR_MS_PER_SEC, grpc_grpclb_duration_to_millis(
                               &initial_response->client_stats_report_interval));
-      if (grpc_lb_glb_trace.enabled()) {
+      if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
         gpr_log(GPR_INFO,
                 "[grpclb %p] lb_calld=%p: Received initial LB response "
                 "message; client load reporting interval = %" PRId64
@@ -1006,7 +1020,7 @@ void GrpcLb::BalancerCallState::OnBalancerMessageReceivedLocked(
                 grpclb_policy, lb_calld,
                 lb_calld->client_stats_report_interval_);
       }
-    } else if (grpc_lb_glb_trace.enabled()) {
+    } else if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       gpr_log(GPR_INFO,
               "[grpclb %p] lb_calld=%p: Received initial LB response message; "
               "client load reporting NOT enabled",
@@ -1019,7 +1033,7 @@ void GrpcLb::BalancerCallState::OnBalancerMessageReceivedLocked(
     // Have seen initial response, look for serverlist.
     GPR_ASSERT(lb_calld->lb_call_ != nullptr);
     auto serverlist_wrapper = MakeRefCounted<Serverlist>(serverlist);
-    if (grpc_lb_glb_trace.enabled()) {
+    if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       UniquePtr<char> serverlist_text = serverlist_wrapper->AsText();
       gpr_log(GPR_INFO,
               "[grpclb %p] lb_calld=%p: Serverlist with %" PRIuPTR
@@ -1040,7 +1054,7 @@ void GrpcLb::BalancerCallState::OnBalancerMessageReceivedLocked(
     // Check if the serverlist differs from the previous one.
     if (grpclb_policy->serverlist_ != nullptr &&
         *grpclb_policy->serverlist_ == *serverlist_wrapper) {
-      if (grpc_lb_glb_trace.enabled()) {
+      if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
         gpr_log(GPR_INFO,
                 "[grpclb %p] lb_calld=%p: Incoming server list identical to "
                 "current, ignoring.",
@@ -1118,7 +1132,7 @@ void GrpcLb::BalancerCallState::OnBalancerStatusReceivedLocked(
   BalancerCallState* lb_calld = static_cast<BalancerCallState*>(arg);
   GrpcLb* grpclb_policy = lb_calld->grpclb_policy();
   GPR_ASSERT(lb_calld->lb_call_ != nullptr);
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     char* status_details =
         grpc_slice_to_c_string(lb_calld->lb_call_status_details_);
     gpr_log(GPR_INFO,
@@ -1132,13 +1146,13 @@ void GrpcLb::BalancerCallState::OnBalancerStatusReceivedLocked(
   // we want to retry connecting. Otherwise, we have deliberately ended this
   // call and no further action is required.
   if (lb_calld == grpclb_policy->lb_calld_.get()) {
-    // If we did not receive a serverlist and the fallback-at-startup checks
-    // are pending, go into fallback mode immediately.  This short-circuits
-    // the timeout for the fallback-at-startup case.
-    if (!lb_calld->seen_serverlist_ &&
-        grpclb_policy->fallback_at_startup_checks_pending_) {
+    // If the fallback-at-startup checks are pending, go into fallback mode
+    // immediately.  This short-circuits the timeout for the fallback-at-startup
+    // case.
+    if (grpclb_policy->fallback_at_startup_checks_pending_) {
+      GPR_ASSERT(!lb_calld->seen_serverlist_);
       gpr_log(GPR_INFO,
-              "[grpclb %p] balancer call finished without receiving "
+              "[grpclb %p] Balancer call finished without receiving "
               "serverlist; entering fallback mode",
               grpclb_policy);
       grpclb_policy->fallback_at_startup_checks_pending_ = false;
@@ -1204,7 +1218,6 @@ grpc_channel_args* BuildBalancerChannelArgs(
     const ServerAddressList& addresses,
     FakeResolverResponseGenerator* response_generator,
     const grpc_channel_args* args) {
-  ServerAddressList balancer_addresses = ExtractBalancerAddresses(addresses);
   // Channel args to remove.
   static const char* args_to_remove[] = {
       // LB policy name, since we want to use the default (pick_first) in
@@ -1217,15 +1230,6 @@ grpc_channel_args* BuildBalancerChannelArgs(
       // the LB channel than for the parent channel.  The client channel
       // factory will re-add this arg with the right value.
       GRPC_ARG_SERVER_URI,
-      // The resolved addresses, which will be generated by the name resolver
-      // used in the LB channel.  Note that the LB channel will use the fake
-      // resolver, so this won't actually generate a query to DNS (or some
-      // other name service).  However, the addresses returned by the fake
-      // resolver will have is_balancer=false, whereas our own addresses have
-      // is_balancer=true.  We need the LB channel to return addresses with
-      // is_balancer=false so that it does not wind up recursively using the
-      // grpclb LB policy.
-      GRPC_ARG_SERVER_ADDRESS_LIST,
       // The fake resolver response generator, because we are replacing it
       // with the one from the grpclb policy, used to propagate updates to
       // the LB channel.
@@ -1238,31 +1242,36 @@ grpc_channel_args* BuildBalancerChannelArgs(
       // treated as a stand-alone channel and not inherit this argument from the
       // args of the parent channel.
       GRPC_SSL_TARGET_NAME_OVERRIDE_ARG,
+      // Don't want to pass down channelz node from parent; the balancer
+      // channel will get its own.
+      GRPC_ARG_CHANNELZ_CHANNEL_NODE,
   };
   // Channel args to add.
-  const grpc_arg args_to_add[] = {
-      // New address list.
-      // Note that we pass these in both when creating the LB channel
-      // and via the fake resolver.  The latter is what actually gets used.
-      CreateServerAddressListChannelArg(&balancer_addresses),
-      // The fake resolver response generator, which we use to inject
-      // address updates into the LB channel.
+  InlinedVector<grpc_arg, 3> args_to_add;
+  // The fake resolver response generator, which we use to inject
+  // address updates into the LB channel.
+  args_to_add.emplace_back(
       grpc_core::FakeResolverResponseGenerator::MakeChannelArg(
-          response_generator),
-      // A channel arg indicating the target is a grpclb load balancer.
-      grpc_channel_arg_integer_create(
-          const_cast<char*>(GRPC_ARG_ADDRESS_IS_GRPCLB_LOAD_BALANCER), 1),
-      // A channel arg indicating this is an internal channels, aka it is
-      // owned by components in Core, not by the user application.
-      grpc_channel_arg_integer_create(
-          const_cast<char*>(GRPC_ARG_CHANNELZ_CHANNEL_IS_INTERNAL_CHANNEL), 1),
-  };
+          response_generator));
+  // A channel arg indicating the target is a grpclb load balancer.
+  args_to_add.emplace_back(grpc_channel_arg_integer_create(
+      const_cast<char*>(GRPC_ARG_ADDRESS_IS_GRPCLB_LOAD_BALANCER), 1));
+  // The parent channel's channelz uuid.
+  channelz::ChannelNode* channelz_node = nullptr;
+  const grpc_arg* arg =
+      grpc_channel_args_find(args, GRPC_ARG_CHANNELZ_CHANNEL_NODE);
+  if (arg != nullptr && arg->type == GRPC_ARG_POINTER &&
+      arg->value.pointer.p != nullptr) {
+    channelz_node = static_cast<channelz::ChannelNode*>(arg->value.pointer.p);
+    args_to_add.emplace_back(
+        channelz::MakeParentUuidArg(channelz_node->uuid()));
+  }
   // Construct channel args.
   grpc_channel_args* new_args = grpc_channel_args_copy_and_add_and_remove(
-      args, args_to_remove, GPR_ARRAY_SIZE(args_to_remove), args_to_add,
-      GPR_ARRAY_SIZE(args_to_add));
+      args, args_to_remove, GPR_ARRAY_SIZE(args_to_remove), args_to_add.data(),
+      args_to_add.size());
   // Make any necessary modifications for security.
-  return grpc_lb_policy_grpclb_modify_lb_channel_args(new_args);
+  return grpc_lb_policy_grpclb_modify_lb_channel_args(addresses, new_args);
 }
 
 //
@@ -1286,7 +1295,6 @@ GrpcLb::GrpcLb(Args args)
   GRPC_CLOSURE_INIT(&lb_channel_on_connectivity_changed_,
                     &GrpcLb::OnBalancerChannelConnectivityChangedLocked, this,
                     grpc_combiner_scheduler(args.combiner));
-  gpr_mu_init(&child_policy_mu_);
   // Record server name.
   const grpc_arg* arg = grpc_channel_args_find(args.args, GRPC_ARG_SERVER_URI);
   const char* server_uri = grpc_channel_arg_get_string(arg);
@@ -1294,7 +1302,7 @@ GrpcLb::GrpcLb(Args args)
   grpc_uri* uri = grpc_uri_parse(server_uri, true);
   GPR_ASSERT(uri->path[0] != '\0');
   server_name_ = gpr_strdup(uri->path[0] == '/' ? uri->path + 1 : uri->path);
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO,
             "[grpclb %p] Will use '%s' as the server name for LB request.",
             this, server_name_);
@@ -1312,7 +1320,6 @@ GrpcLb::GrpcLb(Args args)
 GrpcLb::~GrpcLb() {
   gpr_free((void*)server_name_);
   grpc_channel_args_destroy(args_);
-  gpr_mu_destroy(&child_policy_mu_);
 }
 
 void GrpcLb::ShutdownLocked() {
@@ -1333,11 +1340,8 @@ void GrpcLb::ShutdownLocked() {
     grpc_pollset_set_del_pollset_set(
         pending_child_policy_->interested_parties(), interested_parties());
   }
-  {
-    MutexLock lock(&child_policy_mu_);
-    child_policy_.reset();
-    pending_child_policy_.reset();
-  }
+  child_policy_.reset();
+  pending_child_policy_.reset();
   // We destroy the LB channel here instead of in our destructor because
   // destroying the channel triggers a last callback to
   // OnBalancerChannelConnectivityChangedLocked(), and we need to be
@@ -1345,7 +1349,6 @@ void GrpcLb::ShutdownLocked() {
   if (lb_channel_ != nullptr) {
     grpc_channel_destroy(lb_channel_);
     lb_channel_ = nullptr;
-    gpr_atm_no_barrier_store(&lb_channel_uuid_, 0);
   }
 }
 
@@ -1365,34 +1368,16 @@ void GrpcLb::ResetBackoffLocked() {
   }
 }
 
-void GrpcLb::FillChildRefsForChannelz(
-    channelz::ChildRefsList* child_subchannels,
-    channelz::ChildRefsList* child_channels) {
-  {
-    // Delegate to the child policy to fill the children subchannels.
-    // This must be done holding child_policy_mu_, since this method
-    // does not run in the combiner.
-    MutexLock lock(&child_policy_mu_);
-    if (child_policy_ != nullptr) {
-      child_policy_->FillChildRefsForChannelz(child_subchannels,
-                                              child_channels);
-    }
-    if (pending_child_policy_ != nullptr) {
-      pending_child_policy_->FillChildRefsForChannelz(child_subchannels,
-                                                      child_channels);
-    }
-  }
-  gpr_atm uuid = gpr_atm_no_barrier_load(&lb_channel_uuid_);
-  if (uuid != 0) {
-    child_channels->push_back(uuid);
-  }
-}
-
-void GrpcLb::UpdateLocked(const grpc_channel_args& args,
-                          RefCountedPtr<Config> lb_config) {
+void GrpcLb::UpdateLocked(UpdateArgs args) {
   const bool is_initial_update = lb_channel_ == nullptr;
-  ParseLbConfig(lb_config.get());
-  ProcessChannelArgsLocked(args);
+  auto* grpclb_config =
+      static_cast<const ParsedGrpcLbConfig*>(args.config.get());
+  if (grpclb_config != nullptr) {
+    child_policy_config_ = grpclb_config->child_policy();
+  } else {
+    child_policy_config_ = nullptr;
+  }
+  ProcessAddressesAndChannelArgsLocked(args.addresses, *args.args);
   // Update the existing child policy.
   if (child_policy_ != nullptr) CreateOrUpdateChildPolicyLocked();
   // If this is the initial update, start the fallback-at-startup checks
@@ -1442,18 +1427,10 @@ ServerAddressList ExtractBackendAddresses(const ServerAddressList& addresses) {
   return backend_addresses;
 }
 
-void GrpcLb::ProcessChannelArgsLocked(const grpc_channel_args& args) {
-  const ServerAddressList* addresses = FindServerAddressListChannelArg(&args);
-  if (addresses == nullptr) {
-    // Ignore this update.
-    gpr_log(
-        GPR_ERROR,
-        "[grpclb %p] No valid LB addresses channel arg in update, ignoring.",
-        this);
-    return;
-  }
+void GrpcLb::ProcessAddressesAndChannelArgsLocked(
+    const ServerAddressList& addresses, const grpc_channel_args& args) {
   // Update fallback address list.
-  fallback_backend_addresses_ = ExtractBackendAddresses(*addresses);
+  fallback_backend_addresses_ = ExtractBackendAddresses(addresses);
   // Make sure that GRPC_ARG_LB_POLICY_NAME is set in channel args,
   // since we use this to trigger the client_load_reporting filter.
   static const char* args_to_remove[] = {GRPC_ARG_LB_POLICY_NAME};
@@ -1463,8 +1440,9 @@ void GrpcLb::ProcessChannelArgsLocked(const grpc_channel_args& args) {
   args_ = grpc_channel_args_copy_and_add_and_remove(
       &args, args_to_remove, GPR_ARRAY_SIZE(args_to_remove), &new_arg, 1);
   // Construct args for balancer channel.
-  grpc_channel_args* lb_channel_args =
-      BuildBalancerChannelArgs(*addresses, response_generator_.get(), &args);
+  ServerAddressList balancer_addresses = ExtractBalancerAddresses(addresses);
+  grpc_channel_args* lb_channel_args = BuildBalancerChannelArgs(
+      balancer_addresses, response_generator_.get(), &args);
   // Create balancer channel if needed.
   if (lb_channel_ == nullptr) {
     char* uri_str;
@@ -1472,38 +1450,14 @@ void GrpcLb::ProcessChannelArgsLocked(const grpc_channel_args& args) {
     lb_channel_ =
         channel_control_helper()->CreateChannel(uri_str, *lb_channel_args);
     GPR_ASSERT(lb_channel_ != nullptr);
-    grpc_core::channelz::ChannelNode* channel_node =
-        grpc_channel_get_channelz_node(lb_channel_);
-    if (channel_node != nullptr) {
-      gpr_atm_no_barrier_store(&lb_channel_uuid_, channel_node->uuid());
-    }
     gpr_free(uri_str);
   }
   // Propagate updates to the LB channel (pick_first) through the fake
   // resolver.
-  response_generator_->SetResponse(lb_channel_args);
-  grpc_channel_args_destroy(lb_channel_args);
-}
-
-void GrpcLb::ParseLbConfig(Config* grpclb_config) {
-  const grpc_json* child_policy = nullptr;
-  if (grpclb_config != nullptr) {
-    const grpc_json* grpclb_config_json = grpclb_config->config();
-    for (const grpc_json* field = grpclb_config_json; field != nullptr;
-         field = field->next) {
-      if (field->key == nullptr) return;
-      if (strcmp(field->key, "childPolicy") == 0) {
-        if (child_policy != nullptr) return;  // Duplicate.
-        child_policy = ParseLoadBalancingConfig(field);
-      }
-    }
-  }
-  if (child_policy != nullptr) {
-    child_policy_config_ =
-        MakeRefCounted<Config>(child_policy, grpclb_config->service_config());
-  } else {
-    child_policy_config_.reset();
-  }
+  Resolver::Result result;
+  result.addresses = std::move(balancer_addresses);
+  result.args = lb_channel_args;
+  response_generator_->SetResponse(std::move(result));
 }
 
 void GrpcLb::OnBalancerChannelConnectivityChangedLocked(void* arg,
@@ -1559,7 +1513,7 @@ void GrpcLb::StartBalancerCallLocked() {
   // Init the LB call data.
   GPR_ASSERT(lb_calld_ == nullptr);
   lb_calld_ = MakeOrphanable<BalancerCallState>(Ref());
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO,
             "[grpclb %p] Query for backends (lb_channel: %p, lb_calld: %p)",
             this, lb_channel_, lb_calld_.get());
@@ -1569,7 +1523,7 @@ void GrpcLb::StartBalancerCallLocked() {
 
 void GrpcLb::StartBalancerCallRetryTimerLocked() {
   grpc_millis next_try = lb_call_backoff_.NextAttemptTime();
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO, "[grpclb %p] Connection to LB server lost...", this);
     grpc_millis timeout = next_try - ExecCtx::Get()->Now();
     if (timeout > 0) {
@@ -1596,7 +1550,7 @@ void GrpcLb::OnBalancerCallRetryTimerLocked(void* arg, grpc_error* error) {
   grpclb_policy->retry_timer_callback_pending_ = false;
   if (!grpclb_policy->shutting_down_ && error == GRPC_ERROR_NONE &&
       grpclb_policy->lb_calld_ == nullptr) {
-    if (grpc_lb_glb_trace.enabled()) {
+    if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       gpr_log(GPR_INFO, "[grpclb %p] Restarting call to LB server",
               grpclb_policy);
     }
@@ -1649,41 +1603,18 @@ void GrpcLb::OnFallbackTimerLocked(void* arg, grpc_error* error) {
 // code for interacting with the child policy
 //
 
-grpc_channel_args* GrpcLb::CreateChildPolicyArgsLocked() {
-  ServerAddressList tmp_addresses;
-  ServerAddressList* addresses = &tmp_addresses;
-  bool is_backend_from_grpclb_load_balancer = false;
-  if (fallback_mode_) {
-    // Note: If fallback backend address list is empty, the child policy
-    // will go into state TRANSIENT_FAILURE.
-    addresses = &fallback_backend_addresses_;
-  } else {
-    tmp_addresses = serverlist_->GetServerAddressList(
-        lb_calld_ == nullptr ? nullptr : lb_calld_->client_stats());
-    is_backend_from_grpclb_load_balancer = true;
-  }
-  GPR_ASSERT(addresses != nullptr);
-  // Replace the server address list in the channel args that we pass down to
-  // the subchannel.
-  static const char* keys_to_remove[] = {GRPC_ARG_SERVER_ADDRESS_LIST};
-  grpc_arg args_to_add[3] = {
-      CreateServerAddressListChannelArg(addresses),
-      // A channel arg indicating if the target is a backend inferred from a
-      // grpclb load balancer.
-      grpc_channel_arg_integer_create(
-          const_cast<char*>(
-              GRPC_ARG_ADDRESS_IS_BACKEND_FROM_GRPCLB_LOAD_BALANCER),
-          is_backend_from_grpclb_load_balancer),
-  };
-  size_t num_args_to_add = 2;
+grpc_channel_args* GrpcLb::CreateChildPolicyArgsLocked(
+    bool is_backend_from_grpclb_load_balancer) {
+  InlinedVector<grpc_arg, 2> args_to_add;
+  args_to_add.emplace_back(grpc_channel_arg_integer_create(
+      const_cast<char*>(GRPC_ARG_ADDRESS_IS_BACKEND_FROM_GRPCLB_LOAD_BALANCER),
+      is_backend_from_grpclb_load_balancer));
   if (is_backend_from_grpclb_load_balancer) {
-    args_to_add[2] = grpc_channel_arg_integer_create(
-        const_cast<char*>(GRPC_ARG_INHIBIT_HEALTH_CHECKING), 1);
-    ++num_args_to_add;
+    args_to_add.emplace_back(grpc_channel_arg_integer_create(
+        const_cast<char*>(GRPC_ARG_INHIBIT_HEALTH_CHECKING), 1));
   }
-  return grpc_channel_args_copy_and_add_and_remove(
-      args_, keys_to_remove, GPR_ARRAY_SIZE(keys_to_remove), args_to_add,
-      num_args_to_add);
+  return grpc_channel_args_copy_and_add(args_, args_to_add.data(),
+                                        args_to_add.size());
 }
 
 OrphanablePtr<LoadBalancingPolicy> GrpcLb::CreateChildPolicyLocked(
@@ -1703,7 +1634,7 @@ OrphanablePtr<LoadBalancingPolicy> GrpcLb::CreateChildPolicyLocked(
     return nullptr;
   }
   helper->set_child(lb_policy.get());
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO, "[grpclb %p] Created new child policy %s (%p)", this,
             name, lb_policy.get());
   }
@@ -1717,8 +1648,25 @@ OrphanablePtr<LoadBalancingPolicy> GrpcLb::CreateChildPolicyLocked(
 
 void GrpcLb::CreateOrUpdateChildPolicyLocked() {
   if (shutting_down_) return;
-  grpc_channel_args* args = CreateChildPolicyArgsLocked();
-  GPR_ASSERT(args != nullptr);
+  // Construct update args.
+  UpdateArgs update_args;
+  bool is_backend_from_grpclb_load_balancer = false;
+  if (fallback_mode_) {
+    // If CreateOrUpdateChildPolicyLocked() is invoked when we haven't
+    // received any serverlist from the balancer, we use the fallback backends
+    // returned by the resolver. Note that the fallback backend list may be
+    // empty, in which case the new round_robin policy will keep the requested
+    // picks pending.
+    update_args.addresses = fallback_backend_addresses_;
+  } else {
+    update_args.addresses = serverlist_->GetServerAddressList(
+        lb_calld_ == nullptr ? nullptr : lb_calld_->client_stats());
+    is_backend_from_grpclb_load_balancer = true;
+  }
+  update_args.args =
+      CreateChildPolicyArgsLocked(is_backend_from_grpclb_load_balancer);
+  GPR_ASSERT(update_args.args != nullptr);
+  update_args.config = child_policy_config_;
   // If the child policy name changes, we need to create a new child
   // policy.  When this happens, we leave child_policy_ as-is and store
   // the new child policy in pending_child_policy_.  Once the new child
@@ -1785,18 +1733,14 @@ void GrpcLb::CreateOrUpdateChildPolicyLocked() {
     // Cases 1, 2b, and 3b: create a new child policy.
     // If child_policy_ is null, we set it (case 1), else we set
     // pending_child_policy_ (cases 2b and 3b).
-    if (grpc_lb_glb_trace.enabled()) {
+    if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
       gpr_log(GPR_INFO, "[grpclb %p] Creating new %schild policy %s", this,
               child_policy_ == nullptr ? "" : "pending ", child_policy_name);
     }
-    auto new_policy = CreateChildPolicyLocked(child_policy_name, args);
     // Swap the policy into place.
     auto& lb_policy =
         child_policy_ == nullptr ? child_policy_ : pending_child_policy_;
-    {
-      MutexLock lock(&child_policy_mu_);
-      lb_policy = std::move(new_policy);
-    }
+    lb_policy = CreateChildPolicyLocked(child_policy_name, update_args.args);
     policy_to_update = lb_policy.get();
   } else {
     // Cases 2a and 3a: update an existing policy.
@@ -1808,14 +1752,12 @@ void GrpcLb::CreateOrUpdateChildPolicyLocked() {
   }
   GPR_ASSERT(policy_to_update != nullptr);
   // Update the policy.
-  if (grpc_lb_glb_trace.enabled()) {
+  if (GRPC_TRACE_FLAG_ENABLED(grpc_lb_glb_trace)) {
     gpr_log(GPR_INFO, "[grpclb %p] Updating %schild policy %p", this,
             policy_to_update == pending_child_policy_.get() ? "pending " : "",
             policy_to_update);
   }
-  policy_to_update->UpdateLocked(*args, child_policy_config_);
-  // Clean up.
-  grpc_channel_args_destroy(args);
+  policy_to_update->UpdateLocked(std::move(update_args));
 }
 
 //
@@ -1830,6 +1772,40 @@ class GrpcLbFactory : public LoadBalancingPolicyFactory {
   }
 
   const char* name() const override { return kGrpclb; }
+
+  RefCountedPtr<LoadBalancingPolicy::Config> ParseLoadBalancingConfig(
+      const grpc_json* json, grpc_error** error) const override {
+    GPR_DEBUG_ASSERT(error != nullptr && *error == GRPC_ERROR_NONE);
+    if (json == nullptr) {
+      return RefCountedPtr<LoadBalancingPolicy::Config>(
+          New<ParsedGrpcLbConfig>(nullptr));
+    }
+    InlinedVector<grpc_error*, 2> error_list;
+    RefCountedPtr<LoadBalancingPolicy::Config> child_policy;
+    for (const grpc_json* field = json->child; field != nullptr;
+         field = field->next) {
+      if (field->key == nullptr) continue;
+      if (strcmp(field->key, "childPolicy") == 0) {
+        if (child_policy != nullptr) {
+          error_list.push_back(GRPC_ERROR_CREATE_FROM_STATIC_STRING(
+              "field:childPolicy error:Duplicate entry"));
+        }
+        grpc_error* parse_error = GRPC_ERROR_NONE;
+        child_policy = LoadBalancingPolicyRegistry::ParseLoadBalancingConfig(
+            field, &parse_error);
+        if (parse_error != GRPC_ERROR_NONE) {
+          error_list.push_back(parse_error);
+        }
+      }
+    }
+    if (error_list.empty()) {
+      return RefCountedPtr<LoadBalancingPolicy::Config>(
+          New<ParsedGrpcLbConfig>(std::move(child_policy)));
+    } else {
+      *error = GRPC_ERROR_CREATE_FROM_VECTOR("GrpcLb Parser", &error_list);
+      return nullptr;
+    }
+  }
 };
 
 }  // namespace

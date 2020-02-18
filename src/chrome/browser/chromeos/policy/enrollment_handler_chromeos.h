@@ -236,15 +236,10 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   EnrollmentConfig enrollment_config_;
   std::unique_ptr<policy::DMAuth> dm_auth_;
   std::string client_id_;
-  std::string requisition_;
   std::string sub_organization_;
+  std::unique_ptr<CloudPolicyClient::RegistrationParameters> register_params_;
   EnrollmentCallback completion_callback_;
   AvailableLicensesCallback available_licenses_callback_;
-  enterprise_management::LicenseType::LicenseTypeEnum license_type_ =
-      enterprise_management::LicenseType::UNDEFINED;
-
-  // The current state key provided by |state_keys_broker_|.
-  std::string current_state_key_;
 
   // The device mode as received in the registration request.
   DeviceMode device_mode_ = DEVICE_MODE_NOT_SET;

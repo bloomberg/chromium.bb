@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include "base/macros.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -42,7 +43,7 @@ class CompositorFrameSinkImpl : public mojom::CompositorFrameSink {
       uint64_t submit_time,
       SubmitCompositorFrameSyncCallback callback) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const SharedBitmapId& id) override;
 

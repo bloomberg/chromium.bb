@@ -35,7 +35,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/stream_handle.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/load_states.h"
@@ -189,22 +188,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       bool must_download,
       bool is_new_request);
 
-  // Called to determine whether the response to |request| should be intercepted
-  // and handled as a stream. Streams are used to pass direct access to a
-  // resource response to another application (e.g. a web page) without being
-  // handled by the browser itself. If the request should be intercepted as a
-  // stream, a StreamResourceHandler is returned which provides access to the
-  // response.
-  //
-  // This function must be called after the ResourceRequestInfo has been created
-  // and associated with the request. If |payload| is set to a non-empty value,
-  // the caller must send it to the old resource handler instead of cancelling
-  // it.
-  virtual std::unique_ptr<ResourceHandler> MaybeInterceptAsStream(
-      net::URLRequest* request,
-      network::ResourceResponse* response,
-      std::string* payload);
-
   network::ResourceScheduler* scheduler() { return scheduler_.get(); }
 
   // Called by a ResourceHandler when it's ready to start reading data and
@@ -287,7 +270,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   bool is_shutdown() const { return is_shutdown_; }
 
   // Creates a new request ID for browser initiated requests. See the comments
-  // of |request_id_| for the details. Must be called on the IO thread.
+  // of |request_id_| for the details. Can be called on any thread.
   int MakeRequestID();
 
   // Creates a new global request ID for browser initiated requests. The ID
@@ -585,7 +568,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       net::URLRequest* request,
       ResourceType resource_type,
       ResourceContext* resource_context,
-      network::mojom::FetchRequestMode fetch_request_mode,
+      network::mojom::RequestMode request_mode,
       blink::mojom::RequestContextType fetch_request_context_type,
       uint32_t url_loader_options,
       AppCacheService* appcache_service,
@@ -634,7 +617,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   static void RecordFetchRequestMode(const GURL& url,
                                      base::StringPiece method,
-                                     network::mojom::FetchRequestMode mode);
+                                     network::mojom::RequestMode request_mode);
 
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotation();
 
@@ -655,7 +638,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // uninitialized variables.) This way, we no longer have the unlikely (but
   // observed in the real world!) event where we have two requests with the same
   // request_id_.
-  int request_id_;
+  std::atomic_int request_id_{-1};
 
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
@@ -724,7 +707,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Used on the IO thread to allow PostTaskAndReply replies to the IO thread
   // to be abandoned if they run after OnShutdown().
-  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_on_io_;
+  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_on_io_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

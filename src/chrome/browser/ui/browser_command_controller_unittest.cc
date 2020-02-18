@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -25,8 +26,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -344,7 +344,7 @@ TEST_F(BrowserCommandControllerFullscreenTest,
     { IDC_FOCUS_PREVIOUS_PANE,     true,     false,     false,     false    },
     { IDC_FOCUS_BOOKMARKS,         true,     false,     false,     false    },
     { IDC_DEVELOPER_MENU,          true,     false,     false,     false    },
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     { IDC_FEEDBACK,                true,     false,     false,     false    },
 #endif
     { IDC_OPTIONS,                 true,     false,     false,     false    },

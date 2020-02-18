@@ -400,9 +400,8 @@ class RTCPeerConnectionTestWithPlatformTestingPlatformType
 
   std::string GetExceptionMessage(V8TestingScope& scope) {
     ExceptionState& exception_state = scope.GetExceptionState();
-    return exception_state.HadException()
-               ? exception_state.Message().Utf8().data()
-               : "";
+    return exception_state.HadException() ? exception_state.Message().Utf8()
+                                          : "";
   }
 
   void AddStream(V8TestingScope& scope,
@@ -690,7 +689,7 @@ void PostToCompleteRequest(AsyncOperationAction action,
 
 class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
  public:
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest& request,
       const WebMediaConstraints&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(
@@ -698,7 +697,7 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
     return {};
   }
 
-  std::vector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
+  WebVector<std::unique_ptr<WebRTCRtpTransceiver>> CreateOffer(
       const WebRTCSessionDescriptionRequest& request,
       const WebRTCOfferOptions&) override {
     PostToCompleteRequest<WebRTCSessionDescriptionRequest>(

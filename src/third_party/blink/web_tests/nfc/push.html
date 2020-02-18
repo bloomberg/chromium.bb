@@ -90,13 +90,13 @@ nfc_test(() => {
 nfc_test(() => {
   mockNFC.setHWStatus(NFCHWStatus.DISABLED);
   return assertRejectsWithError(navigator.nfc.push(test_text_data),
-                                'NotSupportedError');
+                                'NotReadableError');
 }, 'nfc.push should fail when NFC HW is disabled.');
 
 nfc_test(() => {
   mockNFC.setHWStatus(NFCHWStatus.NOT_SUPPORTED);
   return assertRejectsWithError(navigator.nfc.push(test_text_data),
-                                'NotSupportedError');
+                                'NotReadableError');
 }, 'nfc.push should fail when NFC HW is not supported.');
 
 nfc_test(() => {
@@ -150,7 +150,7 @@ nfc_test(() => {
 nfc_test(async () => {
   await navigator.nfc.push(test_text_data);
   assertNFCPushOptionsEqual(createNFCPushOptions('any', Infinity, true),
-                            mockNFC.pushOptions());
+                            mockNFC.pushOptions(), 'any');
 }, 'Check that default NFCPushOptions values are correctly set.');
 
 nfc_test(async () => {

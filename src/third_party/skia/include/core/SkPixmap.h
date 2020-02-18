@@ -149,6 +149,11 @@ public:
     */
     int height() const { return fInfo.height(); }
 
+    /**
+     *  Return the dimensions of the pixmap (from its ImageInfo)
+     */
+    SkISize dimensions() const { return fInfo.dimensions(); }
+
     /** Returns SkColorType, one of:
         kUnknown_SkColorType, kAlpha_8_SkColorType, kRGB_565_SkColorType,
         kARGB_4444_SkColorType, kRGBA_8888_SkColorType, kRGB_888x_SkColorType,
@@ -215,7 +220,7 @@ public:
 
     /** Returns minimum memory required for pixel storage.
         Does not include unused memory on last row when rowBytesAsPixels() exceeds width().
-        Returns zero if result does not fit in size_t.
+        Returns SIZE_MAX if result does not fit in size_t.
         Returns zero if height() or width() is 0.
         Returns height() times rowBytes() if colorType() is kUnknown_SkColorType.
 

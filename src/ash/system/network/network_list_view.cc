@@ -52,7 +52,7 @@ using chromeos::network_config::mojom::NetworkFilter;
 using chromeos::network_config::mojom::NetworkStateProperties;
 using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
 using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::ONCSource;
+using chromeos::network_config::mojom::OncSource;
 using chromeos::network_config::mojom::ProxyMode;
 
 namespace ash {
@@ -259,6 +259,11 @@ NetworkListView::UpdateNetworkListEntries() {
       ++index;
     index += new_cellular_guids->size();
     new_guids->insert(new_cellular_guids->begin(), new_cellular_guids->end());
+  } else if (mobile_header_view_) {
+    scroll_content()->RemoveChildView(mobile_header_view_);
+    delete mobile_header_view_;
+    mobile_header_view_ = nullptr;
+    needs_relayout_ = true;
   }
 
   if (!wifi_header_view_)
@@ -389,8 +394,8 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
 
 views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
   // Check if the network is managed by policy.
-  ONCSource source = info.source;
-  if (source != ONCSource::kDevicePolicy && source != ONCSource::kUserPolicy)
+  OncSource source = info.source;
+  if (source != OncSource::kDevicePolicy && source != OncSource::kUserPolicy)
     return nullptr;
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
@@ -498,10 +503,9 @@ int NetworkListView::UpdateNetworkSectionHeader(
     *separator_view = nullptr;
   }
 
-  bool default_toggle_enabled = !IsSecondaryUser();
   // Mobile updates its toggle state independently.
   if (!NetworkTypeMatchesType(type, NetworkType::kMobile))
-    view->SetToggleState(default_toggle_enabled, enabled /* is_on */);
+    view->SetToggleState(true /* toggle_enabled */, enabled /* is_on */);
   PlaceViewAtIndex(view, child_index++);
   return child_index;
 }

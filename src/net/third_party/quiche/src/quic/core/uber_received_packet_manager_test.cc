@@ -49,8 +49,6 @@ const QuicTime::Delta kDelayedAckTime =
 class UberReceivedPacketManagerTest : public QuicTest {
  protected:
   UberReceivedPacketManagerTest() {
-    SetQuicReloadableFlag(quic_deprecate_ack_bundling_mode, true);
-    SetQuicReloadableFlag(quic_rpm_decides_when_to_send_acks, true);
     manager_ = QuicMakeUnique<UberReceivedPacketManager>(&stats_);
     clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
     rtt_stats_.UpdateRtt(kMinRttMs, QuicTime::Delta::Zero(), QuicTime::Zero());
@@ -239,13 +237,8 @@ TEST_F(UberReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent) {
 
   RecordPacketReceipt(3, clock_.ApproximateNow());
   MaybeUpdateAckTimeout(kInstigateAck, 3);
-  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    // Delayed ack is scheduled.
-    CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
-  } else {
-    // Should ack immediately since we have missing packets.
-    CheckAckTimeout(clock_.ApproximateNow());
-  }
+  // Delayed ack is scheduled.
+  CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
 
   RecordPacketReceipt(2, clock_.ApproximateNow());
   MaybeUpdateAckTimeout(kInstigateAck, 2);
@@ -764,7 +757,6 @@ TEST_F(UberReceivedPacketManagerTest,
 
 TEST_F(UberReceivedPacketManagerTest, AckSendingDifferentPacketNumberSpaces) {
   manager_->EnableMultiplePacketNumberSpacesSupport();
-  SetQuicRestartFlag(quic_enable_accept_random_ipn, true);
   EXPECT_FALSE(HasPendingAck());
   EXPECT_FALSE(manager_->IsAckFrameUpdated());
 

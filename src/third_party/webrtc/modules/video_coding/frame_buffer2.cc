@@ -62,7 +62,8 @@ FrameBuffer::FrameBuffer(Clock* clock,
       stats_callback_(stats_callback),
       last_log_non_decoded_ms_(-kLogNonDecodedIntervalMs),
       add_rtt_to_playout_delay_(
-          webrtc::field_trial::IsEnabled("WebRTC-AddRttToPlayoutDelay")) {}
+          webrtc::field_trial::IsEnabled("WebRTC-AddRttToPlayoutDelay")),
+      rtt_mult_settings_(RttMultExperiment::GetRttMultValue()) {}
 
 FrameBuffer::~FrameBuffer() {}
 
@@ -299,10 +300,13 @@ EncodedFrame* FrameBuffer::GetNextFrame() {
     }
 
     float rtt_mult = protection_mode_ == kProtectionNackFEC ? 0.0 : 1.0;
-    if (RttMultExperiment::RttMultEnabled()) {
-      rtt_mult = RttMultExperiment::GetRttMultValue();
+    absl::optional<float> rtt_mult_add_cap_ms = absl::nullopt;
+    if (rtt_mult_settings_.has_value()) {
+      rtt_mult = rtt_mult_settings_->rtt_mult_setting;
+      rtt_mult_add_cap_ms = rtt_mult_settings_->rtt_mult_add_cap_ms;
     }
-    timing_->SetJitterDelay(jitter_estimator_.GetJitterEstimate(rtt_mult));
+    timing_->SetJitterDelay(
+        jitter_estimator_.GetJitterEstimate(rtt_mult, rtt_mult_add_cap_ms));
     timing_->UpdateCurrentDelay(render_time_ms, now_ms);
   } else {
     if (RttMultExperiment::RttMultEnabled() || add_rtt_to_playout_delay_)
@@ -695,19 +699,18 @@ void FrameBuffer::UpdateJitterDelay() {
   if (!stats_callback_)
     return;
 
-  int decode_ms;
   int max_decode_ms;
   int current_delay_ms;
   int target_delay_ms;
   int jitter_buffer_ms;
   int min_playout_delay_ms;
   int render_delay_ms;
-  if (timing_->GetTimings(&decode_ms, &max_decode_ms, &current_delay_ms,
-                          &target_delay_ms, &jitter_buffer_ms,
-                          &min_playout_delay_ms, &render_delay_ms)) {
+  if (timing_->GetTimings(&max_decode_ms, &current_delay_ms, &target_delay_ms,
+                          &jitter_buffer_ms, &min_playout_delay_ms,
+                          &render_delay_ms)) {
     stats_callback_->OnFrameBufferTimingsUpdated(
-        decode_ms, max_decode_ms, current_delay_ms, target_delay_ms,
-        jitter_buffer_ms, min_playout_delay_ms, render_delay_ms);
+        max_decode_ms, current_delay_ms, target_delay_ms, jitter_buffer_ms,
+        min_playout_delay_ms, render_delay_ms);
   }
 }
 

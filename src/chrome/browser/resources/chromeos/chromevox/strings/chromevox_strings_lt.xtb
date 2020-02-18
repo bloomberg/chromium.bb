@@ -69,6 +69,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1385214448885562192">Jei norite priimti, spustelėkite „Enter“, jei atšaukti – „Cancel“. Rodyklėmis aukštyn ir žemyn galite peržiūrėti ankstesnius ir kitus pasiūlymus.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Skaityti raiškiojo teksto atributus</translation>
 <translation id="1405567553485452995">Šviesiai žalia</translation>
 <translation id="1417889266572670458">Tamsiai mėlyna spalva</translation>
 <translation id="1431911867058218151">Slyvų spalva</translation>
@@ -319,11 +320,11 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="3232388865800379423">Iššokantysis mygtukas</translation>
 <translation id="3241052487511142956">Ankstesnė aplankyta nuoroda</translation>
 <translation id="3241638166094654466">Langelių kiekvienoje eilutėje:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">stačia</translation>
 <translation id="3286390186030710347">Šliaužiklis</translation>
 <translation id="3299925995433437805">Nėra kitos aplankytos nuorodos.</translation>
 <translation id="3300348286427369683">Raiškiojo teksto palaikymas. „ChromeVox“ dabar palaiko raiškiojo teksto laukus, įskaitant perėjimo komandas, Brailio žymeklio nukreipimą, pasirinkimą ir daugiau.</translation>
-<translation id="3304756947457041303">Tinkinti raiškiojo teksto indikatorius</translation>
 <translation id="3307886118343381874">Eiti į lentelės pabaigą</translation>
 <translation id="3311969765485641742">Jei norite peržiūrėti įspėjimus, paspauskite „Alt“ + „Shift“ + A</translation>
 <translation id="3312997241656799641">Kita aplankyta nuoroda</translation>
@@ -444,7 +445,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4161104397932142764">{COUNT,plural, =1{sekundė}one{sekundė}few{sekundės}many{sekundės}other{sekundžių}}</translation>
 <translation id="4161663686871496107">„ChromeVox“ ekrano skaitymas balsu parengtas</translation>
 <translation id="4173994908659439270">Nėra kito redaguotino teksto lauko.</translation>
-<translation id="4176463684765177261">Neleista</translation>
+<translation id="4176463684765177261">Išjungta</translation>
 <translation id="4187322598335821254">Jei norite pereiti po vieną eilutę, perbraukite aukštyn arba žemyn</translation>
 <translation id="4188530942454211480">Ankstesnis sakinys</translation>
 <translation id="4191918948604314587">Mygtukas</translation>

@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
@@ -29,15 +30,16 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
@@ -62,6 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // VR is only supported on L+.
 public class VrBrowserTransitionTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -392,7 +395,8 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
+                PreferencesLauncher.launchSettingsPageCompat(
+                        context, SingleWebsitePreferences.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -409,7 +413,7 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferencesLauncher.launchSettingsPage(context, null);
+            PreferencesLauncher.launchSettingsPageCompat(context, null);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -517,7 +521,7 @@ public class VrBrowserTransitionTest {
     public void testVrUnsupportedWhenReprojectionFails() throws InterruptedException {
         AtomicBoolean failed = new AtomicBoolean(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
                 VrShell vrShell = new VrShell(
                         mTestRule.getActivity(), VrShellDelegateUtils.getDelegateInstance(), null) {
                     @Override

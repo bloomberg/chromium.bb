@@ -79,8 +79,6 @@ const char* SchedulerStateMachine::BeginMainFrameStateToString(
       return "BeginMainFrameState::IDLE";
     case BeginMainFrameState::SENT:
       return "BeginMainFrameState::SENT";
-    case BeginMainFrameState::STARTED:
-      return "BeginMainFrameState::STARTED";
     case BeginMainFrameState::READY_TO_COMMIT:
       return "BeginMainFrameState::READY_TO_COMMIT";
   }
@@ -241,6 +239,8 @@ void SchedulerStateMachine::AsValueInto(
                     processing_animation_worklets_for_active_tree_);
   state->SetBoolean("processing_animation_worklets_for_pending_tree",
                     processing_animation_worklets_for_pending_tree_);
+  state->SetBoolean("processing_paint_worklets_for_pending_tree",
+                    processing_paint_worklets_for_pending_tree_);
   state->EndDictionary();
 }
 
@@ -377,6 +377,15 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
   // Even if we need to force activation of the pending tree, we should abort
   // drawing the active tree first.
   if (active_tree_needs_first_draw_)
+    return false;
+
+  // Delay pending tree activation until paint worklets have completed painting
+  // the pending tree. This must occur before the |ShouldAbortCurrentFrame|
+  // check as we cannot have an unpainted active tree.
+  //
+  // Note that paint worklets continue to paint when the page is not visible, so
+  // any abort will eventually happen when they complete.
+  if (processing_paint_worklets_for_pending_tree_)
     return false;
 
   if (ShouldAbortCurrentFrame())
@@ -537,18 +546,16 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (!HasInitializedLayerTreeFrameSink())
     return false;
 
-  if (!settings_.main_frame_while_submit_frame_throttled_enabled) {
-    // Throttle the BeginMainFrames on CompositorFrameAck unless we just
-    // submitted a frame to potentially improve impl-thread latency over
-    // main-thread throughput.
-    // TODO(brianderson): Remove this restriction to improve throughput or
-    // make it conditional on ImplLatencyTakesPriority.
-    bool just_submitted_in_deadline =
-        begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE &&
-        did_submit_in_last_frame_;
-    if (IsDrawThrottled() && !just_submitted_in_deadline)
-      return false;
-  }
+  // Throttle the BeginMainFrames on CompositorFrameAck unless we just
+  // submitted a frame to potentially improve impl-thread latency over
+  // main-thread throughput.
+  // TODO(brianderson): Remove this restriction to improve throughput or
+  // make it conditional on ImplLatencyTakesPriority.
+  bool just_submitted_in_deadline =
+      begin_impl_frame_state_ == BeginImplFrameState::INSIDE_DEADLINE &&
+      did_submit_in_last_frame_;
+  if (IsDrawThrottled() && !just_submitted_in_deadline)
+    return false;
 
   if (skip_next_begin_main_frame_to_reduce_latency_)
     return false;
@@ -710,8 +717,7 @@ bool SchedulerStateMachine::ShouldDeferInvalidatingForMainFrame() const {
     return true;
 
   // If the main frame was already sent, wait for the main thread to respond.
-  if (begin_main_frame_state_ == BeginMainFrameState::SENT ||
-      begin_main_frame_state_ == BeginMainFrameState::STARTED)
+  if (begin_main_frame_state_ == BeginMainFrameState::SENT)
     return true;
 
   // If the main thread committed during the last frame, i.e. it was not
@@ -847,6 +853,11 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
 }
 
 void SchedulerStateMachine::WillActivate() {
+  // We cannot activate the pending tree while paint worklets are still being
+  // processed; the pending tree *must* be fully painted before it can ever be
+  // activated because we cannot paint the active tree.
+  DCHECK(!processing_paint_worklets_for_pending_tree_);
+
   if (layer_tree_frame_sink_state_ ==
       LayerTreeFrameSinkState::WAITING_FOR_FIRST_ACTIVATION)
     layer_tree_frame_sink_state_ = LayerTreeFrameSinkState::ACTIVE;
@@ -906,8 +917,7 @@ void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
 
       if (consecutive_checkerboard_animations_ >=
               settings_.maximum_number_of_failed_draws_before_draw_is_forced &&
-          forced_redraw_state_ == ForcedRedrawOnTimeoutState::IDLE &&
-          settings_.timeout_and_draw_when_animation_checkerboards) {
+          forced_redraw_state_ == ForcedRedrawOnTimeoutState::IDLE) {
         // We need to force a draw, but it doesn't make sense to do this until
         // we've committed and have new textures.
         forced_redraw_state_ = ForcedRedrawOnTimeoutState::WAITING_FOR_COMMIT;
@@ -1134,8 +1144,7 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   main_thread_missed_last_deadline_ =
       CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
   main_thread_failed_to_respond_last_deadline_ =
-      begin_main_frame_state_ == BeginMainFrameState::SENT ||
-      begin_main_frame_state_ == BeginMainFrameState::STARTED;
+      begin_main_frame_state_ == BeginMainFrameState::SENT;
 
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.
@@ -1364,7 +1373,7 @@ void SchedulerStateMachine::SetNeedsOneBeginImplFrame() {
 }
 
 void SchedulerStateMachine::NotifyReadyToCommit() {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::STARTED)
+  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT)
       << AsValue()->ToString();
   begin_main_frame_state_ = BeginMainFrameState::READY_TO_COMMIT;
   // In commit_to_active_tree mode, commit should happen right after BeginFrame,
@@ -1374,7 +1383,7 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
 }
 
 void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::STARTED);
+  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT);
 
   // If the main thread aborted, it doesn't matter if the  main thread missed
   // the last deadline since it didn't have an update anyway.
@@ -1415,6 +1424,12 @@ void SchedulerStateMachine::DidLoseLayerTreeFrameSink() {
 }
 
 bool SchedulerStateMachine::NotifyReadyToActivate() {
+  // It is not valid for clients to try and activate the pending tree whilst
+  // paint worklets are still being processed; the pending tree *must* be fully
+  // painted before it can ever be activated (even if e.g. it is not visible),
+  // because we cannot paint the active tree.
+  DCHECK(!processing_paint_worklets_for_pending_tree_);
+
   if (!has_pending_tree_ || pending_tree_is_ready_for_activation_)
     return false;
 
@@ -1448,6 +1463,16 @@ void SchedulerStateMachine::NotifyAnimationWorkletStateChange(
   }
 }
 
+void SchedulerStateMachine::NotifyPaintWorkletStateChange(
+    PaintWorkletState state) {
+  bool processing_paint_worklets_for_pending_tree =
+      (state == PaintWorkletState::PROCESSING);
+  DCHECK_NE(processing_paint_worklets_for_pending_tree,
+            processing_paint_worklets_for_pending_tree_);
+  processing_paint_worklets_for_pending_tree_ =
+      processing_paint_worklets_for_pending_tree;
+}
+
 void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {
   DCHECK_EQ(layer_tree_frame_sink_state_, LayerTreeFrameSinkState::CREATING);
   layer_tree_frame_sink_state_ =
@@ -1462,11 +1487,6 @@ void SchedulerStateMachine::DidCreateAndInitializeLayerTreeFrameSink() {
   pending_submit_frames_ = 0;
   submit_frames_with_current_layer_tree_frame_sink_ = 0;
   main_thread_missed_last_deadline_ = false;
-}
-
-void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
-  DCHECK_EQ(begin_main_frame_state_, BeginMainFrameState::SENT);
-  begin_main_frame_state_ = BeginMainFrameState::STARTED;
 }
 
 bool SchedulerStateMachine::HasInitializedLayerTreeFrameSink() const {

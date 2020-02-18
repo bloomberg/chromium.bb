@@ -9,6 +9,7 @@
 
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/event_with_callback.h"
+#include "ui/events/blink/prediction/input_filter.h"
 #include "ui/events/blink/prediction/input_predictor.h"
 
 namespace ui {
@@ -24,9 +25,8 @@ class ScrollPredictorTest;
 class ScrollPredictor {
  public:
   // Select the predictor type from field trial params and initialize the
-  // predictor. enable_resampling is true when kResamplingScrollEvents is
-  // enabled.
-  explicit ScrollPredictor(bool enable_resampling);
+  // predictor.
+  explicit ScrollPredictor();
   ~ScrollPredictor();
 
   // Reset the predictors on each GSB.
@@ -61,6 +61,10 @@ class ScrollPredictor {
   void ComputeAccuracy(const WebScopedInputEvent& event);
 
   std::unique_ptr<InputPredictor> predictor_;
+  std::unique_ptr<InputFilter> filter_;
+
+  // Whether predicted scroll events should be filtered or not
+  bool filtering_enabled_ = false;
 
   // Total scroll delta, used for prediction. Reset when GestureScrollBegin
   gfx::PointF current_accumulated_delta_;
@@ -68,11 +72,7 @@ class ScrollPredictor {
   // the aggregated event.
   gfx::PointF last_accumulated_delta_;
 
-  // Whether resampling is enabled by feature flag.
-  bool enable_resampling_ = false;
-
-  // Whether current scroll event should be resampled. This only valid when
-  // enable_resampling_ is true.
+  // Whether current scroll event should be resampled.
   bool should_resample_scroll_events_ = false;
 
   // Records the timestamp for last event added to predictor. Use for

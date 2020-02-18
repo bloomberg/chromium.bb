@@ -75,14 +75,14 @@ void UpdateViewFromEyeParameters(
     const device::mojom::blink::VREyeParametersPtr& eye,
     double depth_near,
     double depth_far) {
-  const device::mojom::blink::VRFieldOfViewPtr& fov = eye->fieldOfView;
+  const device::mojom::blink::VRFieldOfViewPtr& fov = eye->field_of_view;
 
   view.UpdateProjectionMatrixFromFoV(
-      fov->upDegrees * kDegToRad, fov->downDegrees * kDegToRad,
-      fov->leftDegrees * kDegToRad, fov->rightDegrees * kDegToRad, depth_near,
+      fov->up_degrees * kDegToRad, fov->down_degrees * kDegToRad,
+      fov->left_degrees * kDegToRad, fov->right_degrees * kDegToRad, depth_near,
       depth_far);
 
-  view.UpdateOffset(eye->offset[0], eye->offset[1], eye->offset[2]);
+  view.UpdateOffset(eye->offset.x(), eye->offset.y(), eye->offset.z());
 }
 
 }  // namespace
@@ -116,6 +116,7 @@ XRSession::XRSession(
     device::mojom::blink::XRSessionClientRequest client_request,
     XRSession::SessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
+    bool uses_input_eventing,
     bool sensorless_session)
     : xr_(xr),
       mode_(mode),
@@ -124,9 +125,11 @@ XRSession::XRSession(
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
       client_binding_(this, std::move(client_request)),
+      input_binding_(this),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(
               xr_->GetExecutionContext())),
+      uses_input_eventing_(uses_input_eventing),
       sensorless_session_(sensorless_session) {
   render_state_ = MakeGarbageCollected<XRRenderState>(immersive());
   blurred_ = !HasAppropriateFocus();
@@ -157,6 +160,15 @@ ExecutionContext* XRSession::GetExecutionContext() const {
 
 const AtomicString& XRSession::InterfaceName() const {
   return event_target_names::kXRSession;
+}
+
+device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+XRSession::GetInputClickListener() {
+  DCHECK(!input_binding_);
+  device::mojom::blink::XRInputSourceButtonListenerAssociatedPtrInfo
+      input_listener;
+  input_binding_.Bind(MakeRequest(&input_listener));
+  return input_listener;
 }
 
 void XRSession::updateRenderState(XRRenderStateInit* init,
@@ -224,17 +236,15 @@ void XRSession::UpdateEyeParameters(
     const device::mojom::blink::VREyeParametersPtr& left_eye,
     const device::mojom::blink::VREyeParametersPtr& right_eye) {
   auto display_info = display_info_.Clone();
-  display_info->leftEye = left_eye.Clone();
-  display_info->rightEye = right_eye.Clone();
+  display_info->left_eye = left_eye.Clone();
+  display_info->right_eye = right_eye.Clone();
   SetXRDisplayInfo(std::move(display_info));
 }
 
 void XRSession::UpdateStageParameters(
     const device::mojom::blink::VRStageParametersPtr& stage_parameters) {
   auto display_info = display_info_.Clone();
-  display_info->stageParameters = stage_parameters.Clone();
-
-  // TODO(https://crbug.com/922175): Should bubble up to other events
+  display_info->stage_parameters = stage_parameters.Clone();
   SetXRDisplayInfo(std::move(display_info));
 }
 
@@ -270,11 +280,11 @@ ScriptPromise XRSession::requestReferenceSpace(ScriptState* script_state,
       break;
     case XRReferenceSpace::Type::kTypeBoundedFloor: {
       bool supports_bounded = false;
-      if (immersive() && display_info_->stageParameters) {
-        if (display_info_->stageParameters->bounds) {
+      if (immersive() && display_info_->stage_parameters) {
+        if (display_info_->stage_parameters->bounds) {
           supports_bounded = true;
-        } else if (display_info_->stageParameters->sizeX > 0 &&
-                   display_info_->stageParameters->sizeZ > 0) {
+        } else if (display_info_->stage_parameters->size_x > 0 &&
+                   display_info_->stage_parameters->size_z > 0) {
           supports_bounded = true;
         }
       }
@@ -361,8 +371,6 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
                           script_state->GetIsolate(), kNoSpaceSpecified));
   }
 
-  // TODO(https://crbug.com/846411): use space.
-
   // Reject the promise if device doesn't support the hit-test API.
   // TODO(https://crbug.com/878936): Get the environment provider without going
   // up to xr_, since it doesn't know which runtime's environment provider
@@ -376,15 +384,11 @@ ScriptPromise XRSession::requestHitTest(ScriptState* script_state,
 
   device::mojom::blink::XRRayPtr ray_mojo = device::mojom::blink::XRRay::New();
 
-  ray_mojo->origin = gfx::mojom::blink::Point3F::New();
-  ray_mojo->origin->x = ray->origin()->x();
-  ray_mojo->origin->y = ray->origin()->y();
-  ray_mojo->origin->z = ray->origin()->z();
+  ray_mojo->origin = WebFloatPoint3D(ray->origin()->x(), ray->origin()->y(),
+                                     ray->origin()->z());
 
-  ray_mojo->direction = gfx::mojom::blink::Vector3dF::New();
-  ray_mojo->direction->x = ray->direction()->x();
-  ray_mojo->direction->y = ray->direction()->y();
-  ray_mojo->direction->z = ray->direction()->z();
+  ray_mojo->direction = {ray->direction()->x(), ray->direction()->y(),
+                         ray->direction()->z()};
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -413,15 +417,7 @@ void XRSession::OnHitTestResults(
   HeapVector<Member<XRHitResult>> hit_results;
   for (const auto& mojom_result : results.value()) {
     XRHitResult* hit_result = MakeGarbageCollected<XRHitResult>(
-        std::make_unique<TransformationMatrix>(
-            mojom_result->hit_matrix[0], mojom_result->hit_matrix[1],
-            mojom_result->hit_matrix[2], mojom_result->hit_matrix[3],
-            mojom_result->hit_matrix[4], mojom_result->hit_matrix[5],
-            mojom_result->hit_matrix[6], mojom_result->hit_matrix[7],
-            mojom_result->hit_matrix[8], mojom_result->hit_matrix[9],
-            mojom_result->hit_matrix[10], mojom_result->hit_matrix[11],
-            mojom_result->hit_matrix[12], mojom_result->hit_matrix[13],
-            mojom_result->hit_matrix[14], mojom_result->hit_matrix[15]));
+        TransformationMatrix(mojom_result->hit_matrix.matrix()));
     hit_results.push_back(hit_result);
   }
   resolver->Resolve(hit_results);
@@ -478,8 +474,7 @@ void XRSession::ForceEnd() {
 
   for (unsigned i = 0; i < input_sources_->length(); i++) {
     auto* input_source = (*input_sources_)[i];
-    UpdateSelectStateOnRemoval(input_source);
-    input_source->SetGamepadConnected(false);
+    input_source->OnRemoved();
   }
 
   input_sources_ = nullptr;
@@ -516,13 +511,13 @@ DoubleSize XRSession::DefaultFramebufferSize() const {
   }
 
   double scale = display_info_->webxr_default_framebuffer_scale;
-  double width = display_info_->leftEye->renderWidth;
-  double height = display_info_->leftEye->renderHeight;
+  double width = display_info_->left_eye->render_width;
+  double height = display_info_->left_eye->render_height;
 
-  if (display_info_->rightEye) {
-    width += display_info_->rightEye->renderWidth;
-    height = std::max(display_info_->leftEye->renderHeight,
-                      display_info_->rightEye->renderHeight);
+  if (display_info_->right_eye) {
+    width += display_info_->right_eye->render_width;
+    height = std::max(display_info_->left_eye->render_height,
+                      display_info_->right_eye->render_height);
   }
 
   return DoubleSize(width * scale, height * scale);
@@ -636,8 +631,7 @@ void XRSession::OnFrame(
     double timestamp,
     std::unique_ptr<TransformationMatrix> base_pose_matrix,
     const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
-    const base::Optional<WTF::Vector<device::mojom::blink::XRPlaneDataPtr>>&
-        detected_planes) {
+    const device::mojom::blink::XRPlaneDetectionDataPtr& detected_planes_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
@@ -649,7 +643,7 @@ void XRSession::OnFrame(
   // If there are pending render state changes, apply them now.
   ApplyPendingRenderState();
 
-  world_information_->ProcessPlaneInformation(detected_planes);
+  world_information_->ProcessPlaneInformation(detected_planes_data, timestamp);
 
   if (pending_frame_) {
     pending_frame_ = false;
@@ -741,12 +735,27 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   }
 }
 
+void XRSession::OnButtonEvent(
+    device::mojom::blink::XRInputSourceStatePtr input_state) {
+  DCHECK(uses_input_eventing_);
+  OnInputStateChangeInternal(last_frame_id_, base::make_span(&input_state, 1),
+                             true /* from_eventing */);
+}
+
 void XRSession::OnInputStateChange(
     int16_t frame_id,
-    const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&
+    base::span<const device::mojom::blink::XRInputSourceStatePtr>
         input_states) {
+  OnInputStateChangeInternal(frame_id, input_states, false /* from_eventing */);
+}
+
+void XRSession::OnInputStateChangeInternal(
+    int16_t frame_id,
+    base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states,
+    bool from_eventing) {
   HeapVector<Member<XRInputSource>> added;
   HeapVector<Member<XRInputSource>> removed;
+  last_frame_id_ = frame_id;
 
   // Build up our added array, and update the frame id of any active input
   // sources so we can flag the ones that are no longer active.
@@ -778,13 +787,12 @@ void XRSession::OnInputStateChange(
   // We use a separate array of inactive sources here rather than just
   // processing removed, because if we replaced any input sources, they would
   // also be in removed, and we'd remove our newly added source.
-  std::vector<uint32_t> inactive_sources;
+  Vector<uint32_t> inactive_sources;
   for (unsigned i = 0; i < input_sources_->length(); i++) {
     auto* input_source = (*input_sources_)[i];
     if (input_source->activeFrameId() != frame_id) {
       inactive_sources.push_back(input_source->source_id());
-      UpdateSelectStateOnRemoval(input_source);
-      input_source->SetGamepadConnected(false);
+      input_source->OnRemoved();
       removed.push_back(input_source);
     }
   }
@@ -807,10 +815,16 @@ void XRSession::OnInputStateChange(
     if (ended_)
       break;
 
+    // If this data is not from eventing and we support it, ignore it's click
+    // states.
+    // If this data is from eventing, but we don't support it, then ignore it
+    if (from_eventing != uses_input_eventing_)
+      continue;
+
     XRInputSource* input_source =
         input_sources_->GetWithSourceId(input_state->source_id);
     DCHECK(input_source);
-    UpdateSelectState(input_source, input_state);
+    input_source->UpdateSelectState(input_state);
   }
 }
 
@@ -836,124 +850,10 @@ void XRSession::RemoveTransientInputSource(XRInputSource* input_source) {
       event_type_names::kInputsourceschange, this, {}, {input_source}));
 }
 
-void XRSession::OnSelectStart(XRInputSource* input_source) {
-  // Discard duplicate events, or events after the session has ended.
-  if (input_source->primaryInputPressed() || ended_)
-    return;
-
-  input_source->setPrimaryInputPressed(true);
-  input_source->setSelectionCancelled(false);
-
-  XRInputSourceEvent* event =
-      CreateInputSourceEvent(event_type_names::kSelectstart, input_source);
-  DispatchEvent(*event);
-
-  if (event->defaultPrevented())
-    input_source->setSelectionCancelled(true);
-
-  // Ensure the frame cannot be used outside of the event handler.
-  event->frame()->Deactivate();
-}
-
-void XRSession::OnSelectEnd(XRInputSource* input_source) {
-  // Discard duplicate events, or events after the session has ended.
-  if (!input_source->primaryInputPressed() || ended_)
-    return;
-
-  input_source->setPrimaryInputPressed(false);
-
-  LocalFrame* frame = xr_->GetFrame();
-  if (!frame)
-    return;
-
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame);
-
-  XRInputSourceEvent* event =
-      CreateInputSourceEvent(event_type_names::kSelectend, input_source);
-  DispatchEvent(*event);
-
-  if (event->defaultPrevented())
-    input_source->setSelectionCancelled(true);
-
-  // Ensure the frame cannot be used outside of the event handler.
-  event->frame()->Deactivate();
-}
-
-void XRSession::OnSelect(XRInputSource* input_source) {
-  // If a select was fired but we had not previously started the selection it
-  // indictes a sub-frame or instantanous select event, and we should fire a
-  // selectstart prior to the selectend.
-  if (!input_source->primaryInputPressed()) {
-    OnSelectStart(input_source);
-  }
-
-  // If SelectStart caused the session to end, we shouldn't try to fire the
-  // select event.
-  if (!input_source->selectionCancelled() && !ended_) {
-    XRInputSourceEvent* event =
-        CreateInputSourceEvent(event_type_names::kSelect, input_source);
-    DispatchEvent(*event);
-
-    // Ensure the frame cannot be used outside of the event handler.
-    event->frame()->Deactivate();
-  }
-
-  OnSelectEnd(input_source);
-}
-
 void XRSession::OnPoseReset() {
   for (const auto& reference_space : reference_spaces_) {
     reference_space->OnReset();
   }
-}
-
-void XRSession::UpdateSelectState(
-    XRInputSource* input_source,
-    const device::mojom::blink::XRInputSourceStatePtr& state) {
-  if (!input_source || !state)
-    return;
-
-  // Handle state change of the primary input, which may fire events
-  if (state->primary_input_clicked)
-    OnSelect(input_source);
-
-  if (state->primary_input_pressed) {
-    OnSelectStart(input_source);
-  } else if (input_source->primaryInputPressed()) {
-    // May get here if the input source was previously pressed but now isn't,
-    // but the input source did not set primary_input_clicked to true. We will
-    // treat this as a cancelled selection, firing the selectend event so the
-    // page stays in sync with the controller state but won't fire the
-    // usual select event.
-    OnSelectEnd(input_source);
-  }
-}
-
-void XRSession::UpdateSelectStateOnRemoval(XRInputSource* input_source) {
-  if (!input_source)
-    return;
-
-  if (input_source->primaryInputPressed()) {
-    input_source->setPrimaryInputPressed(false);
-
-    XRInputSourceEvent* event =
-        CreateInputSourceEvent(event_type_names::kSelectend, input_source);
-    DispatchEvent(*event);
-
-    if (event->defaultPrevented())
-      input_source->setSelectionCancelled(true);
-
-    // Ensure the frame cannot be used outside of the event handler.
-    event->frame()->Deactivate();
-  }
-}
-
-XRInputSourceEvent* XRSession::CreateInputSourceEvent(
-    const AtomicString& type,
-    XRInputSource* input_source) {
-  XRFrame* presentation_frame = CreatePresentationFrame();
-  return XRInputSourceEvent::Create(type, presentation_frame, input_source);
 }
 
 void XRSession::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {
@@ -977,15 +877,27 @@ void XRSession::SetXRDisplayInfo(
     if (display_info_->Equals(*display_info))
       return;
 
-    if (display_info_->stageParameters && display_info->stageParameters &&
-        !display_info_->stageParameters->Equals(
-            *(display_info->stageParameters)))
+    if (display_info_->stage_parameters && display_info->stage_parameters &&
+        !display_info_->stage_parameters->Equals(
+            *(display_info->stage_parameters))) {
+      // Stage parameters changed.
       stage_parameters_id_++;
+    } else if (!!(display_info_->stage_parameters) !=
+               !!(display_info->stage_parameters)) {
+      // Either stage parameters just became available (sometimes happens if
+      // detecting the bounds doesn't happen until a few seconds into the
+      // session for platforms such as WMR), or the stage parameters just went
+      // away (probably due to tracking loss).
+      stage_parameters_id_++;
+    }
+  } else if (display_info && display_info->stage_parameters) {
+    // Got stage parameters for the first time this session.
+    stage_parameters_id_++;
   }
 
   display_info_id_++;
   display_info_ = std::move(display_info);
-  is_external_ = display_info_->capabilities->hasExternalDisplay;
+  is_external_ = display_info_->capabilities->has_external_display;
 }
 
 WTF::Vector<XRViewData>& XRSession::views() {
@@ -998,18 +910,18 @@ WTF::Vector<XRViewData>& XRSession::views() {
       // If we don't already have the views allocated, do so now.
       if (views_.IsEmpty()) {
         views_.emplace_back(XRView::kEyeLeft);
-        if (display_info_->rightEye) {
+        if (display_info_->right_eye) {
           views_.emplace_back(XRView::kEyeRight);
         }
       }
       // In immersive mode the projection and view matrices must be aligned with
       // the device's physical optics.
       UpdateViewFromEyeParameters(
-          views_[kMonoOrStereoLeftView], display_info_->leftEye,
+          views_[kMonoOrStereoLeftView], display_info_->left_eye,
           render_state_->depthNear(), render_state_->depthFar());
-      if (display_info_->rightEye) {
+      if (display_info_->right_eye) {
         UpdateViewFromEyeParameters(
-            views_[kStereoRightView], display_info_->rightEye,
+            views_[kStereoRightView], display_info_->right_eye,
             render_state_->depthNear(), render_state_->depthFar());
       }
     } else {

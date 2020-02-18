@@ -19,6 +19,21 @@ constexpr char kShowtimeAppId[] = "eoccpgmpiempcflglfokeengliildkag";
 // web_app::GenerateAppIdFromURL(GURL("https://canvas.apps.chrome/")).
 constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 
+// Generated as
+// web_app::GenerateAppIdFromURL(GURL(
+// "https://google.com/chromebook/whatsnew/embedded/")).
+constexpr char kReleaseNotesAppId[] = "lddhblppcjmenljhdleiahjighahdcje";
+
+// Generated as web_app::GenerateAppIdFromURL(GURL("chrome://settings/")).
+constexpr char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";
+
+// Generated as web_app::GenerateAppIdFromURL(GURL("chrome://os-settings/")).
+constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
+
+// Generated as
+// web_app::GenerateAppIdFromURL(GURL("https://news.google.com/?lfhs=2")).
+constexpr char kGoogleNewsAppId[] = "kfgapjallbhpciobgmlhlhokknljkgho";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

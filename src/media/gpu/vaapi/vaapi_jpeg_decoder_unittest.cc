@@ -4,12 +4,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <va/va.h>
 
 // This has to be included first.
 // See http://code.google.com/p/googletest/issues/detail?id=371
@@ -26,6 +26,10 @@
 #include "base/strings/string_util.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_types.h"
+#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
+#include "media/gpu/vaapi/test_utils.h"
+#include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -35,29 +39,36 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 namespace {
 
+using DecodedImagePtr = std::unique_ptr<vaapi_test_utils::DecodedImage>;
+
 constexpr const char* kYuv422Filename = "pixel-1280x720.jpg";
 constexpr const char* kYuv420Filename = "pixel-1280x720-yuv420.jpg";
 constexpr const char* kYuv444Filename = "pixel-1280x720-yuv444.jpg";
+constexpr const char* kOddHeightImageFilename = "peach_pi-40x23.jpg";
+constexpr const char* kOddWidthImageFilename = "peach_pi-41x22.jpg";
+constexpr const char* kOddDimensionsImageFilename = "peach_pi-41x23.jpg";
 
-struct TestParam {
-  const char* test_name;
-  const char* filename;
-};
-
-const TestParam kTestCases[] = {
+const vaapi_test_utils::TestParam kTestCases[] = {
     {"YUV422", kYuv422Filename},
     {"YUV420", kYuv420Filename},
     {"YUV444", kYuv444Filename},
+    {"OddHeightImage40x23", kOddHeightImageFilename},
+    {"OddWidthImage41x22", kOddWidthImageFilename},
+    {"OddDimensionsImage41x23", kOddDimensionsImageFilename},
 };
 
-// Any number above 99.5% should do, experimentally we like a wee higher.
-constexpr double kMinSsim = 0.997;
+constexpr double kMinSsim = 0.995;
 
 // This file is not supported by the VAAPI, so we don't define expectations on
 // the decode result.
@@ -71,158 +82,55 @@ constexpr int k420MCUSize = 16;
 // JPEG decoding.
 constexpr gfx::Size kLargestSupportedSize(16 * 1024, 16 * 1024);
 
-// Compares the result of sw decoding |encoded_image| with |decoded_image| using
-// SSIM. Returns true if all conversions work and SSIM is above a given
-// threshold (kMinSsim), or false otherwise.
-bool CompareImages(base::span<const uint8_t> encoded_image,
-                   const ScopedVAImage* decoded_image) {
+// Decodes the given |encoded_image| using libyuv and returns the result as a
+// DecodedImage object. The decoded planes will be stored in |dest_*|.
+// Note however, that this function does not takes ownership of |dest_*| or
+// manage their memory.
+DecodedImagePtr GetSwDecode(base::span<const uint8_t> encoded_image,
+                            std::vector<uint8_t>* dest_y,
+                            std::vector<uint8_t>* dest_u,
+                            std::vector<uint8_t>* dest_v) {
+  DCHECK(dest_y && dest_u && dest_v);
   JpegParseResult parse_result;
   const bool result = ParseJpegPicture(encoded_image.data(),
                                        encoded_image.size(), &parse_result);
   if (!result)
-    return false;
+    return nullptr;
 
-  const uint16_t coded_width = parse_result.frame_header.coded_width;
-  const uint16_t coded_height = parse_result.frame_header.coded_height;
-  if (coded_width != decoded_image->image()->width ||
-      coded_height != decoded_image->image()->height) {
-    DLOG(ERROR) << "Wrong expected decoded JPEG coded size, " << coded_width
-                << "x" << coded_height << " versus VaAPI provided "
-                << decoded_image->image()->width << "x"
-                << decoded_image->image()->height;
-    return false;
+  const gfx::Size jpeg_size(
+      base::strict_cast<int>(parse_result.frame_header.visible_width),
+      base::strict_cast<int>(parse_result.frame_header.visible_height));
+  if (jpeg_size.IsEmpty())
+    return nullptr;
+
+  const gfx::Size half_jpeg_size((jpeg_size.width() + 1) / 2,
+                                 (jpeg_size.height() + 1) / 2);
+
+  dest_y->resize(jpeg_size.GetArea());
+  dest_u->resize(half_jpeg_size.GetArea());
+  dest_v->resize(half_jpeg_size.GetArea());
+
+  if (libyuv::ConvertToI420(
+          encoded_image.data(), encoded_image.size(), dest_y->data(),
+          jpeg_size.width(), dest_u->data(), half_jpeg_size.width(),
+          dest_v->data(), half_jpeg_size.width(), 0, 0, jpeg_size.width(),
+          jpeg_size.height(), jpeg_size.width(), jpeg_size.height(),
+          libyuv::kRotate0, libyuv::FOURCC_MJPG) != 0) {
+    return nullptr;
   }
 
-  const uint16_t width = parse_result.frame_header.visible_width;
-  const uint16_t height = parse_result.frame_header.visible_height;
-  const uint16_t even_width = (width + 1) / 2;
-  const uint16_t even_height = (height + 1) / 2;
+  auto sw_decoded_jpeg = std::make_unique<vaapi_test_utils::DecodedImage>();
+  sw_decoded_jpeg->fourcc = VA_FOURCC_I420;
+  sw_decoded_jpeg->number_of_planes = 3u;
+  sw_decoded_jpeg->size = jpeg_size;
+  sw_decoded_jpeg->planes[0].data = dest_y->data();
+  sw_decoded_jpeg->planes[0].stride = jpeg_size.width();
+  sw_decoded_jpeg->planes[1].data = dest_u->data();
+  sw_decoded_jpeg->planes[1].stride = half_jpeg_size.width();
+  sw_decoded_jpeg->planes[2].data = dest_v->data();
+  sw_decoded_jpeg->planes[2].stride = half_jpeg_size.width();
 
-  auto ref_y = std::make_unique<uint8_t[]>(width * height);
-  auto ref_u = std::make_unique<uint8_t[]>(even_width * even_height);
-  auto ref_v = std::make_unique<uint8_t[]>(even_width * even_height);
-
-  const int conversion_result = libyuv::ConvertToI420(
-      encoded_image.data(), encoded_image.size(), ref_y.get(), width,
-      ref_u.get(), even_width, ref_v.get(), even_width, 0, 0, width, height,
-      width, height, libyuv::kRotate0, libyuv::FOURCC_MJPG);
-  if (conversion_result != 0) {
-    DLOG(ERROR) << "libyuv conversion error";
-    return false;
-  }
-
-  const uint32_t va_fourcc = decoded_image->image()->format.fourcc;
-  uint32_t libyuv_fourcc = 0;
-  switch (va_fourcc) {
-    case VA_FOURCC_I420:
-      libyuv_fourcc = libyuv::FOURCC_I420;
-      break;
-    case VA_FOURCC_NV12:
-      libyuv_fourcc = libyuv::FOURCC_NV12;
-      break;
-    case VA_FOURCC_YUY2:
-    case VA_FOURCC('Y', 'U', 'Y', 'V'):
-      libyuv_fourcc = libyuv::FOURCC_YUY2;
-      break;
-    default:
-      DLOG(ERROR) << "Not supported FourCC: " << FourccToString(va_fourcc);
-      return false;
-  }
-
-  if (libyuv_fourcc == libyuv::FOURCC_I420) {
-    const auto* decoded_data_y =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[0];
-    const auto* decoded_data_u =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[1];
-    const auto* decoded_data_v =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[2];
-
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        decoded_data_y,
-        base::checked_cast<int>(decoded_image->image()->pitches[0]),
-        decoded_data_u,
-        base::checked_cast<int>(decoded_image->image()->pitches[1]),
-        decoded_data_v,
-        base::checked_cast<int>(decoded_image->image()->pitches[2]), width,
-        height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
-  } else if (libyuv_fourcc == libyuv::FOURCC_NV12) {
-    const auto* decoded_data_y =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[0];
-    const auto* decoded_data_uv =
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()) +
-        decoded_image->image()->offsets[1];
-
-    auto temp_y = std::make_unique<uint8_t[]>(width * height);
-    auto temp_u = std::make_unique<uint8_t[]>(even_width * even_height);
-    auto temp_v = std::make_unique<uint8_t[]>(even_width * even_height);
-
-    const int conversion_result = libyuv::NV12ToI420(
-        decoded_data_y,
-        base::checked_cast<int>(decoded_image->image()->pitches[0]),
-        decoded_data_uv,
-        base::checked_cast<int>(decoded_image->image()->pitches[1]),
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
-    if (conversion_result != 0) {
-      DLOG(ERROR) << "libyuv conversion error";
-      return false;
-    }
-
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
-  } else {
-    auto temp_y = std::make_unique<uint8_t[]>(width * height);
-    auto temp_u = std::make_unique<uint8_t[]>(even_width * even_height);
-    auto temp_v = std::make_unique<uint8_t[]>(even_width * even_height);
-
-    // TODO(crbug.com/868400): support other formats/planarities/pitches.
-    constexpr uint32_t kNumPlanesYuv422 = 1u;
-    constexpr uint32_t kBytesPerPixelYuv422 = 2u;
-    if (decoded_image->image()->num_planes != kNumPlanesYuv422 ||
-        decoded_image->image()->pitches[0] != (width * kBytesPerPixelYuv422)) {
-      DLOG(ERROR) << "Too many planes (got "
-                  << decoded_image->image()->num_planes << ", expected "
-                  << kNumPlanesYuv422 << ") or rows not tightly packed (got "
-                  << decoded_image->image()->pitches[0] << ", expected "
-                  << (width * kBytesPerPixelYuv422) << "), aborting test";
-      return false;
-    }
-
-    const int conversion_result = libyuv::ConvertToI420(
-        static_cast<const uint8_t*>(decoded_image->va_buffer()->data()),
-        base::strict_cast<size_t>(decoded_image->image()->data_size),
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        0, 0, width, height, width, height, libyuv::kRotate0, libyuv_fourcc);
-    if (conversion_result != 0) {
-      DLOG(ERROR) << "libyuv conversion error";
-      return false;
-    }
-
-    const double ssim = libyuv::I420Ssim(
-        ref_y.get(), width, ref_u.get(), even_width, ref_v.get(), even_width,
-        temp_y.get(), width, temp_u.get(), even_width, temp_v.get(), even_width,
-        width, height);
-    if (ssim < kMinSsim) {
-      DLOG(ERROR) << "Too low SSIM: " << ssim << " < " << kMinSsim;
-      return false;
-    }
-  }
-  return true;
+  return sw_decoded_jpeg;
 }
 
 // Generates a checkerboard pattern as a JPEG image of a specified |size| and
@@ -317,8 +225,7 @@ bool GetMinUnsupportedDimension(int min_surface_supported,
 // should return 48 because for a 4:2:0 image, both coded dimensions should be
 // multiples of 16.
 int GetMinSupportedDimension(int min_surface_supported) {
-  if (min_surface_supported == 0)
-    return k420MCUSize;
+  LOG_ASSERT(min_surface_supported > 0);
   return RoundUpToMultiple(min_surface_supported, k420MCUSize);
 }
 
@@ -334,9 +241,8 @@ int GetMaxSupportedDimension(int max_surface_supported) {
 
 }  // namespace
 
-class VASurface;
-
-class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
+class VaapiJpegDecoderTest
+    : public testing::TestWithParam<vaapi_test_utils::TestParam> {
  protected:
   VaapiJpegDecoderTest() {
     const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -354,11 +260,15 @@ class VaapiJpegDecoderTest : public testing::TestWithParam<TestParam> {
   std::unique_ptr<ScopedVAImage> Decode(
       base::span<const uint8_t> encoded_image,
       uint32_t preferred_fourcc,
-      VaapiJpegDecodeStatus* status = nullptr);
+      VaapiImageDecodeStatus* status = nullptr);
 
   std::unique_ptr<ScopedVAImage> Decode(
       base::span<const uint8_t> encoded_image,
-      VaapiJpegDecodeStatus* status = nullptr);
+      VaapiImageDecodeStatus* status = nullptr);
+
+  scoped_refptr<gfx::NativePixmapDmaBuf> DecodeToNativePixmapDmaBuf(
+      base::span<const uint8_t> encoded_image,
+      VaapiImageDecodeStatus* status = nullptr);
 
  protected:
   std::string test_data_path_;
@@ -382,30 +292,51 @@ base::FilePath VaapiJpegDecoderTest::FindTestDataFilePath(
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
     uint32_t preferred_fourcc,
-    VaapiJpegDecodeStatus* status) {
-  VaapiJpegDecodeStatus decode_status;
-  scoped_refptr<VASurface> surface =
-      decoder_.Decode(encoded_image, &decode_status);
-  EXPECT_EQ(!!surface, decode_status == VaapiJpegDecodeStatus::kSuccess);
+    VaapiImageDecodeStatus* status) {
+  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
+  EXPECT_EQ(!!decoder_.GetScopedVASurface(),
+            decode_status == VaapiImageDecodeStatus::kSuccess);
 
   // Still try to get image when decode fails.
-  VaapiJpegDecodeStatus image_status;
+  VaapiImageDecodeStatus image_status;
   std::unique_ptr<ScopedVAImage> scoped_image;
   scoped_image = decoder_.GetImage(preferred_fourcc, &image_status);
-  EXPECT_EQ(!!scoped_image, image_status == VaapiJpegDecodeStatus::kSuccess);
+  EXPECT_EQ(!!scoped_image, image_status == VaapiImageDecodeStatus::kSuccess);
 
-  // Record the first fail status.
+  // Return the first fail status.
   if (status) {
-    *status = decode_status != VaapiJpegDecodeStatus::kSuccess ? decode_status
-                                                               : image_status;
+    *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
+                                                                : image_status;
   }
   return scoped_image;
 }
 
 std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
     base::span<const uint8_t> encoded_image,
-    VaapiJpegDecodeStatus* status) {
+    VaapiImageDecodeStatus* status) {
   return Decode(encoded_image, VA_FOURCC_I420, status);
+}
+
+scoped_refptr<gfx::NativePixmapDmaBuf>
+VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
+    base::span<const uint8_t> encoded_image,
+    VaapiImageDecodeStatus* status) {
+  const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
+  EXPECT_EQ(!!decoder_.GetScopedVASurface(),
+            decode_status == VaapiImageDecodeStatus::kSuccess);
+
+  // Still try to get the pixmap when decode fails.
+  VaapiImageDecodeStatus pixmap_status;
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      decoder_.ExportAsNativePixmapDmaBuf(&pixmap_status);
+  EXPECT_EQ(!!pixmap, pixmap_status == VaapiImageDecodeStatus::kSuccess);
+
+  // Return the first fail status.
+  if (status) {
+    *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
+                                                                : pixmap_status;
+  }
+  return pixmap;
 }
 
 // The intention of this test is to ensure that the workarounds added in
@@ -445,7 +376,7 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   // Skip the image if the VAAPI driver doesn't claim to support its chroma
   // subsampling format. However, we expect at least 4:2:0 and 4:2:2 support.
   const VaapiWrapper::InternalFormats supported_internal_formats =
-      VaapiWrapper::GetJpegDecodeSupportedInternalFormats();
+      VaapiWrapper::GetDecodeSupportedInternalFormats(VAProfileJPEGBaseline);
   ASSERT_TRUE(supported_internal_formats.yuv420);
   ASSERT_TRUE(supported_internal_formats.yuv422);
   JpegParseResult parse_result;
@@ -454,8 +385,10 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   const unsigned int rt_format =
       VaSurfaceFormatForJpeg(parse_result.frame_header);
   ASSERT_NE(kInvalidVaRtFormat, rt_format);
-  if (!VaapiWrapper::IsJpegDecodingSupportedForInternalFormat(rt_format))
+  if (!VaapiWrapper::IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline,
+                                                          rt_format)) {
     GTEST_SKIP();
+  }
 
   // Note that this test together with
   // VaapiJpegDecoderTest.MinimalImageFormatSupport gives us two guarantees:
@@ -481,10 +414,27 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
   nv12_format.fourcc = VA_FOURCC_NV12;
   EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(nv12_format));
 
+  // Decode the image using libyuv. Using |temp_*| for resource management.
+  std::vector<uint8_t> temp_y;
+  std::vector<uint8_t> temp_u;
+  std::vector<uint8_t> temp_v;
+  DecodedImagePtr sw_decoded_jpeg =
+      GetSwDecode(encoded_image, &temp_y, &temp_u, &temp_v);
+  ASSERT_TRUE(sw_decoded_jpeg);
+
+  // Now run the comparison between the sw and hw image decodes for the
+  // supported formats.
   for (const auto& image_format : supported_image_formats) {
     std::unique_ptr<ScopedVAImage> scoped_image =
         Decode(encoded_image, image_format.fourcc);
     ASSERT_TRUE(scoped_image);
+    ASSERT_TRUE(decoder_.GetScopedVASurface());
+    EXPECT_TRUE(decoder_.GetScopedVASurface()->IsValid());
+    EXPECT_EQ(decoder_.GetScopedVASurface()->size().width(),
+              base::strict_cast<int>(parse_result.frame_header.coded_width));
+    EXPECT_EQ(decoder_.GetScopedVASurface()->size().height(),
+              base::strict_cast<int>(parse_result.frame_header.coded_height));
+    EXPECT_EQ(rt_format, decoder_.GetScopedVASurface()->format());
     const uint32_t actual_fourcc = scoped_image->image()->format.fourcc;
     // TODO(andrescj): CompareImages() only supports I420, NV12, YUY2, and YUYV.
     // Make it support all the image formats we expect and call it
@@ -492,7 +442,10 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
     if (actual_fourcc == VA_FOURCC_I420 || actual_fourcc == VA_FOURCC_NV12 ||
         actual_fourcc == VA_FOURCC_YUY2 ||
         actual_fourcc == VA_FOURCC('Y', 'U', 'Y', 'V')) {
-      ASSERT_TRUE(CompareImages(encoded_image, scoped_image.get()));
+      ASSERT_TRUE(vaapi_test_utils::CompareImages(
+          *sw_decoded_jpeg,
+          vaapi_test_utils::ScopedVAImageToDecodedImage(scoped_image.get()),
+          kMinSsim));
     }
     DVLOG(1) << "Got a " << FourccToString(scoped_image->image()->format.fourcc)
              << " VAImage (preferred " << FourccToString(image_format.fourcc)
@@ -504,11 +457,15 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
 // successfully.
 //
 // TODO(andrescj): for now, this assumes 4:2:0. Handle other formats.
+// TODO(andrescj): consider recreating the decoder for every size so that no
+// state is retained.
 TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
   gfx::Size min_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMinResolution(&min_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMinResolution(VAProfileJPEGBaseline,
+                                                   &min_supported_size));
   gfx::Size max_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMaxResolution(&max_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMaxResolution(VAProfileJPEGBaseline,
+                                                   &max_supported_size));
 
   // Ensure the maximum supported size is reasonable.
   ASSERT_GE(max_supported_size.width(), min_supported_size.width());
@@ -538,10 +495,111 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
     std::unique_ptr<ScopedVAImage> scoped_image = Decode(jpeg_data_span);
     ASSERT_TRUE(scoped_image)
         << "Decode unexpectedly failed for size = " << test_size.ToString();
-    EXPECT_TRUE(CompareImages(jpeg_data_span, scoped_image.get()))
+    ASSERT_TRUE(decoder_.GetScopedVASurface());
+    EXPECT_TRUE(decoder_.GetScopedVASurface()->IsValid());
+
+    // Decode the image using libyuv. Using |temp_*| for resource management.
+    std::vector<uint8_t> temp_y;
+    std::vector<uint8_t> temp_u;
+    std::vector<uint8_t> temp_v;
+    DecodedImagePtr sw_decoded_jpeg =
+        GetSwDecode(jpeg_data_span, &temp_y, &temp_u, &temp_v);
+    ASSERT_TRUE(sw_decoded_jpeg);
+
+    EXPECT_TRUE(vaapi_test_utils::CompareImages(
+        *sw_decoded_jpeg,
+        vaapi_test_utils::ScopedVAImageToDecodedImage(scoped_image.get()),
+        kMinSsim))
         << "The SSIM check unexpectedly failed for size = "
         << test_size.ToString();
   }
+}
+
+// TODO(andrescj): test other JPEG formats besides YUV 4:2:0.
+TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
+  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
+                       "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
+    // TODO(crbug.com/974438): until we support surfaces with multiple buffer
+    // objects, the AMD driver fails this test.
+    GTEST_SKIP();
+  }
+  if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
+                       "Intel i965 driver", base::CompareCase::SENSITIVE)) {
+    // TODO(b/135705575): until the correct offsets are exported, the Intel i965
+    // driver fails this test.
+    GTEST_SKIP();
+  }
+
+  base::FilePath input_file = FindTestDataFilePath(kYuv420Filename);
+  std::string jpeg_data;
+  ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
+      << "failed to read input data from " << input_file.value();
+  const auto encoded_image = base::make_span<const uint8_t>(
+      reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
+  VaapiImageDecodeStatus status;
+  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+      DecodeToNativePixmapDmaBuf(encoded_image, &status);
+  ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
+  EXPECT_FALSE(decoder_.GetScopedVASurface());
+  ASSERT_TRUE(pixmap);
+
+  // After exporting the surface, we should not be able to obtain a VAImage with
+  // the decoded data.
+  VAImageFormat i420_format{};
+  i420_format.fourcc = VA_FOURCC_I420;
+  EXPECT_TRUE(VaapiWrapper::IsImageFormatSupported(i420_format));
+  EXPECT_FALSE(decoder_.GetImage(i420_format.fourcc, &status));
+  EXPECT_EQ(VaapiImageDecodeStatus::kInvalidState, status);
+
+  // Workaround: in order to import and map the pixmap using minigbm when the
+  // format is gfx::BufferFormat::YVU_420, we need to reorder the planes so that
+  // the offsets are in increasing order as assumed in https://bit.ly/2NLubNN.
+  // Otherwise, we get a validation error. In essence, we're making minigbm
+  // think that it is mapping a YVU_420, but it's actually mapping a YUV_420.
+  //
+  // TODO(andrescj): revisit this once crrev.com/c/1573718 lands.
+  gfx::NativePixmapHandle handle = pixmap->ExportHandle();
+  if (pixmap->GetBufferFormat() == gfx::BufferFormat::YVU_420)
+    std::swap(handle.planes[1], handle.planes[2]);
+
+  LocalGpuMemoryBufferManager gpu_memory_buffer_manager;
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      gpu_memory_buffer_manager.ImportDmaBuf(handle, pixmap->GetBufferSize(),
+                                             pixmap->GetBufferFormat());
+  ASSERT_TRUE(gpu_memory_buffer);
+  ASSERT_TRUE(gpu_memory_buffer->Map());
+  vaapi_test_utils::DecodedImage decoded_image{};
+  const gfx::BufferFormat format = gpu_memory_buffer->GetFormat();
+  if (format == gfx::BufferFormat::YVU_420) {
+    decoded_image.fourcc = VA_FOURCC_I420;
+    decoded_image.number_of_planes = 3u;
+  } else if (format == gfx::BufferFormat::YUV_420_BIPLANAR) {
+    decoded_image.fourcc = VA_FOURCC_NV12;
+    decoded_image.number_of_planes = 2u;
+  } else {
+    ASSERT_TRUE(false) << "Unsupported format "
+                       << gfx::BufferFormatToString(format);
+  }
+  decoded_image.size = gpu_memory_buffer->GetSize();
+  for (size_t plane = 0u;
+       plane < base::strict_cast<size_t>(decoded_image.number_of_planes);
+       plane++) {
+    decoded_image.planes[plane].data =
+        static_cast<uint8_t*>(gpu_memory_buffer->memory(plane));
+    decoded_image.planes[plane].stride = gpu_memory_buffer->stride(plane);
+  }
+
+  // Decode the image using libyuv. Using |temp_*| for resource management.
+  std::vector<uint8_t> temp_y;
+  std::vector<uint8_t> temp_u;
+  std::vector<uint8_t> temp_v;
+  DecodedImagePtr sw_decoded_jpeg =
+      GetSwDecode(encoded_image, &temp_y, &temp_u, &temp_v);
+  ASSERT_TRUE(sw_decoded_jpeg);
+
+  EXPECT_TRUE(vaapi_test_utils::CompareImages(*sw_decoded_jpeg, decoded_image,
+                                              kMinSsim));
+  gpu_memory_buffer->Unmap();
 }
 
 // Make sure that JPEGs whose size is below the supported size range are
@@ -550,9 +608,11 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
 // TODO(andrescj): for now, this assumes 4:2:0. Handle other formats.
 TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
   gfx::Size min_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMinResolution(&min_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMinResolution(VAProfileJPEGBaseline,
+                                                   &min_supported_size));
   gfx::Size max_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMaxResolution(&max_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMaxResolution(VAProfileJPEGBaseline,
+                                                   &max_supported_size));
 
   // Ensure the maximum supported size is reasonable.
   ASSERT_GE(max_supported_size.width(), min_supported_size.width());
@@ -585,13 +645,14 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
   for (const auto& test_size : test_sizes) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
-    VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+    VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
     ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
                             reinterpret_cast<const uint8_t*>(jpeg_data.data()),
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
+    EXPECT_FALSE(decoder_.GetScopedVASurface());
   }
 }
 
@@ -601,9 +662,11 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForBelowMinSize) {
 // TODO(andrescj): for now, this assumes 4:2:0. Handle other formats.
 TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
   gfx::Size min_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMinResolution(&min_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMinResolution(VAProfileJPEGBaseline,
+                                                   &min_supported_size));
   gfx::Size max_supported_size;
-  ASSERT_TRUE(VaapiWrapper::GetJpegDecodeMaxResolution(&max_supported_size));
+  ASSERT_TRUE(VaapiWrapper::GetDecodeMaxResolution(VAProfileJPEGBaseline,
+                                                   &max_supported_size));
 
   // Ensure the maximum supported size is reasonable.
   ASSERT_GE(max_supported_size.width(), min_supported_size.width());
@@ -632,13 +695,14 @@ TEST_F(VaapiJpegDecoderTest, DecodeFailsForAboveMaxSize) {
   for (const auto& test_size : test_sizes) {
     const std::vector<unsigned char> jpeg_data = GenerateJpegImage(test_size);
     ASSERT_FALSE(jpeg_data.empty());
-    VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+    VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
     ASSERT_FALSE(Decode(base::make_span<const uint8_t>(
                             reinterpret_cast<const uint8_t*>(jpeg_data.data()),
                             jpeg_data.size()),
                         &status))
         << "Decode unexpectedly succeeded for size = " << test_size.ToString();
-    EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedJpeg, status);
+    EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedImage, status);
+    EXPECT_FALSE(decoder_.GetScopedVASurface());
   }
 }
 
@@ -648,22 +712,18 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
-  VaapiJpegDecodeStatus status = VaapiJpegDecodeStatus::kSuccess;
+  VaapiImageDecodeStatus status = VaapiImageDecodeStatus::kSuccess;
   ASSERT_FALSE(Decode(
       base::make_span<const uint8_t>(
           reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size()),
       &status));
-  EXPECT_EQ(VaapiJpegDecodeStatus::kUnsupportedSubsampling, status);
-}
-
-std::string TestParamToString(
-    const testing::TestParamInfo<TestParam>& param_info) {
-  return param_info.param.test_name;
+  EXPECT_EQ(VaapiImageDecodeStatus::kUnsupportedSubsampling, status);
+  EXPECT_FALSE(decoder_.GetScopedVASurface());
 }
 
 INSTANTIATE_TEST_SUITE_P(,
                          VaapiJpegDecoderTest,
                          testing::ValuesIn(kTestCases),
-                         TestParamToString);
+                         vaapi_test_utils::TestParamToString);
 
 }  // namespace media

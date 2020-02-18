@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 
 namespace blink {
 namespace {
@@ -17,15 +19,15 @@ struct UnitValue {
   UnitType unit_type;
 };
 
-CSSPrimitiveValue* Create(UnitValue v) {
-  return CSSPrimitiveValue::Create(v.value, v.unit_type);
+CSSNumericLiteralValue* Create(UnitValue v) {
+  return CSSNumericLiteralValue::Create(v.value, v.unit_type);
 }
 
 CSSPrimitiveValue* CreateAddition(UnitValue a, UnitValue b) {
-  return CSSPrimitiveValue::Create(
-      CSSCalcValue::Create(CSSCalcValue::CreateExpressionNode(
-          CSSCalcValue::CreateExpressionNode(Create(a)),
-          CSSCalcValue::CreateExpressionNode(Create(b)), kCalcAdd)));
+  return CSSMathFunctionValue::Create(CSSMathExpressionBinaryOperation::Create(
+      CSSMathExpressionNumericLiteral::Create(Create(a)),
+      CSSMathExpressionNumericLiteral::Create(Create(b)),
+      CSSMathOperator::kAdd));
 }
 
 TEST(CSSPrimitiveValueTest, IsTime) {

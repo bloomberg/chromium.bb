@@ -12,10 +12,6 @@
 #include "extensions/browser/extension_function.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
-#endif
-
 // API function that enables or disables web content accessibility support.
 class AccessibilityPrivateSetNativeAccessibilityEnabledFunction
     : public UIThreadExtensionFunction {
@@ -62,8 +58,17 @@ class AccessibilityPrivateDarkenScreenFunction
                              ACCESSIBILITY_PRIVATE_DARKENSCREEN)
 };
 
-// API function that sets the keys to be captured by Switch Access.
+// Opens a specified subpage in Chrome settings.
+class AccessibilityPrivateOpenSettingsSubpageFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateOpenSettingsSubpageFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.openSettingsSubpage",
+                             ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE)
+};
+
 #if defined(OS_CHROMEOS)
+// API function that sets the keys to be captured by Switch Access.
 class AccessibilityPrivateSetSwitchAccessKeysFunction
     : public UIThreadExtensionFunction {
   ~AccessibilityPrivateSetSwitchAccessKeysFunction() override {}
@@ -119,6 +124,17 @@ class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
                              ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED)
 };
 
+// API function that is called when the Autoclick extension finds scrollable
+// bounds.
+class AccessibilityPrivateOnScrollableBoundsForPointFoundFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateOnScrollableBoundsForPointFoundFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION(
+      "accessibilityPrivate.onScrollableBoundsForPointFound",
+      ACCESSIBILITY_PRIVATE_ONSCROLLABLEBOUNDSFORPOINTFOUND)
+};
+
 // API function that is called when a user toggles Dictation from another
 // acessibility feature.
 class AccessibilityPrivateToggleDictationFunction
@@ -155,13 +171,11 @@ class AccessibilityPrivateGetBatteryDescriptionFunction
  public:
   AccessibilityPrivateGetBatteryDescriptionFunction();
   ResponseAction Run() override;
-  void OnGotBatteryDescription(const base::string16& battery_description);
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.getBatteryDescription",
                              ACCESSIBILITY_PRIVATE_GETBATTERYDESCRIPTION)
 
  private:
   ~AccessibilityPrivateGetBatteryDescriptionFunction() override;
-  ash::mojom::AccessibilityControllerPtr controller_ = nullptr;
 };
 
 // API function that opens or closes the virtual keyboard.

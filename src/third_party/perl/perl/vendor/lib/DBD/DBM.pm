@@ -3,7 +3,7 @@
 #  DBD::DBM - a DBI driver for DBM files
 #
 #  Copyright (c) 2004 by Jeff Zucker < jzucker AT cpan.org >
-#  Copyright (c) 2010 by Jens Rehsack & H.Merijn Brand
+#  Copyright (c) 2010-2013 by Jens Rehsack & H.Merijn Brand
 #
 #  All rights reserved.
 #
@@ -24,7 +24,7 @@ package DBD::DBM;
 #################
 use base qw( DBD::File );
 use vars qw($VERSION $ATTRIBUTION $drh $methods_already_installed);
-$VERSION     = '0.06';
+$VERSION     = '0.08';
 $ATTRIBUTION = 'DBD::DBM by Jens Rehsack';
 
 # no need to have driver() unless you need private methods
@@ -76,6 +76,8 @@ package DBD::DBM::db;
 $DBD::DBM::db::imp_data_size = 0;
 @DBD::DBM::db::ISA           = qw(DBD::File::db);
 
+use Carp qw/carp/;
+
 sub validate_STORE_attr
 {
     my ( $dbh, $attrib, $value ) = @_;
@@ -83,7 +85,7 @@ sub validate_STORE_attr
     if ( $attrib eq "dbm_ext" or $attrib eq "dbm_lockfile" )
     {
         ( my $newattrib = $attrib ) =~ s/^dbm_/f_/g;
-        # carp "Attribute '$attrib' is depreciated, use '$newattrib' instead" if( $^W );
+        carp "Attribute '$attrib' is depreciated, use '$newattrib' instead" if ($^W);
         $attrib = $newattrib;
     }
 
@@ -97,7 +99,7 @@ sub validate_FETCH_attr
     if ( $attrib eq "dbm_ext" or $attrib eq "dbm_lockfile" )
     {
         ( my $newattrib = $attrib ) =~ s/^dbm_/f_/g;
-        # carp "Attribute '$attrib' is depreciated, use '$newattrib' instead" if( $^W );
+        carp "Attribute '$attrib' is depreciated, use '$newattrib' instead" if ($^W);
         $attrib = $newattrib;
     }
 
@@ -174,7 +176,7 @@ sub get_dbm_versions
     eval {
         $dver = $meta->{dbm_type}->VERSION();
 
-        # *) when we're still alive here, everthing went ok - no need to check for $@
+        # *) when we're still alive here, everything went ok - no need to check for $@
         $dtype .= " ($dver)";
     };
     if ( $meta->{dbm_mldbm} )
@@ -229,10 +231,9 @@ sub dbm_schema
 {
     my ( $sth, $tname ) = @_;
     return $sth->set_err( $DBI::stderr, 'No table name supplied!' ) unless $tname;
-    return $sth->set_err( $DBI::stderr, "Unknown table '$tname'!" )
-      unless (     $sth->{Database}->{f_meta}
-               and $sth->{Database}->{f_meta}->{$tname} );
-    return $sth->{Database}->{f_meta}->{$tname}->{schema};
+    my $tbl_meta = $sth->{Database}->func( $tname, "f_schema", "get_sql_engine_meta" )
+      or return $sth->set_err( $sth->{Database}->err(), $sth->{Database}->errstr() );
+    return $tbl_meta->{$tname}->{f_schema};
 }
 # you could put some :st private methods here
 
@@ -256,17 +257,6 @@ use Fcntl;
 
 my $dirfext = $^O eq 'VMS' ? '.sdbm_dir' : '.dir';
 
-sub file2table
-{
-    my ( $self, $meta, $file, $file_is_table, $quoted ) = @_;
-
-    my $tbl = $self->SUPER::file2table( $meta, $file, $file_is_table, $quoted ) or return;
-
-    $meta->{f_dontopen} = 1;
-
-    return $tbl;
-}
-
 my %reset_on_modify = (
                         dbm_type  => "dbm_tietype",
                         dbm_mldbm => "dbm_tietype",
@@ -274,12 +264,12 @@ my %reset_on_modify = (
 __PACKAGE__->register_reset_on_modify( \%reset_on_modify );
 
 my %compat_map = (
-    ( map { $_ => "dbm_$_" } qw(type mldbm store_metadata) ),
-    dbm_ext => 'f_ext',
-    dbm_file => 'f_file',
-    dbm_lockfile => ' f_lockfile',
-    );
-__PACKAGE__->register_compat_map (\%compat_map);
+                   ( map { $_ => "dbm_$_" } qw(type mldbm store_metadata) ),
+                   dbm_ext      => 'f_ext',
+                   dbm_file     => 'f_file',
+                   dbm_lockfile => ' f_lockfile',
+                 );
+__PACKAGE__->register_compat_map( \%compat_map );
 
 sub bootstrap_table_meta
 {
@@ -322,6 +312,8 @@ sub init_table_meta
 {
     my ( $self, $dbh, $meta, $table ) = @_;
 
+    $meta->{f_dontopen} = 1;
+
     unless ( defined( $meta->{dbm_tietype} ) )
     {
         my $tie_type = $meta->{dbm_type};
@@ -353,10 +345,11 @@ sub init_table_meta
     $self->SUPER::init_table_meta( $dbh, $meta, $table );
 }
 
-sub open_file
+sub open_data
 {
-    my ( $self, $meta, $attrs, $flags ) = @_;
-    $self->SUPER::open_file( $meta, $attrs, $flags );
+    my ( $className, $meta, $attrs, $flags ) = @_;
+    $className->SUPER::open_data( $meta, $attrs, $flags );
+
     unless ( $flags->{dropMode} )
     {
         # TIEING
@@ -401,7 +394,7 @@ sub open_file
         my $tie_class = $meta->{dbm_tietype};
         eval { tie %{ $meta->{hash} }, $tie_class, @tie_args };
         $@ and croak "Cannot tie(\%h $tie_class @tie_args): $@";
-	-f $meta->{f_fqfn} or croak( "No such file: '" . $meta->{f_fqfn} . "'" );
+        -f $meta->{f_fqfn} or croak( "No such file: '" . $meta->{f_fqfn} . "'" );
     }
 
     unless ( $flags->{createMode} )
@@ -657,7 +650,7 @@ DBD::DBM - a DBI driver for DBM & MLDBM files
  });
 
 and other variations on connect() as shown in the L<DBI> docs,
-L<DBD::File/Metadata|DBD::File metadata> and L</Metadata>
+L<DBD::File metadata|DBD::File/Metadata> and L</Metadata>
 shown below.
 
 Use standard DBI prepare, execute, fetch, placeholders, etc.,
@@ -730,7 +723,7 @@ But here's a sample to get you started.
 
 =head1 USAGE
 
-This section will explain some useage cases in more detail. To get an
+This section will explain some usage cases in more detail. To get an
 overview about the available attributes, see L</Metadata>.
 
 =head2 Specifying Files and Directories
@@ -1332,11 +1325,11 @@ C<Storable>.
 
 =item C<YAML::MLDBM>
 
-Additional serializer for MLDBM. YAML is very portable between languanges.
+Additional serializer for MLDBM. YAML is very portable between languages.
 
 =item C<MLDBM::Serializer::JSON>
 
-Additional serializer for MLDBM. JSON is very portable between languanges,
+Additional serializer for MLDBM. JSON is very portable between languages,
 probably more than YAML.
 
 =back
@@ -1445,7 +1438,7 @@ maintained it till 2007. After that, in 2010, Jens Rehsack & H.Merijn Brand
 took over maintenance.
 
  Copyright (c) 2004 by Jeff Zucker, all rights reserved.
- Copyright (c) 2010 by Jens Rehsack & H.Merijn Brand, all rights reserved.
+ Copyright (c) 2010-2013 by Jens Rehsack & H.Merijn Brand, all rights reserved.
 
 You may freely distribute and/or modify this module under the terms of
 either the GNU General Public License (GPL) or the Artistic License, as

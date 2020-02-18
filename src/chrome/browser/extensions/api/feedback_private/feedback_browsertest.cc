@@ -10,6 +10,8 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
+#include "chrome/browser/feedback/feedback_uploader_chrome.h"
+#include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -94,14 +96,19 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 };
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowFeedback DISABLED_ShowFeedback
-#else
-#define MAYBE_ShowFeedback ShowFeedback
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
+class TestFeedbackUploaderDelegate
+    : public feedback::FeedbackUploaderChrome::Delegate {
+ public:
+  explicit TestFeedbackUploaderDelegate(base::RunLoop* quit_on_dispatch)
+      : quit_on_dispatch_(quit_on_dispatch) {}
+
+  void OnStartDispatchingReport() override { quit_on_dispatch_->Quit(); }
+
+ private:
+  base::RunLoop* quit_on_dispatch_;
+};
+
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -109,14 +116,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedback) {
   VerifyFeedbackAppLaunch();
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowLoginFeedback DISABLED_ShowLoginFeedback
-#else
-#define MAYBE_ShowLoginFeedback ShowLoginFeedback
-#endif
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -138,16 +138,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowLoginFeedback) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_AnonymousUser DISABLED_AnonymousUser
-#else
-#define MAYBE_AnonymousUser AnonymousUser
-#endif
 // Tests that there's an option in the email drop down box with a value
 // 'anonymous_user'.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -176,16 +169,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_AnonymousUser) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ExtraDiagnostics DISABLED_ExtraDiagnostics
-#else
-#define MAYBE_ExtraDiagnostics ExtraDiagnostics
-#endif
 // Ensures that when extra diagnostics are provided with feedback, they are
 // injected properly in the system information.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -216,16 +202,9 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ExtraDiagnostics) {
   EXPECT_TRUE(bool_result);
 }
 
-// Disabled for ASan due to flakiness on Mac ASan 64 Tests (1).
-// See crbug.com/757243.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_ShowFeedbackFromAssistant DISABLED_ShowFeedbackFromAssistant
-#else
-#define MAYBE_ShowFeedbackFromAssistant ShowFeedbackFromAssistant
-#endif
 // Ensures that when triggered from Assistant with Google account, Assistant
 // checkbox are not hidden.
-IN_PROC_BROWSER_TEST_F(FeedbackTest, MAYBE_ShowFeedbackFromAssistant) {
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedbackFromAssistant) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
@@ -303,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ProvideBluetoothLogs) {
   EXPECT_TRUE(bool_result);
 }
 #endif  // if defined(CHROME_OS)
-  
+
 IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
   const std::pair<std::string, std::string> test_cases[] = {
       {"https://www.google.com/", "https://www.google.com/"},
@@ -340,4 +319,49 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, GetTargetTabUrl) {
     DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
   }
 }
+
+IN_PROC_BROWSER_TEST_F(FeedbackTest, SubmissionTest) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_GOOGLEINTERNAL, std::string());
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  // Set a delegate for the uploader which will be invoked when the report
+  // normally would have been uploaded. We have it setup to then quit the
+  // RunLoop which will then allow us to terminate.
+  base::RunLoop run_loop;
+  TestFeedbackUploaderDelegate delegate(&run_loop);
+  feedback::FeedbackUploaderFactoryChrome::GetInstance()
+      ->GetForBrowserContext(browser()->profile())
+      ->set_feedback_uploader_delegate(&delegate);
+
+  // Click the send button.
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      if ($('send-report-button') != null) {"
+      "        document.getElementById('send-report-button').click();"
+      "        return true;"
+      "      }"
+      "      return false;"
+      "    })()));",
+      &bool_result));
+  EXPECT_TRUE(bool_result);
+
+  // This will DCHECK if the JS private API call doesn't return a value, which
+  // is the main case we are concerned about.
+  run_loop.Run();
+  feedback::FeedbackUploaderFactoryChrome::GetInstance()
+      ->GetForBrowserContext(browser()->profile())
+      ->set_feedback_uploader_delegate(nullptr);
+}
+
 }  // namespace extensions

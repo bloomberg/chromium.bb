@@ -416,8 +416,7 @@ void FrameTreeNode::CreatedNavigationRequest(
   if (was_previously_loading) {
     if (navigation_request_ && navigation_request_->navigation_handle()) {
       // Mark the old request as aborted.
-      navigation_request_->navigation_handle()->set_net_error_code(
-          net::ERR_ABORTED);
+      navigation_request_->set_net_error(net::ERR_ABORTED);
     }
     ResetNavigationRequest(true, true);
   }
@@ -517,6 +516,8 @@ void FrameTreeNode::DidStopLoading() {
 
   // Notify accessibility that the user is no longer trying to load or
   // reload a page.
+  // TODO(domfarolino): Remove this in favor of notifying via the delegate's
+  // DidStopLoading() above.
   BrowserAccessibilityManager* manager =
       current_frame_host()->browser_accessibility_manager();
   if (manager)
@@ -534,8 +535,7 @@ bool FrameTreeNode::StopLoading() {
   if (navigation_request_) {
     int expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
     if (navigation_request_->navigation_handle()) {
-      navigation_request_->navigation_handle()->set_net_error_code(
-          net::ERR_ABORTED);
+      navigation_request_->set_net_error(net::ERR_ABORTED);
       expected_pending_nav_entry_id =
           navigation_request_->navigation_handle()->pending_nav_entry_id();
     }

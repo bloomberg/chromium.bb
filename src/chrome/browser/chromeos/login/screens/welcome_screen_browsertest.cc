@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/ime/chromeos/extension_ime_util.h"
 
 namespace chromeos {
 
@@ -40,7 +41,7 @@ void ToggleAccessibilityFeature(const std::string& feature_name,
   js.ExpectVisiblePath({"connect", feature_name, "button"});
   EXPECT_FALSE(js.GetBool(feature_toggle));
   js.TapOnPath({"connect", feature_name, "button"});
-  js.CreateWaiter(feature_toggle);
+  js.CreateWaiter(feature_toggle)->Wait();
 }
 
 }  // namespace
@@ -202,23 +203,26 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
-  test::OobeJS().SelectElementInPath(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:intl:eng",
-      {"connect", "keyboardSelect", "select"});
+  std::string extension_id_prefix =
+      std::string("_comp_ime_") + extension_ime_util::kXkbExtensionId;
+
+  test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:intl:eng",
+                                     {"connect", "keyboardSelect", "select"});
   test::OobeJS().GetBool(
       "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
       "'US'");
   ASSERT_TRUE(welcome_screen_->GetInputMethod() ==
-              "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:intl:eng");
+              extension_id_prefix + "xkb:us:intl:eng");
 
-  test::OobeJS().SelectElementInPath(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:workman:eng",
-      {"connect", "keyboardSelect", "select"});
+  test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:workman:eng",
+                                     {"connect", "keyboardSelect", "select"});
   test::OobeJS().GetBool(
-      "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
-      "'_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:workman:eng'");
+      std::string(
+          "document.getElementById('connect').$.welcomeScreen.currentKeyboard=="
+          "'") +
+      extension_id_prefix + "xkb:us:workman:eng'");
   ASSERT_TRUE(welcome_screen_->GetInputMethod() ==
-              "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:workman:eng");
+              extension_id_prefix + "xkb:us:workman:eng");
 }
 
 // Set of browser tests for Welcome Screen Accessibility options.

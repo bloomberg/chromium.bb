@@ -8,15 +8,15 @@ found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
 part of the polymer project is also subject to an additional IP rights grant
 found at http://polymer.github.io/PATENTS.txt
 */
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import '../iron-flex-layout/iron-flex-layout.js';
 import '../paper-styles/default-theme.js';
 import '../paper-styles/typography.js';
 
-import {Polymer} from '../polymer/lib/legacy/polymer-fn.js';
-import {dom} from '../polymer/lib/legacy/polymer.dom.js';
-import {dashToCamelCase} from '../polymer/lib/utils/case-map.js';
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {Polymer} from '../polymer/polymer_bundled.min.js';
+import {dom} from '../polymer/polymer_bundled.min.js';
+import {dashToCamelCase} from '../polymer/polymer_bundled.min.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 const template = html`
 <custom-style>
   <style is="custom-style">
@@ -197,18 +197,14 @@ Polymer({
         @apply --layout-fit;
         border-bottom: 2px solid var(--paper-input-container-focus-color, var(--primary-color));
 
-        -webkit-transform-origin: center center;
         transform-origin: center center;
-        -webkit-transform: scale3d(0,1,1);
         transform: scale3d(0,1,1);
 
         @apply --paper-input-container-underline-focus;
       }
 
       .underline.is-highlighted .focused-line {
-        -webkit-transform: none;
         transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
         @apply --paper-transition-easing;
@@ -216,9 +212,7 @@ Polymer({
 
       .underline.is-invalid .focused-line {
         border-color: var(--paper-input-container-invalid-color, var(--error-color));
-        -webkit-transform: none;
         transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
 
         @apply --paper-transition-easing;
@@ -256,9 +250,7 @@ Polymer({
         width: 100%;
         font: inherit;
         color: var(--paper-input-container-color, var(--secondary-text-color));
-        -webkit-transition: -webkit-transform 0.25s, width 0.25s;
         transition: transform 0.25s, width 0.25s;
-        -webkit-transform-origin: left top;
         transform-origin: left top;
         /* Fix for safari not focusing 0-height date/time inputs with -webkit-apperance: none; */
         min-height: 1px;
@@ -271,7 +263,6 @@ Polymer({
 
       .input-content.label-is-floating ::slotted(label),
       .input-content.label-is-floating ::slotted(.paper-input-label) {
-        -webkit-transform: translateY(-75%) scale(0.75);
         transform: translateY(-75%) scale(0.75);
 
         /* Since we scale to 75/100 of the size, we actually have 100/75 of the
@@ -285,7 +276,6 @@ Polymer({
       :host(:dir(rtl)) .input-content.label-is-floating ::slotted(.paper-input-label) {
         right: 0;
         left: auto;
-        -webkit-transform-origin: right top;
         transform-origin: right top;
       }
 

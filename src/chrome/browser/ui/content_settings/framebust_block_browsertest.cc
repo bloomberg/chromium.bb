@@ -37,6 +37,11 @@
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#endif
+
 namespace {
 
 const int kAllowRadioButtonIndex = 0;
@@ -206,6 +211,12 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, DisallowRadioButtonSelected) {
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, ManageButtonClicked) {
+#if defined(OS_CHROMEOS)
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+#endif
+
   const GURL url = embedded_test_server()->GetURL("/iframe.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -250,8 +261,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest, SimpleFramebust_Blocked) {
                                             redirect_url.spec().c_str())),
       base::NullCallback());
   block_waiter.Run();
-  EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
-                                  redirect_url));
+  EXPECT_TRUE(
+      base::Contains(GetFramebustTabHelper()->blocked_urls(), redirect_url));
 }
 
 IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
@@ -340,8 +351,8 @@ IN_PROC_BROWSER_TEST_F(FramebustBlockBrowserTest,
                                             redirect_url.spec().c_str())),
       base::NullCallback());
   block_waiter.Run();
-  EXPECT_TRUE(base::ContainsValue(GetFramebustTabHelper()->blocked_urls(),
-                                  redirect_url));
+  EXPECT_TRUE(
+      base::Contains(GetFramebustTabHelper()->blocked_urls(), redirect_url));
 
   // Now, navigate away and check that the UI went away.
   ui_test_utils::NavigateToURL(browser(),

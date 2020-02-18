@@ -21,7 +21,6 @@ class CrashUploadListCrashpad : public UploadList {
  protected:
   ~CrashUploadListCrashpad() override;
 
-  base::TaskTraits LoadingTaskTraits() override;
   std::vector<UploadInfo> LoadUploadList() override;
   void ClearUploadList(const base::Time& begin, const base::Time& end) override;
   void RequestSingleUpload(const std::string& local_id) override;

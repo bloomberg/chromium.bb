@@ -377,7 +377,7 @@ FakeLevelDBFactory::CreateBreakableDB(std::unique_ptr<leveldb::DB> db) {
       std::make_unique<BreakOnCallbackDB>(std::move(db));
   base::OnceCallback<void(leveldb::Status)> callback = base::BindOnce(
       &BreakOnCallbackDB::Break, base::Unretained(breakable_db.get()));
-  return std::make_pair(std::move(breakable_db), std::move(callback));
+  return {std::move(breakable_db), std::move(callback)};
 }
 
 // static

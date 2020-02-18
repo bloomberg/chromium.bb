@@ -7,11 +7,11 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 
 namespace cc {
 namespace {

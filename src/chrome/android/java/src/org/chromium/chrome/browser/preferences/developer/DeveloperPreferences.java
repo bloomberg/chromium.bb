@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.preferences.developer;
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -17,7 +17,7 @@ import org.chromium.components.version_info.VersionConstants;
 /**
  * Settings fragment containing preferences aimed at Chrome and web developers.
  */
-public class DeveloperPreferences extends PreferenceFragment {
+public class DeveloperPreferences extends PreferenceFragmentCompat {
     private static final String UI_PREF_BETA_STABLE_HINT = "beta_stable_hint";
     private static final String PREF_DEVELOPER_ENABLED = "developer";
 
@@ -39,8 +39,7 @@ public class DeveloperPreferences extends PreferenceFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String s) {
         getActivity().setTitle(MSG_DEVELOPER_OPTIONS_TITLE);
         PreferenceUtils.addPreferencesFromResource(this, R.xml.developer_preferences);
 

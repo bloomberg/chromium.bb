@@ -55,10 +55,12 @@
   <message name="IDS_POLICY_DM_STATUS_CANNOT_SIGN_REQUEST" desc="Message indicating a failure to sign a request.">
     Request could not be signed
   </message>
+  <message name="IDS_POLICY_DM_STATUS_REQUEST_TOO_LARGE" desc="Message indicating a request to enterprise server is too large.">
+    Request is too large
+  </message>
   <message name="IDS_POLICY_DM_STATUS_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Message to show when the user tries to enroll a device with a packaged license using a consumer account.">
     Can't enroll with consumer account (packaged license available).
   </message>
-
   <message name="IDS_POLICY_VALIDATION_OK" desc="Message indicating successful policy validation.">
     Validation successful
   </message>
@@ -481,4 +483,22 @@ Additional details:
     List entry "<ph name="LANGUAGE_ID">$1<ex>en-GB</ex></ph>": Entry ignored because it is also included in the SpellcheckLanguage policy.
     </message>
   </if>
+  <message name="IDS_POLICY_LABEL_IS_AFFILIATED" desc="Label to indicate if the user is affiliated or not.">
+    Is affiliated:
+  </message>
+  <message name="IDS_POLICY_IS_AFFILIATED_YES" desc="Indicates the user is affiliated.">
+    Yes
+  </message>
+  <message name="IDS_POLICY_IS_AFFILIATED_NO" desc="Indicates the user is not affiliated.">
+    No
+  </message>
+  <message name="IDS_POLICY_LABEL_IS_OFFHOURS_ACTIVE" desc="Label to indicate if the off-hours policy is active or not.">
+    Off-Hours Policy:
+  </message>
+  <message name="IDS_POLICY_OFFHOURS_ACTIVE" desc="Indicates the off-hours policy is active.">
+    Active
+  </message>
+  <message name="IDS_POLICY_OFFHOURS_NOT_ACTIVE" desc="Indicates the off-hours policy is not active.">
+    Not active
+  </message>
 </grit-part>

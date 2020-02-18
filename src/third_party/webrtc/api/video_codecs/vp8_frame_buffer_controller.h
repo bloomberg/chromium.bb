@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "api/fec_controller_override.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/vp8_frame_config.h"
@@ -89,6 +90,9 @@ struct Vp8EncoderConfig {
 
   // Error resilience mode.
   absl::optional<uint32_t> g_error_resilient;
+
+  // If set to true, all previous configuration overrides should be reset.
+  bool reset_previous_configuration_overrides = false;
 };
 
 // This interface defines a way of delegating the logic of buffer management.
@@ -125,9 +129,8 @@ class Vp8FrameBufferController {
   // Called by the encoder before encoding a frame. Returns a set of overrides
   // the controller wishes to enact in the encoder's configuration.
   // If a value is not overridden, previous overrides are still in effect.
-  // (It is therefore not possible to go from a specific override to
-  // no-override. Once the controller takes responsibility over a value, it
-  // must maintain responsibility for it.)
+  // However, if |Vp8EncoderConfig::reset_previous_configuration_overrides|
+  // is set to |true|, all previous overrides are reset.
   virtual Vp8EncoderConfig UpdateConfiguration(size_t stream_index) = 0;
 
   // Returns the recommended VP8 encode flags needed.
@@ -174,8 +177,14 @@ class Vp8FrameBufferControllerFactory {
  public:
   virtual ~Vp8FrameBufferControllerFactory() = default;
 
+  // Clones oneself. (Avoids Vp8FrameBufferControllerFactoryFactory.)
+  virtual std::unique_ptr<Vp8FrameBufferControllerFactory> Clone() const = 0;
+
+  // Create a Vp8FrameBufferController instance.
   virtual std::unique_ptr<Vp8FrameBufferController> Create(
-      const VideoCodec& codec) = 0;
+      const VideoCodec& codec,
+      const VideoEncoder::Settings& settings,
+      FecControllerOverride* fec_controller_override) = 0;
 };
 
 }  // namespace webrtc

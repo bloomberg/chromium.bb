@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/null_task_runner.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,7 +15,7 @@
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -29,6 +30,8 @@ template <class GLES2InterfaceType>
 class SharedGpuContextTestBase : public Test {
  public:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::NullTaskRunner>();
+    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
     auto factory = [](GLES2InterfaceType* gl, bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
@@ -39,15 +42,29 @@ class SharedGpuContextTestBase : public Test {
         WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
   }
 
-  void TearDown() override { SharedGpuContext::ResetForTesting(); }
+  void TearDown() override {
+    handle_.reset();
+    task_runner_.reset();
+    SharedGpuContext::ResetForTesting();
+  }
 
+  scoped_refptr<base::NullTaskRunner> task_runner_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
   GLES2InterfaceType gl_;
 };
 
-class SharedGpuContextTest
-    : public SharedGpuContextTestBase<FakeGLES2Interface> {};
+class TestGLES2Interface : public FakeGLES2Interface {
+ public:
+  GLuint CreateAndTexStorage2DSharedImageCHROMIUM(const GLbyte*) override {
+    return ++texture_id;
+  }
+  GLuint texture_id = 0u;
+};
 
-class MailboxMockGLES2Interface : public FakeGLES2Interface {
+class SharedGpuContextTest
+    : public SharedGpuContextTestBase<TestGLES2Interface> {};
+
+class MailboxMockGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, GLbyte*));
   MOCK_METHOD1(GenSyncTokenCHROMIUM, void(GLbyte*));
@@ -62,6 +79,8 @@ class MailboxSharedGpuContextTest
 class BadSharedGpuContextTest : public Test {
  public:
   void SetUp() override {
+    task_runner_ = base::MakeRefCounted<base::NullTaskRunner>();
+    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
     auto factory = [](bool* gpu_compositing_disabled)
         -> std::unique_ptr<WebGraphicsContext3DProvider> {
       *gpu_compositing_disabled = false;
@@ -71,7 +90,14 @@ class BadSharedGpuContextTest : public Test {
         WTF::BindRepeating(factory));
   }
 
-  void TearDown() override { SharedGpuContext::ResetForTesting(); }
+  void TearDown() override {
+    handle_.reset();
+    task_runner_.reset();
+    SharedGpuContext::ResetForTesting();
+  }
+
+  scoped_refptr<base::NullTaskRunner> task_runner_;
+  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
 };
 
 // Test fixure that simulate not using gpu compositing.
@@ -116,12 +142,13 @@ TEST_F(SharedGpuContextTest, AccelerateImageBufferSurfaceAutoRecovery) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
-          );
+      );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }
@@ -159,12 +186,13 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
-          );
+      );
   EXPECT_FALSE(!resource_provider);
 }
 
@@ -193,18 +221,20 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
-          );
+      );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
+  GLenum texture_target;
   mailbox.name[0] = 0;
 
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
@@ -213,7 +243,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
                                 &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
 
@@ -224,7 +255,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -234,18 +266,20 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   IntSize size(10, 10);
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          size,
+          CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(),
           0,  // msaa_sample_count
           CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
           nullptr  // canvas_resource_dispatcher
-          );
+      );
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
   gpu::Mailbox mailbox;
+  GLenum texture_target;
   mailbox.name[0] = 0;
 
   EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
@@ -254,7 +288,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
                                 &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
 
   EXPECT_EQ(mailbox.name[0], 1);
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -267,12 +302,12 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   // Re-creating surface should recycle the old GrTexture inside skia
   resource_provider = CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::kAcceleratedResourceUsage,
+      size, CanvasResourceProvider::ResourceUsage::kAcceleratedResourceUsage,
       SharedGpuContext::ContextProviderWrapper(),
       0,  // msaa_sample_count
       CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
       nullptr  // canvas_resource_dispatcher
-      );
+  );
 
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   image = resource_provider->Snapshot();
@@ -284,7 +319,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
-      mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
+      mailbox, texture_target, image->PaintImageForCurrentFrame().GetSkImage(),
+      GL_NEAREST);
   EXPECT_EQ(mailbox.name[0], 1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);

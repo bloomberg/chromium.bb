@@ -26,9 +26,10 @@
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/touch_action_region.h"
+#include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/paint/paint_record.h"
-#include "cc/trees/element_id.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -77,7 +78,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // describe how the mask would be generated as a texture in that case.
   enum LayerMaskType {
     NOT_MASK = 0,
-    MULTI_TEXTURE_MASK,
     SINGLE_TEXTURE_MASK,
   };
 
@@ -215,6 +215,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetMasksToBounds(bool masks_to_bounds);
   bool masks_to_bounds() const { return inputs_.masks_to_bounds; }
 
+  // Set or get the clip rect for this layer. |clip_rect| is relative to |this|
+  // layer. If you are trying to clip the subtree to the bounds of this layer,
+  // SetMasksToBounds() would be a better alternative.
+  void SetClipRect(const gfx::Rect& clip_rect);
+  const gfx::Rect& clip_rect() const { return inputs_.clip_rect; }
+
+  // Returns the bounds which is clipped by the clip rect.
+  gfx::RectF EffectiveClipRect();
+
   // Set or get a layer that is not an ancestor of this layer, but which should
   // be clipped to this layer's bounds if SetMasksToBounds() is set to true.
   // The parent layer does *not* retain ownership of a reference on this layer.
@@ -250,6 +259,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Set or get the rounded corner radii which is applied to the layer and its
   // subtree (as if they are together as a single composited entity) when
   // blitting into their target. Setting this makes the layer masked to bounds.
+  // If the layer has a clip of its own, the rounded corner will be applied
+  // along the layer's clip rect corners.
   void SetRoundedCorner(const gfx::RoundedCornersF& corner_radii);
   const gfx::RoundedCornersF& corner_radii() const {
     return inputs_.corner_radii;
@@ -319,6 +330,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void ClearBackdropFilterBounds();
   const base::Optional<gfx::RRectF>& backdrop_filter_bounds() const {
     return inputs_.backdrop_filter_bounds;
+  }
+
+  const ElementId backdrop_mask_element_id() const {
+    return inputs_.backdrop_mask_element_id;
   }
 
   void SetBackdropFilterQuality(const float quality);
@@ -508,6 +523,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetCacheRenderSurface(bool cache_render_surface);
   bool cache_render_surface() const { return cache_render_surface_; }
 
+  // If the layer induces a render surface, this returns the cause for the
+  // render surface. If the layer does not induce a render surface, this returns
+  // kNone.
+  RenderSurfaceReason GetRenderSurfaceReason() const;
+
   // Set or get if the layer and its subtree will be drawn through an
   // intermediate texture, called a RenderSurface. This mimics the need
   // for a RenderSurface that is caused by compositing effects such as masks
@@ -603,6 +623,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   bool has_transform_node() { return has_transform_node_; }
 
+  // This value indicates whether a clip node was created for |this| layer.
+  void SetHasClipNode(bool val) { has_clip_node_ = val; }
+
   // Sets that the content shown in this layer may be a video. This may be used
   // by the system compositor to distinguish between animations updating the
   // screen and video, which the user would be watching. This allows
@@ -634,13 +657,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetTrilinearFiltering(bool trilinear_filtering);
   bool trilinear_filtering() const { return inputs_.trilinear_filtering; }
 
+  // Increments/decrements/gets number of layers mirroring this layer.
+  void IncrementMirrorCount();
+  void DecrementMirrorCount();
+  int mirror_count() const { return inputs_.mirror_count; }
+
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
 
   // Captures text content within the given |rect| and returns the associated
-  // NodeHolder in content.
+  // NodeId in |content|.
   virtual void CaptureContent(const gfx::Rect& rect,
-                              std::vector<NodeHolder>* content);
+                              std::vector<NodeId>* content);
 
   // For tracing. Gets a recorded rasterization of this layer's contents that
   // can be displayed inside representations of this layer. May return null, in
@@ -757,6 +785,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // layer's subtree, including itself. This causes the layer's subtree to be
   // considered damaged and re-displayed to the user.
   void SetSubtreePropertyChanged();
+  void ClearSubtreePropertyChangedForTesting() {
+    subtree_property_changed_ = false;
+  }
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
   // Internal to property tree construction. Returns ElementListType::ACTIVE
@@ -913,6 +944,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // they are marked as needing to be rebuilt.
   void UpdateScrollOffset(const gfx::ScrollOffset&);
 
+  void SetMirrorCount(int mirror_count);
+
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct Inputs {
     explicit Inputs(int layer_id);
@@ -926,6 +959,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     gfx::Size bounds;
     bool masks_to_bounds;
+    gfx::Rect clip_rect;
 
     scoped_refptr<PictureLayer> mask_layer;
 
@@ -960,6 +994,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     FilterOperations filters;
     FilterOperations backdrop_filters;
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
+    ElementId backdrop_mask_element_id;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 
@@ -1030,6 +1065,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     OverscrollBehavior overscroll_behavior;
 
     base::Optional<SnapContainerData> snap_container_data;
+
+    int mirror_count;
   };
 
   Layer* parent_;
@@ -1058,6 +1095,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool may_contain_video_ : 1;
   bool needs_show_scrollbars_ : 1;
   bool has_transform_node_ : 1;
+  bool has_clip_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;

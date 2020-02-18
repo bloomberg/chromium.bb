@@ -171,6 +171,18 @@ def _PylintFile(path, output_format, debug):
   return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
+def _GolintFile(path, _, debug):
+  """Returns result of running golint on |path|."""
+  # Try using golint if it exists.
+  try:
+    cmd = ['golint', '-set_exit_status', path]
+    return _LinterRunCommand(cmd, debug)
+  except cros_build_lib.RunCommandError:
+    logging.notice('Install golint for additional go linting.')
+    return cros_build_lib.CommandResult('gofmt "%s"' % path,
+                                        returncode=0)
+
+
 def _JsonLintFile(path, _output_format, _debug):
   """Returns result of running json lint checks on |path|."""
   result = cros_build_lib.CommandResult('python -mjson.tool "%s"' % path,
@@ -226,16 +238,27 @@ def _ShellLintFile(path, output_format, debug, gentoo_format=False):
     logging.notice('Install shellcheck for additional shell linting.')
     return syntax_check
 
+  (dir_name, file_name) = os.path.split(path)
+  pwd = os.getcwd()
+
   cmd = [shellcheck]
   if output_format != 'default':
     cmd.extend(SHLINT_OUTPUT_FORMAT_MAP[output_format])
+  cmd.append('-x')
   if gentoo_format:
     # ebuilds don't explicitly export variables or contain a shebang.
-    cmd.append('--exclude=SC2034,SC2148')
+    cmd.append('--exclude=SC2148')
     # ebuilds always use bash.
     cmd.append('--shell=bash')
-  cmd.append(path)
+  else:
+    cmd.append('--uses-shflags')
+  cmd.append(file_name)
+
+  # TODO(crbug.com/969045): Remove chdir once -P is available in shellcheck.
+  os.chdir(dir_name)
   lint_result = _LinterRunCommand(cmd, debug)
+  os.chdir(pwd)
+
   # During testing, we don't want to fail the linter for shellcheck errors,
   # so override the return code.
   if lint_result.returncode != 0:
@@ -302,6 +325,7 @@ _EXT_TO_LINTER_MAP = {
     frozenset({'.cc', '.cpp', '.h'}): _CpplintFile,
     frozenset({'.json'}): _JsonLintFile,
     frozenset({'.py'}): _PylintFile,
+    frozenset({'.go'}): _GolintFile,
     frozenset({'.sh'}): _ShellLintFile,
     frozenset({'.ebuild', '.eclass', '.bashrc'}): _GentooShellLintFile,
     frozenset({'.md'}): _MarkdownLintFile,
@@ -390,13 +414,13 @@ run other checks (e.g. pyflakes, etc.)
                                    self.options.output, self.options.debug)
 
     # Special case one file as it's common -- faster to avoid parallel startup.
-    if sum([len(x) for _, x in linter_map.iteritems()]) == 1:
+    if sum([len(x) for _, x in linter_map.items()]) == 1:
       linter, files = linter_map.items()[0]
       dispatcher(linter, files[0])
     else:
       # Run the linter in parallel on the files.
       with parallel.BackgroundTaskRunner(dispatcher) as q:
-        for linter, files in linter_map.iteritems():
+        for linter, files in linter_map.items():
           for path in files:
             q.put([linter, path])
 

@@ -18,7 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -262,7 +261,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
   CreateClient(profile.get());
   ASSERT_TRUE(signin_util::IsUserSignoutAllowedForProfile(profile.get()));
 
-  // Verify SigninManager gets callback indicating sign-out is always allowed.
+  // Verify IdentityManager gets callback indicating sign-out is always allowed.
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
   EXPECT_CALL(
@@ -288,7 +287,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
   signin_util::SetUserSignoutAllowedForProfile(profile.get(), false);
   ASSERT_FALSE(signin_util::IsUserSignoutAllowedForProfile(profile.get()));
 
-  // Verify SigninManager gets callback indicating sign-out is disallowed iff
+  // Verify IdentityManager gets callback indicating sign-out is disallowed iff
   // the source of the sign-out is a user-action.
   SigninClient::SignoutDecision signout_decision =
       IsSignoutDisallowedByPolicy(signout_source)

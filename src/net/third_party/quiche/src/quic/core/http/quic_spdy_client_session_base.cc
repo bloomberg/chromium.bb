@@ -7,7 +7,7 @@
 #include <string>
 
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
+#include "net/third_party/quiche/src/quic/core/http/spdy_server_push_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
@@ -24,7 +24,8 @@ QuicSpdyClientSessionBase::QuicSpdyClientSessionBase(
     : QuicSpdySession(connection, nullptr, config, supported_versions),
       push_promise_index_(push_promise_index),
       largest_promised_stream_id_(
-          QuicUtils::GetInvalidStreamId(connection->transport_version())) {}
+          QuicUtils::GetInvalidStreamId(connection->transport_version())),
+      max_allowed_push_id_(0) {}
 
 QuicSpdyClientSessionBase::~QuicSpdyClientSessionBase() {
   //  all promised streams for this session
@@ -88,6 +89,14 @@ void QuicSpdyClientSessionBase::OnPromiseHeaderList(
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     return;
   }
+
+  if (VersionHasIetfQuicFrames(connection()->transport_version()) &&
+      promised_stream_id > max_allowed_push_id()) {
+    connection()->CloseConnection(
+        QUIC_INVALID_STREAM_ID,
+        "Received push stream id higher than MAX_PUSH_ID.",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+  }
   largest_promised_stream_id_ = promised_stream_id;
 
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
@@ -119,7 +128,8 @@ bool QuicSpdyClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
     return false;
   }
 
-  const std::string url = SpdyUtils::GetPromisedUrlFromHeaders(headers);
+  const std::string url =
+      SpdyServerPushUtils::GetPromisedUrlFromHeaders(headers);
   QuicClientPromisedInfo* old_promised = GetPromisedByUrl(url);
   if (old_promised) {
     QUIC_DVLOG(1) << "Promise for stream " << promised_id
@@ -170,8 +180,8 @@ QuicClientPromisedInfo* QuicSpdyClientSessionBase::GetPromisedById(
 
 QuicSpdyStream* QuicSpdyClientSessionBase::GetPromisedStream(
     const QuicStreamId id) {
-  DynamicStreamMap::iterator it = dynamic_streams().find(id);
-  if (it != dynamic_streams().end()) {
+  StreamMap::iterator it = stream_map().find(id);
+  if (it != stream_map().end()) {
     return static_cast<QuicSpdyStream*>(it->second.get());
   }
   return nullptr;
@@ -186,7 +196,8 @@ void QuicSpdyClientSessionBase::DeletePromised(
   headers_stream()->MaybeReleaseSequencerBuffer();
 }
 
-void QuicSpdyClientSessionBase::OnPushStreamTimedOut(QuicStreamId stream_id) {}
+void QuicSpdyClientSessionBase::OnPushStreamTimedOut(
+    QuicStreamId /*stream_id*/) {}
 
 void QuicSpdyClientSessionBase::ResetPromised(
     QuicStreamId id,
@@ -205,6 +216,11 @@ void QuicSpdyClientSessionBase::CloseStreamInner(QuicStreamId stream_id,
 
 bool QuicSpdyClientSessionBase::ShouldReleaseHeadersStreamSequencerBuffer() {
   return !HasActiveRequestStreams() && promised_by_id_.empty();
+}
+
+void QuicSpdyClientSessionBase::set_max_allowed_push_id(
+    QuicStreamId max_allowed_push_id) {
+  max_allowed_push_id_ = max_allowed_push_id;
 }
 
 }  // namespace quic

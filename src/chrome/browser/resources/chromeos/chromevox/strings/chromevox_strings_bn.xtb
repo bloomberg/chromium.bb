@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1385214448885562192">সম্মতি দিতে এন্টার বা বাতিল করতে এসকেপ, পরবর্তীর জন্য নিচে এবং পূর্ববর্তীর জন্য উপরে টিপুন৷</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">রিচ টেক্সট অ্যাট্রিবিউট ঘোষণা করা</translation>
 <translation id="1405567553485452995">হালকা সবুজ</translation>
 <translation id="1417889266572670458">নেভি</translation>
 <translation id="1431911867058218151">প্লাম</translation>
@@ -319,11 +320,11 @@
 <translation id="3232388865800379423">একটি পপ আপ বোতাম</translation>
 <translation id="3241052487511142956">আগে ঘুরে দেখা লিঙ্ক</translation>
 <translation id="3241638166094654466">প্রতিটি লাইনে কক্ষের সংখ্যা:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">পোর্ট্রেট</translation>
 <translation id="3286390186030710347">স্লাইডার</translation>
 <translation id="3299925995433437805">কোনও পরবর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
 <translation id="3300348286427369683">রিচ টেক্সট ব্যবহার করা যাবে। ChromeVox এ এখন রিচ টেক্সট ফিল্ড ব্যবহার করা যাবে, যাতে জাম্প কমান্ড, ব্রেল কারসর রুটিং, বেছে নেওয়া এবং আরও অনেক কিছু রয়েছে।</translation>
-<translation id="3304756947457041303">রিচ টেক্সট সংক্রান্ত নির্দেশ কাস্টমাইজ করা</translation>
 <translation id="3307886118343381874">সারণীর শেষে যান</translation>
 <translation id="3311969765485641742">এই সতর্কতা পর্যালোচনা করতে Alt+Shift+A টিপুন</translation>
 <translation id="3312997241656799641">পরবর্তী ঘুরে দেখা লিঙ্ক</translation>
@@ -444,7 +445,7 @@
 <translation id="4161104397932142764">{COUNT,plural, =1{সেকেন্ড}one{সেকেন্ড}other{সেকেন্ড}}</translation>
 <translation id="4161663686871496107">ChromeVox কথ্য প্রতিবার্তা প্রস্তুত</translation>
 <translation id="4173994908659439270">কোনো পরবর্তী সম্পাদনযোগ্য পাঠ্য ক্ষেত্র নেই৷</translation>
-<translation id="4176463684765177261">অক্ষম</translation>
+<translation id="4176463684765177261">অক্ষম হয়েছে</translation>
 <translation id="4187322598335821254">একটি লাইন থেকে অন্য লাইনে যেতে উপরে বা নিচের দিকে সোয়াইপ করুন</translation>
 <translation id="4188530942454211480">পূর্ববর্তী বাক্য</translation>
 <translation id="4191918948604314587">একটি বোতাম</translation>

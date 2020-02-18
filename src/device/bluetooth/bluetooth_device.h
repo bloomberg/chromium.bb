@@ -27,7 +27,7 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace device {
 
@@ -252,7 +252,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // of, by decoding the bluetooth class information for Classic devices or
   // by decoding the device's appearance for LE devices. For example,
   // Microsoft Universal Foldable Keyboard only advertises the appearance.
-  BluetoothDeviceType GetDeviceType() const;
+  virtual BluetoothDeviceType GetDeviceType() const;
 
   // Indicates whether the device is known to support pairing based on its
   // device class and address.
@@ -581,6 +581,29 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                           const AbortWriteErrorCallback& error_callback) = 0;
 #endif
 
+  // Set the remaining battery of the device to show in the UI. This value must
+  // be between 0 and 100, inclusive.
+  // TODO(https://crbug.com/973237): Battery percentage is populated by
+  // ash::GattBatteryPoller and used only by Chrome OS. In the future, when
+  // there is a unified Mojo service, this logic will be moved to
+  // BluetoothDeviceInfo.
+  void set_battery_percentage(base::Optional<uint8_t> battery_percentage) {
+    if (battery_percentage) {
+      DCHECK(battery_percentage.value() >= 0 &&
+             battery_percentage.value() <= 100);
+    }
+    battery_percentage_ = battery_percentage;
+  }
+
+  // Returns the remaining battery for the device.
+  // TODO(https://crbug.com/973237): Battery percentage is populated by
+  // ash::GattBatteryPoller and used only by Chrome OS. In the future, when
+  // there is a unified Mojo service, this logic will be moved to
+  // BluetoothDeviceInfo.
+  const base::Optional<uint8_t>& battery_percentage() const {
+    return battery_percentage_;
+  }
+
  protected:
   // BluetoothGattConnection is a friend to call Add/RemoveGattConnection.
   friend BluetoothGattConnection;
@@ -713,6 +736,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Returns a localized string containing the device's bluetooth address and
   // a device type for display when |name_| is empty.
   base::string16 GetAddressWithLocalizedDeviceTypeName() const;
+
+  // Remaining battery level of the device.
+  // TODO(https://crbug.com/973237): This field is populated by
+  // ash::GattBatteryPoller and used only by Chrome OS. This field is different
+  // from others because it is not filled by the platform. In the future, when
+  // there is a unified Mojo service, this field will be moved to
+  // BluetoothDeviceInfo.
+  base::Optional<uint8_t> battery_percentage_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDevice);
 };

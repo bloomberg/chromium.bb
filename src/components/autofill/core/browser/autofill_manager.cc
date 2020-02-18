@@ -41,6 +41,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
+#include "components/autofill/core/browser/autofill_internals_service.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -54,6 +55,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
@@ -94,6 +96,7 @@ namespace autofill {
 
 using base::StartsWith;
 using base::TimeTicks;
+using mojom::SubmissionSource;
 
 const int kCreditCardSigninPromoImpressionLimit = 3;
 
@@ -194,6 +197,8 @@ std::string GetAPIKeyForUrl(version_info::Channel channel) {
 ValuePatternsMetric GetValuePattern(const base::string16& value) {
   if (IsUPIVirtualPaymentAddress(value))
     return ValuePatternsMetric::kUpiVpa;
+  if (IsInternationalBankAccountNumber(value))
+    return ValuePatternsMetric::kIban;
   return ValuePatternsMetric::kNoPatternFound;
 }
 
@@ -233,6 +238,20 @@ bool IsAddressForm(FieldTypeGroup field_type_group) {
   }
   NOTREACHED();
   return false;
+}
+
+void LogAutofillTypePredictionsAvailable(
+    LogManager* log_manager,
+    const std::vector<FormStructure*>& forms) {
+  if (!log_manager || !log_manager->IsLoggingActive())
+    return;
+
+  LogBuffer buffer;
+  for (FormStructure* form : forms)
+    buffer << *form;
+
+  log_manager->Log() << LoggingScope::kParsing << LogMessage::kParsedForms
+                     << std::move(buffer);
 }
 
 }  // namespace
@@ -871,17 +890,28 @@ void AutofillManager::FillProfileForm(const autofill::AutofillProfile& profile,
 
 void AutofillManager::OnFocusNoLongerOnForm() {
   ProcessPendingFormForUpload();
+
+#if defined(OS_CHROMEOS)
+  // There is no way of determining whether ChromeVox is in use, so assume it's
+  // being used.
+  external_delegate_->OnAutofillAvailabilityEvent(false);
+#else
   if (external_delegate_->HasActiveScreenReader())
     external_delegate_->OnAutofillAvailabilityEvent(false);
+#endif
 }
 
 void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
                                              const FormFieldData& field,
                                              const gfx::RectF& bounding_box) {
   // Notify installed screen readers if the focus is on a field for which there
-  // are suggestions to present. Ignore if a screen reader is not present.
+  // are suggestions to present. Ignore if a screen reader is not present. If
+  // the platform is ChromeOS, then assume ChromeVox is in use as there is no
+  // way of determining whether it's being used from this point in the code.
+#if !defined(OS_CHROMEOS)
   if (!external_delegate_->HasActiveScreenReader())
     return;
+#endif
 
   // TODO(https://crbug.com/848427): Add metrics for performance impact.
   std::vector<Suggestion> suggestions;
@@ -973,7 +1003,7 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   if (logger) {
     logger->OnDidShowSuggestions(*form_structure, *autofill_field,
                                  form_structure->form_parsed_timestamp(),
-                                 sync_state_);
+                                 sync_state_, driver()->IsIncognito());
   }
 }
 
@@ -1067,13 +1097,13 @@ bool AutofillManager::ShouldClearPreviewedForm() {
 }
 
 payments::FullCardRequest* AutofillManager::GetOrCreateFullCardRequest() {
-  return credit_card_access_manager_->credit_card_cvc_authenticator()
+  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
       ->GetFullCardRequest();
 }
 
 base::WeakPtr<payments::FullCardRequest::UIDelegate>
 AutofillManager::GetAsFullCardRequestUIDelegate() {
-  return credit_card_access_manager_->credit_card_cvc_authenticator()
+  return credit_card_access_manager_->GetOrCreateCVCAuthenticator()
       ->GetAsFullCardRequestUIDelegate();
 }
 
@@ -1152,6 +1182,8 @@ void AutofillManager::OnLoadedServerPredictions(
   // Send field type predictions to the renderer so that it can possibly
   // annotate forms with the predicted types or add console warnings.
   driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
+
+  LogAutofillTypePredictionsAvailable(log_manager_, queried_forms);
 }
 
 void AutofillManager::OnCreditCardFetched(bool did_succeed,
@@ -1275,7 +1307,7 @@ void AutofillManager::Reset() {
       driver()->IsInMainFrame(), form_interactions_ukm_logger_.get(),
       personal_data_, client_));
   credit_card_access_manager_.reset(new CreditCardAccessManager(
-      client_, personal_data_, credit_card_form_event_logger_.get()));
+      driver(), client_, personal_data_, credit_card_form_event_logger_.get()));
 #if defined(OS_ANDROID) || defined(OS_IOS)
   autofill_assistant_.Reset();
 #endif
@@ -1305,6 +1337,7 @@ AutofillManager::AutofillManager(
     AutofillDownloadManagerState enable_download_manager)
     : AutofillHandler(driver),
       client_(client),
+      log_manager_(client_->GetLogManager()),
       app_locale_(app_locale),
       personal_data_(personal_data),
       field_filler_(app_locale, client->GetAddressNormalizer()),
@@ -1323,14 +1356,14 @@ AutofillManager::AutofillManager(
               personal_data_,
               client_)),
       credit_card_access_manager_(std::make_unique<CreditCardAccessManager>(
+          driver,
           client_,
           personal_data_,
           credit_card_form_event_logger_.get())),
 #if defined(OS_ANDROID) || defined(OS_IOS)
       autofill_assistant_(this),
 #endif
-      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())),
-      weak_ptr_factory_(this) {
+      is_rich_query_enabled_(IsRichQueryEnabled(client->GetChannel())) {
   DCHECK(driver);
   DCHECK(client_);
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
@@ -1469,8 +1502,8 @@ void AutofillManager::FillOrPreviewDataModelForm(
     // On a refill, only fill fields from type groups that were present during
     // the initial fill.
     if (is_refill &&
-        !base::ContainsKey(filling_context->type_groups_originally_filled,
-                           field_group_type)) {
+        !base::Contains(filling_context->type_groups_originally_filled,
+                        field_group_type)) {
       continue;
     }
 
@@ -1729,6 +1762,8 @@ void AutofillManager::OnFormsParsed(
   // queryable forms will be updated once the field type query is complete.
   driver()->SendAutofillTypePredictionsToRenderer(non_queryable_forms);
   driver()->SendAutofillTypePredictionsToRenderer(queryable_forms);
+  LogAutofillTypePredictionsAvailable(log_manager_, non_queryable_forms);
+  LogAutofillTypePredictionsAvailable(log_manager_, queryable_forms);
 
   // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager_) {
@@ -1838,6 +1873,9 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
     for (const CreditCard& card : credit_cards) {
       card.GetMatchingTypes(value, app_locale, &matching_types);
     }
+
+    if (IsUPIVirtualPaymentAddress(value))
+      matching_types.insert(UPI_VPA);
 
     if (matching_types.empty()) {
       matching_types.insert(UNKNOWN_TYPE);

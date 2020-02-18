@@ -183,8 +183,7 @@ GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
       guest_host_(nullptr),
       auto_size_enabled_(false),
       is_full_page_plugin_(false),
-      guest_proxy_routing_id_(MSG_ROUTING_NONE),
-      weak_ptr_factory_(this) {
+      guest_proxy_routing_id_(MSG_ROUTING_NONE) {
   SetOwnerHost();
 }
 
@@ -447,7 +446,7 @@ void GuestViewBase::DidDetach() {
     Destroy(true);
 }
 
-WebContents* GuestViewBase::GetOwnerWebContents() const {
+WebContents* GuestViewBase::GetOwnerWebContents() {
   return owner_web_contents_;
 }
 
@@ -645,7 +644,7 @@ void GuestViewBase::ContentsZoomChange(bool zoom_in) {
 bool GuestViewBase::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  if (!attached())
+  if (!attached() || !embedder_web_contents()->GetDelegate())
     return false;
 
   // Send the keyboard events back to the embedder to reprocess them.

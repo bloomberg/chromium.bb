@@ -71,6 +71,12 @@ egl::Error DisplayGL::makeCurrent(egl::Surface *drawSurface,
     return egl::NoError();
 }
 
+gl::Version DisplayGL::getMaxConformantESVersion() const
+{
+    // 3.1 support is in progress.
+    return std::min(getMaxSupportedESVersion(), gl::Version(3, 0));
+}
+
 void DisplayGL::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
     // Advertise robust resource initialization on all OpenGL backends for testing even though it is

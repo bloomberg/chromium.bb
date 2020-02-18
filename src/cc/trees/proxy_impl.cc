@@ -191,7 +191,9 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
   DCHECK(IsImplThread());
   DCHECK(scheduler_->CommitPending());
 
-  host_impl_->BeginMainFrameAborted(reason, std::move(swap_promises));
+  host_impl_->BeginMainFrameAborted(
+      reason, std::move(swap_promises),
+      scheduler_->last_dispatched_begin_main_frame_args());
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
 }
@@ -365,7 +367,7 @@ void ProxyImpl::PostAnimationEventsToMainThreadOnImplThread(
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::SetAnimationEvents,
-                                proxy_main_weak_ptr_, base::Passed(&events)));
+                                proxy_main_weak_ptr_, std::move(events)));
 }
 
 size_t ProxyImpl::CompositedAnimationsCount() const {
@@ -386,6 +388,14 @@ bool ProxyImpl::NextFrameHasPendingRAF() const {
 
 bool ProxyImpl::IsInsideDraw() {
   return inside_draw_;
+}
+
+bool ProxyImpl::IsBeginMainFrameExpected() {
+  // Check whether the main-thread has requested for updates. If main-thread has
+  // not responded to a previously dispatched BeginMainFrame, then assume that
+  // main-thread would want to produce an update for the current frame too.
+  return scheduler_->needs_begin_main_frame() ||
+         scheduler_->IsBeginMainFrameSent();
 }
 
 void ProxyImpl::RenewTreePriority() {
@@ -495,6 +505,8 @@ void ProxyImpl::DidPresentCompositorFrameOnImplThread(
       FROM_HERE, base::BindOnce(&ProxyMain::DidPresentCompositorFrame,
                                 proxy_main_weak_ptr_, frame_token,
                                 std::move(callbacks), feedback));
+  if (scheduler_)
+    scheduler_->DidPresentCompositorFrame(frame_token, feedback.timestamp);
 }
 
 void ProxyImpl::NotifyAnimationWorkletStateChange(
@@ -510,6 +522,12 @@ void ProxyImpl::NotifyAnimationWorkletStateChange(
                                       : Scheduler::TreeType::PENDING;
   scheduler_->NotifyAnimationWorkletStateChange(animation_worklet_state,
                                                 tree_type);
+}
+
+void ProxyImpl::NotifyPaintWorkletStateChange(
+    Scheduler::PaintWorkletState state) {
+  DCHECK(IsImplThread());
+  scheduler_->NotifyPaintWorkletStateChange(state);
 }
 
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
@@ -551,8 +569,8 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
   MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ProxyMain::BeginMainFrame, proxy_main_weak_ptr_,
-                     base::Passed(&begin_main_frame_state)));
-  host_impl_->DidSendBeginMainFrame();
+                     std::move(begin_main_frame_state)));
+  host_impl_->DidSendBeginMainFrame(args);
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }
 
@@ -685,6 +703,8 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
 
   LayerTreeHostImpl::FrameData frame;
   frame.begin_frame_ack = scheduler_->CurrentBeginFrameAckForActiveTree();
+  frame.origin_begin_main_frame_args =
+      scheduler_->last_activate_origin_frame_args();
   bool draw_frame = false;
 
   DrawResult result;
@@ -696,9 +716,11 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    if (host_impl_->DrawLayers(&frame))
+    if (host_impl_->DrawLayers(&frame)) {
+      DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-      scheduler_->DidSubmitCompositorFrame();
+      scheduler_->DidSubmitCompositorFrame(frame.frame_token);
+    }
     result = DRAW_SUCCESS;
   } else {
     DCHECK_NE(DRAW_SUCCESS, result);
@@ -709,7 +731,7 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   bool start_ready_animations = draw_frame;
   host_impl_->UpdateAnimationState(start_ready_animations);
 
-  // Tell the main thread that the the newly-commited frame was drawn.
+  // Tell the main thread that the newly-commited frame was drawn.
   if (next_frame_is_newly_committed_frame_) {
     next_frame_is_newly_committed_frame_ = false;
     MainThreadTaskRunner()->PostTask(

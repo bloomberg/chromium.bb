@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <linux/media.h>
 #include <linux/videodev2.h>
 #include <poll.h>
 #include <string.h>
@@ -261,6 +262,29 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = 0;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
+  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
+    supports_requests_ = true;
+    VLOGF(1) << "Using request API";
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device: ";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+    }
+    media_fd_ = base::ScopedFD(media_fd);
+  } else {
+    VLOGF(1) << "Using config store";
+  }
+
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
         std::make_unique<V4L2H264Accelerator>(this, device_.get())));
@@ -364,10 +388,12 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
     decoder_input_queue_.pop_front();
 
   // Stop streaming and the device_poll_thread_.
-  StopDevicePoll(false);
+  StopDevicePoll();
 
   DestroyInputBuffers();
   DestroyOutputs(false);
+
+  media_fd_.reset();
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
@@ -463,6 +489,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     VLOGF(1) << "Could not allocate enough output buffers";
     return false;
   }
+
   input_buffer_map_.resize(reqbufs.count);
   for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
     free_input_buffers_.push_back(i);
@@ -489,6 +516,19 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     }
     input_buffer_map_[i].address = address;
     input_buffer_map_[i].length = buffer.m.planes[0].length;
+
+    if (supports_requests_) {
+      int request_fd;
+
+      DCHECK(media_fd_.is_valid());
+      int ret = HANDLE_EINTR(
+          ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
+      if (ret < 0) {
+        VPLOGF(1) << "Failed to create request: ";
+        return false;
+      }
+      input_buffer_map_[i].request_fd = base::ScopedFD(request_fd);
+    }
   }
 
   return true;
@@ -508,6 +548,8 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   DCHECK_GT(num_pictures, 0u);
   DCHECK(!pic_size.IsEmpty());
 
+  // Since VdaVideoDeecoder doesn't allocate PictureBuffer with size adjusted by
+  // itself, we have to adjust here.
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -973,7 +1015,7 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
   return true;
 }
 
-bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
+bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll() {
   DVLOGF(3) << "Stopping device poll";
   if (decoder_thread_.IsRunning())
     DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -993,13 +1035,11 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
     return false;
   }
 
-  if (!keep_input_state) {
-    if (input_streamon_) {
-      __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
-      IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
-    }
-    input_streamon_ = false;
+  if (input_streamon_) {
+    __u32 type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+    IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_STREAMOFF, &type);
   }
+  input_streamon_ = false;
 
   if (output_streamon_) {
     __u32 type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
@@ -1007,17 +1047,15 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll(bool keep_input_state) {
   }
   output_streamon_ = false;
 
-  if (!keep_input_state) {
-    for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
-      InputRecord& input_record = input_buffer_map_[i];
-      if (input_record.at_device) {
-        input_record.at_device = false;
-        ReuseInputBuffer(i);
-        input_buffer_queued_count_--;
-      }
+  for (size_t i = 0; i < input_buffer_map_.size(); ++i) {
+    InputRecord& input_record = input_buffer_map_[i];
+    if (input_record.at_device) {
+      input_record.at_device = false;
+      ReuseInputBuffer(i);
+      input_buffer_queued_count_--;
     }
-    DCHECK_EQ(input_buffer_queued_count_, 0);
   }
+  DCHECK_EQ(input_buffer_queued_count_, 0);
 
   // STREAMOFF makes the driver drop all buffers without decoding and DQBUFing,
   // so we mark them all as at_device = false and clear surfaces_at_device_.
@@ -1108,12 +1146,8 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
     return false;
   }
 
-  const uint8_t* const data = decoder_current_bitstream_buffer_->buffer->data();
-  const size_t data_size =
-      decoder_current_bitstream_buffer_->buffer->data_size();
-  decoder_->SetStream(decoder_current_bitstream_buffer_->input_id, data,
-                      data_size);
-
+  decoder_->SetStream(decoder_current_bitstream_buffer_->input_id,
+                      *decoder_current_bitstream_buffer_->buffer);
   return true;
 }
 
@@ -1209,8 +1243,7 @@ bool V4L2SliceVideoDecodeAccelerator::FinishSurfaceSetChange() {
   DCHECK_EQ(free_output_buffers_.size() + surfaces_at_display_.size(),
             output_buffer_map_.size());
 
-  // Keep input queue running while we switch outputs.
-  if (!StopDevicePoll(true)) {
+  if (!StopDevicePoll()) {
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return false;
   }
@@ -1329,6 +1362,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     const std::vector<PictureBuffer>& buffers) {
   VLOGF(2);
+  DCHECK(!output_streamon_);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kAwaitingPictureBuffers);
   TRACE_EVENT1("media,gpu", "V4L2SVDA::AssignPictureBuffersTask",
@@ -1345,6 +1379,41 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
              << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
+  }
+
+  // If a client allocate a different frame size, S_FMT should be called with
+  // the size.
+  if (coded_size_ != buffers[0].size()) {
+    const auto& new_frame_size = buffers[0].size();
+    v4l2_format format = {};
+    format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    format.fmt.pix_mp.width = new_frame_size.width();
+    format.fmt.pix_mp.height = new_frame_size.height();
+    format.fmt.pix_mp.pixelformat = output_format_fourcc_;
+    format.fmt.pix_mp.num_planes = output_planes_count_;
+    if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
+      VPLOGF(1) << "Failed with frame size adjusted by client: "
+                << new_frame_size.ToString();
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+      return;
+    }
+
+    coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
+    // If size specified by ProvidePictureBuffers() is adjusted by the client,
+    // the size must not be adjusted by a v4l2 driver again.
+    if (coded_size_ != new_frame_size) {
+      VLOGF(1) << "The size of PictureBuffer is invalid."
+               << " size adjusted by the client = " << new_frame_size.ToString()
+               << " size adjusted by a driver = " << coded_size_.ToString();
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
+
+    if (!gfx::Rect(coded_size_).Contains(gfx::Rect(decoder_->GetPicSize()))) {
+      VLOGF(1) << "Got invalid adjusted coded size: " << coded_size_.ToString();
+      NOTIFY_ERROR(INVALID_ARGUMENT);
+      return;
+    }
   }
 
   // Allocate the output buffers.
@@ -1367,8 +1436,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(output_buffer_map_.empty());
   output_buffer_map_.resize(buffers.size());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
-    DCHECK(buffers[i].size() == coded_size_);
-
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
     DCHECK(!output_record.at_client);
@@ -1990,11 +2057,24 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
   DCHECK(decoder_current_bitstream_buffer_ != nullptr);
   input_record.input_id = decoder_current_bitstream_buffer_->input_id;
 
-  scoped_refptr<V4L2DecodeSurface> dec_surface =
-      new V4L2ConfigStoreDecodeSurface(
-          input, output,
-          base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
-                         base::Unretained(this)));
+  scoped_refptr<V4L2DecodeSurface> dec_surface;
+
+  if (supports_requests_) {
+    auto ret = V4L2RequestDecodeSurface::Create(
+        input, output, input_record.request_fd.get(),
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                       base::Unretained(this), output));
+
+    if (!ret)
+      return nullptr;
+
+    dec_surface = std::move(ret).value();
+  } else {
+    dec_surface = new V4L2ConfigStoreDecodeSurface(
+        input, output,
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer,
+                       base::Unretained(this), output));
+  }
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;
   return dec_surface;

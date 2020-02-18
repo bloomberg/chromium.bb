@@ -39,13 +39,9 @@ class QuicSpdyClientBase : public QuicClientBase,
         const std::string& response_body) = 0;
   };
 
-  // The client uses these objects to keep track of any data to resend upon
-  // receipt of a stateless reject.  Recall that the client API allows callers
-  // to optimistically send data to the server prior to handshake-confirmation.
-  // If the client subsequently receives a stateless reject, it must tear down
-  // its existing session, create a new session, and resend all previously sent
-  // data.  It uses these objects to keep track of all the sent data, and to
-  // resend the data upon a subsequent connection.
+  // A piece of data that can be sent multiple times. For example, it can be a
+  // HTTP request that is resent after a connect=>version negotiation=>reconnect
+  // sequence.
   class QuicDataToResend {
    public:
     // |headers| may be null, since it's possible to send data without headers.
@@ -124,7 +120,7 @@ class QuicSpdyClientBase : public QuicClientBase,
 
   void set_store_response(bool val) { store_response_ = val; }
 
-  size_t latest_response_code() const;
+  int latest_response_code() const;
   const std::string& latest_response_headers() const;
   const std::string& preliminary_response_headers() const;
   const spdy::SpdyHeaderBlock& latest_response_header_block() const;
@@ -139,6 +135,9 @@ class QuicSpdyClientBase : public QuicClientBase,
     drop_response_body_ = drop_response_body;
   }
   bool drop_response_body() const { return drop_response_body_; }
+
+  // Set the max promise id for the client session.
+  void set_max_allowed_push_id(QuicStreamId max) { max_allowed_push_id_ = max; }
 
  protected:
   int GetNumSentClientHellosFromSession() override;
@@ -181,6 +180,10 @@ class QuicSpdyClientBase : public QuicClientBase,
     QuicSpdyClientBase* client_;
   };
 
+  void SendRequestInternal(spdy::SpdyHeaderBlock sanitized_headers,
+                           QuicStringPiece body,
+                           bool fin);
+
   // Index of pending promised streams. Must outlive |session_|.
   QuicClientPushPromiseIndex push_promise_index_;
 
@@ -209,6 +212,9 @@ class QuicSpdyClientBase : public QuicClientBase,
   std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 
   bool drop_response_body_ = false;
+
+  // The max promise id to set on the client session when created.
+  QuicStreamId max_allowed_push_id_;
 };
 
 }  // namespace quic

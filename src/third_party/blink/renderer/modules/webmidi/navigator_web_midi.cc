@@ -39,11 +39,11 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 namespace {
@@ -104,10 +104,10 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* script_state,
     // user for permission regardless of sysex option.
     // https://webaudio.github.io/web-midi-api/#dom-navigator-requestmidiaccess
     // https://crbug.com/662000.
-    Deprecation::CountDeprecation(
-        document, document.IsSecureContext()
-                      ? WebFeature::kNoSysexWebMIDIWithoutPermission
-                      : WebFeature::kNoSysexWebMIDIOnInsecureOrigin);
+    if (document.IsSecureContext()) {
+      Deprecation::CountDeprecation(
+          document, WebFeature::kNoSysexWebMIDIWithoutPermission);
+    }
   }
   document.CountUseOnlyInCrossOriginIframe(
       WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);

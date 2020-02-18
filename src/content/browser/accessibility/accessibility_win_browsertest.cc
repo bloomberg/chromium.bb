@@ -20,9 +20,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_variant.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_browsertest.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
@@ -30,15 +30,16 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
@@ -836,7 +837,7 @@ class NativeWinEventWaiter {
   void OnEvent(const std::string& event_str) {
     DLOG(INFO) << "Got event " + event_str;
     if (base::MatchPattern(event_str, match_pattern_))
-      run_loop_.QuitClosure().Run();
+      run_loop_.Quit();
   }
 
   void Wait() { run_loop_.Run(); }
@@ -1098,8 +1099,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, NoFocusEventOnRootChange) {
   EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
 }
 
+// Flaky on win crbug.com/979741
+#if defined(OS_WIN)
+#define MAYBE_FocusEventOnFocusedIframeAddedAndRemoved \
+  DISABLED_FocusEventOnFocusedIframeAddedAndRemoved
+#else
+#define MAYBE_FocusEventOnFocusedIframeAddedAndRemoved \
+  FocusEventOnFocusedIframeAddedAndRemoved
+#endif
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       FocusEventOnFocusedIframeAddedAndRemoved) {
+                       MAYBE_FocusEventOnFocusedIframeAddedAndRemoved) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <button autofocus>Outer button</button>
       )HTML");
@@ -1336,6 +1345,165 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
   document_checker.AppendExpectedChild(&grouping1_checker);
   document_checker.AppendExpectedChild(&grouping2_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestAccSelectionWithNoSelectedItems) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+<div role="listbox" aria-expanded="true">
+<div role="option" aria-selected="false">
+Option 1
+</div>
+<div role="option" aria-selected="false">
+Option 2
+</div>
+<div aria-selected="false">
+Option 3
+</div>
+</div>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> listbox;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &listbox));
+  LONG listbox_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(listbox->role(&listbox_role));
+  ASSERT_EQ(ROLE_SYSTEM_LIST, listbox_role);
+
+  base::win::ScopedVariant selected;
+  ASSERT_HRESULT_SUCCEEDED(listbox->get_accSelection(selected.Receive()));
+  EXPECT_EQ(VT_EMPTY, selected.type());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestAccSelectionWithOneSelectedItem) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+<div role="listbox" aria-expanded="true">
+<div role="option" aria-selected="false">
+Option 1
+</div>
+<div role="option" aria-selected="true">
+Option 2
+</div>
+<div aria-selected="false">
+Option 3
+</div>
+</div>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> listbox;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &listbox));
+  LONG listbox_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(listbox->role(&listbox_role));
+  ASSERT_EQ(ROLE_SYSTEM_LIST, listbox_role);
+
+  base::win::ScopedVariant selected;
+  ASSERT_HRESULT_SUCCEEDED(listbox->get_accSelection(selected.Receive()));
+  ASSERT_EQ(VT_DISPATCH, selected.type());
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  Microsoft::WRL::ComPtr<IAccessible2> option;
+  ASSERT_HRESULT_SUCCEEDED(
+      V_DISPATCH(selected.AsInput())->QueryInterface(IID_PPV_ARGS(&option)));
+  LONG option_role = 0;
+  EXPECT_HRESULT_SUCCEEDED(option->role(&option_role));
+  EXPECT_EQ(ROLE_SYSTEM_LISTITEM, option_role);
+  base::win::ScopedBstr option_name;
+  EXPECT_HRESULT_SUCCEEDED(
+      option->get_accName(childid_self, option_name.Receive()));
+  EXPECT_STREQ(L"Option 2", static_cast<BSTR>(option_name));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestAccSelectionWithMultipleSelectedItems) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+<div role="listbox" aria-expanded="true">
+<div role="option" aria-selected="true">
+Option 1
+</div>
+<div role="option" aria-selected="true">
+Option 2
+</div>
+<div aria-selected="false">
+Option 3
+</div>
+</div>
+      )HTML");
+
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
+  ASSERT_TRUE(document);
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.Get());
+  ASSERT_EQ(1u, document_children.size());
+
+  Microsoft::WRL::ComPtr<IAccessible2> listbox;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
+          .Get(),
+      &listbox));
+  LONG listbox_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(listbox->role(&listbox_role));
+  ASSERT_EQ(ROLE_SYSTEM_LIST, listbox_role);
+
+  base::win::ScopedVariant selected;
+  ASSERT_HRESULT_SUCCEEDED(listbox->get_accSelection(selected.Receive()));
+  ASSERT_EQ(VT_UNKNOWN, selected.type());
+
+  Microsoft::WRL::ComPtr<IEnumVARIANT> enum_variant;
+  ASSERT_HRESULT_SUCCEEDED(V_UNKNOWN(selected.AsInput())
+                               ->QueryInterface(IID_PPV_ARGS(&enum_variant)));
+
+  selected.Release();
+  ASSERT_HRESULT_SUCCEEDED(enum_variant->Next(1, selected.Receive(), nullptr));
+  ASSERT_EQ(VT_DISPATCH, selected.type());
+
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  {
+    Microsoft::WRL::ComPtr<IAccessible2> option;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(selected.AsInput())->QueryInterface(IID_PPV_ARGS(&option)));
+    LONG option_role = 0;
+    EXPECT_HRESULT_SUCCEEDED(option->role(&option_role));
+    EXPECT_EQ(ROLE_SYSTEM_LISTITEM, option_role);
+    base::win::ScopedBstr option_name;
+    EXPECT_HRESULT_SUCCEEDED(
+        option->get_accName(childid_self, option_name.Receive()));
+    EXPECT_STREQ(L"Option 1", static_cast<BSTR>(option_name));
+  }
+
+  selected.Release();
+  ASSERT_HRESULT_SUCCEEDED(enum_variant->Next(1, selected.Receive(), nullptr));
+  ASSERT_EQ(VT_DISPATCH, selected.type());
+
+  {
+    Microsoft::WRL::ComPtr<IAccessible2> option;
+    ASSERT_HRESULT_SUCCEEDED(
+        V_DISPATCH(selected.AsInput())->QueryInterface(IID_PPV_ARGS(&option)));
+    LONG option_role = 0;
+    EXPECT_HRESULT_SUCCEEDED(option->role(&option_role));
+    EXPECT_EQ(ROLE_SYSTEM_LISTITEM, option_role);
+    base::win::ScopedBstr option_name;
+    EXPECT_HRESULT_SUCCEEDED(
+        option->get_accName(childid_self, option_name.Receive()));
+    EXPECT_STREQ(L"Option 2", static_cast<BSTR>(option_name));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
@@ -1687,7 +1855,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
         offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
     EXPECT_EQ(prev_x, x);
     EXPECT_EQ(prev_y, y);
-    EXPECT_EQ(1, width);
+    EXPECT_EQ(7, width);
     EXPECT_EQ(prev_height, height);
   }
 }
@@ -3573,10 +3741,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIFrameRootNodeChange) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ::switches::kEnableExperimentalUIAutomation);
+class AccessibilityWinUIABrowserTest : public AccessibilityWinBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AccessibilityWinBrowserTest::SetUpCommandLine(command_line);
 
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kEnableExperimentalUIAutomation);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       TestIFrameRootNodeChange) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -3624,6 +3800,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIFrameRootNodeChange) {
   ASSERT_HRESULT_SUCCEEDED(
       parent->Navigate(NavigateDirection_FirstChild, &first_child));
   EXPECT_EQ(content_root.Get(), first_child.Get());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest, TestGetFragmentRoot) {
+  // Verify that we can obtain a fragment root from a fragment without having
+  // sent WM_GETOBJECT to the host window.
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      </html>)HTML");
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragment> content_root;
+  ASSERT_HRESULT_SUCCEEDED(
+      GetManager()->GetRoot()->GetNativeViewAccessible()->QueryInterface(
+          IID_PPV_ARGS(&content_root)));
+
+  Microsoft::WRL::ComPtr<IRawElementProviderFragmentRoot> fragment_root;
+  ASSERT_HRESULT_SUCCEEDED(content_root->get_FragmentRoot(&fragment_root));
+  ASSERT_NE(nullptr, fragment_root.Get());
 }
 
 }  // namespace content

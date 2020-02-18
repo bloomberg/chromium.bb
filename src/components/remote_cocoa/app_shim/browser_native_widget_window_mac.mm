@@ -6,8 +6,8 @@
 
 #import <AppKit/AppKit.h>
 
-#include "components/remote_cocoa/app_shim/bridged_native_widget_impl.h"
-#include "components/remote_cocoa/common/bridged_native_widget_host.mojom.h"
+#include "components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"
+#include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 
 @interface NSWindow (PrivateBrowserNativeWidgetAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
@@ -33,10 +33,10 @@
 
   if (!_inFullScreen) {
     auto* window = base::mac::ObjCCast<NativeWidgetMacNSWindow>([self window]);
-    views::BridgedNativeWidgetImpl* bridgeImpl = [window bridgeImpl];
-    if (bridgeImpl) {
-      bridgeImpl->host()->GetWindowFrameTitlebarHeight(&overrideTitlebarHeight,
-                                                       &titlebarHeight);
+    remote_cocoa::NativeWidgetNSWindowBridge* bridge = [window bridge];
+    if (bridge) {
+      bridge->host()->GetWindowFrameTitlebarHeight(&overrideTitlebarHeight,
+                                                   &titlebarHeight);
     }
   }
   if (overrideTitlebarHeight)
@@ -91,9 +91,9 @@
 // Keyboard -> Shortcuts -> Keyboard. Usually Ctrl+F5. The argument (|unknown|)
 // tends to just be nil.
 - (void)_handleFocusToolbarHotKey:(id)unknown {
-  views::BridgedNativeWidgetImpl* bridgeImpl = [self bridgeImpl];
-  if (bridgeImpl)
-    bridgeImpl->host()->OnFocusWindowToolbar();
+  remote_cocoa::NativeWidgetNSWindowBridge* bridge = [self bridge];
+  if (bridge)
+    bridge->host()->OnFocusWindowToolbar();
 }
 
 @end

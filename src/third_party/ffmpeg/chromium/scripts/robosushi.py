@@ -102,6 +102,10 @@ steps = {
       { "desc": "Rewrite chromium/patches/README and commit locally if needed.",
         "skip_fn": robo_branch.IsPatchesFileDone,
         "do_fn": robo_branch.UpdatePatchesFileUnconditionally },
+  "update_chromium_readme":
+      { "desc": "Rewrite README.chromium to reflect the upstream SHA-1.",
+        "skip_fn": robo_branch.IsChromiumReadmeDone,
+        "do_fn": robo_branch.UpdateChromiumReadmeWithUpstream },
   "run_tests":
       { "desc": "Compile and run ffmpeg_regression_tests and media_unittests",
         "do_fn": robo_build.RunTests },
@@ -113,6 +117,7 @@ steps = {
                                               "push_merge_to_origin",
                                               "build_gn_configs",
                                               "update_patches_file",
+                                              "update_chromium_readme",
   # TODO: If the tests fail, and this is a manual roll, then the right thing
   # to do is to upload the gn config / patches for review and land it.
                                               "run_tests",

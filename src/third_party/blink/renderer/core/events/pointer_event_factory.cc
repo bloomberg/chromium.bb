@@ -6,6 +6,8 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
@@ -94,13 +96,36 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
 
   MouseEvent::SetCoordinatesFromWebPointerProperties(
       web_pointer_event_in_root_frame, dom_window, pointer_event_init);
-  if (RuntimeEnabledFeatures::MovementXYInBlinkEnabled() &&
-      web_pointer_event.GetType() == WebInputEvent::kPointerMove) {
-    // TODO(eirage): pointerrawupdate event's movements are not calculated.
-    pointer_event_init->setMovementX(web_pointer_event.PositionInScreen().x -
-                                     last_global_position.X());
-    pointer_event_init->setMovementY(web_pointer_event.PositionInScreen().y -
-                                     last_global_position.Y());
+  if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
+      (web_pointer_event.GetType() == WebInputEvent::kPointerMove ||
+       web_pointer_event.GetType() == WebInputEvent::kPointerRawUpdate)) {
+    // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
+    // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
+    // with the current behavior. We need to figure out what is the best
+    // behavior here.
+    float device_scale_factor = 1;
+    if (dom_window && dom_window->GetFrame()) {
+      LocalFrame* frame = dom_window->GetFrame();
+      if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
+        device_scale_factor = frame->GetPage()
+                                  ->GetChromeClient()
+                                  .GetScreenInfo()
+                                  .device_scale_factor;
+      }
+    }
+
+    // movementX/Y is type int for pointerevent, so we still need to truncated
+    // the coordinates before calculate movement.
+    pointer_event_init->setMovementX(
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().x *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_global_position.X() *
+                                  device_scale_factor));
+    pointer_event_init->setMovementY(
+        base::saturated_cast<int>(web_pointer_event.PositionInScreen().y *
+                                  device_scale_factor) -
+        base::saturated_cast<int>(last_global_position.Y() *
+                                  device_scale_factor));
   }
 
   // If width/height is unknown we let PointerEventInit set it to 1.
@@ -139,8 +164,9 @@ HeapVector<Member<PointerEvent>> PointerEventFactory::CreateEventSequence(
   if (!event_list.IsEmpty()) {
     // Make a copy of LastPointerPosition so we can modify it after creating
     // each coalesced event.
-    FloatPoint last_global_position = GetLastPointerPosition(
-        pointer_event_init->pointerId(), event_list.front());
+    FloatPoint last_global_position =
+        GetLastPointerPosition(pointer_event_init->pointerId(),
+                               event_list.front(), web_pointer_event.GetType());
 
     for (const auto& event : event_list) {
       DCHECK_EQ(web_pointer_event.id, event.id);
@@ -292,8 +318,8 @@ PointerEvent* PointerEventFactory::Create(
   pointer_event_init->setView(view);
   UpdateCommonPointerEventInit(
       web_pointer_event,
-      GetLastPointerPosition(pointer_event_init->pointerId(),
-                             web_pointer_event),
+      GetLastPointerPosition(pointer_event_init->pointerId(), web_pointer_event,
+                             event_type),
       view, pointer_event_init);
 
   UIEventWithKeyState::SetFromWebInputEventModifiers(
@@ -316,25 +342,37 @@ PointerEvent* PointerEventFactory::Create(
   pointer_event_init->setCoalescedEvents(coalesced_pointer_events);
   pointer_event_init->setPredictedEvents(predicted_pointer_events);
 
-  SetLastPosition(pointer_event_init->pointerId(), web_pointer_event);
+  SetLastPosition(pointer_event_init->pointerId(),
+                  web_pointer_event.PositionInScreen(), event_type);
   return PointerEvent::Create(type, pointer_event_init,
                               web_pointer_event.TimeStamp());
 }
 
 void PointerEventFactory::SetLastPosition(int pointer_id,
-                                          const WebPointerProperties& event) {
-  pointer_id_last_position_mapping_.Set(pointer_id, event.PositionInScreen());
+                                          const FloatPoint& position_in_screen,
+                                          WebInputEvent::Type event_type) {
+  if (event_type == WebInputEvent::kPointerRawUpdate)
+    pointerrawupdate_last_position_mapping_.Set(pointer_id, position_in_screen);
+  else
+    pointer_id_last_position_mapping_.Set(pointer_id, position_in_screen);
 }
 
 void PointerEventFactory::RemoveLastPosition(const int pointer_id) {
   pointer_id_last_position_mapping_.erase(pointer_id);
+  pointerrawupdate_last_position_mapping_.erase(pointer_id);
 }
 
 FloatPoint PointerEventFactory::GetLastPointerPosition(
     int pointer_id,
-    const WebPointerProperties& event) const {
-  if (pointer_id_last_position_mapping_.Contains(pointer_id))
-    return pointer_id_last_position_mapping_.at(pointer_id);
+    const WebPointerProperties& event,
+    WebInputEvent::Type event_type) const {
+  if (event_type == WebInputEvent::kPointerRawUpdate) {
+    if (pointerrawupdate_last_position_mapping_.Contains(pointer_id))
+      return pointerrawupdate_last_position_mapping_.at(pointer_id);
+  } else {
+    if (pointer_id_last_position_mapping_.Contains(pointer_id))
+      return pointer_id_last_position_mapping_.at(pointer_id);
+  }
   // If pointer_id is not in the map, returns the current position so the
   // movement will be zero.
   return event.PositionInScreen();
@@ -342,7 +380,7 @@ FloatPoint PointerEventFactory::GetLastPointerPosition(
 
 PointerEvent* PointerEventFactory::CreatePointerCancelEvent(
     const int pointer_id,
-    TimeTicks platfrom_time_stamp) {
+    base::TimeTicks platfrom_time_stamp) {
   DCHECK(pointer_id_mapping_.Contains(pointer_id));
   pointer_id_mapping_.Set(
       pointer_id,

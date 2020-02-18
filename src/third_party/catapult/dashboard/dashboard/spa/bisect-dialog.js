@@ -4,23 +4,23 @@
 */
 'use strict';
 
-import './cp-input.js';
-import './cp-loading.js';
-import './cp-radio-group.js';
-import './cp-radio.js';
+import './cp-flex.js';
 import './error-set.js';
-import './raised-button.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import NewPinpointRequest from './new-pinpoint-request.js';
+import '@chopsui/chops-button';
+import '@chopsui/chops-input';
+import '@chopsui/chops-loading';
+import '@chopsui/chops-radio';
+import '@chopsui/chops-radio-group';
 import {ElementBase, STORE} from './element-base.js';
+import {NewPinpointRequest} from './new-pinpoint-request.js';
 import {UPDATE} from './simple-redux.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {html, css} from 'lit-element';
 import {isElementChildOf, pinpointJob} from './utils.js';
 
 // Display a warning when bisecting large revision ranges.
 const MANY_REVISIONS = 100;
 
-export default class BisectDialog extends ElementBase {
+export class BisectDialog extends ElementBase {
   static get is() { return 'bisect-dialog'; }
 
   static get properties() {
@@ -69,169 +69,165 @@ export default class BisectDialog extends ElementBase {
     };
   }
 
-  static get template() {
+  static get styles() {
+    return css`
+      :host {
+        position: relative;
+      }
+
+      #dialog {
+        background: var(--background-color, white);
+        box-shadow: var(--elevation-2);
+        outline: none;
+        padding: 16px;
+        position: absolute;
+        bottom: 0;
+        z-index: var(--layer-menu, 100);
+      }
+      chops-input {
+        margin: 12px 4px 4px 4px;
+        width: 100px;
+      }
+      chops-radio-group {
+        margin-left: 8px;
+        flex-direction: row;
+      }
+      .row {
+        align-items: center;
+      }
+      .warning {
+        color: var(--error-color, red);
+      }
+      #cancel {
+        background: var(--background-color, white);
+        box-shadow: none;
+      }
+    `;
+  }
+
+  render() {
     return html`
-      <style>
-        :host {
-          position: relative;
-        }
-
-        #dialog {
-          background: var(--background-color, white);
-          box-shadow: var(--elevation-2);
-          flex-direction: column;
-          outline: none;
-          padding: 16px;
-          position: absolute;
-          bottom: 0;
-          z-index: var(--layer-menu, 100);
-        }
-        cp-input {
-          margin: 12px 4px 4px 4px;
-          width: 100px;
-        }
-        cp-radio-group {
-          margin-left: 8px;
-          flex-direction: row;
-        }
-        .row raised-button {
-          flex-grow: 1;
-        }
-        .row {
-          display: flex;
-          align-items: center;
-        }
-        .warning {
-          color: var(--error-color, red);
-        }
-        #cancel {
-          background: var(--background-color, white);
-          box-shadow: none;
-        }
-      </style>
-
-      <raised-button
+      <chops-button
           id="open"
-          disabled$="[[!able]]"
-          title$="[[tooltip]]"
-          on-click="onOpen_">
-        Bisect [[startRevision]] - [[endRevision]]
-      </raised-button>
+          ?disabled="${!this.able}"
+          title="${this.tooltip}"
+          @click="${this.onOpen_}">
+        Bisect ${this.startRevision} - ${this.endRevision}
+      </chops-button>
 
-      <error-set errors="[[errors]]"></error-set>
-      <cp-loading loading$="[[isLoading]]">
-      </cp-loading>
-      <template is="dom-if" if="[[jobId]]">
-        <a target="_blank" href="[[pinpoint_(jobId)]]">[[jobId]]</a>
-      </template>
+      <error-set .errors="${this.errors}"></error-set>
+      <chops-loading ?loading="${this.isLoading}">
+      </chops-loading>
+      ${!this.jobId ? '' : html`
+        <a target="_blank" href="${pinpointJob(this.jobId)}">${this.jobId}</a>
+      `}
 
-      <div id="dialog" hidden$="[[!isOpen]]">
+      <div id="dialog" ?hidden="${!this.isOpen}">
         <table>
           <tr>
             <td>Suite</td>
-            <td>[[suite]]</td>
+            <td>${this.suite}</td
           </tr>
           <tr>
             <td>Bot</td>
-            <td>[[bot]]</td>
+            <td>${this.bot}</td>
           </tr>
           <tr>
             <td>Measurement</td>
-            <td>[[measurement]]</td>
+            <td>${this.measurement}</td>
           </tr>
-          <template is="dom-if" if="[[case]]">
+          ${!this.case ? '' : html`
             <tr>
               <td>Case</td>
-              <td>[[case]]</td>
+              <td>${this.case}</td>
             </tr>
-          </template>
-          <template is="dom-if" if="[[statistic]]">
+          `}
+          ${!this.statistic ? '' : html`
             <tr>
               <td>Statistic</td>
-              <td>[[statistic]]</td>
+              <td>${this.statistic}</td>
             </tr>
-          </template>
+          `}
         </table>
 
-        <div class="row">
-          <cp-input
+        <cp-flex class="row">
+          <chops-input
               id="start_revision"
               label="Start Revision"
               tabindex="0"
-              value="[[startRevision]]"
-              on-change="onStartRevision_">
-          </cp-input>
+              .value="${this.startRevision}"
+              @change="${this.onStartRevision_}">
+          </chops-input>
 
-          <cp-input
+          <chops-input
               id="end_revision"
               label="End Revision"
               tabindex="0"
-              value="[[endRevision]]"
-              on-change="onEndRevision_">
-          </cp-input>
-        </div>
+              .value="${this.endRevision}"
+              @change="${this.onEndRevision_}">
+          </chops-input>
+        </cp-flex>
 
-        <div class="row">
-          <cp-input
+        <cp-flex class="row">
+          <chops-input
               id="bug_id"
               label="Bug ID"
               tabindex="0"
-              value="[[bugId]]"
-              on-change="onBugId_">
-          </cp-input>
+              .value="${this.bugId}"
+              @change="${this.onBugId_}">
+          </chops-input>
 
-          <cp-input
+          <chops-input
               id="patch"
               label="Patch"
               title="optional patch to apply to the entire job"
               tabindex="0"
-              value="[[patch]]"
-              on-change="onPatch_">
-          </cp-input>
-        </div>
+              .value="${this.patch}"
+              @change="${this.onPatch_}">
+          </chops-input>
+        </cp-flex>
 
-        <div class="row">
+        <cp-flex class="row">
           Mode:
-          <cp-radio-group
+          <chops-radio-group
               id="mode"
-              selected="[[mode]]"
-              on-selected-changed="onModeChange_">
-            <cp-radio name="performance">
+              selected="${this.mode}"
+              @selected-changed="${this.onModeChange_}">
+            <chops-radio name="performance">
               Performance
-            </cp-radio>
-            <cp-radio name="functional">
+            </chops-radio>
+            <chops-radio name="functional">
               Functional
-            </cp-radio>
-          </cp-radio-group>
-        </div>
+            </chops-radio>
+          </chops-radio-group>
+        </cp-flex>
 
-        <template is="dom-if"
-            if="[[isRangeLarge_(startRevision, endRevision)]]">
-          <div class="row warning">
+        ${((this.endRevision - this.startRevision) < MANY_REVISIONS) ? '' :
+    html`
+          <cp-flex class="row warning">
             Warning: bisect large revision ranges is slow and expensive.
-          </div>
-        </template>
+          </cp-flex>
+        `}
 
-        <div class="row">
-          <raised-button
+        <cp-flex grows class="row">
+          <chops-button
               id="cancel"
-              on-click="onCancel_"
+              @click="${this.onCancel_}"
               tabindex="0">
             Cancel
-          </raised-button>
-          <raised-button
+          </chops-button>
+          <chops-button
               id="start"
-              on-click="onSubmit_"
+              @click="${this.onSubmit_}"
               tabindex="0">
             Start
-          </raised-button>
-        </div>
+          </chops-button>
+        </cp-flex>
       </div>
     `;
   }
 
-  ready() {
-    super.ready();
+  firstUpdated() {
     this.addEventListener('blur', this.onBlur_.bind(this));
     this.addEventListener('keyup', this.onKeyup_.bind(this));
   }
@@ -240,16 +236,8 @@ export default class BisectDialog extends ElementBase {
     super.stateChanged(rootState);
 
     if (this.isOpen) {
-      this.$.cancel.focus();
+      this.shadowRoot.querySelector('#cancel').focus();
     }
-  }
-
-  isRangeLarge_(startRevision, endRevision) {
-    return (endRevision - startRevision) > MANY_REVISIONS;
-  }
-
-  pinpoint_(jobId) {
-    return pinpointJob(jobId);
   }
 
   async onKeyup_(event) {

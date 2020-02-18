@@ -74,21 +74,33 @@ public class NativeBackgroundTaskTest {
         public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {}
 
         @Override
-        public boolean isStartupSuccessfullyCompleted() {
+        public boolean isFullBrowserStarted() {
             mCallCount++;
             return mStartupSucceeded;
         }
 
         @Override
-        public boolean isServiceManagerSuccessfullyStarted() {
+        public boolean isNativeStarted() {
             return mStartupSucceeded;
+        }
+
+        @Override
+        public boolean isRunningInServiceManagerMode() {
+            return false;
         }
 
         @Override
         public void addStartupCompletedObserver(StartupCallback callback) {}
 
         @Override
-        public void initChromiumBrowserProcessForTests() {}
+        public void setContentMainCallbackForTests(Runnable r) {}
+
+        @Override
+        public int getStartupMode(boolean startServiceManagerOnly) {
+            assertFalse(isNativeStarted());
+            return 0 /*ServicificationStartupUma.ServicificationStartup.CHROME_COLD*/;
+        }
+
         public void setIsStartupSuccessfullyCompleted(boolean flag) {
             mStartupSucceeded = flag;
         }

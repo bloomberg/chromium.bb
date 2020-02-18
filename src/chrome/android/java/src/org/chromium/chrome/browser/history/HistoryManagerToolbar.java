@@ -12,7 +12,6 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
@@ -31,9 +30,7 @@ public class HistoryManagerToolbar extends SelectableListToolbar<HistoryItem> {
 
         getMenu()
                 .findItem(R.id.selection_mode_open_in_incognito)
-                .setTitle(ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS)
-                                ? R.string.contextmenu_open_in_private_tab
-                                : R.string.contextmenu_open_in_incognito_tab);
+                .setTitle(R.string.contextmenu_open_in_incognito_tab);
 
         updateMenuItemVisibility();
     }

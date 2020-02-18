@@ -62,13 +62,11 @@ class CC_EXPORT LayerTreeSettings {
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
   base::TimeDelta scroll_animation_duration_for_testing;
   bool timeout_and_draw_when_animation_checkerboards = true;
-  bool layer_transforms_should_scale_layer_contents = false;
   bool layers_always_allowed_lcd_text = false;
   float minimum_contents_scale = 0.0625f;
   float low_res_contents_scale_factor = 0.25f;
   float top_controls_show_threshold = 0.5f;
   float top_controls_hide_threshold = 0.5f;
-  double background_animation_rate = 1.0;
   gfx::Size default_tile_size;
   gfx::Size max_untiled_layer_size;
   // If set, indicates the largest tile size we will use for GPU Raster. If not
@@ -96,8 +94,6 @@ class CC_EXPORT LayerTreeSettings {
   int max_preraster_distance_in_screen_pixels = 1000;
   bool use_rgba_4444 = false;
   bool unpremultiply_and_dither_low_bit_depth_tiles = false;
-
-  bool enable_mask_tiling = true;
 
   // If set to true, the compositor may selectively defer image decodes to the
   // Image Decode Service and raster tiles without images until the decode is

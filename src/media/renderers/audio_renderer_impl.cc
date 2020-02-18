@@ -68,25 +68,20 @@ AudioRendererImpl::AudioRendererImpl(
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
       is_suspending_(false),
-      is_passthrough_(false),
-      weak_factory_(this) {
+      is_passthrough_(false) {
   DCHECK(create_audio_decoders_cb_);
-  // Tests may not have a power monitor.
-  base::PowerMonitor* monitor = base::PowerMonitor::Get();
-  if (!monitor)
-    return;
 
   // PowerObserver's must be added and removed from the same thread, but we
   // won't remove the observer until we're destructed on |task_runner_| so we
   // must post it here if we're on the wrong thread.
   if (task_runner_->BelongsToCurrentThread()) {
-    monitor->AddObserver(this);
+    base::PowerMonitor::AddObserver(this);
   } else {
     // Safe to post this without a WeakPtr because this class must be destructed
     // on the same thread and construction has not completed yet.
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(&base::PowerMonitor::AddObserver,
-                                          base::Unretained(monitor), this));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(IgnoreResult(&base::PowerMonitor::AddObserver), this));
   }
 
   // Do not add anything below this line since the above actions are only safe
@@ -96,8 +91,7 @@ AudioRendererImpl::AudioRendererImpl(
 AudioRendererImpl::~AudioRendererImpl() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (base::PowerMonitor::Get())
-    base::PowerMonitor::Get()->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.
@@ -378,6 +372,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     sink_->Stop();
 
   state_ = kInitializing;
+  demuxer_stream_ = stream;
   client_ = client;
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
@@ -388,7 +383,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   // media thread on synchronous IPC.
   sink_->GetOutputDeviceInfoAsync(
       base::BindOnce(&AudioRendererImpl::OnDeviceInfoReceived,
-                     weak_factory_.GetWeakPtr(), stream, cdm_context));
+                     weak_factory_.GetWeakPtr(), demuxer_stream_, cdm_context));
 }
 
 void AudioRendererImpl::OnDeviceInfoReceived(
@@ -674,11 +669,21 @@ void AudioRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void AudioRendererImpl::OnBufferingStateChange(BufferingState state) {
+void AudioRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // "Underflow" is only possible when playing. This avoids noise like blaming
+  // the decoder for an "underflow" that is really just a seek.
+  BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
+  if (state_ == kPlaying && buffering_state == BUFFERING_HAVE_NOTHING) {
+    reason = demuxer_stream_->IsReadPending() ? DEMUXER_UNDERFLOW
+                                              : DECODER_UNDERFLOW;
+  }
+
   media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
-      "audio_buffering_state", state));
-  client_->OnBufferingStateChange(state);
+      "audio_buffering_state", buffering_state, reason));
+
+  client_->OnBufferingStateChange(buffering_state, reason);
 }
 
 void AudioRendererImpl::OnWaiting(WaitingReason reason) {
@@ -1095,10 +1100,14 @@ int AudioRendererImpl::Render(base::TimeDelta delay,
         algorithm_->IncreaseQueueCapacity();
         SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
       }
-    } else if (frames_written < frames_requested && !received_end_of_stream_) {
+    } else if (frames_written < frames_requested && !received_end_of_stream_ &&
+               state_ == kPlaying &&
+               buffering_state_ != BUFFERING_HAVE_NOTHING) {
       // If we only partially filled the request and should have more data, go
       // ahead and increase queue capacity to try and meet the next request.
+      // Trigger underflow to give us a chance to refill up to the new cap.
       algorithm_->IncreaseQueueCapacity();
+      SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
     }
 
     audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,

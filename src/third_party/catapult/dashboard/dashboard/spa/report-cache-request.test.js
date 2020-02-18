@@ -4,9 +4,9 @@
 */
 'use strict';
 
+import * as testUtils from './cache-request-base.js';
+import {ReportCacheRequest} from './report-cache-request.js';
 import {assert} from 'chai';
-import testUtils from './cache-request-base.js';
-import ReportCacheRequest from './report-cache-request.js';
 import {timeout} from './utils.js';
 
 suite('ReportCacheRequest', function() {
@@ -182,7 +182,7 @@ suite('ReportCacheRequest', function() {
 
   // After receiving results from the network, the cache will start yielding
   // results in addition to the network.
-  test('yields cache and network', async() => {
+  test('yields cache and network', async function() {
     const parameters = {
       id: 12,
       name: 'name',

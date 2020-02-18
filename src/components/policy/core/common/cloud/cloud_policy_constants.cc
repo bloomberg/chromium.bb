@@ -86,8 +86,6 @@ const char kChromeMachineLevelExtensionCloudPolicyType[] =
 
 }  // namespace dm_protocol
 
-const char kChromePolicyHeader[] = "Chrome-Policy-Posture";
-
 const uint8_t kPolicyVerificationKey[] = {
     0x30, 0x82, 0x01, 0x22, 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86,
     0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x82, 0x01, 0x0F, 0x00,
@@ -123,5 +121,7 @@ std::string GetPolicyVerificationKey() {
   return std::string(reinterpret_cast<const char*>(kPolicyVerificationKey),
                      sizeof(kPolicyVerificationKey));
 }
+
+const char kPolicyFCMInvalidationSenderID[] = "1013309121859";
 
 }  // namespace policy

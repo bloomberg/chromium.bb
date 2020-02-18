@@ -1,11 +1,9 @@
 package TAP::Base;
 
 use strict;
-use vars qw($VERSION @ISA);
+use warnings;
 
-use TAP::Object;
-
-@ISA = qw(TAP::Object);
+use base 'TAP::Object';
 
 =head1 NAME
 
@@ -14,11 +12,11 @@ and L<TAP::Harness>
 
 =head1 VERSION
 
-Version 3.23
+Version 3.42
 
 =cut
 
-$VERSION = '3.23';
+our $VERSION = '3.42';
 
 use constant GOT_TIME_HIRES => do {
     eval 'use Time::HiRes qw(time);';
@@ -29,10 +27,7 @@ use constant GOT_TIME_HIRES => do {
 
     package TAP::Whatever;
 
-    use TAP::Base;
-    
-    use vars qw($VERSION @ISA);
-    @ISA = qw(TAP::Base);
+    use base 'TAP::Base';
 
     # ... later ...
     
@@ -125,5 +120,14 @@ Return true if the time returned by get_time is high resolution (i.e. if Time::H
 =cut
 
 sub time_is_hires { return GOT_TIME_HIRES }
+
+=head3 C<get_times>
+
+Return array reference of the four-element list of CPU seconds,
+as with L<perlfunc/times>.
+
+=cut
+
+sub get_times { return [ times() ] }
 
 1;

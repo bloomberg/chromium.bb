@@ -99,13 +99,13 @@ Polymer({
   /** @private The current update timer if any. */
   updateTimer_: 0,
 
-  /** @private {(mojom.DiscardsDetailsProviderProxy|null)} */
-  uiHandler_: null,
+  /** @private {(mojom.DiscardsDetailsProviderRemote|null)} */
+  discardsDetailsProvider_: null,
 
   /** @override */
   ready: function() {
     this.setSortKey('utilityRank');
-    this.uiHandler_ = discards.getOrCreateUiHandler();
+    this.discardsDetailsProvider_ = discards.getOrCreateDetailsProvider();
 
     this.updateTable_();
   },
@@ -198,11 +198,14 @@ Polymer({
    *     is only used if the state is discard related.
    * @param {mojom.LifecycleUnitVisibility} visibility A visibility value.
    * @param {boolean} hasFocus Whether or not the tab has input focus.
+   * @param {mojoBase.mojom.TimeDelta} stateChangeTime Delta between Unix Epoch
+   *     and time at which the lifecycle state has changed.
    * @return {string} A string representation of the lifecycle state, augmented
    *     with the discard reason if appropriate.
    * @private
    */
-  lifecycleStateToString_: function(state, reason, visibility, hasFocus) {
+  lifecycleStateToString_: function(
+      state, reason, visibility, hasFocus, stateChangeTime) {
     const pageLifecycleStateFromVisibilityAndFocus = function() {
       switch (visibility) {
         case mojom.LifecycleUnitVisibility.HIDDEN:
@@ -228,7 +231,12 @@ Polymer({
         return pageLifecycleStateFromVisibilityAndFocus() +
             ' (pending discard (' + this.discardReasonToString_(reason) + '))';
       case mojom.LifecycleUnitState.DISCARDED:
-        return 'discarded (' + this.discardReasonToString_(reason) + ')';
+        return 'discarded (' + this.discardReasonToString_(reason) + ')' +
+            ((reason == mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
+                     // Must convert since Date constructor takes milliseconds.
+                     (new Date(stateChangeTime.microseconds / 1000))
+                         .toLocaleString() :
+                                                                   '');
       case mojom.LifecycleUnitState.PENDING_UNFREEZE:
         return 'frozen (pending unfreeze)';
     }
@@ -240,7 +248,7 @@ Polymer({
    * @private
    */
   updateTableImpl_: function() {
-    this.uiHandler_.getTabDiscardsInfo().then(response => {
+    this.discardsDetailsProvider_.getTabDiscardsInfo().then(response => {
       this.tabInfos_ = response.infos;
     });
   },
@@ -287,7 +295,7 @@ Polymer({
    * @private
    */
   getFavIconStyle_: function(item) {
-    return 'background-image:' + cr.icon.getFavicon(item.tabUrl);
+    return 'background-image:' + cr.icon.getFavicon(item.tabUrl, false);
   },
 
   /**
@@ -300,7 +308,8 @@ Polymer({
     if (item.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
         item.discardCount > 0) {
       return this.lifecycleStateToString_(
-          item.state, item.discardReason, item.visibility, item.hasFocus);
+          item.state, item.discardReason, item.visibility, item.hasFocus,
+          item.stateChangeTime);
     } else {
       return '';
     }
@@ -405,7 +414,8 @@ Polymer({
    */
   toggleAutoDiscardable_: function(e) {
     const item = e.model.item;
-    this.uiHandler_.setAutoDiscardable(item.id, !item.isAutoDiscardable)
+    this.discardsDetailsProvider_
+        .setAutoDiscardable(item.id, !item.isAutoDiscardable)
         .then(this.updateTable_.bind(this));
   },
 
@@ -415,7 +425,7 @@ Polymer({
    * @private
    */
   loadTab_: function(e) {
-    this.uiHandler_.loadById(e.model.item.id);
+    this.discardsDetailsProvider_.loadById(e.model.item.id);
   },
 
   /**
@@ -424,7 +434,7 @@ Polymer({
    * @private
    */
   freezeTab_: function(e) {
-    this.uiHandler_.freezeById(e.model.item.id);
+    this.discardsDetailsProvider_.freezeById(e.model.item.id);
   },
 
   /**
@@ -434,7 +444,7 @@ Polymer({
    * @private
    */
   discardTabImpl_: function(e, urgent) {
-    this.uiHandler_.discardById(e.model.item.id, urgent)
+    this.discardsDetailsProvider_.discardById(e.model.item.id, urgent)
         .then(this.updateTable_.bind(this));
   },
 
@@ -462,7 +472,7 @@ Polymer({
    * @private
    */
   discardImpl_: function(urgent) {
-    this.uiHandler_.discard(urgent).then(() => {
+    this.discardsDetailsProvider_.discard(urgent).then(() => {
       this.updateTable_();
     });
   },

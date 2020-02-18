@@ -30,7 +30,7 @@ void MockBrowsingDataFileSystemHelper::StartFetching(FetchCallback callback) {
 void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
     const url::Origin& origin) {
   std::string key = origin.Serialize();
-  ASSERT_TRUE(base::ContainsKey(file_systems_, key));
+  ASSERT_TRUE(base::Contains(file_systems_, key));
   last_deleted_origin_ = origin;
   file_systems_[key] = false;
 }

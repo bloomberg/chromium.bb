@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,20 +28,25 @@
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/test_service_worker_observer.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
-namespace service_worker_registration_unittest {
+
+namespace {
 
 // From service_worker_registration.cc.
 constexpr base::TimeDelta kMaxLameDuckTime = base::TimeDelta::FromMinutes(5);
@@ -69,18 +75,21 @@ int CreateInflightRequest(ServiceWorkerVersion* version) {
                                base::DoNothing());
 }
 
-static void SaveStatusCallback(bool* called,
-                               blink::ServiceWorkerStatusCode* out,
-                               blink::ServiceWorkerStatusCode status) {
+void SaveStatusCallback(bool* called,
+                        blink::ServiceWorkerStatusCode* out,
+                        blink::ServiceWorkerStatusCode status) {
   *called = true;
   *out = status;
 }
+
+}  // namespace
 
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
     return false;
@@ -169,13 +178,17 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
-    context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
-  }
+    // Create a StoragePartition with the testing browser context so that the
+    // ServiceWorkerUpdateChecker can find the BrowserContext through it.
+    storage_partition_impl_ = StoragePartitionImpl::Create(
+        helper_->browser_context(), /* in_memory= */ true, base::FilePath(),
+        /* partition_domain= */ "");
+    helper_->context_wrapper()->set_storage_partition(
+        storage_partition_impl_.get());
 
-  void TearDown() override {
-    helper_.reset();
-    base::RunLoop().RunUntilIdle();
+    base::RunLoop loop;
+    context()->storage()->LazyInitializeForTest(loop.QuitClosure());
+    loop.Run();
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }
@@ -221,6 +234,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
  protected:
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
+  std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
 };
 
 TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
@@ -951,6 +965,31 @@ class ServiceWorkerRegistrationObjectHostTest
   std::vector<std::string> bad_messages_;
 };
 
+class ServiceWorkerRegistrationObjectHostUpdateTest
+    : public ServiceWorkerRegistrationObjectHostTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    if (IsImportedScriptUpdateCheckEnabled()) {
+      feature_list_.InitAndEnableFeature(
+          blink::features::kServiceWorkerImportedScriptUpdateCheck);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          blink::features::kServiceWorkerImportedScriptUpdateCheck);
+    }
+    ServiceWorkerRegistrationObjectHostTest::SetUp();
+  }
+
+  static bool IsImportedScriptUpdateCheckEnabled() { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(ServiceWorkerRegistrationObjectHostUpdateTestP,
+                         ServiceWorkerRegistrationObjectHostUpdateTest,
+                         testing::Bool());
+
 TEST_F(ServiceWorkerRegistrationObjectHostTest, BreakConnection_Destroy) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -969,7 +1008,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, BreakConnection_Destroy) {
   EXPECT_EQ(nullptr, context()->GetLiveRegistration(registration_id));
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_Success) {
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest, Update_Success) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   SetUpRegistration(kScope, kScriptUrl);
@@ -990,7 +1029,8 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_Success) {
             CallUpdate(registration_host_ptr.get()));
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_CrossOriginShouldFail) {
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
+       Update_CrossOriginShouldFail) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   SetUpRegistration(kScope, kScriptUrl);
@@ -1010,7 +1050,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_CrossOriginShouldFail) {
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest,
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
        Update_ContentSettingsDisallowsServiceWorker) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -1031,7 +1071,8 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_NoDelayFromControllee) {
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
+       Update_NoDelayFromControllee) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
@@ -1060,7 +1101,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_NoDelayFromControllee) {
   EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest,
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
        Update_DelayFromWorkerWithoutControllee) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -1091,7 +1132,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest,
   EXPECT_LE(base::TimeDelta::FromMinutes(5), registration->self_update_delay());
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest,
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
        Update_NoDelayFromWorkerWithControllee) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -1332,7 +1373,7 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetUpdateViaCache) {
             mock_registration_object->update_via_cache());
 }
 
-TEST_F(ServiceWorkerRegistrationObjectHostTest, UpdateFound) {
+TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest, UpdateFound) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
@@ -1355,5 +1396,4 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, UpdateFound) {
   EXPECT_EQ(1, mock_registration_object->update_found_called_count());
 }
 
-}  // namespace service_worker_registration_unittest
 }  // namespace content

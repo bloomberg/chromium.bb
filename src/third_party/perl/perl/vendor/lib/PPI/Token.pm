@@ -25,11 +25,9 @@ use Params::Util   qw{_INSTANCE};
 use PPI::Element   ();
 use PPI::Exception ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Element';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = 'PPI::Element';
 
 # We don't load the abstracts, they are loaded
 # as part of the inheritance process.
@@ -123,7 +121,7 @@ sub set_class {
 
 =head2 set_content $string
 
-The C<set_content> method allows to set/change the string that the
+The C<set_content> method allows you to set/change the string that the
 C<PPI::Token> object represents.
 
 Returns the string you set the Token to
@@ -199,9 +197,9 @@ sub insert_after {
 #####################################################################
 # Tokenizer Methods
 
-sub __TOKENIZER__on_line_start { 1 }
-sub __TOKENIZER__on_line_end   { 1 }
-sub __TOKENIZER__on_char       { 'Unknown' }
+sub __TOKENIZER__on_line_start() { 1 }
+sub __TOKENIZER__on_line_end()   { 1 }
+sub __TOKENIZER__on_char()       { 'Unknown' }
 
 
 

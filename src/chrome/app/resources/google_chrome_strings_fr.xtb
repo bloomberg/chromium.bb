@@ -8,6 +8,7 @@
 <translation id="1065672644894730302">Impossible de lire vos préférences.
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> utilisait Chrome précédemment</translation>
+<translation id="1097330777386562916">Effacer les cookies et les données de site en quittant Chrome</translation>
 <translation id="1104959162601287462">À propos de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Voici votre Chrome</translation>
 <translation id="1142745911746664600">Impossible de mettre Chrome à jour</translation>
@@ -22,12 +23,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
-<translation id="1585657529869845941">Si le bouton <ph name="BEGIN_BOLD" />Changer quand même<ph name="END_BOLD" /> s'affiche, cliquez dessus</translation>
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="1587325591171447154">Chrome a bloqué <ph name="FILE_NAME" />, car ce fichier est dangereux.</translation>
 <translation id="1590588151039584890">Pour effectuer la mise à jour, vous devez fermer Chrome sur cet ordinateur. Sachez toutefois que les autres utilisateurs qui y sont connectés risquent de perdre leurs données non enregistrées.</translation>
 <translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="1628000112320670027">Obtenir de l'aide avec Chrome</translation>
+<translation id="1635734105302489219">Les cookies sont effacés lorsque vous quittez Chrome. Pour reprendre la synchronisation, modifiez l'option correspondante dans les <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS a été créé à partir d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />, tout comme <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Bêta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="1682634494516646069">Google Chrome ne peut pas lire et écrire dans son répertoire de données : 
@@ -35,7 +36,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome va être relancé dans une heure}one{Chrome va être relancé dans # heure}other{Chrome va être relancé dans # heures}}</translation>
-<translation id="1718131156967340976">Sélectionnez <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="1734234790201236882">Chrome va enregistrer ce mot de passe dans votre compte Google. Vous n'avez pas besoin de le retenir.</translation>
 <translation id="174539241580958092">Impossible de synchroniser vos données dans Google Chrome, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -56,7 +56,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="2246246234298806438">Impossible d'afficher l'aperçu d'impression dans Google Chrome, car la visionneuse de documents PDF intégrée est absente.</translation>
 <translation id="2252923619938421629">Aidez-nous à améliorer Google Chrome en nous signalant vos paramètres.</translation>
 <translation id="2286950485307333924">Vous êtes connecté à Chrome</translation>
-<translation id="2290014774651636340">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Google Chrome vont être désactivées.</translation>
+<translation id="2290014774651636340">Les clés API Google sont manquantes. Certaines fonctionnalités de Google Chrome vont être désactivées.</translation>
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome ?</translation>
 <translation id="2309047409763057870">Ceci est une installation secondaire de Google Chrome. Vous ne pouvez pas le définir comme navigateur par défaut.</translation>
 <translation id="2346876346033403680">Un utilisateur s'est récemment connecté à Google Chrome sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. S'il ne s'agit pas de votre compte, veuillez créer un utilisateur Google Chrome pour séparer vos informations.
@@ -95,6 +95,7 @@ Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assure
 
 Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
+<translation id="3340978935015468852">paramètres</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome va être relancé maintenant}=1{Chrome va être relancé dans 1 seconde}one{Chrome va être relancé dans # seconde}other{Chrome va être relancé dans # secondes}}</translation>
 <translation id="3395323229510056640">Obtenir de l'aide avec Chrome OS</translation>
@@ -102,7 +103,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3398288718845740432">Masquer dans le menu Chrome</translation>
 <translation id="3451115285585441894">Ajout à Google Chrome en cours…</translation>
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
-<translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="34857402635545079">Effacer également les données issues de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome a besoin d'accéder à votre position pour la partager avec ce site</translation>
 <translation id="3576528680708590453">Votre administrateur système a configuré Google Chrome de sorte qu'un autre navigateur s'ouvre pour accéder à <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -117,8 +117,6 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="386202838227397562">Veuillez fermer toutes les fenêtres de Google Chrome et réessayer.</translation>
 <translation id="3873044882194371212">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
-<translation id="3898493977366060150">Navigation sur le Web avec les fonctionnalités intelligentes de Google</translation>
-<translation id="4028693306634653894">Accédez à Chrome plus rapidement</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="4143243756087420366">Nom et photo dans Chrome</translation>
@@ -130,8 +128,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4251625577313994583">télécharger Chrome sur votre iPhone</translation>
 <translation id="4293420128516039005">Se connecter pour synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="4328355335528187361">Google Chrome pour les développeurs (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Système d’exploitation Google Chrome</translation>
 <translation id="4343195214584226067">L'extension <ph name="EXTENSION_NAME" /> a été ajoutée à Chrome</translation>
 <translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
 <translation id="4458462641685292929">Une autre opération est en cours dans Google Chrome. Veuillez réessayer ultérieurement.</translation>
@@ -207,7 +204,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6750954913813541382">Pour corriger les fautes d'orthographe, Chrome envoie à Google le texte que vous saisissez dans le navigateur</translation>
 <translation id="677276454032249905">Quitter Chrome quand même ?</translation>
 <translation id="683440813066116847">Règle de trafic entrant pour Google Chrome Canary autorisant le trafic mDNS</translation>
-<translation id="686561893457936865">Chrome avec vous n'importe où</translation>
 <translation id="6885412569789873916">Applications pour la version bêta de Chrome</translation>
 <translation id="6943584222992551122">Les données de navigation de cet utilisateur vont être supprimées de cet appareil. Pour les récupérer, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Règle de trafic entrant pour la version bêta de Google Chrome autorisant le trafic mDNS.</translation>
@@ -244,7 +240,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="7855730255114109580">Google Chrome est à jour</translation>
-<translation id="7888186132678118370">Épingler Chrome à votre barre des tâches</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7896673875602241923">Un utilisateur s'est récemment connecté à Chrome sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chrome pour séparer vos informations.</translation>
 <translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
@@ -293,6 +288,5 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="9138603949443464873">Pour appliquer vos modifications, relancez Chrome</translation>
 <translation id="919706545465235479">Mettre à jour Chrome pour lancer la synchronisation</translation>
-<translation id="924447568950697217">Définir Chrome comme navigateur par défaut</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
 </translationbundle>

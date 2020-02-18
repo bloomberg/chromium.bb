@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -28,7 +29,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
@@ -103,30 +103,6 @@ constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
-
-// TODO(estark): Figure out a way for the embedder to provide the
-// security style for a resource. Ideally, the logic for assigning
-// per-resource security styles should live in the same place as the
-// logic for assigning per-page security styles (which lives in the
-// embedder). It would also be nice for the embedder to have the chance
-// to control the per-resource security style beyond the simple logic
-// here. (For example, the embedder might want to mark certain resources
-// differently if they use SHA1 signatures.) https://crbug.com/648326
-blink::WebSecurityStyle GetSecurityStyleForResource(
-    const GURL& url,
-    net::CertStatus cert_status) {
-  if (!url.SchemeIsCryptographic())
-    return blink::kWebSecurityStyleNeutral;
-
-  // Minor errors don't lower the security style to
-  // WebSecurityStyleAuthenticationBroken.
-  if (net::IsCertStatusError(cert_status) &&
-      !net::IsCertStatusMinorError(cert_status)) {
-    return blink::kWebSecurityStyleInsecure;
-  }
-
-  return blink::kWebSecurityStyleSecure;
-}
 
 // Converts timing data from |load_timing| to the format used by WebKit.
 void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
@@ -270,8 +246,13 @@ void SetSecurityStyleAndDetails(const GURL& url,
     }
   }
 
-  response->SetSecurityStyle(
-      GetSecurityStyleForResource(url, info.cert_status));
+  // Minor errors don't lower the security style to WebSecurityStyleInsecure.
+  if (net::IsCertStatusError(info.cert_status) &&
+      !net::IsCertStatusMinorError(info.cert_status)) {
+    response->SetSecurityStyle(blink::kWebSecurityStyleInsecure);
+  } else {
+    response->SetSecurityStyle(blink::kWebSecurityStyleSecure);
+  }
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
       ssl_info.signed_certificate_timestamps.size());
@@ -370,11 +351,6 @@ WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
       loader_factory_(std::move(loader_factory)) {}
 
 WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
-
-std::unique_ptr<WebURLLoaderFactoryImpl>
-WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
-  return std::make_unique<WebURLLoaderFactoryImpl>(nullptr, nullptr);
-}
 
 std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
@@ -783,9 +759,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCorsPreflightPolicy();
   resource_request->skip_service_worker = request.GetSkipServiceWorker();
-  resource_request->fetch_request_mode = request.GetFetchRequestMode();
-  resource_request->fetch_credentials_mode = request.GetFetchCredentialsMode();
-  resource_request->fetch_redirect_mode = request.GetFetchRedirectMode();
+  resource_request->mode = request.GetMode();
+  resource_request->credentials_mode = request.GetCredentialsMode();
+  resource_request->redirect_mode = request.GetRedirectMode();
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
@@ -846,6 +822,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       static_cast<int>(ResourceType::kPluginResource)) {
     resource_request->corb_excluded = true;
   }
+  if (request.IsSignedExchangePrefetchCacheEnabled()) {
+    DCHECK_EQ(static_cast<int>(ResourceType::kPrefetch),
+              resource_request->resource_type);
+    resource_request->is_signed_exchange_prefetch_cache_enabled = true;
+  }
 
   auto throttles = extra_data->TakeURLLoaderThrottles();
   // The frame request blocker is only for a frame's subresources.
@@ -882,9 +863,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(resource_request), request.RequestorID(), task_runner_,
-      GetTrafficAnnotationTag(request), false /* is_sync */,
-      request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
-      std::move(throttles), std::move(response_override));
+      GetTrafficAnnotationTag(request), false /* is_sync */, std::move(peer),
+      url_loader_factory_, std::move(throttles), std::move(response_override));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -1117,6 +1097,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetDidServiceWorkerNavigationPreload(
       info.did_service_worker_navigation_preload);
   response->SetEncodedDataLength(info.encoded_data_length);
+  response->SetEncodedBodyLength(info.encoded_body_length);
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);

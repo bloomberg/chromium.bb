@@ -33,7 +33,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
-#include "cc/paint/node_holder.h"
+#include "cc/paint/node_id.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -432,9 +432,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return painted_device_scale_factor_;
   }
 
-  void SetContentSourceId(uint32_t);
-  uint32_t content_source_id() const { return content_source_id_; }
-
   // Clears image caches and resets the scheduling history for the content
   // produced by this host so far.
   void ClearCachesOnNextCommit();
@@ -678,8 +675,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::string LayersAsString() const;
 
   // Captures the on-screen text content, if success, fills the associated
-  // NodeHolder in |content| and return true, otherwise return false.
-  bool CaptureContent(std::vector<NodeHolder>* content);
+  // NodeId in |content| and return true, otherwise return false.
+  bool CaptureContent(std::vector<NodeId>* content);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);
@@ -722,7 +719,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
   void ApplyViewportChanges(const ScrollAndScaleSet& info);
-  void RecordWheelAndTouchScrollingCount(const ScrollAndScaleSet& info);
+  void RecordManipulationTypeCounts(const ScrollAndScaleSet& scroll_info);
   void SendOverscrollAndScrollEndEventsFromImplSide(
       const ScrollAndScaleSet& info);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
@@ -807,7 +804,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gfx::ColorSpace raster_color_space_;
 
   bool clear_caches_on_next_commit_ = false;
-  uint32_t content_source_id_;
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   // Used to detect surface invariant violations.
   bool has_pushed_local_surface_id_from_parent_ = false;
@@ -882,7 +878,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.
-  base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_;
+  base::WeakPtrFactory<LayerTreeHost> defer_main_frame_update_weak_ptr_factory_{
+      this};
 };
 
 }  // namespace cc

@@ -9,10 +9,12 @@ import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_pressure_level.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
+import "services/network/public/mojom/http_raw_headers.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
@@ -96,7 +98,12 @@ interface NetworkServiceClient {
   // The |auth_challenge_responder| will respond to auth challenge with
   // credentials. |head| can provide response headers for the response
   // which has elicited this auth request, if applicable.
-  OnAuthRequired(uint32 process_id,
+  //
+  // |window_id| or else |process_id| and |routing_id| indicates
+  // the frame making the request, see
+  // network::ResourceRequest::fetch_window_id.
+  OnAuthRequired(mojo_base.mojom.UnguessableToken? window_id,
+                 uint32 process_id,
                  uint32 routing_id,
                  uint32 request_id,
                  url.mojom.Url url,
@@ -148,17 +155,6 @@ interface NetworkServiceClient {
                         array<mojo_base.mojom.FilePath> file_paths) =>
                         (int32 net_error, array<mojo_base.mojom.File> files);
 
-  // Called when an attempt has been made to set |cookie|.
-  OnCookieChange(
-      int32 process_id, int32 routing_id, url.mojom.Url url,
-      url.mojom.Url frame_url, CanonicalCookie cookie, bool blocked_by_policy);
-
-  // Called when an attempt has been made to read the cookies in |cookie_list|.
-  OnCookiesRead(
-      int32 process_id, int32 routing_id, url.mojom.Url url,
-      url.mojom.Url frame_url, array<CanonicalCookie> cookie_list,
-      bool blocked_by_policy);
-
   // Called periodically to update the client about progress of the current
   // loads. To avoid flooding the client, it has to ack the update before it can
   // receive the next update.
@@ -178,19 +174,26 @@ interface NetworkServiceClient {
                                    string spn) =>
                                    (int32 result, string auth_token);
 
-  // Called to send information about cookies flagged to be excluded or as a
-  // warning as it's sent in the request.
-  OnFlaggedRequestCookies(
+  // Called to send raw header information and information about excluded
+  // cookies. Only called when |devtool_request_id| is available to the
+  // URLLoader.
+  OnRawRequest(
     int32 process_id,
     int32 routing_id,
-    array<CookieWithStatus> excluded_cookies);
+    string devtool_request_id,
+    array<CookieWithStatus> cookies_with_status,
+    array<HttpRawHeaderPair> headers);
 
-  // Called to send information about cookies flagged to be excluded from
-  // storage or as a warning from a received response.
-  OnFlaggedResponseCookies(
+  // Called to send information about the cookies blocked from storage from a
+  // received response. Only called when |devtool_request_id| is available to
+  // the URLLoader.
+  OnRawResponse(
     int32 process_id,
     int32 routing_id,
-    array<CookieAndLineWithStatus> excluded_cookies);
+    string devtool_request_id,
+    array<CookieAndLineWithStatus> cookies_with_status,
+    array<HttpRawHeaderPair> headers,
+    string? raw_response_headers);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -200,8 +203,10 @@ struct HttpAuthStaticParams {
   // behavior of NetworkService when no HttpAuthStaticParams is specified.
   array<string> supported_schemes;
 
-  // File name the GSSAPI library to load. Only supported on
-  // (OS_POSIX && !OS_ANDROID && !OS_CHROMEOS && OS_IOS) platforms.
+  // File name the GSSAPI library to load. Only supported on platforms where an
+  // external GSSAPI library is necessary for Kerberos/SPNEGO support. See the
+  // |use_external_gssapi| variable definition in //net/BUILD.gn for details on
+  // platforms where this setting is applicable.
   string gssapi_library_name;
 };
 
@@ -429,6 +434,10 @@ interface NetworkService {
   // Called when the system is low on memory.
   OnMemoryPressure(mojo_base.mojom.MemoryPressureLevel memory_pressure_level);
 
+  // Called when there is a change in the current count of peer to peer
+  // connections that may require low latency.
+  OnPeerToPeerConnectionsCountChange(uint32 count);
+
   // Called on state changes of the Android application.
   [EnableIf=is_android]
   OnApplicationStateChange(mojo_base.mojom.ApplicationState state);
@@ -437,4 +446,10 @@ interface NetworkService {
   // This method won't modify variables that aren't present in the
   // |environment| array.
   SetEnvironment(array<EnvironmentVariable> environment);
+
+  // Calls base::debug::DumpWithoutCrashing for the network process.
+  // TODO(http://crbug.com/934317): Remove this once done debugging renderer
+  // hangs.
+  [EnableIf=is_android]
+  DumpWithoutCrashing(mojo_base.mojom.Time dump_request_time);
 };

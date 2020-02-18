@@ -93,7 +93,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
 
   std::vector<SemaphoreHandle> handles;
-  if (!backing_impl()->BeginAccess(readonly, &handles))
+  if (!backing_impl()->BeginAccess(readonly, &handles, false /* is_gl */))
     return nullptr;
 
   for (auto& handle : handles) {
@@ -115,16 +115,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
     end_semaphores->back().initVulkan(end_access_semaphore_);
   }
 
-  // Create backend texture from the VkImage.
-  GrVkAlloc alloc(backing_impl()->memory(), 0 /* offset */,
-                  backing_impl()->memory_size(), 0 /* flags */);
-  GrVkImageInfo vk_image_info(backing_impl()->image(), alloc,
-                              VK_IMAGE_TILING_OPTIMAL,
-                              VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                              backing_impl()->vk_format(), 1 /* levelCount */);
-
-  return SkPromiseImageTexture::Make(
-      GrBackendTexture(size().width(), size().height(), vk_image_info));
+  return SkPromiseImageTexture::Make(backing_impl()->backend_texture());
 }
 
 void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
@@ -146,7 +137,7 @@ void ExternalVkImageSkiaRepresentation::EndAccess(bool readonly) {
     DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
   }
 
-  backing_impl()->EndAccess(readonly, std::move(handle));
+  backing_impl()->EndAccess(readonly, std::move(handle), false /* is_gl */);
 }
 
 }  // namespace gpu

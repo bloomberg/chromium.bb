@@ -1,61 +1,68 @@
-package Parse::CPAN::Meta;
-
+use 5.008001;
 use strict;
+use warnings;
+package Parse::CPAN::Meta;
+# ABSTRACT: Parse META.yml and META.json CPAN metadata files
+
+our $VERSION = '2.150010';
+
+use Exporter;
 use Carp 'croak';
 
-# UTF Support?
-sub HAVE_UTF8 () { $] >= 5.007003 }
-sub IO_LAYER () { $] >= 5.008001 ? ":utf8" : "" }  
-
-BEGIN {
-	if ( HAVE_UTF8 ) {
-		# The string eval helps hide this from Test::MinimumVersion
-		eval "require utf8;";
-		die "Failed to load UTF-8 support" if $@;
-	}
-
-	# Class structure
-	require 5.004;
-	require Exporter;
-	$Parse::CPAN::Meta::VERSION   = '1.4404';
-	@Parse::CPAN::Meta::ISA       = qw{ Exporter      };
-	@Parse::CPAN::Meta::EXPORT_OK = qw{ Load LoadFile };
-}
+our @ISA = qw/Exporter/;
+our @EXPORT_OK = qw/Load LoadFile/;
 
 sub load_file {
   my ($class, $filename) = @_;
 
+  my $meta = _slurp($filename);
+
   if ($filename =~ /\.ya?ml$/) {
-    return $class->load_yaml_string(_slurp($filename));
+    return $class->load_yaml_string($meta);
   }
-
-  if ($filename =~ /\.json$/) {
-    return $class->load_json_string(_slurp($filename));
+  elsif ($filename =~ /\.json$/) {
+    return $class->load_json_string($meta);
   }
+  else {
+    $class->load_string($meta); # try to detect yaml/json
+  }
+}
 
-  croak("file type cannot be determined by filename");
+sub load_string {
+  my ($class, $string) = @_;
+  if ( $string =~ /^---/ ) { # looks like YAML
+    return $class->load_yaml_string($string);
+  }
+  elsif ( $string =~ /^\s*\{/ ) { # looks like JSON
+    return $class->load_json_string($string);
+  }
+  else { # maybe doc-marker-free YAML
+    return $class->load_yaml_string($string);
+  }
 }
 
 sub load_yaml_string {
   my ($class, $string) = @_;
   my $backend = $class->yaml_backend();
   my $data = eval { no strict 'refs'; &{"$backend\::Load"}($string) };
-  if ( $@ ) { 
-    croak $backend->can('errstr') ? $backend->errstr : $@
-  }
+  croak $@ if $@;
   return $data || {}; # in case document was valid but empty
 }
 
 sub load_json_string {
   my ($class, $string) = @_;
-  return $class->json_backend()->new->decode($string);
+  require Encode;
+  # load_json_string takes characters, decode_json expects bytes
+  my $encoded = Encode::encode('UTF-8', $string, Encode::PERLQQ());
+  my $data = eval { $class->json_decoder()->can('decode_json')->($encoded) };
+  croak $@ if $@;
+  return $data || {};
 }
 
 sub yaml_backend {
-  local $Module::Load::Conditional::CHECK_INC_HASH = 1;
-  if (! defined $ENV{PERL_YAML_BACKEND} ) {
-    _can_load( 'CPAN::Meta::YAML', 0.002 )
-      or croak "CPAN::Meta::YAML 0.002 is not available\n";
+  if ($ENV{PERL_CORE} or not defined $ENV{PERL_YAML_BACKEND} ) {
+    _can_load( 'CPAN::Meta::YAML', 0.011 )
+      or croak "CPAN::Meta::YAML 0.011 is not available\n";
     return "CPAN::Meta::YAML";
   }
   else {
@@ -68,11 +75,38 @@ sub yaml_backend {
   }
 }
 
+sub json_decoder {
+  if ($ENV{PERL_CORE}) {
+    _can_load( 'JSON::PP' => 2.27300 )
+      or croak "JSON::PP 2.27300 is not available\n";
+    return 'JSON::PP';
+  }
+  if (my $decoder = $ENV{CPAN_META_JSON_DECODER}) {
+    _can_load( $decoder )
+      or croak "Could not load CPAN_META_JSON_DECODER '$decoder'\n";
+    $decoder->can('decode_json')
+      or croak "No decode_json sub provided by CPAN_META_JSON_DECODER '$decoder'\n";
+    return $decoder;
+  }
+  return $_[0]->json_backend;
+}
+
 sub json_backend {
-  local $Module::Load::Conditional::CHECK_INC_HASH = 1;
+  if ($ENV{PERL_CORE}) {
+    _can_load( 'JSON::PP' => 2.27300 )
+      or croak "JSON::PP 2.27300 is not available\n";
+    return 'JSON::PP';
+  }
+  if (my $backend = $ENV{CPAN_META_JSON_BACKEND}) {
+    _can_load( $backend )
+      or croak "Could not load CPAN_META_JSON_BACKEND '$backend'\n";
+    $backend->can('new')
+      or croak "No constructor provided by CPAN_META_JSON_BACKEND '$backend'\n";
+    return $backend;
+  }
   if (! $ENV{PERL_JSON_BACKEND} or $ENV{PERL_JSON_BACKEND} eq 'JSON::PP') {
-    _can_load( 'JSON::PP' => 2.27103 )
-      or croak "JSON::PP 2.27103 is not available\n";
+    _can_load( 'JSON::PP' => 2.27300 )
+      or croak "JSON::PP 2.27300 is not available\n";
     return 'JSON::PP';
   }
   else {
@@ -84,11 +118,14 @@ sub json_backend {
 }
 
 sub _slurp {
-  open my $fh, "<" . IO_LAYER, "$_[0]"
+  require Encode;
+  open my $fh, "<:raw", "$_[0]" ## no critic
     or die "can't open $_[0] for reading: $!";
-  return do { local $/; <$fh> };
+  my $content = do { local $/; <$fh> };
+  $content = Encode::decode('UTF-8', $content, Encode::PERLQQ());
+  return $content;
 }
-  
+
 sub _can_load {
   my ($module, $version) = @_;
   (my $file = $module) =~ s{::}{/}g;
@@ -106,17 +143,16 @@ sub _can_load {
 
 # Kept for backwards compatibility only
 # Create an object from a file
-sub LoadFile ($) {
-  require CPAN::Meta::YAML;
-  return CPAN::Meta::YAML::LoadFile(shift)
-    or die CPAN::Meta::YAML->errstr;
+sub LoadFile ($) { ## no critic
+  return Load(_slurp(shift));
 }
 
 # Parse a document from a string.
-sub Load ($) {
+sub Load ($) { ## no critic
   require CPAN::Meta::YAML;
-  return CPAN::Meta::YAML::Load(shift)
-    or die CPAN::Meta::YAML->errstr;
+  my $object = eval { CPAN::Meta::YAML::Load(shift) };
+  croak $@ if $@;
+  return $object;
 }
 
 1;
@@ -125,29 +161,35 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Parse::CPAN::Meta - Parse META.yml and META.json CPAN metadata files
+
+=head1 VERSION
+
+version 2.150010
 
 =head1 SYNOPSIS
 
     #############################################
     # In your file
-    
+
     ---
     name: My-Distribution
     version: 1.23
     resources:
       homepage: "http://example.com/dist/My-Distribution"
-    
-    
+
+
     #############################################
     # In your program
-    
+
     use Parse::CPAN::Meta;
-    
+
     my $distmeta = Parse::CPAN::Meta->load_file('META.yml');
-    
+
     # Reading properties
     my $name     = $distmeta->{name};
     my $version  = $distmeta->{version};
@@ -171,6 +213,13 @@ All error reporting is done with exceptions (die'ing).
 Note that META files are expected to be in UTF-8 encoding, only.  When
 converted string data, it must first be decoded from UTF-8.
 
+=begin Pod::Coverage
+
+
+
+
+=end Pod::Coverage
+
 =head1 METHODS
 
 =head2 load_file
@@ -180,8 +229,8 @@ converted string data, it must first be decoded from UTF-8.
   my $metadata_structure = Parse::CPAN::Meta->load_file('META.yml');
 
 This method will read the named file and deserialize it to a data structure,
-determining whether it should be JSON or YAML based on the filename.  On
-Perl 5.8.1 or later, the file will be read using the ":utf8" IO layer.
+determining whether it should be JSON or YAML based on the filename.
+The file will be read using the ":utf8" IO layer.
 
 =head2 load_yaml_string
 
@@ -196,9 +245,16 @@ C<load_yaml_string>.
 
   my $metadata_structure = Parse::CPAN::Meta->load_json_string($json_string);
 
-This method deserializes the given string of JSON and the result.  
+This method deserializes the given string of JSON and the result.
 If the source was UTF-8 encoded, the string must be decoded before calling
 C<load_json_string>.
+
+=head2 load_string
+
+  my $metadata_structure = Parse::CPAN::Meta->load_string($some_string);
+
+If you don't know whether a string contains YAML or JSON data, this method
+will use some heuristics and guess.  If it can't tell, it assumes YAML.
 
 =head2 yaml_backend
 
@@ -211,15 +267,26 @@ for details.
 
   my $backend = Parse::CPAN::Meta->json_backend;
 
-Returns the module name of the JSON serializer.  This will either
-be L<JSON::PP> or L<JSON>.  Even if C<PERL_JSON_BACKEND> is set,
+Returns the module name of the JSON serializer.  If C<CPAN_META_JSON_BACKEND>
+is set, this will be whatever that's set to.  If not, this will either
+be L<JSON::PP> or L<JSON>.  If C<PERL_JSON_BACKEND> is set,
 this will return L<JSON> as further delegation is handled by
 the L<JSON> module.  See L</ENVIRONMENT> for details.
 
+=head2 json_decoder
+
+  my $decoder = Parse::CPAN::Meta->json_decoder;
+
+Returns the module name of the JSON decoder.  Unlike L</json_backend>, this
+is not necessarily a full L<JSON>-style module, but only something that will
+provide a C<decode_json> subroutine.  If C<CPAN_META_JSON_DECODER> is set,
+this will be whatever that's set to.  If not, this will be whatever has
+been selected as L</json_backend>.  See L</ENVIRONMENT> for more notes.
+
 =head1 FUNCTIONS
 
-For maintenance clarity, no functions are exported.  These functions are
-available for backwards compatibility only and are best avoided in favor of
+For maintenance clarity, no functions are exported by default.  These functions
+are available for backwards compatibility only and are best avoided in favor of
 C<load_file>.
 
 =head2 Load
@@ -237,40 +304,67 @@ Reads the YAML stream from a file instead of a string.
 
 =head1 ENVIRONMENT
 
+=head2 CPAN_META_JSON_DECODER
+
+By default, L<JSON::PP> will be used for deserializing JSON data.  If the
+C<CPAN_META_JSON_DECODER> environment variable exists, this is expected to
+be the name of a loadable module that provides a C<decode_json> subroutine,
+which will then be used for deserialization.  Relying only on the existence
+of said subroutine allows for maximum compatibility, since this API is
+provided by all of L<JSON::PP>, L<JSON::XS>, L<Cpanel::JSON::XS>,
+L<JSON::MaybeXS>, L<JSON::Tiny>, and L<Mojo::JSON>.
+
+=head2 CPAN_META_JSON_BACKEND
+
+By default, L<JSON::PP> will be used for deserializing JSON data.  If the
+C<CPAN_META_JSON_BACKEND> environment variable exists, this is expected to
+be the name of a loadable module that provides the L<JSON> API, since
+downstream code expects to be able to call C<new> on this class.  As such,
+while L<JSON::PP>, L<JSON::XS>, L<Cpanel::JSON::XS> and L<JSON::MaybeXS> will
+work for this, to use L<Mojo::JSON> or L<JSON::Tiny> for decoding requires
+setting L</CPAN_META_JSON_DECODER>.
+
 =head2 PERL_JSON_BACKEND
 
-By default, L<JSON::PP> will be used for deserializing JSON data. If the
+If the C<CPAN_META_JSON_BACKEND> environment variable does not exist, and if
 C<PERL_JSON_BACKEND> environment variable exists, is true and is not
 "JSON::PP", then the L<JSON> module (version 2.5 or greater) will be loaded and
 used to interpret C<PERL_JSON_BACKEND>.  If L<JSON> is not installed or is too
-old, an exception will be thrown.
+old, an exception will be thrown.  Note that at the time of writing, the only
+useful values are 1, which will tell L<JSON> to guess, or L<JSON::XS> - if
+you want to use a newer JSON module, see L</CPAN_META_JSON_BACKEND>.
 
 =head2 PERL_YAML_BACKEND
 
 By default, L<CPAN::Meta::YAML> will be used for deserializing YAML data. If
-the C<PERL_YAML_BACKEND> environment variable is defined, then it is intepreted
+the C<PERL_YAML_BACKEND> environment variable is defined, then it is interpreted
 as a module to use for deserialization.  The given module must be installed,
 must load correctly and must implement the C<Load()> function or an exception
 will be thrown.
 
-=head1 SUPPORT
+=head1 AUTHORS
 
-Bugs should be reported via the CPAN bug tracker at
+=over 4
 
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Parse-CPAN-Meta>
+=item *
 
-=head1 AUTHOR
+David Golden <dagolden@cpan.org>
 
-Adam Kennedy E<lt>adamk@cpan.orgE<gt>
+=item *
 
-=head1 COPYRIGHT
+Ricardo Signes <rjbs@cpan.org>
 
-Copyright 2006 - 2010 Adam Kennedy.
+=item *
 
-This program is free software; you can redistribute
-it and/or modify it under the same terms as Perl itself.
+Adam Kennedy <adamk@cpan.org>
 
-The full text of the license can be found in the
-LICENSE file included with this module.
+=back
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2010 by David Golden, Ricardo Signes, Adam Kennedy and Contributors.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut

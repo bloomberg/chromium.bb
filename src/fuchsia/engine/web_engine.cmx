@@ -1,0 +1,13 @@
+{
+  "sandbox": {
+    "features": [
+      "root-ssl-certificates",
+      "vulkan",
+      "deprecated-ambient-replace-as-executable"
+    ],
+    "services": [
+      "fuchsia.logger.LogSink",
+      "fuchsia.process.Launcher"
+    ]
+  }
+}

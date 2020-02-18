@@ -25,9 +25,9 @@
 #include <iosfwd>
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -214,9 +214,9 @@ class WTF_EXPORT AtomicString {
   static AtomicString FromUTF8(const char*, size_t length);
   static AtomicString FromUTF8(const char*);
 
-  CString Ascii() const { return string_.Ascii(); }
+  std::string Ascii() const { return string_.Ascii(); }
   std::string Latin1() const { return string_.Latin1(); }
-  CString Utf8(UTF8ConversionMode mode = kLenientUTF8Conversion) const {
+  std::string Utf8(UTF8ConversionMode mode = kLenientUTF8Conversion) const {
     return string_.Utf8(mode);
   }
 

@@ -5,6 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_QPACK_QPACK_DECODER_TEST_UTILS_H_
 #define QUICHE_QUIC_CORE_QPACK_QPACK_DECODER_TEST_UTILS_H_
 
+#include <string>
+
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_progressive_decoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_test_utils.h"
@@ -33,24 +35,6 @@ class MockEncoderStreamErrorDelegate
   MOCK_METHOD1(OnEncoderStreamError, void(QuicStringPiece error_message));
 };
 
-// QpackDecoderStreamSender::Delegate implementation that does nothing.
-class NoopDecoderStreamSenderDelegate
-    : public QpackDecoderStreamSender::Delegate {
- public:
-  ~NoopDecoderStreamSenderDelegate() override = default;
-
-  void WriteDecoderStreamData(QuicStringPiece data) override;
-};
-
-// Mock QpackDecoderStreamSender::Delegate implementation.
-class MockDecoderStreamSenderDelegate
-    : public QpackDecoderStreamSender::Delegate {
- public:
-  ~MockDecoderStreamSenderDelegate() override = default;
-
-  MOCK_METHOD1(WriteDecoderStreamData, void(QuicStringPiece data));
-};
-
 // HeadersHandlerInterface implementation that collects decoded headers
 // into a SpdyHeaderBlock.
 class TestHeadersHandler
@@ -70,11 +54,13 @@ class TestHeadersHandler
 
   bool decoding_completed() const;
   bool decoding_error_detected() const;
+  const std::string& error_message() const;
 
  private:
   spdy::SpdyHeaderBlock header_list_;
   bool decoding_completed_;
   bool decoding_error_detected_;
+  std::string error_message_;
 };
 
 class MockHeadersHandler
@@ -96,14 +82,15 @@ class NoOpHeadersHandler
  public:
   ~NoOpHeadersHandler() override = default;
 
-  void OnHeaderDecoded(QuicStringPiece name, QuicStringPiece value) override {}
+  void OnHeaderDecoded(QuicStringPiece /*name*/,
+                       QuicStringPiece /*value*/) override {}
   void OnDecodingCompleted() override {}
-  void OnDecodingErrorDetected(QuicStringPiece error_message) override {}
+  void OnDecodingErrorDetected(QuicStringPiece /*error_message*/) override {}
 };
 
 void QpackDecode(
     QpackDecoder::EncoderStreamErrorDelegate* encoder_stream_error_delegate,
-    QpackDecoderStreamSender::Delegate* decoder_stream_sender_delegate,
+    QpackStreamSenderDelegate* decoder_stream_sender_delegate,
     QpackProgressiveDecoder::HeadersHandlerInterface* handler,
     const FragmentSizeGenerator& fragment_size_generator,
     QuicStringPiece data);

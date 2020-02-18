@@ -33,8 +33,6 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
-  std::unique_ptr<viz::OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
@@ -54,7 +52,7 @@ class PixelTestOutputSurface : public viz::OutputSurface {
 
   bool external_stencil_test_ = false;
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<PixelTestOutputSurface> weak_ptr_factory_{this};
 };
 
 }  // namespace cc

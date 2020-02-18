@@ -18,17 +18,7 @@
 #define USE_PATH 1
 
 class ClockView : public Sample {
-public:
-    ClockView() {}
-
-protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Clock");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Clock"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         SkPaint paintFill;
@@ -216,13 +206,7 @@ protected:
         canvas->restore();
     }
 
-    bool onAnimate(const AnimTimer&) override { return true; }
-
-private:
-
-    typedef Sample INHERITED;
+    bool onAnimate(double /*nanos*/) override { return true; }
 };
-
-//////////////////////////////////////////////////////////////////////////////
 
 DEF_SAMPLE( return new ClockView(); )

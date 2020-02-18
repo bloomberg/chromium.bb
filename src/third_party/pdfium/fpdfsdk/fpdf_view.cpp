@@ -12,7 +12,8 @@
 
 #include "build/build_config.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
-#include "core/fpdfapi/cpdf_pagerendercontext.h"
+#include "core/fpdfapi/page/cpdf_docpagedata.h"
+#include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
@@ -20,7 +21,9 @@
 #include "core/fpdfapi/parser/cpdf_name.h"
 #include "core/fpdfapi/parser/cpdf_parser.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
-#include "core/fpdfapi/render/cpdf_occontext.h"
+#include "core/fpdfapi/render/cpdf_docrenderdata.h"
+#include "core/fpdfapi/render/cpdf_pagerendercache.h"
+#include "core/fpdfapi/render/cpdf_pagerendercontext.h"
 #include "core/fpdfapi/render/cpdf_progressiverenderer.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderoptions.h"
@@ -51,7 +54,12 @@
 #endif  // PDF_ENABLE_XFA
 
 #if defined(OS_WIN)
+#include "core/fxcodec/basic/basicmodule.h"
+#include "core/fxcodec/fax/faxmodule.h"
+#include "core/fxcodec/flate/flatemodule.h"
+#include "core/fxcodec/jpeg/jpegmodule.h"
 #include "core/fxge/cfx_windowsrenderdevice.h"
+#include "core/fxge/win32/cfx_psrenderer.h"
 #include "public/fpdf_edit.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
@@ -74,6 +82,12 @@ static_assert(WindowsPrintMode::kModePostScript3PassThrough ==
 namespace {
 
 bool g_bLibraryInitialized = false;
+
+#if defined(OS_WIN)
+constexpr EncoderIface kEncoderIface = {
+    BasicModule::A85Encode, FaxModule::FaxEncode, FlateModule::Encode,
+    JpegModule::JpegEncode, BasicModule::RunLengthEncode};
+#endif  // defined(OS_WIN)
 
 void RenderPageImpl(CPDF_PageRenderContext* pContext,
                     CPDF_Page* pPage,
@@ -109,10 +123,13 @@ void RenderPageImpl(CPDF_PageRenderContext* pContext,
   pContext->m_pContext->AppendLayer(pPage, &matrix);
 
   if (flags & FPDF_ANNOT) {
-    pContext->m_pAnnots = pdfium::MakeUnique<CPDF_AnnotList>(pPage);
-    bool bPrinting = pContext->m_pDevice->GetDeviceClass() != FXDC_DISPLAY;
-    pContext->m_pAnnots->DisplayAnnots(pPage, pContext->m_pContext.get(),
-                                       bPrinting, &matrix, false, nullptr);
+    auto pOwnedList = pdfium::MakeUnique<CPDF_AnnotList>(pPage);
+    CPDF_AnnotList* pList = pOwnedList.get();
+    pContext->m_pAnnots = std::move(pOwnedList);
+    bool bPrinting =
+        pContext->m_pDevice->GetDeviceType() != DeviceType::kDisplay;
+    pList->DisplayAnnots(pPage, pContext->m_pContext.get(), bPrinting, &matrix,
+                         false, nullptr);
   }
 
   pContext->m_pRenderer = pdfium::MakeUnique<CPDF_ProgressiveRenderer>(
@@ -131,7 +148,10 @@ FPDF_DOCUMENT LoadDocumentImpl(
     return nullptr;
   }
 
-  auto pDocument = pdfium::MakeUnique<CPDF_Document>();
+  auto pDocument = pdfium::MakeUnique<CPDF_Document>(
+      pdfium::MakeUnique<CPDF_DocRenderData>(),
+      pdfium::MakeUnique<CPDF_DocPageData>());
+
   CPDF_Parser::Error error = pDocument->LoadDoc(pFileAccess, password);
   if (error != CPDF_Parser::SUCCESS) {
     ProcessParseError(error);
@@ -153,23 +173,19 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_InitLibrary() {
 }
 
 FPDF_EXPORT void FPDF_CALLCONV
-FPDF_InitLibraryWithConfig(const FPDF_LIBRARY_CONFIG* cfg) {
+FPDF_InitLibraryWithConfig(const FPDF_LIBRARY_CONFIG* config) {
   if (g_bLibraryInitialized)
     return;
 
   FXMEM_InitializePartitionAlloc();
-
-  CFX_GEModule* pModule = CFX_GEModule::Get();
-  pModule->Init(cfg ? cfg->m_pUserFontPaths : nullptr);
-
-  CPDF_ModuleMgr* pModuleMgr = CPDF_ModuleMgr::Get();
-  pModuleMgr->Init();
+  CFX_GEModule::Create(config ? config->m_pUserFontPaths : nullptr);
+  CPDF_ModuleMgr::Create();
 
 #ifdef PDF_ENABLE_XFA
   BC_Library_Init();
 #endif  // PDF_ENABLE_XFA
-  if (cfg && cfg->version >= 2)
-    IJS_Runtime::Initialize(cfg->m_v8EmbedderSlot, cfg->m_pIsolate);
+  if (config && config->version >= 2)
+    IJS_Runtime::Initialize(config->m_v8EmbedderSlot, config->m_pIsolate);
 
   g_bLibraryInitialized = true;
 }
@@ -184,7 +200,6 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_DestroyLibrary() {
 
   CPDF_ModuleMgr::Destroy();
   CFX_GEModule::Destroy();
-
   IJS_Runtime::Destroy();
 
   g_bLibraryInitialized = false;
@@ -195,7 +210,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_SetSandBoxPolicy(FPDF_DWORD policy,
   return FSDK_SetSandBoxPolicy(policy, enable);
 }
 
-#if defined(_WIN32)
+#if defined(OS_WIN)
 #if defined(PDFIUM_PRINT_TEXT_WITH_GDI)
 FPDF_EXPORT void FPDF_CALLCONV
 FPDF_SetTypefaceAccessibleFunc(PDFiumEnsureTypefaceCharactersAccessible func) {
@@ -215,7 +230,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_SetPrintMode(int mode) {
   g_pdfium_print_mode = static_cast<WindowsPrintMode>(mode);
   return TRUE;
 }
-#endif  // defined(_WIN32)
+#endif  // defined(OS_WIN)
 
 FPDF_EXPORT FPDF_DOCUMENT FPDF_CALLCONV
 FPDF_LoadDocument(FPDF_STRING file_path, FPDF_BYTESTRING password) {
@@ -342,7 +357,8 @@ FPDF_EXPORT FPDF_PAGE FPDF_CALLCONV FPDF_LoadPage(FPDF_DOCUMENT document,
   if (!pDict)
     return nullptr;
 
-  auto pPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict, true);
+  auto pPage = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict);
+  pPage->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(pPage.Get()));
   pPage->ParseContent();
   return FPDFPageFromIPDFPage(pPage.Leak());
 }
@@ -370,7 +386,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_GetPageBoundingBox(FPDF_PAGE page,
   return true;
 }
 
-#if defined(_WIN32)
+#if defined(OS_WIN)
 namespace {
 
 const double kEpsilonSize = 0.01f;
@@ -495,7 +511,7 @@ void RenderBitmap(CFX_RenderDevice* device,
   pDst->CompositeBitmap(0, 0, size_x_bm, size_y_bm, pSrc, 0, 0,
                         BlendMode::kNormal, nullptr, false);
 
-  if (device->GetDeviceCaps(FXDC_DEVICE_CLASS) == FXDC_PRINTER) {
+  if (device->GetDeviceType() == DeviceType::kPrinter) {
     device->StretchDIBits(pDst, mask_area.left, mask_area.top, size_x_bm,
                           size_y_bm);
   } else {
@@ -516,8 +532,10 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
   CPDF_Page* pPage = CPDFPageFromFPDFPage(page);
   if (!pPage)
     return;
-  pPage->SetRenderContext(pdfium::MakeUnique<CPDF_PageRenderContext>());
-  CPDF_PageRenderContext* pContext = pPage->GetRenderContext();
+
+  auto pOwnedContext = pdfium::MakeUnique<CPDF_PageRenderContext>();
+  CPDF_PageRenderContext* pContext = pOwnedContext.get();
+  pPage->SetRenderContext(std::move(pOwnedContext));
 
   RetainPtr<CFX_DIBitmap> pBitmap;
   // Don't render the full page to bitmap for a mask unless there are a lot
@@ -545,7 +563,8 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pOptions->GetOptions().bBreakForMasks = true;
     }
   } else {
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
+    pContext->m_pDevice =
+        pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc, &kEncoderIface);
   }
 
   RenderPageWithContext(pContext, page, start_x, start_y, size_x, size_y,
@@ -570,9 +589,11 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
 
     // Begin rendering to the printer. Add flag to indicate the renderer should
     // pause after each image mask.
-    pPage->SetRenderContext(pdfium::MakeUnique<CPDF_PageRenderContext>());
-    pContext = pPage->GetRenderContext();
-    pContext->m_pDevice = pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc);
+    pOwnedContext = pdfium::MakeUnique<CPDF_PageRenderContext>();
+    pContext = pOwnedContext.get();
+    pPage->SetRenderContext(std::move(pOwnedContext));
+    pContext->m_pDevice =
+        pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc, &kEncoderIface);
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
     pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
@@ -589,9 +610,9 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pRenderer->Continue(nullptr);
     }
   } else if (bNewBitmap) {
-    CFX_WindowsRenderDevice WinDC(dc);
+    CFX_WindowsRenderDevice WinDC(dc, &kEncoderIface);
     bool bitsStretched = false;
-    if (WinDC.GetDeviceCaps(FXDC_DEVICE_CLASS) == FXDC_PRINTER) {
+    if (WinDC.GetDeviceType() == DeviceType::kPrinter) {
       auto pDst = pdfium::MakeRetain<CFX_DIBitmap>();
       if (pDst->Create(size_x, size_y, FXDIB_Rgb32)) {
         memset(pDst->GetBuffer(), -1, pBitmap->GetPitch() * size_y);
@@ -607,7 +628,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
 
   pPage->SetRenderContext(nullptr);
 }
-#endif  // defined(_WIN32)
+#endif  // defined(OS_WIN)
 
 FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPageBitmap(FPDF_BITMAP bitmap,
                                                      FPDF_PAGE page,
@@ -937,7 +958,8 @@ FPDF_EXPORT int FPDF_CALLCONV FPDF_GetPageSizeByIndex(FPDF_DOCUMENT document,
   if (!pDict)
     return false;
 
-  auto page = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict, true);
+  auto page = pdfium::MakeRetain<CPDF_Page>(pDoc, pDict);
+  page->SetRenderCache(pdfium::MakeUnique<CPDF_PageRenderCache>(page.Get()));
   *width = page->GetPageWidth();
   *height = page->GetPageHeight();
   return true;

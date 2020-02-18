@@ -77,6 +77,7 @@ typedef struct CuvidContext
     int deint_mode;
     int deint_mode_current;
     int64_t prev_pts;
+    int progressive_sequence;
 
     int internal_error;
     int decoder_flushing;
@@ -216,6 +217,8 @@ static int CUDAAPI cuvid_handle_video_sequence(void *opaque, CUVIDEOFORMAT* form
                               ? cudaVideoDeinterlaceMode_Weave
                               : ctx->deint_mode;
 
+    ctx->progressive_sequence = format->progressive_sequence;
+
     if (!format->progressive_sequence && ctx->deint_mode_current == cudaVideoDeinterlaceMode_Weave)
         avctx->flags |= AV_CODEC_FLAG_INTERLACED_DCT;
     else
@@ -348,6 +351,9 @@ static int CUDAAPI cuvid_handle_picture_display(void *opaque, CUVIDPARSERDISPINF
 
     parsed_frame.dispinfo = *dispinfo;
     ctx->internal_error = 0;
+
+    // For some reason, dispinfo->progressive_frame is sometimes wrong.
+    parsed_frame.dispinfo.progressive_frame = ctx->progressive_sequence;
 
     if (ctx->deint_mode_current == cudaVideoDeinterlaceMode_Weave) {
         av_fifo_generic_write(ctx->frame_queue, &parsed_frame, sizeof(CuvidParsedFrame), NULL);
@@ -796,6 +802,12 @@ static int cuvid_test_capabilities(AVCodecContext *avctx,
     if (probed_height > caps->nMaxHeight || probed_height < caps->nMinHeight) {
         av_log(avctx, AV_LOG_ERROR, "Video height %d not within range from %d to %d\n",
                probed_height, caps->nMinHeight, caps->nMaxHeight);
+        return AVERROR(EINVAL);
+    }
+
+    if ((probed_width * probed_height) / 256 > caps->nMaxMBCount) {
+        av_log(avctx, AV_LOG_ERROR, "Video macroblock count %d exceeds maximum of %d\n",
+               (int)(probed_width * probed_height) / 256, caps->nMaxMBCount);
         return AVERROR(EINVAL);
     }
 

@@ -11,6 +11,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -19,7 +20,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/string_data_source.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -174,7 +176,8 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
       std::make_unique<SignedExchangeLoader>(
-          resource_request, response, std::move(client), std::move(endpoints),
+          resource_request, response, mojo::ScopedDataPipeConsumerHandle(),
+          std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
           nullptr /* reporter */, CreateMockPingLoaderFactory(),
@@ -199,18 +202,20 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   const std::string kTestString = "Hello, world!";
   mojo::DataPipe data_pipe(static_cast<uint32_t>(kTestString.size()));
-  std::unique_ptr<mojo::StringDataPipeProducer> producer =
-      std::make_unique<mojo::StringDataPipeProducer>(
+  std::unique_ptr<mojo::DataPipeProducer> producer =
+      std::make_unique<mojo::DataPipeProducer>(
           std::move(data_pipe.producer_handle));
 
-  mojo::StringDataPipeProducer* raw_producer = producer.get();
+  mojo::DataPipeProducer* raw_producer = producer.get();
+  base::RunLoop run_loop;
   raw_producer->Write(
-      kTestString,
-      mojo::StringDataPipeProducer::AsyncWritingMode::
-          STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION,
-      base::BindOnce([](std::unique_ptr<mojo::StringDataPipeProducer> producer,
-                        MojoResult result) {},
-                     std::move(producer)));
+      std::make_unique<mojo::StringDataSource>(
+          kTestString, mojo::StringDataSource::AsyncWritingMode::
+                           STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
+      base::BindOnce([](std::unique_ptr<mojo::DataPipeProducer> producer,
+                        base::OnceClosure quit_closure,
+                        MojoResult result) { std::move(quit_closure).Run(); },
+                     std::move(producer), run_loop.QuitClosure()));
 
   loader_client->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
@@ -225,6 +230,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
 
   if (!base::FeatureList::IsEnabled(
           features::kSignedHTTPExchangePingValidity)) {
+    run_loop.Run();
     EXPECT_CALL(mock_client_after_redirect, OnStartLoadingResponseBody(_));
     EXPECT_CALL(mock_client_after_redirect, OnComplete(_));
   }
@@ -242,6 +248,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
     ping_loader_client()->OnReceiveResponse(network::ResourceResponseHead());
     ping_loader_client()->OnComplete(
         network::URLLoaderCompletionStatus(net::OK));
+    run_loop.Run();
     base::RunLoop().RunUntilIdle();
   }
 }

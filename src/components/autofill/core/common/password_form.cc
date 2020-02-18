@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/submission_source.h"
 
 namespace autofill {
 
@@ -58,8 +57,8 @@ void PasswordFormToJSON(const PasswordForm& form,
                     form.confirmation_password_element);
   target->SetInteger("confirmation_password_element_renderer_id",
                      form.confirmation_password_element_renderer_id);
-  target->SetString("other_possible_usernames",
-                    ValueElementVectorToString(form.other_possible_usernames));
+  target->SetString("all_possible_usernames",
+                    ValueElementVectorToString(form.all_possible_usernames));
   target->SetString("all_possible_passwords",
                     ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
@@ -83,7 +82,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("submission_event", ToString(form.submission_event));
   target->SetBoolean("only_for_fallback", form.only_for_fallback);
   target->SetBoolean("is_gaia_with_skip_save_password_form",
-                     form.is_gaia_with_skip_save_password_form);
+                     form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
 }
 
@@ -128,7 +127,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          username_element_renderer_id == form.username_element_renderer_id &&
          username_marked_by_site == form.username_marked_by_site &&
          username_value == form.username_value &&
-         other_possible_usernames == form.other_possible_usernames &&
+         all_possible_usernames == form.all_possible_usernames &&
          all_possible_passwords == form.all_possible_passwords &&
          form_has_autofilled_value == form.form_has_autofilled_value &&
          password_element == form.password_element &&
@@ -162,8 +161,6 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_icon_url == form.app_icon_url &&
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
-         is_gaia_with_skip_save_password_form ==
-             form.is_gaia_with_skip_save_password_form &&
          is_new_password_reliable == form.is_new_password_reliable;
 }
 

@@ -16,21 +16,23 @@
 #define DAWNNATIVE_OPENGL_PERSISTENTPIPELINESTATEGL_H_
 
 #include "dawn_native/dawn_platform.h"
-
-#include "glad/glad.h"
+#include "dawn_native/opengl/opengl_platform.h"
 
 namespace dawn_native { namespace opengl {
 
+    struct OpenGLFunctions;
+
     class PersistentPipelineState {
       public:
-        void SetDefaultState();
-        void SetStencilFuncsAndMask(GLenum stencilBackCompareFunction,
+        void SetDefaultState(const OpenGLFunctions& gl);
+        void SetStencilFuncsAndMask(const OpenGLFunctions& gl,
+                                    GLenum stencilBackCompareFunction,
                                     GLenum stencilFrontCompareFunction,
                                     uint32_t stencilReadMask);
-        void SetStencilReference(uint32_t stencilReference);
+        void SetStencilReference(const OpenGLFunctions& gl, uint32_t stencilReference);
 
       private:
-        void CallGLStencilFunc();
+        void CallGLStencilFunc(const OpenGLFunctions& gl);
 
         GLenum mStencilBackCompareFunction = GL_ALWAYS;
         GLenum mStencilFrontCompareFunction = GL_ALWAYS;

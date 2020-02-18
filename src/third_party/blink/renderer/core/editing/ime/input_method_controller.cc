@@ -337,7 +337,7 @@ std::pair<ContainerNode*, PlainTextRange> PlainTextRangeForEphemeralRange(
 }
 
 int ComputeAutocapitalizeFlags(const Element* element) {
-  const HTMLElement* const html_element = ToHTMLElementOrNull(element);
+  const auto* const html_element = DynamicTo<HTMLElement>(element);
   if (!html_element)
     return 0;
 
@@ -546,6 +546,22 @@ bool InputMethodController::CommitText(
   }
 
   return InsertTextAndMoveCaret(text, relative_caret_position, ime_text_spans);
+}
+
+bool InputMethodController::ReplaceText(const String& text,
+                                        PlainTextRange range) {
+  EventQueueScope scope;
+  const PlainTextRange old_selection(GetSelectionOffsets());
+  if (!SetSelectionOffsets(range))
+    return false;
+  if (!InsertText(text))
+    return false;
+  wtf_size_t selection_delta = text.length() - range.length();
+  wtf_size_t start = old_selection.Start();
+  wtf_size_t end = old_selection.End();
+  return SetSelectionOffsets(
+      {start >= range.End() ? start + selection_delta : start,
+       end >= range.End() ? end + selection_delta : end});
 }
 
 bool InputMethodController::ReplaceComposition(const String& text) {

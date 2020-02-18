@@ -38,13 +38,14 @@ namespace dawn_native {
             DAWN_TRY(device->ValidateObject(binding.buffer));
 
             uint64_t bufferSize = binding.buffer->GetSize();
-            if (binding.size > bufferSize) {
+            uint64_t bindingSize = (binding.size == dawn::kWholeSize) ? bufferSize : binding.size;
+            if (bindingSize > bufferSize) {
                 return DAWN_VALIDATION_ERROR("Buffer binding size larger than the buffer");
             }
 
             // Note that no overflow can happen because we already checked that
-            // bufferSize >= binding.size
-            if (binding.offset > bufferSize - binding.size) {
+            // bufferSize >= bindingSize
+            if (binding.offset > bufferSize - bindingSize) {
                 return DAWN_VALIDATION_ERROR("Buffer binding doesn't fit in the buffer");
             }
 
@@ -126,11 +127,9 @@ namespace dawn_native {
             // Perform binding-type specific validation.
             switch (layoutInfo.types[bindingIndex]) {
                 case dawn::BindingType::UniformBuffer:
-                case dawn::BindingType::DynamicUniformBuffer:
                     DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Uniform));
                     break;
                 case dawn::BindingType::StorageBuffer:
-                case dawn::BindingType::DynamicStorageBuffer:
                     DAWN_TRY(ValidateBufferBinding(device, binding, dawn::BufferUsageBit::Storage));
                     break;
                 case dawn::BindingType::SampledTexture:
@@ -139,6 +138,10 @@ namespace dawn_native {
                     break;
                 case dawn::BindingType::Sampler:
                     DAWN_TRY(ValidateSamplerBinding(device, binding));
+                    break;
+                case dawn::BindingType::StorageTexture:
+                case dawn::BindingType::ReadonlyStorageBuffer:
+                    UNREACHABLE();
                     break;
             }
         }
@@ -170,7 +173,9 @@ namespace dawn_native {
                 ASSERT(mBindings[bindingIndex].Get() == nullptr);
                 mBindings[bindingIndex] = binding.buffer;
                 mOffsets[bindingIndex] = binding.offset;
-                mSizes[bindingIndex] = binding.size;
+                uint64_t bufferSize =
+                    (binding.size == dawn::kWholeSize) ? binding.buffer->GetSize() : binding.size;
+                mSizes[bindingIndex] = bufferSize;
                 continue;
             }
 
@@ -207,10 +212,7 @@ namespace dawn_native {
         ASSERT(binding < kMaxBindingsPerGroup);
         ASSERT(mLayout->GetBindingInfo().mask[binding]);
         ASSERT(mLayout->GetBindingInfo().types[binding] == dawn::BindingType::UniformBuffer ||
-               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::StorageBuffer ||
-               mLayout->GetBindingInfo().types[binding] ==
-                   dawn::BindingType::DynamicUniformBuffer ||
-               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::DynamicStorageBuffer);
+               mLayout->GetBindingInfo().types[binding] == dawn::BindingType::StorageBuffer);
         BufferBase* buffer = static_cast<BufferBase*>(mBindings[binding].Get());
         return {buffer, mOffsets[binding], mSizes[binding]};
     }

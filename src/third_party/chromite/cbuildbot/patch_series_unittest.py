@@ -60,11 +60,11 @@ class FakePatch(partial_mock.PartialMock):
     FakePatch.assertEqual = None
 
   def GerritDependencies(self, patch):
-    return map(cros_patch.ParsePatchDep, self.parents[patch.id])
+    return [cros_patch.ParsePatchDep(x) for x in self.parents[patch.id]]
 
   def PaladinDependencies(self, patch, path):
     self._assertPath(patch, path)
-    return map(cros_patch.ParsePatchDep, self.cq[patch.id])
+    return [cros_patch.ParsePatchDep(x) for x in self.cq[patch.id]]
 
   def Fetch(self, patch, path):
     self._assertPath(patch, path)
@@ -146,7 +146,8 @@ class PatchSeriesTestCase(patch_unittest.UploadedLocalPatchTestCase,
     _GetFailedIds = lambda seq: _GetIds(x.patch for x in seq)
 
     applied_result = _GetIds(result[0])
-    failed_tot_result, failed_inflight_result = map(_GetFailedIds, result[1:])
+    failed_tot_result, failed_inflight_result = [
+        _GetFailedIds(x) for x in result[1:]]
 
     applied = _GetIds(applied)
     failed_tot = _GetIds(failed_tot)

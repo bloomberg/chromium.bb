@@ -11,11 +11,20 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
+
+// TODO(crbug.com/981913): This flakes on linux tsan.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
+  DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint
+#else
+#define MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint \
+  TestSetCaretSetsSequentialFocusNavigationStartingPoint
+#endif
 
 namespace content {
 
@@ -666,12 +675,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
   atk_text_set_caret_offset(ATK_TEXT(target3), 0);
   waiter3.WaitForNotification();
 
-  // Same as above, make sure the node is roughly centered.
-  int width, height;
-  atk_component_get_extents(ATK_COMPONENT(target3), &x, &y, &width, &height,
-                            ATK_XY_SCREEN);
-  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
-  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+  // The text area should be scrolled to somewhere near the bottom of the
+  // screen. We check that it is in the bottom quarter of the screen here,
+  // but still fully onscreen.
+  int height;
+  atk_component_get_extents(ATK_COMPONENT(target3), nullptr, &y, nullptr,
+                            &height, ATK_XY_SCREEN);
+
+  int doc_bottom = doc_y + doc_height;
+  int bottom_third = doc_bottom - (float{doc_height} / 3.0);
+  EXPECT_GT(y, bottom_third);
+  EXPECT_LT(y, doc_bottom - height + 1);
 
   g_object_unref(target);
   g_object_unref(target2);
@@ -758,10 +772,70 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
   g_free(text);
 
   g_object_unref(list_item_1);
+  g_object_unref(list_item_2);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
-                       TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
+                       TestTextSelectionChangedDuplicateSignals) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+      <div>
+        Sufficiently long div content
+      </div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* div = atk_object_ref_accessible_child(document, 0);
+  EXPECT_NE(div, nullptr);
+
+  int selection_changed_signals = 0;
+  g_signal_connect(div, "text-selection-changed",
+                   G_CALLBACK(+[](AtkText*, int* count) { *count += 1; }),
+                   &selection_changed_signals);
+
+  int caret_moved_signals = 0;
+  g_signal_connect(div, "text-caret-moved",
+                   G_CALLBACK(+[](AtkText*, gint, int* count) { *count += 1; }),
+                   &caret_moved_signals);
+
+  auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  atk_text_set_caret_offset(ATK_TEXT(div), 0);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 0);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_selection(ATK_TEXT(div), 0, 0, 3);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 1);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_caret_offset(ATK_TEXT(div), 3);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 1);
+  ASSERT_EQ(caret_moved_signals, 0);
+
+  caret_moved_signals = selection_changed_signals = 0;
+  atk_text_set_caret_offset(ATK_TEXT(div), 2);
+  waiter->WaitForNotification();
+  ASSERT_EQ(selection_changed_signals, 0);
+  ASSERT_EQ(caret_moved_signals, 1);
+
+  g_object_unref(div);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AccessibilityAuraLinuxBrowserTest,
+    MAYBE_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -846,6 +920,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(child_2);
   g_object_unref(child_3);
   g_object_unref(child_7);
+  g_object_unref(parent_div);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,

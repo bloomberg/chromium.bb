@@ -25,16 +25,6 @@
 
 namespace ash {
 
-namespace {
-
-int GetMaxHeight() {
-  return app_list_features::IsEmbeddedAssistantUIEnabled()
-             ? kMaxHeightEmbeddedDip
-             : kMaxHeightDip;
-}
-
-}  // namespace
-
 // AssistantWebView ------------------------------------------------------------
 
 AssistantWebView::AssistantWebView(AssistantViewDelegate* delegate)
@@ -60,13 +50,14 @@ gfx::Size AssistantWebView::CalculatePreferredSize() const {
 
 int AssistantWebView::GetHeightForWidth(int width) const {
   if (app_list_features::IsEmbeddedAssistantUIEnabled())
-    return GetMaxHeight();
+    return kMaxHeightEmbeddedDip;
 
-  // |height| <= |GetMaxHeight()|.
+  // |height| <= |kMaxHeightDip|.
   // |height| should not exceed the height of the usable work area.
-  gfx::Rect usable_work_area = delegate_->GetUiModel()->usable_work_area();
+  const gfx::Rect usable_work_area =
+      delegate_->GetUiModel()->usable_work_area();
 
-  return std::min(GetMaxHeight(), usable_work_area.height());
+  return std::min(kMaxHeightDip, usable_work_area.height());
 }
 
 void AssistantWebView::ChildPreferredSizeChanged(views::View* child) {
@@ -130,17 +121,12 @@ void AssistantWebView::OnDeepLinkReceived(
 
   RemoveContents();
 
-  delegate_->GetNavigableContentsFactoryForView(
-      contents_factory_.BindNewPipeAndPassReceiver());
-
-  const gfx::Size preferred_size =
-      gfx::Size(kPreferredWidthDip,
-                GetMaxHeight() - caption_bar_->GetPreferredSize().height());
+  if (!contents_factory_.is_bound()) {
+    delegate_->GetNavigableContentsFactoryForView(
+        contents_factory_.BindNewPipeAndPassReceiver());
+  }
 
   auto contents_params = content::mojom::NavigableContentsParams::New();
-  contents_params->enable_view_auto_resize = true;
-  contents_params->auto_resize_min_size = preferred_size;
-  contents_params->auto_resize_max_size = preferred_size;
   contents_params->suppress_navigations = true;
 
   contents_ = std::make_unique<content::NavigableContents>(
@@ -154,17 +140,16 @@ void AssistantWebView::OnDeepLinkReceived(
   contents_->Navigate(assistant::util::GetWebUrl(type, params).value());
 }
 
-void AssistantWebView::DidAutoResizeView(const gfx::Size& new_size) {
-  contents_->GetView()->view()->SetPreferredSize(new_size);
-}
-
 void AssistantWebView::DidStopLoading() {
   // We should only respond to the |DidStopLoading| event the first time, to add
   // the view for the navigable contents to our view hierarchy and perform other
   // one-time view initializations.
-  if (contents_->GetView()->view()->parent() == this)
+  if (contents_view_initialized_)
     return;
 
+  contents_view_initialized_ = true;
+
+  UpdateContentSize();
   AddChildView(contents_->GetView()->view());
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -205,6 +190,11 @@ void AssistantWebView::OnUiVisibilityChanged(
     RemoveContents();
 }
 
+void AssistantWebView::OnUsableWorkAreaChanged(
+    const gfx::Rect& usable_work_area) {
+  UpdateContentSize();
+}
+
 void AssistantWebView::RemoveContents() {
   if (!contents_)
     return;
@@ -216,6 +206,17 @@ void AssistantWebView::RemoveContents() {
   SetFocusBehavior(FocusBehavior::NEVER);
   contents_->RemoveObserver(this);
   contents_.reset();
+  contents_view_initialized_ = false;
+}
+
+void AssistantWebView::UpdateContentSize() {
+  if (!contents_ || !contents_view_initialized_)
+    return;
+
+  const gfx::Size preferred_size = gfx::Size(
+      kPreferredWidthDip, GetHeightForWidth(kPreferredWidthDip) -
+                              caption_bar_->GetPreferredSize().height());
+  contents_->GetView()->view()->SetPreferredSize(preferred_size);
 }
 
 }  // namespace ash

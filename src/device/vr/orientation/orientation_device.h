@@ -20,6 +20,7 @@
 namespace device {
 
 class SensorReadingSharedBufferReader;
+class VROrientationSession;
 
 // Use RELATIVE_ORIENTATION_QUATERNION rather than
 // ABSOLUTE_ORIENTATION_QUATERNION because compass readings can be inacurate
@@ -47,12 +48,12 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
       mojom::XRRuntimeSessionOptionsPtr options,
       mojom::XRRuntime::RequestSessionCallback callback) override;
 
-  // VRDeviceBase
-  void OnGetInlineFrameData(
-      mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
-
   // Indicates whether the device was able to connect to orientation events.
   bool IsAvailable() const { return available_; }
+
+  void EndMagicWindowSession(VROrientationSession* session);
+  virtual void GetInlineFrameData(
+      mojom::XRFrameDataProvider::GetFrameDataCallback callback);
 
  private:
   // SensorClient Functions.
@@ -76,10 +77,10 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
   gfx::Quaternion latest_pose_;
 
   mojom::SensorPtr sensor_;
-  mojo::ScopedSharedBufferHandle shared_buffer_handle_;
-  mojo::ScopedSharedBufferMapping shared_buffer_;
   std::unique_ptr<SensorReadingSharedBufferReader> shared_buffer_reader_;
   mojo::Binding<mojom::SensorClient> binding_;
+
+  std::vector<std::unique_ptr<VROrientationSession>> magic_window_sessions_;
 };
 
 }  // namespace device

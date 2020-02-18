@@ -76,7 +76,7 @@ webrtc::RtpTransceiverInit ToRtpTransceiverInit(
   }
   DCHECK(init->hasStreams());
   for (const auto& stream : init->streams()) {
-    webrtc_init.stream_ids.push_back(stream->id().Utf8().data());
+    webrtc_init.stream_ids.push_back(stream->id().Utf8());
   }
   DCHECK(init->hasSendEncodings());
   for (const auto& encoding : init->sendEncodings()) {
@@ -195,8 +195,8 @@ bool RTCRtpTransceiver::FiredDirectionHasRecv() const {
 void RTCRtpTransceiver::setCodecPreferences(
     const HeapVector<Member<RTCRtpCodecCapability>>& codecs,
     ExceptionState& exception_state) {
-  std::vector<webrtc::RtpCodecCapability> codec_preferences;
-  codec_preferences.reserve(codecs.size());
+  Vector<webrtc::RtpCodecCapability> codec_preferences;
+  codec_preferences.ReserveCapacity(codecs.size());
   for (const auto& codec : codecs) {
     codec_preferences.emplace_back();
     auto& webrtc_codec = codec_preferences.back();
@@ -216,8 +216,7 @@ void RTCRtpTransceiver::setCodecPreferences(
           DOMExceptionCode::kInvalidModificationError, "Invalid codec");
       return;
     }
-    webrtc_codec.name =
-        codec->mimeType().Substring(slash_position + 1).Ascii().data();
+    webrtc_codec.name = codec->mimeType().Substring(slash_position + 1).Ascii();
     webrtc_codec.clock_rate = codec->clockRate();
     if (codec->hasChannels()) {
       webrtc_codec.num_channels = codec->channels();
@@ -235,7 +234,7 @@ void RTCRtpTransceiver::setCodecPreferences(
         auto parameter_name = parameter.Left(equal_position);
         auto parameter_value = parameter.Substring(equal_position + 1);
         webrtc_codec.parameters.insert(std::make_pair<std::string, std::string>(
-            parameter_name.Ascii().data(), parameter_value.Ascii().data()));
+            parameter_name.Ascii(), parameter_value.Ascii()));
       }
     }
   }

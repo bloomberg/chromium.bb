@@ -56,17 +56,16 @@ void CredentialManagerImpl::Store(const CredentialInfo& credential,
   std::unique_ptr<autofill::PasswordForm> form(
       CreatePasswordFormFromCredentialInfo(credential, origin));
 
-  std::unique_ptr<autofill::PasswordForm> observed_form =
-      CreateObservedPasswordFormFromOrigin(origin);
-  // Create a custom form fetcher without HTTP->HTTPS migration, as well as
-  // without fetching of suppressed HTTPS credentials on HTTP origins as the API
-  // is only available on HTTPS origins.
-  auto form_fetcher = std::make_unique<FormFetcherImpl>(
-      PasswordStore::FormDigest(*observed_form), client_, false);
+  std::string signon_realm = origin.GetOrigin().spec();
+  PasswordStore::FormDigest observed_digest(
+      autofill::PasswordForm::Scheme::kHtml, signon_realm, origin);
+
+  // Create a custom form fetcher without HTTP->HTTPS migration as the API is
+  // only available on HTTPS origins.
+  auto form_fetcher =
+      std::make_unique<FormFetcherImpl>(observed_digest, client_, false);
   form_manager_ = std::make_unique<CredentialManagerPasswordFormManager>(
-      client_, *observed_form, std::move(form), this, nullptr,
-      std::move(form_fetcher));
-  form_manager_->Init(nullptr);
+      client_, std::move(form), this, nullptr, std::move(form_fetcher));
 }
 
 void CredentialManagerImpl::PreventSilentAccess(
@@ -107,8 +106,8 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
         pending_request_ ? CredentialManagerError::PENDING_REQUEST
                          : CredentialManagerError::PASSWORDSTOREUNAVAILABLE,
         base::nullopt);
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_REJECTED,
-                                  mediation);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kRejected, mediation);
     return;
   }
 
@@ -117,8 +116,8 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
   if (!client_->IsFillingEnabled(GetLastCommittedURL()) ||
       !client_->OnCredentialManagerUsed()) {
     std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
-    LogCredentialManagerGetResult(metrics_util::CREDENTIAL_MANAGER_GET_NONE,
-                                  mediation);
+    LogCredentialManagerGetResult(
+        metrics_util::CredentialManagerGetResult::kNone, mediation);
     return;
   }
   // Return an empty credential if zero-click is required but disabled.
@@ -127,7 +126,7 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
     // Callback with empty credential info.
     std::move(callback).Run(CredentialManagerError::SUCCESS, CredentialInfo());
     LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_NONE_ZERO_CLICK_OFF, mediation);
+        metrics_util::CredentialManagerGetResult::kNoneZeroClickOff, mediation);
     return;
   }
 
@@ -161,7 +160,7 @@ void CredentialManagerImpl::SendCredential(
     const SendCredentialCallback& send_callback,
     const CredentialInfo& info) {
   DCHECK(pending_request_);
-  DCHECK(send_callback.Equals(pending_request_->send_callback()));
+  DCHECK(send_callback == pending_request_->send_callback());
 
   if (password_manager_util::IsLoggingActive(client_)) {
     CredentialManagerLogger(client_->GetLogManager())
@@ -192,12 +191,12 @@ void CredentialManagerImpl::SendPasswordForm(
     base::RecordAction(
         base::UserMetricsAction("CredentialManager_AccountChooser_Accepted"));
     metrics_util::LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_ACCOUNT_CHOOSER, mediation);
+        metrics_util::CredentialManagerGetResult::kAccountChooser, mediation);
   } else {
     base::RecordAction(
         base::UserMetricsAction("CredentialManager_AccountChooser_Dismissed"));
     metrics_util::LogCredentialManagerGetResult(
-        metrics_util::CREDENTIAL_MANAGER_GET_NONE, mediation);
+        metrics_util::CredentialManagerGetResult::kNone, mediation);
   }
   SendCredential(send_callback, info);
 }

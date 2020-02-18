@@ -7,6 +7,8 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -26,6 +28,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -39,15 +42,21 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/test/widget_test.h"
 
 namespace {
+
+using password_manager::metrics_util::PasswordType;
+
+constexpr char kExpiredCertificateFile[] = "expired_cert.pem";
 
 class ClickEvent : public ui::Event {
  public:
@@ -133,11 +142,13 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kInternalViewSource[] = "InternalViewSource";
     constexpr char kFile[] = "File";
     constexpr char kSecure[] = "Secure";
+    constexpr char kEvSecure[] = "EvSecure";
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
     constexpr char kSignInPasswordReuse[] = "SignInPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
+    constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
     constexpr char kMixedContent[] = "MixedContent";
     constexpr char kAllowAllPermissions[] = "AllowAllPermissions";
@@ -153,8 +164,9 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     const GURL http_url("http://example.com");
 
     GURL url = http_url;
-    if (name == kSecure || name == kMixedContentForm || name == kMixedContent ||
-        name == kAllowAllPermissions || name == kBlockAllPermissions) {
+    if (name == kSecure || name == kEvSecure || name == kMixedContentForm ||
+        name == kMixedContent || name == kAllowAllPermissions ||
+        name == kBlockAllPermissions || name == kMalwareAndBadCert) {
       url = https_url;
     }
     if (name == kInternal) {
@@ -184,20 +196,37 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       constexpr char kGoodCertificateFile[] = "ok_cert.pem";
       identity.certificate = net::ImportCertFromFile(
           net::GetTestCertsDirectory(), kGoodCertificateFile);
+    } else if (name == kEvSecure) {
+      // Generate a valid mock EV HTTPS identity, with an EV certificate. Must
+      // match conditions in PageInfoBubbleView::SetIdentityInfo() for setting
+      // the certificate button subtitle.
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_EV_CERT;
+      identity.connection_status = PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED;
+      identity.identity_status_description = "Issued to: Thawte Inc [US]";
+      scoped_refptr<net::X509Certificate> ev_cert =
+          net::X509Certificate::CreateFromBytes(
+              reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der));
+      ASSERT_TRUE(ev_cert);
+      identity.certificate = ev_cert;
     } else if (name == kMalware) {
-      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_MALWARE;
+      identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
     } else if (name == kDeceptive) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SOCIAL_ENGINEERING;
     } else if (name == kUnwantedSoftware) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE;
     } else if (name == kSignInPasswordReuse) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_SIGN_IN_PASSWORD_REUSE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
     } else if (name == kEnterprisePasswordReuse) {
-      identity.identity_status =
-          PageInfo::SITE_IDENTITY_STATUS_ENTERPRISE_PASSWORD_REUSE;
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
+    } else if (name == kMalwareAndBadCert) {
+      identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
+      identity.certificate = net::ImportCertFromFile(
+          net::GetTestCertsDirectory(), kExpiredCertificateFile);
+      identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
     } else if (name == kMixedContentForm) {
       identity.identity_status =
           PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
@@ -253,6 +282,25 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     }
   }
 
+  bool VerifyUi() override {
+    if (!DialogBrowserTest::VerifyUi())
+      return false;
+#if defined(TOOLKIT_VIEWS)
+    // Check that each expected View is present in the Page Info bubble.
+    views::View* page_info_bubble_view =
+        PageInfoBubbleView::GetPageInfoBubble()->GetContentsView();
+    for (auto id : expected_identifiers_) {
+      views::View* view = GetView(browser(), id);
+      if (!page_info_bubble_view->Contains(view))
+        return false;
+    }
+    return true;
+#else
+    NOTIMPLEMENTED();
+    return false;
+#endif
+  }
+
  protected:
   GURL GetSimplePageUrl() const {
     return ui_test_utils::GetTestUrl(
@@ -297,7 +345,23 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     page_info_bubble_view->OnPermissionChanged(permission);
   }
 
+  void SetPageInfoBubbleIdentityInfo(
+      const PageInfoUI::IdentityInfo& identity_info) {
+    static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+        ->SetIdentityInfo(identity_info);
+  }
+
+  base::string16 GetCertificateButtonTitle() const {
+    // Only PageInfoBubbleViewBrowserTest can access certificate_button_ in
+    // PageInfoBubbleView, or title() in HoverButton.
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubble());
+    return page_info_bubble_view->certificate_button_->title()->GetText();
+  }
+
  private:
+  std::vector<PageInfoBubbleView::PageInfoBubbleViewID> expected_identifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewBrowserTest);
 };
@@ -381,74 +445,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 }
 
 // Test opening page info bubble that matches
-// SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE threat type.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       VerifySignInPasswordReusePageInfoBubble) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(safe_browsing::kSyncPasswordPageInfoHistogram, 0);
-  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
-
-  // Update security state of the current page to match
-  // SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE.
-  safe_browsing::ChromePasswordProtectionService* service =
-      safe_browsing::ChromePasswordProtectionService::
-          GetPasswordProtectionService(browser()->profile());
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::SIGN_IN_PASSWORD);
-
-  OpenPageInfoBubble(browser());
-  views::View* change_password_button = GetView(
-      browser(), PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_CHANGE_PASSWORD);
-  views::View* whitelist_password_reuse_button = GetView(
-      browser(),
-      PageInfoBubbleView::VIEW_ID_PAGE_INFO_BUTTON_WHITELIST_PASSWORD_REUSE);
-
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
-      helper->GetVisibleSecurityState();
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            visible_security_state->malicious_content_status);
-
-  // Verify these two buttons are showing.
-  EXPECT_TRUE(change_password_button->GetVisible());
-  EXPECT_TRUE(whitelist_password_reuse_button->GetVisible());
-
-  // Verify clicking on button will increment corresponding bucket of
-  // PasswordProtection.PageInfoAction.SyncPasswordEntry histogram.
-  PerformMouseClickOnView(change_password_button);
-  EXPECT_THAT(
-      histograms.GetAllSamples(safe_browsing::kSyncPasswordPageInfoHistogram),
-      testing::ElementsAre(
-          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
-                       1),
-          base::Bucket(
-              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
-              1)));
-
-  PerformMouseClickOnView(whitelist_password_reuse_button);
-  EXPECT_THAT(
-      histograms.GetAllSamples(safe_browsing::kSyncPasswordPageInfoHistogram),
-      testing::ElementsAre(
-          base::Bucket(static_cast<int>(safe_browsing::WarningAction::SHOWN),
-                       1),
-          base::Bucket(
-              static_cast<int>(safe_browsing::WarningAction::CHANGE_PASSWORD),
-              1),
-          base::Bucket(static_cast<int>(
-                           safe_browsing::WarningAction::MARK_AS_LEGITIMATE),
-                       1)));
-  // Security state will change after whitelisting.
-  visible_security_state = helper->GetVisibleSecurityState();
-  EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
-            visible_security_state->malicious_content_status);
-}
-
-// Test opening page info bubble that matches
 // SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE threat type.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
                        VerifyEnterprisePasswordReusePageInfoBubble) {
@@ -464,8 +460,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(contents, "token",
-                            safe_browsing::LoginReputationClientRequest::
-                                PasswordReuseEvent::ENTERPRISE_PASSWORD);
+                            PasswordType::ENTERPRISE_PASSWORD);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
@@ -527,6 +522,10 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Secure) {
   ShowAndVerifyUi();
 }
 
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_EvSecure) {
+  ShowAndVerifyUi();
+}
+
 // Shows the Page Info bubble for an internal page, e.g. chrome://settings.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_Internal) {
   ShowAndVerifyUi();
@@ -570,6 +569,13 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
 // Shows the Page Info bubble Safe Browsing warning after detecting the user has
 // re-used an existing password on a site, e.g. due to phishing.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeUi_PasswordReuse) {
+  ShowAndVerifyUi();
+}
+
+// Shows the Page Info bubble for a site flagged for malware that also has a bad
+// certificate.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeUi_MalwareAndBadCert) {
   ShowAndVerifyUi();
 }
 
@@ -643,8 +649,21 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
             PageInfoBubbleView::GetShownBubbleType());
 }
 
+class PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled
+    : public PageInfoBubbleViewBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PageInfoBubbleViewBrowserTest::SetUpCommandLine(command_line);
+    feature_list.InitAndDisableFeature(
+        blink::features::kMixedContentAutoupgrade);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 // Ensure changes to security state are reflected in an open PageInfo bubble.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled,
                        UpdatesOnSecurityStateChange) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.AddDefaultHandlers(
@@ -664,6 +683,41 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   ExecuteJavaScriptForTests("load_mixed();");
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY));
+}
+
+// Ensure a page can both have an invalid certificate *and* be blocked by Safe
+// Browsing.  Regression test for bug 869925.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/simple.html"));
+
+  // Setup the bogus identity with an expired cert and SB flagging.
+  PageInfoUI::IdentityInfo identity;
+  identity.identity_status = PageInfo::SITE_IDENTITY_STATUS_ERROR;
+  identity.certificate = net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                                 kExpiredCertificateFile);
+  identity.safe_browsing_status = PageInfo::SAFE_BROWSING_STATUS_MALWARE;
+  OpenPageInfoBubble(browser());
+
+  SetPageInfoBubbleIdentityInfo(identity);
+
+  views::BubbleDialogDelegateView* page_info =
+      PageInfoBubbleView::GetPageInfoBubble();
+
+  // Verify bubble complains of malware...
+  EXPECT_EQ(page_info->GetWindowTitle(),
+            l10n_util::GetStringUTF16(IDS_PAGE_INFO_MALWARE_SUMMARY));
+
+  // ...and has a "Certificate (Invalid)" button.
+  const base::string16 invalid_parens = l10n_util::GetStringUTF16(
+      IDS_PAGE_INFO_CERTIFICATE_INVALID_PARENTHESIZED);
+  EXPECT_EQ(GetCertificateButtonTitle(),
+            l10n_util::GetStringFUTF16(IDS_PAGE_INFO_CERTIFICATE_BUTTON_TEXT,
+                                       invalid_parens));
 }
 
 namespace {

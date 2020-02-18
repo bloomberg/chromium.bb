@@ -20,7 +20,6 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/submission_indicator_event.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -29,7 +28,7 @@ using autofill::FieldPropertiesFlags;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::PasswordForm;
-using autofill::SubmissionIndicatorEvent;
+using autofill::mojom::SubmissionIndicatorEvent;
 using base::ASCIIToUTF16;
 
 namespace password_manager {
@@ -378,7 +377,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
 
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
         CheckAllValuesUnique(parsed_form->all_possible_passwords);
-        CheckAllValuesUnique(parsed_form->other_possible_usernames);
+        CheckAllValuesUnique(parsed_form->all_possible_usernames);
         if (test_case.number_of_all_possible_passwords >= 0) {
           EXPECT_EQ(
               static_cast<size_t>(test_case.number_of_all_possible_passwords),
@@ -391,11 +390,11 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         if (test_case.number_of_all_possible_usernames >= 0) {
           EXPECT_EQ(
               static_cast<size_t>(test_case.number_of_all_possible_usernames),
-              parsed_form->other_possible_usernames.size());
+              parsed_form->all_possible_usernames.size());
         }
         if (test_case.all_possible_usernames) {
           EXPECT_EQ(*test_case.all_possible_usernames,
-                    parsed_form->other_possible_usernames);
+                    parsed_form->all_possible_usernames);
         }
         if (mode == FormDataParser::Mode::kSaving) {
           EXPECT_EQ(test_case.fallback_only, parsed_form->only_for_fallback);
@@ -419,13 +418,15 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
 TEST(FormParserTest, NotPasswordForm) {
   CheckTestData({
       {
-          "No fields", {},
+          "No fields",
+          {},
       },
       {
           .description_for_logging = "No password fields",
           .fields =
               {
-                  {.form_control_type = "text"}, {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
               },
           .number_of_all_possible_passwords = 0,
           .number_of_all_possible_usernames = 0,
@@ -1098,7 +1099,6 @@ TEST(FormParserTest, ServerHints) {
                   {.role_saving = ElementRole::CURRENT_PASSWORD,
                    .form_control_type = "password"},
                   {.role_filling = ElementRole::NEW_PASSWORD,
-
                    .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
                    .form_control_type = "password"},
                   {.role_filling = ElementRole::CONFIRMATION_PASSWORD,
@@ -1121,7 +1121,6 @@ TEST(FormParserTest, ServerHints) {
                .form_control_type = "password"},
           },
       },
-
   });
 }
 
@@ -1503,6 +1502,96 @@ TEST(FormParserTest, NotPasswordField) {
               {.role = ElementRole::USERNAME, .form_control_type = "text"},
               {.form_control_type = "password",
                .prediction = {.type = autofill::NOT_PASSWORD}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_PASSWORD on only password.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .form_control_type = "password"},
+          },
+          .fallback_only = true,
+      },
+  });
+}
+
+// The parser should avoid identifying NOT_USERNAME fields as usernames.
+TEST(FormParserTest, NotUsernameField) {
+  CheckTestData({
+      {
+          "Server hints: NOT_USERNAME.",
+          {{.role = ElementRole::USERNAME, .form_control_type = "text"},
+           {.role = ElementRole::NONE,
+            .form_control_type = "text",
+            .prediction = {.type = autofill::NOT_USERNAME}},
+           {.role = ElementRole::CURRENT_PASSWORD,
+            .form_control_type = "password",
+            .prediction = {.type = autofill::PASSWORD}}},
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_USERNAME on only username.",
+          {{.role = ElementRole::NONE,
+            .form_control_type = "text",
+            .prediction = {.type = autofill::NOT_USERNAME}},
+           {.role = ElementRole::CURRENT_PASSWORD,
+            .form_control_type = "password"}},
+          .fallback_only = false,
+      },
+  });
+}
+
+// The parser should avoid identifying NOT_USERNAME fields as usernames despite
+// autocomplete attribute.
+TEST(FormParserTest, NotUsernameFieldDespiteAutocompelteAtrribute) {
+  CheckTestData({
+      {
+          "Server hints: NOT_USERNAME.",
+          {{.role = ElementRole::USERNAME, .form_control_type = "text"},
+           {.form_control_type = "text",
+            .autocomplete_attribute = "username",
+            .prediction = {.type = autofill::NOT_USERNAME}},
+           {.role = ElementRole::CURRENT_PASSWORD,
+            .form_control_type = "password",
+            .prediction = {.type = autofill::PASSWORD}}},
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_USERNAME on only username.",
+          {
+              {.role = ElementRole::NONE,
+               .form_control_type = "text",
+               .autocomplete_attribute = "username",
+               .prediction = {.type = autofill::NOT_USERNAME}},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          .fallback_only = false,
+      },
+  });
+}
+
+// The parser should avoid identifying NOT_PASSWORD fields as passwords.
+TEST(FormParserTest, NotPasswordFieldDespiteAutocompleteAttribute) {
+  CheckTestData({
+      {
+          "Server hints: NOT_PASSWORD.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "current-password"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "new-password"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "password"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
@@ -1935,8 +2024,7 @@ TEST(FormParserTest, HistogramsForUsernameDetectionMethod) {
     // saving mode.
     SCOPED_TRACE(histogram_test_case.parsing_data.description_for_logging);
     tester.ExpectUniqueSample("PasswordManager.UsernameDetectionMethod",
-                              histogram_test_case.expected_method,
-                              2);
+                              histogram_test_case.expected_method, 2);
   }
 }
 

@@ -35,6 +35,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/mock_sync_service.h"
 #include "components/sync/driver/sync_user_settings_impl.h"
@@ -47,9 +50,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/public/test/web_contents_tester.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -66,7 +66,7 @@ MATCHER_P(UserSelectableTypeSetMatches, value, "") {
   return arg == value;
 }
 
-const char kTestUser[] = "chrome.p13n.test@gmail.com";
+const char kTestUser[] = "chrome_p13n_test@gmail.com";
 const char kTestCallbackId[] = "test-callback-id";
 
 // Returns a UserSelectableTypeSet with all types set.
@@ -363,7 +363,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     return std::string(kTestUser);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
@@ -1049,7 +1049,7 @@ TEST_F(PeopleHandlerTest_UnifiedConsentDisabled, ShowSigninOnAuthError) {
       primary_account_info.is_under_advanced_protection,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, primary_account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
@@ -1392,6 +1392,8 @@ class PeopleHandlerDiceUnifiedConsentTest
     : public ::testing::TestWithParam<std::tuple<bool, bool>> {};
 
 TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
+  ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
+
   // Do not be in first run, so that the profiles are not created as "new
   // profiles" and automatically migrated to Dice.
   first_run::ResetCachedSentinelDataForTesting();

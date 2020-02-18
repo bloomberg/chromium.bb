@@ -19,13 +19,11 @@ namespace content {
 
 class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
  public:
-  explicit Context(int process_id)
-      : process_id_(process_id), weak_ptr_factory_(this) {
+  explicit Context(int process_id) : process_id_(process_id) {
     RenderProcessHost* process_host = RenderProcessHost::FromID(process_id_);
     if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
-    process_host->IncrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kFetch);
+    process_host->IncrementKeepAliveRefCount();
   }
 
   void Detach() {
@@ -36,8 +34,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
 
-    process_host->DecrementKeepAliveRefCount(
-        RenderProcessHost::KeepAliveClientType::kFetch);
+    process_host->DecrementKeepAliveRefCount();
   }
 
   void DetachLater(base::TimeDelta timeout) {
@@ -62,7 +59,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
   const int process_id_;
   bool detached_ = false;
 
-  base::WeakPtrFactory<Context> weak_ptr_factory_;
+  base::WeakPtrFactory<Context> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

@@ -16,6 +16,8 @@ import("//gn/standalone/android.gni")
 import("//gn/standalone/wasm.gni")
 import("llvm.gni")
 
+# Note: is_android is true also on mac when building with target_os = "android".
+
 declare_args() {
   if (is_clang) {
     if (is_system_compiler) {
@@ -39,19 +41,33 @@ declare_args() {
   if (is_linux_host && is_clang) {
     host_cc = linux_clang_bin
     host_cxx = linux_clangxx_bin
+    host_linker = linux_clang_linker
   } else {
     host_cc = cc
     host_cxx = cxx
+    if (is_linux_host) {
+      host_linker = "gold"
+    } else {
+      host_linker = ""
+    }
   }
 
   if (is_android) {
     target_ar = "$android_toolchain_root/bin/$android_abi_target-ar"
     target_cc = "$android_llvm_dir/bin/clang"
     target_cxx = "$android_llvm_dir/bin/clang++"
+    target_linker = "gold"
   } else {
     target_ar = ar
     target_cc = cc
     target_cxx = cxx
+    if (is_linux && is_clang) {
+      target_linker = linux_clang_linker
+    } else if (is_linux) {
+      target_linker = "gold"
+    } else {
+      target_linker = ""
+    }
   }
   cc_wrapper = ""
 }
@@ -66,6 +82,11 @@ template("gcc_like_toolchain") {
     cxx = invoker.cxx
     lib_switch = "-l"
     lib_dir_switch = "-L"
+    ld_arg = ""
+    if (invoker.linker != "") {
+      _invoker_linker = invoker.linker
+      ld_arg = "-fuse-ld=$_invoker_linker"
+    }
 
     tool("cc") {
       depfile = "{{output}}.d"
@@ -98,10 +119,11 @@ template("gcc_like_toolchain") {
     }
 
     tool("alink") {
+      rspfile = "{{output}}.rsp"
       if (is_mac && ar != "suppress_unused_ar_variable_warning") {
-        command = "rm -f {{output}} && libtool -static {{arflags}} -o {{output}} {{inputs}}"
+        rspfile_content = "{{inputs_newline}}"
+        command = "rm -f {{output}} && libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
       } else {
-        rspfile = "{{output}}.rsp"
         rspfile_content = "{{inputs}}"
         command = "$ar rcsD {{output}} @$rspfile"
       }
@@ -121,7 +143,7 @@ template("gcc_like_toolchain") {
         rpath = "-Wl,-install_name,@rpath/$soname"
       }
 
-      command = "$cc_wrapper $cxx -shared {{ldflags}} ${extra_ldflags} {{inputs}} {{solibs}} {{libs}} $rpath -o {{output}}"
+      command = "$cc_wrapper $cxx $ld_arg -shared {{ldflags}} ${extra_ldflags} {{inputs}} {{solibs}} {{libs}} $rpath -o {{output}}"
       outputs = [
         "{{root_out_dir}}/$soname",
       ]
@@ -131,7 +153,7 @@ template("gcc_like_toolchain") {
     }
 
     tool("link") {
-      command = "$cc_wrapper $cxx {{ldflags}} ${extra_ldflags} {{inputs}} {{solibs}} {{libs}} -o {{output}}"
+      command = "$cc_wrapper $cxx $ld_arg {{ldflags}} ${extra_ldflags} {{inputs}} {{solibs}} {{libs}} -o {{output}}"
       outputs = [
         "{{root_out_dir}}/{{target_output_name}}{{output_extension}}",
       ]
@@ -161,6 +183,7 @@ gcc_like_toolchain("gcc_like") {
   ar = target_ar
   cc = target_cc
   cxx = target_cxx
+  linker = target_linker
 }
 
 gcc_like_toolchain("gcc_like_host") {
@@ -169,6 +192,7 @@ gcc_like_toolchain("gcc_like_host") {
   ar = host_ar
   cc = host_cc
   cxx = host_cxx
+  linker = host_linker
 }
 
 gcc_like_toolchain("wasm") {
@@ -178,4 +202,5 @@ gcc_like_toolchain("wasm") {
   ar = "$emsdk_dir/emscripten/emar --em-config $em_config"
   cc = "$emsdk_dir/emscripten/emcc --em-config $em_config"
   cxx = "$emsdk_dir/emscripten/em++ --em-config $em_config"
+  linker = ""
 }

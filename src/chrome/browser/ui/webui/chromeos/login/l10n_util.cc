@@ -155,7 +155,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
     if (lang.empty() || lang == language_id)
       continue;
 
-    if (base::ContainsValue(base_language_codes, language_id)) {
+    if (base::Contains(base_language_codes, language_id)) {
       // Language is supported. No need to replace
       continue;
     }
@@ -163,7 +163,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
     if (!l10n_util::CheckAndResolveLocale(language_id, &resolved_locale))
       continue;
 
-    if (!base::ContainsValue(base_language_codes, resolved_locale)) {
+    if (!base::Contains(base_language_codes, resolved_locale)) {
       // Resolved locale is not supported.
       continue;
     }
@@ -186,7 +186,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
        it != language_codes.end(); ++it) {
      // Exclude the language which is not in |base_langauge_codes| even it has
      // input methods.
-     if (!base::ContainsValue(base_language_codes, *it))
+     if (!base::Contains(base_language_codes, *it))
        continue;
 
      const base::string16 display_name =

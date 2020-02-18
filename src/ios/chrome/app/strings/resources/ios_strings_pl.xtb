@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Opcje zapisania hasła</translation>
 <translation id="2523363575747517183">Ta strona internetowa wielokrotnie próbuje otworzyć inną aplikację.</translation>
 <translation id="2529021024822217800">Otwórz wszystkie</translation>
+<translation id="2562041823070056534">Wysyłam na urządzenie <ph name="DEVICE_NAME" />…</translation>
 <translation id="2570206273416014374">Niektóre pliki cookie oraz zapytania wpisywane na pasku adresu i w polu wyszukiwania będą wysyłane do domyślnej wyszukiwarki.</translation>
 <translation id="2572712655377361602">Zasady dotyczące urządzeń zablokowały dostęp do Twoich zdjęć</translation>
 <translation id="2578571896248130439">Wyślij stronę internetową</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Latarka</translation>
 <translation id="2958718410589002129">Hasła</translation>
 <translation id="2969979262385602596">Nie udało się zalogować. Spróbuj ponownie później.</translation>
+<translation id="298306318844797842">Dodaj formę płatności…</translation>
 <translation id="2989805286512600854">Otwórz w nowej karcie</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
@@ -313,6 +315,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5556459405103347317">Odśwież</translation>
 <translation id="5614553682702429503">Zapisać hasło?</translation>
 <translation id="5626245204502895507">Nie udało się pobrać teraz tego pliku.</translation>
+<translation id="5631164295104953411">Dodaj formę płatności</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Wersja <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="7781829728241885113">Wczoraj</translation>
 <translation id="778855399387580014">Rozpocznij wyszukiwanie na nowej karcie Chrome.</translation>
+<translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7840771868269352570">Wybrane elementy zostaną usunięte.</translation>
 <translation id="7856733331829174190">Nie udało się pobrać pliku</translation>
@@ -477,6 +481,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7971521879845308059">Blokuj wyskakujące okienka</translation>
 <translation id="7982789257301363584">Sieć</translation>
+<translation id="8007420562015504427">Wyszukiwanie incognito</translation>
 <translation id="8019783059653722575">Umożliwia zapisywanie i przesyłanie zdjęć.</translation>
 <translation id="802154636333426148">Nie udało się pobrać</translation>
 <translation id="8023878949384262191">Rozwija sekcję.</translation>
@@ -491,6 +496,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8225985093977202398">Obrazy i pliki w pamięci podręcznej</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8281781826761538115">Domyślny – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Nowe wyszukiwanie</translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>
 <translation id="8381750437846184350">Określ, jak Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług</translation>
 <translation id="8407669440184693619">Nie znaleziono haseł do tej strony</translation>
@@ -507,7 +513,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8532105204136943229">Rok utraty ważności</translation>
 <translation id="8534481786647257214">Wpis w Google+ opublikowany.</translation>
 <translation id="8548878600947630424">Znajdź na stronie...</translation>
-<translation id="8583866649835978847">Wyślij kartę <ph name="TITLE" /> na jedno ze swoich urządzeń.</translation>
 <translation id="8605219856220328675">Zamknij kartę</translation>
 <translation id="8620640915598389714">Edytuj</translation>
 <translation id="8636825310635137004">Aby korzystać z kart ze swoich innych urządzeń, włącz synchronizację</translation>
@@ -530,7 +535,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8976382372951310360">Pomoc</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>
-<translation id="9016406938567631235">Wysyłam…</translation>
 <translation id="902659348151742535">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
 <translation id="9034759925968272072">Nie spowoduje to wylogowania z konta Google. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Przepustowość</translation>

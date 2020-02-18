@@ -58,9 +58,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // TODO(jeremyim): Rationalize with test_params().
   DataReductionProxyConfigValues* config_values();
 
-  // Resets the Lo-Fi status to default state.
-  void ResetLoFiStatusForTest();
-
   // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
   // passed to the callee.
   void SetTickClock(const base::TickClock* tick_clock);
@@ -140,9 +137,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
       DataReductionProxyConfigurator* configurator);
   ~MockDataReductionProxyConfig() override;
 
-  MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
-                     bool(const net::URLRequest*,
-                          DataReductionProxyTypeInfo* proxy_info));
   MOCK_CONST_METHOD1(ContainsDataReductionProxy,
                      bool(const net::ProxyConfig::ProxyRules& proxy_rules));
   MOCK_METHOD1(SecureProxyCheck,

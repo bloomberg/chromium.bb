@@ -13,7 +13,17 @@
 # limitations under the License.
 
 cimport libc.time
-from libc.stdint cimport intptr_t, uint8_t, int32_t, uint32_t, int64_t
+
+ctypedef          ssize_t   intptr_t
+ctypedef          size_t    uintptr_t
+ctypedef   signed char      int8_t
+ctypedef   signed short     int16_t
+ctypedef   signed int       int32_t
+ctypedef   signed long long int64_t
+ctypedef unsigned char      uint8_t
+ctypedef unsigned short     uint16_t
+ctypedef unsigned int       uint32_t
+ctypedef unsigned long long uint64_t
 
 
 cdef extern from "grpc/support/alloc.h":
@@ -130,7 +140,8 @@ cdef extern from "grpc/grpc.h":
   const char *GRPC_ARG_SECONDARY_USER_AGENT_STRING
   const char *GRPC_SSL_TARGET_NAME_OVERRIDE_ARG
   const char *GRPC_SSL_SESSION_CACHE_ARG
-  const char *GRPC_COMPRESSION_CHANNEL_DEFAULT_ALGORITHM
+  const char *_GRPC_COMPRESSION_CHANNEL_DEFAULT_ALGORITHM \
+    "GRPC_COMPRESSION_CHANNEL_DEFAULT_ALGORITHM"
   const char *GRPC_COMPRESSION_CHANNEL_DEFAULT_LEVEL
   const char *GRPC_COMPRESSION_CHANNEL_ENABLED_ALGORITHMS_BITSET
 
@@ -535,8 +546,8 @@ cdef extern from "grpc/grpc_security.h":
         grpc_credentials_plugin_metadata_cb cb, void *user_data,
         grpc_metadata creds_md[GRPC_METADATA_CREDENTIALS_PLUGIN_SYNC_MAX],
         size_t *num_creds_md, grpc_status_code *status,
-        const char **error_details)
-    void (*destroy)(void *state)
+        const char **error_details) except *
+    void (*destroy)(void *state) except *
     void *state
     const char *type
 
@@ -608,3 +619,8 @@ cdef extern from "grpc/compression.h":
   int grpc_compression_options_is_algorithm_enabled(
       const grpc_compression_options *opts,
       grpc_compression_algorithm algorithm) nogil
+
+cdef extern from "grpc/impl/codegen/compression_types.h":
+
+  const char *_GRPC_COMPRESSION_REQUEST_ALGORITHM_MD_KEY \
+    "GRPC_COMPRESSION_REQUEST_ALGORITHM_MD_KEY"

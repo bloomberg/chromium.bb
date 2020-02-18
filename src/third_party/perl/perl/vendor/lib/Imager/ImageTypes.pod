@@ -138,6 +138,7 @@ that not all code follows this (recent) rule, but will over time.
 =over
 
 =item new()
+X<new(), Imager methods>
 
   $img = Imager->new();
   $img->read(file=>"alligator.ppm") or die $img->errstr;
@@ -170,6 +171,11 @@ supplied to the C<read()> or C<img_set()> methods.
 
 C<channels> - The number of channels for the image.  Default 3.  Valid
 values are from 1 to 4.
+
+=item *
+
+C<model> - this overrides the value, if any, supplied for C<channels>.
+This can be one of C<gray>, C<graya>, C<rgb> or C<rgba>.
 
 =item *
 
@@ -219,9 +225,9 @@ Default: 256.  This must be in the range 1 through 256.
 
 =item *
 
-C<file>, C<fh>, C<fd>, C<callback>, C<readcb> - specify a file name,
-filehandle, file descriptor or callback to read image data from.  See
-L<Imager::Files> for details.  The typical use is:
+C<file>, C<fh>, C<fd>, C<callback>, C<readcb>, or C<io> - specify a
+file name, filehandle, file descriptor or callback to read image data
+from.  See L<Imager::Files> for details.  The typical use is:
 
   my $im = Imager->new(file => $filename);
 
@@ -286,7 +292,13 @@ parameter:
   my $img = Imager->new(file => $filename)
     or die Imager->errstr;
 
+If none of C<xsize>, C<ysize>, C<file>, C<fh>, C<fd>, C<callback>,
+C<readcb>, C<data>, C<io> is supplied, and other parameters I<are> supplied
+C<< Imager->new >> will return failure rather than returning an empty
+image object.
+
 =item img_set()
+X<img_set>
 
 img_set destroys the image data in the object and creates a new one
 with the given dimensions and channels.  For a way to convert image
@@ -294,7 +306,8 @@ data between formats see the C<convert()> method.
 
   $img->img_set(xsize=>500, ysize=>500, channels=>4);
 
-This takes exactly the same parameters as the new() method.
+This takes exactly the same parameters as the new() method, excluding
+those for reading from files.
 
 =back
 
@@ -321,11 +334,60 @@ value of C<getwidth()> is undef.
 Same details apply as for L</getwidth()>.
 
 =item getchannels()
+X<getchannels() method>X<methods, getchannels()>
 
   print "Image has ",$img->getchannels(), " channels\n";
 
-To get the number of channels in an image C<getchannels()> is used.
+Returns the number of channels in an image.
 
+Note: previously the number of channels in an image mapped directly to
+the color model of the image, ie a 4 channel image was always RGBA.
+This may change in a future release of Imager.
+
+Returns an empty list if the image object is not initialized.
+
+=item colorchannels()
+X<colorchannels() method>X<methods, colorchannels()>
+
+Returns the number of color channels.
+
+Currently this is always 1 or 3, but may be 0 for some rare images in
+a future version of Imager.
+
+Returns an empty list if the image object is not initialized.
+
+=item colormodel()
+X<colormodel method>X<methods, colormodel>
+
+Returns the color model of the image, including whether there is an
+alpha channel.
+
+By default this is returned as a string, one of C<unknown>, C<gray>,
+C<graya>, C<rgb> or C<rgba>.
+
+If you call C<colormodel()> with a true numeric parameter:
+
+  my $model = $img->colormodel(numeric => 1);
+
+then the color model is returned as a number, mapped as follows:
+
+  Numeric  String
+  -------  ------
+      0    unknown
+      1    gray
+      2    graya
+      3    rgb
+      4    rgba
+
+=item alphachannel()
+X<alphachannel() method>X<methods, alphachannel()>
+
+Returns the channel index of the alpha channel of the image.
+
+This is 1 for grayscale images with alpha, 3 for RGB images with alpha
+and will return C<undef> for all other images.
+
+Returns an empty list if the image object is not initialized.
 
 =item bits()
 
@@ -340,6 +402,8 @@ channel in a pixel, 8 for a normal image, 16 for 16-bit image and
     # slower but more precise
   }
 
+Returns an empty list if the image object is not initialized.
+
 =item type()
 
 The type() method returns either 'direct' for direct color images or
@@ -351,6 +415,8 @@ The type() method returns either 'direct' for direct color images or
       print join(",", $color->rgba), "\n";
     }
   }
+
+Returns an empty list if the image object is not initialized.
 
 =item virtual()
 
@@ -397,6 +463,8 @@ those 2 colors are black and white, in either order.
 
 If a real bi-level organization image is ever added to Imager, this
 function will return true for that too.
+
+Returns an empty list if the image object is not initialized.
 
 =back
 
@@ -756,6 +824,9 @@ same name is discouraged.
 You can retrieve tags from an image using the tags() method, you can
 get all of the tags in an image, as a list of array references, with
 the code or name of the tag followed by the value of the tag.
+
+Imager's support for fairly limited, for access to pretty much all
+image metadata you may want to try L<Image::ExifTool>.
 
 =over
 
@@ -1245,13 +1316,9 @@ Returns a true value if logging is enabled.
 
 =back
 
-=head1 REVISION
+=head1 AUTHOR
 
-$Revision$
-
-=head1 AUTHORS
-
-Tony Cook, Arnar M. Hrafnkelsson
+Tony Cook <tonyc@cpan.org>, Arnar M. Hrafnkelsson
 
 =head1 SEE ALSO
 

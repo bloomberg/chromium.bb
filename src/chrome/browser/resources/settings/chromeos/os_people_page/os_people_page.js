@@ -13,7 +13,6 @@ Polymer({
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
-    CrPngBehavior,
     LockStateBehavior,
   ],
 
@@ -62,16 +61,13 @@ Polymer({
     },
 
     /**
-     * The currently selected profile icon URL. May be a data URL.
-     * @private
-     */
-    profileIconUrl_: String,
-
-    /**
      * The current profile name.
      * @private
      */
     profileName_: String,
+
+    /** @private */
+    profileLabel_: String,
 
     /** @private */
     showSignoutDialog_: Boolean,
@@ -112,6 +108,15 @@ Polymer({
       readOnly: true,
     },
 
+    /** @private */
+    showParentalControls_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('showParentalControls') &&
+            loadTimeData.getBoolean('showParentalControls');
+      },
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -123,11 +128,6 @@ Polymer({
               loadTimeData.getBoolean('unifiedConsentEnabled') ?
                   '#sync-setup' :
                   '#sync-status .subpage-arrow');
-        }
-        if (settings.routes.CHANGE_PICTURE) {
-          map.set(
-              settings.routes.CHANGE_PICTURE.path,
-              '#picture-subpage-trigger .subpage-arrow');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
@@ -156,6 +156,9 @@ Polymer({
   /** @private {?settings.SyncBrowserProxy} */
   syncBrowserProxy_: null,
 
+  /** @private {?settings.AccountManagerBrowserProxy} */
+  accountManagerBrowserProxy_: null,
+
   /** @override */
   attached: function() {
     const profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
@@ -168,6 +171,12 @@ Polymer({
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener(
         'sync-status-changed', this.handleSyncStatus_.bind(this));
+
+    this.accountManagerBrowserProxy_ =
+        settings.AccountManagerBrowserProxyImpl.getInstance();
+    this.addWebUIListener(
+        'accounts-changed', this.updateProfileLabel_.bind(this));
+    this.updateProfileLabel_();
   },
 
   /** @protected */
@@ -196,23 +205,37 @@ Polymer({
   },
 
   /**
-   * Handler for when the profile's icon and name is updated.
+   * Handler for when the profile's name is updated.
    * @private
    * @param {!settings.ProfileInfo} info
    */
   handleProfileInfo_: function(info) {
     this.profileName_ = info.name;
-    /**
-     * Extract first frame from image by creating a single frame PNG using
-     * url as input if base64 encoded and potentially animated.
-     */
-    if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ =
-          CrPngBehavior.convertImageSequenceToPng([info.iconUrl]);
+    // info.iconUrl is not used for this page.
+  },
+
+  /**
+   * Updates the label underneath the primary profile name.
+   * @private
+   */
+  updateProfileLabel_: async function() {
+    const includeImages = false;
+    const /** @type {!Array<settings.Account>} */ accounts =
+        await this.accountManagerBrowserProxy_.getAccounts(includeImages);
+    // The user might not have any GAIA accounts.
+    if (accounts.length == 0) {
+      this.profileLabel_ = '';
       return;
     }
+    const moreAccounts = accounts.length - 1;
+    // Template: "$1, +$2 more accounts" with correct plural of "account".
+    // Localization handles the case of 0 more accounts.
+    const labelTemplate = await cr.sendWithPromise(
+        'getPluralString', 'profileLabel', moreAccounts);
 
-    this.profileIconUrl_ = info.iconUrl;
+    // Final output: "alice@gmail.com, +2 more accounts"
+    this.profileLabel_ = loadTimeData.substituteString(
+        labelTemplate, accounts[0].email, moreAccounts);
   },
 
   /**
@@ -222,11 +245,6 @@ Polymer({
    */
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
-  },
-
-  /** @private */
-  onProfileTap_: function() {
-    settings.navigateTo(settings.routes.CHANGE_PICTURE);
   },
 
   /** @private */
@@ -400,15 +418,6 @@ Polymer({
     }
 
     return '';
-  },
-
-  /**
-   * @param {string} iconUrl
-   * @return {string} A CSS image-set for multiple scale factors.
-   * @private
-   */
-  getIconImageSet_: function(iconUrl) {
-    return cr.icon.getImage(iconUrl);
   },
 
   /**

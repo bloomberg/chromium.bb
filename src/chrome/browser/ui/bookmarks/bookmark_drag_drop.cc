@@ -28,17 +28,19 @@ BookmarkDragParams::BookmarkDragParams(
     std::vector<const bookmarks::BookmarkNode*> nodes,
     int drag_node_index,
     gfx::NativeView view,
-    ui::DragDropTypes::DragEventSource source)
+    ui::DragDropTypes::DragEventSource source,
+    gfx::Point start_point)
     : nodes(std::move(nodes)),
       drag_node_index(drag_node_index),
       view(view),
-      source(source) {}
+      source(source),
+      start_point(start_point) {}
 BookmarkDragParams::~BookmarkDragParams() = default;
 
 int DropBookmarks(Profile* profile,
                   const BookmarkNodeData& data,
                   const BookmarkNode* parent_node,
-                  int index,
+                  size_t index,
                   bool copy) {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 #if !defined(OS_ANDROID)
@@ -58,7 +60,7 @@ int DropBookmarks(Profile* profile,
         } else {
           model->Move(dragged_nodes[i], parent_node, index);
         }
-        index = parent_node->GetIndexOf(dragged_nodes[i]) + 1;
+        index = size_t{parent_node->GetIndexOf(dragged_nodes[i]) + 1};
       }
       return copy ? ui::DragDropTypes::DRAG_COPY : ui::DragDropTypes::DRAG_MOVE;
     }

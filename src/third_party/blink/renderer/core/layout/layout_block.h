@@ -218,7 +218,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   LayoutUnit TextIndentOffset() const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   static LayoutBlock* CreateAnonymousWithParentAndDisplay(
       const LayoutObject*,
@@ -425,10 +425,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   bool HitTestOverflowControl(HitTestResult&,
                               const HitTestLocation&,
-                              const LayoutPoint& adjusted_location) override;
+                              const PhysicalOffset& adjusted_location) override;
   bool HitTestChildren(HitTestResult&,
-                       const HitTestLocation& location_in_container,
-                       const LayoutPoint& accumulated_offset,
+                       const HitTestLocation&,
+                       const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
   void StyleWillChange(StyleDifference,
@@ -500,8 +500,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   bool TryLayoutDoingPositionedMovementOnly();
 
   bool IsPointInOverflowControl(HitTestResult&,
-                                const LayoutPoint& location_in_container,
-                                const LayoutPoint& accumulated_offset) const;
+                                const PhysicalOffset&,
+                                const PhysicalOffset& accumulated_offset) const;
 
   void ComputeBlockPreferredLogicalWidths(LayoutUnit& min_logical_width,
                                           LayoutUnit& max_logical_width) const;
@@ -542,12 +542,13 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   // Adjust from painting offsets to the local coords of this layoutObject
   void OffsetForContents(LayoutPoint&) const;
+  void OffsetForContents(PhysicalOffset&) const;
 
   PositionWithAffinity PositionForPointRespectingEditingBoundaries(
       LineLayoutBox child,
-      const LayoutPoint& point_in_parent_coordinates) const;
+      const PhysicalOffset& point_in_parent_coordinates) const;
   PositionWithAffinity PositionForPointIfOutsideAtomicInlineLevel(
-      const LayoutPoint&) const;
+      const PhysicalOffset&) const;
 
   virtual bool UpdateLogicalWidthAndColumnWidth();
 

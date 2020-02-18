@@ -65,13 +65,15 @@ class SimpleSessionNotifier : public SessionNotifierInterface {
 
   // SessionNotifierInterface methods:
   bool OnFrameAcked(const QuicFrame& frame,
-                    QuicTime::Delta ack_delay_time) override;
-  void OnStreamFrameRetransmitted(const QuicStreamFrame& frame) override {}
+                    QuicTime::Delta ack_delay_time,
+                    QuicTime receive_timestamp) override;
+  void OnStreamFrameRetransmitted(const QuicStreamFrame& /*frame*/) override {}
   void OnFrameLost(const QuicFrame& frame) override;
   void RetransmitFrames(const QuicFrames& frames,
                         TransmissionType type) override;
   bool IsFrameOutstanding(const QuicFrame& frame) const override;
   bool HasUnackedCryptoData() const override;
+  bool HasUnackedStreamData() const override;
 
  private:
   struct StreamState {

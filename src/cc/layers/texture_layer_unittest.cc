@@ -32,6 +32,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -45,7 +46,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/test/fake_output_surface.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -581,7 +581,7 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
 
 class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
  public:
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
@@ -591,7 +591,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-    return std::make_unique<viz::TestLayerTreeFrameSink>(
+    return std::make_unique<TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         gpu_memory_buffer_manager(), renderer_settings, ImplThreadTaskRunner(),
         synchronous_composite, disable_display_vsync, refresh_rate);
@@ -1489,7 +1489,7 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
     LayerTreeTest::SetupTree();
   }
 
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
@@ -1499,7 +1499,7 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-    auto sink = std::make_unique<viz::TestLayerTreeFrameSink>(
+    auto sink = std::make_unique<TestLayerTreeFrameSink>(
         nullptr, nullptr, gpu_memory_buffer_manager(), renderer_settings,
         ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
         refresh_rate);
@@ -1519,7 +1519,7 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
   scoped_refptr<Layer> root_;
   scoped_refptr<SolidColorLayer> solid_color_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
-  viz::TestLayerTreeFrameSink* frame_sink_ = nullptr;
+  TestLayerTreeFrameSink* frame_sink_ = nullptr;
   int num_frame_sinks_created_ = 0;
 };
 

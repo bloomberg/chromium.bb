@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1385214448885562192">അംഗീകരിക്കുന്നതിന് എന്ററും റദ്ദാക്കുന്നതിന് എസ്‌കേപ്പും അടുത്തതിനായി താഴേക്കും മുമ്പത്തേതിനായി മുകളിലേക്കും അമർത്തുക.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">റിച്ച് ടെക്‌സ്‌റ്റ് ആട്രിബ്യൂട്ടുകൾ പ്രഖ്യാപിക്കുക</translation>
 <translation id="1405567553485452995">ഇളം പച്ച</translation>
 <translation id="1417889266572670458">നേവി</translation>
 <translation id="1431911867058218151">പ്ലം</translation>
@@ -318,11 +319,11 @@
 <translation id="3232388865800379423">ഒരു പോപ്പ് അപ്പ് ബട്ടൺ</translation>
 <translation id="3241052487511142956">സന്ദർശിച്ച മുമ്പത്തെ ലിങ്ക്</translation>
 <translation id="3241638166094654466">ഓരോ വരിയിലെയും കളങ്ങൾ:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">പോർട്രെയ്‌റ്റ്</translation>
 <translation id="3286390186030710347">സ്ലൈഡർ</translation>
 <translation id="3299925995433437805">സന്ദർശിച്ച അടുത്ത ലിങ്കൊന്നുമില്ല.</translation>
 <translation id="3300348286427369683">റിച്ച് ടെക്‌സ്റ്റ് പിന്തുണ. ജംബ് കമാൻഡുകളും ബ്രെയിലി കഴ്‌സർ റൂട്ടിംഗും തിരഞ്ഞെടുപ്പും മറ്റും ഉൾപ്പെടെ, റിച്ച് ടെക്‌സ്റ്റ് ഫീൽഡുകളെ ChromeVox ഇപ്പോൾ പിന്തുണയ്ക്കുന്നു.</translation>
-<translation id="3304756947457041303">റിച്ച് ടെക്‌സ്‌റ്റ് സൂചന ഇഷ്‌ടാനുസൃതമാക്കുക</translation>
 <translation id="3307886118343381874">പട്ടികയുടെ അവസാനത്തിലേക്ക് പോകുക</translation>
 <translation id="3311969765485641742">അലേർട്ടുകൾ അവലോകനം ചെയ്യാൻ Alt+Shift+A അമർത്തുക</translation>
 <translation id="3312997241656799641">സന്ദർശിച്ച അടുത്ത ലിങ്ക്</translation>
@@ -443,7 +444,7 @@
 <translation id="4161104397932142764">{COUNT,plural, =1{സെക്കൻഡ്}other{സെക്കൻഡ്}}</translation>
 <translation id="4161663686871496107">ChromeVox സംഭാഷണ ഫീഡ്‌ബാക്ക് തയ്യാറാണ്</translation>
 <translation id="4173994908659439270">എഡിറ്റ് ചെയ്യാൻ കഴിയുന്ന അടുത്ത വാചക ഫീൽഡ് ഒന്നുമില്ല.</translation>
-<translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
+<translation id="4176463684765177261">അപ്രാപ്തമാക്കി</translation>
 <translation id="4187322598335821254">ലൈൻ അനുസരിച്ച് നീക്കുന്നതിന് മുകളിലേക്കോ താഴേക്കോ സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="4188530942454211480">മുമ്പത്തെ വാക്യം</translation>
 <translation id="4191918948604314587">ഒരു ബട്ടൺ</translation>

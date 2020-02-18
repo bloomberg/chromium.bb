@@ -18,6 +18,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -65,7 +66,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   GpuServiceImpl* gpu_service() { return gpu_service_holder_->gpu_service(); }
 
   TestGpuServiceHolder* gpu_service_holder_;
-  std::unique_ptr<SkiaOutputSurfaceImpl> output_surface_;
+  std::unique_ptr<SkiaOutputSurface> output_surface_;
 
  private:
   void SetUpSkiaOutputSurfaceImpl();
@@ -108,8 +109,10 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
     NOTREACHED();
 #endif
   }
-  output_surface_ = std::make_unique<SkiaOutputSurfaceImpl>(
-      gpu_service(), surface_handle_, RendererSettings());
+  output_surface_ = SkiaOutputSurfaceImpl::Create(
+      std::make_unique<SkiaOutputSurfaceDependencyImpl>(gpu_service(),
+                                                        surface_handle_),
+      RendererSettings());
   output_surface_->BindToClient(output_surface_client_.get());
 }
 
@@ -176,9 +179,8 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
 
   std::vector<gpu::SyncToken> resource_sync_tokens;
   resource_sync_tokens.push_back(sync_token);
-  auto sequence_id = gpu_service()->skia_output_surface_sequence_id();
-  gpu_service()->scheduler()->ScheduleTask(gpu::Scheduler::Task(
-      sequence_id, std::move(closure), std::move(resource_sync_tokens)));
+  output_surface_->ScheduleGpuTaskForTesting(std::move(closure),
+                                             std::move(resource_sync_tokens));
   BlockMainThread();
   EXPECT_TRUE(on_finished_called);
 

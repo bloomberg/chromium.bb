@@ -52,9 +52,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
                                   public SyncEncryptionHandler,
                                   public syncable::NigoriHandler {
  public:
+  // |encryptor| and |user_share| must outlive this object.
   SyncEncryptionHandlerImpl(
       UserShare* user_share,
-      Encryptor* encryptor,
+      const Encryptor* encryptor,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       const base::RepeatingCallback<std::string()>& random_salt_generator);
@@ -63,16 +64,19 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // SyncEncryptionHandler implementation.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void Init() override;
+  bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
+  Cryptographer* GetCryptographerUnsafe() override;
+  KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // NigoriHandler implementation.
   // Note: all methods are invoked while the caller holds a transaction.
-  void ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
+  bool ApplyNigoriUpdate(const sync_pb::NigoriSpecifics& nigori,
                          syncable::BaseTransaction* const trans) override;
   void UpdateNigoriFromEncryptedTypes(
       sync_pb::NigoriSpecifics* nigori,
@@ -89,7 +93,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
 
   // Unsafe getters. Use only if sync is not up and running and there is no risk
   // of other threads calling this.
-  Cryptographer* GetCryptographerUnsafe();
+
   ModelTypeSet GetEncryptedTypesUnsafe();
 
   bool MigratedToKeystore();
@@ -135,9 +139,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // accessed via UnlockVault(..) and UnlockVaultMutable(..), which enforce
   // that a transaction is held.
   struct Vault {
-    Vault(Encryptor* encryptor,
-          ModelTypeSet encrypted_types,
-          PassphraseType passphrase_type);
+    Vault(ModelTypeSet encrypted_types, PassphraseType passphrase_type);
     ~Vault();
 
     // Sync's cryptographer. Used for encrypting and decrypting sync data.
@@ -181,6 +183,13 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
     kMaxValue = kInitialization
   };
 
+  // Enumeration of possible outcomes of ApplyNigoriUpdateImpl.
+  enum class ApplyNigoriUpdateResult {
+    kSuccess,
+    kUnsupportedRemoteState,
+    kRemoteMustBeCorrected,
+  };
+
   // Iterate over all encrypted types ensuring each entry is properly encrypted.
   void ReEncryptEverything(WriteTransaction* trans);
 
@@ -188,11 +197,10 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   //
   // Assumes |nigori| is already present in the Sync Directory.
   //
-  // Returns true on success, false if |nigori| was incompatible, and the
-  // nigori node must be corrected.
   // Note: must be called from within a transaction.
-  bool ApplyNigoriUpdateImpl(const sync_pb::NigoriSpecifics& nigori,
-                             syncable::BaseTransaction* const trans);
+  ApplyNigoriUpdateResult ApplyNigoriUpdateImpl(
+      const sync_pb::NigoriSpecifics& nigori,
+      syncable::BaseTransaction* const trans);
 
   // Wrapper around WriteEncryptionStateToNigori that creates a new write
   // transaction. Because this function can trigger a migration,
@@ -339,7 +347,11 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   base::ObserverList<SyncEncryptionHandler::Observer>::Unchecked observers_;
 
   // The current user share (for creating transactions).
-  UserShare* user_share_;
+  UserShare* const user_share_;
+
+  // Used for encryption/decryption of keystore keys and the key derived from
+  // custom passphrase in order to store them locally.
+  const Encryptor* const encryptor_;
 
   // Container for all data that can be accessed from multiple threads. Do not
   // access this object directly. Instead access it via UnlockVault(..) and
@@ -384,7 +396,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // only.
   bool migration_attempted_;
 
-  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncEncryptionHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SyncEncryptionHandlerImpl);
 };

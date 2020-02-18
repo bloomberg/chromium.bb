@@ -29,14 +29,13 @@ h1 span {
 }
 
 h2 {
-  color: #666;
+  color: var(--heading-color);
   font-size: 1.2em;
   font-weight: normal;
   margin: 10px 0;
 }
 
 a {
-  color: rgb(17, 85, 204);
   text-decoration: none;
 }
 
@@ -94,6 +93,10 @@ a {
   margin-top: 15px;
 }
 
+#suggestions-list a {
+  color: var(--google-blue-600);
+}
+
 #suggestions-list p {
   margin-block-end: 0;
 }
@@ -121,7 +124,7 @@ a {
 .use-popup-container#error-information-popup-container
   #error-information-popup {
   align-items: center;
-  background-color: rgba(0,0,0,.65);
+  background-color: var(--popup-container-background-color);
   display: flex;
   height: 100%;
   left: 0;
@@ -143,7 +146,7 @@ a {
 
 .use-popup-container#error-information-popup-container
   #error-information-popup-box {
-  background-color: white;
+  background-color: var(--background-color);
   left: 5%;
   padding-bottom: 15px;
   padding-top: 15px;
@@ -618,16 +621,34 @@ div.offline-content-suggestion {
 }
 
 #cancel-save-page-button {
+  background-image: url(images/animated_offline_pin.svg);
+  background-position: right 27px center;
+  background-repeat: no-repeat;
   border: 1px solid var(--google-gray-300);
   border-radius: 5px;
   color: var(--google-gray-700);
-  padding: 16px;
-  text-align: center;
+  margin-bottom: 26px;
+  padding-bottom: 16px;
+  padding-inline-end: 88px;
+  padding-inline-start: 16px;
+  padding-top: 16px;
+  text-align: start;
+}
+
+html[dir="rtl"] #cancel-save-page-button {
+  background-position: left 27px center;
 }
 
 #save-page-for-later-button {
   display: flex;
-  justify-content: center;
+  justify-content: start;
+}
+
+#save-page-for-later-button a:before {
+  content: url(images/download-blue.svg);
+  display: inline-block;
+  margin-inline-end: 4px;
+  vertical-align: -webkit-baseline-middle;
 }
 
 .hidden#save-page-for-later-button {
@@ -798,7 +819,7 @@ whereas Blink does not. */
 }
 
 .offline .interstitial-wrapper {
-  color: #2b2b2b;
+  color: var(--text-color);
   font-size: 1em;
   line-height: 1.55;
   margin: 0 auto;
@@ -971,4 +992,36 @@ whereas Blink does not. */
   transform-origin: top center;
   transition: transform 250ms cubic-bezier(0.4, 0.0, 1, 1) .4s;
   z-index: 2;
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon {
+    filter: invert(1);
+  }
+
+  .offline .runner-canvas {
+    filter: invert(1);
+  }
+
+  .offline.inverted {
+    filter: invert(0);
+  <if expr="not is_ios">
+    background-color: var(--background-color);
+  </if>
+  <if expr="is_ios">
+    background-color: #fff;
+  </if>
+  }
+
+  .offline.inverted body {
+    background-color: #fff;
+  }
+
+  #suggestions-list a {
+    color: var(--link-color);
+  }
+
+  #error-information-button {
+    filter: invert(0.6);
+  }
 }

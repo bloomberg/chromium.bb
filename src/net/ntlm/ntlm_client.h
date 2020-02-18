@@ -148,7 +148,7 @@ class NET_EXPORT_PRIVATE NtlmClient {
   // |negotiate_message_|.
   void GenerateNegotiateMessage();
 
-  NtlmFeatures features_;
+  const NtlmFeatures features_;
   NegotiateFlags negotiate_flags_;
   std::vector<uint8_t> negotiate_message_;
 

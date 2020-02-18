@@ -11,8 +11,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/process/process_handle.h"
+#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "mojo/core/platform_handle_utils.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -364,6 +367,28 @@ TEST(ChannelTest, DeserializeMessage_BadExtraHeaderSize) {
                                                    base::kNullProcessHandle));
 }
 
+#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+TEST(ChannelTest, DeserializeMessage_NonZeroExtraHeaderSize) {
+  // Verifies that a message payload is rejected when the extra header chunk
+  // size anything but zero on Linux, even if it's aligned.
+  constexpr uint16_t kTotalHeaderSize =
+      sizeof(Channel::Message::Header) + kChannelMessageAlignment;
+  constexpr uint32_t kEmptyPayloadSize = 8;
+  constexpr uint32_t kMessageSize = kTotalHeaderSize + kEmptyPayloadSize;
+  char message[kMessageSize];
+  memset(message, 0, kMessageSize);
+
+  Channel::Message::Header* header =
+      reinterpret_cast<Channel::Message::Header*>(&message[0]);
+  header->num_bytes = kMessageSize;
+  header->num_header_bytes = kTotalHeaderSize;
+  header->message_type = Channel::Message::MessageType::NORMAL;
+  header->num_handles = 0;
+  EXPECT_EQ(nullptr, Channel::Message::Deserialize(&message[0], kMessageSize,
+                                                   base::kNullProcessHandle));
+}
+#endif
+
 class CountingChannelDelegate : public Channel::Delegate {
  public:
   explicit CountingChannelDelegate(base::OnceClosure on_final_message)
@@ -483,6 +508,71 @@ TEST(ChannelTest, PeerStressTest) {
 
   EXPECT_EQ(0u, delegate_a.error_count_);
   EXPECT_EQ(0u, delegate_b.error_count_);
+}
+
+class SingleMessageWaiterDelegate : public Channel::Delegate {
+ public:
+  SingleMessageWaiterDelegate() {}
+
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override {
+    message_received_ = true;
+    run_loop_->Quit();
+  }
+
+  void OnChannelError(Channel::Error error) override {
+    channel_error_ = true;
+    run_loop_->Quit();
+  }
+
+  void Reset(base::RunLoop* loop) {
+    run_loop_ = loop;
+    message_received_ = false;
+    channel_error_ = false;
+  }
+
+  bool message_received() { return message_received_; }
+  bool channel_error() { return channel_error_; }
+
+ private:
+  bool message_received_ = false;
+  bool channel_error_ = false;
+  base::RunLoop* run_loop_;
+  DISALLOW_COPY_AND_ASSIGN(SingleMessageWaiterDelegate);
+};
+
+TEST(ChannelTest, MessageSizeTest) {
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  PlatformChannel platform_channel;
+
+  SingleMessageWaiterDelegate receiver_delegate;
+  scoped_refptr<Channel> receiver = Channel::Create(
+      &receiver_delegate,
+      ConnectionParams(platform_channel.TakeLocalEndpoint()),
+      Channel::HandlePolicy::kAcceptHandles, message_loop.task_runner());
+  receiver->Start();
+
+  MockChannelDelegate sender_delegate;
+  scoped_refptr<Channel> sender = Channel::Create(
+      &sender_delegate, ConnectionParams(platform_channel.TakeRemoteEndpoint()),
+      Channel::HandlePolicy::kAcceptHandles, message_loop.task_runner());
+  sender->Start();
+
+  for (uint32_t i = 0; i < base::GetPageSize() * 4; ++i) {
+    SCOPED_TRACE(base::StringPrintf("message size %d", i));
+
+    auto message = std::make_unique<Channel::Message>(i, 0);
+    memset(message->mutable_payload(), 0xAB, i);
+    sender->Write(std::move(message));
+
+    base::RunLoop loop;
+    receiver_delegate.Reset(&loop);
+    loop.Run();
+
+    EXPECT_TRUE(receiver_delegate.message_received());
+    EXPECT_FALSE(receiver_delegate.channel_error());
+  }
 }
 
 }  // namespace

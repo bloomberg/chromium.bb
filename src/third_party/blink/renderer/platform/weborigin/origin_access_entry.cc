@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -41,8 +41,8 @@ OriginAccessEntry::OriginAccessEntry(
     const SecurityOrigin& origin,
     network::mojom::CorsDomainMatchMode match_mode,
     network::mojom::CorsOriginAccessMatchPriority priority)
-    : private_(origin.Protocol().Ascii().data(),
-               origin.Domain().Ascii().data(),
+    : private_(origin.Protocol().Ascii(),
+               origin.Domain().Ascii(),
                origin.EffectivePort(),
                match_mode,
                network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
@@ -68,7 +68,7 @@ network::cors::OriginAccessEntry::MatchResult OriginAccessEntry::MatchesOrigin(
 
 network::cors::OriginAccessEntry::MatchResult OriginAccessEntry::MatchesDomain(
     const SecurityOrigin& origin) const {
-  return private_.MatchesDomain(origin.Host().Ascii().data());
+  return private_.MatchesDomain(origin.Host().Ascii());
 }
 
 bool OriginAccessEntry::HostIsIPAddress() const {

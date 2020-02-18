@@ -43,7 +43,7 @@ namespace em = enterprise_management;
 namespace policy {
 
 // A pattern for validating hostnames.
-const char hostNameRegex[] = "^([A-z0-9][A-z0-9-]+\\.)+[A-z0-9]+$";
+const char hostNameRegex[] = "^([A-z0-9][A-z0-9-]*\\.)+[A-z0-9]+$";
 
 namespace {
 
@@ -415,6 +415,18 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
   }
+
+  if (policy.has_device_powerwash_allowed()) {
+    const em::DevicePowerwashAllowedProto& container(
+        policy.device_powerwash_allowed());
+    if (container.has_device_powerwash_allowed()) {
+      policies->Set(
+          key::kDevicePowerwashAllowed, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.device_powerwash_allowed()),
+          nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -753,6 +765,16 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
     if (container.has_device_scheduled_update_check_settings()) {
       SetJsonDevicePolicy(key::kDeviceScheduledUpdateCheck,
                           container.device_scheduled_update_check_settings(),
+                          policies);
+    }
+  }
+
+  if (policy.has_device_webusb_allow_devices_for_urls()) {
+    const em::DeviceWebUsbAllowDevicesForUrlsProto& container(
+        policy.device_webusb_allow_devices_for_urls());
+    if (container.has_device_webusb_allow_devices_for_urls()) {
+      SetJsonDevicePolicy(key::kDeviceWebUsbAllowDevicesForUrls,
+                          container.device_webusb_allow_devices_for_urls(),
                           policies);
     }
   }
@@ -1132,17 +1154,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kDeviceLoginScreenIsolateOrigins, POLICY_LEVEL_MANDATORY,
           POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           std::make_unique<base::Value>(container.isolate_origins()), nullptr);
-    }
-  }
-
-  if (policy.has_device_login_screen_site_per_process()) {
-    const em::DeviceLoginScreenSitePerProcessProto& container(
-        policy.device_login_screen_site_per_process());
-    if (container.has_site_per_process()) {
-      policies->Set(
-          key::kDeviceLoginScreenSitePerProcess, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(container.site_per_process()), nullptr);
     }
   }
 

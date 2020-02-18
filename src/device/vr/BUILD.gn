@@ -12,21 +12,14 @@ if (enable_vr) {
   component("vr") {
     output_name = "device_vr"
 
-    sources = [
-      "vr_export.h",
-    ]
     defines = [ "DEVICE_VR_IMPLEMENTATION" ]
-    deps = [
-      "//device/vr/buildflags",
-      "//device/vr/public/mojom",
-    ]
-    sources += [
+    sources = [
       "orientation/orientation_device.cc",
       "orientation/orientation_device.h",
       "orientation/orientation_device_provider.cc",
       "orientation/orientation_device_provider.h",
-      "util/copy_to_ustring.cc",
-      "util/copy_to_ustring.h",
+      "orientation/orientation_session.cc",
+      "orientation/orientation_session.h",
       "util/fps_meter.cc",
       "util/fps_meter.h",
       "util/gamepad_builder.cc",
@@ -39,14 +32,14 @@ if (enable_vr) {
       "vr_device_base.cc",
       "vr_device_base.h",
       "vr_device_provider.h",
-      "vr_display_impl.cc",
-      "vr_display_impl.h",
+      "vr_export.h",
     ]
-
-    deps += [
+    deps = [
       "//base",
       "//components/ukm:ukm",
       "//device/base",
+      "//device/vr/buildflags",
+      "//device/vr/public/mojom",
       "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
@@ -74,8 +67,6 @@ if (enable_vr) {
         "android/gvr/gvr_gamepad_data_fetcher.cc",
         "android/gvr/gvr_gamepad_data_fetcher.h",
         "android/gvr/gvr_gamepad_data_provider.h",
-        "android/gvr/vr_module_delegate.cc",
-        "android/gvr/vr_module_delegate.h",
       ]
 
       if (enable_arcore) {
@@ -96,19 +87,25 @@ if (enable_vr) {
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
 
-    if (enable_openvr) {
+    if (!is_android) {
+      sources += [
+        "isolated_gamepad_data_fetcher.cc",
+        "isolated_gamepad_data_fetcher.h",
+      ]
+
       deps += [
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
-        "//third_party/openvr:openvr",
       ]
+    }
+
+    if (enable_openvr) {
+      deps += [ "//third_party/openvr:openvr" ]
       sources += [
         "openvr/openvr_api_wrapper.cc",
         "openvr/openvr_api_wrapper.h",
         "openvr/openvr_device.cc",
         "openvr/openvr_device.h",
-        "openvr/openvr_device_provider.cc",
-        "openvr/openvr_device_provider.h",
         "openvr/openvr_gamepad_helper.cc",
         "openvr/openvr_gamepad_helper.h",
         "openvr/openvr_render_loop.cc",
@@ -119,22 +116,22 @@ if (enable_vr) {
       ]
     }
 
-    if (enable_openvr || enable_oculus_vr || enable_windows_mr) {
+    if (enable_openvr || enable_oculus_vr || enable_windows_mr ||
+        enable_openxr) {
       sources += [
         "windows/compositor_base.cc",
         "windows/compositor_base.h",
       ]
     }
 
-    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr)) {
+    if (is_win && (enable_openvr || enable_oculus_vr || enable_windows_mr ||
+                   enable_openxr)) {
       libs = [
         "d3d11.lib",
         "DXGI.lib",
       ]
 
       sources += [
-        "isolated_gamepad_data_fetcher.cc",
-        "isolated_gamepad_data_fetcher.h",
         "windows/d3d11_texture_helper.cc",
         "windows/d3d11_texture_helper.h",
         "windows/flip_pixel_shader.h",
@@ -214,23 +211,32 @@ if (enable_vr) {
     }
 
     if (enable_oculus_vr) {
-      deps += [
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
-        "//third_party/libovr",
-      ]
+      deps += [ "//third_party/libovr" ]
 
       sources += [
         "oculus/oculus_device.cc",
         "oculus/oculus_device.h",
-        "oculus/oculus_device_provider.cc",
-        "oculus/oculus_device_provider.h",
         "oculus/oculus_gamepad_helper.cc",
         "oculus/oculus_gamepad_helper.h",
         "oculus/oculus_render_loop.cc",
         "oculus/oculus_render_loop.h",
         "oculus/oculus_type_converters.cc",
         "oculus/oculus_type_converters.h",
+      ]
+    }
+
+    if (enable_openxr) {
+      deps += [ "//third_party/openxr" ]
+
+      sources += [
+        "openxr/openxr_api_wrapper.cc",
+        "openxr/openxr_api_wrapper.h",
+        "openxr/openxr_device.cc",
+        "openxr/openxr_device.h",
+        "openxr/openxr_render_loop.cc",
+        "openxr/openxr_render_loop.h",
+        "openxr/openxr_util.cc",
+        "openxr/openxr_util.h",
       ]
     }
   }
@@ -328,16 +334,13 @@ if (enable_gvr_services) {
 
   generate_jni("jni_headers") {
     sources = java_sources_needing_jni
-    jni_package = "device"
   }
 
   android_library("java") {
     java_files = java_sources_needing_jni
     deps = [
-      "//third_party/gvr-android-sdk:gvr_common_java",
-    ]
-    classpath_deps = [
       "//base:base_java",
+      "//third_party/gvr-android-sdk:gvr_common_java",
       "//ui/android:ui_java",
     ]
   }

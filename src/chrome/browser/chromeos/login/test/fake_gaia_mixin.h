@@ -30,6 +30,9 @@ class FakeGaiaMixin : public InProcessBrowserTestMixin {
   static const char kEmptyUserServices[];
   static const char kFakeAllScopeAccessToken[];
 
+  // How many seconds until the fake access tokens expire.
+  static const int kFakeAccessTokenExpiration;
+
   // FakeGaia is configured to return these cookies for kFakeUserEmail.
   static const char kFakeSIDCookie[];
   static const char kFakeLSIDCookie[];

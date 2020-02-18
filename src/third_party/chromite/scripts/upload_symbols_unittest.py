@@ -263,10 +263,12 @@ class UploadSymbolsHelpersTest(cros_test_lib.TestCase):
     result = upload_symbols.BatchGenerator([], 2)
     self.assertEqual(list(result), [])
 
-    result = upload_symbols.BatchGenerator(xrange(6), 2)
+    # BatchGenerator accepts iterators, so passing it here is safe.
+    # pylint: disable=range-builtin-not-iterating
+    result = upload_symbols.BatchGenerator(range(6), 2)
     self.assertEqual(list(result), [[0, 1], [2, 3], [4, 5]])
 
-    result = upload_symbols.BatchGenerator(xrange(7), 2)
+    result = upload_symbols.BatchGenerator(range(7), 2)
     self.assertEqual(list(result), [[0, 1], [2, 3], [4, 5], [6]])
 
     # Prove that we are streaming the results, not generating them all at once.
@@ -517,7 +519,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     fail_file = None
 
     # potentially twice as many errors as we should attempt.
-    for _ in xrange(symbol_count):
+    for _ in range(symbol_count):
       # Each loop will get unique SymbolFile instances that use the same files.
       fail = self.createSymbolFile('fail.sym')
       fail_file = fail.file_name

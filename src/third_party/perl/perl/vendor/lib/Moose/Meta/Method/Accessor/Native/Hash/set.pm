@@ -1,32 +1,13 @@
 package Moose::Meta::Method::Accessor::Native::Hash::set;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::Hash::set::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::Hash::set::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use List::MoreUtils ();
-use Scalar::Util qw( looks_like_number );
-
+use List::Util 1.32;
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Hash::Writer' => {
-    -excludes => [
-        qw(
-            _minimum_arguments
-            _maximum_arguments
-            _inline_process_arguments
-            _inline_check_arguments
-            _inline_coerce_new_values
-            _inline_optimized_set_new_value
-            _return_value
-            )
-    ],
-};
+with 'Moose::Meta::Method::Accessor::Native::Hash::Writer';
 
 sub _minimum_arguments { 2 }
 
@@ -39,11 +20,9 @@ around _inline_check_argument_count => sub {
     return (
         $self->$orig(@_),
         'if (@_ % 2) {',
-            $self->_inline_throw_error(
-                sprintf(
-                    '"You must pass an even number of arguments to %s"',
-                    $self->delegate_to_method,
-                ),
+            $self->_inline_throw_exception( MustPassEvenNumberOfArguments =>
+                                            "method_name => '".$self->delegate_to_method."',".
+                                            'args        => \@_',
             ) . ';',
         '}',
     );
@@ -64,11 +43,9 @@ sub _inline_check_arguments {
     return (
         'for (@keys_idx) {',
             'if (!defined($_[$_])) {',
-                $self->_inline_throw_error(
-                    sprintf(
-                        '"Hash keys passed to %s must be defined"',
-                        $self->delegate_to_method,
-                    ),
+                $self->_inline_throw_exception( UndefinedHashKeysPassedToMethod =>
+                                                'hash_keys                       => \@keys_idx,'.
+                                                "method_name                     => '".$self->delegate_to_method."'",
                 ) . ';',
             '}',
         '}',
@@ -88,11 +65,7 @@ sub _inline_coerce_new_values {
 
     # Is there a simpler way to do this?
     return (
-        'my $iter = List::MoreUtils::natatime(2, @_);',
-        '@_ = ();',
-        'while (my ($key, $val) = $iter->()) {',
-            'push @_, $key, $member_coercion->($val);',
-        '}',
+        '@_ = List::Util::pairmap { $a => $member_coercion->($b) } @_;',
     );
 };
 

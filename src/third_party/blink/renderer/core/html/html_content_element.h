@@ -88,9 +88,10 @@ inline bool HTMLContentElement::CanSelectNode(
     return true;
   if (!IsSelectValid())
     return false;
-  if (!siblings[nth]->IsElementNode())
+  auto* element = DynamicTo<Element>(siblings[nth].Get());
+  if (!element)
     return false;
-  return MatchSelector(*ToElement(siblings[nth]));
+  return MatchSelector(*element);
 }
 
 }  // namespace blink

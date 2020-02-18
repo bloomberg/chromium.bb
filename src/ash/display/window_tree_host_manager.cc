@@ -46,6 +46,7 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -62,6 +63,9 @@ namespace {
 // (one here and another one in display_manager) in sync, which is error prone.
 // This is initialized in the constructor, and then in CreatePrimaryHost().
 int64_t primary_display_id = -1;
+
+// The default memory limit: 512mb.
+const char kUICompositorDefaultMemoryLimitMB[] = "512";
 
 display::DisplayManager* GetDisplayManager() {
   return Shell::Get()->display_manager();
@@ -89,33 +93,6 @@ void ClearDisplayPropertiesOnHost(AshWindowTreeHost* ash_host) {
 aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
   CHECK(ash_host->AsWindowTreeHost());
   return ash_host->AsWindowTreeHost()->window();
-}
-
-const char* GetUICompositorMemoryLimitMB() {
-  bool uses_shader_rounded_corner = features::ShouldUseShaderRoundedCorner();
-  // TODO(oshima): Cleanup once new rounded corners is launched.
-  // Uses 512mb which is default.
-  if (uses_shader_rounded_corner)
-    return "512";
-
-  display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-  int width;
-  if (display::Display::HasInternalDisplay()) {
-    // If the device has an internal display, use it even if
-    // it's disabled (can happen when booted in docked mode.
-    const display::ManagedDisplayInfo& display_info =
-        display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
-    width = display_info.size_in_pixel().width();
-  } else {
-    // Otherwise just use the primary.
-    width = display::Screen::GetScreen()
-                ->GetPrimaryDisplay()
-                .GetSizeInPixel()
-                .width();
-  }
-
-  return width >= 3000 ? "1024" : "512";
 }
 
 }  // namespace
@@ -207,6 +184,10 @@ WindowTreeHostManager::~WindowTreeHostManager() = default;
 
 void WindowTreeHostManager::Start() {
   display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager()
+      ->AddObserver(this);
   Shell::Get()->display_manager()->set_delegate(this);
 }
 
@@ -221,6 +202,10 @@ void WindowTreeHostManager::Shutdown() {
   cursor_window_controller_.reset();
   mirror_window_controller_.reset();
 
+  Shell::Get()
+      ->display_configurator()
+      ->content_protection_manager()
+      ->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 
   int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -253,7 +238,7 @@ void WindowTreeHostManager::CreatePrimaryHost(
           switches::kUiCompositorMemoryLimitWhenVisibleMB)) {
     command_line->AppendSwitchASCII(
         switches::kUiCompositorMemoryLimitWhenVisibleMB,
-        GetUICompositorMemoryLimitMB());
+        kUICompositorDefaultMemoryLimitMB);
   }
 
   const display::Display& primary_candidate =
@@ -646,6 +631,18 @@ void WindowTreeHostManager::OnHostResized(aura::WindowTreeHost* host) {
   }
 }
 
+void WindowTreeHostManager::OnDisplaySecurityChanged(int64_t display_id,
+                                                     bool secure) {
+  AshWindowTreeHost* host = GetAshWindowTreeHostForDisplayId(display_id);
+  // No host for internal display in docked mode.
+  if (!host)
+    return;
+
+  ui::Compositor* compositor = host->AsWindowTreeHost()->compositor();
+  compositor->SetOutputIsSecure(secure);
+  compositor->ScheduleFullRedraw();
+}
+
 void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
     const display::DisplayInfoList& info_list) {
   if (GetDisplayManager()->IsInMirrorMode() ||
@@ -767,18 +764,6 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
 void WindowTreeHostManager::PostDisplayConfigurationChange() {
   focus_activation_store_->Restore();
 
-  display::DisplayManager* display_manager = GetDisplayManager();
-  for (const display::Display& display :
-       display_manager->active_display_list()) {
-    bool output_is_secure =
-        !display_manager->IsInMirrorMode() && display.IsInternal();
-    ui::Compositor* compositor = GetAshWindowTreeHostForDisplayId(display.id())
-                                     ->AsWindowTreeHost()
-                                     ->compositor();
-    compositor->SetOutputIsSecure(output_is_secure);
-    compositor->ScheduleFullRedraw();
-  }
-
   for (auto& observer : observers_)
     observer.OnDisplayConfigurationChanged();
   UpdateMouseLocationAfterDisplayChange();
@@ -789,8 +774,7 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
 }
 
 ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
-    ui::KeyEvent* event,
-    DispatchKeyEventPostIMECallback callback) {
+    ui::KeyEvent* event) {
   aura::Window* root_window = nullptr;
   if (event->target()) {
     root_window = static_cast<aura::Window*>(event->target())->GetRootWindow();
@@ -799,12 +783,11 @@ ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     // Getting the active root window to dispatch the event. This isn't
     // significant as the event will be sent to the window resolved by
     // aura::client::FocusClient which is FocusController in ash.
-    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     root_window = active_window ? active_window->GetRootWindow()
                                 : Shell::GetPrimaryRootWindow();
   }
-  return root_window->GetHost()->DispatchKeyEventPostIME(event,
-                                                         std::move(callback));
+  return root_window->GetHost()->DispatchKeyEventPostIME(event);
 }
 
 AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
@@ -826,19 +809,15 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   AshWindowTreeHost* ash_host =
       AshWindowTreeHost::Create(params_with_bounds).release();
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  // Out-of-process ash uses the IME mojo service. In-process ash uses a single
-  // input method shared between ash and browser code.
-  if (!::features::IsMultiProcessMash()) {
-    DCHECK(!host->has_input_method());
-    if (!input_method_) {  // Singleton input method instance for Ash.
-      input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
-      // Makes sure the input method is focused by default when created, because
-      // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when
-      // the active window changed.
-      input_method_->OnFocus();
-    }
-    host->SetSharedInputMethod(input_method_.get());
+  DCHECK(!host->has_input_method());
+  if (!input_method_) {  // Singleton input method instance for Ash.
+    input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());
+    // Makes sure the input method is focused by default when created, because
+    // Ash uses singleton InputMethod and it won't call OnFocus/OnBlur when
+    // the active window changed.
+    input_method_->OnFocus();
   }
+  host->SetSharedInputMethod(input_method_.get());
 
   host->window()->SetName(base::StringPrintf(
       "%sRootWindow-%d", params_with_bounds.offscreen ? "Offscreen" : "",

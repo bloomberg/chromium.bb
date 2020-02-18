@@ -176,7 +176,7 @@ TEST(AboutFlagsTest, OnlyPermittedFlagsNeverExpire) {
       << base::JoinString(missing_flags, "\n  ");
 }
 
-TEST(AboutFlagsTest, DISABLED_EveryFlagHasNonEmptyOwners) {
+TEST(AboutFlagsTest, EveryFlagHasNonEmptyOwners) {
   FlagMetadataMap metadata = LoadFlagMetadata();
   std::vector<std::string> sad_flags;
 

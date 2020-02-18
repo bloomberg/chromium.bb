@@ -9,8 +9,8 @@ Example:
   - my_activity.py  for stats for the current week (last week on mondays).
   - my_activity.py -Q  for stats for last quarter.
   - my_activity.py -Y  for stats for this year.
-  - my_activity.py -b 4/5/12  for stats since 4/5/12.
-  - my_activity.py -b 4/5/12 -e 6/7/12 for stats between 4/5/12 and 6/7/12.
+  - my_activity.py -b 4/24/19  for stats since April 24th 2019.
+  - my_activity.py -b 4/24/19 -e 6/16/19 stats between April 24th and June 16th.
   - my_activity.py -jd to output stats for the week to json with deltas data.
 """
 
@@ -54,7 +54,6 @@ import re
 import auth
 import fix_encoding
 import gerrit_util
-import rietveld
 
 from third_party import httplib2
 
@@ -76,36 +75,6 @@ class DefaultFormatter(Formatter):
     if isinstance(key, basestring) and key not in kwds:
       return self.default
     return Formatter.get_value(self, key, args, kwds)
-
-rietveld_instances = [
-  {
-    'url': 'codereview.chromium.org',
-    'shorturl': 'crrev.com',
-    'supports_owner_modified_query': True,
-    'requires_auth': False,
-    'email_domain': 'chromium.org',
-    'short_url_protocol': 'https',
-  },
-  {
-    'url': 'chromereviews.googleplex.com',
-    'shorturl': 'go/chromerev',
-    'supports_owner_modified_query': True,
-    'requires_auth': True,
-    'email_domain': 'google.com',
-  },
-  {
-    'url': 'codereview.appspot.com',
-    'supports_owner_modified_query': True,
-    'requires_auth': False,
-    'email_domain': 'chromium.org',
-  },
-  {
-    'url': 'breakpad.appspot.com',
-    'supports_owner_modified_query': False,
-    'requires_auth': False,
-    'email_domain': 'chromium.org',
-  },
-]
 
 gerrit_instances = [
   {
@@ -187,15 +156,6 @@ def datetime_from_gerrit(date_string):
   return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f000')
 
 
-def datetime_from_rietveld(date_string):
-  try:
-    return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
-  except ValueError:
-    # Sometimes rietveld returns a value without the milliseconds part, so we
-    # attempt to parse those cases as well.
-    return datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
-
-
 def datetime_from_monorail(date_string):
   return datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%S')
 
@@ -210,7 +170,6 @@ class MyActivity(object):
     self.reviews = []
     self.issues = []
     self.referenced_issues = []
-    self.check_cookies()
     self.google_code_auth_token = None
     self.access_errors = set()
 
@@ -218,72 +177,6 @@ class MyActivity(object):
     if sys.stdout.isatty():
       sys.stdout.write(how)
       sys.stdout.flush()
-
-  # Check the codereview cookie jar to determine which Rietveld instances to
-  # authenticate to.
-  def check_cookies(self):
-    filtered_instances = []
-
-    def has_cookie(instance):
-      auth_config = auth.extract_auth_config_from_options(self.options)
-      a = auth.get_authenticator_for_host(instance['url'], auth_config)
-      return a.has_cached_credentials()
-
-    for instance in rietveld_instances:
-      instance['auth'] = has_cookie(instance)
-
-    if filtered_instances:
-      logging.warning('No cookie found for the following Rietveld instance%s:',
-                   's' if len(filtered_instances) > 1 else '')
-      for instance in filtered_instances:
-        logging.warning('\t' + instance['url'])
-      logging.warning('Use --auth if you would like to authenticate to them.')
-
-  def rietveld_search(self, instance, owner=None, reviewer=None):
-    if instance['requires_auth'] and not instance['auth']:
-      return []
-
-
-    email = None if instance['auth'] else ''
-    auth_config = auth.extract_auth_config_from_options(self.options)
-    remote = rietveld.Rietveld('https://' + instance['url'], auth_config, email)
-
-    # See def search() in rietveld.py to see all the filters you can use.
-    query_modified_after = None
-
-    if instance['supports_owner_modified_query']:
-      query_modified_after = self.modified_after.strftime('%Y-%m-%d')
-
-    # Rietveld does not allow search by both created_before and modified_after.
-    # (And some instances don't allow search by both owner and modified_after)
-    owner_email = None
-    reviewer_email = None
-    if owner:
-      owner_email = owner + '@' + instance['email_domain']
-    if reviewer:
-      reviewer_email = reviewer + '@' + instance['email_domain']
-    issues = remote.search(
-        owner=owner_email,
-        reviewer=reviewer_email,
-        modified_after=query_modified_after,
-        with_messages=True)
-    self.show_progress()
-
-    issues = filter(
-        lambda i: (datetime_from_rietveld(i['created']) < self.modified_before),
-        issues)
-    issues = filter(
-        lambda i: (datetime_from_rietveld(i['modified']) > self.modified_after),
-        issues)
-
-    should_filter_by_user = True
-    issues = map(partial(self.process_rietveld_issue, remote, instance), issues)
-    issues = filter(
-        partial(self.filter_issue, should_filter_by_user=should_filter_by_user),
-        issues)
-    issues = sorted(issues, key=lambda i: i['modified'], reverse=True)
-
-    return issues
 
   def extract_bug_numbers_from_description(self, issue):
     description = None
@@ -310,63 +203,6 @@ class MyActivity(object):
         bugs = [bug if ':' in bug else 'chromium:%s' % bug for bug in bugs]
 
     return sorted(set(bugs))
-
-  def process_rietveld_issue(self, remote, instance, issue):
-    ret = {}
-    if self.options.deltas:
-      patchset_props = remote.get_patchset_properties(
-          issue['issue'],
-          issue['patchsets'][-1])
-      self.show_progress()
-      ret['delta'] = '+%d,-%d' % (
-          sum(f['num_added'] for f in patchset_props['files'].itervalues()),
-          sum(f['num_removed'] for f in patchset_props['files'].itervalues()))
-
-    if issue['landed_days_ago'] != 'unknown':
-      ret['status'] = 'committed'
-    elif issue['closed']:
-      ret['status'] = 'closed'
-    elif len(issue['reviewers']) and issue['all_required_reviewers_approved']:
-      ret['status'] = 'ready'
-    else:
-      ret['status'] = 'open'
-
-    ret['owner'] = issue['owner_email']
-    ret['author'] = ret['owner']
-
-    ret['reviewers'] = set(issue['reviewers'])
-
-    if 'shorturl' in instance:
-      url = instance['shorturl']
-      protocol = instance.get('short_url_protocol', 'http')
-    else:
-      url = instance['url']
-      protocol = 'https'
-
-    ret['review_url'] = '%s://%s/%d' % (protocol, url, issue['issue'])
-
-    # Rietveld sometimes has '\r\n' instead of '\n'.
-    ret['header'] = issue['description'].replace('\r', '').split('\n')[0]
-
-    ret['modified'] = datetime_from_rietveld(issue['modified'])
-    ret['created'] = datetime_from_rietveld(issue['created'])
-    ret['replies'] = self.process_rietveld_replies(issue['messages'])
-
-    ret['bugs'] = self.extract_bug_numbers_from_description(issue)
-    ret['landed_days_ago'] = issue['landed_days_ago']
-
-    return ret
-
-  @staticmethod
-  def process_rietveld_replies(replies):
-    ret = []
-    for reply in replies:
-      r = {}
-      r['author'] = reply['sender']
-      r['created'] = datetime_from_rietveld(reply['date'])
-      r['content'] = ''
-      ret.append(r)
-    return ret
 
   def gerrit_changes_over_rest(self, instance, filters):
     # Convert the "key:value" filter to a list of (key, value) pairs.
@@ -694,17 +530,13 @@ class MyActivity(object):
     pass
 
   def get_changes(self):
-    num_instances = len(rietveld_instances) + len(gerrit_instances)
+    num_instances = len(gerrit_instances)
     with contextlib.closing(ThreadPool(num_instances)) as pool:
-      rietveld_changes = pool.map_async(
-          lambda instance: self.rietveld_search(instance, owner=self.user),
-          rietveld_instances)
       gerrit_changes = pool.map_async(
           lambda instance: self.gerrit_search(instance, owner=self.user),
           gerrit_instances)
-      rietveld_changes = itertools.chain.from_iterable(rietveld_changes.get())
       gerrit_changes = itertools.chain.from_iterable(gerrit_changes.get())
-      self.changes = list(rietveld_changes) + list(gerrit_changes)
+      self.changes = list(gerrit_changes)
 
   def print_changes(self):
     if self.changes:
@@ -719,17 +551,13 @@ class MyActivity(object):
         logging.error(error.rstrip())
 
   def get_reviews(self):
-    num_instances = len(rietveld_instances) + len(gerrit_instances)
+    num_instances = len(gerrit_instances)
     with contextlib.closing(ThreadPool(num_instances)) as pool:
-      rietveld_reviews = pool.map_async(
-          lambda instance: self.rietveld_search(instance, reviewer=self.user),
-          rietveld_instances)
       gerrit_reviews = pool.map_async(
           lambda instance: self.gerrit_search(instance, reviewer=self.user),
           gerrit_instances)
-      rietveld_reviews = itertools.chain.from_iterable(rietveld_reviews.get())
       gerrit_reviews = itertools.chain.from_iterable(gerrit_reviews.get())
-      self.reviews = list(rietveld_reviews) + list(gerrit_reviews)
+      self.reviews = list(gerrit_reviews)
 
   def print_reviews(self):
     if self.reviews:
@@ -861,9 +689,6 @@ class MyActivity(object):
 
 
 def main():
-  # Silence upload.py.
-  rietveld.upload.verbosity = 0
-
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option(
       '-u', '--user', metavar='<email>',

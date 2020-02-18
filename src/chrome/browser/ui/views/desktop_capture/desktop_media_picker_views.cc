@@ -24,7 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -35,7 +34,10 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "ui/wm/core/shadow_types.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/window_tree_host.h"
+#endif
 
 using content::DesktopMediaID;
 
@@ -59,20 +61,18 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     DesktopMediaPickerViews* parent,
     std::vector<std::unique_ptr<DesktopMediaList>> source_lists)
     : parent_(parent),
-      modality_(params.modality),
-      description_label_(new views::Label()),
-      audio_share_checkbox_(nullptr),
-      tabbed_pane_(nullptr) {
+      modality_(params.modality) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 
-  description_label_->SetMultiLine(true);
-  description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(description_label_);
+  auto description_label = std::make_unique<views::Label>();
+  description_label->SetMultiLine(true);
+  description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  description_label_ = AddChildView(std::move(description_label));
 
   std::vector<std::pair<base::string16, std::unique_ptr<View>>> panes;
 
@@ -118,7 +118,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         screen_scroll_view->ClipHeightTo(
             kGenericScreenStyle.item_size.height(),
             kGenericScreenStyle.item_size.height() * 2);
-        screen_scroll_view->set_hide_horizontal_scrollbar(true);
+        screen_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(screen_title_text, std::move(screen_scroll_view)));
@@ -149,7 +149,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
         window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
                                          kWindowStyle.item_size.height() * 2);
-        window_scroll_view->set_hide_horizontal_scrollbar(true);
+        window_scroll_view->SetHideHorizontalScrollBar(true);
 
         panes.push_back(
             std::make_pair(window_title_text, std::move(window_scroll_view)));
@@ -174,7 +174,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   if (panes.size() > 1) {
     auto tabbed_pane = std::make_unique<views::TabbedPane>();
     for (auto& pane : panes)
-      tabbed_pane->AddTab(pane.first, pane.second.release());
+      tabbed_pane->AddTab(pane.first, std::move(pane.second));
     tabbed_pane->set_listener(this);
     tabbed_pane->SetFocusBehavior(views::View::FocusBehavior::NEVER);
     tabbed_pane_ = AddChildView(std::move(tabbed_pane));
@@ -193,11 +193,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   DCHECK(!source_types_.empty());
 
-  if (params.request_audio) {
-    audio_share_checkbox_ = new views::Checkbox(
-        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
-    audio_share_checkbox_->SetChecked(params.approve_audio_by_default);
-  }
+  request_audio_ = params.request_audio;
+  approve_audio_by_default_ = params.approve_audio_by_default;
 
   // Focus on the first non-null media_list.
   OnSourceTypeSwitched(0);
@@ -360,8 +357,16 @@ base::string16 DesktopMediaPickerDialogView::GetDialogButtonLabel(
                                        : IDS_CANCEL);
 }
 
-views::View* DesktopMediaPickerDialogView::CreateExtraView() {
-  return audio_share_checkbox_;
+std::unique_ptr<views::View> DesktopMediaPickerDialogView::CreateExtraView() {
+  std::unique_ptr<views::Checkbox> audio_share_checkbox;
+  if (request_audio_) {
+    audio_share_checkbox = std::make_unique<views::Checkbox>(
+        l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
+    audio_share_checkbox->SetChecked(approve_audio_by_default_);
+    audio_share_checkbox_ = audio_share_checkbox.get();
+  }
+  OnSourceTypeSwitched(0);
+  return audio_share_checkbox;
 }
 
 bool DesktopMediaPickerDialogView::Accept() {

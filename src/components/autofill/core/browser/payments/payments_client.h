@@ -17,13 +17,13 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "services/identity/public/cpp/access_token_fetcher.h"
-#include "services/identity/public/cpp/access_token_info.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 struct ResourceRequest;
@@ -50,10 +50,7 @@ typedef base::OnceCallback<void(
 
 // Callback type for GetUnmaskDetails callback.
 typedef base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                                std::string,
-                                bool,
-                                std::unique_ptr<base::Value>,
-                                std::set<std::string>)>
+                                AutofillClient::UnmaskDetails&)>
     GetUnmaskDetailsCallback;
 
 // Billable service number is defined in Payments server to distinguish
@@ -85,9 +82,11 @@ class PaymentsClient {
     ~UnmaskRequestDetails();
 
     int64_t billing_customer_number = 0;
+    AutofillClient::UnmaskCardReason reason;
     CreditCard card;
     std::string risk_data;
     CardUnmaskDelegate::UnmaskResponse user_response;
+    base::Value fido_assertion_info;
   };
 
   // A collection of the information required to make a credit card upload
@@ -148,7 +147,7 @@ class PaymentsClient {
   // denotes incognito mode.
   PaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      identity::IdentityManager* const identity_manager,
+      signin::IdentityManager* const identity_manager,
       AccountInfoGetter* const account_info_getter,
       bool is_off_the_record = false);
 
@@ -241,7 +240,7 @@ class PaymentsClient {
 
   // Callback that handles a completed access token request.
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                identity::AccessTokenInfo access_token_info);
+                                signin::AccessTokenInfo access_token_info);
 
   // Handles a completed access token request in the case of failure.
   void AccessTokenError(const GoogleServiceAuthError& error);
@@ -259,7 +258,7 @@ class PaymentsClient {
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Provided in constructor; not owned by PaymentsClient.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   // Provided in constructor; not owned by PaymentsClient.
   AccountInfoGetter* const account_info_getter_;
@@ -274,7 +273,7 @@ class PaymentsClient {
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
 
   // The OAuth2 token fetcher for any account.
-  std::unique_ptr<identity::AccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> token_fetcher_;
 
   // The OAuth2 token, or empty if not fetched.
   std::string access_token_;
@@ -286,7 +285,7 @@ class PaymentsClient {
   // server.
   bool has_retried_authorization_;
 
-  base::WeakPtrFactory<PaymentsClient> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentsClient> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentsClient);
 };

@@ -8,14 +8,16 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -23,6 +25,15 @@
 using apps::mojom::OptionalBool;
 
 namespace {
+
+constexpr char const* kAppIdsWithHiddenMoreSettings[] = {
+    extension_misc::kFilesManagerAppId,
+    extensions::kWebStoreAppId,
+};
+
+constexpr char const* kAppIdsWithHiddenPinToShelf[] = {
+  extension_misc::kChromeAppId,
+};
 
 app_management::mojom::ExtensionAppPermissionMessagePtr
 CreateExtensionAppPermissionMessage(
@@ -34,6 +45,15 @@ CreateExtensionAppPermissionMessage(
   return app_management::mojom::ExtensionAppPermissionMessage::New(
       base::UTF16ToUTF8(message.message()), std::move(submessages));
 }
+
+bool ShouldHideMoreSettings(const std::string app_id) {
+  return base::Contains(kAppIdsWithHiddenMoreSettings, app_id);
+}
+
+bool ShouldHidePinToShelf(const std::string app_id) {
+  return base::Contains(kAppIdsWithHiddenPinToShelf, app_id);
+}
+
 
 }  // namespace
 
@@ -197,7 +217,13 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
   app->is_pinned = shelf_delegate_.IsPinned(update.AppId())
                        ? OptionalBool::kTrue
                        : OptionalBool::kFalse;
+  app->is_policy_pinned = shelf_delegate_.IsPolicyPinned(update.AppId())
+                              ? OptionalBool::kTrue
+                              : OptionalBool::kFalse;
 #endif
+
+  app->hide_more_settings = ShouldHideMoreSettings(app->id);
+  app->hide_pin_to_shelf = ShouldHidePinToShelf(app->id);
 
   return app;
 }
@@ -219,6 +245,10 @@ void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   } else {
     page_->OnAppChanged(CreateUIAppPtr(update));
   }
+}
+
+void AppManagementPageHandler::OnArcSupportChanged(bool supported) {
+  page_->OnArcSupportChanged(supported);
 }
 
 void AppManagementPageHandler::OnAppRegistryCacheWillBeDestroyed(

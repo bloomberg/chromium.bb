@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,7 @@
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
+#include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -222,6 +224,7 @@ AutocompleteController::AutocompleteController(
       keyword_provider_(nullptr),
       search_provider_(nullptr),
       zero_suggest_provider_(nullptr),
+      on_device_head_provider_(nullptr),
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
@@ -277,6 +280,11 @@ AutocompleteController::AutocompleteController(
   if (provider_types & AutocompleteProvider::TYPE_DOCUMENT) {
     document_provider_ = DocumentProvider::Create(provider_client_.get(), this);
     providers_.push_back(document_provider_);
+  }
+  if (provider_types & AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
+    on_device_head_provider_ =
+        OnDeviceHeadProvider::Create(provider_client_.get(), this);
+    providers_.push_back(on_device_head_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD) {
 #if !defined(OS_IOS)
@@ -428,6 +436,11 @@ void AutocompleteController::Stop(bool clear_result) {
 void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.SupportsDeletion());
 
+  // This formula combines provider and result type into a single enum as
+  // defined in OmniboxProviderAndResultType in enums.xml.
+  auto combined_type = match.provider->AsOmniboxEventProviderType() * 100 +
+                       match.AsOmniboxEventResultType();
+
   // Delete duplicate matches attached to the main match first.
   for (auto it(match.duplicate_matches.begin());
        it != match.duplicate_matches.end(); ++it) {
@@ -435,8 +448,11 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
       it->provider->DeleteMatch(*it);
   }
 
-  if (match.deletable)
+  if (match.deletable) {
+    base::UmaHistogramSparse("Omnibox.SuggestionDeleted.ProviderAndResultType",
+                             combined_type);
     match.provider->DeleteMatch(match);
+  }
 
   OnProviderUpdate(true);
 

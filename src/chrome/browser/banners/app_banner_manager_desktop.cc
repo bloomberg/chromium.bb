@@ -54,9 +54,15 @@ void AppBannerManagerDesktop::DisableTriggeringForTesting() {
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents),
-      extension_registry_(extensions::ExtensionRegistry::Get(
-          web_contents->GetBrowserContext())) {}
+    : AppBannerManager(web_contents), registrar_observer_(this) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  extension_registry_ = extensions::ExtensionRegistry::Get(profile);
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  // May be null in unit tests e.g. TabDesktopMediaListTest.*.
+  if (provider)
+    registrar_observer_.Add(&provider->registrar());
+}
 
 AppBannerManagerDesktop::~AppBannerManagerDesktop() { }
 
@@ -147,6 +153,22 @@ void AppBannerManagerDesktop::OnEngagementEvent(
   AppBannerManager::OnEngagementEvent(web_contents, url, score, type);
 }
 
+void AppBannerManagerDesktop::OnWebAppInstalled(
+    const web_app::AppId& installed_app_id) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  base::Optional<web_app::AppId> app_id =
+      provider->registrar().FindAppWithUrlInScope(validated_url_);
+  if (app_id.has_value() && *app_id == installed_app_id)
+    OnInstall(blink::kWebDisplayModeStandalone);
+}
+
+void AppBannerManagerDesktop::OnAppRegistrarDestroyed() {
+  registrar_observer_.RemoveAll();
+}
+
 void AppBannerManagerDesktop::CreateWebApp(WebappInstallSource install_source) {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
@@ -184,9 +206,6 @@ void AppBannerManagerDesktop::DidFinishCreatingWebApp(
   SendBannerAccepted();
   AppBannerSettingsHelper::RecordBannerInstallEvent(
       contents, GetAppIdentifier(), AppBannerSettingsHelper::WEB);
-
-  // OnInstall must be called last since it resets Mojo bindings.
-  OnInstall(false /* is_native app */, blink::kWebDisplayModeStandalone);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(AppBannerManagerDesktop)

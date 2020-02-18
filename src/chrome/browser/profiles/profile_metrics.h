@@ -10,7 +10,6 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 
 class Profile;
 class ProfileManager;
@@ -20,7 +19,12 @@ class FilePath;
 }
 
 namespace profile_metrics {
+enum class BrowserProfileType;
 struct Counts;
+}
+
+namespace signin {
+enum GAIAServiceType : int;
 }
 
 class ProfileMetrics {
@@ -174,6 +178,10 @@ class ProfileMetrics {
 #if !defined(OS_ANDROID)
   static void LogNumberOfProfileSwitches();
 #endif
+
+  // Returns profile type for logging.
+  static profile_metrics::BrowserProfileType GetBrowserProfileType(
+      Profile* profile);
 
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);

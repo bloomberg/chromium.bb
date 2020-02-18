@@ -17,10 +17,10 @@
 
 #include "include/gpu/GrBackendSurface.h"
 #include "include/gpu/GrContext.h"
-#include "include/private/GrSurfaceProxy.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrProxyProvider.h"
+#include "src/gpu/GrSurfaceProxy.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 
 
@@ -54,11 +54,10 @@ static SkBitmap create_bm() {
 
 // Basic test of the SkSpecialImage public API (e.g., peekTexture, peekPixels & draw)
 static void test_image(const sk_sp<SkSpecialImage>& img, skiatest::Reporter* reporter,
-                       GrContext* context, bool isGPUBacked,
-                       int offset, int size) {
+                       GrContext* context, bool isGPUBacked) {
     const SkIRect subset = img->subset();
-    REPORTER_ASSERT(reporter, offset == subset.left());
-    REPORTER_ASSERT(reporter, offset == subset.top());
+    REPORTER_ASSERT(reporter, kPad == subset.left());
+    REPORTER_ASSERT(reporter, kPad == subset.top());
     REPORTER_ASSERT(reporter, kSmallerSize == subset.width());
     REPORTER_ASSERT(reporter, kSmallerSize == subset.height());
 
@@ -77,13 +76,8 @@ static void test_image(const sk_sp<SkSpecialImage>& img, skiatest::Reporter* rep
     // Test getROPixels - this should always succeed regardless of backing store
     SkBitmap bitmap;
     REPORTER_ASSERT(reporter, img->getROPixels(&bitmap));
-    if (context) {
-        REPORTER_ASSERT(reporter, kSmallerSize == bitmap.width());
-        REPORTER_ASSERT(reporter, kSmallerSize == bitmap.height());
-    } else {
-        REPORTER_ASSERT(reporter, size == bitmap.width());
-        REPORTER_ASSERT(reporter, size == bitmap.height());
-    }
+    REPORTER_ASSERT(reporter, kSmallerSize == bitmap.width());
+    REPORTER_ASSERT(reporter, kSmallerSize == bitmap.height());
 
     //--------------
     // Test that draw restricts itself to the subset
@@ -148,12 +142,12 @@ DEF_TEST(SpecialImage_Raster, reporter) {
 
     {
         sk_sp<SkSpecialImage> subSImg1(SkSpecialImage::MakeFromRaster(subset, bm));
-        test_image(subSImg1, reporter, nullptr, false, kPad, kFullSize);
+        test_image(subSImg1, reporter, nullptr, false);
     }
 
     {
         sk_sp<SkSpecialImage> subSImg2(fullSImage->makeSubset(subset));
-        test_image(subSImg2, reporter, nullptr, false, 0, kSmallerSize);
+        test_image(subSImg2, reporter, nullptr, false);
     }
 }
 
@@ -171,12 +165,12 @@ static void test_specialimage_image(skiatest::Reporter* reporter) {
 
     {
         sk_sp<SkSpecialImage> subSImg1(SkSpecialImage::MakeFromImage(nullptr, subset, fullImage));
-        test_image(subSImg1, reporter, nullptr, false, kPad, kFullSize);
+        test_image(subSImg1, reporter, nullptr, false);
     }
 
     {
         sk_sp<SkSpecialImage> subSImg2(fullSImage->makeSubset(subset));
-        test_image(subSImg2, reporter, nullptr, false, 0, kSmallerSize);
+        test_image(subSImg2, reporter, nullptr, false);
     }
 }
 
@@ -226,9 +220,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_MakeTexture, reporter, ctxInfo) 
     {
         // gpu
         sk_sp<SkImage> rasterImage = SkImage::MakeFromBitmap(bm);
-        sk_sp<GrTextureProxy> proxy =
-                proxyProvider->createTextureProxy(rasterImage, kNone_GrSurfaceFlags, 1,
-                                                  SkBudgeted::kNo, SkBackingFit::kExact);
+        sk_sp<GrTextureProxy> proxy = proxyProvider->createTextureProxy(
+                rasterImage, GrRenderable::kNo, 1, SkBudgeted::kNo, SkBackingFit::kExact);
         if (!proxy) {
             return;
         }
@@ -259,9 +252,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_Gpu, reporter, ctxInfo) {
     SkBitmap bm = create_bm();
     sk_sp<SkImage> rasterImage = SkImage::MakeFromBitmap(bm);
 
-    sk_sp<GrTextureProxy> proxy =
-            proxyProvider->createTextureProxy(rasterImage, kNone_GrSurfaceFlags, 1,
-                                              SkBudgeted::kNo, SkBackingFit::kExact);
+    sk_sp<GrTextureProxy> proxy = proxyProvider->createTextureProxy(
+            rasterImage, GrRenderable::kNo, 1, SkBudgeted::kNo, SkBackingFit::kExact);
     if (!proxy) {
         return;
     }
@@ -279,12 +271,12 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(SpecialImage_Gpu, reporter, ctxInfo) {
                                                                context, subset,
                                                                kNeedNewImageUniqueID_SpecialImage,
                                                                std::move(proxy), nullptr));
-        test_image(subSImg1, reporter, context, true, kPad, kFullSize);
+        test_image(subSImg1, reporter, context, true);
     }
 
     {
         sk_sp<SkSpecialImage> subSImg2(fullSImg->makeSubset(subset));
-        test_image(subSImg2, reporter, context, true, kPad, kFullSize);
+        test_image(subSImg2, reporter, context, true);
     }
 }
 

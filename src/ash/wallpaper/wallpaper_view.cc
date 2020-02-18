@@ -97,7 +97,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
     // Events that happen while app list is sliding out during overview should
     // be ignored to prevent overview from disappearing out from under the user.
     if (!IsSlidingOutOverviewFromShelf())
-      controller->ToggleOverview();
+      controller->EndOverview();
     event->StopPropagation();
   }
 
@@ -226,13 +226,13 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()
-          ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
-          : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
+          ? WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
+          : wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE;
   aura::Window* wallpaper_window = wallpaper_widget->GetNativeWindow();
   ::wm::SetWindowVisibilityAnimationType(wallpaper_window, animation_type);
 
   // Enable wallpaper transition for the following cases:
-  // 1. Initial(OOBE) wallpaper animation.
+  // 1. Initial wallpaper animation after device boot.
   // 2. Wallpaper fades in from a non empty background.
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.

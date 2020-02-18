@@ -89,6 +89,14 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Returns true if there is a drag in progress.
   bool is_drag_in_progress() const { return window_resizer_.get() != nullptr; }
 
+  // Returns the toplevel window that should be dragged for a gesture event that
+  // occurs in the HTCLIENT area of a window. Returns null if there shouldn't be
+  // special casing for this HTCLIENT area gesture. This is used to drag app
+  // windows which are fullscreened/maximized in tablet mode from the top of the
+  // screen, which don't have a window frame.
+  static aura::Window* GetTargetForClientAreaGesture(ui::GestureEvent* event,
+                                                     aura::Window* target);
+
   // Returns the window that is currently handling gesture events and its
   // location.
   aura::Window* gesture_target() { return gesture_target_; }

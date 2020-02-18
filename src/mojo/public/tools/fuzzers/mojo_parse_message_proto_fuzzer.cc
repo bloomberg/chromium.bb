@@ -6,8 +6,8 @@
 // multiple messages per run.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -47,14 +47,14 @@ void FuzzMessage(const MojoFuzzerMessages& mojo_fuzzer_messages,
 // ThreadPool, because Mojo messages must be sent and processed from
 // TaskRunners.
 struct Environment {
-  Environment() : message_loop(base::MessageLoop::TYPE_UI) {
+  Environment() : main_task_executor(base::MessagePump::Type::UI) {
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
     mojo::core::Init();
   }
 
-  // Message loop to send and handle messages on.
-  base::MessageLoop message_loop;
+  // Task executor to send and handle messages on.
+  base::SingleThreadTaskExecutor main_task_executor;
 
   // Suppress mojo validation failure logs.
   mojo::internal::ScopedSuppressValidationErrorLoggingForTests log_suppression;
@@ -62,9 +62,10 @@ struct Environment {
 
 DEFINE_PROTO_FUZZER(const MojoFuzzerMessages& mojo_fuzzer_messages) {
   static Environment* env = new Environment();
-  // Pass the data along to run on a MessageLoop, and wait for it to finish.
+  // Pass the data along to run on a SingleThreadTaskExecutor, and wait for it
+  // to finish.
   base::RunLoop run;
-  env->message_loop.task_runner()->PostTask(
+  env->main_task_executor.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&FuzzMessage, mojo_fuzzer_messages, &run));
   run.Run();
 }

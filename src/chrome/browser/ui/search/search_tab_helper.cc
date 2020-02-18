@@ -9,8 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
@@ -41,13 +42,10 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -111,6 +109,9 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
 
   search_suggest_service_ =
       SearchSuggestServiceFactory::GetForProfile(profile());
+
+  chrome_colors_service_ =
+      chrome_colors::ChromeColorsFactory::GetForProfile(profile());
 }
 
 SearchTabHelper::~SearchTabHelper() {
@@ -124,11 +125,6 @@ void SearchTabHelper::OmniboxInputStateChanged() {
 
 void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
                                           OmniboxFocusChangeReason reason) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
-      content::Source<SearchTabHelper>(this),
-      content::NotificationService::NoDetails());
-
   ipc_router_.OmniboxFocusChanged(state, reason);
 
   // Don't send oninputstart/oninputend updates in response to focus changes
@@ -157,6 +153,11 @@ void SearchTabHelper::OnTabDeactivated() {
   ipc_router_.OnTabDeactivated();
 }
 
+void SearchTabHelper::OnTabClosing() {
+  if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
+    chrome_colors_service_->RevertThemeChangesForTab(web_contents_);
+}
+
 void SearchTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
@@ -173,19 +174,6 @@ void SearchTabHelper::DidStartNavigation(
       web_contents_->UpdateTitleForEntry(
           entry, l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
     }
-  }
-}
-
-void SearchTabHelper::DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument())
-    return;
-
-  if (IsCacheableNTP(web_contents_)) {
-    UMA_HISTOGRAM_ENUMERATION("InstantExtended.CacheableNTPLoad",
-                              search::CACHEABLE_NTP_LOAD_SUCCEEDED,
-                              search::CACHEABLE_NTP_LOAD_MAX);
   }
 }
 
@@ -233,10 +221,9 @@ void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
   ipc_router_.SendThemeBackgroundInfo(theme_info);
 }
 
-void SearchTabHelper::MostVisitedItemsChanged(
-    const std::vector<InstantMostVisitedItem>& items,
-    bool is_custom_links) {
-  ipc_router_.SendMostVisitedItems(items, is_custom_links);
+void SearchTabHelper::MostVisitedInfoChanged(
+    const InstantMostVisitedInfo& most_visited_info) {
+  ipc_router_.SendMostVisitedInfo(most_visited_info);
 }
 
 void SearchTabHelper::FocusOmnibox(bool focus) {
@@ -282,11 +269,6 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
-void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
-  if (instant_service_)
-    instant_service_->ToggleMostVisitedOrCustomLinks();
-}
-
 bool SearchTabHelper::OnAddCustomLink(const GURL& url,
                                       const std::string& title) {
   DCHECK(!url.is_empty());
@@ -326,6 +308,16 @@ void SearchTabHelper::OnUndoCustomLinkAction() {
 void SearchTabHelper::OnResetCustomLinks() {
   if (instant_service_)
     instant_service_->ResetCustomLinks();
+}
+
+void SearchTabHelper::OnToggleMostVisitedOrCustomLinks() {
+  if (instant_service_)
+    instant_service_->ToggleMostVisitedOrCustomLinks();
+}
+
+void SearchTabHelper::OnToggleShortcutsVisibility(bool do_notify) {
+  if (instant_service_)
+    instant_service_->ToggleShortcutsVisibility(do_notify);
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
@@ -378,14 +370,16 @@ void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
   omnibox_view->OnAfterPossibleChange(true);
 }
 
-void SearchTabHelper::OnSetCustomBackgroundURLWithAttributions(
+void SearchTabHelper::OnSetCustomBackgroundInfo(
     const GURL& background_url,
     const std::string& attribution_line_1,
     const std::string& attribution_line_2,
-    const GURL& action_url) {
+    const GURL& action_url,
+    const std::string& collection_id) {
   if (instant_service_) {
-    instant_service_->SetCustomBackgroundURLWithAttributions(
-        background_url, attribution_line_1, attribution_line_2, action_url);
+    instant_service_->SetCustomBackgroundInfo(
+        background_url, attribution_line_1, attribution_line_2, action_url,
+        collection_id);
   }
 }
 
@@ -403,6 +397,10 @@ void SearchTabHelper::FileSelected(const base::FilePath& path,
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE,
                  base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_DONE, base::TimeDelta::FromSeconds(0));
+
+  ipc_router_.SendLocalBackgroundSelected();
 }
 
 void SearchTabHelper::FileSelectionCanceled(void* params) {
@@ -412,6 +410,8 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL,
                  base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
@@ -473,6 +473,26 @@ void SearchTabHelper::OnSearchSuggestionSelected(int task_version,
 void SearchTabHelper::OnOptOutOfSearchSuggestions() {
   if (search_suggest_service_)
     search_suggest_service_->OptOutOfSearchSuggestions();
+}
+
+void SearchTabHelper::OnApplyDefaultTheme() {
+  if (chrome_colors_service_)
+    chrome_colors_service_->ApplyDefaultTheme(web_contents_);
+}
+
+void SearchTabHelper::OnApplyAutogeneratedTheme(SkColor color) {
+  if (chrome_colors_service_)
+    chrome_colors_service_->ApplyAutogeneratedTheme(color, web_contents_);
+}
+
+void SearchTabHelper::OnRevertThemeChanges() {
+  if (chrome_colors_service_)
+    chrome_colors_service_->RevertThemeChanges();
+}
+
+void SearchTabHelper::OnConfirmThemeChanges() {
+  if (chrome_colors_service_)
+    chrome_colors_service_->ConfirmThemeChanges();
 }
 
 OmniboxView* SearchTabHelper::GetOmniboxView() {

@@ -16,7 +16,7 @@ namespace {
 
 constexpr char kGaiaAuthenticator[] = "$('gaia-signin').authenticator_";
 constexpr char kEnrollmentAuthenticator[] =
-    "$('oauth-enrollment').authenticator_";
+    "$('enterprise-enrollment').authenticator_";
 
 void MaybeWaitForOobeToInitialize() {
   base::RunLoop run_loop;

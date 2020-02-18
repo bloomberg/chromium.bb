@@ -8,10 +8,10 @@
   <link rel="stylesheet" href="screen_gaia_signin.css">
 
   <template>
-
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
         has-buttons no-header no-footer-padding no-buttons-padding
-        hidden="[[!isSigninFrameDialogVisible_(screenMode_)]]">
+        hidden="[[!isSigninFrameDialogVisible_(screenMode_,
+                                               pinDialogParameters_)]]">
       <div slot="footer" class="flex layout vertical">
         <div id="signin-frame-container"
             class$="[[getSigninFrameContainerClass_(isLoadingUiShown_)]]">
@@ -20,28 +20,45 @@
       </div>
       <div id="gaia-screen-navigation-buttons"
           slot="bottom-buttons" class="relative flex layout horizontal center">
-        <div id="buttons-container" class="fit">
+        <div id="buttons-container" class="flex layout horizontal center">
           <oobe-back-button id="signin-back-button"
               disabled="[[!navigationEnabled_]]"></oobe-back-button>
           <div class="flex">
           </div>
+          <oobe-text-button id="primary-action-button"
+              on-tap="onPrimaryActionButtonClicked_"
+              hidden="[[!primaryActionButtonLabel_]]"
+              disabled="[[!primaryActionButtonEnabled_]]"
+              >[[primaryActionButtonLabel_]]</oobe-text-button>
+          <oobe-text-button id="secondary-action-button"
+              on-tap="onSecondaryActionButtonClicked_"
+              hidden="[[!secondaryActionButtonLabel_]]"
+              disabled="[[!secondaryActionButtonEnabled_]]"
+              >[[secondaryActionButtonLabel_]]</oobe-text-button>
         </div>
         <div id="gaia-screen-buttons-overlay" class="fit"
-            hidden="[[navigationEnabled_]]"></div>
+            hidden="[[navigationEnabled_]]">
+        </div>
       </div>
     </oobe-dialog>
     <offline-gaia id="offline-gaia" class="gaia-dialog"
-        hidden="[[!isOfflineGaiaVisible_(screenMode_, isLoadingUiShown_)]]">
+        hidden="[[!isOfflineGaiaVisible_(screenMode_, isLoadingUiShown_,
+                                         pinDialogParameters_)]]">
     </offline-gaia>
     <offline-ad-login id="offline-ad-auth" class="gaia-dialog"
-        hidden="[[!isOfflineAdAuthVisible_(screenMode_, isLoadingUiShown_)]]"
+        hidden="[[!isOfflineAdAuthVisible_(screenMode_, isLoadingUiShown_,
+                                           pinDialogParameters_)]]"
         i18n-values="ad-welcome-message:loginWelcomeMessage">
     </offline-ad-login>
+    <security-token-pin id="pinDialog" parameters="[[pinDialogParameters_]]"
+        hidden="[[!isPinDialogVisible_(pinDialogParameters_)]]"
+        on-cancel="onPinDialogCanceled_" on-completed="onPinDialogCompleted_">
+    </security-token-pin>
     <div id="gaia-step-contents" class="step-contents">
       <div id="gaia-signin-form-container">
         <saml-interstitial id="saml-interstitial" class="fit gaia-dialog"
-            hidden="[[!isSamlInterstitialVisible_(screenMode_,
-                                                  isLoadingUiShown_)]]">
+            hidden="[[!isSamlInterstitialVisible_(
+                screenMode_, isLoadingUiShown_, pinDialogParameters_)]]">
         </saml-interstitial>
       </div>
     </div>

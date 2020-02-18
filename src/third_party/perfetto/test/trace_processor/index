@@ -5,9 +5,17 @@
 synth_1.py smoke.sql synth_1_smoke.out
 ../data/fuchsia_trace.fxt smoke.sql fuchsia_smoke.out
 ../data/fuchsia_trace.fxt smoke_slices.sql fuchsia_smoke_slices.out
+../data/fuchsia_trace.fxt smoke_instants.sql fuchsia_smoke_instants.out
+../data/fuchsia_trace.fxt smoke_counters.sql fuchsia_smoke_counters.out
+../data/fuchsia_workstation.fxt smoke_slices.sql fuchsia_workstation_smoke_slices.out
 
 # Test for the process<>thread tracking logic.
 synth_process_tracking.py process_tracking.sql process_tracking.out
+process_tracking_short_lived_1.py process_tracking.sql process_tracking_process_tracking_short_lived_1.out
+process_tracking_short_lived_2.py process_tracking.sql process_tracking_process_tracking_short_lived_2.out
+process_tracking_exec.py process_tracking.sql process_tracking_process_tracking_exec.out
+process_parent_pid_tracking_1.py process_parent_pid.sql process_parent_pid_process_parent_pid_tracking_1.out
+process_parent_pid_tracking_2.py process_parent_pid.sql process_parent_pid_process_parent_pid_tracking_2.out
 
 # Test for computing CPU time from sched events for threads.
 ../data/example_android_trace_30s.pb thread_cpu_time.sql thread_cpu_time_example_android_trace_30s.out
@@ -48,10 +56,6 @@ kernel_lmk.py lmk.sql lmk_kernel_lmk.out
 ../data/memory_counters.pb args_string_filter_null.sql memory_counters_args_string_filter_null.out
 ../data/memory_counters.pb args_string_is_null.sql memory_counters_args_string_is_null.out
 ../data/memory_counters.pb args_string_is_not_null.sql memory_counters_args_string_is_not_null.out
-# TODO(lalitm): this still doesn't work because we no longer add utid
-# args for memory counters (because they are keyed by upid).
-# ../data/memory_counters.pb smoke_args.sql memory_counters_smoke_args.out
-# ../data/memory_counters.pb counter_args_join.sql memory_counters_counter_args_join.out
 ../data/memory_counters.pb b120605557.sql memory_counters_b120605557.out
 ../data/memory_counters.pb counters_ref_type_null.sql counters_ref_type_null_memory_counters.out
 
@@ -102,3 +106,9 @@ synth_1.py nulls.sql nulls.out
 # The below tests check the systrace conversion code in the raw table.
 # Print events
 ../data/lmk_userspace.pb print_systrace.sql print_systrace_lmk_userspace.out
+# Unsigned integers
+print_systrace_unsigned.py print_systrace.sql print_systrace_unsigned.out
+
+# GPU trace tests
+../data/gpu_counters.pb gpu_counters.sql gpu_counters.out
+../data/gpu_trace.pb gpu_render_stages.sql gpu_render_stages.out

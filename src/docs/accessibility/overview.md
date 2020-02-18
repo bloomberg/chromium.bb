@@ -508,10 +508,11 @@ is defined by [automation.idl], which must be kept synchronized with
 [ax_enums.idl].
 
 [AccessibilityHostMsg_EventParams]: https://cs.chromium.org/chromium/src/content/common/accessibility_messages.h?sq=package:chromium&l=75
-[AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/chrome/renderer/extensions/automation_internal_custom_bindings.h
+[AutomationInternalCustomBindings]: https://cs.chromium.org/chromium/src/extensions/renderer/api/automation/automation_internal_custom_bindings.h
 [AXContentNodeData]: https://cs.chromium.org/chromium/src/content/common/ax_content_node_data.h
 [AXLayoutObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_layout_object.h
 [AXNodeObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_node_object.h
+[AXObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_object.h
 [AXObjectImpl]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_object_impl.h
 [AXObjectCacheImpl]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h
 [AXPlatformNode]: https://cs.chromium.org/chromium/src/ui/accessibility/platform/ax_platform_node.h
@@ -522,13 +523,13 @@ is defined by [automation.idl], which must be kept synchronized with
 [BrowserAccessibilityManager]: https://cs.chromium.org/chromium/src/content/browser/accessibility/browser_accessibility_manager.h
 [LayoutObject]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_object.h
 [ViewAccessibility]: https://cs.chromium.org/chromium/src/ui/views/accessibility/view_accessibility.h
-[Node]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/Node.h
+[Node]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/node.h
 [RenderAccessibilityImpl]: https://cs.chromium.org/chromium/src/content/renderer/accessibility/render_accessibility_impl.h
 [RenderFrameHostImpl]: https://cs.chromium.org/chromium/src/content/browser/frame_host/render_frame_host_impl.h
 [ui::AXNodeData]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_node_data.h
 [WebAXObject]: https://cs.chromium.org/chromium/src/third_party/blink/public/web/web_ax_object.h
 [automation API]: https://cs.chromium.org/chromium/src/chrome/renderer/resources/extensions/automation
-[automation.idl]: https://cs.chromium.org/chromium/src/chrome/common/extensions/api/automation.idl
+[automation.idl]: https://cs.chromium.org/chromium/src/extensions/common/api/automation.idl
 [ax_enums.idl]: https://cs.chromium.org/chromium/src/ui/accessibility/ax_enums.idl
 [chrome.automation API]: https://developer.chrome.com/extensions/automation
 [webui-js]: https://cs.chromium.org/chromium/src/ui/webui/resources/js/cr/ui/

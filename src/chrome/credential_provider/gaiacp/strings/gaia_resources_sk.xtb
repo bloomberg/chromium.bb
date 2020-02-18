@@ -8,8 +8,11 @@
 <translation id="2469311484561825731">Nepodarilo sa prihlásiť do pracovného účtu. Skontrolujte, či má počítač internetové pripojenie, a potom to skúste znova.</translation>
 <translation id="2595469428674600431">Vaše heslo systému Windows sa nepodarilo overiť. Skúste to znova.</translation>
 <translation id="3306357053520292004">Pomocou tohoto účtu už bol do tohto počítača pridaný používateľ. Prihláste sa pomocou iného účtu.</translation>
+<translation id="3643125608647220913">Obrazovku prihlásenia cez Google sa nepodarilo načítať. Kontaktujte správcu.</translation>
 <translation id="369030246015333661">Váš účet bol uzamknutý. Kontaktujte správcu systému.</translation>
+<translation id="3968372833844047539">Prihlásiť sa môžu iba používatelia služby G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Vyskytla sa interná chyba.</translation>
+<translation id="4267670563222825190">Pre váš účet sa nenašiel žiadny používateľ domény. Kontaktujte správcu.</translation>
 <translation id="4300229033992784001">Zmenilo sa heslo vášho účtu. Zadajte svoje aktuálne heslo systému Windows, aby sa váš účet Windows synchronizoval s pracovným účtom.</translation>
 <translation id="4706454071748629324">Nepodarilo sa pridať nového používateľa. V tomto počítači je možné pomocou pracovného účtu vytvoriť iba jedného používateľa.</translation>
 <translation id="6292766200512304540">Používateľ vytvorený z pracovného účtu</translation>
@@ -21,6 +24,7 @@
 <translation id="7385169832667457493">Heslo systému Windows</translation>
 <translation id="7536769223115622137">Pridať pracovný účet</translation>
 <translation id="7856245195110636219">Bez zadania aktuálneho hesla systému Windows nie je možné pokračovať. Kontaktujte správcu systému.</translation>
+<translation id="7996763357529480810">Prihláste sa pomocou pracovného účtu služby G Suite.</translation>
 <translation id="8474372283141585908">Poskytovateľ poverení Google</translation>
 <translation id="8639729688781680518">Nepamätám si heslo systému Windows</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>

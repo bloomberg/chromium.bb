@@ -33,14 +33,19 @@ int NativePixmapDmaBuf::GetDmaBufFd(size_t plane) const {
   return handle_.planes[plane].fd.get();
 }
 
-int NativePixmapDmaBuf::GetDmaBufPitch(size_t plane) const {
+uint32_t NativePixmapDmaBuf::GetDmaBufPitch(size_t plane) const {
   DCHECK_LT(plane, handle_.planes.size());
   return handle_.planes[plane].stride;
 }
 
-int NativePixmapDmaBuf::GetDmaBufOffset(size_t plane) const {
+size_t NativePixmapDmaBuf::GetDmaBufOffset(size_t plane) const {
   DCHECK_LT(plane, handle_.planes.size());
-  return handle_.planes[plane].offset;
+  return static_cast<size_t>(handle_.planes[plane].offset);
+}
+
+size_t NativePixmapDmaBuf::GetDmaBufPlaneSize(size_t plane) const {
+  DCHECK_LT(plane, handle_.planes.size());
+  return static_cast<size_t>(handle_.planes[plane].size);
 }
 
 uint64_t NativePixmapDmaBuf::GetBufferFormatModifier() const {
@@ -49,6 +54,10 @@ uint64_t NativePixmapDmaBuf::GetBufferFormatModifier() const {
 
 gfx::BufferFormat NativePixmapDmaBuf::GetBufferFormat() const {
   return format_;
+}
+
+size_t NativePixmapDmaBuf::GetNumberOfPlanes() const {
+  return handle_.planes.size();
 }
 
 gfx::Size NativePixmapDmaBuf::GetBufferSize() const {
@@ -71,7 +80,7 @@ bool NativePixmapDmaBuf::ScheduleOverlayPlane(
 }
 
 gfx::NativePixmapHandle NativePixmapDmaBuf::ExportHandle() {
-  return gfx::NativePixmapHandle();
+  return gfx::CloneHandleForIPC(handle_);
 }
 
 }  // namespace gfx

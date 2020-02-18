@@ -18,6 +18,9 @@ class Connector;
 }
 
 namespace chromeos {
+
+class NetworkDeviceHandler;
+
 namespace network_config {
 
 class CrosNetworkConfig;
@@ -25,7 +28,11 @@ class CrosNetworkConfigTestObserver;
 
 class CrosNetworkConfigTestHelper {
  public:
+  // Default constructor for unit tests.
   CrosNetworkConfigTestHelper();
+  // Constructor used by ash_shell_with_content providing the Shell connector.
+  explicit CrosNetworkConfigTestHelper(service_manager::Connector* connector);
+
   ~CrosNetworkConfigTestHelper();
 
   // Binds |service_interface_ptr_|. Must be called before using
@@ -42,21 +49,26 @@ class CrosNetworkConfigTestHelper {
   mojom::CrosNetworkConfig* service_interface_ptr() {
     return service_interface_ptr_.get();
   }
-  service_manager::Connector* connector() { return connector_.get(); }
+  service_manager::Connector* connector() { return connector_; }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
 
   void FlushForTesting();
 
  private:
+  void SetupCrosNetworkConfig();
   void SetupService();
   void AddBinding(mojo::ScopedMessagePipeHandle handle);
 
   NetworkStateTestHelper network_state_helper_{
       false /* use_default_devices_and_services */};
+  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<CrosNetworkConfig> cros_network_config_impl_;
 
-  // Service connector for testing.
-  std::unique_ptr<service_manager::Connector> connector_;
+  // Unowned pointer to the service connector.
+  service_manager::Connector* connector_;
+
+  // Owned connector for unit tests. |connector_| is set to the raw pointer.
+  std::unique_ptr<service_manager::Connector> owned_connector_;
 
   // Interface to |cros_network_config_| through service connector.
   mojom::CrosNetworkConfigPtr service_interface_ptr_;

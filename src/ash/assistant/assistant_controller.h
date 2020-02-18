@@ -17,6 +17,7 @@
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
@@ -32,6 +33,7 @@
 #include "base/observer_list.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -45,6 +47,7 @@ class AssistantAlarmTimerController;
 class AssistantCacheController;
 class AssistantInteractionController;
 class AssistantNotificationController;
+class AssistantPrefsController;
 class AssistantScreenContextController;
 class AssistantSetupController;
 class AssistantUiController;
@@ -79,13 +82,10 @@ class ASH_EXPORT AssistantController
   // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
-  void OpenAssistantSettings() override;
   void StartSpeakerIdEnrollmentFlow() override;
   void SendAssistantFeedback(bool assistant_debug_info_allowed,
                              const std::string& feedback_description,
                              const std::string& screenshot_png) override;
-  void SetDeviceActions(
-      chromeos::assistant::mojom::DeviceActionsPtr device_actions) override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
@@ -106,7 +106,9 @@ class ASH_EXPORT AssistantController
 
   // Opens the specified |url| in a new browser tab. Special handling is applied
   // to deep links which may cause deviation from this behavior.
-  void OpenUrl(const GURL& url, bool from_server = false);
+  void OpenUrl(const GURL& url,
+               bool in_background = false,
+               bool from_server = false);
 
   // Acquires a NavigableContentsFactory from the Content Service to allow
   // Assistant to display embedded web contents.
@@ -129,6 +131,10 @@ class ASH_EXPORT AssistantController
     return &assistant_notification_controller_;
   }
 
+  AssistantPrefsController* prefs_controller() {
+    return &assistant_prefs_controller_;
+  }
+
   AssistantScreenContextController* screen_context_controller() {
     return &assistant_screen_context_controller_;
   }
@@ -149,7 +155,7 @@ class ASH_EXPORT AssistantController
   void NotifyConstructed();
   void NotifyDestroying();
   void NotifyDeepLinkReceived(const GURL& deep_link);
-  void NotifyOpeningUrl(const GURL& url, bool from_server);
+  void NotifyOpeningUrl(const GURL& url, bool in_background, bool from_server);
   void NotifyUrlOpened(const GURL& url, bool from_server);
 
   // mojom::VoiceInteractionObserver:
@@ -169,13 +175,12 @@ class ASH_EXPORT AssistantController
 
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
-  chromeos::assistant::mojom::DeviceActionsPtr device_actions_;
-
   // Assistant sub-controllers.
   AssistantAlarmTimerController assistant_alarm_timer_controller_;
   AssistantCacheController assistant_cache_controller_;
   AssistantInteractionController assistant_interaction_controller_;
   AssistantNotificationController assistant_notification_controller_;
+  AssistantPrefsController assistant_prefs_controller_;
   AssistantScreenContextController assistant_screen_context_controller_;
   AssistantSetupController assistant_setup_controller_;
   AssistantUiController assistant_ui_controller_;

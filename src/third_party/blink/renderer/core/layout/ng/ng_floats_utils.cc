@@ -78,11 +78,7 @@ NGConstraintSpace CreateConstraintSpaceForFloat(
     DCHECK(parent_space.HasBlockFragmentation());
     DCHECK_EQ(style.GetWritingMode(), parent_space.GetWritingMode());
 
-    LayoutUnit fragmentation_offset =
-        parent_space.FragmentainerSpaceAtBfcStart() - *origin_block_offset;
-    builder.SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
-    builder.SetFragmentainerSpaceAtBfcStart(fragmentation_offset);
-    builder.SetFragmentationType(parent_space.BlockFragmentationType());
+    SetupFragmentation(parent_space, *origin_block_offset, &builder);
   } else {
     builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
   }
@@ -305,22 +301,6 @@ NGPositionedFloat PositionFloat(
       float_margin_bfc_offset.block_offset + fragment_margins.block_start);
 
   return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
-}
-
-NGFloatTypes ToFloatTypes(EClear clear) {
-  switch (clear) {
-    default:
-      NOTREACHED();
-      FALLTHROUGH;
-    case EClear::kNone:
-      return kFloatTypeNone;
-    case EClear::kLeft:
-      return kFloatTypeLeft;
-    case EClear::kRight:
-      return kFloatTypeRight;
-    case EClear::kBoth:
-      return kFloatTypeBoth;
-  };
 }
 
 }  // namespace blink

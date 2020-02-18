@@ -15,7 +15,6 @@
 #include "core/fxge/cfx_gemodule.h"
 #include "core/fxge/fx_font.h"
 #include "core/fxge/systemfontinfo_iface.h"
-#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/ptr_util.h"
 
 static_assert(FXFONT_ANSI_CHARSET == FX_CHARSET_ANSI, "Charset must match");
@@ -70,11 +69,11 @@ class CFX_ExternalFontInfo final : public SystemFontInfoIface {
 
   uint32_t GetFontData(void* hFont,
                        uint32_t table,
-                       uint8_t* buffer,
-                       uint32_t size) override {
+                       pdfium::span<uint8_t> buffer) override {
     if (!m_pInfo->GetFontData)
       return 0;
-    return m_pInfo->GetFontData(m_pInfo, hFont, table, buffer, size);
+    return m_pInfo->GetFontData(m_pInfo, hFont, table, buffer.data(),
+                                buffer.size());
   }
 
   bool GetFaceName(void* hFont, ByteString* name) override {
@@ -108,10 +107,10 @@ class CFX_ExternalFontInfo final : public SystemFontInfoIface {
 };
 
 FPDF_EXPORT void FPDF_CALLCONV FPDF_AddInstalledFont(void* mapper,
-                                                     const char* name,
+                                                     const char* face,
                                                      int charset) {
   CFX_FontMapper* pMapper = static_cast<CFX_FontMapper*>(mapper);
-  pMapper->AddInstalledFont(name, charset);
+  pMapper->AddInstalledFont(face, charset);
 }
 
 FPDF_EXPORT void FPDF_CALLCONV
@@ -164,7 +163,7 @@ static unsigned long DefaultGetFontData(struct _FPDF_SYSFONTINFO* pThis,
                                         unsigned char* buffer,
                                         unsigned long buf_size) {
   auto* pDefault = static_cast<FPDF_SYSFONTINFO_DEFAULT*>(pThis);
-  return pDefault->m_pFontInfo->GetFontData(hFont, table, buffer, buf_size);
+  return pDefault->m_pFontInfo->GetFontData(hFont, table, {buffer, buf_size});
 }
 
 static unsigned long DefaultGetFaceName(struct _FPDF_SYSFONTINFO* pThis,
@@ -218,6 +217,6 @@ FPDF_EXPORT FPDF_SYSFONTINFO* FPDF_CALLCONV FPDF_GetDefaultSystemFontInfo() {
 }
 
 FPDF_EXPORT void FPDF_CALLCONV
-FPDF_FreeDefaultSystemFontInfo(FPDF_SYSFONTINFO* pDefaultFontInfo) {
-  FX_Free(static_cast<FPDF_SYSFONTINFO_DEFAULT*>(pDefaultFontInfo));
+FPDF_FreeDefaultSystemFontInfo(FPDF_SYSFONTINFO* pFontInfo) {
+  FX_Free(static_cast<FPDF_SYSFONTINFO_DEFAULT*>(pFontInfo));
 }

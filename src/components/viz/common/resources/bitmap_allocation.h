@@ -26,22 +26,6 @@ VIZ_COMMON_EXPORT base::MappedReadOnlyRegion AllocateSharedBitmap(
     const gfx::Size& size,
     ResourceFormat format);
 
-// Converts a base::ReadOnlySharedMemoryRegion to its corresponding
-// Mojo scoped handle. This simply calls mojo::WrapReadOnlySharedMemoryRegion()
-// but allows the caller to not include the corresponding header where it is
-// defined. Moreover, it will be easy to grep for all uses of this method
-// in the future when MojoHandles will not longer be necessary.
-// TODO(crbug.com/951391): Remove once refactor is completed.
-VIZ_COMMON_EXPORT mojo::ScopedSharedBufferHandle ToMojoHandle(
-    base::ReadOnlySharedMemoryRegion region);
-
-// Converts a scoped Mojo handle back to a base::ReadOnlySharedMemoryRegion
-// This simply calls mojo::UnwrapReadOnlySharedMemoryRegion(), but has the same
-// benefits as ToMojoHandle() described above.
-// TODO(crbug.com/951391): Remove once refactor is completed.
-VIZ_COMMON_EXPORT base::ReadOnlySharedMemoryRegion FromMojoHandle(
-    mojo::ScopedSharedBufferHandle handle);
-
 }  // namespace bitmap_allocation
 
 }  // namespace viz

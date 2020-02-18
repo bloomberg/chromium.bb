@@ -145,7 +145,7 @@ void LocalSiteCharacteristicsDataStore::
     OnLocalSiteCharacteristicsDataImplDestroyed(
         internal::LocalSiteCharacteristicsDataImpl* impl) {
   DCHECK(impl);
-  DCHECK(base::ContainsKey(origin_data_map_, impl->origin()));
+  DCHECK(base::Contains(origin_data_map_, impl->origin()));
   // Remove the entry for this origin as this is about to get destroyed.
   auto num_erased = origin_data_map_.erase(impl->origin());
   DCHECK_EQ(1U, num_erased);

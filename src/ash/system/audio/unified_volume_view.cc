@@ -9,6 +9,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/i18n/rtl.h"
 #include "base/stl_util.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -59,7 +60,7 @@ class MoreButton : public views::Button {
   explicit MoreButton(views::ButtonListener* listener)
       : views::Button(listener) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal,
+        views::BoxLayout::Orientation::kHorizontal,
         gfx::Insets((kTrayItemSize -
                      GetDefaultSizeOfVectorIcon(vector_icons::kHeadsetIcon)) /
                     2),
@@ -73,9 +74,12 @@ class MoreButton : public views::Button {
 
     auto* more = new views::ImageView();
     more->set_can_process_events_within_subtree(false);
+    auto icon_rotation = base::i18n::IsRTL()
+                             ? SkBitmapOperations::ROTATION_270_CW
+                             : SkBitmapOperations::ROTATION_90_CW;
     more->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
         CreateVectorIcon(kUnifiedMenuExpandIcon, kUnifiedMenuIconColor),
-        SkBitmapOperations::ROTATION_90_CW));
+        icon_rotation));
     AddChildView(more);
 
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
@@ -151,7 +155,7 @@ void UnifiedVolumeView::Update(bool by_user) {
   float level = CrasAudioHandler::Get()->GetOutputVolumePercent() / 100.f;
 
   // Indicate that the slider is inactive when it's muted.
-  slider()->UpdateState(!is_muted);
+  slider()->SetIsActive(!is_muted);
 
   // The button should be gray whay muted and colored otherwise.
   button()->SetToggled(!is_muted);
@@ -165,7 +169,7 @@ void UnifiedVolumeView::Update(bool by_user) {
   // there will be a small discrepancy between slider's value and volume level
   // on audio side. To avoid the jittering in slider UI, do not set change
   // slider value if the change is less than the threshold.
-  if (std::abs(level - slider()->value()) < kSliderIgnoreUpdateThreshold)
+  if (std::abs(level - slider()->GetValue()) < kSliderIgnoreUpdateThreshold)
     return;
 
   SetSliderValue(level, by_user);

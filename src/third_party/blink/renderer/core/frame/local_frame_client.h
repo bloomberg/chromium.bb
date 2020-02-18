@@ -33,6 +33,8 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -101,10 +103,7 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebContentCaptureClient;
-class WebCookieJar;
 class WebDedicatedWorkerHostFactoryClient;
 class WebLayerTreeView;
 class WebLocalFrame;
@@ -246,8 +245,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                              bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
-  virtual void DidObserveLayoutJank(double jank_fraction,
-                                    bool after_input_or_scroll) {}
+  virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
+  }
 
   // Reports lazy loaded behavior when the frame or image is fully deferred or
   // if the frame or image is loaded after being deferred. Called every time the
@@ -291,8 +290,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // identifies the portal.
   virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest,
-      mojom::blink::PortalClientAssociatedPtrInfo) = 0;
+      mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
+      mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) = 0;
 
   // Adopts the predecessor |portal|. The HTMLPortalElement must have been
   // created by adopting the predecessor in the PortalActivateEvent, and have a
@@ -343,12 +342,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return false;
   }
 
-  virtual WebCookieJar* CookieJar() const = 0;
-
   virtual void DidChangeName(const String&) {}
 
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
-  virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
+  virtual void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) {}
 
   virtual void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) {}
 
@@ -374,10 +371,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   CreateServiceWorkerProvider() = 0;
 
   virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
-
-  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
-      WebApplicationCacheHostClient*) = 0;
 
   virtual void DispatchDidChangeManifest() {}
 
@@ -458,7 +451,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void AnnotatedRegionsChanged() = 0;
 
-  virtual void DidBlockFramebust(const KURL&) {}
+  virtual void DidBlockNavigation(const KURL& blocked_url,
+                                  const KURL& initiator_urk,
+                                  blink::NavigationBlockedReason reason) {}
 
   // Called when the corresponding frame should be scrolled in a remote parent
   // frame.
@@ -484,6 +479,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual Frame* FindFrame(const AtomicString& name) const = 0;
 
   virtual void FrameRectsChanged(const IntRect&) {}
+
+  virtual void LifecycleStateChanged(mojom::FrameLifecycleState state) {}
 
   // Returns true when the contents of plugin are handled externally. This means
   // the plugin element will own a content frame but the frame is than used
@@ -525,6 +522,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Returns whether we are associated with a print context who suggests to use
   // printing layout.
   virtual bool UsePrintingLayout() const { return false; }
+
+  // AppCache ------------------------------------------------------------
+  virtual void UpdateSubresourceFactory(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
+  }
 };
 
 }  // namespace blink

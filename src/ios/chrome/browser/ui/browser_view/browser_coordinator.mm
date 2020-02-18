@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
-#include "components/translate/core/browser/translate_prefs.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -17,7 +16,6 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
@@ -32,13 +30,13 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
-#import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
@@ -69,6 +67,9 @@
 @property(nonatomic, strong)
     BrowserContainerCoordinator* browserContainerCoordinator;
 
+// Mediator between OpenIn TabHelper and OpenIn UI.
+@property(nonatomic, strong) OpenInMediator* openInMediator;
+
 // =================================================
 // Child Coordinators, listed in alphabetical order.
 // =================================================
@@ -83,10 +84,6 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
-
-// Coordinator for a language selection UI.
-@property(nonatomic, strong)
-    LanguageSelectionCoordinator* languageSelectionCoordinator;
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
@@ -187,6 +184,8 @@
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [self.passKitCoordinator stop];
 
+  [self.openInMediator disableAll];
+
   [self.printController dismissAnimated:YES];
 
   [self.viewController clearPresentedStateWithCompletion:completion
@@ -256,19 +255,11 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
-  if (base::FeatureList::IsEnabled(translate::kCompactTranslateInfobarIOS)) {
-    self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                      browserState:self.browserState
-                      webStateList:self.tabModel.webStateList];
-    [self.translateInfobarCoordinator start];
-  } else {
-    self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
-        initWithBaseViewController:self.viewController
-                      browserState:self.browserState
-                      webStateList:self.tabModel.webStateList];
-    [self.languageSelectionCoordinator start];
-  }
+  self.translateInfobarCoordinator = [[TranslateInfobarCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                    webStateList:self.tabModel.webStateList];
+  [self.translateInfobarCoordinator start];
 
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -294,7 +285,8 @@
 
   /* RepostFormCoordinator is created and started by a delegate method */
 
-  self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
+  self.snackbarCoordinator = [[SnackbarCoordinator alloc]
+      initWithBaseViewController:self.viewController];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
 
@@ -313,9 +305,6 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
-
-  [self.languageSelectionCoordinator stop];
-  self.languageSelectionCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;
@@ -351,9 +340,9 @@
 
 - (void)printTab {
   DCHECK(self.printController);
-  Tab* currentTab = self.tabModel.currentTab;
-  [self.printController printView:[currentTab viewForPrinting]
-                        withTitle:tab_util::GetTabTitle(currentTab.webState)];
+  web::WebState* webState = self.tabModel.webStateList->GetActiveWebState();
+  [self.printController printView:webState->GetView()
+                        withTitle:tab_util::GetTabTitle(webState)];
 }
 
 - (void)showReadingList {
@@ -480,6 +469,9 @@
 
 // Installs delegates for each WebState in WebStateList.
 - (void)installDelegatesForAllWebStates {
+  self.openInMediator =
+      [[OpenInMediator alloc] initWithWebStateList:self.tabModel.webStateList];
+
   for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
     web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
     [self installDelegatesForWebState:webState];
@@ -510,6 +502,9 @@
 
 // Uninstalls delegates for each WebState in WebStateList.
 - (void)uninstallDelegatesForAllWebStates {
+  // OpenInMediator is controlled directly monitors the webStateList and should
+  // be deleted.
+  self.openInMediator = nil;
   for (int i = 0; i < self.tabModel.webStateList->count(); i++) {
     web::WebState* webState = self.tabModel.webStateList->GetWebStateAt(i);
     [self uninstallDelegatesForWebState:webState];

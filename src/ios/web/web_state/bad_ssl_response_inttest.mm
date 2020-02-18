@@ -6,7 +6,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -191,7 +191,8 @@ TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
 // Tests navigation to a page with self signed SSL cert and allowing the load
 // via WebClient. Subsequent navigation should not call AllowCertificateError
 // but always allow the load.
-TEST_P(BadSslResponseTest, RememberCertDecision) {
+// TODO(crbug.com/973635): fix and reenable this test.
+TEST_P(BadSslResponseTest, DISABLED_RememberCertDecision) {
   // Allow the load via WebClient.
   web_client()->SetAllowCertificateErrors(true);
   GURL url(https_server_.GetURL("/echo"));

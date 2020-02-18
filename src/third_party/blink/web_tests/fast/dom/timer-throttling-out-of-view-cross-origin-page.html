@@ -15,12 +15,14 @@ if (window.testRunner)
   testRunner.dumpAsText();
 let throttlingTest = async_test("Test timer throttling in out-of-view cross origin frames");
 
-addEventListener('load', () => {
+var frame = document.querySelector('#frame');
+frame.addEventListener('load', () => {
   // Throttling only happens after the first layout, so start the test after
   // that.
   requestAnimationFrame(() => {
-    var frame = document.querySelector('#frame');
-    frame.contentWindow.postMessage(null, '*');
+    setTimeout(() => {
+      frame.contentWindow.postMessage(null, '*');
+    });
   });
 });
 

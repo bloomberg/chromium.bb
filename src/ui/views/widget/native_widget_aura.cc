@@ -34,7 +34,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/views_delegate.h"
@@ -57,7 +56,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
-#include "ui/gfx/system_fonts_win.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_win.h"
 #endif
 
@@ -82,7 +80,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(internal::NativeWidgetPrivate*,
                              nullptr)
 
 void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
-  window->SetProperty(aura::client::kRestoreBoundsKey, new gfx::Rect(bounds));
+  window->SetProperty(aura::client::kRestoreBoundsKey, bounds);
 }
 
 void SetIcon(aura::Window* window,
@@ -91,7 +89,7 @@ void SetIcon(aura::Window* window,
   if (value.isNull())
     window->ClearProperty(key);
   else
-    window->SetProperty(key, new gfx::ImageSkia(value));
+    window->SetProperty(key, value);
 }
 
 }  // namespace
@@ -104,8 +102,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       window_(new aura::Window(this, aura::client::WINDOW_TYPE_UNKNOWN)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       destroying_(false),
-      cursor_(gfx::kNullCursor),
-      close_widget_factory_(this) {
+      cursor_(gfx::kNullCursor) {
   aura::client::SetFocusChangeObserver(window_, this);
   wm::SetActivationChangeObserver(window_, this);
 }
@@ -207,8 +204,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
             ->set_parent_controls_visibility(true);
       }
     }
-    // SetAlwaysOnTop before SetParent so that always-on-top container is used.
-    SetAlwaysOnTop(params.keep_on_top);
+    // SetZOrderLevel before SetParent so that always-on-top container is used.
+    SetZOrderLevel(params.EffectiveZOrderLevel());
 
     // Make sure we have a real |window_bounds|.
     aura::Window* parent_or_context = parent ? parent : context;
@@ -365,7 +362,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   if (!window_)
     return;
 
-  window_->SetProperty(aura::client::kPreferredSize, new gfx::Size(size));
+  window_->SetProperty(aura::client::kPreferredSize, size);
 
   gfx::Rect parent_bounds(window_->parent()->GetBoundsInRootWindow());
   // When centering window, we take the intersection of the host and
@@ -613,13 +610,16 @@ bool NativeWidgetAura::IsActive() const {
   return window_ && wm::IsActiveWindow(window_);
 }
 
-void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
+void NativeWidgetAura::SetZOrderLevel(ui::ZOrderLevel order) {
   if (window_)
-    window_->SetProperty(aura::client::kAlwaysOnTopKey, on_top);
+    window_->SetProperty(aura::client::kZOrderingKey, order);
 }
 
-bool NativeWidgetAura::IsAlwaysOnTop() const {
-  return window_ && window_->GetProperty(aura::client::kAlwaysOnTopKey);
+ui::ZOrderLevel NativeWidgetAura::GetZOrderLevel() const {
+  if (window_)
+    return window_->GetProperty(aura::client::kZOrderingKey);
+
+  return ui::ZOrderLevel::kNormal;
 }
 
 void NativeWidgetAura::SetVisibleOnAllWorkspaces(bool always_visible) {
@@ -691,12 +691,12 @@ void NativeWidgetAura::FlashFrame(bool flash) {
 }
 
 void NativeWidgetAura::RunShellDrag(View* view,
-                                    const ui::OSExchangeData& data,
+                                    std::unique_ptr<ui::OSExchangeData> data,
                                     const gfx::Point& location,
                                     int operation,
                                     ui::DragDropTypes::DragEventSource source) {
   if (window_)
-    views::RunShellDrag(window_, data, location, operation, source);
+    views::RunShellDrag(window_, std::move(data), location, operation, source);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1034,7 +1034,8 @@ void NativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event) {
+int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event,
+                                    std::unique_ptr<ui::OSExchangeData> data) {
   DCHECK(drop_helper_.get() != nullptr);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
@@ -1221,15 +1222,6 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
   // And now, notify them that they have a brand new parent.
   for (auto* widget : widgets)
     widget->NotifyNativeViewHierarchyChanged();
-}
-
-// static
-gfx::FontList NativeWidgetPrivate::GetWindowTitleFontList() {
-#if defined(OS_WIN)
-  return gfx::FontList(gfx::win::GetSystemFont(gfx::win::SystemFont::kCaption));
-#else
-  return gfx::FontList();
-#endif
 }
 
 // static

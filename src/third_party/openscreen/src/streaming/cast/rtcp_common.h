@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <tuple>
 #include <vector>
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "streaming/cast/frame_id.h"
 #include "streaming/cast/ntp_time.h"
 #include "streaming/cast/rtp_defines.h"
 #include "streaming/cast/rtp_time.h"
@@ -41,8 +43,8 @@ struct RtcpCommonHeader {
   int payload_size = 0;
 
   // Serializes this header into the first |kRtcpCommonHeaderSize| bytes of the
-  // given |buffer|.
-  void Serialize(absl::Span<uint8_t> buffer) const;
+  // given |buffer| and adjusts |buffer| to point to the first byte after it.
+  void AppendFields(absl::Span<uint8_t>* buffer) const;
 
   // Parse from the 4-byte wire format in |buffer|. Returns nullopt if the data
   // is corrupt.
@@ -100,8 +102,9 @@ struct RtcpReportBlock {
   Delay delay_since_last_report{};
 
   // Serializes this report block in the first |kRtcpReportBlockSize| bytes of
-  // the given |buffer|.
-  void Serialize(absl::Span<uint8_t> buffer) const;
+  // the given |buffer| and adjusts |buffer| to point to the first byte after
+  // it.
+  void AppendFields(absl::Span<uint8_t>* buffer) const;
 
   // Scans the wire-format report blocks in |buffer|, searching for one with the
   // matching |ssrc| and, if found, returns the parse result. Returns nullopt if
@@ -132,6 +135,29 @@ struct RtcpSenderReport {
   // The report block, if present. While the RTCP spec allows for zero or
   // multiple reports, Cast Streaming only uses zero or one.
   absl::optional<RtcpReportBlock> report_block;
+};
+
+// A pair of IDs that refers to a specific missing packet within a frame. If
+// |packet_id| is kAllPacketsLost, then it represents all the packets of a
+// frame.
+struct PacketNack {
+  FrameId frame_id;
+  FramePacketId packet_id;
+
+  // Comparison operators. Define more when you need them!
+  // TODO(miu): In C++20, just
+  // replace all of this with one operator<=>() definition to get them all for
+  // free.
+  constexpr bool operator==(const PacketNack& other) const {
+    return frame_id == other.frame_id && packet_id == other.packet_id;
+  }
+  constexpr bool operator!=(const PacketNack& other) const {
+    return frame_id != other.frame_id || packet_id != other.packet_id;
+  }
+  constexpr bool operator<(const PacketNack& other) const {
+    return (frame_id < other.frame_id) ||
+           (frame_id == other.frame_id && packet_id < other.packet_id);
+  }
 };
 
 }  // namespace cast_streaming

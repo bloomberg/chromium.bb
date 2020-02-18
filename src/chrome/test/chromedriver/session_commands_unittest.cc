@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -67,7 +68,7 @@ TEST(SessionCommandsTest, ExecuteSetTimeouts) {
   params.Clear();
   params.SetInteger("unknown", 5000);
   status = ExecuteSetTimeouts(&session, params, &value);
-  ASSERT_EQ(kInvalidArgument, status.code());
+  ASSERT_EQ(kOk, status.code());
 
   // Old pre-W3C format.
   params.Clear();
@@ -267,6 +268,26 @@ TEST(SessionCommandsTest, ProcessCapabilities_Merge) {
   ASSERT_TRUE(result.HasKey("unhandledPromptBehavior"));
   ASSERT_FALSE(result.HasKey("pageLoadStrategy"));
 
+  // Selection by platformName
+  std::string platform_name =
+      base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+  status = ProcessCapabilitiesJson(
+      R"({
+       "capabilities": {
+         "alwaysMatch": { "timeouts": { "script": 10 } },
+         "firstMatch": [
+           { "platformName": "LINUX", "pageLoadStrategy": "none" },
+           { "platformName": ")" +
+          platform_name + R"(", "pageLoadStrategy": "eager" }
+         ]
+       }
+     })",
+      &result);
+  printf("THIS IS PLATFORM: %s", platform_name.c_str());
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_EQ(result.FindKey("platformName")->GetString(), platform_name);
+  ASSERT_EQ(result.FindKey("pageLoadStrategy")->GetString(), "eager");
+
   // Selection by browserName
   status = ProcessCapabilitiesJson(
       R"({
@@ -400,48 +421,4 @@ TEST(SessionCommandsTest, QuitFails) {
   base::DictionaryValue params;
   std::unique_ptr<base::Value> value;
   ASSERT_EQ(kUnknownError, ExecuteQuit(false, &session, params, &value).code());
-}
-
-TEST(SessionCommandsTest, AutoReporting) {
-  DetachChrome* chrome = new DetachChrome();
-  Session session("id", std::unique_ptr<Chrome>(chrome));
-  base::DictionaryValue params;
-  std::unique_ptr<base::Value> value;
-  StatusCode status_code;
-  bool enabled;
-
-  // autoreporting should be disabled by default
-  status_code = ExecuteIsAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kOk, status_code);
-  ASSERT_FALSE(session.auto_reporting_enabled);
-  ASSERT_TRUE(value.get()->GetAsBoolean(&enabled));
-  ASSERT_FALSE(enabled);
-
-  // an error should be given if the |enabled| parameter is not set
-  status_code = ExecuteSetAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kInvalidArgument, status_code);
-
-  // try to enable autoreporting
-  params.SetBoolean("enabled", true);
-  status_code = ExecuteSetAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kOk, status_code);
-  ASSERT_TRUE(session.auto_reporting_enabled);
-
-  // check that autoreporting was enabled successfully
-  status_code = ExecuteIsAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kOk, status_code);
-  ASSERT_TRUE(value.get()->GetAsBoolean(&enabled));
-  ASSERT_TRUE(enabled);
-
-  // try to disable autoreporting
-  params.SetBoolean("enabled", false);
-  status_code = ExecuteSetAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kOk, status_code);
-  ASSERT_FALSE(session.auto_reporting_enabled);
-
-  // check that autoreporting was disabled successfully
-  status_code = ExecuteIsAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kOk, status_code);
-  ASSERT_TRUE(value.get()->GetAsBoolean(&enabled));
-  ASSERT_FALSE(enabled);
 }

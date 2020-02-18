@@ -4,6 +4,8 @@
 
 #include "services/device/usb/mock_usb_device.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 
 namespace device {
@@ -29,73 +31,10 @@ MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
                 /*bus_number=*/0,
                 /*port_number=*/0) {}
 
-MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
-                             uint16_t product_id,
-                             const std::string& manufacturer_string,
-                             const std::string& product_string,
-                             const std::string& serial_number,
-                             const GURL& webusb_landing_page)
-    : UsbDevice(0x0200,  // usb_version
-                0xff,    // device_class
-                0xff,    // device_subclass
-                0xff,    // device_protocol
-                vendor_id,
-                product_id,
-                0x0100,  // device_version
-                base::UTF8ToUTF16(manufacturer_string),
-                base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number),
-                /*bus_number=*/0,
-                /*port_number=*/0) {
-  webusb_landing_page_ = webusb_landing_page;
-}
-
-MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
-                             uint16_t product_id,
-                             const UsbConfigDescriptor& configuration)
-    : MockUsbDevice(vendor_id, product_id) {
-  descriptor_.configurations.push_back(configuration);
-}
-
-MockUsbDevice::MockUsbDevice(
-    uint16_t vendor_id,
-    uint16_t product_id,
-    uint8_t device_class,
-    const std::vector<UsbConfigDescriptor>& configurations)
-    : UsbDevice(0x0200,  // usb_version
-                device_class,
-                0xff,  // device_subclass
-                0xff,  // device_protocol
-                vendor_id,
-                product_id,
-                0x0100,  // device_version
-                base::string16(),
-                base::string16(),
-                base::string16(),
-                /*bus_number=*/0,
-                /*port_number=*/0) {
-  descriptor_.configurations = configurations;
-}
-
-MockUsbDevice::MockUsbDevice(
-    uint16_t vendor_id,
-    uint16_t product_id,
-    const std::string& manufacturer_string,
-    const std::string& product_string,
-    const std::string& serial_number,
-    const std::vector<UsbConfigDescriptor>& configurations)
-    : MockUsbDevice(vendor_id,
-                    product_id,
-                    manufacturer_string,
-                    product_string,
-                    serial_number) {
-  descriptor_.configurations = configurations;
-}
-
 MockUsbDevice::~MockUsbDevice() = default;
 
-void MockUsbDevice::AddMockConfig(const UsbConfigDescriptor& config) {
-  descriptor_.configurations.push_back(config);
+void MockUsbDevice::AddMockConfig(mojom::UsbConfigurationInfoPtr config) {
+  device_info_->configurations.push_back(std::move(config));
 }
 
 void MockUsbDevice::ActiveConfigurationChanged(int configuration_value) {

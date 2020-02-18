@@ -5,6 +5,7 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_url_loader_throttle.h"
 
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
+#include "content/public/common/resource_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace subresource_redirect {
@@ -28,16 +29,6 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
           GURL("https://www.test.com/test.jpg#test"),
           static_cast<int>(content::ResourceType::kImage),
           GetSubresourceURLForURL(GURL("https://www.test.com/test.jpg#test")),
-      },
-      {
-          GURL("https://www.test.com/test.css"),
-          static_cast<int>(content::ResourceType::kStylesheet),
-          GURL("https://www.test.com/test.css"),
-      },
-      {
-          GURL("http://www.insecure.com/test.jpg"),
-          static_cast<int>(content::ResourceType::kImage),
-          GURL("http://www.insecure.com/test.jpg"),
       },
   };
 

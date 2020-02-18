@@ -7,6 +7,7 @@
 #include "fpdfsdk/cpdfsdk_annot.h"
 #include "fpdfsdk/cpdfsdk_annotiterator.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
+#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
 #include "public/fpdf_fwlevent.h"
@@ -55,7 +56,7 @@ class CPWLEditEmbedderTest : public EmbedderTest {
     CFFL_InteractiveFormFiller* pInteractiveFormFiller =
         m_pFormFillEnv->GetInteractiveFormFiller();
     {
-      CPDFSDK_Annot::ObservedPtr pObserved(pAnnotTextField);
+      ObservedPtr<CPDFSDK_Annot> pObserved(pAnnotTextField);
       EXPECT_TRUE(pInteractiveFormFiller->OnSetFocus(&pObserved, 0));
     }
 

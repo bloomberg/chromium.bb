@@ -16,6 +16,12 @@
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/win/win_window.h"
 #endif
+// TODO(crbug.com/969798): Fix memory leaks in tests and re-enable on LSAN.
+#ifdef LEAK_SANITIZER
+#define MAYBE_SurfaceFormatTest DISABLED_SurfaceFormatTest
+#else
+#define MAYBE_SurfaceFormatTest SurfaceFormatTest
+#endif
 
 namespace gl {
 
@@ -24,8 +30,13 @@ namespace {
 class GLSurfaceEGLTest : public testing::Test {
  protected:
   void SetUp() override {
+#if defined(OS_WIN)
+    GLSurfaceTestSupport::InitializeOneOffImplementation(
+        GLImplementation::kGLImplementationEGLANGLE, true);
+#else
     GLSurfaceTestSupport::InitializeOneOffImplementation(
         GLImplementation::kGLImplementationEGLGLES2, true);
+#endif
   }
 
   void TearDown() override { gl::init::ShutdownGL(false); }
@@ -33,7 +44,7 @@ class GLSurfaceEGLTest : public testing::Test {
 
 #if !defined(MEMORY_SANITIZER)
 // Fails under MSAN: crbug.com/886995
-TEST_F(GLSurfaceEGLTest, SurfaceFormatTest) {
+TEST_F(GLSurfaceEGLTest, MAYBE_SurfaceFormatTest) {
   GLSurfaceFormat surface_format = GLSurfaceFormat();
   surface_format.SetDepthBits(24);
   surface_format.SetStencilBits(8);

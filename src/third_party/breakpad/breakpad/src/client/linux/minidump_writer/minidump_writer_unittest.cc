@@ -306,7 +306,11 @@ TEST(MinidumpWriterTest, MinidumpStacksSkippedIfRequested) {
       ++threads_with_stacks;
     }
   }
-  ASSERT_EQ(1, threads_with_stacks);
+#if defined(THREAD_SANITIZER) || defined(ADDRESS_SANITIZER)
+  ASSERT_GE(threads_with_stacks, 1);
+#else
+  ASSERT_EQ(threads_with_stacks, 1);
+#endif
   close(fds[1]);
   IGNORE_EINTR(waitpid(child, nullptr, 0));
 }

@@ -37,6 +37,7 @@
 #include "components/content_settings/core/browser/user_modifiable_provider.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -249,8 +250,7 @@ HostContentSettingsMap::HostContentSettingsMap(
 #endif
       prefs_(prefs),
       is_off_the_record_(is_off_the_record),
-      store_last_modified_(store_last_modified),
-      weak_ptr_factory_(this) {
+      store_last_modified_(store_last_modified) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
 
   content_settings::PolicyProvider* policy_provider =
@@ -638,6 +638,7 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
     ContentSettingsForOneType settings;
     GetSettingsForOneType(content_type, std::string(), &settings);
     size_t num_exceptions = 0;
+    size_t num_third_party_cookie_allow_exceptions = 0;
     base::flat_map<ContentSetting, size_t> num_exceptions_with_setting;
     const content_settings::ContentSettingsInfo* content_info =
         content_setting_registry->Get(content_type);
@@ -677,6 +678,12 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
         if (content_info)
           ++num_exceptions_with_setting[setting_entry.GetContentSetting()];
         ++num_exceptions;
+        if (content_type == CONTENT_SETTINGS_TYPE_COOKIES &&
+            setting_entry.primary_pattern.MatchesAllHosts() &&
+            !setting_entry.secondary_pattern.MatchesAllHosts() &&
+            setting_entry.GetContentSetting() == CONTENT_SETTING_ALLOW) {
+          num_third_party_cookie_allow_exceptions++;
+        }
       }
     }
 
@@ -698,6 +705,11 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
             histogram_with_suffix, num_exceptions_with_setting[content_setting],
             1, 1000, 30);
       }
+    }
+    if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
+      base::UmaHistogramCustomCounts(
+          "ContentSettings.Exceptions.cookies.AllowThirdParty",
+          num_third_party_cookie_allow_exceptions, 1, 1000, 30);
     }
   }
 }

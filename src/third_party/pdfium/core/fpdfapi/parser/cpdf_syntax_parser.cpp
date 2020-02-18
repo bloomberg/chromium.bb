@@ -148,8 +148,8 @@ bool CPDF_SyntaxParser::GetCharAtBackward(FX_FILESIZE pos, uint8_t* ch) {
 
   if (!IsPositionRead(pos)) {
     FX_FILESIZE block_start = 0;
-    if (pos >= CPDF_ModuleMgr::kFileBufSize)
-      block_start = pos - CPDF_ModuleMgr::kFileBufSize + 1;
+    if (pos >= CPDF_Stream::kFileBufSize)
+      block_start = pos - CPDF_Stream::kFileBufSize + 1;
     if (!ReadBlockAt(block_start) || !IsPositionRead(pos))
       return false;
   }
@@ -521,7 +521,7 @@ RetainPtr<CPDF_Object> CPDF_SyntaxParser::GetObjectBodyInternal(
 
     AutoRestorer<FX_FILESIZE> pos_restorer(&m_Pos);
     if (GetNextWord(nullptr) != "stream")
-      return std::move(pDict);
+      return pDict;
     pos_restorer.AbandonRestoration();
     return ReadStream(std::move(pDict));
   }
@@ -767,9 +767,9 @@ bool CPDF_SyntaxParser::IsWholeWord(FX_FILESIZE startpos,
   return true;
 }
 
-bool CPDF_SyntaxParser::BackwardsSearchToWord(ByteStringView tag,
+bool CPDF_SyntaxParser::BackwardsSearchToWord(ByteStringView word,
                                               FX_FILESIZE limit) {
-  int32_t taglen = tag.GetLength();
+  int32_t taglen = word.GetLength();
   if (taglen == 0)
     return false;
 
@@ -783,18 +783,18 @@ bool CPDF_SyntaxParser::BackwardsSearchToWord(ByteStringView tag,
     if (!GetCharAtBackward(pos, &byte))
       return false;
 
-    if (byte == tag[offset]) {
+    if (byte == word[offset]) {
       offset--;
       if (offset >= 0) {
         pos--;
         continue;
       }
-      if (IsWholeWord(pos, limit, tag, false)) {
+      if (IsWholeWord(pos, limit, word, false)) {
         m_Pos = pos;
         return true;
       }
     }
-    offset = byte == tag[taglen - 1] ? taglen - 2 : taglen - 1;
+    offset = byte == word[taglen - 1] ? taglen - 2 : taglen - 1;
     pos--;
     if (pos < 0)
       return false;

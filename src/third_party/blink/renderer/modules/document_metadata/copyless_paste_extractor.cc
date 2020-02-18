@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
@@ -296,9 +296,9 @@ WebPagePtr CopylessPasteExtractor::Extract(const Document& document) {
   WebPagePtr page = WebPage::New();
 
   // Traverse the DOM tree and extract the metadata.
-  TimeTicks start_time = CurrentTimeTicks();
+  base::TimeTicks start_time = base::TimeTicks::Now();
   ExtractionStatus status = ExtractMetadata(*html, page->entities);
-  TimeDelta elapsed_time = CurrentTimeTicks() - start_time;
+  base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time;
 
   DEFINE_STATIC_LOCAL(EnumerationHistogram, status_histogram,
                       ("CopylessPaste.ExtractionStatus", kCount));

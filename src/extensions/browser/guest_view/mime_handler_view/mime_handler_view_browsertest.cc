@@ -37,12 +37,11 @@
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"
@@ -189,11 +188,6 @@ class MimeHandlerViewCrossProcessTest
   void SetUpCommandLine(base::CommandLine* cl) override {
     MimeHandlerViewTest::SetUpCommandLine(cl);
     is_cross_process_mode_ = GetParam();
-    // TODO(ekaramad): All these tests started timing out on ChromeOS (https://
-    // crbug.com/949565).
-#if defined(OS_CHROMEOS)
-    is_cross_process_mode_ = false;
-#endif
     if (is_cross_process_mode_) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kMimeHandlerViewInCrossProcessFrame);
@@ -418,21 +412,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Basic) {
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Iframe) {
   RunTest("test_iframe.html");
-}
-
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, Abort) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // With the network service, abortStream isn't needed since we pass a Mojo
-    // pipe to the renderer. If the plugin chooses to cancel the main request
-    // (e.g. to make range requests instead), we are always guaranteed that the
-    // Mojo pipe will be broken which will cancel the request. This is different
-    // than without the network service, since stream URLs need to be explicitly
-    // closed if they weren't yet opened to avoid leaks.
-    // TODO(jam): once the network service is the only path, delete the
-    // abortStream mimeHandlerPrivate method and supporting code.
-    return;
-  }
-  RunTest("testAbort.csv");
 }
 
 IN_PROC_BROWSER_TEST_P(MimeHandlerViewCrossProcessTest, NonAsciiHeaders) {

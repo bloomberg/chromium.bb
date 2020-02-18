@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_updater.h"
 
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -38,28 +37,32 @@
 namespace blink {
 
 GraphicsLayerUpdater::UpdateContext::UpdateContext()
-    : compositing_stacking_context_(nullptr), compositing_ancestor_(nullptr) {}
+    : compositing_stacking_context_(nullptr),
+      compositing_ancestor_(nullptr),
+      use_slow_path_(false) {}
 
 GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other,
                                                    const PaintLayer& layer)
     : compositing_stacking_context_(other.compositing_stacking_context_),
-      compositing_ancestor_(other.CompositingContainer(layer)) {
+      compositing_ancestor_(other.CompositingContainer(layer)),
+      use_slow_path_(other.use_slow_path_) {
   CompositingState compositing_state = layer.GetCompositingState();
   if (compositing_state != kNotComposited &&
       compositing_state != kPaintsIntoGroupedBacking) {
     compositing_ancestor_ = &layer;
     if (layer.GetLayoutObject().StyleRef().IsStackingContext())
       compositing_stacking_context_ = &layer;
-
-    // Any composited content under SVG must be a descendant of (but not
-    // equal to, see PaintLayerCompositor::CanBeComposited)
-    // a <foreignObject> element. The SVG root element amounts to a
-    // compositing stacking ancestor to such an element, if the SVG
-    // root is composited, because <foreignObject> is a replaced normal-flow
-    // stacking element (see PaintLayer::IsReplacedNormalFlowStacking).
-    if (layer.GetLayoutObject().IsSVGRoot())
-      compositing_stacking_context_ = &layer;
   }
+  // Any composited content under SVG must be a descendant of (but not
+  // equal to, see PaintLayerCompositor::CanBeComposited)
+  // a <foreignObject> element. The rules for compositing ancestors are
+  // complicated for this situation, due to <foreignObject> being a replaced
+  // nornmal-flow stacking element
+  // (see PaintLayer::IsReplacedNormalFlowStacking). Use a slow path
+  // for these situations, to simplify the logic.
+  if (layer.GetLayoutObject().IsSVGRoot() ||
+      layer.IsReplacedNormalFlowStacking())
+    use_slow_path_ = true;
 
   parent_object_offset_delta =
       compositing_ancestor_ == other.compositing_ancestor_
@@ -69,6 +72,9 @@ GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other,
 
 const PaintLayer* GraphicsLayerUpdater::UpdateContext::CompositingContainer(
     const PaintLayer& layer) const {
+  if (use_slow_path_)
+    return layer.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
+
   const PaintLayer* compositing_container;
   if (layer.GetLayoutObject().StyleRef().IsStacked() &&
       !layer.IsReplacedNormalFlowStacking()) {

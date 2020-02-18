@@ -10,7 +10,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "components/services/unzip/public/cpp/unzip.h"
-#include "components/services/unzip/public/interfaces/unzipper.mojom.h"
+#include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
@@ -203,7 +203,7 @@ bool ZipFileInstaller::ShouldExtractFile(bool is_theme,
     // Allow filenames with no extension.
     if (extension.empty())
       return true;
-    return base::ContainsValue(kAllowedThemeFiletypes, extension);
+    return base::Contains(kAllowedThemeFiletypes, extension);
   }
   return !base::FilePath::CompareEqualIgnoreCase(file_path.FinalExtension(),
                                                  FILE_PATH_LITERAL(".exe"));

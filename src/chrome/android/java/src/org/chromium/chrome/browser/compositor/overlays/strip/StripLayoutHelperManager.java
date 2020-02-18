@@ -11,7 +11,6 @@ import android.os.SystemClock;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -163,15 +162,9 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
         Resources res = context.getResources();
         mHeight = res.getDimension(R.dimen.tab_strip_height) / res.getDisplayMetrics().density;
-        boolean useAlternativeIncognitoStrings =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_STRINGS);
         mModelSelectorButton.setAccessibilityDescription(
-                res.getString(useAlternativeIncognitoStrings
-                                ? R.string.accessibility_tabstrip_btn_private_toggle_standard
-                                : R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
-                res.getString(useAlternativeIncognitoStrings
-                                ? R.string.accessibility_tabstrip_btn_private_toggle_private
-                                : R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
+                res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_standard),
+                res.getString(R.string.accessibility_tabstrip_btn_incognito_toggle_incognito));
 
         onContextChanged(context);
     }

@@ -11,10 +11,6 @@
 #include <sstream>
 #include <utility>
 
-#include "core/fxcodec/codec/ccodec_basicmodule.h"
-#include "core/fxcodec/codec/ccodec_faxmodule.h"
-#include "core/fxcodec/codec/ccodec_flatemodule.h"
-#include "core/fxcodec/codec/ccodec_jpegmodule.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxge/cfx_fontcache.h"
 #include "core/fxge/cfx_gemodule.h"
@@ -24,66 +20,9 @@
 #include "core/fxge/dib/cfx_dibextractor.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/fx_dib.h"
+#include "core/fxge/text_char_pos.h"
 #include "core/fxge/win32/cpsoutput.h"
 #include "third_party/base/ptr_util.h"
-
-namespace {
-
-bool FaxCompressData(std::unique_ptr<uint8_t, FxFreeDeleter> src_buf,
-                     int width,
-                     int height,
-                     std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
-                     uint32_t* dest_size) {
-  if (width * height <= 128) {
-    *dest_buf = std::move(src_buf);
-    *dest_size = (width + 7) / 8 * height;
-    return false;
-  }
-
-  CCodec_FaxModule::FaxEncode(src_buf.get(), width, height, (width + 7) / 8,
-                              dest_buf, dest_size);
-  return true;
-}
-
-void PSCompressData(int PSLevel,
-                    uint8_t* src_buf,
-                    uint32_t src_size,
-                    uint8_t** output_buf,
-                    uint32_t* output_size,
-                    const char** filter) {
-  *output_buf = src_buf;
-  *output_size = src_size;
-  *filter = "";
-  if (src_size < 1024)
-    return;
-
-  uint8_t* dest_buf = nullptr;
-  uint32_t dest_size = src_size;
-  if (PSLevel >= 3) {
-    std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf_unique;
-    if (CCodec_FlateModule::Encode(src_buf, src_size, &dest_buf_unique,
-                                   &dest_size)) {
-      dest_buf = dest_buf_unique.release();
-      *filter = "/FlateDecode filter ";
-    }
-  } else {
-    std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf_unique;
-    if (CCodec_BasicModule::RunLengthEncode({src_buf, src_size},
-                                            &dest_buf_unique, &dest_size)) {
-      dest_buf = dest_buf_unique.release();
-      *filter = "/RunLengthDecode filter ";
-    }
-  }
-  if (dest_size < src_size) {
-    *output_buf = dest_buf;
-    *output_size = dest_size;
-  } else {
-    *filter = nullptr;
-    FX_Free(dest_buf);
-  }
-}
-
-}  // namespace
 
 struct PSGlyph {
   UnownedPtr<CFX_Font> m_pFont;
@@ -98,7 +37,8 @@ class CPSFont {
   PSGlyph m_Glyphs[256];
 };
 
-CFX_PSRenderer::CFX_PSRenderer() = default;
+CFX_PSRenderer::CFX_PSRenderer(const EncoderIface* pEncoderIface)
+    : m_pEncoderIface(pEncoderIface) {}
 
 CFX_PSRenderer::~CFX_PSRenderer() = default;
 
@@ -454,7 +394,8 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     size_t output_size = 0;
     const char* filter = nullptr;
     if ((m_PSLevel == 2 || options.bLossy) &&
-        CCodec_JpegModule::JpegEncode(pConverted, &output_buf, &output_size)) {
+        m_pEncoderIface->pJpegEncodeFunc(pConverted, &output_buf,
+                                         &output_size)) {
       filter = "/DCTDecode filter ";
     }
     if (!filter) {
@@ -477,8 +418,8 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
       }
       uint8_t* compressed_buf;
       uint32_t compressed_size;
-      PSCompressData(m_PSLevel, output_buf, output_size, &compressed_buf,
-                     &compressed_size, &filter);
+      PSCompressData(output_buf, output_size, &compressed_buf, &compressed_size,
+                     &filter);
       if (output_buf != compressed_buf)
         FX_Free(output_buf);
 
@@ -633,18 +574,18 @@ void CFX_PSRenderer::FindPSFontGlyph(CFX_GlyphCache* pGlyphCache,
 bool CFX_PSRenderer::DrawText(int nChars,
                               const TextCharPos* pCharPos,
                               CFX_Font* pFont,
-                              const CFX_Matrix* pObject2Device,
+                              const CFX_Matrix& mtObject2Device,
                               float font_size,
                               uint32_t color) {
   // Check object to device matrix first, since it can scale the font size.
-  if ((pObject2Device->a == 0 && pObject2Device->b == 0) ||
-      (pObject2Device->c == 0 && pObject2Device->d == 0)) {
+  if ((mtObject2Device.a == 0 && mtObject2Device.b == 0) ||
+      (mtObject2Device.c == 0 && mtObject2Device.d == 0)) {
     return true;
   }
 
   // Do not send near zero font sizes to printers. See crbug.com/767343.
   float scale =
-      std::min(pObject2Device->GetXUnit(), pObject2Device->GetYUnit());
+      std::min(mtObject2Device.GetXUnit(), mtObject2Device.GetYUnit());
   static constexpr float kEpsilon = 0.01f;
   if (std::fabs(font_size * scale) < kEpsilon)
     return true;
@@ -656,9 +597,9 @@ bool CFX_PSRenderer::DrawText(int nChars,
 
   SetColor(color);
   std::ostringstream buf;
-  buf << "q[" << pObject2Device->a << " " << pObject2Device->b << " "
-      << pObject2Device->c << " " << pObject2Device->d << " "
-      << pObject2Device->e << " " << pObject2Device->f << "]cm\n";
+  buf << "q[" << mtObject2Device.a << " " << mtObject2Device.b << " "
+      << mtObject2Device.c << " " << mtObject2Device.d << " "
+      << mtObject2Device.e << " " << mtObject2Device.f << "]cm\n";
 
   CFX_FontCache* pCache = CFX_GEModule::Get()->GetFontCache();
   RetainPtr<CFX_GlyphCache> pGlyphCache = pCache->GetGlyphCache(pFont);
@@ -680,11 +621,65 @@ bool CFX_PSRenderer::DrawText(int nChars,
   return true;
 }
 
+bool CFX_PSRenderer::FaxCompressData(
+    std::unique_ptr<uint8_t, FxFreeDeleter> src_buf,
+    int width,
+    int height,
+    std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
+    uint32_t* dest_size) const {
+  if (width * height <= 128) {
+    *dest_buf = std::move(src_buf);
+    *dest_size = (width + 7) / 8 * height;
+    return false;
+  }
+
+  m_pEncoderIface->pFaxEncodeFunc(src_buf.get(), width, height, (width + 7) / 8,
+                                  dest_buf, dest_size);
+  return true;
+}
+
+void CFX_PSRenderer::PSCompressData(uint8_t* src_buf,
+                                    uint32_t src_size,
+                                    uint8_t** output_buf,
+                                    uint32_t* output_size,
+                                    const char** filter) const {
+  *output_buf = src_buf;
+  *output_size = src_size;
+  *filter = "";
+  if (src_size < 1024)
+    return;
+
+  uint8_t* dest_buf = nullptr;
+  uint32_t dest_size = src_size;
+  if (m_PSLevel >= 3) {
+    std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf_unique;
+    if (m_pEncoderIface->pFlateEncodeFunc(src_buf, src_size, &dest_buf_unique,
+                                          &dest_size)) {
+      dest_buf = dest_buf_unique.release();
+      *filter = "/FlateDecode filter ";
+    }
+  } else {
+    std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf_unique;
+    if (m_pEncoderIface->pRunLengthEncodeFunc({src_buf, src_size},
+                                              &dest_buf_unique, &dest_size)) {
+      dest_buf = dest_buf_unique.release();
+      *filter = "/RunLengthDecode filter ";
+    }
+  }
+  if (dest_size < src_size) {
+    *output_buf = dest_buf;
+    *output_size = dest_size;
+  } else {
+    *filter = nullptr;
+    FX_Free(dest_buf);
+  }
+}
+
 void CFX_PSRenderer::WritePSBinary(const uint8_t* data, int len) {
   std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf;
   uint32_t dest_size;
-  if (CCodec_BasicModule::A85Encode({data, static_cast<size_t>(len)}, &dest_buf,
-                                    &dest_size)) {
+  if (m_pEncoderIface->pA85EncodeFunc({data, static_cast<size_t>(len)},
+                                      &dest_buf, &dest_size)) {
     m_pStream->WriteBlock(dest_buf.get(), dest_size);
   } else {
     m_pStream->WriteBlock(data, len);

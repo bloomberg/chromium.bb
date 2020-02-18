@@ -20,8 +20,8 @@
 #include "base/values.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 
@@ -104,8 +104,8 @@ class TestJSONTraceExporter : public JSONTraceExporter {
   std::vector<perfetto::protos::TraceStats> stats;
 
  protected:
-  void ProcessPackets(
-      const std::vector<perfetto::TracePacket>& packets) override {
+  void ProcessPackets(const std::vector<perfetto::TracePacket>& packets,
+                      bool has_more) override {
     ++process_packets_calls_;
     DCHECK(packets.size() == infos_.size())
         << " different sizes of packets versus expected behaviour test set up "

@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_CONTAINER_H_
 
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_animation_sandwich.h"
 #include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -40,11 +41,14 @@ namespace blink {
 class Document;
 class SMILTime;
 class SVGElement;
-class SVGSMILElement;
 class SVGSVGElement;
 
 class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
  public:
+  // Sorted list
+  using AnimationId = std::pair<WeakMember<SVGElement>, QualifiedName>;
+  using AnimationsMap = HeapHashMap<AnimationId, Member<SMILAnimationSandwich>>;
+
   explicit SMILTimeContainer(SVGSVGElement& owner);
   ~SMILTimeContainer();
 
@@ -106,7 +110,8 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   bool CanScheduleFrame(SMILTime earliest_fire_time) const;
   void UpdateAnimationsAndScheduleFrameIfNeeded(double elapsed,
                                                 bool seek_to_time = false);
-  SMILTime UpdateAnimations(double elapsed, bool seek_to_time);
+  void UpdateAnimationTimings(double elapsed, bool seek_to_time);
+  void ApplyAnimationValues(double elapsed);
   void ServiceOnNextFrame();
   void ScheduleWakeUp(double delay_time, FrameSchedulingState);
   bool HasPendingSynchronization() const;
@@ -131,12 +136,8 @@ class SMILTimeContainer : public GarbageCollectedFinalized<SMILTimeContainer> {
   TaskRunnerTimer<SMILTimeContainer> wakeup_timer_;
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
-  using AnimationsLinkedHashSet = HeapLinkedHashSet<WeakMember<SVGSMILElement>>;
-  using AttributeAnimationsMap =
-      HeapHashMap<QualifiedName, Member<AnimationsLinkedHashSet>>;
-  using GroupedAnimationsMap =
-      HeapHashMap<WeakMember<SVGElement>, AttributeAnimationsMap>;
-  GroupedAnimationsMap scheduled_animations_;
+  AnimationsMap scheduled_animations_;
+  HeapVector<Member<SMILAnimationSandwich>> active_sandwiches_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

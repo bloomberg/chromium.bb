@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_VSS
@@ -440,9 +440,9 @@ DECLARE_INTERFACE_(IVssAsync,IUnknown)
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IVssAsync_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IVssAsync_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IVssAsync_Release(This) (This)->pVtbl->Release(This)
+#define IVssAsync_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IVssAsync_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IVssAsync_Release(This) (This)->lpVtbl->Release(This)
 #define IVssAsync_Cancel() (This)->lpVtbl->Cancel(This)
 #define IVssAsync_Wait(This,dwMilliseconds) (This)->lpVtbl->Wait(This,dwMilliseconds)
 #define IVssAsync_QueryStatus(This,pHrResult,pReserved) (This)->lpVtbl->QueryStatus(This,pHrResult,pReserved)
@@ -474,9 +474,9 @@ DECLARE_INTERFACE_(IVssEnumObject,IUnknown)
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IVssEnumObject_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IVssEnumObject_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IVssEnumObject_Release(This) (This)->pVtbl->Release(This)
+#define IVssEnumObject_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IVssEnumObject_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IVssEnumObject_Release(This) (This)->lpVtbl->Release(This)
 #define IVssEnumObject_Next(This,celt,rgelt,pceltFetched) (This)->lpVtbl->Next(This,celt,rgelt,pceltFetched)
 #define IVssEnumObject_Skip(This,celt) (This)->lpVtbl->Skip(This,celt)
 #define IVssEnumObject_Reset() (This)->lpVtbl->Reset(This)

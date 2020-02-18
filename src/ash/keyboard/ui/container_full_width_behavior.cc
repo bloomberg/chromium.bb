@@ -17,10 +17,10 @@ constexpr int kFullWidthKeyboardAnimationDurationMs = 100;
 ContainerFullWidthBehavior::ContainerFullWidthBehavior(Delegate* delegate)
     : ContainerBehavior(delegate) {}
 
-ContainerFullWidthBehavior::~ContainerFullWidthBehavior() {}
+ContainerFullWidthBehavior::~ContainerFullWidthBehavior() = default;
 
-mojom::ContainerType ContainerFullWidthBehavior::GetType() const {
-  return mojom::ContainerType::kFullWidth;
+ContainerType ContainerFullWidthBehavior::GetType() const {
+  return ContainerType::kFullWidth;
 }
 
 void ContainerFullWidthBehavior::DoHidingAnimation(

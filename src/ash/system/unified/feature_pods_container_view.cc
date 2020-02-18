@@ -18,7 +18,8 @@ FeaturePodsContainerView::FeaturePodsContainerView(
     bool initially_expanded)
     : controller_(controller),
       pagination_model_(controller->model()->pagination_model()),
-      expanded_amount_(initially_expanded ? 1.0 : 0.0) {
+      expanded_amount_(initially_expanded ? 1.0 : 0.0),
+      feature_pod_rows_(kUnifiedFeaturePodMaxRows) {
   pagination_model_->AddObserver(this);
 }
 
@@ -33,8 +34,34 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
     return;
   expanded_amount_ = expanded_amount;
 
-  for (auto* view : children())
-    static_cast<FeaturePodButton*>(view)->SetExpandedAmount(expanded_amount_);
+  int visible_index = 0;
+  for (auto* view : children()) {
+    FeaturePodButton* button = static_cast<FeaturePodButton*>(view);
+    // When collapsing from page 1, buttons below the second row fade out
+    // while the rest move up into a single row for the collapsed state.
+    // When collapsing from page > 1, each row of buttons fades out one by one
+    // and once expanded_amount is less than kCollapseThreshold we begin to
+    // fade in the single row of buttons for the collapsed state.
+    if (expanded_amount_ < kCollapseThreshold &&
+        pagination_model_->selected_page() > 0) {
+      button->SetExpandedAmount(1.0 - expanded_amount,
+                                true /* fade_icon_button */);
+    } else if (visible_index > kUnifiedFeaturePodMaxItemsInCollapsed) {
+      int row =
+          (visible_index / kUnifiedFeaturePodItemsInRow) % feature_pod_rows_;
+      double button_expanded_amount =
+          expanded_amount
+              ? std::min(1.0, expanded_amount +
+                                  (0.25 * (feature_pod_rows_ - row - 1)))
+              : expanded_amount;
+      button->SetExpandedAmount(button_expanded_amount,
+                                true /* fade_icon_button */);
+    } else {
+      button->SetExpandedAmount(expanded_amount, false /* fade_icon_button */);
+    }
+    if (view->GetVisible())
+      visible_index++;
+  }
   UpdateChildVisibility();
   // We have to call Layout() explicitly here.
   Layout();
@@ -48,7 +75,7 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
                         kUnifiedFeaturePodItemsInRow;
 
   if (features::IsSystemTrayFeaturePodsPaginationEnabled())
-    number_of_lines = std::min(number_of_lines, kUnifiedFeaturePodItemsRows);
+    number_of_lines = std::min(number_of_lines, feature_pod_rows_);
 
   return kUnifiedFeaturePodBottomPadding +
          (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
@@ -58,17 +85,6 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
 int FeaturePodsContainerView::GetCollapsedHeight() const {
   return 2 * kUnifiedFeaturePodCollapsedVerticalPadding +
          kUnifiedFeaturePodCollapsedSize.height();
-}
-
-void FeaturePodsContainerView::SaveFocus() {
-  const auto i = std::find_if(children().cbegin(), children().cend(),
-                              [](const auto* v) { return v->HasFocus(); });
-  focused_button_ = (i == children().cend()) ? nullptr : *i;
-}
-
-void FeaturePodsContainerView::RestoreFocus() {
-  if (focused_button_)
-    focused_button_->RequestFocus();
 }
 
 gfx::Size FeaturePodsContainerView::CalculatePreferredSize() const {
@@ -159,10 +175,15 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
                                           kUnifiedFeaturePodVerticalPadding) *
                                              row;
 
-  // When fully expanded, or below the second row, always return the same
-  // position.
-  if (expanded_amount_ == 1.0 || row > 2)
+  // Only feature pods visible in the collapsed state (i.e. the first 5 pods)
+  // move during expansion/collapse. Otherwise, the button position will always
+  // be constant.
+  if (expanded_amount_ == 1.0 ||
+      visible_index > kUnifiedFeaturePodMaxItemsInCollapsed ||
+      (pagination_model_->selected_page() > 0 &&
+       expanded_amount_ >= kCollapseThreshold)) {
     return gfx::Point(x, y);
+  }
 
   int collapsed_x =
       collapsed_side_padding_ + (kUnifiedFeaturePodCollapsedSize.width() +
@@ -170,8 +191,10 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
                                     visible_index;
   int collapsed_y = kUnifiedFeaturePodCollapsedVerticalPadding;
 
-  // When fully collapsed, just return the collapsed position.
-  if (expanded_amount_ == 0.0)
+  // When fully collapsed or collapsing from a different page to the first
+  // page, just return the collapsed position.
+  if (expanded_amount_ == 0.0 || (expanded_amount_ < kCollapseThreshold &&
+                                  pagination_model_->selected_page() > 0))
     return gfx::Point(collapsed_x, collapsed_y);
 
   // Button width is different between expanded and collapsed states.
@@ -183,6 +206,26 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
   return gfx::Point(
       x * expanded_amount_ + collapsed_x * (1.0 - expanded_amount_),
       y * expanded_amount_ + collapsed_y * (1.0 - expanded_amount_));
+}
+
+void FeaturePodsContainerView::SetMaxHeight(int max_height) {
+  int feature_pod_rows =
+      (max_height - kUnifiedFeaturePodBottomPadding -
+       kUnifiedFeaturePodTopPadding) /
+      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding);
+
+  std::cout << (max_height - kUnifiedFeaturePodBottomPadding -
+                kUnifiedFeaturePodTopPadding) /
+                   (kUnifiedFeaturePodSize.height() +
+                    kUnifiedFeaturePodVerticalPadding)
+            << std::endl;
+  feature_pod_rows = std::min(feature_pod_rows, kUnifiedFeaturePodMaxRows);
+  feature_pod_rows = std::max(feature_pod_rows, kUnifiedFeaturePodMinRows);
+
+  if (feature_pod_rows_ != feature_pod_rows) {
+    feature_pod_rows_ = feature_pod_rows;
+    UpdateTotalPages();
+  }
 }
 
 void FeaturePodsContainerView::UpdateCollapsedSidePadding() {
@@ -246,7 +289,13 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
   for (int i = 0; i < visible_buttons_.view_size(); ++i) {
     gfx::Rect tile_bounds;
     gfx::Size child_size;
-    if (expanded_amount_ > 0.0) {
+    // When we are on the first page we calculate bounds for an expanded tray
+    // when expanded_amount is greater than zero. However, when not on the first
+    // page, we only calculate bounds for an expanded tray until expanded_amount
+    // is above kCollapseThreshold. Below kCollapseThreshold we return collapsed
+    // bounds.
+    if ((expanded_amount_ > 0.0 && pagination_model_->selected_page() == 0) ||
+        expanded_amount_ >= kCollapseThreshold) {
       child_size = kUnifiedFeaturePodSize;
 
       // Flexibly give more height if the child view doesn't fit into the
@@ -272,7 +321,7 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
 
 int FeaturePodsContainerView::GetTilesPerPage() const {
   if (features::IsSystemTrayFeaturePodsPaginationEnabled())
-    return kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows;
+    return kUnifiedFeaturePodItemsInRow * feature_pod_rows_;
   else
     return children().size();
 }
@@ -297,6 +346,23 @@ void FeaturePodsContainerView::TransitionChanged() {
       pagination_model_->transition();
   if (pagination_model_->is_valid_page(transition.target_page))
     Layout();
+}
+
+void FeaturePodsContainerView::OnGestureEvent(ui::GestureEvent* event) {
+  if (controller_->pagination_controller()->OnGestureEvent(*event,
+                                                           GetContentsBounds()))
+    event->SetHandled();
+}
+
+void FeaturePodsContainerView::OnScrollEvent(ui::ScrollEvent* event) {
+  controller_->pagination_controller()->OnScroll(
+      gfx::Vector2d(event->x_offset(), event->y_offset()), event->type());
+  event->SetHandled();
+}
+
+bool FeaturePodsContainerView::OnMouseWheel(const ui::MouseWheelEvent& event) {
+  return controller_->pagination_controller()->OnScroll(event.offset(),
+                                                        event.type());
 }
 
 }  // namespace ash

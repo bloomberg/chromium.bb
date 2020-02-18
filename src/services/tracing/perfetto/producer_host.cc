@@ -12,7 +12,7 @@
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/tracing_features.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/data_source_descriptor.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 
@@ -87,7 +87,8 @@ void ProducerHost::OnTracingSetup() {
   mojo::ScopedSharedBufferHandle shm = shared_memory->Clone();
   DCHECK(shm.is_valid());
 
-  producer_client_->OnTracingStart(std::move(shm));
+  producer_client_->OnTracingStart(
+      std::move(shm), producer_endpoint_->shared_buffer_page_size_kb() * 1024);
 }
 
 void ProducerHost::SetupDataSource(perfetto::DataSourceInstanceID,
@@ -132,17 +133,25 @@ void ProducerHost::Flush(
 }
 
 void ProducerHost::ClearIncrementalState(const perfetto::DataSourceInstanceID*,
-                                         size_t) {}
+                                         size_t) {
+  DCHECK(producer_client_);
+  producer_client_->ClearIncrementalState();
+}
 
 // This data can come from a malicious child process. We don't do any
 // sanitization here because ProducerEndpoint::CommitData() (And any other
 // ProducerEndpoint methods) are designed to deal with malformed / malicious
 // inputs.
-void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request) {
+void ProducerHost::CommitData(const perfetto::CommitDataRequest& data_request,
+                              CommitDataCallback callback) {
   if (on_commit_callback_for_testing_) {
     on_commit_callback_for_testing_.Run(data_request);
   }
-  producer_endpoint_->CommitData(data_request);
+  // This assumes that CommitData() will execute the callback synchronously.
+  producer_endpoint_->CommitData(data_request, [&callback]() {
+    std::move(callback).Run();
+  });
+  DCHECK(!callback);  // Should have been run synchronously above.
 }
 
 void ProducerHost::RegisterDataSource(

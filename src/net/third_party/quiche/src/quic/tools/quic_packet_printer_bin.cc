@@ -48,27 +48,27 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     std::cerr << "OnError: " << QuicErrorCodeToString(framer->error())
               << " detail: " << framer->detailed_error() << "\n";
   }
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
-                                 PacketHeaderFormat form) override {
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override {
     framer_->set_version(received_version);
     std::cerr << "OnProtocolVersionMismatch: "
               << ParsedQuicVersionToString(received_version) << "\n";
     return true;
   }
   void OnPacket() override { std::cerr << "OnPacket\n"; }
-  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override {
+  void OnPublicResetPacket(const QuicPublicResetPacket& /*packet*/) override {
     std::cerr << "OnPublicResetPacket\n";
   }
   void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) override {
+      const QuicVersionNegotiationPacket& /*packet*/) override {
     std::cerr << "OnVersionNegotiationPacket\n";
   }
-  void OnRetryPacket(QuicConnectionId original_connection_id,
-                     QuicConnectionId new_connection_id,
-                     QuicStringPiece retry_token) override {
+  void OnRetryPacket(QuicConnectionId /*original_connection_id*/,
+                     QuicConnectionId /*new_connection_id*/,
+                     QuicStringPiece /*retry_token*/) override {
     std::cerr << "OnRetryPacket\n";
   }
-  bool OnUnauthenticatedPublicHeader(const QuicPacketHeader& header) override {
+  bool OnUnauthenticatedPublicHeader(
+      const QuicPacketHeader& /*header*/) override {
     std::cerr << "OnUnauthenticatedPublicHeader\n";
     return true;
   }
@@ -81,11 +81,11 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     DCHECK_EQ(ENCRYPTION_INITIAL, level);
     std::cerr << "OnDecryptedPacket\n";
   }
-  bool OnPacketHeader(const QuicPacketHeader& header) override {
+  bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
     std::cerr << "OnPacketHeader\n";
     return true;
   }
-  void OnCoalescedPacket(const QuicEncryptedPacket& packet) override {
+  void OnCoalescedPacket(const QuicEncryptedPacket& /*packet*/) override {
     std::cerr << "OnCoalescedPacket\n";
   }
   bool OnStreamFrame(const QuicStreamFrame& frame) override {
@@ -130,7 +130,7 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   bool OnPingFrame(const QuicPingFrame& frame) override {
-    std::cerr << "OnPingFrame\n";
+    std::cerr << "OnPingFrame: " << frame;
     return true;
   }
   bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override {
@@ -194,12 +194,12 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   void OnPacketComplete() override { std::cerr << "OnPacketComplete\n"; }
-  bool IsValidStatelessResetToken(QuicUint128 token) const override {
+  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
     std::cerr << "IsValidStatelessResetToken\n";
     return false;
   }
   void OnAuthenticatedIetfStatelessResetPacket(
-      const QuicIetfStatelessResetPacket& packet) override {
+      const QuicIetfStatelessResetPacket& /*packet*/) override {
     std::cerr << "OnAuthenticatedIetfStatelessResetPacket\n";
   }
 

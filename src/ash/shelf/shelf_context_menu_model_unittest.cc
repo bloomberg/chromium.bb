@@ -50,8 +50,6 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
 
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
-  void OnReadyToSetWallpaper() override {}
-  void OnFirstWallpaperAnimationFinished() override {}
 
  private:
   size_t open_count_ = 0;
@@ -204,7 +202,7 @@ TEST_F(ShelfContextMenuModelTest, ExcludeClamshellOptionsOnTabletMode) {
 
   // In tablet mode, the wallpaper picker and auto-hide should be the only two
   // options because other options are disabled.
-  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->SetEnabledForTest(true);
   ShelfContextMenuModel menu1(nullptr, primary_id);
   EXPECT_EQ(2, menu1.GetItemCount());
   EXPECT_EQ(ShelfContextMenuModel::MENU_AUTO_HIDE, menu1.GetCommandIdAt(0));
@@ -213,7 +211,7 @@ TEST_F(ShelfContextMenuModelTest, ExcludeClamshellOptionsOnTabletMode) {
 
   // Test that a menu shown out of tablet mode includes all three options:
   // MENU_AUTO_HIDE, MENU_ALIGNMENT_MENU, and MENU_CHANGE_WALLPAPER.
-  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->SetEnabledForTest(false);
   ShelfContextMenuModel menu2(nullptr, primary_id);
   EXPECT_EQ(3, menu2.GetItemCount());
 

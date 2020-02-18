@@ -24,8 +24,9 @@
 
 namespace performance_manager {
 
-// TODO(chrisha): Remove all of these when GraphObserver is killed.
-class GraphObserver;
+// TODO(chrisha): Remove this when GraphImplObserver is killed.
+class GraphImplObserver;
+class Node;
 
 // NodeBase implements shared functionality among different types of graph
 // nodes. A specific type of graph node will derive from this class and can
@@ -35,6 +36,14 @@ class GraphObserver;
 // All methods not documented otherwise are single-threaded.
 class NodeBase {
  public:
+  using ObserverList =
+      typename base::ObserverList<GraphImplObserver>::Unchecked;
+
+  // Used as a unique key to safely allow downcasting from a public node type
+  // to NodeBase via "GetImplType" and "GetImpl". The implementations are
+  // provided by PublicNodeImpl below.
+  static const uintptr_t kNodeBaseType;
+
   // TODO(siggi): Don't store the node type, expose it on a virtual function
   //    instead.
   NodeBase(NodeTypeEnum type, GraphImpl* graph);
@@ -51,13 +60,36 @@ class NodeBase {
   // provide a stable ID for serialization.
   static int64_t GetSerializationId(NodeBase* node);
 
-  // TODO(chrisha): Remove this after observer migration.
-  // Implementations of these are provided in the *_node_impl.cc translation
-  // units for now.
-  void RemoveObserver(GraphObserver* observer);
+  // TODO(chrisha): Remove these functions once we've moved to typed observers.
+  void AddObserver(GraphImplObserver* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(GraphImplObserver* observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    observers_.RemoveObserver(observer);
+  }
+  const ObserverList& observers() const { return observers_; }
+
+  // Helper functions for casting from a node type to its underlying NodeBase.
+  // This CHECKs that the cast is valid. These functions work happily with
+  // public and private node class inputs.
+  static const NodeBase* FromNode(const Node* node);
+  static NodeBase* FromNode(Node* node);
+
+  // For converting from NodeBase to Node. This is implemented by
+  // TypedNodeBase.
+  virtual const Node* ToNode() const = 0;
 
  protected:
   friend class GraphImpl;
+
+  // Helper function for TypedNodeBase to access the list of typed observers
+  // stored in the graph.
+  template <typename Observer>
+  static const std::vector<Observer*>& GetObservers(const GraphImpl* graph) {
+    return graph->GetObservers<Observer>();
+  }
 
   // Called just before joining |graph_|, a good opportunity to initialize
   // node state.
@@ -75,63 +107,77 @@ class NodeBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
+  // TODO(chrisha): Remove this once we've moved to typed observers.
+  ObserverList observers_;
+
   DISALLOW_COPY_AND_ASSIGN(NodeBase);
 };
 
-// Helper for implementing the common bits of |PublicNodeClass|.
+// Helper for implementing the Node parent of a PublicNodeClass.
 template <class NodeImplClass, class PublicNodeClass>
 class PublicNodeImpl : public PublicNodeClass {
  public:
-  // Partial implementation of PublicNodeClass:
+  // Node implementation:
   Graph* GetGraph() const override {
     return static_cast<const NodeImplClass*>(this)->graph();
   }
-  const void* GetIndexingKey() const override {
-    // By contract the indexing key is actually a NodeBase pointer. This allows
-    // quick and safe casting from a public node type to the corresponding
-    // internal node type.
+  uintptr_t GetImplType() const override { return NodeBase::kNodeBaseType; }
+  const void* GetImpl() const override {
+    // This exposes NodeBase, so that we can complete the triangle of casting
+    // between all views of a node: NodeBase, FooNodeImpl, and FooNode.
     return static_cast<const NodeBase*>(
         static_cast<const NodeImplClass*>(this));
   }
 };
 
-template <class NodeImplClass, class NodeImplObserverClass>
+template <class NodeImplClass,
+          class NodeImplObserverClass,
+          class NodeClass,
+          class NodeObserverClass>
 class TypedNodeBase : public NodeBase {
  public:
-  using Observer = NodeImplObserverClass;
-  using ObserverList =
-      typename base::ObserverList<NodeImplObserverClass>::Unchecked;
-  using ObservedProperty =
-      ObservedPropertyImpl<NodeImplClass, NodeImplObserverClass>;
+  using ObservedProperty = ObservedPropertyImpl<NodeImplClass,
+                                                NodeImplObserverClass,
+                                                NodeClass,
+                                                NodeObserverClass>;
 
   explicit TypedNodeBase(GraphImpl* graph)
       : NodeBase(NodeImplClass::Type(), graph) {}
 
+  // Helper functions for casting from NodeBase to a concrete node type. This
+  // CHECKs that the cast is valid.
   static const NodeImplClass* FromNodeBase(const NodeBase* node) {
-    DCHECK_EQ(node->type(), NodeImplClass::Type());
+    CHECK_EQ(NodeImplClass::Type(), node->type());
     return static_cast<const NodeImplClass*>(node);
   }
-
   static NodeImplClass* FromNodeBase(NodeBase* node) {
-    DCHECK(node->type() == NodeImplClass::Type());
+    CHECK_EQ(NodeImplClass::Type(), node->type());
     return static_cast<NodeImplClass*>(node);
   }
 
-  void AddObserver(Observer* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.AddObserver(observer);
+  // Helper function for casting from a public node type to the private impl.
+  // This also casts away const correctness, as it is intended to be used by
+  // impl code that uses the public observer interface for a node type, where
+  // all notifications are delivered with a const node pointer. This CHECKs that
+  // the cast is valid.
+  static NodeImplClass* FromNode(const NodeClass* node) {
+    NodeBase* node_base = const_cast<NodeBase*>(NodeBase::FromNode(node));
+    return FromNodeBase(node_base);
   }
 
-  void RemoveObserver(Observer* observer) {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    observers_.RemoveObserver(observer);
+  // Convenience accessor to the per-node-class list of observers that is stored
+  // in the graph.
+  const std::vector<NodeObserverClass*>& GetObservers() const {
+    // Mediate through NodeBase, as it's the class that is friended by the
+    // GraphImpl in order to provide access.
+    return NodeBase::GetObservers<NodeObserverClass>(graph());
   }
 
-  const ObserverList& observers() const { return observers_; }
+  const Node* ToNode() const override {
+    return static_cast<const NodeImplClass*>(this);
+  }
 
  private:
-  ObserverList observers_;
-
   DISALLOW_COPY_AND_ASSIGN(TypedNodeBase);
 };
 

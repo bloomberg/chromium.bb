@@ -17,13 +17,13 @@ namespace viz {
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(context_provider)) {
   DCHECK(OutputSurface::context_provider());
 }
 
 FakeOutputSurface::FakeOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(software_device)) {
   DCHECK(OutputSurface::software_device());
 }
 
@@ -54,9 +54,9 @@ void FakeOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 }
 
 void FakeOutputSurface::SwapBuffersAck() {
-  client_->DidReceiveSwapBuffersAck();
-  client_->DidReceivePresentationFeedback(
-      {base::TimeTicks::Now(), base::TimeDelta(), 0});
+  base::TimeTicks now = base::TimeTicks::Now();
+  client_->DidReceiveSwapBuffersAck({now, now});
+  client_->DidReceivePresentationFeedback({now, base::TimeDelta(), 0});
 }
 
 void FakeOutputSurface::BindFramebuffer() {
@@ -82,13 +82,6 @@ void FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
 
 bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
-}
-
-std::unique_ptr<OverlayCandidateValidator>
-FakeOutputSurface::TakeOverlayCandidateValidator() {
-  // TODO(weiliangc): Validators are set on tests explicitly. Use the validator
-  // where they are created. Don't pass it in. This should be removed soon.
-  return nullptr;
 }
 
 gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {

@@ -15,7 +15,6 @@
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
-#include "components/variations/pref_names.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
@@ -54,6 +53,14 @@ const char* const kPersistentPrefNames[] = {
     ash::prefs::kAccessibilityFocusHighlightEnabled,
     ash::prefs::kAccessibilitySelectToSpeakEnabled,
     ash::prefs::kAccessibilitySwitchAccessEnabled,
+    ash::prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+    ash::prefs::kAccessibilitySwitchAccessSelectSetting,
+    ash::prefs::kAccessibilitySwitchAccessNextKeyCodes,
+    ash::prefs::kAccessibilitySwitchAccessNextSetting,
+    ash::prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+    ash::prefs::kAccessibilitySwitchAccessPreviousSetting,
+    ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled,
+    ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
     ash::prefs::kAccessibilityDictationEnabled,
     ash::prefs::kDockedMagnifierEnabled,
     ash::prefs::kDockedMagnifierScale,
@@ -204,25 +211,6 @@ const char* const kPersistentPrefNames[] = {
     ukm::prefs::kUkmClientId,
     ukm::prefs::kUkmUnsentLogStore,
     ukm::prefs::kUkmSessionId,
-
-    // Variations preferences maybe changed from incognito mode and should be
-    // kept in sync between incognito and regular modes.
-    variations::prefs::kVariationsCompressedSeed,
-    variations::prefs::kVariationsCountry,
-    variations::prefs::kVariationsCrashStreak,
-    variations::prefs::kVariationsFailedToFetchSeedStreak,
-    variations::prefs::kVariationsLastFetchTime,
-    variations::prefs::kVariationsPermanentConsistencyCountry,
-    variations::prefs::kVariationsRestrictParameter,
-    variations::prefs::kVariationsSafeCompressedSeed,
-    variations::prefs::kVariationsSafeSeedDate,
-    variations::prefs::kVariationsSafeSeedFetchTime,
-    variations::prefs::kVariationsSafeSeedLocale,
-    variations::prefs::kVariationsSafeSeedPermanentConsistencyCountry,
-    variations::prefs::kVariationsSafeSeedSessionConsistencyCountry,
-    variations::prefs::kVariationsSafeSeedSignature,
-    variations::prefs::kVariationsSeedDate,
-    variations::prefs::kVariationsSeedSignature,
 };
 
 }  // namespace

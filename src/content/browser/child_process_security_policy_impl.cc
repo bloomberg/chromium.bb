@@ -196,7 +196,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFileSystem(const std::string& filesystem_id,
                                      int permissions) {
-    if (!base::ContainsKey(filesystem_permissions_, filesystem_id))
+    if (!base::Contains(filesystem_permissions_, filesystem_id))
       storage::IsolatedContext::GetInstance()->AddReference(filesystem_id);
     filesystem_permissions_[filesystem_id] |= permissions;
   }
@@ -264,7 +264,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     if (url.SchemeIs(url::kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
-        return base::ContainsKey(request_file_set_, path);
+        return base::Contains(request_file_set_, path);
     }
 
     return false;  // Unmentioned schemes are disallowed.
@@ -434,11 +434,15 @@ ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::IsolatedOriginEntry(
     const url::Origin& origin,
     BrowsingInstanceId min_browsing_instance_id,
     BrowserContext* browser_context,
-    ResourceContext* resource_context)
+    ResourceContext* resource_context,
+    bool isolate_all_subdomains,
+    IsolatedOriginSource source)
     : origin_(origin),
       min_browsing_instance_id_(min_browsing_instance_id),
       browser_context_(browser_context),
-      resource_context_(resource_context) {
+      resource_context_(resource_context),
+      isolate_all_subdomains_(isolate_all_subdomains),
+      source_(source) {
   // If there is a BrowserContext, there must also be a ResourceContext
   // associated with this entry.
   DCHECK_EQ(!browser_context, !resource_context);
@@ -502,6 +506,7 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterPseudoScheme(url::kAboutScheme);
   RegisterPseudoScheme(url::kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
+  RegisterPseudoScheme(kGoogleChromeScheme);
 }
 
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
@@ -591,7 +596,7 @@ bool ChildProcessSecurityPolicyImpl::IsWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return base::ContainsKey(schemes_okay_to_request_in_any_process_, scheme);
+  return base::Contains(schemes_okay_to_request_in_any_process_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterPseudoScheme(
@@ -610,7 +615,7 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return base::ContainsKey(pseudo_schemes_, scheme);
+  return base::Contains(pseudo_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
@@ -864,7 +869,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   // TODO(dcheng): Figure out why this check is different from CanCommitURL,
   // which checks for direct equality with kAboutBlankURL.
   if (IsPseudoScheme(scheme))
-    return url.IsAboutBlank() || url == kAboutSrcDocURL;
+    return url.IsAboutBlank() || url.IsAboutSrcdoc();
 
   // Blob and filesystem URLs require special treatment; validate the inner
   // origin they embed.
@@ -936,7 +941,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   // Of all the pseudo schemes, only about:blank and about:srcdoc are allowed to
   // commit.
   if (IsPseudoScheme(scheme))
-    return url == url::kAboutBlankURL || url == kAboutSrcDocURL;
+    return url.IsAboutBlank() || url.IsAboutSrcdoc();
 
   // Blob and filesystem URLs require special treatment; validate the inner
   // origin they embed.
@@ -967,7 +972,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     //
     // TODO(creis, nick): https://crbug.com/515309: The line below does not
     // enforce that http pages cannot commit in an extension process.
-    if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, scheme))
+    if (base::Contains(schemes_okay_to_commit_in_any_process_, scheme))
       return true;
 
     auto state = security_state_.find(child_id);
@@ -991,7 +996,7 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
     return false;  // Can't set invalid URLs as origin headers.
 
   // about:srcdoc cannot be used as an origin
-  if (url == kAboutSrcDocURL)
+  if (url.IsAboutSrcdoc())
     return false;
 
   // If this process can commit |url|, it can use |url| as an origin for
@@ -1009,8 +1014,8 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   // document origin.
   {
     base::AutoLock lock(lock_);
-    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_,
-                          url.scheme())) {
+    if (base::Contains(schemes_okay_to_appear_as_origin_headers_,
+                       url.scheme())) {
       return true;
     }
   }
@@ -1148,10 +1153,8 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   // API either.
   // TODO(lukasza): Audit whether CanAccessDataForOrigin can be used directly
   // here.
-  if (!CanCommitURL(child_id, filesystem_url.origin().GetURL())) {
-    UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
+  if (!CanCommitURL(child_id, filesystem_url.origin().GetURL()))
     return false;
-  }
 
   int found_permissions = 0;
   {
@@ -1388,37 +1391,55 @@ bool ChildProcessSecurityPolicyImpl::CanSendMidiSysExMessage(int child_id) {
 }
 
 void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
-    std::vector<url::Origin> origins_to_add,
+    const std::vector<url::Origin>& origins_to_add,
+    IsolatedOriginSource source,
+    BrowserContext* browser_context) {
+  std::vector<IsolatedOriginPattern> patterns;
+  patterns.reserve(origins_to_add.size());
+  std::transform(origins_to_add.cbegin(), origins_to_add.cend(),
+                 std::back_inserter(patterns),
+                 [](const url::Origin& o) -> IsolatedOriginPattern {
+                   return IsolatedOriginPattern(o);
+                 });
+  AddIsolatedOrigins(patterns, source, browser_context);
+}
+
+void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
+    base::StringPiece origins_to_add,
+    IsolatedOriginSource source,
+    BrowserContext* browser_context) {
+  std::vector<IsolatedOriginPattern> patterns =
+      ParseIsolatedOrigins(origins_to_add);
+  AddIsolatedOrigins(patterns, source, browser_context);
+}
+
+void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
+    const std::vector<IsolatedOriginPattern>& patterns,
+    IsolatedOriginSource source,
     BrowserContext* browser_context) {
   // This can only be called from the UI thread, as it reads state that's only
   // available (and is only safe to be retrieved) on the UI thread, such as
   // BrowsingInstance IDs.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Filter out origins that cannot be used as an isolated origin.
-  base::EraseIf(origins_to_add, [](const url::Origin& origin) {
-    if (IsolatedOriginUtil::IsValidIsolatedOrigin(origin))
-      return false;  // Don't remove.
-
-    LOG(ERROR) << "Invalid isolated origin: " << origin;
-    return true;  // Remove.
-  });
-
-  // Ports are ignored when matching isolated origins (see also
-  // https://crbug.com/914511).
-  for (url::Origin& origin : origins_to_add) {
-    const std::string& scheme = origin.scheme();
-    int default_port =
-        url::DefaultPortForScheme(scheme.data(), scheme.length());
-    if (origin.port() != default_port) {
-      LOG(ERROR) << "Ignoring port number in isolated origin: " << origin;
-      origin = url::Origin::Create(GURL(
-          origin.scheme() + url::kStandardSchemeSeparator + origin.host()));
-    }
+  if (IsolatedOriginSource::COMMAND_LINE == source) {
+    size_t number_of_origins = std::count_if(
+        patterns.cbegin(), patterns.cend(),
+        [](const IsolatedOriginPattern& p) { return p.is_valid(); });
+    UMA_HISTOGRAM_COUNTS_1000("SiteIsolation.IsolateOrigins.Size",
+                              number_of_origins);
   }
 
   base::AutoLock isolated_origins_lock(isolated_origins_lock_);
-  for (url::Origin& origin : origins_to_add) {
+
+  for (const IsolatedOriginPattern& pattern : patterns) {
+    if (!pattern.is_valid()) {
+      LOG(ERROR) << "Invalid isolated origin: " << pattern.pattern();
+      continue;
+    }
+
+    url::Origin origin_to_add = pattern.origin();
+
     // GetSiteForOrigin() is used to look up the site URL of |origin| to speed
     // up the isolated origin lookup.  This only performs a straightforward
     // translation of an origin to eTLD+1; it does *not* take into account
@@ -1426,7 +1447,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     // here, but *is* typically needed for making process model decisions. Be
     // very careful about using GetSiteForOrigin() elsewhere, and consider
     // whether you should be using GetSiteForURL() instead.
-    GURL key(SiteInstanceImpl::GetSiteForOrigin(origin));
+    GURL key(SiteInstanceImpl::GetSiteForOrigin(origin_to_add));
 
     // Isolated origins should apply only to future BrowsingInstances and
     // processes.  Save the first BrowsingInstance ID to which they should
@@ -1438,7 +1459,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     // need to be added again.
     bool should_add = true;
     for (const auto& entry : isolated_origins_[key]) {
-      if (entry.origin() != origin)
+      if (entry.origin() != origin_to_add)
         continue;
 
       // If the added origin already exists for the same BrowserContext, don't
@@ -1463,9 +1484,10 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOrigins(
     if (should_add) {
       ResourceContext* resource_context =
           browser_context ? browser_context->GetResourceContext() : nullptr;
-      IsolatedOriginEntry entry(std::move(origin), min_browsing_instance_id,
-                                browser_context, resource_context);
-      isolated_origins_[key].insert(std::move(entry));
+      IsolatedOriginEntry entry(
+          std::move(origin_to_add), min_browsing_instance_id, browser_context,
+          resource_context, pattern.isolate_all_subdomains(), source);
+      isolated_origins_[key].emplace_back(std::move(entry));
     }
   }
 }
@@ -1502,6 +1524,33 @@ bool ChildProcessSecurityPolicyImpl::IsGloballyIsolatedOriginForTesting(
   IsolationContext isolation_context(null_browsing_instance_id,
                                      no_browser_context);
   return IsIsolatedOrigin(isolation_context, origin);
+}
+
+std::vector<url::Origin> ChildProcessSecurityPolicyImpl::GetIsolatedOrigins(
+    base::Optional<IsolatedOriginSource> source,
+    BrowserContext* browser_context) {
+  std::vector<url::Origin> origins;
+  base::AutoLock isolated_origins_lock(isolated_origins_lock_);
+  for (const auto& iter : isolated_origins_) {
+    for (const auto& isolated_origin_entry : iter.second) {
+      if (source && source.value() != isolated_origin_entry.source())
+        continue;
+
+      // If browser_context is specified, ensure that the entry matches it.  If
+      // the browser_context is not specified, only consider entries that are
+      // not associated with a profile (i.e., which apply globally to the
+      // entire browser).
+      bool matches_profile =
+          browser_context ? isolated_origin_entry.MatchesProfile(
+                                BrowserOrResourceContext(browser_context))
+                          : isolated_origin_entry.AppliesToAllBrowserContexts();
+      if (!matches_profile)
+        continue;
+
+      origins.push_back(isolated_origin_entry.origin());
+    }
+  }
+  return origins;
 }
 
 bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
@@ -1557,7 +1606,7 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
   }
 
   // Looks for all isolated origins that were already isolated at the time
-  // |isolation_context| was created.  If multiple isolated origins are
+  // |isolation_context| was created. If multiple isolated origins are
   // registered with a common domain suffix, return the most specific one.  For
   // example, if foo.isolated.com and isolated.com are both isolated origins,
   // bar.foo.isolated.com should return foo.isolated.com.
@@ -1576,6 +1625,25 @@ bool ChildProcessSecurityPolicyImpl::GetMatchingIsolatedOrigin(
       if (matches_browsing_instance_id &&
           IsolatedOriginUtil::DoesOriginMatchIsolatedOrigin(
               origin, isolated_origin_entry.origin())) {
+        // If a match has been found that requires all subdomains to be isolated
+        // then return immediately. |origin| is returned to ensure proper
+        // process isolation, e.g. https://a.b.c.isolated.com matches an
+        // IsolatedOriginEntry constructed from http://[*.]isolated.com, so
+        // https://a.b.c.isolated.com must be returned.
+        if (isolated_origin_entry.isolate_all_subdomains()) {
+          *result = origin;
+          uint16_t default_port = url::DefaultPortForScheme(
+              origin.scheme().data(), origin.scheme().length());
+
+          if (origin.port() != default_port) {
+            *result = url::Origin::Create(GURL(origin.scheme() +
+                                               url::kStandardSchemeSeparator +
+                                               origin.host()));
+          }
+
+          return true;
+        }
+
         if (!found || result->host().length() <
                           isolated_origin_entry.origin().host().length()) {
           *result = isolated_origin_entry.origin();
@@ -1622,6 +1690,21 @@ ChildProcessSecurityPolicyImpl::GetSecurityState(int child_id) {
   }
 
   return nullptr;
+}
+
+std::vector<IsolatedOriginPattern>
+ChildProcessSecurityPolicyImpl::ParseIsolatedOrigins(
+    base::StringPiece pattern_list) {
+  std::vector<base::StringPiece> origin_strings = base::SplitStringPiece(
+      pattern_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  std::vector<IsolatedOriginPattern> patterns;
+  patterns.reserve(origin_strings.size());
+
+  for (const base::StringPiece& origin_string : origin_strings)
+    patterns.emplace_back(origin_string);
+
+  return patterns;
 }
 
 }  // namespace content

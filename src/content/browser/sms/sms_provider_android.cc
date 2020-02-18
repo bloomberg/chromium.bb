@@ -9,7 +9,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#include "jni/SmsReceiver_jni.h"
+#include "content/public/android/content_jni_headers/SmsReceiver_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -48,7 +48,6 @@ void SmsProviderAndroid::OnReceive(
 void SmsProviderAndroid::OnTimeout(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  NotifyTimeout();
 }
 
 }  // namespace content

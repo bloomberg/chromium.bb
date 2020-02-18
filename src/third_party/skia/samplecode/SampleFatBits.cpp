@@ -364,7 +364,7 @@ void FatBits::drawTriangle(SkCanvas* canvas, SkPoint pts[3]) {
 class IndexClick : public Sample::Click {
     int fIndex;
 public:
-    IndexClick(Sample* v, int index) : Sample::Click(v), fIndex(index) {}
+    IndexClick(int index) : fIndex(index) {}
 
     static int GetIndex(Sample::Click* click) {
         return ((IndexClick*)click)->fIndex;
@@ -391,13 +391,9 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "FatBits");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("FatBits"); }
+
+    bool onChar(SkUnichar uni) override {
             switch (uni) {
                 case 'c':
                     fFB.setUseClip(!fFB.getUseClip());
@@ -444,8 +440,7 @@ protected:
                     fFB.fStrokeWidth += 0.125f;
                     return true;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void onDrawContent(SkCanvas* canvas) override {
@@ -473,7 +468,7 @@ protected:
         }
     }
 
-    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
+    Sample::Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) override {
         SkPoint pt = { x, y };
         int index = -1;
         int count = fFB.getTriangle() ? 3 : 2;
@@ -485,7 +480,7 @@ protected:
                 break;
             }
         }
-        return new IndexClick(this, index);
+        return new IndexClick(index);
     }
 
     bool onClick(Click* click) override {

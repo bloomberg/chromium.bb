@@ -19,6 +19,7 @@
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
+#include "dawn_native/PerStage.h"
 
 #include "dawn_native/dawn_platform.h"
 
@@ -46,14 +47,6 @@ namespace dawn_native {
 
         void ExtractSpirvInfo(const spirv_cross::Compiler& compiler);
 
-        struct PushConstantInfo {
-            std::bitset<kMaxPushConstants> mask;
-
-            std::array<std::string, kMaxPushConstants> names;
-            std::array<uint32_t, kMaxPushConstants> sizes;
-            std::array<PushConstantType, kMaxPushConstants> types;
-        };
-
         struct BindingInfo {
             // The SPIRV ID of the resource.
             uint32_t id;
@@ -64,10 +57,9 @@ namespace dawn_native {
         using ModuleBindingInfo =
             std::array<std::array<BindingInfo, kMaxBindingsPerGroup>, kMaxBindGroups>;
 
-        const PushConstantInfo& GetPushConstants() const;
         const ModuleBindingInfo& GetBindingInfo() const;
         const std::bitset<kMaxVertexAttributes>& GetUsedVertexAttributes() const;
-        dawn::ShaderStage GetExecutionModel() const;
+        ShaderStage GetExecutionModel() const;
 
         bool IsCompatibleWithPipelineLayout(const PipelineLayoutBase* layout);
 
@@ -89,10 +81,9 @@ namespace dawn_native {
         std::vector<uint32_t> mCode;
         bool mIsBlueprint = false;
 
-        PushConstantInfo mPushConstants = {};
         ModuleBindingInfo mBindingInfo;
         std::bitset<kMaxVertexAttributes> mUsedVertexAttributes;
-        dawn::ShaderStage mExecutionModel;
+        ShaderStage mExecutionModel;
     };
 
 }  // namespace dawn_native

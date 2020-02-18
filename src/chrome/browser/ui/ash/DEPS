@@ -11,6 +11,7 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/components/shortcut_viewer",
+   "+ash/components/strings/grit/ash_components_strings.h",
    "+ash/keyboard/ui",
    "+ash/public",
    "+ash/shelf/shelf_constants.h",
@@ -55,6 +56,9 @@ specific_include_rules = {
   # For ash::Shell::GetContainer (!mash)
   "system_tray_client\.cc": [
     "+ash/shell.h",
+  ],
+  "system_tray_tray_cast_browsertest_media_router_chromeos\.cc": [
+    "+ui/message_center/message_center.h",
   ],
   # https://crbug.com/796366
   "tab_scrubber\.cc": [

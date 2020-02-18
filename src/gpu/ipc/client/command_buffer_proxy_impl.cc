@@ -53,8 +53,7 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(
       stream_id_(stream_id),
       command_buffer_id_(
           CommandBufferIdFromChannelAndRoute(channel_id_, route_id_)),
-      callback_thread_(std::move(task_runner)),
-      weak_ptr_factory_(this) {
+      callback_thread_(std::move(task_runner)) {
   DCHECK(route_id_);
 }
 
@@ -98,8 +97,7 @@ ContextResult CommandBufferProxyImpl::Initialize(
 
   shared_state()->Initialize();
 
-  base::UnsafeSharedMemoryRegion region =
-      channel->ShareToGpuProcess(shared_state_shm_);
+  base::UnsafeSharedMemoryRegion region = shared_state_shm_.Duplicate();
   if (!region.IsValid()) {
     // TODO(piman): ShareToGpuProcess should alert if it is failing due to
     // being out of file descriptors, in which case this is a fatal error
@@ -375,8 +373,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   DCHECK_LE(shared_memory_mapping.size(), static_cast<size_t>(UINT32_MAX));
 
   if (last_state_.error == gpu::error::kNoError) {
-    base::UnsafeSharedMemoryRegion region =
-        channel_->ShareToGpuProcess(shared_memory_region);
+    base::UnsafeSharedMemoryRegion region = shared_memory_region.Duplicate();
     if (!region.IsValid()) {
       if (last_state_.error == gpu::error::kNoError)
         OnClientError(gpu::error::kLostContext);
@@ -473,23 +470,6 @@ void CommandBufferProxyImpl::DestroyImage(int32_t id) {
     return;
 
   Send(new GpuCommandBufferMsg_DestroyImage(route_id_, id));
-}
-
-uint32_t CommandBufferProxyImpl::CreateStreamTexture(uint32_t texture_id) {
-  CheckLock();
-  base::AutoLock lock(last_state_lock_);
-  if (last_state_.error != gpu::error::kNoError)
-    return 0;
-
-  int32_t stream_id = channel_->GenerateRouteID();
-  bool succeeded = false;
-  Send(new GpuCommandBufferMsg_CreateStreamTexture(route_id_, texture_id,
-                                                   stream_id, &succeeded));
-  if (!succeeded) {
-    DLOG(ERROR) << "GpuCommandBufferMsg_CreateStreamTexture returned failure";
-    return 0;
-  }
-  return stream_id;
 }
 
 void CommandBufferProxyImpl::SetLock(base::Lock* lock) {

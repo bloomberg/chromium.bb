@@ -66,10 +66,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       !params->installed_scripts_info.is_null(),
       std::move(params->renderer_preferences),
       std::move(params->service_worker_request),
-      std::move(params->controller_request), std::move(params->instance_host),
+      std::move(params->controller_receiver), std::move(params->instance_host),
       std::move(params->provider_info), this, std::move(start_timing),
       std::move(params->preference_watcher_request),
       std::move(params->subresource_loader_factories),
+      std::move(params->subresource_loader_updater),
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
           ->DefaultTaskRunner());
@@ -131,13 +132,6 @@ void EmbeddedWorkerInstanceClientImpl::BindDevToolsAgent(
     blink::mojom::DevToolsAgentAssociatedRequest request) {
   service_worker_context_client_->worker().BindDevToolsAgent(
       host.PassHandle(), request.PassHandle());
-}
-
-void EmbeddedWorkerInstanceClientImpl::UpdateSubresourceLoaderFactories(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories) {
-  service_worker_context_client_->UpdateSubresourceLoaderFactories(
-      std::move(subresource_loader_factories));
 }
 
 EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(

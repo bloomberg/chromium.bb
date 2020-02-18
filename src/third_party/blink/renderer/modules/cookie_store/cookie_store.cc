@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_store_delete_options.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -78,9 +78,9 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     return base::nullopt;
   }
 
-  WTF::Time expires = options->hasExpires()
-                          ? WTF::Time::FromJavaTime(options->expires())
-                          : WTF::Time();
+  base::Time expires = options->hasExpires()
+                           ? base::Time::FromJavaTime(options->expires())
+                           : base::Time();
 
   String cookie_url_host = cookie_url.Host();
   String domain;
@@ -105,15 +105,28 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
     domain = cookie_url_host;
   }
 
-  // The cookie store API is only exposed on secure origins. If this changes:
-  // 1) The secure option must default to false for insecure origins.
-  // 2) Only secure origins can set the "secure" option to true.
-  DCHECK(SecurityOrigin::IsSecure(cookie_url));
-
-  const bool secure = options->secure();
+  // Although the Cookie Store API spec always defaults the "secure" cookie
+  // attribute to true, we only default to true on cryptographically secure
+  // origins, where only secure cookies may be written, and to false otherwise,
+  // where only insecure cookies may be written. As a result,
+  // cookieStore.set("name", "value") sets a cookie and
+  // cookieStore.delete("name") deletes a cookie on both http://localhost and
+  // secure origins, without having to specify "secure: false" on
+  // http://localhost.
+  const bool secure = options->hasSecure()
+                          ? options->secure()
+                          : SecurityOrigin::IsSecure(cookie_url);
+  // If attempting to set/delete a secure cookie on an insecure origin, throw an
+  // exception, rather than failing silently as document.cookie does.
+  if (secure && !SecurityOrigin::IsSecure(cookie_url)) {
+    exception_state.ThrowTypeError(
+        "Cannot modify a secure cookie on insecure origin");
+    return base::nullopt;
+  }
   if (!secure && (name.StartsWith("__Secure-") || name.StartsWith("__Host-"))) {
     exception_state.ThrowTypeError(
         "__Secure- and __Host- cookies must be secure");
+    return base::nullopt;
   }
 
   network::mojom::CookieSameSite same_site;
@@ -127,8 +140,8 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
   }
 
   return WebCanonicalCookie::Create(
-      name, value, domain, options->path(), WTF::Time() /*creation*/, expires,
-      WTF::Time() /*last_access*/, secure, false /*http_only*/, same_site,
+      name, value, domain, options->path(), base::Time() /*creation*/, expires,
+      base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
       WebCanonicalCookie::kDefaultPriority);
 }
 
@@ -268,7 +281,8 @@ ScriptPromise CookieStore::set(ScriptState* script_state,
     set_options->setExpires(options->expires());
   set_options->setDomain(options->domain());
   set_options->setPath(options->path());
-  set_options->setSecure(options->secure());
+  if (options->hasSecure())
+    set_options->setSecure(options->secure());
   set_options->setSameSite(options->sameSite());
   return set(script_state, set_options, exception_state);
 }
@@ -306,7 +320,6 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
   set_options->setExpires(0);
   set_options->setDomain(options->domain());
   set_options->setPath(options->path());
-  set_options->setSecure(true);
   set_options->setSameSite("strict");
   return DoWrite(script_state, set_options, exception_state);
 }

@@ -140,6 +140,40 @@ char* PrependHexAddress(char* output, const void* address) {
 
 }  // namespace
 
+class SequenceManagerImpl::NativeWorkHandleImpl : public NativeWorkHandle {
+ public:
+  NativeWorkHandleImpl(SequenceManagerImpl* sequence_manager,
+                       TaskQueue::QueuePriority priority)
+      : sequence_manager_(sequence_manager->GetWeakPtr()), priority_(priority) {
+    TRACE_EVENT_ASYNC_BEGIN1("sequence_manager", "NativeWork", this, "priority",
+                             TaskQueue::PriorityToString(priority_));
+    sequence_manager_->main_thread_only().pending_native_work.insert(priority_);
+  }
+
+  ~NativeWorkHandleImpl() final {
+    TRACE_EVENT_ASYNC_END0("sequence_manager", "NativeWork", this);
+    if (!sequence_manager_)
+      return;
+    TaskQueue::QueuePriority prev_priority = effective_priority();
+    sequence_manager_->main_thread_only().pending_native_work.erase(priority_);
+    // We should always have at least one instance of pending native work. By
+    // default it is of the lowest priority, which doesn't cause SequenceManager
+    // to yield.
+    DCHECK_GE(sequence_manager_->main_thread_only().pending_native_work.size(),
+              1u);
+    if (prev_priority != effective_priority())
+      sequence_manager_->ScheduleWork();
+  }
+
+  TaskQueue::QueuePriority effective_priority() const {
+    return *sequence_manager_->main_thread_only().pending_native_work.begin();
+  }
+
+ private:
+  WeakPtr<SequenceManagerImpl> sequence_manager_;
+  const TaskQueue::QueuePriority priority_;
+};
+
 // static
 SequenceManagerImpl* SequenceManagerImpl::GetCurrent() {
   return GetTLSSequenceManagerImpl()->Get();
@@ -157,8 +191,7 @@ SequenceManagerImpl::SequenceManagerImpl(
 
       empty_queues_to_reload_(associated_thread_),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
-      main_thread_only_(associated_thread_, settings_),
-      weak_factory_(this) {
+      main_thread_only_(associated_thread_, settings_) {
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
   main_thread_only().selector.SetTaskQueueSelectorObserver(this);
@@ -455,8 +488,8 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
 
 }  // namespace
 
-Optional<PendingTask> SequenceManagerImpl::TakeTask() {
-  Optional<PendingTask> task = TakeTaskImpl();
+Optional<Task> SequenceManagerImpl::TakeTask() {
+  Optional<Task> task = TakeTaskImpl();
   if (!task)
     return base::nullopt;
 
@@ -520,7 +553,7 @@ void SequenceManagerImpl::LogTaskDebugInfo(
 }
 #endif  // DCHECK_IS_ON() && !defined(OS_NACL)
 
-Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
+Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
@@ -549,11 +582,12 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
       return nullopt;
 
     // If the head task was canceled, remove it and run the selector again.
-    if (work_queue->RemoveAllCanceledTasksFromFront())
+    if (UNLIKELY(work_queue->RemoveAllCanceledTasksFromFront()))
       continue;
 
-    if (work_queue->GetFrontTask()->nestable == Nestable::kNonNestable &&
-        main_thread_only().nesting_depth > 0) {
+    if (UNLIKELY(work_queue->GetFrontTask()->nestable ==
+                     Nestable::kNonNestable &&
+                 main_thread_only().nesting_depth > 0)) {
       // Defer non-nestable work. NOTE these tasks can be arbitrarily delayed so
       // the additional delay should not be a problem.
       // Note because we don't delete queues while nested, it's perfectly OK to
@@ -566,6 +600,13 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
       continue;
     }
 
+    if (UNLIKELY(!ShouldRunTaskOfPriority(
+            work_queue->task_queue()->GetQueuePriority()))) {
+      TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
+                   "SequenceManager.YieldToNative");
+      return nullopt;
+    }
+
     main_thread_only().task_execution_stack.emplace_back(
         work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue(),
         InitializeTaskTiming(work_queue->task_queue()));
@@ -576,6 +617,11 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
 
     return std::move(executing_task.pending_task);
   }
+}
+
+bool SequenceManagerImpl::ShouldRunTaskOfPriority(
+    TaskQueue::QueuePriority priority) const {
+  return priority <= *main_thread_only().pending_native_work.begin();
 }
 
 void SequenceManagerImpl::DidRunTask() {
@@ -597,22 +643,36 @@ void SequenceManagerImpl::DidRunTask() {
 TimeDelta SequenceManagerImpl::DelayTillNextTask(LazyNow* lazy_now) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
 
-  // If the selector has non-empty queues we trivially know there is immediate
-  // work to be done.
-  if (!main_thread_only().selector.AllEnabledWorkQueuesAreEmpty())
+  if (auto priority = main_thread_only().selector.GetHighestPendingPriority()) {
+    // If the selector has non-empty queues we trivially know there is immediate
+    // work to be done. However we may want to yield to native work if it is
+    // more important.
+    if (UNLIKELY(!ShouldRunTaskOfPriority(*priority)))
+      return GetDelayTillNextDelayedTask(lazy_now);
     return TimeDelta();
+  }
 
   // There may be some incoming immediate work which we haven't accounted for.
   // NB ReloadEmptyWorkQueues involves a memory barrier, so it's fastest to not
   // do this always.
   ReloadEmptyWorkQueues();
-  if (!main_thread_only().selector.AllEnabledWorkQueuesAreEmpty())
+  if (auto priority = main_thread_only().selector.GetHighestPendingPriority()) {
+    if (UNLIKELY(!ShouldRunTaskOfPriority(*priority)))
+      return GetDelayTillNextDelayedTask(lazy_now);
     return TimeDelta();
+  }
 
   // Otherwise we need to find the shortest delay, if any.  NB we don't need to
   // call MoveReadyDelayedTasksToWorkQueues because it's assumed
   // DelayTillNextTask will return TimeDelta>() if the delayed task is due to
   // run now.
+  return GetDelayTillNextDelayedTask(lazy_now);
+}
+
+TimeDelta SequenceManagerImpl::GetDelayTillNextDelayedTask(
+    LazyNow* lazy_now) const {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+
   TimeDelta delay_till_next_task = TimeDelta::Max();
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
     Optional<TimeDelta> delay = time_domain->DelayTillNextTask(lazy_now);
@@ -818,7 +878,7 @@ bool SequenceManagerImpl::GetAndClearSystemIsQuiescentBit() {
   return !task_was_run;
 }
 
-internal::EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
+EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
   return enqueue_order_generator_.GenerateNext();
 }
 
@@ -850,6 +910,9 @@ SequenceManagerImpl::AsValueWithSelectorResult(
                      selected_work_queue->task_queue()->GetName());
     state->SetString("work_queue_name", selected_work_queue->name());
   }
+  state->SetString("native_work_priority",
+                   TaskQueue::PriorityToString(
+                       *main_thread_only().pending_native_work.begin()));
 
   state->BeginArray("time_domains");
   for (auto* time_domain : main_thread_only().time_domains)
@@ -993,7 +1056,7 @@ void SequenceManagerImpl::AttachToMessagePump() {
 bool SequenceManagerImpl::IsIdleForTesting() {
   ReloadEmptyWorkQueues();
   RemoveAllCanceledTasksFromFrontOfWorkQueues();
-  return main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
+  return !main_thread_only().selector.GetHighestPendingPriority().has_value();
 }
 
 size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
@@ -1012,6 +1075,11 @@ scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
 std::string SequenceManagerImpl::DescribeAllPendingTasks() const {
   return AsValueWithSelectorResult(nullptr, /* force_verbose */ true)
       ->ToString();
+}
+
+std::unique_ptr<NativeWorkHandle> SequenceManagerImpl::OnNativeWorkPending(
+    TaskQueue::QueuePriority priority) {
+  return std::make_unique<NativeWorkHandleImpl>(this, priority);
 }
 
 void SequenceManagerImpl::AddDestructionObserver(

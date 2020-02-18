@@ -18,13 +18,12 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
 import org.chromium.chrome.browser.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -155,11 +154,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-                mPages.add(SigninFirstRunFragment::new);
-            } else {
-                mPages.add(AccountFirstRunFragment::new);
-            }
+            mPages.add(SigninFirstRunFragment::new);
             mFreProgressStates.add(FRE_PROGRESS_SIGNIN_SHOWN);
             notifyAdapter = true;
         }
@@ -214,7 +209,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 mShowWelcomePage = mFreProperties.getBoolean(SHOW_WELCOME_PAGE);
                 if (TextUtils.isEmpty(mResultSignInAccountName)) {
                     mResultSignInAccountName = mFreProperties.getString(
-                            AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
+                            SigninFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
                 }
 
                 createPageSequence();
@@ -257,7 +252,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 onNativeDependenciesFullyInitialized();
             }
         };
-        TemplateUrlService.getInstance().runWhenLoaded(onNativeFinished);
+        TemplateUrlServiceFactory.get().runWhenLoaded(onNativeFinished);
     }
 
     public boolean isNativeSideIsInitializedForTest() {

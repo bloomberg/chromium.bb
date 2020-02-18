@@ -312,10 +312,10 @@ class BlinkScrollbarPartAnimationTimer {
   ~BlinkScrollbarPartAnimationTimer() {}
 
   void Start() {
-    start_time_ = WTF::CurrentTime();
+    start_time_ = base::Time::Now().ToDoubleT();
     // Set the framerate of the animation. NSAnimation uses a default
     // framerate of 60 Hz, so use that here.
-    timer_.StartRepeating(TimeDelta::FromSecondsD(1.0 / 60.0), FROM_HERE);
+    timer_.StartRepeating(base::TimeDelta::FromSecondsD(1.0 / 60.0), FROM_HERE);
   }
 
   void Stop() { timer_.Stop(); }
@@ -324,7 +324,7 @@ class BlinkScrollbarPartAnimationTimer {
 
  private:
   void TimerFired(TimerBase*) {
-    double current_time = WTF::CurrentTime();
+    double current_time = base::Time::Now().ToDoubleT();
     double delta = current_time - start_time_;
 
     if (delta >= duration_)
@@ -332,7 +332,7 @@ class BlinkScrollbarPartAnimationTimer {
 
     double fraction = delta / duration_;
     fraction = clampTo(fraction, 0.0, 1.0);
-    double progress = timing_function_->Evaluate(fraction, 0.001);
+    double progress = timing_function_->Evaluate(fraction);
     [animation_ setCurrentProgress:progress];
   }
 
@@ -740,16 +740,23 @@ void ScrollAnimatorMac::Dispose() {
   send_content_area_scrolled_task_handle_.Cancel();
 }
 
-ScrollResult ScrollAnimatorMac::UserScroll(ScrollGranularity granularity,
-                                           const ScrollOffset& delta) {
+ScrollResult ScrollAnimatorMac::UserScroll(
+    ScrollGranularity granularity,
+    const ScrollOffset& delta,
+    ScrollableArea::ScrollCallback on_finish) {
   have_scrolled_since_page_load_ = true;
 
-  if (!scrollable_area_->ScrollAnimatorEnabled())
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+  if (!scrollable_area_->ScrollAnimatorEnabled() ||
+      granularity == ScrollGranularity::kScrollByPixel ||
+      granularity == ScrollGranularity::kScrollByPrecisePixel) {
+    return ScrollAnimatorBase::UserScroll(granularity, delta,
+                                          std::move(on_finish));
+  }
 
-  if (granularity == ScrollGranularity::kScrollByPixel ||
-      granularity == ScrollGranularity::kScrollByPrecisePixel)
-    return ScrollAnimatorBase::UserScroll(granularity, delta);
+  // TODO(lanwei): we should find when the animation finishes and run the
+  // callback after the animation finishes, see https://crbug.com/967842.
+  if (on_finish)
+    std::move(on_finish).Run();
 
   ScrollOffset consumed_delta = ComputeDeltaToConsume(delta);
   ScrollOffset new_offset = current_offset_ + consumed_delta;
@@ -1051,7 +1058,7 @@ void ScrollAnimatorMac::StartScrollbarPaintTimer() {
       *task_runner_, FROM_HERE,
       WTF::Bind(&ScrollAnimatorMac::InitialScrollbarPaintTask,
                 WrapWeakPersistent(this)),
-      TimeDelta::FromMilliseconds(1));
+      base::TimeDelta::FromMilliseconds(1));
 }
 
 bool ScrollAnimatorMac::ScrollbarPaintTimerIsActive() const {

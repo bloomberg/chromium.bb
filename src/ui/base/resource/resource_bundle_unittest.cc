@@ -253,17 +253,39 @@ TEST_F(ResourceBundleTest, IsGzipped) {
   base::FilePath data_path =
       dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
   // Dump contents into a pak file and load it.
-  ASSERT_EQ(base::WriteFile(data_path, kSamplePakContentsV5, kSamplePakSizeV5),
-            static_cast<int>(kSamplePakSizeV5));
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
   ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
   resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
 
   ASSERT_FALSE(resource_bundle->IsGzipped(1));
   ASSERT_FALSE(resource_bundle->IsGzipped(4));
-  ASSERT_TRUE(resource_bundle->IsGzipped(6));
-  ASSERT_FALSE(resource_bundle->IsGzipped(10));
+  ASSERT_FALSE(resource_bundle->IsGzipped(6));
+  ASSERT_TRUE(resource_bundle->IsGzipped(8));
   // Ask for a non-existent resource ID.
   ASSERT_FALSE(resource_bundle->IsGzipped(200));
+}
+
+TEST_F(ResourceBundleTest, IsBrotli) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
+  // Dump contents into a pak file and load it.
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
+  ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+
+  ASSERT_FALSE(resource_bundle->IsBrotli(1));
+  ASSERT_FALSE(resource_bundle->IsBrotli(4));
+  ASSERT_TRUE(resource_bundle->IsBrotli(6));
+  ASSERT_FALSE(resource_bundle->IsGzipped(6));
+  ASSERT_FALSE(resource_bundle->IsBrotli(8));
+  // Ask for non-existent resource ID.
+  ASSERT_FALSE(resource_bundle->IsBrotli(200));
 }
 
 TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
@@ -399,6 +421,66 @@ TEST_F(ResourceBundleImageTest, LoadDataResourceBytes) {
       ui::SCALE_FACTOR_NONE);
   EXPECT_EQ(nullptr,
             resource_bundle->LoadDataResourceBytes(kUnfoundResourceId));
+}
+
+TEST_F(ResourceBundleImageTest, DecompressDataResourceScaled) {
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_2x_path =
+      dir_path().Append(FILE_PATH_LITERAL("sample_2x.pak"));
+
+  // Dump content into pak files.
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
+  ASSERT_EQ(base::WriteFile(data_2x_path, kSampleCompressScaledPakContents,
+                            kSampleCompressScaledPakSize),
+            static_cast<int>(kSampleCompressScaledPakSize));
+
+  // Load pak files.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_100P);
+  resource_bundle->AddDataPackFromPath(data_2x_path, SCALE_FACTOR_200P);
+
+  // Resource ID 6 is brotlied and exists in both 1x and 2x paks, so we expect a
+  // different result when requesting the 2x scale.
+  EXPECT_EQ("this is id 6", resource_bundle->DecompressDataResourceScaled(
+                                6, SCALE_FACTOR_100P));
+  EXPECT_EQ("this is id 6 x2", resource_bundle->DecompressDataResourceScaled(
+                                   6, SCALE_FACTOR_200P));
+}
+
+TEST_F(ResourceBundleImageTest, DecompressLocalizedDataResource) {
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  // Dump content into pak file.
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
+  // Load pak file.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
+  resource_bundle->OverrideLocalePakForTest(data_path);
+
+  EXPECT_EQ("this is id 6",
+            resource_bundle->DecompressLocalizedDataResource(6));
+  EXPECT_EQ("this is id 8",
+            resource_bundle->DecompressLocalizedDataResource(8));
+}
+
+TEST_F(ResourceBundleImageTest, DecompressDataResource) {
+  base::FilePath data_path = dir_path().Append(FILE_PATH_LITERAL("sample.pak"));
+  // Dump content into pak file.
+  ASSERT_EQ(base::WriteFile(data_path, kSampleCompressPakContentsV5,
+                            kSampleCompressPakSizeV5),
+            static_cast<int>(kSampleCompressPakSizeV5));
+  // Load pak file.
+  ResourceBundle* resource_bundle = CreateResourceBundleWithEmptyLocalePak();
+  resource_bundle->AddDataPackFromPath(data_path, SCALE_FACTOR_NONE);
+
+  // Resource ID 6 is Brotli compressed, expect it to be uncompressed.
+  EXPECT_EQ("this is id 6", resource_bundle->DecompressDataResource(6));
+
+  // Resource ID 8 is Gzip compressed, expect it to be uncompressed.
+  EXPECT_EQ("this is id 8", resource_bundle->DecompressDataResource(8));
 }
 
 TEST_F(ResourceBundleImageTest, GetRawDataResource) {

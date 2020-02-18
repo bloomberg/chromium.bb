@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/platform/audio/audio_destination.h"
 
 #include <memory>
-#include <vector>
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/platform/audio/audio_callback_metric_reporter.h"
 #include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -53,10 +53,10 @@ class TestPlatform : public TestingPlatformSupport {
 
 class AudioCallback : public blink::AudioIOCallback {
  public:
-  void Render(AudioBus* destination_bus,
+  void Render(AudioBus*,
               uint32_t frames_to_process,
-              const AudioIOPosition& output_position,
-              const AudioIOCallbackMetric& metric) override {
+              const AudioIOPosition&,
+              const AudioCallbackMetric&) override {
     frames_processed_ += frames_to_process;
   }
 
@@ -74,7 +74,7 @@ void CountWASamplesProcessedForRate(base::Optional<float> sample_rate) {
   scoped_refptr<AudioDestination> destination = AudioDestination::Create(
       callback, channel_count, latency_hint, sample_rate);
 
-  std::vector<float> channels[channel_count];
+  Vector<float> channels[channel_count];
   WebVector<float*> dest_data(static_cast<size_t>(channel_count));
   for (int i = 0; i < channel_count; ++i) {
     channels[i].resize(request_frames);

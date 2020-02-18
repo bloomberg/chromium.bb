@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -218,7 +217,7 @@ void ProgressTracker::MaybeSendProgress() {
   if (progress_value_ < last_notified_progress_value_)
     return;
 
-  double now = CurrentTime();
+  double now = base::Time::Now().ToDoubleT();
   double notified_progress_time_delta = now - last_notified_progress_time_;
 
   double notification_progress_delta =

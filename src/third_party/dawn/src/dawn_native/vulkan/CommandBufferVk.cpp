@@ -41,6 +41,28 @@ namespace dawn_native { namespace vulkan {
             }
         }
 
+        // Vulkan SPEC requires the source/destination region specified by each element of
+        // pRegions must be a region that is contained within srcImage/dstImage. Here the size of
+        // the image refers to the virtual size, while Dawn validates texture copy extent with the
+        // physical size, so we need to re-calculate the texture copy extent to ensure it should fit
+        // in the virtual size of the subresource.
+        Extent3D ComputeTextureCopyExtent(const TextureCopy& textureCopy,
+                                          const Extent3D& copySize) {
+            Extent3D validTextureCopyExtent = copySize;
+            const TextureBase* texture = textureCopy.texture.Get();
+            Extent3D virtualSizeAtLevel = texture->GetMipLevelVirtualSize(textureCopy.mipLevel);
+            if (textureCopy.origin.x + copySize.width > virtualSizeAtLevel.width) {
+                ASSERT(texture->GetFormat().isCompressed);
+                validTextureCopyExtent.width = virtualSizeAtLevel.width - textureCopy.origin.x;
+            }
+            if (textureCopy.origin.y + copySize.height > virtualSizeAtLevel.height) {
+                ASSERT(texture->GetFormat().isCompressed);
+                validTextureCopyExtent.height = virtualSizeAtLevel.height - textureCopy.origin.y;
+            }
+
+            return validTextureCopyExtent;
+        }
+
         VkBufferImageCopy ComputeBufferImageCopyRegion(const BufferCopy& bufferCopy,
                                                        const TextureCopy& textureCopy,
                                                        const Extent3D& copySize) {
@@ -50,21 +72,23 @@ namespace dawn_native { namespace vulkan {
 
             region.bufferOffset = bufferCopy.offset;
             // In Vulkan the row length is in texels while it is in bytes for Dawn
-            region.bufferRowLength =
-                bufferCopy.rowPitch / TextureFormatPixelSize(texture->GetFormat());
+            const Format& format = texture->GetFormat();
+            ASSERT(bufferCopy.rowPitch % format.blockByteSize == 0);
+            region.bufferRowLength = bufferCopy.rowPitch / format.blockByteSize * format.blockWidth;
             region.bufferImageHeight = bufferCopy.imageHeight;
 
             region.imageSubresource.aspectMask = texture->GetVkAspectMask();
-            region.imageSubresource.mipLevel = textureCopy.level;
-            region.imageSubresource.baseArrayLayer = textureCopy.slice;
+            region.imageSubresource.mipLevel = textureCopy.mipLevel;
+            region.imageSubresource.baseArrayLayer = textureCopy.arrayLayer;
             region.imageSubresource.layerCount = 1;
 
             region.imageOffset.x = textureCopy.origin.x;
             region.imageOffset.y = textureCopy.origin.y;
             region.imageOffset.z = textureCopy.origin.z;
 
-            region.imageExtent.width = copySize.width;
-            region.imageExtent.height = copySize.height;
+            Extent3D imageExtent = ComputeTextureCopyExtent(textureCopy, copySize);
+            region.imageExtent.width = imageExtent.width;
+            region.imageExtent.height = imageExtent.height;
             region.imageExtent.depth = copySize.depth;
 
             return region;
@@ -79,8 +103,8 @@ namespace dawn_native { namespace vulkan {
             VkImageCopy region;
 
             region.srcSubresource.aspectMask = srcTexture->GetVkAspectMask();
-            region.srcSubresource.mipLevel = srcCopy.level;
-            region.srcSubresource.baseArrayLayer = srcCopy.slice;
+            region.srcSubresource.mipLevel = srcCopy.mipLevel;
+            region.srcSubresource.baseArrayLayer = srcCopy.arrayLayer;
             region.srcSubresource.layerCount = 1;
 
             region.srcOffset.x = srcCopy.origin.x;
@@ -88,17 +112,22 @@ namespace dawn_native { namespace vulkan {
             region.srcOffset.z = srcCopy.origin.z;
 
             region.dstSubresource.aspectMask = dstTexture->GetVkAspectMask();
-            region.dstSubresource.mipLevel = dstCopy.level;
-            region.dstSubresource.baseArrayLayer = dstCopy.slice;
+            region.dstSubresource.mipLevel = dstCopy.mipLevel;
+            region.dstSubresource.baseArrayLayer = dstCopy.arrayLayer;
             region.dstSubresource.layerCount = 1;
 
             region.dstOffset.x = dstCopy.origin.x;
             region.dstOffset.y = dstCopy.origin.y;
             region.dstOffset.z = dstCopy.origin.z;
 
-            region.extent.width = copySize.width;
-            region.extent.height = copySize.height;
-            region.extent.depth = copySize.depth;
+            Extent3D imageExtentDst = ComputeTextureCopyExtent(dstCopy, copySize);
+            // TODO(jiawei.shao@intel.com): add workaround for the case that imageExtentSrc is not
+            // equal to imageExtentDst. For example when copySize fits in the virtual size of the
+            // source image but does not fit in the one of the destination image.
+            Extent3D imageExtent = imageExtentDst;
+            region.extent.width = imageExtent.width;
+            region.extent.height = imageExtent.height;
+            region.extent.depth = imageExtent.depth;
 
             return region;
         }
@@ -169,16 +198,44 @@ namespace dawn_native { namespace vulkan {
                 RenderPassCacheQuery query;
 
                 for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
-                    const auto& attachmentInfo = renderPass->colorAttachments[i];
+                    auto& attachmentInfo = renderPass->colorAttachments[i];
+                    TextureView* view = ToBackend(attachmentInfo.view.Get());
                     bool hasResolveTarget = attachmentInfo.resolveTarget.Get() != nullptr;
-                    query.SetColor(i, attachmentInfo.view->GetFormat(), attachmentInfo.loadOp,
+
+                    dawn::LoadOp loadOp = attachmentInfo.loadOp;
+                    ASSERT(view->GetLayerCount() == 1);
+                    ASSERT(view->GetLevelCount() == 1);
+                    if (loadOp == dawn::LoadOp::Load &&
+                        !view->GetTexture()->IsSubresourceContentInitialized(
+                            view->GetBaseMipLevel(), 1, view->GetBaseArrayLayer(), 1)) {
+                        loadOp = dawn::LoadOp::Clear;
+                    }
+                    switch (attachmentInfo.storeOp) {
+                        case dawn::StoreOp::Store: {
+                            view->GetTexture()->SetIsSubresourceContentInitialized(
+                                view->GetBaseMipLevel(), 1, view->GetBaseArrayLayer(), 1);
+                        } break;
+
+                        default: { UNREACHABLE(); } break;
+                    }
+
+                    query.SetColor(i, attachmentInfo.view->GetFormat().format, loadOp,
                                    hasResolveTarget);
                 }
 
                 if (renderPass->hasDepthStencilAttachment) {
-                    const auto& attachmentInfo = renderPass->depthStencilAttachment;
-                    query.SetDepthStencil(attachmentInfo.view->GetTexture()->GetFormat(),
+                    auto& attachmentInfo = renderPass->depthStencilAttachment;
+                    query.SetDepthStencil(attachmentInfo.view->GetTexture()->GetFormat().format,
                                           attachmentInfo.depthLoadOp, attachmentInfo.stencilLoadOp);
+                    if (attachmentInfo.depthLoadOp == dawn::LoadOp::Load ||
+                        attachmentInfo.stencilLoadOp == dawn::LoadOp::Load) {
+                        ToBackend(attachmentInfo.view->GetTexture())
+                            ->EnsureSubresourceContentInitialized(
+                                commands, attachmentInfo.view->GetBaseMipLevel(),
+                                attachmentInfo.view->GetLevelCount(),
+                                attachmentInfo.view->GetBaseArrayLayer(),
+                                attachmentInfo.view->GetLayerCount());
+                    }
                 }
 
                 query.SetSampleCount(renderPass->sampleCount);
@@ -270,8 +327,9 @@ namespace dawn_native { namespace vulkan {
         }
     }  // anonymous namespace
 
-    CommandBuffer::CommandBuffer(Device* device, CommandEncoderBase* encoder)
-        : CommandBufferBase(device, encoder), mCommands(encoder->AcquireCommands()) {
+    CommandBuffer::CommandBuffer(CommandEncoderBase* encoder,
+                                 const CommandBufferDescriptor* descriptor)
+        : CommandBufferBase(encoder, descriptor), mCommands(encoder->AcquireCommands()) {
     }
 
     CommandBuffer::~CommandBuffer() {
@@ -289,6 +347,11 @@ namespace dawn_native { namespace vulkan {
             }
             for (size_t i = 0; i < usages.textures.size(); ++i) {
                 Texture* texture = ToBackend(usages.textures[i]);
+
+                // TODO(natlee@microsoft.com): Update clearing here when subresource tracking is
+                // implemented
+                texture->EnsureSubresourceContentInitialized(
+                    commands, 0, texture->GetNumMipLevels(), 0, texture->GetArrayLayers());
                 texture->TransitionUsageNow(commands, usages.textureUsages[i]);
             }
         };
@@ -301,21 +364,19 @@ namespace dawn_native { namespace vulkan {
             switch (type) {
                 case Command::CopyBufferToBuffer: {
                     CopyBufferToBufferCmd* copy = mCommands.NextCommand<CopyBufferToBufferCmd>();
-                    auto& src = copy->source;
-                    auto& dst = copy->destination;
+                    Buffer* srcBuffer = ToBackend(copy->source.Get());
+                    Buffer* dstBuffer = ToBackend(copy->destination.Get());
 
-                    ToBackend(src.buffer)
-                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::TransferSrc);
-                    ToBackend(dst.buffer)
-                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::TransferDst);
+                    srcBuffer->TransitionUsageNow(commands, dawn::BufferUsageBit::CopySrc);
+                    dstBuffer->TransitionUsageNow(commands, dawn::BufferUsageBit::CopyDst);
 
                     VkBufferCopy region;
-                    region.srcOffset = src.offset;
-                    region.dstOffset = dst.offset;
+                    region.srcOffset = copy->sourceOffset;
+                    region.dstOffset = copy->destinationOffset;
                     region.size = copy->size;
 
-                    VkBuffer srcHandle = ToBackend(src.buffer)->GetHandle();
-                    VkBuffer dstHandle = ToBackend(dst.buffer)->GetHandle();
+                    VkBuffer srcHandle = srcBuffer->GetHandle();
+                    VkBuffer dstHandle = dstBuffer->GetHandle();
                     device->fn.CmdCopyBuffer(commands, srcHandle, dstHandle, 1, &region);
                 } break;
 
@@ -324,16 +385,26 @@ namespace dawn_native { namespace vulkan {
                     auto& src = copy->source;
                     auto& dst = copy->destination;
 
-                    ToBackend(src.buffer)
-                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::TransferSrc);
-                    ToBackend(dst.texture)
-                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferDst);
-
-                    VkBuffer srcBuffer = ToBackend(src.buffer)->GetHandle();
-                    VkImage dstImage = ToBackend(dst.texture)->GetHandle();
-
                     VkBufferImageCopy region =
                         ComputeBufferImageCopyRegion(src, dst, copy->copySize);
+                    VkImageSubresourceLayers subresource = region.imageSubresource;
+
+                    if (IsCompleteSubresourceCopiedTo(dst.texture.Get(), copy->copySize,
+                                                      subresource.mipLevel)) {
+                        // Since texture has been overwritten, it has been "initialized"
+                        dst.texture->SetIsSubresourceContentInitialized(
+                            subresource.mipLevel, 1, subresource.baseArrayLayer, 1);
+                    } else {
+                        ToBackend(dst.texture)
+                            ->EnsureSubresourceContentInitialized(commands, subresource.mipLevel, 1,
+                                                                  subresource.baseArrayLayer, 1);
+                    }
+                    ToBackend(src.buffer)
+                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::CopySrc);
+                    ToBackend(dst.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::CopyDst);
+                    VkBuffer srcBuffer = ToBackend(src.buffer)->GetHandle();
+                    VkImage dstImage = ToBackend(dst.texture)->GetHandle();
 
                     // The image is written to so the Dawn guarantees make sure it is in the
                     // TRANSFER_DST_OPTIMAL layout
@@ -347,18 +418,22 @@ namespace dawn_native { namespace vulkan {
                     auto& src = copy->source;
                     auto& dst = copy->destination;
 
+                    VkBufferImageCopy region =
+                        ComputeBufferImageCopyRegion(dst, src, copy->copySize);
+                    VkImageSubresourceLayers subresource = region.imageSubresource;
+
                     ToBackend(src.texture)
-                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferSrc);
+                        ->EnsureSubresourceContentInitialized(commands, subresource.mipLevel, 1,
+                                                              subresource.baseArrayLayer, 1);
+
+                    ToBackend(src.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::CopySrc);
                     ToBackend(dst.buffer)
-                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::TransferDst);
+                        ->TransitionUsageNow(commands, dawn::BufferUsageBit::CopyDst);
 
                     VkImage srcImage = ToBackend(src.texture)->GetHandle();
                     VkBuffer dstBuffer = ToBackend(dst.buffer)->GetHandle();
-
-                    VkBufferImageCopy region =
-                        ComputeBufferImageCopyRegion(dst, src, copy->copySize);
-
-                    // The Dawn TransferSrc usage is always mapped to GENERAL
+                    // The Dawn CopySrc usage is always mapped to GENERAL
                     device->fn.CmdCopyImageToBuffer(commands, srcImage, VK_IMAGE_LAYOUT_GENERAL,
                                                     dstBuffer, 1, &region);
                 } break;
@@ -369,15 +444,30 @@ namespace dawn_native { namespace vulkan {
                     TextureCopy& src = copy->source;
                     TextureCopy& dst = copy->destination;
 
-                    ToBackend(src.texture)
-                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferSrc);
-                    ToBackend(dst.texture)
-                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::TransferDst);
+                    VkImageCopy region = ComputeImageCopyRegion(src, dst, copy->copySize);
+                    VkImageSubresourceLayers dstSubresource = region.dstSubresource;
+                    VkImageSubresourceLayers srcSubresource = region.srcSubresource;
 
+                    ToBackend(src.texture)
+                        ->EnsureSubresourceContentInitialized(commands, srcSubresource.mipLevel, 1,
+                                                              srcSubresource.baseArrayLayer, 1);
+                    if (IsCompleteSubresourceCopiedTo(dst.texture.Get(), copy->copySize,
+                                                      dstSubresource.mipLevel)) {
+                        // Since destination texture has been overwritten, it has been "initialized"
+                        dst.texture->SetIsSubresourceContentInitialized(
+                            dstSubresource.mipLevel, 1, dstSubresource.baseArrayLayer, 1);
+                    } else {
+                        ToBackend(dst.texture)
+                            ->EnsureSubresourceContentInitialized(commands, dstSubresource.mipLevel,
+                                                                  1, dstSubresource.baseArrayLayer,
+                                                                  1);
+                    }
+                    ToBackend(src.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::CopySrc);
+                    ToBackend(dst.texture)
+                        ->TransitionUsageNow(commands, dawn::TextureUsageBit::CopyDst);
                     VkImage srcImage = ToBackend(src.texture)->GetHandle();
                     VkImage dstImage = ToBackend(dst.texture)->GetHandle();
-
-                    VkImageCopy region = ComputeImageCopyRegion(src, dst, copy->copySize);
 
                     // The dstImage is written to so the Dawn guarantees make sure it is in the
                     // TRANSFER_DST_OPTIMAL layout
@@ -425,6 +515,16 @@ namespace dawn_native { namespace vulkan {
                     DispatchCmd* dispatch = mCommands.NextCommand<DispatchCmd>();
                     descriptorSets.Flush(device, commands, VK_PIPELINE_BIND_POINT_COMPUTE);
                     device->fn.CmdDispatch(commands, dispatch->x, dispatch->y, dispatch->z);
+                } break;
+
+                case Command::DispatchIndirect: {
+                    DispatchIndirectCmd* dispatch = mCommands.NextCommand<DispatchIndirectCmd>();
+                    VkBuffer indirectBuffer = ToBackend(dispatch->indirectBuffer)->GetHandle();
+
+                    descriptorSets.Flush(device, commands, VK_PIPELINE_BIND_POINT_COMPUTE);
+                    device->fn.CmdDispatchIndirect(
+                        commands, indirectBuffer,
+                        static_cast<VkDeviceSize>(dispatch->indirectOffset));
                 } break;
 
                 case Command::SetBindGroup: {
@@ -521,6 +621,26 @@ namespace dawn_native { namespace vulkan {
                     device->fn.CmdDrawIndexed(commands, draw->indexCount, draw->instanceCount,
                                               draw->firstIndex, draw->baseVertex,
                                               draw->firstInstance);
+                } break;
+
+                case Command::DrawIndirect: {
+                    DrawIndirectCmd* draw = mCommands.NextCommand<DrawIndirectCmd>();
+                    VkBuffer indirectBuffer = ToBackend(draw->indirectBuffer)->GetHandle();
+
+                    descriptorSets.Flush(device, commands, VK_PIPELINE_BIND_POINT_GRAPHICS);
+                    device->fn.CmdDrawIndirect(commands, indirectBuffer,
+                                               static_cast<VkDeviceSize>(draw->indirectOffset), 1,
+                                               0);
+                } break;
+
+                case Command::DrawIndexedIndirect: {
+                    DrawIndirectCmd* draw = mCommands.NextCommand<DrawIndirectCmd>();
+                    VkBuffer indirectBuffer = ToBackend(draw->indirectBuffer)->GetHandle();
+
+                    descriptorSets.Flush(device, commands, VK_PIPELINE_BIND_POINT_GRAPHICS);
+                    device->fn.CmdDrawIndexedIndirect(
+                        commands, indirectBuffer, static_cast<VkDeviceSize>(draw->indirectOffset),
+                        1, 0);
                 } break;
 
                 case Command::InsertDebugMarker: {
@@ -621,6 +741,19 @@ namespace dawn_native { namespace vulkan {
                     SetStencilReferenceCmd* cmd = mCommands.NextCommand<SetStencilReferenceCmd>();
                     device->fn.CmdSetStencilReference(commands, VK_STENCIL_FRONT_AND_BACK,
                                                       cmd->reference);
+                } break;
+
+                case Command::SetViewport: {
+                    SetViewportCmd* cmd = mCommands.NextCommand<SetViewportCmd>();
+                    VkViewport viewport;
+                    viewport.x = cmd->x;
+                    viewport.y = cmd->y;
+                    viewport.width = cmd->width;
+                    viewport.height = cmd->height;
+                    viewport.minDepth = cmd->minDepth;
+                    viewport.maxDepth = cmd->maxDepth;
+
+                    device->fn.CmdSetViewport(commands, 0, 1, &viewport);
                 } break;
 
                 case Command::SetScissorRect: {

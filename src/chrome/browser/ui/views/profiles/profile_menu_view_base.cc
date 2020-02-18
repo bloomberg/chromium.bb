@@ -276,7 +276,8 @@ views::Button* ProfileMenuViewBase::CreateAndAddBlueButton(
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(button));
 
   AddMenuItemInternal(std::move(margined_view), MenuItems::kStyledButton);
@@ -297,7 +298,7 @@ DiceSigninButtonView* ProfileMenuViewBase::CreateAndAddDiceSigninButton(
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(GetMarginSize(kSmall), kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(button));
 
@@ -318,7 +319,8 @@ views::Label* ProfileMenuViewBase::CreateAndAddLabel(const base::string16& text,
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(label));
 
   AddMenuItemInternal(std::move(margined_view), MenuItems::kLabel);
@@ -329,7 +331,8 @@ void ProfileMenuViewBase::AddViewItem(std::unique_ptr<views::View> view) {
   // Add margins.
   std::unique_ptr<views::View> margined_view = std::make_unique<views::View>();
   margined_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(0, kMenuEdgeMargin)));
+      views::BoxLayout::Orientation::kVertical,
+      gfx::Insets(0, kMenuEdgeMargin)));
   margined_view->AddChildView(std::move(view));
   AddMenuItemInternal(std::move(margined_view), MenuItems::kGeneral);
 }
@@ -340,7 +343,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   // Create a view to keep menu contents.
   auto contents_view = std::make_unique<views::View>();
   contents_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets()));
+      views::BoxLayout::Orientation::kVertical, gfx::Insets()));
 
   for (unsigned group_index = 0; group_index < menu_item_groups_.size();
        group_index++) {
@@ -390,7 +393,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
       }
 
       sub_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical,
+          views::BoxLayout::Orientation::kVertical,
           gfx::Insets(GetMarginSize(top_margin), 0,
                       GetMarginSize(bottom_margin), 0),
           GetMarginSize(child_spacing)));
@@ -406,21 +409,21 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
 
   // Create a scroll view to hold contents view.
   auto scroll_view = std::make_unique<views::ScrollView>();
-  scroll_view->set_hide_horizontal_scrollbar(true);
+  scroll_view->SetHideHorizontalScrollBar(true);
   // TODO(https://crbug.com/871762): it's a workaround for the crash.
-  scroll_view->set_draw_overflow_indicator(false);
+  scroll_view->SetDrawOverflowIndicator(false);
   scroll_view->ClipHeightTo(0, GetMaxHeight());
   scroll_view->SetContents(std::move(contents_view));
 
   // Create a grid layout to set the menu width.
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                      views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                      menu_width_, menu_width_);
   layout->StartRow(1.0, 0);
-  layout->AddView(scroll_view.release());
+  layout->AddView(std::move(scroll_view));
   if (GetBubbleFrameView()) {
     SizeToContents();
     // SizeToContents() will perform a layout, but only if the size changed.

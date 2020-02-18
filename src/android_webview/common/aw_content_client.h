@@ -19,18 +19,18 @@ class AwContentClient : public content::ContentClient {
  public:
   // ContentClient implementation.
   void AddAdditionalSchemes(Schemes* schemes) override;
-  base::string16 GetLocalizedString(int message_id) const override;
-  base::StringPiece GetDataResource(
-      int resource_id,
-      ui::ScaleFactor scale_factor) const override;
-  base::RefCountedMemory* GetDataResourceBytes(int resource_id) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
+  base::string16 GetLocalizedString(int message_id) override;
+  base::StringPiece GetDataResource(int resource_id,
+                                    ui::ScaleFactor scale_factor) override;
+  base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
+  bool IsDataResourceGzipped(int resource_id) override;
   bool CanSendWhileSwappedOut(const IPC::Message* message) override;
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
   bool UsingSynchronousCompositing() override;
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
-  void OnServiceManagerConnected(
-      content::ServiceManagerConnection* connection) override;
+  void BindChildProcessInterface(
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* receiving_handle) override;
 
   const std::string& gpu_fingerprint() const { return gpu_fingerprint_; }
 

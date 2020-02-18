@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -48,7 +49,7 @@ std::unique_ptr<syncer::EntityData> MoveToEntityData(
     const std::string& client_name,
     SessionSpecifics* specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->non_unique_name = client_name;
+  entity_data->name = client_name;
   entity_data->specifics.mutable_session()->Swap(specifics);
   return entity_data;
 }
@@ -110,8 +111,7 @@ SessionSyncBridge::SessionSyncBridge(
           sessions_client->GetLocalSessionEventRouter()),
       favicon_cache_(sessions_client->GetFaviconService(),
                      sessions_client->GetHistoryService(),
-                     kMaxSyncFavicons),
-      weak_ptr_factory_(this) {
+                     kMaxSyncFavicons) {
   DCHECK(sessions_client_);
   DCHECK(local_session_event_router_);
 }
@@ -297,6 +297,16 @@ void SessionSyncBridge::ApplyStopSyncChanges(
   local_session_event_router_->Stop();
   if (delete_metadata_change_list) {
     store_->DeleteAllDataAndMetadata();
+
+    // Ensure that we clear on-demand favicons that were downloaded using user
+    // synced history data, especially by HistoryUiFaviconRequestHandler. We do
+    // it upon disabling of sessions sync to have symmetry with the condition
+    // checked inside that layer to allow downloads (sessions sync enabled).
+    history::HistoryService* history_service =
+        sessions_client_->GetHistoryService();
+    if (history_service) {
+      history_service->ClearAllOnDemandFavicons();
+    }
   }
   syncing_.reset();
 }

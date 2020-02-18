@@ -60,7 +60,7 @@ public class TrustedWebActivityUmaRecorder {
      * Records the time that a Trusted Web Activity has been in resumed state.
      */
     public void recordTwaOpenTime(long durationMs) {
-        recordDuration(durationMs, "BrowserServices.TwaOpenTime");
+        recordDuration(durationMs, "BrowserServices.TwaOpenTime.V2");
     }
 
     /**
@@ -68,7 +68,7 @@ public class TrustedWebActivityUmaRecorder {
      * the Trusted Web Activity.
      */
     public void recordTimeInVerifiedOrigin(long durationMs) {
-        recordDuration(durationMs, "TrustedWebActivity.TimeInVerifiedOrigin");
+        recordDuration(durationMs, "TrustedWebActivity.TimeInVerifiedOrigin.V2");
     }
 
     /**
@@ -76,11 +76,11 @@ public class TrustedWebActivityUmaRecorder {
      * the Trusted Web Activity.
      */
     public void recordTimeOutOfVerifiedOrigin(long durationMs) {
-        recordDuration(durationMs, "TrustedWebActivity.TimeOutOfVerifiedOrigin");
+        recordDuration(durationMs, "TrustedWebActivity.TimeOutOfVerifiedOrigin.V2");
     }
 
     private void recordDuration(long durationMs, String histogramName) {
-        RecordHistogram.recordTimesHistogram(histogramName, durationMs);
+        RecordHistogram.recordLongTimesHistogram(histogramName, durationMs);
     }
 
     /**

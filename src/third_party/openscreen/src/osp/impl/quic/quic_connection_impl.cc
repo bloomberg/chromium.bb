@@ -9,8 +9,8 @@
 
 #include "absl/types/optional.h"
 #include "osp/impl/quic/quic_connection_factory_impl.h"
-#include "osp_base/error.h"
 #include "platform/api/logging.h"
+#include "platform/base/error.h"
 #include "third_party/chromium_quic/src/net/third_party/quic/platform/impl/quic_chromium_clock.h"
 
 namespace openscreen {
@@ -89,9 +89,9 @@ QuicConnectionImpl::QuicConnectionImpl(
 
 QuicConnectionImpl::~QuicConnectionImpl() = default;
 
-void QuicConnectionImpl::OnDataReceived(const platform::ReceivedData& data) {
-  session_->OnTransportReceived(
-      reinterpret_cast<const char*>(data.bytes.data()), data.length);
+void QuicConnectionImpl::OnDataReceived(const platform::UdpPacket& packet) {
+  session_->OnTransportReceived(reinterpret_cast<const char*>(packet.data()),
+                                packet.size());
 }
 
 std::unique_ptr<QuicStream> QuicConnectionImpl::MakeOutgoingStream(

@@ -86,6 +86,7 @@ if (is_win || is_linux || is_mac) {
       "Math.cpp",
       "Math.h",
       "Platform.h",
+      "Result.cpp",
       "Result.h",
       "Serial.h",
       "SerialMap.h",
@@ -96,9 +97,14 @@ if (is_win || is_linux || is_mac) {
       "windows_with_undefs.h",
     ]
 
-    configs += [ ":dawn_internal" ]
+    public_configs = [ ":dawn_internal" ]
     deps = [
       "${dawn_root}/src/dawn:dawn_headers",
     ]
+    if (dawn_enable_vulkan) {
+      public_deps = [
+        "../../third_party:vulkan_headers",
+      ]
+    }
   }
 }

@@ -13,8 +13,8 @@
 namespace blink {
 
 PlatformPaintWorkletLayerPainter::PlatformPaintWorkletLayerPainter(
-    scoped_refptr<PaintWorkletPaintDispatcher> dispatcher)
-    : dispatcher_(dispatcher) {
+    std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher)
+    : dispatcher_(std::move(dispatcher)) {
   TRACE_EVENT0(
       TRACE_DISABLED_BY_DEFAULT("cc"),
       "PlatformPaintWorkletLayerPainter::PlatformPaintWorkletLayerPainter");
@@ -26,9 +26,15 @@ PlatformPaintWorkletLayerPainter::~PlatformPaintWorkletLayerPainter() {
       "PlatformPaintWorkletLayerPainter::~PlatformPaintWorkletLayerPainter");
 }
 
-sk_sp<PaintRecord> PlatformPaintWorkletLayerPainter::Paint(
-    cc::PaintWorkletInput* input) {
-  return dispatcher_->Paint(input);
+void PlatformPaintWorkletLayerPainter::DispatchWorklets(
+    cc::PaintWorkletJobMap worklet_data_map,
+    DoneCallback done_callback) {
+  dispatcher_->DispatchWorklets(std::move(worklet_data_map),
+                                std::move(done_callback));
+}
+
+bool PlatformPaintWorkletLayerPainter::HasOngoingDispatch() const {
+  return dispatcher_->HasOngoingDispatch();
 }
 
 }  // namespace blink

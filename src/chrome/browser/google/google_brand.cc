@@ -146,7 +146,7 @@ bool IsInternetCafeBrandCode(const std::string& brand) {
     "CHIQ", "CHSG", "HLJY", "NTMO", "OOBA", "OOBB", "OOBC", "OOBD", "OOBE",
     "OOBF", "OOBG", "OOBH", "OOBI", "OOBJ", "IDCM",
   };
-  return base::ContainsValue(kBrands, brand);
+  return base::Contains(kBrands, brand);
 }
 
 // BrandForTesting ------------------------------------------------------------

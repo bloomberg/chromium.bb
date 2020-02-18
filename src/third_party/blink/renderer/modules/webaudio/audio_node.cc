@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
@@ -206,6 +206,10 @@ AudioNodeInput& AudioHandler::Input(unsigned i) {
 }
 
 AudioNodeOutput& AudioHandler::Output(unsigned i) {
+  return *outputs_[i];
+}
+
+const AudioNodeOutput& AudioHandler::Output(unsigned i) const {
   return *outputs_[i];
 }
 
@@ -573,7 +577,8 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
-    : context_(context),
+    : InspectorHelperMixin(context.Uuid()),
+      context_(context),
       deferred_task_handler_(&context.GetDeferredTaskHandler()),
       handler_(nullptr) {}
 

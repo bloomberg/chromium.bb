@@ -1,6 +1,6 @@
 #! /bin/sh
 
-prefix=/mingw
+prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 includedir=${prefix}/include
 libdir=${exec_prefix}/lib
@@ -58,7 +58,7 @@ while test $# -gt 0; do
       ;;
 
     --version)
-	echo 2.7.8
+	echo 2.9.9
 	exit 0
 	;;
 
@@ -67,7 +67,7 @@ while test $# -gt 0; do
 	;;
 
     --cflags)
-       	echo -I${includedir}/libxml2 
+       	echo -I${includedir}/libxml2 -I${pcfiledir}/../../include 
        	;;
 
     --libtool-libs)
@@ -86,12 +86,12 @@ while test $# -gt 0; do
 	then
 	    if [ "-L${libdir}" = "-L/usr/lib" -o "-L${libdir}" = "-L/usr/lib64" ]
 	    then
-		echo -lxml2 -lz   -liconv   
+		echo -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma  -L${pcfiledir}/../../lib    
 	    else
-		echo -L${libdir} -lxml2 -lz   -liconv   
+		echo -L${libdir} -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma  -L${pcfiledir}/../../lib    
 	    fi
 	else
-	    echo -L${libdir} -lxml2 -lz   -liconv   -lws2_32
+	    echo -L${libdir} -lxml2 -L${pcfiledir}/../../lib -lz -L${pcfiledir}/../../lib -llzma  -L${pcfiledir}/../../lib     -lws2_32
 	fi
        	;;
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/clock.h"
 #include "base/timer/mock_timer.h"
@@ -68,6 +69,7 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
   base::MockOneShotTimer* timer_;  // Not owned.
 
   SAMLOfflineSigninLimiter* limiter_;  // Owned.
+  base::PowerMonitorTestSource* power_source_;
 
   TestingPrefServiceSimple testing_local_state_;
 
@@ -78,7 +80,11 @@ SAMLOfflineSigninLimiterTest::SAMLOfflineSigninLimiterTest()
     : user_manager_(new MockUserManager),
       user_manager_enabler_(base::WrapUnique(user_manager_)),
       timer_(nullptr),
-      limiter_(nullptr) {}
+      limiter_(nullptr) {
+  auto power_source = std::make_unique<base::PowerMonitorTestSource>();
+  power_source_ = power_source.get();
+  base::PowerMonitor::Initialize(std::move(power_source));
+}
 
 SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   DestroyLimiter();
@@ -89,6 +95,7 @@ SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {
   // Finish any pending tasks before deleting the TestingBrowserProcess.
   thread_bundle_.RunUntilIdle();
   TestingBrowserProcess::DeleteInstance();
+  base::PowerMonitor::ShutdownForTesting();
 }
 
 void SAMLOfflineSigninLimiterTest::DestroyLimiter() {
@@ -661,6 +668,35 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithExpiredLimit) {
   const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
       prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
   EXPECT_EQ(gaia_signin_time, last_gaia_signin_time);
+}
+
+TEST_F(SAMLOfflineSigninLimiterTest, SAMLLimitExpiredWhileSuspended) {
+  PrefService* prefs = profile_->GetPrefs();
+
+  // Set the time of last login with SAML.
+  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
+                  clock_.Now().ToInternalValue());
+
+  // Authenticate against GAIA with SAML. Verify that the flag enforcing online
+  // login is cleared and the time of last login with SAML is set.
+  CreateLimiter();
+  EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, false))
+      .Times(1);
+  EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, true))
+      .Times(0);
+  limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
+
+  // Suspend for 4 weeks.
+  power_source_->GenerateSuspendEvent();
+  clock_.Advance(base::TimeDelta::FromDays(28));  // 4 weeks.
+
+  // Resume power. Verify that the flag enforcing online login is set.
+  Mock::VerifyAndClearExpectations(user_manager_);
+  EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, false))
+      .Times(0);
+  EXPECT_CALL(*user_manager_, SaveForceOnlineSignin(test_account_id_, true))
+      .Times(1);
+  power_source_->GenerateResumeEvent();
 }
 
 }  //  namespace chromeos

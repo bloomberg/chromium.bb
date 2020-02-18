@@ -322,20 +322,20 @@ class QuickUnlockPrivateUnitTest
     EXPECT_EQ(HasFlag(expected_outcome, PIN_GOOD),
               errors.empty() && warnings.empty());
     EXPECT_EQ(HasFlag(expected_outcome, PIN_TOO_SHORT),
-              base::ContainsValue(
-                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT));
-    EXPECT_EQ(HasFlag(expected_outcome, PIN_TOO_LONG),
-              base::ContainsValue(
-                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG));
+              base::Contains(errors,
+                             CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT));
+    EXPECT_EQ(
+        HasFlag(expected_outcome, PIN_TOO_LONG),
+        base::Contains(errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG));
     EXPECT_EQ(HasFlag(expected_outcome, PIN_WEAK_WARNING),
-              base::ContainsValue(
-                  warnings, CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
-    EXPECT_EQ(HasFlag(expected_outcome, PIN_WEAK_ERROR),
-              base::ContainsValue(
-                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
+              base::Contains(warnings,
+                             CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
+    EXPECT_EQ(
+        HasFlag(expected_outcome, PIN_WEAK_ERROR),
+        base::Contains(errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
     EXPECT_EQ(
         HasFlag(expected_outcome, PIN_CONTAINS_NONDIGIT),
-        base::ContainsValue(
+        base::Contains(
             errors, CredentialProblem::CREDENTIAL_PROBLEM_CONTAINS_NONDIGIT));
   }
 

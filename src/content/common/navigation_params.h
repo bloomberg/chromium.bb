@@ -21,7 +21,6 @@
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/prefetched_signed_exchange_info.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
@@ -187,10 +186,6 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // as they are passed through content across navigations.
   std::vector<int> initiator_origin_trial_features;
 
-  // The current origin policy for this request's origin.
-  // (Empty if none applies.)
-  std::string origin_policy;
-
   // The value of the hrefTranslate attribute if this navigation was initiated
   // from a link that had that attribute set.
   std::string href_translate;
@@ -355,6 +350,9 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // passed in the |CommonNavigationParams::url| field.
   std::string data_url_as_string;
 #endif
+
+  // Whether this navigation was browser initiated.
+  bool is_browser_initiated = false;
 };
 
 }  // namespace content

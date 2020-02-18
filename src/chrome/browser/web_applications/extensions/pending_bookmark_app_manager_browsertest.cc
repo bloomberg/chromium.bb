@@ -26,10 +26,10 @@
 
 namespace extensions {
 
-web_app::InstallOptions CreateInstallOptions(const GURL& url) {
-  web_app::InstallOptions install_options(url,
-                                          web_app::LaunchContainer::kWindow,
-                                          web_app::InstallSource::kInternal);
+web_app::ExternalInstallOptions CreateInstallOptions(const GURL& url) {
+  web_app::ExternalInstallOptions install_options(
+      url, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
   install_options.add_to_applications_menu = false;
   install_options.add_to_desktop = false;
@@ -40,7 +40,7 @@ web_app::InstallOptions CreateInstallOptions(const GURL& url) {
 
 class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {
  protected:
-  void InstallApp(web_app::InstallOptions install_options) {
+  void InstallApp(web_app::ExternalInstallOptions install_options) {
     base::RunLoop run_loop;
 
     web_app::WebAppProvider::Get(browser()->profile())
@@ -50,7 +50,7 @@ class PendingBookmarkAppManagerBrowserTest : public InProcessBrowserTest {
                      [this, &run_loop](const GURL& provided_url,
                                        web_app::InstallResultCode code) {
                        result_code_ = code;
-                       run_loop.QuitClosure().Run();
+                       run_loop.Quit();
                      }));
     run_loop.Run();
     ASSERT_TRUE(result_code_.has_value());
@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
                        ShutdownWithPendingInstallation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  web_app::InstallOptions install_options = CreateInstallOptions(
+  web_app::ExternalInstallOptions install_options = CreateInstallOptions(
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
 
   // Start an installation but don't wait for it to finish.
@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   GURL url(embedded_test_server()->GetURL(
       "/banners/manifest_no_service_worker.html"));
 
-  web_app::InstallOptions install_options = CreateInstallOptions(url);
+  web_app::ExternalInstallOptions install_options = CreateInstallOptions(url);
   install_options.bypass_service_worker_check = true;
   InstallApp(std::move(install_options));
   const extensions::Extension* app =
@@ -115,21 +115,21 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(
       "/banners/manifest_no_service_worker.html"));
-  web_app::InstallOptions install_options = CreateInstallOptions(url);
+  web_app::ExternalInstallOptions install_options = CreateInstallOptions(url);
   InstallApp(std::move(install_options));
   const extensions::Extension* app =
       extensions::util::GetInstalledPwaForUrl(browser()->profile(), url);
   EXPECT_FALSE(app);
 }
 
-IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
+IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, ForceReinstall) {
   ASSERT_TRUE(embedded_test_server()->Start());
   {
     GURL url(embedded_test_server()->GetURL(
         "/banners/"
         "manifest_test_page.html?manifest=manifest_short_name_only.json"));
-    web_app::InstallOptions install_options = CreateInstallOptions(url);
-    install_options.always_update = true;
+    web_app::ExternalInstallOptions install_options = CreateInstallOptions(url);
+    install_options.force_reinstall = true;
     InstallApp(std::move(install_options));
 
     const extensions::Extension* app =
@@ -140,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest, AlwaysUpdate) {
   {
     GURL url(
         embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
-    web_app::InstallOptions install_options = CreateInstallOptions(url);
-    install_options.always_update = true;
+    web_app::ExternalInstallOptions install_options = CreateInstallOptions(url);
+    install_options.force_reinstall = true;
     InstallApp(std::move(install_options));
 
     const extensions::Extension* app =
@@ -182,11 +182,11 @@ IN_PROC_BROWSER_TEST_F(PendingBookmarkAppManagerBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(
       embedded_test_server()->GetURL("/banners/no_manifest_test_page.html"));
-  web_app::InstallOptions install_options = CreateInstallOptions(url);
+  web_app::ExternalInstallOptions install_options = CreateInstallOptions(url);
   install_options.require_manifest = true;
   InstallApp(std::move(install_options));
 
-  EXPECT_EQ(web_app::InstallResultCode::kFailedUnknownReason,
+  EXPECT_EQ(web_app::InstallResultCode::kNotValidManifestForWebApp,
             result_code_.value());
   base::Optional<web_app::AppId> id =
       web_app::ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())

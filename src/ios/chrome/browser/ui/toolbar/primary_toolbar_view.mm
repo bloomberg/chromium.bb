@@ -31,9 +31,6 @@
 // ContentView of the vibrancy effect if there is one, self otherwise.
 @property(nonatomic, strong) UIView* contentView;
 
-// The blur visual effect view, redefined as readwrite.
-@property(nonatomic, strong, readwrite) UIView* blur;
-
 // Container for the location bar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* locationBarContainer;
 // The height of the container for the location bar, redefined as readwrite.
@@ -56,6 +53,9 @@
 
 // Progress bar displayed below the toolbar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) ToolbarProgressBar* progressBar;
+
+// Separator below the toolbar, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIView* separator;
 
 #pragma mark** Buttons in the leading stack view. **
 // Button to navigate back, redefined as readwrite.
@@ -122,7 +122,6 @@
 @synthesize expandedConstraints = _expandedConstraints;
 @synthesize contractedConstraints = _contractedConstraints;
 @synthesize contractedNoMarginConstraints = _contractedNoMarginConstraints;
-@synthesize blur = _blur;
 @synthesize contentView = _contentView;
 
 #pragma mark - Public
@@ -144,35 +143,16 @@
 
   self.translatesAutoresizingMaskIntoConstraints = NO;
 
-  [self setUpBlurredBackground];
+  [self setUpToolbarBackground];
   [self setUpLeadingStackView];
   [self setUpTrailingStackView];
   [self setUpCancelButton];
   [self setUpLocationBar];
   [self setUpProgressBar];
   [self setUpCollapsedToolbarButton];
-
-  // Add the separator here as there is no need to have a property.
-  UIView* separator = [[UIView alloc] init];
-  separator.backgroundColor = [UIColor colorWithWhite:0
-                                                alpha:kToolbarSeparatorAlpha];
-  separator.translatesAutoresizingMaskIntoConstraints = NO;
-  [self addSubview:separator];
-  [NSLayoutConstraint activateConstraints:@[
-    [separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [separator.topAnchor constraintEqualToAnchor:self.bottomAnchor],
-    [separator.heightAnchor
-        constraintEqualToConstant:ui::AlignValueToUpperPixel(
-                                      kToolbarSeparatorHeight)],
-  ]];
+  [self setUpSeparator];
 
   [self setUpConstraints];
-
-  // Make sure that the trait collection is taken into account.
-  if (@available(iOS 13, *)) {
-    [self updateLayoutForPreviousTraitCollection:nil];
-  }
 }
 
 - (void)addFakeOmniboxTarget {
@@ -195,39 +175,14 @@
       ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory));
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  [self updateLayoutForPreviousTraitCollection:previousTraitCollection];
-}
-
 #pragma mark - Setup
 
-// Sets the blur effect on the toolbar background.
-- (void)setUpBlurredBackground {
-  UIBlurEffect* blurEffect = self.buttonFactory.toolbarConfiguration.blurEffect;
-  if (blurEffect) {
-    self.blur = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-  } else {
-    self.blur = [[UIView alloc] init];
-  }
-  self.blur.backgroundColor =
-      self.buttonFactory.toolbarConfiguration.blurBackgroundColor;
-  [self addSubview:self.blur];
+// Sets up the toolbar background.
+- (void)setUpToolbarBackground {
+  self.backgroundColor =
+      self.buttonFactory.toolbarConfiguration.backgroundColor;
 
   self.contentView = self;
-
-  if (UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
-          vibrancyEffectForBlurEffect:blurEffect]) {
-    UIVisualEffectView* vibrancyView =
-        [[UIVisualEffectView alloc] initWithEffect:vibrancy];
-    self.contentView = vibrancyView.contentView;
-    [self addSubview:vibrancyView];
-    vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
-    AddSameConstraints(self, vibrancyView);
-  }
-
-  self.blur.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraints(self.blur, self);
 }
 
 // Sets the cancel button to stop editing the location bar.
@@ -320,12 +275,31 @@
   [self addSubview:self.collapsedToolbarButton];
 }
 
+// Sets the separator up.
+- (void)setUpSeparator {
+  self.separator = [[UIView alloc] init];
+  self.separator.backgroundColor =
+      [UIColor colorNamed:@"tab_toolbar_shadow_color"];
+  self.separator.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.separator];
+}
+
 // Sets the constraints up.
 - (void)setUpConstraints {
   id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
   self.expandedConstraints = [NSMutableArray array];
   self.contractedConstraints = [NSMutableArray array];
   self.contractedNoMarginConstraints = [NSMutableArray array];
+
+  // Separator constraints.
+  [NSLayoutConstraint activateConstraints:@[
+    [self.separator.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [self.separator.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [self.separator.topAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [self.separator.heightAnchor
+        constraintEqualToConstant:ui::AlignValueToUpperPixel(
+                                      kToolbarSeparatorHeight)],
+  ]];
 
   // Leading StackView constraints
   [NSLayoutConstraint activateConstraints:@[
@@ -459,22 +433,7 @@
 
 #pragma mark - AdaptiveToolbarView
 
-- (ToolbarButton*)omniboxButton {
+- (ToolbarButton*)searchButton {
   return nil;
 }
-
-#pragma mark - Private
-
-- (void)updateLayoutForPreviousTraitCollection:
-    (UITraitCollection*)previousTraitCollection {
-  if (IsRegularXRegularSizeClass(self)) {
-    self.backgroundColor =
-        self.buttonFactory.toolbarConfiguration.backgroundColor;
-    self.blur.alpha = 0;
-  } else {
-    self.backgroundColor = [UIColor clearColor];
-    self.blur.alpha = 1;
-  }
-}
-
 @end

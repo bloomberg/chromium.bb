@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Cihazlarınız birlikte daha da iyi çalışır</translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="1153356358378277386">Eşlenen cihazlar</translation>
+<translation id="1175572348579024023">Kaydır</translation>
 <translation id="1178581264944972037">Duraklat</translation>
 <translation id="1195412055398077112">fazla tarama</translation>
 <translation id="119944043368869598">Tümünü temizle</translation>
-<translation id="123828989343052515">Yeni Masa</translation>
 <translation id="1247372569136754018">Mikrofon (dahili)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> güç kaynağından şarj ediliyor</translation>
 <translation id="1255033239764210633">Hava nasıl?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Giriş yöntemleri, yöneticiniz tarafından yapılandırılır.</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1761222317188459878">Ağ bağlantısını aç/kapat. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Sağa kaydır</translation>
 <translation id="1812997170047690955">Ekranımda ne var?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" />, bu cihaza uygulanan bir politika tarafından devre dışı bırakıldı. Lütfen değişiklik talep etmek için yöneticinizle konuşun.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistan (yükleniyor...)</translation>
 <translation id="1850504506766569011">Kablosuz kapalı.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Dilinizi ayarlayın</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Metin girişi</translation>
 <translation id="1993072747612765854">En yeni <ph name="SYSTEM_APP_NAME" /> güncellemesi ile ilgili daha fazla bilgi edinin</translation>
 <translation id="1995660704900986789">Kapat</translation>
 <translation id="2012624427112548395">Ctrl+Arama+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Dikey</translation>
 <translation id="2067602449040652523">Klavye parlaklığı</translation>
 <translation id="209965399369889474">Ağa bağlı değilsiniz</translation>
+<translation id="2126242104232412123">Yeni masa</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="2135456203358955318">Yerleştirilmiş büyüteç</translation>
 <translation id="2144487987174258011">Adobe Flash Player'ı güncellemek için yeniden başlatın</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google Asistan, herkese açık oturumda kullanılamaz.</translation>
 <translation id="2575685495496069081">Çoklu oturum açma devre dışı bırakıldı</translation>
 <translation id="2582112259361606227">Güncellemek için yeniden başlat</translation>
-<translation id="2597972630681408282">Gece Işığı: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kart kilitli</translation>
+<translation id="2651765386227849097">Google Asistan bu cihazda devre dışı bırakıldı.</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2658778018866295321">Tıkla ve sürükle</translation>
 <translation id="2700493154570097719">Klavyenizi ayarlayın</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
 <translation id="3226991577105957773">+<ph name="COUNT" /> öğe daha</translation>
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
+<translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> penceresi, Masa <ph name="ACTIVE_DESK" /> üzerinden Masa <ph name="TARGET_DESK" /> üzerine taşındı</translation>
 <translation id="3255483164551725916">Neler yapabilirsin?</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> daha sonra yine oturum açabilir.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Tekrar "<ph name="FROM_LOCALE" />" ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3576141592585647168">Saat dilimini değiştir</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
+<translation id="3604801046548457007">Masa <ph name="DESK_TITILE" /> oluşturuldu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
 <translation id="3621202678540785336">Giriş</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4017989525502048489">Lazer işaretçi</translation>
+<translation id="4021716437419160885">Aşağı kaydır</translation>
 <translation id="4042660782729322247">Ekranınızı paylaşıyorsunuz</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Bir uygulama için kapalı}other{# uygulama için kapalı}}</translation>
 <translation id="4072264167173457037">Orta düzeyde sinyal</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="490375751687810070">Dikey</translation>
 <translation id="4905614135390995787">Yüksek Kontrast Modunu açma/kapatma kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> tuşlarını kullanın.</translation>
+<translation id="490788395437447240">%<ph name="BATTERY_PERCENTAGE" /> pil</translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4918086044614829423">Kabul et</translation>
 <translation id="4924411785043111640">Yeniden başlat ve sıfırla</translation>
+<translation id="495046168593986294">Yukarı kaydır</translation>
 <translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="5030687792513154421">Süre doldu</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />, yeni bir telefona bağlandı</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Mikrofon jakı</translation>
 <translation id="5669267381087807207">Etkinleştiriliyor</translation>
 <translation id="5673434351075758678">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan dil "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
+<translation id="5682642926269496722">Google Asistan geçerli kullanıcı hesabı için kullanılamaz.</translation>
 <translation id="5691772641933328258">Parmak izi tanınmadı</translation>
 <translation id="5710450975648804523">Rahatsız Etmeyin modu açık</translation>
 <translation id="574392208103952083">Orta</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Güncellemeyi almak için Chromebook'unuzu klavye takılıyken yeniden başlatın.</translation>
 <translation id="5992218262414051481">Yüksek Kontrast Modu etkinleştirildi. Modu kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="6018164090099858612">Ayna modundan çıkılıyor</translation>
+<translation id="602001110135236999">Sola kaydır</translation>
+<translation id="6040143037577758943">Kapat</translation>
 <translation id="6043212731627905357">Bu monitör <ph name="DEVICE_TYPE" /> cihazınızla uyuşmuyor (monitör desteklenmiyor).</translation>
 <translation id="6043994281159824495">Şimdi çıkış yap</translation>
 <translation id="6047696787498798094">Başka bir kullanıcıya geçtiğinizde ekran paylaşma özelliği durur. Devam etmek istiyor musunuz?</translation>
@@ -326,6 +338,7 @@
 <translation id="607652042414456612">Bilgisayarınız yakındaki Bluetooth cihazlar tarafından keşfedilebilir durumdadır. Ayrıca,
 <ph name="ADDRESS" /> adresine sahip "<ph name="NAME" />" olarak görünecek</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> şarj ediyor</translation>
+<translation id="612734058257491180">Google Asistan, misafir oturumunda kullanılamaz.</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
 <translation id="6164005077879661055">Denetlenen bu kullanıcı kaldırıldığında denetlenen kullanıcıyla ilişkilendirilmiş tüm dosyalar ve yerel veriler kalıcı olarak silinir. Yönetici, denetlenen bu kullanıcıya ilişkin ziyaret edilen web sayfaları ve ayarları <ph name="MANAGEMENT_URL" /> adresinden görüntülemeye devam edebilir.</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
@@ -367,7 +380,9 @@
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
 <translation id="6715542151869432661">Mobil cihaz bulunamadı.</translation>
 <translation id="6723839937902243910">Güç</translation>
+<translation id="6727969043791803658">Bağlandı, %<ph name="BATTERY_PERCENTAGE" /> pil</translation>
 <translation id="6751826523481687655">Performans izleme açık</translation>
+<translation id="6752912906630585008">Masa <ph name="REMOVED_DESK" /> kaldırılarak Masa <ph name="RECEIVE_DESK" /> ile birleştirildi</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="6820676911989879663">Mola verin!</translation>
@@ -425,6 +440,7 @@
 <translation id="7692480393933218409">Bağlı USB-C cihazlar şarj ediliyor</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 bildirim}other{# bildirim}}</translation>
+<translation id="7749443890790263709">Maksimum masa sayısına ulaşıldı.</translation>
 <translation id="776344839111254542">Güncelleme ayrıntılarını görüntülemek için tıklayın</translation>
 <translation id="7780159184141939021">Ekranı Döndür</translation>
 <translation id="7796353162336583443">Not veya ekran görüntüsü almak, Google Asistan, lazer işaretçi veya büyüteç işlevlerini kullanmak için raftaki ekran kalemi düğmesine dokunun.</translation>
@@ -468,6 +484,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Not oluştur</translation>
 <translation id="8375916635258623388">Bu <ph name="DEVICE_NAME" /> ve telefonunuz otomatik olarak bağlanacaktır</translation>
+<translation id="8388750414311082622">Son masa kaldırılamaz.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> seçenekler menüsü</translation>
 <translation id="8394567579869570560">Ebeveyniniz bu cihazı kilitledi</translation>
 <translation id="8406981827175133772">Tam Ekran Büyüteci</translation>
@@ -476,6 +493,7 @@
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
+<translation id="8444246603146515890">Masa <ph name="DESK_TITILE" /> etkinleştirildi</translation>
 <translation id="8452135315243592079">SIM kart yok</translation>
 <translation id="8454013096329229812">Kablosuz açık.</translation>
 <translation id="847056008324733326">Ekran ölçeği ayarları</translation>

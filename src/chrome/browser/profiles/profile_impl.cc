@@ -46,6 +46,8 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/client_hints/client_hints_factory.h"
+#include "chrome/browser/content_index/content_index_provider_factory.h"
+#include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
@@ -55,6 +57,8 @@
 #include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
+#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
+#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -84,11 +88,10 @@
 #include "chrome/browser/push_messaging/push_messaging_service_factory.h"
 #include "chrome/browser/push_messaging/push_messaging_service_impl.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
-#include "chrome/browser/sms/sms_keyed_service.h"
-#include "chrome/browser/sms/sms_service_factory.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
@@ -124,7 +127,8 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -146,11 +150,9 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_service.h"
 #include "services/image_annotation/public/mojom/constants.mojom.h"
-#include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -177,10 +179,13 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_builder_chromeos.h"
 #include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/chromeos/printing/cups_proxy_service_delegate_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/services/cups_proxy/cups_proxy_service.h"
+#include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
@@ -227,6 +232,7 @@
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -290,10 +296,6 @@ void CreateProfileDirectory(base::SequencedTaskRunner* io_task_runner,
                               base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
                              base::BindOnce(&CreateProfileReadme, path));
   }
-}
-
-base::FilePath GetMediaCachePath(const base::FilePath& base) {
-  return base.Append(chrome::kMediaCacheDirname);
 }
 
 // Converts the kSessionExitedCleanly pref to the corresponding EXIT_TYPE.
@@ -447,7 +449,6 @@ void ProfileImpl::RegisterProfilePrefs(
   // Initialize the cache prefs.
   registry->RegisterFilePathPref(prefs::kDiskCacheDir, base::FilePath());
   registry->RegisterIntegerPref(prefs::kDiskCacheSize, 0);
-  registry->RegisterIntegerPref(prefs::kMediaCacheSize, 0);
 }
 
 ProfileImpl::ProfileImpl(
@@ -461,7 +462,6 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      reporting_permissions_checker_factory_(this),
       shared_cors_origin_access_list_(
           content::SharedCorsOriginAccessList::Create()) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
@@ -695,33 +695,15 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  base::FilePath media_cache_path = base_cache_path;
-  int media_cache_max_size;
-  GetMediaCacheParameters(&media_cache_path, &media_cache_max_size);
-  media_cache_path = GetMediaCachePath(media_cache_path);
-
-  base::FilePath extensions_cookie_path = GetPath();
-  extensions_cookie_path =
-      extensions_cookie_path.Append(chrome::kExtensionsCookieFilename);
-
   // Make sure we initialize the ProfileIOData after everything else has been
   // initialized that we might be reading from the IO thread.
 
-  io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
-                GetPath(), GetSpecialStoragePolicy(),
-                reporting_permissions_checker_factory_.CreateChecker());
+  io_data_.Init(GetPath());
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
       this, io_data_.GetResourceContextNoInit());
 #endif
-
-  {
-    TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
-    content::BrowserContext::GetDefaultStoragePartition(this)
-        ->GetDOMStorageContext()
-        ->SetSaveSessionStorageOnDisk();
-  }
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
@@ -769,6 +751,10 @@ void ProfileImpl::DoFinalInit() {
     TRACE_EVENT0("browser", "ProfileImpl::DoFileInit:DelegateOnProfileCreated")
     delegate_->OnProfileCreated(this, true, IsNewProfile());
   }
+
+  // Ensure that the SharingService is initialized now that io_data_ is
+  // initialized.
+  SharingServiceFactory::GetForBrowserContext(this);
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
@@ -841,7 +827,7 @@ ProfileImpl::~ProfileImpl() {
 }
 
 std::string ProfileImpl::GetProfileUserName() const {
-  const identity::IdentityManager* identity_manager =
+  const signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(this);
   if (identity_manager)
     return identity_manager->GetPrimaryAccountInfo().email;
@@ -862,6 +848,10 @@ ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
 }
 #endif  // !defined(OS_ANDROID)
 
+base::FilePath ProfileImpl::GetPath() {
+  return path_;
+}
+
 base::FilePath ProfileImpl::GetPath() const {
   return path_;
 }
@@ -870,7 +860,15 @@ scoped_refptr<base::SequencedTaskRunner> ProfileImpl::GetIOTaskRunner() {
   return io_task_runner_;
 }
 
+bool ProfileImpl::IsOffTheRecord() {
+  return false;
+}
+
 bool ProfileImpl::IsOffTheRecord() const {
+  return false;
+}
+
+bool ProfileImpl::IsIndependentOffTheRecordProfile() {
   return false;
 }
 
@@ -954,6 +952,12 @@ void ProfileImpl::OnLocaleReady() {
   if (g_browser_process->local_state())
     MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
   MigrateObsoleteProfilePrefs(this);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Note: Extension preferences can be keyed off the extension ID, so need to
+  // be handled specially (rather than directly as part of
+  // MigrateObsoleteProfilePrefs()).
+  extensions::ExtensionPrefs::Get(this)->MigrateObsoleteExtensionPrefs();
+#endif
 
   // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
   // value is empty fallback to checking for |kSessionExitedCleanly|.
@@ -1161,16 +1165,6 @@ net::URLRequestContextGetter* ProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-base::OnceCallback<net::CookieStore*()>
-ProfileImpl::GetExtensionsCookieStoreGetter() {
-  return base::BindOnce(
-      [](content::ResourceContext* context) {
-        auto* io_data = ProfileIOData::FromResourceContext(context);
-        return io_data->GetExtensionsCookieStore();
-      },
-      GetResourceContext());
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 ProfileImpl::GetURLLoaderFactory() {
   return GetDefaultStoragePartition(this)
@@ -1231,40 +1225,18 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
   return BackgroundSyncControllerFactory::GetForProfile(this);
 }
 
+content::ContentIndexProvider* ProfileImpl::GetContentIndexProvider() {
+  return ContentIndexProviderFactory::GetForProfile(this);
+}
+
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_
-      .CreateMainRequestContextGetter(protocol_handlers,
-                                      std::move(request_interceptors),
-                                      g_browser_process->io_thread())
-      .get();
-}
-
-net::URLRequestContextGetter*
-ProfileImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_
-      .CreateIsolatedAppRequestContextGetter(partition_path, in_memory,
-                                             protocol_handlers,
-                                             std::move(request_interceptors))
-      .get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter* ProfileImpl::CreateMediaRequestContext() {
-  return io_data_.GetMediaRequestContextGetter().get();
-}
-
-net::URLRequestContextGetter*
-ProfileImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return io_data_
-      .GetIsolatedMediaRequestContextGetter(partition_path, in_memory)
-      .get();
+  return nullptr;
 }
 
 void ProfileImpl::SetCorsOriginAccessListForOrigin(
@@ -1272,50 +1244,41 @@ void ProfileImpl::SetCorsOriginAccessListForOrigin(
     std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
     std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
     base::OnceClosure closure) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        std::move(closure));
-  } else {
-    auto barrier_closure = BarrierClosure(3, std::move(closure));
+  auto barrier_closure = BarrierClosure(3, std::move(closure));
 
-    // Keep profile storage partitions' NetworkContexts synchronized.
-    auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+  // Keep profile storage partitions' NetworkContexts synchronized.
+  auto profile_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
+      source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
+      CorsOriginPatternSetter::ClonePatterns(block_patterns), barrier_closure);
+  ForEachStoragePartition(
+      this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                                base::RetainedRef(profile_setter.get())));
+
+  // Keep incognito storage partitions' NetworkContexts synchronized.
+  if (HasOffTheRecordProfile()) {
+    auto off_the_record_setter = base::MakeRefCounted<CorsOriginPatternSetter>(
         source_origin, CorsOriginPatternSetter::ClonePatterns(allow_patterns),
         CorsOriginPatternSetter::ClonePatterns(block_patterns),
         barrier_closure);
     ForEachStoragePartition(
-        this, base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                                  base::RetainedRef(profile_setter.get())));
-
-    // Keep incognito storage partitions' NetworkContexts synchronized.
-    if (HasOffTheRecordProfile()) {
-      auto off_the_record_setter =
-          base::MakeRefCounted<CorsOriginPatternSetter>(
-              source_origin,
-              CorsOriginPatternSetter::ClonePatterns(allow_patterns),
-              CorsOriginPatternSetter::ClonePatterns(block_patterns),
-              barrier_closure);
-      ForEachStoragePartition(
-          GetOffTheRecordProfile(),
-          base::BindRepeating(&CorsOriginPatternSetter::SetLists,
-                              base::RetainedRef(off_the_record_setter.get())));
-    } else {
-      // Release unused closure reference.
-      barrier_closure.Run();
-    }
-
-    // Keep the per-profile access list up to date so that we can use this to
-    // restore NetworkContext settings at anytime, e.g. on restarting the
-    // network service.
-    shared_cors_origin_access_list_->SetForOrigin(
-        source_origin, std::move(allow_patterns), std::move(block_patterns),
-        barrier_closure);
+        GetOffTheRecordProfile(),
+        base::BindRepeating(&CorsOriginPatternSetter::SetLists,
+                            base::RetainedRef(off_the_record_setter.get())));
+  } else {
+    // Release unused closure reference.
+    barrier_closure.Run();
   }
+
+  // Keep the per-profile access list up to date so that we can use this to
+  // restore NetworkContext settings at anytime, e.g. on restarting the
+  // network service.
+  shared_cors_origin_access_list_->SetForOrigin(
+      source_origin, std::move(allow_patterns), std::move(block_patterns),
+      barrier_closure);
 }
 
-const content::SharedCorsOriginAccessList*
-ProfileImpl::GetSharedCorsOriginAccessList() const {
+content::SharedCorsOriginAccessList*
+ProfileImpl::GetSharedCorsOriginAccessList() {
   return shared_cors_origin_access_list_.get();
 }
 
@@ -1375,11 +1338,16 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
         chromeos::GcmDeviceInfoProviderImpl::GetInstance());
   }
 
+  if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
+    return std::make_unique<chromeos::printing::CupsProxyService>(
+        std::move(request),
+        std::make_unique<chromeos::CupsProxyServiceDelegateImpl>());
+  }
+
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   if (service_name == chromeos::assistant::mojom::kServiceName) {
     return std::make_unique<chromeos::assistant::Service>(
-        std::move(request), content::GetNetworkConnectionTracker(),
-        GetURLLoaderFactory()->Clone());
+        std::move(request), GetURLLoaderFactory()->Clone());
   }
 #endif  // BUILDFLAG(ENABLE_CROS_ASSISTANT)
 
@@ -1397,8 +1365,9 @@ ProfileImpl::RetriveInProgressDownloadManager() {
   return DownloadManagerUtils::RetrieveInProgressDownloadManager(this);
 }
 
-content::SmsService* ProfileImpl::GetSmsService() {
-  return SmsServiceFactory::GetForProfile(this)->Get();
+content::NativeFileSystemPermissionContext*
+ProfileImpl::GetNativeFileSystemPermissionContext() {
+  return NativeFileSystemPermissionContextFactory::GetForProfile(this).get();
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {
@@ -1606,16 +1575,4 @@ void ProfileImpl::UpdateIsEphemeralInStorage() {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
   }
-}
-
-// Gets the media cache parameters from the command line. |cache_path| will be
-// set to the user provided path, or will not be touched if there is not an
-// argument. |max_size| will be the user provided value or zero by default.
-void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
-                                          int* max_size) {
-  base::FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
-  if (!path.empty())
-    *cache_path = path.Append(cache_path->BaseName());
-
-  *max_size = prefs_->GetInteger(prefs::kMediaCacheSize);
 }

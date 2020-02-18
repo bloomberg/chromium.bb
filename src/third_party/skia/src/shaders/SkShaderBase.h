@@ -167,6 +167,7 @@ public:
     virtual SkImage* onIsAImage(SkMatrix*, SkTileMode[2]) const {
         return nullptr;
     }
+    virtual SkPicture* isAPicture(SkMatrix*, SkTileMode[2], SkRect* tile) const { return nullptr; }
 
     static Type GetFlattenableType() { return kSkShaderBase_Type; }
     Type getFlattenableType() const override { return GetFlattenableType(); }
@@ -195,13 +196,6 @@ protected:
      * @return pointer to context owned by the arena allocator.
      */
     virtual Context* onMakeContext(const ContextRec&, SkArenaAlloc*) const {
-        return nullptr;
-    }
-
-    /**
-     * Overriden by shaders which prefer burst mode.
-     */
-    virtual Context* onMakeBurstPipelineContext(const ContextRec&, SkArenaAlloc*) const {
         return nullptr;
     }
 #endif

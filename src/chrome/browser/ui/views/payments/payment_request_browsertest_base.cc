@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -72,16 +73,11 @@ void SelectComboboxRowForValue(views::Combobox* combobox,
 
 }  // namespace
 
-PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
-PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
+PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() = default;
+PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() = default;
 
-PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase()
-    : delegate_(nullptr),
-      is_incognito_(false),
-      is_valid_ssl_(true),
-      is_browser_window_active_(true) {}
-
-PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() {}
+PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase() = default;
+PaymentRequestBrowserTestBase::~PaymentRequestBrowserTestBase() = default;
 
 void PaymentRequestBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
@@ -101,13 +97,14 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
 
+  Observe(GetActiveWebContents());
+
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,
   // allowing the test to inject itself as a dialog observer.
-  Observe(GetActiveWebContents());
-  registry_.AddInterface<payments::mojom::PaymentRequest>(
-      base::Bind(&PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
-                 base::Unretained(this)));
+  payments::SetPaymentRequestFactoryForTesting(base::BindRepeating(
+      &PaymentRequestBrowserTestBase::CreatePaymentRequestForTest,
+      base::Unretained(this)));
 
   // Set a test sync service so that all types of cards work.
   GetDataManager()->SetSyncServiceForTest(&sync_service_);
@@ -135,6 +132,10 @@ void PaymentRequestBrowserTestBase::SetInvalidSsl() {
 
 void PaymentRequestBrowserTestBase::SetBrowserWindowInactive() {
   is_browser_window_active_ = false;
+}
+
+void PaymentRequestBrowserTestBase::SetSkipUiForForBasicCard() {
+  skip_ui_for_basic_card_ = true;
 }
 
 void PaymentRequestBrowserTestBase::OnCanMakePaymentCalled() {
@@ -504,7 +505,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   std::unique_ptr<TestChromePaymentRequestDelegate> delegate =
       std::make_unique<TestChromePaymentRequestDelegate>(
           web_contents, this /* observer */, &prefs_, is_incognito_,
-          is_valid_ssl_, is_browser_window_active_);
+          is_valid_ssl_, is_browser_window_active_, skip_ui_for_basic_card_);
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents->GetMainFrame(), web_contents,
@@ -577,19 +578,19 @@ PaymentRequestBrowserTestBase::GetProfileLabelValues(
   views::View* view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_2));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_3));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR));
   if (view)
-    line_labels.push_back(static_cast<views::Label*>(view)->text());
+    line_labels.push_back(static_cast<views::Label*>(view)->GetText());
 
   return line_labels;
 }
@@ -605,11 +606,11 @@ PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
   views::View* view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
   DCHECK(view);
-  labels.push_back(static_cast<views::Label*>(view)->text());
+  labels.push_back(static_cast<views::Label*>(view)->GetText());
   view = parent_view->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
   DCHECK(view);
-  labels.push_back(static_cast<views::Label*>(view)->text());
+  labels.push_back(static_cast<views::Label*>(view)->GetText());
   return labels;
 }
 
@@ -792,14 +793,14 @@ const base::string16& PaymentRequestBrowserTestBase::GetLabelText(
     DialogViewID view_id) {
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  return static_cast<views::Label*>(view)->text();
+  return static_cast<views::Label*>(view)->GetText();
 }
 
 const base::string16& PaymentRequestBrowserTestBase::GetStyledLabelText(
     DialogViewID view_id) {
   views::View* view = dialog_view()->GetViewByID(static_cast<int>(view_id));
   DCHECK(view);
-  return static_cast<views::StyledLabel*>(view)->text();
+  return static_cast<views::StyledLabel*>(view)->GetText();
 }
 
 const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(
@@ -807,7 +808,7 @@ const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(
   views::View* view = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET) + type);
   DCHECK(view);
-  return static_cast<views::Label*>(view)->text();
+  return static_cast<views::Label*>(view)->GetText();
 }
 
 void PaymentRequestBrowserTestBase::SetCanMakePaymentEnabledPref(
@@ -834,14 +835,6 @@ void PaymentRequestBrowserTestBase::ResetEventWaiterForDialogOpened() {
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {
   event_waiter_->Wait();
-}
-
-void PaymentRequestBrowserTestBase::EnableSkipUIForForBasicCard() {
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  ASSERT_EQ(1U, requests.size());
-  requests.front()
-      ->set_skip_ui_for_non_url_payment_method_identifiers_for_test();
 }
 
 }  // namespace payments

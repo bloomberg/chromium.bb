@@ -308,7 +308,7 @@ def _EnumerateMostRecentProfiles(gs_context, milestones, glob_url,
 
   Args:
     gs_context: How we talk to gs://
-    milestones: An iterable of ints; each one is a major Chrome version. We'll
+    milestones: A list of ints; each one is a major Chrome version. We'll
       try to get the most recent profile for each of these.
     glob_url: A URL to query gsutil with.
     parse_profile_name: A callable that transforms a profile's filename into
@@ -412,7 +412,7 @@ def GenerateReleaseProfileMergePlan(gs_context, milestones):
 
   Args:
     gs_context: How we talk to gs://
-    milestones: An iterable of ints; Chrome milestones
+    milestones: A list of ints; Chrome milestones
 
   Returns:
     A tuple (a, b), where:
@@ -428,7 +428,7 @@ def GenerateReleaseProfileMergePlan(gs_context, milestones):
 
   planned_merges = {
       version: (cwp_profiles[version], benchmark_profile)
-      for version, benchmark_profile in benchmark_profiles.iteritems()
+      for version, benchmark_profile in benchmark_profiles.items()
       if version in cwp_profiles
   }
   skipped = sorted(set(milestones) - set(planned_merges))
@@ -463,7 +463,7 @@ def ExecuteReleaseProfileMergePlan(gs_context, buildroot, merge_plan):
     cros_build_lib.UncompressFile(temp_path, local_path)
 
   merge_results = {}
-  for version, (cwp_profile, benchmark_profile) in merge_plan.iteritems():
+  for version, (cwp_profile, benchmark_profile) in merge_plan.items():
     chroot_benchmark_path, benchmark_path = path_pair('benchmark.afdo')
     copy_profile(benchmark_profile, benchmark_path)
 
@@ -505,7 +505,7 @@ def UploadReleaseProfiles(gs_context, run_id, merge_plan, merge_results):
     # run_id is truly unique, this should never make a difference.
     gs_context.Copy(local_path, remote_path, acl='public-read', version=0)
 
-  for version, profile in merge_results.iteritems():
+  for version, profile in merge_results.items():
     suffix = os.path.splitext(profile)[1]
     assert suffix != '.afdo', 'All profiles should be compressed.'
     output_path = os.path.join(gs_url_base,
@@ -719,7 +719,7 @@ def PatchChromeEbuildAFDOFile(ebuild_file, profiles):
         else:  # line without markers, just copy it.
           modified.write(line)
 
-  for source, found in markers.iteritems():
+  for source, found in markers.items():
     if not found:
       raise MissingAFDOMarkers('Chrome ebuild file does not have appropriate '
                                'AFDO markers for source %s' % source)
@@ -1062,9 +1062,9 @@ def CWPProfileToVersionTuple(url):
   """
   fn_mat = (
       CWP_CHROME_PROFILE_NAME_PATTERN % tuple(
-          r'([0-9]+)' for _ in xrange(0, 4)))
+          r'([0-9]+)' for _ in range(0, 4)))
   fn_mat.replace('.', '\\.')
-  return map(int, re.match(fn_mat, os.path.basename(url)).groups())
+  return [int(x) for x in re.match(fn_mat, os.path.basename(url)).groups()]
 
 
 def GetCWPProfile(cpv, source, _buildroot, gs_context):
@@ -1084,7 +1084,7 @@ def GetCWPProfile(cpv, source, _buildroot, gs_context):
     None otherwise.
   """
   ver_mat = r'([0-9]+)\.[0-9]+\.([0-9]+)\.([0-9]+)_rc-r[0-9]+'
-  target = map(int, re.match(ver_mat, cpv.version).groups())
+  target = [int(x) for x in re.match(ver_mat, cpv.version).groups()]
 
   # Check 2 most recent milestones.
   #
@@ -1110,7 +1110,7 @@ def GetCWPProfile(cpv, source, _buildroot, gs_context):
         CWP_CHROME_PROFILE_NAME_PATTERN % (milestone, '*', '*', '*'))
     try:
       res = gs_context.List(gs_ls_url)
-      versions += map(CWPProfileToVersionTuple, [r.url for r in res])
+      versions.extend(CWPProfileToVersionTuple(x) for x in [r.url for r in res])
     except gs.GSNoSuchKey:
       pass
 
@@ -1142,10 +1142,12 @@ def GetAvailableKernelProfiles():
     logging.info('gs files not found: %s', gs_ls_url)
     return {}
 
-  matches = filter(None, [re.match(gs_match_url, p.url) for p in res])
+  all_matches = [re.match(gs_match_url, x.url) for x in res]
+  matches = [x for x in all_matches if x]
   versions = {}
   for m in matches:
-    versions.setdefault(m.group(1), []).append(map(int, m.groups()[1:]))
+    versions.setdefault(m.group(1), []).append(
+        [int(x) for x in m.groups()[1:]])
   for v in versions:
     versions[v].sort()
   return versions

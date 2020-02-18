@@ -4,17 +4,18 @@
 
 #include "media/gpu/vaapi/vaapi_utils.h"
 
-#include <type_traits>
-
 #include <va/va.h>
+
+#include <type_traits>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "base/synchronization/lock.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp8_picture.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
-#include "ui/gfx/geometry/size.h"
 
 namespace media {
 
@@ -107,11 +108,31 @@ ScopedVAImage::~ScopedVAImage() {
   }
 }
 
-bool FillVP8DataStructuresAndPassToVaapiWrapper(
-    const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    VASurfaceID va_surface_id,
-    const Vp8FrameHeader& frame_header,
-    const Vp8ReferenceFrameVector& reference_frames) {
+ScopedVASurface::ScopedVASurface(scoped_refptr<VaapiWrapper> vaapi_wrapper,
+                                 VASurfaceID va_surface_id,
+                                 const gfx::Size& size,
+                                 unsigned int va_rt_format)
+    : vaapi_wrapper_(std::move(vaapi_wrapper)),
+      va_surface_id_(va_surface_id),
+      size_(size),
+      va_rt_format_(va_rt_format) {
+  DCHECK(vaapi_wrapper_);
+}
+
+ScopedVASurface::~ScopedVASurface() {
+  if (va_surface_id_ != VA_INVALID_ID)
+    vaapi_wrapper_->DestroySurface(va_surface_id_);
+}
+
+bool ScopedVASurface::IsValid() const {
+  return va_surface_id_ != VA_INVALID_ID && !size_.IsEmpty() &&
+         va_rt_format_ != kInvalidVaRtFormat;
+}
+
+bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
+                           VASurfaceID va_surface_id,
+                           const Vp8FrameHeader& frame_header,
+                           const Vp8ReferenceFrameVector& reference_frames) {
   DCHECK_NE(va_surface_id, VA_INVALID_SURFACE);
   DCHECK(vaapi_wrapper);
 
@@ -278,12 +299,8 @@ bool FillVP8DataStructuresAndPassToVaapiWrapper(
   if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType, &slice_param))
     return false;
 
-  if (!vaapi_wrapper->SubmitBuffer(
-          VASliceDataBufferType, frame_header.frame_size, frame_header.data)) {
-    return false;
-  }
-
-  return vaapi_wrapper->ExecuteAndDestroyPendingBuffers(va_surface_id);
+  return vaapi_wrapper->SubmitBuffer(
+      VASliceDataBufferType, frame_header.frame_size, frame_header.data);
 }
 
 }  // namespace media

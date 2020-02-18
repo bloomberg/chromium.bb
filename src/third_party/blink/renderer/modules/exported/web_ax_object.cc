@@ -64,6 +64,29 @@
 
 namespace blink {
 
+namespace {
+blink::ScrollAlignmentBehavior ToBlinkScrollAlignmentBehavior(
+    ax::mojom::ScrollAlignment alignment) {
+  switch (alignment) {
+    case ax::mojom::ScrollAlignment::kNone:
+      return blink::kScrollAlignmentNoScroll;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentCenter:
+      return blink::kScrollAlignmentCenter;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentTop:
+      return blink::kScrollAlignmentTop;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentBottom:
+      return blink::kScrollAlignmentBottom;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentLeft:
+      return blink::kScrollAlignmentLeft;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentRight:
+      return blink::kScrollAlignmentRight;
+    case ax::mojom::ScrollAlignment::kScrollAlignmentClosestEdge:
+      return blink::kScrollAlignmentClosestEdge;
+  }
+  NOTREACHED() << alignment;
+}
+}  // namespace
+
 class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
  public:
   WebAXSparseAttributeClientAdapter(WebAXSparseAttributeClient& attribute_map)
@@ -75,6 +98,16 @@ class WebAXSparseAttributeClientAdapter : public AXSparseAttributeClient {
 
   void AddBoolAttribute(AXBoolAttribute attribute, bool value) override {
     attribute_map_.AddBoolAttribute(static_cast<WebAXBoolAttribute>(attribute),
+                                    value);
+  }
+
+  void AddIntAttribute(AXIntAttribute attribute, int32_t value) override {
+    attribute_map_.AddIntAttribute(static_cast<WebAXIntAttribute>(attribute),
+                                   value);
+  }
+
+  void AddUIntAttribute(AXUIntAttribute attribute, uint32_t value) override {
+    attribute_map_.AddUIntAttribute(static_cast<WebAXUIntAttribute>(attribute),
                                     value);
   }
 
@@ -121,14 +154,7 @@ static bool IsLayoutClean(Document* document) {
     return false;
   if (document->View()->NeedsLayout())
     return false;
-  DocumentLifecycle::LifecycleState state = document->Lifecycle().GetState();
-  if (state >= DocumentLifecycle::kLayoutClean ||
-      state == DocumentLifecycle::kStyleClean ||
-      state == DocumentLifecycle::kLayoutSubtreeChangeClean) {
-    return true;
-  }
-
-  return false;
+  return document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean;
 }
 
 void WebAXObject::Reset() {
@@ -330,6 +356,13 @@ bool WebAXObject::IsHovered() const {
     return false;
 
   return private_->IsHovered();
+}
+
+bool WebAXObject::IsLineBreakingObject() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsLineBreakingObject();
 }
 
 bool WebAXObject::IsLinked() const {
@@ -684,6 +717,11 @@ WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
   return WebAXObject();
 }
 
+WebRect WebAXObject::GetBoundsInFrameCoordinates() const {
+  LayoutRect rect = private_->GetBoundsInFrameCoordinates();
+  return WebRect(EnclosingIntRect(rect));
+}
+
 WebString WebAXObject::KeyboardShortcut() const {
   if (IsDetached())
     return WebString();
@@ -1034,6 +1072,15 @@ WebURL WebAXObject::Url() const {
   return private_->Url();
 }
 
+WebAXObject WebAXObject::ChooserPopup() const {
+  if (IsDetached())
+    return WebAXObject();
+  AXObject* target = private_->ChooserPopup();
+  if (!target || target->IsDetached())
+    return WebAXObject();
+  return WebAXObject(target);
+}
+
 WebString WebAXObject::GetName(ax::mojom::NameFrom& out_name_from,
                                WebVector<WebAXObject>& out_name_objects) const {
   if (IsDetached())
@@ -1203,6 +1250,13 @@ bool WebAXObject::AccessibilityIsIgnored() const {
     return false;
 
   return private_->AccessibilityIsIgnored();
+}
+
+bool WebAXObject::AccessibilityIsIncludedInTree() const {
+  if (IsDetached())
+    return false;
+
+  return private_->AccessibilityIsIncludedInTree();
 }
 
 int WebAXObject::AriaColumnCount() const {
@@ -1538,12 +1592,24 @@ bool WebAXObject::ScrollToMakeVisible() const {
 }
 
 bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
-    const WebRect& subfocus) const {
+    const WebRect& subfocus,
+    ax::mojom::ScrollAlignment horizontal_scroll_alignment,
+    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
   if (IsDetached())
     return false;
 
   ScopedActionAnnotator annotater(private_.Get());
-  return private_->RequestScrollToMakeVisibleWithSubFocusAction(subfocus);
+  auto horizontal_behavior =
+      ToBlinkScrollAlignmentBehavior(horizontal_scroll_alignment);
+  auto vertical_behavior =
+      ToBlinkScrollAlignmentBehavior(vertical_scroll_alignment);
+  blink::ScrollAlignment blink_horizontal_scroll_alignment = {
+      kScrollAlignmentNoScroll, horizontal_behavior, horizontal_behavior};
+  blink::ScrollAlignment blink_vertical_scroll_alignment = {
+      kScrollAlignmentNoScroll, vertical_behavior, vertical_behavior};
+  return private_->RequestScrollToMakeVisibleWithSubFocusAction(
+      subfocus, blink_horizontal_scroll_alignment,
+      blink_vertical_scroll_alignment);
 }
 
 bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
@@ -1562,6 +1628,13 @@ void WebAXObject::Swap(WebAXObject& other) {
   DCHECK(temp) << "|private_| should not be null.";
   this->Assign(other);
   other = temp;
+}
+
+void WebAXObject::HandleAutofillStateChanged(bool suggestions_available) const {
+  if (IsDetached() || !private_->IsAXLayoutObject())
+    return;
+
+  private_->HandleAutofillStateChanged(suggestions_available);
 }
 
 WebString WebAXObject::ToString() const {

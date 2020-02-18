@@ -31,6 +31,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -76,6 +77,8 @@ var (
 	keepCheckouts = flag.Bool("keep", false, "don't delete checkout directories after use")
 	dryRun        = flag.Bool("dry", false, "don't post regres reports to gerrit")
 	maxProcMemory = flag.Uint64("max-proc-mem", shell.MaxProcMemory, "maximum virtual memory per child process")
+	dailyNow      = flag.Bool("dailynow", false, "Start by running the daily pass")
+	priority      = flag.String("priority", "", "Prioritize a single change with the given id")
 )
 
 func main() {
@@ -96,6 +99,8 @@ func main() {
 		gerritPass:    os.ExpandEnv(*gerritPass),
 		keepCheckouts: *keepCheckouts,
 		dryRun:        *dryRun,
+		dailyNow:      *dailyNow,
+		priority:      *priority,
 	}
 
 	if err := r.run(); err != nil {
@@ -115,6 +120,8 @@ type regres struct {
 	keepCheckouts bool   // don't delete source & build checkouts after testing
 	dryRun        bool   // don't post any reviews
 	maxProcMemory uint64 // max virtual memory for child processes
+	dailyNow      bool   // start with a daily run
+	priority      string // Prioritize a single change with the given id
 }
 
 // resolveDirs ensures that the necessary directories used can be found, and
@@ -194,6 +201,10 @@ func (r *regres) run() error {
 	lastUpdatedTestLists := toDate(time.Now())
 	lastQueriedChanges := time.Time{}
 
+	if r.dailyNow {
+		lastUpdatedTestLists = date{}
+	}
+
 	for {
 		if now := time.Now(); toDate(now) != lastUpdatedTestLists && now.Hour() >= dailyUpdateTestListHour {
 			lastUpdatedTestLists = toDate(now)
@@ -218,6 +229,13 @@ func (r *regres) run() error {
 				if err != nil {
 					log.Println(cause.Wrap(err, "Couldn't update info for change '%s'", change.id))
 				}
+			}
+		}
+
+		for _, c := range changes {
+			if c.pending && r.priority == c.id {
+				log.Printf("Prioritizing change '%s'\n", c.id)
+				c.priority = 1e6
 			}
 		}
 
@@ -720,6 +738,7 @@ func (t *test) build() error {
 	if err := shell.Shell(buildTimeout, t.r.cmake, t.buildDir,
 		"-DCMAKE_BUILD_TYPE=Release",
 		"-DDCHECK_ALWAYS_ON=1",
+		"-DREACTOR_VERIFY_LLVM_IR=1",
 		".."); err != nil {
 		return err
 	}
@@ -974,9 +993,9 @@ func compare(old, new *CommitTestResults) string {
 			continue
 		}
 		switch {
-		case old.Status.Passing() && new.Status.Failing():
+		case !old.Status.Failing() && new.Status.Failing():
 			broken = append(broken, test)
-		case old.Status.Failing() && new.Status.Passing():
+		case !old.Status.Passing() && new.Status.Passing():
 			fixed = append(fixed, test)
 		case old.Status != new.Status:
 			changed = append(changed, test)
@@ -1097,14 +1116,53 @@ func compare(old, new *CommitTestResults) string {
 		sb.WriteString(fmt.Sprintf("\n--- No change in test results ---\n"))
 	}
 
+	type timingDiff struct {
+		old      time.Duration
+		new      time.Duration
+		relDelta float64
+		name     string
+	}
+
+	timingDiffs := []timingDiff{}
+	for name, new := range new.Tests {
+		if old, ok := old.Tests[name]; ok {
+			old, new := old.TimeTaken, new.TimeTaken
+			delta := new.Seconds() - old.Seconds()
+			absDelta := math.Abs(delta)
+			relDelta := delta / old.Seconds()
+			if absDelta > 2.0 && math.Abs(relDelta) > 0.05 { // If change > ±2s and > than ±5% old time...
+				timingDiffs = append(timingDiffs, timingDiff{
+					old:      old,
+					new:      new,
+					name:     name,
+					relDelta: relDelta,
+				})
+			}
+		}
+	}
+	if len(timingDiffs) > 0 {
+		sb.WriteString(fmt.Sprintf("\n--- Test duration changes ---\n"))
+		const limit = 10
+		if len(timingDiffs) > limit {
+			sort.Slice(timingDiffs, func(i, j int) bool { return math.Abs(timingDiffs[i].relDelta) > math.Abs(timingDiffs[j].relDelta) })
+			timingDiffs = timingDiffs[:limit]
+		}
+		sort.Slice(timingDiffs, func(i, j int) bool { return timingDiffs[i].relDelta < timingDiffs[j].relDelta })
+		for _, d := range timingDiffs {
+			percent := percent64(int64(d.new-d.old), int64(d.old))
+			sb.WriteString(fmt.Sprintf("  > %v: %v -> %v (%+d%%)\n", d.name, d.old, d.new, percent))
+		}
+	}
+
 	return sb.String()
 }
 
 // TestResult holds the results of a single API test.
 type TestResult struct {
-	Test   string
-	Status testlist.Status
-	Err    string `json:",omitempty"`
+	Test      string
+	Status    testlist.Status
+	TimeTaken time.Duration
+	Err       string `json:",omitempty"`
 }
 
 func (r TestResult) String() string {
@@ -1145,6 +1203,7 @@ nextTest:
 			"LIBC_FATAL_STDERR_=1", // Put libc explosions into logs.
 		}
 
+		start := time.Now()
 		outRaw, err := shell.Exec(testTimeout, exe, filepath.Dir(exe), env,
 			"--deqp-surface-type=pbuffer",
 			"--deqp-shadercache=disable",
@@ -1152,6 +1211,7 @@ nextTest:
 			"--deqp-log-shader-sources=disable",
 			"--deqp-log-flush=disable",
 			"-n="+name)
+		duration := time.Since(start)
 		out := string(outRaw)
 		out = strings.ReplaceAll(out, t.srcDir, "<SwiftShader>")
 		out = strings.ReplaceAll(out, exe, "<dEQP>")
@@ -1169,21 +1229,24 @@ nextTest:
 			} {
 				if s := test.re.FindString(out); s != "" {
 					results <- TestResult{
-						Test:   name,
-						Status: test.s,
-						Err:    s,
+						Test:      name,
+						Status:    test.s,
+						TimeTaken: duration,
+						Err:       s,
 					}
 					continue nextTest
 				}
 			}
 			results <- TestResult{
-				Test:   name,
-				Status: testlist.Crash,
+				Test:      name,
+				Status:    testlist.Crash,
+				TimeTaken: duration,
 			}
 		case shell.ErrTimeout:
 			results <- TestResult{
-				Test:   name,
-				Status: testlist.Timeout,
+				Test:      name,
+				Status:    testlist.Timeout,
+				TimeTaken: duration,
 			}
 		case nil:
 			toks := deqpRE.FindStringSubmatch(out)
@@ -1195,23 +1258,23 @@ nextTest:
 			}
 			switch toks[1] {
 			case "Pass":
-				results <- TestResult{Test: name, Status: testlist.Pass}
+				results <- TestResult{Test: name, Status: testlist.Pass, TimeTaken: duration}
 			case "NotSupported":
-				results <- TestResult{Test: name, Status: testlist.NotSupported}
+				results <- TestResult{Test: name, Status: testlist.NotSupported, TimeTaken: duration}
 			case "CompatibilityWarning":
-				results <- TestResult{Test: name, Status: testlist.CompatibilityWarning}
+				results <- TestResult{Test: name, Status: testlist.CompatibilityWarning, TimeTaken: duration}
 			case "QualityWarning":
-				results <- TestResult{Test: name, Status: testlist.QualityWarning}
+				results <- TestResult{Test: name, Status: testlist.QualityWarning, TimeTaken: duration}
 			case "Fail":
 				var err string
 				if toks[2] != "Fail" {
 					err = toks[2]
 				}
-				results <- TestResult{Test: name, Status: testlist.Fail, Err: err}
+				results <- TestResult{Test: name, Status: testlist.Fail, Err: err, TimeTaken: duration}
 			default:
 				err := fmt.Sprintf("Couldn't parse test output:\n%s", out)
 				log.Println("Warning: ", err)
-				results <- TestResult{Test: name, Status: testlist.Fail, Err: err}
+				results <- TestResult{Test: name, Status: testlist.Fail, Err: err, TimeTaken: duration}
 			}
 		}
 	}

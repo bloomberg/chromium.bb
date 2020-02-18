@@ -7,7 +7,6 @@
 #include <utility>
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
@@ -61,10 +60,10 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
       message.encoded_message.size());
   for (auto& blob : message.blobs) {
     result.message->BlobDataHandles().Set(
-        WebString::FromUTF8(blob->uuid),
+        String::FromUTF8(blob->uuid),
         BlobDataHandle::Create(
-            WebString::FromUTF8(blob->uuid),
-            WebString::FromUTF8(blob->content_type), blob->size,
+            String::FromUTF8(blob->uuid), String::FromUTF8(blob->content_type),
+            blob->size,
             mojom::blink::BlobPtrInfo(blob->blob.PassHandle(),
                                       mojom::Blob::Version_)));
   }
@@ -83,6 +82,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
         message.user_activation->was_active);
   }
   result.transfer_user_activation = message.transfer_user_activation;
+  result.allow_autoplay = message.allow_autoplay;
 
   if (!message.array_buffer_contents_array.empty()) {
     SerializedScriptValue::ArrayBufferContentsArray array_buffer_contents_array;
@@ -129,8 +129,8 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
   result.blobs.reserve(message.message->BlobDataHandles().size());
   for (const auto& blob : message.message->BlobDataHandles()) {
     result.blobs.push_back(mojom::SerializedBlob::New(
-        WebString(blob.value->Uuid()).Utf8(),
-        WebString(blob.value->GetType()).Utf8(), blob.value->size(),
+        blob.value->Uuid().Utf8(), blob.value->GetType().Utf8(),
+        blob.value->size(),
         mojom::BlobPtrInfo(
             blob.value->CloneBlobPtr().PassInterface().PassHandle(),
             mojom::Blob::Version_)));
@@ -151,6 +151,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
         message.user_activation->was_active);
   }
   result.transfer_user_activation = message.transfer_user_activation;
+  result.allow_autoplay = message.allow_autoplay;
 
   auto& array_buffer_contents_array =
       message.message->GetArrayBufferContentsArray();

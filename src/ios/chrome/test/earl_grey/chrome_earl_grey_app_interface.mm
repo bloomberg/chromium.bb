@@ -6,6 +6,12 @@
 #import "base/test/ios/wait_util.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#import "components/payments/core/features.h"
+#import "components/ukm/ios/features.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
@@ -14,12 +20,16 @@
 #import "ios/chrome/test/app/signin_test_util.h"
 #import "ios/chrome/test/app/sync_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
+#import "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/testing/nserror_util.h"
+#import "ios/web/common/features.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/web_client.h"
+#import "services/metrics/public/cpp/ukm_recorder.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,8 +52,8 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
       @"Clearing browser history timed out");
 }
 
-+ (void)startLoadingURL:(NSString*)URL {
-  chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(URL)));
++ (void)startLoadingURL:(NSString*)spec {
+  chrome_test_util::LoadUrl(GURL(base::SysNSStringToUTF8(spec)));
 }
 
 + (BOOL)waitForWindowIDInjectionIfNeeded {
@@ -64,7 +74,7 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   [BrowserCommandDispatcherForMainBVC() reload];
 }
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 + (void)selectTabAtIndex:(NSUInteger)index {
   chrome_test_util::SelectTabAtIndexInCurrentMode(index);
@@ -170,12 +180,9 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 }
 
 + (BOOL)tapWebStateElementWithID:(NSString*)elementID error:(NSError*)error {
-  NSError* __autoreleasing autoreleasingError = nil;
-  bool success = web::test::TapWebViewElementWithId(
+  return web::test::TapWebViewElementWithId(
       chrome_test_util::GetCurrentWebState(),
-      base::SysNSStringToUTF8(elementID), &autoreleasingError);
-  error = autoreleasingError;
-  return success;
+      base::SysNSStringToUTF8(elementID), &error);
 }
 
 + (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
@@ -192,17 +199,51 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
-+ (NSError*)waitForWebStateNotContainingText:(NSString*)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
-    return !web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
++ (NSError*)submitWebStateFormWithID:(NSString*)formID {
+  bool success = web::test::SubmitWebViewFormWithId(
+      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(formID));
+
   if (!success) {
-    NSString* NSErrorDescription = [NSString
-        stringWithFormat:@"Failed waiting for web view not containing %@",
-                         text];
-    return testing::NSErrorWithLocalizedDescription(NSErrorDescription);
+    NSString* errorString =
+        [NSString stringWithFormat:@"Failed to submit form with ID=%@", formID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
   }
+
+  return nil;
+}
+
++ (BOOL)webStateContainsText:(NSString*)text {
+  return web::test::IsWebViewContainingText(
+      chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
+}
+
++ (NSError*)waitForWebStateContainingLoadedImage:(NSString*)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_LOADED);
+
+  if (!success) {
+    NSString* errorString = [NSString
+        stringWithFormat:@"Failed waiting for web view loaded image %@",
+                         imageID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
+  return nil;
+}
+
++ (NSError*)waitForWebStateContainingBlockedImage:(NSString*)imageID {
+  bool success = web::test::WaitForWebViewContainingImage(
+      base::SysNSStringToUTF8(imageID), chrome_test_util::GetCurrentWebState(),
+      web::test::IMAGE_STATE_BLOCKED);
+
+  if (!success) {
+    NSString* errorString = [NSString
+        stringWithFormat:@"Failed waiting for web view blocked image %@",
+                         imageID];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
   return nil;
 }
 
@@ -218,6 +259,8 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   }
   return nil;
 }
+
+#pragma mark - Sync Utilities (EG2)
 
 + (void)clearAutofillProfileWithGUID:(NSString*)GUID {
   std::string utfGUID = base::SysNSStringToUTF8(GUID);
@@ -260,6 +303,46 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return nil;
 }
 
++ (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+  return chrome_test_util::GetNumberOfSyncEntities(type);
+}
+
++ (void)addFakeSyncServerBookmarkWithURL:(NSString*)URL title:(NSString*)title {
+  chrome_test_util::InjectBookmarkOnFakeSyncServer(
+      base::SysNSStringToUTF8(URL), base::SysNSStringToUTF8(title));
+}
+
++ (void)addFakeSyncServerTypedURL:(NSString*)URL {
+  chrome_test_util::InjectTypedURLOnFakeSyncServer(
+      base::SysNSStringToUTF8(URL));
+}
+
++ (void)addHistoryServiceTypedURL:(NSString*)URL {
+  chrome_test_util::AddTypedURLOnClient(GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (void)deleteHistoryServiceTypedURL:(NSString*)URL {
+  chrome_test_util::DeleteTypedUrlFromClient(
+      GURL(base::SysNSStringToUTF8(URL)));
+}
+
++ (BOOL)isTypedURL:(NSString*)spec presentOnClient:(BOOL)expectPresent {
+  NSError* error = nil;
+  GURL URL(base::SysNSStringToUTF8(spec));
+  BOOL success =
+      chrome_test_util::IsTypedUrlPresentOnClient(URL, expectPresent, &error);
+  return success && !error;
+}
+
++ (void)triggerSyncCycleForType:(syncer::ModelType)type {
+  chrome_test_util::TriggerSyncCycle(type);
+}
+
++ (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(NSString*)GUID {
+  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(
+      base::SysNSStringToUTF8(GUID));
+}
+
 #pragma mark - Sync Utilities (EG2)
 
 + (void)clearSyncServerData {
@@ -300,6 +383,42 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   chrome_test_util::TearDownFakeSyncServer();
 }
 
++ (NSError*)verifyNumberOfSyncEntitiesWithType:(NSUInteger)type
+                                          name:(NSString*)name
+                                         count:(NSUInteger)count {
+  std::string UTF8Name = base::SysNSStringToUTF8(name);
+  NSError* __autoreleasing tempError = nil;
+  bool success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
+      (syncer::ModelType)type, UTF8Name, count, &tempError);
+  NSError* error = tempError;
+
+  if (!success and !error) {
+    NSString* errorString =
+        [NSString stringWithFormat:@"Expected %zu entities of the %d type.",
+                                   count, (syncer::ModelType)type];
+    return testing::NSErrorWithLocalizedDescription(errorString);
+  }
+
+  return error;
+}
+
++ (NSError*)verifySessionsOnSyncServerWithSpecs:(NSArray<NSString*>*)specs {
+  std::multiset<std::string> multisetSpecs;
+  for (NSString* spec in specs) {
+    multisetSpecs.insert(base::SysNSStringToUTF8(spec));
+  }
+
+  NSError* __autoreleasing tempError = nil;
+  bool success =
+      chrome_test_util::VerifySessionsOnSyncServer(multisetSpecs, &tempError);
+  NSError* error = tempError;
+  if (!success && !error) {
+    error = testing::NSErrorWithLocalizedDescription(
+        @"Error occurred during verification sessions.");
+  }
+  return error;
+}
+
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)outError {
   __block bool handlerCalled = false;
   __block id blockResult = nil;
@@ -328,6 +447,60 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
     *outError = autoreleasedError;
   }
   return blockResult;
+}
+
+#pragma mark - Accessibility Utilities (EG2)
+
++ (NSError*)verifyAccessibilityForCurrentScreen {
+  NSError* error = nil;
+  bool success = chrome_test_util::VerifyAccessibilityForCurrentScreen(error);
+  if (!success || error) {
+    NSString* errorDescription = [NSString
+        stringWithFormat:@"Accessibility checks failed! Error: %@", error];
+    return testing::NSErrorWithLocalizedDescription(errorDescription);
+  }
+  return nil;
+}
+
+#pragma mark - Check features (EG2)
+
++ (BOOL)isSlimNavigationManagerEnabled {
+  return base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
+}
+
++ (BOOL)isBlockNewTabPagePendingLoadEnabled {
+  return base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
+}
+
++ (BOOL)isNewOmniboxPopupLayoutEnabled {
+  return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
+}
+
++ (BOOL)isUMACellularEnabled {
+  return base::FeatureList::IsEnabled(kUmaCellular);
+}
+
++ (BOOL)isUKMEnabled {
+  return base::FeatureList::IsEnabled(ukm::kUkmFeature);
+}
++ (BOOL)isWebPaymentsModifiersEnabled {
+  return base::FeatureList::IsEnabled(
+      payments::features::kWebPaymentsModifiers);
+}
+
+#pragma mark - ScopedBlockPopupsPref
+
++ (ContentSetting)popupPrefValue {
+  return ios::HostContentSettingsMapFactory::GetForBrowserState(
+             chrome_test_util::GetOriginalBrowserState())
+      ->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, NULL);
+}
+
++ (void)setPopupPrefValue:(ContentSetting)value {
+  DCHECK(value == CONTENT_SETTING_BLOCK || value == CONTENT_SETTING_ALLOW);
+  ios::HostContentSettingsMapFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, value);
 }
 
 @end

@@ -18,15 +18,15 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/features/keyboard_accessory/jni_headers/ManualFillingComponentBridge_jni.h"
+#include "chrome/android/features/keyboard_accessory/jni_headers/UserInfoField_jni.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
-#include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
-#include "chrome/browser/password_manager/password_generation_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "jni/ManualFillingComponentBridge_jni.h"
-#include "jni/UserInfoField_jni.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -34,9 +34,13 @@
 
 using autofill::AccessorySheetData;
 using autofill::FooterCommand;
+using autofill::PasswordForm;
 using autofill::UserInfo;
+using autofill::password_generation::PasswordGenerationUIData;
 using base::android::ConvertJavaStringToUTF16;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -131,12 +135,6 @@ void ManualFillingViewAndroid::OnOptionSelected(
       static_cast<autofill::AccessoryAction>(selected_action));
 }
 
-void ManualFillingViewAndroid::OnGenerationRequested(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  controller_->OnGenerationRequested();
-}
-
 void ManualFillingViewAndroid::OnImageFetched(
     const base::android::ScopedJavaGlobalRef<jobject>& j_callback,
     const gfx::Image& image) {
@@ -159,14 +157,16 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
         Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
-            env, java_object_, j_tab_data);
+            env, java_object_, j_tab_data,
+            ConvertUTF8ToJavaString(env, user_info.origin()));
     for (const UserInfo::Field& field : user_info.fields()) {
       Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_, j_user_info,
           static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
-          field.is_obfuscated(), field.selectable());
+          ConvertUTF8ToJavaString(env, field.id()), field.is_obfuscated(),
+          field.selectable());
     }
   }
 
@@ -186,9 +186,11 @@ UserInfo::Field ManualFillingViewAndroid::ConvertJavaUserInfoField(
       env, Java_UserInfoField_getDisplayText(env, j_field_to_convert));
   base::string16 a11y_description = ConvertJavaStringToUTF16(
       env, Java_UserInfoField_getA11yDescription(env, j_field_to_convert));
+  std::string id = ConvertJavaStringToUTF8(
+      env, Java_UserInfoField_getId(env, j_field_to_convert));
   bool is_obfuscated = Java_UserInfoField_isObfuscated(env, j_field_to_convert);
   bool selectable = Java_UserInfoField_isSelectable(env, j_field_to_convert);
-  return UserInfo::Field(display_text, a11y_description, is_obfuscated,
+  return UserInfo::Field(display_text, a11y_description, id, is_obfuscated,
                          selectable);
 }
 
@@ -200,17 +202,6 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     const base::android::JavaParamRef<jobjectArray>& j_passwords) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  PasswordAccessoryController* pwd_controller =
-      static_cast<ManualFillingControllerImpl*>(
-          ManualFillingControllerImpl::GetOrCreate(web_contents).get())
-          ->password_controller_for_testing();
-
-  if (!pwd_controller) {
-    // If the controller isn't initialized (e.g. because the flags are not set),
-    // fail silently so tests can use shared setup methods for old and new UI.
-    LOG(ERROR) << "Tried to fill cache of non-existent accessory controller.";
-    return;
-  }
 
   url::Origin origin = url::Origin::Create(web_contents->GetLastCommittedURL());
   std::vector<std::string> usernames;
@@ -227,7 +218,20 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     password_forms[i].password_value = base::ASCIIToUTF16(passwords[i]);
     credentials[password_forms[i].username_value] = &password_forms[i];
   }
-  pwd_controller->SavePasswordsForOrigin(credentials, origin);
+  return ChromePasswordManagerClient::FromWebContents(web_contents)
+      ->GetCredentialCacheForTesting()
+      ->SaveCredentialsForOrigin(credentials, origin);
+}
+
+// static
+void JNI_ManualFillingComponentBridge_NotifyFocusedFieldTypeForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    jint j_available) {
+  ManualFillingControllerImpl::GetOrCreate(
+      content::WebContents::FromJavaWebContents(j_web_contents))
+      ->NotifyFocusedInputChanged(
+          static_cast<autofill::mojom::FocusedFieldType>(j_available));
 }
 
 // static
@@ -237,11 +241,6 @@ void JNI_ManualFillingComponentBridge_SignalAutoGenerationStatusForTesting(
     jboolean j_available) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  if (j_available) {
-    // The added generation button will call back to the generation controller
-    // so we need to make sure one exists.
-    ignore_result(PasswordGenerationController::GetOrCreate(web_contents));
-  }
 
   // Bypass the generation controller when sending this status to the UI to
   // avoid setup overhead, since its logic is currently not needed for tests.

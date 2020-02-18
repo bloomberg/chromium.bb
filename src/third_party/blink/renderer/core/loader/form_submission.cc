@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -43,6 +42,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -58,7 +58,7 @@ static int64_t GenerateFormDataIdentifier() {
   // Initialize to the current time to reduce the likelihood of generating
   // identifiers that overlap with those from past/future browser sessions.
   static int64_t next_identifier =
-      static_cast<int64_t>(CurrentTime() * 1000000.0);
+      static_cast<int64_t>(base::Time::Now().ToDoubleT() * 1000000.0);
   return ++next_identifier;
 }
 

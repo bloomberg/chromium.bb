@@ -32,7 +32,7 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
                 });
 
     // Set up shader and pipeline
-    auto module = utils::CreateShaderModule(device, dawn::ShaderStage::Compute, shader);
+    auto module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, shader);
     auto pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
@@ -48,12 +48,12 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
     // Set up dst storage buffer
     dawn::BufferDescriptor dstDesc;
     dstDesc.size = sizeof(uint32_t);
-    dstDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::TransferSrc |
-                    dawn::BufferUsageBit::TransferDst;
+    dstDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::CopySrc |
+                    dawn::BufferUsageBit::CopyDst;
     dawn::Buffer dst = device.CreateBuffer(&dstDesc);
 
     const uint32_t zero = 0;
-    dst.SetSubData(0, sizeof(zero), reinterpret_cast<const uint8_t*>(&zero));
+    dst.SetSubData(0, sizeof(zero), &zero);
 
     // Set up bind group and issue dispatch
     dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bgl, {
@@ -80,9 +80,6 @@ void ComputeSharedMemoryTests::BasicTest(const char* shader) {
 
 // Basic shared memory test
 TEST_P(ComputeSharedMemoryTests, Basic) {
-    // See https://bugs.chromium.org/p/dawn/issues/detail?id=159
-    DAWN_SKIP_TEST_IF(IsD3D12() && IsNvidia());
-
     BasicTest(R"(
         #version 450
         const uint kTileSize = 4;

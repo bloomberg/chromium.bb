@@ -181,7 +181,7 @@ void BrowserCloseManager::CloseBrowsers() {
         browser->tab_strip_model()->DetachWebContentsAt(0);
       browser->window()->DestroyBrowser();
       // Destroying the browser should have removed it from the browser list.
-      DCHECK(!base::ContainsValue(*BrowserList::GetInstance(), browser));
+      DCHECK(!base::Contains(*BrowserList::GetInstance(), browser));
     }
   }
 

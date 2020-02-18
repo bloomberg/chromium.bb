@@ -1,0 +1,41 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1600, 1200],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='composited-layer-to-overlap'",
+      "position": [500, 500],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [1600, 1200],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='composited-layer-to-overlap'",
+      "position": [500, 500],
+      "bounds": [200, 200],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV id='software-layer-to-promote' class='final-drop-shadow'",
+      "position": [200, 200],
+      "bounds": [400, 400],
+      "backgroundColor": "#000000"
+    }
+  ]
+}
+

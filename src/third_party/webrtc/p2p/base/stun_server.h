@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 
 #include "p2p/base/stun.h"
@@ -57,7 +58,7 @@ class StunServer : public sigslot::has_slots<> {
   void SendResponse(const StunMessage& msg, const rtc::SocketAddress& addr);
 
   // A helper method to compose a STUN binding response.
-  void GetStunBindReqponse(StunMessage* request,
+  void GetStunBindResponse(StunMessage* request,
                            const rtc::SocketAddress& remote_addr,
                            StunMessage* response) const;
 

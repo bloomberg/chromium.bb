@@ -40,14 +40,12 @@ void PrefetchBackgroundTaskHandlerImpl::CancelBackgroundTask() {
   PrefetchBackgroundTaskScheduler::Cancel();
 }
 
-void PrefetchBackgroundTaskHandlerImpl::EnsureTaskScheduled(
-    const std::string& gcm_token) {
+void PrefetchBackgroundTaskHandlerImpl::EnsureTaskScheduled() {
   if (prefetch_prefs::IsLimitlessPrefetchingEnabled(prefs_)) {
     PrefetchBackgroundTaskScheduler::ScheduleLimitless(
-        GetAdditionalBackoffSeconds(), gcm_token);
+        GetAdditionalBackoffSeconds());
   } else {
-    PrefetchBackgroundTaskScheduler::Schedule(GetAdditionalBackoffSeconds(),
-                                              gcm_token);
+    PrefetchBackgroundTaskScheduler::Schedule(GetAdditionalBackoffSeconds());
   }
 }
 

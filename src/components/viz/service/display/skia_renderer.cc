@@ -308,7 +308,7 @@ SkCanvas::SrcRectConstraint GetTextureConstraint(
   bool fills_left = valid_texel_bounds.x() <= 0.f;
   bool fills_right = valid_texel_bounds.right() >= image->width();
   bool fills_top = valid_texel_bounds.y() <= 0.f;
-  bool fills_bottom = valid_texel_bounds.y() >= image->height();
+  bool fills_bottom = valid_texel_bounds.bottom() >= image->height();
   if (fills_left && fills_right && fills_top && fills_bottom) {
     // The entire image is contained in the content area, so hardware clamping
     // ensures only content texels are sampled
@@ -487,7 +487,7 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
   if (!resource_id)
     return;
   auto* resource_provider = skia_renderer->resource_provider_;
-  if (!skia_renderer->is_using_ddl() || skia_renderer->non_root_surface_ ||
+  if (!skia_renderer->is_using_ddl() ||
       !IsTextureResource(resource_provider, resource_id)) {
     // TODO(penghuang): remove this code when DDL is used everywhere.
     lock_.emplace(resource_provider, resource_id, alpha_type, origin);
@@ -680,7 +680,6 @@ void SkiaRenderer::FinishDrawingFrame() {
   if (sync_queries_) {
     sync_queries_->EndCurrentFrame();
   }
-  non_root_surface_ = nullptr;
   current_canvas_ = nullptr;
   current_surface_ = nullptr;
 
@@ -688,6 +687,9 @@ void SkiaRenderer::FinishDrawingFrame() {
 
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
+
+  skia_output_surface_->ScheduleOverlays(
+      std::move(current_frame()->overlay_list));
 }
 
 void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
@@ -743,7 +745,6 @@ void SkiaRenderer::EnsureScissorTestDisabled() {
 
 void SkiaRenderer::BindFramebufferToOutputSurface() {
   DCHECK(!output_surface_->HasExternalStencilTest());
-  non_root_surface_ = nullptr;
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
@@ -789,7 +790,6 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
   RenderPassBacking& backing = iter->second;
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      non_root_surface_ = nullptr;
       current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
           render_pass_id, backing.size, backing.format, backing.generate_mipmap,
           backing.color_space.ToSkColorSpace());
@@ -1558,9 +1558,12 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   DrawRPDQParams rpdq_params(params->visible_rect);
 
   // Prepare mask.
-  ScopedSkImageBuilder mask_image_builder(this, quad->mask_resource_id());
+  ResourceId mask_resource_id = quad->mask_applies_to_backdrop
+                                    ? kInvalidResourceId
+                                    : quad->mask_resource_id();
+  ScopedSkImageBuilder mask_image_builder(this, mask_resource_id);
   const SkImage* mask_image = mask_image_builder.sk_image();
-  DCHECK_EQ(!!quad->mask_resource_id(), !!mask_image);
+  DCHECK_EQ(!!mask_resource_id, !!mask_image);
   if (mask_image) {
     rpdq_params.mask_image = sk_ref_sp(mask_image);
 
@@ -1635,8 +1638,19 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // Convert CC image filters for the backdrop into a SkImageFilter root node
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
+
+    // Must account for clipping that occurs for backdrop filters, since their
+    // input content has already been clipped to the output rect.
+    gfx::Rect deviceRect = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
+        params->content_device_transform, gfx::RectF(quad->rect)));
+    gfx::Rect outRect = MoveFromDrawToWindowSpace(
+        current_frame()->current_render_pass->output_rect);
+    outRect.Intersect(deviceRect);
+    gfx::Vector2dF offset = (deviceRect.top_right() - outRect.top_right()) +
+                            (deviceRect.bottom_left() - outRect.bottom_left());
+
     auto bg_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-        *backdrop_filters, filter_size);
+        *backdrop_filters, gfx::SizeF(outRect.size()), offset);
     auto sk_bg_filter =
         bg_paint_filter ? bg_paint_filter->cached_sk_filter_ : nullptr;
 
@@ -1798,13 +1812,20 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   // Save the layer with the restoration paint (which holds the final image
-  // filters and blending parameters), the backdrop filters, and mask image.
+  // filters, the backdrop filters, and mask image. If we have a backdrop filter
+  // the layer will blended with src-over, and the rpdq's blend mode will apply
+  // when drawing the content into the layer itself. When there's no backdrop
+  // (so the layer starts empty), use the rp's blend mode when flattening layer.
   SkCanvas::SaveLayerFlags layer_flags = 0;
+  SkBlendMode content_blend = SkBlendMode::kSrcOver;
   if (rpdq_params.backdrop_filter) {
     layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
+    content_blend = paint.getBlendMode();
+    paint.setBlendMode(SkBlendMode::kSrcOver);
   }
+  SkRect bounds = gfx::RectFToSkRect(params->visible_rect);
   current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(nullptr, &paint, rpdq_params.backdrop_filter.get(),
+      SkCanvas::SaveLayerRec(&bounds, &paint, rpdq_params.backdrop_filter.get(),
                              rpdq_params.mask_image.get(),
                              &rpdq_params.mask_to_quad_matrix, layer_flags));
 
@@ -1822,9 +1843,11 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   // Now draw the main content using the same per-edge AA API to be consistent
-  // with DrawSingleImage. Use a new paint that defaults to opaque+src-over,
-  // and just preserve the filter quality from the original paint.
+  // with DrawSingleImage. Use a new paint that uses either srcOver or the rpdq
+  // blend mode, depending how filters were applied, and just preserve the
+  // filter quality from the original paint.
   SkPaint content_paint;
+  content_paint.setBlendMode(content_blend);
   content_paint.setFilterQuality(paint.getFilterQuality());
 
   SkCanvas::SrcRectConstraint constraint =

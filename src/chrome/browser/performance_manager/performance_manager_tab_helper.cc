@@ -33,11 +33,11 @@ void PerformanceManagerTabHelper::DetachAndDestroyAll() {
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      performance_manager_(PerformanceManager::GetInstance()),
-      weak_factory_(this) {
+      performance_manager_(PerformanceManager::GetInstance()) {
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
-      web_contents->GetVisibility() == content::Visibility::VISIBLE);
+      web_contents->GetVisibility() == content::Visibility::VISIBLE,
+      web_contents->IsCurrentlyAudible());
 
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
@@ -86,12 +86,12 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_NE(nullptr, render_frame_host);
   // This must not exist in the map yet.
-  DCHECK(!base::ContainsKey(frames_, render_frame_host));
+  DCHECK(!base::Contains(frames_, render_frame_host));
 
   content::RenderFrameHost* parent = render_frame_host->GetParent();
   FrameNodeImpl* parent_frame_node = nullptr;
   if (parent) {
-    DCHECK(base::ContainsKey(frames_, parent));
+    DCHECK(base::Contains(frames_, parent));
     parent_frame_node = frames_[parent].get();
   }
 
@@ -210,6 +210,11 @@ void PerformanceManagerTabHelper::OnVisibilityChanged(
   const bool is_visible = visibility == content::Visibility::VISIBLE;
   PostToGraph(FROM_HERE, &PageNodeImpl::SetIsVisible, page_node_.get(),
               is_visible);
+}
+
+void PerformanceManagerTabHelper::OnAudioStateChanged(bool audible) {
+  PostToGraph(FROM_HERE, &PageNodeImpl::SetIsAudible, page_node_.get(),
+              audible);
 }
 
 void PerformanceManagerTabHelper::DidFinishNavigation(

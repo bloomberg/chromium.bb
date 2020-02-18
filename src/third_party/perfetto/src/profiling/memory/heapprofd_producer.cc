@@ -16,21 +16,21 @@
 
 #include "src/profiling/memory/heapprofd_producer.h"
 
+#include <algorithm>
+
 #include <inttypes.h>
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "perfetto/base/file_utils.h"
-#include "perfetto/base/string_utils.h"
-#include "perfetto/base/thread_task_runner.h"
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/string_utils.h"
+#include "perfetto/ext/base/thread_task_runner.h"
+#include "perfetto/ext/tracing/core/trace_writer.h"
+#include "perfetto/ext/tracing/ipc/producer_ipc_client.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-#include "perfetto/tracing/core/trace_writer.h"
-#include "perfetto/tracing/ipc/producer_ipc_client.h"
-
-#include "src/profiling/memory/bookkeeping_dump.h"
 
 namespace perfetto {
 namespace profiling {
@@ -121,35 +121,9 @@ HeapprofdProducer::HeapprofdProducer(HeapprofdMode mode,
       mode_(mode),
       unwinding_workers_(MakeUnwindingWorkers(this, kUnwinderThreads)),
       socket_delegate_(this),
-      weak_factory_(this) {
-  if (mode == HeapprofdMode::kCentral) {
-    listening_socket_ = MakeListeningSocket();
-  }
-}
+      weak_factory_(this) {}
 
-HeapprofdProducer::~HeapprofdProducer() {
-  // We only borrowed this from the environment variable.
-  // UnixSocket always owns the socket, so we need to manually release it
-  // here.
-  if (mode_ == HeapprofdMode::kCentral && bool(listening_socket_))
-    listening_socket_->ReleaseSocket().ReleaseFd().release();
-}
-
-std::unique_ptr<base::UnixSocket> HeapprofdProducer::MakeListeningSocket() {
-  const char* sock_fd = getenv(kHeapprofdSocketEnvVar);
-  if (sock_fd == nullptr) {
-    unlink(kHeapprofdSocketFile);
-    return base::UnixSocket::Listen(kHeapprofdSocketFile, &socket_delegate_,
-                                    task_runner_);
-  }
-  char* end;
-  int raw_fd = static_cast<int>(strtol(sock_fd, &end, 10));
-  if (*end != '\0')
-    PERFETTO_FATAL("Invalid %s. Expected decimal integer.",
-                   kHeapprofdSocketEnvVar);
-  return base::UnixSocket::Listen(base::ScopedFile(raw_fd), &socket_delegate_,
-                                  task_runner_);
-}
+HeapprofdProducer::~HeapprofdProducer() = default;
 
 void HeapprofdProducer::SetTargetProcess(pid_t target_pid,
                                          std::string target_cmdline,
@@ -371,16 +345,16 @@ void HeapprofdProducer::SetupDataSource(DataSourceInstanceID id,
     }
   }
 
-  DataSource data_source;
+  auto buffer_id = static_cast<BufferID>(ds_config.target_buffer());
+  DataSource data_source(endpoint_->CreateTraceWriter(buffer_id));
   data_source.id = id;
   auto& cli_config = data_source.client_configuration;
   cli_config.interval = heapprofd_config.sampling_interval_bytes();
   cli_config.block_client = heapprofd_config.block_client();
   data_source.config = heapprofd_config;
-  auto buffer_id = static_cast<BufferID>(ds_config.target_buffer());
-  data_source.trace_writer = endpoint_->CreateTraceWriter(buffer_id);
   data_source.normalized_cmdlines = std::move(normalized_cmdlines);
 
+  WriteFixedInternings(data_source.trace_writer.get());
   data_sources_.emplace(id, std::move(data_source));
   PERFETTO_DLOG("Set up data source.");
 
@@ -530,11 +504,16 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
   }
   DataSource& data_source = it->second;
 
-  DumpState dump_state(data_source.trace_writer.get(),
-                       &data_source.next_index_);
-
-  for (pid_t rejected_pid : data_source.rejected_pids)
-    dump_state.RejectConcurrent(rejected_pid);
+  if (!data_source.rejected_pids.empty()) {
+    auto trace_packet = data_source.trace_writer->NewTracePacket();
+    ProfilePacket* profile_packet = trace_packet->set_profile_packet();
+    for (pid_t rejected_pid : data_source.rejected_pids) {
+      ProfilePacket::ProcessHeapSamples* proto =
+          profile_packet->add_process_dumps();
+      proto->set_pid(static_cast<uint64_t>(rejected_pid));
+      proto->set_rejected_concurrent(true);
+    }
+  }
 
   for (std::pair<const pid_t, ProcessState>& pid_and_process_state :
        data_source.process_states) {
@@ -544,12 +523,15 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
 
     bool from_startup =
         data_source.signaled_pids.find(pid) == data_source.signaled_pids.cend();
-    uint64_t committed_timestamp = heap_tracker.committed_timestamp();
-    auto new_heapsamples = [pid, from_startup, committed_timestamp,
-                            &process_state](
+    uint64_t dump_timestamp;
+    if (data_source.config.dump_at_max())
+      dump_timestamp = heap_tracker.max_timestamp();
+    else
+      dump_timestamp = heap_tracker.committed_timestamp();
+    auto new_heapsamples = [pid, from_startup, dump_timestamp, &process_state](
                                ProfilePacket::ProcessHeapSamples* proto) {
       proto->set_pid(static_cast<uint64_t>(pid));
-      proto->set_timestamp(committed_timestamp);
+      proto->set_timestamp(dump_timestamp);
       proto->set_from_startup(from_startup);
       proto->set_disconnected(process_state.disconnected);
       proto->set_buffer_overran(process_state.buffer_overran);
@@ -569,14 +551,17 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
         bucket->set_count(p.second);
       }
     };
-    dump_state.StartProcessDump(std::move(new_heapsamples));
+
+    DumpState dump_state(data_source.trace_writer.get(),
+                         std::move(new_heapsamples), &data_source.intern_state);
 
     if (process_state.page_idle_checker) {
       PageIdleChecker& page_idle_checker = *process_state.page_idle_checker;
       heap_tracker.GetAllocations([&dump_state, &page_idle_checker](
-                                      uint64_t addr, uint64_t size,
+                                      uint64_t addr, uint64_t,
+                                      uint64_t alloc_size,
                                       uintptr_t callstack_id) {
-        int64_t idle = page_idle_checker.OnIdlePage(addr, size);
+        int64_t idle = page_idle_checker.OnIdlePage(addr, alloc_size);
         if (idle < 0) {
           PERFETTO_PLOG("OnIdlePage.");
           return;
@@ -587,13 +572,15 @@ bool HeapprofdProducer::Dump(DataSourceInstanceID id,
     }
 
     heap_tracker.GetCallstackAllocations(
-        [&dump_state](const HeapTracker::CallstackAllocations& alloc) {
-          dump_state.WriteAllocation(alloc);
+        [&dump_state,
+         &data_source](const HeapTracker::CallstackAllocations& alloc) {
+          dump_state.WriteAllocation(alloc, data_source.config.dump_at_max());
         });
+    if (process_state.page_idle_checker)
+      process_state.page_idle_checker->MarkPagesIdle();
+    dump_state.DumpCallstacks(&callsites_);
   }
 
-  dump_state.DumpCallstacks(&callsites_);
-  dump_state.Finalize();
 
   if (has_flush_id) {
     auto weak_producer = weak_factory_.GetWeakPtr();
@@ -680,7 +667,9 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
   self->Receive(buf, sizeof(buf), fds, base::ArraySize(fds));
 
   static_assert(kHandshakeSize == 3, "change if and else if below.");
-  if (fds[kHandshakeMaps] && fds[kHandshakeMem] && fds[kHandshakePageMap]) {
+  // We deliberately do not check for fds[kHandshakePageIdle] so we can
+  // degrade gracefully on kernels that do not have the file yet.
+  if (fds[kHandshakeMaps] && fds[kHandshakeMem]) {
     auto ds_it =
         producer_->data_sources_.find(pending_process.data_source_instance_id);
     if (ds_it == producer_->data_sources_.end()) {
@@ -690,16 +679,20 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
 
     DataSource& data_source = ds_it->second;
     auto it_and_inserted = data_source.process_states.emplace(
-        self->peer_pid(), &producer_->callsites_);
+        std::piecewise_construct, std::forward_as_tuple(self->peer_pid()),
+        std::forward_as_tuple(&producer_->callsites_,
+                              data_source.config.dump_at_max()));
 
     ProcessState& process_state = it_and_inserted.first->second;
     if (data_source.config.idle_allocations()) {
-      base::ScopedFile kpageflags(base::OpenFile("/proc/kpageflags", O_RDONLY));
-      if (kpageflags) {
-        process_state.page_idle_checker = PageIdleChecker(
-            std::move(fds[kHandshakePageMap]), std::move(kpageflags));
+      if (fds[kHandshakePageIdle]) {
+        process_state.page_idle_checker =
+            PageIdleChecker(std::move(fds[kHandshakePageIdle]));
       } else {
-        PERFETTO_DFATAL_OR_ELOG("Failed to open /proc/kpageflags");
+        PERFETTO_ELOG(
+            "Idle page tracking requested but did not receive "
+            "page_idle file. Continuing without idle page tracking. Please "
+            "check your kernel version.");
       }
     }
 
@@ -723,11 +716,11 @@ void HeapprofdProducer::SocketDelegate::OnDataAvailable(
         .PostHandoffSocket(std::move(handoff_data));
     producer_->pending_processes_.erase(it);
   } else if (fds[kHandshakeMaps] || fds[kHandshakeMem] ||
-             fds[kHandshakePageMap]) {
+             fds[kHandshakePageIdle]) {
     PERFETTO_DFATAL_OR_ELOG("%d: Received partial FDs.", self->peer_pid());
     producer_->pending_processes_.erase(it);
   } else {
-    PERFETTO_DLOG("%d: Received no FDs.", self->peer_pid());
+    PERFETTO_ELOG("%d: Received no FDs.", self->peer_pid());
   }
 }
 
@@ -858,7 +851,8 @@ void HeapprofdProducer::HandleAllocRecord(AllocRecord alloc_rec) {
   process_state.total_unwinding_time_us += alloc_rec.unwinding_time_us;
 
   heap_tracker.RecordMalloc(alloc_rec.frames, alloc_metadata.alloc_address,
-                            alloc_metadata.total_size,
+                            alloc_metadata.sample_size,
+                            alloc_metadata.alloc_size,
                             alloc_metadata.sequence_number,
                             alloc_metadata.clock_monotonic_coarse_timestamp);
 }
@@ -908,7 +902,8 @@ void HeapprofdProducer::HandleSocketDisconnected(
     return;
   ProcessState& process_state = process_state_it->second;
   process_state.disconnected = true;
-  process_state.buffer_overran = stats.num_writes_overflow > 0;
+  process_state.buffer_overran =
+      stats.num_writes_overflow > 0 && !ds.config.block_client();
   process_state.buffer_corrupted =
       stats.num_writes_corrupt > 0 || stats.num_reads_corrupt > 0;
 

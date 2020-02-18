@@ -84,9 +84,16 @@ class PolicyDetails:
         raise RuntimeError(
             'is_device_only is only allowed for Chrome OS: "%s"' % p)
       if platform not in [
-          'chrome_frame', 'chrome_os', 'android', 'webview_android',
-          'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.fuchsia',
-          'chrome.*'
+          'chrome_frame',
+          'chrome_os',
+          'android',
+          'webview_android',
+          'chrome.win',
+          'chrome.linux',
+          'chrome.mac',
+          'chrome.fuchsia',
+          'chrome.*',
+          'chrome.win7',
       ]:
         raise RuntimeError('Platform "%s" is not supported' % platform)
 
@@ -106,6 +113,8 @@ class PolicyDetails:
         platform_sub = platform[7:]
         if platform_sub == '*':
           self.platforms.extend(['win', 'mac', 'linux', 'fuchsia'])
+        elif platform_sub == 'win7':
+          self.platforms.append('win')
         else:
           self.platforms.append(platform_sub)
       else:

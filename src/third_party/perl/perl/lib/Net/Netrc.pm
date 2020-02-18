@@ -1,23 +1,29 @@
 # Net::Netrc.pm
 #
-# Copyright (c) 1995-1998 Graham Barr <gbarr@pobox.com>. All rights reserved.
-# This program is free software; you can redistribute it and/or
-# modify it under the same terms as Perl itself.
+# Copyright (C) 1995-1998 Graham Barr.  All rights reserved.
+# Copyright (C) 2013-2014 Steve Hay.  All rights reserved.
+# This module is free software; you can redistribute it and/or modify it under
+# the same terms as Perl itself, i.e. under the terms of either the GNU General
+# Public License or the Artistic License, as specified in the F<LICENCE> file.
 
 package Net::Netrc;
 
-use Carp;
-use strict;
-use FileHandle;
-use vars qw($VERSION);
+use 5.008001;
 
-$VERSION = "2.12";
+use strict;
+use warnings;
+
+use Carp;
+use FileHandle;
+
+our $VERSION = "3.11";
+
+our $TESTING;
 
 my %netrc = ();
 
-
 sub _readrc {
-  my $host = shift;
+  my($class, $host) = @_;
   my ($home, $file);
 
   if ($^O eq "MacOS") {
@@ -27,10 +33,18 @@ sub _readrc {
   }
   else {
 
-    # Some OS's don't have `getpwuid', so we default to $ENV{HOME}
+    # Some OS's don't have "getpwuid", so we default to $ENV{HOME}
     $home = eval { (getpwuid($>))[7] } || $ENV{HOME};
     $home ||= $ENV{HOMEDRIVE} . ($ENV{HOMEPATH} || '') if defined $ENV{HOMEDRIVE};
-    $file = $home . "/.netrc";
+    if (-e $home . "/.netrc") {
+      $file = $home . "/.netrc";
+    }
+    elsif (-e $home . "/_netrc") {
+      $file = $home . "/_netrc";
+    }
+    else {
+      return unless $TESTING;
+    }
   }
 
   my ($login, $pass, $acct) = (undef, undef, undef);
@@ -39,7 +53,7 @@ sub _readrc {
 
   $netrc{default} = undef;
 
-  # OS/2 and Win32 do not handle stat in a way compatable with this check :-(
+  # OS/2 and Win32 do not handle stat in a way compatible with this check :-(
   unless ($^O eq 'os2'
     || $^O eq 'MSWin32'
     || $^O eq 'MacOS'
@@ -48,7 +62,7 @@ sub _readrc {
     my @stat = stat($file);
 
     if (@stat) {
-      if ($stat[2] & 077) {
+      if ($stat[2] & 077) { ## no critic (ValuesAndExpressions::ProhibitLeadingZeros)
         carp "Bad permissions: $file";
         return;
       }
@@ -82,7 +96,7 @@ sub _readrc {
       while (@tok) {
         if ($tok[0] eq "default") {
           shift(@tok);
-          $mach = bless {};
+          $mach = bless {}, $class;
           $netrc{default} = [$mach];
 
           next TOKEN;
@@ -95,7 +109,7 @@ sub _readrc {
 
         if ($tok eq "machine") {
           my $host = shift @tok;
-          $mach = bless {machine => $host};
+          $mach = bless {machine => $host}, $class;
 
           $netrc{$host} = []
             unless exists($netrc{$host});
@@ -124,9 +138,9 @@ sub _readrc {
 
 
 sub lookup {
-  my ($pkg, $mach, $login) = @_;
+  my ($class, $mach, $login) = @_;
 
-  _readrc()
+  $class->_readrc()
     unless exists $netrc{default};
 
   $mach ||= 'default';
@@ -135,12 +149,11 @@ sub lookup {
 
   if (exists $netrc{$mach}) {
     if (defined $login) {
-      my $m;
-      foreach $m (@{$netrc{$mach}}) {
+      foreach my $m (@{$netrc{$mach}}) {
         return $m
           if (exists $m->{login} && $m->{login} eq $login);
       }
-      return undef;
+      return;
     }
     return $netrc{$mach}->[0];
   }
@@ -148,7 +161,7 @@ sub lookup {
   return $netrc{default}->[0]
     if defined $netrc{default};
 
-  return undef;
+  return;
 }
 
 
@@ -303,23 +316,32 @@ Return the account information for the netrc entry
 
 =item lpa ()
 
-Return a list of login, password and account information fir the netrc entry
+Return a list of login, password and account information for the netrc entry
 
 =back
 
 =head1 AUTHOR
 
-Graham Barr <gbarr@pobox.com>
+Graham Barr E<lt>F<gbarr@pobox.com>E<gt>.
+
+Steve Hay E<lt>F<shay@cpan.org>E<gt> is now maintaining libnet as of version
+1.22_02.
 
 =head1 SEE ALSO
 
-L<Net::Netrc>
+L<Net::Netrc>,
 L<Net::Cmd>
 
 =head1 COPYRIGHT
 
-Copyright (c) 1995-1998 Graham Barr. All rights reserved.
-This program is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Copyright (C) 1995-1998 Graham Barr.  All rights reserved.
+
+Copyright (C) 2013-2014 Steve Hay.  All rights reserved.
+
+=head1 LICENCE
+
+This module is free software; you can redistribute it and/or modify it under the
+same terms as Perl itself, i.e. under the terms of either the GNU General Public
+License or the Artistic License, as specified in the F<LICENCE> file.
 
 =cut

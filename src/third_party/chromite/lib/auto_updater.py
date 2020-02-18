@@ -103,7 +103,7 @@ UPDATE_STATUS_FINALIZING = 'UPDATE_STATUS_FINALIZING'
 UPDATE_STATUS_UPDATED_NEED_REBOOT = 'UPDATE_STATUS_UPDATED_NEED_REBOOT'
 
 # Error msg in loading shared libraries when running python command.
-ERROR_MSG_IN_LOADING_LIB = 'python: error while loading shared libraries'
+ERROR_MSG_IN_LOADING_LIB = ': error while loading shared libraries'
 
 # Max number of the times for retry:
 # 1. for transfer functions to be retried.

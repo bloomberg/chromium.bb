@@ -34,22 +34,6 @@
 
 namespace blink {
 
-namespace {
-
-class NullFetchContext final : public FetchContext {
- public:
-  NullFetchContext() = default;
-
-  void CountUsage(mojom::WebFeature) const override {}
-  void CountDeprecation(mojom::WebFeature) const override {}
-};
-
-}  // namespace
-
-FetchContext& FetchContext::NullInstance() {
-  return *MakeGarbageCollected<NullFetchContext>();
-}
-
 void FetchContext::AddAdditionalRequestHeaders(ResourceRequest&) {}
 
 mojom::FetchCacheMode FetchContext::ResourceRequestCachePolicy(
@@ -63,11 +47,6 @@ void FetchContext::PrepareRequest(ResourceRequest&,
                                   const FetchInitiatorInfo&,
                                   WebScopedVirtualTimePauser&,
                                   ResourceType) {}
-
-void FetchContext::RecordLoadingActivity(
-    const ResourceRequest&,
-    ResourceType,
-    const AtomicString& fetch_initiator_name) {}
 
 void FetchContext::AddResourceTiming(const ResourceTimingInfo&) {}
 

@@ -39,8 +39,8 @@ class WaylandClientTestHelper::WaylandWatcher
       : controller_(FROM_HERE), server_(server) {
     base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
         server_->GetFileDescriptor(),
-        true,  // persistent
-        base::MessagePumpLibevent::WATCH_READ, &controller_, this);
+        /*persistent=*/true, base::MessagePumpLibevent::WATCH_READ,
+        &controller_, this);
   }
 
   // base::MessagePumpLibevent::FdWatcher:
@@ -100,16 +100,15 @@ void WaylandClientTestHelper::SetUpOnUIThread(base::WaitableEvent* event) {
   xdg_temp_dir_ = std::make_unique<base::ScopedTempDir>();
   CHECK(xdg_temp_dir_->CreateUniqueTempDir());
   setenv("XDG_RUNTIME_DIR", xdg_temp_dir_->GetPath().MaybeAsASCII().c_str(),
-         1 /* overwrite */);
+         /*overwrite=*/1);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Disable window animation when running tests.
   command_line->AppendSwitch(wm::switches::kWindowAnimationsDisabled);
 
   ash_test_helper_ = std::make_unique<ash::AshTestHelper>();
-
-  ash_test_helper_->SetUp(false /* start_session */,
-                          true /* provide_local_state */);
+  ash::AshTestHelper::InitParams init_params;
+  ash_test_helper_->SetUp(init_params);
   ash::Shell::GetPrimaryRootWindow()->Show();
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
   ash::Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));

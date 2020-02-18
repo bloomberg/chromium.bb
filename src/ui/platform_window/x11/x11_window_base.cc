@@ -9,12 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -38,7 +38,7 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
       xdisplay_(gfx::GetXDisplay()),
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds),
-      state_(ui::PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {
+      state_(PlatformWindowState::kUnknown) {
   DCHECK(delegate_);
   Create();
   pointer_barriers_.fill(x11::None);
@@ -262,6 +262,14 @@ PlatformWindowState X11WindowBase::GetPlatformWindowState() const {
   return state_;
 }
 
+void X11WindowBase::Activate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11WindowBase::Deactivate() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
   XWarpPointer(xdisplay_, x11::None, xroot_window_, 0, 0, 0, 0,
                bounds_.x() + location.x(), bounds_.y() + location.y());
@@ -293,10 +301,6 @@ void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {
       barrier.bottom(), BarrierNegativeX, 0, XIAllDevices);
 
   has_pointer_barriers_ = true;
-}
-
-PlatformImeController* X11WindowBase::GetPlatformImeController() {
-  return nullptr;
 }
 
 void X11WindowBase::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
@@ -399,22 +403,22 @@ void X11WindowBase::OnWMStateUpdated() {
   // Propagate the window state information to the client.
   // Note that the order of checks is important here, because window can have
   // several proprties at the same time.
-  ui::PlatformWindowState old_state = state_;
+  PlatformWindowState old_state = state_;
   if (ui::HasWMSpecProperty(window_properties_,
                             gfx::GetAtom("_NET_WM_STATE_HIDDEN"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
+    state_ = PlatformWindowState::kMinimized;
   } else if (ui::HasWMSpecProperty(window_properties_,
                                    gfx::GetAtom("_NET_WM_STATE_FULLSCREEN"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    state_ = PlatformWindowState::kFullScreen;
   } else if (ui::HasWMSpecProperty(
                  window_properties_,
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_VERT")) &&
              ui::HasWMSpecProperty(
                  window_properties_,
                  gfx::GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"))) {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+    state_ = PlatformWindowState::kMaximized;
   } else {
-    state_ = ui::PlatformWindowState::PLATFORM_WINDOW_STATE_NORMAL;
+    state_ = PlatformWindowState::kNormal;
   }
 
   if (old_state != state_)
@@ -422,11 +426,11 @@ void X11WindowBase::OnWMStateUpdated() {
 }
 
 bool X11WindowBase::IsMaximized() const {
-  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
+  return state_ == PlatformWindowState::kMaximized;
 }
 
 bool X11WindowBase::IsFullscreen() const {
-  return state_ == ui::PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+  return state_ == PlatformWindowState::kFullScreen;
 }
 
 }  // namespace ui

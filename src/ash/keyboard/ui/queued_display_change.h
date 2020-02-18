@@ -12,8 +12,8 @@
 
 namespace keyboard {
 
-// TODO: refactor and merge this into QueuedContainerType and rename it to
-// something like QueuedVisualChange or similar.
+// TODO(shend): refactor and merge this into QueuedContainerType and rename it
+// to something like QueuedVisualChange or similar.
 class QueuedDisplayChange {
  public:
   QueuedDisplayChange(const display::Display& display,

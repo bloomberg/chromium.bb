@@ -20,11 +20,14 @@
 #include "include/core/SkImage.h"
 #include "include/core/SkShader.h"
 #include "include/core/SkStream.h"
+#include "include/core/SkTextBlob.h"
 #include "include/private/SkTo.h"
+#include "include/svg/SkSVGCanvas.h"
 #include "include/utils/SkParse.h"
 #include "src/core/SkMakeUnique.h"
 #include "src/shaders/SkImageShader.h"
 #include "tests/Test.h"
+#include "tools/ToolUtils.h"
 
 #include <string.h>
 
@@ -34,16 +37,14 @@
 #include "src/xml/SkDOM.h"
 #include "src/xml/SkXMLWriter.h"
 
-static std::unique_ptr<SkCanvas> MakeDOMCanvas(SkDOM* dom) {
+static std::unique_ptr<SkCanvas> MakeDOMCanvas(SkDOM* dom, uint32_t flags = 0) {
     auto svgDevice = SkSVGDevice::Make(SkISize::Make(100, 100),
-                                       skstd::make_unique<SkXMLParserWriter>(dom->beginParsing()));
+                                       skstd::make_unique<SkXMLParserWriter>(dom->beginParsing()),
+                                       flags);
     return svgDevice ? skstd::make_unique<SkCanvas>(svgDevice)
                      : nullptr;
 }
 
-#if 0
-Using the new system where devices only gets glyphs causes this to fail because the font has no
-glyph to unichar data.
 namespace {
 
 
@@ -52,6 +53,7 @@ void check_text_node(skiatest::Reporter* reporter,
                      const SkDOM::Node* root,
                      const SkPoint& offset,
                      unsigned scalarsPerPos,
+                     const char* txt,
                      const char* expected) {
     if (root == nullptr) {
         ERRORF(reporter, "root element not found.");
@@ -69,9 +71,6 @@ void check_text_node(skiatest::Reporter* reporter,
     REPORTER_ASSERT(reporter, textNode != nullptr);
     if (textNode != nullptr) {
         REPORTER_ASSERT(reporter, dom.getType(textNode) == SkDOM::kText_Type);
-        if (strcmp(expected, dom.getName(textNode)) != 0) {
-            SkDebugf("string fail %s == %s\n", expected, dom.getName(textNode));
-        }
         REPORTER_ASSERT(reporter, strcmp(expected, dom.getName(textNode)) == 0);
     }
 
@@ -80,18 +79,19 @@ void check_text_node(skiatest::Reporter* reporter,
     const char* x = dom.findAttr(textElem, "x");
     REPORTER_ASSERT(reporter, x != nullptr);
     if (x != nullptr) {
-        int xposCount = (scalarsPerPos < 1) ? 1 : textLen;
+        int xposCount = textLen;
         REPORTER_ASSERT(reporter, SkParse::Count(x) == xposCount);
 
         SkAutoTMalloc<SkScalar> xpos(xposCount);
         SkParse::FindScalars(x, xpos.get(), xposCount);
         if (scalarsPerPos < 1) {
-            REPORTER_ASSERT(reporter, xpos[0] == offset.x());
+            // For default-positioned text, we cannot make any assumptions regarding
+            // the first glyph position when the string has leading whitespace (to be stripped).
+            if (txt[0] != ' ' && txt[0] != '\t') {
+                REPORTER_ASSERT(reporter, xpos[0] == offset.x());
+            }
         } else {
             for (int i = 0; i < xposCount; ++i) {
-                if (xpos[i] != SkIntToScalar(expected[i])) {
-                    SkDebugf("Bad xs %g == %g\n", xpos[i], SkIntToScalar(expected[i]));
-                }
                 REPORTER_ASSERT(reporter, xpos[i] == SkIntToScalar(expected[i]));
             }
         }
@@ -109,7 +109,7 @@ void check_text_node(skiatest::Reporter* reporter,
             REPORTER_ASSERT(reporter, ypos[0] == offset.y());
         } else {
             for (int i = 0; i < yposCount; ++i) {
-                REPORTER_ASSERT(reporter, ypos[i] == -SkIntToScalar(expected[i]));
+                REPORTER_ASSERT(reporter, ypos[i] == 150 - SkIntToScalar(expected[i]));
             }
         }
     }
@@ -122,15 +122,14 @@ void test_whitespace_pos(skiatest::Reporter* reporter,
 
     SkDOM dom;
     SkPaint paint;
-    SkFont font;
+    SkFont font(ToolUtils::create_portable_typeface());
     SkPoint offset = SkPoint::Make(10, 20);
 
     {
-        auto svgCanvas = MakeDOMCanvas(&dom);
-        svgCanvas->drawSimpleText(txt, len, SkTextEncoding::kUTF8, offset.x(), offset.y(),
-                                  font, paint);
+        MakeDOMCanvas(&dom)->drawSimpleText(txt, len, SkTextEncoding::kUTF8,
+                                            offset.x(), offset.y(), font, paint);
     }
-    check_text_node(reporter, dom, dom.finishParsing(), offset, 2, expected);
+    check_text_node(reporter, dom, dom.finishParsing(), offset, 0, txt, expected);
 
     {
         SkAutoTMalloc<SkScalar> xpos(len);
@@ -138,27 +137,24 @@ void test_whitespace_pos(skiatest::Reporter* reporter,
             xpos[i] = SkIntToScalar(txt[i]);
         }
 
-        auto svgCanvas = MakeDOMCanvas(&dom);
         auto blob = SkTextBlob::MakeFromPosTextH(txt, len, &xpos[0], offset.y(), font);
-        svgCanvas->drawTextBlob(blob, 0, 0, paint);
+        MakeDOMCanvas(&dom)->drawTextBlob(blob, 0, 0, paint);
     }
-    check_text_node(reporter, dom, dom.finishParsing(), offset, 2, expected);
+    check_text_node(reporter, dom, dom.finishParsing(), offset, 1, txt, expected);
 
     {
         SkAutoTMalloc<SkPoint> pos(len);
         for (int i = 0; i < SkToInt(len); ++i) {
-            pos[i] = SkPoint::Make(SkIntToScalar(txt[i]), -SkIntToScalar(txt[i]));
+            pos[i] = SkPoint::Make(SkIntToScalar(txt[i]), 150 - SkIntToScalar(txt[i]));
         }
 
-        SkXMLParserWriter writer(dom.beginParsing());
-        auto blob = SkTextBlob::MakeFromPosTextH(txt, len, &pos[0], font);
-        svgCanvas->drawTextBlob(blob, 0, 0, paint);
+        auto blob = SkTextBlob::MakeFromPosText(txt, len, &pos[0], font);
+        MakeDOMCanvas(&dom)->drawTextBlob(blob, 0, 0, paint);
     }
-    check_text_node(reporter, dom, dom.finishParsing(), offset, 2, expected);
+    check_text_node(reporter, dom, dom.finishParsing(), offset, 2, txt, expected);
 }
 
-}
-
+} // namespace
 
 DEF_TEST(SVGDevice_whitespace_pos, reporter) {
     static const struct {
@@ -173,7 +169,7 @@ DEF_TEST(SVGDevice_whitespace_pos, reporter) {
         { " \t\t abcd", "abcd" },
         { "abcd "     , "abcd " }, // we allow one trailing whitespace char
         { "abcd  "    , "abcd " }, // because it makes no difference and
-        { "abcd\t  "  , "abcd\t" }, // simplifies the implementation
+        { "abcd\t  "  , "abcd " }, // simplifies the implementation
         { "\t\t  \t ab \t\t  \t cd \t\t   \t  ", "ab cd " },
     };
 
@@ -181,8 +177,6 @@ DEF_TEST(SVGDevice_whitespace_pos, reporter) {
         test_whitespace_pos(reporter, tests[i].tst_in, tests[i].tst_out);
     }
 }
-#endif
-
 
 void SetImageShader(SkPaint* paint, int imageWidth, int imageHeight, SkTileMode xTile,
                     SkTileMode yTile) {
@@ -386,6 +380,36 @@ DEF_TEST(SVGDevice_ColorFilters, reporter) {
 
     REPORTER_ASSERT(reporter, strcmp(dom.findAttr(compositeElement, "in"), "flood") == 0);
     REPORTER_ASSERT(reporter, strcmp(dom.findAttr(compositeElement, "operator"), "in") == 0);
+}
+
+DEF_TEST(SVGDevice_textpath, reporter) {
+    SkDOM dom;
+    SkFont font(ToolUtils::create_portable_typeface());
+    SkPaint paint;
+
+    // By default, we emit <text> nodes.
+    {
+        auto svgCanvas = MakeDOMCanvas(&dom);
+        svgCanvas->drawString("foo", 100, 100, font, paint);
+    }
+    const auto* rootElement = dom.finishParsing();
+    REPORTER_ASSERT(reporter, rootElement, "root element not found");
+    const auto* textElement = dom.getFirstChild(rootElement, "text");
+    REPORTER_ASSERT(reporter, textElement, "text element not found");
+    const auto* pathElement = dom.getFirstChild(rootElement, "path");
+    REPORTER_ASSERT(reporter, !pathElement, "path element found");
+
+    // With kConvertTextToPaths_Flag, we emit <path> nodes.
+    {
+        auto svgCanvas = MakeDOMCanvas(&dom, SkSVGCanvas::kConvertTextToPaths_Flag);
+        svgCanvas->drawString("foo", 100, 100, font, paint);
+    }
+    rootElement = dom.finishParsing();
+    REPORTER_ASSERT(reporter, rootElement, "root element not found");
+    textElement = dom.getFirstChild(rootElement, "text");
+    REPORTER_ASSERT(reporter, !textElement, "text element found");
+    pathElement = dom.getFirstChild(rootElement, "path");
+    REPORTER_ASSERT(reporter, pathElement, "path element not found");
 }
 
 #endif

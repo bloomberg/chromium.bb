@@ -13,9 +13,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "absl/memory/memory.h"
-#include "api/array_view.h"
 #include "api/test/peerconnection_quality_test_fixture.h"
 #include "media/base/media_engine.h"
 #include "modules/audio_device/include/test_audio_device.h"
@@ -37,6 +37,18 @@ class TestPeer final : public PeerConnectionWrapper {
   using VideoConfig = PeerConnectionE2EQualityTestFixture::VideoConfig;
   using AudioConfig = PeerConnectionE2EQualityTestFixture::AudioConfig;
 
+  struct RemotePeerAudioConfig {
+    RemotePeerAudioConfig(AudioConfig config)
+        : sampling_frequency_in_hz(config.sampling_frequency_in_hz),
+          output_file_name(config.output_dump_file_name) {}
+
+    int sampling_frequency_in_hz;
+    absl::optional<std::string> output_file_name;
+  };
+
+  static absl::optional<RemotePeerAudioConfig> CreateRemoteAudioConfig(
+      absl::optional<AudioConfig> config);
+
   // Setups all components, that should be provided to WebRTC
   // PeerConnectionFactory and PeerConnection creation methods,
   // also will setup dependencies, that are required for media analyzers
@@ -54,7 +66,7 @@ class TestPeer final : public PeerConnectionWrapper {
       std::unique_ptr<MockPeerConnectionObserver> observer,
       VideoQualityAnalyzerInjectionHelper* video_analyzer_helper,
       rtc::Thread* signaling_thread,
-      absl::optional<std::string> audio_output_file_name,
+      absl::optional<RemotePeerAudioConfig> remote_audio_config,
       double bitrate_multiplier,
       rtc::TaskQueue* task_queue);
 
@@ -63,7 +75,7 @@ class TestPeer final : public PeerConnectionWrapper {
 
   // Adds provided |candidates| to the owned peer connection.
   bool AddIceCandidates(
-      rtc::ArrayView<const IceCandidateInterface* const> candidates);
+      std::vector<std::unique_ptr<IceCandidateInterface>> candidates);
 
  private:
   TestPeer(rtc::scoped_refptr<PeerConnectionFactoryInterface> pc_factory,
@@ -74,6 +86,8 @@ class TestPeer final : public PeerConnectionWrapper {
 
   std::unique_ptr<Params> params_;
   rtc::scoped_refptr<AudioProcessing> audio_processing_;
+
+  std::vector<std::unique_ptr<IceCandidateInterface>> remote_ice_candidates_;
 };
 
 }  // namespace webrtc_pc_e2e

@@ -43,8 +43,8 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -66,7 +66,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -360,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
-  identity::MakePrimaryAccountAvailable(identity_manager, "foo@gmail.com");
+  signin::MakePrimaryAccountAvailable(identity_manager, "foo@gmail.com");
   EnableSigninAllowed(true);
 
   std::string error_message;
@@ -436,9 +435,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
-    // Replace the signin manager and token service with fakes. Do this ahead of
-    // creating the browser so that a bunch of classes don't register as
-    // observers and end up needing to unregister when the fake is substituted.
     IdentityTestEnvironmentProfileAdaptor::
         SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
   }
@@ -497,8 +493,8 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
 
   void SimulateOnClientOAuthSuccess(GaiaAuthConsumer* consumer,
                                     const std::string& refresh_token) {
-    GaiaAuthConsumer::ClientOAuthResult result;
-    result.refresh_token = refresh_token;
+    GaiaAuthConsumer::ClientOAuthResult result(refresh_token, "", 0, false,
+                                               false);
     consumer->OnClientOAuthSuccess(result);
     base::RunLoop().RunUntilIdle();
   }
@@ -509,7 +505,7 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_profile_adaptor_->identity_test_env()
         ->identity_manager();
   }
@@ -555,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest, WithAuthCode) {
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter1) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -591,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter2) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -614,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        UntrustedSigninDialogCancel) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -639,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        UntrustedSigninDialogConfirm) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=0&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -667,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
 IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
                        SigninCreatesSyncStarter4) {
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   const GURL url("chrome://chrome-signin/?access_point=3&reason=5");
   // MockSyncStarterInlineSigninHelper will delete itself when done using
@@ -694,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginHelperBrowserTest,
   ASSERT_EQ(0ul, identity_manager()->GetAccountsWithRefreshTokens().size());
 
   InlineLoginHandlerImpl handler;
-  // See Source enum in components/signin/core/browser/signin_metrics.h for
+  // See Source enum in components/signin/public/base/signin_metrics.h for
   // possible values of access_point=, reason=.
   GURL url("chrome://chrome-signin/?access_point=3&reason=3");
   // InlineSigninHelper will delete itself when done using

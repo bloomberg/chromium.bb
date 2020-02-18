@@ -48,9 +48,9 @@ class PasswordStoreDefault : public PasswordStore {
   void ReportMetricsImpl(const std::string& sync_username,
                          bool custom_passphrase_sync_enabled) override;
   PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
-                                       AddLoginError* error = nullptr) override;
-  PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) override;
+                                       AddLoginError* error) override;
+  PasswordStoreChangeList UpdateLoginImpl(const autofill::PasswordForm& form,
+                                          UpdateLoginError* error) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
   PasswordStoreChangeList RemoveLoginsByURLAndTimeImpl(
@@ -58,9 +58,6 @@ class PasswordStoreDefault : public PasswordStore {
       base::Time delete_begin,
       base::Time delete_end) override;
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) override;
-  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
   PasswordStoreChangeList DisableAutoSignInForOriginsImpl(

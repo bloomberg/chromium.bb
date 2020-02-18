@@ -23,8 +23,8 @@
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
 #include "chromeos/services/device_sync/proto/enum_util.h"
 #include "chromeos/services/device_sync/switches.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,7 +196,7 @@ class DeviceSyncCryptAuthClientTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   // Owned by |client_|.
   StrictMock<MockCryptAuthApiCallFlow>* api_call_flow_;
 

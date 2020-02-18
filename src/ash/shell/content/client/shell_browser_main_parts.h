@@ -9,33 +9,36 @@
 
 #include "base/macros.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/common/main_function_params.h"
+
+namespace chromeos {
+namespace network_config {
+class CrosNetworkConfigTestHelper;
+}  // namespace network_config
+}  // namespace chromeos
 
 namespace content {
-class ShellBrowserContext;
+class BrowserContext;
 struct MainFunctionParams;
-}
-
-namespace net {
-class NetLog;
-}
+}  // namespace content
 
 namespace views {
 class ViewsDelegate;
 }
 
-namespace wm {
-class WMState;
-}
-
 namespace ash {
-namespace shell {
+class AshTestHelper;
 
+namespace shell {
 class ExampleAppListClient;
 class ExampleSessionControllerClient;
+class ShellNewWindowDelegate;
 class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
+  static content::BrowserContext* GetBrowserContext();
+
   explicit ShellBrowserMainParts(const content::MainFunctionParams& parameters);
   ~ShellBrowserMainParts() override;
 
@@ -47,19 +50,20 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
 
-  content::ShellBrowserContext* browser_context() {
-    return browser_context_.get();
-  }
+  content::BrowserContext* browser_context() { return browser_context_.get(); }
 
  private:
-  std::unique_ptr<net::NetLog> net_log_;
-  std::unique_ptr<content::ShellBrowserContext> browser_context_;
+  std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<views::ViewsDelegate> views_delegate_;
   std::unique_ptr<WindowWatcher> window_watcher_;
-  std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<ExampleSessionControllerClient>
       example_session_controller_client_;
   std::unique_ptr<ExampleAppListClient> example_app_list_client_;
+  std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
+  std::unique_ptr<chromeos::network_config::CrosNetworkConfigTestHelper>
+      network_config_helper_;
+  std::unique_ptr<ShellNewWindowDelegate> new_window_delegate_;
+  content::MainFunctionParams parameters_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

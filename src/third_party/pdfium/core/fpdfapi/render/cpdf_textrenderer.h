@@ -30,15 +30,14 @@ class CPDF_TextRenderer {
                              const CFX_Matrix& matrix,
                              const ByteString& str,
                              FX_ARGB fill_argb,
-                             const CFX_GraphStateData* pGraphState,
-                             const CPDF_RenderOptions* pOptions);
+                             const CPDF_RenderOptions& options);
 
   static bool DrawTextPath(CFX_RenderDevice* pDevice,
                            const std::vector<uint32_t>& charCodes,
                            const std::vector<float>& charPos,
                            CPDF_Font* pFont,
                            float font_size,
-                           const CFX_Matrix* pText2User,
+                           const CFX_Matrix& mtText2User,
                            const CFX_Matrix* pUser2Device,
                            const CFX_GraphStateData* pGraphState,
                            FX_ARGB fill_argb,
@@ -51,9 +50,13 @@ class CPDF_TextRenderer {
                              const std::vector<float>& charPos,
                              CPDF_Font* pFont,
                              float font_size,
-                             const CFX_Matrix* pText2Device,
+                             const CFX_Matrix& mtText2Device,
                              FX_ARGB fill_argb,
-                             const CPDF_RenderOptions* pOptions);
+                             const CPDF_RenderOptions& options);
+
+  CPDF_TextRenderer() = delete;
+  CPDF_TextRenderer(const CPDF_TextRenderer&) = delete;
+  CPDF_TextRenderer& operator=(const CPDF_TextRenderer&) = delete;
 };
 
 #endif  // CORE_FPDFAPI_RENDER_CPDF_TEXTRENDERER_H_

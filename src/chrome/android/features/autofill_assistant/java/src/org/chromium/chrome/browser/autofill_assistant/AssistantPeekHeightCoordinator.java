@@ -59,18 +59,17 @@ class AssistantPeekHeightCoordinator {
 
     private final int mToolbarHeightWithoutPaddingBottom;
     private final int mDefaultToolbarPaddingBottom;
-    private final int mProgressBarHeight;
     private final int mChildrenVerticalSpacing;
+    private final int mSuggestionsVerticalInset;
 
     private int mPeekHeight;
     private @PeekMode int mPeekMode = PeekMode.UNDEFINED;
     private int mHeaderHeight;
     private int mSuggestionsHeight;
     private int mActionsHeight;
-    private int mToolbarPaddingBottom;
 
     AssistantPeekHeightCoordinator(Context context, Delegate delegate, BottomSheet bottomSheet,
-            View toolbarView, View contentView, View suggestionsView, View actionsView,
+            View toolbarView, View headerView, View suggestionsView, View actionsView,
             @PeekMode int initialMode) {
         mToolbarView = toolbarView;
         mDelegate = delegate;
@@ -83,10 +82,10 @@ class AssistantPeekHeightCoordinator {
                         R.dimen.autofill_assistant_toolbar_swipe_handle_height);
         mDefaultToolbarPaddingBottom = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_toolbar_vertical_padding);
-        mProgressBarHeight = context.getResources().getDimensionPixelSize(
-                R.dimen.autofill_assistant_progress_bar_height);
         mChildrenVerticalSpacing = context.getResources().getDimensionPixelSize(
                 R.dimen.autofill_assistant_bottombar_vertical_spacing);
+        mSuggestionsVerticalInset =
+                context.getResources().getDimensionPixelSize(R.dimen.chip_bg_vertical_inset);
 
         // Show only actions if we are in the peek state and peek mode is HANDLE_HEADER_CAROUSELS.
         bottomSheet.addObserver(new EmptyBottomSheetObserver() {
@@ -98,11 +97,10 @@ class AssistantPeekHeightCoordinator {
 
         // Listen for height changes in the header and carousel to make sure we always have the
         // correct peek height.
-        View header = contentView.findViewById(R.id.header);
-        mHeaderHeight = header.getHeight();
+        mHeaderHeight = headerView.getHeight();
         mSuggestionsHeight = suggestionsView.getHeight();
         mActionsHeight = actionsView.getHeight();
-        listenForHeightChange(header, this::onHeaderHeightChanged);
+        listenForHeightChange(headerView, this::onHeaderHeightChanged);
         listenForHeightChange(suggestionsView, this::onSuggestionsHeightChanged);
         listenForHeightChange(actionsView, this::onActionsHeightChanged);
 
@@ -168,21 +166,23 @@ class AssistantPeekHeightCoordinator {
      * Adapt the padding top of the toolbar such that header and carousel are visible if desired.
      */
     private void updateToolbarPadding() {
+        int toolbarPaddingBottom;
         switch (mPeekMode) {
             case PeekMode.HANDLE:
-                mToolbarPaddingBottom = mDefaultToolbarPaddingBottom;
+                toolbarPaddingBottom = mDefaultToolbarPaddingBottom;
                 break;
             case PeekMode.HANDLE_HEADER:
-                mToolbarPaddingBottom = mHeaderHeight + mProgressBarHeight;
+                toolbarPaddingBottom = mHeaderHeight;
                 break;
             case PeekMode.HANDLE_HEADER_CAROUSELS:
-                mToolbarPaddingBottom = mHeaderHeight + mProgressBarHeight;
+                toolbarPaddingBottom = mHeaderHeight;
                 if (mSuggestionsHeight > 0) {
-                    mToolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing;
+                    toolbarPaddingBottom += mSuggestionsHeight + mChildrenVerticalSpacing
+                            - 2 * mSuggestionsVerticalInset;
                 }
 
                 if (mActionsHeight > 0) {
-                    mToolbarPaddingBottom += mActionsHeight;
+                    toolbarPaddingBottom += mActionsHeight;
                 }
 
                 // We decrease the artificial padding we add to the toolbar by 1 pixel to make sure
@@ -192,16 +192,16 @@ class AssistantPeekHeightCoordinator {
                 // shown. An alternative would be to allow toolbarHeight == contentHeight and try to
                 // detect swipe/touch events on the sheet, but this alternative is more complex and
                 // feels less safe than the current workaround.
-                mToolbarPaddingBottom -= 1;
+                toolbarPaddingBottom -= 1;
                 break;
             default:
                 throw new IllegalStateException("Unsupported PeekMode: " + mPeekMode);
         }
 
         mToolbarView.setPadding(mToolbarView.getPaddingLeft(), mToolbarView.getPaddingTop(),
-                mToolbarView.getPaddingRight(), mToolbarPaddingBottom);
+                mToolbarView.getPaddingRight(), toolbarPaddingBottom);
 
-        int newHeight = mToolbarHeightWithoutPaddingBottom + mToolbarPaddingBottom;
+        int newHeight = mToolbarHeightWithoutPaddingBottom + toolbarPaddingBottom;
         if (mPeekHeight != newHeight) {
             mPeekHeight = newHeight;
             mDelegate.onPeekHeightChanged();

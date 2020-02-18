@@ -38,6 +38,8 @@ scheduling_metrics::ThreadType ConvertBlinkThreadType(
     case WebThreadType::kSharedWorkerThread:
     case WebThreadType::kUnspecifiedWorkerThread:
     case WebThreadType::kTestThread:
+    case WebThreadType::kAudioEncoderThread:
+    case WebThreadType::kVideoEncoderThread:
       return scheduling_metrics::ThreadType::kRendererOtherBlinkThread;
     case WebThreadType::kCount:
       NOTREACHED();

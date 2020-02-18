@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/chrome_switches.h"
@@ -96,28 +97,40 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
 
 // This class keeps track of tabs as they are added to the browser. It will be
 // "done" (i.e. won't block on Wait()) once |observations| tabs have been added.
-class TabsAddedNotificationObserver
-    : public content::WindowedNotificationObserver {
+class TabsAddedNotificationObserver : public TabStripModelObserver {
  public:
-  explicit TabsAddedNotificationObserver(size_t observations)
-      : content::WindowedNotificationObserver(
-            chrome::NOTIFICATION_TAB_ADDED,
-            content::NotificationService::AllSources()),
-        observations_(observations) {}
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    observed_tabs_.push_back(content::Details<WebContents>(details).ptr());
-    if (observed_tabs_.size() == observations_)
-      content::WindowedNotificationObserver::Observe(type, source, details);
+  TabsAddedNotificationObserver(Browser* browser, size_t observations)
+      : observations_(observations) {
+    tab_strip_observer_.Add(browser->tab_strip_model());
   }
+
+  ~TabsAddedNotificationObserver() override = default;
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kInserted)
+      return;
+
+    for (auto& tab : change.GetInsert()->contents)
+      observed_tabs_.push_back(tab.contents);
+
+    if (observed_tabs_.size() >= observations_)
+      run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
 
   const std::vector<content::WebContents*>& tabs() { return observed_tabs_; }
 
  private:
+  base::RunLoop run_loop_;
   size_t observations_;
   std::vector<content::WebContents*> observed_tabs_;
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(TabsAddedNotificationObserver);
 };
@@ -224,9 +237,10 @@ class PlatformAppWithFileBrowserTest : public PlatformAppBrowserTest {
       return false;
     }
 
-    AppLaunchParams params(
-        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension->id(),
+                           extensions::LaunchContainer::kLaunchContainerNone,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           extensions::AppLaunchSource::kSourceTest);
     params.command_line = command_line;
     params.current_directory = test_data_dir_;
     OpenApplication(params);
@@ -421,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
-  TabsAddedNotificationObserver observer(1);
+  TabsAddedNotificationObserver observer(browser(), 1);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/navigation")) << message_;
@@ -436,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   // The test will try to open in app urls and external urls via clicking links
   // and window.open(). Only the external urls should succeed in opening tabs.
   const size_t kExpectedNumberOfTabs = 2u;
-  TabsAddedNotificationObserver observer(kExpectedNumberOfTabs);
+  TabsAddedNotificationObserver observer(browser(), kExpectedNumberOfTabs);
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/background_page_navigation"))
       << message_;
   observer.Wait();
@@ -750,11 +764,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppWithFileBrowserTest, LaunchNewFile) {
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
   ASSERT_TRUE(StartEmbeddedTestServer());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::Source<content::WebContentsDelegate>(browser()));
   LoadAndLaunchPlatformApp("open_link", "Launched");
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -863,9 +874,10 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(const char* name,
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    OpenApplication(AppLaunchParams(
-        browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+    OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                    LaunchContainer::kLaunchContainerNone,
+                                    WindowOpenDisposition::NEW_WINDOW,
+                                    extensions::AppLaunchSource::kSourceTest));
     app_loaded_observer.Wait();
     window = GetFirstAppWindow();
     ASSERT_TRUE(window);
@@ -1009,9 +1021,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(should_install.seen());
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                  LaunchContainer::kLaunchContainerNone,
+                                  WindowOpenDisposition::NEW_WINDOW,
+                                  extensions::AppLaunchSource::kSourceTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1031,9 +1044,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PRE_ComponentAppBackgroundPage) {
   ASSERT_TRUE(extension);
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                  LaunchContainer::kLaunchContainerNone,
+                                  WindowOpenDisposition::NEW_WINDOW,
+                                  extensions::AppLaunchSource::kSourceTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   ASSERT_FALSE(should_not_install.seen());
@@ -1069,9 +1083,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(should_install.seen());
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                  LaunchContainer::kLaunchContainerNone,
+                                  WindowOpenDisposition::NEW_WINDOW,
+                                  extensions::AppLaunchSource::kSourceTest));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
 }
@@ -1094,9 +1109,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   {
     ExtensionTestMessageListener launched_listener("Launched", false);
-    OpenApplication(AppLaunchParams(
-        browser()->profile(), extension, LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
+    OpenApplication(AppLaunchParams(browser()->profile(), extension->id(),
+                                    LaunchContainer::kLaunchContainerNone,
+                                    WindowOpenDisposition::NEW_WINDOW,
+                                    extensions::AppLaunchSource::kSourceTest));
     ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
   }
 
@@ -1217,9 +1233,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
 
   OpenApplication(CreateAppLaunchParamsUserContainer(
       incognito_profile, file_manager,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, extensions::SOURCE_TEST));
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      extensions::AppLaunchSource::kSourceTest));
 
-  while (!base::ContainsKey(opener_app_ids_, file_manager->id())) {
+  while (!base::Contains(opener_app_ids_, file_manager->id())) {
     content::RunAllPendingInMessageLoop();
   }
 }
@@ -1394,8 +1411,15 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
 }
 
+// TODO(crbug.com/961017): Fix memory leaks in tests and re-enable on LSAN.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_PictureInPicture DISABLED_PictureInPicture
+#else
+#define MAYBE_PictureInPicture PictureInPicture
+#endif
+
 // Tests that platform apps can enter and exit Picture-in-Picture.
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PictureInPicture) {
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_PictureInPicture) {
   LoadAndLaunchPlatformApp("picture_in_picture", "Launched");
 
   WebContents* web_contents = GetFirstAppWindowWebContents();

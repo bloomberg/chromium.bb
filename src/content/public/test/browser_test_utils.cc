@@ -45,6 +45,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
+#include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
@@ -82,12 +83,13 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/accessibility_notification_waiter.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/completion_once_callback.h"
@@ -111,6 +113,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -124,6 +127,14 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/latency/latency_info.h"
 #include "ui/resources/grit/webui_resources.h"
+
+#if defined(OS_WIN)
+#include <uiautomation.h>
+#include <wrl/client.h>
+#include "base/win/atl.h"
+#include "base/win/scoped_safearray.h"
+#include "base/win/scoped_variant.h"
+#endif
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -180,22 +191,20 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          int world_id,
                          std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
-  DOMMessageQueue dom_message_queue(
-      WebContents::FromRenderFrameHost(render_frame_host));
+  DOMMessageQueue dom_message_queue(render_frame_host);
+
   base::string16 script16 = base::UTF8ToUTF16(script);
-  if (world_id == ISOLATED_WORLD_ID_GLOBAL) {
-    if (user_gesture)
-      render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16);
-    else
-      render_frame_host->ExecuteJavaScriptForTests(script16,
-                                                   base::NullCallback());
+  if (world_id == ISOLATED_WORLD_ID_GLOBAL && user_gesture) {
+    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(script16,
+                                                                world_id);
   } else {
-    // Note that |user_gesture| here is ignored. We allow a value of |true|
-    // because it's the default, but in blink, the execution will occur with
-    // no user gesture.
-    render_frame_host->ExecuteJavaScriptInIsolatedWorld(
-        script16, base::NullCallback(), world_id);
+    // Note that |user_gesture| here is ignored when the world is not main. We
+    // allow a value of |true| because it's the default, but in blink, the
+    // execution will occur with no user gesture.
+    render_frame_host->ExecuteJavaScriptForTests(script16, base::NullCallback(),
+                                                 world_id);
   }
+
   std::string json;
   if (!dom_message_queue.WaitForMessage(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
@@ -1844,7 +1853,7 @@ void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
 void WaitForInterstitialAttach(content::WebContents* web_contents) {
   if (web_contents->ShowingInterstitialPage())
     return;
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   InterstitialObserver observer(web_contents, run_loop.QuitClosure(),
                                 base::OnceClosure());
   run_loop.Run();
@@ -1961,6 +1970,103 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
     return ui::AXTreeUpdate();
   return manager->SnapshotAXTreeForTesting();
 }
+
+BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  BrowserAccessibilityManager* manager =
+      web_contents_impl->GetRootBrowserAccessibilityManager();
+  return manager ? manager->GetRoot() : nullptr;
+}
+
+FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;
+
+FindAccessibilityNodeCriteria::~FindAccessibilityNodeCriteria() = default;
+
+BrowserAccessibility* FindAccessibilityNode(
+    WebContents* web_contents,
+    const FindAccessibilityNodeCriteria& criteria) {
+  BrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
+  CHECK(root);
+  return FindAccessibilityNodeInSubtree(root, criteria);
+}
+
+BrowserAccessibility* FindAccessibilityNodeInSubtree(
+    BrowserAccessibility* node,
+    const FindAccessibilityNodeCriteria& criteria) {
+  if ((!criteria.name ||
+       node->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
+           criteria.name.value()) &&
+      (!criteria.role || node->GetRole() == criteria.role.value())) {
+    return node;
+  }
+
+  for (unsigned int i = 0; i < node->PlatformChildCount(); ++i) {
+    BrowserAccessibility* result =
+        FindAccessibilityNodeInSubtree(node->PlatformGetChild(i), criteria);
+    if (result)
+      return result;
+  }
+  return nullptr;
+}
+
+#if defined(OS_WIN)
+template <typename T>
+Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
+    BrowserAccessibility* browser_accessibility) {
+  Microsoft::WRL::ComPtr<T> result;
+  EXPECT_HRESULT_SUCCEEDED(
+      browser_accessibility->GetNativeViewAccessible()->QueryInterface(
+          __uuidof(T), &result));
+  return result;
+}
+
+void UiaGetPropertyValueVtArrayVtUnknownValidate(
+    PROPERTYID property_id,
+    BrowserAccessibility* target_browser_accessibility,
+    const std::vector<std::string>& expected_names) {
+  ASSERT_NE(nullptr, target_browser_accessibility);
+
+  base::win::ScopedVariant result_variant;
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple> node_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          target_browser_accessibility);
+
+  node_provider->GetPropertyValue(property_id, result_variant.Receive());
+  ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, result_variant.type());
+  ASSERT_EQ(1u, SafeArrayGetDim(V_ARRAY(result_variant.ptr())));
+
+  LONG lower_bound, upper_bound, size;
+  ASSERT_HRESULT_SUCCEEDED(
+      SafeArrayGetLBound(V_ARRAY(result_variant.ptr()), 1, &lower_bound));
+  ASSERT_HRESULT_SUCCEEDED(
+      SafeArrayGetUBound(V_ARRAY(result_variant.ptr()), 1, &upper_bound));
+  size = upper_bound - lower_bound + 1;
+  ASSERT_EQ(static_cast<LONG>(expected_names.size()), size);
+
+  std::vector<std::string> names;
+  for (LONG i = 0; i < size; ++i) {
+    CComPtr<IUnknown> unknown_element = nullptr;
+    ASSERT_HRESULT_SUCCEEDED(SafeArrayGetElement(V_ARRAY(result_variant.ptr()),
+                                                 &i, &unknown_element));
+    ASSERT_NE(nullptr, unknown_element);
+
+    CComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
+    ASSERT_HRESULT_SUCCEEDED(
+        unknown_element->QueryInterface(&raw_element_provider_simple));
+    ASSERT_NE(nullptr, raw_element_provider_simple);
+
+    base::win::ScopedVariant name;
+    ASSERT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPropertyValue(
+        UIA_NamePropertyId, name.Receive()));
+    ASSERT_EQ(VT_BSTR, name.type());
+    names.push_back(base::UTF16ToUTF8(
+        base::string16(V_BSTR(name.ptr()), SysStringLen(V_BSTR(name.ptr())))));
+  }
+
+  ASSERT_THAT(names, testing::UnorderedElementsAreArray(expected_names));
+}
+#endif
 
 bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
@@ -2099,7 +2205,7 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
 
 namespace {
 
-RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
+RenderFrameMetadataProviderImpl* RenderFrameMetadataProviderFromFrameTreeNode(
     FrameTreeNode* node) {
   DCHECK(node);
   DCHECK(node->current_frame_host());
@@ -2109,7 +2215,7 @@ RenderFrameMetadataProvider* RenderFrameMetadataProviderFromFrameTreeNode(
       ->render_frame_metadata_provider();
 }
 
-RenderFrameMetadataProvider* RenderFrameMetadataProviderFromWebContents(
+RenderFrameMetadataProviderImpl* RenderFrameMetadataProviderFromWebContents(
     WebContents* web_contents) {
   DCHECK(web_contents);
   DCHECK(web_contents->GetRenderViewHost());
@@ -2156,7 +2262,7 @@ void TitleWatcher::TitleWasSet(NavigationEntry* entry) {
 
 void TitleWatcher::TestTitle() {
   const base::string16& current_title = web_contents()->GetTitle();
-  if (base::ContainsValue(expected_titles_, current_title)) {
+  if (base::Contains(expected_titles_, current_title)) {
     observed_title_ = current_title;
     run_loop_.Quit();
   }
@@ -2168,6 +2274,8 @@ RenderProcessHostWatcher::RenderProcessHostWatcher(
     : render_process_host_(render_process_host),
       type_(type),
       did_exit_normally_(true),
+      allow_renderer_crashes_(
+          std::make_unique<ScopedAllowRendererCrashes>(render_process_host)),
       quit_closure_(run_loop_.QuitClosure()) {
   render_process_host_->AddObserver(this);
 }
@@ -2213,6 +2321,11 @@ DOMMessageQueue::DOMMessageQueue(WebContents* web_contents)
                  Source<WebContents>(web_contents));
 }
 
+DOMMessageQueue::DOMMessageQueue(RenderFrameHost* render_frame_host)
+    : DOMMessageQueue(WebContents::FromRenderFrameHost(render_frame_host)) {
+  render_frame_host_ = render_frame_host;
+}
+
 DOMMessageQueue::~DOMMessageQueue() {}
 
 void DOMMessageQueue::Observe(int type,
@@ -2238,6 +2351,15 @@ void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
   }
 }
 
+void DOMMessageQueue::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
+  if (!render_frame_host_)
+    return;
+  if (render_frame_host_ != render_frame_host)
+    return;
+  if (quit_closure_)
+    std::move(quit_closure_).Run();
+}
+
 void DOMMessageQueue::ClearQueue() {
   message_queue_ = base::queue<std::string>();
 }
@@ -2246,7 +2368,7 @@ bool DOMMessageQueue::WaitForMessage(std::string* message) {
   DCHECK(message);
   if (!renderer_crashed_ && message_queue_.empty()) {
     // This will be quit when a new message comes in.
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
@@ -2345,7 +2467,7 @@ bool RequestFrame(WebContents* web_contents) {
 }
 
 RenderFrameSubmissionObserver::RenderFrameSubmissionObserver(
-    RenderFrameMetadataProvider* render_frame_metadata_provider)
+    RenderFrameMetadataProviderImpl* render_frame_metadata_provider)
     : render_frame_metadata_provider_(render_frame_metadata_provider) {
   render_frame_metadata_provider_->AddObserver(this);
   render_frame_metadata_provider_->ReportAllFrameSubmissionsForTesting(true);
@@ -2423,7 +2545,7 @@ void RenderFrameSubmissionObserver::Quit() {
 }
 
 void RenderFrameSubmissionObserver::Wait() {
-  base::RunLoop run_loop;
+  base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 }
@@ -2589,18 +2711,18 @@ BrowserTestClipboardScope::~BrowserTestClipboardScope() {
 }
 
 void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteRTF(rtf);
 }
 
 void BrowserTestClipboardScope::SetText(const std::string& text) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
 void BrowserTestClipboardScope::GetText(std::string* result) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::CLIPBOARD_TYPE_COPY_PASTE, result);
+      ui::ClipboardType::kCopyPaste, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl
@@ -2671,8 +2793,7 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
       handle_(nullptr),
       navigation_paused_(false),
       current_state_(NavigationState::INITIAL),
-      desired_state_(NavigationState::STARTED),
-      weak_factory_(this) {}
+      desired_state_(NavigationState::STARTED) {}
 
 TestNavigationManager::~TestNavigationManager() {
   if (navigation_paused_)

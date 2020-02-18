@@ -347,7 +347,6 @@ static_library("test_support") {
     "//components/gwp_asan/buildflags",
     "//components/nacl/common:buildflags",
     "//components/startup_metric_utils/browser:lib",
-    "//components/tracing",
     "//content/public/app:both",
     "//content/public/common",
     "//content/public/common:service_names",
@@ -355,6 +354,7 @@ static_library("test_support") {
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//services/service_manager/embedder",
+    "//services/tracing/public/cpp",
     "//ui/base",
     "//v8:v8_headers",
   ]
@@ -396,11 +396,7 @@ static_library("test_support") {
     ]
   }
 
-  if (enable_mus) {
-    deps += [ "//services/ws/public/mojom:constants" ]
-  }
-
-  if (enable_gwp_asan_malloc || enable_gwp_asan_partitionalloc) {
+  if (enable_gwp_asan) {
     deps += [ "//components/gwp_asan/client" ]
   }
 }
@@ -429,12 +425,12 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//chrome/common:page_load_metrics_mojom",
     "//chrome/common/media_router/mojo:media_router",
     "//chrome/test/data:web_ui_test_bindings",
-    "//components/autofill/content/common:mojo_interfaces",
-    "//components/contextual_search/content:mojo_bindings",
+    "//components/autofill/content/common/mojom",
+    "//components/contextual_search/content/common/mojom",
     "//components/data_reduction_proxy/core/common:interfaces",
-    "//components/dom_distiller/content/common:mojo_bindings",
+    "//components/dom_distiller/content/common/mojom",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-    "//components/rappor/public/interfaces",
+    "//components/rappor/public/mojom",
     "//components/safe_browsing/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
     "//components/services/quarantine/public/mojom",
@@ -449,17 +445,16 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (enable_extensions) {
     deps += [
-      "//extensions/common:mojo",
+      "//extensions/common:mojom",
       "//extensions/common/api:mojom",
     ]
   }
 
   if (is_chromeos) {
     deps += [
-      "//chrome/browser/chromeos/kiosk_next_home/mojom",
-      "//chrome/browser/chromeos/supervision/mojom",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/machine_learning:mojo_bindings",
+      "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chrome/services/cups_proxy/public/mojom",
       "//chromeos/assistant:buildflags",
       "//chromeos/services/cellular_setup/public/mojom",
@@ -526,10 +521,10 @@ source_set("chrome_content_renderer_overlay_manifest") {
     "//base",
     "//chrome/common:mojo_bindings",
     "//chrome/common:search_mojom",
-    "//components/autofill/content/common:mojo_interfaces",
-    "//components/dom_distiller/content/common:mojo_bindings",
+    "//components/autofill/content/common/mojom",
+    "//components/dom_distiller/content/common/mojom",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
-    "//components/rappor/public/interfaces",
+    "//components/rappor/public/mojom",
     "//components/safe_browsing/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
     "//components/subresource_filter/content/mojom",
@@ -538,12 +533,16 @@ source_set("chrome_content_renderer_overlay_manifest") {
     "//third_party/blink/public/common",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/services/network_config/public/mojom" ]
+  }
+
   if (is_mac) {
     deps += [ "//components/spellcheck/common:interfaces" ]
   }
 
   if (enable_extensions) {
-    deps += [ "//extensions/common:mojo" ]
+    deps += [ "//extensions/common:mojom" ]
   }
 }
 
@@ -571,7 +570,6 @@ source_set("builtin_service_manifests") {
     "//chrome/common:buildflags",
     "//chrome/common:mojo_bindings",
     "//chrome/services/file_util/public/cpp:manifest",
-    "//chrome/services/noop/public/cpp:manifest",
     "//components/services/patch/public/cpp:manifest",
     "//components/services/quarantine",
     "//components/services/quarantine/public/cpp:manifest",
@@ -582,7 +580,6 @@ source_set("builtin_service_manifests") {
     "//extensions/buildflags",
     "//printing/buildflags",
     "//services/preferences/public/cpp:local_state_manifest",
-    "//services/proxy_resolver/public/cpp:manifest",
     "//services/service_manager/public/cpp",
   ]
 
@@ -602,7 +599,7 @@ source_set("builtin_service_manifests") {
     deps += [ "//chrome/services/printing/public/cpp:manifest" ]
   }
 
-  if (enable_isolated_xr_service) {
+  if (enable_vr && !is_android) {
     deps += [ "//chrome/services/isolated_xr_device:manifest" ]
   }
 
@@ -612,22 +609,17 @@ source_set("builtin_service_manifests") {
   }
 
   if (is_win) {
-    deps += [
-      "//chrome/services/util_win/public/cpp:manifest",
-      "//chrome/services/wifi_util_win/public/cpp:manifest",
-    ]
+    deps += [ "//chrome/services/wifi_util_win/public/cpp:manifest" ]
   }
 
   if (is_chromeos) {
     deps += [
       "//ash/public/cpp:manifest",
       "//chrome/services/cups_ipp_parser/public/cpp:manifest",
-      "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
       "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
-      "//services/ws/public/mojom/input_devices",
     ]
   }
 

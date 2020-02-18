@@ -98,7 +98,7 @@ class SpellCheckProvider
       const blink::WebString& text,
       std::unique_ptr<blink::WebTextCheckingCompletion> completion) override;
 
-#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void OnRespondSpellingService(int identifier,
                                 const base::string16& text,
                                 bool success,
@@ -137,7 +137,7 @@ class SpellCheckProvider
   // Dictionary updated observer.
   std::unique_ptr<DictionaryUpdateObserverImpl> dictionary_update_observer_;
 
-  base::WeakPtrFactory<SpellCheckProvider> weak_factory_;
+  base::WeakPtrFactory<SpellCheckProvider> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckProvider);
 };

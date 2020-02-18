@@ -7,7 +7,6 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/devtools_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
@@ -16,18 +15,23 @@
 #include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/inspector_protocol/encoding/encoding.h"
 
 namespace blink {
 
 namespace {
+using ::inspector_protocol_encoding::span;
 using ::inspector_protocol_encoding::SpanFrom;
 using ::inspector_protocol_encoding::cbor::IsCBORMessage;
+using ::inspector_protocol_encoding::json::ConvertCBORToJSON;
+using IPEStatus = ::inspector_protocol_encoding::Status;
+
 const char kV8StateKey[] = "v8";
 bool ShouldInterruptForMethod(const String& method) {
   // Keep in sync with DevToolsSession::ShouldSendOnIO.
@@ -42,10 +46,10 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Emulation.setScriptExecutionDisabled";
 }
 
-std::vector<uint8_t> UnwrapMessage(
-    const mojom::blink::DevToolsMessagePtr& message) {
-  return std::vector<uint8_t>(message->data.data(),
-                              message->data.data() + message->data.size());
+Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
+  Vector<uint8_t> unwrap_message;
+  unwrap_message.Append(message->data.data(), message->data.size());
+  return unwrap_message;
 }
 
 mojom::blink::DevToolsMessagePtr WrapMessage(
@@ -53,7 +57,7 @@ mojom::blink::DevToolsMessagePtr WrapMessage(
   auto result = mojom::blink::DevToolsMessage::New();
 
   if (message.json.IsEmpty()) {
-    result->data = std::move(message.binary);
+    result->data = message.binary.ReleaseVector();
   } else {
     WTF::StringUTF8Adaptor adaptor(message.json);
     result->data =
@@ -68,11 +72,36 @@ protocol::ProtocolMessage ToProtocolMessage(
   const auto& string = buffer->string();
   DCHECK(string.is8Bit());
   // TODO: add StringBuffer::takeBytes().
-  message.binary = std::vector<uint8_t>(string.characters8(),
-                                        string.characters8() + string.length());
+  message.binary = WebVector<uint8_t>(string.characters8(), string.length());
   return message;
 }
 
+// Platform allows us to inject the string<->double conversion
+// routines from Blink into the inspector_protocol JSON parser / serializer.
+class JsonPlatform : public ::inspector_protocol_encoding::json::Platform {
+ public:
+  bool StrToD(const char* str, double* result) const override {
+    bool ok;
+    *result = String(str).ToDouble(&ok);
+    return ok;
+  }
+
+  // Prints |value| in a format suitable for JSON.
+  std::unique_ptr<char[]> DToStr(double value) const override {
+    String str = String::NumberToStringECMAScript(value);
+    DCHECK(str.Is8Bit());
+    std::unique_ptr<char[]> result(new char[str.length() + 1]);
+    memcpy(result.get(), str.Characters8(), str.length());
+    result.get()[str.length()] = '\0';
+    return result;
+  }
+};
+
+IPEStatus ConvertCBORToJSON(span<uint8_t> cbor, std::vector<uint8_t>* json) {
+  DCHECK(IsCBORMessage(cbor));
+  JsonPlatform platform;
+  return ConvertCBORToJSON(platform, cbor, json);
+}
 }  // namespace
 
 // Created and stored in unique_ptr on UI.
@@ -129,14 +158,16 @@ DevToolsSession::DevToolsSession(
     mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
     mojom::blink::DevToolsSessionAssociatedRequest main_request,
     mojom::blink::DevToolsSessionRequest io_request,
-    mojom::blink::DevToolsSessionStatePtr reattach_session_state)
+    mojom::blink::DevToolsSessionStatePtr reattach_session_state,
+    bool client_expects_binary_responses)
     : agent_(agent),
       binding_(this, std::move(main_request)),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
+      client_expects_binary_responses_(client_expects_binary_responses),
       v8_session_state_(kV8StateKey),
       v8_session_state_cbor_(&v8_session_state_,
-                             /*default_value=*/std::vector<uint8_t>()) {
+                             /*default_value=*/{}) {
   io_session_ =
       new IOSession(agent_->io_task_runner_, agent_->inspector_task_runner_,
                     WrapCrossThreadWeakPersistent(this), std::move(io_request));
@@ -161,7 +192,7 @@ DevToolsSession::~DevToolsSession() {
 
 void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
                                   int context_group_id) {
-  const std::vector<uint8_t>& cbor = v8_session_state_cbor_.Get();
+  const auto& cbor = v8_session_state_cbor_.Get();
   v8_session_ =
       inspector->connect(context_group_id, this,
                          v8_inspector::StringView(cbor.data(), cbor.size()));
@@ -208,8 +239,8 @@ void DevToolsSession::DispatchProtocolCommand(
 
 void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
                                                   const String& method,
-                                                  std::vector<uint8_t> data) {
-  DCHECK(IsCBORMessage(SpanFrom(data)));
+                                                  Vector<uint8_t> data) {
+  DCHECK(IsCBORMessage(span<uint8_t>(data.data(), data.size())));
 
   // IOSession does not provide ordering guarantees relative to
   // Session, so a command may come to IOSession after Session is detached,
@@ -292,7 +323,16 @@ void DevToolsSession::SendProtocolResponse(
   // protocol response in any of them.
   if (WebTestSupport::IsRunningWebTest())
     agent_->FlushProtocolNotifications();
-  host_ptr_->DispatchProtocolResponse(WrapMessage(message), call_id,
+
+  mojom::blink::DevToolsMessagePtr serialized = WrapMessage(message);
+  if (!client_expects_binary_responses_) {
+    std::vector<uint8_t> json;
+    IPEStatus status = ConvertCBORToJSON(
+        span<uint8_t>(serialized->data.data(), serialized->data.size()), &json);
+    CHECK(status.ok()) << status.ToASCIIString();
+    serialized->data = mojo_base::BigBuffer(json);
+  }
+  host_ptr_->DispatchProtocolResponse(std::move(serialized), call_id,
                                       session_state_.TakeUpdates());
 }
 
@@ -360,7 +400,16 @@ void DevToolsSession::flushProtocolNotifications() {
   if (v8_session_)
     v8_session_state_cbor_.Set(v8_session_->state());
   for (wtf_size_t i = 0; i < notification_queue_.size(); ++i) {
-    auto serialized = notification_queue_[i]->Serialize();
+    mojom::blink::DevToolsMessagePtr serialized =
+        notification_queue_[i]->Serialize();
+    if (!client_expects_binary_responses_) {
+      std::vector<uint8_t> json;
+      IPEStatus status = ConvertCBORToJSON(
+          span<uint8_t>(serialized->data.data(), serialized->data.size()),
+          &json);
+      CHECK(status.ok()) << status.ToASCIIString();
+      serialized->data = mojo_base::BigBuffer(json);
+    }
     host_ptr_->DispatchProtocolNotification(std::move(serialized),
                                             session_state_.TakeUpdates());
   }

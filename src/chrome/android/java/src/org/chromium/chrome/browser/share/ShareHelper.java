@@ -17,7 +17,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -47,6 +46,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
@@ -417,10 +417,15 @@ public class ShareHelper {
      */
     public static void captureScreenshotForContents(
             WebContents contents, int width, int height, Callback<Uri> callback) {
+        RenderWidgetHostView rwhv = contents.getRenderWidgetHostView();
+        if (rwhv == null) {
+          callback.onResult(null);
+          return;
+        }
         try {
             String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
                     + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
-            contents.writeContentBitmapToDiskAsync(
+            rwhv.writeContentBitmapToDiskAsync(
                     width, height, path, new ExternallyVisibleUriCallback(callback));
         } catch (IOException e) {
             Log.e(TAG, "Error getting content bitmap: ", e);
@@ -556,10 +561,9 @@ public class ShareHelper {
             try {
                 // TODO(dtrainor): Make asynchronous and have a callback to update the menu.
                 // https://crbug.com/729737
-                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     directShareIcon = pm.getActivityIcon(component);
-                    ApplicationInfo ai = pm.getApplicationInfo(component.getPackageName(), 0);
-                    directShareTitle = pm.getApplicationLabel(ai);
+                    directShareTitle = pm.getActivityInfo(component, 0).loadLabel(pm);
                 }
                 retrieved = true;
             } catch (NameNotFoundException exception) {
@@ -595,7 +599,10 @@ public class ShareHelper {
     @VisibleForTesting
     public static Intent getShareLinkIntent(ShareParams params) {
         final boolean isFileShare = (params.getFileUris() != null);
-        Intent intent = new Intent(isFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND);
+        final boolean isMultipleFileShare = isFileShare && (params.getFileUris().size() > 1);
+        final String action =
+                isMultipleFileShare ? Intent.ACTION_SEND_MULTIPLE : Intent.ACTION_SEND;
+        Intent intent = new Intent(action);
         intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
         intent.putExtra(EXTRA_TASK_ID, params.getActivity().getTaskId());
 
@@ -626,7 +633,11 @@ public class ShareHelper {
                 intent.setType(params.getFileContentType());
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
+                if (isMultipleFileShare) {
+                    intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, params.getFileUris());
+                } else {
+                    intent.putExtra(Intent.EXTRA_STREAM, params.getFileUris().get(0));
+                }
             } else {
                 intent.setType("text/plain");
             }

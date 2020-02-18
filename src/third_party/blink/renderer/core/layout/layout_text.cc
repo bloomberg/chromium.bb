@@ -82,7 +82,7 @@ struct SameSizeAsLayoutText : public LayoutObject {
   float widths[4];
   String text;
   void* pointers[2];
-  NodeHolder node_holder;
+  DOMNodeId node_id;
 };
 
 static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText),
@@ -103,9 +103,9 @@ class SecureTextTimer final : public TimerBase {
   void RestartWithNewText(unsigned last_typed_character_offset) {
     last_typed_character_offset_ = last_typed_character_offset;
     if (Settings* settings = layout_text_->GetDocument().GetSettings()) {
-      StartOneShot(
-          TimeDelta::FromSecondsD(settings->GetPasswordEchoDurationInSeconds()),
-          FROM_HERE);
+      StartOneShot(base::TimeDelta::FromSecondsD(
+                       settings->GetPasswordEchoDurationInSeconds()),
+                   FROM_HERE);
     }
   }
   void Invalidate() { last_typed_character_offset_ = -1; }
@@ -159,9 +159,10 @@ LayoutText::~LayoutText() {
 #endif
 }
 
-LayoutText* LayoutText::CreateEmptyAnonymous(Document& doc,
-                                             scoped_refptr<ComputedStyle> style,
-                                             LegacyLayout legacy) {
+LayoutText* LayoutText::CreateEmptyAnonymous(
+    Document& doc,
+    scoped_refptr<const ComputedStyle> style,
+    LegacyLayout legacy) {
   LayoutText* text =
       LayoutObjectFactory::CreateText(nullptr, StringImpl::empty_, legacy);
   text->SetDocumentForAnonymous(&doc);
@@ -219,9 +220,17 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
       }
       for (InlineTextBox* box : TextBoxes())
         box->Remove();
-    } else if (Parent()) {
-      Parent()->DirtyLinesFromChangedChild(this);
+    } else {
+      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
+        first_inline_fragment->LayoutObjectWillBeDestroyed();
+        SetFirstInlineFragment(nullptr);
+      }
+      if (Parent())
+        Parent()->DirtyLinesFromChangedChild(this);
     }
+  } else if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
+    // Still do this to clear the global hash map in  NGAbstractInlineTextBox.
+    SetFirstInlineFragment(nullptr);
   }
   DeleteTextBoxes();
 }
@@ -231,11 +240,10 @@ void LayoutText::WillBeDestroyed() {
           g_secure_text_timers ? g_secure_text_timers->Take(this) : nullptr)
     delete secure_text_timer;
 
-  if (!node_holder_.is_empty) {
+  if (node_id_ != kInvalidDOMNodeId) {
     if (auto* manager = GetContentCaptureManager())
-      manager->OnLayoutTextWillBeDestroyed(node_holder_);
-    node_holder_.text_holder.reset();
-    node_holder_.is_empty = true;
+      manager->OnLayoutTextWillBeDestroyed(*GetNode());
+    node_id_ = kInvalidDOMNodeId;
   }
 
   RemoveAndDestroyTextBoxes();
@@ -256,9 +264,7 @@ void LayoutText::RemoveTextBox(InlineTextBox* box) {
 }
 
 void LayoutText::DeleteTextBoxes() {
-  if (IsInLayoutNGInlineFormattingContext())
-    SetFirstInlineFragment(nullptr);
-  else
+  if (!IsInLayoutNGInlineFormattingContext())
     MutableTextBoxes().DeleteLineBoxes();
 }
 
@@ -287,9 +293,17 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   Vector<TextBoxInfo> results;
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    bool in_hidden_for_paint = false;
     for (const NGPaintFragment* fragment : fragments) {
       const auto& text_fragment =
           To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+      if (text_fragment.IsHiddenForPaint()) {
+        in_hidden_for_paint = true;
+      } else if (in_hidden_for_paint) {
+        // Because of we finished original fragments (not painted), we should
+        // ignore truncated fragments (actually painted).
+        break;
+      }
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces
@@ -432,7 +446,11 @@ void LayoutText::CollectLineBoxRects(const PhysicalRectCollector& yield,
     const auto children =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     for (const auto& child : children) {
-      // TODO(layout-dev): We should have NG version of |EllipsisRectForBox()|
+      if (UNLIKELY(option != ClippingOption::kNoClipping)) {
+        DCHECK_EQ(option, ClippingOption::kClipToEllipsis);
+        if (child.fragment->IsHiddenForPaint())
+          continue;
+      }
       yield(child.RectInContainerBox());
     }
     return;
@@ -722,7 +740,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 }  // namespace
 
 PositionWithAffinity LayoutText::PositionForPoint(
-    const LayoutPoint& point) const {
+    const PhysicalOffset& point) const {
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
     return ng_block_flow->PositionForPoint(point);
 
@@ -730,10 +748,11 @@ PositionWithAffinity LayoutText::PositionForPoint(
   if (!FirstTextBox() || TextLength() == 0)
     return CreatePositionWithAffinity(0);
 
+  LayoutPoint flipped_point = FlipForWritingMode(point);
   LayoutUnit point_line_direction =
-      FirstTextBox()->IsHorizontal() ? point.X() : point.Y();
+      IsHorizontalWritingMode() ? flipped_point.X() : flipped_point.Y();
   LayoutUnit point_block_direction =
-      FirstTextBox()->IsHorizontal() ? point.Y() : point.X();
+      IsHorizontalWritingMode() ? flipped_point.Y() : flipped_point.X();
   bool blocks_are_flipped = StyleRef().IsFlippedBlocksWritingMode();
 
   InlineTextBox* last_box = nullptr;
@@ -1612,9 +1631,8 @@ void LayoutText::SetFirstTextBoxLogicalLeft(float text_width) const {
 
 void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
                                    unsigned offset,
-                                   unsigned len,
-                                   bool force) {
-  if (!force && Equal(text_.Impl(), text.get()))
+                                   unsigned len) {
+  if (Equal(text_.Impl(), text.get()))
     return;
 
   // Check that we are replacing the whole text.
@@ -1635,7 +1653,9 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
-      SetText(std::move(text), force, true);
+      const bool force = false;
+      const bool avoid_layout_and_only_paint = true;
+      SetText(std::move(text), force, avoid_layout_and_only_paint);
       lines_dirty_ = false;
       valid_ng_items_ = false;
       return;
@@ -1715,7 +1735,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   }
 
   lines_dirty_ = dirtied_lines;
-  SetText(std::move(text), force || dirtied_lines);
+  SetText(std::move(text), dirtied_lines);
 
   // TODO(layout-dev): Invalidation is currently all or nothing in LayoutNG,
   // this is probably fine for NGInlineItem reuse as recreating the individual
@@ -1841,9 +1861,9 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
   if (text_autosizer)
     text_autosizer->Record(this);
 
-  if (HasNodeHolder()) {
+  if (HasNodeId()) {
     if (auto* content_capture_manager = GetContentCaptureManager())
-      content_capture_manager->OnNodeTextChanged(node_holder_);
+      content_capture_manager->OnNodeTextChanged(*GetNode());
   }
 
   valid_ng_items_ = false;
@@ -2381,12 +2401,12 @@ PhysicalRect LayoutText::DebugRect() const {
   return PhysicalRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
 }
 
-NodeHolder LayoutText::EnsureNodeHolder() {
-  if (node_holder_.is_empty) {
+DOMNodeId LayoutText::EnsureNodeId() {
+  if (node_id_ == kInvalidDOMNodeId) {
     if (auto* content_capture_manager = GetContentCaptureManager())
-      node_holder_ = content_capture_manager->GetNodeHolder(*GetNode());
+      node_id_ = content_capture_manager->GetNodeId(*GetNode());
   }
-  return node_holder_;
+  return node_id_;
 }
 
 ContentCaptureManager* LayoutText::GetContentCaptureManager() {
@@ -2404,24 +2424,24 @@ void LayoutText::SetInlineItems(NGInlineItem* begin, NGInlineItem* end) {
     DCHECK_EQ(item->GetLayoutObject(), this);
   }
 #endif
-  NGInlineItems* items = GetNGInlineItems();
+  base::span<NGInlineItem>* items = GetNGInlineItems();
   if (!items)
     return;
   valid_ng_items_ = true;
-  items->SetRange(begin, end);
+  *items = base::make_span(begin, end);
 }
 
 void LayoutText::ClearInlineItems() {
   has_bidi_control_items_ = false;
   valid_ng_items_ = false;
-  if (NGInlineItems* items = GetNGInlineItems())
-    items->Clear();
+  if (base::span<NGInlineItem>* items = GetNGInlineItems())
+    *items = base::span<NGInlineItem>();
 }
 
-const NGInlineItems& LayoutText::InlineItems() const {
+const base::span<NGInlineItem>& LayoutText::InlineItems() const {
   DCHECK(valid_ng_items_);
   DCHECK(GetNGInlineItems());
-  DCHECK(!GetNGInlineItems()->IsEmpty());
+  DCHECK(!GetNGInlineItems()->empty());
   return *GetNGInlineItems();
 }
 

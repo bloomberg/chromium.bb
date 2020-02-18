@@ -30,7 +30,7 @@
 #include "chromeos/services/device_sync/software_feature_manager_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -217,7 +217,7 @@ void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* test_factory) {
 DeviceSyncImpl::Factory::~Factory() = default;
 
 std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
@@ -300,7 +300,7 @@ void DeviceSyncImpl::PendingSetSoftwareFeatureRequest::InvokeCallback(
 }
 
 DeviceSyncImpl::DeviceSyncImpl(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,

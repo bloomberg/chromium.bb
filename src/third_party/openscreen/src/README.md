@@ -51,15 +51,17 @@ dependencies that have changed.
 
 ### Installing build dependencies
 
-Run `./tools/install-build-tools.sh` from the root source directory to obtain a
-copy of the following build tools:
+The following tools are required for building:
 
  - Build file generator: `gn`
- - Code formatter: `clang-format`
+ - Code formatter (optional): `clang-format`
  - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
 
-`gn`, `clang-format`, and `ninja` will be installed in the repository root,
-which must be included in your `$PATH` or the build will fail.
+`clang-format` is only used for presubmit checks and optionally used on
+generated code from the CDDL tool.  A copy of `clang-format` can be downloaded
+to the repository root by running `./tools/install-build-tools.sh`.
+
+`gn` will be installed in `//buildtools/<platform>/` automatically by DEPS.
 
 You also need to ensure that you have the compiler toolchain dependencies.
 Currently, both Linux and Mac OS X build configurations use clang by default.
@@ -163,11 +165,13 @@ the build flags available.
 openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
 to monitor the build and test health of the library.  Current builders include:
 
-| Name            | Arch   | OS                 | Toolchain | Build | Notes        |
-|-----------------|--------|--------------------|-----------|-------|--------------|
-| linux_debug     | x86-64 | Linux Ubuntu 16.04 | clang     | debug | ASAN enabled |
-| linux_debug_gcc | x86-64 | Linux Ubuntu 16.04 | gcc       | debug | ASAN enabled |
-| mac_debug       | x86-64 | Mac OS X/Xcode     | clang     | debug | |
+| Name                   | Arch   | OS                 | Toolchain | Build | Notes        |
+|------------------------|--------|--------------------|-----------|-------|--------------|
+| linux64_debug          | x86-64 | Linux Ubuntu 17.04 | clang     | debug | ASAN enabled |
+| linux64_debug_gcc      | x86-64 | Linux Ubuntu 17.04 | gcc       | debug | ASAN enabled |
+| mac_debug              | x86-64 | Mac OS X/Xcode     | clang     | debug | |
+| chromium_linux64_debug | x86-64 | Linux Ubuntu 17.04 | clang     | debug | built within chromium |
+| chromium_mac_debug     | x86-64 | Mac OS X/Xcode     | clang     | debug | built within chromium |
 
 You can run a patch through the try job queue (which tests it on all builders)
 using `git cl try`, or through Gerrit (details below).

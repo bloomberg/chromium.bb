@@ -17,10 +17,14 @@ import("../swiftshader.gni")
 
 # Need a separate config to ensure the warnings are added to the end.
 config("swiftshader_libvulkan_private_config") {
-  defines = [
-    "VK_USE_PLATFORM_XLIB_KHR",
-    "VK_EXPORT=__attribute__((visibility(\"default\")))",
-  ]
+  if (is_linux) {
+    defines = [
+      "VK_USE_PLATFORM_XLIB_KHR",
+      "VK_EXPORT=__attribute__((visibility(\"default\")))",
+    ]
+  } else {
+    defines = [ "VK_EXPORT=" ]
+  }
 
   cflags = [
     "-Wno-unused-private-field",
@@ -95,7 +99,6 @@ swiftshader_shared_library("swiftshader_libvulkan") {
     "VulkanPlatform.h",
     "libVulkan.cpp",
     "libvk_swiftshader.def",
-    "libvk_swiftshader.lds",
     "main.cpp",
     "resource.h",
   ]
@@ -105,8 +108,19 @@ swiftshader_shared_library("swiftshader_libvulkan") {
   output_name = "libvulkan"
   output_dir = "$root_out_dir/swiftshader"
 
-  ldflags = [ "-Wl,--version-script=" +
-              rebase_path("libvk_swiftshader.lds", root_build_dir) ]
+  if (is_mac) {
+    ldflags = [
+      "-Wl,-install_name,@rpath/libvk_swiftshader.dylib",
+      "-Wl,-exported_symbols_list," +
+          rebase_path("libvk_swiftshader.exports", root_build_dir),
+    ]
+  } else if (is_linux) {
+    inputs = [
+      "libvk_swiftshader.lds",
+    ]
+    ldflags = [ "-Wl,--version-script=" +
+                rebase_path("libvk_swiftshader.lds", root_build_dir) ]
+  }
 
   deps = [
     "../Device",

@@ -65,10 +65,13 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
            net::URLRequest::
                CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE) &&
       request.referrer.SchemeIsCryptographic() &&
+      !url::Origin::Create(request.url).opaque() &&
       !IsOriginSecure(request.url)) {
     LOG(FATAL) << "Trying to send secure referrer for insecure request "
                << "without an appropriate referrer policy.\n"
                << "URL = " << request.url << "\n"
+               << "URL's Origin = "
+               << url::Origin::Create(request.url).Serialize() << "\n"
                << "Referrer = " << request.referrer;
   }
 }
@@ -116,8 +119,7 @@ int ResourceDispatcher::MakeRequestID() {
   return kInitialRequestID + sequence.GetNext();
 }
 
-ResourceDispatcher::ResourceDispatcher()
-    : delegate_(nullptr), weak_factory_(this) {}
+ResourceDispatcher::ResourceDispatcher() : delegate_(nullptr) {}
 
 ResourceDispatcher::~ResourceDispatcher() {
 }
@@ -495,7 +497,6 @@ int ResourceDispatcher::StartAsync(
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     bool is_sync,
-    bool pass_response_pipe_to_peer,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -524,7 +525,7 @@ int ResourceDispatcher::StartAsync(
 
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
       request->render_frame_id, request_id, request->url, request->method,
-      request->referrer, pending_request->resource_type);
+      request->referrer, pending_request->resource_type, request->priority);
 
   pending_request->previews_state = request->previews_state;
 
@@ -549,9 +550,6 @@ int ResourceDispatcher::StartAsync(
   std::unique_ptr<URLLoaderClientImpl> client(new URLLoaderClientImpl(
       request_id, this, loading_task_runner,
       url_loader_factory->BypassRedirectChecks(), request->url));
-
-  if (pass_response_pipe_to_peer)
-    client->SetPassResponsePipeToDispatcher(true);
 
   uint32_t options = network::mojom::kURLLoadOptionNone;
   // TODO(jam): use this flag for ResourceDispatcherHost code path once
@@ -647,11 +645,21 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
       return;
   }
 
-  client_ptr->OnReceiveResponse(response_override->response);
+  client_ptr->OnReceiveResponse(response_override->response_head);
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))
     return;
+
+  if (response_override->response_body.is_valid()) {
+    DCHECK(IsNavigationImmediateResponseBodyEnabled());
+    client_ptr->OnStartLoadingResponseBody(
+        std::move(response_override->response_body));
+
+    // Abort if the request is cancelled.
+    if (!GetPendingRequestInfo(request_id))
+      return;
+  }
 
   DCHECK(response_override->url_loader_client_endpoints);
   client_ptr->Bind(std::move(response_override->url_loader_client_endpoints));

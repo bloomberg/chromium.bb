@@ -32,10 +32,6 @@
 #include <windows.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "mojo/core/mach_port_relay.h"
-#endif
-
 #if !defined(OS_NACL)
 #include "crypto/random.h"
 #endif
@@ -157,14 +153,6 @@ NodeController::NodeController(Core* core)
       node_(new ports::Node(name_, this)) {
   DVLOG(1) << "Initializing node " << name_;
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void NodeController::CreateMachPortRelay(base::PortProvider* port_provider) {
-  base::AutoLock lock(mach_port_relay_lock_);
-  DCHECK(!mach_port_relay_);
-  mach_port_relay_.reset(new MachPortRelay(port_provider));
-}
-#endif
 
 void NodeController::SetIOTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {
@@ -612,28 +600,6 @@ void NodeController::SendPeerEvent(const ports::NodeName& name,
       return;
     }
   }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  if (event_message->has_mach_ports()) {
-    // Messages containing Mach ports are always routed through the broker, even
-    // if the broker process is the intended recipient.
-    bool use_broker = false;
-    if (!GetConfiguration().is_broker_process) {
-      base::AutoLock lock(inviter_lock_);
-      use_broker = (bootstrap_inviter_channel_ ||
-                    inviter_name_ != ports::kInvalidNodeName);
-    }
-
-    if (use_broker) {
-      scoped_refptr<NodeChannel> broker = GetBrokerChannel();
-      if (broker) {
-        broker->RelayEventMessage(name, std::move(event_message));
-      } else {
-        base::AutoLock lock(broker_lock_);
-        pending_relay_messages_[name].emplace(std::move(event_message));
-      }
-      return;
-    }
-  }
 #endif  // defined(OS_WIN)
 
   if (peer) {
@@ -969,7 +935,7 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
     pending_broker_clients.pop();
   }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
   // Have the broker relay any messages we have waiting.
   for (auto& entry : pending_relay_messages) {
     const ports::NodeName& destination = entry.first;
@@ -1128,7 +1094,7 @@ void NodeController::OnBroadcast(const ports::NodeName& from_node,
   }
 }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN)
 void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
                                          base::ProcessHandle from_process,
                                          const ports::NodeName& destination,
@@ -1220,20 +1186,6 @@ void NodeController::OnChannelError(const ports::NodeName& from_node,
                        from_node, base::RetainedRef(channel)));
   }
 }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-MachPortRelay* NodeController::GetMachPortRelay() {
-  {
-    base::AutoLock lock(inviter_lock_);
-    // Return null if we're not the root.
-    if (bootstrap_inviter_channel_ || inviter_name_ != ports::kInvalidNodeName)
-      return nullptr;
-  }
-
-  base::AutoLock lock(mach_port_relay_lock_);
-  return mach_port_relay_.get();
-}
-#endif
 
 void NodeController::CancelPendingPortMerges() {
   std::vector<ports::PortRef> ports_to_close;

@@ -35,6 +35,8 @@
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -47,8 +49,6 @@
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_slow_download_job.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -277,8 +277,7 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(
         browser()->profile());
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        !content::IsInProcessNetworkService()) {
+    if (!content::IsInProcessNetworkService()) {
       interceptor_ = std::make_unique<SlowDownloadInterceptor>();
     } else {
       base::PostTaskWithTraits(
@@ -1047,10 +1046,10 @@ class MultiProfileDownloadNotificationTest
     Profile* profile =
         chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
 
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     if (!identity_manager->HasPrimaryAccount())
-      identity::MakePrimaryAccountAvailable(identity_manager, info.email);
+      signin::MakePrimaryAccountAvailable(identity_manager, info.email);
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;

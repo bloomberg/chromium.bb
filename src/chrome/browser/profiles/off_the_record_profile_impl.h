@@ -52,6 +52,7 @@ class OffTheRecordProfileImpl : public Profile {
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
+  bool IsIndependentOffTheRecordProfile() override;
   bool AllowsBrowserWindows() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
   PrefService* GetPrefs() override;
@@ -67,21 +68,11 @@ class OffTheRecordProfileImpl : public Profile {
   policy::UserCloudPolicyManager* GetUserCloudPolicyManager() override;
 #endif  // defined(OS_CHROMEOS)
   net::URLRequestContextGetter* GetRequestContext() override;
-  base::OnceCallback<net::CookieStore*()> GetExtensionsCookieStoreGetter()
-      override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   net::URLRequestContextGetter* CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      content::ProtocolHandlerMap* protocol_handlers,
-      content::URLRequestInterceptorScopedVector request_interceptors) override;
   net::URLRequestContextGetter* CreateMediaRequestContext() override;
-  net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) override;
   std::unique_ptr<service_manager::Service> HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;
@@ -106,12 +97,14 @@ class OffTheRecordProfileImpl : public Profile {
   GURL GetHomePage() override;
 
   // content::BrowserContext implementation:
+  base::FilePath GetPath() override;
   base::FilePath GetPath() const override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
+  bool IsOffTheRecord() override;
   bool IsOffTheRecord() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   content::ResourceContext* GetResourceContext() override;
@@ -133,8 +126,7 @@ class OffTheRecordProfileImpl : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
-  const content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList()
-      const override;
+  content::SharedCorsOriginAccessList* GetSharedCorsOriginAccessList() override;
 
  private:
   void InitIoData();

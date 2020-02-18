@@ -10,9 +10,9 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlConstants;
 
 /**
  * Provides information regarding homepage enabled states and URI.

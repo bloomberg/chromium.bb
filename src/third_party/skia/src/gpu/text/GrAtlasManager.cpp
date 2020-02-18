@@ -26,7 +26,7 @@ static GrColorType mask_format_to_gr_color_type(GrMaskFormat format) {
         case kA8_GrMaskFormat:
             return GrColorType::kAlpha_8;
         case kA565_GrMaskFormat:
-            return GrColorType::kRGB_565;
+            return GrColorType::kBGR_565;
         case kARGB_GrMaskFormat:
             return GrColorType::kRGBA_8888;
         default:
@@ -68,10 +68,10 @@ void GrAtlasManager::addGlyphToBulkAndSetUseToken(GrDrawOpAtlas::BulkUseTokenUpd
 }
 
 #ifdef SK_DEBUG
-#include "include/private/GrSurfaceProxy.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrSurfaceProxy.h"
+#include "src/gpu/GrTextureProxy.h"
 
 #include "include/core/SkBitmap.h"
 #include "include/core/SkImageEncoder.h"
@@ -82,7 +82,8 @@ void GrAtlasManager::addGlyphToBulkAndSetUseToken(GrDrawOpAtlas::BulkUseTokenUpd
   * Write the contents of the surface proxy to a PNG. Returns true if successful.
   * @param filename      Full path to desired file
   */
-static bool save_pixels(GrContext* context, GrSurfaceProxy* sProxy, const char* filename) {
+static bool save_pixels(GrContext* context, GrSurfaceProxy* sProxy, GrColorType colorType,
+                        const char* filename) {
     if (!sProxy) {
         return false;
     }
@@ -94,12 +95,13 @@ static bool save_pixels(GrContext* context, GrSurfaceProxy* sProxy, const char* 
         return false;
     }
 
-    sk_sp<GrSurfaceContext> sContext(context->priv().makeWrappedSurfaceContext(sk_ref_sp(sProxy)));
+    sk_sp<GrSurfaceContext> sContext(context->priv().makeWrappedSurfaceContext(
+            sk_ref_sp(sProxy), colorType, kUnknown_SkAlphaType));
     if (!sContext || !sContext->asTextureProxy()) {
         return false;
     }
 
-    bool result = sContext->readPixels(ii, bm.getPixels(), bm.rowBytes(), 0, 0);
+    bool result = sContext->readPixels(ii, bm.getPixels(), bm.rowBytes(), {0, 0});
     if (!result) {
         SkDebugf("------ failed to read pixels for %s\n", filename);
         return false;
@@ -137,8 +139,8 @@ void GrAtlasManager::dump(GrContext* context) const {
 #else
                 filename.printf("fontcache_%d%d%d.png", gDumpCount, i, pageIdx);
 #endif
-
-                save_pixels(context, proxies[pageIdx].get(), filename.c_str());
+                auto ct = mask_format_to_gr_color_type(AtlasIndexToMaskFormat(i));
+                save_pixels(context, proxies[pageIdx].get(), ct, filename.c_str());
             }
         }
     }
@@ -164,8 +166,7 @@ bool GrAtlasManager::initAtlas(GrMaskFormat format) {
         SkISize atlasDimensions = fAtlasConfig.atlasDimensions(format);
         SkISize plotDimensions = fAtlasConfig.plotDimensions(format);
 
-        const GrBackendFormat format = fCaps->getBackendFormatFromGrColorType(grColorType,
-                                                                              GrSRGBEncoded::kNo);
+        const GrBackendFormat format = fCaps->getBackendFormatFromColorType(grColorType);
 
         fAtlases[index] = GrDrawOpAtlas::Make(
                 fProxyProvider, format, grColorType,

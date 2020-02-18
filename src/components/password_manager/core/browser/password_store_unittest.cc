@@ -29,6 +29,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -237,6 +238,9 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 }
 
 TEST_F(PasswordStoreTest, StartSyncFlare) {
+  // This test isn't relevant for USS code path.
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords))
+    return;
   scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
       std::make_unique<LoginDatabase>(test_login_db_file_path())));
   StartSyncFlareMock mock;
@@ -705,9 +709,9 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
           IgnoreResult(&PasswordStore::AddLoginSync), store,
           *expected_credentials_after_update[0], /*error=*/nullptr));
     } else {
-      store->ScheduleTask(
-          base::BindOnce(IgnoreResult(&PasswordStore::UpdateLoginSync), store,
-                         *expected_credentials_after_update[0]));
+      store->ScheduleTask(base::BindOnce(
+          IgnoreResult(&PasswordStore::UpdateLoginSync), store,
+          *expected_credentials_after_update[0], /*error=*/nullptr));
     }
     WaitForPasswordStore();
     store->RemoveObserver(&mock_observer);

@@ -16,8 +16,7 @@
 
 #ifdef WIN32
 #  include <win32thread.h>
-#else
-#ifdef NETWARE
+#elif defined(NETWARE)
 #  include <nw5thread.h>
 #else
 #  ifdef OLD_PTHREADS_API /* Here be dragons. */
@@ -39,9 +38,6 @@
 #      define pthread_addr_t any_t
 #      define NEED_PTHREAD_INIT
 #      define PTHREAD_CREATE_JOINABLE (1)
-#    endif
-#    ifdef __OPEN_VM
-#      define pthread_addr_t void *
 #    endif
 #    ifdef OEMVS
 #      define pthread_addr_t void *
@@ -65,7 +61,7 @@
 #      define pthread_mutexattr_init(a) pthread_mutexattr_create(a)
 #      define pthread_mutexattr_settype(a,t) pthread_mutexattr_setkind_np(a,t)
 #    endif
-#    if defined(DJGPP) || defined(__OPEN_VM) || defined(OEMVS)
+#    if defined(DJGPP) || defined(OEMVS)
 #      define PTHREAD_ATTR_SETDETACHSTATE(a,s) pthread_attr_setdetachstate(a,&(s))
 #      define YIELD pthread_yield(NULL)
 #    endif
@@ -74,7 +70,6 @@
 #    define pthread_mutexattr_default NULL
 #    define pthread_condattr_default  NULL
 #  endif
-#endif	/* NETWARE */
 #endif
 
 #ifndef PTHREAD_CREATE
@@ -92,10 +87,6 @@
 #  else
 #    define PTHREAD_CREATE_JOINABLE 0 /* Panic?  No, guess. */
 #  endif
-#endif
-
-#ifdef DGUX
-#  define THREAD_CREATE_NEEDS_STACK (32*1024)
 #endif
 
 #ifdef __VMS
@@ -154,7 +145,7 @@
     } STMT_END
 
 #define THREAD_CREATE(thr, f)	(thr->self = cthread_fork(f, thr), 0)
-#define THREAD_POST_CREATE(thr)
+#define THREAD_POST_CREATE(thr)	NOOP
 
 #define THREAD_RET_TYPE		any_t
 #define THREAD_RET_CAST(x)	((any_t) x)
@@ -176,16 +167,12 @@
 #ifndef YIELD
 #  ifdef SCHED_YIELD
 #    define YIELD SCHED_YIELD
-#  else
-#    ifdef HAS_SCHED_YIELD
-#      define YIELD sched_yield()
-#    else
-#      ifdef HAS_PTHREAD_YIELD
+#  elif defined(HAS_SCHED_YIELD)
+#    define YIELD sched_yield()
+#  elif defined(HAS_PTHREAD_YIELD)
     /* pthread_yield(NULL) platforms are expected
      * to have #defined YIELD for themselves. */
-#        define YIELD pthread_yield()
-#      endif
-#    endif
+#    define YIELD pthread_yield()
 #  endif
 #endif
 
@@ -215,10 +202,18 @@
     } STMT_END
 #  endif
 
+#  ifdef PERL_TSA_ACTIVE
+#    define perl_pthread_mutex_lock(m) perl_tsa_mutex_lock(m)
+#    define perl_pthread_mutex_unlock(m) perl_tsa_mutex_unlock(m)
+#  else
+#    define perl_pthread_mutex_lock(m) pthread_mutex_lock(m)
+#    define perl_pthread_mutex_unlock(m) pthread_mutex_unlock(m)
+#  endif
+
 #  define MUTEX_LOCK(m) \
     STMT_START {						\
 	int _eC_;						\
-	if ((_eC_ = pthread_mutex_lock((m))))			\
+	if ((_eC_ = perl_pthread_mutex_lock((m))))			\
 	    Perl_croak_nocontext("panic: MUTEX_LOCK (%d) [%s:%d]",	\
 				 _eC_, __FILE__, __LINE__);	\
     } STMT_END
@@ -226,7 +221,7 @@
 #  define MUTEX_UNLOCK(m) \
     STMT_START {						\
 	int _eC_;						\
-	if ((_eC_ = pthread_mutex_unlock((m))))			\
+	if ((_eC_ = perl_pthread_mutex_unlock((m))))			\
 	    Perl_croak_nocontext("panic: MUTEX_UNLOCK (%d) [%s:%d]",	\
 				 _eC_, __FILE__, __LINE__);	\
     } STMT_END
@@ -343,7 +338,7 @@
 #  define ALLOC_THREAD_KEY \
     STMT_START {						\
 	if (pthread_key_create(&PL_thr_key, 0)) {		\
-            write(2, STR_WITH_LEN("panic: pthread_key_create failed\n")); \
+            PERL_UNUSED_RESULT(write(2, STR_WITH_LEN("panic: pthread_key_create failed\n"))); \
 	    exit(1);						\
 	}							\
     } STMT_END
@@ -377,47 +372,47 @@
 #endif /* USE_ITHREADS */
 
 #ifndef MUTEX_LOCK
-#  define MUTEX_LOCK(m)
+#  define MUTEX_LOCK(m)           NOOP
 #endif
 
 #ifndef MUTEX_UNLOCK
-#  define MUTEX_UNLOCK(m)
+#  define MUTEX_UNLOCK(m)         NOOP
 #endif
 
 #ifndef MUTEX_INIT
-#  define MUTEX_INIT(m)
+#  define MUTEX_INIT(m)           NOOP
 #endif
 
 #ifndef MUTEX_DESTROY
-#  define MUTEX_DESTROY(m)
+#  define MUTEX_DESTROY(m)        NOOP
 #endif
 
 #ifndef COND_INIT
-#  define COND_INIT(c)
+#  define COND_INIT(c)            NOOP
 #endif
 
 #ifndef COND_SIGNAL
-#  define COND_SIGNAL(c)
+#  define COND_SIGNAL(c)          NOOP
 #endif
 
 #ifndef COND_BROADCAST
-#  define COND_BROADCAST(c)
+#  define COND_BROADCAST(c)       NOOP
 #endif
 
 #ifndef COND_WAIT
-#  define COND_WAIT(c, m)
+#  define COND_WAIT(c, m)         NOOP
 #endif
 
 #ifndef COND_DESTROY
-#  define COND_DESTROY(c)
+#  define COND_DESTROY(c)         NOOP
 #endif
 
 #ifndef LOCK_DOLLARZERO_MUTEX
-#  define LOCK_DOLLARZERO_MUTEX
+#  define LOCK_DOLLARZERO_MUTEX   NOOP
 #endif
 
 #ifndef UNLOCK_DOLLARZERO_MUTEX
-#  define UNLOCK_DOLLARZERO_MUTEX
+#  define UNLOCK_DOLLARZERO_MUTEX NOOP
 #endif
 
 /* THR, SET_THR, and dTHR are there for compatibility with old versions */
@@ -438,11 +433,5 @@
 #endif
 
 /*
- * Local variables:
- * c-indentation-style: bsd
- * c-basic-offset: 4
- * indent-tabs-mode: t
- * End:
- *
- * ex: set ts=8 sts=4 sw=4 noet:
+ * ex: set ts=8 sts=4 sw=4 et:
  */

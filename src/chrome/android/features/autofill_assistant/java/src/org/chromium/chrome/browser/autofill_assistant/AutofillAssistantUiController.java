@@ -38,7 +38,7 @@ import java.util.Set;
 @JNINamespace("autofill_assistant")
 // TODO(crbug.com/806868): This class should be removed once all logic is in native side and the
 // model is directly modified by the native AssistantMediator.
-class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
+class AutofillAssistantUiController {
     private static Set<ChromeActivity> sActiveChromeActivities;
     private long mNativeUiController;
 
@@ -81,8 +81,9 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private static AutofillAssistantUiController create(
-            ChromeActivity activity, boolean allowTabSwitching, long nativeUiController) {
+    private static AutofillAssistantUiController create(ChromeActivity activity,
+            boolean allowTabSwitching, long nativeUiController,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         assert activity != null;
         assert activity.getBottomSheetController() != null;
 
@@ -92,14 +93,16 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         sActiveChromeActivities.add(activity);
 
         return new AutofillAssistantUiController(activity, activity.getBottomSheetController(),
-                allowTabSwitching, nativeUiController);
+                allowTabSwitching, nativeUiController, onboardingCoordinator);
     }
 
     private AutofillAssistantUiController(ChromeActivity activity, BottomSheetController controller,
-            boolean allowTabSwitching, long nativeUiController) {
+            boolean allowTabSwitching, long nativeUiController,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
         mNativeUiController = nativeUiController;
         mActivity = activity;
-        mCoordinator = new AssistantCoordinator(activity, this, controller);
+        mCoordinator = new AssistantCoordinator(activity, controller,
+                onboardingCoordinator == null ? null : onboardingCoordinator.transferControls());
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -150,14 +153,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
                 };
     }
 
-    // Java => native methods.
-
-    /** Shut down the Autofill Assistant immediately, without showing a message. */
-    @Override
-    public void stop(@DropOutReason int reason) {
-        safeNativeStop(reason);
-    }
-
     // Native => Java methods.
 
     // TODO(crbug.com/806868): Some of these functions still have a little bit of logic (e.g. make
@@ -196,11 +191,6 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void onShowOnboarding(String experimentIds, Runnable onAccept) {
-        mCoordinator.showOnboarding(experimentIds, onAccept);
-    }
-
-    @CalledByNative
     private void expandBottomSheet() {
         mCoordinator.getBottomBarCoordinator().showAndExpand();
     }
@@ -222,25 +212,18 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         }
     }
 
-    @CalledByNative
-    private void setSuggestions(int[] icons, String[] texts, boolean[] disabled) {
-        assert texts.length == icons.length;
-        assert texts.length == disabled.length;
-        List<AssistantChip> chips = new ArrayList<>();
-        for (int i = 0; i < texts.length; i++) {
-            final int suggestionIndex = i;
-            chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icons[i], texts[i],
-                    disabled[i], /* sticky= */ false,
-                    () -> safeNativeOnSuggestionSelected(suggestionIndex)));
-        }
-        AssistantCarouselModel model = getModel().getSuggestionsModel();
-        setChips(model, chips);
-    }
-
     /** Creates an empty list of chips. */
     @CalledByNative
     private static List<AssistantChip> createChipList() {
         return new ArrayList<>();
+    }
+
+    /** Adds a suggestion to the chip list, which executes the action {@code actionIndex}. */
+    @CalledByNative
+    private void addSuggestion(
+            List<AssistantChip> chips, String text, int actionIndex, int icon, boolean disabled) {
+        chips.add(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, icon, text, disabled,
+                /* sticky= */ false, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -250,7 +233,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private void addActionButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
             boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                sticky, () -> safeNativeOnActionSelected(actionIndex)));
+                sticky, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -261,7 +244,7 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private void addHighlightedActionButton(List<AssistantChip> chips, int icon, String text,
             int actionIndex, boolean disabled, boolean sticky) {
         chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky,
-                () -> safeNativeOnActionSelected(actionIndex)));
+                () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -292,6 +275,11 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         setHeaderChip(chips);
     }
 
+    @CalledByNative
+    private void setSuggestions(List<AssistantChip> chips) {
+        setChips(getModel().getSuggestionsModel(), chips);
+    }
+
     private void setHeaderChip(List<AssistantChip> chips) {
         // The header chip is the first sticky chip found in the actions.
         AssistantChip headerChip = null;
@@ -315,8 +303,8 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
 
     @CalledByNative
-    private void setResizeViewport(boolean resizeViewport) {
-        mCoordinator.getBottomBarCoordinator().setResizeViewport(resizeViewport);
+    private void setViewportMode(@AssistantViewportMode int mode) {
+        mCoordinator.getBottomBarCoordinator().setViewportMode(mode);
     }
 
     @CalledByNative
@@ -341,15 +329,10 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     private native void nativeOnFatalError(
             long nativeUiControllerAndroid, String message, @DropOutReason int reason);
 
-    private void safeNativeOnSuggestionSelected(int index) {
-        if (mNativeUiController != 0) nativeOnSuggestionSelected(mNativeUiController, index);
+    private void safeNativeOnUserActionSelected(int index) {
+        if (mNativeUiController != 0) nativeOnUserActionSelected(mNativeUiController, index);
     }
-    private native void nativeOnSuggestionSelected(long nativeUiControllerAndroid, int index);
-
-    private void safeNativeOnActionSelected(int index) {
-        if (mNativeUiController != 0) nativeOnActionSelected(mNativeUiController, index);
-    }
-    private native void nativeOnActionSelected(long nativeUiControllerAndroid, int index);
+    private native void nativeOnUserActionSelected(long nativeUiControllerAndroid, int index);
 
     private void safeNativeOnCancelButtonClicked(int index) {
         if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController, index);

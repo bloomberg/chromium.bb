@@ -83,11 +83,6 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
                                   int buf_len,
                                   CacheStorageCacheHandle cache_handle,
                                   blink::mojom::CacheStorageError error);
-  static void DidGenerateCacheableMetadataOnUI(
-      int render_process_id,
-      const GURL& url,
-      base::Time expected_response_time,
-      mojo_base::BigBuffer data);
 
   // Our render process host ID, used to bind to the correct render process.
   const int render_process_id_;
@@ -96,7 +91,7 @@ class CONTENT_EXPORT CodeCacheHostImpl : public blink::mojom::CodeCacheHost {
 
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
 
-  base::WeakPtrFactory<CodeCacheHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CodeCacheHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CodeCacheHostImpl);
 };

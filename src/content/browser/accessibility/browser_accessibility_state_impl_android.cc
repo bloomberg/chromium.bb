@@ -5,9 +5,10 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
 #include "base/android/jni_android.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/BrowserAccessibilityState_jni.h"
 #include "content/public/browser/browser_thread.h"
-#include "jni/BrowserAccessibilityState_jni.h"
 #include "ui/gfx/animation/animation.h"
 
 using base::android::AttachCurrentThread;
@@ -33,6 +34,18 @@ void BrowserAccessibilityStateImpl::
 
   JNIEnv* env = AttachCurrentThread();
   Java_BrowserAccessibilityState_recordAccessibilityHistograms(env);
+
+  // Screen reader metric.
+  ui::AXMode mode =
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.Android.ScreenReader",
+                        mode.has_mode(ui::AXMode::kScreenReader));
+}
+
+void BrowserAccessibilityStateImpl::UpdateUniqueUserHistograms() {
+  ui::AXMode mode = GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.Android.ScreenReader.EveryReport",
+                        mode.has_mode(ui::AXMode::kScreenReader));
 }
 
 // static

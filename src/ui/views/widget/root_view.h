@@ -52,7 +52,7 @@ class VIEWS_EXPORT RootView : public View,
                               public FocusTraversable,
                               public ui::EventProcessor {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(RootView);
 
   // Creation and lifetime -----------------------------------------------------
   explicit RootView(Widget* widget);
@@ -107,7 +107,6 @@ class VIEWS_EXPORT RootView : public View,
   const Widget* GetWidget() const override;
   Widget* GetWidget() override;
   bool IsDrawn() const override;
-  const char* GetClassName() const override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;

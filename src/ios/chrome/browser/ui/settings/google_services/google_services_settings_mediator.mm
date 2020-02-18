@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/ukm/ios/features.h"
 #include "components/unified_consent/pref_names.h"
@@ -20,7 +21,6 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
@@ -32,7 +32,6 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -94,7 +93,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   // Sync observer.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   // Identity manager observer.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
   // Chrome identity observer.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
@@ -633,7 +632,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self loadSyncSection];
   [self loadNonPersonalizedSection];
   _identityManagerObserverBridge.reset(
-      new identity::IdentityManagerObserverBridge(self.identityManager, self));
+      new signin::IdentityManagerObserverBridge(self.identityManager, self));
   DCHECK(self.syncService);
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
   _identityServiceObserver.reset(new ChromeIdentityServiceObserverBridge(self));

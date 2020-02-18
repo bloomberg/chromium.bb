@@ -40,6 +40,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_chunked_decoder.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_request_headers.h"
@@ -399,9 +400,6 @@ int HttpNetworkTransaction::Read(IOBuffer* buf,
     DCHECK(proxy_info_.is_http() || proxy_info_.is_https() ||
            proxy_info_.is_quic());
     DCHECK_EQ(headers->response_code(), HTTP_PROXY_AUTHENTICATION_REQUIRED);
-    LOG(WARNING) << "Blocked proxy response with status "
-                 << headers->response_code() << " to CONNECT request for "
-                 << GetHostAndPort(url_) << ".";
     return ERR_TUNNEL_CONNECTION_FAILED;
   }
 
@@ -1060,7 +1058,7 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     DCHECK(stream_.get());
     DCHECK(IsSecureRequest());
-    response_.cert_request_info = new SSLCertRequestInfo;
+    response_.cert_request_info = base::MakeRefCounted<SSLCertRequestInfo>();
     stream_->GetSSLCertRequestInfo(response_.cert_request_info.get());
     result = HandleCertificateRequest(result);
     if (result == OK)
@@ -1108,16 +1106,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  // Like Net.HttpResponseCode, but only for MAIN_FRAME loads.
-  if (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) {
-    const int response_code = response_.headers->response_code();
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.HttpResponseCode_Nxx_MainFrame", response_code/100, 10);
-  }
-
-  net_log_.AddEvent(
-      NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
-      base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
+  NetLogResponseHeaders(net_log_,
+                        NetLogEventType::HTTP_TRANSACTION_READ_RESPONSE_HEADERS,
+                        response_.headers.get());
   if (response_headers_callback_)
     response_headers_callback_.Run(response_.headers);
 
@@ -1633,11 +1624,11 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       ResetConnectionAndRequestForResend();
       error = OK;
       break;
-    case ERR_SPDY_PING_FAILED:
-    case ERR_SPDY_SERVER_REFUSED_STREAM:
-    case ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE:
-    case ERR_SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER:
-    case ERR_SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH:
+    case ERR_HTTP2_PING_FAILED:
+    case ERR_HTTP2_SERVER_REFUSED_STREAM:
+    case ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE:
+    case ERR_HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER:
+    case ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH:
     case ERR_QUIC_HANDSHAKE_FAILED:
       if (HasExceededMaxRetries())
         break;
@@ -1668,7 +1659,8 @@ int HttpNetworkTransaction::HandleIOError(int error) {
         retry_attempts_++;
         ResetConnectionAndRequestForResend();
         error = OK;
-      } else if (session_->params().retry_without_alt_svc_on_quic_errors) {
+      } else if (session_->params()
+                     .quic_params.retry_without_alt_svc_on_quic_errors) {
         // Disable alternative services for this request and retry it. If the
         // retry succeeds, then the alternative service will be marked as
         // broken then.
@@ -1853,18 +1845,14 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
   request_headers_.GetHeader(HttpRequestHeaders::kAcceptEncoding,
                              &accept_encoding);
   std::set<std::string> allowed_encodings;
-  if (!HttpUtil::ParseAcceptEncoding(accept_encoding, &allowed_encodings)) {
-    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+  if (!HttpUtil::ParseAcceptEncoding(accept_encoding, &allowed_encodings))
     return false;
-  }
 
   std::string content_encoding;
   headers->GetNormalizedHeader("Content-Encoding", &content_encoding);
   std::set<std::string> used_encodings;
-  if (!HttpUtil::ParseContentEncoding(content_encoding, &used_encodings)) {
-    FilterSourceStream::ReportContentDecodingFailed(SourceStream::TYPE_INVALID);
+  if (!HttpUtil::ParseContentEncoding(content_encoding, &used_encodings))
     return false;
-  }
 
   // When "Accept-Encoding" is not specified, it is parsed as "*".
   // If "*" encoding is advertised, then any encoding should be "accepted".
@@ -1880,8 +1868,6 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
     if (source_type == SourceStream::TYPE_UNKNOWN)
       continue;
     if (allowed_encodings.find(encoding) == allowed_encodings.end()) {
-      FilterSourceStream::ReportContentDecodingFailed(
-          SourceStream::TYPE_REJECTED);
       result = false;
       break;
     }

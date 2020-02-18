@@ -128,16 +128,10 @@ void AddCompleteFileTypeInfo(
 // error pages (failed DNS lookups, SSL errors, etc), which shouldn't affect
 // functionality.
 bool IsErrorPage(content::WebContents* web_contents) {
-  if (base::FeatureList::IsEnabled(
-          features::kSupervisedUserCommittedInterstitials)) {
-    if (web_contents->GetController().GetActiveEntry() == NULL)
-      return false;
-    return web_contents->GetController()
-               .GetLastCommittedEntry()
-               ->GetPageType() == content::PAGE_TYPE_ERROR;
-  }
-  // Fallback if someone ever disables committed interstitials.
-  return web_contents->ShowingInterstitialPage();
+  if (web_contents->GetController().GetActiveEntry() == NULL)
+    return false;
+  return web_contents->GetController().GetLastCommittedEntry()->GetPageType() ==
+         content::PAGE_TYPE_ERROR;
 }
 
 }  // anonymous namespace

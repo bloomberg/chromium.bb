@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -18,7 +19,6 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/unified_consent/unified_consent_metrics.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace unified_consent {
@@ -91,7 +91,7 @@ class UnifiedConsentServiceTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
   std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;

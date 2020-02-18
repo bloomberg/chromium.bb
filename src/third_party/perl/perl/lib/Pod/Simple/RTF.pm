@@ -8,14 +8,67 @@ package Pod::Simple::RTF;
 
 use strict;
 use vars qw($VERSION @ISA %Escape $WRAP %Tagmap);
-$VERSION = '3.20';
+$VERSION = '3.36';
 use Pod::Simple::PullParser ();
 BEGIN {@ISA = ('Pod::Simple::PullParser')}
 
 use Carp ();
 BEGIN { *DEBUG = \&Pod::Simple::DEBUG unless defined &DEBUG }
 
+sub to_uni ($) {    # Convert native code point to Unicode
+    my $x = shift;
+
+    # Broken for early EBCDICs
+    $x = chr utf8::native_to_unicode(ord $x) if $] ge 5.007_003
+                                             && ord("A") != 65;
+    return $x;
+}
+
+# We escape out 'F' so that we can send RTF files thru the mail without the
+# slightest worry that paragraphs beginning with "From" will get munged.
+# We also escape '\', '{', '}', and '_'
+my $map_to_self = ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEGHIJKLMNOPQRSTUVWXYZ[]^`abcdefghijklmnopqrstuvwxyz|~';
+
 $WRAP = 1 unless defined $WRAP;
+%Escape = (
+
+  # Start with every character mapping to its hex equivalent
+  map( (chr($_) => sprintf("\\'%02x", $_)), 0 .. 0xFF),
+
+  # Override most ASCII printables with themselves (or on non-ASCII platforms,
+  # their ASCII values.  This is because the output is UTF-16, which is always
+  # based on Unicode code points)
+  map( (   substr($map_to_self, $_, 1)
+        => to_uni(substr($map_to_self, $_, 1))), 0 .. length($map_to_self) - 1),
+
+  # And some refinements:
+  "\r"  => "\n",
+  "\cj"  => "\n",
+  "\n"   => "\n\\line ",
+
+  "\t"   => "\\tab ",     # Tabs (altho theoretically raw \t's are okay)
+  "\f"   => "\n\\page\n", # Formfeed
+  "-"    => "\\_",        # Turn plaintext '-' into a non-breaking hyphen
+  $Pod::Simple::nbsp => "\\~",        # Latin-1 non-breaking space
+  $Pod::Simple::shy => "\\-",        # Latin-1 soft (optional) hyphen
+
+  # CRAZY HACKS:
+  "\n" => "\\line\n",
+  "\r" => "\n",
+  "\cb" => "{\n\\cs21\\lang1024\\noproof ",  # \\cf1
+  "\cc" => "}",
+);
+
+# Generate a string of all the characters in %Escape that don't map to
+# themselves.  First, one without the hyphen, then one with.
+my $escaped_sans_hyphen = "";
+$escaped_sans_hyphen .= $_ for grep { $_ ne $Escape{$_} && $_ ne '-' }
+                                                            sort keys %Escape;
+my $escaped = "-$escaped_sans_hyphen";
+
+# Then convert to patterns
+$escaped_sans_hyphen = qr/[\Q$escaped_sans_hyphen \E]/;
+$escaped= qr/[\Q$escaped\E]/;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -101,7 +154,7 @@ sub new {
 
   $new->accept_codes(@_to_accept);
   $new->accept_codes('VerbatimFormatted');
-  DEBUG > 2 and print "To accept: ", join(' ',@_to_accept), "\n";
+  DEBUG > 2 and print STDERR "To accept: ", join(' ',@_to_accept), "\n";
   $new->doc_lang(
     (  $ENV{'RTFDEFLANG'} || '') =~ m/^(\d{1,10})$/s ? $1
     : ($ENV{'RTFDEFLANG'} || '') =~ m/^0?x([a-fA-F0-9]{1,10})$/s ? hex($1)
@@ -148,6 +201,13 @@ sub run {
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# Match something like an identifier.  Prefer XID if available, then plain ID,
+# then just ASCII
+my $id_re = Pod::Simple::BlackBox::my_qr('[\'_\p{XIDS}][\'\p{XIDC}]+', "ab");
+$id_re    = Pod::Simple::BlackBox::my_qr('[\'_\p{IDS}][\'\p{IDC}]+', "ab")
+                                                                  unless $id_re;
+$id_re = qr/['_a-zA-Z]['a-zA-Z0-9_]+/ unless $id_re;
+
 sub do_middle {      # the main work
   my $self = $_[0];
   my $fh = $self->{'output_fh'};
@@ -161,13 +221,13 @@ sub do_middle {      # the main work
   
     if( ($type = $token->type) eq 'text' ) {
       if( $self->{'rtfverbatim'} ) {
-        DEBUG > 1 and print "  $type " , $token->text, " in verbatim!\n";
-        rtf_esc_codely($scratch = $token->text);
+        DEBUG > 1 and print STDERR "  $type " , $token->text, " in verbatim!\n";
+        rtf_esc(0, $scratch = $token->text); # 0 => Don't escape hyphen
         print $fh $scratch;
         next;
       }
 
-      DEBUG > 1 and print "  $type " , $token->text, "\n";
+      DEBUG > 1 and print STDERR "  $type " , $token->text, "\n";
       
       $scratch = $token->text;
       $scratch =~ tr/\t\cb\cc/ /d;
@@ -176,7 +236,7 @@ sub do_middle {      # the main work
        s/(?:
            ^
            |
-           (?<=[\cm\cj\t "\[\<\(])
+           (?<=[\r\n\t "\[\<\(])
          )   # start on whitespace, sequence-start, or quote
          ( # something looking like a Perl token:
           (?:
@@ -185,19 +245,19 @@ sub do_middle {      # the main work
           |
           # or starting alpha, but containing anything strange:
           (?:
-           [a-zA-Z'\x80-\xFF]+[\$\@\:_<>\(\\\*]\S+
+           ${id_re}[\$\@\:_<>\(\\\*]\S+
           )
          )
         /\cb$1\cc/xsg
       ;
       
-      rtf_esc($scratch);
+      rtf_esc(1, $scratch);     # 1 => escape hyphen
       $scratch =~
          s/(
-            [^\cm\cj\n]{65}        # Snare 65 characters from a line
-            [^\cm\cj\n\x20]{0,50}  #  and finish any current word
+            [^\r\n]{65}        # Snare 65 characters from a line
+            [^\r\n ]{0,50}     #  and finish any current word
            )
-           (\x20{1,10})(?![\cm\cj\n]) # capture some spaces not at line-end
+           (\ {1,10})(?![\r\n]) # capture some spaces not at line-end
           /$1$2\n/gx     # and put a NL before those spaces
         if $WRAP;
         # This may wrap at well past the 65th column, but not past the 120th.
@@ -205,7 +265,7 @@ sub do_middle {      # the main work
       print $fh $scratch;
 
     } elsif( $type eq 'start' ) {
-      DEBUG > 1 and print "  +$type ",$token->tagname,
+      DEBUG > 1 and print STDERR "  +$type ",$token->tagname,
         " (", map("<$_> ", %{$token->attr_hash}), ")\n";
 
       if( ($tagname = $token->tagname) eq 'Verbatim'
@@ -220,7 +280,7 @@ sub do_middle {      # the main work
           while( $$t =~ m/$/mg ) {
             last if  ++$line_count  > 15; # no point in counting further
           }
-          DEBUG > 3 and print "    verbatim line count: $line_count\n";
+          DEBUG > 3 and print STDERR "    verbatim line count: $line_count\n";
         }
         $self->unget_token($next);
         $self->{'rtfkeep'} = ($line_count > 15) ? '' : '\keepn' ;     
@@ -242,7 +302,7 @@ sub do_middle {      # the main work
           
           if($to_unget[-1]->type eq 'text') {
             if( ($text_count_here += length ${$to_unget[-1]->text_r}) > 150 ){
-              DEBUG > 1 and print "    item-* is too long to be keepn'd.\n";
+              DEBUG > 1 and print STDERR "    item-* is too long to be keepn'd.\n";
               last;
             }
           } elsif (@to_unget > 1 and
@@ -254,13 +314,13 @@ sub do_middle {      # the main work
               $to_unget[-1]->type eq 'start' and
               $to_unget[-1]->tagname eq 'Para';
 
-            DEBUG > 1 and printf "    item-* before %s(%s) %s keepn'd.\n",
+            DEBUG > 1 and printf STDERR "    item-* before %s(%s) %s keepn'd.\n",
               $to_unget[-1]->type,
               $to_unget[-1]->can('tagname') ? $to_unget[-1]->tagname : '',
               $self->{'rtfitemkeepn'} ? "gets" : "doesn't get";
             last;
           } elsif (@to_unget > 40) {
-            DEBUG > 1 and print "    item-* now has too many tokens (",
+            DEBUG > 1 and print STDERR "    item-* now has too many tokens (",
               scalar(@to_unget),
               (DEBUG > 4) ? (q<: >, map($_->dump, @to_unget)) : (),
               ") to be keepn'd.\n";
@@ -275,7 +335,7 @@ sub do_middle {      # the main work
         push @stack, $1;
         push @indent_stack,
          int($token->attr('indent') * 4 * $self->normal_halfpoint_size);
-        DEBUG and print "Indenting over $indent_stack[-1] twips.\n";
+        DEBUG and print STDERR "Indenting over $indent_stack[-1] twips.\n";
         $self->{'rtfindent'} += $indent_stack[-1];
         
       } elsif ($tagname eq 'L') {
@@ -288,7 +348,7 @@ sub do_middle {      # the main work
           $self->unget_token($next);
           next;
         }
-        DEBUG and print "    raw text ", $next->text, "\n";
+        DEBUG and print STDERR "    raw text ", $next->text, "\n";
         printf $fh "\n" . $next->text . "\n";
         next;
       }
@@ -300,14 +360,14 @@ sub do_middle {      # the main work
       if ($tagname eq 'item-number') {
         print $fh $token->attr('number'), ". \n";
       } elsif ($tagname eq 'item-bullet') {
-        print $fh "\\'95 \n";
-        #for funky testing: print $fh '', rtf_esc("\x{4E4B}\x{9053}");
+        print $fh "\\'", ord("_"), "\n";
+        #for funky testing: print $fh '', rtf_esc(1, "\x{4E4B}\x{9053}");
       }
 
     } elsif( $type eq 'end' ) {
-      DEBUG > 1 and print "  -$type ",$token->tagname,"\n";
+      DEBUG > 1 and print STDERR "  -$type ",$token->tagname,"\n";
       if( ($tagname = $token->tagname) =~ m/^over-/s ) {
-        DEBUG and print "Indenting back $indent_stack[-1] twips.\n";
+        DEBUG and print STDERR "Indenting back $indent_stack[-1] twips.\n";
         $self->{'rtfindent'} -= pop @indent_stack;
         pop @stack;
       } elsif( $tagname eq 'Verbatim' or $tagname eq 'VerbatimFormatted') {
@@ -441,7 +501,7 @@ END
 sub doc_start {
   my $self = $_[0];
   my $title = $self->get_short_title();
-  DEBUG and print "Short Title: <$title>\n";
+  DEBUG and print STDERR "Short Title: <$title>\n";
   $title .= ' ' if length $title;
   
   $title =~ s/ *$/ /s;
@@ -454,9 +514,9 @@ sub doc_start {
    if $title =~ m/^\S+$/s and $title =~ m/::/s;
     # catches the most common case, at least
 
-  DEBUG and print "Title0: <$title>\n";
-  $title = rtf_esc($title);
-  DEBUG and print "Title1: <$title>\n";
+  DEBUG and print STDERR "Title0: <$title>\n";
+  $title = rtf_esc(1, $title);  # 1 => escape hyphen
+  DEBUG and print STDERR "Title1: <$title>\n";
   $title = '\lang1024\noproof ' . $title
    if $is_obviously_module_name;
 
@@ -479,85 +539,69 @@ END
 #-------------------------------------------------------------------------
 
 use integer;
-sub rtf_esc {
-  my $x; # scratch
-  if(!defined wantarray) { # void context: alter in-place!
-    for(@_) {
-      s/([F\x00-\x1F\-\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
-      s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
-    }
-    return;
-  } elsif(wantarray) {  # return an array
-    return map {; ($x = $_) =~
-      s/([F\x00-\x1F\-\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
-      $x =~ s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
-      $x;
-    } @_;
-  } else { # return a single scalar
-    ($x = ((@_ == 1) ? $_[0] : join '', @_)
-    ) =~ s/([F\x00-\x1F\-\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
-             # Escape \, {, }, -, control chars, and 7f-ff.
-    $x =~ s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
+
+my $question_mark_code_points =
+        Pod::Simple::BlackBox::my_qr('([^\x00-\x{D7FF}\x{E000}-\x{10FFFF}])',
+                                     "\x{110000}");
+my $plane0 =
+        Pod::Simple::BlackBox::my_qr('([\x{100}-\x{FFFF}])', "\x{100}");
+my $other_unicode =
+        Pod::Simple::BlackBox::my_qr('([\x{10000}-\x{10FFFF}])', "\x{10000}");
+
+sub esc_uni($) {
+    use if $] le 5.006002, 'utf8';
+
+    my $x = shift;
+
+    # The output is expected to be UTF-16.  Surrogates and above-Unicode get
+    # mapped to '?'
+    $x =~ s/$question_mark_code_points/?/g if $question_mark_code_points;
+
+    # Non-surrogate Plane 0 characters get mapped to their code points.  But
+    # the standard calls for a 16bit SIGNED value.
+    $x =~ s/$plane0/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg
+                                                                    if $plane0;
+
+    # Use surrogate pairs for the rest
+    $x =~ s/$other_unicode/'\\uc1\\u' . ((ord($1) >> 10) + 0xD7C0 - 65536) . '\\u' . (((ord$1) & 0x03FF) + 0xDC00 - 65536) . '?'/eg if $other_unicode;
+
     return $x;
-  }
 }
 
-sub rtf_esc_codely {
-  # Doesn't change "-" to hard-hyphen, nor apply computerese style-smarts.
-  # We don't want to change the "-" to hard-hyphen, because we want to
+sub rtf_esc ($$) {
+  # The parameter is true if we should escape hyphens
+  my $escape_re = ((shift) ? $escaped : $escaped_sans_hyphen);
+
+  # When false, it doesn't change "-" to hard-hyphen.
+  #  We don't want to change the "-" to hard-hyphen, because we want to
   #  be able to paste this into a file and run it without there being
   #  dire screaming about the mysterious hard-hyphen character (which
   #  looks just like a normal dash character).
-  
+  # XXX The comments used to claim that when false it didn't apply computerese
+  #     style-smarts, but khw didn't see this actually
+
   my $x; # scratch
   if(!defined wantarray) { # void context: alter in-place!
     for(@_) {
-      s/([F\x00-\x1F\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
-      s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
+      s/($escape_re)/$Escape{$1}/g;  # ESCAPER
+      $_ = esc_uni($_);
     }
     return;
   } elsif(wantarray) {  # return an array
     return map {; ($x = $_) =~
-      s/([F\x00-\x1F\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
-      $x =~ s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
+      s/($escape_re)/$Escape{$1}/g;  # ESCAPER
+      $x = esc_uni($x);
       $x;
     } @_;
   } else { # return a single scalar
     ($x = ((@_ == 1) ? $_[0] : join '', @_)
-    ) =~ s/([F\x00-\x1F\\\{\}\x7F-\xFF])/$Escape{$1}/g;  # ESCAPER
+    ) =~ s/($escape_re)/$Escape{$1}/g;  # ESCAPER
              # Escape \, {, }, -, control chars, and 7f-ff.
-    $x =~ s/([^\x00-\xFF])/'\\uc1\\u'.((ord($1)<32768)?ord($1):(ord($1)-65536)).'?'/eg;
+    $x = esc_uni($x);
     return $x;
   }
 }
 
-%Escape = (
-  map( (chr($_),chr($_)),       # things not apparently needing escaping
-       0x20 .. 0x7E ),
-  map( (chr($_),sprintf("\\'%02x", $_)),    # apparently escapeworthy things
-       0x00 .. 0x1F, 0x5c, 0x7b, 0x7d, 0x7f .. 0xFF, 0x46),
-
-  # We get to escape out 'F' so that we can send RTF files thru the mail
-  # without the slightest worry that paragraphs beginning with "From"
-  # will get munged.
-
-  # And some refinements:
-  "\cm"  => "\n",
-  "\cj"  => "\n",
-  "\n"   => "\n\\line ",
-
-  "\t"   => "\\tab ",     # Tabs (altho theoretically raw \t's are okay)
-  "\f"   => "\n\\page\n", # Formfeed
-  "-"    => "\\_",        # Turn plaintext '-' into a non-breaking hyphen
-  "\xA0" => "\\~",        # Latin-1 non-breaking space
-  "\xAD" => "\\-",        # Latin-1 soft (optional) hyphen
-
-  # CRAZY HACKS:
-  "\n" => "\\line\n",
-  "\r" => "\n",
-  "\cb" => "{\n\\cs21\\lang1024\\noproof ",  # \\cf1
-  "\cc" => "}",
-);
 1;
 
 __END__
@@ -662,8 +706,8 @@ pod-people@perl.org mail list. Send an empty email to
 pod-people-subscribe@perl.org to subscribe.
 
 This module is managed in an open GitHub repository,
-L<http://github.com/theory/pod-simple/>. Feel free to fork and contribute, or
-to clone L<git://github.com/theory/pod-simple.git> and send patches!
+L<https://github.com/perl-pod/pod-simple/>. Feel free to fork and contribute, or
+to clone L<git://github.com/perl-pod/pod-simple.git> and send patches!
 
 Patches against Pod::Simple are welcome. Please send bug reports to
 <bug-pod-simple@rt.cpan.org>.

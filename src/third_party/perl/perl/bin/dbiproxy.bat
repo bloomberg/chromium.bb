@@ -1,21 +1,35 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
 
 use strict;
 
-my $VERSION = sprintf("1.%06d", q$Revision: 13336 $ =~ /(\d+)/o);
+my $VERSION = sprintf("1.%06d", q$Revision$ =~ /(\d+)/o);
 
 my $arg_test    = shift(@ARGV)		if $ARGV[0] eq '--test';
 $ENV{DBI_TRACE} = shift(@ARGV) || 2	if $ARGV[0] =~ s/^--dbitrace=?//;
@@ -116,7 +130,7 @@ GID's can be passed as group names or numeric values.
 =item B<--localaddr=ip>
 
 By default a daemon is listening to any IP number that a machine
-has. This attribute allows to restrict the server to the given
+has. This attribute allows one to restrict the server to the given
 IP number.
 
 =item B<--localport=port>
@@ -168,7 +182,7 @@ UID's can be passed as group names or numeric values.
 
 =item B<--version>
 
-Supresses startup of the server; instead the version string will
+Suppresses startup of the server; instead the version string will
 be printed and the program exits immediately.
 
 =back

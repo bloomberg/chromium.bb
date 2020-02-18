@@ -16,10 +16,12 @@ namespace blink {
 CredentialManagerProxy::CredentialManagerProxy(Document& document) {
   LocalFrame* frame = document.GetFrame();
   DCHECK(frame);
-  frame->GetDocumentInterfaceBroker().GetCredentialManager(mojo::MakeRequest(
-      &credential_manager_, frame->GetTaskRunner(TaskType::kUserInteraction)));
-  frame->GetDocumentInterfaceBroker().GetAuthenticator(mojo::MakeRequest(
-      &authenticator_, frame->GetTaskRunner(TaskType::kUserInteraction)));
+  frame->GetDocumentInterfaceBroker().GetCredentialManager(
+      credential_manager_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kUserInteraction)));
+  frame->GetDocumentInterfaceBroker().GetAuthenticator(
+      authenticator_.BindNewPipeAndPassReceiver(
+          frame->GetTaskRunner(TaskType::kUserInteraction)));
 }
 
 CredentialManagerProxy::~CredentialManagerProxy() {}

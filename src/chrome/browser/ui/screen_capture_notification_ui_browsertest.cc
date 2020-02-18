@@ -32,7 +32,7 @@ class ScreenCaptureNotificationUiBrowserTest : public DialogBrowserTest {
                 test->run_loop_->QuitWhenIdle();
             },
             base::Unretained(this)),
-        base::RepeatingClosure());
+        content::MediaStreamUI::SourceCallback());
   }
 
   bool VerifyUi() override {

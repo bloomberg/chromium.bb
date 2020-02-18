@@ -56,7 +56,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                    bool was_within_same_document) override;
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
-      const GURL& default_url,
       mojom::NavigationClientAssociatedPtrInfo* navigation_client) override;
   void Navigate(std::unique_ptr<NavigationRequest> request,
                 ReloadType reload_type,
@@ -87,8 +86,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const std::string& method,
       scoped_refptr<network::ResourceRequestBody> post_body,
       const std::string& extra_headers,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-      override;
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      bool has_user_gesture) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
                          bool proceed,
                          const base::TimeTicks& proceed_time) override;
@@ -128,7 +127,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Called when a navigation has started in a main frame, to update the pending
   // NavigationEntry if the controller does not currently have a
   // browser-initiated one.
-  void DidStartMainFrameNavigation(const GURL& url,
+  void DidStartMainFrameNavigation(const CommonNavigationParams& common_params,
                                    SiteInstanceImpl* site_instance,
                                    NavigationHandleImpl* navigation_handle);
 

@@ -35,8 +35,8 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #endif
 
 using content::BrowserThread;
@@ -175,7 +175,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
     // the username to the UserCloudPolicyValidator.
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::SetPrimaryAccount(identity_manager, "user@example.com");
+    signin::SetPrimaryAccount(identity_manager, "user@example.com");
 
     ASSERT_TRUE(policy_manager());
     policy_manager()->Connect(
@@ -219,18 +219,16 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
 
     // Give a bogus OAuth token to the |policy_manager|. This should make its
     // CloudPolicyClient fetch the DMToken.
-    em::DeviceRegisterRequest::Type registration_type =
+    CloudPolicyClient::RegistrationParameters parameters(
 #if defined(OS_CHROMEOS)
-        em::DeviceRegisterRequest::USER;
+        em::DeviceRegisterRequest::USER,
 #else
-        em::DeviceRegisterRequest::BROWSER;
+        em::DeviceRegisterRequest::BROWSER,
 #endif
+        em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION);
     policy_manager()->core()->client()->Register(
-        registration_type, em::DeviceRegisterRequest::FLAVOR_USER_REGISTRATION,
-        em::DeviceRegisterRequest::LIFETIME_INDEFINITE,
-        em::LicenseType::UNDEFINED, "oauth_token_unused" /* oauth_token */,
-        std::string() /* client_id */, std::string() /* requisition */,
-        std::string() /* current_state_key */);
+        parameters, std::string() /* client_id */,
+        "oauth_token_unused" /* oauth_token */);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager()->core()->client()->RemoveObserver(&observer);

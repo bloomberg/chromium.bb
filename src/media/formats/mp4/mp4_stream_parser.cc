@@ -469,9 +469,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       has_audio_ = true;
       audio_track_ids_.insert(audio_track_id);
       const char* track_kind = (audio_track_ids_.size() == 1 ? "main" : "");
-      media_tracks->AddAudioTrack(audio_config, audio_track_id, track_kind,
-                                  track->media.handler.name,
-                                  track->media.header.language());
+      media_tracks->AddAudioTrack(
+          audio_config, audio_track_id, MediaTrack::Kind(track_kind),
+          MediaTrack::Label(track->media.handler.name),
+          MediaTrack::Language(track->media.header.language()));
       continue;
     }
 
@@ -522,7 +523,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           return false;
       }
       video_config.Initialize(entry.video_codec, entry.video_codec_profile,
-                              PIXEL_FORMAT_I420, VideoColorSpace::REC709(),
+                              VideoDecoderConfig::AlphaMode::kIsOpaque,
+                              VideoColorSpace::REC709(),
                               CalculateRotation(track->header, moov_->header),
                               coded_size, visible_rect, natural_size,
                               // No decoder-specific buffer needed for AVC;
@@ -537,10 +539,12 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       }
       has_video_ = true;
       video_track_ids_.insert(video_track_id);
-      const char* track_kind = (video_track_ids_.size() == 1 ? "main" : "");
-      media_tracks->AddVideoTrack(video_config, video_track_id, track_kind,
-                                  track->media.handler.name,
-                                  track->media.header.language());
+      auto track_kind =
+          MediaTrack::Kind(video_track_ids_.size() == 1 ? "main" : "");
+      media_tracks->AddVideoTrack(
+          video_config, video_track_id, track_kind,
+          MediaTrack::Label(track->media.handler.name),
+          MediaTrack::Language(track->media.header.language()));
       continue;
     }
 

@@ -159,32 +159,17 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // ---------------------------------------------------------
 // For the ZeroSuggestProvider field trial.
 
-// Returns whether the user is in a ZeroSuggest field trial, which shows
-// most visited URLs. This is true for both "MostVisited" and
-// "MostVisitedWithoutSERP" trials.
-bool InZeroSuggestMostVisitedFieldTrial(
+// Returns the configured "ZeroSuggestVariant" parameter for
+// |page_classification|.
+std::string GetZeroSuggestVariant(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
-// Returns whether the user is in ZeroSuggest field trial showing most
-// visited URLs except it doesn't show suggestions on Google search result
-// pages.
-bool InZeroSuggestMostVisitedWithoutSerpFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification);
-
-// Returns whether the user is in a ZeroSuggest field trial, but should
-// show recently searched-for queries instead.
-bool InZeroSuggestPersonalizedFieldTrial(
-    metrics::OmniboxEventProto::PageClassification page_classification);
-
-// ---------------------------------------------------------
-// For the Zero Suggest Redirect to Chrome field trial.
+// Returns the server address associated with the current field trial.
+std::string GetOnFocusSuggestionsCustomEndpointURL();
 
 // Returns the server-side experiment ID to use for contextual suggestions.
 // Returns -1 if there is no associated experiment ID.
-int GetZeroSuggestRedirectToChromeExperimentId();
-
-// Returns the server address associated with the current field trial.
-std::string GetZeroSuggestRedirectToChromeServerAddress();
+int GetOnFocusSuggestionsCustomEndpointExperimentId();
 
 // ---------------------------------------------------------
 // For the ShortcutsScoringMaxRelevance experiment that's part of the
@@ -441,6 +426,10 @@ bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 // is enabled.
 bool IsMaxURLMatchesFeatureEnabled();
 
+// Returns whether the feature to allow the Omnibox pop-up position to wrap
+// between top and bottom is enabled.
+bool IsOmniboxWrapPopupPositionEnabled();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 
@@ -505,16 +494,9 @@ extern const char kUIMaxAutocompleteMatchesParam[];
 extern const char kUIMaxAutocompleteMatchesByProviderParam[];
 extern const char kUIVerticalMarginParam[];
 
-// Parameter name and values used by the Simplify HTTPS experiment.
-extern const char kSimplifyHttpsIndicatorParameterName[];
-extern const char kSimplifyHttpsIndicatorParameterEvToSecure[];
-extern const char kSimplifyHttpsIndicatorParameterSecureToLock[];
-extern const char kSimplifyHttpsIndicatorParameterBothToLock[];
-extern const char kSimplifyHttpsIndicatorParameterKeepSecureChip[];
-
-// Parameter names used by Zero Suggest Redirect to Chrome.
-extern const char kZeroSuggestRedirectToChromeExperimentIdParam[];
-extern const char kZeroSuggestRedirectToChromeServerAddressParam[];
+// Parameter names used by On Focus Suggestions Custom Endpoint.
+extern const char kOnFocusSuggestionsEndpointExperimentIdParam[];
+extern const char kOnFocusSuggestionsEndpointURLParam[];
 
 // The amount of time to wait before sending a new suggest request after the
 // previous one unless overridden by a field trial parameter.

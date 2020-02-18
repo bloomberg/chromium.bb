@@ -466,6 +466,25 @@ void PageLoadTracker::FrameSizeChanged(
   }
 }
 
+void PageLoadTracker::OnCookiesRead(const GURL& url,
+                                    const GURL& first_party_url,
+                                    const net::CookieList& cookie_list,
+                                    bool blocked_by_policy) {
+  for (const auto& observer : observers_) {
+    observer->OnCookiesRead(url, first_party_url, cookie_list,
+                            blocked_by_policy);
+  }
+}
+
+void PageLoadTracker::OnCookieChange(const GURL& url,
+                                     const GURL& first_party_url,
+                                     const net::CanonicalCookie& cookie,
+                                     bool blocked_by_policy) {
+  for (const auto& observer : observers_) {
+    observer->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
+  }
+}
+
 void PageLoadTracker::StopTracking() {
   did_stop_tracking_ = true;
   observers_.clear();
@@ -749,6 +768,10 @@ const ScopedVisibilityTracker& PageLoadTracker::GetVisibilityTracker() const {
 
 const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
   return resource_tracker_;
+}
+
+ukm::SourceId PageLoadTracker::GetSourceId() const {
+  return source_id_;
 }
 
 }  // namespace page_load_metrics

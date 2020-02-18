@@ -31,7 +31,7 @@ class AssistantOverlayEventFilter extends EventFilter {
      * {@link @TAP_TRACKING_DURATION_MS} in the unallowed area.
      */
     private static final int TAP_TRACKING_COUNT = 3;
-    private static final long TAP_TRACKING_DURATION_MS = 15_000;
+    private static final long TAP_TRACKING_DURATION_MS = 5_000;
 
     /** A mode that describes what's happening to the current gesture. */
     @Retention(RetentionPolicy.SOURCE)
@@ -70,6 +70,9 @@ class AssistantOverlayEventFilter extends EventFilter {
 
     /** Touchable area, expressed in CSS pixels relative to the layout viewport. */
     private List<RectF> mTouchableArea = Collections.emptyList();
+
+    /** Restricted area, expressed in CSS pixels relative to the layout viewport. */
+    private List<RectF> mRestrictedArea = Collections.emptyList();
 
     /**
      * Detects taps: {@link GestureDetector#onTouchEvent} returns {@code true} after a tap event.
@@ -149,6 +152,13 @@ class AssistantOverlayEventFilter extends EventFilter {
      */
     void setTouchableArea(List<RectF> touchableArea) {
         mTouchableArea = touchableArea;
+    }
+
+    /**
+     * Set the restricted area. This only applies if current state is AssistantOverlayState.PARTIAL.
+     */
+    void setRestrictedArea(List<RectF> restrictedArea) {
+        mRestrictedArea = restrictedArea;
     }
 
     /** Sets the visual viewport. */
@@ -341,6 +351,11 @@ class AssistantOverlayEventFilter extends EventFilter {
                 ((float) mVisualViewport.width()) / ((float) mCompositorView.getWidth());
         float absoluteXCss = (x * physicalPixelsToCss) + mVisualViewport.left;
         float absoluteYCss = (y * physicalPixelsToCss) + mVisualViewport.top;
+
+        for (RectF rect : mRestrictedArea) {
+            if (rect.contains(absoluteXCss, absoluteYCss)) return false;
+        }
+
         for (RectF rect : mTouchableArea) {
             if (rect.contains(absoluteXCss, absoluteYCss)) return true;
         }

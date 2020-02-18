@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_wrapper.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
@@ -19,18 +22,36 @@
 
 namespace {
 
-constexpr base::Feature kEnableDbusAndX11StatusIcons{
-    "EnableDbusAndX11StatusIcons", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
+
+gfx::ImageSkia GetBestImageRep(const gfx::ImageSkia& image) {
+  float best_scale = 0.0f;
+  SkBitmap best_rep;
+  for (const auto& rep : image.image_reps()) {
+    if (rep.scale() > best_scale) {
+      best_scale = rep.scale();
+      best_rep = rep.GetBitmap();
+    }
+  }
+  // All status icon implementations want the image in pixel coordinates, so use
+  // a scale factor of 1.
+  return gfx::ImageSkia(gfx::ImageSkiaRep(best_rep, 1.0f));
+}
 
 }  // namespace
 
 StatusIconLinuxWrapper::StatusIconLinuxWrapper(
-    std::unique_ptr<views::StatusIconLinux> status_icon)
-    : status_icon_(std::move(status_icon)), menu_model_(nullptr) {
-  status_icon_->set_delegate(this);
+    std::unique_ptr<views::StatusIconLinux> status_icon,
+    StatusIconType status_icon_type,
+    const gfx::ImageSkia& image,
+    const base::string16& tool_tip)
+    : status_icon_(std::move(status_icon)),
+      status_icon_type_(status_icon_type),
+      image_(GetBestImageRep(image)),
+      tool_tip_(tool_tip),
+      menu_model_(nullptr) {
+  status_icon_->SetDelegate(this);
 }
 
 StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
@@ -39,11 +60,15 @@ StatusIconLinuxWrapper::~StatusIconLinuxWrapper() {
 }
 
 void StatusIconLinuxWrapper::SetImage(const gfx::ImageSkia& image) {
-  status_icon_->SetImage(image);
+  image_ = GetBestImageRep(image);
+  if (status_icon_)
+    status_icon_->SetIcon(image_);
 }
 
 void StatusIconLinuxWrapper::SetToolTip(const base::string16& tool_tip) {
-  status_icon_->SetToolTip(tool_tip);
+  tool_tip_ = tool_tip;
+  if (status_icon_)
+    status_icon_->SetToolTip(tool_tip);
 }
 
 void StatusIconLinuxWrapper::DisplayBalloon(
@@ -62,22 +87,61 @@ bool StatusIconLinuxWrapper::HasClickAction() {
   return HasObservers();
 }
 
+const gfx::ImageSkia& StatusIconLinuxWrapper::GetImage() const {
+  return image_;
+}
+
+const base::string16& StatusIconLinuxWrapper::GetToolTip() const {
+  return tool_tip_;
+}
+
+ui::MenuModel* StatusIconLinuxWrapper::GetMenuModel() const {
+  return menu_model_;
+}
+
+void StatusIconLinuxWrapper::OnImplInitializationFailed() {
+  switch (status_icon_type_) {
+    case kTypeDbus:
+#if defined(USE_X11)
+      status_icon_ = std::make_unique<StatusIconLinuxX11>();
+      status_icon_type_ = kTypeX11;
+      status_icon_->SetDelegate(this);
+      return;
+#else
+      // Fallthrough needs to be omitted if USE_X11, otherwise clang will
+      // complain about an unreachable fallthrough.
+      FALLTHROUGH;
+#endif
+    case kTypeX11:
+      status_icon_.reset();
+      status_icon_type_ = kTypeOther;
+      if (menu_model_)
+        menu_model_->RemoveObserver(this);
+      menu_model_ = nullptr;
+      return;
+    case kTypeOther:
+      NOTREACHED();
+  }
+}
+
 void StatusIconLinuxWrapper::OnMenuStateChanged() {
-  status_icon_->RefreshPlatformContextMenu();
+  if (status_icon_)
+    status_icon_->RefreshPlatformContextMenu();
 }
 
 std::unique_ptr<StatusIconLinuxWrapper>
 StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
-  if (base::FeatureList::IsEnabled(kEnableDbusAndX11StatusIcons)) {
+  if (base::FeatureList::IsEnabled(features::kEnableDbusAndX11StatusIcons)) {
 #if defined(USE_DBUS)
     return base::WrapUnique(new StatusIconLinuxWrapper(
-        std::make_unique<StatusIconLinuxDbus>(image, tool_tip)));
+        std::make_unique<StatusIconLinuxDbus>(), kTypeDbus, image, tool_tip));
+#elif defined(USE_X11)
+    return base::WrapUnique(new StatusIconLinuxWrapper(
+        std::make_unique<StatusIconLinuxX11>(), kTypeX11, image, tool_tip));
 #endif
-    // TODO(thomasanderson): Set up a mechanism for replacing |status_icon_|
-    // with a StatusIconLinuxX11 in case the system doesn't support DBus status
-    // icons, which we can only discover asynchronously.
+    return nullptr;
   }
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
@@ -85,7 +149,8 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
         linux_ui->CreateLinuxStatusIcon(image, tool_tip, kAppIndicatorIdPrefix);
     if (status_icon) {
       return base::WrapUnique(
-          new StatusIconLinuxWrapper(std::move(status_icon)));
+          new StatusIconLinuxWrapper(std::move(status_icon), kTypeOther,
+                                     gfx::ImageSkia(), base::string16()));
     }
   }
   return nullptr;
@@ -93,6 +158,9 @@ StatusIconLinuxWrapper::CreateWrappedStatusIcon(
 
 void StatusIconLinuxWrapper::UpdatePlatformContextMenu(
     StatusIconMenuModel* model) {
+  if (!status_icon_)
+    return;
+
   // If a menu already exists, remove ourself from its observer list.
   if (menu_model_)
     menu_model_->RemoveObserver(this);

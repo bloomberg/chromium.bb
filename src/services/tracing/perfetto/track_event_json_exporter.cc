@@ -5,6 +5,7 @@
 #include "services/tracing/perfetto/track_event_json_exporter.h"
 
 #include <cinttypes>
+#include <memory>
 
 #include "base/json/string_escape.h"
 #include "base/strings/string_util.h"
@@ -15,14 +16,50 @@ namespace tracing {
 namespace {
 
 using ::perfetto::protos::ChromeTracePacket;
+using ::perfetto::protos::ThreadDescriptor;
 using ::perfetto::protos::TrackEvent;
 
 const std::string& GetInternedName(
     uint32_t iid,
     const std::unordered_map<uint32_t, std::string>& interned) {
+  DCHECK(iid);
   auto iter = interned.find(iid);
-  DCHECK(iter != interned.end());
+  DCHECK(iter != interned.end()) << "Missing interned ID: " << iid;
   return iter->second;
+}
+
+const char* ThreadTypeToName(ThreadDescriptor::ChromeThreadType type) {
+  switch (type) {
+    case ThreadDescriptor::CHROME_THREAD_MAIN:
+      return "CrProcessMain";
+    case ThreadDescriptor::CHROME_THREAD_IO:
+      return "ChromeIOThread";
+    case ThreadDescriptor::CHROME_THREAD_POOL_FG_WORKER:
+      return "ThreadPoolForegroundWorker&";
+    case ThreadDescriptor::CHROME_THREAD_POOL_BG_WORKER:
+      return "ThreadPoolBackgroundWorker&";
+    case ThreadDescriptor::CHROME_THREAD_POOL_FB_BLOCKING:
+      return "ThreadPoolSingleThreadForegroundBlocking&";
+    case ThreadDescriptor::CHROME_THREAD_POOL_BG_BLOCKING:
+      return "ThreadPoolSingleThreadBackgroundBlocking&";
+    case ThreadDescriptor::CHROME_THREAD_POOL_SERVICE:
+      return "ThreadPoolService";
+    case ThreadDescriptor::CHROME_THREAD_COMPOSITOR_WORKER:
+      return "CompositorTileWorker&";
+    case ThreadDescriptor::CHROME_THREAD_COMPOSITOR:
+      return "Compositor";
+    case ThreadDescriptor::CHROME_THREAD_VIZ_COMPOSITOR:
+      return "VizCompositorThread";
+    case ThreadDescriptor::CHROME_THREAD_SERVICE_WORKER:
+      return "ServiceWorkerThread&";
+    case ThreadDescriptor::CHROME_THREAD_MEMORY_INFRA:
+      return "MemoryInfra";
+    case ThreadDescriptor::CHROME_THREAD_SAMPLING_PROFILER:
+      return "StackSamplingProfiler";
+
+    case ThreadDescriptor::CHROME_THREAD_UNSPECIFIED:
+      return nullptr;
+  }
 }
 
 }  // namespace
@@ -34,12 +71,15 @@ TrackEventJSONExporter::TrackEventJSONExporter(
     : JSONTraceExporter(std::move(argument_filter_predicate),
                         std::move(metadata_filter_predicate),
                         std::move(callback)),
-      current_state_(0) {}
+      current_state_(std::make_unique<ProducerWriterState>(0)) {}
 
-TrackEventJSONExporter::~TrackEventJSONExporter() {}
+TrackEventJSONExporter::~TrackEventJSONExporter() {
+  DCHECK(!current_state_ || !current_state_->last_seen_thread_descriptor);
+}
 
 void TrackEventJSONExporter::ProcessPackets(
-    const std::vector<perfetto::TracePacket>& packets) {
+    const std::vector<perfetto::TracePacket>& packets,
+    bool has_more) {
   for (auto& encoded_packet : packets) {
     // These are perfetto::TracePackets, but ChromeTracePacket is a mirror that
     // reduces binary bloat and only has the fields we are interested in. So
@@ -51,7 +91,7 @@ void TrackEventJSONExporter::ProcessPackets(
     // If this is a different packet_sequence_id we have to reset all our state
     // and wait for the first state_clear before emitting anything.
     if (packet.trusted_packet_sequence_id() !=
-        current_state_.trusted_packet_sequence_id) {
+        current_state_->trusted_packet_sequence_id) {
       StartNewState(packet.trusted_packet_sequence_id(),
                     packet.incremental_state_cleared());
     } else if (packet.incremental_state_cleared()) {
@@ -60,10 +100,10 @@ void TrackEventJSONExporter::ProcessPackets(
       // If we've lost packets we can no longer trust any timestamp data and
       // other state which might have been dropped. We will keep skipping events
       // until we start a new sequence.
-      LOG_IF(ERROR, current_state_.incomplete)
+      LOG_IF(ERROR, current_state_->incomplete)
           << "Previous packet was dropped. Skipping TraceEvents until reset or "
           << "new sequence.";
-      current_state_.incomplete = true;
+      current_state_->incomplete = true;
     }
 
     // Now we process the data from the packet. First by getting the interned
@@ -83,42 +123,57 @@ void TrackEventJSONExporter::ProcessPackets(
       HandleProcessDescriptor(packet);
     } else if (packet.has_trace_stats()) {
       SetTraceStatsMetadata(packet.trace_stats());
+    } else if (packet.has_streaming_profile_packet()) {
+      HandleStreamingProfilePacket(packet.streaming_profile_packet());
+    } else if (packet.has_profiled_frame_symbols()) {
+      HandleProfiledFrameSymbols(packet.profiled_frame_symbols());
     } else {
       // If none of the above matched, this packet was emitted by the service
       // and has no equivalent in the old trace format. We thus ignore it.
     }
   }
+  if (!has_more) {
+    EmitThreadDescriptorIfNeeded();
+  }
 }
 
 TrackEventJSONExporter::ProducerWriterState::ProducerWriterState(
     uint32_t sequence_id)
-    : ProducerWriterState(sequence_id, false, false, true) {}
+    : ProducerWriterState(sequence_id, false, nullptr, true) {}
 
 TrackEventJSONExporter::ProducerWriterState::ProducerWriterState(
     uint32_t sequence_id,
     bool emitted_process,
-    bool emitted_thread,
+    std::unique_ptr<ThreadDescriptor> last_seen_thread_descriptor,
     bool incomplete)
     : trusted_packet_sequence_id(sequence_id),
       emitted_process_metadata(emitted_process),
-      emitted_thread_metadata(emitted_thread),
+      last_seen_thread_descriptor(std::move(last_seen_thread_descriptor)),
       incomplete(incomplete) {}
 
-TrackEventJSONExporter::ProducerWriterState::~ProducerWriterState() {}
+TrackEventJSONExporter::ProducerWriterState::~ProducerWriterState() = default;
+
+TrackEventJSONExporter::UnorderedProducerWriterState::
+    UnorderedProducerWriterState() = default;
+
+TrackEventJSONExporter::UnorderedProducerWriterState::
+    ~UnorderedProducerWriterState() = default;
 
 void TrackEventJSONExporter::StartNewState(uint32_t trusted_packet_sequence_id,
                                            bool state_cleared) {
-  current_state_ = ProducerWriterState{
+  EmitThreadDescriptorIfNeeded();
+  current_state_ = std::make_unique<ProducerWriterState>(
       trusted_packet_sequence_id, /* emitted_process = */ false,
-      /* emitted_thread = */ false, /* incomplete = */ !state_cleared};
+      /* last_seen_thread_descriptor = */ nullptr,
+      /* incomplete = */ !state_cleared);
 }
 
 void TrackEventJSONExporter::ResetIncrementalState() {
-  current_state_ =
-      ProducerWriterState{current_state_.trusted_packet_sequence_id,
-                          current_state_.emitted_process_metadata,
-                          current_state_.emitted_thread_metadata,
-                          /* incomplete = */ false};
+  current_state_ = std::make_unique<ProducerWriterState>(
+      current_state_->trusted_packet_sequence_id,
+      current_state_->emitted_process_metadata,
+      std::move(current_state_->last_seen_thread_descriptor),
+      /* incomplete = */ false);
 }
 
 int64_t TrackEventJSONExporter::ComputeTimeUs(const TrackEvent& event) {
@@ -126,9 +181,9 @@ int64_t TrackEventJSONExporter::ComputeTimeUs(const TrackEvent& event) {
     case TrackEvent::kTimestampAbsoluteUs:
       return event.timestamp_absolute_us();
     case TrackEvent::kTimestampDeltaUs:
-      DCHECK(current_state_.time_us != -1);
-      current_state_.time_us += event.timestamp_delta_us();
-      return current_state_.time_us;
+      DCHECK_NE(current_state_->time_us, -1);
+      current_state_->time_us += event.timestamp_delta_us();
+      return current_state_->time_us;
     case TrackEvent::TIMESTAMP_NOT_SET:
       DLOG(FATAL) << "Event has no timestamp this shouldn't be possible";
       return -1;
@@ -141,9 +196,9 @@ base::Optional<int64_t> TrackEventJSONExporter::ComputeThreadTimeUs(
     case TrackEvent::kThreadTimeAbsoluteUs:
       return event.thread_time_absolute_us();
     case TrackEvent::kThreadTimeDeltaUs:
-      DCHECK(current_state_.thread_time_us != -1);
-      current_state_.thread_time_us += event.thread_time_delta_us();
-      return current_state_.thread_time_us;
+      DCHECK_NE(current_state_->thread_time_us, -1);
+      current_state_->thread_time_us += event.thread_time_delta_us();
+      return current_state_->thread_time_us;
     case TrackEvent::THREAD_TIME_NOT_SET:
       return base::nullopt;
   }
@@ -154,7 +209,7 @@ void TrackEventJSONExporter::HandleInternedData(
   DCHECK(packet.has_interned_data());
 
   // InternedData is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -162,27 +217,68 @@ void TrackEventJSONExporter::HandleInternedData(
   // Even if the interned data was reset we should not change the values in the
   // interned data.
   for (const auto& event_cat : data.event_categories()) {
-    auto iter = current_state_.interned_event_categories_.insert(
+    auto iter = current_state_->interned_event_categories_.insert(
         std::make_pair(event_cat.iid(), event_cat.name()));
     DCHECK(iter.second || iter.first->second == event_cat.name());
   }
   for (const auto& event_name : data.legacy_event_names()) {
-    auto iter = current_state_.interned_legacy_event_names_.insert(
+    auto iter = current_state_->interned_legacy_event_names_.insert(
         std::make_pair(event_name.iid(), event_name.name()));
     DCHECK(iter.second || iter.first->second == event_name.name());
   }
   for (const auto& debug_name : data.debug_annotation_names()) {
-    auto iter = current_state_.interned_debug_annotation_names_.insert(
+    auto iter = current_state_->interned_debug_annotation_names_.insert(
         std::make_pair(debug_name.iid(), debug_name.name()));
     DCHECK(iter.second || iter.first->second == debug_name.name());
   }
   for (const auto& src_loc : data.source_locations()) {
-    auto iter = current_state_.interned_source_locations_.insert(std::make_pair(
-        src_loc.iid(),
-        std::make_pair(src_loc.file_name(), src_loc.function_name())));
+    auto iter = current_state_->interned_source_locations_.insert(
+        std::make_pair(src_loc.iid(), std::make_pair(src_loc.file_name(),
+                                                     src_loc.function_name())));
     DCHECK(iter.second ||
            (iter.first->second.first == src_loc.file_name() &&
             iter.first->second.second == src_loc.function_name()));
+  }
+  for (const auto& frame : data.frames()) {
+    auto iter = current_state_->interned_frames_.emplace(
+        frame.iid(), ProducerWriterState::Frame{
+                         frame.has_rel_pc(), frame.rel_pc(),
+                         frame.function_name_id(), frame.mapping_id()});
+    DCHECK(iter.second || iter.first->second.rel_pc == frame.rel_pc());
+  }
+  for (const auto& module_name : data.mapping_paths()) {
+    auto iter = current_state_->interned_module_names_.insert(
+        std::make_pair(module_name.iid(), module_name.str()));
+    DCHECK(iter.second || iter.first->second == module_name.str());
+  }
+  for (const auto& mapping_id : data.build_ids()) {
+    auto iter = current_state_->interned_module_ids_.insert(
+        std::make_pair(mapping_id.iid(), mapping_id.str()));
+    DCHECK(iter.second || iter.first->second == mapping_id.str());
+  }
+  for (const auto& mapping : data.mappings()) {
+    DCHECK_EQ(mapping.path_string_ids_size(), 1);
+    auto iter = current_state_->interned_mappings_.emplace(
+        mapping.iid(), ProducerWriterState::Mapping{
+                           mapping.build_id(), mapping.path_string_ids(0)});
+    DCHECK(iter.second || iter.first->second.build_id == mapping.build_id());
+  }
+  for (const auto& callstack : data.callstacks()) {
+    std::vector<uint32_t> frame_ids;
+    for (const auto& frame_id : callstack.frame_ids())
+      frame_ids.push_back(frame_id);
+
+    current_state_->interned_callstacks_.emplace(callstack.iid(),
+                                                 std::move(frame_ids));
+  }
+
+  // Unordered data which may be required at any time during export.
+  for (const auto& function_name : data.function_names()) {
+    auto iter =
+        unordered_state_data_[current_state_->trusted_packet_sequence_id]
+            .interned_frame_names_.insert(
+                std::make_pair(function_name.iid(), function_name.str()));
+    DCHECK(iter.second || iter.first->second == function_name.str());
   }
 }
 
@@ -191,10 +287,13 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   DCHECK(packet.has_process_descriptor());
   const auto& process = packet.process_descriptor();
   // Save the current state we need for future packets.
-  current_state_.pid = process.pid();
+  current_state_->pid = process.pid();
+  if (process.has_process_priority()) {
+    current_state_->process_priority = process.process_priority();
+  }
 
   // ProcessDescriptor is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -205,10 +304,10 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   }
 
   // Prevent duplicates by only emitting the metadata once.
-  if (current_state_.emitted_process_metadata) {
+  if (current_state_->emitted_process_metadata) {
     return;
   }
-  current_state_.emitted_process_metadata = true;
+  current_state_->emitted_process_metadata = true;
 
   if (!process.cmdline().empty()) {
     NOTIMPLEMENTED();
@@ -217,7 +316,7 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   if (process.has_legacy_sort_index()) {
     auto event_builder =
         AddTraceEvent("process_sort_index", "__metadata", 'M', 0,
-                      current_state_.pid, current_state_.pid);
+                      current_state_->pid, current_state_->pid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("sort_index");
     if (add_arg) {
@@ -226,8 +325,9 @@ void TrackEventJSONExporter::HandleProcessDescriptor(
   }
 
   const auto emit_process_name = [this](const char* name) {
-    auto event_builder = AddTraceEvent("process_name", "__metadata", 'M', 0,
-                                       current_state_.pid, current_state_.pid);
+    auto event_builder =
+        AddTraceEvent("process_name", "__metadata", 'M', 0, current_state_->pid,
+                      current_state_->pid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("name");
     if (add_arg) {
@@ -270,33 +370,36 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   DCHECK(packet.has_thread_descriptor());
 
   // ThreadDescriptor is only emitted on sequences with incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
   const auto& thread = packet.thread_descriptor();
   // Save the current state we need for future packets.
-  current_state_.pid = thread.pid();
-  current_state_.tid = thread.tid();
-  current_state_.time_us = thread.reference_timestamp_us();
-  current_state_.thread_time_us = thread.reference_thread_time_us();
+  current_state_->pid = thread.pid();
+  current_state_->tid = thread.tid();
+  current_state_->time_us = thread.reference_timestamp_us();
+  current_state_->thread_time_us = thread.reference_thread_time_us();
 
   // If we aren't outputting traceEvents then we don't need to look at the
   // metadata that might need to be emitted.
   if (!ShouldOutputTraceEvents()) {
     return;
   }
+  current_state_->last_seen_thread_descriptor =
+      std::make_unique<ThreadDescriptor>();
+  *current_state_->last_seen_thread_descriptor = thread;
+}
 
-  // Prevent duplicates by only emitting the metadata once.
-  if (current_state_.emitted_thread_metadata) {
+void TrackEventJSONExporter::EmitThreadDescriptorIfNeeded() {
+  if (!current_state_->last_seen_thread_descriptor) {
     return;
   }
-  current_state_.emitted_thread_metadata = true;
-
+  const auto& thread = *current_state_->last_seen_thread_descriptor;
   if (thread.has_legacy_sort_index()) {
     auto event_builder =
         AddTraceEvent("thread_sort_index", "__metadata", 'M', 0,
-                      current_state_.pid, current_state_.tid);
+                      current_state_->pid, current_state_->tid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("sort_index");
     if (add_arg) {
@@ -305,25 +408,24 @@ void TrackEventJSONExporter::HandleThreadDescriptor(
   }
 
   const auto emit_thread_name = [this](const char* name) {
-    auto event_builder = AddTraceEvent("thread_name", "__metadata", 'M', 0,
-                                       current_state_.pid, current_state_.tid);
+    auto event_builder =
+        AddTraceEvent("thread_name", "__metadata", 'M', 0, current_state_->pid,
+                      current_state_->tid);
     auto args_builder = event_builder.BuildArgs();
     auto* add_arg = args_builder->MaybeAddArg("name");
     if (add_arg) {
       add_arg->AppendF("\"%s\"", name);
     }
   };
-  switch (thread.chrome_thread_type()) {
-    // TODO(nuskos): As we add more thread types we will add handling here to
-    // switch the enum to a string and call |emit_thread_name()|
-    case perfetto::protos::ThreadDescriptor::THREAD_UNSPECIFIED:
-      // No thread type enum so check to see if a explicit thread name was
-      // provided..
-      if (thread.has_thread_name()) {
-        emit_thread_name(thread.thread_name().c_str());
-      }
-      break;
+  if (thread.has_thread_name()) {
+    emit_thread_name(thread.thread_name().c_str());
+  } else if (thread.has_chrome_thread_type()) {
+    const char* name = ThreadTypeToName(thread.chrome_thread_type());
+    if (name) {
+      emit_thread_name(name);
+    }
   }
+  current_state_->last_seen_thread_descriptor.reset();
 }
 
 void TrackEventJSONExporter::HandleChromeEvents(
@@ -350,7 +452,7 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   DCHECK(packet.has_track_event());
 
   // TrackEvents need incremental state.
-  if (current_state_.incomplete) {
+  if (current_state_->incomplete) {
     return;
   }
 
@@ -364,14 +466,14 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
 
   // Get the time data out of the TrackEvent.
   int64_t timestamp_us = ComputeTimeUs(track);
-  DCHECK(timestamp_us != -1);
+  DCHECK_NE(timestamp_us, -1);
   base::Optional<int64_t> thread_time_us = ComputeThreadTimeUs(track);
 
   std::vector<base::StringPiece> all_categories;
   all_categories.reserve(track.category_iids().size());
   for (const auto& cat_iid : track.category_iids()) {
     const std::string& name =
-        GetInternedName(cat_iid, current_state_.interned_event_categories_);
+        GetInternedName(cat_iid, current_state_->interned_event_categories_);
     all_categories.push_back(name);
   }
   const std::string joined_categories = base::JoinString(all_categories, ",");
@@ -403,12 +505,134 @@ void TrackEventJSONExporter::HandleTrackEvent(const ChromeTracePacket& packet) {
   }
 }
 
+void TrackEventJSONExporter::HandleStreamingProfilePacket(
+    const perfetto::protos::StreamingProfilePacket& profile_packet) {
+  if (current_state_->incomplete || !ShouldOutputTraceEvents()) {
+    return;
+  }
+
+  // Insert an event with the frames rendered as a string with the following
+  // formats:
+  //   offset - module [debugid]
+  //  [OR]
+  //   symbol - module []
+  // The offset is difference between the load module address and the
+  // frame address.
+  //
+  // Example:
+  //
+  //   "malloc             - libc.so    []
+  //    std::string::alloc - stdc++.so  []
+  //    off:7ffb3f991b2d   - USER32.dll [2103C0950C7DEC7F7AAA44348EDC1DDD1]
+  //    off:7ffb3d439164   - win32u.dll [B3E4BE89CA7FB42A2AC1E1C475284CA11]
+  //    off:7ffaf3e26201   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    off:7ffaf3e26008   - chrome.dll [8767EB7E1C77DD10014E8152A34786B812]
+  //    [...] "
+
+  DCHECK_EQ(profile_packet.callstack_iid_size(), 1);
+  DCHECK_EQ(profile_packet.timestamp_delta_us_size(), 1);
+
+  auto callstack = current_state_->interned_callstacks_.find(
+      profile_packet.callstack_iid(0));
+  DCHECK(callstack != current_state_->interned_callstacks_.end());
+
+  std::string result;
+  for (const auto& frame_id : callstack->second) {
+    auto frame = current_state_->interned_frames_.find(frame_id);
+    if (frame == current_state_->interned_frames_.end()) {
+      base::StringAppendF(&result, "MISSING FRAME REFERENCE - ???\n");
+      continue;
+    }
+
+    std::string frame_name;
+    std::string module_name;
+    std::string module_id;
+    uintptr_t rel_pc = frame->second.rel_pc;
+    const auto& frame_names =
+        unordered_state_data_[current_state_->trusted_packet_sequence_id]
+            .interned_frame_names_;
+    if (frame->second.has_rel_pc) {
+      const auto& profiled_frames =
+          unordered_state_data_[current_state_->trusted_packet_sequence_id]
+              .interned_profiled_frame_;
+
+      auto frame_iter = profiled_frames.find(frame_id);
+      if (frame_iter != profiled_frames.end()) {
+        auto frame_name_iter = frame_names.find(frame_iter->second);
+        DCHECK(frame_name_iter != frame_names.end());
+        frame_name = frame_name_iter->second;
+      } else {
+        frame_name = base::StringPrintf("off:0x%" PRIxPTR, rel_pc);
+      }
+    } else {
+      frame_name = GetInternedName(frame->second.function_name_id, frame_names);
+    }
+
+    auto module =
+        current_state_->interned_mappings_.find(frame->second.mapping_id);
+    if (module != current_state_->interned_mappings_.end()) {
+      module_name = GetInternedName(module->second.name_id,
+                                    current_state_->interned_module_names_);
+      module_id = GetInternedName(module->second.build_id,
+                                  current_state_->interned_module_ids_);
+    }
+
+    base::StringAppendF(&result, "%s - %s [%s]\n", frame_name.c_str(),
+                        module_name.c_str(), module_id.c_str());
+  }
+
+  if (result.empty()) {
+    result = "empty";
+  }
+
+  current_state_->time_us += profile_packet.timestamp_delta_us(0);
+
+  auto event_builder = AddTraceEvent(
+      "StackCpuSampling", TRACE_DISABLED_BY_DEFAULT("cpu_profiler"),
+      TRACE_EVENT_PHASE_INSTANT, current_state_->time_us, current_state_->pid,
+      current_state_->tid);
+  // Add a dummy thread timestamp to this event to match the format of instant
+  // events. Useful in the UI to view args of a selected group of samples.
+  event_builder.AddThreadTimestamp(1);
+  event_builder.AddFlags(TRACE_EVENT_SCOPE_THREAD, base::nullopt, "");
+  auto args_builder = event_builder.BuildArgs();
+  auto* add_arg = args_builder->MaybeAddArg("frames");
+  if (add_arg) {
+    std::string escaped_result;
+    base::EscapeJSONString(result, true, &escaped_result);
+    add_arg->AppendF("%s", escaped_result.c_str());
+  }
+  add_arg = args_builder->MaybeAddArg("process_priority");
+  if (add_arg) {
+    add_arg->AppendF("%" PRId32, current_state_->process_priority);
+  }
+  // Used for backwards compatibility with the memlog pipeline,
+  // should remove once we've switched to looking directly at the tid.
+  add_arg = args_builder->MaybeAddArg("thread_id");
+  if (add_arg) {
+    add_arg->AppendF("%" PRId32, current_state_->tid);
+  }
+}
+
+void TrackEventJSONExporter::HandleProfiledFrameSymbols(
+    const perfetto::protos::ProfiledFrameSymbols& frame_symbols) {
+  auto iter =
+      unordered_state_data_[current_state_->trusted_packet_sequence_id]
+          .interned_profiled_frame_.insert(std::make_pair(
+              frame_symbols.frame_iid(), frame_symbols.function_name_id()));
+  auto& frame_names =
+      unordered_state_data_[current_state_->trusted_packet_sequence_id]
+          .interned_frame_names_;
+  DCHECK(iter.second || frame_names[iter.first->second] ==
+                            frame_names[frame_symbols.function_name_id()]);
+}
+
 void TrackEventJSONExporter::HandleDebugAnnotation(
     const perfetto::protos::DebugAnnotation& debug_annotation,
     ArgumentBuilder* args_builder) {
   const std::string& name =
       GetInternedName(debug_annotation.name_iid(),
-                      current_state_.interned_debug_annotation_names_);
+                      current_state_->interned_debug_annotation_names_);
 
   auto* maybe_arg = args_builder->MaybeAddArg(name);
   if (!maybe_arg) {
@@ -421,8 +645,8 @@ void TrackEventJSONExporter::HandleTaskExecution(
     const perfetto::protos::TaskExecution& task,
     ArgumentBuilder* args_builder) {
   auto iter =
-      current_state_.interned_source_locations_.find(task.posted_from_iid());
-  DCHECK(iter != current_state_.interned_source_locations_.end());
+      current_state_->interned_source_locations_.find(task.posted_from_iid());
+  DCHECK(iter != current_state_->interned_source_locations_.end());
 
   // If source locations were turned off, only the file is provided. JSON
   // expects the event to then have only an "src" attribute.
@@ -454,12 +678,12 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
 
   // Determine which pid and tid to use.
   int32_t pid =
-      event.pid_override() == 0 ? current_state_.pid : event.pid_override();
+      event.pid_override() == 0 ? current_state_->pid : event.pid_override();
   int32_t tid =
-      event.tid_override() == 0 ? current_state_.tid : event.tid_override();
+      event.tid_override() == 0 ? current_state_->tid : event.tid_override();
 
   const std::string& name = GetInternedName(
-      event.name_iid(), current_state_.interned_legacy_event_names_);
+      event.name_iid(), current_state_->interned_legacy_event_names_);
 
   // Build the actual json output, if we are missing the interned name we just
   // use the interned ID.
@@ -475,11 +699,14 @@ TrackEventJSONExporter::HandleLegacyEvent(const TrackEvent::LegacyEvent& event,
   if (event.has_thread_duration_us()) {
     builder.AddThreadDuration(event.thread_duration_us());
   }
+  if (event.has_thread_instruction_delta()) {
+    builder.AddThreadInstructionDelta(event.thread_instruction_delta());
+  }
 
   // For flags and ID we need to determine all possible flag bits and set them
   // correctly.
   uint32_t flags = 0;
-  base::Optional<uint32_t> id;
+  base::Optional<uint64_t> id;
   switch (event.id_case()) {
     case TrackEvent::LegacyEvent::kUnscopedId:
       flags |= TRACE_EVENT_FLAG_HAS_ID;

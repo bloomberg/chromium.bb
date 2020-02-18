@@ -13,7 +13,6 @@ sys.path.insert(0, ROOT_DIR)
 
 import metrics
 import metrics_utils
-import cStringIO
 
 from third_party import mock
 
@@ -706,7 +705,7 @@ class MetricsUtilsTest(unittest.TestCase):
   def test_get_git_version(self, mockPopen):
     """Tests that we can get the git version."""
     mockProcess = mock.Mock()
-    mockProcess.communicate.side_effect = [('git version 2.18.0.123.foo', '')]
+    mockProcess.communicate.side_effect = [(b'git version 2.18.0.123.foo', '')]
     mockPopen.side_effect = [mockProcess]
 
     self.assertEqual('2.18.0', metrics_utils.get_git_version())
@@ -715,7 +714,7 @@ class MetricsUtilsTest(unittest.TestCase):
   def test_get_git_version_unrecognized(self, mockPopen):
     """Tests that we can get the git version."""
     mockProcess = mock.Mock()
-    mockProcess.communicate.side_effect = [('Blah blah blah', 'blah blah')]
+    mockProcess.communicate.side_effect = [(b'Blah blah blah', 'blah blah')]
     mockPopen.side_effect = [mockProcess]
 
     self.assertIsNone(metrics_utils.get_git_version())

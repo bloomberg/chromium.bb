@@ -43,7 +43,7 @@ FrameResourceFetcherProperties::GetControllerServiceWorkerMode() const {
           .GetServiceWorkerNetworkProvider();
   if (!service_worker_network_provider)
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  return service_worker_network_provider->IsControlledByServiceWorker();
+  return service_worker_network_provider->GetControllerServiceWorkerMode();
 }
 
 int64_t FrameResourceFetcherProperties::ServiceWorkerId() const {

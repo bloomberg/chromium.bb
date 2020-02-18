@@ -50,6 +50,7 @@
 #include "util/linux/direct_ptrace_connection.h"
 #include "util/misc/address_sanitizer.h"
 #include "util/misc/from_pointer_cast.h"
+#include "util/misc/memory_sanitizer.h"
 #include "util/synchronization/semaphore.h"
 
 #if defined(OS_ANDROID)
@@ -337,6 +338,11 @@ class ChildThreadTest : public Multiprocess {
     thread_pool.StartThreads(kThreadCount, stack_size_);
 
     TestThreadPool::ThreadExpectation expectation;
+#if defined(MEMORY_SANITIZER)
+    // memset() + re-initialization is required to zero padding bytes for MSan.
+    memset(&expectation, 0, sizeof(expectation));
+#endif  // defined(MEMORY_SANITIZER)
+    expectation = {};
     expectation.tls = GetTLS();
     expectation.stack_address = reinterpret_cast<LinuxVMAddress>(&thread_pool);
 
@@ -463,7 +469,14 @@ class ChildWithSplitStackTest : public Multiprocess {
   DISALLOW_COPY_AND_ASSIGN(ChildWithSplitStackTest);
 };
 
-TEST(ProcessReaderLinux, ChildWithSplitStack) {
+// AddressSanitizer with use-after-return detection causes stack variables to
+// be allocated on the heap.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ChildWithSplitStack DISABLED_ChildWithSplitStack
+#else
+#define MAYBE_ChildWithSplitStack ChildWithSplitStack
+#endif
+TEST(ProcessReaderLinux, MAYBE_ChildWithSplitStack) {
   ChildWithSplitStackTest test;
   test.Run();
 }
@@ -771,7 +784,7 @@ class ChildModuleTest : public Multiprocess {
     ScopedModuleHandle empty_test_module(LoadTestModule(module_name_));
     ASSERT_TRUE(empty_test_module.valid());
 
-    char c;
+    char c = 0;
     ASSERT_TRUE(LoggingWriteFile(WritePipeHandle(), &c, sizeof(c)));
 
     CheckedReadFileAtEOF(ReadPipeHandle());

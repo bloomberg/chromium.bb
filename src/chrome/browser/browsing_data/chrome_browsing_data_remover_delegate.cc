@@ -40,7 +40,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
@@ -264,14 +263,16 @@ void OnClearedCookies(base::OnceClosure done,
 
 ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
     BrowserContext* browser_context)
-    : profile_(Profile::FromBrowserContext(browser_context)),
+    : profile_(Profile::FromBrowserContext(browser_context))
 #if BUILDFLAG(ENABLE_PLUGINS)
-      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
+      ,
+      flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context))
 #endif
 #if defined(OS_ANDROID)
-      webapp_registry_(new WebappRegistry()),
+      ,
+      webapp_registry_(new WebappRegistry())
 #endif
-      weak_ptr_factory_(this) {
+{
   domain_reliability_clearer_ = base::BindRepeating(
       [](BrowserContext* browser_context,
          content::BrowsingDataFilterBuilder* filter_builder,
@@ -934,14 +935,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     // cache we should remove offline pages as well.
     if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE) &&
         offline_pages::IsOfflinePagesEnabled()) {
-      offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile_)
-          ->DeleteCachedPagesByURLPredicate(
-              filter,
-              base::AdaptCallbackForRepeating(
-                  IgnoreArgument<
-                      offline_pages::OfflinePageModel::DeletePageResult>(
-                      CreateTaskCompletionClosure(
-                          TracingDataType::kOfflinePages))));
+      auto* offline_page_model =
+          offline_pages::OfflinePageModelFactory::GetForBrowserContext(
+              profile_);
+      if (offline_page_model)
+        offline_page_model->DeleteCachedPagesByURLPredicate(
+            filter, base::AdaptCallbackForRepeating(
+                        IgnoreArgument<
+                            offline_pages::OfflinePageModel::DeletePageResult>(
+                            CreateTaskCompletionClosure(
+                                TracingDataType::kOfflinePages))));
     }
 #endif
 

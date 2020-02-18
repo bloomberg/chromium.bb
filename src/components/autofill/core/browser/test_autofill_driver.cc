@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/autofill/core/browser/test_autofill_driver.h"
+
+#include "build/build_config.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
@@ -27,6 +30,11 @@ bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
 }
 
+ui::AXTreeID TestAutofillDriver::GetAxTreeId() const {
+  NOTIMPLEMENTED() << "See https://crbug.com/985933";
+  return ui::AXTreeIDUnknown();
+}
+
 net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
   return url_request_context_;
 }
@@ -39,6 +47,11 @@ TestAutofillDriver::GetURLLoaderFactory() {
 bool TestAutofillDriver::RendererIsAvailable() {
   return true;
 }
+
+#if !defined(OS_IOS)
+void TestAutofillDriver::ConnectToAuthenticator(
+    blink::mojom::InternalAuthenticatorRequest request) {}
+#endif
 
 void TestAutofillDriver::SendFormDataToRenderer(int query_id,
                                                 RendererFormDataAction action,
@@ -69,6 +82,9 @@ void TestAutofillDriver::RendererShouldFillFieldWithValue(
 void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
 }
+
+void TestAutofillDriver::RendererShouldSetSuggestionAvailability(
+    bool available) {}
 
 void TestAutofillDriver::PopupHidden() {
 }

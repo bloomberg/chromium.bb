@@ -17,10 +17,7 @@ SupervisedUserSyncModelTypeController::SupervisedUserSyncModelTypeController(
     : SyncableServiceBasedModelTypeController(
           type,
           sync_client->GetModelTypeStoreService()->GetStoreFactory(),
-          base::BindOnce(
-              &browser_sync::BrowserSyncClient::GetSyncableServiceForType,
-              base::Unretained(sync_client),
-              type),
+          sync_client->GetSyncableServiceForType(type),
           dump_stack),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USER_SETTINGS ||

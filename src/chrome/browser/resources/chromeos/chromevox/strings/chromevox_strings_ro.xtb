@@ -69,6 +69,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1385214448885562192">Apăsați pe Enter pentru a accepta sau pe Escape pentru a anula, pe săgeata în jos pentru Înainte și pe săgeata în sus pentru Înapoi.</translation>
 <translation id="1396114365388024581">listă de file</translation>
+<translation id="139902759009894363">Anunță atributele textului îmbogățit</translation>
 <translation id="1405567553485452995">Verde deschis</translation>
 <translation id="1417889266572670458">Bleumarin</translation>
 <translation id="1431911867058218151">Violet prună</translation>
@@ -319,11 +320,11 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="3232388865800379423">Un buton pop-up</translation>
 <translation id="3241052487511142956">Link accesat anterior</translation>
 <translation id="3241638166094654466">Celule pe fiecare rând:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">portret</translation>
 <translation id="3286390186030710347">Glisor</translation>
 <translation id="3299925995433437805">Nu există un link accesat următor.</translation>
 <translation id="3300348286427369683">Compatibilitate cu textul îmbogățit. ChromeVox acceptă acum câmpuri de text îmbogățit, inclusiv comenzi de accesare, orientarea cursorului pentru textul braille, selectarea și altele.</translation>
-<translation id="3304756947457041303">Personalizează indicațiile pentru textul îmbogățit</translation>
 <translation id="3307886118343381874">Accesați finalul tabelului</translation>
 <translation id="3311969765485641742">Apăsați pe Alt+Shift+A pentru a examina alertele</translation>
 <translation id="3312997241656799641">Următorul link accesat</translation>

@@ -9,7 +9,9 @@
 
 #include <string>
 
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
 namespace password_manager {
@@ -120,41 +122,27 @@ enum AccountChooserUserAction {
   ACCOUNT_CHOOSER_ACTION_COUNT
 };
 
-enum SyncSignInUserAction {
-  CHROME_SIGNIN_DISMISSED,
-  CHROME_SIGNIN_OK,
-  CHROME_SIGNIN_CANCEL,
-  CHROME_SIGNIN_ACTION_COUNT
-};
-
-enum AccountChooserUsabilityMetric {
-  ACCOUNT_CHOOSER_LOOKS_OK,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME,
-  ACCOUNT_CHOOSER_DUPLICATES,
-  ACCOUNT_CHOOSER_EMPTY_USERNAME_AND_DUPLICATES,
-  ACCOUNT_CHOOSER_USABILITY_COUNT,
-};
-
-enum CredentialManagerGetResult {
+// Metrics: "PasswordManager.Mediation{Silent,Optional,Required}"
+enum class CredentialManagerGetResult {
   // The promise is rejected.
-  CREDENTIAL_MANAGER_GET_REJECTED,
+  kRejected,
   // Auto sign-in is not allowed in the current context.
-  CREDENTIAL_MANAGER_GET_NONE_ZERO_CLICK_OFF,
+  kNoneZeroClickOff,
   // No matching credentials found.
-  CREDENTIAL_MANAGER_GET_NONE_EMPTY_STORE,
+  kNoneEmptyStore,
   // User mediation required due to > 1 matching credentials.
-  CREDENTIAL_MANAGER_GET_NONE_MANY_CREDENTIALS,
+  kNoneManyCredentials,
   // User mediation required due to the signed out state.
-  CREDENTIAL_MANAGER_GET_NONE_SIGNED_OUT,
+  kNoneSignedOut,
   // User mediation required due to pending first run experience dialog.
-  CREDENTIAL_MANAGER_GET_NONE_FIRST_RUN,
+  kNoneFirstRun,
   // Return empty credential for whatever reason.
-  CREDENTIAL_MANAGER_GET_NONE,
+  kNone,
   // Return a credential from the account chooser.
-  CREDENTIAL_MANAGER_GET_ACCOUNT_CHOOSER,
+  kAccountChooser,
   // User is auto signed in.
-  CREDENTIAL_MANAGER_GET_AUTOSIGNIN,
-  CREDENTIAL_MANAGER_GET_COUNT
+  kAutoSignIn,
+  kMaxValue = kAutoSignIn,
 };
 
 // Metrics: "PasswordManager.HttpPasswordMigrationMode"
@@ -269,26 +257,23 @@ enum class CertificateError {
   COUNT
 };
 
-// Metric: PasswordManager.ExportPasswordsToCSVResult
-enum class ExportPasswordsResult {
-  SUCCESS = 0,
-  USER_ABORTED = 1,
-  WRITE_FAILED = 2,
-  NO_CONSUMER = 3,  // Only used on Android.
-  COUNT,
-};
-
 // Used in UMA histograms, please do NOT reorder.
 // Metric: "PasswordManager.ReusedPasswordType".
 enum class PasswordType {
   // Passwords saved by password manager.
   SAVED_PASSWORD = 0,
-  // Passwords used for Chrome sign-in.
-  SYNC_PASSWORD = 1,
+  // Passwords used for Chrome sign-in and is closest ("blessed") to be set to
+  // sync when signed into multiple profiles if user wants to set up sync.
+  // The primary account is equivalent to the "sync account" if this profile has
+  // enabled sync.
+  PRIMARY_ACCOUNT_PASSWORD = 1,
   // Other Gaia passwords used in Chrome other than the sync password.
   OTHER_GAIA_PASSWORD = 2,
   // Passwords captured from enterprise login page.
   ENTERPRISE_PASSWORD = 3,
+  // Unknown password type. Used by downstream code to indicate there was not a
+  // password reuse.
+  PASSWORD_TYPE_UNKNOWN = 4,
   PASSWORD_TYPE_COUNT
 };
 
@@ -341,6 +326,28 @@ enum class PasswordDropdownSelectedOption {
   kMaxValue = kGenerate
 };
 
+// Used in UMA histograms, please do NOT reorder.
+// Metric: "KeyboardAccessory.GenerationDialogChoice.{Automatic, Manual}".
+enum class GenerationDialogChoice {
+  // The user accepted the generated password.
+  kAccepted = 0,
+  // The user rejected the generated password.
+  kRejected = 1,
+  kMaxValue = kRejected
+};
+
+// Type of the conflict with existing credentials when starting password
+// generation.
+enum class GenerationPresaveConflict {
+  // Credential can be presaved as is.
+  kNoUsernameConflict = 0,
+  // Credential can be presaved without username.
+  kNoConflictWithEmptyUsername = 1,
+  // Credential should overwrite one without username.
+  kConflictWithEmptyUsername = 2,
+  kMaxValue = kConflictWithEmptyUsername
+};
+
 // A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
 // to vary over the program's runtime.
 void LogUMAHistogramBoolean(const std::string& name, bool sample);
@@ -354,6 +361,10 @@ void LogSaveUIDismissalReason(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble.
 void LogUpdateUIDismissalReason(UIDismissalReason reason);
+
+// Log the |reason| a user dismissed the update password bubble when resolving a
+// conflict during generation.
+void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason);
 
 // Log the appropriate display disposition.
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
@@ -384,23 +395,11 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
-// Log a user action on showing the Chrome sign in promo.
-void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
-
-// Logs whether a password was rejected due to same origin but different scheme.
-void LogShouldBlockPasswordForSameOriginButDifferentScheme(bool should_block);
-
 // Logs number of passwords migrated from HTTP to HTTPS.
 void LogCountHttpMigratedPasswords(int count);
 
 // Logs mode of HTTP password migration.
 void LogHttpPasswordMigrationMode(HttpPasswordMigrationMode mode);
-
-// Log if the account chooser has empty username or duplicate usernames. In
-// addition record number of the placeholder avatars and total number of rows.
-void LogAccountChooserUsability(AccountChooserUsabilityMetric usability,
-                                int count_empty_icons,
-                                int count_accounts);
 
 // Log the result of navigator.credentials.get.
 void LogCredentialManagerGetResult(CredentialManagerGetResult result,
@@ -423,19 +422,20 @@ void LogContextOfShowAllSavedPasswordsAccepted(
     ShowAllSavedPasswordsContext context);
 
 // Log the type of the password dropdown when it's shown.
-void LogPasswordDropdownShown(PasswordDropdownState state);
+void LogPasswordDropdownShown(PasswordDropdownState state, bool off_the_record);
 
 // Log the type of the password dropdown suggestion when chosen.
-void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type);
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type,
+                                     bool off_the_record);
 
 // Log a password successful submission event.
 void LogPasswordSuccessfulSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event);
+    autofill::mojom::SubmissionIndicatorEvent event);
 
 // Log a password successful submission event for accepted by user password save
 // or update.
 void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
-    autofill::SubmissionIndicatorEvent event);
+    autofill::mojom::SubmissionIndicatorEvent event);
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
@@ -450,6 +450,16 @@ void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
 
 // Log whether a saved password was generated.
 void LogNewlySavedPasswordIsGenerated(bool value);
+
+// Log whether the generated password was accepted or rejected for generation of
+// |type| (automatic or manual).
+void LogGenerationDialogChoice(
+    GenerationDialogChoice choice,
+    autofill::password_generation::PasswordGenerationType type);
+
+// Log whether there is a conflict with existing credentials when presaving
+// a generated password.
+void LogGenerationPresaveConflict(GenerationPresaveConflict value);
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save sync password change event.

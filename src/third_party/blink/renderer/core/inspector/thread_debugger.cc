@@ -190,7 +190,7 @@ bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value) {
 }
 
 double ThreadDebugger::currentTimeMS() {
-  return WTF::CurrentTimeMS();
+  return base::Time::Now().ToDoubleT() * 1000.0;
 }
 
 bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object) {
@@ -460,14 +460,14 @@ void ThreadDebugger::consoleTime(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
   TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console",
-                                ToCoreString(title).Utf8().data(), this);
+                                ToCoreString(title).Utf8().c_str(), this);
 }
 
 void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title) {
   // TODO(dgozman): we can save on a copy here if trace macro would take a
   // pointer with length.
   TRACE_EVENT_COPY_ASYNC_END0("blink.console",
-                              ToCoreString(title).Utf8().data(), this);
+                              ToCoreString(title).Utf8().c_str(), this);
 }
 
 void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
@@ -493,7 +493,7 @@ void ThreadDebugger::startRepeatingTimer(
           &ThreadDebugger::OnTimer);
   TaskRunnerTimer<ThreadDebugger>* timer_ptr = timer.get();
   timers_.push_back(std::move(timer));
-  timer_ptr->StartRepeating(TimeDelta::FromSecondsD(interval), FROM_HERE);
+  timer_ptr->StartRepeating(base::TimeDelta::FromSecondsD(interval), FROM_HERE);
 }
 
 void ThreadDebugger::cancelTimer(void* data) {

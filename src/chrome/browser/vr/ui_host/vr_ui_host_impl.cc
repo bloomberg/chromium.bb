@@ -23,7 +23,7 @@
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -126,20 +126,19 @@ VRUiHostImpl::VRUiHostImpl(device::mojom::XRDeviceId device_id,
                            device::mojom::XRCompositorHostPtr compositor)
     : compositor_(std::move(compositor)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      triggered_capturing_transience_(&triggered_capturing_state_model_),
-      weak_ptr_factory_(this) {
+      triggered_capturing_transience_(&triggered_capturing_state_model_) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << __func__;
 
-  BrowserXRRuntime* runtime =
-      XRRuntimeManager::GetInstance()->GetRuntime(device_id);
+  auto* runtime_manager = XRRuntimeManager::GetInstanceIfCreated();
+  DCHECK(runtime_manager != nullptr);
+  BrowserXRRuntime* runtime = runtime_manager->GetRuntime(device_id);
   if (runtime) {
     runtime->AddObserver(this);
   }
 
-  auto* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
+  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
+                                               &geolocation_config_);
 }
 
 VRUiHostImpl::~VRUiHostImpl() {
@@ -165,9 +164,9 @@ bool IsValidInfo(device::mojom::VRDisplayInfoPtr& info) {
   // Numeric properties are validated elsewhere, but we expect a stereo headset.
   if (!info)
     return false;
-  if (!info->leftEye)
+  if (!info->left_eye)
     return false;
-  if (!info->rightEye)
+  if (!info->right_eye)
     return false;
   return true;
 }

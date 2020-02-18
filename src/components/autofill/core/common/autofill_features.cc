@@ -93,14 +93,6 @@ const base::Feature kAutofillGetPaymentsIdentityFromSync{
 const base::Feature kAutofillKeyboardAccessory{
     "AutofillKeyboardAccessory", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the manual fallback will be present.
-const base::Feature kAutofillManualFallback{"AutofillManualFallback",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether the manual fallback will include addresses and cards.
-const base::Feature kAutofillManualFallbackPhaseTwo{
-    "AutofillManualFallbackPhaseTwo", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAutofillPruneSuggestions{
     "AutofillPruneSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -216,6 +208,11 @@ const base::Feature kAutofillManualFallbackAndroid{
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the touch to fill feature for Android.
+const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -232,14 +229,6 @@ bool IsAutofillCreditCardAssistEnabled() {
 #else
   return base::FeatureList::IsEnabled(kAutofillCreditCardAssist);
 #endif
-}
-
-bool IsPasswordManualFallbackEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillManualFallback);
-}
-
-bool IsAutofillManualFallbackEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillManualFallbackPhaseTwo);
 }
 
 }  // namespace features

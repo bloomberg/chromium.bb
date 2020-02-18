@@ -393,6 +393,10 @@
     ]
   },
 
+  "ExternalPrintServers": {
+    "note": "This policy will be added in R-78"
+  },
+
   "NativePrinters": {
     "os": ["chromeos"],
     "test_policy": {
@@ -698,11 +702,7 @@
   },
 
   "MediaCacheSize": {
-    "os": ["win", "mac", "linux"],
-    "test_policy": { "MediaCacheSize": 200 },
-    "pref_mappings": [
-      { "pref": "browser.media_cache_size" }
-    ]
+    "note": "This policy has been removed, see https://crbug.com/974387."
   },
 
   "DownloadRestrictions": {
@@ -879,6 +879,14 @@
     "note": "This policy is deprecated and removed since Chrome 75."
   },
 
+  "BuiltinCertificateVerifierEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "BuiltinCertificateVerifierEnabled": true },
+    "pref_mappings": [
+      { "pref": "builtin_certificate_verifier_enabled" }
+    ]
+  },
+
   "AuthSchemes": {
     "os": ["win", "linux", "mac", "chromeos", "android"],
     "test_policy": { "AuthSchemes": "AuthSchemes" },
@@ -1013,11 +1021,15 @@
       "KerberosAccounts": [
         {
           "principal": "user1@realm",
-          "password": "password1"
+          "password": "password1",
+          "remember_password": true
         },
         {
-          "principal": "user2@realm",
-          "remember_password": true,
+          "principal": "${LOGIN_EMAIL}"
+        },
+        {
+          "principal": "${LOGIN_ID}",
+          "password": "${PASSWORD}",
           "krb5conf": [
             "line1",
             "line2"
@@ -2433,6 +2445,16 @@
     ]
   },
 
+  "BrowserGuestModeEnforced": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BrowserGuestModeEnforced": true },
+    "pref_mappings": [
+      { "pref": "profile.browser_guest_enforced",
+        "local_state": true
+      }
+    ]
+  },
+
   "BrowserAddPersonEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "BrowserAddPersonEnabled": true },
@@ -2466,7 +2488,7 @@
   },
 
   "BrowserSignin.DesktopForce": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "mac"],
     "test_policy": { "BrowserSignin": 2 },
     "pref_mappings": [
       { "pref": "signin.allowed_on_next_startup" },
@@ -2476,6 +2498,14 @@
       { "pref": "profile.browser_guest_enabled",
         "local_state": true
       }
+    ]
+  },
+
+  "BrowserSignin.LinuxForceNotSupported": {
+    "os": ["linux"],
+    "test_policy": { "BrowserSignin": 2 },
+    "pref_mappings": [
+      { "pref": "signin.allowed_on_next_startup" }
     ]
   },
 
@@ -2563,13 +2593,7 @@
   },
 
   "WelcomePageOnOSUpgradeEnabled": {
-    "os": ["win"],
-    "test_policy": { "WelcomePageOnOSUpgradeEnabled": false },
-    "pref_mappings": [
-      { "pref": "browser.welcome_page_on_os_upgrade_enabled",
-        "local_state": true
-      }
-    ]
+    "note": "This policy is retired, see https://crbug.com/978349."
   },
 
   "SuppressUnsupportedOSWarning": {
@@ -3103,18 +3127,6 @@
     ]
   },
 
-  "DockedMagnifierEnabled": {
-    "os": ["chromeos"],
-    "test_policy": { "DockedMagnifierEnabled": true },
-    "pref_mappings": [
-      { "pref": "ash.docked_magnifier.enabled",
-        "indicator_tests": [
-          { "policy": { "DockedMagnifierEnabled": true } }
-        ]
-      }
-    ]
-  },
-
   "SpokenFeedbackEnabled": {
     "os": ["chromeos"],
     "test_policy": { "SpokenFeedbackEnabled": true },
@@ -3139,6 +3151,18 @@
     ]
   },
 
+  "SelectToSpeakEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "SelectToSpeakEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.select_to_speak",
+        "indicator_tests": [
+          { "policy": { "SelectToSpeakEnabled": true } }
+        ]
+      }
+    ]
+  },
+
   "ScreenMagnifierType": {
     "os": ["chromeos"],
     "test_policy": { "ScreenMagnifierType": 1 },
@@ -3148,7 +3172,8 @@
           { "policy": { "ScreenMagnifierType": 1 } }
         ]
       },
-      { "pref": "settings.a11y.screen_magnifier" }
+      { "pref": "settings.a11y.screen_magnifier" },
+      { "pref": "ash.docked_magnifier.enabled" }
     ]
   },
 
@@ -3335,6 +3360,16 @@
       { "pref": "settings.display.unified_desktop_enabled_by_default" }
     ]
   },
+
+  "UserFeedbackAllowed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "UserFeedbackAllowed": false },
+    "pref_mappings": [
+      { "pref": "feedback_allowed" }
+    ]
+  },
+
 
   "ArcEnabled": {
     "os": ["chromeos"],
@@ -3641,6 +3676,14 @@
     "test_policy": { "SamlPasswordExpirationAdvanceWarningDays": 7 },
     "pref_mappings": [
       { "pref": "saml.password_expiration_advance_warning_days"}
+    ]
+  },
+
+  "VmManagementCliAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "VmManagementCliAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.vm_management_cli_allowed_by_policy" }
     ]
   },
 
@@ -4223,8 +4266,7 @@
   },
 
   "DeviceLoginScreenSitePerProcess": {
-    "os": ["chromeos"],
-    "note": "Chrome OS device policy used by session_manager only"
+    "note": "This policy has been removed in Chrome 77, see https://crbug.com/964068 ."
   },
 
   "VirtualMachinesAllowed": {
@@ -4263,6 +4305,14 @@
     ]
   },
 
+  "CrostiniRootAccessAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CrostiniRootAccessAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.user_root_access_allowed_by_policy" }
+    ]
+  },
+
   "DeviceSamlLoginAuthenticationType": {
   },
 
@@ -4270,6 +4320,19 @@
      "os": ["chromeos"],
      "test_policy": { "DeviceScheduledUpdateCheck": {"update_check_time" : {"hour": 23, "minute": 35}, "frequency": "WEEKLY", "day_of_week": "MONDAY" }}
    },
+
+   "DeviceWebUsbAllowDevicesForUrls": {
+      "os": ["chromeos"],
+      "test_policy": { "DeviceWebUsbAllowDevicesForUrls": [{
+        "devices": [{"vendor_id": 1234, "product_id": 5678}],
+        "urls": ["https://google.com", "https://requesting.com,https://embedded.com"]
+      }]},
+      "pref_mappings": [
+        { "pref": "device_webusb_allow_devices_for_urls",
+          "local_state": true
+        }
+      ]
+    },
 
   "ChromeCleanupEnabled": {
     "os": ["win"],
@@ -4344,9 +4407,7 @@
   },
 
   "ContextualSuggestionsEnabled": {
-    "os": ["android"],
-    "test_policy": { "ContextualSuggestionsEnabled": false },
-    "pref_mappings": [{ "pref": "contextual_suggestions.enabled" }]
+    "note": "This policy has been removed. See https://crbug.com/938050"
   },
 
   "DeviceAutoUpdateTimeRestrictions": {
@@ -4420,9 +4481,9 @@
     "pref_mappings": [{ "pref": "child_user.parent_access_code.config" }]
   },
 
-  "CertificateManagementAllowed": {
+  "ClientCertificateManagementAllowed": {
     "os": ["chromeos"],
-    "test_policy": { "CertificateManagementAllowed": 2 },
+    "test_policy": { "ClientCertificateManagementAllowed": 2 },
     "pref_mappings": [{ "pref": "certificate_management_allowed" }]
   },
 
@@ -4637,6 +4698,17 @@
     "pref_mappings": [
       {
         "pref": "ash.power.usb_power_share_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "DevicePowerwashAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "DevicePowerwashAllowed": true },
+    "pref_mappings": [
+      {
+        "pref": "cros.device.device_powerwash_allowed",
         "local_state": true
       }
     ]
@@ -4880,6 +4952,16 @@
     },
     "pref_mappings": [
       { "pref": "startup_browser_window_launch_suppressed" }
+    ]
+  },
+
+  "SafeBrowsingRealTimeLookupEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "SafeBrowsingRealTimeLookupEnabled": true
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.real_time_lookup_enabled" }
     ]
   }
 }

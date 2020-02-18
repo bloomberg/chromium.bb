@@ -46,6 +46,8 @@ unsigned InternalFormatForGpuMemoryBufferFormat(gfx::BufferFormat format) {
       return GL_RGB_YCBCR_420V_CHROMIUM;
     case gfx::BufferFormat::UYVY_422:
       return GL_RGB_YCBCR_422_CHROMIUM;
+    case gfx::BufferFormat::P010:
+      return GL_RGB_YCBCR_P010_CHROMIUM;
     default:
       NOTREACHED();
       return 0;
@@ -76,6 +78,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
       return true;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::P010:
       // U and V planes are subsampled by a factor of 2.
       return size.width() % 2 == 0 && size.height() % 2 == 0;
     case gfx::BufferFormat::UYVY_422:
@@ -104,8 +107,8 @@ uint32_t GetPlatformSpecificTextureTarget() {
 GPU_EXPORT uint32_t GetBufferTextureTarget(gfx::BufferUsage usage,
                                            gfx::BufferFormat format,
                                            const Capabilities& capabilities) {
-  bool found = base::ContainsValue(capabilities.texture_target_exception_list,
-                                   gfx::BufferUsageAndFormat(usage, format));
+  bool found = base::Contains(capabilities.texture_target_exception_list,
+                              gfx::BufferUsageAndFormat(usage, format));
   return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
 }
 

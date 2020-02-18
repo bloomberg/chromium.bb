@@ -7,20 +7,21 @@
 
 from __future__ import print_function
 
+import contextlib
 import mock
 
 from chromite.api import controller
 from chromite.api.controller import test as test_controller
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.api.gen.chromite.api import image_pb2
 from chromite.api.gen.chromite.api import test_pb2
-from chromite.cbuildbot import commands
-from chromite.lib import constants
+from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import failures_lib
+from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.scripts import cros_set_lsb_release
+from chromite.service import test as test_service
 
 
 class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
@@ -74,37 +75,10 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     pkgs = ['cat/pkg', 'foo/bar']
     expected = [('cat', 'pkg'), ('foo', 'bar')]
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.PackageBuildFailure(rce, 'shortname', pkgs)
-    self.PatchObject(commands, 'RunUnitTests', side_effect=error)
 
-    input_msg = self._GetInput(board='board', result_path=self.tempdir)
-    output_msg = self._GetOutput()
-
-    rc = test_controller.BuildTargetUnitTest(input_msg, output_msg)
-
-    self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
-    self.assertTrue(output_msg.failed_packages)
-    failed = []
-    for pi in output_msg.failed_packages:
-      failed.append((pi.category, pi.package_name))
-    self.assertItemsEqual(expected, failed)
-
-  def testPopulatedEmergeFile(self):
-    """Test build script failure due to using outside emerge status file."""
-    tempdir = osutils.TempDir(base_dir=self.tempdir)
-    self.PatchObject(osutils, 'TempDir', return_value=tempdir)
-
-    pkgs = ['cat/pkg', 'foo/bar']
-    cpvs = [portage_util.SplitCPV(pkg, strict=False) for pkg in pkgs]
-    expected = [('cat', 'pkg'), ('foo', 'bar')]
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.BuildScriptFailure(rce, 'shortname')
-    self.PatchObject(commands, 'RunUnitTests', side_effect=error)
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
-                     return_value=cpvs)
+    result = test_service.BuildTargetUnitTestResult(1, None)
+    result.failed_cpvs = [portage_util.SplitCPV(p, strict=False) for p in pkgs]
+    self.PatchObject(test_service, 'BuildTargetUnitTest', return_value=result)
 
     input_msg = self._GetInput(board='board', result_path=self.tempdir)
     output_msg = self._GetOutput()
@@ -123,12 +97,8 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
     tempdir = osutils.TempDir(base_dir=self.tempdir)
     self.PatchObject(osutils, 'TempDir', return_value=tempdir)
 
-    rce = cros_build_lib.RunCommandError('error',
-                                         cros_build_lib.CommandResult())
-    error = failures_lib.BuildScriptFailure(rce, 'shortname')
-    patch = self.PatchObject(commands, 'RunUnitTests', side_effect=error)
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
-                     return_value=[])
+    result = test_service.BuildTargetUnitTestResult(1, None)
+    self.PatchObject(test_service, 'BuildTargetUnitTest', return_value=result)
 
     pkgs = ['foo/bar', 'cat/pkg']
     blacklist = [portage_util.SplitCPV(p, strict=False) for p in pkgs]
@@ -140,9 +110,6 @@ class BuildTargetUnitTestTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertEqual(controller.RETURN_CODE_COMPLETED_UNSUCCESSFULLY, rc)
     self.assertFalse(output_msg.failed_packages)
-    patch.assert_called_with(constants.SOURCE_ROOT, 'board', extra_env=mock.ANY,
-                             chroot_args=mock.ANY, build_stage=False,
-                             blacklist=pkgs)
 
 
 class VmTestTest(cros_test_lib.MockTestCase):
@@ -151,11 +118,13 @@ class VmTestTest(cros_test_lib.MockTestCase):
   def _GetInput(self, **kwargs):
     values = dict(
         build_target=common_pb2.BuildTarget(name='target'),
-        vm_image=image_pb2.VmImage(path='/path/to/image.bin'),
+        vm_path=common_pb2.Path(path='/path/to/image.bin',
+                                location=common_pb2.Path.INSIDE),
         test_harness=test_pb2.VmTestRequest.TAST,
         vm_tests=[test_pb2.VmTestRequest.VmTest(pattern='suite')],
         ssh_options=test_pb2.VmTestRequest.SshOptions(
-            port=1234, private_key_path='/path/to/id_rsa'),
+            port=1234, private_key_path={'path':'/path/to/id_rsa',
+                                         'location': common_pb2.Path.INSIDE}),
     )
     values.update(kwargs)
     return test_pb2.VmTestRequest(**values)
@@ -199,7 +168,7 @@ class VmTestTest(cros_test_lib.MockTestCase):
 
   def testMissingVmImage(self):
     """Test VmTest dies when vm_image not set."""
-    input_proto = self._GetInput(vm_image=None)
+    input_proto = self._GetInput(vm_path=None)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       test_controller.VmTest(input_proto, None)
 
@@ -215,3 +184,85 @@ class VmTestTest(cros_test_lib.MockTestCase):
     input_proto = self._GetInput(vm_tests=[])
     with self.assertRaises(cros_build_lib.DieSystemExit):
       test_controller.VmTest(input_proto, None)
+
+
+class MoblabVmTestTest(cros_test_lib.MockTestCase):
+  """Test the MoblabVmTest endpoint."""
+
+  @staticmethod
+  def _Payload(path):
+    return test_pb2.MoblabVmTestRequest.Payload(
+        path=common_pb2.Path(path=path))
+
+  @staticmethod
+  def _Output():
+    return test_pb2.MoblabVmTestResponse()
+
+  def _Input(self):
+    return test_pb2.MoblabVmTestRequest(
+        chroot=common_pb2.Chroot(path=self.chroot_dir),
+        image_payload=self._Payload(self.image_payload_dir),
+        cache_payloads=[self._Payload(self.autotest_payload_dir)])
+
+  def setUp(self):
+    self.chroot_dir = '/chroot'
+    self.chroot_tmp_dir = '/chroot/tmp'
+    self.image_payload_dir = '/payloads/image'
+    self.autotest_payload_dir = '/payloads/autotest'
+    self.builder = 'moblab-generic-vm/R12-3.4.5-67.890'
+    self.image_cache_dir = '/mnt/moblab/cache'
+    self.image_mount_dir = '/mnt/image'
+
+    self.PatchObject(chroot_lib.Chroot, 'tempdir', osutils.TempDir)
+
+    self.mock_create_moblab_vms = self.PatchObject(
+        test_service, 'CreateMoblabVm')
+    self.mock_prepare_moblab_vm_image_cache = self.PatchObject(
+        test_service, 'PrepareMoblabVmImageCache',
+        return_value=self.image_cache_dir)
+    self.mock_run_moblab_vm_tests = self.PatchObject(
+        test_service, 'RunMoblabVmTest')
+    self.mock_validate_moblab_vm_tests = self.PatchObject(
+        test_service, 'ValidateMoblabVmTest')
+
+    @contextlib.contextmanager
+    def MockLoopbackPartitions(*_args, **_kwargs):
+      mount = mock.MagicMock()
+      mount.Mount.return_value = [self.image_mount_dir]
+      yield mount
+    self.PatchObject(image_lib, 'LoopbackPartitions', MockLoopbackPartitions)
+
+  def testImageContainsBuilder(self):
+    """MoblabVmTest calls service with correct args."""
+    request = self._Input()
+    response = self._Output()
+
+    self.PatchObject(
+        cros_build_lib, 'LoadKeyValueFile',
+        return_value={cros_set_lsb_release.LSB_KEY_BUILDER_PATH: self.builder})
+
+    test_controller.MoblabVmTest(request, response)
+
+    self.assertEqual(
+        self.mock_create_moblab_vms.call_args_list,
+        [mock.call(mock.ANY, self.chroot_dir, self.image_payload_dir)])
+    self.assertEqual(
+        self.mock_prepare_moblab_vm_image_cache.call_args_list,
+        [mock.call(mock.ANY, self.builder, [self.autotest_payload_dir])])
+    self.assertEqual(
+        self.mock_run_moblab_vm_tests.call_args_list,
+        [mock.call(mock.ANY, mock.ANY, self.builder, self.image_cache_dir,
+                   mock.ANY)])
+    self.assertEqual(
+        self.mock_validate_moblab_vm_tests.call_args_list,
+        [mock.call(mock.ANY)])
+
+  def testImageMissingBuilder(self):
+    """MoblabVmTest dies when builder path not found in lsb-release."""
+    request = self._Input()
+    response = self._Output()
+
+    self.PatchObject(cros_build_lib, 'LoadKeyValueFile', return_value={})
+
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      test_controller.MoblabVmTest(request, response)

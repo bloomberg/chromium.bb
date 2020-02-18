@@ -297,12 +297,6 @@ void ParseJobs(ipp_t* response,
   }
 }
 
-// Returns the uri for printer with |id| as served by CUPS.  Assumes that |id|
-// is a valid CUPS printer name and performs no error checking or escaping.
-std::string PrinterUriFromName(const std::string& id) {
-  return base::StringPrintf("ipp://localhost/printers/%s", id.c_str());
-}
-
 // Extracts PrinterInfo fields from |response| and populates |printer_info|.
 // Returns true if at least printer-make-and-model and ipp-versions-supported
 // were read.
@@ -325,8 +319,7 @@ bool ParsePrinterInfo(ipp_t* response, PrinterInfo* printer_info) {
     } else if (name == base::StringPiece(kIppFeaturesSupported)) {
       std::vector<std::string> features;
       ParseCollection(attr, &features);
-      printer_info->ipp_everywhere =
-          base::ContainsValue(features, kIppEverywhere);
+      printer_info->ipp_everywhere = base::Contains(features, kIppEverywhere);
     } else if (name == base::StringPiece(kDocumentFormatSupported)) {
       ParseCollection(attr, &printer_info->document_formats);
     }
@@ -353,6 +346,10 @@ PrinterStatus::~PrinterStatus() = default;
 PrinterInfo::PrinterInfo() = default;
 
 PrinterInfo::~PrinterInfo() = default;
+
+std::string PrinterUriFromName(const std::string& id) {
+  return base::StringPrintf("ipp://localhost/printers/%s", id.c_str());
+}
 
 void ParseJobsResponse(ipp_t* response,
                        const std::string& printer_id,
@@ -430,18 +427,18 @@ void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status) {
   }
 }
 
-bool GetPrinterInfo(const std::string& address,
-                    const int port,
-                    const std::string& resource,
-                    bool encrypted,
-                    PrinterInfo* printer_info) {
+PrinterQueryResult GetPrinterInfo(const std::string& address,
+                                  const int port,
+                                  const std::string& resource,
+                                  bool encrypted,
+                                  PrinterInfo* printer_info) {
   ScopedHttpPtr http = ScopedHttpPtr(httpConnect2(
       address.c_str(), port, nullptr, AF_INET,
       encrypted ? HTTP_ENCRYPTION_ALWAYS : HTTP_ENCRYPTION_IF_REQUESTED, 0,
       kHttpConnectTimeoutMs, nullptr));
   if (!http) {
     LOG(WARNING) << "Could not connect to host";
-    return false;
+    return PrinterQueryResult::UNREACHABLE;
   }
 
   // TODO(crbug.com/821497): Use a library to canonicalize the URL.
@@ -460,10 +457,13 @@ bool GetPrinterInfo(const std::string& address,
                            kPrinterInfo.size(), kPrinterInfo.data(), &status);
   if (status != IPP_STATUS_OK || response.get() == nullptr) {
     LOG(WARNING) << "Get attributes failure: " << status;
-    return false;
+    return PrinterQueryResult::UNKNOWN_FAILURE;
   }
 
-  return ParsePrinterInfo(response.get(), printer_info);
+  if (ParsePrinterInfo(response.get(), printer_info)) {
+    return PrinterQueryResult::SUCCESS;
+  }
+  return PrinterQueryResult::UNKNOWN_FAILURE;
 }
 
 bool GetPrinterStatus(http_t* http,

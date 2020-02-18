@@ -58,7 +58,7 @@ C:\strawberry\perl\vendor\lib\Template\Stash.pm
 C:\strawberry\perl\vendor\lib\Template\Stash\Context.pm
 C:\strawberry\perl\vendor\lib\Template\Stash\XS.pm
 C:\strawberry\perl\vendor\lib\Template\Test.pm
-C:\strawberry\perl\vendor\lib\Template\Toolkit.pod
+C:\strawberry\perl\vendor\lib\Template\Toolkit.pm
 C:\strawberry\perl\vendor\lib\Template\Tools.pod
 C:\strawberry\perl\vendor\lib\Template\Tools\tpage.pod
 C:\strawberry\perl\vendor\lib\Template\Tools\ttree.pod
@@ -67,5 +67,4 @@ C:\strawberry\perl\vendor\lib\Template\Tutorial\Datafile.pod
 C:\strawberry\perl\vendor\lib\Template\Tutorial\Web.pod
 C:\strawberry\perl\vendor\lib\Template\VMethods.pm
 C:\strawberry\perl\vendor\lib\Template\View.pm
-C:\strawberry\perl\vendor\lib\auto\Template\Stash\XS\XS.bs
-C:\strawberry\perl\vendor\lib\auto\Template\Stash\XS\XS.dll
+C:\strawberry\perl\vendor\lib\auto\Template\Stash\XS\XS.xs.dll

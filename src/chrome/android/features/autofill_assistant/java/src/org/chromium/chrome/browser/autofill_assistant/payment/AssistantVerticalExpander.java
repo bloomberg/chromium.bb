@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.payment;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
+
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -14,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /**
@@ -143,18 +146,6 @@ public class AssistantVerticalExpander extends LinearLayout {
         mExpandedContainer.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    /**
-     * Sets the top/bottom padding of the title bar. This method should be used instead of manually
-     * setting a padding on the title view, because that would result in misalignment between title
-     * view and the expand chevron.
-     */
-    public void setTitlePadding(int topPadding, int bottomPadding) {
-        mTitleContainer.setPadding(mTitleContainer.getPaddingLeft(), topPadding,
-                mTitleContainer.getPaddingRight(), bottomPadding);
-        mChevronButton.setPadding(mChevronButton.getPaddingLeft(), topPadding,
-                mChevronButton.getPaddingRight(), bottomPadding);
-    }
-
     public View getChevronButton() {
         return mChevronButton;
     }
@@ -181,8 +172,7 @@ public class AssistantVerticalExpander extends LinearLayout {
 
     private View createChevron() {
         TintedDrawable chevron = TintedDrawable.constructTintedDrawable(getContext(),
-                org.chromium.chrome.R.drawable.ic_expand_more_black_24dp,
-                org.chromium.chrome.R.color.payments_section_chevron);
+                R.drawable.ic_expand_more_black_24dp, R.color.payments_section_chevron);
 
         ImageView view = new ImageView(getContext());
         view.setImageDrawable(chevron);
@@ -190,6 +180,7 @@ public class AssistantVerticalExpander extends LinearLayout {
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.gravity = Gravity.CENTER_VERTICAL;
         view.setLayoutParams(lp);
+        view.setTag(VERTICAL_EXPANDER_CHEVRON);
         return view;
     }
 

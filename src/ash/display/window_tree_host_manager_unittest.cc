@@ -18,7 +18,6 @@
 #include "ash/wm/cursor_manager_test_api.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -548,8 +547,8 @@ TEST_F(WindowTreeHostManagerTest, MirrorToDockedWithFullscreen) {
   EXPECT_EQ(2U, display_manager()->num_connected_displays());
   EXPECT_EQ(1U, display_manager()->GetNumDisplays());
 
-  wm::WindowState* window_state = wm::GetWindowState(w1.get());
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState* window_state = WindowState::Get(w1.get());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&toggle_fullscreen_event);
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_EQ("0,0 250x250", w1->bounds().ToString());
@@ -1708,8 +1707,7 @@ TEST_F(WindowTreeHostManagerTest, KeyEventFromSecondaryDisplay) {
   dispatcher_api.set_target(
       Shell::Get()->window_tree_host_manager()->GetRootWindowForDisplayId(
           GetSecondaryDisplay().id()));
-  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(
-      &key_event, base::NullCallback());
+  Shell::Get()->window_tree_host_manager()->DispatchKeyEventPostIME(&key_event);
   // As long as nothing crashes, we're good.
 }
 

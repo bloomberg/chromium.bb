@@ -118,6 +118,8 @@ bool GLSurfaceEGLSurfaceControl::Resize(const gfx::Size& size,
                                         float scale_factor,
                                         ColorSpace color_space,
                                         bool has_alpha) {
+  // TODO(khushalsagar): Update GLSurfaceFormat using the |color_space| above?
+  // We don't do this for the NativeViewGLSurfaceEGL as well yet.
   window_rect_ = gfx::Rect(size);
   return true;
 }
@@ -191,29 +193,31 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
     return;
   }
 
-  // Mark the intersection of a surface's rect with the damage rect as the dirty
-  // rect for that surface.
-  DCHECK_LE(pending_surfaces_count_, surface_list_.size());
-  const gfx::Rect damage_rect_in_screen_space =
-      ApplyDisplayInverse(damage_rect);
+  // This is to workaround an Android bug where not specifying a damage region
+  // is assumed to mean nothing is damaged. See crbug.com/993977.
   for (size_t i = 0; i < pending_surfaces_count_; ++i) {
     const auto& surface_state = surface_list_[i];
-    if (!surface_state.buffer_updated_in_pending_transaction)
+    if (!surface_state.hardware_buffer)
       continue;
 
-    gfx::Rect surface_damage_rect = surface_state.dst;
-    surface_damage_rect.Intersect(damage_rect_in_screen_space);
-    pending_transaction_->SetDamageRect(*surface_state.surface,
-                                        surface_damage_rect);
+    pending_transaction_->SetDamageRect(
+        *surface_state.surface,
+        gfx::Rect(GetBufferSize(surface_state.hardware_buffer)));
   }
 
   // Surfaces which are present in the current frame but not in the next frame
   // need to be explicitly updated in order to get a release fence for them in
   // the next transaction.
+  DCHECK_LE(pending_surfaces_count_, surface_list_.size());
   for (size_t i = pending_surfaces_count_; i < surface_list_.size(); ++i) {
     pending_transaction_->SetBuffer(*surface_list_[i].surface, nullptr,
                                     base::ScopedFD());
   }
+
+  // TODO(khushalsagar): Consider using the SetDamageRect API for partial
+  // invalidations. Note that the damage rect set should be in the space in
+  // which the content is rendered (including the pre-transform). See
+  // crbug.com/988857 for details.
 
   // Release resources for the current frame once the next frame is acked.
   ResourceRefs resources_to_release;
@@ -268,9 +272,10 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     return false;
   }
 
-  if (!SurfaceControl::SupportsColorSpace(image->color_space())) {
+  const auto& image_color_space = GetNearestSupportedImageColorSpace(image);
+  if (!SurfaceControl::SupportsColorSpace(image_color_space)) {
     LOG(ERROR) << "Not supported color space used with overlay : "
-               << image->color_space().ToString();
+               << image_color_space.ToString();
   }
 
   if (!pending_transaction_)
@@ -349,10 +354,10 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     pending_transaction_->SetOpaque(*surface_state.surface, opaque);
   }
 
-  if (uninitialized || surface_state.color_space != image->color_space()) {
-    surface_state.color_space = image->color_space();
+  if (uninitialized || surface_state.color_space != image_color_space) {
+    surface_state.color_space = image_color_space;
     pending_transaction_->SetColorSpace(*surface_state.surface,
-                                        image->color_space());
+                                        image_color_space);
   }
 
   return true;
@@ -498,6 +503,24 @@ gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(
       gfx::InvertOverlayTransform(display_transform_), window_rect_.size());
   return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       display_inverse, input);
+}
+
+const gfx::ColorSpace&
+GLSurfaceEGLSurfaceControl::GetNearestSupportedImageColorSpace(
+    GLImage* image) const {
+  static constexpr gfx::ColorSpace kSRGB = gfx::ColorSpace::CreateSRGB();
+  static constexpr gfx::ColorSpace kP3 = gfx::ColorSpace::CreateDisplayP3D65();
+
+  switch (format_.GetColorSpace()) {
+    case GLSurfaceFormat::COLOR_SPACE_UNSPECIFIED:
+    case GLSurfaceFormat::COLOR_SPACE_SRGB:
+      return kSRGB;
+    case GLSurfaceFormat::COLOR_SPACE_DISPLAY_P3:
+      return image->color_space() == kP3 ? kP3 : kSRGB;
+  }
+
+  NOTREACHED();
+  return kSRGB;
 }
 
 GLSurfaceEGLSurfaceControl::SurfaceState::SurfaceState(

@@ -118,6 +118,13 @@ struct FeaturesVk : FeatureSetBase
         "supports_shader_stencil_export", FeatureCategory::VulkanFeatures,
         "VkDevice supports the VK_EXT_shader_stencil_export extension", &members};
 
+    // Where VK_EXT_transform_feedback is not support, an emulation path is used.
+    // http://anglebug.com/3205
+    Feature emulateTransformFeedback = {
+        "emulate_transform_feedback", FeatureCategory::VulkanFeatures,
+        "Emulate transform feedback as the VK_EXT_transform_feedback is not present.", &members,
+        "http://anglebug.com/3205"};
+
     // VK_PRESENT_MODE_FIFO_KHR causes random timeouts on Linux Intel. http://anglebug.com/3153
     Feature disableFifoPresentMode = {
         "disable_fifo_present_mode", FeatureCategory::VulkanWorkarounds,
@@ -143,12 +150,12 @@ struct FeaturesVk : FeatureSetBase
 
     // When the scissor is (0,0,0,0) on Windows Intel, the driver acts as if the scissor was
     // disabled.  Work-around this by setting the scissor to just outside of the render area
-    // (e.g. (renderArea.x, renderArea.y, 1, 1)). http://anglebug.com/3153
+    // (e.g. (renderArea.x, renderArea.y, 1, 1)). http://anglebug.com/3407
     Feature forceNonZeroScissor = {
         "force_non_zero_scissor", FeatureCategory::VulkanWorkarounds,
         "On Windows Intel, when the scissor is (0,0,0,0), the driver acts as if the "
         "scissor was disabled",
-        &members, "http://anglebug.com/3153"};
+        &members, "http://anglebug.com/3407"};
 
     // OES_depth_texture is a commonly expected feature on Android. However it
     // requires that D16_UNORM support texture filtering
@@ -160,6 +167,23 @@ struct FeaturesVk : FeatureSetBase
                                  "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT, "
                                  "which prevents OES_depth_texture from being supported.",
                                  &members, "http://anglebug.com/3452"};
+
+    // On some android devices, vkCmdBlitImage with flipped coordinates blits incorrectly.  This
+    // workaround makes sure this path is avoided.  http://anglebug.com/3498
+    Feature disableFlippingBlitWithCommand = {
+        "disable_flipping_blit_with_command", FeatureCategory::VulkanWorkarounds,
+        "On some android devices, vkCmdBlitImage with flipped coordinates blits incorrectly.",
+        &members, "http://anglebug.com/3498"};
+
+    // On platform with Intel or AMD GPU, a window resizing would not trigger the vulkan driver to
+    // return VK_ERROR_OUT_OF_DATE on swapchain present.  Work-around by query current window extent
+    // every frame to detect a window resizing.
+    // http://anglebug.com/3623, http://anglebug.com/3624, http://anglebug.com/3625
+    Feature perFrameWindowSizeQuery = {
+        "per_frame_window_size_query", FeatureCategory::VulkanWorkarounds,
+        "On platform with Intel or AMD gpu, vulkan swapchain is not returning VK_ERROR_OUT_OF_DATE"
+        "when window resizing",
+        &members, "http://anglebug.com/3623, http://anglebug.com/3624, http://anglebug.com/3625"};
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

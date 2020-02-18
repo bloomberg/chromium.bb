@@ -17,9 +17,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 import javax.annotation.Nonnull;

@@ -260,6 +260,9 @@ testcase.checkContextMenusForInputElements = async () => {
   // Open FilesApp on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
+  // Click on the search button to display the search box.
+  await remoteCall.waitAndClickElement(appId, '#search-button');
+
   // Query all input elements.
   const elements = await remoteCall.callRemoteTestUtil(
       'queryAllElements', appId,
@@ -605,4 +608,36 @@ testcase.checkRenameDisabledInDocProvider = () => {
 testcase.checkRenameEnabledInDocProvider = () => {
   return checkDocumentsProviderContextMenu(
       'rename', 'Renamable File.txt', true);
+};
+
+/**
+ * Tests that context menu in file list gets the focus, so ChromeVox can
+ * announce it.
+ */
+testcase.checkContextMenuFocus = async () => {
+  // Open Files App on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Select the file |path|.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'selectFile', appId, ['hello.txt']));
+
+  // Wait for the file to be selected.
+  await remoteCall.waitForElement(appId, '.table-row[selected]');
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Wait for the menu item to get focus.
+  await remoteCall.waitForElement(
+      appId, '#file-context-menu cr-menu-item:focus');
+
+  // Check currently focused element.
+  const focusedElement =
+      await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
+  chrome.test.assertEq('menuitem', focusedElement.attributes.role);
 };

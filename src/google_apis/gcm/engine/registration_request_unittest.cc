@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gcm/engine/gcm_registration_request_handler.h"
 #include "google_apis/gcm/engine/gcm_request_test_base.h"
 #include "google_apis/gcm/engine/instance_id_get_token_request_handler.h"
@@ -107,7 +108,8 @@ void GCMRegistrationRequestTest::CreateRequest(const std::string& sender_ids) {
       GetBackoffPolicy(),
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_, url_loader_factory(), &recorder_, sender_ids));
+      max_retry_count_, url_loader_factory(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_, sender_ids));
 }
 
 TEST_F(GCMRegistrationRequestTest, RequestSuccessful) {
@@ -430,7 +432,8 @@ void InstanceIDGetTokenRequestTest::CreateRequest(
       GetBackoffPolicy(),
       base::Bind(&RegistrationRequestTest::RegistrationCallback,
                  base::Unretained(this)),
-      max_retry_count_, url_loader_factory(), &recorder_, authorized_entity));
+      max_retry_count_, url_loader_factory(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_, authorized_entity));
 }
 
 TEST_F(InstanceIDGetTokenRequestTest, RequestSuccessful) {

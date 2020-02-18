@@ -70,7 +70,7 @@ class ServiceWorkerRemoteProviderEndpoint {
       ServiceWorkerRemoteProviderEndpoint&& other);
   ~ServiceWorkerRemoteProviderEndpoint();
 
-  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForWindowPtr info);
+  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForClientPtr info);
   void BindForServiceWorker(
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
@@ -100,11 +100,32 @@ class ServiceWorkerRemoteProviderEndpoint {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRemoteProviderEndpoint);
 };
 
+struct ServiceWorkerProviderHostAndInfo {
+  ServiceWorkerProviderHostAndInfo(
+      base::WeakPtr<ServiceWorkerProviderHost> host,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr);
+  ~ServiceWorkerProviderHostAndInfo();
+
+  base::WeakPtr<ServiceWorkerProviderHost> host;
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr info;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostAndInfo);
+};
+
+// Creates a provider host that finished navigation. Test code can typically use
+// this function, but if more control is required
+// CreateProviderHostAndInfoForWindow() can be used instead.
 base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
+
+// Creates a provider host that can be used for a navigation.
+std::unique_ptr<ServiceWorkerProviderHostAndInfo>
+CreateProviderHostAndInfoForWindow(
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    bool are_ancestors_secure);
 
 base::WeakPtr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
@@ -113,6 +134,12 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerVersion* hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint);
+
+// Creates a registration with a waiting version in INSTALLED state.
+scoped_refptr<ServiceWorkerRegistration>
+CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
+                                          const GURL& scope,
+                                          const GURL& script);
 
 // Writes the script down to |storage| synchronously. This should not be used in
 // base::RunLoop since base::RunLoop is used internally to wait for completing

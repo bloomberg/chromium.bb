@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
 #include "chrome/common/chrome_features.h"
@@ -22,6 +23,10 @@
 #include "device/vr/test/test_hook.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace vr {
 
@@ -164,7 +169,15 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   // JavaScript errors were encountered.
   void AssertNoJavaScriptErrors(content::WebContents* web_contents);
 
-  Browser* browser() { return InProcessBrowserTest::browser(); }
+  Browser* browser() {
+    return browser_ == nullptr ? InProcessBrowserTest::browser() : browser_;
+  }
+
+  void SetBrowser(Browser* browser) { browser_ = browser; }
+
+  Browser* CreateIncognitoBrowser(Profile* profile = nullptr) {
+    return InProcessBrowserTest::CreateIncognitoBrowser(profile);
+  }
 
   // Convenience function for running RunJavaScriptOrFail with the return value
   // of GetCurrentWebContents.
@@ -220,8 +233,13 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   std::vector<XrTestRequirement> runtime_requirements_;
   std::unordered_set<std::string> ignored_requirements_;
 
+#if defined(OS_WIN)
+  HWND hwnd_;
+#endif
+
  private:
   void LogJavaScriptFailure();
+  Browser* browser_ = nullptr;
   std::unique_ptr<net::EmbeddedTestServer> server_;
   base::test::ScopedFeatureList scoped_feature_list_;
   bool test_skipped_at_startup_ = false;

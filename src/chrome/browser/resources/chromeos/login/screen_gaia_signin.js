@@ -63,6 +63,8 @@ Polymer({
     'monitorOfflineIdle',
     'showWhitelistCheckFailedError',
     'invalidateAd',
+    'showPinDialog',
+    'closePinDialog',
   ],
 
   properties: {
@@ -101,6 +103,53 @@ Polymer({
     isSaml_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * Contains the security token PIN dialog parameters object when the dialog
+     * is shown. Is null when no PIN dialog is shown.
+     * @type {OobeTypes.SecurityTokenPinDialogParameter}
+     * @private
+     */
+    pinDialogParameters_: {
+      type: Object,
+      value: null,
+    },
+
+    /**
+     * Controls label on the primary action button.
+     * @private
+     */
+    primaryActionButtonLabel_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Controls availability of the primary action button.
+     * @private
+     */
+    primaryActionButtonEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Controls label on the secondary action button.
+     * @private
+     */
+    secondaryActionButtonLabel_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Controls availability of the secondary action button.
+     * @private
+     */
+    secondaryActionButtonEnabled_: {
+      type: Boolean,
+      value: true,
     },
   },
 
@@ -198,10 +247,17 @@ Polymer({
    */
   authenticator_: undefined,
 
+  /**
+   * Whether the result was reported to the handler for the most recent PIN
+   * dialog.
+   * @type {boolean}
+   * @private
+   */
+  pinDialogResultReported_: false,
+
   /** @override */
   ready: function() {
     this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
-    this.authenticator_.addEventListener('ready', this.onAuthReady_.bind(this));
 
     const that = this;
     const $that = this.$;
@@ -239,10 +295,6 @@ Polymer({
               'menuItemClicked', frameFilter(that.onMenuItemClicked_));
         });
 
-    this.authenticator_.addEventListener('showView', (e) => {
-      // Redirect to onShowView_() with dropping the |e| argument.
-      this.onShowView_();
-    });
     this.authenticator_.confirmPasswordCallback =
         this.onAuthConfirmPassword_.bind(this);
     this.authenticator_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
@@ -253,20 +305,34 @@ Polymer({
     this.authenticator_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
     this.authenticator_.getIsSamlUserPasswordlessCallback =
         this.getIsSamlUserPasswordless_.bind(this);
-    this.authenticator_.addEventListener(
-        'authDomainChange', this.onAuthDomainChange_.bind(this));
-    this.authenticator_.addEventListener(
-        'authFlowChange', this.onAuthFlowChange_.bind(this));
-    this.authenticator_.addEventListener(
-        'videoEnabledChange', this.onVideoEnabledChange_.bind(this));
 
-    this.authenticator_.addEventListener(
-        'loadAbort', this.onLoadAbortMessage_.bind(this));
-    this.authenticator_.addEventListener(
-        'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
+    /**
+     * Event listeners for the events triggered by the authenticator.
+     */
+    const authenticatorEventListeners = {
+      'authDomainChange': this.onAuthDomainChange_,
+      'authFlowChange': this.onAuthFlowChange_,
+      'identifierEntered': this.onIdentifierEnteredMessage_,
+      'loadAbort': this.onLoadAbortMessage_,
+      'ready': this.onAuthReady_,
+      'setPrimaryActionEnabled': this.onSetPrimaryActionEnabled_,
+      'setPrimaryActionLabel': this.onSetPrimaryActionLabel_,
+      'setSecondaryActionEnabled': this.onSetSecondaryActionEnabled_,
+      'setSecondaryActionLabel': this.onSetSecondaryActionLabel_,
+      'setAllActionsEnabled': this.onSetAllActionsEnabled_,
+      'showView': (e) => {
+        // Redirect to onShowView_() with dropping the |e| argument.
+        this.onShowView_();
+      },
+      'videoEnabledChange': this.onVideoEnabledChange_,
+    };
+    for (eventName in authenticatorEventListeners) {
+      this.authenticator_.addEventListener(
+          eventName, authenticatorEventListeners[eventName].bind(this));
+    }
 
     this.$['signin-back-button'].addEventListener(
-        'tap', this.onBackButtonClicked_.bind(this));
+        'click', this.onBackButtonClicked_.bind(this));
     this.$['offline-gaia'].addEventListener(
         'offline-gaia-cancel', this.cancel.bind(this));
 
@@ -332,7 +398,22 @@ Polymer({
    */
   updateGuestButtonVisibility_: function() {
     let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
+    // TODO(rsorokin): Rename message string to reflect the meaning.
     chrome.send('showGuestInOobe', [showGuestInOobe]);
+  },
+
+  /**
+   * Handles clicks on "PrimaryAction" button.
+   */
+  onPrimaryActionButtonClicked_: function() {
+    this.authenticator_.sendMessageToWebview('primaryActionHit');
+  },
+
+  /**
+   * Handles clicks on "SecondaryAction" button.
+   */
+  onSecondaryActionButtonClicked_: function() {
+    this.authenticator_.sendMessageToWebview('secondaryActionHit');
   },
 
   /**
@@ -404,13 +485,14 @@ Polymer({
   /**
    * Whether the signin-frame-dialog element should be visible.
    * @param {number} screenMode
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isSigninFrameDialogVisible_: function(screenMode) {
+  isSigninFrameDialogVisible_: function(screenMode, pinDialogParameters) {
     // See the comment in getSigninFrameContainerClass_() for the explanation on
     // why our element shouldn't be hidden during loading.
-    return screenMode == ScreenMode.DEFAULT;
+    return screenMode == ScreenMode.DEFAULT && pinDialogParameters === null;
   },
 
   /**
@@ -431,33 +513,52 @@ Polymer({
    * Whether the offline-gaia element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isOfflineGaiaVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.OFFLINE && !isLoadingUiShown;
+  isOfflineGaiaVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.OFFLINE && !isLoadingUiShown &&
+        pinDialogParameters === null;
   },
 
   /**
    * Whether the saml-interstitial element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isSamlInterstitialVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.SAML_INTERSTITIAL && !isLoadingUiShown;
+  isSamlInterstitialVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.SAML_INTERSTITIAL && !isLoadingUiShown &&
+        pinDialogParameters === null;
   },
 
   /**
    * Whether the offline-ad-auth element should be visible.
    * @param {number} screenMode
    * @param {boolean} isLoadingUiShown
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
    * @return {boolean}
    * @private
    */
-  isOfflineAdAuthVisible_: function(screenMode, isLoadingUiShown) {
-    return screenMode == ScreenMode.AD_AUTH && !isLoadingUiShown;
+  isOfflineAdAuthVisible_: function(
+      screenMode, isLoadingUiShown, pinDialogParameters) {
+    return screenMode == ScreenMode.AD_AUTH && !isLoadingUiShown &&
+        pinDialogParameters === null;
+  },
+
+  /**
+   * Whether the pinDialog element should be visible.
+   * @param {OobeTypes.SecurityTokenPinDialogParameters} pinDialogParameters
+   * @return {boolean}
+   * @private
+   */
+  isPinDialogVisible_: function(pinDialogParameters) {
+    return pinDialogParameters !== null;
   },
 
   /**
@@ -631,7 +732,7 @@ Polymer({
   getSigninFrame_: function() {
     // Note: Can't use |this.$|, since it returns cached references to elements
     // originally present in DOM, while the signin-frame is dynamically
-    // recreated (see setSigninFramePartition_()).
+    // recreated (see Authenticator.setWebviewPartition()).
     const signinFrame = this.shadowRoot.getElementById('signin-frame');
     assert(signinFrame);
     return signinFrame;
@@ -672,52 +773,6 @@ Polymer({
   },
 
   /**
-   * Copies attributes between nodes.
-   * @param {!Element} fromNode source to copy attributes from
-   * @param {!Element} toNode target to copy attributes to
-   * @param {!Set<string>} skipAttributes specifies attributes to be skipped
-   * @private
-   */
-  copyAttributes_: function(fromNode, toNode, skipAttributes) {
-    for (let i = 0; i < fromNode.attributes.length; ++i) {
-      const attribute = fromNode.attributes[i];
-      if (!skipAttributes.has(attribute.nodeName))
-        toNode.setAttribute(attribute.nodeName, attribute.nodeValue);
-    }
-  },
-
-  /**
-   * Changes the 'partition' attribute of the sign-in frame. If the sign-in
-   * frame has already navigated, this function re-creates it.
-   * @param {string} newWebviewPartitionName the new partition
-   * @private
-   */
-  setSigninFramePartition_: function(newWebviewPartitionName) {
-    const signinFrame = this.getSigninFrame_();
-
-    if (!signinFrame.src) {
-      // We have not navigated anywhere yet. Note that a webview's src
-      // attribute does not allow a change back to "".
-      signinFrame.partition = newWebviewPartitionName;
-    } else if (signinFrame.partition != newWebviewPartitionName) {
-      // The webview has already navigated. We have to re-create it.
-      const signinFrameParent = signinFrame.parentElement;
-
-      // Copy all attributes except for partition and src from the previous
-      // webview. Use the specified |newWebviewPartitionName|.
-      const newSigninFrame = document.createElement('webview');
-      this.copyAttributes_(
-          signinFrame, newSigninFrame, new Set(['src', 'partition']));
-      newSigninFrame.partition = newWebviewPartitionName;
-
-      signinFrameParent.replaceChild(newSigninFrame, signinFrame);
-
-      // Make sure the authenticator uses the new webview from now on.
-      this.authenticator_.rebindWebview(newSigninFrame);
-    }
-  },
-
-  /**
    * Loads the authentication extension into the iframe.
    * @param {!Object} data Extension parameters bag.
    */
@@ -729,7 +784,7 @@ Polymer({
       this.authenticator_.resetWebview();
     }
 
-    this.setSigninFramePartition_(data.webviewPartitionName);
+    this.authenticator_.setWebviewPartition(data.webviewPartitionName);
 
     // This triggers updateSigninFrameContainers_()
     this.screenMode_ = data.screenMode;
@@ -740,6 +795,9 @@ Polymer({
     // Reset SAML
     this.isSaml_ = false;
     this.samlPasswordConfirmAttempt_ = 0;
+
+    // Reset the PIN dialog, in case it's shown.
+    this.closePinDialog();
 
     this.updateSigninFrameContainers_();
 
@@ -757,6 +815,7 @@ Polymer({
         !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.isFirstUser = !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.obfuscatedOwnerId = data.obfuscatedOwnerId;
+    params.enableGaiaActionButtons = data.enableGaiaActionButtons;
 
     this.authenticatorParams_ = params;
 
@@ -947,6 +1006,46 @@ Polymer({
     this.lastBackMessageValue_ = !!e.detail;
     this.updateGuestButtonVisibility_();
   },
+  /**
+   * Invoked when the auth host emits 'setPrimaryActionEnabled'  event
+   * @private
+   */
+  onSetPrimaryActionEnabled_: function(e) {
+    this.primaryActionButtonEnabled_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setSecondaryActionEnabled'  event
+   * @private
+   */
+  onSetSecondaryActionEnabled_: function(e) {
+    this.secondaryActionButtonEnabled_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setPrimaryActionLabel' event
+   * @private
+   */
+  onSetPrimaryActionLabel_: function(e) {
+    this.primaryActionButtonLabel_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setSecondaryActionLabel' event
+   * @private
+   */
+  onSetSecondaryActionLabel_: function(e) {
+    this.secondaryActionButtonLabel_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setAllActionsEnabled' event
+   * @private
+   */
+  onSetAllActionsEnabled_: function(e) {
+    this.onSetPrimaryActionEnabled_(e);
+    this.onSetSecondaryActionEnabled_(e);
+  },
 
   /**
    * Invoked when the authenticator emits 'showView' event or when corresponding
@@ -1114,6 +1213,9 @@ Polymer({
     // the loading screen is shown.
     this.$['signin-back-button'].hidden = true;
     this.$['signin-frame-dialog'].setAttribute('hide-shadow', true);
+    // Also hide the primary and secondary action buttons
+    this.primaryActionButtonLabel_ = null;
+    this.secondaryActionButtonLabel_ = null;
 
     // Clear any error messages that were shown before login.
     Oobe.clearErrors();
@@ -1326,6 +1428,52 @@ Polymer({
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
     this.isLoadingUiShown_ = false;
+  },
+
+  /**
+   * Shows the PIN dialog according to the given parameters.
+   *
+   * In case the dialog is already shown, updates it according to the new
+   * parameters.
+   * @param {!OobeTypes.SecurityTokenPinDialogParameters} parameters
+   */
+  showPinDialog: function(parameters) {
+    assert(parameters);
+
+    // If currently shown, reset and send the cancellation result if not yet.
+    this.closePinDialog();
+    this.$.pinDialog.reset();
+
+    this.pinDialogParameters_ = parameters;
+    this.pinDialogResultReported_ = false;
+  },
+
+  /**
+   * Closes the PIN dialog (that was previously opened using showPinDialog()).
+   */
+  closePinDialog: function() {
+    if (this.pinDialogParameters_ && !this.pinDialogResultReported_) {
+      this.pinDialogResultReported_ = true;
+      // TODO(crbug.com/964069): Send the "canceled" result to the C++ side.
+    }
+    this.pinDialogParameters_ = null;
+  },
+
+  /**
+   * Invoked when the user cancels the PIN dialog.
+   * @param {!CustomEvent} e
+   */
+  onPinDialogCanceled_: function(e) {
+    this.closePinDialog();
+  },
+
+  /**
+   * Invoked when the PIN dialog is completed.
+   * @param {!CustomEvent<string>} e Event with the entered PIN as the payload.
+   */
+  onPinDialogCompleted_: function(e) {
+    this.pinDialogResultReported_ = true;
+    // TODO(crbug.com/964069): Send the PIN to the C++ side.
   },
 
 });

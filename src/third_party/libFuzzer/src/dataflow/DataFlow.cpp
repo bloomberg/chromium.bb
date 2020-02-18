@@ -13,12 +13,13 @@
 // It executes the fuzz target on the given input while monitoring the
 // data flow for every instrumented comparison instruction.
 //
-// The output shows which functions depend on which bytes of the input.
+// The output shows which functions depend on which bytes of the input,
+// and also provides basic-block coverage for every input.
 //
 // Build:
 //   1. Compile this file with -fsanitize=dataflow
 //   2. Build the fuzz target with -g -fsanitize=dataflow
-//       -fsanitize-coverage=trace-pc-guard,pc-table,func,trace-cmp
+//       -fsanitize-coverage=trace-pc-guard,pc-table,bb,trace-cmp
 //   3. Link those together with -fsanitize=dataflow
 //
 //  -fsanitize-coverage=trace-cmp inserts callbacks around every comparison
@@ -26,12 +27,15 @@
 //  The callbacks update the data flow label for the current function.
 //  See e.g. __dfsw___sanitizer_cov_trace_cmp1 below.
 //
-//  -fsanitize-coverage=trace-pc-guard,pc-table,func instruments function
+//  -fsanitize-coverage=trace-pc-guard,pc-table,bb instruments function
 //  entries so that the comparison callback knows that current function.
+//  -fsanitize-coverage=...,bb also allows to collect basic block coverage.
 //
 //
 // Run:
-//   # Collect data flow for INPUT_FILE, write to OUTPUT_FILE (default: stdout)
+//   # Collect data flow and coverage for INPUT_FILE
+//   # write to OUTPUT_FILE (default: stdout)
+//   export DFSAN_OPTIONS=fast16labels=1:warn_unimplemented=0
 //   ./a.out INPUT_FILE [OUTPUT_FILE]
 //
 //   # Print all instrumented functions. llvm-symbolizer must be present in PATH
@@ -41,10 +45,14 @@
 // ===============
 //  F0 11111111111111
 //  F1 10000000000000
+//  C0 1 2 3 4 5
+//  C1 8
 //  ===============
 // "FN xxxxxxxxxx": tells what bytes of the input does the function N depend on.
-//    The byte string is LEN+1 bytes. The last byte is set if the function
-//    depends on the input length.
+// "CN X Y Z T": tells that a function N has basic blocks X, Y, and Z covered
+//    in addition to the function's entry block, out of T total instrumented
+//    blocks.
+//
 //===----------------------------------------------------------------------===*/
 
 #include <assert.h>
@@ -63,15 +71,23 @@ __attribute__((weak)) extern int LLVMFuzzerInitialize(int *argc, char ***argv);
 } // extern "C"
 
 static size_t InputLen;
-static size_t InputLabelBeg;
-static size_t InputLabelEnd;
-static size_t InputSizeLabel;
-static size_t NumFuncs;
-static const uintptr_t *FuncsBeg;
-static __thread size_t CurrentFunc;
-static dfsan_label *FuncLabels;  // Array of NumFuncs elements.
-static char *PrintableStringForLabel;  // InputLen + 2 bytes.
-static bool LabelSeen[1 << 8 * sizeof(dfsan_label)];
+static size_t NumIterations;
+static size_t NumFuncs, NumGuards;
+static uint32_t *GuardsBeg, *GuardsEnd;
+static const uintptr_t *PCsBeg, *PCsEnd;
+static __thread size_t CurrentFunc, CurrentIteration;
+static dfsan_label **FuncLabels;  // NumFuncs x NumIterations.
+static bool *BBExecuted;  // Array of NumGuards elements.
+
+enum {
+  PCFLAG_FUNC_ENTRY = 1,
+};
+
+const int kNumLabels = 16;
+
+static inline bool BlockIsEntry(size_t BlockIdx) {
+  return PCsBeg[BlockIdx * 2 + 1] & PCFLAG_FUNC_ENTRY;
+}
 
 // Prints all instrumented functions.
 static int PrintFunctions() {
@@ -82,9 +98,12 @@ static int PrintFunctions() {
   FILE *Pipe = popen("sed 's/(+/ /g; s/).*//g' "
                      "| llvm-symbolizer "
                      "| grep 'dfs\\$' "
-                     "| sed 's/dfs\\$//g'", "w");
-  for (size_t I = 0; I < NumFuncs; I++) {
-    uintptr_t PC = FuncsBeg[I * 2];
+                     "| sed 's/dfs\\$//g' "
+                     "| c++filt",
+                     "w");
+  for (size_t I = 0; I < NumGuards; I++) {
+    uintptr_t PC = PCsBeg[I * 2];
+    if (!BlockIsEntry(I)) continue;
     void *const Buf[1] = {(void*)PC};
     backtrace_symbols_fd(Buf, 1, fileno(Pipe));
   }
@@ -92,35 +111,53 @@ static int PrintFunctions() {
   return 0;
 }
 
-extern "C"
-void SetBytesForLabel(dfsan_label L, char *Bytes) {
-  if (LabelSeen[L])
-    return;
-  LabelSeen[L] = true;
-  assert(L);
-  if (L < InputSizeLabel) {
-    Bytes[L + InputLabelBeg - 1] = '1';
-  } else if (L == InputSizeLabel) {
-    Bytes[InputLen] = '1';
-  } else {
-    auto *DLI = dfsan_get_label_info(L);
-    SetBytesForLabel(DLI->l1, Bytes);
-    SetBytesForLabel(DLI->l2, Bytes);
-  }
-}
-
-static char *GetPrintableStringForLabel(dfsan_label L) {
-  memset(PrintableStringForLabel, '0', InputLen + 1);
-  PrintableStringForLabel[InputLen + 1] = 0;
-  memset(LabelSeen, 0, sizeof(LabelSeen));
-  SetBytesForLabel(L, PrintableStringForLabel);
-  return PrintableStringForLabel;
+static void PrintBinary(FILE *Out, dfsan_label L, size_t Len) {
+  char buf[kNumLabels + 1];
+  assert(Len <= kNumLabels);
+  for (int i = 0; i < kNumLabels; i++)
+    buf[i] = (L & (1 << i)) ? '1' : '0';
+  buf[Len] = 0;
+  fprintf(Out, "%s", buf);
 }
 
 static void PrintDataFlow(FILE *Out) {
-  for (size_t I = 0; I < NumFuncs; I++)
-    if (FuncLabels[I])
-      fprintf(Out, "F%zd %s\n", I, GetPrintableStringForLabel(FuncLabels[I]));
+  for (size_t Func = 0; Func < NumFuncs; Func++) {
+    bool HasAny = false;
+    for (size_t Iter = 0; Iter < NumIterations; Iter++)
+      if (FuncLabels[Func][Iter])
+        HasAny = true;
+    if (!HasAny)
+      continue;
+    fprintf(Out, "F%zd ", Func);
+    size_t LenOfLastIteration = kNumLabels;
+    if (auto Tail = InputLen % kNumLabels)
+        LenOfLastIteration = Tail;
+    for (size_t Iter = 0; Iter < NumIterations; Iter++)
+      PrintBinary(Out, FuncLabels[Func][Iter],
+                  Iter == NumIterations - 1 ? LenOfLastIteration : kNumLabels);
+    fprintf(Out, "\n");
+  }
+}
+
+static void PrintCoverage(FILE *Out) {
+  ssize_t CurrentFuncGuard = -1;
+  ssize_t CurrentFuncNum = -1;
+  ssize_t NumBlocksInCurrentFunc = -1;
+  for (size_t FuncBeg = 0; FuncBeg < NumGuards;) {
+    CurrentFuncNum++;
+    assert(BlockIsEntry(FuncBeg));
+    size_t FuncEnd = FuncBeg + 1;
+    for (; FuncEnd < NumGuards && !BlockIsEntry(FuncEnd); FuncEnd++)
+      ;
+    if (BBExecuted[FuncBeg]) {
+      fprintf(Out, "C%zd", CurrentFuncNum);
+      for (size_t I = FuncBeg + 1; I < FuncEnd; I++)
+        if (BBExecuted[I])
+          fprintf(Out, " %zd", I - FuncBeg);
+      fprintf(Out, " %zd\n", FuncEnd - FuncBeg);
+    }
+    FuncBeg = FuncEnd;
+  }
 }
 
 int main(int argc, char **argv) {
@@ -128,12 +165,9 @@ int main(int argc, char **argv) {
     LLVMFuzzerInitialize(&argc, &argv);
   if (argc == 1)
     return PrintFunctions();
-  assert(argc == 4 || argc == 5);
-  InputLabelBeg = atoi(argv[1]);
-  InputLabelEnd = atoi(argv[2]);
-  assert(InputLabelBeg < InputLabelEnd);
+  assert(argc == 2 || argc == 3);
 
-  const char *Input = argv[3];
+  const char *Input = argv[1];
   fprintf(stderr, "INFO: reading '%s'\n", Input);
   FILE *In = fopen(Input, "r");
   assert(In);
@@ -143,31 +177,37 @@ int main(int argc, char **argv) {
   unsigned char *Buf = (unsigned char*)malloc(InputLen);
   size_t NumBytesRead = fread(Buf, 1, InputLen, In);
   assert(NumBytesRead == InputLen);
-  PrintableStringForLabel = (char*)malloc(InputLen + 2);
   fclose(In);
 
-  fprintf(stderr, "INFO: running '%s'\n", Input);
-  for (size_t I = 1; I <= InputLen; I++) {
-    size_t Idx = I - 1;
-    if (Idx >= InputLabelBeg && Idx < InputLabelEnd) {
-      dfsan_label L = dfsan_create_label("", nullptr);
-      assert(L == I - InputLabelBeg);
-      dfsan_set_label(L, Buf + Idx, 1);
-    }
-  }
-  dfsan_label SizeL = dfsan_create_label("", nullptr);
-  InputSizeLabel = SizeL;
-  assert(InputSizeLabel == InputLabelEnd - InputLabelBeg + 1);
-  dfsan_set_label(SizeL, &InputLen, sizeof(InputLen));
+  NumIterations = (NumBytesRead + kNumLabels - 1) / kNumLabels;
+  FuncLabels = (dfsan_label**)calloc(NumFuncs, sizeof(dfsan_label*));
+  for (size_t Func = 0; Func < NumFuncs; Func++)
+    FuncLabels[Func] =
+        (dfsan_label *)calloc(NumIterations, sizeof(dfsan_label));
 
-  LLVMFuzzerTestOneInput(Buf, InputLen);
+  for (CurrentIteration = 0; CurrentIteration < NumIterations;
+       CurrentIteration++) {
+    fprintf(stderr, "INFO: running '%s' %zd/%zd\n", Input, CurrentIteration,
+            NumIterations);
+    dfsan_flush();
+    dfsan_set_label(0, Buf, InputLen);
+
+    size_t BaseIdx = CurrentIteration * kNumLabels;
+    size_t LastIdx = BaseIdx + kNumLabels < NumBytesRead ? BaseIdx + kNumLabels
+                                                         : NumBytesRead;
+    assert(BaseIdx < LastIdx);
+    for (size_t Idx = BaseIdx; Idx < LastIdx; Idx++)
+      dfsan_set_label(1 << (Idx - BaseIdx), Buf + Idx, 1);
+    LLVMFuzzerTestOneInput(Buf, InputLen);
+  }
   free(Buf);
 
-  bool OutIsStdout = argc == 4;
+  bool OutIsStdout = argc == 2;
   fprintf(stderr, "INFO: writing dataflow to %s\n",
-          OutIsStdout ? "<stdout>" : argv[4]);
-  FILE *Out = OutIsStdout ? stdout : fopen(argv[4], "w");
+          OutIsStdout ? "<stdout>" : argv[2]);
+  FILE *Out = OutIsStdout ? stdout : fopen(argv[2], "w");
   PrintDataFlow(Out);
+  PrintCoverage(Out);
   if (!OutIsStdout) fclose(Out);
 }
 
@@ -178,21 +218,35 @@ void __sanitizer_cov_trace_pc_guard_init(uint32_t *start,
   assert(NumFuncs == 0 && "This tool does not support DSOs");
   assert(start < stop && "The code is not instrumented for coverage");
   if (start == stop || *start) return;  // Initialize only once.
-  for (uint32_t *x = start; x < stop; x++)
-    *x = ++NumFuncs;  // The first index is 1.
-  FuncLabels = (dfsan_label*)calloc(NumFuncs, sizeof(dfsan_label));
-  fprintf(stderr, "INFO: %zd instrumented function(s) observed\n", NumFuncs);
+  GuardsBeg = start;
+  GuardsEnd = stop;
 }
 
 void __sanitizer_cov_pcs_init(const uintptr_t *pcs_beg,
                               const uintptr_t *pcs_end) {
-  assert(NumFuncs == (pcs_end - pcs_beg) / 2);
-  FuncsBeg = pcs_beg;
+  if (NumGuards) return;  // Initialize only once.
+  NumGuards = GuardsEnd - GuardsBeg;
+  PCsBeg = pcs_beg;
+  PCsEnd = pcs_end;
+  assert(NumGuards == (PCsEnd - PCsBeg) / 2);
+  for (size_t i = 0; i < NumGuards; i++) {
+    if (BlockIsEntry(i)) {
+      NumFuncs++;
+      GuardsBeg[i] = NumFuncs;
+    }
+  }
+  BBExecuted = (bool*)calloc(NumGuards, sizeof(bool));
+  fprintf(stderr, "INFO: %zd instrumented function(s) observed "
+          "and %zd basic blocks\n", NumFuncs, NumGuards);
 }
 
 void __sanitizer_cov_trace_pc_indir(uint64_t x){}  // unused.
 
-void __sanitizer_cov_trace_pc_guard(uint32_t *guard){
+void __sanitizer_cov_trace_pc_guard(uint32_t *guard) {
+  size_t GuardIdx = guard - GuardsBeg;
+  assert(GuardIdx < NumGuards);
+  BBExecuted[GuardIdx] = true;
+  if (!*guard) return;  // not a function entry.
   uint32_t FuncNum = *guard - 1;  // Guards start from 1.
   assert(FuncNum < NumFuncs);
   CurrentFunc = FuncNum;
@@ -201,14 +255,13 @@ void __sanitizer_cov_trace_pc_guard(uint32_t *guard){
 void __dfsw___sanitizer_cov_trace_switch(uint64_t Val, uint64_t *Cases,
                                          dfsan_label L1, dfsan_label UnusedL) {
   assert(CurrentFunc < NumFuncs);
-  FuncLabels[CurrentFunc] = dfsan_union(FuncLabels[CurrentFunc], L1);
+  FuncLabels[CurrentFunc][CurrentIteration] |= L1;
 }
 
 #define HOOK(Name, Type)                                                       \
   void Name(Type Arg1, Type Arg2, dfsan_label L1, dfsan_label L2) {            \
     assert(CurrentFunc < NumFuncs);                                            \
-    FuncLabels[CurrentFunc] =                                                  \
-        dfsan_union(FuncLabels[CurrentFunc], dfsan_union(L1, L2));             \
+    FuncLabels[CurrentFunc][CurrentIteration] |= L1 | L2;                      \
   }
 
 HOOK(__dfsw___sanitizer_cov_trace_const_cmp1, uint8_t)

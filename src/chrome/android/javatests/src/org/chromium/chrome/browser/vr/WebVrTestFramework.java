@@ -15,6 +15,7 @@ import org.chromium.content_public.browser.WebContents;
 public class WebVrTestFramework extends WebXrVrTestFramework {
     public WebVrTestFramework(ChromeActivityTestRule rule) {
         super(rule);
+        mShouldExpectConsentDialog = false;
     }
 
     /**

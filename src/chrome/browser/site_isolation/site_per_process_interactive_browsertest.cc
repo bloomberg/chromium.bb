@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -723,7 +724,7 @@ void WaitForMultipleFullscreenEvents(
     std::vector<std::string> response_params = base::SplitString(
         response, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (response_params[0] == "fullscreenchange") {
-      EXPECT_TRUE(base::ContainsKey(remaining_events, response_params[1]));
+      EXPECT_TRUE(base::Contains(remaining_events, response_params[1]));
       remaining_events.erase(response_params[1]);
     } else if (response_params[0] == "resize") {
       resize_validated = true;
@@ -774,11 +775,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, GetScreenSize());
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(child, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -810,11 +810,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(child, original_child_size);
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(child, "exitFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -854,6 +853,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_TRUE(
       ExecuteScript(grandchild, "location.href = '/fullscreen_frame.html'"));
   observer.Wait();
+  grandchild = ChildFrameAt(child, 0);
   EXPECT_EQ(embedded_test_server()->GetURL("a.com", "/fullscreen_frame.html"),
             grandchild->GetLastCommittedURL());
 
@@ -874,11 +874,10 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(grandchild, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -905,8 +904,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   AddResizeListener(grandchild, original_grandchild_size);
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     switch (exit_method) {
       case FullscreenExitMethod::JS_CALL:
         EXPECT_TRUE(ExecuteScript(grandchild, "exitFullscreen()"));
@@ -919,7 +917,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
         NOTREACHED();
     }
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1008,6 +1006,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_TRUE(
       ExecuteScript(c_middle, "location.href = '/fullscreen_frame.html'"));
   observer.Wait();
+  c_middle = ChildFrameAt(c_top, 0);
   EXPECT_EQ(embedded_test_server()->GetURL("c.com", "/fullscreen_frame.html"),
             c_middle->GetLastCommittedURL());
   content::RenderFrameHost* c_bottom = ChildFrameAt(c_middle, 0);
@@ -1038,11 +1037,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // browser finishes the fullscreen transition.
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     EXPECT_TRUE(ExecuteScript(c_middle, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1079,12 +1077,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(c_middle, c_middle_original_size);
   {
     content::DOMMessageQueue queue;
-    std::unique_ptr<FullscreenNotificationObserver> observer(
-        new FullscreenNotificationObserver());
+    FullscreenNotificationObserver observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                                 false, false, false, false));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer->Wait();
+    observer.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());

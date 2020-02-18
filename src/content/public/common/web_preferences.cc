@@ -166,6 +166,7 @@ WebPreferences::WebPreferences()
       smart_insert_delete_enabled(false),
 #endif
       spatial_navigation_enabled(false),
+      caret_browsing_enabled(false),
       use_solid_color_scrollbars(false),
       navigate_on_drag_drop(true),
       v8_cache_options(blink::mojom::V8CacheOptions::kDefault),
@@ -225,6 +226,7 @@ WebPreferences::WebPreferences()
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(AutoplayPolicy::kDocumentUserActivationRequired),
       preferred_color_scheme(blink::PreferredColorScheme::kNoPreference),
+      forced_colors(blink::ForcedColors::kNone),
       low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       picture_in_picture_enabled(true),
       translate_service_available(false),

@@ -22,8 +22,7 @@ DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config,
       logger_(std::move(logger)),
       controller_(std::move(controller)),
       service_config_(config_.get()),
-      startup_completed_(false),
-      weak_ptr_factory_(this) {
+      startup_completed_(false) {
   controller_->Initialize(
       base::BindRepeating(&DownloadServiceImpl::OnControllerInitialized,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -80,7 +79,6 @@ DownloadService::ServiceStatus DownloadServiceImpl::GetStatus() {
 void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {
   stats::LogServiceApiAction(download_params.client,
                              stats::ServiceApiAction::START_DOWNLOAD);
-  stats::LogDownloadParams(download_params);
   if (startup_completed_) {
     controller_->StartDownload(download_params);
   } else {

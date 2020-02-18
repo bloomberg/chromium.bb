@@ -4,8 +4,11 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+assert(is_chromeos, "Only ChromeOS components belong here.")
+
 js_type_check("closure_compile") {
   deps = [
+    ":mojo_interface_provider",
     ":network_apnlist",
     ":network_choose_mobile",
     ":network_config",
@@ -20,6 +23,13 @@ js_type_check("closure_compile") {
     ":network_proxy_exclusions",
     ":network_proxy_input",
     ":network_siminfo",
+  ]
+}
+
+js_library("mojo_interface_provider") {
+  deps = [
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
@@ -139,9 +149,12 @@ js_library("network_proxy_exclusions") {
 
 js_library("network_siminfo") {
   deps = [
+    "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
+    "//ui/webui/resources/js/chromeos:onc_mojo",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]

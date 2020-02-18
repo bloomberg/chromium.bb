@@ -110,25 +110,24 @@ class RendererStartupHelperTest : public ExtensionsTest {
   }
 
   bool IsProcessInitialized(content::RenderProcessHost* rph) {
-    return base::ContainsKey(helper_->initialized_processes_, rph);
+    return base::Contains(helper_->initialized_processes_, rph);
   }
 
   bool IsExtensionLoaded(const Extension& extension) {
-    return base::ContainsKey(helper_->extension_process_map_, extension.id());
+    return base::Contains(helper_->extension_process_map_, extension.id());
   }
 
   bool IsExtensionLoadedInProcess(const Extension& extension,
                                   content::RenderProcessHost* rph) {
     return IsExtensionLoaded(extension) &&
-           base::ContainsKey(helper_->extension_process_map_[extension.id()],
-                             rph);
+           base::Contains(helper_->extension_process_map_[extension.id()], rph);
   }
 
   bool IsExtensionPendingActivationInProcess(const Extension& extension,
                                              content::RenderProcessHost* rph) {
-    return base::ContainsKey(helper_->pending_active_extensions_, rph) &&
-           base::ContainsKey(helper_->pending_active_extensions_[rph],
-                             extension.id());
+    return base::Contains(helper_->pending_active_extensions_, rph) &&
+           base::Contains(helper_->pending_active_extensions_[rph],
+                          extension.id());
   }
 
   std::unique_ptr<RendererStartupHelper> helper_;

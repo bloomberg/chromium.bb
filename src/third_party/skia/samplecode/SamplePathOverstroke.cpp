@@ -32,13 +32,9 @@ class OverstrokeView : public Sample {
     }
 
    protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "PathOverstroke");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("PathOverstroke"); }
+
+    bool onChar(SkUnichar uni) override {
             switch (uni) {
                 case ',':
                     fStroke += 1.0;
@@ -61,8 +57,7 @@ class OverstrokeView : public Sample {
                 default:
                     break;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     SkPath quadPath(SkPoint p1, SkPoint p2) {

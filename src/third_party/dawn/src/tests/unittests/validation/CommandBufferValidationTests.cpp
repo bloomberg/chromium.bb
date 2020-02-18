@@ -49,9 +49,7 @@ TEST_F(CommandBufferValidationTest, EndedMidRenderPass) {
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
         ASSERT_DEVICE_ERROR(encoder.Finish());
-        // TODO(cwallez@chromium.org) this should probably be a device error, but currently it
-        // produces a encoder error.
-        pass.EndPass();
+        ASSERT_DEVICE_ERROR(pass.EndPass());
     }
 }
 
@@ -78,9 +76,7 @@ TEST_F(CommandBufferValidationTest, EndedMidComputePass) {
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::ComputePassEncoder pass = encoder.BeginComputePass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
-        // TODO(cwallez@chromium.org) this should probably be a device error, but currently it
-        // produces a encoder error.
-        pass.EndPass();
+        ASSERT_DEVICE_ERROR(pass.EndPass());
     }
 }
 
@@ -101,8 +97,6 @@ TEST_F(CommandBufferValidationTest, RenderPassEndedTwice) {
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&dummyRenderPass);
         pass.EndPass();
-        // TODO(cwallez@chromium.org) this should probably be a device error, but currently it
-        // produces a encoder error.
         pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
@@ -123,8 +117,6 @@ TEST_F(CommandBufferValidationTest, ComputePassEndedTwice) {
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::ComputePassEncoder pass = encoder.BeginComputePass();
         pass.EndPass();
-        // TODO(cwallez@chromium.org) this should probably be a device error, but currently it
-        // produces a encoder error.
         pass.EndPass();
         ASSERT_DEVICE_ERROR(encoder.Finish());
     }
@@ -160,7 +152,7 @@ TEST_F(CommandBufferValidationTest, CallsAfterASuccessfulFinish) {
     // A buffer that can be used in CopyBufferToBuffer
     dawn::BufferDescriptor copyBufferDesc;
     copyBufferDesc.size = 16;
-    copyBufferDesc.usage = dawn::BufferUsageBit::TransferSrc | dawn::BufferUsageBit::TransferDst;
+    copyBufferDesc.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
     dawn::Buffer copyBuffer = device.CreateBuffer(&copyBufferDesc);
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -174,7 +166,7 @@ TEST_F(CommandBufferValidationTest, CallsAfterAFailedFinish) {
     // A buffer that can be used in CopyBufferToBuffer
     dawn::BufferDescriptor copyBufferDesc;
     copyBufferDesc.size = 16;
-    copyBufferDesc.usage = dawn::BufferUsageBit::TransferSrc | dawn::BufferUsageBit::TransferDst;
+    copyBufferDesc.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
     dawn::Buffer copyBuffer = device.CreateBuffer(&copyBufferDesc);
 
     // A buffer that can't be used in CopyBufferToBuffer
@@ -238,7 +230,7 @@ TEST_F(CommandBufferValidationTest, TextureWithReadAndWriteUsage) {
     // Create a texture that will be used both as a sampled texture and a render target
     dawn::TextureDescriptor textureDescriptor;
     textureDescriptor.usage = dawn::TextureUsageBit::Sampled | dawn::TextureUsageBit::OutputAttachment;
-    textureDescriptor.format = dawn::TextureFormat::R8G8B8A8Unorm;
+    textureDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
     textureDescriptor.dimension = dawn::TextureDimension::e2D;
     textureDescriptor.size = {1, 1, 1};
     textureDescriptor.arrayLayerCount = 1;

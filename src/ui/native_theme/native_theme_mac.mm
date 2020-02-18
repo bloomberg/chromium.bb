@@ -266,6 +266,13 @@ void NativeThemeMac::PaintMenuItemBackground(
   }
 }
 
+bool NativeThemeMac::SystemDarkModeSupported() const {
+  if (@available(macOS 10.14, *)) {
+    return true;
+  }
+  return false;
+}
+
 NativeThemeMac::NativeThemeMac() {
   InitializeDarkModeStateAndObserver();
 
@@ -301,9 +308,11 @@ void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,
 void NativeThemeMac::InitializeDarkModeStateAndObserver() {
   __block auto theme = this;
   set_dark_mode(IsDarkMode());
+  set_preferred_color_scheme(CalculatePreferredColorScheme());
   appearance_observer_.reset(
       [[NativeThemeEffectiveAppearanceObserver alloc] initWithHandler:^{
         theme->set_dark_mode(IsDarkMode());
+        theme->set_preferred_color_scheme(CalculatePreferredColorScheme());
         theme->NotifyObservers();
       }]);
 }

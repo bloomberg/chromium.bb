@@ -37,14 +37,18 @@ class WebAppInstallManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    registrar_ = std::make_unique<TestAppRegistrar>(profile());
+    registrar_ = std::make_unique<TestAppRegistrar>();
 
     install_finalizer_ = std::make_unique<TestInstallFinalizer>();
 
-    install_manager_ = std::make_unique<WebAppInstallManager>(
-        profile(), registrar_.get(), install_finalizer_.get());
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+    install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
+
+    test_url_loader->SetNextLoadUrlResult(GURL("about:blank"),
+                                          WebAppUrlLoader::Result::kUrlLoaded);
+
     test_url_loader_ = test_url_loader.get();
     install_manager_->SetUrlLoaderForTesting(std::move(test_url_loader));
   }
@@ -63,6 +67,15 @@ class WebAppInstallManagerTest : public WebAppTest {
     return web_app_info;
   }
 
+  void DestroyManagers() {
+    // The reverse order of creation:
+    install_manager_.reset();
+    install_finalizer_.reset();
+    registrar_.reset();
+
+    test_url_loader_ = nullptr;
+  }
+
  private:
   std::unique_ptr<TestAppRegistrar> registrar_;
   std::unique_ptr<WebAppInstallManager> install_manager_;
@@ -79,9 +92,6 @@ TEST_F(WebAppInstallManagerTest,
 
   const GURL url2{"https://example.org/path"};
   const AppId app2_id = GenerateAppIdFromURL(url2);
-
-  url_loader().SetNextLoadUrlResult(GURL("about:blank"),
-                                    WebAppUrlLoader::Result::kUrlLoaded);
 
   // 1 InstallTask == 1 DataRetriever, their lifetime matches.
   base::flat_set<TestDataRetriever*> task_data_retrievers;
@@ -192,6 +202,102 @@ TEST_F(WebAppInstallManagerTest,
   };
 
   EXPECT_EQ(expected_event_order, event_order);
+}
+
+TEST_F(WebAppInstallManagerTest,
+       InstallOrUpdateWebAppFromSync_InstallManagerShutdown) {
+  const GURL app_url("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(app_url);
+  NavigateAndCommit(app_url);
+
+  base::RunLoop run_loop;
+
+  install_manager().SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        auto data_retriever = std::make_unique<TestDataRetriever>();
+
+        // Every InstallTask starts with WebAppDataRetriever::GetIcons step.
+        data_retriever->SetGetIconsDelegate(base::BindLambdaForTesting(
+            [&](content::WebContents* web_contents,
+                const std::vector<GURL>& icon_urls, bool skip_page_favicons) {
+              run_loop.Quit();
+
+              IconsMap icons_map;
+              AddIconToIconsMap(kIconUrl, icon_size::k256, SK_ColorBLUE,
+                                &icons_map);
+              return icons_map;
+            }));
+
+        return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
+      }));
+
+  install_manager().InstallOrUpdateWebAppFromSync(
+      app_id, CreateWebAppInfo(app_url),
+      base::BindLambdaForTesting(
+          [](const web_app::AppId& installed_app_id,
+             web_app::InstallResultCode code) { NOTREACHED(); }));
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
+
+  // Wait for the task started.
+  run_loop.Run();
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
+
+  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
+  install_manager().Shutdown();
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+
+  // Delete InstallManager object.
+  DestroyManagers();
+}
+
+TEST_F(WebAppInstallManagerTest,
+       InstallOrUpdateWebAppFromSync_InstallAfterShutdown) {
+  const GURL app1_url("https://example.com/path");
+  const AppId app1_id = GenerateAppIdFromURL(app1_url);
+
+  install_manager().InstallOrUpdateWebAppFromSync(
+      app1_id, CreateWebAppInfo(app1_url),
+      base::BindLambdaForTesting(
+          [&](const web_app::AppId& installed_app_id,
+              web_app::InstallResultCode code) { NOTREACHED(); }));
+  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
+
+  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
+  install_manager().Shutdown();
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+
+  const GURL app2_url("https://example.org/path");
+  const AppId app2_id = GenerateAppIdFromURL(app2_url);
+
+  install_manager().InstallOrUpdateWebAppFromSync(
+      app2_id, CreateWebAppInfo(app2_url),
+      base::BindLambdaForTesting(
+          [&](const web_app::AppId& installed_app_id,
+              web_app::InstallResultCode code) { NOTREACHED(); }));
+  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
+
+  // Delete InstallManager object.
+  DestroyManagers();
+}
+
+TEST_F(WebAppInstallManagerTest,
+       InstallOrUpdateWebAppFromSync_CanSkipAppUpdateForSync) {
+  const GURL app_url("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(app_url);
+  NavigateAndCommit(app_url);
+
+  finalizer().SetNextCanSkipAppUpdateForSync(true);
+
+  base::RunLoop run_loop;
+  install_manager().InstallOrUpdateWebAppFromSync(
+      app_id, CreateWebAppInfo(app_url),
+      base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
+                                     web_app::InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
+        EXPECT_EQ(app_id, installed_app_id);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace web_app

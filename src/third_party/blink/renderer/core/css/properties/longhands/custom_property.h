@@ -45,8 +45,10 @@ class CORE_EXPORT CustomProperty : public Variable {
       const ComputedStyle&,
       const SVGComputedStyle&,
       const LayoutObject*,
-      Node* styled_node,
+      const Node* styled_node,
       bool allow_visited_style) const override;
+
+  bool IsRegistered() const { return registration_; }
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
 
@@ -63,6 +65,14 @@ class CORE_EXPORT CustomProperty : public Variable {
 
   AtomicString name_;
   Member<const PropertyRegistration> registration_;
+};
+
+template <>
+struct DowncastTraits<CustomProperty> {
+  static bool AllowFrom(const CSSProperty& property) {
+    DCHECK(!Variable::IsStaticInstance(property));
+    return property.PropertyID() == CSSPropertyID::kVariable;
+  }
 };
 
 }  // namespace blink

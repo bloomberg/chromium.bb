@@ -11,15 +11,18 @@ source_set("overlays") {
     "overlay_container_coordinator.mm",
     "overlay_coordinator_factory+initialization.h",
     "overlay_coordinator_factory.mm",
-    "overlay_presenter_ui_delegate_impl.h",
-    "overlay_presenter_ui_delegate_impl.mm",
+    "overlay_presentation_context_impl.h",
+    "overlay_presentation_context_impl.mm",
     "overlay_request_ui_state.h",
     "overlay_request_ui_state.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  friend = [ ":unit_tests" ]
+  friend = [
+    ":unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
+  ]
 
   deps = [
     ":container_ui",

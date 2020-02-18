@@ -18,7 +18,6 @@
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class FilePath;
@@ -62,7 +61,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext {
   virtual void Close() = 0;
 
   // GUID for this browser context.
-  virtual const std::string& Id() const = 0;
+  virtual const std::string& Id() = 0;
 
   // TODO(skyostil): Allow saving and restoring contexts (crbug.com/617931).
 

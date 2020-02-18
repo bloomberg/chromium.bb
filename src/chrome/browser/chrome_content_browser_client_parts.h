@@ -65,9 +65,6 @@ class ChromeContentBrowserClientParts {
       content::RenderProcessHost* process,
       Profile* profile) {}
 
-  // Called when the ResourceDispatcherHost is created.
-  virtual void ResourceDispatcherHostCreated() {}
-
   // Allows to register browser interfaces exposed through the
   // RenderProcessHost. Note that interface factory callbacks added to
   // |registry| will by default be run immediately on the IO thread, unless a

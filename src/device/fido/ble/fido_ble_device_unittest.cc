@@ -102,7 +102,7 @@ class FidoBleDeviceTest : public Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
   scoped_refptr<MockBluetoothAdapter> adapter_ =
@@ -258,7 +258,7 @@ TEST_F(FidoBleDeviceTest, CancelAfterTransmission) {
 
 TEST_F(FidoBleDeviceTest, StaticGetIdTest) {
   std::string address = BluetoothTestBase::kTestDeviceAddress1;
-  EXPECT_EQ("ble:" + address, FidoBleDevice::GetId(address));
+  EXPECT_EQ("ble:" + address, FidoBleDevice::GetIdForAddress(address));
 }
 
 TEST_F(FidoBleDeviceTest, GetIdTest) {
@@ -362,6 +362,40 @@ TEST_F(FidoBleDeviceTest, Timeout) {
   EXPECT_EQ(FidoDevice::State::kDeviceError, device()->state_for_testing());
   EXPECT_TRUE(callback_receiver.was_called());
   EXPECT_FALSE(callback_receiver.value());
+}
+
+TEST_F(FidoBleDeviceTest, RequiresBlePairingPin) {
+  EXPECT_TRUE(device()->RequiresBlePairingPin());
+
+  EXPECT_CALL(*connection(), ConnectPtr)
+      .WillOnce(Invoke([this](auto* callback) {
+        connection()->FidoBleConnection::Connect(std::move(*callback));
+      }));
+  device()->Connect();
+
+  // Add mock FIDO device.
+  auto mock_bluetooth_device = std::make_unique<NiceMockBluetoothDevice>(
+      adapter(), /* bluetooth_class */ 0u,
+      BluetoothTestBase::kTestDeviceNameU2f,
+      BluetoothTestBase::kTestDeviceAddress1, /* paired */ true,
+      /* connected */ false);
+  EXPECT_CALL(*adapter(), GetDevice(BluetoothTestBase::kTestDeviceAddress1))
+      .WillRepeatedly(Return(mock_bluetooth_device.get()));
+
+  // The default is for a device to require a PIN or passkey.
+  EXPECT_TRUE(device()->RequiresBlePairingPin());
+
+  // Clear the advertised service data to include the flag for requiring a PIN
+  // or passkey during pairing.
+  SetServiceData(mock_bluetooth_device.get(),
+                 {{BluetoothUUID(kFidoServiceUUID), {}}});
+  EXPECT_FALSE(device()->RequiresBlePairingPin());
+
+  // Set the flag.
+  SetServiceData(mock_bluetooth_device.get(),
+                 {{BluetoothUUID(kFidoServiceUUID),
+                   {static_cast<int>(FidoServiceDataFlags::kPasskeyEntry)}}});
+  EXPECT_TRUE(device()->RequiresBlePairingPin());
 }
 
 }  // namespace device

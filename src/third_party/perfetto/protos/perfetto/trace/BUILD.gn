@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import("../../../gn/perfetto.gni")
-import("../../../gn/proto_library.gni")
 import("../../../gn/proto_descriptor.gni")
+import("../../../gn/proto_library.gni")
 import("../../../gn/protozero_library.gni")
 
 # Common protos used by both the ":minimal_lite" target (for the service) and
@@ -41,7 +41,9 @@ protozero_library("zero") {
     "chrome:zero",
     "filesystem:zero",
     "ftrace:zero",
+    "gpu:zero",
     "interned_data:zero",
+    "perfetto:zero",
     "power:zero",
     "profiling:zero",
     "ps:zero",
@@ -64,7 +66,9 @@ proto_library("lite") {
     "chrome:lite",
     "filesystem:lite",
     "ftrace:lite",
+    "gpu:lite",
     "interned_data:lite",
+    "perfetto:lite",
     "power:lite",
     "profiling:lite",
     "ps:lite",
@@ -78,7 +82,9 @@ proto_library("lite") {
 
 if (perfetto_build_standalone) {
   proto_descriptor("descriptor") {
-    sources = proto_sources
+    sources = [
+      "trace.proto",
+    ]
     generate_descriptor = "$perfetto_root_path/protos/trace/trace.descriptor"
     proto_in_dir = "$perfetto_root_path/protos"
     proto_out_dir = "$perfetto_root_path/protos"

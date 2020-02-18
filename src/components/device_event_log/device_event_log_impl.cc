@@ -251,9 +251,7 @@ void DeviceEventLogImpl::SendToVLogOrErrorLog(const char* file,
 DeviceEventLogImpl::DeviceEventLogImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     size_t max_entries)
-    : task_runner_(task_runner),
-      max_entries_(max_entries),
-      weak_ptr_factory_(this) {
+    : task_runner_(task_runner), max_entries_(max_entries) {
   DCHECK(task_runner_);
 }
 
@@ -402,6 +400,10 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   }
 
   return result;
+}
+
+void DeviceEventLogImpl::ClearAll() {
+  entries_.clear();
 }
 
 void DeviceEventLogImpl::Clear(const base::Time& begin, const base::Time& end) {

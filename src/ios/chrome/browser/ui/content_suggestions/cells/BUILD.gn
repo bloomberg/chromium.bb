@@ -54,6 +54,7 @@ source_set("cells_ui") {
   deps = [
     "//base",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
@@ -62,6 +63,7 @@ source_set("cells_ui") {
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ui/base",

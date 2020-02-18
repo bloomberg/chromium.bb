@@ -1,0 +1,9 @@
+{
+  "sysroot": {
+    "buildTarget": {
+      "name": "betty"
+    },
+    "path": "/build/betty"
+  },
+  "use_flags": [{"flag": "chrome_internal"}]
+}

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -124,7 +124,7 @@ bool AllowMimeTypeAsScript(const String& mime_type,
 
 }  // namespace
 
-bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
+bool AllowedByNosniff::MimeTypeAsScript(UseCounter& use_counter,
                                         ConsoleLogger* console_logger,
                                         const ResourceResponse& response,
                                         MimeTypeCheck mime_type_check_mode) {
@@ -171,15 +171,15 @@ bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
   // These record usages for two MIME types (without subtypes), per same/cross
   // origin.
   if (mime_type.StartsWithIgnoringASCIICase("application/")) {
-    context.CountUsage(kApplicationFeatures[same_origin]);
+    use_counter.CountUse(kApplicationFeatures[same_origin]);
   } else if (mime_type.StartsWithIgnoringASCIICase("text/")) {
-    context.CountUsage(kTextFeatures[same_origin]);
+    use_counter.CountUse(kTextFeatures[same_origin]);
   }
 
   // The code above has made a decision and handed down the result in accept
   // and counter.
   if (counter != kWebFeatureNone) {
-    context.CountUsage(counter);
+    use_counter.CountUse(counter);
   }
   if (!allow) {
     console_logger->AddConsoleMessage(

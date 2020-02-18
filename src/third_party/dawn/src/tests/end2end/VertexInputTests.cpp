@@ -117,9 +117,9 @@ class VertexInputTest : public DawnTest {
         vs << "}\n";
 
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vs.str().c_str());
+            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs.str().c_str());
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) in vec4 color;
                 layout(location = 0) out vec4 fragColor;
@@ -136,40 +136,42 @@ class VertexInputTest : public DawnTest {
         return device.CreateRenderPipeline(&descriptor);
     }
 
-    struct VertexBufferSpec {
-        uint32_t slot;
-        uint64_t stride;
-        InputStepMode step;
-    };
-    struct AttributeSpec {
+    struct VertexAttributeSpec {
         uint32_t location;
-        uint32_t slot;
         uint64_t offset;
         VertexFormat format;
     };
+    struct VertexBufferSpec {
+        uint64_t stride;
+        InputStepMode step;
+        std::vector<VertexAttributeSpec> attributes;
+    };
 
     utils::ComboVertexInputDescriptor MakeVertexInput(
-        const std::vector<VertexBufferSpec>& buffers,
-        const std::vector<AttributeSpec>& attributes) {
+        const std::vector<VertexBufferSpec>& buffers) {
         utils::ComboVertexInputDescriptor vertexInput;
-        uint32_t numBuffers = 0;
-        for (const auto& buffer : buffers) {
-            vertexInput.cBuffers[numBuffers].inputSlot = buffer.slot;
-            vertexInput.cBuffers[numBuffers].stride = buffer.stride;
-            vertexInput.cBuffers[numBuffers].stepMode = buffer.step;
-            numBuffers++;
+        uint32_t bufferCount = 0;
+        uint32_t totalNumAttributes = 0;
+        for (const VertexBufferSpec& buffer : buffers) {
+            vertexInput.cBuffers[bufferCount].stride = buffer.stride;
+            vertexInput.cBuffers[bufferCount].stepMode = buffer.step;
+
+            vertexInput.cBuffers[bufferCount].attributes =
+                &vertexInput.cAttributes[totalNumAttributes];
+
+            for (const VertexAttributeSpec& attribute : buffer.attributes) {
+                vertexInput.cAttributes[totalNumAttributes].shaderLocation = attribute.location;
+                vertexInput.cAttributes[totalNumAttributes].offset = attribute.offset;
+                vertexInput.cAttributes[totalNumAttributes].format = attribute.format;
+                totalNumAttributes++;
+            }
+            vertexInput.cBuffers[bufferCount].attributeCount =
+                static_cast<uint32_t>(buffer.attributes.size());
+
+            bufferCount++;
         }
 
-        uint32_t numAttributes = 0;
-        for (const auto& attribute : attributes) {
-            vertexInput.cAttributes[numAttributes].shaderLocation = attribute.location;
-            vertexInput.cAttributes[numAttributes].inputSlot = attribute.slot;
-            vertexInput.cAttributes[numAttributes].offset = attribute.offset;
-            vertexInput.cAttributes[numAttributes].format = attribute.format;
-            numAttributes++;
-        }
-        vertexInput.numBuffers = numBuffers;
-        vertexInput.numAttributes = numAttributes;
+        vertexInput.bufferCount = bufferCount;
         return vertexInput;
     }
 
@@ -232,7 +234,7 @@ class VertexInputTest : public DawnTest {
 // Test compilation and usage of the fixture :)
 TEST_P(VertexInputTest, Basic) {
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {{0, 4 * sizeof(float), InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float4}});
+        {{4 * sizeof(float), InputStepMode::Vertex, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
 
@@ -250,7 +252,7 @@ TEST_P(VertexInputTest, ZeroStride) {
     DAWN_SKIP_TEST_IF(IsLinux() && IsOpenGL());
 
     utils::ComboVertexInputDescriptor vertexInput =
-        MakeVertexInput({{0, 0, InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float4}});
+        MakeVertexInput({{0, InputStepMode::Vertex, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 0, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
 
@@ -268,7 +270,7 @@ TEST_P(VertexInputTest, AttributeExpanding) {
     // R32F case
     {
         utils::ComboVertexInputDescriptor vertexInput =
-            MakeVertexInput({{0, 0, InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float}});
+            MakeVertexInput({{0, InputStepMode::Vertex, {{0, 0, VertexFormat::Float}}}});
         dawn::RenderPipeline pipeline =
             MakeTestPipeline(vertexInput, 0, {{0, VertexFormat::Float, InputStepMode::Vertex}});
 
@@ -280,7 +282,7 @@ TEST_P(VertexInputTest, AttributeExpanding) {
     // RG32F case
     {
         utils::ComboVertexInputDescriptor vertexInput =
-            MakeVertexInput({{0, 0, InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float2}});
+            MakeVertexInput({{0, InputStepMode::Vertex, {{0, 0, VertexFormat::Float2}}}});
         dawn::RenderPipeline pipeline =
             MakeTestPipeline(vertexInput, 0, {{0, VertexFormat::Float2, InputStepMode::Vertex}});
 
@@ -292,7 +294,7 @@ TEST_P(VertexInputTest, AttributeExpanding) {
     // RGB32F case
     {
         utils::ComboVertexInputDescriptor vertexInput =
-            MakeVertexInput({{0, 0, InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float3}});
+            MakeVertexInput({{0, InputStepMode::Vertex, {{0, 0, VertexFormat::Float3}}}});
         dawn::RenderPipeline pipeline =
             MakeTestPipeline(vertexInput, 0, {{0, VertexFormat::Float3, InputStepMode::Vertex}});
 
@@ -309,7 +311,7 @@ TEST_P(VertexInputTest, StrideLargerThanAttributes) {
     DAWN_SKIP_TEST_IF(IsLinux() && IsOpenGL());
 
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {{0, 8 * sizeof(float), InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float4}});
+        {{8 * sizeof(float), InputStepMode::Vertex, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
 
@@ -324,8 +326,9 @@ TEST_P(VertexInputTest, StrideLargerThanAttributes) {
 // Test two attributes at an offset, vertex version
 TEST_P(VertexInputTest, TwoAttributesAtAnOffsetVertex) {
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {{0, 8 * sizeof(float), InputStepMode::Vertex}},
-        {{0, 0, 0, VertexFormat::Float4}, {1, 0, 4 * sizeof(float), VertexFormat::Float4}});
+        {{8 * sizeof(float),
+          InputStepMode::Vertex,
+          {{0, 0, VertexFormat::Float4}, {1, 4 * sizeof(float), VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
 
@@ -340,8 +343,9 @@ TEST_P(VertexInputTest, TwoAttributesAtAnOffsetVertex) {
 // Test two attributes at an offset, instance version
 TEST_P(VertexInputTest, TwoAttributesAtAnOffsetInstance) {
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {{0, 8 * sizeof(float), InputStepMode::Instance}},
-        {{0, 0, 0, VertexFormat::Float4}, {1, 0, 4 * sizeof(float), VertexFormat::Float4}});
+        {{8 * sizeof(float),
+          InputStepMode::Instance,
+          {{0, 0, VertexFormat::Float4}, {1, 4 * sizeof(float), VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Instance}});
 
@@ -356,7 +360,7 @@ TEST_P(VertexInputTest, TwoAttributesAtAnOffsetInstance) {
 // Test a pure-instance input state
 TEST_P(VertexInputTest, PureInstance) {
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {{0, 4 * sizeof(float), InputStepMode::Instance}}, {{0, 0, 0, VertexFormat::Float4}});
+        {{4 * sizeof(float), InputStepMode::Instance, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Instance}});
 
@@ -373,14 +377,12 @@ TEST_P(VertexInputTest, PureInstance) {
 // different attribute types
 TEST_P(VertexInputTest, MixedEverything) {
     utils::ComboVertexInputDescriptor vertexInput = MakeVertexInput(
-        {
-            {0, 12 * sizeof(float), InputStepMode::Vertex},
-            {1, 10 * sizeof(float), InputStepMode::Instance},
-        },
-        {{0, 0, 0, VertexFormat::Float},
-         {1, 0, 6 * sizeof(float), VertexFormat::Float2},
-         {2, 1, 0, VertexFormat::Float3},
-         {3, 1, 5 * sizeof(float), VertexFormat::Float4}});
+        {{12 * sizeof(float),
+          InputStepMode::Vertex,
+          {{0, 0, VertexFormat::Float}, {1, 6 * sizeof(float), VertexFormat::Float2}}},
+         {10 * sizeof(float),
+          InputStepMode::Instance,
+          {{2, 0, VertexFormat::Float3}, {3, 5 * sizeof(float), VertexFormat::Float4}}}});
     dawn::RenderPipeline pipeline =
         MakeTestPipeline(vertexInput, 1,
                          {{0, VertexFormat::Float, InputStepMode::Vertex},
@@ -407,7 +409,8 @@ TEST_P(VertexInputTest, MixedEverything) {
 TEST_P(VertexInputTest, UnusedVertexSlot) {
     // Instance input state, using slot 1
     utils::ComboVertexInputDescriptor instanceVertexInput = MakeVertexInput(
-        {{1, 4 * sizeof(float), InputStepMode::Instance}}, {{0, 1, 0, VertexFormat::Float4}});
+        {{0, InputStepMode::Vertex, {}},
+         {4 * sizeof(float), InputStepMode::Instance, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline instancePipeline = MakeTestPipeline(
         instanceVertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Instance}});
 
@@ -444,13 +447,14 @@ TEST_P(VertexInputTest, UnusedVertexSlot) {
 TEST_P(VertexInputTest, MultiplePipelinesMixedVertexInput) {
     // Basic input state, using slot 0
     utils::ComboVertexInputDescriptor vertexVertexInput = MakeVertexInput(
-        {{0, 4 * sizeof(float), InputStepMode::Vertex}}, {{0, 0, 0, VertexFormat::Float4}});
+        {{4 * sizeof(float), InputStepMode::Vertex, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline vertexPipeline =
         MakeTestPipeline(vertexVertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
 
     // Instance input state, using slot 1
     utils::ComboVertexInputDescriptor instanceVertexInput = MakeVertexInput(
-        {{1, 4 * sizeof(float), InputStepMode::Instance}}, {{0, 1, 0, VertexFormat::Float4}});
+        {{0, InputStepMode::Instance, {}},
+         {4 * sizeof(float), InputStepMode::Instance, {{0, 0, VertexFormat::Float4}}}});
     dawn::RenderPipeline instancePipeline = MakeTestPipeline(
         instanceVertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Instance}});
 

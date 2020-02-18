@@ -28,8 +28,9 @@ message FuzzCommands {
     MEDIA_CACHE = 2;
     SHADER_CACHE = 3;
     PNACL_CACHE = 4;
-    GENERATED_CODE_CACHE = 5;
+    GENERATED_BYTE_CODE_CACHE = 5;
     DISK_CACHE = 6;
+    GENERATED_NATIVE_CODE_CACHE = 7;
   }
   required CacheType cache_type = 4;
 

@@ -67,7 +67,6 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -931,8 +930,7 @@ Vector<String> GetOwnPropertyNames(v8::Isolate* isolate,
 v8::MicrotaskQueue* ToMicrotaskQueue(ExecutionContext* execution_context) {
   if (!execution_context)
     return nullptr;
-  Agent* agent = execution_context->GetAgent();
-  return agent ? agent->event_loop()->microtask_queue() : nullptr;
+  return execution_context->GetMicrotaskQueue();
 }
 
 v8::MicrotaskQueue* ToMicrotaskQueue(ScriptState* script_state) {

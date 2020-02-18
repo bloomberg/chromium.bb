@@ -96,7 +96,8 @@ void ContextMenuController::DocumentDetached(Document* document) {
 void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
   DCHECK(mouse_event->type() == event_type_names::kContextmenu);
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
-  LayoutPoint location(mouse_event->AbsoluteLocation());
+  PhysicalOffset location = PhysicalOffset::FromFloatPointRound(
+      FloatPoint(mouse_event->AbsoluteLocation()));
   if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))
     mouse_event->SetDefaultHandled();
 }
@@ -107,7 +108,8 @@ void ContextMenuController::ShowContextMenuAtPoint(
     float y,
     ContextMenuProvider* menu_provider) {
   menu_provider_ = menu_provider;
-  if (!ShowContextMenu(frame, LayoutPoint(x, y), kMenuSourceNone))
+  if (!ShowContextMenu(frame, PhysicalOffset(LayoutUnit(x), LayoutUnit(y)),
+                       kMenuSourceNone))
     ClearContextMenu();
 }
 
@@ -136,11 +138,6 @@ static KURL UrlFromFrame(LocalFrame* frame) {
 
 static int ComputeEditFlags(Document& selected_document, Editor& editor) {
   int edit_flags = WebContextMenuData::kCanDoNone;
-  if (!selected_document.IsHTMLDocument() &&
-      !selected_document.IsXHTMLDocument())
-    return edit_flags;
-
-  edit_flags |= WebContextMenuData::kCanTranslate;
   if (editor.CanUndo())
     edit_flags |= WebContextMenuData::kCanUndo;
   if (editor.CanRedo())
@@ -155,8 +152,12 @@ static int ComputeEditFlags(Document& selected_document, Editor& editor) {
     edit_flags |= WebContextMenuData::kCanDelete;
   if (editor.CanEditRichly())
     edit_flags |= WebContextMenuData::kCanEditRichly;
-  if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
-    edit_flags |= WebContextMenuData::kCanSelectAll;
+  if (selected_document.IsHTMLDocument() ||
+      selected_document.IsXHTMLDocument()) {
+    edit_flags |= WebContextMenuData::kCanTranslate;
+    if (selected_document.queryCommandEnabled("selectAll", ASSERT_NO_EXCEPTION))
+      edit_flags |= WebContextMenuData::kCanSelectAll;
+  }
   return edit_flags;
 }
 
@@ -200,7 +201,7 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
 }
 
 bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
-                                            const LayoutPoint& point,
+                                            const PhysicalOffset& point,
                                             WebMenuSourceType source_type) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in
@@ -210,8 +211,9 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (!ContextMenuAllowedScope::IsContextMenuAllowed())
     return false;
 
-  HitTestRequest::HitTestRequestType type =
-      HitTestRequest::kReadOnly | HitTestRequest::kActive;
+  HitTestRequest::HitTestRequestType type = HitTestRequest::kReadOnly |
+                                            HitTestRequest::kActive |
+                                            HitTestRequest::kRetargetForInert;
   HitTestLocation location(point);
   HitTestResult result(type, location);
   if (frame)
@@ -239,11 +241,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
   auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
   if (html_element) {
-    if (!html_element->title().IsEmpty()) {
-      data.title_text = html_element->title();
-    } else {
-      data.title_text = html_element->AltText();
-    }
+    data.title_text = html_element->title();
+    data.alt_text = html_element->AltText();
   }
 
   if (IsHTMLCanvasElement(result.InnerNode())) {
@@ -257,17 +256,6 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // An image can be null for many reasons, like being blocked, no image
     // data received from server yet.
     data.has_image_contents = result.GetImage() && !result.GetImage()->IsNull();
-    data.is_placeholder_image =
-        result.GetImage() && result.GetImage()->IsPlaceholderImage();
-    if (data.has_image_contents &&
-        IsHTMLImageElement(result.InnerNodeOrImageMapImage())) {
-      HTMLImageElement* image_element =
-          ToHTMLImageElement(result.InnerNodeOrImageMapImage());
-      if (image_element && image_element->CachedImage()) {
-        data.image_response = WrappedResourceResponse(
-            image_element->CachedImage()->GetResponse());
-      }
-    }
   } else if (!result.AbsoluteMediaURL().IsEmpty() ||
              result.GetMediaStreamDescriptor()) {
     if (!result.AbsoluteMediaURL().IsEmpty())

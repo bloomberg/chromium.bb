@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -552,7 +553,7 @@ inline bool PaintFastBottomLayer(Node* node,
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     if (info.image && info.image->IsImageResource()) {
       PaintTimingDetector::NotifyBackgroundImagePaint(
-          node, image, info.image->CachedImage(),
+          node, image, To<StyleFetchedImage>(info.image.Get()),
           paint_info.context.GetPaintController()
               .CurrentPaintChunkProperties());
     }
@@ -563,7 +564,7 @@ inline bool PaintFastBottomLayer(Node* node,
     LocalDOMWindow* window = node->GetDocument().domWindow();
     DCHECK(window);
     ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-        node, info.image,
+        node, To<StyleFetchedImage>(info.image.Get()),
         context.GetPaintController().CurrentPaintChunkProperties());
   }
   return true;
@@ -685,7 +686,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
     if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
       if (info.image && info.image->IsImageResource()) {
         PaintTimingDetector::NotifyBackgroundImagePaint(
-            node, image, info.image->CachedImage(),
+            node, image, To<StyleFetchedImage>(info.image.Get()),
             context.GetPaintController().CurrentPaintChunkProperties());
       }
     }
@@ -695,7 +696,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
       LocalDOMWindow* window = node->GetDocument().domWindow();
       DCHECK(window);
       ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-          node, info.image,
+          node, To<StyleFetchedImage>(info.image.Get()),
           context.GetPaintController().CurrentPaintChunkProperties());
     }
   }

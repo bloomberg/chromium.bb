@@ -52,6 +52,22 @@ void LayoutNGListItem::StyleDidChange(StyleDifference diff,
   LayoutNGBlockFlow::StyleDidChange(diff, old_style);
 
   UpdateMarker();
+
+  if (old_style && old_style->ListStyleType() != StyleRef().ListStyleType())
+    ListStyleTypeChanged();
+}
+
+// If the value of ListStyleType changed, we need to the marker text has been
+// updated.
+void LayoutNGListItem::ListStyleTypeChanged() {
+  if (!is_marker_text_updated_)
+    return;
+
+  is_marker_text_updated_ = false;
+  if (marker_) {
+    marker_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kListStyleTypeChange);
+  }
 }
 
 void LayoutNGListItem::OrdinalValueChanged() {
@@ -322,18 +338,24 @@ void LayoutNGListItem::UpdateMarkerContentIfNeeded() {
   } else {
     // Create a LayoutText in it.
     LayoutText* text = nullptr;
+    // |text_style| should be as same as style propagated in
+    // |LayoutObject::PropagateStyleToAnonymousChildren()| to avoid unexpected
+    // full layout due by style difference. See http://crbug.com/980399
+    scoped_refptr<ComputedStyle> text_style =
+        ComputedStyle::CreateAnonymousStyleWithDisplay(
+            marker_->StyleRef(), marker_->StyleRef().Display());
     if (child) {
       if (child->IsText()) {
         text = ToLayoutText(child);
-        text->SetStyle(marker_->MutableStyle());
+        text->SetStyle(text_style);
       } else {
         child->Destroy();
         child = nullptr;
       }
     }
     if (!child) {
-      text = LayoutText::CreateEmptyAnonymous(
-          GetDocument(), marker_->MutableStyle(), LegacyLayout::kAuto);
+      text = LayoutText::CreateEmptyAnonymous(GetDocument(), text_style,
+                                              LegacyLayout::kAuto);
       marker_->AddChild(text);
       is_marker_text_updated_ = false;
     }

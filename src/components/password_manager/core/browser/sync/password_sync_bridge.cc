@@ -101,7 +101,7 @@ std::unique_ptr<syncer::EntityData> CreateEntityData(
     const autofill::PasswordForm& form) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   *entity_data->specifics.mutable_password() = SpecificsFromPassword(form);
-  entity_data->non_unique_name = form.signon_realm;
+  entity_data->name = form.signon_realm;
   return entity_data;
 }
 
@@ -392,10 +392,15 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::MergeSyncDataInternal(
             std::move(local_form_entity_data), metadata_change_list.get());
       } else {
         // The remote password is more recent, update the local model.
-        PasswordStoreChangeList changes =
-            password_store_sync_->UpdateLoginSync(PasswordFromEntityChange(
-                remote_entity_change, /*sync_time=*/time_now));
+        UpdateLoginError update_login_error;
+        PasswordStoreChangeList changes = password_store_sync_->UpdateLoginSync(
+            PasswordFromEntityChange(remote_entity_change,
+                                     /*sync_time=*/time_now),
+            &update_login_error);
         DCHECK_LE(changes.size(), 1U);
+        base::UmaHistogramEnumeration(
+            "PasswordManager.MergeSyncData.UpdateLoginSyncError",
+            update_login_error);
         if (changes.empty()) {
           metrics_util::LogPasswordSyncState(
               metrics_util::NOT_SYNCING_FAILED_UPDATE);
@@ -578,8 +583,20 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           if (entity_change->storage_key().empty()) {
             continue;
           }
+          UpdateLoginError update_login_error;
           changes = password_store_sync_->UpdateLoginSync(
-              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
+              PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now),
+              &update_login_error);
+          base::UmaHistogramEnumeration(
+              "PasswordManager.ApplySyncChanges.UpdateLoginSyncError",
+              update_login_error);
+          // If there are no entries to update, direct the processor to ignore
+          // and move on.
+          if (update_login_error == UpdateLoginError::kNoUpdatedRecords) {
+            change_processor()->UntrackEntityForClientTagHash(
+                entity_change->data().client_tag_hash);
+            continue;
+          }
           if (changes.empty()) {
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyUpdateFailed);
@@ -603,9 +620,9 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           if (changes.empty()) {
             metrics_util::LogApplySyncChangesState(
                 metrics_util::ApplySyncChangesState::kApplyDeleteFailed);
-            return syncer::ModelError(
-                FROM_HERE,
-                "Failed to delete an entry from the password store.");
+            // TODO(mamir): Revisit this after checking UMA to decide if this
+            // relaxation is crucial or not.
+            continue;
           }
           DCHECK_EQ(1U, changes.size());
           DCHECK_EQ(changes[0].primary_key(), primary_key);

@@ -4,7 +4,7 @@
 
 package Convert::ASN1;
 {
-  $Convert::ASN1::VERSION = '0.23';
+  $Convert::ASN1::VERSION = '0.27';
 }
 
 use strict;
@@ -54,7 +54,7 @@ sub asn_recv { # $socket, $buffer, $flags
       last MORE;
     }
 
-    if (ord(substr($buf,$pos+$tb,1)) == 0x80) {
+    if (unpack("C",substr($buf,$pos+$tb,1)) == 0x80) {
       # indefinite length, grrr!
       $depth++;
       $pos += $tb + 1;
@@ -141,7 +141,7 @@ sub asn_read { # $fh, $buffer, $offset
 	goto READ_ERR;
     }
 
-    my $tch = ord(substr($_[1],$pos++,1));
+    my $tch = unpack("C",substr($_[1],$pos++,1));
     # Tag may be multi-byte
     if(($tch & 0x1f) == 0x1f) {
       my $ch;
@@ -151,7 +151,7 @@ sub asn_read { # $fh, $buffer, $offset
 	  $e = sysread($_[0],$_[1],$n,length $_[1]) or
 	      goto READ_ERR;
 	}
-	$ch = ord(substr($_[1],$pos++,1));
+	$ch = unpack("C",substr($_[1],$pos++,1));
       } while($ch & 0x80);
     }
 
@@ -162,7 +162,7 @@ sub asn_read { # $fh, $buffer, $offset
 	  goto READ_ERR;
     }
 
-    my $len = ord(substr($_[1],$pos++,1));
+    my $len = unpack("C",substr($_[1],$pos++,1));
 
     if($len & 0x80) {
       unless ($len &= 0x7f) {

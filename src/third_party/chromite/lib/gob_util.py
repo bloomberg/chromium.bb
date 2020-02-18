@@ -36,10 +36,10 @@ except ImportError:  # Newer oauth2client versions put it in .contrib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
-from chromite.lib import memoize
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 from chromite.lib import cros_build_lib
+from chromite.utils import memoize
 
 
 _GAE_VERSION = 'GAE_VERSION'
@@ -159,7 +159,7 @@ def _QueryString(param_dict, first_param=None):
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
   q = [urllib.quote(first_param)] if first_param else []
-  q.extend(['%s:%s' % (key, val) for key, val in param_dict.iteritems()])
+  q.extend(['%s:%s' % (key, val) for key, val in param_dict.items()])
   return '+'.join(q)
 
 
@@ -241,7 +241,7 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     headers.setdefault('Content-Type', 'application/json')
   if logging.getLogger().isEnabledFor(logging.DEBUG):
     logging.debug('%s https://%s%s', reqtype, host, path)
-    for key, val in headers.iteritems():
+    for key, val in headers.items():
       if key.lower() in ('authorization', 'cookie'):
         val = 'HIDDEN'
       logging.debug('%s: %s', key, val)
@@ -712,7 +712,7 @@ def SetReview(host, change, revision=None, msg=None, labels=None, notify=None):
         http_status=404,
         reason='CL %s not found in %s' % (change, host))
   if labels:
-    for key, val in labels.iteritems():
+    for key, val in labels.items():
       if ('labels' not in response or key not in response['labels'] or
           int(response['labels'][key] != int(val))):
         raise GOBError(

@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/native_file_system_permission_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
@@ -24,6 +25,7 @@ class Browser;
 class LoginHandler;
 class Profile;
 struct WebApplicationInfo;
+enum class PermissionAction;
 
 namespace base {
 class FilePath;
@@ -63,6 +65,10 @@ class WebDialogDelegate;
 struct SelectedFileInfo;
 }  // namespace ui
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace chrome {
 
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
@@ -71,7 +77,6 @@ namespace chrome {
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser);
 void HideTaskManager();
 
-#if !defined(OS_MACOSX)
 // Creates and shows an HTML dialog with the given delegate and context.
 // The window is automatically destroyed when it is closed.
 // Returns the created window.
@@ -81,7 +86,6 @@ void HideTaskManager();
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
-#endif  // !defined(OS_MACOSX)
 
 // Shows the create chrome app shortcut dialog box.
 // |close_callback| may be null.
@@ -299,6 +303,35 @@ void ShowFolderUploadConfirmationDialog(
     const base::FilePath& path,
     base::OnceCallback<void(const std::vector<ui::SelectedFileInfo>&)> callback,
     std::vector<ui::SelectedFileInfo> selected_files,
+    content::WebContents* web_contents);
+
+// Displays a dialog to ask for write access to the given file or directory for
+// the native file system API.
+void ShowNativeFileSystemPermissionDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    bool is_directory,
+    base::OnceCallback<void(PermissionAction result)> callback,
+    content::WebContents* web_contents);
+
+// Displays a dialog to inform the user that the directory |path| they picked
+// using the native file system API is blocked by chrome.
+// |callback| is called when the user has dismissed the dialog.
+void ShowNativeFileSystemRestrictedDirectoryDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceCallback<void(
+        content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
+        callback,
+    content::WebContents* web_contents);
+
+// Displays a dialog to confirm that the user intended to give read access to a
+// specific directory. Similar to ShowFolderUploadConfirmationDialog above,
+// except for use by the Native File System API.
+void ShowNativeFileSystemDirectoryAccessConfirmationDialog(
+    const url::Origin& origin,
+    const base::FilePath& path,
+    base::OnceCallback<void(PermissionAction result)> callback,
     content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_DIALOGS_H_

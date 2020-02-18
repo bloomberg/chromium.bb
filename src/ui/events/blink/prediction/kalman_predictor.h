@@ -19,7 +19,7 @@ namespace ui {
 // be used to predict one dimension (x, y).
 class KalmanPredictor : public InputPredictor {
  public:
-  explicit KalmanPredictor();
+  explicit KalmanPredictor(bool enable_time_filtering);
   ~KalmanPredictor() override;
 
   const char* GetName() const override;
@@ -36,7 +36,6 @@ class KalmanPredictor : public InputPredictor {
   // Generate the prediction based on stored points and given time_stamp.
   // Return false if no prediction available.
   bool GeneratePrediction(base::TimeTicks predict_time,
-                          bool is_resampling,
                           InputData* result) const override;
 
  private:
@@ -45,9 +44,13 @@ class KalmanPredictor : public InputPredictor {
   gfx::Vector2dF PredictVelocity() const;
   gfx::Vector2dF PredictAcceleration() const;
 
-  // Prdictor for each axis.
+  // Predictor for each axis.
   KalmanFilter x_predictor_;
   KalmanFilter y_predictor_;
+
+  // Filter to smooth time intervals.
+  KalmanFilter time_filter_;
+  bool enable_time_filtering_;
 
   // The last input point.
   InputData last_point_;

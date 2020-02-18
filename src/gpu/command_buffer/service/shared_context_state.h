@@ -72,7 +72,7 @@ class GPU_GLES2_EXPORT SharedContextState
                     scoped_refptr<gles2::FeatureInfo> feature_info);
   bool IsGLInitialized() const { return !!feature_info_; }
 
-  bool MakeCurrent(gl::GLSurface* surface);
+  bool MakeCurrent(gl::GLSurface* surface, bool needs_gl = false);
   void MarkContextLost();
   bool IsCurrent(gl::GLSurface* surface);
 
@@ -104,11 +104,15 @@ class GPU_GLES2_EXPORT SharedContextState
   std::vector<uint8_t>* scratch_deserialization_buffer() {
     return &scratch_deserialization_buffer_;
   }
+  size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   size_t glyph_cache_max_texture_bytes() const {
     return glyph_cache_max_texture_bytes_;
   }
   bool use_virtualized_gl_contexts() const {
     return use_virtualized_gl_contexts_;
+  }
+  bool support_vulkan_external_object() const {
+    return support_vulkan_external_object_;
   }
 
   // base::trace_event::MemoryDumpProvider implementation.
@@ -152,6 +156,7 @@ class GPU_GLES2_EXPORT SharedContextState
   QueryManager* GetQueryManager() override;
 
   bool use_virtualized_gl_contexts_ = false;
+  bool support_vulkan_external_object_ = false;
   base::OnceClosure context_lost_callback_;
   viz::VulkanContextProvider* const vk_context_provider_;
   viz::MetalContextProvider* const metal_context_provider_;
@@ -169,6 +174,7 @@ class GPU_GLES2_EXPORT SharedContextState
   gl::ProgressReporter* progress_reporter_ = nullptr;
   sk_sp<GrContext> owned_gr_context_;
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
+  size_t max_resource_cache_bytes_ = 0u;
   size_t glyph_cache_max_texture_bytes_ = 0u;
   std::vector<uint8_t> scratch_deserialization_buffer_;
 
@@ -179,7 +185,7 @@ class GPU_GLES2_EXPORT SharedContextState
   bool context_lost_ = false;
   base::ObserverList<ContextLostObserver>::Unchecked context_lost_observers_;
 
-  base::WeakPtrFactory<SharedContextState> weak_ptr_factory_;
+  base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SharedContextState);
 };

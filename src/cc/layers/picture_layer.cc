@@ -82,7 +82,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   }
 
   layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource(),
-                                 &last_updated_invalidation_, nullptr);
+                                 &last_updated_invalidation_, nullptr, nullptr);
   DCHECK(last_updated_invalidation_.IsEmpty());
 }
 
@@ -91,10 +91,6 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (!host)
     return;
-
-  if (!host->GetSettings().enable_mask_tiling &&
-      mask_type_ == LayerMaskType::MULTI_TEXTURE_MASK)
-    mask_type_ = LayerMaskType::SINGLE_TEXTURE_MASK;
 
   if (!recording_source_)
     recording_source_.reset(new RecordingSource);
@@ -165,11 +161,6 @@ bool PictureLayer::Update() {
 }
 
 void PictureLayer::SetLayerMaskType(LayerMaskType mask_type) {
-  // We do not allow converting SINGLE_TEXTURE_MASK to MULTI_TEXTURE_MASK in
-  // order to avoid rerastering when a mask's transform is being animated.
-  if (mask_type_ == LayerMaskType::SINGLE_TEXTURE_MASK &&
-      mask_type == LayerMaskType::MULTI_TEXTURE_MASK)
-    return;
   mask_type_ = mask_type;
 }
 
@@ -249,7 +240,7 @@ void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 }
 
 void PictureLayer::CaptureContent(const gfx::Rect& rect,
-                                  std::vector<NodeHolder>* content) {
+                                  std::vector<NodeId>* content) {
   if (!DrawsContent())
     return;
 

@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1385214448885562192">Нажмите ВВОД, чтобы принять, или ОТМЕНА, чтобы отменить изменения. Для перехода к следующему или предыдущему элементу используйте стрелки вниз и вверх.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Озвучивать атрибуты форматированного текста</translation>
 <translation id="1405567553485452995">Светло-зеленый</translation>
 <translation id="1417889266572670458">Военно-морской синий</translation>
 <translation id="1431911867058218151">Сливовый</translation>
@@ -319,11 +320,11 @@
 <translation id="3232388865800379423">Всплывающая кнопка</translation>
 <translation id="3241052487511142956">Перейти к предыдущей открытой ссылке</translation>
 <translation id="3241638166094654466">Ячеек в каждой строке:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">вертикальная ориентация</translation>
 <translation id="3286390186030710347">Ползунок</translation>
 <translation id="3299925995433437805">Следующей открытой ссылки нет.</translation>
 <translation id="3300348286427369683">В ChromeVox появилось больше возможностей для редактирования текста, например команды для ускоренной навигации, перемещение курсора с помощью дисплея Брайля, выбор и не только.</translation>
-<translation id="3304756947457041303">Настроить индикаторы форматированного текста</translation>
 <translation id="3307886118343381874">Перейти к концу таблицы</translation>
 <translation id="3311969765485641742">Нажмите ALT + SHIFT + A, чтобы посмотреть оповещения</translation>
 <translation id="3312997241656799641">Перейти к следующей открытой ссылке</translation>
@@ -334,7 +335,7 @@
 <translation id="3323447499041942178">Текстовое поле</translation>
 <translation id="3324983252691184275">Малиновый</translation>
 <translation id="3338224621010291843">Ползунок <ph name="VALUE" /> <ph name="NAME" /></translation>
-<translation id="335581015389089642">Озвучить</translation>
+<translation id="335581015389089642">Озвучивание</translation>
 <translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{знак плюс}one{# знак плюс}few{# знака плюс}many{# знаков плюс}other{# plus signs}}</translation>
 <translation id="338583716107319301">Разделитель</translation>
@@ -409,7 +410,7 @@
 <translation id="3930383913623796990">Весенне-зеленый</translation>
 <translation id="3930498801443296724">Цитата в виде врезки</translation>
 <translation id="3936394396199829062">Розово-лавандовый</translation>
-<translation id="3941269780691800708">Произносить текст под мышью</translation>
+<translation id="3941269780691800708">Произносить текст под указателем мыши</translation>
 <translation id="394953087167197343">Опечатка:</translation>
 <translation id="3962990492275676168">Читать с текущего места</translation>
 <translation id="3970951409746498040">Песочно-коричневый</translation>

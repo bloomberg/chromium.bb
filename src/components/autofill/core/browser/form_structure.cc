@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -33,6 +34,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
+#include "components/autofill/core/browser/logging/log_buffer.h"
 #include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
@@ -52,6 +54,10 @@
 #include "url/origin.h"
 
 namespace autofill {
+
+using mojom::ButtonTitleType;
+using mojom::SubmissionIndicatorEvent;
+
 namespace {
 
 // Version of the client sent to the server.
@@ -344,9 +350,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
 }
 
 // Helper function for explicit conversion between |ButtonTitleType| defined in
-// "button_title_type.h" and "server.proto".
+// "autofill_types.mojom.h" and "server.proto".
 AutofillUploadContents_ButtonTitle_ButtonTitleType ToServerButtonTitleType(
-    autofill::ButtonTitleType input) {
+    ButtonTitleType input) {
   switch (input) {
     case ButtonTitleType::NONE:
       return AutofillUploadContents::ButtonTitle::NONE;
@@ -448,12 +454,16 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
   const FormSignature form_signature = form.form_signature();
   constexpr FieldSignature kNullFieldSignature =
       0;  // Not relevant for form level metadata.
-  EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
-                        RandomizedEncoder::FORM_ID, form.id_attribute(),
-                        metadata->mutable_id());
-  EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
-                        RandomizedEncoder::FORM_NAME, form.name_attribute(),
-                        metadata->mutable_name());
+  if (!form.id_attribute().empty()) {
+    EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
+                          RandomizedEncoder::FORM_ID, form.id_attribute(),
+                          metadata->mutable_id());
+  }
+  if (!form.name_attribute().empty()) {
+    EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
+                          RandomizedEncoder::FORM_NAME, form.name_attribute(),
+                          metadata->mutable_name());
+  }
 }
 
 void PopulateRandomizedFieldMetadata(
@@ -463,32 +473,47 @@ void PopulateRandomizedFieldMetadata(
     AutofillRandomizedFieldMetadata* metadata) {
   const FormSignature form_signature = form.form_signature();
   const FieldSignature field_signature = field.GetFieldSignature();
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_ID, field.id_attribute,
-                        metadata->mutable_id());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_NAME, field.name_attribute,
-                        metadata->mutable_name());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_CONTROL_TYPE,
-                        field.form_control_type, metadata->mutable_type());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_LABEL, field.label,
-                        metadata->mutable_label());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label,
-                        metadata->mutable_aria_label());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                        field.aria_description,
-                        metadata->mutable_aria_description());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes,
-                        metadata->mutable_css_class());
-  EncodeRandomizedValue(encoder, form_signature, field_signature,
-                        RandomizedEncoder::FIELD_PLACEHOLDER, field.placeholder,
-                        metadata->mutable_placeholder());
-  // TODO(rogerm): Add hash of initial value.
+  if (!field.id_attribute.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_ID, field.id_attribute,
+                          metadata->mutable_id());
+  }
+  if (!field.name_attribute.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_NAME, field.name_attribute,
+                          metadata->mutable_name());
+  }
+  if (!field.form_control_type.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_CONTROL_TYPE,
+                          field.form_control_type, metadata->mutable_type());
+  }
+  if (!field.label.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_LABEL, field.label,
+                          metadata->mutable_label());
+  }
+  if (!field.aria_label.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label,
+                          metadata->mutable_aria_label());
+  }
+  if (!field.aria_description.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                          field.aria_description,
+                          metadata->mutable_aria_description());
+  }
+  if (!field.css_classes.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes,
+                          metadata->mutable_css_class());
+  }
+  if (!field.placeholder.empty()) {
+    EncodeRandomizedValue(encoder, form_signature, field_signature,
+                          RandomizedEncoder::FIELD_PLACEHOLDER,
+                          field.placeholder, metadata->mutable_placeholder());
+  }
 }
 
 void EncodeFormMetadataForQuery(const FormStructure& form,
@@ -659,8 +684,7 @@ bool FormStructure::EncodeUploadRequest(
                               ? submission_event_
                               : ToSubmissionIndicatorEvent(submission_source_);
 
-  DCHECK_LT(submission_event_,
-            SubmissionIndicatorEvent::SUBMISSION_INDICATOR_EVENT_COUNT);
+  DCHECK(autofill::mojom::IsKnownEnumValue(triggering_event));
   upload->set_submission_event(
       static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
           triggering_event));
@@ -1881,6 +1905,10 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       added_field->set_vote_type(field->vote_type());
     }
 
+    if (field->initial_value_hash()) {
+      added_field->set_initial_value_hash(field->initial_value_hash().value());
+    }
+
     added_field->set_signature(field->GetFieldSignature());
 
     if (field->properties_mask)
@@ -2153,6 +2181,43 @@ void FormStructure::RationalizeTypeRelationships() {
       }
     }
   }
+}
+
+LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
+  buffer << Tag{"div"} << Attrib{"class", "form"};
+  buffer << Tag{"table"};
+  buffer << MakeTr2Cells("Form signature:", form.form_signature());
+  buffer << MakeTr2Cells("Form name:", form.form_name());
+  buffer << MakeTr2Cells("Target URL:", form.target_url());
+  for (size_t i = 0; i < form.field_count(); ++i) {
+    buffer << Tag{"tr"};
+    buffer << Tag{"td"} << "Field " << i << ": " << CTag{};
+    const AutofillField* field = form.field(i);
+    buffer << Tag{"td"};
+    buffer << Tag{"table"};
+    buffer << MakeTr2Cells("Signature:", field->GetFieldSignature());
+    buffer << MakeTr2Cells("Name:", field->parseable_name());
+
+    auto type = field->Type().ToString();
+    auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
+    auto server_type = AutofillType(field->server_type()).ToString();
+
+    buffer << MakeTr2Cells("Type:",
+                           base::StrCat({type, " (heuristic: ", heuristic_type,
+                                         ", server: ", server_type, ")"}));
+    buffer << MakeTr2Cells("Section:", field->section);
+
+    constexpr size_t kMaxLabelSize = 100;
+    const base::string16 truncated_label =
+        field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
+    buffer << MakeTr2Cells("Label:", truncated_label);
+    buffer << CTag{"table"};
+    buffer << CTag{"td"};
+    buffer << CTag{"tr"};
+  }
+  buffer << CTag{"table"};
+  buffer << CTag{"div"};
+  return buffer;
 }
 
 }  // namespace autofill

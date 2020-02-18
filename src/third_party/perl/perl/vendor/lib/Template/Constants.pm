@@ -39,7 +39,7 @@ our $VERSION = 2.75;
 # STATUS constants returned by directives
 use constant STATUS_OK       =>   0;      # ok
 use constant STATUS_RETURN   =>   1;      # ok, block ended by RETURN
-use constant STATUS_STOP     =>   2;      # ok, stoppped by STOP 
+use constant STATUS_STOP     =>   2;      # ok, stopped by STOP 
 use constant STATUS_DONE     =>   3;      # ok, iterator done
 use constant STATUS_DECLINED =>   4;      # ok, declined to service request
 use constant STATUS_ERROR    => 255;      # error condition
@@ -77,7 +77,7 @@ use constant DEBUG_ALL       => 2047; # everything
 
 # extra debugging flags
 use constant DEBUG_CALLER    => 4096; # add caller file/line
-use constant DEBUG_FLAGS     => 4096; # bitmask to extraxt flags
+use constant DEBUG_FLAGS     => 4096; # bitmask to extract flags
 
 $DEBUG_OPTIONS  = {
     &DEBUG_OFF      => off      => off      => &DEBUG_OFF,

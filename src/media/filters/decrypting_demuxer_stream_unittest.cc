@@ -9,12 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/mock_media_log.h"
@@ -22,6 +22,7 @@
 #include "media/filters/decrypting_demuxer_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::base::test::RunCallback;
 using ::testing::_;
 using ::testing::HasSubstr;
 using ::testing::InSequence;
@@ -68,7 +69,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
  public:
   DecryptingDemuxerStreamTest()
       : demuxer_stream_(new DecryptingDemuxerStream(
-            message_loop_.task_runner(),
+            scoped_task_environment_.GetMainThreadTaskRunner(),
             &media_log_,
             base::Bind(&DecryptingDemuxerStreamTest::OnWaiting,
                        base::Unretained(this)))),
@@ -263,7 +264,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                void(DemuxerStream::Status, scoped_refptr<DecoderBuffer>));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   StrictMock<MockMediaLog> media_log_;
   std::unique_ptr<DecryptingDemuxerStream> demuxer_stream_;
   std::unique_ptr<StrictMock<MockCdmContext>> cdm_context_;
@@ -305,7 +306,7 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   EXPECT_EQ(DemuxerStream::VIDEO, demuxer_stream_->type());
   EXPECT_FALSE(output_config.is_encrypted());
   EXPECT_EQ(input_config.codec(), output_config.codec());
-  EXPECT_EQ(input_config.format(), output_config.format());
+  EXPECT_EQ(input_config.alpha_mode(), output_config.alpha_mode());
   EXPECT_EQ(input_config.profile(), output_config.profile());
   EXPECT_EQ(input_config.coded_size(), output_config.coded_size());
   EXPECT_EQ(input_config.visible_rect(), output_config.visible_rect());
@@ -347,6 +348,19 @@ TEST_F(DecryptingDemuxerStreamTest, Read_DecryptError) {
   EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
       .WillRepeatedly(
           RunCallback<2>(Decryptor::kError, scoped_refptr<DecoderBuffer>()));
+  EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
+  ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
+}
+
+// Test the case where the decryptor returns kNeedMoreData during read.
+TEST_F(DecryptingDemuxerStreamTest, Read_DecryptNeedMoreData) {
+  Initialize();
+
+  EXPECT_CALL(*input_audio_stream_, Read(_))
+      .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
+  EXPECT_CALL(*decryptor_, Decrypt(_, encrypted_buffer_, _))
+      .WillRepeatedly(RunCallback<2>(Decryptor::kNeedMoreData,
+                                     scoped_refptr<DecoderBuffer>()));
   EXPECT_MEDIA_LOG(HasSubstr("DecryptingDemuxerStream: decrypt error"));
   ReadAndExpectBufferReadyWith(DemuxerStream::kError, nullptr);
 }

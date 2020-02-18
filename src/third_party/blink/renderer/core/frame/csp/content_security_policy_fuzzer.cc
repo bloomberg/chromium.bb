@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -22,6 +23,14 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // that Oilpan be initialized to access blink::ThreadState::Current.
   LEAK_SANITIZER_DISABLED_SCOPE;
   g_page_holder = std::make_unique<DummyPageHolder>().release();
+
+  // Set loader sandbox flags and install a new document so the document
+  // has all possible sandbox flags set on the document already when the
+  // CSP is bound.
+  scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
+  g_page_holder->GetFrame().Loader().ForceSandboxFlags(WebSandboxFlags::kAll);
+  g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
+      "text/html", empty_document_data);
   return 0;
 }
 

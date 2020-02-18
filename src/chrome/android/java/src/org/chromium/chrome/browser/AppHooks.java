@@ -26,6 +26,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.directactions.DirectActionCoordinator;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.AsyncFeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
@@ -55,6 +56,7 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
 import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
@@ -156,6 +158,14 @@ public abstract class AppHooks {
      */
     public CustomTabsConnection createCustomTabsConnection() {
         return new CustomTabsConnection();
+    }
+
+    /**
+     * Returns a new {@link DirectActionCoordinator} instance, if available.
+     */
+    @Nullable
+    public DirectActionCoordinator createDirectActionCoordinator() {
+        return null;
     }
 
     /**
@@ -393,7 +403,7 @@ public abstract class AppHooks {
      * @return A new {@link TouchlessUiCoordinator} instance.
      */
     public TouchlessUiCoordinator createTouchlessUiCoordinator(ChromeActivity activity) {
-        return null;
+        return TouchlessDelegate.getTouchlessUiCoordinator(activity);
     }
 
     /**

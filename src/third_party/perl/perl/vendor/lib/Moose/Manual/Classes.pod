@@ -1,10 +1,11 @@
-package Moose::Manual::Classes;
-
+# PODNAME: Moose::Manual::Classes
 # ABSTRACT: Making your classes use Moose (and subclassing)
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Classes - Making your classes use Moose (and subclassing)
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 USING MOOSE
 
@@ -78,6 +79,8 @@ classes, C<extends>:
 Note that each call to C<extends> will I<reset> your parents. For
 multiple inheritance you must provide all the parents at once,
 C<extends 'Foo', 'Bar'>.
+
+When you call C<extends> Moose will try to load any classes you pass.
 
 You can use Moose to extend a non-Moose parent. However, when you do
 this, you will inherit the parent class's constructor (assuming it is
@@ -145,19 +148,71 @@ can also provide your own immutabilization method. Doing so requires
 extending the Moose metaclasses, and is well beyond the scope of this
 manual.
 
-=head1 AUTHOR
+=head1 INSTANTIATING CLASSES
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+When you're ready to use Moose classes in an application, reference them in
+your code in the regular Perl OO way by including a C<use> directive
+at the top of the file where the objects should be created.
+
+  use Person;
+
+  my $person = Person->new(
+    # attribute values at instantiation
+    # go here
+    ssn => '123456789',
+  );
+
+=head1 AUTHORS
+
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

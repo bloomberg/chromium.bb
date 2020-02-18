@@ -13,8 +13,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +80,7 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
                     : GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 

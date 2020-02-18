@@ -40,17 +40,21 @@ namespace blink {
 CSSImageValue::CSSImageValue(const AtomicString& raw_value,
                              const KURL& url,
                              const Referrer& referrer,
-                             StyleImage* image)
+                             StyleImage* image,
+                             OriginClean origin_clean)
     : CSSValue(kImageClass),
       relative_url_(raw_value),
       referrer_(referrer),
       absolute_url_(url.GetString()),
-      cached_image_(image) {}
+      cached_image_(image),
+      origin_clean_(origin_clean) {}
 
-CSSImageValue::CSSImageValue(const AtomicString& absolute_url)
+CSSImageValue::CSSImageValue(const AtomicString& absolute_url,
+                             OriginClean origin_clean)
     : CSSValue(kImageClass),
       relative_url_(absolute_url),
-      absolute_url_(absolute_url) {}
+      absolute_url_(absolute_url),
+      origin_clean_(OriginClean::kFalse) {}
 
 CSSImageValue::~CSSImageValue() = default;
 
@@ -62,8 +66,12 @@ StyleImage* CSSImageValue::CacheImage(
     if (absolute_url_.IsEmpty())
       ReResolveURL(document);
     ResourceRequest resource_request(absolute_url_);
-    resource_request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
-        referrer_.referrer_policy, resource_request.Url(), referrer_.referrer));
+    resource_request.SetReferrerPolicy(
+        ReferrerPolicyResolveDefault(referrer_.referrer_policy),
+        ResourceRequest::SetReferrerPolicyLocation::kCSSImageValueCacheImage);
+    resource_request.SetReferrerString(
+        referrer_.referrer,
+        ResourceRequest::SetReferrerStringLocation::kCSSImageValueCacheImage);
     ResourceLoaderOptions options;
     options.initiator_info.name = initiator_name_.IsEmpty()
                                       ? fetch_initiator_type_names::kCSS
@@ -91,6 +99,9 @@ StyleImage* CSSImageValue::CacheImage(
       }
       params.SetLazyImageDeferred();
     }
+
+    if (origin_clean_ != OriginClean::kTrue)
+      params.SetFromOriginDirtyStyleSheet(true);
 
     cached_image_ = MakeGarbageCollected<StyleFetchedImage>(document, params,
                                                             is_lazily_loaded);

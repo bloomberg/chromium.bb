@@ -67,6 +67,7 @@ class GCMInternalsBuilder {
       base::Clock* clock,
       ConnectionFactory* connection_factory,
       GCMStore* gcm_store,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder);
   virtual std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
@@ -74,6 +75,7 @@ class GCMInternalsBuilder {
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       GCMStatsRecorder* recorder,
       network::NetworkConnectionTracker* network_connection_tracker);
 };
@@ -113,6 +115,7 @@ class GCMClientImpl
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,
@@ -376,6 +379,8 @@ class GCMClientImpl
 
   network::NetworkConnectionTracker* network_connection_tracker_;
 
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
   // Controls receiving and sending of packets and reliable message queueing.
   // Must be destroyed before |network_session_|.
   std::unique_ptr<MCSClient> mcs_client_;
@@ -404,13 +409,13 @@ class GCMClientImpl
   std::map<std::string, std::pair<std::string, std::string>> instance_id_data_;
 
   // Factory for creating references when scheduling periodic checkin.
-  base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> periodic_checkin_ptr_factory_{this};
 
   // Factory for wiping out GCM store.
-  base::WeakPtrFactory<GCMClientImpl> destroying_gcm_store_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> destroying_gcm_store_ptr_factory_{this};
 
   // Factory for creating references in callbacks.
-  base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientImpl);
 };

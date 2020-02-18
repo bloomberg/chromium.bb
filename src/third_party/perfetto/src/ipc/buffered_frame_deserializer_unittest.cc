@@ -19,9 +19,9 @@
 #include <algorithm>
 #include <string>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 #include "perfetto/base/logging.h"
-#include "perfetto/base/utils.h"
+#include "perfetto/ext/base/utils.h"
 
 #include "src/ipc/wire_protocol.pb.h"
 

@@ -10,6 +10,17 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+
+namespace {
+
+// USER_VISIBLE because loading uploads blocks chrome://crashes,
+// chrome://webrtc-logs and the feedback UI. See https://crbug.com/972526.
+constexpr base::TaskTraits kLoadingTaskTraits = {
+    base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+    base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+
+}  // namespace
 
 UploadList::UploadInfo::UploadInfo(const std::string& upload_id,
                                    const base::Time& upload_time,
@@ -53,7 +64,7 @@ void UploadList::Load(base::OnceClosure callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   load_callback_ = std::move(callback);
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, LoadingTaskTraits(),
+      FROM_HERE, kLoadingTaskTraits,
       base::Bind(&UploadList::LoadUploadList, this),
       base::Bind(&UploadList::OnLoadComplete, this));
 }
@@ -64,7 +75,7 @@ void UploadList::Clear(const base::Time& begin,
   DCHECK(sequence_checker_.CalledOnValidSequence());
   clear_callback_ = std::move(callback);
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE, LoadingTaskTraits(),
+      FROM_HERE, kLoadingTaskTraits,
       base::BindOnce(&UploadList::ClearUploadList, this, begin, end),
       base::BindOnce(&UploadList::OnClearComplete, this));
 }
@@ -76,7 +87,7 @@ void UploadList::CancelLoadCallback() {
 void UploadList::RequestSingleUploadAsync(const std::string& local_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::PostTaskWithTraits(
-      FROM_HERE, LoadingTaskTraits(),
+      FROM_HERE, kLoadingTaskTraits,
       base::BindOnce(&UploadList::RequestSingleUpload, this, local_id));
 }
 

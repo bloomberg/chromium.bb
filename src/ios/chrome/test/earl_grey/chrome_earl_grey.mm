@@ -11,7 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/testing/nserror_util.h"
 #include "ios/web/public/test/element_selector.h"
@@ -19,12 +18,10 @@
 #if defined(CHROME_EARL_GREY_1)
 #import <WebKit/WebKit.h>
 
-#include "components/strings/grit/components_strings.h"  // nogncheck
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"  // nogncheck
 #import "ios/chrome/test/app/chrome_test_util.h"                   // nogncheck
 #import "ios/chrome/test/app/history_test_util.h"                  // nogncheck
 #include "ios/chrome/test/app/navigation_test_util.h"              // nogncheck
-#import "ios/chrome/test/app/static_html_view_test_util.h"         // nogncheck
 #import "ios/chrome/test/app/sync_test_util.h"                     // nogncheck
 #import "ios/chrome/test/app/tab_test_util.h"                      // nogncheck
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"    // nogncheck
@@ -32,7 +29,6 @@
 #import "ios/web/public/test/web_view_content_test_util.h"         // nogncheck
 #import "ios/web/public/test/web_view_interaction_test_util.h"     // nogncheck
 #import "ios/web/public/web_state/web_state.h"                     // nogncheck
-#include "ui/base/l10n/l10n_util.h"                                // nogncheck
 #endif
 
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -41,7 +37,10 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
-NSString* kWaitForPageToFinishLoadingError = @"Page did not finish loading";
+NSString* const kWaitForPageToFinishLoadingError =
+    @"Page did not finish loading";
+NSString* const kTypedURLError =
+    @"Error occurred during typed URL verification.";
 }
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -53,6 +52,19 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 #endif  // defined(CHROME_EARL_GREY_2)
 
 @implementation ChromeEarlGreyImpl
+
+#pragma mark - Device Utilities
+
+- (BOOL)isIPadIdiom {
+#if defined(CHROME_EARL_GREY_1)
+  UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
+#elif defined(CHROME_EARL_GREY_2)
+  UIUserInterfaceIdiom idiom =
+      [[GREY_REMOTE_CLASS_IN_APP(UIDevice) currentDevice] userInterfaceIdiom];
+#endif
+
+  return idiom == UIUserInterfaceIdiomPad;
+}
 
 #pragma mark - History Utilities (EG2)
 
@@ -67,26 +79,23 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - Navigation Utilities (EG2)
 
-- (NSError*)goBack {
+- (void)goBack {
   [ChromeEarlGreyAppInterface startGoingBack];
 
   [self waitForPageToFinishLoading];
-  return nil;
 }
 
-- (NSError*)goForward {
+- (void)goForward {
   [ChromeEarlGreyAppInterface startGoingForward];
   [self waitForPageToFinishLoading];
-  return nil;
 }
 
-- (NSError*)reload {
+- (void)reload {
   [ChromeEarlGreyAppInterface startReloading];
   [self waitForPageToFinishLoading];
-  return nil;
 }
 
-#pragma mark - Tab Utilities
+#pragma mark - Tab Utilities (EG2)
 
 - (void)selectTabAtIndex:(NSUInteger)index {
   [ChromeEarlGreyAppInterface selectTabAtIndex:index];
@@ -131,12 +140,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
       [ChromeEarlGreyAppInterface resetTabUsageRecorder]);
 }
 
-- (NSError*)openNewTab {
+- (void)openNewTab {
   [ChromeEarlGreyAppInterface openNewTab];
   [self waitForPageToFinishLoading];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  return nil;
 }
 
 - (void)closeCurrentTab {
@@ -144,12 +151,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-- (NSError*)openNewIncognitoTab {
+- (void)openNewIncognitoTab {
   [ChromeEarlGreyAppInterface openNewIncognitoTab];
   [self waitForPageToFinishLoading];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  return nil;
 }
 
 - (void)closeAllTabsInCurrentMode {
@@ -157,19 +162,17 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
-- (NSError*)closeAllIncognitoTabs {
+- (void)closeAllIncognitoTabs {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface closeAllIncognitoTabs]);
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  return nil;
 }
 
 - (void)closeAllTabs {
   [ChromeEarlGreyAppInterface closeAllTabs];
 }
 
-- (NSError*)waitForPageToFinishLoading {
+- (void)waitForPageToFinishLoading {
   GREYCondition* finishedLoading = [GREYCondition
       conditionWithName:kWaitForPageToFinishLoadingError
                   block:^{
@@ -178,12 +181,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
   bool pageLoaded = [finishedLoading waitWithTimeout:kWaitForPageLoadTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(pageLoaded, kWaitForPageToFinishLoadingError);
-
-  return nil;
 }
 
-
-- (NSError*)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
+- (void)loadURL:(const GURL&)URL waitForCompletion:(BOOL)wait {
   NSString* spec = base::SysUTF8ToNSString(URL.spec());
   [ChromeEarlGreyAppInterface startLoadingURL:spec];
   if (wait) {
@@ -192,11 +192,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
         [ChromeEarlGreyAppInterface waitForWindowIDInjectionIfNeeded],
         @"WindowID failed to inject");
   }
-
-  return nil;
 }
 
-- (NSError*)loadURL:(const GURL&)URL {
+- (void)loadURL:(const GURL&)URL {
   return [self loadURL:URL waitForCompletion:YES];
 }
 
@@ -204,8 +202,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isLoading];
 }
 
-- (NSError*)waitForSufficientlyVisibleElementWithMatcher:
-    (id<GREYMatcher>)matcher {
+- (void)waitForSufficientlyVisibleElementWithMatcher:(id<GREYMatcher>)matcher {
   NSString* errorDescription = [NSString
       stringWithFormat:
           @"Failed waiting for element with matcher %@ to become visible",
@@ -224,8 +221,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   bool matchedElement =
       [waitForElement waitWithTimeout:kWaitForUIElementTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(matchedElement, errorDescription);
-
-  return nil;
 }
 
 #pragma mark - Cookie Utilities (EG2)
@@ -254,7 +249,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 #pragma mark - WebState Utilities (EG2)
 
-- (NSError*)tapWebStateElementWithID:(NSString*)elementID {
+- (void)tapWebStateElementWithID:(NSString*)elementID {
   NSError* error = nil;
   bool success = [ChromeEarlGreyAppInterface tapWebStateElementWithID:elementID
                                                                 error:error];
@@ -263,23 +258,20 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
       [NSString stringWithFormat:@"Failed to tap web state element with ID: %@",
                                  elementID];
   EG_TEST_HELPER_ASSERT_TRUE(success, description);
-  return nil;
 }
 
-- (NSError*)tapWebStateElementInIFrameWithID:(const std::string&)elementID {
+- (void)tapWebStateElementInIFrameWithID:(const std::string&)elementID {
   NSString* NSElementID = base::SysUTF8ToNSString(elementID);
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
       tapWebStateElementInIFrameWithID:NSElementID]);
-  return nil;
 }
 
-- (NSError*)waitForWebStateContainingElement:(ElementSelector*)selector {
+- (void)waitForWebStateContainingElement:(ElementSelector*)selector {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface waitForWebStateContainingElement:selector]);
-  return nil;
 }
 
-- (NSError*)waitForMainTabCount:(NSUInteger)count {
+- (void)waitForMainTabCount:(NSUInteger)count {
   NSString* errorString = [NSString
       stringWithFormat:@"Failed waiting for main tab count to become %" PRIuNS,
                        count];
@@ -294,11 +286,9 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                   }];
   bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
-
-  return nil;
 }
 
-- (NSError*)waitForIncognitoTabCount:(NSUInteger)count {
+- (void)waitForIncognitoTabCount:(NSUInteger)count {
   NSString* errorString = [NSString
       stringWithFormat:
           @"Failed waiting for incognito tab count to become %" PRIuNS, count];
@@ -314,24 +304,65 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
                   }];
   bool tabCountEqual = [tabCountCheck waitWithTimeout:kWaitForUIElementTimeout];
   EG_TEST_HELPER_ASSERT_TRUE(tabCountEqual, errorString);
-  return nil;
 }
 
-- (NSError*)waitForWebStateNotContainingText:(std::string)UTF8Text {
-  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+- (void)submitWebStateFormWithID:(const std::string&)UTF8FormID {
+  NSString* formID = base::SysUTF8ToNSString(UTF8FormID);
   EG_TEST_HELPER_ASSERT_NO_ERROR(
-      [ChromeEarlGreyAppInterface waitForWebStateNotContainingText:text]);
-  return nil;
+      [ChromeEarlGreyAppInterface submitWebStateFormWithID:formID]);
 }
 
-#pragma mark - Settings Utilities
+- (void)waitForWebStateContainingText:(const std::string&)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for web state containing %@", text];
 
-- (NSError*)setContentSettings:(ContentSetting)setting {
+  GREYCondition* waitForText = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return
+                        [ChromeEarlGreyAppInterface webStateContainsText:text];
+                  }];
+  bool containsText = [waitForText waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
+}
+
+- (void)waitForWebStateNotContainingText:(const std::string&)UTF8Text {
+  NSString* text = base::SysUTF8ToNSString(UTF8Text);
+  NSString* errorString = [NSString
+      stringWithFormat:@"Failed waiting for web state not containing %@", text];
+
+  GREYCondition* waitForText = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    return !
+                        [ChromeEarlGreyAppInterface webStateContainsText:text];
+                  }];
+  bool containsText = [waitForText waitWithTimeout:kWaitForUIElementTimeout];
+  EG_TEST_HELPER_ASSERT_TRUE(containsText, errorString);
+}
+
+- (void)waitForWebStateContainingBlockedImageElementWithID:
+    (const std::string&)UTF8ImageID {
+  NSString* imageID = base::SysUTF8ToNSString(UTF8ImageID);
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForWebStateContainingBlockedImage:imageID]);
+}
+
+- (void)waitForWebStateContainingLoadedImageElementWithID:
+    (const std::string&)UTF8ImageID {
+  NSString* imageID = base::SysUTF8ToNSString(UTF8ImageID);
+  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
+      waitForWebStateContainingLoadedImage:imageID]);
+}
+
+#pragma mark - Settings Utilities (EG2)
+
+- (void)setContentSettings:(ContentSetting)setting {
   [ChromeEarlGreyAppInterface setContentSettings:setting];
-  return nil;
 }
 
-#pragma mark - Sync Utilities
+#pragma mark - Sync Utilities (EG2)
 
 - (void)clearSyncServerData {
   [ChromeEarlGreyAppInterface clearSyncServerData];
@@ -345,28 +376,28 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface stopSync];
 }
 
-- (void)clearAutofillProfileWithGUID:(const std::string&)GUID {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:nsGUID];
+- (void)clearAutofillProfileWithGUID:(const std::string&)UTF8GUID {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  [ChromeEarlGreyAppInterface clearAutofillProfileWithGUID:GUID];
 }
 
-- (void)injectAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID
+- (void)injectAutofillProfileOnFakeSyncServerWithGUID:
+            (const std::string&)UTF8GUID
                                   autofillProfileName:
-                                      (const std::string&)fullName {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
+                                      (const std::string&)UTF8FullName {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  NSString* fullName = base::SysUTF8ToNSString(UTF8FullName);
   [ChromeEarlGreyAppInterface
-      injectAutofillProfileOnFakeSyncServerWithGUID:nsGUID
-                                autofillProfileName:nsFullName];
+      injectAutofillProfileOnFakeSyncServerWithGUID:GUID
+                                autofillProfileName:fullName];
 }
 
-- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)GUID
-                     autofillProfileName:(const std::string&)fullName {
-  NSString* nsGUID = base::SysUTF8ToNSString(GUID);
-  NSString* nsFullName = base::SysUTF8ToNSString(fullName);
-  return
-      [ChromeEarlGreyAppInterface isAutofillProfilePresentWithGUID:nsGUID
-                                               autofillProfileName:nsFullName];
+- (BOOL)isAutofillProfilePresentWithGUID:(const std::string&)UTF8GUID
+                     autofillProfileName:(const std::string&)UTF8FullName {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  NSString* fullName = base::SysUTF8ToNSString(UTF8FullName);
+  return [ChromeEarlGreyAppInterface isAutofillProfilePresentWithGUID:GUID
+                                                  autofillProfileName:fullName];
 }
 
 - (void)setUpFakeSyncServer {
@@ -377,12 +408,65 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [ChromeEarlGreyAppInterface tearDownFakeSyncServer];
 }
 
-- (NSError*)waitForSyncInitialized:(BOOL)isInitialized
-                       syncTimeout:(NSTimeInterval)timeout {
+- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
+  return [ChromeEarlGreyAppInterface numberOfSyncEntitiesWithType:type];
+}
+
+- (void)addFakeSyncServerBookmarkWithURL:(const GURL&)URL
+                                   title:(const std::string&)UTF8Title {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  NSString* title = base::SysUTF8ToNSString(UTF8Title);
+  [ChromeEarlGreyAppInterface addFakeSyncServerBookmarkWithURL:spec
+                                                         title:title];
+}
+
+- (void)addFakeSyncServerTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface addFakeSyncServerTypedURL:spec];
+}
+
+- (void)addHistoryServiceTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface addHistoryServiceTypedURL:spec];
+}
+
+- (void)deleteHistoryServiceTypedURL:(const GURL&)URL {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  [ChromeEarlGreyAppInterface deleteHistoryServiceTypedURL:spec];
+}
+
+- (void)waitForTypedURL:(const GURL&)URL
+          expectPresent:(BOOL)expectPresent
+                timeout:(NSTimeInterval)timeout {
+  NSString* spec = base::SysUTF8ToNSString(URL.spec());
+  GREYCondition* waitForTypedURL =
+      [GREYCondition conditionWithName:kTypedURLError
+                                 block:^{
+                                   return [ChromeEarlGreyAppInterface
+                                            isTypedURL:spec
+                                       presentOnClient:expectPresent];
+                                 }];
+
+  bool success = [waitForTypedURL waitWithTimeout:timeout];
+  EG_TEST_HELPER_ASSERT_TRUE(success, kTypedURLError);
+}
+
+- (void)triggerSyncCycleForType:(syncer::ModelType)type {
+  [ChromeEarlGreyAppInterface triggerSyncCycleForType:type];
+}
+
+- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:
+    (const std::string&)UTF8GUID {
+  NSString* GUID = base::SysUTF8ToNSString(UTF8GUID);
+  [ChromeEarlGreyAppInterface
+      deleteAutofillProfileOnFakeSyncServerWithGUID:GUID];
+}
+
+- (void)waitForSyncInitialized:(BOOL)isInitialized
+                   syncTimeout:(NSTimeInterval)timeout {
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface
       waitForSyncInitialized:isInitialized
                  syncTimeout:timeout]);
-  return nil;
 }
 
 - (const std::string)syncCacheGUID {
@@ -390,25 +474,48 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return base::SysNSStringToUTF8(cacheGUID);
 }
 
-#pragma mark - SignIn Utilities
+- (void)verifySyncServerURLs:(NSArray<NSString*>*)URLs {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface verifySessionsOnSyncServerWithSpecs:URLs]);
+}
 
-- (NSError*)signOutAndClearAccounts {
+- (void)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
+                                     name:(const std::string&)UTF8Name
+                                    count:(size_t)count
+                                  timeout:(NSTimeInterval)timeout {
+  NSString* errorString = [NSString
+      stringWithFormat:@"Expected %zu entities of the %d type.", count, type];
+  NSString* name = base::SysUTF8ToNSString(UTF8Name);
+  GREYCondition* verifyEntities = [GREYCondition
+      conditionWithName:errorString
+                  block:^{
+                    NSError* error = [ChromeEarlGreyAppInterface
+                        verifyNumberOfSyncEntitiesWithType:type
+                                                      name:name
+                                                     count:count];
+                    return !error;
+                  }];
+
+  bool success = [verifyEntities waitWithTimeout:timeout];
+  EG_TEST_HELPER_ASSERT_TRUE(success, errorString);
+}
+
+#pragma mark - SignIn Utilities (EG2)
+
+- (void)signOutAndClearAccounts {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface signOutAndClearAccounts]);
-  return nil;
 }
 
 #pragma mark - Bookmarks Utilities (EG2)
 
-- (NSError*)waitForBookmarksToFinishLoading {
+- (void)waitForBookmarksToFinishLoading {
   EG_TEST_HELPER_ASSERT_NO_ERROR(
       [ChromeEarlGreyAppInterface waitForBookmarksToFinishinLoading]);
-  return nil;
 }
 
-- (NSError*)clearBookmarks {
+- (void)clearBookmarks {
   EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface clearBookmarks]);
-  return nil;
 }
 
 - (id)executeJavaScript:(NSString*)JS {
@@ -416,6 +523,49 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   id result = [ChromeEarlGreyAppInterface executeJavaScript:JS error:&error];
   EG_TEST_HELPER_ASSERT_NO_ERROR(error);
   return result;
+}
+
+#pragma mark - Accessibility Utilities (EG2)
+
+- (void)verifyAccessibilityForCurrentScreen {
+  EG_TEST_HELPER_ASSERT_NO_ERROR(
+      [ChromeEarlGreyAppInterface verifyAccessibilityForCurrentScreen]);
+}
+
+#pragma mark - Check features (EG2)
+
+- (BOOL)isSlimNavigationManagerEnabled {
+  return [ChromeEarlGreyAppInterface isSlimNavigationManagerEnabled];
+}
+
+- (BOOL)isBlockNewTabPagePendingLoadEnabled {
+  return [ChromeEarlGreyAppInterface isBlockNewTabPagePendingLoadEnabled];
+}
+
+- (BOOL)isNewOmniboxPopupLayoutEnabled {
+  return [ChromeEarlGreyAppInterface isNewOmniboxPopupLayoutEnabled];
+}
+
+- (BOOL)isUMACellularEnabled {
+  return [ChromeEarlGreyAppInterface isUMACellularEnabled];
+}
+
+- (BOOL)isUKMEnabled {
+  return [ChromeEarlGreyAppInterface isUKMEnabled];
+}
+
+- (BOOL)isWebPaymentsModifiersEnabled {
+  return [ChromeEarlGreyAppInterface isWebPaymentsModifiersEnabled];
+}
+
+#pragma mark - ScopedBlockPopupsPref
+
+- (ContentSetting)popupPrefValue {
+  return [ChromeEarlGreyAppInterface popupPrefValue];
+}
+
+- (void)setPopupPrefValue:(ContentSetting)value {
+  return [ChromeEarlGreyAppInterface setPopupPrefValue:value];
 }
 
 @end
@@ -457,193 +607,6 @@ id ExecuteJavaScript(NSString* javascript,
 }  // namespace chrome_test_util
 
 @implementation ChromeEarlGreyImpl (EG1)
-
-#pragma mark - Navigation Utilities
-
-- (NSError*)waitForErrorPage {
-  NSString* const kErrorPageText =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  return [self waitForStaticHTMLViewContainingText:kErrorPageText];
-}
-
-- (NSError*)waitForStaticHTMLViewContainingText:(NSString*)text {
-  bool hasStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    return chrome_test_util::StaticHtmlViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
-
-  NSString* errorDescription = [NSString
-      stringWithFormat:@"Failed to find static html view containing %@", text];
-  EG_TEST_HELPER_ASSERT_TRUE(hasStaticView, errorDescription);
-
-  return nil;
-}
-
-- (NSError*)waitForStaticHTMLViewNotContainingText:(NSString*)text {
-  bool noStaticView = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^{
-    return !chrome_test_util::StaticHtmlViewContainingText(
-        chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));
-  });
-
-  NSString* errorDescription = [NSString
-      stringWithFormat:@"Failed, there was a static html view containing %@",
-                       text];
-  EG_TEST_HELPER_ASSERT_TRUE(noStaticView, errorDescription);
-
-  return nil;
-}
-
-#pragma mark - WebState Utilities
-
-- (NSError*)submitWebStateFormWithID:(const std::string&)formID {
-  bool success = web::test::SubmitWebViewFormWithId(
-      chrome_test_util::GetCurrentWebState(), formID);
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed to submit form with ID=%s", formID.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingText:(std::string)text {
-  bool success = WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, ^bool {
-    return web::test::IsWebViewContainingText(
-        chrome_test_util::GetCurrentWebState(), text);
-  });
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web state containing %s",
-                         text.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingBlockedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_BLOCKED);
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web view blocked image %s",
-                         imageID.c_str()]);
-  }
-
-  return nil;
-}
-
-- (NSError*)waitForWebStateContainingLoadedImageElementWithID:
-    (std::string)imageID {
-  bool success = web::test::WaitForWebViewContainingImage(
-      imageID, chrome_test_util::GetCurrentWebState(),
-      web::test::IMAGE_STATE_LOADED);
-
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription([NSString
-        stringWithFormat:@"Failed waiting for web view loaded image %s",
-                         imageID.c_str()]);
-  }
-
-  return nil;
-}
-
-#pragma mark - Sync Utilities
-
-- (NSError*)waitForSyncServerEntitiesWithType:(syncer::ModelType)type
-                                         name:(const std::string&)name
-                                        count:(size_t)count
-                                      timeout:(NSTimeInterval)timeout {
-  __block NSError* error = nil;
-  ConditionBlock condition = ^{
-    NSError* __autoreleasing tempError = error;
-    BOOL success = chrome_test_util::VerifyNumberOfSyncEntitiesWithName(
-        type, name, count, &tempError);
-    error = tempError;
-    DCHECK(success || error);
-    return !!success;
-  };
-  bool success = WaitUntilConditionOrTimeout(timeout, condition);
-  if (error != nil) {
-    return nil;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        [NSString stringWithFormat:@"Expected %zu entities of the %d type.",
-                                   count, type]);
-  }
-  return nil;
-}
-
-- (int)numberOfSyncEntitiesWithType:(syncer::ModelType)type {
-  return chrome_test_util::GetNumberOfSyncEntities(type);
-}
-
-- (void)injectBookmarkOnFakeSyncServerWithURL:(const std::string&)URL
-                                bookmarkTitle:(const std::string&)title {
-  chrome_test_util::InjectBookmarkOnFakeSyncServer(URL, title);
-}
-
-- (void)addTypedURL:(const GURL&)URL {
-  chrome_test_util::AddTypedURLOnClient(URL);
-}
-
-- (void)triggerSyncCycleForType:(syncer::ModelType)type {
-  chrome_test_util::TriggerSyncCycle(type);
-}
-
-- (NSError*)waitForTypedURL:(const GURL&)URL
-              expectPresent:(BOOL)expectPresent
-                    timeout:(NSTimeInterval)timeout {
-  __block NSError* error = nil;
-  ConditionBlock condition = ^{
-    NSError* __autoreleasing tempError = error;
-    BOOL success = chrome_test_util::IsTypedUrlPresentOnClient(
-        URL, expectPresent, &tempError);
-    error = tempError;
-    DCHECK(success || error);
-    return !!success;
-  };
-  bool success = WaitUntilConditionOrTimeout(timeout, condition);
-  if (error != nil) {
-    return nil;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Error occurred during typed URL verification.");
-  }
-  return nil;
-}
-
-- (void)deleteTypedURL:(const GURL&)URL {
-  chrome_test_util::DeleteTypedUrlFromClient(URL);
-}
-
-- (void)injectTypedURLOnFakeSyncServer:(const std::string&)URL {
-  chrome_test_util::InjectTypedURLOnFakeSyncServer(URL);
-}
-
-- (void)deleteAutofillProfileOnFakeSyncServerWithGUID:(const std::string&)GUID {
-  chrome_test_util::DeleteAutofillProfileOnFakeSyncServer(GUID);
-}
-
-- (NSError*)verifySyncServerURLs:(const std::multiset<std::string>&)URLs {
-  NSError* error = nil;
-  NSError* __autoreleasing tempError = error;
-  BOOL success = chrome_test_util::VerifySessionsOnSyncServer(URLs, &tempError);
-  error = tempError;
-  if (error != nil) {
-    return error;
-  }
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Error occurred during verification sessions.");
-  }
-  return nil;
-}
 
 @end
 

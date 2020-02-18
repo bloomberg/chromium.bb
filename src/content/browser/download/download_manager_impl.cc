@@ -67,6 +67,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
@@ -284,6 +285,8 @@ scoped_refptr<download::DownloadURLLoaderFactoryGetter>
 CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
                                      RenderFrameHost* rfh,
                                      bool is_download) {
+  // TODO(crbug.com/955171): Replace these with PendingRemote and
+  // PendingReceiver.
   network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
   network::mojom::URLLoaderFactoryRequest proxy_factory_request;
   if (rfh) {
@@ -292,26 +295,27 @@ CreateDownloadURLLoaderFactoryGetter(StoragePartitionImpl* storage_partition,
     // Create an intermediate pipe that can be used to proxy the download's
     // URLLoaderFactory.
     network::mojom::URLLoaderFactoryPtrInfo maybe_proxy_factory_ptr_info;
-    network::mojom::URLLoaderFactoryRequest maybe_proxy_factory_request =
-        MakeRequest(&maybe_proxy_factory_ptr_info);
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+        maybe_proxy_factory_receiver =
+            MakeRequest(&maybe_proxy_factory_ptr_info);
 
     // Allow DevTools to potentially inject itself into the proxy pipe.
     should_proxy = devtools_instrumentation::WillCreateURLLoaderFactory(
         static_cast<RenderFrameHostImpl*>(rfh), true, is_download,
-        &maybe_proxy_factory_request);
+        &maybe_proxy_factory_receiver);
 
     // Also allow the Content embedder to inject itself if it wants to.
     should_proxy |= GetContentClient()->browser()->WillCreateURLLoaderFactory(
         rfh->GetSiteInstance()->GetBrowserContext(), rfh,
         rfh->GetProcess()->GetID(), false /* is_navigation */,
-        true /* is_download/ */, url::Origin(), &maybe_proxy_factory_request,
+        true /* is_download/ */, url::Origin(), &maybe_proxy_factory_receiver,
         nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
 
     // If anyone above indicated that they care about proxying, pass the
     // intermediate pipe along to the NetworkDownloadURLLoaderFactoryGetter.
     if (should_proxy) {
       proxy_factory_ptr_info = std::move(maybe_proxy_factory_ptr_info);
-      proxy_factory_request = std::move(maybe_proxy_factory_request);
+      proxy_factory_request = std::move(maybe_proxy_factory_receiver);
     }
   }
 
@@ -350,8 +354,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       is_history_download_id_retrieved_(false),
       should_persist_new_download_(false),
       cancelled_download_cleared_from_history_(0),
-      interrupted_download_cleared_from_history_(0),
-      weak_factory_(this) {
+      interrupted_download_cleared_from_history_(0) {
   DCHECK(browser_context);
   download::SetIOTaskRunner(
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
@@ -380,7 +383,7 @@ download::DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     const download::DownloadCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::ContainsKey(downloads_, id))
+  if (base::Contains(downloads_, id))
     return nullptr;
 
   download::DownloadItemImpl* download =
@@ -536,9 +539,11 @@ bool DownloadManagerImpl::InterceptDownload(
   if (info.is_new_download &&
       info.result ==
           download::DOWNLOAD_INTERRUPT_REASON_SERVER_CROSS_ORIGIN_REDIRECT) {
-    if (web_contents) {
-      std::vector<GURL> url_chain(info.url_chain);
-      GURL url = url_chain.back();
+    std::vector<GURL> url_chain(info.url_chain);
+    GURL url = url_chain.back();
+    if ((url.SchemeIsHTTPOrHTTPS() ||
+         GetContentClient()->browser()->IsHandledURL(url)) &&
+        web_contents) {
       url_chain.pop_back();
       NavigationController::LoadURLParams params(url);
       params.has_user_gesture = info.has_user_gesture;
@@ -549,6 +554,9 @@ bool DownloadManagerImpl::InterceptDownload(
       params.frame_tree_node_id =
           RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
               info.render_process_id, info.render_frame_id);
+      params.from_download_cross_origin_redirect = true;
+      params.initiator_origin = info.request_initiator;
+      params.is_renderer_initiated = info.is_content_initiated;
       web_contents->GetController().LoadURLWithParams(params);
     }
     if (info.request_handle)
@@ -680,9 +688,7 @@ net::URLRequestContextGetter* DownloadManagerImpl::GetURLRequestContextGetter(
 
 service_manager::Connector* DownloadManagerImpl::GetServiceManagerConnector() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (auto* connection = ServiceManagerConnection::GetForProcess())
-    return connection->GetConnector();
-  return nullptr;
+  return GetSystemConnector();
 }
 
 void DownloadManagerImpl::StartDownload(
@@ -731,7 +737,7 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!result) {  // File does not exist.
-    if (base::ContainsKey(downloads_, download_id))
+    if (base::Contains(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
   }
 }
@@ -773,7 +779,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(download::DownloadItem::kInvalidId, id);
-  DCHECK(!base::ContainsKey(downloads_, id));
+  DCHECK(!base::Contains(downloads_, id));
   download::DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
       this, id, main_file_path, page_url, mime_type, std::move(request_handle));
   DownloadItemUtils::AttachInfo(download_item, GetBrowserContext(),
@@ -905,7 +911,8 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
     int frame_tree_node_id) {
@@ -917,6 +924,8 @@ void DownloadManagerImpl::InterceptNavigation(
 
   const GURL& url = resource_request->url;
   const std::string& method = resource_request->method;
+  base::Optional<url::Origin> request_initiator =
+      resource_request->request_initiator;
 
   ResourceRequestInfo::WebContentsGetter web_contents_getter =
       base::BindRepeating(WebContents::FromFrameTreeNodeId, frame_tree_node_id);
@@ -925,11 +934,12 @@ void DownloadManagerImpl::InterceptNavigation(
       on_download_checks_done = base::BindOnce(
           &DownloadManagerImpl::InterceptNavigationOnChecksComplete,
           weak_factory_.GetWeakPtr(), web_contents_getter,
-          std::move(resource_request), std::move(url_chain),
-          std::move(response), cert_status,
+          std::move(resource_request), std::move(url_chain), cert_status,
+          std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints));
 
   delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url, method,
+                                  std::move(request_initiator),
                                   std::move(on_download_checks_done));
 }
 
@@ -1075,8 +1085,8 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
 
 void DownloadManagerImpl::OnDownloadCreated(
     std::unique_ptr<download::DownloadItemImpl> download) {
-  DCHECK(!base::ContainsKey(downloads_, download->GetId()));
-  DCHECK(!base::ContainsKey(downloads_by_guid_, download->GetGuid()));
+  DCHECK(!base::Contains(downloads_, download->GetId()));
+  DCHECK(!base::Contains(downloads_by_guid_, download->GetGuid()));
   download::DownloadItemImpl* item = download.get();
   downloads_[item->GetId()] = std::move(download);
   downloads_by_guid_[item->GetGuid()] = item;
@@ -1112,7 +1122,8 @@ void DownloadManagerImpl::PostInitialization(
 
   // Download manager is only initialized if both history db and in progress
   // cache are initialized.
-  if (!history_db_initialized_ || !in_progress_cache_initialized_)
+  bool history_loaded = history_db_initialized_ || IsOffTheRecord();
+  if (!history_loaded || !in_progress_cache_initialized_)
     return;
 
 #if defined(OS_ANDROID)
@@ -1197,9 +1208,8 @@ int DownloadManagerImpl::NonMaliciousInProgressCount() {
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
-  return base::ContainsKey(downloads_, download_id)
-             ? downloads_[download_id].get()
-             : nullptr;
+  return base::Contains(downloads_, download_id) ? downloads_[download_id].get()
+                                                 : nullptr;
 }
 
 download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
@@ -1210,8 +1220,8 @@ download::DownloadItem* DownloadManagerImpl::GetDownloadByGuid(
         return it.get();
     }
   }
-  return base::ContainsKey(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
-                                                     : nullptr;
+  return base::Contains(downloads_by_guid_, guid) ? downloads_by_guid_[guid]
+                                                  : nullptr;
 }
 
 void DownloadManagerImpl::OnUrlDownloadStarted(
@@ -1239,6 +1249,10 @@ void DownloadManagerImpl::GetAllDownloads(
     download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : downloads_)
     downloads->push_back(it.second.get());
+}
+
+void DownloadManagerImpl::GetUninitializedActiveDownloadsIfAny(
+    download::SimpleDownloadManager::DownloadVector* downloads) {
   for (const auto& it : in_progress_downloads_)
     downloads->push_back(it.get());
 }
@@ -1279,8 +1293,9 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
-    scoped_refptr<network::ResourceResponse> response,
     net::CertStatus cert_status,
+    scoped_refptr<network::ResourceResponse> response_head,
+    mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download_allowed) {
   if (!is_download_allowed) {
@@ -1309,8 +1324,9 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       GetStoragePartition(browser_context_, render_process_id, render_frame_id);
   in_progress_manager_->InterceptDownloadFromNavigation(
       std::move(resource_request), render_process_id, render_frame_id, site_url,
-      tab_url, tab_referrer_url, std::move(url_chain), std::move(response),
-      std::move(cert_status), std::move(url_loader_client_endpoints),
+      tab_url, tab_referrer_url, std::move(url_chain), std::move(cert_status),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints),
       CreateDownloadURLLoaderFactoryGetter(storage_partition, render_frame_host,
                                            false));
 }
@@ -1371,8 +1387,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     }
     url_loader_factory_getter =
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
-            params->url(), rfh, /*is_navigation=*/false,
-            storage_partition->GetFileSystemContext(), storage_domain);
+            params->url(), rfh, storage_partition->GetFileSystemContext(),
+            storage_domain);
   } else if (params->url().SchemeIs(url::kDataScheme)) {
     url_loader_factory_getter =
         CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(
@@ -1455,6 +1471,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
       if (delegate_) {
         delegate_->CheckDownloadAllowed(std::move(web_contents_getter), url,
                                         method,
+                                        base::nullopt /*request_initiator*/,
                                         std::move(on_can_download_checks_done));
         return;
       }

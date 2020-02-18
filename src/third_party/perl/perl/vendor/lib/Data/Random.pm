@@ -9,10 +9,12 @@ package Data::Random;
 ################################################################################
 # - Modules and Libraries
 ################################################################################
+use strict;
+use warnings;
 use 5.005_62;
 
 use Carp qw(cluck);
-
+use Time::Piece;
 #use Data::Random::WordList;
 
 require Exporter;
@@ -47,7 +49,7 @@ use vars qw(
 @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 @EXPORT    = qw();
 
-$Data::Random::VERSION = '0.06';
+our $VERSION = '0.13';
 
 ################################################################################
 # - Subroutines
@@ -100,7 +102,7 @@ sub rand_words {
         require Data::Random::WordList;
 
         # Create a new wordlist object
-        $wl = new Data::Random::WordList( wordlist => $options{'wordlist'} );
+        $wl = Data::Random::WordList->new( wordlist => $options{'wordlist'} );
     }
 
     # Get the random words
@@ -128,6 +130,7 @@ sub rand_chars {
 
     # Get the options hash
     my %options = @_;
+    my @chars;
 
     # Build named character sets if one wasn't supplied
     if ( ref( $options{'set'} ) ne 'ARRAY' ) {
@@ -154,7 +157,7 @@ sub rand_chars {
         elsif ( $options{'set'} eq 'alphanumeric' ) {
             @charset = ( 0 .. 9, 'a' .. 'z', 'A' .. 'Z' );
         }
-        elsif ( $options{'set'} eq 'misc' ) {
+        elsif ( $options{'set'} =~ /^(misc|char)$/ ) {
             @charset =
               ( '#', ',',
                 qw(~ ! @ $ % ^ & * ( ) _ + = - { } | : " < > ? / . ' ; ] [ \ `)
@@ -164,7 +167,8 @@ sub rand_chars {
         $options{'set'} = \@charset;
     }
 
-    return rand_set(%options);
+    @chars = rand_set(%options);
+    return wantarray ? @chars : join('', @chars);
 }
 
 ################################################################################
@@ -240,7 +244,7 @@ sub rand_set {
 sub rand_enum {
 
     # Get the options hash
-    my %options = @_;
+    my %options = @_ == 1 && ref $_[0] eq 'ARRAY' ? ( set => @_ ) : @_;
 
     # Make sure the set array was defined
     cluck('set array is not defined') && return if !$options{'set'};
@@ -256,56 +260,41 @@ sub rand_date {
     # Get the options hash
     my %options = @_;
 
-    # use the Date::Calc module
-    eval q{ use Date::Calc };
-
-    cluck($@) && return if $@;
-
-    my ( $min_year, $min_month, $min_day, $max_year, $max_month, $max_day );
-
+    my $min;
+    my $max;
     # Get today's date
-    my ( $year, $month, $day ) = Date::Calc::Today();
+    my $t = localtime;
+    my ( $year, $month, $day ) = split('-', $t->ymd);
+    my $today = Time::Piece->strptime($t->ymd, "%Y-%m-%d");
 
     if ( $options{'min'} ) {
         if ( $options{'min'} eq 'now' ) {
-            ( $min_year, $min_month, $min_day ) = ( $year, $month, $day );
+            $min = $today;
         }
         else {
-            ( $min_year, $min_month, $min_day ) =
-              split ( /\-/, $options{'min'} );
+            $min = Time::Piece->strptime($options{'min'}, '%Y-%m-%d');
         }
     }
     else {
-        ( $min_year, $min_month, $min_day ) = ( $year, $month, $day );
+        $min = $today;
     }
-
     if ( $options{'max'} ) {
         if ( $options{'max'} eq 'now' ) {
-            ( $max_year, $max_month, $max_day ) = ( $year, $month, $day );
+            $max = $today;
         }
         else {
-            ( $max_year, $max_month, $max_day ) =
-              split ( /\-/, $options{'max'} );
+            $max = Time::Piece->strptime($options{max}, "%Y-%m-%d");
         }
     }
     else {
-        ( $max_year, $max_month, $max_day ) =
-          Date::Calc::Add_Delta_YMD( $min_year, $min_month, $min_day, 1, 0, 0 );
+          $max = $min->add_years(1);
     }
 
-    my $delta_days =
-      Date::Calc::Delta_Days( $min_year, $min_month, $min_day, $max_year,
-        $max_month, $max_day, );
-
+    my $delta_days = int($max->julian_day) - int($min->julian_day);
     cluck('max date is later than min date') && return if $delta_days < 0;
 
-    $delta_days = int( rand( $delta_days + 1 ) );
-
-    ( $year, $month, $day ) =
-      Date::Calc::Add_Delta_Days( $min_year, $min_month, $min_day,
-        $delta_days );
-
-    return sprintf( "%04u-%02u-%02u", $year, $month, $day );
+    my $result = $min + ( 3600 * 24  * int( rand($delta_days + 1) ) );
+    return $result->ymd;
 }
 
 ################################################################################
@@ -327,14 +316,15 @@ sub rand_time {
             ( $min_hour, $min_min, $min_sec ) = ( $hour, $min, $sec );
         }
         else {
-            ( $min_hour, $min_min, $min_sec ) = split ( /\:/, $options{'min'} );
-
-            cluck('minimum time is not in valid time format HH:MM:SS') && return
-              if ( $min_hour > 23 ) || ( $min_hour < 0 );
-            cluck('minimum time is not in valid time format HH:MM:SS') && return
-              if ( $min_min > 59 ) || ( $min_min < 0 );
-            cluck('minimum time is not in valid time format HH:MM:SS') && return
-              if ( $min_sec > 59 ) || ( $min_sec < 0 );
+            eval {
+                my $min = Time::Piece->strptime( $options{min}, '%T' );
+                ( $min_hour, $min_min, $min_sec )
+                    = ( $min->hour, $min->min, $min->sec );
+            };
+            if ($@) {
+                cluck 'minimum time is not in valid time format HH:MM:SS';
+                return;
+            }
         }
     }
     else {
@@ -350,14 +340,15 @@ sub rand_time {
             ( $max_hour, $max_min, $max_sec ) = ( $hour, $min, $sec );
         }
         else {
-            ( $max_hour, $max_min, $max_sec ) = split ( /\:/, $options{'max'} );
-
-            cluck('maximum time is not in valid time format HH:MM:SS') && return
-              if ( $max_hour > 23 ) || ( $max_hour < 0 );
-            cluck('maximum time is not in valid time format HH:MM:SS') && return
-              if ( $max_min > 59 ) || ( $max_min < 0 );
-            cluck('maximum time is not in valid time format HH:MM:SS') && return
-              if ( $max_sec > 59 ) || ( $max_sec < 0 );
+            eval {
+                my $max = Time::Piece->strptime( $options{max}, '%T' );
+                ( $max_hour, $max_min, $max_sec )
+                    = ( $max->hour, $max->min, $max->sec );
+            };
+            if ($@) {
+                cluck 'maximum time is not in valid time format HH:MM:SS';
+                return;
+            }
         }
     }
     else {
@@ -390,79 +381,54 @@ sub rand_datetime {
     # Get the options hash
     my %options = @_;
 
-    # use the Date::Calc module
-    eval q{ use Date::Calc };
-
-    cluck($@) && return if $@;
-
-    my (
-        $min_year, $min_month, $min_day, $min_hour, $min_min, $min_sec,
-        $max_year, $max_month, $max_day, $max_hour, $max_min, $max_sec
-    );
-
     # Get today's date
-    my ( $year, $month, $day, $hour, $min, $sec ) = Date::Calc::Today_and_Now();
+    my $now = localtime;
+    my $minimum;
+    my $maximum;
 
-    if ( $options{'min'} ) {
-        if ( $options{'min'} eq 'now' ) {
-            ( $min_year, $min_month, $min_day,
-              $min_hour, $min_min,   $min_sec )
-              = ( $year, $month, $day, $hour, $min, $sec );
+    if ( $options{min} ) {
+        if ( $options{min} eq 'now' ) {
+            $minimum = Time::Piece->strptime(
+              $now->strftime('%Y-%m-%d %H:%M:%S'),
+              '%Y-%m-%d %H:%M:%S'
+            );
         }
         else {
-            ( $min_year, $min_month, $min_day,
-              $min_hour, $min_min,   $min_sec )
-              = $options{'min'} =~ /^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/;
+            $minimum = Time::Piece->strptime(
+              $options{min},
+              '%Y-%m-%d %H:%M:%S'
+            );
         }
     }
     else {
-        ( $min_year, $min_month, $min_day, $min_hour, $min_min, $min_sec ) =
-          ( $year, $month, $day, 0, 0, 0 );
+        $minimum = $now;
     }
 
-    if ( $options{'max'} ) {
-        if ( $options{'max'} eq 'now' ) {
-            ( $max_year, $max_month, $max_day,
-              $max_hour, $max_min,   $max_sec )
-              = ( $year, $month, $day, $hour, $min, $sec );
+    if ( $options{max} ) {
+        if ( $options{max} eq 'now' ) {
+            $maximum = Time::Piece->strptime(
+              $now->strftime('%Y-%m-%d %H:%M:%S'),
+              '%Y-%m-%d %H:%M:%S'
+            );
         }
         else {
-            ( $max_year, $max_month, $max_day,
-              $max_hour, $max_min,   $max_sec )
-              = $options{'max'} =~ /^(\d+)-(\d+)-(\d+) (\d+):(\d+):(\d+)$/;
+            $maximum = Time::Piece->strptime(
+              $options{max},
+              '%Y-%m-%d %H:%M:%S'
+            );
         }
     }
     else {
-        ( $max_year, $max_month, $max_day, $max_hour, $max_min, $max_sec ) =
-          ( Date::Calc::Add_Delta_YMD( $min_year, $min_month, $min_day, 1, 0,
-              0 ), 23, 59, 59 );
+        $maximum = $minimum->add_years(1);
     }
 
-    my ( $delta_days, $delta_hours, $delta_mins, $delta_secs ) =
-      Date::Calc::Delta_DHMS(
-        $min_year, $min_month, $min_day, $min_hour, $min_min, $min_sec,
-        $max_year, $max_month, $max_day, $max_hour, $max_min, $max_sec,
-    );
-
-    cluck('max date is later than min date') && return
-      if ( $delta_days < 0 ) || ( $delta_hours < 0 ) || ( $delta_mins < 0 )
-      || ( $delta_secs < 0 );
-
-    $delta_secs =
-      ( $delta_days * 86400 ) + ( $delta_hours * 3600 ) + ( $delta_mins * 60 ) +
-      $delta_secs;
-
+    my $delta_secs = $maximum - $minimum;
+    cluck('max_date is later than min date') && return if $delta_secs < 0;
     $delta_secs = int( rand( $delta_secs + 1 ) );
 
-    ( $year, $month, $day, $hour, $min, $sec ) = Date::Calc::Add_Delta_DHMS(
-        $min_year, $min_month, $min_day, $min_hour,
-        $min_min,  $min_sec,   0,        0,
-        0,         $delta_secs
-    );
+    my $result = $minimum + $delta_secs;
 
-    return
-      sprintf( "%04u-%02u-%02u %02u:%02u:%02u", $year, $month, $day, $hour,
-        $min, $sec );
+    return $result->strftime('%Y-%m-%d %H:%M:%S');
 }
 
 ################################################################################
@@ -472,6 +438,9 @@ sub rand_image {
 
     # Get the options hash
     my %options = @_;
+
+    eval q{ require GD; };
+    cluck($@) && return if $@;
 
     $options{'minwidth'} ||= 1;
     $options{'maxwidth'} ||= 100;
@@ -494,11 +463,7 @@ sub rand_image {
     $options{'bgcolor'} ||= _color();
     $options{'fgcolor'} ||= _color();
 
-    eval q{ use GD; };
-
-    cluck($@) && return if $@;
-
-    my $image = new GD::Image( $options{'width'}, $options{'height'} );
+    my $image = GD::Image->new( $options{'width'}, $options{'height'} );
 
     my $bgcolor = $image->colorAllocate( @{ $options{'bgcolor'} } );
     my $fgcolor = $image->colorAllocate( @{ $options{'fgcolor'} } );
@@ -515,7 +480,7 @@ sub rand_image {
     return $image->png();
 
     sub _color {
-        return [ int( rand(266) ), int( rand(266) ), int( rand(266) ) ];
+        return [ int( rand(256) ), int( rand(256) ), int( rand(256) ) ];
     }
 }
 
@@ -548,10 +513,12 @@ Data::Random - Perl module to generate random data
   my @random_words = rand_words( size => 10 );
 
   my @random_chars = rand_chars( set => 'all', min => 5, max => 8 );
+  my $string       = rand_chars( set => 'all', min => 5, max => 8 );
 
   my @random_set = rand_set( set => \@set, size => 5 );
 
   my $random_enum = rand_enum( set => \@set );
+  my $random_enum = rand_enum( \@set ); # shortcut
 
   my $random_date = rand_date();
 
@@ -559,10 +526,10 @@ Data::Random - Perl module to generate random data
 
   my $random_datetime = rand_datetime();
 
-  open(FILE, ">rand_image.png") or die $!;
-  binmode(FILE);
-  print FILE rand_image( bgcolor => [0, 0, 0] );
-  close(FILE);
+  open(my $file, ">", "rand_image.png") or die $!;
+  binmode($file);
+  print $file rand_image( bgcolor => [0, 0, 0] );
+  close($file);
 
 
 =head1 DESCRIPTION
@@ -603,7 +570,10 @@ shuffle - whether or not the words should be randomly shuffled.  Set this to 0 i
 
 =head2 rand_chars()
 
-This returns a list of random characters given a set of characters.  See below for possible parameters.
+When called in a list context this returns
+a list of random characters given a set of characters.
+In a scalar context it returns a string of random characters.
+See below for possible parameters.
 
 =over 4
 
@@ -617,6 +587,7 @@ set - the set of characters to be used.  This value can be either a reference to
     numeric      - numeric characters: 0-9
     alphanumeric - alphanumeric characters: a-z, A-Z, 0-9
     char         - non-alphanumeric characters: # ~ ! @ $ % ^ & * ( ) _ + = - { } | : " < > ? / . ' ; ] [ \ `
+    misc         - same as 'char'
     all          - all of the above
 
 =item *
@@ -675,7 +646,7 @@ This returns a random element given an initial set.  See below for possible para
 
 =item *
 
-set - the set of strings to be used.  This should be a reference to an array of strings.
+set - the set of strings to be used.  This should be a reference to an array of strings. The C<set> key will be assumed if the array reference is passed as the only argument.
 
 =back
 
@@ -828,7 +799,7 @@ fgcolor - the foreground color of the image.  The value must be a reference to a
 
 =head1 VERSION
 
-0.06
+0.12
 
 
 =head1 AUTHOR
@@ -842,11 +813,14 @@ Currently maintained by: Buddy Burden (barefoot@cpan.org), starting with version
 
     Hiroki Chalfant
     David Sarno
+	Michiel Beijen
 
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2011 Adekunle Olonoh.  All rights reserved.  This program is free software; you
+Copyright (c) 2000-2011 Adekunle Olonoh.
+Copyright (c) 2011-2015 Buddy Burden.
+All rights reserved.  This program is free software; you
 can redistribute it and/or modify it under the same terms as Perl itself.
 
 

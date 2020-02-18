@@ -24,8 +24,8 @@
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "test/logging/log_writer.h"
+#include "test/network/network_emulation.h"
 #include "test/scenario/column_printer.h"
-#include "test/scenario/network/network_emulation.h"
 #include "test/scenario/network_node.h"
 #include "test/scenario/scenario_config.h"
 #include "test/time_controller/time_controller.h"
@@ -33,6 +33,36 @@
 namespace webrtc {
 
 namespace test {
+// Helper class to capture network controller state.
+class NetworkControleUpdateCache : public NetworkControllerInterface {
+ public:
+  explicit NetworkControleUpdateCache(
+      std::unique_ptr<NetworkControllerInterface> controller);
+
+  NetworkControlUpdate OnNetworkAvailability(NetworkAvailability msg) override;
+  NetworkControlUpdate OnNetworkRouteChange(NetworkRouteChange msg) override;
+  NetworkControlUpdate OnProcessInterval(ProcessInterval msg) override;
+  NetworkControlUpdate OnRemoteBitrateReport(RemoteBitrateReport msg) override;
+  NetworkControlUpdate OnRoundTripTimeUpdate(RoundTripTimeUpdate msg) override;
+  NetworkControlUpdate OnSentPacket(SentPacket msg) override;
+  NetworkControlUpdate OnReceivedPacket(ReceivedPacket msg) override;
+  NetworkControlUpdate OnStreamsConfig(StreamsConfig msg) override;
+  NetworkControlUpdate OnTargetRateConstraints(
+      TargetRateConstraints msg) override;
+  NetworkControlUpdate OnTransportLossReport(TransportLossReport msg) override;
+  NetworkControlUpdate OnTransportPacketsFeedback(
+      TransportPacketsFeedback msg) override;
+  NetworkControlUpdate OnNetworkStateEstimate(
+      NetworkStateEstimate msg) override;
+
+  NetworkControlUpdate update_state() const;
+
+ private:
+  NetworkControlUpdate Update(NetworkControlUpdate update);
+  const std::unique_ptr<NetworkControllerInterface> controller_;
+  NetworkControlUpdate update_state_;
+};
+
 class LoggingNetworkControllerFactory
     : public NetworkControllerFactoryInterface {
  public:
@@ -46,10 +76,13 @@ class LoggingNetworkControllerFactory
   // TODO(srte): Consider using the Columnprinter interface for this.
   void LogCongestionControllerStats(Timestamp at_time);
 
+  NetworkControlUpdate GetUpdate() const;
+
  private:
   GoogCcDebugFactory goog_cc_factory_;
   NetworkControllerFactoryInterface* cc_factory_ = nullptr;
   bool print_cc_state_ = false;
+  NetworkControleUpdateCache* last_controller_ = nullptr;
 };
 
 struct CallClientFakeAudio {
@@ -73,6 +106,9 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   DataRate send_bandwidth() {
     return DataRate::bps(GetStats().send_bandwidth_bps);
   }
+  DataRate target_rate() const;
+  DataRate link_capacity() const;
+  DataRate padding_rate() const;
 
   void OnPacketReceived(EmulatedIpPacket packet) override;
   std::unique_ptr<RtcEventLogOutput> GetLogWriter(std::string name);
@@ -92,7 +128,6 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   uint32_t GetNextAudioSsrc();
   uint32_t GetNextAudioLocalSsrc();
   uint32_t GetNextRtxSsrc();
-  std::string GetNextPriorityId();
   void AddExtensions(std::vector<RtpExtension> extensions);
   void SendTask(std::function<void()> task);
 
@@ -114,7 +149,6 @@ class CallClient : public EmulatedNetworkReceiverInterface {
   int next_rtx_ssrc_index_ = 0;
   int next_audio_ssrc_index_ = 0;
   int next_audio_local_ssrc_index_ = 0;
-  int next_priority_index_ = 0;
   std::map<uint32_t, MediaType> ssrc_media_types_;
   // Defined last so it's destroyed first.
   TaskQueueForTest task_queue_;

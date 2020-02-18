@@ -128,7 +128,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
         WriteHTML(&(params[0].front()), params[0].size(),
                   &(params[1].front()), params[1].size());
       } else if (params.size() == 1) {
-        WriteHTML(&(params[0].front()), params[0].size(), NULL, 0);
+        WriteHTML(&(params[0].front()), params[0].size(), nullptr, 0);
       }
       break;
 
@@ -176,7 +176,7 @@ base::PlatformThreadId Clipboard::GetAndValidateThreadID() {
   // was whitelisted to use the clipboard. This is a CHECK rather than a DCHECK
   // to catch incorrect usage in production (e.g. https://crbug.com/872737).
   AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
-  CHECK(allowed_threads->empty() || base::ContainsValue(*allowed_threads, id));
+  CHECK(allowed_threads->empty() || base::Contains(*allowed_threads, id));
 
   return id;
 }

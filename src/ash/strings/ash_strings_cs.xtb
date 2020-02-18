@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Společně budou vaše zařízení fungovat ještě lépe</translation>
 <translation id="112308213915226829">Automaticky skrývat poličku</translation>
 <translation id="1153356358378277386">Spárovaná zařízení</translation>
+<translation id="1175572348579024023">Posunout</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="119944043368869598">Vymazat vše</translation>
-<translation id="123828989343052515">Nová plocha</translation>
 <translation id="1247372569136754018">Mikrofon (interní)</translation>
 <translation id="1252999807265626933">Zdroj nabíjení: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Jaké je počasí?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Metody zadávání nastavuje váš administrátor.</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="1761222317188459878">Přepnout připojení k síti. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Posunout doprava</translation>
 <translation id="1812997170047690955">Co je na obrazovce?</translation>
+<translation id="1820355135508821526">Funkce <ph name="FEATURE_NAME" /> byla zakázána zásadou použitou na toto zařízení. Chcete-li požádat o změny, kontaktujte svého administrátora.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Asistent (načítání...)</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Nastavit jazyk</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Zadávání textu</translation>
 <translation id="1993072747612765854">Další informace o nejnovější aktualizaci systému <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Vypnout</translation>
 <translation id="2012624427112548395">Ctrl+Hledat+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="2067602449040652523">Jas klávesnice</translation>
 <translation id="209965399369889474">Nejste připojeni k síti</translation>
+<translation id="2126242104232412123">Nová plocha</translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
 <translation id="2135456203358955318">Zadokovaná lupa</translation>
 <translation id="2144487987174258011">Aktualizace přehrávače Adobe Flash Player vyžaduje restart</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Asistent Google není ve veřejné relaci k dispozici.</translation>
 <translation id="2575685495496069081">Vícenásobné přihlášení je zakázáno.</translation>
 <translation id="2582112259361606227">Restartovat a aktualizovat</translation>
-<translation id="2597972630681408282">Noční režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karta je uzamčena</translation>
+<translation id="2651765386227849097">Asistent Google je na tomto zařízení vypnutý.</translation>
 <translation id="2653659639078652383">Odeslat</translation>
 <translation id="2658778018866295321">Kliknout a přetáhnout</translation>
 <translation id="2700493154570097719">Nastavit klávesnici</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Připojeno k zařízení}few{Připojeno k # zařízením}many{Připojeno k # zařízení}other{Připojeno k # zařízením}}</translation>
 <translation id="3226991577105957773">a ještě <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Není k dispozici žádná mobilní síť</translation>
+<translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> bylo přesunuto z plochy <ph name="ACTIVE_DESK" /> na plochu <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Co umíš?</translation>
 <translation id="3294437725009624529">Host</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3576141592585647168">Změnit časové pásmo</translation>
 <translation id="3595596368722241419">Baterie je nabitá</translation>
+<translation id="3604801046548457007">Byla vytvořena plocha <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Je připojen hmatový displej.</translation>
 <translation id="3621202678540785336">Vstup</translation>
 <translation id="3626281679859535460">Jas</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Baterie je nabitá na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="4017989525502048489">Laserové ukazovátko</translation>
+<translation id="4021716437419160885">Posunout dolů</translation>
 <translation id="4042660782729322247">Sdílíte svou obrazovku</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Vypnuto pro aplikaci}few{Vypnuto pro # aplikace}many{Vypnuto pro # aplikace}other{Vypnuto pro # aplikací}}</translation>
 <translation id="4072264167173457037">Střední signál</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Baterie je plně nabita.</translation>
 <translation id="490375751687810070">Na výšku</translation>
 <translation id="4905614135390995787">Zkratka k přepínání režimu vysokého kontrastu se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % baterie</translation>
 <translation id="4917385247580444890">Silný</translation>
 <translation id="4918086044614829423">Přijmout</translation>
 <translation id="4924411785043111640">Restartovat a resetovat</translation>
+<translation id="495046168593986294">Posunout nahoru</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="5030687792513154421">Čas vypršel</translation>
 <translation id="5035236842988137213">Zařízení <ph name="DEVICE_NAME" /> je připojeno k novému telefonu</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Konektor mikrofonu</translation>
 <translation id="5669267381087807207">Probíhá aktivace</translation>
 <translation id="5673434351075758678">Po synchronizaci nastavení se oznámení změní z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
+<translation id="5682642926269496722">Asistent Google pro aktuální uživatelský účet není k dispozici.</translation>
 <translation id="5691772641933328258">Otisk prstu nebyl rozpoznán</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
 <translation id="574392208103952083">Střední</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Aktualizaci nainstalujete tím, že Chromebook s připojenou klávesnicí restartujete.</translation>
 <translation id="5992218262414051481">Je aktivován režim vysokého kontrastu. Vypnete jej opětovným stisknutím kombinace kláves Ctrl+Hledat+H.</translation>
 <translation id="6018164090099858612">Ukončování režimu zrcadlení</translation>
+<translation id="602001110135236999">Posunout doleva</translation>
+<translation id="6040143037577758943">Zavřít</translation>
 <translation id="6043212731627905357">Tento monitor si se zařízením <ph name="DEVICE_TYPE" /> nerozumí (monitor není podporován).</translation>
 <translation id="6043994281159824495">Odhlásit se</translation>
 <translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Litujeme, heslo se nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME" />“ a adresou <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> – nabíjení</translation>
+<translation id="612734058257491180">Asistent Google v relaci hosta není k dispozici.</translation>
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6164005077879661055">Po odebrání dozorovaného uživatele budou trvale smazány všechny soubory a místní data, která jsou k němu přiřazena. Navštívené weby a nastavení tohoto dozorovaného uživatele může správce i nadále zobrazit na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Další informace</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je teď k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6715542151869432661">Nebyla nalezena žádná mobilní zařízení.</translation>
 <translation id="6723839937902243910">Napájení</translation>
+<translation id="6727969043791803658">Připojeno, <ph name="BATTERY_PERCENTAGE" /> % baterie</translation>
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
+<translation id="6752912906630585008">Plocha <ph name="REMOVED_DESK" /> byla odstraněna a sloučena s plochou <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="6820676911989879663">Dejte si pauzu.</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>
 <translation id="7705524343798198388">Síť VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 oznámení}few{# oznámení}many{# oznámení}other{# oznámení}}</translation>
+<translation id="7749443890790263709">Byl dosažen maximální počet ploch.</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizaci</translation>
 <translation id="7780159184141939021">Otočit obrazovku</translation>
 <translation id="7796353162336583443">Klepnutím na tlačítko dotykového pera na poličce můžete pořídit poznámku nebo snímek obrazovky, případně použít Asistenta Google, laserové ukazovátko nebo lupu.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Vytvořit poznámku</translation>
 <translation id="8375916635258623388">Toto zařízení <ph name="DEVICE_NAME" />a váš telefon se automaticky spojí</translation>
+<translation id="8388750414311082622">Poslední plochu nelze odstranit.</translation>
 <translation id="8392451568018454956">Nabídka možností pro uživatele <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Rodič toto zařízení uzamkl</translation>
 <translation id="8406981827175133772">Lupa celé obrazovky</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433186206711564395">Nastavení sítě</translation>
 <translation id="8433977262951327081">Klávesová zkratka k zobrazení bubliny s možnostmi vstupu na poličce se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Plocha <ph name="DESK_TITILE" /> byla aktivována</translation>
 <translation id="8452135315243592079">Chybí SIM karta</translation>
 <translation id="8454013096329229812">Připojení Wi-Fi je zapnuto.</translation>
 <translation id="847056008324733326">Zobrazit nastavení měřítka</translation>

@@ -23,9 +23,9 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 using sync_pb::UserConsentTypes;
 
@@ -125,7 +125,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
         chrome_launcher_controller->UnpinAppWithID(kPlayStoreAppId);
 
       // Tell Consent Auditor that the Play Store consent was revoked.
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile_);
       // TODO(crbug.com/850297): Fix unrelated tests that are not properly
       // setting up the state of identity_manager and enable the DCHECK instead

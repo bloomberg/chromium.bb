@@ -64,7 +64,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -105,7 +105,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&,
       HeapHashSet<WeakMember<const Element>>&);
-  ~MHTMLFrameSerializerDelegate() override;
+  ~MHTMLFrameSerializerDelegate() override = default;
   bool ShouldIgnoreElement(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool RewriteLink(const Element&, String& rewritten_link) override;
@@ -134,14 +134,6 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     : web_delegate_(web_delegate),
       shadow_template_elements_(shadow_template_elements),
       popup_overlays_skipped_(false) {}
-
-MHTMLFrameSerializerDelegate::~MHTMLFrameSerializerDelegate() {
-  if (web_delegate_.RemovePopupOverlay()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "PageSerialization.MhtmlGeneration.PopupOverlaySkipped",
-        popup_overlays_skipped_);
-  }
-}
 
 bool MHTMLFrameSerializerDelegate::ShouldIgnoreElement(const Element& element) {
   if (ShouldIgnoreHiddenElement(element))
@@ -235,8 +227,11 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // images, as only the value of src is pulled into the archive. Discarding
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
-  if (attribute.LocalName() == html_names::kSrcsetAttr)
+  if (IsHTMLImageElement(element) &&
+      (attribute.LocalName() == html_names::kSrcsetAttr ||
+       attribute.LocalName() == html_names::kSizesAttr)) {
     return true;
+  }
 
   // Do not save ping attribute since anyway the ping will be blocked from
   // MHTML.
@@ -406,7 +401,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   scoped_refptr<RawData> buffer = RawData::Create();
   MHTMLArchive::GenerateMHTMLHeader(
       boundary, document->Url(), document->title(),
-      document->SuggestedMIMEType(), WTF::Time::Now(), *buffer->MutableData());
+      document->SuggestedMIMEType(), base::Time::Now(), *buffer->MutableData());
   return WebThreadSafeData(buffer);
 }
 

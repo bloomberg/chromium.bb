@@ -15,7 +15,6 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -114,7 +113,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
 
   DCHECK(!presentation_time_recorder_);
   presentation_time_recorder_.reset();
-  if (wm::IsDraggingTabs(dragged_window)) {
+  if (window_util::IsDraggingTabs(dragged_window)) {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         dragged_window->layer()->GetCompositor(), kSwipeDownDragTabHistogram,
         kSwipeDownDragTabMaxLatencyHistogram);
@@ -154,8 +153,8 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
             ->overview_button_tray();
     DCHECK(overview_button_tray);
     overview_button_tray->SnapRippleToActivated();
-    controller->ToggleOverview(
-        OverviewSession::EnterExitOverviewType::kWindowDragged);
+    controller->StartOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateEnter);
   }
 
   if (controller->InOverviewSession()) {
@@ -177,7 +176,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
   Shell* shell = Shell::Get();
   TabletModeController* tablet_mode_controller =
       shell->tablet_mode_controller();
-  if (wm::IsDraggingTabs(dragged_window_)) {
+  if (window_util::IsDraggingTabs(dragged_window_)) {
     tablet_mode_controller->increment_tab_drag_count();
     if (was_splitview_active)
       tablet_mode_controller->increment_tab_drag_in_splitview_count();
@@ -274,7 +273,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   // For child class to do its special handling if any.
   EndedWindowDrag(location_in_screen);
 
-  if (!wm::IsDraggingTabs(dragged_window_)) {
+  if (!window_util::IsDraggingTabs(dragged_window_)) {
     if (split_view_controller_->IsWindowInSplitView(dragged_window_)) {
       RecordAppDragEndWindowStateHistogram(
           AppWindowDragEndWindowState::kDraggedIntoSplitView);
@@ -315,6 +314,10 @@ gfx::Point TabletModeWindowDragDelegate::GetEventLocationInScreen(
 
 IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
     const gfx::Point& location_in_screen) const {
+  // Do not show the drag indicators if split view is disabled globally.
+  if (!ShouldAllowSplitView())
+    return IndicatorState::kNone;
+
   // Do not show the drag indicators if the window hasn't been considered as
   // moved.
   if (!is_window_considered_moved_)

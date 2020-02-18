@@ -31,7 +31,6 @@
 
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/filesystem/async_callback_helper.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/sync_callback_helper.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {

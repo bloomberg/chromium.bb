@@ -32,10 +32,10 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_CLIENT_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
@@ -59,7 +59,6 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_dom_message_event.h"
@@ -90,8 +89,6 @@ enum class WebFeature : int32_t;
 
 enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
-class WebApplicationCacheHost;
-class WebApplicationCacheHostClient;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
@@ -109,7 +106,6 @@ class WebMediaPlayerSource;
 class WebNavigationControl;
 class WebServiceWorkerProvider;
 class WebPlugin;
-class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
 class WebSocketHandshakeThrottle;
@@ -152,13 +148,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                                             WebContentDecryptionModule*,
                                             const WebString& sink_id,
                                             WebLayerTreeView*) {
-    return nullptr;
-  }
-
-  // May return null.
-  virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      WebDocumentLoader*,
-      WebApplicationCacheHostClient*) {
     return nullptr;
   }
 
@@ -239,13 +228,18 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Request the creation of a new portal.
   virtual std::pair<WebRemoteFrame*, base::UnguessableToken> CreatePortal(
-      mojo::ScopedInterfaceEndpointHandle request_pipe,
-      mojo::ScopedInterfaceEndpointHandle client_pipe) {
+      mojo::ScopedInterfaceEndpointHandle portal_endpoint,
+      mojo::ScopedInterfaceEndpointHandle client_endpoint,
+      const WebElement& portal_element) {
     return std::pair<WebRemoteFrame*, base::UnguessableToken>(
         nullptr, base::UnguessableToken());
   }
+
+  // Request the creation of a remote frame which corresponds to an existing
+  // portal.
   virtual blink::WebRemoteFrame* AdoptPortal(
-      const base::UnguessableToken& portal_token) {
+      const base::UnguessableToken& portal_token,
+      const WebElement& portal_element) {
     return nullptr;
   }
 
@@ -280,7 +274,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 
   // This frame has set an upgrade insecure navigations set.
-  virtual void DidEnforceInsecureNavigationsSet(const std::vector<unsigned>&) {}
+  virtual void DidEnforceInsecureNavigationsSet(const WebVector<unsigned>&) {}
 
   // The sandbox flags or container policy have changed for a child frame of
   // this frame.
@@ -326,6 +320,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Announces that an embedded frame needs occlusion information from its
   // parent frame.
   virtual void SetNeedsOcclusionTracking(bool needs_tracking) {}
+
+  // Lifecycle of the frame has changed.
+  virtual void LifecycleStateChanged(mojom::FrameLifecycleState state) {}
 
   // Console messages ----------------------------------------------------
 
@@ -509,9 +506,11 @@ class BLINK_EXPORT WebLocalFrameClient {
     return WebURLRequest::kPreviewsUnspecified;
   }
 
-  // This frame tried to navigate its top level frame to the given url without
-  // ever having received a user gesture.
-  virtual void DidBlockFramebust(const WebURL&) {}
+  // This frame tried to perform a navigation from |initiator_url| to
+  // |blocked_url| but was blocked because of |reason|.
+  virtual void DidBlockNavigation(const WebURL& blocked_url,
+                                  const WebURL& initiator_url,
+                                  blink::NavigationBlockedReason reason) {}
 
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session
@@ -534,11 +533,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
   virtual void AbortClientNavigation() {}
-
-  // Push API ---------------------------------------------------
-
-  // Used to access the embedder for the Push API.
-  virtual WebPushClient* PushClient() { return nullptr; }
 
   // InstalledApp API ----------------------------------------------------
 
@@ -675,8 +669,8 @@ class BLINK_EXPORT WebLocalFrameClient {
                                              bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
-  virtual void DidObserveLayoutJank(double jank_fraction,
-                                    bool after_input_or_scroll) {}
+  virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
+  }
 
   enum class LazyLoadBehavior {
     kDeferredImage,    // An image is being deferred by the lazy load feature.
@@ -870,6 +864,14 @@ class BLINK_EXPORT WebLocalFrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
+  enum class AppCacheType {
+    kAppCacheForNone = 0,
+    kAppCacheForFrame,
+    kAppCacheForSharedWorker,
+  };
+  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
+    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
+  }
 };
 
 }  // namespace blink

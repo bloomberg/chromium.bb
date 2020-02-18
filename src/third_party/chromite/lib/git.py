@@ -431,7 +431,7 @@ class Manifest(object):
 
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
-    for path_data in self.checkouts_by_path.itervalues():
+    for path_data in self.checkouts_by_path.values():
       self._FinalizeProjectData(path_data)
 
   def _FinalizeProjectData(self, attrs):
@@ -690,9 +690,9 @@ class ManifestCheckout(Manifest):
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
     Manifest._FinalizeAllProjectData(self)
-    for key, value in self.checkouts_by_path.iteritems():
+    for key, value in self.checkouts_by_path.items():
       self.checkouts_by_path[key] = ProjectCheckout(value)
-    for key, value in self.checkouts_by_name.iteritems():
+    for key, value in self.checkouts_by_name.items():
       self.checkouts_by_name[key] = \
           [ProjectCheckout(x) for x in value]
 
@@ -1152,6 +1152,41 @@ def RevertPath(git_repo, filename, rev):
     rev: Revision to revert the file to.
   """
   RunGit(git_repo, ['checkout', rev, '--', filename])
+
+
+def Log(git_repo, pretty=None, after=None, until=None,
+        reverse=False, date=None, paths=None):
+  """Return git log output for the given arguments.
+
+  For more detailed description of the parameters, run `git help log`.
+
+  Args:
+    git_repo: Path to a directory in the git repository.
+    pretty: Passed directly to the --pretty flag.
+    after: Passed directly to --after flag.
+    until: Passed directly to --until flag.
+    reverse: If true, set --reverse flag.
+    date: Passed ddirectly to --date flag.
+    paths: List of paths to log commits for (enumerated after final -- ).
+
+  Returns:
+    The raw log output as a string.
+  """
+  cmd = ['log']
+  if pretty:
+    cmd.append('--pretty=%s' % pretty)
+  if after:
+    cmd.append('--after=%s' % after)
+  if until:
+    cmd.append('--until=%s' % until)
+  if reverse:
+    cmd.append('--reverse')
+  if date:
+    cmd.append('--date=%s' % date)
+  if paths:
+    cmd.append('--')
+    cmd.extend(paths)
+  return RunGit(git_repo, cmd).output
 
 
 def Commit(git_repo, message, amend=False, allow_empty=False,

@@ -200,7 +200,8 @@ Page::Page(PageClients& page_clients)
       subframe_count_(0),
       next_related_page_(this),
       prev_related_page_(this),
-      autoplay_flags_(0) {
+      autoplay_flags_(0),
+      web_text_autosizer_page_info_({0, 0, 1.f}) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
@@ -589,10 +590,11 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
             ->GetDocument()
             ->GetViewportData()
             .UpdateViewportDescription();
-        // The text autosizer has dependencies on the viewport.
-        if (TextAutosizer* text_autosizer =
-                DeprecatedLocalMainFrame()->GetDocument()->GetTextAutosizer())
-          text_autosizer->UpdatePageInfoInAllFrames();
+        // The text autosizer has dependencies on the viewport. Viewport
+        // description only applies to the main frame. On a viewport description
+        // change; any changes will be calculated starting from the local main
+        // frame renderer and propagated to the OOPIF renderers.
+        TextAutosizer::UpdatePageInfoInAllFrames(MainFrame());
       }
       break;
     case SettingsDelegate::kViewportScrollbarChange:
@@ -617,11 +619,11 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
       }
       break;
     case SettingsDelegate::kTextAutosizingChange:
-      if (!MainFrame() || !MainFrame()->IsLocalFrame())
+      if (!MainFrame())
         break;
-      if (TextAutosizer* text_autosizer =
-              DeprecatedLocalMainFrame()->GetDocument()->GetTextAutosizer())
-        text_autosizer->UpdatePageInfoInAllFrames();
+      // We need to update even for remote main frames since this setting
+      // could be changed via InternalSettings.
+      TextAutosizer::UpdatePageInfoInAllFrames(MainFrame());
       break;
     case SettingsDelegate::kFontFamilyChange:
       for (Frame* frame = MainFrame(); frame;

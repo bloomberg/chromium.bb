@@ -177,7 +177,7 @@ constexpr const char kPrefGeometryCache[] = "geometry_cache";
 // A preference that indicates when an extension is last launched.
 constexpr const char kPrefLastLaunchTime[] = "last_launch_time";
 
-// Am installation parameter bundled with an extension.
+// An installation parameter bundled with an extension.
 constexpr const char kPrefInstallParam[] = "install_parameter";
 
 // A list of installed ids and a signature.
@@ -203,6 +203,11 @@ constexpr const char kPrefDNRAllowedPages[] = "dnr_whitelisted_pages";
 
 constexpr const char kPrefDNRDynamicRulesetChecksum[] =
     "dnr_dynamic_ruleset_checksum";
+
+// A boolean preference that indicates whether the extension's icon should be
+// automatically badged to the matched action count for a tab. False by default.
+constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
+    "dnr_use_action_count_as_badge_text";
 
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
@@ -1130,6 +1135,17 @@ void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
   SetExtensionPrefFromContainer(pref_names::kToolbar, extension_ids);
 }
 
+ExtensionIdList ExtensionPrefs::GetPinnedExtensions() const {
+  ExtensionIdList id_list_out;
+  GetUserExtensionPrefIntoContainer(pref_names::kPinnedExtensions,
+                                    &id_list_out);
+  return id_list_out;
+}
+
+void ExtensionPrefs::SetPinnedExtensions(const ExtensionIdList& extension_ids) {
+  SetExtensionPrefFromContainer(pref_names::kPinnedExtensions, extension_ids);
+}
+
 void ExtensionPrefs::OnExtensionInstalled(
     const Extension* extension,
     Extension::State initial_state,
@@ -1642,7 +1658,6 @@ void ExtensionPrefs::RemoveObserver(ExtensionPrefsObserver* observer) {
 
 void ExtensionPrefs::InitPrefStore() {
   TRACE_EVENT0("browser,startup", "ExtensionPrefs::InitPrefStore")
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefStoreTime");
 
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
@@ -1806,6 +1821,20 @@ URLPatternSet ExtensionPrefs::GetDNRAllowedPages(
   return result;
 }
 
+bool ExtensionPrefs::GetDNRUseActionCountAsBadgeText(
+    const ExtensionId& extension_id) const {
+  return ReadPrefAsBooleanAndReturn(extension_id,
+                                    kPrefDNRUseActionCountAsBadgeText);
+}
+
+void ExtensionPrefs::SetDNRUseActionCountAsBadgeText(
+    const ExtensionId& extension_id,
+    bool use_action_count_as_badge_text) {
+  UpdateExtensionPref(
+      extension_id, kPrefDNRUseActionCountAsBadgeText,
+      std::make_unique<base::Value>(use_action_count_as_badge_text));
+}
+
 // static
 void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
   g_run_alerts_in_first_run_for_testing = true;
@@ -1814,6 +1843,9 @@ void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
 void ExtensionPrefs::ClearExternalUninstallForTesting(const ExtensionId& id) {
   DeleteExtensionPrefs(id);
 }
+
+const char ExtensionPrefs::kFakeObsoletePrefForTesting[] =
+    "__fake_obsolete_pref_for_testing";
 
 ExtensionPrefs::ExtensionPrefs(
     content::BrowserContext* browser_context,
@@ -1857,6 +1889,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(pref_names::kExtensions);
   registry->RegisterListPref(pref_names::kToolbar,
+                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterListPref(pref_names::kPinnedExtensions,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(pref_names::kToolbarSize, -1);
   registry->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
@@ -1968,7 +2002,6 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
     const ExtensionsInfo& extensions_info) {
   TRACE_EVENT0("browser,startup",
                "ExtensionPrefs::InitExtensionControlledPrefs")
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
 
   for (const auto& info : extensions_info) {
     const ExtensionId& extension_id = info->extension_id;
@@ -2073,6 +2106,31 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   for (auto& observer : observer_list_)
     observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
+}
+
+void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
+  const base::Value* extensions_dictionary =
+      prefs_->GetDictionary(pref_names::kExtensions);
+  DCHECK(extensions_dictionary->is_dict());
+
+  // Please clean this list up periodically, removing any entries added more
+  // than a year ago (with the exception of the testing key).
+  constexpr const char* kObsoleteKeys[] = {
+      // Permanent testing-only key.
+      kFakeObsoletePrefForTesting,
+
+      // Added 2019-07.
+      "has_set_script_all_urls",
+  };
+
+  for (const auto& key_value : extensions_dictionary->DictItems()) {
+    if (!crx_file::id_util::IdIsValid(key_value.first))
+      continue;
+    ScopedExtensionPrefUpdate update(prefs_, key_value.first);
+    std::unique_ptr<prefs::DictionaryValueUpdate> inner_update = update.Get();
+    for (const char* key : kObsoleteKeys)
+      inner_update->Remove(key, nullptr);
+  }
 }
 
 }  // namespace extensions

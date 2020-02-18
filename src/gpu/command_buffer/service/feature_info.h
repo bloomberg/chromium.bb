@@ -102,6 +102,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool chromium_image_ycbcr_422 = false;
     bool chromium_image_xr30 = false;
     bool chromium_image_xb30 = false;
+    bool chromium_image_ycbcr_p010 = false;
     bool emulate_primitive_restart_fixed_index = false;
     bool ext_render_buffer_format_bgra8888 = false;
     bool ext_multisample_compatibility = false;
@@ -123,9 +124,6 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool angle_client_arrays = false;
     bool angle_request_extension = false;
     bool ext_debug_marker = false;
-    bool arb_robustness = false;
-    bool khr_robustness = false;
-    bool ext_robustness = false;
     bool ext_pixel_buffer_object = false;
     bool ext_unpack_subimage = false;
     bool oes_rgb8_rgba8 = false;
@@ -225,6 +223,10 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool oes_texture_half_float_linear_available() const {
     return oes_texture_half_float_linear_available_;
+  }
+
+  bool is_passthrough_cmd_decoder() const {
+    return is_passthrough_cmd_decoder_;
   }
 
  private:

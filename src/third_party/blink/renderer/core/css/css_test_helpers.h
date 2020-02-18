@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -15,6 +15,7 @@ class Document;
 class CSSStyleSheet;
 class CSSVariableData;
 class CSSValue;
+class CSSProperty;
 
 namespace css_test_helpers {
 
@@ -33,7 +34,7 @@ class TestStyleSheet {
 
   const Document& GetDocument() { return *document_; }
 
-  void AddCSSRules(const char* rule_text, bool is_empty_sheet = false);
+  void AddCSSRules(const String& rule_text, bool is_empty_sheet = false);
   RuleSet& GetRuleSet();
   CSSRuleList* CssRules();
 
@@ -50,6 +51,9 @@ void RegisterProperty(Document& document,
 
 scoped_refptr<CSSVariableData> CreateVariableData(String);
 const CSSValue* CreateCustomIdent(AtomicString);
+const CSSValue* ParseLonghand(Document& document,
+                              const CSSProperty&,
+                              const String& value);
 
 }  // namespace css_test_helpers
 }  // namespace blink

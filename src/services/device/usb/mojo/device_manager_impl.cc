@@ -18,7 +18,6 @@
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 #include "services/device/usb/mojo/device_impl.h"
-#include "services/device/usb/mojo/type_converters.h"
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_service.h"
 
@@ -34,9 +33,7 @@ DeviceManagerImpl::DeviceManagerImpl()
     : DeviceManagerImpl(UsbService::Create()) {}
 
 DeviceManagerImpl::DeviceManagerImpl(std::unique_ptr<UsbService> usb_service)
-    : usb_service_(std::move(usb_service)),
-      observer_(this),
-      weak_factory_(this) {
+    : usb_service_(std::move(usb_service)), observer_(this) {
   if (usb_service_)
     observer_.Add(usb_service_.get());
 }
@@ -84,7 +81,7 @@ void DeviceManagerImpl::RefreshDeviceInfo(const std::string& guid,
   }
 
   if (device->permission_granted()) {
-    std::move(callback).Run(mojom::UsbDeviceInfo::From(*device));
+    std::move(callback).Run(device->device_info().Clone());
     return;
   }
 
@@ -103,7 +100,7 @@ void DeviceManagerImpl::OnPermissionGrantedToRefresh(
     return;
   }
 
-  std::move(callback).Run(mojom::UsbDeviceInfo::From(*device));
+  std::move(callback).Run(device->device_info().Clone());
 }
 #endif  // defined(OS_ANDROID)
 
@@ -176,9 +173,8 @@ void DeviceManagerImpl::OnGetDevices(
 
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
-    mojom::UsbDeviceInfoPtr device_info = mojom::UsbDeviceInfo::From(*device);
-    if (UsbDeviceFilterMatchesAny(filters, *device_info)) {
-      device_infos.push_back(std::move(device_info));
+    if (UsbDeviceFilterMatchesAny(filters, device->device_info())) {
+      device_infos.push_back(device->device_info().Clone());
     }
   }
 
@@ -189,18 +185,14 @@ void DeviceManagerImpl::OnGetDevices(
 }
 
 void DeviceManagerImpl::OnDeviceAdded(scoped_refptr<UsbDevice> device) {
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-  clients_.ForAllPtrs([&device_info](mojom::UsbDeviceManagerClient* client) {
-    client->OnDeviceAdded(device_info->Clone());
+  clients_.ForAllPtrs([&device](mojom::UsbDeviceManagerClient* client) {
+    client->OnDeviceAdded(device->device_info().Clone());
   });
 }
 
 void DeviceManagerImpl::OnDeviceRemoved(scoped_refptr<UsbDevice> device) {
-  auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-  DCHECK(device_info);
-  clients_.ForAllPtrs([&device_info](mojom::UsbDeviceManagerClient* client) {
-    client->OnDeviceRemoved(device_info->Clone());
+  clients_.ForAllPtrs([&device](mojom::UsbDeviceManagerClient* client) {
+    client->OnDeviceRemoved(device->device_info().Clone());
   });
 }
 

@@ -1,9 +1,11 @@
 package URI::http;
 
-require URI::_server;
-@ISA=qw(URI::_server);
-
 use strict;
+use warnings;
+
+our $VERSION = '1.76';
+
+use parent 'URI::_server';
 
 sub default_port { 80 }
 

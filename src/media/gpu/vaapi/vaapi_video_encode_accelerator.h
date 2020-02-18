@@ -181,6 +181,9 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // VA surfaces available for reuse.
   std::vector<VASurfaceID> available_va_surface_ids_;
 
+  // VASurfaceIDs internal format.
+  static constexpr unsigned int kVaSurfaceFormat = VA_RT_FORMAT_YUV420;
+
   // VA buffers for coded frames.
   std::vector<VABufferID> available_va_buffer_ids_;
 

@@ -47,12 +47,12 @@ URLFetcherCore::Registry::Registry() = default;
 URLFetcherCore::Registry::~Registry() = default;
 
 void URLFetcherCore::Registry::AddURLFetcherCore(URLFetcherCore* core) {
-  DCHECK(!base::ContainsKey(fetchers_, core));
+  DCHECK(!base::Contains(fetchers_, core));
   fetchers_.insert(core);
 }
 
 void URLFetcherCore::Registry::RemoveURLFetcherCore(URLFetcherCore* core) {
-  DCHECK(base::ContainsKey(fetchers_, core));
+  DCHECK(base::Contains(fetchers_, core));
   fetchers_.erase(core);
 }
 

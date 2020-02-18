@@ -6,6 +6,7 @@
 
 #include "xfa/fwl/theme/cfwl_comboboxtp.h"
 
+#include "core/fxge/render_defines.h"
 #include "xfa/fwl/cfwl_combobox.h"
 #include "xfa/fwl/cfwl_themebackground.h"
 #include "xfa/fwl/cfwl_widget.h"
@@ -13,9 +14,9 @@
 #include "xfa/fxgraphics/cxfa_gecolor.h"
 #include "xfa/fxgraphics/cxfa_gepath.h"
 
-CFWL_ComboBoxTP::CFWL_ComboBoxTP() {}
+CFWL_ComboBoxTP::CFWL_ComboBoxTP() = default;
 
-CFWL_ComboBoxTP::~CFWL_ComboBoxTP() {}
+CFWL_ComboBoxTP::~CFWL_ComboBoxTP() = default;
 
 void CFWL_ComboBoxTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
   switch (pParams.m_iPart) {

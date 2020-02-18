@@ -5,7 +5,7 @@
 #include "chrome/browser/android/feed/feed_debugging_bridge.h"
 
 #include "base/android/jni_string.h"
-#include "jni/FeedDebuggingBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/FeedDebuggingBridge_jni.h"
 #include "url/gurl.h"
 
 namespace feed {
@@ -20,7 +20,7 @@ GURL GetFeedFetchUrlForDebugging() {
 std::string GetFeedProcessScopeDumpForDebugging() {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_string =
-      Java_FeedDebuggingBridge_getFeedProcessScopeDump(env);
+      Java_FeedDebuggingBridge_getProcessScopeDump(env);
   return ConvertJavaStringToUTF8(env, j_string);
 }
 

@@ -65,7 +65,7 @@ const char kAccessibilityAutoclickStabilizePosition[] =
 // a new autoclick.
 const char kAccessibilityAutoclickMovementThreshold[] =
     "settings.a11y.autoclick_movement_threshold";
-// The Autoclick menu position on the screen, an mojom::AutoclickMenuPosition.
+// The Autoclick menu position on the screen, an AutoclickMenuPosition.
 const char kAccessibilityAutoclickMenuPosition[] =
     "settings.a11y.autoclick_menu_position";
 // A boolean pref which determines whether caret highlighting is enabled.
@@ -81,20 +81,39 @@ const char kAccessibilityFocusHighlightEnabled[] =
 const char kAccessibilitySelectToSpeakEnabled[] =
     "settings.a11y.select_to_speak";
 // A boolean pref which determines whether switch access is enabled.
-const char kAccessibilitySwitchAccessEnabled[] = "settings.a11y.switch_access";
+const char kAccessibilitySwitchAccessEnabled[] =
+    "settings.a11y.switch_access.enabled";
+// A pref that stores the key code for the "select" action.
+const char kAccessibilitySwitchAccessSelectKeyCodes[] =
+    "settings.a11y.switch_access.select.key_codes";
+// A pref that stores the setting value for the "select" action.
+const char kAccessibilitySwitchAccessSelectSetting[] =
+    "settings.a11y.switch_access.select.setting";
+// A pref that stores the key code for the "next" action.
+const char kAccessibilitySwitchAccessNextKeyCodes[] =
+    "settings.a11y.switch_access.next.key_codes";
+// A pref that stores the setting value for the "next" action.
+const char kAccessibilitySwitchAccessNextSetting[] =
+    "settings.a11y.switch_access.next.setting";
+// A pref that stores the key code for the "previous" action.
+const char kAccessibilitySwitchAccessPreviousKeyCodes[] =
+    "settings.a11y.switch_access.previous.key_codes";
+// A pref that stores the setting value for the "previous" action.
+const char kAccessibilitySwitchAccessPreviousSetting[] =
+    "settings.a11y.switch_access.previous.setting";
+// A boolean pref which determines whether auto-scanning is enabled within
+// switch access.
+const char kAccessibilitySwitchAccessAutoScanEnabled[] =
+    "settings.a11y.switch_access.auto_scan.enabled";
+// An integer pref which determines time delay in ms before automatically
+// scanning forward (when auto-scan is enabled).
+const char kAccessibilitySwitchAccessAutoScanSpeedMs[] =
+    "settings.a11y.switch_access.auto_scan.speed_ms";
 // A boolean pref which determines whether dictation is enabled.
 const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
-
-// A boolean pref that stores whether the user is eligible to start the Kiosk
-// Next shell.
-const char kKioskNextShellEligible[] = "ash.kiosk_next_shell.eligible";
-
-// A boolean pref that stores whether the Kiosk Next Shell is enabled. When it
-// is, we start it after sign in.
-const char kKioskNextShellEnabled[] = "ash.kiosk_next_shell.enabled";
 
 // A boolean pref storing the enabled status of the Docked Magnifier feature.
 const char kDockedMagnifierEnabled[] = "ash.docked_magnifier.enabled";
@@ -439,6 +458,9 @@ const char kAssistantPrivacyInfoShownInLauncher[] =
 // info view, and do not show the privacy info any more.
 const char kAssistantPrivacyInfoDismissedInLauncher[] =
     "ash.launcher.assistant_privacy_info_dismissed";
+
+// A boolean pref that indicates whether lock screen media keys are enabled.
+const char kLockScreenMediaKeysEnabled[] = "ash.lock_screen_media_keys_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

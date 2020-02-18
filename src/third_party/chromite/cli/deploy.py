@@ -321,8 +321,8 @@ print(json.dumps(pkg_info))
     # Add approximate forward dependencies.
     if process_rdeps:
       logging.debug('Populating forward dependencies...')
-      for cp, cp_slots in db.iteritems():
-        for slot, pkg_info in cp_slots.iteritems():
+      for cp, cp_slots in db.items():
+        for slot, pkg_info in cp_slots.items():
           pkg_info.rdeps.update(self._ProcessDepStr(pkg_info.rdeps_raw,
                                                     installed_db, avail_db))
           logging.debug(' %s (%s) processed rdeps: %s',
@@ -333,14 +333,14 @@ print(json.dumps(pkg_info))
     # Add approximate reverse dependencies (optional).
     if process_rev_rdeps:
       logging.debug('Populating reverse dependencies...')
-      for cp, cp_slots in db.iteritems():
-        for slot, pkg_info in cp_slots.iteritems():
+      for cp, cp_slots in db.items():
+        for slot, pkg_info in cp_slots.items():
           for rdep_cp, rdep_slot in pkg_info.rdeps:
             to_slots = db.get(rdep_cp)
             if not to_slots:
               continue
 
-            for to_slot, to_pkg_info in to_slots.iteritems():
+            for to_slot, to_pkg_info in to_slots.items():
               if rdep_slot and to_slot != rdep_slot:
                 continue
               logging.debug(' %s (%s) added as rev rdep for %s (%s)',
@@ -437,7 +437,7 @@ print(json.dumps(pkg_info))
     attrs = portage_util.SplitCPV(cpv_pattern, strict=False)
     cp_pattern = os.path.join(attrs.category or '*', attrs.package or '*')
     matches = []
-    for cp, cp_slots in self.binpkgs_db.iteritems():
+    for cp, cp_slots in self.binpkgs_db.items():
       if not fnmatch.fnmatchcase(cp, cp_pattern):
         continue
 
@@ -447,7 +447,7 @@ print(json.dumps(pkg_info))
         matches.append((cp, None))
       else:
         cpv_pattern = '%s-%s' % (cp, attrs.version)
-        for slot, pkg_info in cp_slots.iteritems():
+        for slot, pkg_info in cp_slots.items():
           if fnmatch.fnmatchcase(pkg_info.cpv, cpv_pattern):
             matches.append((cp, slot))
 
@@ -579,7 +579,7 @@ print(json.dumps(pkg_info))
                     ' (slot: %s)' % required_slot if required_slot else '',
                     ' (optional)' if optional else '')
       num_processed = 0
-      for slot, pkg_info in cp_slots.iteritems():
+      for slot, pkg_info in cp_slots.items():
         if required_slot and slot != required_slot:
           continue
 
@@ -655,10 +655,10 @@ print(json.dumps(pkg_info))
 
   def _EnqInstalledPkgs(self):
     """Enqueues all available binary packages that are already installed."""
-    for cp, cp_slots in self.binpkgs_db.iteritems():
+    for cp, cp_slots in self.binpkgs_db.items():
       target_cp_slots = self.target_db.get(cp)
       if target_cp_slots:
-        for slot in cp_slots.iterkeys():
+        for slot in cp_slots.keys():
           if slot in target_cp_slots:
             self._EnqDep((cp, slot), True, False)
 
@@ -709,7 +709,7 @@ print(json.dumps(pkg_info))
 
     num_updates = 0
     listed_installs = []
-    for cpv, _, listed, update in installs.itervalues():
+    for cpv, _, listed, update in installs.values():
       if listed:
         listed_installs.append(cpv)
       if update:
@@ -796,27 +796,52 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     logging.notice('%s has been installed.', pkg_name)
 
 
-def _SetSELinuxPermissive(device):
-  """Set SELinux to permissive on target device.
+def _HasSELinux(device):
+  """Check whether the device has SELinux-enabled.
 
   Args:
     device: A ChromiumOSDevice object.
   """
   try:
-    enforce = device.CatFile('/sys/fs/selinux/enforce', max_size=None)
-    # See if SELinux is already disabled.
-    if enforce.strip() == '0':
-      return
+    device.CatFile('/sys/fs/selinux/enforce', max_size=None)
+    return True
   except remote_access.CatFileError:
-    # Assume SELinux is not enabled.
-    return
-  device.RunCommand(['setenforce', '0'], remote_sudo=True)
-  device.RunCommand(['sed', '-i', 's/SELINUX=.*/SELINUX=permissive/',
-                     '/etc/selinux/config'], remote_sudo=True)
-  logging.notice('SELinux is set to permissive(crbug.com/932156). '
-                 'Use build_image to test whether the change works '
-                 'with current SELinux policy, or to test SELinux-'
-                 'related changes.')
+    return False
+
+
+def _IsSELinuxEnforced(device):
+  """Check whether the device has SELinux-enforced.
+
+  Args:
+    device: A ChromiumOSDevice object
+  """
+  return device.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
+
+
+def _RestoreSELinuxContext(device, pkgpath):
+  """Restore SELinux context for files in a given pacakge.
+
+  This reads the tarball from pkgpath, and calls restorecon on device to
+  restore SELinux context for files listed in the tarball, assuming those files
+  are installed to /
+
+  Args:
+    device: a ChromiumOSDevice object
+    pkgpath: path to tarball
+  """
+  enforced = _IsSELinuxEnforced(device)
+  if enforced:
+    device.RunCommand(['setenforce', '0'])
+  pkgroot = os.path.join(device.work_dir, 'packages')
+  pkg_dirname = os.path.basename(os.path.dirname(pkgpath))
+  pkgpath_device = os.path.join(pkgroot, pkg_dirname, os.path.basename(pkgpath))
+  # Testing shows restorecon splits on newlines instead of spaces.
+  device.RunCommand(
+      ['cd', '/', '&&',
+       'tar', 'tf', pkgpath_device, '|', 'restorecon', '-i', '-f', '-'],
+      remote_sudo=True)
+  if enforced:
+    device.RunCommand(['setenforce', '1'])
 
 
 def _GetPackagesByCPV(cpvs, strip, sysroot):
@@ -914,6 +939,8 @@ def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   """Call _Emerge for each packge in pkgs."""
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
+    if _HasSELinux(device):
+      _RestoreSELinuxContext(device, pkg_path)
 
 
 def _UnmergePackages(pkgs, device, root):
@@ -1024,7 +1051,13 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
       else:
         func()
 
-      _SetSELinuxPermissive(device)
+      if _HasSELinux(device):
+        if sum(x.count('selinux-policy') for x in pkgs):
+          logging.warning(
+              'Deploying SELinux policy will not take effect until reboot. '
+              'SELinux policy is loaded by init. Also, security contexts '
+              '(labels) in files will require manual relabeling by the user '
+              'if your policy modifies the file contexts.')
 
       logging.warning('Please restart any updated services on the device, '
                       'or just reboot it.')

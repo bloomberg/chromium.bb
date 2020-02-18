@@ -8,6 +8,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
@@ -23,6 +24,8 @@ namespace {
 constexpr int kAnimationDurationMs = 250;
 
 constexpr int kPaddingBetweenWidgetsNewUi = 8;
+
+constexpr int kPaddingBetweenWidgetAndRightScreenEdge = 6;
 
 class StatusAreaWidgetDelegateAnimationSettings
     : public ui::ScopedLayerAnimationSettings {
@@ -65,6 +68,10 @@ void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
 }
 
 bool StatusAreaWidgetDelegate::ShouldFocusOut(bool reverse) {
+  // Never bring the focus out if it's not a views-based shelf as it is visually
+  // not on par with the status widget.
+  if (!ShelfWidget::IsUsingViewsShelf())
+    return false;
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   return (reverse && focused_view == GetFirstFocusableChild()) ||
          (!reverse && focused_view == GetLastFocusableChild());
@@ -118,15 +125,17 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
   // Use a grid layout so that the trays can be centered in each cell, and
   // so that the widget gets laid out correctly when tray sizes change.
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
-  // Update tray border based on layout.
-  bool is_child_on_edge = true;
+  const auto it = std::find_if(children().crbegin(), children().crend(),
+                               [](const View* v) { return v->GetVisible(); });
+  const View* last_visible_child = it == children().crend() ? nullptr : *it;
+
+  // Set the border for each child, with a different border for the edge child.
   for (auto* child : children()) {
     if (!child->GetVisible())
       continue;
-    SetBorderOnChild(child, is_child_on_edge);
-    is_child_on_edge = false;
+    SetBorderOnChild(child, last_visible_child == child);
   }
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -142,7 +151,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     layout->StartRow(0, 0);
     for (auto* child : children()) {
       if (child->GetVisible())
-        layout->AddView(child);
+        layout->AddExistingView(child);
     }
   } else {
     columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
@@ -152,7 +161,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       if (!child->GetVisible())
         continue;
       layout->StartRow(0, 0);
-      layout->AddView(child);
+      layout->AddExistingView(child);
     }
   }
 
@@ -179,7 +188,7 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
 }
 
 void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
-                                                bool extend_border_to_edge) {
+                                                bool is_child_on_edge) {
   const int vertical_padding =
       (ShelfConstants::shelf_size() - kTrayItemSize) / 2;
 
@@ -190,6 +199,8 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // Add some extra space so that borders don't overlap. This padding between
   // items also takes care of padding at the edge of the shelf.
   int right_edge = kPaddingBetweenWidgetsNewUi;
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfDenseClamshell())
+    right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

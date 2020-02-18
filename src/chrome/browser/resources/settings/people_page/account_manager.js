@@ -133,6 +133,26 @@ Polymer({
                                 : 'accountManagerReauthenticationLabel');
   },
 
+
+  /**
+   * @param {!settings.Account} account
+   * @private
+   */
+  getAccountManagerSignedOutTitle_: function(account) {
+    const label = account.unmigrated ? 'accountManagerMigrationTooltip'
+                                     : 'accountManagerReauthenticationTooltip';
+    return loadTimeData.getStringF(label, account.email);
+  },
+
+  /**
+   * @param {!settings.Account} account
+   * @private
+   */
+  getMoreActionsTitle_: function(account) {
+    return loadTimeData.getStringF('accountManagerMoreActionsTooltip',
+                                    account.email);
+  },
+
   /**
    * @param {!CustomEvent<!{model: !{item: !settings.Account}}>} event
    * @private
@@ -149,7 +169,8 @@ Polymer({
    * @private
    */
   refreshAccounts_: function() {
-    this.browserProxy_.getAccounts().then(accounts => {
+    const includeImages = true;
+    this.browserProxy_.getAccounts(includeImages).then(accounts => {
       this.set('accounts_', accounts);
     });
   },

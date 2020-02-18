@@ -394,16 +394,17 @@ TEST(VideoFrame, WrapExternalDmabufs) {
   gfx::Rect visible_rect(coded_size);
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> offsets = {0, 100, 200};
-  std::vector<size_t> buffer_sizes = {73728, 18432, 18432};
+  std::vector<size_t> sizes = {100, 50, 50};
   std::vector<VideoFrameLayout::Plane> planes(strides.size());
 
   for (size_t i = 0; i < planes.size(); i++) {
     planes[i].stride = strides[i];
     planes[i].offset = offsets[i];
+    planes[i].size = sizes[i];
   }
   auto timestamp = base::TimeDelta::FromMilliseconds(1);
-  auto layout = VideoFrameLayout::CreateWithPlanes(
-      PIXEL_FORMAT_I420, coded_size, planes, buffer_sizes);
+  auto layout =
+      VideoFrameLayout::CreateWithPlanes(PIXEL_FORMAT_I420, coded_size, planes);
   ASSERT_TRUE(layout);
   std::vector<base::ScopedFD> dmabuf_fds(3u);
   auto frame = VideoFrame::WrapExternalDmabufs(
@@ -413,18 +414,30 @@ TEST(VideoFrame, WrapExternalDmabufs) {
   EXPECT_EQ(frame->layout().format(), PIXEL_FORMAT_I420);
   EXPECT_EQ(frame->layout().coded_size(), coded_size);
   EXPECT_EQ(frame->layout().num_planes(), 3u);
-  EXPECT_EQ(frame->layout().num_buffers(), 3u);
-  EXPECT_EQ(frame->layout().GetTotalBufferSize(), 110592u);
+  EXPECT_EQ(frame->layout().is_multi_planar(), false);
   for (size_t i = 0; i < 3; ++i) {
     EXPECT_EQ(frame->layout().planes()[i].stride, strides[i]);
     EXPECT_EQ(frame->layout().planes()[i].offset, offsets[i]);
-    EXPECT_EQ(frame->layout().buffer_sizes()[i], buffer_sizes[i]);
+    EXPECT_EQ(frame->layout().planes()[i].size, sizes[i]);
   }
   EXPECT_TRUE(frame->HasDmaBufs());
   EXPECT_EQ(frame->DmabufFds().size(), 3u);
   EXPECT_EQ(frame->coded_size(), coded_size);
   EXPECT_EQ(frame->visible_rect(), visible_rect);
   EXPECT_EQ(frame->timestamp(), timestamp);
+
+  // Wrapped DMABUF frames must share the same memory as their wrappee.
+  auto wrapped_frame = VideoFrame::WrapVideoFrame(
+      *frame, frame->format(), visible_rect, visible_rect.size());
+  ASSERT_NE(wrapped_frame, nullptr);
+  ASSERT_EQ(wrapped_frame->IsSameDmaBufsAs(*frame), true);
+
+  // Multi-level wrapping should share same memory as well.
+  auto wrapped_frame2 = VideoFrame::WrapVideoFrame(
+      *wrapped_frame, frame->format(), visible_rect, visible_rect.size());
+  ASSERT_NE(wrapped_frame2, nullptr);
+  ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*wrapped_frame), true);
+  ASSERT_EQ(wrapped_frame2->IsSameDmaBufsAs(*frame), true);
 }
 #endif
 
@@ -608,7 +621,6 @@ TEST(VideoFrame, AllocationSize_OddSize) {
       case PIXEL_FORMAT_ARGB:
       case PIXEL_FORMAT_XRGB:
       case PIXEL_FORMAT_I420A:
-      case PIXEL_FORMAT_RGB32:
       case PIXEL_FORMAT_ABGR:
       case PIXEL_FORMAT_XBGR:
       case PIXEL_FORMAT_P016LE:

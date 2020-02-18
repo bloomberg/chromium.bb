@@ -257,7 +257,8 @@ class _TeedStream(object):
         self.capturing = False
         self.diverting = False
         self._capture_file = tempfile.NamedTemporaryFile(delete=True)
-        self.original_stream = os.fdopen(os.dup(self.stream.fileno()), 'a')
+        self.original_stream = os.fdopen(
+            os.dup(self.stream.fileno()), self.mode)
 
     def write(self, msg, *args, **kwargs):
         if (sys.version_info.major == 2 and
@@ -291,6 +292,10 @@ class _TeedStream(object):
 
     def fileno(self):
         return self._capture_file.fileno()
+
+    @property
+    def mode(self):
+        return self.stream.mode
 
     def getvalue(self):
         assert self.capturing

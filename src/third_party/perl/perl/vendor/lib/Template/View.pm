@@ -121,7 +121,7 @@ sub _init {
 # seal()
 # unseal()
 #
-# Seal or unseal the view to allow/prevent new datat items from being
+# Seal or unseal the view to allow/prevent new data items from being
 # automatically created by the AUTOLOAD method.
 #------------------------------------------------------------------------
 
@@ -182,7 +182,7 @@ sub clone {
 #------------------------------------------------------------------------
 # print(@items, ..., \%config)
 #
-# Prints @items in turn by mapping each to an approriate template using 
+# Prints @items in turn by mapping each to an appropriate template using 
 # the internal 'map' hash.  If an entry isn't found and the item is an 
 # object that implements the method named in the internal 'method' item,
 # (default: 'present'), then the method will be called passing a reference
@@ -707,7 +707,7 @@ to 'view_'.
 
 =item view_naked
 
-Flag to indcate if any attempt should be made to map method names to 
+Flag to indicate if any attempt should be made to map method names to 
 template names where they don't match the view_prefix.  Defaults to 0.
 
     [% USE view(view_naked => 1) %]

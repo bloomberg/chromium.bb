@@ -4,9 +4,9 @@
 
 #include "net/third_party/quiche/src/spdy/core/priority_write_scheduler.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
+#include "net/third_party/quiche/src/spdy/platform/api/spdy_test.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_test_helpers.h"
 
 namespace spdy {
@@ -40,8 +40,10 @@ class PriorityWriteSchedulerTest : public ::testing::Test {
 TEST_F(PriorityWriteSchedulerTest, RegisterUnregisterStreams) {
   EXPECT_FALSE(scheduler_.HasReadyStreams());
   EXPECT_FALSE(scheduler_.StreamRegistered(1));
+  EXPECT_EQ(0u, scheduler_.NumRegisteredStreams());
   scheduler_.RegisterStream(1, SpdyStreamPrecedence(1));
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
+  EXPECT_EQ(1u, scheduler_.NumRegisteredStreams());
 
   // Root stream counts as already registered.
   EXPECT_SPDY_BUG(
@@ -55,12 +57,15 @@ TEST_F(PriorityWriteSchedulerTest, RegisterUnregisterStreams) {
                   "Stream 1 already registered");
 
   scheduler_.RegisterStream(2, SpdyStreamPrecedence(3));
+  EXPECT_EQ(2u, scheduler_.NumRegisteredStreams());
 
   // Verify registration != ready.
   EXPECT_FALSE(scheduler_.HasReadyStreams());
 
   scheduler_.UnregisterStream(1);
+  EXPECT_EQ(1u, scheduler_.NumRegisteredStreams());
   scheduler_.UnregisterStream(2);
+  EXPECT_EQ(0u, scheduler_.NumRegisteredStreams());
 
   // Try redundant unregistration.
   EXPECT_SPDY_BUG(scheduler_.UnregisterStream(1), "Stream 1 not registered");

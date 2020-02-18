@@ -95,8 +95,7 @@ PrinterJobHandler::PrinterJobHandler(
       cloud_print_server_url_(cloud_print_server_url),
       delegate_(delegate),
       print_thread_("Chrome_CloudPrintJobPrintThread"),
-      job_handler_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      job_handler_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_);
 }
 
@@ -652,8 +651,8 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   // continue in OnReceivePrinterCaps.
   print_system_->GetPrinterCapsAndDefaults(
       printer_info.printer_name,
-      base::Bind(&PrinterJobHandler::OnReceivePrinterCaps,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PrinterJobHandler::OnReceivePrinterCaps,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   // While we are waiting for the data, pretend we have work to do and return
   // true.

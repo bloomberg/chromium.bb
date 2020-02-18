@@ -291,10 +291,24 @@ def trace_add_benchmark_metadata(
     label=None,
     had_failures=None,
 ):
+  """ Add benchmark metadata to be written to trace file.
+
+  Args:
+    benchmark_start_time_us: Benchmark start time in microseconds.
+    story_run_time_us: Story start time in microseconds.
+    benchmark_name: Name of the benchmark.
+    benchmark_description: Description of the benchmark.
+    story_name: Name of the story.
+    story_tags: List of story tags.
+    story_run_index: Index of the story run.
+    label: Optional label.
+    had_failures: Whether this story run failed.
+  """
   global _benchmark_metadata
   if _format == PROTOBUF:
     # Write metadata immediately.
     perfetto_trace_writer.write_metadata(
+        output=_log_file,
         benchmark_start_time_us=benchmark_start_time_us,
         story_run_time_us=story_run_time_us,
         benchmark_name=benchmark_name,

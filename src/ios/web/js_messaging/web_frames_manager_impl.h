@@ -7,17 +7,35 @@
 
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 
-namespace web {
+#import <WebKit/WebKit.h>
+#include <map>
+#include "base/memory/weak_ptr.h"
 
+@class CRWWKScriptMessageRouter;
+
+namespace web {
+class WebState;
 class WebFrame;
+
+// Delegate for WebFramesManager to publish frame events and get WebState.
+class WebFramesManagerDelegate {
+ public:
+  virtual ~WebFramesManagerDelegate() {}
+
+  // Will be invoked only once for each web frame in the page, when the frame is
+  // loaded and a WebFrame is added to the WebFramesManager.
+  virtual void OnWebFrameAvailable(WebFrame* frame) = 0;
+  // Will be invoked only once for each web frame in the page, when the frame is
+  // unloaed and before the WebFrame is removed from the WebFramesManager.
+  virtual void OnWebFrameUnavailable(WebFrame* frame) = 0;
+
+  virtual WebState* GetWebState() = 0;
+};
 
 class WebFramesManagerImpl : public WebFramesManager {
  public:
+  explicit WebFramesManagerImpl(WebFramesManagerDelegate& delegate);
   ~WebFramesManagerImpl() override;
-  explicit WebFramesManagerImpl(web::WebState* web_state);
-
-  static void CreateForWebState(WebState* web_state);
-  static WebFramesManagerImpl* FromWebState(WebState* web_state);
 
   // Adds |frame| to the list of web frames associated with WebState.
   // The frame must not be already in the frame manager (the frame manager must
@@ -40,15 +58,35 @@ class WebFramesManagerImpl : public WebFramesManager {
   WebFrame* GetMainWebFrame() override;
   WebFrame* GetFrameWithId(const std::string& frame_id) override;
 
+  // Use |message_router| to unregister JS message handlers for |old_web_view|
+  // and register handlers for |new_web_view|. Owner of this class should call
+  // this method whenever associated WKWebView changes.
+  void OnWebViewUpdated(WKWebView* old_web_view,
+                        WKWebView* new_web_view,
+                        CRWWKScriptMessageRouter* message_router);
+
  private:
-  friend class web::WebStateUserData<WebFramesManagerImpl>;
+  // Handles FrameBecameAvailable JS message and creates new WebFrame based on
+  // frame info from the message (e.g. ID, encryption key, message counter,
+  // etc.).
+  void OnFrameBecameAvailable(WKScriptMessage* message);
+
+  // Handles FrameBecameUnavailable JS message and removes the WebFrame with ID
+  // from the message.
+  void OnFrameBecameUnavailable(WKScriptMessage* message);
 
   // List of pointers to all web frames associated with WebState.
   std::map<std::string, std::unique_ptr<WebFrame>> web_frames_;
 
   // Reference to the current main web frame.
   WebFrame* main_web_frame_ = nullptr;
-  WebState* web_state_ = nullptr;
+
+  // Reference to the delegate.
+  WebFramesManagerDelegate& delegate_;
+
+  base::WeakPtrFactory<WebFramesManagerImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebFramesManagerImpl);
 };
 
 }  // namespace web

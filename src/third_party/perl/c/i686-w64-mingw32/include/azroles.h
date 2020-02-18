@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -1098,8 +1098,8 @@ extern "C"{
 #if defined(__cplusplus) && !defined(CINTERFACE)
   struct IAzApplications : public IDispatch {
   public:
-    virtual HRESULT WINAPI get_Item(long Index,VARIANT *pvarObtPtr) = 0;
-    virtual HRESULT WINAPI get_Count(long *plCount) = 0;
+    virtual HRESULT WINAPI get_Item(__LONG32 Index,VARIANT *pvarObtPtr) = 0;
+    virtual HRESULT WINAPI get_Count(__LONG32 *plCount) = 0;
     virtual HRESULT WINAPI get__NewEnum(LPUNKNOWN *ppEnumPtr) = 0;
   };
 #else
@@ -1112,8 +1112,8 @@ extern "C"{
       HRESULT (WINAPI *GetTypeInfo)(IAzApplications *This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo);
       HRESULT (WINAPI *GetIDsOfNames)(IAzApplications *This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
       HRESULT (WINAPI *Invoke)(IAzApplications *This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
-      HRESULT (WINAPI *get_Item)(IAzApplications *This,long Index,VARIANT *pvarObtPtr);
-      HRESULT (WINAPI *get_Count)(IAzApplications *This,long *plCount);
+      HRESULT (WINAPI *get_Item)(IAzApplications *This,__LONG32 Index,VARIANT *pvarObtPtr);
+      HRESULT (WINAPI *get_Count)(IAzApplications *This,__LONG32 *plCount);
       HRESULT (WINAPI *get__NewEnum)(IAzApplications *This,LPUNKNOWN *ppEnumPtr);
     END_INTERFACE
   } IAzApplicationsVtbl;
@@ -1133,9 +1133,9 @@ extern "C"{
 #define IAzApplications_get__NewEnum(This,ppEnumPtr) (This)->lpVtbl->get__NewEnum(This,ppEnumPtr)
 #endif
 #endif
-  HRESULT WINAPI IAzApplications_get_Item_Proxy(IAzApplications *This,long Index,VARIANT *pvarObtPtr);
+  HRESULT WINAPI IAzApplications_get_Item_Proxy(IAzApplications *This,__LONG32 Index,VARIANT *pvarObtPtr);
   void __RPC_STUB IAzApplications_get_Item_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
-  HRESULT WINAPI IAzApplications_get_Count_Proxy(IAzApplications *This,long *plCount);
+  HRESULT WINAPI IAzApplications_get_Count_Proxy(IAzApplications *This,__LONG32 *plCount);
   void __RPC_STUB IAzApplications_get_Count_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
   HRESULT WINAPI IAzApplications_get__NewEnum_Proxy(IAzApplications *This,LPUNKNOWN *ppEnumPtr);
   void __RPC_STUB IAzApplications_get__NewEnum_Stub(IRpcStubBuffer *This,IRpcChannelBuffer *_pRpcChannelBuffer,PRPC_MESSAGE _pRpcMessage,DWORD *_pdwStubPhase);
@@ -2589,20 +2589,20 @@ extern "C"{
 #endif
 
 #ifndef OLESCRIPT_E_SYNTAX
-#define OLESCRIPT_E_SYNTAX _HRESULT_TYPEDEF_(0x80020101L)
+#define OLESCRIPT_E_SYNTAX _HRESULT_TYPEDEF_(__MSABI_LONG(0x80020101))
 #endif
 
   extern RPC_IF_HANDLE __MIDL_itf_azroles_0279_v0_0_c_ifspec;
   extern RPC_IF_HANDLE __MIDL_itf_azroles_0279_v0_0_s_ifspec;
 
-  unsigned long __RPC_API BSTR_UserSize(unsigned long *,unsigned long,BSTR *);
-  unsigned char *__RPC_API BSTR_UserMarshal(unsigned long *,unsigned char *,BSTR *);
-  unsigned char *__RPC_API BSTR_UserUnmarshal(unsigned long *,unsigned char *,BSTR *);
-  void __RPC_API BSTR_UserFree(unsigned long *,BSTR *);
-  unsigned long __RPC_API VARIANT_UserSize(unsigned long *,unsigned long,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserMarshal(unsigned long *,unsigned char *,VARIANT *);
-  unsigned char *__RPC_API VARIANT_UserUnmarshal(unsigned long *,unsigned char *,VARIANT *);
-  void __RPC_API VARIANT_UserFree(unsigned long *,VARIANT *);
+  ULONG __RPC_API BSTR_UserSize(ULONG *,ULONG,BSTR *);
+  unsigned char *__RPC_API BSTR_UserMarshal(ULONG *,unsigned char *,BSTR *);
+  unsigned char *__RPC_API BSTR_UserUnmarshal(ULONG *,unsigned char *,BSTR *);
+  void __RPC_API BSTR_UserFree(ULONG *,BSTR *);
+  ULONG __RPC_API VARIANT_UserSize(ULONG *,ULONG,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserMarshal(ULONG *,unsigned char *,VARIANT *);
+  unsigned char *__RPC_API VARIANT_UserUnmarshal(ULONG *,unsigned char *,VARIANT *);
+  void __RPC_API VARIANT_UserFree(ULONG *,VARIANT *);
 
 #ifdef __cplusplus
 }

@@ -37,7 +37,7 @@ RendererD3D::RendererD3D(egl::Display *display)
     : mDisplay(display),
       mPresentPathFastEnabled(false),
       mCapsInitialized(false),
-      mWorkaroundsInitialized(false),
+      mFeaturesInitialized(false),
       mDisjoint(false),
       mDeviceLost(false)
 {}
@@ -182,6 +182,17 @@ angle::Result RendererD3D::initRenderTarget(const gl::Context *context,
                                             RenderTargetD3D *renderTarget)
 {
     return clearRenderTarget(context, renderTarget, gl::ColorF(0, 0, 0, 0), 1, 0);
+}
+
+const angle::FeaturesD3D &RendererD3D::getFeatures() const
+{
+    if (!mFeaturesInitialized)
+    {
+        initializeFeatures(&mFeatures);
+        mFeaturesInitialized = true;
+    }
+
+    return mFeatures;
 }
 
 unsigned int GetBlendSampleMask(const gl::State &glState, int samples)

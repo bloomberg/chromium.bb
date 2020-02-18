@@ -82,20 +82,15 @@ bool VirtualFidoDevice::State::InjectRegistration(
 
 bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
-    const std::string& relying_party_id,
-    base::span<const uint8_t> user_id,
-    const std::string& name,
-    const std::string& display_name) {
-  auto application_parameter =
-      fido_parsing_utils::CreateSHA256Hash(relying_party_id);
-  const std::vector<uint8_t> user_id_bytes =
-      fido_parsing_utils::Materialize(user_id);
+    device::PublicKeyCredentialRpEntity rp,
+    device::PublicKeyCredentialUserEntity user) {
+  auto application_parameter = fido_parsing_utils::CreateSHA256Hash(rp.id);
 
   // Cannot create a duplicate credential for the same (RP ID, user ID) pair.
   for (const auto& registration : registrations) {
     if (registration.second.is_resident &&
         application_parameter == registration.second.application_parameter &&
-        user_id_bytes == registration.second.user->id) {
+        user.id == registration.second.user->id) {
       return false;
     }
   }
@@ -107,15 +102,26 @@ bool VirtualFidoDevice::State::InjectResidentKey(
                                 std::move(application_parameter),
                                 0 /* signature counter */);
   registration.is_resident = true;
-  registration.rp = PublicKeyCredentialRpEntity(std::move(relying_party_id));
-  registration.user = PublicKeyCredentialUserEntity(std::move(user_id_bytes));
-  registration.user->name = name;
-  registration.user->display_name = display_name;
+  registration.rp = std::move(rp);
+  registration.user = std::move(user);
 
   bool was_inserted;
   std::tie(std::ignore, was_inserted) = registrations.emplace(
       fido_parsing_utils::Materialize(credential_id), std::move(registration));
   return was_inserted;
+}
+
+bool VirtualFidoDevice::State::InjectResidentKey(
+    base::span<const uint8_t> credential_id,
+    const std::string& relying_party_id,
+    base::span<const uint8_t> user_id,
+    const std::string& user_name,
+    const std::string& user_display_name) {
+  return InjectResidentKey(
+      credential_id, PublicKeyCredentialRpEntity(std::move(relying_party_id)),
+      PublicKeyCredentialUserEntity(fido_parsing_utils::Materialize(user_id),
+                                    user_name, user_display_name,
+                                    /*icon_url=*/base::nullopt));
 }
 
 VirtualFidoDevice::VirtualFidoDevice() = default;
@@ -150,11 +156,27 @@ VirtualFidoDevice::GenerateAttestationCertificate(
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-authenticator-transports-extension-v1.2-ps-20170411.html#fido-u2f-certificate-transports-extension
   static constexpr uint8_t kTransportTypesOID[] = {
       0x2b, 0x06, 0x01, 0x04, 0x01, 0x82, 0xe5, 0x1c, 0x02, 0x01, 0x01};
-  static constexpr uint8_t kTransportTypesContents[] = {
-      3,           // BIT STRING
-      2,           // two bytes long
-      4,           // four trailing bits unused
-      0b00110000,  // USB + NFC asserted
+  uint8_t transport_bit;
+  switch (DeviceTransport()) {
+    case FidoTransportProtocol::kBluetoothLowEnergy:
+    case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
+      transport_bit = 1;
+      break;
+    case FidoTransportProtocol::kUsbHumanInterfaceDevice:
+      transport_bit = 2;
+      break;
+    case FidoTransportProtocol::kNearFieldCommunication:
+      transport_bit = 3;
+      break;
+    case FidoTransportProtocol::kInternal:
+      transport_bit = 4;
+      break;
+  }
+  const uint8_t kTransportTypesContents[] = {
+      3,                            // BIT STRING
+      2,                            // two bytes long
+      8 - transport_bit - 1,        // trailing bits unused
+      0b10000000 >> transport_bit,  // transport
   };
   const std::vector<net::x509_util::Extension> extensions = {
       {kTransportTypesOID, false /* not critical */, kTransportTypesContents},

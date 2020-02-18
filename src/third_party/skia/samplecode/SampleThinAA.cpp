@@ -13,7 +13,6 @@
 #include "include/core/SkImage.h"
 #include "include/core/SkPath.h"
 #include "include/core/SkSurface.h"
-#include "tools/timer/AnimTimer.h"
 
 namespace skiagm {
 
@@ -316,8 +315,8 @@ protected:
         this->drawShapes(canvas, "SSx64", 4, fSS16);
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        SkScalar t = timer.secs();
+    bool onAnimate(double nanos) override {
+        SkScalar t = 1e-9 * nanos;
         SkScalar dt = fLastFrameTime < 0.f ? 0.f : t - fLastFrameTime;
         fLastFrameTime = t;
 
@@ -373,14 +372,9 @@ protected:
         return true;
     }
 
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Thin-AA");
-            return true;
-        }
+    SkString name() override { return SkString("Thin-AA"); }
 
-        SkUnichar key;
-        if (Sample::CharQ(*evt, &key)) {
+    bool onChar(SkUnichar key) override {
             switch(key) {
                 case 't':
                     // Toggle translation animation.
@@ -412,8 +406,7 @@ protected:
                 case '-': fStrokeWidth = SkMaxScalar(0.1f, fStrokeWidth - 0.05f); return true;
                 case '=': fStrokeWidth = SkMinScalar(1.f, fStrokeWidth + 0.05f); return true;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
 private:

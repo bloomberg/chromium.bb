@@ -23,7 +23,6 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shutdown_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
@@ -34,6 +33,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
+#include "base/sequence_checker.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -91,18 +91,22 @@ LoginMetricsRecorder::ShelfButtonClickTarget GetUserClickTarget(int button_id) {
 
 // The margins of the button contents.
 constexpr int kButtonMarginTopDp = 18;
+constexpr int kButtonMarginTopDpDense = 16;
 constexpr int kButtonMarginLeftDp = 18;
 constexpr int kButtonMarginBottomDp = 18;
+constexpr int kButtonMarginBottomDpDense = 16;
 constexpr int kButtonMarginRightDp = 16;
 
 // The margins of the button background.
 constexpr gfx::Insets kButtonBackgroundMargin(8, 8, 8, 0);
+constexpr gfx::Insets kButtonBackgroundMarginDense(6, 8, 6, 0);
 
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 10;
 
 // The border radius of the button background.
 constexpr int kButtonRoundedBorderRadiusDp = 20;
+constexpr int kButtonRoundedBorderRadiusDpDense = 18;
 
 // The color of the button background.
 constexpr SkColor kButtonBackgroundColor =
@@ -118,10 +122,14 @@ std::unique_ptr<SkPath> GetButtonHighlightPath(views::View* view) {
   auto path = std::make_unique<SkPath>();
 
   gfx::Rect rect(view->GetLocalBounds());
-  rect.Inset(kButtonBackgroundMargin);
+  rect.Inset(chromeos::switches::ShouldShowShelfDenseClamshell()
+                 ? kButtonBackgroundMarginDense
+                 : kButtonBackgroundMargin);
 
-  path->addRoundRect(gfx::RectToSkRect(rect), kButtonRoundedBorderRadiusDp,
-                     kButtonRoundedBorderRadiusDp);
+  int border_radius = chromeos::switches::ShouldShowShelfDenseClamshell()
+                          ? kButtonRoundedBorderRadiusDpDense
+                          : kButtonRoundedBorderRadiusDp;
+  path->addRoundRect(gfx::RectToSkRect(rect), border_radius, border_radius);
   return path;
 }
 
@@ -176,8 +184,14 @@ class LoginShelfButton : public views::LabelButton {
 
   // views::LabelButton:
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kButtonMarginTopDp, kButtonMarginLeftDp,
-                       kButtonMarginBottomDp, kButtonMarginRightDp);
+    int top_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
+                         ? kButtonMarginTopDpDense
+                         : kButtonMarginTopDp;
+    int bottom_margin = chromeos::switches::ShouldShowShelfDenseClamshell()
+                            ? kButtonMarginBottomDpDense
+                            : kButtonMarginBottomDp;
+    return gfx::Insets(top_margin, kButtonMarginLeftDp, bottom_margin,
+                       kButtonMarginRightDp);
   }
 
   const char* GetClassName() const override {
@@ -226,6 +240,16 @@ class LoginShelfButton : public views::LabelButton {
 void StartAddUser() {
   Shell::Get()->login_screen_controller()->ShowGaiaSignin(
       true /*can_close*/, EmptyAccountId() /*prefilled_account*/);
+}
+
+bool DialogStateGuestAllowed(OobeDialogState state) {
+  // Temp solution until https://crbug.com/981544 is fixed.
+  if (state == OobeDialogState::HIDDEN)
+    return true;
+
+  return state == OobeDialogState::NONE ||
+         state == OobeDialogState::GAIA_SIGNIN ||
+         state == OobeDialogState::ERROR;
 }
 
 }  // namespace
@@ -376,6 +400,36 @@ class KioskAppsButton : public views::MenuButton,
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
 };
 
+// Class that temporarily disables Guest login buttin on shelf.
+class LoginShelfView::ScopedGuestButtonBlockerImpl
+    : public ScopedGuestButtonBlocker {
+ public:
+  ScopedGuestButtonBlockerImpl(base::WeakPtr<LoginShelfView> shelf_view)
+      : shelf_view_(shelf_view) {
+    ++(shelf_view_->scoped_guest_button_blockers_);
+    if (shelf_view_->scoped_guest_button_blockers_ == 1)
+      shelf_view_->UpdateUi();
+  }
+
+  ~ScopedGuestButtonBlockerImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!shelf_view_)
+      return;
+
+    DCHECK_GT(shelf_view_->scoped_guest_button_blockers_, 0);
+    --(shelf_view_->scoped_guest_button_blockers_);
+    if (!shelf_view_->scoped_guest_button_blockers_)
+      shelf_view_->UpdateUi();
+  }
+
+ private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // ScopedGuestButtonBlockerImpl is not owned by the LoginShelfView,
+  // so they could be independently destroyed.
+  base::WeakPtr<LoginShelfView> shelf_view_;
+};
+
 LoginShelfView::TestUiUpdateDelegate::~TestUiUpdateDelegate() = default;
 
 LoginShelfView::LoginShelfView(
@@ -385,8 +439,8 @@ LoginShelfView::LoginShelfView(
   // switch to the lock screen or status area. This view should otherwise not
   // be focusable.
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal));
 
   auto add_button = [this](ButtonId id, int text_resource_id,
                            const gfx::VectorIcon& icon) {
@@ -567,6 +621,12 @@ void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
   GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
 }
 
+std::unique_ptr<ScopedGuestButtonBlocker>
+LoginShelfView::GetScopedGuestButtonBlocker() {
+  return std::make_unique<LoginShelfView::ScopedGuestButtonBlockerImpl>(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();
@@ -652,29 +712,7 @@ void LoginShelfView::UpdateUi() {
   bool dialog_visible = dialog_state_ != OobeDialogState::HIDDEN;
   bool is_oobe = (session_state == SessionState::OOBE);
 
-  bool user_session_started =
-      Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
-
-  // Show guest button if:
-  // 1. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
-  // is manually controlled by the WebUI.
-  // 2. Guest login is allowed.
-  // 3. OOBE UI dialog is not currently showing wrong HWID warning screen, SAML
-  // password confirmation screen or login UI provided by an extension.
-  // 4. OOBE UI dialog is not currently showing gaia signin screen, or if there
-  // are no user views available. If there are no user pods (i.e. Gaia is the
-  // only signin option), the guest button should be shown if allowed.
-  // 5. No users sessions have started. Button is hidden from all post login
-  // screens like sync consent, etc.
-  GetViewByID(kBrowseAsGuest)
-      ->SetVisible((is_login_primary || (is_oobe && allow_guest_in_oobe_)) &&
-                   allow_guest_ &&
-                   dialog_state_ != OobeDialogState::WRONG_HWID_WARNING &&
-                   dialog_state_ != OobeDialogState::SAML_PASSWORD_CONFIRM &&
-                   dialog_state_ != OobeDialogState::EXTENSION_LOGIN &&
-                   (dialog_state_ != OobeDialogState::GAIA_SIGNIN ||
-                    !login_screen_has_users_) &&
-                   !user_session_started);
+  GetViewByID(kBrowseAsGuest)->SetVisible(ShouldShowGuestButton());
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
   // visible. The button should not appear if the device is not connected to a
@@ -729,6 +767,48 @@ void LoginShelfView::UpdateButtonUnionBounds() {
     if (child->GetVisible())
       button_union_bounds_.Union(child->bounds());
   }
+}
+
+// Show guest button if:
+// 1. Guest login is allowed.
+// 2. OOBE UI dialog is currently showing the login UI or error.
+// 3. No users sessions have started. Button is hidden from all post login
+// screens like sync consent, etc.
+// 4. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
+// is manually controlled by the WebUI.
+// 5. OOBE UI dialog is not currently showing gaia signin screen, or if there
+// are no user views available. If there are no user pods (i.e. Gaia is the
+// only signin option), the guest button should be shown if allowed by policy
+// and OOBE.
+// 6. There are no scoped guest buttons blockers active.
+bool LoginShelfView::ShouldShowGuestButton() const {
+  if (!allow_guest_)
+    return false;
+
+  if (scoped_guest_button_blockers_ > 0)
+    return false;
+
+  if (!DialogStateGuestAllowed(dialog_state_))
+    return false;
+
+  const bool user_session_started =
+      Shell::Get()->session_controller()->NumberOfLoggedInUsers() != 0;
+  if (user_session_started)
+    return false;
+
+  const SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+
+  if (session_state == SessionState::OOBE)
+    return allow_guest_in_oobe_;
+
+  if (session_state != SessionState::LOGIN_PRIMARY)
+    return false;
+
+  if (dialog_state_ == OobeDialogState::GAIA_SIGNIN)
+    return !login_screen_has_users_ && allow_guest_in_oobe_;
+
+  return true;
 }
 
 }  // namespace ash

@@ -48,10 +48,6 @@ class APP_LIST_EXPORT AppListMainView
 
   void ShowAppListWhenReady();
 
-  void ResetForShow();
-
-  void Close();
-
   void ModelChanged();
 
   SearchBoxView* search_box_view() const { return search_box_view_; }

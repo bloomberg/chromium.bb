@@ -39,8 +39,7 @@ void MetalWindowContext::initializeContext() {
             return;
         }
     }
-    // TODO: Multisampling not supported
-    fSampleCount = 1; //fDisplayParams.fMSAASampleCount;
+    fSampleCount = fDisplayParams.fMSAASampleCount;
     fStencilBits = 8;
 
     fMetalLayer = [CAMetalLayer layer];
@@ -49,7 +48,8 @@ void MetalWindowContext::initializeContext() {
 
     fValid = this->onInitializeContext();
 
-    fContext = GrContext::MakeMetal(fDevice, fQueue, fDisplayParams.fGrContextOptions);
+    fContext = GrContext::MakeMetal((__bridge void*)fDevice, (__bridge void*)fQueue,
+                                    fDisplayParams.fGrContextOptions);
     if (!fContext && fDisplayParams.fMSAASampleCount > 1) {
         fDisplayParams.fMSAASampleCount /= 2;
         this->initializeContext();
@@ -69,9 +69,8 @@ void MetalWindowContext::destroyContext() {
     fMetalLayer = nil;
     fValid = false;
 
-    // TODO: figure out why we can't release these
-    // [fQueue release];
-    // [fDevice release];
+    [fQueue release];
+    [fDevice release];
 }
 
 sk_sp<SkSurface> MetalWindowContext::getBackbufferSurface() {
@@ -84,18 +83,30 @@ sk_sp<SkSurface> MetalWindowContext::getBackbufferSurface() {
         fCurrentDrawable = [fMetalLayer nextDrawable];
 
         GrMtlTextureInfo fbInfo;
-        fbInfo.fTexture = fCurrentDrawable.texture;
+        fbInfo.fTexture.retain((__bridge const void*)(fCurrentDrawable.texture));
 
-        GrBackendRenderTarget backendRT(fWidth,
-                                        fHeight,
-                                        fSampleCount,
-                                        fbInfo);
+        if (fSampleCount == 1) {
+            GrBackendRenderTarget backendRT(fWidth,
+                                            fHeight,
+                                            fSampleCount,
+                                            fbInfo);
 
-        surface = SkSurface::MakeFromBackendRenderTarget(fContext.get(), backendRT,
-                                                         kTopLeft_GrSurfaceOrigin,
-                                                         kBGRA_8888_SkColorType,
-                                                         fDisplayParams.fColorSpace,
-                                                         &fDisplayParams.fSurfaceProps);
+            surface = SkSurface::MakeFromBackendRenderTarget(fContext.get(), backendRT,
+                                                             kTopLeft_GrSurfaceOrigin,
+                                                             kBGRA_8888_SkColorType,
+                                                             fDisplayParams.fColorSpace,
+                                                             &fDisplayParams.fSurfaceProps);
+        } else {
+            GrBackendTexture backendTexture(fWidth,
+                                            fHeight,
+                                            GrMipMapped::kNo,
+                                            fbInfo);
+
+            surface = SkSurface::MakeFromBackendTexture(
+                    fContext.get(), backendTexture, kTopLeft_GrSurfaceOrigin, fSampleCount,
+                    kBGRA_8888_SkColorType, fDisplayParams.fColorSpace,
+                    &fDisplayParams.fSurfaceProps);
+        }
     }
 
     return surface;

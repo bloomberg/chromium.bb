@@ -1,4 +1,19 @@
-../data/lmk_userspace.pb android_mem android_mem_lmk.out
+# Real traces
 ../data/memory_counters.pb android_mem android_mem_counters.out
-android_startup.py android_startup android_startup.out
 ../data/memory_counters.pb error_statistics error_statistics.out
+
+# Synthetic traces
+android_mem_by_priority.py android_mem android_mem_by_priority.out
+android_process_growth.py android_process_growth android_process_growth.out
+android_lmk.py android_lmk android_mem_lmk.out
+android_ion.py android_ion android_ion.out
+
+android_startup.py android_startup android_startup.out
+android_startup_breakdown.py android_startup android_startup_breakdown.out
+android_startup_process_track.py android_startup android_startup_process_track.out
+
+android_startup_battery.py android_batt android_batt_counters.out
+android_startup_cpu.py android_cpu android_startup_cpu.out
+android_startup_powrails.py android_powrails android_startup_powrails.out
+
+android_package_list.py android_package_list android_package_list.out

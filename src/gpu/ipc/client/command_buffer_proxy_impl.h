@@ -151,7 +151,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   const base::UnsafeSharedMemoryRegion& GetSharedStateRegion() const {
     return shared_state_shm_;
   }
-  uint32_t CreateStreamTexture(uint32_t texture_id);
 
  private:
   typedef std::map<int32_t, scoped_refptr<gpu::Buffer>> TransferBufferMap;
@@ -276,7 +275,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   GetGpuFenceTaskMap get_gpu_fence_tasks_;
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_thread_;
-  base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<CommandBufferProxyImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

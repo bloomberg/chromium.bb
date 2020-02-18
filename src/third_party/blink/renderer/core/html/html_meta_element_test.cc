@@ -18,18 +18,23 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class HTMLMetaElementTest : public PageTestBase {
+class HTMLMetaElementTest : public PageTestBase,
+                            private ScopedDisplayCutoutAPIForTest,
+                            private ScopedMetaColorSchemeForTest,
+                            private ScopedMediaQueryPrefersColorSchemeForTest,
+                            private ScopedCSSColorSchemeForTest {
  public:
+  HTMLMetaElementTest()
+      : ScopedDisplayCutoutAPIForTest(true),
+        ScopedMetaColorSchemeForTest(true),
+        ScopedMediaQueryPrefersColorSchemeForTest(true),
+        ScopedCSSColorSchemeForTest(true) {}
   void SetUp() override {
     PageTestBase::SetUp();
-
-    RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
-    RuntimeEnabledFeatures::SetMetaColorSchemeEnabled(true);
-    RuntimeEnabledFeatures::SetMediaQueryPrefersColorSchemeEnabled(true);
-    RuntimeEnabledFeatures::SetCSSColorSchemeEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
 
@@ -164,7 +169,7 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveContentAttribute) {
   GetDocument().getElementById("meta")->removeAttribute(
       html_names::kContentAttr);
 
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveNameAttribute) {
@@ -176,17 +181,17 @@ TEST_F(HTMLMetaElementTest, ColorSchemeProcessing_RemoveNameAttribute) {
 
   GetDocument().getElementById("meta")->removeAttribute(html_names::kNameAttr);
 
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
   GetDocument().head()->AppendChild(CreateColorSchemeMeta(""));
 
   SetColorScheme("");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
-  SetColorScheme("auto");
-  ExpectComputedColorScheme("auto");
+  SetColorScheme("normal");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light");
   ExpectComputedColorScheme("light");
@@ -201,19 +206,19 @@ TEST_F(HTMLMetaElementTest, ColorSchemeParsing) {
   ExpectComputedColorScheme("BLUE light");
 
   SetColorScheme("light,dark");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light,");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme(",light");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme(", light");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 
   SetColorScheme("light, dark");
-  ExpectComputedColorScheme("auto");
+  ExpectComputedColorScheme("normal");
 }
 
 TEST_F(HTMLMetaElementTest, ColorSchemeForcedDarkeningAndMQ) {

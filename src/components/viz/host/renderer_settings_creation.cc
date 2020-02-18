@@ -51,9 +51,7 @@ RendererSettings CreateRendererSettings() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);
-#if defined(OS_WIN)
-  renderer_settings.finish_rendering_on_resize = true;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
   renderer_settings.auto_resize_output_surface = false;
 #elif defined(OS_CHROMEOS)
@@ -66,8 +64,6 @@ RendererSettings CreateRendererSettings() {
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  renderer_settings.use_skia_renderer_non_ddl =
-      features::IsUsingSkiaRendererNonDDL();
 #if defined(OS_MACOSX)
   renderer_settings.allow_overlays =
       ui::RemoteLayerAPISupported() &&

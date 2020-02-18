@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -30,7 +30,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -53,9 +53,7 @@ class ExternalBeginFrameControllerClientImpl;
 }
 
 namespace viz {
-class Display;
 class FrameSinkId;
-class FrameSinkManagerImpl;
 class HostDisplayClient;
 class OutputSurface;
 }
@@ -80,17 +78,12 @@ class CONTENT_EXPORT CompositorImpl
 
   static bool IsInitialized();
 
-  static viz::FrameSinkManagerImpl* GetFrameSinkManager();
-  static viz::HostFrameSinkManager* GetHostFrameSinkManager();
-  static viz::FrameSinkId AllocateFrameSinkId();
-
   // ui::ResourceProvider implementation.
   cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;
   void DeleteUIResource(cc::UIResourceId resource_id) override;
   bool SupportsETC1NonPowerOfTwo() const override;
 
   // Test functions:
-  bool IsLockedForTesting() const { return lock_manager_.IsLocked(); }
   void SetVisibleForTesting(bool visible) { SetVisible(visible); }
   void SetSwapCompletedWithSizeCallbackForTesting(
       base::RepeatingCallback<void(const gfx::Size&)> cb) {
@@ -126,8 +119,7 @@ class CONTENT_EXPORT CompositorImpl
   void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
   }
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
+  void RecordManipulationTypeCounts(cc::ManipulationInfo args) override {}
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override {}
@@ -159,9 +151,6 @@ class CONTENT_EXPORT CompositorImpl
   viz::FrameSinkId GetFrameSinkId() override;
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) override;
-  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
-      ui::CompositorLockClient* client,
-      base::TimeDelta timeout) override;
   bool IsDrawingFirstVisibleFrame() const override;
   void SetVSyncPaused(bool paused) override;
   void OnUpdateRefreshRate(float refresh_rate) override;
@@ -215,7 +204,7 @@ class CONTENT_EXPORT CompositorImpl
 
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(
-      scoped_refptr<ws::ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<viz::ContextProviderCommandBuffer> context_provider);
 
   viz::FrameSinkId frame_sink_id_;
 
@@ -230,8 +219,6 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
-
-  std::unique_ptr<viz::Display> display_;
 
   gfx::ColorSpace display_color_space_;
   gfx::Size size_;
@@ -262,14 +249,7 @@ class CONTENT_EXPORT CompositorImpl
   bool has_layer_tree_frame_sink_ = false;
   std::unordered_set<viz::FrameSinkId, viz::FrameSinkIdHash>
       pending_child_frame_sink_ids_;
-  ui::CompositorLockManager lock_manager_;
   bool has_submitted_frame_since_became_visible_ = false;
-
-  // If true, we are using surface synchronization.
-  const bool enable_surface_synchronization_;
-
-  // If true, we are using a Viz process.
-  const bool enable_viz_;
 
   // Viz-specific members for communicating with the display.
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;

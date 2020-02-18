@@ -33,7 +33,7 @@ std::unique_ptr<EntityData> ConvertPersistedToEntityData(
   DCHECK(!client_tag_hash.empty());
   auto entity_data = std::make_unique<EntityData>();
 
-  entity_data->non_unique_name = std::move(*data.mutable_non_unique_name());
+  entity_data->name = std::move(*data.mutable_name());
   entity_data->specifics = std::move(*data.mutable_specifics());
   entity_data->client_tag_hash = client_tag_hash;
 
@@ -47,7 +47,7 @@ std::unique_ptr<EntityData> ConvertPersistedToEntityData(
 sync_pb::PersistedEntityData CreatePersistedFromEntityData(
     const EntityData& entity_data) {
   sync_pb::PersistedEntityData persisted;
-  persisted.set_non_unique_name(entity_data.non_unique_name);
+  persisted.set_name(entity_data.name);
   *persisted.mutable_specifics() = entity_data.specifics;
   return persisted;
 }
@@ -56,7 +56,7 @@ sync_pb::PersistedEntityData CreatePersistedFromSyncData(
     const SyncDataLocal& sync_data) {
   DCHECK(!sync_data.GetTitle().empty());
   sync_pb::PersistedEntityData persisted;
-  persisted.set_non_unique_name(sync_data.GetTitle());
+  persisted.set_name(sync_data.GetTitle());
   *persisted.mutable_specifics() = sync_data.GetSpecifics();
   return persisted;
 }
@@ -283,11 +283,12 @@ SyncableServiceBasedBridge::SyncableServiceBasedBridge(
     : ModelTypeSyncBridge(std::move(change_processor)),
       type_(type),
       syncable_service_(syncable_service),
-      store_factory_(std::move(store_factory)),
-      syncable_service_started_(false),
-      weak_ptr_factory_(this) {
-  DCHECK(store_factory_);
+      syncable_service_started_(false) {
   DCHECK(syncable_service_);
+
+  std::move(store_factory)
+      .Run(type_, base::BindOnce(&SyncableServiceBasedBridge::OnStoreCreated,
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 SyncableServiceBasedBridge::~SyncableServiceBasedBridge() {
@@ -305,25 +306,6 @@ SyncableServiceBasedBridge::CreateMetadataChangeList() {
   return ModelTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
-void SyncableServiceBasedBridge::OnSyncStarting(
-    const DataTypeActivationRequest& request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!syncable_service_started_);
-
-  if (!store_factory_) {
-    // Sync was have been started earlier, and |store_| is guaranteed to be
-    // initialized because stopping of the datatype cannot be completed before
-    // ModelReadyToSync().
-    DCHECK(store_);
-    ReportErrorIfSet(MaybeStartSyncableService());
-    return;
-  }
-
-  syncable_service_->WaitUntilReadyToSync(
-      base::BindOnce(&SyncableServiceBasedBridge::OnSyncableServiceReady,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
 base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_change_list) {
@@ -337,10 +319,9 @@ base::Optional<ModelError> SyncableServiceBasedBridge::MergeSyncData(
                                std::move(entity_change_list));
 
   // We ignore the output of previous call of StoreAndConvertRemoteChanges() at
-  // this point and let MaybeStartSyncableService() read from
-  // |in_memory_store_|, which has been updated above as part of
-  // StoreAndConvertRemoteChanges().
-  return MaybeStartSyncableService();
+  // this point and let StartSyncableService() read from |in_memory_store_|,
+  // which has been updated above as part of StoreAndConvertRemoteChanges().
+  return StartSyncableService();
 }
 
 base::Optional<ModelError> SyncableServiceBasedBridge::ApplySyncChanges(
@@ -382,6 +363,7 @@ void SyncableServiceBasedBridge::GetAllDataForDebugging(DataCallback callback) {
 
 std::string SyncableServiceBasedBridge::GetClientTag(
     const EntityData& entity_data) {
+  // Not supported as per SupportsGetClientTag().
   NOTREACHED();
   return std::string();
 }
@@ -425,10 +407,14 @@ void SyncableServiceBasedBridge::ApplyStopSyncChanges(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(store_);
 
-  if (delete_metadata_change_list) {
-    in_memory_store_.clear();
-    store_->DeleteAllDataAndMetadata(base::DoNothing());
+  // If Sync is being stopped only temporarily (i.e. we want to keep tracking
+  // metadata), then there's nothing to do here.
+  if (!delete_metadata_change_list) {
+    return;
   }
+
+  in_memory_store_.clear();
+  store_->DeleteAllDataAndMetadata(base::DoNothing());
 
   if (syncable_service_started_) {
     syncable_service_->StopSyncing(type_);
@@ -451,15 +437,6 @@ SyncableServiceBasedBridge::CreateLocalChangeProcessorForTesting(
   return std::make_unique<LocalChangeProcessor>(
       type, /*error_callback=*/base::DoNothing(), store, in_memory_store,
       other);
-}
-
-void SyncableServiceBasedBridge::OnSyncableServiceReady() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(store_factory_)
-      .Run(type_, base::BindOnce(&SyncableServiceBasedBridge::OnStoreCreated,
-                                 weak_ptr_factory_.GetWeakPtr()));
-  DCHECK(!store_factory_);
 }
 
 void SyncableServiceBasedBridge::OnStoreCreated(
@@ -515,6 +492,16 @@ void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
     return;
   }
 
+  syncable_service_->WaitUntilReadyToSync(base::BindOnce(
+      &SyncableServiceBasedBridge::OnSyncableServiceReady,
+      weak_ptr_factory_.GetWeakPtr(), std::move(metadata_batch)));
+}
+
+void SyncableServiceBasedBridge::OnSyncableServiceReady(
+    std::unique_ptr<MetadataBatch> metadata_batch) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!syncable_service_started_);
+
   // Guard against inconsistent state, and recover from it by starting from
   // scratch, which will cause the eventual refetching of all entities from the
   // server.
@@ -529,19 +516,19 @@ void SyncableServiceBasedBridge::OnReadAllMetadataForInit(
 
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
 
-  ReportErrorIfSet(MaybeStartSyncableService());
+  // If sync was previously enabled according to the loaded metadata, then
+  // immediately start the SyncableService to track as many local changes as
+  // possible (regardless of whether sync actually starts or not). Otherwise,
+  // the SyncableService will be started from MergeSyncData().
+  if (change_processor()->IsTrackingMetadata()) {
+    ReportErrorIfSet(StartSyncableService());
+  }
 }
 
-base::Optional<ModelError>
-SyncableServiceBasedBridge::MaybeStartSyncableService() {
-  DCHECK(!syncable_service_started_);
+base::Optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
   DCHECK(store_);
-
-  // If sync wasn't enabled according to the loaded metadata, let's wait until
-  // MergeSyncData() is called before starting the SyncableService.
-  if (!change_processor()->IsTrackingMetadata()) {
-    return base::nullopt;
-  }
+  DCHECK(!syncable_service_started_);
+  DCHECK(change_processor()->IsTrackingMetadata());
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
 

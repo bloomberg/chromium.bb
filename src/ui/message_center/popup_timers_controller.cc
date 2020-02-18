@@ -76,7 +76,7 @@ void PopupTimersController::CancelAll() {
 }
 
 void PopupTimersController::TimerFinished(const std::string& id) {
-  if (!base::ContainsKey(popup_timers_, id))
+  if (!base::Contains(popup_timers_, id))
     return;
 
   CancelTimer(id);

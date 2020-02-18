@@ -6,6 +6,7 @@
 #define IMAGEI_H_
 
 #include "imager.h"
+#include <stddef.h>
 
 /* wrapper functions that implement the floating point sample version of a 
    function in terms of the 8-bit sample version
@@ -110,5 +111,57 @@ i_img_dim i_abs(i_img_dim x);
 #define i_max(a, b) i_maxx((a), (b))
 
 #define color_to_grey(col) ((col)->rgb.r * 0.222  + (col)->rgb.g * 0.707 + (col)->rgb.b * 0.071)
+
+struct file_magic_entry {
+  unsigned char *magic;
+  size_t magic_size;
+  char *name;
+  unsigned char *mask;  
+};
+
+
+typedef struct im_file_magic im_file_magic;
+struct im_file_magic {
+  struct file_magic_entry m;
+
+  /* more magic to check */
+  im_file_magic *next;
+};
+
+#define IM_ERROR_COUNT 20
+typedef struct im_context_tag {
+  int error_sp;
+  size_t error_alloc[IM_ERROR_COUNT];
+  i_errmsg error_stack[IM_ERROR_COUNT];
+#ifdef IMAGER_LOG
+  /* the log file and level for this context */
+  FILE *lg_file;
+  int log_level;
+
+  /* whether we own the lg_file, false for stderr and for cloned contexts */
+  int own_log;
+
+  /* values supplied by lhead */
+  const char *filename;
+  int line;
+#endif
+
+  /* file size limits */
+  i_img_dim max_width, max_height;
+  size_t max_bytes;
+
+  /* per context storage */
+  size_t slot_alloc;
+  void **slots;
+
+  /* registered file type magic */
+  im_file_magic *file_magic;
+
+  ptrdiff_t refcount;
+} im_context_struct;
+
+#define DEF_BYTES_LIMIT 0x40000000
+
+#define im_size_t_max (~(size_t)0)
 
 #endif

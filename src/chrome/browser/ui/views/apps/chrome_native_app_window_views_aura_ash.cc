@@ -17,7 +17,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/wm/window_state.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -25,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/kiosk_next_shell_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -62,13 +60,6 @@ bool IsLoginFeedbackModalDialog(const AppWindow* app_window) {
   SessionState state = session_manager::SessionManager::Get()->session_state();
   return state == SessionState::OOBE || state == SessionState::LOGIN_PRIMARY ||
          state == SessionState::LOGIN_SECONDARY;
-}
-
-// Return true if |app_window| is a Kiosk Next Home app in a KioskNext session.
-bool IsKioskNextHomeWindow(const AppWindow* app_window) {
-  return KioskNextShellClient::Get() &&
-         KioskNextShellClient::Get()->has_launched() &&
-         app_window->extension_id() == extension_misc::kKioskNextHomeAppId;
 }
 
 }  // namespace
@@ -121,8 +112,6 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     container_id = ash::kShellWindowId_ImeWindowParentContainer;
   else if (create_params.show_on_lock_screen)
     container_id = ash::kShellWindowId_LockActionHandlerContainer;
-  else if (IsKioskNextHomeWindow(app_window()))
-    container_id = ash::kShellWindowId_HomeScreenContainer;
 
   if (container_id.has_value()) {
     ash_util::SetupWidgetInitParamsForContainer(init_params, *container_id);
@@ -213,8 +202,8 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
   return GetRestorableState(restore_state);
 }
 
-bool ChromeNativeAppWindowViewsAuraAsh::IsAlwaysOnTop() const {
-  return widget()->IsAlwaysOnTop();
+ui::ZOrderLevel ChromeNativeAppWindowViewsAuraAsh::GetZOrderLevel() const {
+  return widget()->GetZOrderLevel();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,7 +244,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  observed_window_state_.Add(ash::wm::GetWindowState(GetNativeWindow()));
+  observed_window_state_.Add(ash::WindowState::Get(GetNativeWindow()));
 
   ash::NonClientFrameViewAsh* custom_frame_view =
       new ash::NonClientFrameViewAsh(widget);
@@ -456,7 +445,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWidgetActivationChanged(
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
+    ash::WindowState* window_state,
     ash::WindowStateType old_type) {
   DCHECK(!IsFrameless());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
@@ -498,7 +487,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowPropertyChanged(
 void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(
     aura::Window* window) {
   if (observed_window_state_.IsObservingSources())
-    observed_window_state_.Remove(ash::wm::GetWindowState(window));
+    observed_window_state_.Remove(ash::WindowState::Get(window));
   observed_window_.Remove(window);
 }
 

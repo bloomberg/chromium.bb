@@ -102,21 +102,21 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
         })");
   }
   DCHECK_EQ(service_type, metrics::MetricsLogUploader::UKM);
+  // TODO(https://crbug.com/951781): Update this annotation once Unity is
+  // enabled on ChromeOS by default.
   return net::DefineNetworkTrafficAnnotation("metrics_report_ukm", R"(
       semantics {
         sender: "Metrics UKM Log Uploader"
         description:
-          "Report of usage statistics that are keyed by URLs to Chromium, "
-          "sent only if the profile has History Sync. This includes "
-          "information about the web pages you visit and your usage of them, "
-          "such as page load speed. This will also include URLs and "
-          "statistics related to downloaded files. If Extension Sync is "
-          "enabled, these statistics will also include information about "
-          "the extensions that have been installed from Chrome Web Store. "
-          "Google only stores usage statistics associated with published "
-          "extensions, and URLs that are known by Google’s search index. "
-          "Usage statistics are tied to a pseudonymous machine identifier "
-          "and not to your email address."
+          "Report of usage statistics that are keyed by URLs to Chromium. This "
+          "includes information about the web pages you visit and your usage "
+          "of them, such as page load speed. This will also include URLs and "
+          "statistics related to downloaded files. These statistics may also "
+          "include information about the extensions that have been installed "
+          "from Chrome Web Store. Google only stores usage statistics "
+          "associated with published extensions, and URLs that are known by "
+          "Google’s search index. Usage statistics are tied to a "
+          "pseudonymous machine identifier and not to your email address."
         trigger:
           "Reports are automatically generated on startup and at intervals "
           "while Chromium is running with Sync enabled."
@@ -127,11 +127,19 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
       policy {
         cookies_allowed: NO
         setting:
-          "Users can enable or disable this feature by disabling "
-          "'Automatically send usage statistics and crash reports to Google' "
-          "in Chromium's settings under Advanced Settings, Privacy. This is "
-          "only enabled if all active profiles have History/Extension Sync "
-          "enabled without a Sync passphrase."
+          "On ChromeOS, users can enable or disable this feature by disabling "
+          "'Automatically send diagnostic and usage data to Google' in "
+          "Chrome's settings under Advanced Settings, Privacy. This is only "
+          "enabled if all active profiles have History Sync enabled without a "
+          "Sync passphrase. "
+          "On all other platforms, users can enable or disable this feature by "
+          "disabling 'Make searches and browsing better' in Chrome's settings "
+          "under Advanced Settings, Privacy. This has to be enabled for all "
+          "active profiles. This is only enabled if the user has "
+          "'Help improve Chrome's features and performance' enabled in the "
+          "same settings menu. "
+          "On all platforms, information about the installed extensions is "
+          "sent only if Extension Sync is enabled."
         chrome_policy {
           MetricsReportingEnabled {
             policy_options {mode: MANDATORY}

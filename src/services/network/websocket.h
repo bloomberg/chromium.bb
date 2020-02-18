@@ -64,14 +64,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   };
 
   WebSocket(std::unique_ptr<Delegate> delegate,
-            mojom::WebSocketRequest request,
+            const GURL& url,
+            const std::vector<std::string>& requested_protocols,
+            const GURL& site_for_cookies,
+            std::vector<mojom::HttpHeaderPtr> additional_headers,
+            int32_t process_id,
+            int32_t render_frame_id,
+            const url::Origin& origin,
+            uint32_t options,
+            mojom::WebSocketHandshakeClientPtr handshake_client,
+            mojom::WebSocketClientPtr client,
             mojom::AuthenticationHandlerPtr auth_handler,
             mojom::TrustedHeaderClientPtr header_client,
             WebSocketThrottler::PendingConnection pending_connection_tracker,
-            int child_id,
-            int frame_id,
-            url::Origin origin,
-            uint32_t options,
             base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -80,11 +85,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   virtual void GoAway();
 
   // mojom::WebSocket methods:
-  void AddChannelRequest(const GURL& url,
-                         const std::vector<std::string>& requested_protocols,
-                         const GURL& site_for_cookies,
-                         std::vector<mojom::HttpHeaderPtr> additional_headers,
-                         mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
@@ -156,6 +156,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   std::unique_ptr<Delegate> delegate_;
   mojo::Binding<mojom::WebSocket> binding_;
 
+  mojom::WebSocketHandshakeClientPtr handshake_client_;
   mojom::WebSocketClientPtr client_;
   mojom::AuthenticationHandlerPtr auth_handler_;
   mojom::TrustedHeaderClientPtr header_client_;
@@ -175,8 +176,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   uint32_t options_;
 
-  int child_id_;
-  int frame_id_;
+  int32_t child_id_;
+  int32_t frame_id_;
 
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
@@ -185,7 +186,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // per-renderer WebSocket throttling.
   bool handshake_succeeded_;
 
-  base::WeakPtrFactory<WebSocket> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };

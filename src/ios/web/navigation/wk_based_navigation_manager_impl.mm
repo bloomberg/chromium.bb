@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
@@ -22,7 +23,7 @@
 #include "ios/web/navigation/navigation_item_impl_list.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
@@ -263,7 +264,7 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
 
 void WKBasedNavigationManagerImpl::CommitPendingItem(
     std::unique_ptr<NavigationItemImpl> item) {
-  if (!features::StorePendingItemInContext() || pending_item_index_ != -1) {
+  if (!item) {
     CommitPendingItem();
     return;
   }
@@ -288,10 +289,13 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
   // If |currentItem| is not nil, it is the last committed item in the
   // WKWebView.
   if (proxy.backForwardList && !proxy.backForwardList.currentItem) {
-    // WKWebView's URL should be about:blank for empty window open item.
-    // TODO(crbug.com/885249): Use GURL::IsAboutBlank() instead.
-    DCHECK(base::StartsWith(net::GURLWithNSURL(proxy.URL).spec(),
-                            url::kAboutBlankURL, base::CompareCase::SENSITIVE));
+    if (!base::ios::IsRunningOnIOS13OrLater()) {
+      // Prior to iOS 13 WKWebView's URL should be about:blank for empty window
+      // open item. TODO(crbug.com/885249): Use GURL::IsAboutBlank() instead.
+      DCHECK(base::StartsWith(net::GURLWithNSURL(proxy.URL).spec(),
+                              url::kAboutBlankURL,
+                              base::CompareCase::SENSITIVE));
+    }
     // There should be no back-forward history for empty window open item.
     DCHECK_EQ(0UL, proxy.backForwardList.backList.count);
     DCHECK_EQ(0UL, proxy.backForwardList.forwardList.count);
@@ -325,7 +329,6 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
     }
   }
 
-  pending_item_index_ = -1;
   // If the last committed item is the empty window open item, then don't update
   // previous item because the new commit replaces the last committed item.
   if (!last_committed_item_was_empty_window_open_item) {
@@ -792,6 +795,8 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
       } else {
         last_committed_web_view_item_->SetVirtualURL(virtual_url);
       }
+    } else {
+      last_committed_web_view_item_->SetVirtualURL(document_url);
     }
     last_committed_web_view_item_->SetTimestamp(
         time_smoother_.GetSmoothedTime(base::Time::Now()));
@@ -819,7 +824,7 @@ int WKBasedNavigationManagerImpl::
 NavigationItemImpl*
 WKBasedNavigationManagerImpl::GetPendingItemInCurrentOrRestoredSession() const {
   if (pending_item_index_ == -1) {
-    if (features::StorePendingItemInContext() && !pending_item_) {
+    if (!pending_item_) {
       return delegate_->GetPendingItem();
     }
     return pending_item_.get();

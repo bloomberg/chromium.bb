@@ -2,23 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
-
-if (is_android) {
-  import("//build/config/android/rules.gni")
-}
-
 source_set("test_lib") {
-  visibility = [ "//chrome/browser/notifications/scheduler:unit_tests" ]
+  testonly = true
+  visibility =
+      [ "//chrome/browser/notifications/scheduler/internal:unit_tests" ]
 
   sources = [
+    "fake_clock.cc",
+    "fake_clock.h",
+    "mock_display_agent.cc",
+    "mock_display_agent.h",
+    "mock_display_decider.cc",
+    "mock_display_decider.h",
+    "mock_impression_history_tracker.cc",
+    "mock_impression_history_tracker.h",
+    "mock_notification_background_task_scheduler.cc",
+    "mock_notification_background_task_scheduler.h",
+    "mock_scheduled_notification_manager.cc",
+    "mock_scheduled_notification_manager.h",
     "test_utils.cc",
     "test_utils.h",
   ]
 
   deps = [
     "//base",
-    "//chrome/browser/notifications/scheduler:lib",
-    "//chrome/browser/notifications/scheduler:public",
+    "//chrome/browser/notifications/scheduler/internal:lib",
+    "//chrome/browser/notifications/scheduler/public",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

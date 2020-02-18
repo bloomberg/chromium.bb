@@ -33,7 +33,7 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -70,13 +70,11 @@ class MODULES_EXPORT WebSocketChannel
   };
 
   virtual bool Connect(const KURL&, const String& protocol) = 0;
-  virtual void Send(const CString&) = 0;
+  virtual void Send(const std::string&) = 0;
   virtual void Send(const DOMArrayBuffer&,
                     unsigned byte_offset,
                     unsigned byte_length) = 0;
   virtual void Send(scoped_refptr<BlobDataHandle>) = 0;
-  virtual void SendTextAsCharVector(std::unique_ptr<Vector<char>>) = 0;
-  virtual void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>) = 0;
 
   // Do not call |Send| after calling this method.
   virtual void Close(int code, const String& reason) = 0;

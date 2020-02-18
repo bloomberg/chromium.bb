@@ -28,7 +28,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/web_data_service_factory.h"
+#include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static

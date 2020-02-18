@@ -19,12 +19,18 @@ buildflag_header("firebase_buildflags") {
 source_set("app") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "app_startup_parameters.h",
+    "app_startup_parameters.mm",
     "deferred_initialization_runner.h",
     "deferred_initialization_runner.mm",
   ]
 
   deps = [
     "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/payments:constants",
+    "//net",
+    "//url",
   ]
 
   libs = [ "Foundation.framework" ]
@@ -34,6 +40,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "app_startup_parameters_unittest.mm",
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
     "firebase_utils_unittest.mm",
@@ -158,6 +165,7 @@ source_set("app_internal") {
     "//components/prefs",
     "//components/prefs/ios",
     "//components/proxy_config",
+    "//components/signin/public/identity_manager",
     "//components/suggestions",
     "//components/sync",
     "//components/ukm/ios:features",
@@ -208,6 +216,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/appearance",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/browser_view",
     "//ios/chrome/browser/ui/commands",
@@ -222,6 +231,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/tabs",
     "//ios/chrome/browser/ui/toolbar:toolbar_ui",
     "//ios/chrome/browser/ui/toolbar/public",
@@ -247,10 +257,10 @@ source_set("app_internal") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/testing/perf:startup",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public/webui",
     "//mojo/core/embedder",
     "//net",
-    "//services/identity/public/cpp:cpp",
     "//skia",
     "//ui/base",
     "//ui/gfx",

@@ -17,8 +17,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
-#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -87,19 +87,15 @@ class TestNetworkConnectionObserver
 
 class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
  public:
-  NetworkConnectionTrackerBrowserTest()
-      : network_service_enabled_(
-            base::FeatureList::IsEnabled(network::features::kNetworkService)) {}
+  NetworkConnectionTrackerBrowserTest() {}
   ~NetworkConnectionTrackerBrowserTest() override {}
 
   // Simulates a network connection change.
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
-    if (network_service_enabled_ && !content::IsInProcessNetworkService()) {
+    if (!content::IsInProcessNetworkService()) {
       network::mojom::NetworkServiceTestPtr network_service_test;
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->BindInterface(content::mojom::kNetworkServiceName,
-                          &network_service_test);
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
       base::RunLoop run_loop;
       network_service_test->SimulateNetworkChange(
           type, base::Bind([](base::RunLoop* run_loop) { run_loop->Quit(); },
@@ -111,10 +107,7 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
         net::NetworkChangeNotifier::ConnectionType(type));
   }
 
-  bool network_service_enabled() const { return network_service_enabled_; }
-
  private:
-  const bool network_service_enabled_;
 };
 
 // Basic test to make sure NetworkConnectionTracker is set up.
@@ -124,8 +117,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
   // browser test fixture doesn't have NetworkServiceTest mojo code.
-  if (network_service_enabled())
-    return;
+  return;
 #endif
   network::NetworkConnectionTracker* tracker =
       content::GetNetworkConnectionTracker();

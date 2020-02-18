@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "audio/audio_receive_stream.h"
+
 #include <map>
 #include <string>
 #include <utility>
@@ -15,7 +17,6 @@
 
 #include "api/test/mock_audio_mixer.h"
 #include "api/test/mock_frame_decryptor.h"
-#include "audio/audio_receive_stream.h"
 #include "audio/conversion.h"
 #include "audio/mock_voe_channel_proxy.h"
 #include "call/rtp_stream_receiver_controller.h"
@@ -61,8 +62,7 @@ const unsigned int kSpeechOutputLevel = 99;
 const double kTotalOutputEnergy = 0.25;
 const double kTotalOutputDuration = 0.5;
 
-const CallReceiveStatistics kCallStats = {345, 678, 901, 234,
-                                          -12, 567, 890, 123};
+const CallReceiveStatistics kCallStats = {678, 901, 234, -12, 567, 890, 123};
 const std::pair<int, SdpAudioFormat> kReceiveCodec = {
     123,
     {"codec_name_recv", 96000, 0}};
@@ -270,7 +270,6 @@ TEST(AudioReceiveStreamTest, GetStats) {
   EXPECT_EQ(static_cast<uint32_t>(kCallStats.packetsReceived),
             stats.packets_rcvd);
   EXPECT_EQ(kCallStats.cumulativeLost, stats.packets_lost);
-  EXPECT_EQ(Q8ToFloat(kCallStats.fractionLost), stats.fraction_lost);
   EXPECT_EQ(kReceiveCodec.second.name, stats.codec_name);
   EXPECT_EQ(kCallStats.extendedMax, stats.ext_seqnum);
   EXPECT_EQ(

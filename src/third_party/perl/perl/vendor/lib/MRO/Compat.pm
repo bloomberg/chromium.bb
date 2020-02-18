@@ -5,7 +5,7 @@ require 5.006_000;
 
 # Keep this < 1.00, so people can tell the fake
 #  mro.pm from the real one
-our $VERSION = '0.11';
+our $VERSION = '0.13';
 
 BEGIN {
     # Alias our private functions over to
@@ -49,17 +49,19 @@ MRO::Compat - mro::* interface compatibility for Perls < 5.9.5
 
 =head1 SYNOPSIS
 
+   package PPP;      use base qw/Exporter/;
+   package X;        use base qw/PPP/;
+   package Y;        use base qw/PPP/;
+   package Z;        use base qw/PPP/;
+
    package FooClass; use base qw/X Y Z/;
-   package X;        use base qw/ZZZ/;
-   package Y;        use base qw/ZZZ/;
-   package Z;        use base qw/ZZZ/;
 
    package main;
    use MRO::Compat;
    my $linear = mro::get_linear_isa('FooClass');
    print join(q{, }, @$linear);
 
-   # Prints: "FooClass, X, ZZZ, Y, Z"
+   # Prints: FooClass, X, PPP, Exporter, Y, Z
 
 =head1 DESCRIPTION
 

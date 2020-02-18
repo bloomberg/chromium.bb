@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -38,11 +37,10 @@
 #include "third_party/blink/renderer/modules/vr/vr_stage_parameters.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
-
-#include <array>
 
 namespace blink {
 
@@ -51,14 +49,14 @@ namespace {
 // Threshold for rejecting stored non-immersive poses as being too old.
 // If it's exceeded, defer non-immersive rAF callback execution until
 // a fresh pose is received.
-constexpr WTF::TimeDelta kNonImmersivePoseAgeThreshold =
-    WTF::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kNonImmersivePoseAgeThreshold =
+    base::TimeDelta::FromMilliseconds(250);
 
 device::mojom::blink::XRFrameDataPtr CreateIdentityFrameData() {
   auto data = device::mojom::blink::XRFrameData::New();
   data->pose = device::mojom::blink::VRPose::New();
-  data->pose->orientation.emplace({0.0f, 0.0f, 0.0f, 1.0f});
-  data->pose->position.emplace({0.0f, 0.0f, 0.0f});
+  data->pose->orientation = gfx::Quaternion();
+  data->pose->position = WebFloatPoint3D();
 
   return data;
 }
@@ -80,17 +78,17 @@ class VRDisplayFrameRequestCallback
   void Invoke(double high_res_time_ms) override {
     if (Id() != vr_display_->PendingNonImmersiveVSyncId())
       return;
-    TimeTicks monotonic_time;
+    base::TimeTicks monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
-      monotonic_time = WTF::CurrentTimeTicks();
+      monotonic_time = base::TimeTicks::Now();
     } else {
       // Convert document-zero time back to monotonic time.
-      TimeTicks reference_monotonic_time = vr_display_->GetDocument()
-                                               ->Loader()
-                                               ->GetTiming()
-                                               .ReferenceMonotonicTime();
+      base::TimeTicks reference_monotonic_time = vr_display_->GetDocument()
+                                                     ->Loader()
+                                                     ->GetTiming()
+                                                     .ReferenceMonotonicTime();
       monotonic_time = reference_monotonic_time +
-                       TimeDelta::FromMillisecondsD(high_res_time_ms);
+                       base::TimeDelta::FromMillisecondsD(high_res_time_ms);
     }
     vr_display_->OnNonImmersiveVSync(monotonic_time);
   }
@@ -169,14 +167,14 @@ VRController* VRDisplay::Controller() {
 }
 
 void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
-  display_name_ = display->displayName;
+  display_name_ = display->display_name;
   is_connected_ = true;
 
-  capabilities_->SetHasPosition(display->capabilities->hasPosition);
+  capabilities_->SetHasPosition(display->capabilities->has_position);
   capabilities_->SetHasExternalDisplay(
-      display->capabilities->hasExternalDisplay);
-  capabilities_->SetCanPresent(display->capabilities->canPresent);
-  capabilities_->SetMaxLayers(display->capabilities->canPresent ? 1 : 0);
+      display->capabilities->has_external_display);
+  capabilities_->SetCanPresent(display->capabilities->can_present);
+  capabilities_->SetMaxLayers(display->capabilities->can_present ? 1 : 0);
 
   // Clear eye parameters to prevent them from getting stale.
   eye_parameters_left_.Clear();
@@ -184,13 +182,13 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
 
   bool is_valid = false;
   if (capabilities_->canPresent()) {
-    DCHECK_GT(display->leftEye->renderWidth, 0u);
+    DCHECK_GT(display->left_eye->render_width, 0u);
     is_valid = true;
 
     eye_parameters_left_ = MakeGarbageCollected<VREyeParameters>(
-        display->leftEye, display->webvr_default_framebuffer_scale);
+        display->left_eye, display->webvr_default_framebuffer_scale);
     eye_parameters_right_ = MakeGarbageCollected<VREyeParameters>(
-        display->rightEye, display->webvr_default_framebuffer_scale);
+        display->right_eye, display->webvr_default_framebuffer_scale);
   }
 
   bool need_on_present_change = false;
@@ -199,10 +197,10 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   }
   is_valid_device_for_presenting_ = is_valid;
 
-  if (!display->stageParameters.is_null()) {
+  if (!display->stage_parameters.is_null()) {
     if (!stage_parameters_)
       stage_parameters_ = MakeGarbageCollected<VRStageParameters>();
-    stage_parameters_->Update(display->stageParameters);
+    stage_parameters_->Update(display->stage_parameters);
   } else {
     stage_parameters_ = nullptr;
   }
@@ -300,7 +298,7 @@ void VRDisplay::RequestVSync() {
     if (pending_non_immersive_vsync_)
       return;
     non_immersive_vsync_waiting_for_pose_.Reset();
-    non_immersive_pose_request_time_ = WTF::CurrentTimeTicks();
+    non_immersive_pose_request_time_ = base::TimeTicks::Now();
 
     if (non_immersive_provider_) {
       non_immersive_provider_->GetFrameData(
@@ -564,7 +562,9 @@ ScriptPromise VRDisplay::requestPresent(
 }
 
 void VRDisplay::OnRequestImmersiveSessionReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   pending_present_request_ = false;
   if (session) {
     DCHECK(session->submit_frame_sink);
@@ -610,7 +610,9 @@ void VRDisplay::OnRequestImmersiveSessionReturned(
 }
 
 void VRDisplay::OnNonImmersiveSessionRequestReturned(
-    device::mojom::blink::XRSessionPtr session) {
+    device::mojom::blink::RequestSessionResultPtr result) {
+  device::mojom::blink::XRSessionPtr session =
+      result->is_session() ? std::move(result->get_session()) : nullptr;
   non_immersive_session_initialized_ = true;
 
   // Only create the non immersive provider if we actually got a session.
@@ -718,7 +720,7 @@ void VRDisplay::BeginPresent() {
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (doc && !pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
-    TimeTicks timestamp = WTF::CurrentTimeTicks();
+    base::TimeTicks timestamp = base::TimeTicks::Now();
     doc->GetTaskRunner(blink::TaskType::kInternalMedia)
         ->PostTask(FROM_HERE,
                    WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
@@ -987,7 +989,7 @@ void VRDisplay::OnDeactivate(
       event_type_names::kVrdisplaydeactivate, this, reason));
 }
 
-void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {
+void VRDisplay::ProcessScheduledWindowAnimations(base::TimeTicks timestamp) {
   TRACE_EVENT1("gpu", "VRDisplay::window.rAF", "frame", vr_frame_id_);
   auto* doc = navigator_vr_->GetDocument();
   if (!doc)
@@ -1016,7 +1018,7 @@ void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {
   }
 }
 
-void VRDisplay::ProcessScheduledAnimations(TimeTicks timestamp) {
+void VRDisplay::ProcessScheduledAnimations(base::TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   // Check if we still have a valid context, the animation controller
   // or document may have disappeared since we scheduled this.
@@ -1126,20 +1128,21 @@ void VRDisplay::OnPresentingVSync(
   // Used kInternalMedia since 1) this is not spec-ed and 2) this is media
   // related then tasks should not be throttled or frozen in background tabs.
   doc->GetTaskRunner(blink::TaskType::kInternalMedia)
-      ->PostTask(FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                                      WrapWeakPersistent(this),
-                                      TimeTicks() + frame_data->time_delta));
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
+                           WrapWeakPersistent(this),
+                           base::TimeTicks() + frame_data->time_delta));
 }
 
-void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {
+void VRDisplay::OnNonImmersiveVSync(base::TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   pending_non_immersive_vsync_ = false;
   pending_non_immersive_vsync_id_ = -1;
   if (is_presenting_)
     return;
   vr_frame_id_ = -1;
-  WTF::TimeDelta pose_age =
-      WTF::CurrentTimeTicks() - non_immersive_pose_received_time_;
+  base::TimeDelta pose_age =
+      base::TimeTicks::Now() - non_immersive_pose_received_time_;
   if (pose_age >= kNonImmersivePoseAgeThreshold &&
       non_immersive_pose_request_time_ > non_immersive_pose_received_time_) {
     // The VSync got triggered before ever receiving a pose, or the pose is
@@ -1158,7 +1161,7 @@ void VRDisplay::OnNonImmersiveVSync(TimeTicks timestamp) {
 
 void VRDisplay::OnNonImmersiveFrameData(
     device::mojom::blink::XRFrameDataPtr data) {
-  non_immersive_pose_received_time_ = WTF::CurrentTimeTicks();
+  non_immersive_pose_received_time_ = base::TimeTicks::Now();
   if (data) {
     if (!in_animation_frame_) {
       frame_pose_ = std::move(data->pose);

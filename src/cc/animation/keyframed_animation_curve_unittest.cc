@@ -519,6 +519,19 @@ TEST(KeyframedAnimationCurveTest, UnsortedKeyframes) {
   EXPECT_FLOAT_EQ(8.f, curve->GetValue(base::TimeDelta::FromSecondsD(3.f)));
 }
 
+// Tests that a linear timing function works as expected.
+TEST(KeyframedAnimationCurveTest, LinearTimingFunction) {
+  std::unique_ptr<KeyframedFloatAnimationCurve> curve(
+      KeyframedFloatAnimationCurve::Create());
+  curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta(), 0.f,
+                                           LinearTimingFunction::Create()));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 1.f, nullptr));
+
+  EXPECT_FLOAT_EQ(0.f, curve->GetValue(base::TimeDelta::FromSecondsD(0.f)));
+  EXPECT_FLOAT_EQ(0.75f, curve->GetValue(base::TimeDelta::FromSecondsD(0.75f)));
+}
+
 // Tests that a cubic bezier timing function works as expected.
 TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
@@ -1004,7 +1017,7 @@ TEST(KeyframedAnimationCurveTest, OneSizeKeyFrame) {
 TEST(KeyframedAnimationCurveTest, TwoSizeKeyFrame) {
   gfx::SizeF size_a = gfx::SizeF(100, 100);
   gfx::SizeF size_b = gfx::SizeF(100, 0);
-  gfx::SizeF size_midpoint = gfx::Tween::SizeValueBetween(0.5, size_a, size_b);
+  gfx::SizeF size_midpoint = gfx::Tween::SizeFValueBetween(0.5, size_a, size_b);
   std::unique_ptr<KeyframedSizeAnimationCurve> curve(
       KeyframedSizeAnimationCurve::Create());
   curve->AddKeyframe(SizeKeyframe::Create(base::TimeDelta(), size_a, nullptr));
@@ -1024,8 +1037,10 @@ TEST(KeyframedAnimationCurveTest, ThreeSizeKeyFrame) {
   gfx::SizeF size_a = gfx::SizeF(100, 100);
   gfx::SizeF size_b = gfx::SizeF(100, 0);
   gfx::SizeF size_c = gfx::SizeF(200, 0);
-  gfx::SizeF size_midpoint1 = gfx::Tween::SizeValueBetween(0.5, size_a, size_b);
-  gfx::SizeF size_midpoint2 = gfx::Tween::SizeValueBetween(0.5, size_b, size_c);
+  gfx::SizeF size_midpoint1 =
+      gfx::Tween::SizeFValueBetween(0.5, size_a, size_b);
+  gfx::SizeF size_midpoint2 =
+      gfx::Tween::SizeFValueBetween(0.5, size_b, size_c);
   std::unique_ptr<KeyframedSizeAnimationCurve> curve(
       KeyframedSizeAnimationCurve::Create());
   curve->AddKeyframe(SizeKeyframe::Create(base::TimeDelta(), size_a, nullptr));

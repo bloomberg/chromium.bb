@@ -30,6 +30,7 @@
 #include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
@@ -51,8 +52,7 @@ SpellcheckService::EventType g_status_type =
     SpellcheckService::BDICT_NOTINITIALIZED;
 
 SpellcheckService::SpellcheckService(content::BrowserContext* context)
-    : context_(context),
-      weak_ptr_factory_(this) {
+    : context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
@@ -60,12 +60,11 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Ensure that the renderer always knows the platform spellchecking language.
-  // This language is used for initialization of the text iterator. If the
-  // iterator is not initialized, then the context menu does not show spellcheck
-  // suggestions.
-  //
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  // Ensure that the renderer always knows the platform spellchecking
+  // language. This language is used for initialization of the text iterator.
+  // If the iterator is not initialized, then the context menu does not show
+  // spellcheck suggestions.
   // No migration is necessary, because the spellcheck language preference is
   // not user visible or modifiable in Chrome on Mac.
   dictionaries_pref.SetValue(std::vector<std::string>(
@@ -87,7 +86,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 
   single_dictionary_pref.SetValue("");
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
 
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,
@@ -181,6 +180,11 @@ void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_ = std::make_unique<SpellCheckHostMetrics>();
   metrics_->RecordEnabledStats(spellcheck_enabled);
   OnUseSpellingServiceChanged();
+
+#if defined(OS_WIN)
+  RecordMissingLanguagePacksCount();
+  RecordHunspellUnsupportedLanguageCount(GetNormalizedAcceptLanguages());
+#endif  // defined(OS_WIN)
 }
 
 void SpellcheckService::InitForRenderer(
@@ -265,6 +269,10 @@ void SpellcheckService::LoadHunspellDictionaries() {
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }
+
+#if defined(OS_WIN)
+  RecordMissingLanguagePacksCount();
+#endif  // defined(OS_WIN)
 }
 
 const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
@@ -384,6 +392,29 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
 }
 
 void SpellcheckService::OnAcceptLanguagesChanged() {
+  std::vector<std::string> accept_languages = GetNormalizedAcceptLanguages();
+
+  StringListPrefMember dictionaries_pref;
+  dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries,
+                         user_prefs::UserPrefs::Get(context_));
+  std::vector<std::string> dictionaries = dictionaries_pref.GetValue();
+  std::vector<std::string> filtered_dictionaries;
+
+  for (const auto& dictionary : dictionaries) {
+    if (base::Contains(accept_languages, dictionary)) {
+      filtered_dictionaries.push_back(dictionary);
+    }
+  }
+
+  dictionaries_pref.SetValue(filtered_dictionaries);
+
+#if defined(OS_WIN)
+  RecordHunspellUnsupportedLanguageCount(accept_languages);
+#endif  // defined(OS_WIN)
+}
+
+std::vector<std::string> SpellcheckService::GetNormalizedAcceptLanguages()
+    const {
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
   std::vector<std::string> accept_languages =
       base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
@@ -391,17 +422,31 @@ void SpellcheckService::OnAcceptLanguagesChanged() {
   std::transform(accept_languages.begin(), accept_languages.end(),
                  accept_languages.begin(),
                  &spellcheck::GetCorrespondingSpellCheckLanguage);
-
-  StringListPrefMember dictionaries_pref;
-  dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
-  std::vector<std::string> dictionaries = dictionaries_pref.GetValue();
-  std::vector<std::string> filtered_dictionaries;
-
-  for (const auto& dictionary : dictionaries) {
-    if (base::ContainsValue(accept_languages, dictionary)) {
-      filtered_dictionaries.push_back(dictionary);
-    }
-  }
-
-  dictionaries_pref.SetValue(filtered_dictionaries);
+  return accept_languages;
 }
+
+#if defined(OS_WIN)
+void SpellcheckService::RecordMissingLanguagePacksCount() {
+  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
+      !hunspell_dictionaries_.empty()) {
+    std::vector<std::string> hunspell_locales;
+    for (auto& dict : hunspell_dictionaries_) {
+      hunspell_locales.push_back(dict->GetLanguage());
+    }
+    spellcheck_platform::RecordMissingLanguagePacksCount(
+        std::move(hunspell_locales), metrics_.get());
+  }
+}
+
+void SpellcheckService::RecordHunspellUnsupportedLanguageCount(
+    const std::vector<std::string>& accept_languages) {
+  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
+      !accept_languages.empty()) {
+    metrics_->RecordHunspellUnsupportedLanguageCount(std::count_if(
+        accept_languages.begin(), accept_languages.end(),
+        [](const std::string& s) {
+          return spellcheck::GetCorrespondingSpellCheckLanguage(s).empty();
+        }));
+  }
+}
+#endif  // defined(OS_WIN)

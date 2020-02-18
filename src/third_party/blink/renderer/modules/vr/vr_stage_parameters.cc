@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/vr/vr_stage_parameters.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
@@ -17,10 +19,10 @@ VRStageParameters::VRStageParameters() : size_x_(0.0f), size_z_(0.0f) {
 
 void VRStageParameters::Update(
     const device::mojom::blink::VRStageParametersPtr& stage) {
-  standing_transform_ =
-      DOMFloat32Array::Create(&(stage->standingTransform.front()), 16);
-  size_x_ = stage->sizeX;
-  size_z_ = stage->sizeZ;
+  standing_transform_ = transformationMatrixToDOMFloat32Array(
+      TransformationMatrix(stage->standing_transform.matrix()));
+  size_x_ = stage->size_x;
+  size_z_ = stage->size_z;
 }
 
 void VRStageParameters::Trace(blink::Visitor* visitor) {

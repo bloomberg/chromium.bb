@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -66,13 +66,13 @@ inline LayoutMultiColumnFlowThread* GetFlowThread(const LayoutBox& box) {
 template <typename Algorithm, typename Callback>
 NOINLINE void CreateAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
                                     const Callback& callback) {
-  std::unique_ptr<Algorithm> algorithm = std::make_unique<Algorithm>(params);
-  callback(algorithm.get());
+  Algorithm algorithm(params);
+  callback(&algorithm);
 }
 
-inline void DetermineAlgorithmAndRun(
-    const NGLayoutAlgorithmParams& params,
-    const std::function<void(NGLayoutAlgorithmOperations*)>& callback) {
+template <typename Callback>
+NOINLINE void DetermineAlgorithmAndRun(const NGLayoutAlgorithmParams& params,
+                                       const Callback& callback) {
   const ComputedStyle& style = params.node.Style();
   const LayoutBox& box = *params.node.GetLayoutBox();
   if (box.IsLayoutNGFlexibleBox()) {
@@ -232,7 +232,17 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     UpdateShapeOutsideInfoIfNeeded(
         *layout_result, constraint_space.PercentageResolutionInlineSize());
 
-    return layout_result;
+    // Even if we can reuse the result, we may still need to recalculate our
+    // overflow. TODO(crbug.com/919415): Explain why.
+    if (box_->NeedsLayoutOverflowRecalc())
+      box_->RecalcLayoutOverflow();
+
+    // Return the cached result unless we're marked for layout. We may have
+    // added or removed scrollbars during overflow recalculation, which may have
+    // marked us for layout. In that case the cached result is unusable, and we
+    // need to re-lay out now.
+    if (!box_->NeedsLayout())
+      return layout_result;
   }
 
   if (!fragment_geometry) {
@@ -266,23 +276,32 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   // be used for comparison with their after layout size.
   NGBoxStrut before_layout_scrollbars =
       ComputeScrollbars(constraint_space, *this);
+  bool before_layout_preferred_logical_widths_dirty =
+      box_->PreferredLogicalWidthsDirty();
 
   if (!layout_result)
     layout_result = LayoutWithAlgorithm(params);
 
   FinishLayout(block_flow, constraint_space, break_token, layout_result);
 
-  if (before_layout_scrollbars != ComputeScrollbars(constraint_space, *this)) {
-    // If our scrollbars have changed, we need to relayout because either:
-    // - Our size has changed (if shrinking to fit), or
-    // - Space available to our children has changed.
-    // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
-    // TODO(cbiesinger): It seems that we should also check if
-    // PreferredLogicalWidthsDirty() has changed from false to true during
-    // layout, so that we correctly size ourselves when shrinking to fit
-    // and a child gained a vertical scrollbar. However, no test fails
-    // without that check.
+  // We may need to relayout if:
+  // - Our scrollbars have changed causing our size to change (shrink-to-fit)
+  //   or the available space to our children changing.
+  // - A child changed scrollbars causing our size to change (shrink-to-fit).
+  //
+  // This mirrors legacy code in PaintLayerScrollableArea::UpdateAfterLayout.
+  if ((before_layout_scrollbars !=
+       ComputeScrollbars(constraint_space, *this)) ||
+      (!before_layout_preferred_logical_widths_dirty &&
+       box_->PreferredLogicalWidthsDirty())) {
     PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbars;
+
+#if DCHECK_IS_ON()
+    // Ensure turning on/off scrollbars only once at most, when we call
+    // |LayoutWithAlgorithm| recursively.
+    DEFINE_STATIC_LOCAL(HashSet<LayoutBox*>, scrollbar_changed, ());
+    DCHECK(scrollbar_changed.insert(box_).is_new_entry);
+#endif
 
     // Must not call SetNeedsLayout in intermediate layout. If we do,
     // the NeedsLayout flag might not be cleared. crbug.com/967361
@@ -296,6 +315,10 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
         CalculateInitialFragmentGeometry(constraint_space, *this);
     layout_result = LayoutWithAlgorithm(params);
     FinishLayout(block_flow, constraint_space, break_token, layout_result);
+
+#if DCHECK_IS_ON()
+    scrollbar_changed.erase(box_);
+#endif
   }
 
   // We always need to update the ShapeOutsideInfo even if the layout is
@@ -322,7 +345,8 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::SimplifiedLayout() {
   if (!box_->NeedsLayout())
     return previous_result;
 
-  DCHECK(box_->NeedsSimplifiedLayoutOnly());
+  DCHECK(box_->NeedsSimplifiedLayoutOnly() ||
+         box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
 
   // Perform layout on ourselves using the previous constraint space.
   const NGConstraintSpace space(
@@ -405,8 +429,9 @@ void NGBlockNode::FinishLayout(
 
   box_->SetCachedLayoutResult(*layout_result, break_token);
   if (block_flow) {
-    NGLayoutInputNode first_child = FirstChild();
-    bool has_inline_children = first_child && first_child.IsInline();
+    auto* child = GetLayoutObjectForFirstChildNode(block_flow);
+    bool has_inline_children =
+        child && AreNGBlockFlowChildrenInline(block_flow);
 
     // Don't consider display-locked objects as having any children.
     if (has_inline_children &&
@@ -576,11 +601,23 @@ MinMaxSize NGBlockNode::ComputeMinMaxSizeFromLegacy(
 
 NGLayoutInputNode NGBlockNode::NextSibling() const {
   LayoutObject* next_sibling = GetLayoutObjectForNextSiblingNode(box_);
-  if (next_sibling) {
-    DCHECK(!next_sibling->IsInline());
-    return NGBlockNode(ToLayoutBox(next_sibling));
+
+  // We may have some LayoutInline(s) still within the tree (due to treating
+  // inline-level floats and/or OOF-positioned nodes as block-level), we need
+  // to skip them and clear layout.
+  while (next_sibling && next_sibling->IsInline()) {
+    // TODO(layout-dev): Clearing needs-layout within this accessor is an
+    // unexpected side-effect. There may be additional invalidations that need
+    // to be performed.
+    DCHECK(next_sibling->IsText());
+    next_sibling->ClearNeedsLayout();
+    next_sibling = next_sibling->NextSibling();
   }
-  return nullptr;
+
+  if (!next_sibling)
+    return nullptr;
+
+  return NGBlockNode(ToLayoutBox(next_sibling));
 }
 
 NGLayoutInputNode NGBlockNode::FirstChild() const {
@@ -588,8 +625,33 @@ NGLayoutInputNode NGBlockNode::FirstChild() const {
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;
-  if (AreNGBlockFlowChildrenInline(block))
-    return NGInlineNode(To<LayoutBlockFlow>(block));
+  if (!AreNGBlockFlowChildrenInline(block))
+    return NGBlockNode(ToLayoutBox(child));
+
+  NGInlineNode inline_node(To<LayoutBlockFlow>(block));
+  if (!inline_node.IsBlockLevel())
+    return inline_node;
+
+  // At this point we have a node which is empty or only has floats and
+  // OOF-positioned nodes. We treat all children as block-level, even though
+  // they are within a inline-level LayoutBlockFlow.
+
+  // We may have some LayoutInline(s) still within the tree (due to treating
+  // inline-level floats and/or OOF-positioned nodes as block-level), we need
+  // to skip them and clear layout.
+  while (child && child->IsInline()) {
+    // TODO(layout-dev): Clearing needs-layout within this accessor is an
+    // unexpected side-effect. There may be additional invalidations that need
+    // to be performed.
+    DCHECK(child->IsText());
+    child->ClearNeedsLayout();
+    child = child->NextSibling();
+  }
+
+  if (!child)
+    return nullptr;
+
+  DCHECK(child->IsFloatingOrOutOfFlowPositioned());
   return NGBlockNode(ToLayoutBox(child));
 }
 
@@ -612,7 +674,7 @@ bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (box.ForceLegacyLayout())
     return false;
-  return box.IsLayoutNGMixin() || box.IsLayoutNGFlexibleBox();
+  return box.IsLayoutNGMixin();
 }
 
 bool NGBlockNode::CanUseNewLayout() const {
@@ -621,7 +683,7 @@ bool NGBlockNode::CanUseNewLayout() const {
 
 String NGBlockNode::ToString() const {
   return String::Format("NGBlockNode: '%s'",
-                        GetLayoutBox()->DebugName().Ascii().data());
+                        GetLayoutBox()->DebugName().Ascii().c_str());
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
@@ -667,7 +729,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   if (LIKELY(IsLastFragment(physical_fragment)))
     intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
-  box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
+  if (!constraint_space.IsFixedSizeBlock()) {
+    // If we had a fixed block size, our children will have sized themselves
+    // relative to the fixed size, which would make our intrinsic size
+    // incorrect (too big).
+    box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
+  }
 
   // TODO(mstensho): This should always be done by the parent algorithm, since
   // we may have auto margins, which only the parent is able to resolve. Remove
@@ -725,14 +792,19 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   }
 
   box_->UpdateAfterLayout();
-  // We should only clear the child layout bits if display-locking has not
-  // prevented us from laying the children out.
-  box_->ClearNeedsLayout(
-      !box_->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren));
+  box_->ClearNeedsLayout();
 
   // Overflow computation depends on this being set.
   if (LIKELY(block_flow))
     block_flow->UpdateIsSelfCollapsing();
+
+  // We should notify the display lock that we've done layout on self, and if
+  // it's not blocked, on children.
+  if (auto* context = box_->GetDisplayLockContext()) {
+    context->DidLayout(DisplayLockContext::kSelf);
+    if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+      context->DidLayout(DisplayLockContext::kChildren);
+  }
 }
 
 void NGBlockNode::PlaceChildrenInLayoutBox(
@@ -949,11 +1021,14 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
   DCHECK(!box_->IsLayoutBlock() ||
          To<LayoutBlock>(box_)->CreatesNewFormattingContext());
 
+  // We cannot enter legacy layout for something fragmentable if we're inside an
+  // NG block fragmentation context. LayoutNG and legacy block fragmentation
+  // cannot cooperate within the same fragmentation context.
+  DCHECK(!constraint_space.HasBlockFragmentation() ||
+         box_->GetPaginationBreakability() == LayoutBox::kForbidBreaks);
+
   scoped_refptr<const NGLayoutResult> layout_result =
-      box_->IsOutOfFlowPositioned()
-          ? CachedLayoutResultForOutOfFlowPositioned(
-                constraint_space.PercentageResolutionSize())
-          : box_->GetCachedLayoutResult();
+      box_->GetCachedLayoutResult();
 
   // We need to force a layout on the child if the constraint space given will
   // change the layout.
@@ -1004,6 +1079,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     // Using |LayoutObject::LayoutIfNeeded| save us a little bit of overhead,
     // compared to |LayoutObject::ForceLayout|.
     DCHECK(!box_->IsLayoutNGMixin());
+    bool needed_layout = box_->NeedsLayout();
     if (box_->NeedsLayout() && !needs_force_relayout)
       box_->LayoutIfNeeded();
     else
@@ -1031,6 +1107,20 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     layout_result = builder.ToBoxFragment();
 
     box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+
+    // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
+    // |NeedsLayout()| flag should not be cleared.
+    if (needed_layout) {
+      if (constraint_space.IsIntermediateLayout()) {
+        DCHECK_NE(layout_result, box_->GetCachedLayoutResult());
+        box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+      } else if (layout_result != box_->GetCachedLayoutResult()) {
+        // TODO(kojii): If we failed to update CachedLayoutResult for other
+        // reasons, we'd like to review it.
+        NOTREACHED();
+        box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
+      }
+    }
   } else if (layout_result) {
     // OOF-positioned nodes have a two-tier cache, and their layout results
     // must always contain the correct percentage resolution size.

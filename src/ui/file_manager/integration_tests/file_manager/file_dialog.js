@@ -222,6 +222,25 @@ async function openFileDialogSendEscapeKey(volume, name) {
 }
 
 /**
+ * Tests for display:none status of feedback panels in Files app.
+ *
+ * @param {string} type Type of dialog to open.
+ */
+async function checkFeedbackDisplayHidden(type) {
+  // Open dialog of the specified 'type'.
+  chrome.fileSystem.chooseEntry({type: type}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+  // Check the display style of the feedback panels container.
+  const element = await remoteCall.waitForElementStyles(
+      appId, ['.files-feedback-panels'], ['display']);
+  // Check that CSS display style is 'none'.
+  chrome.test.assertTrue(element.styles['display'] === 'none');
+}
+
+/**
  * Test file present in Downloads.
  * @{!string}
  */
@@ -242,6 +261,27 @@ testcase.saveFileDialogDownloads = () => {
 };
 
 /**
+ * Tests opening save file dialog on Downloads and using New Folder button.
+ */
+testcase.saveFileDialogDownloadsNewFolderButton = async () => {
+  // Open Save as dialog.
+  chrome.fileSystem.chooseEntry({type: 'saveFile'}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Check: New Folder button should be enabled and click on it.
+  const query = '#new-folder-button:not([disabled])';
+  const newFolderButton = await remoteCall.waitAndClickElement(appId, query);
+
+  // Wait for the new folder with input to appear, assume the rest of the
+  // process works (covered by other tests).
+  const textInput = '#file-list .table-row[renaming] input.rename';
+  await remoteCall.waitForElement(appId, textInput);
+};
+
+/**
  * Tests opening file dialog on Downloads and closing it with Cancel button.
  */
 testcase.openFileDialogCancelDownloads = () => {
@@ -253,6 +293,20 @@ testcase.openFileDialogCancelDownloads = () => {
  */
 testcase.openFileDialogEscapeDownloads = () => {
   return openFileDialogSendEscapeKey('downloads', TEST_LOCAL_FILE);
+};
+
+/**
+ * Tests the feedback panels are hidden when using an open file dialog.
+ */
+testcase.openFileDialogPanelsDisabled = () => {
+  return checkFeedbackDisplayHidden('openFile');
+};
+
+/**
+ * Tests the feedback panels are hidden when using a save file dialog.
+ */
+testcase.saveFileDialogPanelsDisabled = () => {
+  return checkFeedbackDisplayHidden('saveFile');
 };
 
 /**
@@ -419,4 +473,53 @@ testcase.saveFileDialogDefaultFilter = async () => {
       await remoteCall.waitForElement(dialog, '.file-type option:checked');
   chrome.test.assertEq('0', selectedFilter.value);
   chrome.test.assertEq('All files', selectedFilter.text);
+};
+
+/**
+ * Tests that context menu on File List for file picker dialog.
+ * File picker dialog displays fewer menu options than full Files app. For
+ * example copy/paste commands are disabled. Right-click on a file/folder should
+ * show context menu, whereas right-clicking on the blank parts of file list
+ * should NOT display the context menu.
+ *
+ * crbug.com/917975 crbug.com/983507.
+ */
+testcase.openFileDialogFileListShowContextMenu = async () => {
+  // Add entries to Downloads.
+  await addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
+
+  // Open file picker dialog.
+  chrome.fileSystem.chooseEntry({type: 'openFile'}, (entry) => {});
+  const appId = await remoteCall.waitForWindow('dialog#');
+
+  // Wait for files to be displayed.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+
+  // Wait to finish initial load.
+  await remoteCall.waitFor('isFileManagerLoaded', appId, true);
+
+  // Right-click "photos" folder to show context menu.
+  await remoteCall.waitAndRightClick(appId, '#file-list [file-name="photos"]');
+
+  // Wait until the context menu appears.
+  const menuVisible = '#file-context-menu:not([hidden])';
+  await remoteCall.waitForElement(appId, menuVisible);
+
+  // Dismiss context menu.
+  const escKey = ['Escape', false, false, false];
+  await remoteCall.fakeKeyDown(appId, menuVisible, ...escKey);
+  await remoteCall.waitForElementLost(appId, menuVisible);
+
+  // Right-click 100px inside of #file-list (in an empty space).
+  const offsetBottom = -100;
+  const offsetRight = -100;
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil(
+          'rightClickOffset', appId, ['#file-list', offsetBottom, offsetRight]),
+      'right click failed');
+
+  // Check that context menu is NOT displayed because there is no visible menu
+  // items.
+  await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
 };

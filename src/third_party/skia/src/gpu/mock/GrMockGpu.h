@@ -56,28 +56,31 @@ private:
 
     void onResetContext(uint32_t resetBits) override {}
 
-    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {
-        SkASSERT(!this->caps()->sampleLocationsSupport());
-        SK_ABORT("Sample locations not implemented for mock GPU.");
-    }
+    void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>* sampleLocations) override;
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
-    sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc&, SkBudgeted, const GrMipLevel[],
+    sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc&, GrRenderable, int renderTargetSampleCnt,
+                                     SkBudgeted, GrProtected, const GrMipLevel[],
                                      int mipLevelCount) override;
 
-    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrWrapOwnership, GrWrapCacheable,
-                                          GrIOType) override;
+    sk_sp<GrTexture> onCreateCompressedTexture(int width, int height, SkImage::CompressionType,
+                                               SkBudgeted, const void* data) override;
+
+    sk_sp<GrTexture> onWrapBackendTexture(const GrBackendTexture&, GrColorType, GrWrapOwnership,
+                                          GrWrapCacheable, GrIOType) override;
 
     sk_sp<GrTexture> onWrapRenderableBackendTexture(const GrBackendTexture&,
                                                     int sampleCnt,
+                                                    GrColorType,
                                                     GrWrapOwnership,
                                                     GrWrapCacheable) override;
 
-    sk_sp<GrRenderTarget> onWrapBackendRenderTarget(const GrBackendRenderTarget&) override;
+    sk_sp<GrRenderTarget> onWrapBackendRenderTarget(const GrBackendRenderTarget&,
+                                                    GrColorType) override;
 
     sk_sp<GrRenderTarget> onWrapBackendTextureAsRenderTarget(const GrBackendTexture&,
-                                                             int sampleCnt) override;
+                                                             int sampleCnt, GrColorType) override;
 
     sk_sp<GrGpuBuffer> onCreateBuffer(size_t sizeInBytes, GrGpuBufferType, GrAccessPattern,
                                       const void*) override;
@@ -101,8 +104,7 @@ private:
                               GrColorType, GrGpuBuffer* transferBuffer, size_t offset) override {
         return true;
     }
-    bool onCopySurface(GrSurface* dst, GrSurfaceOrigin dstOrigin, GrSurface* src,
-                       GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
+    bool onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
                        const SkIPoint& dstPoint, bool canDiscardOutsideDstRect) override {
         return true;
     }
@@ -118,13 +120,12 @@ private:
         }
     }
 
-    GrStencilAttachment* createStencilAttachmentForRenderTarget(const GrRenderTarget*,
-                                                                int width,
-                                                                int height) override;
+    GrStencilAttachment* createStencilAttachmentForRenderTarget(
+            const GrRenderTarget*, int width, int height, int numStencilSamples) override;
     GrBackendTexture createBackendTexture(int w, int h, const GrBackendFormat&,
                                           GrMipMapped, GrRenderable,
                                           const void* pixels, size_t rowBytes,
-                                          const SkColor4f& color = SkColors::kTransparent) override;
+                                          const SkColor4f* color, GrProtected isProtected) override;
     void deleteBackendTexture(const GrBackendTexture&) override;
 
 #if GR_TEST_UTILS

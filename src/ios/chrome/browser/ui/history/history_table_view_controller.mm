@@ -37,11 +37,13 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/referrer.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/navigation/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -117,29 +119,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 @end
 
 @implementation HistoryTableViewController
-@synthesize browserState = _browserState;
-@synthesize cancelButton = _cancelButton;
-@synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
-@synthesize contextMenuCoordinator = _contextMenuCoordinator;
-@synthesize currentQuery = _currentQuery;
-@synthesize currentStatusMessage = _currentStatusMessage;
-@synthesize deleteButton = _deleteButton;
-@synthesize editButton = _editButton;
-@synthesize scrimView = _scrimView;
-@synthesize empty = _empty;
-@synthesize entryInserter = _entryInserter;
-@synthesize filteredOutEntriesIndexPaths = _filteredOutEntriesIndexPaths;
-@synthesize filterQueryResult = _filterQueryResult;
-@synthesize finishedLoading = _finishedLoading;
-@synthesize historyService = _historyService;
-@synthesize imageDataSource = _imageDataSource;
-@synthesize loading = _loading;
-@synthesize localDispatcher = _localDispatcher;
-@synthesize searchController = _searchController;
-@synthesize searchInProgress = _searchInProgress;
-@synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
-    _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
-@synthesize presentationDelegate = _presentationDelegate;
 
 #pragma mark - ViewController Lifecycle.
 
@@ -214,10 +193,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // TableView.
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
-  self.searchController.dimsBackgroundDuringPresentation = NO;
+  self.searchController.obscuresBackgroundDuringPresentation = NO;
   self.searchController.searchBar.delegate = self;
   self.searchController.searchResultsUpdater = self;
-  self.searchController.searchBar.backgroundColor = [UIColor clearColor];
+  self.searchController.searchBar.backgroundColor = UIColor.clearColor;
   self.searchController.searchBar.accessibilityIdentifier =
       kHistorySearchControllerSearchBarIdentifier;
   // UIKit needs to know which controller will be presenting the
@@ -227,9 +206,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
   self.scrimView = [[UIControl alloc] init];
   self.scrimView.alpha = 0.0f;
-  self.scrimView.backgroundColor =
-      [UIColor colorWithWhite:0
-                        alpha:kTableViewNavigationWhiteAlphaForSearchScrim];
+  self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
   self.scrimView.translatesAutoresizingMaskIntoConstraints = NO;
   self.scrimView.accessibilityIdentifier = kHistorySearchScrimIdentifier;
   [self.scrimView addTarget:self
@@ -608,7 +585,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
         base::mac::ObjCCastStrict<HistoryEntryItem>(item);
     TableViewURLCell* URLCell =
         base::mac::ObjCCastStrict<TableViewURLCell>(cellToReturn);
-    FaviconAttributes* cachedAttributes = [self.imageDataSource
+    [self.imageDataSource
         faviconForURL:URLItem.URL
            completion:^(FaviconAttributes* attributes) {
              // Only set favicon if the cell hasn't been reused.
@@ -618,8 +595,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                [URLCell.faviconView configureWithAttributes:attributes];
              }
            }];
-    DCHECK(cachedAttributes);
-    [URLCell.faviconView configureWithAttributes:cachedAttributes];
   }
   if (item.type == ItemTypeEntriesStatusWithLink) {
     TableViewTextLinkCell* tableViewTextLinkCell =
@@ -814,7 +789,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     TableViewTextItem* entriesStatusItem =
         [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
     entriesStatusItem.text = statusMessage;
-    entriesStatusItem.textColor = [UIColor blackColor];
+    entriesStatusItem.textColor = UIColor.cr_labelColor;
     statusMessageItem = entriesStatusItem;
   }
   return statusMessageItem;
@@ -1123,7 +1098,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                         action:@selector(openPrivacySettings)];
     _clearBrowsingDataButton.accessibilityIdentifier =
         kHistoryToolbarClearBrowsingButtonIdentifier;
-    _clearBrowsingDataButton.tintColor = [UIColor redColor];
+    _clearBrowsingDataButton.tintColor =
+        [UIColor colorNamed:kDestructiveTintColor];
   }
   return _clearBrowsingDataButton;
 }
@@ -1139,7 +1115,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                action:@selector(deleteSelectedItemsFromHistory)];
     _deleteButton.accessibilityIdentifier =
         kHistoryToolbarDeleteButtonIdentifier;
-    _deleteButton.tintColor = [UIColor redColor];
+    _deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
   }
   return _deleteButton;
 }

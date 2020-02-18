@@ -23,6 +23,7 @@ from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.cbuildbot import swarming_lib
 from chromite.cbuildbot import topology
+from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
@@ -31,11 +32,10 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import path_util
 from chromite.lib import portage_util
+from chromite.lib import sysroot_lib
 from chromite.scripts import pushimage
 
-from chromite.lib.paygen import partition_lib
-from chromite.lib.paygen import paygen_payload_lib
-from chromite.lib.paygen import paygen_stateful_payload_lib
+from chromite.service import artifacts as artifacts_service
 
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
@@ -51,6 +51,7 @@ class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
       raises: If the command should fail, the exception to be raised.
       kwargs: Extra kwargs passed to RunBuildScript.
     """
+
     # Write specified error message to status file.
     def WriteError(_cmd, extra_env=None, **_kwargs):
       if extra_env is not None and error is not None:
@@ -431,8 +432,8 @@ The suite job has another 2:39:39.789250 till timeout.
       priority = args[args.index(priority_flag) + 1]
 
     base_cmd = [swarming_lib._SWARMING_PROXY_CLIENT, 'run',
-                '--swarming', topology.topology.get(
-                    topology.SWARMING_PROXY_HOST_KEY),
+                '--swarming',
+                topology.topology.get(topology.SWARMING_PROXY_HOST_KEY),
                 '--task-summary-json', self.temp_json_path,
                 '--print-status-updates',
                 '--timeout', swarming_timeout_secs,
@@ -523,11 +524,11 @@ The suite job has another 2:39:39.789250 till timeout.
     if task_outputs:
       return_values = []
       for s in task_outputs:
-        j = {'shards':[{'name': 'fake_name', 'bot_id': 'chromeos-server990',
-                        'created_ts': '2015-06-12 12:00:00',
-                        'internal_failure': s[1],
-                        'state': s[2],
-                        'outputs': [s[0]]}]}
+        j = {'shards': [{'name': 'fake_name', 'bot_id': 'chromeos-server990',
+                         'created_ts': '2015-06-12 12:00:00',
+                         'internal_failure': s[1],
+                         'state': s[2],
+                         'outputs': [s[0]]}]}
         return_values.append(j)
       return_values_iter = iter(return_values)
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
@@ -614,17 +615,19 @@ The suite job has another 2:39:39.789250 till timeout.
   def testRunHWTestSuiteCommandErrorJSONDumpMissing(self):
     """Test RunHWTestSuite when the JSON output is missing on error."""
     self.SetCmdResults()
-    self.PatchJson(
-        [(self.JOB_ID_OUTPUT, False, None),
-         ('', False, None),
-         ('', False, None),
-        ])
+    self.PatchJson([
+        (self.JOB_ID_OUTPUT, False, None),
+        ('', False, None),
+        ('', False, None),
+    ])
+
     def fail_swarming_cmd(cmd, *_args, **_kwargs):
       result = swarming_lib.SwarmingCommandResult(None, cmd=cmd,
                                                   error='injected error',
                                                   output='', returncode=3)
       raise cros_build_lib.RunCommandError('injected swarming failure',
                                            result, None)
+
     self.rc.AddCmdResult(self.wait_cmd, side_effect=fail_swarming_cmd)
     self.rc.AddCmdResult(self.json_dump_cmd, side_effect=fail_swarming_cmd)
 
@@ -677,12 +680,12 @@ The suite job has another 2:39:39.789250 till timeout.
   def testRunHWTestTestSwarmingClientWithRetires(self):
     """Test RunHWTestSuite with retries."""
     self.SetCmdResults(wait_retry=True)
-    self.PatchJson(
-        [(self.JOB_ID_OUTPUT, False, None),
-         (self.WAIT_RETRY_OUTPUT, True, self.retriable_swarming_code),
-         (self.WAIT_OUTPUT, False, None),
-         (self.JSON_OUTPUT, False, None),
-        ])
+    self.PatchJson([
+        (self.JOB_ID_OUTPUT, False, None),
+        (self.WAIT_RETRY_OUTPUT, True, self.retriable_swarming_code),
+        (self.WAIT_OUTPUT, False, None),
+        (self.JSON_OUTPUT, False, None),
+    ])
     with self.OutputCapturer() as output:
       self.RunHWTestSuite(wait_for_results=self._wait_for_results)
       self.assertCommandCalled(self.create_cmd, capture_output=True,
@@ -697,10 +700,10 @@ The suite job has another 2:39:39.789250 till timeout.
   def testRunHWTestSuiteJsonDumpWhenWaitCmdFail(self):
     """Test RunHWTestSuite run json dump cmd when wait_cmd fail."""
     self.SetCmdResults(wait_return_code=1, wait_retry=True)
-    self.PatchJson(
-        [(self.JOB_ID_OUTPUT, False, None),
-         (self.JSON_OUTPUT, False, None),
-        ])
+    self.PatchJson([
+        (self.JOB_ID_OUTPUT, False, None),
+        (self.JSON_OUTPUT, False, None),
+    ])
     with (mock.patch.object(commands, '_HWTestWait', return_value=False)):
       with self.OutputCapturer() as output:
         self.RunHWTestSuite(wait_for_results=self._wait_for_results)
@@ -1161,52 +1164,6 @@ fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
     commands.AbortHWTests('my_config', 'my_version', debug=False)
     self.assertCommandContains(['-i', 'my_config/my_version'])
 
-  def testGenerateQuickProvisionPayloads(self):
-    """Verifies correct files are created for quick_provision script."""
-    extract_kernel_mock = self.PatchObject(partition_lib, 'ExtractKernel')
-    extract_root_mock = self.PatchObject(partition_lib, 'ExtractRoot')
-    compress_file_mock = self.PatchObject(cros_build_lib, 'CompressFile')
-
-    commands.GenerateQuickProvisionPayloads(self.target_image, self.tempdir)
-
-    extract_kernel_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_KERN.bin'))
-    extract_root_mock.assert_called_once_with(
-        self.target_image, partial_mock.HasString('full_dev_part_ROOT.bin'),
-        truncate=False)
-
-    calls = [mock.call(partial_mock.HasString('full_dev_part_KERN.bin'),
-                       partial_mock.HasString('full_dev_part_KERN.bin.gz')),
-             mock.call(partial_mock.HasString('full_dev_part_ROOT.bin'),
-                       partial_mock.HasString('full_dev_part_ROOT.bin.gz'))]
-    compress_file_mock.assert_has_calls(calls)
-
-  def testGenerateFullPayloads(self):
-    """Verifies correctly generating full payloads."""
-    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
-    commands.GeneratePayloads(self.target_image, self.tempdir, full=True)
-    payload_path = os.path.join(
-        self.tempdir,
-        'chromeos_R37-5952.0.2014_06_12_2302-a1_link_full_dev.bin')
-    paygen_mock.assert_call_once_with(self.target_image, payload_path)
-
-  def testGenerateDeltaPayloads(self):
-    """Verifies correctly generating delta payloads."""
-    paygen_mock = self.PatchObject(paygen_payload_lib, 'GenerateUpdatePayload')
-    commands.GeneratePayloads(self.target_image, self.tempdir, delta=True)
-    payload_path = os.path.join(
-        self.tempdir,
-        'chromeos_R37-5952.0.2014_06_12_2302-a1_R37-'
-        '5952.0.2014_06_12_2302-a1_link_delta_dev.bin')
-    paygen_mock.assert_call_once_with(self.target_image, payload_path)
-
-  def testGenerateStatefulPayloads(self):
-    """Verifies correctly generating stateful payloads."""
-    paygen_mock = self.PatchObject(paygen_stateful_payload_lib,
-                                   'GenerateStatefulPayload')
-    commands.GeneratePayloads(self.target_image, self.tempdir, stateful=True)
-    paygen_mock.assert_call_once_with(self.target_image, self.tempdir)
-
 
 class GenerateDebugTarballTests(cros_test_lib.TempDirTestCase):
   """Tests related to building tarball artifacts."""
@@ -1297,6 +1254,8 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     self._cwd = os.path.abspath(
         os.path.join(self._buildroot, 'chroot', 'build', self._board,
                      constants.AUTOTEST_BUILD_PATH, '..'))
+    self._sysroot_build = os.path.abspath(
+        os.path.join(self._buildroot, 'chroot', 'build', self._board, 'build'))
     self._tarball_dir = self.tempdir
 
 
@@ -1370,22 +1329,24 @@ class BuildTarballTests(cros_test_lib.RunCommandTempDirTestCase):
     for d in ('libexec/tast', 'share/tast'):
       os.makedirs(os.path.join(self._cwd, d))
 
-    with mock.patch.object(commands, 'BuildTarball') as m:
-      tarball = commands.BuildTastBundleTarball(self._buildroot, self._cwd,
-                                                self._tarball_dir)
-      self.assertEquals(expected_tarball, tarball)
-      m.assert_called_once_with(self._buildroot,
-                                ['libexec/tast', 'share/tast'],
-                                expected_tarball,
-                                cwd=self._cwd)
+    chroot = chroot_lib.Chroot(os.path.join(self._buildroot, 'chroot'))
+    sysroot = sysroot_lib.Sysroot(os.path.join('/build', self._board))
+    patch = self.PatchObject(artifacts_service, 'BundleTastFiles',
+                             return_value=expected_tarball)
+
+    tarball = commands.BuildTastBundleTarball(self._buildroot,
+                                              self._sysroot_build,
+                                              self._tarball_dir)
+    self.assertEquals(expected_tarball, tarball)
+    patch.assert_called_once_with(chroot, sysroot, self._tarball_dir)
 
   def testBuildTastTarballNoBundle(self):
     """Tests the case when the Tast private bundles tarball is not generated."""
-    with mock.patch.object(commands, 'BuildTarball') as m:
-      tarball = commands.BuildTastBundleTarball(self._buildroot, self._cwd,
-                                                self._tarball_dir)
-      self.assertIs(tarball, None)
-      m.assert_not_called()
+    self.PatchObject(artifacts_service, 'BundleTastFiles', return_value=None)
+    tarball = commands.BuildTastBundleTarball(self._buildroot,
+                                              self._sysroot_build,
+                                              self._tarball_dir)
+    self.assertIsNone(tarball)
 
   def testBuildPinnedGuestImagesTarball(self):
     """Tests that generating a guest images tarball."""
@@ -1492,9 +1453,8 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
   """Test cases which really run tests, instead of using mocks."""
 
   def testBuildFirmwareArchive(self):
-    """Verifies that firmware archiver includes proper files"""
-    # Assorted set of file names, some of which are supposed to be included in
-    # the archive.
+    """Verifies that the archiver creates a tarfile with the expected files."""
+    # Set of files to tar up
     fw_files = (
         'dts/emeraldlake2.dts',
         'image-link.rw.bin',
@@ -1506,20 +1466,29 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
         'updater-link.rw.sh',
         'x86-memtest',
     )
-    # Files which should be included in the archive.
-    fw_archived_files = fw_files + ('dts/',)
     board = 'link'
+    chroot_path = 'chroot/build/%s/firmware' % board
     fw_test_root = os.path.join(self.tempdir, os.path.basename(__file__))
-    fw_files_root = os.path.join(fw_test_root,
-                                 'chroot/build/%s/firmware' % board)
-    # Generate a representative set of files produced by a typical build.
+    fw_files_root = os.path.join(fw_test_root, chroot_path)
+
+    # Generate the fw_files in fw_files_root.
     cros_test_lib.CreateOnDiskHierarchy(fw_files_root, fw_files)
-    # Create an archive from the simulated firmware directory
-    tarball = os.path.join(
-        fw_test_root,
-        commands.BuildFirmwareArchive(fw_test_root, board, fw_test_root))
-    # Verify the tarball contents.
-    cros_test_lib.VerifyTarball(tarball, fw_archived_files)
+
+    # Create an archive from the specified test directory.
+    returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
+                                                          fw_test_root)
+    # Verify we get a valid tarball returned whose name uses the default name.
+    self.assertTrue(returned_archive_name is not None)
+    self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
+
+    # Create an archive and specify that archive filename.
+    archive_name = "alternative_archive.tar.bz2"
+    returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
+                                                          fw_test_root,
+                                                          archive_name)
+    # Verify that we get back an archive file using the specified name.
+    self.assertEquals(archive_name, returned_archive_name)
+
 
   def findFilesWithPatternExpectedResults(self, root, files):
     """Generate the expected results for testFindFilesWithPattern"""
@@ -1591,7 +1560,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(set(parsed.keys()), set(test_content.keys()))
 
     # Verify the math.
-    for filename, content in test_content.iteritems():
+    for filename, content in test_content.items():
       entry = parsed[filename]
       size = len(content)
       sha1 = base64.b64encode(hashlib.sha1(content).digest())
@@ -1681,7 +1650,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
     # Check specifying tar functionality.
     artifact = {'paths': ['a.bin'], 'output': 'a.tar.gz', 'archive': 'tar',
-                'compress':'gz'}
+                'compress': 'gz'}
     path = commands.BuildStandaloneArchive(archive_dir, image_dir, artifact)
     self.assertEquals(path, ['a.tar.gz'])
     cros_test_lib.VerifyTarball(os.path.join(archive_dir, path[0]),
@@ -1817,3 +1786,76 @@ class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
         ],
         enter_chroot=True,
     )
+
+class GenerateChromeOrderfileArtifactsTests(
+    cros_test_lib.RunCommandTempDirTestCase):
+  """Test GenerateChromeOrderfileArtifacts command."""
+
+  def setUp(self):
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    osutils.SafeMakedirs(self.buildroot)
+    chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
+    osutils.SafeMakedirs(chroot_tmp)
+    self.board = 'board'
+    self.output_path = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_path)
+
+    unused = {
+        'pv': None,
+        'version_no_rev': None,
+        'rev': None,
+        'category': None,
+        'cpv': None,
+        'cp': None,
+        'cpf': None
+    }
+    cpv = portage_util.CPV(
+        version='75.0.3761.0', package='chromeos-chrome', **unused)
+
+    self.PatchObject(portage_util, 'PortageqBestVisible',
+                     return_value=cpv)
+    self.chrome_version = 'chromeos-chrome-orderfile-75.0.3761.0'
+
+  def testRun(self):
+    """Verifies GenerateChromeOrderfileArtifacts calls into build-api."""
+    # Redirect the current tempdir to read/write contents inside it.
+    self.PatchObject(osutils.TempDir, '__enter__',
+                     return_value=self.tempdir)
+
+    input_proto_file = os.path.join(self.tempdir, 'input.json')
+    output_proto_file = os.path.join(self.tempdir, 'output.json')
+
+    # Write dummy outputs to output JSON file
+    with open(output_proto_file, 'w') as f:
+      output_proto = {
+          'artifacts': [
+              {'path': self.chrome_version + '.orderfile.tar.xz'},
+              {'path': self.chrome_version + '.nm.tar.xz'}
+          ]
+      }
+      json.dump(output_proto, f)
+
+    commands.GenerateChromeOrderfileArtifacts(
+        self.buildroot, self.board, self.output_path)
+
+    # Verify the command is called correctly
+    self.assertCommandContains(
+        [
+            os.path.join(self.buildroot, constants.CHROMITE_BIN_SUBDIR,
+                         'build_api'),
+            'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts',
+            '--input-json', input_proto_file,
+            '--output-json', output_proto_file
+        ]
+    )
+
+    # Verify the input proto has all the information
+    input_proto = json.loads(osutils.ReadFile(input_proto_file))
+    self.assertEqual(input_proto['chroot']['path'],
+                     os.path.join(self.buildroot, 'chroot'))
+    self.assertEqual(input_proto['build_target']['name'],
+                     self.board)
+    self.assertEqual(input_proto['chrome_version'],
+                     self.chrome_version)
+    self.assertEqual(input_proto['output_dir'],
+                     self.output_path)

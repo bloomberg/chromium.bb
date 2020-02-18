@@ -415,7 +415,7 @@ NoteTakingHelper::~NoteTakingHelper() {
 bool NoteTakingHelper::IsWhitelistedChromeApp(
     const extensions::Extension* extension) const {
   DCHECK(extension);
-  return base::ContainsValue(whitelisted_chrome_app_ids_, extension->id());
+  return base::Contains(whitelisted_chrome_app_ids_, extension->id());
 }
 
 std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
@@ -437,7 +437,7 @@ std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
   // Add any extensions which have a "note" action in their manifest
   // "action_handler" entry.
   for (const auto& extension : enabled_extensions) {
-    if (base::ContainsValue(extensions, extension.get()))
+    if (base::Contains(extensions, extension.get()))
       continue;
 
     if (extensions::ActionHandlersInfo::HasActionHandler(

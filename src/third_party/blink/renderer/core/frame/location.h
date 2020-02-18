@@ -100,6 +100,8 @@ class CORE_EXPORT Location final : public ScriptWrappable {
   // Returns true if the associated Window is the active Window in the frame.
   bool IsAttached() const;
 
+  // Note: SetLocation should be called synchronously from the DOM operation to
+  // ensure we use the correct Javascript world for CSP checks.
   enum class SetLocationPolicy { kNormal, kReplaceThisFrame };
   void SetLocation(const String&,
                    LocalDOMWindow* current_window,

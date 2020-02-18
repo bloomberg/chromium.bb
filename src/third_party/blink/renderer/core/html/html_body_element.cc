@@ -33,10 +33,10 @@
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -65,7 +65,8 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
       CSSImageValue* image_value =
           CSSImageValue::Create(url, GetDocument().CompleteURL(url),
                                 Referrer(GetDocument().OutgoingReferrer(),
-                                         GetDocument().GetReferrerPolicy()));
+                                         GetDocument().GetReferrerPolicy()),
+                                OriginClean::kTrue);
       image_value->SetInitiator(localName());
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));

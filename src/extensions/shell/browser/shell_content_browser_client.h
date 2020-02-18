@@ -71,6 +71,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) override;
+  void RegisterNonNetworkServiceWorkerUpdateURLLoaderFactories(
+      content::BrowserContext* browser_context,
+      NonNetworkURLLoaderFactoryMap* factories) override;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,
       int render_frame_id,
@@ -82,7 +85,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       bool is_navigation,
       bool is_download,
       const url::Origin& request_initiator,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
   bool HandleExternalProtocol(
@@ -93,15 +96,14 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override;
+      network::mojom::URLLoaderFactoryPtr* out_factory) override;
   network::mojom::URLLoaderFactoryPtrInfo
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       const url::Origin& request_initiator) override;
-  std::string GetUserAgent() const override;
+  std::string GetUserAgent() override;
 
  protected:
   // Subclasses may wish to provide their own ShellBrowserMainParts.

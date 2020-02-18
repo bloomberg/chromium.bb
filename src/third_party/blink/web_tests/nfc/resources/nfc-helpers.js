@@ -8,10 +8,14 @@ var test_url_data = 'https://w3c.github.io/web-nfc/';
 var test_message_origin = 'https://127.0.0.1:8443';
 var test_buffer_data = new ArrayBuffer(test_text_byte_array.length);
 var test_buffer_view = new Uint8Array(test_buffer_data).set(test_text_byte_array);
+var fake_tag_serial_number = 'c0:45:00:02';
 
 var NFCHWStatus = {};
+// OS-level NFC setting is ON
 NFCHWStatus.ENABLED = 1;
+// no NFC chip
 NFCHWStatus.NOT_SUPPORTED = NFCHWStatus.ENABLED + 1;
+// OS-level NFC setting OFF
 NFCHWStatus.DISABLED = NFCHWStatus.NOT_SUPPORTED + 1;
 
 function noop() {}
@@ -43,12 +47,12 @@ function createRecord(recordType, mediaType, data) {
   return record;
 }
 
-function createNFCPushOptions(target, timeout, ignoreRead) {
-  return { target, timeout, ignoreRead };
+function createNFCPushOptions(target, timeout, ignoreRead, compatibility) {
+  return { target, timeout, ignoreRead, compatibility};
 }
 
-function createNFCWatchOptions(url, recordType, mediaType, mode) {
-  return { url, recordType, mediaType, mode};
+function createNFCReaderOptions(url, recordType, mediaType, compatibility) {
+  return { url, recordType, mediaType, compatibility };
 }
 
 function createTextRecord(text) {
@@ -95,13 +99,15 @@ function toMojoNFCPushTarget(target) {
   return device.mojom.NFCPushTarget.ANY;
 }
 
-function toMojoNFCWatchMode(mode) {
-  if (mode === 'web-nfc-only')
-    return device.mojom.NFCWatchMode.WEBNFC_ONLY;
-  return device.mojom.NFCWatchMode.ANY;
+function toMojoNDEFCompatibility(compatibility) {
+  if (compatibility === 'nfc-forum')
+    return device.mojom.NDEFCompatibility.NFC_FORUM;
+  if (compatibility === 'vendor')
+    return device.mojom.NDEFCompatibility.VENDOR;
+  return device.mojom.NDEFCompatibility.ANY;
 }
 
-// Converts between NDEFMessage https://w3c.github.io/web-nfc/#dom-ndefmessage
+// Converts between NDEFMessageInit https://w3c.github.io/web-nfc/#dom-ndefmessage
 // and mojom.NDEFMessage structure, so that nfc.watch function can be tested.
 function toMojoNDEFMessage(message) {
   let ndefMessage = new device.mojom.NDEFMessage();
@@ -136,8 +142,8 @@ function toByteArray(data) {
   return byteArray;
 }
 
-// Compares NDEFMessage that was provided to the API
-// (e.g. navigator.nfc.push), and NDEFMessage that was received by the
+// Compares NDEFMessageSource that was provided to the API
+// (e.g. navigator.nfc.push), and mojom NDEFMessage that was received by the
 // mock NFC service.
 function assertNDEFMessagesEqual(providedMessage, receivedMessage) {
   // If simple data type is passed, e.g. String or ArrayBuffer, convert it
@@ -168,7 +174,6 @@ function assertWebNDEFMessagesEqual(a, b) {
     let recordB = b.records[i];
     assert_equals(recordA.recordType, recordB.recordType);
     assert_equals(recordA.mediaType, recordB.mediaType);
-
     if (recordA.data instanceof ArrayBuffer) {
       assert_array_equals(new Uint8Array(recordA.data),
           new Uint8Array(recordB.data));
@@ -218,11 +223,16 @@ function assertNFCPushOptionsEqual(provided, received) {
     assert_equals(toMojoNFCPushTarget(provided.target), received.target);
   else
     assert_equals(received.target, device.mojom.NFCPushTarget.ANY);
+
+  if (provided.compatibility !== undefined)
+    assert_equals(toMojoNDEFCompatibility(provided.compatibility), received.compatibility);
+  else
+    assert_equals(received.compatibility, device.mojom.NDEFCompatibility.NFC_FORUM);
 }
 
-// Compares NFCWatchOptions structures that were provided to API and
+// Compares NFCReaderOptions structures that were provided to API and
 // received by the mock mojo service.
-function assertNFCWatchOptionsEqual(provided, received) {
+function assertNFCReaderOptionsEqual(provided, received) {
   if (provided.url !== undefined)
     assert_equals(provided.url, received.url);
   else
@@ -233,10 +243,10 @@ function assertNFCWatchOptionsEqual(provided, received) {
   else
     assert_equals(received.mediaType, '');
 
-  if (provided.mode !== undefined)
-    assert_equals(toMojoNFCWatchMode(provided.mode), received.mode);
+  if (provided.compatibility !== undefined)
+    assert_equals(toMojoNDEFCompatibility(provided.compatibility), received.compatibility);
   else
-    assert_equals(received.mode, device.mojom.NFCWatchMode.WEBNFC_ONLY);
+    assert_equals(received.compatibility, device.mojom.NDEFCompatibility.NFC_FORUM);
 
   if (provided.recordType !== undefined) {
     assert_equals(!+received.record_filter, true);
@@ -371,9 +381,9 @@ class MockNFC {
 
   isReady() {
     if (this.hw_status_ === NFCHWStatus.DISABLED)
-      return createNFCError(device.mojom.NFCErrorType.DEVICE_DISABLED);
+      return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
     if (this.hw_status_ === NFCHWStatus.NOT_SUPPORTED)
-      return createNFCError(device.mojom.NFCErrorType.NOT_SUPPORTED);
+      return createNFCError(device.mojom.NFCErrorType.NOT_READABLE);
     return null;
   }
 
@@ -424,7 +434,7 @@ class MockNFC {
   triggerWatchCallback(id, message) {
     assert_true(this.client_ !== null);
     if (this.watchers_.length > 0) {
-      this.client_.onWatch([id], toMojoNDEFMessage(message));
+      this.client_.onWatch([id], fake_tag_serial_number, toMojoNDEFMessage(message));
     }
   }
 }

@@ -30,6 +30,8 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -63,6 +66,13 @@ WebRemoteFrame* WebRemoteFrame::CreateMainFrame(WebView* web_view,
                                                 WebRemoteFrameClient* client,
                                                 WebFrame* opener) {
   return WebRemoteFrameImpl::CreateMainFrame(web_view, client, opener);
+}
+
+WebRemoteFrame* WebRemoteFrame::CreateForPortal(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    const WebElement& portal_element) {
+  return WebRemoteFrameImpl::CreateForPortal(scope, client, portal_element);
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::Create(WebTreeScopeType scope,
@@ -88,7 +98,27 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
   // swapping path and instead directly overwrites the main frame.
   // TODO(dcheng): Remove the need for this and strongly enforce this condition
   // with a DCHECK.
-  frame->InitializeCoreFrame(page, nullptr, g_null_atom);
+  frame->InitializeCoreFrame(
+      page, nullptr, g_null_atom,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr);
+  return frame;
+}
+
+WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
+    WebTreeScopeType scope,
+    WebRemoteFrameClient* client,
+    const WebElement& portal_element) {
+  WebRemoteFrameImpl* frame =
+      MakeGarbageCollected<WebRemoteFrameImpl>(scope, client);
+
+  Element* element = portal_element;
+  DCHECK(element->HasTagName(html_names::kPortalTag));
+  DCHECK(RuntimeEnabledFeatures::PortalsEnabled(&element->GetDocument()));
+  HTMLPortalElement* portal = static_cast<HTMLPortalElement*>(element);
+  LocalFrame* host_frame = portal->GetDocument().GetFrame();
+  frame->InitializeCoreFrame(*host_frame->GetPage(), portal, g_null_atom,
+                             &host_frame->window_agent_factory());
+
   return frame;
 }
 
@@ -159,16 +189,21 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, frame_owner_properties, frame_owner_element_type);
-  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
+  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
+                             opener
+                                 ? &ToCoreFrame(*opener)->window_agent_factory()
+                                 : &GetFrame()->window_agent_factory());
   DCHECK(child->GetFrame());
   return child;
 }
 
-void WebRemoteFrameImpl::InitializeCoreFrame(Page& page,
-                                             FrameOwner* owner,
-                                             const AtomicString& name) {
-  SetCoreFrame(
-      MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page, owner));
+void WebRemoteFrameImpl::InitializeCoreFrame(
+    Page& page,
+    FrameOwner* owner,
+    const AtomicString& name,
+    WindowAgentFactory* window_agent_factory) {
+  SetCoreFrame(MakeGarbageCollected<RemoteFrame>(frame_client_.Get(), page,
+                                                 owner, window_agent_factory));
   GetFrame()->CreateView();
   frame_->Tree().SetName(name);
 }
@@ -185,7 +220,10 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
   AppendChild(child);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
       frame_policy, WebFrameOwnerProperties(), frame_owner_element_type);
-  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name);
+  child->InitializeCoreFrame(*GetFrame()->GetPage(), owner, name,
+                             opener
+                                 ? &ToCoreFrame(*opener)->window_agent_factory()
+                                 : &GetFrame()->window_agent_factory());
   return child;
 }
 
@@ -235,8 +273,7 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
 
 void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
   DCHECK(GetFrame());
-  GetFrame()->GetSecurityContext()->ResetSandboxFlags();
-  GetFrame()->GetSecurityContext()->EnforceSandboxFlags(
+  GetFrame()->GetSecurityContext()->ResetAndEnforceSandboxFlags(
       static_cast<SandboxFlags>(flags));
 }
 
@@ -298,7 +335,7 @@ void WebRemoteFrameImpl::SetReplicatedInsecureRequestPolicy(
 }
 
 void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
-    const std::vector<unsigned>& set) {
+    const WebVector<unsigned>& set) {
   DCHECK(GetFrame());
   GetFrame()->GetSecurityContext()->SetInsecureNavigationsSet(set);
 }
@@ -398,11 +435,8 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   }
 
   // Schedule the scroll.
-  LayoutRect absolute_rect =
-      owner_object
-          ->LocalToAncestorRect(PhysicalRect(rect_to_scroll),
-                                owner_object->View())
-          .ToLayoutRect();
+  PhysicalRect absolute_rect = owner_object->LocalToAncestorRect(
+      PhysicalRect(rect_to_scroll), owner_object->View());
 
   if (!params.zoom_into_rect ||
       !owner_object->GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
@@ -490,7 +524,7 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,
     : WebRemoteFrame(scope),
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
-      self_keep_alive_(this) {
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client);
 }
 

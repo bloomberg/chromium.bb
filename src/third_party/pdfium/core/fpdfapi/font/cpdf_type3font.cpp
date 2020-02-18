@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "core/fpdfapi/font/cpdf_type3char.h"
-#include "core/fpdfapi/page/cpdf_form.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
+#include "core/fxcrt/autorestorer.h"
 #include "core/fxcrt/fx_system.h"
 #include "third_party/base/ptr_util.h"
 
@@ -24,8 +24,9 @@ constexpr int kMaxType3FormLevel = 4;
 }  // namespace
 
 CPDF_Type3Font::CPDF_Type3Font(CPDF_Document* pDocument,
-                               CPDF_Dictionary* pFontDict)
-    : CPDF_SimpleFont(pDocument, pFontDict) {
+                               CPDF_Dictionary* pFontDict,
+                               FormFactoryIface* pFormFactory)
+    : CPDF_SimpleFont(pDocument, pFontDict), m_pFormFactory(pFormFactory) {
   ASSERT(GetDocument());
   memset(m_CharWidthL, 0, sizeof(m_CharWidthL));
 }
@@ -102,32 +103,38 @@ CPDF_Type3Char* CPDF_Type3Font::LoadChar(uint32_t charcode) {
   if (!name)
     return nullptr;
 
-  CPDF_Stream* pStream =
-      ToStream(m_pCharProcs ? m_pCharProcs->GetDirectObjectFor(name) : nullptr);
+  if (!m_pCharProcs)
+    return nullptr;
+
+  CPDF_Stream* pStream = ToStream(m_pCharProcs->GetDirectObjectFor(name));
   if (!pStream)
     return nullptr;
 
-  auto pNewChar =
-      pdfium::MakeUnique<CPDF_Type3Char>(pdfium::MakeUnique<CPDF_Form>(
-          m_pDocument.Get(),
-          m_pFontResources ? m_pFontResources.Get() : m_pPageResources.Get(),
-          pStream, nullptr));
+  std::unique_ptr<CPDF_Font::FormIface> pForm = m_pFormFactory->CreateForm(
+      m_pDocument.Get(),
+      m_pFontResources ? m_pFontResources.Get() : m_pPageResources.Get(),
+      pStream);
+
+  auto pNewChar = pdfium::MakeUnique<CPDF_Type3Char>();
 
   // This can trigger recursion into this method. The content of |m_CacheMap|
   // can change as a result. Thus after it returns, check the cache again for
   // a cache hit.
-  m_CharLoadingDepth++;
-  pNewChar->form()->ParseContent(nullptr, nullptr, pNewChar.get(), nullptr);
-  m_CharLoadingDepth--;
+  {
+    AutoRestorer<int> restorer(&m_CharLoadingDepth);
+    m_CharLoadingDepth++;
+    pForm->ParseContentForType3Char(pNewChar.get());
+  }
   it = m_CacheMap.find(charcode);
   if (it != m_CacheMap.end())
     return it->second.get();
 
-  pNewChar->Transform(m_FontMatrix);
+  pNewChar->Transform(pForm.get(), m_FontMatrix);
+  if (pForm->HasPageObjects())
+    pNewChar->SetForm(std::move(pForm));
+
+  CPDF_Type3Char* pCachedChar = pNewChar.get();
   m_CacheMap[charcode] = std::move(pNewChar);
-  CPDF_Type3Char* pCachedChar = m_CacheMap[charcode].get();
-  if (pCachedChar->form()->GetPageObjectCount() == 0)
-    pCachedChar->ResetForm();
   return pCachedChar;
 }
 

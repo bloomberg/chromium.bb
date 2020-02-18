@@ -25,7 +25,6 @@
 #include "base/thread_annotations.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -51,14 +50,12 @@
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
 #include "components/zoom/zoom_controller.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -71,6 +68,7 @@
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/dump_accessibility_test_helper.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -272,11 +270,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
       if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
-        if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-          // This file has races in loading correctly or not.
-          if (pdf_file == "pdf_private/cfuzz5.pdf")
-            continue;
-        }
+        if (pdf_file == "pdf_private/cfuzz5.pdf")
+          continue;
         EXPECT_EQ(PdfIsExpectedToLoad(pdf_file), success) << pdf_file;
       }
       ++count;
@@ -408,25 +403,7 @@ class PDFExtensionLoadTest : public PDFExtensionTest,
   PDFExtensionLoadTest() {}
 };
 
-class PDFExtensionHitTestTest : public PDFExtensionTest,
-                                public testing::WithParamInterface<bool> {
- public:
-  PDFExtensionHitTestTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PDFExtensionTest::SetUpCommandLine(command_line);
-    if (GetParam()) {
-      std::map<std::string, std::string> parameters{{"provider", "draw_quad"}};
-      feature_list_.InitAndEnableFeatureWithParameters(
-          features::kEnableVizHitTest, parameters);
-    } else {
-      feature_list_.InitAndDisableFeature(features::kEnableVizHitTest);
-    }
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
+using PDFExtensionHitTestTest = PDFExtensionTest;
 
 class PDFAnnotationsTest : public PDFExtensionTest {
  public:
@@ -477,7 +454,6 @@ class DownloadAwaiter : public content::DownloadManager::Observer {
   }
 
  private:
-  content::NotificationRegistrar registrar_;
   base::RunLoop download_run_loop_;
   GURL last_url_;
 };
@@ -630,10 +606,6 @@ INSTANTIATE_TEST_SUITE_P(PDFTestFiles,
                          PDFExtensionLoadTest,
                          testing::Range(0, kNumberLoadTestParts));
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         PDFExtensionHitTestTest,
-                         testing::Bool());
-
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", "test.pdf");
 
@@ -706,8 +678,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
 IN_PROC_BROWSER_TEST_F(PDFAnnotationsTest, MAYBE_AnnotationsFeatureEnabled) {
   RunTestsInFile("annotations_feature_enabled_test.js", "test.pdf");
 }
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, AnnotationsFeatureDisabled) {
   RunTestsInFile("annotations_feature_disabled_test.js", "test.pdf");
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Printing) {
+  RunTestsInFile("printing_icon_test.js", "test.pdf");
 }
 #endif
 
@@ -1270,13 +1247,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1298,13 +1272,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, Middle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1328,13 +1299,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, CtrlShiftLeft) {
 
   const int modifiers = blink::WebInputEvent::kShiftKey | kDefaultKeyModifier;
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), modifiers,
                                 blink::WebMouseEvent::Button::kLeft,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1351,13 +1319,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftMiddle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kMiddle, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1376,13 +1341,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
@@ -1422,13 +1384,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, OpenPDFWithReplaceState) {
       web_contents->GetBrowserContext()->GetGuestManager();
   SetGuestContents(guest_manager->GetFullPageGuest(web_contents));
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   // We should have two tabs now. One with the PDF and the second for
   // example.com
@@ -1482,13 +1441,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, CtrlLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), kDefaultKeyModifier,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1511,13 +1467,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, Middle) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(GetWebContentsForInputRouting(), 0,
                                 blink::WebMouseEvent::Button::kMiddle,
                                 GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::TabAddedWaiter(browser()).Wait();
 
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
@@ -1542,13 +1495,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionInternalLinkClickTest, ShiftLeft) {
 
   WebContents* web_contents = GetActiveWebContents();
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_OPENED,
-      content::NotificationService::AllSources());
   content::SimulateMouseClickAt(
       GetWebContentsForInputRouting(), blink::WebInputEvent::kShiftKey,
       blink::WebMouseEvent::Button::kLeft, GetLinkPosition());
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToOpen();
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
@@ -1654,7 +1604,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   // Checks the Linux selection clipboard by polling.
   void CheckSelectionClipboard(const std::string& expected) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    CheckClipboard(ui::CLIPBOARD_TYPE_SELECTION, expected);
+    CheckClipboard(ui::ClipboardType::kSelection, expected);
 #endif
   }
 
@@ -1664,7 +1614,7 @@ class PDFExtensionClipboardTest : public PDFExtensionTest {
   void SendCopyCommandAndCheckCopyPasteClipboard(const std::string& expected) {
     content::RunAllPendingInMessageLoop();
     GetWebContentsForInputRouting()->Copy();
-    CheckClipboard(ui::CLIPBOARD_TYPE_COPY_PASTE, expected);
+    CheckClipboard(ui::ClipboardType::kCopyPaste, expected);
   }
 
   content::WebContents* GetWebContentsForInputRouting() {
@@ -1972,7 +1922,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
 #endif  // !defined(OS_MACOSX)
 
 // Flaky in nearly all configurations; see https://crbug.com/856169.
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
@@ -2023,7 +1973,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
   EXPECT_EQ(1, enter_count);
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.
@@ -2266,4 +2216,145 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DidStopLoading) {
   // MAIN VERIFICATION: Wait for the main frame to report that is has stopped
   // loading.
   content::WaitForLoadStop(web_contents);
+}
+
+class PDFExtensionAccessibilityTreeDumpTest
+    : public PDFExtensionTest,
+      public ::testing::WithParamInterface<size_t> {
+ public:
+  PDFExtensionAccessibilityTreeDumpTest()
+      : test_pass_(
+            content::AccessibilityTreeFormatter::GetTestPass(GetParam())) {}
+  ~PDFExtensionAccessibilityTreeDumpTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+
+    // Each test pass might require custom command-line setup
+    if (test_pass_.set_up_command_line)
+      test_pass_.set_up_command_line(command_line);
+  }
+
+ protected:
+  void RunPDFTest(const base::FilePath::CharType* pdf_file) {
+    base::FilePath test_path = ui_test_utils::GetTestFilePath(
+        base::FilePath(FILE_PATH_LITERAL("pdf")),
+        base::FilePath(FILE_PATH_LITERAL("accessibility")));
+    {
+      base::ScopedAllowBlockingForTesting allow_blocking;
+      ASSERT_TRUE(base::PathExists(test_path)) << test_path.LossyDisplayName();
+    }
+    base::FilePath pdf_path = test_path.Append(pdf_file);
+
+    RunTest(pdf_path, "pdf/accessibility");
+  }
+
+ private:
+  using PropertyFilter = content::AccessibilityTreeFormatter::PropertyFilter;
+
+  void RunTest(const base::FilePath& test_file_path, const char* file_dir) {
+    // Set up the tree formatter.
+    std::unique_ptr<content::AccessibilityTreeFormatter> formatter =
+        test_pass_.create_formatter();
+    std::vector<PropertyFilter> property_filters;
+    formatter->AddDefaultFilters(&property_filters);
+    AddDefaultFilters(&property_filters);
+    formatter->SetPropertyFilters(property_filters);
+
+    // Exit without running the test if we can't find an expectation file or if
+    // the expectation file contains a skip marker.
+    // This is used to skip certain tests on certain platforms.
+    content::DumpAccessibilityTestHelper test_helper(formatter.get());
+    base::Optional<base::FilePath> expected_file_path =
+        test_helper.GetExpectationFilePath(test_file_path);
+    if (!expected_file_path) {
+      LOG(INFO) << "No expectation file present, ignoring test on this "
+                   "platform.";
+      return;
+    }
+
+    base::Optional<std::vector<std::string>> expected_lines =
+        test_helper.LoadExpectationFile(*expected_file_path);
+    if (!expected_lines) {
+      LOG(INFO) << "Skipping this test on this platform.";
+      return;
+    }
+
+    // Enable accessibility and load the test file.
+    content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+    GURL test_pdf_url(embedded_test_server()->GetURL(
+        "/" + std::string(file_dir) + "/" +
+        test_file_path.BaseName().MaybeAsASCII()));
+    WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+    ASSERT_TRUE(guest_contents);
+    WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
+
+    // Find the embedded PDF and dump the accessibility tree.
+    content::FindAccessibilityNodeCriteria find_criteria;
+    find_criteria.role = ax::mojom::Role::kEmbeddedObject;
+    content::BrowserAccessibility* pdf_root =
+        content::FindAccessibilityNode(guest_contents, find_criteria);
+    CHECK(pdf_root);
+
+    base::string16 actual_contents_utf16;
+    formatter->FormatAccessibilityTree(pdf_root, &actual_contents_utf16);
+    std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
+
+    std::vector<std::string> actual_lines =
+        base::SplitString(actual_contents, "\n", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+
+    // Validate the dump against the expectation file.
+    EXPECT_TRUE(test_helper.ValidateAgainstExpectation(
+        test_file_path, *expected_file_path, actual_lines, *expected_lines));
+  }
+
+  void AddDefaultFilters(std::vector<PropertyFilter>* property_filters) {
+    AddPropertyFilter(property_filters, "value='*'");
+    // The value attribute on the document object contains the URL of the
+    // current page which will not be the same every time the test is run.
+    AddPropertyFilter(property_filters, "value='http*'", PropertyFilter::DENY);
+    // Object attributes.value
+    AddPropertyFilter(property_filters, "layout-guess:*",
+                      PropertyFilter::ALLOW);
+
+    AddPropertyFilter(property_filters, "select*");
+    AddPropertyFilter(property_filters, "descript*");
+    AddPropertyFilter(property_filters, "check*");
+    AddPropertyFilter(property_filters, "horizontal");
+    AddPropertyFilter(property_filters, "multiselectable");
+
+    // Deny most empty values
+    AddPropertyFilter(property_filters, "*=''", PropertyFilter::DENY);
+    // After denying empty values, because we want to allow name=''
+    AddPropertyFilter(property_filters, "name=*", PropertyFilter::ALLOW_EMPTY);
+  }
+
+  void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
+                         std::string filter,
+                         PropertyFilter::Type type = PropertyFilter::ALLOW) {
+    property_filters->push_back(
+        PropertyFilter(base::ASCIIToUTF16(filter), type));
+  }
+
+  content::AccessibilityTreeFormatter::TestPass test_pass_;
+};
+
+// Parameterize the tests so that each test-pass is run independently.
+struct DumpAccessibilityTreeTestPassToString {
+  std::string operator()(const ::testing::TestParamInfo<size_t>& i) const {
+    return content::AccessibilityTreeFormatter::GetTestPass(i.param).name;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    PDFExtensionAccessibilityTreeDumpTest,
+    ::testing::Range(
+        size_t{0},
+        content::AccessibilityTreeFormatter::GetTestPasses().size()),
+    DumpAccessibilityTreeTestPassToString());
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, HelloWorld) {
+  RunPDFTest(FILE_PATH_LITERAL("hello-world.pdf"));
 }

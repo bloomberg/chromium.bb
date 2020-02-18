@@ -16,10 +16,15 @@
 #define VK_DEVICE_HPP_
 
 #include "VkObject.hpp"
+#include "Device/LRUCache.hpp"
+#include "Reactor/Routine.hpp"
+#include <memory>
+#include <mutex>
 
 namespace sw
 {
 	class Blitter;
+	class SamplingRoutineCache;
 }
 
 namespace vk
@@ -33,7 +38,7 @@ class Device
 public:
 	static constexpr VkSystemAllocationScope GetAllocationScope() { return VK_SYSTEM_ALLOCATION_SCOPE_DEVICE; }
 
-	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice);
+	Device(const VkDeviceCreateInfo* pCreateInfo, void* mem, PhysicalDevice *physicalDevice, const VkPhysicalDeviceFeatures *enabledFeatures);
 	void destroy(const VkAllocationCallbacks* pAllocator);
 
 	static size_t ComputeRequiredAllocationSize(const VkDeviceCreateInfo* pCreateInfo);
@@ -47,16 +52,44 @@ public:
 	PhysicalDevice *getPhysicalDevice() const { return physicalDevice; }
 	void updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites,
 	                          uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies);
-	sw::Blitter* getBlitter() const { return blitter; }
+	const VkPhysicalDeviceFeatures &getEnabledFeatures() const { return enabledFeatures; }
+	sw::Blitter* getBlitter() const { return blitter.get(); }
+
+	class SamplingRoutineCache
+	{
+	public:
+		SamplingRoutineCache() : cache(1024) {}
+		~SamplingRoutineCache() {}
+
+		struct Key
+		{
+			uint32_t instruction;
+			uint32_t sampler;
+			uint32_t imageView;
+		};
+
+		rr::Routine* query(const Key& key) const;
+		void add(const Key& key, rr::Routine* routine);
+
+	private:
+		std::size_t hash(const Key &key) const;
+		sw::LRUCache<std::size_t, rr::Routine> cache;
+	};
+
+	SamplingRoutineCache* getSamplingRoutineCache();
+	std::mutex& getSamplingRoutineCacheMutex();
 
 private:
-	PhysicalDevice *physicalDevice = nullptr;
-	Queue* queues = nullptr;
+	PhysicalDevice *const physicalDevice = nullptr;
+	Queue *const queues = nullptr;
 	uint32_t queueCount = 0;
-	sw::Blitter* blitter = nullptr;
+	std::unique_ptr<sw::Blitter> blitter;
+	std::unique_ptr<SamplingRoutineCache> samplingRoutineCache;
+	std::mutex samplingRoutineCacheMutex;
 	uint32_t enabledExtensionCount = 0;
 	typedef char ExtensionName[VK_MAX_EXTENSION_NAME_SIZE];
 	ExtensionName* extensions = nullptr;
+	const VkPhysicalDeviceFeatures enabledFeatures = {};
 };
 
 using DispatchableDevice = DispatchableObject<Device, VkDevice>;

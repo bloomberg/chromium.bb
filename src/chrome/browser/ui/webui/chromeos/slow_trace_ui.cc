@@ -28,7 +28,7 @@ namespace chromeos {
 SlowTraceSource::SlowTraceSource() {
 }
 
-std::string SlowTraceSource::GetSource() const {
+std::string SlowTraceSource::GetSource() {
   return chrome::kChromeUISlowTraceHost;
 }
 
@@ -51,7 +51,7 @@ void SlowTraceSource::StartDataRequest(
                                    callback));
 }
 
-std::string SlowTraceSource::GetMimeType(const std::string& path) const {
+std::string SlowTraceSource::GetMimeType(const std::string& path) {
   return "application/zip";
 }
 
@@ -63,7 +63,7 @@ void SlowTraceSource::OnGetTraceData(
   callback.Run(trace_data.get());
 }
 
-bool SlowTraceSource::AllowCaching() const {
+bool SlowTraceSource::AllowCaching() {
   // Should not be cached to reflect dynamically-generated contents that may
   // depend on current settings.
   return false;

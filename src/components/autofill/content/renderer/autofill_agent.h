@@ -14,17 +14,20 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_input_element.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 class WebNode;
@@ -63,11 +66,13 @@ class AutofillAgent : public content::RenderFrameObserver,
                 blink::AssociatedInterfaceRegistry* registry);
   ~AutofillAgent() override;
 
-  void BindRequest(mojom::AutofillAgentAssociatedRequest request);
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<mojom::AutofillAgent> pending_receiver);
 
-  const mojom::AutofillDriverAssociatedPtr& GetAutofillDriver();
+  const mojo::AssociatedRemote<mojom::AutofillDriver>& GetAutofillDriver();
 
-  const mojom::PasswordManagerDriverAssociatedPtr& GetPasswordManagerDriver();
+  const mojo::AssociatedRemote<mojom::PasswordManagerDriver>&
+  GetPasswordManagerDriver();
 
   // mojom::AutofillAgent:
   void FillForm(int32_t id, const FormData& form) override;
@@ -78,6 +83,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void ClearPreviewedForm() override;
   void FillFieldWithValue(const base::string16& value) override;
   void PreviewFieldWithValue(const base::string16& value) override;
+  void SetSuggestionAvailability(bool available) override;
   void AcceptDataListSuggestion(const base::string16& value) override;
   void FillPasswordSuggestion(const base::string16& username,
                               const base::string16& password) override;
@@ -106,7 +112,7 @@ class AutofillAgent : public content::RenderFrameObserver,
                                ElementChangeSource source) override;
   void OnProbablyFormSubmitted() override;
   void OnFormSubmitted(const blink::WebFormElement& form) override;
-  void OnInferredFormSubmission(SubmissionSource source) override;
+  void OnInferredFormSubmission(mojom::SubmissionSource source) override;
 
   void AddFormObserver(Observer* observer);
   void RemoveFormObserver(Observer* observer);
@@ -166,15 +172,16 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidFinishDocumentLoad() override;
   void DidChangeScrollOffset() override;
   void FocusedElementChanged(const blink::WebElement& element) override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
   void OnDestruct() override;
 
   // Fires Mojo messages for a given form submission.
   void FireHostSubmitEvents(const blink::WebFormElement& form,
                             bool known_success,
-                            SubmissionSource source);
+                            mojom::SubmissionSource source);
   void FireHostSubmitEvents(const FormData& form_data,
                             bool known_success,
-                            SubmissionSource source);
+                            mojom::SubmissionSource source);
 
   // Shuts the AutofillAgent down on RenderFrame deletion. Safe to call multiple
   // times.
@@ -197,7 +204,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebFormControlElement& element) override;
   void SelectControlDidChange(
       const blink::WebFormControlElement& element) override;
-  bool HasFillData(const blink::WebFormControlElement& element) const override;
+  bool TryToShowTouchToFill(
+      const blink::WebFormControlElement& element) override;
 
   void HandleFocusChangeComplete();
 
@@ -379,15 +387,19 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Whether or not we delay focus handling until scrolling occurs.
   bool focus_requires_scroll_ = true;
 
-  mojo::AssociatedBinding<mojom::AutofillAgent> binding_;
+  mojo::AssociatedReceiver<mojom::AutofillAgent> receiver_{this};
 
-  mojom::AutofillDriverAssociatedPtr autofill_driver_;
+  mojo::AssociatedRemote<mojom::AutofillDriver> autofill_driver_;
 
   bool was_last_action_fill_ = false;
 
   base::OneShotTimer on_select_update_timer_;
 
-  base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
+  // Will be set when accessibility mode changes, depending on what the new mode
+  // is.
+  bool is_screen_reader_enabled_ = false;
+
+  base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgent);
 };

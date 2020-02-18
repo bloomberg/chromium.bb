@@ -251,11 +251,11 @@ bool TabCaptureRegistry::VerifyRequest(
 void TabCaptureRegistry::OnRequestUpdate(
     int target_render_process_id,
     int target_render_frame_id,
-    blink::MediaStreamType stream_type,
+    blink::mojom::MediaStreamType stream_type,
     const content::MediaRequestState new_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (stream_type != blink::MEDIA_GUM_TAB_VIDEO_CAPTURE &&
-      stream_type != blink::MEDIA_GUM_TAB_AUDIO_CAPTURE) {
+  if (stream_type != blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE &&
+      stream_type != blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE) {
     return;
   }
 

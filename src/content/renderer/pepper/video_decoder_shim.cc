@@ -35,7 +35,7 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace content {
@@ -60,7 +60,7 @@ bool IsCodecSupported(media::VideoCodec codec) {
 // YUV->RGB converter class using a shader and FBO.
 class VideoDecoderShim::YUVConverter {
  public:
-  YUVConverter(scoped_refptr<ws::ContextProviderCommandBuffer>);
+  YUVConverter(scoped_refptr<viz::ContextProviderCommandBuffer>);
   ~YUVConverter();
   bool Initialize();
   void Convert(const media::VideoFrame* frame, GLuint tex_out);
@@ -71,7 +71,7 @@ class VideoDecoderShim::YUVConverter {
   GLuint CreateProgram(const char* name, GLuint vshader, GLuint fshader);
   GLuint CreateTexture();
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;
   gpu::gles2::GLES2Interface* gl_;
   GLuint frame_buffer_;
   GLuint vertex_buffer_;
@@ -101,7 +101,7 @@ class VideoDecoderShim::YUVConverter {
 };
 
 VideoDecoderShim::YUVConverter::YUVConverter(
-    scoped_refptr<ws::ContextProviderCommandBuffer> context_provider)
+    scoped_refptr<viz::ContextProviderCommandBuffer> context_provider)
     : context_provider_(std::move(context_provider)),
       gl_(context_provider_->ContextGL()),
       frame_buffer_(0),
@@ -670,14 +670,12 @@ class VideoDecoderShim::DecoderImpl {
   // store id of the current buffer while Decode() call is pending.
   uint32_t decode_id_ = 0;
 
-  base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<DecoderImpl> weak_ptr_factory_{this};
 };
 
 VideoDecoderShim::DecoderImpl::DecoderImpl(
     const base::WeakPtr<VideoDecoderShim>& proxy)
-    : shim_(proxy),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+    : shim_(proxy), main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 VideoDecoderShim::DecoderImpl::~DecoderImpl() {
   DCHECK(pending_decodes_.empty());
@@ -828,8 +826,8 @@ void VideoDecoderShim::DecoderImpl::OnResetComplete() {
       FROM_HERE, base::BindOnce(&VideoDecoderShim::OnResetComplete, shim_));
 }
 
-VideoDecoderShim::VideoDecoderShim(
-    PepperVideoDecoderHost* host, uint32_t texture_pool_size)
+VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host,
+                                   uint32_t texture_pool_size)
     : state_(UNINITIALIZED),
       host_(host),
       media_task_runner_(
@@ -838,8 +836,7 @@ VideoDecoderShim::VideoDecoderShim(
           RenderThreadImpl::current()->SharedMainThreadContextProvider()),
       texture_pool_size_(texture_pool_size),
       num_pending_decodes_(0),
-      yuv_converter_(new YUVConverter(context_provider_)),
-      weak_ptr_factory_(this) {
+      yuv_converter_(new YUVConverter(context_provider_)) {
   DCHECK(host_);
   DCHECK(media_task_runner_.get());
   DCHECK(context_provider_.get());
@@ -892,8 +889,9 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
     return false;
 
   media::VideoDecoderConfig video_decoder_config(
-      codec, vda_config.profile, media::PIXEL_FORMAT_I420,
-      media::VideoColorSpace(), media::kNoTransformation,
+      codec, vda_config.profile,
+      media::VideoDecoderConfig::AlphaMode::kIsOpaque, media::VideoColorSpace(),
+      media::kNoTransformation,
       gfx::Size(32, 24),  // Small sizes that won't fail.
       gfx::Rect(32, 24), gfx::Size(32, 24),
       // TODO(bbudge): Verify extra data isn't needed.

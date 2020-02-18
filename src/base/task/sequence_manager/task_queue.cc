@@ -12,6 +12,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -35,11 +36,15 @@ class NullTaskRunner final : public SingleThreadTaskRunner {
     return false;
   }
 
-  bool RunsTasksInCurrentSequence() const override { return false; }
+  bool RunsTasksInCurrentSequence() const override {
+    return thread_checker_.CalledOnValidThread();
+  }
 
  private:
   // Ref-counted
   ~NullTaskRunner() override = default;
+
+  ThreadCheckerImpl thread_checker_;
 };
 
 // TODO(kraynov): Move NullTaskRunner from //base/test to //base.
@@ -136,7 +141,7 @@ void TaskQueue::ShutdownTaskQueueGracefully() {
 
   // If we've not been unregistered then this must occur on the main thread.
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
+  impl_->SetObserver(nullptr);
   impl_->sequence_manager()->ShutdownTaskQueueGracefully(TakeTaskQueueImpl());
 }
 
@@ -315,6 +320,13 @@ bool TaskQueue::BlockedByFence() const {
   return impl_->BlockedByFence();
 }
 
+EnqueueOrder TaskQueue::GetLastUnblockEnqueueOrder() const {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (!impl_)
+    return EnqueueOrder();
+  return impl_->GetLastUnblockEnqueueOrder();
+}
+
 const char* TaskQueue::GetName() const {
   return name_;
 }
@@ -323,15 +335,14 @@ void TaskQueue::SetObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;
-  if (observer) {
-    // Observer is guaranteed to outlive TaskQueue and TaskQueueImpl lifecycle
-    // is controlled by |this|.
-    impl_->SetOnNextWakeUpChangedCallback(
-        BindRepeating(&TaskQueue::Observer::OnQueueNextWakeUpChanged,
-                      Unretained(observer), Unretained(this)));
-  } else {
-    impl_->SetOnNextWakeUpChangedCallback(RepeatingCallback<void(TimeTicks)>());
-  }
+
+  // Observer is guaranteed to outlive TaskQueue and TaskQueueImpl lifecycle is
+  // controlled by |this|.
+  impl_->SetObserver(observer);
+}
+
+void TaskQueue::SetShouldReportPostedTasksWhenDisabled(bool should_report) {
+  impl_->SetShouldReportPostedTasksWhenDisabled(should_report);
 }
 
 bool TaskQueue::IsOnMainThread() const {

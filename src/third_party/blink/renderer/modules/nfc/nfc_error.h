@@ -6,13 +6,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_ERROR_H_
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
 class DOMException;
 class ScriptPromiseResolver;
 
+// TODO(leonhsl): Remove this class and create a util function
+// NFCErrorTypeToDOMException() to do what Take() does now, because we do not
+// use CallbackPromiseAdapter across nfc code.
 class NFCError {
   STATIC_ONLY(NFCError);
 

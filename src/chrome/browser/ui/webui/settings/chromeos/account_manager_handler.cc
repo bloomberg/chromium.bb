@@ -6,10 +6,13 @@
 
 #include <utility>
 
+#include "ash/public/cpp/toast_data.h"
+#include "ash/public/cpp/toast_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -18,10 +21,13 @@
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_dialog.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "components/user_manager/user.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -33,6 +39,9 @@ namespace settings {
 namespace {
 
 constexpr char kFamilyLink[] = "Family Link";
+constexpr int kToastDurationMs = 2500;
+constexpr char kAccountRemovedToastId[] =
+    "settings_account_manager_account_removed";
 
 std::string GetEnterpriseDomainFromUsername(const std::string& username) {
   size_t email_separator_pos = username.find('@');
@@ -79,11 +88,16 @@ bool IsSameAccount(const AccountManager::AccountKey& account_key,
   }
 }
 
+void ShowToast(const std::string& id, const base::string16& message) {
+  ash::ToastManager::Get()->Show(ash::ToastData(
+      id, message, kToastDurationMs, /*dismiss_text=*/base::nullopt));
+}
+
 }  // namespace
 
 AccountManagerUIHandler::AccountManagerUIHandler(
     AccountManager* account_manager,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : account_manager_(account_manager),
       identity_manager_(identity_manager),
       account_manager_observer_(this),
@@ -126,16 +140,22 @@ void AccountManagerUIHandler::RegisterMessages() {
 void AccountManagerUIHandler::HandleGetAccounts(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK(!args->GetList().empty());
-  base::Value callback_id = args->GetList()[0].Clone();
+  const auto& args_list = args->GetList();
+  CHECK_EQ(args_list.size(), 2u);
+  CHECK(args_list[0].is_string());
+  CHECK(args_list[1].is_bool());
 
-  account_manager_->GetAccounts(
-      base::BindOnce(&AccountManagerUIHandler::OnGetAccounts,
-                     weak_factory_.GetWeakPtr(), std::move(callback_id)));
+  base::Value callback_id = args_list[0].Clone();
+  bool include_images = args_list[1].GetBool();
+
+  account_manager_->GetAccounts(base::BindOnce(
+      &AccountManagerUIHandler::OnGetAccounts, weak_factory_.GetWeakPtr(),
+      std::move(callback_id), include_images));
 }
 
 void AccountManagerUIHandler::OnGetAccounts(
     base::Value callback_id,
+    bool include_images,
     const std::vector<AccountManager::Account>& stored_accounts) {
   base::ListValue accounts;
 
@@ -169,17 +189,20 @@ void AccountManagerUIHandler::OnGetAccounts(
             maybe_account_info->account_id));
     account.SetString("fullName", maybe_account_info->full_name);
     account.SetString("email", stored_account.raw_email);
-    if (!maybe_account_info->account_image.IsEmpty()) {
-      account.SetString("pic",
-                        webui::GetBitmapDataUrl(
-                            maybe_account_info->account_image.AsBitmap()));
-    } else {
-      gfx::ImageSkia default_icon =
-          *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_LOGIN_DEFAULT_USER);
-      account.SetString("pic",
-                        webui::GetBitmapDataUrl(
-                            default_icon.GetRepresentation(1.0f).GetBitmap()));
+    // Images can be large, so only send them if requested.
+    if (include_images) {
+      if (!maybe_account_info->account_image.IsEmpty()) {
+        account.SetString("pic",
+                          webui::GetBitmapDataUrl(
+                              maybe_account_info->account_image.AsBitmap()));
+      } else {
+        gfx::ImageSkia default_icon =
+            *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                IDR_LOGIN_DEFAULT_USER);
+        account.SetString(
+            "pic", webui::GetBitmapDataUrl(
+                       default_icon.GetRepresentation(1.0f).GetBitmap()));
+      }
     }
     account.SetBoolean("unmigrated",
                        account_manager_->HasDummyGaiaToken(account_key));
@@ -258,6 +281,16 @@ void AccountManagerUIHandler::HandleRemoveAccount(const base::ListValue* args) {
   }
 
   account_manager_->RemoveAccount(account_key);
+
+  // Show toast with removal message.
+  const base::Value* email_value = dictionary->FindKey("email");
+  const std::string email = email_value->GetString();
+  DCHECK(!email.empty());
+
+  ShowToast(kAccountRemovedToastId,
+            l10n_util::GetStringFUTF16(
+                IDS_SETTINGS_ACCOUNT_MANAGER_ACCOUNT_REMOVED_MESSAGE,
+                base::UTF8ToUTF16(email)));
 }
 
 void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
@@ -289,11 +322,11 @@ void AccountManagerUIHandler::OnAccountRemoved(
   RefreshUI();
 }
 
-// |identity::IdentityManager::Observer| overrides. For newly added accounts,
-// |identity::IdentityManager| may take some time to fetch user's full name and
+// |signin::IdentityManager::Observer| overrides. For newly added accounts,
+// |signin::IdentityManager| may take some time to fetch user's full name and
 // account image. Whenever that is completed, we may need to update the UI with
 // this new set of information. Note that we may be listening to
-// |identity::IdentityManager| but we still consider |AccountManager| to be the
+// |signin::IdentityManager| but we still consider |AccountManager| to be the
 // source of truth for account list.
 void AccountManagerUIHandler::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {

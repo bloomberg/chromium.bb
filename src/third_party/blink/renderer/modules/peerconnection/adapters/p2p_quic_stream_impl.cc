@@ -21,11 +21,11 @@ P2PQuicStreamImpl::P2PQuicStreamImpl(quic::QuicStreamId id,
   DCHECK_GT(write_buffer_size_, 0u);
 }
 
-P2PQuicStreamImpl::P2PQuicStreamImpl(quic::PendingStream pending,
+P2PQuicStreamImpl::P2PQuicStreamImpl(quic::PendingStream* pending,
                                      quic::QuicSession* session,
                                      uint32_t delegate_read_buffer_size,
                                      uint32_t write_buffer_size)
-    : quic::QuicStream(std::move(pending),
+    : quic::QuicStream(pending,
                        quic::BIDIRECTIONAL,
                        /*is_static=*/false),
       delegate_read_buffer_size_(delegate_read_buffer_size),

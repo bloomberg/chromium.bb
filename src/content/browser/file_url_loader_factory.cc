@@ -33,8 +33,9 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/file_data_source.h"
+#include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/directory_lister.h"
 #include "net/base/directory_listing.h"
 #include "net/base/filename_util.h"
@@ -107,8 +108,7 @@ GURL AppendUrlSeparator(const GURL& url) {
 // NetworkService is disabled. If NetworkService is enabled, callers can access
 // the lists directly on the main thread.
 bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
     const url::Origin origin,
     const GURL url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -118,20 +118,39 @@ bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
          network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
-base::File::Error ToFileError(int net_error) {
+net::Error ConvertMojoResultToNetError(MojoResult result) {
+  switch (result) {
+    case MOJO_RESULT_OK:
+      return net::OK;
+    case MOJO_RESULT_NOT_FOUND:
+      return net::ERR_FILE_NOT_FOUND;
+    case MOJO_RESULT_PERMISSION_DENIED:
+      return net::ERR_ACCESS_DENIED;
+    case MOJO_RESULT_RESOURCE_EXHAUSTED:
+      return net::ERR_INSUFFICIENT_RESOURCES;
+    case MOJO_RESULT_ABORTED:
+      return net::ERR_ABORTED;
+    default:
+      return net::ERR_FAILED;
+  }
+}
+
+MojoResult ConvertNetErrorToMojoResult(net::Error net_error) {
   // Note: For now, only return specific errors that our obervers care about.
   switch (net_error) {
     case net::OK:
-      return base::File::FILE_OK;
+      return MOJO_RESULT_OK;
     case net::ERR_FILE_NOT_FOUND:
-      return base::File::FILE_ERROR_NOT_FOUND;
+      return MOJO_RESULT_NOT_FOUND;
     case net::ERR_ACCESS_DENIED:
-      return base::File::FILE_ERROR_ACCESS_DENIED;
+      return MOJO_RESULT_PERMISSION_DENIED;
+    case net::ERR_INSUFFICIENT_RESOURCES:
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
     case net::ERR_ABORTED:
     case net::ERR_CONNECTION_ABORTED:
-      return base::File::FILE_ERROR_ABORT;
+      return MOJO_RESULT_ABORTED;
     default:
-      return base::File::FILE_ERROR_FAILED;
+      return MOJO_RESULT_UNKNOWN;
   }
 }
 
@@ -217,7 +236,7 @@ class FileURLDirectoryLoader
     lister_ = std::make_unique<net::DirectoryLister>(path_, this);
     lister_->Start();
 
-    data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
+    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle));
   }
 
@@ -283,11 +302,12 @@ class FileURLDirectoryLoader
       return;
 
     transfer_in_progress_ = true;
-    data_producer_->Write(pending_data_,
-                          mojo::StringDataPipeProducer::AsyncWritingMode::
-                              STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION,
-                          base::BindOnce(&FileURLDirectoryLoader::OnDataWritten,
-                                         base::Unretained(this)));
+    data_producer_->Write(
+        std::make_unique<mojo::StringDataSource>(
+            pending_data_, mojo::StringDataSource::AsyncWritingMode::
+                               STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
+        base::BindOnce(&FileURLDirectoryLoader::OnDataWritten,
+                       base::Unretained(this)));
     // The producer above will have already copied any parts of |pending_data_|
     // that couldn't be written immediately, so we can wipe it out here to begin
     // accumulating more data.
@@ -336,7 +356,7 @@ class FileURLDirectoryLoader
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
 
-  std::unique_ptr<mojo::StringDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   std::string pending_data_;
   bool transfer_in_progress_ = false;
 
@@ -543,8 +563,11 @@ class FileURLLoader : public network::mojom::URLLoader {
     base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (!file.IsValid()) {
       if (observer) {
-        observer->OnBytesRead(nullptr, 0u, file.error_details());
-        observer->OnDoneReading();
+        mojo::DataPipeProducer::DataSource::ReadResult result;
+        result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
+            file.error_details());
+        observer->OnRead(base::span<char>(), &result);
+        observer->OnDone();
       }
       net::Error net_error = net::FileErrorToNetError(file.error_details());
       client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
@@ -556,23 +579,27 @@ class FileURLLoader : public network::mojom::URLLoader {
     int initial_read_result =
         file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
     if (initial_read_result < 0) {
-      base::File::Error read_error = base::File::GetLastFileError();
-      DCHECK_NE(base::File::FILE_OK, read_error);
+      mojo::DataPipeProducer::DataSource::ReadResult result;
+      result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
+          base::File::GetLastFileError());
+      DCHECK_NE(MOJO_RESULT_OK, result.result);
       if (observer) {
         // This can happen when the file is unreadable (which can happen during
         // corruption). We need to be sure to inform
         // the observer that we've finished reading so that it can proceed.
-        observer->OnBytesRead(nullptr, 0u, read_error);
-        observer->OnDoneReading();
+        observer->OnRead(base::span<char>(), &result);
+        observer->OnDone();
       }
-      net::Error net_error = net::FileErrorToNetError(read_error);
+      net::Error net_error = ConvertMojoResultToNetError(result.result);
       client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
       client_.reset();
       MaybeDeleteSelf();
       return;
     } else if (observer) {
-      observer->OnBytesRead(initial_read_buffer, initial_read_result,
-                            base::File::FILE_OK);
+      base::span<char> buffer(initial_read_buffer, net::kMaxBytesToSniff);
+      mojo::DataPipeProducer::DataSource::ReadResult result;
+      result.bytes_read = initial_read_result;
+      observer->OnRead(buffer, &result);
     }
     size_t initial_read_size = static_cast<size_t>(initial_read_result);
 
@@ -668,12 +695,14 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnSeekComplete(new_position);
 
-    data_producer_ = std::make_unique<mojo::FileDataPipeProducer>(
-        std::move(pipe.producer_handle), std::move(observer));
-    data_producer_->WriteFromFile(
-        std::move(file), total_bytes_to_send,
-        base::BindOnce(&FileURLLoader::OnFileWritten, base::Unretained(this),
-                       nullptr));
+    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
+        std::move(pipe.producer_handle));
+    data_producer_->Write(std::make_unique<mojo::FilteredDataSource>(
+                              std::make_unique<mojo::FileDataSource>(
+                                  std::move(file), total_bytes_to_send),
+                              std::move(observer)),
+                          base::BindOnce(&FileURLLoader::OnFileWritten,
+                                         base::Unretained(this), nullptr));
   }
 
   void OnConnectionError() {
@@ -686,9 +715,12 @@ class FileURLLoader : public network::mojom::URLLoader {
     client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
     client_.reset();
     if (observer) {
-      if (net_error != net::OK)
-        observer->OnBytesRead(nullptr, 0u, ToFileError(net_error));
-      observer->OnDoneReading();
+      if (net_error != net::OK) {
+        mojo::DataPipeProducer::DataSource::ReadResult result;
+        result.result = ConvertNetErrorToMojoResult(net_error);
+        observer->OnRead(base::span<char>(), &result);
+      }
+      observer->OnDone();
     }
     MaybeDeleteSelf();
   }
@@ -704,7 +736,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     // be notified that there will be no more data to read from now.
     data_producer_.reset();
     if (observer)
-      observer->OnDoneReading();
+      observer->OnDone();
 
     if (result == MOJO_RESULT_OK) {
       network::URLLoaderCompletionStatus status(net::OK);
@@ -719,7 +751,7 @@ class FileURLLoader : public network::mojom::URLLoader {
     MaybeDeleteSelf();
   }
 
-  std::unique_ptr<mojo::FileDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
   std::unique_ptr<RedirectData> redirect_data_;
@@ -738,13 +770,14 @@ class FileURLLoader : public network::mojom::URLLoader {
 
 FileURLLoaderFactory::FileURLLoaderFactory(
     const base::FilePath& profile_path,
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
+    base::TaskPriority task_priority)
     : profile_path_(profile_path),
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
-      task_runner_(std::move(task_runner)) {}
+      task_runner_(base::CreateSequencedTaskRunner(
+          {base::MayBlock(), task_priority,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
@@ -758,10 +791,8 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool cors_flag =
-      request.fetch_request_mode !=
-          network::mojom::FetchRequestMode::kNavigate &&
-      request.fetch_request_mode != network::mojom::FetchRequestMode::kNoCors;
+  bool cors_flag = request.mode != network::mojom::RequestMode::kNavigate &&
+                   request.mode != network::mojom::RequestMode::kNoCors;
 
   // CORS mode requires a valid |request_inisiator|. Check this condition first
   // so that kDisableWebSecurity should not hide program errors in tests.
@@ -895,15 +926,12 @@ void CreateFileURLLoader(
 
 std::unique_ptr<network::mojom::URLLoaderFactory> CreateFileURLLoaderFactory(
     const base::FilePath& profile_path,
-    scoped_refptr<const SharedCorsOriginAccessList>
-        shared_cors_origin_access_list) {
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list) {
   // TODO(crbug.com/924416): Re-evaluate TaskPriority: Should the caller provide
   // it?
   return std::make_unique<content::FileURLLoaderFactory>(
       profile_path, shared_cors_origin_access_list,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+      base::TaskPriority::USER_VISIBLE);
 }
 
 }  // namespace content

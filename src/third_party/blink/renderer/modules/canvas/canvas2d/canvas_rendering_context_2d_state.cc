@@ -337,7 +337,7 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
     filter_style->SetFont(font_for_filter_);
 
     StyleResolverState resolver_state(
-        style_resolution_host->GetDocument(), style_resolution_host,
+        style_resolution_host->GetDocument(), *style_resolution_host,
         nullptr /* pseudo_element */, filter_style.get(), filter_style.get());
     resolver_state.SetStyle(filter_style);
 
@@ -610,6 +610,17 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
   flags->setLooper(sk_ref_sp(ShadowAndForegroundDrawLooper()));
   flags->setImageFilter(nullptr);
   return flags;
+}
+
+bool CanvasRenderingContext2DState::HasPattern() const {
+  return FillStyle() && FillStyle()->GetCanvasPattern() &&
+         FillStyle()->GetCanvasPattern()->GetPattern();
+}
+
+// Only to be used if the CanvasRenderingContext2dState has Pattern
+bool CanvasRenderingContext2DState::PatternIsAccelerated() const {
+  DCHECK(HasPattern());
+  return FillStyle()->GetCanvasPattern()->GetPattern()->IsTextureBacked();
 }
 
 }  // namespace blink

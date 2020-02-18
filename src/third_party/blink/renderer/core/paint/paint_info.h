@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 #include <limits>
@@ -136,6 +136,12 @@ struct CORE_EXPORT PaintInfo {
   PaintLayerFlags PaintFlags() const { return paint_flags_; }
 
   const CullRect& GetCullRect() const { return cull_rect_; }
+
+  bool IntersectsCullRect(
+      const PhysicalRect& rect,
+      const PhysicalOffset& offset = PhysicalOffset()) const {
+    return cull_rect_.Intersects(rect.ToLayoutRect(), offset.ToLayoutPoint());
+  }
 
   void ApplyInfiniteCullRect() { cull_rect_ = CullRect::Infinite(); }
 

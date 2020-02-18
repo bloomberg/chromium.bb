@@ -156,8 +156,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
  public:
   MockClientCertURLRequestJob(net::URLRequest* request,
                               net::NetworkDelegate* network_delegate)
-      : net::URLRequestTestJob(request, network_delegate),
-        weak_factory_(this) {}
+      : net::URLRequestTestJob(request, network_delegate) {}
 
   static std::vector<std::string> test_authorities() {
     return std::vector<std::string>(1, "dummy");
@@ -165,8 +164,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
 
   // net::URLRequestTestJob:
   void Start() override {
-    scoped_refptr<net::SSLCertRequestInfo> cert_request_info(
-        new net::SSLCertRequestInfo);
+    auto cert_request_info = base::MakeRefCounted<net::SSLCertRequestInfo>();
     cert_request_info->cert_authorities = test_authorities();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -184,7 +182,7 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
  private:
   ~MockClientCertURLRequestJob() override {}
 
-  base::WeakPtrFactory<MockClientCertURLRequestJob> weak_factory_;
+  base::WeakPtrFactory<MockClientCertURLRequestJob> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockClientCertURLRequestJob);
 };
@@ -276,7 +274,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -287,6 +285,7 @@ class SelectCertificateBrowserClient : public TestContentBrowserClient {
     passed_identities_ = std::move(client_certs);
     delegate_ = std::move(delegate);
     select_certificate_run_loop_.Quit();
+    return base::OnceClosure();
   }
 
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://drafts.csswg.org/css-fonts-4/#om-fontfeaturevalues
+
 [
     RuntimeEnabled=CSSFontFeatureValues
 ] interface CSSFontFeatureValuesRule : CSSRule {

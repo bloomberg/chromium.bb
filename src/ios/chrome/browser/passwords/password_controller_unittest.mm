@@ -18,8 +18,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/logging/log_buffer_submitter.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -40,8 +41,8 @@
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -57,6 +58,7 @@
 #error "This file requires ARC support."
 #endif
 
+using autofill::FormData;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using password_manager::PasswordStoreConsumer;
@@ -87,7 +89,7 @@ class MockPasswordManagerClient
 
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(GetLogManager, password_manager::LogManager*(void));
+  MOCK_CONST_METHOD0(GetLogManager, autofill::LogManager*(void));
   MOCK_CONST_METHOD0(GetPasswordSyncState, password_manager::SyncState());
   MOCK_CONST_METHOD0(IsIncognito, bool());
 
@@ -102,14 +104,18 @@ class MockPasswordManagerClient
   password_manager::PasswordStore* const store_;
 };
 
-class MockLogManager : public password_manager::LogManager {
+class MockLogManager : public autofill::LogManager {
  public:
-  MOCK_CONST_METHOD1(LogSavePasswordProgress, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogTextMessage, void(const std::string& text));
+  MOCK_CONST_METHOD1(LogEntry, void(base::Value&&));
   MOCK_CONST_METHOD0(IsLoggingActive, bool(void));
 
   // Methods not important for testing.
   void OnLogRouterAvailabilityChanged(bool router_can_be_used) override {}
   void SetSuspended(bool suspended) override {}
+  autofill::LogBufferSubmitter Log() override {
+    return autofill::LogBufferSubmitter(nullptr, false);
+  }
 };
 
 // Creates PasswordController with the given |web_state| and a mock client
@@ -229,6 +235,7 @@ class PasswordControllerTest : public ChromeWebTest {
                  providers:@[ [passwordController_ suggestionProvider] ]];
       accessoryMediator_ =
           [[FormInputAccessoryMediator alloc] initWithConsumer:nil
+                                                      delegate:nil
                                                   webStateList:NULL
                                            personalDataManager:NULL
                                                  passwordStore:NULL];
@@ -313,86 +320,52 @@ class PasswordControllerTest : public ChromeWebTest {
 struct FindPasswordFormTestData {
   NSString* html_string;
   const bool expected_form_found;
-  const char* const expected_username_element;
-  const char* const expected_password_element;
+  // Expected number of fields in found form.
+  const size_t expected_number_of_fields;
+  // Expected form name.
+  const char* expected_form_name;
 };
 
 // TODO(crbug.com/403705) This test is flaky.
-// Check that HTML forms are converted correctly into PasswordForms.
+// Check that HTML forms are converted correctly into FormDatas.
 TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
   // clang-format off
   FindPasswordFormTestData test_data[] = {
-    // Normal form: a username and a password element.
+     // Normal form: a username and a password element.
     {
-      @"<form>"
-          "<input type='text' name='user0'>"
-          "<input type='password' name='pass0'>"
-          "</form>",
-      true, "user0", "pass0"
+      @"<form name='form1'>"
+      "<input type='text' name='user0'>"
+      "<input type='password' name='pass0'>"
+      "</form>",
+      true, 2, "form1"
     },
     // User name is captured as an email address (HTML5).
     {
-      @"<form>"
-          "<input type='email' name='email1'>"
-          "<input type='password' name='pass1'>"
-          "</form>",
-      true, "email1", "pass1"
+      @"<form name='form1'>"
+      "<input type='email' name='email1'>"
+      "<input type='password' name='pass1'>"
+      "</form>",
+      true, 2, "form1"
     },
-    // No username element.
+    // No form found.
     {
-      @"<form>"
-          "<input type='password' name='user2'>"
-          "<input type='password' name='pass2'>"
-          "</form>",
-      true, "", "user2"
-    },
-    // No username element before password.
-    {
-      @"<form>"
-          "<input type='password' name='pass3'>"
-          "<input type='text' name='user3'>"
-          "</form>",
-      true, "", "pass3"
+      @"<div>",
+      false, 0, nullptr
     },
     // Disabled username element.
     {
-      @"<form>"
-          "<input type='text' name='user4' disabled='disabled'>"
-          "<input type='password' name='pass4'>"
-          "</form>",
-      true, "user4", "pass4"
-    },
-    // Username element has autocomplete='off'.
-    {
-      @"<form>"
-          "<input type='text' name='user5' AUTOCOMPLETE='off'>"
-          "<input type='password' name='pass5'>"
-          "</form>",
-      true, "user5", "pass5"
+      @"<form name='form1'>"
+      "<input type='text' name='user2' disabled='disabled'>"
+      "<input type='password' name='pass2'>"
+      "</form>",
+      true, 2, "form1"
     },
     // No password element.
     {
-      @"<form>"
-          "<input type='text' name='user6'>"
-          "<input type='text' name='pass6'>"
-          "</form>",
-      false, nullptr, nullptr
-    },
-    // Password element has autocomplete='off'.
-    {
-      @"<form>"
-          "<input type='text' name='user7'>"
-          "<input type='password' name='pass7' AUTOCOMPLETE='OFF'>"
-          "</form>",
-      true, "user7", "pass7"
-    },
-    // Form element has autocomplete='off'.
-    {
-      @"<form autocomplete='off'>"
-          "<input type='text' name='user8'>"
-          "<input type='password' name='pass8'>"
-          "</form>",
-      true, "user8", "pass8"
+      @"<form name='form1'>"
+      "<input type='text' name='user3'>"
+      "</form>",
+      false, 0, nullptr
     },
   };
   // clang-format on
@@ -400,24 +373,21 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
   for (const FindPasswordFormTestData& data : test_data) {
     SCOPED_TRACE(testing::Message() << "for html_string=" << data.html_string);
     LoadHtml(data.html_string);
-    __block std::vector<PasswordForm> forms;
+    __block std::vector<FormData> forms;
     __block BOOL block_was_called = NO;
-    [passwordController_.formHelper
-        findPasswordFormsWithCompletionHandler:^(
-            const std::vector<PasswordForm>& result) {
-          block_was_called = YES;
-          forms = result;
-        }];
+    [passwordController_.formHelper findPasswordFormsWithCompletionHandler:^(
+                                        const std::vector<FormData>& result) {
+      block_was_called = YES;
+      forms = result;
+    }];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
         }));
     if (data.expected_form_found) {
       ASSERT_EQ(1U, forms.size());
-      EXPECT_EQ(ASCIIToUTF16(data.expected_username_element),
-                forms[0].username_element);
-      EXPECT_EQ(ASCIIToUTF16(data.expected_password_element),
-                forms[0].password_element);
+      EXPECT_EQ(data.expected_number_of_fields, forms[0].fields.size());
+      EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(forms[0].name));
     } else {
       ASSERT_TRUE(forms.empty());
     }
@@ -425,11 +395,16 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
 }
 
 struct GetSubmittedPasswordFormTestData {
+  // HTML String of the form.
   NSString* html_string;
+  // Javascript to submit the form.
   NSString* java_script;
-  const int number_of_forms_to_submit;
-  const bool expected_form_found;
-  const char* expected_username_element;
+  // 0 based index of the form on the page to submit.
+  const int index_of_the_form_to_submit;
+  // Expected number of fields in found form.
+  const size_t expected_number_of_fields;
+  // Expected form name.
+  const char* expected_form_name;
 };
 
 // TODO(crbug.com/403705) This test is flaky.
@@ -450,7 +425,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
           "<input type='submit' id='s2'>"
           "</form>",
       @"document.getElementById('s2').click()",
-      1, true, "user2"
+      1, 2, "gChrome~form~1"
     },
     // Two forms with explicit names.
     {
@@ -464,7 +439,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
           "<input type='password' name='pass2' value='pw2'>"
           "</form>",
       @"document.getElementById('s1').click()",
-      0, true, "user1"
+      0, 2, "test2a"
     },
     // No password forms.
     {
@@ -474,7 +449,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
           "<input type='submit' id='s1'>"
           "</form>",
       @"document.getElementById('s1').click()",
-      0, false, nullptr
+      0, 2, "gChrome~form~0"
     },
     // Form with quotes in the form and field names.
     {
@@ -483,29 +458,27 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
           "<input type='password' id='s1' name=\"pass1'\" value='pw2'>"
           "</form>",
       @"document.getElementById('s1').click()",
-      0, true, "user1'"
+      0, 2, "foo'"
     },
   };
   // clang-format on
 
   for (const GetSubmittedPasswordFormTestData& data : test_data) {
-    SCOPED_TRACE(testing::Message() << "for html_string=" << data.html_string
+    SCOPED_TRACE(testing::Message() << "for html_string="
+                                    << base::SysNSStringToUTF8(data.html_string)
                                     << " and java_script=" << data.java_script
-                                    << " and number_of_forms_to_submit="
-                                    << data.number_of_forms_to_submit);
+                                    << " and index_of_the_form_to_submit="
+                                    << data.index_of_the_form_to_submit);
     LoadHtml(data.html_string);
     ExecuteJavaScript(data.java_script);
     __block BOOL block_was_called = NO;
-    id completion_handler = ^(BOOL found, const PasswordForm& form) {
+    id completion_handler = ^(BOOL found, const FormData& form) {
       block_was_called = YES;
-      ASSERT_EQ(data.expected_form_found, found);
-      if (data.expected_form_found) {
-        EXPECT_EQ(ASCIIToUTF16(data.expected_username_element),
-                  form.username_element);
-      }
+      EXPECT_EQ(data.expected_number_of_fields, form.fields.size());
+      EXPECT_EQ(data.expected_form_name, base::UTF16ToUTF8(form.name));
     };
     [passwordController_.formHelper
-        extractSubmittedPasswordForm:FormName(data.number_of_forms_to_submit)
+        extractSubmittedPasswordForm:FormName(data.index_of_the_form_to_submit)
                    completionHandler:completion_handler];
     EXPECT_TRUE(
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
@@ -1177,12 +1150,12 @@ TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   // code better to allow proper unit-testing.
   MockLogManager log_manager;
   EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      log_manager,
+      LogTextMessage("Message:  PasswordManager::OnPasswordFormsRendered \n"));
   EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(
-                  "Message: \"PasswordManager::OnPasswordFormsRendered\"\n"));
-  EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(testing::Ne(
-                  "Message: \"PasswordManager::OnPasswordFormsRendered\"\n")))
+              LogTextMessage(testing::Ne(
+                  "Message:  PasswordManager::OnPasswordFormsRendered \n")))
       .Times(testing::AnyNumber());
   EXPECT_CALL(*weak_client, GetLogManager())
       .WillRepeatedly(Return(&log_manager));
@@ -1260,10 +1233,9 @@ TEST_F(PasswordControllerTest, TouchendAsSubmissionIndicator) {
     // code better to allow proper unit-testing.
     EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
     const char kExpectedMessage[] =
-        "Message: \"PasswordManager::ProvisionallySaveForm\"\n";
-    EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage));
-    EXPECT_CALL(log_manager,
-                LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+        "Message:  PasswordManager::ProvisionallySaveForm \n";
+    EXPECT_CALL(log_manager, LogTextMessage(kExpectedMessage));
+    EXPECT_CALL(log_manager, LogTextMessage(testing::Ne(kExpectedMessage)))
         .Times(testing::AnyNumber());
 
     ExecuteJavaScript(
@@ -1286,7 +1258,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
       .WillRepeatedly(Return(&log_manager));
   EXPECT_CALL(log_manager, IsLoggingActive()).WillRepeatedly(Return(true));
   const char kExpectedMessage[] =
-      "Message: \"PasswordManager::OnSameDocumentNavigation\"\n";
+      "Message:  PasswordManager::OnSameDocumentNavigation \n";
 
   // The standard pattern is to use a __block variable WaitUntilCondition but
   // __block variable can't be captured in C++ lambda, so as workaround it's
@@ -1295,14 +1267,13 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
   bool expected_message_logged = false;
   bool* p_expected_message_logged = &expected_message_logged;
 
-  EXPECT_CALL(log_manager, LogSavePasswordProgress(kExpectedMessage))
+  EXPECT_CALL(log_manager, LogTextMessage(kExpectedMessage))
       .WillOnce(testing::Invoke(
           [&expected_message_logged](const std::string& message) {
             expected_message_logged = true;
           }));
 
-  EXPECT_CALL(log_manager,
-              LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
+  EXPECT_CALL(log_manager, LogTextMessage(testing::Ne(kExpectedMessage)))
       .Times(testing::AnyNumber());
 
   LoadHtml(@"<iframe id='frame1' name='frame1'></iframe>");
@@ -1540,22 +1511,22 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
     ChromeWebTest::SetUp();
-    
+
     password_manager::NewPasswordFormManager::
     set_wait_for_server_predictions_for_filling(false);
-    
+
     auto client =
     std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());
     weak_client_ = client.get();
-    
+
     EXPECT_CALL(*weak_client_, GetPasswordSyncState())
     .WillRepeatedly(
                     Return(password_manager::SyncState::SYNCING_NORMAL_ENCRYPTION));
     EXPECT_CALL(*weak_client_, IsIncognito()).WillRepeatedly(Return(true));
-    
+
     passwordController_ =
     [[PasswordController alloc] initWithWebState:web_state()
                                           client:std::move(client)];
-    
+
     EXPECT_FALSE([passwordController_ passwordGenerationHelper]);
 }

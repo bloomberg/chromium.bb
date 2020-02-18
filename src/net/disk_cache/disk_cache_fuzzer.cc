@@ -82,18 +82,12 @@ struct InitGlobals {
 
     print_comms_ = ::getenv("LPM_DUMP_NATIVE_INPUT");
 
-    // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that every
-    // other thread's time is driven from this thread's MOCK_TIME.
-    scoped_task_environment_ = std::make_unique<
-        base::test::ScopedTaskEnvironment>(
-        base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME,
-        base::test::ScopedTaskEnvironment::NowSource::MAIN_THREAD_MOCK_TIME);
-
-    // Work around for a DCHECK issue: DCHECK(!TimeTicks::Now().is_null())
-    // Since MOCK_TIME starts at 0 the starting time is considered null.
-    // So make it non-zero.
-    scoped_task_environment_->FastForwardBy(
-        base::TimeDelta::FromMilliseconds(1));
+    // Mark this thread as an IO_THREAD with MOCK_TIME, and ensure that Now()
+    // is driven from the same mock clock.
+    scoped_task_environment_ =
+        std::make_unique<base::test::ScopedTaskEnvironment>(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW);
 
     // Disable noisy logging as per "libFuzzer in Chrome" documentation:
     // testing/libfuzzer/getting_started.md#Disable-noisy-error-message-logging.
@@ -270,9 +264,13 @@ net::CacheType GetCacheTypeAndPrint(
       MAYBE_PRINT << "Cache type = PNACL_CACHE." << std::endl;
       return net::CacheType::PNACL_CACHE;
       break;
-    case disk_cache_fuzzer::FuzzCommands::GENERATED_CODE_CACHE:
-      MAYBE_PRINT << "Cache type = GENERATED_CODE_CACHE." << std::endl;
-      return net::CacheType::GENERATED_CODE_CACHE;
+    case disk_cache_fuzzer::FuzzCommands::GENERATED_BYTE_CODE_CACHE:
+      MAYBE_PRINT << "Cache type = GENERATED_BYTE_CODE_CACHE." << std::endl;
+      return net::CacheType::GENERATED_BYTE_CODE_CACHE;
+      break;
+    case disk_cache_fuzzer::FuzzCommands::GENERATED_NATIVE_CODE_CACHE:
+      MAYBE_PRINT << "Cache type = GENERATED_NATIVE_CODE_CACHE." << std::endl;
+      return net::CacheType::GENERATED_NATIVE_CODE_CACHE;
       break;
     case disk_cache_fuzzer::FuzzCommands::DISK_CACHE:
       MAYBE_PRINT << "Cache type = DISK_CACHE." << std::endl;

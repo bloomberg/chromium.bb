@@ -12,10 +12,10 @@
 #include "base/bind_helpers.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/signin/core/browser/account_consistency_method.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/browser/web_contents.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -70,7 +70,7 @@ class ProcessDiceHeaderDelegateImplTest
     show_error_called_ = true;
   }
 
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
 
   bool enable_sync_called_;
   bool show_error_called_;

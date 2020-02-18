@@ -31,6 +31,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_host_base.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/tiles/tiling_set_raster_queue_required.h"
@@ -80,7 +81,6 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
   LayerTreeSettings CreateSettings() override {
     LayerTreeSettings settings;
     settings.commit_to_active_tree = false;
-    settings.layer_transforms_should_scale_layer_contents = true;
     settings.create_low_res_tiling = true;
     return settings;
   }
@@ -721,8 +721,7 @@ TEST_F(PictureLayerImplTest, ScaledBoundsOverflowInt) {
       gfx::Rect(layer_bounds);
   viz::SharedQuadState state;
   active_layer()->PopulateScaledSharedQuadState(
-      &state, adjusted_scale, adjusted_scale,
-      active_layer()->contents_opaque());
+      &state, adjusted_scale, active_layer()->contents_opaque());
 }
 
 TEST_F(PictureLayerImplTest, PinchGestureTilings) {
@@ -1158,7 +1157,7 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Mask layers dont create low res since they always fit on one tile.
   std::unique_ptr<FakePictureLayerImpl> mask =
-      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
+      FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl()->pending_tree(), 3, pending_raster_source);
   mask->SetBounds(layer_bounds);
   mask->SetDrawsContent(true);
@@ -1191,7 +1190,7 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   std::unique_ptr<FakePictureLayerImpl> mask_ptr =
-      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
+      FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
@@ -1324,7 +1323,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   std::unique_ptr<FakePictureLayerImpl> mask_ptr =
-      FakePictureLayerImpl::CreateSingleTextureMaskWithRasterSource(
+      FakePictureLayerImpl::CreateMaskWithRasterSource(
           host_impl()->pending_tree(), 3, valid_raster_source);
   mask_ptr->SetBounds(layer_bounds);
   mask_ptr->SetDrawsContent(true);
@@ -3375,7 +3374,7 @@ TEST_F(PictureLayerImplTest, IgnoreOcclusionOnSolidColorMask) {
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
   SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
-                   Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+                   Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
 
@@ -4934,7 +4933,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
       FakeRasterSource::CreateFilledLCD(layer_bounds);
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
 
-  EXPECT_TRUE(pending_layer()->RasterSourceUsesLCDTextForTesting());
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
@@ -4942,7 +4941,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   pending_layer()->SetContentsOpaque(false);
   pending_layer()->UpdateCanUseLCDTextAfterCommit();
 
-  EXPECT_FALSE(pending_layer()->RasterSourceUsesLCDTextForTesting());
+  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   std::vector<Tile*> new_tiles =
       pending_layer()->HighResTiling()->AllTilesForTesting();
@@ -5536,5 +5535,88 @@ TEST_F(PictureLayerImplTest, AnimatedImages) {
   EXPECT_FALSE(active_layer()->ShouldAnimate(image2.stable_id()));
 }
 
+TEST_F(PictureLayerImplTest, PaintWorkletInputs) {
+  gfx::Size layer_bounds(1000, 1000);
+
+  // Set up a raster source with 2 PaintWorkletInputs.
+  auto recording_source = FakeRecordingSource::CreateRecordingSource(
+      gfx::Rect(layer_bounds), layer_bounds);
+  scoped_refptr<TestPaintWorkletInput> input1 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(100, 100));
+  PaintImage image1 = CreatePaintWorkletPaintImage(input1);
+  scoped_refptr<TestPaintWorkletInput> input2 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(50, 50));
+  PaintImage image2 = CreatePaintWorkletPaintImage(input2);
+  recording_source->add_draw_image(image1, gfx::Point(100, 100));
+  recording_source->add_draw_image(image2, gfx::Point(500, 500));
+  recording_source->Rerecord();
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource();
+
+  // All inputs should be registered on the pending layer.
+  SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMap().size(), 2u);
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input1));
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input2));
+
+  // Specify a record for one of the inputs.
+  sk_sp<PaintRecord> record1 = sk_make_sp<PaintOpBuffer>();
+  pending_layer()->SetPaintWorkletRecord(input1, record1);
+
+  // Now activate and make sure the active layer is registered as well, with the
+  // appropriate record.
+  ActivateTree();
+  EXPECT_EQ(active_layer()->GetPaintWorkletRecordMap().size(), 2u);
+  auto it = active_layer()->GetPaintWorkletRecordMap().find(input1);
+  ASSERT_NE(it, active_layer()->GetPaintWorkletRecordMap().end());
+  EXPECT_EQ(it->second, record1);
+  EXPECT_TRUE(active_layer()->GetPaintWorkletRecordMap().contains(input2));
+
+  // Committing new PaintWorkletInputs (in a new raster source) should replace
+  // the previous ones.
+  recording_source = FakeRecordingSource::CreateRecordingSource(
+      gfx::Rect(layer_bounds), layer_bounds);
+  scoped_refptr<TestPaintWorkletInput> input3 =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(12, 12));
+  PaintImage image3 = CreatePaintWorkletPaintImage(input3);
+  recording_source->add_draw_image(image3, gfx::Point(10, 10));
+  recording_source->Rerecord();
+  raster_source = recording_source->CreateRasterSource();
+
+  SetupPendingTree(raster_source, gfx::Size(), Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(pending_layer()->GetPaintWorkletRecordMap().size(), 1u);
+  EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input3));
+}
+
+TEST_F(PictureLayerImplTest, NoTilingsUsesScaleOne) {
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+
+  gfx::Size layer_bounds(1000, 10000);
+  scoped_refptr<FakeRasterSource> active_raster_source =
+      FakeRasterSource::CreateEmpty(layer_bounds);
+  SetupPendingTree(active_raster_source);
+  ActivateTree();
+
+  active_layer()->SetContentsOpaque(true);
+  active_layer()->draw_properties().visible_layer_rect =
+      gfx::Rect(0, 0, 1000, 1000);
+  active_layer()->UpdateTiles();
+
+  ASSERT_FALSE(active_layer()->HighResTiling());
+
+  AppendQuadsData data;
+  active_layer()->WillDraw(DRAW_MODE_HARDWARE, nullptr);
+  active_layer()->AppendQuads(render_pass.get(), &data);
+  active_layer()->DidDraw(nullptr);
+
+  // One checkerboard quad.
+  EXPECT_EQ(1u, render_pass->quad_list.size());
+
+  auto* shared_quad_state = render_pass->quad_list.begin()->shared_quad_state;
+  // We should use scale 1 here, so the layer rect should be full layer bounds
+  // and the transform should be identity.
+  EXPECT_RECT_EQ(gfx::Rect(1000, 10000), shared_quad_state->quad_layer_rect);
+  EXPECT_TRUE(shared_quad_state->quad_to_target_transform.IsIdentity());
+}
 }  // namespace
 }  // namespace cc

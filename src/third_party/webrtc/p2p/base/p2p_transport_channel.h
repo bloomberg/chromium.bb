@@ -135,6 +135,7 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
                 std::vector<CandidateStats>* candidate_stats_list) override;
   absl::optional<int> GetRttEstimate() override;
   const Connection* selected_connection() const override;
+  absl::optional<const CandidatePair> GetSelectedCandidatePair() const override;
 
   // TODO(honghaiz): Remove this method once the reference of it in
   // Chromoting is removed.
@@ -307,6 +308,8 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
                      const std::vector<PortInterface*>& ports);
   void OnCandidatesReady(PortAllocatorSession* session,
                          const std::vector<Candidate>& candidates);
+  void OnCandidateError(PortAllocatorSession* session,
+                        const IceCandidateErrorEvent& event);
   void OnCandidatesRemoved(PortAllocatorSession* session,
                            const std::vector<Candidate>& candidates);
   void OnCandidatesAllocationDone(PortAllocatorSession* session);
@@ -401,6 +404,15 @@ class RTC_EXPORT P2PTransportChannel : public IceTransportInternal {
   void SetWritable(bool writable);
   // Sets the receiving state, signaling if necessary.
   void SetReceiving(bool receiving);
+  // Clears the address and the related address fields of a local candidate to
+  // avoid IP leakage. This is applicable in several scenarios as commented in
+  // |PortAllocator::SanitizeCandidate|.
+  Candidate SanitizeLocalCandidate(const Candidate& c) const;
+  // Clears the address field of a remote candidate to avoid IP leakage. This is
+  // applicable in the following scenarios:
+  // 1. mDNS candidates are received.
+  // 2. Peer-reflexive remote candidates.
+  Candidate SanitizeRemoteCandidate(const Candidate& c) const;
 
   std::string transport_name_ RTC_GUARDED_BY(network_thread_);
   int component_ RTC_GUARDED_BY(network_thread_);

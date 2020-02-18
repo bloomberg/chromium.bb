@@ -22,7 +22,6 @@
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_result_promise_helper.h"
 #include "media/blink/cdm_session_adapter.h"
-#include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/cenc_utils.h"
 #include "media/cdm/json_web_key.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -30,6 +29,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 
 namespace media {
 
@@ -229,8 +229,7 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     : adapter_(adapter),
       has_close_been_called_(false),
       is_closed_(false),
-      is_persistent_session_(false),
-      weak_ptr_factory_(this) {}
+      is_persistent_session_(false) {}
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
@@ -266,7 +265,7 @@ blink::WebString WebContentDecryptionModuleSessionImpl::SessionId() const {
 }
 
 void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
-    blink::WebEncryptedMediaInitDataType init_data_type,
+    EmeInitDataType eme_init_data_type,
     const unsigned char* init_data,
     size_t init_data_length,
     blink::WebEncryptedMediaSessionType session_type,
@@ -280,7 +279,6 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
   //    implementation value does not support initDataType as an Initialization
   //    Data Type, return a promise rejected with a NotSupportedError.
   //    String comparison is case-sensitive.
-  EmeInitDataType eme_init_data_type = ConvertToEmeInitDataType(init_data_type);
   if (!IsSupportedKeySystemWithInitDataType(adapter_->GetKeySystem(),
                                             eme_init_data_type)) {
     std::string message =

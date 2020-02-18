@@ -88,6 +88,10 @@ cc_component("cc") {
     "layers/layer_position_constraint.h",
     "layers/layer_sticky_position_constraint.cc",
     "layers/layer_sticky_position_constraint.h",
+    "layers/mirror_layer.cc",
+    "layers/mirror_layer.h",
+    "layers/mirror_layer_impl.cc",
+    "layers/mirror_layer_impl.h",
     "layers/nine_patch_generator.cc",
     "layers/nine_patch_generator.h",
     "layers/nine_patch_layer.cc",
@@ -132,6 +136,8 @@ cc_component("cc") {
     "layers/texture_layer_client.h",
     "layers/texture_layer_impl.cc",
     "layers/texture_layer_impl.h",
+    "layers/tile_size_calculator.cc",
+    "layers/tile_size_calculator.h",
     "layers/touch_action_region.cc",
     "layers/touch_action_region.h",
     "layers/ui_resource_layer.cc",
@@ -234,8 +240,6 @@ cc_component("cc") {
     "tiles/image_decode_cache_utils.h",
     "tiles/mipmap_util.cc",
     "tiles/mipmap_util.h",
-    "tiles/paint_worklet_image_cache.cc",
-    "tiles/paint_worklet_image_cache.h",
     "tiles/picture_layer_tiling.cc",
     "tiles/picture_layer_tiling.h",
     "tiles/picture_layer_tiling_set.cc",
@@ -284,10 +288,10 @@ cc_component("cc") {
     "trees/draw_property_utils.h",
     "trees/effect_node.cc",
     "trees/effect_node.h",
-    "trees/element_id.cc",
-    "trees/element_id.h",
     "trees/frame_rate_counter.cc",
     "trees/frame_rate_counter.h",
+    "trees/frame_sequence_tracker.cc",
+    "trees/frame_sequence_tracker.h",
     "trees/image_animation_controller.cc",
     "trees/image_animation_controller.h",
     "trees/latency_info_swap_promise.cc",
@@ -502,10 +506,8 @@ cc_test_static_library("test_support") {
     "test/task_graph_runner_test_template.h",
     "test/test_hooks.cc",
     "test/test_hooks.h",
-    "test/test_image_factory.cc",
-    "test/test_image_factory.h",
-    "test/test_in_process_context_provider.cc",
-    "test/test_in_process_context_provider.h",
+    "test/test_layer_tree_frame_sink.cc",
+    "test/test_layer_tree_frame_sink.h",
     "test/test_layer_tree_host_base.cc",
     "test/test_layer_tree_host_base.h",
     "test/test_occlusion_tracker.h",
@@ -605,6 +607,7 @@ cc_test("cc_unittests") {
     "layers/layer_list_iterator_unittest.cc",
     "layers/layer_position_constraint_unittest.cc",
     "layers/layer_unittest.cc",
+    "layers/mirror_layer_unittest.cc",
     "layers/nine_patch_generator_unittest.cc",
     "layers/nine_patch_layer_impl_unittest.cc",
     "layers/nine_patch_layer_unittest.cc",
@@ -634,6 +637,7 @@ cc_test("cc_unittests") {
     "paint/discardable_image_map_unittest.cc",
     "paint/display_item_list_unittest.cc",
     "paint/filter_operations_unittest.cc",
+    "paint/image_transfer_cache_entry_unittest.cc",
     "paint/oop_pixeltest.cc",
     "paint/paint_cache_unittest.cc",
     "paint/paint_filter_unittest.cc",
@@ -654,6 +658,7 @@ cc_test("cc_unittests") {
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "resources/resource_pool_unittest.cc",
+    "scheduler/compositor_frame_reporter_unittest.cc",
     "scheduler/compositor_frame_reporting_controller_unittest.cc",
     "scheduler/compositor_timing_history_unittest.cc",
     "scheduler/scheduler_state_machine_unittest.cc",
@@ -664,7 +669,6 @@ cc_test("cc_unittests") {
     "tiles/gpu_image_decode_cache_unittest.cc",
     "tiles/image_controller_unittest.cc",
     "tiles/mipmap_util_unittest.cc",
-    "tiles/paint_worklet_image_cache_unittest.cc",
     "tiles/picture_layer_tiling_set_unittest.cc",
     "tiles/picture_layer_tiling_unittest.cc",
     "tiles/software_image_decode_cache_unittest.cc",
@@ -672,6 +676,7 @@ cc_test("cc_unittests") {
     "tiles/tile_manager_unittest.cc",
     "tiles/tile_priority_unittest.cc",
     "trees/damage_tracker_unittest.cc",
+    "trees/frame_sequence_tracker_unittest.cc",
     "trees/image_animation_controller_unittest.cc",
     "trees/layer_tree_frame_sink_unittest.cc",
     "trees/layer_tree_host_common_unittest.cc",
@@ -679,6 +684,7 @@ cc_test("cc_unittests") {
     "trees/layer_tree_host_pixeltest_blending.cc",
     "trees/layer_tree_host_pixeltest_filters.cc",
     "trees/layer_tree_host_pixeltest_masks.cc",
+    "trees/layer_tree_host_pixeltest_mirror.cc",
     "trees/layer_tree_host_pixeltest_readback.cc",
     "trees/layer_tree_host_pixeltest_scrollbars.cc",
     "trees/layer_tree_host_pixeltest_synchronous.cc",
@@ -771,6 +777,20 @@ cc_test("cc_unittests") {
   data_deps = [
     "//third_party/mesa_headers",
   ]
+
+  if (enable_vulkan) {
+    deps += [
+      "//gpu/vulkan:test_support",
+      "//gpu/vulkan/init",
+    ]
+
+    # TODO(samans): Support more configurations.
+    # CFI issue: https://crbug.com/967819
+    # LSAN issue: https://crbug.com/971325
+    if (use_x11 && !is_cfi && !is_lsan) {
+      defines = [ "ENABLE_CC_VULKAN_TESTS" ]
+    }
+  }
 }
 
 cc_test("cc_perftests") {

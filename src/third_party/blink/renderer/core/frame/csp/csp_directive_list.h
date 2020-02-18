@@ -100,7 +100,8 @@ class CORE_EXPORT CSPDirectiveList
                                     ResourceRequest::RedirectStatus,
                                     SecurityViolationReportingPolicy) const;
 
-  bool AllowTrustedTypeAssignmentFailure(const String& message) const;
+  bool AllowTrustedTypeAssignmentFailure(const String& message,
+                                         const String& sample) const;
 
   bool StrictMixedContentChecking() const {
     return strict_mixed_content_checking_enforced_;
@@ -108,6 +109,12 @@ class CORE_EXPORT CSPDirectiveList
   void ReportMixedContent(const KURL& mixed_url,
                           ResourceRequest::RedirectStatus) const;
 
+  bool ShouldDisableEval() const {
+    return ShouldDisableEvalBecauseScriptSrc() ||
+           ShouldDisableEvalBecauseTrustedTypes();
+  }
+  bool ShouldDisableEvalBecauseScriptSrc() const;
+  bool ShouldDisableEvalBecauseTrustedTypes() const;
   const String& EvalDisabledErrorMessage() const {
     return eval_disabled_error_message_;
   }
@@ -194,7 +201,8 @@ class CORE_EXPORT CSPDirectiveList
                        const KURL& blocked_url,
                        ResourceRequest::RedirectStatus,
                        ContentSecurityPolicy::ViolationType violation_type =
-                           ContentSecurityPolicy::kURLViolation) const;
+                           ContentSecurityPolicy::kURLViolation,
+                       const String& sample = String()) const;
   void ReportViolationWithFrame(const String& directive_text,
                                 const ContentSecurityPolicy::DirectiveType,
                                 const String& console_message,

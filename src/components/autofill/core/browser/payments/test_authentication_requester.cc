@@ -9,8 +9,7 @@
 
 namespace autofill {
 
-TestAuthenticationRequester::TestAuthenticationRequester()
-    : weak_ptr_factory_(this) {}
+TestAuthenticationRequester::TestAuthenticationRequester() {}
 
 TestAuthenticationRequester::~TestAuthenticationRequester() {}
 
@@ -23,11 +22,28 @@ void TestAuthenticationRequester::OnCVCAuthenticationComplete(
     bool did_succeed,
     const CreditCard* card,
     const base::string16& cvc) {
-  if (did_succeed) {
+  did_succeed_ = did_succeed;
+  if (did_succeed_) {
+    DCHECK(card);
     number_ = card->number();
-    return Success();
   }
-  return Failure();
 }
+
+#if !defined(OS_IOS)
+void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
+    bool did_succeed,
+    const CreditCard* card) {
+  did_succeed_ = did_succeed;
+  if (did_succeed_) {
+    DCHECK(card);
+    number_ = card->number();
+  }
+}
+
+void TestAuthenticationRequester::IsUserVerifiableCallback(
+    bool is_user_verifiable) {
+  is_user_verifiable_ = is_user_verifiable;
+}
+#endif
 
 }  // namespace autofill

@@ -177,9 +177,6 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override {
     return nullptr;
   }
-  version_info::Channel GetChannel() override {
-    return version_info::Channel::UNKNOWN;
-  }
   bool OverridesRestrictParameter(std::string* parameter) override {
     if (restrict_parameter_.empty())
       return false;
@@ -192,6 +189,11 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   }
 
  private:
+  // VariationsServiceClient:
+  version_info::Channel GetChannel() override {
+    return version_info::Channel::UNKNOWN;
+  }
+
   std::string restrict_parameter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsServiceClient);
@@ -516,6 +518,24 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
 
   EXPECT_EQ(kTestSeedExperimentName,
             base::FieldTrialList::FindFullName(kTestSeedStudyName));
+}
+
+// Tests that the hardware class is set on Android.
+TEST_F(FieldTrialCreatorTest, ClientFilterableState_HardwareClass) {
+  testing::NiceMock<MockSafeSeedManager> safe_seed_manager(&prefs_);
+  ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
+      .WillByDefault(Return(false));
+
+  TestVariationsServiceClient variations_service_client;
+  TestVariationsFieldTrialCreator field_trial_creator(
+      &prefs_, &variations_service_client, &safe_seed_manager);
+
+  const base::Version& current_version = version_info::GetVersion();
+  EXPECT_TRUE(current_version.IsValid());
+
+  std::unique_ptr<ClientFilterableState> client_filterable_state =
+      field_trial_creator.GetClientFilterableStateForVersion(current_version);
+  EXPECT_NE(client_filterable_state->hardware_class, std::string());
 }
 #endif  // OS_ANDROID
 

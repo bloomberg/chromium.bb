@@ -656,6 +656,7 @@ virtual void BindImageTexture(GLuint unit,
 virtual void DispatchCompute(GLuint num_groups_x,
                              GLuint num_groups_y,
                              GLuint num_groups_z) = 0;
+virtual void DispatchComputeIndirect(GLintptr offset) = 0;
 virtual void GetProgramInterfaceiv(GLuint program,
                                    GLenum program_interface,
                                    GLenum pname,
@@ -824,11 +825,13 @@ virtual void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                           GLfloat uv_height,
                                           GLboolean enable_blend,
                                           GLuint gpu_fence_id) = 0;
-virtual void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
-                                                GLboolean is_clipped,
-                                                const GLfloat* clip_rect,
-                                                GLint sorting_context_id,
-                                                const GLfloat* transform) = 0;
+virtual void ScheduleCALayerSharedStateCHROMIUM(
+    GLfloat opacity,
+    GLboolean is_clipped,
+    const GLfloat* clip_rect,
+    const GLfloat* rounded_corner_bounds,
+    GLint sorting_context_id,
+    const GLfloat* transform) = 0;
 virtual void ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                      const GLfloat* contents_rect,
                                      GLuint background_color,

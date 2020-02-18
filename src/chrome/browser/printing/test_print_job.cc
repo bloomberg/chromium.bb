@@ -16,14 +16,12 @@
 
 namespace printing {
 
-void TestPrintJob::Initialize(PrinterQuery* query,
+void TestPrintJob::Initialize(std::unique_ptr<PrinterQuery> query,
                               const base::string16& name,
                               int page_count) {
   // Since we do not actually print in these tests, just let this get destroyed
   // when this function exits.
   std::unique_ptr<PrintJobWorker> worker = query->DetachWorker();
-
-  set_settings(query->settings());
 
   scoped_refptr<PrintedDocument> new_doc =
       base::MakeRefCounted<PrintedDocument>(query->settings(), name,

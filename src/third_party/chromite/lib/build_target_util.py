@@ -41,6 +41,9 @@ class BuildTarget(object):
     else:
       self.root = GetDefaultSysrootPath(self.name)
 
+  def __str__(self):
+    return self.name
+
 
 def GetDefaultSysrootPath(target_name):
   if target_name:

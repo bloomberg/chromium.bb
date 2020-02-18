@@ -108,4 +108,11 @@ public class CustomTabStatusBarColorProvider {
 
         return false;
     }
+
+    /**
+     * Called when toolbar color is changed so that the status bar can adapt.
+     */
+    public void onToolbarColorChanged() {
+        mStatusBarColorController.updateStatusBarColor(false);
+    }
 }

@@ -623,8 +623,7 @@ void SSLErrorHandler::HandleSSLError(
   bool hard_override_disabled =
       !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
   int options_mask = CalculateOptionsMask(cert_error, hard_override_disabled,
-                                          ssl_info.is_fatal_cert_error,
-                                          expired_previous_decision);
+                                          ssl_info.is_fatal_cert_error);
 
   SSLErrorHandler* error_handler = new SSLErrorHandler(
       std::unique_ptr<SSLErrorHandler::Delegate>(
@@ -726,8 +725,7 @@ SSLErrorHandler::SSLErrorHandler(
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
-      decision_callback_(decision_callback),
-      weak_ptr_factory_(this) {}
+      decision_callback_(decision_callback) {}
 
 SSLErrorHandler::~SSLErrorHandler() {
 }
@@ -1061,8 +1059,7 @@ bool SSLErrorHandler::IsOnlyCertError(
 // static
 int SSLErrorHandler::CalculateOptionsMask(int cert_error,
                                           bool hard_override_disabled,
-                                          bool should_ssl_errors_be_fatal,
-                                          bool expired_previous_decision) {
+                                          bool should_ssl_errors_be_fatal) {
   int options_mask = 0;
   if (!IsCertErrorFatal(cert_error) && !hard_override_disabled &&
       !should_ssl_errors_be_fatal) {
@@ -1073,10 +1070,6 @@ int SSLErrorHandler::CalculateOptionsMask(int cert_error,
   }
   if (should_ssl_errors_be_fatal) {
     options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
-  }
-  if (expired_previous_decision) {
-    options_mask |=
-        security_interstitials::SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED;
   }
   return options_mask;
 }

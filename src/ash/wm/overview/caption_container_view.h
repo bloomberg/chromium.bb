@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_CAPTION_CONTAINER_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 
@@ -22,16 +23,15 @@ class View;
 
 namespace ash {
 class RoundedRectView;
-
-namespace wm {
 class WindowPreviewView;
-}  // namespace wm
 
 // CaptionContainerView covers the overview window and listens for events. It
 // also draws a header for overview mode which contains a icon, title and close
 // button.
 // TODO(sammiequon): Rename this to something which describes it better.
-class ASH_EXPORT CaptionContainerView : public views::Button {
+class ASH_EXPORT CaptionContainerView
+    : public views::Button,
+      public OverviewHighlightController::OverviewHighlightableView {
  public:
   // The visibility of the header. It may be fully visible or invisible, or
   // everything but the close button is visible.
@@ -44,7 +44,8 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   class EventDelegate {
    public:
     // TODO(sammiequon): Maybe consolidate into just mouse and gesture events.
-    virtual void HandlePressEvent(const gfx::PointF& location_in_screen) = 0;
+    virtual void HandlePressEvent(const gfx::PointF& location_in_screen,
+                                  bool from_touch_gesture) = 0;
     virtual void HandleDragEvent(const gfx::PointF& location_in_screen) = 0;
     virtual void HandleReleaseEvent(const gfx::PointF& location_in_screen) = 0;
     virtual void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
@@ -55,6 +56,8 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
     virtual void HandleTapEvent() = 0;
     virtual void HandleGestureEndEvent() = 0;
     virtual bool ShouldIgnoreGestureEvents() = 0;
+    virtual void OnHighlightedViewActivated() = 0;
+    virtual void OnHighlightedViewClosed() = 0;
 
    protected:
     virtual ~EventDelegate() {}
@@ -97,11 +100,17 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   // dragging.
   void UpdatePreviewView();
 
+  // OverviewHighlightController::OverviewHighlightableView:
+  views::View* GetView() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
+
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
   RoundedRectView* backdrop_view() { return backdrop_view_; }
-  wm::WindowPreviewView* preview_view() { return preview_view_; }
+  WindowPreviewView* preview_view() { return preview_view_; }
 
  protected:
   // views::View:
@@ -133,7 +142,7 @@ class ASH_EXPORT CaptionContainerView : public views::Button {
   RoundedRectView* backdrop_view_ = nullptr;
 
   // Optionally shows a preview of |window_|.
-  wm::WindowPreviewView* preview_view_ = nullptr;
+  WindowPreviewView* preview_view_ = nullptr;
 
   HeaderVisibility current_header_visibility_ = HeaderVisibility::kVisible;
 

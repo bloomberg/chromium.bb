@@ -4,11 +4,12 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/mojo/geometry_traits_test_service.mojom.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/quaternion.h"
 
 namespace gfx {
 
@@ -78,7 +79,12 @@ class GeometryStructTraitsTest : public testing::Test,
     std::move(callback).Run(v);
   }
 
-  base::MessageLoop loop_;
+  void EchoQuaternion(const Quaternion& q,
+                      EchoQuaternionCallback callback) override {
+    std::move(callback).Run(q);
+  }
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojo::BindingSet<GeometryTraitsTestService> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GeometryStructTraitsTest);
@@ -236,6 +242,21 @@ TEST_F(GeometryStructTraitsTest, Vector3dF) {
   EXPECT_EQ(x, output.x());
   EXPECT_EQ(y, output.y());
   EXPECT_EQ(z, output.z());
+}
+
+TEST_F(GeometryStructTraitsTest, Quaternion) {
+  const double x = 1234.5;
+  const double y = 6789.6;
+  const double z = 31415.9;
+  const double w = 27182.8;
+  gfx::Quaternion input(x, y, z, w);
+  mojom::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gfx::Quaternion output;
+  proxy->EchoQuaternion(input, &output);
+  EXPECT_EQ(x, output.x());
+  EXPECT_EQ(y, output.y());
+  EXPECT_EQ(z, output.z());
+  EXPECT_EQ(w, output.w());
 }
 
 }  // namespace gfx

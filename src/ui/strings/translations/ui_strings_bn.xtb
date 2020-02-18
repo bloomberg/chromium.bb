@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="1409544243779336081">অ্যাপের সাজেশন</translation>
+<translation id="1498028757988366001">আপনি এটি আগেও সার্চ করেছেন। ইতিহাস থেকে "<ph name="QUERY" />" সরিয়ে দিলে, আপনার সব ডিভাইসের অ্যাকাউন্ট থেকে সেটি স্থায়ীভাবে মুছে যাবে।</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{১ মিনিট এবং }one{# মিনিট এবং }other{# মিনিট এবং }}</translation>
 <translation id="1643823602425662293">বিজ্ঞপ্তি</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">আপনার স্ক্রীনে স্পর্শ লক্ষ্যগুলি আলতা চাপুন।</translation>
 <translation id="2295140143284145483">সমীক্ষা</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
+<translation id="2388990488038464401">আপনার ফোন থেকে এই নম্বরে কল করতে চান?</translation>
 <translation id="24452542372838207">বিজ্ঞপ্তি প্রসারিত করুন</translation>
 <translation id="2445449901874883781">উচ্চ রেজোলিউশন ব্যবহার করুন</translation>
+<translation id="2451871130406122810">ডিভাইসে পাঠানো হয়েছে</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2497284189126895209">সব ফাইল</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">ক্রমাঙ্কন সম্পূর্ণ হয়েছে</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
+<translation id="2545651323591713692">স্নুজ করুন</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{১ ঘণ্টার মধ্যে}one{# ঘণ্টার মধ্যে}other{# ঘণ্টার মধ্যে}}</translation>
 <translation id="2583543531130364912">আপনার টাচস্ক্রীন ক্যালিব্রেট করুন</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">এই পর্যন্ত স্ক্রল করুন</translation>
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{১ দিন}one{# দিন}other{# দিন}}</translation>
+<translation id="3295886253693811851">এগুলি দিয়ে কল করুন</translation>
 <translation id="335581015389089642">স্পিচ</translation>
 <translation id="3443810440409579745">ট্যাব পাওয়া গেছে।</translation>
 <translation id="3479552764303398839">এখনই নয়</translation>
@@ -95,6 +100,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{১ মাস আগে}one{# মাস আগে}other{# মাস আগে}}</translation>
 <translation id="4289300219472526559">কথা বলা শুরু করুন</translation>
 <translation id="4316910396681052118">সব অ্যাপ</translation>
+<translation id="4467014365953759647">নম্বর পাঠানো যাচ্ছে না</translation>
 <translation id="4588090240171750605">ডান দিকে স্ক্রল করুন</translation>
 <translation id="4690510401873698237">শেল্ফ নিচে দেখানো হচ্ছে</translation>
 <translation id="4724120544754982507">বিজ্ঞপ্তি কেন্দ্র, <ph name="UNREAD_NOTIFICATION_COUNT" />টি না পড়া বিজ্ঞপ্তি</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">সম্পূর্ণ দেখার ত্রিভুজ</translation>
 <translation id="5278860589123563674">পাঠানো যায়নি</translation>
 <translation id="528468243742722775">শেষ</translation>
+<translation id="5327567770033251652">সিঙ্ক চালু করুন</translation>
 <translation id="5329858601952122676">&amp;মুছুন</translation>
 <translation id="5395308026110844773">ফোল্ডার তৈরি করতে <ph name="IN_PLACE_APP" />-এর উপরে <ph name="DRAGGED_APP_NAME" /> টেনে এনে ছেড়ে দিন।</translation>
 <translation id="5463830097259460683">ইমোজি ও প্রতীকগুলি</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">ফাইল সেভ করুন</translation>
 <translation id="6699343763173986273">মিডিয়া পরবর্তী ট্র্যাক</translation>
 <translation id="673773751041746814">মোছা হচ্ছে</translation>
+<translation id="6779314412797872738">এখান থেকে আপনার Android ফোনে কোনও নম্বর পাঠাতে, সেটিংসে গিয়ে দুটি ডিভাইসের জন্য <ph name="TROUBLESHOOT_LINK" />।</translation>
 <translation id="6786750046913594791">ফোল্ডার বন্ধ করুন</translation>
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
 <translation id="6845383723252244143">ফোল্ডার বেছে নিন</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">লঞ্চার, আংশিক দেখুন</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{১ মিনিট পূর্বে}one{# মিনিট পূর্বে}other{# মিনিট পূর্বে}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">আপনার ফোনের কানেকশন ঠিক আছে কিনা দেখে নিয়ে আবার চেষ্টা করুন</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{১ মিনিট বাকি}one{# মিনিট বাকি}other{# মিনিট বাকি}}</translation>
+<translation id="7430878839542012341">এই সার্চ কি ইতিহাস থেকে মুছে দিতে চান?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ইমোজি</translation>
 <translation id="7658239707568436148">বাতিল</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">Google অ্যাসিস্ট্যান্ট আপনার সার্চ পরিচালনা করে। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, নিজে থেকে সম্পূর্ন করা</translation>
 <translation id="815598010540052116">নিচে স্ক্রল করুন</translation>
-<translation id="8170087467028567933">এই সাজেশন সরিয়ে দেওয়া হলে, আপনার সব ডিভাইসে অ্যাকাউন্ট থেকে এটি লুকিয়ে রাখা হবে।</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">পৃষ্ঠা উপরে</translation>
 <translation id="8245914219290430011">ট্যাব</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">চেক করুন</translation>
 <translation id="8393700583063109961">বার্তা পাঠান</translation>
 <translation id="8394908167088220973">মিডিয়া প্লে করুন/বিরতি</translation>
-<translation id="8420205633584771378">সাজেশনটি সরাতে চান?</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{১ বছর}one{# বছর}other{# বছর}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ফাইল (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">শেল্ফ সবসময় দেখানো হয়</translation>

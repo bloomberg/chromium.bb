@@ -43,11 +43,9 @@ StyleResolverState::StyleResolverState(
       layout_parent_style_(layout_parent_style),
       is_animation_interpolation_map_ready_(false),
       is_animating_custom_properties_(false),
-      apply_property_to_regular_style_(true),
-      apply_property_to_visited_link_style_(false),
       has_dir_auto_attribute_(false),
       font_builder_(&document),
-      element_style_resources_(*GetElement(),
+      element_style_resources_(GetElement(),
                                document.DevicePixelRatio(),
                                pseudo_element) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
@@ -66,13 +64,12 @@ StyleResolverState::StyleResolverState(
 }
 
 StyleResolverState::StyleResolverState(Document& document,
-                                       Element* element,
+                                       Element& element,
                                        PseudoElement* pseudo_element,
                                        const ComputedStyle* parent_style,
                                        const ComputedStyle* layout_parent_style)
     : StyleResolverState(document,
-                         element ? ElementResolveContext(*element)
-                                 : ElementResolveContext(document),
+                         ElementResolveContext(element),
                          pseudo_element,
                          parent_style,
                          layout_parent_style) {}
@@ -84,7 +81,7 @@ StyleResolverState::~StyleResolverState() {
 }
 
 TreeScope& StyleResolverState::GetTreeScope() const {
-  return GetElement() ? GetElement()->GetTreeScope() : GetDocument();
+  return GetElement().GetTreeScope();
 }
 
 void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {

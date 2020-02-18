@@ -63,8 +63,8 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
   size_t buffer_size = sizeof(device::SubmittedFrameData::raw_buffer);
   size_t buffer_size_pixels = buffer_size / sizeof(device::Color);
 
-  desc.Width = 1;
-  desc.Height = buffer_size_pixels;
+  desc.Width = buffer_size_pixels;
+  desc.Height = 1;
   desc.MiscFlags = 0;
   desc.BindFlags = 0;
   desc.Usage = D3D11_USAGE_STAGING;
@@ -75,7 +75,9 @@ void TestHelper::OnPresentedFrame(ID3D11Texture2D* texture,
     return;
   }
 
-  D3D11_BOX box = {0, 0, 0, buffer_size_pixels, 1, 1};  // a 1-pixel box
+  // A strip of pixels along the top of the texture, however many will fit into
+  // our buffer.
+  D3D11_BOX box = {0, 0, 0, buffer_size_pixels, 1, 1};
   context->CopySubresourceRegion(texture_copy.Get(), 0, 0, 0, 0, texture, 0,
                                  &box);
 
@@ -103,9 +105,13 @@ namespace {
 vr::TrackedDevicePose_t TranslatePose(device::PoseFrameData pose) {
   vr::TrackedDevicePose_t ret = {};
 
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 3; ++j) {
-      ret.mDeviceToAbsoluteTracking.m[j][i] = pose.device_to_origin[j * 4 + i];
+  // We're given the pose in column-major order, with the translation component
+  // in the 4th column. OpenVR uses a 3x4 matrix instead of a 4x4, so copying
+  // as-is will chop off the translation. So, transpose while copying.
+  for (int col = 0; col < 4; ++col) {
+    for (int row = 0; row < 3; ++row) {
+      ret.mDeviceToAbsoluteTracking.m[row][col] =
+          pose.device_to_origin[col * 4 + row];
     }
   }
 

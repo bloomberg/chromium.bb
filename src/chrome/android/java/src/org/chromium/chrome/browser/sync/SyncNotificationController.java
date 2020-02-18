@@ -7,13 +7,11 @@ package org.chromium.chrome.browser.sync;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
@@ -25,8 +23,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError.State;
 import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -135,10 +132,6 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
             case State.INVALID_GAIA_CREDENTIALS:
                 return false;
             case State.USER_NOT_SIGNED_UP:
-            case State.CAPTCHA_REQUIRED:
-            case State.ACCOUNT_DELETED:
-            case State.ACCOUNT_DISABLED:
-            case State.TWO_FACTOR:
                 return true;
             default:
                 Log.w(TAG, "Not showing unknown Auth Error: " + mProfileSyncService.getAuthError());
@@ -153,17 +146,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        final String fragmentName;
-        final Bundle fragmentArguments;
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
-            fragmentName = SyncAndServicesPreferences.class.getName();
-            fragmentArguments = SyncAndServicesPreferences.createArguments(false);
-        } else {
-            fragmentName = AccountManagementFragment.class.getName();
-            fragmentArguments = null;
-        }
-        return PreferencesLauncher.createIntentForSettingsPage(
-                ContextUtils.getApplicationContext(), fragmentName, fragmentArguments);
+        return PreferencesLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
+                SyncAndServicesPreferences.class.getName(),
+                SyncAndServicesPreferences.createArguments(false));
     }
 
     /**

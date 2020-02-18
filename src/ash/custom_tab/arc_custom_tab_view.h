@@ -37,6 +37,7 @@ class ArcCustomTabView : public ArcCustomTab,
  private:
   // ArcCustomTab:
   void Attach(gfx::NativeView view) override;
+  gfx::NativeView GetHostView() override;
 
   // views::View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

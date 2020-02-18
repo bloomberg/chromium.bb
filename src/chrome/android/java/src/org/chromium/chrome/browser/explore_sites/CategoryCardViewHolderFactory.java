@@ -15,6 +15,7 @@ import org.chromium.ui.modelutil.RecyclerViewAdapter;
 /** Factory to create CategoryCardViewHolder objects. */
 public class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFactory<
         CategoryCardViewHolderFactory.CategoryCardViewHolder> {
+
     /** View holder for the recycler view. */
     public static class CategoryCardViewHolder extends RecyclerView.ViewHolder {
         public CategoryCardViewHolder(View view) {

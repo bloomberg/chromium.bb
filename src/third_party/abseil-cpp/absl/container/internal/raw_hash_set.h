@@ -350,7 +350,7 @@ struct GroupSse2Impl {
     return BitMask<uint32_t, kWidth>(
         _mm_movemask_epi8(_mm_sign_epi8(ctrl, ctrl)));
 #else
-    return Match(kEmpty);
+    return Match(static_cast<h2_t>(kEmpty));
 #endif
   }
 
@@ -1182,7 +1182,7 @@ class raw_hash_set {
 
   node_type extract(const_iterator position) {
     auto node =
-        CommonAccess::Make<node_type>(alloc_ref(), position.inner_.slot_);
+        CommonAccess::Transfer<node_type>(alloc_ref(), position.inner_.slot_);
     erase_meta_only(position);
     return node;
   }

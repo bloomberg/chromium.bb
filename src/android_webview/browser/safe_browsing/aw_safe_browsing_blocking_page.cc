@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/prefs/pref_service.h"
@@ -20,7 +21,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-
 using content::InterstitialPage;
 using content::WebContents;
 using security_interstitials::BaseSafeBrowsingErrorUI;
@@ -66,7 +66,8 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
     // HistoryServiceFactory lives in the chrome/ layer and relies on Profile
     // which we don't have in Android WebView (crbug.com/731744).
     threat_details_in_progress_ =
-        aw_browser_context->GetSafeBrowsingTriggerManager()
+        AwBrowserProcess::GetInstance()
+            ->GetSafeBrowsingTriggerManager()
             ->StartCollectingThreatDetails(
                 safe_browsing::TriggerType::SECURITY_INTERSTITIAL, web_contents,
                 unsafe_resources[0], url_loader_factory,
@@ -78,8 +79,7 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
 // static
 void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     AwSafeBrowsingUIManager* ui_manager,
-    const UnsafeResource& unsafe_resource,
-    PrefService* pref_service) {
+    const UnsafeResource& unsafe_resource) {
   DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
@@ -95,11 +95,14 @@ void AwSafeBrowsingBlockingPage::ShowBlockingPage(
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
     const UnsafeResourceList unsafe_resources{unsafe_resource};
+    AwBrowserContext* browser_context =
+        AwBrowserContext::FromWebContents(web_contents);
+    PrefService* pref_service = browser_context->GetPrefService();
     BaseSafeBrowsingErrorUI::SBErrorDisplayOptions display_options =
         BaseSafeBrowsingErrorUI::SBErrorDisplayOptions(
             IsMainPageLoadBlocked(unsafe_resources),
             safe_browsing::IsExtendedReportingOptInAllowed(*pref_service),
-            false,  // is_off_the_record
+            browser_context->IsOffTheRecord(),
             safe_browsing::IsExtendedReportingEnabled(*pref_service),
             safe_browsing::IsExtendedReportingPolicyManaged(*pref_service),
             pref_service->GetBoolean(
@@ -131,9 +134,8 @@ void AwSafeBrowsingBlockingPage::FinishThreatDetails(
 
   // Finish computing threat details. TriggerManager will decide if it is safe
   // to send the report.
-  AwBrowserContext* aw_browser_context =
-      AwBrowserContext::FromWebContents(web_contents());
-  bool report_sent = aw_browser_context->GetSafeBrowsingTriggerManager()
+  bool report_sent = AwBrowserProcess::GetInstance()
+                         ->GetSafeBrowsingTriggerManager()
                          ->FinishCollectingThreatDetails(
                              safe_browsing::TriggerType::SECURITY_INTERSTITIAL,
                              web_contents(), delay, did_proceed, num_visits,

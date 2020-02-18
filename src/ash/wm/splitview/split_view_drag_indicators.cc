@@ -11,12 +11,12 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/rounded_rect_view.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_highlight_view.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -43,7 +43,6 @@ std::unique_ptr<views::Widget> CreateWidget() {
   auto widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
-  params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
@@ -141,7 +140,7 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     label_parent_->SetPaintToLayer();
     label_parent_->layer()->SetFillsBoundsOpaquely(false);
     label_parent_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical,
+        views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kSplitviewLabelVerticalInsetDp,
                     kSplitviewLabelHorizontalInsetDp)));
     label_parent_->AddChildView(label_);
@@ -608,8 +607,8 @@ SplitViewDragIndicators::~SplitViewDragIndicators() {
   aura::Window* window = widget_->GetNativeWindow();
   if (window == nullptr)
     return;
-  ::wm::SetWindowVisibilityAnimationType(
-      window, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END);
+  wm::SetWindowVisibilityAnimationType(
+      window, WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END);
   AnimateOnChildWindowVisibilityChanged(window, /*visible=*/false);
 }
 
@@ -620,7 +619,7 @@ void SplitViewDragIndicators::SetIndicatorState(
     return;
 
   // Reparent the widget if needed.
-  aura::Window* target = ash::wm::GetRootWindowAt(event_location);
+  aura::Window* target = ash::window_util::GetRootWindowAt(event_location);
   aura::Window* root_window = target->GetRootWindow();
   if (widget_->GetNativeView()->GetRootWindow() != root_window) {
     views::Widget::ReparentNativeView(

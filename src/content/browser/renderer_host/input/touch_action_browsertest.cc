@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -31,6 +32,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -167,11 +169,12 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     TitleWatcher watcher(shell()->web_contents(), ready_title);
     ignore_result(watcher.WaitAndGetTitle());
 
-    // We need to wait until at least one frame has been composited
-    // otherwise the injection of the synthetic gestures may get
-    // dropped because of MainThread/Impl thread sync of touch event
-    // regions.
-    frame_observer_->WaitForAnyFrameSubmission();
+    // We need to wait until hit test data is available. We use our own
+    // HitTestRegionObserver here, rather than
+    // WaitForHitTestDataOrChildSurfaceReady, because we have the
+    // RenderWidgetHostImpl available.
+    HitTestRegionObserver observer(host->GetFrameSinkId());
+    observer.WaitForHitTestData();
   }
 
   // ContentBrowserTest:
@@ -286,6 +289,8 @@ class TouchActionBrowserTest : public ContentBrowserTest,
                      const base::TimeDelta& jank_time) {
     DCHECK(URLLoaded());
     EXPECT_EQ(0, GetScrollTop());
+
+    EnsureInitializedForSyntheticGestures();
 
     int scroll_height =
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
@@ -404,6 +409,22 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     // Runs until we get the OnSyntheticGestureCompleted callback
     run_loop_->Run();
     run_loop_.reset();
+  }
+
+  // Sends a no-op gesture to the page to ensure the SyntheticGestureController
+  // is initialized. We need to do this if the first sent gesture happens when
+  // the main thread is janked, otherwise the initialization won't happen
+  // because of the blocked main thread.
+  void EnsureInitializedForSyntheticGestures() {
+    DCHECK(URLLoaded());
+
+    base::RunLoop run_loop;
+
+    GetWidgetHost()->EnsureReadyForSyntheticGestures(
+        base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+
+    // Runs until we get the OnSyntheticGestureCompleted callback
+    run_loop.Run();
   }
 
   void CheckScrollOffset(

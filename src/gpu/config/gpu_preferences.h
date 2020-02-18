@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "gpu/gpu_export.h"
 #include "media/media_buildflags.h"
@@ -24,6 +25,13 @@ const size_t kDefaultMaxProgramCacheMemoryBytes = 6 * 1024 * 1024;
 const size_t kDefaultMaxProgramCacheMemoryBytes = 2 * 1024 * 1024;
 const size_t kLowEndMaxProgramCacheMemoryBytes = 128 * 1024;
 #endif
+
+enum VulkanImplementationName : uint32_t {
+  kNone = 0,
+  kNative = 1,
+  kSwiftshader = 2,
+  kLast = kSwiftshader,
+};
 
 // NOTE: if you modify this structure then you must also modify the
 // following two files to keep them in sync:
@@ -186,7 +194,7 @@ struct GPU_EXPORT GpuPreferences {
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.h
   // Use Vulkan for rasterization and display compositing.
-  bool enable_vulkan = false;
+  VulkanImplementationName use_vulkan = VulkanImplementationName::kNone;
 
   // Use vulkan VK_KHR_surface for presenting.
   bool disable_vulkan_surface = false;
@@ -206,6 +214,9 @@ struct GPU_EXPORT GpuPreferences {
 
   // Enable the WebGPU command buffer.
   bool enable_webgpu = false;
+
+  // Determines message loop type for the GPU thread.
+  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.

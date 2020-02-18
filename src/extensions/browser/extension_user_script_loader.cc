@@ -68,14 +68,11 @@ struct VerifyContentInfo {
 void VerifyContent(const VerifyContentInfo& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info.verifier);
-  ContentVerifier* verifier = info.verifier.get();
-  scoped_refptr<ContentVerifyJob> job(verifier->CreateJobFor(
+  scoped_refptr<ContentVerifyJob> job(info.verifier->CreateAndStartJobFor(
       info.extension_id, info.extension_root, info.relative_path));
   if (job.get()) {
-    job->Start(verifier);
-    job->BytesRead(info.content.data(), info.content.size(),
-                   base::File::FILE_OK);
-    job->DoneReading();
+    job->Read(info.content.data(), info.content.size(), MOJO_RESULT_OK);
+    job->Done();
   }
 }
 
@@ -212,8 +209,7 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     : UserScriptLoader(browser_context, host_id),
       content_verifier_(
           ExtensionSystem::Get(browser_context)->content_verifier()),
-      extension_registry_observer_(this),
-      weak_factory_(this) {
+      extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context));
   if (listen_for_extension_system_loaded) {
     ExtensionSystem::Get(browser_context)

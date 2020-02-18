@@ -54,8 +54,8 @@ jumbo_source_set("fxjs") {
       "cjs_event.h",
       "cjs_event_context.cpp",
       "cjs_event_context.h",
-      "cjs_eventhandler.cpp",
-      "cjs_eventhandler.h",
+      "cjs_eventrecorder.cpp",
+      "cjs_eventrecorder.h",
       "cjs_field.cpp",
       "cjs_field.h",
       "cjs_font.cpp",
@@ -107,6 +107,7 @@ jumbo_source_set("fxjs") {
       "../core/fpdfapi/font",
       "../core/fpdfapi/page",
       "../core/fpdfapi/parser",
+      "../core/fpdfapi/render",
       "../core/fpdfdoc",
       "../core/fxge",
       "//v8",
@@ -243,6 +244,7 @@ if (pdf_enable_v8) {
     configs = [ "//v8:external_startup_data" ]
     deps = [
       ":fxjs",
+      "../fpdfsdk",
     ]
     pdfium_root_dir = "../"
 

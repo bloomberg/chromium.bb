@@ -330,7 +330,20 @@ if (current_os == "mac") {
     args = rebase_path(sources, root_build_dir) +
            rebase_path(outputs, root_build_dir)
     if (!use_system_xcode) {
-      args += [ hermetic_xcode_path ]
+      import("//build/config/clang/clang.gni")
+      clang_path =
+          rebase_path("$clang_base_path/bin/", root_build_dir) + "clang"
+      mig_path = mac_bin_path + "mig"
+      migcom_path = mac_bin_path + "../libexec/migcom"
+
+      args += [
+        "--clang-path",
+        clang_path,
+        "--mig-path",
+        mig_path,
+        "--migcom-path",
+        migcom_path,
+      ]
     }
     args += [
       "--sdk",

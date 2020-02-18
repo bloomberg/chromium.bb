@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_status_code.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -206,7 +206,7 @@ class GCMAccountTrackerTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<GCMAccountTracker> tracker_;
 };

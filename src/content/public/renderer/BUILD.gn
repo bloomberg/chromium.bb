@@ -30,7 +30,6 @@ target(link_target_type, "renderer_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
-    "associated_resource_fetcher.h",
     "browser_plugin_delegate.cc",
     "browser_plugin_delegate.h",
     "chrome_object_extensions_utils.cc",
@@ -61,13 +60,11 @@ target(link_target_type, "renderer_sources") {
     "renderer_ppapi_host.h",
     "request_peer.h",
     "resource_dispatcher_delegate.h",
-    "resource_fetcher.h",
     "seccomp_sandbox_status_android.h",
     "url_loader_throttle_provider.h",
     "v8_value_converter.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
-    "webrtc_log_message_delegate.h",
     "websocket_handshake_throttle_provider.h",
     "window_features_converter.cc",
     "window_features_converter.h",

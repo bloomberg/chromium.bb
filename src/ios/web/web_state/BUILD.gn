@@ -10,6 +10,7 @@ source_set("web_state") {
     ":web_state_impl_header",
     "//base",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
     "//ios/web/navigation:wk_navigation_util",
@@ -22,6 +23,7 @@ source_set("web_state") {
     "//ios/web/session",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
+    "//ios/web/web_view:util",
     "//ios/web/webui",
     "//net",
     "//ui/gfx",
@@ -49,6 +51,7 @@ source_set("web_state") {
 source_set("web_state_impl_header") {
   deps = [
     "//base",
+    "//ios/web/js_messaging",
     "//ios/web/navigation:core",
     "//ios/web/public",
     "//ios/web/public/js_messaging",

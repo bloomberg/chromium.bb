@@ -202,7 +202,7 @@ void CertificateSelector::Show() {
 void CertificateSelector::InitWithText(
     std::unique_ptr<views::View> text_label) {
   views::GridLayout* const layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);
@@ -210,7 +210,7 @@ void CertificateSelector::InitWithText(
                         views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  layout->AddView(text_label.release());
+  layout->AddView(std::move(text_label));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing = provider->GetDistanceMetric(
@@ -234,10 +234,9 @@ void CertificateSelector::InitWithText(
   table_ = table.get();
   table->set_observer(this);
   layout->StartRow(1.0, kColumnSetId);
-  layout->AddView(
-      views::TableView::CreateScrollViewWithTable(std::move(table)).release(),
-      1, 1, views::GridLayout::FILL, views::GridLayout::FILL, kTableViewWidth,
-      kTableViewHeight);
+  layout->AddView(views::TableView::CreateScrollViewWithTable(std::move(table)),
+                  1, 1, views::GridLayout::FILL, views::GridLayout::FILL,
+                  kTableViewWidth, kTableViewHeight);
 
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 }
@@ -281,12 +280,12 @@ views::View* CertificateSelector::GetInitiallyFocusedView() {
   return table_;
 }
 
-views::View* CertificateSelector::CreateExtraView() {
+std::unique_ptr<views::View> CertificateSelector::CreateExtraView() {
   DCHECK(!view_cert_button_);
   auto view_cert_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_PAGE_INFO_CERT_INFO_BUTTON));
-  view_cert_button_ = view_cert_button.release();
-  return view_cert_button_;
+  view_cert_button_ = view_cert_button.get();
+  return view_cert_button;
 }
 
 ui::ModalType CertificateSelector::GetModalType() const {

@@ -56,6 +56,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   // DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override;
+  bool IsReadPending() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
@@ -171,7 +172,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   bool key_added_while_decrypt_pending_;
 
   base::WeakPtr<DecryptingDemuxerStream> weak_this_;
-  base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_;
+  base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingDemuxerStream);
 };

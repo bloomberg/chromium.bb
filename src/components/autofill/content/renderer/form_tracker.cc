@@ -21,8 +21,10 @@ using blink::WebFormElement;
 
 namespace autofill {
 
+using mojom::SubmissionSource;
+
 FormTracker::FormTracker(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame), weak_ptr_factory_(this) {
+    : content::RenderFrameObserver(render_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
 }
 

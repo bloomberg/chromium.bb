@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -179,6 +180,11 @@ class AwPermissionManager::PendingRequest {
     }
     DCHECK(!IsCompleted());
     results[result->second] = status;
+    if (type == PermissionType::MIDI_SYSEX &&
+        status == PermissionStatus::GRANTED) {
+      content::ChildProcessSecurityPolicy::GetInstance()
+          ->GrantSendMidiSysExMessage(render_process_id);
+    }
     resolved_permissions_.insert(type);
   }
 
@@ -336,12 +342,17 @@ int AwPermissionManager::RequestPermissions(
         break;
       case PermissionType::MIDI:
       case PermissionType::SENSORS:
+      case PermissionType::WAKE_LOCK_SCREEN:
         // PermissionType::SENSORS requests are always granted so that access
         // to device motion and device orientation data (and underlying
         // sensors) works in the WebView. SensorProviderImpl::GetSensor()
         // filters requests for other types of sensors.
         pending_request_raw->SetPermissionStatus(permissions[i],
                                                  PermissionStatus::GRANTED);
+        break;
+      case PermissionType::WAKE_LOCK_SYSTEM:
+        pending_request_raw->SetPermissionStatus(permissions[i],
+                                                 PermissionStatus::DENIED);
         break;
       case PermissionType::NUM:
         NOTREACHED() << "PermissionType::NUM was not expected here.";
@@ -530,6 +541,8 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
         break;
       case PermissionType::MIDI:
       case PermissionType::SENSORS:
+      case PermissionType::WAKE_LOCK_SCREEN:
+      case PermissionType::WAKE_LOCK_SYSTEM:
         // There is nothing to cancel so this is simply ignored.
         break;
       case PermissionType::NUM:

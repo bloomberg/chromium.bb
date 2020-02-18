@@ -25,13 +25,12 @@ double GetCornerRadius() {
 
 }  // namespace
 
-const char FocusRing::kViewClassName[] = "FocusRing";
-
 // static
 std::unique_ptr<FocusRing> FocusRing::Install(View* parent) {
   auto ring = base::WrapUnique<FocusRing>(new FocusRing());
   ring->set_owned_by_client();
   parent->AddChildView(ring.get());
+  ring->EnableCanvasFlippingForRTLUI(parent->flip_canvas_on_paint_for_rtl_ui());
   ring->InvalidateLayout();
   ring->SchedulePaint();
   return ring;
@@ -61,10 +60,6 @@ void FocusRing::SetHasFocusPredicate(const ViewPredicate& predicate) {
 void FocusRing::SetColor(base::Optional<SkColor> color) {
   color_ = color;
   SchedulePaint();
-}
-
-const char* FocusRing::GetClassName() const {
-  return kViewClassName;
 }
 
 void FocusRing::Layout() {
@@ -107,6 +102,8 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
     path = GetHighlightPath(parent());
 
   DCHECK(IsPathUseable(path));
+  DCHECK_EQ(flip_canvas_on_paint_for_rtl_ui(),
+            parent()->flip_canvas_on_paint_for_rtl_ui());
   SkRect bounds;
   SkRRect rbounds;
   if (path.isRect(&bounds)) {
@@ -178,5 +175,9 @@ SkPath GetHighlightPath(const View* view) {
                                     corner_radius, corner_radius));
   return path;
 }
+
+BEGIN_METADATA(FocusRing)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

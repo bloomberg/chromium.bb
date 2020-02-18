@@ -25,14 +25,15 @@
 namespace viz {
 
 GLOutputSurface::GLOutputSurface(
-    scoped_refptr<VizProcessContextProvider> context_provider)
+    scoped_refptr<VizProcessContextProvider> context_provider,
+    gpu::SurfaceHandle surface_handle)
     : OutputSurface(context_provider),
       viz_context_provider_(context_provider),
+      surface_handle_(surface_handle),
       use_gpu_fence_(
           context_provider->ContextCapabilities().chromium_gpu_fence &&
           context_provider->ContextCapabilities()
-              .use_gpu_fences_for_overlay_planes),
-      weak_ptr_factory_(this) {
+              .use_gpu_fences_for_overlay_planes) {
   capabilities_.flipped_output_surface =
       context_provider->ContextCapabilities().flips_vertically;
   capabilities_.supports_stencil =
@@ -134,11 +135,6 @@ uint32_t GLOutputSurface::GetFramebufferCopyTextureFormat() {
   return gl->GetCopyTextureInternalFormat();
 }
 
-std::unique_ptr<OverlayCandidateValidator>
-GLOutputSurface::TakeOverlayCandidateValidator() {
-  return nullptr;
-}
-
 bool GLOutputSurface::IsDisplayedAsOverlayPlane() const {
   return false;
 }
@@ -157,8 +153,9 @@ bool GLOutputSurface::HasExternalStencilTest() const {
 
 void GLOutputSurface::ApplyExternalStencil() {}
 
-void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
-  client_->DidReceiveSwapBuffersAck();
+void GLOutputSurface::DidReceiveSwapBuffersAck(
+    const gfx::SwapResponse& response) {
+  client_->DidReceiveSwapBuffersAck(response.timings);
 }
 
 void GLOutputSurface::HandlePartialSwap(
@@ -179,7 +176,7 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   if (!params.ca_layer_params.is_empty)
     client_->DidReceiveCALayerParams(params.ca_layer_params);
-  DidReceiveSwapBuffersAck(params.swap_response.result);
+  DidReceiveSwapBuffersAck(params.swap_response);
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
@@ -242,4 +239,7 @@ base::ScopedClosureRunner GLOutputSurface::GetCacheBackBufferCb() {
   return viz_context_provider_->GetCacheBackBufferCb();
 }
 
+gpu::SurfaceHandle GLOutputSurface::GetSurfaceHandle() const {
+  return surface_handle_;
+}
 }  // namespace viz

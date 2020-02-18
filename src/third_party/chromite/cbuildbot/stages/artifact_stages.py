@@ -12,6 +12,7 @@ import glob
 import itertools
 import json
 import multiprocessing
+import re
 import os
 import shutil
 
@@ -439,6 +440,41 @@ class CPEExportStage(generic_stages.BoardSpecificBuilderStage,
     self.UploadArtifact(os.path.basename(results_filename), archive=False)
 
 
+class BuildConfigsExportStage(generic_stages.BoardSpecificBuilderStage,
+                              generic_stages.ArchivingStageMixin):
+  """Handles generation & upload of build related configs.
+
+  NOTES: this is an ephemeral stage just to gather build config data for
+    crbug.com/974795 and will be removed once that project finished.
+  """
+  config_name = 'run_build_configs_export'
+  category = constants.CI_INFRA_STAGE
+
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+  def PerformStage(self):
+    """Generate and upload build configs.
+
+    The build config includes config.yaml (for unibuild) and USE flags.
+    """
+    board = self._current_board
+    config_useflags = self._run.config.useflags
+
+    logging.info('Generating build configs.')
+    results = commands.GenerateBuildConfigs(board, config_useflags)
+
+    results_str = json.dumps(results, indent=2)
+    logging.info('Results:\n %s', results_str)
+
+    logging.info('Writing build configs to files for archive.')
+    results_filename = os.path.join(self.archive_path,
+                                    'chromeos-build-configs-%s.json' % board)
+
+    osutils.WriteFile(results_filename, results_str)
+
+    logging.info('Uploading build config files.')
+    self.UploadArtifact(os.path.basename(results_filename), archive=False)
+
+
 class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Handles generation & upload of debug symbols."""
@@ -649,7 +685,7 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
       # Deduplicate against previous binhosts.
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, board).split())
       binhosts.extend(self._GetPortageEnvVar(_PORTAGE_BINHOST, None).split())
-      for binhost in filter(None, binhosts):
+      for binhost in (x for x in binhosts if x):
         generated_args.extend(['--previous-binhost-url', binhost])
 
       if self._run.config.master and board == self._boards[-1]:
@@ -945,13 +981,63 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
   PROFDATA_TAR = 'llvm_profdata.tar.xz'
+  LLVM_METADATA = 'llvm_metadata.json'
   PROFDATA = 'llvm.profdata'
-  SYS_DEVEL_DIR = 'var/tmp/portage/sys-devel'
 
   def __init__(self, *args, **kwargs):
     super(CollectPGOProfilesStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
     self._merge_cmd = ''
+
+  @staticmethod
+  def _ParseUseFlagState(use_flags):
+    """Converts the textual output of equery to a +/- USE flag list."""
+    # Equery prints out a large header. The lines we're interested in look
+    # like:
+    # " + - use_flag : foo", where `use_flag` is the name of the use flag, the
+    # initial - or + says whether the flag is enabled by default, and the
+    # second one says whether the flag was enabled upon installation. `foo` is
+    # the description, but that's unimportant to us.
+    matcher = re.compile(r'^\s+[+-]\s+([+-])\s+(\S+)\s+:', re.MULTILINE)
+    matches = matcher.findall(use_flags)
+    return [state + flag_name for state, flag_name in matches]
+
+  @staticmethod
+  def _ParseLLVMHeadSHA(version_string):
+    # The first line of clang's version string looks something like:
+    # Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 \
+    # (/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project \
+    # de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)
+    #
+    # The SHA after llvm-project is the SHA we're looking for.
+    # Note that len('de7a0a152648d1a74cf4319920b1848aa00d1ca3') == 40.
+    sha_re = re.compile(r'([A-Fa-f0-9]{40})\)\s+\(based on LLVM [\d+.]+svn\)$')
+    first_line = version_string.splitlines()[0].strip()
+    match = sha_re.search(first_line)
+    if not match:
+      raise ValueError('Can\'t recognize the version string %r' % first_line)
+    return match.group(1)
+
+  def _CollectLLVMMetadata(self):
+    def check_chroot_output(command):
+      cmd = cros_build_lib.RunCommand(command, enter_chroot=True,
+                                      redirect_stdout=True)
+      return cmd.output
+
+    # The baked-in clang should be the one we're looking for. If not, yell.
+    llvm_uses = check_chroot_output(
+        ['equery', '-C', '-N', 'uses', 'sys-devel/llvm'])
+    use_vars = self._ParseUseFlagState(llvm_uses)
+    if '+llvm_pgo_generate' not in use_vars:
+      raise ValueError('The pgo_generate flag isn\'t enabled; USE flags: %r' %
+                       sorted(use_vars))
+
+    clang_version_str = check_chroot_output(['clang', '--version'])
+    head_sha = self._ParseLLVMHeadSHA(clang_version_str)
+    metadata_output_path = os.path.join(self.archive_path, self.LLVM_METADATA)
+    osutils.WriteFile(metadata_output_path, json.dumps({'head_sha': head_sha}))
+    # This is a tiny JSON file, so it doesn't need to be tarred/compressed.
+    self._upload_queue.put([metadata_output_path])
 
   def _CollectPGOProfiles(self):
     """Collect and upload PGO profiles for the board."""
@@ -960,18 +1046,16 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     # Look for profiles generated by instrumented LLVM
     out_chroot = os.path.abspath(
         os.path.join(self._build_root, 'chroot'))
-    out_chroot_sys_devel = os.path.join(out_chroot, self.SYS_DEVEL_DIR)
+    cov_data_location = 'build/%s/build/coverage_data' % self._current_board
+    out_chroot_cov_data = os.path.join(out_chroot, cov_data_location)
     try:
-      profiles_dirs = [root for root, _, _ in os.walk(out_chroot_sys_devel)
-                       if os.path.basename(root) == 'profiles']
+      profiles_dirs = [root for root, _, _ in os.walk(out_chroot_cov_data)
+                       if os.path.basename(root) == 'raw_profiles']
       if not profiles_dirs:
         raise Exception('No profile directories found.')
-      if len(profiles_dirs) != 1:
-        raise Exception('More than one profile directories are found: %s'
-                        % ' '.join(sorted(profiles_dirs)))
-      profiles_dir = profiles_dirs[0]
       # Get out of chroot profile paths, and convert to in chroot paths
       profraws = [path_util.ToChrootPath(os.path.join(profiles_dir, f))
+                  for profiles_dir in profiles_dirs
                   for f in os.listdir(profiles_dir)]
       if not profraws:
         raise Exception('No profraw files found in profiles directory.')
@@ -983,13 +1067,23 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     profdata_loc = os.path.join(in_chroot_path, self.PROFDATA)
 
-    self._merge_cmd = ['llvm-profdata', 'merge', '-output', profdata_loc] + \
-                      profraws
+    out_chroot_path = os.path.join(out_chroot, self.archive_path)
+    out_profdata_loc = os.path.join(out_chroot_path, self.PROFDATA)
+
+    # There can bee too many profraws to merge, put them as a list in the file
+    # so that bash will not complain about arguments getting too long.
+    profraw_list = os.path.join(in_chroot_path, 'profraw_list')
+    out_profraw_list = os.path.join(out_chroot_path, 'profraw_list')
+
+    with open(out_profraw_list, 'w') as f:
+      f.write('\n'.join(profraws))
+
+    self._merge_cmd = ['llvm-profdata', 'merge',
+                       '-output', profdata_loc,
+                       '-f', profraw_list]
     cros_build_lib.RunCommand(self._merge_cmd, cwd=self._build_root,
                               enter_chroot=True)
 
-    out_chroot_path = os.path.join(out_chroot, self.archive_path)
-    out_profdata_loc = os.path.join(out_chroot_path, self.PROFDATA)
     cros_build_lib.CreateTarball(self.PROFDATA_TAR, cwd=out_chroot_path,
                                  inputs=[out_profdata_loc])
 
@@ -999,6 +1093,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._CollectPGOProfiles()
+      self._CollectLLVMMetadata()
 
 
 # This stage generates and uploads the orderfile files for Chrome build.
@@ -1008,30 +1103,54 @@ class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
 
-  ORDERFILE_TAR = 'chrome.orderfile.tar.xz'
-  ORDERFILE_NAME = 'chrome.orderfile.txt'
+  GS_URL = 'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
 
   def __init__(self, *args, **kwargs):
     super(GenerateOrderfileStage, self).__init__(*args, **kwargs)
     self._upload_queue = multiprocessing.Queue()
 
-  def _GenerateOrderfile(self):
-    """Generate and upload the orderfile for the board."""
-    assert self.archive_path.startswith(self._build_root)
-    chroot_path = os.path.join(self._build_root, 'chroot')
-    orderfile_path = os.path.join(chroot_path, 'build',
-                                  self._current_board, 'opt/google/chrome')
-    orderfile = os.path.join(orderfile_path, self.ORDERFILE_NAME)
-    if not os.path.exists(orderfile):
-      raise Exception('No orderfile generated in the builder.')
+  def _UploadOrderfile(self, tar_path, tar_names):
+    """Upload orderfile tarballs to the gs bucket and build bucket."""
+    gs_context = gs.GSContext()
+    debug = self._run.options.debug_forced
+    for tar_name in tar_names:
+      tar_file = os.path.join(tar_path, tar_name)
+      if not os.path.exists(tar_file):
+        raise Exception('%s does not exist for uploading', tar_file)
 
-    output_path = os.path.join(self._build_root, 'chroot/tmp')
-    target = os.path.join(output_path, self.ORDERFILE_TAR)
-    cros_build_lib.CreateTarball(os.path.relpath(target, orderfile_path),
-                                 cwd=orderfile_path,
-                                 input=[self.ORDERFILE_NAME])
-    orderfile_tarball = os.path.abspath(target)
-    self._upload_queue.put([orderfile_tarball])
+      if debug:
+        logging.info('Debug run: not uploading tarball.')
+        logging.info('If this were not a debug run, would upload %s to %s.',
+                     tar_file, self.GS_URL)
+        continue
+
+      try:
+        if gs_context.Exists(self.GS_URL + '/' + tar_name):
+          logging.info('%s already exists at %s, skip uploading', tar_name,
+                       self.GS_URL)
+        else:
+          logging.info('Uploading tarball %s to %s', tar_file, self.GS_URL)
+          gs_context.CopyInto(tar_file, self.GS_URL, acl='public-read')
+      except:
+        logging.error('Error: Unable to upload tarball %s to %s', tar_file,
+                      self.GS_URL)
+        raise
+
+    # Upload to build bucket too
+    for n in tar_names:
+      self._upload_queue.put([n])
+
+  def _GenerateOrderfile(self):
+    """Generate and upload orderfile artifacts for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    output_path = os.path.abspath(
+        os.path.join(self._build_root, 'chroot', self.archive_path))
+
+    tarballs = commands.GenerateChromeOrderfileArtifacts(self._build_root,
+                                                         self._current_board,
+                                                         output_path)
+    tarball_names = [os.path.basename(f) for f in tarballs]
+    self._UploadOrderfile(output_path, tarball_names)
 
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):

@@ -372,22 +372,31 @@ class VersionInfo(object):
 
   def VersionComponents(self):
     """Return an array of ints of the version fields for comparing."""
-    return map(int, [self.build_number, self.branch_build_number,
-                     self.patch_number])
+    return [int(x) for x in [self.build_number, self.branch_build_number,
+                             self.patch_number]]
 
   @classmethod
   def VersionCompare(cls, version_string):
     """Useful method to return a comparable version of a LKGM string."""
     return cls(version_string).VersionComponents()
 
-  def __cmp__(self, other):
-    sinfo = self.VersionComponents()
-    oinfo = other.VersionComponents()
+  def __lt__(self, other):
+    return self.VersionComponents() < other.VersionComponents()
 
-    for s, o in zip(sinfo, oinfo):
-      if s != o:
-        return -1 if s < o else 1
-    return 0
+  def __le__(self, other):
+    return self.VersionComponents() <= other.VersionComponents()
+
+  def __eq__(self, other):
+    return self.VersionComponents() == other.VersionComponents()
+
+  def __ne__(self, other):
+    return self.VersionComponents() != other.VersionComponents()
+
+  def __gt__(self, other):
+    return self.VersionComponents() > other.VersionComponents()
+
+  def __ge__(self, other):
+    return self.VersionComponents() >= other.VersionComponents()
 
   __hash__ = None
 
@@ -1177,8 +1186,8 @@ def FilterManifest(manifest, whitelisted_remotes=None, whitelisted_groups=None):
 
   with os.fdopen(temp_fd, 'w') as manifest_file:
     # Filter out empty lines.
-    filtered_manifest_noempty = filter(
-        str.strip, manifest_dom.toxml('utf-8').splitlines())
+    stripped = [x.strip() for x in manifest_dom.toxml('utf-8').splitlines()]
+    filtered_manifest_noempty = [x for x in stripped if x]
     manifest_file.write(os.linesep.join(filtered_manifest_noempty))
 
   return new_path

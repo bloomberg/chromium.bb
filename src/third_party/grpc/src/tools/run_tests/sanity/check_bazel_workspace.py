@@ -35,7 +35,7 @@ git_submodule_hashes = {
 }
 
 _BAZEL_SKYLIB_DEP_NAME = 'bazel_skylib'
-_BAZEL_TOOLCHAINS_DEP_NAME = 'com_github_bazelbuild_bazeltoolchains'
+_BAZEL_TOOLCHAINS_DEP_NAME = 'bazel_toolchains'
 _TWISTED_TWISTED_DEP_NAME = 'com_github_twisted_twisted'
 _YAML_PYYAML_DEP_NAME = 'com_github_yaml_pyyaml'
 _TWISTED_INCREMENTAL_DEP_NAME = 'com_github_twisted_incremental'
@@ -45,7 +45,7 @@ _TWISTED_CONSTANTLY_DEP_NAME = 'com_github_twisted_constantly'
 _GRPC_DEP_NAMES = [
     'upb',
     'boringssl',
-    'com_github_madler_zlib',
+    'zlib',
     'com_google_protobuf',
     'com_github_google_googletest',
     'com_github_gflags_gflags',

@@ -53,8 +53,10 @@
         background-color: rgb(228, 236, 247);
       }
 
-      :host-context([dark]) .list-item:-webkit-any(:hover, :focus) {
-        background-color: var(--cr-menu-background-focus-color);
+      @media (prefers-color-scheme: dark) {
+        .list-item:-webkit-any(:hover, :focus) {
+          background-color: var(--cr-menu-background-focus-color);
+        }
       }
 
       .list-item:focus {

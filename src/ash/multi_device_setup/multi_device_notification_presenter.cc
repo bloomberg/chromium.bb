@@ -9,7 +9,7 @@
 
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -56,18 +56,6 @@ MultiDeviceNotificationPresenter::GetNotificationDescriptionForLogging(
   NOTREACHED();
 }
 
-MultiDeviceNotificationPresenter::OpenUiDelegate::~OpenUiDelegate() = default;
-
-void MultiDeviceNotificationPresenter::OpenUiDelegate::
-    OpenMultiDeviceSetupUi() {
-  Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
-}
-
-void MultiDeviceNotificationPresenter::OpenUiDelegate::
-    OpenConnectedDevicesSettings() {
-  Shell::Get()->system_tray_model()->client()->ShowConnectedDevicesSettings();
-}
-
 // static
 MultiDeviceNotificationPresenter::NotificationType
 MultiDeviceNotificationPresenter::GetMetricValueForNotification(
@@ -91,7 +79,6 @@ MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
     : message_center_(message_center),
       connector_(connector),
       binding_(this),
-      open_ui_delegate_(std::make_unique<OpenUiDelegate>()),
       weak_ptr_factory_(this) {
   DCHECK(message_center_);
   DCHECK(connector_);
@@ -191,14 +178,17 @@ void MultiDeviceNotificationPresenter::OnNotificationClicked(
                             kNotificationTypeMax);
   switch (notification_status_) {
     case Status::kNewUserNotificationVisible:
-      open_ui_delegate_->OpenMultiDeviceSetupUi();
+      Shell::Get()->system_tray_model()->client()->ShowMultiDeviceSetup();
       break;
     case Status::kExistingUserHostSwitchedNotificationVisible:
       // Clicks on the 'host switched' and 'Chromebook added' notifications have
       // the same effect, i.e. opening the Settings subpage.
       FALLTHROUGH;
     case Status::kExistingUserNewChromebookNotificationVisible:
-      open_ui_delegate_->OpenConnectedDevicesSettings();
+      Shell::Get()
+          ->system_tray_model()
+          ->client()
+          ->ShowConnectedDevicesSettings();
       break;
     case Status::kNoNotificationVisible:
       NOTREACHED();
@@ -272,14 +262,14 @@ std::unique_ptr<message_center::Notification>
 MultiDeviceNotificationPresenter::CreateNotification(
     const base::string16& title,
     const base::string16& message) {
-  return ash::CreateSystemNotification(
+  return CreateSystemNotification(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId, title, message, base::string16() /* display_source */,
       GURL() /* origin_url */,
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierMultiDevice),
       message_center::RichNotificationData(), nullptr /* delegate */,
-      ash::kNotificationMultiDeviceSetupIcon,
+      kNotificationMultiDeviceSetupIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 }
 

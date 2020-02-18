@@ -24,21 +24,20 @@ class QueueSubmitValidationTest : public ValidationTest {
 static void StoreTrueMapWriteCallback(DawnBufferMapAsyncStatus status,
                                       void*,
                                       uint64_t,
-                                      DawnCallbackUserdata userdata) {
-    bool* userdataPtr = reinterpret_cast<bool*>(static_cast<intptr_t>(userdata));
-    *userdataPtr = true;
+                                      void* userdata) {
+    *static_cast<bool*>(userdata) = true;
 }
 
 // Test submitting with a mapped buffer is disallowed
 TEST_F(QueueSubmitValidationTest, SubmitWithMappedBuffer) {
     // Create a map-write buffer.
     dawn::BufferDescriptor descriptor;
-    descriptor.usage = dawn::BufferUsageBit::MapWrite | dawn::BufferUsageBit::TransferSrc;
+    descriptor.usage = dawn::BufferUsageBit::MapWrite | dawn::BufferUsageBit::CopySrc;
     descriptor.size = 4;
     dawn::Buffer buffer = device.CreateBuffer(&descriptor);
 
     // Create a fake copy destination buffer
-    descriptor.usage = dawn::BufferUsageBit::TransferDst;
+    descriptor.usage = dawn::BufferUsageBit::CopyDst;
     dawn::Buffer targetBuffer = device.CreateBuffer(&descriptor);
 
     // Create a command buffer that reads from the mappable buffer.
@@ -56,8 +55,7 @@ TEST_F(QueueSubmitValidationTest, SubmitWithMappedBuffer) {
 
     // Map the buffer, submitting when the buffer is mapped should fail
     bool mapWriteFinished = false;
-    DawnCallbackUserdata userdata = static_cast<DawnCallbackUserdata>(reinterpret_cast<intptr_t>(&mapWriteFinished));
-    buffer.MapWriteAsync(StoreTrueMapWriteCallback, userdata);
+    buffer.MapWriteAsync(StoreTrueMapWriteCallback, &mapWriteFinished);
     queue.Submit(0, nullptr);
     ASSERT_TRUE(mapWriteFinished);
 

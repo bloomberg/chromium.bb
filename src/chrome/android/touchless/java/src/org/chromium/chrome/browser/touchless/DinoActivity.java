@@ -15,12 +15,13 @@ import android.widget.TextView;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SingleTabActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.touchless.R;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.UiUtils;
@@ -87,8 +88,19 @@ public class DinoActivity extends SingleTabActivity {
     protected void initializeToolbar() {}
 
     @Override
+    public boolean supportsFindInPage() {
+        return false;
+    }
+
+    @Override
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this, ChromeFullscreenManager.ControlsPosition.NONE);
+    }
+
+    @Override
+    protected TabDelegateFactory createTabDelegateFactory() {
+        return new NoTouchTabDelegateFactory(
+                this, getFullscreenManager().getBrowserVisibilityDelegate());
     }
 
     @Override

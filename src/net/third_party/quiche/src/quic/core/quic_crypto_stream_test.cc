@@ -484,8 +484,7 @@ TEST_F(QuicCryptoStreamTest, HasUnackedCryptoData) {
   EXPECT_FALSE(stream_->IsWaitingForAcks());
   // Although there is no outstanding data, verify session has pending crypto
   // data.
-  EXPECT_EQ(GetQuicReloadableFlag(quic_fix_has_pending_crypto_data),
-            session_.HasUnackedCryptoData());
+  EXPECT_TRUE(session_.HasUnackedCryptoData());
 
   EXPECT_CALL(
       session_,
@@ -511,6 +510,23 @@ TEST_F(QuicCryptoStreamTest, HasUnackedCryptoDataWithCryptoFrames) {
   stream_->WriteCryptoData(ENCRYPTION_INITIAL, data);
   EXPECT_TRUE(stream_->IsWaitingForAcks());
   EXPECT_TRUE(session_.HasUnackedCryptoData());
+}
+
+// Regression test for bugfix of GetPacketHeaderSize.
+TEST_F(QuicCryptoStreamTest, CryptoMessageFramingOverhead) {
+  SetQuicReloadableFlag(quic_fix_get_packet_header_size, true);
+  for (auto version : AllSupportedTransportVersions()) {
+    SCOPED_TRACE(version);
+    QuicByteCount expected_overhead = 48;
+    if (VersionHasIetfInvariantHeader(version)) {
+      expected_overhead = 52;
+    }
+    if (QuicVersionHasLongHeaderLengths(version)) {
+      expected_overhead = 55;
+    }
+    EXPECT_EQ(expected_overhead, QuicCryptoStream::CryptoMessageFramingOverhead(
+                                     version, TestConnectionId()));
+  }
 }
 
 }  // namespace

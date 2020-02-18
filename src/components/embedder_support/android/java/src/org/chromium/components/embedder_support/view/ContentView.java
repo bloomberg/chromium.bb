@@ -14,12 +14,15 @@ import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnSystemUiVisibilityChangeListener;
+import android.view.ViewGroup.OnHierarchyChangeListener;
 import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -34,32 +37,22 @@ import org.chromium.ui.base.EventForwarder;
  * The containing view for {@link WebContents} that exists in the Android UI hierarchy and exposes
  * the various {@link View} functionality to it.
  */
-public class ContentView
-        extends FrameLayout implements ViewEventSink.InternalAccessDelegate, SmartClipProvider {
+public class ContentView extends FrameLayout
+        implements ViewEventSink.InternalAccessDelegate, SmartClipProvider,
+                   OnHierarchyChangeListener, OnSystemUiVisibilityChangeListener {
     private static final String TAG = "cr.ContentView";
 
     // Default value to signal that the ContentView's size need not be overridden.
     public static final int DEFAULT_MEASURE_SPEC =
             MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
 
-    /** Delegates touch events for extending functionalities. */
-    public interface TouchEventDelegate {
-        /**
-         * @see View#dispatchTouchEvent(MotionEvent)
-         */
-        boolean dispatchTouchEvent(MotionEvent e);
-
-        /**
-         * @see View#onInterceptTouchEvent(MotionEvent)
-         */
-        boolean onInterceptTouchEvent(MotionEvent e);
-    }
-
     private final WebContents mWebContents;
+    private final ObserverList<OnHierarchyChangeListener> mHierarchyChangeListeners =
+            new ObserverList<>();
+    private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
+            new ObserverList<>();
     private ViewEventSink mViewEventSink;
     private EventForwarder mEventForwarder;
-
-    private TouchEventDelegate mDelegate;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host
@@ -104,6 +97,9 @@ public class ContentView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ApiHelperForO.setDefaultFocusHighlightEnabled(this, false);
         }
+
+        setOnHierarchyChangeListener(this);
+        setOnSystemUiVisibilityChangeListener(this);
     }
 
     protected WebContentsAccessibility getWebContentsAccessibility() {
@@ -129,12 +125,74 @@ public class ContentView
         mDesiredHeightMeasureSpec = height;
     }
 
+    @Override
+    public void setOnHierarchyChangeListener(OnHierarchyChangeListener listener) {
+        assert listener == this : "Use add/removeOnHierarchyChangeListener instead.";
+        super.setOnHierarchyChangeListener(listener);
+    }
+
     /**
-     * Sets {@link #TouchEventDelegate} used to do additional work.
-     * @param delegate Delegate object.
+     * Registers the given listener to receive state changes for the content view hierarchy.
+     * @param listener Listener to receive view hierarchy state changes.
      */
-    public void setTouchEventDelegate(TouchEventDelegate delegate) {
-        mDelegate = delegate;
+    public void addOnHierarchyChangeListener(OnHierarchyChangeListener listener) {
+        mHierarchyChangeListeners.addObserver(listener);
+    }
+
+    /**
+     * Unregisters the given listener from receiving state changes for the content view hierarchy.
+     * @param listener Listener that doesn't want to receive view hierarchy state changes.
+     */
+    public void removeOnHierarchyChangeListener(OnHierarchyChangeListener listener) {
+        mHierarchyChangeListeners.removeObserver(listener);
+    }
+
+    @Override
+    public void setOnSystemUiVisibilityChangeListener(OnSystemUiVisibilityChangeListener listener) {
+        assert listener == this : "Use add/removeOnSystemUiVisibilityChangeListener instead.";
+        super.setOnSystemUiVisibilityChangeListener(listener);
+    }
+
+    /**
+     * Registers the given listener to receive system UI visibility state changes.
+     * @param listener Listener to receive system UI visibility state changes.
+     */
+    public void addOnSystemUiVisibilityChangeListener(OnSystemUiVisibilityChangeListener listener) {
+        mSystemUiChangeListeners.addObserver(listener);
+    }
+
+    /**
+     * Unregisters the given listener from receiving system UI visibility state changes.
+     * @param listener Listener that doesn't want to receive state changes.
+     */
+    public void removeOnSystemUiVisibilityChangeListener(
+            OnSystemUiVisibilityChangeListener listener) {
+        mSystemUiChangeListeners.removeObserver(listener);
+    }
+
+    // View.OnHierarchyChangeListener implementation
+
+    @Override
+    public void onChildViewRemoved(View parent, View child) {
+        for (OnHierarchyChangeListener listener : mHierarchyChangeListeners) {
+            listener.onChildViewRemoved(parent, child);
+        }
+    }
+
+    @Override
+    public void onChildViewAdded(View parent, View child) {
+        for (OnHierarchyChangeListener listener : mHierarchyChangeListeners) {
+            listener.onChildViewAdded(parent, child);
+        }
+    }
+
+    // View.OnHierarchyChangeListener implementation
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        for (OnSystemUiVisibilityChangeListener listener : mSystemUiChangeListeners) {
+            listener.onSystemUiVisibilityChange(visibility);
+        }
     }
 
     @Override
@@ -207,18 +265,6 @@ public class ContentView
     @Override
     public boolean onDragEvent(DragEvent event) {
         return getEventForwarder().onDragEvent(event, this);
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent e) {
-        if (mDelegate != null && mDelegate.dispatchTouchEvent(e)) return true;
-        return super.dispatchTouchEvent(e);
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent e) {
-        if (mDelegate != null && mDelegate.onInterceptTouchEvent(e)) return true;
-        return super.onInterceptTouchEvent(e);
     }
 
     @Override

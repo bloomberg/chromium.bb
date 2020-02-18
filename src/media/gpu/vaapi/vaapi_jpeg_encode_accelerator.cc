@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -93,10 +94,13 @@ class VaapiJpegEncodeAccelerator::Encoder {
   base::RepeatingCallback<void(int32_t, size_t)> video_frame_ready_cb_;
   base::RepeatingCallback<void(int32_t, Status)> notify_error_cb_;
 
-  // The current VA surface used for encoding.
+  // The current VA surface ID used for encoding. Only used for Non-DMA-buf use
+  // case.
   VASurfaceID va_surface_id_;
   // The size of the surface associated with |va_surface_id_|.
-  gfx::Size surface_size_;
+  gfx::Size input_size_;
+  // The format used to create VAContext. Only used for DMA-buf use case.
+  uint32_t va_format_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -113,7 +117,9 @@ VaapiJpegEncodeAccelerator::Encoder::Encoder(
       gpu_memory_buffer_support_(new gpu::GpuMemoryBufferSupport()),
       video_frame_ready_cb_(std::move(video_frame_ready_cb)),
       notify_error_cb_(std::move(notify_error_cb)),
-      va_surface_id_(VA_INVALID_SURFACE) {
+      va_surface_id_(VA_INVALID_SURFACE),
+      input_size_(gfx::Size()),
+      va_format_(0) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -136,11 +142,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // Construct GBM Handle from VideoFrame.
   gfx::GpuMemoryBufferHandle input_gmb_handle =
       CreateGpuMemoryBufferHandle(input_frame.get());
-  if (input_gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to create input gmb handle";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
+  DCHECK(!input_gmb_handle.is_null());
 
   // Create pixmap for input handle and create VA surface.
   auto num_planes_input = VideoFrame::NumPlanes(input_frame->format());
@@ -149,6 +151,22 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // once we support other formats.
   DCHECK(num_planes_input == 2);
   gfx::BufferFormat buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+  uint32_t va_format = VaapiWrapper::BufferFormatToVARTFormat(buffer_format);
+  bool context_changed = input_size != input_size_ || va_format != va_format_;
+  if (context_changed) {
+    vaapi_wrapper_->DestroyContext();
+    va_format_ = 0;
+    input_size_ = gfx::Size();
+    const bool success = vaapi_wrapper_->CreateContext(input_size);
+    if (!success) {
+      VLOGF(1) << "Failed to create context";
+      vaapi_wrapper_->DestroyContext();
+      notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
+      return;
+    }
+    va_format_ = va_format;
+    input_size_ = input_size;
+  }
 
   auto va_surface = vaapi_wrapper_->CreateVASurfaceForPixmap(
       base::WrapRefCounted(new gfx::NativePixmapDmaBuf(
@@ -159,21 +177,11 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;
   }
-  va_surface_id_ = va_surface->id();
-
-  vaapi_wrapper_->DestroyContextAndSurfaces();
-  const bool success = vaapi_wrapper_->CreateContext(
-      VaapiWrapper::BufferFormatToVARTFormat(buffer_format), input_size);
-  if (!success) {
-    VLOGF(1) << "Failed to create context";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
 
   // Create output buffer for encoding result.
   size_t max_coded_buffer_size =
       VaapiJpegEncoder::GetMaxCodedBufferSize(input_size);
-  if (max_coded_buffer_size > cached_output_buffer_size_) {
+  if (context_changed || max_coded_buffer_size > cached_output_buffer_size_) {
     vaapi_wrapper_->DestroyVABuffers();
     cached_output_buffer_size_ = 0;
 
@@ -206,23 +214,23 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   size_t exif_offset = 0;
 
   if (!jpeg_encoder_->Encode(input_size, exif_buffer_dummy.data(),
-                             exif_buffer_size, quality, va_surface_id_,
+                             exif_buffer_size, quality, va_surface->id(),
                              cached_output_buffer_id_, &exif_offset)) {
     VLOGF(1) << "Encode JPEG failed";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
     return;
   }
 
-  // Create gmb buffer from output VideoFrame.
+  // Create gmb buffer from output VideoFrame. Since the JPEG VideoFrame's coded
+  // size is the 2D image size, we should use (buffer_size, 1) as the R8 gmb's
+  // size, where buffer_size can be obtained from the first plane's size.
   auto output_gmb_handle = CreateGpuMemoryBufferHandle(output_frame.get());
-  if (output_gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to create GpuMemoryBufferHandle";
-    notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
-    return;
-  }
+  DCHECK(!output_gmb_handle.is_null());
+  const gfx::Size output_gmb_buffer_size(
+      base::checked_cast<int32_t>(output_frame->layout().planes()[0].size), 1);
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
-          std::move(output_gmb_handle), output_frame->coded_size(),
+          std::move(output_gmb_handle), output_gmb_buffer_size,
           gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
   if (output_gmb_buffer == nullptr) {
@@ -246,7 +254,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   // use its area as the maximum bytes we need to download to avoid buffer
   // overflow.
   if (!vaapi_wrapper_->DownloadFromVABuffer(
-          cached_output_buffer_id_, va_surface_id_,
+          cached_output_buffer_id_, va_surface->id(),
           static_cast<uint8_t*>(output_memory),
           output_gmb_buffer->GetSize().GetArea(), &encoded_size)) {
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
@@ -274,10 +282,13 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   gfx::Size input_size = request->video_frame->coded_size();
 
   // Recreate VASurface if the video frame's size changed.
-  if (input_size != surface_size_ || va_surface_id_ == VA_INVALID_SURFACE) {
-    vaapi_wrapper_->DestroyContextAndSurfaces();
+  bool context_changed =
+      input_size != input_size_ || va_surface_id_ == VA_INVALID_SURFACE;
+  if (context_changed) {
+    vaapi_wrapper_->DestroyContextAndSurfaces(
+        std::vector<VASurfaceID>({va_surface_id_}));
     va_surface_id_ = VA_INVALID_SURFACE;
-    surface_size_ = gfx::Size();
+    input_size_ = gfx::Size();
 
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
@@ -287,7 +298,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
       return;
     }
     va_surface_id_ = va_surfaces[0];
-    surface_size_ = input_size;
+    input_size_ = input_size;
   }
 
   if (!vaapi_wrapper_->UploadVideoFrameToSurface(*request->video_frame,
@@ -300,7 +311,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
   // Create output buffer for encoding result.
   size_t max_coded_buffer_size =
       VaapiJpegEncoder::GetMaxCodedBufferSize(input_size);
-  if (max_coded_buffer_size > cached_output_buffer_size_) {
+  if (max_coded_buffer_size > cached_output_buffer_size_ || context_changed) {
     vaapi_wrapper_->DestroyVABuffers();
     cached_output_buffer_size_ = 0;
 
@@ -346,6 +357,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
           request->output_shm->size(), &encoded_size)) {
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
     notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
+    return;
   }
 
   // Copy the real exif buffer into preserved space.

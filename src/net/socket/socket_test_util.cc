@@ -220,7 +220,8 @@ void StaticSocketDataHelper::Reset() {
   write_index_ = 0;
 }
 
-bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
+bool StaticSocketDataHelper::VerifyWriteData(const std::string& data,
+                                             SocketDataPrinter* printer) {
   CHECK(!AllWriteDataConsumed());
   // Check that the actual data matches the expectations, skipping over any
   // pause events.
@@ -240,6 +241,12 @@ bool StaticSocketDataHelper::VerifyWriteData(const std::string& data) {
   EXPECT_TRUE(actual_data == expected_data)
       << "Actual write data:\n" << HexDump(data)
       << "Expected write data:\n" << HexDump(expected_data);
+  if (printer) {
+    EXPECT_TRUE(actual_data == expected_data)
+        << "Actual write data:\n"
+        << printer->PrintWrite(data) << "Expected write data:\n"
+        << printer->PrintWrite(expected_data);
+  }
   return expected_data == actual_data;
 }
 
@@ -295,7 +302,7 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 
   // Check that what we are writing matches the expectation.
   // Then give the mocked return value.
-  if (!helper_.VerifyWriteData(data))
+  if (!helper_.VerifyWriteData(data, printer_))
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
 
   const MockWrite& next_write = helper_.AdvanceWrite();
@@ -354,8 +361,7 @@ SequencedSocketData::SequencedSocketData(base::span<const MockRead> reads,
       sequence_number_(0),
       read_state_(IDLE),
       write_state_(IDLE),
-      busy_before_sync_reads_(false),
-      weak_factory_(this) {
+      busy_before_sync_reads_(false) {
   // Check that reads and writes have a contiguous set of sequence numbers
   // starting from 0 and working their way up, with no repeats and skipping
   // no values.
@@ -435,7 +441,8 @@ SequencedSocketData::SequencedSocketData(const MockConnect& connect,
 
 MockRead SequencedSocketData::OnRead() {
   CHECK_EQ(IDLE, read_state_);
-  CHECK(!helper_.AllReadDataConsumed());
+  CHECK(!helper_.AllReadDataConsumed())
+      << "Application tried to read but there is no read data left";
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockRead& next_read = helper_.PeekRead();
@@ -487,7 +494,7 @@ MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   NET_TRACE(1, " *** ") << "next_write: " << next_write.sequence_number;
   CHECK_GE(next_write.sequence_number, sequence_number_);
 
-  if (!helper_.VerifyWriteData(data))
+  if (!helper_.VerifyWriteData(data, printer_))
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
 
   if (next_write.sequence_number <= sequence_number_) {
@@ -785,10 +792,10 @@ MockClientSocketFactory::CreateTransportClientSocket(
 }
 
 std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
   if (next_ssl_data->next_protos_expected_in_ssl_config.has_value()) {
     EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.value().size(),
@@ -812,9 +819,12 @@ std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
       EXPECT_FALSE(ssl_config.client_cert);
     }
   }
-  if (next_ssl_data->expected_false_start_enabled) {
-    EXPECT_EQ(*next_ssl_data->expected_false_start_enabled,
-              ssl_config.false_start_enabled);
+  if (next_ssl_data->expected_host_and_port) {
+    EXPECT_EQ(*next_ssl_data->expected_host_and_port, host_and_port);
+  }
+  if (next_ssl_data->expected_network_isolation_key) {
+    EXPECT_EQ(*next_ssl_data->expected_network_isolation_key,
+              ssl_config.network_isolation_key);
   }
   return std::unique_ptr<SSLClientSocket>(new MockSSLClientSocket(
       std::move(stream_socket), host_and_port, ssl_config, next_ssl_data));
@@ -845,7 +855,7 @@ MockClientSocketFactory::CreateProxyClientSocket(
 }
 
 MockClientSocket::MockClientSocket(const NetLogWithSource& net_log)
-    : connected_(false), net_log_(net_log), weak_factory_(this) {
+    : connected_(false), net_log_(net_log) {
   local_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 123);
   peer_addr_ = IPEndPoint(IPAddress(192, 0, 2, 33), 0);
 }
@@ -1290,8 +1300,7 @@ MockProxyClientSocket::MockProxyClientSocket(
     : net_log_(socket->NetLog()),
       socket_(std::move(socket)),
       data_(data),
-      auth_controller_(auth_controller),
-      weak_factory_(this) {
+      auth_controller_(auth_controller) {
   DCHECK(data_);
 }
 
@@ -1457,8 +1466,7 @@ MockSSLClientSocket::MockSSLClientSocket(
     SSLSocketDataProvider* data)
     : net_log_(stream_socket->NetLog()),
       stream_socket_(std::move(stream_socket)),
-      data_(data),
-      weak_factory_(this) {
+      data_(data) {
   DCHECK(data_);
   peer_addr_ = data->connect.peer_addr;
 }
@@ -1659,8 +1667,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       pending_read_buf_(nullptr),
       pending_read_buf_len_(0),
-      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)),
-      weak_factory_(this) {
+      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::NONE)) {
   DCHECK(data_);
   data_->Initialize(this);
   peer_addr_ = data->connect_data().peer_addr;

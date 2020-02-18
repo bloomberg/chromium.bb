@@ -21,8 +21,8 @@
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,7 +80,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
@@ -98,15 +98,12 @@ namespace internal {
 
 class FakeCallbackContainer {
   public:
-    FakeCallbackContainer() : called_(false),
-                              weak_ptr_factory_(this) {}
+   FakeCallbackContainer() : called_(false) {}
 
-    void FakeCallback(const base::DictionaryValue& value) {
-      called_ = true;
-    }
+   void FakeCallback(const base::DictionaryValue& value) { called_ = true; }
 
-    bool called_;
-    base::WeakPtrFactory<FakeCallbackContainer> weak_ptr_factory_;
+   bool called_;
+   base::WeakPtrFactory<FakeCallbackContainer> weak_ptr_factory_{this};
 };
 
 }  // namespace internal

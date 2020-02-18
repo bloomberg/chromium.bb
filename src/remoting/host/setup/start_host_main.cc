@@ -237,7 +237,7 @@ int StartHostMain(int argc, char** argv) {
                           /*consent_to_data_collection=*/true, auth_code,
                           redirect_url, base::Bind(&OnDone));
 
-  // Run the message loop until the StartHost completion callback.
+  // Run the task executor until the StartHost completion callback.
   base::RunLoop run_loop;
   g_active_run_loop = &run_loop;
   run_loop.Run();

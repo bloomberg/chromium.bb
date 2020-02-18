@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
-#include "services/network/public/mojom/cors.mojom-shared.h"
+#include "services/network/public/mojom/cors.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -242,11 +242,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       EXPECT_EQ(String::FromUTF8(test.expected), result.referrer)
           << "'" << test.referrer << "' to '" << test.destination
           << "' should have been '" << test.expected << "': was '"
-          << result.referrer.Utf8().data() << "'.";
+          << result.referrer.Utf8() << "'.";
     } else {
       EXPECT_TRUE(result.referrer.IsEmpty())
           << "'" << test.referrer << "' to '" << test.destination
-          << "' should have been empty: was '" << result.referrer.Utf8().data()
+          << "' should have been empty: was '" << result.referrer.Utf8()
           << "'.";
     }
     EXPECT_EQ(test.policy == network::mojom::ReferrerPolicy::kDefault

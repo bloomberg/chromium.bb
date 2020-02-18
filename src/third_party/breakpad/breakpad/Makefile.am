@@ -389,7 +389,8 @@ check_PROGRAMS += \
 	src/processor/pathname_stripper_unittest \
 	src/processor/postfix_evaluator_unittest \
 	src/processor/proc_maps_linux_unittest \
-	src/processor/range_map_shrink_down_unittest \
+	src/processor/range_map_truncate_lower_unittest \
+	src/processor/range_map_truncate_upper_unittest \
 	src/processor/range_map_unittest \
 	src/processor/stackwalker_amd64_unittest \
 	src/processor/stackwalker_arm_unittest \
@@ -1049,14 +1050,24 @@ src_processor_postfix_evaluator_unittest_LDADD = \
 	src/processor/pathname_stripper.o \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
-src_processor_range_map_shrink_down_unittest_SOURCES = \
-	src/processor/range_map_shrink_down_unittest.cc
-src_processor_range_map_shrink_down_unittest_LDADD = \
-  src/processor/logging.o \
+src_processor_range_map_truncate_lower_unittest_SOURCES = \
+	src/processor/range_map_truncate_lower_unittest.cc
+src_processor_range_map_truncate_lower_unittest_LDADD = \
+	src/processor/logging.o \
 	src/processor/pathname_stripper.o \
 	$(TEST_LIBS) \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
-src_processor_range_map_shrink_down_unittest_CPPFLAGS = \
+src_processor_range_map_truncate_lower_unittest_CPPFLAGS = \
+	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+
+src_processor_range_map_truncate_upper_unittest_SOURCES = \
+	src/processor/range_map_truncate_upper_unittest.cc
+src_processor_range_map_truncate_upper_unittest_LDADD = \
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o \
+	$(TEST_LIBS) \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+src_processor_range_map_truncate_upper_unittest_CPPFLAGS = \
 	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 src_processor_range_map_unittest_SOURCES = \

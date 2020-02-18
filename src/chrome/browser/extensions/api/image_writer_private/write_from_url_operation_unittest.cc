@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/test_url_request_interceptor.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
@@ -29,8 +29,6 @@ using testing::Gt;
 using testing::Lt;
 
 const char kTestImageUrl[] = "http://localhost/test/image.zip";
-
-typedef net::LocalHostTestURLRequestInterceptor GetInterceptor;
 
 }  // namespace
 
@@ -94,23 +92,26 @@ class WriteFromUrlOperationForTest : public WriteFromUrlOperation {
 
 class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
  protected:
-  ImageWriterWriteFromUrlOperationTest() : manager_(&test_profile_) {}
-
-  void SetUp() override {
-    ImageWriterUnitTestBase::SetUp();
-
-    // Turn on interception and set up our dummy file.
-    get_interceptor_.reset(new GetInterceptor(
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
-    get_interceptor_->SetResponse(GURL(kTestImageUrl),
-                                  test_utils_.GetImagePath());
-  }
+  ImageWriterWriteFromUrlOperationTest()
+      : url_loader_interceptor_(base::BindRepeating(
+            &ImageWriterWriteFromUrlOperationTest::HandleRequest,
+            base::Unretained(this))),
+        url_interception_count_(0),
+        manager_(&test_profile_) {}
 
   void TearDown() override {
     ImageWriterUnitTestBase::TearDown();
+  }
+
+  // Intercepts network requests.
+  bool HandleRequest(content::URLLoaderInterceptor::RequestParams* params) {
+    if (params->url_request.url == GURL(kTestImageUrl)) {
+      url_interception_count_++;
+      content::URLLoaderInterceptor::WriteResponse(test_utils_.GetImagePath(),
+                                                   params->client.get());
+      return true;
+    }
+    return false;
   }
 
   scoped_refptr<WriteFromUrlOperationForTest> CreateOperation(
@@ -131,7 +132,8 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
   }
 
   TestingProfile test_profile_;
-  std::unique_ptr<GetInterceptor> get_interceptor_;
+  content::URLLoaderInterceptor url_loader_interceptor_;
+  int url_interception_count_;
 
   MockOperationManager manager_;
 };
@@ -205,7 +207,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   EXPECT_TRUE(base::ContentsEqual(test_utils_.GetImagePath(),
                                   operation->GetImagePath()));
 
-  EXPECT_EQ(1, get_interceptor_->GetHitCount());
+  EXPECT_EQ(1, url_interception_count_);
 
   operation->Cancel();
 }
@@ -236,11 +238,30 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
   operation->SetImagePath(test_utils_.GetImagePath());
   {
     base::RunLoop run_loop;
-    operation->VerifyDownload(run_loop.QuitClosure());
+    // The OnProgress tasks are posted with priority USER_VISIBLE priority so
+    // post the quit closure with the same priority to ensure it doesn't run too
+    // soon.
+    operation->VerifyDownload(base::Bind(
+        [](base::OnceClosure quit_closure) {
+          base::PostTaskWithTraits(
+              FROM_HERE,
+              {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+              std::move(quit_closure));
+        },
+        run_loop.QuitClosure()));
+
     run_loop.Run();
   }
 
   operation->Cancel();
+
+  // The OnProgress calls we're expecting are posted to the Operation's
+  // SequencedTaskRunner. Flush it before the mock's expectations are checked.
+  {
+    base::RunLoop run_loop;
+    operation->PostTask(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 }
 
 }  // namespace image_writer

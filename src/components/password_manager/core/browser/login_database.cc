@@ -188,7 +188,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS,
              static_cast<int>(form.generation_upload_status));
   base::Pickle usernames_pickle =
-      SerializeValueElementPairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.all_possible_usernames);
   s->BindBlob(COLUMN_POSSIBLE_USERNAME_PAIRS, usernames_pickle.data(),
               usernames_pickle.size());
 }
@@ -723,8 +723,6 @@ bool LoginDatabase::Init() {
     meta_table_.SetVersionNumber(kCurrentVersionNumber);
   } else {
     LogDatabaseInitError(MIGRATION_ERROR);
-    base::UmaHistogramSparse("PasswordManager.LoginDatabaseFailedVersion",
-                             meta_table_.GetVersionNumber());
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;
@@ -875,19 +873,6 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
     int empty_forms = empty_usernames_statement.ColumnInt(0);
     UMA_HISTOGRAM_COUNTS_100("PasswordManager.EmptyUsernames.CountInDatabase",
                              empty_forms);
-  }
-
-  sql::Statement standalone_empty_usernames_statement(db_.GetCachedStatement(
-      SQL_FROM_HERE, "SELECT COUNT(*) FROM logins a "
-                     "WHERE a.blacklisted_by_user=0 AND a.username_value='' "
-                     "AND NOT EXISTS (SELECT * FROM logins b "
-                     "WHERE b.blacklisted_by_user=0 AND b.username_value!='' "
-                     "AND a.signon_realm = b.signon_realm)"));
-  if (standalone_empty_usernames_statement.Step()) {
-    int num_entries = standalone_empty_usernames_statement.ColumnInt(0);
-    UMA_HISTOGRAM_COUNTS_100(
-        "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty",
-        num_entries);
   }
 
   sql::Statement logins_with_schemes_statement(db_.GetUniqueStatement(
@@ -1046,11 +1031,19 @@ PasswordStoreChangeList LoginDatabase::AddBlacklistedLoginForTesting(
   return list;
 }
 
-PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
+PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form,
+                                                   UpdateLoginError* error) {
+  if (error) {
+    *error = UpdateLoginError::kNone;
+  }
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
-      ENCRYPTION_RESULT_SUCCESS)
+      ENCRYPTION_RESULT_SUCCESS) {
+    if (error) {
+      *error = UpdateLoginError::kEncrytionServiceFailure;
+    }
     return PasswordStoreChangeList();
+  }
 
 #if defined(OS_IOS)
   DeleteEncryptedPassword(form);
@@ -1084,7 +1077,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(next_param++, form.skip_zero_click);
   s.BindInt(next_param++, static_cast<int>(form.generation_upload_status));
   base::Pickle username_pickle =
-      SerializeValueElementPairs(form.other_possible_usernames);
+      SerializeValueElementPairs(form.all_possible_usernames);
   s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
   // NOTE: Add new fields here unless the field is a part of the unique key.
   // If so, add new field below.
@@ -1098,12 +1091,19 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   // NOTE: Add new fields here only if the field is a part of the unique key.
   // Otherwise, add the field above "WHERE starts here" comment.
 
-  if (!s.Run())
+  if (!s.Run()) {
+    if (error) {
+      *error = UpdateLoginError::kDbError;
+    }
     return PasswordStoreChangeList();
+  }
 
   PasswordStoreChangeList list;
-  if (db_.GetLastChangeCount())
+  if (db_.GetLastChangeCount()) {
     list.emplace_back(PasswordStoreChange::UPDATE, form, GetPrimaryKey(form));
+  } else if (error) {
+    *error = UpdateLoginError::kNoUpdatedRecords;
+  }
 
   return list;
 }
@@ -1215,59 +1215,14 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(
   return true;
 }
 
-bool LoginDatabase::RemoveLoginsSyncedBetween(
-    base::Time delete_begin,
-    base::Time delete_end,
-    PasswordStoreChangeList* changes) {
-  if (changes) {
-    changes->clear();
-  }
-  ScopedTransaction transaction(this);
-  PrimaryKeyToFormMap key_to_form_map;
-  if (!GetLoginsSyncedBetween(delete_begin, delete_end, &key_to_form_map)) {
-    return false;
-  }
-
-#if defined(OS_IOS)
-  for (const auto& pair : key_to_form_map) {
-    DeleteEncryptedPassword(*pair.second);
-  }
-#endif
-
-  sql::Statement s(db_.GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM logins WHERE date_synced >= ? AND date_synced < ?"));
-  s.BindInt64(0, delete_begin.ToInternalValue());
-  s.BindInt64(1,
-              delete_end.is_null() ? base::Time::Max().ToInternalValue()
-                                   : delete_end.ToInternalValue());
-
-  if (!s.Run()) {
-    return false;
-  }
-  if (changes) {
-    for (const auto& pair : key_to_form_map) {
-      changes->emplace_back(PasswordStoreChange::REMOVE,
-                            /*form=*/std::move(*pair.second),
-                            /*primary_key=*/pair.first);
-    }
-  }
-  return true;
-}
-
-bool LoginDatabase::GetAutoSignInLogins(
-    std::vector<std::unique_ptr<PasswordForm>>* forms) {
-  DCHECK(forms);
+bool LoginDatabase::GetAutoSignInLogins(PrimaryKeyToFormMap* key_to_form_map) {
+  DCHECK(key_to_form_map);
   DCHECK(!autosignin_statement_.empty());
-  forms->clear();
+  key_to_form_map->clear();
 
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, autosignin_statement_.c_str()));
-  PrimaryKeyToFormMap key_to_form_map;
-  FormRetrievalResult result = StatementToForms(&s, nullptr, &key_to_form_map);
-  for (auto& pair : key_to_form_map) {
-    forms->push_back(std::move(pair.second));
-  }
+  FormRetrievalResult result = StatementToForms(&s, nullptr, key_to_form_map);
   return result == FormRetrievalResult::kSuccess;
 }
 
@@ -1324,7 +1279,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     base::Pickle pickle(
         static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAME_PAIRS)),
         s.ColumnByteLength(COLUMN_POSSIBLE_USERNAME_PAIRS));
-    form->other_possible_usernames = DeserializeValueElementPairs(pickle);
+    form->all_possible_usernames = DeserializeValueElementPairs(pickle);
   }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   if (s.ColumnByteLength(COLUMN_FORM_DATA)) {
@@ -1459,23 +1414,6 @@ bool LoginDatabase::GetLoginsCreatedBetween(
          FormRetrievalResult::kSuccess;
 }
 
-bool LoginDatabase::GetLoginsSyncedBetween(
-    const base::Time begin,
-    const base::Time end,
-    PrimaryKeyToFormMap* key_to_form_map) {
-  DCHECK(key_to_form_map);
-  DCHECK(!synced_statement_.empty());
-  sql::Statement s(
-      db_.GetCachedStatement(SQL_FROM_HERE, synced_statement_.c_str()));
-  s.BindInt64(0, begin.ToInternalValue());
-  s.BindInt64(1,
-              end.is_null() ? base::Time::Max().ToInternalValue()
-                            : end.ToInternalValue());
-
-  return StatementToForms(&s, nullptr, key_to_form_map) ==
-         FormRetrievalResult::kSuccess;
-}
-
 FormRetrievalResult LoginDatabase::GetAllLogins(
     PrimaryKeyToFormMap* key_to_form_map) {
   DCHECK(key_to_form_map);
@@ -1519,6 +1457,12 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
     forms->push_back(std::move(pair.second));
   }
   return true;
+}
+
+bool LoginDatabase::IsEmpty() {
+  sql::Statement s(
+      db_.GetCachedStatement(SQL_FROM_HERE, "SELECT COUNT(*) FROM logins"));
+  return s.Step() && s.ColumnInt(0) == 0;
 }
 
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
@@ -1917,10 +1861,6 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
       "SELECT " + all_column_names +
       " FROM logins WHERE date_created >= ? AND date_created < "
       "? ORDER BY origin_url";
-  DCHECK(synced_statement_.empty());
-  synced_statement_ = "SELECT " + all_column_names +
-                      " FROM logins WHERE date_synced >= ? AND date_synced < "
-                      "? ORDER BY origin_url";
   DCHECK(blacklisted_statement_.empty());
   blacklisted_statement_ =
       "SELECT " + all_column_names +

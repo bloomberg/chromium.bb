@@ -57,8 +57,8 @@ base::string16 GetDisplaySize(int64_t display_id) {
   // to empty string if this happens on release build.
   const display::DisplayIdList id_list =
       display_manager->GetMirroringDestinationDisplayIdList();
-  const bool mirroring = display_manager->IsInMirrorMode() &&
-                         base::ContainsValue(id_list, display_id);
+  const bool mirroring =
+      display_manager->IsInMirrorMode() && base::Contains(id_list, display_id);
   DCHECK(!mirroring);
   if (mirroring)
     return base::string16();
@@ -335,9 +335,7 @@ bool ScreenLayoutObserver::GetDisplayMessageForNotification(
       continue;
     }
     // c) if the device is in tablet mode, and source is not user.
-    if (Shell::Get()
-            ->tablet_mode_controller()
-            ->IsTabletModeWindowManagerEnabled() &&
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         iter.second.active_rotation_source() !=
             display::Display::RotationSource::USER) {
       continue;

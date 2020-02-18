@@ -4,7 +4,6 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
@@ -12,20 +11,6 @@
 #include "content/public/test/web_contents_tester.h"
 
 namespace data_reduction_proxy {
-
-DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle) {
-  auto chrome_navigation_data = std::make_unique<ChromeNavigationData>();
-
-  auto drp_data = std::make_unique<DataReductionProxyData>();
-  DataReductionProxyData* data = drp_data.get();
-  chrome_navigation_data->SetDataReductionProxyData(std::move(drp_data));
-
-  content::WebContentsTester::For(web_contents)
-      ->SetNavigationData(navigation_handle, std::move(chrome_navigation_data));
-  return data;
-}
 
 previews::PreviewsUserData* PreviewsDataForNavigationHandle(
     content::NavigationHandle* navigation_handle) {
@@ -47,7 +32,9 @@ CreateDataReductionProxyResource(bool was_cached,
                                  double compression_ratio) {
   auto resource_data_update =
       page_load_metrics::mojom::ResourceDataUpdate::New();
-  resource_data_update->was_fetched_via_cache = was_cached;
+  resource_data_update->cache_type =
+      was_cached ? page_load_metrics::mojom::CacheType::kHttp
+                 : page_load_metrics::mojom::CacheType::kNotCached;
   resource_data_update->delta_bytes = was_cached ? 0 : delta_bytes;
   resource_data_update->encoded_body_length = delta_bytes;
   resource_data_update->is_complete = is_complete;
@@ -186,12 +173,6 @@ void DataReductionProxyMetricsObserverTestBase::ValidateTimes() {
                 ? static_cast<int64_t>(kMemoryKb)
                 : 0,
             pingback_client_->timing()->renderer_memory_usage_kb);
-}
-
-void DataReductionProxyMetricsObserverTestBase::ValidateLoFiInPingback(
-    bool lofi_expected) {
-  EXPECT_TRUE(pingback_client_->send_pingback_called());
-  EXPECT_EQ(lofi_expected, pingback_client_->data().lofi_received());
 }
 
 void DataReductionProxyMetricsObserverTestBase::ValidateBlackListInPingback(

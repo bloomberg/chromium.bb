@@ -37,65 +37,6 @@ namespace {
 // window from the top of the screen in tablet mode.
 constexpr int kDragStartTopEdgeInset = 8;
 
-// Returns the toplevel window that should be dragged for a gesture event that
-// occurs in the HTCLIENT area of a window. Returns null if there shouldn't be
-// special casing for this HTCLIENT area gesture. This is used to drag app
-// windows which are fullscreened/maximized in tablet mode from the top of the
-// screen, which don't have a window frame.
-aura::Window* GetTargetForClientAreaGesture(ui::GestureEvent* event,
-                                            aura::Window* target) {
-  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN)
-    return nullptr;
-
-  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
-  if (!widget)
-    return nullptr;
-
-  aura::Window* toplevel = widget->GetNativeWindow();
-
-  if (!Shell::Get()
-           ->tablet_mode_controller()
-           ->IsTabletModeWindowManagerEnabled()) {
-    return nullptr;
-  }
-  wm::WindowState* window_state = wm::GetWindowState(toplevel);
-  if (!window_state ||
-      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
-       !window_state->IsSnapped())) {
-    return nullptr;
-  }
-
-  if (toplevel->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(AppType::BROWSER)) {
-    return nullptr;
-  }
-
-  if (event->details().scroll_y_hint() < 0)
-    return nullptr;
-
-  const gfx::Point location_in_screen =
-      event->target()->GetScreenLocation(*event);
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
-          .work_area();
-
-  gfx::Rect hit_bounds_in_screen(work_area_bounds);
-  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
-
-  // There may be a bezel sensor off screen logically above
-  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
-  // triggered in the bezel area too.
-  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
-                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
-                  location_in_screen.x() < hit_bounds_in_screen.right();
-
-  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
-    return toplevel;
-
-  return nullptr;
-}
-
 // Returns whether |window| can be moved via a two finger drag given
 // the hittest results of the two fingers.
 bool CanStartTwoFingerMove(aura::Window* window,
@@ -107,7 +48,7 @@ bool CanStartTwoFingerMove(aura::Window* window,
   // the window type and the state type so that we do not steal touches from the
   // web contents.
   if (window->type() != aura::client::WINDOW_TYPE_NORMAL ||
-      !wm::GetWindowState(window)->IsNormalOrSnapped()) {
+      !WindowState::Get(window)->IsNormalOrSnapped()) {
     return false;
   }
   int component1_behavior =
@@ -127,9 +68,7 @@ bool CanStartOneFingerDrag(int window_component) {
 
 void ShowResizeShadow(aura::Window* window, int component) {
   // Window resize in tablet mode is disabled (except in splitscreen).
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
   }
 
@@ -164,7 +103,7 @@ void OnDragCompleted(
 // ToplevelWindowEventHandler to clean up.
 class ToplevelWindowEventHandler::ScopedWindowResizer
     : public aura::WindowObserver,
-      public wm::WindowStateObserver {
+      public WindowStateObserver {
  public:
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       std::unique_ptr<WindowResizer> resizer);
@@ -182,7 +121,7 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver overrides:
-  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+  void OnPreWindowStateTypeChange(WindowState* window_state,
                                   WindowStateType type) override;
 
  private:
@@ -204,7 +143,7 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     : handler_(handler), resizer_(std::move(resizer)), grabbed_capture_(false) {
   aura::Window* target = resizer_->GetTarget();
   target->AddObserver(this);
-  wm::GetWindowState(target)->AddObserver(this);
+  WindowState::Get(target)->AddObserver(this);
 
   if (IsResize())
     target->NotifyResizeLoopStarted();
@@ -218,7 +157,7 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   aura::Window* target = resizer_->GetTarget();
   target->RemoveObserver(this);
-  wm::GetWindowState(target)->RemoveObserver(this);
+  WindowState::Get(target)->RemoveObserver(this);
   if (grabbed_capture_)
     target->ReleaseCapture();
   if (!window_destroying_ && IsResize())
@@ -236,8 +175,7 @@ bool ToplevelWindowEventHandler::ScopedWindowResizer::IsResize() const {
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::
-    OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                               WindowStateType old) {
+    OnPreWindowStateTypeChange(WindowState* window_state, WindowStateType old) {
   handler_->CompleteDrag(DragResult::SUCCESS);
 }
 
@@ -327,7 +265,7 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  int component = wm::GetNonClientComponent(target, event->location());
+  int component = window_util::GetNonClientComponent(target, event->location());
   gfx::Point event_location = event->location();
 
   aura::Window* original_target = target;
@@ -558,6 +496,59 @@ void ToplevelWindowEventHandler::RevertDrag() {
   CompleteDrag(DragResult::REVERT);
 }
 
+aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
+    ui::GestureEvent* event,
+    aura::Window* target) {
+  if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN)
+    return nullptr;
+
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
+  if (!widget)
+    return nullptr;
+
+  aura::Window* toplevel = widget->GetNativeWindow();
+
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return nullptr;
+  }
+  WindowState* window_state = WindowState::Get(toplevel);
+  if (!window_state ||
+      (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
+       !window_state->IsSnapped())) {
+    return nullptr;
+  }
+
+  if (toplevel->GetProperty(aura::client::kAppType) ==
+      static_cast<int>(AppType::BROWSER)) {
+    return nullptr;
+  }
+
+  if (event->details().scroll_y_hint() < 0)
+    return nullptr;
+
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
+          .work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_height(kDragStartTopEdgeInset);
+
+  // There may be a bezel sensor off screen logically above
+  // |hit_bounds_in_screen|. Handles the ET_GESTURE_SCROLL_BEGIN event
+  // triggered in the bezel area too.
+  bool in_bezel = location_in_screen.y() < hit_bounds_in_screen.y() &&
+                  location_in_screen.x() >= hit_bounds_in_screen.x() &&
+                  location_in_screen.x() < hit_bounds_in_screen.right();
+
+  if (hit_bounds_in_screen.Contains(location_in_screen) || in_bezel)
+    return toplevel;
+
+  return nullptr;
+}
+
 ::wm::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
     aura::Window* source,
     const gfx::Vector2d& drag_offset,
@@ -602,7 +593,7 @@ void ToplevelWindowEventHandler::RevertDrag() {
 
   // Disable window position auto management while dragging and restore it
   // aftrewards.
-  wm::WindowState* window_state = wm::GetWindowState(source);
+  WindowState* window_state = WindowState::Get(source);
   const bool window_position_managed = window_state->GetWindowPositionManaged();
   window_state->SetWindowPositionManaged(false);
   aura::WindowTracker tracker({source});
@@ -678,7 +669,7 @@ void ToplevelWindowEventHandler::HandleMousePressed(aura::Window* target,
   // We also update the current window component here because for the
   // mouse-drag-release-press case, where the mouse is released and
   // pressed without mouse move event.
-  int component = wm::GetNonClientComponent(target, event->location());
+  int component = window_util::GetNonClientComponent(target, event->location());
   if ((event->flags() & (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) ==
           0 &&
       WindowResizer::GetBoundsChangeForWindowComponent(component)) {
@@ -736,7 +727,8 @@ void ToplevelWindowEventHandler::HandleMouseMoved(aura::Window* target,
   // TODO(jamescook): Move the resize cursor update code into here from
   // CompoundEventFilter?
   if (event->flags() & ui::EF_IS_NON_CLIENT) {
-    int component = wm::GetNonClientComponent(target, event->location());
+    int component =
+        window_util::GetNonClientComponent(target, event->location());
     ShowResizeShadow(target, component);
   } else {
     HideResizeShadow(target);

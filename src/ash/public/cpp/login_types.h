@@ -9,7 +9,7 @@
 #include "ash/public/cpp/session/user_info.h"
 #include "base/time/time.h"
 #include "base/token.h"
-#include "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom.h"
+#include "chromeos/components/proximity_auth/public/mojom/auth_type.mojom.h"
 
 namespace ash {
 
@@ -284,6 +284,18 @@ struct ASH_PUBLIC_EXPORT AuthDisabledData {
 
   // The amount of time that the user used this device.
   base::TimeDelta device_used_time;
+};
+
+// Possible reasons why the parent access code is required. This corresponds to
+// actions that children can't perform on a Chromebook, but their parents can on
+// their behalf.
+enum class ParentAccessRequestReason {
+  // Unlock a Chromebook that is locked due to a Time Limit policy.
+  kUnlockTimeLimits,
+  // Update values on the date time dialog.
+  kChangeTime,
+  // Update values on the timezone settings page.
+  kChangeTimezone,
 };
 
 }  // namespace ash

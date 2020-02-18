@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/extension_set.h"
 
@@ -36,15 +37,15 @@ class VULKAN_EXPORT VulkanDeviceQueue {
                                    uint32_t queue_family_index)>;
   bool Initialize(
       uint32_t options,
+      uint32_t max_api_version,
       const std::vector<const char*>& required_extensions,
-      const GetPresentationSupportCallback& get_presentation_support,
-      bool use_swiftshader);
+      const GetPresentationSupportCallback& get_presentation_support);
 
-  bool InitializeForWevbView(VkPhysicalDevice vk_physical_device,
-                             VkDevice vk_device,
-                             VkQueue vk_queue,
-                             uint32_t vk_queue_index,
-                             gfx::ExtensionSet enabled_extensions);
+  bool InitializeForWebView(VkPhysicalDevice vk_physical_device,
+                            VkDevice vk_device,
+                            VkQueue vk_queue,
+                            uint32_t vk_queue_index,
+                            gfx::ExtensionSet enabled_extensions);
 
   const gfx::ExtensionSet& enabled_extensions() const {
     return enabled_extensions_;
@@ -80,6 +81,14 @@ class VULKAN_EXPORT VulkanDeviceQueue {
 
   VulkanFenceHelper* GetFenceHelper() const { return cleanup_helper_.get(); }
 
+  const VkPhysicalDeviceFeatures2& enabled_device_features_2() const {
+    return enabled_device_features_2_;
+  }
+
+  const VkPhysicalDeviceFeatures& enabled_device_features() const {
+    return enabled_device_features_2_.features;
+  }
+
  private:
   gfx::ExtensionSet enabled_extensions_;
   VkPhysicalDevice vk_physical_device_ = VK_NULL_HANDLE;
@@ -90,6 +99,12 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   uint32_t vk_queue_index_ = 0;
   const VkInstance vk_instance_;
   std::unique_ptr<VulkanFenceHelper> cleanup_helper_;
+  VkPhysicalDeviceFeatures2 enabled_device_features_2_ = {};
+
+#if defined(OS_ANDROID)
+  VkPhysicalDeviceSamplerYcbcrConversionFeatures
+      sampler_ycbcr_conversion_features_ = {};
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

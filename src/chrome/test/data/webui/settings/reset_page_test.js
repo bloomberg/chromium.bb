@@ -5,6 +5,8 @@
 cr.define('settings_reset_page', function() {
   /** @enum {string} */
   const TestNames = {
+    // TODO(crbug/950007): Remove PowerwashDialogAction and
+    // PowerwashDialogOpenClose associated tests when SplitSettings is complete.
     PowerwashDialogAction: 'PowerwashDialogAction',
     PowerwashDialogOpenClose: 'PowerwashDialogOpenClose',
     ResetProfileDialogAction: 'ResetProfileDialogAction',
@@ -36,6 +38,9 @@ cr.define('settings_reset_page', function() {
 
         PolymerTest.clearBody();
         resetPage = document.createElement('settings-reset-page');
+        if (cr.isChromeOS) {
+          resetPage.pageVisibility = {powerwash: true};
+        }
         document.body.appendChild(resetPage);
       });
 

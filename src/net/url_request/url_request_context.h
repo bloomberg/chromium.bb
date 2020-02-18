@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_network_session.h"
@@ -58,6 +59,10 @@ class URLRequest;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+class FtpAuthCache;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
 class ReportingService;
@@ -85,12 +90,18 @@ class NET_EXPORT URLRequestContext
   // session.
   const HttpNetworkSession::Context* GetNetworkSessionContext() const;
 
+#if (!defined(OS_WIN) && !defined(OS_LINUX)) || defined(OS_CHROMEOS)
   // This function should not be used in Chromium, please use the version with
   // NetworkTrafficAnnotationTag in the future.
+  //
+  // The unannotated method is not available on desktop Linux + Windows. It's
+  // available on other platforms, since we only audit network annotations on
+  // Linux & Windows.
   std::unique_ptr<URLRequest> CreateRequest(
       const GURL& url,
       RequestPriority priority,
       URLRequest::Delegate* delegate) const;
+#endif
 
   // |traffic_annotation| is metadata about the network traffic send via this
   // URLRequest, see net::DefineNetworkTrafficAnnotation. Note that:
@@ -275,6 +286,13 @@ class NET_EXPORT URLRequestContext
   // Returns current value of the |check_cleartext_permitted| flag.
   bool check_cleartext_permitted() const { return check_cleartext_permitted_; }
 
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  void set_ftp_auth_cache(FtpAuthCache* auth_cache) {
+    ftp_auth_cache_ = auth_cache;
+  }
+  FtpAuthCache* ftp_auth_cache() { return ftp_auth_cache_; }
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
+
   // Sets a name for this URLRequestContext. Currently the name is used in
   // MemoryDumpProvier to annotate memory usage. The name does not need to be
   // unique.
@@ -335,6 +353,9 @@ class NET_EXPORT URLRequestContext
   ReportingService* reporting_service_;
   NetworkErrorLoggingService* network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+#if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+  FtpAuthCache* ftp_auth_cache_;
+#endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to

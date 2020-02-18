@@ -1,17 +1,31 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
 #!perl
-#line 15
+#line 29
     eval 'exec perl -S $0 "$@"'
         if 0;
 
@@ -19,7 +33,8 @@ goto endofperl
 # pod2usage -- command to print usage messages from embedded pod docs
 #
 # Copyright (c) 1996-2000 by Bradford Appleton. All rights reserved.
-# This file is part of "PodParser". PodParser is free software;
+# Copyright (c) 2001-2016 by Marek Rouchal.
+# This file is part of "Pod-Usage". Pod-Usage is free software;
 # you can redistribute it and/or modify it under the same terms
 # as Perl itself.
 #############################################################################
@@ -43,6 +58,8 @@ pod2usage - print usage messages from embedded pod docs in files
 [B<-output>S< >I<outfile>]
 [B<-verbose> I<level>]
 [B<-pathlist> I<dirlist>]
+[B<-formatter> I<module>]
+[B<-utf8>]
 I<file>
 
 =back
@@ -83,6 +100,17 @@ Specifies one or more directories to search for the input file if it
 was not supplied with an absolute path. Each directory path in the given
 list should be separated by a ':' on Unix (';' on MSWin32 and DOS).
 
+=item B<-formatter> I<module>
+
+Which text formatter to use. Default is L<Pod::Text>, or for very old
+Perl versions L<Pod::PlainText>. An alternative would be e.g. 
+L<Pod::Text::Termcap>.
+
+=item B<-utf8>
+
+This option assumes that the formatter (see above) understands the option
+"utf8". It turns on generation of utf8 output.
+
 =item I<file>
 
 The pathname of a file containing pod documentation to be output in
@@ -114,7 +142,6 @@ Tom Christiansen E<lt>tchrist@mox.perl.comE<gt>
 
 =cut
 
-use Pod::Usage;
 use Getopt::Long;
 
 ## Define options
@@ -125,11 +152,16 @@ my @opt_specs = (
     'exit=i',
     'output=s',
     'pathlist=s',
+    'formatter=s',
     'verbose=i',
+    'utf8!'
 );
 
 ## Parse options
 GetOptions(\%options, @opt_specs)  ||  pod2usage(2);
+$Pod::Usage::Formatter = $options{formatter} if $options{formatter};
+require Pod::Usage;
+Pod::Usage->import();
 pod2usage(1)  if ($options{help});
 pod2usage(VERBOSE => 2)  if ($options{man});
 
@@ -148,6 +180,7 @@ $usage{-exitval}  = $options{'exit'}      if (defined $options{'exit'});
 $usage{-output}   = $options{'output'}    if (defined $options{'output'});
 $usage{-verbose}  = $options{'verbose'}   if (defined $options{'verbose'});
 $usage{-pathlist} = $options{'pathlist'}  if (defined $options{'pathlist'});
+$usage{-utf8}     = $options{'utf8'}      if (defined $options{'utf8'});
 
 pod2usage(\%usage);
 

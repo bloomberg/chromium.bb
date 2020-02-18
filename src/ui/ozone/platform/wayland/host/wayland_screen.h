@@ -29,7 +29,7 @@ class WaylandScreen : public PlatformScreen {
   void OnOutputRemoved(uint32_t output_id);
   void OnOutputMetricsChanged(uint32_t output_id,
                               const gfx::Rect& bounds,
-                              float device_pixel_ratio);
+                              int32_t output_scale);
 
   base::WeakPtr<WaylandScreen> GetWeakPtr();
 

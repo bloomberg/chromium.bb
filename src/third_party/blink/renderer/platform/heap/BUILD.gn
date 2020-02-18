@@ -28,6 +28,8 @@ blink_platform_sources("heap") {
     "blink_gc.h",
     "blink_gc_memory_dump_provider.cc",
     "blink_gc_memory_dump_provider.h",
+    "cancelable_task_scheduler.cc",
+    "cancelable_task_scheduler.h",
     "finalizer_traits.h",
     "garbage_collected.h",
     "gc_info.cc",
@@ -46,6 +48,7 @@ blink_platform_sources("heap") {
     "heap_stats_collector.cc",
     "heap_stats_collector.h",
     "heap_traits.h",
+    "marking_verifier.cc",
     "marking_verifier.h",
     "marking_visitor.cc",
     "marking_visitor.h",
@@ -101,8 +104,10 @@ test("blink_heap_unittests") {
 jumbo_source_set("blink_heap_unittests_sources") {
   testonly = true
   sources = [
+    "../testing/run_all_tests.cc",
     "address_cache_test.cc",
     "blink_gc_memory_dump_provider_test.cc",
+    "cancelable_task_scheduler_test.cc",
     "gc_info_test.cc",
     "heap_compact_test.cc",
     "heap_stats_collector_test.cc",
@@ -112,10 +117,10 @@ jumbo_source_set("blink_heap_unittests_sources") {
     "heap_thread_test.cc",
     "heap_traits_test.cc",
     "incremental_marking_test.cc",
+    "marking_verifier_test.cc",
     "name_trait_test.cc",
     "object_start_bitmap_test.cc",
     "persistent_test.cc",
-    "run_all_tests.cc",
     "thread_state_scheduling_test.cc",
     "worklist_test.cc",
   ]
@@ -129,10 +134,14 @@ jumbo_source_set("blink_heap_unittests_sources") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/platform:test_support",
     "//third_party/blink/renderer/platform/wtf",
   ]
+
+  if (is_fuchsia) {
+    # Needed for ../testing/run_all_tests.cc.
+    deps += [ "//skia:test_fonts" ]
+  }
 }

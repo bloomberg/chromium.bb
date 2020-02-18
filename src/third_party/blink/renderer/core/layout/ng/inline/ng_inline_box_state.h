@@ -106,7 +106,7 @@ struct NGInlineBoxState {
 // 2) Performs layout when the positin/size of a box was computed.
 // 3) Cache common values for a box.
 class CORE_EXPORT NGInlineLayoutStateStack {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
   // The box state for the line box.
@@ -135,6 +135,9 @@ class CORE_EXPORT NGInlineLayoutStateStack {
   void OnEndPlaceItems(NGLineBoxFragmentBuilder::ChildList*, FontBaseline);
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
+
+  // Notify when child is inserted at |index| to adjust child indexes.
+  void ChildInserted(unsigned index);
 
   // This class keeps indexes to fragments in the line box, and that only
   // appending is allowed. Call this function to move all such data to the line

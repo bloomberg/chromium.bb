@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "components/signin/core/browser/signin_metrics.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -31,7 +31,8 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
 }
 
-views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
+std::unique_ptr<views::View>
+SaveCardManageCardsBubbleViews::CreateFootnoteView() {
 #if defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   return nullptr;
@@ -55,21 +56,21 @@ views::View* SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   params.dice_signin_button_prominent = false;
   params.dice_text_style = ChromeTextStyle::STYLE_SECONDARY;
 
-  std::unique_ptr<views::View> promo_view = CreateBubbleSyncPromoView(
+  auto promo_view = CreateBubbleSyncPromoView(
       controller()->GetProfile(), sync_promo_delegate_.get(),
       signin_metrics::AccessPoint::ACCESS_POINT_MANAGE_CARDS_BUBBLE, params);
 
   DCHECK(promo_view);
   InitFootnoteView(promo_view.get());
-  return promo_view.release();
+  return promo_view;
 #endif
 }
 
-views::View* SaveCardManageCardsBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View> SaveCardManageCardsBubbleViews::CreateExtraView() {
   auto manage_cards_button = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_CARDS));
   manage_cards_button->SetID(DialogViewId::MANAGE_CARDS_BUTTON);
-  return manage_cards_button.release();
+  return manage_cards_button;
 }
 
 int SaveCardManageCardsBubbleViews::GetDialogButtons() const {

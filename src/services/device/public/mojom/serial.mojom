@@ -20,15 +20,12 @@ struct SerialPortInfo {
 enum SerialSendError {
   NONE,
   DISCONNECTED,
-  PENDING,
-  TIMEOUT,
   SYSTEM_ERROR,
 };
 
 enum SerialReceiveError {
   NONE,
   DISCONNECTED,
-  TIMEOUT,
   DEVICE_LOST,
   BREAK,
   FRAME_ERROR,
@@ -106,7 +103,7 @@ interface SerialPort {
   Open(SerialConnectionOptions options,
        handle<data_pipe_consumer> in_stream,
        handle<data_pipe_producer> out_stream,
-       associated SerialPortClient client) => (bool success);
+       SerialPortClient client) => (bool success);
 
   // Try to clear existing send error and reconnect the data pipe for send.
   // This is supposed to be called after SerialPortClient#OnSendError is
@@ -140,6 +137,10 @@ interface SerialPort {
   // Terminates the BREAK signal. Places the transmission line in a nonbreak
   // state.
   ClearBreak() => (bool success);
+
+  // Closes the connection created by Open(). Once this returns no more data
+  // will be sent or received on |in_stream| or |out_stream|.
+  Close() => ();
 };
 
 interface SerialPortClient {

@@ -10,7 +10,6 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
@@ -41,8 +40,7 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
                               QuicServerId("example.com", 443, false),
                               &crypto_config_,
                               push_promise_index),
-        crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
-                       TlsClientHandshaker::CreateSslCtx()) {}
+        crypto_config_(crypto_test_utils::ProofVerifierForTesting()) {}
   MockQuicSpdyClientSession(const MockQuicSpdyClientSession&) = delete;
   MockQuicSpdyClientSession& operator=(const MockQuicSpdyClientSession&) =
       delete;
@@ -68,6 +66,7 @@ class QuicSpdyClientStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
                  connection_,
                  &push_promise_index_),
         body_("hello world") {
+    SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
     session_.Initialize();
 
     headers_[":status"] = "200";

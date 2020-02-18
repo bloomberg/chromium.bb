@@ -65,7 +65,7 @@ class AwAutofillClient : public autofill::AutofillClient,
       override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
   autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::StrikeDatabase* GetStrikeDatabase() override;
@@ -110,6 +110,7 @@ class AwAutofillClient : public autofill::AutofillClient,
       std::unique_ptr<base::DictionaryValue> legal_message,
       SaveCreditCardOptions options,
       UploadSaveCardPromptCallback callback) override;
+  void CreditCardUploadCompleted(bool card_saved) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;

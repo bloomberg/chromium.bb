@@ -1,5 +1,4 @@
-Strawberry Perl Portable 5.16.0.1-32bit README
-==============================================
+=== Strawberry Perl Portable 5.30.0.1-32bit README ===
 
 What is Strawberry Perl Portable?
 ---------------------------------
@@ -32,12 +31,8 @@ How to use Strawberry Perl Portable?
 
      c:\> cpan Module::Name
   
-  3. run other tools included in strawberry like: perldoc, gcc, dmake ...
+  3. run other tools included in strawberry like: perldoc, gcc, gmake ...
 
 * If you want to use Strawberry Perl Portable not only from portableshell.bat,
-  you need to set the following environmental variables:
-  
-  1. add c:\myperl\perl\site\bin, c:\myperl\perl\bin, and c:\myperl\c\bin 
-     to PATH variable
-  
-  2. set variable TERM=dumb
+  add c:\myperl\perl\site\bin, c:\myperl\perl\bin, and c:\myperl\c\bin
+  to PATH variable

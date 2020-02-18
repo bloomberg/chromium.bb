@@ -7,9 +7,9 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -90,7 +90,7 @@ class TraceEventPerfTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoop _message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment;
 };
 
 TEST_F(TraceEventPerfTest, Submit_10000_TRACE_EVENT0) {

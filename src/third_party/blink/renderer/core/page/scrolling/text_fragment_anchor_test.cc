@@ -397,9 +397,9 @@ TEST_F(TextFragmentAnchorTest, MultipleNonMatchingStrings) {
 
 // Test matching a text range within the same element
 TEST_F(TextFragmentAnchorTest, SameElementTextRange) {
-  SimRequest request("https://example.com/test.html#targetText=this,page",
+  SimRequest request("https://example.com/test.html#targetText=This,page",
                      "text/html");
-  LoadURL("https://example.com/test.html#targetText=this,page");
+  LoadURL("https://example.com/test.html#targetText=This,page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -619,9 +619,9 @@ TEST_F(TextFragmentAnchorTest, DistantElementTextRange) {
 // Test a text range with both context terms in the same element.
 TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=this-,is,test,-page",
+      "https://example.com/test.html#targetText=This-,is,test,-page",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=this-,is,test,-page");
+  LoadURL("https://example.com/test.html#targetText=This-,is,test,-page");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -661,9 +661,9 @@ TEST_F(TextFragmentAnchorTest, PrefixNotFound) {
 // Ensure that we do not match a text range if the suffix is not found.
 TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
   SimRequest request(
-      "https://example.com/test.html#targetText=this-,is,test,-suffix",
+      "https://example.com/test.html#targetText=This-,is,test,-suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=this-,is,test,-suffix");
+  LoadURL("https://example.com/test.html#targetText=This-,is,test,-suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <p id="text">This is a test page</p>
@@ -678,11 +678,11 @@ TEST_F(TextFragmentAnchorTest, SuffixNotFound) {
 // Test a text range with context terms in different elements
 TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=header%202-,a,text,-footer%201",
+      "https://example.com/test.html#targetText=Header%202-,A,text,-Footer%201",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=header%202-,a,text,-footer%201");
+      "test.html#targetText=Header%202-,A,text,-Footer%201");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1>Header 1</h1>
@@ -714,11 +714,11 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
 TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   SimRequest request(
       "https://example.com/"
-      "test.html#targetText=list%202-,cat,-good%20cat",
+      "test.html#targetText=List%202-,Cat,-Good%20cat",
       "text/html");
   LoadURL(
       "https://example.com/"
-      "test.html#targetText=list%202-,cat,-good%20cat");
+      "test.html#targetText=List%202-,Cat,-Good%20cat");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <h1> List 1 </h1>
@@ -791,9 +791,9 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
 // Ensure we scroll to text when its prefix and suffix are out of view.
 TEST_F(TextFragmentAnchorTest, DistantElementContext) {
   SimRequest request(
-      "https://example.com/test.html#targetText=prefix-,cats,-suffix",
+      "https://example.com/test.html#targetText=Prefix-,Cats,-Suffix",
       "text/html");
-  LoadURL("https://example.com/test.html#targetText=prefix-,cats,-suffix");
+  LoadURL("https://example.com/test.html#targetText=Prefix-,Cats,-Suffix");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style>
@@ -1008,6 +1008,276 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
   RunAsyncMatchingTasks();
 
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+}
+
+// Ensure matching is case insensitive.
+TEST_F(TextFragmentAnchorTest, CaseInsensitive) {
+  SimRequest request("https://example.com/test.html#targetText=Test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=Test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">test</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test that the fragment anchor stays centered in view throughout loading.
+TEST_F(TextFragmentAnchorTest, TargetStaysInView) {
+  SimRequest main_request("https://example.com/test.html#targetText=test",
+                          "text/html");
+  SimRequest image_request("https://example.com/image.svg", "image/svg+xml");
+  LoadURL("https://example.com/test.html#targetText=test");
+  main_request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      p {
+        margin-top: 1000px;
+      }
+    </style>
+    <img src="image.svg">
+    <p id="text">test</p>
+  )HTML");
+  Compositor().PaintFrame();
+  RunAsyncMatchingTasks();
+
+  ScrollOffset first_scroll_offset = LayoutViewport()->GetScrollOffset();
+  ASSERT_NE(ScrollOffset(), first_scroll_offset);
+
+  Element& p = *GetDocument().getElementById("text");
+  IntRect first_bounding_rect = BoundingRectInFrame(p);
+  EXPECT_TRUE(ViewportRect().Contains(first_bounding_rect));
+
+  // Load an image that pushes the target text out of view
+  image_request.Complete(R"SVG(
+    <svg xmlns="http://www.w3.org/2000/svg" width="200" height="2000">
+      <rect fill="green" width="200" height="2000"/>
+    </svg>
+  )SVG");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  // Ensure the target text is still in view and stayed centered
+  ASSERT_NE(first_scroll_offset, LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
+  EXPECT_EQ(first_bounding_rect, BoundingRectInFrame(p));
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test that overlapping text ranges results in only the first one highlighted
+TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
+  SimRequest request(
+      "https://example.com/test.html#targetText=This,test&targetText=is,page",
+      "text/html");
+  LoadURL(
+      "https://example.com/test.html#targetText=This,test&targetText=is,page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Expect marker on "This is a test".
+  auto* text = To<Text>(GetDocument().getElementById("text")->firstChild());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *text, DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(0u, markers.at(0)->StartOffset());
+  EXPECT_EQ(14u, markers.at(0)->EndOffset());
+}
+
+// Test that the ##targetText fragment syntax works properly and is stripped
+// from the URL.
+TEST_F(TextFragmentAnchorTest, DoubleHashSyntax) {
+  SimRequest request("https://example.com/test.html##targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html##targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#");
+}
+
+// Test that the ##targetText fragment directive is stripped from the URL when
+// there's also non-directive fragment contents.
+TEST_F(TextFragmentAnchorTest, DoubleHashStrippedWithRemainingFragment) {
+  SimRequest request("https://example.com/test.html#element##targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#element##targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #text {
+        position: absolute;
+        top: 1000px;
+      }
+      #element {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+    <div id="element"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#element");
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// If the fragment has a double hash, but the double hash isn't followed by a
+// valid targetText syntax, it should be interpreted as an element ID.
+TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
+  SimRequest request("https://example.com/test.html#element##id", "text/html");
+  LoadURL("https://example.com/test.html#element##id");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+      div {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="element">This is a test page</p>
+    <div id="element##id"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& div = *GetDocument().getElementById("element##id");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
+      << "Should have scrolled <div> into view but didn't, scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Test matching a space to &nbsp character.
+TEST_F(TextFragmentAnchorTest, SpaceMatchesNbsp) {
+  SimRequest request("https://example.com/test.html#targetText=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test&nbsp;page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+
+// Test matching text with a CSS text transform.
+TEST_F(TextFragmentAnchorTest, CSSTextTransform) {
+  SimRequest request("https://example.com/test.html#targetText=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+        text-transform: uppercase;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
 }
 
 }  // namespace

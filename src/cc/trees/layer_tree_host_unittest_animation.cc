@@ -369,6 +369,15 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
     if (host_impl->active_tree()->source_frame_number() != 0)
       return;
 
+    // The impl thread may start a second frame before the test finishes. This
+    // can lead to a race as if the main thread has committed a new sync tree
+    // the impl thread can now delete the KeyframeModel as the animation only
+    // lasts a single frame and no longer affects either tree. Only test the
+    // first frame the animation shows up for.
+    if (!first_animation_frame_)
+      return;
+    first_animation_frame_ = false;
+
     scoped_refptr<AnimationTimeline> timeline_impl =
         GetImplAnimationHost(host_impl)->GetTimelineById(timeline_id_);
     scoped_refptr<SingleKeyframeEffectAnimation> animation_child_impl =
@@ -397,6 +406,7 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
 
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> picture_;
+  bool first_animation_frame_ = true;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -710,13 +720,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     AttachAnimationsToTimeline();
     animation_child_->AttachElement(picture_->element_id());
     animation_child_->set_animation_delegate(this);
-  }
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // Make sure that drawing many times doesn't cause a checkerboarded
-    // animation to start so we avoid flake in this test.
-    settings->timeout_and_draw_when_animation_checkerboards = false;
-    LayerTreeHostAnimationTest::InitializeSettings(settings);
   }
 
   void BeginTest() override {

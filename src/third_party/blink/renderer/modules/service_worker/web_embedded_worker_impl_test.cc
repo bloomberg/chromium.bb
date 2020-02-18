@@ -59,7 +59,7 @@ class FakeServiceWorkerNetworkProvider final
         nullptr);
   }
 
-  blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       override {
     return blink::mojom::ControllerServiceWorkerMode::kNoController;
   }
@@ -95,7 +95,7 @@ class FakeWebURLLoader final : public WebURLLoader {
       response.SetMimeType("text/javascript");
       response.SetHttpStatusCode(404);
       client->DidReceiveResponse(response);
-      client->DidFinishLoading(TimeTicks(), 0, 0, 0, false, {});
+      client->DidFinishLoading(base::TimeTicks(), 0, 0, 0, false, {});
       return;
     }
     // Don't handle other requests intentionally to emulate ongoing load.
@@ -133,7 +133,7 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
     return nullptr;
   }
   void WillSendRequest(WebURLRequest&) override {}
-  mojom::ControllerServiceWorkerMode IsControlledByServiceWorker()
+  mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       const override {
     return mojom::ControllerServiceWorkerMode::kNoController;
   }
@@ -207,8 +207,13 @@ class MockServiceWorkerContextClient final
   }
 
   scoped_refptr<WebWorkerFetchContext>
-  CreateServiceWorkerFetchContextOnMainThread(
+  CreateWorkerFetchContextOnMainThreadLegacy(
       WebServiceWorkerNetworkProvider* network_provider) override {
+    return base::MakeRefCounted<FakeWebWorkerFetchContext>();
+  }
+
+  scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContextOnMainThread()
+      override {
     return base::MakeRefCounted<FakeWebWorkerFetchContext>();
   }
 

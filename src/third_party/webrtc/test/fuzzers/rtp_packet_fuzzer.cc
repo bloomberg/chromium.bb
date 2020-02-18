@@ -79,6 +79,11 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
         uint32_t sendtime;
         packet.GetExtension<AbsoluteSendTime>(&sendtime);
         break;
+      case kRtpExtensionAbsoluteCaptureTime: {
+        AbsoluteCaptureTime extension;
+        packet.GetExtension<AbsoluteCaptureTimeExtension>(&extension);
+        break;
+      }
       case kRtpExtensionVideoRotation:
         uint8_t rotation;
         packet.GetExtension<VideoOrientation>(&rotation);
@@ -140,6 +145,10 @@ void FuzzOneInput(const uint8_t* data, size_t size) {
         packet.GetExtension<ColorSpaceExtension>(&color_space);
         break;
       }
+      case kRtpExtensionGenericFrameDescriptor02:
+        // This extension requires state to read and so complicated that
+        // deserves own fuzzer.
+        break;
     }
   }
 }

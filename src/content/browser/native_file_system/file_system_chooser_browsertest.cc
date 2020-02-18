@@ -5,9 +5,16 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/native_file_system/file_system_chooser_test_helpers.h"
+#include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -19,6 +26,11 @@
 #include "ui/shell_dialogs/select_file_policy.h"
 
 namespace content {
+
+using base::test::RunOnceCallback;
+using blink::mojom::PermissionStatus;
+using SensitiveDirectoryResult =
+    NativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
 // This browser test implements end-to-end tests for the chooseFileSystemEntry
 // API.
@@ -32,6 +44,12 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     ContentBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable experimental web platform features to enable write access.
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   void TearDown() override {
@@ -167,6 +185,42 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
   EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
+  base::FilePath test_dir = CreateTestDir();
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_dir}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context,
+              ConfirmSensitiveDirectoryAccess_(
+                  testing::_, testing::_, testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<4>(SensitiveDirectoryResult::kAllowed));
+
+  EXPECT_CALL(
+      permission_context,
+      ConfirmDirectoryReadAccess_(
+          url::Origin::Create(embedded_test_server()->GetURL("/title1.html")),
+          test_dir,
+          shell()->web_contents()->GetMainFrame()->GetProcess()->GetID(),
+          shell()->web_contents()->GetMainFrame()->GetRoutingID(), testing::_))
+      .WillOnce(RunOnceCallback<4>(PermissionStatus::DENIED));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'openDirectory'})");
+  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+      << result.error;
+}
+
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
   SelectFileDialogParams dialog_params;
   ui::SelectFileDialog::SetFactory(
@@ -190,10 +244,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
             dialog_params.file_types->extensions[0][0]);
   EXPECT_EQ(FILE_PATH_LITERAL("txt"),
             dialog_params.file_types->extensions[0][1]);
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpg")));
-  EXPECT_TRUE(base::ContainsValue(dialog_params.file_types->extensions[1],
-                                  FILE_PATH_LITERAL("jpeg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpg")));
+  EXPECT_TRUE(base::Contains(dialog_params.file_types->extensions[1],
+                             FILE_PATH_LITERAL("jpeg")));
 
   ASSERT_EQ(2u,
             dialog_params.file_types->extension_description_overrides.size());

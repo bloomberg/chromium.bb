@@ -75,6 +75,12 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
     }
     return nullptr;
   }
+  int64_t io_surface_width = IOSurfaceGetWidth(io_surface);
+  int64_t io_surface_height = IOSurfaceGetHeight(io_surface);
+  if (io_surface_width < size.width() || io_surface_height < size.height()) {
+    DLOG(ERROR) << "IOSurface size does not match handle.";
+    return nullptr;
+  }
 
   return base::WrapUnique(new GpuMemoryBufferImplIOSurface(
       handle.id, size, format, std::move(callback), io_surface.release(),
@@ -107,7 +113,7 @@ bool GpuMemoryBufferImplIOSurface::Map() {
 
 void* GpuMemoryBufferImplIOSurface::memory(size_t plane) {
   DCHECK(mapped_);
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
   return IOSurfaceGetBaseAddressOfPlane(io_surface_, plane);
 }
 
@@ -118,7 +124,7 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
 }
 
 int GpuMemoryBufferImplIOSurface::stride(size_t plane) const {
-  DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
+  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
   return IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
 }
 

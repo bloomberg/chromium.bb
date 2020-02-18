@@ -17,6 +17,10 @@
 namespace openscreen {
 namespace cast_streaming {
 
+// Default target playout delay. The playout delay is the window of time between
+// capture from the source until presentation at the receiver.
+constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);
+
 // Target number of milliseconds between the sending of RTCP reports.  Both
 // senders and receivers regularly send RTCP reports to their peer.
 constexpr std::chrono::milliseconds kRtcpReportInterval(500);

@@ -19,6 +19,12 @@
 
 #include <array>
 
+namespace dawn_native {
+
+    struct Format;
+
+}  // namespace dawn_native
+
 namespace dawn_native { namespace d3d12 {
 
     struct TextureCopySplit {
@@ -39,7 +45,7 @@ namespace dawn_native { namespace d3d12 {
 
     TextureCopySplit ComputeTextureCopySplit(Origin3D origin,
                                              Extent3D copySize,
-                                             uint32_t texelSize,
+                                             const Format& format,
                                              uint64_t offset,
                                              uint32_t rowPitch,
                                              uint32_t imageHeight);

@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">ตัวเลือกในการบันทึกรหัสผ่าน</translation>
 <translation id="2523363575747517183">เว็บไซต์นี้พยายามเปิดแอปพลิเคชันอื่นอยู่เรื่อยๆ</translation>
 <translation id="2529021024822217800">เปิดทั้งหมด</translation>
+<translation id="2562041823070056534">กำลังส่งไปยัง <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">ส่งคุกกี้และการค้นหาบางรายการจากแถบที่อยู่และช่องค้นหาไปยังเครื่องมือค้นหาเริ่มต้น</translation>
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
 <translation id="2578571896248130439">ส่งหน้าเว็บ</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">แฟลช</translation>
 <translation id="2958718410589002129">รหัสผ่าน</translation>
 <translation id="2969979262385602596">ไม่สามารถลงชื่อเข้าใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
+<translation id="298306318844797842">เพิ่มวิธีการชำระเงิน...</translation>
 <translation id="2989805286512600854">เปิดในแท็บใหม่</translation>
 <translation id="3037605927509011580">แย่จัง!</translation>
 <translation id="3112556859945124369">ทำเครื่องหมาย…</translation>
@@ -313,6 +315,7 @@
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5614553682702429503">บันทึกรหัสผ่านไหม</translation>
 <translation id="5626245204502895507">ไม่สามารถดาวน์โหลดไฟล์ได้ในขณะนี้</translation>
+<translation id="5631164295104953411">เพิ่มวิธีการชำระเงิน</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">รุ่น <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@
 <translation id="7772032839648071052">ยืนยันข้อความรหัสผ่าน</translation>
 <translation id="7781829728241885113">เมื่อวานนี้</translation>
 <translation id="778855399387580014">เริ่มการค้นหาในแท็บใหม่ของ Chrome</translation>
+<translation id="7791543448312431591">เพิ่ม</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7840771868269352570">ระบบจะนำรายการที่คุณเลือกออก</translation>
 <translation id="7856733331829174190">ดาวน์โหลดไม่ได้</translation>
@@ -477,6 +481,7 @@
 <translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7971521879845308059">บล็อกป๊อปอัป</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
+<translation id="8007420562015504427">ค้นหาในโหมดไม่ระบุตัวตน</translation>
 <translation id="8019783059653722575">ช่วยให้คุณบันทึกและอัปโหลดรูปภาพได้</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
 <translation id="8023878949384262191">ขยายส่วนนี้</translation>
@@ -491,6 +496,7 @@
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8281781826761538115">ค่าเริ่มต้น - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">ค้นหาใหม่</translation>
 <translation id="8328777765163860529">ปิดทั้งหมด</translation>
 <translation id="8381750437846184350">ควบคุมวิธีที่ Google ใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="8407669440184693619">ไม่พบรหัสผ่านสำหรับเว็บไซต์นี้</translation>
@@ -507,7 +513,6 @@
 <translation id="8532105204136943229">ปีที่หมดอายุ</translation>
 <translation id="8534481786647257214">โพสต์ใน Google+ แล้ว</translation>
 <translation id="8548878600947630424">ค้นหาในหน้าเว็บ...</translation>
-<translation id="8583866649835978847">ส่ง <ph name="TITLE" /> ไปยังอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ</translation>
 <translation id="8605219856220328675">ปิดแท็บ</translation>
 <translation id="8620640915598389714">แก้ไข</translation>
 <translation id="8636825310635137004">เปิดการซิงค์เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
@@ -530,7 +535,6 @@
 <translation id="8976382372951310360">ความช่วยเหลือ</translation>
 <translation id="8981454092730389528">ส่วนควบคุมกิจกรรมของ Google</translation>
 <translation id="8985320356172329008">ลงชื่อเข้าใช้ Google ด้วย</translation>
-<translation id="9016406938567631235">กำลังส่ง...</translation>
 <translation id="902659348151742535">Google อาจใช้ประวัติการท่องเว็บของคุณเพื่อปรับเปลี่ยนการค้นหา โฆษณา และบริการอื่นๆ ของ Google ในแบบของคุณ</translation>
 <translation id="9034759925968272072">คุณจะไม่ออกจากระบบบัญชี Google บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="9039373489628511875">แบนด์วิดท์</translation>

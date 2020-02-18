@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -702,8 +702,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
           }
         }));
 
-    LoginShelfTestHelper shelf_helper;
-    ASSERT_TRUE(shelf_helper.IsLoginShelfShown());
+    ASSERT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
 
     EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
     EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -717,7 +716,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     CheckCurrentScreen(EulaView::kScreenId);
     // Login shelf should still be visible.
-    EXPECT_TRUE(shelf_helper.IsLoginShelfShown());
+    EXPECT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
 
     EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
     EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
@@ -1264,11 +1263,8 @@ class WizardControllerDeviceStateExplicitRequirementTest
 // explicitly required, and that the user may not enter a guest session if FRE
 // was explicitly required. Then, a retyr is performed and FRE indicates that
 // the device should be enrolled.
-//
-// TODO(https://crbug.com/911154) Flaky time outs on Linux Chromium OS ASan
-// LSan bot.
 IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
-                       DISABLED_ControlFlowForcedReEnrollment) {
+                       ControlFlowForcedReEnrollment) {
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull())).Times(1);
@@ -1315,20 +1311,15 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // (because the check_enrollment VPD key was set to "1", making FRE
     // explicitly required).
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
-    EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
-               ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, FakeSessionManagerClient::Get()
-                     ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
     EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
-    EXPECT_EQ(
-        1, FakeCryptohomeClient::Get()
-               ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(1, FakeSessionManagerClient::Get()
-                     ->clear_forced_re_enrollment_vpd_call_count());
   }
+  EXPECT_EQ(0,
+            FakeCryptohomeClient::Get()
+                ->remove_firmware_management_parameters_from_tpm_call_count());
+  EXPECT_EQ(0, FakeSessionManagerClient::Get()
+                   ->clear_forced_re_enrollment_vpd_call_count());
 
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,

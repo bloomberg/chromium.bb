@@ -35,7 +35,6 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->may_contain_video = data.may_contain_video();
   out->is_resourceless_software_draw_with_scroll_or_animation =
       data.is_resourceless_software_draw_with_scroll_or_animation();
-  out->content_source_id = data.content_source_id();
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
   out->root_background_color = data.root_background_color();
   out->min_page_scale_factor = data.min_page_scale_factor();
@@ -61,7 +60,8 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
          data.ReadLocalSurfaceIdAllocationTime(
              &out->local_surface_id_allocation_time) &&
          !out->local_surface_id_allocation_time.is_null() &&
-         data.ReadPreferredFrameInterval(&out->preferred_frame_interval);
+         data.ReadPreferredFrameInterval(&out->preferred_frame_interval) &&
+         data.ReadMirrorRect(&out->mirror_rect);
 }
 
 }  // namespace mojo

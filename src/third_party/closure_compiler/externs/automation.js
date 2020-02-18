@@ -7,8 +7,7 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.automation.FooType'.
 // Please run the closure compiler before committing changes.
-// See
-// https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 /** @fileoverview Externs generated from namespace: automation */
 
@@ -30,20 +29,21 @@ chrome.automation.EventType = {
   CHECKED_STATE_CHANGED: 'checkedStateChanged',
   CHILDREN_CHANGED: 'childrenChanged',
   CLICKED: 'clicked',
+  CONTROLS_CHANGED: 'controlsChanged',
   DOCUMENT_SELECTION_CHANGED: 'documentSelectionChanged',
   DOCUMENT_TITLE_CHANGED: 'documentTitleChanged',
   END_OF_TEST: 'endOfTest',
   EXPANDED_CHANGED: 'expandedChanged',
   FOCUS: 'focus',
   FOCUS_CONTEXT: 'focusContext',
-  IMAGE_FRAME_UPDATED: 'imageFrameUpdated',
   HIDE: 'hide',
   HIT_TEST_RESULT: 'hitTestResult',
   HOVER: 'hover',
+  IMAGE_FRAME_UPDATED: 'imageFrameUpdated',
   INVALID_STATUS_CHANGED: 'invalidStatusChanged',
   LAYOUT_COMPLETE: 'layoutComplete',
-  LIVE_REGION_CREATED: 'liveRegionCreated',
   LIVE_REGION_CHANGED: 'liveRegionChanged',
+  LIVE_REGION_CREATED: 'liveRegionCreated',
   LOAD_COMPLETE: 'loadComplete',
   LOAD_START: 'loadStart',
   LOCATION_CHANGED: 'locationChanged',
@@ -76,6 +76,7 @@ chrome.automation.EventType = {
   TEXT_SELECTION_CHANGED: 'textSelectionChanged',
   WINDOW_ACTIVATED: 'windowActivated',
   WINDOW_DEACTIVATED: 'windowDeactivated',
+  WINDOW_VISIBILITY_CHANGED: 'windowVisibilityChanged',
   TREE_CHANGED: 'treeChanged',
   VALUE_CHANGED: 'valueChanged',
 };
@@ -504,6 +505,17 @@ chrome.automation.TreeChangeObserverFilter = {
 chrome.automation.CustomAction;
 
 /**
+ * @typedef {{
+ *   startIndex: number,
+ *   endIndex: number,
+ *   language: string,
+ *   probability: number
+ * }}
+ * @see https://developer.chrome.com/extensions/automation#type-LanguageSpan
+ */
+chrome.automation.LanguageSpan;
+
+/**
  * @constructor
  * @private
  * @see https://developer.chrome.com/extensions/automation#type-AutomationNode
@@ -639,6 +651,20 @@ chrome.automation.AutomationNode.prototype.wordStarts;
  * @see https://developer.chrome.com/extensions/automation#type-wordEnds
  */
 chrome.automation.AutomationNode.prototype.wordEnds;
+
+/**
+ * The start index of each word within the node's name. This is different from wordStarts because it is not restricted to inline text boxes and can be used for any type of element.
+ * @type {(!Array<number>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-nonInlineTextWordStarts
+ */
+chrome.automation.AutomationNode.prototype.nonInlineTextWordStarts;
+
+/**
+ * The end index of each word within the node's name. This is different from wordEnds because it is not restricted to inline text boxes and can be used for any type of element.
+ * @type {(!Array<number>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-nonInlineTextWordEnds
+ */
+chrome.automation.AutomationNode.prototype.nonInlineTextWordEnds;
 
 /**
  * The nodes, if any, which this node is specified to control via <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls"> <code>aria-controls</code></a>.
@@ -902,8 +928,7 @@ chrome.automation.AutomationNode.prototype.markerEnds;
 chrome.automation.AutomationNode.prototype.markerTypes;
 
 /**
- * If a selection is present, whether the anchor of the selection comes after
- * its focus in the accessibility tree.
+ * If a selection is present, whether the anchor of the selection comes after its focus in the accessibility tree.
  * @type {(boolean|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-isSelectionBackward
  */
@@ -1748,3 +1773,16 @@ chrome.automation.removeTreeChangeObserver = function(observer) {};
  * @see https://developer.chrome.com/extensions/automation#method-setDocumentSelection
  */
 chrome.automation.setDocumentSelection = function(params) {};
+
+/**
+ * Returns the detected languages for the provided string attribute as an array
+ * of LanguageSpan objects. There are several guarantees about the format of the
+ * LanguageSpan array: 1. Is either empty or contains LanguageSpans that cover
+ * all indices in the associated string attribute value. 2. Is sorted by
+ * increasing startIndex (those with smaller startIndex appear first). 3.
+ * LanguageSpans are non-overlapping and contain exactly one language.
+ * @param {string} attribute
+ * @return {!Array<!chrome.automation.LanguageSpan>}
+ * @see https://developer.chrome.com/extensions/automation#method-languageAnnotationForStringAttribute
+ */
+chrome.automation.languageAnnotationForStringAttribute = function(attribute) {};

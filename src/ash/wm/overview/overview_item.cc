@@ -8,19 +8,20 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
@@ -29,7 +30,6 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
@@ -58,9 +58,6 @@ namespace {
 
 // Opacity for fading out during closing a window.
 constexpr float kClosingItemOpacity = 0.8f;
-
-// Opacity for the item header.
-constexpr float kHeaderOpacity = 0.1f;
 
 // Before closing a window animate both the window and the caption to shrink by
 // this fraction of size.
@@ -99,10 +96,8 @@ OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(
   // EnterExitOverviewType can only be set to kWindowMinimized in talbet mode.
   // Fade out the minimized window without animation if switch from tablet mode
   // to clamshell mode.
-  if (type == OverviewSession::EnterExitOverviewType::kWindowsMinimized) {
-    return Shell::Get()
-                   ->tablet_mode_controller()
-                   ->IsTabletModeWindowManagerEnabled()
+  if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit) {
+    return Shell::Get()->tablet_mode_controller()->InTabletMode()
                ? OVERVIEW_ANIMATION_EXIT_TO_HOME_LAUNCHER
                : OVERVIEW_ANIMATION_NONE;
   }
@@ -145,43 +140,6 @@ void SetWidgetBoundsAndMaybeAnimateTransform(
 }
 
 }  // namespace
-
-// The class to cache render surface to the specified window's layer.
-class OverviewItem::WindowSurfaceCacheObserver : public aura::WindowObserver {
- public:
-  explicit WindowSurfaceCacheObserver(aura::Window* window) {
-    StartObserving(window);
-  }
-
-  ~WindowSurfaceCacheObserver() override { StopObserving(); }
-
-  void StartObserving(aura::Window* window) {
-    // If we're already observing a window, stop observing it first.
-    StopObserving();
-
-    window_ = window;
-    window_->AddObserver(this);
-    window_->layer()->AddCacheRenderSurfaceRequest();
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(window_, window);
-    StopObserving();
-  }
-
- private:
-  void StopObserving() {
-    if (window_) {
-      window_->layer()->RemoveCacheRenderSurfaceRequest();
-      window_->RemoveObserver(this);
-      window_ = nullptr;
-    }
-  }
-
-  aura::Window* window_ = nullptr;
-  DISALLOW_COPY_AND_ASSIGN(WindowSurfaceCacheObserver);
-};
 
 // The close button for the overview item. It has a custom ink drop.
 class OverviewItem::OverviewCloseButton : public views::ImageButton {
@@ -247,15 +205,15 @@ OverviewItem::OverviewItem(aura::Window* window,
       overview_session_(overview_session),
       overview_grid_(overview_grid) {
   CreateWindowLabel();
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(GetWindow()))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->AddObserver(this);
   }
 }
 
 OverviewItem::~OverviewItem() {
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(GetWindow()))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->RemoveObserver(this);
   }
 }
@@ -272,9 +230,7 @@ void OverviewItem::RestoreWindow(bool reset_transform) {
   // TODO(oshima): SplitViewController has its own logic to adjust the
   // target state in |SplitViewController::OnOverviewModeEnding|.
   // Unify the mechanism to control it and remove ifs.
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled() &&
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       !Shell::Get()->split_view_controller()->InSplitViewMode() &&
       reset_transform) {
     MaximizeIfSnapped(GetWindow());
@@ -325,7 +281,7 @@ void OverviewItem::SlideWindowIn() {
   FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
                                    OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
                                    /*slide=*/true, /*observe=*/true);
-  UpdateMaskAndShadow();
+  UpdateRoundedCornersAndShadow();
 }
 
 std::unique_ptr<ui::ScopedLayerAnimationSettings>
@@ -450,7 +406,7 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
   // transform and |item_widget_|'s new bounds so set it after SetItemBounds
   // and UpdateHeaderLayout. Do not apply the shadow for drop target.
   if (new_animation_type == OVERVIEW_ANIMATION_NONE)
-    UpdateMaskAndShadow();
+    UpdateRoundedCornersAndShadow();
 
   if (cannot_snap_widget_) {
     inset_bounds.Inset(
@@ -534,13 +490,8 @@ void OverviewItem::CloseWindow() {
 void OverviewItem::OnMinimizedStateChanged() {
   const bool minimized = transform_window_.IsMinimized();
   caption_container_view_->SetShowPreview(minimized);
-  if (minimized)
+  if (!minimized)
     EnsureVisible();
-
-  if (window_surface_cache_observers_) {
-    window_surface_cache_observers_->StartObserving(
-        transform_window_.GetOverviewWindow());
-  }
 }
 
 void OverviewItem::UpdateCannotSnapWarningVisibility() {
@@ -583,39 +534,29 @@ void OverviewItem::UpdateCannotSnapWarningVisibility() {
   gfx::Rect bounds = gfx::ToEnclosingRect(target_bounds());
   bounds.Inset(kWindowMargin, kWindowMargin);
   bounds.Inset(gfx::Insets(kHeaderHeightDp, 0, 0, 0));
-  cannot_snap_widget_->SetBoundsCenteredIn(bounds);
+  cannot_snap_widget_->SetBoundsCenteredIn(bounds, /*animate=*/false);
 }
 
 void OverviewItem::OnSelectorItemDragStarted(OverviewItem* item) {
   is_being_dragged_ = (item == this);
-  // Disable mask and shadow for the dragged overview item during dragging.
+  // Disable shadow for the dragged overview item during dragging.
   if (is_being_dragged_)
-    UpdateMaskAndShadow();
+    UpdateRoundedCornersAndShadow();
 
   caption_container_view_->SetHeaderVisibility(
       is_being_dragged_
           ? CaptionContainerView::HeaderVisibility::kInvisible
           : CaptionContainerView::HeaderVisibility::kCloseButtonInvisibleOnly);
-
-  if (!features::ShouldUseShaderRoundedCorner()) {
-    // Start caching render surface during overview window dragging.
-    window_surface_cache_observers_ =
-        std::make_unique<WindowSurfaceCacheObserver>(
-            transform_window_.GetOverviewWindow());
-  }
 }
 
 void OverviewItem::OnSelectorItemDragEnded(bool snap) {
-  // Stop caching render surface after overview window dragging.
-  window_surface_cache_observers_.reset();
-
   if (is_being_dragged_) {
     is_being_dragged_ = false;
     // Do nothing further with the dragged overview item if it is being snapped.
     if (snap)
       return;
-    // Re-show mask and shadow for the dragged overview item after drag ends.
-    UpdateMaskAndShadow();
+    // Re-show shadow for the dragged overview item after drag ends.
+    UpdateRoundedCornersAndShadow();
   }
 
   // Update the header.
@@ -708,6 +649,9 @@ void OverviewItem::OnDragAnimationCompleted() {
 
 void OverviewItem::UpdatePhantomsForDragging(
     const gfx::PointF& location_in_screen) {
+  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
+  DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
+
   aura::Window* window = transform_window_.IsMinimized()
                              ? item_widget_->GetNativeWindow()
                              : GetWindow();
@@ -718,12 +662,13 @@ void OverviewItem::UpdatePhantomsForDragging(
   }
 
   const gfx::Point location = gfx::ToRoundedPoint(location_in_screen);
-  window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
-      root_window_, window, location));
+    window->layer()->SetOpacity(DragWindowController::GetDragWindowOpacity(
+        root_window_, window, location));
   phantoms_for_dragging_->Update(location);
 }
 
 void OverviewItem::DestroyPhantomsForDragging() {
+  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   phantoms_for_dragging_.reset();
   aura::Window* window = transform_window_.IsMinimized()
                              ? item_widget_->GetNativeWindow()
@@ -754,49 +699,46 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
   shadow_->SetContentBounds(bounds_in_item);
 }
 
-void OverviewItem::UpdateMaskAndShadow() {
-  // Do not show mask and shadow if:
-  // 1) overview is shutting down or
-  // 2) this overview item is in an overview grid that contains more than 10
-  //    windows. In this case don't apply rounded corner mask because it can
-  //    push the compositor memory usage to the limit. TODO(oshima): Remove
-  //    this once new rounded corner impl is available. (crbug.com/903486)
-  // 3) we're currently in entering overview animation or
-  // 4) this overview item is being dragged or
-  // 5) this overview item is the drop target window or
-  // 6) this overview item is in animation.
-  bool should_show = true;
+void OverviewItem::UpdateRoundedCornersAndShadow() {
+  // Do not show the rounded corners and the shadow if overview is shutting down
+  // or we're currently in entering overview animation.
+  // Also don't update or animate the window's frame header clip under these
+  // conditions.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (disable_mask_ || !overview_controller ||
-      !overview_controller->InOverviewSession() ||
-      (!ash::features::ShouldUseShaderRoundedCorner() &&
-       overview_grid_->window_list().size() > 10) ||
-      overview_controller->IsInStartAnimation() || is_being_dragged_ ||
-      overview_grid_->IsDropTargetWindow(GetWindow()) ||
-      transform_window_.GetOverviewWindow()
-          ->layer()
-          ->GetAnimator()
-          ->is_animating()) {
-    should_show = false;
-  }
+  const bool is_shutting_down =
+      !overview_controller || !overview_controller->InOverviewSession();
+  const bool should_show_rounded_corners =
+      !disable_mask_ && !is_shutting_down &&
+      !overview_controller->IsInStartAnimation();
 
-  transform_window_.UpdateMask(should_show);
-  gfx::Rect shadow_bounds =
-      gfx::ToEnclosedRect(transform_window_.GetTransformedBounds());
+  transform_window_.UpdateRoundedCorners(
+      should_show_rounded_corners,
+      /*update_clip=*/should_show_rounded_corners);
+
+  // In addition, the shadow should be hidden if
+  // 1) this overview item is being dragged or
+  // 2) this overview item is the drop target window or
+  // 3) this overview item is in animation.
+  const bool should_show_shadow =
+      should_show_rounded_corners && !is_being_dragged_ &&
+      !overview_grid_->IsDropTargetWindow(GetWindow()) &&
+      !transform_window_.GetOverviewWindow()
+           ->layer()
+           ->GetAnimator()
+           ->is_animating();
+
+  SetShadowBounds(should_show_shadow
+                      ? base::make_optional(gfx::ToEnclosedRect(
+                            transform_window_.GetTransformedBounds()))
+                      : base::nullopt);
   if (transform_window_.IsMinimized()) {
     caption_container_view_->UpdatePreviewRoundedCorners(
-        should_show, kOverviewWindowRoundingDp);
-    if (caption_container_view_->preview_view()) {
-      shadow_bounds =
-          caption_container_view_->preview_view()->GetBoundsInScreen();
-    }
+        should_show_rounded_corners, kOverviewWindowRoundingDp);
   }
-  SetShadowBounds(should_show ? base::make_optional(shadow_bounds)
-                              : base::nullopt);
 }
 
 void OverviewItem::OnStartingAnimationComplete() {
-  DCHECK(item_widget_.get());
+  DCHECK(item_widget_);
   if (transform_window_.IsMinimized()) {
     // Fade the title in if minimized. The rest of |item_widget_| should already
     // be shown.
@@ -812,6 +754,11 @@ void OverviewItem::OnStartingAnimationComplete() {
       ScopedOverviewTransformWindow::GridWindowFillMode::kNormal;
   caption_container_view_->SetBackdropVisibility(show_backdrop);
   UpdateCannotSnapWarningVisibility();
+}
+
+void OverviewItem::StopWidgetAnimation() {
+  DCHECK(item_widget_.get());
+  item_widget_->GetNativeWindow()->layer()->GetAnimator()->StopAnimating();
 }
 
 void OverviewItem::SetOpacity(float opacity) {
@@ -846,7 +793,8 @@ OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
-void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen) {
+void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
+                                    bool from_touch_gesture) {
   // We allow switching finger while dragging, but do not allow dragging two or
   // more items.
   if (overview_session_->window_drag_controller() &&
@@ -855,14 +803,14 @@ void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen) {
   }
 
   StartDrag();
-  overview_session_->InitiateDrag(this, location_in_screen);
+  overview_session_->InitiateDrag(this, location_in_screen,
+                                  /*allow_drag_to_close=*/from_touch_gesture);
 }
 
 void OverviewItem::HandleReleaseEvent(const gfx::PointF& location_in_screen) {
   if (!IsDragItem())
     return;
 
-  overview_grid_->SetSelectionWidgetVisibility(true);
   overview_session_->CompleteDrag(this, location_in_screen);
 }
 
@@ -874,7 +822,7 @@ void OverviewItem::HandleDragEvent(const gfx::PointF& location_in_screen) {
 }
 
 void OverviewItem::HandleLongPressEvent(const gfx::PointF& location_in_screen) {
-  if (ShouldAllowSplitView() || features::IsVirtualDesksEnabled())
+  if (ShouldAllowSplitView() || desks_util::ShouldDesksBarBeCreated())
     overview_session_->StartNormalDragMode(location_in_screen);
 }
 
@@ -902,6 +850,14 @@ bool OverviewItem::ShouldIgnoreGestureEvents() {
   return IsSlidingOutOverviewFromShelf();
 }
 
+void OverviewItem::OnHighlightedViewActivated() {
+  overview_session_->OnHighlightedItemActivated(this);
+}
+
+void OverviewItem::OnHighlightedViewClosed() {
+  overview_session_->OnHighlightedItemClosed(this);
+}
+
 void OverviewItem::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
   DCHECK_EQ(sender, close_button_);
@@ -910,9 +866,7 @@ void OverviewItem::ButtonPressed(views::Button* sender,
 
   base::RecordAction(
       base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
-  if (Shell::Get()
-          ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     base::RecordAction(
         base::UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
   }
@@ -940,8 +894,8 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
 
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
   // Stops observing the window and all of its transient descendents.
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(window))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(window))) {
     window_iter->RemoveObserver(this);
   }
   if (window != GetWindow())
@@ -1003,7 +957,7 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
     window->SetBoundsInScreen(gfx::ToEnclosedRect(overview_item_bounds),
-                              wm::GetWindowState(window)->GetDisplay());
+                              WindowState::Get(window)->GetDisplay());
     window->SetTransform(gfx::Transform());
     return;
   }
@@ -1087,11 +1041,9 @@ void OverviewItem::AnimateOpacity(float opacity,
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   transform_window_.SetOpacity(opacity);
 
-  const float header_opacity = selected_ ? 0.f : kHeaderOpacity * opacity;
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  ScopedOverviewAnimationSettings animation_settings_label(animation_type,
-                                                           widget_window);
-  widget_window->layer()->SetOpacity(header_opacity);
+  ScopedOverviewAnimationSettings animation_settings_label(
+      animation_type, item_widget_->GetNativeWindow());
+  item_widget_->SetOpacity(opacity);
 
   if (cannot_snap_widget_) {
     aura::Window* cannot_snap_widget_window =
@@ -1103,8 +1055,6 @@ void OverviewItem::AnimateOpacity(float opacity,
 }
 
 void OverviewItem::StartDrag() {
-  overview_grid_->SetSelectionWidgetVisibility(false);
-
   // |transform_window_| handles hiding shadow and rounded edges mask while
   // animating, and applies them after animation is complete. Prevent the
   // shadow and rounded edges mask from showing up after dragging in the case
@@ -1124,7 +1074,7 @@ void OverviewItem::StartDrag() {
 aura::Window::Windows OverviewItem::GetWindowsForHomeGesture() {
   aura::Window::Windows windows = {item_widget_->GetNativeWindow()};
   if (!transform_window_.IsMinimized()) {
-    for (auto* window : wm::GetTransientTreeIterator(GetWindow()))
+    for (auto* window : GetTransientTreeIterator(GetWindow()))
       windows.push_back(window);
   }
   if (cannot_snap_widget_)

@@ -39,9 +39,9 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -49,7 +49,8 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -69,6 +70,7 @@ void Frame::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_window_);
   visitor->Trace(client_);
   visitor->Trace(navigation_rate_limiter_);
+  visitor->Trace(window_agent_factory_);
 }
 
 void Frame::Detach(FrameDetachType type) {
@@ -259,23 +261,27 @@ void Frame::UpdateInheritedEffectiveTouchActionIfPossible() {
   }
 }
 
-const CString& Frame::ToTraceValue() {
+const std::string& Frame::ToTraceValue() {
   // token's ToString() is latin1.
   if (!trace_value_)
-    trace_value_ = CString(devtools_frame_token_.ToString().c_str());
+    trace_value_ = devtools_frame_token_.ToString();
   return trace_value_.value();
 }
 
 Frame::Frame(FrameClient* client,
              Page& page,
              FrameOwner* owner,
-             WindowProxyManager* window_proxy_manager)
+             WindowProxyManager* window_proxy_manager,
+             WindowAgentFactory* inheriting_agent_factory)
     : tree_node_(this),
       page_(&page),
       owner_(owner),
       client_(client),
       window_proxy_manager_(window_proxy_manager),
       navigation_rate_limiter_(*this),
+      window_agent_factory_(inheriting_agent_factory
+                                ? inheriting_agent_factory
+                                : MakeGarbageCollected<WindowAgentFactory>()),
       is_loading_(false),
       devtools_frame_token_(client->GetDevToolsFrameToken()),
       create_stack_(base::debug::StackTrace()) {

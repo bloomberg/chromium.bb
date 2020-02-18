@@ -25,30 +25,15 @@ class Rect;
 }
 
 namespace ash {
+class ClientControlledState;
 class LockWindowState;
 class TabletModeWindowState;
-enum class WindowStateType;
-
-namespace mojom {
 enum class WindowPinType;
-}
-
-namespace wm {
-class InitialStateTestState;
 class WindowState;
 class WindowStateDelegate;
 class WindowStateObserver;
+enum class WindowStateType;
 class WMEvent;
-class ClientControlledState;
-
-// Returns the WindowState for the active window, null if there is no active
-// window.
-ASH_EXPORT WindowState* GetActiveWindowState();
-
-// Returns the WindowState for |window|. Creates WindowState if it doesn't
-// exist. The returned value is owned by |window| (you should not delete it).
-ASH_EXPORT WindowState* GetWindowState(aura::Window* window);
-ASH_EXPORT const WindowState* GetWindowState(const aura::Window* window);
 
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
@@ -57,7 +42,7 @@ ASH_EXPORT const WindowState* GetWindowState(const aura::Window* window);
 // of defining separate functions (like |MaximizeWindow(aura::Window*
 // window)|) or using aura Window property.
 // The WindowState gets created when first accessed by
-// |wm::GetWindowState|, and deleted when the window is deleted.
+// |WindowState::Get()|, and deleted when the window is deleted.
 // Prefer using this class instead of passing aura::Window* around in
 // ash code as this is often what you need to interact with, and
 // accessing the window using |window()| is cheap.
@@ -115,7 +100,16 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
-  // Call GetWindowState() to instantiate this class.
+  // Returns the WindowState for |window|. Creates WindowState if it doesn't
+  // exist. The returned value is owned by |window| (you should not delete it).
+  static WindowState* Get(aura::Window* window);
+  static const WindowState* Get(const aura::Window* window);
+
+  // Returns the WindowState for the active window, null if there is no active
+  // window.
+  static WindowState* ForActiveWindow();
+
+  // Call WindowState::Get() to instantiate this class.
   ~WindowState() override;
 
   aura::Window* window() { return window_; }
@@ -177,12 +171,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // TODO(oshima): Change to use RESTORE event.
   void Restore();
 
-  // Caches, then disables always on top state and then stacks |window_| below
-  // |window_on_top| if a |window_| is currently in always on top state.
-  void DisableAlwaysOnTop(aura::Window* window_on_top);
+  // Caches, then disables z-ordering state and then stacks |window_| below
+  // |window_on_top| if |window_| currently has a special z-order.
+  void DisableZOrdering(aura::Window* window_on_top);
 
-  // Restores always on top state that a window might have cached.
-  void RestoreAlwaysOnTop();
+  // Restores the z-ordering state that a window might have cached.
+  void RestoreZOrdering();
 
   // Invoked when a WMevent occurs, which drives the internal
   // state machine.
@@ -361,12 +355,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class BaseState;
+  friend class ClientControlledState;
   friend class DefaultState;
-  friend class InitialStateTestState;
-  friend class ash::wm::ClientControlledState;
-  friend class ash::LockWindowState;
-  friend class ash::TabletModeWindowState;
-  friend WindowState* GetWindowState(aura::Window*);
+  friend class LockWindowState;
+  friend class TabletModeWindowState;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
@@ -379,14 +371,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool HasMaximumWidthOrHeight() const;
 
-  // Returns the window's current always_on_top state.
-  bool GetAlwaysOnTop() const;
+  // Returns the window's current z-ordering state.
+  ui::ZOrderLevel GetZOrdering() const;
 
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
 
   // Return the window's current pin type.
-  ash::mojom::WindowPinType GetPinType() const;
+  ash::WindowPinType GetPinType() const;
 
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
@@ -415,13 +407,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // a scale animation, with duration specified by |duration|.
   void SetBoundsDirectAnimated(
       const gfx::Rect& bounds,
-      base::TimeDelta duration = kBoundsChangeSlideDuration);
+      base::TimeDelta duration = kBoundsChangeSlideDuration,
+      gfx::Tween::Type animation_type = gfx::Tween::LINEAR);
 
   // Sets the window's |bounds| and transition to the new bounds with
   // a cross fade animation.
-  void SetBoundsDirectCrossFade(
-      const gfx::Rect& bounds,
-      gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
+  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
 
   // Called before the state change and update PIP related state, such as next
   // window animation type, upon state change.
@@ -455,7 +446,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool ignore_keyboard_bounds_change_ = false;
   bool hide_shelf_when_fullscreen_;
   bool autohide_shelf_when_maximized_or_fullscreen_;
-  bool cached_always_on_top_;
+  ui::ZOrderLevel cached_z_order_;
   bool allow_set_bounds_direct_ = false;
 
   // A property to save the ratio between snapped window width and display
@@ -488,7 +479,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_STATE_H_

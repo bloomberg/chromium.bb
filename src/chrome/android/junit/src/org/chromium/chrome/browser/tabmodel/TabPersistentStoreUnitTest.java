@@ -31,12 +31,12 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.task.TaskRunner;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**

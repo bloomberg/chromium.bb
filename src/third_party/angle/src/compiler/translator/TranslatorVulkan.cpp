@@ -17,8 +17,11 @@
 #include "compiler/translator/OutputVulkanGLSL.h"
 #include "compiler/translator/StaticType.h"
 #include "compiler/translator/tree_ops/NameEmbeddedUniformStructs.h"
+#include "compiler/translator/tree_ops/RewriteAtomicCounters.h"
+#include "compiler/translator/tree_ops/RewriteDfdy.h"
 #include "compiler/translator/tree_ops/RewriteStructSamplers.h"
 #include "compiler/translator/tree_util/BuiltIn_autogen.h"
+#include "compiler/translator/tree_util/FindFunction.h"
 #include "compiler/translator/tree_util/FindMain.h"
 #include "compiler/translator/tree_util/IntermNode_util.h"
 #include "compiler/translator/tree_util/ReplaceVariable.h"
@@ -149,6 +152,14 @@ class DeclareDefaultUniformsTraverser : public TIntermTraverser
     bool mInDefaultUniform;
 };
 
+TIntermConstantUnion *CreateFloatConstant(float value)
+{
+    const TType *constantType     = StaticType::GetBasic<EbtFloat, 1>();
+    TConstantUnion *constantValue = new TConstantUnion;
+    constantValue->setFConst(value);
+    return new TIntermConstantUnion(constantValue, *constantType);
+}
+
 constexpr ImmutableString kFlippedPointCoordName    = ImmutableString("flippedPointCoord");
 constexpr ImmutableString kFlippedFragCoordName     = ImmutableString("flippedFragCoord");
 constexpr ImmutableString kEmulatedDepthRangeParams = ImmutableString("ANGLEDepthRangeParams");
@@ -157,24 +168,14 @@ constexpr const char kViewport[]             = "viewport";
 constexpr const char kHalfRenderAreaHeight[] = "halfRenderAreaHeight";
 constexpr const char kViewportYScale[]       = "viewportYScale";
 constexpr const char kNegViewportYScale[]    = "negViewportYScale";
+constexpr const char kXfbActiveUnpaused[]    = "xfbActiveUnpaused";
+constexpr const char kXfbBufferOffsets[]     = "xfbBufferOffsets";
 constexpr const char kDepthRange[]           = "depthRange";
 
-constexpr size_t kNumDriverUniforms                                        = 6;
+constexpr size_t kNumDriverUniforms                                        = 7;
 constexpr std::array<const char *, kNumDriverUniforms> kDriverUniformNames = {
-    {kViewport, kHalfRenderAreaHeight, kViewportYScale, kNegViewportYScale, "padding",
-     kDepthRange}};
-
-template <TBasicType BasicType = EbtFloat, unsigned char PrimarySize = 1>
-TIntermConstantUnion *CreateBasicConstant(float value)
-{
-    const TType *constantType     = StaticType::GetBasic<BasicType, PrimarySize>();
-    TConstantUnion *constantValue = new TConstantUnion[PrimarySize];
-    for (unsigned char sizeIndex = 0; sizeIndex < PrimarySize; ++sizeIndex)
-    {
-        constantValue[sizeIndex].setFConst(value);
-    }
-    return new TIntermConstantUnion(constantValue, *constantType);
-}
+    {kViewport, kHalfRenderAreaHeight, kViewportYScale, kNegViewportYScale, kXfbActiveUnpaused,
+     kXfbBufferOffsets, kDepthRange}};
 
 size_t FindFieldIndex(const TFieldList &fieldList, const char *fieldName)
 {
@@ -293,7 +294,7 @@ void AppendVertexShaderDepthCorrectionToMain(TIntermBlock *root, TSymbolTable *s
     TIntermSwizzle *positionZ = new TIntermSwizzle(positionRef, swizzleOffsetZ);
 
     // Create a constant "0.5"
-    TIntermConstantUnion *oneHalf = CreateBasicConstant(0.5f);
+    TIntermConstantUnion *oneHalf = CreateFloatConstant(0.5f);
 
     // Create a swizzle to "gl_Position.w"
     TVector<int> swizzleOffsetW;
@@ -310,6 +311,15 @@ void AppendVertexShaderDepthCorrectionToMain(TIntermBlock *root, TSymbolTable *s
 
     // Append the assignment as a statement at the end of the shader.
     RunAtTheEndOfShader(root, assignment, symbolTable);
+}
+
+void AppendVertexShaderTransformFeedbackOutputToMain(TIntermBlock *root, TSymbolTable *symbolTable)
+{
+    TVariable *xfbPlaceholder = new TVariable(symbolTable, ImmutableString("@@ XFB-OUT @@"),
+                                              new TType(), SymbolType::AngleInternal);
+
+    // Append the assignment as a statement at the end of the shader.
+    RunAtTheEndOfShader(root, new TIntermSymbol(xfbPlaceholder), symbolTable);
 }
 
 // The AddDriverUniformsToShader operation adds an internal uniform block to a shader. The driver
@@ -350,7 +360,8 @@ const TVariable *AddDriverUniformsToShader(TIntermBlock *root, TSymbolTable *sym
         new TType(EbtFloat),
         new TType(EbtFloat),
         new TType(EbtFloat),
-        new TType(EbtFloat),
+        new TType(EbtUInt),
+        new TType(EbtInt, 4),
         emulatedDepthRangeType,
     }};
 
@@ -362,28 +373,9 @@ const TVariable *AddDriverUniformsToShader(TIntermBlock *root, TSymbolTable *sym
         driverFieldList->push_back(driverUniformField);
     }
 
-    // Define a driver uniform block "ANGLEUniformBlock".
-    TLayoutQualifier driverLayoutQualifier = TLayoutQualifier::Create();
-    TInterfaceBlock *interfaceBlock =
-        new TInterfaceBlock(symbolTable, ImmutableString("ANGLEUniformBlock"), driverFieldList,
-                            driverLayoutQualifier, SymbolType::AngleInternal);
-
-    // Make the inteface block into a declaration. Use instance name "ANGLEUniforms".
-    TType *interfaceBlockType = new TType(interfaceBlock, EvqUniform, driverLayoutQualifier);
-    TIntermDeclaration *driverUniformsDecl = new TIntermDeclaration;
-    TVariable *driverUniformsVar = new TVariable(symbolTable, ImmutableString("ANGLEUniforms"),
-                                                 interfaceBlockType, SymbolType::AngleInternal);
-    TIntermSymbol *driverUniformsDeclarator = new TIntermSymbol(driverUniformsVar);
-    driverUniformsDecl->appendDeclarator(driverUniformsDeclarator);
-
-    // Insert the declarations before Main.
-    TIntermSequence *insertSequence = new TIntermSequence;
-    insertSequence->push_back(driverUniformsDecl);
-
-    size_t mainIndex = FindMainIndex(root);
-    root->insertChildNodes(mainIndex, *insertSequence);
-
-    return driverUniformsVar;
+    // Define a driver uniform block "ANGLEUniformBlock" with instance name "ANGLEUniforms".
+    return DeclareInterfaceBlock(root, symbolTable, driverFieldList, EvqUniform,
+                                 TMemoryQualifier::Create(), "ANGLEUniformBlock", "ANGLEUniforms");
 }
 
 TIntermPreprocessorDirective *GenerateLineRasterIfDef()
@@ -509,7 +501,7 @@ void AddLineSegmentRasterizationEmulation(TInfoSinkBase &sink,
     TIntermBinary *positionNDC = new TIntermBinary(EOpDiv, positionXY, positionW);
 
     // ANGLEPosition * 0.5
-    TIntermConstantUnion *oneHalf = CreateBasicConstant(0.5f);
+    TIntermConstantUnion *oneHalf = CreateFloatConstant(0.5f);
     TIntermBinary *halfPosition   = new TIntermBinary(EOpVectorTimesScalar, positionNDC, oneHalf);
 
     // (ANGLEPosition * 0.5) + 0.5
@@ -547,7 +539,7 @@ void AddLineSegmentRasterizationEmulation(TInfoSinkBase &sink,
     TIntermBinary *baSq = new TIntermBinary(EOpMul, ba, ba->deepCopy());
 
     // 2.0 * ba * ba
-    TIntermTyped *two      = CreateBasicConstant(2.0f);
+    TIntermTyped *two      = CreateFloatConstant(2.0f);
     TIntermBinary *twoBaSq = new TIntermBinary(EOpVectorTimesScalar, baSq, two);
 
     // Assign to a temporary "ba2".
@@ -578,7 +570,7 @@ void AddLineSegmentRasterizationEmulation(TInfoSinkBase &sink,
     // Using a small epsilon value ensures that we don't suffer from numerical instability when
     // lines are exactly vertical or horizontal.
     static constexpr float kEpisilon = 0.00001f;
-    TIntermConstantUnion *epsilon    = CreateBasicConstant(kEpisilon);
+    TIntermConstantUnion *epsilon    = CreateFloatConstant(kEpisilon);
 
     // bp.x > epsilon
     TIntermBinary *checkX = new TIntermBinary(EOpGreaterThan, bpX, epsilon);
@@ -639,6 +631,7 @@ void TranslatorVulkan::translate(TIntermBlock *root,
     // Write out default uniforms into a uniform block assigned to a specific set/binding.
     int defaultUniformCount        = 0;
     int structTypesUsedForUniforms = 0;
+    int atomicCounterCount         = 0;
     for (const auto &uniform : getUniforms())
     {
         if (!uniform.isBuiltIn() && uniform.staticUse && !gl::IsOpaqueType(uniform.type))
@@ -649,6 +642,11 @@ void TranslatorVulkan::translate(TIntermBlock *root,
         if (uniform.isStruct())
         {
             ++structTypesUsedForUniforms;
+        }
+
+        if (gl::IsAtomicCounterType(uniform.type))
+        {
+            ++atomicCounterCount;
         }
     }
 
@@ -677,9 +675,17 @@ void TranslatorVulkan::translate(TIntermBlock *root,
         sink << "};\n";
     }
 
-    const TVariable *driverUniforms = AddDriverUniformsToShader(root, &getSymbolTable());
+    if (atomicCounterCount > 0)
+    {
+        RewriteAtomicCounters(root, &getSymbolTable());
+    }
 
-    ReplaceGLDepthRangeWithDriverUniform(root, driverUniforms, &getSymbolTable());
+    const TVariable *driverUniforms = nullptr;
+    if (getShaderType() != GL_COMPUTE_SHADER)
+    {
+        driverUniforms = AddDriverUniformsToShader(root, &getSymbolTable());
+        ReplaceGLDepthRangeWithDriverUniform(root, driverUniforms, &getSymbolTable());
+    }
 
     // Declare gl_FragColor and glFragData as webgl_FragColor and webgl_FragData
     // if it's core profile shaders and they are used.
@@ -744,7 +750,7 @@ void TranslatorVulkan::translate(TIntermBlock *root,
         {
             TIntermBinary *viewportYScale =
                 CreateDriverUniformRef(driverUniforms, kNegViewportYScale);
-            TIntermConstantUnion *pivot = CreateBasicConstant(0.5f);
+            TIntermConstantUnion *pivot = CreateFloatConstant(0.5f);
             FlipBuiltinVariable(root, GetMainSequence(root), viewportYScale, &getSymbolTable(),
                                 BuiltInVariable::gl_PointCoord(), kFlippedPointCoordName, pivot);
         }
@@ -754,15 +760,29 @@ void TranslatorVulkan::translate(TIntermBlock *root,
             InsertFragCoordCorrection(root, GetMainSequence(root), &getSymbolTable(),
                                       driverUniforms);
         }
-    }
-    else
-    {
-        ASSERT(getShaderType() == GL_VERTEX_SHADER);
 
+        {
+            TIntermBinary *viewportYScale = CreateDriverUniformRef(driverUniforms, kViewportYScale);
+            RewriteDfdy(root, getSymbolTable(), getShaderVersion(), viewportYScale);
+        }
+    }
+    else if (getShaderType() == GL_VERTEX_SHADER)
+    {
         AddANGLEPositionVarying(root, &getSymbolTable());
+
+        // Add a macro to declare transform feedback buffers.
+        sink << "@@ XFB-DECL @@\n\n";
+
+        // Append a macro for transform feedback substitution prior to modifying depth.
+        AppendVertexShaderTransformFeedbackOutputToMain(root, &getSymbolTable());
 
         // Append depth range translation to main.
         AppendVertexShaderDepthCorrectionToMain(root, &getSymbolTable());
+    }
+    else
+    {
+        ASSERT(getShaderType() == GL_COMPUTE_SHADER);
+        EmitWorkGroupSizeGLSL(*this, sink);
     }
 
     // Write translated shader.

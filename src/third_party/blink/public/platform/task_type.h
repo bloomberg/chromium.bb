@@ -130,9 +130,9 @@ enum class TaskType : unsigned char {
   // Tasks used for DedicatedWorker's requestAnimationFrame.
   kWorkerAnimation = 51,
 
-  // For tasks started with the experimental Scheduling API
-  kExperimentalWebSchedulingUserInteraction = 53,
-  kExperimentalWebSchedulingBestEffort = 54,
+  // Obsolete.
+  // kExperimentalWebSchedulingUserInteraction = 53,
+  // kExperimentalWebSchedulingBestEffort = 54,
 
   // https://drafts.csswg.org/css-font-loading/#task-source
   kFontLoading = 56,
@@ -148,6 +148,9 @@ enum class TaskType : unsigned char {
 
   // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue
   kServiceWorkerClientMessage = 60,
+
+  // https://wicg.github.io/web-locks/#web-locks-tasks-source
+  kWebLocks = 66,
 
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
@@ -210,6 +213,12 @@ enum class TaskType : unsigned char {
   // when one of the frames is frozen.
   kInternalNavigationAssociated = 63,
 
+  // Legacy IPCs that are freezable.
+  kInternalFreezableIPC = 64,
+
+  // Task used to split a script loading task for cooperative scheduling
+  kInternalContinueScriptLoading = 65,
+
   ///////////////////////////////////////
   // The following task types are only for thread-local queues.
   ///////////////////////////////////////
@@ -233,7 +242,7 @@ enum class TaskType : unsigned char {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 64,
+  kCount = 67,
 };
 
 }  // namespace blink

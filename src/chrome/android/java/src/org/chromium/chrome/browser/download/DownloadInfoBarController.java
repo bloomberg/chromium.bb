@@ -39,6 +39,7 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -342,8 +343,13 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     }
 
     @Override
-    public void onItemUpdated(OfflineItem item) {
+    public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
         if (!isVisibleToUser(item)) return;
+
+        if (updateDelta != null && !updateDelta.stateChanged
+                && item.state == OfflineItemState.COMPLETE) {
+            return;
+        }
 
         if (item.state == OfflineItemState.CANCELLED) {
             onItemRemoved(item.id);
@@ -898,8 +904,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     }
 
     private OfflineContentProvider getOfflineContentProvider() {
-        return OfflineContentAggregatorFactory.forProfile(
-                Profile.getLastUsedProfile().getOriginalProfile());
+        return OfflineContentAggregatorFactory.get();
     }
 
     private void removeNotification(ContentId contentId) {

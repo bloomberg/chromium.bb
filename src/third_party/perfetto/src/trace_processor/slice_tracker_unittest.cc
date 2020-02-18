@@ -21,8 +21,8 @@
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace trace_processor {
@@ -57,15 +57,15 @@ TEST(SliceTrackerTest, OneSliceDetailed) {
   context.storage.reset(new TraceStorage());
   SliceTracker tracker(&context);
 
-  tracker.Begin(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/);
-  tracker.End(10 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/);
+  tracker.Begin(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/);
+  tracker.End(10 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/);
 
   auto slices = context.storage->nestable_slices();
-  EXPECT_EQ(slices.slice_count(), 1);
+  EXPECT_EQ(slices.slice_count(), 1u);
   EXPECT_EQ(slices.start_ns()[0], 2);
   EXPECT_EQ(slices.durations()[0], 8);
-  EXPECT_EQ(slices.cats()[0], 0);
-  EXPECT_EQ(slices.names()[0], 1);
+  EXPECT_EQ(slices.categories()[0], 0u);
+  EXPECT_EQ(slices.names()[0], 1u);
   EXPECT_EQ(slices.refs()[0], 42);
   EXPECT_EQ(slices.types()[0], kRefUtid);
   EXPECT_EQ(slices.depths()[0], 0);
@@ -77,23 +77,23 @@ TEST(SliceTrackerTest, OneSliceWithArgs) {
   context.storage.reset(new TraceStorage());
   SliceTracker tracker(&context);
 
-  tracker.Begin(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/,
+  tracker.Begin(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/,
                 [](ArgsTracker* args_tracker, RowId row) {
                   args_tracker->AddArg(row, /*flat_key=*/1, /*key=*/2,
                                        /*value=*/Variadic::Integer(10));
                 });
-  tracker.End(10 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/,
+  tracker.End(10 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/,
               [](ArgsTracker* args_tracker, RowId row) {
                 args_tracker->AddArg(row, /*flat_key=*/3, /*key=*/4,
                                      /*value=*/Variadic::Integer(20));
               });
 
   auto slices = context.storage->nestable_slices();
-  EXPECT_EQ(slices.slice_count(), 1);
+  EXPECT_EQ(slices.slice_count(), 1u);
   EXPECT_EQ(slices.start_ns()[0], 2);
   EXPECT_EQ(slices.durations()[0], 8);
-  EXPECT_EQ(slices.cats()[0], 0);
-  EXPECT_EQ(slices.names()[0], 1);
+  EXPECT_EQ(slices.categories()[0], 0u);
+  EXPECT_EQ(slices.names()[0], 1u);
   EXPECT_EQ(slices.refs()[0], 42);
   EXPECT_EQ(slices.types()[0], kRefUtid);
   EXPECT_EQ(slices.depths()[0], 0);
@@ -101,12 +101,12 @@ TEST(SliceTrackerTest, OneSliceWithArgs) {
 
   auto args = context.storage->args();
   EXPECT_EQ(args.set_ids()[0], set_id);
-  EXPECT_EQ(args.flat_keys()[0], 1);
-  EXPECT_EQ(args.keys()[0], 2);
+  EXPECT_EQ(args.flat_keys()[0], 1u);
+  EXPECT_EQ(args.keys()[0], 2u);
   EXPECT_EQ(args.arg_values()[0], Variadic::Integer(10));
   EXPECT_EQ(args.set_ids()[1], set_id);
-  EXPECT_EQ(args.flat_keys()[1], 3);
-  EXPECT_EQ(args.keys()[1], 4);
+  EXPECT_EQ(args.flat_keys()[1], 3u);
+  EXPECT_EQ(args.keys()[1], 4u);
   EXPECT_EQ(args.arg_values()[1], Variadic::Integer(20));
 }
 
@@ -115,28 +115,28 @@ TEST(SliceTrackerTest, TwoSliceDetailed) {
   context.storage.reset(new TraceStorage());
   SliceTracker tracker(&context);
 
-  tracker.Begin(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/);
-  tracker.Begin(3 /*ts*/, 42 /*tid*/, 0 /*cat*/, 2 /*name*/);
-  tracker.End(5 /*ts*/, 42 /*tid*/);
-  tracker.End(10 /*ts*/, 42 /*tid*/);
+  tracker.Begin(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/);
+  tracker.Begin(3 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 2 /*name*/);
+  tracker.End(5 /*ts*/, 42 /*ref*/, RefType::kRefUtid);
+  tracker.End(10 /*ts*/, 42 /*ref*/, RefType::kRefUtid);
 
   auto slices = context.storage->nestable_slices();
 
-  EXPECT_EQ(slices.slice_count(), 2);
+  EXPECT_EQ(slices.slice_count(), 2u);
 
   size_t idx = 0;
   EXPECT_EQ(slices.start_ns()[idx], 2);
   EXPECT_EQ(slices.durations()[idx], 8);
-  EXPECT_EQ(slices.cats()[idx], 0);
-  EXPECT_EQ(slices.names()[idx], 1);
+  EXPECT_EQ(slices.categories()[idx], 0u);
+  EXPECT_EQ(slices.names()[idx], 1u);
   EXPECT_EQ(slices.refs()[idx], 42);
   EXPECT_EQ(slices.types()[idx], kRefUtid);
   EXPECT_EQ(slices.depths()[idx++], 0);
 
   EXPECT_EQ(slices.start_ns()[idx], 3);
   EXPECT_EQ(slices.durations()[idx], 2);
-  EXPECT_EQ(slices.cats()[idx], 0);
-  EXPECT_EQ(slices.names()[idx], 2);
+  EXPECT_EQ(slices.categories()[idx], 0u);
+  EXPECT_EQ(slices.names()[idx], 2u);
   EXPECT_EQ(slices.refs()[idx], 42);
   EXPECT_EQ(slices.types()[idx], kRefUtid);
   EXPECT_EQ(slices.depths()[idx], 1);
@@ -151,11 +151,11 @@ TEST(SliceTrackerTest, Scoped) {
   context.storage.reset(new TraceStorage());
   SliceTracker tracker(&context);
 
-  tracker.Begin(0 /*ts*/, 42 /*tid*/, 0, 0);
-  tracker.Begin(1 /*ts*/, 42 /*tid*/, 0, 0);
-  tracker.Scoped(2 /*ts*/, 42 /*tid*/, 0, 0, 6);
-  tracker.End(9 /*ts*/, 42 /*tid*/);
-  tracker.End(10 /*ts*/, 42 /*tid*/);
+  tracker.Begin(0 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0, 0);
+  tracker.Begin(1 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0, 0);
+  tracker.Scoped(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0, 0, 6);
+  tracker.End(9 /*ts*/, 42 /*ref*/, RefType::kRefUtid);
+  tracker.End(10 /*ts*/, 42 /*ref*/, RefType::kRefUtid);
 
   auto slices = ToSliceInfo(context.storage->nestable_slices());
   EXPECT_THAT(slices,
@@ -167,10 +167,10 @@ TEST(SliceTrackerTest, IgnoreMismatchedEnds) {
   context.storage.reset(new TraceStorage());
   SliceTracker tracker(&context);
 
-  tracker.Begin(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/);
-  tracker.End(3 /*ts*/, 42 /*tid*/, 1 /*cat*/, 1 /*name*/);
-  tracker.End(4 /*ts*/, 42 /*tid*/, 0 /*cat*/, 2 /*name*/);
-  tracker.End(5 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/);
+  tracker.Begin(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/);
+  tracker.End(3 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 1 /*cat*/, 1 /*name*/);
+  tracker.End(4 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 2 /*name*/);
+  tracker.End(5 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/);
 
   auto slices = ToSliceInfo(context.storage->nestable_slices());
   EXPECT_THAT(slices, ElementsAre(SliceInfo{2, 3}));
@@ -184,14 +184,41 @@ TEST(SliceTrackerTest, ZeroLengthScoped) {
   // Bug scenario: the second zero-length scoped slice prevents the first slice
   // from being closed, leading to an inconsistency when we try to insert the
   // final slice and it doesn't intersect with the still pending first slice.
-  tracker.Scoped(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/, 10 /* dur */);
-  tracker.Scoped(2 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/, 0 /* dur */);
-  tracker.Scoped(12 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/, 1 /* dur */);
-  tracker.Scoped(13 /*ts*/, 42 /*tid*/, 0 /*cat*/, 1 /*name*/, 1 /* dur */);
+  tracker.Scoped(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/,
+                 10 /* dur */);
+  tracker.Scoped(2 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/, 1 /*name*/,
+                 0 /* dur */);
+  tracker.Scoped(12 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/,
+                 1 /*name*/, 1 /* dur */);
+  tracker.Scoped(13 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0 /*cat*/,
+                 1 /*name*/, 1 /* dur */);
 
   auto slices = ToSliceInfo(context.storage->nestable_slices());
   EXPECT_THAT(slices, ElementsAre(SliceInfo{2, 10}, SliceInfo{2, 0},
                                   SliceInfo{12, 1}, SliceInfo{13, 1}));
+}
+
+TEST(SliceTrackerTest, DifferentRefTypes) {
+  TraceProcessorContext context;
+  context.storage.reset(new TraceStorage());
+  SliceTracker tracker(&context);
+
+  tracker.Begin(0 /*ts*/, 42 /*ref*/, RefType::kRefUtid, 0, 0);
+  tracker.Scoped(2 /*ts*/, 42 /*ref*/, RefType::kRefUpid, 0, 0, 6);
+  tracker.Scoped(3 /*ts*/, 42 /*ref*/, RefType::kRefUpid, 0, 0, 4);
+  tracker.End(10 /*ts*/, 42 /*ref*/, RefType::kRefUtid);
+  tracker.FlushPendingSlices();
+
+  auto slices = ToSliceInfo(context.storage->nestable_slices());
+  EXPECT_THAT(slices,
+              ElementsAre(SliceInfo{0, 10}, SliceInfo{2, 6}, SliceInfo{3, 4}));
+
+  EXPECT_EQ(context.storage->nestable_slices().types()[0], RefType::kRefUtid);
+  EXPECT_EQ(context.storage->nestable_slices().types()[1], RefType::kRefUpid);
+  EXPECT_EQ(context.storage->nestable_slices().types()[2], RefType::kRefUpid);
+  EXPECT_EQ(context.storage->nestable_slices().depths()[0], 0);
+  EXPECT_EQ(context.storage->nestable_slices().depths()[1], 0);
+  EXPECT_EQ(context.storage->nestable_slices().depths()[2], 1);
 }
 
 }  // namespace

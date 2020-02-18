@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -292,7 +292,7 @@ public class WebsitePermissionsFetcherTest {
         // If the CONTENT_SETTINGS_NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(49, ContentSettingsType.CONTENT_SETTINGS_NUM_TYPES);
+        Assert.assertEquals(52, ContentSettingsType.CONTENT_SETTINGS_NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES,
                         googleOrigin, ContentSettingValues.DEFAULT, preferenceSource));

@@ -271,8 +271,8 @@ std::ostream& operator<<(std::ostream& ostream, const FloatRect& rect) {
 }
 
 String FloatRect::ToString() const {
-  return String::Format("%s %s", Location().ToString().Ascii().data(),
-                        Size().ToString().Ascii().data());
+  return String::Format("%s %s", Location().ToString().Ascii().c_str(),
+                        Size().ToString().Ascii().c_str());
 }
 
 WTF::TextStream& operator<<(WTF::TextStream& ts, const FloatRect& r) {

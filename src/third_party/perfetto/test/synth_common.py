@@ -22,6 +22,7 @@ CLONE_THREAD = 0x00010000
 
 
 class Trace(object):
+
   def __init__(self, trace):
     self.trace = trace
     self.proc_map = {}
@@ -35,6 +36,10 @@ class Trace(object):
     self.packet = self.trace.packet.add()
     self.packet.ftrace_events.cpu = cpu
 
+  def add_packet(self):
+    self.packet = self.trace.packet.add()
+    return self.packet
+
   def __add_ftrace_event(self, ts, tid):
     ftrace = self.packet.ftrace_events.event.add()
     ftrace.timestamp = ts
@@ -47,6 +52,12 @@ class Trace(object):
     rss_stat.member = member
     rss_stat.size = size
 
+  def add_ion_event(self, ts, tid, heap_name, size):
+    ftrace = self.__add_ftrace_event(ts, tid)
+    ion = ftrace.ion_heap_grow
+    ion.heap_name = heap_name
+    ion.total_allocated = size
+
   def add_oom_score_update(self, ts, oom_score_adj, pid):
     ftrace = self.__add_ftrace_event(ts, pid)
     oom_score = ftrace.oom_score_adj_update
@@ -54,8 +65,13 @@ class Trace(object):
     oom_score.oom_score_adj = oom_score_adj
     oom_score.pid = pid
 
-  def add_sched(self, ts, prev_pid, next_pid, prev_comm=None, next_comm=None,
-      prev_state=None):
+  def add_sched(self,
+                ts,
+                prev_pid,
+                next_pid,
+                prev_comm=None,
+                next_comm=None,
+                prev_state=None):
     ftrace = self.__add_ftrace_event(ts, 0)
     ss = ftrace.sched_switch
     ss.prev_comm = prev_comm or self.proc_map[prev_pid]
@@ -101,10 +117,44 @@ class Trace(object):
     newtask.comm = new_comm
     newtask.clone_flags = flags
 
+  def add_process_free(self, ts, tid, comm, prio):
+    ftrace = self.__add_ftrace_event(ts, tid)
+    sched_process_free = ftrace.sched_process_free
+    sched_process_free.pid = tid
+    sched_process_free.comm = comm
+    sched_process_free.prio = prio
+
+  def add_rename(self, ts, tid, old_comm, new_comm, oom_score_adj):
+    ftrace = self.__add_ftrace_event(ts, tid)
+    task_rename = ftrace.task_rename
+    task_rename.pid = tid
+    task_rename.oldcomm = old_comm
+    task_rename.newcomm = new_comm
+    task_rename.oom_score_adj = oom_score_adj
+
   def add_print(self, ts, tid, buf):
     ftrace = self.__add_ftrace_event(ts, tid)
     print_event = getattr(ftrace, 'print')
     print_event.buf = buf
+
+  def add_kmalloc(self, ts, tid, bytes_alloc, bytes_req, call_site, gfp_flags,
+                  ptr):
+    ftrace = self.__add_ftrace_event(ts, tid)
+    kmalloc = ftrace.kmalloc
+    kmalloc.bytes_alloc = bytes_alloc
+    kmalloc.bytes_req = bytes_req
+    kmalloc.call_site = call_site
+    kmalloc.gfp_flags = gfp_flags
+    kmalloc.ptr = ptr
+
+  def add_kfree(self, ts, tid, call_site, ptr):
+    ftrace = self.__add_ftrace_event(ts, tid)
+    kfree = ftrace.kfree
+    kfree.call_site = call_site
+    kfree.ptr = ptr
+
+  def add_atrace_counter(self, ts, pid, tid, buf, cnt):
+    self.add_print(ts, tid, 'C|{}|{}|{}'.format(pid, buf, cnt))
 
   def add_atrace_begin(self, ts, tid, pid, buf):
     self.add_print(ts, tid, 'B|{}|{}'.format(pid, buf))
@@ -136,6 +186,47 @@ class Trace(object):
     thread.tgid = tgid
     self.proc_map[tid] = cmdline
 
+  def add_battery_counters(self, ts, charge_uah, cap_prct, curr_ua,
+                           curr_avg_ua):
+    self.packet = self.trace.packet.add()
+    self.packet.timestamp = ts
+    battery_count = self.packet.battery
+    battery_count.charge_counter_uah = charge_uah
+    battery_count.capacity_percent = cap_prct
+    battery_count.current_ua = curr_ua
+    battery_count.current_avg_ua = curr_avg_ua
+
+  def add_battery_counters_no_curr_ua(self, ts, charge_uah, cap_prct,
+                                      curr_avg_ua):
+    self.packet = self.trace.packet.add()
+    self.packet.timestamp = ts
+    battery_count = self.packet.battery
+    battery_count.charge_counter_uah = charge_uah
+    battery_count.capacity_percent = cap_prct
+    battery_count.current_avg_ua = curr_avg_ua
+
+  def add_power_rails_desc(self, index_val, name):
+    power_rails = self.packet.power_rails
+    descriptor = power_rails.rail_descriptor.add()
+    descriptor.index = index_val
+    descriptor.rail_name = name
+
+  def add_power_rails_data(self, ts, index_val, value):
+    power_rails = self.packet.power_rails
+    energy_data = power_rails.energy_data.add()
+    energy_data.index = index_val
+    energy_data.timestamp_ms = ts
+    energy_data.energy = value
+
+  def add_package_list(self, ts, name, uid, version_code):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    plist = packet.packages_list
+    pinfo = plist.packages.add()
+    pinfo.name = name
+    pinfo.uid = uid
+    pinfo.version_code = version_code
+
 
 def create_trace():
   parser = argparse.ArgumentParser()
@@ -143,7 +234,7 @@ def create_trace():
       'trace_descriptor', type=str, help='location of trace descriptor')
   args = parser.parse_args()
 
-  with open(args.trace_descriptor, "rb") as t:
+  with open(args.trace_descriptor, 'rb') as t:
     fileContent = t.read()
 
   file_desc_set_pb2 = descriptor_pb2.FileDescriptorSet()

@@ -18,11 +18,13 @@ const char kRemoveAccountMethod[] = "RemoveAccount";
 const char kClearAccountsMethod[] = "ClearAccounts";
 const char kListAccountsMethod[] = "ListAccounts";
 const char kSetConfigMethod[] = "SetConfig";
+const char kValidateConfigMethod[] = "ValidateConfig";
 const char kAcquireKerberosTgtMethod[] = "AcquireKerberosTgt";
 const char kGetKerberosFilesMethod[] = "GetKerberosFiles";
 
 // Signals
 const char kKerberosFilesChangedSignal[] = "KerberosFilesChanged";
+const char kKerberosTicketExpiringSignal[] = "KerberosTicketExpiring";
 
 }  // namespace kerberos
 

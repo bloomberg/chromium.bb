@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"
@@ -43,21 +42,13 @@ bool IsFusionSensorType(mojom::SensorType type) {
 }
 }  // namespace
 
-// static
-PlatformSensorProviderLinux* PlatformSensorProviderLinux::GetInstance() {
-  return base::Singleton<
-      PlatformSensorProviderLinux,
-      base::LeakySingletonTraits<PlatformSensorProviderLinux>>::get();
-}
-
 PlatformSensorProviderLinux::PlatformSensorProviderLinux()
     : sensor_nodes_enumerated_(false),
       sensor_nodes_enumeration_started_(false),
       blocking_task_runner_(
           base::CreateSequencedTaskRunnerWithTraits(kBlockingTaskRunnerTraits)),
       sensor_device_manager_(nullptr,
-                             base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_ptr_factory_(this) {
+                             base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   sensor_device_manager_.reset(
       new SensorDeviceManager(weak_ptr_factory_.GetWeakPtr()));
 }
@@ -183,7 +174,7 @@ void PlatformSensorProviderLinux::OnDeviceAdded(
     std::unique_ptr<SensorInfoLinux> sensor_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // At the moment, we support only one device per type.
-  if (base::ContainsKey(sensor_devices_by_type_, type)) {
+  if (base::Contains(sensor_devices_by_type_, type)) {
     DVLOG(1) << "Sensor ignored. Type " << type
              << ". Node: " << sensor_device->device_node;
     return;

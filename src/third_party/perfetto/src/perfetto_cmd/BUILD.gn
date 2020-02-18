@@ -18,14 +18,15 @@ import("../../gn/proto_library.gni")
 source_set("perfetto_cmd") {
   public_deps = [
     ":protos",
-    "../../include/perfetto/traced",
+    "../../include/perfetto/ext/traced",
   ]
   deps = [
     ":trigger_producer",
-    "../../buildtools:protobuf_lite",
     "../../gn:default_deps",
+    "../../gn:zlib",
     "../../protos/perfetto/common:lite",
     "../../protos/perfetto/config:lite",
+    "../android_internal:lazy_library_loader",
     "../base",
     "../protozero",
     "../tracing:ipc",
@@ -33,6 +34,8 @@ source_set("perfetto_cmd") {
   sources = [
     "config.cc",
     "config.h",
+    "packet_writer.cc",
+    "packet_writer.h",
     "pbtxt_to_pb.cc",
     "pbtxt_to_pb.h",
     "perfetto_cmd.cc",
@@ -54,7 +57,7 @@ source_set("perfetto_cmd") {
 source_set("trigger_perfetto_cmd") {
   public_deps = [
     ":protos",
-    "../../include/perfetto/traced",
+    "../../include/perfetto/ext/traced",
   ]
   deps = [
     ":trigger_producer",
@@ -73,8 +76,6 @@ source_set("trigger_producer") {
     "trigger_producer.h",
   ]
   deps = [
-    "../../buildtools:protobuf_lite",
-    "../../buildtools:zlib",
     "../../gn:default_deps",
     "../../protos/perfetto/config:lite",
     "../base",
@@ -98,12 +99,18 @@ source_set("unittests") {
   deps = [
     ":perfetto_cmd",
     "../../gn:default_deps",
-    "../../gn:gtest_deps",
+    "../../gn:gtest_and_gmock",
+    "../../gn:zlib",
     "../../include/perfetto/base",
+    "../../include/perfetto/ext/base",
     "../../protos/perfetto/config:lite",
+    "../../protos/perfetto/trace:lite",
+    "../protozero",
+    "../tracing",
   ]
   sources = [
     "config_unittest.cc",
+    "packet_writer_unittest.cc",
     "pbtxt_to_pb_unittest.cc",
     "rate_limiter_unittest.cc",
   ]

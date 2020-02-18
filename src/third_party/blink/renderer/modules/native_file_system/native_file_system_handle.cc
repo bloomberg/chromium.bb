@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/native_file_system/file_system_handle_permission_descriptor.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -21,80 +23,71 @@ NativeFileSystemHandle::NativeFileSystemHandle(const String& name)
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
-    mojom::blink::NativeFileSystemEntryPtr e) {
+    mojom::blink::NativeFileSystemEntryPtr e,
+    ExecutionContext* execution_context) {
   if (e->entry_handle->is_file()) {
     return MakeGarbageCollected<NativeFileSystemFileHandle>(
-        e->name, mojom::blink::NativeFileSystemFileHandlePtr(
-                     std::move(e->entry_handle->get_file())));
+        e->name,
+        RevocableInterfacePtr<mojom::blink::NativeFileSystemFileHandle>(
+            std::move(e->entry_handle->get_file()),
+            execution_context->GetInterfaceInvalidator(),
+            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return MakeGarbageCollected<NativeFileSystemDirectoryHandle>(
-      e->name, mojom::blink::NativeFileSystemDirectoryHandlePtr(
-                   std::move(e->entry_handle->get_directory())));
+      e->name,
+      RevocableInterfacePtr<mojom::blink::NativeFileSystemDirectoryHandle>(
+          std::move(e->entry_handle->get_directory()),
+          execution_context->GetInterfaceInvalidator(),
+          execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
-ScriptPromise NativeFileSystemHandle::moveTo(
+namespace {
+String MojoPermissionStatusToString(mojom::blink::PermissionStatus status) {
+  switch (status) {
+    case mojom::blink::PermissionStatus::GRANTED:
+      return "granted";
+    case mojom::blink::PermissionStatus::DENIED:
+      return "denied";
+    case mojom::blink::PermissionStatus::ASK:
+      return "prompt";
+  }
+  NOTREACHED();
+  return "denied";
+}
+}  // namespace
+
+ScriptPromise NativeFileSystemHandle::queryPermission(
     ScriptState* script_state,
-    NativeFileSystemDirectoryHandle* parent,
-    const String& new_name) {
+    const FileSystemHandlePermissionDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  parent->MojoHandle()->MoveFrom(
-      Transfer(), new_name.IsEmpty() ? name() : new_name,
+  QueryPermissionImpl(
+      descriptor->writable(),
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
-             NativeFileSystemEntryPtr entry) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(NativeFileSystemHandle::CreateFromMojoEntry(
-                  std::move(entry)));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
+          [](ScriptPromiseResolver* resolver,
+             mojom::blink::PermissionStatus result) {
+            resolver->Resolve(MojoPermissionStatusToString(result));
           },
           WrapPersistent(resolver)));
 
   return result;
 }
 
-ScriptPromise NativeFileSystemHandle::copyTo(
+ScriptPromise NativeFileSystemHandle::requestPermission(
     ScriptState* script_state,
-    NativeFileSystemDirectoryHandle* parent,
-    const String& new_name) {
+    const FileSystemHandlePermissionDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
-  parent->MojoHandle()->CopyFrom(
-      Transfer(), new_name.IsEmpty() ? name() : new_name,
+  RequestPermissionImpl(
+      descriptor->writable(),
       WTF::Bind(
-          [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
-             NativeFileSystemEntryPtr entry) {
-            if (result->error_code == base::File::FILE_OK) {
-              resolver->Resolve(NativeFileSystemHandle::CreateFromMojoEntry(
-                  std::move(entry)));
-            } else {
-              resolver->Reject(
-                  file_error::CreateDOMException(result->error_code));
-            }
+          [](ScriptPromiseResolver* resolver,
+             mojom::blink::PermissionStatus result) {
+            resolver->Resolve(MojoPermissionStatusToString(result));
           },
           WrapPersistent(resolver)));
-
-  return result;
-}
-
-ScriptPromise NativeFileSystemHandle::remove(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  RemoveImpl(WTF::Bind(
-      [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result) {
-        if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve();
-        } else {
-          resolver->Reject(file_error::CreateDOMException(result->error_code));
-        }
-      },
-      WrapPersistent(resolver)));
 
   return result;
 }

@@ -4,11 +4,17 @@
 
 /**
  * @fileoverview Polymer element wrapping cr-network-list including the
- * networkingPrivate calls to populate it.
+ * networkConfig mojo API calls to populate it.
  */
+
+(function() {
+
+const mojom = chromeos.networkConfig.mojom;
 
 Polymer({
   is: 'cr-network-select',
+
+  behaviors: [CrNetworkListenerBehavior],
 
   properties: {
     /**
@@ -32,24 +38,18 @@ Polymer({
       },
     },
 
-    /**
-     * Whether to handle "item-selected" for network items.
-     * If this property is false, "network-item-selected" event is fired
-     * carrying CrOnc.NetworkStateProperties as event detail.
-     * @type {Function}
-     */
-    handleNetworkItemSelected: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-    },
-
     /** Whether to show technology badges on mobile network icons. */
     showTechnologyBadge: {type: Boolean, value: true},
 
     /**
+     * Whether to show a progress indicator at the top of the network list while
+     * a scan (e.g., for nearby Wi-Fi networks) is in progress.
+     */
+    showScanProgress: {type: Boolean, value: false},
+
+    /**
      * List of all network state data for all visible networks.
-     * @private {!Array<!CrOnc.NetworkStateProperties>}
+     * @private {!Array<!OncMojo.NetworkStateProperties>}
      */
     networkStateList_: {
       type: Array,
@@ -59,10 +59,52 @@ Polymer({
     },
 
     /**
+     * Whether a network scan is currently in progress.
+     * @private
+     */
+    isScanOngoing_: {type: Boolean, value: false},
+
+    /**
      * Cached Cellular Device state or undefined if there is no Cellular device.
-     * @private {!CrOnc.DeviceStateProperties|undefined} deviceState
+     * @private {!OncMojo.DeviceStateProperties|undefined} deviceState
      */
     cellularDeviceState_: Object,
+  },
+
+  /** @type {!OncMojo.NetworkStateProperties|undefined} */
+  defaultNetworkState_: undefined,
+
+
+  /** @private {number|null} */
+  scanIntervalId_: null,
+
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy} */
+  networkConfigProxy_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
+  },
+
+  /** @override */
+  attached: function() {
+    this.refreshNetworks();
+
+    const INTERVAL_MS = 10 * 1000;
+    const kAll = chromeos.networkConfig.mojom.NetworkType.kAll;
+    this.networkConfigProxy_.requestNetworkScan(kAll);
+    this.scanIntervalId_ = window.setInterval(function() {
+      this.networkConfigProxy_.requestNetworkScan(kAll);
+    }.bind(this), INTERVAL_MS);
+  },
+
+  /** @override */
+  detached: function() {
+    if (this.scanIntervalId_ !== null) {
+      window.clearInterval(this.scanIntervalId_);
+    }
   },
 
   /**
@@ -72,59 +114,18 @@ Polymer({
     return this.$.networkList.$$('#networkList');
   },
 
-  /** @type {!CrOnc.NetworkStateProperties|undefined} */
-  defaultNetworkState_: undefined,
-
   focus: function() {
     this.$.networkList.focus();
   },
 
-  /**
-   * Listener function for chrome.networkingPrivate.onNetworkListChanged event.
-   * @type {function(!Array<string>)}
-   * @private
-   */
-  networkListChangedListener_: function() {},
-
-  /**
-   * Listener function for chrome.networkingPrivate.onDeviceStateListChanged
-   * event.
-   * @type {function(!Array<string>)}
-   * @private
-   */
-  deviceStateListChangedListener_: function() {},
-
-  /** @private {number|null} */
-  scanIntervalId_: null,
-
-  /** @override */
-  attached: function() {
-    this.networkListChangedListener_ = this.refreshNetworks.bind(this);
-    chrome.networkingPrivate.onNetworkListChanged.addListener(
-        this.networkListChangedListener_);
-
-    this.deviceStateListChangedListener_ = this.refreshNetworks.bind(this);
-    chrome.networkingPrivate.onDeviceStateListChanged.addListener(
-        this.deviceStateListChangedListener_);
-
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
     this.refreshNetworks();
-
-    /** @const */ const INTERVAL_MS = 10 * 1000;
-    chrome.networkingPrivate.requestNetworkScan();
-    this.scanIntervalId_ = window.setInterval(function() {
-      chrome.networkingPrivate.requestNetworkScan();
-    }.bind(this), INTERVAL_MS);
   },
 
-  /** @override */
-  detached: function() {
-    if (this.scanIntervalId_ !== null) {
-      window.clearInterval(this.scanIntervalId_);
-    }
-    chrome.networkingPrivate.onNetworkListChanged.removeListener(
-        this.networkListChangedListener_);
-    chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
-        this.deviceStateListChangedListener_);
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    this.refreshNetworks();
   },
 
   /**
@@ -132,28 +133,29 @@ Polymer({
    * refresh and list update (e.g. when the element is shown).
    */
   refreshNetworks: function() {
-    chrome.networkingPrivate.getDeviceStates(
-        this.getDeviceStatesCallback_.bind(this));
+    this.networkConfigProxy_.getDeviceStateList().then(response => {
+      this.onGetDeviceStates_(response.result);
+    });
   },
 
   /**
    * Returns default network if it is present.
-   * @return {!CrOnc.NetworkStateProperties|undefined}
+   * @return {!OncMojo.NetworkStateProperties|undefined}
    */
   getDefaultNetwork: function() {
     let defaultNetwork;
     for (let i = 0; i < this.networkStateList_.length; ++i) {
       const state = this.networkStateList_[i];
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+      if (OncMojo.connectionStateIsConnected(state.connectionState)) {
         defaultNetwork = state;
         break;
       }
-      if (state.ConnectionState == CrOnc.ConnectionState.CONNECTING &&
+      if (state.connectionState == mojom.ConnectionStateType.kConnecting &&
           !defaultNetwork) {
         defaultNetwork = state;
         // Do not break here in case a non WiFi network is connecting but a
         // WiFi network is connected.
-      } else if (state.Type == CrOnc.Type.WI_FI) {
+      } else if (state.type == mojom.NetworkType.kWiFi) {
         break;  // Non connecting or connected WiFI networks are always last.
       }
     }
@@ -163,37 +165,40 @@ Polymer({
   /**
    * Returns network with specified GUID if it is available.
    * @param {string} guid of network.
-   * @return {!CrOnc.NetworkStateProperties|undefined}
+   * @return {!OncMojo.NetworkStateProperties|undefined}
    */
   getNetwork: function(guid) {
     return this.networkStateList_.find(function(network) {
-      return network.GUID == guid;
+      return network.guid == guid;
     });
   },
 
   /**
-   * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
+   * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStates
    * @private
    */
-  getDeviceStatesCallback_: function(deviceStates) {
+  onGetDeviceStates_: function(deviceStates) {
+    this.isScanOngoing_ =
+        deviceStates.some((deviceState) => !!deviceState.scanning);
+
     const filter = {
-      networkType: chrome.networkingPrivate.NetworkType.ALL,
-      visible: true,
-      configured: false
+      filter: chromeos.networkConfig.mojom.FilterType.kVisible,
+      networkType: mojom.NetworkType.kAll,
+      limit: chromeos.networkConfig.mojom.kNoLimit,
     };
-    chrome.networkingPrivate.getNetworks(filter, function(networkStates) {
-      this.getNetworksCallback_(deviceStates, networkStates);
-    }.bind(this));
+    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+      this.onGetNetworkStateList_(deviceStates, response.result);
+    });
   },
 
   /**
-   * @param {!Array<!CrOnc.DeviceStateProperties>} deviceStates
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates
+   * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStates
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
-  getNetworksCallback_: function(deviceStates, networkStates) {
+  onGetNetworkStateList_: function(deviceStates, networkStates) {
     this.cellularDeviceState_ = deviceStates.find(function(device) {
-      return device.Type == CrOnc.Type.CELLULAR;
+      return device.type == mojom.NetworkType.kCellular;
     });
     if (this.cellularDeviceState_) {
       this.ensureCellularNetwork_(networkStates);
@@ -205,94 +210,63 @@ Polymer({
 
     if ((!defaultNetwork && !this.defaultNetworkState_) ||
         (defaultNetwork && this.defaultNetworkState_ &&
-         defaultNetwork.GUID == this.defaultNetworkState_.GUID &&
-         defaultNetwork.ConnectionState ==
-             this.defaultNetworkState_.ConnectionState)) {
+         defaultNetwork.guid == this.defaultNetworkState_.guid &&
+         defaultNetwork.connectionState ==
+             this.defaultNetworkState_.connectionState)) {
       return;  // No change to network or ConnectionState
     }
     this.defaultNetworkState_ = defaultNetwork ?
-        /** @type {!CrOnc.NetworkStateProperties|undefined} */ (
+        /** @type {!OncMojo.NetworkStateProperties|undefined} */ (
             Object.assign({}, defaultNetwork)) :
         undefined;
+    // Note: event.detail will be {} if defaultNetwork is undefined.
     this.fire('default-network-changed', defaultNetwork);
   },
 
   /**
    * Modifies |networkStates| to include a cellular network if one is required
    * but does not exist.
-   * @param {!Array<!CrOnc.NetworkStateProperties>} networkStates
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
   ensureCellularNetwork_: function(networkStates) {
     if (networkStates.find(function(network) {
-          return network.Type == CrOnc.Type.CELLULAR;
+          return network.type == mojom.NetworkType.kCellular;
         })) {
       return;
     }
-    let connectionState;
-    switch (this.cellularDeviceState_.State) {
-      case CrOnc.DeviceState.DISABLED:
-      case CrOnc.DeviceState.PROHIBITED:
-        return;  // No Cellular network
-      case CrOnc.DeviceState.UNINITIALIZED:
-      case CrOnc.DeviceState.ENABLING:
-        // Leave |connectionState| undefined to indicate "initializing".
-        break;
-      case CrOnc.DeviceState.ENABLED:
-        // The default network state is never connected. When a real network
-        // state is provided, it will have ConnectionState properly set.
-        connectionState = CrOnc.ConnectionState.NOT_CONNECTED;
-        break;
+    const deviceState = this.cellularDeviceState_.deviceState;
+    if (deviceState == mojom.DeviceStateType.kDisabled ||
+        deviceState == mojom.DeviceStateType.kProhibited) {
+      return;  // No Cellular network
     }
-    // Add a Cellular network after the Ethernet network if it exists.
-    const idx = networkStates.length > 0 &&
-            networkStates[0].Type == CrOnc.Type.ETHERNET ?
+
+    const cellular =
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular);
+    cellular.cellular.scanning = this.cellularDeviceState_.scanning;
+
+    // Note: the default connectionState is kNotConnected.
+    // TODO(khorimoto): Maybe set an 'initializing' CellularState property if
+    // the device state is initializing, see TODO in cr_network_list_item.js.
+
+    // Insert the Cellular network after the Ethernet network if it exists.
+    const idx = (networkStates.length > 0 &&
+                 networkStates[0].type == mojom.NetworkType.kEthernet) ?
         1 :
         0;
-    const cellular = {
-      GUID: '',
-      Type: CrOnc.Type.CELLULAR,
-      Cellular: {Scanning: this.cellularDeviceState_.Scanning},
-      ConnectionState: connectionState,
-    };
     networkStates.splice(idx, 0, cellular);
   },
 
   /**
    * Event triggered when a cr-network-list-item is selected.
-   * @param {!{target: HTMLElement, detail: !CrOnc.NetworkStateProperties}} e
+   * @param {!{target: HTMLElement, detail: !OncMojo.NetworkStateProperties}} e
    * @private
    */
   onNetworkListItemSelected_: function(e) {
     const state = e.detail;
     e.target.blur();
 
-    if (!this.handleNetworkItemSelected) {
-      this.fire('network-item-selected', state);
-      return;
-    }
-
-    // NOTE: This isn't used by OOBE (no handle-network-item-selected).
-    // TODO(stevenjb): Remove custom OOBE handling.
-    if (state.Type == CrOnc.Type.CELLULAR && this.cellularDeviceState_) {
-      const cellularDevice = this.cellularDeviceState_;
-      // If Cellular is not enabled and not SIM locked, enable Cellular.
-      if (cellularDevice.State != CrOnc.DeviceState.ENABLED &&
-          (!cellularDevice.SIMLockStatus ||
-           !cellularDevice.SIMLockStatus.LockType)) {
-        chrome.networkingPrivate.enableNetworkType(CrOnc.Type.CELLULAR);
-      }
-    }
-
-    if (state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
-      return;
-    }
-
-    chrome.networkingPrivate.startConnect(state.GUID, function() {
-      const lastError = chrome.runtime.lastError;
-      if (lastError && lastError != 'connecting') {
-        console.error('networkingPrivate.startConnect error: ' + lastError);
-      }
-    });
+    this.fire('network-item-selected', state);
   },
 });
+})();

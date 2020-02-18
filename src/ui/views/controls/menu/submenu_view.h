@@ -44,10 +44,9 @@ class VIEWS_EXPORT SubmenuView : public View,
                                  public PrefixDelegate,
                                  public ScrollDelegate {
  public:
-  using MenuItems = std::vector<MenuItemView*>;
+  METADATA_HEADER(SubmenuView);
 
-  // The submenu's class name.
-  static const char kViewClassName[];
+  using MenuItems = std::vector<MenuItemView*>;
 
   // Creates a SubmenuView for the specified menu item.
   explicit SubmenuView(MenuItemView* parent);
@@ -172,8 +171,6 @@ class VIEWS_EXPORT SubmenuView : public View,
   }
 
  protected:
-  // Overridden from View:
-  const char* GetClassName() const override;
 
   // View method. Overridden to schedule a paint. We do this so that when
   // scrolling occurs, everything is repainted correctly.

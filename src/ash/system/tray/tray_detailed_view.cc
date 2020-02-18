@@ -16,6 +16,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
+#include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,8 +58,8 @@ class ScrollContentsView : public views::View {
  public:
   explicit ScrollContentsView(DetailedViewDelegate* delegate)
       : delegate_(delegate) {
-    box_layout_ = SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
   }
   ~ScrollContentsView() override = default;
 
@@ -271,8 +272,8 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       progress_bar_(nullptr),
       tri_view_(nullptr),
       back_button_(nullptr) {
-  box_layout_ = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   SetBackground(views::CreateSolidBackground(
       delegate_->GetBackgroundColor(GetNativeTheme())));
 }
@@ -312,8 +313,7 @@ void TrayDetailedView::CreateScrollableList() {
   DCHECK(!scroller_);
   auto scroll_content = std::make_unique<ScrollContentsView>(delegate_);
   scroller_ = new views::ScrollView;
-  scroller_->set_draw_overflow_indicator(
-      delegate_->IsOverflowIndicatorEnabled());
+  scroller_->SetDrawOverflowIndicator(delegate_->IsOverflowIndicatorEnabled());
   scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
   scroller_->SetBackgroundColor(
@@ -347,10 +347,23 @@ HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
 }
 
 void TrayDetailedView::SetupConnectedScrollListItem(HoverHighlightView* view) {
+  SetupConnectedScrollListItem(view, base::nullopt /* battery_percentage */);
+}
+
+void TrayDetailedView::SetupConnectedScrollListItem(
+    HoverHighlightView* view,
+    base::Optional<uint8_t> battery_percentage) {
   DCHECK(view->is_populated());
 
-  view->SetSubText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  if (battery_percentage) {
+    view->SetSubText(l10n_util::GetStringFUTF16(
+        IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_WITH_BATTERY_LABEL,
+        base::NumberToString16(battery_percentage.value())));
+  } else {
+    view->SetSubText(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+  }
+
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::CAPTION);
   style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
   style.SetupLabel(view->sub_text_label());

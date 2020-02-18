@@ -73,6 +73,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-algs.hh",
       "src/src/hb-array.hh",
       "src/src/hb-atomic.hh",
+      "src/src/hb-bimap.hh",
       "src/src/hb-blob.cc",
       "src/src/hb-blob.hh",
       "src/src/hb-buffer-deserialize-json.hh",
@@ -111,6 +112,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-ot-color-cbdt-table.hh",
       "src/src/hb-ot-color-colr-table.hh",
       "src/src/hb-ot-color-cpal-table.hh",
+      "src/src/hb-ot-face-table-list.hh",
       "src/src/hb-ot-face.cc",
       "src/src/hb-ot-face.hh",
       "src/src/hb-ot-font.cc",
@@ -195,14 +197,14 @@ if (use_system_harfbuzz) {
       "src/src/hb-subset-cff-common.hh",
       "src/src/hb-subset-cff1.cc",
       "src/src/hb-subset-cff2.cc",
-      "src/src/hb-subset-glyf.cc",
-      "src/src/hb-subset-glyf.hh",
       "src/src/hb-subset-input.cc",
       "src/src/hb-subset-input.hh",
       "src/src/hb-subset-plan.cc",
       "src/src/hb-subset-plan.hh",
       "src/src/hb-subset.cc",
       "src/src/hb-subset.hh",
+      "src/src/hb-ucd-table.hh",
+      "src/src/hb-ucd.cc",
       "src/src/hb-unicode-emoji-table.hh",
       "src/src/hb-unicode.cc",
       "src/src/hb-unicode.hh",
@@ -213,14 +215,24 @@ if (use_system_harfbuzz) {
 
     defines = [
       "HAVE_OT",
+      "HAVE_FREETYPE",
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
       "HB_NO_MMAP",
 
+      # Size reductions by disabling parts that we do not currently require:
+
       # SkPDF needs subsetting but does not require subsetting of layout or CFF tables.
       "HB_NO_SUBSET_LAYOUT",
       "HB_NO_SUBSET_CFF",
+
+      # Fallback shaper not required, we only use the HarfBuzz internal OT shaper.
+      "HB_NO_FALLBACK_SHAPE",
+
+      # Tells HarfBuzz to use ICU instead of the own mini UCDN implementation
+      # that is part of HarfBuzz.
+      "HB_NO_UCD",
 
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",

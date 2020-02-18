@@ -18,6 +18,9 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kHasScriptableFramesInMultipleTabs:
     case Feature::kBroadcastChannel:
     case Feature::kIndexedDBConnection:
+    case Feature::kWebGL:
+    case Feature::kWebVR:
+    case Feature::kWebXR:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:

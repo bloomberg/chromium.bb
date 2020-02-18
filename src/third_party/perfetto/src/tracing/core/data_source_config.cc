@@ -27,9 +27,13 @@
 
 #include "perfetto/tracing/core/data_source_config.h"
 
-#include "perfetto/config/chrome/chrome_config.pb.h"
 #include "perfetto/config/data_source_config.pb.h"
+
+#include "perfetto/config/chrome/chrome_config.pb.h"
+#include "perfetto/tracing/core/chrome_config.h"
+
 #include "perfetto/config/test_config.pb.h"
+#include "perfetto/tracing/core/test_config.h"
 
 namespace perfetto {
 
@@ -55,6 +59,8 @@ bool DataSourceConfig::operator==(const DataSourceConfig& other) const {
          (heapprofd_config_ == other.heapprofd_config_) &&
          (android_power_config_ == other.android_power_config_) &&
          (android_log_config_ == other.android_log_config_) &&
+         (gpu_counter_config_ == other.gpu_counter_config_) &&
+         (packages_list_config_ == other.packages_list_config_) &&
          (chrome_config_ == other.chrome_config_) &&
          (legacy_config_ == other.legacy_config_) &&
          (for_testing_ == other.for_testing_);
@@ -107,13 +113,17 @@ void DataSourceConfig::FromProto(
 
   android_log_config_ = proto.android_log_config().SerializeAsString();
 
-  chrome_config_.FromProto(proto.chrome_config());
+  gpu_counter_config_ = proto.gpu_counter_config().SerializeAsString();
+
+  packages_list_config_ = proto.packages_list_config().SerializeAsString();
+
+  chrome_config_->FromProto(proto.chrome_config());
 
   static_assert(sizeof(legacy_config_) == sizeof(proto.legacy_config()),
                 "size mismatch");
   legacy_config_ = static_cast<decltype(legacy_config_)>(proto.legacy_config());
 
-  for_testing_.FromProto(proto.for_testing());
+  for_testing_->FromProto(proto.for_testing());
   unknown_fields_ = proto.unknown_fields();
 }
 
@@ -162,14 +172,18 @@ void DataSourceConfig::ToProto(
 
   proto->mutable_android_log_config()->ParseFromString(android_log_config_);
 
-  chrome_config_.ToProto(proto->mutable_chrome_config());
+  proto->mutable_gpu_counter_config()->ParseFromString(gpu_counter_config_);
+
+  proto->mutable_packages_list_config()->ParseFromString(packages_list_config_);
+
+  chrome_config_->ToProto(proto->mutable_chrome_config());
 
   static_assert(sizeof(legacy_config_) == sizeof(proto->legacy_config()),
                 "size mismatch");
   proto->set_legacy_config(
       static_cast<decltype(proto->legacy_config())>(legacy_config_));
 
-  for_testing_.ToProto(proto->mutable_for_testing());
+  for_testing_->ToProto(proto->mutable_for_testing());
   *(proto->mutable_unknown_fields()) = unknown_fields_;
 }
 

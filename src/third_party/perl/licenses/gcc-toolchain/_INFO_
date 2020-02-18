@@ -1,20 +1,23 @@
-Package: gcc-4.6.3
+Package: gcc-8.3.0
 Homepage: http://gcc.gnu.org/
-Sources: ftp://gcc.gnu.org/pub/gcc/releases/
-Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
-Comment: version 4.6.3 + patches
+Sources: https://ftp.gnu.org/gnu/gcc/gcc-8.3.0/gcc-8.3.0.tar.xz
+Patches: gcc/gcc-4.7-stdthreads.patch, gcc/gcc-5.1-iconv.patch, gcc/gcc-4.8-libstdc++export.patch, gcc/gcc-4.8.2-fix-for-windows-not-minding-non-existant-parent-dirs.patch, gcc/gcc-4.8.2-windows-lrealpath-no-force-lowercase-nor-backslash.patch, gcc/gcc-4.9.1-enable-shared-gnat-implib.mingw.patch, gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch, gcc/gcc-5.2-fix-mingw-pch.patch, gcc/gcc-5-dwarf-regression.patch, gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch, gcc/gcc-6-ktietz-libgomp.patch, gcc/gcc-libgomp-ftime64.patch, gcc/gcc-8.3.0-Backport-patches-for-std-filesystem-from-master.patch, gcc/KMX-relocate-hack.patch
 
-Package: binutils-2.22.52
+Package: binutils-2.32
 Homepage: http://www.gnu.org/software/binutils/
-Sources: http://ftp.gnu.org/gnu/binutils/
-Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
-Comment: version 2.22.52 + libiberty-md5-w64.patch + implib-compat.patch + longname-fix.patch 
+Sources: https://ftp.gnu.org/gnu/binutils/binutils-2.32.tar.bz2
+Patches: binutils/0001-enable-gold-on.mingw32.patch, binutils/0002-check-for-unusual-file-harder.patch, binutils/0008-fix-libiberty-makefile.mingw.patch, binutils/0009-fix-libiberty-configure.mingw.patch, binutils/0110-binutils-mingw-gnu-print.patch
 
-Package: mingw-w64-crt_2.x_r4936
+Package: gdb-8.2.1
+Homepage: http://www.gnu.org/software/gdb/
+Sources: https://ftp.gnu.org/gnu/gdb/gdb-8.2.1.tar.xz
+Patches: gdb/gdb-perfomance.patch, gdb/gdb-fix-using-gnu-print.patch, gdb/gdb-7.12-dynamic-libs.patch
+
+Package: make-4.2.1
+Homepage: http://www.gnu.org/software/make/
+Sources: https://ftp.gnu.org/gnu/make/make-4.2.1.tar.bz2
+Patches: make/make-linebuf-mingw.patch, make/make-getopt.patch
+
+Package: mingw-w64-crt-v6.0.0
 Homepage: http://mingw-w64.sourceforge.net/
-Sources: http://sourceforge.net/projects/mingw-w64/files/Toolchain%20sources/
-SVN: https://mingw-w64.svn.sourceforge.net/svnroot/mingw-w64/
-Comment: based on Mark Dootson's 20120411 pack - check: http://sourceforge.net/projects/perlmingw/
-Comment: mingw-w64 / stable-2.x branche / SVN rev4936
-Comment: wglext.h glxext.h glext.h (from the Khronos Group)
-Comment: opencl (from the Khronos Group)
+Sources: https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v6.0.0.tar.bz2

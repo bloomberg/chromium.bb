@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -215,9 +216,10 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 std::move(updates));
 
-  ASSERT_THAT(bookmarkbar->GetChild(0), NotNull());
-  EXPECT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kTitle)));
-  EXPECT_THAT(bookmarkbar->GetChild(0)->url(), Eq(GURL(kUrl)));
+  ASSERT_THAT(bookmarkbar->children().front().get(), NotNull());
+  EXPECT_THAT(bookmarkbar->children().front()->GetTitle(),
+              Eq(ASCIIToUTF16(kTitle)));
+  EXPECT_THAT(bookmarkbar->children().front()->url(), Eq(GURL(kUrl)));
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
@@ -238,7 +240,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   // Make sure original bookmark exists.
   const bookmarks::BookmarkNode* bookmark_bar =
       bookmark_model()->bookmark_bar_node();
-  const bookmarks::BookmarkNode* bookmark_node = bookmark_bar->GetChild(0);
+  const bookmarks::BookmarkNode* bookmark_node =
+      bookmark_bar->children().front().get();
   ASSERT_THAT(bookmark_node, NotNull());
   ASSERT_THAT(bookmark_node->GetTitle(), Eq(ASCIIToUTF16(kTitle)));
   ASSERT_THAT(bookmark_node->url(), Eq(GURL(kUrl)));
@@ -256,7 +259,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
                                 std::move(updates));
 
   // Check if the bookmark has been updated properly.
-  EXPECT_THAT(bookmark_bar->GetChild(0), Eq(bookmark_node));
+  EXPECT_THAT(bookmark_bar->children().front().get(), Eq(bookmark_node));
   EXPECT_THAT(bookmark_node->GetTitle(), Eq(ASCIIToUTF16(kNewTitle)));
   EXPECT_THAT(bookmark_node->url(), Eq(GURL(kNewUrl)));
 }
@@ -281,7 +284,8 @@ TEST_F(
   // Make sure original bookmark exists.
   const bookmarks::BookmarkNode* bookmark_bar =
       bookmark_model()->bookmark_bar_node();
-  const bookmarks::BookmarkNode* bookmark_node = bookmark_bar->GetChild(0);
+  const bookmarks::BookmarkNode* bookmark_node =
+      bookmark_bar->children().front().get();
   ASSERT_THAT(bookmark_node, NotNull());
 
   // Process an update for the same bookmark with the same data.
@@ -341,8 +345,11 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
 
   std::string metadata_str;
   model_metadata.SerializeToString(&metadata_str);
+  base::HistogramTester histogram_tester;
   new_processor.ModelReadyToSync(metadata_str, base::DoNothing(),
                                  bookmark_model());
+  histogram_tester.ExpectTotalCount("Sync.BookmarksModelReadyToSyncTime",
+                                    /*count=*/1);
 
   AssertState(&new_processor, bookmarks);
 }

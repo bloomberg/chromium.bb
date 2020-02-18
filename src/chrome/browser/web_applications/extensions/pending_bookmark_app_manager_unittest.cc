@@ -25,7 +25,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
-#include "chrome/browser/web_applications/test/test_web_app_ui_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -44,11 +44,12 @@ const GURL kFooWebAppUrl("https://foo.example");
 const GURL kBarWebAppUrl("https://bar.example");
 const GURL kQuxWebAppUrl("https://qux.example");
 
-web_app::InstallOptions GetFooInstallOptions(
+web_app::ExternalInstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
         base::Optional<bool>()) {
-  web_app::InstallOptions options(kFooWebAppUrl, web_app::LaunchContainer::kTab,
-                                  web_app::InstallSource::kExternalPolicy);
+  web_app::ExternalInstallOptions options(
+      kFooWebAppUrl, web_app::LaunchContainer::kTab,
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   if (override_previous_user_uninstall.has_value())
     options.override_previous_user_uninstall =
@@ -57,22 +58,22 @@ web_app::InstallOptions GetFooInstallOptions(
   return options;
 }
 
-web_app::InstallOptions GetBarInstallOptions() {
-  web_app::InstallOptions options(kBarWebAppUrl,
-                                  web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+web_app::ExternalInstallOptions GetBarInstallOptions() {
+  web_app::ExternalInstallOptions options(
+      kBarWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
-web_app::InstallOptions GetQuxInstallOptions() {
-  web_app::InstallOptions options(kQuxWebAppUrl,
-                                  web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kExternalPolicy);
+web_app::ExternalInstallOptions GetQuxInstallOptions() {
+  web_app::ExternalInstallOptions options(
+      kQuxWebAppUrl, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
 std::string GenerateFakeAppId(const GURL& url) {
-  return std::string("fake_app_id_for:") + url.spec();
+  return web_app::TestInstallFinalizer::GetAppIdForUrl(url);
 }
 
 class TestBookmarkAppInstallationTaskFactory {
@@ -84,13 +85,13 @@ class TestBookmarkAppInstallationTaskFactory {
 
   size_t install_run_count() { return install_run_count_; }
 
-  const std::vector<web_app::InstallOptions>& install_options_list() {
+  const std::vector<web_app::ExternalInstallOptions>& install_options_list() {
     return install_options_list_;
   }
 
   void SetNextInstallationTaskResult(const GURL& app_url,
                                      web_app::InstallResultCode result_code) {
-    DCHECK(!base::ContainsKey(next_installation_task_results_, app_url));
+    DCHECK(!base::Contains(next_installation_task_results_, app_url));
     next_installation_task_results_[app_url] = result_code;
   }
 
@@ -98,19 +99,19 @@ class TestBookmarkAppInstallationTaskFactory {
       Profile* profile,
       web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
-      web_app::InstallOptions install_options) {
+      web_app::ExternalInstallOptions install_options) {
     return std::make_unique<TestBookmarkAppInstallationTask>(
         this, profile, static_cast<web_app::TestAppRegistrar*>(registrar),
         install_finalizer, std::move(install_options));
   }
 
-  void OnInstallCalled(const web_app::InstallOptions& install_options) {
+  void OnInstallCalled(const web_app::ExternalInstallOptions& install_options) {
     ++install_run_count_;
     install_options_list_.push_back(install_options);
   }
 
   web_app::InstallResultCode GetNextInstallationTaskResult(const GURL& url) {
-    DCHECK(base::ContainsKey(next_installation_task_results_, url));
+    DCHECK(base::Contains(next_installation_task_results_, url));
     auto result = next_installation_task_results_.at(url);
     next_installation_task_results_.erase(url);
     return result;
@@ -124,7 +125,7 @@ class TestBookmarkAppInstallationTaskFactory {
         Profile* profile,
         web_app::TestAppRegistrar* registrar,
         web_app::InstallFinalizer* install_finalizer,
-        web_app::InstallOptions install_options)
+        web_app::ExternalInstallOptions install_options)
         : BookmarkAppInstallationTask(profile,
                                       registrar,
                                       install_finalizer,
@@ -146,14 +147,14 @@ class TestBookmarkAppInstallationTaskFactory {
           factory_->GetNextInstallationTaskResult(install_options_.url);
       if (result_code == web_app::InstallResultCode::kSuccess) {
         app_id = GenerateFakeAppId(install_options_.url);
-        externally_installed_app_prefs_.Insert(install_options_.url,
-                                               app_id.value(),
+        registrar_->AddExternalApp(
+            *app_id, {install_options_.url, install_options_.install_source});
+        externally_installed_app_prefs_.Insert(install_options_.url, *app_id,
                                                install_options_.install_source);
         const bool is_placeholder =
             (url_loaded_result != web_app::WebAppUrlLoader::Result::kUrlLoaded);
         externally_installed_app_prefs_.SetIsPlaceholder(install_options_.url,
                                                          is_placeholder);
-        registrar_->AddAsInstalled(app_id.value());
       }
       std::move(callback).Run({result_code, app_id});
     }
@@ -162,13 +163,13 @@ class TestBookmarkAppInstallationTaskFactory {
     TestBookmarkAppInstallationTaskFactory* factory_;
     Profile* profile_;
     web_app::TestAppRegistrar* registrar_;
-    web_app::InstallOptions install_options_;
+    web_app::ExternalInstallOptions install_options_;
     web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
     DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallationTask);
   };
 
-  std::vector<web_app::InstallOptions> install_options_list_;
+  std::vector<web_app::ExternalInstallOptions> install_options_list_;
   size_t install_run_count_ = 0;
 
   std::map<GURL, web_app::InstallResultCode> next_installation_task_results_;
@@ -184,13 +185,10 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    registrar_ = std::make_unique<web_app::TestAppRegistrar>(profile());
-    ui_delegate_ = std::make_unique<web_app::TestWebAppUiDelegate>();
+    registrar_ = std::make_unique<web_app::TestAppRegistrar>();
+    ui_manager_ = std::make_unique<web_app::TestWebAppUiManager>();
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
     task_factory_ = std::make_unique<TestBookmarkAppInstallationTaskFactory>();
-
-    web_app::WebAppProvider::Get(profile())->set_ui_delegate(
-        ui_delegate_.get());
   }
 
   void TearDown() override {
@@ -200,7 +198,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   std::pair<GURL, web_app::InstallResultCode> InstallAndWait(
       web_app::PendingAppManager* pending_app_manager,
-      web_app::InstallOptions install_options) {
+      web_app::ExternalInstallOptions install_options) {
     base::RunLoop run_loop;
 
     base::Optional<GURL> url;
@@ -221,7 +219,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::vector<std::pair<GURL, web_app::InstallResultCode>> InstallAppsAndWait(
       web_app::PendingAppManager* pending_app_manager,
-      std::vector<web_app::InstallOptions> apps_to_install) {
+      std::vector<web_app::ExternalInstallOptions> apps_to_install) {
     std::vector<std::pair<GURL, web_app::InstallResultCode>> results;
 
     base::RunLoop run_loop;
@@ -261,8 +259,9 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<PendingBookmarkAppManager>
   GetPendingBookmarkAppManagerWithTestMocks() {
-    auto manager = std::make_unique<PendingBookmarkAppManager>(
-        profile(), registrar_.get(), install_finalizer_.get());
+    auto manager = std::make_unique<PendingBookmarkAppManager>(profile());
+    manager->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                           install_finalizer_.get());
     manager->SetTaskFactoryForTesting(base::BindRepeating(
         &TestBookmarkAppInstallationTaskFactory::CreateInstallationTask,
         base::Unretained(task_factory_.get())));
@@ -277,8 +276,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     return manager;
   }
 
-  // InstallOptions that was used to run the last installation task.
-  const web_app::InstallOptions& last_install_options() {
+  // ExternalInstallOptions that was used to run the last installation task.
+  const web_app::ExternalInstallOptions& last_install_options() {
     DCHECK(!task_factory_->install_options_list().empty());
     return task_factory_->install_options_list().back();
   }
@@ -305,7 +304,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   web_app::TestAppRegistrar* registrar() { return registrar_.get(); }
 
-  web_app::TestWebAppUiDelegate* ui_delegate() { return ui_delegate_.get(); }
+  web_app::TestWebAppUiManager* ui_manager() { return ui_manager_.get(); }
 
   web_app::TestWebAppUrlLoader* url_loader() { return url_loader_; }
 
@@ -316,7 +315,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  private:
   std::unique_ptr<TestBookmarkAppInstallationTaskFactory> task_factory_;
   std::unique_ptr<web_app::TestAppRegistrar> registrar_;
-  std::unique_ptr<web_app::TestWebAppUiDelegate> ui_delegate_;
+  std::unique_ptr<web_app::TestWebAppUiManager> ui_manager_;
   std::unique_ptr<web_app::TestInstallFinalizer> install_finalizer_;
 
   web_app::TestWebAppUrlLoader* url_loader_ = nullptr;
@@ -651,11 +650,11 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  auto get_always_update_info = []() {
-    web_app::InstallOptions options(kFooWebAppUrl,
-                                    web_app::LaunchContainer::kWindow,
-                                    web_app::InstallSource::kExternalPolicy);
-    options.always_update = true;
+  auto get_force_reinstall_info = []() {
+    web_app::ExternalInstallOptions options(
+        kFooWebAppUrl, web_app::LaunchContainer::kWindow,
+        web_app::ExternalInstallSource::kExternalPolicy);
+    options.force_reinstall = true;
     return options;
   };
 
@@ -663,13 +662,13 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_always_update_info());
+        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
 
     EXPECT_EQ(1u, install_run_count());
-    EXPECT_EQ(get_always_update_info(), last_install_options());
+    EXPECT_EQ(get_force_reinstall_info(), last_install_options());
   }
 
   task_factory()->SetNextInstallationTaskResult(
@@ -680,14 +679,14 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
     base::Optional<GURL> url;
     base::Optional<web_app::InstallResultCode> code;
     std::tie(url, code) =
-        InstallAndWait(pending_app_manager.get(), get_always_update_info());
+        InstallAndWait(pending_app_manager.get(), get_force_reinstall_info());
 
     EXPECT_EQ(web_app::InstallResultCode::kSuccess, code);
     EXPECT_EQ(kFooWebAppUrl, url);
 
-    // The app should be installed again because of the |always_update| flag.
+    // The app should be installed again because of the |force_reinstall| flag.
     EXPECT_EQ(2u, install_run_count());
-    EXPECT_EQ(get_always_update_info(), last_install_options());
+    EXPECT_EQ(get_force_reinstall_info(), last_install_options());
   }
 }
 
@@ -738,7 +737,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_Succeeds) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
   InstallAppsResults results =
@@ -759,7 +758,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_FailsInstallationFails) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
   InstallAppsResults results =
@@ -782,7 +781,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PlaceholderApp) {
 
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(install_options);
 
   InstallAppsResults results =
@@ -807,7 +806,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_Multiple) {
   url_loader()->SetNextLoadUrlResult(
       kBarWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
@@ -836,7 +835,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstallApps) {
 
   base::RunLoop run_loop;
   {
-    std::vector<web_app::InstallOptions> apps_to_install;
+    std::vector<web_app::ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetFooInstallOptions());
 
     pending_app_manager->InstallApps(
@@ -852,7 +851,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstallApps) {
   }
 
   {
-    std::vector<web_app::InstallOptions> apps_to_install;
+    std::vector<web_app::ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetBarInstallOptions());
 
     pending_app_manager->InstallApps(
@@ -888,7 +887,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingMulitpleInstallApps) {
 
   base::RunLoop run_loop;
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
@@ -965,7 +964,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstall) {
           }));
 
   // Queue through InstallApps.
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
@@ -1018,8 +1017,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExtensionUninstalled) {
   }
 
   // Simulate the extension for the app getting uninstalled.
-  const std::string app_id = GenerateFakeAppId(kFooWebAppUrl);
-  registrar()->RemoveAsInstalled(app_id);
+  registrar()->RemoveExternalAppByInstallUrl(kFooWebAppUrl);
 
   // Try to install the app again.
   {
@@ -1058,8 +1056,7 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
   // Simulate external extension for the app getting uninstalled by the user.
   const std::string app_id = GenerateFakeAppId(kFooWebAppUrl);
-  registrar()->AddAsExternalAppUninstalledByUser(app_id);
-  registrar()->RemoveAsInstalled(app_id);
+  registrar()->SimulateExternalAppUninstalledByUser(app_id);
 
   // The extension was uninstalled by the user. Installing again should succeed
   // or fail depending on whether we set override_previous_user_uninstall. We
@@ -1096,7 +1093,9 @@ TEST_F(PendingBookmarkAppManagerTest, ExternalExtensionUninstalled) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Succeeds) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
-  registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kFooWebAppUrl),
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
@@ -1124,8 +1123,12 @@ TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Fails) {
 
 TEST_F(PendingBookmarkAppManagerTest, UninstallApps_Multiple) {
   auto pending_app_manager = GetPendingBookmarkAppManagerWithTestMocks();
-  registrar()->AddAsInstalled(GenerateFakeAppId(kFooWebAppUrl));
-  registrar()->AddAsInstalled(GenerateFakeAppId(kBarWebAppUrl));
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kFooWebAppUrl),
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
+  registrar()->AddExternalApp(
+      GenerateFakeAppId(kBarWebAppUrl),
+      {kFooWebAppUrl, web_app::ExternalInstallSource::kExternalPolicy});
 
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
@@ -1280,7 +1283,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.wait_for_windows_closed = true;
     task_factory()->SetNextInstallationTaskResult(
         kFooWebAppUrl, web_app::InstallResultCode::kSuccess);
-    ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
+    ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 0);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1323,7 +1326,7 @@ TEST_F(PendingBookmarkAppManagerTest,
     install_options.wait_for_windows_closed = true;
     task_factory()->SetNextInstallationTaskResult(
         kFooWebAppUrl, web_app::InstallResultCode::kSuccess);
-    ui_delegate()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
+    ui_manager()->SetNumWindowsForApp(GenerateFakeAppId(kFooWebAppUrl), 1);
     url_loader()->SetNextLoadUrlResult(
         kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
     install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,

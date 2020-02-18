@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "modules/video_coding/codecs/test/videoprocessor.h"
+
 #include <memory>
 
 #include "absl/memory/memory.h"
@@ -18,7 +20,6 @@
 #include "api/video/i420_buffer.h"
 #include "media/base/media_constants.h"
 #include "modules/video_coding/codecs/test/videocodec_test_stats_impl.h"
-#include "modules/video_coding/codecs/test/videoprocessor.h"
 #include "rtc_base/task_queue_for_test.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
@@ -66,7 +67,7 @@ class VideoProcessorTest : public ::testing::Test {
   }
 
   void ExpectInit() {
-    EXPECT_CALL(encoder_mock_, InitEncode(_, _, _)).Times(1);
+    EXPECT_CALL(encoder_mock_, InitEncode(_, _)).Times(1);
     EXPECT_CALL(encoder_mock_, RegisterEncodeCompleteCallback(_)).Times(1);
     EXPECT_CALL(*decoder_mock_, InitDecode(_, _)).Times(1);
     EXPECT_CALL(*decoder_mock_, RegisterDecodeCompleteCallback(_)).Times(1);

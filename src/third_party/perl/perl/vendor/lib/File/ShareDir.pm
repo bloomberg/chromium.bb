@@ -6,6 +6,14 @@ package File::ShareDir;
 
 File::ShareDir - Locate per-dist and per-module shared files
 
+=begin html
+
+<a href="https://travis-ci.org/perl5-utils/File-ShareDir"><img src="https://travis-ci.org/perl5-utils/File-ShareDir.svg?branch=master" alt="Travis CI"/></a>
+<a href='https://coveralls.io/github/perl5-utils/File-ShareDir?branch=master'><img src='https://coveralls.io/repos/github/perl5-utils/File-ShareDir/badge.svg?branch=master' alt='Coverage Status' /></a>
+<a href="https://saythanks.io/to/rehsack"><img src="https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg" alt="Say Thanks" /></a>
+
+=end html
+
 =head1 SYNOPSIS
 
   use File::ShareDir ':ALL';
@@ -75,8 +83,12 @@ Once the files have been installed to the correct directory,
 you can use C<File::ShareDir> to find your files again after
 the installation.
 
-For the installation half of the solution, see L<Module::Install>
+For the installation half of the solution, see L<File::ShareDir::Install>
 and its C<install_share> directive.
+
+Using L<File::ShareDir::Install> together with L<File::ShareDir>
+allows one to rely on the files in appropriate C<dist_dir()>
+or C<module_dir()> in development phase, too.
 
 =head1 FUNCTIONS
 
@@ -107,34 +119,33 @@ exception.
 
 use 5.005;
 use strict;
+use warnings;
+
+use base ('Exporter');
+use constant IS_MACOS => !!($^O eq 'MacOS');
+use constant IS_WIN32 => !!($^O eq 'MSWin32');
+
 use Carp             ();
-use Config           ();
 use Exporter         ();
 use File::Spec       ();
 use Class::Inspector ();
 
-use vars qw{ $VERSION @ISA @EXPORT_OK %EXPORT_TAGS };
-BEGIN {
-	$VERSION     = '1.03';
-	@ISA         = qw{ Exporter };
-	@EXPORT_OK   = qw{
-		dist_dir
-		dist_file
-		module_dir
-		module_file
-		class_dir
-		class_file
-	};
-	%EXPORT_TAGS = (
-		ALL => [ @EXPORT_OK ],
-	);
-}
+our %DIST_SHARE;
+our %MODULE_SHARE;
 
-use constant IS_MACOS => !! ($^O eq 'MacOS');
-
-
-
-
+our @CARP_NOT;
+our @EXPORT_OK = qw{
+  dist_dir
+  dist_file
+  module_dir
+  module_file
+  class_dir
+  class_file
+};
+our %EXPORT_TAGS = (
+    ALL => [@EXPORT_OK],
+);
+our $VERSION = '1.116';
 
 #####################################################################
 # Interface Functions
@@ -155,64 +166,42 @@ located or is not readable.
 
 =cut
 
-sub dist_dir {
-	my $dist = _DIST(shift);
-	my $dir;
+sub dist_dir
+{
+    my $dist = _DIST(shift);
+    my $dir;
 
-	# Try the new version
-	$dir = _dist_dir_new( $dist );
-	return $dir if defined $dir;
+    # Try the new version, then fall back to the legacy version
+    $dir = _dist_dir_new($dist) || _dist_dir_old($dist);
 
-	# Fall back to the legacy version
-	$dir = _dist_dir_old( $dist );
-	return $dir if defined $dir;
+    return $dir if defined $dir;
 
-	# Ran out of options
-	Carp::croak("Failed to find share dir for dist '$dist'");
+    # Ran out of options
+    Carp::croak("Failed to find share dir for dist '$dist'");
 }
 
-sub _dist_dir_new {
-	my $dist = shift;
+sub _dist_dir_new
+{
+    my $dist = shift;
 
-	# Create the subpath
-	my $path = File::Spec->catdir(
-		'auto', 'share', 'dist', $dist,
-	);
+    return $DIST_SHARE{$dist} if exists $DIST_SHARE{$dist};
 
-	# Find the full dir withing @INC
-	foreach my $inc ( @INC ) {
-		next unless defined $inc and ! ref $inc;
-		my $dir = File::Spec->catdir( $inc, $path );
-		next unless -d $dir;
-		unless ( -r $dir ) {
-			Carp::croak("Found directory '$dir', but no read permissions");
-		}
-		return $dir;
-	}
+    # Create the subpath
+    my $path = File::Spec->catdir('auto', 'share', 'dist', $dist);
 
-	return undef;
+    # Find the full dir within @INC
+    return _search_inc_path($path);
 }
 
-sub _dist_dir_old {
-	my $dist = shift;
+sub _dist_dir_old
+{
+    my $dist = shift;
 
-	# Create the subpath
-	my $path = File::Spec->catdir(
-		'auto', split( /-/, $dist ),
-	);
+    # Create the subpath
+    my $path = File::Spec->catdir('auto', split(/-/, $dist),);
 
-	# Find the full dir within @INC
-	foreach my $inc ( @INC ) {
-		next unless defined $inc and ! ref $inc;
-		my $dir = File::Spec->catdir( $inc, $path );
-		next unless -d $dir;
-		unless ( -r $dir ) {
-			Carp::croak("Found directory '$dir', but no read permissions");
-		}
-		return $dir;
-	}
-
-	return undef;
+    # Find the full dir within @INC
+    return _search_inc_path($path);
 }
 
 =pod
@@ -234,56 +223,43 @@ located or is not readable.
 
 =cut
 
-sub module_dir {
-	my $module = _MODULE(shift);
-	my $dir;
+sub module_dir
+{
+    my $module = _MODULE(shift);
 
-	# Try the new version
-	$dir = _module_dir_new( $module );
-	return $dir if defined $dir;
+    return $MODULE_SHARE{$module} if exists $MODULE_SHARE{$module};
 
-	# Fall back to the legacy version
-	return _module_dir_old( $module );
+    # Try the new version first, then fall back to the legacy version
+    return _module_dir_new($module) || _module_dir_old($module);
 }
 
-sub _module_dir_new {
-	my $module = shift;
+sub _module_dir_new
+{
+    my $module = shift;
 
-	# Create the subpath
-	my $path = File::Spec->catdir(
-		'auto', 'share', 'module',
-		_module_subdir( $module ),
-	);
+    # Create the subpath
+    my $path = File::Spec->catdir('auto', 'share', 'module', _module_subdir($module),);
 
-	# Find the full dir withing @INC
-	foreach my $inc ( @INC ) {
-		next unless defined $inc and ! ref $inc;
-		my $dir = File::Spec->catdir( $inc, $path );
-		next unless -d $dir;
-		unless ( -r $dir ) {
-			Carp::croak("Found directory '$dir', but no read permissions");
-		}
-		return $dir;
-	}
-
-	return undef;
+    # Find the full dir within @INC
+    return _search_inc_path($path);
 }
-	
-sub _module_dir_old {
-	my $module = shift;
-	my $short  = Class::Inspector->filename($module);
-	my $long   = Class::Inspector->loaded_filename($module);
-	$short =~ tr{/}{:} if IS_MACOS;
-	substr( $short, -3, 3, '' );
-	$long  =~ m/^(.*)\Q$short\E\.pm\z/s or die("Failed to find base dir");
-	my $dir = File::Spec->catdir( "$1", 'auto', $short );
-	unless ( -d $dir ) {
-		Carp::croak("Directory '$dir', does not exist");
-	}
-	unless ( -r $dir ) {
-		Carp::croak("Directory '$dir', no read permissions");
-	}
-	return $dir;
+
+sub _module_dir_old
+{
+    my $module = shift;
+    my $short  = Class::Inspector->filename($module);
+    my $long   = Class::Inspector->loaded_filename($module);
+    $short =~ tr{/}{:}   if IS_MACOS;
+    $short =~ tr{\\} {/} if IS_WIN32;
+    $long =~ tr{\\} {/}  if IS_WIN32;
+    substr($short, -3, 3, '');
+    $long =~ m/^(.*)\Q$short\E\.pm\z/s or Carp::croak("Failed to find base dir");
+    my $dir = File::Spec->catdir("$1", 'auto', $short);
+
+    -d $dir or Carp::croak("Directory '$dir': No such directory");
+    -r $dir or Carp::croak("Directory '$dir': No read permission");
+
+    return $dir;
 }
 
 =pod
@@ -293,8 +269,8 @@ sub _module_dir_old {
   # Find a file in our distribution shared dir
   my $dir = dist_file('My-Distribution', 'file/name.txt');
 
-The C<dist_file> function takes two params of the distribution name
-and file name, locates the dist dir, and then finds the file within
+The C<dist_file> function takes two parameters of the distribution name
+and file name, locates the dist directory, and then finds the file within
 it, verifying that the file actually exists, and that it is readable.
 
 The filename should be a relative path in the format of your local
@@ -306,60 +282,51 @@ directory cannot be located, or the file is not readable.
 
 =cut
 
-sub dist_file {
-	my $dist = _DIST(shift);
-	my $file = _FILE(shift);
+sub dist_file
+{
+    my $dist = _DIST(shift);
+    my $file = _FILE(shift);
 
-	# Try the new version first
-	my $path = _dist_file_new( $dist, $file );
-	return $path if defined $path;
+    # Try the new version first, in doubt hand off to the legacy version
+    my $path = _dist_file_new($dist, $file) || _dist_file_old($dist, $file);
+    $path or Carp::croak("Failed to find shared file '$file' for dist '$dist'");
 
-	# Hand off to the legacy version
-	return _dist_file_old( $dist, $file );;
+    -f $path or Carp::croak("File '$path': No such file");
+    -r $path or Carp::croak("File '$path': No read permission");
+
+    return $path;
 }
 
-sub _dist_file_new {
-	my $dist = shift;
-	my $file = shift;
+sub _dist_file_new
+{
+    my $dist = shift;
+    my $file = shift;
 
-	# If it exists, what should the path be
-	my $dir  = _dist_dir_new( $dist );
-	my $path = File::Spec->catfile( $dir, $file );
+    # If it exists, what should the path be
+    my $dir = _dist_dir_new($dist);
+    return undef unless defined $dir;
+    my $path = File::Spec->catfile($dir, $file);
 
-	# Does the file exist
-	return undef unless -e $path;
-	unless ( -f $path ) {
-		Carp::croak("Found dist_file '$path', but not a file");
-	}
-	unless ( -r $path ) {
-		Carp::croak("File '$path', no read permissions");
-	}
+    # Does the file exist
+    return undef unless -e $path;
 
-	return $path;
+    return $path;
 }
 
-sub _dist_file_old {
-	my $dist = shift;
-	my $file = shift;
+sub _dist_file_old
+{
+    my $dist = shift;
+    my $file = shift;
 
-	# Create the subpath
-	my $path = File::Spec->catfile(
-		'auto', split( /-/, $dist ), $file,
-	);
+    # If it exists, what should the path be
+    my $dir = _dist_dir_old($dist);
+    return undef unless defined $dir;
+    my $path = File::Spec->catfile($dir, $file);
 
-	# Find the full dir withing @INC
-	foreach my $inc ( @INC ) {
-		next unless defined $inc and ! ref $inc;
-		my $full = File::Spec->catdir( $inc, $path );
-		next unless -e $full;
-		unless ( -r $full ) {
-			Carp::croak("Directory '$full', no read permissions");
-		}
-		return $full;
-	}
+    # Does the file exist
+    return undef unless -e $path;
 
-	# Couldn't find it
-	Carp::croak("Failed to find shared file '$file' for dist '$dist'");
+    return $path;
 }
 
 =pod
@@ -369,9 +336,9 @@ sub _dist_file_old {
   # Find a file in our module shared dir
   my $dir = module_file('My::Module', 'file/name.txt');
 
-The C<module_file> function takes two params of the module name
-and file name. It locates the module dir, and then finds the file within
-it, verifying that the file actually exists, and that it is readable.
+The C<module_file> function takes two parameters of the module name
+and file name. It locates the module directory, and then finds the file
+within it, verifying that the file actually exists, and that it is readable.
 
 In order to find the directory, the module B<must> be loaded when
 calling this function.
@@ -385,18 +352,17 @@ directory cannot be located, or the file is not readable.
 
 =cut
 
-sub module_file {
-	my $module = _MODULE(shift);
-	my $file   = _FILE(shift);
-	my $dir    = module_dir($module);
-	my $path   = File::Spec->catfile($dir, $file);
-	unless ( -e $path ) {
-		Carp::croak("File '$file' does not exist in module dir");
-	}
-	unless ( -r $path ) {
-		Carp::croak("File '$file' cannot be read, no read permissions");
-	}
-	$path;
+sub module_file
+{
+    my $module = _MODULE(shift);
+    my $file   = _FILE(shift);
+    my $dir    = module_dir($module);
+    my $path   = File::Spec->catfile($dir, $file);
+
+    -e $path or Carp::croak("File '$path' does not exist in module dir");
+    -r $path or Carp::croak("File '$path': No read permission");
+
+    return $path;
 }
 
 =pod
@@ -406,9 +372,9 @@ sub module_file {
   # Find a file in our module shared dir, or in our parent class
   my $dir = class_file('My::Module', 'file/name.txt');
 
-The C<module_file> function takes two params of the module name
-and file name. It locates the module dir, and then finds the file within
-it, verifying that the file actually exists, and that it is readable.
+The C<module_file> function takes two parameters of the module name
+and file name. It locates the module directory, and then finds the file
+within it, verifying that the file actually exists, and that it is readable.
 
 In order to find the directory, the module B<must> be loaded when
 calling this function.
@@ -428,143 +394,262 @@ directory cannot be located, or the file is not readable.
 
 =cut
 
-sub class_file {
-	my $module = _MODULE(shift);
-	my $file   = _FILE(shift);
+sub class_file
+{
+    my $module = _MODULE(shift);
+    my $file   = _FILE(shift);
 
-	# Get the super path ( not including UNIVERSAL )
-	# Rather than using Class::ISA, we'll use an inlined version
-	# that implements the same basic algorithm.
-	my @path  = ();
-	my @queue = ( $module );
-	my %seen  = ( $module => 1 );
-	while ( my $cl = shift @queue ) {
-		push @path, $cl;
-		no strict 'refs';
-		unshift @queue, grep { ! $seen{$_}++ }
-			map { s/^::/main::/; s/\'/::/g; $_ }
-			( @{"${cl}::ISA"} );
-	}
+    # Get the super path ( not including UNIVERSAL )
+    # Rather than using Class::ISA, we'll use an inlined version
+    # that implements the same basic algorithm.
+    my @path  = ();
+    my @queue = ($module);
+    my %seen  = ($module => 1);
+    while (my $cl = shift @queue)
+    {
+        push @path, $cl;
+        no strict 'refs';    ## no critic (TestingAndDebugging::ProhibitNoStrict)
+        unshift @queue, grep { !$seen{$_}++ }
+          map { my $s = $_; $s =~ s/^::/main::/; $s =~ s/\'/::/g; $s } (@{"${cl}::ISA"});
+    }
 
-	# Search up the path
-	foreach my $class ( @path ) {
-		local $@;
-		my $dir = eval {
-		 	module_dir($class);
-		};
-		next if $@;
-		my $path = File::Spec->catfile($dir, $file);
-		unless ( -e $path ) {
-			next;
-		}
-		unless ( -r $path ) {
-			Carp::croak("File '$file' cannot be read, no read permissions");
-		}
-		return $path;
-	}
-	Carp::croak("File '$file' does not exist in class or parent shared files");
+    # Search up the path
+    foreach my $class (@path)
+    {
+        my $dir = eval { module_dir($class); };
+        next if $@;
+        my $path = File::Spec->catfile($dir, $file);
+        -e $path or next;
+        -r $path or Carp::croak("File '$file' cannot be read, no read permissions");
+        return $path;
+    }
+    Carp::croak("File '$file' does not exist in class or parent shared files");
 }
 
-
-
+## no critic (BuiltinFunctions::ProhibitStringyEval)
+if (eval "use List::MoreUtils 0.428; 1;")
+{
+    List::MoreUtils->import("firstres");
+}
+else
+{
+    ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
+    eval <<'END_OF_BORROWED_CODE';
+sub firstres (&@)
+{
+    my $test = shift;
+    foreach (@_)
+    {
+        my $testval = $test->();
+        $testval and return $testval;
+    }
+    return undef;
+}
+END_OF_BORROWED_CODE
+}
 
 #####################################################################
 # Support Functions
 
-sub _module_subdir {
-	my $module = shift;
-	$module =~ s/::/-/g;
-	return $module;
+sub _search_inc_path
+{
+    my $path = shift;
+
+    # Find the full dir within @INC
+    my $dir = firstres(
+        sub {
+            my $d;
+            $d = File::Spec->catdir($_, $path) if defined _STRING($_);
+            defined $d and -d $d ? $d : 0;
+        },
+        @INC
+    ) or return;
+
+    Carp::croak("Found directory '$dir', but no read permissions") unless -r $dir;
+
+    return $dir;
 }
 
-sub _dist_packfile {
-	my $module = shift;
-	my @dirs   = grep { -e } ( $Config::Config{archlibexp}, $Config::Config{sitearchexp} );
-	my $file   = File::Spec->catfile(
-		'auto', split( /::/, $module), '.packlist',
-	);
-
-	foreach my $dir ( @dirs ) {
-		my $path = File::Spec->catfile( $dir, $file );
-		next unless -f $path;
-
-		# Load the file
-		my $packlist = ExtUtils::Packlist->new($path);
-		unless ( $packlist ) {
-			die "Failed to load .packlist file for $module";
-		}
-
-		die "CODE INCOMPLETE";
-	}
-
-	die "CODE INCOMPLETE";
+sub _module_subdir
+{
+    my $module = shift;
+    $module =~ s/::/-/g;
+    return $module;
 }
 
+## no critic (BuiltinFunctions::ProhibitStringyEval)
+if (eval "use Params::Util 1.07; 1;")
+{
+    Params::Util->import("_CLASS", "_STRING");
+}
+else
+{
+    ## no critic (ErrorHandling::RequireCheckingReturnValueOfEval)
+    eval <<'END_OF_BORROWED_CODE';
 # Inlined from Params::Util pure perl version
-sub _CLASS {
-    (defined $_[0] and ! ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*\z/s) ? $_[0] : undef;
+sub _CLASS ($)
+{
+    return (defined $_[0] and !ref $_[0] and $_[0] =~ m/^[^\W\d]\w*(?:::\w+)*\z/s) ? $_[0] : undef;
 }
 
+sub _STRING ($)
+{
+    (defined $_[0] and ! ref $_[0] and length($_[0])) ? $_[0] : undef;
+}
+END_OF_BORROWED_CODE
+}
 
 # Maintainer note: The following private functions are used by
 #                  File::ShareDir::PAR. (It has to or else it would have to copy&fork)
 #                  So if you significantly change or even remove them, please
-#                  notify the File::ShareDir::PAR maintainer(s). Thank you!    
+#                  notify the File::ShareDir::PAR maintainer(s). Thank you!
 
 # Matches a valid distribution name
 ### This is a total guess at this point
-sub _DIST {
-	if ( defined $_[0] and ! ref $_[0] and $_[0] =~ /^[a-z0-9+_-]+$/is ) {
-		return shift;
-	}
-	Carp::croak("Not a valid distribution name");
+sub _DIST    ## no critic (Subroutines::RequireArgUnpacking)
+{
+    defined _STRING($_[0]) and $_[0] =~ /^[a-z0-9+_-]+$/is and return $_[0];
+    Carp::croak("Not a valid distribution name");
 }
 
 # A valid and loaded module name
-sub _MODULE {
-	my $module = _CLASS(shift) or Carp::croak("Not a valid module name");
-	if ( Class::Inspector->loaded($module) ) {
-		return $module;
-	}
-	Carp::croak("Module '$module' is not loaded");
+sub _MODULE
+{
+    my $module = _CLASS(shift) or Carp::croak("Not a valid module name");
+    Class::Inspector->loaded($module) and return $module;
+    Carp::croak("Module '$module' is not loaded");
 }
 
 # A valid file name
-sub _FILE {
-	my $file = shift;
-	unless ( defined $file and ! ref $file and length $file ) {
-		Carp::croak("Did not pass a file name");
-	}
-	if ( File::Spec->file_name_is_absolute($file) ) {
-		Carp::croak("Cannot use absolute file name '$file'");
-	}
-	$file;
+sub _FILE
+{
+    my $file = shift;
+    _STRING($file) or Carp::croak("Did not pass a file name");
+    File::Spec->file_name_is_absolute($file) and Carp::croak("Cannot use absolute file name '$file'");
+    return $file;
 }
 
 1;
 
 =pod
 
+=head1 EXTENDING
+
+=head2 Overriding Directory Resolution
+
+C<File::ShareDir> has two convenience hashes for people who have advanced usage
+requirements of C<File::ShareDir> such as using uninstalled C<share>
+directories during development.
+
+  #
+  # Dist-Name => /absolute/path/for/DistName/share/dir
+  #
+  %File::ShareDir::DIST_SHARE
+
+  #
+  # Module::Name => /absolute/path/for/Module/Name/share/dir
+  #
+  %File::ShareDir::MODULE_SHARE
+
+Setting these values any time before the corresponding calls
+
+  dist_dir('Dist-Name')
+  dist_file('Dist-Name','some/file');
+
+  module_dir('Module::Name');
+  module_file('Module::Name','some/file');
+
+Will override the base directory for resolving those calls.
+
+An example of where this would be useful is in a test for a module that
+depends on files installed into a share directory, to enable the tests
+to use the development copy without needing to install them first.
+
+  use File::ShareDir;
+  use Cwd qw( getcwd );
+  use File::Spec::Functions qw( rel2abs catdir );
+
+  $File::ShareDir::MODULE_SHARE{'Foo::Module'} = rel2abs(catfile(getcwd,'share'));
+
+  use Foo::Module;
+
+  # interal calls in Foo::Module to module_file('Foo::Module','bar') now resolves to
+  # the source trees share/ directory instead of something in @INC
+
 =head1 SUPPORT
 
-Bugs should always be submitted via the CPAN bug tracker
+Bugs should always be submitted via the CPAN request tracker, see below.
 
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=File-ShareDir>
+You can find documentation for this module with the perldoc command.
 
-For other issues, contact the maintainer.
+    perldoc File::ShareDir
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=File-ShareDir>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/File-ShareDir>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/s/File-ShareDir>
+
+=item * CPAN Search
+
+L<http://search.cpan.org/dist/File-ShareDir/>
+
+=back
+
+=head2 Where can I go for other help?
+
+If you have a bug report, a patch or a suggestion, please open a new
+report ticket at CPAN (but please check previous reports first in case
+your issue has already been addressed).
+
+Report tickets should contain a detailed description of the bug or
+enhancement request and at least an easily verifiable way of
+reproducing the issue or fix. Patches are always welcome, too.
+
+=head2 Where can I go for help with a concrete version?
+
+Bugs and feature requests are accepted against the latest version
+only. To get patches for earlier versions, you need to get an
+agreement with a developer of your choice - who may or not report the
+issue and a suggested fix upstream (depends on the license you have
+chosen).
+
+=head2 Business support and maintenance
+
+For business support you can contact the maintainer via his CPAN
+email address. Please keep in mind that business support is neither
+available for free nor are you eligible to receive any support
+based on the license distributed with this package.
 
 =head1 AUTHOR
 
 Adam Kennedy E<lt>adamk@cpan.orgE<gt>
 
+=head2 MAINTAINER
+
+Jens Rehsack E<lt>rehsack@cpan.orgE<gt>
+
 =head1 SEE ALSO
 
-L<File::HomeDir>, L<Module::Install>, L<Module::Install::Share>,
-L<File::ShareDir::PAR>
+L<File::ShareDir::Install>,
+L<File::ConfigDir>, L<File::HomeDir>,
+L<Module::Install>, L<Module::Install::Share>,
+L<File::ShareDir::PAR>, L<Dist::Zilla::Plugin::ShareDir>
 
 =head1 COPYRIGHT
 
-Copyright 2005 - 2011 Adam Kennedy.
+Copyright 2005 - 2011 Adam Kennedy,
+Copyright 2014 - 2018 Jens Rehsack.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

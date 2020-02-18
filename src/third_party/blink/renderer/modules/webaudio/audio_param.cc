@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -308,13 +308,15 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
 // ----------------------------------------------------------------
 
 AudioParam::AudioParam(BaseAudioContext& context,
-                       AudioParamType param_type,
+                       const String& parent_uuid,
+                       AudioParamHandler::AudioParamType param_type,
                        double default_value,
                        AudioParamHandler::AutomationRate rate,
                        AudioParamHandler::AutomationRateMode rate_mode,
                        float min_value,
                        float max_value)
-    : handler_(AudioParamHandler::Create(context,
+    : InspectorHelperMixin(parent_uuid),
+      handler_(AudioParamHandler::Create(context,
                                          param_type,
                                          default_value,
                                          rate,
@@ -325,17 +327,8 @@ AudioParam::AudioParam(BaseAudioContext& context,
       deferred_task_handler_(&context.GetDeferredTaskHandler()) {}
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
-                               AudioParamType param_type,
-                               double default_value) {
-  return MakeGarbageCollected<AudioParam>(
-      context, param_type, default_value,
-      AudioParamHandler::AutomationRate::kAudio,
-      AudioParamHandler::AutomationRateMode::kVariable,
-      -std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-}
-
-AudioParam* AudioParam::Create(BaseAudioContext& context,
-                               AudioParamType param_type,
+                               const String& parent_uuid,
+                               AudioParamHandler::AudioParamType param_type,
                                double default_value,
                                AudioParamHandler::AutomationRate rate,
                                AudioParamHandler::AutomationRateMode rate_mode,
@@ -343,9 +336,9 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                                float max_value) {
   DCHECK_LE(min_value, max_value);
 
-  return MakeGarbageCollected<AudioParam>(context, param_type, default_value,
-                                          rate, rate_mode, min_value,
-                                          max_value);
+  return MakeGarbageCollected<AudioParam>(context, parent_uuid, param_type,
+                                          default_value, rate, rate_mode,
+                                          min_value, max_value);
 }
 
 AudioParam::~AudioParam() {
@@ -406,7 +399,7 @@ float AudioParam::maxValue() const {
   return Handler().MaxValue();
 }
 
-void AudioParam::SetParamType(AudioParamType param_type) {
+void AudioParam::SetParamType(AudioParamHandler::AudioParamType param_type) {
   Handler().SetParamType(param_type);
 }
 

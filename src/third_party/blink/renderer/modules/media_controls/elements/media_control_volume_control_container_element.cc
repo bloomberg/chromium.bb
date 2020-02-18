@@ -20,8 +20,7 @@ MediaControlVolumeControlContainerElement::
   MediaControlElementsHelper::CreateDiv(
       "-webkit-media-controls-volume-control-hover-background", this);
 
-  if (MediaControlsImpl::IsModern())
-    CloseContainer();
+  CloseContainer();
 }
 
 void MediaControlVolumeControlContainerElement::OpenContainer() {

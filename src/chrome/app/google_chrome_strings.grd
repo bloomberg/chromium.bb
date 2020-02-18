@@ -611,7 +611,10 @@ Google Chrome is unable to recover your settings.
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_ABOUT" desc="The text label of the About Chrome OS menu item">
+        <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
+          About &amp;Google Chrome
+        </message>
+        <message name="IDS_ABOUT_OS" desc="The text label of the About Chrome OS menu item">
           About &amp;Chrome OS
         </message>
         <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome OS Now menu item">
@@ -637,9 +640,6 @@ Google Chrome is unable to recover your settings.
       </message>
 
       <!-- DICE sign-in promo strings -->
-      <message name="IDS_PROFILES_DICE_SIGNIN_PROMO" desc="Text describing the benefits of signing in and turning on Sync.">
-        Sign in to sync and personalize Chrome across your devices
-      </message>
       <message name="IDS_PROFILES_DICE_SYNC_PROMO" desc="Text describing the benefits of turning on Sync.">
         Sync and personalize Chrome across your devices
       </message>
@@ -757,6 +757,12 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           Chrome OS could not sync your data due to an error signing in.
         </message>
       </if>
+      <message name="IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT" desc="Info text displayed in the user menu when sync is paused due to cookies cleared on exit.">
+        You clear cookies when you quit Chrome. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK">$1<ex>settings</ex></ph>.
+      </message>
+      <message name="IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT" desc="Link text part of the sync paused info text when sync is paused due to cookies cleared on exit.">
+        settings
+      </message>
 
       <if expr="is_android">
         <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
@@ -1188,40 +1194,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         <message name="IDS_WELCOME_HEADER" desc="A message which will appear as the header on the Welcome UI if the user has never run Chrome before.">
           Welcome to Chrome
         </message>
-        <message name="IDS_WELCOME_HEADER_AFTER_FIRST_RUN" desc="A message which will appear as the header on the Welcome UI if the user has run Chrome before.">
-          Take Chrome everywhere
-        </message>
-        <message name="IDS_DICE_WELCOME_SECOND_HEADER" desc="A second message which will appear as the header on the Welcome UI if the user has never run Chrome before.">
-          Web browsing with Google smarts
-        </message>
-        <message name="IDS_DICE_WELCOME_DECLINE_BUTTON" desc="A button on the welcome page which declines the offer to sign in to Chrome.">
-          Not now
-        </message>
-        <message name="IDS_DICE_WELCOME_DESCRIPTION" desc="A message on the welcome page explaining the purpose of signing in.">
-          Sync and personalize Chrome across your devices
-        </message>
-      </if>
-
-      <!-- Windows 10 Welcome page strings -->
-      <if expr="is_win">
-        <message name="IDS_WIN10_WELCOME_HEADER" desc="A header on the Windows 10 Welcome UI if the user has never run Chrome before.">
-          Welcome to Chrome
-        </message>
-        <message name="IDS_WIN10_WELCOME_HEADER_AFTER_FIRST_RUN" desc="A header on the Windows 10 Welcome UI if the user has run Chrome before.">
-          Get to Chrome faster
-        </message>
-        <message name="IDS_WIN10_WELCOME_MAKE_DEFAULT_SUBHEADING" desc="A subheading on a section which gives instructions on how to make Chrome the default browser.">
-          Make Chrome your default browser
-        </message>
-        <message name="IDS_WIN10_WELCOME_PIN_SUBHEADING" desc="A subheading on a section which gives instructions on how to pin Chrome to the Windows 10 taskbar.">
-          Pin Chrome to your taskbar
-        </message>
-        <message name="IDS_WIN10_WELCOME_SELECT" desc="An instruction asking the user to select Chrome from an external list of apps.">
-          Select <ph name="SMALL_PRODUCT_LOGO">&lt;div class="logo-small"&gt;&lt;/div&gt;</ph> <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Google Chrome<ph name="END_BOLD">&lt;/strong&gt;</ph>
-        </message>
-        <message name="IDS_WIN10_WELCOME_CLICK_SWITCH_ANYWAY" desc="An instruction asking the user to click on the &quot;Switch anyway&quot; button. It's possible that the button doesn't appear for the user, hence the &quot;if it appears&quot;. The bold portion of this message must match IDS_WIN10_WELCOME_SWITCH_ANYWAY_LABEL.">
-          Click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Switch anyway<ph name="END_BOLD">&lt;/strong&gt;</ph>, if it appears
-        </message>
       </if>
 
       <!-- Native notifications for Windows 10 -->
@@ -1287,6 +1259,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WEB_CONTENTS_ONLY" desc="Title for the window picker dialog shown when desktop capture of a tab is requested by an app.">
         Share a Chrome tab
       </message>
+
+      <!-- User happiness tracking survey UI -->
+      <if expr="not is_android">
+        <message name="IDS_HATS_BUBBLE_TITLE" translateable="false" desc="The title of Happiness Tracking Survey's invitation banner, it invites users to take a survey">
+          Help us improve Chrome
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

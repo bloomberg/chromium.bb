@@ -48,26 +48,6 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(FilterNonInterpolableValue);
 
 namespace {
 
-double DefaultParameter(FilterOperation::OperationType type) {
-  switch (type) {
-    case FilterOperation::BRIGHTNESS:
-    case FilterOperation::GRAYSCALE:
-    case FilterOperation::SATURATE:
-    case FilterOperation::SEPIA:
-      return 1;
-
-    case FilterOperation::CONTRAST:
-    case FilterOperation::HUE_ROTATE:
-    case FilterOperation::INVERT:
-    case FilterOperation::OPACITY:
-      return 0;
-
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
 double ClampParameter(double value, FilterOperation::OperationType type) {
   switch (type) {
     case FilterOperation::BRIGHTNESS:
@@ -110,26 +90,11 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
     case FilterOperation::INVERT:
     case FilterOperation::OPACITY:
     case FilterOperation::SATURATE:
-    case FilterOperation::SEPIA: {
-      double amount = DefaultParameter(type);
-      if (filter.length() == 1) {
-        const CSSPrimitiveValue& first_value =
-            To<CSSPrimitiveValue>(filter.Item(0));
-        amount = first_value.GetDoubleValue();
-        if (first_value.IsPercentage())
-          amount /= 100;
-      }
-      result.interpolable_value = std::make_unique<InterpolableNumber>(amount);
+    case FilterOperation::SEPIA:
+    case FilterOperation::HUE_ROTATE:
+      result.interpolable_value = std::make_unique<InterpolableNumber>(
+          FilterOperationResolver::ResolveNumericArgumentForFunction(filter));
       break;
-    }
-
-    case FilterOperation::HUE_ROTATE: {
-      double angle = DefaultParameter(type);
-      if (filter.length() == 1)
-        angle = To<CSSPrimitiveValue>(filter.Item(0)).ComputeDegrees();
-      result.interpolable_value = std::make_unique<InterpolableNumber>(angle);
-      break;
-    }
 
     case FilterOperation::BLUR: {
       if (filter.length() == 0)

@@ -17,8 +17,14 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the network service.
-const base::Feature kNetworkService{"NetworkService",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kNetworkService {
+#if defined(OS_ANDROID)
+  "NetworkService",
+#else
+  "NetworkServiceNotSupported",
+#endif
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
 
 // Out of Blink CORS
 const base::Feature kOutOfBlinkCors {
@@ -66,6 +72,39 @@ const base::Feature kFetchMetadataDestination{
 // network::mojom::URLLoaderFactoryParams::request_initiator_site_lock.
 const base::Feature kRequestInitiatorSiteLock{"RequestInitiatorSiteLock",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When kPauseBrowserInitiatedHeavyTrafficForP2P is enabled, then a subset of
+// the browser initiated traffic may be paused if there is at least one active
+// P2P connection and the network is estimated to be congested. This feature is
+// intended to throttle only the browser initiated traffic that is expected to
+// be heavy (has large request/response sizes) when real time content might be
+// streaming over an active P2P connection.
+const base::Feature kPauseBrowserInitiatedHeavyTrafficForP2P{
+    "PauseBrowserInitiatedHeavyTrafficForP2P",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When kCORBProtectionSniffing is enabled CORB sniffs additional same-origin
+// resources if they look sensitive.
+const base::Feature kCORBProtectionSniffing{"CORBProtectionSniffing",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When kProactivelyThrottleLowPriorityRequests is enabled,
+// resource scheduler proactively throttles low priority requests to avoid
+// network contention with high priority requests that may arrive soon.
+const base::Feature kProactivelyThrottleLowPriorityRequests{
+    "ProactivelyThrottleLowPriorityRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// https://github.com/mikewest/corpp
+const base::Feature kCrossOriginEmbedderPolicy{
+    "CrossOriginEmbedderPolicy", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If this feature is enabled, the mDNS responder service responds to queries
+// for TXT records associated with
+// "Generated-Names._mdns_name_generator._udp.local" with a list of generated
+// mDNS names (random UUIDs) in the TXT record data.
+const base::Feature kMdnsResponderGeneratedNameListing{
+    "MdnsResponderGeneratedNameListing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ShouldEnableOutOfBlinkCors() {
   // OOR-CORS requires NetworkService.

@@ -5,7 +5,6 @@
 import numbers
 import math
 
-from telemetry import value as value_module
 from telemetry.value import none_values
 from telemetry.value import summarizable
 
@@ -70,14 +69,12 @@ class ListOfScalarValues(summarizable.SummarizableValue):
   also be specified in the constructor if the numbers are not from the same
   population.
   """
-  def __init__(self, page, name, units, values,
-               important=True, description=None,
-               tir_label=None, none_value_reason=None,
-               std=None, improvement_direction=None, grouping_keys=None):
+  def __init__(self, page, name, units, values, important=True,
+               description=None, none_value_reason=None, std=None,
+               improvement_direction=None, grouping_label=None):
     super(ListOfScalarValues, self).__init__(page, name, units, important,
-                                             description, tir_label,
-                                             improvement_direction,
-                                             grouping_keys)
+                                             description, improvement_direction,
+                                             grouping_label)
     if values is not None:
       assert isinstance(values, list)
       assert len(values) > 0
@@ -112,18 +109,16 @@ class ListOfScalarValues(summarizable.SummarizableValue):
     else:
       page_name = 'None'
     return ('ListOfScalarValues(%s, %s, %s, %s, '
-            'important=%s, description=%s, tir_label=%s, std=%s, '
-            'improvement_direction=%s, grouping_keys=%s)') % (
+            'important=%s, description=%s, std=%s, '
+            'improvement_direction=%s)') % (
                 page_name,
                 self.name,
                 self.units,
                 repr(self.values),
                 self.important,
                 self.description,
-                self.tir_label,
                 self.std,
-                self.improvement_direction,
-                self.grouping_keys)
+                self.improvement_direction)
 
   @staticmethod
   def GetJSONTypeName():
@@ -139,34 +134,21 @@ class ListOfScalarValues(summarizable.SummarizableValue):
 
     return d
 
-  @staticmethod
-  def FromDict(value_dict, page_dict):
-    kwargs = value_module.Value.GetConstructorKwArgs(value_dict, page_dict)
-    kwargs['values'] = value_dict['values']
-    kwargs['std'] = value_dict['std']
-
-    if 'improvement_direction' in value_dict:
-      kwargs['improvement_direction'] = value_dict['improvement_direction']
-    if 'none_value_reason' in value_dict:
-      kwargs['none_value_reason'] = value_dict['none_value_reason']
-
-    return ListOfScalarValues(**kwargs)
-
   @classmethod
   def MergeLikeValuesFromSamePage(cls, values):
     assert len(values) > 0
     v0 = values[0]
 
-    return cls._MergeLikeValues(values, v0.page, v0.name, v0.grouping_keys)
+    return cls._MergeLikeValues(values, v0.page, v0.name)
 
   @classmethod
   def MergeLikeValuesFromDifferentPages(cls, values):
     assert len(values) > 0
     v0 = values[0]
-    return cls._MergeLikeValues(values, None, v0.name, v0.grouping_keys)
+    return cls._MergeLikeValues(values, None, v0.name)
 
   @classmethod
-  def _MergeLikeValues(cls, values, page, name, grouping_keys):
+  def _MergeLikeValues(cls, values, page, name):
     v0 = values[0]
     merged_values = []
     list_of_samples = []
@@ -188,13 +170,16 @@ class ListOfScalarValues(summarizable.SummarizableValue):
       # in the cosntructor of ListOfScalarValues.
       pooled_std = PooledStandardDeviation(
           list_of_samples, list_of_variances=[v.variance for v in values])
+    grouping_label = v0.grouping_label
+    if page is not None or any(
+        v.grouping_label != grouping_label for v in values):
+      grouping_label = None
     return ListOfScalarValues(
         page, name, v0.units,
         merged_values,
         important=v0.important,
         description=v0.description,
-        tir_label=value_module.MergedTirLabel(values),
         std=pooled_std,
         none_value_reason=none_value_reason,
         improvement_direction=v0.improvement_direction,
-        grouping_keys=grouping_keys)
+        grouping_label=grouping_label)

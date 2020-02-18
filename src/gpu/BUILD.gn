@@ -197,7 +197,7 @@ jumbo_static_library("test_support") {
   ]
 }
 
-if (!is_android && !is_fuchsia) {
+if (!is_android && !is_fuchsia && !is_chromeos) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [
       "command_buffer/tests/lpm/gl_lpm_fuzzer.proto",
@@ -392,6 +392,7 @@ test("gl_tests") {
       "//ui/platform_window",
       "//ui/platform_window:platform_impls",
     ]
+    sources += [ "command_buffer/service/swap_chain_factory_dxgi_unittest.cc" ]
   }
 
   if (use_dawn) {
@@ -446,6 +447,9 @@ test("gpu_unittests") {
     "command_buffer/service/command_buffer_service_unittest.cc",
     "command_buffer/service/common_decoder_unittest.cc",
     "command_buffer/service/context_group_unittest.cc",
+    "command_buffer/service/context_state_test_helpers.cc",
+    "command_buffer/service/context_state_test_helpers.h",
+    "command_buffer/service/context_state_test_helpers_autogen.h",
     "command_buffer/service/context_state_unittest.cc",
     "command_buffer/service/feature_info_unittest.cc",
     "command_buffer/service/framebuffer_manager_unittest.cc",
@@ -458,7 +462,6 @@ test("gpu_unittests") {
     "command_buffer/service/gl_surface_mock.h",
     "command_buffer/service/gles2_cmd_decoder_unittest.cc",
     "command_buffer/service/gles2_cmd_decoder_unittest.h",
-    "command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h",
     "command_buffer/service/gles2_cmd_decoder_unittest_1.cc",
     "command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h",
     "command_buffer/service/gles2_cmd_decoder_unittest_2.cc",
@@ -507,6 +510,7 @@ test("gpu_unittests") {
     "command_buffer/service/shader_manager_unittest.cc",
     "command_buffer/service/shader_translator_cache_unittest.cc",
     "command_buffer/service/shader_translator_unittest.cc",
+    "command_buffer/service/shared_context_state_unittest.cc",
     "command_buffer/service/sync_point_manager_unittest.cc",
     "command_buffer/service/test_helper.cc",
     "command_buffer/service/test_helper.h",
@@ -527,6 +531,7 @@ test("gpu_unittests") {
     "config/gpu_control_list_version_unittest.cc",
     "config/gpu_driver_bug_list_unittest.cc",
     "config/gpu_info_collector_unittest.cc",
+    "config/gpu_info_unittest.cc",
     "config/gpu_preferences_unittest.cc",
     "config/gpu_test_config_unittest.cc",
     "config/gpu_test_expectations_parser_unittest.cc",
@@ -540,6 +545,7 @@ test("gpu_unittests") {
     "ipc/service/gpu_channel_test_common.cc",
     "ipc/service/gpu_channel_test_common.h",
     "ipc/service/gpu_channel_unittest.cc",
+    "ipc/service/gpu_watchdog_thread_unittest.cc",
   ]
 
   if (is_chromeos) {

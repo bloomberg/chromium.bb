@@ -22,10 +22,12 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -83,6 +85,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // allows deletion.
 - (void)addToolbar;
 
+// Dispatcher for this ViewController.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+
 @end
 
 @implementation BookmarkFolderEditorViewController
@@ -100,30 +105,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - Class methods
 
-+ (instancetype)
-folderCreatorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                  parentFolder:(const BookmarkNode*)parentFolder {
++ (instancetype)folderCreatorWithBookmarkModel:
+                    (bookmarks::BookmarkModel*)bookmarkModel
+                                  parentFolder:(const BookmarkNode*)parentFolder
+                                    dispatcher:(id<BrowserCommands>)dispatcher {
+  DCHECK(dispatcher);
   BookmarkFolderEditorViewController* folderCreator =
       [[self alloc] initWithBookmarkModel:bookmarkModel];
   folderCreator.parentFolder = parentFolder;
   folderCreator.folder = NULL;
   folderCreator.editingExistingFolder = NO;
+  folderCreator.dispatcher = dispatcher;
   return folderCreator;
 }
 
 + (instancetype)
-folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                       folder:(const BookmarkNode*)folder
-                 browserState:(ios::ChromeBrowserState*)browserState {
+    folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                           folder:(const BookmarkNode*)folder
+                     browserState:(ios::ChromeBrowserState*)browserState
+                       dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(folder);
   DCHECK(!bookmarkModel->is_permanent_node(folder));
   DCHECK(browserState);
+  DCHECK(dispatcher);
   BookmarkFolderEditorViewController* folderEditor =
       [[self alloc] initWithBookmarkModel:bookmarkModel];
   folderEditor.parentFolder = folder->parent();
   folderEditor.folder = folder;
   folderEditor.browserState = browserState;
   folderEditor.editingExistingFolder = YES;
+  folderEditor.dispatcher = dispatcher;
   return folderEditor;
 }
 
@@ -238,8 +249,10 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
   DCHECK(self.folder);
   std::set<const BookmarkNode*> editedNodes;
   editedNodes.insert(self.folder);
-  bookmark_utils_ios::DeleteBookmarksWithUndoToast(
-      editedNodes, self.bookmarkModel, self.browserState);
+  [self.dispatcher
+      showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
+                              editedNodes, self.bookmarkModel,
+                              self.browserState)];
   [self.delegate bookmarkFolderEditorDidDeleteEditedFolder:self];
 }
 
@@ -262,14 +275,15 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
       base::AutoReset<BOOL> autoReset(&_ignoresOwnMove, YES);
       std::set<const BookmarkNode*> editedNodes;
       editedNodes.insert(self.folder);
-      bookmark_utils_ios::MoveBookmarksWithUndoToast(
-          editedNodes, self.bookmarkModel, self.parentFolder,
-          self.browserState);
+      [self.dispatcher
+          showSnackbarMessage:bookmark_utils_ios::MoveBookmarksWithUndoToast(
+                                  editedNodes, self.bookmarkModel,
+                                  self.parentFolder, self.browserState)];
     }
   } else {
     DCHECK(!self.folder);
     self.folder = self.bookmarkModel->AddFolder(
-        self.parentFolder, self.parentFolder->child_count(), folderTitle);
+        self.parentFolder, self.parentFolder->children().size(), folderTitle);
   }
   [self.delegate bookmarkFolderEditor:self didFinishEditingFolder:self.folder];
 }
@@ -284,7 +298,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
                allowsNewFolders:NO
                     editedNodes:editedNodes
                    allowsCancel:NO
-                 selectedFolder:self.parentFolder];
+                 selectedFolder:self.parentFolder
+                     dispatcher:self.dispatcher];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
 
@@ -472,7 +487,7 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  deleteButton.tintColor = [UIColor redColor];
+  deleteButton.tintColor = [UIColor colorNamed:kDestructiveTintColor];
   [self.navigationController.toolbar setShadowImage:[UIImage new]
                                  forToolbarPosition:UIBarPositionAny];
   [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]

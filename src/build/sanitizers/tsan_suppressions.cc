@@ -34,45 +34,14 @@ char kTSanDefaultSuppressions[] =
     // [test-only]. http://crbug.com/927330.
     "race:content/browser/net_info_browsertest.cc\n"
 
-    // http://crbug.com/84094.
-    "race:sqlite3StatusSet\n"
-    "race:pcache1EnforceMaxPage\n"
-    "race:pcache1AllocPage\n"
-
     // http://crbug.com/120808
     "race:base/threading/watchdog.cc\n"
 
     // http://crbug.com/157586
     "race:third_party/libvpx/source/libvpx/vp8/decoder/threading.c\n"
 
-    // http://crbug.com/158718
-    "race:third_party/ffmpeg/libavcodec/pthread.c\n"
-    "race:third_party/ffmpeg/libavcodec/pthread_frame.c\n"
-    "race:third_party/ffmpeg/libavcodec/vp8.c\n"
-    "race:third_party/ffmpeg/libavutil/mem.c\n"
-    "race:*HashFrameForTesting\n"
-    "race:third_party/ffmpeg/libavcodec/h264pred.c\n"
-    "race:media::ReleaseData\n"
-
-    // http://crbug.com/239359
-    "race:media::TestInputCallback::OnData\n"
-
-    // http://crbug.com/244385
-    "race:unixTempFileDir\n"
-
     // http://crbug.com/244755
     "race:v8::internal::Zone::NewExpand\n"
-
-    // http://crbug.com/244774
-    "race:webrtc::RTPReceiver::ProcessBitrate\n"
-    "race:webrtc::RTPSender::ProcessBitrate\n"
-    "race:webrtc::VideoCodingModuleImpl::Decode\n"
-    "race:webrtc::RTPSender::SendOutgoingData\n"
-    "race:webrtc::LibvpxVp8Encoder::GetEncodedPartitions\n"
-    "race:webrtc::LibvpxVp8Encoder::Encode\n"
-    "race:webrtc::ViEEncoder::DeliverFrame\n"
-    "race:webrtc::vcm::VideoReceiver::Decode\n"
-    "race:webrtc::VCMReceiver::FrameForDecoding\n"
 
     // http://crbug.com/244856
     "race:libpulsecommon*.so\n"
@@ -86,9 +55,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/258479
     "race:SamplingStateScope\n"
     "race:g_trace_state\n"
-
-    // http://crbug.com/258499
-    "race:third_party/skia/include/core/SkRefCnt.h\n"
 
     // http://crbug.com/268924
     "race:base::g_power_monitor\n"
@@ -113,13 +79,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/328868
     "race:PR_Lock\n"
 
-    // http://crbug.com/333244
-    "race:content::"
-    "VideoCaptureImplTest::MockVideoCaptureImpl::~MockVideoCaptureImpl\n"
-
-    // http://crbug.com/347538
-    "race:sctp_timer_start\n"
-
     // http://crbug.com/348982
     "race:cricket::P2PTransportChannel::OnConnectionDestroyed\n"
     "race:cricket::P2PTransportChannel::AddConnection\n"
@@ -127,9 +86,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/348984
     "race:sctp_express_handle_sack\n"
     "race:system_base_info\n"
-
-    // http://crbug.com/374135
-    "race:media::AlsaWrapper::PcmWritei\n"
 
     // False positive in libc's tzset_internal, http://crbug.com/379738.
     "race:tzset_internal\n"
@@ -148,12 +104,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/415472
     "deadlock:base::trace_event::TraceLog::GetCategoryGroupEnabled\n"
 
-    // http://crbug.com/490856
-    "deadlock:content::TracingControllerImpl::SetEnabledOnFileThread\n"
-
-    // https://code.google.com/p/skia/issues/detail?id=3294
-    "race:SkBaseMutex::acquire\n"
-
     // Lock inversion in third party code, won't fix.
     // https://crbug.com/455638
     "deadlock:dbus::Bus::ShutdownAndBlock\n"
@@ -170,6 +120,9 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/691029
     "deadlock:libGLX.so*\n"
 
+    //  http://crbug.com/973947
+    "deadlock:libnvidia-glsi.so*\n"
+
     // http://crbug.com/695929
     "race:base::i18n::IsRTL\n"
     "race:base::i18n::SetICUDefaultLocale\n"
@@ -178,25 +131,14 @@ char kTSanDefaultSuppressions[] =
     "race:base::debug::SetCrashKeyString\n"
     "race:crash_reporter::internal::CrashKeyStringImpl::Set\n"
 
-    // http://crbug.com/795110
-    "race:third_party/fontconfig/*\n"
-
     // http://crbug.com/927330
     "race:net::(anonymous namespace)::g_network_change_notifier\n"
-
-    // https://crbug.com/965717
-    "race:base::internal::ThreadPoolImplTest_"
-    "FileDescriptorWatcherNoOpsAfterShutdown_Test::TestBody\n"
 
     // https://crbug.com/965722
     "race:content::(anonymous namespace)::CorruptDBRequestHandler\n"
 
-    // https://crbug.com/965724
-    "race:content::NetworkServiceRestartBrowserTest::MonitorRequest\n"
-
-    // https://crbug.com/965726
-    "race:content::RenderFrameHostManagerUnloadBrowserTest::"
-    "MonitorResourceRequest\n"
+    // https://crbug.com/977085
+    "race:vp3_update_thread_context\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.

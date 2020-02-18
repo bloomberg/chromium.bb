@@ -88,9 +88,6 @@ public class WebXrVrTestFramework extends WebXrTestFramework {
                 "sessionTypeToRequest = sessionTypes.IMMERSIVE", POLL_TIMEOUT_LONG_MS, webContents);
         enterSessionWithUserGesture(webContents);
 
-        PermissionUtils.waitForConsentPrompt(getRule().getActivity());
-        PermissionUtils.acceptConsentPrompt(getRule().getActivity());
-
         pollJavaScriptBooleanOrFail("sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
                 POLL_TIMEOUT_LONG_MS, webContents);
         Assert.assertTrue("Immersive session started, but VR Shell not in presentation mode",

@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_NETWORK_AGENT_H_
 
+#include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -127,7 +128,7 @@ class CORE_EXPORT InspectorNetworkAgent final
                                    size_t encoded_data_length);
   void DidFinishLoading(uint64_t identifier,
                         DocumentLoader*,
-                        TimeTicks monotonic_finish_time,
+                        base::TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
@@ -185,8 +186,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidReceiveWebSocketMessage(uint64_t identifier,
                                   int op_code,
                                   bool masked,
-                                  const char* payload,
-                                  size_t payload_length);
+                                  const Vector<base::span<const char>>& data);
   void DidSendWebSocketMessage(uint64_t identifier,
                                int op_code,
                                bool masked,
@@ -260,7 +260,8 @@ class CORE_EXPORT InspectorNetworkAgent final
 
   static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
       Document*,
-      const FetchInitiatorInfo&);
+      const FetchInitiatorInfo&,
+      int max_async_depth);
   static bool IsNavigation(DocumentLoader*, uint64_t identifier);
 
   // This is null while inspecting workers.

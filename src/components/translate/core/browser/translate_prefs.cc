@@ -83,16 +83,7 @@ const base::Feature kTranslateUI{"TranslateUI",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateMobileManualTrigger{
-  "TranslateAndroidManualTrigger",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kCompactTranslateInfobarIOS{
-    "CompactTranslateInfobarIOS", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TranslateAndroidManualTrigger", base::FEATURE_ENABLED_BY_DEFAULT};
 
 DenialTimeUpdate::DenialTimeUpdate(PrefService* prefs,
                                    const std::string& language,
@@ -240,7 +231,7 @@ void TranslatePrefs::AddToLanguageList(const std::string& input_language,
   }
 
   // Add the language to the list.
-  if (!base::ContainsValue(languages, chrome_language)) {
+  if (!base::Contains(languages, chrome_language)) {
     languages.push_back(chrome_language);
     UpdateLanguageList(languages);
   }

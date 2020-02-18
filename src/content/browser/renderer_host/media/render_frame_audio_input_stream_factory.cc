@@ -148,7 +148,7 @@ class RenderFrameAudioInputStreamFactory::Core final
   // Always null-check this weak pointer before dereferencing it.
   base::WeakPtr<ForwardingAudioStreamFactory::Core> forwarding_factory_;
 
-  base::WeakPtrFactory<Core> weak_ptr_factory_;
+  base::WeakPtrFactory<Core> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -182,8 +182,7 @@ RenderFrameAudioInputStreamFactory::Core::Core(
       process_id_(render_frame_host->GetProcess()->GetID()),
       frame_id_(render_frame_host->GetRoutingID()),
       origin_(render_frame_host->GetLastCommittedOrigin()),
-      binding_(this),
-      weak_ptr_factory_(this) {
+      binding_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ForwardingAudioStreamFactory::Core* tmp_factory =
@@ -257,7 +256,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
             weak_ptr_factory_.GetWeakPtr(), std::move(client), audio_params,
             shared_memory_count, capture_id.disable_local_echo));
 
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE)
+    if (device->type ==
+        blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     return;
   } else {
@@ -268,7 +268,8 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 
     // Only count for captures from desktop media picker dialog and system loop
     // back audio.
-    if (device->type == blink::MEDIA_GUM_DESKTOP_AUDIO_CAPTURE &&
+    if (device->type ==
+            blink::mojom::MediaStreamType::GUM_DESKTOP_AUDIO_CAPTURE &&
         (media::AudioDeviceDescription::IsLoopbackDevice(device->id))) {
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
     }

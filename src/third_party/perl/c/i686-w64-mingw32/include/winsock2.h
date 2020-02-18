@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 
@@ -43,6 +43,12 @@
 /* undefine macros from winsock.h */
 #include <psdk_inc/_ws1_undef.h>
 
+#ifdef __LP64__
+#pragma push_macro("u_long")
+#undef u_long
+#define u_long __ms_u_long
+#endif
+
 #include <_timeval.h>
 #include <_bsd_types.h>
 #include <inaddr.h>
@@ -56,44 +62,6 @@
 extern "C" {
 #endif
 
-extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
-
-#define FD_CLR(fd,set)							\
-  do {									\
-	u_int __i;							\
-	for(__i = 0; __i < ((fd_set *)(set))->fd_count; __i++) {	\
-		if (((fd_set *)(set))->fd_array[__i] == fd) {		\
-			while (__i < ((fd_set *)(set))->fd_count - 1) {	\
-				((fd_set *)(set))->fd_array[__i] =	\
-				 ((fd_set *)(set))->fd_array[__i + 1];	\
-				__i++;					\
-			}						\
-			((fd_set *)(set))->fd_count--;			\
-			break;						\
-		}							\
-	}								\
-} while(0)
-
-#define FD_ZERO(set)		(((fd_set *)(set))->fd_count = 0)
-
-#define FD_ISSET(fd,set)	__WSAFDIsSet((SOCKET)(fd),(fd_set *)(set))
-
-#define FD_SET(fd,set)							\
-  do {									\
-	u_int __i;							\
-	for(__i = 0; __i < ((fd_set *)(set))->fd_count; __i++) {	\
-		if (((fd_set *)(set))->fd_array[__i] == (fd)) {		\
-			break;						\
-		}							\
-	}								\
-	if (__i == ((fd_set *)(set))->fd_count) {			\
-		if (((fd_set *)(set))->fd_count < FD_SETSIZE) {		\
-			((fd_set *)(set))->fd_array[__i] = (fd);	\
-			((fd_set *)(set))->fd_count++;			\
-		}							\
-	}								\
-} while(0)
-
 #define IOCPARM_MASK 0x7f
 #define IOC_VOID 0x20000000
 #define IOC_OUT 0x40000000
@@ -101,8 +69,8 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
 #define IOC_INOUT (IOC_IN|IOC_OUT)
 
 #define _IO(x,y) (IOC_VOID|((x)<<8)|(y))
-#define _IOR(x,y,t) (IOC_OUT|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
-#define _IOW(x,y,t) (IOC_IN|(((long)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define _IOR(x,y,t) (IOC_OUT|(((__LONG32)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
+#define _IOW(x,y,t) (IOC_IN|(((__LONG32)sizeof(t)&IOCPARM_MASK)<<16)|((x)<<8)|(y))
 
 #define FIONREAD _IOR('f',127,u_long)
 #define FIONBIO _IOW('f',126,u_long)
@@ -173,24 +141,24 @@ extern int WINAPI __WSAFDIsSet(SOCKET,fd_set *);
 #define IMPLINK_HIGHEXPER 158
 
 
-#define IN_CLASSA(i) (((long)(i) & 0x80000000)==0)
+#define IN_CLASSA(i) (((__LONG32)(i) & 0x80000000)==0)
 #define IN_CLASSA_NET 0xff000000
 #define IN_CLASSA_NSHIFT 24
 #define IN_CLASSA_HOST 0x00ffffff
 #define IN_CLASSA_MAX 128
 
-#define IN_CLASSB(i) (((long)(i) & 0xc0000000)==0x80000000)
+#define IN_CLASSB(i) (((__LONG32)(i) & 0xc0000000)==0x80000000)
 #define IN_CLASSB_NET 0xffff0000
 #define IN_CLASSB_NSHIFT 16
 #define IN_CLASSB_HOST 0x0000ffff
 #define IN_CLASSB_MAX 65536
 
-#define IN_CLASSC(i) (((long)(i) & 0xe0000000)==0xc0000000)
+#define IN_CLASSC(i) (((__LONG32)(i) & 0xe0000000)==0xc0000000)
 #define IN_CLASSC_NET 0xffffff00
 #define IN_CLASSC_NSHIFT 8
 #define IN_CLASSC_HOST 0x000000ff
 
-#define IN_CLASSD(i) (((long)(i) & 0xf0000000)==0xe0000000)
+#define IN_CLASSD(i) (((__LONG32)(i) & 0xf0000000)==0xe0000000)
 #define IN_CLASSD_NET 0xf0000000
 #define IN_CLASSD_NSHIFT 28
 #define IN_CLASSD_HOST 0x0fffffff
@@ -426,7 +394,7 @@ typedef unsigned int GROUP;
 #define SG_CONSTRAINED_GROUP 0x02
 
   typedef struct _WSANETWORKEVENTS {
-    long lNetworkEvents;
+    __LONG32 lNetworkEvents;
     int iErrorCode[FD_MAX_EVENTS];
   } WSANETWORKEVENTS,*LPWSANETWORKEVENTS;
 
@@ -640,12 +608,21 @@ typedef unsigned int GROUP;
 #define NS_NETBT (13)
 #define NS_WINS (14)
 #define NS_NLA (15)
+#if (_WIN32_WINNT >= 0x0600)
+#define NS_BTH (16)
+#endif
 
 #define NS_NBP (20)
 
 #define NS_MS (30)
 #define NS_STDA (31)
 #define NS_NTDS (32)
+
+#if (_WIN32_WINNT >= 0x0600)
+#define NS_EMAIL (37)
+#define NS_PNRPNAME (38)
+#define NS_PNRPCLOUD (39)
+#endif
 
 #define NS_X500 (40)
 #define NS_NIS (41)
@@ -883,20 +860,20 @@ typedef unsigned int GROUP;
   typedef int (WSAAPI *LPFN_BIND)(SOCKET s,const struct sockaddr *name,int namelen);
   typedef int (WSAAPI *LPFN_CLOSESOCKET)(SOCKET s);
   typedef int (WSAAPI *LPFN_CONNECT)(SOCKET s,const struct sockaddr *name,int namelen);
-  typedef int (WSAAPI *LPFN_IOCTLSOCKET)(SOCKET s,long cmd,u_long *argp);
+  typedef int (WSAAPI *LPFN_IOCTLSOCKET)(SOCKET s,__LONG32 cmd,u_long *argp);
   typedef int (WSAAPI *LPFN_GETPEERNAME)(SOCKET s,struct sockaddr *name,int *namelen);
   typedef int (WSAAPI *LPFN_GETSOCKNAME)(SOCKET s,struct sockaddr *name,int *namelen);
   typedef int (WSAAPI *LPFN_GETSOCKOPT)(SOCKET s,int level,int optname,char *optval,int *optlen);
   typedef u_long (WSAAPI *LPFN_HTONL)(u_long hostlong);
   typedef u_short (WSAAPI *LPFN_HTONS)(u_short hostshort);
-  typedef unsigned long (WSAAPI *LPFN_INET_ADDR)(const char *cp);
+  typedef unsigned __LONG32 (WSAAPI *LPFN_INET_ADDR)(const char *cp);
   typedef char *(WSAAPI *LPFN_INET_NTOA)(struct in_addr in);
   typedef int (WSAAPI *LPFN_LISTEN)(SOCKET s,int backlog);
   typedef u_long (WSAAPI *LPFN_NTOHL)(u_long netlong);
   typedef u_short (WSAAPI *LPFN_NTOHS)(u_short netshort);
   typedef int (WSAAPI *LPFN_RECV)(SOCKET s,char *buf,int len,int flags);
   typedef int (WSAAPI *LPFN_RECVFROM)(SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen);
-  typedef int (WSAAPI *LPFN_SELECT)(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout);
+  typedef int (WSAAPI *LPFN_SELECT)(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const PTIMEVAL timeout);
   typedef int (WSAAPI *LPFN_SEND)(SOCKET s,const char *buf,int len,int flags);
   typedef int (WSAAPI *LPFN_SENDTO)(SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen);
   typedef int (WSAAPI *LPFN_SETSOCKOPT)(SOCKET s,int level,int optname,const char *optval,int optlen);
@@ -924,7 +901,7 @@ typedef unsigned int GROUP;
   typedef HANDLE (WSAAPI *LPFN_WSAASYNCGETHOSTBYNAME)(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
   typedef HANDLE (WSAAPI *LPFN_WSAASYNCGETHOSTBYADDR)(HWND hWnd,u_int wMsg,const char *addr,int len,int type,char *buf,int buflen);
   typedef int (WSAAPI *LPFN_WSACANCELASYNCREQUEST)(HANDLE hAsyncTaskHandle);
-  typedef int (WSAAPI *LPFN_WSAASYNCSELECT)(SOCKET s,HWND hWnd,u_int wMsg,long lEvent);
+  typedef int (WSAAPI *LPFN_WSAASYNCSELECT)(SOCKET s,HWND hWnd,u_int wMsg,__LONG32 lEvent);
   typedef SOCKET (WSAAPI *LPFN_WSAACCEPT)(SOCKET s,struct sockaddr *addr,LPINT addrlen,LPCONDITIONPROC lpfnCondition,DWORD_PTR dwCallbackData);
   typedef WINBOOL (WSAAPI *LPFN_WSACLOSEEVENT)(WSAEVENT hEvent);
   typedef int (WSAAPI *LPFN_WSACONNECT)(SOCKET s,const struct sockaddr *name,int namelen,LPWSABUF lpCallerData,LPWSABUF lpCalleeData,LPQOS lpSQOS,LPQOS lpGQOS);
@@ -934,7 +911,7 @@ typedef unsigned int GROUP;
   typedef int (WSAAPI *LPFN_WSAENUMNETWORKEVENTS)(SOCKET s,WSAEVENT hEventObject,LPWSANETWORKEVENTS lpNetworkEvents);
   typedef int (WSAAPI *LPFN_WSAENUMPROTOCOLSA)(LPINT lpiProtocols,LPWSAPROTOCOL_INFOA lpProtocolBuffer,LPDWORD lpdwBufferLength);
   typedef int (WSAAPI *LPFN_WSAENUMPROTOCOLSW)(LPINT lpiProtocols,LPWSAPROTOCOL_INFOW lpProtocolBuffer,LPDWORD lpdwBufferLength);
-  typedef int (WSAAPI *LPFN_WSAEVENTSELECT)(SOCKET s,WSAEVENT hEventObject,long lNetworkEvents);
+  typedef int (WSAAPI *LPFN_WSAEVENTSELECT)(SOCKET s,WSAEVENT hEventObject,__LONG32 lNetworkEvents);
   typedef WINBOOL (WSAAPI *LPFN_WSAGETOVERLAPPEDRESULT)(SOCKET s,LPWSAOVERLAPPED lpOverlapped,LPDWORD lpcbTransfer,WINBOOL fWait,LPDWORD lpdwFlags);
   typedef WINBOOL (WSAAPI *LPFN_WSAGETQOSBYNAME)(SOCKET s,LPWSABUF lpQOSName,LPQOS lpQOS);
   typedef int (WSAAPI *LPFN_WSAHTONL)(SOCKET s,u_long hostlong,u_long *lpnetlong);
@@ -997,20 +974,26 @@ typedef unsigned int GROUP;
   WINSOCK_API_LINKAGE int WSAAPI bind(SOCKET s,const struct sockaddr *name,int namelen);
   WINSOCK_API_LINKAGE int WSAAPI closesocket(SOCKET s);
   WINSOCK_API_LINKAGE int WSAAPI connect(SOCKET s,const struct sockaddr *name,int namelen);
-  WINSOCK_API_LINKAGE int WSAAPI ioctlsocket(SOCKET s,long cmd,u_long *argp);
+  WINSOCK_API_LINKAGE int WSAAPI ioctlsocket(SOCKET s,__LONG32 cmd,u_long *argp);
   WINSOCK_API_LINKAGE int WSAAPI getpeername(SOCKET s,struct sockaddr *name,int *namelen);
   WINSOCK_API_LINKAGE int WSAAPI getsockname(SOCKET s,struct sockaddr *name,int *namelen);
   WINSOCK_API_LINKAGE int WSAAPI getsockopt(SOCKET s,int level,int optname,char *optval,int *optlen);
+#ifndef __INSIDE_CYGWIN__
   WINSOCK_API_LINKAGE u_long WSAAPI htonl(u_long hostlong);
   WINSOCK_API_LINKAGE u_short WSAAPI htons(u_short hostshort);
-  WINSOCK_API_LINKAGE unsigned long WSAAPI inet_addr(const char *cp);
+#endif /* !__INSIDE_CYGWIN__ */
+  WINSOCK_API_LINKAGE unsigned __LONG32 WSAAPI inet_addr(const char *cp);
   WINSOCK_API_LINKAGE char *WSAAPI inet_ntoa(struct in_addr in);
   WINSOCK_API_LINKAGE int WSAAPI listen(SOCKET s,int backlog);
+#ifndef __INSIDE_CYGWIN__
   WINSOCK_API_LINKAGE u_long WSAAPI ntohl(u_long netlong);
   WINSOCK_API_LINKAGE u_short WSAAPI ntohs(u_short netshort);
+#endif /* !__INSIDE_CYGWIN__ */
   WINSOCK_API_LINKAGE int WSAAPI recv(SOCKET s,char *buf,int len,int flags);
   WINSOCK_API_LINKAGE int WSAAPI recvfrom(SOCKET s,char *buf,int len,int flags,struct sockaddr *from,int *fromlen);
-  WINSOCK_API_LINKAGE int WSAAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const struct timeval *timeout);
+#ifndef __INSIDE_CYGWIN__
+  WINSOCK_API_LINKAGE int WSAAPI select(int nfds,fd_set *readfds,fd_set *writefds,fd_set *exceptfds,const PTIMEVAL timeout);
+#endif /* !__INSIDE_CYGWIN__ */
   WINSOCK_API_LINKAGE int WSAAPI send(SOCKET s,const char *buf,int len,int flags);
   WINSOCK_API_LINKAGE int WSAAPI sendto(SOCKET s,const char *buf,int len,int flags,const struct sockaddr *to,int tolen);
   WINSOCK_API_LINKAGE int WSAAPI setsockopt(SOCKET s,int level,int optname,const char *optval,int optlen);
@@ -1038,7 +1021,7 @@ typedef unsigned int GROUP;
   WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByName(HWND hWnd,u_int wMsg,const char *name,char *buf,int buflen);
   WINSOCK_API_LINKAGE HANDLE WSAAPI WSAAsyncGetHostByAddr(HWND hWnd,u_int wMsg,const char *addr,int len,int type,char *buf,int buflen);
   WINSOCK_API_LINKAGE int WSAAPI WSACancelAsyncRequest(HANDLE hAsyncTaskHandle);
-  WINSOCK_API_LINKAGE int WSAAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,long lEvent);
+  WINSOCK_API_LINKAGE int WSAAPI WSAAsyncSelect(SOCKET s,HWND hWnd,u_int wMsg,__LONG32 lEvent);
 #endif /* __WINSOCK_WS1_SHARED */
   WINSOCK_API_LINKAGE SOCKET WSAAPI WSAAccept(SOCKET s,struct sockaddr *addr,LPINT addrlen,LPCONDITIONPROC lpfnCondition,DWORD_PTR dwCallbackData);
   WINSOCK_API_LINKAGE WINBOOL WSAAPI WSACloseEvent(WSAEVENT hEvent);
@@ -1049,7 +1032,7 @@ typedef unsigned int GROUP;
   WINSOCK_API_LINKAGE int WSAAPI WSAEnumNetworkEvents(SOCKET s,WSAEVENT hEventObject,LPWSANETWORKEVENTS lpNetworkEvents);
   WINSOCK_API_LINKAGE int WSAAPI WSAEnumProtocolsA(LPINT lpiProtocols,LPWSAPROTOCOL_INFOA lpProtocolBuffer,LPDWORD lpdwBufferLength);
   WINSOCK_API_LINKAGE int WSAAPI WSAEnumProtocolsW(LPINT lpiProtocols,LPWSAPROTOCOL_INFOW lpProtocolBuffer,LPDWORD lpdwBufferLength);
-  WINSOCK_API_LINKAGE int WSAAPI WSAEventSelect(SOCKET s,WSAEVENT hEventObject,long lNetworkEvents);
+  WINSOCK_API_LINKAGE int WSAAPI WSAEventSelect(SOCKET s,WSAEVENT hEventObject,__LONG32 lNetworkEvents);
   WINSOCK_API_LINKAGE WINBOOL WSAAPI WSAGetOverlappedResult(SOCKET s,LPWSAOVERLAPPED lpOverlapped,LPDWORD lpcbTransfer,WINBOOL fWait,LPDWORD lpdwFlags);
   WINSOCK_API_LINKAGE WINBOOL WSAAPI WSAGetQOSByName(SOCKET s,LPWSABUF lpQOSName,LPQOS lpQOS);
   WINSOCK_API_LINKAGE int WSAAPI WSAHtonl(SOCKET s,u_long hostlong,u_long *lpnetlong);
@@ -1182,7 +1165,7 @@ WINSOCK_API_LINKAGE WINBOOL PASCAL WSAConnectByList(
   LPSOCKADDR LocalAddress,
   LPDWORD RemoteAddressLength,
   LPSOCKADDR RemoteAddress,
-  const struct timeval *timeout,
+  const PTIMEVAL timeout,
   LPWSAOVERLAPPED Reserved
 );
 
@@ -1194,7 +1177,7 @@ WINSOCK_API_LINKAGE WINBOOL PASCAL WSAConnectByNameA(
   LPSOCKADDR LocalAddress,
   LPDWORD RemoteAddressLength,
   LPSOCKADDR RemoteAddress,
-  const struct timeval *timeout,
+  const PTIMEVAL timeout,
   LPWSAOVERLAPPED Reserved
 );
 
@@ -1206,7 +1189,7 @@ WINSOCK_API_LINKAGE WINBOOL PASCAL WSAConnectByNameW(
   LPSOCKADDR LocalAddress,
   LPDWORD RemoteAddressLength,
   LPSOCKADDR RemoteAddress,
-  const struct timeval *timeout,
+  const PTIMEVAL timeout,
   LPWSAOVERLAPPED Reserved
 );
 #define WSAConnectByName __MINGW_NAME_AW(WSAConnectByName)
@@ -1248,6 +1231,10 @@ int WSAAPI WSASendMsg(
 
 #ifdef IPV6STRICT
 #include <wsipv6ok.h>
+#endif
+
+#ifdef __LP64__
+#pragma pop_macro("u_long")
 #endif
 
 #endif /* _WINSOCK2API_ */

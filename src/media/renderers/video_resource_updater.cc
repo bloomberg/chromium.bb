@@ -67,8 +67,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
   switch (format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_UYVY:
+    case PIXEL_FORMAT_ABGR:
       DCHECK_EQ(num_textures, 1);
       buffer_formats[0] = gfx::BufferFormat::RGBA_8888;
       switch (target) {
@@ -126,7 +126,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
-    case PIXEL_FORMAT_ABGR:
     case PIXEL_FORMAT_XBGR:
     case PIXEL_FORMAT_P016LE:
     case PIXEL_FORMAT_UNKNOWN:
@@ -284,9 +283,8 @@ class VideoResourceUpdater::SoftwarePlaneResource
         viz::bitmap_allocation::AllocateSharedBitmap(
             resource_size(), viz::ResourceFormat::RGBA_8888);
     shared_mapping_ = std::move(shm.mapping);
-    shared_bitmap_reporter_->DidAllocateSharedBitmap(
-        viz::bitmap_allocation::ToMojoHandle(std::move(shm.region)),
-        shared_bitmap_id_);
+    shared_bitmap_reporter_->DidAllocateSharedBitmap(std::move(shm.region),
+                                                     shared_bitmap_id_);
   }
   ~SoftwarePlaneResource() override {
     shared_bitmap_reporter_->DidDeleteSharedBitmap(shared_bitmap_id_);
@@ -436,8 +434,7 @@ VideoResourceUpdater::VideoResourceUpdater(
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       use_r16_texture_(use_r16_texture),
       max_resource_size_(max_resource_size),
-      tracing_id_(g_next_video_resource_updater_id.GetNext()),
-      weak_ptr_factory_(this) {
+      tracing_id_(g_next_video_resource_updater_id.GetNext()) {
   DCHECK(context_provider_ || raster_context_provider_ ||
          shared_bitmap_reporter_);
 
@@ -540,20 +537,11 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
                                       coded_size.height());
       gfx::Size uv_tex_size(u_width, u_height);
 
+      DCHECK_EQ(frame_resources_.size(),
+                VideoFrame::NumPlanes(frame->format()));
       if (frame->HasTextures()) {
-        if (frame->format() == PIXEL_FORMAT_NV12) {
-          DCHECK_EQ(2u, frame_resources_.size());
-        } else {
-          DCHECK_EQ(PIXEL_FORMAT_I420, frame->format());
-          DCHECK_EQ(3u,
-                    frame_resources_.size());  // Alpha is not supported yet.
-        }
-      } else {
-        DCHECK_GE(frame_resources_.size(), 3u);
-        DCHECK(frame_resources_.size() <= 3 ||
-               ya_tex_size == VideoFrame::PlaneSize(frame->format(),
-                                                    VideoFrame::kAPlane,
-                                                    coded_size));
+        DCHECK(frame->format() == PIXEL_FORMAT_NV12 ||
+               frame->format() == PIXEL_FORMAT_I420);
       }
 
       // Compute the UV sub-sampling factor based on the ratio between
@@ -583,10 +571,10 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
         if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED)) {
           yuv_video_quad->protected_video_type =
-              ui::ProtectedVideoType::kHardwareProtected;
+              gfx::ProtectedVideoType::kHardwareProtected;
         } else {
           yuv_video_quad->protected_video_type =
-              ui::ProtectedVideoType::kSoftwareProtected;
+              gfx::ProtectedVideoType::kSoftwareProtected;
         }
       }
 
@@ -607,13 +595,13 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
       bool flipped = false;
       bool nearest_neighbor = false;
-      ui::ProtectedVideoType protected_video_type =
-          ui::ProtectedVideoType::kClear;
+      gfx::ProtectedVideoType protected_video_type =
+          gfx::ProtectedVideoType::kClear;
       if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
         if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED))
-          protected_video_type = ui::ProtectedVideoType::kHardwareProtected;
+          protected_video_type = gfx::ProtectedVideoType::kHardwareProtected;
         else
-          protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+          protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
       }
 
       auto* texture_quad =
@@ -940,8 +928,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           return false;
 
         return resource->resource_format() != output_resource_format ||
-               !base::ContainsValue(outplane_plane_sizes,
-                                    resource->resource_size());
+               !base::Contains(outplane_plane_sizes, resource->resource_size());
       };
   base::EraseIf(all_resources_, can_delete_resource_fn);
 

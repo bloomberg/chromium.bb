@@ -36,21 +36,17 @@ process to be.
 
 use strict;
 use Carp                      ();
-use List::MoreUtils           ();
+use List::Util 1.33           ();
 use PPI::Util                 '_Document';
 use PPI::Document::Normalized ();
+use PPI::Normal::Standard     ();
+use PPI::Singletons           '%LAYER';
 
-use vars qw{$VERSION %LAYER};
-BEGIN {
-	$VERSION = '1.215';
+our $VERSION = '1.269'; # VERSION
 
-	# Registered function store
-	%LAYER = (
-		1 => [],
-		2 => [],
-	);
-}
-
+# With the registration mechanism in place, load in the main set of
+# normalization methods to initialize the store.
+PPI::Normal::Standard->import;
 
 
 
@@ -86,7 +82,7 @@ sub register {
 		}
 
 		# Has it already been added?
-		if ( List::MoreUtils::any { $_ eq $function } ) {
+		if ( List::Util::any { $_ eq $function } map @{$_}, values %LAYER ) {
 			return 1;
 		}
 
@@ -101,10 +97,6 @@ sub register {
 
 	1;
 }
-
-# With the registration mechanism in place, load in the main set of
-# normalization methods to initialize the store.
-use PPI::Normal::Standard;
 
 
 
@@ -130,29 +122,6 @@ Takes an optional single parameter of the normalisation layer
 to use, which at this time can be either "1" or "2".
 
 Returns a new C<PPI::Normal> object, or C<undef> on error.
-
-=begin testing new after PPI::Document 12
-
-# Check we actually set the layer at creation
-my $layer_1 = PPI::Normal->new;
-isa_ok( $layer_1, 'PPI::Normal' );
-is( $layer_1->layer, 1, '->new creates a layer 1' );
-my $layer_1a = PPI::Normal->new(1);
-isa_ok( $layer_1a, 'PPI::Normal' );
-is( $layer_1a->layer, 1, '->new(1) creates a layer 1' );
-my $layer_2 = PPI::Normal->new(2);
-isa_ok( $layer_2, 'PPI::Normal' );
-is( $layer_2->layer, 2, '->new(2) creates a layer 2' );
-
-# Test bad things
-is( PPI::Normal->new(3), undef, '->new only allows up to layer 2' );
-is( PPI::Normal->new(undef), undef, '->new(evil) returns undef' );
-is( PPI::Normal->new("foo"), undef, '->new(evil) returns undef' );
-is( PPI::Normal->new(\"foo"), undef, '->new(evil) returns undef' );
-is( PPI::Normal->new([]), undef, '->new(evil) returns undef' );
-is( PPI::Normal->new({}), undef, '->new(evil) returns undef' );
-
-=end testing
 
 =cut
 
@@ -197,47 +166,6 @@ applies the normalisation process to the document.
 
 Returns a L<PPI::Document::Normalized> object, or C<undef> on error.
 
-=begin testing process after new 15
-
-my $doc1 = PPI::Document->new(\'print "Hello World!\n";');
-isa_ok( $doc1, 'PPI::Document' );
-my $doc2 = \'print "Hello World!\n";';
-my $doc3 = \' print  "Hello World!\n"; # comment';
-my $doc4 = \'print "Hello World!\n"';
-
-# Normalize them at level 1
-my $layer1 = PPI::Normal->new(1);
-isa_ok( $layer1, 'PPI::Normal' );
-my $nor11 = $layer1->process($doc1->clone);
-my $nor12 = $layer1->process($doc2);
-my $nor13 = $layer1->process($doc3);
-isa_ok( $nor11, 'PPI::Document::Normalized' );
-isa_ok( $nor12, 'PPI::Document::Normalized' );
-isa_ok( $nor13, 'PPI::Document::Normalized' );
-
-# The first 3 should be the same, the second not
-is_deeply( { %$nor11 }, { %$nor12 }, 'Layer 1: 1 and 2 match' );
-is_deeply( { %$nor11 }, { %$nor13 }, 'Layer 1: 1 and 3 match' );
-
-# Normalize them at level 2
-my $layer2 = PPI::Normal->new(2);
-isa_ok( $layer2, 'PPI::Normal' );
-my $nor21 = $layer2->process($doc1);
-my $nor22 = $layer2->process($doc2);
-my $nor23 = $layer2->process($doc3); 
-my $nor24 = $layer2->process($doc4);
-isa_ok( $nor21, 'PPI::Document::Normalized' );
-isa_ok( $nor22, 'PPI::Document::Normalized' );
-isa_ok( $nor23, 'PPI::Document::Normalized' );
-isa_ok( $nor24, 'PPI::Document::Normalized' );
-
-# The first 3 should be the same, the second not
-is_deeply( { %$nor21 }, { %$nor22 }, 'Layer 2: 1 and 2 match' );
-is_deeply( { %$nor21 }, { %$nor23 }, 'Layer 2: 1 and 3 match' );
-is_deeply( { %$nor21 }, { %$nor24 }, 'Layer 2: 1 and 4 match' );
-
-=end testing
-
 =cut
 
 sub process {
@@ -250,10 +178,7 @@ sub process {
 	$self->{Document} = _Document(shift) or return undef;
 
 	# Work out what functions we need to call
-	my @functions = ();
-	foreach ( 1 .. $self->layer ) {
-		push @functions, @{ $LAYER{$_} };
-	}
+	my @functions = map { @{ $LAYER{$_} } } ( 1 .. $self->layer );
 
 	# Execute each function
 	foreach my $function ( @functions ) {
@@ -264,7 +189,7 @@ sub process {
 	# Create the normalized Document object
 	my $Normalized = PPI::Document::Normalized->new(
 		Document  => $self->{Document},
-		version   => $VERSION,
+		version   => __PACKAGE__->VERSION,
 		functions => \@functions,
 	) or return undef;
 

@@ -42,10 +42,13 @@ void AssistantMediaSession::GetMediaSessionInfo(
 }
 
 void AssistantMediaSession::AddObserver(
-    media_session::mojom::MediaSessionObserverPtr observer) {
-  observer->MediaSessionInfoChanged(GetMediaSessionInfoInternal());
-  observer->MediaSessionMetadataChanged(metadata_);
-  observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<media_session::mojom::MediaSessionObserver> observer) {
+  mojo::Remote<media_session::mojom::MediaSessionObserver>
+      media_session_observer(std::move(observer));
+  media_session_observer->MediaSessionInfoChanged(
+      GetMediaSessionInfoInternal());
+  media_session_observer->MediaSessionMetadataChanged(metadata_);
+  observers_.Add(std::move(media_session_observer));
 }
 
 void AssistantMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
@@ -54,11 +57,27 @@ void AssistantMediaSession::GetDebugInfo(GetDebugInfoCallback callback) {
   std::move(callback).Run(std::move(info));
 }
 
+// TODO(b/135064564): Update StartDucking() and StopDucking() after volume
+// control API for media streams is implemented.
+void AssistantMediaSession::StartDucking() {
+  if (is_ducking_)
+    return;
+  is_ducking_ = true;
+  Suspend(SuspendType::kSystem);
+}
+
+void AssistantMediaSession::StopDucking() {
+  if (!is_ducking_)
+    return;
+  is_ducking_ = false;
+  Resume(SuspendType::kSystem);
+}
+
 void AssistantMediaSession::Suspend(SuspendType suspend_type) {
   if (!IsActive())
     return;
 
-  SetAudioFocusState(State::SUSPENDED);
+  SetAudioFocusInfo(State::SUSPENDED, audio_focus_type_);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPause);
 }
@@ -67,7 +86,7 @@ void AssistantMediaSession::Resume(SuspendType suspend_type) {
   if (!IsSuspended())
     return;
 
-  SetAudioFocusState(State::ACTIVE);
+  SetAudioFocusInfo(State::ACTIVE, audio_focus_type_);
   assistant_manager_service_->UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction::kPlay);
 }
@@ -109,7 +128,7 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   if (audio_focus_state_ == State::INACTIVE)
     return;
 
-  SetAudioFocusState(State::INACTIVE);
+  SetAudioFocusInfo(State::INACTIVE, audio_focus_type_);
 
   if (!request_client_ptr_.is_bound())
     return;
@@ -117,6 +136,7 @@ void AssistantMediaSession::AbandonAudioFocusIfNeeded() {
   request_client_ptr_->AbandonAudioFocus();
   request_client_ptr_.reset();
   audio_focus_ptr_.reset();
+  internal_audio_focus_id_ = base::UnguessableToken::Null();
 }
 
 void AssistantMediaSession::EnsureServiceConnection() {
@@ -136,20 +156,25 @@ void AssistantMediaSession::FinishAudioFocusRequest(
     AudioFocusType audio_focus_type) {
   DCHECK(request_client_ptr_.is_bound());
 
-  SetAudioFocusState(State::ACTIVE);
+  SetAudioFocusInfo(State::ACTIVE, audio_focus_type);
 }
 
 void AssistantMediaSession::FinishInitialAudioFocusRequest(
     AudioFocusType audio_focus_type,
     const base::UnguessableToken& request_id) {
+  internal_audio_focus_id_ = request_id;
   FinishAudioFocusRequest(audio_focus_type);
 }
 
-void AssistantMediaSession::SetAudioFocusState(State audio_focus_state) {
-  if (audio_focus_state == audio_focus_state_)
+void AssistantMediaSession::SetAudioFocusInfo(State audio_focus_state,
+                                              AudioFocusType audio_focus_type) {
+  if (audio_focus_state == audio_focus_state_ &&
+      audio_focus_type == audio_focus_type_) {
     return;
+  }
 
   audio_focus_state_ = audio_focus_state;
+  audio_focus_type_ = audio_focus_type;
   NotifyMediaSessionInfoChanged();
 }
 
@@ -168,10 +193,9 @@ void AssistantMediaSession::NotifyMediaSessionMetadataChanged(
   metadata_ = metadata;
 
   current_track_ = status.track_type;
-  observers_.ForAllPtrs(
-      [this](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionMetadataChanged(this->metadata_);
-      });
+
+  for (auto& observer : observers_)
+    observer->MediaSessionMetadataChanged(this->metadata_);
 }
 
 media_session::mojom::MediaSessionInfoPtr
@@ -190,7 +214,7 @@ AssistantMediaSession::GetMediaSessionInfoInternal() {
       break;
   }
   if (audio_focus_state_ != State::INACTIVE &&
-      current_track_ == assistant_client::TrackType::MEDIA_TRACK_CONTENT) {
+      audio_focus_type_ != AudioFocusType::kGainTransient) {
     info->is_controllable = true;
   }
   return info;
@@ -206,10 +230,8 @@ void AssistantMediaSession::NotifyMediaSessionInfoChanged() {
   if (request_client_ptr_.is_bound())
     request_client_ptr_->MediaSessionInfoChanged(current_info.Clone());
 
-  observers_.ForAllPtrs(
-      [&current_info](media_session::mojom::MediaSessionObserver* observer) {
-        observer->MediaSessionInfoChanged(current_info.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->MediaSessionInfoChanged(current_info.Clone());
 
   session_info_ = std::move(current_info);
 }

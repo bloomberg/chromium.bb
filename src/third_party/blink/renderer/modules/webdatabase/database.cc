@@ -31,8 +31,6 @@
 #include "base/thread_annotations.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_database_observer.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -51,9 +49,10 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================
@@ -292,24 +291,20 @@ bool Database::OpenAndVerifyVersion(bool set_version_in_new_database,
     if (success && IsNew()) {
       STORAGE_DVLOG(1)
           << "Scheduling DatabaseCreationCallbackTask for database " << this;
-      auto* v8persistent_callback =
-          ToV8PersistentCallbackFunction(creation_callback);
       probe::AsyncTaskScheduled(GetExecutionContext(), "openDatabase",
-                                v8persistent_callback);
+                                creation_callback);
       GetExecutionContext()
           ->GetTaskRunner(TaskType::kDatabaseAccess)
-          ->PostTask(
-              FROM_HERE,
-              WTF::Bind(&Database::RunCreationCallback, WrapPersistent(this),
-                        WrapPersistent(v8persistent_callback)));
+          ->PostTask(FROM_HERE, WTF::Bind(&Database::RunCreationCallback,
+                                          WrapPersistent(this),
+                                          WrapPersistent(creation_callback)));
     }
   }
 
   return success;
 }
 
-void Database::RunCreationCallback(
-    V8PersistentCallbackFunction<V8DatabaseCallback>* creation_callback) {
+void Database::RunCreationCallback(V8DatabaseCallback* creation_callback) {
   probe::AsyncTask async_task(GetExecutionContext(), creation_callback);
   creation_callback->InvokeAndReportException(nullptr, this);
 }
@@ -741,11 +736,8 @@ void Database::IncrementalVacuumIfNeeded() {
 }
 
 void Database::ReportSqliteError(int sqlite_error_code) {
-  if (Platform::Current()->DatabaseObserver()) {
-    Platform::Current()->DatabaseObserver()->ReportSqliteError(
-        WebSecurityOrigin(GetSecurityOrigin()), StringIdentifier(),
-        sqlite_error_code);
-  }
+  WebDatabaseHost::GetInstance().ReportSqliteError(
+      *GetSecurityOrigin(), StringIdentifier(), sqlite_error_code);
 }
 
 void Database::LogErrorMessage(const String& message) {

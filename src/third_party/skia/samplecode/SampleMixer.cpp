@@ -35,13 +35,7 @@ public:
     MixerView() {}
 
 protected:
-    bool onQuery(Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Mixer");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Mixer"); }
 
     void dodraw(SkCanvas* canvas, sk_sp<SkColorFilter> cf0, sk_sp<SkColorFilter> cf1, float gap) {
         SkPaint paint;
@@ -77,14 +71,14 @@ protected:
         }
     }
 
-    virtual Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) override {
+    virtual Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey) override {
         return fRect.contains(SkScalarRoundToInt(x),
-                              SkScalarRoundToInt(y)) ? new Click(this) : nullptr;
+                              SkScalarRoundToInt(y)) ? new Click() : nullptr;
     }
 
     bool onClick(Click* click) override {
-        fRect.offset(click->fICurr.fX - click->fIPrev.fX,
-                     click->fICurr.fY - click->fIPrev.fY);
+        fRect.offset(click->fCurr.fX - click->fPrev.fX,
+                     click->fCurr.fY - click->fPrev.fY);
         return true;
     }
 
@@ -131,13 +125,7 @@ public:
     }
 
 protected:
-    bool onQuery(Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "ShaderMixer");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("ShaderMixer"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         if (!fSurface) {
@@ -166,10 +154,10 @@ protected:
         canvas->restore();
     }
 
-    virtual Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned) override {
+    virtual Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey) override {
         fMode = (fMode == SkBlendMode::kSrcOver) ? SkBlendMode::kClear : SkBlendMode::kSrcOver;
         return fRect.contains(SkScalarRoundToInt(x),
-                              SkScalarRoundToInt(y)) ? new Click(this) : nullptr;
+                              SkScalarRoundToInt(y)) ? new Click() : nullptr;
     }
 
     bool onClick(Click* click) override {

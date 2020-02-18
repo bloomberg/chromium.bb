@@ -105,8 +105,9 @@ class TabController {
                                  const ui::MouseEvent& event) = 0;
 
   // Updates hover-card content, anchoring and visibility based on what tab is
-  // hovered and whether the card should be shown.
-  virtual void UpdateHoverCard(Tab* tab, bool should_show) = 0;
+  // hovered and whether the card should be shown. Providing a nullptr for |tab|
+  // will cause the tab hover card to be hidden.
+  virtual void UpdateHoverCard(Tab* tab) = 0;
 
   // Returns true if the hover card is showing for the given tab.
   virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;

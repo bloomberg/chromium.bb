@@ -43,7 +43,8 @@ class RtcEventLog;
 class RtpTransportControllerSend final
     : public RtpTransportControllerSendInterface,
       public RtcpBandwidthObserver,
-      public TransportFeedbackObserver {
+      public TransportFeedbackObserver,
+      public NetworkStateEstimateObserver {
  public:
   RtpTransportControllerSend(
       Clock* clock,
@@ -73,6 +74,7 @@ class RtpTransportControllerSend final
   rtc::TaskQueue* GetWorkerQueue() override;
   PacketRouter* packet_router() override;
 
+  NetworkStateEstimateObserver* network_state_estimate_observer() override;
   TransportFeedbackObserver* transport_feedback_observer() override;
   RtpPacketSender* packet_sender() override;
 
@@ -96,13 +98,15 @@ class RtpTransportControllerSend final
   int64_t GetFirstPacketTimeMs() const override;
   void EnablePeriodicAlrProbing(bool enable) override;
   void OnSentPacket(const rtc::SentPacket& sent_packet) override;
-  void OnReceivedPacket(const RtpPacketReceived& received_packet) override;
+  void OnReceivedPacket(const ReceivedPacket& packet_msg) override;
 
   void SetSdpBitrateParameters(const BitrateConstraints& constraints) override;
   void SetClientBitratePreferences(const BitrateSettings& preferences) override;
 
   void OnTransportOverheadChanged(
       size_t transport_overhead_per_packet) override;
+
+  void AccountForAudioPacketsInPacedSender(bool account_for_audio) override;
 
   // Implements RtcpBandwidthObserver interface
   void OnReceivedEstimatedBitrate(uint32_t bitrate) override;
@@ -113,6 +117,9 @@ class RtpTransportControllerSend final
   // Implements TransportFeedbackObserver interface
   void OnAddPacket(const RtpPacketSendInfo& packet_info) override;
   void OnTransportFeedback(const rtcp::TransportFeedback& feedback) override;
+
+  // Implements NetworkStateEstimateObserver interface
+  void OnRemoteNetworkEstimate(NetworkStateEstimate estimate) override;
 
  private:
   void MaybeCreateControllers() RTC_RUN_ON(task_queue_);

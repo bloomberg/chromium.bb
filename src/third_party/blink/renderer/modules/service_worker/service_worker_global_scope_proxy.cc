@@ -53,9 +53,9 @@
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -89,7 +89,8 @@ void ServiceWorkerGlobalScopeProxy::BindControllerServiceWorker(
     mojo::ScopedMessagePipeHandle request) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->BindControllerServiceWorker(
-      mojom::blink::ControllerServiceWorkerRequest(std::move(request)));
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>(
+          std::move(request)));
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(
@@ -111,7 +112,7 @@ void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadError(
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadComplete(
     int fetch_event_id,
-    TimeTicks completion_time,
+    base::TimeTicks completion_time,
     int64_t encoded_data_length,
     int64_t encoded_body_length,
     int64_t decoded_body_length) {
@@ -177,7 +178,7 @@ void ServiceWorkerGlobalScopeProxy::DidInitializeWorkerContext() {
   ScriptState::Scope scope(
       WorkerGlobalScope()->ScriptController()->GetScriptState());
   Client().DidInitializeWorkerContext(
-      WorkerGlobalScope()->ScriptController()->GetContext());
+      this, WorkerGlobalScope()->ScriptController()->GetContext());
   TRACE_EVENT_END0("ServiceWorker",
                    "ServiceWorkerGlobalScopeProxy::InitializeWorkerContext");
 }
@@ -288,6 +289,29 @@ void ServiceWorkerGlobalScopeProxy::DidTerminateWorkerThread() {
   Client().WorkerContextDestroyed();
 }
 
+bool ServiceWorkerGlobalScopeProxy::IsServiceWorkerGlobalScopeProxy() const {
+  return true;
+}
+
+void ServiceWorkerGlobalScopeProxy::SetupNavigationPreload(
+    int fetch_event_id,
+    const KURL& url,
+    mojom::blink::FetchEventPreloadHandlePtr preload_handle) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  auto web_preload_handle = std::make_unique<WebFetchEventPreloadHandle>();
+  web_preload_handle->url_loader = preload_handle->url_loader.PassHandle();
+  web_preload_handle->url_loader_client_request =
+      preload_handle->url_loader_client_request.PassMessagePipe();
+  Client().SetupNavigationPreload(fetch_event_id, url,
+                                  std::move(web_preload_handle));
+}
+
+void ServiceWorkerGlobalScopeProxy::RequestTermination(
+    base::OnceCallback<void(bool)> callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
+  Client().RequestTermination(std::move(callback));
+}
+
 ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     WebEmbeddedWorkerImpl& embedded_worker,
     WebServiceWorkerContextClient& client)
@@ -313,6 +337,10 @@ void ServiceWorkerGlobalScopeProxy::Detach() {
 void ServiceWorkerGlobalScopeProxy::TerminateWorkerContext() {
   DCHECK(IsMainThread());
   embedded_worker_->TerminateWorkerContext();
+}
+
+bool ServiceWorkerGlobalScopeProxy::IsWindowInteractionAllowed() {
+  return WorkerGlobalScope()->IsWindowInteractionAllowed();
 }
 
 WebServiceWorkerContextClient& ServiceWorkerGlobalScopeProxy::Client() const {

@@ -11,18 +11,19 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "services/viz/public/interfaces/compositing/frame_timing_details.mojom-blink.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "ui/gfx/mojo/presentation_feedback.mojom-blink.h"
 
 namespace blink {
@@ -62,8 +63,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
       num_unreclaimed_frames_posted_(0),
       client_(client),
       enable_surface_synchronization_(
-          ::features::IsSurfaceSynchronizationEnabled()),
-      weak_ptr_factory_(this) {
+          ::features::IsSurfaceSynchronizationEnabled()) {
   // Frameless canvas pass an invalid |frame_sink_id_|; don't create mojo
   // channel for this special case.
   if (!frame_sink_id_.is_valid())
@@ -277,7 +277,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
                canvas_resource_size, kPremultipliedAlpha, uv_top_left,
                uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity, yflipped,
                kNearestNeighbor, /*secure_output_only=*/false,
-               ui::ProtectedVideoType::kClear);
+               gfx::ProtectedVideoType::kClear);
 
   frame->render_pass_list.push_back(std::move(pass));
 
@@ -329,7 +329,7 @@ void CanvasResourceDispatcher::SetNeedsBeginFrameInternal() {
 
 void CanvasResourceDispatcher::OnBeginFrame(
     const viz::BeginFrameArgs& begin_frame_args,
-    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>) {
+    WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) {
   current_begin_frame_ack_ = viz::BeginFrameAck(begin_frame_args, false);
   if (pending_compositor_frames_ >= kMaxPendingCompositorFrames ||
       (begin_frame_args.type == viz::BeginFrameArgs::MISSED &&
@@ -388,10 +388,10 @@ void CanvasResourceDispatcher::Reshape(const IntSize& size) {
 }
 
 void CanvasResourceDispatcher::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     ::gpu::mojom::blink::MailboxPtr id) {
   if (sink_)
-    sink_->DidAllocateSharedBitmap(std::move(buffer), std::move(id));
+    sink_->DidAllocateSharedBitmap(std::move(region), std::move(id));
 }
 
 void CanvasResourceDispatcher::DidDeleteSharedBitmap(

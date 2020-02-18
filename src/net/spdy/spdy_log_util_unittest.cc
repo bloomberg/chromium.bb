@@ -21,15 +21,13 @@ std::string ElideGoAwayDebugDataForNetLogAsString(
 TEST(SpdyLogUtilTest, ElideGoAwayDebugDataForNetLog) {
   // Only elide for appropriate log level.
   EXPECT_EQ("[6 bytes were stripped]",
-            ElideGoAwayDebugDataForNetLogAsString(NetLogCaptureMode::Default(),
+            ElideGoAwayDebugDataForNetLogAsString(NetLogCaptureMode::kDefault,
                                                   "foobar"));
-  EXPECT_EQ("foobar",
+  EXPECT_EQ("foobar", ElideGoAwayDebugDataForNetLogAsString(
+                          NetLogCaptureMode::kIncludeSensitive, "foobar"));
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B %FE%FF",
             ElideGoAwayDebugDataForNetLogAsString(
-                NetLogCaptureMode::IncludeCookiesAndCredentials(), "foobar"));
-  EXPECT_EQ(
-      "%ESCAPED:\xE2\x80\x8B %FE%FF",
-      ElideGoAwayDebugDataForNetLogAsString(
-          NetLogCaptureMode::IncludeCookiesAndCredentials(), "\xfe\xff\x00"));
+                NetLogCaptureMode::kIncludeSensitive, "\xfe\xff\x00"));
 }
 
 TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
@@ -38,7 +36,7 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
   headers["cookie"] = "name=value";
 
   base::ListValue list =
-      ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::Default());
+      ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::kDefault);
 
   ASSERT_FALSE(list.is_none());
   ASSERT_EQ(2u, list.GetList().size());
@@ -49,8 +47,8 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
   ASSERT_TRUE(list.GetList()[1].is_string());
   EXPECT_EQ("cookie: [10 bytes were stripped]", list.GetList()[1].GetString());
 
-  list = ElideSpdyHeaderBlockForNetLog(
-      headers, NetLogCaptureMode::IncludeCookiesAndCredentials());
+  list = ElideSpdyHeaderBlockForNetLog(headers,
+                                       NetLogCaptureMode::kIncludeSensitive);
 
   ASSERT_FALSE(list.is_none());
   ASSERT_EQ(2u, list.GetList().size());
@@ -62,13 +60,13 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLog) {
   EXPECT_EQ("cookie: name=value", list.GetList()[1].GetString());
 }
 
-TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
+TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogParams) {
   spdy::SpdyHeaderBlock headers;
   headers["foo"] = "bar";
   headers["cookie"] = "name=value";
 
   std::unique_ptr<base::Value> dict = base::Value::ToUniquePtrValue(
-      SpdyHeaderBlockNetLogCallback(&headers, NetLogCaptureMode::Default()));
+      SpdyHeaderBlockNetLogParams(&headers, NetLogCaptureMode::kDefault));
 
   ASSERT_TRUE(dict);
   ASSERT_TRUE(dict->is_dict());
@@ -86,8 +84,8 @@ TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
   EXPECT_EQ("cookie: [10 bytes were stripped]",
             header_list->GetList()[1].GetString());
 
-  dict = base::Value::ToUniquePtrValue(SpdyHeaderBlockNetLogCallback(
-      &headers, NetLogCaptureMode::IncludeCookiesAndCredentials()));
+  dict = base::Value::ToUniquePtrValue(SpdyHeaderBlockNetLogParams(
+      &headers, NetLogCaptureMode::kIncludeSensitive));
 
   ASSERT_TRUE(dict);
   ASSERT_TRUE(dict->is_dict());
@@ -113,7 +111,7 @@ TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLogWithNonUTF8Characters) {
   headers["\xde\xad"] = "\xbe\xef";
 
   base::ListValue list =
-      ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::Default());
+      ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::kDefault);
 
   ASSERT_EQ(3u, list.GetSize());
   std::string field;

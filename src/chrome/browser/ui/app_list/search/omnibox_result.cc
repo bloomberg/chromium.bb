@@ -31,8 +31,7 @@ namespace app_list {
 
 namespace {
 
-// #000 at 87% opacity.
-constexpr SkColor kListIconColor = SkColorSetARGB(0xDE, 0x00, 0x00, 0x00);
+constexpr SkColor kListIconColor = gfx::kGoogleGrey700;
 
 int ACMatchStyleToTagStyle(int styles) {
   int tag_styles = 0;
@@ -141,6 +140,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
   }
   set_id(match_.stripped_destination_url.spec());
   SetResultType(ash::SearchResultType::kOmnibox);
+  set_result_subtype(static_cast<int>(match_.type));
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].
   // The magic number 1500 is the highest score of an omnibox result.
@@ -178,10 +178,6 @@ void OmniboxResult::InvokeAction(int action_index, int event_flags) {
     default:
       NOTREACHED();
   }
-}
-
-int OmniboxResult::GetSubType() const {
-  return static_cast<int>(match_.type);
 }
 
 SearchResultType OmniboxResult::GetSearchResultType() const {
@@ -233,6 +229,10 @@ SearchResultType OmniboxResult::GetSearchResultType() const {
       NOTREACHED();
       return SEARCH_RESULT_TYPE_BOUNDARY;
   }
+}
+
+GURL OmniboxResult::DestinationURL() const {
+  return match_.destination_url;
 }
 
 void OmniboxResult::UpdateIcon() {

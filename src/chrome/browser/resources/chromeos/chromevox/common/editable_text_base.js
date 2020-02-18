@@ -421,7 +421,10 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged = function(
     if (this.start + 1 == evt.start && this.end == this.value.length &&
         evt.end == this.value.length) {
       // Autocomplete: the user typed one character of autocompleted text.
-      this.speak(this.value.substr(this.start, 1), evt.triggeredByUser);
+      if (cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER ||
+          cvox.ChromeVox.typingEcho == cvox.TypingEcho.CHARACTER_AND_WORD) {
+        this.speak(this.value.substr(this.start, 1), evt.triggeredByUser);
+      }
       this.speak(this.value.substr(evt.start));
     } else if (this.start == this.end) {
       // It was previously a cursor.
@@ -678,6 +681,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
     utterance = deleted + ', deleted';
   } else if (deletedLen == 1) {
     utterance = deleted;
+    // Single-deleted characters should also use PERSONALITY_DELETED.
+    opt_personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
 
   if (autocompleteSuffix && utterance) {

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_PROPERTY_PRIORITY_H_
 
 #include "third_party/blink/renderer/core/css/css_property_names.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -87,7 +87,7 @@ inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::First() {
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::Last() {
   static_assert(static_cast<int>(CSSPropertyID::kZoom) ==
-                    static_cast<int>(CSSPropertyID::kColor) + 22,
+                    static_cast<int>(CSSPropertyID::kColor) + 25,
                 "CSSPropertyID::kZoom should be the end of the high priority "
                 "property range");
   static_assert(static_cast<int>(CSSPropertyID::kWritingMode) ==

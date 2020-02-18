@@ -24,7 +24,9 @@
  *
  */
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -140,7 +142,11 @@ TEST(LifecycleContextTest, ObserverRemovedDuringNotifyDestroyed) {
 
 // This is a regression test for http://crbug.com/854639.
 TEST(LifecycleContextTest, ShouldNotHitCFICheckOnIncrementalMarking) {
-  ScopedHeapIncrementalMarkingForTest scoped_feature(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  // Disable concurrent sweeping as worker_pool task environment is not set.
+  scoped_feature_list.InitWithFeatures(
+      {blink::features::kBlinkHeapIncrementalMarking},
+      {blink::features::kBlinkHeapConcurrentSweeping});
   ThreadState* thread_state = ThreadState::Current();
   thread_state->IncrementalMarkingStart(BlinkGC::GCReason::kForcedGCForTesting);
 

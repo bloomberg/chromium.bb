@@ -134,13 +134,14 @@ int CastDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-views::View* CastDialogView::CreateExtraView() {
-  sources_button_ = new views::MdTextButtonWithDownArrow(
+std::unique_ptr<views::View> CastDialogView::CreateExtraView() {
+  auto sources_button = std::make_unique<views::MdTextButtonWithDownArrow>(
       this,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  sources_button_->SetID(kAlternativeSourceButtonId);
-  sources_button_->SetEnabled(false);
-  return sources_button_;
+  sources_button->SetID(kAlternativeSourceButtonId);
+  sources_button->SetEnabled(false);
+  sources_button_ = sources_button.get();
+  return sources_button;
 }
 
 bool CastDialogView::Close() {
@@ -266,8 +267,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       selected_source_(SourceType::kTab),
       controller_(controller),
       profile_(profile),
-      metrics_(start_time),
-      weak_factory_(this) {
+      metrics_(start_time) {
   ShowNoSinksView();
 }
 
@@ -350,8 +350,8 @@ void CastDialogView::RestoreSinkListState() {
 void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_buttons_.clear();
   auto sink_list_view = std::make_unique<views::View>();
-  sink_list_view->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  sink_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
     const UIMediaSink& sink = sinks.at(i);
     CastDialogSinkButton* sink_button =
@@ -434,17 +434,17 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
   // supported and selected.
   switch (selected_source_) {
     case SourceType::kTab:
-      if (base::ContainsKey(sink.cast_modes, PRESENTATION))
+      if (base::Contains(sink.cast_modes, PRESENTATION))
         return base::make_optional<MediaCastMode>(PRESENTATION);
-      if (base::ContainsKey(sink.cast_modes, TAB_MIRROR))
+      if (base::Contains(sink.cast_modes, TAB_MIRROR))
         return base::make_optional<MediaCastMode>(TAB_MIRROR);
       break;
     case SourceType::kDesktop:
-      if (base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR))
+      if (base::Contains(sink.cast_modes, DESKTOP_MIRROR))
         return base::make_optional<MediaCastMode>(DESKTOP_MIRROR);
       break;
     case SourceType::kLocalFile:
-      if (base::ContainsKey(sink.cast_modes, LOCAL_FILE))
+      if (base::Contains(sink.cast_modes, LOCAL_FILE))
         return base::make_optional<MediaCastMode>(LOCAL_FILE);
       break;
   }

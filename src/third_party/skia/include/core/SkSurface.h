@@ -365,15 +365,15 @@ public:
         @param imageInfo    width, height, SkColorType, SkAlphaType, SkColorSpace,
                             of raster surface; width, or height, or both, may be zero
         @param sampleCount  samples per pixel, or 0 to disable multi-sample anti-aliasing
-        @param props        LCD striping orientation and setting for device independent
+        @param surfaceProps LCD striping orientation and setting for device independent
                             fonts; may be nullptr
         @return             SkSurface if all parameters are valid; otherwise, nullptr
     */
     static sk_sp<SkSurface> MakeRenderTarget(GrContext* context, SkBudgeted budgeted,
                                              const SkImageInfo& imageInfo, int sampleCount,
-                                             const SkSurfaceProps* props) {
+                                             const SkSurfaceProps* surfaceProps) {
         return MakeRenderTarget(context, budgeted, imageInfo, sampleCount,
-                                kBottomLeft_GrSurfaceOrigin, props);
+                                kBottomLeft_GrSurfaceOrigin, surfaceProps);
     }
 
     /** Returns SkSurface on GPU indicated by context. Allocates memory for
@@ -411,6 +411,42 @@ public:
                                              const SkSurfaceCharacterization& characterization,
                                              SkBudgeted budgeted);
 
+    /** Wraps a backend texture in an SkSurface - setting up the surface to match the provided
+        characterization. The caller must ensure the texture is valid for the lifetime of
+        returned SkSurface.
+
+        If the backend texture and surface characterization are incompatible then null will
+        be returned.
+
+        Usually, the GrContext::createBackendTexture variant that takes a surface characterization
+        should be used to create the backend texture. If not,
+        SkSurfaceCharacterization::isCompatible can be used to determine if a given backend texture
+        is compatible with a specific surface characterization.
+
+        @param context             GPU context
+        @param characterization    characterization of the desired surface
+        @param backendTexture      texture residing on GPU
+        @param textureReleaseProc  function called when texture can be released
+        @param releaseContext      state passed to textureReleaseProc
+        @return                    SkSurface if all parameters are compatible; otherwise, nullptr
+    */
+    static sk_sp<SkSurface> MakeFromBackendTexture(GrContext* context,
+                                                   const SkSurfaceCharacterization& characterzation,
+                                                   const GrBackendTexture& backendTexture,
+                                                   TextureReleaseProc textureReleaseProc = nullptr,
+                                                   ReleaseContext releaseContext = nullptr);
+
+    /** Is this surface compatible with the provided characterization?
+
+        This method can be used to determine if an existing SkSurface is a viable destination
+        for an SkDeferredDisplayList.
+
+        @param characterization  The characterization for which a compatibility check is desired
+        @return                  true if this surface is compatible with the characterization;
+                                 false otherwise
+    */
+    bool isCompatible(const SkSurfaceCharacterization& characterization) const;
+
     /** Returns SkSurface without backing pixels. Drawing to SkCanvas returned from SkSurface
         has no effect. Calling makeImageSnapshot() on returned SkSurface returns nullptr.
 
@@ -431,6 +467,10 @@ public:
         @return  number of pixel rows
     */
     int height() const { return fHeight; }
+
+    /** Returns an ImageInfo describing the surface.
+     */
+    SkImageInfo imageInfo();
 
     /** Returns unique value identifying the content of SkSurface. Returned value changes
         each time the content changes. Content is changed by drawing, or by calling
@@ -541,6 +581,11 @@ public:
         @return           compatible SkSurface or nullptr
     */
     sk_sp<SkSurface> makeSurface(const SkImageInfo& imageInfo);
+
+    /** Calls makeSurface(ImageInfo) with the same ImageInfo as this surface, but with the
+     *  specified width and height.
+     */
+    sk_sp<SkSurface> makeSurface(int width, int height);
 
     /** Returns SkImage capturing SkSurface contents. Subsequent drawing to SkSurface contents
         are not captured. SkImage allocation is accounted for if SkSurface was created with
@@ -710,6 +755,35 @@ public:
     void asyncRescaleAndReadPixels(const SkImageInfo& info, const SkIRect& srcRect,
                                    RescaleGamma rescaleGamma, SkFilterQuality rescaleQuality,
                                    ReadPixelsCallback callback, ReadPixelsContext context);
+
+    /**
+        Similar to asyncRescaleAndReadPixels but performs an additional conversion to YUV. The
+        RGB->YUV conversion is controlled by 'yuvColorSpace'. The YUV data is returned as three
+        planes ordered y, u, v. The u and v planes are half the width and height of the resized
+        rectangle. Currently this fails if dstW or dstH are not even.
+
+        On failure the callback is called with a null data pointer array. Fails if srcRect is not
+        contained in the surface bounds.
+
+        @param yuvColorSpace  The transformation from RGB to YUV. Applied to the resized image
+                              after it is converted to dstColorSpace.
+        @param dstColorSpace  The color space to convert the resized image to, after rescaling.
+        @param srcRect        The portion of the surface to rescale and convert to YUV planes.
+        @param dstW           The width to rescale srcRect to
+        @param dstH           The height to rescale srcRect to
+        @param rescaleGamma     controls whether rescaling is done in the surface's gamma or whether
+                                the source data is transformed to a linear gamma before rescaling.
+        @param rescaleQuality   controls the quality (and cost) of the rescaling
+        @param callback         function to call with the planar read result
+        @param context          passed to callback
+     */
+    using ReadPixelsCallbackYUV420 = void(ReadPixelsContext, const void* data[3],
+                                          size_t rowBytes[3]);
+    void asyncRescaleAndReadPixelsYUV420(SkYUVColorSpace yuvColorSpace,
+                                         sk_sp<SkColorSpace> dstColorSpace, const SkIRect& srcRect,
+                                         int dstW, int dstH, RescaleGamma rescaleGamma,
+                                         SkFilterQuality rescaleQuality,
+                                         ReadPixelsCallbackYUV420 callback, ReadPixelsContext);
 
     /** Copies SkRect of pixels from the src SkPixmap to the SkSurface.
 

@@ -71,6 +71,7 @@ Options:
   -fhlsl_functionality1, -fhlsl-functionality1
                     Enable extension SPV_GOOGLE_hlsl_functionality1 for HLSL
                     compilation.
+  -finvert-y        Invert position.Y output in vertex shader.
   -fhlsl-iomap      Use HLSL IO mappings for bindings.
   -fhlsl-offsets    Use HLSL offset rules for packing members of blocks.
                     Affects only GLSL.  HLSL rules are always used for HLSL.
@@ -81,6 +82,10 @@ Options:
                     several times, only the last setting takes effect.
   -flimit-file <file>
                     Set limits as specified in the given file.
+  -fnan-clamp       Generate code for max and min builtins so that, when given
+                    a NaN operand, the other operand is returned. Similarly,
+                    the clamp builtin will favour the non-NaN operands, as if
+                    clamp were implemented as a composition of max and min.
   -fresource-set-binding [stage] <reg0> <set0> <binding0>
                         [<reg1> <set1> <binding1>...]
                     Explicitly sets the descriptor set and binding for
@@ -155,6 +160,14 @@ Options:
                         vulkan          # Same as vulkan1.0
                         opengl4.5
                         opengl          # Same as opengl4.5
+  --target-spv=<spirv-version>
+                    Set the SPIR-V version to be used for the generated SPIR-V
+                    module.  The default is the highest version of SPIR-V
+                    required to be supported for the target environment.
+                    For example, default for vulkan1.0 is spv1.0, and
+                    the default for vulkan1.1 is spv1.3.
+                    Values are:
+                        spv1.0, spv1.1, spv1.2, spv1.3, spv1.4
   --version         Display compiler version information.
   -w                Suppresses all warning messages.
   -Werror           Treat all warnings as errors.

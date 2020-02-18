@@ -51,7 +51,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/text/tab_size.h"
 #include "third_party/blink/renderer/platform/transforms/rotation.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
@@ -164,6 +164,7 @@ class StyleBuilderConverter {
   static Length ConvertLength(const StyleResolverState&, const CSSValue&);
   static UnzoomedLength ConvertUnzoomedLength(const StyleResolverState&,
                                               const CSSValue&);
+  static float ConvertZoom(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthOrAuto(const StyleResolverState&, const CSSValue&);
   static Length ConvertLengthSizing(StyleResolverState&, const CSSValue&);
   static Length ConvertLengthMaxSizing(StyleResolverState&, const CSSValue&);

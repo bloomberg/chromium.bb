@@ -27,6 +27,7 @@
 #include "core/fxge/win32/cfx_windowsdib.h"
 #include "core/fxge/win32/win32_int.h"
 #include "third_party/base/ptr_util.h"
+#include "third_party/base/span.h"
 #include "third_party/base/win/win_util.h"
 
 #ifndef _SKIA_SUPPORT_
@@ -300,8 +301,8 @@ unsigned clip_liang_barsky(float x1,
 
 class CFX_Win32FallbackFontInfo final : public CFX_FolderFontInfo {
  public:
-  CFX_Win32FallbackFontInfo() {}
-  ~CFX_Win32FallbackFontInfo() override {}
+  CFX_Win32FallbackFontInfo() = default;
+  ~CFX_Win32FallbackFontInfo() override = default;
 
   // CFX_FolderFontInfo:
   void* MapFont(int weight,
@@ -326,8 +327,7 @@ class CFX_Win32FontInfo final : public SystemFontInfoIface {
   void* GetFont(const char* face) override { return nullptr; }
   uint32_t GetFontData(void* hFont,
                        uint32_t table,
-                       uint8_t* buffer,
-                       uint32_t size) override;
+                       pdfium::span<uint8_t> buffer) override;
   bool GetFaceName(void* hFont, ByteString* name) override;
   bool GetFontCharset(void* hFont, int* charset) override;
   void DeleteFont(void* hFont) override;
@@ -363,10 +363,10 @@ CFX_Win32FontInfo::~CFX_Win32FontInfo() {
 bool CFX_Win32FontInfo::IsOpenTypeFromDiv(const LOGFONTA* plf) {
   HFONT hFont = CreateFontIndirectA(plf);
   bool ret = false;
-  uint32_t font_size = GetFontData(hFont, 0, nullptr, 0);
+  uint32_t font_size = GetFontData(hFont, 0, {});
   if (font_size != GDI_ERROR && font_size >= sizeof(uint32_t)) {
     uint32_t lVersion = 0;
-    GetFontData(hFont, 0, (uint8_t*)(&lVersion), sizeof(uint32_t));
+    GetFontData(hFont, 0, {(uint8_t*)(&lVersion), sizeof(uint32_t)});
     lVersion = (((uint32_t)(uint8_t)(lVersion)) << 24) |
                ((uint32_t)((uint8_t)(lVersion >> 8))) << 16 |
                ((uint32_t)((uint8_t)(lVersion >> 16))) << 8 |
@@ -384,10 +384,10 @@ bool CFX_Win32FontInfo::IsOpenTypeFromDiv(const LOGFONTA* plf) {
 bool CFX_Win32FontInfo::IsSupportFontFormDiv(const LOGFONTA* plf) {
   HFONT hFont = CreateFontIndirectA(plf);
   bool ret = false;
-  uint32_t font_size = GetFontData(hFont, 0, nullptr, 0);
+  uint32_t font_size = GetFontData(hFont, 0, {});
   if (font_size != GDI_ERROR && font_size >= sizeof(uint32_t)) {
     uint32_t lVersion = 0;
-    GetFontData(hFont, 0, (uint8_t*)(&lVersion), sizeof(uint32_t));
+    GetFontData(hFont, 0, {(uint8_t*)(&lVersion), sizeof(lVersion)});
     lVersion = (((uint32_t)(uint8_t)(lVersion)) << 24) |
                ((uint32_t)((uint8_t)(lVersion >> 8))) << 16 |
                ((uint32_t)((uint8_t)(lVersion >> 16))) << 8 |
@@ -627,11 +627,10 @@ void CFX_Win32FontInfo::DeleteFont(void* hFont) {
 
 uint32_t CFX_Win32FontInfo::GetFontData(void* hFont,
                                         uint32_t table,
-                                        uint8_t* buffer,
-                                        uint32_t size) {
+                                        pdfium::span<uint8_t> buffer) {
   HFONT hOldFont = (HFONT)::SelectObject(m_hDC, (HFONT)hFont);
   table = FXDWORD_GET_MSBFIRST(reinterpret_cast<uint8_t*>(&table));
-  size = ::GetFontData(m_hDC, table, 0, buffer, size);
+  uint32_t size = ::GetFontData(m_hDC, table, 0, buffer.data(), buffer.size());
   ::SelectObject(m_hDC, hOldFont);
   if (size == GDI_ERROR) {
     return 0;
@@ -704,9 +703,8 @@ CFX_GEModule::PlatformIface::Create() {
   return pdfium::MakeUnique<CWin32Platform>();
 }
 
-CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, int device_class) {
-  m_hDC = hDC;
-  m_DeviceClass = device_class;
+CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, DeviceType device_type)
+    : m_hDC(hDC), m_DeviceType(device_type) {
   auto* pPlatform =
       static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   SetStretchBltMode(hDC, pPlatform->m_bHalfTone ? HALFTONE : COLORONCOLOR);
@@ -727,19 +725,21 @@ CGdiDeviceDriver::CGdiDeviceDriver(HDC hDC, int device_class) {
     m_Width = ::GetDeviceCaps(m_hDC, HORZRES);
     m_Height = ::GetDeviceCaps(m_hDC, VERTRES);
   }
-  if (m_DeviceClass != FXDC_DISPLAY) {
+  if (m_DeviceType != DeviceType::kDisplay) {
     m_RenderCaps = FXRC_BIT_MASK;
   } else {
     m_RenderCaps = FXRC_GET_BITS | FXRC_BIT_MASK;
   }
 }
 
-CGdiDeviceDriver::~CGdiDeviceDriver() {}
+CGdiDeviceDriver::~CGdiDeviceDriver() = default;
+
+DeviceType CGdiDeviceDriver::GetDeviceType() const {
+  return m_DeviceType;
+}
 
 int CGdiDeviceDriver::GetDeviceCaps(int caps_id) const {
   switch (caps_id) {
-    case FXDC_DEVICE_CLASS:
-      return m_DeviceClass;
     case FXDC_PIXEL_WIDTH:
       return m_Width;
     case FXDC_PIXEL_HEIGHT:
@@ -748,8 +748,10 @@ int CGdiDeviceDriver::GetDeviceCaps(int caps_id) const {
       return m_nBitsPerPixel;
     case FXDC_RENDER_CAPS:
       return m_RenderCaps;
+    default:
+      NOTREACHED();
+      return 0;
   }
-  return 0;
 }
 
 void CGdiDeviceDriver::SaveState() {
@@ -766,7 +768,7 @@ bool CGdiDeviceDriver::GDI_SetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap1,
                                      const FX_RECT& src_rect,
                                      int left,
                                      int top) {
-  if (m_DeviceClass == FXDC_PRINTER) {
+  if (m_DeviceType == DeviceType::kPrinter) {
     RetainPtr<CFX_DIBitmap> pBitmap = pBitmap1->FlipImage(false, true);
     if (!pBitmap)
       return false;
@@ -825,7 +827,7 @@ bool CGdiDeviceDriver::GDI_StretchDIBits(
     SetStretchBltMode(m_hDC, COLORONCOLOR);
   }
   RetainPtr<CFX_DIBitmap> pToStrechBitmap = pBitmap;
-  if (m_DeviceClass == FXDC_PRINTER &&
+  if (m_DeviceType == DeviceType::kPrinter &&
       ((int64_t)pBitmap->GetWidth() * pBitmap->GetHeight() >
        (int64_t)abs(dest_width) * abs(dest_height))) {
     pToStrechBitmap = pBitmap->StretchTo(dest_width, dest_height,
@@ -986,9 +988,9 @@ bool CGdiDeviceDriver::DrawPath(const CFX_PathData* pPathData,
     return false;
 
   if (pPlatform->m_GdiplusExt.IsAvailable()) {
-    if (bDrawAlpha ||
-        ((m_DeviceClass != FXDC_PRINTER && !(fill_mode & FXFILL_FULLCOVER)) ||
-         (pGraphState && !pGraphState->m_DashArray.empty()))) {
+    if (bDrawAlpha || ((m_DeviceType != DeviceType::kPrinter &&
+                        !(fill_mode & FXFILL_FULLCOVER)) ||
+                       (pGraphState && !pGraphState->m_DashArray.empty()))) {
       if (!((!pMatrix || !pMatrix->WillScale()) && pGraphState &&
             pGraphState->m_LineWidth == 1.0f &&
             (pPathData->GetPoints().size() == 5 ||
@@ -1131,7 +1133,7 @@ bool CGdiDeviceDriver::DrawCosmeticLine(const CFX_PointF& ptMoveTo,
 }
 
 CGdiDisplayDriver::CGdiDisplayDriver(HDC hDC)
-    : CGdiDeviceDriver(hDC, FXDC_DISPLAY) {
+    : CGdiDeviceDriver(hDC, DeviceType::kDisplay) {
   auto* pPlatform =
       static_cast<CWin32Platform*>(CFX_GEModule::Get()->GetPlatform());
   if (pPlatform->m_GdiplusExt.IsAvailable()) {
@@ -1139,7 +1141,13 @@ CGdiDisplayDriver::CGdiDisplayDriver(HDC hDC)
   }
 }
 
-CGdiDisplayDriver::~CGdiDisplayDriver() {}
+CGdiDisplayDriver::~CGdiDisplayDriver() = default;
+
+int CGdiDisplayDriver::GetDeviceCaps(int caps_id) const {
+  if (caps_id == FXDC_HORZ_SIZE || caps_id == FXDC_VERT_SIZE)
+    return 0;
+  return CGdiDeviceDriver::GetDeviceCaps(caps_id);
+}
 
 bool CGdiDisplayDriver::GetDIBits(const RetainPtr<CFX_DIBitmap>& pBitmap,
                                   int left,
@@ -1337,15 +1345,18 @@ bool CGdiDisplayDriver::StartDIBits(const RetainPtr<CFX_DIBBase>& pBitmap,
   return false;
 }
 
-CFX_WindowsRenderDevice::CFX_WindowsRenderDevice(HDC hDC) {
-  SetDeviceDriver(pdfium::WrapUnique(CreateDriver(hDC)));
+CFX_WindowsRenderDevice::CFX_WindowsRenderDevice(
+    HDC hDC,
+    const EncoderIface* pEncoderIface) {
+  SetDeviceDriver(pdfium::WrapUnique(CreateDriver(hDC, pEncoderIface)));
 }
 
 CFX_WindowsRenderDevice::~CFX_WindowsRenderDevice() = default;
 
 // static
 RenderDeviceDriverIface* CFX_WindowsRenderDevice::CreateDriver(
-    HDC hDC) {
+    HDC hDC,
+    const EncoderIface* pEncoderIface) {
   int device_type = ::GetDeviceCaps(hDC, TECHNOLOGY);
   int obj_type = ::GetObjectType(hDC);
   bool use_printer = device_type == DT_RASPRINTER ||
@@ -1361,5 +1372,5 @@ RenderDeviceDriverIface* CFX_WindowsRenderDevice::CreateDriver(
   if (g_pdfium_print_mode == WindowsPrintMode::kModeTextOnly)
     return new CTextOnlyPrinterDriver(hDC);
 
-  return new CPSPrinterDriver(hDC, g_pdfium_print_mode, false);
+  return new CPSPrinterDriver(hDC, g_pdfium_print_mode, false, pEncoderIface);
 }

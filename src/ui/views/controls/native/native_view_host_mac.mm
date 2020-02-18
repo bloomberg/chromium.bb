@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ui/accessibility/platform/ax_platform_node_mac.h"
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
@@ -40,9 +40,8 @@ NativeViewHostMac::NativeViewHostMac(NativeViewHost* host) : host_(host) {
 NativeViewHostMac::~NativeViewHostMac() {
 }
 
-BridgedNativeWidgetHostImpl* NativeViewHostMac::GetBridgedNativeWidgetHost()
-    const {
-  return BridgedNativeWidgetHostImpl::GetFromNativeWindow(
+NativeWidgetMacNSWindowHost* NativeViewHostMac::GetNSWindowHost() const {
+  return NativeWidgetMacNSWindowHost::GetFromNativeWindow(
       host_->GetWidget()->GetNativeWindow());
 }
 
@@ -53,19 +52,19 @@ ui::Layer* NativeViewHostMac::GetUiLayer() const {
   return host_->layer();
 }
 
-remote_cocoa::mojom::BridgeFactory*
-NativeViewHostMac::GetRemoteCocoaApplication() const {
-  if (auto* bridge_host = GetBridgedNativeWidgetHost()) {
-    if (bridge_host->bridge_factory_host())
-      return bridge_host->bridge_factory_host()->GetFactory();
+remote_cocoa::mojom::Application* NativeViewHostMac::GetRemoteCocoaApplication()
+    const {
+  if (auto* window_host = GetNSWindowHost()) {
+    if (auto* application_host = window_host->application_host())
+      return application_host->GetApplication();
   }
   return nullptr;
 }
 
 uint64_t NativeViewHostMac::GetNSViewId() const {
-  auto* bridge_host = GetBridgedNativeWidgetHost();
-  if (bridge_host)
-    return bridge_host->GetRootViewNSViewId();
+  auto* window_host = GetNSWindowHost();
+  if (window_host)
+    return window_host->GetRootViewNSViewId();
   return 0;
 }
 
@@ -88,13 +87,13 @@ void NativeViewHostMac::AttachNativeView() {
   }
   EnsureNativeViewHasNoChildWidgets(native_view_);
 
-  auto* bridge_host = GetBridgedNativeWidgetHost();
-  CHECK(bridge_host);
+  auto* window_host = GetNSWindowHost();
+  CHECK(window_host);
 
   // TODO(https://crbug.com/933679): This is lifted out the ViewsHostableAttach
   // call below because of crashes being observed in the field.
   NSView* superview =
-      bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
+      window_host->native_widget_mac()->GetNativeView().GetNativeNSView();
   [superview addSubview:native_view_];
 
   if (native_view_hostable_) {
@@ -105,7 +104,7 @@ void NativeViewHostMac::AttachNativeView() {
         host_->parent()->GetNativeViewAccessible());
   }
 
-  bridge_host->SetAssociationForView(host_, native_view_);
+  window_host->SetAssociationForView(host_, native_view_);
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
@@ -131,10 +130,10 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   }
 
   EnsureNativeViewHasNoChildWidgets(native_view_);
-  auto* bridge_host = GetBridgedNativeWidgetHost();
-  // BridgedNativeWidgetImpl can be null when Widget is closing.
-  if (bridge_host)
-    bridge_host->ClearAssociationForView(host_);
+  auto* window_host = GetNSWindowHost();
+  // NativeWidgetNSWindowBridge can be null when Widget is closing.
+  if (window_host)
+    window_host->ClearAssociationForView(host_);
 
   native_view_.reset();
 }

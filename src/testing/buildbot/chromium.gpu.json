@@ -21,6 +21,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -50,6 +51,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -79,6 +81,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -108,6 +111,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -141,6 +145,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -177,6 +182,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -197,8 +203,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
@@ -211,16 +215,19 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -229,7 +236,8 @@
               "os": "Android"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -251,6 +259,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -280,6 +289,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -310,6 +320,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
@@ -346,10 +357,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -367,10 +379,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -388,10 +401,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -418,10 +432,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -446,10 +461,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -474,10 +490,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -502,10 +519,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -534,10 +552,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -569,10 +588,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -588,8 +608,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
@@ -602,24 +620,28 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -641,10 +663,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -669,10 +692,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -697,10 +721,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -725,40 +750,16 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
         },
         "test": "angle_unittests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "browser_tests"
       },
       {
         "args": [
@@ -771,10 +772,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -792,10 +794,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -822,10 +825,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -850,10 +854,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -878,10 +883,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -906,10 +912,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -938,10 +945,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -973,10 +981,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -992,8 +1001,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
@@ -1006,24 +1013,28 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1045,10 +1056,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1073,10 +1085,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1101,10 +1114,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1130,41 +1144,16 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
         },
         "test": "angle_unittests"
-      },
-      {
-        "args": [
-          "--enable-gpu",
-          "--test-launcher-bot-mode",
-          "--test-launcher-jobs=1",
-          "--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*",
-          "--no-xvfb"
-        ],
-        "isolate_coverage_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "tab_capture_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-GPU"
-            }
-          ]
-        },
-        "test": "browser_tests"
       },
       {
         "args": [
@@ -1178,10 +1167,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1200,10 +1190,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -1231,10 +1222,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1260,10 +1252,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1289,10 +1282,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1318,10 +1312,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1351,10 +1346,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1387,10 +1383,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1406,8 +1403,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
@@ -1421,24 +1416,28 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1461,10 +1460,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1490,10 +1490,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1519,10 +1520,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-ubuntu-stable",
-              "os": "Ubuntu-14.04",
+              "os": "linux-nvidia-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -1546,10 +1548,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1566,10 +1569,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1585,10 +1589,11 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ]
         },
@@ -1614,10 +1619,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1641,10 +1647,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1668,10 +1675,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1695,10 +1703,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1726,10 +1735,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1760,10 +1770,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1778,8 +1789,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
@@ -1792,23 +1801,27 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -1830,10 +1843,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1857,10 +1871,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false
@@ -1884,10 +1899,11 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
@@ -1910,19 +1926,13 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "angle_unittests"
       },
@@ -1940,19 +1950,13 @@
         "name": "tab_capture_end2end_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "browser_tests"
       },
@@ -1967,19 +1971,13 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_tests"
       },
@@ -1993,19 +1991,13 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
-          ],
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          ]
         },
         "test": "gl_unittests"
       }
@@ -2029,20 +2021,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2063,20 +2049,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2097,20 +2077,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2131,20 +2105,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2169,20 +2137,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2210,20 +2172,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2235,8 +2191,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
@@ -2249,30 +2203,27 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2294,20 +2245,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2328,20 +2273,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
-          "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          }
+          "idempotent": false
         }
       },
       {
@@ -2362,20 +2301,14 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
+              "os": "mac-intel-stable"
             }
           ],
           "idempotent": false,
-          "optional_dimensions": {
-            "600": [
-              {
-                "os": "Mac-10.13.6"
-              }
-            ]
-          },
           "shards": 2
         }
       }
@@ -2395,11 +2328,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2417,11 +2351,12 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2438,11 +2373,12 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2469,11 +2405,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2498,11 +2435,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2527,11 +2465,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2556,11 +2495,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2589,11 +2529,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2625,11 +2566,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2645,8 +2587,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
@@ -2659,25 +2599,29 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -2699,11 +2643,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2728,11 +2673,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2757,11 +2703,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2785,11 +2732,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2810,11 +2758,12 @@
         "name": "tab_capture_end2end_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2832,11 +2781,12 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2853,11 +2803,12 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ]
@@ -2884,11 +2835,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2913,11 +2865,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2942,11 +2895,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -2971,11 +2925,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3004,11 +2959,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3040,11 +2996,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3060,8 +3017,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
@@ -3074,25 +3029,29 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3114,11 +3073,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3143,11 +3103,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3172,11 +3133,12 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.13.6",
+              "os": "mac-amd-stable",
               "pool": "Chrome-GPU"
             }
           ],
@@ -3200,6 +3162,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3221,6 +3184,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3243,6 +3207,7 @@
         "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3263,6 +3228,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3286,6 +3252,7 @@
         "name": "video_decode_accelerator_d3d11_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3307,6 +3274,7 @@
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3337,6 +3305,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3365,6 +3334,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3393,6 +3363,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3421,6 +3392,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3453,6 +3425,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3488,6 +3461,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3507,8 +3481,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
@@ -3521,16 +3493,19 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3538,7 +3513,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         }
       },
       {
@@ -3560,6 +3536,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3588,6 +3565,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3616,6 +3594,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3643,6 +3622,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3676,6 +3656,7 @@
         "name": "tab_capture_end2end_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3706,6 +3687,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3737,6 +3719,7 @@
         "name": "gl_tests_passthrough",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3766,6 +3749,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3798,6 +3782,7 @@
         "name": "video_decode_accelerator_d3d11_unittest",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3828,6 +3813,7 @@
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3867,6 +3853,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3904,6 +3891,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3941,6 +3929,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3978,6 +3967,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4019,6 +4009,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4063,6 +4054,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4091,8 +4083,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
@@ -4105,16 +4095,19 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
+        "name": "pixel_skia_gold_test",
         "precommit_args": [
-          "--download-refimg-from-cloud-storage"
+          "--review-patch-issue",
+          "${patch_issue}",
+          "--review-patch-set",
+          "${patch_set}",
+          "--buildbucket-build-id",
+          "${buildbucket_build_id}"
         ],
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4122,7 +4115,8 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "idempotent": false
+          "idempotent": false,
+          "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
         "trigger_script": {
           "args": [
@@ -4153,6 +4147,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4190,6 +4185,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -4227,6 +4223,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",

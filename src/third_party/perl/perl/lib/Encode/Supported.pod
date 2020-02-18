@@ -94,7 +94,7 @@ To find how (UCS-2|UTF-(16|32))(LE|BE)? differ from one another,
 see L<Encode::Unicode>. 
 
 UTF-7 is a special encoding which "re-encodes" UTF-16BE into a 7-bit
-encoding.  It is implemented seperately by Encode::Unicode::UTF7.
+encoding.  It is implemented separately by Encode::Unicode::UTF7.
 
 =head2 Encode::Byte -- Extended ASCII
 
@@ -367,7 +367,7 @@ Unicode character should belong).
 
 Not very popular.  Needs CNS 11643-1 and -2 which are not available in
 this module.  CNS 11643 is supported (via euc-tw) in Encode::HanExtra.
-Autrijus Tang may add support for this encoding in his module in future.
+Audrey Tang may add support for this encoding in her module in future.
 
 =item Various HP-UX encodings
 
@@ -420,7 +420,7 @@ at L<http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/> .
 =item (Mac) Indic encodings
 
 The maps for the following are available at L<http://www.unicode.org/>
-but remain unsupport because those encodings need algorithmical
+but remain unsupported because those encodings need an algorithmical
 approach, currently unsupported by F<enc2xs>:
 
   MacDevanagari
@@ -603,7 +603,7 @@ you're doing and unless you really benefit from using C<UTF-16>.
   ISO-IR-165    [RFC1345]
   VISCII
   GB 12345
-  GB 18030 (**)  (see links bellow)
+  GB 18030 (**)  (see links below)
   EUC-TW   (**)
 
 are totally valid encodings but not registered at IANA.

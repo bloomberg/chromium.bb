@@ -49,6 +49,25 @@ using InputEventState = WebThreadScheduler::InputEventState;
 using base::sequence_manager::FakeTask;
 using base::sequence_manager::FakeTaskTiming;
 
+enum class AntiStarvationLogic {
+  kEnabled,
+  kDisabled,
+};
+
+std::string ToString(AntiStarvationLogic type) {
+  switch (type) {
+    case AntiStarvationLogic::kEnabled:
+      return "AntiStarvationLogicEnabled";
+    case AntiStarvationLogic::kDisabled:
+      return "AntiStarvationLogicDisabled";
+  }
+}
+
+std::string GetTestNameSuffix(
+    const testing::TestParamInfo<AntiStarvationLogic>& info) {
+  return "With" + ToString(info.param);
+}
+
 class FakeInputEvent : public blink::WebInputEvent {
  public:
   explicit FakeInputEvent(blink::WebInputEvent::Type event_type,
@@ -83,13 +102,12 @@ class FakeMouseWheelEvent : public blink::WebMouseWheelEvent {
   }
 };
 
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
-void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
-                                std::string value,
+void AppendToVectorIdleTestTask(Vector<String>* vector,
+                                String value,
                                 base::TimeTicks deadline) {
   AppendToVectorTestTask(vector, value);
 }
@@ -97,7 +115,7 @@ void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
 void NullTask() {}
 
 void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
-                                 std::vector<int>* vector,
+                                 Vector<int>* vector,
                                  int* reentrant_count,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
@@ -135,7 +153,7 @@ void RepostingUpdateClockIdleTestTask(
     int* run_count,
     scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner,
     base::TimeDelta advance_time,
-    std::vector<base::TimeTicks>* deadlines,
+    Vector<base::TimeTicks>* deadlines,
     base::TimeTicks deadline) {
   if ((*run_count + 1) < g_max_idle_task_reposts) {
     idle_task_runner->PostIdleTask(
@@ -250,7 +268,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     update_policy_count_++;
     MainThreadSchedulerImpl::UpdatePolicyLocked(update_type);
 
-    std::string use_case = MainThreadSchedulerImpl::UseCaseToString(
+    String use_case = MainThreadSchedulerImpl::UseCaseToString(
         main_thread_only().current_use_case);
     if (main_thread_only().blocking_input_expected_soon) {
       use_cases_.push_back(use_case + " blocking input expected");
@@ -290,7 +308,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return main_thread_only().virtual_time_policy;
   }
 
-  const std::vector<base::TimeDelta>& expected_queueing_times() const {
+  const Vector<base::TimeDelta>& expected_queueing_times() const {
     return expected_queueing_times_;
   }
 
@@ -300,8 +318,8 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   }
 
   int update_policy_count_;
-  std::vector<std::string> use_cases_;
-  std::vector<base::TimeDelta> expected_queueing_times_;
+  Vector<String> use_cases_;
+  Vector<base::TimeDelta> expected_queueing_times_;
   base::OnceClosure on_microtask_checkpoint_;
 };
 
@@ -310,7 +328,8 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   return os << MainThreadSchedulerImpl::UseCaseToString(use_case);
 }
 
-class MainThreadSchedulerImplTest : public testing::Test {
+class MainThreadSchedulerImplTest
+    : public testing::TestWithParam<AntiStarvationLogic> {
  public:
   MainThreadSchedulerImplTest(std::vector<base::Feature> features_to_enable,
                               std::vector<base::Feature> features_to_disable) {
@@ -327,7 +346,12 @@ class MainThreadSchedulerImplTest : public testing::Test {
     CreateTestTaskRunner();
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::Create(
-            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
+            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock(),
+            base::sequence_manager::SequenceManager::Settings::Builder()
+                .SetRandomisedSamplingEnabled(true)
+                .SetAntiStarvationLogicForPrioritiesDisabled(
+                    GetParam() == AntiStarvationLogic::kDisabled)
+                .Build()),
         base::nullopt));
   }
 
@@ -657,13 +681,16 @@ class MainThreadSchedulerImplTest : public testing::Test {
             MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
 
     base::TimeTicks start = Now();
-    scheduler_->OnTaskStarted(fake_queue.get(), FakeTask(),
+    FakeTask fake_task;
+    fake_task.set_enqueue_order(
+        base::sequence_manager::EnqueueOrder::FromIntForTesting(42));
+    scheduler_->OnTaskStarted(fake_queue.get(), fake_task,
                               FakeTaskTiming(start, base::TimeTicks()));
     std::move(task).Run();
     base::TimeTicks end = Now();
     FakeTaskTiming task_timing(start, end);
     scheduler_->OnTaskCompleted(fake_queue->weak_ptr_factory_.GetWeakPtr(),
-                                FakeTask(), &task_timing, nullptr);
+                                fake_task, &task_timing, nullptr);
   }
 
   void RunSlowCompositorTask() {
@@ -688,52 +715,51 @@ class MainThreadSchedulerImplTest : public testing::Test {
   // - 'I': Idle task
   // - 'T': Timer task
   // - 'V': kV8 task
-  void PostTestTasks(std::vector<std::string>* run_order,
-                     const std::string& task_descriptor) {
-    std::istringstream stream(task_descriptor);
+  void PostTestTasks(Vector<String>* run_order, const String& task_descriptor) {
+    std::istringstream stream(task_descriptor.Utf8());
     while (!stream.eof()) {
       std::string task;
       stream >> task;
       switch (task[0]) {
         case 'D':
           default_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'C':
           compositor_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'P':
           input_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'L':
           loading_task_queue()->task_runner()->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'M':
           loading_control_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'I':
           idle_task_runner_->PostIdleTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorIdleTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'T':
           timer_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         case 'V':
           v8_task_runner_->PostTask(
-              FROM_HERE,
-              base::BindOnce(&AppendToVectorTestTask, run_order, task));
+              FROM_HERE, base::BindOnce(&AppendToVectorTestTask, run_order,
+                                        String::FromUTF8(task)));
           break;
         default:
           NOTREACHED();
@@ -815,18 +841,22 @@ class MainThreadSchedulerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplTest);
 };
 
-TEST_F(MainThreadSchedulerImplTest, TestPostDefaultTask) {
-  std::vector<std::string> run_order;
+INSTANTIATE_TEST_SUITE_P(,
+                         MainThreadSchedulerImplTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(MainThreadSchedulerImplTest, TestPostDefaultTask) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 D2 D3 D4");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("D3"), std::string("D4")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "D3", "D4"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestPostDefaultAndCompositor) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestPostDefaultAndCompositor) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1 P1");
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::Contains("D1"));
@@ -834,9 +864,9 @@ TEST_F(MainThreadSchedulerImplTest, TestPostDefaultAndCompositor) {
   EXPECT_THAT(run_order, testing::Contains("P1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestRentrantTask) {
+TEST_P(MainThreadSchedulerImplTest, TestRentrantTask) {
   int count = 0;
-  std::vector<int> run_order;
+  Vector<int> run_order;
   default_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(AppendToVectorReentrantTask,
                                 base::RetainedRef(default_task_runner_),
@@ -846,7 +876,7 @@ TEST_F(MainThreadSchedulerImplTest, TestRentrantTask) {
   EXPECT_THAT(run_order, testing::ElementsAre(0, 1, 2, 3, 4));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestPostIdleTask) {
+TEST_P(MainThreadSchedulerImplTest, TestPostIdleTask) {
   int run_count = 0;
   base::TimeTicks expected_deadline =
       Now() + base::TimeDelta::FromMilliseconds(2300);
@@ -885,7 +915,7 @@ TEST_F(MainThreadSchedulerImplTest, TestPostIdleTask) {
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestRepostingIdleTask) {
+TEST_P(MainThreadSchedulerImplTest, TestRepostingIdleTask) {
   int run_count = 0;
 
   g_max_idle_task_reposts = 2;
@@ -906,7 +936,7 @@ TEST_F(MainThreadSchedulerImplTest, TestRepostingIdleTask) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestIdleTaskExceedsDeadline) {
+TEST_P(MainThreadSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   int run_count = 0;
 
   // Post two UpdateClockToDeadlineIdleTestTask tasks.
@@ -928,7 +958,7 @@ TEST_F(MainThreadSchedulerImplTest, TestIdleTaskExceedsDeadline) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
+TEST_P(MainThreadSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
   int run_count = 0;
 
   base::TimeTicks deadline_in_task;
@@ -968,8 +998,8 @@ TEST_F(MainThreadSchedulerImplTest, TestDelayedEndIdlePeriodCanceled) {
   EXPECT_EQ(1, run_count);  // We should still be in the new idle period.
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicy) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestDefaultPolicy) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 P1 C1 D2 P2 C2");
 
   EnableIdleTasks();
@@ -977,34 +1007,28 @@ TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicy) {
   // High-priority input is enabled and input tasks are processed first.
   // One compositing event is prioritized after an input event but still
   // has lower priority than input event.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("P2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("C1"), std::string("D2"),
-                                   std::string("C2"), std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "P2", "L1", "D1", "C1",
+                                              "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicyWithSlowCompositor) {
+TEST_P(MainThreadSchedulerImplTest, TestDefaultPolicyWithSlowCompositor) {
   RunSlowCompositorTask();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 P1 D2 C2");
 
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   // Even with slow compositor input tasks are handled first.
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("L1"),
-                                   std::string("D1"), std::string("C1"),
-                                   std::string("D2"), std::string("C2"),
-                                   std::string("I1")));
+              testing::ElementsAre("P1", "L1", "D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_CompositorHandlesInput_WithTouchHandler) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1012,15 +1036,13 @@ TEST_F(MainThreadSchedulerImplTest,
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("C1"),
-                                   std::string("C2"), std::string("I1")));
+              testing::ElementsAre("L1", "D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_WithoutScrollUpdates) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1028,15 +1050,13 @@ TEST_F(MainThreadSchedulerImplTest,
   SimulateMainThreadGestureWithoutScrollUpdates();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_WithoutPreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1044,13 +1064,11 @@ TEST_F(MainThreadSchedulerImplTest,
   SimulateMainThreadGestureWithoutPreventDefault();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("C1"),
-                                   std::string("C2"), std::string("I1")));
+              testing::ElementsAre("L1", "D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_CompositorHandlesInput_LongGestureDuration) {
   EnableIdleTasks();
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
@@ -1072,35 +1090,30 @@ TEST_F(MainThreadSchedulerImplTest,
     base::RunLoop().RunUntilIdle();
   }
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "L1", "D1", "D2"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_CompositorHandlesInput_WithoutTouchHandler) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
   SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("C1"),
-                                   std::string("C2"), std::string("I1")));
+              testing::ElementsAre("L1", "D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_WithTouchHandler) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1109,18 +1122,16 @@ TEST_F(MainThreadSchedulerImplTest,
                                  blink::WebInputEvent::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_WithoutTouchHandler) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1128,18 +1139,16 @@ TEST_F(MainThreadSchedulerImplTest,
                                  blink::WebInputEvent::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
       WebInputEventResult::kHandledSystem);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_MainThreadHandlesInput_SingleEvent_PreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1154,16 +1163,14 @@ TEST_F(MainThreadSchedulerImplTest,
   // Because the main thread is performing custom input handling, we let all
   // tasks run. However compositing tasks are still given priority.
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("L1"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("C1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
 
-TEST_F(
+TEST_P(
     MainThreadSchedulerImplTest,
     TestCompositorPolicy_MainThreadHandlesInput_SingleEvent_NoPreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1177,15 +1184,12 @@ TEST_F(
   base::RunLoop().RunUntilIdle();
   // Because we are still waiting for the touchstart to be processed,
   // non-essential tasks like loading tasks are blocked.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kTouchstart, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -1196,15 +1200,12 @@ TEST_F(MainThreadSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
             ForceUpdatePolicyAndGetCurrentUseCase());
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("C1"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
+  Vector<String> run_order;
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   SimulateExpensiveTasks(timer_task_runner_);
@@ -1219,12 +1220,11 @@ TEST_F(MainThreadSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("T1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "T1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
   // Observation of touchstart should defer execution of timer, idle and loading
@@ -1234,9 +1234,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
 
   // Animation or meta events like TapDown/FlingCancel shouldn't affect the
   // priority.
@@ -1259,13 +1257,11 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_Compositor) {
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("T1"),
-                                   std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("L1", "T1", "T2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2 T1 T2");
 
   // Observation of touchstart should defer execution of timer, idle and loading
@@ -1278,9 +1274,7 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
       WebInputEventResult::kHandledSystem);
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
 
   // Meta events like TapDown/FlingCancel shouldn't affect the priority.
   run_order.clear();
@@ -1310,15 +1304,13 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicy_MainThread) {
       WebInputEventResult::kHandledSystem);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("T1"),
-                                   std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("L1", "T1", "T2"));
 }
 
 // TODO(alexclarke): Reenable once we've reinstaed the Loading
 // UseCase.
-TEST_F(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
   scheduler_->DidStartProvisionalLoad(true);
@@ -1326,10 +1318,8 @@ TEST_F(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
   base::RunLoop().RunUntilIdle();
 
   // In loading policy, loading tasks are prioritized other others.
-  std::string loading_policy_expected[] = {
-      std::string("D1"), std::string("L1"), std::string("D2"),
-      std::string("L2"), std::string("C1"), std::string("T1"),
-      std::string("C2"), std::string("T2"), std::string("I1")};
+  String loading_policy_expected[] = {"D1", "L1", "D2", "L2", "C1",
+                                      "T1", "C2", "T2", "I1"};
   EXPECT_THAT(run_order, testing::ElementsAreArray(loading_policy_expected));
   EXPECT_EQ(UseCase::kLoading, CurrentUseCase());
 
@@ -1343,19 +1333,17 @@ TEST_F(MainThreadSchedulerImplTest, DISABLED_LoadingUseCase) {
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
 
-  std::string default_order_expected[] = {
-      std::string("D1"), std::string("C1"), std::string("T1"),
-      std::string("L1"), std::string("D2"), std::string("C2"),
-      std::string("T2"), std::string("L2"), std::string("I1")};
+  String default_order_expected[] = {"D1", "C1", "T1", "L1", "D2",
+                                     "C2", "T2", "L2", "I1"};
   EXPECT_THAT(run_order, testing::ElementsAreArray(default_order_expected));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresMouseMove_WhenMouseUp) {
   RunSlowCompositorTask();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1365,17 +1353,14 @@ TEST_F(MainThreadSchedulerImplTest,
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("D2"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "D2", "C2", "I1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_IgnoresMouseMove_WhenMouseUp) {
   RunSlowCompositorTask();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1385,15 +1370,12 @@ TEST_F(MainThreadSchedulerImplTest,
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("D2"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "D2", "C2", "I1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_MouseMove_WhenMouseDown) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   // Note that currently the compositor will never consume mouse move events,
@@ -1406,15 +1388,12 @@ TEST_F(MainThreadSchedulerImplTest,
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks deprioritized.
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("C1"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "C1", "C2", "I1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_MouseMove_WhenMouseDown) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1424,17 +1403,14 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
   scheduler_->DidHandleInputEventOnMainThread(
       FakeInputEvent(blink::WebInputEvent::kMouseMove,
                      blink::WebInputEvent::kLeftButtonDown),
       WebInputEventResult::kHandledSystem);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_MouseMove_WhenMouseDown_AfterMouseWheel) {
   // Simulate a main thread driven mouse wheel scroll gesture.
   SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
@@ -1445,7 +1421,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
   // Now start a main thread mouse touch gesture. It should be detected as main
   // thread custom input handling.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
   EnableIdleTasks();
 
@@ -1462,17 +1438,14 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, EventForwardedToMainThread_MouseClick) {
+TEST_P(MainThreadSchedulerImplTest, EventForwardedToMainThread_MouseClick) {
   // A mouse click should be detected as main thread input handling, which means
   // we won't try to defer expensive tasks because of one. We can, however,
   // prioritize compositing/input handling.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
   EnableIdleTasks();
 
@@ -1489,15 +1462,12 @@ TEST_F(MainThreadSchedulerImplTest, EventForwardedToMainThread_MouseClick) {
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_MouseWheel) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1506,16 +1476,13 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("C1"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_MouseWheel_PreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1524,16 +1491,13 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized (since they are fast).
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_NoPreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1551,17 +1515,14 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase());
 }
 
-TEST_F(
+TEST_P(
     MainThreadSchedulerImplTest,
     EventForwardedToMainThreadAndBackToCompositor_MouseWheel_NoPreventDefault) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1579,18 +1540,15 @@ TEST_F(
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("D2"),
-                                   std::string("C1"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "D2", "C1", "C2", "I1"));
   EXPECT_EQ(UseCase::kCompositorGesture, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventConsumedOnCompositorThread_IgnoresKeyboardEvents) {
   RunSlowCompositorTask();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1599,18 +1557,15 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("D2"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EventForwardedToMainThread_IgnoresKeyboardEvents) {
   RunSlowCompositorTask();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2");
 
   EnableIdleTasks();
@@ -1619,10 +1574,7 @@ TEST_F(MainThreadSchedulerImplTest,
       InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
   base::RunLoop().RunUntilIdle();
   // Note compositor tasks are not prioritized.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("D2"), std::string("C2"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
   // Note compositor tasks are not prioritized.
   scheduler_->DidHandleInputEventOnMainThread(
@@ -1630,13 +1582,13 @@ TEST_F(MainThreadSchedulerImplTest,
       WebInputEventResult::kHandledSystem);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestMainthreadScrollingUseCaseDoesNotStarveDefaultTasks) {
   SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
                                  blink::WebInputEvent::kGestureScrollBegin);
   EnableIdleTasks();
 
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1");
 
   for (int i = 0; i < 20; i++) {
@@ -1648,14 +1600,22 @@ TEST_F(MainThreadSchedulerImplTest,
       FakeInputEvent(blink::WebInputEvent::kGestureFlingStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
-  // Ensure that the default D1 task gets to run at some point before the final
-  // C2 compositor task.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("D1"),
-                                   std::string("C2")));
+
+  switch (GetParam()) {
+    case AntiStarvationLogic::kEnabled:
+      // Ensure that the default D1 task gets to run at some point before the
+      // final C2 compositor task.
+      EXPECT_THAT(run_order, testing::ElementsAre("C1", "D1", "C2"));
+      break;
+    case AntiStarvationLogic::kDisabled:
+      // Without anti-starvation logic, the default D1 task should get stuck at
+      // the end.
+      EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1"));
+      break;
+  }
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicyEnds_CompositorHandlesInput) {
   SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
   EXPECT_EQ(UseCase::kCompositorGesture,
@@ -1665,7 +1625,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicyEnds_MainThreadHandlesInput) {
   SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
                                  blink::WebInputEvent::kGestureScrollBegin);
@@ -1676,17 +1636,15 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
 
   run_order.clear();
   test_task_runner_->AdvanceMockTickClock(base::TimeDelta::FromSeconds(1));
@@ -1697,14 +1655,12 @@ TEST_F(MainThreadSchedulerImplTest, TestTouchstartPolicyEndsAfterTimeout) {
 
   // Touchstart policy mode should have ended now that the clock has advanced.
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1"),
-                                   std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("L1", "D1", "D2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestTouchstartPolicyEndsAfterConsecutiveTouchmoves) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
   // Observation of touchstart should defer execution of idle and loading tasks.
@@ -1712,9 +1668,7 @@ TEST_F(MainThreadSchedulerImplTest,
       FakeTouchEvent(blink::WebInputEvent::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("C2"),
-                                   std::string("D1"), std::string("D2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
 
   // Receiving the first touchmove will not affect scheduler priority.
   run_order.clear();
@@ -1730,10 +1684,10 @@ TEST_F(MainThreadSchedulerImplTest,
       FakeInputEvent(blink::WebInputEvent::kTouchMove),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("L1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
+TEST_P(MainThreadSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   bool is_anticipated_before = false;
   bool is_anticipated_after = false;
 
@@ -1801,7 +1755,7 @@ TEST_F(MainThreadSchedulerImplTest, TestIsHighPriorityWorkAnticipated) {
   EXPECT_FALSE(is_anticipated_after);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestShouldYield) {
+TEST_P(MainThreadSchedulerImplTest, TestShouldYield) {
   bool should_yield_before = false;
   bool should_yield_after = false;
 
@@ -1835,7 +1789,7 @@ TEST_F(MainThreadSchedulerImplTest, TestShouldYield) {
   EXPECT_TRUE(should_yield_after);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestShouldYield_TouchStart) {
+TEST_P(MainThreadSchedulerImplTest, TestShouldYield_TouchStart) {
   // Receiving a touchstart should immediately trigger yielding, even if
   // there's no immediately pending work in the compositor queue.
   EXPECT_FALSE(scheduler_->ShouldYieldForHighPriorityWork());
@@ -1846,7 +1800,7 @@ TEST_F(MainThreadSchedulerImplTest, TestShouldYield_TouchStart) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(MainThreadSchedulerImplTest, SlowMainThreadInputEvent) {
+TEST_P(MainThreadSchedulerImplTest, SlowMainThreadInputEvent) {
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 
   // An input event should bump us into input priority.
@@ -1875,7 +1829,7 @@ TEST_F(MainThreadSchedulerImplTest, SlowMainThreadInputEvent) {
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdate) {
+TEST_P(MainThreadSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdate) {
   for (int i = 0; i < 4; i++) {
     scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
   }
@@ -1883,7 +1837,7 @@ TEST_F(MainThreadSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdate) {
   EXPECT_EQ(1, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
+TEST_P(MainThreadSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
   scheduler_->ScheduleDelayedPolicyUpdate(Now(),
                                           base::TimeDelta::FromMilliseconds(1));
   scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
@@ -1893,7 +1847,7 @@ TEST_F(MainThreadSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
   EXPECT_EQ(2, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
+TEST_P(MainThreadSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
   scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread();
   scheduler_->ScheduleDelayedPolicyUpdate(Now(),
                                           base::TimeDelta::FromMilliseconds(1));
@@ -1903,7 +1857,7 @@ TEST_F(MainThreadSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
   EXPECT_EQ(2, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
+TEST_P(MainThreadSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
   // We expect DidHandleInputEventOnCompositorThread to post an urgent policy
   // update.
   scheduler_->DidHandleInputEventOnCompositorThread(
@@ -1924,7 +1878,7 @@ TEST_F(MainThreadSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
   EXPECT_EQ(2, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        UpdatePolicyCountTriggeredByThreeInputEvents) {
   // We expect DidHandleInputEventOnCompositorThread to post
   // an urgent policy update.
@@ -1974,7 +1928,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(3, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        UpdatePolicyCountTriggeredByTwoInputEventsWithALongSeparatingDelay) {
   // We expect DidHandleInputEventOnCompositorThread to post an urgent policy
   // update.
@@ -2012,7 +1966,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(4, scheduler_->update_policy_count_);
 }
 
-TEST_F(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
+TEST_P(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   EXPECT_EQ(0, scheduler_->update_policy_count_);
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   EXPECT_EQ(1, scheduler_->update_policy_count_);
@@ -2060,15 +2014,13 @@ TEST_F(MainThreadSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   // earlier updated cause by IsHighPriorityWorkAnticipated, a final update
   // transitions from 'not_scrolling touchstart expected' to 'not_scrolling'.
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(
-      scheduler_->use_cases_,
-      testing::ElementsAre(
-          std::string("none"), std::string("compositor_gesture"),
-          std::string("compositor_gesture blocking input expected"),
-          std::string("none blocking input expected"), std::string("none")));
+  EXPECT_THAT(scheduler_->use_cases_,
+              testing::ElementsAre("none", "compositor_gesture",
+                                   "compositor_gesture blocking input expected",
+                                   "none blocking input expected", "none"));
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        BlockingInputExpectedSoonWhenBlockInputEventSeen) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
   EXPECT_TRUE(HaveSeenABlockingGesture());
@@ -2076,7 +2028,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_TRUE(BlockingInputExpectedSoon());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        BlockingInputNotExpectedSoonWhenNoBlockInputEventSeen) {
   SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
   EXPECT_FALSE(HaveSeenABlockingGesture());
@@ -2097,6 +2049,8 @@ class MainThreadSchedulerImplWithMessageLoopTest
         base::sequence_manager::SequenceManagerForTest::CreateOnCurrentThread(
             base::sequence_manager::SequenceManager::Settings::Builder()
                 .SetTickClock(&clock_)
+                .SetAntiStarvationLogicForPrioritiesDisabled(
+                    GetParam() == AntiStarvationLogic::kDisabled)
                 .Build()),
         base::nullopt));
   }
@@ -2105,8 +2059,7 @@ class MainThreadSchedulerImplWithMessageLoopTest
   base::TimeTicks Now() override { return clock_.NowTicks(); }
 
   void PostFromNestedRunloop(
-      std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
-          tasks) {
+      Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>* tasks) {
     for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
       if (pair.second) {
         idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
@@ -2126,27 +2079,28 @@ class MainThreadSchedulerImplWithMessageLoopTest
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplWithMessageLoopTest);
 };
 
-TEST_F(MainThreadSchedulerImplWithMessageLoopTest,
-       NonNestableIdleTaskDoesntExecuteInNestedLoop) {
-  std::vector<std::string> order;
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("1")));
-  idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("2")));
+INSTANTIATE_TEST_SUITE_P(,
+                         MainThreadSchedulerImplWithMessageLoopTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
 
-  std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
+TEST_P(MainThreadSchedulerImplWithMessageLoopTest,
+       NonNestableIdleTaskDoesntExecuteInNestedLoop) {
+  Vector<String> order;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "1"));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "2"));
+
+  Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
       tasks_to_post_from_nested_loop;
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("3")),
-      false));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "3"), false));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("4")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "4"), true));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("5")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "5"), true));
 
   default_task_runner_->PostTask(
       FROM_HERE,
@@ -2158,12 +2112,10 @@ TEST_F(MainThreadSchedulerImplWithMessageLoopTest,
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
-                                          std::string("4"), std::string("5"),
-                                          std::string("3")));
+  EXPECT_THAT(order, testing::ElementsAre("1", "2", "4", "5", "3"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
+TEST_P(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
   base::TimeDelta ten_millis(base::TimeDelta::FromMilliseconds(10));
   base::TimeTicks expected_deadline = Now() + ten_millis;
   base::TimeTicks deadline_in_task;
@@ -2185,7 +2137,7 @@ TEST_F(MainThreadSchedulerImplTest, TestBeginMainFrameNotExpectedUntil) {
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriod) {
+TEST_P(MainThreadSchedulerImplTest, TestLongIdlePeriod) {
   base::TimeTicks expected_deadline = Now() + maximum_idle_period_duration();
   base::TimeTicks deadline_in_task;
   int run_count = 0;
@@ -2202,7 +2154,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriod) {
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
+TEST_P(MainThreadSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
   base::TimeDelta pending_task_delay = base::TimeDelta::FromMilliseconds(30);
   base::TimeTicks expected_deadline = Now() + pending_task_delay;
   base::TimeTicks deadline_in_task;
@@ -2219,7 +2171,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestLongIdlePeriodWithLatePendingDelayedTask) {
   base::TimeDelta pending_task_delay = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks deadline_in_task;
@@ -2246,8 +2198,8 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(1, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodRepeating) {
-  std::vector<base::TimeTicks> actual_deadlines;
+TEST_P(MainThreadSchedulerImplTest, TestLongIdlePeriodRepeating) {
+  Vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
   g_max_idle_task_reposts = 3;
@@ -2285,7 +2237,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodRepeating) {
   EXPECT_EQ(4, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
+TEST_P(MainThreadSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   base::TimeTicks deadline_in_task;
   int run_count = 0;
 
@@ -2313,7 +2265,7 @@ void TestCanExceedIdleDeadlineIfRequiredTask(ThreadScheduler* scheduler,
   (*run_count)++;
 }
 
-TEST_F(MainThreadSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
+TEST_P(MainThreadSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   int run_count = 0;
   bool can_exceed_idle_deadline = false;
 
@@ -2363,7 +2315,7 @@ TEST_F(MainThreadSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
   EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestRendererHiddenIdlePeriod) {
+TEST_P(MainThreadSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   int run_count = 0;
 
   g_max_idle_task_reposts = 2;
@@ -2395,16 +2347,15 @@ TEST_F(MainThreadSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   EXPECT_EQ(2, run_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TimerQueueEnabledByDefault) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, TimerQueueEnabledByDefault) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("T1", "T2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, StopAndResumeRenderer) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, StopAndResumeRenderer) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   auto pause_handle = scheduler_->PauseRenderer();
@@ -2413,12 +2364,11 @@ TEST_F(MainThreadSchedulerImplTest, StopAndResumeRenderer) {
 
   pause_handle.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("T1", "T2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, StopAndThrottleTimerQueue) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, StopAndThrottleTimerQueue) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   auto pause_handle = scheduler_->PauseRenderer();
@@ -2429,8 +2379,8 @@ TEST_F(MainThreadSchedulerImplTest, StopAndThrottleTimerQueue) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest, ThrottleAndPauseRenderer) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, ThrottleAndPauseRenderer) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
@@ -2441,8 +2391,8 @@ TEST_F(MainThreadSchedulerImplTest, ThrottleAndPauseRenderer) {
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
-  std::vector<std::string> run_order;
+TEST_P(MainThreadSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   auto pause_handle1 = scheduler_->PauseRenderer();
@@ -2461,34 +2411,30 @@ TEST_F(MainThreadSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
 
   pause_handle3.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T1"), std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("T1", "T2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, PauseRenderer) {
+TEST_P(MainThreadSchedulerImplTest, PauseRenderer) {
   // Tasks in some queues don't fire when the renderer is paused.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
   auto pause_handle = scheduler_->PauseRenderer();
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "I1"));
 
   // Tasks are executed when renderer is resumed.
   run_order.clear();
   pause_handle.reset();
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("T1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("L1", "T1"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, UseCaseToString) {
+TEST_P(MainThreadSchedulerImplTest, UseCaseToString) {
   CheckAllUseCaseToString();
 }
 
-TEST_F(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
+TEST_P(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
   // This should not DCHECK because there was no corresponding compositor side
   // call to DidHandleInputEventOnCompositorThread with
   // INPUT_EVENT_ACK_STATE_NOT_CONSUMED. There are legitimate reasons for the
@@ -2498,7 +2444,7 @@ TEST_F(MainThreadSchedulerImplTest, MismatchedDidHandleInputEventOnMainThread) {
       WebInputEventResult::kHandledSystem);
 }
 
-TEST_F(MainThreadSchedulerImplTest, BeginMainFrameOnCriticalPath) {
+TEST_P(MainThreadSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 
   viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
@@ -2513,24 +2459,24 @@ TEST_F(MainThreadSchedulerImplTest, BeginMainFrameOnCriticalPath) {
   ASSERT_FALSE(scheduler_->BeginMainFrameOnCriticalPath());
 }
 
-TEST_F(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
+TEST_P(MainThreadSchedulerImplTest, ShutdownPreventsPostingOfNewTasks) {
   main_frame_scheduler_.reset();
   page_scheduler_.reset();
   scheduler_->Shutdown();
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1");
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_NONE) {
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
   EXPECT_EQ(rails_response_time(),
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_kCompositorGesture) {
   SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
   EXPECT_EQ(UseCase::kCompositorGesture,
@@ -2541,7 +2487,7 @@ TEST_F(MainThreadSchedulerImplTest,
 
 // TODO(alexclarke): Reenable once we've reinstaed the Loading
 // UseCase.
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        DISABLED_EstimateLongestJankFreeTaskDuration_UseCase_) {
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_EQ(UseCase::kLoading, ForceUpdatePolicyAndGetCurrentUseCase());
@@ -2549,7 +2495,7 @@ TEST_F(MainThreadSchedulerImplTest,
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_GESTURE) {
   SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
                                  blink::WebInputEvent::kGestureScrollUpdate);
@@ -2575,7 +2521,7 @@ TEST_F(MainThreadSchedulerImplTest,
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-TEST_F(
+TEST_P(
     MainThreadSchedulerImplTest,
     EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
   viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
@@ -2600,7 +2546,7 @@ TEST_F(
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        EstimateLongestJankFreeTaskDuration_UseCase_SYNCHRONIZED_GESTURE) {
   SimulateCompositorGestureStart(TouchEventPolicy::kDontSendTouchStart);
 
@@ -2631,18 +2577,16 @@ class PageSchedulerImplForTest : public PageSchedulerImpl {
       : PageSchedulerImpl(nullptr, scheduler) {}
   ~PageSchedulerImplForTest() override = default;
 
-  void ReportIntervention(const std::string& message) override {
+  void ReportIntervention(const String& message) override {
     interventions_.push_back(message);
   }
 
-  const std::vector<std::string>& Interventions() const {
-    return interventions_;
-  }
+  const Vector<String>& Interventions() const { return interventions_; }
 
   MOCK_METHOD1(RequestBeginMainFrameNotExpected, bool(bool));
 
  private:
-  std::vector<std::string> interventions_;
+  Vector<String> interventions_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSchedulerImplForTest);
 };
@@ -2662,7 +2606,7 @@ void SlowCountingTask(size_t* count,
 }
 }  // namespace
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        SYNCHRONIZED_GESTURE_TimerTaskThrottling_TimersStopped) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
@@ -2719,7 +2663,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(2u, count);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        SYNCHRONIZED_GESTURE_TimerTaskThrottling_task_not_expensive) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
@@ -2757,7 +2701,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(500u, count);
 }
 
-TEST_F(MainThreadSchedulerImplTest, DenyLongIdleDuringTouchStart) {
+TEST_P(MainThreadSchedulerImplTest, DenyLongIdleDuringTouchStart) {
   scheduler_->DidHandleInputEventOnCompositorThread(
       FakeTouchEvent(blink::WebInputEvent::kTouchStart),
       InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
@@ -2777,7 +2721,7 @@ TEST_F(MainThreadSchedulerImplTest, DenyLongIdleDuringTouchStart) {
   EXPECT_GE(next_time_to_check, base::TimeDelta());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        TestCompositorPolicy_TouchStartDuringFling) {
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   scheduler_->DidAnimateForInputOnCompositorThread();
@@ -2793,13 +2737,13 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_EQ(UseCase::kTouchstart, ForceUpdatePolicyAndGetCurrentUseCase());
 }
 
-TEST_F(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
+TEST_P(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
 
   // With the compositor task taking 20ms, there is not enough time to run
   // other tasks in the same 16ms frame. To avoid starvation, compositing tasks
   // should therefore not get prioritized.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   for (int i = 0; i < 1000; i++)
     PostTestTasks(&run_order, "T1");
 
@@ -2832,14 +2776,14 @@ TEST_F(MainThreadSchedulerImplTest, SYNCHRONIZED_GESTURE_CompositingExpensive) {
   EXPECT_EQ(1000u, run_order.size());
 }
 
-TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
+TEST_P(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
   SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
                                  blink::WebInputEvent::kGestureScrollBegin);
 
   // With the compositor task taking 20ms, there is not enough time to run
   // other tasks in the same 16ms frame. To avoid starvation, compositing tasks
   // should therefore not get prioritized.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   for (int i = 0; i < 1000; i++)
     PostTestTasks(&run_order, "T1");
 
@@ -2873,7 +2817,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_CUSTOM_INPUT_HANDLING) {
   EXPECT_EQ(1000u, run_order.size());
 }
 
-TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
+TEST_P(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
   SimulateMainThreadGestureStart(TouchEventPolicy::kDontSendTouchStart,
                                  blink::WebInputEvent::kGestureScrollBegin);
 
@@ -2881,7 +2825,7 @@ TEST_F(MainThreadSchedulerImplTest, MAIN_THREAD_GESTURE) {
   // other tasks in the same 16ms frame. However because this is a main thread
   // gesture instead of custom main thread input handling, we allow the timer
   // tasks to be starved.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   for (int i = 0; i < 1000; i++)
     PostTestTasks(&run_order, "T1");
 
@@ -2917,7 +2861,7 @@ class MockRAILModeObserver : public RAILModeObserver {
   MOCK_METHOD1(OnRAILModeChanged, void(RAILMode rail_mode));
 };
 
-TEST_F(MainThreadSchedulerImplTest, TestResponseRAILMode) {
+TEST_P(MainThreadSchedulerImplTest, TestResponseRAILMode) {
   MockRAILModeObserver observer;
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kResponse));
@@ -2929,7 +2873,7 @@ TEST_F(MainThreadSchedulerImplTest, TestResponseRAILMode) {
   scheduler_->RemoveRAILModeObserver(&observer);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestAnimateRAILMode) {
+TEST_P(MainThreadSchedulerImplTest, TestAnimateRAILMode) {
   MockRAILModeObserver observer;
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation)).Times(0);
@@ -2940,7 +2884,7 @@ TEST_F(MainThreadSchedulerImplTest, TestAnimateRAILMode) {
   scheduler_->RemoveRAILModeObserver(&observer);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestIdleRAILMode) {
+TEST_P(MainThreadSchedulerImplTest, TestIdleRAILMode) {
   MockRAILModeObserver observer;
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
@@ -2955,7 +2899,7 @@ TEST_F(MainThreadSchedulerImplTest, TestIdleRAILMode) {
   scheduler_->RemoveRAILModeObserver(&observer);
 }
 
-TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
+TEST_P(MainThreadSchedulerImplTest, TestLoadRAILMode) {
   MockRAILModeObserver observer;
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
@@ -2970,7 +2914,7 @@ TEST_F(MainThreadSchedulerImplTest, TestLoadRAILMode) {
   scheduler_->RemoveRAILModeObserver(&observer);
 }
 
-TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
+TEST_P(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   MockRAILModeObserver observer;
   scheduler_->AddRAILModeObserver(&observer);
   EXPECT_CALL(observer, OnRAILModeChanged(RAILMode::kAnimation));
@@ -2991,7 +2935,7 @@ TEST_F(MainThreadSchedulerImplTest, InputTerminatesLoadRAILMode) {
   scheduler_->RemoveRAILModeObserver(&observer);
 }
 
-TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
+TEST_P(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
   // Ensure neither suspension nor timer task throttling affects an unthrottled
   // task runner.
   SimulateCompositorGestureStart(TouchEventPolicy::kSendTouchStart);
@@ -3036,7 +2980,7 @@ TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
   EXPECT_EQ(500u, unthrottled_count);
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        VirtualTimePolicyDoesNotAffectNewTimerTaskQueueIfVirtualTimeNotEnabled) {
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kPause);
@@ -3045,7 +2989,7 @@ TEST_F(MainThreadSchedulerImplTest,
   EXPECT_FALSE(timer_tq->HasActiveFence());
 }
 
-TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
+TEST_P(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
@@ -3107,7 +3051,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
 }
 
-TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
+TEST_P(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
   std::unique_ptr<PageSchedulerImpl> page_scheduler =
       base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get()));
   scheduler_->AddPageScheduler(page_scheduler.get());
@@ -3128,7 +3072,7 @@ TEST_F(MainThreadSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
   EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
 }
 
-TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
+TEST_P(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
 
@@ -3154,7 +3098,7 @@ TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
   EXPECT_FALSE(scheduler_->VirtualTimeControlTaskQueue());
 }
 
-TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
+TEST_P(MainThreadSchedulerImplTest, VirtualTimePauser) {
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   scheduler_->SetVirtualTimePolicy(
@@ -3175,7 +3119,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
   EXPECT_EQ(after, before);
 }
 
-TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
+TEST_P(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   scheduler_->EnableVirtualTime(
       MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   scheduler_->SetVirtualTimePolicy(
@@ -3192,7 +3136,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
   EXPECT_GT(after, before);
 }
 
-TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
+TEST_P(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   // This test ensures that we do not do anything strange like stopping
   // processing task queues after we encountered one task queue with
   // DoNotUseVirtualTime trait.
@@ -3238,7 +3182,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   EXPECT_EQ(counter, kTaskQueueCount);
 }
 
-TEST_F(MainThreadSchedulerImplTest, Tracing) {
+TEST_P(MainThreadSchedulerImplTest, Tracing) {
   // This test sets renderer scheduler to some non-trivial state
   // (by posting tasks, creating child schedulers, etc) and converts it into a
   // traced value. This test checks that no internal checks fire during this.
@@ -3273,7 +3217,7 @@ TEST_F(MainThreadSchedulerImplTest, Tracing) {
 }
 
 void RecordingTimeTestTask(
-    std::vector<base::TimeTicks>* run_times,
+    Vector<base::TimeTicks>* run_times,
     scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
   run_times->push_back(task_runner->GetMockTickClock()->NowTicks());
 }
@@ -3291,7 +3235,7 @@ void RecordingTimeTestTask(
 //
 // MaxEQT1 = 500ms is recorded and observed in histogram.
 // MaxEQT2 is recorded but not yet in histogram for not being flushed.
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        MaxQueueingTimeMetricRecordedOnlyDuringNavigation) {
   base::HistogramTester tester;
   // Start with a long task whose queueing time will be ignored.
@@ -3311,7 +3255,7 @@ TEST_F(MainThreadSchedulerImplTest,
 }
 
 // Only the max of all the queueing times is recorded.
-TEST_F(MainThreadSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
+TEST_P(MainThreadSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
   base::HistogramTester tester;
   scheduler_->DidCommitProvisionalLoad(false, false, false);
   // The smaller queuing time will be ignored.
@@ -3324,7 +3268,7 @@ TEST_F(MainThreadSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
   tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
 }
 
-TEST_F(MainThreadSchedulerImplTest, DidCommitProvisionalLoad) {
+TEST_P(MainThreadSchedulerImplTest, DidCommitProvisionalLoad) {
   scheduler_->OnFirstMeaningfulPaint();
   EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
 
@@ -3378,20 +3322,17 @@ TEST_F(MainThreadSchedulerImplTest, DidCommitProvisionalLoad) {
   EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
 }
 
-TEST_F(MainThreadSchedulerImplTest, LoadingControlTasks) {
+TEST_P(MainThreadSchedulerImplTest, LoadingControlTasks) {
   // Expect control loading tasks (M) to jump ahead of any regular loading
   // tasks (L).
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 L2 M1 L3 L4 M2 L5 L6");
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("M1"), std::string("M2"),
-                                   std::string("L1"), std::string("L2"),
-                                   std::string("L3"), std::string("L4"),
-                                   std::string("L5"), std::string("L6")));
+  EXPECT_THAT(run_order, testing::ElementsAre("M1", "M2", "L1", "L2", "L3",
+                                              "L4", "L5", "L6"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, RequestBeginMainFrameNotExpected) {
+TEST_P(MainThreadSchedulerImplTest, RequestBeginMainFrameNotExpected) {
   std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
       std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
   scheduler_->AddPageScheduler(page_scheduler.get());
@@ -3413,7 +3354,7 @@ TEST_F(MainThreadSchedulerImplTest, RequestBeginMainFrameNotExpected) {
   Mock::VerifyAndClearExpectations(page_scheduler.get());
 }
 
-TEST_F(MainThreadSchedulerImplTest,
+TEST_P(MainThreadSchedulerImplTest,
        RequestBeginMainFrameNotExpected_MultipleCalls) {
   std::unique_ptr<PageSchedulerImplForTest> page_scheduler =
       std::make_unique<PageSchedulerImplForTest>(scheduler_.get());
@@ -3431,21 +3372,19 @@ TEST_F(MainThreadSchedulerImplTest,
 }
 
 #if defined(OS_ANDROID)
-TEST_F(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
+TEST_P(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
   // Tasks in some queues don't fire when the timers are paused.
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
   scheduler_->PauseTimersForAndroidWebView();
   EnableIdleTasks();
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                   std::string("L1"), std::string("I1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("D1", "C1", "L1", "I1"));
   // The rest queued tasks fire when the timers are resumed.
   run_order.clear();
   scheduler_->ResumeTimersForAndroidWebView();
   test_task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("T1"));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -3456,12 +3395,23 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
     CreateTestTaskRunner();
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
         base::sequence_manager::SequenceManagerForTest::Create(
-            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
+            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock(),
+            base::sequence_manager::SequenceManager::Settings::Builder()
+                .SetRandomisedSamplingEnabled(true)
+                .SetAntiStarvationLogicForPrioritiesDisabled(
+                    GetParam() == AntiStarvationLogic::kDisabled)
+                .Build()),
         base::Time::FromJsTime(1000000.0)));
   }
 };
 
-TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
+INSTANTIATE_TEST_SUITE_P(,
+                         MainThreadSchedulerImplWithInitalVirtualTimeTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
   EXPECT_EQ(PageSchedulerImpl::VirtualTimePolicy::kPause,
             scheduler_->virtual_time_policy());
@@ -3479,14 +3429,18 @@ class CompositingExperimentWithExplicitSignalsTest
             {}) {}
 };
 
-TEST_F(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
-  std::vector<std::string> run_order;
+INSTANTIATE_TEST_SUITE_P(,
+                         CompositingExperimentWithExplicitSignalsTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "P1 T1 C1");
   base::RunLoop().RunUntilIdle();
   // Without an explicit signal nothing should be reordered.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("T1"),
-                                   std::string("C1")));
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "T1", "C1"));
   run_order.clear();
 
   scheduler_->OnMainFrameRequestedForInput();
@@ -3495,18 +3449,14 @@ TEST_F(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
   base::RunLoop().RunUntilIdle();
   // When a signal is present, compositing tasks should be prioritized until
   // WillBeginMainFrame is received.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C2"), std::string("C3"),
-                                   std::string("T2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("C2", "C3", "T2"));
   run_order.clear();
 
   scheduler_->WillBeginFrame(viz::BeginFrameArgs());
 
   PostTestTasks(&run_order, "T3 C4 C5");
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("T3"), std::string("C4"),
-                                   std::string("C5")));
+  EXPECT_THAT(run_order, testing::ElementsAre("T3", "C4", "C5"));
   run_order.clear();
 }
 
@@ -3521,18 +3471,21 @@ class CompositingExperimentWithImplicitSignalsTest
              kUseWillBeginMainFrameForCompositingPrioritization}) {}
 };
 
-TEST_F(CompositingExperimentWithImplicitSignalsTest, CompositingAfterInput) {
-  std::vector<std::string> run_order;
+INSTANTIATE_TEST_SUITE_P(,
+                         CompositingExperimentWithImplicitSignalsTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(CompositingExperimentWithImplicitSignalsTest, CompositingAfterInput) {
+  Vector<String> run_order;
   PostTestTasks(&run_order, "T1 C1 C2 P1 P2");
   base::RunLoop().RunUntilIdle();
   // One compositing task should be prioritized after input.
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("P2"),
-                                   std::string("C1"), std::string("T1"),
-                                   std::string("C2")));
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "P2", "C1", "T1", "C2"));
 }
 
-TEST_F(MainThreadSchedulerImplTest, EQTWithNestedLoop) {
+TEST_P(MainThreadSchedulerImplTest, EQTWithNestedLoop) {
   AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(100));
 
   RunTask(base::BindLambdaForTesting([&] {
@@ -3571,7 +3524,7 @@ TEST_F(MainThreadSchedulerImplTest, EQTWithNestedLoop) {
                   base::TimeDelta::FromMicroseconds(400 + 50 + 50 + 1250)));
 }
 
-TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
+TEST_P(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
   // Ensure that the scheduler clears its references to a task queue after
   // |shutdown| and doesn't try to update its policies.
   scoped_refptr<MainThreadTaskQueue> queue1 = scheduler_->NewTimerTaskQueue(
@@ -3593,7 +3546,7 @@ TEST_F(MainThreadSchedulerImplTest, TaskQueueReferenceClearedOnShutdown) {
   EXPECT_EQ(queue2->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 }
 
-TEST_F(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
+TEST_P(MainThreadSchedulerImplTest, MicrotaskCheckpointTiming) {
   base::RunLoop().RunUntilIdle();
 
   base::TimeTicks start_time = Now();
@@ -3628,17 +3581,21 @@ class VeryHighPriorityForCompositingAlwaysExperimentTest
                                     {}) {}
 };
 
-TEST_F(VeryHighPriorityForCompositingAlwaysExperimentTest,
+INSTANTIATE_TEST_SUITE_P(,
+                         VeryHighPriorityForCompositingAlwaysExperimentTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAlwaysExperimentTest,
        TestCompositorPolicy) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
 
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("C1"),
-                                   std::string("C2"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
@@ -3650,38 +3607,40 @@ class VeryHighPriorityForCompositingWhenFastExperimentTest
                                     {}) {}
 };
 
-TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+INSTANTIATE_TEST_SUITE_P(,
+                         VeryHighPriorityForCompositingWhenFastExperimentTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingWhenFastExperimentTest,
        TestCompositorPolicy_FastCompositing) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
 
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("C1"),
-                                   std::string("C2"), std::string("D1"),
-                                   std::string("D2"), std::string("I1")));
+              testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+TEST_P(VeryHighPriorityForCompositingWhenFastExperimentTest,
        TestCompositorPolicy_SlowCompositing) {
   RunSlowCompositorTask();
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
 
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("P1"), std::string("D1"),
-                                   std::string("C1"), std::string("D2"),
-                                   std::string("C2"), std::string("I1")));
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
-TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
+TEST_P(VeryHighPriorityForCompositingWhenFastExperimentTest,
        TestCompositorPolicy_CompositingStaysAtHighest) {
-  std::vector<std::string> run_order;
+  Vector<String> run_order;
   PostTestTasks(&run_order, "L1 I1 D1 C1 D2 P1 C2");
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -3690,11 +3649,107 @@ TEST_F(VeryHighPriorityForCompositingWhenFastExperimentTest,
                                  blink::WebInputEvent::kGestureScrollBegin);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("P1"),
-                                   std::string("C2"), std::string("L1"),
-                                   std::string("D1"), std::string("D2"),
-                                   std::string("I1")));
+              testing::ElementsAre("C1", "P1", "C2", "L1", "D1", "D2", "I1"));
   EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingAlternatingExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAlternatingExperimentTest()
+      : MainThreadSchedulerImplTest(
+            {kVeryHighPriorityForCompositingAlternating},
+            {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    VeryHighPriorityForCompositingAlternatingExperimentTest,
+    testing::Values(AntiStarvationLogic::kEnabled,
+                    AntiStarvationLogic::kDisabled),
+    GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAlternatingExperimentTest,
+       TestCompositorPolicy_AlternatingCompositorTasks) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 C1 C2 C3");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("C1", "D1", "C2", "D2", "C3", "D3"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAlternatingExperimentTest,
+       TestCompositorPolicy_AlternatingCompositorStaysAtHighest) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 D2 D3 C1 C2 C3");
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  EnableIdleTasks();
+  SimulateMainThreadGestureStart(TouchEventPolicy::kSendTouchStart,
+                                 blink::WebInputEvent::kGestureScrollBegin);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("C1", "C2", "C3", "D1", "D2", "D3"));
+  EXPECT_EQ(UseCase::kMainThreadCustomInputHandling, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingAfterDelayExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAfterDelayExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAfterDelay},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VeryHighPriorityForCompositingAfterDelayExperimentTest,
+                         testing::Values(AntiStarvationLogic::kEnabled,
+                                         AntiStarvationLogic::kDisabled),
+                         GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_CompositorStaysAtNormalPriority) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_FirstCompositorTaskSetToVeryHighPriority) {
+  // 1.5ms task to complete the countdown and prioritze compositing.
+  AdvanceTimeWithTask(0.15);
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "C1", "D1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
+       TestCompositorPolicy_FirstCompositorTaskStaysAtNormalPriority) {
+  // 0.5ms task should not prioritize compositing.
+  AdvanceTimeWithTask(0.05);
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "I1 D1 C1 D2 C2 P1");
+
+  EnableIdleTasks();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("P1", "D1", "C1", "D2", "C2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 
 }  // namespace main_thread_scheduler_impl_unittest

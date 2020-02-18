@@ -24,8 +24,8 @@
 #include "perfetto/config/inode_file/inode_file_config.pbzero.h"
 #include "perfetto/trace/filesystem/inode_file_map.pbzero.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace {
@@ -101,7 +101,7 @@ TEST_F(InodeFileDataSourceTest, TestFileSystemScan) {
   data_source->OnInodes({{buf.st_ino, buf.st_dev}});
   task_runner_.RunUntilCheckpoint("done");
 
-  // Expect that the found inode is added the the LRU cache.
+  // Expect that the found inode is added in the LRU cache.
   EXPECT_THAT(cache_.Get(std::make_pair(buf.st_dev, buf.st_ino)),
               Pointee(Eq(value)));
 }

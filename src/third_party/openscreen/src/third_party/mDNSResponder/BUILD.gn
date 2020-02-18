@@ -42,9 +42,7 @@ source_set("core") {
     "src/mDNSShared/mDNSDebug.c",
   ]
 
-  configs += [
-    ":mdnsresponder_config",
-  ]
+  configs += [ ":mdnsresponder_config" ]
 
   if (is_debug) {
     defines = [ "MDNS_DEBUGMSGS=2" ]

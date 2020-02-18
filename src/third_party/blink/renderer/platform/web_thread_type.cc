@@ -39,6 +39,10 @@ const char* GetNameForThreadType(WebThreadType thread_type) {
       return "HRTF database loader thread";
     case WebThreadType::kTestThread:
       return "test thread";
+    case WebThreadType::kAudioEncoderThread:
+      return "Audio encoder thread";
+    case WebThreadType::kVideoEncoderThread:
+      return "Video encoder thread";
     case WebThreadType::kCount:
       NOTREACHED();
       return nullptr;

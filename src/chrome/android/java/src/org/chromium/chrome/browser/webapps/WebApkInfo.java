@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -32,6 +33,7 @@ import org.chromium.webapk.lib.common.WebApkCommonUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.WebApkMetaDataUtils;
+import org.chromium.webapk.lib.common.splash.SplashLayout;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -279,11 +281,10 @@ public class WebApkInfo extends WebappInfo {
             return null;
         }
 
+        Context appContext = ContextUtils.getApplicationContext();
         Resources res = null;
         try {
-            res = ContextUtils.getApplicationContext()
-                          .getPackageManager()
-                          .getResourcesForApplication(webApkPackageName);
+            res = appContext.getPackageManager().getResourcesForApplication(webApkPackageName);
         } catch (PackageManager.NameNotFoundException e) {
             return null;
         }
@@ -310,6 +311,19 @@ public class WebApkInfo extends WebappInfo {
                 WebApkMetaDataUtils.getLongFromMetaData(bundle, WebApkMetaDataKeys.BACKGROUND_COLOR,
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
 
+        // Fetch the default background color from the WebAPK's resources. Fetching the default
+        // background color from the WebAPK is important for consistency when:
+        // - A new version of Chrome has changed the default background color.
+        // - Chrome has not yet requested an update for the WebAPK and the WebAPK still has the old
+        //   default background color in its resources.
+        // New-style WebAPKs use the background color and default background color in both the
+        // WebAPK and Chrome processes.
+        int defaultBackgroundColorId =
+                IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.DEFAULT_BACKGROUND_COLOR_ID, 0);
+        int defaultBackgroundColor = (defaultBackgroundColorId == 0)
+                ? SplashLayout.getDefaultBackgroundColor(appContext)
+                : ApiCompatibilityUtils.getColor(res, defaultBackgroundColorId);
+
         int shellApkVersion =
                 IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.SHELL_APK_VERSION, 0);
 
@@ -322,6 +336,9 @@ public class WebApkInfo extends WebappInfo {
 
         int primaryIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.ICON_ID, 0);
         Bitmap primaryIcon = decodeBitmapFromDrawable(res, primaryIconId);
+
+        boolean isPrimaryIconMaskable =
+                IntentUtils.safeGetBoolean(bundle, WebApkMetaDataKeys.IS_ICON_MASKABLE, false);
 
         int badgeIconId = IntentUtils.safeGetInt(bundle, WebApkMetaDataKeys.BADGE_ICON_ID, 0);
         Bitmap badgeIcon = decodeBitmapFromDrawable(res, badgeIconId);
@@ -340,10 +357,10 @@ public class WebApkInfo extends WebappInfo {
 
         return create(WebApkConstants.WEBAPK_ID_PREFIX + webApkPackageName, url, scope,
                 new Icon(primaryIcon), new Icon(badgeIcon), new Icon(splashIcon), name, shortName,
-                displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, shareTargetActivityName, forceNavigation,
-                isSplashProvidedByWebApk, shareData);
+                displayMode, orientation, source, themeColor, backgroundColor,
+                defaultBackgroundColor, isPrimaryIconMaskable, webApkPackageName, shellApkVersion,
+                manifestUrl, manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
+                shareTargetActivityName, forceNavigation, isSplashProvidedByWebApk, shareData);
     }
 
     /**
@@ -361,6 +378,9 @@ public class WebApkInfo extends WebappInfo {
      * @param source                   Source that the WebAPK was launched from.
      * @param themeColor               The theme color of the WebAPK.
      * @param backgroundColor          The background color of the WebAPK.
+     * @param defaultBackgroundColor   The background color to use if the Web Manifest does not
+     *                                 provide a background color.
+     * @param isPrimaryIconMaskable    Is the primary icon maskable.
      * @param webApkPackageName        The package of the WebAPK.
      * @param shellApkVersion          Version of the code in //chrome/android/webapk/shell_apk.
      * @param manifestUrl              URL of the Web Manifest.
@@ -383,7 +403,8 @@ public class WebApkInfo extends WebappInfo {
     public static WebApkInfo create(String id, String url, String scope, Icon primaryIcon,
             Icon badgeIcon, Icon splashIcon, String name, String shortName,
             @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
-            long backgroundColor, String webApkPackageName, int shellApkVersion, String manifestUrl,
+            long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
+            String webApkPackageName, int shellApkVersion, String manifestUrl,
             String manifestStartUrl, @WebApkDistributor int distributor,
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             String shareTargetActivityName, boolean forceNavigation,
@@ -403,23 +424,23 @@ public class WebApkInfo extends WebappInfo {
         }
 
         return new WebApkInfo(id, url, scope, primaryIcon, badgeIcon, splashIcon, name, shortName,
-                displayMode, orientation, source, themeColor, backgroundColor, webApkPackageName,
-                shellApkVersion, manifestUrl, manifestStartUrl, distributor,
-                iconUrlToMurmur2HashMap, shareTarget, shareTargetActivityName, forceNavigation,
-                isSplashProvidedByWebApk, shareData);
+                displayMode, orientation, source, themeColor, backgroundColor,
+                defaultBackgroundColor, isPrimaryIconMaskable, webApkPackageName, shellApkVersion,
+                manifestUrl, manifestStartUrl, distributor, iconUrlToMurmur2HashMap, shareTarget,
+                shareTargetActivityName, forceNavigation, isSplashProvidedByWebApk, shareData);
     }
 
     protected WebApkInfo(String id, String url, String scope, Icon primaryIcon, Icon badgeIcon,
             Icon splashIcon, String name, String shortName, @WebDisplayMode int displayMode,
             int orientation, int source, long themeColor, long backgroundColor,
-            String webApkPackageName, int shellApkVersion, String manifestUrl,
-            String manifestStartUrl, @WebApkDistributor int distributor,
-            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            String shareTargetActivityName, boolean forceNavigation,
+            int defaultBackgroundColor, boolean isPrimaryIconMaskable, String webApkPackageName,
+            int shellApkVersion, String manifestUrl, String manifestStartUrl,
+            @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
+            ShareTarget shareTarget, String shareTargetActivityName, boolean forceNavigation,
             boolean isSplashProvidedByWebApk, ShareData shareData) {
         super(id, url, scope, primaryIcon, name, shortName, displayMode, orientation, source,
-                themeColor, backgroundColor, null /* splash_screen_url */,
-                false /* isIconGenerated */, false /* isIconAdaptive */, forceNavigation);
+                themeColor, backgroundColor, defaultBackgroundColor, false /* isIconGenerated */,
+                isPrimaryIconMaskable /* isIconAdaptive */, forceNavigation);
         mBadgeIcon = badgeIcon;
         mSplashIcon = splashIcon;
         mApkPackageName = webApkPackageName;

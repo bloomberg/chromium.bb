@@ -232,14 +232,19 @@ CFPF_SkiaFontMgr::CFPF_SkiaFontMgr() = default;
 CFPF_SkiaFontMgr::~CFPF_SkiaFontMgr() {
   m_FamilyFonts.clear();
   m_FontFaces.clear();
-  if (m_FTLibrary)
-    FXFT_Done_FreeType(m_FTLibrary);
 }
 
 bool CFPF_SkiaFontMgr::InitFTLibrary() {
-  if (!m_FTLibrary)
-    FXFT_Init_FreeType(&m_FTLibrary);
-  return !!m_FTLibrary;
+  if (m_FTLibrary)
+    return true;
+
+  FXFT_LibraryRec* pLibrary = nullptr;
+  FT_Init_FreeType(&pLibrary);
+  if (!pLibrary)
+    return false;
+
+  m_FTLibrary.reset(pLibrary);
+  return true;
 }
 
 void CFPF_SkiaFontMgr::LoadSystemFonts() {
@@ -332,19 +337,23 @@ CFPF_SkiaFont* CFPF_SkiaFontMgr::CreateFont(ByteStringView bsFamilyname,
   return pRet;
 }
 
-FXFT_Face CFPF_SkiaFontMgr::GetFontFace(ByteStringView bsFile,
-                                        int32_t iFaceIndex) {
+RetainPtr<CFX_Face> CFPF_SkiaFontMgr::GetFontFace(ByteStringView bsFile,
+                                                  int32_t iFaceIndex) {
   if (bsFile.IsEmpty())
     return nullptr;
+
   if (iFaceIndex < 0)
     return nullptr;
-  FXFT_Open_Args args;
+
+  FT_Open_Args args;
   args.flags = FT_OPEN_PATHNAME;
   args.pathname = const_cast<FT_String*>(bsFile.unterminated_c_str());
-  FXFT_Face face;
-  if (FXFT_Open_Face(m_FTLibrary, &args, iFaceIndex, &face))
+  RetainPtr<CFX_Face> face =
+      CFX_Face::Open(m_FTLibrary.get(), &args, iFaceIndex);
+  if (!face)
     return nullptr;
-  FXFT_Set_Pixel_Sizes(face, 0, 64);
+
+  FT_Set_Pixel_Sizes(face->GetRec(), 0, 64);
   return face;
 }
 
@@ -377,25 +386,25 @@ void CFPF_SkiaFontMgr::ScanPath(const ByteString& path) {
 }
 
 void CFPF_SkiaFontMgr::ScanFile(const ByteString& file) {
-  FXFT_Face face = GetFontFace(file.AsStringView(), 0);
+  RetainPtr<CFX_Face> face = GetFontFace(file.AsStringView(), 0);
   if (!face)
     return;
 
   m_FontFaces.push_back(ReportFace(face, file));
-  FXFT_Done_Face(face);
 }
 
 std::unique_ptr<CFPF_SkiaPathFont> CFPF_SkiaFontMgr::ReportFace(
-    FXFT_Face face,
+    RetainPtr<CFX_Face> face,
     const ByteString& file) {
   uint32_t dwStyle = 0;
-  if (FXFT_Is_Face_Bold(face))
+  if (FXFT_Is_Face_Bold(face->GetRec()))
     dwStyle |= FXFONT_BOLD;
-  if (FXFT_Is_Face_Italic(face))
+  if (FXFT_Is_Face_Italic(face->GetRec()))
     dwStyle |= FXFONT_ITALIC;
-  if (FT_IS_FIXED_WIDTH(face))
+  if (FT_IS_FIXED_WIDTH(face->GetRec()))
     dwStyle |= FXFONT_FIXED_PITCH;
-  TT_OS2* pOS2 = static_cast<TT_OS2*>(FT_Get_Sfnt_Table(face, ft_sfnt_os2));
+  TT_OS2* pOS2 =
+      static_cast<TT_OS2*>(FT_Get_Sfnt_Table(face->GetRec(), ft_sfnt_os2));
   if (pOS2) {
     if (pOS2->ulCodePageRange1 & (1 << 31))
       dwStyle |= FXFONT_SYMBOLIC;
@@ -409,6 +418,7 @@ std::unique_ptr<CFPF_SkiaPathFont> CFPF_SkiaFontMgr::ReportFace(
     dwStyle |= FXFONT_SYMBOLIC;
 
   return pdfium::MakeUnique<CFPF_SkiaPathFont>(
-      file, FXFT_Get_Face_Family_Name(face), dwStyle, face->face_index,
-      FPF_SkiaGetFaceCharset(pOS2), face->num_glyphs);
+      file, FXFT_Get_Face_Family_Name(face->GetRec()), dwStyle,
+      face->GetRec()->face_index, FPF_SkiaGetFaceCharset(pOS2),
+      face->GetRec()->num_glyphs);
 }

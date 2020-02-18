@@ -4,7 +4,7 @@
 
 #include "ash/wm/work_area_insets.h"
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -57,11 +57,11 @@ WorkAreaInsets* WorkAreaInsets::ForWindow(const aura::Window* window) {
 
 WorkAreaInsets::WorkAreaInsets(RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller) {
-  keyboard::KeyboardController::Get()->AddObserver(this);
+  keyboard::KeyboardUIController::Get()->AddObserver(this);
 }
 
 WorkAreaInsets::~WorkAreaInsets() {
-  keyboard::KeyboardController::Get()->RemoveObserver(this);
+  keyboard::KeyboardUIController::Get()->RemoveObserver(this);
 }
 
 gfx::Insets WorkAreaInsets::GetAccessibilityInsets() const {
@@ -73,7 +73,7 @@ gfx::Rect WorkAreaInsets::ComputeStableWorkArea() const {
   return CalculateWorkAreaBounds(
       GetAccessibilityInsets(),
       root_window_controller_->shelf()->GetIdealBounds(),
-      keyboard_occluded_bounds_, root_window_controller_->GetRootWindow());
+      keyboard_displaced_bounds_, root_window_controller_->GetRootWindow());
 }
 
 bool WorkAreaInsets::IsKeyboardShown() const {
@@ -102,7 +102,7 @@ void WorkAreaInsets::SetShelfBoundsAndInsets(const gfx::Rect& bounds,
 }
 
 void WorkAreaInsets::OnKeyboardAppearanceChanged(
-    const keyboard::KeyboardStateDescriptor& state) {
+    const KeyboardStateDescriptor& state) {
   aura::Window* window = root_window_controller_->GetRootWindow();
 
   keyboard_occluded_bounds_ = state.occluded_bounds_in_screen;
@@ -112,7 +112,7 @@ void WorkAreaInsets::OnKeyboardAppearanceChanged(
   Shell::Get()->NotifyUserWorkAreaInsetsChanged(window);
 }
 
-void WorkAreaInsets::OnKeyboardVisibilityStateChanged(const bool is_visible) {
+void WorkAreaInsets::OnKeyboardVisibilityChanged(const bool is_visible) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore work area insets since shelf overlaps with login window.
   if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&

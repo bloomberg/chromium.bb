@@ -90,6 +90,7 @@
 }
 
 - (void)stop {
+  [super stop];
   if (self.started) {
     self.started = NO;
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
@@ -168,6 +169,11 @@
 
 - (void)performInfobarAction {
   self.passwordInfoBarDelegate->Accept();
+}
+
+- (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
+  if (userInitiated && self.passwordInfoBarDelegate)
+    self.passwordInfoBarDelegate->InfoBarDismissed();
 }
 
 - (void)infobarWasDismissed {

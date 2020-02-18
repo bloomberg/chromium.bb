@@ -123,8 +123,9 @@ public class Features {
     }
 
     /**
-     * Feature processor intended to be used in JUnit tests, that applies the collected feature
-     * state to {@link ChromeFeatureList}'s internal test-only feature map.
+     * Feature processor intended to be used in Robolectric and {@link DummyUiActivityTestCase}
+     * tests. The collected feature states would be applied to {@link ChromeFeatureList}'s
+     * internal test-only feature map.
      */
     public static class JUnitProcessor extends Processor {
         @Override
@@ -134,8 +135,9 @@ public class Features {
     }
 
     /**
-     * Feature processor intended to be used in instrumentation tests, that applies the collected
-     * feature state to {@link CommandLine}.
+     * Feature processor intended to be used in instrumentation tests with native library, like
+     * {@link ChromeBrowserTestRule}. The collected feature states would be applied to
+     * {@link CommandLine}.
      */
     public static class InstrumentationProcessor extends Processor {
         @Override

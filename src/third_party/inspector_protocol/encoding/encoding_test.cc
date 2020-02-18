@@ -121,6 +121,28 @@ TEST(SpanFromTest, FromConstCharAndLiteral) {
   EXPECT_EQ(3u, SpanFrom("foo").size());
 }
 
+TEST(SpanComparisons, ByteWiseLexicographicalOrder) {
+  // Compare the empty span.
+  EXPECT_FALSE(SpanLessThan(span<uint8_t>(), span<uint8_t>()));
+  EXPECT_TRUE(SpanEquals(span<uint8_t>(), span<uint8_t>()));
+
+  // Compare message with itself.
+  std::string msg = "Hello, world";
+  EXPECT_FALSE(SpanLessThan(SpanFrom(msg), SpanFrom(msg)));
+  EXPECT_TRUE(SpanEquals(SpanFrom(msg), SpanFrom(msg)));
+
+  // Compare message and copy.
+  EXPECT_FALSE(SpanLessThan(SpanFrom(msg), SpanFrom(std::string(msg))));
+  EXPECT_TRUE(SpanEquals(SpanFrom(msg), SpanFrom(std::string(msg))));
+
+  // Compare two messages. |lesser_msg| < |msg| because of the first
+  // byte ('A' < 'H').
+  std::string lesser_msg = "A lesser message.";
+  EXPECT_TRUE(SpanLessThan(SpanFrom(lesser_msg), SpanFrom(msg)));
+  EXPECT_FALSE(SpanLessThan(SpanFrom(msg), SpanFrom(lesser_msg)));
+  EXPECT_FALSE(SpanEquals(SpanFrom(msg), SpanFrom(lesser_msg)));
+}
+
 // =============================================================================
 // Status and Error codes
 // =============================================================================
@@ -957,6 +979,72 @@ TEST(ParseCBORTest, UnexpectedEofInMapError) {
   EXPECT_EQ("", out);
 }
 
+TEST(ParseCBORTest, TopLevelCantBeEmptyEnvelope) {
+  // Normally, an array would be allowed inside an envelope, but
+  // the top-level envelope is required to contain a map.
+  std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, 0};  // envelope
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  EXPECT_EQ(Error::CBOR_MAP_START_EXPECTED, status.error);
+  EXPECT_EQ(bytes.size(), status.pos);
+  EXPECT_EQ("", out);
+}
+
+TEST(ParseCBORTest, MapStartExpectedAtTopLevel) {
+  // Normally, an array would be allowed inside an envelope, but
+  // the top-level envelope is required to contain a map.
+  constexpr uint8_t kPayloadLen = 1;
+  std::vector<uint8_t> bytes = {0xd8,
+                                0x5a,
+                                0,
+                                0,
+                                0,
+                                kPayloadLen,  // envelope
+                                EncodeIndefiniteLengthArrayStart()};
+  EXPECT_EQ(kPayloadLen, bytes.size() - 6);
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  EXPECT_EQ(Error::CBOR_MAP_START_EXPECTED, status.error);
+  EXPECT_EQ(6u, status.pos);
+  EXPECT_EQ("", out);
+}
+
+TEST(ParseCBORTest, OnlyMapsAndArraysSupportedInsideEnvelopes) {
+  // The top level is a map with key "foo", and the value
+  // is an envelope that contains just a number (1). We don't
+  // allow numbers to be contained in an envelope though, only
+  // maps and arrays.
+  constexpr uint8_t kPayloadLen = 1;
+  std::vector<uint8_t> bytes = {0xd8,
+                                0x5a,
+                                0,
+                                0,
+                                0,
+                                kPayloadLen,  // envelope
+                                EncodeIndefiniteLengthMapStart()};
+  EncodeString8(SpanFrom("foo"), &bytes);
+  for (uint8_t byte : {0xd8, 0x5a, 0, 0, 0, /*payload_len*/ 1})
+    bytes.emplace_back(byte);
+  size_t error_pos = bytes.size();
+  bytes.push_back(1);  // Envelope contents / payload = number 1.
+  bytes.emplace_back(EncodeStop());
+
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  EXPECT_EQ(Error::CBOR_MAP_OR_ARRAY_EXPECTED_IN_ENVELOPE, status.error);
+  EXPECT_EQ(error_pos, status.pos);
+  EXPECT_EQ("", out);
+}
+
 TEST(ParseCBORTest, InvalidMapKeyError) {
   constexpr uint8_t kPayloadLen = 2;
   std::vector<uint8_t> bytes = {0xd8,       0x5a, 0,
@@ -1173,18 +1261,18 @@ TEST(ParseCBORTest, InvalidSignedError) {
 }
 
 TEST(ParseCBORTest, TrailingJunk) {
-  constexpr uint8_t kPayloadLen = 35;
+  constexpr uint8_t kPayloadLen = 12;
   std::vector<uint8_t> bytes = {0xd8, 0x5a, 0, 0, 0, kPayloadLen,  // envelope
                                 0xbf};                             // map start
   EncodeString8(SpanFrom("key"), &bytes);
   EncodeString8(SpanFrom("value"), &bytes);
   bytes.push_back(0xff);  // Up to here, it's a perfectly fine msg.
+  ASSERT_EQ(kPayloadLen, bytes.size() - 6);
   size_t error_pos = bytes.size();
+  // Now write some trailing junk after the message.
   EncodeString8(SpanFrom("trailing junk"), &bytes);
-
   internals::WriteTokenStart(MajorType::UNSIGNED,
                              std::numeric_limits<uint64_t>::max(), &bytes);
-  EXPECT_EQ(kPayloadLen, bytes.size() - 6);
   std::string out;
   Status status;
   std::unique_ptr<StreamingParserHandler> json_writer =
@@ -1192,6 +1280,29 @@ TEST(ParseCBORTest, TrailingJunk) {
   ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
   EXPECT_EQ(Error::CBOR_TRAILING_JUNK, status.error);
   EXPECT_EQ(error_pos, status.pos);
+  EXPECT_EQ("", out);
+}
+
+TEST(ParseCBORTest, EnvelopeContentsLengthMismatch) {
+  constexpr uint8_t kPartialPayloadLen = 5;
+  std::vector<uint8_t> bytes = {0xd8, 0x5a, 0,
+                                0,    0,    kPartialPayloadLen,  // envelope
+                                0xbf};                           // map start
+  EncodeString8(SpanFrom("key"), &bytes);
+  // kPartialPayloadLen would need to indicate the length of the entire map,
+  // all the way past the 0xff map stop character. Instead, it only covers
+  // a portion of the map.
+  EXPECT_EQ(bytes.size() - 6, kPartialPayloadLen);
+  EncodeString8(SpanFrom("value"), &bytes);
+  bytes.push_back(0xff);  // map stop
+
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> json_writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+  ParseCBOR(span<uint8_t>(bytes.data(), bytes.size()), json_writer.get());
+  EXPECT_EQ(Error::CBOR_ENVELOPE_CONTENTS_LENGTH_MISMATCH, status.error);
+  EXPECT_EQ(bytes.size(), status.pos);
   EXPECT_EQ("", out);
 }
 
@@ -1323,6 +1434,51 @@ namespace json {
 
 void WriteUTF8AsUTF16(StreamingParserHandler* writer, const std::string& utf8) {
   writer->HandleString16(SpanFrom(UTF8ToUTF16(SpanFrom(utf8))));
+}
+
+TEST(JsonEncoder, OverlongEncodings) {
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+
+  // We encode 0x7f, which is the DEL ascii character, as a 4 byte UTF8
+  // sequence. This is called an overlong encoding, because only 1 byte
+  // is needed to represent 0x7f as UTF8.
+  std::vector<uint8_t> chars = {
+      0xf0,  // Starts 4 byte utf8 sequence
+      0x80,  // continuation byte
+      0x81,  // continuation byte w/ payload bit 7 set to 1.
+      0xbf,  // continuation byte w/ payload bits 0-6 set to 11111.
+  };
+  writer->HandleString8(SpanFrom(chars));
+  EXPECT_EQ("\"\"", out);  // Empty string means that 0x7f was rejected (good).
+}
+
+TEST(JsonEncoder, IncompleteUtf8Sequence) {
+  std::string out;
+  Status status;
+  std::unique_ptr<StreamingParserHandler> writer =
+      NewJSONEncoder(&GetTestPlatform(), &out, &status);
+
+  writer->HandleArrayBegin();  // This emits [, which starts an array.
+
+  {  // 🌎 takes four bytes to encode in UTF-8. We test with the first three;
+    // This means we're trying to emit a string that consists solely of an
+    // incomplete UTF-8 sequence. So the string in the JSON output is empty.
+    std::string world_utf8 = "🌎";
+    ASSERT_EQ(4u, world_utf8.size());
+    std::vector<uint8_t> chars(world_utf8.begin(), world_utf8.begin() + 3);
+    writer->HandleString8(SpanFrom(chars));
+    EXPECT_EQ("[\"\"", out);  // Incomplete sequence rejected: empty string.
+  }
+
+  {  // This time, the incomplete sequence is at the end of the string.
+    std::string msg = "Hello, \xF0\x9F\x8C";
+    std::vector<uint8_t> chars(msg.begin(), msg.end());
+    writer->HandleString8(SpanFrom(chars));
+    EXPECT_EQ("[\"\",\"Hello, \"", out);  // Incomplete sequence dropped at end.
+  }
 }
 
 TEST(JsonStdStringWriterTest, HelloWorld) {
@@ -1561,6 +1717,13 @@ TEST_F(JsonParserTest, UsAsciiDelCornerCase) {
       "string16: a\x7f\n"
       "map end\n",
       log_.str());
+
+  // We've seen an implementation of UTF16ToUTF8 which would replace the DEL
+  // character with ' ', so this simple roundtrip tests the routines in
+  // encoding_test_helper.h, to make test failures of the above easier to
+  // diagnose.
+  std::vector<uint16_t> utf16 = UTF8ToUTF16(SpanFrom(json));
+  EXPECT_EQ(json, UTF16ToUTF8(SpanFrom(utf16)));
 }
 
 TEST_F(JsonParserTest, Whitespace) {

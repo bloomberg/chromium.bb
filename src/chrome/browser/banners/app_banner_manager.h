@@ -153,7 +153,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // redundant for the beforeinstallprompt event's promise being resolved, but
   // is required by the install event spec.
   // This is virtual for testing.
-  virtual void OnInstall(bool is_native, blink::WebDisplayMode display);
+  virtual void OnInstall(blink::WebDisplayMode display);
 
   // Sends a message to the renderer that the user accepted the banner.
   void SendBannerAccepted();
@@ -321,6 +321,9 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // The primary icon object.
   SkBitmap primary_icon_;
+
+  // Whether or not the primary icon is maskable.
+  bool has_maskable_primary_icon_;
 
   // The current banner pipeline state for this page load.
   State state_;

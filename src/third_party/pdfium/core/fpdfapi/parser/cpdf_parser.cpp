@@ -114,8 +114,8 @@ bool CPDF_Parser::IsObjectFree(uint32_t objnum) const {
   return GetObjectType(objnum) == ObjectType::kFree;
 }
 
-void CPDF_Parser::ShrinkObjectMap(uint32_t objnum) {
-  m_CrossRefTable->ShrinkObjectMap(objnum);
+void CPDF_Parser::ShrinkObjectMap(uint32_t size) {
+  m_CrossRefTable->ShrinkObjectMap(size);
 }
 
 bool CPDF_Parser::InitSyntaxParser(
@@ -650,7 +650,7 @@ bool CPDF_Parser::RebuildCrossRef() {
   m_CrossRefTable = CPDF_CrossRefTable::MergeUp(std::move(m_CrossRefTable),
                                                 std::move(cross_ref_table));
   // Resore default buffer size.
-  m_pSyntax->SetReadBufferSize(CPDF_ModuleMgr::kFileBufSize);
+  m_pSyntax->SetReadBufferSize(CPDF_Stream::kFileBufSize);
 
   return GetTrailer() && !m_CrossRefTable->objects_info().empty();
 }

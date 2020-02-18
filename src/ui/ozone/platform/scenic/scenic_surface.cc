@@ -50,9 +50,7 @@ void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
   material_.SetTexture(image);
 }
 
-mojo::ScopedHandle ScenicSurface::CreateParentExportToken() {
-  // Scenic does not care about order here; it's totally fine for imports to
-  // cause exports, and that's what's done here.
+mojo::ScopedHandle ScenicSurface::CreateExportToken() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   zx::eventpair export_token;
   parent_.BindAsRequest(&export_token);

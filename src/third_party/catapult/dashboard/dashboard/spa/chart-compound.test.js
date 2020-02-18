@@ -4,14 +4,14 @@
 */
 'use strict';
 
-import ChartCompound from './chart-compound.js';
-import findElements from './find-elements.js';
 import {CHAIN, ENSURE, UPDATE} from './simple-redux.js';
+import {ChartCompound} from './chart-compound.js';
 import {MODE} from './layout-timeseries.js';
 import {STORE} from './element-base.js';
 import {TimeseriesRequest} from './timeseries-request.js';
 import {afterRender, denormalize} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
 
 suite('chart-compound', function() {
   let MS_PER_YEAR;  // tr might not be loaded yet.
@@ -109,9 +109,7 @@ suite('chart-compound', function() {
     STORE.dispatch(UPDATE('test.minimapLayout.xAxis', {brushes: [
       {xPct: '10%'}, {xPct: '90%'},
     ]}));
-    cc.$.minimap.dispatchEvent(new CustomEvent('brush', {
-      detail: {sourceEvent: {detail: {state: 'end'}}},
-    }));
+    cc.minimap.dispatchEvent(new CustomEvent('brush-end'));
     await afterRender();
 
     assert.closeTo(cc.chartLayout.minRevision,

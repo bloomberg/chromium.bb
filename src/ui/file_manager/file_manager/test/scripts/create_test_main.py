@@ -236,6 +236,7 @@ for filename, substitutions in (
     ('foreground/elements/files_toast.html', ()),
     ('foreground/elements/files_toggle_ripple.html', ()),
     ('foreground/elements/files_tooltip.html', ()),
+    ('foreground/elements/files_xf_elements.html', ()),
     ('foreground/elements/icons.html', ()),
     ):
   buf = i18n(read('ui/file_manager/file_manager/' + filename))
@@ -243,7 +244,13 @@ for filename, substitutions in (
   buf = buf.replace('chrome://resources/polymer/v1_0/', '../../cc/')
   buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
                     'cr_input/cr_input.html">', '')
+  buf = buf.replace('<link rel="import" href="chrome://resources/cr_elements/'
+                    'cr_button/cr_button.html">', '')
   buf = buf.replace('src="files_', 'src="' + elements_path('files_'))
+  # The files_format_dialog and files_message import various files that are
+  # not available in a ui test, just ignore them completely.
+  buf = buf.replace('<link rel="import" href="files_format_dialog.html">', '')
+  buf = buf.replace('<link rel="import" href="files_message.html">', '')
   for old, new in substitutions:
     buf = buf.replace(old, new)
   write('test/gen/' + filename, buf)

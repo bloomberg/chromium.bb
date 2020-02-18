@@ -6,8 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_controller.h"
-#include "ash/kiosk_next/kiosk_next_shell_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
@@ -37,7 +36,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/color_palette.h"
@@ -94,8 +93,8 @@ class TitleView : public views::View, public views::ButtonListener {
   explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
     // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
     // See crbug.com/614453.
-    auto box_layout =
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+    auto box_layout = std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     views::BoxLayout* layout_ptr = SetLayoutManager(std::move(box_layout));
@@ -204,7 +203,7 @@ PaletteTray::~PaletteTray() {
   if (bubble_)
     bubble_->bubble_view()->ResetDelegate();
 
-  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
+  ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
 
@@ -435,7 +434,7 @@ void PaletteTray::AnchorUpdated() {
 
 void PaletteTray::Initialize() {
   TrayBackgroundView::Initialize();
-  ui::InputDeviceManager::GetInstance()->AddObserver(this);
+  ui::DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {
@@ -561,10 +560,13 @@ void PaletteTray::UpdateTrayIcon() {
 void PaletteTray::OnPaletteEnabledPrefChanged() {
   is_palette_enabled_ = pref_change_registrar_user_->prefs()->GetBoolean(
       prefs::kEnableStylusTools);
-  if (!is_palette_enabled_)
-    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
 
-  UpdateIconVisibility();
+  if (!is_palette_enabled_) {
+    SetVisible(false);
+    palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
+  } else {
+    UpdateIconVisibility();
+  }
 }
 
 void PaletteTray::OnHasSeenStylusPrefChanged() {
@@ -595,8 +597,7 @@ bool PaletteTray::HasSeenStylus() {
 void PaletteTray::UpdateIconVisibility() {
   SetVisible(HasSeenStylus() && is_palette_enabled_ &&
              stylus_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
-             palette_utils::IsInUserSession() &&
-             !Shell::Get()->kiosk_next_shell_controller()->IsEnabled());
+             palette_utils::IsInUserSession());
 }
 
 }  // namespace ash

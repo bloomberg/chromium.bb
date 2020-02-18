@@ -43,6 +43,28 @@ MEASUREMENTS = set([
     'V8-Only:duration',
 ])
 
+# Compute averages over a fixed set of active stories. These may need to be
+# periodically updated.
+ACTIVE_STORIES = set([
+    'browse:chrome:newtab',
+    'browse:chrome:omnibox',
+    'browse:media:facebook_photos',
+    'browse:media:googleplaystore:2019',
+    'browse:media:imgur',
+    'browse:media:youtube',
+    'browse:news:cricbuzz',
+    'browse:news:toi',
+    'browse:shopping:amazon',
+    'browse:shopping:lazada',
+    'browse:social:facebook',
+    'browse:social:instagram',
+    'browse:tools:maps',
+    'load:media:facebook_photos',
+    'load:media:youtube:2018',
+    'load:news:irctc',
+    'load:news:wikipedia:2018'
+])
+
 
 def StartPinpointJobs(state, date):
   """Start new pinpoint jobs for the last commit on the given date."""
@@ -66,20 +88,24 @@ def StartPinpointJobs(state, date):
           universal_newlines=True).strip()
     logging.info(output)
     assert 'https://pinpoint' in output
-    item['jobs'].append({'id': output.split('/')[-1], 'status': 'running'})
+    item['jobs'].append({'id': output.split('/')[-1], 'status': 'queued'})
   state.append(item)
   state.sort(key=lambda p: p['timestamp'])  # Keep items sorted by date.
+
+
+def IsJobFinished(job):
+  return job['status'] in ['completed', 'failed']
 
 
 def CollectPinpointResults(state):
   """Check the status of pinpoint jobs and collect their results."""
   # First iterate over all running jobs, and update their status.
   for item in state:
-    running = [job['id'] for job in item['jobs'] if job['status'] == 'running']
-    if not running:
+    active = [job['id'] for job in item['jobs'] if not IsJobFinished(job)]
+    if not active:
       continue
     cmd = ['vpython', PINPOINT_CLI, 'status']
-    cmd.extend(running)
+    cmd.extend(active)
     output = subprocess.check_output(cmd, universal_newlines=True)
     updates = dict(line.split(': ', 1) for line in output.splitlines())
     logging.info('Got job updates: %s.', updates)
@@ -95,7 +121,7 @@ def CollectPinpointResults(state):
     if not os.path.exists(output_file):
       cmd = ['vpython', PINPOINT_CLI, 'get-csv', '--output', output_file, '--']
       job_ids = [j['id'] for j in item['jobs'] if j['status'] == 'completed']
-      logging.info('Getting csv data for job ids: %s.', job_ids)
+      logging.info('Getting csv data for commit: %s.', item['revision'])
       subprocess.check_output(cmd + job_ids)
 
 
@@ -179,8 +205,9 @@ def GetRevisionResults(item):
   assert df['change'].str.contains(item['revision']).all(), (
       'Not all results match the expected git revision')
 
-  # Filter out and keep only the measurements we want.
+  # Filter out and keep only the measurements and stories that we want.
   df = df[df['name'].isin(MEASUREMENTS)]
+  df = df[df['story'].isin(ACTIVE_STORIES)]
 
   if not df.empty:
     # Aggregate over the results of individual stories.
@@ -225,8 +252,8 @@ def GetRevisionResults(item):
 
 
 def _SkipProcessing(item):
-  """Return True if some jobs have not finished or all failed."""
-  return (any(job['status'] == 'running' for job in item['jobs']) or
+  """Return True if not all jobs have finished or all have failed."""
+  return (not all(IsJobFinished(job) for job in item['jobs']) or
           all(job['status'] == 'failed' for job in item['jobs']))
 
 

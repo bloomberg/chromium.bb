@@ -13,9 +13,11 @@
 #include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/loader/webrtc_connections_observer.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -34,7 +36,6 @@
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "net/cookies/cookie_util.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/ssl/client_cert_store.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -53,7 +54,7 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
   explicit SSLErrorDelegate(
       network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback
           response)
-      : response_(std::move(response)), weak_factory_(this) {}
+      : response_(std::move(response)) {}
   ~SSLErrorDelegate() override {}
   void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
     std::move(response_).Run(error);
@@ -69,7 +70,7 @@ class SSLErrorDelegate : public SSLErrorHandler::Delegate {
 
  private:
   network::mojom::NetworkServiceClient::OnSSLCertificateErrorCallback response_;
-  base::WeakPtrFactory<SSLErrorDelegate> weak_factory_;
+  base::WeakPtrFactory<SSLErrorDelegate> weak_factory_{this};
 };
 
 // This class lives on the IO thread. It is self-owned and will delete itself
@@ -160,8 +161,7 @@ class LoginHandlerDelegate {
         url_(url),
         response_headers_(std::move(response_headers)),
         first_auth_attempt_(first_auth_attempt),
-        web_contents_getter_(web_contents_getter),
-        weak_factory_(this) {
+        web_contents_getter_(web_contents_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     auth_challenge_responder_.set_connection_error_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
@@ -247,7 +247,7 @@ class LoginHandlerDelegate {
   bool first_auth_attempt_;
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
   std::unique_ptr<LoginDelegate> login_delegate_;
-  base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_;
+  base::WeakPtrFactory<LoginHandlerDelegate> weak_factory_{this};
 };
 
 void HandleFileUploadRequest(
@@ -290,6 +290,12 @@ void HandleFileUploadRequest(
                                                   std::move(files)));
 }
 
+FrameTreeNodeIdRegistry::IsMainFrameGetter GetIsMainFrameFromRegistry(
+    const base::UnguessableToken& window_id) {
+  return FrameTreeNodeIdRegistry::GetInstance()->GetIsMainFrameGetter(
+      window_id);
+}
+
 base::RepeatingCallback<WebContents*(void)> GetWebContentsFromRegistry(
     const base::UnguessableToken& window_id) {
   return FrameTreeNodeIdRegistry::GetInstance()->GetWebContentsGetter(
@@ -309,6 +315,63 @@ bool IsMainFrameRequest(int process_id, int routing_id) {
 
   auto* frame_tree_node = FrameTreeNode::GloballyFindByID(routing_id);
   return frame_tree_node && frame_tree_node->IsMainFrame();
+}
+
+void OnAuthRequiredContinuation(
+    uint32_t process_id,
+    uint32_t routing_id,
+    uint32_t request_id,
+    const GURL& url,
+    bool is_request_for_main_frame,
+    bool first_auth_attempt,
+    const net::AuthChallengeInfo& auth_info,
+    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    base::RepeatingCallback<WebContents*(void)> web_contents_getter) {
+  if (!web_contents_getter) {
+    web_contents_getter =
+        base::BindRepeating(GetWebContents, process_id, routing_id);
+  }
+  if (!web_contents_getter.Run()) {
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
+  new LoginHandlerDelegate(std::move(auth_challenge_responder),
+                           std::move(web_contents_getter), auth_info,
+                           is_request_for_main_frame, process_id, routing_id,
+                           request_id, url, head ? head->headers : nullptr,
+                           first_auth_attempt);  // deletes self
+}
+
+void OnAuthRequiredContinuationForWindowId(
+    const base::UnguessableToken& window_id,
+    uint32_t process_id,
+    uint32_t routing_id,
+    uint32_t request_id,
+    const GURL& url,
+    bool first_auth_attempt,
+    const net::AuthChallengeInfo& auth_info,
+    const base::Optional<network::ResourceResponseHead>& head,
+    network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
+    FrameTreeNodeIdRegistry::IsMainFrameGetter is_main_frame_getter) {
+  if (!is_main_frame_getter) {
+    // FrameTreeNode id may already be removed from FrameTreeNodeIdRegistry
+    // due to thread hopping.
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
+  base::Optional<bool> is_main_frame_opt = is_main_frame_getter.Run();
+  // The frame may already be gone due to thread hopping.
+  if (!is_main_frame_opt) {
+    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+    return;
+  }
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&GetWebContentsFromRegistry, window_id),
+      base::BindOnce(&OnAuthRequiredContinuation, process_id, routing_id,
+                     request_id, url, *is_main_frame_opt, first_auth_attempt,
+                     auth_info, head, std::move(auth_challenge_responder)));
 }
 
 void CreateSSLClientAuthDelegateOnIO(
@@ -363,82 +426,6 @@ void FinishGenerateNegotiateAuthToken(
 }
 #endif
 
-// TODO(crbug.com/977040): Remove when no longer needed.
-void DeprecateSameSiteCookies(int process_id,
-                              int routing_id,
-                              const net::CookieStatusList& excluded_cookies) {
-  // Navigation requests start in the browser, before process_id is assigned, so
-  // the id is set to network::mojom::kBrowserProcessId. In these situations,
-  // the routing_id is the frame tree node id, and can be used directly.
-  RenderFrameHostImpl* frame = nullptr;
-  if (process_id == network::mojom::kBrowserProcessId) {
-    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
-    if (ftn)
-      frame = ftn->current_frame_host();
-  } else {
-    frame = RenderFrameHostImpl::FromID(process_id, routing_id);
-  }
-
-  if (!frame)
-    return;
-
-  // Because of the nature of mojo and calling cross process, there's the
-  // possibility of calling this method after the page has already been
-  // navigated away from, which is DCHECKed against in
-  // LogWebFeatureForCurrentPage. We're replicating the DCHECK here and
-  // returning early should this be the case.
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
-
-  // |web_contents| will be null on interstitial pages, which means the frame
-  // has been navigated away from and the function should return early.
-  if (!web_contents)
-    return;
-
-  RenderFrameHostImpl* root_frame_host = frame;
-  while (root_frame_host->GetParent() != nullptr)
-    root_frame_host = root_frame_host->GetParent();
-
-  if (root_frame_host != web_contents->GetMainFrame())
-    return;
-
-  bool samesite_treated_as_lax_cookies = false;
-  bool samesite_none_insecure_cookies = false;
-
-  bool emit_messages =
-      base::FeatureList::IsEnabled(features::kCookieDeprecationMessages);
-
-  for (const net::CookieWithStatus& excluded_cookie : excluded_cookies) {
-    std::string cookie_url =
-        net::cookie_util::CookieOriginToURL(excluded_cookie.cookie.Domain(),
-                                            excluded_cookie.cookie.IsSecure())
-            .possibly_invalid_spec();
-
-    if (excluded_cookie.status ==
-        net::CanonicalCookie::CookieInclusionStatus::
-            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) {
-      samesite_treated_as_lax_cookies = true;
-    }
-    if (excluded_cookie.status == net::CanonicalCookie::CookieInclusionStatus::
-                                      EXCLUDE_SAMESITE_NONE_INSECURE) {
-      samesite_none_insecure_cookies = true;
-    }
-    if (emit_messages) {
-      root_frame_host->AddSameSiteCookieDeprecationMessage(
-          cookie_url, excluded_cookie.status);
-    }
-  }
-
-  if (samesite_treated_as_lax_cookies) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame, blink::mojom::WebFeature::kCookieNoSameSite);
-  }
-
-  if (samesite_none_insecure_cookies) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        frame, blink::mojom::WebFeature::kCookieInsecureAndSameSiteNone);
-  }
-}
-
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
@@ -451,6 +438,12 @@ NetworkServiceClient::NetworkServiceClient(
                               base::Unretained(this))))
 #endif
 {
+
+#if defined(OS_MACOSX)
+  if (base::MessageLoopCurrentForUI::IsSet())  // Not set in some unit tests.
+    net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
+#endif
+
   if (IsOutOfProcessNetworkService()) {
     net::CertDatabase::GetInstance()->AddObserver(this);
     memory_pressure_listener_ =
@@ -467,6 +460,11 @@ NetworkServiceClient::NetworkServiceClient(
     net::NetworkChangeNotifier::AddDNSObserver(this);
 #endif
   }
+
+  webrtc_connections_observer_ =
+      std::make_unique<content::WebRtcConnectionsObserver>(base::BindRepeating(
+          &NetworkServiceClient::OnPeerToPeerConnectionsCountChange,
+          base::Unretained(this)));
 }
 
 NetworkServiceClient::~NetworkServiceClient() {
@@ -482,6 +480,7 @@ NetworkServiceClient::~NetworkServiceClient() {
 }
 
 void NetworkServiceClient::OnAuthRequired(
+    const base::Optional<base::UnguessableToken>& window_id,
     uint32_t process_id,
     uint32_t routing_id,
     uint32_t request_id,
@@ -490,20 +489,20 @@ void NetworkServiceClient::OnAuthRequired(
     const net::AuthChallengeInfo& auth_info,
     const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
-  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
-      base::BindRepeating(GetWebContents, process_id, routing_id);
-
-  if (!web_contents_getter.Run()) {
-    std::move(auth_challenge_responder)->OnAuthCredentials(base::nullopt);
+  if (window_id) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&GetIsMainFrameFromRegistry, *window_id),
+        base::BindOnce(&OnAuthRequiredContinuationForWindowId, *window_id,
+                       process_id, routing_id, request_id, url,
+                       first_auth_attempt, auth_info, head,
+                       std::move(auth_challenge_responder)));
     return;
   }
-
-  bool is_request_for_main_frame = IsMainFrameRequest(process_id, routing_id);
-  new LoginHandlerDelegate(std::move(auth_challenge_responder),
-                           std::move(web_contents_getter), auth_info,
-                           is_request_for_main_frame, process_id, routing_id,
-                           request_id, url, head ? head->headers : nullptr,
-                           first_auth_attempt);  // deletes self
+  OnAuthRequiredContinuation(process_id, routing_id, request_id, url,
+                             IsMainFrameRequest(process_id, routing_id),
+                             first_auth_attempt, auth_info, head,
+                             std::move(auth_challenge_responder), {});
 }
 
 void NetworkServiceClient::OnCertificateRequested(
@@ -565,27 +564,6 @@ void NetworkServiceClient::OnFileUploadRequested(
                      base::SequencedTaskRunnerHandle::Get()));
 }
 
-void NetworkServiceClient::OnCookiesRead(int process_id,
-                                         int routing_id,
-                                         const GURL& url,
-                                         const GURL& first_party_url,
-                                         const net::CookieList& cookie_list,
-                                         bool blocked_by_policy) {
-  GetContentClient()->browser()->OnCookiesRead(process_id, routing_id, url,
-                                               first_party_url, cookie_list,
-                                               blocked_by_policy);
-}
-
-void NetworkServiceClient::OnCookieChange(int process_id,
-                                          int routing_id,
-                                          const GURL& url,
-                                          const GURL& first_party_url,
-                                          const net::CanonicalCookie& cookie,
-                                          bool blocked_by_policy) {
-  GetContentClient()->browser()->OnCookieChange(
-      process_id, routing_id, url, first_party_url, cookie, blocked_by_policy);
-}
-
 void NetworkServiceClient::OnLoadingStateUpdate(
     std::vector<network::mojom::LoadInfoPtr> infos,
     OnLoadingStateUpdateCallback callback) {
@@ -619,6 +597,10 @@ void NetworkServiceClient::OnCertDBChanged() {
 void NetworkServiceClient::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   GetNetworkService()->OnMemoryPressure(memory_pressure_level);
+}
+
+void NetworkServiceClient::OnPeerToPeerConnectionsCountChange(uint32_t count) {
+  GetNetworkService()->OnPeerToPeerConnectionsCountChange(count);
 }
 
 #if defined(OS_ANDROID)
@@ -713,7 +695,7 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
   auth_negotiate->set_can_delegate(can_delegate);
 
   auto auth_token = std::make_unique<std::string>();
-  auth_negotiate_raw->GenerateAuthToken(
+  auth_negotiate_raw->GenerateAuthTokenAndroid(
       nullptr, spn, std::string(), auth_token.get(),
       base::BindOnce(&FinishGenerateNegotiateAuthToken,
                      std::move(auth_negotiate), std::move(auth_token),
@@ -721,28 +703,26 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-void NetworkServiceClient::OnFlaggedRequestCookies(
+void NetworkServiceClient::OnRawRequest(
     int32_t process_id,
     int32_t routing_id,
-    const net::CookieStatusList& excluded_cookies) {
-  DeprecateSameSiteCookies(process_id, routing_id, excluded_cookies);
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {
+  devtools_instrumentation::OnRequestWillBeSentExtraInfo(
+      process_id, routing_id, devtools_request_id, cookies_with_status,
+      headers);
 }
 
-void NetworkServiceClient::OnFlaggedResponseCookies(
+void NetworkServiceClient::OnRawResponse(
     int32_t process_id,
     int32_t routing_id,
-    const net::CookieAndLineStatusList& excluded_cookies) {
-  net::CookieStatusList excluded_list;
-
-  for (const auto& excluded_cookie : excluded_cookies) {
-    // If there's no cookie, it was a parsing error and wouldn't be deprecated
-    if (excluded_cookie.cookie) {
-      excluded_list.push_back(
-          {excluded_cookie.cookie.value(), excluded_cookie.status});
-    }
-  }
-
-  DeprecateSameSiteCookies(process_id, routing_id, excluded_list);
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    const base::Optional<std::string>& raw_response_headers) {
+  devtools_instrumentation::OnResponseReceivedExtraInfo(
+      process_id, routing_id, devtools_request_id, cookies_with_status, headers,
+      raw_response_headers);
 }
-
 }  // namespace content

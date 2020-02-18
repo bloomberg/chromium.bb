@@ -19,11 +19,11 @@ PrefsInternalsSource::PrefsInternalsSource(Profile* profile)
 
 PrefsInternalsSource::~PrefsInternalsSource() = default;
 
-std::string PrefsInternalsSource::GetSource() const {
+std::string PrefsInternalsSource::GetSource() {
   return chrome::kChromeUIPrefsInternalsHost;
 }
 
-std::string PrefsInternalsSource::GetMimeType(const std::string& path) const {
+std::string PrefsInternalsSource::GetMimeType(const std::string& path) {
   return "text/plain";
 }
 

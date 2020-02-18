@@ -24,7 +24,6 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/events/types/scroll_types.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -269,6 +268,7 @@ bool CanCoalesce(const WebPointerEvent& event_to_coalesce,
   return (event.GetType() == WebInputEvent::kPointerMove ||
           event.GetType() == WebInputEvent::kPointerRawUpdate) &&
          event.GetType() == event_to_coalesce.GetType() &&
+         event.GetModifiers() == event_to_coalesce.GetModifiers() &&
          event.id == event_to_coalesce.id &&
          event.pointer_type == event_to_coalesce.pointer_type;
 }
@@ -291,6 +291,7 @@ bool CanCoalesce(const WebMouseEvent& event_to_coalesce,
   // coalescing mouse events.
   return event.GetType() == WebInputEvent::kMouseMove &&
          event.GetType() == event_to_coalesce.GetType() &&
+         event.GetModifiers() == event_to_coalesce.GetModifiers() &&
          event.id == event_to_coalesce.id &&
          event.pointer_type == event_to_coalesce.pointer_type;
 }

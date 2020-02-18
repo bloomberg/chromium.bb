@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/installable/fake_installable_manager.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -32,12 +31,25 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/test/connection_holder_util.h"
+#include "components/arc/test/fake_app_instance.h"
+#include "components/arc/test/fake_intent_helper_instance.h"
+#endif
 
 namespace web_app {
 
@@ -118,6 +130,33 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), install_finalizer_.get(), std::move(data_retriever));
+
+#if defined(OS_CHROMEOS)
+    arc_test_.SetUp(profile());
+
+    auto* arc_bridge_service =
+        arc_test_.arc_service_manager()->arc_bridge_service();
+    intent_helper_bridge_ = std::make_unique<arc::ArcIntentHelperBridge>(
+        profile(), arc_bridge_service);
+    fake_intent_helper_instance_ =
+        std::make_unique<arc::FakeIntentHelperInstance>();
+    arc_bridge_service->intent_helper()->SetInstance(
+        fake_intent_helper_instance_.get());
+    WaitForInstanceReady(arc_bridge_service->intent_helper());
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_CHROMEOS)
+    arc_test_.arc_service_manager()
+        ->arc_bridge_service()
+        ->intent_helper()
+        ->CloseInstance(fake_intent_helper_instance_.get());
+    fake_intent_helper_instance_.reset();
+    intent_helper_bridge_.reset();
+    arc_test_.TearDown();
+#endif
+    WebAppTest::TearDown();
   }
 
   void CreateRendererAppInfo(const GURL& url,
@@ -155,16 +194,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void CreateDefaultDataToRetrieve(const GURL& url, const GURL& scope) {
-    data_retriever_->SetRendererWebApplicationInfo(
-        std::make_unique<WebApplicationInfo>());
-
-    auto manifest = std::make_unique<blink::Manifest>();
-    manifest->start_url = url;
-    manifest->scope = scope;
-
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
-
-    data_retriever_->SetIcons(IconsMap{});
+    DCHECK(data_retriever_);
+    data_retriever_->BuildDefaultDataToRetrieve(url, scope);
   }
 
   void CreateDefaultDataToRetrieve(const GURL& url) {
@@ -177,7 +208,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void SetIconsMapToRetrieve(IconsMap icons_map) {
-    CHECK(data_retriever_);
+    DCHECK(data_retriever_);
     data_retriever_->SetIcons(std::move(icons_map));
   }
 
@@ -231,6 +262,12 @@ class WebAppInstallTaskTest : public WebAppTest {
   // Owned by install_task_:
   TestFileUtils* file_utils_ = nullptr;
   TestDataRetriever* data_retriever_ = nullptr;
+
+#if defined(OS_CHROMEOS)
+  ArcAppTest arc_test_;
+  std::unique_ptr<arc::ArcIntentHelperBridge> intent_helper_bridge_;
+  std::unique_ptr<arc::FakeIntentHelperInstance> fake_intent_helper_instance_;
+#endif
 
  private:
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
@@ -385,9 +422,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
     manifest->scope = manifest_scope;
     manifest->theme_color = manifest_theme_color;
 
-    FakeInstallableManager::CreateForWebContentsWithManifest(
-        web_contents(), NO_ERROR_DETECTED, GURL("https://example.com/manifest"),
-        std::move(manifest));
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
   }
 
   base::RunLoop run_loop;
@@ -936,6 +971,78 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
             run_loop.Quit();
           }));
 
+  run_loop.Run();
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(WebAppInstallTaskTest, IntentToPlayStore) {
+  arc_test_.app_instance()->set_is_installable(true);
+
+  const GURL url("https://example.com/scope/path");
+  const std::string name = "Name";
+  const std::string description = "Description";
+  const GURL scope("https://example.com/scope");
+  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+
+  CreateRendererAppInfo(url, name, description, /*scope*/ GURL{}, theme_color);
+  {
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = url;
+    manifest->scope = scope;
+    blink::Manifest::RelatedApplication related_app;
+    related_app.platform =
+        base::NullableString16(base::ASCIIToUTF16("chromeos_play"));
+    related_app.id = base::NullableString16(base::ASCIIToUTF16("com.app.id"));
+    manifest->related_applications.push_back(std::move(related_app));
+
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+
+    data_retriever_->SetIcons(IconsMap{});
+  }
+
+  base::RunLoop run_loop;
+  install_task_->InstallWebAppFromManifestWithFallback(
+      web_contents(), /*force_shortcut_app=*/false,
+      WebappInstallSource::MENU_BROWSER_TAB,
+      base::BindOnce(TestAcceptDialogCallback),
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kIntentToPlayStore, code);
+            EXPECT_EQ(AppId(), installed_app_id);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+}
+#endif
+
+// Default apps should be installable for guest profiles.
+TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
+  SetInstallFinalizerForTesting();
+
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(profile_manager.SetUp());
+  Profile* guest_profile = profile_manager.CreateGuestProfile();
+
+  const GURL app_url("https://example.com/path");
+  auto data_retriever = std::make_unique<TestDataRetriever>();
+  data_retriever->BuildDefaultDataToRetrieve(app_url,
+                                             /*scope=*/GURL{});
+
+  auto install_task = std::make_unique<WebAppInstallTask>(
+      guest_profile, install_finalizer_.get(), std::move(data_retriever));
+
+  ExternalInstallOptions install_options{
+      app_url, LaunchContainer::kDefault,
+      ExternalInstallSource::kExternalDefault};
+
+  base::RunLoop run_loop;
+  install_task->InstallWebAppWithOptions(
+      web_contents(), install_options,
+      base::BindLambdaForTesting(
+          [&](const AppId& app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            run_loop.Quit();
+          }));
   run_loop.Run();
 }
 

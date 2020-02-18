@@ -13,7 +13,6 @@
 #include "include/utils/SkRandom.h"
 #include "include/utils/SkTextUtils.h"
 #include "samplecode/Sample.h"
-#include "tools/timer/AnimTimer.h"
 
 typedef void (*DrawAtlasProc)(SkCanvas*, SkImage*, const SkRSXform[], const SkRect[],
                               const SkColor[], int, const SkRect*, const SkPaint*);
@@ -211,19 +210,14 @@ public:
     DrawAtlasView(const char name[], DrawAtlasProc proc) : fName(name), fProc(proc) { }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, fName);
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString(fName); }
+
+    bool onChar(SkUnichar uni) override {
             switch (uni) {
                 case 'C': fDrawable->toggleUseColors(); return true;
                 default: break;
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void onOnceBeforeDraw() override {
@@ -234,11 +228,11 @@ protected:
         canvas->drawDrawable(fDrawable.get());
     }
 
-    bool onAnimate(const AnimTimer&) override { return true; }
+    bool onAnimate(double /*nanos*/) override { return true; }
 #if 0
     // TODO: switch over to use this for our animation
-    bool onAnimate(const AnimTimer& timer) override {
-        SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
+    bool onAnimate(double nanos) override {
+        SkScalar angle = SkDoubleToScalar(fmod(1e-9 * nanos * 360 / 24, 360));
         fAnimatingDrawable->setSweep(angle);
         return true;
     }

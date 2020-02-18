@@ -129,7 +129,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
     PrivacyMode privacy_mode() const { return privacy_mode_; }
 
-    const NetworkIsolationKey& network_isolation_key() {
+    const NetworkIsolationKey& network_isolation_key() const {
       return network_isolation_key_;
     }
 
@@ -352,8 +352,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
                                                 const GroupId& group_id);
 
   // Utility method to log a GroupId with a NetLog event.
-  static base::Value NetLogGroupIdCallback(const GroupId* group_id,
-                                           NetLogCaptureMode capture_mode);
+  static base::Value NetLogGroupIdParams(const GroupId& group_id);
 
   static std::unique_ptr<ConnectJob> CreateConnectJob(
       GroupId group_id,

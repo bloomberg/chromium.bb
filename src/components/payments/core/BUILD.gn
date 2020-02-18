@@ -42,6 +42,8 @@ jumbo_static_library("core") {
 
   if (!is_android) {
     sources += [
+      "autofill_card_validation.cc",
+      "autofill_card_validation.h",
       "autofill_payment_instrument.cc",
       "autofill_payment_instrument.h",
       "basic_card_response.cc",
@@ -71,6 +73,7 @@ jumbo_static_library("core") {
   }
 
   deps = [
+    ":error_strings",
     "//base",
     "//components/autofill/core/browser",
     "//components/keyed_service/core",
@@ -98,12 +101,16 @@ jumbo_static_library("error_strings") {
   sources = [
     "error_strings.cc",
     "error_strings.h",
+    "native_error_strings.cc",
+    "native_error_strings.h",
   ]
 }
 
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
+    "mock_payment_request_delegate.cc",
+    "mock_payment_request_delegate.h",
     "payments_test_util.cc",
     "payments_test_util.h",
     "test_payment_manifest_downloader.cc",
@@ -123,6 +130,7 @@ jumbo_static_library("test_support") {
     "//net:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
+    "//testing/gmock",
   ]
 }
 

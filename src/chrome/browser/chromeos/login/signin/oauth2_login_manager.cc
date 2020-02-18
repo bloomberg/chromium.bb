@@ -12,17 +12,18 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_id_from_account_info.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "components/account_id/account_id.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
@@ -82,7 +83,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 }
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
-  identity::IdentityManager* identity_manager = GetIdentityManager();
+  signin::IdentityManager* identity_manager = GetIdentityManager();
   if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
     VerifySessionCookies();
@@ -137,15 +138,16 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
     Stop();
 
     // Token is loaded. Undo the flagging before token loading.
+    DCHECK(!account_info.gaia.empty());
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        AccountId::FromUserEmail(account_info.email),
+        AccountIdFromAccountInfo(account_info),
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
 
     VerifySessionCookies();
   }
 }
 
-identity::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
+signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
@@ -182,13 +184,13 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   } else {
     // TODO(sinhak): Remove this when Account Manager is enabled by default.
 
-    identity::IdentityManager* identity_manager = GetIdentityManager();
+    signin::IdentityManager* identity_manager = GetIdentityManager();
     DCHECK(identity_manager->HasPrimaryAccount());
 
     // On ChromeOS, the primary account is set via
-    // IdentityManager::LegacySetPrimaryAccount(), which seeds the account
-    // info with AccountTrackerService. Hence, the primary account info will be
-    // available at this point.
+    // PrimaryAccountMutator::SetPrimaryAccountAndUpdateAccountInfo(), which
+    // seeds the account info with AccountTrackerService. Hence, the primary
+    // account info will be available at this point.
     const CoreAccountInfo primary_account_info =
         identity_manager->GetPrimaryAccountInfo();
 

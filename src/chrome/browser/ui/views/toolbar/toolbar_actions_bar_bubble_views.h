@@ -32,6 +32,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   ~ToolbarActionsBarBubbleViews() override;
 
   void Show();
+  std::string GetAnchorActionId();
 
   const views::Label* body_text() const { return body_text_; }
   const views::Label* item_list() const { return item_list_; }
@@ -43,7 +44,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  views::View* CreateExtraView() override;
+  std::unique_ptr<views::View> CreateExtraView() override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

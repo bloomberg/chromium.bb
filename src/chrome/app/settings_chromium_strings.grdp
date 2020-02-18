@@ -2,13 +2,13 @@
 <!-- Settings-specific Chromium strings (included from chromium_strings.grd). -->
 <grit-part>
   <!-- About Page -->
+  <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chromium page.">
+    About Chromium
+  </message>
+  <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+    Get help with Chromium
+  </message>
   <if expr="not chromeos">
-    <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chromium page.">
-      About Chromium
-    </message>
-    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
-      Get help with Chromium
-    </message>
     <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating Chromium">
       Updating Chromium
     </message>
@@ -23,13 +23,18 @@
     </message>
   </if>
   <if expr="chromeos">
-    <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Chromium page.">
+    <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About Chromium OS page.">
       About Chromium OS
     </message>
-    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME_OS" desc="Text of the button which takes the user to the Chrome help page.">
       Get help with Chromium OS
     </message>
   </if>
+
+  <!-- Cookie Settings Page -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE_DATA_POST_SESSION" desc="Label for the checkbox that allows the user to automatically delete their cookies and site data at the end of the browser session.">
+    Clear cookies and site data when you quit Chromium
+  </message>
 
   <!-- Autofill Page -->
   <message name="IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED" desc="Label that will be used to show that a credit card comes from Google Pay and is saved locally. This should follow the casing of the 'Google Pay' and 'Chrome' brands. 'Copied to Chromium' is short for 'The credit card is copied to Chromium'. 'Google Pay' should not be translated as it is the product name.">

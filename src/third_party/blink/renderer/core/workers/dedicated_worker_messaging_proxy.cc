@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
@@ -21,8 +21,8 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_options.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -86,7 +86,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // "module: Fetch a module worker script graph given url, outside settings,
     // destination, the value of the credentials member of options, and inside
     // settings."
-    network::mojom::FetchCredentialsMode credentials_mode;
+    network::mojom::CredentialsMode credentials_mode;
     bool result = Request::ParseCredentialsMode(options->credentials(),
                                                 &credentials_mode);
     DCHECK(result);

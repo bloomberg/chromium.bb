@@ -7,7 +7,6 @@ import StringIO
 import unittest
 
 from telemetry import story
-from telemetry import benchmark
 from telemetry.internal.results import html_output_formatter
 from telemetry.internal.results import page_test_results
 from telemetry import page as page_module
@@ -37,19 +36,14 @@ class HtmlOutputFormatterTest(unittest.TestCase):
   def setUp(self):
     self._output = StringIO.StringIO()
     self._story_set = _MakeStorySet()
-    self._benchmark_metadata = benchmark.BenchmarkMetadata(
-        'benchmark_name', 'benchmark_description')
 
   def testBasic(self):
     formatter = html_output_formatter.HtmlOutputFormatter(
-        self._output, self._benchmark_metadata, False)
-    results = page_test_results.PageTestResults(
-        benchmark_metadata=self._benchmark_metadata)
-    results.telemetry_info.benchmark_name = 'benchmark_name'
-    results.telemetry_info.benchmark_start_epoch = 1501773200
+        self._output, reset_results=False)
+    results = page_test_results.PageTestResults()
 
     results.WillRunPage(self._story_set[0])
-    v0 = scalar.ScalarValue(results.current_page, 'foo', 'seconds', 3,
+    v0 = scalar.ScalarValue(results.current_story, 'foo', 'seconds', 3,
                             improvement_direction=improvement_direction.DOWN)
     results.AddValue(v0)
     results.DidRunPage(self._story_set[0])
@@ -63,4 +57,3 @@ class HtmlOutputFormatterTest(unittest.TestCase):
 
     self.assertEqual(len(histograms), 1)
     self.assertEqual(histograms.GetFirstHistogram().name, 'foo')
-

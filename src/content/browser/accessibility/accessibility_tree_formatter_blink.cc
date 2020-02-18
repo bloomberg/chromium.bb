@@ -104,6 +104,8 @@ std::string IntAttrToString(const BrowserAccessibility& node,
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
     case ax::mojom::IntAttribute::kAriaColumnCount:
+    case ax::mojom::IntAttribute::kAriaCellColumnSpan:
+    case ax::mojom::IntAttribute::kAriaCellRowSpan:
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kBackgroundColor:
     case ax::mojom::IntAttribute::kColor:
@@ -183,6 +185,7 @@ void AccessibilityTreeFormatterBlink::AddDefaultFilters(
   AddPropertyFilter(property_filters, "flowtoIds*");
   AddPropertyFilter(property_filters, "detailsIds*");
   AddPropertyFilter(property_filters, "invalidState=*");
+  AddPropertyFilter(property_filters, "ignored*");
   AddPropertyFilter(property_filters, "invalidState=false",
                     PropertyFilter::DENY);  // Don't show false value
   AddPropertyFilter(property_filters, "roleDescription=*");
@@ -204,8 +207,9 @@ uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return node.PlatformChildCount();
-  else
-    return node.InternalChildCount();
+  // We don't want to use InternalGetChild as we want to include
+  // ignored nodes in the tree for tests.
+  return node.node()->children().size();
 }
 
 BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
@@ -213,8 +217,13 @@ BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
     uint32_t i) const {
   if (node.HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return node.PlatformGetChild(i);
-  else
-    return node.InternalGetChild(i);
+  // We don't want to use InternalGetChild as we want to include
+  // ignored nodes in the tree for tests.
+  if (i < 0 && i >= node.node()->children().size())
+    return nullptr;
+  ui::AXNode* child_node = node.node()->children()[i];
+  DCHECK(child_node);
+  return node.manager()->GetFromAXNode(child_node);
 }
 
 void AccessibilityTreeFormatterBlink::AddProperties(
@@ -329,14 +338,16 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   }
 
   //  Check for relevant rich text selection info in AXTreeData
-  int anchor_id = node.manager()->GetTreeData().sel_anchor_object_id;
+  ui::AXTree::Selection unignored_selection =
+      node.manager()->ax_tree()->GetUnignoredSelection();
+  int anchor_id = unignored_selection.anchor_object_id;
   if (id == anchor_id) {
-    int anchor_offset = node.manager()->GetTreeData().sel_anchor_offset;
+    int anchor_offset = unignored_selection.anchor_offset;
     dict->SetInteger("TreeData.textSelStartOffset", anchor_offset);
   }
-  int focus_id = node.manager()->GetTreeData().sel_focus_object_id;
+  int focus_id = unignored_selection.focus_object_id;
   if (id == focus_id) {
-    int focus_offset = node.manager()->GetTreeData().sel_focus_offset;
+    int focus_offset = unignored_selection.focus_offset;
     dict->SetInteger("TreeData.textSelEndOffset", focus_offset);
   }
 
@@ -394,27 +405,32 @@ base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
     WriteAttribute(false, STATE_FOCUSED, &line);
 
   WriteAttribute(
-      false, FormatCoordinates("location", "boundsX", "boundsY", dict), &line);
+      false, FormatCoordinates(dict, "location", "boundsX", "boundsY"), &line);
   WriteAttribute(false,
-                 FormatCoordinates("size", "boundsWidth", "boundsHeight", dict),
+                 FormatCoordinates(dict, "size", "boundsWidth", "boundsHeight"),
                  &line);
 
-  WriteAttribute(
-      false,
-      FormatCoordinates("pageLocation", "pageBoundsX", "pageBoundsY", dict),
-      &line);
-  WriteAttribute(false,
-                 FormatCoordinates("pageSize", "pageBoundsWidth",
-                                   "pageBoundsHeight", dict),
-                 &line);
-  WriteAttribute(false,
-                 FormatCoordinates("unclippedLocation", "unclippedBoundsX",
-                                   "unclippedBoundsY", dict),
-                 &line);
-  WriteAttribute(false,
-                 FormatCoordinates("unclippedSize", "unclippedBoundsWidth",
-                                   "unclippedBoundsHeight", dict),
-                 &line);
+  bool ignored = false;
+  dict.GetBoolean("ignored", &ignored);
+  if (!ignored) {
+    WriteAttribute(
+        false,
+        FormatCoordinates(dict, "pageLocation", "pageBoundsX", "pageBoundsY"),
+        &line);
+    WriteAttribute(false,
+                   FormatCoordinates(dict, "pageSize", "pageBoundsWidth",
+                                     "pageBoundsHeight"),
+                   &line);
+    WriteAttribute(false,
+                   FormatCoordinates(dict, "unclippedLocation",
+                                     "unclippedBoundsX", "unclippedBoundsY"),
+                   &line);
+    WriteAttribute(
+        false,
+        FormatCoordinates(dict, "unclippedSize", "unclippedBoundsWidth",
+                          "unclippedBoundsHeight"),
+        &line);
+  }
 
   bool transform;
   if (dict.GetBoolean("transform", &transform) && transform)

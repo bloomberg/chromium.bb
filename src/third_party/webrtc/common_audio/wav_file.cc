@@ -11,9 +11,11 @@
 #include "common_audio/wav_file.h"
 
 #include <errno.h>
+
 #include <algorithm>
 #include <cstdio>
 #include <type_traits>
+#include <utility>
 
 #include "common_audio/include/audio_util.h"
 #include "common_audio/wav_header.h"
@@ -38,7 +40,6 @@ class ReadableWavFile : public ReadableWav {
   size_t Read(void* buf, size_t num_bytes) override {
     return fread(buf, 1, num_bytes, file_);
   }
-  bool Eof() const override { return feof(file_) != 0; }
   bool SeekForward(uint32_t num_bytes) override {
     return fseek(file_, num_bytes, SEEK_CUR) == 0;
   }
@@ -139,25 +140,17 @@ WavWriter::WavWriter(const std::string& filename,
                      size_t num_channels)
     // Unlike plain fopen, CreatePlatformFile takes care of filename utf8 ->
     // wchar conversion on windows.
-    : WavWriter(rtc::CreatePlatformFile(filename), sample_rate, num_channels) {}
+    : WavWriter(FileWrapper::OpenWriteOnly(filename),
+                sample_rate,
+                num_channels) {}
 
-WavWriter::WavWriter(rtc::PlatformFile file,
-                     int sample_rate,
-                     size_t num_channels)
-    : sample_rate_(sample_rate), num_channels_(num_channels), num_samples_(0) {
+WavWriter::WavWriter(FileWrapper file, int sample_rate, size_t num_channels)
+    : sample_rate_(sample_rate),
+      num_channels_(num_channels),
+      num_samples_(0),
+      file_(std::move(file)) {
   // Handle errors from the CreatePlatformFile call in above constructor.
-  RTC_CHECK_NE(file, rtc::kInvalidPlatformFileValue)
-      << "Invalid file. Could not create wav file.";
-  file_handle_ = rtc::FdopenPlatformFile(file, "wb");
-  if (!file_handle_) {
-    RTC_LOG(LS_ERROR) << "Could not open wav file for writing.";
-    // Even though we failed to open a FILE*, the file is still open
-    // and needs to be closed.
-    if (!rtc::ClosePlatformFile(file)) {
-      RTC_LOG(LS_ERROR) << "Can't close file.";
-    }
-    FATAL() << "Could not open wav file for writing.";
-  }
+  RTC_CHECK(file_.is_open()) << "Invalid file. Could not create wav file.";
 
   RTC_CHECK(CheckWavParameters(num_channels_, sample_rate_, kWavFormat,
                                kBytesPerSample, num_samples_));
@@ -165,7 +158,7 @@ WavWriter::WavWriter(rtc::PlatformFile file,
   // Write a blank placeholder header, since we need to know the total number
   // of samples before we can fill in the real data.
   static const uint8_t blank_header[kWavHeaderSize] = {0};
-  RTC_CHECK_EQ(1, fwrite(blank_header, kWavHeaderSize, 1, file_handle_));
+  RTC_CHECK(file_.Write(blank_header, kWavHeaderSize));
 }
 
 WavWriter::~WavWriter() {
@@ -188,11 +181,9 @@ void WavWriter::WriteSamples(const int16_t* samples, size_t num_samples) {
 #ifndef WEBRTC_ARCH_LITTLE_ENDIAN
 #error "Need to convert samples to little-endian when writing to WAV file"
 #endif
-  const size_t written =
-      fwrite(samples, sizeof(*samples), num_samples, file_handle_);
-  RTC_CHECK_EQ(num_samples, written);
-  num_samples_ += written;
-  RTC_CHECK(num_samples_ >= written);  // detect size_t overflow
+  RTC_CHECK(file_.Write(samples, sizeof(*samples) * num_samples));
+  num_samples_ += num_samples;
+  RTC_CHECK(num_samples_ >= num_samples);  // detect size_t overflow
 }
 
 void WavWriter::WriteSamples(const float* samples, size_t num_samples) {
@@ -206,42 +197,12 @@ void WavWriter::WriteSamples(const float* samples, size_t num_samples) {
 }
 
 void WavWriter::Close() {
-  RTC_CHECK_EQ(0, fseek(file_handle_, 0, SEEK_SET));
+  RTC_CHECK(file_.Rewind());
   uint8_t header[kWavHeaderSize];
   WriteWavHeader(header, num_channels_, sample_rate_, kWavFormat,
                  kBytesPerSample, num_samples_);
-  RTC_CHECK_EQ(1, fwrite(header, kWavHeaderSize, 1, file_handle_));
-  RTC_CHECK_EQ(0, fclose(file_handle_));
-  file_handle_ = nullptr;
+  RTC_CHECK(file_.Write(header, kWavHeaderSize));
+  RTC_CHECK(file_.Close());
 }
 
 }  // namespace webrtc
-
-rtc_WavWriter* rtc_WavOpen(const char* filename,
-                           int sample_rate,
-                           size_t num_channels) {
-  return reinterpret_cast<rtc_WavWriter*>(
-      new webrtc::WavWriter(filename, sample_rate, num_channels));
-}
-
-void rtc_WavClose(rtc_WavWriter* wf) {
-  delete reinterpret_cast<webrtc::WavWriter*>(wf);
-}
-
-void rtc_WavWriteSamples(rtc_WavWriter* wf,
-                         const float* samples,
-                         size_t num_samples) {
-  reinterpret_cast<webrtc::WavWriter*>(wf)->WriteSamples(samples, num_samples);
-}
-
-int rtc_WavSampleRate(const rtc_WavWriter* wf) {
-  return reinterpret_cast<const webrtc::WavWriter*>(wf)->sample_rate();
-}
-
-size_t rtc_WavNumChannels(const rtc_WavWriter* wf) {
-  return reinterpret_cast<const webrtc::WavWriter*>(wf)->num_channels();
-}
-
-size_t rtc_WavNumSamples(const rtc_WavWriter* wf) {
-  return reinterpret_cast<const webrtc::WavWriter*>(wf)->num_samples();
-}

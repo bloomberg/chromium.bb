@@ -321,6 +321,7 @@ UI.TreeOutline = class extends Common.Object {
 /** @enum {symbol} */
 UI.TreeOutline.Events = {
   ElementAttached: Symbol('ElementAttached'),
+  ElementsDetached: Symbol('ElementsDetached'),
   ElementExpanded: Symbol('ElementExpanded'),
   ElementCollapsed: Symbol('ElementCollapsed'),
   ElementSelected: Symbol('ElementSelected')
@@ -570,6 +571,8 @@ UI.TreeElement = class {
       this.treeOutline._unbindTreeElement(current);
 
     child._detach();
+    if (this.treeOutline)
+      this.treeOutline.dispatchEventToListeners(UI.TreeOutline.Events.ElementsDetached);
   }
 
   /**
@@ -607,6 +610,8 @@ UI.TreeElement = class {
       child._detach();
     }
     this._children = [];
+    if (this.treeOutline)
+      this.treeOutline.dispatchEventToListeners(UI.TreeOutline.Events.ElementsDetached);
   }
 
   get selectable() {
@@ -924,8 +929,9 @@ UI.TreeElement = class {
 
   /**
    * @param {number=} maxDepth
+   * @returns {!Promise}
    */
-  expandRecursively(maxDepth) {
+  async expandRecursively(maxDepth) {
     let item = this;
     const info = {};
     let depth = 0;
@@ -937,8 +943,11 @@ UI.TreeElement = class {
       maxDepth = 3;
 
     while (item) {
+      await item._populateIfNeeded();
+
       if (depth < maxDepth)
         item.expand();
+
       item = item.traverseNextTreeElement(false, this, (depth >= maxDepth), info);
       depth += info.depthChange;
     }
@@ -1130,14 +1139,20 @@ UI.TreeElement = class {
     }
   }
 
-  _populateIfNeeded() {
+  /**
+   * @returns {!Promise}
+   */
+  async _populateIfNeeded() {
     if (this.treeOutline && this._expandable && !this._children) {
       this._children = [];
-      this.onpopulate();
+      await this.onpopulate();
     }
   }
 
-  onpopulate() {
+  /**
+   * @return {!Promise}
+   */
+  async onpopulate() {
     // Overridden by subclasses.
   }
 
@@ -1282,9 +1297,6 @@ UI.TreeElement._ArrowToggleWidth = 10;
 
 (function() {
 const img = new Image();
-if (window.devicePixelRatio > 1)
-  img.src = 'Images/treeoutlineTriangles_2x.png';
-else
-  img.src = 'Images/treeoutlineTriangles.png';
+img.src = 'Images/treeoutlineTriangles.svg';
 UI.TreeElement._imagePreload = img;
 })();

@@ -58,13 +58,14 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
       : RenderWidget(std::forward<Args>(args)...) {}
 
   // RenderWidget overrides.
+  void BeginMainFrame(base::TimeTicks frame_time) override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void RequestPresentation(PresentationTimeCallback callback) override;
 
   // WebWidgetClient implementation.
   void ScheduleAnimation() override;
-  bool RequestPointerLock() override;
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void SetToolTipText(const blink::WebString& text,

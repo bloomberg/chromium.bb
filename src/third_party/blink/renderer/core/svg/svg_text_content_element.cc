@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_query.h"
 #include "third_party/blink/renderer/core/svg/svg_enumeration_map.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -60,8 +60,7 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
                           SVGLength::Initial::kUnitlessZero) {}
 
   SVGLengthTearOff* baseVal() override {
-    SVGTextContentElement* text_content_element =
-        ToSVGTextContentElement(ContextElement());
+    auto* text_content_element = To<SVGTextContentElement>(ContextElement());
     if (!text_content_element->TextLengthIsSpecifiedByUser())
       BaseValue()->NewValueSpecifiedUnits(
           CSSPrimitiveValue::UnitType::kNumber,
@@ -280,10 +279,8 @@ SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
       (!line_layout_item.IsSVGText() && !line_layout_item.IsSVGInline()))
     return nullptr;
 
-  auto* element = To<SVGElement>(line_layout_item.GetNode());
-  DCHECK(element);
-  return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
-                                           : nullptr;
+  DCHECK(line_layout_item.GetNode());
+  return DynamicTo<SVGTextContentElement>(line_layout_item.GetNode());
 }
 
 }  // namespace blink

@@ -40,6 +40,7 @@ class AutofillDriverIOS : public AutofillDriver {
   // AutofillDriver:
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
+  ui::AXTreeID GetAxTreeId() const override;
   net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
@@ -60,6 +61,7 @@ class AutofillDriverIOS : public AutofillDriver {
   void RendererShouldFillFieldWithValue(const base::string16& value) override;
   void RendererShouldPreviewFieldWithValue(
       const base::string16& value) override;
+  void RendererShouldSetSuggestionAvailability(bool available) override;
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;

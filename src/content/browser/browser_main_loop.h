@@ -34,14 +34,9 @@ namespace base {
 class CommandLine;
 class HighResolutionTimerManager;
 class MemoryPressureMonitor;
-class PowerMonitor;
 class SingleThreadTaskRunner;
 class SystemMonitor;
 }  // namespace base
-
-namespace discardable_memory {
-class DiscardableSharedMemoryManager;
-}
 
 namespace gpu {
 class GpuChannelEstablishFactory;
@@ -86,7 +81,7 @@ class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
 class HostFrameSinkManager;
 class ServerSharedBitmapManager;
-}
+}  // namespace viz
 
 namespace content {
 class BrowserMainParts;
@@ -98,10 +93,9 @@ class MediaStreamManager;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class ScreenlockMonitor;
-class ServiceManagerContext;
+class SmsProvider;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
-class SwapMetricsDriver;
 class TracingControllerImpl;
 struct MainFunctionParams;
 
@@ -190,10 +184,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 #endif
 
-  discardable_memory::DiscardableSharedMemoryManager*
-  discardable_shared_memory_manager() const {
-    return discardable_shared_memory_manager_.get();
-  }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
 
   // Returns the task runner for tasks that that are critical to producing a new
@@ -238,6 +228,9 @@ class CONTENT_EXPORT BrowserMainLoop {
     return device_monitor_mac_.get();
   }
 #endif
+
+  SmsProvider* GetSmsProvider();
+  void SetSmsProviderForTesting(std::unique_ptr<SmsProvider>);
 
   BrowserMainParts* parts() { return parts_.get(); }
 
@@ -305,12 +298,19 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
       scoped_execution_fence_;
 
+  // BEST_EFFORT tasks are not allowed to run between //content initialization
+  // and startup completion.
+  //
+  // TODO(fdoray): Move this to a more elaborate class that prevents BEST_EFFORT
+  // tasks from running when resources are needed to respond to user actions.
+  base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
+      scoped_best_effort_execution_fence_;
+
   // Members initialized in |MainMessageLoopStart()| ---------------------------
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
-  std::unique_ptr<base::PowerMonitor> power_monitor_;
   std::unique_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<ScreenlockMonitor> screenlock_monitor_;
@@ -342,14 +342,17 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
-  std::unique_ptr<SwapMetricsDriver> swap_metrics_driver_;
 #if defined(USE_X11)
   std::unique_ptr<internal::GpuDataManagerVisualProxy>
       gpu_data_manager_visual_proxy_;
 #endif
 
-  ServiceManagerContext* service_manager_context_ = nullptr;
-  std::unique_ptr<ServiceManagerContext> owned_service_manager_context_;
+  // If provided to the BrowserMainLoop (see StartupDataImpl), this closure
+  // is run during shutdown, prior to IO thread destruction, and should do
+  // whatever work is necessary to tear down the ServiceManager if one is
+  // running. Must be provided if a ServiceManager is initialized and running on
+  // the IO thread.
+  base::OnceClosure service_manager_shutdown_closure_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
@@ -377,6 +380,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Must be deleted on the IO thread.
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
 
+  std::unique_ptr<SmsProvider> sms_provider_;
+
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
@@ -388,8 +393,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;
   scoped_refptr<responsiveness::Watcher> responsiveness_watcher_;

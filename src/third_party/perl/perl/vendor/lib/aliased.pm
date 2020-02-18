@@ -1,22 +1,24 @@
-package aliased;
-$VERSION = '0.30';
-
+package aliased; # git description: v0.33-3-g0a61221
+# ABSTRACT: Use shorter versions of class names.
+$aliased::VERSION = '0.34';
 require Exporter;
-@ISA    = qw(Exporter);
-@EXPORT = qw(alias);
+@EXPORT = qw(alias prefix);
 
 use strict;
+use warnings;
+
+sub _croak {
+    require Carp;
+    Carp::croak(@_);
+}
 
 sub import {
+    # Without args, just export @EXPORT
+    goto &Exporter::import if @_ <= 1;
+
     my ( $class, $package, $alias, @import ) = @_;
 
-    if ( @_ <= 1 ) {
-        $class->export_to_level(1);
-        return;
-    }
-
     my $callpack = caller(0);
-
     _load_alias( $package, $callpack, @import );
     _make_alias( $package, $callpack, $alias );
 }
@@ -32,8 +34,15 @@ sub _make_alias {
 
     $alias ||= _get_alias($package);
 
+    my $destination = $alias =~ /::/
+      ? $alias
+      : "$callpack\::$alias";
+
+    # need a scalar not referenced elsewhere to make the sub inlinable
+    my $pack2 = $package;
+
     no strict 'refs';
-    *{ join q{::} => $callpack, $alias } = sub () { $package };
+    *{ $destination } = sub () { $pack2 };
 }
 
 sub _load_alias {
@@ -50,7 +59,7 @@ sub _load_alias {
         eval $code;
         if ( my $error = $@ ) {
             $SIG{__DIE__} = $sigdie;
-            die $error;
+            _croak($error);
         }
         $sigdie = $SIG{__DIE__}
           if defined $SIG{__DIE__};
@@ -58,19 +67,40 @@ sub _load_alias {
 
     # Make sure a global $SIG{__DIE__} makes it out of the localization.
     $SIG{__DIE__} = $sigdie if defined $sigdie;
+    return $package;
 }
 
 sub alias {
     my ( $package, @import ) = @_;
 
     my $callpack = scalar caller(0);
-    _load_alias( $package, $callpack, @import );
+    return _load_alias( $package, $callpack, @import );
+}
 
-    return $package;
+sub prefix {
+    my ($class) = @_;
+    return sub {
+        my ($name) = @_;
+        my $callpack = caller(0);
+        if ( not @_ ) {
+            return _load_alias( $class, $callpack );
+        }
+        elsif ( @_ == 1 && defined $name ) {
+            return _load_alias( "${class}::$name", $callpack );
+        }
+        else {
+            _croak("Too many arguments to prefix('$class')");
+        }
+    };
 }
 
 1;
+
 __END__
+
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -78,7 +108,7 @@ aliased - Use shorter versions of class names.
 
 =head1 VERSION
 
-0.30
+version 0.34
 
 =head1 SYNOPSIS
 
@@ -96,8 +126,7 @@ aliased - Use shorter versions of class names.
   my $cust      = $Customer->new;
 
   my $Preferred = alias "My::Other::Namespace::Preferred::Customer";
-  my $pref      = $Preferred->new;  
-
+  my $pref      = $Preferred->new;
 
 =head1 DESCRIPTION
 
@@ -124,9 +153,9 @@ namespace to another, but it's a handy term.  Just keep in mind that this is
 done with a subroutine and not with typeglobs and weird namespace munging.)
 
 Note that this is B<only> for C<use>ing OO modules.  You cannot use this to
-load procedural modules.  See the L<Why OO Only?|Why OO Only?> section.  Also,
-don't let the version number fool you.  This code is ridiculously simple and
-is just fine for most use.
+load procedural modules.  See the L<Why OO Only?> section.  Also, don't let
+the version number fool you.  This code is ridiculously simple and is just
+fine for most use.
 
 =head2 Implicit Aliasing
 
@@ -185,7 +214,7 @@ by the import list:
 Snippet 1:
 
   use Some::Module::Name qw/foo bar/;
-  my $o = Some::Module::Name->some_class_method; 
+  my $o = Some::Module::Name->some_class_method;
 
 Snippet 2 (equivalent to snippet 1):
 
@@ -198,15 +227,19 @@ of style.
 
 =head2 alias()
 
+This function is only exported if you specify C<use aliased> with no import
+list.
+
+    use aliased;
     my $alias = alias($class);
     my $alias = alias($class, @imports);
 
-alias() is an alternative to C<use aliased ...> which uses less magic and
+C<alias()> is an alternative to C<use aliased ...> which uses less magic and
 avoids some of the ambiguities.
 
-Like C<use aliased> it C<use>s the $class (pass in @imports, if given) but
-instead of providing an C<Alias> constant it simply returns a scalar set to
-the $class name.
+Like C<use aliased> it C<use>s the C<$class> (pass in C<@imports>, if given)
+but instead of providing an C<Alias> constant it simply returns a scalar set
+to the C<$class> name.
 
     my $thing = alias("Some::Thing::With::A::Long::Name");
 
@@ -222,7 +255,7 @@ when aliasing two similar names:
 
 and there is no magic constant exported into your namespace.
 
-The only caveat is loading of the $class happens at run time.  If $class
+The only caveat is loading of the $class happens at run time.  If C<$class>
 exports anything you might want to ensure it is loaded at compile time with:
 
     my $thing;
@@ -230,6 +263,22 @@ exports anything you might want to ensure it is loaded at compile time with:
 
 However, since OO classes rarely export this should not be necessary.
 
+=head2 prefix() (experimental)
+
+This function is only exported if you specify C<use aliased> with no import
+list.
+
+    use aliased;
+
+Sometimes you find you have a ton of packages in the same top-level namespace
+and you want to alias them, but only use them on demand.  For example:
+
+    # instead of:
+    MailVerwaltung::Client::Exception::REST::Response->throw()
+
+    my $error = prefix('MailVerwaltung::Client::Exception');
+    $error->('REST::Response')->throw();   # same as above
+    $error->()->throw; # same as MailVerwaltung::Client::Exception->throw
 
 =head2 Why OO Only?
 
@@ -240,12 +289,14 @@ following syntax:
   use aliased 'Some::Really::Long::Module::Name';
   my $data = Name::data();
 
+=for stopwords nilly
+
 That causes a serious problem.  The only (reasonable) way it can be done is to
 handle the aliasing via typeglobs.  Thus, instead of a subroutine that
 provides the class name, we alias one package to another (as the
 L<namespace|namespace> module does.)  However, we really don't want to simply
 alias one package to another and wipe out namespaces willy-nilly.  By merely
-exporting a single subroutine to a namespace, we minimize the issue. 
+exporting a single subroutine to a namespace, we minimize the issue.
 
 Fortunately, this doesn't seem to be that much of a problem.  Non-OO modules
 generally support exporting of the functions you need and this eliminates the
@@ -255,29 +306,66 @@ need for a module such as this.
 
 This modules exports a subroutine with the same name as the "aliased" name.
 
-=head1 BUGS
-
-There are no known bugs in this module, but feel free to email me reports.
-
 =head1 SEE ALSO
 
 The L<namespace> module.
 
 =head1 THANKS
 
+=for stopwords Rentrak
+
 Many thanks to Rentrak, Inc. (http://www.rentrak.com/) for graciously allowing
 me to replicate the functionality of some of their internal code.
 
 =head1 AUTHOR
 
-Curtis Poe, C<< ovid [at] cpan [dot] org >>
+Curtis "Ovid" Poe <ovid@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005 by Curtis "Ovid" Poe
+This software is copyright (c) 2005 by Curtis "Ovid" Poe.
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.5 or,
-at your option, any later version of Perl 5 you may have available.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=head1 CONTRIBUTORS
+
+=for stopwords Karen Etheridge Curtis Poe Ovid Florian Ragwitz Grzegorz Rożniecki Father Chrysostomos Belden Lyman Olivier Mengué
+
+=over 4
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Curtis Poe <ovid@cpan.org>
+
+=item *
+
+Ovid <curtis_ovid_poe@yahoo.com>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Grzegorz Rożniecki <xaerxess@gmail.com>
+
+=item *
+
+Father Chrysostomos <sprout@cpan.org>
+
+=item *
+
+Belden Lyman <belden@shutterstock.com>
+
+=item *
+
+Olivier Mengué <dolmen@cpan.org>
+
+=back
 
 =cut

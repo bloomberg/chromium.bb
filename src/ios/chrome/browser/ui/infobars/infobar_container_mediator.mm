@@ -97,14 +97,14 @@
 
 #pragma mark - InfobarBadgeUIDelegate
 
-- (void)infobarWasAccepted {
+- (void)infobarWasAccepted:(InfobarType)infobarType {
   if (IsInfobarUIRebootEnabled()) {
     web::WebState* webState = self.webStateList->GetActiveWebState();
     DCHECK(webState);
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
-    infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted();
+    infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
   }
 }
 

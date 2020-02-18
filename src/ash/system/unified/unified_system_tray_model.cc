@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/unified_system_tray_model.h"
 
-#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "base/bind.h"
@@ -74,7 +74,7 @@ void UnifiedSystemTrayModel::DBusObserver::KeyboardBrightnessChanged(
 
 UnifiedSystemTrayModel::UnifiedSystemTrayModel()
     : dbus_observer_(std::make_unique<DBusObserver>(this)),
-      pagination_model_(std::make_unique<PaginationModel>()) {}
+      pagination_model_(std::make_unique<PaginationModel>(nullptr)) {}
 
 UnifiedSystemTrayModel::~UnifiedSystemTrayModel() = default;
 

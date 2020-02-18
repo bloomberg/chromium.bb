@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/css/css_image_generator_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -50,6 +51,14 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     return generator_ ? &generator_->CustomInvalidationProperties() : nullptr;
   }
 
+  const CSSStyleValueVector* GetParsedInputArgumentsForTesting() {
+    return parsed_input_arguments_;
+  }
+  void BuildInputArgumentValuesForTesting(
+      Vector<std::unique_ptr<CrossThreadStyleValue>>& style_value) {
+    BuildInputArgumentValues(style_value);
+  }
+
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
@@ -74,6 +83,9 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
 
   bool ParseInputArguments(const Document&);
 
+  void BuildInputArgumentValues(
+      Vector<std::unique_ptr<CrossThreadStyleValue>>&);
+
   bool input_arguments_invalid_ = false;
 
   Member<CSSCustomIdentValue> name_;
@@ -81,6 +93,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
+  bool paint_off_thread_;
 };
 
 template <>

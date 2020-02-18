@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
@@ -153,7 +152,7 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       was_candidate_window_open_(false),
       window_shell_id_(window_shell_id) {
   SetCanActivate(false);
-  DCHECK(parent || features::IsUsingWindowService());
+  DCHECK(parent);
   set_parent_window(parent);
   set_margins(gfx::Insets());
 
@@ -161,8 +160,8 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
       1, GetNativeTheme()->GetSystemColor(
              ui::NativeTheme::kColorId_MenuBorderColor)));
 
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   auxiliary_text_ = new InformationTextArea(gfx::ALIGN_RIGHT, 0);
   preedit_ = new InformationTextArea(gfx::ALIGN_LEFT, kMinPreeditAreaWidth);
   candidate_area_ = new views::View;
@@ -175,16 +174,16 @@ CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
     AddChildView(candidate_area_);
     AddChildView(auxiliary_text_);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
-    candidate_area_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
   } else {
     AddChildView(preedit_);
     AddChildView(auxiliary_text_);
     AddChildView(candidate_area_);
     auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
     auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
-    candidate_area_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+    candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
   }
 }
 
@@ -249,14 +248,14 @@ void CandidateWindowView::UpdateCandidates(
         ReorderChildView(auxiliary_text_, -1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_RIGHT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::TOP);
-        candidate_area_->SetLayoutManager(
-            std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+        candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
       } else {
         ReorderChildView(auxiliary_text_, 1);
         auxiliary_text_->SetAlignment(gfx::ALIGN_LEFT);
         auxiliary_text_->SetBorderFromPosition(InformationTextArea::BOTTOM);
-        candidate_area_->SetLayoutManager(
-            std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+        candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal));
       }
     }
 

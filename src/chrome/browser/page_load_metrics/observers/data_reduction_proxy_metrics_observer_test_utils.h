@@ -19,7 +19,6 @@
 #include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
 #include "net/nqe/effective_connection_type.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -28,12 +27,6 @@ namespace data_reduction_proxy {
 
 const char kDefaultTestUrl[] = "http://google.com";
 const int kMemoryKb = 1024;
-
-// Attaches a new |DataReductionProxyData| to |navigation_handle|'s navigation
-// data.
-DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle);
 
 // Attaches a new |PreviewsUserData| to the given |navigation_handle|.
 previews::PreviewsUserData* PreviewsDataForNavigationHandle(
@@ -118,9 +111,6 @@ class DataReductionProxyMetricsObserverTestBase
   // Validates the times in the pingback.
   void ValidateTimes();
 
-  // Validates the LoFi state in the pingback.
-  void ValidateLoFiInPingback(bool lofi_expected);
-
   // Validates the blacklist state in the pingback.
   void ValidateBlackListInPingback(bool black_listed);
 
@@ -148,11 +138,15 @@ class DataReductionProxyMetricsObserverTestBase
   bool is_using_lite_page() const { return is_using_lite_page_; }
   bool opt_out_expected() const { return opt_out_expected_; }
   bool black_listed() const { return black_listed_; }
+  std::string session_key() const { return session_key_; }
+  uint64_t page_id() const { return page_id_; }
 
  protected:
   std::unique_ptr<TestPingbackClient> pingback_client_;
   page_load_metrics::mojom::PageLoadTiming timing_;
   bool cached_data_reduction_proxy_used_ = false;
+  std::string session_key_;
+  uint64_t page_id_ = 0;
 
  private:
   previews::PreviewsUserData::ServerLitePageInfo* preview_info_;

@@ -30,12 +30,12 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/prefetched_signed_exchange_cache.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader_delegate_impl.h"
+#include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/navigation_params.h"
@@ -82,8 +82,8 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/resource_scheduler.h"
-#include "services/network/resource_scheduler_params_manager.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler_params_manager.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -837,16 +837,18 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.initiator_origin = url::Origin::Create(url);
+    url::Origin origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
-                                  url::Origin::Create(url), true, false, false,
-                                  -1, false, false, false, false, nullptr,
+                                  net::NetworkIsolationKey(origin, origin),
+                                  true, false, false, -1, false, false, false,
+                                  false, nullptr,
                                   base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     std::unique_ptr<NavigationURLLoader> test_loader =
         NavigationURLLoader::Create(
-            browser_context_->GetResourceContext(),
+            browser_context_.get(), browser_context_->GetResourceContext(),
             BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
             std::move(request_info), nullptr, nullptr, nullptr, nullptr,
             &delegate);
@@ -2190,8 +2192,7 @@ class ExternalProtocolBrowserClient : public TestContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override {
+      network::mojom::URLLoaderFactoryPtr* out_factory) override {
     return false;
   }
 

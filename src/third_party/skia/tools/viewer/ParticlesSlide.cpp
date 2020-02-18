@@ -15,7 +15,6 @@
 #include "src/core/SkOSFile.h"
 #include "src/utils/SkOSPath.h"
 #include "tools/Resources.h"
-#include "tools/timer/AnimTimer.h"
 #include "tools/viewer/ImGuiLayer.h"
 
 #include "imgui.h"
@@ -282,9 +281,9 @@ void ParticlesSlide::draw(SkCanvas* canvas) {
         SkGuiVisitor gui;
         for (int i = 0; i < fLoaded.count(); ++i) {
             ImGui::PushID(i);
-            if (fTimer && ImGui::Button("Play")) {
+            if (fAnimated && ImGui::Button("Play")) {
                 sk_sp<SkParticleEffect> effect(new SkParticleEffect(fLoaded[i].fParams, fRandom));
-                effect->start(fTimer->secs(), looped);
+                effect->start(fAnimationTime, looped);
                 fRunning.push_back({ fPlayPosition, fLoaded[i].fName, effect });
             }
             ImGui::SameLine();
@@ -339,17 +338,18 @@ void ParticlesSlide::draw(SkCanvas* canvas) {
     }
 }
 
-bool ParticlesSlide::animate(const AnimTimer& timer) {
-    fTimer = &timer;
+bool ParticlesSlide::animate(double nanos) {
+    fAnimated = true;
+    fAnimationTime = 1e-9 * nanos;
     for (const auto& effect : fRunning) {
-        effect.fEffect->update(timer.secs());
+        effect.fEffect->update(fAnimationTime);
     }
     return true;
 }
 
-bool ParticlesSlide::onMouse(SkScalar x, SkScalar y, Window::InputState state, uint32_t modifiers) {
+bool ParticlesSlide::onMouse(SkScalar x, SkScalar y, InputState state, ModifierKey modifiers) {
     if (gDragIndex == -1) {
-        if (state == Window::kDown_InputState) {
+        if (state == InputState::kDown) {
             float bestDistance = kDragSize;
             SkPoint mousePt = { x, y };
             for (int i = 0; i < gDragPoints.count(); ++i) {
@@ -365,7 +365,7 @@ bool ParticlesSlide::onMouse(SkScalar x, SkScalar y, Window::InputState state, u
         // Currently dragging
         SkASSERT(gDragIndex < gDragPoints.count());
         gDragPoints[gDragIndex]->set(x, y);
-        if (state == Window::kUp_InputState) {
+        if (state == InputState::kUp) {
             gDragIndex = -1;
         }
         return true;

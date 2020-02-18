@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -265,7 +265,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: The data structure of a policy.
     '''
     examples = self._AddStyledElement(parent, 'dl', ['dd dl'])
-    if self.IsPolicySupportedOnPlatform(policy, 'win'):
+    if self.IsPolicySupportedOnWindows(policy):
       self._AddListExampleWindowsChromeOS(examples, policy, True)
     if self.IsPolicySupportedOnPlatform(
         policy, 'chrome_os', management='active_directory'):
@@ -388,7 +388,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: The data structure of a policy.
     '''
     examples = self._AddStyledElement(parent, 'dl', ['dd dl'])
-    if self.IsPolicySupportedOnPlatform(policy, 'win'):
+    if self.IsPolicySupportedOnWindows(policy):
       self._AddDictionaryExampleWindowsChromeOS(examples, policy, True)
     if self.IsPolicySupportedOnPlatform(
         policy, 'chrome_os', management='active_directory'):
@@ -418,7 +418,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     policy_type = policy['type']
     if policy_type == 'main':
       pieces = []
-      if self.IsPolicySupportedOnPlatform(policy, 'win') or \
+      if self.IsPolicySupportedOnWindows(policy) or \
          self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
                                           management='active_directory'):
         value = '0x00000001' if example_value else '0x00000000'
@@ -437,7 +437,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       self.AddText(parent, '"%s"' % example_value)
     elif policy_type in ('int', 'int-enum'):
       pieces = []
-      if self.IsPolicySupportedOnPlatform(policy, 'win') or \
+      if self.IsPolicySupportedOnWindows(policy) or \
          self.IsPolicySupportedOnPlatform(policy, 'chrome_os',
                                           management='active_directory'):
         pieces.append('0x%08x (Windows)' % example_value)
@@ -548,7 +548,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
           'Android:%s' % self._RESTRICTION_TYPE_MAP[policy['type']])
       if policy['type'] in ('dict', 'external', 'list'):
         is_complex_policy = True
-    if ((self.IsPolicySupportedOnPlatform(policy, 'win') or
+    if ((self.IsPolicySupportedOnWindows(policy) or
          self.IsPolicySupportedOnPlatform(
              policy, 'chrome_os', management='active_directory')) and
         self._REG_TYPE_MAP.get(policy['type'], None)):
@@ -561,7 +561,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         data_type.append(
             '(%s)' % self.GetLocalizedMessage('complex_policies_on_windows'))
     self._AddPolicyAttribute(dl, 'data_type', ' '.join(data_type))
-    if self.IsPolicySupportedOnPlatform(policy, 'win'):
+    if self.IsPolicySupportedOnWindows(policy):
       key_name = self._GetRegistryKeyName(policy, True)
       self._AddPolicyAttribute(dl, 'win_reg_loc',
                                key_name + '\\' + policy['name'], ['.monospace'])
@@ -604,7 +604,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     if 'url_schema' in policy:
       dd = self._AddPolicyAttribute(dl, 'url_schema')
       self._AddTextWithLinks(dd, policy['url_schema'])
-    if (self.IsPolicySupportedOnPlatform(policy, 'win') or
+    if (self.IsPolicySupportedOnWindows(policy) or
         self.IsPolicySupportedOnPlatform(policy, 'linux') or
         self.IsPolicySupportedOnPlatform(policy, 'android') or
         self.IsPolicySupportedOnPlatform(policy, 'mac') or
@@ -613,6 +613,15 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       # Don't add an example for Google cloud managed ChromeOS policies.
       dd = self._AddPolicyAttribute(dl, 'example_value')
       self._AddExample(dd, policy)
+    if 'atomic_group' in policy:
+      dd = self._AddPolicyAttribute(dl, 'policy_atomic_group')
+      policy_group_ref = './policy-list-3/atomic_groups'
+      if 'local' in self.config and self.config['local']:
+        policy_group_ref = './chrome_policy_atomic_groups_list.html'
+      self.AddText(dd, self.GetLocalizedMessage('policy_in_atomic_group') + ' ')
+      self.AddElement(dd, 'a',
+                      {'href': policy_group_ref + '#' + policy['atomic_group']},
+                      policy['atomic_group'])
 
   def _AddPolicyNote(self, parent, policy):
     '''If a policy has an additional web page assigned with it, then add
@@ -696,6 +705,36 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       return schema['minimum'] != 0
     return False
 
+  def _BeginTemplate(self, intro_message_id, banner_message_id):
+    # Add a <div> for the summary section.
+    if self._GetChromiumVersionString() is not None:
+      self.AddComment(self._main_div, self.config['build'] + \
+          ' version: ' + self._GetChromiumVersionString())
+
+    banner_div = self._AddStyledElement(self._main_div, 'div', ['div.banner'],
+                                        {}, '')
+    self._AddParagraphs(banner_div, self.GetLocalizedMessage(banner_message_id))
+    summary_div = self.AddElement(self._main_div, 'div')
+    self.AddElement(summary_div, 'a', {'name': 'top'})
+    self.AddElement(summary_div, 'br')
+    self._AddParagraphs(summary_div, self.GetLocalizedMessage(intro_message_id))
+    self.AddElement(summary_div, 'br')
+    self.AddElement(summary_div, 'br')
+    self.AddElement(summary_div, 'br')
+    # Add the summary table of policies.
+    summary_table = self._AddStyledElement(summary_div, 'table', ['table'])
+    # Add the first row.
+    thead = self.AddElement(summary_table, 'thead')
+    tr = self._AddStyledElement(thead, 'tr', ['tr'])
+    self._AddStyledElement(tr, 'td', ['td', 'td.left', 'thead td'], {},
+                           self.GetLocalizedMessage('name_column_title'))
+    self._AddStyledElement(tr, 'td', ['td', 'td.right', 'thead td'], {},
+                           self.GetLocalizedMessage('description_column_title'))
+    self._summary_tbody = self.AddElement(summary_table, 'tbody')
+
+    # Add a <div> for the detailed policy listing.
+    self._details_div = self.AddElement(self._main_div, 'div')
+
   #
   # Implementation of abstract methods of TemplateWriter:
   #
@@ -715,31 +754,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._indent_level -= 1
 
   def BeginTemplate(self):
-    # Add a <div> for the summary section.
-    if self._GetChromiumVersionString() is not None:
-      self.AddComment(self._main_div, self.config['build'] + \
-          ' version: ' + self._GetChromiumVersionString())
-
-    summary_div = self.AddElement(self._main_div, 'div')
-    self.AddElement(summary_div, 'a', {'name': 'top'})
-    self.AddElement(summary_div, 'br')
-    self._AddParagraphs(summary_div, self.GetLocalizedMessage('intro'))
-    self.AddElement(summary_div, 'br')
-    self.AddElement(summary_div, 'br')
-    self.AddElement(summary_div, 'br')
-    # Add the summary table of policies.
-    summary_table = self._AddStyledElement(summary_div, 'table', ['table'])
-    # Add the first row.
-    thead = self.AddElement(summary_table, 'thead')
-    tr = self._AddStyledElement(thead, 'tr', ['tr'])
-    self._AddStyledElement(tr, 'td', ['td', 'td.left', 'thead td'], {},
-                           self.GetLocalizedMessage('name_column_title'))
-    self._AddStyledElement(tr, 'td', ['td', 'td.right', 'thead td'], {},
-                           self.GetLocalizedMessage('description_column_title'))
-    self._summary_tbody = self.AddElement(summary_table, 'tbody')
-
-    # Add a <div> for the detailed policy listing.
-    self._details_div = self.AddElement(self._main_div, 'div')
+    self._BeginTemplate('intro', 'banner')
 
   def Init(self):
     dom_impl = minidom.getDOMImplementation('')
@@ -755,6 +770,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         'linux': 'Linux',
         'chrome_os': self.config['os_name'],
         'android': 'Android',
+        'win7': 'Windows 7',
     }
     # Human-readable names of supported products.
     self._PRODUCT_MAP = {
@@ -803,6 +819,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     # the style-sheet is a dictionary and the style attributes will be added
     # "by hand" for each element.
     self._STYLE = {
+        'div.banner': 'background-color: rgb(244,204,204); font-size: x-large; '
+                      'border: 1px solid red; padding: 20px; '
+                      'text-align: center;',
         'table': 'border-style: none; border-collapse: collapse;',
         'tr': 'height: 0px;',
         'td': 'border: 1px dotted rgb(170, 170, 170); padding: 7px; '

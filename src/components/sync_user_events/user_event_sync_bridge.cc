@@ -52,8 +52,7 @@ int64_t GetEventTimeFromStorageKey(const std::string& storage_key) {
 std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserEventSpecifics> specifics) {
   auto entity_data = std::make_unique<EntityData>();
-  entity_data->non_unique_name =
-      base::NumberToString(specifics->event_time_usec());
+  entity_data->name = base::NumberToString(specifics->event_time_usec());
   entity_data->specifics.set_allocated_user_event(specifics.release());
   return entity_data;
 }
@@ -65,8 +64,7 @@ UserEventSyncBridge::UserEventSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      global_id_mapper_(global_id_mapper),
-      weak_ptr_factory_(this) {
+      global_id_mapper_(global_id_mapper) {
   DCHECK(global_id_mapper_);
   std::move(store_factory)
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
@@ -111,8 +109,8 @@ base::Optional<ModelError> UserEventSyncBridge::ApplySyncChanges(
   base::EraseIf(in_flight_nav_linked_events_,
                 [&deleted_event_times](
                     const std::pair<int64_t, sync_pb::UserEventSpecifics> kv) {
-                  return base::ContainsKey(deleted_event_times,
-                                           kv.second.event_time_usec());
+                  return base::Contains(deleted_event_times,
+                                        kv.second.event_time_usec());
                 });
 
   batch->TakeMetadataChangesFrom(std::move(metadata_change_list));

@@ -15,13 +15,23 @@
   public static *** CREATOR;
 }
 
+# Keep all default constructors for used Fragments. Required since they are
+# called reflectively when fragments are reinflated after the app is killed.
+-keepclassmembers class * extends android.app.Fragment {
+  public <init>();
+}
+-keepclassmembers class * extends android.support.v4.app.Fragment {
+  public <init>();
+}
+-keepclassmembers class * extends androidx.fragment.app.Fragment {
+  public <init>();
+}
+
 # Don't obfuscate Parcelables as they might be marshalled outside Chrome.
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class * implements android.os.Parcelable {
-  <init>(...);
-}
+-keepnames class * implements android.os.Parcelable {}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
@@ -37,6 +47,13 @@
   static *** d(...);
   static *** v(...);
   static *** isLoggable(...);
+}
+-checkdiscard class org.chromium.base.Log {
+  public static void d(...);
+  public static void v(...);
+  private static void debug(...);
+  private static void verbose(...);
+  private static String getCallOrigin(...);
 }
 
 # The following chart was created on July 20, 2016, to decide on 3 optimization

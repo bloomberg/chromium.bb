@@ -15,19 +15,18 @@
 #include <string>
 #include <vector>
 
+#include "api/audio/audio_mixer.h"
+#include "api/audio_codecs/audio_decoder_factory.h"
+#include "api/audio_codecs/audio_encoder_factory.h"
+#include "api/bitrate_constraints.h"
+#include "api/rtp_parameters.h"
 #include "api/task_queue/task_queue_factory.h"
-#include "call/call.h"
+#include "api/video_codecs/video_decoder_factory.h"
+#include "api/video_codecs/video_encoder_factory.h"
+#include "media/base/codec.h"
 #include "media/base/media_engine.h"
 #include "modules/audio_device/include/audio_device.h"
-
-namespace webrtc {
-class AudioDecoderFactory;
-class AudioMixer;
-class AudioProcessing;
-class VideoDecoderFactory;
-class VideoEncoderFactory;
-class VideoBitrateAllocatorFactory;
-}  // namespace webrtc
+#include "modules/audio_processing/include/audio_processing.h"
 
 namespace cricket {
 
@@ -50,27 +49,11 @@ struct MediaEngineDependencies {
   std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory;
 };
 
+// CreateMediaEngine may be called on any thread, though the engine is
+// only expected to be used on one thread, internally called the "worker
+// thread". This is the thread Init must be called on.
 std::unique_ptr<MediaEngineInterface> CreateMediaEngine(
     MediaEngineDependencies dependencies);
-
-class WebRtcMediaEngineFactory {
- public:
-  // These Create methods may be called on any thread, though the engine is
-  // only expected to be used on one thread, internally called the "worker
-  // thread". This is the thread Init must be called on.
-
-  // Create a MediaEngineInterface with optional video codec factories. These
-  // video factories represents all video codecs, i.e. no extra internal video
-  // codecs will be added.
-  static std::unique_ptr<MediaEngineInterface> Create(
-      rtc::scoped_refptr<webrtc::AudioDeviceModule> adm,
-      rtc::scoped_refptr<webrtc::AudioEncoderFactory> audio_encoder_factory,
-      rtc::scoped_refptr<webrtc::AudioDecoderFactory> audio_decoder_factory,
-      std::unique_ptr<webrtc::VideoEncoderFactory> video_encoder_factory,
-      std::unique_ptr<webrtc::VideoDecoderFactory> video_decoder_factory,
-      rtc::scoped_refptr<webrtc::AudioMixer> audio_mixer,
-      rtc::scoped_refptr<webrtc::AudioProcessing> audio_processing);
-};
 
 // Verify that extension IDs are within 1-byte extension range and are not
 // overlapping.

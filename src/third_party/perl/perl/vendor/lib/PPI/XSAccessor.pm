@@ -7,10 +7,7 @@ use 5.006;
 use strict;
 use PPI ();
 
-use vars qw{$VERSION};
-BEGIN {
-	$VERSION = '1.215';
-}
+our $VERSION = '1.269'; # VERSION
 
 
 
@@ -21,7 +18,8 @@ BEGIN {
 
 # Packages are implemented here in alphabetical order
 
-package PPI::Document;
+package #hide from indexer
+	PPI::Document;
 
 use Class::XSAccessor
 	replace => 1,
@@ -32,7 +30,8 @@ use Class::XSAccessor
 		'scope'
 	];
 
-package PPI::Document::File;
+package #hide from indexer
+	PPI::Document::File;
 
 use Class::XSAccessor
 	replace => 1,
@@ -40,7 +39,8 @@ use Class::XSAccessor
 		filename => 'filename',
 	};
 
-package PPI::Document::Fragment;
+package #hide from indexer
+	PPI::Document::Fragment;
 
 use Class::XSAccessor
 	replace => 1,
@@ -48,7 +48,8 @@ use Class::XSAccessor
 		'scope',
 	];
 
-package PPI::Document::Normalized;
+package #hide from indexer
+	PPI::Document::Normalized;
 
 use Class::XSAccessor
 	replace => 1,
@@ -58,7 +59,8 @@ use Class::XSAccessor
 		'functions' => 'functions',
 	};
 
-package PPI::Element;
+package #hide from indexer
+	PPI::Element;
 
 use Class::XSAccessor
 	replace => 1,
@@ -66,7 +68,8 @@ use Class::XSAccessor
 		'significant',
 	];
 
-package PPI::Exception;
+package #hide from indexer
+	PPI::Exception;
 
 use Class::XSAccessor
 	replace => 1,
@@ -74,7 +77,8 @@ use Class::XSAccessor
 		message => 'message',
 	};
 
-package PPI::Node;
+package #hide from indexer
+	PPI::Node;
 
 use Class::XSAccessor
 	replace => 1,
@@ -82,7 +86,8 @@ use Class::XSAccessor
 		'scope',
 	];
 
-package PPI::Normal;
+package #hide from indexer
+	PPI::Normal;
 
 use Class::XSAccessor
 	replace => 1,
@@ -90,7 +95,8 @@ use Class::XSAccessor
 		'layer' => 'layer',
 	};
 
-package PPI::Statement;
+package #hide from indexer
+	PPI::Statement;
 
 use Class::XSAccessor
 	replace => 1,
@@ -98,7 +104,8 @@ use Class::XSAccessor
 		'__LEXER__normal',
 	];
 
-package PPI::Statement::Compound;
+package #hide from indexer
+	PPI::Statement::Compound;
 
 use Class::XSAccessor
 	replace => 1,
@@ -109,7 +116,8 @@ use Class::XSAccessor
 		'__LEXER__normal',
 	];
 
-package PPI::Statement::Data;
+package #hide from indexer
+	PPI::Statement::Data;
 
 use Class::XSAccessor
 	replace => 1,
@@ -117,7 +125,8 @@ use Class::XSAccessor
 		'_complete',
 	];
 
-package PPI::Statement::End;
+package #hide from indexer
+	PPI::Statement::End;
 
 use Class::XSAccessor
 	replace => 1,
@@ -125,7 +134,8 @@ use Class::XSAccessor
 		'_complete',
 	];
 
-package PPI::Statement::Given;
+package #hide from indexer
+	PPI::Statement::Given;
 
 use Class::XSAccessor
 	replace => 1,
@@ -136,7 +146,8 @@ use Class::XSAccessor
 		'__LEXER__normal',
 	];
 
-package PPI::Token;
+package #hide from indexer
+	PPI::Token;
 
 use Class::XSAccessor
 	replace => 1,

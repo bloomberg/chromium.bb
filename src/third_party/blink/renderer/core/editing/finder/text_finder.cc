@@ -60,7 +60,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -88,7 +88,7 @@ static void ScrollToVisible(Range* match) {
   ScrollBehavior scroll_behavior =
       smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
-      LayoutRect(match->BoundingBox()),
+      PhysicalRect(match->BoundingBox()),
       WebScrollIntoViewParams(
           ScrollAlignment::kAlignCenterIfNeeded,
           ScrollAlignment::kAlignCenterIfNeeded, kUserScroll,
@@ -256,10 +256,10 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   const EphemeralRange active_match_range(active_match);
   if (node) {
     for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
-      if (!runner.IsElementNode())
+      auto* element = DynamicTo<Element>(runner);
+      if (!element)
         continue;
-      Element& element = ToElement(runner);
-      if (element.IsFocusable()) {
+      if (element->IsFocusable()) {
         // Found a focusable parent node. Set the active match as the
         // selection and focus to the focusable node.
         GetFrame()->Selection().SetSelectionAndEndTyping(
@@ -267,8 +267,8 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
                 .SetBaseAndExtent(active_match_range)
                 .Build());
         GetFrame()->GetDocument()->SetFocusedElement(
-            &element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                                  kWebFocusTypeNone, nullptr));
+            element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                                 kWebFocusTypeNone, nullptr));
         return;
       }
     }
@@ -278,13 +278,13 @@ void TextFinder::SetFindEndstateFocusAndSelection() {
   // This, for example, sets focus to the first link if you search for
   // text and text that is within one or more links.
   for (Node& runner : active_match_range.Nodes()) {
-    if (!runner.IsElementNode())
+    auto* element = DynamicTo<Element>(runner);
+    if (!element)
       continue;
-    Element& element = ToElement(runner);
-    if (element.IsFocusable()) {
+    if (element->IsFocusable()) {
       GetFrame()->GetDocument()->SetFocusedElement(
-          &element, FocusParams(SelectionBehaviorOnFocus::kNone,
-                                kWebFocusTypeNone, nullptr));
+          element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                               kWebFocusTypeNone, nullptr));
       return;
     }
   }
@@ -621,7 +621,7 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
     if (active_match_->FirstNode() &&
         active_match_->FirstNode()->GetLayoutObject()) {
       active_match_->FirstNode()->GetLayoutObject()->ScrollRectToVisible(
-          LayoutRect(active_match_bounding_box),
+          PhysicalRect(active_match_bounding_box),
           WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
                                   ScrollAlignment::kAlignCenterIfNeeded,
                                   kUserScroll));

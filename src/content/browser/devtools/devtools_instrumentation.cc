@@ -18,7 +18,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/common/navigation_params.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "content/public/browser/file_select_listener.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
@@ -48,6 +49,28 @@ void DispatchToAgents(int frame_tree_node_id,
   FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (ftn)
     DispatchToAgents(ftn, method, std::forward<Args>(args)...);
+}
+
+FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
+  // Navigation requests start in the browser, before process_id is assigned, so
+  // the id is set to 0. In these situations, the routing_id is the frame tree
+  // node id, and can be used directly.
+  int frame_tree_node_id =
+      process_id == 0 ? routing_id
+                      : RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
+                            process_id, routing_id);
+  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+
+  // If this is a navigation request (process_id == 0) of a child frame
+  // (ftn->parent()), then requestWillBeSent and responseReceived are delivered
+  // to the parent frame instead of the child because we don't know if the child
+  // will become an OOPIF with a separate target yet or not. Do the same for
+  // requestWillBeSentExtraInfo and responseReceivedExtraInfo.
+  if (ftn && process_id == 0 && ftn->parent()) {
+    ftn = ftn->parent();
+  }
+
+  return ftn;
 }
 
 }  // namespace
@@ -162,7 +185,9 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
   }
   FrameTreeNode* parent = frame_tree_node->parent();
   if (!parent) {
-    if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal()) {
+    if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal() &&
+        WebContentsImpl::FromFrameTreeNode(frame_tree_node)
+            ->GetOuterWebContents()) {
       parent = WebContentsImpl::FromFrameTreeNode(frame_tree_node)
                    ->GetOuterWebContents()
                    ->GetFrameTree()
@@ -224,7 +249,8 @@ bool MaybeCreateProxyForInterception(
     const base::UnguessableToken& frame_token,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        target_factory_receiver) {
   if (!agent_host)
     return false;
   bool had_interceptors = false;
@@ -232,7 +258,7 @@ bool MaybeCreateProxyForInterception(
   for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) {
     had_interceptors = (*it)->MaybeCreateProxyForInterception(
                            rph, frame_token, is_navigation, is_download,
-                           target_factory_request) ||
+                           target_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
@@ -244,7 +270,8 @@ bool WillCreateURLLoaderFactory(
     RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
-    network::mojom::URLLoaderFactoryRequest* target_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        target_factory_receiver) {
   DCHECK(!is_download || is_navigation);
 
   // Order of targets and sessions matters -- the latter proxy is created,
@@ -253,34 +280,51 @@ bool WillCreateURLLoaderFactory(
   // Within the target, the agents added earlier are closer to network.
 
   DevToolsAgentHostImpl* frame_agent_host =
-      RenderFrameDevToolsAgentHost::GetFor(rfh->frame_tree_node());
+      RenderFrameDevToolsAgentHost::GetFor(rfh);
   RenderProcessHost* rph = rfh->GetProcess();
   const base::UnguessableToken& frame_token = rfh->GetDevToolsFrameToken();
 
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::NetworkHandler>(
           frame_agent_host, rph, frame_token, is_navigation, is_download,
-          target_factory_request);
+          target_factory_receiver);
 
   had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                          frame_agent_host, rph, frame_token, is_navigation,
-                         is_download, target_factory_request) ||
+                         is_download, target_factory_receiver) ||
                      had_interceptors;
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, frame_token, is_navigation,
-                           is_download, target_factory_request) ||
+                           is_download, target_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
 }
 
+bool InterceptFileChooser(
+    RenderFrameHostImpl* rfh,
+    std::unique_ptr<content::FileSelectListener>* listener,
+    const blink::mojom::FileChooserParams& params) {
+  DevToolsAgentHostImpl* agent_host = RenderFrameDevToolsAgentHost::GetFor(rfh);
+  if (!agent_host)
+    return false;
+  std::vector<protocol::PageHandler*> page_handlers =
+      protocol::PageHandler::ForAgentHost(agent_host);
+  for (auto* handler : page_handlers) {
+    if (handler->InterceptFileChooser(rfh, listener, params))
+      return true;
+  }
+  return false;
+}
+
 bool WillCreateURLLoaderFactoryForServiceWorker(
     RenderProcessHost* rph,
     int routing_id,
-    network::mojom::URLLoaderFactoryRequest* loader_factory_request) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+        loader_factory_receiver) {
   ServiceWorkerDevToolsAgentHost* worker_agent_host =
       ServiceWorkerDevToolsManager::GetInstance()
           ->GetDevToolsAgentHostForWorker(rph->GetID(), routing_id);
@@ -294,13 +338,13 @@ bool WillCreateURLLoaderFactoryForServiceWorker(
   bool had_interceptors =
       MaybeCreateProxyForInterception<protocol::FetchHandler>(
           worker_agent_host, rph, worker_token, false, false,
-          loader_factory_request);
+          loader_factory_receiver);
 
   // TODO(caseq): assure deterministic order of browser agents (or sessions).
   for (auto* browser_agent_host : BrowserDevToolsAgentHost::Instances()) {
     had_interceptors = MaybeCreateProxyForInterception<protocol::FetchHandler>(
                            browser_agent_host, rph, worker_token, false, false,
-                           loader_factory_request) ||
+                           loader_factory_receiver) ||
                        had_interceptors;
   }
   return had_interceptors;
@@ -311,12 +355,13 @@ bool WillCreateURLLoaderFactory(
     bool is_navigation,
     bool is_download,
     std::unique_ptr<network::mojom::URLLoaderFactory>* factory) {
+  // TODO(crbug.com/955171): Replace this with PendingRemote.
   network::mojom::URLLoaderFactoryPtrInfo proxied_factory;
-  network::mojom::URLLoaderFactoryRequest request =
+  mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       mojo::MakeRequest(&proxied_factory);
-  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &request))
+  if (!WillCreateURLLoaderFactory(rfh, is_navigation, is_download, &receiver))
     return false;
-  mojo::MakeStrongBinding(std::move(*factory), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(*factory), std::move(receiver));
   *factory = std::make_unique<DevToolsURLLoaderFactoryAdapter>(
       mojo::MakeProxy(std::move(proxied_factory)));
   return true;
@@ -381,6 +426,36 @@ void PortalDetached(RenderFrameHostImpl* render_frame_host_impl) {
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl) {
   DispatchToAgents(render_frame_host_impl->frame_tree_node(),
                    &protocol::TargetHandler::UpdatePortals);
+}
+
+void OnRequestWillBeSentExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& request_cookie_list,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
+  if (!ftn)
+    return;
+
+  DispatchToAgents(ftn, &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
+                   devtools_request_id, request_cookie_list, request_headers);
+}
+
+void OnResponseReceivedExtraInfo(
+    int process_id,
+    int routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& response_cookie_list,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
+    const base::Optional<std::string>& response_headers_text) {
+  FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
+  if (!ftn)
+    return;
+
+  DispatchToAgents(ftn, &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
+                   devtools_request_id, response_cookie_list, response_headers,
+                   response_headers_text);
 }
 
 }  // namespace devtools_instrumentation

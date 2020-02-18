@@ -11,13 +11,16 @@ namespace chromeos {
 namespace cellular_setup {
 
 OtaActivator::OtaActivator(base::OnceClosure on_finished_callback)
-    : on_finished_callback_(std::move(on_finished_callback)) {}
+    : on_finished_callback_(std::move(on_finished_callback)), binding_(this) {}
 
 OtaActivator::~OtaActivator() = default;
 
 mojom::CarrierPortalHandlerPtr OtaActivator::GenerateInterfacePtr() {
+  // Only one InterfacePtr should be created per instance.
+  DCHECK(!binding_);
+
   mojom::CarrierPortalHandlerPtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
+  binding_.Bind(mojo::MakeRequest(&interface_ptr));
   return interface_ptr;
 }
 

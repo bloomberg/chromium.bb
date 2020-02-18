@@ -31,7 +31,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/auto_reset.h"
 #include "build/build_config.h"
@@ -94,12 +93,12 @@ namespace {
 bool ParseQuad(std::unique_ptr<protocol::Array<double>> quad_array,
                FloatQuad* quad) {
   const size_t kCoordinatesInQuad = 8;
-  if (!quad_array || quad_array->length() != kCoordinatesInQuad)
+  if (!quad_array || quad_array->size() != kCoordinatesInQuad)
     return false;
-  quad->SetP1(FloatPoint(quad_array->get(0), quad_array->get(1)));
-  quad->SetP2(FloatPoint(quad_array->get(2), quad_array->get(3)));
-  quad->SetP3(FloatPoint(quad_array->get(4), quad_array->get(5)));
-  quad->SetP4(FloatPoint(quad_array->get(6), quad_array->get(7)));
+  quad->SetP1(FloatPoint((*quad_array)[0], (*quad_array)[1]));
+  quad->SetP2(FloatPoint((*quad_array)[2], (*quad_array)[3]));
+  quad->SetP3(FloatPoint((*quad_array)[4], (*quad_array)[5]));
+  quad->SetP4(FloatPoint((*quad_array)[6], (*quad_array)[7]));
   return true;
 }
 
@@ -114,8 +113,8 @@ void InspectTool::Init(InspectorOverlayAgent* overlay,
   DoInit();
 }
 
-CString InspectTool::GetDataResourceName() {
-  return "inspect_tool_highlight.html";
+String InspectTool::GetDataResourceName() {
+  return String("inspect_tool_highlight.html");
 }
 
 bool InspectTool::HandleInputEvent(LocalFrameView* frame_view,
@@ -331,12 +330,13 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       show_debug_borders_(&agent_state_, false),
       show_fps_counter_(&agent_state_, false),
       show_paint_rects_(&agent_state_, false),
+      show_layout_shift_regions_(&agent_state_, false),
       show_scroll_bottleneck_rects_(&agent_state_, false),
       show_hit_test_borders_(&agent_state_, false),
       show_size_on_resize_(&agent_state_, false),
       paused_in_debugger_message_(&agent_state_, String()),
       inspect_mode_(&agent_state_, protocol::Overlay::InspectModeEnum::None),
-      inspect_mode_protocol_config_(&agent_state_, String()) {}
+      inspect_mode_protocol_config_(&agent_state_, std::vector<uint8_t>()) {}
 
 InspectorOverlayAgent::~InspectorOverlayAgent() {
   DCHECK(!overlay_page_);
@@ -360,6 +360,7 @@ void InspectorOverlayAgent::Restore() {
   setShowDebugBorders(show_debug_borders_.Get());
   setShowFPSCounter(show_fps_counter_.Get());
   setShowPaintRects(show_paint_rects_.Get());
+  setShowLayoutShiftRegions(show_layout_shift_regions_.Get());
   setShowScrollBottleneckRects(show_scroll_bottleneck_rects_.Get());
   setShowHitTestBorders(show_hit_test_borders_.Get());
   setShowViewportSizeOnResize(show_size_on_resize_.Get());
@@ -390,12 +391,13 @@ Response InspectorOverlayAgent::disable() {
   setShowDebugBorders(false);
   setShowFPSCounter(false);
   setShowPaintRects(false);
+  setShowLayoutShiftRegions(false);
   setShowScrollBottleneckRects(false);
   setShowHitTestBorders(false);
   setShowViewportSizeOnResize(false);
   paused_in_debugger_message_.Clear();
   inspect_mode_.Set(protocol::Overlay::InspectModeEnum::None);
-  inspect_mode_protocol_config_.Set(String());
+  inspect_mode_protocol_config_.Set(std::vector<uint8_t>());
   if (overlay_page_) {
     overlay_page_->WillBeDestroyed();
     overlay_page_.Clear();
@@ -406,7 +408,7 @@ Response InspectorOverlayAgent::disable() {
   resize_timer_.Stop();
   resize_timer_active_ = false;
   frame_overlay_.reset();
-  frame_resource_name_ = CString();
+  frame_resource_name_ = String();
   PickTheRightTool();
   SetNeedsUnbufferedInput(false);
   return Response::OK();
@@ -463,6 +465,24 @@ Response InspectorOverlayAgent::setShowPaintRects(bool show) {
   // turn off debug overlays, but the WebFrameWidget is already gone.
   if (widget_impl)
     widget_impl->Client()->SetShowPaintRects(show);
+  if (!show && frame_impl_->GetFrameView())
+    frame_impl_->GetFrameView()->Invalidate();
+  return Response::OK();
+}
+
+Response InspectorOverlayAgent::setShowLayoutShiftRegions(bool show) {
+  show_layout_shift_regions_.Set(show);
+  if (show) {
+    Response response = CompositingEnabled();
+    if (!response.isSuccess())
+      return response;
+  }
+  WebFrameWidget* widget = frame_impl_->LocalRoot()->FrameWidget();
+  WebFrameWidgetBase* widget_impl = static_cast<WebFrameWidgetBase*>(widget);
+  // While a frame is being detached the inspector will shutdown and
+  // turn off debug overlays, but the WebFrameWidget is already gone.
+  if (widget_impl)
+    widget_impl->Client()->SetShowLayoutShiftRegions(show);
   if (!show && frame_impl_->GetFrameView())
     frame_impl_->GetFrameView()->Invalidate();
   return Response::OK();
@@ -599,6 +619,7 @@ Response InspectorOverlayAgent::hideHighlight() {
 Response InspectorOverlayAgent::getHighlightObjectForTest(
     int node_id,
     Maybe<bool> include_distance,
+    Maybe<bool> include_style,
     std::unique_ptr<protocol::DictionaryValue>* result) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
@@ -614,10 +635,12 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
     is_locked_ancestor = true;
   }
 
-  InspectorHighlight highlight(
-      node, InspectorHighlight::DefaultConfig(),
-      InspectorHighlightContrastInfo(), true /* append_element_info */,
-      include_distance.fromMaybe(false), is_locked_ancestor);
+  InspectorHighlightConfig config = InspectorHighlight::DefaultConfig();
+  config.show_styles = include_style.fromMaybe(false);
+  InspectorHighlight highlight(node, config, InspectorHighlightContrastInfo(),
+                               true /* append_element_info */,
+                               include_distance.fromMaybe(false),
+                               is_locked_ancestor);
   *result = highlight.AsProtocolValue();
   return Response::OK();
 }
@@ -719,9 +742,9 @@ WebInputEventResult InspectorOverlayAgent::HandleInputEventInOverlay(
       return OverlayMainFrame()->GetEventHandler().HandleMouseMoveEvent(
           mouse_event,
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       std::vector<const WebInputEvent*>()),
+                                       WebVector<const WebInputEvent*>()),
           TransformWebMouseEventVector(frame_impl_->GetFrameView(),
-                                       std::vector<const WebInputEvent*>()));
+                                       WebVector<const WebInputEvent*>()));
     }
     if (mouse_event.GetType() == WebInputEvent::kMouseDown) {
       return OverlayMainFrame()->GetEventHandler().HandleMousePressEvent(
@@ -847,8 +870,8 @@ void InspectorOverlayAgent::EnsureOverlayPageCreated() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
-                                                 *overlay_page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(
+      dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -863,8 +886,8 @@ void InspectorOverlayAgent::LoadFrameForTool() {
 
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, dummy_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
-  auto* frame = MakeGarbageCollected<LocalFrame>(dummy_local_frame_client,
-                                                 *overlay_page_, nullptr);
+  auto* frame = MakeGarbageCollected<LocalFrame>(
+      dummy_local_frame_client, *overlay_page_, nullptr, nullptr, nullptr);
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);
@@ -877,8 +900,8 @@ void InspectorOverlayAgent::LoadFrameForTool() {
   data->Append("<script>", static_cast<size_t>(8));
   data->Append(Platform::Current()->GetDataResource("inspect_tool_common.js"));
   data->Append("</script>", static_cast<size_t>(9));
-  data->Append(
-      Platform::Current()->GetDataResource(frame_resource_name_.data()));
+  data->Append(Platform::Current()->GetDataResource(
+      frame_resource_name_.Utf8().c_str()));
 
   frame->ForceSynchronousDocumentInstall("text/html", data);
 
@@ -993,7 +1016,7 @@ void InspectorOverlayAgent::OnResizeTimer(TimerBase*) {
   SetInspectTool(MakeGarbageCollected<ShowViewSizeTool>());
   resize_timer_active_ = true;
   resize_timer_.Stop();
-  resize_timer_.StartOneShot(TimeDelta::FromSeconds(1), FROM_HERE);
+  resize_timer_.StartOneShot(base::TimeDelta::FromSeconds(1), FROM_HERE);
 }
 
 void InspectorOverlayAgent::Dispatch(const String& message) {
@@ -1007,7 +1030,7 @@ void InspectorOverlayAgent::PageLayoutInvalidated(bool resized) {
     // the main page layout to avoid document lifecycle issues caused by
     // Microtask::PerformCheckpoint() called when we rebuild the overlay page.
     resize_timer_.Stop();
-    resize_timer_.StartOneShot(TimeDelta::FromSeconds(0), FROM_HERE);
+    resize_timer_.StartOneShot(base::TimeDelta::FromSeconds(0), FROM_HERE);
     return;
   }
   ScheduleUpdate();
@@ -1059,10 +1082,11 @@ Response InspectorOverlayAgent::setInspectMode(
         String("Unknown mode \"" + mode + "\" was provided."));
   }
 
-  String serialized_config =
-      highlight_inspector_object.isJust()
-          ? highlight_inspector_object.fromJust()->toJSON()
-          : String();
+  std::vector<uint8_t> serialized_config;
+  if (highlight_inspector_object.isJust()) {
+    serialized_config =
+        highlight_inspector_object.fromJust()->serializeToBinary();
+  }
   std::unique_ptr<InspectorHighlightConfig> config;
   Response response = HighlightConfigFromInspectorObject(
       std::move(highlight_inspector_object), &config);

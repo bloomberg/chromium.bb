@@ -157,6 +157,29 @@ void CheckMemoryMetric(const std::string& name,
   EXPECT_LT(samples->sum(), maximum_expected_size) << name;
 }
 
+void CheckExperimentalMemoryMetricsForProcessType(
+    const base::HistogramTester& histogram_tester,
+    int count,
+    const char* process_type,
+    int number_of_processes) {
+#if !defined(OS_WIN)
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.Malloc",
+      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+      number_of_processes);
+#endif
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.BlinkGC",
+      histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+  CheckMemoryMetric(
+      std::string("Memory.Experimental.") + process_type + "2.PartitionAlloc",
+      histogram_tester, count, ValueRestriction::NONE, number_of_processes);
+  // V8 memory footprint can be below 1 MB, which is reported as zero.
+  CheckMemoryMetric(std::string("Memory.Experimental.") + process_type + "2.V8",
+                    histogram_tester, count, ValueRestriction::NONE,
+                    number_of_processes);
+}
+
 void CheckExperimentalMemoryMetrics(
     const base::HistogramTester& histogram_tester,
     int count,
@@ -167,37 +190,12 @@ void CheckExperimentalMemoryMetrics(
                     count, ValueRestriction::ABOVE_ZERO);
 #endif
   if (number_of_renderer_processes) {
-#if !defined(OS_WIN)
-    CheckMemoryMetric("Memory.Experimental.Renderer2.Malloc", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_renderer_processes);
-#endif
-    CheckMemoryMetric("Memory.Experimental.Renderer2.BlinkGC", histogram_tester,
-                      count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
-    CheckMemoryMetric("Memory.Experimental.Renderer2.PartitionAlloc",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
-    // V8 memory footprint can be below 1 MB, which is reported as zero.
-    CheckMemoryMetric("Memory.Experimental.Renderer2.V8", histogram_tester,
-                      count, ValueRestriction::NONE,
-                      number_of_renderer_processes);
+    CheckExperimentalMemoryMetricsForProcessType(
+        histogram_tester, count, "Renderer", number_of_renderer_processes);
   }
   if (number_of_extension_processes) {
-#if !defined(OS_WIN)
-    CheckMemoryMetric("Memory.Experimental.Extension2.Malloc", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extension_processes);
-#endif
-    CheckMemoryMetric("Memory.Experimental.Extension2.BlinkGC",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extension_processes);
-    CheckMemoryMetric("Memory.Experimental.Extension2.PartitionAlloc",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_extension_processes);
-    CheckMemoryMetric("Memory.Experimental.Extension2.V8", histogram_tester,
-                      count, ValueRestriction::ABOVE_ZERO,
-                      number_of_extension_processes);
+    CheckExperimentalMemoryMetricsForProcessType(
+        histogram_tester, count, "Extension", number_of_extension_processes);
   }
   CheckMemoryMetric("Memory.Experimental.Total2.PrivateMemoryFootprint",
                     histogram_tester, count, ValueRestriction::ABOVE_ZERO);
@@ -252,23 +250,20 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
                       number_of_extension_processes);
   }
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    int number_of_ns_processes =
-        content::IsOutOfProcessNetworkService() ? 1 : 0;
-    CheckMemoryMetric("Memory.NetworkService.ResidentSet", histogram_tester,
-                      count_for_resident_set, ValueRestriction::ABOVE_ZERO,
-                      number_of_ns_processes);
-    CheckMemoryMetric("Memory.NetworkService.PrivateMemoryFootprint",
-                      histogram_tester, count, ValueRestriction::ABOVE_ZERO,
-                      number_of_ns_processes);
-    // Shared memory footprint can be below 1 MB, which is reported as zero.
-    CheckMemoryMetric("Memory.NetworkService.SharedMemoryFootprint",
-                      histogram_tester, count, ValueRestriction::NONE,
-                      number_of_ns_processes);
-    CheckMemoryMetric("Memory.NetworkService.PrivateSwapFootprint",
-                      histogram_tester, count_for_private_swap_footprint,
-                      ValueRestriction::NONE, number_of_ns_processes);
-  }
+  int number_of_ns_processes = content::IsOutOfProcessNetworkService() ? 1 : 0;
+  CheckMemoryMetric("Memory.NetworkService.ResidentSet", histogram_tester,
+                    count_for_resident_set, ValueRestriction::ABOVE_ZERO,
+                    number_of_ns_processes);
+  CheckMemoryMetric("Memory.NetworkService.PrivateMemoryFootprint",
+                    histogram_tester, count, ValueRestriction::ABOVE_ZERO,
+                    number_of_ns_processes);
+  // Shared memory footprint can be below 1 MB, which is reported as zero.
+  CheckMemoryMetric("Memory.NetworkService.SharedMemoryFootprint",
+                    histogram_tester, count, ValueRestriction::NONE,
+                    number_of_ns_processes);
+  CheckMemoryMetric("Memory.NetworkService.PrivateSwapFootprint",
+                    histogram_tester, count_for_private_swap_footprint,
+                    ValueRestriction::NONE, number_of_ns_processes);
 
   CheckMemoryMetric("Memory.Total.ResidentSet", histogram_tester,
                     count_for_resident_set, ValueRestriction::ABOVE_ZERO);
@@ -554,10 +549,6 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   DISABLED_FetchAndEmitMetricsWithExtensions
-#elif defined(OS_LINUX)
-// Disabled for crbug.com/964025
-#define MAYBE_FetchAndEmitMetricsWithExtensions \
-  DISABLED_FetchAndEmitMetricsWithExtensions
 #else
 #define MAYBE_FetchAndEmitMetricsWithExtensions \
   FetchAndEmitMetricsWithExtensions
@@ -811,22 +802,20 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_ForegroundAndBackgroundPages) {
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab;
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url1 = embedded_test_server()->GetURL("a.com", "/empty.html");
   const GURL url2 = embedded_test_server()->GetURL("b.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab_observer.Wait();
-  content::WebContents* tab1 = tab_observer.GetTab();
+  content::WebContents* tab1 = add_tab.Wait();
 
+  ui_test_utils::AllBrowserTabAddedWaiter add_tab2;
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url2, WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  tab_observer.Wait();
-  content::WebContents* tab2 = tab_observer.GetTab();
+  content::WebContents* tab2 = add_tab2.Wait();
 
   base::HistogramTester histogram_tester;
   {

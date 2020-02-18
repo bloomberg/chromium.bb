@@ -15,7 +15,9 @@
 #include "components/google/core/common/google_util.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
@@ -56,7 +58,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -353,7 +354,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 // Add footers about user's account data.
 - (void)addSyncProfileItemsToModel:(ListModel*)model {
   // Google Account footer.
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(self.browserState);
   if (identityManager->HasPrimaryAccount()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
@@ -804,7 +805,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
       _shouldShowNoticeAboutOtherFormsOfBrowsingHistory);
 
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   if (!identityManager->HasPrimaryAccount()) {
     return;

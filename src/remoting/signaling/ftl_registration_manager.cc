@@ -13,6 +13,7 @@
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/base/grpc_support/grpc_executor.h"
+#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_device_id_provider.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 
@@ -37,14 +38,61 @@ constexpr base::TimeDelta kRefreshBufferTime = base::TimeDelta::FromHours(1);
 
 }  // namespace
 
+class FtlRegistrationManager::RegistrationClientImpl final
+    : public FtlRegistrationManager::RegistrationClient {
+ public:
+  explicit RegistrationClientImpl(OAuthTokenGetter* token_getter);
+  ~RegistrationClientImpl() override;
+
+  // RegistrationClient implementations.
+  void SignInGaia(const ftl::SignInGaiaRequest& request,
+                  SignInGaiaResponseCallback on_done) override;
+  void CancelPendingRequests() override;
+
+ private:
+  using Registration =
+      google::internal::communications::instantmessaging::v1::Registration;
+
+  GrpcAuthenticatedExecutor executor_;
+  std::unique_ptr<Registration::Stub> registration_stub_;
+
+  DISALLOW_COPY_AND_ASSIGN(RegistrationClientImpl);
+};
+
+FtlRegistrationManager::RegistrationClientImpl::RegistrationClientImpl(
+    OAuthTokenGetter* token_getter)
+    : executor_(token_getter),
+      registration_stub_(
+          Registration::NewStub(FtlGrpcContext::CreateChannel())) {}
+
+FtlRegistrationManager::RegistrationClientImpl::~RegistrationClientImpl() =
+    default;
+
+void FtlRegistrationManager::RegistrationClientImpl::SignInGaia(
+    const ftl::SignInGaiaRequest& request,
+    SignInGaiaResponseCallback on_done) {
+  auto grpc_request = CreateGrpcAsyncUnaryRequest(
+      base::BindOnce(&Registration::Stub::AsyncSignInGaia,
+                     base::Unretained(registration_stub_.get())),
+      request, std::move(on_done));
+  FtlGrpcContext::FillClientContext(grpc_request->context());
+  executor_.ExecuteRpc(std::move(grpc_request));
+}
+
+void FtlRegistrationManager::RegistrationClientImpl::CancelPendingRequests() {
+  executor_.CancelPendingRequests();
+}
+
+// End of RegistrationClientImplImpl
+
 FtlRegistrationManager::FtlRegistrationManager(
     OAuthTokenGetter* token_getter,
     std::unique_ptr<FtlDeviceIdProvider> device_id_provider)
-    : executor_(std::make_unique<GrpcAuthenticatedExecutor>(token_getter)),
+    : registration_client_(
+          std::make_unique<RegistrationClientImpl>(token_getter)),
       device_id_provider_(std::move(device_id_provider)),
       sign_in_backoff_(&FtlGrpcContext::GetBackoffPolicy()) {
   DCHECK(device_id_provider_);
-  registration_stub_ = Registration::NewStub(FtlGrpcContext::CreateChannel());
 }
 
 FtlRegistrationManager::~FtlRegistrationManager() = default;
@@ -62,7 +110,7 @@ void FtlRegistrationManager::SignOut() {
   if (!IsSignedIn()) {
     return;
   }
-  executor_->CancelPendingRequests();
+  registration_client_->CancelPendingRequests();
   sign_in_refresh_timer_.Stop();
   registration_id_.clear();
   ftl_auth_token_.clear();
@@ -96,14 +144,9 @@ void FtlRegistrationManager::DoSignInGaia(DoneCallback on_done) {
     request.mutable_register_data()->add_caps(kFtlCapabilities[i]);
   }
 
-  auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&Registration::Stub::AsyncSignInGaia,
-                     base::Unretained(registration_stub_.get())),
-      request,
-      base::BindOnce(&FtlRegistrationManager::OnSignInGaiaResponse,
-                     base::Unretained(this), std::move(on_done)));
-  FtlGrpcContext::FillClientContext(grpc_request->context());
-  executor_->ExecuteRpc(std::move(grpc_request));
+  registration_client_->SignInGaia(
+      request, base::BindOnce(&FtlRegistrationManager::OnSignInGaiaResponse,
+                              base::Unretained(this), std::move(on_done)));
 }
 
 void FtlRegistrationManager::OnSignInGaiaResponse(

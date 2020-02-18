@@ -58,7 +58,10 @@ void SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(Profile* profile) {
 
   if (!origins.empty()) {
     auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
-    policy->AddIsolatedOrigins(origins, /* browser_context = */ profile);
+    using IsolatedOriginSource =
+        content::ChildProcessSecurityPolicy::IsolatedOriginSource;
+    policy->AddIsolatedOrigins(origins, IsolatedOriginSource::USER_TRIGGERED,
+                               /* browser_context = */ profile);
   }
 
   UMA_HISTOGRAM_COUNTS_1000(

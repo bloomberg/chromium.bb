@@ -51,11 +51,10 @@ more details on how it works...
 use 5.008;
 use strict;
 use warnings;
-use Carp                   ();
-use File::Spec        3.29 ();
-use Parse::CPAN::Meta 1.39 ();
+use Portable::LoadYaml;
+use Portable::FileSpec;
 
-our $VERSION = '1.17';
+our $VERSION = '1.22';
 
 # This variable is provided exclusively for the
 # use of test scripts.
@@ -137,16 +136,16 @@ sub new {
 
 	# Param checking
 	unless ( exists $self->{dist_volume} ) {
-		Carp::croak('Missing or invalid dist_volume param');
+		die('Missing or invalid dist_volume param');
 	}
 	unless ( _STRING($self->dist_dirs) ) {
-		Carp::croak('Missing or invalid dist_dirs param');
+		die('Missing or invalid dist_dirs param');
 	}
 	unless ( _STRING($self->dist_root) ) {
-		Carp::croak('Missing or invalid dist_root param');
+		die('Missing or invalid dist_root param');
 	}
 	unless ( _HASH($self->{portable}) ) {
-		Carp::croak('Missing or invalid portable param');
+		die('Missing or invalid portable param');
 	}
 
 	# Compulsory support for Config.pm
@@ -185,28 +184,28 @@ sub default {
 	# G:\\strawberry\\perl\\bin\\perl.exe
 	# Split it up, and search upwards to try and locate the
 	# portable.perl file in the distribution root.
-	my ($dist_volume, $d, $f) = File::Spec->splitpath($perlpath);
-	my @d = File::Spec->splitdir($d);
-	pop @d if $d[-1] eq '';
+	my ($dist_volume, $d, $f) = Portable::FileSpec::splitpath($perlpath);
+	my @d = Portable::FileSpec::splitdir($d);
+	pop @d if @d > 0 && $d[-1] eq '';
 	my @tmp = grep {
-			-f File::Spec->catpath( $dist_volume, $_, 'portable.perl' )
+			-f Portable::FileSpec::catpath( $dist_volume, $_, 'portable.perl' )
 		}
 		map {
-			File::Spec->catdir(@d[0 .. $_])
+			Portable::FileSpec::catdir(@d[0 .. $_])
 		} reverse ( 0 .. $#d );
 	my $dist_dirs = $tmp[0];
 	unless ( defined $dist_dirs ) {
-		Carp::croak("Failed to find the portable.perl file");
+		die("Failed to find the portable.perl file");
 	}
 
 	# Derive the main paths from the plain dirs
-	my $dist_root = File::Spec->catpath($dist_volume, $dist_dirs, '' );
-	my $conf      = File::Spec->catpath($dist_volume, $dist_dirs, 'portable.perl' );
+	my $dist_root = Portable::FileSpec::catpath($dist_volume, $dist_dirs, '' );
+	my $conf      = Portable::FileSpec::catpath($dist_volume, $dist_dirs, 'portable.perl' );
 
 	# Load the YAML file
-	my $portable = Parse::CPAN::Meta::LoadFile( $conf );
+	my $portable = Portable::LoadYaml::load_file( $conf );
 	unless ( _HASH($portable) ) {
-		Carp::croak("Missing or invalid portable.perl file");
+		die("Missing or invalid portable.perl file");
 	}
 
 	# Hand off to the main constructor,

@@ -732,6 +732,39 @@ TEST_F(DiscardableImageMapTest, GathersAnimatedImages) {
   EXPECT_DCHECK_DEATH(images[2]->frame_index());
 }
 
+TEST_F(DiscardableImageMapTest, GathersPaintWorklets) {
+  gfx::Rect visible_rect(1000, 1000);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  gfx::Size image_size(100, 100);
+  PaintImage static_image = CreateDiscardablePaintImage(image_size);
+  scoped_refptr<TestPaintWorkletInput> input =
+      base::MakeRefCounted<TestPaintWorkletInput>(gfx::SizeF(image_size));
+  PaintImage paint_worklet_image = CreatePaintWorkletPaintImage(input);
+
+  PaintFlags flags;
+  content_layer_client.add_draw_image(static_image, gfx::Point(0, 0), flags);
+  content_layer_client.add_draw_image(paint_worklet_image, gfx::Point(100, 100),
+                                      flags);
+
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+
+  const auto& paint_worklet_inputs =
+      display_list->discardable_image_map().paint_worklet_inputs();
+  ASSERT_EQ(paint_worklet_inputs.size(), 1u);
+  EXPECT_EQ(paint_worklet_inputs[0], input);
+
+  // PaintWorklets are not considered discardable images.
+  std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
+      display_list->discardable_image_map(), visible_rect);
+  ASSERT_EQ(images.size(), 1u);
+  EXPECT_EQ(images[0].image, static_image);
+}
+
 TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   // Create the record to use in the shader.
   auto shader_record = sk_make_sp<PaintOpBuffer>();
@@ -882,19 +915,6 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
             ImageAnalysisState::kAnimatedImages);
   EXPECT_EQ(shader_with_shader_with_image->image_analysis_state(),
             ImageAnalysisState::kAnimatedImages);
-}
-
-TEST_F(DiscardableImageMapTest, BuildPaintWorkletImage) {
-  gfx::SizeF size(100, 50);
-  scoped_refptr<TestPaintWorkletInput> input =
-      base::MakeRefCounted<TestPaintWorkletInput>(size);
-  PaintImage paint_image = PaintImageBuilder::WithDefault()
-                               .set_id(1)
-                               .set_paint_worklet_input(std::move(input))
-                               .TakePaintImage();
-  EXPECT_TRUE(paint_image.paint_worklet_input());
-  EXPECT_EQ(paint_image.width(), size.width());
-  EXPECT_EQ(paint_image.height(), size.height());
 }
 
 TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {

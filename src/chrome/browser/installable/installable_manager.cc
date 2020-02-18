@@ -72,34 +72,13 @@ int GetIdealBadgeIconSizeInPx() {
 
 using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
-// Returns true if the overall security state of |web_contents| is sufficient to
-// be considered installable.
-bool IsContentSecure(content::WebContents* web_contents) {
-  if (!web_contents)
-    return false;
-
-  // chrome:// URLs are considered secure.
-  const GURL& url = web_contents->GetVisibleURL();
-  if (url.scheme() == content::kChromeUIScheme)
-    return true;
-
-  // SecurityStateTabHelper ignores origins that are manually listed as secure.
-  // Check those explicitly, using the VisibleURL to match what
-  // SecurityStateTabHelper looks at.
-  if (net::IsLocalhost(url) ||
-      network::SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(
-          url::Origin::Create(url))) {
-    return true;
-  }
-
-  return security_state::IsSslCertificateValid(
-      SecurityStateTabHelper::FromWebContents(web_contents)
-          ->GetSecurityLevel());
-}
-
-// Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
-// height and width >= kMinimumPrimaryIconSizeInPx (or size "any").
-bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
+// Returns true if |manifest| specifies a PNG icon of height and width >=
+// kMinimumPrimaryIconSizeInPx (or size "any"), and either
+// 1. with IconPurpose::ANY or IconPurpose::MASKABLE, if maskable icon is
+// preferred, or
+// 2. with IconPurpose::ANY if maskable icon is not preferred.
+bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
+                                     bool prefer_maskable_icon) {
   for (const auto& icon : manifest.icons) {
     // The type field is optional. If it isn't present, fall back on checking
     // the src extension, and allow the icon if the extension ends with png.
@@ -109,8 +88,12 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
             base::CompareCase::INSENSITIVE_ASCII)))
       continue;
 
-    if (!base::ContainsValue(icon.purpose,
-                             blink::Manifest::ImageResource::Purpose::ANY)) {
+    if (!(base::Contains(icon.purpose,
+                         blink::Manifest::ImageResource::Purpose::ANY) ||
+          (prefer_maskable_icon &&
+           base::Contains(
+               icon.purpose,
+               blink::Manifest::ImageResource::Purpose::MASKABLE)))) {
       continue;
     }
 
@@ -168,14 +151,12 @@ InstallableManager::IconProperty& InstallableManager::IconProperty::operator=(
 
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      metrics_(std::make_unique<InstallableMetrics>()),
       eligibility_(std::make_unique<EligiblityProperty>()),
       manifest_(std::make_unique<ManifestProperty>()),
       valid_manifest_(std::make_unique<ValidManifestProperty>()),
       worker_(std::make_unique<ServiceWorkerProperty>()),
       service_worker_context_(nullptr),
-      has_pwa_check_(false),
-      weak_factory_(this) {
+      has_pwa_check_(false) {
   // This is null in unit tests.
   if (web_contents) {
     content::StoragePartition* storage_partition =
@@ -200,6 +181,31 @@ int InstallableManager::GetMinimumIconSizeInPx() {
   return kMinimumPrimaryIconSizeInPx;
 }
 
+// static
+bool InstallableManager::IsContentSecure(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  // chrome:// URLs are considered secure.
+  const GURL& url = web_contents->GetLastCommittedURL();
+  if (url.scheme() == content::kChromeUIScheme)
+    return true;
+
+  if (IsOriginConsideredSecure(url))
+    return true;
+
+  return security_state::IsSslCertificateValid(
+      SecurityStateTabHelper::FromWebContents(web_contents)
+          ->GetSecurityLevel());
+}
+
+// static
+bool InstallableManager::IsOriginConsideredSecure(const GURL& url) {
+  return net::IsLocalhost(url) ||
+         network::SecureOriginAllowlist::GetInstance().IsOriginAllowlisted(
+             url::Origin::Create(url));
+}
+
 void InstallableManager::GetData(const InstallableParams& params,
                                  InstallableCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -214,7 +220,6 @@ void InstallableManager::GetData(const InstallableParams& params,
   if (was_active)
     return;
 
-  metrics_->Start();
   WorkOnTask();
 }
 
@@ -230,42 +235,6 @@ void InstallableManager::GetAllErrors(
   params.is_debug_mode = true;
   GetData(params,
           base::BindOnce(OnDidCompleteGetAllErrors, std::move(callback)));
-}
-
-void InstallableManager::RecordMenuOpenHistogram() {
-  metrics_->RecordMenuOpen();
-}
-
-void InstallableManager::RecordMenuItemAddToHomescreenHistogram() {
-  metrics_->RecordMenuItemAddToHomescreen();
-}
-
-void InstallableManager::RecordAddToHomescreenNoTimeout() {
-  metrics_->RecordAddToHomescreenNoTimeout();
-}
-
-void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
-  metrics_->RecordAddToHomescreenManifestAndIconTimeout();
-
-  // If needed, explicitly trigger GetData() with a no-op callback to complete
-  // the installability check. This is so we can accurately record whether or
-  // not a site is a PWA, assuming that the check finishes prior to resetting.
-  if (!has_pwa_check_) {
-    InstallableParams params;
-    params.valid_manifest = true;
-    params.has_worker = true;
-    params.valid_primary_icon = true;
-    params.wait_for_worker = true;
-    GetData(params, base::DoNothing());
-  }
-}
-
-void InstallableManager::RecordAddToHomescreenInstallabilityTimeout() {
-  metrics_->RecordAddToHomescreenInstallabilityTimeout();
-}
-
-bool InstallableManager::IsContentSecureForTesting() {
-  return IsContentSecure(web_contents());
 }
 
 bool InstallableManager::IsIconFetched(const IconPurpose purpose) const {
@@ -396,29 +365,15 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          (!params.valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
 }
 
-void InstallableManager::ResolveMetrics(const InstallableParams& params,
-                                        bool check_passed) {
-  // Don't do anything if we passed the check AND it was not for the full PWA
-  // params. We don't yet know if the site is installable. However, if the check
-  // didn't pass, we know for sure the site isn't installable, regardless of how
-  // much we checked.
-  if (check_passed && !IsParamsForPwaCheck(params))
-    return;
-
-  metrics_->Resolve(check_passed);
-}
-
 void InstallableManager::Reset() {
   // Prevent any outstanding callbacks to or from this object from being called.
   weak_factory_.InvalidateWeakPtrs();
   icons_.clear();
 
   // If we have paused tasks, we are waiting for a service worker.
-  metrics_->Flush(task_queue_.HasPaused());
   task_queue_.Reset();
   has_pwa_check_ = false;
 
-  metrics_ = std::make_unique<InstallableMetrics>();
   eligibility_ = std::make_unique<EligiblityProperty>();
   manifest_ = std::make_unique<ManifestProperty>();
   valid_manifest_ = std::make_unique<ValidManifestProperty>();
@@ -472,7 +427,6 @@ void InstallableManager::WorkOnTask() {
   bool check_passed = errors.empty();
   if ((!check_passed && !params.is_debug_mode) || IsComplete(params)) {
     auto task = std::move(task_queue_.Current());
-    ResolveMetrics(params, check_passed);
     RunCallback(std::move(task), std::move(errors));
 
     // Sites can always register a service worker after we finish checking, so
@@ -499,7 +453,8 @@ void InstallableManager::WorkOnTask() {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
                           GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);
   } else if (params.valid_manifest && !valid_manifest_->fetched) {
-    CheckManifestValid(params.check_webapp_manifest_display);
+    CheckManifestValid(params.check_webapp_manifest_display,
+                       params.prefer_maskable_icon);
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
   } else if (params.valid_badge_icon && !IsIconFetched(IconPurpose::BADGE)) {
@@ -557,20 +512,21 @@ void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
   WorkOnTask();
 }
 
-void InstallableManager::CheckManifestValid(
-    bool check_webapp_manifest_display) {
+void InstallableManager::CheckManifestValid(bool check_webapp_manifest_display,
+                                            bool prefer_maskable_icon) {
   DCHECK(!valid_manifest_->fetched);
   DCHECK(!manifest().IsEmpty());
 
-  valid_manifest_->is_valid =
-      IsManifestValidForWebApp(manifest(), check_webapp_manifest_display);
+  valid_manifest_->is_valid = IsManifestValidForWebApp(
+      manifest(), check_webapp_manifest_display, prefer_maskable_icon);
   valid_manifest_->fetched = true;
   WorkOnTask();
 }
 
 bool InstallableManager::IsManifestValidForWebApp(
     const blink::Manifest& manifest,
-    bool check_webapp_manifest_display) {
+    bool check_webapp_manifest_display,
+    bool prefer_maskable_icon) {
   bool is_valid = true;
   if (manifest.IsEmpty()) {
     valid_manifest_->errors.push_back(MANIFEST_EMPTY);
@@ -596,7 +552,7 @@ bool InstallableManager::IsManifestValidForWebApp(
     is_valid = false;
   }
 
-  if (!DoesManifestContainRequiredIcon(manifest)) {
+  if (!DoesManifestContainRequiredIcon(manifest, prefer_maskable_icon)) {
     valid_manifest_->errors.push_back(MANIFEST_MISSING_SUITABLE_ICON);
     is_valid = false;
   }

@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <iterator>
+#include <ostream>
 #include <utility>
 
 #include "core/fxcrt/fx_system.h"
@@ -34,7 +35,7 @@ class WideString {
   using const_iterator = const CharType*;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  static WideString Format(const wchar_t* lpszFormat, ...) WARN_UNUSED_RESULT;
+  static WideString Format(const wchar_t* pFormat, ...) WARN_UNUSED_RESULT;
   static WideString FormatV(const wchar_t* lpszFormat,
                             va_list argList) WARN_UNUSED_RESULT;
 
@@ -52,7 +53,7 @@ class WideString {
   // NOLINTNEXTLINE(runtime/explicit)
   WideString(char) = delete;
 
-  WideString(const wchar_t* ptr, size_t len);
+  WideString(const wchar_t* pStr, size_t len);
 
   explicit WideString(WideStringView str);
   WideString(WideStringView str1, WideStringView str2);
@@ -81,7 +82,7 @@ class WideString {
 
   // Explicit conversion to span.
   // Note: Any subsequent modification of |this| will invalidate the result.
-  pdfium::span<const wchar_t> AsSpan() const {
+  pdfium::span<const wchar_t> span() const {
     return pdfium::make_span(m_pData ? m_pData->m_String : nullptr,
                              GetLength());
   }
@@ -110,15 +111,15 @@ class WideString {
   bool IsValidIndex(size_t index) const { return index < GetLength(); }
   bool IsValidLength(size_t length) const { return length <= GetLength(); }
 
-  const WideString& operator=(const wchar_t* str);
-  const WideString& operator=(WideStringView stringSrc);
-  const WideString& operator=(const WideString& that);
-  const WideString& operator=(WideString&& that);
+  WideString& operator=(const wchar_t* str);
+  WideString& operator=(WideStringView str);
+  WideString& operator=(const WideString& that);
+  WideString& operator=(WideString&& that);
 
-  const WideString& operator+=(const wchar_t* str);
-  const WideString& operator+=(wchar_t ch);
-  const WideString& operator+=(const WideString& str);
-  const WideString& operator+=(WideStringView str);
+  WideString& operator+=(const wchar_t* str);
+  WideString& operator+=(wchar_t ch);
+  WideString& operator+=(const WideString& str);
+  WideString& operator+=(WideStringView str);
 
   bool operator==(const wchar_t* ptr) const;
   bool operator==(WideStringView str) const;
@@ -174,12 +175,12 @@ class WideString {
 
   // Note: any modification of the string (including ReleaseBuffer()) may
   // invalidate the span, which must not outlive its buffer.
-  pdfium::span<wchar_t> GetBuffer(size_t len);
-  void ReleaseBuffer(size_t len);
+  pdfium::span<wchar_t> GetBuffer(size_t nMinBufLength);
+  void ReleaseBuffer(size_t nNewLength);
 
   int GetInteger() const;
 
-  Optional<size_t> Find(WideStringView pSub, size_t start = 0) const;
+  Optional<size_t> Find(WideStringView subStr, size_t start = 0) const;
   Optional<size_t> Find(wchar_t ch, size_t start = 0) const;
 
   bool Contains(WideStringView lpszSub, size_t start = 0) const {
@@ -214,11 +215,11 @@ class WideString {
  protected:
   using StringData = StringDataTemplate<wchar_t>;
 
-  void ReallocBeforeWrite(size_t nLen);
-  void AllocBeforeWrite(size_t nLen);
+  void ReallocBeforeWrite(size_t nNewLength);
+  void AllocBeforeWrite(size_t nNewLength);
   void AllocCopy(WideString& dest, size_t nCopyLen, size_t nCopyIndex) const;
   void AssignCopy(const wchar_t* pSrcData, size_t nSrcLen);
-  void Concat(const wchar_t* lpszSrcData, size_t nSrcLen);
+  void Concat(const wchar_t* pSrcData, size_t nSrcLen);
   intptr_t ReferenceCountForTesting() const;
 
   RetainPtr<StringData> m_pData;

@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/management_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -59,6 +58,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_REPORT_DEVICE_NETWORK_INTERFACES},
     {kManagementReportUsers, IDS_MANAGEMENT_REPORT_DEVICE_USERS},
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
+    {kManagementCrostini, IDS_MANAGEMENT_CROSTINI},
 #endif  // defined(OS_CHROMEOS)
     {"browserReporting", IDS_MANAGEMENT_BROWSER_REPORTING},
     {"browserReportingExplanation",
@@ -72,7 +72,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
     {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
     {"backButton", IDS_ACCNAME_BACK},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},
     {kManagementExtensionReportMachineNameAddress,
@@ -87,7 +86,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_EXTENSION_REPORT_PERF_CRASH},
     {kManagementExtensionReportUserBrowsingData,
      IDS_MANAGEMENT_EXTENSION_REPORT_USER_BROWSING_DATA},
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   };
 
   AddLocalizedStringsBulk(source, kLocalizedStrings,
@@ -173,7 +171,6 @@ ManagementUI::ManagementUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   content::WebUIDataSource* source =
       CreateManagementUIHtmlSource(Profile::FromWebUI(web_ui));
   ManagementUIHandler::Initialize(web_ui, source);
-  DarkModeHandler::Initialize(web_ui, source);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 

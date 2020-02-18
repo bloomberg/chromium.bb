@@ -229,17 +229,14 @@ mojom::XRGamepadDataPtr OpenVRGamepadHelper::GetGamepadData(
       gfx::DecomposeTransform(&src_pose, transform);
       auto dst_pose = mojom::VRPose::New();
 
-      dst_pose->orientation = std::vector<float>(
-          {src_pose.quaternion.x(), src_pose.quaternion.y(),
-           src_pose.quaternion.z(), src_pose.quaternion.w()});
-      dst_pose->position =
-          std::vector<float>({src_pose.translate[0], src_pose.translate[1],
-                              src_pose.translate[2]});
-      dst_pose->angularVelocity = std::vector<float>(
-          {pose.vAngularVelocity.v[0], pose.vAngularVelocity.v[1],
-           pose.vAngularVelocity.v[2]});
-      dst_pose->linearVelocity = std::vector<float>(
-          {pose.vVelocity.v[0], pose.vVelocity.v[1], pose.vVelocity.v[2]});
+      dst_pose->orientation = src_pose.quaternion;
+      dst_pose->position = gfx::Point3F(
+          src_pose.translate[0], src_pose.translate[1], src_pose.translate[2]);
+      dst_pose->angular_velocity =
+          gfx::Vector3dF(pose.vAngularVelocity.v[0], pose.vAngularVelocity.v[1],
+                         pose.vAngularVelocity.v[2]);
+      dst_pose->linear_velocity = gfx::Vector3dF(
+          pose.vVelocity.v[0], pose.vVelocity.v[1], pose.vVelocity.v[2]);
 
       gamepad->pose = std::move(dst_pose);
     }
@@ -263,7 +260,7 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
                        vr::VRControllerState_t controller_state,
                        device::mojom::XRHandedness handedness)
       : GamepadBuilder(GetGamepadId(vr_system, controller_id),
-                       GamepadMapping::kXRStandard,
+                       GamepadMapping::kXrStandard,
                        handedness),
         controller_state_(controller_state) {
     supported_buttons_ = vr_system->GetUint64TrackedDeviceProperty(

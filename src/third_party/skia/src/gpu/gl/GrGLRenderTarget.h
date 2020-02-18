@@ -31,11 +31,11 @@ public:
         GrBackendObjectOwnership   fRTFBOOwnership;
         GrGLuint                   fTexFBOID;
         GrGLuint                   fMSColorRenderbufferID;
-        bool                       fIsMixedSampled;
     };
 
     static sk_sp<GrGLRenderTarget> MakeWrapped(GrGLGpu*,
                                                const GrSurfaceDesc&,
+                                               int sampleCount,
                                                GrGLenum format,
                                                const IDDesc&,
                                                int stencilBits);
@@ -49,8 +49,7 @@ public:
 
     // override of GrRenderTarget
     ResolveType getResolveType() const override {
-        if (GrFSAAType::kUnifiedMSAA != this->fsaaType() || fRTFBOID == fTexFBOID) {
-            // catches FBO 0 and non unified-MSAA case
+        if (this->numSamples() <= 1 || fRTFBOID == fTexFBOID) {  // Also catches FBO 0.
             return kAutoResolves_ResolveType;
         } else if (kUnresolvableFBOID == fTexFBOID) {
             return kCantResolve_ResolveType;
@@ -71,7 +70,8 @@ public:
 
 protected:
     // Constructor for subclasses.
-    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, GrGLenum format, const IDDesc&);
+    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, int sampleCount, GrGLenum format,
+                     const IDDesc&);
 
     void init(const GrSurfaceDesc&, GrGLenum format, const IDDesc&);
 
@@ -82,8 +82,8 @@ protected:
 
 private:
     // Constructor for instances wrapping backend objects.
-    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, GrGLenum format, const IDDesc&,
-                     GrGLStencilAttachment*);
+    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, int sampleCount, GrGLenum format,
+                     const IDDesc&, GrGLStencilAttachment*);
 
     void setFlags(const GrGLCaps&, const IDDesc&);
 

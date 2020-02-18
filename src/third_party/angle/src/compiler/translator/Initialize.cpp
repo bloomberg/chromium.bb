@@ -81,6 +81,10 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     {
         extBehavior[TExtension::OES_texture_storage_multisample_2d_array] = EBhUndefined;
     }
+    if (resources.OES_texture_3D)
+    {
+        extBehavior[TExtension::OES_texture_3D] = EBhUndefined;
+    }
     if (resources.ANGLE_texture_multisample)
     {
         extBehavior[TExtension::ANGLE_texture_multisample] = EBhUndefined;
@@ -88,6 +92,10 @@ void InitExtensionBehavior(const ShBuiltInResources &resources, TExtensionBehavi
     if (resources.ANGLE_multi_draw)
     {
         extBehavior[TExtension::ANGLE_multi_draw] = EBhUndefined;
+    }
+    if (resources.ANGLE_base_vertex_base_instance)
+    {
+        extBehavior[TExtension::ANGLE_base_vertex_base_instance] = EBhUndefined;
     }
 }
 

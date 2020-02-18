@@ -16,6 +16,21 @@ static int node_ids = 0;
 
 }  // namespace
 
+UIElement::ClassProperties::ClassProperties(
+    std::string class_name,
+    std::vector<UIElement::UIProperty> properties)
+    : class_name_(class_name), properties_(properties) {}
+
+UIElement::ClassProperties::ClassProperties(
+    const UIElement::ClassProperties& other) = default;
+
+UIElement::ClassProperties::~ClassProperties() = default;
+
+// static
+void UIElement::ResetNodeId() {
+  node_ids = 0;
+}
+
 UIElement::~UIElement() {
   if (owns_children_) {
     for (auto* child : children_)
@@ -100,6 +115,11 @@ template <class T>
 int UIElement::FindUIElementIdForBackendElement(T* element) const {
   NOTREACHED();
   return 0;
+}
+
+std::vector<UIElement::ClassProperties>
+UIElement::GetCustomPropertiesForMatchedStyle() const {
+  return {};
 }
 
 UIElement::UIElement(const UIElementType type,

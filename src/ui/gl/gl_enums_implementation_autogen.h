@@ -1009,6 +1009,10 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_LATENCY_QUERY_CHROMIUM",
     },
     {
+        0x6009,
+        "GL_PROGRAM_COMPLETION_QUERY_CHROMIUM",
+    },
+    {
         0x78EC,
         "GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM",
     },

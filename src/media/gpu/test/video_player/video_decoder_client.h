@@ -149,8 +149,8 @@ class VideoDecoderClient {
   void FireEvent(VideoPlayerEvent event);
 
   VideoPlayer::EventCallback event_cb_;
-  std::unique_ptr<FrameRenderer> const frame_renderer_;
-  std::vector<std::unique_ptr<VideoFrameProcessor>> const frame_processors_;
+  std::unique_ptr<FrameRenderer> frame_renderer_;
+  std::vector<std::unique_ptr<VideoFrameProcessor>> frame_processors_;
 
   std::unique_ptr<media::VideoDecoder> decoder_;
   const VideoDecoderClientConfig decoder_client_config_;
@@ -173,7 +173,7 @@ class VideoDecoderClient {
   SEQUENCE_CHECKER(decoder_client_sequence_checker_);
 
   base::WeakPtr<VideoDecoderClient> weak_this_;
-  base::WeakPtrFactory<VideoDecoderClient> weak_this_factory_;
+  base::WeakPtrFactory<VideoDecoderClient> weak_this_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderClient);
 };

@@ -662,10 +662,10 @@ UI.anotherProfilerActiveLabel = function() {
 UI.asyncStackTraceLabel = function(description) {
   if (description) {
     if (description === 'Promise.resolve')
-      description = Common.UIString('Promise resolved');
+      return ls`Promise resolved (async)`;
     else if (description === 'Promise.reject')
-      description = Common.UIString('Promise rejected');
-    return description + ' ' + Common.UIString('(async)');
+      return ls`Promise rejected (async)`;
+    return ls`${description} (async)`;
   }
   return Common.UIString('Async Call');
 };
@@ -1171,16 +1171,6 @@ UI.beautifyFunctionName = function(name) {
 };
 
 /**
- * @param {!Element} label
- * @param {!Element} control
- */
-UI.bindLabelToControl = function(label, control) {
-  const controlId = UI.ARIAUtils.nextId('labelledControl');
-  control.id = controlId;
-  label.setAttribute('for', controlId);
-};
-
-/**
  * @param {string} localName
  * @param {string} typeExtension
  * @param {function(new:HTMLElement, *)} definition
@@ -1241,7 +1231,7 @@ UI.createLabel = function(title, className, associatedControl) {
   const element = createElementWithClass('label', className || '');
   element.textContent = title;
   if (associatedControl)
-    UI.bindLabelToControl(element, associatedControl);
+    UI.ARIAUtils.bindLabelToControl(element, associatedControl);
 
   return element;
 };
@@ -1476,6 +1466,7 @@ UI.registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement 
     super();
     const root = UI.createShadowRootWithCoreStyles(this, 'ui/closeButton.css');
     this._buttonElement = root.createChild('div', 'close-button');
+    UI.ARIAUtils.setAccessibleName(this._buttonElement, ls`Close`);
     UI.ARIAUtils.markAsButton(this._buttonElement);
     const regularIcon = UI.Icon.create('smallicon-cross', 'default-icon');
     this._hoverIcon = UI.Icon.create('mediumicon-red-cross-hover', 'hover-icon');
@@ -1512,7 +1503,7 @@ UI.registerCustomElement('div', 'dt-close-button', class extends HTMLDivElement 
 /**
  * @param {!Element} input
  * @param {function(string)} apply
- * @param {function(string):boolean} validate
+ * @param {function(string):{valid: boolean, errorMessage: (string|undefined)}} validate
  * @param {boolean} numeric
  * @param {number=} modifierMultiplier
  * @return {function(string)}
@@ -1528,7 +1519,7 @@ UI.bindInput = function(input, apply, validate, numeric, modifierMultiplier) {
   }
 
   function onChange() {
-    const valid = validate(input.value);
+    const {valid} = validate(input.value);
     input.classList.toggle('error-input', !valid);
     if (valid)
       apply(input.value);
@@ -1539,7 +1530,8 @@ UI.bindInput = function(input, apply, validate, numeric, modifierMultiplier) {
    */
   function onKeyDown(event) {
     if (isEnterKey(event)) {
-      if (validate(input.value))
+      const {valid} = validate(input.value);
+      if (valid)
         apply(input.value);
       event.preventDefault();
       return;
@@ -1550,7 +1542,8 @@ UI.bindInput = function(input, apply, validate, numeric, modifierMultiplier) {
 
     const value = UI._modifiedFloatNumber(parseFloat(input.value), event, modifierMultiplier);
     const stringValue = value ? String(value) : '';
-    if (!validate(stringValue) || !value)
+    const {valid} = validate(stringValue);
+    if (!valid || !value)
       return;
 
     input.value = stringValue;
@@ -1564,7 +1557,7 @@ UI.bindInput = function(input, apply, validate, numeric, modifierMultiplier) {
   function setValue(value) {
     if (value === input.value)
       return;
-    const valid = validate(value);
+    const {valid} = validate(value);
     input.classList.toggle('error-input', !valid);
     input.value = value;
   }
@@ -1665,7 +1658,8 @@ UI.ThemeSupport = class {
    * @param {!Common.Setting} setting
    */
   constructor(setting) {
-    this._themeName = setting.get() || 'default';
+    const systemPreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
+    this._themeName = setting.get() === 'systemPreferred' ? systemPreferredTheme : setting.get();
     this._themableProperties = new Set([
       'color', 'box-shadow', 'text-shadow', 'outline-color', 'background-image', 'background-color',
       'border-left-color', 'border-right-color', 'border-top-color', 'border-bottom-color', '-webkit-border-image',
@@ -2018,7 +2012,7 @@ UI.ConfirmDialog = class {
 };
 
 /**
- * @param {!UI.ToolbarToggle} toolbarButton
+ * @param {!UI.ToolbarButton} toolbarButton
  * @return {!Element}
  */
 UI.createInlineButton = function(toolbarButton) {
@@ -2037,6 +2031,11 @@ UI.createInlineButton = function(toolbarButton) {
  * @return {!DocumentFragment}
  */
 UI.createExpandableText = function(text, maxLength) {
+  const clickHandler = () => {
+    if (expandElement.parentElement)
+      expandElement.parentElement.insertBefore(createTextNode(text.slice(maxLength)), expandElement);
+    expandElement.remove();
+  };
   const fragment = createDocumentFragment();
   fragment.textContent = text.slice(0, maxLength);
   const expandElement = fragment.createChild('span');
@@ -2044,11 +2043,13 @@ UI.createExpandableText = function(text, maxLength) {
   if (text.length < 10000000) {
     expandElement.setAttribute('data-text', ls`Show more (${totalBytes})`);
     expandElement.classList.add('expandable-inline-button');
-    expandElement.addEventListener('click', () => {
-      if (expandElement.parentElement)
-        expandElement.parentElement.insertBefore(createTextNode(text.slice(maxLength)), expandElement);
-      expandElement.remove();
+    expandElement.addEventListener('click', clickHandler);
+    expandElement.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ')
+        clickHandler();
     });
+    UI.ARIAUtils.markAsButton(expandElement);
+
   } else {
     expandElement.setAttribute('data-text', ls`long text was truncated (${totalBytes})`);
     expandElement.classList.add('undisplayable-text');
@@ -2059,6 +2060,11 @@ UI.createExpandableText = function(text, maxLength) {
   copyButton.addEventListener('click', () => {
     InspectorFrontendHost.copyText(text);
   });
+  copyButton.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ')
+      InspectorFrontendHost.copyText(text);
+  });
+  UI.ARIAUtils.markAsButton(copyButton);
   return fragment;
 };
 

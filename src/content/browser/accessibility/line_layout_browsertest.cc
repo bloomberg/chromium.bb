@@ -6,11 +6,11 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -50,9 +50,9 @@ class AccessibilityLineLayoutBrowserTest : public ContentBrowserTest {
       line_link_count++;
     }
 
-    for (unsigned i = 0; i < node->InternalChildCount(); i++)
-      line_link_count +=
-          CountNextPreviousOnLineLinks(node->InternalGetChild(i));
+    for (auto it = node->InternalChildrenBegin();
+         it != node->InternalChildrenEnd(); ++it)
+      line_link_count += CountNextPreviousOnLineLinks(it.get());
 
     return line_link_count;
   }

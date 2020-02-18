@@ -84,6 +84,9 @@ jumbo_component("views") {
     "animation/ink_drop_stub.h",
     "animation/ink_drop_util.h",
     "animation/installable_ink_drop.h",
+    "animation/installable_ink_drop_animator.h",
+    "animation/installable_ink_drop_config.h",
+    "animation/installable_ink_drop_painter.h",
     "animation/scroll_animator.h",
     "animation/square_ink_drop_ripple.h",
     "background.h",
@@ -94,8 +97,7 @@ jumbo_component("views") {
     "bubble/info_bubble.h",
     "bubble/tooltip_icon.h",
     "button_drag_utils.h",
-    "cocoa/bridge_factory_host.h",
-    "cocoa/bridged_native_widget_host_impl.h",
+    "cocoa/native_widget_mac_ns_window_host.h",
     "color_chooser/color_chooser_listener.h",
     "color_chooser/color_chooser_view.h",
     "context_menu_controller.h",
@@ -190,24 +192,23 @@ jumbo_component("views") {
     "drag_utils.h",
     "event_monitor.h",
     "event_monitor_mac.h",
-    "event_utils.h",
     "focus/external_focus_tracker.h",
     "focus/focus_manager.h",
     "focus/focus_manager_delegate.h",
     "focus/focus_manager_factory.h",
     "focus/focus_search.h",
     "focus/widget_focus_manager.h",
+    "input_event_activation_protector.h",
     "layout/box_layout.h",
     "layout/fill_layout.h",
     "layout/flex_layout.h",
     "layout/flex_layout_types.h",
     "layout/grid_layout.h",
+    "layout/interpolating_layout_manager.h",
     "layout/layout_manager.h",
+    "layout/layout_manager_base.h",
     "layout/layout_provider.h",
-    "linux_ui/device_scale_factor_observer.h",
-    "linux_ui/linux_ui.h",
-    "linux_ui/status_icon_linux.h",
-    "linux_ui/window_button_order_observer.h",
+    "layout/layout_types.h",
     "masked_targeter_delegate.h",
     "metadata/metadata_cache.h",
     "metadata/metadata_header_macros.h",
@@ -306,6 +307,8 @@ jumbo_component("views") {
     "animation/ink_drop_stub.cc",
     "animation/ink_drop_util.cc",
     "animation/installable_ink_drop.cc",
+    "animation/installable_ink_drop_animator.cc",
+    "animation/installable_ink_drop_painter.cc",
     "animation/scroll_animator.cc",
     "animation/square_ink_drop_ripple.cc",
     "background.cc",
@@ -398,23 +401,23 @@ jumbo_component("views") {
     "drag_utils.cc",
     "drag_utils_mac.mm",
     "event_monitor_mac.mm",
-    "event_utils.cc",
     "focus/external_focus_tracker.cc",
     "focus/focus_manager.cc",
     "focus/focus_manager_factory.cc",
     "focus/focus_search.cc",
     "focus/widget_focus_manager.cc",
+    "input_event_activation_protector.cc",
     "layout/box_layout.cc",
     "layout/fill_layout.cc",
     "layout/flex_layout.cc",
     "layout/flex_layout_types.cc",
     "layout/flex_layout_types_internal.cc",
     "layout/grid_layout.cc",
+    "layout/interpolating_layout_manager.cc",
     "layout/layout_manager.cc",
+    "layout/layout_manager_base.cc",
     "layout/layout_provider.cc",
-    "linux_ui/linux_ui.cc",
-    "linux_ui/status_icon_linux.cc",
-    "linux_ui/window_button_order_provider.cc",
+    "layout/layout_types.cc",
     "masked_targeter_delegate.cc",
     "metadata/metadata_cache.cc",
     "metadata/metadata_types.cc",
@@ -479,10 +482,9 @@ jumbo_component("views") {
   # Internal sources. TODO(https://crbug.com/871123): Move more headers from
   # public into this list, along with the implementation file.
   sources += [
-    "cocoa/bridge_factory_host.cc",
-    "cocoa/bridged_native_widget_host_impl.mm",
     "cocoa/drag_drop_client_mac.h",
     "cocoa/drag_drop_client_mac.mm",
+    "cocoa/native_widget_mac_ns_window_host.mm",
     "cocoa/text_input_host.h",
     "cocoa/text_input_host.mm",
     "cocoa/tooltip_manager_mac.h",
@@ -545,23 +547,21 @@ jumbo_component("views") {
       "//ui/base/ime/linux",
       "//ui/shell_dialogs",
     ]
-  } else {
-    public -= [
+    public += [
+      "linux_ui/device_scale_factor_observer.h",
       "linux_ui/linux_ui.h",
+      "linux_ui/status_icon_linux.h",
       "linux_ui/window_button_order_observer.h",
     ]
-    sources -= [
+    sources += [
       "linux_ui/linux_ui.cc",
+      "linux_ui/status_icon_linux.cc",
       "linux_ui/window_button_order_provider.cc",
     ]
   }
 
   if (is_chromeos) {
-    public -= [ "linux_ui/status_icon_linux.h" ]
-    sources -= [
-      "controls/menu/menu_config_linux.cc",
-      "linux_ui/status_icon_linux.cc",
-    ]
+    sources -= [ "controls/menu/menu_config_linux.cc" ]
   }
 
   if (is_win) {
@@ -961,7 +961,10 @@ jumbo_source_set("test_support") {
     }
   }
   if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/x",
+      "//ui/gfx/x",
+    ]
   }
   if (ozone_platform_x11) {
     deps += [ "//ui/base/x" ]
@@ -985,6 +988,7 @@ test("views_unittests") {
     "animation/ink_drop_impl_unittest.cc",
     "animation/ink_drop_ripple_unittest.cc",
     "animation/ink_drop_unittest.cc",
+    "animation/installable_ink_drop_animator_unittest.cc",
     "animation/installable_ink_drop_unittest.cc",
     "animation/square_ink_drop_ripple_unittest.cc",
     "border_unittest.cc",
@@ -1007,6 +1011,7 @@ test("views_unittests") {
     "controls/editable_combobox/editable_combobox_unittest.cc",
     "controls/image_view_unittest.cc",
     "controls/label_unittest.cc",
+    "controls/menu/menu_closure_animation_mac_unittest.cc",
     "controls/menu/menu_controller_unittest.cc",
     "controls/menu/menu_item_view_unittest.cc",
     "controls/menu/menu_model_adapter_unittest.cc",
@@ -1041,8 +1046,11 @@ test("views_unittests") {
     "focus/focus_traversal_unittest.cc",
     "layout/box_layout_unittest.cc",
     "layout/fill_layout_unittest.cc",
+    "layout/flex_layout_types_internal_unittest.cc",
     "layout/flex_layout_unittest.cc",
     "layout/grid_layout_unittest.cc",
+    "layout/interpolating_layout_manager_unittest.cc",
+    "layout/layout_manager_base_unittest.cc",
     "metadata/metadata_unittest.cc",
     "metadata/type_conversion_unittest.cc",
     "paint_info_unittest.cc",

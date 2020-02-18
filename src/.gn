@@ -30,6 +30,8 @@ default_args = {
   # location when it is removed).
 
   v8_extra_library_files = [
+    # Do *not* add more files to this list. V8 extra libraries is deprecated.
+    # TODO(902633): This list is be removed once streams are ported to C++.
     # Dependencies used by the extra libraries. Putting them here causes them
     # to be executed first during snapshot creation.
     "//third_party/blink/renderer/core/streams/CommonOperations.js",
@@ -79,7 +81,7 @@ check_targets = [
 
   #"//chrome/*",          # Many errors: https://crbug.com/949535
 
-  #"//chrome/android/*",  # 13 errors
+  "//chrome/android/*",
   "//chrome/app/*",
   "//chrome/app_shim/*",
 
@@ -267,7 +269,9 @@ check_targets = [
   "//extensions:extensions_browsertests",
   "//extensions:extensions_unittests",
   "//extensions/browser",
+  "//extensions/browser:core_api_provider",
   "//extensions/browser:browser_tests",
+  "//extensions/browser:test_support",
   "//extensions/browser:unit_tests",
   "//extensions/browser/api:api_registration",
   "//extensions/browser/install:*",
@@ -276,7 +280,7 @@ check_targets = [
   "//extensions/common/*",
   "//extensions/components/javascript_dialog_extensions_client",
   "//extensions/components/native_app_window",
-  "//extensions/renderer:unit_tests",
+  "//extensions/renderer/*",
   "//extensions/shell/*",
   "//extensions/strings/*",
   "//fuchsia/*",
@@ -340,7 +344,6 @@ check_targets = [
   "//third_party/android_swipe_refresh/*",
   "//third_party/android_system_sdk/*",
   "//third_party/android_testrunner/*",
-  "//third_party/android_tools/*",
 
   # "//third_party/angle/*",  # 30ish errors
   "//third_party/apache-portable-runtime/*",
@@ -664,6 +667,8 @@ exec_script_whitelist =
       # with other repos. The entries in this list should be only for files
       # in the Chromium repo outside of //build.
       "//build_overrides/build.gni",
+
+      "//chrome/android/webapk/shell_apk/prepare_upload_dir/BUILD.gn",
 
       # TODO(dgn): Layer violation but breaks the build otherwise, see
       # https://crbug.com/474506.

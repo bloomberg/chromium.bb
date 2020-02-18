@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -17,8 +18,11 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.OAuth2TokenService;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * An Autofill Assistant client, associated with a specific WebContents.
@@ -26,7 +30,7 @@ import java.util.Map;
  * This mainly a bridge to autofill_assistant::ClientAndroid.
  */
 @JNINamespace("autofill_assistant")
-class AutofillAssistantClient implements AutofillAssistantModuleEntry {
+class AutofillAssistantClient {
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
@@ -37,6 +41,11 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
      * the native instance has been deleted. Always check before use.
      */
     private long mNativeClientAndroid;
+
+    /**
+     * Indicates whether account initialization was started.
+     */
+    private boolean mAccountInitializationStarted;
 
     /**
      * Indicates whether {@link mAccount} has been initialized.
@@ -66,26 +75,40 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
         mNativeClientAndroid = nativeClientAndroid;
     }
 
-    @Override
-    public void showOnboarding(String experimentIds, Runnable onAccept) {
-        checkNativeClientIsAliveOrThrow();
-        nativeShowOnboarding(mNativeClientAndroid, experimentIds, onAccept);
-    }
-
     private void checkNativeClientIsAliveOrThrow() {
         if (mNativeClientAndroid == 0) {
             throw new IllegalStateException("Native instance is dead");
         }
     }
 
-    @Override
-    public void start(String initialUrl, Map<String, String> parameters, String experimentIds,
-            Bundle intentExtras) {
+    /**
+     * Start a flow on the current URL, autostarting scripts defined for that URL.
+     *
+     * <p>This immediately shows the UI, with a loading message, then fetches scripts
+     * from the server and autostarts one of them.
+     *
+     * @param initialUrl the original deep link, if known. When started from CCT, this
+     * is the URL included into the intent
+     * @param parameters autobot parameters to set during the whole flow
+     * @param experimentIds comma-separated set of experiments to use while running the flow
+     * @param intentExtras extras of the original intent
+     * @param onboardingCoordinator if non-null, reuse existing UI elements, usually created to show
+     *         onboarding.
+     *
+     * @return true if the flow was started, false if the controller is in a state where
+     * autostarting is not possible, such as can happen if a script is already running. The flow can
+     * still fail after this method returns true; the failure will be displayed on the UI.
+     */
+    boolean start(String initialUrl, Map<String, String> parameters, String experimentIds,
+            Bundle intentExtras, @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
+        if (mNativeClientAndroid == 0) return false;
+
         checkNativeClientIsAliveOrThrow();
-        nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
+        chooseAccountAsyncIfNecessary(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
+        return nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]));
-        chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
+                parameters.values().toArray(new String[parameters.size()]), onboardingCoordinator,
+                AutofillAssistantServiceInjector.getServiceToInject());
     }
 
     /**
@@ -110,12 +133,56 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
         nativeTransferUITo(mNativeClientAndroid, otherWebContents);
     }
 
+    /** Lists available direct actions. */
+    public void listDirectActions(String userName, String experimentIds,
+            Map<String, String> arguments, Callback<Set<String>> callback) {
+        if (mNativeClientAndroid == 0) {
+            callback.onResult(Collections.emptySet());
+            return;
+        }
+
+        chooseAccountAsyncIfNecessary(userName.isEmpty() ? null : userName, null);
+
+        // The native side calls sendDirectActionList() on the callback once the controller has
+        // results.
+        nativeListDirectActions(mNativeClientAndroid, experimentIds,
+                arguments.keySet().toArray(new String[arguments.size()]),
+                arguments.values().toArray(new String[arguments.size()]), callback);
+    }
+
+    /**
+     * Performs a direct action.
+     *
+     * @param actionId id of the action
+     * @param experimentIds comma-separated set of experiments to use while running the flow
+     * @param arguments report these as autobot parameters while performing this specific action
+     * @param onboardingcoordinator if non-null, reuse existing UI elements, usually created to show
+     *         onboarding.
+     * @return true if the action was found started, false otherwise. The action can still fail
+     * after this method returns true; the failure will be displayed on the UI.
+     */
+    public boolean performDirectAction(String actionId, String experimentIds,
+            Map<String, String> arguments,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator) {
+        if (mNativeClientAndroid == 0) return false;
+
+        // Note that only listDirectActions can start AA, so only it needs
+        // chooseAccountAsyncIfNecessary.
+        return nativePerformDirectAction(mNativeClientAndroid, actionId, experimentIds,
+                arguments.keySet().toArray(new String[arguments.size()]),
+                arguments.values().toArray(new String[arguments.size()]), onboardingCoordinator);
+    }
+
     @CalledByNative
     private static AutofillAssistantClient create(long nativeClientAndroid) {
         return new AutofillAssistantClient(nativeClientAndroid);
     }
 
-    private void chooseAccountAsync(@Nullable String accountFromParameter, Bundle extras) {
+    private void chooseAccountAsyncIfNecessary(
+            @Nullable String accountFromParameter, @Nullable Bundle extras) {
+        if (mAccountInitializationStarted) return;
+        mAccountInitializationStarted = true;
+
         AccountManagerFacade.get().tryGetGoogleAccounts(accounts -> {
             if (mNativeClientAndroid == 0) return;
             if (accounts.size() == 1) {
@@ -140,13 +207,15 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
                 }
             }
 
-            for (String extra : extras.keySet()) {
-                // TODO(crbug.com/806868): Deprecate ACCOUNT_NAME.
-                if (extra.endsWith("ACCOUNT_NAME")) {
-                    Account account = findAccountByName(accounts, extras.getString(extra));
-                    if (account != null) {
-                        onAccountChosen(account);
-                        return;
+            if (extras != null) {
+                for (String extra : extras.keySet()) {
+                    // TODO(crbug.com/806868): Deprecate ACCOUNT_NAME.
+                    if (extra.endsWith("ACCOUNT_NAME")) {
+                        Account account = findAccountByName(accounts, extras.getString(extra));
+                        if (account != null) {
+                            onAccountChosen(account);
+                            return;
+                        }
                     }
                 }
             }
@@ -240,19 +309,33 @@ class AutofillAssistantClient implements AutofillAssistantModuleEntry {
         return null;
     }
 
+    /** Adds a dynamic action to the given reporter. */
+    @CalledByNative
+    private void sendDirectActionList(Callback<Set<String>> callback, String[] names) {
+        Set<String> set = new HashSet<>();
+        for (String name : names) {
+            set.add(name);
+        }
+        callback.onResult(set);
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeClientAndroid = 0;
     }
 
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
-    private native void nativeShowOnboarding(
-            long nativeClientAndroid, String experimentIds, Object onAccept);
-    private native void nativeStart(long nativeClientAndroid, String initialUrl,
-            String experimentIds, String[] parameterNames, String[] parameterValues);
+    private native boolean nativeStart(long nativeClientAndroid, String initialUrl,
+            String experimentIds, String[] parameterNames, String[] parameterValues,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator, long nativeService);
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);
     private native void nativeDestroyUI(long nativeClientAndroid);
     private native void nativeTransferUITo(long nativeClientAndroid, Object otherWebContents);
+    private native void nativeListDirectActions(long nativeClientAndroid, String experimentIds,
+            String[] argumentNames, String[] argumentValues, Object callback);
+    private native boolean nativePerformDirectAction(long nativeClientAndroid, String actionId,
+            String experimentId, String[] argumentNames, String[] argumentValues,
+            @Nullable AssistantOnboardingCoordinator onboardingCoordinator);
 }

@@ -4,12 +4,20 @@
 
 #include "services/device/usb/fake_usb_device_handle.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "services/device/usb/usb_device.h"
 
 namespace device {
+
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 FakeUsbDeviceHandle::FakeUsbDeviceHandle(const uint8_t* data, size_t size)
     : data_(data), size_(size), position_(0) {}
@@ -115,7 +123,7 @@ void FakeUsbDeviceHandle::GenericTransfer(
   NOTIMPLEMENTED();
 }
 
-const UsbInterfaceDescriptor* FakeUsbDeviceHandle::FindInterfaceByEndpoint(
+const mojom::UsbInterfaceInfo* FakeUsbDeviceHandle::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
   NOTIMPLEMENTED();
   return nullptr;

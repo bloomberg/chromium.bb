@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -60,6 +59,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -83,8 +83,8 @@ SVGElement::~SVGElement() {
   DCHECK(isConnected() || !HasRelativeLengths());
 }
 
-void SVGElement::DetachLayoutTree(const AttachContext& context) {
-  Element::DetachLayoutTree(context);
+void SVGElement::DetachLayoutTree(bool performing_reattach) {
+  Element::DetachLayoutTree(performing_reattach);
   if (SVGElement* element = CorrespondingElement())
     element->RemoveInstanceMapping(this);
   // To avoid a noncollectable Blink GC reference cycle, we must clear the
@@ -583,7 +583,7 @@ void SVGElement::InvalidateRelativeLengthClients(
       &in_relative_length_clients_invalidation_, true);
 #endif
 
-  if (LayoutObject* layout_object = this->GetLayoutObject()) {
+  if (LayoutObject* layout_object = GetLayoutObject()) {
     if (HasRelativeLengths() && layout_object->IsSVGResourceContainer()) {
       ToLayoutSVGResourceContainer(layout_object)
           ->InvalidateCacheAndMarkForLayout(
@@ -1326,6 +1326,11 @@ void SVGElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_rare_data_);
   visitor->Trace(class_name_);
   Element::Trace(visitor);
+}
+
+void SVGElement::AccessKeyAction(bool send_mouse_events) {
+  DispatchSimulatedClick(
+      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
 }  // namespace blink

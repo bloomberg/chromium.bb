@@ -14,7 +14,6 @@
 namespace views {
 
 // static
-const char NativeViewHost::kViewClassName[] = "NativeViewHost";
 const char kWidgetNativeViewHostKey[] = "WidgetNativeViewHost";
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,10 +194,6 @@ void NativeViewHost::ViewHierarchyChanged(
   }
 }
 
-const char* NativeViewHost::GetClassName() const {
-  return kViewClassName;
-}
-
 void NativeViewHost::OnFocus() {
   if (native_view_)
     native_wrapper_->SetFocus();
@@ -255,5 +250,9 @@ void NativeViewHost::ClearFocus() {
       return;
   }
 }
+
+BEGIN_METADATA(NativeViewHost)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
 
 }  // namespace views

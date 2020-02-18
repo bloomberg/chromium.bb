@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -26,7 +27,6 @@
 #include "cc/layers/layer.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/mock_audio_renderer_sink.h"
@@ -37,7 +37,6 @@
 #include "media/blink/mock_webassociatedurlloader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/video_decode_stats_reporter.h"
-#include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
@@ -48,6 +47,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
+#include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -60,10 +60,12 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
 
+using ::base::test::RunClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Eq;
@@ -81,6 +83,9 @@ namespace media {
 constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 constexpr char kVideoOnlyTestFile[] = "bear-320x240-video-only.webm";
 constexpr char kEncryptedVideoOnlyTestFile[] = "bear-320x240-av_enc-v.webm";
+
+constexpr base::TimeDelta kAudioOnlyTestFileDuration =
+    base::TimeDelta::FromMilliseconds(296);
 
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
@@ -163,9 +168,7 @@ class MockWebMediaPlayerEncryptedMediaClient
   MockWebMediaPlayerEncryptedMediaClient() = default;
 
   MOCK_METHOD3(Encrypted,
-               void(blink::WebEncryptedMediaInitDataType,
-                    const unsigned char*,
-                    unsigned));
+               void(EmeInitDataType, const unsigned char*, unsigned));
   MOCK_METHOD0(DidBlockPlaybackWaitingForKey, void());
   MOCK_METHOD0(DidResumePlaybackBlockedForKey, void());
 
@@ -173,12 +176,12 @@ class MockWebMediaPlayerEncryptedMediaClient
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaPlayerEncryptedMediaClient);
 };
 
-class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
+class MockWebMediaPlayerDelegate : public blink::WebMediaPlayerDelegate {
  public:
   MockWebMediaPlayerDelegate() = default;
   ~MockWebMediaPlayerDelegate() override = default;
 
-  // WebMediaPlayerDelegate implementation.
+  // blink::WebMediaPlayerDelegate implementation.
   int AddObserver(Observer* observer) override {
     DCHECK_EQ(nullptr, observer_);
     observer_ = observer;
@@ -255,6 +258,9 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   void SetFrameClosedForTesting(bool is_closed) { is_closed_ = is_closed; }
 
   int player_id() { return player_id_; }
+
+  MOCK_METHOD2(DidPlayerMediaPositionStateChange,
+               void(int, const media_session::MediaPosition&));
 
  private:
   Observer* observer_ = nullptr;
@@ -333,10 +339,15 @@ class WebMediaPlayerImplTest : public testing::Test {
             DefaultRendererFactory::GetGpuFactoriesCB()));
     factory_selector->SetBaseFactoryType(
         RendererFactorySelector::FactoryType::DEFAULT);
+#if defined(OS_ANDROID)
+    factory_selector->StartRequestRemotePlayStateCB(base::DoNothing());
+#endif
 
     mojom::MediaMetricsProviderPtr provider;
     MediaMetricsProvider::Create(
-        false, base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
+        MediaMetricsProvider::BrowsingMode::kNormal,
+        MediaMetricsProvider::FrameStatus::kNotTopFrame,
+        base::BindRepeating([]() { return ukm::kInvalidSourceId; }),
         base::BindRepeating([]() { return learning::FeatureValue(0); }),
         VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider));
 
@@ -399,6 +410,8 @@ class WebMediaPlayerImplTest : public testing::Test {
     return std::move(surface_layer_bridge_);
   }
 
+  blink::WebLocalFrame* GetWebLocalFrame() { return web_local_frame_; }
+
   int64_t OnAdjustAllocatedMemory(int64_t delta) {
     reported_memory_ += delta;
     return 0;
@@ -416,6 +429,7 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   void SetDuration(base::TimeDelta value) {
     wmpi_->SetPipelineMediaDurationForTest(value);
+    wmpi_->OnDurationChange();
   }
 
   base::TimeDelta GetCurrentTimeInternal() {
@@ -1380,6 +1394,127 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
   wmpi_->SetVolume(1.0);
 }
 
+TEST_F(WebMediaPlayerImplTest, MediaPositionState_OnDurationChange) {
+  InitializeWebMediaPlayerImpl();
+
+  testing::Sequence s;
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(
+                  delegate_.player_id(),
+                  media_session::MediaPosition(0.0, kAudioOnlyTestFileDuration,
+                                               base::TimeDelta())))
+      .InSequence(s);
+  EXPECT_CALL(delegate_, DidPlayerMediaPositionStateChange(
+                             delegate_.player_id(),
+                             media_session::MediaPosition(
+                                 0.0, kInfiniteDuration, base::TimeDelta())))
+      .InSequence(s);
+
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveCurrentData);
+
+  SetDuration(kInfiniteDuration);
+}
+
+TEST_F(WebMediaPlayerImplTest, MediaPositionState_PlayPauseSetRate) {
+  InitializeWebMediaPlayerImpl();
+
+  testing::Sequence s;
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(
+                  delegate_.player_id(),
+                  media_session::MediaPosition(0.0, kAudioOnlyTestFileDuration,
+                                               base::TimeDelta())))
+      .InSequence(s);
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(s)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(1.0, position.playback_rate());
+        EXPECT_EQ(kAudioOnlyTestFileDuration, position.duration());
+        EXPECT_EQ(base::TimeDelta(),
+                  position.GetPositionAtTime(position.last_updated_time()));
+      });
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(
+                  delegate_.player_id(),
+                  media_session::MediaPosition(0.0, kAudioOnlyTestFileDuration,
+                                               base::TimeDelta())))
+      .InSequence(s);
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(s)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(2.0, position.playback_rate());
+        EXPECT_EQ(kAudioOnlyTestFileDuration, position.duration());
+        EXPECT_EQ(base::TimeDelta(),
+                  position.GetPositionAtTime(position.last_updated_time()));
+      });
+
+  wmpi_->SetRate(1.0);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveCurrentData);
+
+  // Play will set the playback rate to 1.0.
+  Play();
+
+  // Pause will set the playback rate to 0.0.
+  Pause();
+
+  // SetRate will set the playback rate, but it will not affect the position
+  // state until we have started playing again.
+  wmpi_->SetRate(2.0);
+  Play();
+}
+
+TEST_F(WebMediaPlayerImplTest, MediaPositionState_Seeking) {
+  InitializeWebMediaPlayerImpl();
+
+  testing::Sequence s;
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(
+                  delegate_.player_id(),
+                  media_session::MediaPosition(0.0, kAudioOnlyTestFileDuration,
+                                               base::TimeDelta())))
+      .InSequence(s);
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(s)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(1.0, position.playback_rate());
+        EXPECT_EQ(kAudioOnlyTestFileDuration, position.duration());
+        EXPECT_EQ(base::TimeDelta(),
+                  position.GetPositionAtTime(position.last_updated_time()));
+      });
+  EXPECT_CALL(delegate_,
+              DidPlayerMediaPositionStateChange(delegate_.player_id(), _))
+      .InSequence(s)
+      .WillOnce([](auto id, auto position) {
+        EXPECT_EQ(1.0, position.playback_rate());
+        EXPECT_EQ(kAudioOnlyTestFileDuration, position.duration());
+        EXPECT_EQ(base::TimeDelta::FromMilliseconds(100),
+                  position.GetPositionAtTime(position.last_updated_time()));
+      });
+  EXPECT_CALL(delegate_, DidPlayerMediaPositionStateChange(
+                             delegate_.player_id(),
+                             media_session::MediaPosition(
+                                 0.0, kAudioOnlyTestFileDuration,
+                                 base::TimeDelta::FromMilliseconds(100))))
+      .InSequence(s);
+
+  wmpi_->SetRate(1.0);
+  LoadAndWaitForReadyState(kAudioOnlyTestFile,
+                           blink::WebMediaPlayer::kReadyStateHaveCurrentData);
+  Play();
+
+  // Seek forward 100ms will result in the position to be updated.
+  wmpi_->Seek(0.1);
+
+  // If we trigger another update to the position state the new position should
+  // be used.
+  Pause();
+}
+
 TEST_F(WebMediaPlayerImplTest, NoStreams) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
@@ -1402,9 +1537,8 @@ TEST_F(WebMediaPlayerImplTest, Encrypted) {
   InitializeWebMediaPlayerImpl();
 
   base::RunLoop loop;
-  EXPECT_CALL(
-      encrypted_client_,
-      Encrypted(blink::WebEncryptedMediaInitDataType::kWebm, NotNull(), Gt(0u)))
+  EXPECT_CALL(encrypted_client_,
+              Encrypted(EmeInitDataType::WEBM, NotNull(), Gt(0u)))
       .WillOnce(RunClosure(loop.QuitClosure()));
 
   // Cannot wait for metadata since we don't have a CDM and pipeline
@@ -1624,22 +1758,19 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture it does unlock the player.
-  {
-    blink::WebScopedUserGesture user_gesture(nullptr);
-    Play();
-    EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
-  }
+  blink::WebScopedUserGesture user_gesture1(GetWebLocalFrame());
+  Play();
+  EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // Pause without a user gesture doesn't lock the player.
+  blink::WebUserGestureIndicator::ConsumeUserGesture(GetWebLocalFrame());
   Pause();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture, pause does lock the player.
-  {
-    blink::WebScopedUserGesture user_gesture(nullptr);
-    Pause();
-    EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
-  }
+  blink::WebScopedUserGesture user_gesture2(GetWebLocalFrame());
+  Pause();
+  EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // Foregrounding the player unsets the lock.
   ForegroundPlayer();

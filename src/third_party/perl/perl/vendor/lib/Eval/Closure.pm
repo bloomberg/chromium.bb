@@ -1,24 +1,28 @@
 package Eval::Closure;
-{
-  $Eval::Closure::VERSION = '0.08';
+BEGIN {
+  $Eval::Closure::AUTHORITY = 'cpan:DOY';
 }
+$Eval::Closure::VERSION = '0.14';
 use strict;
 use warnings;
-use Sub::Exporter -setup => {
-    exports => [qw(eval_closure)],
-    groups  => { default => [qw(eval_closure)] },
-};
 # ABSTRACT: safely and cleanly create closures via string eval
+
+use Exporter 'import';
+@Eval::Closure::EXPORT = @Eval::Closure::EXPORT_OK = 'eval_closure';
 
 use Carp;
 use overload ();
 use Scalar::Util qw(reftype);
-use Try::Tiny;
+
+use constant HAS_LEXICAL_SUBS => $] >= 5.018;
 
 
 
 sub eval_closure {
     my (%args) = @_;
+
+    # default to copying environment
+    $args{alias} = 0 if !exists $args{alias};
 
     $args{source} = _canonicalize_source($args{source});
     _validate_env($args{environment} ||= {});
@@ -27,7 +31,7 @@ sub eval_closure {
                   . $args{source}
         if defined $args{description} && !($^P & 0x10);
 
-    my ($code, $e) = _clean_eval_closure(@args{qw(source environment)});
+    my ($code, $e) = _clean_eval_closure(@args{qw(source environment alias)});
 
     if (!$code) {
         if ($args{terse_error}) {
@@ -74,8 +78,14 @@ sub _validate_env {
         unless reftype($env) eq 'HASH';
 
     for my $var (keys %$env) {
-        croak("Environment key '$var' should start with \@, \%, or \$")
-            unless $var =~ /^([\@\%\$])/;
+        if (HAS_LEXICAL_SUBS) {
+            croak("Environment key '$var' should start with \@, \%, \$, or \&")
+                if index('$@%&', substr($var, 0, 1)) < 0;
+        }
+        else {
+            croak("Environment key '$var' should start with \@, \%, or \$")
+                if index('$@%', substr($var, 0, 1)) < 0;
+        }
         croak("Environment values must be references, not $env->{$var}")
             unless ref($env->{$var});
     }
@@ -90,24 +100,38 @@ sub _line_directive {
 }
 
 sub _clean_eval_closure {
-    my ($source, $captures) = @_;
+    my ($source, $captures, $alias) = @_;
 
-    my @capture_keys = sort keys %$captures;
+    my @capture_keys = keys %$captures;
 
     if ($ENV{EVAL_CLOSURE_PRINT_SOURCE}) {
-        _dump_source(_make_compiler_source($source, @capture_keys));
+        _dump_source(_make_compiler_source($source, $alias, @capture_keys));
     }
 
-    my ($compiler, $e) = _make_compiler($source, @capture_keys);
-    my $code;
-    if (defined $compiler) {
-        $code = $compiler->(@$captures{@capture_keys});
+    my ($compiler, $e) = _make_compiler($source, $alias, @capture_keys);
+    return (undef, $e) unless defined $compiler;
+
+    my $code = $compiler->(@$captures{@capture_keys});
+
+    if (!defined $code) {
+        return (
+            undef,
+            "The 'source' parameter must return a subroutine reference, "
+            . "not undef"
+        )
+    }
+    if (!ref($code) || ref($code) ne 'CODE') {
+        return (
+            undef,
+            "The 'source' parameter must return a subroutine reference, not "
+            . ref($code)
+        )
     }
 
-    if (defined($code) && (!ref($code) || ref($code) ne 'CODE')) {
-        $e = "The 'source' parameter must return a subroutine reference, "
-           . "not $code";
-        undef $code;
+    if ($alias) {
+        require Devel::LexAlias;
+        Devel::LexAlias::lexalias($code, $_, $captures->{$_})
+            for grep substr($_, 0, 1) ne '&', @capture_keys;
     }
 
     return ($code, $e);
@@ -116,7 +140,7 @@ sub _clean_eval_closure {
 sub _make_compiler {
     my $source = _make_compiler_source(@_);
 
-    return @{ _clean_eval($source) };
+    _clean_eval($source)
 }
 
 sub _clean_eval {
@@ -124,31 +148,49 @@ sub _clean_eval {
     local $SIG{__DIE__};
     my $compiler = eval $_[0];
     my $e = $@;
-    [ $compiler, $e ];
+    ( $compiler, $e )
 }
 
 $Eval::Closure::SANDBOX_ID = 0;
 
 sub _make_compiler_source {
-    my ($source, @capture_keys) = @_;
+    my ($source, $alias, @capture_keys) = @_;
     $Eval::Closure::SANDBOX_ID++;
     my $i = 0;
     return join "\n", (
         "package Eval::Closure::Sandbox_$Eval::Closure::SANDBOX_ID;",
         'sub {',
-        (map {
-            'my ' . $_ . ' = ' . substr($_, 0, 1) . '{$_[' . $i++ . ']};'
-         } @capture_keys),
-        $source,
+            (map { _make_lexical_assignment($_, $i++, $alias) } @capture_keys),
+            $source,
         '}',
     );
+}
+
+sub _make_lexical_assignment {
+    my ($key, $index, $alias) = @_;
+    my $sigil = substr($key, 0, 1);
+    my $name = substr($key, 1);
+    if (HAS_LEXICAL_SUBS && $sigil eq '&') {
+        my $tmpname = '$__' . $name . '__' . $index;
+        return 'use feature "lexical_subs"; '
+             . 'no warnings "experimental::lexical_subs"; '
+             . 'my ' . $tmpname . ' = $_[' . $index . ']; '
+             . 'my sub ' . $name . ' { goto ' . $tmpname . ' }';
+    }
+    if ($alias) {
+        return 'my ' . $key . ';';
+    }
+    else {
+        return 'my ' . $key . ' = ' . $sigil . '{$_[' . $index . ']};';
+    }
 }
 
 sub _dump_source {
     my ($source) = @_;
 
     my $output;
-    if (try { require Perl::Tidy }) {
+    local $@;
+    if (eval { require Perl::Tidy; 1 }) {
         Perl::Tidy::perltidy(
             source      => \$source,
             destination => \$output,
@@ -166,7 +208,10 @@ sub _dump_source {
 1;
 
 __END__
+
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -174,7 +219,7 @@ Eval::Closure - safely and cleanly create closures via string eval
 
 =head1 VERSION
 
-version 0.08
+version 0.14
 
 =head1 SYNOPSIS
 
@@ -233,6 +278,20 @@ would allow the generated function to use an array named C<@foo>). Generally,
 this is used to allow the generated function to access externally defined
 variables (so you would pass in a reference to a variable that already exists).
 
+In perl 5.18 and greater, the environment hash can contain variables with a
+sigil of C<&>. This will create a lexical sub in the evaluated code (see
+L<feature/The 'lexical_subs' feature>). Using a C<&> sigil on perl versions
+before lexical subs were available will throw an error.
+
+=item alias
+
+If set to true, the coderef returned closes over the variables referenced in
+the environment hashref. (This feature requires L<Devel::LexAlias>.) If set to
+false, the coderef closes over a I<< shallow copy >> of the variables.
+
+If this argument is omitted, Eval::Closure will currently assume false, but
+this assumption may change in a future version.
+
 =item description
 
 This lets you provide a bit more information in backtraces. Normally, when a
@@ -260,44 +319,8 @@ behavior so you get only the compilation error that Perl actually reported.
 
 No known bugs.
 
-Please report any bugs through RT: email
-C<bug-eval-closure at rt.cpan.org>, or browse to
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Eval-Closure>.
-
-=head1 SUPPORT
-
-You can find this documentation for this module with the perldoc command.
-
-    perldoc Eval::Closure
-
-You can also look for information at:
-
-=over 4
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Eval-Closure>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Eval-Closure>
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Eval-Closure>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Eval-Closure>
-
-=back
-
-=head1 AUTHOR
-
-Jesse Luehrs <doy at tozt dot net>
-
-Based on code from L<Class::MOP::Method::Accessor>, by Stevan Little and the
-Moose Cabal.
+Please report any bugs to GitHub Issues at
+L<https://github.com/doy/eval-closure/issues>.
 
 =head1 SEE ALSO
 
@@ -309,12 +332,48 @@ This module is a factoring out of code that used to live here
 
 =back
 
+=head1 SUPPORT
+
+You can find this documentation for this module with the perldoc command.
+
+    perldoc Eval::Closure
+
+You can also look for information at:
+
+=over 4
+
+=item * MetaCPAN
+
+L<https://metacpan.org/release/Eval-Closure>
+
+=item * Github
+
+L<https://github.com/doy/eval-closure>
+
+=item * RT: CPAN's request tracker
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Eval-Closure>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Eval-Closure>
+
+=back
+
+=head1 NOTES
+
+Based on code from L<Class::MOP::Method::Accessor>, by Stevan Little and the
+Moose Cabal.
+
+=head1 AUTHOR
+
+Jesse Luehrs <doy@tozt.net>
+
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Jesse Luehrs.
+This software is copyright (c) 2016 by Jesse Luehrs.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

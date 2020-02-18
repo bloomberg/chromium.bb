@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_pageobject.h"
+#include "core/fpdfapi/page/cpdf_pageobjectholder.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -105,7 +106,7 @@ void CPDF_PageContentManager::ExecuteScheduledRemovals() {
   // updated.
   // Since this is only called by CPDF_PageContentGenerator::GenerateContent(),
   // which cleans up the dirty streams first, this should always be true.
-  ASSERT(obj_holder_->GetDirtyStreams().empty());
+  ASSERT(!obj_holder_->HasDirtyStreams());
 
   if (contents_stream_) {
     // Only stream that can be removed is 0.

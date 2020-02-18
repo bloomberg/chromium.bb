@@ -45,15 +45,16 @@ GURL GetShortcutUrl(content::WebContents* web_contents) {
       web_contents->GetVisibleURL());
 }
 
-bool DoesAndroidSupportMaskableIcons() {
-  return base::android::BuildInfo::GetInstance()->sdk_int() >=
-         base::android::SDK_VERSION_OREO;
+bool DoesAndroidSupportMaskableIconsForHomescreen() {
+  // TODO(crbug.com/977173): re-enable maskable icon support once server support
+  // is ready.
+  return false;
 }
 
 InstallableParams ParamsToPerformManifestAndIconFetch() {
   InstallableParams params;
   params.valid_primary_icon = true;
-  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIconsForHomescreen();
   params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
@@ -65,7 +66,7 @@ InstallableParams ParamsToPerformInstallableCheck() {
   params.valid_manifest = true;
   params.has_worker = true;
   params.valid_primary_icon = true;
-  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIconsForHomescreen();
   params.wait_for_worker = true;
   return params;
 }
@@ -203,11 +204,6 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
   if (!web_contents())
     return;
 
-  if (is_waiting_for_manifest_)
-    installable_manager_->RecordAddToHomescreenManifestAndIconTimeout();
-  else
-    installable_manager_->RecordAddToHomescreenInstallabilityTimeout();
-
   observer_->OnUserTitleAvailable(shortcut_info_.user_title, shortcut_info_.url,
                                   false);
 
@@ -233,7 +229,6 @@ void AddToHomescreenDataFetcher::OnDidGetManifestAndIcons(
     observer_->OnUserTitleAvailable(shortcut_info_.user_title,
                                     shortcut_info_.url, false);
     StopTimer();
-    installable_manager_->RecordAddToHomescreenNoTimeout();
     FetchFavicon();
     return;
   }
@@ -269,8 +264,6 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   if (!web_contents())
     return;
-
-  installable_manager_->RecordAddToHomescreenNoTimeout();
 
   bool webapk_compatible =
       (data.errors.empty() && data.valid_manifest && data.has_worker &&

@@ -11,7 +11,6 @@ from telemetry.core import util
 from telemetry.internal.forwarders import cros_forwarder
 from telemetry.internal.platform import cros_device
 from telemetry.internal.platform import linux_based_platform_backend
-from telemetry.internal.util import ps_util
 
 
 class CrosPlatformBackend(
@@ -89,38 +88,6 @@ class CrosPlatformBackend(
   def PushContents(self, text, remote_filename):
     return self._cri.PushContents(text, remote_filename)
 
-  def GetPsOutput(self, columns, pid=None):
-    return ps_util.GetPsOutputWithPlatformBackend(self, columns, pid)
-
-  @staticmethod
-  def ParseCStateSample(sample):
-    sample_stats = {}
-    for cpu in sample:
-      values = sample[cpu].splitlines()
-      # There are three values per state after excluding the single time value.
-      num_states = (len(values) - 1) / 3
-      names = values[:num_states]
-      times = values[num_states:2 * num_states]
-      latencies = values[2 * num_states:]
-      # The last line in the sample contains the time.
-      cstates = {'C0': int(values[-1]) * 10 ** 6}
-      for i, state in enumerate(names):
-        if names[i] == 'POLL' and not int(latencies[i]):
-          # C0 state. Kernel stats aren't right, so calculate by
-          # subtracting all other states from total time (using epoch
-          # timer since we calculate differences in the end anyway).
-          # NOTE: Only x86 lists C0 under cpuidle, ARM does not.
-          continue
-        cstates['C0'] -= int(times[i])
-        if names[i] == '<null>':
-          # Kernel race condition that can happen while a new C-state gets
-          # added (e.g. AC->battery). Don't know the 'name' of the state
-          # yet, but its 'time' would be 0 anyway.
-          continue
-        cstates[state] = int(times[i])
-      sample_stats[cpu] = cstates
-    return sample_stats
-
   def GetDeviceTypeName(self):
     return self._cri.GetDeviceTypeName()
 
@@ -137,17 +104,6 @@ class CrosPlatformBackend(
   def GetOSVersionDetailString(self):
     return ''  # TODO(kbr): Implement this.
 
-  def GetChildPids(self, pid):
-    """Returns a list of child pids of |pid|."""
-    all_process_info = self._cri.ListProcesses()
-    processes = [(curr_pid, curr_ppid, curr_state)
-                 for curr_pid, _, curr_ppid, curr_state in all_process_info]
-    return ps_util.GetChildPids(processes, pid)
-
-  def GetCommandLine(self, pid):
-    procs = self._cri.ListProcesses()
-    return next((proc[1] for proc in procs if proc[0] == pid), None)
-
   def CanFlushIndividualFilesFromSystemCache(self):
     return True
 
@@ -159,9 +115,6 @@ class CrosPlatformBackend(
         '/usr/local/telemetry/src/src/out/Release/clear_system_cache')
     self.RunCommand(['chmod', '+x', flush_command])
     self.RunCommand([flush_command, '--recurse', directory])
-
-  def CanMonitorPower(self):
-    return False
 
   def PathExists(self, path, timeout=None, retries=None):
     if timeout or retries:

@@ -94,12 +94,13 @@ void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void PageTimingMetricsSender::DidObserveLayoutJank(double jank_fraction,
-                                                   bool after_input_or_scroll) {
-  DCHECK(jank_fraction > 0);
-  render_data_.layout_jank_delta += jank_fraction;
+void PageTimingMetricsSender::DidObserveLayoutShift(
+    double score,
+    bool after_input_or_scroll) {
+  DCHECK(score > 0);
+  render_data_.layout_shift_delta += score;
   if (!after_input_or_scroll)
-    render_data_.layout_jank_delta_before_input_or_scroll += jank_fraction;
+    render_data_.layout_shift_delta_before_input_or_scroll += score;
   EnsureSendTimer();
 }
 
@@ -127,7 +128,7 @@ void PageTimingMetricsSender::DidStartResponse(
     const network::ResourceResponseHead& response_head,
     content::ResourceType resource_type,
     content::PreviewsState previews_state) {
-  DCHECK(!base::ContainsKey(page_resource_data_use_, resource_id));
+  DCHECK(!base::Contains(page_resource_data_use_, resource_id));
 
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
@@ -168,9 +169,8 @@ void PageTimingMetricsSender::DidCompleteResponse(
     resource_it = new_resource_it.first;
   }
 
-  if (resource_it->second->DidCompleteResponse(status)) {
-    EnsureSendTimer();
-  }
+  resource_it->second->DidCompleteResponse(status);
+  EnsureSendTimer();
   modified_resources_.insert(resource_it->second.get());
 }
 
@@ -180,6 +180,27 @@ void PageTimingMetricsSender::DidCancelResponse(int resource_id) {
     return;
   }
   resource_it->second->DidCancelResponse();
+}
+
+void PageTimingMetricsSender::DidLoadResourceFromMemoryCache(
+    const GURL& response_url,
+    int request_id,
+    int64_t encoded_body_length,
+    const std::string& mime_type) {
+  // In general, we should not observe the same resource being loaded twice in
+  // the frame. This is possible due to an existing workaround in
+  // ResourceFetcher::EmulateLoadStartedForInspector(). In this case, ignore
+  // multiple resources being loaded in the document, as memory cache resources
+  // are only reported once per context by design in all other cases.
+  if (base::Contains(page_resource_data_use_, request_id))
+    return;
+
+  auto resource_it = page_resource_data_use_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(request_id),
+      std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
+  resource_it.first->second->DidLoadFromMemoryCache(
+      response_url, request_id, encoded_body_length, mime_type);
+  modified_resources_.insert(resource_it.first->second.get());
 }
 
 void PageTimingMetricsSender::UpdateResourceMetadata(
@@ -246,8 +267,8 @@ void PageTimingMetricsSender::SendNow() {
   new_features_ = mojom::PageLoadFeatures::New();
   last_cpu_timing_->task_time = base::TimeDelta();
   modified_resources_.clear();
-  render_data_.layout_jank_delta = 0;
-  render_data_.layout_jank_delta_before_input_or_scroll = 0;
+  render_data_.layout_shift_delta = 0;
+  render_data_.layout_shift_delta_before_input_or_scroll = 0;
 }
 
 }  // namespace page_load_metrics

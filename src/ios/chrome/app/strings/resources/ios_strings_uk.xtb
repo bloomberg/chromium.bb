@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Опції для збереження паролів</translation>
 <translation id="2523363575747517183">Цей веб-сайт періодично намагається відкрити інший додаток.</translation>
 <translation id="2529021024822217800">Відкрити всі</translation>
+<translation id="2562041823070056534">Надсилання на пристрій <ph name="DEVICE_NAME" />…</translation>
 <translation id="2570206273416014374">Надсилає деякі файли cookie й пошукові запити з адресного рядка та вікна пошуку в пошукову систему за умовчанням.</translation>
 <translation id="2572712655377361602">пристрою</translation>
 <translation id="2578571896248130439">Надіслати веб-сторінку</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Ліхтарик</translation>
 <translation id="2958718410589002129">Паролі</translation>
 <translation id="2969979262385602596">Не вдалося ввійти. Спробуйте пізніше.</translation>
+<translation id="298306318844797842">Додати спосіб оплати…</translation>
 <translation id="2989805286512600854">Відкрити в новій вкладці</translation>
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3112556859945124369">Позначити…</translation>
@@ -313,6 +315,7 @@
 <translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5614553682702429503">Зберегти пароль?</translation>
 <translation id="5626245204502895507">Зараз неможливо завантажити цей файл.</translation>
+<translation id="5631164295104953411">Додати спосіб оплати</translation>
 <translation id="5659593005791499971">Електронна пошта</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версія <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пошук у новій вкладці Chrome.</translation>
+<translation id="7791543448312431591">Додати</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7840771868269352570">Вибраний елемент буде видалено.</translation>
 <translation id="7856733331829174190">Не вдалося завантажити</translation>
@@ -477,6 +481,7 @@
 <translation id="7961015016161918242">Ніколи</translation>
 <translation id="7971521879845308059">Блок.сплив.вікна</translation>
 <translation id="7982789257301363584">Мережа</translation>
+<translation id="8007420562015504427">Пошук у режимі інкогніто</translation>
 <translation id="8019783059653722575">Ви зможете зберігати й завантажувати фотографії.</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8023878949384262191">Розгортає розділ.</translation>
@@ -491,6 +496,7 @@
 <translation id="8225985093977202398">Кешовані зображення й файли</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8281781826761538115">За умовчанням – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Новий пошук</translation>
 <translation id="8328777765163860529">Закрити всі</translation>
 <translation id="8381750437846184350">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу та інші служби Google</translation>
 <translation id="8407669440184693619">Немає паролів для цього сайту</translation>
@@ -507,7 +513,6 @@
 <translation id="8532105204136943229">Рік закінчення терміну дії</translation>
 <translation id="8534481786647257214">Опубліковано в Google+</translation>
 <translation id="8548878600947630424">Знайти на сторінці...</translation>
-<translation id="8583866649835978847">Надіслати вкладку "<ph name="TITLE" />" на один із пристроїв.</translation>
 <translation id="8605219856220328675">Закрити вкладку.</translation>
 <translation id="8620640915598389714">Редагувати</translation>
 <translation id="8636825310635137004">Щоб мати доступ до вкладок з інших пристроїв, увімкніть синхронізацію.</translation>
@@ -530,7 +535,6 @@
 <translation id="8976382372951310360">Довідка</translation>
 <translation id="8981454092730389528">Відстеження дій у Google</translation>
 <translation id="8985320356172329008">Ви ввійшли в обліковий запис Google як</translation>
-<translation id="9016406938567631235">Надсилання…</translation>
 <translation id="902659348151742535">Google може використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, рекламу та інші служби Google.</translation>
 <translation id="9034759925968272072">Ви не вийдете з облікового запису Google. Історія веб-перегляду може також зберігатися у вашому обліковому записі Google на сторінці  <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Трафік</translation>

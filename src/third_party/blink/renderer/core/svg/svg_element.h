@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -55,7 +55,7 @@ class CORE_EXPORT SVGElement : public Element {
  public:
   ~SVGElement() override;
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext&) override;
+  void DetachLayoutTree(bool performing_reattach) override;
 
   int tabIndex() const override;
   bool SupportsFocus() const override { return false; }
@@ -263,6 +263,8 @@ class CORE_EXPORT SVGElement : public Element {
                           RegisteredEventListener&) final;
   void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) final;
+
+  void AccessKeyAction(bool send_mouse_events) override;
 
  private:
   bool IsSVGElement() const =

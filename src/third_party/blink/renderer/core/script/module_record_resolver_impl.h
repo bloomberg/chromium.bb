@@ -30,7 +30,7 @@ class CORE_EXPORT ModuleRecordResolverImpl final
                                     ExecutionContext* execution_context)
       : ContextLifecycleObserver(execution_context), modulator_(modulator) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   USING_GARBAGE_COLLECTED_MIXIN(ModuleRecordResolverImpl);
 
  private:
@@ -38,7 +38,8 @@ class CORE_EXPORT ModuleRecordResolverImpl final
 
   void RegisterModuleScript(const ModuleScript*) final;
   void UnregisterModuleScript(const ModuleScript*) final;
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const final;
+  const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const final;
 
   // Implements "Runtime Semantics: HostResolveImportedModule" per HTML spec.
   // https://html.spec.whatwg.org/C/#hostresolveimportedmodule(referencingscriptormodule,-specifier))

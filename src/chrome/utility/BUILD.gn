@@ -30,8 +30,6 @@ static_library("utility") {
     "//chrome:strings",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//chrome/services/noop:lib",
-    "//chrome/services/noop/public/cpp",
     "//components/mirroring/mojom:constants",
     "//components/mirroring/service:mirroring_service",
     "//components/search_engines",
@@ -179,12 +177,12 @@ static_library("utility") {
   if (enable_basic_printing) {
     deps += [
       "//components/services/pdf_compositor/public/cpp:factory",
-      "//components/services/pdf_compositor/public/interfaces",
+      "//components/services/pdf_compositor/public/mojom",
     ]
 
     if (is_chromeos) {
       deps += [
-        "//chrome/services/cups_ipp_parser:lib",
+        "//chrome/services/cups_ipp_parser",
         "//chrome/services/cups_ipp_parser/public/mojom",
       ]
     }
@@ -212,7 +210,7 @@ static_library("utility") {
     deps += [ "//chrome/services/media_gallery_util:lib" ]
   }
 
-  if (enable_isolated_xr_service) {
+  if (enable_vr && !is_android) {
     deps += [
       "//chrome/services/isolated_xr_device:lib",
       "//device/vr/public/mojom",

@@ -54,8 +54,7 @@ bool DownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
   return true;
 }
 
-std::string
-DownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+std::string DownloadManagerDelegate::ApplicationClientIdForFileScanning() {
   return std::string();
 }
 
@@ -63,6 +62,7 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
     const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));

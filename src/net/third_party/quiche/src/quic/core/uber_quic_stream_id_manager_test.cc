@@ -37,26 +37,26 @@ class UberQuicStreamIdManagerTest : public QuicTestWithParam<Perspective> {
   }
 
   QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
-    return QuicUtils::GetFirstBidirectionalStreamId(
-               connection_->transport_version(), Perspective::IS_CLIENT) +
+    return QuicUtils::GetFirstBidirectionalStreamId(transport_version(),
+                                                    Perspective::IS_CLIENT) +
            kV99StreamIdIncrement * n;
   }
 
   QuicStreamId GetNthClientInitiatedUnidirectionalId(int n) {
-    return QuicUtils::GetFirstUnidirectionalStreamId(
-               connection_->transport_version(), Perspective::IS_CLIENT) +
+    return QuicUtils::GetFirstUnidirectionalStreamId(transport_version(),
+                                                     Perspective::IS_CLIENT) +
            kV99StreamIdIncrement * n;
   }
 
   QuicStreamId GetNthServerInitiatedBidirectionalId(int n) {
-    return QuicUtils::GetFirstBidirectionalStreamId(
-               connection_->transport_version(), Perspective::IS_SERVER) +
+    return QuicUtils::GetFirstBidirectionalStreamId(transport_version(),
+                                                    Perspective::IS_SERVER) +
            kV99StreamIdIncrement * n;
   }
 
   QuicStreamId GetNthServerInitiatedUnidirectionalId(int n) {
-    return QuicUtils::GetFirstUnidirectionalStreamId(
-               connection_->transport_version(), Perspective::IS_SERVER) +
+    return QuicUtils::GetFirstUnidirectionalStreamId(transport_version(),
+                                                     Perspective::IS_SERVER) +
            kV99StreamIdIncrement * n;
   }
 
@@ -86,10 +86,14 @@ class UberQuicStreamIdManagerTest : public QuicTestWithParam<Perspective> {
                                Perspective perspective,
                                bool bidirectional) {
     return ((bidirectional) ? QuicUtils::GetFirstBidirectionalStreamId(
-                                  QUIC_VERSION_99, perspective)
+                                  transport_version(), perspective)
                             : QuicUtils::GetFirstUnidirectionalStreamId(
-                                  QUIC_VERSION_99, perspective)) +
-           ((stream_count - 1) * QuicUtils::StreamIdDelta(QUIC_VERSION_99));
+                                  transport_version(), perspective)) +
+           ((stream_count - 1) * QuicUtils::StreamIdDelta(transport_version()));
+  }
+
+  QuicTransportVersion transport_version() {
+    return connection_->transport_version();
   }
 
   MockQuicConnectionHelper helper_;
@@ -133,7 +137,8 @@ TEST_P(UberQuicStreamIdManagerTest, RegisterStaticStream) {
       manager_->actual_max_allowed_incoming_bidirectional_streams();
   QuicStreamCount actual_max_allowed_incoming_unidirectional_streams =
       manager_->actual_max_allowed_incoming_unidirectional_streams();
-  manager_->RegisterStaticStream(first_incoming_bidirectional_stream_id);
+  manager_->RegisterStaticStream(first_incoming_bidirectional_stream_id,
+                                 /*stream_already_counted = */ false);
   // Verify actual_max_allowed_incoming_bidirectional_streams increases.
   EXPECT_EQ(actual_max_allowed_incoming_bidirectional_streams + 1u,
             manager_->actual_max_allowed_incoming_bidirectional_streams());
@@ -142,7 +147,8 @@ TEST_P(UberQuicStreamIdManagerTest, RegisterStaticStream) {
   EXPECT_EQ(actual_max_allowed_incoming_unidirectional_streams,
             manager_->actual_max_allowed_incoming_unidirectional_streams());
 
-  manager_->RegisterStaticStream(first_incoming_unidirectional_stream_id);
+  manager_->RegisterStaticStream(first_incoming_unidirectional_stream_id,
+                                 /*stream_already_counted = */ false);
   EXPECT_EQ(actual_max_allowed_incoming_bidirectional_streams + 1u,
             manager_->actual_max_allowed_incoming_bidirectional_streams());
   EXPECT_EQ(actual_max_allowed_incoming_unidirectional_streams + 1u,
@@ -269,16 +275,10 @@ TEST_P(UberQuicStreamIdManagerTest, MaybeIncreaseLargestPeerStreamId) {
   EXPECT_CALL(*connection_, CloseConnection(_, _, _)).Times(0);
   EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(StreamCountToId(
       manager_->actual_max_allowed_incoming_bidirectional_streams(),
-      /* Perspective=*/GetParam() == Perspective::IS_SERVER
-          ? Perspective::IS_CLIENT
-          : Perspective::IS_SERVER,
-      /* bidirectional=*/true)));
+      QuicUtils::InvertPerspective(GetParam()), /* bidirectional=*/true)));
   EXPECT_TRUE(manager_->MaybeIncreaseLargestPeerStreamId(StreamCountToId(
       manager_->actual_max_allowed_incoming_bidirectional_streams(),
-      /* Perspective=*/GetParam() == Perspective::IS_SERVER
-          ? Perspective::IS_CLIENT
-          : Perspective::IS_SERVER,
-      /* bidirectional=*/false)));
+      QuicUtils::InvertPerspective(GetParam()), /* bidirectional=*/false)));
 
   std::string error_details =
       GetParam() == Perspective::IS_SERVER
@@ -289,10 +289,7 @@ TEST_P(UberQuicStreamIdManagerTest, MaybeIncreaseLargestPeerStreamId) {
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
   EXPECT_FALSE(manager_->MaybeIncreaseLargestPeerStreamId(StreamCountToId(
       manager_->actual_max_allowed_incoming_bidirectional_streams() + 1,
-      /* Perspective=*/GetParam() == Perspective::IS_SERVER
-          ? Perspective::IS_CLIENT
-          : Perspective::IS_SERVER,
-      /* bidirectional=*/true)));
+      QuicUtils::InvertPerspective(GetParam()), /* bidirectional=*/true)));
   error_details = GetParam() == Perspective::IS_SERVER
                       ? "Stream id 402 would exceed stream count limit 100"
                       : "Stream id 403 would exceed stream count limit 100";
@@ -300,10 +297,7 @@ TEST_P(UberQuicStreamIdManagerTest, MaybeIncreaseLargestPeerStreamId) {
               CloseConnection(QUIC_INVALID_STREAM_ID, error_details, _));
   EXPECT_FALSE(manager_->MaybeIncreaseLargestPeerStreamId(StreamCountToId(
       manager_->actual_max_allowed_incoming_bidirectional_streams() + 1,
-      /* Perspective=*/GetParam() == Perspective::IS_SERVER
-          ? Perspective::IS_CLIENT
-          : Perspective::IS_SERVER,
-      /* bidirectional=*/false)));
+      QuicUtils::InvertPerspective(GetParam()), /* bidirectional=*/false)));
 }
 
 TEST_P(UberQuicStreamIdManagerTest, OnMaxStreamsFrame) {

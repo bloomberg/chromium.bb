@@ -87,6 +87,13 @@ class CORE_EXPORT NGInlineItem {
   bool IsEmptyItem() const { return is_empty_item_; }
   void SetIsEmptyItem(bool value) { is_empty_item_ = value; }
 
+  // If this item is either a float or OOF-positioned node. If an inline
+  // formatting-context *only* contains these types of nodes we consider it
+  // block-level, and run the |NGBlockLayoutAlgorithm| instead of the
+  // |NGInlineLayoutAlgorithm|.
+  bool IsBlockLevel() const { return is_block_level_; }
+  void SetIsBlockLevel(bool value) { is_block_level_ = value; }
+
   // If this item should create a box fragment. Box fragments can be omitted for
   // optimization if this is false.
   bool ShouldCreateBoxFragment() const {
@@ -175,8 +182,8 @@ class CORE_EXPORT NGInlineItem {
   // context that are lost during the whitespace collapsing. This item is used
   // during the line breaking and layout, but is not supposed to generate
   // fragments.
-  bool IsGenerated() const { return is_generated_; }
-  void SetIsGenerated() { is_generated_ = true; }
+  bool IsGeneratedForLineBreak() const { return is_generated_for_line_break_; }
+  void SetIsGeneratedForLineBreak() { is_generated_for_line_break_ = true; }
 
   // Whether the end collapsible space run contains a newline.
   // Valid only when kCollapsible or kCollapsed.
@@ -190,10 +197,6 @@ class CORE_EXPORT NGInlineItem {
 
   // RunSegmenter properties.
   unsigned SegmentData() const { return segment_data_; }
-  void SetSegmentData(unsigned segment_data) {
-    DCHECK_EQ(Type(), NGInlineItem::kText);
-    segment_data_ = segment_data;
-  }
   static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
                              Vector<NGInlineItem>* items);
 
@@ -235,15 +238,17 @@ class CORE_EXPORT NGInlineItem {
   LayoutObject* layout_object_;
 
   NGInlineItemType type_;
+  // |segment_data_| is valid only for |type_ == NGInlineItem::kText|.
   unsigned segment_data_ : NGInlineItemSegment::kSegmentDataBits;
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
+  unsigned is_block_level_ : 1;
   unsigned style_variant_ : 2;
   unsigned end_collapse_type_ : 2;  // NGCollapseType
   unsigned is_end_collapsible_newline_ : 1;
   unsigned is_symbol_marker_ : 1;
-  unsigned is_generated_ : 1;
+  unsigned is_generated_for_line_break_ : 1;
   friend class NGInlineNode;
 };
 
@@ -283,11 +288,6 @@ struct CORE_EXPORT NGInlineItemsData {
   void AssertEndOffset(unsigned index, unsigned offset) const {
     items[index].AssertEndOffset(offset);
   }
-
-  // Returns the non-zero-length inline item whose |StartOffset() <= offset| and
-  // |EndOffset() > offset|, namely, contains the character at |offset|.
-  // Note: This function is not a trivial getter, but does a binary search.
-  const NGInlineItem& FindItemForTextOffset(unsigned offset) const;
 };
 
 }  // namespace blink

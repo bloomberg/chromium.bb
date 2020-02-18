@@ -83,7 +83,7 @@ void URLDownloader::RemoveOfflineURL(const GURL& url) {
 }
 
 void URLDownloader::DownloadOfflineURL(const GURL& url) {
-  if (!base::ContainsValue(tasks_, std::make_pair(DOWNLOAD, url))) {
+  if (!base::Contains(tasks_, std::make_pair(DOWNLOAD, url))) {
     tasks_.push_back(std::make_pair(DOWNLOAD, url));
     HandleNextTask();
   }

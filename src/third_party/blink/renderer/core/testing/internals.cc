@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/testing/internals.h"
 
-#include <deque>
 #include <memory>
 
 #include "base/macros.h"
@@ -35,6 +34,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -165,7 +165,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -173,6 +173,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -272,8 +273,7 @@ void Internals::ResetToConsistentState(Page* page) {
   // call.
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix());
+  page->GetChromeClient().GetWebView()->DisableDeviceEmulation();
 
   // Ensure timers are reset so timers such as EventHandler's |hover_timer_| do
   // not cause additional lifecycle updates.
@@ -486,7 +486,7 @@ ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  KURL resource_url = url_test_helpers::ToKURL(url.Utf8().data());
+  KURL resource_url = url_test_helpers::ToKURL(url.Utf8());
   DCHECK(document);
 
   auto callback = WTF::Bind(&Internals::ResolveResourcePriority,
@@ -513,10 +513,10 @@ String Internals::getResourceHeader(const String& url,
   if (!document)
     return String();
   Resource* resource = document->Fetcher()->AllResources().at(
-      url_test_helpers::ToKURL(url.Utf8().data()));
+      url_test_helpers::ToKURL(url.Utf8()));
   if (!resource)
     return String();
-  return resource->GetResourceRequest().HttpHeaderField(header.Utf8().data());
+  return resource->GetResourceRequest().HttpHeaderField(AtomicString(header));
 }
 
 bool Internals::isValidContentSelect(Element* insertion_point,
@@ -885,14 +885,8 @@ DOMWindow* Internals::pagePopupWindow() const {
   if (!document_)
     return nullptr;
   if (Page* page = document_->GetPage()) {
-    LocalDOMWindow* popup =
-        To<LocalDOMWindow>(page->GetChromeClient().PagePopupWindowForTesting());
-    if (popup) {
-      // We need to make the popup same origin so web tests can access it.
-      popup->document()->UpdateSecurityOrigin(
-          document_->GetMutableSecurityOrigin());
-    }
-    return popup;
+    return To<LocalDOMWindow>(
+        page->GetChromeClient().PagePopupWindowForTesting());
   }
   return nullptr;
 }
@@ -1385,7 +1379,7 @@ void Internals::setAutofilledValue(Element* element,
   if (auto* select = ToHTMLSelectElementOrNull(*element))
     select->setValue(value, true /* send_events */);
 
-  ToHTMLFormControlElement(element)->SetAutofillState(
+  To<HTMLFormControlElement>(element)->SetAutofillState(
       blink::WebAutofillState::kAutofilled);
 }
 
@@ -1406,19 +1400,15 @@ void Internals::setAutofilled(Element* element,
                               bool enabled,
                               ExceptionState& exception_state) {
   DCHECK(element);
-  if (!element->IsFormControlElement()) {
+  auto* form_control_element = DynamicTo<HTMLFormControlElement>(element);
+  if (!form_control_element) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidNodeTypeError,
         "The element provided is not a form control element.");
     return;
   }
-  if (enabled) {
-    ToHTMLFormControlElement(element)->SetAutofillState(
-        WebAutofillState::kAutofilled);
-  } else {
-    ToHTMLFormControlElement(element)->SetAutofillState(
-        WebAutofillState::kNotFilled);
-  }
+  form_control_element->SetAutofillState(
+      enabled ? WebAutofillState::kAutofilled : WebAutofillState::kNotFilled);
 }
 
 Range* Internals::rangeFromLocationAndLength(Element* scope,
@@ -1472,10 +1462,10 @@ void Internals::HitTestRect(HitTestLocation& location,
                             Document* document) {
   document->UpdateStyleAndLayout();
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
-  LayoutPoint hit_test_point(
-      document->GetFrame()->View()->ConvertFromRootFrame(LayoutPoint(x, y)));
-  location = HitTestLocation(
-      (LayoutRect(hit_test_point, LayoutSize((int)width, (int)height))));
+  PhysicalRect rect{LayoutUnit(x), LayoutUnit(y), LayoutUnit(width),
+                    LayoutUnit(height)};
+  rect.offset = document->GetFrame()->View()->ConvertFromRootFrame(rect.offset);
+  location = HitTestLocation(rect);
   result = event_handler.HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
                     HitTestRequest::kListBased);
@@ -1806,14 +1796,14 @@ static void AccumulateTouchActionRectList(
     HitTestLayerRectList* hit_test_rects) {
   const cc::TouchActionRegion& touch_action_region =
       graphics_layer->CcLayer()->touch_action_region();
-  if (!touch_action_region.region().IsEmpty()) {
+  if (!touch_action_region.GetAllRegions().IsEmpty()) {
     const auto& layer_position = graphics_layer->CcLayer()->position();
     const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
     IntRect layer_rect(layer_position.x(), layer_position.y(),
                        layer_bounds.width(), layer_bounds.height());
 
     Vector<IntRect> layer_hit_test_rects;
-    for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+    for (const gfx::Rect& hit_test_rect : touch_action_region.GetAllRegions())
       layer_hit_test_rects.push_back(IntRect(hit_test_rect));
     MergeRects(layer_hit_test_rects);
 
@@ -1851,13 +1841,13 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     for (const auto& layer : content_layers) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
-      if (!touch_action_region.region().IsEmpty()) {
+      if (!touch_action_region.GetAllRegions().IsEmpty()) {
         const auto& offset = layer->offset_to_transform_parent();
         IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
                            IntSize(layer->bounds()));
 
         Vector<IntRect> layer_hit_test_rects;
-        for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+        for (const auto& hit_test_rect : touch_action_region.GetAllRegions())
           layer_hit_test_rects.push_back(IntRect(hit_test_rect));
         MergeRects(layer_hit_test_rects);
 
@@ -1961,7 +1951,8 @@ StaticNodeList* Internals::nodesFromRect(
                                                 HitTestRequest::kActive |
                                                 HitTestRequest::kListBased;
   LocalFrame* frame = document->GetFrame();
-  LayoutRect rect(x, y, width, height);
+  PhysicalRect rect{LayoutUnit(x), LayoutUnit(y), LayoutUnit(width),
+                    LayoutUnit(height)};
   if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
   } else if (!IntRect(IntPoint(), frame->View()->Size())
@@ -2316,7 +2307,7 @@ String Internals::pageProperty(String property_name,
     return String();
   }
 
-  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().data(),
+  return PrintContext::PageProperty(GetFrame(), property_name.Utf8().c_str(),
                                     page_number);
 }
 
@@ -2614,96 +2605,110 @@ DOMRectList* Internals::AnnotatedRegions(Document* document,
   return DOMRectList::Create(quads);
 }
 
-static const char* CursorTypeToString(Cursor::Type cursor_type) {
+static const char* CursorTypeToString(ui::CursorType cursor_type) {
   switch (cursor_type) {
-    case Cursor::kPointer:
+    case ui::CursorType::kPointer:
       return "Pointer";
-    case Cursor::kCross:
+    case ui::CursorType::kCross:
       return "Cross";
-    case Cursor::kHand:
+    case ui::CursorType::kHand:
       return "Hand";
-    case Cursor::kIBeam:
+    case ui::CursorType::kIBeam:
       return "IBeam";
-    case Cursor::kWait:
+    case ui::CursorType::kWait:
       return "Wait";
-    case Cursor::kHelp:
+    case ui::CursorType::kHelp:
       return "Help";
-    case Cursor::kEastResize:
+    case ui::CursorType::kEastResize:
       return "EastResize";
-    case Cursor::kNorthResize:
+    case ui::CursorType::kNorthResize:
       return "NorthResize";
-    case Cursor::kNorthEastResize:
+    case ui::CursorType::kNorthEastResize:
       return "NorthEastResize";
-    case Cursor::kNorthWestResize:
+    case ui::CursorType::kNorthWestResize:
       return "NorthWestResize";
-    case Cursor::kSouthResize:
+    case ui::CursorType::kSouthResize:
       return "SouthResize";
-    case Cursor::kSouthEastResize:
+    case ui::CursorType::kSouthEastResize:
       return "SouthEastResize";
-    case Cursor::kSouthWestResize:
+    case ui::CursorType::kSouthWestResize:
       return "SouthWestResize";
-    case Cursor::kWestResize:
+    case ui::CursorType::kWestResize:
       return "WestResize";
-    case Cursor::kNorthSouthResize:
+    case ui::CursorType::kNorthSouthResize:
       return "NorthSouthResize";
-    case Cursor::kEastWestResize:
+    case ui::CursorType::kEastWestResize:
       return "EastWestResize";
-    case Cursor::kNorthEastSouthWestResize:
+    case ui::CursorType::kNorthEastSouthWestResize:
       return "NorthEastSouthWestResize";
-    case Cursor::kNorthWestSouthEastResize:
+    case ui::CursorType::kNorthWestSouthEastResize:
       return "NorthWestSouthEastResize";
-    case Cursor::kColumnResize:
+    case ui::CursorType::kColumnResize:
       return "ColumnResize";
-    case Cursor::kRowResize:
+    case ui::CursorType::kRowResize:
       return "RowResize";
-    case Cursor::kMiddlePanning:
+    case ui::CursorType::kMiddlePanning:
       return "MiddlePanning";
-    case Cursor::kEastPanning:
+    case ui::CursorType::kMiddlePanningVertical:
+      return "MiddlePanningVertical";
+    case ui::CursorType::kMiddlePanningHorizontal:
+      return "MiddlePanningHorizontal";
+    case ui::CursorType::kEastPanning:
       return "EastPanning";
-    case Cursor::kNorthPanning:
+    case ui::CursorType::kNorthPanning:
       return "NorthPanning";
-    case Cursor::kNorthEastPanning:
+    case ui::CursorType::kNorthEastPanning:
       return "NorthEastPanning";
-    case Cursor::kNorthWestPanning:
+    case ui::CursorType::kNorthWestPanning:
       return "NorthWestPanning";
-    case Cursor::kSouthPanning:
+    case ui::CursorType::kSouthPanning:
       return "SouthPanning";
-    case Cursor::kSouthEastPanning:
+    case ui::CursorType::kSouthEastPanning:
       return "SouthEastPanning";
-    case Cursor::kSouthWestPanning:
+    case ui::CursorType::kSouthWestPanning:
       return "SouthWestPanning";
-    case Cursor::kWestPanning:
+    case ui::CursorType::kWestPanning:
       return "WestPanning";
-    case Cursor::kMove:
+    case ui::CursorType::kMove:
       return "Move";
-    case Cursor::kVerticalText:
+    case ui::CursorType::kVerticalText:
       return "VerticalText";
-    case Cursor::kCell:
+    case ui::CursorType::kCell:
       return "Cell";
-    case Cursor::kContextMenu:
+    case ui::CursorType::kContextMenu:
       return "ContextMenu";
-    case Cursor::kAlias:
+    case ui::CursorType::kAlias:
       return "Alias";
-    case Cursor::kProgress:
+    case ui::CursorType::kProgress:
       return "Progress";
-    case Cursor::kNoDrop:
+    case ui::CursorType::kNoDrop:
       return "NoDrop";
-    case Cursor::kCopy:
+    case ui::CursorType::kCopy:
       return "Copy";
-    case Cursor::kNone:
+    case ui::CursorType::kNone:
       return "None";
-    case Cursor::kNotAllowed:
+    case ui::CursorType::kNotAllowed:
       return "NotAllowed";
-    case Cursor::kZoomIn:
+    case ui::CursorType::kZoomIn:
       return "ZoomIn";
-    case Cursor::kZoomOut:
+    case ui::CursorType::kZoomOut:
       return "ZoomOut";
-    case Cursor::kGrab:
+    case ui::CursorType::kGrab:
       return "Grab";
-    case Cursor::kGrabbing:
+    case ui::CursorType::kGrabbing:
       return "Grabbing";
-    case Cursor::kCustom:
+    case ui::CursorType::kCustom:
       return "Custom";
+    case ui::CursorType::kNull:
+      return "Null";
+    case ui::CursorType::kDndNone:
+      return "DragAndDropNone";
+    case ui::CursorType::kDndMove:
+      return "DragAndDropMove";
+    case ui::CursorType::kDndCopy:
+      return "DragAndDropCopy";
+    case ui::CursorType::kDndLink:
+      return "DragAndDropLink";
   }
 
   NOTREACHED();
@@ -3158,7 +3163,7 @@ unsigned Internals::canvasFontCacheMaxFonts() {
 void Internals::setScrollChain(ScrollState* scroll_state,
                                const HeapVector<Member<Element>>& elements,
                                ExceptionState&) {
-  std::deque<DOMNodeId> scroll_chain;
+  Deque<DOMNodeId> scroll_chain;
   for (wtf_size_t i = 0; i < elements.size(); ++i)
     scroll_chain.push_back(DOMNodeIds::IdForNode(elements[i].Get()));
   scroll_state->SetScrollChain(scroll_chain);
@@ -3292,6 +3297,17 @@ void Internals::setCapsLockState(bool enabled) {
       enabled ? OverrideCapsLockState::kOn : OverrideCapsLockState::kOff);
 }
 
+void Internals::setPseudoClassState(Element* element,
+                                    const String& pseudo,
+                                    bool matches,
+                                    ExceptionState& exception_state) {
+  if (!element->GetDocument().SetPseudoStateForTesting(*element, pseudo,
+                                                       matches)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      pseudo + " is not supported");
+  }
+}
+
 bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
                                                        bool visible) {
   if (ScrollableArea* scrollable_area = ScrollableAreaForNode(node)) {
@@ -3309,7 +3325,7 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
   return document_->Loader()
       ->GetTiming()
       .MonotonicTimeToZeroBasedDocumentTime(
-          base::TimeTicks() + TimeDelta::FromSecondsD(platform_time))
+          base::TimeTicks() + base::TimeDelta::FromSecondsD(platform_time))
       .InSecondsF();
 }
 
@@ -3445,13 +3461,27 @@ void Internals::setDeviceEmulationScale(float scale,
         "The document's page cannot be retrieved.");
     return;
   }
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix().Scale(scale));
+  WebDeviceEmulationParams params;
+  params.scale = scale;
+  page->GetChromeClient().GetWebView()->EnableDeviceEmulation(params);
 }
 
 void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,
                                         int resource_load_priority) {
   resolver->Resolve(resource_load_priority);
+}
+
+String Internals::getDocumentAgentId(Document* document) {
+  // Sounds like there's no notion of "process ID" in Blink, but the main
+  // thread's thread ID serves for that purpose.
+  PlatformThreadId process_id = Thread::MainThread()->ThreadId();
+
+  uintptr_t agent_address = reinterpret_cast<uintptr_t>(document->GetAgent());
+
+  // This serializes a pointer as a decimal number, which is a bit ugly, but
+  // it works. Is there any utility to dump a number in a hexadecimal form?
+  // I couldn't find one in WTF.
+  return String::Number(process_id) + ":" + String::Number(agent_address);
 }
 
 }  // namespace blink

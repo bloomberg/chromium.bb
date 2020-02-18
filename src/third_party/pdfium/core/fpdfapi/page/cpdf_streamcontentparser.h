@@ -40,11 +40,11 @@ class CPDF_StreamContentParser {
                            CPDF_Dictionary* pPageResources,
                            CPDF_Dictionary* pParentResources,
                            const CFX_Matrix* pmtContentToUser,
-                           CPDF_PageObjectHolder* pObjectHolder,
+                           CPDF_PageObjectHolder* pObjHolder,
                            CPDF_Dictionary* pResources,
                            const CFX_FloatRect& rcBBox,
-                           const CPDF_AllStates* pAllStates,
-                           std::set<const uint8_t*>* parsedSet);
+                           const CPDF_AllStates* pStates,
+                           std::set<const uint8_t*>* pParsedSet);
   ~CPDF_StreamContentParser();
 
   uint32_t Parse(const uint8_t* pData,
@@ -81,7 +81,7 @@ class CPDF_StreamContentParser {
   using OpCodes = std::map<uint32_t, void (CPDF_StreamContentParser::*)()>;
   static OpCodes InitializeOpCodes();
 
-  void AddNameParam(ByteStringView str);
+  void AddNameParam(ByteStringView bsName);
   void AddNumberParam(ByteStringView str);
   void AddObjectParam(RetainPtr<CPDF_Object> pObj);
   int GetNextParamPos();
@@ -118,7 +118,7 @@ class CPDF_StreamContentParser {
                         bool bText,
                         bool bGraph);
   RetainPtr<CPDF_ColorSpace> FindColorSpace(const ByteString& name);
-  CPDF_Pattern* FindPattern(const ByteString& name, bool bShading);
+  RetainPtr<CPDF_Pattern> FindPattern(const ByteString& name, bool bShading);
   CPDF_Dictionary* FindResourceHolder(const ByteString& type);
   CPDF_Object* FindResourceObj(const ByteString& type, const ByteString& name);
 

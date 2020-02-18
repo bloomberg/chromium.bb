@@ -21,12 +21,63 @@
 #define REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION 0
 #endif
 
+namespace
+{
+	// Introduced in C++20.
+	template <class ForwardIterator, class UnaryPredicate>
+	ForwardIterator remove_if(ForwardIterator first, ForwardIterator last,
+								UnaryPredicate pred)
+	{
+		ForwardIterator result = first;
+		while (first!=last) {
+			if (!pred(*first)) {
+				*result = std::move(*first);
+				++result;
+			}
+			++first;
+		}
+		return result;
+	}
+}
+
 namespace rr
 {
+	const Config::Edit Config::Edit::None = {};
+
+	Config Config::Edit::apply(const Config &cfg) const
+	{
+		if (this == &None) { return cfg; }
+
+		auto level = optLevelChanged ? optLevel : cfg.optimization.getLevel();
+		auto passes = cfg.optimization.getPasses();
+		apply(optPassEdits, passes);
+		return Config{ Optimization{level, passes} };
+	}
+
+	template <typename T>
+	void rr::Config::Edit::apply(const std::vector<std::pair<ListEdit, T>> & edits, std::vector<T>& list) const
+	{
+		for (auto & edit : edits)
+		{
+			switch (edit.first)
+			{
+			case ListEdit::Add:
+				list.push_back(edit.second);
+				break;
+			case ListEdit::Remove:
+				::remove_if(list.begin(), list.end(), [&](T item) { return item == edit.second; });
+				break;
+			case ListEdit::Clear:
+				list.clear();
+				break;
+			}
+		}
+	}
+
 	// Set of variables that do not have a stack location yet.
 	std::unordered_set<Variable*> Variable::unmaterializedVariables;
 
-	Variable::Variable(Type *type, int arraySize) : type(type), arraySize(arraySize)
+	Variable::Variable(Type *type, int arraySize) : arraySize(arraySize), type(type)
 	{
 		#if REACTOR_MATERIALIZE_LVALUES_ON_DEFINITION
 			materialize();
@@ -4232,14 +4283,34 @@ namespace rr
 		Nucleus::setInsertBlock(bodyBB);
 	}
 
-	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	RValue<Float4> MaskedLoad(RValue<Pointer<Float4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
 	{
-		return RValue<Float4>(Nucleus::createGather(base.value, Float::getType(), offsets.value, mask.value, alignment));
+		return RValue<Float4>(Nucleus::createMaskedLoad(base.value, Float::getType(), mask.value, alignment, zeroMaskedLanes));
 	}
 
-	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)
+	RValue<Int4> MaskedLoad(RValue<Pointer<Int4>> base, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
 	{
-		return RValue<Int4>(Nucleus::createGather(base.value, Int::getType(), offsets.value, mask.value, alignment));
+		return RValue<Int4>(Nucleus::createMaskedLoad(base.value, Int::getType(), mask.value, alignment, zeroMaskedLanes));
+	}
+
+	void MaskedStore(RValue<Pointer<Float4>> base, RValue<Float4> val, RValue<Int4> mask, unsigned int alignment)
+	{
+		Nucleus::createMaskedStore(base.value, val.value, mask.value, alignment);
+	}
+
+	void MaskedStore(RValue<Pointer<Int4>> base, RValue<Int4> val, RValue<Int4> mask, unsigned int alignment)
+	{
+		Nucleus::createMaskedStore(base.value, val.value, mask.value, alignment);
+	}
+
+	RValue<Float4> Gather(RValue<Pointer<Float>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
+	{
+		return RValue<Float4>(Nucleus::createGather(base.value, Float::getType(), offsets.value, mask.value, alignment, zeroMaskedLanes));
+	}
+
+	RValue<Int4> Gather(RValue<Pointer<Int>> base, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment, bool zeroMaskedLanes /* = false */)
+	{
+		return RValue<Int4>(Nucleus::createGather(base.value, Int::getType(), offsets.value, mask.value, alignment, zeroMaskedLanes));
 	}
 
 	void Scatter(RValue<Pointer<Float>> base, RValue<Float4> val, RValue<Int4> offsets, RValue<Int4> mask, unsigned int alignment)

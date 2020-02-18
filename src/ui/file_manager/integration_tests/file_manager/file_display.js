@@ -766,10 +766,7 @@ async function unmountRemovableVolume(removableDirectory) {
   if (removableDirectory === 'partition-1' ||
       removableDirectory === 'partition-2') {
     const partitionQuery = `#file-list [file-name="${removableDirectory}"]`;
-    const partitionFiles = [
-      ENTRIES.hello.getExpectedRow(),
-      ['Folder', '--', 'Folder', Date()],
-    ];
+    const partitionFiles = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
     await remoteCall.callRemoteTestUtil(
         'fakeMouseDoubleClick', appId, [partitionQuery]);
     await remoteCall.waitUntilCurrentDirectoryIsChanged(
@@ -855,4 +852,38 @@ testcase.fileDisplayCheckSelectWithFakeItemSelected = async () => {
 
   // Make sure check-select is enabled.
   await remoteCall.waitForElement(appId, 'body.check-select');
+};
+
+/**
+ * Tests to make sure read-only indicator is visible when the current directory
+ * is read-only.
+ */
+testcase.fileDisplayCheckReadOnlyIconOnFakeDirectory = async () => {
+  // Open Files app on Drive with the given test files.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [ENTRIES.newlyAdded],
+      [ENTRIES.testSharedDocument, ENTRIES.hello]);
+
+  // Navigate to Shared with me.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['[volume-type-icon=\'drive_shared_with_me\']']);
+
+  // Wait for the navigation to complete.
+  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/Shared with me');
+
+  // Make sure read-only indicator on toolbar is visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator:not([hidden])');
+};
+
+/**
+ * Tests to make sure read-only indicator is NOT visible when the current
+ * is writable.
+ */
+testcase.fileDisplayCheckNoReadOnlyIconOnDownloads = async () => {
+  // Open files app on Downloads containing ENTRIES.hello.
+  const appId =
+      await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.hello], []);
+
+  // Make sure read-only indicator on toolbar is NOT visible.
+  await remoteCall.waitForElement(appId, '#read-only-indicator[hidden]');
 };

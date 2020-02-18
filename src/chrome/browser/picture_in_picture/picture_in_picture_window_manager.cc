@@ -7,6 +7,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -52,7 +53,8 @@ void PictureInPictureWindowManager::EnterPictureInPictureWithController(
   pip_window_controller_->Show();
 }
 
-gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
+content::PictureInPictureResult
+PictureInPictureWindowManager::EnterPictureInPicture(
     content::WebContents* web_contents,
     const viz::SurfaceId& surface_id,
     const gfx::Size& natural_size) {
@@ -68,8 +70,7 @@ gfx::Size PictureInPictureWindowManager::EnterPictureInPicture(
     CreateWindowInternal(web_contents);
   }
 
-  pip_window_controller_->EmbedSurface(surface_id, natural_size);
-  return pip_window_controller_->Show();
+  return content::PictureInPictureResult::kSuccess;
 }
 
 void PictureInPictureWindowManager::ExitPictureInPicture() {

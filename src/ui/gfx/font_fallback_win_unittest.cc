@@ -4,9 +4,11 @@
 
 #include "ui/gfx/font_fallback_win.h"
 
+#include <ios>
 #include <tuple>
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/win/windows_version.h"
@@ -15,6 +17,7 @@
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "ui/gfx/test/font_fallback_test_data.h"
 
 namespace gfx {
 
@@ -34,34 +37,16 @@ class FontFallbackWinTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FontFallbackWinTest);
 };
 
-enum class FallbackFontFn { DEFAULT, UNISCRIBE };
-
 // Options to parameterized unittests.
 struct FallbackFontTestOption {
-  FallbackFontFn fallback_font = FallbackFontFn::DEFAULT;
   bool ignore_get_fallback_failure = false;
   bool skip_code_point_validation = false;
   bool skip_fallback_fonts_validation = false;
 };
 
-// Options for tests that fully validate the GetFallbackFont(...) parameters.
-const FallbackFontTestOption default_fallback_option = {
-    FallbackFontFn::DEFAULT};
-const FallbackFontTestOption uniscribe_fallback_option = {
-    FallbackFontFn::UNISCRIBE};
+const FallbackFontTestOption default_fallback_option = {false, false, false};
 // Options for tests that does not validate the GetFallbackFont(...) parameters.
-const FallbackFontTestOption untested_default_fallback_option = {
-    FallbackFontFn::DEFAULT, true, true, true};
-const FallbackFontTestOption untested_uniscribe_fallback_option = {
-    FallbackFontFn::UNISCRIBE, true, true, true};
-
-// A font test case for the parameterized unittests.
-struct FallbackFontTestCase {
-  UScriptCode script;
-  base::string16 text;
-  std::vector<std::string> fallback_fonts;
-  bool is_win10 = false;
-};
+const FallbackFontTestOption untested_fallback_option = {true, true, true};
 
 using FallbackFontTestParamInfo =
     std::tuple<FallbackFontTestCase, FallbackFontTestOption>;
@@ -74,32 +59,20 @@ class GetFallbackFontTest
   static std::string ParamInfoToString(
       ::testing::TestParamInfo<FallbackFontTestParamInfo> param_info) {
     const FallbackFontTestCase& test_case = std::get<0>(param_info.param);
-    const FallbackFontTestOption& options = std::get<1>(param_info.param);
 
-    std::string script_name = uscript_getName(test_case.script);
-
-    std::string fallback_fn;
-    if (options.fallback_font == FallbackFontFn::DEFAULT)
-      fallback_fn = "DEFAULT";
-    else if (options.fallback_font == FallbackFontFn::UNISCRIBE)
-      fallback_fn = "UNISCRIBE";
-
-    return base::StringPrintf("%s_%s", script_name.c_str(),
-                              fallback_fn.c_str());
+    std::string language_tag = test_case.language_tag;
+    base::RemoveChars(language_tag, "-", &language_tag);
+    return std::string("S") + uscript_getName(test_case.script) + "L" +
+           language_tag;
   }
 
   void SetUp() override { std::tie(test_case_, test_option_) = GetParam(); }
 
  protected:
-  bool GetFallbackFont(const Font& font, Font* result) {
-    if (test_option_.fallback_font == FallbackFontFn::DEFAULT) {
-      return gfx::GetFallbackFont(font, kDefaultApplicationLocale,
-                                  test_case_.text, result);
-    } else if (test_option_.fallback_font == FallbackFontFn::UNISCRIBE) {
-      return internal::GetUniscribeFallbackFont(font, kDefaultApplicationLocale,
-                                                test_case_.text, result);
-    }
-    return false;
+  bool GetFallbackFont(const Font& font,
+                       const std::string& language_tag,
+                       Font* result) {
+    return gfx::GetFallbackFont(font, language_tag, test_case_.text, result);
   }
 
   bool EnsuresScriptSupportCodePoints(const base::string16& text,
@@ -115,8 +88,8 @@ class GetFallbackFontTest
         UScriptCode codepoint_script =
             uscript_getScript(code_point, &script_error);
 
-        ADD_FAILURE() << "CodePoint '" << code_point
-                      << "' is not part of the script '" << script_name
+        ADD_FAILURE() << "CodePoint U+" << std::hex << code_point
+                      << " is not part of the script '" << script_name
                       << "'. Script '" << uscript_getName(codepoint_script)
                       << "' detected.";
         return false;
@@ -199,15 +172,6 @@ TEST_F(FontFallbackWinTest, ParseFontFamilyString) {
   EXPECT_EQ("Meiryo Italic", font_names[1]);
   EXPECT_EQ("Meiryo UI", font_names[2]);
   EXPECT_EQ("Meiryo UI Italic", font_names[3]);
-}
-
-TEST_F(FontFallbackWinTest, EmptyStringUniscribeFallback) {
-  Font base_font;
-  Font fallback_font;
-  bool result =
-      internal::GetUniscribeFallbackFont(base_font, kDefaultApplicationLocale,
-                                         base::StringPiece16(), &fallback_font);
-  EXPECT_FALSE(result);
 }
 
 TEST_F(FontFallbackWinTest, EmptyStringFallback) {
@@ -310,7 +274,8 @@ TEST_P(GetFallbackFontTest, GetFallbackFont) {
 
   // Retrieve the fallback font.
   Font fallback_font;
-  bool result = GetFallbackFont(base_font, &fallback_font);
+  bool result =
+      GetFallbackFont(base_font, test_case_.language_tag, &fallback_font);
   if (!result) {
     if (!test_option_.ignore_get_fallback_failure)
       ADD_FAILURE() << "GetFallbackFont failed for '" << script_name_ << "'";
@@ -326,7 +291,9 @@ TEST_P(GetFallbackFontTest, GetFallbackFont) {
     if (!valid) {
       ADD_FAILURE() << "GetFallbackFont failed for '" << script_name_
                     << "' invalid fallback font: "
-                    << fallback_font.GetFontName();
+                    << fallback_font.GetFontName()
+                    << " not among valid options: "
+                    << base::JoinString(test_case_.fallback_fonts, ", ");
       return;
     }
   }
@@ -338,147 +305,6 @@ TEST_P(GetFallbackFontTest, GetFallbackFont) {
     return;
   }
 }
-
-FallbackFontTestCase kGetUniscribeFontFallbackTests[] = {
-    {USCRIPT_ARABIC, L"\u062A\u062D", {"Segoe UI", "Tahoma"}},
-    {USCRIPT_DEVANAGARI, L"\u0905\u0906", {"Mangal", "Nirmala UI"}},
-    {USCRIPT_GURMUKHI, L"\u0A21\u0A22", {"Raavi", "Nirmala UI"}},
-    {USCRIPT_NEW_TAI_LUE, L"\u1981\u1982", {"Microsoft New Tai Lue"}},
-};
-
-// A list of script and the fallback font on a default windows installation.
-// This list may need to be updated if fonts or operating systems are
-// upgraded.
-constexpr bool kWin10Only = true;
-FallbackFontTestCase kGetFontFallbackTests[] = {
-    {USCRIPT_ARABIC, L"\u062A\u062D", {"Segoe UI", "Tahoma"}},
-    {USCRIPT_ARMENIAN, L"\u0540\u0541", {"Segoe UI", "Tahoma"}},
-    {USCRIPT_BRAILLE, L"\u2870\u2871", {"Segoe UI Symbol"}},
-    {USCRIPT_BUGINESE, L"\u1A00\u1A01", {"Leelawadee UI"}, kWin10Only},
-    {USCRIPT_CANADIAN_ABORIGINAL, L"\u1410\u1411", {"Gadugi", "Euphemia"}},
-
-    {USCRIPT_CARIAN,
-     L"\U000102A0\U000102A1",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_CHEROKEE,
-     L"\u13A1\u13A2",
-     {"Gadugi", "Plantagenet Cheroke"},
-     kWin10Only},
-
-    {USCRIPT_COPTIC, L"\u2C81\u2C82", {"Segoe UI Historic"}, kWin10Only},
-
-    {USCRIPT_CUNEIFORM,
-     L"\U00012000\U0001200C",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_CYPRIOT,
-     L"\U00010800\U00010801",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_DESERET, L"\U00010400\U00010401", {"Segoe UI Symbol"}, kWin10Only},
-
-    {USCRIPT_DEVANAGARI, L"\u0905\u0906", {"Mangal", "Nirmala UI"}},
-    {USCRIPT_ETHIOPIC, L"\u1201\u1202", {"Ebrima", "Nyala"}},
-    {USCRIPT_GURMUKHI, L"\u0A21\u0A22", {"Raavi", "Nirmala UI"}},
-    {USCRIPT_HEBREW, L"\u05D1\u05D2", {"Segoe UI", "Tahoma"}},
-
-    {USCRIPT_IMPERIAL_ARAMAIC,
-     L"\U00010841\U00010842",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_INSCRIPTIONAL_PAHLAVI,
-     L"\U00010B61\U00010B62",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_INSCRIPTIONAL_PARTHIAN,
-     L"\U00010B41\U00010B42",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_JAVANESE, L"\uA991\uA992", {"Javanese Text"}, kWin10Only},
-    {USCRIPT_KANNADA, L"\u0CA1\u0CA2", {"Nirmala UI", "Tunga"}},
-
-    {USCRIPT_KHAROSHTHI,
-     L"\U00010A10\U00010A11",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_LAO, L"\u0ED0\u0ED1", {"Lao UI", "Leelawadee UI"}},
-    {USCRIPT_LISU, L"\uA4D0\uA4D1", {"Segoe UI"}, kWin10Only},
-
-    {USCRIPT_LYCIAN,
-     L"\U00010281\U00010282",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_LYDIAN,
-     L"\U00010921\U00010922",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_MALAYALAM, L"\u0D21\u0D22", {"Kartika", "Nirmala UI"}},
-
-    {USCRIPT_MEROITIC_CURSIVE,
-     L"\U000109A1\U000109A2",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_MYANMAR, L"\u1000\u1001", {"Myanmar Text"}, kWin10Only},
-    {USCRIPT_NEW_TAI_LUE, L"\u1981\u1982", {"Microsoft New Tai Lue"}},
-    {USCRIPT_NKO, L"\u07C1\u07C2", {"Ebrima"}},
-
-    {USCRIPT_OGHAM, L"\u1680\u1681", {"Segoe UI Symbol", "Segoe UI Historic"}},
-
-    {USCRIPT_OL_CHIKI, L"\u1C51\u1C52", {"Nirmala UI"}, kWin10Only},
-
-    {USCRIPT_OLD_ITALIC,
-     L"\U00010301\U00010302",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_OLD_PERSIAN,
-     L"\U000103A1\U000103A2",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_OLD_SOUTH_ARABIAN,
-     L"\U00010A61\U00010A62",
-     {"Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_ORIYA, L"\u0B21\u0B22", {"Kalinga", "Nirmala UI"}},
-    {USCRIPT_PHAGS_PA, L"\uA841\uA842", {"Microsoft PhagsPa"}},
-
-    {USCRIPT_RUNIC, L"\u16A0\u16A1", {"Segoe UI Symbol", "Segoe UI Historic"}},
-
-    {USCRIPT_SHAVIAN,
-     L"\U00010451\U00010452",
-     {"Segoe UI", "Segoe UI Historic"},
-     kWin10Only},
-
-    {USCRIPT_SINHALA, L"\u0D91\u0D92", {"Iskoola Pota", "Nirmala UI"}},
-
-    {USCRIPT_SORA_SOMPENG, L"\U000110D1\U000110D2", {"Nirmala UI"}, kWin10Only},
-
-    {USCRIPT_SYRIAC,
-     L"\u0711\u0712",
-     {"Estrangelo Edessa", "Segoe UI Historic"}},
-
-    {USCRIPT_TAI_LE, L"\u1951\u1952", {"Microsoft Tai Le"}},
-    {USCRIPT_TAMIL, L"\u0BB1\u0BB2", {"Latha", "Nirmala UI"}},
-    {USCRIPT_TELUGU, L"\u0C21\u0C22", {"Gautami", "Nirmala UI"}},
-    {USCRIPT_THAANA, L"\u0781\u0782", {"Mv Boli", "MV Boli"}},
-    {USCRIPT_TIBETAN, L"\u0F01\u0F02", {"Microsoft Himalaya"}},
-    {USCRIPT_TIFINAGH, L"\u2D31\u2D32", {"Ebrima"}},
-    {USCRIPT_VAI, L"\uA501\uA502", {"Ebrima"}},
-    {USCRIPT_YI, L"\uA000\uA001", {"Microsoft Yi Baiti"}},
-};
 
 // Produces a font test case for every script.
 std::vector<FallbackFontTestCase> GetSampleFontTestCases() {
@@ -496,26 +322,16 @@ std::vector<FallbackFontTestCase> GetSampleFontTestCases() {
     if (text_length <= 0 || errorCode != U_ZERO_ERROR)
       continue;
 
-    FallbackFontTestCase test_case{script, text};
+    FallbackFontTestCase test_case(script, "", text, {});
     result.push_back(test_case);
   }
   return result;
 }
 
-// Ensures that Uniscribe fallback font gives known results. The uniscribe
-// fallback is only used on windows 7. For the purpose of tests coverage, we
-// are validating its behavior on every windows version.
-INSTANTIATE_TEST_SUITE_P(
-    Uniscribe,
-    GetFallbackFontTest,
-    testing::Combine(testing::ValuesIn(kGetUniscribeFontFallbackTests),
-                     testing::Values(uniscribe_fallback_option)),
-    GetFallbackFontTest::ParamInfoToString);
-
 // Ensures that the default fallback font gives known results. The test
 // is validating that a known fallback font is given for a given text and font.
 INSTANTIATE_TEST_SUITE_P(
-    Default,
+    KnownExpectedFonts,
     GetFallbackFontTest,
     testing::Combine(testing::ValuesIn(kGetFontFallbackTests),
                      testing::Values(default_fallback_option)),
@@ -530,7 +346,6 @@ INSTANTIATE_TEST_SUITE_P(
     Glyphs,
     GetFallbackFontTest,
     testing::Combine(testing::ValuesIn(GetSampleFontTestCases()),
-                     testing::Values(untested_default_fallback_option,
-                                     untested_uniscribe_fallback_option)),
+                     testing::Values(untested_fallback_option)),
     GetFallbackFontTest::ParamInfoToString);
 }  // namespace gfx

@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
@@ -56,22 +57,6 @@ const int k3GLatency = 100;
 const int k3GThroughput = 750 * 1024;
 const int k2GLatency = 300;
 const int k2GThroughput = 250 * 1024;
-
-const char kWindowHandlePrefix[] = "CDwindow-";
-
-std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
-  return kWindowHandlePrefix + web_view_id;
-}
-
-bool WindowHandleToWebViewId(const std::string& window_handle,
-                             std::string* web_view_id) {
-  if (!base::StartsWith(window_handle, kWindowHandlePrefix,
-                        base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  *web_view_id = window_handle.substr(sizeof(kWindowHandlePrefix) - 1);
-  return true;
-}
 
 Status EvaluateScriptAndIgnoreResult(Session* session, std::string expression) {
   WebView* web_view = nullptr;
@@ -126,7 +111,7 @@ bool GetW3CSetting(const base::DictionaryValue& params) {
     }
   }
 
-  if (!params.HasKey("capabilities")) {
+  if (!params.HasKey("capabilities") && params.HasKey("desiredCapabilities")) {
     return false;
   }
 
@@ -270,9 +255,6 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   Status status = capabilities.Parse(*desired_caps, session->w3c_compliant);
   if (status.IsError())
     return status;
-  status = capabilities.CheckSupport();
-  if (status.IsError())
-    return status;
 
   if (capabilities.unhandled_prompt_behavior.length() > 0) {
     session->unhandled_prompt_behavior = capabilities.unhandled_prompt_behavior;
@@ -329,9 +311,23 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
   session->detach = capabilities.detach;
-  session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
   session->capabilities =
       CreateCapabilities(session, capabilities, *desired_caps);
+
+  std::string download_directory;
+  if (capabilities.prefs &&
+      capabilities.prefs->GetString("download.default_directory",
+                                    &download_directory))
+    session->headless_download_directory =
+        std::make_unique<std::string>(download_directory);
+  else
+    session->headless_download_directory = std::make_unique<std::string>(".");
+  WebView* first_view;
+  session->chrome->GetWebViewById(session->window, &first_view);
+  status = first_view->OverrideDownloadDirectoryIfNeeded(
+      *session->headless_download_directory);
+  if (status.IsError())
+    return status;
 
   if (session->w3c_compliant) {
     std::unique_ptr<base::DictionaryValue> capabilities =
@@ -374,13 +370,48 @@ bool MergeCapabilities(const base::DictionaryValue* always_match,
 // Implementation of "matching capabilities", as defined in W3C spec at
 // https://www.w3.org/TR/webdriver/#dfn-matching-capabilities.
 // It checks some requested capabilities and make sure they are supported.
-// Currently, we only check "browserName", but more can be added as necessary.
+// Currently, we only check "browserName" and "platformName", but more can be
+// added as necessary.
 bool MatchCapabilities(const base::DictionaryValue* capabilities) {
   const base::Value* name;
   if (capabilities->Get("browserName", &name) && !name->is_none()) {
     if (!(name->is_string() && name->GetString() == "chrome"))
       return false;
   }
+
+  const base::Value* platform_name_value;
+  if (capabilities->Get("platformName", &platform_name_value) &&
+      !platform_name_value->is_none()) {
+    if (platform_name_value->is_string()) {
+      std::string requested_platform_name = platform_name_value->GetString();
+      std::string actual_platform_name =
+          base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+      bool is_android = capabilities->FindPath(
+                            "goog:chromeOptions.androidPackage") != nullptr;
+      bool is_remote = capabilities->FindPath(
+                           "goog:chromeOptions.debuggerAddress") != nullptr;
+      if (requested_platform_name == "any" || is_remote ||
+          (is_android && requested_platform_name == "android")) {
+        // "any" can be used as a wild card for platformName.
+        // if |is_remote| there is no easy way to know
+        // target platform. Android check also occurs here.
+        // If any of the above cases pass, we return true.
+      } else if (is_android && requested_platform_name != "android") {
+        return false;
+      } else if (requested_platform_name == "mac" ||
+                 requested_platform_name == "windows" ||
+                 requested_platform_name == "linux") {
+        if (!base::StartsWith(actual_platform_name, requested_platform_name,
+                              base::CompareCase::SENSITIVE))
+          return false;
+      } else if (requested_platform_name != actual_platform_name) {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -719,6 +750,19 @@ Status ExecuteSwitchToWindow(Session* session,
     if (status.IsError())
       return status;
   }
+  if (session->headless_download_directory) {
+    WebView* web_view;
+    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
+    if (status.IsError())
+      return status;
+    status = web_view->ConnectIfNecessary();
+    if (status.IsError())
+      return status;
+    status = web_view->OverrideDownloadDirectoryIfNeeded(
+        *session->headless_download_directory);
+    if (status.IsError())
+      return status;
+  }
 
   status = session->chrome->ActivateWebView(web_view_id);
   if (status.IsError())
@@ -783,8 +827,6 @@ Status ExecuteSetTimeoutsW3C(Session* session,
       session->page_load_timeout = timeout;
     } else if (type == "implicit") {
       session->implicit_wait = timeout;
-    } else {
-      return Status(kInvalidArgument, "unknown type of timeout: " + type);
     }
   }
   return Status(kOk);
@@ -1126,75 +1168,10 @@ Status ExecuteUploadFile(Session* session,
   return Status(kOk);
 }
 
-Status ExecuteIsAutoReporting(Session* session,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value) {
-  value->reset(new base::Value(session->auto_reporting_enabled));
-  return Status(kOk);
-}
-
-Status ExecuteSetAutoReporting(Session* session,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
-  bool enabled;
-  if (!params.GetBoolean("enabled", &enabled))
-    return Status(kInvalidArgument, "missing parameter 'enabled'");
-  session->auto_reporting_enabled = enabled;
-  return Status(kOk);
-}
-
 Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {
   return Status(kUnknownCommand);
-}
-
-Status ExecuteGetScreenOrientation(Session* session,
-                                   const base::DictionaryValue& params,
-                                   std::unique_ptr<base::Value>* value) {
-  WebView* web_view = nullptr;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-
-  std::string screen_orientation;
-  status = web_view->GetScreenOrientation(&screen_orientation);
-  if (status.IsError())
-    return status;
-
-  base::DictionaryValue orientation_value;
-  orientation_value.SetString("orientation", screen_orientation);
-  value->reset(orientation_value.DeepCopy());
-  return Status(kOk);
-}
-
-Status ExecuteSetScreenOrientation(Session* session,
-                                   const base::DictionaryValue& params,
-                                   std::unique_ptr<base::Value>* value) {
-  WebView* web_view = nullptr;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-
-  std::string screen_orientation;
-  params.GetString("parameters.orientation", &screen_orientation);
-  status = web_view->SetScreenOrientation(screen_orientation);
-  if (status.IsError())
-    return status;
-  return Status(kOk);
-}
-
-Status ExecuteDeleteScreenOrientation(Session* session,
-                                      const base::DictionaryValue& params,
-                                      std::unique_ptr<base::Value>* value) {
-  WebView* web_view = nullptr;
-  Status status = session->GetTargetWindow(&web_view);
-  if (status.IsError())
-    return status;
-  status = web_view->DeleteScreenOrientation();
-  if (status.IsError())
-    return status;
-  return Status(kOk);
 }
 
 Status ExecuteGenerateTestReport(Session* session,

@@ -64,12 +64,6 @@ base::Time GenerateNextGlobalSweepTime(base::Time now) {
 
 }  // namespace
 
-const base::Feature kIDBTombstoneStatistics{"IDBTombstoneStatistics",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kIDBTombstoneDeletion{"IDBTombstoneDeletion",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 constexpr const base::TimeDelta
     IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow;
 constexpr const base::TimeDelta
@@ -78,11 +72,13 @@ constexpr const base::TimeDelta
 IndexedDBOriginState::IndexedDBOriginState(
     bool persist_for_incognito,
     base::Clock* clock,
+    indexed_db::LevelDBFactory* leveldb_factory,
     base::Time* earliest_global_sweep_time,
     base::OnceClosure destruct_myself,
     std::unique_ptr<IndexedDBBackingStore> backing_store)
     : persist_for_incognito_(persist_for_incognito),
       clock_(clock),
+      leveldb_factory_(leveldb_factory),
       earliest_global_sweep_time_(earliest_global_sweep_time),
       lock_manager_(kIndexedDBLockLevelCount),
       backing_store_(std::move(backing_store)),
@@ -169,7 +165,7 @@ IndexedDBDatabase* IndexedDBOriginState::AddDatabase(
     const base::string16& name,
     std::unique_ptr<IndexedDBDatabase> database) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!base::ContainsKey(databases_, name));
+  DCHECK(!base::Contains(databases_, name));
   return databases_.emplace(name, std::move(database)).first->second.get();
 }
 
@@ -274,15 +270,6 @@ void IndexedDBOriginState::StartPreCloseTasks() {
   if (*earliest_global_sweep_time_ > now)
     return;
 
-  bool tombstone_stats_enabled =
-      base::FeatureList::IsEnabled(kIDBTombstoneStatistics);
-  bool tombstone_deletion_enabled =
-      base::FeatureList::IsEnabled(kIDBTombstoneDeletion);
-
-  // After this check, exactly one of the flags must be true.
-  if (tombstone_stats_enabled == tombstone_deletion_enabled)
-    return;
-
   base::Time origin_earliest_sweep;
   leveldb::Status s = indexed_db::GetEarliestSweepTime(backing_store_->db(),
                                                        &origin_earliest_sweep);
@@ -296,9 +283,8 @@ void IndexedDBOriginState::StartPreCloseTasks() {
 
   // A sweep will happen now, so reset the sweep timers.
   *earliest_global_sweep_time_ = GenerateNextGlobalSweepTime(now);
-  scoped_refptr<LevelDBTransaction> txn =
-      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
-          backing_store_->db());
+  scoped_refptr<TransactionalLevelDBTransaction> txn =
+      leveldb_factory_->CreateLevelDBTransaction(backing_store_->db());
   indexed_db::SetEarliestSweepTime(txn.get(), GenerateNextOriginSweepTime(now));
   s = txn->Commit();
 
@@ -307,11 +293,8 @@ void IndexedDBOriginState::StartPreCloseTasks() {
     return;
 
   std::list<std::unique_ptr<IndexedDBPreCloseTaskQueue::PreCloseTask>> tasks;
-  IndexedDBTombstoneSweeper::Mode mode =
-      tombstone_stats_enabled ? IndexedDBTombstoneSweeper::Mode::STATISTICS
-                              : IndexedDBTombstoneSweeper::Mode::DELETION;
   tasks.push_back(std::make_unique<IndexedDBTombstoneSweeper>(
-      mode, kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
+      kTombstoneSweeperRoundIterations, kTombstoneSweeperMaxIterations,
       backing_store_->db()->db()));
   // TODO(dmurph): Add compaction task that compacts all indexes if we have
   // more than X deletions.

@@ -4,7 +4,7 @@ use strict;
 use vars qw($VERSION @ISA $BUGHUNTING);
 use CPAN::Debug;
 use File::Basename qw(basename);
-$VERSION = "5.5011";
+$VERSION = "5.5013";
 # module is internal to CPAN.pm
 
 @ISA = qw(CPAN::Debug); ## no critic
@@ -41,6 +41,11 @@ CPAN shell prompt to register it as external program.
     bless $me, $class;
 }
 
+sub _zlib_ok () {
+    $CPAN::META->has_inst("Compress::Zlib") or return;
+    Compress::Zlib->can('gzopen');
+}
+
 sub _my_which {
     my($what) = @_;
     if ($CPAN::Config->{$what}) {
@@ -66,13 +71,14 @@ sub _my_which {
 sub gzip {
     my($self,$read) = @_;
     my $write = $self->{FILE};
-    if ($CPAN::META->has_inst("Compress::Zlib")) {
+    if (_zlib_ok) {
         my($buffer,$fhw);
         $fhw = FileHandle->new($read)
             or $CPAN::Frontend->mydie("Could not open $read: $!");
         my $cwd = `pwd`;
         my $gz = Compress::Zlib::gzopen($write, "wb")
             or $CPAN::Frontend->mydie("Cannot gzopen $write: $! (pwd is $cwd)\n");
+        binmode($fhw);
         $gz->gzwrite($buffer)
             while read($fhw,$buffer,4096) > 0 ;
         $gz->gzclose() ;
@@ -88,14 +94,15 @@ sub gzip {
 sub gunzip {
     my($self,$write) = @_;
     my $read = $self->{FILE};
-    if ($CPAN::META->has_inst("Compress::Zlib")) {
+    if (_zlib_ok) {
         my($buffer,$fhw);
         $fhw = FileHandle->new(">$write")
             or $CPAN::Frontend->mydie("Could not open >$write: $!");
         my $gz = Compress::Zlib::gzopen($read, "rb")
             or $CPAN::Frontend->mydie("Cannot gzopen $read: $!\n");
+        binmode($fhw);
         $fhw->print($buffer)
-        while $gz->gzread($buffer) > 0 ;
+            while $gz->gzread($buffer) > 0 ;
         $CPAN::Frontend->mydie("Error reading from $read: $!\n")
             if $gz->gzerror != Compress::Zlib::Z_STREAM_END();
         $gz->gzclose() ;
@@ -103,7 +110,7 @@ sub gunzip {
         return 1;
     } else {
         my $command = CPAN::HandleConfig->safe_quote($self->{UNGZIPPRG});
-        system(qq{$command -dc "$read" > "$write"})==0;
+        system(qq{$command -d -c "$read" > "$write"})==0;
     }
 }
 
@@ -118,7 +125,7 @@ sub gtest {
         my($buffer,$len);
         $len = 0;
         my $gz = Compress::Bzip2::bzopen($read, "rb")
-            or $CPAN::Frontend->mydie(sprintf("Cannot gzopen %s: %s\n",
+            or $CPAN::Frontend->mydie(sprintf("Cannot bzopen %s: %s\n",
                                               $read,
                                               $Compress::Bzip2::bzerrno));
         while ($gz->bzread($buffer) > 0 ) {
@@ -133,7 +140,7 @@ sub gtest {
         }
         $gz->gzclose();
         CPAN->debug("err[$err]success[$success]") if $CPAN::DEBUG;
-    } elsif ( $read=~/\.(?:gz|tgz)$/ && $CPAN::META->has_inst("Compress::Zlib") ) {
+    } elsif ( $read=~/\.(?:gz|tgz)$/ && _zlib_ok ) {
         # After I had reread the documentation in zlib.h, I discovered that
         # uncompressed files do not lead to an gzerror (anymore?).
         my($buffer,$len);
@@ -181,14 +188,14 @@ sub TIEHANDLE {
             $CPAN::Frontend->mydie("Could not bzopen $file");
         $self->{GZ} = $gz;
         $class->debug("via Compress::Bzip2");
-    } elsif ($file =~/\.(?:gz|tgz)$/ && $CPAN::META->has_inst("Compress::Zlib")) {
+    } elsif ($file =~/\.(?:gz|tgz)$/ && _zlib_ok) {
         my $gz = Compress::Zlib::gzopen($file,"rb") or
             $CPAN::Frontend->mydie("Could not gzopen $file");
         $self->{GZ} = $gz;
         $class->debug("via Compress::Zlib");
     } else {
         my $gzip = CPAN::HandleConfig->safe_quote($self->{UNGZIPPRG});
-        my $pipe = "$gzip -dc $file |";
+        my $pipe = "$gzip -d -c $file |";
         my $fh = FileHandle->new($pipe) or $CPAN::Frontend->mydie("Could not pipe[$pipe]: $!");
         binmode $fh;
         $self->{FH} = $fh;
@@ -258,7 +265,7 @@ sub untar {
     } elsif (
              $CPAN::META->has_usable("Archive::Tar")
              &&
-             $CPAN::META->has_inst("Compress::Zlib") ) {
+             _zlib_ok ) {
         my $prefer_external_tar = $CPAN::Config->{prefer_external_tar};
         unless (defined $prefer_external_tar) {
             if ($^O =~ /(MSWin32|solaris)/) {
@@ -292,7 +299,7 @@ END_WARN
             $foundAT = "nothing";
         }
         my $foundCZ;
-        if ($CPAN::META->has_inst("Compress::Zlib")) {
+        if (_zlib_ok) {
             $foundCZ = sprintf "'%s'", "Compress::Zlib::"->VERSION;
         } elsif ($foundAT) {
             $foundCZ = "nothing";
@@ -322,7 +329,7 @@ Can't continue cutting file '$file'.
         my $tarcommand = CPAN::HandleConfig->safe_quote($exttar);
         if ($is_compressed) {
             my $command = CPAN::HandleConfig->safe_quote($extgzip);
-            $system = qq{$command -dc }.
+            $system = qq{$command -d -c }.
                 qq{< "$file" | $tarcommand x${tar_verb}f -};
         } else {
             $system = qq{$tarcommand x${tar_verb}f "$file"};
@@ -343,10 +350,20 @@ Can't continue cutting file '$file'.
             }
             $system = qq{$tarcommand x${tar_verb}f "$file"};
             $CPAN::Frontend->myprint(qq{Using Tar:$system:\n});
-            if (system($system)==0) {
+            my $ret = system($system);
+            if ($ret==0) {
                 $CPAN::Frontend->myprint(qq{Untarred $file successfully\n});
             } else {
-                $CPAN::Frontend->mydie(qq{Couldn\'t untar $file\n});
+                if ($? == -1) {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: '%s'\n},
+                                           $file, $!);
+                } elsif ($? & 127) {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: child died with signal %d, %s coredump\n},
+                                           $file, ($? & 127),  ($? & 128) ? 'with' : 'without');
+                } else {
+                    $CPAN::Frontend->mydie(sprintf qq{Couldn\'t untar %s: child exited with value %d\n},
+                                           $file, $? >> 8);
+                }
             }
             return 1;
         } else {
@@ -449,6 +466,10 @@ END
 1;
 
 __END__
+
+=head1 NAME
+
+CPAN::Tarzip - internal handling of tar archives for CPAN.pm
 
 =head1 LICENSE
 

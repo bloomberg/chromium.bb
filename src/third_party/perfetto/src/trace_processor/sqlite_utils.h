@@ -18,15 +18,15 @@
 #define SRC_TRACE_PROCESSOR_SQLITE_UTILS_H_
 
 #include <math.h>
-#include <sqlite3.h>
 
 #include <functional>
 #include <limits>
 #include <string>
 
 #include "perfetto/base/logging.h"
-#include "perfetto/base/optional.h"
+#include "perfetto/ext/base/optional.h"
 #include "src/trace_processor/scoped_db.h"
+#include "src/trace_processor/sqlite.h"
 #include "src/trace_processor/table.h"
 
 namespace perfetto {
@@ -130,6 +130,13 @@ inline double ExtractSqliteValue(sqlite3_value* value) {
   auto type = sqlite3_value_type(value);
   PERFETTO_DCHECK(type == SQLITE_FLOAT || type == SQLITE_INTEGER);
   return sqlite3_value_double(value);
+}
+
+template <>
+inline bool ExtractSqliteValue(sqlite3_value* value) {
+  auto type = sqlite3_value_type(value);
+  PERFETTO_DCHECK(type == SQLITE_INTEGER);
+  return static_cast<bool>(sqlite3_value_int(value));
 }
 
 // Do not add a uint64_t version of ExtractSqliteValue. You should not be using
@@ -362,6 +369,11 @@ inline void ReportSqliteResult(sqlite3_context* ctx, uint32_t value) {
 }
 
 template <>
+inline void ReportSqliteResult(sqlite3_context* ctx, bool value) {
+  sqlite3_result_int(ctx, value);
+}
+
+template <>
 inline void ReportSqliteResult(sqlite3_context* ctx, double value) {
   sqlite3_result_double(ctx, value);
 }
@@ -430,6 +442,8 @@ inline std::vector<Table::Column> GetColumnsForTable(
       type = Table::ColumnType::kString;
     } else if (strcmp(raw_type, "DOUBLE") == 0) {
       type = Table::ColumnType::kDouble;
+    } else if (strcmp(raw_type, "BOOLEAN") == 0) {
+      type = Table::ColumnType::kBool;
     } else if (!*raw_type) {
       PERFETTO_DLOG("Unknown column type for %s %s", raw_table_name.c_str(),
                     name);

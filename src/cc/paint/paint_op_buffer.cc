@@ -45,7 +45,6 @@ SkRect AdjustSrcRectForScale(SkRect original, SkSize scale_adjustment) {
                           original.width() * x_scale,
                           original.height() * y_scale);
 }
-
 }  // namespace
 
 #define TYPES(M)      \
@@ -1026,7 +1025,7 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
                                      void* output,
                                      size_t output_size,
                                      const DeserializeOptions& options) {
-  DCHECK_GE(output_size, sizeof(DrawTextBlobOp) - sizeof(NodeHolder));
+  DCHECK_GE(output_size, sizeof(DrawTextBlobOp) - sizeof(NodeId));
   DrawTextBlobOp* op = new (output) DrawTextBlobOp;
 
   PaintOpReader helper(input, input_size, options);
@@ -1199,8 +1198,9 @@ void DrawDRRectOp::RasterWithFlags(const DrawDRRectOp* op,
                                    const PaintFlags* flags,
                                    SkCanvas* canvas,
                                    const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawDRRect(op->outer, op->inner, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawDRRect(op->outer, op->inner, p);
+  });
 }
 
 void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
@@ -1316,8 +1316,9 @@ void DrawIRectOp::RasterWithFlags(const DrawIRectOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawIRect(op->rect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawIRect(op->rect, p);
+  });
 }
 
 void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
@@ -1325,23 +1326,27 @@ void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
-  canvas->drawLine(op->x0, op->y0, op->x1, op->y1, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawLine(op->x0, op->y0, op->x1, op->y1, p);
+  });
 }
 
 void DrawOvalOp::RasterWithFlags(const DrawOvalOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawOval(op->oval, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawOval(op->oval, p);
+  });
 }
 
 void DrawPathOp::RasterWithFlags(const DrawPathOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawPath(op->path, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawPath(op->path, p);
+  });
 }
 
 void DrawRecordOp::Raster(const DrawRecordOp* op,
@@ -1357,16 +1362,18 @@ void DrawRectOp::RasterWithFlags(const DrawRectOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRect(op->rect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawRect(op->rect, p);
+  });
 }
 
 void DrawRRectOp::RasterWithFlags(const DrawRRectOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRRect(op->rrect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawRRect(op->rrect, p);
+  });
 }
 
 void DrawSkottieOp::Raster(const DrawSkottieOp* op,
@@ -1379,8 +1386,9 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      const PaintFlags* flags,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawTextBlob(op->blob.get(), op->x, op->y, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawTextBlob(op->blob.get(), op->x, op->y, p);
+  });
 }
 
 void RestoreOp::Raster(const RestoreOp* op,
@@ -1779,7 +1787,7 @@ bool DrawTextBlobOp::AreEqual(const PaintOp* base_left,
     return false;
   if (!AreEqualEvenIfNaN(left->y, right->y))
     return false;
-  if (left->node_holder != right->node_holder)
+  if (left->node_id != right->node_id)
     return false;
 
   SkSerialProcs default_procs;
@@ -2203,6 +2211,10 @@ bool DrawRecordOp::HasDiscardableImages() const {
   return record->HasDiscardableImages();
 }
 
+bool DrawRecordOp::HasText() const {
+  return record->HasText();
+}
+
 DrawTextBlobOp::DrawTextBlobOp() : PaintOpWithFlags(kType) {}
 
 DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
@@ -2214,13 +2226,13 @@ DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
 DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
                                SkScalar x,
                                SkScalar y,
-                               const PaintFlags& flags,
-                               const NodeHolder& holder)
+                               NodeId node_id,
+                               const PaintFlags& flags)
     : PaintOpWithFlags(kType, flags),
       blob(std::move(blob)),
       x(x),
       y(y),
-      node_holder(holder) {}
+      node_id(node_id) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
 
@@ -2240,7 +2252,9 @@ PaintOpBuffer::CompositeIterator::CompositeIterator(CompositeIterator&& other) =
     default;
 
 PaintOpBuffer::PaintOpBuffer()
-    : has_non_aa_paint_(false), has_discardable_images_(false) {}
+    : has_non_aa_paint_(false),
+      has_discardable_images_(false),
+      has_text_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -2260,6 +2274,7 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   subrecord_op_count_ = other.subrecord_op_count_;
   has_non_aa_paint_ = other.has_non_aa_paint_;
   has_discardable_images_ = other.has_discardable_images_;
+  has_text_ = other.has_text_;
 
   // Make sure the other pob can destruct safely.
   other.used_ = 0;
@@ -2281,6 +2296,7 @@ void PaintOpBuffer::Reset() {
   subrecord_bytes_used_ = 0;
   subrecord_op_count_ = 0;
   has_discardable_images_ = false;
+  has_text_ = false;
 }
 
 // When |op| is a nested PaintOpBuffer, this returns the PaintOp inside
@@ -2542,6 +2558,8 @@ bool PaintOpBuffer::operator==(const PaintOpBuffer& other) const {
   if (has_non_aa_paint_ != other.has_non_aa_paint_)
     return false;
   if (has_discardable_images_ != other.has_discardable_images_)
+    return false;
+  if (has_text_ != other.has_text_)
     return false;
 
   auto left_iter = Iterator(this);

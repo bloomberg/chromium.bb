@@ -6,6 +6,9 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -16,7 +19,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
-#include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
@@ -32,6 +35,8 @@ namespace app_list {
 namespace {
 
 constexpr int kMaxResults = 5;
+constexpr base::TimeDelta kImpressionThreshold =
+    base::TimeDelta::FromSeconds(3);
 
 constexpr SkColor kListVerticalBarIconColor =
     SkColorSetARGB(0xFF, 0xE8, 0xEA, 0xED);
@@ -110,6 +115,17 @@ void CalculateDisplayIcons(
   }
 }
 
+ash::SearchResultIdWithPositionIndices GetSearchResultsForLogging(
+    std::vector<SearchResultView*> search_result_views) {
+  ash::SearchResultIdWithPositionIndices results;
+  for (const auto* item : search_result_views) {
+    if (item->result()) {
+      results.emplace_back(ash::SearchResultIdWithPositionIndex(
+          item->result()->id(), item->index_in_container()));
+    }
+  }
+  return results;
+}
 }  // namespace
 
 SearchResultListView::SearchResultListView(AppListMainView* main_view,
@@ -118,8 +134,8 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
       main_view_(main_view),
       view_delegate_(view_delegate),
       results_container_(new views::View) {
-  results_container_->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  results_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   for (int i = 0; i < kMaxResults; ++i) {
     search_result_views_.emplace_back(
@@ -195,10 +211,31 @@ int SearchResultListView::DoUpdate() {
     }
   }
 
+  // Logic for logging impression of items that were shown to user.
+  // Each time DoUpdate() called, start a timer that will be fired after a
+  // certain amount of time |kImpressionThreshold|. If during the waiting time,
+  // there's another DoUpdate() called, reset the timer and start a new timer
+  // with updated result list.
+  if (impression_timer_.IsRunning())
+    impression_timer_.Stop();
+  impression_timer_.Start(FROM_HERE, kImpressionThreshold, this,
+                          &SearchResultListView::LogImpressions);
+
   set_container_score(
       display_results.empty() ? 0 : display_results.front()->display_score());
 
   return display_results.size();
+}
+
+void SearchResultListView::LogImpressions() {
+  // Since no items is actually clicked, send the position index of clicked item
+  // as -1.
+  if (main_view_->search_box_view()->is_search_box_active()) {
+    view_delegate_->NotifySearchResultsForLogging(
+        view_delegate_->GetSearchModel()->search_box()->text(),
+        GetSearchResultsForLogging(search_result_views_),
+        -1 /* position_index */);
+  }
 }
 
 void SearchResultListView::Layout() {
@@ -224,6 +261,10 @@ void SearchResultListView::SearchResultActivated(SearchResultView* view,
                                  view_delegate_->GetSearchModel());
     view_delegate_->LogResultLaunchHistogram(
         SearchResultLaunchLocation::kResultList, view->index_in_container());
+    view_delegate_->NotifySearchResultsForLogging(
+        view_delegate_->GetSearchModel()->search_box()->text(),
+        GetSearchResultsForLogging(search_result_views_),
+        view->index_in_container());
     view_delegate_->OpenSearchResult(
         view->result()->id(), event_flags,
         ash::AppListLaunchedFrom::kLaunchedFromSearchBox,

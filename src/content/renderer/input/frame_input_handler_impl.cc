@@ -27,8 +27,7 @@ FrameInputHandlerImpl::FrameInputHandlerImpl(
       render_frame_(render_frame),
       input_event_queue_(
           render_frame->GetLocalRootRenderWidget()->GetInputEventQueue()),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
   // If we have created an input event queue move the mojo request over to the
   // compositor thread.
@@ -422,20 +421,20 @@ void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
 }
 
 void FrameInputHandlerImpl::GetWidgetInputHandler(
-    mojom::WidgetInputHandlerAssociatedRequest interface_request,
-    mojom::WidgetInputHandlerHostPtr host) {
+    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::GetWidgetInputHandler,
-                                  weak_this_, std::move(interface_request),
-                                  std::move(host)));
+        FROM_HERE,
+        base::BindOnce(&FrameInputHandlerImpl::GetWidgetInputHandler,
+                       weak_this_, std::move(receiver), std::move(host)));
     return;
   }
   if (!render_frame_)
     return;
   render_frame_->GetLocalRootRenderWidget()
       ->widget_input_handler_manager()
-      ->AddAssociatedInterface(std::move(interface_request), std::move(host));
+      ->AddAssociatedInterface(std::move(receiver), std::move(host));
 }
 
 void FrameInputHandlerImpl::ExecuteCommandOnMainThread(

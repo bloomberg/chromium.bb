@@ -165,7 +165,7 @@ recently than the generated output file then F<ttree> will not process
 it.  The F<-a> (all) option can be used to force F<ttree> to process
 all files regardless of modification time.
 
-    $ tree -a
+    $ ttree -a
 
 Any templates explicitly named as command line argument are always
 processed and the modification time checking is bypassed.

@@ -10,8 +10,8 @@
 
 #include "fxjs/xfa/cjx_object.h"
 #include "xfa/fxfa/cxfa_ffpageview.h"
-#include "xfa/fxfa/layout/cxfa_layoutpagemgr.h"
 #include "xfa/fxfa/layout/cxfa_layoutprocessor.h"
+#include "xfa/fxfa/layout/cxfa_viewlayoutprocessor.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 #include "xfa/fxfa/parser/cxfa_medium.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -27,15 +27,13 @@ CXFA_ViewLayoutItem::CXFA_ViewLayoutItem(
 CXFA_ViewLayoutItem::~CXFA_ViewLayoutItem() = default;
 
 CXFA_LayoutProcessor* CXFA_ViewLayoutItem::GetLayout() const {
-  return GetFormNode()->GetDocument()->GetLayoutProcessor();
+  return CXFA_LayoutProcessor::FromDocument(GetFormNode()->GetDocument());
 }
 
 int32_t CXFA_ViewLayoutItem::GetPageIndex() const {
-  return GetFormNode()
-      ->GetDocument()
-      ->GetLayoutProcessor()
-      ->GetLayoutPageMgr()
-      ->GetPageIndex(this);
+  auto* pLayout =
+      CXFA_LayoutProcessor::FromDocument(GetFormNode()->GetDocument());
+  return pLayout->GetLayoutPageMgr()->GetPageIndex(this);
 }
 
 CFX_SizeF CXFA_ViewLayoutItem::GetPageSize() const {

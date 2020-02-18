@@ -77,12 +77,27 @@ uint8_t ConvertEndpointAddressToNumber(uint8_t address) {
   return address & 0x0F;
 }
 
+uint8_t ConvertEndpointNumberToAddress(uint8_t endpoint_number,
+                                       mojom::UsbTransferDirection direction) {
+  return endpoint_number |
+         (direction == mojom::UsbTransferDirection::INBOUND ? 0x80 : 0x00);
+}
+
 uint8_t ConvertEndpointNumberToAddress(
     const mojom::UsbEndpointInfo& mojo_endpoint) {
-  return mojo_endpoint.endpoint_number |
-         (mojo_endpoint.direction == mojom::UsbTransferDirection::INBOUND
-              ? 0x80
-              : 0x00);
+  return ConvertEndpointNumberToAddress(mojo_endpoint.endpoint_number,
+                                        mojo_endpoint.direction);
+}
+
+uint16_t GetUsbVersion(const mojom::UsbDeviceInfo& device_info) {
+  return device_info.usb_version_major << 8 |
+         device_info.usb_version_minor << 4 | device_info.usb_version_subminor;
+}
+
+uint16_t GetDeviceVersion(const mojom::UsbDeviceInfo& device_info) {
+  return device_info.device_version_major << 8 |
+         device_info.device_version_minor << 4 |
+         device_info.device_version_subminor;
 }
 
 }  // namespace device

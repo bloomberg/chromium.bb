@@ -34,9 +34,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -95,7 +95,6 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
 MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
     MutableCSSPropertyValueSet* declaration,
     const AtomicString& property_name,
-    const PropertyRegistry* registry,
     const String& value,
     bool important,
     const CSSParserContext* context,
@@ -110,18 +109,6 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   bool did_parse = false;
   bool did_change = false;
   if (!parser.parsed_properties_.IsEmpty()) {
-    const auto* parsed_declaration =
-        To<CSSCustomPropertyDeclaration>(parser.parsed_properties_[0].Value());
-    if (parsed_declaration->Value() && registry) {
-      const PropertyRegistration* registration =
-          registry->Registration(property_name);
-      // TODO(timloh): This is a bit wasteful, we parse the registered property
-      // to validate but throw away the result.
-      if (registration &&
-          !registration->Syntax().Parse(range, context, is_animation_tainted)) {
-        return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
-      }
-    }
     did_parse = true;
     did_change = declaration->AddParsedProperties(parser.parsed_properties_);
   }
@@ -546,6 +533,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
       return ConsumeKeyframesRule(false, prelude, prelude_offset, stream);
     case kCSSAtRulePage:
       return ConsumePageRule(prelude, prelude_offset, stream);
+    case kCSSAtRuleProperty:
+      return ConsumePropertyRule(prelude, prelude_offset, stream);
     default:
       return nullptr;  // Parse error, unrecognised at-rule with block
   }
@@ -645,7 +634,8 @@ StyleRuleImport* CSSParserImpl::ConsumeImportRule(
   }
 
   return MakeGarbageCollected<StyleRuleImport>(
-      uri, MediaQueryParser::ParseMediaQuerySet(prelude));
+      uri, MediaQueryParser::ParseMediaQuerySet(prelude),
+      context_->IsOriginClean() ? OriginClean::kTrue : OriginClean::kFalse);
 }
 
 StyleRuleNamespace* CSSParserImpl::ConsumeNamespaceRule(
@@ -863,6 +853,30 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
+StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
+    CSSParserTokenRange prelude,
+    const RangeOffset& prelude_offset,
+    CSSParserTokenStream& block) {
+  if (!RuntimeEnabledFeatures::CSSVariables2AtPropertyEnabled())
+    return nullptr;
+
+  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
+  if (!prelude.AtEnd())
+    return nullptr;
+  if (!CSSVariableParser::IsValidVariableName(name_token))
+    return nullptr;
+  String name = name_token.Value().ToString();
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kProperty, prelude_offset.start);
+    observer_->EndRuleHeader(prelude_offset.end);
+  }
+
+  ConsumeDeclarationList(block, StyleRule::kProperty);
+  return StyleRuleProperty::Create(
+      name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
@@ -1019,14 +1033,14 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
 
   CSSPropertyID unresolved_property = CSSPropertyID::kInvalid;
   AtRuleDescriptorID atrule_id = AtRuleDescriptorID::Invalid;
-  if (rule_type == StyleRule::kFontFace) {
+  if (rule_type == StyleRule::kFontFace || rule_type == StyleRule::kProperty) {
     if (important)  // Invalid
       return;
     atrule_id = lhs.ParseAsAtRuleDescriptorID();
     AtRuleDescriptorParser::ParseAtRule(atrule_id, range, *context_,
                                         parsed_properties_);
   } else {
-    unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID();
+    unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID(context_->Mode());
   }
 
   // @rules other than FontFace still handled with legacy code.

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/feed_scheduler_host.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -36,7 +37,8 @@ class FeedLoggingMetrics {
       base::RepeatingCallback<void(const GURL&, CheckURLVisitCallback)>;
 
   explicit FeedLoggingMetrics(HistoryURLCheckCallback callback,
-                              base::Clock* clock);
+                              base::Clock* clock,
+                              FeedSchedulerHost* scheduler_host);
   ~FeedLoggingMetrics();
 
   // |suggestions_count| contains how many cards show to users. It does not
@@ -93,6 +95,14 @@ class FeedLoggingMetrics {
 
   void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
 
+  void OnVisualElementClicked(int element_type,
+                              int position,
+                              base::Time fetch_date);
+
+  void OnVisualElementViewed(int element_type,
+                             int position,
+                             base::Time fetch_date);
+
   void OnInternalError(int internal_error);
 
   void OnTokenCompleted(bool was_synthetic, int content_count, int token_count);
@@ -115,7 +125,9 @@ class FeedLoggingMetrics {
   // Used to access current time, injected for testing.
   base::Clock* clock_;
 
-  base::WeakPtrFactory<FeedLoggingMetrics> weak_ptr_factory_;
+  FeedSchedulerHost* scheduler_host_;
+
+  base::WeakPtrFactory<FeedLoggingMetrics> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FeedLoggingMetrics);
 };

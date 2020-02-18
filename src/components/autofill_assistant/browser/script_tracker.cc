@@ -26,11 +26,21 @@ void SortScripts(std::vector<Script*>* scripts) {
               // Order of scripts with the same priority is arbitrary. Fallback
               // to ordering by name and path, arbitrarily, for the behavior to
               // be consistent across runs.
-              return std::tie(a->priority, a->handle.chip.text(),
-                              a->handle.path) < std::tie(b->priority,
-                                                         b->handle.chip.text(),
-                                                         a->handle.path);
+              return std::tie(a->priority, a->handle.chip.text,
+                              a->handle.path) <
+                     std::tie(b->priority, b->handle.chip.text, a->handle.path);
             });
+}
+
+// Creates a value containing a vector of a simple type, accepted by base::Value
+// constructor, from a container.
+template <typename T>
+base::Value ToValueArray(const T& v) {
+  std::vector<base::Value> values;
+  for (const auto& s : v) {
+    values.emplace_back(base::Value(s));
+  }
+  return base::Value(values);
 }
 
 }  // namespace
@@ -79,14 +89,13 @@ void ScriptTracker::CheckScripts() {
   batch_element_checker_ = std::make_unique<BatchElementChecker>();
   for (const auto& entry : available_scripts_) {
     Script* script = entry.first;
-    if (script->handle.chip.text().empty() &&
-        script->handle.chip.icon() == ChipIcon::NO_ICON &&
+    if (script->handle.chip.empty() && script->handle.direct_action.empty() &&
         !script->handle.autostart)
       continue;
 
     script->precondition->Check(
-        url, batch_element_checker_.get(),
-        delegate_->GetTriggerContext()->script_parameters, scripts_state_,
+        url, batch_element_checker_.get(), *delegate_->GetTriggerContext(),
+        scripts_state_,
         base::BindOnce(&ScriptTracker::OnPreconditionCheck,
                        weak_ptr_factory_.GetWeakPtr(), script));
   }
@@ -97,7 +106,7 @@ void ScriptTracker::CheckScripts() {
     // There are no runnable scripts, even though we haven't checked the DOM
     // yet. Report it all immediately.
     UpdateRunnableScriptsIfNecessary();
-    listener_->OnNoRunnableScripts();
+    listener_->OnNoRunnableScriptsForPage();
     TerminatePendingChecks();
     return;
   }
@@ -107,6 +116,7 @@ void ScriptTracker::CheckScripts() {
 }
 
 void ScriptTracker::ExecuteScript(const std::string& script_path,
+                                  std::unique_ptr<TriggerContext> context,
                                   ScriptExecutor::RunScriptCallback callback) {
   if (running()) {
     DVLOG(1) << "Do not expect executing the script (" << script_path
@@ -118,13 +128,18 @@ void ScriptTracker::ExecuteScript(const std::string& script_path,
   }
 
   executor_ = std::make_unique<ScriptExecutor>(
-      script_path, last_global_payload_, last_script_payload_,
+      script_path, std::move(context), last_global_payload_,
+      last_script_payload_,
       /* listener= */ this, &scripts_state_, &interrupts_, delegate_);
   ScriptExecutor::RunScriptCallback run_script_callback = base::BindOnce(
       &ScriptTracker::OnScriptRun, weak_ptr_factory_.GetWeakPtr(), script_path,
       std::move(callback));
   TerminatePendingChecks();
   executor_->Run(std::move(run_script_callback));
+}
+
+void ScriptTracker::StopScript() {
+  executor_.reset();
 }
 
 void ScriptTracker::ClearRunnableScripts() {
@@ -158,11 +173,22 @@ base::Value ScriptTracker::GetDebugContext() const {
   std::vector<base::Value> runnable_scripts_js;
   for (const auto& entry : runnable_scripts_) {
     base::Value script_js = base::Value(base::Value::Type::DICTIONARY);
-    script_js.SetKey("name", base::Value(entry.chip.text()));
+    script_js.SetKey("name", base::Value(entry.chip.text));
     script_js.SetKey("path", base::Value(entry.path));
     script_js.SetKey("initial_prompt", base::Value(entry.initial_prompt));
     script_js.SetKey("autostart", base::Value(entry.autostart));
-    script_js.SetKey("chip_type", base::Value(entry.chip.type()));
+    script_js.SetKey("chip_type", base::Value(entry.chip.type));
+
+    base::Value direct_action_js = base::Value(base::Value::Type::DICTIONARY);
+    direct_action_js.SetKey("names", ToValueArray(entry.direct_action.names));
+    direct_action_js.SetKey(
+        "required_arguments",
+        ToValueArray(entry.direct_action.required_arguments));
+    direct_action_js.SetKey(
+        "optional_arguments",
+        ToValueArray(entry.direct_action.optional_arguments));
+    script_js.SetKey("direct_action", std::move(direct_action_js));
+
     runnable_scripts_js.push_back(std::move(script_js));
   }
   dict.SetKey("runnable-scripts", base::Value(runnable_scripts_js));
@@ -192,8 +218,11 @@ void ScriptTracker::OnCheckDone() {
 }
 
 void ScriptTracker::UpdateRunnableScriptsIfNecessary() {
-  if (!RunnablesHaveChanged())
+  if (!has_reported_scripts_) {
+    has_reported_scripts_ = true;
+  } else if (!RunnablesHaveChanged()) {
     return;
+  }
 
   runnable_scripts_.clear();
   SortScripts(&pending_runnable_scripts_);

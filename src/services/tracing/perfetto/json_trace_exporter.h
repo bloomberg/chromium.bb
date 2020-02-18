@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 
 namespace perfetto {
 namespace protos {
@@ -166,6 +166,7 @@ class JSONTraceExporter {
     void AddDuration(int64_t duration);
     void AddThreadDuration(int64_t thread_duration);
     void AddThreadTimestamp(int64_t thread_timestamp);
+    void AddThreadInstructionDelta(int64_t thread_instruction_delta);
     void AddBindId(uint64_t bind_id);
     // A set of bit flags for this trace event, along with a |scope|. |scope| is
     // ignored if empty.
@@ -221,8 +222,8 @@ class JSONTraceExporter {
   // Subclasses implement this to add data from |packets| to the JSON output.
   // For example they can add traceEvents through AddTraceEvent(), or add
   // metadata through AddChromeMetadata().
-  virtual void ProcessPackets(
-      const std::vector<perfetto::TracePacket>& packets) = 0;
+  virtual void ProcessPackets(const std::vector<perfetto::TracePacket>& packets,
+                              bool has_more) = 0;
 
   // If true then all trace events should be skipped. AddTraceEvent should not
   // be called.

@@ -92,8 +92,8 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
     std::unique_ptr<
         protocol::Array<protocol::ApplicationCache::FrameWithManifest>>*
         result) {
-  *result =
-      protocol::Array<protocol::ApplicationCache::FrameWithManifest>::create();
+  *result = std::make_unique<
+      protocol::Array<protocol::ApplicationCache::FrameWithManifest>>();
 
   for (LocalFrame* frame : *inspected_frames_) {
     DocumentLoader* document_loader = frame->Loader().GetDocumentLoader();
@@ -110,7 +110,7 @@ Response InspectorApplicationCacheAgent::getFramesWithManifests(
               .setManifestURL(manifest_url)
               .setStatus(static_cast<int>(host->GetStatus()))
               .build();
-      (*result)->addItem(std::move(value));
+      (*result)->emplace_back(std::move(value));
     }
   }
   return Response::OK();
@@ -156,7 +156,7 @@ Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
   ApplicationCacheHost* host = document_loader->GetApplicationCacheHost();
   ApplicationCacheHost::CacheInfo info = host->ApplicationCacheInfo();
 
-  ApplicationCacheHost::ResourceInfoList resources;
+  Vector<mojom::blink::AppCacheResourceInfo> resources;
   host->FillResourceList(&resources);
 
   *application_cache = BuildObjectForApplicationCache(resources, info);
@@ -165,7 +165,8 @@ Response InspectorApplicationCacheAgent::getApplicationCacheForFrame(
 
 std::unique_ptr<protocol::ApplicationCache::ApplicationCache>
 InspectorApplicationCacheAgent::BuildObjectForApplicationCache(
-    const ApplicationCacheHost::ResourceInfoList& application_cache_resources,
+    const Vector<mojom::blink::AppCacheResourceInfo>&
+        application_cache_resources,
     const ApplicationCacheHost::CacheInfo& application_cache_info) {
   return protocol::ApplicationCache::ApplicationCache::create()
       .setManifestURL(application_cache_info.manifest_.GetString())
@@ -180,45 +181,40 @@ InspectorApplicationCacheAgent::BuildObjectForApplicationCache(
 std::unique_ptr<
     protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
 InspectorApplicationCacheAgent::BuildArrayForApplicationCacheResources(
-    const ApplicationCacheHost::ResourceInfoList& application_cache_resources) {
-  std::unique_ptr<
-      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>
-      resources = protocol::Array<
-          protocol::ApplicationCache::ApplicationCacheResource>::create();
+    const Vector<mojom::blink::AppCacheResourceInfo>&
+        application_cache_resources) {
+  auto resources = std::make_unique<
+      protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>>();
 
-  ApplicationCacheHost::ResourceInfoList::const_iterator end =
-      application_cache_resources.end();
-  ApplicationCacheHost::ResourceInfoList::const_iterator it =
-      application_cache_resources.begin();
-  for (int i = 0; it != end; ++it, i++)
-    resources->addItem(BuildObjectForApplicationCacheResource(*it));
+  for (const auto& resource : application_cache_resources)
+    resources->emplace_back(BuildObjectForApplicationCacheResource(resource));
 
   return resources;
 }
 
 std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource>
 InspectorApplicationCacheAgent::BuildObjectForApplicationCacheResource(
-    const ApplicationCacheHost::ResourceInfo& resource_info) {
+    const mojom::blink::AppCacheResourceInfo& resource_info) {
   StringBuilder builder;
-  if (resource_info.is_master_)
+  if (resource_info.is_master)
     builder.Append("Master ");
 
-  if (resource_info.is_manifest_)
+  if (resource_info.is_manifest)
     builder.Append("Manifest ");
 
-  if (resource_info.is_fallback_)
+  if (resource_info.is_fallback)
     builder.Append("Fallback ");
 
-  if (resource_info.is_foreign_)
+  if (resource_info.is_foreign)
     builder.Append("Foreign ");
 
-  if (resource_info.is_explicit_)
+  if (resource_info.is_explicit)
     builder.Append("Explicit ");
 
   std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> value =
       protocol::ApplicationCache::ApplicationCacheResource::create()
-          .setUrl(resource_info.resource_.GetString())
-          .setSize(static_cast<int>(resource_info.response_size_))
+          .setUrl(resource_info.url.GetString())
+          .setSize(static_cast<int>(resource_info.response_size))
           .setType(builder.ToString())
           .build();
   return value;

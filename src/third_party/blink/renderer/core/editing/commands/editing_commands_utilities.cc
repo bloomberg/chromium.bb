@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
@@ -47,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -80,7 +80,7 @@ Node* HighestNodeToRemoveInPruning(Node* node, const Node* exclude_node) {
 }
 
 Element* EnclosingTableCell(const Position& p) {
-  return ToElement(EnclosingNodeOfType(p, IsTableCell));
+  return To<Element>(EnclosingNodeOfType(p, IsTableCell));
 }
 
 bool IsTableStructureNode(const Node* node) {
@@ -132,18 +132,18 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
 }
 
 bool AreIdenticalElements(const Node& first, const Node& second) {
-  if (!first.IsElementNode() || !second.IsElementNode())
+  const auto* first_element = DynamicTo<Element>(first);
+  const auto* second_element = DynamicTo<Element>(second);
+  if (!first_element || !second_element)
     return false;
 
-  const Element& first_element = ToElement(first);
-  const Element& second_element = ToElement(second);
-  if (!first_element.HasTagName(second_element.TagQName()))
+  if (!first_element->HasTagName(second_element->TagQName()))
     return false;
 
-  if (!first_element.HasEquivalentAttributes(second_element))
+  if (!first_element->HasEquivalentAttributes(*second_element))
     return false;
 
-  return HasEditableStyle(first_element) && HasEditableStyle(second_element);
+  return HasEditableStyle(*first_element) && HasEditableStyle(*second_element);
 }
 
 // FIXME: need to dump this

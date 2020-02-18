@@ -31,32 +31,6 @@ everything found until the next top-level "file scoped" package statement.
 A file may, however, contain nested temporary package, in which case you
 are mostly on your own :)
 
-
-=begin testing hash_constructors_dont_contain_packages_rt52259 2
-
-my $Document = PPI::Document->new(\<<'END_PERL');
-{    package  => "", };
-+{   package  => "", };
-{   'package' => "", };
-+{  'package' => "", };
-{   'package' ,  "", };
-+{  'package' ,  "", };
-END_PERL
-
-isa_ok( $Document, 'PPI::Document' );
-
-my $packages = $Document->find('PPI::Statement::Package');
-my $test_name = 'Found no package statements in hash constructors - RT #52259';
-if (not $packages) {
-	pass $test_name;
-} elsif ( not is(scalar @{$packages}, 0, $test_name) ) {
-	diag 'Package statements found:';
-	diag $_->parent()->parent()->content() foreach @{$packages};
-}
-
-=end testing
-
-
 =head1 METHODS
 
 C<PPI::Statement::Package> has a number of methods in addition to the standard
@@ -67,11 +41,12 @@ L<PPI::Statement>, L<PPI::Node> and L<PPI::Element> methods.
 use strict;
 use PPI::Statement ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = 'PPI::Statement';
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = "PPI::Statement";
+
+# Lexer clues
+sub __LEXER__normal() { '' }
 
 =pod
 
@@ -95,6 +70,28 @@ sub namespace {
 	$namespace->isa('PPI::Token::Word')
 		? $namespace->content
 		: '';
+}
+
+=pod
+
+=head2 version
+
+Some package declarations may include a version:
+
+  package Foo::Bar 1.23;
+  package Baz v1.23;
+
+The C<version> method returns the stringified version as seen in the
+document (if any), otherwise the empty string.
+
+=cut
+
+sub version {
+	my $self = shift;
+	my $version = $self->schild(2) or return '';
+	$version->isa('PPI::Token::Structure')
+		? ''
+		: $version->content;
 }
 
 =pod

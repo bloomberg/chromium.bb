@@ -43,6 +43,9 @@ const char kAccountTypeKey[] = "account_type";
 // Key of whether this user ID refers to a SAML user.
 const char kUsingSAMLKey[] = "using_saml";
 
+// Key of whether this user authenticated via SAML using the principals API.
+const char kIsUsingSAMLPrincipalsAPI[] = "using_saml_principals_api";
+
 // Key of Device Id.
 const char kDeviceId[] = "device_id";
 
@@ -66,19 +69,24 @@ const char kProfileRequiresPolicy[] = "profile_requires_policy";
 // from the local state on logout.
 const char kIsEphemeral[] = "is_ephemeral";
 
+// Key of the list value that stores challenge-response authentication keys.
+const char kChallengeResponseKeys[] = "challenge_response_keys";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
                                kObjGuidKey,
                                kAccountTypeKey,
                                kUsingSAMLKey,
+                               kIsUsingSAMLPrincipalsAPI,
                                kDeviceId,
                                kGAPSCookie,
                                kReauthReasonKey,
                                kGaiaIdMigration,
                                kMinimalMigrationAttempted,
                                kProfileRequiresPolicy,
-                               kIsEphemeral};
+                               kIsEphemeral,
+                               kChallengeResponseKeys};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -519,6 +527,23 @@ bool IsUsingSAML(const AccountId& account_id) {
   return false;
 }
 
+void USER_MANAGER_EXPORT
+UpdateIsUsingSAMLPrincipalsAPI(const AccountId& account_id,
+                               bool is_using_saml_principals_api) {
+  SetBooleanPref(account_id, kIsUsingSAMLPrincipalsAPI,
+                 is_using_saml_principals_api);
+}
+
+bool USER_MANAGER_EXPORT
+GetIsUsingSAMLPrincipalsAPI(const AccountId& account_id) {
+  bool is_using_saml_principals_api;
+  if (GetBooleanPref(account_id, kIsUsingSAMLPrincipalsAPI,
+                     &is_using_saml_principals_api)) {
+    return is_using_saml_principals_api;
+  }
+  return false;
+}
+
 void SetProfileRequiresPolicy(const AccountId& account_id,
                               ProfileRequiresPolicy required) {
   DCHECK_NE(required, ProfileRequiresPolicy::kUnknown);
@@ -563,6 +588,18 @@ void SetUserHomeMinimalMigrationAttempted(const AccountId& account_id,
                                           bool minimal_migration_attempted) {
   SetBooleanPref(account_id, kMinimalMigrationAttempted,
                  minimal_migration_attempted);
+}
+
+void SetChallengeResponseKeys(const AccountId& account_id, base::Value value) {
+  DCHECK(value.is_list());
+  SetPref(account_id, kChallengeResponseKeys, std::move(value));
+}
+
+base::Value GetChallengeResponseKeys(const AccountId& account_id) {
+  const base::Value* value = nullptr;
+  if (!GetPref(account_id, kChallengeResponseKeys, &value) || !value->is_list())
+    return base::Value();
+  return value->Clone();
 }
 
 void RemovePrefs(const AccountId& account_id) {

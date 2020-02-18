@@ -6,12 +6,13 @@
 #define COMPONENTS_AUTOFILL_CORE_COMMON_FORM_DATA_H_
 
 #include <limits>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/submission_indicator_event.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -19,7 +20,7 @@ namespace autofill {
 
 // Pair of a button title (e.g. "Register") and its type (e.g.
 // INPUT_ELEMENT_SUBMIT_TYPE).
-using ButtonTitleInfo = std::pair<base::string16, ButtonTitleType>;
+using ButtonTitleInfo = std::pair<base::string16, mojom::ButtonTitleType>;
 
 // List of button titles of a given form.
 using ButtonTitleList = std::vector<ButtonTitleInfo>;
@@ -86,7 +87,8 @@ struct FormData {
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is filled only in Password
   // Manager for submitted password forms.
-  SubmissionIndicatorEvent submission_event = SubmissionIndicatorEvent::NONE;
+  mojom::SubmissionIndicatorEvent submission_event =
+      mojom::SubmissionIndicatorEvent::NONE;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
   // Contains unique renderer IDs of text elements which are predicted to be
@@ -95,6 +97,8 @@ struct FormData {
   // contain IDs of elements which are not in |fields|. This is only used during
   // parsing into PasswordForm, and hence not serialised for storage.
   std::vector<uint32_t> username_predictions;
+  // True if this is a Gaia form which should be skipped on saving.
+  bool is_gaia_with_skip_save_password_form = false;
 };
 
 // For testing.

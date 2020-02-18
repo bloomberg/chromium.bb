@@ -86,6 +86,8 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
   configuration.rtcp_loss_notification_observer =
       rtcp_loss_notification_observer;
   configuration.bandwidth_callback = bandwidth_callback;
+  configuration.network_state_estimate_observer =
+      transport->network_state_estimate_observer();
   configuration.transport_feedback_callback =
       transport->transport_feedback_observer();
   configuration.rtt_stats = rtt_stats;
@@ -189,19 +191,13 @@ std::unique_ptr<FlexfecSender> MaybeCreateFlexfecSender(
       RTPSender::FecExtensionSizes(), rtp_state, clock);
 }
 
-uint32_t CalculateOverheadRateBps(int packets_per_second,
-                                  size_t overhead_bytes_per_packet,
-                                  uint32_t max_overhead_bps) {
-  uint32_t overhead_bps =
-      static_cast<uint32_t>(8 * overhead_bytes_per_packet * packets_per_second);
-  return std::min(overhead_bps, max_overhead_bps);
-}
-
-int CalculatePacketRate(uint32_t bitrate_bps, size_t packet_size_bytes) {
-  size_t packet_size_bits = 8 * packet_size_bytes;
-  // Ceil for int value of bitrate_bps / packet_size_bits.
-  return static_cast<int>((bitrate_bps + packet_size_bits - 1) /
-                          packet_size_bits);
+DataRate CalculateOverheadRate(DataRate data_rate,
+                               DataSize packet_size,
+                               DataSize overhead_per_packet) {
+  Frequency packet_rate = data_rate / packet_size;
+  // TOSO(srte): We should not need to round to nearest whole packet per second
+  // rate here.
+  return packet_rate.RoundUpTo(Frequency::hertz(1)) * overhead_per_packet;
 }
 }  // namespace
 
@@ -231,6 +227,7 @@ RtpVideoSender::RtpVideoSender(
       flexfec_sender_(
           MaybeCreateFlexfecSender(clock, rtp_config, suspended_ssrcs_)),
       fec_controller_(std::move(fec_controller)),
+      fec_allowed_(true),
       rtp_streams_(
           CreateRtpStreamSenders(clock,
                                  rtp_config,
@@ -421,8 +418,12 @@ EncodedImageCallback::Result RtpVideoSender::OnEncodedImage(
     // The payload router could be active but this module isn't sending.
     return Result(Result::ERROR_SEND_FAILED);
   }
-  int64_t expected_retransmission_time_ms =
-      rtp_streams_[stream_index].rtp_rtcp->ExpectedRetransmissionTimeMs();
+
+  absl::optional<int64_t> expected_retransmission_time_ms;
+  if (encoded_image.RetransmissionAllowed()) {
+    expected_retransmission_time_ms =
+        rtp_streams_[stream_index].rtp_rtcp->ExpectedRetransmissionTimeMs();
+  }
 
   bool send_result = rtp_streams_[stream_index].sender_video->SendVideo(
       encoded_image._frameType, rtp_config_.payload_type, rtp_timestamp,
@@ -616,13 +617,14 @@ void RtpVideoSender::ConfigureSsrcs() {
 }
 
 void RtpVideoSender::ConfigureRids() {
-  RTC_DCHECK(rtp_config_.rids.empty() ||
-             rtp_config_.rids.size() == rtp_config_.ssrcs.size());
-  RTC_DCHECK(rtp_config_.rids.empty() ||
-             rtp_config_.rids.size() == rtp_streams_.size());
-  for (size_t i = 0; i < rtp_config_.rids.size(); ++i) {
-    const std::string& rid = rtp_config_.rids[i];
-    rtp_streams_[i].rtp_rtcp->SetRid(rid);
+  if (rtp_config_.rids.empty())
+    return;
+
+  // Some streams could have been disabled, but the rids are still there.
+  // This will occur when simulcast has been disabled for a codec (e.g. VP9)
+  RTC_DCHECK(rtp_config_.rids.size() >= rtp_streams_.size());
+  for (size_t i = 0; i < rtp_streams_.size(); ++i) {
+    rtp_streams_[i].rtp_rtcp->SetRid(rtp_config_.rids[i]);
   }
 }
 
@@ -690,22 +692,29 @@ void RtpVideoSender::OnBitrateUpdated(uint32_t bitrate_bps,
                                       int framerate) {
   // Substract overhead from bitrate.
   rtc::CritScope lock(&crit_);
+  DataSize packet_overhead = DataSize::bytes(
+      overhead_bytes_per_packet_ + transport_overhead_bytes_per_packet_);
+  DataSize max_total_packet_size = DataSize::bytes(
+      rtp_config_.max_packet_size + transport_overhead_bytes_per_packet_);
   uint32_t payload_bitrate_bps = bitrate_bps;
   if (send_side_bwe_with_overhead_) {
-    uint32_t overhead_bps = CalculateOverheadRateBps(
-        CalculatePacketRate(
-            bitrate_bps,
-            rtp_config_.max_packet_size + transport_overhead_bytes_per_packet_),
-        overhead_bytes_per_packet_ + transport_overhead_bytes_per_packet_,
-        bitrate_bps);
-    RTC_DCHECK_LE(overhead_bps, bitrate_bps);
-    payload_bitrate_bps = bitrate_bps - overhead_bps;
+    DataRate overhead_rate = CalculateOverheadRate(
+        DataRate::bps(bitrate_bps), max_total_packet_size, packet_overhead);
+    // TODO(srte): We probably should not accept 0 payload bitrate here.
+    payload_bitrate_bps =
+        rtc::saturated_cast<uint32_t>(bitrate_bps - overhead_rate.bps());
   }
 
   // Get the encoder target rate. It is the estimated network rate -
   // protection overhead.
   encoder_target_rate_bps_ = fec_controller_->UpdateFecRates(
       payload_bitrate_bps, framerate, fraction_loss, loss_mask_vector_, rtt);
+  if (!fec_allowed_) {
+    encoder_target_rate_bps_ = payload_bitrate_bps;
+    // fec_controller_->UpdateFecRates() was still called so as to allow
+    // |fec_controller_| to update whatever internal state it might have,
+    // since |fec_allowed_| may be toggled back on at any moment.
+  }
 
   uint32_t packetization_rate_bps = 0;
   if (account_for_packetization_overhead_) {
@@ -720,18 +729,20 @@ void RtpVideoSender::OnBitrateUpdated(uint32_t bitrate_bps,
 
   loss_mask_vector_.clear();
 
-  uint32_t encoder_overhead_rate_bps =
-      send_side_bwe_with_overhead_
-          ? CalculateOverheadRateBps(
-                CalculatePacketRate(encoder_target_rate_bps_,
-                                    rtp_config_.max_packet_size +
-                                        transport_overhead_bytes_per_packet_ -
-                                        overhead_bytes_per_packet_),
-                overhead_bytes_per_packet_ +
-                    transport_overhead_bytes_per_packet_,
-                bitrate_bps - encoder_target_rate_bps_)
-          : 0;
-
+  uint32_t encoder_overhead_rate_bps = 0;
+  if (send_side_bwe_with_overhead_) {
+    // TODO(srte): The packet size should probably be the same as in the
+    // CalculateOverheadRate call above (just max_total_packet_size), it doesn't
+    // make sense to use different packet rates for different overhead
+    // calculations.
+    DataRate encoder_overhead_rate = CalculateOverheadRate(
+        DataRate::bps(encoder_target_rate_bps_),
+        max_total_packet_size - DataSize::bytes(overhead_bytes_per_packet_),
+        packet_overhead);
+    encoder_overhead_rate_bps =
+        std::min(encoder_overhead_rate.bps<uint32_t>(),
+                 bitrate_bps - encoder_target_rate_bps_);
+  }
   // When the field trial "WebRTC-SendSideBwe-WithOverhead" is enabled
   // protection_bitrate includes overhead.
   const uint32_t media_rate = encoder_target_rate_bps_ +
@@ -779,6 +790,11 @@ int RtpVideoSender::ProtectionRequest(const FecProtectionParams* delta_params,
     *sent_nack_rate_bps += module_nack_rate;
   }
   return 0;
+}
+
+void RtpVideoSender::SetFecAllowed(bool fec_allowed) {
+  rtc::CritScope cs(&crit_);
+  fec_allowed_ = fec_allowed;
 }
 
 void RtpVideoSender::OnPacketFeedbackVector(

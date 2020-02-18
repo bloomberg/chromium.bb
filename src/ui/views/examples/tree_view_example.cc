@@ -73,18 +73,19 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view->SetController(this);
   tree_view->SetDrawingProvider(
       std::make_unique<ExampleTreeViewDrawingProvider>());
-  add_ = new LabelButton(this, ASCIIToUTF16("Add"));
-  add_->SetFocusForPlatform();
-  add_->set_request_focus_on_press(true);
-  remove_ = new LabelButton(this, ASCIIToUTF16("Remove"));
-  remove_->SetFocusForPlatform();
-  remove_->set_request_focus_on_press(true);
-  change_title_ = new LabelButton(this, ASCIIToUTF16("Change Title"));
-  change_title_->SetFocusForPlatform();
-  change_title_->set_request_focus_on_press(true);
+  auto add = std::make_unique<LabelButton>(this, ASCIIToUTF16("Add"));
+  add->SetFocusForPlatform();
+  add->set_request_focus_on_press(true);
+  auto remove = std::make_unique<LabelButton>(this, ASCIIToUTF16("Remove"));
+  remove->SetFocusForPlatform();
+  remove->set_request_focus_on_press(true);
+  auto change_title =
+      std::make_unique<LabelButton>(this, ASCIIToUTF16("Change Title"));
+  change_title->SetFocusForPlatform();
+  change_title->set_request_focus_on_press(true);
 
-  GridLayout* layout = container->SetLayoutManager(
-      std::make_unique<views::GridLayout>(container));
+  GridLayout* layout =
+      container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   const int tree_view_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tree_view_column);
@@ -92,8 +93,7 @@ void TreeViewExample::CreateExampleView(View* container) {
                         1.0f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tree_view_column);
   tree_view_ = tree_view.get();
-  layout->AddView(
-      TreeView::CreateScrollViewWithTree(std::move(tree_view)).release());
+  layout->AddView(TreeView::CreateScrollViewWithTree(std::move(tree_view)));
 
   // Add control buttons horizontally.
   const int button_column = 1;
@@ -104,9 +104,9 @@ void TreeViewExample::CreateExampleView(View* container) {
   }
 
   layout->StartRow(0 /* no expand */, button_column);
-  layout->AddView(add_);
-  layout->AddView(remove_);
-  layout->AddView(change_title_);
+  add_ = layout->AddView(std::move(add));
+  remove_ = layout->AddView(std::move(remove));
+  change_title_ = layout->AddView(std::move(change_title));
 }
 
 void TreeViewExample::AddNewNode() {
@@ -115,8 +115,7 @@ void TreeViewExample::AddNewNode() {
   if (!selected_node)
     selected_node = model_.GetRoot();
   NodeType* new_node = model_.Add(
-      selected_node, std::make_unique<NodeType>(selected_node->GetTitle(), 1),
-      selected_node->child_count());
+      selected_node, std::make_unique<NodeType>(selected_node->GetTitle(), 1));
   tree_view_->SetSelectedNode(new_node);
 }
 

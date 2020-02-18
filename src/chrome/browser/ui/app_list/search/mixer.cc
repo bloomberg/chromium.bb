@@ -28,7 +28,14 @@ Mixer::SortData::SortData(ChromeSearchResult* result, double score)
     : result(result), score(score) {}
 
 bool Mixer::SortData::operator<(const SortData& other) const {
-  // This data precedes (less than) |other| if it has higher score.
+  // This data precedes (less than) |other| if it has specified display index or
+  // higher score.
+  ash::SearchResultDisplayIndex index1 = result->display_index();
+  ash::SearchResultDisplayIndex index2 = other.result->display_index();
+  // The |kUndefined| index is larger than other specified indexes.
+  if (index1 != index2)
+    return index1 < index2;
+
   return score > other.score;
 }
 
@@ -171,9 +178,9 @@ SearchResultRanker* Mixer::GetNonAppSearchResultRanker() {
   return non_app_ranker_.get();
 }
 
-void Mixer::Train(const std::string& id, RankingItemType type) {
+void Mixer::Train(const AppLaunchData& app_launch_data) {
   if (non_app_ranker_)
-    non_app_ranker_->Train(id, type);
+    non_app_ranker_->Train(app_launch_data);
 }
 
 }  // namespace app_list

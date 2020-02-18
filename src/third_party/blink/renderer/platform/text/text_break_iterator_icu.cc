@@ -68,7 +68,7 @@ class LineBreakIteratorPool final {
       bool locale_is_empty = locale.IsEmpty();
       iterator = icu::BreakIterator::createLineInstance(
           locale_is_empty ? icu::Locale(CurrentTextBreakLocaleID())
-                          : icu::Locale(locale.Utf8().data()),
+                          : icu::Locale(locale.Utf8().c_str()),
           open_status);
       // locale comes from a web page and it can be invalid, leading ICU
       // to fail, in which case we fall back to the default locale.
@@ -579,7 +579,7 @@ static UText* TextOpenUTF16(UText* text,
   return text;
 }
 
-static UText g_empty_text = UTEXT_INITIALIZER;
+static const UText g_empty_text = UTEXT_INITIALIZER;
 
 static TextBreakIterator* WordBreakIterator(base::span<const LChar> string) {
   UErrorCode error_code = U_ZERO_ERROR;

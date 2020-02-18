@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import re
 
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
@@ -303,10 +304,20 @@ class GpuIntegrationTest(
         gpu_device_tag = '%s-%s' % (gpu_vendor, gpu_device_id)
       angle_renderer = gpu_helper.GetANGLERenderer(gpu_info)
       cmd_decoder = gpu_helper.GetCommandDecoder(gpu_info)
-      # all spaces in the tag will be replaced by '-', and all letters will
-      # be converted to its lower case form.
-      tags.extend([tag.lower().replace(' ', '-').replace('_', '-') for tag in [
+      # all spaces and underscores in the tag will be replaced by dashes
+      tags.extend([re.sub('[ _]', '-', tag) for tag in [
           gpu_vendor, gpu_device_tag, angle_renderer, cmd_decoder]])
+    # If additional options have been set via '--extra-browser-args' check for
+    # those which map to expectation tags. The '_browser_backend' attribute may
+    # not exist in unit tests.
+    if (hasattr(browser, '_browser_backend') and
+        browser._browser_backend.browser_options.extra_browser_args):
+      skia_renderer = gpu_helper.GetSkiaRenderer(\
+          browser._browser_backend.browser_options.extra_browser_args)
+      tags.extend([skia_renderer])
+      use_vulkan = gpu_helper.GetVulkan(\
+          browser._browser_backend.browser_options.extra_browser_args)
+      tags.extend([use_vulkan])
     return tags
 
   @classmethod

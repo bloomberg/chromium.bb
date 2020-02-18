@@ -140,40 +140,39 @@ Resource* CachedResource(LocalFrame* frame,
 
 std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
     const WebWindowFeatures& window_features) {
-  std::unique_ptr<protocol::Array<String>> feature_strings =
-      protocol::Array<String>::create();
+  auto feature_strings = std::make_unique<protocol::Array<String>>();
   if (window_features.x_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("left=%d", static_cast<int>(window_features.x)));
   }
   if (window_features.y_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("top=%d", static_cast<int>(window_features.y)));
   }
   if (window_features.width_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("width=%d", static_cast<int>(window_features.width)));
   }
   if (window_features.height_set) {
-    feature_strings->addItem(
+    feature_strings->emplace_back(
         String::Format("height=%d", static_cast<int>(window_features.height)));
   }
   if (window_features.menu_bar_visible)
-    feature_strings->addItem("menubar");
+    feature_strings->emplace_back("menubar");
   if (window_features.tool_bar_visible)
-    feature_strings->addItem("toolbar");
+    feature_strings->emplace_back("toolbar");
   if (window_features.status_bar_visible)
-    feature_strings->addItem("status");
+    feature_strings->emplace_back("status");
   if (window_features.scrollbars_visible)
-    feature_strings->addItem("scrollbars");
+    feature_strings->emplace_back("scrollbars");
   if (window_features.resizable)
-    feature_strings->addItem("resizable");
+    feature_strings->emplace_back("resizable");
   if (window_features.noopener)
-    feature_strings->addItem("noopener");
+    feature_strings->emplace_back("noopener");
   if (window_features.background)
-    feature_strings->addItem("background");
+    feature_strings->emplace_back("background");
   if (window_features.persistent)
-    feature_strings->addItem("persistent");
+    feature_strings->emplace_back("persistent");
   return feature_strings;
 }
 
@@ -241,12 +240,12 @@ static void MaybeEncodeTextContent(const String& text_content,
                                    wtf_size_t buffer_size,
                                    String* result,
                                    bool* base64_encoded) {
-  if (!text_content.IsNull() &&
-      !text_content.Utf8(WTF::kStrictUTF8Conversion).IsNull()) {
+  if (!text_content.IsNull()) {
     *result = text_content;
     *base64_encoded = false;
   } else if (buffer_data) {
-    *result = Base64Encode(buffer_data, buffer_size);
+    *result =
+        Base64Encode(base::as_bytes(base::make_span(buffer_data, buffer_size)));
     *base64_encoded = true;
   } else if (text_content.IsNull()) {
     *result = "";
@@ -327,8 +326,8 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
       return false;
 
     const SharedBuffer::DeprecatedFlatData flat_buffer(std::move(buffer));
-    *result = Base64Encode(flat_buffer.Data(),
-                           SafeCast<wtf_size_t>(flat_buffer.size()));
+    *result = Base64Encode(base::as_bytes(
+        base::make_span(flat_buffer.Data(), flat_buffer.size())));
     *base64_encoded = true;
     return true;
   }
@@ -540,8 +539,8 @@ Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
     const String& source,
     Maybe<String> world_name,
     String* identifier) {
-  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
-  auto result = std::max_element(
+  Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  auto* result = std::max_element(
       keys.begin(), keys.end(), [](const WTF::String& a, const WTF::String& b) {
         return Decimal::FromString(a) < Decimal::FromString(b);
       });
@@ -588,33 +587,34 @@ Response InspectorPageAgent::setLifecycleEventsEnabled(bool enabled) {
       continue;
 
     DocumentLoadTiming& timing = loader->GetTiming();
-    TimeTicks commit_timestamp = timing.ResponseEnd();
+    base::TimeTicks commit_timestamp = timing.ResponseEnd();
     if (!commit_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "commit",
                      commit_timestamp.since_origin().InSecondsF());
     }
 
-    TimeTicks domcontentloaded_timestamp =
+    base::TimeTicks domcontentloaded_timestamp =
         document->GetTiming().DomContentLoadedEventEnd();
     if (!domcontentloaded_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "DOMContentLoaded",
                      domcontentloaded_timestamp.since_origin().InSecondsF());
     }
 
-    TimeTicks load_timestamp = timing.LoadEventEnd();
+    base::TimeTicks load_timestamp = timing.LoadEventEnd();
     if (!load_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "load",
                      load_timestamp.since_origin().InSecondsF());
     }
 
     IdlenessDetector* idleness_detector = frame->GetIdlenessDetector();
-    TimeTicks network_almost_idle_timestamp =
+    base::TimeTicks network_almost_idle_timestamp =
         idleness_detector->GetNetworkAlmostIdleTime();
     if (!network_almost_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkAlmostIdle",
                      network_almost_idle_timestamp.since_origin().InSecondsF());
     }
-    TimeTicks network_idle_timestamp = idleness_detector->GetNetworkIdleTime();
+    base::TimeTicks network_idle_timestamp =
+        idleness_detector->GetNetworkIdleTime();
     if (!network_idle_timestamp.is_null()) {
       LifecycleEvent(frame, loader, "networkIdle",
                      network_idle_timestamp.since_origin().InSecondsF());
@@ -764,11 +764,10 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   auto matches = v8_session_->searchInTextByLines(
       ToV8InspectorStringView(content), ToV8InspectorStringView(query),
       case_sensitive, is_regex);
-  auto results = protocol::Array<
-      v8_inspector::protocol::Debugger::API::SearchMatch>::create();
-  for (size_t i = 0; i < matches.size(); ++i)
-    results->addItem(std::move(matches[i]));
-  callback->sendSuccess(std::move(results));
+  callback->sendSuccess(
+      std::make_unique<
+          protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>(
+          std::move(matches)));
 }
 
 void InspectorPageAgent::searchInResource(
@@ -820,16 +819,40 @@ void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
   }
 }
 
+scoped_refptr<DOMWrapperWorld> InspectorPageAgent::EnsureDOMWrapperWorld(
+    LocalFrame* frame,
+    const String& world_name,
+    bool grant_universal_access) {
+  if (!isolated_worlds_.Contains(frame))
+    isolated_worlds_.Set(frame, FrameIsolatedWorlds());
+  FrameIsolatedWorlds& frame_worlds = isolated_worlds_.find(frame)->value;
+
+  auto world_it = frame_worlds.find(world_name);
+  if (world_it != frame_worlds.end())
+    return world_it->value;
+  scoped_refptr<DOMWrapperWorld> world =
+      frame->GetScriptController().CreateNewInspectorIsolatedWorld(world_name);
+  if (!world)
+    return nullptr;
+  frame_worlds.Set(world_name, world);
+  scoped_refptr<SecurityOrigin> security_origin =
+      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
+  if (grant_universal_access)
+    security_origin->GrantUniversalAccess();
+  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
+                                                  security_origin);
+  return world;
+}
+
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;
-  std::vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
+  Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
   std::sort(keys.begin(), keys.end(),
             [](const WTF::String& a, const WTF::String& b) {
               return Decimal::FromString(a) < Decimal::FromString(b);
             });
 
-  HashMap<String, int> world_id_by_name;
   for (const WTF::String& key : keys) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
@@ -840,31 +863,16 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
       continue;
     }
 
-    auto it = world_id_by_name.find(world_name);
-    int world_id = 0;
-    if (it != world_id_by_name.end()) {
-      world_id = it->value;
-    } else {
-      scoped_refptr<DOMWrapperWorld> world =
-          frame->GetScriptController().CreateNewInspectorIsolatedWorld(
-              world_name);
-      if (!world)
-        continue;
-      world_id = world->GetWorldId();
-      world_id_by_name.Set(world_name, world_id);
-
-      scoped_refptr<SecurityOrigin> security_origin =
-          frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
-      security_origin->GrantUniversalAccess();
-      DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id,
-                                                      security_origin);
-    }
+    scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
+        frame, world_name, true /* grant_universal_access */);
+    if (!world)
+      continue;
 
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
     frame->GetScriptController().ExecuteScriptInIsolatedWorld(
-        world_id, source, KURL(), SanitizeScriptErrors::kSanitize);
+        world->GetWorldId(), source, KURL(), SanitizeScriptErrors::kSanitize);
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
@@ -875,7 +883,7 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
-  double timestamp = CurrentTimeTicksInSeconds();
+  double timestamp = base::TimeTicks::Now().since_origin().InSecondsF();
   if (frame == inspected_frames_->Root())
     GetFrontend()->domContentEventFired(timestamp);
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
@@ -883,7 +891,7 @@ void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
-  double timestamp = CurrentTimeTicksInSeconds();
+  double timestamp = base::TimeTicks::Now().since_origin().InSecondsF();
   if (frame == inspected_frames_->Root())
     GetFrontend()->loadEventFired(timestamp);
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
@@ -1032,6 +1040,8 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setSecurityOrigin(
               SecurityOrigin::Create(loader->Url())->ToRawString())
           .build();
+  if (loader->Url().HasFragmentIdentifier())
+    frame_object->setUrlFragment("#" + loader->Url().FragmentIdentifier());
   Frame* parent_frame = frame->Tree().Parent();
   if (parent_frame) {
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
@@ -1058,9 +1068,11 @@ InspectorPageAgent::BuildObjectForFrameTree(LocalFrame* frame) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (!child_local_frame)
       continue;
-    if (!children_array)
-      children_array = protocol::Array<protocol::Page::FrameTree>::create();
-    children_array->addItem(BuildObjectForFrameTree(child_local_frame));
+    if (!children_array) {
+      children_array =
+          std::make_unique<protocol::Array<protocol::Page::FrameTree>>();
+    }
+    children_array->emplace_back(BuildObjectForFrameTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;
@@ -1070,8 +1082,8 @@ std::unique_ptr<protocol::Page::FrameResourceTree>
 InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
   std::unique_ptr<protocol::Page::Frame> frame_object =
       BuildObjectForFrame(frame);
-  std::unique_ptr<protocol::Array<protocol::Page::FrameResource>> subresources =
-      protocol::Array<protocol::Page::FrameResource>::create();
+  auto subresources =
+      std::make_unique<protocol::Array<protocol::Page::FrameResource>>();
 
   HeapVector<Member<Resource>> all_resources =
       CachedResourcesForFrame(frame, true);
@@ -1090,7 +1102,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
       resource_object->setCanceled(true);
     else if (cached_resource->GetStatus() == ResourceStatus::kLoadError)
       resource_object->setFailed(true);
-    subresources->addItem(std::move(resource_object));
+    subresources->emplace_back(std::move(resource_object));
   }
 
   HeapVector<Member<Document>> all_imports =
@@ -1102,7 +1114,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
             .setType(ResourceTypeJson(InspectorPageAgent::kDocumentResource))
             .setMimeType(import->SuggestedMIMEType())
             .build();
-    subresources->addItem(std::move(resource_object));
+    subresources->emplace_back(std::move(resource_object));
   }
 
   std::unique_ptr<protocol::Page::FrameResourceTree> result =
@@ -1118,10 +1130,11 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (!child_local_frame)
       continue;
-    if (!children_array)
-      children_array =
-          protocol::Array<protocol::Page::FrameResourceTree>::create();
-    children_array->addItem(BuildObjectForResourceTree(child_local_frame));
+    if (!children_array) {
+      children_array = std::make_unique<
+          protocol::Array<protocol::Page::FrameResourceTree>>();
+    }
+    children_array->emplace_back(BuildObjectForResourceTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;
@@ -1206,18 +1219,10 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   if (!frame)
     return Response::Error("No frame for given id found");
 
-  scoped_refptr<DOMWrapperWorld> world =
-      frame->GetScriptController().CreateNewInspectorIsolatedWorld(
-          world_name.fromMaybe(""));
+  scoped_refptr<DOMWrapperWorld> world = EnsureDOMWrapperWorld(
+      frame, world_name.fromMaybe(""), grant_universal_access.fromMaybe(false));
   if (!world)
     return Response::Error("Could not create isolated world");
-
-  scoped_refptr<SecurityOrigin> security_origin =
-      frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
-  if (grant_universal_access.fromMaybe(false))
-    security_origin->GrantUniversalAccess();
-  DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),
-                                                  security_origin);
 
   LocalWindowProxy* isolated_world_window_proxy =
       frame->GetScriptController().WindowProxy(*world);
@@ -1370,6 +1375,7 @@ protocol::Response InspectorPageAgent::generateTestReport(const String& message,
 void InspectorPageAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
+  visitor->Trace(isolated_worlds_);
   InspectorBaseAgent::Trace(visitor);
 }
 

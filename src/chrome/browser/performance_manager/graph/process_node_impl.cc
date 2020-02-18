@@ -11,9 +11,6 @@
 
 namespace performance_manager {
 
-ProcessNodeImplObserver::ProcessNodeImplObserver() = default;
-ProcessNodeImplObserver::~ProcessNodeImplObserver() = default;
-
 ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
     : TypedNodeBase(graph), binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -31,7 +28,7 @@ void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
 
 void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::ContainsKey(frame_nodes_, frame_node));
+  DCHECK(base::Contains(frame_nodes_, frame_node));
   frame_nodes_.erase(frame_node);
 }
 
@@ -83,21 +80,9 @@ void ProcessNodeImpl::SetProcess(base::Process process,
   SetProcessImpl(std::move(process), pid, launch_time);
 }
 
-const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::GetFrameNodes() const {
+const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_nodes_;
-}
-
-// There is currently not a direct relationship between processes and
-// pages. However, frames are children of both processes and frames, so we
-// find all of the pages that are reachable from the process's child
-// frames.
-base::flat_set<PageNodeImpl*> ProcessNodeImpl::GetAssociatedPageNodes() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<PageNodeImpl*> page_nodes;
-  for (auto* frame_node : frame_nodes_)
-    page_nodes.insert(frame_node->page_node());
-  return page_nodes;
 }
 
 PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
@@ -131,6 +116,78 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
   cumulative_cpu_usage_ = base::TimeDelta();
 }
 
+base::ProcessId ProcessNodeImpl::GetProcessId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return process_id();
+}
+
+const base::Process& ProcessNodeImpl::GetProcess() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return process();
+}
+
+base::Time ProcessNodeImpl::GetLaunchTime() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return launch_time();
+}
+
+base::Optional<int32_t> ProcessNodeImpl::GetExitStatus() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return exit_status();
+}
+
+void ProcessNodeImpl::VisitFrameNodes(const FrameNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* frame_impl : frame_nodes()) {
+    const FrameNode* frame = frame_impl;
+    if (!visitor.Run(frame))
+      return;
+  }
+}
+
+base::flat_set<const FrameNode*> ProcessNodeImpl::GetFrameNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const FrameNode*> frames;
+  const base::flat_set<FrameNodeImpl*>& frame_impls = frame_nodes();
+  for (auto* frame_impl : frame_impls) {
+    const FrameNode* frame = frame_impl;
+    frames.insert(frame);
+  }
+  return frames;
+}
+
+base::TimeDelta ProcessNodeImpl::GetExpectedTaskQueueingDuration() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return expected_task_queueing_duration();
+}
+
+bool ProcessNodeImpl::GetMainThreadTaskLoadIsLow() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return main_thread_task_load_is_low();
+}
+
+double ProcessNodeImpl::GetCpuUsage() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return cpu_usage();
+}
+
+base::TimeDelta ProcessNodeImpl::GetCumulativeCpuUsage() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return cumulative_cpu_usage();
+}
+
+uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return private_footprint_kb();
+}
+
+void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
+  for (auto& observer : observers())
+    observer.OnAllFramesInProcessFrozen(this);
+  for (auto* observer : GetObservers())
+    observer->OnAllFramesInProcessFrozen(this);
+}
+
 void ProcessNodeImpl::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NodeBase::LeaveGraph();
@@ -143,8 +200,5 @@ void ProcessNodeImpl::LeaveGraph() {
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
 }
-
-ProcessNodeImpl::ObserverDefaultImpl::ObserverDefaultImpl() = default;
-ProcessNodeImpl::ObserverDefaultImpl::~ObserverDefaultImpl() = default;
 
 }  // namespace performance_manager

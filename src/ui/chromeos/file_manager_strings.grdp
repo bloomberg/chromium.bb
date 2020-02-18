@@ -113,6 +113,28 @@
   <message name="IDS_FILE_BROWSER_COLUMN_SORTED_DESC_MESSAGE" desc="Message read by Chromevox/screenreader after sorting a column in the File list in descending order.">
     File list sorted by <ph name="COLUMN_NAME">$1<ex>date modified</ex></ph> in descending order.
   </message>
+
+  <!-- File selection a11y -->
+  <message name="IDS_FILE_BROWSER_SELECTION_ADD_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when adding a single entry (file or folder) to the existing selection.">
+    Added <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph> to selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_REMOVE_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when remove a single entry (file or folder) from the existing selection.">
+    Removed <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph> from selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_SINGLE_ENTRY" desc="Message spoken by Chromevox/screenreader when selection only one entry (without multiple selection).">
+    Selected <ph name="ENTRY_NAME">$1<ex>file.txt</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_ADD_RANGE" desc="Message spoken by Chromevox/screenreader when user selects a range of entries.">
+    Selected a range of <ph name="ENTRY_COUNT">$1<ex>10</ex></ph> entries from <ph name="FROM_ENTRY_NAME">$2<ex>file.txt</ex></ph> to <ph name="TO_ENTRY_NAME">$3<ex>another_file.txt</ex></ph>.
+  </message>
+
+  <message name="IDS_FILE_BROWSER_SELECTION_CANCELLATION" desc="Message spoken by Chromevox/screenreader user cancels a selection via 'Cancel selection' button or hitting Esc key.">
+    Removed all entries from selection.
+  </message>
+  <message name="IDS_FILE_BROWSER_SELECTION_ALL_ENTRIES" desc="Message spoken by Chromevox/screenreader user selects all entries e.g.: using Ctlr+A.">
+    Selected all entries.
+  </message>
+
   <message name="IDS_FILE_BROWSER_SIZE_BYTES" desc="Size in bytes.">
     <ph name="NUMBER_OF_BYTES">$1<ex>42</ex></ph> bytes
   </message>
@@ -545,11 +567,11 @@
   <message name="IDS_FILE_BROWSER_SET_WALLPAPER_BUTTON_LABEL" desc="The context menu item to set wallpaper.">
     Set as wallpaper
   </message>
-  <message name="IDS_FILE_BROWSER_CREATE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, creating a shortcut of the selected folder to the left nav.">
-    Create shortcut
+  <message name="IDS_FILE_BROWSER_PIN_FOLDER_BUTTON_LABEL" desc="Menu item label, pinning the selected folder to the left nav.">
+    Pin folder
   </message>
-  <message name="IDS_FILE_BROWSER_REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
-    Remove shortcut
+  <message name="IDS_FILE_BROWSER_UNPIN_FOLDER_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
+    Unpin folder
   </message>
   <message name="IDS_FILE_BROWSER_SELECT_ALL_COMMAND_LABEL" desc="Menu item label, select all files and folders in the right view">
     Select all
@@ -581,11 +603,20 @@
   <message name="IDS_FILE_BROWSER_CANCEL_SELECTION_BUTTON_LABEL" desc="Label for button that unselects all selected items.">
     Cancel selection
   </message>
+  <message name="IDS_FILE_BROWSER_READ_ONLY_LABEL" desc="Label for an indicator which means that the current folder is read-only.">
+    Read only
+  </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_LISTVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'list view' mode.">
     Switch to list view
   </message>
   <message name="IDS_FILE_BROWSER_CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL" desc="Label for button that changes the view mode to 'thumbnail view' mode.">
     Switch to thumbnail view
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_LIST_CHANGED_TO_LIST_VIEW" desc="Message spoken by ChromeVox/screen reader after clicking on button to switch to list view mode.">
+    File list has changed to list view.
+  </message>
+  <message name="IDS_FILE_BROWSER_FILE_LIST_CHANGED_TO_THUMBNAIL_VIEW" desc="Message spoken by ChromeVox/screen reader after clicking on button to switch to thumbnail view mode.">
+    File list has changed to thumbnail view.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TITLE" desc="Title of the cloud import feature.">
     Cloud backup
@@ -674,6 +705,9 @@
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_ITEMS_REMAINING" desc="File Manager status message.">
     Importing <ph name="FILE_COUNT">$1<ex>5</ex></ph> files...
   </message>
+  <message name="IDS_FILE_BROWSER_COPIED_TO" desc="File Manager status message.">
+    Copied to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
+  </message>
   <message name="IDS_FILE_BROWSER_COPY_FILE_NAME" desc="File Manager status message.">
     Copying <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
@@ -692,6 +726,9 @@
   <message name="IDS_FILE_BROWSER_COPY_UNEXPECTED_ERROR" desc="File Manager error message.">
     Copy operation failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not copy</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_FILE_ITEMS" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items
+  </message>
   <message name="IDS_FILE_BROWSER_MOVE_FILE_NAME" desc="File Manager status message.">
     Moving <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
   </message>
@@ -709,6 +746,12 @@
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
     Move failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not move</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_MOVED_TO" desc="File Manager status message.">
+    Moved to <ph name="FOLDER_NAME">$1<ex>images</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_TO_FOLDER_NAME" desc="File Manager status message.">
+    To <ph name="FOLDER_NAME">$1<ex>images</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
     Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
@@ -784,8 +827,17 @@
   <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
     Cancel
   </message>
+  <message name="IDS_FILE_BROWSER_CLOSE_LABEL" desc="Close label.">
+    Close
+  </message>
+  <message name="IDS_FILE_BROWSER_EXPAND_LABEL" desc="Expand label.">
+    Expand
+  </message>
   <message name="IDS_FILE_BROWSER_OPEN_LABEL" desc="Open label.">
     Open
+  </message>
+  <message name="IDS_FILE_BROWSER_PAUSE_LABEL" desc="Pause label.">
+    Pause
   </message>
   <message name="IDS_FILE_BROWSER_SAVE_LABEL" desc="Save label.">
     Save
@@ -801,6 +853,15 @@
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_CLEAR_LABEL" desc="Label to clear search text field">
     Clear
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
+    There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has some result">
+    Showing results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH" desc="Text spoken by ChromeVox/screen reader when a search term has been cleared">
+    Search text cleared, showing all files and folders.
   </message>
 
   <message name="IDS_FILE_BROWSER_DEFAULT_NEW_FOLDER_NAME" desc="The default name for a newly created folder.">
@@ -822,6 +883,25 @@
   </message>
   <message name="IDS_FILE_BROWSER_FORMATTING_WARNING" desc="Displayed when you attempt to format device.">
     Formatting the removable media is going to erase all data. Do you wish to continue?
+  </message>
+
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_TITLE" desc="Title of the format USB drive dialog.">
+    Format <ph name="DRIVE_NAME">$1<ex>Untitled USB</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_MESSAGE" desc="Advisory message shown before formatting a USB drive.">
+    Formatting a drive will delete all data stored on it. This action cannot be undone.
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_DELETE_WARNING" desc="Advisory message shown before formatting a USB drive that contains files.">
+    <ph name="TOTAL_FILE_SIZE">$1<ex>38.3 MB</ex></ph> of files will be deleted
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_DRIVE_NAME_LABEL" desc="Label for the USB drive name input field">
+    Drive name
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_FORMAT_LABEL" desc="Label for the format filesystem selector">
+    Format
+  </message>
+  <message name="IDS_FILE_BROWSER_FORMAT_DIALOG_CONFIRM_LABEL" desc="Label for the confirm button">
+    Erase and Format
   </message>
 
   <message name="IDS_FILE_BROWSER_SUGGEST_DIALOG_TITLE" desc="Title of the suggest app dialog, which shows the list of the apps which supports the selected file.">
@@ -1357,6 +1437,9 @@
   </message>
   <message name="IDS_AUDIO_PLAYER_OPEN_PLAY_LIST_BUTTON_LABEL" desc="Label for a button which is used to open play list in audio player.">
     Open play list
+  </message>
+  <message name="IDS_AUDIO_PLAYER_ARTWORK_EXPAND_BUTTON_LABEL" desc="Label for an expand button which is used to show/hide artwork.">
+    Artwork
   </message>
 
 <!-- Video Player -->

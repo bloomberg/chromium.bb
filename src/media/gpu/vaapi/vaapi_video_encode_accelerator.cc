@@ -5,15 +5,14 @@
 #include "media/gpu/vaapi/vaapi_video_encode_accelerator.h"
 
 #include <string.h>
+#include <va/va.h>
+#include <va/va_enc_h264.h>
+#include <va/va_enc_vp8.h>
 
 #include <algorithm>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#include <va/va.h>
-#include <va/va_enc_h264.h>
-#include <va/va_enc_vp8.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -32,6 +31,7 @@
 #include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/h264_dpb.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
@@ -40,10 +40,6 @@
 #include "media/gpu/vaapi/vp9_encoder.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
 #include "media/gpu/vp9_reference_frame_vector.h"
-
-#if defined(OS_LINUX)
-#include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
 
 #define NOTIFY_ERROR(error, msg)                        \
   do {                                                  \
@@ -384,7 +380,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       (native_input_mode_ ? 0 : kNumSurfacesPerInputVideoFrame);
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
-          VA_RT_FORMAT_YUV420, coded_size_,
+          kVaSurfaceFormat, coded_size_,
           (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");
@@ -557,18 +553,18 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     va_picture = vaapi_picture_factory_->Create(
         vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
         PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
-    gfx::GpuMemoryBufferHandle gmb_handle;
-#if defined(OS_LINUX)
-    gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
-#endif
-    if (gmb_handle.is_null()) {
-      NOTIFY_ERROR(kPlatformFailureError,
-                   "Failed to create GMB handle from video frame");
+    gfx::GpuMemoryBufferHandle gmb_handle =
+        CreateGpuMemoryBufferHandle(frame.get());
+    DCHECK(!gmb_handle.is_null());
+
+    auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
+    if (!buffer_format) {
+      NOTIFY_ERROR(kInvalidArgumentError,
+                   "Unsupported format: " << frame->format());
       return nullptr;
     }
-    if (!va_picture->ImportGpuMemoryBufferHandle(
-            VideoPixelFormatToGfxBufferFormat(frame->format()),
-            std::move(gmb_handle))) {
+    if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
+                                                 std::move(gmb_handle))) {
       NOTIFY_ERROR(kPlatformFailureError,
                    "Failed in ImportGpuMemoryBufferHandle");
       return nullptr;
@@ -581,14 +577,13 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
   }
 
   scoped_refptr<VASurface> input_surface = new VASurface(
-      va_input_surface_id, coded_size_, vaapi_wrapper_->va_surface_format(),
+      va_input_surface_id, coded_size_, kVaSurfaceFormat,
       native_input_mode_ ? base::DoNothing()
                          : base::BindOnce(va_surface_release_cb_));
 
   scoped_refptr<VASurface> reconstructed_surface =
       new VASurface(available_va_surface_ids_.back(), coded_size_,
-                    vaapi_wrapper_->va_surface_format(),
-                    base::BindOnce(va_surface_release_cb_));
+                    kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
   available_va_surface_ids_.pop_back();
 
   auto job = base::MakeRefCounted<VaapiEncodeJob>(
@@ -765,7 +760,8 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   // Clean up members that are to be accessed on the encoder thread only.
-  available_va_surface_ids_.clear();
+  if (vaapi_wrapper_)
+    vaapi_wrapper_->DestroyContextAndSurfaces(available_va_surface_ids_);
   available_va_buffer_ids_.clear();
 
   while (!available_bitstream_buffers_.empty())

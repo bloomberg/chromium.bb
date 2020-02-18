@@ -28,10 +28,9 @@ class JavaScriptConsoleTabHelper
 
  private:
   // Handles the received JavaScript messages.
-  bool OnJavaScriptConsoleMessage(const base::DictionaryValue& message,
+  void OnJavaScriptConsoleMessage(const base::DictionaryValue& message,
                                   const GURL& page_url,
-                                  bool has_user_gesture,
-                                  bool main_frame,
+                                  bool user_is_interacting,
                                   web::WebFrame* sender_frame);
 
   // WebStateObserver overrides.
@@ -42,6 +41,9 @@ class JavaScriptConsoleTabHelper
 
   // The delegate associated with the receiver.
   JavaScriptConsoleTabHelperDelegate* delegate_ = nullptr;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   // The WebState this instance is observing. Will be null after
   // WebStateDestroyed has been called.

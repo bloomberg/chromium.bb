@@ -22,7 +22,7 @@ namespace {
 
 class SequencedModelWorkerTest : public testing::Test {
  public:
-  SequencedModelWorkerTest() : did_do_work_(false), weak_factory_(this) {}
+  SequencedModelWorkerTest() : did_do_work_(false) {}
 
   bool did_do_work() { return did_do_work_; }
   SequencedModelWorker* worker() { return worker_.get(); }
@@ -44,8 +44,7 @@ class SequencedModelWorkerTest : public testing::Test {
   // This is the work that will be scheduled to be done on the DB sequence.
   SyncerError DoWork() {
     EXPECT_TRUE(task_runner_->RunsTasksInCurrentSequence());
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, run_loop_.QuitClosure());
+    run_loop_.Quit();
     did_do_work_ = true;
     return SyncerError(SyncerError::SYNCER_OK);
   }
@@ -55,8 +54,7 @@ class SequencedModelWorkerTest : public testing::Test {
   void Timeout() {
     ADD_FAILURE()
         << "Timed out waiting for work to be done on the DB sequence.";
-    scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, run_loop_.QuitClosure());
+    run_loop_.Quit();
   }
 
  protected:
@@ -77,7 +75,7 @@ class SequencedModelWorkerTest : public testing::Test {
   base::RunLoop run_loop_;
 
  private:
-  base::WeakPtrFactory<SequencedModelWorkerTest> weak_factory_;
+  base::WeakPtrFactory<SequencedModelWorkerTest> weak_factory_{this};
 };
 
 TEST_F(SequencedModelWorkerTest, DoesWorkOnDatabaseSequence) {

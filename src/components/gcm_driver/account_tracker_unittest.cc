@@ -10,9 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/http/http_status_code.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -277,12 +277,12 @@ class AccountTrackerTest : public testing::Test {
 #if !defined(OS_CHROMEOS)
   void NotifyLogoutOfPrimaryAccountOnly() {
     identity_test_env_.ClearPrimaryAccount(
-        identity::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+        signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
   }
 
   void NotifyLogoutOfAllAccounts() {
     identity_test_env_.ClearPrimaryAccount(
-        identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+        signin::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
   }
 #endif
 
@@ -334,7 +334,7 @@ class AccountTrackerTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
   AccountTrackerObserver observer_;

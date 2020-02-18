@@ -342,8 +342,7 @@ void CPWL_ComboBox::CreateListBox(const CreateParams& cp) {
 }
 
 bool CPWL_ComboBox::RePosChildWnd() {
-  ObservedPtr thisObserved(this);
-
+  ObservedPtr<CPWL_ComboBox> thisObserved(this);
   const CFX_FloatRect rcClient = GetClientRect();
   if (m_bPopup) {
     const float fOldWindowHeight = m_rcOldWindow.Height();
@@ -444,7 +443,7 @@ bool CPWL_ComboBox::SetPopup(bool bPopup) {
   if (!m_pFillerNotify)
     return true;
 
-  ObservedPtr thisObserved(this);
+  ObservedPtr<CPWL_ComboBox> thisObserved(this);
 
 #ifdef PDF_ENABLE_XFA
   if (m_pFillerNotify->OnPopupPreOpen(GetAttachedData(), 0))
@@ -589,7 +588,7 @@ bool CPWL_ComboBox::IsPopup() const {
 
 void CPWL_ComboBox::SetSelectText() {
   m_pEdit->SelectAll();
-  m_pEdit->ReplaceSel(m_pList->GetText());
+  m_pEdit->ReplaceSelection(m_pList->GetText());
   m_pEdit->SelectAll();
   m_nSelectItem = m_pList->GetCurSel();
 }

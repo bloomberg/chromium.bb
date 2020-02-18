@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <map>
 
-#include "osp_base/macros.h"
+#include "platform/base/macros.h"
 
 namespace openscreen {
 

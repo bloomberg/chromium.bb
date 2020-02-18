@@ -29,6 +29,7 @@
  */
 
 UI.Dialog = class extends UI.GlassPane {
+
   constructor() {
     super();
     this.registerRequiredCSS('ui/dialog.css');
@@ -41,6 +42,7 @@ UI.Dialog = class extends UI.GlassPane {
       this.hide();
       event.consume(true);
     });
+    UI.ARIAUtils.markAsDialog(this.contentElement, true);
     /** @type {!Map<!HTMLElement, number>} */
     this._tabIndexMap = new Map();
     /** @type {?UI.WidgetFocusRestorer} */

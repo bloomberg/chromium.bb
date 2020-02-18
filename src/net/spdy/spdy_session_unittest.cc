@@ -32,7 +32,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
-#include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/socket/client_socket_pool.h"
@@ -152,13 +151,10 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   }
 
  protected:
-  SpdySessionTest()
-      : SpdySessionTest(base::test::ScopedTaskEnvironment::MainThreadType::IO) {
-  }
-
   explicit SpdySessionTest(
-      base::test::ScopedTaskEnvironment::MainThreadType type)
-      : WithScopedTaskEnvironment(type),
+      base::test::ScopedTaskEnvironment::TimeSource time_source =
+          base::test::ScopedTaskEnvironment::TimeSource::DEFAULT)
+      : WithScopedTaskEnvironment(time_source),
         old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
@@ -365,6 +361,8 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
                url, session_.get()) != kNoPushedStreamFound;
   }
 
+  BoundTestNetLog log_;
+
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
   int old_max_group_sockets_;
@@ -380,14 +378,13 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
   const url::SchemeHostPort test_server_;
   SpdySessionKey key_;
   SSLSocketDataProvider ssl_;
-  BoundTestNetLog log_;
 };
 
 class SpdySessionTestWithMockTime : public SpdySessionTest {
  protected:
   SpdySessionTestWithMockTime()
       : SpdySessionTest(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 };
 
 // Try to create a SPDY session that will fail during
@@ -2148,8 +2145,7 @@ TEST_F(SpdySessionTest, Initialize) {
   // Flush the read completion task.
   base::RunLoop().RunUntilIdle();
 
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged HTTP2_SESSION_INITIALIZED correctly.
@@ -2158,10 +2154,9 @@ TEST_F(SpdySessionTest, Initialize) {
       NetLogEventPhase::NONE);
   EXPECT_LT(0, pos);
 
-  TestNetLogEntry entry = entries[pos];
   NetLogSource socket_source;
   EXPECT_TRUE(
-      NetLogSource::FromEventParameters(entry.params.get(), &socket_source));
+      NetLogSource::FromEventParameters(&entries[pos].params, &socket_source));
   EXPECT_TRUE(socket_source.IsValid());
   EXPECT_NE(log_.bound().source().id, socket_source.id);
 }
@@ -2189,38 +2184,24 @@ TEST_F(SpdySessionTest, NetLogOnSessionGoaway) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   int pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_RECV_GOAWAY,
       NetLogEventPhase::NONE);
-  TestNetLogEntry entry = entries[pos];
-  int last_accepted_stream_id;
-  ASSERT_TRUE(entry.GetIntegerValue("last_accepted_stream_id",
-                                    &last_accepted_stream_id));
-  EXPECT_EQ(42, last_accepted_stream_id);
-  int active_streams;
-  ASSERT_TRUE(entry.GetIntegerValue("active_streams", &active_streams));
-  EXPECT_EQ(0, active_streams);
-  int unclaimed_streams;
-  ASSERT_TRUE(entry.GetIntegerValue("unclaimed_streams", &unclaimed_streams));
-  EXPECT_EQ(0, unclaimed_streams);
-  std::string error_code;
-  ASSERT_TRUE(entry.GetStringValue("error_code", &error_code));
-  EXPECT_EQ("11 (ENHANCE_YOUR_CALM)", error_code);
-  std::string debug_data;
-  ASSERT_TRUE(entry.GetStringValue("debug_data", &debug_data));
-  EXPECT_EQ("foo", debug_data);
+  ASSERT_EQ(42,
+            GetIntegerValueFromParams(entries[pos], "last_accepted_stream_id"));
+  ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "active_streams"));
+  ASSERT_EQ(0, GetIntegerValueFromParams(entries[pos], "unclaimed_streams"));
+  ASSERT_EQ("11 (ENHANCE_YOUR_CALM)",
+            GetStringValueFromParams(entries[pos], "error_code"));
+  ASSERT_EQ("foo", GetStringValueFromParams(entries[pos], "debug_data"));
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
   pos = ExpectLogContainsSomewhere(
       entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
-  entry = entries[pos];
-  int net_error_code = 0;
-  ASSERT_TRUE(entry.GetNetErrorCode(&net_error_code));
-  EXPECT_THAT(net_error_code, IsOk());
+  EXPECT_THAT(GetNetErrorCodeFromParams(entries[pos]), IsOk());
 }
 
 TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
@@ -2244,8 +2225,7 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
   EXPECT_FALSE(session_);
 
   // Check that the NetLog was filled reasonably.
-  TestNetLogEntry::List entries;
-  log_.GetEntries(&entries);
+  auto entries = log_.GetEntries();
   EXPECT_LT(0u, entries.size());
 
   // Check that we logged SPDY_SESSION_CLOSE correctly.
@@ -2253,10 +2233,8 @@ TEST_F(SpdySessionTest, NetLogOnSessionEOF) {
       entries, 0, NetLogEventType::HTTP2_SESSION_CLOSE, NetLogEventPhase::NONE);
 
   if (pos < static_cast<int>(entries.size())) {
-    TestNetLogEntry entry = entries[pos];
-    int error_code = 0;
-    ASSERT_TRUE(entry.GetNetErrorCode(&error_code));
-    EXPECT_THAT(error_code, IsError(ERR_CONNECTION_CLOSED));
+    ASSERT_THAT(GetNetErrorCodeFromParams(entries[pos]),
+                IsError(ERR_CONNECTION_CLOSED));
   } else {
     ADD_FAILURE();
   }
@@ -2718,7 +2696,7 @@ class SessionClosingDelegate : public test::StreamDelegateDoNothing {
   ~SessionClosingDelegate() override = default;
 
   void OnClose(int status) override {
-    session_to_close_->CloseSessionOnError(ERR_SPDY_PROTOCOL_ERROR, "Error");
+    session_to_close_->CloseSessionOnError(ERR_HTTP2_PROTOCOL_ERROR, "Error");
   }
 
  private:
@@ -5187,7 +5165,7 @@ TEST_F(SpdySessionTest, GoAwayOnSessionFlowControlError) {
   data.Resume();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_SPDY_FLOW_CONTROL_ERROR));
+  EXPECT_THAT(delegate.WaitForClose(), IsError(ERR_HTTP2_FLOW_CONTROL_ERROR));
   EXPECT_FALSE(session_);
 }
 
@@ -5814,7 +5792,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   SpdyStream* pushed_stream;
   int rv = session_->GetPushedStream(pushed_url, 2 /* pushed_stream_id */, IDLE,
                                      &pushed_stream);
-  EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE));
 
   // Read PUSH_PROMISE.
   data.Resume();
@@ -5845,7 +5823,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   // stream with ID |pushed_stream_id|.
   rv = session_->GetPushedStream(pushed_url, 4 /* pushed_stream_id */, IDLE,
                                  &pushed_stream);
-  EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
+  EXPECT_THAT(rv, IsError(ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE));
 
   // GetPushedStream() should return OK and return the pushed stream in
   // |pushed_stream| outparam if |pushed_stream_id| matches.
@@ -6597,19 +6575,19 @@ TEST(MapFramerErrorToProtocolError, MapsValues) {
 }
 
 TEST(MapFramerErrorToNetError, MapsValue) {
-  CHECK_EQ(ERR_SPDY_PROTOCOL_ERROR,
+  CHECK_EQ(ERR_HTTP2_PROTOCOL_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_INVALID_CONTROL_FRAME));
-  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+  CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_COMPRESS_FAILURE));
-  CHECK_EQ(ERR_SPDY_COMPRESSION_ERROR,
+  CHECK_EQ(ERR_HTTP2_COMPRESSION_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_DECOMPRESS_FAILURE));
-  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+  CHECK_EQ(ERR_HTTP2_FRAME_SIZE_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_CONTROL_PAYLOAD_TOO_LARGE));
-  CHECK_EQ(ERR_SPDY_FRAME_SIZE_ERROR,
+  CHECK_EQ(ERR_HTTP2_FRAME_SIZE_ERROR,
            MapFramerErrorToNetError(
                http2::Http2DecoderAdapter::SPDY_OVERSIZED_PAYLOAD));
 }
@@ -6633,15 +6611,15 @@ TEST(MapRstStreamStatusToProtocolError, MapsValues) {
 
 TEST(MapNetErrorToGoAwayStatus, MapsValue) {
   CHECK_EQ(spdy::ERROR_CODE_INADEQUATE_SECURITY,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_INADEQUATE_TRANSPORT_SECURITY));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY));
   CHECK_EQ(spdy::ERROR_CODE_FLOW_CONTROL_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_FLOW_CONTROL_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_FLOW_CONTROL_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_PROTOCOL_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_PROTOCOL_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_PROTOCOL_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_COMPRESSION_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_COMPRESSION_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_COMPRESSION_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_FRAME_SIZE_ERROR,
-           MapNetErrorToGoAwayStatus(ERR_SPDY_FRAME_SIZE_ERROR));
+           MapNetErrorToGoAwayStatus(ERR_HTTP2_FRAME_SIZE_ERROR));
   CHECK_EQ(spdy::ERROR_CODE_PROTOCOL_ERROR,
            MapNetErrorToGoAwayStatus(ERR_UNEXPECTED));
 }

@@ -37,9 +37,9 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
   switch (type) {
     case content::ResourceType::kPrefetch:
     case content::ResourceType::kSubResource:
-    case content::ResourceType::kNavigationPreload:
       return flat_rule::ElementType_OTHER;
     case content::ResourceType::kMainFrame:
+    case content::ResourceType::kNavigationPreloadMainFrame:
       return flat_rule::ElementType_MAIN_FRAME;
     case content::ResourceType::kCspReport:
       return flat_rule::ElementType_CSP_REPORT;
@@ -59,6 +59,7 @@ flat_rule::ElementType GetElementType(content::ResourceType type) {
     case content::ResourceType::kXhr:
       return flat_rule::ElementType_XMLHTTPREQUEST;
     case content::ResourceType::kSubFrame:
+    case content::ResourceType::kNavigationPreloadSubFrame:
       return flat_rule::ElementType_SUBDOCUMENT;
     case content::ResourceType::kPing:
       return flat_rule::ElementType_PING;
@@ -126,7 +127,7 @@ bool IsExtraHeadersMatcherInternal(
     const flat::ExtensionIndexedRuleset& ruleset) {
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 6,
+  static_assert(flat::ActionIndex_count == 7,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
   static const flat::ActionIndex extra_header_indices[] = {
@@ -236,15 +237,16 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
   return mask;
 }
 
-bool RulesetMatcher::HasMatchingRedirectRule(const RequestParams& params,
-                                             GURL* redirect_url) const {
+const flat_rule::UrlRule* RulesetMatcher::GetRedirectRule(
+    const RequestParams& params,
+    GURL* redirect_url) const {
   DCHECK(redirect_url);
   DCHECK_NE(flat_rule::ElementType_WEBSOCKET, params.element_type);
 
   const flat_rule::UrlRule* rule = GetMatchingRule(
       params, flat::ActionIndex_redirect, FindRuleStrategy::kHighestPriority);
   if (!rule)
-    return false;
+    return nullptr;
 
   // Find the UrlRuleMetadata corresponding to |rule|. Since |metadata_list_| is
   // sorted by rule id, use LookupByKey which binary searches for fast lookup.
@@ -259,7 +261,17 @@ bool RulesetMatcher::HasMatchingRedirectRule(const RequestParams& params,
                                          metadata->redirect_url()->size()));
   DCHECK(redirect_url->is_valid());
   // Prevent a redirect loop where a URL continuously redirects to itself.
-  return *params.url != *redirect_url;
+  return *params.url == *redirect_url ? nullptr : rule;
+}
+
+const flat_rule::UrlRule* RulesetMatcher::GetUpgradeRule(
+    const RequestParams& params) const {
+  const bool is_upgradeable = params.url->SchemeIs(url::kHttpScheme) ||
+                              params.url->SchemeIs(url::kFtpScheme);
+  return is_upgradeable
+             ? GetMatchingRule(params, flat::ActionIndex_upgrade_scheme,
+                               FindRuleStrategy::kHighestPriority)
+             : nullptr;
 }
 
 RulesetMatcher::RulesetMatcher(std::string ruleset_data,

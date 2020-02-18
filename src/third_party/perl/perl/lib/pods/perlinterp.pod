@@ -70,8 +70,7 @@ needs, the stacks, and so on.
 
 Now we pass Perl the command line options, and tell it to go:
 
- exitstatus = perl_parse(my_perl, xs_init, argc, argv, (char **)NULL);
- if (!exitstatus)
+ if (!perl_parse(my_perl, xs_init, argc, argv, (char **)NULL))
      perl_run(my_perl);
 
  exitstatus = perl_destruct(my_perl);
@@ -363,7 +362,7 @@ Let's take an example of manipulating a PV, from C<sv_catpvn>, in
 F<sv.c>
 
      1  void
-     2  Perl_sv_catpvn(pTHX_ register SV *sv, register const char *ptr, register STRLEN len)
+     2  Perl_sv_catpvn(pTHX_ SV *sv, const char *ptr, STRLEN len)
      3  {
      4      STRLEN tlen;
      5      char *junk;
@@ -435,7 +434,7 @@ operations in.
 The easiest way to examine the op tree is to stop Perl after it has
 finished parsing, and get it to dump out the tree. This is exactly what
 the compiler backends L<B::Terse|B::Terse>, L<B::Concise|B::Concise>
-and L<B::Debug|B::Debug> do.
+and CPAN module <B::Debug do.
 
 Let's have a look at how Perl sees C<$a = $b + $c>:
 
@@ -473,11 +472,11 @@ Originally, the tree would have looked like this:
     11              SVOP (0x816dcf0) gv  GV (0x80fa460) *a
 
 That is, fetch the C<a> entry from the main symbol table, and then look
-at the scalar component of it: C<gvsv> (C<pp_gvsv> into F<pp_hot.c>)
+at the scalar component of it: C<gvsv> (C<pp_gvsv> in F<pp_hot.c>)
 happens to do both these things.
 
 The right hand side, starting at line 5 is similar to what we've just
-seen: we have the C<add> op (C<pp_add> also in F<pp_hot.c>) add
+seen: we have the C<add> op (C<pp_add>, also in F<pp_hot.c>) add
 together two C<gvsv>s.
 
 Now, what's this about?
@@ -531,8 +530,45 @@ statement. Get the values of C<$b> and C<$c>, and add them together.
 Find C<$a>, and assign one to the other. Then leave.
 
 The way Perl builds up these op trees in the parsing process can be
-unravelled by examining F<perly.y>, the YACC grammar. Let's take the
-piece we need to construct the tree for C<$a = $b + $c>
+unravelled by examining F<toke.c>, the lexer, and F<perly.y>, the YACC
+grammar. Let's look at the code that constructs the tree for C<$a = $b +
+$c>.
+
+First, we'll look at the C<Perl_yylex> function in the lexer. We want to
+look for C<case 'x'>, where x is the first character of the operator.
+(Incidentally, when looking for the code that handles a keyword, you'll
+want to search for C<KEY_foo> where "foo" is the keyword.) Here is the code
+that handles assignment (there are quite a few operators beginning with
+C<=>, so most of it is omitted for brevity):
+
+     1    case '=':
+     2        s++;
+              ... code that handles == => etc. and pod ...
+     3        pl_yylval.ival = 0;
+     4        OPERATOR(ASSIGNOP);
+
+We can see on line 4 that our token type is C<ASSIGNOP> (C<OPERATOR> is a
+macro, defined in F<toke.c>, that returns the token type, among other
+things). And C<+>:
+
+     1     case '+':
+     2         {
+     3             const char tmp = *s++;
+                   ... code for ++ ...
+     4             if (PL_expect == XOPERATOR) {
+                       ...
+     5                 Aop(OP_ADD);
+     6             }
+                   ...
+     7         }
+
+Line 4 checks what type of token we are expecting. C<Aop> returns a token.
+If you search for C<Aop> elsewhere in F<toke.c>, you will see that it
+returns an C<ADDOP> token.
+
+Now that we know the two token types we want to look for in the parser,
+let's take the piece of F<perly.y> we need to construct the tree for
+C<$a = $b + $c>
 
     1 term    :   term ASSIGNOP term
     2                { $$ = newASSIGNOP(OPf_STACKED, $1, $2, $3); }
@@ -541,9 +577,8 @@ piece we need to construct the tree for C<$a = $b + $c>
 
 If you're not used to reading BNF grammars, this is how it works:
 You're fed certain things by the tokeniser, which generally end up in
-upper case. Here, C<ADDOP>, is provided when the tokeniser sees C<+> in
-your code. C<ASSIGNOP> is provided when C<=> is used for assigning.
-These are "terminal symbols", because you can't get any simpler than
+upper case. C<ADDOP> and C<ASSIGNOP> are examples of "terminal symbols",
+because you can't get any simpler than
 them.
 
 The grammar, lines one and three of the snippet above, tells you how to
@@ -579,6 +614,49 @@ directly, but it's right there as the second token in the input, so we
 use C<$2>. The second parameter is the op's flags: 0 means "nothing
 special". Then the things to add: the left and right hand side of our
 expression, in scalar context.
+
+The functions that create ops, which have names like C<newUNOP> and
+C<newBINOP>, call a "check" function associated with each op type, before
+returning the op. The check functions can mangle the op as they see fit,
+and even replace it with an entirely new one. These functions are defined
+in F<op.c>, and have a C<Perl_ck_> prefix. You can find out which
+check function is used for a particular op type by looking in
+F<regen/opcodes>.  Take C<OP_ADD>, for example. (C<OP_ADD> is the token
+value from the C<Aop(OP_ADD)> in F<toke.c> which the parser passes to
+C<newBINOP> as its first argument.) Here is the relevant line:
+
+    add             addition (+)            ck_null         IfsT2   S S
+
+The check function in this case is C<Perl_ck_null>, which does nothing.
+Let's look at a more interesting case:
+
+    readline        <HANDLE>                ck_readline     t%      F?
+
+And here is the function from F<op.c>:
+
+     1 OP *
+     2 Perl_ck_readline(pTHX_ OP *o)
+     3 {
+     4     PERL_ARGS_ASSERT_CK_READLINE;
+     5 
+     6     if (o->op_flags & OPf_KIDS) {
+     7          OP *kid = cLISTOPo->op_first;
+     8          if (kid->op_type == OP_RV2GV)
+     9              kid->op_private |= OPpALLOW_FAKE;
+    10     }
+    11     else {
+    12         OP * const newop
+    13             = newUNOP(OP_READLINE, 0, newGVOP(OP_GV, 0,
+    14                                               PL_argvgv));
+    15         op_free(o);
+    16         return newop;
+    17     }
+    18     return o;
+    19 }
+
+One particularly interesting aspect is that if the op has no kids (i.e.,
+C<readline()> or C<< <> >>) the op is freed and replaced with an entirely
+new one that references C<*ARGV> (lines 12-16).
 
 =head1 STACKS
 
@@ -703,26 +781,27 @@ See L<perlguts/"Localizing changes"> for how to use the save stack.
 One thing you'll notice about the Perl source is that it's full of
 macros. Some have called the pervasive use of macros the hardest thing
 to understand, others find it adds to clarity. Let's take an example,
-the code which implements the addition operator:
+a stripped-down version the code which implements the addition operator:
 
    1  PP(pp_add)
    2  {
-   3      dSP; dATARGET; tryAMAGICbin(add,opASSIGN);
-   4      {
-   5        dPOPTOPnnrl_ul;
-   6        SETn( left + right );
-   7        RETURN;
-   8      }
-   9  }
+   3      dSP; dATARGET;
+   4      tryAMAGICbin_MG(add_amg, AMGf_assign|AMGf_numeric);
+   5      {
+   6        dPOPTOPnnrl_ul;
+   7        SETn( left + right );
+   8        RETURN;
+   9      }
+  10  }
 
 Every line here (apart from the braces, of course) contains a macro.
 The first line sets up the function declaration as Perl expects for PP
 code; line 3 sets up variable declarations for the argument stack and
-the target, the return value of the operation. Finally, it tries to see
+the target, the return value of the operation. Line 4 tries to see
 if the addition operation is overloaded; if so, the appropriate
 subroutine is called.
 
-Line 5 is another variable declaration - all variable declarations
+Line 6 is another variable declaration - all variable declarations
 start with C<d> - which pops from the top of the argument stack two NVs
 (hence C<nn>) and puts them into the variables C<right> and C<left>,
 hence the C<rl>. These are the two operands to the addition operator.

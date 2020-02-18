@@ -28,8 +28,8 @@ class WidgetDialogExample : public DialogDelegateView {
   WidgetDialogExample();
   ~WidgetDialogExample() override;
   base::string16 GetWindowTitle() const override;
-  View* CreateExtraView() override;
-  View* CreateFootnoteView() override;
+  std::unique_ptr<View> CreateExtraView() override;
+  std::unique_ptr<View> CreateFootnoteView() override;
 };
 
 class ModalDialogExample : public WidgetDialogExample {
@@ -45,8 +45,8 @@ class ModalDialogExample : public WidgetDialogExample {
 
 WidgetDialogExample::WidgetDialogExample() {
   SetBackground(CreateSolidBackground(SK_ColorGRAY));
-  SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kVertical, gfx::Insets(10), 10));
+  SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kVertical, gfx::Insets(10), 10));
   AddChildView(new Label(ASCIIToUTF16("Dialog contents label!")));
 }
 
@@ -56,15 +56,14 @@ base::string16 WidgetDialogExample::GetWindowTitle() const {
   return ASCIIToUTF16("Dialog Widget Example");
 }
 
-// TODO(crbug.com/961660): CreateExtraView should return std::unique_ptr<View>
-View* WidgetDialogExample::CreateExtraView() {
+std::unique_ptr<View> WidgetDialogExample::CreateExtraView() {
   auto view = MdTextButton::CreateSecondaryUiButton(
       nullptr, ASCIIToUTF16("Extra button!"));
-  return view.release();
+  return view;
 }
 
-View* WidgetDialogExample::CreateFootnoteView() {
-  return new Label(ASCIIToUTF16("Footnote label!"));
+std::unique_ptr<View> WidgetDialogExample::CreateFootnoteView() {
+  return std::make_unique<Label>(ASCIIToUTF16("Footnote label!"));
 }
 
 }  // namespace
@@ -75,8 +74,8 @@ WidgetExample::WidgetExample() : ExampleBase("Widget") {
 WidgetExample::~WidgetExample() = default;
 
 void WidgetExample::CreateExampleView(View* container) {
-  container->SetLayoutManager(
-      std::make_unique<BoxLayout>(BoxLayout::kHorizontal, gfx::Insets(), 10));
+  container->SetLayoutManager(std::make_unique<BoxLayout>(
+      BoxLayout::Orientation::kHorizontal, gfx::Insets(), 10));
   BuildButton(container, "Popup widget", POPUP);
   BuildButton(container, "Dialog widget", DIALOG);
   BuildButton(container, "Modal Dialog", MODAL_DIALOG);
@@ -109,7 +108,7 @@ void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
   if (!widget->GetContentsView()) {
     View* contents = new View();
     contents->SetLayoutManager(
-        std::make_unique<BoxLayout>(BoxLayout::kHorizontal));
+        std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal));
     contents->SetBackground(CreateSolidBackground(SK_ColorGRAY));
     BuildButton(contents, "Close", CLOSE_WIDGET);
     widget->SetContentsView(contents);

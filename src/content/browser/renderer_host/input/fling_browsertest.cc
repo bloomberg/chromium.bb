@@ -453,7 +453,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   // Scroll the parent down so that it is scrollable upward.
 
   // Initialize observer before scrolling changes the position of the OOPIF.
-  HitTestTransformChangeObserver observer(child_view_->GetFrameSinkId());
+  HitTestRegionObserver observer(child_view_->GetFrameSinkId());
+  observer.WaitForHitTestData();
 
   EXPECT_TRUE(
       ExecJs(GetRootNode()->current_frame_host(), "window.scrollTo(0, 20)"));
@@ -463,7 +464,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
   WaitForFrameScroll(GetRootNode(), 19);
   SynchronizeThreads();
 
-  // Wait for hit test data to change after scroll happens.
   observer.WaitForHitTestDataChange();
 
   // Fling and wait for the parent to scroll up.

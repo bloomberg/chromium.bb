@@ -29,7 +29,9 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -49,10 +51,13 @@ class ServiceWorkerTestContentClient : public TestContentClient {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   struct AllowServiceWorkerCallLog {
-    AllowServiceWorkerCallLog(const GURL& scope, const GURL& first_party)
-        : scope(scope), first_party(first_party) {}
+    AllowServiceWorkerCallLog(const GURL& scope,
+                              const GURL& first_party,
+                              const GURL& script_url)
+        : scope(scope), first_party(first_party), script_url(script_url) {}
     const GURL scope;
     const GURL first_party;
+    const GURL script_url;
   };
 
   ServiceWorkerTestContentBrowserClient() {}
@@ -60,9 +65,10 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
   bool AllowServiceWorker(
       const GURL& scope,
       const GURL& first_party,
+      const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
-    logs_.emplace_back(scope, first_party);
+    logs_.emplace_back(scope, first_party, script_url);
     return false;
   }
 
@@ -258,6 +264,13 @@ class ServiceWorkerProviderHostTest : public testing::Test {
     return !host->versions_to_update_.empty();
   }
 
+  void TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType provider_type,
+      const GURL url);
+  void TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType provider_type,
+      const GURL url);
+
   TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -285,6 +298,26 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   }
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHostTest);
+};
+
+// Run tests with PlzDedicatedWorker.
+// TODO(https://crbug.com/906991): Merge this test fixture into
+// ServiceWorkerProviderHostTest once PlzDedicatedWorker is enabled by default.
+class ServiceWorkerProviderHostTestWithPlzDedicatedWorker
+    : public ServiceWorkerProviderHostTest {
+ public:
+  ServiceWorkerProviderHostTestWithPlzDedicatedWorker() {
+    // ServiceWorkerProviderHost for dedicated workers is available only when
+    // PlzDedicatedWorker is enabled.
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
+         blink::features::kPlzDedicatedWorker,
+         network::features::kNetworkService} /* enabled_features */,
+        {} /* disabled_features */);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
@@ -454,13 +487,13 @@ class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
 
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
   remote_endpoints_.emplace_back();
-  remote_endpoints_.back().BindForWindow(std::move(provider_info));
+  remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
@@ -490,13 +523,13 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
 
 TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
   remote_endpoints_.emplace_back();
-  remote_endpoints_.back().BindForWindow(std::move(provider_info));
+  remote_endpoints_.back().BindForWindow(std::move(host_and_info->info));
   auto container = std::make_unique<MockServiceWorkerContainer>(
       std::move(*remote_endpoints_.back().client_request()));
 
@@ -543,6 +576,8 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[0].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[0].first_party);
+  EXPECT_EQ(GURL("https://www.example.com/bar"),
+            test_browser_client.logs()[0].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             GetRegistration(remote_endpoint.host_ptr()->get(),
@@ -552,6 +587,7 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[1].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[1].first_party);
+  EXPECT_EQ(GURL(), test_browser_client.logs()[1].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             GetRegistrations(remote_endpoint.host_ptr()->get()));
@@ -560,6 +596,7 @@ TEST_F(ServiceWorkerProviderHostTest,
             test_browser_client.logs()[2].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
             test_browser_client.logs()[2].first_party);
+  EXPECT_EQ(GURL(), test_browser_client.logs()[2].script_url);
 
   SetBrowserClientForTesting(old_browser_client);
 }
@@ -583,7 +620,8 @@ TEST_F(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
 
-  EXPECT_FALSE(host->AllowServiceWorker(GURL("https://www.example.com/scope")));
+  EXPECT_FALSE(
+      host->AllowServiceWorker(GURL("https://www.example.com/scope"), GURL()));
 
   ASSERT_EQ(1ul, test_browser_client.logs().size());
   EXPECT_EQ(GURL("https://www.example.com/scope"),
@@ -849,31 +887,35 @@ TEST_F(ServiceWorkerProviderHostTest,
 // Test that a "reserved" (i.e., not execution ready) client is not included
 // when iterating over client provider hosts. If it were, it'd be undesirably
 // exposed via the Clients API.
-TEST_F(ServiceWorkerProviderHostTest,
-       ReservedClientsAreNotExposedToClientsAPI) {
+void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
+    blink::mojom::ServiceWorkerProviderType provider_type,
+    const GURL url) {
   {
+    blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+    blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
     auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
+    provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+    host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
     base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateForSharedWorker(
+        ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
-            &provider_info);
-    const GURL url("https://www.example.com/shared_worker.js");
+            provider_type, std::move(host_request), std::move(client_ptr_info));
     host->UpdateUrls(url, url);
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
-    host->CompleteSharedWorkerPreparation();
+    host->CompleteWebWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
   }
 
   {
-    auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+    std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+        CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                           /*are_ancestors_secure=*/true);
     base::WeakPtr<ServiceWorkerProviderHost> host =
-        ServiceWorkerProviderHost::PreCreateNavigationHost(
-            helper_->context()->AsWeakPtr(), true,
-            FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+        std::move(host_and_info->host);
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    remote_endpoint.BindForWindow(std::move(provider_info));
+    remote_endpoint.BindForWindow(std::move(host_and_info->info));
+
     FinishNavigation(host.get());
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
 
@@ -885,18 +927,33 @@ TEST_F(ServiceWorkerProviderHostTest,
   }
 }
 
+TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
+       ReservedClientsAreNotExposedToClientsApiForDedicatedWorker) {
+  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
+  TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+      GURL("https://www.example.com/dedicated_worker.js"));
+}
+
+TEST_F(ServiceWorkerProviderHostTest,
+       ReservedClientsAreNotExposedToClientsApiForSharedWorker) {
+  TestReservedClientsAreNotExposed(
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      GURL("https://www.example.com/shared_worker.js"));
+}
+
 // Tests the client phase transitions for a navigation.
 TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
+      std::move(host_and_info->host);
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+  remote_endpoint.BindForWindow(std::move(host_and_info->info));
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  remote_endpoint.BindForWindow(std::move(provider_info));
   FinishNavigation(host.get());
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
@@ -909,22 +966,41 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
   EXPECT_TRUE(host->is_execution_ready());
 }
 
-// Tests the client phase transitions for a shared worker.
-TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+// Tests the client phase transitions for workers.
+void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
+    blink::mojom::ServiceWorkerProviderType provider_type,
+    const GURL url) {
+  blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
+  blink::mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  provider_info->client_request = mojo::MakeRequest(&client_ptr_info);
+  host_request = mojo::MakeRequest(&provider_info->host_ptr_info);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateForSharedWorker(
-          context_->AsWeakPtr(), helper_->mock_render_process_id(),
-          &provider_info);
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
+          helper_->context()->AsWeakPtr(), helper_->mock_render_process_id(),
+          provider_type, std::move(host_request), std::move(client_ptr_info));
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
-  const GURL url("https://www.example.com/shared_worker.js");
   host->UpdateUrls(url, url);
-  host->CompleteSharedWorkerPreparation();
+  host->CompleteWebWorkerPreparation();
 
   EXPECT_TRUE(host->is_response_committed());
   EXPECT_TRUE(host->is_execution_ready());
+}
+
+TEST_F(ServiceWorkerProviderHostTestWithPlzDedicatedWorker,
+       ClientPhaseForDedicatedWorker) {
+  ASSERT_TRUE(blink::features::IsPlzDedicatedWorkerEnabled());
+  TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+      GURL("https://www.example.com/dedicated_worker.js"));
+}
+
+TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForSharedWorker) {
+  TestClientPhaseTransition(
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      GURL("https://www.example.com/shared_worker.js"));
 }
 
 // Tests that the service worker involved with a navigation (via

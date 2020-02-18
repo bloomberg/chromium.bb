@@ -21,8 +21,6 @@ generate_jni("jni_headers") {
   public_deps = [
     ":system_impl_java_jni_headers",
   ]
-
-  jni_package = "mojo"
 }
 
 generate_jni("system_impl_java_jni_headers") {
@@ -31,8 +29,6 @@ generate_jni("system_impl_java_jni_headers") {
     "src/org/chromium/mojo/system/impl/CoreImpl.java",
     "src/org/chromium/mojo/system/impl/WatcherImpl.java",
   ]
-
-  jni_package = "mojo"
 }
 
 source_set("native_support") {
@@ -174,5 +170,6 @@ instrumentation_test_apk("mojo_test_apk") {
   shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"
   android_manifest = "javatests/AndroidManifest.xml"
+  target_sdk_version = 21
   enable_multidex = false
 }

@@ -18,10 +18,10 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/base/test_signin_client.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +64,7 @@ class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
     template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
     search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
 
-    identity_env_ = std::make_unique<identity::IdentityTestEnvironment>(
+    identity_env_ = std::make_unique<signin::IdentityTestEnvironment>(
         &test_url_loader_factory_);
     auto loader = std::make_unique<FakeSearchSuggestLoader>();
     loader_ = loader.get();
@@ -132,7 +132,7 @@ class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
  private:
   TemplateURLService* template_url_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_env_;
 
   // Owned by the service.
   FakeSearchSuggestLoader* loader_;

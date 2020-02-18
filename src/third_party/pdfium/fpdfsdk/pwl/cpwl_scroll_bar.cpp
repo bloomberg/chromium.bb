@@ -30,9 +30,9 @@ void PWL_FLOATRANGE::Reset() {
   fMax = 0.0f;
 }
 
-void PWL_FLOATRANGE::Set(float f1, float f2) {
-  fMin = std::min(f1, f2);
-  fMax = std::max(f1, f2);
+void PWL_FLOATRANGE::Set(float min, float max) {
+  fMin = std::min(min, max);
+  fMax = std::max(min, max);
 }
 
 bool PWL_FLOATRANGE::In(float x) const {
@@ -370,20 +370,17 @@ bool CPWL_ScrollBar::RePosChildWnd() {
       break;
   }
 
-  ObservedPtr thisObserved(this);
-
+  ObservedPtr<CPWL_ScrollBar> thisObserved(this);
   if (m_pMinButton) {
     m_pMinButton->Move(rcMinButton, true, false);
     if (!thisObserved)
       return false;
   }
-
   if (m_pMaxButton) {
     m_pMaxButton->Move(rcMaxButton, true, false);
     if (!thisObserved)
       return false;
   }
-
   if (!MovePosButton(false))
     return false;
 
@@ -558,7 +555,7 @@ void CPWL_ScrollBar::CreateButtons(const CreateParams& cp) {
     auto pButton = pdfium::MakeUnique<CPWL_SBButton>(scp, CloneAttachedData(),
                                                      m_sbType, PSBT_POS);
     m_pPosButton = pButton.get();
-    ObservedPtr thisObserved(this);
+    ObservedPtr<CPWL_ScrollBar> thisObserved(this);
     if (m_pPosButton->SetVisible(false) && thisObserved) {
       AddChild(std::move(pButton));
       m_pPosButton->Realize();
@@ -579,10 +576,9 @@ void CPWL_ScrollBar::SetScrollRange(float fMin,
   if (!m_pPosButton)
     return;
 
+  ObservedPtr<CPWL_ScrollBar> thisObserved(this);
   m_sData.SetScrollRange(fMin, fMax);
   m_sData.SetClientWidth(fClientWidth);
-
-  ObservedPtr thisObserved(this);
 
   if (IsFloatSmaller(m_sData.ScrollRange.GetWidth(), 0.0f)) {
     m_pPosButton->SetVisible(false);
@@ -662,8 +658,7 @@ bool CPWL_ScrollBar::MovePosButton(bool bRefresh) {
         break;
     }
 
-    ObservedPtr thisObserved(this);
-
+    ObservedPtr<CPWL_ScrollBar> thisObserved(this);
     m_pPosButton->Move(rcPosButton, true, bRefresh);
     if (!thisObserved)
       return false;

@@ -27,6 +27,7 @@
 #include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtcp_statistics.h"
+#include "modules/rtp_rtcp/include/rtp_packet_sender.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/rtp_packet_received.h"
 
@@ -115,6 +116,7 @@ class RtpTransportControllerSendInterface {
   virtual void DestroyRtpVideoSender(
       RtpVideoSenderInterface* rtp_video_sender) = 0;
 
+  virtual NetworkStateEstimateObserver* network_state_estimate_observer() = 0;
   virtual TransportFeedbackObserver* transport_feedback_observer() = 0;
 
   virtual RtpPacketSender* packet_sender() = 0;
@@ -123,8 +125,7 @@ class RtpTransportControllerSendInterface {
   // settings.
   // |min_send_bitrate_bps| is the total minimum send bitrate required by all
   // sending streams.  This is the minimum bitrate the PacedSender will use.
-  // Note that SendSideCongestionController::OnNetworkChanged can still be
-  // called with a lower bitrate estimate. |max_padding_bitrate_bps| is the max
+  // |max_padding_bitrate_bps| is the max
   // bitrate the send streams request for padding. This can be higher than the
   // current network estimate and tells the PacedSender how much it should max
   // pad unless there is real packets to send.
@@ -150,7 +151,7 @@ class RtpTransportControllerSendInterface {
   virtual int64_t GetFirstPacketTimeMs() const = 0;
   virtual void EnablePeriodicAlrProbing(bool enable) = 0;
   virtual void OnSentPacket(const rtc::SentPacket& sent_packet) = 0;
-  virtual void OnReceivedPacket(const RtpPacketReceived& received_packet) = 0;
+  virtual void OnReceivedPacket(const ReceivedPacket& received_packet) = 0;
 
   virtual void SetSdpBitrateParameters(
       const BitrateConstraints& constraints) = 0;
@@ -159,6 +160,8 @@ class RtpTransportControllerSendInterface {
 
   virtual void OnTransportOverheadChanged(
       size_t transport_overhead_per_packet) = 0;
+
+  virtual void AccountForAudioPacketsInPacedSender(bool account_for_audio) = 0;
 };
 
 }  // namespace webrtc

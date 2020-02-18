@@ -31,6 +31,25 @@ cr.define('cr.icon', function() {
   }
 
   /**
+   * Generates a CSS url string.
+   * @param {string} s The URL to generate the CSS url for.
+   * @return {string} The CSS url string.
+   */
+  function getUrlForCss(s) {
+    // http://www.w3.org/TR/css3-values/#uris
+    // Parentheses, commas, whitespace characters, single quotes (') and double
+    // quotes (") appearing in a URI must be escaped with a backslash
+    let s2 = s.replace(/(\(|\)|\,|\s|\'|\"|\\)/g, '\\$1');
+    // WebKit has a bug when it comes to URLs that end with \
+    // https://bugs.webkit.org/show_bug.cgi?id=28885
+    if (/\\\\$/.test(s2)) {
+      // Add a space to work around the WebKit bug.
+      s2 += ' ';
+    }
+    return 'url("' + s2 + '")';
+  }
+
+  /**
    * A URL for the filetype icon for |filePath|. OS and theme dependent.
    * @param {string} filePath
    * @return {string}
@@ -55,7 +74,7 @@ cr.define('cr.icon', function() {
   function getImageSet(path) {
     const supportedScaleFactors = getSupportedScaleFactors();
 
-    const replaceStartIndex = path.indexOf('scalefactor');
+    const replaceStartIndex = path.indexOf('SCALEFACTOR');
     if (replaceStartIndex < 0) {
       return getUrlForCss(path);
     }
@@ -86,7 +105,7 @@ cr.define('cr.icon', function() {
     const chromeThemePath = 'chrome://theme';
     const isChromeThemeUrl =
         (path.slice(0, chromeThemePath.length) == chromeThemePath);
-    return isChromeThemeUrl ? getImageSet(path + '@scalefactorx') :
+    return isChromeThemeUrl ? getImageSet(path + '@SCALEFACTORx') :
                               getUrlForCss(path);
   }
 
@@ -94,26 +113,37 @@ cr.define('cr.icon', function() {
    * A regular expression for identifying favicon URLs.
    * @const {!RegExp}
    */
-  const FAVICON_URL_REGEX = /\.ico$/i;
+  const FAVICON_URL_REGEX = /\.(ico|png)$/i;
 
   /**
    * Creates a CSS -webkit-image-set for a favicon request.
    *
    * @param {string} url Either the URL of the original page or of the favicon
    *     itself.
+   * @param {boolean} isSyncedUrlForHistoryUi Should be set to true only if the
+   *     caller is an UI aimed at displaying user history, and the requested url
+   *     is known to be present in Chrome sync data.
+   *
    * @return {string} -webkit-image-set for the favicon.
    */
-  function getFavicon(url) {
-    return getImageSet(
-        'chrome://favicon/size/16@scalefactorx/' +
-        // Note: Literal 'iconurl' must match |kIconURLParameter| in
-        // components/favicon_base/favicon_url_parser.cc.
-        (FAVICON_URL_REGEX.test(url) ? 'iconurl/' : '') + url);
+  function getFavicon(url, isSyncedUrlForHistoryUi) {
+    const isIconUrl = FAVICON_URL_REGEX.test(url);
+    // Note: Literal strings used below must match those in the description of
+    // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
+    let path = 'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
+        '&url_type=' + (isIconUrl ? 'icon_url' : 'page_url') +
+        '&url=' + encodeURIComponent(url);
+    if (!isIconUrl) {
+      path += '&allow_google_server_fallback=' +
+          (isSyncedUrlForHistoryUi ? '1' : '0');
+    }
+    return getImageSet(path);
   }
 
   return {
-    getImage: getImage,
     getFavicon: getFavicon,
     getFileIconUrl: getFileIconUrl,
+    getImage: getImage,
+    getUrlForCss: getUrlForCss,
   };
 });

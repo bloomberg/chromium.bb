@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
@@ -275,7 +275,7 @@ class FakeSSLClientSocketTest : public testing::Test {
   }
 
   // MockTCPClientSocket needs a message loop.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   net::MockClientSocketFactory mock_client_socket_factory_;
   std::unique_ptr<net::StaticSocketDataProvider> static_socket_data_provider_;

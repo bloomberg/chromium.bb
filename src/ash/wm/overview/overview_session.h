@@ -40,6 +40,7 @@ class Widget;
 namespace ash {
 class OverviewDelegate;
 class OverviewGrid;
+class OverviewHighlightController;
 class OverviewItem;
 class OverviewWindowDragController;
 class RoundedLabelWidget;
@@ -55,8 +56,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
                                    public ShellObserver,
                                    public SplitViewObserver {
  public:
-  enum Direction { LEFT, UP, RIGHT, DOWN };
-
   enum class OverviewTransition {
     kEnter,       // In the entering process of overview.
     kInOverview,  // Already in overview.
@@ -69,22 +68,23 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // bounds. Window(s) that are not visible to the user do not get animated.
     // This should always be the type when in clamshell mode.
     kNormal,
-    // When going to or from a state which all window(s) are minimized, slides
-    // the windows in or out. This will minimize windows on exit if needed, so
-    // that we do not need to add a delayed observer to handle minimizing the
-    // windows after overview exit animations are finished.
-    kWindowsMinimized,
+    // Slide all windows in to enter overview. This can happen when going from
+    // a state which all window(s) are minimized.
+    kSlideInEnter,
+    // Slide all windows out to exit overview. This can happen when going to
+    // a state which all window(s) are minimized. This will minimize windows on
+    // exit if needed, so that we do not need to add a delayed observer to
+    // handle minimizing the windows after overview exit animations are
+    // finished.
+    kSlideOutExit,
     // Overview can be closed by swiping up from the shelf. In this mode, the
     // call site will handle shifting the bounds of the windows, so overview
     // code does not need to handle any animations. This is an exit only type.
     kSwipeFromShelf,
-    // Overview can be opened by start dragging a window from top or be closed
-    // if the dragged window restores back to maximized/full-screened. On enter
-    // this mode is same as kNormal, except when all windows are minimized, the
-    // launcher does not animate in. On exit this mode is used to avoid the
-    // update bounds animation of the windows in overview grid on overview mode
-    // ended.
-    kWindowDragged,
+    // Used only when it's desired to enter overview mode immediately without
+    // animations. It's used when entering overview by dragging a window from
+    // from the top of the screen.
+    kImmediateEnter,
     // Used only when it's desired to exit overview mode immediately without
     // animations. This is used when performing the desk switch animation when
     // the source desk is in overview mode, while the target desk is not.
@@ -109,11 +109,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Perform cleanup that cannot be done in the destructor.
   void Shutdown();
 
-  // Cancels window selection.
-  void CancelSelection();
-
   // Called when the last overview item from a grid is deleted.
-  void OnGridEmpty(OverviewGrid* grid);
+  void OnGridEmpty();
 
   // Moves the current selection by |increment| items. Positive values of
   // |increment| move the selection forward, negative values move it backward.
@@ -156,7 +153,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // repositioned.
   void RemoveItem(OverviewItem* overview_item);
 
-  void InitiateDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
+  void InitiateDrag(OverviewItem* item,
+                    const gfx::PointF& location_in_screen,
+                    bool allow_drag_to_close);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void StartNormalDragMode(const gfx::PointF& location_in_screen);
@@ -211,7 +210,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
       UpdateAnimationSettingsCallback callback);
 
   // Updates all the overview items' mask and shadow.
-  void UpdateMaskAndShadow();
+  void UpdateRoundedCornersAndShadow();
 
   // Called when the overview mode starting animation completes.
   void OnStartingAnimationComplete(bool canceled);
@@ -226,12 +225,19 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Gets the window which keeps focus for the duration of overview mode.
   aura::Window* GetOverviewFocusWindow();
 
+  // Returns the window highlighted by the selector widget.
+  aura::Window* GetHighlightedWindow();
+
   // Suspends/Resumes window re-positiong in overview.
   void SuspendReposition();
   void ResumeReposition();
 
   // Returns true if all its window grids don't have any window item.
   bool IsEmpty() const;
+
+  // Handles requests to active or close the currently highlighted |item|.
+  void OnHighlightedItemActivated(OverviewItem* item);
+  void OnHighlightedItemClosed(OverviewItem* item);
 
   // display::DisplayObserver:
   void OnDisplayRemoved(const display::Display& display) override;
@@ -264,6 +270,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return split_view_drag_indicators_.get();
   }
 
+  const std::vector<std::unique_ptr<OverviewGrid>>& grid_list() const {
+    return grid_list_;
+  }
+
+  size_t num_items() const { return num_items_; }
+
   EnterExitOverviewType enter_exit_overview_type() const {
     return enter_exit_overview_type_;
   }
@@ -275,26 +287,24 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return window_drag_controller_.get();
   }
 
-  const std::vector<std::unique_ptr<OverviewGrid>>& grid_list_for_testing()
-      const {
-    return grid_list_;
+  OverviewHighlightController* highlight_controller() {
+    return highlight_controller_.get();
   }
-
-  size_t num_items_for_testing() const { return num_items_; }
 
   RoundedLabelWidget* no_windows_widget_for_testing() {
     return no_windows_widget_.get();
   }
 
  private:
+  friend class DesksAcceleratorsTest;
   friend class OverviewSessionTest;
 
   // |focus|, restores focus to the stored window.
   void ResetFocusRestoreWindow(bool focus);
 
-  // Helper function that moves the selection widget to |direction| on the
-  // corresponding window grid.
-  void Move(Direction direction, bool animate);
+  // Helper function that moves the selection widget to forward or backward on
+  // the corresponding window grid.
+  void Move(bool reverse);
 
   // Removes all observers that were registered during construction and/or
   // initialization.
@@ -304,6 +314,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnDisplayBoundsChanged();
 
   void UpdateNoWindowsWidget();
+
+  void RefreshNoWindowsWidgetBounds(bool animate);
 
   // Tracks observed windows.
   base::flat_set<aura::Window*> observed_windows_;
@@ -319,7 +331,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // A hidden window that receives focus while in overview mode. It is needed
   // because accessibility needs something focused for it to work and we cannot
-  // use one of the overview windows otherwise ::wm::ActivateWindow will not
+  // use one of the overview windows otherwise wm::ActivateWindow will not
   // work.
   // TODO(sammiequon): Investigate if we can focus the |selection_widget_| in
   // OverviewGrid when it is created, or if we can focus a widget from the
@@ -345,9 +357,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // overview mode. This will be nullptr if split view is not enabled.
   std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
-  // Tracks the index of the root window the selection widget is in.
-  size_t selected_grid_index_ = 0;
-
   // The following variables are used for metric collection purposes. All of
   // them refer to this particular overview session and are not cumulative:
   // The time when overview was started.
@@ -372,6 +381,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   std::unique_ptr<OverviewWindowDragController> window_drag_controller_;
 
   std::unique_ptr<ScopedOverviewHideWindows> hide_overview_windows_;
+
+  std::unique_ptr<OverviewHighlightController> highlight_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewSession);
 };

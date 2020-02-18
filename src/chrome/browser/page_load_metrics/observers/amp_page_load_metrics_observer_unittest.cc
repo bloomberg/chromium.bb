@@ -80,14 +80,17 @@ class AMPPageLoadMetricsObserverTest
         1);
   }
 
-  ukm::mojom::UkmEntryPtr GetAmpPageLoadUkmEntry() {
-    std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> entries =
-        test_ukm_recorder().GetMergedEntriesByName(
-            ukm::builders::AmpPageLoad::kEntryName);
-    if (entries.size() != 1ul) {
-      return nullptr;
+  ukm::mojom::UkmEntryPtr GetAmpPageLoadUkmEntry(const GURL& url) {
+    ukm::mojom::UkmEntryPtr entry;
+    for (auto& it : test_ukm_recorder().GetMergedEntriesByName(
+             ukm::builders::AmpPageLoad::kEntryName)) {
+      const ukm::UkmSource* source =
+          test_ukm_recorder().GetSourceForSourceId(it.first);
+      if (source->url() == url) {
+        entry = std::move(it.second);
+      }
     }
-    return std::move(entries.begin()->second);
+    return entry;
   }
 
  protected:
@@ -170,13 +173,13 @@ TEST_F(AMPPageLoadMetricsObserverTest, GoogleSearchAMPViewerSameDocument) {
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
+  GURL main_frame_url("https://ampviewer.com/");
   GURL amp_url("https://ampviewer.com/page");
 
   // This emulates the AMP subframe non-prerender flow: first we perform a
   // same-document navigation in the main frame to the AMP viewer URL, then we
   // create and navigate the subframe to an AMP cache URL.
-  NavigationSimulator::CreateRendererInitiated(GURL("https://ampviewer.com/"),
-                                               main_rfh())
+  NavigationSimulator::CreateRendererInitiated(main_frame_url, main_rfh())
       ->Commit();
 
   NavigationSimulator::CreateRendererInitiated(amp_url, main_rfh())
@@ -210,14 +213,25 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameInputBeforeNavigation) {
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
+  ukm::mojom::UkmEntryPtr main_frame_entry =
+      GetAmpPageLoadUkmEntry(main_frame_url);
+  ukm::mojom::UkmEntryPtr sub_frame_entry = GetAmpPageLoadUkmEntry(amp_url);
+  ASSERT_NE(nullptr, main_frame_entry.get());
+  ASSERT_NE(nullptr, sub_frame_entry.get());
+
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
-  test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
-      entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
+      sub_frame_entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
   EXPECT_NE(nullptr, nav_delta_metric);
   EXPECT_GE(*nav_delta_metric, 0ll);
+
+  const int64_t* amp_subframe_metric = test_ukm_recorder().GetEntryMetric(
+      main_frame_entry.get(), "SubFrameAmpPageLoad");
+  EXPECT_NE(nullptr, amp_subframe_metric);
+  EXPECT_GE(*amp_subframe_metric, 1ll);
+  EXPECT_EQ(nullptr, test_ukm_recorder().GetEntryMetric(
+                         main_frame_entry.get(), "MainFrameAmpPageLoad"));
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
@@ -261,9 +275,11 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameNavigationBeforeInput) {
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
+  ASSERT_NE(nullptr, entry.get());
+
   // We expect a source with a positive NavigationDelta metric, since the main
   // frame navigation occurred after the AMP subframe navigation.
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
       entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
@@ -318,22 +334,24 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
       "PageLoad.Clients.AMP.PaintTiming.InputToFirstContentfulPaint.Subframe",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe",
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe", 1);
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe", 1);
 
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
+  ASSERT_NE(nullptr, entry.get());
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay3", 3);
+      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
+      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
+      10);
 }
 
-TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
+TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutInstability) {
   GURL amp_url("https://ampviewer.com/page");
 
   NavigationSimulator::CreateRendererInitiated(GURL("https://ampviewer.com/"),
@@ -355,7 +373,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
       blink::WebLoadingBehaviorFlag::kWebLoadingBehaviorAmpDocumentLoaded;
   SimulateMetadataUpdate(metadata, subframe);
 
-  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 0.5);
   SimulateRenderDataUpdate(render_data, subframe);
 
   // Navigate the main frame to trigger metrics recording.
@@ -364,13 +382,18 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics_LayoutStability) {
       ->CommitSameDocument();
 
   histogram_tester().ExpectUniqueSample(
-      "PageLoad.Clients.AMP.Experimental.LayoutStability.JankScore.Subframe",
+      "PageLoad.Clients.AMP.LayoutInstability.CumulativeShiftScore.Subframe",
       10, 1);
 
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
+  ASSERT_NE(nullptr, entry.get());
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.LayoutStability.JankScore", 100);
+      entry.get(), "SubFrame.LayoutInstability.CumulativeShiftScore", 100);
+  test_ukm_recorder().ExpectEntryMetric(
+      entry.get(),
+      "SubFrame.LayoutInstability.CumulativeShiftScore.BeforeInputOrScroll",
+      50);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
@@ -416,22 +439,23 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
       "FullNavigation",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentPaint.Subframe."
+      "PageLoad.Clients.AMP.PaintTiming.InputToLargestContentfulPaint.Subframe."
       "FullNavigation",
       1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay3.Subframe."
+      "PageLoad.Clients.AMP.InteractiveTiming.FirstInputDelay4.Subframe."
       "FullNavigation",
       1);
 
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay3", 3);
+      entry.get(), "SubFrame.InteractiveTiming.FirstInputDelay4", 3);
   test_ukm_recorder().ExpectEntryMetric(
       entry.get(), "SubFrame.PaintTiming.NavigationToFirstContentfulPaint", 5);
   test_ukm_recorder().ExpectEntryMetric(
-      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentPaint", 10);
+      entry.get(), "SubFrame.PaintTiming.NavigationToLargestContentfulPaint",
+      10);
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {
@@ -467,7 +491,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFullNavigation) {
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
       entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
@@ -510,7 +534,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFrameDeleted) {
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
       entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
@@ -519,11 +543,11 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameRecordOnFrameDeleted) {
 }
 
 TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
+  GURL main_frame_url("https://ampviewer.com/");
   GURL amp_url1("https://ampviewer.com/page");
   GURL amp_url2("https://ampviewer.com/page2");
 
-  NavigationSimulator::CreateRendererInitiated(GURL("https://ampviewer.com/"),
-                                               main_rfh())
+  NavigationSimulator::CreateRendererInitiated(main_frame_url, main_rfh())
       ->Commit();
 
   // Simulate a prerender.
@@ -596,7 +620,7 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> entries =
       test_ukm_recorder().GetMergedEntriesByName(
           ukm::builders::AmpPageLoad::kEntryName);
-  EXPECT_EQ(2ull, entries.size());
+  EXPECT_EQ(3ull, entries.size());
 
   const ukm::UkmSource* source1 = nullptr;
   const ukm::UkmSource* source2 = nullptr;
@@ -608,6 +632,8 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMultipleFrames) {
       source1 = candidate;
     } else if (candidate->url() == amp_url2) {
       source2 = candidate;
+    } else if (candidate->url() == main_frame_url) {
+      // Ignore.
     } else {
       FAIL() << "Encountered unexpected source for: " << candidate->url();
     }
@@ -671,7 +697,7 @@ TEST_F(AMPPageLoadMetricsObserverTest,
 
   // We expect a source with a negative NavigationDelta metric, since the main
   // frame navigation occurred before the AMP subframe navigation.
-  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry();
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(amp_url);
   test_ukm_recorder().ExpectEntrySourceHasUrl(entry.get(), amp_url);
   const int64_t* nav_delta_metric = test_ukm_recorder().GetEntryMetric(
       entry.get(), "SubFrame.MainFrameToSubFrameNavigationDelta");
@@ -717,17 +743,17 @@ TEST_F(AMPPageLoadMetricsObserverTest, NoSubFrameMetricsForNonAmpSubFrame) {
 
 TEST_F(AMPPageLoadMetricsObserverTest,
        NoSubFrameMetricsForSubFrameWithoutViewerUrl) {
+  GURL subframe_url("https://ampviewer.com/page");
   NavigationSimulator::CreateRendererInitiated(GURL("https://ampviewer.com/"),
                                                main_rfh())
       ->Commit();
 
-  NavigationSimulator::CreateRendererInitiated(
-      GURL("https://ampviewer.com/page"), main_rfh())
+  NavigationSimulator::CreateRendererInitiated(GURL(subframe_url), main_rfh())
       ->CommitSameDocument();
 
   content::RenderFrameHost* subframe =
       NavigationSimulator::NavigateAndCommitFromDocument(
-          GURL("https://ampsubframe.com/page"),
+          GURL(subframe_url),
           content::RenderFrameHostTester::For(web_contents()->GetMainFrame())
               ->AppendChild("subframe"));
 
@@ -752,7 +778,6 @@ TEST_F(AMPPageLoadMetricsObserverTest,
       "MainFrameToSubFrameNavigationDelta.Subframe",
       0);
 
-  EXPECT_TRUE(test_ukm_recorder()
-                  .GetEntriesByName(ukm::builders::AmpPageLoad::kEntryName)
-                  .empty());
+  ukm::mojom::UkmEntryPtr entry = GetAmpPageLoadUkmEntry(subframe_url);
+  EXPECT_EQ(nullptr, entry.get());
 }

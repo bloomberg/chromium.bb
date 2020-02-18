@@ -4,7 +4,6 @@
 
 #include "components/omnibox/browser/on_device_head_provider.h"
 
-#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -28,7 +27,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
  protected:
   void SetUp() override {
     client_.reset(new FakeAutocompleteProviderClient());
+    SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
@@ -42,20 +43,24 @@ class OnDeviceHeadProviderTest : public testing::Test,
     // No action required.
   }
 
-  void SetTestOnDeviceHeadServing() {
+  void SetTestOnDeviceHeadModel() {
     base::FilePath file_path;
     base::PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
     // The same test model also used in ./on_device_head_serving_unittest.cc.
-    file_path = file_path.AppendASCII(
-        "components/test/data/omnibox/on_device_head_test_model.bin");
+    file_path = file_path.AppendASCII("components/test/data/omnibox");
     ASSERT_TRUE(base::PathExists(file_path));
-#if defined(OS_WIN)
-    provider_->serving_ =
-        OnDeviceHeadServing::Create(base::WideToUTF8(file_path.value()), 3);
-#else
-    provider_->serving_ = OnDeviceHeadServing::Create(file_path.value(), 3);
-#endif
-    ASSERT_TRUE(provider_->serving_);
+    auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
+    if (update_listener)
+      update_listener->OnModelUpdate(file_path);
+    scoped_task_environment_.RunUntilIdle();
+  }
+
+  void ResetServingInstance() {
+    if (provider_) {
+      provider_->serving_.reset();
+      provider_->current_model_filename_.clear();
+      provider_->new_model_filename_.clear();
+    }
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -64,49 +69,48 @@ class OnDeviceHeadProviderTest : public testing::Test,
 };
 
 TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
+  ResetServingInstance();
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
 }
 
 TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(false);
 
-  SetTestOnDeviceHeadServing();
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
 }
 
 TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(true));
 
-  SetTestOnDeviceHeadServing();
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -121,10 +125,9 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
-  SetTestOnDeviceHeadServing();
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -139,10 +142,9 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
-  SetTestOnDeviceHeadServing();
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
@@ -165,13 +167,12 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
 
-  SetTestOnDeviceHeadServing();
   provider_->Start(input1, false);
   EXPECT_FALSE(provider_->done());
   provider_->Start(input2, false);
 
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());

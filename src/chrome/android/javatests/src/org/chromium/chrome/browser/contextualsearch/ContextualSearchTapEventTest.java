@@ -320,7 +320,7 @@ public class ContextualSearchTapEventTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testTapProcessIsRobustWhenSelectionGetsClearedDLD() throws InterruptedException {
+    public void testTapProcessIsRobustWhenSelectionGetsCleared() throws InterruptedException {
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
 
         // Fake a Tap event.

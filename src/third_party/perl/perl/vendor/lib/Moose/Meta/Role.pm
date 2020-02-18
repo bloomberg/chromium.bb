@@ -1,19 +1,11 @@
 package Moose::Meta::Role;
-BEGIN {
-  $Moose::Meta::Role::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Role::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 use metaclass;
 
-use Class::Load qw(load_class);
 use Scalar::Util 'blessed';
-use Carp         'confess';
-use Devel::GlobalDestruction 'in_global_destruction';
 
 use Moose::Meta::Class;
 use Moose::Meta::Role::Attribute;
@@ -21,19 +13,20 @@ use Moose::Meta::Role::Method;
 use Moose::Meta::Role::Method::Required;
 use Moose::Meta::Role::Method::Conflicting;
 use Moose::Meta::Method::Meta;
-use Moose::Util qw( ensure_all_roles );
+use Moose::Util qw/throw_exception/;
 use Class::MOP::MiniTrait;
 
-use base 'Class::MOP::Module',
+use parent 'Class::MOP::Module',
          'Class::MOP::Mixin::HasAttributes',
-         'Class::MOP::Mixin::HasMethods';
+         'Class::MOP::Mixin::HasMethods',
+         'Class::MOP::Mixin::HasOverloads';
 
 Class::MOP::MiniTrait::apply(__PACKAGE__, 'Moose::Meta::Object::Trait');
 
 ## ------------------------------------------------------------------
 ## NOTE:
 ## I normally don't do this, but I am doing
-## a whole bunch of meta-programmin in this
+## a whole bunch of meta-programmin' in this
 ## module, so it just makes sense. For a clearer
 ## picture of what is going on in the next
 ## several lines of code, look at the really
@@ -53,7 +46,7 @@ my $META = __PACKAGE__->meta;
 # time when it is applied to a class. This means
 # keeping a lot of things in hash maps, so we are
 # using a little of that meta-programmin' magic
-# here an saving lots of extra typin. And since
+# here and saving lots of extra typin'. And since
 # many of these attributes above require similar
 # functionality to support them, so we again use
 # the wonders of meta-programmin' to deliver a
@@ -244,10 +237,14 @@ sub add_attribute {
 
     if (blessed $_[0] && ! $_[0]->isa('Moose::Meta::Role::Attribute') ) {
         my $class = ref $_[0];
-        Moose->throw_error( "Cannot add a $class as an attribute to a role" );
+        throw_exception( CannotAddAsAnAttributeToARole => role_name       => $self->name,
+                                                          attribute_class => $class,
+                       );
     }
     elsif (!blessed($_[0]) && defined($_[0]) && $_[0] =~ /^\+(.*)/) {
-        Moose->throw_error( "has '+attr' is not supported in roles" );
+        throw_exception( AttributeExtensionIsNotSupportedInRoles => attribute_name => $_[0],
+                                                                    role_name      => $self->name,
+                       );
     }
 
     return $self->SUPER::add_attribute(@_);
@@ -347,7 +344,7 @@ foreach my $modifier_type (qw[ before around after ]) {
 }
 
 ## ------------------------------------------------------------------
-## override method mofidiers
+## override method modifiers
 
 $META->add_attribute('override_method_modifiers' => (
     reader  => 'get_override_method_modifiers_map',
@@ -364,8 +361,9 @@ $META->add_attribute('override_method_modifiers' => (
 sub add_override_method_modifier {
     my ($self, $method_name, $method) = @_;
     (!$self->has_method($method_name))
-        || Moose->throw_error("Cannot add an override of method '$method_name' " .
-                   "because there is a local version of '$method_name'");
+        || throw_exception( CannotOverrideALocalMethod => method_name => $method_name,
+                                                          role_name   => $self->name,
+                          );
     $self->get_override_method_modifiers_map->{$method_name} = $method;
 }
 
@@ -404,7 +402,9 @@ $META->add_attribute('roles' => (
 sub add_role {
     my ($self, $role) = @_;
     (blessed($role) && $role->isa('Moose::Meta::Role'))
-        || Moose->throw_error("Roles must be instances of Moose::Meta::Role");
+        || throw_exception( AddRoleToARoleTakesAMooseMetaRole => role_to_be_added => $role,
+                                                                 role_name        => $self->name,
+                          );
     push @{$self->get_roles} => $role;
     $self->reset_package_cache_flag;
 }
@@ -422,7 +422,7 @@ sub calculate_all_roles {
 sub does_role {
     my ($self, $role) = @_;
     (defined $role)
-        || Moose->throw_error("You must supply a role name to look for");
+        || throw_exception( RoleNameRequiredForMooseMetaRole => role_name => $self->name );
     my $role_name = blessed $role ? $role->name : $role;
     # if we are it,.. then return true
     return 1 if $role_name eq $self->name;
@@ -443,7 +443,9 @@ sub apply {
     my ($self, $other, %args) = @_;
 
     (blessed($other))
-        || Moose->throw_error("You must pass in an blessed instance");
+        || throw_exception( ApplyTakesABlessedInstance => param     => $other,
+                                                          role_name => $self->name,
+                          );
 
     my $application_class;
     if ($other->isa('Moose::Meta::Role')) {
@@ -456,7 +458,7 @@ sub apply {
         $application_class = $self->application_to_instance_class;
     }
 
-    load_class($application_class);
+    Moose::Util::_load_user_class($application_class);
 
     if ( exists $args{'-excludes'} ) {
         # I wish we had coercion here :)
@@ -509,15 +511,21 @@ sub create {
     my %options = @args;
 
     (ref $options{attributes} eq 'HASH')
-        || confess "You must pass a HASH ref of attributes"
+        || throw_exception( CreateTakesHashRefOfAttributes => params           => \%options,
+                                                              attribute_class  => $class
+                          )
             if exists $options{attributes};
 
     (ref $options{methods} eq 'HASH')
-        || confess "You must pass a HASH ref of methods"
+        || throw_exception( CreateTakesHashRefOfMethods => params           => \%options,
+                                                           attribute_class  => $class
+                          )
             if exists $options{methods};
 
     (ref $options{roles} eq 'ARRAY')
-        || confess "You must pass an ARRAY ref of roles"
+        || throw_exception( CreateTakesArrayRefOfRoles => params           => \%options,
+                                                          attribute_class  => $class
+                          )
             if exists $options{roles};
 
     my $package      = delete $options{package};
@@ -733,9 +741,11 @@ sub _anon_cache_key {
 
 # ABSTRACT: The Moose Role metaclass
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -743,7 +753,7 @@ Moose::Meta::Role - The Moose Role metaclass
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -761,13 +771,11 @@ C<Moose::Meta::Role> is a subclass of L<Class::MOP::Module>.
 
 =head2 Construction
 
-=over 4
-
-=item B<< Moose::Meta::Role->initialize($role_name) >>
+=head3 Moose::Meta::Role->initialize($role_name)
 
 This method creates a new role object with the provided name.
 
-=item B<< Moose::Meta::Role->combine( [ $role => { ... } ], [ $role ], ... ) >>
+=head3 Moose::Meta::Role->combine( [ $role => { ... } ], [ $role ], ... )
 
 This method accepts a list of array references. Each array reference
 should contain a role name or L<Moose::Meta::Role> object as its first element. The second element is
@@ -777,7 +785,7 @@ and C<-alias> keys to control how methods are composed from the role.
 The return value is a new L<Moose::Meta::Role::Composite> that
 represents the combined roles.
 
-=item B<< $metarole->composition_class_roles >>
+=head3 $metarole->composition_class_roles
 
 When combining multiple roles using C<combine>, this method is used to obtain a
 list of role names to be applied to the L<Moose::Meta::Role::Composite>
@@ -785,31 +793,27 @@ instance returned by C<combine>. The default implementation returns an empty
 list. Extensions that need to hook into role combination may wrap this method
 to return additional role names.
 
-=item B<< Moose::Meta::Role->create($name, %options) >>
+=head3 Moose::Meta::Role->create($name, %options)
 
 This method is identical to the L<Moose::Meta::Class> C<create>
 method.
 
-=item B<< Moose::Meta::Role->create_anon_role >>
+=head3 Moose::Meta::Role->create_anon_role
 
 This method is identical to the L<Moose::Meta::Class>
 C<create_anon_class> method.
 
-=item B<< $metarole->is_anon_role >>
+=head3 $metarole->is_anon_role
 
 Returns true if the role is an anonymous role.
 
-=item B<< $metarole->consumers >>
+=head3 $metarole->consumers
 
 Returns a list of names of classes and roles which consume this role.
 
-=back
-
 =head2 Role application
 
-=over 4
-
-=item B<< $metarole->apply( $thing, @options ) >>
+=head3 $metarole->apply( $thing, @options )
 
 This method applies a role to the given C<$thing>. That can be another
 L<Moose::Meta::Role>, object, a L<Moose::Meta::Class> object, or a
@@ -822,74 +826,64 @@ Note that this will apply the role even if the C<$thing> in question already
 C<does> this role.  L<Moose::Util/does_role> is a convenient wrapper for
 finding out if role application is necessary.
 
-=back
-
 =head2 Roles and other roles
 
-=over 4
-
-=item B<< $metarole->get_roles >>
+=head3 $metarole->get_roles
 
 This returns an array reference of roles which this role does. This
 list may include duplicates.
 
-=item B<< $metarole->calculate_all_roles >>
+=head3 $metarole->calculate_all_roles
 
 This returns a I<unique> list of all roles that this role does, and
 all the roles that its roles do.
 
-=item B<< $metarole->does_role($role) >>
+=head3 $metarole->does_role($role)
 
 Given a role I<name> or L<Moose::Meta::Role> object, returns true if this role
 does the given role.
 
-=item B<< $metarole->add_role($role) >>
+=head3 $metarole->add_role($role)
 
 Given a L<Moose::Meta::Role> object, this adds the role to the list of
 roles that the role does.
 
-=item B<< $metarole->get_excluded_roles_list >>
+=head3 $metarole->get_excluded_roles_list
 
 Returns a list of role names which this role excludes.
 
-=item B<< $metarole->excludes_role($role_name) >>
+=head3 $metarole->excludes_role($role_name)
 
 Given a role I<name>, returns true if this role excludes the named
 role.
 
-=item B<< $metarole->add_excluded_roles(@role_names) >>
+=head3 $metarole->add_excluded_roles(@role_names)
 
 Given one or more role names, adds those roles to the list of excluded
 roles.
-
-=back
 
 =head2 Methods
 
 The methods for dealing with a role's methods are all identical in API
 and behavior to the same methods in L<Class::MOP::Class>.
 
-=over 4
-
-=item B<< $metarole->method_metaclass >>
+=head3 $metarole->method_metaclass
 
 Returns the method metaclass name for the role. This defaults to
 L<Moose::Meta::Role::Method>.
 
-=item B<< $metarole->get_method($name) >>
+=head3 $metarole->get_method($name)
 
-=item B<< $metarole->has_method($name) >>
+=head3 $metarole->has_method($name)
 
-=item B<< $metarole->add_method( $name, $body ) >>
+=head3 $metarole->add_method( $name, $body )
 
-=item B<< $metarole->get_method_list >>
+=head3 $metarole->get_method_list
 
-=item B<< $metarole->find_method_by_name($name) >>
+=head3 $metarole->find_method_by_name($name)
 
 These methods are all identical to the methods of the same name in
 L<Class::MOP::Package>
-
-=back
 
 =head2 Attributes
 
@@ -904,146 +898,162 @@ is passed directly to the metaclass's C<add_attribute> method.
 
 This is quite likely to change in the future.
 
-=over 4
+=head3 $metarole->get_attribute($attribute_name)
 
-=item B<< $metarole->get_attribute($attribute_name) >>
+=head3 $metarole->has_attribute($attribute_name)
 
-=item B<< $metarole->has_attribute($attribute_name) >>
+=head3 $metarole->get_attribute_list
 
-=item B<< $metarole->get_attribute_list >>
+=head3 $metarole->add_attribute($name, %options)
 
-=item B<< $metarole->add_attribute($name, %options) >>
-
-=item B<< $metarole->remove_attribute($attribute_name) >>
-
-=back
+=head3 $metarole->remove_attribute($attribute_name)
 
 =head2 Overload introspection and creation
 
-The methods for dealing with a role's overloads are all identical in API
-and behavior to the same methods in L<Class::MOP::Class>. Note that these are
-not particularly useful (yet), because overloads do not participate in role
-composition.
+The methods for dealing with a role's overloads are all identical in API and
+behavior to the same methods in L<Class::MOP::Class>.
 
-=over 4
+=head3 $metarole->is_overloaded
 
-=item B<< $metarole->is_overloaded >>
+=head3 $metarole->get_overloaded_operator($op)
 
-=item B<< $metarole->get_overloaded_operator($op) >>
+=head3 $metarole->has_overloaded_operator($op)
 
-=item B<< $metarole->has_overloaded_operator($op) >>
+=head3 $metarole->get_overload_list
 
-=item B<< $metarole->get_overload_list >>
+=head3 $metarole->get_all_overloaded_operators
 
-=item B<< $metarole->get_all_overloaded_operators >>
+=head3 $metarole->add_overloaded_operator($op, $impl)
 
-=item B<< $metarole->add_overloaded_operator($op, $impl) >>
-
-=item B<< $metarole->remove_overloaded_operator($op) >>
-
-=back
+=head3 $metarole->remove_overloaded_operator($op)
 
 =head2 Required methods
 
-=over 4
-
-=item B<< $metarole->get_required_method_list >>
+=head3 $metarole->get_required_method_list
 
 Returns the list of methods required by the role.
 
-=item B<< $metarole->requires_method($name) >>
+=head3 $metarole->requires_method($name)
 
 Returns true if the role requires the named method.
 
-=item B<< $metarole->add_required_methods(@names) >>
+=head3 $metarole->add_required_methods(@names)
 
 Adds the named methods to the role's list of required methods.
 
-=item B<< $metarole->remove_required_methods(@names) >>
+=head3 $metarole->remove_required_methods(@names)
 
 Removes the named methods from the role's list of required methods.
 
-=item B<< $metarole->add_conflicting_method(%params) >>
+=head3 $metarole->add_conflicting_method(%params)
 
 Instantiate the parameters as a L<Moose::Meta::Role::Method::Conflicting>
 object, then add it to the required method list.
-
-=back
 
 =head2 Method modifiers
 
 These methods act like their counterparts in L<Class::MOP::Class> and
 L<Moose::Meta::Class>.
 
-However, method modifiers are simply stored internally, and are not
-applied until the role itself is applied to a class.
+However, method modifiers are simply stored internally, and are not applied
+until the role itself is applied to a class or object.
 
-=over 4
+=head3 $metarole->add_after_method_modifier($method_name, $method)
 
-=item B<< $metarole->add_after_method_modifier($method_name, $method) >>
+=head3 $metarole->add_around_method_modifier($method_name, $method)
 
-=item B<< $metarole->add_around_method_modifier($method_name, $method) >>
+=head3 $metarole->add_before_method_modifier($method_name, $method)
 
-=item B<< $metarole->add_before_method_modifier($method_name, $method) >>
-
-=item B<< $metarole->add_override_method_modifier($method_name, $method) >>
+=head3 $metarole->add_override_method_modifier($method_name, $method)
 
 These methods all add an appropriate modifier to the internal list of
 modifiers.
 
-=item B<< $metarole->has_after_method_modifiers >>
+=head3 $metarole->has_after_method_modifiers
 
-=item B<< $metarole->has_around_method_modifiers >>
+=head3 $metarole->has_around_method_modifiers
 
-=item B<< $metarole->has_before_method_modifiers >>
+=head3 $metarole->has_before_method_modifiers
 
-=item B<< $metarole->has_override_method_modifier >>
+=head3 $metarole->has_override_method_modifier
 
 Return true if the role has any modifiers of the given type.
 
-=item B<< $metarole->get_after_method_modifiers($method_name) >>
+=head3 $metarole->get_after_method_modifiers($method_name)
 
-=item B<< $metarole->get_around_method_modifiers($method_name) >>
+=head3 $metarole->get_around_method_modifiers($method_name)
 
-=item B<< $metarole->get_before_method_modifiers($method_name) >>
+=head3 $metarole->get_before_method_modifiers($method_name)
 
 Given a method name, returns a list of the appropriate modifiers for
 that method.
 
-=item B<< $metarole->get_override_method_modifier($method_name) >>
+=head3 $metarole->get_override_method_modifier($method_name)
 
 Given a method name, returns the override method modifier for that
 method, if it has one.
 
-=back
-
 =head2 Introspection
 
-=over 4
-
-=item B<< Moose::Meta::Role->meta >>
+=head3 Moose::Meta::Role->meta
 
 This will return a L<Class::MOP::Class> instance for this class.
-
-=back
 
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

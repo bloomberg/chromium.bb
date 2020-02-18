@@ -83,7 +83,7 @@ LayoutUnit LayoutListBox::ItemHeight() const {
     return LayoutUnit();
 
   const auto& items = select->GetListItems();
-  if (items.IsEmpty())
+  if (items.IsEmpty() || ShouldApplySizeContainment())
     return DefaultItemHeight();
 
   LayoutUnit max_height;
@@ -131,7 +131,7 @@ void LayoutListBox::ComputeIntrinsicLogicalWidths(
     min_logical_width = LayoutUnit();
 }
 
-void LayoutListBox::ScrollToRect(const LayoutRect& absolute_rect) {
+void LayoutListBox::ScrollToRect(const PhysicalRect& absolute_rect) {
   if (HasOverflowClip()) {
     DCHECK(Layer());
     DCHECK(Layer()->GetScrollableArea());

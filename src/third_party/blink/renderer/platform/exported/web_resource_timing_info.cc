@@ -51,9 +51,14 @@ bool WebResourceTimingInfo::operator==(
          IsSameServerTimingInfo(server_timing, other.server_timing);
 }
 
-CrossThreadCopier<WebResourceTimingInfo>::Type CrossThreadCopier<
-    WebResourceTimingInfo>::Copy(const WebResourceTimingInfo& info) {
-  WebResourceTimingInfo copy;
+}  // namespace blink
+
+namespace WTF {
+#if INSIDE_BLINK
+CrossThreadCopier<blink::WebResourceTimingInfo>::Type
+CrossThreadCopier<blink::WebResourceTimingInfo>::Copy(
+    const blink::WebResourceTimingInfo& info) {
+  blink::WebResourceTimingInfo copy;
 
   copy.name = String(info.name).IsolatedCopy();
   copy.start_time = info.start_time;
@@ -63,7 +68,7 @@ CrossThreadCopier<WebResourceTimingInfo>::Type CrossThreadCopier<
   copy.connection_info = String(info.connection_info).IsolatedCopy();
 
   if (!info.timing.IsNull())
-    copy.timing = CrossThreadCopier<WebURLLoadTiming>::Copy(info.timing);
+    copy.timing = CrossThreadCopier<blink::WebURLLoadTiming>::Copy(info.timing);
 
   copy.last_redirect_end_time = info.last_redirect_end_time;
   copy.response_end = info.response_end;
@@ -80,13 +85,13 @@ CrossThreadCopier<WebResourceTimingInfo>::Type CrossThreadCopier<
 
   copy.allow_negative_values = info.allow_negative_values;
   for (auto& entry : info.server_timing) {
-    WebServerTimingInfo entry_copy(String(entry.name).IsolatedCopy(),
-                                   entry.duration,
-                                   String(entry.description).IsolatedCopy());
+    blink::WebServerTimingInfo entry_copy(
+        String(entry.name).IsolatedCopy(), entry.duration,
+        String(entry.description).IsolatedCopy());
     copy.server_timing.emplace_back(std::move(entry_copy));
   }
 
   return copy;
 }
-
-}  // namespace blink
+#endif
+}  // namespace WTF

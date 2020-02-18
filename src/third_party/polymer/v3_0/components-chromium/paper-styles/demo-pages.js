@@ -18,13 +18,13 @@ For a set of styles that can be applied to an element,
 check iron-demo-helpers/demo-pages-shared-styles.html.
 */
 
-import '../polymer/polymer-legacy.js';
+import '../polymer/polymer_bundled.min.js';
 import '../iron-flex-layout/iron-flex-layout.js';
 import './color.js';
 import './typography.js';
 import './shadow.js';
 
-import {html} from '../polymer/lib/utils/html-tag.js';
+import {html} from '../polymer/polymer_bundled.min.js';
 const template = html`<custom-style>
   <style is="custom-style">
     body {

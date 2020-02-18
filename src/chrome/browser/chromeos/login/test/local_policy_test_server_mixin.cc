@@ -14,6 +14,7 @@
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
+#include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 #include "components/policy/core/common/policy_switches.h"
@@ -207,6 +208,53 @@ bool LocalPolicyTestServerMixin::SetDeviceStateRetrievalResponse(
                       base::Value(static_cast<int>(restore_mode)));
   server_config_.SetKey("device_state", std::move(device_state));
   return policy_test_server_->SetConfig(server_config_);
+}
+
+bool LocalPolicyTestServerMixin::SetDeviceInitialEnrollmentResponse(
+    const std::string& device_brand_code,
+    const std::string& device_serial_number,
+    enterprise_management::DeviceInitialEnrollmentStateResponse::
+        InitialEnrollmentMode initial_mode,
+    const base::Optional<std::string>& management_domain,
+    const base::Optional<bool> is_license_packaged_with_device) {
+  base::Value serial_entry(base::Value::Type::DICTIONARY);
+  serial_entry.SetKey("initial_enrollment_mode", base::Value(initial_mode));
+
+  if (management_domain.has_value())
+    serial_entry.SetKey("management_domain",
+                        base::Value(management_domain.value()));
+
+  if (is_license_packaged_with_device.has_value())
+    serial_entry.SetKey("is_license_packaged_with_device",
+                        base::Value(is_license_packaged_with_device.value()));
+
+  const std::string brand_serial_id =
+      device_brand_code + "_" + device_serial_number;
+  server_config_.SetPath("initial_enrollment_state." + brand_serial_id,
+                         std::move(serial_entry));
+  policy_test_server_->SetConfig(server_config_);
+  return true;
+}
+
+void LocalPolicyTestServerMixin::SetupZeroTouchForcedEnrollment() {
+  SetFakeAttestationFlow();
+  auto initial_enrollment =
+      enterprise_management::DeviceInitialEnrollmentStateResponse::
+          INITIAL_ENROLLMENT_MODE_ZERO_TOUCH_ENFORCED;
+  SetUpdateDeviceAttributesPermission(false);
+  SetDeviceInitialEnrollmentResponse(
+      test::kTestRlzBrandCodeKey, test::kTestSerialNumber, initial_enrollment,
+      test::kTestDomain, base::nullopt /* is_license_packaged_with_device */);
+}
+
+void LocalPolicyTestServerMixin::ConfigureFakeStatisticsForZeroTouch(
+    system::ScopedFakeStatisticsProvider* provider) {
+  provider->SetMachineStatistic(system::kRlzBrandCodeKey,
+                                test::kTestRlzBrandCodeKey);
+  provider->SetMachineStatistic(system::kSerialNumberKeyForTest,
+                                test::kTestSerialNumber);
+  provider->SetMachineStatistic(system::kHardwareClassKey,
+                                test::kTestHardwareClass);
 }
 
 LocalPolicyTestServerMixin::~LocalPolicyTestServerMixin() = default;

@@ -20,10 +20,24 @@ class ProtoLevelDBWrapper;
 class Enums {
  public:
   enum InitStatus {
+    // Failed to migrate from shared to unique or unique to shared, or failed to
+    // create a non-existent database.
     kError = -1,
+    // Internal state, never returned to clients. TODO: This should be removed.
     kNotInitialized = 0,
+    // Leveldb initialization successful.
     kOK = 1,
+    // In case of unique database, this status is never returned. The legacy
+    // behavior is to delete the database on corruption and return a clean one
+    // (if possible). In case of shared database, the default behavior is to
+    // delete on corruption and not return this flag. In the future we will have
+    // a delete_on_corruption flag that clients can set to false and handle
+    // corruption with partial data. TODO(salg): Expose delete_on_corruption
+    // flag.
     kCorrupt = 2,
+    // Invalid arguments were passed (like database doesn't exist and
+    // create_if_missing was false), or the current platform does not support
+    // leveldb.
     kInvalidOperation = 3,
   };
 };

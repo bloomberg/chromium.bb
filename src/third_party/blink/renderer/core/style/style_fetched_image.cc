@@ -30,18 +30,22 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 StyleFetchedImage::StyleFetchedImage(const Document& document,
                                      FetchParameters& params,
                                      bool is_lazyload_possibly_deferred)
-    : document_(&document), url_(params.Url()) {
+    : document_(&document),
+      url_(params.Url()),
+      origin_clean_(!params.IsFromOriginDirtyStyleSheet()) {
   is_image_resource_ = true;
   is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
 
@@ -77,7 +81,9 @@ ImageResourceContent* StyleFetchedImage::CachedImage() const {
 }
 
 CSSValue* StyleFetchedImage::CssValue() const {
-  return CSSImageValue::Create(url_, const_cast<StyleFetchedImage*>(this));
+  return CSSImageValue::Create(
+      url_, origin_clean_ ? OriginClean::kTrue : OriginClean::kFalse,
+      const_cast<StyleFetchedImage*>(this));
 }
 
 CSSValue* StyleFetchedImage::ComputedCSSValue() const {
@@ -134,6 +140,12 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
       ToSVGImage(image).UpdateUseCounters(*document_);
 
     image_->UpdateImageAnimationPolicy();
+  }
+
+  if (document_ && RuntimeEnabledFeatures::ElementTimingEnabled(document_)) {
+    if (LocalDOMWindow* window = document_->domWindow()) {
+      ImageElementTiming::From(*window).NotifyBackgroundImageFinished(this);
+    }
   }
 
   // Oilpan: do not prolong the Document's lifetime.

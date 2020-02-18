@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">మీ పరికరాలు కలిసికట్టుగా మరింత బాగా పనిచేస్తాయి</translation>
 <translation id="112308213915226829">అరను స్వయంచాలకంగా దాచు</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
+<translation id="1175572348579024023">స్క్రోల్ చేస్తుంది</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
 <translation id="1195412055398077112">ఓవర్‌స్కాన్</translation>
 <translation id="119944043368869598">అన్ని క్లియర్ చెయ్యి</translation>
-<translation id="123828989343052515">కొత్త డెస్క్</translation>
 <translation id="1247372569136754018">మైక్రోఫోన్ (అంతర్గతం)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> నుండి ఛార్జ్ అవుతోంది</translation>
 <translation id="1255033239764210633">వాతావరణం ఎలా ఉంది?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">ఇన్‌పుట్ పద్ధతులు మీ నిర్వాహకుల ద్వారా కాన్ఫిగర్ చేయబడ్డాయి.</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
 <translation id="1761222317188459878">నెట్‌వర్క్ కనెక్షన్‌ను టోగుల్ చేయండి. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">కుడికి స్క్రోల్ చేయి</translation>
 <translation id="1812997170047690955">నా స్క్రీన్‌పై ఏమి ఉన్నాయి?</translation>
+<translation id="1820355135508821526">ఈ పరికరానికి వర్తింపజేసిన విధానం కారణంగా <ph name="FEATURE_NAME" /> నిలిపివేయబడింది. మార్పులను అభ్యర్థించడానికి, దయచేసి మీ నిర్వాహకుడితో మాట్లాడండి.</translation>
 <translation id="1823873187264960516">ఈథర్‌నెట్: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">సహాయకం (లోడ్ అవుతోంది...)</translation>
 <translation id="1850504506766569011">Wi-Fi ఆఫ్ చేయబడింది.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">మీ భాషని సెట్ చేయండి</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">వచన ఇన్‌పుట్</translation>
 <translation id="1993072747612765854">తాజా <ph name="SYSTEM_APP_NAME" /> అప్‌డేట్ గురించి మరింత తెలుసుకోండి</translation>
 <translation id="1995660704900986789">పవర్ ఆఫ్ చేయి</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
 <translation id="2067602449040652523">కీబోర్డ్ ప్రకాశం</translation>
 <translation id="209965399369889474">నెట్‌వర్క్‌కు కనెక్ట్ కాలేదు</translation>
+<translation id="2126242104232412123">కొత్త డెస్క్</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="2135456203358955318">డాక్ చేయబడిన మాగ్నిఫైయర్</translation>
 <translation id="2144487987174258011">Adobe Flash Playerను అప్‌డేట్ చేయ‌డానికి పున:ప్రారంభించండి</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">Google అసిస్టెంట్ పబ్లిక్ సెషన్‌లో అందుబాటులో లేదు.</translation>
 <translation id="2575685495496069081">బహుళ సైన్-ఇన్ నిలిపివేయబడింది</translation>
 <translation id="2582112259361606227">అప్‌డేేట్ చేయడానికి పునఃప్రారంభించండి</translation>
-<translation id="2597972630681408282">రాత్రి కాంతి: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM కార్డ్ లాక్ అయింది</translation>
+<translation id="2651765386227849097">ఈ పరికరంలో Google అసిస్టెంట్ నిలిపివేయబడింది.</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="2658778018866295321">క్లిక్ చేసి, లాగండి</translation>
 <translation id="2700493154570097719">మీ కీబోర్డ్‌ని సెట్ చేయండి</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{పరికరానికి కనెక్ట్ చేయబడింది}other{# పరికరాలకు కనెక్ట్ చేయబడింది}}</translation>
 <translation id="3226991577105957773">+మరో <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">మొబైల్ నెట్‌వర్క్ ఏదీ అందుబాటులో లేదు</translation>
+<translation id="3249513730522716925">"<ph name="WINDOW_TITLE" />" విండో అన్నది "<ph name="ACTIVE_DESK" />" డెస్క్ నుండి "<ph name="TARGET_DESK" />" డెస్క్‌కు తరలించబడింది</translation>
 <translation id="3255483164551725916">నువ్వు ఏమి చేయగలవు?</translation>
 <translation id="3294437725009624529">అతిథి</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ఇప్పటికీ తర్వాత సైన్ ఇన్ చేయవచ్చు.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"కు వెనుక‌కు మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3576141592585647168">సమయ మండలిని మార్చండి</translation>
 <translation id="3595596368722241419">బ్యాటరీ నిండింది</translation>
+<translation id="3604801046548457007">"<ph name="DESK_TITILE" />" డెస్క్ సృష్టించబడింది</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
 <translation id="3621202678540785336">ఇన్‌పుట్</translation>
 <translation id="3626281679859535460">ప్రకాశం</translation>
@@ -204,6 +210,7 @@
 <translation id="3977512764614765090">బ్యాటరీ <ph name="PERCENTAGE" />% ఉంది. ఛార్జ్ అవుతోంది.</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4017989525502048489">లేజర్ పాయింటర్</translation>
+<translation id="4021716437419160885">కిందికి స్క్రోల్ చేయి</translation>
 <translation id="4042660782729322247">మీరు మీ స్క్రీన్‌ను షేర్ చేస్తున్నారు</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ఒక యాప్‌కు ఆఫ్‌లో ఉంది}other{# యాప్‌లకు ఆఫ్‌లో ఉంది}}</translation>
 <translation id="4072264167173457037">సిగ్నల్ ఓ మోస్తరుగా ఉంది</translation>
@@ -259,9 +266,11 @@
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
 <translation id="490375751687810070">నిలువుగా ఉంది</translation>
 <translation id="4905614135390995787">అధిక కాంట్రాస్ట్ మోడ్‌ను టోగుల్ చేయడానికి ఉన్న షార్ట్‌కట్ మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" /> ఉపయోగించండి.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% బ్యాటరీ</translation>
 <translation id="4917385247580444890">బలమైన</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4924411785043111640">మళ్లీ ప్రారంభించి, రీసెట్ చేయండి</translation>
+<translation id="495046168593986294">పైకి స్క్రోల్ చేయి</translation>
 <translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
 <translation id="5030687792513154421">సమయం ముగిసింది</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ఒక కొత్త ఫోన్‌కి కనెక్ట్ చేయబడింది</translation>
@@ -295,6 +304,7 @@
 <translation id="5648021990716966815">మైక్ జాక్</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
 <translation id="5673434351075758678">మీ సెట్టింగులను సమకాలీకరించిన తర్వాత "<ph name="FROM_LOCALE" />" నుండి "<ph name="TO_LOCALE" />"కి.</translation>
+<translation id="5682642926269496722">ప్రస్తుత వినియోగదారు ఖాతాలో Google అసిస్టెంట్ పని చేయదు.</translation>
 <translation id="5691772641933328258">వేలిముద్ర గుర్తించబడలేదు</translation>
 <translation id="5710450975648804523">'అంతరాయం కలిగించవద్దు' మోడ్ ఆన్‌లో ఉంది</translation>
 <translation id="574392208103952083">మధ్యస్థం</translation>
@@ -319,6 +329,8 @@
 <translation id="598882571027504733">అప్‌డేట్‌ను పొందడానికి, కీబోర్డ్‌ను అలానే జోడించి ఉంచి మీ Chromebookను పునఃప్రారంభించండి.</translation>
 <translation id="5992218262414051481">అధిక క్రాంటాస్ట్ మోడ్ ఆరంభించబడింది. దానిని ఆఫ్‌కు టోగుల్ చేయడం కోసం మళ్లీ Ctrl+Search+Hను నొక్కండి.</translation>
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
+<translation id="602001110135236999">ఎడమకు స్క్రోల్ చేయి</translation>
+<translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
 <translation id="6047696787498798094">మీరు మరొక వినియోగదారుకు మారినప్పుడు స్క్రీన్ షేర్‌ ఆపివేయబడుతుంది. మీరు కొనసాగించాలని అనుకుంటున్నారా?</translation>
@@ -326,6 +338,7 @@
 <translation id="6064337552080329342">క్షమించండి, మీ పాస్‌వర్డ్ ధృవీకరించబడలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="607652042414456612">మీ కంప్యూటర్ సమీప బ్లూటూత్ పరికరాల్లో కనుగొనబడుతుంది మరియు చిరునామా <ph name="ADDRESS" />తో "<ph name="NAME" />" లాగా కనిపిస్తుంది</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" />ని ఛార్జ్ చేస్తోంది</translation>
+<translation id="612734058257491180">అతిథి సెషన్‌లో Google అసిస్టెంట్ పని చేయదు.</translation>
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
 <translation id="6164005077879661055">ఈ పర్యవేక్షించబడే వినియోగదారు తీసివేయబడినప్పుడు, పర్యవేక్షించబడే వినియోగదారుతో అనుబంధించబడిన అన్ని ఫైల్‌లు మరియు స్థానిక డేటా శాశ్వతంగా తొలగించబడతాయి. ఈ పర్యవేక్షించబడే వినియోగదారు సందర్శించిన వెబ్‌సైట్‌లు మరియు వీరి సెట్టింగ్‌లు ఇప్పటికీ <ph name="MANAGEMENT_URL" />లో నిర్వాహకునికి కనిపించవచ్చు.</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
@@ -367,7 +380,9 @@
 <translation id="6713285437468012787">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత చేయబడింది. ఇప్పుడు అందరు వినియోగదారులకు అందుబాటులో ఉంది. మీరు సెట్టింగ్‌లను ఉపయోగించి ఈ జతను తీసివేయవచ్చు.</translation>
 <translation id="6715542151869432661">మొబైల్ పరికరాలేవీ కనుగొనబడలేదు.</translation>
 <translation id="6723839937902243910">పవర్</translation>
+<translation id="6727969043791803658">కనెక్ట్ చేయబడింది, <ph name="BATTERY_PERCENTAGE" />% బ్యాటరీ ఉంది</translation>
 <translation id="6751826523481687655">పనితీరు స్థితిగతి కనుగొనడం ఆన్‌లో ఉంది</translation>
+<translation id="6752912906630585008">"<ph name="REMOVED_DESK" />" డెస్క్ తీసివేసి, "<ph name="RECEIVE_DESK" />" డెస్క్‌తో విలీనం చేయబడింది</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
 <translation id="6820676911989879663">విరామం తీసుకోండి!</translation>
@@ -425,6 +440,7 @@
 <translation id="7692480393933218409">కనెక్ట్ చేసిన USB-C పరికరాలను ఛార్జ్ చేస్తోంది</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 నోటిఫికేషన్‌}other{# నోటిఫికేషన్‌లు}}</translation>
+<translation id="7749443890790263709">గరిష్ట డెస్క్‌ల సంఖ్యను చేరుకుంది.</translation>
 <translation id="776344839111254542">అప్‌డేట్ వివరాలను వీక్షించడం కోసం క్లిక్ చేయండి</translation>
 <translation id="7780159184141939021">స్క్రీన్‌ను తిప్పండి</translation>
 <translation id="7796353162336583443">గమనికను రాయడానికి, స్క్రీన్‌షాట్‌ను తీయడానికి, Google అసిస్టెంట్, లేజర్ పాయింటర్ లేదా భూతద్దాన్ని ఉపయోగించడానికి అరలో స్టైలస్ బటన్‌ను నొక్కండి.</translation>
@@ -468,6 +484,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">గమనికను సృష్టించండి</translation>
 <translation id="8375916635258623388">ఈ <ph name="DEVICE_NAME" /> మరియు మీ ఫోన్‌ ఆటోమెటిక్‌గా కనెక్ట్ చేయబడతాయి</translation>
+<translation id="8388750414311082622">చివరి డెస్క్‌ను తీసివేయలేరు.</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> కోసం ఎంపికల మెను</translation>
 <translation id="8394567579869570560">మీ తల్లి/తండ్రి ఈ పరికరాన్ని లాక్ చేసి ఉంచారు</translation>
 <translation id="8406981827175133772">పూర్తి స్క్రీన్ మాగ్నిఫైయర్</translation>
@@ -476,6 +493,7 @@
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433186206711564395">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="8433977262951327081">అరలో ఇన్‌పుట్ ఎంపికల మెనూ బబుల్‌ను చూపడానికి ఉపయోగించే షార్ట్‌కట్ మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కు బదులుగా <ph name="NEW_SHORTCUT" />ను ఉపయోగించండి.</translation>
+<translation id="8444246603146515890">డెస్క్ <ph name="DESK_TITILE" /> యాక్టివేట్ చేయబడింది</translation>
 <translation id="8452135315243592079">SIM కార్డ్ లేదు</translation>
 <translation id="8454013096329229812">Wi-Fi ఆన్ చేయబడింది.</translation>
 <translation id="847056008324733326">స్కేల్ సెట్టింగ్‌లను ప్రదర్శించండి</translation>

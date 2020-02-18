@@ -33,52 +33,66 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-blink.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace blink {
 
-class WebSocketHandleImpl : public WebSocketHandle,
-                            public network::mojom::blink::WebSocketClient {
+class WebSocketHandleImpl
+    : public WebSocketHandle,
+      public network::mojom::blink::WebSocketHandshakeClient,
+      public network::mojom::blink::WebSocketClient {
  public:
-  WebSocketHandleImpl();
+  explicit WebSocketHandleImpl(scoped_refptr<base::SingleThreadTaskRunner>);
   ~WebSocketHandleImpl() override;
 
-  void Connect(network::mojom::blink::WebSocketPtr,
+  void Connect(mojom::blink::WebSocketConnectorPtr,
                const KURL&,
                const Vector<String>& protocols,
                const KURL& site_for_cookies,
                const String& user_agent_override,
-               WebSocketHandleClient*,
-               base::SingleThreadTaskRunner*) override;
+               WebSocketChannelImpl*) override;
   void Send(bool fin, MessageType, const char* data, wtf_size_t) override;
   void AddReceiveFlowControlQuota(int64_t quota) override;
   void Close(uint16_t code, const String& reason) override;
 
  private:
   void Disconnect();
-  void OnConnectionError();
+  void OnConnectionError(uint32_t custom_reason,
+                         const std::string& description);
 
-  // network::mojom::blink::WebSocketClient methods:
-  void OnFailChannel(const String& reason) override;
-  void OnStartOpeningHandshake(
+  // network::mojom::blink::WebSocketHandshakeClient methods:
+  void OnOpeningHandshakeStarted(
       network::mojom::blink::WebSocketHandshakeRequestPtr) override;
-  void OnFinishOpeningHandshake(
+  void OnResponseReceived(
       network::mojom::blink::WebSocketHandshakeResponsePtr) override;
-  void OnAddChannelResponse(const String& selected_protocol,
-                            const String& extensions) override;
+  void OnConnectionEstablished(network::mojom::blink::WebSocketPtr websocket,
+                               const String& selected_protocol,
+                               const String& extensions,
+                               uint64_t receive_quota_threshold) override;
+  // network::mojom::blink::WebSocketClient methods:
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
-                   const Vector<uint8_t>& data) override;
-  void OnFlowControl(int64_t quota) override;
+                   base::span<const uint8_t> data) override;
+  void AddSendFlowControlQuota(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  WebSocketHandleClient* client_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  WeakPersistent<WebSocketChannelImpl> channel_;
 
   network::mojom::blink::WebSocketPtr websocket_;
+  network::mojom::blink::WebSocketClientRequest pending_client_receiver_;
+  mojo::Binding<network::mojom::blink::WebSocketHandshakeClient>
+      handshake_client_binding_;
   mojo::Binding<network::mojom::blink::WebSocketClient> client_binding_;
 };
 

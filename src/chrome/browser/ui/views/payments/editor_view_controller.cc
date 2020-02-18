@@ -49,8 +49,8 @@ std::unique_ptr<views::View> CreateErrorLabelView(
     autofill::ServerFieldType type) {
   std::unique_ptr<views::View> view = std::make_unique<views::View>();
 
-  std::unique_ptr<views::BoxLayout> layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  std::unique_ptr<views::BoxLayout> layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
@@ -67,7 +67,7 @@ std::unique_ptr<views::View> CreateErrorLabelView(
   error_label->SetMultiLine(true);
   error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  view->AddChildView(error_label.release());
+  view->AddChildView(std::move(error_label));
   return view;
 }
 
@@ -143,7 +143,8 @@ bool EditorViewController::ShouldShowSecondaryButton() {
 }
 
 void EditorViewController::FillContentView(views::View* content_view) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
@@ -256,8 +257,8 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   constexpr int kShortFieldMinimumWidth = 176;
   constexpr int kLongFieldMinimumWidth = 272;
 
-  views::GridLayout* editor_layout = editor_view->SetLayoutManager(
-      std::make_unique<views::GridLayout>(editor_view.get()));
+  views::GridLayout* editor_layout =
+      editor_view->SetLayoutManager(std::make_unique<views::GridLayout>());
   // Column set for short fields.
   views::ColumnSet* columns_short = editor_layout->AddColumnSet(0);
   columns_short->AddColumn(
@@ -314,6 +315,17 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
                      kFieldExtraViewHorizontalPadding - long_extra_view_width;
   columns_long->AddPaddingColumn(views::GridLayout::kFixedSize, long_padding);
 
+  // This column set is used for the error label in CreateInputField().
+  views::ColumnSet* columns_error = editor_layout->AddColumnSet(2);
+  columns_error->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::FIXED, kLabelWidth, 0);
+  columns_error->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                  kLabelInputFieldHorizontalPadding);
+  columns_error->AddColumn(views::GridLayout::LEADING,
+                           views::GridLayout::CENTER, 1.0,
+                           views::GridLayout::USE_PREF, 0, 0);
+
   views::View* first_field = nullptr;
   for (const auto& field : GetFieldDefinitions()) {
     bool valid = false;
@@ -331,16 +343,15 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
   // Validate all fields and disable the primary (Done) button if necessary.
   primary_button()->SetEnabled(ValidateInputFields());
 
-  views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(2);
+  views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(3);
   required_field_columns->AddColumn(views::GridLayout::LEADING,
                                     views::GridLayout::CENTER, 1.0,
                                     views::GridLayout::USE_PREF, 0, 0);
-  editor_layout->StartRow(views::GridLayout::kFixedSize, 2);
+  editor_layout->StartRow(views::GridLayout::kFixedSize, 3);
+
   // Adds the "* indicates a required field" label in "hint" grey text.
-  editor_layout->AddView(
-      CreateHintLabel(
-          l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE))
-          .release());
+  editor_layout->AddView(CreateHintLabel(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE)));
 
   return editor_view;
 }
@@ -367,7 +378,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
 
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->AddView(label.release());
+  layout->AddView(std::move(label));
 
   views::View* focusable_field = nullptr;
   constexpr int kInputFieldHeight = 28;
@@ -381,13 +392,13 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       ValidationDelegate* delegate_ptr = validation_delegate.get();
 
       base::string16 initial_value = GetInitialValueForType(field.type);
-      ValidatingTextfield* text_field =
-          new ValidatingTextfield(std::move(validation_delegate));
+      auto text_field =
+          std::make_unique<ValidatingTextfield>(std::move(validation_delegate));
       // Set the initial value and validity state.
       text_field->SetText(initial_value);
       text_field->SetAccessibleName(field.label);
       *valid = IsEditingExistingItem() &&
-               delegate_ptr->IsValidTextfield(text_field, &error_message);
+               delegate_ptr->IsValidTextfield(text_field.get(), &error_message);
       if (IsEditingExistingItem())
         text_field->SetInvalid(!(*valid));
 
@@ -396,26 +407,26 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       text_field->set_controller(this);
       // Using autofill field type as a view ID (for testing).
       text_field->SetID(GetInputFieldViewId(field.type));
-      text_fields_.insert(std::make_pair(text_field, field));
-      focusable_field = text_field;
+      text_fields_.insert(std::make_pair(text_field.get(), field));
 
       // |text_field| will now be owned by |row|.
-      layout->AddView(text_field, 1.0, 1.0, views::GridLayout::FILL,
-                      views::GridLayout::FILL, views::GridLayout::kFixedSize,
-                      kInputFieldHeight);
+      focusable_field =
+          layout->AddView(std::move(text_field), 1.0, 1.0,
+                          views::GridLayout::FILL, views::GridLayout::FILL,
+                          views::GridLayout::kFixedSize, kInputFieldHeight);
       break;
     }
     case EditorField::ControlType::COMBOBOX: {
       std::unique_ptr<ValidatingCombobox> combobox =
           CreateComboboxForField(field, &error_message);
 
-      focusable_field = combobox.get();
       *valid = combobox->IsValid();
 
       // |combobox| will now be owned by |row|.
-      layout->AddView(combobox.release(), 1.0, 1.0, views::GridLayout::FILL,
-                      views::GridLayout::FILL, views::GridLayout::kFixedSize,
-                      kInputFieldHeight);
+      focusable_field =
+          layout->AddView(std::move(combobox), 1.0, 1.0,
+                          views::GridLayout::FILL, views::GridLayout::FILL,
+                          views::GridLayout::kFixedSize, kInputFieldHeight);
       break;
     }
     case EditorField::ControlType::CUSTOMFIELD: {
@@ -425,7 +436,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
           field.type, &focusable_field, valid, &error_message);
       DCHECK(field_view);
 
-      layout->AddView(field_view.release(), 1, 1, views::GridLayout::FILL,
+      layout->AddView(std::move(field_view), 1, 1, views::GridLayout::FILL,
                       views::GridLayout::FILL, views::GridLayout::kFixedSize,
                       kInputFieldHeight);
       break;
@@ -435,7 +446,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
           std::make_unique<views::Label>(GetInitialValueForType(field.type));
       label->SetID(GetInputFieldViewId(field.type));
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      layout->AddView(label.release(), 1, 1, views::GridLayout::FILL,
+      layout->AddView(std::move(label), 1, 1, views::GridLayout::FILL,
                       views::GridLayout::FILL, 0, kInputFieldHeight);
       break;
     }
@@ -445,9 +456,9 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   // last column.
   std::unique_ptr<views::View> extra_view = CreateExtraViewForField(field.type);
   if (extra_view)
-    layout->AddView(extra_view.release());
+    layout->AddView(std::move(extra_view));
 
-  layout->StartRow(views::GridLayout::kFixedSize, column_set);
+  layout->StartRow(views::GridLayout::kFixedSize, 2);
   layout->SkipColumns(1);
   std::unique_ptr<views::View> error_label_view =
       std::make_unique<views::View>();
@@ -456,7 +467,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   if (IsEditingExistingItem() && !error_message.empty())
     AddOrUpdateErrorMessageForField(field.type, error_message);
 
-  layout->AddView(error_label_view.release());
+  layout->AddView(std::move(error_label_view));
 
   // Bottom padding for the row.
   layout->AddPaddingRow(views::GridLayout::kFixedSize, kInputRowSpacing);

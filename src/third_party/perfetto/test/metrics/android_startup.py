@@ -45,7 +45,7 @@ trace.add_sched(ts=120, prev_pid=3, next_pid=0, prev_state='S')
 # P1: 10ns sleep
 trace.add_sched(ts=130, prev_pid=0, next_pid=3)
 
-trace.add_sched(ts=130, prev_pid=0, next_pid=4)
+trace.add_sched(ts=130, prev_pid=3, next_pid=4)
 
 # Create an unrelated task
 trace.add_newtask(ts=155, tid=1, new_tid=5, new_comm='', flags=0)
@@ -73,5 +73,9 @@ trace.add_atrace_async_begin(ts=410, tid=2, pid=2,
 
 trace.add_atrace_async_end(ts=510, tid=2, pid=2,
     buf='launching: com.google.android.apps.nexuslauncher')
+
+trace.add_ftrace_packet(cpu=1)
+trace.add_sched(ts=160, prev_pid=0, next_pid=1)
+trace.add_sched(ts=200, prev_pid=1, next_pid=0)
 
 print(trace.trace.SerializeToString())

@@ -8,6 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "pc/jsep_transport.h"
+
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -16,7 +18,6 @@
 #include "media/base/fake_rtp.h"
 #include "p2p/base/fake_dtls_transport.h"
 #include "p2p/base/fake_ice_transport.h"
-#include "pc/jsep_transport.h"
 #include "rtc_base/gunit.h"
 
 namespace cricket {
@@ -108,8 +109,11 @@ class JsepTransport2Test : public ::testing::Test, public sigslot::has_slots<> {
         kTransportName, /*local_certificate=*/nullptr, std::move(ice),
         std::move(rtcp_ice), std::move(unencrypted_rtp_transport),
         std::move(sdes_transport), std::move(dtls_srtp_transport),
-        std::move(rtp_dtls_transport), std::move(rtcp_dtls_transport),
-        /*media_transport=*/nullptr);
+        /*datagram_rtp_transport=*/nullptr, std::move(rtp_dtls_transport),
+        std::move(rtcp_dtls_transport),
+        /*datagram_dtls_transport=*/nullptr,
+        /*media_transport=*/nullptr,
+        /*datagram_transport=*/nullptr);
 
     signal_rtcp_mux_active_received_ = false;
     jsep_transport->SignalRtcpMuxActive.connect(

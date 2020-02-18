@@ -7,16 +7,17 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/demuxer_stream.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/media_util.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/filters/decrypting_media_resource.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using ::base::test::RunCallback;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;

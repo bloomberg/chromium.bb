@@ -574,11 +574,11 @@ void WebRtcVoiceEngine::UnregisterChannel(WebRtcVoiceMediaChannel* channel) {
   channels_.erase(it);
 }
 
-bool WebRtcVoiceEngine::StartAecDump(rtc::PlatformFile file,
+bool WebRtcVoiceEngine::StartAecDump(webrtc::FileWrapper file,
                                      int64_t max_size_bytes) {
   RTC_DCHECK(worker_thread_checker_.IsCurrent());
   auto aec_dump = webrtc::AecDumpFactory::Create(
-      file, max_size_bytes, low_priority_worker_queue_.get());
+      std::move(file), max_size_bytes, low_priority_worker_queue_.get());
   if (!aec_dump) {
     return false;
   }
@@ -609,10 +609,10 @@ webrtc::AudioState* WebRtcVoiceEngine::audio_state() {
   return audio_state_.get();
 }
 
-AudioCodecs WebRtcVoiceEngine::CollectCodecs(
+std::vector<AudioCodec> WebRtcVoiceEngine::CollectCodecs(
     const std::vector<webrtc::AudioCodecSpec>& specs) const {
   PayloadTypeMapper mapper;
-  AudioCodecs out;
+  std::vector<AudioCodec> out;
 
   // Only generate CN payload types for these clockrates:
   std::map<int, bool, std::greater<int>> generate_cn = {
@@ -622,7 +622,7 @@ AudioCodecs WebRtcVoiceEngine::CollectCodecs(
       {8000, false}, {16000, false}, {32000, false}, {48000, false}};
 
   auto map_format = [&mapper](const webrtc::SdpAudioFormat& format,
-                              AudioCodecs* out) {
+                              std::vector<AudioCodec>* out) {
     absl::optional<AudioCodec> opt_codec = mapper.ToAudioCodec(format);
     if (opt_codec) {
       if (out) {
@@ -2247,7 +2247,6 @@ bool WebRtcVoiceMediaChannel::GetStats(VoiceMediaInfo* info) {
     rinfo.fec_packets_received = stats.fec_packets_received;
     rinfo.fec_packets_discarded = stats.fec_packets_discarded;
     rinfo.packets_lost = stats.packets_lost;
-    rinfo.fraction_lost = stats.fraction_lost;
     rinfo.codec_name = stats.codec_name;
     rinfo.codec_payload_type = stats.codec_payload_type;
     rinfo.ext_seqnum = stats.ext_seqnum;

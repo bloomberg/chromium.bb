@@ -6,8 +6,6 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
-#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
@@ -166,21 +164,6 @@ JSModuleScript::JSModuleScript(Modulator* settings_object,
       start_position_(start_position),
       produce_cache_data_(produce_cache_data) {}
 
-void JSModuleScript::RunScriptOnWorker(WorkerGlobalScope& worker_global_scope) {
-  DCHECK(worker_global_scope.IsContextThread());
-
-  WorkerReportingProxy& worker_reporting_proxy =
-      worker_global_scope.ReportingProxy();
-
-  worker_reporting_proxy.WillEvaluateModuleScript();
-  // This |error| is always null because the second argument is |kReport|.
-  // TODO(nhiroki): Catch an error when an evaluation error happens.
-  // (https://crbug.com/680046)
-  ScriptValue error = SettingsObject()->ExecuteModule(
-      this, Modulator::CaptureEvalErrorFlag::kReport);
-  worker_reporting_proxy.DidEvaluateModuleScript(error.IsEmpty());
-}
-
 String JSModuleScript::InlineSourceTextForCSP() const {
   return source_text_.ToString();
 }
@@ -199,7 +182,7 @@ void JSModuleScript::ProduceCache() {
   produce_cache_data_ = nullptr;
 }
 
-void JSModuleScript::Trace(blink::Visitor* visitor) {
+void JSModuleScript::Trace(Visitor* visitor) {
   visitor->Trace(produce_cache_data_);
   ModuleScript::Trace(visitor);
 }

@@ -43,8 +43,11 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
+    absl::any
     absl::compressed_tuple
     absl::memory
+    absl::optional
+    absl::test_instance_tracker
     absl::utility
     gmock_main
 )
@@ -124,6 +127,9 @@ absl_cc_library(
     ${ABSL_DEFAULT_COPTS}
   DEPS
     absl::compressed_tuple
+    absl::core_headers
+    absl::memory
+    absl::span
     absl::type_traits
   PUBLIC
 )

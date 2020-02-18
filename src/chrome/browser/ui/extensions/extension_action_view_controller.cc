@@ -60,8 +60,7 @@ ExtensionActionViewController::ExtensionActionViewController(
       icon_factory_(browser->profile(), extension, extension_action, this),
       extension_registry_(
           extensions::ExtensionRegistry::Get(browser_->profile())),
-      popup_host_observer_(this),
-      weak_factory_(this) {
+      popup_host_observer_(this) {
   DCHECK(extensions_container);
   DCHECK(extension_action);
   DCHECK(extension);
@@ -216,7 +215,8 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu() {
 
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_.reset(new extensions::ExtensionContextMenuModel(
-      extension(), browser_, visibility, this));
+      extension(), browser_, visibility, this,
+      view_delegate_->CanShowIconInToolbar()));
   return context_menu_model_.get();
 }
 

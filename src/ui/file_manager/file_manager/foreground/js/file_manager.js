@@ -570,7 +570,8 @@ class FileManager extends cr.EventTarget {
     this.toolbarController_ = new ToolbarController(
         this.ui_.toolbar, this.ui_.dialogNavigationList, this.ui_.listContainer,
         assert(this.ui_.locationLine), this.selectionHandler_,
-        this.directoryModel_, this.volumeManager_);
+        this.directoryModel_, this.volumeManager_,
+        /** @type {!A11yAnnounce} */ (this.ui_));
     this.emptyFolderController_ = new EmptyFolderController(
         this.ui_.emptyFolder, this.directoryModel_, this.ui_.alertDialog);
     this.actionsController_ = new ActionsController(
@@ -593,7 +594,8 @@ class FileManager extends cr.EventTarget {
         assert(this.ui_.listContainer), assert(this.ui_.selectionMenuButton),
         assert(this.quickViewModel_), assert(this.taskController_),
         fileListSelectionModel, assert(this.quickViewUma_),
-        metadataBoxController, this.dialogType, assert(this.volumeManager_));
+        metadataBoxController, this.dialogType, assert(this.volumeManager_),
+        this.dialogDom_);
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       this.importController_ = new importer.ImportController(
@@ -914,15 +916,14 @@ class FileManager extends cr.EventTarget {
         this.dialogType == DialogType.FULL_PAGE);
     const grid = queryRequiredElement('.thumbnail-grid', dom);
     FileGrid.decorate(
-        grid, this.metadataModel_, this.volumeManager_, this.historyLoader_);
+        grid, this.metadataModel_, this.volumeManager_, this.historyLoader_,
+        /** @type {!A11yAnnounce} */ (this.ui_));
 
     this.addHistoryObserver_();
 
     this.ui_.initAdditionalUI(
         assertInstanceof(table, FileTable), assertInstanceof(grid, FileGrid),
-        new LocationLine(
-            queryRequiredElement('#location-breadcrumbs', dom),
-            this.volumeManager_));
+        this.volumeManager_);
 
     // Handle UI events.
     this.fileBrowserBackground_.progressCenter.addPanel(
@@ -1071,7 +1072,7 @@ class FileManager extends cr.EventTarget {
     // Create search controller.
     this.searchController_ = new SearchController(
         this.ui_.searchBox, assert(this.ui_.locationLine), this.directoryModel_,
-        this.volumeManager_, assert(this.taskController_));
+        this.volumeManager_, assert(this.taskController_), assert(this.ui_));
 
     // Create directory tree naming controller.
     this.directoryTreeNamingController_ = new DirectoryTreeNamingController(

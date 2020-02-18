@@ -47,7 +47,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
 
   const bool is_invidual_attestation =
       request.attestation_preference ==
-      AttestationConveyancePreference::ENTERPRISE;
+      AttestationConveyancePreference::kEnterprise;
   return ConstructU2fRegisterCommand(
       fido_parsing_utils::CreateSHA256Hash(request.rp.id),
       request.client_data_hash, is_invidual_attestation);

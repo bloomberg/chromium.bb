@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 
 jumbo_source_set("common") {
@@ -10,6 +11,7 @@ jumbo_source_set("common") {
   # source set rather than the actual component that can be linked to.
   # Dependencies instead should be to //third_party/blink/public/common:common.
   visibility = [
+    ":*",
     "//third_party/blink/public/common",
     "//third_party/blink/public:all_blink",
   ]
@@ -22,6 +24,9 @@ jumbo_source_set("common") {
     "associated_interfaces/associated_interface_provider.cc",
     "associated_interfaces/associated_interface_registry.cc",
     "blob/blob_utils.cc",
+    "bluetooth/web_bluetooth_device_id.cc",
+    "bluetooth/web_bluetooth_device_id.h",
+    "bluetooth/web_bluetooth_device_id_struct_traits.h",
     "cache_storage/cache_storage_utils.cc",
     "client_hints/client_hints.cc",
     "device_memory/approximated_device_memory.cc",
@@ -30,6 +35,7 @@ jumbo_source_set("common") {
     "feature_policy/feature_policy.cc",
     "feature_policy/policy_value.cc",
     "features.cc",
+    "fetch/fetch_api_request_body_mojom_traits.cc",
     "frame/frame_policy.cc",
     "frame/from_ad_state.cc",
     "frame/user_activation_state.cc",
@@ -38,6 +44,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
+    "loader/request_destination.cc",
     "loader/url_loader_factory_bundle.cc",
     "loader/url_loader_factory_bundle_mojom_traits.cc",
     "logging/logging_utils.cc",
@@ -68,7 +75,9 @@ jumbo_source_set("common") {
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
+    "web_package/http_structured_header.cc",
     "web_package/signed_exchange_consts.cc",
+    "web_package/signed_exchange_request_matcher.cc",
   ]
 
   public_deps = [
@@ -91,6 +100,7 @@ jumbo_source_set("common") {
   if (is_android || is_win) {
     sources += [
       "font_unique_name_lookup/font_table_matcher.cc",
+      "font_unique_name_lookup/font_table_persistence.cc",
       "font_unique_name_lookup/icu_fold_case_util.cc",
     ]
 
@@ -101,6 +111,17 @@ jumbo_source_set("common") {
     sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.cc" ]
     deps += [ "//ui/gfx/" ]
   }
+}
+
+fuzzer_test("http_structured_header_fuzzer") {
+  sources = [
+    "web_package/http_structured_header_fuzzer.cc",
+  ]
+  deps = [
+    ":common",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+  ]
+  seed_corpus = "web_package/http_structured_header_corpus"
 }
 
 test("blink_common_unittests") {
@@ -121,6 +142,7 @@ jumbo_source_set("common_unittests_sources") {
   testonly = true
 
   sources = [
+    "bluetooth/web_bluetooth_device_id_unittest.cc",
     "client_hints/client_hints_unittest.cc",
     "device_memory/approximated_device_memory_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
@@ -135,6 +157,8 @@ jumbo_source_set("common_unittests_sources") {
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
+    "web_package/http_structured_header_unittest.cc",
+    "web_package/signed_exchange_request_matcher_unittest.cc",
   ]
 
   deps = [

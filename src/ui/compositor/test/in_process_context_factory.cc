@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -25,8 +26,11 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -70,7 +74,7 @@ class DirectOutputSurface : public viz::OutputSurface {
  public:
   explicit DirectOutputSurface(
       scoped_refptr<InProcessContextProvider> context_provider)
-      : viz::OutputSurface(context_provider), weak_ptr_factory_(this) {
+      : viz::OutputSurface(context_provider) {
     capabilities_.flipped_output_surface = true;
   }
 
@@ -117,10 +121,6 @@ class DirectOutputSurface : public viz::OutputSurface {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
-  std::unique_ptr<viz::OverlayCandidateValidator>
-  TakeOverlayCandidateValidator() override {
-    return nullptr;
-  }
   bool IsDisplayedAsOverlayPlane() const override { return false; }
   unsigned GetOverlayTextureId() const override { return 0; }
   gfx::BufferFormat GetOverlayBufferFormat() const override {
@@ -138,12 +138,12 @@ class DirectOutputSurface : public viz::OutputSurface {
 
  private:
   void OnSwapBuffersComplete() {
-    client_->DidReceiveSwapBuffersAck();
+    client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
   viz::OutputSurfaceClient* client_ = nullptr;
-  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
+  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
 };
@@ -160,6 +160,14 @@ struct InProcessContextFactory::PerCompositorData {
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     viz::FrameSinkManagerImpl* frame_sink_manager)
+    : InProcessContextFactory(host_frame_sink_manager,
+                              frame_sink_manager,
+                              features::IsUsingSkiaRenderer()) {}
+
+InProcessContextFactory::InProcessContextFactory(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    viz::FrameSinkManagerImpl* frame_sink_manager,
+    bool use_skia_renderer)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
       disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -170,9 +178,9 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
-#if defined(OS_WIN)
-  renderer_settings_.finish_rendering_on_resize = true;
-#elif defined(OS_MACOSX)
+  if (use_skia_renderer)
+    renderer_settings_.use_skia_renderer = true;
+#if defined(OS_MACOSX)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
   // Ensure that tests don't wait for frames that will never come.
   ui::CATransactionCoordinator::Get().DisableForTesting();
@@ -235,7 +243,14 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
                                        "UICompositor", support_locking);
 
   std::unique_ptr<viz::OutputSurface> display_output_surface;
-  if (use_test_surface_) {
+
+  if (renderer_settings_.use_skia_renderer) {
+    display_output_surface = viz::SkiaOutputSurfaceImpl::Create(
+        std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+            viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+            gpu::kNullSurfaceHandle),
+        renderer_settings_);
+  } else if (use_test_surface_) {
     bool flipped_output_surface = false;
     display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
         context_provider, flipped_output_surface);
@@ -267,8 +282,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(scheduler),
       compositor->task_runner());
-  GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source.get(),
-                                                  compositor->frame_sink_id());
+  frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
+                                                compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
   data->begin_frame_source = std::move(begin_frame_source);
@@ -276,10 +291,9 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto layer_tree_frame_sink = std::make_unique<viz::DirectLayerTreeFrameSink>(
       compositor->frame_sink_id(), GetHostFrameSinkManager(),
-      GetFrameSinkManager(), display, nullptr /* display_client */,
+      frame_sink_manager_, display, nullptr /* display_client */,
       context_provider, shared_worker_context_provider_,
-      compositor->task_runner(), &gpu_memory_buffer_manager_,
-      false /* use_viz_hit_test */);
+      compositor->task_runner(), &gpu_memory_buffer_manager_);
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 
   data->display->Resize(compositor->size());
@@ -330,7 +344,7 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
-  GetFrameSinkManager()->UnregisterBeginFrameSource(
+  frame_sink_manager_->UnregisterBeginFrameSource(
       data->begin_frame_source.get());
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
@@ -394,10 +408,6 @@ void InProcessContextFactory::AddObserver(ContextFactoryObserver* observer) {
 
 void InProcessContextFactory::RemoveObserver(ContextFactoryObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-viz::FrameSinkManagerImpl* InProcessContextFactory::GetFrameSinkManager() {
-  return frame_sink_manager_;
 }
 
 SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(

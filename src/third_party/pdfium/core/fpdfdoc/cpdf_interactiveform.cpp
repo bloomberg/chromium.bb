@@ -14,6 +14,7 @@
 #include "constants/stream_dict_common.h"
 #include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/font/cpdf_fontencoding.h"
+#include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/parser/cfdf_document.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -97,7 +98,7 @@ void InitDict(CPDF_Dictionary*& pFormDict, CPDF_Document* pDocument) {
 
     if (charSet != FX_CHARSET_ANSI) {
       ByteString csFontName =
-          CPDF_InteractiveForm::GetNativeFont(charSet, nullptr);
+          CPDF_InteractiveForm::GetNativeFontName(charSet, nullptr);
       if (!pFont || csFontName != CFX_Font::kDefaultAnsiFontName) {
         pFont = CPDF_InteractiveForm::AddNativeFont(pDocument);
         if (pFont) {
@@ -133,12 +134,10 @@ CPDF_Font* GetFont(CPDF_Dictionary* pFormDict,
     return nullptr;
 
   CPDF_Dictionary* pElement = pFonts->GetDictFor(csAlias);
-  if (!pElement)
+  if (!pElement || pElement->GetStringFor("Type") != "Font")
     return nullptr;
 
-  if (pElement->GetStringFor("Type") == "Font")
-    return pDocument->LoadFont(pElement);
-  return nullptr;
+  return CPDF_DocPageData::FromDocument(pDocument)->GetFont(pElement);
 }
 
 CPDF_Font* GetNativeFont(CPDF_Dictionary* pFormDict,
@@ -163,11 +162,11 @@ CPDF_Font* GetNativeFont(CPDF_Dictionary* pFormDict,
       continue;
 
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement)
+    if (!pElement || pElement->GetStringFor("Type") != "Font")
       continue;
-    if (pElement->GetStringFor("Type") != "Font")
-      continue;
-    CPDF_Font* pFind = pDocument->LoadFont(pElement);
+
+    auto* pData = CPDF_DocPageData::FromDocument(pDocument);
+    CPDF_Font* pFind = pData->GetFont(pElement);
     if (!pFind)
       continue;
 
@@ -241,11 +240,10 @@ bool FindFont(CPDF_Dictionary* pFormDict,
       continue;
 
     CPDF_Dictionary* pElement = ToDictionary(it.second->GetDirect());
-    if (!pElement)
+    if (!pElement || pElement->GetStringFor("Type") != "Font")
       continue;
-    if (pElement->GetStringFor("Type") != "Font")
-      continue;
-    pFont = pDocument->LoadFont(pElement);
+
+    pFont = CPDF_DocPageData::FromDocument(pDocument)->GetFont(pElement);
     if (!pFont)
       continue;
 
@@ -306,7 +304,8 @@ CPDF_Font* AddNativeFont(CPDF_Dictionary*& pFormDict,
     *csNameTag = std::move(csTemp);
     return pFont;
   }
-  ByteString csFontName = CPDF_InteractiveForm::GetNativeFont(charSet, nullptr);
+  ByteString csFontName =
+      CPDF_InteractiveForm::GetNativeFontName(charSet, nullptr);
   if (!csFontName.IsEmpty() &&
       FindFont(pFormDict, pDocument, csFontName, pFont, csNameTag)) {
     return pFont;
@@ -618,15 +617,16 @@ CPDF_Font* CPDF_InteractiveForm::AddStandardFont(CPDF_Document* pDocument,
   if (!pDocument || csFontName.IsEmpty())
     return nullptr;
 
+  auto* pPageData = CPDF_DocPageData::FromDocument(pDocument);
   if (csFontName == "ZapfDingbats")
-    return pDocument->AddStandardFont(csFontName.c_str(), nullptr);
+    return pPageData->AddStandardFont(csFontName.c_str(), nullptr);
 
   CPDF_FontEncoding encoding(PDFFONT_ENCODING_WINANSI);
-  return pDocument->AddStandardFont(csFontName.c_str(), &encoding);
+  return pPageData->AddStandardFont(csFontName.c_str(), &encoding);
 }
 
-ByteString CPDF_InteractiveForm::GetNativeFont(uint8_t charSet,
-                                               void* pLogFont) {
+ByteString CPDF_InteractiveForm::GetNativeFontName(uint8_t charSet,
+                                                   void* pLogFont) {
   ByteString csFontName;
 #if defined(OS_WIN)
   LOGFONTA lf = {};
@@ -671,11 +671,11 @@ CPDF_Font* CPDF_InteractiveForm::AddNativeFont(uint8_t charSet,
 
 #if defined(OS_WIN)
   LOGFONTA lf;
-  ByteString csFontName = GetNativeFont(charSet, &lf);
+  ByteString csFontName = GetNativeFontName(charSet, &lf);
   if (!csFontName.IsEmpty()) {
     if (csFontName == CFX_Font::kDefaultAnsiFontName)
       return AddStandardFont(pDocument, csFontName);
-    return pDocument->AddWindowsFont(&lf);
+    return CPDF_DocPageData::FromDocument(pDocument)->AddWindowsFont(&lf);
   }
 #endif
   return nullptr;
@@ -1038,7 +1038,7 @@ std::unique_ptr<CFDF_Document> CPDF_InteractiveForm::ExportToFDF(
       pNewDict->SetNewFor<CPDF_Name>("Type", "Filespec");
       CPDF_FileSpec filespec(pNewDict.Get());
       filespec.SetFileName(pdf_path);
-      pMainDict->SetFor("F", std::move(pNewDict));
+      pMainDict->SetFor("F", pNewDict);
     }
   }
 
@@ -1081,7 +1081,7 @@ std::unique_ptr<CFDF_Document> CPDF_InteractiveForm::ExportToFDF(
       if (pV)
         pFieldDict->SetFor(pdfium::form_fields::kV, pV->CloneDirectObject());
     }
-    pFields->Add(std::move(pFieldDict));
+    pFields->Add(pFieldDict);
   }
   return pDoc;
 }

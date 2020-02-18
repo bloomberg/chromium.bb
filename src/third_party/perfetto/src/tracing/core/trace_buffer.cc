@@ -19,9 +19,10 @@
 #include <limits>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/protozero/proto_utils.h"
-#include "perfetto/tracing/core/shared_memory_abi.h"
-#include "perfetto/tracing/core/trace_packet.h"
 
 #define TRACE_BUFFER_VERBOSE_LOGGING() 0  // Set to 1 when debugging unittests.
 #if TRACE_BUFFER_VERBOSE_LOGGING()
@@ -843,8 +844,14 @@ TraceBuffer::ReadPacketResult TraceBuffer::ReadNextPacketInChunk(
   const uint8_t* next_packet = packet_data + packet_size;
   if (PERFETTO_UNLIKELY(next_packet <= packet_begin ||
                         next_packet > record_end)) {
-    stats_.set_abi_violations(stats_.abi_violations() + 1);
-    PERFETTO_DCHECK(suppress_sanity_dchecks_for_testing_);
+    // In SharedMemoryArbiter::BufferExhaustedPolicy::kDrop mode, TraceWriter
+    // may abort a fragmented packet by writing an invalid size in the last
+    // fragment's header. We should handle this case without recording an ABI
+    // violation (since Android R).
+    if (packet_size != SharedMemoryABI::kPacketSizeDropPacket) {
+      stats_.set_abi_violations(stats_.abi_violations() + 1);
+      PERFETTO_DCHECK(suppress_sanity_dchecks_for_testing_);
+    }
     chunk_meta->cur_fragment_offset = 0;
     chunk_meta->num_fragments_read = chunk_meta->num_fragments;
     if (PERFETTO_LIKELY(chunk_meta->is_complete())) {

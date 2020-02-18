@@ -26,6 +26,7 @@ namespace {
 constexpr int kMaxActiveComparisons = 10;
 constexpr int kFreezeThresholdMs = 150;
 constexpr int kMicrosPerSecond = 1000000;
+constexpr int kBitsInByte = 8;
 
 void LogFrameCounters(const std::string& name, const FrameCounters& counters) {
   RTC_LOG(INFO) << "[" << name << "] Captured    : " << counters.captured;
@@ -81,7 +82,10 @@ void DefaultVideoQualityAnalyzer::Start(std::string test_case_name,
   }
   {
     rtc::CritScope crit(&lock_);
+    RTC_CHECK(start_time_.IsMinusInfinity());
+
     state_ = State::kActive;
+    start_time_ = Now();
   }
 }
 
@@ -90,6 +94,13 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
     const webrtc::VideoFrame& frame) {
   // |next_frame_id| is atomic, so we needn't lock here.
   uint16_t frame_id = next_frame_id_++;
+  Timestamp start_time = Timestamp::MinusInfinity();
+  {
+    rtc::CritScope crit(&lock_);
+    // Create a local copy of start_time_ to access it under |comparison_lock_|
+    // without holding a |lock_|
+    start_time = start_time_;
+  }
   {
     // Ensure stats for this stream exists.
     rtc::CritScope crit(&comparison_lock_);
@@ -98,7 +109,7 @@ uint16_t DefaultVideoQualityAnalyzer::OnFrameCaptured(
       // Assume that the first freeze was before first stream frame captured.
       // This way time before the first freeze would be counted as time between
       // freezes.
-      stream_last_freeze_end_time_.insert({stream_label, Now()});
+      stream_last_freeze_end_time_.insert({stream_label, start_time});
     }
   }
   {
@@ -152,11 +163,13 @@ void DefaultVideoQualityAnalyzer::OnFrameEncoded(
   rtc::CritScope crit(&lock_);
   auto it = frame_stats_.find(frame_id);
   RTC_DCHECK(it != frame_stats_.end());
-  RTC_DCHECK(it->second.encoded_time.IsInfinite())
-      << "Received multiple spatial layers for stream_label="
-      << it->second.stream_label;
-  frame_counters_.encoded++;
-  stream_frame_counters_[it->second.stream_label].encoded++;
+  // For SVC we can receive multiple encoded images for one frame, so to cover
+  // all cases we have to pick the last encode time.
+  if (it->second.encoded_time.IsInfinite()) {
+    // Increase counters only when we meet this frame first time.
+    frame_counters_.encoded++;
+    stream_frame_counters_[it->second.stream_label].encoded++;
+  }
   it->second.encoded_time = Now();
 }
 
@@ -298,10 +311,12 @@ void DefaultVideoQualityAnalyzer::Stop() {
     rtc::CritScope crit1(&lock_);
     rtc::CritScope crit2(&comparison_lock_);
     for (auto& item : stream_stats_) {
-      if (item.second.freeze_time_ms.IsEmpty()) {
-        continue;
-      }
       const StreamState& state = stream_states_[item.first];
+      // If there are no freezes in the call we have to report
+      // time_between_freezes_ms as call duration and in such case
+      // |stream_last_freeze_end_time_| for this stream will be |start_time_|.
+      // If there is freeze, then we need add time from last rendered frame
+      // to last freeze end as time between freezes.
       if (state.last_rendered_frame_time) {
         item.second.time_between_freezes_ms.AddSample(
             (state.last_rendered_frame_time.value() -
@@ -567,15 +582,20 @@ void DefaultVideoQualityAnalyzer::ReportVideoBweResults(
     const std::string& test_case_name,
     const VideoBweStats& video_bwe_stats) {
   ReportResult("available_send_bandwidth", test_case_name,
-               video_bwe_stats.available_send_bandwidth, "bytesPerSecond");
+               video_bwe_stats.available_send_bandwidth / kBitsInByte,
+               "bytesPerSecond");
   ReportResult("transmission_bitrate", test_case_name,
-               video_bwe_stats.transmission_bitrate, "bytesPerSecond");
+               video_bwe_stats.transmission_bitrate / kBitsInByte,
+               "bytesPerSecond");
   ReportResult("retransmission_bitrate", test_case_name,
-               video_bwe_stats.retransmission_bitrate, "bytesPerSecond");
+               video_bwe_stats.retransmission_bitrate / kBitsInByte,
+               "bytesPerSecond");
   ReportResult("actual_encode_bitrate", test_case_name,
-               video_bwe_stats.actual_encode_bitrate, "bytesPerSecond");
+               video_bwe_stats.actual_encode_bitrate / kBitsInByte,
+               "bytesPerSecond");
   ReportResult("target_encode_bitrate", test_case_name,
-               video_bwe_stats.target_encode_bitrate, "bytesPerSecond");
+               video_bwe_stats.target_encode_bitrate / kBitsInByte,
+               "bytesPerSecond");
 }
 
 void DefaultVideoQualityAnalyzer::ReportResults(
@@ -597,6 +617,7 @@ void DefaultVideoQualityAnalyzer::ReportResults(
   ReportResult("encode_time", test_case_name, stats.encode_time_ms, "ms");
   ReportResult("time_between_freezes", test_case_name,
                stats.time_between_freezes_ms, "ms");
+  ReportResult("freeze_time_ms", test_case_name, stats.freeze_time_ms, "ms");
   ReportResult("pixels_per_frame", test_case_name,
                stats.resolution_of_rendered_frame, "unitless");
   test::PrintResult("min_psnr", "", test_case_name,
@@ -628,7 +649,7 @@ std::string DefaultVideoQualityAnalyzer::GetTestCaseName(
 }
 
 Timestamp DefaultVideoQualityAnalyzer::Now() {
-  return Timestamp::us(clock_->TimeInMicroseconds());
+  return clock_->CurrentTime();
 }
 
 DefaultVideoQualityAnalyzer::FrameStats::FrameStats(std::string stream_label,

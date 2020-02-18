@@ -14,6 +14,7 @@
 
 namespace gfx {
 class ColorSpace;
+class GpuFence;
 class GpuMemoryBuffer;
 class Size;
 }  // namespace gfx
@@ -84,6 +85,15 @@ class SharedImageInterface {
   virtual void UpdateSharedImage(const SyncToken& sync_token,
                                  const Mailbox& mailbox) = 0;
 
+  // Updates a shared image after its GpuMemoryBuffer (if any) was modified on
+  // the CPU or through external devices, after |sync_token| has been released.
+  // If |acquire_fence| is not null, the fence is inserted in the GPU command
+  // stream and a server side wait is issued before any GPU command referring
+  // to this shared imaged is executed on the GPU.
+  virtual void UpdateSharedImage(const SyncToken& sync_token,
+                                 std::unique_ptr<gfx::GpuFence> acquire_fence,
+                                 const Mailbox& mailbox) = 0;
+
   // Destroys the shared image, unregistering its mailbox, after |sync_token|
   // has been released. After this call, the mailbox can't be used to reference
   // the image any more, however if the image was imported into other APIs,
@@ -124,6 +134,9 @@ class SharedImageInterface {
   // Generates a verified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenVerifiedSyncToken() = 0;
+
+  // Flush the SharedImageInterface, issuing any deferred IPCs.
+  virtual void Flush() = 0;
 };
 
 }  // namespace gpu

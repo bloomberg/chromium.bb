@@ -21,8 +21,7 @@ int main(int argc, char **argv) {
 
   // unit_tests don't currently work with the Network Service enabled.
   // https://crbug.com/966633.
-  content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv),
-                                        "NetworkService");
+  content::UnitTestTestSuite test_suite(new ChromeUnitTestSuite(argc, argv));
 
   base::TestIOThread test_io_thread(base::TestIOThread::kAutoStart);
   mojo::core::ScopedIPCSupport ipc_support(

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
@@ -25,6 +26,11 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_unsupported_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -61,7 +67,7 @@ CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
 
 CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
                                              const LayoutObject* layout_object,
-                                             Node* styled_node,
+                                             const Node* styled_node,
                                              bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
@@ -120,7 +126,7 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
                         border_style == EBorderStyle::kRidge ||
                         border_style == EBorderStyle::kGroove))
     return blink::Color(238, 238, 238);
-  return visited_link ? style.VisitedLinkColor() : style.GetColor();
+  return visited_link ? style.InternalVisitedColor() : style.GetColor();
 }
 
 const CSSValue* ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
@@ -213,7 +219,7 @@ const CSSValue* ComputedStyleUtils::ValueForFillRepeat(EFillRepeat x_repeat,
 const CSSValueList* ComputedStyleUtils::ValuesForBackgroundShorthand(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* result = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.BackgroundLayers();
@@ -300,11 +306,12 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
 
   // TODO(alancutter): Make this code aware of calc lengths.
   if (image.ImageSlices().Top().IsPercentOrCalc()) {
-    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
-                                    CSSPrimitiveValue::UnitType::kPercentage);
+    top = CSSNumericLiteralValue::Create(
+        image.ImageSlices().Top().Value(),
+        CSSPrimitiveValue::UnitType::kPercentage);
   } else {
-    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
-                                    CSSPrimitiveValue::UnitType::kNumber);
+    top = CSSNumericLiteralValue::Create(image.ImageSlices().Top().Value(),
+                                         CSSPrimitiveValue::UnitType::kNumber);
   }
 
   if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
@@ -315,12 +322,13 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
     left = top;
   } else {
     if (image.ImageSlices().Right().IsPercentOrCalc()) {
-      right =
-          CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
-                                    CSSPrimitiveValue::UnitType::kPercentage);
+      right = CSSNumericLiteralValue::Create(
+          image.ImageSlices().Right().Value(),
+          CSSPrimitiveValue::UnitType::kPercentage);
     } else {
-      right = CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
-                                        CSSPrimitiveValue::UnitType::kNumber);
+      right =
+          CSSNumericLiteralValue::Create(image.ImageSlices().Right().Value(),
+                                         CSSPrimitiveValue::UnitType::kNumber);
     }
 
     if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
@@ -329,26 +337,26 @@ CSSBorderImageSliceValue* ComputedStyleUtils::ValueForNinePieceImageSlice(
       left = right;
     } else {
       if (image.ImageSlices().Bottom().IsPercentOrCalc()) {
-        bottom =
-            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
-                                      CSSPrimitiveValue::UnitType::kPercentage);
+        bottom = CSSNumericLiteralValue::Create(
+            image.ImageSlices().Bottom().Value(),
+            CSSPrimitiveValue::UnitType::kPercentage);
       } else {
-        bottom =
-            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
-                                      CSSPrimitiveValue::UnitType::kNumber);
+        bottom = CSSNumericLiteralValue::Create(
+            image.ImageSlices().Bottom().Value(),
+            CSSPrimitiveValue::UnitType::kNumber);
       }
 
       if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
         left = right;
       } else {
         if (image.ImageSlices().Left().IsPercentOrCalc()) {
-          left = CSSPrimitiveValue::Create(
+          left = CSSNumericLiteralValue::Create(
               image.ImageSlices().Left().Value(),
               CSSPrimitiveValue::UnitType::kPercentage);
         } else {
-          left =
-              CSSPrimitiveValue::Create(image.ImageSlices().Left().Value(),
-                                        CSSPrimitiveValue::UnitType::kNumber);
+          left = CSSNumericLiteralValue::Create(
+              image.ImageSlices().Left().Value(),
+              CSSPrimitiveValue::UnitType::kNumber);
         }
       }
     }
@@ -364,8 +372,8 @@ CSSValue* ValueForBorderImageLength(
     const BorderImageLength& border_image_length,
     const ComputedStyle& style) {
   if (border_image_length.IsNumber()) {
-    return CSSPrimitiveValue::Create(border_image_length.Number(),
-                                     CSSPrimitiveValue::UnitType::kNumber);
+    return CSSNumericLiteralValue::Create(border_image_length.Number(),
+                                          CSSPrimitiveValue::UnitType::kNumber);
   }
   return CSSValue::Create(border_image_length.length(), style.EffectiveZoom());
 }
@@ -472,9 +480,9 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
   CSSPrimitiveValue* offset = nullptr;
   // TODO(alancutter): Make this work correctly for calc lengths.
   if (reflection->Offset().IsPercentOrCalc()) {
-    offset =
-        CSSPrimitiveValue::Create(reflection->Offset().Percent(),
-                                  CSSPrimitiveValue::UnitType::kPercentage);
+    offset = CSSNumericLiteralValue::Create(
+        reflection->Offset().Percent(),
+        CSSPrimitiveValue::UnitType::kPercentage);
   } else {
     offset = ZoomAdjustedPixelValue(reflection->Offset().Value(), style);
   }
@@ -500,7 +508,7 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
 }
 
 CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
-    Node* styled_node,
+    const Node* styled_node,
     const ComputedStyle& style) {
   LayoutObject* layout_object =
       styled_node ? styled_node->GetLayoutObject() : nullptr;
@@ -580,8 +588,8 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
       // is negative right. So we get the opposite length unit and see if it is
       // auto.
       if (opposite.IsAuto()) {
-        return CSSPrimitiveValue::Create(0,
-                                         CSSPrimitiveValue::UnitType::kPixels);
+        return CSSNumericLiteralValue::Create(
+            0, CSSPrimitiveValue::UnitType::kPixels);
       }
 
       if (opposite.IsPercentOrCalc()) {
@@ -764,8 +772,9 @@ CSSPrimitiveValue* ComputedStyleUtils::ValueForFontSize(
 
 CSSPrimitiveValue* ComputedStyleUtils::ValueForFontStretch(
     const ComputedStyle& style) {
-  return CSSPrimitiveValue::Create(style.GetFontDescription().Stretch(),
-                                   CSSPrimitiveValue::UnitType::kPercentage);
+  return CSSNumericLiteralValue::Create(
+      style.GetFontDescription().Stretch(),
+      CSSPrimitiveValue::UnitType::kPercentage);
 }
 
 CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
@@ -782,16 +791,16 @@ CSSValue* ComputedStyleUtils::ValueForFontStyle(const ComputedStyle& style) {
   // "20deg"', but since we compute that to 'italic' (handled above),
   // we don't perform any special treatment of that value here.
   CSSValueList* oblique_values = CSSValueList::CreateSpaceSeparated();
-  oblique_values->Append(
-      *CSSPrimitiveValue::Create(angle, CSSPrimitiveValue::UnitType::kDegrees));
+  oblique_values->Append(*CSSNumericLiteralValue::Create(
+      angle, CSSPrimitiveValue::UnitType::kDegrees));
   return MakeGarbageCollected<CSSFontStyleRangeValue>(
       *CSSIdentifierValue::Create(CSSValueID::kOblique), *oblique_values);
 }
 
 CSSPrimitiveValue* ComputedStyleUtils::ValueForFontWeight(
     const ComputedStyle& style) {
-  return CSSPrimitiveValue::Create(style.GetFontDescription().Weight(),
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(style.GetFontDescription().Weight(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 CSSIdentifierValue* ComputedStyleUtils::ValueForFontVariantCaps(
@@ -1036,8 +1045,8 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
 CSSValue* SpecifiedValueForGridTrackBreadth(const GridLength& track_breadth,
                                             const ComputedStyle& style) {
   if (!track_breadth.IsLength()) {
-    return CSSPrimitiveValue::Create(track_breadth.Flex(),
-                                     CSSPrimitiveValue::UnitType::kFraction);
+    return CSSNumericLiteralValue::Create(
+        track_breadth.Flex(), CSSPrimitiveValue::UnitType::kFraction);
   }
 
   const Length& track_breadth_length = track_breadth.length();
@@ -1057,7 +1066,7 @@ CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
     case kMinMaxTrackSizing: {
       if (track_size.MinTrackBreadth().IsAuto() &&
           track_size.MaxTrackBreadth().IsFlex()) {
-        return CSSPrimitiveValue::Create(
+        return CSSNumericLiteralValue::Create(
             track_size.MaxTrackBreadth().Flex(),
             CSSPrimitiveValue::UnitType::kFraction);
       }
@@ -1277,10 +1286,10 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (position.IsSpan()) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kSpan));
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
   } else {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         position.IntegerPosition(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
@@ -1414,11 +1423,11 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDelay(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   if (timing_data) {
     for (wtf_size_t i = 0; i < timing_data->DelayList().size(); ++i) {
-      list->Append(*CSSPrimitiveValue::Create(
+      list->Append(*CSSNumericLiteralValue::Create(
           timing_data->DelayList()[i], CSSPrimitiveValue::UnitType::kSeconds));
     }
   } else {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         CSSTimingData::InitialDelay(), CSSPrimitiveValue::UnitType::kSeconds));
   }
   return list;
@@ -1446,14 +1455,14 @@ CSSValue* ComputedStyleUtils::ValueForAnimationDuration(
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   if (timing_data) {
     for (wtf_size_t i = 0; i < timing_data->DurationList().size(); ++i) {
-      list->Append(
-          *CSSPrimitiveValue::Create(timing_data->DurationList()[i],
-                                     CSSPrimitiveValue::UnitType::kSeconds));
+      list->Append(*CSSNumericLiteralValue::Create(
+          timing_data->DurationList()[i],
+          CSSPrimitiveValue::UnitType::kSeconds));
     }
   } else {
     list->Append(
-        *CSSPrimitiveValue::Create(CSSTimingData::InitialDuration(),
-                                   CSSPrimitiveValue::UnitType::kSeconds));
+        *CSSNumericLiteralValue::Create(CSSTimingData::InitialDuration(),
+                                        CSSPrimitiveValue::UnitType::kSeconds));
   }
   return list;
 }
@@ -1479,8 +1488,8 @@ CSSValue* ComputedStyleUtils::ValueForAnimationIterationCount(
     double iteration_count) {
   if (iteration_count == std::numeric_limits<double>::infinity())
     return CSSIdentifierValue::Create(CSSValueID::kInfinite);
-  return CSSPrimitiveValue::Create(iteration_count,
-                                   CSSPrimitiveValue::UnitType::kNumber);
+  return CSSNumericLiteralValue::Create(iteration_count,
+                                        CSSPrimitiveValue::UnitType::kNumber);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationPlayState(
@@ -1530,15 +1539,10 @@ CSSValue* ComputedStyleUtils::CreateTimingFunctionValue(
       StepsTimingFunction::StepPosition position =
           steps_timing_function->GetStepPosition();
       int steps = steps_timing_function->NumberOfSteps();
-      DCHECK(position == StepsTimingFunction::StepPosition::START ||
-             position == StepsTimingFunction::StepPosition::END);
 
-      if (steps > 1)
-        return CSSStepsTimingFunctionValue::Create(steps, position);
-      CSSValueID value_id = position == StepsTimingFunction::StepPosition::START
-                                ? CSSValueID::kStepStart
-                                : CSSValueID::kStepEnd;
-      return CSSIdentifierValue::Create(value_id);
+      // Canonical form of step timing function is step(n, type) or step(n) even
+      // if initially parsed as step-start or step-end.
+      return CSSStepsTimingFunctionValue::Create(steps, position);
     }
 
     default:
@@ -1566,13 +1570,13 @@ CSSValueList* ComputedStyleUtils::ValuesForBorderRadiusCorner(
     const ComputedStyle& style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (radius.Width().IsPercent()) {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         radius.Width().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   } else {
     list->Append(*ZoomAdjustedPixelValueForLength(radius.Width(), style));
   }
   if (radius.Height().IsPercent()) {
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         radius.Height().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   } else {
     list->Append(*ZoomAdjustedPixelValueForLength(radius.Height(), style));
@@ -1601,56 +1605,56 @@ CSSFunctionValue* ValueForMatrixTransform(
     transform_value =
         MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix);
 
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.A(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.B(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.C(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.D(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.E(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.F(), CSSPrimitiveValue::UnitType::kNumber));
   } else {
     transform_value =
         MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMatrix3d);
 
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M11(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M12(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M13(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M14(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M21(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M22(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M23(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M24(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M31(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M32(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M33(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M34(), CSSPrimitiveValue::UnitType::kNumber));
 
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M41(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M42(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M43(), CSSPrimitiveValue::UnitType::kNumber));
-    transform_value->Append(*CSSPrimitiveValue::Create(
+    transform_value->Append(*CSSNumericLiteralValue::Create(
         transform.M44(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
@@ -1810,7 +1814,7 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
     list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(item.key));
     int32_t number =
         is_increment ? item.value.IncrementValue() : item.value.ResetValue();
-    list->Append(*CSSPrimitiveValue::Create(
+    list->Append(*CSSNumericLiteralValue::Create(
         (double)number, CSSPrimitiveValue::UnitType::kInteger));
   }
 
@@ -1994,35 +1998,35 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::GRAYSCALE:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kGrayscale);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SEPIA:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSepia);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::SATURATE:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kSaturate);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
         break;
       case FilterOperation::HUE_ROTATE:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kHueRotate);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount(),
             CSSPrimitiveValue::UnitType::kDegrees));
         break;
       case FilterOperation::INVERT:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kInvert);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
@@ -2030,7 +2034,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::OPACITY:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kOpacity);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
@@ -2038,7 +2042,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::BRIGHTNESS:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kBrightness);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
@@ -2046,7 +2050,7 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
       case FilterOperation::CONTRAST:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kContrast);
-        filter_value->Append(*CSSPrimitiveValue::Create(
+        filter_value->Append(*CSSNumericLiteralValue::Create(
             To<BasicComponentTransferFilterOperation>(filter_operation)
                 ->Amount(),
             CSSPrimitiveValue::UnitType::kNumber));
@@ -2200,7 +2204,7 @@ CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
@@ -2217,7 +2221,7 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
@@ -2234,7 +2238,7 @@ CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // Assume the properties are in the usual order top, right, bottom, left.
@@ -2274,7 +2278,7 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* start_value =
       shorthand.properties()[0]->CSSValueFromComputedStyle(
@@ -2291,6 +2295,23 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
   return pair;
 }
 
+CSSValuePair* ComputedStyleUtils::ValuesForPlaceShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    const Node* styled_node,
+    bool allow_visited_style) {
+  const CSSValue* align_value =
+      shorthand.properties()[0]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+  const CSSValue* justify_value =
+      shorthand.properties()[1]->CSSValueFromComputedStyle(
+          style, layout_object, styled_node, allow_visited_style);
+
+  return MakeGarbageCollected<CSSValuePair>(align_value, justify_value,
+                                            CSSValuePair::kDropIdenticalValues);
+}
+
 static CSSValue* ExpandNoneLigaturesValue() {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*CSSIdentifierValue::Create(CSSValueID::kNoCommonLigatures));
@@ -2304,7 +2325,7 @@ static CSSValue* ExpandNoneLigaturesValue() {
 CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   enum VariantShorthandCases {
     kAllNormal,
@@ -2399,6 +2420,24 @@ CSSValue* ComputedStyleUtils::ValueForGapLength(const GapLength& gap_length,
   if (gap_length.IsNormal())
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
   return ZoomAdjustedPixelValueForLength(gap_length.GetLength(), style);
+}
+
+std::unique_ptr<CrossThreadStyleValue>
+ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
+    CSSStyleValue* style_value) {
+  switch (style_value->GetType()) {
+    case CSSStyleValue::StyleValueType::kKeywordType:
+      return std::make_unique<CrossThreadKeywordValue>(
+          To<CSSKeywordValue>(style_value)->value().IsolatedCopy());
+    case CSSStyleValue::StyleValueType::kUnitType:
+      return std::make_unique<CrossThreadUnitValue>(
+          To<CSSUnitValue>(style_value)->value(),
+          To<CSSUnitValue>(style_value)->GetInternalUnit());
+    default:
+      // Make an isolated copy to ensure that it is safe to pass cross thread.
+      return std::make_unique<CrossThreadUnsupportedValue>(
+          style_value->toString().IsolatedCopy());
+  }
 }
 
 }  // namespace blink

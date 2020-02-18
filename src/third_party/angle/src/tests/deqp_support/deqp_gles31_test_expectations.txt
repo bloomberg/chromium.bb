@@ -87,7 +87,6 @@
 1442 D3D11 : dEQP-GLES31.functional.debug.error_groups.case_3 = FAIL
 1442 D3D11 : dEQP-GLES31.functional.debug.error_groups.case_9 = FAIL
 1442 D3D11 : dEQP-GLES31.functional.debug.error_groups.case_10 = FAIL
-1663 D3D11 : dEQP-GLES31.functional.draw_indirect.compute_interop.* = FAIL
 
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.common.abs.float_lowp_geometry = FAIL
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.common.abs.float_mediump_geometry = FAIL
@@ -505,7 +504,6 @@
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.integer.findmsb.uvec4_lowp_geometry = FAIL
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.integer.findmsb.uvec4_mediump_geometry = FAIL
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.integer.findmsb.uvec4_highp_geometry = FAIL
-2619 D3D11 : dEQP-GLES31.functional.shaders.builtin_functions.uniform.findLSBMinusOne.highp_compute = FAIL
 1941 D3D11 : dEQP-GLES31.functional.shaders.builtin_constants.geometry_shader.* = FAIL
 1941 D3D11 : dEQP-GLES31.functional.state_query.program.geometry_shader_state_get_programiv = FAIL
 1941 D3D11 : dEQP-GLES31.functional.geometry_shading.query.* = FAIL
@@ -534,7 +532,7 @@
 1665 WIN NVIDIA OPENGL : dEQP-GLES31.functional.draw_indirect.negative.command_offset_not_in_buffer_unsigned32_wrap = FAIL
 1442 NVIDIA OPENGL : dEQP-GLES31.functional.fbo.no_attachments.maximums.all = FAIL
 1442 OPENGL : dEQP-GLES31.functional.program_interface_query.atomic_counter_buffer.referenced_by* = FAIL
-1442 OPENGL : dEQP-GLES31.functional.program_interface_query.buffer_limited_query.* = FAIL
+1442 OPENGL : dEQP-GLES31.functional.program_interface_query.buffer_limited_query.resource_query = FAIL
 1442 OPENGL : dEQP-GLES31.functional.program_interface_query.buffer_variable.* = FAIL
 1442 OPENGL : dEQP-GLES31.functional.program_interface_query.program_input.* = FAIL
 1442 OPENGL : dEQP-GLES31.functional.program_interface_query.program_output.* = FAIL
@@ -547,7 +545,7 @@
 // An NVIDIA bug seems to occur when sending GL commands in a certain order to the driver
 2432 NVIDIA OPENGL : dEQP-GLES31.functional.vertex_attribute_binding.usage.mixed_usage.mixed_api_change_binding_point = SKIP
 
-// OpenGL and D3D11 Failing Tests
+// OpenGL/D3D11/Vulkan Failing Tests
 1442 : dEQP-GLES31.functional.compute.basic.copy_image_to_ssbo_large = FAIL
 1442 : dEQP-GLES31.functional.compute.basic.copy_ssbo_to_image_large = FAIL
 1442 : dEQP-GLES31.functional.shaders.opaque_type_indexing.* = FAIL
@@ -612,3 +610,130 @@
 1442 D3D11 : dEQP-GLES31.functional.layout_binding.image.* = SKIP
 // This case is skipped since it uses atomic counter builtin functions which haven't been implemented.
 1729 D3D11 : dEQP-GLES31.functional.state_query.program.active_atomic_counter_buffers_get_programiv = SKIP
+
+// Vulkan Android failures
+
+// Debug:
+3520 VULKAN ANDROID : dEQP-GLES31.functional.debug.negative_coverage.get_error.texture.texparameterf = FAIL
+3520 VULKAN ANDROID : dEQP-GLES31.functional.debug.negative_coverage.get_error.texture.texparameterfv = FAIL
+
+// General Vulkan failures
+
+// Limits:
+// MAX_FRAMEBUFFER_SAMPLES is 0
+3520 VULKAN : dEQP-GLES31.functional.state_query.integer.max_framebuffer_samples* = FAIL
+// MAX_UNIFORM_LOCATIONS is 0
+3520 VULKAN : dEQP-GLES31.functional.state_query.integer.max_uniform_locations* = FAIL
+// GL_MIN/MAX_PROGRAM_TEXTURE_GATHER_OFFSET not set.
+3605 VULKAN : dEQP-GLES31.functional.texture.gather.offset.* = FAIL
+
+// Front-end query bugs:
+3520 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_limited_query.resource_query = FAIL
+3520 VULKAN : dEQP-GLES31.functional.program_interface_query.program_*.resource_list.compute.empty = FAIL
+3520 VULKAN : dEQP-GLES31.functional.program_interface_query.shader_storage_block.buffer_data_size.* = FAIL
+
+// Shader support:
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.common.frexp.* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.common.ldexp.* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.pack_unpack.* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.integer.* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.uniform.* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.texture_size.* = SKIP
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.precision.frexp* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.precision.ldexp* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.functions* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.arrays* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.linkage*uniform* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_constants.core.max_* = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_constants.core.min_program_texel_offset = FAIL
+3569 VULKAN : dEQP-GLES31.functional.shaders.uniform_block.es31.valid.* = FAIL
+
+// SSBO and Image qualifiers:
+3602 VULKAN : dEQP-GLES31.functional.synchronization.in_invocation.ssbo_alias_overwrite = FAIL
+
+// Array of array and struct default uniforms:
+3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*float_struct = FAIL
+3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*float_struct_struct = FAIL
+3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*random* = FAIL
+3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*array*array* = SKIP
+
+// Block name matching failure:
+3459 VULKAN : dEQP-GLES31.functional.shaders.linkage.es31.shader_storage_block.mismatch_with_and_without_instance_name = FAIL
+
+// Explicit uniform locations:
+3597 VULKAN : dEQP-GLES31.functional.uniform_location.* = FAIL
+
+// Indirect draw:
+3564 VULKAN : dEQP-GLES31.functional.draw_indirect.* = SKIP
+
+// Tessellation geometry interaction:
+3572 VULKAN : dEQP-GLES31.functional.tessellation_geometry_interaction.* = FAIL
+
+// dEQP bug where atomic counter bindings > max result in failure instead of not-supported:
+// https://github.com/KhronosGroup/VK-GL-CTS/issues/156
+3566 VULKAN : dEQP-GLES31.functional.atomic_counter.* = FAIL
+3566 VULKAN : dEQP-GLES31.functional.synchronization.inter_call.without_memory_barrier.*atomic_counter* = FAIL
+
+// Storage image:
+3563 VULKAN : dEQP-GLES31.functional.state_query.*image* = FAIL
+3563 VULKAN : dEQP-GLES31.functional.synchronization.*.image* = FAIL
+3563 VULKAN : dEQP-GLES31.functional.compute.*image* = FAIL
+
+// Framebuffer parameters (FRAMEBUFFER_DEFAULT_SAMPLES):
+3520 VULKAN : dEQP-GLES31.functional.state_query.framebuffer_default.framebuffer_default_samples_get_framebuffer_parameteriv = FAIL
+
+// Framebuffer without attachments:
+3579 VULKAN : dEQP-GLES31.functional.fbo.no_attachments.* = SKIP
+
+// Separate shader objects:
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.*separable_* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.random.* = FAIL
+
+// Debug:
+3590 VULKAN : dEQP-GLES31.functional.debug.negative_coverage.* = SKIP
+3590 VULKAN : dEQP-GLES31.functional.debug.error_groups.case_14 = SKIP
+
+// Transform feedback:
+3205 VULKAN : dEQP-GLES31.functional.debug.*transform_feedback = SKIP
+
+// Stencil textures (some missing support for 3D and 2D array textures):
+3585 VULKAN : dEQP-GLES31.functional.stencil_texturing.* = SKIP
+
+// Multisampled textures:
+3565 VULKAN : dEQP-GLES31.functional.texture.multisample.* = SKIP
+3565 VULKAN : dEQP-GLES31.functional.state_query.texture.*multisample.* = SKIP
+
+// Base texture level:
+3148 VULKAN : dEQP-GLES31.functional.texture.gather.*base_level* = SKIP
+
+// 2D array textures:
+3189 VULKAN : dEQP-GLES31.functional.texture.gather.*2d_array* = SKIP
+3189 VULKAN : dEQP-GLES31.functional.state_query.*2d_array* = SKIP
+
+// Compressed integer textures:
+3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture_2d.compressed_integer = SKIP
+3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture_2d.compressed_float = SKIP
+
+// column/row_major specified on struct member:
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.2 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.9 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.12 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.16 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.23 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.25 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.29 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.33 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.3 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.11 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.25 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.39 = FAIL
+3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.45 = FAIL
+
+// Inactive SSBOs with flexible array member (about 20% of these tests are affected):
+3714 VULKAN : dEQP-GLES31.functional.ssbo.layout.random.* = FAIL
+
+// Validation errors:
+// Optimal tiling not supported for format:
+3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture* = SKIP
+// Invalid vertex attribute alignment:
+3520 VULKAN : dEQP-GLES31.functional.vertex_attribute_binding.usage.single_binding.unaligned_offset_elements_1_aligned_elements = FAIL

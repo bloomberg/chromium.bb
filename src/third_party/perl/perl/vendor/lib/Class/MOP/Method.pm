@@ -1,24 +1,21 @@
-
 package Class::MOP::Method;
-BEGIN {
-  $Class::MOP::Method::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Method::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp         'confess';
 use Scalar::Util 'weaken', 'reftype', 'blessed';
 
-use base 'Class::MOP::Object';
+use parent 'Class::MOP::Object';
 
 # NOTE:
 # if poked in the right way,
 # they should act like CODE refs.
-use overload '&{}' => sub { $_[0]->body }, fallback => 1;
+use overload
+    '&{}' => sub { $_[0]->body },
+    'bool' => sub { 1 },
+    '""' => sub { overload::StrVal($_[0]) },
+    fallback => 1;
 
 # construction
 
@@ -37,11 +34,17 @@ sub wrap {
         return $method;
     }
     elsif (!ref $code || 'CODE' ne reftype($code)) {
-        confess "You must supply a CODE reference to bless, not (" . ($code || 'undef') . ")";
+        $class->_throw_exception( WrapTakesACodeRefToBless => params => \%params,
+                                                                  class  => $class,
+                                                                  code   => $code
+                                    );
     }
 
     ($params{package_name} && $params{name})
-        || confess "You must supply the package_name and name parameters";
+        || $class->_throw_exception( PackageNameAndNameParamsNotGivenToWrap => params => \%params,
+                                                                                   class  => $class,
+                                                                                   code   => $code
+                                       );
 
     my $self = $class->_new(\%params);
 
@@ -140,13 +143,24 @@ sub clone {
     return $clone;
 }
 
+sub _inline_throw_exception {
+    my ( $self, $exception_type, $throw_args ) = @_;
+    return
+          'die Module::Runtime::use_module("Moose::Exception::'
+        . $exception_type
+        . '")->new('
+        . ( $throw_args || '' ) . ')';
+}
+
 1;
 
 # ABSTRACT: Method Meta Object
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -154,7 +168,7 @@ Class::MOP::Method - Method Meta Object
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -208,7 +222,7 @@ This returns a reference to the method's subroutine.
 
 =item B<< $metamethod->name >>
 
-This returns the method's name
+This returns the method's name.
 
 =item B<< $metamethod->package_name >>
 
@@ -286,20 +300,57 @@ metaclass.
 
 =back
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

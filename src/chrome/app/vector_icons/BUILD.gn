@@ -49,8 +49,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "file_download.icon",
     "file_download_shelf.icon",
     "fingerprint.icon",
-    "folder.icon",
-    "folder_supervised.icon",
     "forward_arrow_touch.icon",
     "generic_stop.icon",
     "globe.icon",
@@ -77,15 +75,16 @@ aggregate_vector_icons("chrome_vector_icons") {
     "photo_camera.icon",
     "picture_in_picture_control_background.icon",
     "picture_in_picture_alt.icon",
+    "reader_mode.icon",
     "reload_touch.icon",
     "remove.icon",
     "remove_box.icon",
     "resize_handle.icon",
     "sad_tab.icon",
+    "save_original_file.icon",
     "security.icon",
     "send_tab_to_self.icon",
     "sensors.icon",
-    "settings.icon",
     "signin_button_drop_down_arrow.icon",
     "sign_out.icon",
     "smartphone.icon",
@@ -164,7 +163,29 @@ aggregate_vector_icons("chrome_vector_icons") {
   }
 
   if (is_chromeos) {
-    icons += [ "warning_badge_circle.icon" ]
+    icons += [
+      "notification_captive_portal.icon",
+      "notification_battery.icon",
+      "notification_cellular_alert.icon",
+      "notification_download.icon",
+      "notification_end_of_support.icon",
+      "notification_family_link.icon",
+      "notification_google.icon",
+      "notification_image.icon",
+      "notification_installed.icon",
+      "notification_linux.icon",
+      "notification_messages.icon",
+      "notification_mobile_data.icon",
+      "notification_mobile_data_off.icon",
+      "notification_plugin_vm.icon",
+      "notification_printing.icon",
+      "notification_printing_done.icon",
+      "notification_printing_warning.icon",
+      "notification_storage_full.icon",
+      "notification_vpn.icon",
+      "notification_wifi_off.icon",
+      "warning_badge_circle.icon",
+    ]
   }
 
   if (enable_vr && !is_android) {

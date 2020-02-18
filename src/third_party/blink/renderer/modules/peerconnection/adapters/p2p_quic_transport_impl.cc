@@ -284,7 +284,7 @@ P2PQuicTransportImpl::P2PQuicTransportImpl(
   DCHECK(packet_transport_);
   DCHECK_GT(stream_delegate_read_buffer_size_, 0u);
   DCHECK_GT(stream_write_buffer_size_, 0u);
-  if (!p2p_transport_config.certificates.empty()) {
+  if (!p2p_transport_config.certificates.IsEmpty()) {
     // TODO(https://crbug.com/874296): The web API accepts multiple
     // certificates, and we might want to pass these down to let QUIC decide on
     // what to use.
@@ -331,7 +331,7 @@ void P2PQuicTransportImpl::Start(StartConfig config) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Either the remote fingerprints are being verified or a pre shared key is
   // set.
-  DCHECK((certificate_ && !config.remote_fingerprints.empty()) ||
+  DCHECK((certificate_ && !config.remote_fingerprints.IsEmpty()) ||
          !config.pre_shared_key.empty());
   DCHECK(!crypto_stream_);
 
@@ -413,7 +413,7 @@ void P2PQuicTransportImpl::SendDatagram(Vector<uint8_t> datagram) {
 bool P2PQuicTransportImpl::CanSendDatagram() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return IsEncryptionEstablished() &&
-         (connection()->transport_version() > quic::QUIC_VERSION_44) &&
+         (connection()->transport_version() > quic::QUIC_VERSION_43) &&
          !IsClosed();
 }
 
@@ -437,10 +437,10 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
-    quic::PendingStream pending) {
+    quic::PendingStream* pending) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   num_incoming_streams_created_++;
-  P2PQuicStreamImpl* stream = CreateStreamInternal(std::move(pending));
+  P2PQuicStreamImpl* stream = CreateStreamInternal(pending);
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   delegate_->OnStream(stream);
   return stream;
@@ -457,13 +457,12 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
 }
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
-    quic::PendingStream pending) {
+    quic::PendingStream* pending) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(crypto_stream_);
   DCHECK(IsEncryptionEstablished());
   DCHECK(!IsClosed());
-  return new P2PQuicStreamImpl(std::move(pending), this,
-                               stream_delegate_read_buffer_size_,
+  return new P2PQuicStreamImpl(pending, this, stream_delegate_read_buffer_size_,
                                stream_write_buffer_size_);
 }
 
@@ -586,11 +585,12 @@ void P2PQuicTransportImpl::OnMessageLost(quic::QuicMessageId message_id) {
 }
 
 void P2PQuicTransportImpl::OnConnectionClosed(
-    quic::QuicErrorCode error,
-    const std::string& error_details,
+    const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  quic::QuicSession::OnConnectionClosed(error, error_details, source);
+  const quic::QuicErrorCode error = frame.quic_error_code;
+  const std::string& error_details = frame.error_details;
+  quic::QuicSession::OnConnectionClosed(frame, source);
   if (error != quic::QuicErrorCode::QUIC_CONNECTION_CANCELLED) {
     delegate_->OnConnectionFailed(
         error_details, source == quic::ConnectionCloseSource::FROM_PEER);

@@ -42,6 +42,7 @@ policy.Conflict;
  *    source: string,
  *    error: string,
  *    value: any,
+ *    allSourcesMerged: ?boolean,
  *    conflicts: ?Array<!Conflict>,
  * }}
  */
@@ -124,6 +125,13 @@ cr.define('policy', function() {
         this.setLabelAndShow_(
             '.directory-api-id', status.directoryApiId || notSpecifiedString);
         this.setLabelAndShow_('.client-id', status.clientId);
+        //For off-hours policy, indicate if it's active or not.
+        if (status.isOffHoursActive != null) {
+          this.setLabelAndShow_(
+              '.is-offhours-active',
+              loadTimeData.getString(
+                  status.isOffHoursActive ? 'offHoursActive' : 'offHoursNotActive'));
+        }
       } else if (scope == 'machine') {
         // For machine policy, set the appropriate title and populate
         // machine enrollment status with the information that applies
@@ -145,6 +153,12 @@ cr.define('policy', function() {
         // Populate the user gaia id.
         this.setLabelAndShow_('.gaia-id', status.gaiaId || notSpecifiedString);
         this.setLabelAndShow_('.client-id', status.clientId);
+        if (status.isAffiliated != null) {
+          this.setLabelAndShow_(
+              '.is-affiliated',
+              loadTimeData.getString(
+                  status.isAffiliated ? 'isAffiliatedYes' : 'isAffiliatedNo'));
+        }
       }
       this.setLabelAndShow_(
           '.time-since-last-refresh', status.timeSinceLastRefresh, false);
@@ -228,6 +242,9 @@ cr.define('policy', function() {
       /** @private {boolean} */
       this.hasConflicts_ = !!policy.conflicts;
 
+      /** @private {boolean} */
+      this.isMergedValue_ = !!policy.allSourcesMerged;
+
       // Populate the name column.
       const nameDisplay = this.querySelector('.name .link span');
       nameDisplay.textContent = policy.name;
@@ -277,8 +294,9 @@ cr.define('policy', function() {
             this.hasErrors_ ? loadTimeData.getString('error') : '';
         const warningsNotice =
             this.hasWarnings_ ? loadTimeData.getString('warning') : '';
-        const conflictsNotice =
-            this.hasConflicts_ ? loadTimeData.getString('conflict') : '';
+        const conflictsNotice = this.hasConflicts_ && !this.isMergedValue_ ?
+            loadTimeData.getString('conflict') :
+            '';
         const ignoredNotice =
             this.policy.ignored ? loadTimeData.getString('ignored') : '';
         const notice =
@@ -492,7 +510,7 @@ cr.define('policy', function() {
                       link:
                           knownPolicyNames === policyNames.chrome.policyNames &&
                               knownPolicyNamesSet.has(name) ?
-                          `https://chromium.org/administrators/policy-list-3#${
+                          `https://cloud.google.com/docs/chrome-enterprise/policies/?policy=${
                               name}` :
                           undefined,
                     },

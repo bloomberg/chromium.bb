@@ -8,7 +8,6 @@
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
-#include "ash/wm/window_util.h"  // nogncheck
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -478,11 +477,6 @@ void ArcNotificationContentView::AttachSurface() {
   UpdatePreferredSize();
   surface_->Attach(this);
 
-  // The texture for this window can be placed at subpixel position
-  // with fractional scale factor. Force to align it at the pixel
-  // boundary here, and when layout is updated in Layout().
-  ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
-
   // Creates slide helper after this view is added to its parent.
   slide_helper_.reset(new SlideHelper(this));
 
@@ -505,21 +499,9 @@ void ArcNotificationContentView::ShowCopiedSurface() {
   surface_copy_->root()->SetBounds(size);
   layer()->Add(surface_copy_->root());
 
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    surface_copy_->root()->SetRoundedCornerRadius(
-        {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
-    surface_copy_->root()->SetIsFastRoundedCorner(true);
-  } else {
-    if (!surface_copy_mask_) {
-      surface_copy_mask_ = views::Painter::CreatePaintedLayer(
-          std::make_unique<message_center::NotificationBackgroundPainter>(
-              top_radius_, bottom_radius_));
-      surface_copy_mask_->layer()->SetBounds(size);
-      surface_copy_mask_->layer()->SetFillsBoundsOpaquely(false);
-    }
-    DCHECK(!surface_copy_mask_->layer()->parent());
-    surface_copy_->root()->SetMaskLayer(surface_copy_mask_->layer());
-  }
+  surface_copy_->root()->SetRoundedCornerRadius(
+      {top_radius_, top_radius_, bottom_radius_, bottom_radius_});
+  surface_copy_->root()->SetIsFastRoundedCorner(true);
 
   // Changes the opacity instead of setting the visibility, to keep
   // |EventFowarder| working.
@@ -655,9 +637,6 @@ void ArcNotificationContentView::Layout() {
   }
 
   UpdateControlButtonsVisibility();
-
-  if (is_surface_visible)
-    ::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 }
 
 void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {

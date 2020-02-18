@@ -42,24 +42,22 @@ SkPDFIndirectReference SkPDFMakeShader(SkPDFDocument* doc,
                                        SkShader* shader,
                                        const SkMatrix& ctm,
                                        const SkIRect& surfaceBBox,
-                                       SkColor paintColor);
+                                       SkColor4f paintColor);
 
 SK_BEGIN_REQUIRE_DENSE
 struct SkPDFImageShaderKey {
-    SkMatrix fCanvasTransform;
-    SkMatrix fShaderTransform;
+    SkMatrix fTransform;
     SkIRect fBBox;
     SkBitmapKey fBitmapKey;
     SkTileMode fImageTileModes[2];
-    SkColor fPaintColor;
+    SkColor4f fPaintColor;
 };
 SK_END_REQUIRE_DENSE
 
 inline bool operator==(const SkPDFImageShaderKey& a, const SkPDFImageShaderKey& b) {
     SkASSERT(a.fBitmapKey.fID != 0);
     SkASSERT(b.fBitmapKey.fID != 0);
-    return a.fCanvasTransform   == b.fCanvasTransform
-        && a.fShaderTransform   == b.fShaderTransform
+    return a.fTransform         == b.fTransform
         && a.fBBox              == b.fBBox
         && a.fBitmapKey         == b.fBitmapKey
         && a.fImageTileModes[0] == b.fImageTileModes[0]

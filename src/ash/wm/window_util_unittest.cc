@@ -15,7 +15,7 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
+namespace window_util {
 
 namespace {
 
@@ -57,7 +57,7 @@ TEST_F(WindowUtilTest, CenterWindow) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 100, 100)));
 
-  WindowState* window_state = GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   EXPECT_FALSE(window_state->bounds_changed_by_user());
 
   CenterWindow(window.get());
@@ -188,8 +188,8 @@ TEST_F(WindowUtilTest, RemoveTransientDescendants) {
   window_list.push_back(descendant2.get());
   RemoveTransientDescendants(&window_list);
   ASSERT_EQ(2u, window_list.size());
-  ASSERT_TRUE(base::ContainsValue(window_list, window1.get()));
-  ASSERT_TRUE(base::ContainsValue(window_list, window2.get()));
+  ASSERT_TRUE(base::Contains(window_list, window1.get()));
+  ASSERT_TRUE(base::Contains(window_list, window2.get()));
 
   // Create a window which has a transient parent that is not in |window_list|.
   // Test that the window is not removed when calling
@@ -206,7 +206,7 @@ TEST_F(WindowUtilTest,
        HideAndMaybeMinimizeWithoutAnimationMinimizesArcWindowsBeforeHiding) {
   auto window = CreateTestWindow();
   auto* state = new FakeWindowState();
-  GetWindowState(window.get())
+  WindowState::Get(window.get())
       ->SetStateObject(std::unique_ptr<WindowState::State>(state));
 
   std::vector<aura::Window*> windows = {window.get()};
@@ -220,7 +220,7 @@ TEST_F(WindowUtilTest, InteriorTargeter) {
   auto window = CreateTestWindow();
   window->SetBounds(gfx::Rect(0, 0, 100, 100));
 
-  wm::GetWindowState(window.get())->Maximize();
+  WindowState::Get(window.get())->Maximize();
   InstallResizeHandleWindowTargeterForWindow(window.get());
 
   auto* child = aura::test::CreateTestWindowWithDelegateAndType(
@@ -239,7 +239,7 @@ TEST_F(WindowUtilTest, InteriorTargeter) {
 
   // InteriorEventTargeter is now active and should pass an event at the edge to
   // its parent.
-  wm::GetWindowState(window.get())->Restore();
+  WindowState::Get(window.get())->Restore();
   {
     ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(0, 0), gfx::Point(0, 0),
                          ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
@@ -247,5 +247,5 @@ TEST_F(WindowUtilTest, InteriorTargeter) {
   }
 }
 
-}  // namespace wm
+}  // namespace window_util
 }  // namespace ash

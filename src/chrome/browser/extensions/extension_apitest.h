@@ -66,6 +66,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     // usually provided for force-installed extension on the login screen. This
     // also sets the location to EXTERNAL_POLICY.
     kFlagLoadForLoginScreen = 1 << 8,
+
+    // Load the event page extension as a Service Worker based background
+    // extension.
+    kFlagRunAsServiceWorkerBasedExtension = 1 << 9,
   };
 
   ExtensionApiTest();

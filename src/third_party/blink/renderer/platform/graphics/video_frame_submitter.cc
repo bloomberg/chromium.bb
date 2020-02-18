@@ -4,9 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
-#include <vector>
-
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -14,13 +13,14 @@
 #include "components/viz/common/resources/returned_resource.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "ui/gfx/presentation_feedback.h"
 
 namespace blink {
 
@@ -32,9 +32,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
       resource_provider_(std::move(resource_provider)),
       rotation_(media::VIDEO_ROTATION_0),
       enable_surface_synchronization_(
-          ::features::IsSurfaceSynchronizationEnabled()),
-      empty_frame_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+          ::features::IsSurfaceSynchronizationEnabled()) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -76,11 +74,7 @@ void VideoFrameSubmitter::StopRendering() {
 void VideoFrameSubmitter::DidReceiveFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(video_frame_provider_);
-
-  // DidReceiveFrame is called before rendering has started, as a part of
-  // VideoRendererSink::PaintSingleFrame.
-  if (!is_rendering_)
-    SubmitSingleFrame();
+  SubmitSingleFrame();
 }
 
 bool VideoFrameSubmitter::IsDrivingFrameUpdates() const {
@@ -172,16 +166,27 @@ void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
 
 void VideoFrameSubmitter::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    WTF::HashMap<uint32_t, ::gfx::mojom::blink::PresentationFeedbackPtr>
-        feedbacks) {
+    WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>
+        timing_details) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
 
-  for (const auto& pair : feedbacks) {
+  for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
-    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0("media", "VideoFrameSubmitter",
-                                          pair.key, pair.value->timestamp);
+
+    if (base::Contains(frame_token_to_timestamp_map_, pair.key) &&
+        !(pair.value->presentation_feedback->flags &
+          gfx::PresentationFeedback::kFailure)) {
+      UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter",
+                          pair.value->presentation_feedback->timestamp -
+                              frame_token_to_timestamp_map_[pair.key]);
+      frame_token_to_timestamp_map_.erase(pair.key);
+    }
+
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+        "media", "VideoFrameSubmitter", pair.key,
+        pair.value->presentation_feedback->timestamp);
   }
 
   // Don't call UpdateCurrentFrame() for MISSED BeginFrames. Also don't call it
@@ -229,17 +234,16 @@ void VideoFrameSubmitter::OnBeginFrame(
 void VideoFrameSubmitter::ReclaimResources(
     const WTF::Vector<viz::ReturnedResource>& resources) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  resource_provider_->ReceiveReturnsFromParent(
-      WebVector<viz::ReturnedResource>(resources).ReleaseVector());
+  resource_provider_->ReceiveReturnsFromParent(resources);
 }
 
 void VideoFrameSubmitter::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(compositor_frame_sink_);
   compositor_frame_sink_->DidAllocateSharedBitmap(
-      std::move(buffer), SharedBitmapIdToGpuMailboxPtr(id));
+      std::move(region), SharedBitmapIdToGpuMailboxPtr(id));
 }
 
 void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
@@ -337,11 +341,9 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
   //
   // See https://crbug.com/829813 and https://crbug.com/829565.
   if (ShouldSubmit()) {
-    // We don't want to submit when |is_rendering_| because OnBeginFrame() calls
-    // are already driving submissions. We should still submit the empty frame
-    // in the other branch for memory savings.
-    if (!is_rendering_)
-      SubmitSingleFrame();
+    // Submit even if we're rendering, otherwise we may display an empty frame
+    // before the next OnBeginFrame() which can cause a visible flash.
+    SubmitSingleFrame();
   } else {
     // Post a delayed task to submit an empty frame. We don't do this here,
     // since there is a race between when we're notified that the player is not
@@ -352,15 +354,13 @@ void VideoFrameSubmitter::UpdateSubmissionState() {
     // the auto-PiP a chance to start. Note that the empty frame isn't required
     // for visual correctness; it's just for resource cleanup. We can delay
     // resource cleanup a little.
-
-    // If there are any in-flight empty frame requests, then cancel them. We
+    //
+    // If there are any in-flight empty frame requests, this cancels them. We
     // want to wait until any group of state changes stabilizes.
-    empty_frame_weak_ptr_factory_.InvalidateWeakPtrs();
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
+    empty_frame_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(500),
         base::BindOnce(&VideoFrameSubmitter::SubmitEmptyFrameIfNeeded,
-                       empty_frame_weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(500));
+                       base::Unretained(this)));
   }
 }
 
@@ -409,15 +409,16 @@ bool VideoFrameSubmitter::SubmitFrame(
   auto compositor_frame =
       CreateCompositorFrame(begin_frame_ack, std::move(video_frame));
 
-  std::vector<viz::ResourceId> resources;
+  WebVector<viz::ResourceId> resources;
   const auto& quad_list = compositor_frame.render_pass_list.back()->quad_list;
   if (!quad_list.empty()) {
     DCHECK_EQ(quad_list.size(), 1u);
-    resources.assign(quad_list.front()->resources.begin(),
-                     quad_list.front()->resources.end());
+    resources.Assign(quad_list.front()->resources);
   }
-  resource_provider_->PrepareSendToParent(resources,
-                                          &compositor_frame.resource_list);
+
+  WebVector<viz::TransferableResource> resource_list;
+  resource_provider_->PrepareSendToParent(resources, &resource_list);
+  compositor_frame.resource_list = resource_list.ReleaseVector();
 
   // We can pass nullptr for the HitTestData as the CompositorFram will not
   // contain any SurfaceDrawQuads.
@@ -464,15 +465,8 @@ void VideoFrameSubmitter::SubmitSingleFrame() {
   if (!video_frame)
     return;
 
-  // TODO(dalecurtis): This probably shouldn't be posted since it runs the risk
-  // of having state change out from under it. All call sites into this method
-  // should be from posted tasks so it should be safe to remove the post.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&VideoFrameSubmitter::SubmitFrame),
-                     weak_ptr_factory_.GetWeakPtr(),
-                     viz::BeginFrameAck::CreateManualAckWithDamage(),
-                     std::move(video_frame)));
+  SubmitFrame(viz::BeginFrameAck::CreateManualAckWithDamage(),
+              std::move(video_frame));
 
   video_frame_provider_->PutCurrentFrame();
 }
@@ -502,6 +496,10 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
                                             *next_frame_token_, value);
     TRACE_EVENT_ASYNC_STEP_PAST0("media", "VideoFrameSubmitter",
                                  *next_frame_token_, "Pre-submit buffering");
+
+    frame_token_to_timestamp_map_[*next_frame_token_] = value;
+    UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter.PreSubmitBuffering",
+                        base::TimeTicks::Now() - value);
   } else {
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
         "media", "VideoFrameSubmitter", *next_frame_token_,

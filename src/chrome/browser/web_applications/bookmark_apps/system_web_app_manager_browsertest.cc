@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,21 +105,21 @@ class TestWebUIControllerFactory : public content::WebUIControllerFactory {
 
   std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(
       content::WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     return std::make_unique<TestWebUIController>(web_ui);
   }
 
   content::WebUI::TypeID GetWebUIType(content::BrowserContext* browser_context,
-                                      const GURL& url) const override {
+                                      const GURL& url) override {
     return reinterpret_cast<content::WebUI::TypeID>(1);
   }
 
   bool UseWebUIForURL(content::BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return true;
   }
   bool UseWebUIBindingsForURL(content::BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return true;
   }
 
@@ -143,23 +145,21 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   DCHECK(SystemWebAppManager::IsEnabled());
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
-  // Create all real subsystems but do not start them:
-  provider->Init();
 
   // Override SystemWebAppManager with TestSystemWebAppManager:
   DCHECK(!test_system_web_app_manager_);
-  auto test_system_web_app_manager = std::make_unique<TestSystemWebAppManager>(
-      profile, &provider->pending_app_manager());
+  auto test_system_web_app_manager =
+      std::make_unique<TestSystemWebAppManager>(profile);
   test_system_web_app_manager_ = test_system_web_app_manager.get();
   provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
 
-  base::flat_map<SystemAppType, GURL> system_apps;
-  system_apps[SystemAppType::SETTINGS] =
-      content::GetWebUIURL("test-system-app/pwa.html");
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps[SystemAppType::SETTINGS] = {
+      content::GetWebUIURL("test-system-app/pwa.html")};
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
-  provider->StartRegistry();
+  provider->Start();
 
   return provider;
 }
@@ -206,6 +206,35 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_TRUE(WebAppProvider::Get(browser()->profile())
                   ->system_web_app_manager()
                   .IsSystemWebApp(app->id()));
+}
+
+// Check the toolbar is not shown for system web apps for pages on the chrome://
+// scheme but is shown off the chrome:// scheme.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
+                       ToolbarVisibilityForSystemWebApp) {
+  Browser* app_browser =
+      WaitForSystemAppInstallAndLaunch(SystemAppType::SETTINGS);
+  // In scope, the toolbar should not be visible.
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+
+  // Because the first part of the url is on a different origin (settings vs.
+  // foo) a toolbar would normally be shown. However, because settings is a
+  // SystemWebApp and foo is served via chrome:// it is okay not to show the
+  // toolbar.
+  GURL out_of_scope_chrome_page(content::kChromeUIScheme +
+                                std::string("://foo"));
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      app_browser->tab_strip_model()->GetActiveWebContents(),
+      out_of_scope_chrome_page, 1);
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowToolbar());
+
+  // Even though the url is secure it is not being served over chrome:// so a
+  // toolbar should be shown.
+  GURL off_scheme_page("https://example.com");
+  content::NavigateToURLBlockUntilNavigationsComplete(
+      app_browser->tab_strip_model()->GetActiveWebContents(), off_scheme_page,
+      1);
+  EXPECT_TRUE(app_browser->app_controller()->ShouldShowToolbar());
 }
 
 }  // namespace web_app

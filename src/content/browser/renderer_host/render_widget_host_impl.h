@@ -21,7 +21,7 @@
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory_handle.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -56,7 +56,9 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
@@ -75,7 +77,6 @@
 #endif
 
 class SkBitmap;
-struct FrameHostMsg_HittestData_Params;
 struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
@@ -386,13 +387,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // in flight change).
   bool RequestRepaintForTesting();
 
-  // Called after every cross-document navigation. If Surface Synchronizaton is
-  // on, we send a new LocalSurfaceId to RenderWidget to be used after
-  // navigation. If Surface Synchronization is off, we block CompositorFrames
-  // that have smaller content_source_id than |next_source_id|. In either case,
-  // we will clear the displayed graphics of the renderer after a certain
-  // timeout if it does not produce a new CompositorFrame after navigation.
-  void DidNavigate(uint32_t next_source_id);
+  // Called after every cross-document navigation. The displayed graphics of
+  // the renderer is cleared after a certain timeout if it does not produce a
+  // new CompositorFrame after navigation.
+  void DidNavigate();
 
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
@@ -457,6 +455,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       base::OnceCallback<void(SyntheticGesture::Result)> on_complete);
   void QueueSyntheticGestureCompleteImmediately(
       std::unique_ptr<SyntheticGesture> synthetic_gesture);
+
+  // Ensures the renderer is in a state ready to receive synthetic input. The
+  // SyntheticGestureController will normally ensure this before sending the
+  // first gesture; however, in some tests that may be a bad time (e.g. the
+  // gesture is sent while the main thread is blocked) so this allows the
+  // caller to do so manually.
+  void EnsureReadyForSyntheticGestures(base::OnceClosure on_ready);
 
   // Update the composition node of the renderer (or WebKit).
   // WebKit has a special node (a composition node) for input method to change
@@ -656,7 +661,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       uint64_t submit_time,
       const SubmitCompositorFrameSyncCallback callback) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
 
@@ -664,13 +669,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // there are any queued messages belonging to it, they will be processed.
   void DidProcessFrame(uint32_t frame_token);
 
-  // An associated WidgetInputHandler should be set if the RWHI is associated
-  // with a RenderFrameHost. Using an associated channel will allow the
-  // interface calls processed on the FrameInputHandler to be processed in order
-  // with the interface calls processed on the WidgetInputHandler.
-  void SetWidgetInputHandler(
-      mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
-      mojom::WidgetInputHandlerHostRequest host_request);
+  // Indicate the frame input handler is now available.
+  void SetFrameInputHandler(mojom::FrameInputHandler*);
   void SetWidget(mojom::WidgetPtr widget);
 
   viz::mojom::InputTargetClient* input_target_client() {
@@ -702,7 +702,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
-  bool FlingCancellationIsDeferred() const;
   void SetNeedsBeginFrameForFlingProgress();
 
   // The RenderWidgetHostImpl will keep showing the old page (for a while) after
@@ -711,8 +710,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // arriving, this call can be used for force a timeout, to avoid showing the
   // content of the old page under UI from the new page.
   void ForceFirstFrameAfterNavigationTimeout();
-
-  uint32_t current_content_source_id() { return current_content_source_id_; }
 
   void SetScreenOrientationForTesting(uint16_t angle,
                                       ScreenOrientationValues type);
@@ -750,6 +747,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called during frame eviction to return all SurfaceIds in the frame tree.
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
+
+  // Ignore any future TouchEvent acks that have an event ID that is in
+  // |acks_to_ignore|.
+  void IgnoreTouchEventAcks(const std::unordered_set<uint32_t>& acks_to_ignore);
 
  protected:
   // ---------------------------------------------------------------------------
@@ -858,7 +859,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
-  void OnHittestData(const FrameHostMsg_HittestData_Params& params);
   void OnFocusedNodeTouched(bool editable);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
@@ -1045,7 +1045,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       input_event_observers_;
 
   // The observers watching us.
-  base::ObserverList<RenderWidgetHostObserver>::Unchecked observers_;
+  base::ObserverList<RenderWidgetHostObserver> observers_;
 
   // This is true if the renderer is currently unresponsive.
   bool is_unresponsive_ = false;
@@ -1150,25 +1150,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // renderer process before clearing any previously displayed content.
   base::TimeDelta new_content_rendering_delay_;
 
-  // This identifier tags compositor frames according to the page load with
-  // which they are associated, to prevent an unloaded web page from being
-  // drawn after a navigation to a new page has already committed. This is
-  // a no-op for non-top-level RenderWidgets, as that should always be zero.
-  // TODO(kenrb, fsamuel): We should use SurfaceIDs for this purpose when they
-  // are available in the renderer process. See https://crbug.com/695579.
-  uint32_t current_content_source_id_ = 0;
-
   // When true, the RenderWidget is regularly sending updates regarding
   // composition info. It should only be true when there is a focused editable
   // node.
   bool monitoring_composition_info_ = false;
-
-  // This is the content_source_id of the latest frame received. This value is
-  // compared against current_content_source_id_ to determine whether the
-  // received frame belongs to the current page. If a frame for the current page
-  // does not arrive in time after nagivation, we clear the graphics of the old
-  // page. See RenderWidget::current_content_source_id_ for more information.
-  uint32_t last_received_content_source_id_ = 0;
 
 #if defined(OS_MACOSX)
   device::mojom::WakeLockPtr wake_lock_;
@@ -1191,8 +1176,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // at the frame input level; see FrameInputHandler. Note that when the
   // RWHI wraps a WebPagePopup widget it will only have a
   // a |widget_input_handler_|.
-  mojom::WidgetInputHandlerAssociatedPtr associated_widget_input_handler_;
-  mojom::WidgetInputHandlerPtr widget_input_handler_;
+  mojo::AssociatedRemote<mojom::WidgetInputHandler>
+      associated_widget_input_handler_;
+  mojo::Remote<mojom::WidgetInputHandler> widget_input_handler_;
   viz::mojom::InputTargetClientPtr input_target_client_;
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
@@ -1225,7 +1211,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
 
-  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
+  // Event IDs for touch event acks that should be ignored.
+  std::unordered_set<uint32_t> touch_event_acks_to_ignore_;
+
+  base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
 };

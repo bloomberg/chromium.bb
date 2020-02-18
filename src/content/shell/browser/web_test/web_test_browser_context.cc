@@ -18,6 +18,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
+#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
@@ -36,9 +37,8 @@
 
 namespace content {
 
-WebTestBrowserContext::WebTestBrowserContext(bool off_the_record,
-                                             net::NetLog* net_log)
-    : ShellBrowserContext(off_the_record, net_log) {
+WebTestBrowserContext::WebTestBrowserContext(bool off_the_record)
+    : ShellBrowserContext(off_the_record) {
   // Overrides geolocation coordinates for testing.
   geolocation_overrider_ =
       std::make_unique<device::ScopedGeolocationOverrider>(0, 0);
@@ -55,7 +55,7 @@ WebTestBrowserContext::CreateURLRequestContextGetter(
   return new WebTestURLRequestContextGetter(
       ignore_certificate_errors(), IsOffTheRecord(), GetPath(),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      protocol_handlers, std::move(request_interceptors), net_log());
+      protocol_handlers, std::move(request_interceptors));
 }
 
 DownloadManagerDelegate* WebTestBrowserContext::GetDownloadManagerDelegate() {
@@ -71,9 +71,8 @@ DownloadManagerDelegate* WebTestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 PushMessagingService* WebTestBrowserContext::GetPushMessagingService() {
-  if (!push_messaging_service_) {
+  if (!push_messaging_service_)
     push_messaging_service_ = std::make_unique<WebTestPushMessagingService>();
-  }
   return push_messaging_service_.get();
 }
 
@@ -103,6 +102,12 @@ BackgroundSyncController* WebTestBrowserContext::GetBackgroundSyncController() {
 WebTestPermissionManager* WebTestBrowserContext::GetWebTestPermissionManager() {
   return static_cast<WebTestPermissionManager*>(
       GetPermissionControllerDelegate());
+}
+
+ContentIndexProvider* WebTestBrowserContext::GetContentIndexProvider() {
+  if (!content_index_provider_)
+    content_index_provider_ = std::make_unique<WebTestContentIndexProvider>();
+  return content_index_provider_.get();
 }
 
 }  // namespace content

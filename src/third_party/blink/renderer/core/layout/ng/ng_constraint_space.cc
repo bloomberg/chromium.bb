@@ -102,12 +102,12 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
 
 String NGConstraintSpace::ToString() const {
   return String::Format("Offset: %s,%s Size: %sx%s Clearance: %s",
-                        bfc_offset_.line_offset.ToString().Ascii().data(),
-                        bfc_offset_.block_offset.ToString().Ascii().data(),
-                        AvailableSize().inline_size.ToString().Ascii().data(),
-                        AvailableSize().block_size.ToString().Ascii().data(),
+                        bfc_offset_.line_offset.ToString().Ascii().c_str(),
+                        bfc_offset_.block_offset.ToString().Ascii().c_str(),
+                        AvailableSize().inline_size.ToString().Ascii().c_str(),
+                        AvailableSize().block_size.ToString().Ascii().c_str(),
                         HasClearanceOffset()
-                            ? ClearanceOffset().ToString().Ascii().data()
+                            ? ClearanceOffset().ToString().Ascii().c_str()
                             : "none");
 }
 

@@ -12,8 +12,6 @@
 
 namespace ash {
 
-class SystemTrayClient;
-
 // Handles method calls delegated back to chrome from ash.
 class ASH_PUBLIC_EXPORT SystemTrayClient {
  public:

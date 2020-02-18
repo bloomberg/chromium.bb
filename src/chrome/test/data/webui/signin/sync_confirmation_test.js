@@ -9,7 +9,7 @@ cr.define('signin_sync_confirmation', function() {
     setup(function() {
       PolymerTest.clearBody();
       app = document.createElement('sync-confirmation-app');
-      var accountImageRequested = false;
+      let accountImageRequested = false;
       registerMessageCallback('accountImageRequest', this, function() {
         accountImageRequested = true;
       });
@@ -62,11 +62,8 @@ cr.define('signin_sync_confirmation', function() {
     // button.
     test('recordConsentOnConfirm', function() {
       app.$$('#confirmButton').click();
-      return browserProxy.whenCalled('confirm').then(function(arguments) {
-        assertEquals(2, arguments.length);
-        var description = arguments[0];
-        var confirmation = arguments[1];
-
+      return browserProxy.whenCalled('confirm').then(function(
+          [description, confirmation]) {
         assertEquals(
             JSON.stringify(STANDARD_CONSENT_DESCRIPTION_TEXT),
             JSON.stringify(description));
@@ -78,11 +75,9 @@ cr.define('signin_sync_confirmation', function() {
     // button.
     test('recordConsentOnSettingsLink', function() {
       app.$$('#settingsButton').click();
-      return browserProxy.whenCalled('goToSettings').then(function(arguments) {
-        assertEquals(2, arguments.length);
-        var description = arguments[0];
-        var confirmation = arguments[1];
-
+      return browserProxy.whenCalled('goToSettings').then(function([
+        description, confirmation
+      ]) {
         assertEquals(
             JSON.stringify(STANDARD_CONSENT_DESCRIPTION_TEXT),
             JSON.stringify(description));

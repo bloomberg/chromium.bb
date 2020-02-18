@@ -29,15 +29,16 @@
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
+#include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
-#import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -85,7 +86,7 @@ WebViewBrowserState::WebViewBrowserState(
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
-      GetStatePath(),
+      GetStatePath(), ApplicationContext::GetInstance()->GetNetLog(),
       base::CreateSingleThreadTaskRunnerWithTraits({web::WebThread::IO}));
 
   BrowserState::Initialize(this, path_);
@@ -191,7 +192,7 @@ void WebViewBrowserState::RegisterPrefs(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
-  WebViewPasswordManagerInternalsServiceFactory::GetInstance();
+  WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
@@ -200,7 +201,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewHostContentSettingsMapFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewSigninErrorControllerFactory::GetInstance();
-  WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
+  WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();
   WebViewProfileInvalidationProviderFactory::GetInstance();
   WebViewProfileSyncServiceFactory::GetInstance();

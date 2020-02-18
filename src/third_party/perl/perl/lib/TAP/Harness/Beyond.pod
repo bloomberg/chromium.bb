@@ -1,3 +1,7 @@
+=head1 NAME
+
+Test::Harness::Beyond - Beyond make test
+
 =head1 Beyond make test
 
 Test::Harness is responsible for running test scripts, analysing
@@ -223,7 +227,8 @@ document:
 
   package My::TAP::Harness;
 
-  use base qw( TAP::Harness ); use YAML;
+  use base 'TAP::Harness';
+  use YAML;
 
   sub summary {
     my ( $self, $aggregate ) = @_; 
@@ -411,6 +416,10 @@ list[1]. For discussion of general, language independent TAP issues
 there's the tap-l[2] list. Finally there's a wiki dedicated to the
 Test Anything Protocol[3]. Contributions to the wiki, patches and
 suggestions are all welcome.
+
+=for comment
+  The URLs in [1] and [2] point to 404 pages. What are currently the
+  correct URLs?
 
 [1] L<http://www.hexten.net/mailman/listinfo/tapx-dev>
 [2] L<http://testanything.org/mailman/listinfo/tap-l>

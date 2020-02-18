@@ -69,10 +69,10 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   message_ = message;
   page_->GetChromeClient().RegisterPopupOpeningObserver(this);
   constexpr auto kMinimumTimeToShowValidationMessage =
-      TimeDelta::FromSeconds(5);
-  constexpr auto kTimePerCharacter = TimeDelta::FromMilliseconds(50);
+      base::TimeDelta::FromSeconds(5);
+  constexpr auto kTimePerCharacter = base::TimeDelta::FromMilliseconds(50);
   finish_time_ =
-      CurrentTimeTicks() +
+      base::TimeTicks::Now() +
       std::max(kMinimumTimeToShowValidationMessage,
                (message.length() + sub_message.length()) * kTimePerCharacter);
 
@@ -114,7 +114,8 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
       &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.
-  const TimeDelta kHidingAnimationDuration = TimeDelta::FromSecondsD(0.13333);
+  const base::TimeDelta kHidingAnimationDuration =
+      base::TimeDelta::FromSecondsD(0.13333);
   timer_->StartOneShot(kHidingAnimationDuration, FROM_HERE);
 }
 
@@ -131,7 +132,7 @@ void ValidationMessageClientImpl::Reset(TimerBase*) {
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
-  finish_time_ = TimeTicks();
+  finish_time_ = base::TimeTicks();
   overlay_ = nullptr;
   overlay_delegate_ = nullptr;
   page_->GetChromeClient().UnregisterPopupOpeningObserver(this);
@@ -163,7 +164,7 @@ void ValidationMessageClientImpl::DidChangeFocusTo(const Element* new_element) {
 void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
   DCHECK(current_anchor_);
   if ((!WebTestSupport::IsRunningWebTest() &&
-       CurrentTimeTicks() >= finish_time_) ||
+       base::TimeTicks::Now() >= finish_time_) ||
       !CurrentView()) {
     HideValidationMessage(*current_anchor_);
     return;
@@ -192,6 +193,12 @@ void ValidationMessageClientImpl::WillBeDestroyed() {
 void ValidationMessageClientImpl::WillOpenPopup() {
   if (current_anchor_)
     HideValidationMessage(*current_anchor_);
+}
+
+void ValidationMessageClientImpl::ServiceScriptedAnimations(
+    base::TimeTicks monotonic_frame_begin_time) {
+  if (overlay_)
+    overlay_->ServiceScriptedAnimations(monotonic_frame_begin_time);
 }
 
 void ValidationMessageClientImpl::LayoutOverlay() {

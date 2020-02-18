@@ -218,6 +218,12 @@ void GLSurface::SetRelyOnImplicitSync() {
   // It is fine to ignore this call in those cases.
 }
 
+void GLSurface::SetForceGlFlushOnSwapBuffers() {
+  // Some GLSurface derived classes might not implement this workaround while
+  // still being allocated on devices where the workaround is enabled.
+  // It is fine to ignore this call in those cases.
+}
+
 bool GLSurface::SupportsSwapTimestamps() const {
   return false;
 }
@@ -476,6 +482,10 @@ gfx::Vector2d GLSurfaceAdapter::GetDrawOffset() const {
 
 void GLSurfaceAdapter::SetRelyOnImplicitSync() {
   surface_->SetRelyOnImplicitSync();
+}
+
+void GLSurfaceAdapter::SetForceGlFlushOnSwapBuffers() {
+  surface_->SetForceGlFlushOnSwapBuffers();
 }
 
 bool GLSurfaceAdapter::SupportsSwapTimestamps() const {

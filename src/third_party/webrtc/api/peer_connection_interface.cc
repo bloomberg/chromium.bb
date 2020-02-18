@@ -9,6 +9,7 @@
  */
 
 #include "api/peer_connection_interface.h"
+
 #include "api/dtls_transport_interface.h"
 #include "api/sctp_transport_interface.h"
 
@@ -169,11 +170,6 @@ PeerConnectionInterface::standardized_ice_connection_state() {
 PeerConnectionInterface::PeerConnectionState
 PeerConnectionInterface::peer_connection_state() {
   return PeerConnectionInterface::PeerConnectionState::kFailed;
-}
-
-bool PeerConnectionInterface::StartRtcEventLog(rtc::PlatformFile file,
-                                               int64_t max_size_bytes) {
-  return false;
 }
 
 bool PeerConnectionInterface::StartRtcEventLog(

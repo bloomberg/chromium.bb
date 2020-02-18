@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,11 +67,6 @@ public class WebappDataStorageTest {
         mCallbackCalled = false;
     }
 
-    @After
-    public void tearDown() {
-        mSharedPreferences.edit().clear().apply();
-    }
-
     @Test
     @Feature({"Webapp"})
     public void testBackwardCompat() {
@@ -87,7 +81,6 @@ public class WebappDataStorageTest {
         assertEquals("orientation", WebappDataStorage.KEY_ORIENTATION);
         assertEquals("theme_color", WebappDataStorage.KEY_THEME_COLOR);
         assertEquals("background_color", WebappDataStorage.KEY_BACKGROUND_COLOR);
-        assertEquals("splash_screen_url", WebappDataStorage.KEY_SPLASH_SCREEN_URL);
         assertEquals("source", WebappDataStorage.KEY_SOURCE);
         assertEquals("action", WebappDataStorage.KEY_ACTION);
         assertEquals("is_icon_generated", WebappDataStorage.KEY_IS_ICON_GENERATED);
@@ -216,13 +209,11 @@ public class WebappDataStorageTest {
         final int orientation = 1;
         final long themeColor = 2;
         final long backgroundColor = 3;
-        final String splashScreenUrl = "splashy";
         final boolean isIconGenerated = false;
         final boolean isIconAdaptive = false;
         Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, action, url, scope,
                 name, shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
-                orientation, themeColor, backgroundColor, splashScreenUrl, isIconGenerated,
-                isIconAdaptive);
+                orientation, themeColor, backgroundColor, isIconGenerated, isIconAdaptive);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
         storage.updateFromShortcutIntent(shortcutIntent);
@@ -240,8 +231,6 @@ public class WebappDataStorageTest {
         assertEquals(themeColor, mSharedPreferences.getLong(WebappDataStorage.KEY_THEME_COLOR, 0));
         assertEquals(backgroundColor,
                 mSharedPreferences.getLong(WebappDataStorage.KEY_BACKGROUND_COLOR, 0));
-        assertEquals(splashScreenUrl,
-                mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(isIconGenerated,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
         assertEquals(isIconAdaptive,
@@ -259,7 +248,6 @@ public class WebappDataStorageTest {
                 .remove(WebappDataStorage.KEY_ORIENTATION)
                 .remove(WebappDataStorage.KEY_THEME_COLOR)
                 .remove(WebappDataStorage.KEY_BACKGROUND_COLOR)
-                .remove(WebappDataStorage.KEY_SPLASH_SCREEN_URL)
                 .remove(WebappDataStorage.KEY_IS_ICON_GENERATED)
                 .remove(WebappDataStorage.KEY_IS_ICON_ADAPTIVE)
                 .apply();
@@ -274,8 +262,6 @@ public class WebappDataStorageTest {
         assertEquals(0, mSharedPreferences.getInt(WebappDataStorage.KEY_ORIENTATION, 0));
         assertEquals(0, mSharedPreferences.getLong(WebappDataStorage.KEY_THEME_COLOR, 0));
         assertEquals(0, mSharedPreferences.getLong(WebappDataStorage.KEY_BACKGROUND_COLOR, 0));
-        assertEquals(
-                null, mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(true,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
         assertEquals(true,
@@ -297,8 +283,6 @@ public class WebappDataStorageTest {
         assertEquals(themeColor, mSharedPreferences.getLong(WebappDataStorage.KEY_THEME_COLOR, 0));
         assertEquals(backgroundColor,
                 mSharedPreferences.getLong(WebappDataStorage.KEY_BACKGROUND_COLOR, 0));
-        assertEquals(splashScreenUrl,
-                mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_SCREEN_URL, null));
         assertEquals(isIconGenerated,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
         assertEquals(isIconAdaptive,

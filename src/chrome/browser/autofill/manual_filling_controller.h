@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/common/filling_status.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/image/image.h"
@@ -43,7 +42,13 @@ class ManualFillingController {
  public:
   // The controller checks if at least one of these sources needs the accessory
   // to be displayed.
-  enum class FillingSource { AUTOFILL, PASSWORD_FALLBACKS, ADDRESS_FALLBACKS };
+  enum class FillingSource {
+    AUTOFILL,
+    PASSWORD_FALLBACKS,
+    CREDIT_CARD_FALLBACKS,
+    ADDRESS_FALLBACKS,
+    TOUCH_TO_FILL,
+  };
 
   ManualFillingController() = default;
   virtual ~ManualFillingController() = default;
@@ -59,26 +64,25 @@ class ManualFillingController {
   // Methods called by type-specific controllers.
   // --------------------------------------------
 
-  // Forwards |accessory_sheet_data| to the view provided by a type-specific
-  // controller to be shown on the accessory sheet.
-  virtual void RefreshSuggestionsForField(
-      autofill::mojom::FocusedFieldType focused_field_type,
+  // Depending on the type of the given |accessory_sheet_data|, this updates a
+  // accessory sheet. Controllers to handle touch events are determined by the
+  // type of the sheet.
+  virtual void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) = 0;
 
-  // Completes a filling attempt by recording metrics, giving feedback to the
-  // user and dismissing the accessory sheet.
-  virtual void OnFilledIntoFocusedField(autofill::FillingStatus status) = 0;
+  // Notifies that the focused field changed which allows the controller to
+  // update the UI visibility.
+  virtual void NotifyFocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type) = 0;
 
-  // Requests to show the accessory bar. The accessory will only be shown
-  // when the keyboard becomes visible.
-  virtual void ShowWhenKeyboardIsVisible(FillingSource source) = 0;
+  // Reports for a source whether it provides suggestions or just default
+  // options. The controller then updates the UI visibility accordingly.
+  virtual void UpdateSourceAvailability(FillingSource source,
+                                        bool has_suggestions) = 0;
 
-  // Requests to show the touch to fill sheet.
-  virtual void ShowTouchToFillSheet() = 0;
-
-  // Requests to hide the accessory. This hides both the accessory sheet
-  // (if open) and the accessory bar.
-  virtual void Hide(FillingSource source) = 0;
+  // Explicitly hides all manual filling UI without checking any filling source.
+  // E.g. after autofilling suggestions, or generating a password.
+  virtual void Hide() = 0;
 
   // Notifies the view that automatic password generation status changed.
   //
@@ -102,14 +106,6 @@ class ManualFillingController {
   // such as "Manage passwords...".
   virtual void OnOptionSelected(
       autofill::AccessoryAction selected_action) const = 0;
-
-  // Called by the UI code to signal that the user requested password
-  // generation. This should prompt a modal dialog with the generated password.
-  //
-  // TODO(crbug.com/905669): This controller doesn't need to know about password
-  // generation. Generalize this to forward an action request from the UI to a
-  // type-specific accessory controller.
-  virtual void OnGenerationRequested() = 0;
 
   // Gets an icon for the currently focused frame and passes it to
   // |icon_callback|. The callback is invoked with an image unless an icon for

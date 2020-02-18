@@ -9,9 +9,11 @@
 #include <algorithm>
 #include <memory>
 
+#include "core/fpdfapi/page/cpdf_dibbase.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_image.h"
 #include "core/fpdfapi/page/cpdf_imageobject.h"
+#include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/page/cpdf_shadingpattern.h"
@@ -20,8 +22,6 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
-#include "core/fpdfapi/render/cpdf_dibbase.h"
-#include "core/fpdfapi/render/cpdf_occontext.h"
 #include "core/fpdfapi/render/cpdf_pagerendercache.h"
 #include "core/fpdfapi/render/cpdf_rendercontext.h"
 #include "core/fpdfapi/render/cpdf_renderstatus.h"
@@ -96,7 +96,7 @@ bool CPDF_ImageRenderer::StartRenderDIBBase() {
   if (m_pDIBBase->IsAlphaMask()) {
     const CPDF_Color* pColor = m_pImageObject->m_ColorState.GetFillColor();
     if (pColor && pColor->IsPattern()) {
-      m_pPattern = pColor->GetPattern();
+      m_pPattern.Reset(pColor->GetPattern());
       if (m_pPattern)
         m_bPatternColor = true;
     }
@@ -115,8 +115,10 @@ bool CPDF_ImageRenderer::StartRenderDIBBase() {
   else if (GetRenderOptions().GetOptions().bForceHalftone)
     m_ResampleOptions.bHalftone = true;
 
-  if (m_pRenderStatus->GetRenderDevice()->GetDeviceClass() != FXDC_DISPLAY)
+  if (m_pRenderStatus->GetRenderDevice()->GetDeviceType() !=
+      DeviceType::kDisplay) {
     HandleFilters();
+  }
 
   if (GetRenderOptions().GetOptions().bNoImageSmooth)
     m_ResampleOptions.bNoSmoothing = true;
@@ -147,8 +149,9 @@ bool CPDF_ImageRenderer::StartRenderDIBBase() {
   CPDF_Object* pCSObj =
       m_pImageObject->GetImage()->GetStream()->GetDict()->GetDirectObjectFor(
           "ColorSpace");
+  auto* pData = CPDF_DocPageData::FromDocument(pDocument);
   RetainPtr<CPDF_ColorSpace> pColorSpace =
-      pDocument->LoadColorSpace(pCSObj, pPageResources);
+      pData->GetColorSpace(pCSObj, pPageResources);
   if (pColorSpace) {
     int format = pColorSpace->GetFamily();
     if (format == PDFCS_DEVICECMYK || format == PDFCS_SEPARATION ||

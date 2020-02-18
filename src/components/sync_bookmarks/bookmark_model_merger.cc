@@ -98,15 +98,15 @@ bool NodesMatch(const bookmarks::BookmarkNode* local_node,
 size_t FindMatchingChildFor(const UpdateResponseData* remote_node,
                             const bookmarks::BookmarkNode* local_parent,
                             size_t search_starting_child_index) {
-  const EntityData& remote_node_update_entity = *remote_node->entity;
-  for (int i = search_starting_child_index; i < local_parent->child_count();
-       ++i) {
-    const bookmarks::BookmarkNode* local_child = local_parent->GetChild(i);
-    if (NodesMatch(local_child, remote_node_update_entity)) {
-      return i;
-    }
-  }
-  return kInvalidIndex;
+  const auto& children = local_parent->children();
+  DCHECK_LE(search_starting_child_index, children.size());
+  const EntityData& remote_entity = *remote_node->entity;
+  const auto it =
+      std::find_if(children.cbegin() + search_starting_child_index,
+                   children.cend(), [&remote_entity](const auto& child) {
+                     return NodesMatch(child.get(), remote_entity);
+                   });
+  return (it == children.cend()) ? kInvalidIndex : (it - children.cbegin());
 }
 
 bool UniquePositionLessThan(const UpdateResponseData* a,
@@ -262,7 +262,7 @@ void BookmarkModelMerger::MergeSubtree(
         continue;
       }
       const bookmarks::BookmarkNode* local_child =
-          local_node->GetChild(local_index);
+          local_node->children()[local_index].get();
       // If local node isn't in the correct position, move it.
       if (remote_index != local_index) {
         bookmark_model_->Move(local_child, local_node, remote_index);
@@ -273,15 +273,16 @@ void BookmarkModelMerger::MergeSubtree(
   }
   // At this point all the children nodes of the parent sync node have
   // corresponding children in the parent bookmark node and they are all in the
-  // right positions: from 0 to |updates_tree_.at(remote_update).size() - 1|. So
-  // the children starting from index |updates_tree_.at(remote_update).size()|
-  // in the parent bookmark node are the ones that are not present in the parent
+  // right positions: from 0 to updates_tree_.at(remote_update).size() - 1. So
+  // the children starting from index updates_tree_.at(remote_update).size() in
+  // the parent bookmark node are the ones that are not present in the parent
   // sync node and tracked yet. So create all of the remaining local nodes.
-  const int index_of_new_local_nodes =
+  const size_t index_of_new_local_nodes =
       updates_tree_.count(remote_update) > 0
           ? updates_tree_.at(remote_update).size()
           : 0;
-  for (int i = index_of_new_local_nodes; i < local_node->child_count(); ++i) {
+  for (size_t i = index_of_new_local_nodes; i < local_node->children().size();
+       ++i) {
     ProcessLocalCreation(local_node, i);
   }
 }
@@ -289,7 +290,7 @@ void BookmarkModelMerger::MergeSubtree(
 void BookmarkModelMerger::ProcessRemoteCreation(
     const UpdateResponseData* remote_update,
     const bookmarks::BookmarkNode* local_parent,
-    int index) {
+    size_t index) {
   const EntityData& remote_update_entity = *remote_update->entity;
   const bookmarks::BookmarkNode* bookmark_node =
       CreateBookmarkNodeFromSpecifics(
@@ -321,8 +322,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
 
 void BookmarkModelMerger::ProcessLocalCreation(
     const bookmarks::BookmarkNode* parent,
-    int index) {
-  DCHECK_GT(index, -1);
+    size_t index) {
   const SyncedBookmarkTracker::Entity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
   // Since we are merging top down, parent entity must be tracked.
@@ -345,21 +345,21 @@ void BookmarkModelMerger::ProcessLocalCreation(
   } else {
     const SyncedBookmarkTracker::Entity* predecessor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(
-            parent->GetChild(index - 1));
+            parent->children()[index - 1].get());
     pos = syncer::UniquePosition::After(
         syncer::UniquePosition::FromProto(
             predecessor_entity->metadata()->unique_position()),
         suffix);
   }
 
-  const bookmarks::BookmarkNode* node = parent->GetChild(index);
+  const bookmarks::BookmarkNode* node = parent->children()[index].get();
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, /*force_favicon_load=*/true);
   bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
                          pos.ToProto(), specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(sync_id);
-  for (int i = 0; i < node->child_count(); ++i) {
+  for (size_t i = 0; i < node->children().size(); ++i) {
     // If a local node hasn't matched with any remote entity, its descendants
     // will neither.
     ProcessLocalCreation(node, i);

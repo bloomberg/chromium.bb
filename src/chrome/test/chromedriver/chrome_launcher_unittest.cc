@@ -74,6 +74,27 @@ TEST(ProcessExtensions, GenerateIds) {
             "_generated_background_page.html", bg_pages[2]);
 }
 
+TEST(ProcessExtensions, GenerateIdCrx3) {
+  std::vector<std::string> extensions;
+  base::ScopedTempDir extension_dir;
+  Switches switches;
+  std::vector<std::string> bg_pages;
+
+  ASSERT_TRUE(AddExtensionForInstall("same_key_as_header.crx3", &extensions));
+
+  ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
+
+  Status status = internal::ProcessExtensions(
+      extensions, extension_dir.GetPath(), false, &switches, &bg_pages);
+
+  ASSERT_EQ(kOk, status.code()) << status.message();
+  ASSERT_EQ(1u, bg_pages.size());
+  ASSERT_EQ(
+      "chrome-extension://dfdeoklpcichfcnoaomfpagfiibhomnh/"
+      "_generated_background_page.html",
+      bg_pages[0]);
+}
+
 TEST(ProcessExtensions, SingleExtensionWithBgPage) {
   std::vector<std::string> extensions;
   ASSERT_TRUE(AddExtensionForInstall("ext_slow_loader.crx", &extensions));

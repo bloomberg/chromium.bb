@@ -6,7 +6,7 @@ use Carp ();
 use Encode ();
 
 use vars qw($VERSION);
-$VERSION = "6.03";
+our $VERSION = '6.04';
 
 my %form_tags = map {$_ => 1} qw(input textarea button select option);
 
@@ -119,7 +119,7 @@ behaves.  The following are all the options currently recognized:
 
 =item C<< base => $uri >>
 
-This is the URI used to retrive the original document.  This option is not optional ;-)
+This is the URI used to retrieve the original document.  This option is not optional ;-)
 
 =item C<< charset => $str >>
 
@@ -285,10 +285,10 @@ sub parse
 				$tag eq "select" ||
 				$tag eq "keygen")
 			    {
-				# MSIE implictly terminate the <select> here, so we
+				# MSIE implicitly terminates the <select> here, so we
 				# try to do the same.  Actually the MSIE behaviour
 				# appears really strange:  <input> and <textarea>
-				# do implictly close, but not <select>, <keygen> or
+				# do implicitly close, but not <select>, <keygen> or
 				# </form>.
 				my $type = ($tag =~ s,^/,,) ? "E" : "S";
 				$p->unget_token([$type, $tag, @$t]);
@@ -341,7 +341,7 @@ sub push_input
     push(@extra, strict => 1) if $self->{strict};
     if ($type eq "file" && exists $attr->{value}) {
 	# it's not safe to trust the value set by the server
-	# the user always need to explictly set the names of files to upload
+	# the user always needs to explicitly set the names of files to upload
 	$attr->{orig_value} = delete $attr->{value};
     }
     delete $attr->{type}; # don't confuse the type argument
@@ -383,7 +383,7 @@ charset as specified by the 'charset' parameter of the parse() method.
 =cut
 
 BEGIN {
-    # Set up some accesor
+    # Set up some accessors
     for (qw(method action enctype accept_charset)) {
 	my $m = $_;
 	no strict 'refs';
@@ -472,17 +472,17 @@ This method is used to locate specific inputs within the form.  All
 inputs that match the arguments given are returned.  In scalar context
 only the first is returned, or C<undef> if none match.
 
-If $selector is specified, then the input's name, id, class attribute must
+If $selector is not C<undef>, then the input's name, id, class attribute must
 match.  A selector prefixed with '#' must match the id attribute of the input.
 A selector prefixed with '.' matches the class attribute.  A selector prefixed
 with '^' or with no prefix matches the name attribute.
 
-If $type is specified, then the input must have the specified type.
+If $type is not C<undef>, then the input must have the specified type.
 The following type names are used: "text", "password", "hidden",
 "textarea", "file", "image", "submit", "radio", "checkbox" and "option".
 
 The $index is the sequence number of the input matched where 1 is the
-first.  If combined with $name and/or $type then it select the I<n>th
+first.  If combined with $name and/or $type, then it selects the I<n>th
 input with the given name and/or type.
 
 =cut
@@ -501,7 +501,7 @@ sub find_input
 	    push(@res, $_);
 	}
 	return @res;
-	
+
     }
     else {
 	$no ||= 1;
@@ -927,6 +927,11 @@ croak if you try.
 You will also be able to set the value of read-only inputs, but a
 warning will be generated if running under C<perl -w>.
 
+=item $autocomplete = $input->autocomplete
+
+=item $input->autocomplete( $new_autocomplete )
+
+This method can be used to get/set the current value (if any) of C<autcomplete> for the input.
 =cut
 
 sub name
@@ -970,6 +975,14 @@ sub value
     my $self = shift;
     my $old = $self->{value};
     $self->{value} = shift if @_;
+    $old;
+}
+
+sub autocomplete
+{
+    my $self = shift;
+    my $old = $self->{autocomplete};
+    $self->{autocomplete} = shift if @_;
     $old;
 }
 
@@ -1205,7 +1218,7 @@ sub add_to_form
     my $prev = $form->find_input($self->{name}, $self->{type}, $self->{idx});
     return $self->SUPER::add_to_form($form) unless $prev;
 
-    # merge menues
+    # merge menus
     $prev->{current} = @{$prev->{menu}} if exists $self->{current};
     push(@{$prev->{menu}}, $m);
 }

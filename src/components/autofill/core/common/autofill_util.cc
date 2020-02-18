@@ -24,6 +24,8 @@ namespace autofill {
 
 using features::kAutofillKeyboardAccessory;
 using mojom::FocusedFieldType;
+using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
 
 const char kAutofillKeyboardAccessoryAnimationDurationKey[] =
     "animation_duration_millis";
@@ -63,6 +65,14 @@ bool IsShowAutofillSignaturesEnabled() {
 bool IsKeyboardAccessoryEnabled() {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(kAutofillKeyboardAccessory);
+#else  // !defined(OS_ANDROID)
+  return false;
+#endif
+}
+
+bool IsTouchToFillEnabled() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(features::kTouchToFillAndroid);
 #else  // !defined(OS_ANDROID)
   return false;
 #endif
@@ -211,9 +221,33 @@ bool ShouldAutoselectFirstSuggestionOnArrowDown() {
 }
 
 bool IsFillable(FocusedFieldType focused_field_type) {
-  return focused_field_type == FocusedFieldType::kFillableTextField ||
+  return focused_field_type == FocusedFieldType::kFillableTextArea ||
+         focused_field_type == FocusedFieldType::kFillableSearchField ||
+         focused_field_type == FocusedFieldType::kFillableNonSearchField ||
          focused_field_type == FocusedFieldType::kFillableUsernameField ||
          focused_field_type == FocusedFieldType::kFillablePasswordField;
+}
+
+SubmissionIndicatorEvent ToSubmissionIndicatorEvent(SubmissionSource source) {
+  switch (source) {
+    case SubmissionSource::NONE:
+      return SubmissionIndicatorEvent::NONE;
+    case SubmissionSource::SAME_DOCUMENT_NAVIGATION:
+      return SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+    case SubmissionSource::XHR_SUCCEEDED:
+      return SubmissionIndicatorEvent::XHR_SUCCEEDED;
+    case SubmissionSource::FRAME_DETACHED:
+      return SubmissionIndicatorEvent::FRAME_DETACHED;
+    case SubmissionSource::DOM_MUTATION_AFTER_XHR:
+      return SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR;
+    case SubmissionSource::PROBABLY_FORM_SUBMITTED:
+      return SubmissionIndicatorEvent::PROBABLE_FORM_SUBMISSION;
+    case SubmissionSource::FORM_SUBMISSION:
+      return SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
+  }
+
+  NOTREACHED();
+  return SubmissionIndicatorEvent::NONE;
 }
 
 }  // namespace autofill

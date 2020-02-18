@@ -373,10 +373,10 @@ void SessionControllerImpl::PrepareForLock(PrepareForLockCallback callback) {
   // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
   // visible while in fullscreen because the shelf makes it harder for a web
   // page or app to mimick the lock screen.
-  wm::WindowState* active_window_state = wm::GetActiveWindowState();
+  WindowState* active_window_state = WindowState::ForActiveWindow();
   if (active_window_state && active_window_state->IsFullscreen() &&
       active_window_state->GetHideShelfWhenFullscreen()) {
-    const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+    const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
     active_window_state->OnWMEvent(&event);
   }
 
@@ -426,9 +426,7 @@ void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
 void SessionControllerImpl::CanSwitchActiveUser(
     CanSwitchActiveUserCallback callback) {
   // Cancel overview mode when switching user profiles.
-  OverviewController* controller = Shell::Get()->overview_controller();
-  if (controller->InOverviewSession())
-    controller->ToggleOverview();
+  Shell::Get()->overview_controller()->EndOverview();
 
   ash::Shell::Get()
       ->screen_switch_check_controller()
@@ -561,8 +559,7 @@ LoginStatus SessionControllerImpl::CalculateLoginStatusForActiveSession()
 
   switch (user_sessions_[0]->user_info.type) {
     case user_manager::USER_TYPE_REGULAR:
-      return user_sessions_[0]->user_info.is_device_owner ? LoginStatus::OWNER
-                                                          : LoginStatus::USER;
+      return LoginStatus::USER;
     case user_manager::USER_TYPE_GUEST:
       return LoginStatus::GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:

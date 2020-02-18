@@ -18,6 +18,7 @@
  *   device: (boolean|undefined),
  *   downloads: (boolean|undefined|DownloadsPageVisibility),
  *   internet: (boolean|undefined),
+ *   languages: (boolean|undefined|LanguagesPageVisibility),
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
  *   people: (boolean|undefined|PeoplePageVisibility),
@@ -81,6 +82,14 @@ let PrivacyPageVisibility;
  */
 let ResetPageVisibility;
 
+/**
+ * @typedef {{
+ *   manageInputMethods: boolean,
+ *   inputMethodsList: boolean,
+ * }}
+ */
+let LanguagesPageVisibility;
+
 cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
@@ -104,6 +113,7 @@ cr.define('settings', function() {
       advancedSettings: false,
       extensions: false,
       printing: false,
+      languages: false,
     };
     // </if>
     // <if expr="chromeos">
@@ -114,9 +124,7 @@ cr.define('settings', function() {
       autofill: false,
       people: false,
       onStartup: false,
-      reset: {
-        powerwash: false,
-      },
+      reset: false,
       appearance: {
         setWallpaper: false,
         setTheme: false,
@@ -141,7 +149,11 @@ cr.define('settings', function() {
         webstoreLink: showOSSettings,
       },
       extensions: false,
-      printing: showOSSettings,
+      printing: true,
+      languages: {
+        manageInputMethods: showOSSettings,
+        inputMethodsList: showOSSettings,
+      },
     };
     // </if>
   } else {
@@ -187,7 +199,11 @@ cr.define('settings', function() {
         webstoreLink: showOSSettings,
       },
       extensions: true,
-      printing: showOSSettings,
+      printing: true,
+      languages: {
+        manageInputMethods: showOSSettings,
+        inputMethodsList: showOSSettings,
+      },
     };
     // </if>
   }

@@ -78,7 +78,8 @@ class Buffer::Texture : public viz::ContextLostObserver {
   // mailbox().
   // Returns a sync token that can be used when accessing the SharedImage from a
   // different context.
-  gpu::SyncToken UpdateSharedImage();
+  gpu::SyncToken UpdateSharedImage(
+      std::unique_ptr<gfx::GpuFence> acquire_fence);
 
   // Releases the contents referenced by |mailbox_| after |sync_token| has
   // passed and runs |callback| when completed.
@@ -89,7 +90,9 @@ class Buffer::Texture : public viz::ContextLostObserver {
   // Copy the contents of texture to |destination| and runs |callback| when
   // completed. Returns a sync token that can be used when accessing texture
   // from a different context.
-  gpu::SyncToken CopyTexImage(Texture* destination, base::OnceClosure callback);
+  gpu::SyncToken CopyTexImage(std::unique_ptr<gfx::GpuFence> acquire_fence,
+                              Texture* destination,
+                              base::OnceClosure callback);
 
   // Returns the mailbox for this texture.
   gpu::Mailbox mailbox() const { return mailbox_; }
@@ -205,7 +208,8 @@ void Buffer::Texture::Release(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-gpu::SyncToken Buffer::Texture::UpdateSharedImage() {
+gpu::SyncToken Buffer::Texture::UpdateSharedImage(
+    std::unique_ptr<gfx::GpuFence> acquire_fence) {
   gpu::SyncToken sync_token;
   if (context_provider_) {
     gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
@@ -214,7 +218,8 @@ gpu::SyncToken Buffer::Texture::UpdateSharedImage() {
     // A buffer can be reattached to a surface only after it has been returned
     // to wayland clients. We return buffers to clients only after the query
     // |query_type_| is available.
-    sii->UpdateSharedImage(gpu::SyncToken(), mailbox_);
+    sii->UpdateSharedImage(gpu::SyncToken(), std::move(acquire_fence),
+                           mailbox_);
     sync_token = sii->GenUnverifiedSyncToken();
     TRACE_EVENT_ASYNC_STEP_INTO0("exo", kBufferInUse, gpu_memory_buffer_,
                                  "bound");
@@ -243,13 +248,16 @@ void Buffer::Texture::ReleaseSharedImage(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-gpu::SyncToken Buffer::Texture::CopyTexImage(Texture* destination,
-                                             base::OnceClosure callback) {
+gpu::SyncToken Buffer::Texture::CopyTexImage(
+    std::unique_ptr<gfx::GpuFence> acquire_fence,
+    Texture* destination,
+    base::OnceClosure callback) {
   gpu::SyncToken sync_token;
   if (context_provider_) {
     DCHECK(!mailbox_.IsZero());
     gpu::SharedImageInterface* sii = context_provider_->SharedImageInterface();
-    sii->UpdateSharedImage(gpu::SyncToken(), mailbox_);
+    sii->UpdateSharedImage(gpu::SyncToken(), std::move(acquire_fence),
+                           mailbox_);
     sync_token = sii->GenUnverifiedSyncToken();
 
     gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
@@ -372,6 +380,7 @@ Buffer::~Buffer() {}
 
 bool Buffer::ProduceTransferableResource(
     FrameSinkResourceManager* resource_manager,
+    std::unique_ptr<gfx::GpuFence> acquire_fence,
     bool secure_output_only,
     viz::TransferableResource* resource) {
   TRACE_EVENT1("exo", "Buffer::ProduceTransferableResource", "buffer_id",
@@ -423,7 +432,8 @@ bool Buffer::ProduceTransferableResource(
   // Zero-copy means using the contents texture directly.
   if (use_zero_copy_) {
     // This binds the latest contents of this buffer to |contents_texture|.
-    gpu::SyncToken sync_token = contents_texture->UpdateSharedImage();
+    gpu::SyncToken sync_token =
+        contents_texture->UpdateSharedImage(std::move(acquire_fence));
     resource->mailbox_holder = gpu::MailboxHolder(contents_texture->mailbox(),
                                                   sync_token, texture_target_);
     resource->is_overlay_candidate = is_overlay_candidate_;
@@ -452,9 +462,10 @@ bool Buffer::ProduceTransferableResource(
   // texture mailbox from the result in |texture|. The contents texture will
   // be released when copy has completed.
   gpu::SyncToken sync_token = contents_texture->CopyTexImage(
-      texture, base::BindOnce(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
-                              std::move(contents_texture_),
-                              release_contents_callback_.callback()));
+      std::move(acquire_fence), texture,
+      base::BindOnce(&Buffer::ReleaseContentsTexture, AsWeakPtr(),
+                     std::move(contents_texture_),
+                     release_contents_callback_.callback()));
   resource->mailbox_holder =
       gpu::MailboxHolder(texture->mailbox(), sync_token, GL_TEXTURE_2D);
   resource->is_overlay_candidate = false;

@@ -39,8 +39,8 @@ ExtensionRegistrar::ExtensionRegistrar(content::BrowserContext* browser_context,
       extension_prefs_(ExtensionPrefs::Get(browser_context)),
       registry_(ExtensionRegistry::Get(browser_context)),
       renderer_helper_(
-          RendererStartupHelperFactory::GetForBrowserContext(browser_context)),
-      weak_factory_(this) {}
+          RendererStartupHelperFactory::GetForBrowserContext(browser_context)) {
+}
 
 ExtensionRegistrar::~ExtensionRegistrar() = default;
 
@@ -355,7 +355,7 @@ void ExtensionRegistrar::TerminateExtension(const ExtensionId& extension_id) {
   // even if it's not permanently installed.
   unloaded_extension_paths_[extension->id()] = extension->path();
 
-  DCHECK(!base::ContainsKey(reloading_extensions_, extension->id()))
+  DCHECK(!base::Contains(reloading_extensions_, extension->id()))
       << "Enabled extension shouldn't be marked for reloading";
 
   registry_->AddTerminated(extension);
@@ -513,7 +513,7 @@ void ExtensionRegistrar::MaybeSpinUpLazyBackgroundPage(
   // For orphaned devtools, we will reconnect devtools to it later in
   // DidCreateRenderViewForBackgroundPage().
   bool has_orphaned_dev_tools =
-      base::ContainsKey(orphaned_dev_tools_, extension->id());
+      base::Contains(orphaned_dev_tools_, extension->id());
 
   // Reloading component extension does not trigger install, so RuntimeAPI won't
   // be able to detect its loading. Therefore, we need to spin up its lazy

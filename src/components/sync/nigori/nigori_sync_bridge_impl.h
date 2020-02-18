@@ -38,21 +38,23 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public NigoriSyncBridge,
                              public SyncEncryptionHandler {
  public:
-  // |encryptor| must not be null and must outlive this object and any copies
-  // of the Cryptographer exposed by this object.
+  // |encryptor| must be not null and must outlive this object.
   NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
-                       Encryptor* encryptor);
+                       const Encryptor* encryptor);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void Init() override;
+  bool Init() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
   void EnableEncryptEverything() override;
   bool IsEncryptEverythingEnabled() const override;
   base::Time GetKeystoreMigrationTime() const override;
+  Cryptographer* GetCryptographerUnsafe() override;
+  KeystoreKeysHandler* GetKeystoreKeysHandler() override;
+  syncable::NigoriHandler* GetNigoriHandler() override;
 
   // KeystoreKeysHandler implementation.
   bool NeedKeystoreKey() const override;
@@ -86,6 +88,18 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
 
   base::Time GetExplicitPassphraseTime() const;
 
+  // Returns key derivation params based on |passphrase_type_| and
+  // |custom_passphrase_key_derivation_params_|. Should be called only if
+  // |passphrase_type_| is an explicit passphrase.
+  KeyDerivationParams GetKeyDerivationParamsForPendingKeys() const;
+
+  // Persists Nigori derived from explicit passphrase into preferences, in case
+  // error occurs during serialization/encryption, corresponding preference
+  // just won't be updated.
+  void MaybeNotifyBootstrapTokenUpdated() const;
+
+  const Encryptor* const encryptor_;
+
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
 
   // Base64 encoded keystore keys. The last element is the current keystore
@@ -94,10 +108,18 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   std::vector<std::string> keystore_keys_;
 
   Cryptographer cryptographer_;
+  // TODO(mmoskvitin): Consider adopting the C++ enum PassphraseType here and
+  // if so remove function ProtoPassphraseInt32ToProtoEnum() from
+  // passphrase_enums.h.
   sync_pb::NigoriSpecifics::PassphraseType passphrase_type_;
   bool encrypt_everything_;
   base::Time custom_passphrase_time_;
   base::Time keystore_migration_time_;
+
+  // The key derivation params we are using for the custom passphrase. Set iff
+  // |passphrase_type_| is CUSTOM_PASSPHRASE, otherwise key derivation method
+  // is always PBKDF2.
+  base::Optional<KeyDerivationParams> custom_passphrase_key_derivation_params_;
 
   // TODO(crbug/922900): consider using checked ObserverList once
   // SyncEncryptionHandlerImpl is no longer needed or consider refactoring old

@@ -2,23 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include <memory>
 
-#include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/http_server/error_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -90,8 +84,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
   web::test::SetUpHttpServer(std::move(provider));
 
   // Open a page with an error.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()]);
+  [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
 
   // Verify that you can share, but that the Print action is not available.
   [ChromeEarlGreyUI openShareMenu];
@@ -115,7 +108,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
 - (void)testActivityServiceControllerIsDisabled {
   // Open an un-shareable page.
   GURL kURL("chrome://version");
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:kURL]);
+  [ChromeEarlGrey loadURL:kURL];
   // Verify that the share button is disabled.
   id<GREYMatcher> share_button = chrome_test_util::ShareButton();
   [[EarlGrey selectElementWithMatcher:share_button]
@@ -135,7 +128,7 @@ id<GREYMatcher> ShareMenuCollectionView() {
   web::test::SetUpSimpleHttpServer(responses);
 
   // Open page and open the share menu.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:url]);
+  [ChromeEarlGrey loadURL:url];
   [ChromeEarlGreyUI openShareMenu];
 
   // Verify that the share menu is up and contains a Copy action.

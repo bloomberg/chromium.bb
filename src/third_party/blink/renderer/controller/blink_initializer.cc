@@ -34,6 +34,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
@@ -48,7 +49,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -164,18 +165,18 @@ void BlinkInitializer::RegisterInterfaces(
     return;
 
 #if defined(OS_ANDROID)
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
-      main_thread->GetTaskRunner());
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &OomInterventionImpl::Create)),
+                        main_thread->GetTaskRunner());
 
-  registry.AddInterface(ConvertToBaseCallback(CrossThreadBind(
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
                             &CrashMemoryMetricsReporterImpl::Bind)),
                         main_thread->GetTaskRunner());
 #endif
 
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Create)),
-      main_thread->GetTaskRunner());
+  registry.AddInterface(ConvertToBaseCallback(CrossThreadBindRepeating(
+                            &BlinkLeakDetector::Create)),
+                        main_thread->GetTaskRunner());
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
@@ -187,9 +188,12 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
       &DevToolsFrontendImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
-  frame.GetInterfaceRegistry()->AddInterface(
-      WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
-                         WrapWeakPersistent(&frame)));
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
+    frame.GetInterfaceRegistry()->AddInterface(
+        WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
+                           WrapWeakPersistent(&frame)));
+  }
   ModulesInitializer::InitLocalFrame(frame);
 }
 

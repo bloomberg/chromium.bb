@@ -8,9 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "api/peer_connection_interface.h"
+
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,26 +34,26 @@
 #include "api/jsep_session_description.h"
 #include "api/media_stream_interface.h"
 #include "api/media_types.h"
-#include "api/peer_connection_interface.h"
 #include "api/rtc_error.h"
+#include "api/rtc_event_log/rtc_event_log.h"
+#include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/rtc_event_log_output.h"
 #include "api/rtc_event_log_output_file.h"
 #include "api/rtp_receiver_interface.h"
 #include "api/rtp_sender_interface.h"
 #include "api/rtp_transceiver_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/task_queue/default_task_queue_factory.h"
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/video_codecs/video_decoder_factory.h"
 #include "api/video_codecs/video_encoder_factory.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
-#include "logging/rtc_event_log/rtc_event_log_factory.h"
-#include "logging/rtc_event_log/rtc_event_log_factory_interface.h"
 #include "media/base/codec.h"
 #include "media/base/media_config.h"
 #include "media/base/media_engine.h"
 #include "media/base/stream_params.h"
 #include "media/engine/webrtc_media_engine.h"
+#include "media/engine/webrtc_media_engine_defaults.h"
 #include "media/sctp/sctp_transport_internal.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_processing/include/audio_processing.h"
@@ -78,7 +81,6 @@
 #include "rtc_base/checks.h"
 #include "rtc_base/copy_on_write_buffer.h"
 #include "rtc_base/gunit.h"
-#include "rtc_base/platform_file.h"
 #include "rtc_base/ref_counted_object.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/socket_address.h"
@@ -451,6 +453,12 @@ static const char kDtlsSdesFallbackSdp[] =
     "inline:NzB4d1BINUAvLEw6UzF3WSJ+PSdFcGdUJShpX1Zj|2^20|1:32 "
     "dummy_session_params\r\n";
 
+class RtcEventLogOutputNull final : public RtcEventLogOutput {
+ public:
+  bool IsActive() const override { return true; }
+  bool Write(const std::string& output) override { return true; }
+};
+
 using ::cricket::StreamParams;
 using ::testing::Exactly;
 using ::testing::Values;
@@ -634,27 +642,22 @@ class PeerConnectionFactoryForTest : public webrtc::PeerConnectionFactory {
  public:
   static rtc::scoped_refptr<PeerConnectionFactoryForTest>
   CreatePeerConnectionFactoryForTest() {
-    auto audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
-    auto audio_decoder_factory = webrtc::CreateBuiltinAudioDecoderFactory();
-    auto video_encoder_factory = webrtc::CreateBuiltinVideoEncoderFactory();
-    auto video_decoder_factory = webrtc::CreateBuiltinVideoDecoderFactory();
-
     PeerConnectionFactoryDependencies dependencies;
     dependencies.worker_thread = rtc::Thread::Current();
     dependencies.network_thread = rtc::Thread::Current();
     dependencies.signaling_thread = rtc::Thread::Current();
-
+    dependencies.task_queue_factory = CreateDefaultTaskQueueFactory();
+    cricket::MediaEngineDependencies media_deps;
+    media_deps.task_queue_factory = dependencies.task_queue_factory.get();
     // Use fake audio device module since we're only testing the interface
     // level, and using a real one could make tests flaky when run in parallel.
-    dependencies.media_engine = std::unique_ptr<cricket::MediaEngineInterface>(
-        cricket::WebRtcMediaEngineFactory::Create(
-            FakeAudioCaptureModule::Create(), audio_encoder_factory,
-            audio_decoder_factory, std::move(video_encoder_factory),
-            std::move(video_decoder_factory), nullptr,
-            webrtc::AudioProcessingBuilder().Create()));
-
+    media_deps.adm = FakeAudioCaptureModule::Create();
+    SetMediaEngineDefaults(&media_deps);
+    dependencies.media_engine =
+        cricket::CreateMediaEngine(std::move(media_deps));
     dependencies.call_factory = webrtc::CreateCallFactory();
-    dependencies.event_log_factory = webrtc::CreateRtcEventLogFactory();
+    dependencies.event_log_factory = absl::make_unique<RtcEventLogFactory>(
+        dependencies.task_queue_factory.get());
 
     return new rtc::RefCountedObject<PeerConnectionFactoryForTest>(
         std::move(dependencies));
@@ -2463,9 +2466,22 @@ TEST_P(PeerConnectionInterfaceTest, SetConfigurationChangesIceCheckInterval) {
   config = pc_->GetConfiguration();
   config.ice_check_min_interval = 100;
   EXPECT_TRUE(pc_->SetConfiguration(config));
-  PeerConnectionInterface::RTCConfiguration new_config =
-      pc_->GetConfiguration();
-  EXPECT_EQ(new_config.ice_check_min_interval, 100);
+  config = pc_->GetConfiguration();
+  EXPECT_EQ(config.ice_check_min_interval, 100);
+}
+
+TEST_P(PeerConnectionInterfaceTest,
+       SetConfigurationChangesSurfaceIceCandidatesOnIceTransportTypeChanged) {
+  PeerConnectionInterface::RTCConfiguration config;
+  config.surface_ice_candidates_on_ice_transport_type_changed = false;
+  CreatePeerConnection(config);
+  config = pc_->GetConfiguration();
+  EXPECT_FALSE(config.surface_ice_candidates_on_ice_transport_type_changed);
+
+  config.surface_ice_candidates_on_ice_transport_type_changed = true;
+  EXPECT_TRUE(pc_->SetConfiguration(config));
+  config = pc_->GetConfiguration();
+  EXPECT_TRUE(config.surface_ice_candidates_on_ice_transport_type_changed);
 }
 
 // Test that when SetConfiguration changes both the pool size and other
@@ -3445,30 +3461,6 @@ TEST_P(PeerConnectionInterfaceTest, CurrentAndPendingDescriptions) {
 
 // Tests that it won't crash when calling StartRtcEventLog or StopRtcEventLog
 // after the PeerConnection is closed.
-// This version tests the StartRtcEventLog version that receives a file.
-TEST_P(PeerConnectionInterfaceTest,
-       StartAndStopLoggingToFileAfterPeerConnectionClosed) {
-  CreatePeerConnection();
-  // The RtcEventLog will be reset when the PeerConnection is closed.
-  pc_->Close();
-
-  auto test_info = ::testing::UnitTest::GetInstance()->current_test_info();
-  std::string filename = webrtc::test::OutputPath() +
-                         test_info->test_case_name() + test_info->name();
-  rtc::PlatformFile file = rtc::CreatePlatformFile(filename);
-
-  constexpr int64_t max_size_bytes = 1024;
-
-  EXPECT_FALSE(pc_->StartRtcEventLog(file, max_size_bytes));
-  pc_->StopRtcEventLog();
-
-  // Cleanup.
-  rtc::ClosePlatformFile(file);
-  rtc::RemoveFile(filename);
-}
-
-// Tests that it won't crash when calling StartRtcEventLog or StopRtcEventLog
-// after the PeerConnection is closed.
 // This version tests the StartRtcEventLog version that receives an object
 // of type |RtcEventLogOutput|.
 TEST_P(PeerConnectionInterfaceTest,
@@ -3477,11 +3469,9 @@ TEST_P(PeerConnectionInterfaceTest,
   // The RtcEventLog will be reset when the PeerConnection is closed.
   pc_->Close();
 
-  rtc::PlatformFile file = 0;
-  int64_t max_size_bytes = 1024;
-  EXPECT_FALSE(pc_->StartRtcEventLog(
-      absl::make_unique<webrtc::RtcEventLogOutputFile>(file, max_size_bytes),
-      webrtc::RtcEventLog::kImmediateOutput));
+  EXPECT_FALSE(
+      pc_->StartRtcEventLog(absl::make_unique<webrtc::RtcEventLogOutputNull>(),
+                            webrtc::RtcEventLog::kImmediateOutput));
   pc_->StopRtcEventLog();
 }
 

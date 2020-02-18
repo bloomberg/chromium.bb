@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -116,9 +117,9 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
     const GURL& url) {
   std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
+  bool show_persistence_options = ShouldShowPersistenceOptions(apps);
   ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps),
-      /*show_remember_selection=*/false,
+      web_contents, std::move(apps), show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -161,21 +162,29 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case apps::mojom::AppType::kExtension:
       NOTREACHED();
   }
-  RecordUma(launch_name, app_type, close_reason, should_persist);
+  RecordUma(launch_name, app_type, close_reason, Source::kHttpOrHttps,
+            should_persist);
 }
 
 // static
 void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
                                        apps::mojom::AppType app_type,
                                        IntentPickerCloseReason close_reason,
+                                       Source source,
                                        bool should_persist) {
   PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
   Platform platform = GetDestinationPlatform(selected_app_package, action);
 
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
+  // TODO(crbug.com/985233) For now External Protocol Dialog is only querying
+  // ARC apps.
+  if (source == Source::kExternalProtocol) {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.ExternalProtocolDialog", action);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerAction", action);
 
-  UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
-                            platform);
+    UMA_HISTOGRAM_ENUMERATION("ChromeOS.Apps.IntentPickerDestinationPlatform",
+                              platform);
+  }
 }
 
 // static
@@ -194,7 +203,7 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
     std::vector<IntentPickerAppInfo> apps,
-    bool show_remember_selection,
+    bool show_persistence_options,
     IntentPickerResponse callback) {
   if (apps.empty())
     return;
@@ -206,8 +215,8 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   if (!browser)
     return;
   browser->window()->ShowIntentPickerBubble(std::move(apps),
-                                            /*show_stay_in_chrome=*/true,
-                                            show_remember_selection,
+                                            /*enable_stay_in_chrome=*/true,
+                                            show_persistence_options,
                                             std::move(callback));
 }
 
@@ -284,7 +293,8 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
       return Platform::ARC;
     case PickerAction::PWA_APP_PRESSED:
       return Platform::PWA;
-    case PickerAction::PICKER_ERROR:
+    case PickerAction::ERROR_BEFORE_PICKER:
+    case PickerAction::ERROR_AFTER_PICKER:
     case PickerAction::DIALOG_DEACTIVATED:
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:
@@ -309,7 +319,7 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
   const extensions::Extension* extension =
       extensions::util::GetInstalledPwaForUrl(
           web_contents->GetBrowserContext(), url,
-          extensions::LAUNCH_CONTAINER_WINDOW);
+          extensions::LaunchContainer::kLaunchContainerWindow);
 
   if (extension) {
     auto* menu_manager =
@@ -331,6 +341,25 @@ void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
     web_contents->GetController().GoBack();
   else
     web_contents->ClosePage();
+}
+
+// static
+bool AppsNavigationThrottle::ContainsOnlyPwas(
+    const std::vector<apps::IntentPickerAppInfo>& apps) {
+  return std::all_of(apps.begin(), apps.end(),
+                     [](const apps::IntentPickerAppInfo& app_info) {
+                       return app_info.type == apps::mojom::AppType::kWeb;
+                     });
+}
+
+// static
+bool AppsNavigationThrottle::ShouldShowPersistenceOptions(
+    std::vector<apps::IntentPickerAppInfo>& apps) {
+  // There is no support persistence for PWA so the selection should be hidden
+  // if only PWAs are present.
+  // TODO(crbug.com/826982): Provide the "Remember my choice" option when the
+  // app registry can support persistence for PWAs.
+  return !ContainsOnlyPwas(apps);
 }
 
 bool AppsNavigationThrottle::ShouldDeferNavigationForArc(
@@ -359,11 +388,13 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
       ui_displayed_ = false;
       IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
       break;
-    case PickerShowState::kPopOut:
+    case PickerShowState::kPopOut: {
+      bool show_persistence_options = ShouldShowPersistenceOptions(apps);
       ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
-                                    ShouldShowRememberSelection(),
+                                    show_persistence_options,
                                     std::move(callback));
       break;
+    }
     default:
       NOTREACHED();
   }
@@ -385,10 +416,6 @@ IntentPickerResponse AppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool AppsNavigationThrottle::ShouldShowRememberSelection() {
-  return false;
-}
-
 bool AppsNavigationThrottle::navigate_from_link() {
   return navigate_from_link_;
 }
@@ -399,8 +426,10 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
     IntentPickerCloseReason close_reason,
     bool should_persist) {
   switch (close_reason) {
-    case IntentPickerCloseReason::PICKER_ERROR:
-      return PickerAction::PICKER_ERROR;
+    case IntentPickerCloseReason::ERROR_BEFORE_PICKER:
+      return PickerAction::ERROR_BEFORE_PICKER;
+    case IntentPickerCloseReason::ERROR_AFTER_PICKER:
+      return PickerAction::ERROR_AFTER_PICKER;
     case IntentPickerCloseReason::DIALOG_DEACTIVATED:
       return PickerAction::DIALOG_DEACTIVATED;
     case IntentPickerCloseReason::PREFERRED_APP_FOUND:

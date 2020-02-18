@@ -5,6 +5,8 @@
 '''A baseclass for simple gatherers based on regular expressions.
 '''
 
+from __future__ import print_function
+
 import re
 
 from grit.gather import skeleton_gatherer
@@ -30,7 +32,7 @@ class RegexpGatherer(skeleton_gatherer.SkeletonGatherer):
   # Contextualization elements. Used for adding additional information
   # to the message bundle description string from RC files.
   def AddDescriptionElement(self, string):
-    if self.DescriptionMapping_.has_key(string):
+    if string in self.DescriptionMapping_:
       description = self.DescriptionMapping_[string]
     else:
       description = string

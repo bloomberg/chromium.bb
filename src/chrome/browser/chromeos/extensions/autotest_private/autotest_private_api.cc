@@ -11,17 +11,21 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
+#include "ash/wm/wm_event.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -45,6 +49,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/policy_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -67,7 +72,7 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -80,11 +85,16 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/filename_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 
 namespace extensions {
 namespace {
@@ -209,6 +219,86 @@ std::string SetWhitelistedPref(Profile* profile,
   return std::string();
 }
 
+// Returns the ARC app window that associates with |package_name|. Note there
+// might be more than 1 windows that have the same package name. This function
+// just returns the first window it finds.
+aura::Window* GetArcAppWindow(const std::string& package_name) {
+  for (auto* window : ChromeLauncherController::instance()->GetArcWindows()) {
+    std::string* pkg_name = window->GetProperty(ash::kArcPackageNameKey);
+    if (pkg_name && *pkg_name == package_name)
+      return window;
+  }
+  return nullptr;
+}
+
+// Gets expected window state type according to |event_type|.
+ash::WindowStateType GetExpectedWindowState(
+    api::autotest_private::WMEventType event_type) {
+  switch (event_type) {
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
+      return ash::WindowStateType::kNormal;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+      return ash::WindowStateType::kMaximized;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
+      return ash::WindowStateType::kMinimized;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
+      return ash::WindowStateType::kFullscreen;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
+      return ash::WindowStateType::kLeftSnapped;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
+      return ash::WindowStateType::kRightSnapped;
+    default:
+      NOTREACHED();
+      return ash::WindowStateType::kNormal;
+  }
+}
+
+ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
+  switch (event_type) {
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
+      return ash::WMEventType::WM_EVENT_NORMAL;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
+      return ash::WMEventType::WM_EVENT_MAXIMIZE;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
+      return ash::WMEventType::WM_EVENT_MINIMIZE;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
+      return ash::WMEventType::WM_EVENT_FULLSCREEN;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
+      return ash::WMEventType::WM_EVENT_SNAP_LEFT;
+    case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
+      return ash::WMEventType::WM_EVENT_SNAP_RIGHT;
+    default:
+      NOTREACHED();
+      return ash::WMEventType::WM_EVENT_NORMAL;
+  }
+}
+
+api::autotest_private::WindowStateType ToWindowStateType(
+    ash::WindowStateType state_type) {
+  switch (state_type) {
+    case ash::WindowStateType::kNormal:
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NORMAL;
+    case ash::WindowStateType::kMinimized:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_MINIMIZED;
+    case ash::WindowStateType::kMaximized:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_MAXIMIZED;
+    case ash::WindowStateType::kFullscreen:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_FULLSCREEN;
+    case ash::WindowStateType::kLeftSnapped:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_LEFTSNAPPED;
+    case ash::WindowStateType::kRightSnapped:
+      return api::autotest_private::WindowStateType::
+          WINDOW_STATE_TYPE_RIGHTSNAPPED;
+    default:
+      NOTREACHED();
+      return api::autotest_private::WindowStateType::WINDOW_STATE_TYPE_NONE;
+  }
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -321,6 +411,26 @@ ExtensionFunction::ResponseAction AutotestPrivateLockScreenFunction::Run() {
 
   chromeos::SessionManagerClient::Get()->RequestLockScreen();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetAllEnterprisePoliciesFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetAllEnterprisePoliciesFunction::
+    ~AutotestPrivateGetAllEnterprisePoliciesFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
+  DVLOG(1) << "AutotestPrivateGetAllEnterprisePoliciesFunction";
+
+  base::Value all_policies_array = policy::GetAllPolicyValuesAsDictionary(
+      browser_context(), true /* with_user_policies */,
+      false /* convert_values */, true /* with_device_data */,
+      false /* pretty_print */, true /* convert_types */);
+
+  return RespondNow(OneArgument(
+      base::Value::ToUniquePtrValue(std::move(all_policies_array))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -575,22 +685,12 @@ ExtensionFunction::ResponseAction
 AutotestPrivateGetVisibleNotificationsFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetVisibleNotificationsFunction";
 
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                            &controller_);
-  controller_->GetActiveNotifications(base::BindOnce(
-      &AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications,
-      this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetVisibleNotificationsFunction::OnGotNotifications(
-    const std::vector<message_center::Notification>& notifications) {
+  message_center::NotificationList::Notifications notification_set =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
   auto values = std::make_unique<base::ListValue>();
-  for (const auto& notification : notifications) {
-    values->Append(MakeDictionaryFromNotification(notification));
-  }
-  Respond(OneArgument(std::move(values)));
+  for (auto* notification : notification_set)
+    values->Append(MakeDictionaryFromNotification(*notification));
+  return RespondNow(OneArgument(std::move(values)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -790,30 +890,37 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcAppFunction::Run() {
   if (!prefs)
     return RespondNow(Error("ARC is not available"));
 
-  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      prefs->GetApp(params->app_id);
-  if (!app_info)
-    return RespondNow(Error("App is not available"));
+  std::unique_ptr<base::DictionaryValue> app_value;
+  {
+    const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs->GetApp(params->app_id);
+    if (!app_info)
+      return RespondNow(Error("App is not available"));
 
-  auto app_value = std::make_unique<base::DictionaryValue>();
+    app_value = std::make_unique<base::DictionaryValue>();
 
-  app_value->SetKey("name", base::Value(app_info->name));
-  app_value->SetKey("packageName", base::Value(app_info->package_name));
-  app_value->SetKey("activity", base::Value(app_info->activity));
-  app_value->SetKey("intentUri", base::Value(app_info->intent_uri));
-  app_value->SetKey("iconResourceId", base::Value(app_info->icon_resource_id));
-  app_value->SetKey("lastLaunchTime",
-                    base::Value(app_info->last_launch_time.ToJsTime()));
-  app_value->SetKey("installTime",
-                    base::Value(app_info->install_time.ToJsTime()));
-  app_value->SetKey("sticky", base::Value(app_info->sticky));
-  app_value->SetKey("notificationsEnabled",
-                    base::Value(app_info->notifications_enabled));
-  app_value->SetKey("ready", base::Value(app_info->ready));
-  app_value->SetKey("suspended", base::Value(app_info->suspended));
-  app_value->SetKey("showInLauncher", base::Value(app_info->show_in_launcher));
-  app_value->SetKey("shortcut", base::Value(app_info->shortcut));
-  app_value->SetKey("launchable", base::Value(app_info->launchable));
+    app_value->SetKey("name", base::Value(std::move(app_info->name)));
+    app_value->SetKey("packageName",
+                      base::Value(std::move(app_info->package_name)));
+    app_value->SetKey("activity", base::Value(std::move(app_info->activity)));
+    app_value->SetKey("intentUri",
+                      base::Value(std::move(app_info->intent_uri)));
+    app_value->SetKey("iconResourceId",
+                      base::Value(std::move(app_info->icon_resource_id)));
+    app_value->SetKey("lastLaunchTime",
+                      base::Value(app_info->last_launch_time.ToJsTime()));
+    app_value->SetKey("installTime",
+                      base::Value(app_info->install_time.ToJsTime()));
+    app_value->SetKey("sticky", base::Value(app_info->sticky));
+    app_value->SetKey("notificationsEnabled",
+                      base::Value(app_info->notifications_enabled));
+    app_value->SetKey("ready", base::Value(app_info->ready));
+    app_value->SetKey("suspended", base::Value(app_info->suspended));
+    app_value->SetKey("showInLauncher",
+                      base::Value(app_info->show_in_launcher));
+    app_value->SetKey("shortcut", base::Value(app_info->shortcut));
+    app_value->SetKey("launchable", base::Value(app_info->launchable));
+  }
 
   return RespondNow(OneArgument(std::move(app_value)));
 }
@@ -836,26 +943,31 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
   if (!prefs)
     return RespondNow(Error("ARC is not available"));
 
-  const std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
-      prefs->GetPackage(params->package_name);
-  if (!package_info)
-    return RespondNow(Error("Package is not available"));
+  std::unique_ptr<base::DictionaryValue> package_value;
+  {
+    const std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
+        prefs->GetPackage(params->package_name);
+    if (!package_info)
+      return RespondNow(Error("Package is not available"));
 
-  auto package_value = std::make_unique<base::DictionaryValue>();
-  package_value->SetKey("packageName", base::Value(package_info->package_name));
-  package_value->SetKey("packageVersion",
-                        base::Value(package_info->package_version));
-  package_value->SetKey(
-      "lastBackupAndroidId",
-      base::Value(base::NumberToString(package_info->last_backup_android_id)));
-  package_value->SetKey("lastBackupTime",
-                        base::Value(base::Time::FromDeltaSinceWindowsEpoch(
-                                        base::TimeDelta::FromMicroseconds(
-                                            package_info->last_backup_time))
-                                        .ToJsTime()));
-  package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
-  package_value->SetKey("system", base::Value(package_info->system));
-  package_value->SetKey("vpnProvider", base::Value(package_info->vpn_provider));
+    package_value = std::make_unique<base::DictionaryValue>();
+    package_value->SetKey("packageName",
+                          base::Value(std::move(package_info->package_name)));
+    package_value->SetKey("packageVersion",
+                          base::Value(package_info->package_version));
+    package_value->SetKey("lastBackupAndroidId",
+                          base::Value(base::NumberToString(
+                              package_info->last_backup_android_id)));
+    package_value->SetKey("lastBackupTime",
+                          base::Value(base::Time::FromDeltaSinceWindowsEpoch(
+                                          base::TimeDelta::FromMicroseconds(
+                                              package_info->last_backup_time))
+                                          .ToJsTime()));
+    package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
+    package_value->SetKey("system", base::Value(package_info->system));
+    package_value->SetKey("vpnProvider",
+                          base::Value(package_info->vpn_provider));
+  }
   return RespondNow(OneArgument(std::move(package_value)));
 }
 
@@ -1142,7 +1254,7 @@ void AutotestPrivateTakeScreenshotFunction::ScreenshotTaken(
     std::string base64Png(png_data->front(),
                           png_data->front() + png_data->size());
     base::Base64Encode(base64Png, &base64Png);
-    Respond(OneArgument(std::make_unique<base::Value>(base64Png)));
+    Respond(OneArgument(std::make_unique<base::Value>(std::move(base64Png))));
   } else {
     Respond(Error(base::StrCat(
         {"Error taking screenshot ",
@@ -1206,11 +1318,11 @@ void AutotestPrivateGetPrinterListFunction::OnEnterprisePrintersInitialized() {
     std::vector<chromeos::Printer> printer_list =
         printers_manager_->GetPrinters(type);
     for (const auto& printer : printer_list) {
-      vresults.push_back(base::Value(base::Value::Type::DICTIONARY));
-      base::Value& result = vresults.back();
+      base::Value result(base::Value::Type::DICTIONARY);
       result.SetKey("printerName", base::Value(printer.display_name()));
       result.SetKey("printerId", base::Value(printer.id()));
       result.SetKey("printerType", base::Value(GetPrinterType(type)));
+      vresults.push_back(std::move(result));
     }
   }
   // We have to respond in separate task, because it will cause a destruction of
@@ -1327,8 +1439,7 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError() {
 
 AutotestPrivateSetAssistantEnabledFunction::
     AutotestPrivateSetAssistantEnabledFunction() {
-  auto* connection = content::ServiceManagerConnection::GetForProcess();
-  assistant_state_.Init(connection->GetConnector());
+  assistant_state_.Init(content::GetSystemConnector());
   assistant_state_.AddObserver(this);
 }
 
@@ -1581,9 +1692,11 @@ AutotestPrivateSetTabletModeEnabledFunction::Run() {
   std::unique_ptr<api::autotest_private::SetTabletModeEnabled::Params> params(
       api::autotest_private::SetTabletModeEnabled::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  ash::TabletMode::Waiter waiter(params->enabled);
   ash::TabletMode::Get()->SetEnabledForTest(params->enabled);
+  waiter.Wait();
   return RespondNow(OneArgument(
-      std::make_unique<base::Value>(ash::TabletMode::Get()->IsEnabled())));
+      std::make_unique<base::Value>(ash::TabletMode::Get()->InTabletMode())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1605,10 +1718,6 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
     return RespondNow(Error(base::StrCat(
@@ -1616,16 +1725,9 @@ AutotestPrivateGetShelfAutoHideBehaviorFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->GetAutoHideBehavior(
-      display_id,
-      base::BindOnce(&AutotestPrivateGetShelfAutoHideBehaviorFunction::
-                         OnGetShelfAutoHideBehaviorCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetShelfAutoHideBehaviorFunction::
-    OnGetShelfAutoHideBehaviorCompleted(ash::ShelfAutoHideBehavior behavior) {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::ShelfAutoHideBehavior behavior =
+      ash::GetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id);
   std::string str_behavior;
   switch (behavior) {
     case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS:
@@ -1635,10 +1737,11 @@ void AutotestPrivateGetShelfAutoHideBehaviorFunction::
       str_behavior = "never";
       break;
     case ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN:
-      str_behavior = "hidden";
-      break;
+      // SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported by shelf_prefs.cc
+      return RespondNow(Error("SHELF_AUTO_HIDE_ALWAYS_HIDDEN not supported"));
   }
-  Respond(OneArgument(std::make_unique<base::Value>(str_behavior)));
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(std::move(str_behavior))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1660,21 +1763,15 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
           *args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   ash::ShelfAutoHideBehavior behavior;
   if (params->behavior == "always") {
     behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   } else if (params->behavior == "never") {
     behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
-  } else if (params->behavior == "hidden") {
-    behavior = ash::ShelfAutoHideBehavior::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
   } else {
-    return RespondNow(Error(base::StrCat(
-        {"Invalid behavior; expected 'always', 'never' or 'hidden', got ",
-         params->behavior})));
+    return RespondNow(Error(
+        base::StrCat({"Invalid behavior; expected 'always', 'never', got ",
+                      params->behavior})));
   }
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
@@ -1683,17 +1780,9 @@ AutotestPrivateSetShelfAutoHideBehaviorFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->SetAutoHideBehavior(
-      display_id, behavior,
-      base::BindOnce(&AutotestPrivateSetShelfAutoHideBehaviorFunction::
-                         OnSetShelfAutoHideBehaviorCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateSetShelfAutoHideBehaviorFunction::
-    OnSetShelfAutoHideBehaviorCompleted() {
-  Respond(NoArguments());
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::SetShelfAutoHideBehaviorPref(profile->GetPrefs(), display_id, behavior);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1714,10 +1803,6 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
       api::autotest_private::GetShelfAlignment::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
     return RespondNow(Error(base::StrCat(
@@ -1725,15 +1810,9 @@ AutotestPrivateGetShelfAlignmentFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->GetAlignment(
-      display_id, base::BindOnce(&AutotestPrivateGetShelfAlignmentFunction::
-                                     OnGetShelfAlignmentCompleted,
-                                 this));
-  return RespondLater();
-}
-
-void AutotestPrivateGetShelfAlignmentFunction::OnGetShelfAlignmentCompleted(
-    ash::ShelfAlignment alignment) {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::ShelfAlignment alignment =
+      ash::GetShelfAlignmentPref(profile->GetPrefs(), display_id);
   api::autotest_private::ShelfAlignmentType alignment_type;
   switch (alignment) {
     case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM:
@@ -1749,11 +1828,10 @@ void AutotestPrivateGetShelfAlignmentFunction::OnGetShelfAlignmentCompleted(
           api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT;
       break;
     case ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      alignment_type = api::autotest_private::ShelfAlignmentType::
-          SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED;
-      break;
+      // SHELF_ALIGNMENT_BOTTOM_LOCKED not supported by shelf_prefs.cc
+      return RespondNow(Error("SHELF_ALIGNMENT_BOTTOM_LOCKED not supported"));
   }
-  Respond(OneArgument(std::make_unique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       api::autotest_private::ToString(alignment_type))));
 }
 
@@ -1775,10 +1853,6 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
       api::autotest_private::SetShelfAlignment::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(ash::mojom::kServiceName, &shelf_test_api_);
-
   ash::ShelfAlignment alignment;
   switch (params->alignment) {
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_BOTTOM:
@@ -1790,14 +1864,10 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_RIGHT:
       alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_RIGHT;
       break;
-    case api::autotest_private::ShelfAlignmentType::
-        SHELF_ALIGNMENT_TYPE_BOTTOMLOCKED:
-      alignment = ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED;
-      break;
     case api::autotest_private::ShelfAlignmentType::SHELF_ALIGNMENT_TYPE_NONE:
       return RespondNow(
-          Error("Unsupported None alignment; expected 'Bottom', 'Left', "
-                "'Right' or 'BottomLocked'"));
+          Error("Invalid None alignment; expected 'Bottom', 'Left', or "
+                "'Right'"));
   }
   int64_t display_id;
   if (!base::StringToInt64(params->display_id, &display_id)) {
@@ -1806,16 +1876,9 @@ AutotestPrivateSetShelfAlignmentFunction::Run() {
          params->display_id})));
   }
 
-  shelf_test_api_->SetAlignment(
-      display_id, alignment,
-      base::BindOnce(&AutotestPrivateSetShelfAlignmentFunction::
-                         OnSetShelfAlignmentCompleted,
-                     this));
-  return RespondLater();
-}
-
-void AutotestPrivateSetShelfAlignmentFunction::OnSetShelfAlignmentCompleted() {
-  Respond(NoArguments());
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  ash::SetShelfAlignmentPref(profile->GetPrefs(), display_id, alignment);
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1840,6 +1903,103 @@ AutotestPrivateShowVirtualKeyboardIfEnabledFunction::Run() {
       ->GetInputMethod()
       ->ShowVirtualKeyboardIfEnabled();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetArcAppWindowStateFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetArcAppWindowStateFunction::
+    AutotestPrivateSetArcAppWindowStateFunction() = default;
+AutotestPrivateSetArcAppWindowStateFunction::
+    ~AutotestPrivateSetArcAppWindowStateFunction() = default;
+
+class AutotestPrivateSetArcAppWindowStateFunction::WindowStateChangeObserver
+    : public aura::WindowObserver {
+ public:
+  WindowStateChangeObserver(aura::Window* window,
+                            ash::WindowStateType expected_type,
+                            base::OnceCallback<void(bool)> callback)
+      : expected_type_(expected_type), callback_(std::move(callback)) {
+    DCHECK_NE(window->GetProperty(ash::kWindowStateTypeKey), expected_type_);
+    scoped_observer_.Add(window);
+  }
+  ~WindowStateChangeObserver() override {}
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    if (key == ash::kWindowStateTypeKey &&
+        window->GetProperty(ash::kWindowStateTypeKey) == expected_type_) {
+      scoped_observer_.RemoveAll();
+      std::move(callback_).Run(/*success=*/true);
+    }
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    DCHECK(scoped_observer_.IsObserving(window));
+    scoped_observer_.RemoveAll();
+    std::move(callback_).Run(/*success=*/false);
+  }
+
+ private:
+  ash::WindowStateType expected_type_;
+  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  base::OnceCallback<void(bool)> callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
+};
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetArcAppWindowStateFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetArcAppWindowState::Params> params(
+      api::autotest_private::SetArcAppWindowState::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateSetArcAppWindowStateFunction "
+           << params->package_name;
+
+  aura::Window* arc_window = GetArcAppWindow(params->package_name);
+  if (!arc_window) {
+    return RespondNow(Error(base::StrCat(
+        {"No ARC app window is found for ", params->package_name})));
+  }
+
+  ash::WindowStateType expected_state =
+      GetExpectedWindowState(params->change.event_type);
+  if (arc_window->GetProperty(ash::kWindowStateTypeKey) == expected_state) {
+    if (params->change.fail_if_no_change &&
+        *(params->change.fail_if_no_change)) {
+      return RespondNow(Error(
+          "The ARC app window is already in the expected window state! "));
+    } else {
+      return RespondNow(OneArgument(std::make_unique<base::Value>(
+          api::autotest_private::ToString(ToWindowStateType(expected_state)))));
+    }
+  }
+
+  window_state_observer_ = std::make_unique<WindowStateChangeObserver>(
+      arc_window, expected_state,
+      base::BindOnce(
+          &AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged,
+          this, expected_state));
+  const ash::WMEvent event(ToWMEventType(params->change.event_type));
+  ash::WindowState::Get(arc_window)->OnWMEvent(&event);
+
+  return RespondLater();
+}
+
+void AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged(
+    ash::WindowStateType expected_type,
+    bool success) {
+  if (!success) {
+    Respond(Error(
+        "ARC app window is destroyed while waiting for its state change! "));
+  } else {
+    Respond(OneArgument(std::make_unique<base::Value>(
+        api::autotest_private::ToString(ToWindowStateType(expected_type)))));
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

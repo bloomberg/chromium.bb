@@ -25,6 +25,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -496,7 +497,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
   }
 }
 
-bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
+bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) {
 #if defined(OS_ANDROID)
   return PlatformIsFullscreenForTabOrPending(web_contents);
 #else
@@ -504,8 +505,7 @@ bool Shell::IsFullscreenForTabOrPending(const WebContents* web_contents) const {
 #endif
 }
 
-blink::WebDisplayMode Shell::GetDisplayMode(
-    const WebContents* web_contents) const {
+blink::WebDisplayMode Shell::GetDisplayMode(const WebContents* web_contents) {
   // TODO: should return blink::WebDisplayModeFullscreen wherever user puts
   // a browser window into fullscreen (not only in case of renderer-initiated
   // fullscreen mode): crbug.com/476874.
@@ -524,7 +524,7 @@ void Shell::CloseContents(WebContents* source) {
   Close();
 }
 
-bool Shell::CanOverscrollContent() const {
+bool Shell::CanOverscrollContent() {
 #if defined(USE_AURA)
   return true;
 #else
@@ -618,13 +618,15 @@ bool Shell::ShouldAllowRunningInsecureContent(
   return allowed_per_prefs || allowed_by_test;
 }
 
-gfx::Size Shell::EnterPictureInPicture(content::WebContents* web_contents,
-                                       const viz::SurfaceId& surface_id,
-                                       const gfx::Size& natural_size) {
-  // During tests, returning a fake window size (same aspect ratio) to pretend
-  // the window was created and allow tests to run accordingly.
-  return switches::IsRunWebTestsSwitchPresent() ? natural_size
-                                                : gfx::Size(0, 0);
+PictureInPictureResult Shell::EnterPictureInPicture(
+    content::WebContents* web_contents,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  // During tests, returning success to pretend the window was created and allow
+  // tests to run accordingly.
+  if (!switches::IsRunWebTestsSwitchPresent())
+    return PictureInPictureResult::kNotSupported;
+  return PictureInPictureResult::kSuccess;
 }
 
 bool Shell::ShouldResumeRequestsForCreatedWindow() {

@@ -9,13 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/mojo_embedder/mojo_embedder_export.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -123,7 +124,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
                              bool hit_test_data_changed,
                              bool show_hit_test_borders) override;
   void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
   void ForceAllocateNewId() override;
@@ -137,7 +138,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& begin_frame_args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const viz::FrameTimingDetailsMap& timing_details) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
@@ -187,7 +188,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   // Histogram metrics used to record
   // GraphicsPipeline.ClientName.SubmitCompositorFrameAfterBeginFrame
   base::HistogramBase* const submit_begin_frame_histogram_;
-  base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
+  base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_{this};
 };
 
 }  // namespace mojo_embedder

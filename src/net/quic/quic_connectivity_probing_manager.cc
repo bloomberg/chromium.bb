@@ -8,7 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
 
 namespace net {
@@ -18,11 +18,10 @@ namespace {
 // Default to 2 seconds timeout as the maximum timeout.
 const int64_t kMaxProbingTimeoutMs = 2000;
 
-base::Value NetLogStartProbingCallback(
+base::Value NetLogStartProbingParams(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress* peer_address,
-    base::TimeDelta initial_timeout,
-    NetLogCaptureMode capture_mode) {
+    base::TimeDelta initial_timeout) {
   base::DictionaryValue dict;
   dict.SetKey("network", NetLogNumberValue(network));
   dict.SetString("peer address", peer_address->ToString());
@@ -31,11 +30,10 @@ base::Value NetLogStartProbingCallback(
   return std::move(dict);
 }
 
-base::Value NetLogProbeReceivedCallback(
+base::Value NetLogProbeReceivedParams(
     NetworkChangeNotifier::NetworkHandle network,
     const IPEndPoint* self_address,
-    const quic::QuicSocketAddress* peer_address,
-    NetLogCaptureMode capture_mode) {
+    const quic::QuicSocketAddress* peer_address) {
   base::DictionaryValue dict;
   dict.SetKey("network", NetLogNumberValue(network));
   dict.SetString("self address", self_address->ToString());
@@ -43,10 +41,9 @@ base::Value NetLogProbeReceivedCallback(
   return std::move(dict);
 }
 
-base::Value NetLogProbingDestinationCallback(
+base::Value NetLogProbingDestinationParams(
     NetworkChangeNotifier::NetworkHandle network,
-    const quic::QuicSocketAddress* peer_address,
-    NetLogCaptureMode capture_mode) {
+    const quic::QuicSocketAddress* peer_address) {
   base::DictionaryValue dict;
   dict.SetString("network", base::NumberToString(network));
   dict.SetString("peer address", peer_address->ToString());
@@ -63,8 +60,7 @@ QuicConnectivityProbingManager::QuicConnectivityProbingManager(
       network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       retry_count_(0),
       probe_start_time_(base::TimeTicks()),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   retransmit_timer_.SetTaskRunner(task_runner_);
 }
 
@@ -103,9 +99,9 @@ void QuicConnectivityProbingManager::CancelProbing(
 void QuicConnectivityProbingManager::CancelProbingIfAny() {
   if (is_running_) {
     net_log_.AddEvent(
-        NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_CANCEL_PROBING,
-        base::Bind(&NetLogProbingDestinationCallback, network_,
-                   &peer_address_));
+        NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_CANCEL_PROBING, [&] {
+          return NetLogProbingDestinationParams(network_, &peer_address_);
+        });
   }
   is_running_ = false;
   network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
@@ -150,9 +146,10 @@ void QuicConnectivityProbingManager::StartProbing(
   initial_timeout_ = initial_timeout;
 
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_START_PROBING,
-      base::Bind(&NetLogStartProbingCallback, network_, &peer_address_,
-                 initial_timeout_));
+      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_START_PROBING, [&] {
+        return NetLogStartProbingParams(network_, &peer_address_,
+                                        initial_timeout_);
+      });
 
   reader_->StartReading();
   SendConnectivityProbingPacket(initial_timeout_);
@@ -183,9 +180,10 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
   }
 
   net_log_.AddEvent(
-      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED,
-      base::Bind(&NetLogProbeReceivedCallback, network_, &local_address,
-                 &peer_address_));
+      NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED, [&] {
+        return NetLogProbeReceivedParams(network_, &local_address,
+                                         &peer_address_);
+      });
 
   UMA_HISTOGRAM_COUNTS_100("Net.QuicSession.ProbingRetryCountUntilSuccess",
                            retry_count_);
@@ -202,9 +200,9 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
 
 void QuicConnectivityProbingManager::SendConnectivityProbingPacket(
     base::TimeDelta timeout) {
-  net_log_.AddEvent(
+  net_log_.AddEventWithInt64Params(
       NetLogEventType::QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_SENT,
-      NetLog::Int64Callback("sent_count", retry_count_));
+      "sent_count", retry_count_);
   if (!delegate_->OnSendConnectivityProbingPacket(writer_.get(),
                                                   peer_address_)) {
     NotifyDelegateProbeFailed();

@@ -43,13 +43,13 @@ Here are some examples:
 
 Binary-Size: Increase is due to translations and so cannot be avoided.
 Binary-Size: Increase is due to new images, which are already optimally encoded.
-Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring.
-    It should go away once the "old way" is removed.
+Binary-Size: Increase is temporary due to a "new way" / "old way" refactoring. \
+It should go away once the "old way" is removed.
 Binary-Size: Increase is temporary and will be reverted before next branch cut.
 Binary-Size: Increase needed to reduce RAM of a common user flow.
 Binary-Size: Increase needed to reduce runtime of a common user flow.
-Binary-Size: Increase needed to implement a feature, and I've already spent a
-    non-trivial amount of time trying to reduce its size.
+Binary-Size: Increase needed to implement a feature, and I've already spent a \
+non-trivial amount of time trying to reduce its size.
 """
 
 
@@ -237,7 +237,14 @@ PASSING:
   if failing_deltas:
     checks_text += _FAILURE_GUIDANCE
 
-  status_code = 1 if failing_deltas and not is_roller else 0
+  status_code = int(bool(failing_deltas))
+
+  # Give rollers a free pass, except for mutable constants.
+  # Mutable constants are rare, and other regressions are generally noticed in
+  # size graphs and can be investigated after-the-fact.
+  if is_roller and mutable_constants_delta not in failing_deltas:
+    status_code = 0
+
   summary = '<br>' + '<br>'.join(resource_sizes_lines)
   if 'Empty Resource Sizes Diff' in summary:
     summary = '<br>No size metrics were affected.'

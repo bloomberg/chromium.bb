@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
-#include "net/third_party/quiche/src/quic/core/proto/source_address_token.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
+#include "net/third_party/quiche/src/quic/core/proto/source_address_token_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_handshaker.h"
 #include "net/third_party/quiche/src/quic/core/quic_crypto_server_stream.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
@@ -152,10 +152,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   void FinishSendServerConfigUpdate(bool ok,
                                     const CryptoHandshakeMessage& message);
 
-  // Returns a new ConnectionId to be used for statelessly rejected connections
-  // if |use_stateless_rejects| is true. Returns 0 otherwise.
-  QuicConnectionId GenerateConnectionIdForReject(bool use_stateless_rejects);
-
   // Returns the QuicTransportVersion of the connection.
   QuicTransportVersion transport_version() const {
     return session_->connection()->transport_version();
@@ -208,9 +204,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerHandshaker
   // Contains any source address tokens which were present in the CHLO.
   SourceAddressTokens previous_source_address_tokens_;
 
-  // True if client attempts 0-rtt handshake (which can succeed or fail). If
-  // stateless rejects are used, this variable will be false for the stateless
-  // rejected connection and true for subsequent connections.
+  // True if client attempts 0-rtt handshake (which can succeed or fail).
   bool zero_rtt_attempted_;
 
   // Size of the packet containing the most recently received CHLO.

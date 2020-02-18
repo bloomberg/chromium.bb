@@ -4,7 +4,7 @@
 */
 'use strict';
 
-import RecommendedOptions from './recommended-options.js';
+import {RecommendedOptions} from './recommended-options.js';
 import {STORE} from './element-base.js';
 import {UPDATE} from './simple-redux.js';
 import {afterRender} from './utils.js';
@@ -46,7 +46,6 @@ suite('recommended-options', function() {
       ],
     }));
     const rec = await fixture();
-    rec.ready();
     STORE.dispatch(UPDATE('', {
       test: RecommendedOptions.buildState({
         options: ['aaa', 'bbb', 'ccc'],
@@ -99,16 +98,13 @@ suite('recommended-options', function() {
       ],
     }));
     const rec = await fixture();
-    STORE.dispatch(UPDATE('', {
-      optionRecommendations: undefined,
-    }));
     await afterRender();
-    rec.ready();
     STORE.dispatch(UPDATE('', {
       test: RecommendedOptions.buildState({
         options: ['aaa', 'bbb', 'ccc'],
       }),
     }));
+    await afterRender();
     let state = STORE.getState().test;
     assert.deepEqual(['ccc', 'bbb'], state.recommended.optionValues);
 

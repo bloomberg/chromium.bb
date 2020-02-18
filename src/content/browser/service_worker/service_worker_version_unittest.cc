@@ -1263,18 +1263,19 @@ TEST_F(ServiceWorkerVersionTest,
       0,
       helper_->mock_render_process_host()->foreground_service_worker_count());
 
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  registration_->SetActiveVersion(version_);
+
   // Add a controllee, but don't begin the navigation commit yet.  This will
   // cause the client to have an invalid process id like we see in real
   // navigations.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  registration_->SetActiveVersion(version_);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
+      CreateProviderHostAndInfoForWindow(helper_->context()->AsWeakPtr(),
+                                         /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::PreCreateNavigationHost(
-          helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,
-          FrameTreeNode::kFrameTreeNodeInvalidId, &provider_info);
-  remote_endpoint.BindForWindow(std::move(provider_info));
+      std::move(host_and_info->host);
+  remote_endpoint.BindForWindow(std::move(host_and_info->info));
   host->UpdateUrls(registration_->scope(), registration_->scope());
   host->SetControllerRegistration(registration_,
                                   false /* notify_controllerchange */);
@@ -1470,122 +1471,6 @@ TEST_F(ServiceWorkerVersionTest, FailToStart_RestartStalledWorker) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
   EXPECT_TRUE(has_stopped);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-}
-
-class ServiceWorkerNavigationHintUMATest : public ServiceWorkerVersionTest {
- protected:
-  ServiceWorkerNavigationHintUMATest() : ServiceWorkerVersionTest() {}
-
-  void StartWorker(ServiceWorkerMetrics::EventType purpose) {
-    base::Optional<blink::ServiceWorkerStatusCode> status;
-    base::RunLoop run_loop;
-    version_->StartWorker(
-        purpose, ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
-  }
-
-  void StopWorker() {
-    bool has_stopped = false;
-    base::RunLoop run_loop;
-    version_->StopWorker(VerifyCalled(&has_stopped, run_loop.QuitClosure()));
-    run_loop.Run();
-    EXPECT_TRUE(has_stopped);
-  }
-
-  static const char kStartHintPrecision[];
-
-  base::HistogramTester histogram_tester_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHintUMATest);
-};
-
-const char ServiceWorkerNavigationHintUMATest::kStartHintPrecision[] =
-    "ServiceWorker.StartHintPrecision";
-
-TEST_F(ServiceWorkerNavigationHintUMATest, Precision) {
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  StopWorker();
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 0);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 1);
-
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::MESSAGE);
-  StopWorker();
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 0);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
-
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
-  StopWorker();
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 1);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
-
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_SUB_FRAME);
-  StopWorker();
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 2);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 2);
-}
-
-TEST_F(ServiceWorkerNavigationHintUMATest, ConcurrentStart) {
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  base::Optional<blink::ServiceWorkerStatusCode> status1;
-  base::Optional<blink::ServiceWorkerStatusCode> status2;
-  base::RunLoop run_loop_1;
-  base::RunLoop run_loop_2;
-  version_->StartWorker(
-      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-      ReceiveServiceWorkerStatus(&status1, run_loop_1.QuitClosure()));
-  version_->StartWorker(
-      ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
-      ReceiveServiceWorkerStatus(&status2, run_loop_2.QuitClosure()));
-  run_loop_1.Run();
-  run_loop_2.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status1.value());
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status2.value());
-  StopWorker();
-  // The first purpose of starting worker was not a navigation hint.
-  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 0);
-
-  status1.reset();
-  status2.reset();
-  base::RunLoop run_loop_3;
-  base::RunLoop run_loop_4;
-  version_->StartWorker(
-      ServiceWorkerMetrics::EventType::NAVIGATION_HINT,
-      ReceiveServiceWorkerStatus(&status2, run_loop_4.QuitClosure()));
-  version_->StartWorker(
-      ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
-      ReceiveServiceWorkerStatus(&status1, run_loop_3.QuitClosure()));
-  run_loop_4.Run();
-  run_loop_3.Run();
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status1.value());
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status2.value());
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
-  StopWorker();
-  // The first purpose of starting worker was a navigation hint.
-  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 1);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, true, 1);
-  histogram_tester_.ExpectBucketCount(kStartHintPrecision, false, 0);
-}
-
-TEST_F(ServiceWorkerNavigationHintUMATest, StartWhileStopping) {
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  bool has_stopped = false;
-  version_->StopWorker(VerifyCalled(&has_stopped));
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 0);
-
-  StartWorker(ServiceWorkerMetrics::EventType::NAVIGATION_HINT);
-  // The UMA must be recorded while restarting.
-  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 1);
-  EXPECT_TRUE(has_stopped);
-  StopWorker();
-  // The UMA must be recorded when the worker stopped.
-  histogram_tester_.ExpectTotalCount(kStartHintPrecision, 2);
 }
 
 TEST_F(ServiceWorkerVersionTest, InstalledFetchEventHandlerExists) {

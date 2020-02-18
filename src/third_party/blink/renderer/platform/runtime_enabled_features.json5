@@ -133,12 +133,18 @@
       status: "experimental",
     },
     {
+      name: "AutoLazyLoadOnReloads",
+      depends_on: ["LazyFrameLoading"],
+    },
+    {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "AutomationControlled",
@@ -180,15 +186,6 @@
       name: "BlinkRuntimeCallStats",
     },
     {
-      name: "BloatedRendererDetection",
-      status: "experimental",
-    },
-    {
-      // Detects bloated renderers even if the uptime is small.
-      // Useful for local testing, not intended for production.
-      name: "BloatedRendererDetectionSkipUptimeCheck",
-    },
-    {
       // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
       // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
       name: "BlobReadMethods",
@@ -197,6 +194,9 @@
     {
       name: "BlockCredentialedSubresources",
       status: "stable",
+    },
+    {
+      name: "BlockHTMLParserOnStyleSheets",
     },
     {
       name: "BlockingDownloadsInSandboxWithoutUserActivation",
@@ -215,12 +215,17 @@
       origin_trial_feature_name: "BuiltInModuleInfra",
       implied_by: ["ExperimentalProductivityFeatures",
                    "BuiltInModuleAll",
-                   "BuiltInModuleKvStorage"],
+                   "BuiltInModuleKvStorage",
+                   "BuiltInModuleSwitchElement"],
     },
     {
       name: "BuiltInModuleKvStorage",
       origin_trial_feature_name: "BuiltInModuleKvStorage",
       implied_by: ["ExperimentalProductivityFeatures"],
+    },
+    {
+      name: "BuiltInModuleSwitchElement",
+      implied_by: ["BuiltInModuleAll"],
     },
     {
       name: "CacheInlineScriptCode"
@@ -283,8 +288,16 @@
       status: "experimental",
     },
     {
+      name: "ConsolidatedMovementXY",
+    },
+    {
       name: "ContactsManager",
       origin_trial_feature_name: "ContactsManager",
+      origin_trial_os: ["android"],
+      status: {"Android": "experimental", "default": "test"},
+    },
+    {
+      name: "ContentIndex",
       status: "experimental",
     },
     {
@@ -314,7 +327,7 @@
     },
     {
       name: "CSSAltText",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSBackdropFilter",
@@ -324,10 +337,18 @@
       name: "CSSCalcAsInt",
       status: "test",
     },
+    {
+      name: "CSSCascade",
+    },
     // Support for the CSS color-scheme property from the css-color-adjust spec.
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
     {
       name: "CSSColorScheme",
+    },
+    {
+      // CSS min(), max() and clamp()
+      // https://drafts.csswg.org/css-values-4/#comp-func
+      name: "CSSComparisonFunctions",
     },
     {
       name: "CSSFocusVisible",
@@ -359,6 +380,10 @@
       name: "CSSLogical",
       status: "experimental",
       settable_from_internals: true,
+    },
+    {
+      name: "CSSLogicalOverflow",
+      status: "test",
     },
     {
       name: "CSSMaskSourceType",
@@ -405,6 +430,11 @@
     {
       name: "CSSVariables2",
       status: "experimental",
+    },
+    // Support for @property rules.
+    {
+      name: "CSSVariables2AtProperty",
+      depends_on: ["CSSVariables2"],
     },
     // Support for registered custom properties with <image> syntax.
     {
@@ -456,11 +486,16 @@
       status: "experimental",
     },
     {
+      name: "DiscardInputToMovingIframes",
+      status: "stable",
+    },
+    {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
     },
     {
       name: "DisplayLocking",
+      status: "experimental",
     },
     {
       name: "DocumentCookie",
@@ -478,13 +513,14 @@
     {
       // http://crbug.com/905922
       name: "ElementInternals",
+      status: "stable",
       implied_by: ["FormAssociatedCustomElements"],
     },
     {
       // https://crbug.com/879270
       name: "ElementTiming",
       origin_trial_feature_name: "ElementTimingImages",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",
@@ -500,7 +536,7 @@
     },
     {
       name: "EnterKeyHintAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EventTiming",
@@ -514,6 +550,12 @@
     {
       name: "ExpensiveBackgroundTimerThrottling",
       status: "stable",
+    },
+    // Experimental feature to try dynamic delegation of autoplay capability
+    // through postMessages.
+    {
+      name: "ExperimentalAutoplayDynamicDelegation",
+      origin_trial_feature_name: "ExperimentalAutoplayDynamicDelegation",
     },
     {
       name: "ExperimentalContentSecurityPolicyFeatures",
@@ -555,10 +597,6 @@
       status: "experimental",
     },
     {
-      name: "FastFlatTreeTraversal",
-      status: "stable",
-    },
-    {
       name: "FastMobileScrolling",
       status: {"Android": "stable"},
     },
@@ -592,6 +630,10 @@
       status: "experimental"
     },
     {
+      name: "FileHandling",
+      depends_on: ["NativeFileSystem"]
+    },
+    {
       name: "FileSystem",
       status: "stable",
     },
@@ -617,6 +659,12 @@
       status: "test",
     },
     {
+      name: "ForcedColors",
+    },
+    {
+      name: "ForceDeferScriptIntervention",
+    },
+    {
       name: "ForceOverlayFullscreenVideo",
     },
     {
@@ -628,7 +676,7 @@
     },
     {
       name: "FormAssociatedCustomElements",
-      status: "experimental",
+      status: "stable",
     },
     // This is to communicate features::FormControlsRefresh from ui (and can be
     // removed when the feature launches).
@@ -637,13 +685,14 @@
     },
     {
       name: "FormDataEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FractionalMouseEvent",
     },
     {
       name: "FractionalScrollOffsets",
+      status: "experimental",
     },
     {
       name: "FreezeFramesOnVisibility",
@@ -658,20 +707,8 @@
       status: "stable",
     },
     {
-      name: "HeapCompaction",
-    },
-    {
-      name: "HeapConcurrentMarking",
-    },
-    {
-      name: "HeapIncrementalMarking",
-      status: "stable",
-    },
-    {
-      name: "HeapIncrementalMarkingStress"
-    },
-    {
-      name: "HeapUnifiedGCScheduling"
+      name: "GroupEffect",
+      status: "test",
     },
     {
       name: "HrefTranslate",
@@ -742,8 +779,10 @@
       status: "experimental",
     },
     {
+      // Launched by default. TODO(mythria): cleanup virtual tests and
+      // other hooks in blink.
       name: "IsolatedCodeCache",
-      status: "experimental",
+      status: "stable",
     },
     {
       // If enabled, CSP checks use the isolated world CSP when in an isolated
@@ -751,8 +790,8 @@
       name: "IsolatedWorldCSP"
     },
     {
-      // Modifies JankTracker to use O(n log n) sweep line algorithm for
-      // computing the area of the jank region.
+      // Modifies LayoutShiftTracker to use O(n log n) sweep line algorithm for
+      // computing the area of the layout shift region.
       name: "JankTrackingSweepLine",
       status: "experimental",
     },
@@ -768,20 +807,19 @@
       status: "experimental",
     },
     {
+      name: "LargestContentfulPaint",
+      status: "stable",
+    },
+    {
       // Exposes layout shift scores to Javascript. See explainer:
       // http://bit.ly/lsm-explainer.
       name: "LayoutInstabilityAPI",
       origin_trial_feature_name: "LayoutJankAPI",
-      status: "experimental",
-    },
-    {
-      // Modifies LayoutInstabilityAPI to include the maximum move distance in the
-      // jank fraction computation.
-      name: "LayoutInstabilityMoveDistance",
+      status: "stable",
     },
     {
       name: "LayoutNG",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity"],
+      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable"],
       status: "stable",
     },
     {
@@ -798,16 +836,24 @@
       implied_by: ["LayoutNG"],
     },
     {
+      name: "LayoutNGFragmentItem",
+    },
+    {
       name: "LayoutNGLineCache",
     },
     {
+      name: "LayoutNGTable",
+    },
+    {
       name: "LazyFrameLoading",
+      status: "stable",
     },
     {
       name: "LazyFrameVisibleLoadTimeMetrics",
     },
     {
       name: "LazyImageLoading",
+      status: "stable",
     },
     {
       name: "LazyImageLoadingMetadataFetch",
@@ -821,8 +867,8 @@
       // This is enabled by features::kLazyInitializeMediaControls.
     },
     {
-      name: "LegacyPerformanceMemoryCounters",
-      origin_trial_feature_name: "LegacyPerformanceMemoryCounters",
+      name: "LegacyWindowsDWriteFontFallback",
+      // Enabled by features::kLegacyWindowsDWriteFontFallback;
     },
     {
       name: "LongTaskV2",
@@ -863,6 +909,9 @@
     {
       name: "MediaDocumentDownloadButton",
     },
+    {
+      name: "MediaElementVolumeGreaterThanOne",
+    },
     // Set to reflect the kMediaEngagementBypassAutoplayPolicies feature.
     {
       name: "MediaEngagementBypassAutoplayPolicies",
@@ -880,7 +929,15 @@
       status: "stable",
     },
     {
+      name: "MediaSessionSeeking",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceExperimental",
+      status: "experimental",
+    },
+    {
+      name: "MediaSourceInWorkers",
       status: "experimental",
     },
     {
@@ -888,7 +945,11 @@
       status: "experimental",
     },
     {
-      name: "MediaStreamTrackContentHint",
+      // This is used in cases of mixed specification of stable and
+      // experimental MediaSource features, such as in the IDL for an interface
+      // constructor where exposure of the constructor in Window vs other
+      // contexts can vary in stable vs experimental.
+      name: "MediaSourceStable",
       status: "stable",
     },
     {
@@ -933,7 +994,8 @@
       status: "test",
     },
     {
-      name: "MovementXYInBlink",
+      // When enabled, iframes are not capturing mouse events by default.
+      name: "MouseSubframeNoImplicitCapture",
     },
     {
       name: "MuteButton",
@@ -946,16 +1008,9 @@
       name: "NativeFileSystem",
     },
     {
-      name: "NativeStreams",
-    },
-    {
       name: "NavigatorContentUtils",
       // Android does not yet support NavigatorContentUtils.
       status: {"Android": "", "default": "stable"},
-    },
-    {
-      name: "NavigatorDeviceMemory",
-      status: "stable",
     },
     {
       // Allows the navigator.language and navigator.languages APIs in insecure
@@ -1102,6 +1157,7 @@
     },
     {
       name: "PauseExecutionContextOnBackgroundFreeze",
+      status: "stable",
     },
     {
       name: "PaymentApp",
@@ -1140,11 +1196,13 @@
       // flag indicates whether or not the buffered entries should be loaded
       // into the observer's buffer upon registration. See crbug.com/725567.
       name: "PerformanceObserverBufferedFlag",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PeriodicBackgroundSync",
+      origin_trial_feature_name: "PeriodicBackgroundSync",
       settable_from_internals: true,
+      status: "test",
     },
     {
       name: "PerMethodCanMakePaymentQuota",
@@ -1185,7 +1243,7 @@
     },
     {
       name: "PointerRawUpdate",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Portals",
@@ -1200,7 +1258,7 @@
     },
     {
       name: "PredictedEvents",
-      status: "experimental",
+      status: "stable",
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
@@ -1223,6 +1281,10 @@
     {
       name: "PushMessaging",
       status: "stable",
+    },
+    {
+      name: "PushMessagingSubscriptionChange",
+      status: "experimental",
     },
     {
       name: "RasterInducingScroll",
@@ -1293,10 +1355,6 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
-    {
-      name: "RTCRtpSenderParameters",
-      status: "stable",
-    },
     // Enables the use of the RTCSctpTransport object.
     {
       name: "RTCSctpTransport",
@@ -1338,6 +1396,12 @@
     },
     {
       name: "ScrollCustomization",
+    },
+    {
+      name: "ScrollTimeline",
+      status: "experimental",
+      origin_trial_feature_name: "AnimationWorklet",
+      implied_by: ['AnimationWorklet']
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
@@ -1400,7 +1464,13 @@
       status: "experimental",
     },
     {
+      name: "SignedExchangePrefetchCacheForNavigations",
+      status: "experimental",
+    },
+    {
       name: "SignedExchangeSubresourcePrefetch",
+      origin_trial_feature_name: "SignedExchangeSubresourcePrefetchM77",
+      status: "experimental",
     },
     {
       name: "SkipAd",
@@ -1418,11 +1488,7 @@
     },
     {
       name: "SmsReceiver",
-      status: "experimental",
-    },
-    {
-      name: "SpeechSynthesisEventCharLength",
-      status: "experimental",
+      status: {"Android": "experimental", "default": "test"},
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.
@@ -1446,6 +1512,7 @@
     },
     {
       name: "StreamsNative",
+      status: "test",
     },
     {
       name: "TextFragmentIdentifiers",
@@ -1513,11 +1580,7 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
-      name: "UpdateHoverFromLayoutChangeAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
-      name: "UpdateHoverFromScrollAtBeginFrame",
+      name: "UpdateHoverAtBeginFrame",
       settable_from_internals: true,
     },
     {
@@ -1532,6 +1595,7 @@
     },
     {
       name: "UserActivationV2",
+      status: "stable",
     },
     {
       name: "UserAgentClientHint",
@@ -1670,10 +1734,6 @@
     {
       name: "WebXRPlaneDetection",
       // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
-    },
-    {
-      name: "WorkerTaskQueue",
-      status: "experimental"
     },
     {
       name: "XSLT",

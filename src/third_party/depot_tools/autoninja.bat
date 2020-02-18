@@ -16,7 +16,7 @@ if "%NINJA_SUMMARIZE_BUILD%" == "1" set NINJA_STATUS=[%%r processes, %%f/%%t @ %
 
 REM Execute whatever is printed by autoninja.py.
 REM Also print it to reassure that the right settings are being used.
-FOR /f "usebackq tokens=*" %%a in (`python %~dp0autoninja.py "%*"`) do echo %%a & %%a
+FOR /f "usebackq tokens=*" %%a in (`vpython %~dp0autoninja.py "%*"`) do echo %%a & %%a
 @if errorlevel 1 goto buildfailure
 
 REM Use call to invoke python script here, because we use python via python.bat.

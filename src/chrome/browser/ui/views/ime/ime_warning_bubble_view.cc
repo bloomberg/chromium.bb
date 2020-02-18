@@ -30,8 +30,9 @@ namespace {
 // The column width of the warning bubble.
 const int kColumnWidth = 285;
 
-views::Label* CreateExtensionNameLabel(const base::string16& text) {
-  views::Label* label = new views::Label(text, CONTEXT_BODY_TEXT_SMALL);
+std::unique_ptr<views::Label> CreateExtensionNameLabel(
+    const base::string16& text) {
+  auto label = std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_SMALL);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
@@ -91,12 +92,8 @@ ImeWarningBubbleView::ImeWarningBubbleView(
     : extension_(extension),
       browser_view_(browser_view),
       browser_(browser_view->browser()),
-      anchor_to_action_(false),
-      never_show_checkbox_(nullptr),
       response_callback_(callback),
-      bubble_has_shown_(false),
-      toolbar_actions_bar_observer_(this),
-      weak_ptr_factory_(this) {
+      toolbar_actions_bar_observer_(this) {
   container_ = browser_view_->toolbar()->browser_actions();
   toolbar_actions_bar_ = container_->toolbar_actions_bar();
   BrowserList::AddObserver(this);
@@ -160,7 +157,7 @@ void ImeWarningBubbleView::InitLayout() {
   //
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   int cs_id = 0;
 
@@ -176,16 +173,16 @@ void ImeWarningBubbleView::InitLayout() {
   layout->StartRow(views::GridLayout::kFixedSize, cs_id);
   base::string16 extension_name = base::UTF8ToUTF16(extension_->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
-  views::Label* warning = CreateExtensionNameLabel(l10n_util::GetStringFUTF16(
-      IDS_IME_API_ACTIVATED_WARNING, extension_name));
-  layout->AddView(warning);
+  std::unique_ptr<views::Label> warning =
+      CreateExtensionNameLabel(l10n_util::GetStringFUTF16(
+          IDS_IME_API_ACTIVATED_WARNING, extension_name));
+  layout->AddView(std::move(warning));
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
   // The seconde row which shows the check box.
   layout->StartRow(views::GridLayout::kFixedSize, cs_id);
-  never_show_checkbox_ =
-      new views::Checkbox(l10n_util::GetStringUTF16(IDS_IME_API_NEVER_SHOW));
-  layout->AddView(never_show_checkbox_);
+  never_show_checkbox_ = layout->AddView(std::make_unique<views::Checkbox>(
+      l10n_util::GetStringUTF16(IDS_IME_API_NEVER_SHOW)));
 }
 
 bool ImeWarningBubbleView::IsToolbarAnimating() {

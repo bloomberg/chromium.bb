@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -134,6 +134,7 @@ class CORE_EXPORT NGLineBreaker {
                         const ShapeResult&,
                         LayoutUnit available_width,
                         NGLineInfo*);
+  bool ShouldHangTraillingSpaces(const NGInlineItem&);
   bool HandleTextForFastMinContent(NGInlineItemResult*,
                                    const NGInlineItem&,
                                    const ShapeResult&,
@@ -158,7 +159,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void HandleControlItem(const NGInlineItem&, NGLineInfo*);
   void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
-  void HandleAtomicInline(
+  bool HandleAtomicInline(
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);

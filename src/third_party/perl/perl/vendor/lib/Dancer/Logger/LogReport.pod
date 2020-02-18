@@ -1,0 +1,74 @@
+=encoding utf8
+
+=head1 NAME
+
+Dancer::Logger::LogReport - reroute Dancer logs into Log::Report
+
+=head1 INHERITANCE
+
+ Dancer::Logger::LogReport
+   is a Dancer::Logger::Abstract
+
+ Dancer::Logger::LogReport
+   is a Exporter
+
+=head1 SYNOPSIS
+
+  # When your main program is not a Dancer object
+  use My::Dancer::App;
+  use Log::Report;
+  ... start dispatcher ...
+  error "something is wrong";   # Log::Report::error()
+
+  # When your main program is a Dancer object
+  use Dancer;
+  use Dancer::Logger::LogReport;
+  use Log::Report import => 'dispatcher';
+  ... start dispatcher ...
+  error "something is wrong";   # Dancer::error()
+
+  # In any case, your main program needs to start log dispatcers
+  # Both Dancer and other Log::Report based modules will send
+  # their messages here:
+  dispatcher FILE => 'default', ...;
+
+  # In your config
+  logger: log_report
+  logger_format: %i%m   # keep it simple
+  log: debug            # filtered by dispatchers
+
+=head1 DESCRIPTION
+
+The L<Log::Report|Log::Report> exception/translation framework defines a large
+number of logging back-ends.  The same log messages can be sent to 
+multiple destinations at the same time via flexible dispatchers.
+When you use this logger in your Dancer application, it will nicely
+integrate with non-Dancer modules which need logging.
+
+Many log back-ends, like syslog, have more levels of system messages.
+Modules who explicitly load this module can use the missing C<assert>,
+C<notice>, C<panic>, and C<alert> log levels.  The C<trace> name is
+provided as well: when you are debugging, you add a 'trace' to your
+program... its just a better name than 'debug'.
+
+You probably want to set a very simple C<logger_format>, because the
+dispatchers do already add some of the fields that the default
+C<simple> format adds.  For instance, to get the filename/line-number 
+in messages depends on the dispatcher 'mode' (f.i. 'DEBUG').
+
+You also want to set the log level to C<debug>, because level filtering
+is controlled per dispatcher (as well)
+
+=head1 SEE ALSO
+
+This module is part of Log-Report distribution version 1.28,
+built on May 14, 2019. Website: F<http://perl.overmeer.net/CPAN/>
+
+=head1 LICENSE
+
+Copyrights 2007-2019 by [Mark Overmeer <markov@cpan.org>]. For other contributors see ChangeLog.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+See F<http://dev.perl.org/licenses/>
+

@@ -30,6 +30,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/accessibility/apply_dark_mode.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -44,12 +45,12 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -64,9 +65,9 @@
 #include "third_party/blink/renderer/core/paint/frame_paint_timing.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_paint_order_iterator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -366,7 +367,7 @@ void CompositedLayerMapping::UpdateStickyConstraints(
   constraint.top_offset = constraints.top_offset;
   constraint.bottom_offset = constraints.bottom_offset;
   constraint.constraint_box_rect =
-      GetLayoutObject().ComputeStickyConstrainingRect();
+      RoundedIntRect(GetLayoutObject().ComputeStickyConstrainingRect());
   constraint.scroll_container_relative_sticky_box_rect =
       RoundedIntRect(constraints.scroll_container_relative_sticky_box_rect);
   constraint.scroll_container_relative_containing_block_rect = RoundedIntRect(
@@ -401,8 +402,7 @@ void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
   bool isolate = owning_layer_.ShouldIsolateCompositedDescendants();
 
   // non stacking context layers should never isolate
-  DCHECK((owning_layer_.StackingNode() &&
-          owning_layer_.GetLayoutObject().StyleRef().IsStackingContext()) ||
+  DCHECK(owning_layer_.GetLayoutObject().StyleRef().IsStackingContext() ||
          !isolate);
 
   graphics_layer_->SetIsRootForIsolatedGroup(isolate);
@@ -1117,10 +1117,6 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
         layers[i].offset_from_layout_object != new_offset_from_layout_object) {
       ObjectPaintInvalidator(layers[i].paint_layer->GetLayoutObject())
           .InvalidatePaintIncludingNonCompositingDescendants();
-
-      TRACE_LAYER_INVALIDATION(layers[i].paint_layer,
-                               inspector_layer_invalidation_tracking_event::
-                                   kSquashingLayerGeometryWasUpdated);
       layers_needing_paint_invalidation.push_back(layers[i].paint_layer);
     }
     layers[i].offset_from_layout_object = new_offset_from_layout_object;
@@ -1329,7 +1325,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
                                 update_context.parent_object_offset_delta;
   if (!layout_object_delta.IsZero()) {
     LocalFrameView* frame_view = layout_object.View()->GetFrameView();
-    frame_view->GetJankTracker().NotifyCompositedLayerMoved(
+    frame_view->GetLayoutShiftTracker().NotifyCompositedLayerMoved(
         layout_object,
         FloatRect(FloatPoint(), FloatSize(old_size - old_object_offset)),
         FloatRect(FloatPoint(layout_object_delta),
@@ -1380,7 +1376,7 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
       compositing_container->NeedsCompositedScrolling()) {
     LayoutBox& layout_box =
         ToLayoutBox(compositing_container->GetLayoutObject());
-    IntSize scroll_offset = layout_box.ScrolledContentOffset();
+    IntSize scroll_offset = FlooredIntSize(layout_box.ScrolledContentOffset());
     IntPoint scroll_origin =
         compositing_container->GetScrollableArea()->ScrollOrigin();
     scroll_origin.Move(-layout_box.OriginAdjustmentForScrollbars());
@@ -2439,6 +2435,12 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
     if (!mask_layer_) {
       mask_layer_ = CreateGraphicsLayer(CompositingReason::kLayerForMask);
       mask_layer_->SetPaintingPhase(kGraphicsLayerPaintMask);
+      CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
+          owning_layer_.GetLayoutObject().UniqueId(),
+          CompositorElementIdNamespace::kEffectMask);
+      mask_layer_->SetElementId(element_id);
+      mask_layer_->CcLayer()->SetLayerMaskType(
+          cc::Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
       layer_changed = true;
     }
   } else if (mask_layer_) {
@@ -2777,16 +2779,8 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
   if (!parent->HasVisibleDescendant())
     return false;
 
-  if (!parent->StackingNode())
-    return false;
-
-#if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(parent->StackingNode());
-#endif
-
-  PaintLayerStackingNodeIterator normal_flow_iterator(*parent->StackingNode(),
-                                                      kAllChildren);
-  while (PaintLayer* child_layer = normal_flow_iterator.Next()) {
+  PaintLayerPaintOrderIterator iterator(*parent, kAllChildren);
+  while (PaintLayer* child_layer = iterator.Next()) {
     if (child_layer->HasCompositedLayerMapping())
       continue;
     if (child_layer->HasVisibleContent() ||
@@ -2883,7 +2877,9 @@ bool CompositedLayerMapping::IsDirectlyCompositedImage() const {
 void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
   if ((change_type == kImageChanged) && GetLayoutObject().IsImage() &&
       IsDirectlyCompositedImage()) {
-    UpdateImageContents();
+    SetNeedsGraphicsLayerUpdate(kGraphicsLayerUpdateLocal);
+    Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateAfterGeometryChange);
     return;
   }
 
@@ -2895,6 +2891,9 @@ void CompositedLayerMapping::ContentChanged(ContentChangeType change_type) {
 }
 
 void CompositedLayerMapping::UpdateImageContents() {
+  DCHECK_EQ(owning_layer_.Compositor()->Lifecycle().GetState(),
+            DocumentLifecycle::kInCompositingUpdate);
+
   DCHECK(GetLayoutObject().IsImage());
   LayoutImage& image_layout_object = ToLayoutImage(GetLayoutObject());
 
@@ -2962,12 +2961,7 @@ PhysicalRect CompositedLayerMapping::ContentsBox() const {
 }
 
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
-  const ComputedStyle& style = owning_layer_.GetLayoutObject().StyleRef();
-  return owning_layer_.GetScrollableArea() &&
-         owning_layer_.GetScrollableArea()->HasOverlayScrollbars() &&
-         !style.IsStackingContext() &&
-         (style.IsStacked() ||
-          owning_layer_.IsNonStackedWithInFlowStackedDescendant());
+  return owning_layer_.NeedsReorderOverlayScrollbars();
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
@@ -3185,13 +3179,6 @@ void CompositedLayerMapping::DoPaintTask(
         paint_info.paint_layer->SubpixelAccumulation());
     PaintLayerPainter(*paint_info.paint_layer)
         .PaintLayerContents(context, painting_info, paint_layer_flags);
-
-    if (paint_info.paint_layer->ContainsDirtyOverlayScrollbars()) {
-      PaintLayerPainter(*paint_info.paint_layer)
-          .PaintLayerContents(
-              context, painting_info,
-              paint_layer_flags | kPaintLayerPaintingOverlayScrollbars);
-    }
   } else {
     PaintLayerPaintingInfo painting_info(
         paint_info.paint_layer, CullRect(dirty_rect), kGlobalPaintNormalPhase,
@@ -3265,6 +3252,37 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     // cases, fall back to painting the first kPixelDistanceToRecord pixels in
     // each direction.
 
+    // Note that since the interest rect mapping above can produce extremely
+    // large numbers in cases of perspective, try our best to "normalize" the
+    // result by ensuring that none of the rect dimensions exceed some large,
+    // but reasonable, limit.
+    const float reasonable_pixel_limit = std::numeric_limits<int>::max() / 2.f;
+    auto unpadded_intersection = local_interest_rect;
+
+    // Note that by clamping X and Y, we are effectively moving the rect right /
+    // down. However, this will at most make us paint more content, which is
+    // better than erroneously deciding that the rect produced here is far
+    // offscreen.
+    if (unpadded_intersection.X() < -reasonable_pixel_limit)
+      unpadded_intersection.SetX(-reasonable_pixel_limit);
+    if (unpadded_intersection.Y() < -reasonable_pixel_limit)
+      unpadded_intersection.SetY(-reasonable_pixel_limit);
+    if (unpadded_intersection.MaxX() > reasonable_pixel_limit) {
+      unpadded_intersection.SetWidth(reasonable_pixel_limit -
+                                     unpadded_intersection.X());
+    }
+    if (unpadded_intersection.MaxY() > reasonable_pixel_limit) {
+      unpadded_intersection.SetHeight(reasonable_pixel_limit -
+                                      unpadded_intersection.Y());
+    }
+
+    unpadded_intersection.Intersect(FloatRect(graphics_layer_bounds));
+    // If our unpadded intersection is not empty, then use that before padding,
+    // since it can produce more stable results, and it would not produce any
+    // smaller area than if we used the original local interest rect.
+    if (!unpadded_intersection.IsEmpty())
+      local_interest_rect = unpadded_intersection;
+
     // Expand by interest rect padding amount, scaled by the approximate scale
     // of the GraphicsLayer relative to screen pixels. If width or height
     // are zero or nearly zero, fall back to kPixelDistanceToRecord.
@@ -3277,8 +3295,13 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
         visible_content_rect.Height() > std::numeric_limits<float>::epsilon()
             ? local_interest_rect.Height() / visible_content_rect.Height()
             : 1.0f;
-    local_interest_rect.InflateX(kPixelDistanceToRecord * x_scale);
-    local_interest_rect.InflateY(kPixelDistanceToRecord * y_scale);
+    // Take the max, to account for situations like rotation transforms, which
+    // swap x and y.
+    // Since at this point we can also have an extremely large scale due to
+    // perspective (see the comments above), cap it to something reasonable.
+    float scale = std::min(std::max(x_scale, y_scale),
+                           reasonable_pixel_limit / kPixelDistanceToRecord);
+    local_interest_rect.Inflate(kPixelDistanceToRecord * scale);
   } else {
     // Expand by interest rect padding amount.
     local_interest_rect.Inflate(kPixelDistanceToRecord);
@@ -3506,6 +3529,10 @@ bool CompositedLayerMapping::ShouldThrottleRendering() const {
   return GetLayoutObject().GetFrame()->ShouldThrottleRendering();
 }
 
+bool CompositedLayerMapping::IsUnderSVGHiddenContainer() const {
+  return owning_layer_.IsUnderSVGHiddenContainer();
+}
+
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
   return GetLayoutObject().GetFrameView()->IsTrackingPaintInvalidations();
 }
@@ -3521,8 +3548,29 @@ void CompositedLayerMapping::GraphicsLayersDidChange() {
   frame_view->GraphicsLayersDidChange();
 }
 
-bool CompositedLayerMapping::PaintBlockedByDisplayLock() const {
-  return GetLayoutObject().PaintBlockedByDisplayLock();
+bool CompositedLayerMapping::PaintBlockedByDisplayLockIncludingAncestors(
+    DisplayLockContextLifecycleTarget target) const {
+  auto* node = GetLayoutObject().GetNode();
+  if (!node)
+    return false;
+  auto* element = DynamicTo<Element>(node);
+  if (target == DisplayLockContextLifecycleTarget::kSelf && element) {
+    if (auto* context = element->GetDisplayLockContext()) {
+      if (!context->ShouldPaint(DisplayLockContext::kSelf))
+        return true;
+    }
+  }
+  return DisplayLockUtilities::NearestLockedExclusiveAncestor(*node);
+}
+
+void CompositedLayerMapping::NotifyDisplayLockNeedsGraphicsLayerCollection() {
+  if (auto* node = GetLayoutObject().GetNode()) {
+    if (auto* locked_element =
+            DisplayLockUtilities::NearestLockedInclusiveAncestor(*node)) {
+      locked_element->GetDisplayLockContext()
+          ->NotifyNeedsGraphicsLayerCollection();
+    }
+  }
 }
 
 #if DCHECK_IS_ON()

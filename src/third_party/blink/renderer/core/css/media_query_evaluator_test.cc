@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -173,6 +174,18 @@ MediaQueryEvaluatorTestCase g_non_ua_sheet_immersive_test_cases[] = {
     {nullptr, 0}  // Do not remove the terminator line.
 };
 
+MediaQueryEvaluatorTestCase g_forcedcolors_active_cases[] = {
+    {"(forced-colors: active)", 1},
+    {"(forced-colors: none)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_forcedcolors_none_cases[] = {
+    {"(forced-colors: active)", 0},
+    {"(forced-colors: none)", 1},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
 void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
                      const MediaQueryEvaluator& media_query_evaluator,
                      CSSParserMode mode) {
@@ -324,6 +337,26 @@ TEST(MediaQueryEvaluatorTest, DynamicImmersive) {
                   kUASheetMode);
   page_holder->GetDocument().GetSettings()->SetImmersiveModeEnabled(true);
   TestMQEvaluator(g_immersive_test_cases, media_query_evaluator, kUASheetMode);
+}
+
+TEST(MediaQueryEvaluatorTest, CachedForcedColors) {
+  ScopedForcedColorsForTest scoped_feature(true);
+
+  MediaValuesCached::MediaValuesCachedData data;
+  data.forced_colors = ForcedColors::kNone;
+  MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+
+  // Forced colors - none.
+  MediaQueryEvaluator media_query_evaluator(*media_values);
+  TestMQEvaluator(g_forcedcolors_none_cases, media_query_evaluator);
+
+  // Forced colors - active.
+  {
+    data.forced_colors = ForcedColors::kActive;
+    MediaValues* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+    MediaQueryEvaluator media_query_evaluator(*media_values);
+    TestMQEvaluator(g_forcedcolors_active_cases, media_query_evaluator);
+  }
 }
 
 }  // namespace blink

@@ -37,9 +37,10 @@
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/browser/service_worker/service_worker_update_checker.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -344,11 +345,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // not running is a bit sketchy, maybe this should queue a task to check
   // if the pending request is pending too long? https://crbug.com/797222
   blink::mojom::ControllerServiceWorker* controller() {
-    if (!controller_ptr_.is_bound()) {
-      DCHECK(!controller_request_.is_pending());
-      controller_request_ = mojo::MakeRequest(&controller_ptr_);
+    if (!remote_controller_.is_bound()) {
+      DCHECK(!controller_receiver_.is_valid());
+      controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
     }
-    return controller_ptr_.get();
+    return remote_controller_.get();
   }
 
   // Adds and removes the specified host as a controllee of this service worker.
@@ -528,8 +529,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerReadFromCacheJobTest;
   friend class ServiceWorkerVersionBrowserTest;
-  friend class service_worker_registration_unittest::
-      ServiceWorkerActivationTest;
+  friend class ServiceWorkerActivationTest;
   friend class service_worker_version_unittest::ServiceWorkerVersionTest;
   friend class service_worker_navigation_loader_unittest::
       ServiceWorkerNavigationLoaderTest;
@@ -775,8 +775,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 
-  // Resets |start_worker_first_purpose_| and fires and clears all start
-  // callbacks.
+  // Fires and clears all start callbacks.
   void FinishStartWorker(blink::ServiceWorkerStatusCode status);
 
   // Removes any pending external request that has GUID of |request_uuid|.
@@ -846,11 +845,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   blink::mojom::ServiceWorkerPtr service_worker_ptr_;
 
   // Connection to the controller service worker.
-  // |controller_request_| is non-null only when the |controller_ptr_| is
+  // |controller_receiver_| is non-null only when the |remote_controller_| is
   // requested before the worker is started, it is passed to the worker (and
   // becomes null) once it's started.
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr_;
-  blink::mojom::ControllerServiceWorkerRequest controller_request_;
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller_;
+  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+      controller_receiver_;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;
@@ -860,11 +860,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::TimeTicks no_controllees_time_;
 
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerHost> binding_;
-
-  // The number of fetch event responses that the service worker is streaming to
-  // the browser process. We try to not stop the service worker while there is
-  // an inflight response.
-  int inflight_stream_response_count_ = 0;
 
   // Set to true if the worker has no inflight events and the idle timer has
   // been triggered. Set back to false if another event starts since the worker
@@ -945,16 +940,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ServiceWorkerPingController ping_controller_;
 
-  // Used for recording worker activities while this service worker is running
-  // (i.e., after it starts up until it stops). Created only when the service
-  // worker is speculatively launched for navigation hints.
-  std::unique_ptr<ServiceWorkerMetrics::ScopedEventRecorder> event_recorder_;
-
   bool stop_when_devtools_detached_ = false;
-
-  // Keeps the first purpose of starting the worker for UMA. Cleared in
-  // FinishStartWorker().
-  base::Optional<ServiceWorkerMetrics::EventType> start_worker_first_purpose_;
 
   // This is the set of features that were used up until installation of this
   // version completed, or used during the lifetime of |this|.
@@ -975,7 +961,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This is set when this service worker becomes redundant.
   base::debug::StackTrace redundant_state_callstack_;
 
-  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

@@ -66,6 +66,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -294,6 +295,8 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   float backdrop_filter_quality = 1.0;
   // Whether the original background texture is needed for the mask.
   bool mask_for_background = false;
+
+  bool apply_shader_based_rounded_corner = true;
 };
 
 class GLRenderer::ScopedUseGrContext {
@@ -349,8 +352,7 @@ GLRenderer::GLRenderer(
                        output_surface_->context_provider()
                            ->ContextCapabilities()
                            .texture_half_float_linear),
-      current_task_runner_(std::move(current_task_runner)),
-      weak_ptr_factory_(this) {
+      current_task_runner_(std::move(current_task_runner)) {
   DCHECK(gl_);
   DCHECK(context_support_);
 
@@ -592,28 +594,32 @@ static SkColorType GlFormatToSkFormat(GrGLenum format) {
   }
 }
 
+static GrGLenum SkFormatToGlFormat(SkColorType format) {
+  switch (format) {
+    case kRGB_888x_SkColorType:
+      return GL_RGB8_OES;
+      break;
+    case kRGBA_8888_SkColorType:
+      return GL_RGBA8_OES;
+      break;
+    case kBGRA_8888_SkColorType:
+      return GL_BGRA8_EXT;
+      break;
+    default:
+      NOTREACHED();
+      return GL_RGBA8_OES;
+  }
+}
+
 // Wrap a given texture in a Ganesh backend texture.
 static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                   uint32_t target,
                                   const gfx::Size& size,
                                   GrContext* context,
                                   bool flip_texture,
-                                  SkColorType format) {
-  GrGLenum texture_format(GL_RGBA8_OES);
-  switch (format) {
-    case kRGB_888x_SkColorType:
-      texture_format = GL_RGB8_OES;
-      break;
-    case kRGBA_8888_SkColorType:
-      texture_format = GL_RGBA8_OES;
-      break;
-    case kBGRA_8888_SkColorType:
-      texture_format = GL_BGRA8_EXT;
-      break;
-    default:
-      NOTREACHED();
-  }
-
+                                  SkColorType format,
+                                  bool adopt_texture) {
+  GrGLenum texture_format = SkFormatToGlFormat(format);
   GrGLTextureInfo texture_info;
   texture_info.fTarget = target;
   texture_info.fID = texture_id;
@@ -622,8 +628,13 @@ static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                    GrMipMapped::kNo, texture_info);
   GrSurfaceOrigin origin =
       flip_texture ? kBottomLeft_GrSurfaceOrigin : kTopLeft_GrSurfaceOrigin;
-  return SkImage::MakeFromTexture(context, backend_texture, origin, format,
-                                  kPremul_SkAlphaType, nullptr);
+  if (adopt_texture) {
+    return SkImage::MakeFromAdoptedTexture(
+        context, backend_texture, origin, format, kPremul_SkAlphaType, nullptr);
+  } else {
+    return SkImage::MakeFromTexture(context, backend_texture, origin, format,
+                                    kPremul_SkAlphaType, nullptr);
+  }
 }
 
 static gfx::RectF CenteredRect(const gfx::Rect& tile_rect) {
@@ -885,12 +896,11 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     return nullptr;
 
   auto filter = paint_filter->cached_sk_filter_;
-  bool flip_texture = true;
-
   sk_sp<SkImage> src_image = WrapTexture(
       params->background_texture, GL_TEXTURE_2D, params->background_rect.size(),
-      use_gr_context->context(), flip_texture,
-      GlFormatToSkFormat(params->background_texture_format));
+      use_gr_context->context(), /*flip_texture=*/true,
+      GlFormatToSkFormat(params->background_texture_format),
+      /*adopt_texture=*/false);
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyBackdropFilters wrap background texture failed",
@@ -930,13 +940,16 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     // Crop the source image to the backdrop_filter_bounds.
     gfx::Rect filter_clip = gfx::ToEnclosingRect(cc::MathUtil::MapClippedRect(
         backdrop_filter_bounds_transform, backdrop_filter_bounds->rect()));
-    filter_clip.Intersect(gfx::Rect(src_image->width(), src_image->height()));
+    gfx::Rect src_rect(src_image->width(), src_image->height());
+    filter_clip.Intersect(src_rect);
     if (filter_clip.IsEmpty())
       return FinalizeImage(surface);
-    src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
-    src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
-    dest_rect = RectToSkRect(
-        ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+    if (filter_clip != src_rect) {
+      src_image = src_image->makeSubset(RectToSkIRect(filter_clip));
+      src_image_rect = gfx::RectF(filter_clip.width(), filter_clip.height());
+      dest_rect = RectToSkRect(
+          ScaleToEnclosingRect(filter_clip, params->backdrop_filter_quality));
+    }
   }
 
   SkIPoint offset;
@@ -963,7 +976,73 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     paint.setImageFilter(
         SkiaHelper::BuildOpacityFilter(quad->shared_quad_state->opacity));
   }
-  // Now paint the pre-filtered image onto the canvas.
+  // Apply the mask image, if present, to filtered backdrop content. Note that
+  // this needs to be performed here, in addition to elsewhere, because of the
+  // order of operations:
+  //   1. Render the child render pass (containing backdrop-filtered element),
+  //      including any masks, typically built as child DstIn layers.
+  //   2. Render the parent render pass (containing the "backdrop image" to be
+  //      filtered).
+  //   3. Run this code, to filter, and possibly mask, the backdrop image.
+  sk_sp<const SkImage> mask_image = nullptr;
+  base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
+      backdrop_image_lock_sk;
+  base::Optional<DisplayResourceProvider::ScopedSamplerGL>
+      backdrop_image_lock_gl;
+  if (quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
+    if (resource_provider_->GetResourceTextureTarget(
+            quad->mask_resource_id()) == GL_TEXTURE_RECTANGLE_ARB) {
+      // On some platforms, Skia doesn't know that the hardware supports
+      // GL_TEXTURE_RECTANGLE. So for texture rectangles, fall back to using
+      // CopyTextureCHROMIUM to copy from the mask resource to a newly-created
+      // texture, and then wrap that texture with an SkImage.
+      backdrop_image_lock_gl.emplace(resource_provider_,
+                                     quad->mask_resource_id(), GL_LINEAR);
+      GLenum source_id = backdrop_image_lock_gl->texture_id();
+      GLint internalformat = GLInternalFormat(
+          resource_provider_->GetResourceFormat(quad->mask_resource_id()));
+      GLuint dest_id;
+      gl_->GenTextures(1, &dest_id);
+      gl_->BindTexture(GL_TEXTURE_2D, dest_id);
+      // Format is the same as internalformat for the formats being considered.
+      GLint format = internalformat;
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internalformat,
+                      quad->mask_texture_size.width(),
+                      quad->mask_texture_size.height(), 0, format,
+                      GL_UNSIGNED_BYTE, nullptr);
+      gl_->CopyTextureCHROMIUM(source_id, 0, GL_TEXTURE_2D, dest_id, 0,
+                               internalformat, GL_UNSIGNED_BYTE,
+                               /*unpack_flip_y=*/false,
+                               /*unpack_premultiply_alpha=*/false,
+                               /*unpack_unmultiply_alpha=*/false);
+      mask_image = WrapTexture(dest_id, GL_TEXTURE_2D, quad->mask_texture_size,
+                               use_gr_context->context(), false,
+                               GlFormatToSkFormat(internalformat),
+                               /*adopt_texture=*/true);
+    } else {
+      backdrop_image_lock_sk.emplace(
+          resource_provider_, quad->mask_resource_id(), kPremul_SkAlphaType,
+          kTopLeft_GrSurfaceOrigin);
+      mask_image = backdrop_image_lock_sk->TakeSkImage();
+    }
+    DCHECK(mask_image);
+  }
+  if (mask_image) {
+    // Scale normalized uv rect into absolute texel coordinates.
+    SkRect mask_rect = gfx::RectFToSkRect(
+        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
+                       quad->mask_texture_size.height()));
+    // Map to full quad rect so that mask coordinates don't change with
+    // clipping.
+    SkMatrix mask_to_quad_matrix = SkMatrix::MakeRectToRect(
+        mask_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
+    paint.setMaskFilter(
+        SkShaderMaskFilter::Make(mask_image->makeShader(&mask_to_quad_matrix)));
+    DCHECK(paint.getMaskFilter());
+  }
+
+  // Now paint the pre-filtered image onto the canvas (possibly with mask
+  // applied).
   surface->getCanvas()->drawImageRect(filtered_image, subset, dest_rect,
                                       &paint);
 
@@ -1160,8 +1239,9 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         }
       }
       if (params->background_image_id) {
-        // Reset original background texture if there is not any mask.
-        if (!quad->mask_resource_id()) {
+        // Reset original background texture if there is not any mask, or if the
+        // mask was used for backdrop filter only.
+        if (!quad->mask_resource_id() || quad->mask_applies_to_backdrop) {
           gl_->DeleteTextures(1, &params->background_texture);
           params->background_texture = 0;
         }
@@ -1189,6 +1269,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->background_texture && params->background_image_id) {
     DCHECK(params->mask_for_background);
     DCHECK(quad->mask_resource_id());
+    DCHECK(!quad->mask_applies_to_backdrop);
   }
 
   DCHECK_EQ(params->background_texture || params->background_image_id,
@@ -1250,7 +1331,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
           sk_sp<SkImage> src_image = WrapTexture(
               params->contents_texture->id(), GL_TEXTURE_2D,
               params->contents_texture->size(), use_gr_context->context(),
-              params->flip_texture, kN32_SkColorType);
+              params->flip_texture, kN32_SkColorType, /*adopt_texture=*/false);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               use_gr_context->context(), src_image, src_rect, params->dst_rect,
               quad->filters_scale, std::move(filter), &offset, &subset,
@@ -1266,7 +1347,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
                           prefilter_bypass_quad_texture_lock.target(),
                           prefilter_bypass_quad_texture_lock.size(),
                           use_gr_context->context(), params->flip_texture,
-                          kN32_SkColorType);
+                          kN32_SkColorType, /*adopt_texture=*/false);
           params->filter_image = SkiaHelper::ApplyImageFilter(
               use_gr_context->context(), src_image, src_rect, params->dst_rect,
               quad->filters_scale, std::move(filter), &offset, &subset,
@@ -1289,7 +1370,8 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
 
 void GLRenderer::UpdateRPDQTexturesForSampling(
     DrawRenderPassDrawQuadParams* params) {
-  if (params->quad->mask_resource_id()) {
+  if (!params->quad->mask_applies_to_backdrop &&
+      params->quad->mask_resource_id()) {
     params->mask_resource_lock.reset(
         new DisplayResourceProvider::ScopedSamplerGL(
             resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
@@ -1364,7 +1446,8 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
           tex_coord_precision, sampler_type, shader_blend_mode,
           params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
           params->use_color_matrix, tint_gl_composited_content_,
-          ShouldApplyRoundedCorner(params->quad)),
+          params->apply_shader_based_rounded_corner &&
+              ShouldApplyRoundedCorner(params->quad)),
       params->contents_and_bypass_color_space, target_color_space);
 }
 
@@ -3103,9 +3186,17 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
                                const gfx::ColorSpace& dst_color_space) {
   DCHECK(dst_color_space.IsValid());
 
+  gfx::ColorSpace adjusted_color_space = src_color_space;
+  float sdr_white_level = current_frame()->sdr_white_level;
+  if (src_color_space.IsValid() && !src_color_space.IsHDR() &&
+      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+    adjusted_color_space = src_color_space.GetScaledColorSpace(
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  }
+
   ProgramKey program_key = program_key_no_color;
   const gfx::ColorTransform* color_transform =
-      GetColorTransform(src_color_space, dst_color_space);
+      GetColorTransform(adjusted_color_space, dst_color_space);
   program_key.SetColorTransform(color_transform);
 
   const bool is_root_render_pass =
@@ -3292,6 +3383,13 @@ void GLRenderer::ScheduleCALayers() {
                             ca_layer_overlay.shared_state->clip_rect.y(),
                             ca_layer_overlay.shared_state->clip_rect.width(),
                             ca_layer_overlay.shared_state->clip_rect.height()};
+
+    const gfx::RectF& rect =
+        ca_layer_overlay.shared_state->rounded_corner_bounds.rect();
+    GLfloat rounded_corner_bounds[5] = {
+        rect.x(), rect.y(), rect.width(), rect.height(),
+        ca_layer_overlay.shared_state->rounded_corner_bounds.GetSimpleRadius()};
+
     GLint sorting_context_id =
         ca_layer_overlay.shared_state->sorting_context_id;
     GLfloat transform[16];
@@ -3302,7 +3400,7 @@ void GLRenderer::ScheduleCALayers() {
       shared_state = ca_layer_overlay.shared_state;
       gl_->ScheduleCALayerSharedStateCHROMIUM(
           ca_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
-          sorting_context_id, transform);
+          rounded_corner_bounds, sorting_context_id, transform);
     }
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.background_color,
@@ -3513,6 +3611,12 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   UpdateRPDQTexturesForSampling(&params);
   UpdateRPDQBlendMode(&params);
+  // The code in this method (CopyRenderPassDrawQuadToOverlayResource) is
+  // only called when we are drawing for the purpose of copying to
+  // a CALayerOverlay. In such cases, the CALayerOverlay applies rounded
+  // corners via CALayer parameters, so the shader-based rounded corners
+  // should be disabled here.
+  params.apply_shader_based_rounded_corner = false;
   ChooseRPDQProgram(&params, (*overlay_texture)->texture.color_space());
   UpdateRPDQUniforms(&params);
 
@@ -3624,6 +3728,13 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
                           ca_layer_overlay->shared_state->clip_rect.y(),
                           ca_layer_overlay->shared_state->clip_rect.width(),
                           ca_layer_overlay->shared_state->clip_rect.height()};
+
+  const gfx::RectF& rect =
+      ca_layer_overlay->shared_state->rounded_corner_bounds.rect();
+  GLfloat rounded_corner_rect[5] = {
+      rect.x(), rect.y(), rect.width(), rect.height(),
+      ca_layer_overlay->shared_state->rounded_corner_bounds.GetSimpleRadius()};
+
   GLint sorting_context_id = ca_layer_overlay->shared_state->sorting_context_id;
   SkMatrix44 transform = ca_layer_overlay->shared_state->transform;
   GLfloat gl_transform[16];
@@ -3633,6 +3744,7 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
   // The alpha has already been applied when copying the RPDQ to an IOSurface.
   GLfloat alpha = 1;
   gl_->ScheduleCALayerSharedStateCHROMIUM(alpha, is_clipped, clip_rect,
+                                          rounded_corner_rect,
                                           sorting_context_id, gl_transform);
   gl_->ScheduleCALayerCHROMIUM(overlay_texture->texture.id(), contents_rect,
                                ca_layer_overlay->background_color,

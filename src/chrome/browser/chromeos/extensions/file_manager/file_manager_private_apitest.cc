@@ -37,10 +37,10 @@
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/install_warning.h"
 #include "google_apis/drive/test_util.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 using ::testing::_;
@@ -48,6 +48,7 @@ using ::testing::ReturnRef;
 
 using chromeos::disks::Disk;
 using chromeos::disks::DiskMountManager;
+using chromeos::disks::FormatFileSystemType;
 
 namespace {
 
@@ -350,7 +351,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         crostini::prefs::kCrostiniEnabled, true);
     scoped_feature_list->InitWithFeatures({features::kCrostini}, {});
     // Profile must be signed in with email for crostini.
-    identity::SetPrimaryAccount(
+    signin::SetPrimaryAccount(
         IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
         "testuser@gmail.com");
   }
@@ -418,6 +419,36 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/mount_test"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, FormatVolume) {
+  // Catch-all rule to ensure that FormatMountedDevice does not get called with
+  // other arguments that don't match the rules below.
+  EXPECT_CALL(*disk_mount_manager_mock_, FormatMountedDevice(_, _, _)).Times(0);
+
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path1")
+                      .AsUTF8Unsafe(),
+                  FormatFileSystemType::kVfat, "NEWLABEL1"))
+      .Times(1);
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path2")
+                      .AsUTF8Unsafe(),
+                  FormatFileSystemType::kExfat, "NEWLABEL2"))
+      .Times(1);
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              FormatMountedDevice(
+                  chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path3")
+                      .AsUTF8Unsafe(),
+                  FormatFileSystemType::kNtfs, "NEWLABEL3"))
+      .Times(1);
+
+  ASSERT_TRUE(RunComponentExtensionTest("file_browser/format_test"));
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Permissions) {
@@ -560,11 +591,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
     ASSERT_TRUE(base::CreateDirectory(shared1));
     ASSERT_TRUE(base::CreateDirectory(shared2));
   }
-  crostini::CrostiniSharePath* crostini_share_path =
-      crostini::CrostiniSharePath::GetForProfile(browser()->profile());
-  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+  guest_os::GuestOsSharePath* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(browser()->profile());
+  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
                                              shared1);
-  crostini_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
+  guest_os_share_path->RegisterPersistedPath(crostini::kCrostiniDefaultVmName,
                                              shared2);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));

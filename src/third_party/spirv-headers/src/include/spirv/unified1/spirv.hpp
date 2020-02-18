@@ -154,6 +154,12 @@ enum ExecutionMode {
     ExecutionModeDerivativeGroupQuadsNV = 5289,
     ExecutionModeDerivativeGroupLinearNV = 5290,
     ExecutionModeOutputTrianglesNV = 5298,
+    ExecutionModePixelInterlockOrderedEXT = 5366,
+    ExecutionModePixelInterlockUnorderedEXT = 5367,
+    ExecutionModeSampleInterlockOrderedEXT = 5368,
+    ExecutionModeSampleInterlockUnorderedEXT = 5369,
+    ExecutionModeShadingRateInterlockOrderedEXT = 5370,
+    ExecutionModeShadingRateInterlockUnorderedEXT = 5371,
     ExecutionModeMax = 0x7fffffff,
 };
 
@@ -449,6 +455,7 @@ enum Decoration {
     DecorationHlslCounterBufferGOOGLE = 5634,
     DecorationHlslSemanticGOOGLE = 5635,
     DecorationUserSemantic = 5635,
+    DecorationUserTypeGOOGLE = 5636,
     DecorationMax = 0x7fffffff,
 };
 
@@ -551,6 +558,10 @@ enum BuiltIn {
     BuiltInHitTNV = 5332,
     BuiltInHitKindNV = 5333,
     BuiltInIncomingRayFlagsNV = 5351,
+    BuiltInWarpsPerSMNV = 5374,
+    BuiltInSMCountNV = 5375,
+    BuiltInWarpIDNV = 5376,
+    BuiltInSMIDNV = 5377,
     BuiltInMax = 0x7fffffff,
 };
 
@@ -622,6 +633,7 @@ enum MemorySemanticsShift {
     MemorySemanticsOutputMemoryKHRShift = 12,
     MemorySemanticsMakeAvailableKHRShift = 13,
     MemorySemanticsMakeVisibleKHRShift = 14,
+    MemorySemanticsVolatileShift = 15,
     MemorySemanticsMax = 0x7fffffff,
 };
 
@@ -640,6 +652,7 @@ enum MemorySemanticsMask {
     MemorySemanticsOutputMemoryKHRMask = 0x00001000,
     MemorySemanticsMakeAvailableKHRMask = 0x00002000,
     MemorySemanticsMakeVisibleKHRMask = 0x00004000,
+    MemorySemanticsVolatileMask = 0x00008000,
 };
 
 enum MemoryAccessShift {
@@ -829,6 +842,11 @@ enum Capability {
     CapabilityPhysicalStorageBufferAddressesEXT = 5347,
     CapabilityComputeDerivativeGroupLinearNV = 5350,
     CapabilityCooperativeMatrixNV = 5357,
+    CapabilityFragmentShaderSampleInterlockEXT = 5363,
+    CapabilityFragmentShaderShadingRateInterlockEXT = 5372,
+    CapabilityShaderSMBuiltinsNV = 5373,
+    CapabilityFragmentShaderPixelInterlockEXT = 5378,
+    CapabilityDemoteToHelperInvocationEXT = 5379,
     CapabilitySubgroupShuffleINTEL = 5568,
     CapabilitySubgroupBufferBlockIOINTEL = 5569,
     CapabilitySubgroupImageBlockIOINTEL = 5570,
@@ -1215,6 +1233,10 @@ enum Op {
     OpCooperativeMatrixStoreNV = 5360,
     OpCooperativeMatrixMulAddNV = 5361,
     OpCooperativeMatrixLengthNV = 5362,
+    OpBeginInvocationInterlockEXT = 5364,
+    OpEndInvocationInterlockEXT = 5365,
+    OpDemoteToHelperInvocationEXT = 5380,
+    OpIsHelperInvocationEXT = 5381,
     OpSubgroupShuffleINTEL = 5571,
     OpSubgroupShuffleDownINTEL = 5572,
     OpSubgroupShuffleUpINTEL = 5573,
@@ -1743,6 +1765,10 @@ inline void HasResultAndType(Op opcode, bool *hasResult, bool *hasResultType) {
     case OpCooperativeMatrixStoreNV: *hasResult = false; *hasResultType = false; break;
     case OpCooperativeMatrixMulAddNV: *hasResult = true; *hasResultType = true; break;
     case OpCooperativeMatrixLengthNV: *hasResult = true; *hasResultType = true; break;
+    case OpBeginInvocationInterlockEXT: *hasResult = false; *hasResultType = false; break;
+    case OpEndInvocationInterlockEXT: *hasResult = false; *hasResultType = false; break;
+    case OpDemoteToHelperInvocationEXT: *hasResult = false; *hasResultType = false; break;
+    case OpIsHelperInvocationEXT: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupShuffleINTEL: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupShuffleDownINTEL: *hasResult = true; *hasResultType = true; break;
     case OpSubgroupShuffleUpINTEL: *hasResult = true; *hasResultType = true; break;

@@ -23,10 +23,10 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/app_launcher_login_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -36,13 +36,13 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
@@ -347,8 +347,6 @@ void NTPResourceCache::CreateNewTabGuestHTML() {
       l10n_util::GetStringUTF16(guest_tab_link_ids));
   localized_strings.SetString("learnMoreLink", guest_tab_link);
 
-  SetDarkKey(&localized_strings);
-
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &localized_strings);
 
@@ -467,8 +465,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       "isUserSignedIn",
       IdentityManagerFactory::GetForProfile(profile_)->HasPrimaryAccount());
 
-  SetDarkKey(&load_time_data);
-
   // Load the new tab page appropriate for this build.
   base::StringPiece new_tab_html(
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -583,12 +579,4 @@ void NTPResourceCache::CreateNewTabCSS() {
   std::string css_string =
       ui::ReplaceTemplateExpressions(new_tab_theme_css, substitutions);
   new_tab_css_ = base::RefCountedString::TakeString(&css_string);
-}
-
-void NTPResourceCache::SetDarkKey(base::Value* dict) {
-  DCHECK(dict && dict->is_dict());
-  bool use_dark =
-      base::FeatureList::IsEnabled(features::kWebUIDarkMode) &&
-      ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled();
-  dict->SetKey("dark", base::Value(use_dark ? "dark" : ""));
 }

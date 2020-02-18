@@ -13,6 +13,10 @@
 #include "core/fxcrt/fx_system.h"
 #include "third_party/base/numerics/safe_math.h"
 
+#ifndef NDEBUG
+#include <ostream>
+#endif
+
 template <class BaseType>
 class CFX_PTemplate {
  public:
@@ -20,7 +24,7 @@ class CFX_PTemplate {
   CFX_PTemplate(BaseType new_x, BaseType new_y) : x(new_x), y(new_y) {}
   CFX_PTemplate(const CFX_PTemplate& other) : x(other.x), y(other.y) {}
 
-  CFX_PTemplate operator=(const CFX_PTemplate& other) {
+  CFX_PTemplate& operator=(const CFX_PTemplate& other) {
     if (this != &other) {
       x = other.x;
       y = other.y;
@@ -77,7 +81,7 @@ class CFX_STemplate {
     width = 0;
     height = 0;
   }
-  CFX_STemplate operator=(const CFX_STemplate& other) {
+  CFX_STemplate& operator=(const CFX_STemplate& other) {
     if (this != &other) {
       width = other.width;
       height = other.height;

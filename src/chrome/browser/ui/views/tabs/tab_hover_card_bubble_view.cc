@@ -24,7 +24,6 @@
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/theme_provider.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/tween.h"
@@ -32,6 +31,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/background.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/image_view.h"
@@ -46,6 +46,8 @@
 #endif
 
 namespace {
+// Maximum number of lines that a title label occupies.
+int kTitleMaxLines = 2;
 
 // Hover card and preview image dimensions.
 int GetPreferredTabHoverCardWidth() {
@@ -110,10 +112,11 @@ bool TabHoverCardBubbleView::disable_animations_for_testing_ = false;
 
 // TODO(corising): Move this to a place where it could be used for all widgets.
 class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
-    : public gfx::AnimationDelegate {
+    : public views::AnimationDelegateViews {
  public:
   explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
-      : widget_(hover_card),
+      : AnimationDelegateViews(hover_card->GetRootView()),
+        widget_(hover_card),
         fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {}
   ~WidgetFadeAnimationDelegate() override {}
 
@@ -202,11 +205,12 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
 };
 
 class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
-    : public gfx::AnimationDelegate {
+    : public views::AnimationDelegateViews {
  public:
   explicit WidgetSlideAnimationDelegate(
       TabHoverCardBubbleView* hover_card_delegate)
-      : bubble_delegate_(hover_card_delegate),
+      : AnimationDelegateViews(hover_card_delegate),
+        bubble_delegate_(hover_card_delegate),
         slide_animation_(std::make_unique<gfx::SlideAnimation>(this)) {
     constexpr int kSlideDuration = 75;
     slide_animation_->SetSlideDuration(kSlideDuration);
@@ -296,7 +300,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       new views::Label(base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
                        views::style::STYLE_PRIMARY);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label_->SetMultiLine(false);
+  title_label_->SetMultiLine(true);
+  title_label_->SetMaxLines(kTitleMaxLines);
   AddChildView(title_label_);
 
   domain_label_ =
@@ -330,11 +335,11 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   constexpr int kVerticalMargin = 18;
   constexpr int kLineSpacing = 0;
   title_label_->SetProperty(views::kMarginsKey,
-                            new gfx::Insets(kHorizontalMargin, kVerticalMargin,
-                                            kLineSpacing, kVerticalMargin));
-  domain_label_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(kLineSpacing, kVerticalMargin,
-                                          kHorizontalMargin, kVerticalMargin));
+                            gfx::Insets(kHorizontalMargin, kVerticalMargin,
+                                        kLineSpacing, kVerticalMargin));
+  domain_label_->SetProperty(views::kMarginsKey,
+                             gfx::Insets(kLineSpacing, kVerticalMargin,
+                                         kHorizontalMargin, kVerticalMargin));
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);

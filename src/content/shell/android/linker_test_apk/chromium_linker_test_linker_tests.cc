@@ -18,7 +18,7 @@
 #include "base/debug/proc_maps_linux.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "jni/LinkerTests_jni.h"
+#include "content/shell/android/linker_test_jni_headers/LinkerTests_jni.h"
 #include "third_party/re2/src/re2/re2.h"
 
 using base::android::JavaParamRef;
@@ -29,7 +29,7 @@ namespace {
 
 using base::debug::MappedMemoryRegion;
 
-jboolean RunChecks(bool in_browser_process, bool need_relros) {
+jboolean RunChecks(bool in_browser_process) {
   // IMPORTANT NOTE: The Python test control script reads the logcat for
   // lines like:
   //   BROWSER_LINKER_TEST: <status>
@@ -41,7 +41,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
       in_browser_process ? "BROWSER_LINKER_TEST: " : "RENDERER_LINKER_TEST: ";
 
   // The RELRO section(s) will appear in /proc/self/maps as a mapped memory
-  // region for a file with a recognizable name. For the Chromium Linker the
+  // region for a file with a recognizable name. For the LegacyLinker the
   // full name will be something like:
   //
   //   "/dev/ashmem/RELRO:<libname> (deleted)"
@@ -151,18 +151,10 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
     return false;
   }
 
-  if (need_relros) {
-    if (num_shared_relros == 0) {
-      LOG(ERROR) << prefix
-                 << "FAIL Missing shared RELRO sections in this process!";
-      return false;
-    }
-  } else {
-    if (num_shared_relros > 0) {
-      LOG(ERROR) << prefix << "FAIL Unexpected " << num_shared_relros
-                 << " shared RELRO sections in this process!";
-      return false;
-    }
+  if (num_shared_relros == 0) {
+    LOG(ERROR) << prefix
+               << "FAIL Missing shared RELRO sections in this process!";
+    return false;
   }
 
   VLOG(0) << prefix << "SUCCESS";
@@ -173,13 +165,7 @@ jboolean RunChecks(bool in_browser_process, bool need_relros) {
 
 jboolean JNI_LinkerTests_CheckForSharedRelros(JNIEnv* env,
                                               jboolean in_browser_process) {
-  return RunChecks(in_browser_process, true);
-}
-
-jboolean JNI_LinkerTests_CheckForNoSharedRelros(
-    JNIEnv* env,
-    jboolean in_browser_process) {
-  return RunChecks(in_browser_process, false);
+  return RunChecks(in_browser_process);
 }
 
 }  // namespace content

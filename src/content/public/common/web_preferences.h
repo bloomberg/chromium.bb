@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/blink/public/common/css/forced_colors.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom.h"
 #include "ui/base/pointer/pointer_device.h"
@@ -182,6 +183,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
+  bool caret_browsing_enabled;
   bool use_solid_color_scrollbars;
   bool navigate_on_drag_drop;
   blink::mojom::V8CacheOptions v8_cache_options;
@@ -215,6 +217,15 @@ struct CONTENT_EXPORT WebPreferences {
   std::string text_track_font_family;
   // Specifies the value for CSS font-variant property.
   std::string text_track_font_variant;
+
+  // These fields specify values for CSS properties used to style the window
+  // around WebVTT text tracks.
+  // Window color can be any legal CSS color descriptor.
+  std::string text_track_window_color;
+  // Window padding is in em.
+  std::string text_track_window_padding;
+  // Window radius is in pixels.
+  std::string text_track_window_radius;
 
   // Specifies the margin for WebVTT text tracks as a percentage of media
   // element height/width (for horizontal/vertical text respectively).
@@ -304,6 +315,12 @@ struct CONTENT_EXPORT WebPreferences {
   // to be used based on the supported-color-schemes META tag and CSS property.
   blink::PreferredColorScheme preferred_color_scheme =
       blink::PreferredColorScheme::kNoPreference;
+
+  // Forced colors indicates whether forced color mode is active or not. Forced
+  // colors is used to evaluate the forced-colors and prefers-color-scheme
+  // media queries and is used to resolve the default color scheme as indicated
+  // by the preferred_color_scheme.
+  blink::ForcedColors forced_colors = blink::ForcedColors::kNone;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.

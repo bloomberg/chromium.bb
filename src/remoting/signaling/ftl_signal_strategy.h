@@ -26,6 +26,11 @@ class FtlSignalStrategy : public SignalStrategy {
   // send out pending requests after the instance is deleted.
   FtlSignalStrategy(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
                     std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
+
+  // Note that pending outgoing messages will be silently dropped when the
+  // signal strategy is being deleted. If you want to send last minute messages,
+  // consider calling Disconnect() then posting a delayed task to delete the
+  // strategy.
   ~FtlSignalStrategy() override;
 
   // SignalStrategy interface.
@@ -38,10 +43,7 @@ class FtlSignalStrategy : public SignalStrategy {
   void RemoveListener(Listener* listener) override;
   bool SendStanza(std::unique_ptr<jingle_xmpp::XmlElement> stanza) override;
   std::string GetNextId() override;
-
-  // Returns true if the signal strategy gets into an error state when it tries
-  // to sign in. You can get back the actual error by calling GetError().
-  bool IsSignInError() const;
+  bool IsSignInError() const override;
 
  private:
   friend class FtlSignalStrategyTest;

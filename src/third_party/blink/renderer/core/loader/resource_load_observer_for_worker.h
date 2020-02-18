@@ -25,6 +25,7 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
   ~ResourceLoadObserverForWorker() override;
 
   // ResourceLoadObserver implementation.
+  void DidStartRequest(const FetchParameters&, ResourceType) override;
   void WillSendRequest(uint64_t identifier,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
@@ -44,11 +45,10 @@ class ResourceLoadObserverForWorker final : public ResourceLoadObserver {
                                     int transfer_size_diff) override;
   void DidDownloadToBlob(uint64_t identifier, BlobDataHandle*) override;
   void DidFinishLoading(uint64_t identifier,
-                        TimeTicks finish_time,
+                        base::TimeTicks finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
-                        bool should_report_corb_blocking,
-                        ResponseSource) override;
+                        bool should_report_corb_blocking) override;
   void DidFailLoading(const KURL&,
                       uint64_t identifier,
                       const ResourceError&,

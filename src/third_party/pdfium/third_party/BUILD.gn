@@ -625,6 +625,7 @@ jumbo_source_set("pdfium_base") {
     "base/debug/alias.h",
     "base/logging.h",
     "base/numerics/safe_conversions.h",
+    "base/numerics/safe_conversions_arm_impl.h",
     "base/numerics/safe_conversions_impl.h",
     "base/numerics/safe_math.h",
     "base/numerics/safe_math_impl.h",
@@ -640,6 +641,25 @@ jumbo_source_set("pdfium_base") {
       "base/win/win_util.cc",
       "base/win/win_util.h",
     ]
+  }
+}
+
+jumbo_source_set("pdfium_base_test_support") {
+  testonly = true
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+    ":pdfium_third_party_config",
+  ]
+  sources = []
+  deps = []
+
+  if (is_posix || is_fuchsia) {
+    sources += [
+      "base/test/scoped_locale.cc",
+      "base/test/scoped_locale.h",
+    ]
+    deps += [ "//testing/gtest" ]
   }
 }
 

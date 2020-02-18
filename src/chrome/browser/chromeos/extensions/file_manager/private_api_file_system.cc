@@ -257,11 +257,12 @@ void StatusCallbackToResponseCallback(
 // Calls a response callback (on the UI thread) with a file content hash
 // computed on the IO thread.
 void ComputeChecksumRespondOnUIThread(
-    base::OnceCallback<void(const std::string&)> callback,
-    const std::string& hash) {
+    base::OnceCallback<void(std::string)> callback,
+    std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::BindOnce(std::move(callback), hash));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(std::move(callback), std::move(hash)));
 }
 
 // Calls a response callback on the UI thread.
@@ -336,6 +337,22 @@ std::vector<std::pair<base::FilePath, bool>> SearchByPattern(
           std::min(max_results - prefix_matches.size(), other_matches.size()));
 
   return prefix_matches;
+}
+
+chromeos::disks::FormatFileSystemType ApiFormatFileSystemToChromeEnum(
+    api::file_manager_private::FormatFileSystemType filesystem) {
+  switch (filesystem) {
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_NONE:
+      return chromeos::disks::FormatFileSystemType::kUnknown;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_VFAT:
+      return chromeos::disks::FormatFileSystemType::kVfat;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_EXFAT:
+      return chromeos::disks::FormatFileSystemType::kExfat;
+    case api::file_manager_private::FORMAT_FILE_SYSTEM_TYPE_NTFS:
+      return chromeos::disks::FormatFileSystemType::kNtfs;
+  }
+  NOTREACHED() << "Unknown format filesystem " << filesystem;
+  return chromeos::disks::FormatFileSystemType::kUnknown;
 }
 
 }  // namespace
@@ -705,7 +722,9 @@ FileManagerPrivateFormatVolumeFunction::Run() {
     return RespondNow(Error("Volume not found"));
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
-      volume->mount_path().AsUTF8Unsafe());
+      volume->mount_path().AsUTF8Unsafe(),
+      ApiFormatFileSystemToChromeEnum(params->filesystem),
+      params->volume_label);
   return RespondNow(NoArguments());
 }
 
@@ -1059,9 +1078,9 @@ FileManagerPrivateInternalComputeChecksumFunction::Run() {
 }
 
 void FileManagerPrivateInternalComputeChecksumFunction::RespondWith(
-    const std::string& hash) {
+    std::string hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Respond(OneArgument(std::make_unique<base::Value>(hash)));
+  Respond(OneArgument(std::make_unique<base::Value>(std::move(hash))));
 }
 
 FileManagerPrivateSearchFilesByHashesFunction::
@@ -1230,7 +1249,7 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
     return;
   }
   const std::string fs_name = my_files_virtual_path.value();
-  const auto fs_root = base::StrCat({url.spec(), "/"});
+  const std::string fs_root = base::StrCat({url.spec(), "/"});
 
   auto entries = std::make_unique<base::ListValue>();
   entries->GetList().reserve(results.size());

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import android.content.res.Resources;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
@@ -11,7 +12,9 @@ import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.previews.PreviewsUma;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -20,6 +23,11 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Contains the controller logic of the Status component.
  */
 class StatusMediator {
+    // The size that the icon should be displayed as.
+    private static final int SEARCH_ENGINE_LOGO_ICON_TARGET_SIZE_DP = 24;
+    // The size given to LargeIconBridge to increase the probability that we'll get an icon back.
+    private static final int SEARCH_ENGINE_LOGO_ICON_DOWNLOAD_SIZE_DP = 16;
+
     private final PropertyModel mModel;
     private boolean mDarkTheme;
     private boolean mUrlHasFocus;
@@ -27,8 +35,10 @@ class StatusMediator {
     private boolean mVerboseStatusSpaceAvailable;
     private boolean mPageIsPreview;
     private boolean mPageIsOffline;
-
     private boolean mShowStatusIconWhenUrlFocused;
+    private boolean mIsSecurityButtonShown;
+    private boolean mShouldShowSearchEngineLogo;
+    private boolean mIsSearchEngineGoogle;
 
     private int mUrlMinWidth;
     private int mSeparatorMinWidth;
@@ -41,11 +51,13 @@ class StatusMediator {
     private @StringRes int mSecurityIconDescriptionRes;
     private @DrawableRes int mNavigationIconTintRes;
 
-    private boolean mIsSecurityButtonShown;
+    private Resources mResources;
 
-    StatusMediator(PropertyModel model) {
+    StatusMediator(PropertyModel model, Resources resources) {
         mModel = model;
         updateColorTheme();
+
+        mResources = resources;
     }
 
     /**
@@ -280,6 +292,17 @@ class StatusMediator {
                 || mPageIsOffline;
     }
 
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mModel.set(StatusProperties.STATUS_ICON, null);
+        mModel.set(StatusProperties.STATUS_ICON_RES, 0);
+        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
+
+        mIsSearchEngineGoogle = isSearchEngineGoogle;
+        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+        updateLocationBarIcon();
+    }
+
     /**
      * Update selection of icon presented on the location bar.
      *
@@ -299,12 +322,33 @@ class StatusMediator {
 
         mIsSecurityButtonShown = false;
 
+        // When the search engine logo should be shown, but the engine isn't Google. In this case,
+        // we download the icon on the fly.
+        if (!mIsSearchEngineGoogle && mShowStatusIconWhenUrlFocused
+                && mShouldShowSearchEngineLogo) {
+            mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, /* no tint */ 0);
+
+            // TODO(crbug.com/985565): Cache this favicon in Java.
+            SearchEngineLogoUtils.getSearchEngineLogoFavicon(
+                    Profile.getLastUsedProfile().getOriginalProfile(), mResources, (favicon) -> {
+                        if (favicon == null) return;
+                        mModel.set(StatusProperties.STATUS_ICON, favicon);
+                    });
+
+            return;
+        }
+
         if (mUrlHasFocus) {
             if (mShowStatusIconWhenUrlFocused) {
-                icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
-                                                     : R.drawable.ic_omnibox_page;
-                tint = mNavigationIconTintRes;
-                description = R.string.accessibility_toolbar_btn_site_info;
+                if (mShouldShowSearchEngineLogo && mIsSearchEngineGoogle) {
+                    icon = R.drawable.ic_logo_googleg_24dp;
+                } else {
+                    icon = mFirstSuggestionIsSearchQuery ? R.drawable.omnibox_search
+                                                         : R.drawable.ic_omnibox_page;
+                    tint = mNavigationIconTintRes;
+                    description = R.string.accessibility_toolbar_btn_site_info;
+                }
             }
         } else if (mSecurityIconRes != 0) {
             mIsSecurityButtonShown = true;

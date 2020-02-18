@@ -29,47 +29,44 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
 
 PACKAGE_INFO = dict(chrome.PACKAGE_INFO)
 PACKAGE_INFO.update({
-    'legacy_browser': chrome.PackageInfo(
-        'com.google.android.browser',
-        'com.android.browser.BrowserActivity',
-        None,
-        None),
-    'chromecast_shell': chrome.PackageInfo(
-        'com.google.android.apps.mediashell',
-        'com.google.android.apps.mediashell.MediaShellActivity',
-        'castshell-command-line',
-        None),
-    'android_webview_shell': chrome.PackageInfo(
-        'org.chromium.android_webview.shell',
-        'org.chromium.android_webview.shell.AwShellActivity',
-        'android-webview-command-line',
-        None),
-    'gtest': chrome.PackageInfo(
-        'org.chromium.native_test',
-        'org.chromium.native_test.NativeUnitTestActivity',
-        'chrome-native-tests-command-line',
-        None),
-    'components_browsertests': chrome.PackageInfo(
-        'org.chromium.components_browsertests_apk',
-        ('org.chromium.components_browsertests_apk' +
-         '.ComponentsBrowserTestsActivity'),
-        'chrome-native-tests-command-line',
-        None),
-    'content_browsertests': chrome.PackageInfo(
+    'legacy_browser':
+    chrome.PackageInfo('com.google.android.browser',
+                       'com.android.browser.BrowserActivity', None, None),
+    'chromecast_shell':
+    chrome.PackageInfo('com.google.android.apps.mediashell',
+                       'com.google.android.apps.mediashell.MediaShellActivity',
+                       'castshell-command-line', None),
+    'android_webview_shell':
+    chrome.PackageInfo('org.chromium.android_webview.shell',
+                       'org.chromium.android_webview.shell.AwShellActivity',
+                       'android-webview-command-line', None),
+    'gtest':
+    chrome.PackageInfo('org.chromium.native_test',
+                       'org.chromium.native_test.NativeUnitTestActivity',
+                       'chrome-native-tests-command-line', None),
+    'android_browsertests':
+    chrome.PackageInfo('org.chromium.android_browsertests_apk',
+                       ('org.chromium.android_browsertests_apk' +
+                        '.ChromeBrowserTestsActivity'),
+                       'chrome-native-tests-command-line', None),
+    'components_browsertests':
+    chrome.PackageInfo('org.chromium.components_browsertests_apk',
+                       ('org.chromium.components_browsertests_apk' +
+                        '.ComponentsBrowserTestsActivity'),
+                       'chrome-native-tests-command-line', None),
+    'content_browsertests':
+    chrome.PackageInfo(
         'org.chromium.content_browsertests_apk',
         'org.chromium.content_browsertests_apk.ContentBrowserTestsActivity',
-        'chrome-native-tests-command-line',
-        None),
-    'chromedriver_webview_shell': chrome.PackageInfo(
-        'org.chromium.chromedriver_webview_shell',
-        'org.chromium.chromedriver_webview_shell.Main',
-        None,
-        None),
-    'android_webview_cts': chrome.PackageInfo(
-        'com.android.webview',
-        'com.android.cts.webkit.WebViewStartupCtsActivity',
-        'webview-command-line',
-        None),
+        'chrome-native-tests-command-line', None),
+    'chromedriver_webview_shell':
+    chrome.PackageInfo('org.chromium.chromedriver_webview_shell',
+                       'org.chromium.chromedriver_webview_shell.Main', None,
+                       None),
+    'android_webview_cts':
+    chrome.PackageInfo('com.android.webview',
+                       'com.android.cts.webkit.WebViewStartupCtsActivity',
+                       'webview-command-line', None),
 })
 
 

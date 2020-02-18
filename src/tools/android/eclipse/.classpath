@@ -78,8 +78,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/url_formatter/android/java/src"/>
     <classpathentry kind="src" path="components/variations/android/java/src"/>
     <classpathentry kind="src" path="components/embedder_support/android/java/src"/>
-    <classpathentry kind="src" path="components/web_restrictions/browser/java/src"/>
-    <classpathentry kind="src" path="components/web_restrictions/browser/junit/src"/>
     <classpathentry kind="src" path="components/minidump_uploader/android/java/src"/>
     <classpathentry kind="src" path="components/minidump_uploader/android/javatests/src"/>
     <classpathentry kind="src" path="content/public/android/java/src"/>

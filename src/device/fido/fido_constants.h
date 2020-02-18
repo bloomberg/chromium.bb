@@ -12,6 +12,7 @@
 
 #include "base/component_export.h"
 #include "base/time/time.h"
+#include "device/fido/fido_types.h"
 
 namespace device {
 
@@ -41,12 +42,7 @@ enum class FidoReturnCode : uint8_t {
   // kStorageFull indicates that a resident credential could not be created
   // because the authenticator has insufficient storage.
   kStorageFull,
-};
-
-enum class ProtocolVersion {
-  kCtap2,
-  kU2f,
-  kUnknown,
+  kAuthenticatorMissingBioEnrollment,
 };
 
 // Length of the U2F challenge parameter:
@@ -251,6 +247,7 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorGetInfo = 0x04,
   kAuthenticatorClientPin = 0x06,
   kAuthenticatorReset = 0x07,
+  kAuthenticatorBioEnrollment = 0x09,
   kAuthenticatorBioEnrollmentPreview = 0x40,
   kAuthenticatorCredentialManagement = 0x0a,
   kAuthenticatorCredentialManagementPreview = 0x41,
@@ -266,27 +263,6 @@ enum class U2fApduInstruction : uint8_t {
   kVersion = 0x03,
   kVendorFirst = 0x40,
   kVenderLast = 0xBF,
-};
-
-enum class CredentialType { kPublicKey };
-
-// Authenticator attachment constraint passed on from the relying party as a
-// parameter for AuthenticatorSelectionCriteria. |kAny| is equivalent to the
-// (optional) attachment field not being present.
-// https://w3c.github.io/webauthn/#attachment
-enum class AuthenticatorAttachment {
-  kAny,
-  kPlatform,
-  kCrossPlatform,
-};
-
-// User verification constraint passed on from the relying party as a parameter
-// for AuthenticatorSelectionCriteria and for CtapGetAssertion request.
-// https://w3c.github.io/webauthn/#enumdef-userverificationrequirement
-enum class UserVerificationRequirement {
-  kRequired,
-  kPreferred,
-  kDiscouraged,
 };
 
 // Enumerates the two types of application parameter values used: the
@@ -324,6 +300,7 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialManagementMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCredentialManagementPreviewMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
 
 // HID transport specific constants.
@@ -400,16 +377,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#BTCORE
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::TimeDelta kBleDevicePairingModeWaitingInterval;
-
-// https://w3c.github.io/webauthn/#attestation-convey
-enum class AttestationConveyancePreference : uint8_t {
-  NONE,
-  INDIRECT,
-  DIRECT,
-  // Non-standard value for individual attestation that we hope to end up in
-  // the standard eventually.
-  ENTERPRISE,
-};
 
 // CredProtect enumerates the levels of credential protection specified by the
 // `credProtect` CTAP2 extension.

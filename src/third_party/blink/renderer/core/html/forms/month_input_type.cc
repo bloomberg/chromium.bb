@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -76,7 +76,8 @@ String MonthInputType::SerializeWithMilliseconds(double value) const {
 
 Decimal MonthInputType::DefaultValueForStepUp() const {
   DateComponents date;
-  date.SetMillisecondsSinceEpochForMonth(ConvertToLocalTime(CurrentTimeMS()));
+  date.SetMillisecondsSinceEpochForMonth(
+      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
   double months = date.MonthsSinceEpoch();
   DCHECK(std::isfinite(months));
   return Decimal::FromDouble(months);

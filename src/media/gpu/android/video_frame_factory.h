@@ -15,14 +15,10 @@
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gpu {
-class CommandBufferStub;
-}  // namespace gpu
-
 namespace media {
 
-struct AVDASurfaceBundle;
 class CodecOutputBuffer;
+class CodecSurfaceBundle;
 class TextureOwner;
 class VideoFrame;
 
@@ -30,7 +26,6 @@ class VideoFrame;
 // safe. Virtual for testing; see VideoFrameFactoryImpl.
 class MEDIA_GPU_EXPORT VideoFrameFactory {
  public:
-  using GetStubCb = base::Callback<gpu::CommandBufferStub*()>;
   using InitCb = base::RepeatingCallback<void(scoped_refptr<TextureOwner>)>;
   using OnceOutputCb = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
 
@@ -60,7 +55,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   // Notify us about the current surface bundle that subsequent video frames
   // should use.
   virtual void SetSurfaceBundle(
-      scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
+      scoped_refptr<CodecSurfaceBundle> surface_bundle) = 0;
 
   // Creates a new VideoFrame backed by |output_buffer|.  Runs |output_cb| on
   // the calling sequence to return the frame.

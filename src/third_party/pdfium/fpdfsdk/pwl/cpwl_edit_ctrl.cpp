@@ -55,8 +55,7 @@ WideString CPWL_EditCtrl::GetSelectedText() {
 }
 
 void CPWL_EditCtrl::ReplaceSelection(const WideString& text) {
-  m_pEdit->ClearSelection();
-  m_pEdit->InsertText(text, FX_CHARSET_Default);
+  m_pEdit->ReplaceSelection(text);
 }
 
 bool CPWL_EditCtrl::RePosChildWnd() {
@@ -331,7 +330,7 @@ bool CPWL_EditCtrl::SetCaret(bool bVisible,
   if (!IsFocused() || m_pEdit->IsSelected())
     bVisible = false;
 
-  ObservedPtr thisObserved(this);
+  ObservedPtr<CPWL_EditCtrl> thisObserved(this);
   m_pEditCaret->SetCaret(bVisible, ptHead, ptFoot);
   if (!thisObserved)
     return false;

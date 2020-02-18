@@ -305,7 +305,7 @@ gfx::ImageSkia ActiveNetworkIcon::GetDefaultImageForNoNetwork(
 void ActiveNetworkIcon::SetCellularUninitializedMsg() {
   const DeviceStateProperties* cellular =
       model_->GetDevice(NetworkType::kCellular);
-  if (cellular && cellular->state == DeviceStateType::kUninitialized) {
+  if (cellular && cellular->device_state == DeviceStateType::kUninitialized) {
     cellular_uninitialized_msg_ = IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR;
     uninitialized_state_time_ = base::Time::Now();
     return;

@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -60,6 +60,11 @@ class ProtocolHandlerRegistry : public KeyedService {
                                           ProtocolHandlerRegistry* registry);
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    virtual void OnProtocolHandlerRegistryChanged() = 0;
+  };
+
   // IOThreadDelegate is an IO thread specific object. Access to the class
   // should all be done via the IO thread. The registry living on the UI thread
   // makes a best effort to update the IO object after local updates are
@@ -82,7 +87,7 @@ class ProtocolHandlerRegistry : public KeyedService {
     // Should be called only from the IO thread.
     void SetDefault(const ProtocolHandler& handler);
 
-    // Returns a translated url if |url| is handled by a protocol handler,
+    // Returns a translated URL if |url| is handled by a protocol handler,
     // otherwise it returns an empty URL.
     GURL Translate(const GURL& url) const;
 
@@ -113,58 +118,12 @@ class ProtocolHandlerRegistry : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(IOThreadDelegate);
   };
 
-  // JobInterceptorFactory intercepts URLRequestJob creation for URLRequests the
-  // ProtocolHandlerRegistry is registered to handle.  When no handler is
-  // registered, the URLRequest is passed along to the chained
-  // URLRequestJobFactory (set with |JobInterceptorFactory::Chain|).
-  // JobInterceptorFactory's are created via
-  // |ProtocolHandlerRegistry::CreateJobInterceptorFactory|.
-  class JobInterceptorFactory : public net::URLRequestJobFactory {
-   public:
-    // |io_thread_delegate| is used to perform actual job creation work.
-    explicit JobInterceptorFactory(IOThreadDelegate* io_thread_delegate);
-    ~JobInterceptorFactory() override;
-
-    // |job_factory| is set as the URLRequestJobFactory where requests are
-    // forwarded if JobInterceptorFactory decides to pass on them.
-    void Chain(std::unique_ptr<net::URLRequestJobFactory> job_factory);
-
-    // URLRequestJobFactory implementation.
-    net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
-        const std::string& scheme,
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const override;
-
-    net::URLRequestJob* MaybeInterceptRedirect(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate,
-        const GURL& location) const override;
-
-    net::URLRequestJob* MaybeInterceptResponse(
-        net::URLRequest* request,
-        net::NetworkDelegate* network_delegate) const override;
-
-    bool IsHandledProtocol(const std::string& scheme) const override;
-    bool IsSafeRedirectTarget(const GURL& location) const override;
-
-   private:
-    // When JobInterceptorFactory decides to pass on particular requests,
-    // they're forwarded to the chained URLRequestJobFactory, |job_factory_|.
-    std::unique_ptr<URLRequestJobFactory> job_factory_;
-    // |io_thread_delegate_| performs the actual job creation decisions by
-    // mirroring the ProtocolHandlerRegistry on the IO thread.
-    scoped_refptr<IOThreadDelegate> io_thread_delegate_;
-
-    DISALLOW_COPY_AND_ASSIGN(JobInterceptorFactory);
-  };
-
   // Creates a new instance. Assumes ownership of |delegate|.
   ProtocolHandlerRegistry(content::BrowserContext* context, Delegate* delegate);
   ~ProtocolHandlerRegistry() override;
 
-  // Returns a net::URLRequestJobFactory suitable for use on the IO thread, but
-  // is initialized on the UI thread.
-  std::unique_ptr<JobInterceptorFactory> CreateJobInterceptorFactory();
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Called when a site tries to register as a protocol handler. If the request
   // can be handled silently by the registry - either to ignore the request
@@ -265,6 +224,10 @@ class ProtocolHandlerRegistry : public KeyedService {
   // exists.
   const ProtocolHandler& GetHandlerFor(const std::string& scheme) const;
 
+  // Returns a translated URL if |url| is handled by a protocol handler,
+  // otherwise it returns an empty URL.
+  GURL Translate(const GURL& url) const;
+
   // Puts this registry in the enabled state - registered protocol handlers
   // will handle requests.
   void Enable();
@@ -335,7 +298,7 @@ class ProtocolHandlerRegistry : public KeyedService {
   // responsible for deleting this Value.
   base::Value* EncodeIgnoredHandlers();
 
-  // Sends a notification of the given type to the NotificationService.
+  // Notifies observers of a change to the registry.
   void NotifyChanged();
 
   // Registers a new protocol handler.
@@ -437,9 +400,11 @@ class ProtocolHandlerRegistry : public KeyedService {
   // are posted to the IO thread where updates are applied to this object.
   scoped_refptr<IOThreadDelegate> io_thread_delegate_;
 
+  base::ObserverList<Observer> observers_;
+
   // Makes it possible to invalidate the callback for the
   // DefaultProtocolClientWorker.
-  base::WeakPtrFactory<ProtocolHandlerRegistry> weak_ptr_factory_;
+  base::WeakPtrFactory<ProtocolHandlerRegistry> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistry);
 };

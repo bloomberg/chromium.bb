@@ -17,9 +17,8 @@ namespace blink {
 
 // Wrapper function defined in WebKit.h
 void LogRuntimeCallStats() {
-  LOG(INFO)
-      << "\n"
-      << RuntimeCallStats::From(MainThreadIsolate())->ToString().Utf8().data();
+  LOG(INFO) << "\n"
+            << RuntimeCallStats::From(MainThreadIsolate())->ToString().Utf8();
 }
 
 namespace {
@@ -38,16 +37,16 @@ void RuntimeCallTimer::Start(RuntimeCallCounter* counter,
   DCHECK(!IsRunning());
   counter_ = counter;
   parent_ = parent;
-  start_ticks_ = TimeTicks(clock_->NowTicks());
+  start_ticks_ = base::TimeTicks(clock_->NowTicks());
   if (parent_)
     parent_->Pause(start_ticks_);
 }
 
 RuntimeCallTimer* RuntimeCallTimer::Stop() {
   DCHECK(IsRunning());
-  TimeTicks now = TimeTicks(clock_->NowTicks());
+  base::TimeTicks now = base::TimeTicks(clock_->NowTicks());
   elapsed_time_ += (now - start_ticks_);
-  start_ticks_ = TimeTicks();
+  start_ticks_ = base::TimeTicks();
   counter_->IncrementAndAddTime(elapsed_time_);
   if (parent_)
     parent_->Resume(now);

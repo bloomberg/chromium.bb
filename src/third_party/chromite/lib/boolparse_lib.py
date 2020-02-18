@@ -37,6 +37,7 @@ class _BoolOperand(object):
   def __str__(self):
     return self.label
 
+  # Python 2 glue.
   __nonzero__ = __bool__
 
 
@@ -66,6 +67,7 @@ class _BoolBinOp(object):
     """
     return self.evalop(bool(a) for a in self.args)
 
+  # Python 2 glue.
   __nonzero__ = __bool__
 
 
@@ -91,6 +93,7 @@ class _BoolNot(object):
     v = bool(self.arg)
     return not v
 
+  # Python 2 glue.
   __nonzero__ = __bool__
 
 

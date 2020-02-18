@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -67,7 +68,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         TraceEvent.begin(TAG);
 
         mModalDialogManager = activity.getModalDialogManager();
-        mTab = activity.getActivityTab();
+        mTab = nativePageHost.getActiveTab();
         Profile profile = mTab.getProfile();
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
@@ -116,7 +117,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
                 activity, profile, nativePageHost, TabModelSelector.from(mTab));
         SuggestionsUiDelegate suggestionsUiDelegate = new SuggestionsUiDelegateImpl(
                 suggestionsSource, eventReporter, navigationDelegate, profile, nativePageHost,
-                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
+                GlobalDiscardableReferencePool.getReferencePool(), activity.getSnackbarManager());
         suggestionsUiDelegate.addDestructionObserver(this::destroy);
 
         assert suggestionsUiDelegate.getSuggestionsSource() != null;

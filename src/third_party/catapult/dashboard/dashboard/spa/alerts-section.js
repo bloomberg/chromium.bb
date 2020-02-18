@@ -4,43 +4,84 @@
 */
 'use strict';
 
-import './cp-loading.js';
+import './cp-flex.js';
 import './error-set.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import AlertsControls from './alerts-controls.js';
-import AlertsRequest from './alerts-request.js';
-import AlertsTable from './alerts-table.js';
-import ChartCompound from './chart-compound.js';
-import ChartTimeseries from './chart-timeseries.js';
-import ExistingBugRequest from './existing-bug-request.js';
-import MenuInput from './menu-input.js';
-import NewBugRequest from './new-bug-request.js';
-import TriageExisting from './triage-existing.js';
-import TriageNew from './triage-new.js';
-import groupAlerts from './group-alerts.js';
+import '@chopsui/chops-button';
+import '@chopsui/chops-loading';
+import '@chopsui/chops-switch';
+import {AlertsControls} from './alerts-controls.js';
+import {AlertsRequest} from './alerts-request.js';
+import {AlertsTable} from './alerts-table.js';
+import {BatchIterator} from '@chopsui/batch-iterator';
+import {CHAIN, TOGGLE, UPDATE} from './simple-redux.js';
+import {ChartCompound} from './chart-compound.js';
+import {ChartTimeseries} from './chart-timeseries.js';
 import {ElementBase, STORE} from './element-base.js';
-import {UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {ExistingBugRequest} from './existing-bug-request.js';
+import {MenuInput} from './menu-input.js';
+import {NewBugRequest} from './new-bug-request.js';
+import {TriageExisting} from './triage-existing.js';
+import {TriageNew} from './triage-new.js';
+import {autotriage} from './autotriage.js';
+import {get, set} from 'dot-prop-immutable';
+import {groupAlerts} from './group-alerts.js';
+import {html, css} from 'lit-element';
 
 import {
-  BatchIterator,
   animationFrame,
+  isDebug,
+  isProduction,
+  measureElement,
   plural,
-  setImmutable,
   simpleGUID,
-  transformAlert,
   timeout,
+  transformAlert,
 } from './utils.js';
 
 const NOTIFICATION_MS = 5000;
+const FULLAUTOTRIAGE_DELAY_MS = 3000;
 
 // loadMore() below chases cursors when loading untriaged alerts until it's
 // loaded enough alert groups and spent enough time waiting for the backend.
 const ENOUGH_GROUPS = 100;
 const ENOUGH_LOADING_MS = 60000;
 
-export default class AlertsSection extends ElementBase {
+const HOTKEYS = {
+  HELP: '?',
+  DOWN: 'j',
+  UP: 'k',
+  NEW_BUG: 'n',
+  SELECT: 'x',
+  EXPAND_GROUP: 'g',
+  EXPAND_TRIAGED: 't',
+  START_SORT: 's',
+  AUTOTRIAGE: 'a',
+  EXISTING_BUG: 'e',
+  NEW_BUG: 'n',
+  IGNORE: 'i',
+  UNASSIGN: 'u',
+  SEARCH: '/',
+};
+
+const SORT_HOTKEYS = {
+  'c': 'count',
+  't': 'triaged',
+  'u': 'bugId',
+  'r': 'startRevision',
+  's': 'suite',
+  'm': 'measurement',
+  'a': 'master',
+  'b': 'bot',
+  'e': 'case',
+  'd': 'deltaValue',
+  'p': 'percentDeltaValue',
+};
+
+if (new Set(Object.values(HOTKEYS)).size !== Object.keys(HOTKEYS).length) {
+  throw new Error('Duplicate hotkey');
+}
+
+export class AlertsSection extends ElementBase {
   static get is() { return 'alerts-section'; }
 
   static get properties() {
@@ -56,6 +97,8 @@ export default class AlertsSection extends ElementBase {
       sectionId: Number,
       selectedAlertPath: String,
       totalCount: Number,
+      autotriage: Object,
+      hotkeyable: Boolean,
     };
   }
 
@@ -70,163 +113,363 @@ export default class AlertsSection extends ElementBase {
       sectionId: options.sectionId || simpleGUID(),
       selectedAlertPath: undefined,
       totalCount: 0,
+      autotriage: {
+        fullAuto: options.fullAuto || false,
+        running: false,
+        bugId: 0,
+        explanation: '',
+      },
+      hotkeyable: false,
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        #triage_controls {
-          align-items: center;
-          display: flex;
-          padding-left: 24px;
-          transition: background-color var(--transition-short, 0.2s),
-                      color var(--transition-short, 0.2s);
-        }
+  static get styles() {
+    return css`
+      #wrapper {
+        border: 4px solid var(--background-color);
+        padding: 4px;
+      }
 
-        #triage_controls[anySelected] {
-          background-color: var(--primary-color-light, lightblue);
-          color: var(--primary-color-dark, blue);
-        }
+      #wrapper[hotkeyable] {
+        border-color: var(--primary-color-medium);
+      }
 
-        #triage_controls .button {
-          background: unset;
-          cursor: pointer;
-          font-weight: bold;
-          padding: 8px;
-          text-transform: uppercase;
-        }
+      #triage-controls {
+        align-items: center;
+        padding-left: 24px;
+        transition: background-color var(--transition-short, 0.2s),
+                    color var(--transition-short, 0.2s);
+      }
 
-        #triage_controls .button[disabled] {
-          color: var(--neutral-color-dark, grey);
-          font-weight: normal;
-        }
+      #triage-controls[anySelected] {
+        background-color: var(--primary-color-light, lightblue);
+        color: var(--primary-color-dark, blue);
+      }
 
-        #count {
-          flex-grow: 1;
-        }
-      </style>
+      #triage-controls .button {
+        background: unset;
+        cursor: pointer;
+        font-weight: bold;
+        padding: 8px;
+        text-transform: uppercase;
+      }
 
-      <alerts-controls
-          id="controls"
-          state-path="[[statePath]]"
-          on-sources="onSources_">
-      </alerts-controls>
+      #triage-controls .button[disabled] {
+        color: var(--neutral-color-dark, grey);
+        font-weight: normal;
+      }
 
-      <error-set errors="[[errors]]"></error-set>
-      <cp-loading loading$="[[isLoading_(isLoading, preview.isLoading)]]">
-      </cp-loading>
+      #count {
+        padding: 8px;
+        flex-grow: 1;
+      }
 
-      <template is="dom-if" if="[[!isEmpty_(alertGroups)]]">
-        <div id="triage_controls"
-            anySelected$="[[!isEqual_(0, selectedAlertsCount)]]">
-          <div id="count">
-            [[selectedAlertsCount]] selected of
-            [[summary_(showingTriaged, alertGroups)]]
-          </div>
+      #autotriage {
+        align-items: center;
+        border: 2px solid var(--primary-color-light, lightblue);
+        padding: 4px;
+      }
 
-          <span style="position: relative;">
-            <div class="button"
-                disabled$="[[!canTriage_(alertGroups)]]"
-                on-click="onTriageNew_">
-              New Bug
-            </div>
-
-            <triage-new
-                tabindex="0"
-                state-path="[[statePath]].newBug"
-                on-submit="onTriageNewSubmit_">
-            </triage-new>
-          </span>
-
-          <span style="position: relative;">
-            <div class="button"
-                disabled$="[[!canTriage_(alertGroups)]]"
-                on-click="onTriageExisting_">
-              Existing Bug
-            </div>
-
-            <triage-existing
-                tabindex="0"
-                state-path="[[statePath]].existingBug"
-                on-submit="onTriageExistingSubmit_">
-            </triage-existing>
-          </span>
-
-          <div class="button"
-              disabled$="[[!canTriage_(alertGroups)]]"
-              on-click="onIgnore_">
-            Ignore
-          </div>
-
-          <div class="button"
-              disabled$="[[!canUnassignAlerts_(alertGroups)]]"
-              on-click="onUnassign_">
-            Unassign
-          </div>
-        </div>
-      </template>
-
-      <alerts-table
-          state-path="[[statePath]]"
-          on-selected="onSelected_"
-          on-alert-click="onAlertClick_">
-      </alerts-table>
-
-      <iron-collapse opened="[[!allTriaged_(alertGroups, showingTriaged)]]">
-        <chart-compound
-            id="preview"
-            state-path="[[statePath]].preview"
-            linked-state-path="[[linkedStatePath]]"
-            on-line-count-change="onPreviewLineCountChange_">
-          Select alerts using the checkboxes in the table above to preview
-          their timeseries.
-        </chart-compound>
-      </iron-collapse>
+      #explanation {
+        flex-grow: 1;
+        text-align: center;
+      }
     `;
   }
 
-  ready() {
-    super.ready();
+  render() {
+    const selectedAlerts = AlertsTable.getSelectedAlerts(this.alertGroups);
+    let anyTriaged = false;
+    for (const alert of selectedAlerts) {
+      if (alert.bugId) {
+        anyTriaged = true;
+        break;
+      }
+    }
+
+    const canTriage = (selectedAlerts.length > 0) && !anyTriaged;
+    const allTriaged = this.allTriaged_();
+    const summary = AlertsSection.summary(
+        this.showingTriaged, this.alertGroups, this.totalCount);
+
+    const canAutotriage = isProduction() && this.sheriff &&
+      this.sheriff.selectedOptions && this.sheriff.selectedOptions.length;
+
+    let fullAutoTooltip = this.autotriage.fullAuto ?
+      'Now triaging alerts completely automatically. Click to switch to ' +
+      'semi-automatic, where you need to click a button to accept autotriage ' +
+      'suggestions.' :
+      'Now semi-automatic, where you can click a button to accept autotriage ' +
+      'suggestions. Click to switch to full automatic.';
+    fullAutoTooltip += '\n\nDISABLED until sheriffs approve the ' +
+      'heuristics in autotriage.js';
+    let autotriageLabel = 'Autotriage';
+    if (this.autotriage.explanation) {
+      if (this.autotriage.fullAuto) {
+        autotriageLabel = this.autotriage.running ? 'Stop' : 'Start';
+      } else {
+        if (this.autotriage.bugId < 0) {
+          autotriageLabel = 'Ignore';
+        } else if (this.autotriage.bugId > 0) {
+          autotriageLabel = 'Assign to ' + this.autotriage.bugId;
+        } else {
+          autotriageLabel = 'New Bug';
+        }
+      }
+    }
+
+    return html`
+      <div id="wrapper" ?hotkeyable="${this.hotkeyable}">
+        <alerts-controls
+            id="controls"
+            .statePath="${this.statePath}"
+            @sources="${this.onSources_}">
+        </alerts-controls>
+
+        <error-set .errors="${this.errors}"></error-set>
+        <chops-loading ?loading="${this.isLoading || this.preview.isLoading}">
+        </chops-loading>
+
+        ${(this.alertGroups && this.alertGroups.length) ? html`
+          ${!canAutotriage ? '' : html`
+            <cp-flex id="autotriage">
+              <chops-switch
+                  title="${fullAutoTooltip}"
+                  disabled="true"
+                  ?checked="${this.autotriage.fullAuto}"
+                  @change="${this.onToggleFullAuto_}">
+                Full automatic
+              </chops-switch>
+
+              <span id="explanation">
+                ${!this.isLoading ? '' : html`
+                  Please wait for triaged alerts to finish loading.
+                `}
+                <br>
+                ${this.autotriage.explanation ||
+                  'Select alerts in the table below to autotriage.'}
+              </span>
+
+              <chops-button
+                  ?disabled="${!this.autotriage.explanation}"
+                  @click="${this.onAutotriage_}">
+                ${autotriageLabel}
+              </chops-button>
+            </cp-flex>
+          `}
+
+          <cp-flex id="triage-controls"
+              ?anySelected="${this.selectedAlertsCount !== 0}">
+            <div id="count">
+              ${this.selectedAlertsCount} selected of ${summary}
+            </div>
+
+            ${!isProduction() ? '' : html`
+              <span style="position: relative;">
+                <div class="button"
+                    ?disabled="${!canTriage}"
+                    @click="${this.onTriageNew_}">
+                  New Bug
+                </div>
+
+                <triage-new
+                    tabindex="0"
+                    .statePath="${this.statePath}.newBug"
+                    @submit="${this.onTriageNewSubmit_}">
+                </triage-new>
+              </span>
+
+              <span style="position: relative;">
+                <div class="button"
+                    ?disabled="${!canTriage}"
+                    @click="${this.onTriageExisting_}">
+                  Existing Bug
+                </div>
+
+                <triage-existing
+                    tabindex="0"
+                    .statePath="${this.statePath}.existingBug"
+                    @submit="${this.onTriageExistingSubmit_}">
+                </triage-existing>
+              </span>
+
+              <div class="button"
+                  ?disabled="${!canTriage}"
+                  @click="${this.onIgnore_}">
+                Ignore
+              </div>
+
+              <div class="button"
+                  ?disabled="${!anyTriaged}"
+                  @click="${this.onUnassign_}">
+                Unassign
+              </div>
+            `}
+          </cp-flex>
+        ` : html``}
+
+        <alerts-table
+            .statePath="${this.statePath}"
+            @selected="${this.onSelected_}"
+            @alert-click="${this.onAlertClick_}">
+        </alerts-table>
+
+        <chart-compound
+            id="preview"
+            ?hidden="${allTriaged}"
+            .statePath="${this.statePath}.preview"
+            .linkedStatePath="${this.linkedStatePath}"
+            @line-count-change="${this.onPreviewLineCountChange_}">
+          Select alerts using the checkboxes in the table above to preview
+          their timeseries.
+        </chart-compound>
+      </div>
+    `;
+  }
+
+  constructor() {
+    super();
+    this.onKeyup_ = this.onKeyup_.bind(this);
+  }
+
+  async connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('keyup', this.onKeyup_);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('keyup', this.onKeyup_);
+    super.disconnectedCallback();
+  }
+
+  firstUpdated() {
     this.scrollIntoView(true);
+    this.updateHotkeyable_();
   }
 
-  isLoading_(isLoading, isPreviewLoading) {
-    return isLoading || isPreviewLoading;
+  updated(changedProperties) {
+    if (changedProperties.has('alertGroups') ||
+        changedProperties.has('preview')) {
+      this.updateHotkeyable_();
+    }
   }
 
-  summary_(showingTriaged, alertGroups) {
-    return AlertsSection.summary(
-        showingTriaged, alertGroups, this.totalCount);
-  }
-
-  allTriaged_(alertGroups, showingTriaged) {
-    if (!alertGroups) return true;
-    if (showingTriaged) return alertGroups.length === 0;
-    return alertGroups.filter(group =>
+  allTriaged_() {
+    if (!this.alertGroups) return true;
+    if (this.showingTriaged) return this.alertGroups.length === 0;
+    return this.alertGroups.filter(group =>
       group.alerts.length > group.triaged.count).length === 0;
   }
 
-  canTriage_(alertGroups) {
-    if (!window.IS_PRODUCTION) return false;
-    const selectedAlerts = AlertsTable.getSelectedAlerts(alertGroups);
-    if (selectedAlerts.length === 0) return false;
-    for (const alert of selectedAlerts) {
-      if (alert.bugId) return false;
-    }
-    return true;
+  async updateHotkeyable_() {
+    const thisRect = await measureElement(this);
+    const midline = window.innerHeight / 2;
+    STORE.dispatch(UPDATE(this.statePath, {
+      hotkeyable: (thisRect.top < midline && thisRect.bottom > midline),
+    }));
   }
 
-  canUnassignAlerts_(alertGroups) {
-    const selectedAlerts = AlertsTable.getSelectedAlerts(alertGroups);
-    for (const alert of selectedAlerts) {
-      if (alert.bugId) return true;
+  onScroll() {
+    this.updateHotkeyable_();
+  }
+
+  async onKeyup_(event) {
+    if (!this.hotkeyable) return;
+
+    if (this.isHotkeySorting) {
+      STORE.dispatch({
+        type: AlertsSection.reducers.hotkeySort.name,
+        statePath: this.statePath,
+        key: event.key,
+      });
+      return;
     }
-    return false;
+
+    if (event.key === HOTKEYS.AUTOTRIAGE) {
+      await AlertsSection.autotriage(this.statePath);
+      return;
+    }
+
+    if (event.key === HOTKEYS.EXISTING_BUG) {
+      await AlertsSection.submitExistingBug(this.statePath);
+      return;
+    }
+
+    if (event.key === HOTKEYS.NEW_BUG) {
+      await AlertsSection.openNewBugDialog(this.statePath);
+      STORE.dispatch(UPDATE(this.statePath + '.newBug', {isOpen: false}));
+      await AlertsSection.submitNewBug(this.statePath);
+      return;
+    }
+
+    if (event.key === HOTKEYS.IGNORE) {
+      AlertsSection.ignore(this.statePath);
+      return;
+    }
+
+    if (event.key === HOTKEYS.UNASSIGN) {
+      await AlertsSection.changeBugId(this.statePath, 0);
+      return;
+    }
+
+    if (event.key === HOTKEYS.SEARCH) {
+      MenuInput.focus(this.statePath + '.sheriff');
+      return;
+    }
+
+    STORE.dispatch({
+      type: AlertsSection.reducers.hotkey.name,
+      statePath: this.statePath,
+      key: event.key,
+    });
+
+    if (event.key === HOTKEYS.SELECT) {
+      AlertsSection.maybeLayoutPreview(this.statePath);
+    }
   }
 
   async onSources_(event) {
     await AlertsSection.loadAlerts(this.statePath, event.detail.sources);
+  }
+
+  async onToggleFullAuto_(event) {
+    STORE.dispatch(CHAIN(TOGGLE(this.statePath + '.autotriage.fullAuto'), {
+      type: AlertsSection.reducers.autotriage.name,
+      statePath: this.statePath,
+    }));
+  }
+
+  async onAutotriage_(event) {
+    if (!this.autotriage.fullAuto) {
+      await AlertsSection.autotriage(this.statePath);
+      return;
+    }
+
+    STORE.dispatch(TOGGLE(this.statePath + '.autotriage.running'));
+    if (this.autotriage.running) {
+      AlertsSection.fullAutotriage(this.statePath);
+    }
+  }
+
+  static async fullAutotriage(statePath) {
+    await timeout(FULLAUTOTRIAGE_DELAY_MS);
+    let state = get(STORE.getState(), statePath);
+    while (state.autotriage.running) {
+      await AlertsSection.autotriage(this.statePath);
+      await timeout(FULLAUTOTRIAGE_DELAY_MS);
+      state = get(STORE.getState(), statePath);
+    }
+  }
+
+  static async autotriage(statePath) {
+    const state = get(STORE.getState(), statePath);
+    if (state.autotriage.bugId) {
+      await AlertsSection.changeBugId(statePath, state.autotriage.bugId);
+    } else {
+      await AlertsSection.openNewBugDialog(statePath);
+      STORE.dispatch(UPDATE(statePath + '.newBug', {isOpen: false}));
+      await AlertsSection.submitNewBug(statePath);
+    }
   }
 
   async onUnassign_(event) {
@@ -271,6 +514,10 @@ export default class AlertsSection extends ElementBase {
 
   onSelected_(event) {
     AlertsSection.maybeLayoutPreview(this.statePath);
+    STORE.dispatch({
+      type: AlertsSection.reducers.autotriage.name,
+      statePath: this.statePath,
+    });
   }
 
   onAlertClick_(event) {
@@ -298,10 +545,13 @@ export default class AlertsSection extends ElementBase {
   static async submitExistingBug(statePath) {
     METRICS.endTriage();
     METRICS.startTriage();
+
     let state = get(STORE.getState(), statePath);
     const triagedBugId = state.existingBug.bugId;
     STORE.dispatch(UPDATE(`${statePath}.existingBug`, {isOpen: false}));
+
     await AlertsSection.changeBugId(statePath, triagedBugId);
+
     STORE.dispatch({
       type: AlertsSection.reducers.showTriagedExisting.name,
       statePath,
@@ -325,25 +575,23 @@ export default class AlertsSection extends ElementBase {
 
   static async changeBugId(statePath, bugId) {
     STORE.dispatch(UPDATE(statePath, {isLoading: true}));
-    const rootState = STORE.getState();
-    let state = get(rootState, statePath);
+    const state = get(STORE.getState(), statePath);
     const selectedAlerts = AlertsTable.getSelectedAlerts(
         state.alertGroups);
     const alertKeys = new Set(selectedAlerts.map(a => a.key));
+
+    STORE.dispatch({
+      type: AlertsSection.reducers.removeOrUpdateAlerts.name,
+      statePath,
+      alertKeys,
+      bugId,
+    });
+
+    AlertsSection.selectFirstGroup(statePath);
+
     try {
       const request = new ExistingBugRequest({alertKeys, bugId});
       await request.response;
-      STORE.dispatch({
-        type: AlertsSection.reducers.removeOrUpdateAlerts.name,
-        statePath,
-        alertKeys,
-        bugId,
-      });
-
-      state = get(STORE.getState(), statePath);
-      if (bugId !== 0) {
-        STORE.dispatch(UPDATE(`${statePath}.preview`, {lineDescriptors: []}));
-      }
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -355,7 +603,8 @@ export default class AlertsSection extends ElementBase {
     let state = get(STORE.getState(), statePath);
     const alerts = AlertsTable.getSelectedAlerts(state.alertGroups);
     const ignoredCount = alerts.length;
-    await AlertsSection.changeBugId(statePath, -2);
+    await AlertsSection.changeBugId(statePath,
+        ExistingBugRequest.IGNORE_BUG_ID);
 
     STORE.dispatch(UPDATE(statePath, {
       hasTriagedExisting: false,
@@ -380,7 +629,7 @@ export default class AlertsSection extends ElementBase {
 
   static async openNewBugDialog(statePath) {
     let userEmail = STORE.getState().userEmail;
-    if (window.IS_DEBUG) {
+    if (isDebug()) {
       userEmail = 'you@chromium.org';
     }
     if (!userEmail) return;
@@ -393,7 +642,7 @@ export default class AlertsSection extends ElementBase {
 
   static async openExistingBugDialog(statePath) {
     let userEmail = STORE.getState().userEmail;
-    if (window.IS_DEBUG) {
+    if (isDebug()) {
       userEmail = 'you@chromium.org';
     }
     if (!userEmail) return;
@@ -403,21 +652,41 @@ export default class AlertsSection extends ElementBase {
     });
   }
 
+  static async selectFirstGroup(statePath) {
+    const state = get(STORE.getState(), statePath);
+    if (state.alertGroups.length === 0) return;
+    STORE.dispatch(CHAIN({
+      type: AlertsTable.reducers.selectAlert.name,
+      statePath,
+      alertGroupIndex: 0,
+      alertIndex: state.alertGroups[0].alerts.findIndex(a => !a.bugId),
+    }, {
+      type: AlertsSection.reducers.autotriage.name,
+      statePath,
+    }));
+    AlertsSection.maybeLayoutPreview(statePath);
+  }
+
   static async submitNewBug(statePath) {
     METRICS.endTriage();
     METRICS.startTriage();
+
     STORE.dispatch(UPDATE(statePath, {isLoading: true}));
-    const rootState = STORE.getState();
-    let state = get(rootState, statePath);
+
+    let state = get(STORE.getState(), statePath);
     const selectedAlerts = AlertsTable.getSelectedAlerts(
         state.alertGroups);
     const alertKeys = new Set(selectedAlerts.map(a => a.key));
+
+    // Remove selected alerts.
     STORE.dispatch({
       type: AlertsSection.reducers.removeOrUpdateAlerts.name,
       statePath,
       alertKeys,
       bugId: '[creating]',
     });
+
+    AlertsSection.selectFirstGroup(statePath);
 
     let bugId;
     try {
@@ -445,8 +714,6 @@ export default class AlertsSection extends ElementBase {
         alertKeys,
         bugId,
       });
-      state = get(STORE.getState(), statePath);
-      STORE.dispatch(UPDATE(`${statePath}.preview`, {lineDescriptors: []}));
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
@@ -529,13 +796,21 @@ export default class AlertsSection extends ElementBase {
           batches, state.alertGroups, nextRequests, triagedRequests,
           triagedMaxStartRevision, started);
       await animationFrame();
-      AlertsSection.maybeLayoutPreview(statePath);
     }
 
     STORE.dispatch({
       type: AlertsSection.reducers.finalizeAlerts.name,
       statePath,
     });
+
+    const state = get(STORE.getState(), statePath);
+    if (!state) return;
+    if (state.preview && state.preview.lineDescriptors &&
+        state.preview.lineDescriptors.length) {
+      return;
+    }
+
+    AlertsSection.maybeLayoutPreview(statePath);
   }
 
   static async layoutPreview(statePath) {
@@ -559,6 +834,161 @@ export default class AlertsSection extends ElementBase {
     }
 
     AlertsSection.layoutPreview(statePath);
+  }
+
+  static summary(showingTriaged, alertGroups, totalCount) {
+    if (!alertGroups ||
+        (alertGroups === AlertsTable.placeholderAlertGroups())) {
+      return '0 alerts';
+    }
+    let groupCount = 0;
+    let displayedCount = 0;
+    for (const group of alertGroups) {
+      if (showingTriaged) {
+        ++groupCount;
+        displayedCount += group.alerts.length;
+      } else if (group.alerts.length > group.triaged.count) {
+        ++groupCount;
+        displayedCount += group.alerts.length - group.triaged.count;
+      }
+    }
+    totalCount = Math.max(totalCount, displayedCount);
+    return (
+      `${displayedCount} displayed in ` +
+      `${groupCount} group${plural(groupCount)} of ` +
+      `${totalCount} alert${plural(totalCount)}`);
+  }
+
+  static matchesOptions(state, options) {
+    if (!options || !state || !state.report || !state.sheriff || !state.bug) {
+      return false;
+    }
+    if (!tr.b.setsEqual(new Set(options.reports),
+        new Set(state.report.selectedOptions))) {
+      return false;
+    }
+    if (!tr.b.setsEqual(new Set(options.sheriffs),
+        new Set(state.sheriff.selectedOptions))) {
+      return false;
+    }
+    if (!tr.b.setsEqual(new Set(options.bugs),
+        new Set(state.bug.selectedOptions))) {
+      return false;
+    }
+    return true;
+  }
+
+  static newStateOptionsFromQueryParams(queryParams) {
+    return {
+      sheriffs: queryParams.getAll('sheriff').map(
+          sheriffName => sheriffName.replace(/_/g, ' ')),
+      bugs: queryParams.getAll('bug'),
+      reports: queryParams.getAll('ar'),
+      minRevision: queryParams.get('minRev') || queryParams.get('rev'),
+      maxRevision: queryParams.get('maxRev') || queryParams.get('rev'),
+      sortColumn: queryParams.get('sort') || 'startRevision',
+      showingImprovements: ((queryParams.get('improvements') !== null) ||
+        (queryParams.get('bug') !== null)),
+      showingTriaged: ((queryParams.get('triaged') !== null) ||
+        (queryParams.get('bug') !== null)),
+      sortDescending: queryParams.get('descending') !== null,
+      fullAuto: queryParams.get('fa') !== null,
+    };
+  }
+
+  static isEmpty(state) {
+    if (!state) return true;
+    if (state.sheriff && state.sheriff.selectedOptions &&
+        state.sheriff.selectedOptions.length) {
+      return false;
+    }
+    if (state.bug && state.bug.selectedOptions &&
+        state.bug.selectedOptions.length) {
+      return false;
+    }
+    if (state.report && state.report.selectedOptions &&
+        state.report.selectedOptions.length) {
+      return false;
+    }
+    if (state.minRevision && state.minRevision.match(/^\d+$/)) {
+      return false;
+    }
+    if (state.maxRevision && state.maxRevision.match(/^\d+$/)) {
+      return false;
+    }
+    return true;
+  }
+
+  static getSessionState(state) {
+    return {
+      sheriffs: state.sheriff.selectedOptions,
+      bugs: state.bug.selectedOptions,
+      showingImprovements: state.showingImprovements,
+      showingTriaged: state.showingTriaged,
+      sortColumn: state.sortColumn,
+      sortDescending: state.sortDescending,
+      fullAuto: state.autotriage.fullAuto,
+    };
+  }
+
+  static getRouteParams(state) {
+    const queryParams = new URLSearchParams();
+    for (const sheriff of state.sheriff.selectedOptions) {
+      queryParams.append('sheriff', sheriff.replace(/ /g, '_'));
+    }
+    for (const bug of state.bug.selectedOptions) {
+      queryParams.append('bug', bug);
+    }
+    for (const name of state.report.selectedOptions) {
+      queryParams.append('ar', name);
+    }
+
+    const minRev = state.minRevision && state.minRevision.match(/^\d+$/);
+    const maxRev = state.maxRevision && state.maxRevision.match(/^\d+$/);
+    if ((minRev || maxRev) &&
+        !queryParams.get('sheriff') &&
+        !queryParams.get('bug') &&
+        !queryParams.get('ar')) {
+      queryParams.set('alerts', '');
+    }
+    if (minRev && maxRev && state.minRevision === state.maxRevision) {
+      queryParams.set('rev', state.minRevision);
+    } else {
+      if (minRev) {
+        queryParams.set('minRev', state.minRevision);
+      }
+      if (maxRev) {
+        queryParams.set('maxRev', state.maxRevision);
+      }
+    }
+
+    // #bug implies #improvements and #triaged
+    if (state.showingImprovements && !queryParams.get('bug')) {
+      queryParams.set('improvements', '');
+    }
+    if (state.showingTriaged && !queryParams.get('bug')) {
+      queryParams.set('triaged', '');
+    }
+    if (state.sortColumn !== 'startRevision') {
+      queryParams.set('sort', state.sortColumn);
+    }
+    if (state.autotriage.fullAuto) {
+      queryParams.set('fa', '');
+    }
+    if (state.sortDescending) queryParams.set('descending', '');
+    return queryParams;
+  }
+
+  static computeLineDescriptor(alert) {
+    return {
+      baseUnit: alert.baseUnit,
+      suites: [alert.suite],
+      measurement: alert.measurement,
+      bots: [alert.master + ':' + alert.bot],
+      cases: [alert.case],
+      statistic: alert.statistic,
+      buildType: 'test',
+    };
   }
 }
 
@@ -615,7 +1045,9 @@ function loadMore(batches, alertGroups, nextRequests, triagedRequests,
   if (!triagedMaxStartRevision ||
       (minStartRevision < triagedMaxStartRevision)) {
     for (const request of triagedRequests) {
-      request.min_start_revision = minStartRevision;
+      if (minStartRevision) {
+        request.min_start_revision = minStartRevision;
+      }
       if (triagedMaxStartRevision) {
         request.max_start_revision = triagedMaxStartRevision;
       }
@@ -636,18 +1068,6 @@ function loadMore(batches, alertGroups, nextRequests, triagedRequests,
   return minStartRevision;
 }
 
-AlertsSection.computeLineDescriptor = alert => {
-  return {
-    baseUnit: alert.baseUnit,
-    suites: [alert.suite],
-    measurement: alert.measurement,
-    bots: [alert.master + ':' + alert.bot],
-    cases: [alert.case],
-    statistic: alert.statistic,
-    buildType: 'test',
-  };
-};
-
 AlertsSection.reducers = {
   selectAlert: (state, action, rootState) => {
     if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
@@ -657,8 +1077,7 @@ AlertsSection.reducers = {
       `alertGroups.${action.alertGroupIndex}.alerts.${action.alertIndex}`;
     const alert = get(state, alertPath);
     if (!alert.isSelected) {
-      state = setImmutable(
-          state, `${alertPath}.isSelected`, true);
+      state = set(state, `${alertPath}.isSelected`, true);
     }
     if (state.selectedAlertPath === alertPath) {
       return {
@@ -887,7 +1306,53 @@ AlertsSection.reducers = {
     state = {...state, alertGroups};
     state = AlertsSection.reducers.updateColumns(state);
     state = AlertsSection.reducers.updateSelectedAlertsCount(state);
+    state = AlertsSection.reducers.autotriage(state);
     return state;
+  },
+
+  autotriage: (state, action, rootState) => {
+    if (state.bug.selectedOptions.length ||
+        state.report.selectedOptions.length ||
+        !state.sheriff.selectedOptions.length ||
+        state.showingTriaged) {
+      return state;
+    }
+
+    const untriagedAlerts = [];
+    const triagedAlerts = [];
+    for (const alertGroup of state.alertGroups) {
+      let anyInGroup = false;
+      for (const alert of alertGroup.alerts) {
+        if (!alert.isSelected || alert.bugId) continue;
+        untriagedAlerts.push(alert);
+        anyInGroup = true;
+      }
+      if (anyInGroup) {
+        for (const alert of alertGroup.alerts) {
+          if (!alert.bugId) continue;
+          triagedAlerts.push(alert);
+        }
+      }
+    }
+
+    if (!untriagedAlerts.length) {
+      return {
+        ...state,
+        autotriage: {
+          ...state.autotriage,
+          bugId: 0,
+          explanation: '',
+        },
+      };
+    }
+
+    return {
+      ...state,
+      autotriage: {
+        ...state.autotriage,
+        ...autotriage(untriagedAlerts, triagedAlerts),
+      },
+    };
   },
 
   finalizeAlerts: (state, action, rootState) => {
@@ -940,144 +1405,131 @@ AlertsSection.reducers = {
       totalCount: 0,
     };
   },
-};
 
-AlertsSection.newStateOptionsFromQueryParams = queryParams => {
-  return {
-    sheriffs: queryParams.getAll('sheriff').map(
-        sheriffName => sheriffName.replace(/_/g, ' ')),
-    bugs: queryParams.getAll('bug'),
-    reports: queryParams.getAll('ar'),
-    minRevision: queryParams.get('minRev') || queryParams.get('rev'),
-    maxRevision: queryParams.get('maxRev') || queryParams.get('rev'),
-    sortColumn: queryParams.get('sort') || 'startRevision',
-    showingImprovements: ((queryParams.get('improvements') !== null) ||
-      (queryParams.get('bug') !== null)),
-    showingTriaged: ((queryParams.get('triaged') !== null) ||
-      (queryParams.get('bug') !== null)),
-    sortDescending: queryParams.get('descending') !== null,
-  };
-};
-
-AlertsSection.isEmpty = state => {
-  if (!state) return true;
-  if (state.sheriff && state.sheriff.selectedOptions &&
-      state.sheriff.selectedOptions.length) {
-    return false;
-  }
-  if (state.bug && state.bug.selectedOptions &&
-      state.bug.selectedOptions.length) {
-    return false;
-  }
-  if (state.report && state.report.selectedOptions &&
-      state.report.selectedOptions.length) {
-    return false;
-  }
-  if (state.minRevision && state.minRevision.match(/^\d+$/)) {
-    return false;
-  }
-  if (state.maxRevision && state.maxRevision.match(/^\d+$/)) {
-    return false;
-  }
-  return true;
-};
-
-AlertsSection.getSessionState = state => {
-  return {
-    sheriffs: state.sheriff.selectedOptions,
-    bugs: state.bug.selectedOptions,
-    showingImprovements: state.showingImprovements,
-    showingTriaged: state.showingTriaged,
-    sortColumn: state.sortColumn,
-    sortDescending: state.sortDescending,
-  };
-};
-
-AlertsSection.getRouteParams = state => {
-  const queryParams = new URLSearchParams();
-  for (const sheriff of state.sheriff.selectedOptions) {
-    queryParams.append('sheriff', sheriff.replace(/ /g, '_'));
-  }
-  for (const bug of state.bug.selectedOptions) {
-    queryParams.append('bug', bug);
-  }
-  for (const name of state.report.selectedOptions) {
-    queryParams.append('ar', name);
-  }
-
-  const minRev = state.minRevision && state.minRevision.match(/^\d+$/);
-  const maxRev = state.maxRevision && state.maxRevision.match(/^\d+$/);
-  if ((minRev || maxRev) &&
-      !queryParams.get('sheriff') &&
-      !queryParams.get('bug') &&
-      !queryParams.get('ar')) {
-    queryParams.set('alerts', '');
-  }
-  if (minRev && maxRev && state.minRevision === state.maxRevision) {
-    queryParams.set('rev', state.minRevision);
-  } else {
-    if (minRev) {
-      queryParams.set('minRev', state.minRevision);
+  hotkey: (state, {key}, rootState) => {
+    if (key === HOTKEYS.HELP) return {...state, isHelping: !state.isHelping};
+    if (key === HOTKEYS.DOWN) return AlertsSection.reducers.cursorDown(state);
+    if (key === HOTKEYS.UP) return AlertsSection.reducers.cursorUp(state);
+    if (key === HOTKEYS.SELECT) {
+      return AlertsSection.reducers.selectCursor(state);
     }
-    if (maxRev) {
-      queryParams.set('maxRev', state.maxRevision);
+    if (key === HOTKEYS.EXPAND_GROUP) {
+      return AlertsSection.reducers.expandCursor(state);
     }
-  }
-
-  // #bug implies #improvements and #triaged
-  if (state.showingImprovements && !queryParams.get('bug')) {
-    queryParams.set('improvements', '');
-  }
-  if (state.showingTriaged && !queryParams.get('bug')) {
-    queryParams.set('triaged', '');
-  }
-  if (state.sortColumn !== 'startRevision') {
-    queryParams.set('sort', state.sortColumn);
-  }
-  if (state.sortDescending) queryParams.set('descending', '');
-  return queryParams;
-};
-
-AlertsSection.matchesOptions = (state, options) => {
-  if (!options || !state || !state.report || !state.sheriff || !state.bug) {
-    return false;
-  }
-  if (!tr.b.setsEqual(new Set(options.reports),
-      new Set(state.report.selectedOptions))) {
-    return false;
-  }
-  if (!tr.b.setsEqual(new Set(options.sheriffs),
-      new Set(state.sheriff.selectedOptions))) {
-    return false;
-  }
-  if (!tr.b.setsEqual(new Set(options.bugs),
-      new Set(state.bug.selectedOptions))) {
-    return false;
-  }
-  return true;
-};
-
-AlertsSection.summary = (showingTriaged, alertGroups, totalCount) => {
-  if (!alertGroups ||
-      (alertGroups === AlertsTable.placeholderAlertGroups())) {
-    return '0 alerts';
-  }
-  let groupCount = 0;
-  let displayedCount = 0;
-  for (const group of alertGroups) {
-    if (showingTriaged) {
-      ++groupCount;
-      displayedCount += group.alerts.length;
-    } else if (group.alerts.length > group.triaged.count) {
-      ++groupCount;
-      displayedCount += group.alerts.length - group.triaged.count;
+    if (key === HOTKEYS.EXPAND_TRIAGED) {
+      return AlertsSection.reducers.expandTriagedCursor(state);
     }
-  }
-  totalCount = Math.max(totalCount, displayedCount);
-  return (
-    `${displayedCount} displayed in ` +
-    `${groupCount} group${plural(groupCount)} of ` +
-    `${totalCount} alert${plural(totalCount)}`);
+    if (key === HOTKEYS.START_SORT) {
+      return AlertsSection.reducers.startSort(state);
+    }
+    return state;
+  },
+
+  hotkeySort: (state, {key}, rootState) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    state = {...state, isHotkeySorting: false};
+    const sortColumn = SORT_HOTKEYS[key];
+    if (!sortColumn) return state;
+    return AlertsTable.reducers.sort(state, {sortColumn}, rootState);
+  },
+
+  cursorDown: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    let [groupIndex, alertIndex] = state.cursor || [
+      state.alertGroups.length - 1,
+      state.alertGroups[state.alertGroups.length - 1].alerts.length,
+    ];
+    ++alertIndex;
+    if (alertIndex >= state.alertGroups[groupIndex].alerts.length) {
+      groupIndex = (groupIndex + 1) % state.alertGroups.length;
+      alertIndex = 0;
+    }
+    while (!AlertsTable.shouldDisplayAlert(false, state.showingTriaged,
+        state.alertGroups[groupIndex], alertIndex)) {
+      ++alertIndex;
+      if (alertIndex >= state.alertGroups[groupIndex].alerts.length) {
+        groupIndex = (groupIndex + 1) % state.alertGroups.length;
+        alertIndex = 0;
+      }
+    }
+    return {...state, cursor: [groupIndex, alertIndex]};
+  },
+
+  cursorUp: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    let [groupIndex, alertIndex] = state.cursor || [0, 0];
+    --alertIndex;
+    if (alertIndex < 0) {
+      --groupIndex;
+      while (groupIndex < 0) {
+        groupIndex += state.alertGroups.length;
+      }
+      alertIndex = state.alertGroups[groupIndex].alerts.length - 1;
+    }
+    while (!AlertsTable.shouldDisplayAlert(false, state.showingTriaged,
+        state.alertGroups[groupIndex], alertIndex)) {
+      --alertIndex;
+      if (alertIndex < 0) {
+        --groupIndex;
+        while (groupIndex < 0) {
+          groupIndex += state.alertGroups.length;
+        }
+        alertIndex = state.alertGroups[groupIndex].alerts.length - 1;
+      }
+    }
+    return {...state, cursor: [groupIndex, alertIndex]};
+  },
+
+  selectCursor: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups() ||
+        !state.cursor) {
+      return state;
+    }
+
+    state = AlertsTable.reducers.selectAlert(state, {
+      alertGroupIndex: state.cursor[0],
+      alertIndex: state.cursor[1],
+    });
+    state = AlertsSection.reducers.autotriage(state);
+    return state;
+  },
+
+  expandCursor: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    if (!state.cursor) return state;
+    const path = `alertGroups.${state.cursor[0]}.isExpanded`;
+    return set(state, path, e => !e);
+  },
+
+  expandTriagedCursor: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    if (!state.cursor) return state;
+    const path = `alertGroups.${state.cursor[0]}.triaged.isExpanded`;
+    return set(state, path, e => !e);
+  },
+
+  startSort: (state) => {
+    if (state.alertGroups === AlertsTable.placeholderAlertGroups()) {
+      return state;
+    }
+
+    return {...state, isHotkeySorting: true};
+  },
 };
 
 ElementBase.register(AlertsSection);

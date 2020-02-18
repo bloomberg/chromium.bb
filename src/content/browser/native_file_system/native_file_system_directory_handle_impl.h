@@ -6,16 +6,14 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_HANDLE_IMPL_H_
 
 #include "base/files/file.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 
-
 namespace content {
-class NativeFileSystemTransferTokenImpl;
-
 // This is the browser side implementation of the
 // NativeFileSystemDirectoryHandle mojom interface. Instances of this class are
 // owned by the NativeFileSystemManagerImpl instance passed in to the
@@ -27,28 +25,27 @@ class NativeFileSystemDirectoryHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemDirectoryHandle {
  public:
-  NativeFileSystemDirectoryHandleImpl(
-      NativeFileSystemManagerImpl* manager,
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system);
+  NativeFileSystemDirectoryHandleImpl(NativeFileSystemManagerImpl* manager,
+                                      const BindingContext& context,
+                                      const storage::FileSystemURL& url,
+                                      const SharedHandleState& handle_state);
   ~NativeFileSystemDirectoryHandleImpl() override;
 
   // blink::mojom::NativeFileSystemDirectoryHandle:
-  void GetFile(const std::string& name,
+  void GetPermissionStatus(bool writable,
+                           GetPermissionStatusCallback callback) override;
+  void RequestPermission(bool writable,
+                         RequestPermissionCallback callback) override;
+  void GetFile(const std::string& basename,
                bool create,
                GetFileCallback callback) override;
-  void GetDirectory(const std::string& name,
+  void GetDirectory(const std::string& basename,
                     bool create,
                     GetDirectoryCallback callback) override;
   void GetEntries(GetEntriesCallback callback) override;
-  void MoveFrom(blink::mojom::NativeFileSystemTransferTokenPtr source,
-                const std::string& name,
-                MoveFromCallback callback) override;
-  void CopyFrom(blink::mojom::NativeFileSystemTransferTokenPtr source,
-                const std::string& name,
-                CopyFromCallback callback) override;
-  void Remove(bool recurse, RemoveCallback callback) override;
+  void RemoveEntry(const std::string& basename,
+                   bool recurse,
+                   RemoveEntryCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
 
@@ -56,10 +53,18 @@ class NativeFileSystemDirectoryHandleImpl
   // State that is kept for the duration of a GetEntries/ReadDirectory call.
   struct ReadDirectoryState;
 
-  void DidGetFile(storage::FileSystemURL url,
+  // This method creates the file if it does not currently exists. I.e. it is
+  // the implementation for passing create=true to GetFile.
+  void GetFileWithWritePermission(const storage::FileSystemURL& child_url,
+                                  GetFileCallback callback);
+  void DidGetFile(const storage::FileSystemURL& url,
                   GetFileCallback callback,
                   base::File::Error result);
-  void DidGetDirectory(storage::FileSystemURL url,
+  // This method creates the directory if it does not currently exists. I.e. it
+  // is the implementation for passing create=true to GetDirectory.
+  void GetDirectoryWithWritePermission(const storage::FileSystemURL& child_url,
+                                       GetDirectoryCallback callback);
+  void DidGetDirectory(const storage::FileSystemURL& url,
                        GetDirectoryCallback callback,
                        base::File::Error result);
   void DidReadDirectory(
@@ -68,26 +73,24 @@ class NativeFileSystemDirectoryHandleImpl
       std::vector<filesystem::mojom::DirectoryEntry> file_list,
       bool has_more);
 
-  using CopyOrMoveCallback = MoveFromCallback;
-  void DoCopyOrMoveFrom(const std::string& new_name,
-                        bool is_copy,
-                        CopyOrMoveCallback callback,
-                        NativeFileSystemTransferTokenImpl* source);
-  void DidCopyOrMove(CopyOrMoveCallback callback,
-                     const std::string& new_name,
-                     const storage::FileSystemURL& new_url,
-                     bool is_directory,
-                     base::File::Error result);
+  void RemoveEntryImpl(const storage::FileSystemURL& url,
+                       bool recurse,
+                       RemoveEntryCallback callback);
 
-  // Returns a FileSystemURL for a (direct) child of this directory with the
-  // given name.
-  storage::FileSystemURL GetChildURL(const std::string& name);
+  // Calculates a FileSystemURL for a (direct) child of this directory with the
+  // given basename.  Returns an error when |basename| includes invalid input
+  // like "/".
+  base::File::Error GetChildURL(const std::string& basename,
+                                storage::FileSystemURL* result)
+      WARN_UNUSED_RESULT;
 
   // Helper to create a blink::mojom::NativeFileSystemEntry struct.
   blink::mojom::NativeFileSystemEntryPtr CreateEntry(
-      const std::string& name,
+      const std::string& basename,
       const storage::FileSystemURL& url,
       bool is_directory);
+
+  base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 
   base::WeakPtrFactory<NativeFileSystemDirectoryHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemDirectoryHandleImpl);

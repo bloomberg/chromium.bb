@@ -17,6 +17,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -269,7 +270,7 @@ void GCMConnectionHandlerImplTest::PumpLoop() {
 void GCMConnectionHandlerImplTest::Connect(
     ScopedMessage* dst_proto) {
   connection_handler_ = std::make_unique<ConnectionHandlerImpl>(
-      TestTimeouts::tiny_timeout(),
+      base::ThreadTaskRunnerHandle::Get(), TestTimeouts::tiny_timeout(),
       base::Bind(&GCMConnectionHandlerImplTest::ReadContinuation,
                  base::Unretained(this), dst_proto),
       base::Bind(&GCMConnectionHandlerImplTest::WriteContinuation,

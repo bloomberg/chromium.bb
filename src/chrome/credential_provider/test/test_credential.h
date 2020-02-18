@@ -35,13 +35,17 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual HRESULT STDMETHODCALLTYPE
   SetGlsEmailAddress(const std::string& email) = 0;
   virtual HRESULT STDMETHODCALLTYPE
+  SetGlsGaiaPassword(const std::string& gaia_password) = 0;
+  virtual HRESULT STDMETHODCALLTYPE
   SetGaiaIdOverride(const std::string& gaia_id,
                     bool ignore_expected_gaia_id) = 0;
   virtual HRESULT STDMETHODCALLTYPE WaitForGls() = 0;
   virtual HRESULT STDMETHODCALLTYPE
   SetStartGlsEventName(const base::string16& event_name) = 0;
+  virtual HRESULT STDMETHODCALLTYPE FailLoadingGaiaLogonStub() = 0;
   virtual BSTR STDMETHODCALLTYPE GetFinalUsername() = 0;
   virtual std::string STDMETHODCALLTYPE GetFinalEmail() = 0;
+  virtual bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() = 0;
   virtual BSTR STDMETHODCALLTYPE GetErrorText() = 0;
   virtual bool STDMETHODCALLTYPE AreCredentialsValid() = 0;
   virtual bool STDMETHODCALLTYPE CanAttemptWindowsLogon() = 0;
@@ -70,13 +74,16 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   // ITestCredential.
   IFACEMETHODIMP SetDefaultExitCode(UiExitCodes default_exit_code) override;
   IFACEMETHODIMP SetGlsEmailAddress(const std::string& email) override;
+  IFACEMETHODIMP SetGlsGaiaPassword(const std::string& gaia_password) override;
   IFACEMETHODIMP SetGaiaIdOverride(const std::string& gaia_id,
                                    bool ignore_expected_gaia_id) override;
+  IFACEMETHODIMP FailLoadingGaiaLogonStub() override;
   IFACEMETHODIMP WaitForGls() override;
   IFACEMETHODIMP SetStartGlsEventName(
       const base::string16& event_name) override;
   BSTR STDMETHODCALLTYPE GetFinalUsername() override;
   std::string STDMETHODCALLTYPE GetFinalEmail() override;
+  bool STDMETHODCALLTYPE IsAuthenticationResultsEmpty() override;
   BSTR STDMETHODCALLTYPE GetErrorText() override;
   bool STDMETHODCALLTYPE AreCredentialsValid() override;
   bool STDMETHODCALLTYPE CanAttemptWindowsLogon() override;
@@ -112,6 +119,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
 
   UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
+  std::string gaia_password_;
   std::string gaia_id_override_;
   base::WaitableEvent gls_done_;
   base::win::ScopedHandle process_continue_event_;
@@ -119,6 +127,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   CComBSTR error_text_;
   bool gls_process_started_ = false;
   bool ignore_expected_gaia_id_ = false;
+  bool fail_loading_gaia_logon_stub_ = false;
 };
 
 template <class T>
@@ -138,8 +147,21 @@ HRESULT CTestCredentialBase<T>::SetDefaultExitCode(
 }
 
 template <class T>
+HRESULT CTestCredentialBase<T>::FailLoadingGaiaLogonStub() {
+  fail_loading_gaia_logon_stub_ = true;
+  return S_OK;
+}
+
+template <class T>
 HRESULT CTestCredentialBase<T>::SetGlsEmailAddress(const std::string& email) {
   gls_email_ = email;
+  return S_OK;
+}
+
+template <class T>
+HRESULT CTestCredentialBase<T>::SetGlsGaiaPassword(
+    const std::string& gaia_password) {
+  gaia_password_ = gaia_password;
   return S_OK;
 }
 
@@ -172,6 +194,13 @@ HRESULT CTestCredentialBase<T>::SetStartGlsEventName(
 template <class T>
 BSTR CTestCredentialBase<T>::GetFinalUsername() {
   return this->get_username();
+}
+
+template <class T>
+bool CTestCredentialBase<T>::IsAuthenticationResultsEmpty() {
+  auto& results = this->get_authentication_results();
+
+  return !results || (results->is_dict() && results->DictEmpty());
 }
 
 template <class T>
@@ -223,8 +252,8 @@ template <class T>
 HRESULT CTestCredentialBase<T>::GetBaseGlsCommandline(
     base::CommandLine* command_line) {
   return GlsRunnerTestBase::GetFakeGlsCommandline(
-      default_exit_code_, gls_email_, gaia_id_override_, start_gls_event_name_,
-      ignore_expected_gaia_id_, command_line);
+      default_exit_code_, gls_email_, gaia_id_override_, gaia_password_,
+      start_gls_event_name_, ignore_expected_gaia_id_, command_line);
 }
 
 template <class T>
@@ -232,6 +261,9 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
     OSProcessManager* process_manager,
     const base::CommandLine& command_line,
     CGaiaCredentialBase::UIProcessInfo* uiprocinfo) {
+  if (fail_loading_gaia_logon_stub_)
+    return E_FAIL;
+
   HRESULT hr = T::ForkGaiaLogonStub(process_manager, command_line, uiprocinfo);
 
   if (SUCCEEDED(hr)) {

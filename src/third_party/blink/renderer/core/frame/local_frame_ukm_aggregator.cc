@@ -93,7 +93,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     uma_name.Append(uma_postscript);
     if (metric_data.has_uma) {
       absolute_record.uma_counter.reset(new CustomCountHistogram(
-          uma_name.ToString().Utf8().data(), 0, 10000000, 50));
+          uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
 
     // Percentage records report the ratio of each metric to the primary metric,
@@ -109,7 +109,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       uma_percentage_name.Append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
           std::make_unique<CustomCountHistogram>(
-              uma_percentage_name.ToString().Utf8().data(), 0, 10000000, 50));
+              uma_percentage_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
   }
 }
@@ -129,7 +129,8 @@ void LocalFrameUkmAggregator::SetTickClockForTesting(
   clock_ = clock;
 }
 
-void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(TimeDelta& duration) {
+void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(
+    base::TimeDelta& duration) {
   if (!calls_to_next_forced_style_layout_uma_) {
     auto& record = absolute_metric_records_[kForcedStyleAndLayout];
     record.uma_counter->CountMicroseconds(duration);
@@ -142,9 +143,9 @@ void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(TimeDelta& duration) {
 }
 
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
-                                           TimeTicks start,
-                                           TimeTicks end) {
-  TimeDelta duration = end - start;
+                                           base::TimeTicks start,
+                                           base::TimeTicks end) {
+  base::TimeDelta duration = end - start;
 
   // Accumulate for UKM and record the UMA
   DCHECK_LT(metric_index, absolute_metric_records_.size());
@@ -169,8 +170,8 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   }
 }
 
-void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
-                                                      TimeTicks end) {
+void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(base::TimeTicks start,
+                                                      base::TimeTicks end) {
   // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
   // will mean we are not in a main frame update. Recording is triggered
   // higher in the stack, so we cannot know to avoid calling this method.
@@ -182,7 +183,7 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
   }
   in_main_frame_update_ = false;
 
-  TimeDelta duration = end - start;
+  base::TimeDelta duration = end - start;
 
   // Record UMA
   primary_metric_.uma_counter->CountMicroseconds(duration);

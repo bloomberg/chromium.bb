@@ -120,8 +120,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
       const quic::ProofVerifyDetails& verify_details) override {}
 
   // quic::QuicConnectionVisitorInterface overrides.
-  void OnConnectionClosed(quic::QuicErrorCode error,
-                          const std::string& error_details,
+  void OnConnectionClosed(const quic::QuicConnectionCloseFrame& frame,
                           quic::ConnectionCloseSource source) override;
   bool ShouldKeepConnectionAlive() const override;
 
@@ -132,7 +131,8 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // quic::QuicSession.
   P2PQuicStreamImpl* CreateIncomingStream(
       quic::QuicStreamId id) override;
-  P2PQuicStreamImpl* CreateIncomingStream(quic::PendingStream pending) override;
+  P2PQuicStreamImpl* CreateIncomingStream(
+      quic::PendingStream* pending) override;
 
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
@@ -164,7 +164,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream. This helper function is used when we need to create
   // a new incoming stream or outgoing stream.
   P2PQuicStreamImpl* CreateStreamInternal(quic::QuicStreamId id);
-  P2PQuicStreamImpl* CreateStreamInternal(quic::PendingStream pending);
+  P2PQuicStreamImpl* CreateStreamInternal(quic::PendingStream* pending);
 
   // Returns true if datagram was sent, false if it was not because of
   // congestion control blocking.
@@ -195,7 +195,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Crypto certificate information. Note that currently the handshake is
   // insecure and these are not used...
   rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
-  std::vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_;
+  Vector<std::unique_ptr<rtc::SSLFingerprint>> remote_fingerprints_;
 
   bool pre_shared_key_set_ = false;
 

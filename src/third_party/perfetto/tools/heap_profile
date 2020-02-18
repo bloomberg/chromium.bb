@@ -30,8 +30,8 @@ import time
 import urllib
 
 TRACE_TO_TEXT_SHAS = {
-  'linux': 'a8171d85c5964ccafe457142dbb7df68ca8da543',
-  'mac': '268c2fc096039566979d16c1a7a99eabef0d9682',
+  'linux': 'b91fd044422c5276f314728dca52a1d1cf43df69',
+  'mac': 'd00c9ba443c93c18ed9e712d3e699ddda72a8bd8',
 }
 TRACE_TO_TEXT_PATH = tempfile.gettempdir()
 TRACE_TO_TEXT_BASE_URL = (
@@ -137,17 +137,27 @@ def main(argv):
                       "profile.")
   parser.add_argument("--no-versions", action="store_true",
                       help="Do not get version information about APKs.")
+  parser.add_argument("--no-running", action="store_true",
+                      help="Do not target already running processes.")
+  parser.add_argument("--no-startup", action="store_true",
+                      help="Do not target processes that start during "
+                      "the profile.")
   parser.add_argument("--shmem-size", help="Size of buffer between client and "
                       "heapprofd. Default 8MiB. Needs to be a power of two "
                       "multiple of 4096, at least 8192.", type=int,
                       default=8 * 1048576)
   parser.add_argument("--block-client", help="When buffer is full, block the "
                       "client to wait for buffer space. Use with caution as "
-                      "this can significantly slow down the client.",
-                      action="store_true")
+                      "this can significantly slow down the client. "
+                      "This is the default", action="store_true")
+  parser.add_argument("--no-block-client", help="When buffer is full, stop the "
+                      "profile early.", action="store_true")
   parser.add_argument("--idle-allocations", help="Keep track of how many "
-                      "bytes were unused since the last clear_refs, per "
+                      "bytes were unused since the last dump, per "
                       "callstack", action="store_true")
+  parser.add_argument("--dump-at-max", help="Dump the maximum memory usage"
+                      "rather than at the time of the dump.",
+                      action="store_true")
   parser.add_argument("--simpleperf", action="store_true",
                       help="Get simpleperf profile of heapprofd. This is "
                       "only for heapprofd development.")
@@ -159,6 +169,10 @@ def main(argv):
   args = parser.parse_args()
 
   fail = False
+  if args.block_client and args.no_block_client:
+    print("FATAL: Both block-client and no-block-client given.",
+            file=sys.stderr)
+    fail = True
   if args.pid is None and args.name is None:
     print("FATAL: Neither PID nor NAME given.", file=sys.stderr)
     fail = True
@@ -179,10 +193,16 @@ def main(argv):
     fail = True
 
   target_cfg = ""
-  if args.block_client:
+  if not args.no_block_client:
     target_cfg += "block_client: true\n"
   if args.idle_allocations:
     target_cfg += "idle_allocations: true\n"
+  if args.no_startup:
+    target_cfg += "no_startup: true\n"
+  if args.no_running:
+    target_cfg += "no_running: true\n"
+  if args.dump_at_max:
+    target_cfg += "dump_at_max: true\n"
   if args.pid:
     for pid in args.pid.split(','):
       try:
@@ -309,6 +329,9 @@ def main(argv):
   profile_files = os.listdir(profile_path)
   if not profile_files:
     print("No profiles generated", file=sys.stderr)
+    print("If this is unexpected, check "
+          "https://docs.perfetto.dev/#/heapprofd?id=troubleshooting.",
+          file=sys.stderr)
     return 1
 
   subprocess.check_call(['gzip'] + [os.path.join(profile_path, x) for x in

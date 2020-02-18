@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
@@ -219,28 +220,28 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   const gfx::Insets toast_label_vertical_margin(
       provider->GetDistanceMetric(DISTANCE_TOAST_LABEL_VERTICAL), 0);
   find_previous_button_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(toast_control_vertical_margin +
-                                          vector_button_horizontal_margin));
-  find_next_button_->SetProperty(
-      views::kMarginsKey, new gfx::Insets(toast_control_vertical_margin +
-                                          vector_button_horizontal_margin));
-  close_button_->SetProperty(views::kMarginsKey,
-                             new gfx::Insets(toast_control_vertical_margin +
+      views::kMarginsKey, gfx::Insets(toast_control_vertical_margin +
+                                      vector_button_horizontal_margin));
+  find_next_button_->SetProperty(views::kMarginsKey,
+                                 gfx::Insets(toast_control_vertical_margin +
                                              vector_button_horizontal_margin));
+  close_button_->SetProperty(views::kMarginsKey,
+                             gfx::Insets(toast_control_vertical_margin +
+                                         vector_button_horizontal_margin));
   separator_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_control_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_control_vertical_margin + horizontal_margin));
   find_text_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_control_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_control_vertical_margin + horizontal_margin));
   match_count_text_->SetProperty(
       views::kMarginsKey,
-      new gfx::Insets(toast_label_vertical_margin + horizontal_margin));
+      gfx::Insets(toast_label_vertical_margin + horizontal_margin));
 
   find_text_->SetBorder(views::NullBorder());
 
   auto* manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       gfx::Insets(provider->GetInsetsMetric(INSETS_TOAST) - horizontal_margin),
       0));
 
@@ -270,7 +271,7 @@ base::string16 FindBarView::GetFindSelectedText() const {
 }
 
 base::string16 FindBarView::GetMatchCountText() const {
-  return match_count_text_->text();
+  return match_count_text_->GetText();
 }
 
 void FindBarView::UpdateForResult(const FindNotificationDetails& result,
@@ -395,8 +396,7 @@ void FindBarView::ButtonPressed(
       break;
     case VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON:
       find_bar_host_->GetFindBarController()->EndFindSession(
-          FindBarController::kKeepSelectionOnPage,
-          FindBarController::kKeepResultsInFindBox);
+          FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
       break;
     default:
       NOTREACHED() << "Unknown button";
@@ -476,7 +476,7 @@ void FindBarView::Find(const base::string16& search_text) {
     // The last two params here are forward (true) and case sensitive (false).
     find_tab_helper->StartFinding(search_text, true, false);
   } else {
-    find_tab_helper->StopFinding(FindBarController::kClearSelectionOnPage);
+    find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
     UpdateForResult(find_tab_helper->find_result(), base::string16());
     find_bar_host_->MoveWindowIfNecessary(gfx::Rect());
 

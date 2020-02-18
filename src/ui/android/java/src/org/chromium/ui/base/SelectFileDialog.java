@@ -183,8 +183,22 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                             return;
                         }
 
-                        if (shouldUsePhotoPicker
-                                && requestPermissions[i].equals(storagePermission)) {
+                        // TODO(finnur): Remove once we figure out the cause of crbug.com/950024.
+                        if (shouldUsePhotoPicker) {
+                            if (permissions.length != requestPermissions.length) {
+                                throw new RuntimeException(
+                                        String.format("Permissions arrays misaligned: %d != %d",
+                                                permissions.length, requestPermissions.length));
+                            }
+
+                            if (!permissions[i].equals(requestPermissions[i])) {
+                                throw new RuntimeException(
+                                        String.format("Permissions arrays don't match: %s != %s",
+                                                permissions[i], requestPermissions[i]));
+                            }
+                        }
+
+                        if (shouldUsePhotoPicker && permissions[i].equals(storagePermission)) {
                             onFileNotSelected();
                             return;
                         }

@@ -21,6 +21,8 @@
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
+#include "media/gpu/v4l2/v4l2_decode_surface.h"
+
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
 #endif
@@ -103,7 +105,6 @@ V4L2Buffer::V4L2Buffer(scoped_refptr<V4L2Device> device,
   v4l2_buffer_.index = buffer_id;
   v4l2_buffer_.type = type;
   v4l2_buffer_.memory = memory;
-
   plane_mappings_.resize(v4l2_buffer_.length);
 }
 
@@ -167,7 +168,7 @@ size_t V4L2Buffer::GetMemoryUsage() const {
 scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
   auto layout = V4L2Device::V4L2FormatToVideoFrameLayout(format_);
   if (!layout) {
-    DVLOG(1) << "Cannot create frame layout for V4L2 buffers";
+    VLOGF(1) << "Cannot create frame layout for V4L2 buffers";
     return nullptr;
   }
 
@@ -188,7 +189,7 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
 scoped_refptr<VideoFrame> V4L2Buffer::GetVideoFrame() {
   // We can create the VideoFrame only when using MMAP buffers.
   if (v4l2_buffer_.memory != V4L2_MEMORY_MMAP) {
-    DVLOGF(1) << "Cannot create video frame from non-MMAP buffer";
+    VLOGF(1) << "Cannot create video frame from non-MMAP buffer";
     // video_frame_ should be null since that's its default value.
     DCHECK_EQ(video_frame_, nullptr);
     return video_frame_;
@@ -467,13 +468,13 @@ bool V4L2WritableBufferRef::QueueDMABuf(
     return false;
   }
 
-  if (fds.size() != self.PlanesCount()) {
-    VLOGF(1) << "Provided " << fds.size() << " FDs while we require "
-             << self.buffer_data_->v4l2_buffer_.length << ".";
+  size_t num_planes = self.PlanesCount();
+  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
+  if (fds.size() < num_planes) {
+    VLOGF(1) << "The given number of fds is less than required one";
     return false;
   }
-
-  for (size_t i = 0; i < fds.size(); i++)
+  for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
 
   return std::move(self).DoQueue();
@@ -548,6 +549,11 @@ size_t V4L2WritableBufferRef::GetPlaneBytesUsed(const size_t plane) const {
   }
 
   return buffer_data_->v4l2_buffer_.m.planes[plane].bytesused;
+}
+
+void V4L2WritableBufferRef::PrepareQueueBuffer(
+    scoped_refptr<V4L2DecodeSurface> surface) {
+  surface->PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
 }
 
 size_t V4L2WritableBufferRef::BufferId() const {
@@ -973,7 +979,7 @@ void V4L2Device::OnQueueDestroyed(v4l2_buf_type buf_type) {
 
 // static
 scoped_refptr<V4L2Device> V4L2Device::Create() {
-  VLOGF(2);
+  DVLOGF(3);
 
   scoped_refptr<V4L2Device> device;
 
@@ -1043,12 +1049,8 @@ uint32_t V4L2Device::VideoPixelFormatToV4L2PixFmt(const VideoPixelFormat format,
 // static
 uint32_t V4L2Device::VideoFrameLayoutToV4L2PixFmt(
     const VideoFrameLayout& layout) {
-  if (layout.num_buffers() == 0) {
-    VLOGF(1) << "layout.num_buffers() must be more than 0: " << layout;
-    return 0;
-  }
   return VideoPixelFormatToV4L2PixFmt(layout.format(),
-                                      layout.num_buffers() == 1);
+                                      !layout.is_multi_planar());
 }
 
 // static
@@ -1174,9 +1176,6 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
 
     case V4L2_PIX_FMT_RGB32:
       return DRM_FORMAT_ARGB8888;
-
-    case V4L2_PIX_FMT_MT21C:
-      return DRM_FORMAT_MT21;
 
     default:
       DVLOGF(1) << "Unrecognized format " << FourccToString(format);
@@ -1440,20 +1439,19 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   if (num_buffers > num_color_planes) {
-    VLOG(1) << "pix_mp.num_planes: " << num_buffers << " should not be larger "
-            << "than NumPlanes(" << VideoPixelFormatToString(video_format)
-            << "): " << num_color_planes;
+    VLOGF(1) << "pix_mp.num_planes: " << num_buffers
+             << " should not be larger than NumPlanes("
+             << VideoPixelFormatToString(video_format)
+             << "): " << num_color_planes;
     return base::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.
   std::vector<VideoFrameLayout::Plane> planes;
-  std::vector<size_t> buffer_sizes;
   planes.reserve(num_color_planes);
-  buffer_sizes.reserve(num_buffers);
   for (size_t i = 0; i < num_buffers; ++i) {
     const v4l2_plane_pix_format& plane_format = pix_mp.plane_fmt[i];
-    planes.emplace_back(static_cast<int32_t>(plane_format.bytesperline), 0u);
-    buffer_sizes.push_back(plane_format.sizeimage);
+    planes.emplace_back(static_cast<int32_t>(plane_format.bytesperline), 0u,
+                        plane_format.sizeimage);
   }
   // For the case that #color planes > #buffers, it fills stride of color
   // plane which does not map to buffer.
@@ -1466,8 +1464,9 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     switch (pix_fmt) {
       case V4L2_PIX_FMT_NV12:
         // The stride of UV is the same as Y in NV12.
-        planes.emplace_back(y_stride, y_stride_abs * pix_mp.height);
-        DCHECK_EQ(1u, buffer_sizes.size());
+        // The height is half of Y plane.
+        planes.emplace_back(y_stride, y_stride_abs * pix_mp.height,
+                            y_stride_abs * pix_mp.height / 2);
         DCHECK_EQ(2u, planes.size());
         break;
       case V4L2_PIX_FMT_YUV420:
@@ -1483,9 +1482,9 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
         const int32_t half_stride = y_stride / 2;
         const size_t plane_0_area = y_stride_abs * pix_mp.height;
         const size_t plane_1_area = plane_0_area / 4;
-        planes.emplace_back(half_stride, plane_0_area);
-        planes.emplace_back(half_stride, plane_0_area + plane_1_area);
-        DCHECK_EQ(1u, buffer_sizes.size());
+        planes.emplace_back(half_stride, plane_0_area, plane_1_area);
+        planes.emplace_back(half_stride, plane_0_area + plane_1_area,
+                            plane_1_area);
         DCHECK_EQ(3u, planes.size());
         break;
       }
@@ -1499,22 +1498,33 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   // Some V4L2 devices expect buffers to be page-aligned. We cannot detect
   // such devices individually, so set this as a video frame layout property.
   constexpr size_t buffer_alignment = 0x1000;
-
-  return VideoFrameLayout::CreateWithPlanes(
-      video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
-      std::move(buffer_sizes), buffer_alignment);
+  if (num_buffers == 1) {
+    return VideoFrameLayout::CreateWithPlanes(
+        video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
+        buffer_alignment);
+  } else {
+    return VideoFrameLayout::CreateMultiPlanar(
+        video_format, gfx::Size(pix_mp.width, pix_mp.height), std::move(planes),
+        buffer_alignment);
+  }
 }
 
 // static
 bool V4L2Device::IsMultiPlanarV4L2PixFmt(uint32_t pix_fmt) {
   constexpr uint32_t kMultiV4L2PixFmts[] = {
-      V4L2_PIX_FMT_NV12M,
-      V4L2_PIX_FMT_MT21C,
-      V4L2_PIX_FMT_YUV420M,
-      V4L2_PIX_FMT_YVU420M,
+      V4L2_PIX_FMT_NV12M,   V4L2_PIX_FMT_MT21C,   V4L2_PIX_FMT_YUV420M,
+      V4L2_PIX_FMT_YVU420M, V4L2_PIX_FMT_YUV422M,
   };
   return std::find(std::cbegin(kMultiV4L2PixFmts), std::cend(kMultiV4L2PixFmts),
                    pix_fmt) != std::cend(kMultiV4L2PixFmts);
+}
+
+// static
+size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
+  if (IsMultiPlanarV4L2PixFmt(pix_fmt)) {
+    return VideoFrame::NumPlanes(V4L2PixFmtToVideoPixelFormat(pix_fmt));
+  }
+  return 1u;
 }
 
 void V4L2Device::GetSupportedResolution(uint32_t pixelformat,

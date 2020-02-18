@@ -14,6 +14,8 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
+#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
 
@@ -75,7 +77,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
 
   class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
     // Called when the current input method is changed.  |show_message|
     // indicates whether the user should be notified of this change.
     virtual void InputMethodChanged(InputMethodManager* manager,
@@ -103,7 +105,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
   // keyboard is used, since it controls its own candidate window.
   class CandidateWindowObserver {
    public:
-    virtual ~CandidateWindowObserver() {}
+    virtual ~CandidateWindowObserver() = default;
     // Called when the candidate window is opened.
     virtual void CandidateWindowOpened(InputMethodManager* manager) = 0;
     // Called when the candidate window is closed.
@@ -114,7 +116,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
   // bar.
   class ImeMenuObserver {
    public:
-    virtual ~ImeMenuObserver() {}
+    virtual ~ImeMenuObserver() = default;
 
     // Called when the IME menu is activated or deactivated.
     virtual void ImeMenuActivationChanged(bool is_active) = 0;
@@ -255,7 +257,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
     virtual ~State();
   };
 
-  virtual ~InputMethodManager() {}
+  virtual ~InputMethodManager() = default;
 
   // Gets the global instance of InputMethodManager. Initialize() must be called
   // first.
@@ -293,6 +295,11 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodManager {
 
   // Activates the input method property specified by the |key|.
   virtual void ActivateInputMethodMenuItem(const std::string& key) = 0;
+
+  // Connects a receiver to the InputEngineManager instance.
+  virtual void ConnectInputEngineManager(
+      mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager>
+          receiver) = 0;
 
   virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const = 0;
 

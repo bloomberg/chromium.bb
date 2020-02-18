@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/default_tick_clock.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
@@ -51,7 +52,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -119,10 +120,15 @@ class CORE_EXPORT LocalFrame final : public Frame,
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
-  LocalFrame(LocalFrameClient*,
-             Page&,
-             FrameOwner*,
-             InterfaceRegistry* = nullptr);
+  // For a description of |inheriting_agent_factory| go see the comment on the
+  // Frame constructor.
+  LocalFrame(
+      LocalFrameClient*,
+      Page&,
+      FrameOwner*,
+      WindowAgentFactory* inheriting_agent_factory,
+      InterfaceRegistry*,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
 
   void Init();
   void SetView(LocalFrameView*);
@@ -136,7 +142,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   SecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason);
   void PrintNavigationWarning(const String&);
-  bool PrepareForCommit() override;
+  bool DetachDocument() override;
   void CheckCompleted() override;
   void DidChangeVisibilityState() override;
   void DidFreeze() override;
@@ -262,8 +268,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   String SelectedTextForClipboard() const;
 
   PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>>
-  PositionForPoint(const LayoutPoint& frame_point);
-  Document* DocumentAtPoint(const LayoutPoint&);
+  PositionForPoint(const PhysicalOffset& frame_point);
+  Document* DocumentAtPoint(const PhysicalOffset&);
 
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 
@@ -317,13 +323,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns true if Client Lo-Fi should be used for this request.
   bool IsClientLoFiAllowed(const ResourceRequest&) const;
 
-  enum class LazyLoadImageEnabledState {
+  enum class LazyLoadImageSetting {
     kDisabled,
     kEnabledExplicit,
     kEnabledAutomatic
   };
   // Returns the enabled state of lazyloading of images.
-  LazyLoadImageEnabledState GetLazyLoadImageEnabledState() const;
+  LazyLoadImageSetting GetLazyLoadImageSetting() const;
+
+  // Returns true if parser-blocking script should be force-deferred to execute
+  // after parsing completes for this frame.
+  bool ShouldForceDeferScript() const;
 
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();
@@ -346,6 +356,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return remote_viewport_intersection_;
   }
   FrameOcclusionState GetOcclusionState() const;
+  bool NeedsOcclusionTracking() const;
 
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for

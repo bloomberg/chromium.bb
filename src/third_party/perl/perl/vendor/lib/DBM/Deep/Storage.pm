@@ -5,6 +5,10 @@ use 5.008_004;
 use strict;
 use warnings FATAL => 'all';
 
+=head1 NAME
+
+DBM::Deep::Storage - abstract base class for storage
+
 =head2 flush()
 
 This flushes the filehandle. This takes no parameters and returns nothing.

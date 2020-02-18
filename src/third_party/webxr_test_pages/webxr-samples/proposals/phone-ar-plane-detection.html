@@ -29,7 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     <!-- Origin Trial Token, feature = WebXR Device API, origin = https://immersive-web.github.io, expires = 2018-08-28 -->
 <meta http-equiv="origin-trial" data-feature="WebXR Device API" data-expires="2018-08-28" content="AnNpu7ceXvLew05ccD8Zr1OZsdZiB2hLQKK82kTTMDwF7oRKtP3QEJ4RzkeHrmB8Sq0vSV6ZNmszpBCZ0I8p9gAAAABceyJvcmlnaW4iOiJodHRwczovL2ltbWVyc2l2ZS13ZWIuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJYUkRldmljZSIsImV4cGlyeSI6MTUzNTQxNDQwMH0=">
 
-    <title>AR Hit Test</title>
+    <title>AR Plane Detection</title>
 
     <link href='../css/common.css' rel='stylesheet'></link>
 
@@ -44,7 +44,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   <body>
     <header>
       <details open>
-        <summary>AR Synchronous Hit Test</summary>
+        <summary>AR Plane Detection</summary>
+        This sample demonstrates using the Plane Detection feature,
+        including implementation of synchronous hit test in JavaScript
+        leveraging obtained plane data.
         <p>
           <input id="useReticle" type="checkbox" checked>
           <label for="useReticle">Use reticle for placement</label><br/>
@@ -344,7 +347,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }
       }
 
-      function addPlaneToScene(plane) {
+      function addPlaneToScene(frame, plane, timestamp) {
         if(typeof XRPlane.counter == 'undefined') {
           XRPlane.counter = 1;
           XRPlane.colors = [
@@ -386,7 +389,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           plane_node.addNode(planeFrameOfReference);
 
           plane.scene_node = plane_node;
-          plane.scene_node.matrix = plane.getPose(xrRefSpace).transform.matrix;
+          plane.scene_node.matrix = frame.getPose(plane.planeSpace, xrRefSpace).transform.matrix;
 
           plane.extended_polygon = extendPolygon(plane.polygon);
           plane.extended_polygon_node = new PlaneNode({
@@ -399,17 +402,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
           scene.addNode(plane.scene_node);
         }
-        else
+        else if(plane.lastChangedTime == timestamp)
         {
-          // old plane
+          // old plane that was updated in current frame
           plane.scene_node.onPlaneChanged(plane.polygon);
-          plane.scene_node.matrix = plane.getPose(xrRefSpace).transform.matrix;
+          plane.scene_node.matrix = frame.getPose(plane.planeSpace, xrRefSpace).transform.matrix;
           plane.extended_polygon = extendPolygon(plane.polygon);
           plane.extended_polygon_node.onPlaneChanged(plane.extended_polygon);
         }
       }
 
-      let all_planes = new Set();
+      // Set with all planes detected in a previous frame.
+      let all_previous_planes = new Set();
 
       // Called every time a XRSession requests that a new frame be drawn.
       async function onXRFrame(t, frame) {
@@ -417,32 +421,37 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         let session = frame.session;
         let pose = frame.getViewerPose(xrRefSpace);
 
-        let previous_planes = new Set(all_planes);
         let detected_planes = frame.worldInformation.detectedPlanes;
+
+        // Check if any of the old planes is no longer present in detected planes set.
+        // If it's no longer present, it was removed - clean up after.
+        all_previous_planes.forEach(plane => {
+          if(!detected_planes.has(plane)) {
+            console.log("Removing plane, id:", plane.id);
+
+            let index = all_plane_origins.findIndex(
+              element => element === plane.scene_node.origins);
+            if(index != -1){
+              all_plane_origins.splice(index, 1);
+            }
+
+            index = all_extended_planes.findIndex(
+              element => element === plane.extended_polygon_node);
+            if(index != -1){
+              all_extended_planes.splice(index, 1);
+            }
+
+            scene.removeNode(plane.scene_node);
+          }
+        });
+
+        // Store currently detected planes to check against them in subsequent frame.
+        all_previous_planes = detected_planes;
+
+        // Process all currently detected planes.
         detected_planes.forEach(plane => {
-          addPlaneToScene(plane);
-          if(previous_planes.has(plane)) {
-            previous_planes.delete(plane);
-          }
+          addPlaneToScene(frame, plane, t);
         });
-
-        previous_planes.forEach(plane => {
-          console.log("Removing plane, id:", plane.id);
-
-          let index = all_plane_origins.findIndex(element => element === plane.scene_node.origins);
-          if(index != -1){
-            all_plane_origins.splice(index, 1);
-          }
-
-          index = all_extended_planes.findIndex(element => element === plane.extended_polygon_node);
-          if(index != -1){
-            all_extended_planes.splice(index, 1);
-          }
-
-          scene.removeNode(plane.scene_node);
-        });
-
-        all_planes = new Set(detected_planes);
 
         // If requested, use the pose to cast a reticle into the scene using a
         // continuous hit test. For the moment we're just using the flower
@@ -460,7 +469,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           rayObject.matrix = ray.matrix.slice();
           rayObject.visible = true;
 
-          const hitTestResults = hitTest(ray, frame.worldInformation.detectedPlanes, xrRefSpace);
+          const hitTestResults = hitTest(frame, ray, xrRefSpace);
           const hitTestFiltered = filterHitTestResults(hitTestResults,
                                                        extendPlanesEnabled.checked,
                                                        false,

@@ -37,6 +37,13 @@ message ClientContextProto {
 
   // Experiment ids string provided by the 'caller'.
   optional string experiment_ids = 7;
+
+  // True if the script is called from a Chrome Custom Tab created for Autofill
+  // Assistant.
+  optional bool is_cct = 8;
+
+  // True if the script was triggered by a direct action.
+  optional bool is_direct_action = 9;
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -120,10 +127,6 @@ message SupportedScriptProto {
   optional string path = 1;
 
   message PresentationProto {
-    // Script name.
-    // Deprecated, use chip.text instead.
-    optional string name = 1 [deprecated = true];
-
     // Precondition contains a set of conditions that must hold for a script to
     // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 3;
@@ -138,26 +141,26 @@ message SupportedScriptProto {
     // priority 1.
     optional int32 priority = 5;
 
-    // Describes the chip to be shown. The name of the chip is set by the
-    // name field.
-    // Deprecated, use chip.type instead.
-    optional ChipType chip_type = 10 [deprecated = true];
-
-    // An icon the should be shown next to the chip text.
-    // Deprecated, use chip.icon instead.
-    optional ChipIcon chip_icon = 11 [deprecated = true];
-
-    // The chip to display. This chip has precedence over name, chip_type and
-    // chip_icon. Not required if autostart is true.
+    // An optional chip to display.
     optional ChipProto chip = 12;
 
-    // When set to true this script can be run in 'autostart mode'. Chip won't
-    // be shown; name and chip_type are ignored.
+    // Optionally map this script to a direct action.
+    optional DirectActionProto direct_action = 13;
+
+    // When set to true this script can be run in 'autostart mode'.
     optional bool autostart = 8;
 
     // When set to true this script will be run from WaitForDom actions with
     // allow_interrupt=true.
     optional bool interrupt = 9;
+
+    // Message to show once the script has been started. This is shown while
+    // loading the actions.
+    optional string start_message = 14;
+
+    // Show the UI if it's not shown yet. Setting this to false is useful for
+    // scripts started by direct actions.
+    optional bool needs_ui = 15 [default = true];
   }
   optional PresentationProto presentation = 2;
 }
@@ -406,6 +409,8 @@ message ActionProto {
     WaitForNavigationProto wait_for_navigation = 41;
     ConfigureBottomSheetProto configure_bottom_sheet = 42;
     ShowFormProto show_form = 43;
+    PopupMessageProto popup_message = 44;
+    WaitForDocumentProto wait_for_document = 45;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -421,6 +426,13 @@ message PaymentDetails {
   optional bool is_terms_and_conditions_accepted = 2;
   // The email address of the payer.
   optional string payer_email = 3;
+  // If set, this means that the user triggered the action in
+  // |GetPaymentInformationProto.additional_actions| that has index
+  // |additional_action_index|.
+  optional int32 additional_action_index = 4;
+  // If set, this means that the user clicked on one of the terms and conditions
+  // links.
+  optional int32 terms_link = 5;
 }
 
 message ProcessedActionProto {
@@ -442,6 +454,8 @@ message ProcessedActionProto {
     WaitForDomProto.Result wait_for_dom_result = 22;
     // Should be set as a result of FormAction.
     FormProto.Result form_result = 21;
+
+    WaitForDocumentProto.Result wait_for_document_result = 25;
   }
 
   // Reports information about navigation that happened while
@@ -451,6 +465,11 @@ message ProcessedActionProto {
   // Reports how long it took for the client to run the action. This does not
   // include the delay specified in action.delay_ms.
   optional int64 run_time_ms = 23;
+
+  // If true, the user triggered, during the client action, at least one user
+  // action, such as a prompt choice, through a direct action instead of
+  // selecting a chip on the UI. This is meant for monitoring and debugging.
+  optional bool direct_action = 24;
 }
 
 // Extended information about the action status, which provides more details
@@ -467,6 +486,11 @@ message ProcessedActionStatusDetailsProto {
   // more appropriate error. When that happens, this field contains the original
   // status, to help debugging.
   optional ProcessedActionStatusProto original_status = 2;
+
+  // More information included for autofill related errors.
+  //
+  // For now this is only filled for PRECONDITION_FAILED errors.
+  optional AutofillErrorInfoProto autofill_error_info = 3;
 }
 
 message NavigationInfoProto {
@@ -516,6 +540,18 @@ message UnexpectedErrorInfoProto {
   // JavaScript exception column number, within the js snippet that was sent to
   // devtools runtime by the client, if reporting a JavaScript error.
   optional int32 js_exception_column_number = 5;
+}
+
+// Message to report autofill related errors for debugging purposes.
+message AutofillErrorInfoProto {
+  // Comma separated list of address keys in the client memory when the
+  // unexpected error occurred. Memory values are never reported this way since
+  // they may contain PII. Only the address key names!
+  optional string client_memory_address_key_names = 1;
+
+  // Name of the address key requested in the list of keys in
+  // |client_memory_address_key_names|.
+  optional string address_key_requested = 2;
 }
 
 enum ProcessedActionStatusProto {
@@ -709,6 +745,10 @@ message SelectOptionProto {
 // Contain a localized text message from the server.
 message TellProto {
   optional string message = 1;
+
+  // Show the UI if it's not shown yet, such as when a script has been started
+  // by a direct action.
+  optional bool needs_ui = 2 [default = true];
 }
 
 // Contain all arguments to focus on an element.
@@ -753,7 +793,13 @@ message ElementAreaProto {
     // the screen.
     optional bool full_width = 2;
   }
-  repeated Rectangle rectangles = 1;
+
+  // The rectangles that will be highlighted and touchable.
+  repeated Rectangle touchable = 1;
+
+  // The rectangles that should be neither highlighted nor touchable. Those
+  // rectangles have precedence over the |touchable| rectangles.
+  repeated Rectangle restricted = 2;
 }
 
 // Fill a form with an address if there is, otherwise fail this action.
@@ -787,6 +833,11 @@ message UseAddressProto {
 
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];
+
+    // Fill in the fill even if it's non-empty. This is useful to work around
+    // cases where the way autofill sets the field doesn't work on the website.
+    // Usually used together with simulate_key_presses.
+    optional bool forced = 5;
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -806,12 +857,42 @@ message UseAddressProto {
 
 // Fill a form with a credit card if there is, otherwise fail this action.
 message UseCreditCardProto {
+  // Message used to indicate what form fields should be filled with what
+  // information.
+  message RequiredField {
+    enum CardField {
+      UNDEFINED = 0;
+      CREDIT_CARD_VERIFICATION_CODE = 1;
+      CREDIT_CARD_EXP_MONTH = 2;
+      CREDIT_CARD_EXP_2_DIGIT_YEAR = 3;
+      CREDIT_CARD_EXP_4_DIGIT_YEAR = 4;
+    }
+
+    optional CardField card_field = 1;
+
+    optional ElementReferenceProto element = 2;
+
+    // Whether we should simulate actual key presses when filling |element| with
+    // its corresponding value.
+    optional bool simulate_key_presses = 3;
+
+    // Delay between two key presses when simlulating.
+    optional int32 delay_in_millisecond = 4 [default = 20];
+
+    // Fill in the fill even if it's non-empty. This is useful to work around
+    // cases where the way autofill sets the field doesn't work on the website.
+    // Usually used together with simulate_key_presses.
+    optional bool forced = 5;
+  }
+
   // An optional message to show to the user when asking to select a card.
   // TODO(crbug.com/806868): Make the prompt a required field.
   optional string prompt = 1;
 
   // A reference to the card number field in the form that should be filled.
   optional ElementReferenceProto form_field_element = 3;
+
+  repeated RequiredField required_fields = 7;
 }
 
 // Ask Chrome to wait for an element in the DOM. This can be used to only
@@ -901,9 +982,18 @@ message HighlightElementProto {
   optional ElementReferenceProto element = 1;
 }
 
-// Load the given URL in the current tab.
+// Controls the browser navigation.
 message NavigateProto {
-  optional string url = 1;
+  oneof value {
+    // Navigate to the given URL.
+    string url = 1;
+    // Navigate backward in the history. Action will return PRECONDITION_FAILED
+    // if it is not possible.
+    bool go_backward = 2;
+    // Navigate forward in the history. Action will return PRECONDITION_FAILED
+    // if it is not possible.
+    bool go_forward = 3;
+  }
 }
 
 // Specify from which point in the script navigation is expected for the next
@@ -931,6 +1021,55 @@ message WaitForNavigationProto {
   optional int32 timeout_ms = 1;
 }
 
+// Chrome document.readyState values.
+//
+// Number is significant, as the document goes through these state in order,
+// from initialized to complete.
+enum DocumentReadyState {
+  option allow_alias = true;
+
+  DOCUMENT_UNKNOWN_READY_STATE = 0;
+  DOCUMENT_UNINITIALIZED = 1;
+  DOCUMENT_LOADING = 2;
+  DOCUMENT_LOADED = 3;
+  DOCUMENT_INTERACTIVE = 4;
+  DOCUMENT_COMPLETE = 5;
+
+  // Maximum value above.
+  DOCUMENT_MAX_READY_STATE = 5;
+}
+
+// Wait for the document to be ready before proceeding.
+//
+// Client errors:
+//   TIMED_OUT if timed out waiting for an acceptable state.
+//   ELEMENT_RESOLUTION_FAILED if the specified frame selector could not be
+//   found.
+message WaitForDocumentProto {
+  // Maximum amount of time to wait for the state to change. Set it to 0 to
+  // check once and report the result immediately, without waiting.
+  optional int32 timeout_ms = 1 [default = 5000];
+
+  // If specified, check the document in the given frame, instead
+  // of the main document.
+  optional ElementReferenceProto frame = 2;
+
+  // The minimum ready state needed to satisfy the requirement.
+  optional DocumentReadyState min_ready_state = 3
+      [default = DOCUMENT_INTERACTIVE];
+
+  message Result {
+    // The ready state found when the action started.
+    optional DocumentReadyState start_ready_state = 1;
+
+    // The ready state found when the action ended.
+    //
+    // This is filled even when the action fails, so it is not guaranteed to
+    // match min_ready_state.
+    optional DocumentReadyState end_ready_state = 2;
+  }
+}
+
 // Allow choosing one or more possibility. If FocusElement was called just
 // before, allow interaction with the touchable element area, otherwise don't
 // allow any interactions.
@@ -938,30 +1077,19 @@ message PromptProto {
   // Display this message to the user.
   optional string message = 1;
 
-  // A choice that is made either directly by clicking on a chip or chip, or
-  // implicitly by making a change on the website that is then detected by
-  // looking for the existence of an element.
+  // A choice that can be triggered:
+  // - by clicking on a chip, if a chip is set
+  // - by triggering a direct action, if direct action names are set
+  // - indirectly, DOM change, if auto_select_if_element_exists if set
   //
   // One of these protos must is transmitted as-is back to the server as part of
   // ProcessedActionProto.
   message Choice {
-    // Localized text message to display. Not required if
-    // auto_select_if_element_exists is set.
-    // Deprecated, use chip.text instead.
-    optional string name = 2 [deprecated = true];
-
-    // Describes the chip to be shown. The name of the chip is set by the
-    // name field.
-    // Deprecated, use chip.type instead.
-    optional ChipType chip_type = 7 [deprecated = true];
-
-    // An icon the should be shown next to the chip text.
-    // Deprecated, use chip.icon instead.
-    optional ChipIcon chip_icon = 10 [deprecated = true];
-
-    // The chip to display. This chip has precedence over name, chip_type and
-    // chip_icon. Not required if auto_select_if_element_exists is set.
+    // The chip to display to the UI.
     optional ChipProto chip = 11;
+
+    // Map this choice to a direct action.
+    optional DirectActionProto direct_action = 12;
 
     // Auto-select this choice if the given element exist.
     optional ElementReferenceProto auto_select_if_element_exists = 4;
@@ -979,6 +1107,8 @@ message PromptProto {
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
+
+    reserved 13;
   }
   repeated Choice choices = 4;
 }
@@ -1027,6 +1157,29 @@ message GetPaymentInformationProto {
   optional TermsAndConditionsState terms_and_conditions_state = 8;
   // When 'false', hide the terms and conditions box in the UI.
   optional bool request_terms_and_conditions = 9 [default = true];
+  // Whether the terms and conditions should be displayed as a single checkbox
+  // with |accept_terms_and_conditions_text| as text. If false, the accept terms
+  // will be displayed as a radio button next to an additional "Read and agree
+  // later on domain.com" choice.
+  optional bool show_terms_as_checkbox = 12;
+  // The text for the terms and conditions "I accept..." choice. The text is
+  // formatted such that '<b>text</b>' will be bold and '<link0>clickable
+  // link</link0>', '<link1>other link</link1>', etc will be clickable links
+  // that will finish this action and return the clicked link in the action
+  // result.
+  optional string accept_terms_and_conditions_text = 13;
+  // Optionally allows confiriming through the given direct actions.
+  optional DirectActionProto confirm_direct_action = 10;
+  // Additional actions available to the user. This can be used for instance to
+  // display a "Show terms" button that will navigate the user to the terms and
+  // conditions page when clicked.
+  repeated UserActionProto additional_actions = 11;
+  // Optionally requests a payment method with a billing address that has a
+  // postcode value.
+  optional bool require_billing_postal_code = 14;
+  // The error message to display when the billing address is missing the
+  // postal code. This field is mandatory if |require_postal_code| is true.
+  optional string billing_postal_code_missing_text = 15;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1221,13 +1374,17 @@ message ConfigureBottomSheetProto {
     // Don't change resizing configuration.
     NO_CHANGE = 0;
 
-    // Resize the viewport such that it is completely visible when the sheet is
-    // in the peek state.
-    RESIZE = 1;
+    // Resize the layout viewport such that it is completely visible when the
+    // sheet is in the peek state.
+    RESIZE_LAYOUT_VIEWPORT = 1;
 
     // Don't resize the viewport such that it is overlaid by the sheet, even in
     // the peek state.
     NO_RESIZE = 2;
+
+    // Dynamically resize the visual viewport by the height of the sheet. This
+    // allows to fully scroll the page above the sheet at any time.
+    RESIZE_VISUAL_VIEWPORT = 3;
   }
 
   // The peek mode allows to set what components are visible when the sheet is
@@ -1252,8 +1409,9 @@ message ConfigureBottomSheetProto {
   optional ViewportResizing viewport_resizing = 1;
 
   // Set the peek mode. This will change the peek height of the sheet. If
-  // resize_viewport is true or was set to true by a previous actions, the
-  // viewport will be resized to match the new peek height.
+  // viewport_resizing is set to RESIZE_LAYOUT_VIEWPORT or was set by a previous
+  // ConfigureBottomSheet action, the viewport will be resized to match the new
+  // peek height.
   optional PeekMode peek_mode = 2;
 
   // Maximum time to wait for the window to resize before continuing with the
@@ -1269,6 +1427,9 @@ message ShowFormProto {
   // The chip to display below the form. This chip will be enabled only if all
   // form inputs are valid.
   optional ChipProto chip = 2;
+
+  // Optionally allow confirming the prompt using given direct actions.
+  optional DirectActionProto direct_action = 3;
 }
 
 message FormProto {
@@ -1299,22 +1460,33 @@ message FormInputProto {
 message CounterInputProto {
   // A single counter.
   message Counter {
-    // The label shown with the counter, that handles plurals using the format
-    // defined by java.text.ChoiceFormat. All occurrences of the '{value}'
+    // The label shown with the counter. All occurrences of the '{value}'
     // substring will be replaced by the current counter value.
     optional string label = 1;
 
     // Text shown below the label. Optional.
     optional string subtext = 5;
 
-    // The minimum value this counter can have.
+    // The possible values this counter can have. If empty, the possible values
+    // will be all integer values between |min_value| and |max_value|.
+    // Note that the order of the values matters and they will not be
+    // automatically sorted.
+    repeated int32 allowed_values = 6;
+
+    // The minimum value this counter can have. Ignored if |allowed_values| is
+    // not empty.
     optional int32 min_value = 2 [default = -0x80000000];  // kint32min
 
-    // The maximum value this counter can have.
+    // The maximum value this counter can have. Ignored if |allowed_values| is
+    // not empty.
     optional int32 max_value = 3 [default = 0x7FFFFFFF];  // kint32max
 
-    // The initial value of the counter.
+    // The initial value of the counter. If |allowed_values| is not empty, it
+    // must contain |initial_value| or it will otherwise default to the first
+    // value.
     optional int32 initial_value = 4 [default = 0];
+
+    reserved 7;
   }
 
   // A result associated to this counter.
@@ -1429,6 +1601,8 @@ message SelectionInputProto {
     // then maximum 1 Choice can have this set to true, otherwise the associated
     // FormAction will fail.
     optional bool selected = 2 [default = false];
+
+    reserved 7;
   }
 
   message Result {
@@ -1451,4 +1625,38 @@ message SelectionInputProto {
   // The minimum number of choices that should be selected to consider this
   // input valid.
   optional int32 min_selected_choices = 4 [default = 1];
+}
+
+// Defines a mapping to an Android Q direct action.
+message DirectActionProto {
+  // Map to direct actions with the given names.
+  repeated string names = 1;
+
+  // Arguments to report as required for the direct action.
+  //
+  // This is included into the definition reported to the caller without being
+  // interpreted. Requirement is not enforced.
+  repeated string required_arguments = 2;
+
+  // Arguments to report as optional for the direct action.
+  //
+  // This is included into the definition reported to the caller without being
+  // interpreted.
+  repeated string optional_arguments = 3;
+}
+
+// An action that can be performed via the UI and/or via Direct Actions (in
+// Android Q+).
+message UserActionProto {
+  optional ChipProto chip = 1;
+
+  optional DirectActionProto direct_action = 2;
+}
+
+// Action to show a popup bubble on top of the bottom sheet, anchored at the
+// icon. Setting an empty message will remove any existing and visible popup
+// message. A second action replaces a previously shown message.
+message PopupMessageProto {
+  // Message to show in the popup.
+  optional string message = 1;
 }

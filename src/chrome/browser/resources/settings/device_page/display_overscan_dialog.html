@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../settings_shared_css.html">
 
@@ -74,12 +74,12 @@
         </div>
       </div>
       <div slot="button-container">
-        <paper-button id="reset" class="cancel-button" on-click="onResetTap_">
+        <cr-button id="reset" class="cancel-button" on-click="onResetTap_">
           $i18n{displayOverscanReset}
-        </paper-button>
-        <paper-button class="action-button" on-click="onSaveTap_">
+        </cr-button>
+        <cr-button class="action-button" on-click="onSaveTap_">
           $i18n{ok}
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

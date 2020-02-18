@@ -129,29 +129,26 @@ BluetoothAdapterMac::BluetoothAdapterMac()
       device_paired_status_callback_(
           base::BindRepeating(&IsDeviceSystemPaired)),
       weak_ptr_factory_(this) {
-  if (IsLowEnergyAvailable()) {
-    low_energy_discovery_manager_.reset(
-        BluetoothLowEnergyDiscoveryManagerMac::Create(this));
-    low_energy_central_manager_delegate_.reset(
-        [[BluetoothLowEnergyCentralManagerDelegate alloc]
-            initWithDiscoveryManager:low_energy_discovery_manager_.get()
-                          andAdapter:this]);
-    low_energy_central_manager_.reset([[CBCentralManager alloc]
-        initWithDelegate:low_energy_central_manager_delegate_
-                   queue:dispatch_get_main_queue()]);
-    low_energy_discovery_manager_->SetCentralManager(
-        low_energy_central_manager_);
+  low_energy_discovery_manager_.reset(
+      BluetoothLowEnergyDiscoveryManagerMac::Create(this));
+  low_energy_central_manager_delegate_.reset(
+      [[BluetoothLowEnergyCentralManagerDelegate alloc]
+          initWithDiscoveryManager:low_energy_discovery_manager_.get()
+                        andAdapter:this]);
+  low_energy_central_manager_.reset([[CBCentralManager alloc]
+      initWithDelegate:low_energy_central_manager_delegate_
+                 queue:dispatch_get_main_queue()]);
+  low_energy_discovery_manager_->SetCentralManager(low_energy_central_manager_);
 
-    low_energy_advertisement_manager_.reset(
-        new BluetoothLowEnergyAdvertisementManagerMac());
-    low_energy_peripheral_manager_delegate_.reset(
-        [[BluetoothLowEnergyPeripheralManagerDelegate alloc]
-            initWithAdvertisementManager:low_energy_advertisement_manager_.get()
-                              andAdapter:this]);
-    low_energy_peripheral_manager_.reset([[CBPeripheralManager alloc]
-        initWithDelegate:low_energy_peripheral_manager_delegate_
-                   queue:dispatch_get_main_queue()]);
-  }
+  low_energy_advertisement_manager_.reset(
+      new BluetoothLowEnergyAdvertisementManagerMac());
+  low_energy_peripheral_manager_delegate_.reset(
+      [[BluetoothLowEnergyPeripheralManagerDelegate alloc]
+          initWithAdvertisementManager:low_energy_advertisement_manager_.get()
+                            andAdapter:this]);
+  low_energy_peripheral_manager_.reset([[CBPeripheralManager alloc]
+      initWithDelegate:low_energy_peripheral_manager_delegate_
+                 queue:dispatch_get_main_queue()]);
   DCHECK(classic_discovery_manager_);
 }
 
@@ -197,13 +194,8 @@ bool BluetoothAdapterMac::IsInitialized() const {
 }
 
 bool BluetoothAdapterMac::IsPresent() const {
-  bool is_present = !address_.empty();
-  if (IsLowEnergyAvailable()) {
-    is_present =
-        is_present || (GetCBManagerState(low_energy_central_manager_) !=
-                       CBCentralManagerStateUnsupported);
-  }
-  return is_present;
+  return !address_.empty() || (GetCBManagerState(low_energy_central_manager_) !=
+                               CBCentralManagerStateUnsupported);
 }
 
 bool BluetoothAdapterMac::IsPowered() const {
@@ -224,11 +216,8 @@ void BluetoothAdapterMac::SetDiscoverable(
 }
 
 bool BluetoothAdapterMac::IsDiscovering() const {
-  bool is_discovering = classic_discovery_manager_->IsDiscovering();
-  if (IsLowEnergyAvailable())
-    is_discovering =
-        is_discovering || low_energy_discovery_manager_->IsDiscovering();
-  return is_discovering;
+  return classic_discovery_manager_->IsDiscovering() ||
+         low_energy_discovery_manager_->IsDiscovering();
 }
 
 std::unordered_map<BluetoothDevice*, BluetoothDevice::UUIDSet>
@@ -313,11 +302,6 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
   ClassicDeviceAdded(device);
 }
 
-// static
-bool BluetoothAdapterMac::IsLowEnergyAvailable() {
-  return base::mac::IsAtLeastOS10_10();
-}
-
 bool BluetoothAdapterMac::SetPoweredImpl(bool powered) {
   power_state_function_.Run(base::strict_cast<int>(powered));
   return true;
@@ -365,7 +349,6 @@ void BluetoothAdapterMac::UpdateKnownLowEnergyDevices(
 
 void BluetoothAdapterMac::SetCentralManagerForTesting(
     CBCentralManager* central_manager) {
-  CHECK(BluetoothAdapterMac::IsLowEnergyAvailable());
   central_manager.delegate = low_energy_central_manager_delegate_;
   low_energy_central_manager_.reset(central_manager,
                                     base::scoped_policy::RETAIN);
@@ -436,10 +419,7 @@ void BluetoothAdapterMac::StartScanWithFilter(
   if (transport & BLUETOOTH_TRANSPORT_LE) {
     // Begin a low energy discovery session or update it if one is already
     // running.
-    if (IsLowEnergyAvailable()) {
-      low_energy_discovery_manager_->StartDiscovery(
-          BluetoothDevice::UUIDList());
-    }
+    low_energy_discovery_manager_->StartDiscovery(BluetoothDevice::UUIDList());
   }
   for (auto& observer : observers_)
     observer.AdapterDiscoveringChanged(this, true);
@@ -480,11 +460,9 @@ void BluetoothAdapterMac::RemoveDiscoverySession(
     }
   }
   if (transport & BLUETOOTH_TRANSPORT_LE) {
-    if (IsLowEnergyAvailable()) {
-      low_energy_discovery_manager_->StopDiscovery();
-      for (const auto& device_id_object_pair : devices_) {
-        device_id_object_pair.second->ClearAdvertisementData();
-      }
+    low_energy_discovery_manager_->StopDiscovery();
+    for (const auto& device_id_object_pair : devices_) {
+      device_id_object_pair.second->ClearAdvertisementData();
     }
   }
 
@@ -521,9 +499,7 @@ bool BluetoothAdapterMac::StartDiscovery(
   if (transport & BLUETOOTH_TRANSPORT_LE) {
     // Begin a low energy discovery session or update it if one is already
     // running.
-    if (IsLowEnergyAvailable())
-      low_energy_discovery_manager_->StartDiscovery(
-          BluetoothDevice::UUIDList());
+    low_energy_discovery_manager_->StartDiscovery(BluetoothDevice::UUIDList());
   }
   return true;
 }
@@ -601,10 +577,6 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
 }
 
 bool BluetoothAdapterMac::IsLowEnergyPowered() const {
-  if (!IsLowEnergyAvailable()) {
-    return false;
-  }
-
   return GetCBManagerState(low_energy_central_manager_) ==
          CBCentralManagerStatePoweredOn;
 }

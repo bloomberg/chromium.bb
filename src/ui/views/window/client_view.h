@@ -22,8 +22,7 @@ class Widget;
 //  "DialogClientView".
 class VIEWS_EXPORT ClientView : public View {
  public:
-  // Internal class name
-  static const char kViewClassName[];
+  METADATA_HEADER(ClientView);
 
   // Constructs a ClientView object for the specified widget with the specified
   // contents. Since this object is created during the process of creating
@@ -61,7 +60,6 @@ class VIEWS_EXPORT ClientView : public View {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
-  const char* GetClassName() const override;
 
  protected:
   // Overridden from View:

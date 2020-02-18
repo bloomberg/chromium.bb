@@ -35,7 +35,6 @@ namespace data_reduction_proxy {
 DataReductionProxyService::DataReductionProxyService(
     DataReductionProxySettings* settings,
     PrefService* prefs,
-    net::URLRequestContextGetter* request_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DataStore> store,
     std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
@@ -46,20 +45,19 @@ DataReductionProxyService::DataReductionProxyService(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::TimeDelta& commit_delay)
-    : url_request_context_getter_(request_context_getter),
-      url_loader_factory_(std::move(url_loader_factory)),
+    : url_loader_factory_(std::move(url_loader_factory)),
       pingback_client_(std::move(pingback_client)),
       settings_(settings),
       prefs_(prefs),
       db_data_owner_(new DBDataOwner(std::move(store))),
+      ui_task_runner_(ui_task_runner),
       io_task_runner_(io_task_runner),
       db_task_runner_(db_task_runner),
       initialized_(false),
       network_quality_tracker_(network_quality_tracker),
       network_connection_tracker_(network_connection_tracker),
       data_use_measurement_(data_use_measurement),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      weak_factory_(this) {
+      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);
@@ -283,9 +281,11 @@ void DataReductionProxyService::SetProxyRequestHeadersOnUI(
 }
 
 void DataReductionProxyService::SetConfiguredProxiesOnUI(
-    const net::ProxyList& proxies) {
+    const net::ProxyList& proxies,
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   settings_->SetConfiguredProxies(proxies);
+  settings_->SetProxiesForHttp(proxies_for_http);
 }
 
 void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
@@ -396,6 +396,34 @@ void DataReductionProxyService::OnServicesDataUse(int32_t service_hash_code,
         std::string(), false, data_use_measurement::DataUseUserData::OTHER,
         service_hash_code);
   }
+}
+
+void DataReductionProxyService::MarkProxiesAsBad(
+    base::TimeDelta bypass_duration,
+    const net::ProxyList& bad_proxies,
+    MarkProxiesAsBadCallback callback) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &DataReductionProxyIOData::MarkProxiesAsBad, io_data_,
+          bypass_duration, bad_proxies,
+          base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                         ui_task_runner_, FROM_HERE, std::move(callback))));
+}
+
+void DataReductionProxyService::AddThrottleConfigObserver(
+    mojom::DataReductionProxyThrottleConfigObserverPtr observer) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&DataReductionProxyIOData::AddThrottleConfigObserverInfo,
+                     io_data_, observer.PassInterface()));
+}
+
+void DataReductionProxyService::Clone(
+    mojom::DataReductionProxyRequest request) {
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&DataReductionProxyIOData::Clone, io_data_,
+                                std::move(request)));
 }
 
 }  // namespace data_reduction_proxy

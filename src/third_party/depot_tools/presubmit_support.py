@@ -303,6 +303,14 @@ class _PresubmitResult(object):
     if self.fatal:
       output.fail()
 
+  def json_format(self):
+    return {
+        'message': self._message,
+        'items': [str(item) for item in self._items],
+        'long_text': self._long_text,
+        'fatal': self.fatal
+    }
+
 
 # Top level object so multiprocessing can pickle
 # Public access through OutputApi object.
@@ -1462,7 +1470,8 @@ def DoPresubmitChecks(change,
                       may_prompt,
                       gerrit_obj,
                       dry_run=None,
-                      parallel=False):
+                      parallel=False,
+                      json_output=None):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1501,6 +1510,7 @@ def DoPresubmitChecks(change,
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
     output = PresubmitOutput(input_stream, output_stream)
+
     if committing:
       output.write("Running presubmit commit checks ...\n")
     else:
@@ -1540,6 +1550,22 @@ def DoPresubmitChecks(change,
         warnings.append(result)
       else:
         notifications.append(result)
+
+    if json_output:
+      # Write the presubmit results to json output
+      presubmit_results = {
+        'errors': [
+            error.json_format() for error in errors
+        ],
+        'notifications': [
+            notification.json_format() for notification in notifications
+        ],
+        'warnings': [
+            warning.json_format() for warning in warnings
+        ]
+      }
+
+      gclient_utils.FileWrite(json_output, json.dumps(presubmit_results))
 
     output.write('\n')
     for name, items in (('Messages', notifications),
@@ -1674,6 +1700,8 @@ def main(argv=None):
   parser.add_option('--parallel', action='store_true',
                     help='Run all tests specified by input_api.RunTests in all '
                          'PRESUBMIT files in parallel.')
+  parser.add_option('--json_output',
+                    help='Write presubmit errors to json output.')
 
   options, args = parser.parse_args(argv)
 
@@ -1718,7 +1746,8 @@ def main(argv=None):
           options.may_prompt,
           gerrit_obj,
           options.dry_run,
-          options.parallel)
+          options.parallel,
+          options.json_output)
     return not results.should_continue()
   except PresubmitFailure as e:
     print(e, file=sys.stderr)

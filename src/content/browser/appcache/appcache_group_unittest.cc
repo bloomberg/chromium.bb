@@ -12,7 +12,8 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "content/browser/appcache/mock_appcache_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
@@ -27,7 +28,7 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
         last_status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE) {}
 
   void CacheSelected(blink::mojom::AppCacheInfoPtr info) override {
-    last_host_id_ = bindings_.dispatch_context();
+    last_host_id_ = receivers_.current_context();
     last_cache_id_ = info->cache_id;
     last_status_ = info->status;
   }
@@ -47,18 +48,18 @@ class TestAppCacheFrontend : public blink::mojom::AppCacheFrontend {
   void SetSubresourceFactory(
       network::mojom::URLLoaderFactoryPtr url_loader_factory) override {}
 
-  blink::mojom::AppCacheFrontendPtr Bind(
+  mojo::PendingRemote<blink::mojom::AppCacheFrontend> Bind(
       const base::UnguessableToken& host_id) {
-    blink::mojom::AppCacheFrontendPtr result;
-    bindings_.AddBinding(this, mojo::MakeRequest(&result), host_id);
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> result;
+    receivers_.Add(this, result.InitWithNewPipeAndPassReceiver(), host_id);
     return result;
   }
 
   base::UnguessableToken last_host_id_;
   int64_t last_cache_id_;
   blink::mojom::AppCacheStatus last_status_;
-  mojo::BindingSet<blink::mojom::AppCacheFrontend, base::UnguessableToken>
-      bindings_;
+  mojo::ReceiverSet<blink::mojom::AppCacheFrontend, base::UnguessableToken>
+      receivers_;
 };
 
 }  // namespace
@@ -106,40 +107,40 @@ class AppCacheGroupTest : public testing::Test {
 
 TEST_F(AppCacheGroupTest, AddRemoveCache) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111));
+  auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
+                                                   GURL("http://foo.com"), 111);
 
   base::Time now = base::Time::Now();
 
-  scoped_refptr<AppCache> cache1(new AppCache(service.storage(), 111));
+  auto cache1 = base::MakeRefCounted<AppCache>(service.storage(), 111);
   cache1->set_complete(true);
   cache1->set_update_time(now);
   group->AddCache(cache1.get());
   EXPECT_EQ(cache1.get(), group->newest_complete_cache());
 
   // Adding older cache does not change newest complete cache.
-  scoped_refptr<AppCache> cache2(new AppCache(service.storage(), 222));
+  auto cache2 = base::MakeRefCounted<AppCache>(service.storage(), 222);
   cache2->set_complete(true);
   cache2->set_update_time(now - base::TimeDelta::FromDays(1));
   group->AddCache(cache2.get());
   EXPECT_EQ(cache1.get(), group->newest_complete_cache());
 
   // Adding newer cache does change newest complete cache.
-  scoped_refptr<AppCache> cache3(new AppCache(service.storage(), 333));
+  auto cache3 = base::MakeRefCounted<AppCache>(service.storage(), 333);
   cache3->set_complete(true);
   cache3->set_update_time(now + base::TimeDelta::FromDays(1));
   group->AddCache(cache3.get());
   EXPECT_EQ(cache3.get(), group->newest_complete_cache());
 
   // Adding cache with same update time uses one with larger ID.
-  scoped_refptr<AppCache> cache4(new AppCache(service.storage(), 444));
+  auto cache4 = base::MakeRefCounted<AppCache>(service.storage(), 444);
   cache4->set_complete(true);
   cache4->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 3
   group->AddCache(cache4.get());
   EXPECT_EQ(cache4.get(), group->newest_complete_cache());
 
   // smaller id
-  scoped_refptr<AppCache> cache5(new AppCache(service.storage(), 55));
+  auto cache5 = base::MakeRefCounted<AppCache>(service.storage(), 55);
   cache5->set_complete(true);
   cache5->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 4
   group->AddCache(cache5.get());
@@ -229,8 +230,8 @@ TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
 
 TEST_F(AppCacheGroupTest, StartUpdate) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111));
+  auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
+                                                   GURL("http://foo.com"), 111);
 
   // Set state to checking to prevent update job from executing fetches.
   group->update_status_ = AppCacheGroup::CHECKING;
@@ -250,8 +251,8 @@ TEST_F(AppCacheGroupTest, StartUpdate) {
 
 TEST_F(AppCacheGroupTest, CancelUpdate) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111));
+  auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
+                                                   GURL("http://foo.com"), 111);
 
   // Set state to checking to prevent update job from executing fetches.
   group->update_status_ = AppCacheGroup::CHECKING;
@@ -269,8 +270,8 @@ TEST_F(AppCacheGroupTest, CancelUpdate) {
 
 TEST_F(AppCacheGroupTest, QueueUpdate) {
   MockAppCacheService service;
-  scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(service.storage(), GURL("http://foo.com"), 111));
+  auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
+                                                   GURL("http://foo.com"), 111);
 
   // Set state to checking to prevent update job from executing fetches.
   group->update_status_ = AppCacheGroup::CHECKING;

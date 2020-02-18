@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_load_timing.h"
@@ -16,7 +16,9 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
@@ -39,9 +41,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   PrefetchedSignedExchangeLoader(
       const WebURLRequest& request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : request_(request),
-        task_runner_(std::move(task_runner)),
-        weak_ptr_factory_(this) {}
+      : request_(request), task_runner_(std::move(task_runner)) {}
 
   ~PrefetchedSignedExchangeLoader() override {}
 
@@ -119,7 +119,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
   std::unique_ptr<WebURLLoader> url_loader_;
   std::queue<base::OnceClosure> pending_method_calls_;
 
-  base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedSignedExchangeLoader);
 };
@@ -131,7 +131,6 @@ PrefetchedSignedExchangeManager* PrefetchedSignedExchangeManager::MaybeCreate(
     const String& inner_link_header,
     WebVector<std::unique_ptr<WebNavigationParams::PrefetchedSignedExchange>>
         prefetched_signed_exchanges) {
-  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
   if (prefetched_signed_exchanges.empty())
     return nullptr;
   std::unique_ptr<AlternateSignedExchangeResourceInfo> alternative_resources =
@@ -163,7 +162,6 @@ PrefetchedSignedExchangeManager::PrefetchedSignedExchangeManager(
     : frame_(frame),
       alternative_resources_(std::move(alternative_resources)),
       prefetched_exchanges_map_(std::move(prefetched_exchanges_map)) {
-  DCHECK(RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled());
 }
 
 PrefetchedSignedExchangeManager::~PrefetchedSignedExchangeManager() {}
@@ -188,8 +186,9 @@ PrefetchedSignedExchangeManager::MaybeCreateURLLoader(
     const WebURLRequest& request) {
   if (started_)
     return nullptr;
-  const auto* matching_resource =
-      alternative_resources_->FindMatchingEntry(request.Url());
+  const auto* matching_resource = alternative_resources_->FindMatchingEntry(
+      request.Url(), request.GetRequestContext(),
+      frame_->DomWindow()->navigator()->languages());
   if (!matching_resource)
     return nullptr;
 
@@ -221,7 +220,7 @@ PrefetchedSignedExchangeManager::CreatePrefetchedSignedExchangeURLLoader(
 }
 
 void PrefetchedSignedExchangeManager::TriggerLoad() {
-  std::vector<WebNavigationParams::PrefetchedSignedExchange*>
+  Vector<WebNavigationParams::PrefetchedSignedExchange*>
       maching_prefetched_exchanges;
   for (auto loader : loaders_) {
     if (!loader) {
@@ -231,8 +230,9 @@ void PrefetchedSignedExchangeManager::TriggerLoad() {
       // arbitrary information to the publisher using this resource.
       continue;
     }
-    const auto* matching_resource =
-        alternative_resources_->FindMatchingEntry(loader->request().Url());
+    const auto* matching_resource = alternative_resources_->FindMatchingEntry(
+        loader->request().Url(), loader->request().GetRequestContext(),
+        frame_->DomWindow()->navigator()->languages());
     const auto alternative_url = matching_resource->alternative_url();
     if (!alternative_url.IsValid()) {
       // There is no matching "alternate" link header in outer response header.

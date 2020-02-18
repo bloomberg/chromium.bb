@@ -12,8 +12,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/net/url_test_util.h"
@@ -55,34 +55,29 @@ id<GREYMatcher> PopupBlocker() {
 
 + (void)setUp {
   [super setUp];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW]);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
   web::test::SetUpFileBasedHttpServer();
 }
 
 + (void)tearDown {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT]);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_DEFAULT];
   [super tearDown];
 }
 
 - (void)setUp {
   [super setUp];
   // Open the test page. There should only be one tab open.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kTestURL)]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Expected result"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kTestURL)];
+  [ChromeEarlGrey waitForWebStateContainingText:"Expected result"];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that opening a link with target=_blank which then immediately closes
 // itself works.
 - (void)testLinkWithBlankTargetWithImmediateClose {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:
-          @"webScenarioWindowOpenBlankTargetWithImmediateClose"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey tapWebStateElementWithID:
+                      @"webScenarioWindowOpenBlankTargetWithImmediateClose"];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that sessionStorage content is available for windows opened by DOM via
@@ -95,9 +90,8 @@ id<GREYMatcher> PopupBlocker() {
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"Expected result"]);
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey waitForWebStateContainingText:"Expected result"];
 
   id value =
       [ChromeEarlGrey executeJavaScript:@"sessionStorage.getItem('key');"];
@@ -111,19 +105,44 @@ id<GREYMatcher> PopupBlocker() {
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests opening a window with URL that ends with /..;
+- (void)testWindowOpenWithSpecialURL {
+  const char ID[] = "webScenarioWindowOpenWithSpecialURL";
+  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
+      performAction:web::WebViewTapElement(
+                        GetCurrentWebState(),
+                        [ElementSelector selectorWithElementID:ID])];
+  if (@available(iOS 13, *)) {
+    // Starting from iOS 13 WebKit does not rewrite URL that ends with /..;
+    [ChromeEarlGrey waitForMainTabCount:2];
+  } else if (@available(iOS 12, *)) {
+    // Prior to iOS 13 WebKit rewries URL that ends with /..; to invalid URL
+    // so Chrome opens about:blank for that invalid URL.
+    [ChromeEarlGrey waitForMainTabCount:2];
+    [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
+        assertWithMatcher:grey_notNil()];
+  } else {
+    // Prior to iOS 12 WebKit rewries URL that ends with /..; to invalid URL,
+    // but Chrome does not have a chance to open about:blank, so child window
+    // is not created.
+    [ChromeEarlGrey waitForWebStateNotContainingText:ID];
+    [ChromeEarlGrey waitForMainTabCount:1];
+    [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
+        assertWithMatcher:grey_notNil()];
+  }
 }
 
 // Tests executing script that clicks a link with target="_blank".
 - (void)testLinkWithBlankTargetWithoutUserGesture {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK]);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK];
   [ChromeEarlGrey
       executeJavaScript:@"document.getElementById('"
                         @"webScenarioWindowOpenRegularLink').click()"];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      waitForSufficientlyVisibleElementWithMatcher:PopupBlocker()]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:PopupBlocker()];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests a link with target="_blank" multiple times.
@@ -135,29 +154,28 @@ id<GREYMatcher> PopupBlocker() {
       test_page_web_state, [ElementSelector selectorWithElementID:ID]);
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey openNewTab]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:3]);
+  [ChromeEarlGrey waitForMainTabCount:2];
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey waitForMainTabCount:3];
   [ChromeEarlGrey selectTabAtIndex:0];
   [[EarlGrey selectElementWithMatcher:test_page_matcher]
       performAction:link_tap];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:4]);
+  [ChromeEarlGrey waitForMainTabCount:4];
 }
 
 // Tests a window.open by assigning to window.location.
 - (void)testWindowOpenAndAssignToHref {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:
-                          @"webScenarioWindowOpenTabWithAssignmentToHref"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenTabWithAssignmentToHref"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that opening a window and calling window.location.assign works.
 - (void)testWindowOpenAndCallLocationAssign {
   // Open a child tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenAndCallLocationAssign"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenAndCallLocationAssign"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
@@ -172,9 +190,9 @@ id<GREYMatcher> PopupBlocker() {
 // completes and causes a navigation. (Reduced test case from actual site.)
 - (void)testWindowOpenAndSetLocation {
   // Open a child tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenAndSetLocation"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenAndSetLocation"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Ensure that the resulting tab is updated as expected.
   const GURL targetURL =
@@ -187,9 +205,9 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests a button that invokes window.open() with "_blank" target parameter.
 - (void)testWindowOpenWithBlankTarget {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithBlankTarget"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithBlankTarget"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that opening a window with target=_blank which closes itself after 1
@@ -200,63 +218,66 @@ id<GREYMatcher> PopupBlocker() {
       performAction:web::WebViewTapElement(
                         GetCurrentWebState(),
                         [ElementSelector selectorWithElementID:ID])];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests a window.open used in a <button onClick> element.
 - (void)testWindowOpenWithButtonOnClick {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithButtonOnClick"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithButtonOnClick"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests a button that invokes window.open with an empty target parameter.
 - (void)testWindowOpenWithEmptyTarget {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithEmptyTarget"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithEmptyTarget"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that the correct URL is displayed for a child window opened with the
 // script window.open('', '').location.replace('about:blank#hash').
 // This is a regression test for crbug.com/866142.
 - (void)testLocationReplaceInWindowOpenWithEmptyTarget {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:
-          @"webScenarioLocationReplaceInWindowOpenWithEmptyTarget"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey tapWebStateElementWithID:
+                      @"webScenarioLocationReplaceInWindowOpenWithEmptyTarget"];
+  [ChromeEarlGrey waitForMainTabCount:2];
   // WebKit doesn't parse 'about:blank#hash' as about:blank with URL fragment.
   // Instead, it percent encodes '#hash' and considers 'blank%23hash' as the
   // resource identifier. Nevertheless, the '#' is significant in triggering the
   // edge case in the bug. TODO(crbug.com/885249): Change back to '#'.
-  const GURL URL("about:blank%23hash");
-  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank%23hash")]
+  // Since about scheme URLs are also trimmed to about:blank, check the url
+  // directly instead.
+  DCHECK_EQ(GURL("about:blank%23hash"),
+            chrome_test_util::GetCurrentWebState()->GetLastCommittedURL());
+  // And confirm the location bar only shows about:blank.
+  [[EarlGrey selectElementWithMatcher:OmniboxText("about:blank")]
       assertWithMatcher:grey_notNil()];
 }
 
 // Tests a link with JavaScript in the href.
 + (void)testWindowOpenWithJavaScriptInHref {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithJavaScriptInHref"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithJavaScriptInHref"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests a window.open by running Meta-Refresh.
 - (void)testWindowOpenWithMetaRefresh {
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithMetaRefresh"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithMetaRefresh"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 // Tests that a link with an onclick that opens a tab and calls preventDefault
 // opens the tab, but doesn't navigate the main tab.
 - (void)testWindowOpenWithPreventDefaultLink {
   // Open a child tab.
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioWindowOpenWithPreventDefaultLink"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioWindowOpenWithPreventDefaultLink"];
+  [ChromeEarlGrey waitForMainTabCount:2];
 
   // Ensure that the starting tab hasn't navigated.
   [ChromeEarlGrey closeCurrentTab];
@@ -267,21 +288,19 @@ id<GREYMatcher> PopupBlocker() {
 
 // Tests that closing the current window using DOM fails.
 - (void)testCloseWindowNotOpenByDOM {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"webScenarioWindowClose"]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:1]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"webScenarioWindowClose"];
+  [ChromeEarlGrey waitForMainTabCount:1];
 }
 
 // Tests that popup blocking works when a popup is injected into a window before
 // its initial load is committed.
 - (void)testBlockPopupInjectedIntoOpenedWindow {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK]);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey
-      tapWebStateElementWithID:@"webScenarioOpenWindowAndInjectPopup"]);
+  [ChromeEarlGrey setContentSettings:CONTENT_SETTING_BLOCK];
+  [ChromeEarlGrey
+      tapWebStateElementWithID:@"webScenarioOpenWindowAndInjectPopup"];
   [[EarlGrey selectElementWithMatcher:PopupBlocker()]
       assertWithMatcher:grey_notNil()];
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey waitForMainTabCount:2]);
+  [ChromeEarlGrey waitForMainTabCount:2];
 }
 
 @end

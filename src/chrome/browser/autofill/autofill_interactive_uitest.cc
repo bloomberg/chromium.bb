@@ -32,7 +32,6 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
@@ -67,6 +66,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
@@ -269,11 +269,16 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
+    LOG(ERROR) << "crbug/967588: AutofillInteractiveTestBase::SetUp() entered";
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
+    LOG(ERROR) << "crbug/967588: embedded_test_server InitializeAndListen";
     InProcessBrowserTest::SetUp();
+    LOG(ERROR) << "crbug/967588: AutofillInteractiveTestBase::SetUp() exited";
   }
 
   void SetUpOnMainThread() override {
+    LOG(ERROR) << "crbug/967588: "
+                  "AutofillInteractiveTestBase::SetUpOnMainThread() entered";
     AutofillUiTest::SetUpOnMainThread();
 
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
@@ -282,6 +287,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
         &AutofillInteractiveTestBase::HandleTestURL, base::Unretained(this)));
     ASSERT_TRUE(https_server_.InitializeAndListen());
     https_server_.StartAcceptingConnections();
+    LOG(ERROR) << "crbug/967588: https_server started accepting connections";
 
     controllable_http_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -293,10 +299,14 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &AutofillInteractiveTestBase::HandleTestURL, base::Unretained(this)));
     embedded_test_server()->StartAcceptingConnections();
+    LOG(ERROR)
+        << "crbug/967588: embedded_test_server started accepting connections";
 
     // By default, all SSL cert checks are valid. Can be overriden in tests if
     // needed.
     cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
+    LOG(ERROR) << "crbug/967588: "
+                  "AutofillInteractiveTestBase::SetUpOnMainThread() exited";
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -672,9 +682,8 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
   net::EmbeddedTestServer https_server_;
 
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
-  // used by the NetworkService. This is needed for when tests run with
-  // the NetworkService enabled.
-  ChromeMockCertVerifier cert_verifier_;
+  // used by the NetworkService.
+  content::ContentMockCertVerifier cert_verifier_;
 
   net::TestURLFetcherFactory url_fetcher_factory_;
 

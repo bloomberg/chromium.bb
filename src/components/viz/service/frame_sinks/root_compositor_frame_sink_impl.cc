@@ -160,8 +160,7 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
 
 void RootCompositorFrameSinkImpl::DisableSwapUntilResize(
     DisableSwapUntilResizeCallback callback) {
-  display_->Resize(gfx::Size());
-  std::move(callback).Run();
+  display_->DisableSwapUntilResize(std::move(callback));
 }
 
 void RootCompositorFrameSinkImpl::Resize(const gfx::Size& size) {
@@ -174,9 +173,9 @@ void RootCompositorFrameSinkImpl::SetDisplayColorMatrix(
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
-    const gfx::ColorSpace& blending_color_space,
-    const gfx::ColorSpace& device_color_space) {
-  display_->SetColorSpace(blending_color_space, device_color_space);
+    const gfx::ColorSpace& device_color_space,
+    float sdr_white_level) {
+  display_->SetColorSpace(device_color_space, sdr_white_level);
 }
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
@@ -278,9 +277,9 @@ void RootCompositorFrameSinkImpl::DidNotProduceFrame(
 }
 
 void RootCompositorFrameSinkImpl::DidAllocateSharedBitmap(
-    mojo::ScopedSharedBufferHandle buffer,
+    base::ReadOnlySharedMemoryRegion region,
     const SharedBitmapId& id) {
-  if (!support_->DidAllocateSharedBitmap(std::move(buffer), id)) {
+  if (!support_->DidAllocateSharedBitmap(std::move(region), id)) {
     DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
                 << "SharedBitmapId";
     compositor_frame_sink_binding_.Close();
@@ -376,7 +375,8 @@ void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
 void RootCompositorFrameSinkImpl::SetPreferredFrameInterval(
     base::TimeDelta interval) {
 #if defined(OS_ANDROID)
-  float refresh_rate = 1 / interval.InSecondsF();
+  float refresh_rate =
+      interval.InSecondsF() == 0 ? 0 : (1 / interval.InSecondsF());
   if (display_client_)
     display_client_->SetPreferredRefreshRate(refresh_rate);
 #else

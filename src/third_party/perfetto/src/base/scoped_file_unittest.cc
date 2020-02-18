@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "perfetto/base/scoped_file.h"
+#include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/base/build_config.h"
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
@@ -29,7 +29,7 @@
 #define TEST_INVALID_CLOSE
 #endif
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace base {

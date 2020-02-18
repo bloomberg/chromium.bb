@@ -447,7 +447,6 @@
       "os": {
         "type": "linux"
       },
-      "gl_type": "gl",
       "gl_renderer": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
@@ -1863,7 +1862,6 @@
       "os": {
         "type": "linux"
       },
-      "gl_type": "gl",
       "gl_version_string": ".*Mesa.*",
       "features": [
         "disable_post_sub_buffers_for_onscreen_surfaces"
@@ -3282,6 +3280,43 @@
       "gl_renderer": "Mali.*",
       "features": [
         "disable_program_caching_for_transform_feedback"
+      ]
+    },
+    {
+      "id": 307,
+      "cr_bugs": [833975],
+      "description": "Workaround for broken EGL_IMAGE_EXTERNAL_FLUSH_EXT implementation on NVIDIA",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "force_gl_flush_on_swap_buffers"
+      ]
+    },
+    {
+      "id": 308,
+      "cr_bugs": [983787],
+      "description": "Delayed copy NV12 causes crashes on GPU main thread when DXVA video decoder runs on another thread",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_delayed_copy_nv12"
+      ]
+    },
+    {
+      "id": 310,
+      "description": "Context lost recovery often fails on Mali on CrOS.",
+      "cr_bugs": [992286],
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-.*",
+      "features": [
+        "exit_on_context_lost"
       ]
     }
   ]

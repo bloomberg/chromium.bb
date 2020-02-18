@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_SHARING_SHARING_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_SHARING_SHARING_MESSAGE_HANDLER_H_
 
-#include <string>
-
-#include "chrome/browser/sharing/proto/sharing_message.pb.h"
+namespace chrome_browser_sharing {
+class SharingMessage;
+}  // namespace chrome_browser_sharing
 
 // Interface for handling incoming SharingMessage.
 class SharingMessageHandler {
  public:
-  SharingMessageHandler();
-  virtual ~SharingMessageHandler();
+  virtual ~SharingMessageHandler() = default;
 
   // Called when a SharingMessage has been received.
   virtual void OnMessage(

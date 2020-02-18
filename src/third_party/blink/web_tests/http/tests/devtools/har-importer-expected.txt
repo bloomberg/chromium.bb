@@ -129,11 +129,7 @@ requests: [
   {
     "url": "http://localhost:8000/js_file.js",
     "documentURL": "http://localhost:8000/",
-    "initiator": {
-      "type": "parser",
-      "url": "http://localhost/",
-      "lineNumber": 1
-    },
+    "initiator": null,
     "requestFormData": null,
     "connectionId": "2945",
     "requestMethod": "GET",

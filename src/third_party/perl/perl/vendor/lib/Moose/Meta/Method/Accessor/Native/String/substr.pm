@@ -1,10 +1,5 @@
 package Moose::Meta::Method::Accessor::Native::String::substr;
-BEGIN {
-  $Moose::Meta::Method::Accessor::Native::String::substr::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Method::Accessor::Native::String::substr::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
@@ -13,30 +8,8 @@ use Moose::Util ();
 
 use Moose::Role;
 
-with 'Moose::Meta::Method::Accessor::Native::Reader' => {
-    -excludes => [
-        qw( _generate_method
-            _minimum_arguments
-            _maximum_arguments
-            _inline_process_arguments
-            _inline_check_arguments
-            _return_value
-            )
-    ]
-    },
-    'Moose::Meta::Method::Accessor::Native::Writer' => {
-    -excludes => [
-        qw(
-            _generate_method
-            _minimum_arguments
-            _maximum_arguments
-            _inline_process_arguments
-            _inline_check_arguments
-            _inline_optimized_set_new_value
-            _return_value
-            )
-    ]
-    };
+with 'Moose::Meta::Method::Accessor::Native::Reader',
+     'Moose::Meta::Method::Accessor::Native::Writer';
 
 sub _generate_method {
     my $self = shift;
@@ -81,13 +54,21 @@ sub _inline_check_arguments {
 
     my @code = (
         'if ($offset !~ /^-?\d+$/) {',
-            $self->_inline_throw_error(
-                '"The first argument passed to substr must be an integer"'
+            $self->_inline_throw_exception( InvalidArgumentToMethod =>
+                                            'argument                => $offset,'.
+                                            'ordinal                 => "first",'.
+                                            'type_of_argument        => "integer",'.
+                                            'method_name             => "substr",'.
+                                            'type                    => "Int"',
             ) . ';',
         '}',
         'if ($length !~ /^-?\d+$/) {',
-            $self->_inline_throw_error(
-                '"The second argument passed to substr must be an integer"'
+            $self->_inline_throw_exception( InvalidArgumentToMethod =>
+                                            'argument                => $length,'.
+                                            'ordinal                 => "second",'.
+                                            'type_of_argument        => "integer",'.
+                                            'method_name             => "substr",'.
+                                            'type                    => "Int"',
             ) . ';',
         '}',
     );
@@ -95,8 +76,12 @@ sub _inline_check_arguments {
     if ($for_writer) {
         push @code, (
             'if (!Moose::Util::_STRINGLIKE0($replacement)) {',
-                $self->_inline_throw_error(
-                    '"The third argument passed to substr must be a string"'
+                $self->_inline_throw_exception( InvalidArgumentToMethod =>
+                                                'argument                => $replacement,'.
+                                                'ordinal                 => "third",'.
+                                                'type_of_argument        => "string",'.
+                                                'method_name             => "substr",'.
+                                                'type                    => "Str"',
                 ) . ';',
             '}',
         );

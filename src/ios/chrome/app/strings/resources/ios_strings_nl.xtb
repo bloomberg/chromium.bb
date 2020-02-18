@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Opties voor 'Wachtwoord opslaan'</translation>
 <translation id="2523363575747517183">Deze website probeert herhaaldelijk een andere app te openen.</translation>
 <translation id="2529021024822217800">Alles openen</translation>
+<translation id="2562041823070056534">Verzenden naar <ph name="DEVICE_NAME" />…</translation>
 <translation id="2570206273416014374">Verzendt bepaalde cookies en zoekopdrachten vanuit de adresbalk en het zoekvak naar je standaardzoekmachine.</translation>
 <translation id="2572712655377361602">Een apparaatbeleid blokkeert toegang tot je foto's</translation>
 <translation id="2578571896248130439">Webpagina verzenden</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Zaklamp</translation>
 <translation id="2958718410589002129">Wachtwoorden</translation>
 <translation id="2969979262385602596">Kan niet inloggen. Probeer het later opnieuw.</translation>
+<translation id="298306318844797842">Betaalmethode toevoegen…</translation>
 <translation id="2989805286512600854">Openen op nieuw tabblad</translation>
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3112556859945124369">Markeren…</translation>
@@ -313,6 +315,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5614553682702429503">Wachtwoord opslaan?</translation>
 <translation id="5626245204502895507">Het bestand kan momenteel niet worden gedownload.</translation>
+<translation id="5631164295104953411">Betaalmethode toevoegen</translation>
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versie <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="778855399387580014">Start een zoekopdracht op een nieuw Chrome-tabblad.</translation>
+<translation id="7791543448312431591">Toevoegen</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7840771868269352570">De geselecteerde items worden verwijderd.</translation>
 <translation id="7856733331829174190">Kan niet downloaden</translation>
@@ -477,6 +481,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7971521879845308059">Pop-ups blokkeren</translation>
 <translation id="7982789257301363584">Netwerk</translation>
+<translation id="8007420562015504427">Incognito zoeken</translation>
 <translation id="8019783059653722575">Hiermee kun je foto's opslaan en uploaden.</translation>
 <translation id="802154636333426148">Downloaden mislukt</translation>
 <translation id="8023878949384262191">Hiermee wordt het gedeelte uitgevouwen.</translation>
@@ -491,6 +496,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8225985093977202398">Afbeeldingen en bestanden in chachegeheugen</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8281781826761538115">Standaard - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Nieuwe zoekopdracht</translation>
 <translation id="8328777765163860529">Alles sluiten</translation>
 <translation id="8381750437846184350">Beheer hoe Google je browsegeschiedenis gebruikt om Google Zoeken, advertenties en andere Google-services te personaliseren</translation>
 <translation id="8407669440184693619">Geen wachtwoorden gevonden voor deze site</translation>
@@ -507,7 +513,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8532105204136943229">Vervaljaar</translation>
 <translation id="8534481786647257214">Google+ bericht voltooid.</translation>
 <translation id="8548878600947630424">Zoeken op deze pagina...</translation>
-<translation id="8583866649835978847">Verzend <ph name="TITLE" /> naar een van je apparaten.</translation>
 <translation id="8605219856220328675">Tabblad sluiten</translation>
 <translation id="8620640915598389714">Bewerken</translation>
 <translation id="8636825310635137004">Schakel synchronisatie in om de tabbladen op je andere apparaten te bekijken</translation>
@@ -530,7 +535,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8976382372951310360">Hulp</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8985320356172329008">Ingelogd bij Google als</translation>
-<translation id="9016406938567631235">Verzenden…</translation>
 <translation id="902659348151742535">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren.</translation>
 <translation id="9034759925968272072">Je wordt niet uitgelogd van je Google-account. Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Bandbreedte</translation>

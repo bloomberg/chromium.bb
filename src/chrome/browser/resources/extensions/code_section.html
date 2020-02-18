@@ -17,10 +17,12 @@
         display: block;
       }
 
-      :host-context([dark]) {
-        --container-bg: rgba(0, 0, 0, .4);
-        --line-bg: var(--google-grey-800);
-        --main-color: var(--cr-primary-text-color);
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --container-bg: rgba(0, 0, 0, .4);
+          --line-bg: var(--google-grey-800);
+          --main-color: var(--cr-primary-text-color);
+        }
       }
 
       #scroll-container {
@@ -30,8 +32,10 @@
         position: relative;
       }
 
-      :host-context(html:not([dark])) #scroll-container {
-        border: 1px solid var(--paper-grey-500);
+      @media (prefers-color-scheme: light) {
+        #scroll-container {
+          border: 1px solid var(--paper-grey-500);
+        }
       }
 
       #main {
@@ -49,8 +53,10 @@
         text-align: end;
       }
 
-      :host-context(html:not([dark])) #line-numbers {
-        border-inline-end: 1px solid var(--paper-grey-500);
+      @media (prefers-color-scheme: light) {
+        #line-numbers {
+          border-inline-end: 1px solid var(--paper-grey-500);
+        }
       }
 
       #source {
@@ -68,12 +74,14 @@
         text-align: center;
       }
 
-      :host-context(html:not([dark])) #no-code {
-        color: var(--paper-grey-800);
-      }
+      @media (prefers-color-scheme: light) {
+        #no-code {
+          color: var(--paper-grey-800);
+        }
 
-      :host-context(html:not([dark])) .more-code {
-        color: var(--paper-grey-500);
+        .more-code {
+          color: var(--paper-grey-500);
+        }
       }
 
       #highlight-description {
@@ -81,9 +89,11 @@
         overflow: hidden;
       }
 
-      :host-context([dark]) mark {
-        background-color: var(--google-yellow-refresh-300);
-        color: var(--google-grey-900);
+      @media (prefers-color-scheme: dark) {
+        mark {
+          background-color: var(--google-yellow-refresh-300);
+          color: var(--google-grey-900);
+        }
       }
     </style>
     <div id="scroll-container" hidden="[[!highlighted_]]" dir="ltr">

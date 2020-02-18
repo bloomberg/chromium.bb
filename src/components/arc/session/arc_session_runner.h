@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_SESSION_ARC_SESSION_RUNNER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -91,6 +92,9 @@ class ArcSessionRunner : public ArcSession::Observer {
   // when this function is called, MessageLoop is no longer exists.
   void OnShutdown();
 
+  // Sets a hash string of the profile user ID.
+  void SetUserIdHashForProfile(const std::string& hash);
+
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
@@ -138,6 +142,9 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Parameters to upgrade request.
   ArcSession::UpgradeParams upgrade_params_;
+
+  // A hash string of the profile user ID.
+  std::string user_id_hash_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;

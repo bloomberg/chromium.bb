@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Vorteile durch das Verbinden Ihrer Geräte</translation>
 <translation id="112308213915226829">Ablage automatisch ausblenden</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
+<translation id="1175572348579024023">Scrollen</translation>
 <translation id="1178581264944972037">Anhalten</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="119944043368869598">Alle löschen</translation>
-<translation id="123828989343052515">Neuer Arbeitsbereich</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Die Eingabemethoden werden von Ihrem Administrator konfiguriert.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
 <translation id="1761222317188459878">Netzwerkverbindung aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Nach rechts scrollen</translation>
 <translation id="1812997170047690955">Was wird auf meinem Bildschirm angezeigt?</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" /> wurde durch eine Richtlinie deaktiviert, die auf dieses Gerät angewendet wird. Bitten Sie Ihren Administrator, die erforderlichen Änderungen vorzunehmen.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistant (wird geladen…)</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Sprache festlegen</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Texteingabe</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
 <translation id="209965399369889474">Keine Netzwerkverbindung</translation>
+<translation id="2126242104232412123">Neuer Arbeitsbereich</translation>
 <translation id="2127372758936585790">Schwachstrom-Ladegerät</translation>
 <translation id="2135456203358955318">Angedockte Lupe</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">In öffentlichen Sitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="2575685495496069081">Mehrfachanmeldung wurde deaktiviert</translation>
 <translation id="2582112259361606227">Zum Aktualisieren neu starten</translation>
-<translation id="2597972630681408282">Nachtlicht: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-Karte ist gesperrt</translation>
+<translation id="2651765386227849097">Google Assistant ist auf diesem Gerät deaktiviert.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2658778018866295321">Klicken und ziehen</translation>
 <translation id="2700493154570097719">Tastatur einrichten</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Mit einem Gerät verbunden}other{Mit # Geräten verbunden}}</translation>
 <translation id="3226991577105957773">+ <ph name="COUNT" /> weitere</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
+<translation id="3249513730522716925">Das Fenster "<ph name="WINDOW_TITLE" />" wurde von Arbeitsbereich <ph name="ACTIVE_DESK" /> zu Arbeitsbereich <ph name="TARGET_DESK" /> verschoben</translation>
 <translation id="3255483164551725916">Was kannst du alles tun?</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kann sich später weiterhin anmelden.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3576141592585647168">Zeitzone ändern</translation>
 <translation id="3595596368722241419">Akku voll</translation>
+<translation id="3604801046548457007">Arbeitsbereich <ph name="DESK_TITILE" /> erstellt</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">Der Akkustand ist <ph name="PERCENTAGE" /> %. Der Akku wird aufgeladen.</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4017989525502048489">Laserpointer</translation>
+<translation id="4021716437419160885">Nach unten scrollen</translation>
 <translation id="4042660782729322247">Sie geben Ihren Bildschirm frei</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Für eine App deaktiviert}other{Für # Apps deaktiviert}}</translation>
 <translation id="4072264167173457037">Durchschnittliches Signal</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">Akku ist vollständig geladen.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="4905614135390995787">Die Tastenkombination zum Deaktivieren des Modus mit hohem Kontrast hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240">Akku: <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Annehmen</translation>
 <translation id="4924411785043111640">Neu starten und zurücksetzen</translation>
+<translation id="495046168593986294">Nach oben scrollen</translation>
 <translation id="4961318399572185831">Bildschirmübertragung</translation>
 <translation id="5030687792513154421">Die Zeit ist abgelaufen</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ist mit einem neuen Smartphone verbunden</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Mikrofonanschluss</translation>
 <translation id="5669267381087807207">Wird aktiviert...</translation>
 <translation id="5673434351075758678">Nach der Synchronisierung der Einstellungen von "<ph name="FROM_LOCALE" />" zu "<ph name="TO_LOCALE" />" geändert.</translation>
+<translation id="5682642926269496722">Google Assistant steht für das aktuelle Nutzerkonto nicht zur Verfügung.</translation>
 <translation id="5691772641933328258">Fingerabdruck nicht erkannt</translation>
 <translation id="5710450975648804523">"Bitte nicht stören" ist aktiviert</translation>
 <translation id="574392208103952083">Mittel</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Sie können das Update vornehmen, indem Sie das Chromebook mit angeschlossener Tastatur neu starten.</translation>
 <translation id="5992218262414051481">Modus mit hohem Kontrast aktiviert. Drücken Sie Strg + Suche + H, um ihn zu deaktivieren.</translation>
 <translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
+<translation id="602001110135236999">Nach links scrollen</translation>
+<translation id="6040143037577758943">Schließen</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
 <translation id="6047696787498798094">Wenn Sie zu einem anderen Nutzer wechseln, wird die Bildschirmfreigabe beendet. Möchten Sie fortfahren?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Ihr Passwort konnte nicht bestätigt werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="607652042414456612">Ihr Computer kann von Bluetooth-Geräten in der näheren Umgebung erkannt werden. Er erscheint als "<ph name="NAME" />" mit der Adresse <ph name="ADDRESS" />.</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> wird aufgeladen</translation>
+<translation id="612734058257491180">In Gastsitzungen ist Google Assistant nicht verfügbar.</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können es unter "Einstellungen" wieder entkoppeln.</translation>
 <translation id="6715542151869432661">Keine Mobilgeräte gefunden.</translation>
 <translation id="6723839937902243910">Akkuleistung</translation>
+<translation id="6727969043791803658">Verbunden, Akkustand bei <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
+<translation id="6752912906630585008">Arbeitsbereich <ph name="REMOVED_DESK" /> wurde entfernt und mit Arbeitsbereich <ph name="RECEIVE_DESK" /> zusammengeführt</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
 <translation id="6820676911989879663">Zeit für eine Pause.</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">Verbundene USB-C-Geräte werden geladen</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 Benachrichtigung}other{# Benachrichtigungen}}</translation>
+<translation id="7749443890790263709">Maximale Anzahl von Arbeitsbereichen erreicht.</translation>
 <translation id="776344839111254542">Zum Aufrufen von Aktualisierungsdetails klicken</translation>
 <translation id="7780159184141939021">Bildschirm drehen</translation>
 <translation id="7796353162336583443">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, Google Assistant zu aktivieren oder den Laserpointer oder die Lupe zu verwenden.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> und Ihr Smartphone werden automatisch miteinander verbunden</translation>
+<translation id="8388750414311082622">Letzter Arbeitsbereich kann nicht entfernt werden.</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Deine Eltern haben dieses Gerät gesperrt</translation>
 <translation id="8406981827175133772">Vollbildlupe</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Arbeitsbereich <ph name="DESK_TITILE" /> aktiviert</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>

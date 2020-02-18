@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -16,6 +17,10 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+
+#if defined(OS_FUCHSIA)
+#include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
+#endif
 
 namespace aura {
 
@@ -42,9 +47,12 @@ TestScreen::~TestScreen() {
 
 WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   DCHECK(!host_);
-  host_ = WindowTreeHost::Create(ui::PlatformWindowInitProperties{gfx::Rect(
-                                     GetPrimaryDisplay().GetSizeInPixel())})
-              .release();
+  ui::PlatformWindowInitProperties properties(
+      gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
+#if defined(OS_FUCHSIA)
+  ui::fuchsia::InitializeViewTokenAndPresentView(&properties);
+#endif
+  host_ = WindowTreeHost::Create(std::move(properties)).release();
   // Some tests don't correctly manage window focus/activation states.
   // Makes sure InputMethod is default focused so that IME basics can work.
   host_->GetInputMethod()->OnFocus();

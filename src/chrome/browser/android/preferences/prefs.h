@@ -37,7 +37,6 @@ enum Pref {
   AUTOFILL_CREDIT_CARD_ENABLED,
   USAGE_STATS_ENABLED,
   OFFLINE_PREFETCH_USER_SETTING_ENABLED,
-  CONTENT_SUGGESTIONS_NOTIFICATIONS_ENABLED,
   SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
@@ -66,7 +65,6 @@ const char* const kPrefsExposedToJava[] = {
     autofill::prefs::kAutofillCreditCardEnabled,
     prefs::kUsageStatsEnabled,
     offline_pages::prefetch_prefs::kUserSettingEnabled,
-    offline_pages::prefetch_prefs::kContentSuggestionsNotificationsEnabled,
     prefs::kSafeBrowsingExtendedReportingOptInAllowed,
 };
 

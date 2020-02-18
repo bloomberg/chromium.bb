@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet_proxy_client.h"
 #include "third_party/blink/renderer/modules/worklet/animation_and_paint_worklet_thread.h"
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
@@ -30,13 +31,11 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
   void SetUp() override {
     PageTestBase::SetUp(IntSize());
-    Document* document = &GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
-
-    dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
-    proxy_client_ =
-        MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, dispatcher_);
+    NavigateTo(KURL("https://example.com/"));
+    // This test only needs the proxy client set to avoid calling
+    // PaintWorkletProxyClient::Create, but it doesn't need the dispatcher/etc.
+    proxy_client_ = MakeGarbageCollected<PaintWorkletProxyClient>(
+        1, nullptr, nullptr, nullptr);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
@@ -111,7 +110,6 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
   }
 
  private:
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
   Persistent<PaintWorkletProxyClient> proxy_client_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };

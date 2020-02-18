@@ -16,6 +16,21 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 
+# The name of the ACL argument file.
+_GOOGLESTORAGE_GSUTIL_FILE = 'googlestorage_acl.txt'
+
+
+class Error(Exception):
+  """Base error class for the module."""
+
+
+class EmptyPrebuiltsRoot(Error):
+  """When a prebuilts root is unexpectedly empty."""
+
+
+class NoAclFileFound(Error):
+  """No ACL file could be found."""
+
 
 def _ValidateBinhostConf(path, key):
   """Validates the binhost conf file defines only one environment variable.
@@ -74,25 +89,27 @@ def _ValidatePrebuiltsRoot(target, prebuilts_root):
     prebuilts_root: The expected root directory for the target's prebuilts.
 
   Raises:
-    LookupError: If prebuilts root does not exist.
+    EmptyPrebuiltsRoot: If prebuilts root does not exist.
   """
   if not os.path.exists(prebuilts_root):
-    raise LookupError(
+    raise EmptyPrebuiltsRoot(
         'Expected to find prebuilts for build target %s at %s. '
         'Did %s build successfully?' % (target, prebuilts_root, target))
 
 
-def GetPrebuiltsRoot(target):
-  """Find the root directory with binary prebuilts for the given build target.
+def GetPrebuiltsRoot(chroot, sysroot, build_target):
+  """Find the root directory with binary prebuilts for the given sysroot.
 
   Args:
-    target: The build target in question.
+    chroot (chroot_lib.Chroot): The chroot where the sysroot lives.
+    sysroot (sysroot_lib.Sysroot): The sysroot.
+    build_target (build_target_util.BuildTarget): The build target.
 
   Returns:
     Absolute path to the root directory with the target's prebuilt archives.
   """
-  root = os.path.join(constants.SOURCE_ROOT, 'chroot/build', target, 'packages')
-  _ValidatePrebuiltsRoot(target, root)
+  root = os.path.join(chroot.path, sysroot.path.lstrip(os.sep), 'packages')
+  _ValidatePrebuiltsRoot(build_target, root)
   return root
 
 
@@ -100,6 +117,16 @@ def GetPrebuiltsFiles(prebuilts_root):
   """Find paths to prebuilts at the given root directory.
 
   Assumes the root contains a Portage package index named Packages.
+
+  The package index paths are used to de-duplicate prebuilts uploaded. The
+  immediate consequence of this is reduced storage usage. The non-obvious
+  consequence is the shared packages generally end up with public permissions,
+  while the board-specific packages end up with private permissions. This is
+  what is meant to happen, but a further consequence of that is that when
+  something happens that causes the toolchains to be uploaded as a private
+  board's package, the board will not be able to build properly because
+  it won't be able to fetch the toolchain packages, because they're expected
+  to be public.
 
   Args:
     prebuilts_root: Absolute path to root directory containing a package index.
@@ -171,13 +198,53 @@ def SetBinhost(target, key, uri, private=True):
   osutils.WriteFile(conf_path, '%s="%s"' % (key, uri))
   return conf_path
 
-def RegenBuildCache(overlay_type, sysroot_path):
+
+def RegenBuildCache(overlay_type):
   """Regenerate the Build Cache for the given target.
 
   Args:
     overlay_type: one of "private", "public", or "both".
-    sysroot_path: Sysroot to update.
   """
-  overlays = portage_util.FindOverlays(overlay_type, buildroot=sysroot_path)
+  overlays = portage_util.FindOverlays(overlay_type)
   task_inputs = [[o] for o in overlays if os.path.isdir(o)]
   parallel.RunTasksInProcessPool(portage_util.RegenCache, task_inputs)
+
+
+def GetPrebuiltAclArgs(build_target):
+  """Read and parse the GS ACL file from the private overlays.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+
+  Returns:
+    list[list[str]]: A list containing all of the [arg, value] pairs. E.g.
+      [['-g', 'group_id:READ'], ['-u', 'user:FULL_CONTROL']]
+  """
+  acl_file = portage_util.FindOverlayFile(_GOOGLESTORAGE_GSUTIL_FILE,
+                                          board=build_target.name)
+
+  if not acl_file:
+    raise NoAclFileFound('No ACL file found for %s.' % build_target.name)
+
+  lines = osutils.ReadFile(acl_file).splitlines()
+  # Remove comments.
+  lines = [line.split('#', 1)[0].strip() for line in lines]
+  # Remove empty lines.
+  lines = [line.strip() for line in lines if line.strip()]
+
+  return [line.split() for line in lines]
+
+
+def GetBinhosts(build_target):
+  """Get the binhosts for the build target.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+
+  Returns:
+    list[str]: The build target's binhosts.
+  """
+  binhosts = portage_util.PortageqEnvvar('PORTAGE_BINHOST',
+                                         board=build_target.name,
+                                         allow_undefined=True)
+  return binhosts.split() if binhosts else []

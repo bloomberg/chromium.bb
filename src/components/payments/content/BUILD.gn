@@ -10,6 +10,8 @@ jumbo_static_library("content") {
     "can_make_payment_query_factory.h",
     "payment_details_converter.cc",
     "payment_details_converter.h",
+    "payment_event_response_util.cc",
+    "payment_event_response_util.h",
     "payment_handler_host.cc",
     "payment_handler_host.h",
     "payment_request_converter.cc",
@@ -94,6 +96,7 @@ jumbo_static_library("utils") {
     "//components/payments/content/icon",
     "//components/payments/content/utility",
     "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/strings",
     "//components/webdata/common",
     "//content/public/browser",
@@ -121,6 +124,7 @@ jumbo_source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "payment_instrument_unittest.cc",
       "payment_request_spec_unittest.cc",
       "payment_request_state_unittest.cc",
       "payment_response_helper_unittest.cc",
@@ -136,6 +140,7 @@ jumbo_source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/payments/core",
+    "//components/payments/core:error_strings",
     "//components/payments/core:test_support",
     "//components/strings:components_strings_grit",
     "//components/webdata/common",

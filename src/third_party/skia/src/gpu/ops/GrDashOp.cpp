@@ -17,11 +17,11 @@
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProcessor.h"
-#include "src/gpu/GrQuad.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrStyle.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/SkGr.h"
+#include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
@@ -258,7 +258,7 @@ public:
     }
 
     GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType,
+            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
             GrClampType clampType) override {
         GrProcessorAnalysisCoverage coverage;
         if (AAMode::kNone == fAAMode && !clip->numClipCoverageFragmentProcessors()) {
@@ -267,7 +267,8 @@ public:
             coverage = GrProcessorAnalysisCoverage::kSingleChannel;
         }
         auto analysis = fProcessorSet.finalize(
-                fColor, coverage, clip, fStencilSettings, fsaaType, caps, clampType, &fColor);
+                fColor, coverage, clip, fStencilSettings, hasMixedSampledCoverage, caps, clampType,
+                &fColor);
         fUsesLocalCoords = analysis.usesLocalCoords();
         return analysis;
     }
@@ -1205,7 +1206,7 @@ GR_DRAW_OP_TEST_DEFINE(DashOp) {
     AAMode aaMode;
     do {
         aaMode = static_cast<AAMode>(random->nextULessThan(GrDashOp::kAAModeCnt));
-    } while (AAMode::kCoverageWithMSAA == aaMode && GrFSAAType::kUnifiedMSAA != fsaaType);
+    } while (AAMode::kCoverageWithMSAA == aaMode && numSamples <= 1);
 
     // We can only dash either horizontal or vertical lines
     SkPoint pts[2];

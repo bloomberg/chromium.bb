@@ -352,7 +352,7 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
       calibration_data_to_set = &calibration_data;
 
     if (calibration_data_to_set) {
-      if (!base::ContainsKey(touch_associations, fallback_identifier)) {
+      if (!base::Contains(touch_associations, fallback_identifier)) {
         touch_associations.emplace(
             fallback_identifier,
             display::TouchDeviceManager::AssociationInfoMap());
@@ -514,7 +514,7 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
   const display::TouchDeviceIdentifier& fallback_identifier =
       display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
   display::TouchDeviceManager::AssociationInfoMap legacy_data_map;
-  if (base::ContainsKey(
+  if (base::Contains(
           display_manager->touch_device_manager()->touch_associations(),
           fallback_identifier)) {
     legacy_data_map =
@@ -563,7 +563,7 @@ void StoreCurrentDisplayProperties(PrefService* pref_service) {
 
     // Store the legacy format touch calibration data. This can be removed after
     // a couple of milestones when every device has migrated to the new format.
-    if (legacy_data_map.size() && base::ContainsKey(legacy_data_map, id)) {
+    if (legacy_data_map.size() && base::Contains(legacy_data_map, id)) {
       TouchDataToValue(legacy_data_map.at(id).calibration_data,
                        property_value.get());
     }

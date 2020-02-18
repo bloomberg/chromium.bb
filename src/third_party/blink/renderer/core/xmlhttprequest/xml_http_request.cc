@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
@@ -73,7 +72,8 @@
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
@@ -89,10 +89,9 @@
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -359,6 +358,7 @@ void XMLHttpRequest::InitResponseDocument() {
 
   DocumentInit init = DocumentInit::Create()
                           .WithContextDocument(GetDocument()->ContextDocument())
+                          .WithOwnerDocument(GetDocument()->ContextDocument())
                           .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);
@@ -366,7 +366,6 @@ void XMLHttpRequest::InitResponseDocument() {
     response_document_ = MakeGarbageCollected<XMLDocument>(init);
 
   // FIXME: Set Last-Modified.
-  response_document_->SetSecurityOrigin(GetMutableSecurityOrigin());
   response_document_->SetContextFeatures(GetDocument()->GetContextFeatures());
   response_document_->SetMimeType(FinalResponseMIMETypeWithFallback());
 }
@@ -476,7 +475,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
     return;
   }
 
-  timeout_ = TimeDelta::FromMilliseconds(timeout);
+  timeout_ = base::TimeDelta::FromMilliseconds(timeout);
 
   // From http://www.w3.org/TR/XMLHttpRequest/#the-timeout-attribute:
   // Note: This implies that the timeout attribute can be set while fetching is
@@ -1056,12 +1055,12 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   request.SetRequestorOrigin(GetSecurityOrigin());
   request.SetHttpMethod(method_);
   request.SetRequestContext(mojom::RequestContextType::XML_HTTP_REQUEST);
-  request.SetFetchRequestMode(
-      upload_events ? network::mojom::FetchRequestMode::kCorsWithForcedPreflight
-                    : network::mojom::FetchRequestMode::kCors);
-  request.SetFetchCredentialsMode(
-      with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                        : network::mojom::FetchCredentialsMode::kSameOrigin);
+  request.SetMode(upload_events
+                      ? network::mojom::RequestMode::kCorsWithForcedPreflight
+                      : network::mojom::RequestMode::kCors);
+  request.SetCredentialsMode(
+      with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                        : network::mojom::CredentialsMode::kSameOrigin);
   request.SetSkipServiceWorker(is_isolated_world_);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       execution_context.GetSecurityContext().AddressSpace());
@@ -1469,8 +1468,8 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
   WebHTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
-          with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                            : network::mojom::FetchCredentialsMode::kSameOrigin,
+          with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                            : network::mojom::CredentialsMode::kSameOrigin,
           response_);
 
   HTTPHeaderMap::const_iterator end = response_.HttpHeaderFields().end();
@@ -1487,7 +1486,7 @@ String XMLHttpRequest::getAllResponseHeaders() const {
 
     if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
         !cors::IsCorsSafelistedResponseHeader(it->key) &&
-        access_control_expose_header_set.find(it->key.Ascii().data()) ==
+        access_control_expose_header_set.find(it->key.Ascii()) ==
             access_control_expose_header_set.end()) {
       continue;
     }
@@ -1518,13 +1517,13 @@ const AtomicString& XMLHttpRequest::getResponseHeader(
 
   WebHTTPHeaderSet access_control_expose_header_set =
       cors::ExtractCorsExposedHeaderNamesList(
-          with_credentials_ ? network::mojom::FetchCredentialsMode::kInclude
-                            : network::mojom::FetchCredentialsMode::kSameOrigin,
+          with_credentials_ ? network::mojom::CredentialsMode::kInclude
+                            : network::mojom::CredentialsMode::kSameOrigin,
           response_);
 
   if (response_.GetType() == network::mojom::FetchResponseType::kCors &&
       !cors::IsCorsSafelistedResponseHeader(name) &&
-      access_control_expose_header_set.find(name.Ascii().data()) ==
+      access_control_expose_header_set.find(name.Ascii()) ==
           access_control_expose_header_set.end()) {
     LogConsoleError(GetExecutionContext(),
                     "Refused to get unsafe header \"" + name + "\"");

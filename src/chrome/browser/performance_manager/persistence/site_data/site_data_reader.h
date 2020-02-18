@@ -45,7 +45,9 @@ class SiteDataReader {
   const internal::SiteDataImpl* impl_for_testing() const { return impl_.get(); }
 
  private:
+  friend class SiteDataCacheImpl;
   friend class SiteDataReaderTest;
+
   FRIEND_TEST_ALL_PREFIXES(SiteDataReaderTest,
                            DestroyingReaderCancelsPendingCallbacks);
   FRIEND_TEST_ALL_PREFIXES(SiteDataReaderTest,
@@ -65,7 +67,7 @@ class SiteDataReader {
   const scoped_refptr<internal::SiteDataImpl> impl_;
 
   // Used for invalidating callbacks.
-  base::WeakPtrFactory<SiteDataReader> weak_factory_;
+  base::WeakPtrFactory<SiteDataReader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SiteDataReader);
 };

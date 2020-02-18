@@ -79,6 +79,7 @@ extern const char kDisablePopupBlocking[];
 extern const char kDisablePrintPreview[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableSearchGeolocationDisclosure[];
+extern const char kDisableXrDeviceConsentPromptForTesting[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
@@ -122,8 +123,9 @@ extern const char kLaunchInProcessSimpleBrowserSwitch[];
 extern const char kLaunchSimpleBrowserSwitch[];
 extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];
-extern const char kMediaCacheSize[];
 extern const char kMonitoringDestinationID[];
+extern const char kNativeMessagingConnectHost[];
+extern const char kNativeMessagingConnectExtension[];
 extern const char kNewNetErrorPageUI[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoExperiments[];
@@ -190,10 +192,6 @@ extern const char kWindowSize[];
 extern const char kWindowWorkspace[];
 extern const char kWinHttpProxyResolver[];
 extern const char kWinJumplistAction[];
-
-#if !defined(GOOGLE_CHROME_BUILD)
-extern const char kLocalNtpReload[];
-#endif
 
 #if defined(OS_ANDROID)
 extern const char kAuthAndroidNegotiateAccountType[];
@@ -267,6 +265,7 @@ extern const char kAllowNaClSocketAPI[];
 
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 extern const char kEnableNewAppMenuIcon[];
+extern const char kGuest[];
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && \

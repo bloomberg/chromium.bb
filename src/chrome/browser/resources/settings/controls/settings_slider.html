@@ -21,8 +21,10 @@
         color: var(--paper-grey-400);
       }
 
-      :host-context([dark]) #labels[disabled] {
-        color: var(--google-grey-refresh-500);
+      @media (prefers-color-scheme: dark) {
+        #labels[disabled] {
+          color: var(--google-grey-refresh-500);
+        }
       }
 
       div.outer {

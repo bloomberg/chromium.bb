@@ -37,7 +37,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -67,6 +67,54 @@ class PLATFORM_EXPORT ResourceRequest final {
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
+  // TODO(domfarolino): Remove these location enums when Referer header crash
+  // debugging is done.
+  enum class SetHttpReferrerLocation : uint8_t {
+    kCreateRedirectRequest,
+    kFrameLoaderResourceRequestForReload,
+    kFrameLoadRequest,
+    kInspectorNetworkAgent,
+    kLocalDomWindow,
+    kResourceFetcher,
+    kWebURLRequest,
+  };
+  enum class SetReferrerStringLocation : uint8_t {
+    kCSSFontFaceSrcValueFetch,
+    kCSSImageSetValueCacheImage,
+    kCSSImageValueCacheImage,
+    kHistoryItem,
+    kModuleScriptLoader,
+    kPerformHTTPFetch,
+    kPingLoader,
+    kPreloadRequestStart,
+    kResourceFetcher,
+    kThreadableLoaderCreateAccessControlPreflightRequest,
+    kThreadableLoaderPrepareCrossOriginRequest,
+    kWebLocalFrameImpl,
+    kWebURLRequest,
+  };
+  enum class SetReferrerPolicyLocation : uint8_t {
+    kAnchorElement,
+    kCSSFontFaceSrcValueFetch,
+    kCSSImageSetValueCacheImage,
+    kCSSImageValueCacheImage,
+    kFrameOwnerLoadOrRedirectSubframe,
+    kHistoryItem,
+    kImageLoader,
+    kLinkImport,
+    kLoadStylesheet,
+    kModuleLoader,
+    kPerformHTTPFetch,
+    kPingLoader,
+    kPrefetchIfNeeded,
+    kPreloadIfNeeded,
+    kPreloadRequestStart,
+    kResourceFetcher,
+    kSFOCreateFetchParameters,
+    kThreadableLoaderCreateAccessControlPreflightRequest,
+    kThreadableLoaderPrepareCrossOriginRequest,
+    kWebLocalFrameImpl,
+  };
 
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
@@ -151,21 +199,36 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpReferrer() const {
     return HttpHeaderField(http_names::kReferer);
   }
-  void SetHttpReferrer(const Referrer&);
+  SetHttpReferrerLocation HttpReferrerLocation() const {
+    return set_http_referrer_location_;
+  }
+  void SetHttpReferrer(const Referrer&, SetHttpReferrerLocation);
   bool DidSetHttpReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
-  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
+  void SetReferrerPolicy(
+      network::mojom::ReferrerPolicy referrer_policy,
+      SetReferrerPolicyLocation set_referrer_policy_location) {
     referrer_policy_ = referrer_policy;
+    set_referrer_policy_location_ = set_referrer_policy_location;
   }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
   }
+  SetReferrerPolicyLocation ReferrerPolicyLocation() const {
+    return set_referrer_policy_location_;
+  }
 
-  void SetReferrerString(const String& referrer_string) {
+  void SetReferrerString(
+      const String& referrer_string,
+      SetReferrerStringLocation set_referrer_string_location) {
     referrer_string_ = referrer_string;
+    set_referrer_string_location_ = set_referrer_string_location;
   }
   const String& ReferrerString() const { return referrer_string_; }
+  SetReferrerStringLocation ReferrerStringLocation() const {
+    return set_referrer_string_location_;
+  }
 
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(http_names::kOrigin);
@@ -193,6 +256,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TODO(yhirano): Describe what Priority and IntraPriorityValue are.
   ResourceLoadPriority Priority() const;
   int IntraPriorityValue() const;
+  bool PriorityHasBeenSet() const;
   void SetPriority(ResourceLoadPriority, int intra_priority_value = 0);
 
   bool IsConditional() const;
@@ -291,12 +355,8 @@ class PLATFORM_EXPORT ResourceRequest final {
     request_context_ = context;
   }
 
-  network::mojom::FetchRequestMode GetFetchRequestMode() const {
-    return fetch_request_mode_;
-  }
-  void SetFetchRequestMode(network::mojom::FetchRequestMode mode) {
-    fetch_request_mode_ = mode;
-  }
+  network::mojom::RequestMode GetMode() const { return mode_; }
+  void SetMode(network::mojom::RequestMode mode) { mode_ = mode; }
 
   // A resource request's fetch_importance_mode_ is a developer-set priority
   // hint that differs from priority_. It is used in
@@ -313,18 +373,18 @@ class PLATFORM_EXPORT ResourceRequest final {
     fetch_importance_mode_ = mode;
   }
 
-  network::mojom::FetchCredentialsMode GetFetchCredentialsMode() const {
-    return fetch_credentials_mode_;
+  network::mojom::CredentialsMode GetCredentialsMode() const {
+    return credentials_mode_;
   }
-  void SetFetchCredentialsMode(network::mojom::FetchCredentialsMode mode) {
-    fetch_credentials_mode_ = mode;
+  void SetCredentialsMode(network::mojom::CredentialsMode mode) {
+    credentials_mode_ = mode;
   }
 
-  network::mojom::FetchRedirectMode GetFetchRedirectMode() const {
-    return fetch_redirect_mode_;
+  network::mojom::RedirectMode GetRedirectMode() const {
+    return redirect_mode_;
   }
-  void SetFetchRedirectMode(network::mojom::FetchRedirectMode redirect) {
-    fetch_redirect_mode_ = redirect;
+  void SetRedirectMode(network::mojom::RedirectMode redirect) {
+    redirect_mode_ = redirect;
   }
 
   const String& GetFetchIntegrity() const { return fetch_integrity_; }
@@ -432,6 +492,25 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetInspectorId(uint64_t inspector_id) { inspector_id_ = inspector_id; }
   uint64_t InspectorId() const { return inspector_id_; }
 
+  // Temporary for metrics. True if the request was initiated by a stylesheet
+  // that is not origin-clean:
+  // https://drafts.csswg.org/cssom-1/#concept-css-style-sheet-origin-clean-flag
+  //
+  // TODO(crbug.com/898497): Remove this when there is enough data.
+  bool IsFromOriginDirtyStyleSheet() const {
+    return is_from_origin_dirty_style_sheet_;
+  }
+  void SetFromOriginDirtyStyleSheet(bool dirty) {
+    is_from_origin_dirty_style_sheet_ = dirty;
+  }
+
+  bool IsSignedExchangePrefetchCacheEnabled() const {
+    return is_signed_exchange_prefetch_cache_enabled_;
+  }
+  void SetSignedExchangePrefetchCacheEnabled(bool enabled) {
+    is_signed_exchange_prefetch_cache_enabled_ = enabled;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -444,7 +523,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TODO(yoav): initial_url_for_resource_timing_ is a stop-gap only needed
   // until Out-of-Blink CORS lands: https://crbug.com/736308
   KURL initial_url_for_resource_timing_;
-  // TimeDelta::Max() represents the default timeout on platforms that have one.
+  // base::TimeDelta::Max() represents the default timeout on platforms that
+  // have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
   scoped_refptr<const SecurityOrigin> top_frame_origin_;
@@ -474,10 +554,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
-  network::mojom::FetchRequestMode fetch_request_mode_;
+  network::mojom::RequestMode mode_;
   mojom::FetchImportanceMode fetch_importance_mode_;
-  network::mojom::FetchCredentialsMode fetch_credentials_mode_;
-  network::mojom::FetchRedirectMode fetch_redirect_mode_;
+  network::mojom::CredentialsMode credentials_mode_;
+  network::mojom::RedirectMode redirect_mode_;
   String fetch_integrity_;
   // TODO(domfarolino): Use AtomicString for referrer_string_ once
   // off-main-thread fetch is fully implemented and ResourceRequest never gets
@@ -488,11 +568,16 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
+  // TODO(domfarolino): Remove these after crash debugging is complete.
+  SetHttpReferrerLocation set_http_referrer_location_;
+  SetReferrerStringLocation set_referrer_string_location_;
+  SetReferrerPolicyLocation set_referrer_policy_location_;
+
   base::Optional<String> suggested_filename_;
 
   mutable CacheControlHeader cache_control_header_cache_;
 
-  static base::TimeDelta default_timeout_interval_;
+  static const base::TimeDelta default_timeout_interval_;
 
   bool is_ad_resource_ = false;
 
@@ -513,6 +598,10 @@ class PLATFORM_EXPORT ResourceRequest final {
   base::UnguessableToken fetch_window_id_;
 
   uint64_t inspector_id_ = 0;
+
+  bool is_from_origin_dirty_style_sheet_ = false;
+
+  bool is_signed_exchange_prefetch_cache_enabled_ = false;
 };
 
 }  // namespace blink

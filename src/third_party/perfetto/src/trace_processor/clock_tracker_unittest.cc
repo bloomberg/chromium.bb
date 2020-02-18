@@ -15,12 +15,12 @@
  */
 
 #include "src/trace_processor/clock_tracker.h"
-#include "perfetto/base/optional.h"
+#include "perfetto/ext/base/optional.h"
 #include "src/trace_processor/trace_processor_context.h"
 #include "src/trace_processor/trace_storage.h"
 
-#include "gmock/gmock.h"
-#include "gtest/gtest.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 namespace perfetto {
 namespace trace_processor {

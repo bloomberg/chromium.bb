@@ -149,7 +149,7 @@ def FindVolumeGroupForDevice(chroot_path, chroot_dev):
     elif vg_name.startswith(vg_prefix):
       existing_vgs.add(vg_name)
 
-  for i in xrange(1000):
+  for i in range(1000):
     vg_name = '%s%03d' % (vg_prefix, i)
     if vg_name not in existing_vgs:
       return vg_name
@@ -286,7 +286,7 @@ def MountChroot(chroot=None, buildroot=None, create=True,
     # and this command will fail.  When this is the case, it will succeed if
     # we retry.  If it fails three times in a row, assume there's a real error
     # and re-raise the exception.
-    try_count = xrange(1, 4)
+    try_count = list(range(1, 4))
     for i in try_count:
       try:
         cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)

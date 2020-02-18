@@ -44,13 +44,19 @@ void LogNonReflectionUpdateFreshnessToUma(ModelType type,
                                           base::Time remote_modification_time) {
   const base::TimeDelta latency = base::Time::Now() - remote_modification_time;
 
-  UMA_HISTOGRAM_LONG_TIMES("Sync.NonReflectionUpdateFreshnessPossiblySkewed",
-                           latency);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Sync.NonReflectionUpdateFreshnessPossiblySkewed2",
+                             latency,
+                             /*min=*/base::TimeDelta::FromMilliseconds(100),
+                             /*max=*/base::TimeDelta::FromDays(7),
+                             /*bucket_count=*/50);
 
-  base::UmaHistogramLongTimes(
-      std::string("Sync.NonReflectionUpdateFreshnessPossiblySkewed.") +
+  base::UmaHistogramCustomTimes(
+      std::string("Sync.NonReflectionUpdateFreshnessPossiblySkewed2.") +
           ModelTypeToHistogramSuffix(type),
-      latency);
+      latency,
+      /*min=*/base::TimeDelta::FromMilliseconds(100),
+      /*max=*/base::TimeDelta::FromDays(7),
+      /*bucket_count=*/50);
 }
 
 }  // namespace
@@ -69,9 +75,7 @@ ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     : type_(type),
       bridge_(nullptr),
       dump_stack_(dump_stack),
-      commit_only_(commit_only),
-      weak_ptr_factory_for_controller_(this),
-      weak_ptr_factory_for_worker_(this) {
+      commit_only_(commit_only) {
   ResetState(CLEAR_METADATA);
 }
 
@@ -178,6 +182,15 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
     // |model_type_state_| and the one received from sync. This indicates that
     // the stored metadata are invalid (e.g. has been manipulated) and don't
     // belong to the current syncing client.
+    if (model_type_state_.progress_marker().data_type_id() !=
+        GetSpecificsFieldNumberFromModelType(type_)) {
+      // This is not strongly typed because historically,
+      // ModelTypeToHistogramInt() defines quite a different order from the
+      // type_ enum.
+      UMA_HISTOGRAM_ENUMERATION("Sync.PersistedModelTypeIdMismatch",
+                                ModelTypeToHistogramInt(type_),
+                                static_cast<int>(ModelType::NUM_ENTRIES));
+    }
     ClearMetadataAndResetState();
 
     // The model is still ready to sync (with the same |bridge_|) - replay
@@ -364,7 +377,7 @@ void ClientTagBasedModelTypeProcessor::Put(
   DCHECK(IsAllowingChanges());
   DCHECK(data);
   DCHECK(!data->is_deleted());
-  DCHECK(!data->non_unique_name.empty());
+  DCHECK(!data->name.empty());
   DCHECK(!data->specifics.has_encrypted());
   DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 

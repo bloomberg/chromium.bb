@@ -226,8 +226,8 @@ class MetricStoreTestBase(object):
 
     # Create 10 modify threads and 10 get_all threads.
     threads = (
-        [threading.Thread(target=modify_worker) for _ in xrange(10)] +
-        [threading.Thread(target=get_all_worker) for _ in xrange(10)])
+        [threading.Thread(target=modify_worker) for _ in range(10)] +
+        [threading.Thread(target=get_all_worker) for _ in range(10)])
 
     # Start all the threads at once.
     for thread in threads:

@@ -156,10 +156,6 @@ class PasswordStore : protected PasswordStoreSync,
                                   base::Time delete_end,
                                   const base::Closure& completion);
 
-  // Removes all logins synced in the given date range.
-  void RemoveLoginsSyncedBetween(base::Time delete_begin,
-                                 base::Time delete_end);
-
   // Removes all the stats created in the given date range.
   // If |origin_filter| is not null, only statistics for matching origins are
   // removed. If |completion| is not null, it will be posted to the
@@ -371,11 +367,6 @@ class PasswordStore : protected PasswordStoreSync,
       base::Time delete_begin,
       base::Time delete_end) = 0;
 
-  // Synchronous implementation to remove the given logins.
-  virtual PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) = 0;
-
   // Synchronous implementation to remove the statistics.
   virtual bool RemoveStatisticsByOriginAndTimeImpl(
       const base::Callback<bool(const GURL&)>& origin_filter,
@@ -394,7 +385,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation provided by subclasses to update the given
   // login.
   virtual PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) = 0;
+      const autofill::PasswordForm& form,
+      UpdateLoginError* error = nullptr) = 0;
 
   // Synchronous implementation provided by subclasses to remove the given
   // login.
@@ -413,18 +405,11 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) = 0;
 
-  // Log UMA stats for number of bulk deletions.
-  void LogStatsForBulkDeletion(int num_deletions);
-
-  // Log UMA stats for password deletions happening on clear browsing data
-  // since first sync during rollback.
-  void LogStatsForBulkDeletionDuringRollback(int num_deletions);
-
   // PasswordStoreSync:
   PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
-  PasswordStoreChangeList UpdateLoginSync(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList UpdateLoginSync(const autofill::PasswordForm& form,
+                                          UpdateLoginError* error) override;
   PasswordStoreChangeList RemoveLoginSync(
       const autofill::PasswordForm& form) override;
 
@@ -536,8 +521,6 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveLoginsCreatedBetweenInternal(base::Time delete_begin,
                                           base::Time delete_end,
                                           const base::Closure& completion);
-  void RemoveLoginsSyncedBetweenInternal(base::Time delete_begin,
-                                         base::Time delete_end);
   void RemoveStatisticsByOriginAndTimeInternal(
       const base::Callback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,

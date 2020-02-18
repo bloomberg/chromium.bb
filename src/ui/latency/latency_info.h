@@ -160,8 +160,7 @@ class LatencyInfo {
   // Modifies the current sequence number and adds a certain number of events
   // for a specific component.
   void AddLatencyNumberWithTimestamp(LatencyComponentType component,
-                                     base::TimeTicks time,
-                                     uint32_t event_count);
+                                     base::TimeTicks time);
 
   // Returns true if a component with |type| is found in the latency component.
   // The first such component (when iterating over latency_components_) is
@@ -208,7 +207,6 @@ class LatencyInfo {
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
                                          base::TimeTicks time,
-                                         uint32_t event_count,
                                          const char* trace_name_str);
 
   // Converts latencyinfo into format that can be dumped into trace buffer.

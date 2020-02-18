@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -39,11 +39,12 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                    bool suppress_box_decoration_background = false);
 
   // Hit tests this box fragment.
-  // @param physical_offset Physical offset of this box fragment in paint layer.
+  // @param physical_offset Physical offset of this box fragment in the
+  // coordinate space of |hit_test_location|.
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& physical_offset,
+                   const HitTestLocation& hit_test_location,
+                   const PhysicalOffset& physical_offset,
                    HitTestAction);
 
  protected:
@@ -93,8 +94,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintFloatingChildren(NGPaintFragment::ChildList, const PaintInfo&);
   void PaintFloats(const PaintInfo&);
   void PaintMask(const PaintInfo&, const PhysicalOffset& paint_offset);
-  void PaintOverflowControlsIfNeeded(const PaintInfo&,
-                                     const PhysicalOffset& paint_offset);
   void PaintAtomicInline(const PaintInfo&);
   void PaintBackground(const PaintInfo&,
                        const PhysicalRect&,
@@ -103,10 +102,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintCarets(const PaintInfo&, const PhysicalOffset& paint_offset);
 
   void RecordHitTestData(const PaintInfo& paint_info,
-                         const LayoutPoint& paint_offset);
+                         const PhysicalOffset& paint_offset);
 
   void RecordHitTestDataForLine(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset,
+                                const PhysicalOffset& paint_offset,
                                 const NGPaintFragment& line);
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
@@ -119,8 +118,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // container has 'overflow: scroll'.
   bool HitTestChildren(HitTestResult&,
                        NGPaintFragment::ChildList,
-                       const HitTestLocation& location_in_container,
-                       const LayoutPoint& physical_offset,
+                       const HitTestLocation& hit_test_location,
+                       const PhysicalOffset& physical_offset,
                        HitTestAction);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
@@ -129,16 +128,16 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // paint layer.
   bool HitTestChildBoxFragment(HitTestResult&,
                                const NGPaintFragment&,
-                               const HitTestLocation& location_in_container,
-                               const LayoutPoint& physical_offset,
+                               const HitTestLocation& hit_test_location,
+                               const PhysicalOffset& physical_offset,
                                HitTestAction);
 
   // Hit tests the given text fragment.
   // @param physical_offset Physical offset of the text fragment in paint layer.
   bool HitTestTextFragment(HitTestResult&,
                            const NGPaintFragment&,
-                           const HitTestLocation& location_in_container,
-                           const LayoutPoint& physical_offset,
+                           const HitTestLocation& hit_test_location,
+                           const PhysicalOffset& physical_offset,
                            HitTestAction);
 
   // Hit tests the given line box fragment.
@@ -146,18 +145,15 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // layer.
   bool HitTestLineBoxFragment(HitTestResult&,
                               const NGPaintFragment&,
-                              const HitTestLocation& location_in_container,
-                              const LayoutPoint& physical_offset,
+                              const HitTestLocation& hit_test_location,
+                              const PhysicalOffset& physical_offset,
                               HitTestAction);
 
   // Returns whether the hit test location is completely outside the border box,
   // which possibly has rounded corners.
-  bool HitTestClippedOutByBorder(const HitTestLocation&,
-                                 const LayoutPoint& border_box_location) const;
-
-  LayoutPoint FlipForWritingModeForChild(
-      const NGPhysicalFragment& child_fragment,
-      const LayoutPoint& offset);
+  bool HitTestClippedOutByBorder(
+      const HitTestLocation&,
+      const PhysicalOffset& border_box_location) const;
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
   const NGBorderEdges& BorderEdges() const;

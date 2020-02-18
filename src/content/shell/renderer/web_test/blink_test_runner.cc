@@ -168,8 +168,7 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
-      test_config_(mojom::ShellTestConfiguration::New()),
-      is_main_window_(false) {}
+      test_config_(mojom::ShellTestConfiguration::New()) {}
 
 BlinkTestRunner::~BlinkTestRunner() {}
 
@@ -313,6 +312,10 @@ void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
                                                        by_user));
 }
 
+void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
+  Send(new WebTestHostMsg_SimulateWebContentIndexDelete(routing_id(), id));
+}
+
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }
@@ -416,8 +419,7 @@ void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
   if (!interfaces->TestIsRunning())
     return;
 
-  RenderThread::Get()->Send(
-      new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
+  Send(new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -432,8 +434,7 @@ void BlinkTestRunner::TestFinished() {
   // If we're not in the main frame, then ask the browser to redirect the call
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
-    RenderThread::Get()->Send(
-        new WebTestHostMsg_TestFinishedInSecondaryRenderer());
+    Send(new WebTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
 
@@ -535,12 +536,14 @@ void BlinkTestRunner::CaptureLocalPixelsDump() {
 }
 
 void BlinkTestRunner::OnLayoutDumpCompleted(std::string completed_layout_dump) {
+  CHECK(waiting_for_layout_dump_results_);
   dump_result_->layout.emplace(completed_layout_dump);
   waiting_for_layout_dump_results_ = false;
   CaptureDumpComplete();
 }
 
 void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
+  CHECK(waiting_for_pixels_dump_result_);
   DCHECK_NE(0, snapshot.info().width());
   DCHECK_NE(0, snapshot.info().height());
 
@@ -570,8 +573,6 @@ void BlinkTestRunner::CaptureDumpComplete() {
     return;
 
   std::move(dump_callback_).Run(std::move(dump_result_));
-  dump_callback_.Reset();
-  dump_result_.reset();
 }
 
 void BlinkTestRunner::CloseRemainingWindows() {
@@ -817,8 +818,8 @@ void BlinkTestRunner::OnReset() {
   waiting_for_reset_ = true;
 
   auto request = blink::WebURLRequest(GURL(url::kAboutBlankURL));
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::CreateUniqueOpaque());
   main_frame->StartNavigation(request);

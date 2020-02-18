@@ -23,7 +23,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
@@ -41,11 +41,17 @@ class CrOSSystemTracingSession {
   // |true| if tracing was started and |false| otherwise.
   void StartTracing(const std::string& config, SuccessCallback callback) {
     DCHECK(!is_tracing_);
+    if (!chromeos::DBusThreadManager::IsInitialized()) {
+      if (callback)
+        std::move(callback).Run(/*success=*/false);
+      return;
+    }
+
     base::trace_event::TraceConfig trace_config(config);
     debug_daemon_ = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
     if (!trace_config.IsSystraceEnabled() || !debug_daemon_) {
       if (callback)
-        std::move(callback).Run(false /* success */);
+        std::move(callback).Run(/*success=*/false);
       return;
     }
     debug_daemon_->SetStopAgentTracingTaskRunner(
@@ -135,9 +141,7 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   void StartTracingOnUI(tracing::PerfettoProducer* producer,
                         const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
-    DCHECK(!producer_);
     DCHECK(!session_);
-    producer_ = producer;
     target_buffer_ = data_source_config.target_buffer();
     session_ = std::make_unique<CrOSSystemTracingSession>();
     session_->StartTracing(
@@ -211,7 +215,6 @@ class CrOSDataSource : public tracing::PerfettoTracedProcess::DataSourceBase {
   bool session_started_ = false;
   base::OnceClosure on_session_started_callback_;
   uint32_t target_buffer_ = 0;
-  tracing::PerfettoProducer* producer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSDataSource);
 };

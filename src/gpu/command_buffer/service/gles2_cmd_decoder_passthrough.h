@@ -377,6 +377,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void SetOptionalExtensionsRequestedForTesting(bool request_extensions);
 
+  void InitializeFeatureInfo(ContextType context_type,
+                             const DisallowedFeatures& disallowed_features,
+                             bool force_reinitialize);
+
   void* GetScratchMemory(size_t size);
 
   template <typename T>
@@ -427,8 +431,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   GLenum PopError();
   bool FlushErrors();
 
-  bool IsRobustnessSupported();
-
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
@@ -467,6 +469,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void ExitCommandProcessingEarly() override;
 
+  void CheckSwapBuffersAsyncResult(const char* function_name,
+                                   uint64_t swap_id,
+                                   gfx::SwapResult result,
+                                   std::unique_ptr<gfx::GpuFence> gpu_fence);
   error::Error CheckSwapBuffersResult(gfx::SwapResult result,
                                       const char* function_name);
 
@@ -669,6 +675,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     base::subtle::Atomic32 submit_count = 0;
 
     std::unique_ptr<gl::GLFence> commands_completed_fence;
+    base::TimeDelta commands_issued_time;
 
     std::vector<base::OnceClosure> callbacks;
     std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
@@ -689,6 +696,12 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     GLuint service_id = 0;
     scoped_refptr<gpu::Buffer> shm;
     QuerySync* sync = nullptr;
+
+    // Time at which the commands for this query started processing. This is
+    // used to ensure we only include the time when the decoder is scheduled in
+    // the |active_time|. Used for GL_COMMANDS_ISSUED_CHROMIUM type query.
+    base::TimeTicks command_processing_start_time;
+    base::TimeDelta active_time;
   };
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 
@@ -840,7 +853,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool gpu_debug_commands_;
 
   // Context lost state
-  bool has_robustness_extension_;
   bool context_lost_;
   bool reset_by_robustness_extension_;
   bool lose_context_when_out_of_memory_;
@@ -855,7 +867,10 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   GLuint linking_program_service_id_ = 0u;
 
-  base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_;
+  // CA Layer state
+  std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
+
+  base::WeakPtrFactory<GLES2DecoderPassthroughImpl> weak_ptr_factory_{this};
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

@@ -68,7 +68,7 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 PaymentRequestDialogView::PaymentRequestDialogView(
     PaymentRequest* request,
     PaymentRequestDialogView::ObserverForTest* observer)
-    : request_(request), observer_for_testing_(observer), being_closed_(false) {
+    : request_(request), observer_for_testing_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   request->spec()->AddObserver(this);
@@ -128,6 +128,9 @@ bool PaymentRequestDialogView::Cancel() {
   // all the controllers, because they may have pointers to PaymentRequestSpec/
   // PaymentRequestState. Then send the signal to PaymentRequest to destroy.
   being_closed_ = true;
+  for (const auto& controller : controller_map_) {
+    controller.second->Stop();
+  }
   view_stack_.reset();
   controller_map_.clear();
   request_->UserCancelled();
@@ -174,14 +177,14 @@ void PaymentRequestDialogView::ShowErrorMessage() {
 }
 
 void PaymentRequestDialogView::ShowProcessingSpinner() {
-  throbber_.Start();
-  throbber_overlay_.SetVisible(true);
+  throbber_->Start();
+  throbber_overlay_->SetVisible(true);
   if (observer_for_testing_)
     observer_for_testing_->OnProcessingSpinnerShown();
 }
 
 bool PaymentRequestDialogView::IsInteractive() const {
-  return !throbber_overlay_.GetVisible();
+  return !throbber_overlay_->GetVisible();
 }
 
 void PaymentRequestDialogView::ShowPaymentHandlerScreen(
@@ -209,7 +212,7 @@ void PaymentRequestDialogView::RetryDialog() {
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedShippingProfile,
-            base::Unretained(request_->state()), profile,
+            request_->state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
@@ -223,7 +226,7 @@ void PaymentRequestDialogView::RetryDialog() {
         /*on_edited=*/
         base::BindOnce(
             &PaymentRequestState::SetSelectedContactProfile,
-            base::Unretained(request_->state()), profile,
+            request_->state()->AsWeakPtr(), profile,
             PaymentRequestState::SectionSelectionStatus::kEditedSelected),
         /*on_added=*/
         base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
@@ -413,8 +416,8 @@ void PaymentRequestDialogView::EditorViewUpdated() {
 }
 
 void PaymentRequestDialogView::HideProcessingSpinner() {
-  throbber_.Stop();
-  throbber_overlay_.SetVisible(false);
+  throbber_->Stop();
+  throbber_overlay_->SetVisible(false);
   if (observer_for_testing_)
     observer_for_testing_->OnProcessingSpinnerHidden();
 }
@@ -441,18 +444,18 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
 }
 
 void PaymentRequestDialogView::SetupSpinnerOverlay() {
-  throbber_.set_owned_by_client();
+  auto throbber = std::make_unique<views::Throbber>();
+  auto throbber_overlay = std::make_unique<views::View>();
 
-  throbber_overlay_.set_owned_by_client();
-  throbber_overlay_.SetPaintToLayer();
-  throbber_overlay_.SetVisible(false);
+  throbber_overlay->SetPaintToLayer();
+  throbber_overlay->SetVisible(false);
   // The throbber overlay has to have a solid white background to hide whatever
   // would be under it.
-  throbber_overlay_.SetBackground(views::CreateThemedSolidBackground(
-      &throbber_overlay_, ui::NativeTheme::kColorId_DialogBackground));
+  throbber_overlay->SetBackground(views::CreateThemedSolidBackground(
+      throbber_overlay.get(), ui::NativeTheme::kColorId_DialogBackground));
 
-  views::GridLayout* layout = throbber_overlay_.SetLayoutManager(
-      std::make_unique<views::GridLayout>(&throbber_overlay_));
+  views::GridLayout* layout =
+      throbber_overlay->SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
   throbber_columns->AddPaddingColumn(0.5, 0);
   throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
@@ -470,13 +473,13 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   label_columns->AddPaddingColumn(0.5, 0);
 
   layout->StartRow(0.5, 0);
-  layout->AddView(&throbber_);
+  throbber_ = layout->AddView(std::move(throbber));
 
   layout->StartRow(0.5, 1);
-  layout->AddView(new views::Label(
+  layout->AddView(std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_PROCESSING_MESSAGE)));
 
-  AddChildView(&throbber_overlay_);
+  throbber_overlay_ = AddChildView(std::move(throbber_overlay));
 }
 
 gfx::Size PaymentRequestDialogView::CalculatePreferredSize() const {

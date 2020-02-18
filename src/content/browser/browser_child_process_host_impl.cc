@@ -34,7 +34,7 @@
 #include "content/browser/histogram_controller.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
-#include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/service_manager/child_connection.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
@@ -51,11 +51,13 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "net/websockets/websocket_basic_stream.h"
+#include "net/websockets/websocket_channel.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/constants.h"
 
 #if defined(OS_MACOSX)
-#include "content/browser/mach_broker_mac.h"
+#include "content/browser/child_process_task_port_provider_mac.h"
 #endif
 
 namespace content {
@@ -126,7 +128,7 @@ BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
 
 #if defined(OS_MACOSX)
 base::PortProvider* BrowserChildProcessHost::GetPortProvider() {
-  return MachBroker::GetInstance();
+  return ChildProcessTaskPortProvider::GetInstance();
 }
 #endif
 
@@ -158,12 +160,10 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
       delegate_(delegate),
       channel_(nullptr),
       is_channel_connected_(false),
-      notify_child_disconnected_(false),
-      weak_factory_(this) {
+      notify_child_disconnected_(false) {
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
   child_process_host_ = ChildProcessHost::Create(this);
-  AddFilter(new TraceMessageFilter(data_.id));
 
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
@@ -312,12 +312,15 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   static const char* const kForwardSwitches[] = {
+      net::kWebSocketReadBufferSize,
+      net::kWebSocketReceiveQuotaThreshold,
       service_manager::switches::kDisableInProcessStackTraces,
       switches::kDisableBestEffortTasks,
       switches::kDisableLogging,
       switches::kDisablePerfetto,
       switches::kEnableLogging,
       switches::kIPCConnectionTimeout,
+      switches::kLogBestEffortTasks,
       switches::kLogFile,
       switches::kLoggingLevel,
       switches::kTraceToConsole,
@@ -331,6 +334,15 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
     cmd_line->AppendSwitchASCII(
         service_manager::switches::kServiceRequestChannelToken,
         child_connection_->service_token());
+
+    // Tracing adds too much overhead to the profiling service.
+    if (service_manager::SandboxTypeFromCommandLine(*cmd_line) !=
+        service_manager::SANDBOX_TYPE_PROFILING) {
+      BackgroundTracingManagerImpl::ActivateForProcess(
+          data_.id,
+          static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+              ->child_process());
+    }
   }
 
   // All processes should have a non-empty metrics name.
@@ -392,6 +404,12 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 
   is_channel_connected_ = true;
   notify_child_disconnected_ = true;
+
+#if defined(OS_MACOSX)
+  ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
+      peer_pid, static_cast<ChildProcessHostImpl*>(child_process_host_.get())
+                    ->child_process());
+#endif
 
 #if defined(OS_WIN)
   // From this point onward, the exit of the child process is detected by an
@@ -561,13 +579,6 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
       break;
 
     default:
-      // Report new processes. "Custom" ones are renumbered to 1000+ so that
-      // they won't conflict with any standard ones in the future.
-      int process_type = data_.process_type;
-      if (process_type >= PROCESS_TYPE_CONTENT_END)
-        process_type += 1000 - PROCESS_TYPE_CONTENT_END;
-      base::UmaHistogramSparse(
-          "UMA.SubprocessMetricsProvider.UntrackedProcesses", process_type);
       return;
   }
 

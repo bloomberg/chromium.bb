@@ -27,8 +27,9 @@
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_hkdf.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config.pb.h"
-#include "net/third_party/quiche/src/quic/core/proto/source_address_token.pb.h"
+#include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
+#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
+#include "net/third_party/quiche/src/quic/core/proto/source_address_token_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
@@ -75,7 +76,7 @@ class DefaultKeyExchangeSource : public KeyExchangeSource {
   ~DefaultKeyExchangeSource() override = default;
 
   std::unique_ptr<AsynchronousKeyExchange> Create(
-      std::string server_config_id,
+      std::string /*server_config_id*/,
       bool /* is_fallback */,
       QuicTag type,
       QuicStringPiece private_key) override {
@@ -231,8 +232,7 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
     QuicStringPiece source_address_token_secret,
     QuicRandom* server_nonce_entropy,
     std::unique_ptr<ProofSource> proof_source,
-    std::unique_ptr<KeyExchangeSource> key_exchange_source,
-    bssl::UniquePtr<SSL_CTX> ssl_ctx)
+    std::unique_ptr<KeyExchangeSource> key_exchange_source)
     : replay_protection_(true),
       chlo_multiplier_(kMultiplier),
       configs_lock_(),
@@ -240,7 +240,7 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       next_config_promotion_time_(QuicWallTime::Zero()),
       proof_source_(std::move(proof_source)),
       key_exchange_source_(std::move(key_exchange_source)),
-      ssl_ctx_(std::move(ssl_ctx)),
+      ssl_ctx_(TlsServerConnection::CreateSslCtx()),
       source_address_token_future_secs_(3600),
       source_address_token_lifetime_secs_(86400),
       enable_serving_sct_(false),
@@ -656,8 +656,6 @@ void QuicCryptoServerConfig::ProcessClientHello(
     const QuicSocketAddress& client_address,
     ParsedQuicVersion version,
     const ParsedQuicVersionVector& supported_versions,
-    bool use_stateless_rejects,
-    QuicConnectionId server_designated_connection_id,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCompressedCertsCache* compressed_certs_cache,
@@ -669,10 +667,9 @@ void QuicCryptoServerConfig::ProcessClientHello(
   DCHECK(done_cb);
   auto context = QuicMakeUnique<ProcessClientHelloContext>(
       validate_chlo_result, reject_only, connection_id, server_address,
-      client_address, version, supported_versions, use_stateless_rejects,
-      server_designated_connection_id, clock, rand, compressed_certs_cache,
-      params, signed_config, total_framing_overhead, chlo_packet_size,
-      std::move(done_cb));
+      client_address, version, supported_versions, clock, rand,
+      compressed_certs_cache, params, signed_config, total_framing_overhead,
+      chlo_packet_size, std::move(done_cb));
 
   // Verify that various parts of the CHLO are valid
   std::string error_details;
@@ -785,25 +782,6 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                          &key_exchange_index)) {
     context->Fail(QUIC_CRYPTO_NO_SUPPORT, "Unsupported AEAD or KEXS");
     return;
-  }
-
-  if (!configs.requested->tb_key_params.empty()) {
-    QuicTagVector their_tbkps;
-    switch (context->client_hello().GetTaglist(kTBKP, &their_tbkps)) {
-      case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
-        break;
-      case QUIC_NO_ERROR:
-        if (FindMutualQuicTag(configs.requested->tb_key_params, their_tbkps,
-                              &context->params()->token_binding_key_param,
-                              nullptr)) {
-          break;
-        }
-        QUIC_FALLTHROUGH_INTENDED;
-      default:
-        context->Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
-                      "Invalid Token Binding key parameter");
-        return;
-    }
   }
 
   QuicStringPiece public_value;
@@ -1209,7 +1187,7 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
 
 void QuicCryptoServerConfig::EvaluateClientHello(
     const QuicSocketAddress& server_address,
-    QuicTransportVersion version,
+    QuicTransportVersion /*version*/,
     const Configs& configs,
     QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
         client_hello_state,
@@ -1394,7 +1372,7 @@ void QuicCryptoServerConfig::FinishBuildServerConfigUpdateMessage(
     const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
     const std::string& signature,
     const std::string& leaf_cert_sct,
-    std::unique_ptr<ProofSource::Details> details,
+    std::unique_ptr<ProofSource::Details> /*details*/,
     CryptoHandshakeMessage message,
     std::unique_ptr<BuildServerConfigUpdateMessageResultCallback> cb) const {
   if (!ok) {
@@ -1604,14 +1582,6 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   QuicTagVector kexs_tags;
   if (msg->GetTaglist(kKEXS, &kexs_tags) != QUIC_NO_ERROR) {
     QUIC_LOG(WARNING) << "Server config message is missing KEXS";
-    return nullptr;
-  }
-
-  QuicErrorCode err;
-  if ((err = msg->GetTaglist(kTBKP, &config->tb_key_params)) !=
-          QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND &&
-      err != QUIC_NO_ERROR) {
-    QUIC_LOG(WARNING) << "Server config message is missing or has invalid TBKP";
     return nullptr;
   }
 

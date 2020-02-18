@@ -5,7 +5,7 @@
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 
 #include "base/stl_util.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
+#include "chromeos/services/device_sync/cryptauth_enrollment_constants.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -187,10 +187,8 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeleteKey) {
       key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kLegacyMasterKey);
   ASSERT_TRUE(key_bundle);
 
-  EXPECT_FALSE(
-      base::ContainsKey(key_bundle->handle_to_key_map(), "sym-handle"));
-  EXPECT_TRUE(
-      base::ContainsKey(key_bundle->handle_to_key_map(), "asym-handle"));
+  EXPECT_FALSE(base::Contains(key_bundle->handle_to_key_map(), "sym-handle"));
+  EXPECT_TRUE(base::Contains(key_bundle->handle_to_key_map(), "asym-handle"));
 
   CryptAuthKeyBundle expected_bundle(
       CryptAuthKeyBundle::Name::kLegacyMasterKey);

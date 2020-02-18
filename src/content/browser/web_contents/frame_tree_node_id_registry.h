@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/unguessable_token.h"
 
@@ -37,13 +38,18 @@ class WebContents;
 class FrameTreeNodeIdRegistry {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
+  using IsMainFrameGetter = base::RepeatingCallback<base::Optional<bool>()>;
 
   static FrameTreeNodeIdRegistry* GetInstance();
 
   void Add(const base::UnguessableToken& id, const int frame_tree_node_id);
   void Remove(const base::UnguessableToken&);
-  // Returns null callback if not found.
+  // Returns a null callback if not found.
   WebContentsGetter GetWebContentsGetter(
+      const base::UnguessableToken& id) const;
+  // Returns a null callback if not found.  The returned callback will return
+  // nullopt if a corresponding FrameTreeNode is not found.
+  IsMainFrameGetter GetIsMainFrameGetter(
       const base::UnguessableToken& id) const;
 
  private:

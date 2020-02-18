@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
@@ -142,12 +142,14 @@ void AvatarToolbarButton::UpdateText() {
     }
     text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                             incognito_window_count);
-  } else if (sync_state == SyncState::kError) {
+  } else if (!suppress_avatar_button_state_ &&
+             sync_state == SyncState::kError) {
     color = AdjustHighlightColorForContrast(
         GetThemeProvider(), gfx::kGoogleRed300, gfx::kGoogleRed600,
         gfx::kGoogleRed050, gfx::kGoogleRed900);
     text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_ERROR);
-  } else if (sync_state == SyncState::kPaused) {
+  } else if (!suppress_avatar_button_state_ &&
+             sync_state == SyncState::kPaused) {
     color = AdjustHighlightColorForContrast(
         GetThemeProvider(), gfx::kGoogleBlue300, gfx::kGoogleBlue600,
         gfx::kGoogleBlue050, gfx::kGoogleBlue900);
@@ -159,6 +161,13 @@ void AvatarToolbarButton::UpdateText() {
   SetHighlightColor(color);
   SetText(text);
   SetTooltipText(GetAvatarTooltipText());
+}
+
+void AvatarToolbarButton::SetSuppressAvatarButtonState(
+    bool suppress_avatar_button_state) {
+  DCHECK(!IsIncognito());
+  suppress_avatar_button_state_ = suppress_avatar_button_state;
+  UpdateText();
 }
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
@@ -176,6 +185,7 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 }
 
 void AvatarToolbarButton::OnThemeChanged() {
+  ToolbarButton::OnThemeChanged();
   UpdateIcon();
   UpdateText();
 }
@@ -230,7 +240,7 @@ void AvatarToolbarButton::OnProfileNameChanged(
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   UpdateIcon();
 }
@@ -273,6 +283,12 @@ bool AvatarToolbarButton::ShouldShowGenericIcon() const {
     // This can happen if the user deletes the current profile.
     return true;
   }
+
+  // If the profile is using the placeholder avatar, fall back on the themeable
+  // vector icon instead.
+  if (entry->GetAvatarIconIndex() == profiles::GetPlaceholderAvatarIndex())
+    return true;
+
   return entry->GetAvatarIconIndex() == 0 &&
          g_browser_process->profile_manager()
                  ->GetProfileAttributesStorage()
@@ -375,7 +391,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 #if !defined(OS_CHROMEOS)
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager && identity_manager->HasPrimaryAccount() &&
       profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {

@@ -67,6 +67,7 @@ struct WebFloatSize;
 struct WebPluginAction;
 struct WebRect;
 struct WebSize;
+struct WebTextAutosizerPageInfo;
 struct WebWindowFeatures;
 
 class WebView {
@@ -239,16 +240,23 @@ class WebView {
   virtual float MaximumPageScaleFactor() const = 0;
 
   // Sets the offset of the visual viewport within the main frame, in
-  // partial CSS pixels. The offset will be clamped so the visual viewport
+  // fractional CSS pixels. The offset will be clamped so the visual viewport
   // stays within the frame's bounds.
   virtual void SetVisualViewportOffset(const WebFloatPoint&) = 0;
 
   // Gets the visual viewport's current offset within the page's main frame,
-  // in partial CSS pixels.
+  // in fractional CSS pixels.
   virtual WebFloatPoint VisualViewportOffset() const = 0;
 
   // Get the visual viewport's size in CSS pixels.
   virtual WebFloatSize VisualViewportSize() const = 0;
+
+  // Resizes the unscaled (page scale = 1.0) visual viewport. Normally the
+  // unscaled visual viewport is the same size as the main frame. The passed
+  // size becomes the size of the viewport when page scale = 1. This
+  // is used to shrink the visible viewport to allow things like the ChromeOS
+  // virtual keyboard to overlay over content but allow scrolling it into view.
+  virtual void ResizeVisualViewport(const WebSize&) = 0;
 
   // Sets the default minimum, and maximum page scale. These will be overridden
   // by the page or by the overrides below if they are set.
@@ -400,13 +408,6 @@ class WebView {
   virtual void SetBaseBackgroundColorOverride(SkColor) {}
   virtual void ClearBaseBackgroundColorOverride() {}
 
-  // Modal dialog support ------------------------------------------------
-
-  // Call these methods before and after running a nested, modal event loop
-  // to suspend script callbacks and resource loads.
-  BLINK_EXPORT static void WillEnterModalLoop();
-  BLINK_EXPORT static void DidExitModalLoop();
-
   // Scheduling -----------------------------------------------------------
 
   virtual PageScheduler* Scheduler() const = 0;
@@ -490,6 +491,10 @@ class WebView {
 
   // Informs the page that it is inside a portal.
   virtual void SetInsidePortal(bool inside_portal) = 0;
+
+  // Use to transfer TextAutosizer state from the local main frame renderer to
+  // remote main frame renderers.
+  virtual void SetTextAutosizePageInfo(const WebTextAutosizerPageInfo&) {}
 
  protected:
   ~WebView() = default;

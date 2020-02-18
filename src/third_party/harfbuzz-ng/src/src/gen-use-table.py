@@ -197,15 +197,15 @@ def is_BASE_OTHER(U, UISC, UGC):
 def is_CGJ(U, UISC, UGC):
 	return U == 0x034F
 def is_CONS_FINAL(U, UISC, UGC):
-	# Consonant_Initial_Postfixed is new in Unicode 11; not in the spec.
 	return ((UISC == Consonant_Final and UGC != Lo) or
-		UISC == Consonant_Initial_Postfixed or
 		UISC == Consonant_Succeeding_Repha)
 def is_CONS_FINAL_MOD(U, UISC, UGC):
 	#SPEC-DRAFT return  UISC in [Consonant_Final_Modifier, Syllable_Modifier]
 	return  UISC == Syllable_Modifier
 def is_CONS_MED(U, UISC, UGC):
-	return UISC == Consonant_Medial and UGC != Lo
+	# Consonant_Initial_Postfixed is new in Unicode 11; not in the spec.
+	return (UISC == Consonant_Medial and UGC != Lo or
+		UISC == Consonant_Initial_Postfixed)
 def is_CONS_MOD(U, UISC, UGC):
 	return UISC in [Nukta, Gemination_Mark, Consonant_Killer]
 def is_CONS_SUB(U, UISC, UGC):
@@ -214,7 +214,9 @@ def is_CONS_SUB(U, UISC, UGC):
 def is_CONS_WITH_STACKER(U, UISC, UGC):
 	return UISC == Consonant_With_Stacker
 def is_HALANT(U, UISC, UGC):
-	return UISC in [Virama, Invisible_Stacker] and not is_HALANT_OR_VOWEL_MODIFIER(U, UISC, UGC)
+	return (UISC in [Virama, Invisible_Stacker]
+		and not is_HALANT_OR_VOWEL_MODIFIER(U, UISC, UGC)
+		and not is_SAKOT(U, UISC, UGC))
 def is_HALANT_OR_VOWEL_MODIFIER(U, UISC, UGC):
 	# https://github.com/harfbuzz/harfbuzz/issues/1102
 	# https://github.com/harfbuzz/harfbuzz/issues/1379
@@ -240,6 +242,8 @@ def is_Reserved(U, UISC, UGC):
 	return UGC == 'Cn'
 def is_REPHA(U, UISC, UGC):
 	return UISC in [Consonant_Preceding_Repha, Consonant_Prefixed]
+def is_SAKOT(U, UISC, UGC):
+	return U == 0x1A60
 def is_SYM(U, UISC, UGC):
 	if U == 0x25CC: return False #SPEC-DRAFT
 	#SPEC-DRAFT return UGC in [So, Sc] or UISC == Symbol_Letter
@@ -279,6 +283,7 @@ use_mapping = {
 	'Rsv':	is_Reserved,
 	'R':	is_REPHA,
 	'S':	is_SYM,
+	'Sk':	is_SAKOT,
 	'SM':	is_SYM_MOD,
 	'VS':	is_VARIATION_SELECTOR,
 	'V':	is_VOWEL,
@@ -320,7 +325,11 @@ use_positions = {
 	'H': None,
 	'HVM': None,
 	'B': None,
-	'FM': None,
+	'FM': {
+		'Abv': [Top],
+		'Blw': [Bottom],
+		'Pst': [Not_Applicable],
+	},
 	'SUB': None,
 }
 
@@ -359,14 +368,8 @@ def map_to_use(data):
 		# the nasalization marks, maybe only for U+1CE9..U+1CF1.
 		if U == 0x1CED: UISC = Tone_Mark
 
-		# TODO: https://github.com/harfbuzz/harfbuzz/issues/525
-		if U == 0x1A7F: UISC = Consonant_Final
-
 		# TODO: https://github.com/harfbuzz/harfbuzz/issues/1105
 		if U == 0x11134: UISC = Gemination_Mark
-
-		# TODO: https://github.com/harfbuzz/harfbuzz/pull/1399
-		if U == 0x111C9: UISC = Consonant_Final
 
 		values = [k for k,v in items if v(U,UISC,UGC)]
 		assert len(values) == 1, "%s %s %s %s" % (hex(U), UISC, UGC, values)
@@ -415,6 +418,10 @@ for h in headers:
 	for l in h:
 		print (" * %s" % (l.strip()))
 print (" */")
+print ()
+print ('#include "hb.hh"')
+print ()
+print ('#ifndef HB_NO_OT_SHAPE')
 print ()
 print ('#include "hb-ot-shape-complex-use.hh"')
 print ()
@@ -530,6 +537,8 @@ for k,v in sorted(use_positions.items()):
 		tag = k + suf
 		print ("#undef %s" % tag)
 print ()
+print ()
+print ('#endif')
 print ("/* == End of generated table == */")
 
 # Maintain at least 50% occupancy in the table */

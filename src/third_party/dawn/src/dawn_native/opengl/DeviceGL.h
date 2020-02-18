@@ -20,8 +20,8 @@
 #include "common/Platform.h"
 #include "dawn_native/Device.h"
 #include "dawn_native/opengl/Forward.h"
-
-#include "glad/glad.h"
+#include "dawn_native/opengl/GLFormat.h"
+#include "dawn_native/opengl/OpenGLFunctions.h"
 
 #include <queue>
 
@@ -34,13 +34,21 @@ namespace dawn_native { namespace opengl {
 
     class Device : public DeviceBase {
       public:
-        Device(AdapterBase* adapter, const DeviceDescriptor* descriptor);
+        Device(AdapterBase* adapter,
+               const DeviceDescriptor* descriptor,
+               const OpenGLFunctions& functions);
         ~Device();
+
+        // Contains all the OpenGL entry points, glDoFoo is called via device->gl.DoFoo.
+        const OpenGLFunctions gl;
+
+        const GLFormat& GetGLFormat(const Format& format);
 
         void SubmitFenceSync();
 
         // Dawn API
-        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
+        CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder,
+                                               const CommandBufferDescriptor* descriptor) override;
 
         Serial GetCompletedCommandSerial() const final override;
         Serial GetLastSubmittedCommandSerial() const final override;
@@ -82,6 +90,8 @@ namespace dawn_native { namespace opengl {
         Serial mCompletedSerial = 0;
         Serial mLastSubmittedSerial = 0;
         std::queue<std::pair<GLsync, Serial>> mFencesInFlight;
+
+        GLFormatTable mFormatTable;
     };
 
 }}  // namespace dawn_native::opengl

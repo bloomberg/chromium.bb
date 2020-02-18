@@ -613,11 +613,17 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t total,
                                bool is_parallelizable,
                                bool is_parallel_download_enabled,
-                               DownloadSource download_source) {
+                               DownloadSource download_source,
+                               bool post_content_length_mismatch) {
   RecordDownloadCountWithSource(INTERRUPTED_COUNT, download_source);
   if (is_parallelizable) {
     RecordParallelizableDownloadCount(INTERRUPTED_COUNT,
                                       is_parallel_download_enabled);
+  }
+
+  if (post_content_length_mismatch) {
+    base::UmaHistogramSparse(
+        "Download.ResumptionAfterContentLengthMismatch.Reason", reason);
   }
 
   std::vector<base::HistogramBase::Sample> samples =
@@ -644,8 +650,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   bool unknown_size = total <= 0;
   int64_t received_kb = received / 1024;
   int64_t total_kb = total / 1024;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK", received_kb,
-                              1, kMaxKb, kBuckets);
   if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
@@ -662,31 +666,9 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
     }
     if (delta_bytes == 0) {
       RecordDownloadCountWithSource(INTERRUPTED_AT_END_COUNT, download_source);
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedAtEndReason",
-                                       reason, samples);
-
       if (is_parallelizable) {
         RecordParallelizableDownloadCount(INTERRUPTED_AT_END_COUNT,
                                           is_parallel_download_enabled);
-        UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-            "Download.InterruptedAtEndReason.ParallelDownload", reason,
-            samples);
-      }
-    } else if (delta_bytes > 0) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
-                                  delta_bytes, 1, kMaxKb, kBuckets);
-      if (is_parallel_download_enabled) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Download.InterruptedOverrunBytes.ParallelDownload", delta_bytes, 1,
-            kMaxKb, kBuckets);
-      }
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
-                                  -delta_bytes, 1, kMaxKb, kBuckets);
-      if (is_parallel_download_enabled) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Download.InterruptedUnderrunBytes.ParallelDownload", -delta_bytes,
-            1, kMaxKb, kBuckets);
       }
     }
   }
@@ -929,6 +911,54 @@ void RecordDownloadVideoType(const std::string& mime_type_string) {
                             DOWNLOAD_VIDEO_MAX);
 }
 
+// These histograms summarize download mime-types. The same data is recorded in
+// a few places, as they exist to sanity-check and understand other metrics.
+const char* const kDownloadMetricsVerificationNameItemSecure =
+    "Download.InsecureBlocking.Verification.Item.Secure";
+const char* const kDownloadMetricsVerificationNameItemInsecure =
+    "Download.InsecureBlocking.Verification.Item.Insecure";
+const char* const kDownloadMetricsVerificationNameItemOther =
+    "Download.InsecureBlocking.Verification.Item.Other";
+const char* const kDownloadMetricsVerificationNameManagerSecure =
+    "Download.InsecureBlocking.Verification.Manager.Secure";
+const char* const kDownloadMetricsVerificationNameManagerInsecure =
+    "Download.InsecureBlocking.Verification.Manager.Insecure";
+const char* const kDownloadMetricsVerificationNameManagerOther =
+    "Download.InsecureBlocking.Verification.Manager.Other";
+
+const char* GetDownloadValidationMetricName(
+    const DownloadMetricsCallsite& callsite,
+    const DownloadConnectionSecurity& state) {
+  DCHECK(callsite == DownloadMetricsCallsite::kDownloadItem ||
+         callsite == DownloadMetricsCallsite::kMixContentDownloadBlocking);
+
+  switch (state) {
+    case DOWNLOAD_SECURE:
+    case DOWNLOAD_TARGET_BLOB:
+    case DOWNLOAD_TARGET_DATA:
+    case DOWNLOAD_TARGET_FILE:
+      if (callsite == DownloadMetricsCallsite::kDownloadItem)
+        return kDownloadMetricsVerificationNameItemSecure;
+      return kDownloadMetricsVerificationNameManagerSecure;
+    case DOWNLOAD_TARGET_INSECURE:
+    case DOWNLOAD_REDIRECT_INSECURE:
+    case DOWNLOAD_REDIRECT_TARGET_INSECURE:
+      if (callsite == DownloadMetricsCallsite::kDownloadItem)
+        return kDownloadMetricsVerificationNameItemInsecure;
+      return kDownloadMetricsVerificationNameManagerInsecure;
+    case DOWNLOAD_TARGET_OTHER:
+    case DOWNLOAD_TARGET_FILESYSTEM:
+    case DOWNLOAD_TARGET_FTP:
+      if (callsite == DownloadMetricsCallsite::kDownloadItem)
+        return kDownloadMetricsVerificationNameItemOther;
+      return kDownloadMetricsVerificationNameManagerOther;
+    case DOWNLOAD_CONNECTION_SECURITY_MAX:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace
 
 DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
@@ -1055,8 +1085,16 @@ void RecordParallelDownloadRequestCount(int request_count) {
                               request_count, 1, 10, 11);
 }
 
-void RecordParallelDownloadAddStreamSuccess(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Download.ParallelDownloadAddStreamSuccess", success);
+void RecordParallelDownloadAddStreamSuccess(bool success,
+                                            bool support_range_request) {
+  if (support_range_request) {
+    base::UmaHistogramBoolean("Download.ParallelDownloadAddStreamSuccess",
+                              success);
+  } else {
+    base::UmaHistogramBoolean(
+        "Download.ParallelDownloadAddStreamSuccess.NoAcceptRangesHeader",
+        success);
+  }
 }
 
 void RecordParallelizableContentLength(int64_t content_length) {
@@ -1118,10 +1156,6 @@ void RecordParallelizableDownloadStats(
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.EstimatedTimeSavedWithParallelDownload",
         time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Download.EstimatedTimeWastedWithParallelDownload",
-        -time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
   }
 }
 
@@ -1193,6 +1227,14 @@ DownloadConnectionSecurity CheckDownloadConnectionSecurity(
   return state;
 }
 
+void RecordDownloadValidationMetrics(DownloadMetricsCallsite callsite,
+                                     DownloadConnectionSecurity state,
+                                     DownloadContent file_type) {
+  base::UmaHistogramEnumeration(
+      GetDownloadValidationMetricName(callsite, state), file_type,
+      DownloadContent::MAX);
+}
+
 void RecordDownloadConnectionSecurity(const GURL& download_url,
                                       const std::vector<GURL>& url_chain) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -1238,11 +1280,17 @@ void RecordDownloadSourcePageTransitionType(
       ui::PAGE_TRANSITION_LAST_CORE + 1);
 }
 
-void RecordDownloadHttpResponseCode(int response_code) {
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      "Download.HttpResponseCode",
-      net::HttpUtil::MapStatusCodeForHistogram(response_code),
-      net::HttpUtil::GetStatusCodesForHistogram());
+void RecordDownloadHttpResponseCode(int response_code,
+                                    bool is_background_mode) {
+  int status_code = net::HttpUtil::MapStatusCodeForHistogram(response_code);
+  std::vector<int> status_codes = net::HttpUtil::GetStatusCodesForHistogram();
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.HttpResponseCode", status_code,
+                                   status_codes);
+  if (is_background_mode) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Download.HttpResponseCode.BackgroundDownload", status_code,
+        status_codes);
+  }
 }
 
 void RecordInProgressDBCount(InProgressDBCountTypes type) {
@@ -1267,6 +1315,13 @@ void RecordDownloadResumed(bool has_strong_validators) {
                             has_strong_validators);
 }
 
+void RecordDownloadConnectionInfo(
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
+  base::UmaHistogramEnumeration(
+      "Download.ConnectionInfo", connection_info,
+      net::HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
+}
+
 #if defined(OS_ANDROID)
 void RecordFirstBackgroundDownloadInterruptReason(
     DownloadInterruptReason reason,
@@ -1277,6 +1332,17 @@ void RecordFirstBackgroundDownloadInterruptReason(
   else
     base::UmaHistogramSparse("MobileDownload.FirstBackground.Reason", reason);
 }
+
+void RecordBackgroundTargetDeterminationResult(
+    BackgroudTargetDeterminationResultTypes type) {
+  base::UmaHistogramEnumeration(
+      "MobileDownload.Background.TargetDeterminationResult", type);
+}
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+void RecordWinFileMoveError(int os_error) {
+  base::UmaHistogramSparse("Download.WinFileMoveError", os_error);
+}
+#endif  // defined(OS_WIN)
 }  // namespace download

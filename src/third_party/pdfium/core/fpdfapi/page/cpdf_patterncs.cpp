@@ -26,7 +26,7 @@ uint32_t CPDF_PatternCS::v_Load(CPDF_Document* pDoc,
   if (pBaseCS == m_pArray)
     return 0;
 
-  CPDF_DocPageData* pDocPageData = pDoc->GetPageData();
+  auto* pDocPageData = CPDF_DocPageData::FromDocument(pDoc);
   m_pBaseCS = pDocPageData->GetColorSpaceGuarded(pBaseCS, nullptr, pVisited);
   if (!m_pBaseCS)
     return 1;
@@ -60,7 +60,7 @@ bool CPDF_PatternCS::GetPatternRGB(const PatternValue& value,
                                    float* R,
                                    float* G,
                                    float* B) const {
-  if (m_pBaseCS && m_pBaseCS->GetRGB(value.m_Comps, R, G, B))
+  if (m_pBaseCS && m_pBaseCS->GetRGB(value.GetComps().data(), R, G, B))
     return true;
 
   *R = 0.75f;

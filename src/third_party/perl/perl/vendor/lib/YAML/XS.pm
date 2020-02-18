@@ -1,8 +1,8 @@
-use 5.008001;
-use strict;
+use strict; use warnings;
 
 package YAML::XS;
-$YAML::XS::VERSION = '0.38';
+our $VERSION = '0.78';
+
 use base 'Exporter';
 
 @YAML::XS::EXPORT = qw(Load Dump);
@@ -10,6 +10,7 @@ use base 'Exporter';
 %YAML::XS::EXPORT_TAGS = (
     all => [qw(Dump Load LoadFile DumpFile)],
 );
+our ($UseCode, $DumpCode, $LoadCode, $Boolean, $LoadBlessed, $Indent);
 # $YAML::XS::UseCode = 0;
 # $YAML::XS::DumpCode = 0;
 # $YAML::XS::LoadCode = 0;
@@ -17,11 +18,12 @@ use base 'Exporter';
 $YAML::XS::QuoteNumericStrings = 1;
 
 use YAML::XS::LibYAML qw(Load Dump);
+use Scalar::Util qw/ openhandle /;
 
 sub DumpFile {
     my $OUT;
     my $filename = shift;
-    if (ref $filename eq 'GLOB') {
+    if (openhandle $filename) {
         $OUT = $filename;
     }
     else {
@@ -39,7 +41,7 @@ sub DumpFile {
 sub LoadFile {
     my $IN;
     my $filename = shift;
-    if (ref $filename eq 'GLOB') {
+    if (openhandle $filename) {
         $IN = $filename;
     }
     else {
@@ -49,15 +51,11 @@ sub LoadFile {
     return YAML::XS::LibYAML::Load(do { local $/; local $_ = <$IN> });
 }
 
-# XXX Figure out how to lazily load this module. 
-# So far I've tried using the C function:
-#      load_module(PERL_LOADMOD_NOIMPORT, newSVpv("B::Deparse", 0), NULL);
-# But it didn't seem to work.
-use B::Deparse;
 
 # XXX The following code should be moved from Perl to C.
 $YAML::XS::coderef2text = sub {
     my $coderef = shift;
+    require B::Deparse;
     my $deparse = B::Deparse->new();
     my $text;
     eval {
@@ -118,94 +116,25 @@ use constant _QR_MAP => {
 };
 
 sub __qr_loader {
-    if ($_[0] =~ /\A  \(\?  ([ixsm]*)  (?:-  (?:[ixsm]*))?  : (.*) \)  \z/x) {
-        my $sub = _QR_MAP->{$1} || _QR_MAP->{''};
-        &$sub($2);
+    if ($_[0] =~ /\A  \(\?  ([\^uixsm]*)  (?:-  (?:[ixsm]*))?  : (.*) \)  \z/x) {
+        my ($flags, $re) = ($1, $2);
+        $flags =~ s/^\^//;
+        $flags =~ tr/u//d;
+        my $sub = _QR_MAP->{$flags} || _QR_MAP->{''};
+        my $qr = &$sub($re);
+        return $qr;
     }
-    else {
-        qr/$_[0]/;
+    return qr/$_[0]/;
+}
+
+sub __code_loader {
+    my ($string) = @_;
+    my $sub = eval "sub $string";
+    if ($@) {
+        warn "YAML::XS failed to load sub: $@";
+        return sub {};
     }
+    return $sub;
 }
 
 1;
-
-=encoding utf8
-
-=head1 NAME
-
-YAML::XS - Perl YAML Serialization using XS and libyaml
-
-=head1 SYNOPSIS
-
-    use YAML::XS;
-
-    my $yaml = Dump [ 1..4 ];
-    my $array = Load $yaml;
-
-=head1 DESCRIPTION
-
-Kirill Siminov's C<libyaml> is arguably the best YAML implementation.
-The C library is written precisely to the YAML 1.1 specification. It was
-originally bound to Python and was later bound to Ruby.
-
-This module is a Perl XS binding to libyaml which offers Perl the best YAML
-support to date.
-
-This module exports the functions C<Dump>, C<Load>, C<DumpFile> and
-C<LoadFile>. These functions are intended to work exactly like C<YAML.pm>'s
-corresponding functions.
-
-=head1 CONFIGURATION
-
-=over 4
-
-=item C<$YAML::XS::UseCode>
-
-=item C<$YAML::XS::DumpCode>
-
-=item C<$YAML::XS::LoadCode>
-
-If enabled supports deparsing and evaling of code blocks.
-
-=item C<$YAML::XS::QuoteNumericStrings>
-
-When true (the default) strings that look like numbers but have not been
-numified will be quoted when dumping.
-
-This ensures leading that things like leading zeros and other formatting
-are preserved.
-
-=back
-
-=head1 USING YAML::XS WITH UNICODE
-
-Handling unicode properly in Perl can be a pain. YAML::XS only deals
-with streams of utf8 octets. Just remember this:
-
-    $perl = Load($utf8_octets);
-    $utf8_octets = Dump($perl);
-
-There are many, many places where things can go wrong with unicode.
-If you are having problems, use Devel::Peek on all the possible
-data points.
-
-=head1 SEE ALSO
-
- * YAML.pm
- * YAML::Syck
- * YAML::Tiny
-
-=head1 AUTHOR
-
-Ingy döt Net <ingy@cpan.org>
-
-=head1 COPYRIGHT
-
-Copyright (c) 2007, 2008, 2010, 2011. Ingy döt Net.
-
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-See http://www.perl.com/perl/misc/Artistic.html
-
-=cut

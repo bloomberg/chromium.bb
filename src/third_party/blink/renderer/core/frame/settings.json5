@@ -484,6 +484,12 @@
       initial: false,
     },
 
+    // The current state of caret browsing mode.
+    {
+      name: "caretBrowsingEnabled",
+      initial: false,
+    },
+
     // Font scale factor for accessibility, applied as part of text autosizing.
     {
       name: "accessibilityFontScaleFactor",
@@ -771,6 +777,18 @@
       name: "textTrackTextSize",
       type: "String",
     },
+    {
+      name: "textTrackWindowColor",
+      type: "String",
+    },
+    {
+      name: "textTrackWindowPadding",
+      type: "String",
+    },
+    {
+      name: "textTrackWindowRadius",
+      type: "String",
+    },
 
     // Margin for title-safe placement of cues with overscan, gives top and bottom margin size as
     // percentage of video element height (for horizontal text) into which cues will not be placed.
@@ -902,7 +920,7 @@
     },
     {
       name: "darkModeImagePolicy",
-      initial: "DarkModeImagePolicy::kFilterAll",
+      initial: "DarkModeImagePolicy::kFilterNone",
       type: "DarkModeImagePolicy",
       invalidate: "Paint",
     },
@@ -913,9 +931,15 @@
       invalidate: "Paint",
     },
     {
-      name: "darkModeTextPolicy",
-      initial: "DarkModeTextPolicy::kInvertAll",
-      type: "DarkModeTextPolicy",
+      name: "darkModeTextBrightnessThreshold",
+      initial: "256",
+      type: "int",
+      invalidate: "Paint",
+    },
+    {
+      name: "darkModeBackgroundBrightnessThreshold",
+      initial: "0",
+      type: "int",
       invalidate: "Paint",
     },
     {
@@ -947,7 +971,7 @@
     //
     {
       name: "lazyFrameLoadingDistanceThresholdPxUnknown",
-      initial: 6000,
+      initial: 4000,
       type: "int",
     },
     {
@@ -981,7 +1005,7 @@
     //
     {
       name: "lazyImageLoadingDistanceThresholdPxUnknown",
-      initial: 5000,
+      initial: 3000,
       type: "int",
     },
     {
@@ -1029,6 +1053,14 @@
     {
       name: "DontSendKeyEventsToJavascript",
       initial: false,
+    },
+    // Forced colors from the OS/application passed to the renderer for
+    // evaluating the forced-colors media query.
+    {
+      name: "forcedColors",
+      initial: "ForcedColors::kNone",
+      invalidate: "ColorScheme",
+      type: "ForcedColors",
     },
   ],
 }

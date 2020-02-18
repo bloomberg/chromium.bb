@@ -7,6 +7,7 @@ module blink.mojom;
 import "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom";
 import "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom";
+import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 
 // Union representing either a file or a directory handle. Used in APIs that
 // can return arbitrary handles.
@@ -30,19 +31,26 @@ struct NativeFileSystemEntry {
 // fact that our paths really aren't base::FilePath, but instead are virtual
 // paths).
 interface NativeFileSystemDirectoryHandle {
-  // Returns a file with the given |name| that is a child of this directory. If
-  // no such file exists, and |create| is true, the file is first created.
-  // Returns an error if the operation fails, or a handle to the newly created
-  // file if the operation succeeds.
-  GetFile(string name, bool create) =>
+  // Queries the current permission status for this handle.
+  GetPermissionStatus(bool writable) => (PermissionStatus status);
+
+  // Requests read and/or write permission for this handle. Returns the new
+  // permission status for this handle.
+  RequestPermission(bool writable) => (PermissionStatus status);
+
+  // Returns a file with the given |basename| that is a child of this
+  // directory. If no such file exists, and |create| is true, the file is first
+  // created. Returns an error if the operation fails, or a handle to the newly
+  // created file if the operation succeeds.
+  GetFile(string basename, bool create) =>
       (NativeFileSystemError result, NativeFileSystemFileHandle? file);
 
-  // Returns a directory with the given |name| that is a child of this
+  // Returns a directory with the given |basename| that is a child of this
   // directory. If no such directory exists, and |create| is true, the directory
   // is first created.
   // Returns an error if the operation fails, or a handle to the newly created
   // directory if the operation succeeds.
-  GetDirectory(string name, bool create) =>
+  GetDirectory(string basename, bool create) =>
       (NativeFileSystemError result, NativeFileSystemDirectoryHandle? directory);
 
   // Returns all the direct children of this directory.
@@ -50,24 +58,9 @@ interface NativeFileSystemDirectoryHandle {
   // until all entries have been retrieved.
   GetEntries() => (NativeFileSystemError result, array<NativeFileSystemEntry> entries);
 
-  // Creates a new file or directory, or overwrites an existing one in this
-  // directory by moving the file or directory represented by |source|. The
-  // new file or directory will be named |name|.
-  // Returns an error if the operation fails, or a handle to the newly created
-  // file or directory if the operation succeeds.
-  MoveFrom(NativeFileSystemTransferToken source, string name) =>
-      (NativeFileSystemError result, NativeFileSystemEntry? entry);
-
-  // Creates a new file or directory, or overwrites an existing one in this
-  // directory by copying the file or directory represented by |source|. The
-  // new file or directory will be named |name|.
-  // Returns an error if the operation fails, or a handle to the newly created
-  // file or directory if the operation succeeds.
-  CopyFrom(NativeFileSystemTransferToken source, string name) =>
-      (NativeFileSystemError result, NativeFileSystemEntry? entry);
-
-  // Deletes this directory. To delete recursively, set |recursive| to true.
-  Remove(bool recurse) => (NativeFileSystemError result);
+  // Deletes an entry which is a child of this directory.
+  // To delete recursively, set |recurse| to true.
+  RemoveEntry(string basename, bool recurse) => (NativeFileSystemError result);
 
   // Create a TransferToken for this directory. This token can be used to pass
   // a reference to this directory to other methods, for example to copy or move

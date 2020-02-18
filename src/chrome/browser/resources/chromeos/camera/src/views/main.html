@@ -9,6 +9,7 @@
     <title>&#xfeff;</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="../css/main.css">
+    <script src="../js/browser_proxy/browser_proxy.js"></script>
     <script src="../js/google-analytics-bundle.js"></script>
     <script src="../js/metrics.js"></script>
     <script src="../js/util.js"></script>
@@ -19,6 +20,9 @@
     <script src="../js/sound.js"></script>
     <script src="../js/scrollbar.js"></script>
     <script src="../js/gallerybutton.js"></script>
+    <script src="../js/device/camera3_device_info.js"></script>
+    <script src="../js/device/constraints_preferrer.js"></script>
+    <script src="../js/device/device_info_updater.js"></script>
     <script src="../js/models/filenamer.js"></script>
     <script src="../js/models/gallery.js"></script>
     <script src="../js/models/filesystem.js"></script>
@@ -36,7 +40,6 @@
     <script src="../js/views/camera/options.js"></script>
     <script src="../js/views/camera/preview.js"></script>
     <script src="../js/views/camera/recordtime.js"></script>
-    <script src="../js/views/camera/resolution_preference.js"></script>
     <script src="../js/views/camera/timertick.js"></script>
     <script src="../js/views/camera/modes.js"></script>
     <script src="../js/views/dialog.js"></script>
@@ -131,6 +134,8 @@
                data-key="toggleGrid">
         <input type="checkbox" id="toggle-mirror" tabindex="0"
                i18n-label="toggle_mirror_button" data-state="mirror" checked>
+        <input type="checkbox" id="toggle-fps" tabindex="0"
+               i18n-label="toggle_60fps_button">
       </div>
       <div class="top-stripe left-stripe buttons">
         <button id="open-settings" tabindex="0"

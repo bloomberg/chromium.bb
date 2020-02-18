@@ -26,6 +26,7 @@
  *   BASIC: (undefined|!settings.Route),
  *   BLUETOOTH: (undefined|!settings.Route),
  *   BLUETOOTH_DEVICES: (undefined|!settings.Route),
+ *   CAPTIONS: (undefined|!settings.Route),
  *   CERTIFICATES: (undefined|!settings.Route),
  *   CHANGE_PICTURE: (undefined|!settings.Route),
  *   CHROME_CLEANUP: (undefined|!settings.Route),
@@ -42,6 +43,7 @@
  *   EDIT_DICTIONARY: (undefined|!settings.Route),
  *   EXTERNAL_STORAGE_PREFERENCES: (undefined|!settings.Route),
  *   FINGERPRINT: (undefined|!settings.Route),
+ *   FILES: (undefined|!settings.Route),
  *   FONTS: (undefined|!settings.Route),
  *   GOOGLE_ASSISTANT: (undefined|!settings.Route),
  *   IMPORT_DATA: (undefined|!settings.Route),
@@ -53,9 +55,11 @@
  *   KEYBOARD: (undefined|!settings.Route),
  *   KNOWN_NETWORKS: (undefined|!settings.Route),
  *   LANGUAGES: (undefined|!settings.Route),
+ *   LANGUAGES_DETAILS: (undefined|!settings.Route),
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
+ *   MANAGE_SWITCH_ACCESS_SETTINGS: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
  *   MULTIDEVICE: (undefined|!settings.Route),
  *   MULTIDEVICE_FEATURES: (undefined|!settings.Route),
@@ -64,6 +68,7 @@
  *   PASSWORDS: (undefined|!settings.Route),
  *   PAYMENTS: (undefined|!settings.Route),
  *   PEOPLE: (undefined|!settings.Route),
+ *   PERSONALIZATION: (undefined|!settings.Route),
  *   PLUGIN_VM: (undefined|!settings.Route),
  *   PLUGIN_VM_DETAILS: (undefined|!settings.Route),
  *   PLUGIN_VM_SHARED_PATHS: (undefined|!settings.Route),
@@ -252,6 +257,7 @@ cr.define('settings', function() {
     r.MULTIDEVICE_FEATURES = r.MULTIDEVICE.createChild('/multidevice/features');
     r.SMART_LOCK =
         r.MULTIDEVICE_FEATURES.createChild('/multidevice/features/smartLock');
+
     // </if>
 
     if (pageVisibility.appearance !== false) {
@@ -292,10 +298,11 @@ cr.define('settings', function() {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
       r.CROSTINI_EXPORT_IMPORT =
-          r.CROSTINI.createChild('/crostini/exportImport');
-      r.CROSTINI_SHARED_PATHS = r.CROSTINI.createChild('/crostini/sharedPaths');
+          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      r.CROSTINI_SHARED_PATHS =
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =
-          r.CROSTINI.createChild('/crostini/sharedUsbDevices');
+          r.CROSTINI_DETAILS.createChild('/crostini/sharedUsbDevices');
     }
 
     if (loadTimeData.valueExists('showPluginVm') &&
@@ -320,7 +327,14 @@ cr.define('settings', function() {
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
       // </if>
       // <if expr="chromeos">
-      r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
+      // TODO(crbug.com/950007): Remove when SplitSettings is the default.
+      if (loadTimeData.getBoolean('isOSSettings')) {
+        r.PERSONALIZATION =
+            r.BASIC.createSection('/personalization', 'personalization');
+        r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
+      } else {
+        r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
+      }
       r.ACCOUNTS = r.PEOPLE.createChild('/accounts');
       r.ACCOUNT_MANAGER = r.PEOPLE.createChild('/accountManager');
       r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
@@ -357,16 +371,9 @@ cr.define('settings', function() {
         }
       }
 
-      if (loadTimeData.getBoolean('enableSiteSettings')) {
-        r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
-        r.SITE_SETTINGS_SITE_DETAILS =
-            r.SITE_SETTINGS_ALL.createChild('/content/siteDetails');
-      } else {
-        // When there is no "All Sites", pressing 'back' from "Site Details"
-        // should return to "Content Settings".
-        r.SITE_SETTINGS_SITE_DETAILS =
-            r.SITE_SETTINGS.createChild('/content/siteDetails');
-      }
+      r.SITE_SETTINGS_ALL = r.SITE_SETTINGS.createChild('all');
+      r.SITE_SETTINGS_SITE_DETAILS =
+          r.SITE_SETTINGS_ALL.createChild('/content/siteDetails');
 
       r.SITE_SETTINGS_HANDLERS = r.SITE_SETTINGS.createChild('/handlers');
 
@@ -426,7 +433,13 @@ cr.define('settings', function() {
 
       r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
       // <if expr="chromeos">
-      r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
+      if (loadTimeData.getBoolean('isOSSettings')) {
+        r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
+        r.INPUT_METHODS =
+            r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
+      } else {
+        r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
+      }
       // </if>
       // <if expr="not is_macosx">
       r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
@@ -435,7 +448,14 @@ cr.define('settings', function() {
       if (pageVisibility.downloads !== false) {
         r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
         // <if expr="chromeos">
-        r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+        // TODO(crbug.com/950007): Make unconditional and remove 'else' block
+        //     when SplitSettings is the default.
+        if (loadTimeData.getBoolean('isOSSettings')) {
+          r.FILES = r.ADVANCED.createSection('/files', 'files');
+          r.SMB_SHARES = r.FILES.createChild('/smbShares');
+        } else {
+          r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+        }
         // </if>
       }
 
@@ -446,9 +466,28 @@ cr.define('settings', function() {
       // </if>
 
       r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+
+      // <if expr="chromeos or is_linux">
+      if (loadTimeData.getBoolean('enableCaptionSettings')) {
+        r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
+      }
+      // </if>
+
+      // <if expr="is_win">
+      if (loadTimeData.getBoolean('enableCaptionSettings') &&
+          !loadTimeData.getBoolean('isWindows10OrNewer')) {
+        r.CAPTIONS = r.ACCESSIBILITY.createChild('/captions');
+      }
+      // </if>
+
       // <if expr="chromeos">
       r.MANAGE_ACCESSIBILITY =
           r.ACCESSIBILITY.createChild('/manageAccessibility');
+      if (loadTimeData.getBoolean(
+              'showExperimentalAccessibilitySwitchAccess')) {
+        r.MANAGE_SWITCH_ACCESS_SETTINGS = r.MANAGE_ACCESSIBILITY.createChild(
+            '/manageAccessibility/switchAccess');
+      }
       r.MANAGE_TTS_SETTINGS =
           r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
       // </if>
@@ -476,7 +515,10 @@ cr.define('settings', function() {
     // "About" is the only section in About, but we still need to create the
     // route in order to show the subpage on Chrome OS.
     r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
-    r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
+    // TODO(aee): Remove once this file is forked.
+    if (loadTimeData.getBoolean('showOSSettings')) {
+      r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
+    }
     // </if>
 
     return r;

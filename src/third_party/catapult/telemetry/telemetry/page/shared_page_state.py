@@ -4,6 +4,7 @@
 
 import logging
 import os
+import shutil
 
 from telemetry.core import exceptions
 from telemetry.core import platform as platform_module
@@ -51,7 +52,6 @@ class SharedPageState(story_module.SharedState):
     self._finder_options = finder_options
 
     self._first_browser = True
-    self._previous_page = None
     self._current_page = None
     self._current_tab = None
 
@@ -82,7 +82,7 @@ class SharedPageState(story_module.SharedState):
   def browser(self):
     return self._browser
 
-  def DumpStateUponFailure(self, page, results):
+  def DumpStateUponStoryRunFailure(self, results):
     # Dump browser standard output and log.
     if self._browser:
       self._browser.DumpStateUponFailure()
@@ -93,15 +93,15 @@ class SharedPageState(story_module.SharedState):
     if self._finder_options.browser_options.take_screenshot_for_failed_page:
       fh = screenshot.TryCaptureScreenShot(self.platform, self._current_tab)
       if fh is not None:
-        results.AddArtifact(page.name, 'screenshot', fh)
+        with results.CaptureArtifact('screenshot') as path:
+          shutil.move(fh.GetAbsPath(), path)
     else:
       logging.warning('Taking screenshots upon failures disabled.')
 
   def DidRunStory(self, results):
     self._AllowInteractionForStage('after-run-story')
     try:
-      self._previous_page = None
-      if self.ShouldStopBrowserAfterStoryRun(self._current_page):
+      if not self.ShouldReuseBrowserForAllStoryRuns():
         self._StopBrowser()
       elif self._current_tab:
         # We might hang while trying to close the connection, and need to
@@ -110,29 +110,27 @@ class SharedPageState(story_module.SharedState):
         try:
           if self._current_tab.IsAlive():
             self._current_tab.CloseConnections()
-          self._previous_page = self._current_page
         except Exception as exc: # pylint: disable=broad-except
           logging.warning(
               '%s raised while closing tab connections; tab will be closed.',
               type(exc).__name__)
           self._current_tab.Close()
       self._interval_profiling_controller.GetResults(
-          self._current_page.name, self._current_page.file_safe_name, results)
+          self._current_page.file_safe_name, results)
     finally:
       self._current_page = None
       self._current_tab = None
 
-  def ShouldStopBrowserAfterStoryRun(self, story):
-    """Specify whether the browser should be closed after running a story.
+  def ShouldReuseBrowserForAllStoryRuns(self):
+    """Whether a single browser instance should be reused to run all stories.
 
-    Defaults to always closing the browser on all platforms to help keeping
-    story runs independent of each other; except on ChromeOS where restarting
-    the browser is expensive.
+    This should return False in most situations in order to help maitain
+    independence between measurements taken on different story runs.
 
-    Subclasses may override this method to change this behavior.
+    The default implementation only allows reusing the browser in ChromeOs,
+    where bringing up the browser for each story is expensive.
     """
-    del story
-    return self.platform.GetOSName() != 'chromeos'
+    return self.platform.GetOSName() == 'chromeos'
 
   @property
   def platform(self):
@@ -182,12 +180,10 @@ class SharedPageState(story_module.SharedState):
       # benchmarks.
       self.platform.tracing_controller.ClearStateIfNeeded()
 
-    page_set = page.page_set
     self._current_page = page
 
-    started_browser = not self.browser
-
-    archive_path = page_set.WprFilePathForStory(page, self.platform.GetOSName())
+    archive_path = page.story_set.WprFilePathForStory(
+        page, self.platform.GetOSName())
     # TODO(nednguyen, perezju): Ideally we should just let the network
     # controller raise an exception when the archive_path is not found.
     if archive_path is not None and not os.path.isfile(archive_path):
@@ -196,27 +192,22 @@ class SharedPageState(story_module.SharedState):
     self.platform.network_controller.StartReplay(
         archive_path, page.make_javascript_deterministic, self._extra_wpr_args)
 
-    if not self.browser:
+    reusing_browser = self.browser is not None
+    if not reusing_browser:
       self._StartBrowser(page)
+
     if self.browser.supports_tab_control:
-      # Create a tab if there's none.
-      if len(self.browser.tabs) == 0:
-        self.browser.tabs.New()
-
-      # Ensure only one tab is open.
-      while len(self.browser.tabs) > 1:
-        self.browser.tabs[-1].Close()
-
-      # Don't close the last tab on android as some tests require the last tab
-      # not to be closed.
-      should_close_last_tab = self.platform.GetOSName() != 'android'
-
-      # If we didn't start the browser, then there is a single tab left from the
-      # previous story. The tab may have some state that may effect the next
-      # story. Close it to reset the state. Tab.Close(), when there is only one
-      # tab left, creates a new tab and closes the old tab.
-      if not started_browser and should_close_last_tab:
-        self.browser.tabs[-1].Close()
+      if reusing_browser:
+        # Try to close all previous tabs to maintain some independence between
+        # individual story runs. Note that the final tab.Close(keep_one=True)
+        # will create a fresh new tab before the last one is closed.
+        while len(self.browser.tabs) > 1:
+          self.browser.tabs[-1].Close()
+        self.browser.tabs[-1].Close(keep_one=True)
+      else:
+        # Create a tab if there's none.
+        if len(self.browser.tabs) == 0:
+          self.browser.tabs.New()
 
       # Must wait for tab to commit otherwise it can commit after the next
       # navigation has begun and RenderFrameHostManager::DidNavigateMainFrame()
@@ -224,13 +215,12 @@ class SharedPageState(story_module.SharedState):
       # the first navigation in a PageSet freezing indefinitely because the
       # navigation was silently canceled when |self.browser.tabs[0]| was
       # committed.
-      if started_browser or should_close_last_tab:
-        self.browser.tabs[0].WaitForDocumentReadyStateToBeComplete()
+      self.browser.tabs[0].WaitForDocumentReadyStateToBeComplete()
 
     # Reset traffic shaping to speed up cache temperature setup.
     self.platform.network_controller.UpdateTrafficSettings(0, 0, 0)
     cache_temperature.EnsurePageCacheTemperature(
-        self._current_page, self.browser, self._previous_page)
+        self._current_page, self.browser)
     if self._current_page.traffic_setting != traffic_setting.NONE:
       s = traffic_setting.NETWORK_CONFIGS[self._current_page.traffic_setting]
       self.platform.network_controller.UpdateTrafficSettings(
@@ -244,8 +234,7 @@ class SharedPageState(story_module.SharedState):
     return self.CanRunOnBrowser(browser_info_module.BrowserInfo(self.browser),
                                 page)
 
-  def CanRunOnBrowser(self, browser_info,
-                      page):  # pylint: disable=unused-argument
+  def CanRunOnBrowser(self, browser_info, page):
     """Override this to return whether the browser brought up by this state
     instance is suitable for running the given page.
 
@@ -272,11 +261,8 @@ class SharedPageState(story_module.SharedState):
     self._current_tab = self._GetCurrentTab()
     if self._current_page.is_file:
       self.platform.SetHTTPServerDirectories(
-          self._current_page.page_set.serving_dirs |
+          self._current_page.story_set.serving_dirs |
           set([self._current_page.serving_dir]))
-
-    if self._page_test and self._page_test.clear_cache_before_each_run:
-      self._current_tab.ClearCache(force=True)
 
   @property
   def current_page(self):

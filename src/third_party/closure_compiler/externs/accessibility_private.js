@@ -64,6 +64,15 @@ chrome.accessibilityPrivate.Gesture = {
 /**
  * @enum {string}
  */
+chrome.accessibilityPrivate.SwitchAccessCommand = {
+  SELECT: 'select',
+  NEXT: 'next',
+  PREVIOUS: 'previous',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.accessibilityPrivate.SyntheticKeyboardEventType = {
   KEYUP: 'keyup',
   KEYDOWN: 'keydown',
@@ -119,28 +128,32 @@ chrome.accessibilityPrivate.SelectToSpeakState = {
 };
 
 /**
- * Information about a focus ring.
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.FocusType = {
+  GLOW: 'glow',
+  SOLID: 'solid',
+  DASHED: 'dashed',
+};
+
+/**
  * @typedef {{
- *   id: ?string,
  *   rects: !Array<!chrome.accessibilityPrivate.ScreenRect>,
- *   type: chrome.accessibilityPrivate.FocusType,
+ *   type: !chrome.accessibilityPrivate.FocusType,
  *   color: string,
- *   secondaryColor: ?string
+ *   secondaryColor: (string|undefined),
+ *   id: (string|undefined)
  * }}
  */
 chrome.accessibilityPrivate.FocusRingInfo;
 
-/** @enum {string} */
-chrome.accessibilityPrivate.FocusType = {
-  // The focus ring used by ChromeVox and Select-to-Speak. Fades from full
-  // opacity to full transparency. Does not support two colors.
-  GLOW: 'glow',
-  // The focus ring used by Switch Access. Supports two-color focus rings.
-  SOLID: 'solid',
-  // Used by Switch Access to indicate the current scope. Supports two-color
-  // focus rings.
-  DASHED: 'dashed',
-}
+/**
+ * Called to translate language code into human-readable string in the language
+ * of the provided language code.
+ * @param {string} languageCode
+ * @return {string} The human-readable language string in the provided language.
+ */
+chrome.accessibilityPrivate.getDisplayLanguage = function(languageCode) {};
 
 /**
  * Called to request battery status from Chrome OS system.
@@ -158,10 +171,9 @@ chrome.accessibilityPrivate.getBatteryDescription = function(callback) {};
 chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(enabled) {};
 
 /**
- * Sets the bounds of the accessibility focus ring.
- * @param {!Array<!chrome.accessibilityPrivate.FocusRingInfo>} focusRings Array of
- *     focus rings to draw, each with information about the position onscreen,
- *     display type, and colors to be used.
+ * Sets the given accessibility focus rings for this extension.
+ * @param {!Array<!chrome.accessibilityPrivate.FocusRingInfo>} focusRings Array
+ *     of focus rings to draw.
  */
 chrome.accessibilityPrivate.setFocusRings = function(focusRings) {};
 
@@ -204,10 +216,10 @@ chrome.accessibilityPrivate.setSwitchAccessKeys = function(key_codes) {};
  * Shows or hides the Switch Access menu. If shown, it is at the indicated
  * location.
  * @param {boolean} show If true, show the menu. If false, hide the menu.
- * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds
- *    Position of an element, in global screen coordinates, to place the
- *    menu next to.
- * @param {number} item_count The number of items to show in the menu
+ * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
+ *     an element, in global screen coordinates, to place the menu next to.
+ * @param {number} item_count The number of items that need to be shown in the
+ *     menu.
  */
 chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds, item_count) {};
 
@@ -251,15 +263,31 @@ chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
 chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
 
 /**
+ * Called by the Autoclick extension when findScrollableBoundsForPoint has found
+ * a scrolling container. |rect| will be the bounds of the nearest scrollable
+ * ancestor of the node at the point requested using
+ * findScrollableBoundsForPoint.
+ * @param {!chrome.accessibilityPrivate.ScreenRect} rect
+ */
+chrome.accessibilityPrivate.onScrollableBoundsForPointFound = function(rect) {};
+
+/**
  * Toggles dictation between active and inactive states.
  */
 chrome.accessibilityPrivate.toggleDictation = function() {};
 
 /**
- * Opens or closes the virtual keyboard.
- * @param {!boolean} isVisible
+ * Shows or hides the virtual keyboard.
+ * @param {boolean} isVisible
  */
 chrome.accessibilityPrivate.setVirtualKeyboardVisible = function(isVisible) {};
+
+/**
+ * Opens a settings subpage, specified by the portion of the page's URL after
+ * "chrome://settings/"
+ * @param {string} subpage
+ */
+chrome.accessibilityPrivate.openSettingsSubpage = function (subpage) {}
 
 /**
  * Fired whenever ChromeVox should output introduction.
@@ -296,9 +324,24 @@ chrome.accessibilityPrivate.onTwoFingerTouchStop;
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
 
 /**
+ * Called when Chrome OS has received a key event corresponding to a Switch
+ * Access command.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onSwitchAccessCommand;
+
+/**
  * Called when an internal component within accessibility wants to force speech
  * output for an accessibility extension. Do not use without approval from
  * accessibility owners.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onAnnounceForAccessibility;
+
+/**
+ * Called when an internal component within accessibility wants to find the
+ * nearest scrolling container at a given screen coordinate. Used in Automatic
+ * Clicks.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.findScrollableBoundsForPoint;

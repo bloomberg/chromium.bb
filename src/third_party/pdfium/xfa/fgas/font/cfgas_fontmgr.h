@@ -15,7 +15,7 @@
 
 #include "build/build_config.h"
 #include "core/fxcrt/fx_extension.h"
-#include "core/fxcrt/observable.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/fx_freetype.h"
 #include "core/fxge/systemfontinfo_iface.h"
@@ -96,7 +96,7 @@ class CFX_FontDescriptorInfo {
 
 #endif  // defined(OS_WIN)
 
-class CFGAS_FontMgr final : public Observable<CFGAS_FontMgr> {
+class CFGAS_FontMgr final : public Observable {
  public:
   CFGAS_FontMgr();
   ~CFGAS_FontMgr();
@@ -133,7 +133,7 @@ class CFGAS_FontMgr final : public Observable<CFGAS_FontMgr> {
 #else   // defined(OS_WIN)
   bool EnumFontsFromFontMapper();
   bool EnumFontsFromFiles();
-  void RegisterFace(FXFT_Face pFace, const WideString* pFaceName);
+  void RegisterFace(RetainPtr<CFX_Face> pFace, const WideString* pFaceName);
   void RegisterFaces(const RetainPtr<IFX_SeekableReadStream>& pFontStream,
                      const WideString* pFaceName);
   void MatchFonts(std::vector<CFX_FontDescriptorInfo>* MatchedFonts,

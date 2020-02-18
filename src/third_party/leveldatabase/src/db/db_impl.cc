@@ -237,8 +237,9 @@ void DBImpl::DeleteObsoleteFiles() {
   env_->GetChildren(dbname_, &filenames);  // Ignoring errors on purpose
   uint64_t number;
   FileType type;
-  for (size_t i = 0; i < filenames.size(); i++) {
-    if (ParseFileName(filenames[i], &number, &type)) {
+  std::vector<std::string> files_to_delete;
+  for (std::string& filename : filenames) {
+    if (ParseFileName(filename, &number, &type)) {
       bool keep = true;
       switch (type) {
         case kLogFile:
@@ -266,15 +267,24 @@ void DBImpl::DeleteObsoleteFiles() {
       }
 
       if (!keep) {
+        files_to_delete.push_back(std::move(filename));
         if (type == kTableFile) {
           table_cache_->Evict(number);
         }
         Log(options_.info_log, "Delete type=%d #%lld\n", static_cast<int>(type),
             static_cast<unsigned long long>(number));
-        env_->DeleteFile(dbname_ + "/" + filenames[i]);
       }
     }
   }
+
+  // While deleting all files unblock other threads. All files being deleted
+  // have unique names which will not collide with newly created files and
+  // are therefore safe to delete while allowing other threads to proceed.
+  mutex_.Unlock();
+  for (const std::string& filename : files_to_delete) {
+    env_->DeleteFile(dbname_ + "/" + filename);
+  }
+  mutex_.Lock();
 }
 
 Status DBImpl::Recover(VersionEdit* edit, bool* save_manifest) {
@@ -376,7 +386,7 @@ Status DBImpl::RecoverLogFile(uint64_t log_number, bool last_log,
     Logger* info_log;
     const char* fname;
     Status* status;  // null if options_.paranoid_checks==false
-    virtual void Corruption(size_t bytes, const Status& s) {
+    void Corruption(size_t bytes, const Status& s) override {
       Log(info_log, "%s%s: dropping %d bytes; %s",
           (this->status == nullptr ? "(ignoring error) " : ""), fname,
           static_cast<int>(bytes), s.ToString().c_str());
@@ -893,17 +903,18 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
     compact->smallest_snapshot = snapshots_.oldest()->sequence_number();
   }
 
+  Iterator* input = versions_->MakeInputIterator(compact->compaction);
+
   // Release mutex while we're actually doing the compaction work
   mutex_.Unlock();
 
-  Iterator* input = versions_->MakeInputIterator(compact->compaction);
   input->SeekToFirst();
   Status status;
   ParsedInternalKey ikey;
   std::string current_user_key;
   bool has_current_user_key = false;
   SequenceNumber last_sequence_for_key = kMaxSequenceNumber;
-  for (; input->Valid() && !shutting_down_.load(std::memory_order_acquire);) {
+  while (input->Valid() && !shutting_down_.load(std::memory_order_acquire)) {
     // Prioritize immutable compaction work
     if (has_imm_.load(std::memory_order_relaxed)) {
       const uint64_t imm_start = env_->NowMicros();
@@ -1433,12 +1444,9 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
 
 void DBImpl::GetApproximateSizes(const Range* range, int n, uint64_t* sizes) {
   // TODO(opt): better implementation
-  Version* v;
-  {
-    MutexLock l(&mutex_);
-    versions_->current()->Ref();
-    v = versions_->current();
-  }
+  MutexLock l(&mutex_);
+  Version* v = versions_->current();
+  v->Ref();
 
   for (int i = 0; i < n; i++) {
     // Convert user_key into a corresponding internal key.
@@ -1449,10 +1457,7 @@ void DBImpl::GetApproximateSizes(const Range* range, int n, uint64_t* sizes) {
     sizes[i] = (limit >= start ? limit - start : 0);
   }
 
-  {
-    MutexLock l(&mutex_);
-    v->Unref();
-  }
+  v->Unref();
 }
 
 // Default implementations of convenience methods that subclasses of DB

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/web_contents.h"
@@ -60,8 +61,9 @@ WebAppMetrics::WebAppMetrics(Profile* profile)
   WebAppProvider* provider = WebAppProvider::Get(profile_);
   DCHECK(provider);
 
-  provider->SetRegistryReadyCallback(base::BindOnce(
-      &WebAppMetrics::CountUserInstalledApps, weak_ptr_factory_.GetWeakPtr()));
+  provider->on_registry_ready().Post(
+      FROM_HERE, base::BindOnce(&WebAppMetrics::CountUserInstalledApps,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebAppMetrics::~WebAppMetrics() = default;
@@ -130,7 +132,7 @@ void WebAppMetrics::CountUserInstalledApps() {
 
   WebAppProvider* provider = WebAppProvider::Get(profile_);
 
-  num_user_installed_apps_ = provider->CountUserInstalledApps();
+  num_user_installed_apps_ = provider->registrar().CountUserInstalledApps();
   DCHECK_NE(kNumUserInstalledAppsNotCounted, num_user_installed_apps_);
   DCHECK_GE(num_user_installed_apps_, 0);
 }

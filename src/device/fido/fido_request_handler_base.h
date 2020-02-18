@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/build_config.h"
 #include "device/fido/fido_discovery_base.h"
@@ -33,17 +34,6 @@ class BleAdapterManager;
 class FidoAuthenticator;
 class FidoDiscoveryFactory;
 
-struct COMPONENT_EXPORT(DEVICE_FIDO) PlatformAuthenticatorInfo {
-  PlatformAuthenticatorInfo(std::unique_ptr<FidoAuthenticator> authenticator,
-                            bool has_recognized_mac_touch_id_credential);
-  PlatformAuthenticatorInfo(PlatformAuthenticatorInfo&&);
-  PlatformAuthenticatorInfo& operator=(PlatformAuthenticatorInfo&& other);
-  ~PlatformAuthenticatorInfo();
-
-  std::unique_ptr<FidoAuthenticator> authenticator;
-  bool has_recognized_mac_touch_id_credential;
-};
-
 // Base class that handles authenticator discovery/removal. Its lifetime is
 // equivalent to that of a single WebAuthn request. For each authenticator, the
 // per-device work is carried out by one FidoAuthenticator instance, which is
@@ -57,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   using RequestCallback = base::RepeatingCallback<void(const std::string&)>;
   using BlePairingCallback =
       base::RepeatingCallback<void(std::string authenticator_id,
-                                   std::string pin_code,
+                                   base::Optional<std::string> pin_code,
                                    base::OnceClosure success_callback,
                                    base::OnceClosure error_callback)>;
 
@@ -78,6 +68,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // TODO(hongjunchoi): Factor |request_type| from TransportAvailabilityInfo.
     // See: https://crbug.com/875011
     RequestType request_type = RequestType::kMakeCredential;
+
+    // Indicates whether this is a GetAssertion request with an empty allow
+    // list.
+    bool has_empty_allow_list = false;
 
     // The intersection of transports supported by the client and allowed by the
     // relying party.
@@ -135,7 +129,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         std::string new_authenticator_id) = 0;
     virtual void FidoAuthenticatorPairingModeChanged(
         base::StringPiece authenticator_id,
-        bool is_in_pairing_mode) = 0;
+        bool is_in_pairing_mode,
+        base::string16 display_name) = 0;
 
     // SupportsPIN returns true if this observer supports collecting a PIN from
     // the user. If this function returns false, |CollectPIN| and
@@ -191,7 +186,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void OnBluetoothAdapterPowerChanged(bool is_powered_on);
   void PowerOnBluetoothAdapter();
   void InitiatePairingWithDevice(std::string authenticator_id,
-                                 std::string pin_code,
+                                 base::Optional<std::string> pin_code,
                                  base::OnceClosure success_callback,
                                  base::OnceClosure error_callback);
 
@@ -205,13 +200,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     notify_observer_callback_.Run();
   }
 
-  // Set the platform authenticator for this request, if one is available.
-  // |AuthenticatorImpl| must call this method after invoking |set_observer|
-  // even if no platform authenticator is available, in which case it passes
-  // nullptr.
-  virtual void SetPlatformAuthenticatorOrMarkUnavailable(
-      base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info);
-
   // Returns whether FidoAuthenticator with id equal to |authenticator_id|
   // exists. Fake FidoRequestHandler objects used in testing overrides this
   // function to simulate scenarios where authenticator with |authenticator_id|
@@ -224,6 +212,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   const AuthenticatorMap& AuthenticatorsForTesting() {
     return active_authenticators_;
+  }
+
+  std::unique_ptr<BleAdapterManager>&
+  get_bluetooth_adapter_manager_for_testing() {
+    return bluetooth_adapter_manager_;
   }
 
  protected:
@@ -280,9 +273,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   TransportAvailabilityInfo transport_availability_info_;
   base::RepeatingClosure notify_observer_callback_;
   std::unique_ptr<BleAdapterManager> bluetooth_adapter_manager_;
-  // TODO(martinkr): Inject platform authenticators through a new
-  // FidoDiscoveryBase specialization and hold ownership there.
-  std::unique_ptr<FidoAuthenticator> platform_authenticator_;
   service_manager::Connector* const connector_;
 
   base::WeakPtrFactory<FidoRequestHandlerBase> weak_factory_;

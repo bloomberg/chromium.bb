@@ -27,6 +27,7 @@ using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
 using OfflineItem = offline_items_collection::OfflineItem;
+using UpdateDelta = offline_items_collection::UpdateDelta;
 using OfflineItemShareInfo = offline_items_collection::OfflineItemShareInfo;
 
 namespace offline_pages {
@@ -198,7 +199,7 @@ class DownloadUIAdapter : public OfflineContentProvider,
   // The observers.
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
 
-  base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadUIAdapter> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUIAdapter);
 };

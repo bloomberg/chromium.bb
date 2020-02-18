@@ -35,11 +35,13 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_metrics.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/accounts_mutator.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/user_selectable_type.h"
@@ -52,9 +54,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "services/identity/public/cpp/accounts_mutator.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -90,6 +89,14 @@ struct SyncConfigInfo {
   std::string passphrase;
   bool set_new_passphrase;
 };
+
+bool IsSyncSubpage(const GURL& current_url) {
+  return (current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)
+#if defined(OS_CHROMEOS)
+          || current_url == chrome::GetOSSettingsUrl(chrome::kSyncSetupSubPage)
+#endif  // defined(OS_CHROMEOS)
+  );
+}
 
 SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
@@ -336,7 +343,7 @@ void PeopleHandler::OnJavascriptAllowed() {
       prefs::kSigninAllowed,
       base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
 
-  identity::IdentityManager* identity_manager(
+  signin::IdentityManager* identity_manager(
       IdentityManagerFactory::GetInstance()->GetForProfile(profile_));
   if (identity_manager)
     identity_manager_observer_.Add(identity_manager);
@@ -381,12 +388,12 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     // then sign in again.
 
     identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
         signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
         signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
 
-  // If the signin manager already has an authenticated username, this is a
+  // If the identity manager already has a primary account, this is a
   // re-auth scenario, and we need to ensure that the user signs in with the
   // same email address.
   if (identity_manager->HasPrimaryAccount()) {
@@ -805,7 +812,7 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
                          : signin_metrics::SignoutDelete::KEEPING;
 
       identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-          identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
           signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
     } else {
       DCHECK(!delete_profile)
@@ -882,7 +889,7 @@ void PeopleHandler::CloseSyncSetup() {
             IdentityManagerFactory::GetForProfile(profile_)
                 ->GetPrimaryAccountMutator()
                 ->ClearPrimaryAccount(
-                    identity::PrimaryAccountMutator::ClearAccountsAction::
+                    signin::PrimaryAccountMutator::ClearAccountsAction::
                         kDefault,
                     signin_metrics::ABORT_SIGNIN,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
@@ -909,13 +916,15 @@ void PeopleHandler::CloseSyncSetup() {
 void PeopleHandler::InitializeSyncBlocker() {
   DCHECK(web_ui());
   WebContents* web_contents = web_ui()->GetWebContents();
-  if (web_contents) {
-    syncer::SyncService* service = GetSyncService();
-    const GURL current_url = web_contents->GetVisibleURL();
-    if (service &&
-        current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)) {
-      sync_blocker_ = service->GetSetupInProgressHandle();
-    }
+  if (!web_contents)
+    return;
+
+  syncer::SyncService* service = GetSyncService();
+  if (!service)
+    return;
+
+  if (IsSyncSubpage(web_contents->GetVisibleURL())) {
+    sync_blocker_ = service->GetSetupInProgressHandle();
   }
 }
 
@@ -971,7 +980,7 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
   std::unique_ptr<base::DictionaryValue> sync_status(new base::DictionaryValue);
   if (profile_->IsGuestSession()) {
     // Cannot display signin status when running in guest mode on chromeos
-    // because there is no SigninManager.
+    // because there is no IdentityManager.
     sync_status->SetBoolean("signinAllowed", false);
     return sync_status;
   }

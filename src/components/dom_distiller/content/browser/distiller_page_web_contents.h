@@ -60,7 +60,7 @@ class DistillerPageWebContents : public DistillerPage,
 
   // content::WebContentsDelegate implementation.
   gfx::Size GetSizeForNewRenderView(
-      content::WebContents* web_contents) const override;
+      content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation.
   void DocumentLoadedInFrame(
@@ -113,7 +113,7 @@ class DistillerPageWebContents : public DistillerPage,
 
   content::BrowserContext* browser_context_;
   gfx::Size render_view_size_;
-  base::WeakPtrFactory<DistillerPageWebContents> weak_factory_;
+  base::WeakPtrFactory<DistillerPageWebContents> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DistillerPageWebContents);
 };
 

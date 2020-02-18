@@ -60,11 +60,13 @@ class UnitTestPlatformDelegate {
 
   // Called to create a temporary for storing test results. The delegate
   // must put the resulting path in |path| and return true on success.
-  virtual bool CreateResultsFile(base::FilePath* path) = 0;
+  virtual bool CreateResultsFile(const base::FilePath& temp_dir,
+                                 base::FilePath* path) = 0;
 
   // Called to create a new temporary file. The delegate must put the resulting
   // path in |path| and return true on success.
-  virtual bool CreateTemporaryFile(base::FilePath* path) = 0;
+  virtual bool CreateTemporaryFile(const base::FilePath& temp_dir,
+                                   base::FilePath* path) = 0;
 
   // Returns command line for child GTest process based on the command line
   // of current process. |test_names| is a vector of test full names
@@ -77,11 +79,6 @@ class UnitTestPlatformDelegate {
   // Returns wrapper to use for child GTest process. Empty string means
   // no wrapper.
   virtual std::string GetWrapperForChildGTestProcess() = 0;
-
-  // Relaunch tests, e.g. after a crash.
-  virtual void RelaunchTests(TestLauncher* test_launcher,
-                             const std::vector<std::string>& test_names,
-                             int launch_flags) = 0;
 
  protected:
   ~UnitTestPlatformDelegate() = default;
@@ -100,9 +97,11 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
 
   bool GetTests(std::vector<TestIdentifier>* output) override;
 
-  bool CreateResultsFile(base::FilePath* path) override;
+  bool CreateResultsFile(const base::FilePath& temp_dir,
+                         base::FilePath* path) override;
 
-  bool CreateTemporaryFile(base::FilePath* path) override;
+  bool CreateTemporaryFile(const base::FilePath& temp_dir,
+                           base::FilePath* path) override;
 
   CommandLine GetCommandLineForChildGTestProcess(
       const std::vector<std::string>& test_names,
@@ -111,26 +110,10 @@ class DefaultUnitTestPlatformDelegate : public UnitTestPlatformDelegate {
 
   std::string GetWrapperForChildGTestProcess() override;
 
-  void RelaunchTests(TestLauncher* test_launcher,
-                     const std::vector<std::string>& test_names,
-                     int launch_flags) override;
-
   ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultUnitTestPlatformDelegate);
 };
-
-// Runs tests serially, each in its own process.
-void RunUnitTestsSerially(TestLauncher* test_launcher,
-                          UnitTestPlatformDelegate* platform_delegate,
-                          const std::vector<std::string>& test_names,
-                          int launch_flags);
-
-// Runs tests in batches (each batch in its own process).
-void RunUnitTestsBatch(TestLauncher* test_launcher,
-                       UnitTestPlatformDelegate* platform_delegate,
-                       const std::vector<std::string>& test_names,
-                       int launch_flags);
 
 // Test launcher delegate for unit tests (mostly to support batching).
 class UnitTestLauncherDelegate : public TestLauncherDelegate {
@@ -145,12 +128,26 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
   bool GetTests(std::vector<TestIdentifier>* output) override;
   bool WillRunTest(const std::string& test_case_name,
                    const std::string& test_name) override;
-  bool ShouldRunTest(const std::string& test_case_name,
-                     const std::string& test_name) override;
-  size_t RunTests(TestLauncher* test_launcher,
-                  const std::vector<std::string>& test_names) override;
-  size_t RetryTests(TestLauncher* test_launcher,
-                    const std::vector<std::string>& test_names) override;
+
+  std::vector<TestResult> ProcessTestResults(
+      const std::vector<std::string>& test_names,
+      const base::FilePath& output_file,
+      const std::string& output,
+      const base::TimeDelta& elapsed_time,
+      int exit_code,
+      bool was_timeout) override;
+
+  CommandLine GetCommandLine(const std::vector<std::string>& test_names,
+                             const FilePath& temp_dir,
+                             FilePath* output_file) override;
+
+  std::string GetWrapper() override;
+
+  int GetLaunchOptions() override;
+
+  TimeDelta GetTimeout() override;
+
+  size_t GetBatchSize() override;
 
   ThreadChecker thread_checker_;
 

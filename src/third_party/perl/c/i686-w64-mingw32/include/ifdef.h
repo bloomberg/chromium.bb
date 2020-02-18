@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_IFDEF
@@ -32,6 +32,16 @@ typedef enum _IF_OPER_STATUS {
   IfOperStatusNotPresent,
   IfOperStatusLowerLayerDown 
 } IF_OPER_STATUS;
+
+typedef enum _NET_IF_OPER_STATUS {
+  NET_IF_OPER_STATUS_UP                = 1,
+  NET_IF_OPER_STATUS_DOWN,
+  NET_IF_OPER_STATUS_TESTING,
+  NET_IF_OPER_STATUS_UNKNOWN,
+  NET_IF_OPER_STATUS_DORMANT,
+  NET_IF_OPER_STATUS_NOT_PRESENT,
+  NET_IF_OPER_STATUS_LOWER_LAYER_DOWN
+} NET_IF_OPER_STATUS, *PNET_IF_OPER_STATUS;
 
 typedef enum _NET_IF_ADMIN_STATUS {
   NET_IF_ADMIN_STATUS_UP        = 1,
@@ -83,7 +93,6 @@ typedef enum _TUNNEL_TYPE {
   TUNNEL_TYPE_IPHTTPS   = 15
 } TUNNEL_TYPE, *PTUNNEL_TYPE;
 
-#include <pshpack1.h>
 typedef union _NET_LUID {
   ULONG64 Value;
   __C89_NAMELESS struct { /* bitfield with 64 bit types. */
@@ -92,9 +101,22 @@ typedef union _NET_LUID {
     ULONG64 IfType  :16;
   } Info;
 } NET_LUID, *PNET_LUID;
-#include <poppack.h>
 
 typedef NET_LUID IF_LUID, *PIF_LUID;
+
+typedef struct _IF_COUNTED_STRING_LH {
+    USHORT Length;
+    WCHAR  String[IF_MAX_STRING_SIZE + 1];
+} IF_COUNTED_STRING_LH, *PIF_COUNTED_STRING_LH;
+typedef IF_COUNTED_STRING_LH IF_COUNTED_STRING;
+typedef IF_COUNTED_STRING *PIF_COUNTED_STRING;
+
+typedef struct _IF_PHYSICAL_ADDRESS_LH {
+    USHORT Length;
+    UCHAR  Address[IF_MAX_PHYS_ADDRESS_LENGTH];
+} IF_PHYSICAL_ADDRESS_LH, *PIF_PHYSICAL_ADDRESS_LH;
+typedef IF_PHYSICAL_ADDRESS_LH IF_PHYSICAL_ADDRESS;
+typedef IF_PHYSICAL_ADDRESS *PIF_PHYSICAL_ADDRESS;
 
 #ifdef __cplusplus
 }

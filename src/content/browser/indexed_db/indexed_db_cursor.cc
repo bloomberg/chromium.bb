@@ -57,14 +57,11 @@ IndexedDBCursor::IndexedDBCursor(
       cursor_type_(cursor_type),
       transaction_(std::move(transaction)),
       cursor_(std::move(cursor)),
-      closed_(false),
-      ptr_factory_(this) {
+      closed_(false) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBCursor::open", this);
 }
 
 IndexedDBCursor::~IndexedDBCursor() {
-  if (transaction_)
-    transaction_->UnregisterOpenCursor(this);
   // Call to make sure we complete our lifetime trace.
   Close();
 }
@@ -406,6 +403,8 @@ void IndexedDBCursor::Close() {
   closed_ = true;
   cursor_.reset();
   saved_cursor_.reset();
+  if (transaction_)
+    transaction_->UnregisterOpenCursor(this);
   transaction_.reset();
 }
 

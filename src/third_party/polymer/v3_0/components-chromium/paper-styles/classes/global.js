@@ -17,7 +17,7 @@ you import this file.
 
 import '../paper-styles-classes.js';
 
-import {html} from '../../polymer/lib/utils/html-tag.js';
+import {html} from '../../polymer/polymer_bundled.min.js';
 const template = html`<style>
 /* Mixins */
 

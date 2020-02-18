@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -248,10 +248,10 @@ class CORE_EXPORT MouseEventManager final
   Member<Element> mouse_down_element_;
 
   IntPoint mouse_down_pos_;  // In our view's coords.
-  TimeTicks mouse_down_timestamp_;
+  base::TimeTicks mouse_down_timestamp_;
   WebMouseEvent mouse_down_;
 
-  LayoutPoint drag_start_pos_;
+  PhysicalOffset drag_start_pos_;
   // This indicates that whether we should update the hover at each begin
   // frame. This is set to be true after the compositor or main thread scroll
   // ends, and at each begin frame, we will dispatch a fake mouse move event to

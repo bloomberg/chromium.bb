@@ -24,7 +24,9 @@
 #include "src/core/SkDevice.h"
 #include "src/core/SkMakeUnique.h"
 #include "src/core/SkStrikeInterface.h"
+#include "src/core/SkTLazy.h"
 
+class Deserializer;
 class Serializer;
 enum SkAxisAlignment : uint32_t;
 class SkDescriptor;
@@ -193,6 +195,16 @@ public:
         virtual bool deleteHandle(SkDiscardableHandleId) = 0;
 
         virtual void notifyCacheMiss(CacheMissType) {}
+
+        struct ReadFailureData {
+            size_t memorySize;
+            size_t bytesRead;
+            uint64_t typefaceSize;
+            uint64_t strikeCount;
+            uint64_t glyphImagesCount;
+            uint64_t glyphPathsCount;
+        };
+        virtual void notifyReadFailure(const ReadFailureData& data) {}
     };
 
     explicit SkStrikeClient(sk_sp<DiscardableHandleManager>,
@@ -203,6 +215,8 @@ public:
     // Deserializes the typeface previously serialized using the SkStrikeServer. Returns null if the
     // data is invalid.
     sk_sp<SkTypeface> deserializeTypeface(const void* data, size_t length);
+
+    static bool ReadGlyph(SkTLazy<SkGlyph>& glyph, Deserializer* deserializer);
 
     // Deserializes the strike data from a SkStrikeServer. All messages generated
     // from a server when serializing the ops must be deserialized before the op

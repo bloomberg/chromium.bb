@@ -14,7 +14,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
-#include "third_party/trace_event/trace_event.h"
+#include "libANGLE/trace.h"
 
 namespace rx
 {
@@ -26,9 +26,45 @@ namespace
 // On some hardware, reading 4 bytes from address 4k returns 0, making it impossible to read the
 // last n bytes.  By rounding up the buffer sizes to a multiple of 4, the problem is alleviated.
 constexpr size_t kBufferSizeGranularity = 4;
+
+// Start with a fairly small buffer size. We can increase this dynamically as we convert more data.
+constexpr size_t kConvertedArrayBufferInitialSize = 1024 * 8;
 }  // namespace
 
-BufferVk::BufferVk(const gl::BufferState &state) : BufferImpl(state), mDataWriteAccessFlags(0) {}
+// ConversionBuffer implementation.
+ConversionBuffer::ConversionBuffer(RendererVk *renderer,
+                                   VkBufferUsageFlags usageFlags,
+                                   size_t initialSize,
+                                   size_t alignment)
+    : dirty(true), lastAllocationOffset(0)
+{
+    data.init(renderer, usageFlags, alignment, initialSize, true);
+}
+
+ConversionBuffer::~ConversionBuffer() = default;
+
+ConversionBuffer::ConversionBuffer(ConversionBuffer &&other) = default;
+
+// BufferVk::VertexConversionBuffer implementation.
+BufferVk::VertexConversionBuffer::VertexConversionBuffer(RendererVk *renderer,
+                                                         angle::FormatID formatIDIn,
+                                                         GLuint strideIn,
+                                                         size_t offsetIn)
+    : ConversionBuffer(renderer,
+                       vk::kVertexBufferUsageFlags,
+                       kConvertedArrayBufferInitialSize,
+                       vk::kVertexBufferAlignment),
+      formatID(formatIDIn),
+      stride(strideIn),
+      offset(offsetIn)
+{}
+
+BufferVk::VertexConversionBuffer::VertexConversionBuffer(VertexConversionBuffer &&other) = default;
+
+BufferVk::VertexConversionBuffer::~VertexConversionBuffer() = default;
+
+// BufferVk implementation.
+BufferVk::BufferVk(const gl::BufferState &state) : BufferImpl(state) {}
 
 BufferVk::~BufferVk() {}
 
@@ -42,6 +78,11 @@ void BufferVk::destroy(const gl::Context *context)
 void BufferVk::release(ContextVk *contextVk)
 {
     mBuffer.release(contextVk);
+
+    for (ConversionBuffer &buffer : mVertexConversionBuffers)
+    {
+        buffer.data.release(contextVk);
+    }
 }
 
 angle::Result BufferVk::setData(const gl::Context *context,
@@ -109,24 +150,45 @@ angle::Result BufferVk::copySubData(const gl::Context *context,
                                     GLintptr destOffset,
                                     GLsizeiptr size)
 {
-    ANGLE_VK_UNREACHABLE(vk::GetImpl(context));
-    return angle::Result::Stop;
+    ASSERT(mBuffer.valid());
+
+    ContextVk *contextVk = vk::GetImpl(context);
+    auto *sourceBuffer   = GetAs<BufferVk>(source);
+
+    vk::CommandBuffer *commandBuffer = nullptr;
+
+    // Handle self-dependency especially.
+    if (sourceBuffer->mBuffer.getBuffer().getHandle() == mBuffer.getBuffer().getHandle())
+    {
+        mBuffer.onSelfReadWrite(contextVk, VK_ACCESS_TRANSFER_READ_BIT,
+                                VK_ACCESS_TRANSFER_WRITE_BIT);
+
+        ANGLE_TRY(mBuffer.recordCommands(contextVk, &commandBuffer));
+    }
+    else
+    {
+        ANGLE_TRY(mBuffer.recordCommands(contextVk, &commandBuffer));
+
+        sourceBuffer->mBuffer.onReadByBuffer(contextVk, &mBuffer, VK_ACCESS_TRANSFER_READ_BIT,
+                                             VK_ACCESS_TRANSFER_WRITE_BIT);
+    }
+
+    // Enqueue a copy command on the GPU.
+    VkBufferCopy copyRegion = {static_cast<VkDeviceSize>(sourceOffset),
+                               static_cast<VkDeviceSize>(destOffset),
+                               static_cast<VkDeviceSize>(size)};
+
+    commandBuffer->copyBuffer(sourceBuffer->getBuffer().getBuffer(), mBuffer.getBuffer(), 1,
+                              &copyRegion);
+
+    return angle::Result::Continue;
 }
 
 angle::Result BufferVk::map(const gl::Context *context, GLenum access, void **mapPtr)
 {
     ASSERT(mBuffer.valid());
 
-    ContextVk *contextVk = vk::GetImpl(context);
-    return mapImpl(contextVk, mapPtr);
-}
-
-angle::Result BufferVk::mapImpl(ContextVk *contextVk, void **mapPtr)
-{
-    ANGLE_VK_TRY(contextVk,
-                 mBuffer.getDeviceMemory().map(contextVk->getDevice(), 0, mState.getSize(), 0,
-                                               reinterpret_cast<uint8_t **>(mapPtr)));
-    return angle::Result::Continue;
+    return mapImpl(vk::GetImpl(context), mapPtr);
 }
 
 angle::Result BufferVk::mapRange(const gl::Context *context,
@@ -135,9 +197,32 @@ angle::Result BufferVk::mapRange(const gl::Context *context,
                                  GLbitfield access,
                                  void **mapPtr)
 {
+    return mapRangeImpl(vk::GetImpl(context), offset, length, access, mapPtr);
+}
+
+angle::Result BufferVk::mapImpl(ContextVk *contextVk, void **mapPtr)
+{
+    return mapRangeImpl(contextVk, 0, static_cast<VkDeviceSize>(mState.getSize()), 0, mapPtr);
+}
+
+angle::Result BufferVk::mapRangeImpl(ContextVk *contextVk,
+                                     VkDeviceSize offset,
+                                     VkDeviceSize length,
+                                     GLbitfield access,
+                                     void **mapPtr)
+{
     ASSERT(mBuffer.valid());
 
-    ContextVk *contextVk = vk::GetImpl(context);
+    if ((access & GL_MAP_UNSYNCHRONIZED_BIT) == 0)
+    {
+        // If there are pending commands for the buffer, flush them.
+        if (mBuffer.isResourceInUse(contextVk))
+        {
+            ANGLE_TRY(contextVk->flushImpl(nullptr));
+        }
+        // Make sure the GPU is done with the buffer.
+        ANGLE_TRY(contextVk->finishToSerial(mBuffer.getStoredQueueSerial()));
+    }
 
     ANGLE_VK_TRY(contextVk, mBuffer.getDeviceMemory().map(contextVk->getDevice(), offset, length, 0,
                                                           reinterpret_cast<uint8_t **>(mapPtr)));
@@ -146,37 +231,23 @@ angle::Result BufferVk::mapRange(const gl::Context *context,
 
 angle::Result BufferVk::unmap(const gl::Context *context, GLboolean *result)
 {
-    return unmapImpl(vk::GetImpl(context));
+    unmapImpl(vk::GetImpl(context));
+
+    // This should be false if the contents have been corrupted through external means.  Vulkan
+    // doesn't provide such information.
+    *result = true;
+
+    return angle::Result::Continue;
 }
 
-angle::Result BufferVk::unmapImpl(ContextVk *contextVk)
+void BufferVk::unmapImpl(ContextVk *contextVk)
 {
     ASSERT(mBuffer.valid());
 
     mBuffer.getDeviceMemory().unmap(contextVk->getDevice());
-    mDataWriteAccessFlags = VK_ACCESS_HOST_WRITE_BIT;
+    mBuffer.onExternalWrite(VK_ACCESS_HOST_WRITE_BIT);
 
-    return angle::Result::Continue;
-}
-
-angle::Result BufferVk::onRead(ContextVk *contextVk,
-                               vk::CommandGraphResource *reader,
-                               VkAccessFlagBits readAccessType)
-{
-    // Now that the buffer helper is being used (and will be part of the command graph), make sure
-    // its data write barrier is executed.
-    if (mDataWriteAccessFlags != 0)
-    {
-        vk::CommandBuffer *commandBuffer;
-        ANGLE_TRY(mBuffer.recordCommands(contextVk, &commandBuffer));
-
-        mBuffer.onWrite(mDataWriteAccessFlags);
-        mDataWriteAccessFlags = 0;
-    }
-
-    mBuffer.onRead(reader, readAccessType);
-
-    return angle::Result::Continue;
+    markConversionBuffersDirty();
 }
 
 angle::Result BufferVk::getIndexRange(const gl::Context *context,
@@ -198,7 +269,7 @@ angle::Result BufferVk::getIndexRange(const gl::Context *context,
         return angle::Result::Continue;
     }
 
-    TRACE_EVENT0("gpu.angle", "BufferVk::getIndexRange");
+    ANGLE_TRACE_EVENT0("gpu.angle", "BufferVk::getIndexRange");
     // Needed before reading buffer or we could get stale data.
     ANGLE_TRY(contextVk->finishImpl());
 
@@ -222,7 +293,7 @@ angle::Result BufferVk::setDataImpl(ContextVk *contextVk,
                                     size_t size,
                                     size_t offset)
 {
-    VkDevice device      = contextVk->getDevice();
+    VkDevice device = contextVk->getDevice();
 
     // Use map when available.
     if (mBuffer.isResourceInUse(contextVk))
@@ -257,8 +328,11 @@ angle::Result BufferVk::setDataImpl(ContextVk *contextVk,
         memcpy(mapPointer, data, size);
 
         mBuffer.getDeviceMemory().unmap(device);
-        mDataWriteAccessFlags = VK_ACCESS_HOST_WRITE_BIT;
+        mBuffer.onExternalWrite(VK_ACCESS_HOST_WRITE_BIT);
     }
+
+    // Update conversions
+    markConversionBuffersDirty();
 
     return angle::Result::Continue;
 }
@@ -272,10 +346,35 @@ angle::Result BufferVk::copyToBuffer(ContextVk *contextVk,
     ANGLE_TRY(destBuffer->recordCommands(contextVk, &commandBuffer));
     commandBuffer->copyBuffer(mBuffer.getBuffer(), destBuffer->getBuffer(), copyCount, copies);
 
-    mBuffer.onRead(destBuffer, VK_ACCESS_TRANSFER_READ_BIT);
-    destBuffer->onWrite(VK_ACCESS_TRANSFER_WRITE_BIT);
+    mBuffer.onReadByBuffer(contextVk, destBuffer, VK_ACCESS_TRANSFER_READ_BIT,
+                           VK_ACCESS_TRANSFER_WRITE_BIT);
 
     return angle::Result::Continue;
+}
+
+ConversionBuffer *BufferVk::getVertexConversionBuffer(RendererVk *renderer,
+                                                      angle::FormatID formatID,
+                                                      GLuint stride,
+                                                      size_t offset)
+{
+    for (VertexConversionBuffer &buffer : mVertexConversionBuffers)
+    {
+        if (buffer.formatID == formatID && buffer.stride == stride && buffer.offset == offset)
+        {
+            return &buffer;
+        }
+    }
+
+    mVertexConversionBuffers.emplace_back(renderer, formatID, stride, offset);
+    return &mVertexConversionBuffers.back();
+}
+
+void BufferVk::markConversionBuffersDirty()
+{
+    for (VertexConversionBuffer &buffer : mVertexConversionBuffers)
+    {
+        buffer.dirty = true;
+    }
 }
 
 }  // namespace rx

@@ -44,7 +44,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   static bool CouldOpen();
 
   // Overridden from views::StatusIconLinux:
-  void SetImage(const gfx::ImageSkia& image) override;
+  void SetIcon(const gfx::ImageSkia& image) override;
   void SetToolTip(const base::string16& tool_tip) override;
   void UpdatePlatformContextMenu(ui::MenuModel* menu) override;
   void RefreshPlatformContextMenu() override;
@@ -100,7 +100,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   base::FilePath temp_dir_;
   int icon_change_count_;
 
-  base::WeakPtrFactory<AppIndicatorIcon> weak_factory_;
+  base::WeakPtrFactory<AppIndicatorIcon> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppIndicatorIcon);
 };

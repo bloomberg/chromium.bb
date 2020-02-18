@@ -21,14 +21,12 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_encrypted_media_request.h"
-#include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
@@ -42,12 +40,14 @@
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder_handler.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -737,7 +737,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
   }
 
   if (configuration->type() == "record") {
-    if (auto handler = Platform::Current()->CreateMediaRecorderHandler(
+    if (auto* handler = MediaRecorderHandler::Create(
             ExecutionContext::From(script_state)
                 ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
       handler->EncodingInfo(ToWebMediaConfiguration(configuration),

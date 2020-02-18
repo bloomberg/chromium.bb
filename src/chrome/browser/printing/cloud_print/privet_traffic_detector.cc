@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
@@ -80,7 +79,7 @@ namespace cloud_print {
 
 PrivetTrafficDetector::PrivetTrafficDetector(
     content::BrowserContext* profile,
-    const base::RepeatingClosure& on_traffic_detected)
+    base::RepeatingClosure on_traffic_detected)
     : helper_(new Helper(profile, on_traffic_detected)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
@@ -108,12 +107,11 @@ void PrivetTrafficDetector::OnConnectionChanged(
 
 PrivetTrafficDetector::Helper::Helper(
     content::BrowserContext* profile,
-    const base::RepeatingClosure& on_traffic_detected)
+    base::RepeatingClosure on_traffic_detected)
     : profile_(profile),
       on_traffic_detected_(on_traffic_detected),
       restart_attempts_(kMaxRestartAttempts),
-      receiver_binding_(this),
-      weak_ptr_factory_(this) {
+      receiver_binding_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -151,11 +149,6 @@ void PrivetTrafficDetector::Helper::Restart(
 
 void PrivetTrafficDetector::Helper::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!start_time_.is_null()) {
-    base::TimeDelta time_delta = base::Time::Now() - start_time_;
-    UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorRestartTime", time_delta);
-  }
-  start_time_ = base::Time::Now();
 
   network::mojom::UDPSocketReceiverPtr receiver_ptr;
   network::mojom::UDPSocketReceiverRequest receiver_request =
@@ -265,8 +258,6 @@ void PrivetTrafficDetector::Helper::OnReceived(
     ResetConnection();
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                              on_traffic_detected_);
-    base::TimeDelta time_delta = base::Time::Now() - start_time_;
-    UMA_HISTOGRAM_LONG_TIMES("LocalDiscovery.DetectorTriggerTime", time_delta);
   } else {
     socket_->ReceiveMoreWithBufferSize(1, net::dns_protocol::kMaxMulticastSize);
   }

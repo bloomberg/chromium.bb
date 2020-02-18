@@ -10,7 +10,7 @@
 
 #include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/presentation_feedback_map.h"
+#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
@@ -24,6 +24,10 @@ namespace gfx {
 class Rect;
 class Size;
 class Transform;
+}
+
+namespace gl {
+class GLShareGroup;
 }
 
 namespace viz {
@@ -80,7 +84,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const viz::FrameTimingDetailsMap& timing_details) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
@@ -108,6 +112,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   gfx::Size surface_size_;
 
+  scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gpu::SharedContextState> shared_context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);

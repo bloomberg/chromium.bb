@@ -1,30 +1,55 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!/usr/bin/perl
-#line 15
-# Time-stamp: "2000-10-02 14:48:15 MDT"
-#
-# Parse the given HTML file(s) and dump the parse tree
-# Usage:
-#  htmltree -D3 -w file1 file2 file3
-#    -D[number]  sets HTML::TreeBuilder::Debug to that figure.
-#    -w  turns on $tree->warn(1) for the new tree
+#!C:\strawberry\perl\bin\perl.exe 
+#line 29
 
-require 5;
 use warnings;
 use strict;
+use 5.008;
+
+use Pod::Usage;
+
+=head1 NAME
+
+htmltree - Parse the given HTML file(s) and dump the parse tree
+
+=head1 SYNOPSIS
+
+htmltree -D3 -w file1 file2 file3
+
+ Options:
+    -D[number]  sets HTML::TreeBuilder::Debug to that figure.
+    -w  turns on $tree->warn(1) for the new tree
+    -h  Help message
+
+=cut
 
 my $warn;
+my $help;
 
 BEGIN { # We have to set debug level before we use HTML::TreeBuilder.
   $HTML::TreeBuilder::DEBUG = 0; # default debug level
@@ -37,11 +62,16 @@ BEGIN { # We have to set debug level before we use HTML::TreeBuilder.
     } elsif ($ARGV[0] =~ m<^-w$>s) {
       $warn = 1;
       shift @ARGV;
+    } elsif ($ARGV[0] =~ m<^-h$>s) {
+      $help = 1;
+      shift @ARGV;
     } else {
       last;
     }
   }
 }
+
+pod2usage({-exitval => 0, -verbose => 1}) if($help);
 
 use HTML::TreeBuilder;
 
@@ -60,8 +90,8 @@ foreach my $file (grep( -f $_, @ARGV)) {
   $h = $h->delete(); # nuke it!
   print "\n\n";
 }
+
 exit;
-__END__
 
 __END__
 :endofperl

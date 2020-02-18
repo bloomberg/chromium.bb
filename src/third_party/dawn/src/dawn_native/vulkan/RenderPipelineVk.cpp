@@ -121,6 +121,42 @@ namespace dawn_native { namespace vulkan {
             }
         }
 
+        bool ShouldEnablePrimitiveRestart(dawn::PrimitiveTopology topology) {
+            // Primitive restart is always enabled in WebGPU but Vulkan validation rules ask that
+            // primitive restart be only enabled on primitive topologies that support restarting.
+            switch (topology) {
+                case dawn::PrimitiveTopology::PointList:
+                case dawn::PrimitiveTopology::LineList:
+                case dawn::PrimitiveTopology::TriangleList:
+                    return false;
+                case dawn::PrimitiveTopology::LineStrip:
+                case dawn::PrimitiveTopology::TriangleStrip:
+                    return true;
+                default:
+                    UNREACHABLE();
+            }
+        }
+
+        VkFrontFace VulkanFrontFace(dawn::FrontFace face) {
+            switch (face) {
+                case dawn::FrontFace::CCW:
+                    return VK_FRONT_FACE_COUNTER_CLOCKWISE;
+                case dawn::FrontFace::CW:
+                    return VK_FRONT_FACE_CLOCKWISE;
+            }
+        }
+
+        VkCullModeFlagBits VulkanCullMode(dawn::CullMode mode) {
+            switch (mode) {
+                case dawn::CullMode::None:
+                    return VK_CULL_MODE_NONE;
+                case dawn::CullMode::Front:
+                    return VK_CULL_MODE_FRONT_BIT;
+                case dawn::CullMode::Back:
+                    return VK_CULL_MODE_BACK_BIT;
+            }
+        }
+
         VkBlendFactor VulkanBlendFactor(dawn::BlendFactor factor) {
             switch (factor) {
                 case dawn::BlendFactor::Zero:
@@ -307,8 +343,7 @@ namespace dawn_native { namespace vulkan {
         inputAssembly.pNext = nullptr;
         inputAssembly.flags = 0;
         inputAssembly.topology = VulkanPrimitiveTopology(GetPrimitiveTopology());
-        // Primitive restart is always enabled in Dawn (because of Metal)
-        inputAssembly.primitiveRestartEnable = VK_TRUE;
+        inputAssembly.primitiveRestartEnable = ShouldEnablePrimitiveRestart(GetPrimitiveTopology());
 
         // A dummy viewport/scissor info. The validation layers force use to provide at least one
         // scissor and one viewport here, even if we choose to make them dynamic.
@@ -340,8 +375,8 @@ namespace dawn_native { namespace vulkan {
         rasterization.depthClampEnable = VK_FALSE;
         rasterization.rasterizerDiscardEnable = VK_FALSE;
         rasterization.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterization.cullMode = VK_CULL_MODE_NONE;
-        rasterization.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+        rasterization.cullMode = VulkanCullMode(GetCullMode());
+        rasterization.frontFace = VulkanFrontFace(GetFrontFace());
         rasterization.depthBiasEnable = VK_FALSE;
         rasterization.depthBiasConstantFactor = 0.0f;
         rasterization.depthBiasClamp = 0.0f;

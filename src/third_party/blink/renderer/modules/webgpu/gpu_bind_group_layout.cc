@@ -18,6 +18,7 @@ DawnBindGroupLayoutBinding AsDawnType(
   dawn_binding.type = AsDawnEnum<DawnBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<DawnShaderStageBit>(webgpu_binding->visibility());
+  dawn_binding.dynamic = webgpu_binding->dynamic();
 
   return dawn_binding;
 }
@@ -35,7 +36,7 @@ GPUBindGroupLayout* GPUBindGroupLayout::Create(
   std::unique_ptr<DawnBindGroupLayoutBinding[]> bindings =
       binding_count != 0 ? AsDawnType(webgpu_desc->bindings()) : nullptr;
 
-  DawnBindGroupLayoutDescriptor dawn_desc;
+  DawnBindGroupLayoutDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
   dawn_desc.bindingCount = binding_count;
   dawn_desc.bindings = bindings.get();

@@ -18,16 +18,18 @@
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/detachable_use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/null_resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -166,6 +168,7 @@ class OutsideSettingsCSPDelegate final
 
 WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     v8::Isolate* isolate,
+    scoped_refptr<SecurityOrigin> origin,
     Agent* agent,
     OffMainThreadWorkerScriptFetchOption off_main_thread_fetch_option,
     const String& name,
@@ -174,7 +177,10 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     WorkerClients* worker_clients,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : ExecutionContext(isolate, agent),
+    : ExecutionContext(isolate,
+                       agent,
+                       MakeGarbageCollected<OriginTrialContext>()),
+      SecurityContext(std::move(origin), WebSandboxFlags::kNone, nullptr),
       off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),
@@ -306,8 +312,8 @@ ResourceFetcher* WorkerOrWorkletGlobalScope::CreateFetcherInternal(
         GetTaskRunner(TaskType::kNetworking),
         MakeGarbageCollected<LoaderFactoryForWorker>(
             *this, web_worker_fetch_context_));
-    auto* console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
-    init.console_logger = console_logger;
+    init.use_counter = MakeGarbageCollected<DetachableUseCounter>(this);
+    init.console_logger = MakeGarbageCollected<DetachableConsoleLogger>(this);
     fetcher = MakeGarbageCollected<ResourceFetcher>(init);
     fetcher->SetResourceLoadObserver(
         MakeGarbageCollected<ResourceLoadObserverForWorker>(
@@ -393,6 +399,14 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   return GetThread()->GetTaskRunner(type);
 }
 
+void WorkerOrWorkletGlobalScope::ApplySandboxFlags(SandboxFlags mask) {
+  sandbox_flags_ |= mask;
+  if (IsSandboxed(WebSandboxFlags::kOrigin) &&
+      !GetSecurityOrigin()->IsOpaque()) {
+    SetSecurityOrigin(GetSecurityOrigin()->DeriveNewOpaqueOrigin());
+  }
+}
+
 void WorkerOrWorkletGlobalScope::SetOutsideContentSecurityPolicyHeaders(
     const Vector<CSPHeaderAndType>& headers) {
   outside_content_security_policy_headers_ = headers;
@@ -425,7 +439,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WorkerResourceTimingNotifier& resource_timing_notifier,
     mojom::RequestContextType destination,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    network::mojom::CredentialsMode credentials_mode,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeClient* client) {
   // Step 2: "Let options be a script fetch options whose cryptographic nonce is

@@ -21,6 +21,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -37,13 +39,12 @@ namespace idle_helper_unittest {
 using base::sequence_manager::SequenceManager;
 using base::sequence_manager::TaskQueue;
 
-void AppendToVectorTestTask(std::vector<std::string>* vector,
-                            std::string value) {
+void AppendToVectorTestTask(Vector<String>* vector, String value) {
   vector->push_back(value);
 }
 
-void AppendToVectorIdleTestTask(std::vector<std::string>* vector,
-                                std::string value,
+void AppendToVectorIdleTestTask(Vector<String>* vector,
+                                String value,
                                 base::TimeTicks deadline) {
   AppendToVectorTestTask(vector, value);
 }
@@ -53,7 +54,7 @@ void NullTask() {}
 void NullIdleTask(base::TimeTicks deadline) {}
 
 void AppendToVectorReentrantTask(base::SingleThreadTaskRunner* task_runner,
-                                 std::vector<int>* vector,
+                                 Vector<int>* vector,
                                  int* reentrant_count,
                                  int max_reentrant_count) {
   vector->push_back((*reentrant_count)++);
@@ -93,7 +94,7 @@ void RepostingUpdateClockIdleTestTask(
     int* run_count,
     scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner,
     base::TimeDelta advance_time,
-    std::vector<base::TimeTicks>* deadlines,
+    Vector<base::TimeTicks>* deadlines,
     base::TimeTicks deadline) {
   if ((*run_count + 1) < g_max_idle_task_reposts) {
     idle_task_runner->PostIdleTask(
@@ -457,8 +458,7 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
   ~IdleHelperWithMessageLoopTest() override = default;
 
   void PostFromNestedRunloop(
-      std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
-          tasks) {
+      Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>* tasks) {
     for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
       if (pair.second) {
         idle_task_runner_->PostIdleTask(FROM_HERE, std::move(pair.first));
@@ -486,25 +486,20 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
 
 TEST_F(IdleHelperWithMessageLoopTest,
        NonNestableIdleTaskDoesntExecuteInNestedLoop) {
-  std::vector<std::string> order;
+  Vector<String> order;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("1")));
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "1"));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("2")));
+      FROM_HERE, base::BindOnce(&AppendToVectorIdleTestTask, &order, "2"));
 
-  std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
+  Vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
       tasks_to_post_from_nested_loop;
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("3")),
-      false));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "3"), false));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("4")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "4"), true));
   tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::BindOnce(&AppendToVectorIdleTestTask, &order, std::string("5")),
-      true));
+      base::BindOnce(&AppendToVectorIdleTestTask, &order, "5"), true));
 
   default_task_runner_->PostTask(
       FROM_HERE,
@@ -518,9 +513,7 @@ TEST_F(IdleHelperWithMessageLoopTest,
       test_task_runner_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
   base::RunLoop().RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
-  EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
-                                          std::string("4"), std::string("5"),
-                                          std::string("3")));
+  EXPECT_THAT(order, testing::ElementsAre("1", "2", "4", "5", "3"));
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriod) {
@@ -591,7 +584,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodWithLatePendingDelayedTask) {
 }
 
 TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
-  std::vector<base::TimeTicks> actual_deadlines;
+  Vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
   EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
@@ -675,7 +668,7 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver,
 
 TEST_F(IdleHelperTest,
        TestLongIdlePeriodDoesNotImmediatelyRestartIfMaxDeadline) {
-  std::vector<base::TimeTicks> actual_deadlines;
+  Vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
   base::TimeTicks clock_before(test_task_runner_->NowTicks());
@@ -742,7 +735,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodRestartWaitsIfNotMaxDeadline) {
 }
 
 TEST_F(IdleHelperTest, TestLongIdlePeriodPaused) {
-  std::vector<base::TimeTicks> actual_deadlines;
+  Vector<base::TimeTicks> actual_deadlines;
   int run_count = 0;
 
   // If there are no idle tasks posted we should start in the paused state.

@@ -48,6 +48,7 @@ class PerformanceManagerTabHelper
   void DidStartLoading() override;
   void DidStopLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void OnAudioStateChanged(bool audible) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
@@ -108,7 +109,7 @@ class PerformanceManagerTabHelper
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_;
+  base::WeakPtrFactory<PerformanceManagerTabHelper> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTabHelper);
 };

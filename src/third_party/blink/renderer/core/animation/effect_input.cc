@@ -94,9 +94,9 @@ void SetKeyframeValue(Element* element,
   if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyID::kVariable
-            ? keyframe.SetCSSPropertyValue(
-                  AtomicString(property), document.GetPropertyRegistry(), value,
-                  document.GetSecureContextMode(), style_sheet_contents)
+            ? keyframe.SetCSSPropertyValue(AtomicString(property), value,
+                                           document.GetSecureContextMode(),
+                                           style_sheet_contents)
             : keyframe.SetCSSPropertyValue(css_property, value,
                                            document.GetSecureContextMode(),
                                            style_sheet_contents);
@@ -222,7 +222,7 @@ void AddPropertyValuePairsForKeyframe(
   // By spec, we must sort the properties in "ascending order by the Unicode
   // codepoints that define each property name."
   std::sort(keyframe_properties.begin(), keyframe_properties.end(),
-            WTF::CodePointCompareLessThan);
+            WTF::CodeUnitCompareLessThan);
 
   v8::TryCatch try_catch(isolate);
   for (const auto& property : keyframe_properties) {
@@ -485,7 +485,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // By spec, we must sort the properties in "ascending order by the Unicode
   // codepoints that define each property name."
   std::sort(keyframe_properties.begin(), keyframe_properties.end(),
-            WTF::CodePointCompareLessThan);
+            WTF::CodeUnitCompareLessThan);
 
   for (const auto& property : keyframe_properties) {
     if (property == "offset" || property == "composite" ||

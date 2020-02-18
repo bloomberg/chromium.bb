@@ -43,8 +43,6 @@ void BindNetworkContextOnUI(network::mojom::CustomProxyConfigPtr config,
 }
 
 WarmupURLFetcher::WarmupURLFetcher(
-    scoped_refptr<network::SharedURLLoaderFactory>
-        non_network_service_url_loader_factory,
     CreateCustomProxyConfigCallback create_custom_proxy_config_callback,
     WarmupURLFetcherCallback callback,
     GetHttpRttCallback get_http_rtt_callback,
@@ -52,15 +50,13 @@ WarmupURLFetcher::WarmupURLFetcher(
     const std::string& user_agent)
     : is_fetch_in_flight_(false),
       previous_attempt_counts_(0),
-      non_network_service_url_loader_factory_(
-          std::move(non_network_service_url_loader_factory)),
       create_custom_proxy_config_callback_(create_custom_proxy_config_callback),
       callback_(callback),
       get_http_rtt_callback_(get_http_rtt_callback),
       user_agent_(user_agent),
       ui_task_runner_(ui_task_runner) {
-  DCHECK(non_network_service_url_loader_factory_);
   DCHECK(create_custom_proxy_config_callback);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 }
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
@@ -69,6 +65,7 @@ void WarmupURLFetcher::FetchWarmupURL(
     size_t previous_attempt_counts,
     const DataReductionProxyServer& proxy_server) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 
   previous_attempt_counts_ = previous_attempt_counts;
 
@@ -102,6 +99,7 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
 void WarmupURLFetcher::FetchWarmupURLNow(
     const DataReductionProxyServer& proxy_server) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 
   UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
                              2);
@@ -162,15 +160,11 @@ void WarmupURLFetcher::FetchWarmupURLNow(
       &WarmupURLFetcher::OnURLLoadResponseStarted, base::Unretained(this)));
   url_loader_->SetOnRedirectCallback(base::BindRepeating(
       &WarmupURLFetcher::OnURLLoaderRedirect, base::Unretained(this)));
-  network::mojom::URLLoaderFactory* factory = nullptr;
-  if (params::IsEnabledWithNetworkService())
-    factory = GetNetworkServiceURLLoaderFactory(proxy_server);
-  else
-    factory = non_network_service_url_loader_factory_.get();
 
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      factory, base::BindOnce(&WarmupURLFetcher::OnURLLoadComplete,
-                              base::Unretained(this)));
+      GetNetworkServiceURLLoaderFactory(proxy_server),
+      base::BindOnce(&WarmupURLFetcher::OnURLLoadComplete,
+                     base::Unretained(this)));
 }
 
 network::mojom::URLLoaderFactory*

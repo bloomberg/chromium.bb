@@ -28,7 +28,6 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import gs
 

@@ -34,8 +34,8 @@ void PluginVmImageDownloadClient::OnServiceInitialized(
   for (const auto& download : downloads) {
     VLOG(1) << "Download tracked by DownloadService: " << download.guid;
     old_downloads_.insert(download.guid);
-    DownloadServiceFactory::GetForBrowserContext(profile_)->CancelDownload(
-        download.guid);
+    DownloadServiceFactory::GetForKey(profile_->GetProfileKey())
+        ->CancelDownload(download.guid);
   }
 }
 
@@ -51,8 +51,8 @@ void PluginVmImageDownloadClient::OnDownloadStarted(
   // We do not want downloads that are tracked by download service from its
   // initialization to proceed.
   if (old_downloads_.find(guid) != old_downloads_.end()) {
-    DownloadServiceFactory::GetForBrowserContext(profile_)->CancelDownload(
-        guid);
+    DownloadServiceFactory::GetForKey(profile_->GetProfileKey())
+        ->CancelDownload(guid);
     return;
   }
 

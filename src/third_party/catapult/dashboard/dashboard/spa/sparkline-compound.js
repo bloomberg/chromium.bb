@@ -4,22 +4,21 @@
 */
 'use strict';
 
-import './cp-loading.js';
-import './cp-tab-bar.js';
-import './cp-tab.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
-import ChartTimeseries from './chart-timeseries.js';
-import OptionGroup from './option-group.js';
-import TimeseriesDescriptor from './timeseries-descriptor.js';
+import './cp-flex.js';
+import '@chopsui/chops-loading';
+import '@chopsui/chops-tab';
+import '@chopsui/chops-tab-bar';
+import {ChartTimeseries} from './chart-timeseries.js';
 import {ElementBase, STORE} from './element-base.js';
 import {MODE} from './layout-timeseries.js';
+import {OptionGroup} from './option-group.js';
+import {TimeseriesDescriptor} from './timeseries-descriptor.js';
 import {UPDATE} from './simple-redux.js';
 import {breakWords} from './utils.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
-export default class SparklineCompound extends ElementBase {
+export class SparklineCompound extends ElementBase {
   static get is() { return 'sparkline-compound'; }
 
   static get properties() {
@@ -47,84 +46,80 @@ export default class SparklineCompound extends ElementBase {
     };
   }
 
-  static get template() {
-    const chartPath = html([
-      '[[statePath]].relatedTabs.[[tabIndex]].renderedSparklines.' +
-      '[[sparklineIndex]].layout',
-    ]);
+  static get styles() {
+    return css`
+      .related-tab {
+        background-color: var(--primary-color-light, lightblue);
+        flex-wrap: wrap;
+        max-height: 380px;
+        overflow: auto;
+        border: 2px solid var(--primary-color-dark, blue);
+        border-top: none;
+      }
+
+      .sparkline-tile {
+        background: var(--background-color);
+        cursor: pointer;
+        margin: 4px;
+        width: 300px;
+      }
+
+      .sparkline-name {
+        justify-content: center;
+        padding: 4px;
+      }
+
+      .sparkline-tile[hidden] {
+        display: none;
+      }
+
+      .sparkline-container {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+      }
+
+      chops-tab-bar {
+        border-bottom: 2px solid var(--primary-color-dark, blue);
+      }
+    `;
+  }
+
+  render() {
+    if (!this.relatedTabs || (this.relatedTabs.length === 0)) return '';
+
     return html`
-      <style>
-        .related_tab {
-          background-color: var(--primary-color-light, lightblue);
-          display: flex;
-          flex-wrap: wrap;
-          max-height: 380px;
-          overflow: auto;
-        }
+      <chops-tab-bar selected="${this.selectedRelatedTabName}">
+        ${this.relatedTabs.map((tab, tabIndex) => html`
+          <chops-tab
+              name="${tab.name}"
+              @click="${event => this.onRelatedTabClick_(tab)}">
+            ${tab.name}
+          </chops-tab>
+        `)}
+      </chops-tab-bar>
 
-        .related_tab:not(.iron-collapse-closed) {
-          border: 2px solid var(--primary-color-dark, blue);
-          border-top: none;
-        }
-
-        .sparkline_tile {
-          background: var(--background-color);
-          cursor: pointer;
-          margin: 4px;
-          width: 300px;
-        }
-
-        .sparkline_name {
-          display: flex;
-          justify-content: center;
-          padding: 4px;
-        }
-
-        .sparkline_container {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: center;
-          width: 100%;
-        }
-
-        cp-tab-bar {
-          border-bottom: 2px solid var(--primary-color-dark, blue);
-        }
-      </style>
-
-      <template is="dom-if" if="[[!isEmpty_(relatedTabs)]]">
-        <cp-tab-bar selected="[[selectedRelatedTabName]]">
-          <template is="dom-repeat" items="[[relatedTabs]]" as="tab"
-                                    index-as="tabIndex">
-            <cp-tab name="[[tab.name]]" on-click="onRelatedTabClick_">
-              [[tab.name]]
-            </cp-tab>
-          </template>
-        </cp-tab-bar>
-
-        <template is="dom-repeat" items="[[relatedTabs]]" as="tab"
-                                  index-as="tabIndex">
-          <iron-collapse
-              opened="[[isEqual_(tab.name, selectedRelatedTabName)]]"
-              class="related_tab">
-            <div class="sparkline_container">
-              <template is="dom-repeat" items="[[tab.renderedSparklines]]"
-    as="sparkline" index-as="sparklineIndex">
-                <div
-                    class="sparkline_tile"
-                    hidden$="[[hideTile_(sparkline)]]"
-                    on-click="onSparklineClick_">
-                  <div class="sparkline_name">[[sparkline.name]]</div>
-                  <cp-loading loading$="[[sparkline.layout.isLoading]]">
-                  </cp-loading>
-                  <chart-timeseries state-path="${chartPath}">
-                  </chart-timeseries>
-                </div>
-              </template>
-            </div>
-          </iron-collapse>
-        </template>
-      </template>
+      ${this.relatedTabs.map((tab, tabIndex) => html`
+        <cp-flex class="related-tab"
+            ?hidden="${tab.name !== this.selectedRelatedTabName}">
+          <cp-flex class="sparkline-container">
+            ${(tab.renderedSparklines || []).map((sparkline, index) => html`
+              <div
+                  class="sparkline-tile"
+                  ?hidden="${this.hideTile_(sparkline)}"
+                  @click="${event => this.onSparklineClick_(sparkline)}">
+                <cp-flex class="sparkline-name">${sparkline.name}</cp-flex>
+                <chops-loading ?loading="${sparkline.layout.isLoading}">
+                </chops-loading>
+                <chart-timeseries .statePath="${
+  this.statePath}.relatedTabs.${tabIndex}.renderedSparklines.${
+  index}.layout">
+                </chart-timeseries>
+              </div>
+            `)}
+          </cp-flex>
+        </cp-flex>
+      `)}
     `;
   }
 
@@ -136,7 +131,7 @@ export default class SparklineCompound extends ElementBase {
     const oldMinRevision = this.minRevision;
     const oldMaxRevision = this.maxRevision;
 
-    this.setProperties(get(rootState, this.statePath));
+    Object.assign(this, get(rootState, this.statePath));
 
     if (this.minRevision !== oldMinRevision ||
         this.maxRevision !== oldMaxRevision) {
@@ -155,20 +150,19 @@ export default class SparklineCompound extends ElementBase {
     }
   }
 
-  async onRelatedTabClick_(event) {
-    await SparklineCompound.selectRelatedTab(
-        this.statePath, event.model.tab.name);
+  async onRelatedTabClick_(tab) {
+    await SparklineCompound.selectRelatedTab(this.statePath, tab.name);
   }
 
   hideTile_(sparkline) {
-    return !sparkline.isLoading && this.isEmpty_(sparkline.layout.lines);
+    return !sparkline.layout.isLoading && (sparkline.layout.lines.length === 0);
   }
 
-  async onSparklineClick_(event) {
+  async onSparklineClick_(sparkline) {
     this.dispatchEvent(new CustomEvent('new-chart', {
       bubbles: true,
       composed: true,
-      detail: {options: event.model.sparkline.chartOptions},
+      detail: {options: sparkline.chartOptions},
     }));
   }
 

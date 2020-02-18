@@ -102,6 +102,9 @@ void FakeDebugDaemonClient::GetPerfOutput(
     int file_descriptor,
     DBusMethodCallback<uint64_t> error_callback) {}
 
+void FakeDebugDaemonClient::StopPerf(uint64_t session_id,
+                                     VoidDBusMethodCallback callback) {}
+
 void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
@@ -222,7 +225,7 @@ void FakeDebugDaemonClient::CupsRemovePrinter(
     const std::string& name,
     DebugDaemonClient::CupsRemovePrinterCallback callback,
     const base::Closure& error_callback) {
-  const bool has_printer = base::ContainsKey(printers_, name);
+  const bool has_printer = base::Contains(printers_, name);
   if (has_printer)
     printers_.erase(name);
 

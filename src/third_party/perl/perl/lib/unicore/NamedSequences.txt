@@ -1,24 +1,34 @@
-# NamedSequences-6.1.0.txt
-# Date: 2011-07-26, 19:47:00 GMT [KW]
+# NamedSequences-12.1.0.txt
+# Date: 2019-03-08, 23:59:00 GMT [KW, LI]
+# © 2019 Unicode®, Inc.
+# For terms of use, see http://www.unicode.org/terms_of_use.html
 #
 # Unicode Character Database
-# Copyright (c) 1991-2011 Unicode, Inc.
-# For terms of use, see http://www.unicode.org/terms_of_use.html
 # For documentation, see http://www.unicode.org/reports/tr44/
+#
+# Unicode Named Character Sequences
+#
+# This file is a normative contributory data file in the Unicode
+# Character Database.
 #
 # Format:
 # Name of Sequence; Code Point Sequence for USI
 #
-# Code point sequences in the UCD use spaces as delimiters.
-# The corresponding format for a USI in ISO/IEC 10646 uses
-# comma delimitation and angle brackets. Thus, a named sequence
-# of the form:
+# Code point sequences in the Unicode Character Database
+# use spaces as delimiters. The corresponding format for a
+# UCS Sequence Identifier (USI) in ISO/IEC 10646 uses
+# comma delimitation and angle brackets. Thus, a Unicode
+# named character sequence of the form:
 #
 # EXAMPLE NAME;1000 1001 1002
 #
-# in this data file, would correspond to a 10646 USI as follows:
+# in this data file, would correspond to an ISO/IEC 10646 USI
+# as follows:
 #
-# <1000, 1001, 1002> 
+# <1000, 1001, 1002>
+#
+# For more information, see UAX #34: Unicode Named Character
+# Sequences, at http://www.unicode.org/unicode/reports/tr34/
 #
 # Note: The order of entries in this file is not significant.
 # However, entries are generally in script order corresponding
@@ -26,6 +36,28 @@
 # to find entries in the list.
 
 # ================================================
+
+# Named keycap sequences for telephone keypad (used for emoji)
+# Provisional, 2015-05-05
+# FE0F added to the sequences, 2016-05-11
+# Approved 2017-05-12
+
+KEYCAP NUMBER SIGN;0023 FE0F 20E3
+KEYCAP ASTERISK;002A FE0F 20E3
+KEYCAP DIGIT ZERO;0030 FE0F 20E3
+KEYCAP DIGIT ONE;0031 FE0F 20E3
+KEYCAP DIGIT TWO;0032 FE0F 20E3
+KEYCAP DIGIT THREE;0033 FE0F 20E3
+KEYCAP DIGIT FOUR;0034 FE0F 20E3
+KEYCAP DIGIT FIVE;0035 FE0F 20E3
+KEYCAP DIGIT SIX;0036 FE0F 20E3
+KEYCAP DIGIT SEVEN;0037 FE0F 20E3
+KEYCAP DIGIT EIGHT;0038 FE0F 20E3
+KEYCAP DIGIT NINE;0039 FE0F 20E3
+
+# Latin letter plus accent combinations.
+# These are part of the original set of approved named sequences
+# for Unicode 4.1. 2005.
 
 LATIN CAPITAL LETTER A WITH MACRON AND GRAVE;0100 0300
 LATIN SMALL LETTER A WITH MACRON AND GRAVE;0101 0300
@@ -54,7 +86,8 @@ LATIN SMALL LETTER S WITH VERTICAL LINE BELOW;0073 0329
 LATIN CAPITAL LETTER U WITH MACRON AND GRAVE;016A 0300
 LATIN SMALL LETTER U WITH MACRON AND GRAVE;016B 0300
 
-# Additions for Lithuanian. Provisional 2006-05-18, Approved 2007-10-19
+# Additions for Lithuanian.
+# Provisional 2006-05-18, Approved 2007-10-19
 
 LATIN CAPITAL LETTER A WITH OGONEK AND ACUTE;0104 0301
 LATIN SMALL LETTER A WITH OGONEK AND ACUTE;0105 0301
@@ -92,7 +125,7 @@ LATIN CAPITAL LETTER U WITH MACRON AND TILDE;016A 0303
 LATIN SMALL LETTER U WITH MACRON AND TILDE;016B 0303
 
 # Entries for JIS X 0213 compatibility mapping.
-# Provisional: 2008-11-07, Approved 2010-05-14
+# Provisional 2008-11-07, Approved 2010-05-14
 
 LATIN SMALL LETTER AE WITH GRAVE;00E6 0300
 LATIN SMALL LETTER OPEN O WITH GRAVE;0254 0300
@@ -104,16 +137,32 @@ LATIN SMALL LETTER SCHWA WITH ACUTE;0259 0301
 LATIN SMALL LETTER HOOKED SCHWA WITH GRAVE;025A 0300
 LATIN SMALL LETTER HOOKED SCHWA WITH ACUTE;025A 0301
 
+# Entries for Uyghur and Chagatai.
+# Provisional N/A, Approved 2012-11-08
+
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH ALEF;0626 0627
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH WAW;0626 0648
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH ALEF MAKSURA;0626 0649
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH OE;0626 06C6
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH U;0626 06C7
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH YU;0626 06C8
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH E;0626 06D0
+ARABIC SEQUENCE YEH WITH HAMZA ABOVE WITH AE;0626 06D5
+ARABIC SEQUENCE NOON WITH KEHEH;0646 06A9
+
 # Entry for a Bangla entity.
-# Provisional: 2009-08-10, Approved 2010-05-14
+# Provisional 2009-08-10, Approved 2010-05-14
+#
+# Note that this same sequence is also used for the ASSAMESE LETTER KSSA.
 
 BENGALI LETTER KHINYA;0995 09CD 09B7
 
-# Additions for Tamil. Provisional 2008-02-08, Approved 2009-08-14
+# Additions for Tamil.
+# Provisional 2008-02-08, Approved 2009-08-14
 #
-# A visual display of the Tamil named sequences is available
-# in the documentation for Unicode 5.2. See:
-# http://www.unicode.org/versions/Unicode5.2.0/
+# A visual display of the Tamil named character sequences is available
+# in the documentation for the Unicode Standard. See Section 12.6, Tamil in
+# http://www.unicode.org/versions/latest/
 
 TAMIL CONSONANT K;  0B95 0BCD
 TAMIL CONSONANT NG; 0B99 0BCD
@@ -431,14 +480,23 @@ TAMIL SYLLABLE KSSAU; 0B95 0BCD 0BB7 0BCC
 
 TAMIL SYLLABLE SHRII; 0BB6 0BCD 0BB0 0BC0
 
-# Sinhala medial consonants and "reph" form
+# Sinhala medial consonants and "reph" form.
 # Provisional 2010-05-13, Approved 2011-08-05
 
 SINHALA CONSONANT SIGN YANSAYA;0DCA 200D 0DBA
 SINHALA CONSONANT SIGN RAKAARAANSAYA;0DCA 200D 0DBB
 SINHALA CONSONANT SIGN REPAYA;0DBB 0DCA 200D
 
+# Georgian letter plus accent sequence.
+# This is part of the original set of approved named sequences
+# for Unicode 4.1. 2005.
+
 GEORGIAN LETTER U-BRJGU;10E3 0302
+
+# Khmer subjoined forms and other sequences.
+# These are part of the original set of approved named sequences
+# for Unicode 4.1. 2005.
+
 KHMER CONSONANT SIGN COENG KA;17D2 1780
 KHMER CONSONANT SIGN COENG KHA;17D2 1781
 KHMER CONSONANT SIGN COENG KO;17D2 1782
@@ -482,7 +540,10 @@ KHMER VOWEL SIGN OM;17BB 17C6
 KHMER VOWEL SIGN AAM;17B6 17C6
 
 # Entries for JIS X 0213 compatibility mapping.
-# Provisional: 2008-11-07, Approved 2010-05-14
+# Provisional 2008-11-07, Approved 2010-05-14
+#
+# Two of these were part of the original set of approved named sequences
+# for Unicode 4.1. 2005.
 
 HIRAGANA LETTER BIDAKUON NGA;304B 309A
 HIRAGANA LETTER BIDAKUON NGI;304D 309A
@@ -500,3 +561,5 @@ KATAKANA LETTER AINU TO;30C8 309A
 KATAKANA LETTER AINU P;31F7 309A
 MODIFIER LETTER EXTRA-HIGH EXTRA-LOW CONTOUR TONE BAR;02E5 02E9
 MODIFIER LETTER EXTRA-LOW EXTRA-HIGH CONTOUR TONE BAR;02E9 02E5
+
+# EOF

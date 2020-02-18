@@ -459,12 +459,12 @@ class PpdProviderImpl : public PpdProvider {
         for (const std::string& make_and_model : search_data.make_and_model) {
           // Check if we need to load its ppd_index
           int ppd_index_shard = IndexShard(make_and_model);
-          if (!base::ContainsKey(cached_ppd_idxs_, ppd_index_shard)) {
+          if (!base::Contains(cached_ppd_idxs_, ppd_index_shard)) {
             StartFetch(GetPpdIndexURL(ppd_index_shard), FT_PPD_INDEX);
             return true;
           }
-          if (base::ContainsKey(cached_ppd_idxs_[ppd_index_shard],
-                                make_and_model)) {
+          if (base::Contains(cached_ppd_idxs_[ppd_index_shard],
+                             make_and_model)) {
             // Found a hit, satisfy this resolution.
             RunPpdReferenceResolutionSucceeded(std::move(next.cb),
                                                make_and_model);
@@ -490,10 +490,19 @@ class PpdProviderImpl : public PpdProvider {
         // Found a hit, satisfy this resolution.
         RunPpdReferenceResolutionSucceeded(std::move(next.cb),
                                            kEpsonGenericPPD);
+      } else {
+        // We don't have anything else left to try.
+        if (search_data.discovery_type ==
+            PrinterSearchData::PrinterDiscoveryType::kUsb) {
+          // We've reached unsupported USB printer, try to grab the manufacturer
+          // name.
+          ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
+        } else {
+          // Non-USB printer, so we fail resolution normally.
+          RunPpdReferenceResolutionNotFound(std::move(next.cb),
+                                            "" /* Empty Manufacturer */);
+        }
       }
-      // We don't have anything else left to try. We've reached unsupported USB
-      // printer, try to grab the manufacturer name.
-      ResolveUsbManufacturer(std::move(next.cb), search_data.usb_vendor_id);
     }
     // Didn't start any fetches.
     return false;
@@ -545,7 +554,7 @@ class PpdProviderImpl : public PpdProvider {
       }
       DCHECK(!next.reference.effective_make_and_model.empty());
       int ppd_index_shard = IndexShard(next.reference.effective_make_and_model);
-      if (!base::ContainsKey(cached_ppd_idxs_, ppd_index_shard)) {
+      if (!base::Contains(cached_ppd_idxs_, ppd_index_shard)) {
         // Have to have the ppd index before we can resolve by ppd server
         // key.
         StartFetch(GetPpdIndexURL(ppd_index_shard), FT_PPD_INDEX);
@@ -1488,7 +1497,7 @@ class PpdProviderImpl : public PpdProvider {
 
   void ResolveUsbManufacturer(ResolvePpdReferenceCallback cb, int vendor_id) {
     std::string manufacturer;
-    if (base::ContainsKey(GetVendorIdMap(), vendor_id)) {
+    if (base::Contains(GetVendorIdMap(), vendor_id)) {
       manufacturer = GetVendorIdMap().at(vendor_id);
     } else {
       LOG(ERROR) << "Unable to find vendor_id: " << vendor_id;

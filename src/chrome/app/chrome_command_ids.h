@@ -107,6 +107,7 @@
 #define IDC_FIND                        37000
 #define IDC_FIND_NEXT                   37001
 #define IDC_FIND_PREVIOUS               37002
+#define IDC_CLOSE_FIND_OR_STOP          37003
 #define IDC_FIND_MENU                   37100
 
 // Zoom
@@ -328,6 +329,9 @@
 #define IDC_BOOKMARK_BAR_UNDO 51012
 #define IDC_BOOKMARK_BAR_REDO 51013
 #define IDC_BOOKMARK_BAR_SHOW_MANAGED_BOOKMARKS 51014
+// Context menu items for Sharing
+#define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_SINGLE_DEVICE 51030
+#define IDC_CONTENT_CONTEXT_SHARING_CLICK_TO_CALL_MULTIPLE_DEVICES 51031
 
 // Context menu items in the status tray
 #define IDC_STATUS_TRAY_KEEP_CHROME_RUNNING_IN_BACKGROUND 51100

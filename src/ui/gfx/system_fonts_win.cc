@@ -21,16 +21,26 @@ namespace {
 
 class SystemFonts {
  public:
-  const gfx::Font& GetFont(SystemFont system_font) const {
+  const gfx::Font& GetFont(SystemFont system_font) {
+    if (!IsInitialized())
+      Initialize();
+
     auto it = system_fonts_.find(system_font);
     DCHECK(it != system_fonts_.end())
         << "System font #" << static_cast<int>(system_font) << " not found!";
     return it->second;
   }
 
-  static const SystemFonts* Instance() {
+  static SystemFonts* Instance() {
     static base::NoDestructor<SystemFonts> instance;
     return instance.get();
+  }
+
+  void ResetForTesting() {
+    SystemFonts::is_initialized_ = false;
+    SystemFonts::adjust_font_callback_ = nullptr;
+    SystemFonts::get_minimum_font_size_callback_ = nullptr;
+    system_fonts_.clear();
   }
 
   static int AdjustFontSize(int lf_height, int size_delta) {
@@ -109,8 +119,10 @@ class SystemFonts {
  private:
   friend base::NoDestructor<SystemFonts>;
 
-  SystemFonts() {
-    TRACE_EVENT0("fonts", "gfx::SystemFonts::SystemFonts");
+  SystemFonts() {}
+
+  void Initialize() {
+    TRACE_EVENT0("fonts", "gfx::SystemFonts::Initialize");
 
     NONCLIENTMETRICS_XP metrics;
     base::win::GetNonClientMetrics(&metrics);
@@ -253,6 +265,10 @@ int AdjustFontSize(int lf_height, int size_delta) {
 void AdjustLOGFONTForTesting(const FontAdjustment& font_adjustment,
                              LOGFONT* logfont) {
   SystemFonts::AdjustLOGFONT(font_adjustment, logfont);
+}
+
+GFX_EXPORT void ResetSystemFontsForTesting() {
+  SystemFonts::Instance()->ResetForTesting();
 }
 
 }  // namespace win

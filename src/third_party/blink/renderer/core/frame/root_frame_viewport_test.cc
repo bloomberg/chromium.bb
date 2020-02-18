@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -145,9 +146,9 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
     return ScrollOffset(ContentsSize() - ViewportSize());
   }
 
-  LayoutRect DocumentToFrame(const LayoutRect& rect) const {
-    LayoutRect ret = rect;
-    ret.Move(LayoutSize(-GetScrollOffset()));
+  PhysicalRect DocumentToFrame(const PhysicalRect& rect) const {
+    PhysicalRect ret = rect;
+    ret.Move(-PhysicalOffset::FromFloatSizeRound(GetScrollOffset()));
     return ret;
   }
 
@@ -220,14 +221,16 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
   // Layout viewport shouldn't scroll since it's not horizontally scrollable,
   // but visual viewport should.
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(300, 0));
+                                  FloatSize(300, 0),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 0), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 0), root_frame_viewport->GetScrollOffset());
 
   // Vertical scrolling should be unaffected.
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(0, 300));
+                                  FloatSize(0, 300),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(0, 150), layout_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 75), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 225), root_frame_viewport->GetScrollOffset());
@@ -250,14 +253,16 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
   // Layout viewport shouldn't scroll since it's not vertically scrollable,
   // but visual viewport should.
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(0, 300));
+                                  FloatSize(0, 300),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 75), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 75), root_frame_viewport->GetScrollOffset());
 
   // Horizontal scrolling should be unaffected.
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(300, 0));
+                                  FloatSize(300, 0),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(100, 0), layout_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 75), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(150, 75), root_frame_viewport->GetScrollOffset());
@@ -294,7 +299,8 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   EXPECT_EQ(ScrollOffset(50, 75), root_frame_viewport->GetScrollOffset());
 
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(-50, 0));
+                                  FloatSize(-50, 0),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(0, 75), root_frame_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 75), visual_viewport->GetScrollOffset());
 
@@ -306,7 +312,8 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   EXPECT_EQ(ScrollOffset(100, 150), root_frame_viewport->GetScrollOffset());
 
   root_frame_viewport->UserScroll(ScrollGranularity::kScrollByPixel,
-                                  FloatSize(-100, 0));
+                                  FloatSize(-100, 0),
+                                  ScrollableArea::ScrollCallback());
   EXPECT_EQ(ScrollOffset(0, 150), root_frame_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 150), layout_viewport->GetScrollOffset());
 }
@@ -328,7 +335,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   // scaled.
   visual_viewport->SetViewportSize(IntSize(100, 100));
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(100, 250, 50, 50)),
+      layout_viewport->DocumentToFrame(PhysicalRect(100, 250, 50, 50)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -337,7 +344,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 50), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(25, 75, 50, 50)),
+      layout_viewport->DocumentToFrame(PhysicalRect(25, 75, 50, 50)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -353,7 +360,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
                                        ScrollableArea::ScrollCallback());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(50, 75, 50, 75)),
+      layout_viewport->DocumentToFrame(PhysicalRect(50, 75, 50, 75)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -362,7 +369,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(50, 75), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(190, 290, 10, 10)),
+      layout_viewport->DocumentToFrame(PhysicalRect(190, 290, 10, 10)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -380,7 +387,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
       kScrollBehaviorInstant, ScrollableArea::ScrollCallback());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(
+      layout_viewport->DocumentToFrame(PhysicalRect(
           root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
@@ -390,7 +397,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 10), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(
+      layout_viewport->DocumentToFrame(PhysicalRect(
           root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
                               ScrollAlignment::kAlignCenterAlways,
@@ -400,7 +407,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 10), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      layout_viewport->DocumentToFrame(LayoutRect(
+      layout_viewport->DocumentToFrame(PhysicalRect(
           root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(
           ScrollAlignment::kAlignTopAlways, ScrollAlignment::kAlignTopAlways,

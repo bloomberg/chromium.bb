@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -128,6 +127,7 @@ DemoSetupController::DemoSetupError CreateFromClientStatus(
           ErrorCode::kTemporaryUnavailable, RecoveryMethod::kRetry,
           debug_message);
     case policy::DM_STATUS_HTTP_STATUS_ERROR:
+    case policy::DM_STATUS_REQUEST_TOO_LARGE:
       return DemoSetupController::DemoSetupError(
           ErrorCode::kResponseError, RecoveryMethod::kUnknown, debug_message);
     case policy::DM_STATUS_RESPONSE_DECODING_ERROR:
@@ -462,14 +462,10 @@ bool DemoSetupController::IsOobeDemoSetupFlowInProgress() {
 
 // static
 std::string DemoSetupController::GetSubOrganizationEmail() {
-  if (!base::FeatureList::IsEnabled(
-          switches::kSupportCountryCustomizationInDemoMode)) {
-    return std::string();
-  }
   const std::string country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const base::flat_set<std::string> kCountriesWithCustomization(
-      {"dk", "fi", "fr", "nl", "no", "se"});
+      {"de", "dk", "fi", "fr", "jp", "nl", "no", "se"});
   if (kCountriesWithCustomization.contains(country))
     return "admin-" + country + "@" + policy::kDemoModeDomain;
   return std::string();

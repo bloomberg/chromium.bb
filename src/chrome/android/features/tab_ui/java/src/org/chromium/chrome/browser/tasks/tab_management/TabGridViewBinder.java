@@ -42,29 +42,36 @@ class TabGridViewBinder {
             String title = item.get(TabProperties.TITLE);
             holder.title.setText(title);
         } else if (TabProperties.IS_SELECTED == propertyKey) {
-            Resources res = holder.itemView.getResources();
-            Resources.Theme theme = holder.itemView.getContext().getTheme();
+            int selectedTabBackground = item.get(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID);
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                Drawable selectedDrawable = new InsetDrawable(
-                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
-                        (int) res.getDimension(R.dimen.tab_list_selected_inset_kitkat));
-                Drawable elevationDrawable =
-                        ResourcesCompat.getDrawable(res, R.drawable.popup_bg, theme);
-                holder.backgroundView.setBackground(
-                        item.get(TabProperties.IS_SELECTED) ? selectedDrawable : elevationDrawable);
+                if (item.get(TabProperties.IS_SELECTED)) {
+                    holder.selectedViewBelowLollipop.setBackgroundResource(selectedTabBackground);
+                    holder.selectedViewBelowLollipop.setVisibility(View.VISIBLE);
+                } else {
+                    holder.selectedViewBelowLollipop.setVisibility(View.GONE);
+                }
             } else {
+                Resources res = holder.itemView.getResources();
+                Resources.Theme theme = holder.itemView.getContext().getTheme();
                 Drawable drawable = new InsetDrawable(
-                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
+                        ResourcesCompat.getDrawable(res, selectedTabBackground, theme),
                         (int) res.getDimension(R.dimen.tab_list_selected_inset));
                 holder.itemView.setForeground(
                         item.get(TabProperties.IS_SELECTED) ? drawable : null);
             }
         } else if (TabProperties.FAVICON == propertyKey) {
-            holder.favicon.setImageDrawable(item.get(TabProperties.FAVICON));
+            Drawable favicon = item.get(TabProperties.FAVICON);
+            holder.favicon.setImageDrawable(favicon);
+            int padding = favicon == null ? 0
+                                          : (int) holder.itemView.getResources().getDimension(
+                                                  R.dimen.tab_list_card_padding);
+            holder.favicon.setPadding(padding, padding, padding, padding);
         } else if (TabProperties.THUMBNAIL_FETCHER == propertyKey) {
             updateThumbnail(holder, item);
         } else if (TabProperties.TAB_ID == propertyKey) {
             holder.setTabId(item.get(TabProperties.TAB_ID));
+        } else if (TabProperties.IS_INCOGNITO == propertyKey) {
+            holder.updateColor(item.get(TabProperties.IS_INCOGNITO));
         }
 
         if (holder instanceof ClosableTabGridViewHolder) {
@@ -106,13 +113,15 @@ class TabGridViewBinder {
         } else if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
             holder.actionButton.setContentDescription(holder.itemView.getResources().getString(
-                    org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab, title));
+                    R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.IPH_PROVIDER == propertyKey) {
             TabListMediator.IphProvider provider = item.get(TabProperties.IPH_PROVIDER);
             if (provider != null) provider.showIPH(holder.thumbnail);
         } else if (TabProperties.CARD_ANIMATION_STATUS == propertyKey) {
-            TabListRecyclerView.scaleTabGridCardView(
-                    holder.itemView, item.get(TabProperties.CARD_ANIMATION_STATUS));
+            boolean isSelected = item.get(TabProperties.IS_SELECTED);
+            ((ClosableTabGridViewHolder) holder)
+                    .scaleTabGridCardView(
+                            item.get(TabProperties.CARD_ANIMATION_STATUS), isSelected);
         }
     }
 
@@ -135,12 +144,15 @@ class TabGridViewBinder {
                 item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
                 selectionHolder.selectableTabGridView.onClick();
             });
+            selectionHolder.itemView.setOnLongClickListener(view -> {
+                item.get(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER).run(holder.getTabId());
+                return selectionHolder.selectableTabGridView.onLongClick(view);
+            });
         } else if (TabProperties.TITLE == propertyKey) {
             String title = item.get(TabProperties.TITLE);
             selectionHolder.actionButton.setContentDescription(
                     holder.itemView.getResources().getString(
-                            org.chromium.chrome.R.string.accessibility_tabstrip_btn_close_tab,
-                            title));
+                            R.string.accessibility_tabstrip_btn_close_tab, title));
         } else if (TabProperties.TAB_SELECTION_DELEGATE == propertyKey) {
             assert item.get(TabProperties.TAB_SELECTION_DELEGATE) != null;
 

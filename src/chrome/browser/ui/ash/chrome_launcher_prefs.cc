@@ -22,8 +22,12 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -100,13 +104,6 @@ struct ComparePinInfo {
     return pin1.item_ordinal.LessThan(pin2.item_ordinal);
   }
 };
-
-// Returns true in case some configuration was rolled.
-bool IsAnyDefaultPinLayoutRolled(Profile* profile) {
-  const auto* layouts_rolled =
-      profile->GetPrefs()->GetList(prefs::kShelfDefaultPinLayoutRolls);
-  return layouts_rolled && !layouts_rolled->GetList().empty();
-}
 
 // Returns true in case default pin layout |default_pin_layout| was already
 // rolled.
@@ -224,10 +221,11 @@ void InitLocalPref(PrefService* prefs, const char* local, const char* synced) {
 
 // Helper that extracts app list from policy preferences.
 std::vector<std::string> GetAppsPinnedByPolicy(
-    const LauncherControllerHelper* helper) {
+    LauncherControllerHelper* helper) {
   const PrefService* prefs = helper->profile()->GetPrefs();
   std::vector<std::string> result;
-  const auto* policy_apps = prefs->GetList(prefs::kPolicyPinnedLauncherApps);
+  const base::Value* policy_apps =
+      prefs->GetList(prefs::kPolicyPinnedLauncherApps);
   if (!policy_apps)
     return result;
 
@@ -238,29 +236,47 @@ std::vector<std::string> GetAppsPinnedByPolicy(
       arc_app_list_pref ? arc_app_list_pref->GetAppIds()
                         : std::vector<std::string>());
 
-  for (const auto& policy_apps_entry : policy_apps->GetList()) {
-    const base::Value* app_id_value =
-        policy_apps_entry.is_dict()
-            ? policy_apps_entry.FindKeyOfType(kPinnedAppsPrefAppIDKey,
-                                              base::Value::Type::STRING)
+  for (const auto& policy_dict_entry : policy_apps->GetList()) {
+    const std::string* policy_entry =
+        policy_dict_entry.is_dict()
+            ? policy_dict_entry.FindStringKey(kPinnedAppsPrefAppIDKey)
             : nullptr;
-    if (!app_id_value) {
+
+    if (!policy_entry) {
       LOG(ERROR) << "Cannot extract policy app info from prefs.";
       continue;
     }
-    const std::string app_id = app_id_value->GetString();
 
     if (chromeos::DemoSession::Get() &&
-        chromeos::DemoSession::Get()->ShouldIgnorePinPolicy(app_id)) {
+        chromeos::DemoSession::Get()->ShouldIgnorePinPolicy(*policy_entry)) {
       continue;
     }
 
-    if (IsAppIdArcPackage(app_id)) {
+    // Handle Chrome App ids
+    if (crx_file::id_util::IdIsValid(*policy_entry)) {
+      result.emplace_back(*policy_entry);
+      continue;
+    }
+
+    // Handle Web App ids
+    const GURL web_app_url(*policy_entry);
+    if (web_app_url.is_valid()) {
+      base::Optional<web_app::AppId> web_app_id =
+          web_app::WebAppProvider::Get(helper->profile())
+              ->registrar()
+              .LookupExternalAppId(web_app_url);
+      if (web_app_id.has_value())
+        result.emplace_back(web_app_id.value());
+      continue;
+    }
+
+    // Handle Arc++ App ids
+    if (IsAppIdArcPackage(*policy_entry)) {
       if (!arc_app_list_pref)
         continue;
 
       // We are dealing with package name, not with 32 characters ID.
-      const std::string& arc_package = app_id;
+      const std::string& arc_package = *policy_entry;
       const std::vector<std::string> activities = GetActivitiesForPackage(
           arc_package, all_arc_app_ids, *arc_app_list_pref);
       for (const auto& activity : activities) {
@@ -268,8 +284,8 @@ std::vector<std::string> GetAppsPinnedByPolicy(
             ArcAppListPrefs::GetAppId(arc_package, activity);
         result.emplace_back(arc_app_id);
       }
-    } else {
-      result.emplace_back(app_id);
+
+      continue;
     }
   }
   return result;
@@ -433,11 +449,8 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
   // completed. prefs::kPolicyPinnedLauncherApps overrides any default layout.
   // This also limits applying experimental configuration only for users who
   // have the default pin layout specified by |kDefaultPinnedApps| or for
-  // fresh users who have no pin information at all. Default configuration is
-  // not applied if any of experimental layout was rolled.
-  std::string shelf_layout = IsAnyDefaultPinLayoutRolled(helper->profile())
-                                 ? std::string()
-                                 : kDefaultPinnedAppsKey;
+  // fresh users who have no pin information at all.
+  std::string shelf_layout = kDefaultPinnedAppsKey;
   // Set to true in case default configuration has to be reset in order to let
   // new layout takes effect.
   bool reset_default_configuration = false;
@@ -465,7 +478,6 @@ std::vector<ash::ShelfID> GetPinnedAppsFromSync(
 
   if (!prefs->HasPrefPath(prefs::kPolicyPinnedLauncherApps) &&
       IsSafeToApplyDefaultPinLayout(helper->profile()) &&
-      !shelf_layout.empty() &&
       !IsDefaultPinLayoutRolled(helper->profile(), shelf_layout)) {
     VLOG(1) << "Roll default shelf pin layout " << shelf_layout;
     if (reset_default_configuration) {

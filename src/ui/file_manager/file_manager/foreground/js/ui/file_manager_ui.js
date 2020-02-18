@@ -111,6 +111,12 @@ class FileManagerUI {
         new cr.filebrowser.InstallLinuxPackageDialog(this.element);
 
     /**
+     * Dialog for formatting
+     * @const {!HTMLElement}
+     */
+    this.formatDialog = queryRequiredElement('#format-dialog');
+
+    /**
      * The container element of the dialog.
      * @type {!HTMLElement}
      */
@@ -239,6 +245,22 @@ class FileManagerUI {
      */
     this.progressCenterPanel = new ProgressCenterPanel(
         queryRequiredElement('#progress-center', this.element));
+
+    /**
+     * Activity complete feedback panel.
+     * @type {!HTMLElement}
+     * @const
+     */
+    this.activityCompletePanel =
+        queryRequiredElement('#completed-panel', this.element);
+
+    /**
+     * Activity feedback panel.
+     * @type {!HTMLElement}
+     * @const
+     */
+    this.activityProgressPanel =
+        queryRequiredElement('#progress-panel', this.element);
 
     /**
      * List container.
@@ -389,19 +411,21 @@ class FileManagerUI {
    *
    * @param {!FileTable} table
    * @param {!FileGrid} grid
-   * @param {!LocationLine} locationLine
+   * @param {!VolumeManager} volumeManager
    */
-  initAdditionalUI(table, grid, locationLine) {
+  initAdditionalUI(table, grid, volumeManager) {
     // List container.
     this.listContainer = new ListContainer(
         queryRequiredElement('#list-container', this.element), table, grid);
 
+    // Location line.
+    this.locationLine = new LocationLine(
+        queryRequiredElement('#location-breadcrumbs', this.element),
+        volumeManager, this.listContainer);
+
     // Splitter.
     this.decorateSplitter_(
         queryRequiredElement('#navigation-list-splitter', this.element));
-
-    // Location line.
-    this.locationLine = locationLine;
 
     // Init context menus.
     cr.ui.contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
@@ -445,6 +469,8 @@ class FileManagerUI {
         util.queryDecoratedElement('#roots-context-menu', cr.ui.Menu);
     this.directoryTree.contextMenuForSubitems =
         util.queryDecoratedElement('#directory-tree-context-menu', cr.ui.Menu);
+    this.directoryTree.disabledContextMenu =
+        util.queryDecoratedElement('#disabled-context-menu', cr.ui.Menu);
 
     // Visible height of the directory tree depends on the size of progress
     // center panel. When the size of progress center panel changes, directory

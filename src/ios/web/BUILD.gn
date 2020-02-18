@@ -4,7 +4,6 @@
 
 import("//ios/build/config.gni")
 import("//ios/web/js_compile.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -18,16 +17,16 @@ group("all_tests") {
 
 source_set("web") {
   public_deps = [
-    ":service_names",
+    "//ios/web/public/service:service_names",
 
     # TODO(crbug.com/616244): Remove private files from public dependencies.
-    ":services",
     ":threads",
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
     "//ios/web/public/download",
     "//ios/web/public/init",
+    "//ios/web/service",
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
@@ -40,11 +39,11 @@ source_set("web") {
     ":js_resources",
     ":navigation_resources",
     ":resources",
-    ":services",
     ":threads",
     "//base",
     "//ios/web/common",
     "//ios/web/download",
+    "//ios/web/favicon",
     "//ios/web/init",
     "//ios/web/navigation",
     "//ios/web/net",
@@ -52,14 +51,13 @@ source_set("web") {
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/security",
+    "//ios/web/service",
     "//ios/web/session",
+    "//ios/web/thread",
     "//ios/web/web_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/network:network_service",
-    "//services/network/public/mojom",
-    "//services/service_manager",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
   ]
 
   sources = [
@@ -68,9 +66,7 @@ source_set("web") {
     "browser_url_rewriter_impl.mm",
     "crw_navigation_item_storage.mm",
     "network_context_owner.cc",
-    "url_scheme_util.mm",
     "web_client.mm",
-    "web_view_creation_util.mm",
   ]
 
   libs = [ "WebKit.framework" ]
@@ -92,34 +88,6 @@ source_set("threads") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("services") {
-  deps = [
-    ":service_names",
-    "//ios/web/public",
-    "//services/network:network_service",
-    "//services/network/public/mojom",
-    "//services/service_manager",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-  sources = [
-    "service_manager_connection_impl.cc",
-    "service_manager_connection_impl.h",
-    "service_manager_context.h",
-    "service_manager_context.mm",
-    "web_browser_manifest.h",
-    "web_browser_manifest.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-mojom("service_names") {
-  sources = [
-    "public/service_names.mojom",
-  ]
 }
 
 source_set("core") {
@@ -238,6 +206,7 @@ test("ios_web_unittests") {
     "//ios/web/browsing_data:browsing_data_unittests",
     "//ios/web/common:unittests",
     "//ios/web/download:download_unittests",
+    "//ios/web/favicon:unittests",
     "//ios/web/find_in_page:find_in_page_unittests",
     "//ios/web/js_messaging:unittests",
     "//ios/web/security:unittests",
@@ -268,7 +237,6 @@ source_set("ios_web_general_unittests") {
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -279,9 +247,7 @@ source_set("ios_web_general_unittests") {
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
     "network_context_owner_unittest.cc",
-    "service_manager_connection_impl_unittest.cc",
     "test/web_test_unittest.mm",
-    "url_scheme_util_unittest.mm",
     "web_client_unittest.mm",
     "web_thread_unittest.cc",
   ]
@@ -314,7 +280,6 @@ source_set("ios_web_navigation_unittests") {
     "//ios/web/test/fakes",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -443,12 +408,14 @@ source_set("ios_web_web_state_unittests") {
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/find_in_page",
     "//ios/web/js_messaging",
     "//ios/web/navigation",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/deprecated",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/public/test",
@@ -475,7 +442,6 @@ source_set("ios_web_web_state_unittests") {
   sources = [
     "web_state/context_menu_params_utils_unittest.mm",
     "web_state/page_display_state_unittest.mm",
-    "web_state/ui/wk_security_origin_util_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",
     "web_state/web_state_observer_bridge_unittest.mm",
@@ -496,7 +462,9 @@ source_set("ios_web_web_state_js_unittests") {
     "//components/url_formatter",
     "//ios/net",
     "//ios/testing:ocmock_support",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/find_in_page",
+    "//ios/web/js_messaging",
     "//ios/web/public",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
@@ -507,8 +475,6 @@ source_set("ios_web_web_state_js_unittests") {
     "//ios/web/test:test_support",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/js",
-    "//ios/web/web_state/js:script_util",
-    "//ios/web/web_state/ui:crw_wk_script_message_router",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -521,10 +487,8 @@ source_set("ios_web_web_state_js_unittests") {
     "web_state/js/common_js_unittest.mm",
     "web_state/js/context_menu_js_unittest.mm",
     "web_state/js/crw_js_injection_manager_unittest.mm",
-    "web_state/js/crw_js_window_id_manager_unittest.mm",
     "web_state/js/find_in_page_js_unittest.mm",
     "web_state/js/message_js_unittest.mm",
-    "web_state/js/page_script_util_unittest.mm",
   ]
 }
 
@@ -540,6 +504,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/net",
     "//ios/testing:ocmock_support",
     "//ios/web/common",
+    "//ios/web/js_messaging",
     "//ios/web/navigation",
     "//ios/web/navigation:block_universal_links_buildflags",
     "//ios/web/navigation:core",
@@ -555,11 +520,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "//ios/web/test/fakes:fakes",
     "//ios/web/web_state:context_menu",
     "//ios/web/web_state/js",
-    "//ios/web/web_state/js:script_util",
     "//ios/web/web_state/ui:crw_context_menu_controller",
-    "//ios/web/web_state/ui:crw_wk_script_message_router",
-    "//ios/web/web_state/ui:favicon_util",
-    "//ios/web/web_state/ui:web_view_js_utils",
     "//net:test_support",
     "//services/service_manager/public/cpp",
     "//testing/gmock",
@@ -573,8 +534,6 @@ source_set("ios_web_web_state_ui_unittests") {
     "web_state/ui/crw_web_view_content_view_unittest.mm",
     "web_state/ui/crw_web_view_proxy_impl_unittest.mm",
     "web_state/ui/crw_web_view_scroll_view_proxy_unittest.mm",
-    "web_state/ui/crw_wk_script_message_router_unittest.mm",
-    "web_state/ui/favicon_util_unittest.mm",
     "web_state/ui/html_element_fetch_request_unittest.mm",
     "web_state/ui/web_view_js_utils_unittest.mm",
     "web_state/ui/wk_web_view_configuration_provider_unittest.mm",
@@ -623,7 +582,9 @@ test("ios_web_inttests") {
     "//ios/testing:http_server_bundle_data",
     "//ios/web:resources_grit",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/download:download_inttests",
+    "//ios/web/favicon:inttests",
     "//ios/web/js_messaging:inttests",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
@@ -664,7 +625,6 @@ test("ios_web_inttests") {
     "url_loader_inttest.mm",
     "web_state/bad_ssl_response_inttest.mm",
     "web_state/error_page_inttest.mm",
-    "web_state/favicon_callbacks_inttest.mm",
     "web_state/http_auth_inttest.mm",
     "web_state/keep_render_process_alive_inttest.mm",
     "web_state/web_state_observer_inttest.mm",
@@ -680,7 +640,6 @@ js_compile_bundle("main_frame_web_bundle") {
 
   sources = [
     "web_state/js/resources/error.js",
-    "web_state/js/resources/legacy.js",
     "web_state/js/resources/main_frame_context_menu.js",
     "web_state/js/resources/main_frame_web_bundle.js",
     "web_state/js/resources/navigation.js",
@@ -693,12 +652,12 @@ js_compile_bundle("all_frames_web_bundle") {
   closure_entry_point = "__crWeb.allFramesWebBundle"
 
   sources = [
+    "js_messaging/resources/message.js",
     "web_state/js/resources/all_frames_context_menu.js",
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/base.js",
     "web_state/js/resources/common.js",
     "web_state/js/resources/find_in_page.js",
-    "web_state/js/resources/message.js",
   ]
 }
 
@@ -707,9 +666,19 @@ js_compile_bundle("all_frames_document_end_web_bundle") {
   closure_entry_point = "__crWeb.allFramesDocumentEndWebBundle"
 
   sources = [
+    "js_messaging/resources/setup_frame.js",
     "web_state/js/resources/all_frames_document_end_web_bundle.js",
     "web_state/js/resources/plugin_placeholder.js",
-    "web_state/js/resources/setup_frame.js",
+  ]
+}
+
+js_compile_bundle("main_frame_document_end_web_bundle") {
+  visibility = [ ":js_resources" ]
+  closure_entry_point = "__crWeb.mainFrameDocumentEndWebBundle"
+
+  sources = [
+    "favicon/resources/favicon.js",
+    "web_state/js/resources/main_frame_document_end_web_bundle.js",
   ]
 }
 
@@ -726,12 +695,13 @@ js_compile_checked("js_resources") {
   public_deps = [
     ":all_frames_document_end_web_bundle",
     ":all_frames_web_bundle",
+    ":main_frame_document_end_web_bundle",
     ":main_frame_web_bundle",
     ":nav_bundle",
   ]
 
   sources = [
-    "web_state/js/resources/window_id.js",
+    "js_messaging/resources/window_id.js",
   ]
 }
 

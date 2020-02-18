@@ -30,7 +30,7 @@
     <LinearLayout
         android:id="@+id/accessory_bar_contents"
         android:layout_width="match_parent"
-        android:minHeight="@dimen/keyboard_accessory_bar_item_height"
+        android:minHeight="@dimen/keyboard_accessory_height"
         android:layout_height="wrap_content"
         android:layout_gravity="start|bottom"
         android:orientation="horizontal"

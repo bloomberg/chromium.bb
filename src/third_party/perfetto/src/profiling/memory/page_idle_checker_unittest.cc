@@ -16,7 +16,9 @@
 
 #include "src/profiling/memory/page_idle_checker.h"
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
+#include "perfetto/ext/base/utils.h"
 
 namespace perfetto {
 namespace profiling {

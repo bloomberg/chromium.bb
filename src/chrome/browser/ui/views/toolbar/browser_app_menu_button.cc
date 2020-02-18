@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_otr_state.h"
+#include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -30,11 +30,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -47,9 +47,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/ui/in_product_help/in_product_help.h"
 
 namespace {
 
@@ -70,7 +67,7 @@ constexpr float kFeaturePromoPulseInsetDip = 3.0f;
 
 // An InkDropMask used to animate the size of the BrowserAppMenuButton's ink
 // drop. This is used when showing in-product help.
-class PulsingInkDropMask : public gfx::AnimationDelegate,
+class PulsingInkDropMask : public views::AnimationDelegateViews,
                            public views::InkDropMask {
  public:
   PulsingInkDropMask(views::View* layer_container,
@@ -78,7 +75,8 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
                      const gfx::Insets& margins,
                      float normal_corner_radius,
                      float max_inset)
-      : views::InkDropMask(layer_size),
+      : AnimationDelegateViews(layer_container),
+        views::InkDropMask(layer_size),
         layer_container_(layer_container),
         margins_(margins),
         normal_corner_radius_(normal_corner_radius),
@@ -109,7 +107,7 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
     recorder.canvas()->DrawRoundRect(bounds, corner_radius, flags);
   }
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override {
     DCHECK_EQ(animation, &throb_animation_);
     layer()->SchedulePaint(gfx::Rect(layer()->size()));
@@ -141,7 +139,6 @@ class PulsingInkDropMask : public gfx::AnimationDelegate,
 };
 
 }  // namespace
-#endif
 
 // static
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
@@ -177,7 +174,6 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
   UpdateIcon();
 }
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 void BrowserAppMenuButton::SetPromoFeature(
     base::Optional<InProductHelpFeature> promo_feature) {
   if (promo_feature_ == promo_feature)
@@ -212,7 +208,6 @@ void BrowserAppMenuButton::SetPromoFeature(
   UpdateIcon();
   SchedulePaint();
 }
-#endif
 
 void BrowserAppMenuButton::ShowMenu(int run_types) {
   if (IsMenuShowing())
@@ -221,31 +216,22 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
 #if defined(OS_CHROMEOS)
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_visible())
-    keyboard_client->HideKeyboard(ash::mojom::HideReason::kSystem);
+    keyboard_client->HideKeyboard(ash::HideReason::kSystem);
 #endif
 
   Browser* browser = toolbar_view_->browser();
-  bool alert_reopen_tab_items = false;
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-  alert_reopen_tab_items = promo_feature_ == InProductHelpFeature::kReopenTab;
-#endif
-  base::TimeTicks menu_open_time = base::TimeTicks::Now();
+
+  bool alert_reopen_tab_items =
+      promo_feature_ == InProductHelpFeature::kReopenTab;
 
   RunMenu(
       std::make_unique<AppMenuModel>(toolbar_view_, browser,
                                      toolbar_view_->app_menu_icon_controller()),
       browser, run_types, alert_reopen_tab_items);
-
-  if (!(run_types & views::MenuRunner::FOR_DROP)) {
-    // Record the time-to-action for the menu. We don't record in the case of a
-    // drag-and-drop command because menus opened for drag-and-drop don't block
-    // the message loop.
-    UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
-                        base::TimeTicks::Now() - menu_open_time);
-  }
 }
 
 void BrowserAppMenuButton::OnThemeChanged() {
+  AppMenuButton::OnThemeChanged();
   UpdateIcon();
 }
 
@@ -283,7 +269,6 @@ void BrowserAppMenuButton::UpdateBorder() {
 }
 
 base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (promo_feature_) {
     return ToolbarButton::AdjustHighlightColorForContrast(
         GetThemeProvider(), kFeaturePromoHighlightDarkColor,
@@ -291,7 +276,7 @@ base::Optional<SkColor> BrowserAppMenuButton::GetPromoHighlightColor() const {
         kFeaturePromoHighlightDarkExtremeColor,
         kFeaturePromoHighlightLightExtremeColor);
   }
-#endif
+
   return base::nullopt;
 }
 
@@ -362,7 +347,6 @@ BrowserAppMenuButton::CreateInkDropHighlight() const {
 
 std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
     const {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   if (promo_feature_) {
     // This gets the latest ink drop insets. |SetTrailingMargin()| is called
     // whenever our margins change (i.e. due to the window maximizing or
@@ -375,7 +359,6 @@ std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
                                                 ink_drop_insets, corner_radius,
                                                 kFeaturePromoPulseInsetDip);
   }
-#endif
 
   return AppMenuButton::CreateInkDropMask();
 }
@@ -387,11 +370,9 @@ SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
 }
 
 base::string16 BrowserAppMenuButton::GetTooltipText(const gfx::Point& p) const {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Suppress tooltip when IPH is showing.
   if (promo_feature_)
     return base::string16();
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 
   return AppMenuButton::GetTooltipText(p);
 }

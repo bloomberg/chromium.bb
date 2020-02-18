@@ -69,6 +69,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1385214448885562192">Premeu Retorn per acceptar o Esc per cancel·lar; fletxa avall per passar al següent i fletxa amunt per tornar a l'anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Anuncia atributs de text enriquit</translation>
 <translation id="1405567553485452995">Verd clar</translation>
 <translation id="1417889266572670458">Blau marí</translation>
 <translation id="1431911867058218151">Pruna</translation>
@@ -318,11 +319,11 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3232388865800379423">Un botó emergent</translation>
 <translation id="3241052487511142956">Enllaç visitat anterior</translation>
 <translation id="3241638166094654466">Cel·les en cada línia:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control lliscant</translation>
 <translation id="3299925995433437805">No hi ha cap enllaç visitat següent.</translation>
 <translation id="3300348286427369683">Compatibilitat amb text enriquit. Ara ChromeVox admet els camps de text enriquit, com ara les ordres de salt, l'encaminament del cursor Braille i la selecció, entre d'altres.</translation>
-<translation id="3304756947457041303">Personalitza l'indicador de text enriquit</translation>
 <translation id="3307886118343381874">Ves al final de la taula</translation>
 <translation id="3311969765485641742">Premeu Alt + Maj + A per revisar les alertes.</translation>
 <translation id="3312997241656799641">Enllaç visitat següent</translation>

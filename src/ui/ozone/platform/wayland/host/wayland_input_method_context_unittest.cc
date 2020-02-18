@@ -65,6 +65,8 @@ class WaylandInputMethodContextTest : public WaylandTest {
         std::make_unique<TestInputMethodContextDelegate>();
 
     WaylandInputMethodContextFactory factory(connection_.get());
+    LinuxInputMethodContextFactory::SetInstance(&factory);
+
     input_method_context_ = factory.CreateWaylandInputMethodContext(
         input_method_context_delegate_.get(), false);
     input_method_context_->Init(true);

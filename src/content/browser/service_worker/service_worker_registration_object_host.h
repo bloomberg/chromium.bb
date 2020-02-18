@@ -12,14 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
-namespace service_worker_registration_unittest {
-class ServiceWorkerRegistrationObjectHostTest;
-}  // namespace service_worker_registration_unittest
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
@@ -49,8 +45,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   ServiceWorkerRegistration* registration() { return registration_.get(); }
 
  private:
-  friend class service_worker_registration_unittest::
-      ServiceWorkerRegistrationObjectHostTest;
+  friend class ServiceWorkerRegistrationObjectHostTest;
 
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
@@ -146,7 +141,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
       remote_registration_;
 
-  base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationObjectHost);
 };

@@ -29,16 +29,29 @@ using testing::Values;
 namespace blink {
 namespace {
 
-class CSSPaintValueTest : public RenderingTest,
-                          public ::testing::WithParamInterface<bool> {
- public:
-  CSSPaintValueTest() : scoped_off_main_thread_css_paint_(GetParam()) {}
-
- private:
-  ScopedOffMainThreadCSSPaintForTest scoped_off_main_thread_css_paint_;
+enum {
+  kCSSPaintAPIArguments = 1 << 0,
+  kOffMainThreadCSSPaint = 1 << 1,
 };
 
-INSTANTIATE_TEST_SUITE_P(, CSSPaintValueTest, Values(false, true));
+class CSSPaintValueTest : public RenderingTest,
+                          public ::testing::WithParamInterface<unsigned>,
+                          private ScopedCSSPaintAPIArgumentsForTest,
+                          private ScopedOffMainThreadCSSPaintForTest {
+ public:
+  CSSPaintValueTest()
+      : ScopedCSSPaintAPIArgumentsForTest(GetParam() & kCSSPaintAPIArguments),
+        ScopedOffMainThreadCSSPaintForTest(GetParam() &
+                                           kOffMainThreadCSSPaint) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         CSSPaintValueTest,
+                         Values(0,
+                                kCSSPaintAPIArguments,
+                                kOffMainThreadCSSPaint,
+                                kCSSPaintAPIArguments |
+                                    kOffMainThreadCSSPaint));
 
 class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
  public:
@@ -53,10 +66,11 @@ class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
         .WillByDefault(ReturnRef(input_argument_types_));
   }
 
-  MOCK_METHOD3(Paint,
+  MOCK_METHOD4(Paint,
                scoped_refptr<Image>(const ImageResourceObserver&,
                                     const FloatSize& container_size,
-                                    const CSSStyleValueVector*));
+                                    const CSSStyleValueVector*,
+                                    float device_scale_factor));
   MOCK_CONST_METHOD0(NativeInvalidationProperties, Vector<CSSPropertyID>&());
   MOCK_CONST_METHOD0(CustomInvalidationProperties, Vector<AtomicString>&());
   MOCK_CONST_METHOD0(HasAlpha, bool());
@@ -93,14 +107,6 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
           ProvideOverrideGenerator);
 
   const FloatSize target_size(100, 100);
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    // In off-thread CSS Paint, the actual paint call is deferred.
-    EXPECT_CALL(*mock_generator, Paint(_, _, _)).Times(0);
-  } else {
-    ON_CALL(*mock_generator, Paint(_, _, _))
-        .WillByDefault(
-            Return(PaintGeneratedImage::Create(nullptr, target_size)));
-  }
 
   SetBodyInnerHTML(R"HTML(
     <div id="target"></div>
@@ -111,12 +117,22 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
   auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
   CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
 
-  // Initially the generator is not ready, so GetImage should fail.
+  // Initially the generator is not ready, so GetImage should fail (and no paint
+  // should happen).
+  EXPECT_CALL(*mock_generator, Paint(_, _, _, _)).Times(0);
   EXPECT_FALSE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 
   // Now mark the generator as ready - GetImage should then succeed.
-  EXPECT_CALL(*mock_generator, IsImageGeneratorReady()).WillOnce(Return(true));
+  ON_CALL(*mock_generator, IsImageGeneratorReady()).WillByDefault(Return(true));
+  // In off-thread CSS Paint, the actual paint call is deferred and so will
+  // never happen.
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
+    EXPECT_CALL(*mock_generator, Paint(_, _, _, _))
+        .WillRepeatedly(
+            Return(PaintGeneratedImage::Create(nullptr, target_size)));
+  }
+
   EXPECT_TRUE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 }
@@ -169,6 +185,16 @@ TEST_P(CSSPaintValueTest, DoNotPaintWhenAncestorHasLink) {
   CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
   EXPECT_FALSE(paint_value->GetImage(*target, GetDocument(), style,
                                      FloatSize(100, 100)));
+}
+
+TEST_P(CSSPaintValueTest, BuildInputArgumentValuesNotCrash) {
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+
+  ASSERT_EQ(paint_value->GetParsedInputArgumentsForTesting(), nullptr);
+  Vector<std::unique_ptr<CrossThreadStyleValue>> cross_thread_input_arguments;
+  paint_value->BuildInputArgumentValuesForTesting(cross_thread_input_arguments);
+  EXPECT_EQ(cross_thread_input_arguments.size(), 0u);
 }
 
 }  // namespace blink

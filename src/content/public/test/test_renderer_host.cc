@@ -34,9 +34,7 @@
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
-#include "net/base/network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/events/devices/input_device_manager.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -49,7 +47,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_helper.h"
-#include "ui/aura/test/aura_test_utils.h"
 #include "ui/wm/core/default_activation_client.h"
 #endif
 
@@ -132,9 +129,6 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif  // OS_MACOSX
-#if defined(USE_AURA)
-  input_device_client_ = aura::test::CreateTestInputDeviceManager();
-#endif
 }
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
@@ -234,12 +228,6 @@ void RenderViewHostTestHarness::NavigateAndCommit(
 }
 
 void RenderViewHostTestHarness::SetUp() {
-  // Create and own a NetworkChangeNotifier so that it will not be created
-  // during the initialization of the global leaky singleton NetworkService. The
-  // global NetworkService's NetworkChangeNotifier can affect subsequent unit
-  // tests.
-  network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-
   ui::MaterialDesignController::Initialize();
 
   rvh_test_enabler_.reset(new RenderViewHostTestEnabler);

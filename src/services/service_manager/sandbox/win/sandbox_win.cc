@@ -118,6 +118,7 @@ const wchar_t* const kTroublesomeDlls[] = {
     L"picrmi32.dll",               // PicRec.
     L"picrmi64.dll",               // PicRec.
     L"prntrack.dll",               // Pharos Systems.
+    L"prochook.dll",               // Unknown (GBill-Tools?) (crbug.com/974722).
     L"protector.dll",              // Unknown (suspected malware).
     L"radhslib.dll",               // Radiant Naomi Internet Filter.
     L"radprlib.dll",               // Radiant Naomi Internet Filter.
@@ -199,10 +200,10 @@ bool IsExpandedModuleName(HMODULE module, const wchar_t* module_name) {
   return (fname.BaseName().value() == module_name);
 }
 
-// Adds a single dll by |module_name| into the |policy| blacklist.
+// Adds a single dll by |module_name| into the |policy| blocklist.
 // If |check_in_browser| is true we only add an unload policy only if the dll
 // is also loaded in this process.
-void BlacklistAddOneDll(const wchar_t* module_name,
+void BlocklistAddOneDll(const wchar_t* module_name,
                         bool check_in_browser,
                         sandbox::TargetPolicy* policy) {
   HMODULE module = check_in_browser ? ::GetModuleHandleW(module_name) : NULL;
@@ -243,7 +244,7 @@ void BlacklistAddOneDll(const wchar_t* module_name,
 // does not get a chance to execute any code.
 void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
   for (int ix = 0; ix != base::size(kTroublesomeDlls); ++ix)
-    BlacklistAddOneDll(kTroublesomeDlls[ix], true, policy);
+    BlocklistAddOneDll(kTroublesomeDlls[ix], true, policy);
 }
 
 // Returns the object path prepended with the current logon session.

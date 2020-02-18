@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __STRALIGN_H_
@@ -14,8 +14,15 @@
 extern "C" {
 #endif
 
-#if defined(_X86_)
+#ifndef WSTR_ALIGNED
+#if defined (__amd64__) || defined (__arm__)
 #define WSTR_ALIGNED(s) TRUE
+#else
+#define WSTR_ALIGNED(s) (((DWORD_PTR)(s) & 1) == 0)
+#endif
+#endif
+
+#if defined(_X86_)
 #define ua_CharUpperW CharUpperW
 #define ua_lstrcmpiW lstrcmpiW
 #define ua_lstrcmpW lstrcmpW
@@ -26,7 +33,7 @@ extern "C" {
 #define ua_wcsrchr wcsrchr
 
   PUWSTR ua_wcscpy(PUWSTR Destination,PCUWSTR Source);
-#ifndef __CRT__NO_INLINE
+#if !defined (__CRT__NO_INLINE) && !defined (__CYGWIN__)
   __CRT_INLINE PUWSTR ua_wcscpy(PUWSTR Destination,PCUWSTR Source) { return wcscpy(Destination,Source); }
 #else
 #define ua_wcscpy wcscpy
@@ -34,7 +41,9 @@ extern "C" {
 
 #else /* not _X86_ : */
 
+#ifndef WSTR_ALIGNED
 #define WSTR_ALIGNED(s) (((DWORD_PTR)(s) & (sizeof(WCHAR)-1))==0)
+#endif
 
   /* TODO: This method seems to be not present for amd64.  */
   LPUWSTR WINAPI uaw_CharUpperW(LPUWSTR String);
@@ -54,7 +63,7 @@ extern "C" {
     return uaw_CharUpperW(String);
   }
 #endif /* !__CRT__NO_INLINE */
-#endif /* _X86_ */
+#endif /* CharUpper */
 
 #ifdef lstrcmp
   int ua_lstrcmpW(LPCUWSTR String1,LPCUWSTR String2);
@@ -109,11 +118,11 @@ extern "C" {
 
 #ifndef __CRT__NO_INLINE
   __CRT_INLINE PUWSTR_C ua_wcschr(PCUWSTR String,WCHAR Character) {
-    if(WSTR_ALIGNED(String)) return wcschr((PCWSTR)String,Character);
+    if(WSTR_ALIGNED(String)) return (PUWSTR_C)wcschr((PCWSTR)String,Character);
     return (PUWSTR_C)uaw_wcschr(String,Character);
   }
   __CRT_INLINE PUWSTR_C ua_wcsrchr(PCUWSTR String,WCHAR Character) {
-    if(WSTR_ALIGNED(String)) return wcsrchr((PCWSTR)String,Character);
+    if(WSTR_ALIGNED(String)) return (PUWSTR_C)wcsrchr((PCWSTR)String,Character);
     return (PUWSTR_C)uaw_wcsrchr(String,Character);
   }
 #if defined(__cplusplus) && defined(_WConst_Return)
@@ -137,7 +146,7 @@ extern "C" {
     return uaw_wcslen(String);
   }
 #endif /* !__CRT__NO_INLINE */
-#endif
+#endif /* _X86_ */
   int ua_wcsicmp(LPCUWSTR String1,LPCUWSTR String2);
 
 #ifndef __CRT__NO_INLINE
@@ -147,7 +156,7 @@ extern "C" {
     return uaw_wcsicmp(String1,String2);
   }
 #endif /* !__CRT__NO_INLINE */
-#endif
+#endif /* _WSTRING_DEFINED */
 
 #ifndef __UA_WCSLEN
 #define __UA_WCSLEN ua_wcslen
@@ -156,7 +165,7 @@ extern "C" {
 #define __UA_WSTRSIZE(s) ((__UA_WCSLEN(s)+1)*sizeof(WCHAR))
 #define __UA_STACKCOPY(p,s) memcpy(_alloca(s),p,s)
 
-#ifdef _X86_
+#if defined (__amd64__) || defined (__arm__) || defined (_X86_)
 #define WSTR_ALIGNED_STACK_COPY(d,s) (*(d) = (PCWSTR)(s))
 #else
 #define WSTR_ALIGNED_STACK_COPY(d,s) { PCUWSTR __ua_src; ULONG __ua_size; PWSTR __ua_dst; __ua_src = (s); if(WSTR_ALIGNED(__ua_src)) { __ua_dst = (PWSTR)__ua_src; } else { __ua_size = __UA_WSTRSIZE(__ua_src); __ua_dst = (PWSTR)_alloca(__ua_size); memcpy(__ua_dst,__ua_src,__ua_size); } *(d) = (PCWSTR)__ua_dst; }
@@ -164,7 +173,7 @@ extern "C" {
 
 #define ASTR_ALIGNED_STACK_COPY(d,s) (*(d) = (PCSTR)(s))
 
-#ifndef _X86_
+#if !defined (_X86_) && !defined (__amd64__) && !defined (__arm__)
 #define __UA_STRUC_ALIGNED(t,s) (((DWORD_PTR)(s) & (TYPE_ALIGNMENT(t)-1))==0)
 #define STRUC_ALIGNED_STACK_COPY(t,s) __UA_STRUC_ALIGNED(t,s) ? ((t const *)(s)) : ((t const *)__UA_STACKCOPY((s),sizeof(t)))
 #else

@@ -1,14 +1,12 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_OPMAPI
 #define _INC_OPMAPI
 
 #include <dxva2api.h>
-
-#if (_WIN32_WINNT >= 0x0600)
 
 #define OPM_OMAC_SIZE                                16
 #define OPM_CONFIGURE_SETTING_DATA_SIZE              4056
@@ -225,18 +223,18 @@ DECLARE_INTERFACE_(IOPMVideoOutput,IUnknown)
     STDMETHOD_(ULONG, Release)(THIS) PURE;
 
     /* IOPMVideoOutput methods */
-    STDMETHOD_(HRESULT,Configure)(THIS_ const OPM_CONFIGURE_PARAMETERS *pParameters,ULONG ulAdditionalParametersSize,const BYTE *pbAdditionalParameters) PURE;
-    STDMETHOD_(HRESULT,COPPCompatibleGetInformation)(THIS_ const OPM_COPP_COMPATIBLE_GET_INFO_PARAMETERS *pParameters,OPM_REQUESTED_INFORMATION *pRequestedInformation) PURE;
+    STDMETHOD_(HRESULT,StartInitialization)(THIS_ OPM_RANDOM_NUMBER *prnRandomNumber,BYTE **ppbCertificate,ULONG *pulCertificateLength) PURE;
     STDMETHOD_(HRESULT,FinishInitialization)(THIS_ const OPM_ENCRYPTED_INITIALIZATION_PARAMETERS *pParameters) PURE;
     STDMETHOD_(HRESULT,GetInformation)(THIS_ const OPM_GET_INFO_PARAMETERS *pParameters,OPM_REQUESTED_INFORMATION *pRequestedInformation) PURE;
-    STDMETHOD_(HRESULT,StartInitialization)(THIS_ OPM_RANDOM_NUMBER *prnRandomNumber,BYTE **ppbCertificate,ULONG *pulCertificateLength) PURE;
+    STDMETHOD_(HRESULT,COPPCompatibleGetInformation)(THIS_ const OPM_COPP_COMPATIBLE_GET_INFO_PARAMETERS *pParameters,OPM_REQUESTED_INFORMATION *pRequestedInformation) PURE;
+    STDMETHOD_(HRESULT,Configure)(THIS_ const OPM_CONFIGURE_PARAMETERS *pParameters,ULONG ulAdditionalParametersSize,const BYTE *pbAdditionalParameters) PURE;
 
     END_INTERFACE
 };
 #ifdef COBJMACROS
-#define IOPMVideoOutput_QueryInterface(This,riid,ppvObject) (This)->pVtbl->QueryInterface(This,riid,ppvObject)
-#define IOPMVideoOutput_AddRef(This) (This)->pVtbl->AddRef(This)
-#define IOPMVideoOutput_Release(This) (This)->pVtbl->Release(This)
+#define IOPMVideoOutput_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IOPMVideoOutput_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IOPMVideoOutput_Release(This) (This)->lpVtbl->Release(This)
 #define IOPMVideoOutput_Configure(This,pParameters,ulAdditionalParametersSize,pbAdditionalParameters) (This)->lpVtbl->Configure(This,pParameters,ulAdditionalParametersSize,pbAdditionalParameters)
 #define IOPMVideoOutput_COPPCompatibleGetInformation(This,pParameters,pRequestedInformation) (This)->lpVtbl->COPPCompatibleGetInformation(This,pParameters,pRequestedInformation)
 #define IOPMVideoOutput_FinishInitialization(This,pParameters) (This)->lpVtbl->FinishInitialization(This,pParameters)
@@ -261,11 +259,20 @@ HRESULT WINAPI OPMGetVideoOutputsFromIDirect3DDevice9Object(
   ULONG *pulNumVideoOutputs,
   IOPMVideoOutput ***pppOPMVideoOutputArray
 );
+
+typedef struct _OPM_GET_CODEC_INFO_INFORMATION {
+  OPM_RANDOM_NUMBER rnRandomNumber;
+  DWORD             Merit;
+} OPM_GET_CODEC_INFO_INFORMATION;
+
+typedef struct _OPM_GET_CODEC_INFO_PARAMETERS {
+  DWORD cbVerifier;
+  BYTE  Verifier[OPM_GET_INFORMATION_PARAMETERS_SIZE - 4];
+} OPM_GET_CODEC_INFO_PARAMETERS;
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif /*(_WIN32_WINNT >= 0x0600)*/
 
 #endif /*_INC_OPMAPI*/
 

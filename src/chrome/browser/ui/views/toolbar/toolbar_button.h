@@ -69,6 +69,7 @@ class ToolbarButton : public views::LabelButton,
   // views::LabelButton:
   void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnThemeChanged() override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -166,7 +167,7 @@ class ToolbarButton : public views::LabelButton,
   std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
 
   // A factory for tasks that show the dropdown context menu for the button.
-  base::WeakPtrFactory<ToolbarButton> show_menu_factory_;
+  base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarButton);
 };

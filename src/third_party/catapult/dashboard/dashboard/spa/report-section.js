@@ -5,25 +5,23 @@
 'use strict';
 
 import './cp-dialog.js';
-import './cp-loading.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@chopsui/chops-loading';
 import * as PolymerAsync from '@polymer/polymer/lib/utils/async.js';
-import ReportControls from './report-controls.js';
-import ReportNamesRequest from './report-names-request.js';
-import ReportRequest from './report-request.js';
-import ReportTable from './report-table.js';
-import ReportTemplate from './report-template.js';
-import TimeseriesDescriptor from './timeseries-descriptor.js';
-import {BatchIterator} from './utils.js';
-import {ElementBase, STORE} from './element-base.js';
+import {BatchIterator} from '@chopsui/batch-iterator';
+import {ElementBase, STORE, maybeScheduleAutoReload} from './element-base.js';
+import {ReportControls} from './report-controls.js';
+import {ReportNamesRequest} from './report-names-request.js';
+import {ReportRequest} from './report-request.js';
+import {ReportTable} from './report-table.js';
+import {ReportTemplate} from './report-template.js';
+import {TimeseriesDescriptor} from './timeseries-descriptor.js';
 import {UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
 const DEBOUNCE_LOAD_MS = 200;
 
-export default class ReportSection extends ElementBase {
+export class ReportSection extends ElementBase {
   static get is() { return 'report-section'; }
 
   static get properties() {
@@ -43,48 +41,48 @@ export default class ReportSection extends ElementBase {
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        #tables {
-          align-items: center;
-          display: flex;
-          flex-direction: column;
-        }
-        report-template {
-          background-color: var(--background-color, white);
-          overflow: auto;
-        }
-      </style>
+  static get styles() {
+    return css`
+      #tables {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+      report-template {
+        background-color: var(--background-color, white);
+        overflow: auto;
+      }
+    `;
+  }
 
-      <report-controls state-path="[[statePath]]">
+  render() {
+    return html`
+      <report-controls .statePath="${this.statePath}">
       </report-controls>
 
-      <cp-loading loading$="[[isLoading]]"></cp-loading>
+      <chops-loading ?loading="${this.isLoading}"></chops-loading>
 
       <div id="tables">
-        <template is="dom-repeat" items="[[tables]]" as="table"
-                                  index-as="tableIndex">
-          <cp-loading loading$="[[table.isLoading]]"></cp-loading>
+        ${(this.tables || []).map((table, tableIndex) => html`
+          <chops-loading ?loading="${table.isLoading}"></chops-loading>
 
-          <report-table state-path="[[statePath]].tables.[[tableIndex]]">
+          <report-table .statePath="${this.statePath}.tables.${tableIndex}">
           </report-table>
 
-          <template is="dom-if" if="[[table.isEditing]]">
+          ${!table.isEditing ? '' : html`
             <cp-dialog>
               <report-template
-                  state-path="[[statePath]].tables.[[tableIndex]]"
-                  on-save="onSave_">
+                  .statePath="${this.statePath}.tables.${tableIndex}"
+                  @save="${this.onSave_}">
               </report-template>
             </cp-dialog>
-          </template>
-        </template>
+          `}
+        `)}
       </div>
     `;
   }
 
-  ready() {
-    super.ready();
+  firstUpdated() {
     this.scrollIntoView(true);
   }
 
@@ -104,7 +102,7 @@ export default class ReportSection extends ElementBase {
             new Set(this.source.selectedOptions),
             new Set(state.source.selectedOptions))));
 
-    this.setProperties(state);
+    Object.assign(this, state);
 
     if (sourcesChanged) {
       this.debounce('loadReports', () => {
@@ -130,9 +128,22 @@ export default class ReportSection extends ElementBase {
     }
   }
 
+  static maybeAutoReload(statePath) {
+    const state = get(STORE.getState(), statePath);
+    if (!state || !state.minRevision ||
+        (state.maxRevision !== 'latest')) {
+      return;
+    }
+    ReportSection.loadReports(statePath);
+  }
+
   static async loadReports(statePath) {
     let state = get(STORE.getState(), statePath);
     if (!state || !state.minRevision || !state.maxRevision) return;
+
+    maybeScheduleAutoReload(statePath,
+        state => (state.maxRevision === 'latest'),
+        () => ReportSection.maybeAutoReload(statePath));
 
     STORE.dispatch({
       type: ReportSection.reducers.requestReports.name,
@@ -264,8 +275,23 @@ ReportSection.reducers = {
         }
       }
 
+      let minRevision;
+      let maxRevision;
+      if (report.report && report.report.rows && report.report.rows[0] &&
+          report.report.rows[0].data) {
+        if (report.report.rows[0].data[state.minRevision]) {
+          minRevision = report.report.rows[0].data[state.minRevision].revision;
+        }
+        if (report.report.rows[0].data[state.maxRevision]) {
+          maxRevision = report.report.rows[0].data[state.maxRevision].revision;
+        }
+      }
+
       tables.push({
         name: report.name,
+        milestone: state.milestone,
+        minRevision,
+        maxRevision,
         id: report.id,
         internal: report.internal,
         canEdit: false,

@@ -29,6 +29,9 @@
 
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -85,6 +88,12 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   if (media_feature == kPrefersReducedMotionMediaFeature)
     return ident == CSSValueID::kNoPreference || ident == CSSValueID::kReduce;
 
+  if (RuntimeEnabledFeatures::ForcedColorsEnabled()) {
+    if (media_feature == kForcedColorsMediaFeature) {
+      return ident == CSSValueID::kNone || ident == CSSValueID::kActive;
+    }
+  }
+
   return false;
 }
 
@@ -111,13 +120,7 @@ static inline bool FeatureWithValidPositiveLength(
 
 static inline bool FeatureWithValidDensity(const String& media_feature,
                                            const CSSPrimitiveValue* value) {
-  if ((value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerPixel &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerInch &&
-       value->TypeWithCalcResolved() !=
-           CSSPrimitiveValue::UnitType::kDotsPerCentimeter) ||
-      value->GetDoubleValue() <= 0)
+  if (!value->IsResolution() || value->GetDoubleValue() <= 0)
     return false;
 
   return media_feature == kResolutionMediaFeature ||
@@ -141,7 +144,7 @@ static inline bool FeatureExpectingPositiveInteger(
 
 static inline bool FeatureWithPositiveInteger(const String& media_feature,
                                               const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger)
+  if (!value->IsInteger())
     return false;
   return FeatureExpectingPositiveInteger(media_feature);
 }
@@ -159,7 +162,7 @@ static inline bool FeatureWithPositiveNumber(const String& media_feature,
 
 static inline bool FeatureWithZeroOrOne(const String& media_feature,
                                         const CSSPrimitiveValue* value) {
-  if (value->TypeWithCalcResolved() != CSSPrimitiveValue::UnitType::kInteger ||
+  if (!value->IsInteger() ||
       !(value->GetDoubleValue() == 1 || !value->GetDoubleValue()))
     return false;
 
@@ -201,7 +204,8 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == kColorGamutMediaFeature ||
          media_feature == kImmersiveMediaFeature ||
          media_feature == kPrefersColorSchemeMediaFeature ||
-         media_feature == kPrefersReducedMotionMediaFeature;
+         media_feature == kPrefersReducedMotionMediaFeature ||
+         media_feature == kForcedColorsMediaFeature;
 }
 
 bool MediaQueryExp::IsViewportDependent() const {
@@ -262,51 +266,93 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   }
   if (!value)
     value = css_property_parser_helpers::ConsumeResolution(range);
-  // Create value for media query expression that must have 1 or more values.
-  if (value) {
-    if (FeatureWithAspectRatio(lower_media_feature)) {
-      if (value->TypeWithCalcResolved() !=
-              CSSPrimitiveValue::UnitType::kInteger ||
-          value->GetDoubleValue() == 0)
-        return Invalid();
-      if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
-        return Invalid();
-      CSSPrimitiveValue* denominator =
-          css_property_parser_helpers::ConsumePositiveInteger(range);
-      if (!denominator)
-        return Invalid();
 
-      exp_value.numerator = clampTo<unsigned>(value->GetDoubleValue());
-      exp_value.denominator = clampTo<unsigned>(denominator->GetDoubleValue());
-      exp_value.is_ratio = true;
-    } else if (FeatureWithValidDensity(lower_media_feature, value) ||
-               FeatureWithValidPositiveLength(lower_media_feature, value) ||
-               FeatureWithPositiveInteger(lower_media_feature, value) ||
-               FeatureWithPositiveNumber(lower_media_feature, value) ||
-               FeatureWithZeroOrOne(lower_media_feature, value)) {
-      exp_value.value = value->GetDoubleValue();
-      if (value->IsNumber())
-        exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
-      else
-        exp_value.unit = value->TypeWithCalcResolved();
-      exp_value.is_value = true;
-    } else {
-      return Invalid();
+  if (!value) {
+    if (CSSIdentifierValue* ident =
+            css_property_parser_helpers::ConsumeIdent(range)) {
+      CSSValueID ident_id = ident->GetValueID();
+      if (!FeatureWithValidIdent(lower_media_feature, ident_id))
+        return Invalid();
+      exp_value.id = ident_id;
+      exp_value.is_id = true;
+      return MediaQueryExp(lower_media_feature, exp_value);
     }
-  } else if (CSSIdentifierValue* ident =
-                 css_property_parser_helpers::ConsumeIdent(range)) {
-    CSSValueID ident_id = ident->GetValueID();
-    if (!FeatureWithValidIdent(lower_media_feature, ident_id))
-      return Invalid();
-    exp_value.id = ident_id;
-    exp_value.is_id = true;
-  } else if (FeatureWithoutValue(lower_media_feature)) {
-    // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
-  } else {
+    if (FeatureWithoutValue(lower_media_feature)) {
+      // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
     return Invalid();
   }
 
-  return MediaQueryExp(lower_media_feature, exp_value);
+  // Now we have |value| as a number, length or resolution
+  // Create value for media query expression that must have 1 or more values.
+  if (FeatureWithAspectRatio(lower_media_feature)) {
+    if (!value->IsInteger() || value->GetDoubleValue() == 0)
+      return Invalid();
+    if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
+      return Invalid();
+    CSSPrimitiveValue* denominator =
+        css_property_parser_helpers::ConsumePositiveInteger(range);
+    if (!denominator)
+      return Invalid();
+
+    exp_value.numerator = clampTo<unsigned>(value->GetDoubleValue());
+    exp_value.denominator = clampTo<unsigned>(denominator->GetDoubleValue());
+    exp_value.is_ratio = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithValidDensity(lower_media_feature, value)) {
+    // TODO(crbug.com/983613): Support resolution in math functions.
+    DCHECK(value->IsNumericLiteralValue());
+    const auto* numeric_literal = To<CSSNumericLiteralValue>(value);
+    exp_value.value = numeric_literal->DoubleValue();
+    exp_value.unit = numeric_literal->GetType();
+    exp_value.is_value = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithPositiveInteger(lower_media_feature, value) ||
+      FeatureWithPositiveNumber(lower_media_feature, value) ||
+      FeatureWithZeroOrOne(lower_media_feature, value)) {
+    exp_value.value = value->GetDoubleValue();
+    exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+    exp_value.is_value = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  if (FeatureWithValidPositiveLength(lower_media_feature, value)) {
+    if (value->IsNumber()) {
+      exp_value.value = value->GetDoubleValue();
+      exp_value.unit = CSSPrimitiveValue::UnitType::kNumber;
+      exp_value.is_value = true;
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
+
+    DCHECK(value->IsLength());
+    if (const auto* numeric_literal =
+            DynamicTo<CSSNumericLiteralValue>(value)) {
+      exp_value.value = numeric_literal->GetDoubleValue();
+      exp_value.unit = numeric_literal->GetType();
+      exp_value.is_value = true;
+      return MediaQueryExp(lower_media_feature, exp_value);
+    }
+
+    const auto* math_value = To<CSSMathFunctionValue>(value);
+    CSSPrimitiveValue::UnitType expression_unit =
+        math_value->ExpressionNode()->ResolvedUnitType();
+    if (expression_unit == CSSPrimitiveValue::UnitType::kUnknown) {
+      // TODO(crbug.com/982542): Support math expressions involving type
+      // conversions properly. For example, calc(10px + 1em).
+      return Invalid();
+    }
+    exp_value.value = math_value->DoubleValue();
+    exp_value.unit = expression_unit;
+    exp_value.is_value = true;
+    return MediaQueryExp(lower_media_feature, exp_value);
+  }
+
+  return Invalid();
 }
 
 MediaQueryExp::~MediaQueryExp() = default;

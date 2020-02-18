@@ -34,10 +34,28 @@ void CrosImageCaptureImpl::SetReprocessOption(
       device_id, effect, media::BindToCurrentLoop(std::move(callback)));
 }
 
+void CrosImageCaptureImpl::SetFpsRange(const std::string& device_id,
+                                       const uint32_t stream_width,
+                                       const uint32_t stream_height,
+                                       const int32_t min_fps,
+                                       const int32_t max_fps,
+                                       SetFpsRangeCallback callback) {
+  reprocess_manager_->SetFpsRange(
+      device_id, stream_width, stream_height, min_fps, max_fps,
+      media::BindToCurrentLoop(std::move(callback)));
+}
+
 void CrosImageCaptureImpl::OnGotCameraInfo(
     GetCameraInfoCallback callback,
     cros::mojom::CameraInfoPtr camera_info) {
   std::move(callback).Run(std::move(camera_info));
+}
+
+void CrosImageCaptureImpl::OnIntentHandled(
+    uint32_t intent_id,
+    bool is_success,
+    const std::vector<uint8_t>& captured_data) {
+  NOTREACHED() << "Should be handled in RendererFacingCrosImageCapture";
 }
 
 }  // namespace media

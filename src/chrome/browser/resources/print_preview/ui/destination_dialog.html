@@ -1,22 +1,21 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <!-- The imports below are needed as an action-link is added to the promo-text
   div to create the cloud print "Sign in" link when this element is
   attached. -->
 <link rel="import" href="chrome://resources/html/action_link.html">
-<link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/cr_elements/action_link_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/list_property_update_behavior.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../metrics.html">
 <link rel="import" href="../native_layer.html">
@@ -35,19 +34,20 @@
 
 <dom-module id="print-preview-destination-dialog">
   <template>
-    <style include="print-preview-shared action-link md-select cr-hidden-style throbber paper-button-style">
-      #dialog {
-        --cr-dialog-native: {
-          height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-          max-width: 640px;
-          width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
-        };
-        --cr-dialog-wrapper: {
-          height: calc(100vh - 2 * var(--print-preview-dialog-margin));
-        };
-        --cr-dialog-body-container: {
-          flex: 1;
-        };
+    <style include="print-preview-shared action-link md-select cr-hidden-style
+        throbber">
+      #dialog::part(dialog) {
+        height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+        max-width: 640px;
+        width:  calc(100vw - 2 * var(--print-preview-dialog-margin));
+      }
+
+      #dialog::part(wrapper) {
+        height: calc(100vh - 2 * var(--print-preview-dialog-margin));
+      }
+
+      #dialog::part(body-container) {
+        flex: 1;
       }
 
       print-preview-search-box {
@@ -57,7 +57,7 @@
 
       .user-info {
         font-size: calc(13 / 15 * 1em);
-        line-height: normal;
+        line-height: calc(20 / 15 * 1em);
         margin-bottom: 14px;
         margin-top: 8px;
       }
@@ -78,7 +78,7 @@
         justify-content: space-between;
       }
 
-      paper-button {
+      cr-button {
         font-size: calc(12 / 13 * 1em);
       }
 
@@ -91,8 +91,10 @@
         padding: 0;
       }
 
-      :host-context([dark]) #dialog #promos {
-        background: rgb(50, 54, 57);
+      @media (prefers-color-scheme: dark) {
+        #dialog #promos {
+          background: rgb(50, 54, 57);
+        }
       }
 
       #dialog .promo {
@@ -130,12 +132,14 @@
         padding: 12px 0;
       }
 
-      #invitationPromo paper-button {
+      #invitationPromo cr-button {
         margin: 0 4px;
       }
 
-      :host-context(html:not([dark])) #invitationPromo paper-button {
-        background-color: white;
+      @media (prefers-color-scheme: light) {
+        #invitationPromo cr-button {
+          background-color: white;
+        }
       }
 
       #invitationPromo invitation-details {
@@ -154,8 +158,7 @@
           <select class="md-select account-select"
               aria-labelledby="accountSelectLabel" on-change="onUserChange_">
             <template is="dom-repeat" items="[[users]]">
-              <option selected="[[isSelected_(item, activeUser)]]"
-                  value="[[item]]">
+              <option value="[[item]]">
                 [[item]]
               </option>
             </template>
@@ -163,8 +166,7 @@
           </select>
         </div>
         <print-preview-search-box id="searchBox"
-            label="$i18n{searchBoxPlaceholder}" search-query="{{searchQuery_}}"
-            autofocus>
+            label="$i18n{searchBoxPlaceholder}" search-query="{{searchQuery_}}">
         </print-preview-search-box>
       </div>
       <div slot="body">
@@ -180,12 +182,12 @@
         </print-preview-provisional-destination-resolver>
       </div>
       <div slot="button-container">
-        <paper-button on-click="onOpenSettingsPrintPage_">
+        <cr-button on-click="onOpenSettingsPrintPage_">
           $i18n{manage}
-        </paper-button>
-        <paper-button class="cancel-button" on-click="onCancelButtonClick_">
+        </cr-button>
+        <cr-button class="cancel-button" on-click="onCancelButtonClick_">
           $i18n{cancel}
-        </paper-button>
+        </cr-button>
       </div>
       <div id="promos" slot="footer" hidden="[[!shouldShowFooter_(
           shouldShowCloudPrintPromo_, invitation_)]]">
@@ -199,12 +201,12 @@
         <div class="promo" id="invitationPromo" hidden="[[!invitation_]]">
           <div inner-h-t-m-l="[[getInvitationText_(invitation_)]]"></div>
           <div class="invitation-buttons">
-            <paper-button on-click="onInvitationAcceptClick_">
+            <cr-button on-click="onInvitationAcceptClick_">
               [[getAcceptButtonText_(invitation_)]]
-            </paper-button>
-            <paper-button on-click="onInvitationRejectClick_">
+            </cr-button>
+            <cr-button on-click="onInvitationRejectClick_">
               $i18n{reject}
-            </paper-button>
+            </cr-button>
             <div id="invitation-process-throbber" class="throbber" hidden></div>
           </div>
           <div class="invitation-details">

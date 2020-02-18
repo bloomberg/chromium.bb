@@ -4,34 +4,34 @@ vars = {
   'google_git':  'https://github.com/google',
   'khronos_git': 'https://github.com/KhronosGroup',
 
-  'effcee_revision' : '8f0a61dc95e0df18c18e0ac56d83b3fa9d2fe90b',
-  'glslang_revision': 'f88e5824d2cfca5edc58c7c2101ec9a4ec36afac',
-  'googletest_revision': '0599a7b8410dc5cfdb477900b280475ae775d7f9',
-  're2_revision': '90970542fe952602f42150c6e71d086f5afebcb3',
-  'spirv_headers_revision': 'c4f8f65792d4bf2657ca751904c511bbcf2ac77b',
-  'spirv_tools_revision': '0125b28ed4214d1860696f22d230dbfc965c6c2c',
-  'spirv_cross_revision': 'fce83b7e8b0f6599efd4481992b2eb30f69f21de',
+  'effcee_revision' : 'b83b58d177b797edd1f94c5f10837f2cc2863f0a',
+  'glslang_revision': '4b4b41a63499d34c527ee4f714dde8072f60c900',
+  'googletest_revision': '437e1008c97b6bf595fec85da42c6925babd96b2',
+  're2_revision': 'e356bd3f80e0c15c1050323bb5a2d0f8ea4845f4',
+  'spirv_headers_revision': '29c11140baaf9f7fdaa39a583672c556bf1795a1',
+  'spirv_tools_revision': 'b8ab80843f67479b1b0c096138e62ec78145f05b',
+  'spirv_cross_revision': '53ab2144b90abede33be5161aec5dfc94ddc3caf',
 }
 
 deps = {
-  'third_party/effcee': vars['google_git'] + '/effcee.git@' +
-      vars['effcee_revision'],
+  'third_party/effcee': Var('google_git') + '/effcee.git@' +
+      Var('effcee_revision'),
 
-  'third_party/googletest': vars['google_git'] + '/googletest.git@' +
-      vars['googletest_revision'],
+  'third_party/googletest': Var('google_git') + '/googletest.git@' +
+      Var('googletest_revision'),
 
-  'third_party/glslang': vars['khronos_git'] + '/glslang.git@' +
-      vars['glslang_revision'],
+  'third_party/glslang': Var('khronos_git') + '/glslang.git@' +
+      Var('glslang_revision'),
 
-  'third_party/re2': vars['google_git'] + '/re2.git@' +
-      vars['re2_revision'],
+  'third_party/re2': Var('google_git') + '/re2.git@' +
+      Var('re2_revision'),
 
-  'third_party/spirv-headers': vars['khronos_git'] + '/SPIRV-Headers.git@' +
-      vars['spirv_headers_revision'],
+  'third_party/spirv-headers': Var('khronos_git') + '/SPIRV-Headers.git@' +
+      Var('spirv_headers_revision'),
 
-  'third_party/spirv-tools': vars['khronos_git'] + '/SPIRV-Tools.git@' +
-      vars['spirv_tools_revision'],
+  'third_party/spirv-tools': Var('khronos_git') + '/SPIRV-Tools.git@' +
+      Var('spirv_tools_revision'),
 
-  'third_party/spirv-cross': vars['khronos_git'] + '/SPIRV-Cross.git@' +
-      vars['spirv_cross_revision'],
+  'third_party/spirv-cross': Var('khronos_git') + '/SPIRV-Cross.git@' +
+      Var('spirv_cross_revision'),
 }

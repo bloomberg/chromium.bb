@@ -12,7 +12,7 @@
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "media/base/media_content_type.h"
@@ -25,6 +25,8 @@
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+using ::testing::_;
 
 namespace content {
 
@@ -96,10 +98,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
     // Connect to the Media Session service and bind |audio_focus_ptr_| to it.
     service_manager_context_ = std::make_unique<TestServiceManagerContext>();
-    service_manager::Connector* connector =
-        ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(media_session::mojom::kServiceName,
-                             mojo::MakeRequest(&audio_focus_ptr_));
+    GetSystemConnector()->BindInterface(media_session::mojom::kServiceName,
+                                        mojo::MakeRequest(&audio_focus_ptr_));
   }
 
   void TearDown() override {
@@ -127,7 +127,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
   }
 
   void ClearObservers(MediaSessionImpl* session) {
-    session->observers_.CloseAll();
+    session->observers_.Clear();
   }
 
   bool HasObservers(MediaSessionImpl* session) {
@@ -142,9 +142,7 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     std::unique_ptr<TestAudioFocusObserver> observer =
         std::make_unique<TestAudioFocusObserver>();
 
-    media_session::mojom::AudioFocusObserverPtr observer_ptr;
-    observer->BindToMojoRequest(mojo::MakeRequest(&observer_ptr));
-    audio_focus_ptr_->AddObserver(std::move(observer_ptr));
+    audio_focus_ptr_->AddObserver(observer->BindNewPipeAndPassRemote());
     audio_focus_ptr_.FlushForTesting();
 
     return observer;
@@ -336,7 +334,7 @@ TEST_F(MediaSessionImplTest, SessionInfo_PlaybackState) {
 TEST_F(MediaSessionImplTest, SuspendUI) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -352,7 +350,7 @@ TEST_F(MediaSessionImplTest, SuspendUI) {
 TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -370,7 +368,7 @@ TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
 TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -388,7 +386,7 @@ TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
 TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause));
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _));
 
   StartNewPlayer();
   mock_media_session_service().EnableAction(
@@ -403,8 +401,9 @@ TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -419,8 +418,9 @@ TEST_F(MediaSessionImplTest, ResumeUI) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -437,8 +437,9 @@ TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -457,7 +458,7 @@ TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
 TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay));
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _));
 
   StartNewPlayer();
   mock_media_session_service().EnableAction(

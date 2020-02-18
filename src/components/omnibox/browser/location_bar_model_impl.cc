@@ -74,6 +74,8 @@ base::string16 LocationBarModelImpl::GetURLForDisplay() const {
 
 base::string16 LocationBarModelImpl::GetFormattedURL(
     url_formatter::FormatUrlTypes format_types) const {
+  if (!ShouldDisplayURL())
+    return base::string16{};
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
@@ -95,7 +97,9 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
 
 GURL LocationBarModelImpl::GetURL() const {
   GURL url;
-  return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
+  return (ShouldDisplayURL() && delegate_->GetURL(&url))
+             ? url
+             : GURL(url::kAboutBlankURL);
 }
 
 security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel() const {
@@ -210,14 +214,6 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
   // Note that displayed text (the first output) will be implicitly used as the
   // accessibility text unless no display text has been specified.
 
-  // Security UI study (https://crbug.com/803501): Change EV/Secure text.
-  const std::string securityUIStudyParam =
-      base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
-          ? base::GetFieldTrialParamValueByFeature(
-                omnibox::kSimplifyHttpsIndicator,
-                OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
-          : std::string();
-
   if (IsOfflinePage())
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
@@ -226,14 +222,10 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
     case security_state::EV_SECURE: {
-      if (securityUIStudyParam ==
-          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure)
-        return SecureChipText(
-            l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
-      if (securityUIStudyParam ==
-          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock)
+      if (base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)) {
         return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
                                                     IDS_SECURE_VERBOSE_STATE));
+      }
 
       // Note: Cert is guaranteed non-NULL or the security level would be NONE.
       scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
@@ -249,12 +241,8 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
           base::UTF8ToUTF16(cert->subject().country_name)));
     }
     case security_state::SECURE:
-      if (securityUIStudyParam !=
-          OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterKeepSecureChip)
-        return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
-                                                    IDS_SECURE_VERBOSE_STATE));
-      return SecureChipText(
-          l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE));
+      return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
+                                                  IDS_SECURE_VERBOSE_STATE));
     case security_state::DANGEROUS: {
       std::unique_ptr<security_state::VisibleSecurityState>
           visible_security_state = delegate_->GetVisibleSecurityState();

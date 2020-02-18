@@ -457,7 +457,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   // Update dataSink.
 }
 
-#pragma mark - SuggestedContentDelegate
+#pragma mark - ContentSuggestionsItemDelegate
 
 - (void)loadImageForSuggestedItem:(ContentSuggestionsItem*)suggestedItem {
   __weak ContentSuggestionsMediator* weakSelf = self;
@@ -497,6 +497,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
     ContentSuggestionsMostVisitedItem* item =
         ConvertNTPTile(tile, self.mostVisitedSectionInfo);
+    item.commandHandler = self.commandHandler;
     [self.faviconMediator fetchFaviconForMostVisited:item];
     [self.freshMostVisitedItems addObject:item];
   }
@@ -667,6 +668,19 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     }
   }
   return _actionButtonItems;
+}
+
+- (void)setCommandHandler:
+    (id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>)
+        commandHandler {
+  if (_commandHandler == commandHandler)
+    return;
+
+  _commandHandler = commandHandler;
+
+  for (ContentSuggestionsMostVisitedItem* item in self.freshMostVisitedItems) {
+    item.commandHandler = commandHandler;
+  }
 }
 
 #pragma mark - ReadingListModelBridgeObserver

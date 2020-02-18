@@ -5,8 +5,9 @@
  * found in the LICENSE file.
  */
 
+#include "src/gpu/ops/GrQuadPerEdgeAA.h"
+
 #include "include/private/SkNx.h"
-#include "src/gpu/GrQuad.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
@@ -15,7 +16,6 @@
 #include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/ops/GrQuadPerEdgeAA.h"
 
 #define AI SK_ALWAYS_INLINE
 
@@ -671,7 +671,7 @@ static void write_quad(GrVertexWriter* vb, const GrQuadPerEdgeAA::VertexSpec& sp
         // save position, this is a float2 or float3 or float4 depending on the combination of
         // perspective and coverage mode.
         vb->write(quad.fX[i], quad.fY[i],
-                  If(spec.deviceQuadType() == GrQuadType::kPerspective, quad.fW[i]),
+                  If(spec.deviceQuadType() == GrQuad::Type::kPerspective, quad.fW[i]),
                   If(mode == CoverageMode::kWithPosition, coverage[i]));
 
         // save color
@@ -684,7 +684,7 @@ static void write_quad(GrVertexWriter* vb, const GrQuadPerEdgeAA::VertexSpec& sp
         // save local position
         if (spec.hasLocalCoords()) {
             vb->write(quad.fU[i], quad.fV[i],
-                      If(spec.localQuadType() == GrQuadType::kPerspective, quad.fR[i]));
+                      If(spec.localQuadType() == GrQuad::Type::kPerspective, quad.fR[i]));
         }
 
         // save the geometry domain
@@ -739,8 +739,8 @@ ColorType MinColorType(SkPMColor4f color, GrClampType clampType, const GrCaps& c
 
 ////////////////// Tessellate Implementation
 
-void* Tessellate(void* vertices, const VertexSpec& spec, const GrPerspQuad& deviceQuad,
-                 const SkPMColor4f& color4f, const GrPerspQuad& localQuad, const SkRect& domain,
+void* Tessellate(void* vertices, const VertexSpec& spec, const GrQuad& deviceQuad,
+                 const SkPMColor4f& color4f, const GrQuad& localQuad, const SkRect& domain,
                  GrQuadAAFlags aaFlags) {
     SkASSERT(deviceQuad.quadType() <= spec.deviceQuadType());
     SkASSERT(!spec.hasLocalCoords() || localQuad.quadType() <= spec.localQuadType());
@@ -770,7 +770,7 @@ void* Tessellate(void* vertices, const VertexSpec& spec, const GrPerspQuad& devi
 
         SkRect geomDomain;
         V4f maxCoverage = 1.f;
-        if (spec.deviceQuadType() == GrQuadType::kPerspective) {
+        if (spec.deviceQuadType() == GrQuad::Type::kPerspective) {
             // For perspective, send quads with all edges non-AA through the tessellation to ensure
             // their corners are processed the same as adjacent quads. This approach relies on
             // solving edge equations to reconstruct corners, which can create seams if an inner
@@ -780,7 +780,7 @@ void* Tessellate(void* vertices, const VertexSpec& spec, const GrPerspQuad& devi
             // In 2D, the simpler corner math does not cause issues with seaming against non-AA
             // inner quads.
             maxCoverage = compute_nested_quad_vertices(
-                    aaFlags, spec.deviceQuadType() <= GrQuadType::kRectilinear, &inner, &outer,
+                    aaFlags, spec.deviceQuadType() <= GrQuad::Type::kRectilinear, &inner, &outer,
                     &geomDomain);
         } else if (spec.requiresGeometryDomain()) {
             // The quad itself wouldn't need a geometric domain, but the batch does, so set the
@@ -839,11 +839,11 @@ bool ConfigureMeshIndices(GrMeshDrawOp::Target* target, GrMesh* mesh, const Vert
 ////////////////// VertexSpec Implementation
 
 int VertexSpec::deviceDimensionality() const {
-    return this->deviceQuadType() == GrQuadType::kPerspective ? 3 : 2;
+    return this->deviceQuadType() == GrQuad::Type::kPerspective ? 3 : 2;
 }
 
 int VertexSpec::localDimensionality() const {
-    return fHasLocalCoords ? (this->localQuadType() == GrQuadType::kPerspective ? 3 : 2) : 0;
+    return fHasLocalCoords ? (this->localQuadType() == GrQuad::Type::kPerspective ? 3 : 2) : 0;
 }
 
 ////////////////// Geometry Processor Implementation
@@ -858,11 +858,11 @@ public:
     static sk_sp<GrGeometryProcessor> Make(const VertexSpec& vertexSpec, const GrShaderCaps& caps,
                                            GrTextureType textureType, GrPixelConfig textureConfig,
                                            const GrSamplerState& samplerState,
-                                           uint32_t extraSamplerKey,
+                                           const GrSwizzle& swizzle, uint32_t extraSamplerKey,
                                            sk_sp<GrColorSpaceXform> textureColorSpaceXform) {
         return sk_sp<QuadPerEdgeAAGeometryProcessor>(new QuadPerEdgeAAGeometryProcessor(
-                vertexSpec, caps, textureType, textureConfig, samplerState, extraSamplerKey,
-                std::move(textureColorSpaceXform)));
+                vertexSpec, caps, textureType, textureConfig, samplerState, swizzle,
+                extraSamplerKey, std::move(textureColorSpaceXform)));
     }
 
     const char* name() const override { return "QuadPerEdgeAAGeometryProcessor"; }
@@ -1053,11 +1053,12 @@ private:
     QuadPerEdgeAAGeometryProcessor(const VertexSpec& spec, const GrShaderCaps& caps,
                                    GrTextureType textureType, GrPixelConfig textureConfig,
                                    const GrSamplerState& samplerState,
+                                   const GrSwizzle& swizzle,
                                    uint32_t extraSamplerKey,
                                    sk_sp<GrColorSpaceXform> textureColorSpaceXform)
             : INHERITED(kQuadPerEdgeAAGeometryProcessor_ClassID)
             , fTextureColorSpaceXform(std::move(textureColorSpaceXform))
-            , fSampler(textureType, textureConfig, samplerState, extraSamplerKey) {
+            , fSampler(textureType, textureConfig, samplerState, swizzle, extraSamplerKey) {
         SkASSERT(spec.hasLocalCoords());
         this->initializeAttrs(spec);
         this->setTextureSamplerCnt(1);
@@ -1136,10 +1137,10 @@ sk_sp<GrGeometryProcessor> MakeProcessor(const VertexSpec& spec) {
 
 sk_sp<GrGeometryProcessor> MakeTexturedProcessor(const VertexSpec& spec, const GrShaderCaps& caps,
         GrTextureType textureType, GrPixelConfig textureConfig,
-        const GrSamplerState& samplerState, uint32_t extraSamplerKey,
+        const GrSamplerState& samplerState, const GrSwizzle& swizzle, uint32_t extraSamplerKey,
         sk_sp<GrColorSpaceXform> textureColorSpaceXform) {
     return QuadPerEdgeAAGeometryProcessor::Make(spec, caps, textureType, textureConfig,
-                                                samplerState, extraSamplerKey,
+                                                samplerState, swizzle, extraSamplerKey,
                                                 std::move(textureColorSpaceXform));
 }
 

@@ -24,19 +24,19 @@
 #include <set>
 #include <vector>
 
-#include "perfetto/base/gtest_prod_util.h"
 #include "perfetto/base/logging.h"
-#include "perfetto/base/optional.h"
-#include "perfetto/base/time.h"
-#include "perfetto/base/weak_ptr.h"
-#include "perfetto/tracing/core/basic_types.h"
-#include "perfetto/tracing/core/commit_data_request.h"
+#include "perfetto/ext/base/optional.h"
+#include "perfetto/ext/base/time.h"
+#include "perfetto/ext/base/weak_ptr.h"
+#include "perfetto/ext/tracing/core/basic_types.h"
+#include "perfetto/ext/tracing/core/commit_data_request.h"
+#include "perfetto/ext/tracing/core/observable_events.h"
+#include "perfetto/ext/tracing/core/shared_memory_abi.h"
+#include "perfetto/ext/tracing/core/trace_stats.h"
+#include "perfetto/ext/tracing/core/tracing_service.h"
+#include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
-#include "perfetto/tracing/core/observable_events.h"
-#include "perfetto/tracing/core/shared_memory_abi.h"
 #include "perfetto/tracing/core/trace_config.h"
-#include "perfetto/tracing/core/trace_stats.h"
-#include "perfetto/tracing/core/tracing_service.h"
 #include "src/tracing/core/id_allocator.h"
 
 namespace perfetto {
@@ -60,6 +60,7 @@ class TracingServiceImpl : public TracingService {
   struct DataSourceInstance;
 
  public:
+  static constexpr size_t kDefaultShmPageSize = base::kPageSize;
   static constexpr size_t kDefaultShmSize = 256 * 1024ul;
   static constexpr size_t kMaxShmSize = 32 * 1024 * 1024ul;
   static constexpr uint32_t kDataSourceStopTimeoutMs = 5000;
@@ -116,6 +117,8 @@ class TracingServiceImpl : public TracingService {
       return base::nullopt;
     }
 
+    uid_t uid() const { return uid_; }
+
    private:
     friend class TracingServiceImpl;
     friend class TracingServiceImplTest;
@@ -132,6 +135,7 @@ class TracingServiceImpl : public TracingService {
     size_t shared_buffer_page_size_kb_ = 0;
     SharedMemoryABI shmem_abi_;
     size_t shmem_size_hint_bytes_ = 0;
+    size_t shmem_page_size_hint_bytes_ = 0;
     const std::string name_;
     bool in_process_;
     bool smb_scraping_enabled_;
@@ -182,6 +186,7 @@ class TracingServiceImpl : public TracingService {
     void Attach(const std::string& key) override;
     void GetTraceStats() override;
     void ObserveEvents(uint32_t enabled_event_types) override;
+    void QueryServiceState(QueryServiceStateCallback) override;
 
     // If |observe_data_source_instances == true|, will queue a task to notify
     // the consumer about the state change.
@@ -265,7 +270,8 @@ class TracingServiceImpl : public TracingService {
       size_t shared_memory_size_hint_bytes = 0,
       bool in_process = false,
       ProducerSMBScrapingMode smb_scraping_mode =
-          ProducerSMBScrapingMode::kDefault) override;
+          ProducerSMBScrapingMode::kDefault,
+      size_t shared_memory_page_size_hint_bytes = 0) override;
 
   std::unique_ptr<TracingService::ConsumerEndpoint> ConnectConsumer(
       Consumer*,
@@ -280,8 +286,6 @@ class TracingServiceImpl : public TracingService {
   // Exposed mainly for testing.
   size_t num_producers() const { return producers_.size(); }
   ProducerEndpointImpl* GetProducer(ProducerID) const;
-
-  uint32_t override_data_source_test_timeout_ms_for_testing = 0;
 
  private:
   friend class TracingServiceImplTest;
@@ -356,6 +360,11 @@ class TracingServiceImpl : public TracingService {
     uint32_t flush_timeout_ms() {
       uint32_t timeout_ms = config.flush_timeout_ms();
       return timeout_ms ? timeout_ms : kDefaultFlushTimeoutMs;
+    }
+
+    uint32_t data_source_stop_timeout_ms() {
+      uint32_t timeout_ms = config.data_source_stop_timeout_ms();
+      return timeout_ms ? timeout_ms : kDataSourceStopTimeoutMs;
     }
 
     PacketSequenceID GetPacketSequenceID(ProducerID producer_id,
@@ -446,6 +455,10 @@ class TracingServiceImpl : public TracingService {
     // When the last snapshots (clock, stats, sync marker) were emitted into
     // the output stream.
     base::TimeMillis last_snapshot_time = {};
+
+    // Whether we should emit the trace stats next time we reach EOF while
+    // performing ReadBuffers.
+    bool should_emit_stats = false;
 
     // Whether we mirrored the trace config back to the trace output yet.
     bool did_emit_config = false;

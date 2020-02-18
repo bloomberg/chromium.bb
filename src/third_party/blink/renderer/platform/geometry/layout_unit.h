@@ -40,7 +40,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -202,7 +202,9 @@ class LayoutUnit {
     return value_ > 0 ? LayoutUnit() : *this;
   }
 
-  bool HasFraction() const { return RawValue() % kFixedPointDenominator; }
+  constexpr bool HasFraction() const {
+    return RawValue() % kFixedPointDenominator;
+  }
 
   LayoutUnit Fraction() const {
     // Compute fraction using the mod operator to preserve the sign of the value

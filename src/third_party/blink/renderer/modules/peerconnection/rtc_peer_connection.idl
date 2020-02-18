@@ -86,6 +86,7 @@ enum RTCPeerConnectionState {
     readonly attribute RTCIceConnectionState iceConnectionState;
     readonly attribute RTCPeerConnectionState connectionState;
     // readonly attribute boolean? canTrickleIceCandidates;
+    void restartIce();
     [CallWith=ScriptState] RTCConfiguration getConfiguration();
     [CallWith=ScriptState, RaisesException] void setConfiguration(RTCConfiguration configuration);
     void close();
@@ -95,6 +96,7 @@ enum RTCPeerConnectionState {
     attribute EventHandler oniceconnectionstatechange;
     attribute EventHandler onconnectionstatechange;
     attribute EventHandler onicegatheringstatechange;
+    attribute EventHandler onicecandidateerror;
 
     // https://w3c.github.io/webrtc-pc/#legacy-interface-extensions
     // These methods return Promise<void> because having Promise-based versions requires that all overloads return Promises.
@@ -136,7 +138,7 @@ enum RTCPeerConnectionState {
     //    List of implemented stats:
     //    https://cs.chromium.org/chromium/src/third_party/webrtc/api/stats/rtcstats_objects.h
     //    See also RTCRtpSender.getStats() and RTCRtpReceiver.getStats().
-    [CallWith=ScriptState] Promise<any> getStats(optional any callbackOrSelector, optional any legacySelector);
+    [CallWith=ScriptState, RaisesException] Promise<any> getStats(optional any callbackOrSelector, optional any legacySelector);
 
     // RTP Media API
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-gettransceivers

@@ -15,10 +15,10 @@ String GetViolationMessage(const CSSProperty& property) {
   return String::Format(
       "Feature policy violation: CSS property '%s' violates feature policy "
       "'%s' which is disabled in this document",
-      property.GetPropertyNameString().Utf8().data(),
+      property.GetPropertyNameString().Utf8().c_str(),
       GetNameForFeature(mojom::FeaturePolicyFeature::kLayoutAnimations)
           .Utf8()
-          .data());
+          .c_str());
 }
 }  // namespace
 

@@ -178,7 +178,7 @@ class NavigationCompletedObserver : public content::WebContentsObserver {
     web_contents()->ForEachFrame(
         base::BindRepeating(&AddFrameToSet, base::Unretained(&current_frames)));
     for (content::RenderFrameHost* frame : frames_) {
-      if (!base::ContainsKey(current_frames, frame))
+      if (!base::Contains(current_frames, frame))
         return false;
     }
     return true;
@@ -272,12 +272,10 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   content::WebContents* OpenPopup(content::RenderFrameHost* opener,
                                   const GURL& url,
                                   bool expect_success = true) {
-    content::WindowedNotificationObserver popup_observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
+    ui_test_utils::TabAddedWaiter waiter(browser());
     EXPECT_TRUE(ExecuteScript(
         opener, "window.popup = window.open('" + url.spec() + "')"));
-    popup_observer.Wait();
+    waiter.Wait();
     content::WebContents* popup =
         browser()->tab_strip_model()->GetActiveWebContents();
     WaitForLoadStop(popup);

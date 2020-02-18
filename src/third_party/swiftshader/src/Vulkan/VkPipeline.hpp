@@ -17,7 +17,9 @@
 
 #include "VkObject.hpp"
 #include "Vulkan/VkDescriptorSet.hpp"
+#include "Vulkan/VkPipelineCache.hpp"
 #include "Device/Renderer.hpp"
+#include <memory>
 
 namespace sw
 {
@@ -28,17 +30,25 @@ namespace sw
 namespace vk
 {
 
+class PipelineCache;
 class PipelineLayout;
+class ShaderModule;
+class Device;
 
 class Pipeline
 {
 public:
-	Pipeline(PipelineLayout const *layout);
+	Pipeline(PipelineLayout const *layout, const Device *device);
 	virtual ~Pipeline() = default;
 
 	operator VkPipeline()
 	{
-		return reinterpret_cast<VkPipeline::HandleType>(this);
+		return vk::TtoVkT<Pipeline, VkPipeline>(this);
+	}
+
+	static inline Pipeline* Cast(VkPipeline object)
+	{
+		return vk::VkTtoT<Pipeline, VkPipeline>(object);
 	}
 
 	void destroy(const VkAllocationCallbacks* pAllocator)
@@ -55,12 +65,16 @@ public:
 
 protected:
 	PipelineLayout const *layout = nullptr;
+
+	const bool robustBufferAccess = true;
 };
 
 class GraphicsPipeline : public Pipeline, public ObjectBase<GraphicsPipeline, VkPipeline>
 {
 public:
-	GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem);
+	GraphicsPipeline(const VkGraphicsPipelineCreateInfo* pCreateInfo, void* mem, const Device *device);
+	virtual ~GraphicsPipeline() = default;
+
 	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
@@ -72,7 +86,7 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkGraphicsPipelineCreateInfo* pCreateInfo);
 
-	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkGraphicsPipelineCreateInfo* pCreateInfo);
+	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkGraphicsPipelineCreateInfo* pCreateInfo, PipelineCache* pipelineCache);
 
 	uint32_t computePrimitiveCount(uint32_t vertexCount) const;
 	const sw::Context& getContext() const;
@@ -83,8 +97,10 @@ public:
 	bool hasPrimitiveRestartEnable() const { return primitiveRestartEnable; }
 
 private:
-	sw::SpirvShader *vertexShader = nullptr;
-	sw::SpirvShader *fragmentShader = nullptr;
+	void setShader(const VkShaderStageFlagBits& stage, const std::shared_ptr<sw::SpirvShader> spirvShader);
+	const std::shared_ptr<sw::SpirvShader> getShader(const VkShaderStageFlagBits& stage) const;
+	std::shared_ptr<sw::SpirvShader> vertexShader;
+	std::shared_ptr<sw::SpirvShader> fragmentShader;
 
 	uint32_t dynamicStateFlags = 0;
 	bool primitiveRestartEnable = false;
@@ -97,7 +113,9 @@ private:
 class ComputePipeline : public Pipeline, public ObjectBase<ComputePipeline, VkPipeline>
 {
 public:
-	ComputePipeline(const VkComputePipelineCreateInfo* pCreateInfo, void* mem);
+	ComputePipeline(const VkComputePipelineCreateInfo* pCreateInfo, void* mem, const Device *device);
+	virtual ~ComputePipeline() = default;
+
 	void destroyPipeline(const VkAllocationCallbacks* pAllocator) override;
 
 #ifndef NDEBUG
@@ -109,7 +127,7 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkComputePipelineCreateInfo* pCreateInfo);
 
-	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkComputePipelineCreateInfo* pCreateInfo);
+	void compileShaders(const VkAllocationCallbacks* pAllocator, const VkComputePipelineCreateInfo* pCreateInfo, PipelineCache* pipelineCache);
 
 	void run(uint32_t baseGroupX, uint32_t baseGroupY, uint32_t baseGroupZ,
 			uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ,
@@ -118,13 +136,13 @@ public:
 		sw::PushConstantStorage const &pushConstants);
 
 protected:
-	sw::SpirvShader *shader = nullptr;
-	sw::ComputeProgram *program = nullptr;
+	std::shared_ptr<sw::SpirvShader> shader;
+	std::shared_ptr<sw::ComputeProgram> program;
 };
 
 static inline Pipeline* Cast(VkPipeline object)
 {
-	return reinterpret_cast<Pipeline*>(object.get());
+	return Pipeline::Cast(object);
 }
 
 } // namespace vk

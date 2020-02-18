@@ -18,18 +18,16 @@
 namespace content {
 class WebContents;
 struct ContextMenuParams;
-struct StreamInfo;
 }  // namespace content
 
 namespace extensions {
 class MimeHandlerViewGuestDelegate;
 
-// A container for a StreamHandle and any other information necessary for a
-// MimeHandler to handle a resource stream.
+// A container for a information necessary for a MimeHandler to handle a
+// resource stream.
 class StreamContainer {
  public:
   StreamContainer(
-      std::unique_ptr<content::StreamInfo> stream,
       int tab_id,
       bool embedded,
       const GURL& handler_url,
@@ -37,9 +35,6 @@ class StreamContainer {
       content::mojom::TransferrableURLLoaderPtr transferrable_loader,
       const GURL& original_url);
   ~StreamContainer();
-
-  // Aborts the stream.
-  void Abort(const base::Closure& callback);
 
   base::WeakPtr<StreamContainer> GetWeakPtr();
 
@@ -58,7 +53,6 @@ class StreamContainer {
   }
 
  private:
-  const std::unique_ptr<content::StreamInfo> stream_;
   const bool embedded_;
   const int tab_id_;
   const GURL handler_url_;
@@ -70,7 +64,7 @@ class StreamContainer {
   GURL stream_url_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
-  base::WeakPtrFactory<StreamContainer> weak_factory_;
+  base::WeakPtrFactory<StreamContainer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(StreamContainer);
 };
@@ -88,7 +82,7 @@ class MimeHandlerViewGuest
   bool CanBeEmbeddedInsideCrossProcessFrames() override;
   content::RenderWidgetHost* GetOwnerRenderWidgetHost() override;
   content::SiteInstance* GetOwnerSiteInstance() override;
-  content::RenderFrameHost* GetEmbedderFrame() const override;
+  content::RenderFrameHost* GetEmbedderFrame() override;
 
   void SetEmbedderFrame(int process_id, int routing_id);
 
@@ -152,7 +146,7 @@ class MimeHandlerViewGuest
       const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenModeForTab(content::WebContents*) override;
   bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const override;
+      const content::WebContents* web_contents) override;
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
       content::RenderFrameHost* opener,
@@ -203,7 +197,7 @@ class MimeHandlerViewGuest
   bool maybe_has_frame_container_ = false;
   mime_handler::BeforeUnloadControlPtrInfo pending_before_unload_control_;
 
-  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };

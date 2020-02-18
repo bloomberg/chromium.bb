@@ -351,7 +351,7 @@ class CreditCardSaveManager {
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;
 
-  base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CreditCardSaveManager> weak_ptr_factory_{this};
 
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardSaveManagerTest,
@@ -359,6 +359,12 @@ class CreditCardSaveManager {
   FRIEND_TEST_ALL_PREFIXES(
       CreditCardSaveManagerTest,
       UploadCreditCard_ShouldRequestExpirationDate_ResetBetweenConsecutiveSaves);
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardSaveManagerTest,
+      UploadCreditCard_WalletSyncTransportEnabled_ShouldNotRequestExpirationDate);
+  FRIEND_TEST_ALL_PREFIXES(
+      CreditCardSaveManagerTest,
+      UploadCreditCard_WalletSyncTransportNotEnabled_ShouldRequestExpirationDate);
 
   DISALLOW_COPY_AND_ASSIGN(CreditCardSaveManager);
 };

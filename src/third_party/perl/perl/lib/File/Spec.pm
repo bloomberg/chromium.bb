@@ -1,26 +1,25 @@
 package File::Spec;
 
 use strict;
-use vars qw(@ISA $VERSION);
 
-$VERSION = '3.39_02';
-$VERSION =~ tr/_//;
+our $VERSION = '3.78';
+$VERSION =~ tr/_//d;
 
-my %module = (MacOS   => 'Mac',
+my %module = (
 	      MSWin32 => 'Win32',
 	      os2     => 'OS2',
 	      VMS     => 'VMS',
-	      epoc    => 'Epoc',
 	      NetWare => 'Win32', # Yes, File::Spec::Win32 works on NetWare.
 	      symbian => 'Win32', # Yes, File::Spec::Win32 works on symbian.
 	      dos     => 'OS2',   # Yes, File::Spec::OS2 works on DJGPP.
-	      cygwin  => 'Cygwin');
+	      cygwin  => 'Cygwin',
+	      amigaos => 'AmigaOS');
 
 
 my $module = $module{$^O} || 'Unix';
 
 require "File/Spec/$module.pm";
-@ISA = ("File::Spec::$module");
+our @ISA = ("File::Spec::$module");
 
 1;
 
@@ -157,10 +156,13 @@ Returns a string representation of the parent directory.
 
 =item no_upwards
 
-Given a list of file names, strip out those that refer to a parent
-directory. (Does not strip symlinks, only '.', '..', and equivalents.)
+Given a list of files in a directory (such as from C<readdir()>),
+strip out C<'.'> and C<'..'>.
 
-    @paths = File::Spec->no_upwards( @paths );
+B<SECURITY NOTE:> This does NOT filter paths containing C<'..'>, like
+C<'../../../../etc/passwd'>, only literal matches to C<'.'> and C<'..'>.
+
+    @paths = File::Spec->no_upwards( readdir $dirhandle );
 
 =item case_tolerant
 
@@ -331,7 +333,7 @@ splitpath(), splitdir(), catpath() and catdir() by Barrie Slaymaker.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2004-2010 by the Perl 5 Porters.  All rights reserved.
+Copyright (c) 2004-2013 by the Perl 5 Porters.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

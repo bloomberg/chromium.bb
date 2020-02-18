@@ -97,7 +97,8 @@ class ChannelSend : public ChannelSendInterface,
               FrameEncryptorInterface* frame_encryptor,
               const webrtc::CryptoOptions& crypto_options,
               bool extmap_allow_mixed,
-              int rtcp_report_interval_ms);
+              int rtcp_report_interval_ms,
+              uint32_t ssrc);
 
   ~ChannelSend() override;
 
@@ -259,7 +260,7 @@ class ChannelSend : public ChannelSendInterface,
       nullptr;
   const std::unique_ptr<TransportFeedbackProxy> feedback_observer_proxy_;
   const std::unique_ptr<TransportSequenceNumberProxy> seq_num_allocator_proxy_;
-  const std::unique_ptr<RtpPacketSenderProxy> rtp_packet_sender_proxy_;
+  const std::unique_ptr<RtpPacketSenderProxy> rtp_packet_pacer_proxy_;
   const std::unique_ptr<RateLimiter> retransmission_rate_limiter_;
 
   rtc::ThreadChecker construction_thread_;
@@ -366,12 +367,17 @@ class TransportSequenceNumberProxy : public TransportSequenceNumberAllocator {
 
 class RtpPacketSenderProxy : public RtpPacketSender {
  public:
-  RtpPacketSenderProxy() : rtp_packet_sender_(nullptr) {}
+  RtpPacketSenderProxy() : rtp_packet_pacer_(nullptr) {}
 
-  void SetPacketSender(RtpPacketSender* rtp_packet_sender) {
+  void SetPacketPacer(RtpPacketSender* rtp_packet_pacer) {
     RTC_DCHECK(thread_checker_.IsCurrent());
     rtc::CritScope lock(&crit_);
-    rtp_packet_sender_ = rtp_packet_sender;
+    rtp_packet_pacer_ = rtp_packet_pacer;
+  }
+
+  void EnqueuePacket(std::unique_ptr<RtpPacketToSend> packet) override {
+    rtc::CritScope lock(&crit_);
+    rtp_packet_pacer_->EnqueuePacket(std::move(packet));
   }
 
   // Implements RtpPacketSender.
@@ -382,20 +388,16 @@ class RtpPacketSenderProxy : public RtpPacketSender {
                     size_t bytes,
                     bool retransmission) override {
     rtc::CritScope lock(&crit_);
-    if (rtp_packet_sender_) {
-      rtp_packet_sender_->InsertPacket(priority, ssrc, sequence_number,
-                                       capture_time_ms, bytes, retransmission);
+    if (rtp_packet_pacer_) {
+      rtp_packet_pacer_->InsertPacket(priority, ssrc, sequence_number,
+                                      capture_time_ms, bytes, retransmission);
     }
-  }
-
-  void SetAccountForAudioPackets(bool account_for_audio) override {
-    RTC_NOTREACHED();
   }
 
  private:
   rtc::ThreadChecker thread_checker_;
   rtc::CriticalSection crit_;
-  RtpPacketSender* rtp_packet_sender_ RTC_GUARDED_BY(&crit_);
+  RtpPacketSender* rtp_packet_pacer_ RTC_GUARDED_BY(&crit_);
 };
 
 class VoERtcpObserver : public RtcpBandwidthObserver {
@@ -511,32 +513,35 @@ int32_t ChannelSend::SendRtpAudio(AudioFrameType frameType,
   // DTMF, or the encoder entered DTX.
   // TODO(minyue): see whether DTMF packets should be encrypted or not. In
   // current implementation, they are not.
-  if (frame_encryptor_ != nullptr && !payload.empty()) {
-    // TODO(benwright@webrtc.org) - Allocate enough to always encrypt inline.
-    // Allocate a buffer to hold the maximum possible encrypted payload.
-    size_t max_ciphertext_size = frame_encryptor_->GetMaxCiphertextByteSize(
-        cricket::MEDIA_TYPE_AUDIO, payload.size());
-    encrypted_audio_payload.SetSize(max_ciphertext_size);
+  if (!payload.empty()) {
+    if (frame_encryptor_ != nullptr) {
+      // TODO(benwright@webrtc.org) - Allocate enough to always encrypt inline.
+      // Allocate a buffer to hold the maximum possible encrypted payload.
+      size_t max_ciphertext_size = frame_encryptor_->GetMaxCiphertextByteSize(
+          cricket::MEDIA_TYPE_AUDIO, payload.size());
+      encrypted_audio_payload.SetSize(max_ciphertext_size);
 
-    // Encrypt the audio payload into the buffer.
-    size_t bytes_written = 0;
-    int encrypt_status = frame_encryptor_->Encrypt(
-        cricket::MEDIA_TYPE_AUDIO, _rtpRtcpModule->SSRC(),
-        /*additional_data=*/nullptr, payload, encrypted_audio_payload,
-        &bytes_written);
-    if (encrypt_status != 0) {
-      RTC_DLOG(LS_ERROR) << "Channel::SendData() failed encrypt audio payload: "
-                         << encrypt_status;
+      // Encrypt the audio payload into the buffer.
+      size_t bytes_written = 0;
+      int encrypt_status = frame_encryptor_->Encrypt(
+          cricket::MEDIA_TYPE_AUDIO, _rtpRtcpModule->SSRC(),
+          /*additional_data=*/nullptr, payload, encrypted_audio_payload,
+          &bytes_written);
+      if (encrypt_status != 0) {
+        RTC_DLOG(LS_ERROR)
+            << "Channel::SendData() failed encrypt audio payload: "
+            << encrypt_status;
+        return -1;
+      }
+      // Resize the buffer to the exact number of bytes actually used.
+      encrypted_audio_payload.SetSize(bytes_written);
+      // Rewrite the payloadData and size to the new encrypted payload.
+      payload = encrypted_audio_payload;
+    } else if (crypto_options_.sframe.require_frame_encryption) {
+      RTC_DLOG(LS_ERROR) << "Channel::SendData() failed sending audio payload: "
+                         << "A frame encryptor is required but one is not set.";
       return -1;
     }
-    // Resize the buffer to the exact number of bytes actually used.
-    encrypted_audio_payload.SetSize(bytes_written);
-    // Rewrite the payloadData and size to the new encrypted payload.
-    payload = encrypted_audio_payload;
-  } else if (crypto_options_.sframe.require_frame_encryption) {
-    RTC_DLOG(LS_ERROR) << "Channel::SendData() failed sending audio payload: "
-                       << "A frame encryptor is required but one is not set.";
-    return -1;
   }
 
   // Push data from ACM to RTP/RTCP-module to deliver audio frame for
@@ -632,7 +637,8 @@ ChannelSend::ChannelSend(Clock* clock,
                          FrameEncryptorInterface* frame_encryptor,
                          const webrtc::CryptoOptions& crypto_options,
                          bool extmap_allow_mixed,
-                         int rtcp_report_interval_ms)
+                         int rtcp_report_interval_ms,
+                         uint32_t ssrc)
     : event_log_(rtc_event_log),
       _timeStamp(0),  // This is just an offset, RTP module will add it's own
                       // random offset
@@ -643,7 +649,7 @@ ChannelSend::ChannelSend(Clock* clock,
       rtcp_observer_(new VoERtcpObserver(this)),
       feedback_observer_proxy_(new TransportFeedbackProxy()),
       seq_num_allocator_proxy_(new TransportSequenceNumberProxy()),
-      rtp_packet_sender_proxy_(new RtpPacketSenderProxy()),
+      rtp_packet_pacer_proxy_(new RtpPacketSenderProxy()),
       retransmission_rate_limiter_(
           new RateLimiter(clock, kMaxRetransmissionWindowMs)),
       use_twcc_plr_for_ana_(
@@ -676,7 +682,7 @@ ChannelSend::ChannelSend(Clock* clock,
   configuration.clock = Clock::GetRealTimeClock();
   configuration.outgoing_transport = rtp_transport;
 
-  configuration.paced_sender = rtp_packet_sender_proxy_.get();
+  configuration.paced_sender = rtp_packet_pacer_proxy_.get();
   configuration.transport_sequence_number_allocator =
       seq_num_allocator_proxy_.get();
 
@@ -686,6 +692,8 @@ ChannelSend::ChannelSend(Clock* clock,
       retransmission_rate_limiter_.get();
   configuration.extmap_allow_mixed = extmap_allow_mixed;
   configuration.rtcp_report_interval_ms = rtcp_report_interval_ms;
+
+  configuration.media_send_ssrc = ssrc;
 
   _rtpRtcpModule = RtpRtcp::Create(configuration);
   _rtpRtcpModule->SetSendingMediaStatus(false);
@@ -993,12 +1001,12 @@ void ChannelSend::RegisterSenderCongestionControlObjects(
     RtpTransportControllerSendInterface* transport,
     RtcpBandwidthObserver* bandwidth_observer) {
   RTC_DCHECK_RUN_ON(&worker_thread_checker_);
-  RtpPacketSender* rtp_packet_sender = transport->packet_sender();
+  RtpPacketSender* rtp_packet_pacer = transport->packet_sender();
   TransportFeedbackObserver* transport_feedback_observer =
       transport->transport_feedback_observer();
   PacketRouter* packet_router = transport->packet_router();
 
-  RTC_DCHECK(rtp_packet_sender);
+  RTC_DCHECK(rtp_packet_pacer);
   RTC_DCHECK(transport_feedback_observer);
   RTC_DCHECK(packet_router);
   RTC_DCHECK(!packet_router_);
@@ -1006,7 +1014,7 @@ void ChannelSend::RegisterSenderCongestionControlObjects(
   feedback_observer_proxy_->SetTransportFeedbackObserver(
       transport_feedback_observer);
   seq_num_allocator_proxy_->SetSequenceNumberAllocator(packet_router);
-  rtp_packet_sender_proxy_->SetPacketSender(rtp_packet_sender);
+  rtp_packet_pacer_proxy_->SetPacketPacer(rtp_packet_pacer);
   _rtpRtcpModule->SetStorePacketsStatus(true, 600);
   constexpr bool remb_candidate = false;
   packet_router->AddSendRtpModule(_rtpRtcpModule.get(), remb_candidate);
@@ -1022,7 +1030,7 @@ void ChannelSend::ResetSenderCongestionControlObjects() {
   seq_num_allocator_proxy_->SetSequenceNumberAllocator(nullptr);
   packet_router_->RemoveSendRtpModule(_rtpRtcpModule.get());
   packet_router_ = nullptr;
-  rtp_packet_sender_proxy_->SetPacketSender(nullptr);
+  rtp_packet_pacer_proxy_->SetPacketPacer(nullptr);
 }
 
 void ChannelSend::SetRTCP_CNAME(absl::string_view c_name) {
@@ -1110,7 +1118,7 @@ void ChannelSend::ProcessAndEncodeAudio(
 
 void ChannelSend::ProcessAndEncodeAudioOnTaskQueue(AudioFrame* audio_input) {
   RTC_DCHECK_GT(audio_input->samples_per_channel_, 0);
-  RTC_DCHECK_LE(audio_input->num_channels_, 2);
+  RTC_DCHECK_LE(audio_input->num_channels_, 8);
 
   // Measure time between when the audio frame is added to the task queue and
   // when the task is actually executed. Goal is to keep track of unwanted
@@ -1248,12 +1256,13 @@ std::unique_ptr<ChannelSendInterface> CreateChannelSend(
     FrameEncryptorInterface* frame_encryptor,
     const webrtc::CryptoOptions& crypto_options,
     bool extmap_allow_mixed,
-    int rtcp_report_interval_ms) {
+    int rtcp_report_interval_ms,
+    uint32_t ssrc) {
   return absl::make_unique<ChannelSend>(
       clock, task_queue_factory, module_process_thread, media_transport_config,
       overhead_observer, rtp_transport, rtcp_rtt_stats, rtc_event_log,
       frame_encryptor, crypto_options, extmap_allow_mixed,
-      rtcp_report_interval_ms);
+      rtcp_report_interval_ms, ssrc);
 }
 
 }  // namespace voe

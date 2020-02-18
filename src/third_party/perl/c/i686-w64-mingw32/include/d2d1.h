@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
 
  * d2d1.h - Header file for the Direct2D API
@@ -28,13 +28,6 @@
 #endif
 
 typedef UINT64 D2D1_TAG;
-
-#pragma push_macro("IDWriteTextFormat")
-#pragma push_macro("IDWriteRenderingParams")
-#pragma push_macro("IDWriteTextLayout")
-#undef IDWriteTextFormat
-#undef IDWriteRenderingParams
-#undef IDWriteTextLayout
 
 #if !defined(D2D_USE_C_DEFINITIONS) && !defined(__cplusplus)
 #define D2D_USE_C_DEFINITIONS
@@ -167,7 +160,7 @@ typedef enum DXGI_FORMAT {
   DXGI_FORMAT_BC7_TYPELESS                 = 97,
   DXGI_FORMAT_BC7_UNORM                    = 98,
   DXGI_FORMAT_BC7_UNORM_SRGB               = 99,
-  DXGI_FORMAT_FORCE_UINT                   = 0xffffffffUL
+  DXGI_FORMAT_FORCE_UINT                   = 0xffffffff
 } DXGI_FORMAT, *LPDXGI_FORMAT;
 
 #endif /*__MINGW_HAS_DXSDK*/
@@ -213,6 +206,17 @@ typedef enum _D2D1_ARC_SIZE {
   D2D1_ARC_SIZE_SMALL   = 0,
   D2D1_ARC_SIZE_LARGE   = 1 
 } D2D1_ARC_SIZE;
+
+enum {
+    D2D1_INTERPOLATION_MODE_DEFINITION_NEAREST_NEIGHBOR    = 0,
+    D2D1_INTERPOLATION_MODE_DEFINITION_LINEAR              = 1,
+    D2D1_INTERPOLATION_MODE_DEFINITION_CUBIC               = 2,
+    D2D1_INTERPOLATION_MODE_DEFINITION_MULTI_SAMPLE_LINEAR = 3,
+    D2D1_INTERPOLATION_MODE_DEFINITION_ANISOTROPIC         = 4,
+    D2D1_INTERPOLATION_MODE_DEFINITION_HIGH_QUALITY_CUBIC  = 5,
+    D2D1_INTERPOLATION_MODE_DEFINITION_FANT                = 6,
+    D2D1_INTERPOLATION_MODE_DEFINITION_MIPMAP_LINEAR       = 7
+};
 
 typedef enum _D2D1_BITMAP_INTERPOLATION_MODE {
   D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR   = 0,
@@ -584,9 +588,9 @@ interface ID2D1Resource {
     const ID2D1ResourceVtbl *lpVtbl;
 };
 
-#define ID2D1Resource_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1Resource_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)this)
-#define ID2D1Resource_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)this)
+#define ID2D1Resource_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Resource_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)(this))
+#define ID2D1Resource_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)(this))
 #define ID2D1Resource_GetFactory(this,A) (this)->lpVtbl->GetFactory(this,A)
 
 #endif
@@ -621,10 +625,10 @@ interface ID2D1Brush {
     const ID2D1BrushVtbl *lpVtbl;
 };
 
-#define ID2D1Brush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1Brush_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1Brush_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1Brush_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1Brush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Brush_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Brush_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1Brush_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1Brush_SetOpacity(this,A) (this)->lpVtbl->SetOpacity(this,A)
 #define ID2D1Brush_SetTransform(this,A) (this)->lpVtbl->SetTransform(this,A)
 #define ID2D1Brush_GetOpacity(this) (this)->lpVtbl->GetOpacity(this)
@@ -632,14 +636,67 @@ interface ID2D1Brush {
 
 #endif
 
+DEFINE_GUID(IID_ID2D1Image, 0x65019f75,0x8da2,0x497c,0xb3,0x2c,0xdf,0xa3,0x4e,0x48,0xed,0xe6);
+
+#ifndef D2D_USE_C_DEFINITIONS
+
+interface ID2D1Image : public ID2D1Resource {};
+
+#else
+
+typedef struct ID2D1ImageVtbl {
+    ID2D1ResourceVtbl Base;
+} ID2D1ImageVtbl;
+
+interface ID2D1Image {
+    const ID2D1ImageVtbl *lpVtbl;
+};
+
+#define ID2D1Image_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnkwnown*)(this),A,B)
+#define ID2D1Image_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Image_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1Image_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
+
+#endif
+
 DEFINE_GUID(IID_ID2D1Bitmap, 0xa2296057,0xea42,0x4099,0x98,0x3b,0x53,0x9f,0xb6,0x50,0x54,0x26);
 
 #ifndef D2D_USE_C_DEFINITIONS
 
-interface ID2D1Bitmap : public ID2D1Resource {
+interface ID2D1Bitmap : public ID2D1Image {
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
+#else
+    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(D2D1_SIZE_F*) const = 0;
+    D2D1_SIZE_F STDMETHODCALLTYPE GetSize() const {
+        D2D1_SIZE_F __ret;
+        GetSize(&__ret);
+        return __ret;
+    }
+#endif
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(void) const PURE;
+#else
+    virtual D2D1_SIZE_U* STDMETHODCALLTYPE GetPixelSize(D2D1_SIZE_U*) const = 0;
+    D2D1_SIZE_U STDMETHODCALLTYPE GetPixelSize() const {
+        D2D1_SIZE_U __ret;
+        GetPixelSize(&__ret);
+        return __ret;
+    }
+#endif
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_PIXEL_FORMAT, GetPixelFormat)(void) const PURE;
+#else
+    virtual D2D1_PIXEL_FORMAT* STDMETHODCALLTYPE GetPixelFormat(D2D1_PIXEL_FORMAT*) const = 0;
+    D2D1_PIXEL_FORMAT STDMETHODCALLTYPE GetPixelFormat() const {
+        D2D1_PIXEL_FORMAT __ret;
+        GetPixelFormat(&__ret);
+        return __ret;
+    }
+#endif
+
     STDMETHOD_(void, GetDpi)(FLOAT *dpiX, FLOAT *dpiY) const PURE;
     STDMETHOD(CopyFromBitmap)(const D2D1_POINT_2U *destPoint, ID2D1Bitmap *bitmap, const D2D1_RECT_U *srcRect) PURE;
     STDMETHOD(CopyFromRenderTarget)(const D2D1_POINT_2U *destPoint, ID2D1RenderTarget *renderTarget, const D2D1_RECT_U *srcRect) PURE;
@@ -649,7 +706,7 @@ interface ID2D1Bitmap : public ID2D1Resource {
 #else
 
 typedef struct ID2D1BitmapVtbl {
-    ID2D1ResourceVtbl Base;
+    ID2D1ImageVtbl Base;
 
     STDMETHOD_(D2D1_SIZE_F, GetSize)(ID2D1Bitmap *This) PURE;
     STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(ID2D1Bitmap *This) PURE;
@@ -664,10 +721,10 @@ interface ID2D1Bitmap {
     const ID2D1BitmapVtbl *lpVtbl;
 };
 
-#define ID2D1Bitmap_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnkwnown*)this,A,B)
-#define ID2D1Bitmap_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1Bitmap_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1Bitmap_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1Bitmap_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnkwnown*)(this),A,B)
+#define ID2D1Bitmap_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Bitmap_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1Bitmap_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1Bitmap_GetSize(this) (this)->lpVtbl->GetSize(this)
 #define ID2D1Bitmap_GetPixelSize(this) (this)->lpVtbl->GetPixelSize(this)
 #define ID2D1Bitmap_GetPixelFormat(this) (this)->lpVtbl->GetPixelFormat(this)
@@ -712,10 +769,14 @@ interface ID2D1BitmapBrush {
     const ID2D1BitmapBrushVtbl *lpVtbl;
 };
 
-#define ID2D1BitmapBrush_SetOpacity(this,A) (this)->lpVtbl->Base.SetOpacity((ID2D1Brush*)this,A)
-#define ID2D1BitmapBrush_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1Brush*)this,A)
-#define ID2D1BitmapBrush_GetOpacity(this) (this)->lpVtbl->Base.GetOpacity((ID2D1Brush*)this)
-#define ID2D1BitmapBrush_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1Brush*)this,A)
+#define ID2D1BitmapBrush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnkwnown*)(this),A,B)
+#define ID2D1BitmapBrush_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1BitmapBrush_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1BitmapBrush_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1BitmapBrush_SetOpacity(this,A) (this)->lpVtbl->Base.SetOpacity((ID2D1Brush*)(this),A)
+#define ID2D1BitmapBrush_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1Brush*)(this),A)
+#define ID2D1BitmapBrush_GetOpacity(this) (this)->lpVtbl->Base.GetOpacity((ID2D1Brush*)(this))
+#define ID2D1BitmapBrush_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1Brush*)(this),A)
 #define ID2D1BitmapBrush_SetExtendModeX(this,A) (this)->lpVtbl->SetExtendModeX(this,A)
 #define ID2D1BitmapBrush_SetExtendModeY(this,A) (this)->lpVtbl->SetExtendModeY(this,A)
 #define ID2D1BitmapBrush_SetInterpolationMode(this,A) (this)->lpVtbl->SetInterpolationMode(this,A)
@@ -778,11 +839,43 @@ interface ID2D1RenderTarget : public ID2D1Resource {
     STDMETHOD_(void, Clear)(const D2D1_COLOR_F *clearColor = NULL) PURE;
     STDMETHOD_(void, BeginDraw)(void) PURE;
     STDMETHOD(EndDraw)(D2D1_TAG *tag1 = NULL, D2D1_TAG *tag2 = NULL) PURE;
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_PIXEL_FORMAT, GetPixelFormat)(void) const PURE;
+#else
+    virtual D2D1_PIXEL_FORMAT* STDMETHODCALLTYPE GetPixelFormat(D2D1_PIXEL_FORMAT*) const = 0;
+    D2D1_PIXEL_FORMAT STDMETHODCALLTYPE GetPixelFormat() const {
+        D2D1_PIXEL_FORMAT __ret;
+        GetPixelFormat(&__ret);
+        return __ret;
+    }
+#endif
+
     STDMETHOD_(void, SetDpi)(FLOAT dpiX, FLOAT dpiY) PURE;
     STDMETHOD_(void, GetDpi)(FLOAT *dpiX, FLOAT *dpiY) const PURE;
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
+#else
+    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(D2D1_SIZE_F*) const = 0;
+    D2D1_SIZE_F STDMETHODCALLTYPE GetSize() const {
+        D2D1_SIZE_F __ret;
+        GetSize(&__ret);
+        return __ret;
+    }
+#endif
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(void) const PURE;
+#else
+    virtual D2D1_SIZE_U* STDMETHODCALLTYPE GetPixelSize(D2D1_SIZE_U*) const = 0;
+    D2D1_SIZE_U STDMETHODCALLTYPE GetPixelSize() const {
+        D2D1_SIZE_U __ret;
+        GetPixelSize(&__ret);
+        return __ret;
+    }
+#endif
+
     STDMETHOD_(UINT32, GetMaximumBitmapSize)(void) const PURE;
     STDMETHOD_(BOOL, IsSupported)(const D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties) const PURE;
 
@@ -995,18 +1088,18 @@ interface ID2D1RenderTarget {
     const ID2D1RenderTargetVtbl *lpVtbl;
 };
 
-#define ID2D1RenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1RenderTarget_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1RenderTarget_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1RenderTarget_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1RenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1RenderTarget_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1RenderTarget_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1RenderTarget_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1RenderTarget_BeginDraw(this) (this)->lpVtbl->BeginDraw(this)
 #define ID2D1RenderTarget_Clear(this,A) (this)->lpVtbl->Clear(this,A)
 #define ID2D1RenderTarget_CreateBitmap(this,A,B,C,D,E) (this)->lpVtbl->CreateBitmap(this,A,B,C,D,E)
 #define ID2D1RenderTarget_CreateBitmapBrush(this,A,B) (this)->lpVtbl->CreateBitmapBrush(this,A,B)
-#define ID2D1RenderTarget_CreateBitmapFromWicBitmap(this,A,B) (this)->lpVtbl->CreateBitmapFromWicBitmap(this,A,B)
-#define ID2D1RenderTarget_CreateCompatibleRenderTarget(this,A) (this)->lpVtbl->CreateCompatibleRenderTarget(this,A)
+#define ID2D1RenderTarget_CreateBitmapFromWicBitmap(this,A,B,C) (this)->lpVtbl->CreateBitmapFromWicBitmap(this,A,B,C)
+#define ID2D1RenderTarget_CreateCompatibleRenderTarget(this,A,B,C,D,E) (this)->lpVtbl->CreateCompatibleRenderTarget(this,A,B,C,D,E)
 #define ID2D1RenderTarget_CreateGradientStopCollection(this,A,B,C) (this)->lpVtbl->CreateGradientStopCollection(this,A,B,C)
-#define ID2D1RenderTarget_CreateLayer(this,A) (this)->lpVtbl->CreateLayer(this,A)
+#define ID2D1RenderTarget_CreateLayer(this,A,B) (this)->lpVtbl->CreateLayer(this,A,B)
 #define ID2D1RenderTarget_CreateLinearGradientBrush(this,A,B,C,D) (this)->lpVtbl->CreateLinearGradientBrush(this,A,B,C,D)
 #define ID2D1RenderTarget_CreateMesh(this,A) (this)->lpVtbl->CreateMesh(this,A)
 #define ID2D1RenderTarget_CreateRadialGradientBrush(this,A,B,C,D) (this)->lpVtbl->CreateRadialGradientBrush(this,A,B,C,D)
@@ -1247,6 +1340,10 @@ interface ID2D1Geometry {
     const ID2D1GeometryVtbl *lpVtbl;
 };
 
+#define ID2D1Geometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Geometry_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Geometry_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1Geometry_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1Geometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->CombineWithGeometry(this,A,B,C,D)
 #define ID2D1Geometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->CompareWithGeometry(this,A,B,C)
 #define ID2D1Geometry_ComputeArea(this,A,B) (this)->lpVtbl->ComputeArea(this,A,B)
@@ -1283,6 +1380,63 @@ interface ID2D1BitmapRenderTarget {
     const ID2D1BitmapRenderTargetVtbl *lpVtbl;
 };
 
+#define ID2D1BitmapRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1BitmapRenderTarget_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1BitmapRenderTarget_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1BitmapRenderTarget_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1BitmapRenderTarget_BeginDraw(this) (this)->lpVtbl->Base.BeginDraw((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_Clear(this,A) (this)->lpVtbl->Base.Clear((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_CreateBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1BitmapRenderTarget_CreateBitmapBrush(this,A,B) (this)->lpVtbl->Base.CreateBitmapBrush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_CreateBitmapFromWicBitmap(this,A,B,C) (this)->lpVtbl->Base.CreateBitmapFromWicBitmap((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1BitmapRenderTarget_CreateCompatibleBitmapRenderTarget(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateCompatibleBitmapRenderTarget((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1BitmapRenderTarget_CreateGradientStopCollection(this,A,B,C) (this)->lpVtbl->Base.CreateGradientStopCollection((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1BitmapRenderTarget_CreateLayer(this,A,B) (this)->lpVtbl->Base.CreateLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_CreateLinearGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateLinearGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_CreateMesh(this,A) (this)->lpVtbl->Base.CreateMesh((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_CreateRadialGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateRadialGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_CreateSharedBitmap(this,A,B,C,D) (this)->lpVtbl->Base.CreateSharedBitmap((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_CreateSolidColorBrush(this,A,B,C) (this)->lpVtbl->Base.CreateSolidColorBrush((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1BitmapRenderTarget_DrawBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1BitmapRenderTarget_DrawEllipse(this,A,B,C,D) (this)->lpVtbl->Base.DrawEllipse((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_DrawGeometry(this,A,B,C,D) (this)->lpVtbl->Base.DrawGeometry((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_DrawGlyphRun(this,A,B,C,D) (this)->lpVtbl->Base.DrawGlyphRun((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_DrawLine(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawLine((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1BitmapRenderTarget_DrawRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_DrawRoundedRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRoundedRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_DrawText(this,A,B,C,D,E,F,G) (this)->lpVtbl->Base.DrawText((ID2D1RenderTarget*)(this),A,B,C,D,E,F,G)
+#define ID2D1BitmapRenderTarget_DrawTextLayout(this,A,B,C,D) (this)->lpVtbl->Base.DrawTextLayout((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1BitmapRenderTarget_EndDraw(this,A,B) (this)->lpVtbl->Base.EndDraw((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_FillEllipse(this,A,B) (this)->lpVtbl->Base.FillEllipse((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_FillGeometry(this,A,B,C) (this)->lpVtbl->Base.FillGeometry((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1BitmapRenderTarget_FillMesh(this,A,B) (this)->lpVtbl->Base.FillMesh((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_FillOpacityMask(this,A,B,C,D,E) (this)->lpVtbl->Base.FillOpacityMask((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1BitmapRenderTarget_FillRectangle(this,A,B) (this)->lpVtbl->Base.FillRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_FillRoundedRectangle(this,A,B) (this)->lpVtbl->Base.FillRoundedRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_Flush(this,A,B) (this)->lpVtbl->Base.Flush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_GetAntialiasMode(this) (this)->lpVtbl->Base.GetAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetDpi(this,A,B) (this)->lpVtbl->Base.GetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_GetMaximumBitmapSize(this) (this)->lpVtbl->Base.GetMaximumBitmapSize((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetPixelFormat(this) (this)->lpVtbl->Base.GetPixelFormat((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetPixelSize(this) (this)->lpVtbl->Base.GetPixelSize((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetSize(this) (this)->lpVtbl->Base.GetSize((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetTags(this,A,B) (this)->lpVtbl->Base.GetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_GetTextAntialiasMode(this) (this)->lpVtbl->Base.GetTextAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_GetTextRenderingParams(this,A) (this)->lpVtbl->Base.GetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_IsSupported(this,A) (this)->lpVtbl->Base.IsSupported((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_PopAxisAlignedClip(this) (this)->lpVtbl->Base.PopAxisAlignedClip((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_PopLayer(this) (this)->lpVtbl->Base.PopLayer((ID2D1RenderTarget*)(this))
+#define ID2D1BitmapRenderTarget_PushAxisAlignedClip(this,A,B) (this)->lpVtbl->Base.PushAxisAlignedClip((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_PushLayer(this,A,B) (this)->lpVtbl->Base.PushLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_RestoreDrawingState(this,A) (this)->lpVtbl->Base.RestoreDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_SaveDrawingState(this,A) (this)->lpVtbl->Base.SaveDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_SetAntialiasMode(this,A) (this)->lpVtbl->Base.SetAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_SetDpi(this,A,B) (this)->lpVtbl->Base.SetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_SetTags(this,A,B) (this)->lpVtbl->Base.SetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1BitmapRenderTarget_SetTextAntialiasMode(this,A) (this)->lpVtbl->Base.SetTextAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_SetTextRenderingParams(this,A) (this)->lpVtbl->Base.SetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1BitmapRenderTarget_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1RenderTarget*)(this),A)
 #define ID2D1BitmapRenderTarget_GetBitmap(this,A) (this)->lpVtbl->GetBitmap(this,A)
 
 #endif
@@ -1308,41 +1462,107 @@ interface ID2D1DCRenderTarget
     const ID2D1DCRenderTargetVtbl *lpVtbl;
 };
 
+#define ID2D1DCRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1DCRenderTarget_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1DCRenderTarget_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1DCRenderTarget_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1DCRenderTarget_BeginDraw(this) (this)->lpVtbl->Base.BeginDraw((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_Clear(this,A) (this)->lpVtbl->Base.Clear((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_CreateBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1DCRenderTarget_CreateBitmapBrush(this,A,B) (this)->lpVtbl->Base.CreateBitmapBrush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_CreateBitmapFromWicBitmap(this,A,B,C) (this)->lpVtbl->Base.CreateBitmapFromWicBitmap((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1DCRenderTarget_CreateCompatibleRenderTarget(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateCompatibleRenderTarget((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1DCRenderTarget_CreateGradientStopCollection(this,A,B,C) (this)->lpVtbl->Base.CreateGradientStopCollection((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1DCRenderTarget_CreateLayer(this,A,B) (this)->lpVtbl->Base.CreateLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_CreateLinearGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateLinearGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_CreateMesh(this,A) (this)->lpVtbl->Base.CreateMesh((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_CreateRadialGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateRadialGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_CreateSharedBitmap(this,A,B,C,D) (this)->lpVtbl->Base.CreateSharedBitmap((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_CreateSolidColorBrush(this,A,B,C) (this)->lpVtbl->Base.CreateSolidColorBrush((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1DCRenderTarget_DrawBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1DCRenderTarget_DrawEllipse(this,A,B,C,D) (this)->lpVtbl->Base.DrawEllipse((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_DrawGeometry(this,A,B,C,D) (this)->lpVtbl->Base.DrawGeometry((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_DrawGlyphRun(this,A,B,C,D) (this)->lpVtbl->Base.DrawGlyphRun((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_DrawLine(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawLine((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1DCRenderTarget_DrawRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_DrawRoundedRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRoundedRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_DrawText(this,A,B,C,D,E,F,G) (this)->lpVtbl->Base.DrawText((ID2D1RenderTarget*)(this),A,B,C,D,E,F,G)
+#define ID2D1DCRenderTarget_DrawTextLayout(this,A,B,C,D) (this)->lpVtbl->Base.DrawTextLayout((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1DCRenderTarget_EndDraw(this,A,B) (this)->lpVtbl->Base.EndDraw((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_FillEllipse(this,A,B) (this)->lpVtbl->Base.FillEllipse((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_FillGeometry(this,A,B,C) (this)->lpVtbl->Base.FillGeometry((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1DCRenderTarget_FillMesh(this,A,B) (this)->lpVtbl->Base.FillMesh((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_FillOpacityMask(this,A,B,C,D,E) (this)->lpVtbl->Base.FillOpacityMask((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1DCRenderTarget_FillRectangle(this,A,B) (this)->lpVtbl->Base.FillRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_FillRoundedRectangle(this,A,B) (this)->lpVtbl->Base.FillRoundedRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_Flush(this,A,B) (this)->lpVtbl->Base.Flush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_GetAntialiasMode(this) (this)->lpVtbl->Base.GetAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetDpi(this,A,B) (this)->lpVtbl->Base.GetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_GetMaximumBitmapSize(this) (this)->lpVtbl->Base.GetMaximumBitmapSize((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetPixelFormat(this) (this)->lpVtbl->Base.GetPixelFormat((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetPixelSize(this) (this)->lpVtbl->Base.GetPixelSize((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetSize(this) (this)->lpVtbl->Base.GetSize((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetTags(this,A,B) (this)->lpVtbl->Base.GetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_GetTextAntialiasMode(this) (this)->lpVtbl->Base.GetTextAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_GetTextRenderingParams(this,A) (this)->lpVtbl->Base.GetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_IsSupported(this,A) (this)->lpVtbl->Base.IsSupported((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_PopAxisAlignedClip(this) (this)->lpVtbl->Base.PopAxisAlignedClip((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_PopLayer(this) (this)->lpVtbl->Base.PopLayer((ID2D1RenderTarget*)(this))
+#define ID2D1DCRenderTarget_PushAxisAlignedClip(this,A,B) (this)->lpVtbl->Base.PushAxisAlignedClip((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_PushLayer(this,A,B) (this)->lpVtbl->Base.PushLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_RestoreDrawingState(this,A) (this)->lpVtbl->Base.RestoreDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_SaveDrawingState(this,A) (this)->lpVtbl->Base.SaveDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_SetAntialiasMode(this,A) (this)->lpVtbl->Base.SetAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_SetDpi(this,A,B) (this)->lpVtbl->Base.SetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_SetTags(this,A,B) (this)->lpVtbl->Base.SetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1DCRenderTarget_SetTextAntialiasMode(this,A) (this)->lpVtbl->Base.SetTextAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_SetTextRenderingParams(this,A) (this)->lpVtbl->Base.SetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1DCRenderTarget_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1RenderTarget*)(this),A)
 #define ID2D1DCRenderTarget_BindDC(this,A,B) (this)->lpVtbl->BindDC(this,A,B)
 
 #endif
 
-#define INTERFACE ID2D1DrawingStateBlock
-DECLARE_INTERFACE_(ID2D1DrawingStateBlock, ID2D1Resource)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1DrawingStateBlock, 0x28506e39,0xebf6,0x46a1,0xbb,0x47,0xfd,0x85,0x56,0x5a,0xb9,0x57);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
+interface ID2D1DrawingStateBlock : public ID2D1Resource {
+    STDMETHOD_(void, GetDescription)(D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) const PURE;
+    STDMETHOD_(void, SetDescription)(const D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) PURE;
+    STDMETHOD_(void, SetTextRenderingParams)(IDWriteRenderingParams *textRenderingParams = NULL) PURE;
+    STDMETHOD_(void, GetTextRenderingParams)(IDWriteRenderingParams **textRenderingParams) const PURE;
 
-  /* ID2D1DrawingStateBlock methods */
-  STDMETHOD_(void, GetDescription)(THIS_ D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) PURE;
-  STDMETHOD_(void, GetTextRenderingParams)(THIS_ IDWriteRenderingParams **textRenderingParams) PURE;
-  STDMETHOD_(void, SetDescription)(THIS_ D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) PURE;
-  STDMETHOD_(void, SetTextRenderingParams)(THIS_ IDWriteRenderingParams *textRenderingParams) PURE;
-
-  END_INTERFACE
+    void SetDescription(const D2D1_DRAWING_STATE_DESCRIPTION &stateDescription) {
+        SetDescription(&stateDescription);
+    }
 };
-#undef INTERFACE
 
-#define ID2D1DrawingStateBlock_QueryInterface(this,A,B) (this)->lpVtbl->QueryInterface(this,A,B)
-#define ID2D1DrawingStateBlock_AddRef(this) (this)->lpVtbl->AddRef(this)
-#define ID2D1DrawingStateBlock_Release(this) (this)->lpVtbl->Release(this)
-#define ID2D1DrawingStateBlock_GetFactory(this,A) (this)->lpVtbl->GetFactory(this,A)
+#else
+
+typedef struct ID2D1DrawingStateBlockVtbl {
+    ID2D1ResourceVtbl Base;
+
+    STDMETHOD_(void, GetDescription)(ID2D1DrawingStateBlock *This, D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) PURE;
+    STDMETHOD_(void, SetDescription)(ID2D1DrawingStateBlock *This, const D2D1_DRAWING_STATE_DESCRIPTION *stateDescription) PURE;
+    STDMETHOD_(void, SetTextRenderingParams)(ID2D1DrawingStateBlock *This, IDWriteRenderingParams *textRenderingParams) PURE;
+    STDMETHOD_(void, GetTextRenderingParams)(ID2D1DrawingStateBlock *This, IDWriteRenderingParams **textRenderingParams) PURE;
+} ID2D1DrawingStateBlockVtbl;
+
+interface ID2D1DrawingStateBlock {
+    const struct ID2D1DrawingStateBlockVtbl *lpVtbl;
+};
+
+#define ID2D1DrawingStateBlock_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1DrawingStateBlock_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1DrawingStateBlock_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1DrawingStateBlock_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1DrawingStateBlock_GetDescription(this,A) (this)->lpVtbl->GetDescription(this,A)
 #define ID2D1DrawingStateBlock_GetTextRenderingParams(this,A) (this)->lpVtbl->GetTextRenderingParams(this,A)
 #define ID2D1DrawingStateBlock_SetDescription(this,A) (this)->lpVtbl->SetDescription(this,A)
 #define ID2D1DrawingStateBlock_SetTextRenderingParams(this,A) (this)->lpVtbl->SetTextRenderingParams(this,A)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1SimplifiedGeometrySink, 0x2cd9069e,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
@@ -1376,9 +1596,9 @@ interface ID2D1SimplifiedGeometrySink {
     const ID2D1SimplifiedGeometrySinkVtbl *lpVtbl;
 };
 
-#define ID2D1SimplifiedGeometrySink_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1SimplifiedGeometrySink_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)this)
-#define ID2D1SimplifiedGeometrySink_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)this)
+#define ID2D1SimplifiedGeometrySink_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1SimplifiedGeometrySink_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)(this))
+#define ID2D1SimplifiedGeometrySink_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)(this))
 #define ID2D1SimplifiedGeometrySink_SetFillMode(this,A) (this)->lpVtbl->SetFillMode(this,A)
 #define ID2D1SimplifiedGeometrySink_SetSegmentFlags(this,A) (this)->lpVtbl->SetSegmentFlags(this,A)
 #define ID2D1SimplifiedGeometrySink_BeginFigure(this,A,B) (this)->lpVtbl->BeginFigure(this,A,B)
@@ -1389,55 +1609,46 @@ interface ID2D1SimplifiedGeometrySink {
 
 #endif
 
-#define INTERFACE ID2D1EllipseGeometry
-DECLARE_INTERFACE_(ID2D1EllipseGeometry, ID2D1Geometry)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1EllipseGeometry, 0x2cd906a4,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
-
-  /* ID2D1Geometry methods */
-  STDMETHOD(CombineWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_COMBINE_MODE combineMode, D2D1_MATRIX_3X2_F *inputGeometryTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(CompareWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_MATRIX_3X2_F *inputGeometryTransform, D2D1_GEOMETRY_RELATION *relation) PURE;
-  STDMETHOD(ComputeArea)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *area) PURE;
-  STDMETHOD(ComputeLength)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *length) PURE;
-  STDMETHOD(ComputePointAtLength)(THIS_ FLOAT length, D2D1_MATRIX_3X2_F *worldTransform, D2D1_POINT_2F *point, D2D1_POINT_2F *unitTangentVector) PURE;
-  STDMETHOD(FillContainsPoint)(THIS_ D2D1_POINT_2F point, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(GetBounds)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(GetWidenedBounds)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(Outline)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(StrokeContainsPoint)(THIS_ D2D1_POINT_2F point, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(Simplify)(THIS_ D2D1_GEOMETRY_SIMPLIFICATION_OPTION simplificationOption, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(Tessellate)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1TessellationSink *tessellationSink) PURE;
-  STDMETHOD(Widen)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-
-  /* ID2D1EllipseGeometry methods */
-  STDMETHOD_(void, GetEllipse)(THIS_ D2D1_ELLIPSE *ellipse) PURE;
-
-  END_INTERFACE
+interface ID2D1EllipseGeometry : public ID2D1Geometry {
+    STDMETHOD_(void, GetEllipse)(D2D1_ELLIPSE *ellipse) const PURE;
 };
-#undef INTERFACE
 
-#define ID2D1EllipseGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->CombineWithGeometry(this,A,B,C,D)
-#define ID2D1EllipseGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->CompareWithGeometry(this,A,B,C)
-#define ID2D1EllipseGeometry_ComputeArea(this,A,B) (this)->lpVtbl->ComputeArea(this,A,B)
-#define ID2D1EllipseGeometry_ComputeLength(this,A,B) (this)->lpVtbl->ComputeLength(this,A,B)
-#define ID2D1EllipseGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->ComputePointAtLength(this,A,B,C,D)
-#define ID2D1EllipseGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->FillContainsPoint(this,A,B,C)
-#define ID2D1EllipseGeometry_GetBounds(this,A,B) (this)->lpVtbl->GetBounds(this,A,B)
-#define ID2D1EllipseGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->GetWidenedBounds(this,A,B,C,D)
-#define ID2D1EllipseGeometry_Outline(this,A,B) (this)->lpVtbl->Outline(this,A,B)
-#define ID2D1EllipseGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->StrokeContainsPoint(this,A,B,C,D,E)
-#define ID2D1EllipseGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Simplify(this,A,B,C)
-#define ID2D1EllipseGeometry_Tessellate(this,A,B) (this)->lpVtbl->Tessellate(this,A,B)
-#define ID2D1EllipseGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Widen(this,A,B,C,D)
+#else
+
+typedef struct ID2D1EllipseGeometryVtbl {
+    ID2D1GeometryVtbl Base;
+
+    STDMETHOD_(void, GetEllipse)(ID2D1EllipseGeometry *This, D2D1_ELLIPSE *ellipse) PURE;
+} ID2D1EllipseGeometryVtbl;
+
+interface ID2D1EllipseGeometry {
+    const struct ID2D1EllipseGeometryVtbl *lpVtbl;
+};
+
+#define ID2D1EllipseGeometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1EllipseGeometry_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1EllipseGeometry_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1EllipseGeometry_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1EllipseGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1EllipseGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1EllipseGeometry_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1EllipseGeometry_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1EllipseGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1EllipseGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1EllipseGeometry_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1EllipseGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1EllipseGeometry_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1EllipseGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1EllipseGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1EllipseGeometry_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1EllipseGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1EllipseGeometry_GetEllipse(this,A) (this)->lpVtbl->GetEllipse(this,A)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1Factory, 0x06152247,0x6f50,0x465a,0x92,0x45,0x11,0x8b,0xfd,0x3b,0x60,0x07);
 
@@ -1525,9 +1736,9 @@ interface ID2D1Factory {
     const ID2D1FactoryVtbl *lpVtbl;
 };
 
-#define ID2D1Factory_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1Factory_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)this)
-#define ID2D1Factory_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)this)
+#define ID2D1Factory_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Factory_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)(this))
+#define ID2D1Factory_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)(this))
 #define ID2D1Factory_CreateDCRenderTarget(this,A,B) (this)->lpVtbl->CreateDCRenderTarget(this,A,B)
 #define ID2D1Factory_CreateDrawingStateBlock(this,A,B,C) (this)->lpVtbl->CreateDrawingStateBlock(this,A,B,C)
 #define ID2D1Factory_CreateDxgiSurfaceRenderTarget(this,A,B,C) (this)->lpVtbl->CreateDxgiSurfaceRenderTarget(this,A,B,C)
@@ -1567,67 +1778,60 @@ interface ID2D1GdiInteropRenderTarget {
     const ID2D1GdiInteropRenderTargetVtbl *lpVtbl;
 };
 
-#define ID2D1GdiInteropRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1GdiInteropRenderTarget_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)this)
-#define ID2D1GdiInteropRenderTarget_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)this)
+#define ID2D1GdiInteropRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1GdiInteropRenderTarget_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)(this))
+#define ID2D1GdiInteropRenderTarget_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)(this))
 #define ID2D1GdiInteropRenderTarget_GetDC(this,A,B) (this)->lpVtbl->GetDC(this,A,B)
 #define ID2D1GdiInteropRenderTarget_ReleaseDC(this,A) (this)->lpVtbl->ReleaseDC(this,A)
 
 #endif
 
-#define INTERFACE ID2D1GeometryGroup
-DECLARE_INTERFACE_(ID2D1GeometryGroup, ID2D1Geometry)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1GeometryGroup, 0x2cd906a6,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
-
-  /* ID2D1Geometry methods */
-  STDMETHOD(CombineWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_COMBINE_MODE combineMode, D2D1_MATRIX_3X2_F *inputGeometryTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(CompareWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_MATRIX_3X2_F *inputGeometryTransform, D2D1_GEOMETRY_RELATION *relation) PURE;
-  STDMETHOD(ComputeArea)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *area) PURE;
-  STDMETHOD(ComputeLength)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *length) PURE;
-  STDMETHOD(ComputePointAtLength)(THIS_ FLOAT length, D2D1_MATRIX_3X2_F *worldTransform, D2D1_POINT_2F *point, D2D1_POINT_2F *unitTangentVector) PURE;
-  STDMETHOD(FillContainsPoint)(THIS_ D2D1_POINT_2F point, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(GetBounds)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(GetWidenedBounds)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(Outline)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(StrokeContainsPoint)(THIS_ D2D1_POINT_2F point, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(Simplify)(THIS_ D2D1_GEOMETRY_SIMPLIFICATION_OPTION simplificationOption, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(Tessellate)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1TessellationSink *tessellationSink) PURE;
-  STDMETHOD(Widen)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-
-  /* ID2D1GeometryGroup methods */
-  STDMETHOD_(D2D1_FILL_MODE, GetFillMode)(THIS) PURE;
-  STDMETHOD_(void, GetSourceGeometries)(THIS_ ID2D1Geometry **geometries, UINT geometriesCount) PURE;
-  STDMETHOD_(UINT32, GetSourceGeometryCount)(THIS) PURE;
-
-  END_INTERFACE
+interface ID2D1GeometryGroup : public ID2D1Geometry {
+    STDMETHOD_(D2D1_FILL_MODE, GetFillMode)() const PURE;
+    STDMETHOD_(UINT32, GetSourceGeometryCount)() const PURE;
+    STDMETHOD_(void, GetSourceGeometries)(ID2D1Geometry **geometries, UINT geometriesCount) const PURE;
 };
-#undef INTERFACE
 
-#define ID2D1GeometryGroup_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->CombineWithGeometry(this,A,B,C,D)
-#define ID2D1GeometryGroup_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->CompareWithGeometry(this,A,B,C)
-#define ID2D1GeometryGroup_ComputeArea(this,A,B) (this)->lpVtbl->ComputeArea(this,A,B)
-#define ID2D1GeometryGroup_ComputeLength(this,A,B) (this)->lpVtbl->ComputeLength(this,A,B)
-#define ID2D1GeometryGroup_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->ComputePointAtLength(this,A,B,C,D)
-#define ID2D1GeometryGroup_FillContainsPoint(this,A,B,C) (this)->lpVtbl->FillContainsPoint(this,A,B,C)
-#define ID2D1GeometryGroup_GetBounds(this,A,B) (this)->lpVtbl->GetBounds(this,A,B)
-#define ID2D1GeometryGroup_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->GetWidenedBounds(this,A,B,C,D)
-#define ID2D1GeometryGroup_Outline(this,A,B) (this)->lpVtbl->Outline(this,A,B)
-#define ID2D1GeometryGroup_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->StrokeContainsPoint(this,A,B,C,D,E)
-#define ID2D1GeometryGroup_Simplify(this,A,B,C) (this)->lpVtbl->Simplify(this,A,B,C)
-#define ID2D1GeometryGroup_Tessellate(this,A,B) (this)->lpVtbl->Tessellate(this,A,B)
-#define ID2D1GeometryGroup_Widen(this,A,B,C,D) (this)->lpVtbl->Widen(this,A,B,C,D)
+#else
+
+typedef struct ID2D1GeometryGroupVtbl {
+    ID2D1GeometryVtbl Base;
+
+    STDMETHOD_(D2D1_FILL_MODE, GetFillMode)(ID2D1GeometryGroup *This) PURE;
+    STDMETHOD_(UINT32, GetSourceGeometryCount)(ID2D1GeometryGroup *This) PURE;
+    STDMETHOD_(void, GetSourceGeometries)(ID2D1GeometryGroup *This, ID2D1Geometry **geometries, UINT geometriesCount) PURE;
+} ID2D1GeometryGroupVtbl;
+
+interface ID2D1GeometryGroup {
+    const struct ID2D1GeometryGroupVtbl *lpVtbl;
+};
+
+#define ID2D1GeometryGroup_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1GeometryGroup_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1GeometryGroup_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1GeometryGroup_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1GeometryGroup_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1GeometryGroup_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1GeometryGroup_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1GeometryGroup_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1GeometryGroup_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1GeometryGroup_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1GeometryGroup_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1GeometryGroup_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1GeometryGroup_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1GeometryGroup_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1GeometryGroup_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1GeometryGroup_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1GeometryGroup_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1GeometryGroup_GetFillMode(this) (this)->lpVtbl->GetFillMode(this)
 #define ID2D1GeometryGroup_GetSourceGeometries(this,A,B) (this)->lpVtbl->GetSourceGeometries(this,A,B)
 #define ID2D1GeometryGroup_GetSourceGeometryCount(this) (this)->lpVtbl->GetSourceGeometryCount(this)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1GeometrySink, 0x2cd9069f,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
@@ -1669,6 +1873,16 @@ interface ID2D1GeometrySink {
     const ID2D1GeometrySinkVtbl *lpVtbl;
 };
 
+#define ID2D1GeometrySink_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1GeometrySink_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1GeometrySink_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1GeometrySink_SetFillMode(this,A) (this)->lpVtbl->Base.SetFillMode((ID2D1SimplifiedGeometrySink*)(this),A)
+#define ID2D1GeometrySink_SetSegmentFlags(this,A) (this)->lpVtbl->Base.SetSegmentFlags((ID2D1SimplifiedGeometrySink*)(this),A)
+#define ID2D1GeometrySink_BeginFigure(this,A,B) (this)->lpVtbl->Base.BeginFigure((ID2D1SimplifiedGeometrySink*)(this),A,B)
+#define ID2D1GeometrySink_AddLines(this,A,B) (this)->lpVtbl->Base.AddLines((ID2D1SimplifiedGeometrySink*)(this),A,B)
+#define ID2D1GeometrySink_AddBeziers(this,A,B) (this)->lpVtbl->Base.AddBeziers((ID2D1SimplifiedGeometrySink*)(this),A,B)
+#define ID2D1GeometrySink_EndFigure(this,A) (this)->lpVtbl->Base.EndFigure((ID2D1SimplifiedGeometrySink*)(this),A)
+#define ID2D1GeometrySink_Close(this) (this)->lpVtbl->Base.Close((ID2D1SimplifiedGeometrySink*)(this))
 #define ID2D1GeometrySink_AddArc(this,A) (this)->lpVtbl->AddArc(this,A)
 #define ID2D1GeometrySink_AddBezier(this,A) (this)->lpVtbl->AddBezier(this,A)
 #define ID2D1GeometrySink_AddLine(this,A) (this)->lpVtbl->AddLine(this,A)
@@ -1703,10 +1917,10 @@ interface ID2D1GradientStopCollection {
     const ID2D1GradientStopCollectionVtbl *lpVtbl;
 };
 
-#define ID2D1GradientStopCollection_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1GradientStopCollection_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1GradientStopCollection_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1GradientStopCollection_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1GradientStopCollection_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1GradientStopCollection_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1GradientStopCollection_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1GradientStopCollection_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1GradientStopCollection_GetColorInterpolationGamma(this) (this)->lpVtbl->GetColorInterpolationGamma(this)
 #define ID2D1GradientStopCollection_GetExtendMode(this) (this)->lpVtbl->GetExtendMode(this)
 #define ID2D1GradientStopCollection_GetGradientStopCount(this) (this)->lpVtbl->GetGradientStopCount(this)
@@ -1714,149 +1928,112 @@ interface ID2D1GradientStopCollection {
 
 #endif
 
-#define INTERFACE ID2D1HwndRenderTarget
-DECLARE_INTERFACE_(ID2D1HwndRenderTarget, ID2D1RenderTarget)
-{
-  BEGIN_INTERFACE
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+interface ID2D1HwndRenderTarget : public ID2D1RenderTarget {
+    STDMETHOD_(D2D1_WINDOW_STATE, CheckWindowState)() PURE;
+    STDMETHOD(Resize)(const D2D1_SIZE_U *pixelSize) PURE;
+    STDMETHOD_(HWND, GetHwnd)() const PURE;
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
-
-  /* ID2D1RenderTarget methods */
-  STDMETHOD_(void, BeginDraw)(THIS) PURE;
-  STDMETHOD_(void, Clear)(THIS_ const D2D1_COLOR_F *clearColor) PURE;
-  STDMETHOD(CreateBitmap)(THIS_ D2D1_SIZE_U size, void *srcData, UINT32 pitch, D2D1_BITMAP_PROPERTIES *bitmapProperties, ID2D1Bitmap **bitmap) PURE;
-  STDMETHOD(CreateBitmapBrush)(THIS_ ID2D1Bitmap *bitmap, ID2D1BitmapBrush **bitmapBrush) PURE;
-  STDMETHOD(CreateBitmapFromWicBitmap)(THIS_ IWICBitmapSource *wicBitmapSource, ID2D1Bitmap **bitmap) PURE;
-  STDMETHOD(CreateCompatibleRenderTarget)(THIS_ ID2D1BitmapRenderTarget **bitmapRenderTarget) PURE;
-  STDMETHOD(CreateGradientStopCollection)(THIS_ D2D1_GRADIENT_STOP *gradientStops, UINT gradientStopsCount, ID2D1GradientStopCollection **gradientStopCollection) PURE;
-  STDMETHOD(CreateLayer)(THIS_ ID2D1Layer **layer) PURE;
-  STDMETHOD(CreateLinearGradientBrush)(THIS_ D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES *linearGradientBrushProperties, D2D1_BRUSH_PROPERTIES *brushProperties, ID2D1GradientStopCollection *gradientStopCollection, ID2D1LinearGradientBrush **linearGradientBrush) PURE;
-  STDMETHOD(CreateMesh)(THIS_ ID2D1Mesh **mesh) PURE;
-  STDMETHOD(CreateRadialGradientBrush)(THIS_ D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES *radialGradientBrushProperties, D2D1_BRUSH_PROPERTIES *brushProperties, ID2D1GradientStopCollection *gradientStopCollection, ID2D1RadialGradientBrush **radialGradientBrush) PURE;
-  STDMETHOD(CreateSharedBitmap)(THIS_ REFIID riid, void *data, D2D1_BITMAP_PROPERTIES *bitmapProperties, ID2D1Bitmap **bitmap) PURE;
-  STDMETHOD(CreateSolidColorBrush)(THIS_ const D2D1_COLOR_F *color, const D2D1_BRUSH_PROPERTIES *brushProperties, ID2D1SolidColorBrush **solidColorBrush) PURE;
-  STDMETHOD_(void, DrawBitmap)(THIS_ ID2D1Bitmap *bitmap, D2D1_RECT_F *destinationRectangle, FLOAT opacity, D2D1_BITMAP_INTERPOLATION_MODE interpolationMode , D2D1_RECT_F *sourceRectangle) PURE;
-  STDMETHOD_(void, DrawEllipse)(THIS_ D2D1_ELLIPSE *ellipse, ID2D1Brush *brush, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle) PURE;
-  STDMETHOD_(void, DrawGeometry)(THIS_ ID2D1Geometry *geometry, ID2D1Brush *brush, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle) PURE;
-  STDMETHOD_(void, DrawGlyphRun)(THIS_ D2D1_POINT_2F baselineOrigin, DWRITE_GLYPH_RUN *glyphRun, ID2D1Brush *foregroundBrush, DWRITE_MEASURING_MODE measuringMode = DWRITE_MEASURING_MODE_NATURAL) PURE;
-  STDMETHOD_(void, DrawLine)(THIS_ D2D1_POINT_2F point0, D2D1_POINT_2F point1, ID2D1Brush *brush, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle) PURE;
-  STDMETHOD_(void, DrawRectangle)(THIS_ D2D1_RECT_F *rect, ID2D1Brush *brush, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle) PURE;
-  STDMETHOD_(void, DrawRoundedRectangle)(THIS_ D2D1_ROUNDED_RECT *roundedRect, ID2D1Brush *brush, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle) PURE;
-  STDMETHOD_(void, DrawText)(THIS_ WCHAR *string, UINT stringLength, IDWriteTextFormat *textFormat, D2D1_RECT_F *layoutRect, ID2D1Brush *defaultForegroundBrush, D2D1_DRAW_TEXT_OPTIONS options , DWRITE_MEASURING_MODE measuringMode) PURE;
-  STDMETHOD_(void, DrawTextLayout)(THIS_ D2D1_POINT_2F origin, IDWriteTextLayout *textLayout, ID2D1Brush *defaultForegroundBrush, D2D1_DRAW_TEXT_OPTIONS options) PURE;
-  STDMETHOD(EndDraw)(THIS_ D2D1_TAG *tag1 = NULL, D2D1_TAG *tag2 = NULL) PURE;
-  STDMETHOD_(void, FillEllipse)(THIS_ D2D1_ELLIPSE *ellipse, ID2D1Brush *brush) PURE;
-  STDMETHOD_(void, FillGeometry)(THIS_ ID2D1Geometry *geometry, ID2D1Brush *brush, ID2D1Brush *opacityBrush) PURE;
-  STDMETHOD_(void, FillMesh)(THIS_ ID2D1Mesh *mesh, ID2D1Brush *brush) PURE;
-  STDMETHOD_(void, FillOpacityMask)(THIS_ ID2D1Bitmap *opacityMask, ID2D1Brush *brush, D2D1_OPACITY_MASK_CONTENT content, D2D1_RECT_F *destinationRectangle, D2D1_RECT_F *sourceRectangle) PURE;
-  STDMETHOD_(void, FillRectangle)(THIS_ D2D1_RECT_F *rect, ID2D1Brush *brush) PURE;
-  STDMETHOD_(void, FillRoundedRectangle)(THIS_ D2D1_ROUNDED_RECT *roundedRect, ID2D1Brush *brush) PURE;
-  STDMETHOD(Flush)(THIS_ D2D1_TAG *tag1, D2D1_TAG *tag2) PURE;
-  STDMETHOD_(D2D1_ANTIALIAS_MODE, GetAntialiasMode)(THIS) PURE;
-  STDMETHOD_(void, GetDpi)(THIS_ FLOAT *dpiX, FLOAT *dpiY) PURE;
-  STDMETHOD_(UINT32, GetMaximumBitmapSize)(THIS) PURE;
-  STDMETHOD_(D2D1_PIXEL_FORMAT, GetPixelFormat)(THIS) PURE;
-  STDMETHOD_(D2D1_SIZE_U, GetPixelSize)(THIS) PURE;
-  STDMETHOD_(D2D1_SIZE_F, GetSize)(THIS) PURE;
-  STDMETHOD_(void, GetTags)(THIS_ D2D1_TAG *tag1, D2D1_TAG *tag2) PURE;
-  STDMETHOD_(D2D1_TEXT_ANTIALIAS_MODE, GetTextAntialiasMode)(THIS) PURE;
-  STDMETHOD_(void, GetTextRenderingParams)(THIS_ IDWriteRenderingParams **textRenderingParams) PURE;
-  STDMETHOD_(void, GetTransform)(THIS_ D2D1_MATRIX_3X2_F *transform) PURE;
-  STDMETHOD_(BOOL, IsSupported)(THIS_ D2D1_RENDER_TARGET_PROPERTIES *renderTargetProperties) PURE;
-  STDMETHOD_(void, PopAxisAlignedClip)(THIS) PURE;
-  STDMETHOD_(void, PopLayer)(THIS) PURE;
-  STDMETHOD_(void, PushAxisAlignedClip)(THIS_ D2D1_RECT_F *clipRect, D2D1_ANTIALIAS_MODE antialiasMode) PURE;
-  STDMETHOD_(void, PushLayer)(THIS_ D2D1_LAYER_PARAMETERS *layerParameters, ID2D1Layer *layer) PURE;
-  STDMETHOD_(void, RestoreDrawingState)(THIS_ ID2D1DrawingStateBlock *drawingStateBlock) PURE;
-  STDMETHOD_(void, SaveDrawingState)(THIS_ ID2D1DrawingStateBlock *drawingStateBlock) PURE;
-  STDMETHOD_(void, SetAntialiasMode)(THIS_ D2D1_ANTIALIAS_MODE antialiasMode) PURE;
-  STDMETHOD_(void, SetDpi)(THIS_ FLOAT dpiX, FLOAT dpiY) PURE;
-  STDMETHOD_(void, SetTags)(THIS_ D2D1_TAG tag1, D2D1_TAG tag2) PURE;
-  STDMETHOD_(void, SetTextAntialiasMode)(THIS_ D2D1_TEXT_ANTIALIAS_MODE textAntialiasMode) PURE;
-  STDMETHOD_(void, SetTextRenderingParams)(THIS_ IDWriteRenderingParams *textRenderingParams) PURE;
-  STDMETHOD_(void, SetTransform)(THIS_ const D2D1_MATRIX_3X2_F *transform) PURE;
-
-  /* ID2D1HwndRenderTarget methods */
-  STDMETHOD_(D2D1_WINDOW_STATE, CheckWindowState)(THIS) PURE;
-  STDMETHOD_(HWND, GetHwnd)(THIS) PURE;
-  STDMETHOD(Resize)(THIS_ D2D1_SIZE_U *pixelSize) PURE;
-
-  END_INTERFACE
+    HRESULT Resize(const D2D1_SIZE_U &pixelSize) {
+        return Resize(&pixelSize);
+    }
 };
-#undef INTERFACE
 
-#define ID2D1HwndRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->QueryInterface(this,A,B)
-#define ID2D1HwndRenderTarget_AddRef(this) (this)->lpVtbl->AddRef(this)
-#define ID2D1HwndRenderTarget_Release(this) (this)->lpVtbl->Release(this)
-#define ID2D1HwndRenderTarget_BeginDraw(this) (this)->lpVtbl->BeginDraw(this)
-#define ID2D1HwndRenderTarget_Clear(this,A) (this)->lpVtbl->Clear(this,A)
-#define ID2D1HwndRenderTarget_CreateBitmap(this,A,B,C,D,E) (this)->lpVtbl->CreateBitmap(this,A,B,C,D,E)
-#define ID2D1HwndRenderTarget_CreateBitmapBrush(this,A,B) (this)->lpVtbl->CreateBitmapBrush(this,A,B)
-#define ID2D1HwndRenderTarget_CreateBitmapFromWicBitmap(this,A,B) (this)->lpVtbl->CreateBitmapFromWicBitmap(this,A,B)
-#define ID2D1HwndRenderTarget_CreateCompatibleRenderTarget(this,A) (this)->lpVtbl->CreateCompatibleRenderTarget(this,A)
-#define ID2D1HwndRenderTarget_CreateGradientStopCollection(this,A,B,C) (this)->lpVtbl->CreateGradientStopCollection(this,A,B,C)
-#define ID2D1HwndRenderTarget_CreateLayer(this,A) (this)->lpVtbl->CreateLayer(this,A)
-#define ID2D1HwndRenderTarget_CreateLinearGradientBrush(this,A,B,C,D) (this)->lpVtbl->CreateLinearGradientBrush(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_CreateMesh(this,A) (this)->lpVtbl->CreateMesh(this,A)
-#define ID2D1HwndRenderTarget_CreateRadialGradientBrush(this,A,B,C,D) (this)->lpVtbl->CreateRadialGradientBrush(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_CreateSharedBitmap(this,A,B,C,D) (this)->lpVtbl->CreateSharedBitmap(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_CreateSolidColorBrush(this,A,B,C) (this)->lpVtbl->CreateSolidColorBrush(this,A,B,C)
-#define ID2D1HwndRenderTarget_DrawBitmap(this,A,B,C,D,E) (this)->lpVtbl->DrawBitmap(this,A,B,C,D,E)
-#define ID2D1HwndRenderTarget_DrawEllipse(this,A,B,C,D) (this)->lpVtbl->DrawEllipse(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_DrawGeometry(this,A,B,C,D) (this)->lpVtbl->DrawGeometry(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_DrawGlyphRun(this,A,B,C,D) (this)->lpVtbl->DrawGlyphRun(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_DrawLine(this,A,B,C,D,E) (this)->lpVtbl->DrawLine(this,A,B,C,D,E)
-#define ID2D1HwndRenderTarget_DrawRectangle(this,A,B,C,D) (this)->lpVtbl->DrawRectangle(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_DrawRoundedRectangle(this,A,B,C,D) (this)->lpVtbl->DrawRoundedRectangle(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_DrawText(this,A,B,C,D,E,F,G) (this)->lpVtbl->DrawText(this,A,B,C,D,E,F,G)
-#define ID2D1HwndRenderTarget_DrawTextLayout(this,A,B,C,D) (this)->lpVtbl->DrawTextLayout(this,A,B,C,D)
-#define ID2D1HwndRenderTarget_EndDraw(this,A,B) (this)->lpVtbl->EndDraw(this,A,B)
-#define ID2D1HwndRenderTarget_FillEllipse(this,A,B) (this)->lpVtbl->FillEllipse(this,A,B)
-#define ID2D1HwndRenderTarget_FillGeometry(this,A,B,C) (this)->lpVtbl->FillGeometry(this,A,B,C)
-#define ID2D1HwndRenderTarget_FillMesh(this,A,B) (this)->lpVtbl->FillMesh(this,A,B)
-#define ID2D1HwndRenderTarget_FillOpacityMask(this,A,B,C,D,E) (this)->lpVtbl->FillOpacityMask(this,A,B,C,D,E)
-#define ID2D1HwndRenderTarget_FillRectangle(this,A,B) (this)->lpVtbl->FillRectangle(this,A,B)
-#define ID2D1HwndRenderTarget_FillRoundedRectangle(this,A,B) (this)->lpVtbl->FillRoundedRectangle(this,A,B)
-#define ID2D1HwndRenderTarget_Flush(this,A,B) (this)->lpVtbl->Flush(this,A,B)
-#define ID2D1HwndRenderTarget_GetAntialiasMode(this) (this)->lpVtbl->GetAntialiasMode(this)
-#define ID2D1HwndRenderTarget_GetDpi(this,A,B) (this)->lpVtbl->GetDpi(this,A,B)
-#define ID2D1HwndRenderTarget_GetMaximumBitmapSize(this) (this)->lpVtbl->GetMaximumBitmapSize(this)
-#define ID2D1HwndRenderTarget_GetPixelFormat(this) (this)->lpVtbl->GetPixelFormat(this)
-#define ID2D1HwndRenderTarget_GetPixelSize(this) (this)->lpVtbl->GetPixelSize(this)
-#define ID2D1HwndRenderTarget_GetSize(this) (this)->lpVtbl->GetSize(this)
-#define ID2D1HwndRenderTarget_GetTags(this,A,B) (this)->lpVtbl->GetTags(this,A,B)
-#define ID2D1HwndRenderTarget_GetTextAntialiasMode(this) (this)->lpVtbl->GetTextAntialiasMode(this)
-#define ID2D1HwndRenderTarget_GetTextRenderingParams(this,A) (this)->lpVtbl->GetTextRenderingParams(this,A)
-#define ID2D1HwndRenderTarget_GetTransform(this,A) (this)->lpVtbl->GetTransform(this,A)
-#define ID2D1HwndRenderTarget_IsSupported(this,A) (this)->lpVtbl->IsSupported(this,A)
-#define ID2D1HwndRenderTarget_PopAxisAlignedClip(this) (this)->lpVtbl->PopAxisAlignedClip(this)
-#define ID2D1HwndRenderTarget_PopLayer(this) (this)->lpVtbl->PopLayer(this)
-#define ID2D1HwndRenderTarget_PushAxisAlignedClip(this,A,B) (this)->lpVtbl->PushAxisAlignedClip(this,A,B)
-#define ID2D1HwndRenderTarget_PushLayer(this,A,B) (this)->lpVtbl->PushLayer(this,A,B)
-#define ID2D1HwndRenderTarget_RestoreDrawingState(this,A) (this)->lpVtbl->RestoreDrawingState(this,A)
-#define ID2D1HwndRenderTarget_SaveDrawingState(this,A) (this)->lpVtbl->SaveDrawingState(this,A)
-#define ID2D1HwndRenderTarget_SetAntialiasMode(this,A) (this)->lpVtbl->SetAntialiasMode(this,A)
-#define ID2D1HwndRenderTarget_SetDpi(this,A,B) (this)->lpVtbl->SetDpi(this,A,B)
-#define ID2D1HwndRenderTarget_SetTags(this,A,B) (this)->lpVtbl->SetTags(this,A,B)
-#define ID2D1HwndRenderTarget_SetTextAntialiasMode(this,A) (this)->lpVtbl->SetTextAntialiasMode(this,A)
-#define ID2D1HwndRenderTarget_SetTextRenderingParams(this,A) (this)->lpVtbl->SetTextRenderingParams(this,A)
-#define ID2D1HwndRenderTarget_SetTransform(this,A) (this)->lpVtbl->SetTransform(this,A)
+#else
+
+typedef interface ID2D1HwndRenderTarget ID2D1HwndRenderTarget;
+
+typedef struct ID2D1HwndRenderTargetVtbl {
+    ID2D1RenderTargetVtbl Base;
+
+    STDMETHOD_(D2D1_WINDOW_STATE, CheckWindowState)(ID2D1HwndRenderTarget *This) PURE;
+    STDMETHOD(Resize)(ID2D1HwndRenderTarget *This, const D2D1_SIZE_U *pixelSize) PURE;
+    STDMETHOD_(HWND, GetHwnd)(ID2D1HwndRenderTarget *This) PURE;
+} ID2D1HwndRenderTargetVtbl;
+
+interface ID2D1HwndRenderTarget {
+    const struct ID2D1HwndRenderTargetVtbl *lpVtbl;
+};
+
+#define ID2D1HwndRenderTarget_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1HwndRenderTarget_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1HwndRenderTarget_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1HwndRenderTarget_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1HwndRenderTarget_BeginDraw(this) (this)->lpVtbl->Base.BeginDraw((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_Clear(this,A) (this)->lpVtbl->Base.Clear((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_CreateBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1HwndRenderTarget_CreateBitmapBrush(this,A,B) (this)->lpVtbl->Base.CreateBitmapBrush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_CreateBitmapFromWicBitmap(this,A,B,C) (this)->lpVtbl->Base.CreateBitmapFromWicBitmap((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1HwndRenderTarget_CreateCompatibleRenderTarget(this,A,B,C,D,E) (this)->lpVtbl->Base.CreateCompatibleRenderTarget((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1HwndRenderTarget_CreateGradientStopCollection(this,A,B,C) (this)->lpVtbl->Base.CreateGradientStopCollection((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1HwndRenderTarget_CreateLayer(this,A,B) (this)->lpVtbl->Base.CreateLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_CreateLinearGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateLinearGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_CreateMesh(this,A) (this)->lpVtbl->Base.CreateMesh((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_CreateRadialGradientBrush(this,A,B,C,D) (this)->lpVtbl->Base.CreateRadialGradientBrush((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_CreateSharedBitmap(this,A,B,C,D) (this)->lpVtbl->Base.CreateSharedBitmap((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_CreateSolidColorBrush(this,A,B,C) (this)->lpVtbl->Base.CreateSolidColorBrush((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1HwndRenderTarget_DrawBitmap(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawBitmap((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1HwndRenderTarget_DrawEllipse(this,A,B,C,D) (this)->lpVtbl->Base.DrawEllipse((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_DrawGeometry(this,A,B,C,D) (this)->lpVtbl->Base.DrawGeometry((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_DrawGlyphRun(this,A,B,C,D) (this)->lpVtbl->Base.DrawGlyphRun((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_DrawLine(this,A,B,C,D,E) (this)->lpVtbl->Base.DrawLine((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1HwndRenderTarget_DrawRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_DrawRoundedRectangle(this,A,B,C,D) (this)->lpVtbl->Base.DrawRoundedRectangle((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_DrawText(this,A,B,C,D,E,F,G) (this)->lpVtbl->Base.DrawText((ID2D1RenderTarget*)(this),A,B,C,D,E,F,G)
+#define ID2D1HwndRenderTarget_DrawTextLayout(this,A,B,C,D) (this)->lpVtbl->Base.DrawTextLayout((ID2D1RenderTarget*)(this),A,B,C,D)
+#define ID2D1HwndRenderTarget_EndDraw(this,A,B) (this)->lpVtbl->Base.EndDraw((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_FillEllipse(this,A,B) (this)->lpVtbl->Base.FillEllipse((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_FillGeometry(this,A,B,C) (this)->lpVtbl->Base.FillGeometry((ID2D1RenderTarget*)(this),A,B,C)
+#define ID2D1HwndRenderTarget_FillMesh(this,A,B) (this)->lpVtbl->Base.FillMesh((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_FillOpacityMask(this,A,B,C,D,E) (this)->lpVtbl->Base.FillOpacityMask((ID2D1RenderTarget*)(this),A,B,C,D,E)
+#define ID2D1HwndRenderTarget_FillRectangle(this,A,B) (this)->lpVtbl->Base.FillRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_FillRoundedRectangle(this,A,B) (this)->lpVtbl->Base.FillRoundedRectangle((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_Flush(this,A,B) (this)->lpVtbl->Base.Flush((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_GetAntialiasMode(this) (this)->lpVtbl->Base.GetAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetDpi(this,A,B) (this)->lpVtbl->Base.GetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_GetMaximumBitmapSize(this) (this)->lpVtbl->Base.GetMaximumBitmapSize((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetPixelFormat(this) (this)->lpVtbl->Base.GetPixelFormat((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetPixelSize(this) (this)->lpVtbl->Base.GetPixelSize((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetSize(this) (this)->lpVtbl->Base.GetSize((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetTags(this,A,B) (this)->lpVtbl->Base.GetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_GetTextAntialiasMode(this) (this)->lpVtbl->Base.GetTextAntialiasMode((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_GetTextRenderingParams(this,A) (this)->lpVtbl->Base.GetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_IsSupported(this,A) (this)->lpVtbl->Base.IsSupported((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_PopAxisAlignedClip(this) (this)->lpVtbl->Base.PopAxisAlignedClip((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_PopLayer(this) (this)->lpVtbl->Base.PopLayer((ID2D1RenderTarget*)(this))
+#define ID2D1HwndRenderTarget_PushAxisAlignedClip(this,A,B) (this)->lpVtbl->Base.PushAxisAlignedClip((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_PushLayer(this,A,B) (this)->lpVtbl->Base.PushLayer((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_RestoreDrawingState(this,A) (this)->lpVtbl->Base.RestoreDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_SaveDrawingState(this,A) (this)->lpVtbl->Base.SaveDrawingState((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_SetAntialiasMode(this,A) (this)->lpVtbl->Base.SetAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_SetDpi(this,A,B) (this)->lpVtbl->Base.SetDpi((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_SetTags(this,A,B) (this)->lpVtbl->Base.SetTags((ID2D1RenderTarget*)(this),A,B)
+#define ID2D1HwndRenderTarget_SetTextAntialiasMode(this,A) (this)->lpVtbl->Base.SetTextAntialiasMode((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_SetTextRenderingParams(this,A) (this)->lpVtbl->Base.SetTextRenderingParams((ID2D1RenderTarget*)(this),A)
+#define ID2D1HwndRenderTarget_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1RenderTarget*)(this),A)
 #define ID2D1HwndRenderTarget_CheckWindowState(this) (this)->lpVtbl->CheckWindowState(this)
 #define ID2D1HwndRenderTarget_GetHwnd(this) (this)->lpVtbl->GetHwnd(this)
 #define ID2D1HwndRenderTarget_Resize(this,A) (this)->lpVtbl->Resize(this,A)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1Layer, 0x2cd9069b,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
 #ifndef D2D_USE_C_DEFINITIONS
 
 interface ID2D1Layer : public ID2D1Resource {
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_SIZE_F, GetSize)(void) const PURE;
+#else
+    virtual D2D1_SIZE_F* STDMETHODCALLTYPE GetSize(D2D1_SIZE_F*) const = 0;
+    D2D1_SIZE_F STDMETHODCALLTYPE GetSize() const {
+        D2D1_SIZE_F __ret;
+        GetSize(&__ret);
+        return __ret;
+    }
+#endif
 };
 
 #else
@@ -1871,10 +2048,10 @@ interface ID2D1Layer {
     const ID2D1LayerVtbl *lpVtbl;
 };
 
-#define ID2D1Layer_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1Layer_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1Layer_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1Layer_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1Layer_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Layer_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Layer_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1Layer_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1Layer_GetSize(this) (this)->lpVtbl->GetSize(this)
 
 #endif
@@ -1886,8 +2063,29 @@ DEFINE_GUID(IID_ID2D1LinearGradientBrush, 0x2cd906ab,0x12e2,0x11dc,0x9f,0xed,0x0
 interface ID2D1LinearGradientBrush : public ID2D1Brush {
     STDMETHOD_(void, SetStartPoint)(D2D1_POINT_2F startPoint) PURE;
     STDMETHOD_(void, SetEndPoint)(D2D1_POINT_2F endPoint) PURE;
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_POINT_2F, GetStartPoint)(void) const PURE;
+#else
+    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetStartPoint(D2D1_POINT_2F*) const = 0;
+    D2D1_POINT_2F STDMETHODCALLTYPE GetStartPoint() const {
+        D2D1_POINT_2F __ret;
+        GetStartPoint(&__ret);
+        return __ret;
+    }
+#endif
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_POINT_2F, GetEndPoint)(void) const PURE;
+#else
+    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetEndPoint(D2D1_POINT_2F*) const = 0;
+    D2D1_POINT_2F STDMETHODCALLTYPE GetEndPoint() const {
+        D2D1_POINT_2F __ret;
+        GetEndPoint(&__ret);
+        return __ret;
+    }
+#endif
+
     STDMETHOD_(void, GetGradientStopCollection)(ID2D1GradientStopCollection **gradientStopCollection) const PURE;
 };
 
@@ -1907,6 +2105,14 @@ interface ID2D1LinearGradientBrush {
     const ID2D1LinearGradientBrushVtbl *lpVtbl;
 };
 
+#define ID2D1LinearGradientBrush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1LinearGradientBrush_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1LinearGradientBrush_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1LinearGradientBrush_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1LinearGradientBrush_SetOpacity(this,A) (this)->lpVtbl->Base.SetOpacity((ID2D1Brush*)(this),A)
+#define ID2D1LinearGradientBrush_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1Brush*)(this),A)
+#define ID2D1LinearGradientBrush_GetOpacity(this) (this)->lpVtbl->Base.GetOpacity((ID2D1Brush*)(this))
+#define ID2D1LinearGradientBrush_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1Brush*)(this),A)
 #define ID2D1LinearGradientBrush_GetEndPoint(this) (this)->lpVtbl->GetEndPoint(this)
 #define ID2D1LinearGradientBrush_GetGradientStopCollection(this,A) (this)->lpVtbl->GetGradientStopCollection(this,A)
 #define ID2D1LinearGradientBrush_GetStartPoint(this) (this)->lpVtbl->GetStartPoint(this)
@@ -1915,33 +2121,35 @@ interface ID2D1LinearGradientBrush {
 
 #endif
 
-#define INTERFACE ID2D1Mesh
-DECLARE_INTERFACE_(ID2D1Mesh, ID2D1Resource)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1Mesh,0x2cd906c2,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
-
-  /* ID2D1Mesh methods */
-  STDMETHOD(Open)(THIS_ ID2D1TessellationSink **tessellationSink) PURE;
-
-  END_INTERFACE
+interface ID2D1Mesh : public ID2D1Resource {
+    STDMETHOD(Open)(ID2D1TessellationSink **tessellationSink) PURE;
 };
-#undef INTERFACE
 
-#define ID2D1Mesh_QueryInterface(this,A,B) (this)->lpVtbl->QueryInterface(this,A,B)
-#define ID2D1Mesh_AddRef(this) (this)->lpVtbl->AddRef(this)
-#define ID2D1Mesh_Release(this) (this)->lpVtbl->Release(this)
-#define ID2D1Mesh_GetFactory(this,A) (this)->lpVtbl->GetFactory(this,A)
+#else
+
+typedef struct ID2D1MeshVtbl{
+    ID2D1ResourceVtbl Base;
+
+    STDMETHOD(Open)(ID2D1Mesh *This, ID2D1TessellationSink **tessellationSink) PURE;
+} ID2D1MeshVtbl;
+
+interface ID2D1Mesh {
+    const struct ID2D1MeshVtbl *lpVtbl;
+};
+
+#define ID2D1Mesh_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1Mesh_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1Mesh_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1Mesh_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1Mesh_Open(this,A) (this)->lpVtbl->Open(this,A)
 
-DEFINE_GUID(IID_ID2D1PathGeometry, 0x2cd906a5,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9); 
+#endif
+
+DEFINE_GUID(IID_ID2D1PathGeometry, 0x2cd906a5,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
 #ifndef D2D_USE_C_DEFINITIONS
 
@@ -1967,6 +2175,23 @@ interface ID2D1PathGeometry {
     const ID2D1PathGeometryVtbl *lpVtbl;
 };
 
+#define ID2D1PathGeometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1PathGeometry_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1PathGeometry_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1PathGeometry_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1PathGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1PathGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1PathGeometry_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1PathGeometry_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1PathGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1PathGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1PathGeometry_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1PathGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1PathGeometry_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1PathGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1PathGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1PathGeometry_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1PathGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1PathGeometry_Open(this,A) (this)->lpVtbl->Open(this,A)
 #define ID2D1PathGeometry_Stream(this,A) (this)->lpVtbl->Stream(this,A)
 #define ID2D1PathGeometry_GetSegmentCount(this,A) (this)->lpVtbl->GetSegmentCount(this,A)
@@ -1983,8 +2208,31 @@ interface ID2D1RadialGradientBrush : public ID2D1Brush {
     STDMETHOD_(void, SetGradientOriginOffset)(D2D1_POINT_2F gradientOriginOffset) PURE;
     STDMETHOD_(void, SetRadiusX)(FLOAT radiusX) PURE;
     STDMETHOD_(void, SetRadiusY)(FLOAT radiusY) PURE;
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_POINT_2F, GetCenter)(void) const PURE;
+#else
+    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetCenter(D2D1_POINT_2F *__ret) const = 0;
+    D2D1_POINT_2F STDMETHODCALLTYPE GetCenter() const
+    {
+        D2D1_POINT_2F __ret;
+        GetCenter(&__ret);
+        return __ret;
+    }
+#endif
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_POINT_2F, GetGradientOriginOffset)(void) const PURE;
+#else
+    virtual D2D1_POINT_2F* STDMETHODCALLTYPE GetGradientOriginOffset(D2D1_POINT_2F *__ret) const = 0;
+    D2D1_POINT_2F STDMETHODCALLTYPE GetGradientOriginOffset() const
+    {
+        D2D1_POINT_2F __ret;
+        GetGradientOriginOffset(&__ret);
+        return __ret;
+    }
+#endif
+
     STDMETHOD_(FLOAT, GetRadiusX)(void) const PURE;
     STDMETHOD_(FLOAT, GetRadiusY)(void) const PURE;
     STDMETHOD_(void, GetGradientStopCollection)(ID2D1GradientStopCollection **gradientStopCollection) const PURE;
@@ -2010,6 +2258,14 @@ interface ID2D1RadialGradientBrush {
     const ID2D1RadialGradientBrushVtbl *lpVtbl;
 };
 
+#define ID2D1RadialGradientBrush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1RadialGradientBrush_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1RadialGradientBrush_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1RadialGradientBrush_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1RadialGradientBrush_SetOpacity(this,A) (this)->lpVtbl->Base.SetOpacity((ID2D1Brush*)(this),A)
+#define ID2D1RadialGradientBrush_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1Brush*)(this),A)
+#define ID2D1RadialGradientBrush_GetOpacity(this) (this)->lpVtbl->Base.GetOpacity((ID2D1Brush*)(this))
+#define ID2D1RadialGradientBrush_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1Brush*)(this),A)
 #define ID2D1RadialGradientBrush_GetCenter(this) (this)->lpVtbl->GetCenter(this)
 #define ID2D1RadialGradientBrush_GetGradientOriginOffset(this) (this)->lpVtbl->GetGradientOriginOffset(this)
 #define ID2D1RadialGradientBrush_GetGradientStopCollection(this,A) (this)->lpVtbl->GetGradientStopCollection(this,A)
@@ -2042,59 +2298,67 @@ interface ID2D1RectangleGeometry {
     const ID2D1RectangleGeometryVtbl *lpVtbl;
 };
 
+#define ID2D1RectangleGeometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1RectangleGeometry_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1RectangleGeometry_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1RectangleGeometry_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1RectangleGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RectangleGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RectangleGeometry_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1RectangleGeometry_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1RectangleGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RectangleGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RectangleGeometry_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1RectangleGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RectangleGeometry_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1RectangleGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1RectangleGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RectangleGeometry_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1RectangleGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1RectangleGeometry_GetRect(this,A) (this)->lpVtbl->GetRect(this,A)
 
 #endif
 
-#define INTERFACE ID2D1RoundedRectangleGeometry
-DECLARE_INTERFACE_(ID2D1RoundedRectangleGeometry, ID2D1Geometry)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1RoundedRectangleGeometry, 0x2cd906a3,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1Resource methods */
-  STDMETHOD_(void, GetFactory)(THIS_ ID2D1Factory **factory) PURE;
-
-  /* ID2D1Geometry methods */
-  STDMETHOD(CombineWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_COMBINE_MODE combineMode, D2D1_MATRIX_3X2_F *inputGeometryTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(CompareWithGeometry)(THIS_ ID2D1Geometry *inputGeometry, D2D1_MATRIX_3X2_F *inputGeometryTransform, D2D1_GEOMETRY_RELATION *relation) PURE;
-  STDMETHOD(ComputeArea)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *area) PURE;
-  STDMETHOD(ComputeLength)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, FLOAT *length) PURE;
-  STDMETHOD(ComputePointAtLength)(THIS_ FLOAT length, D2D1_MATRIX_3X2_F *worldTransform, D2D1_POINT_2F *point, D2D1_POINT_2F *unitTangentVector) PURE;
-  STDMETHOD(FillContainsPoint)(THIS_ D2D1_POINT_2F point, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(GetBounds)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(GetWidenedBounds)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, D2D1_RECT_F *bounds) PURE;
-  STDMETHOD(Outline)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(StrokeContainsPoint)(THIS_ D2D1_POINT_2F point, FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, BOOL *contains) PURE;
-  STDMETHOD(Simplify)(THIS_ D2D1_GEOMETRY_SIMPLIFICATION_OPTION simplificationOption, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-  STDMETHOD(Tessellate)(THIS_ D2D1_MATRIX_3X2_F *worldTransform, ID2D1TessellationSink *tessellationSink) PURE;
-  STDMETHOD(Widen)(THIS_ FLOAT strokeWidth, ID2D1StrokeStyle *strokeStyle, D2D1_MATRIX_3X2_F *worldTransform, ID2D1SimplifiedGeometrySink *geometrySink) PURE;
-
-  /* ID2D1RoundedRectangleGeometry methods */
-  STDMETHOD_(void, GetRoundedRect)(THIS_ D2D1_ROUNDED_RECT *roundedRect) PURE;
-
-  END_INTERFACE
+interface ID2D1RoundedRectangleGeometry : public ID2D1Geometry {
+    STDMETHOD_(void, GetRoundedRect)(D2D1_ROUNDED_RECT *roundedRect) const PURE;
 };
-#undef INTERFACE
 
-#define ID2D1RoundedRectangleGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->CombineWithGeometry(this,A,B,C,D)
-#define ID2D1RoundedRectangleGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->CompareWithGeometry(this,A,B,C)
-#define ID2D1RoundedRectangleGeometry_ComputeArea(this,A,B) (this)->lpVtbl->ComputeArea(this,A,B)
-#define ID2D1RoundedRectangleGeometry_ComputeLength(this,A,B) (this)->lpVtbl->ComputeLength(this,A,B)
-#define ID2D1RoundedRectangleGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->ComputePointAtLength(this,A,B,C,D)
-#define ID2D1RoundedRectangleGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->FillContainsPoint(this,A,B,C)
-#define ID2D1RoundedRectangleGeometry_GetBounds(this,A,B) (this)->lpVtbl->GetBounds(this,A,B)
-#define ID2D1RoundedRectangleGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->GetWidenedBounds(this,A,B,C,D)
-#define ID2D1RoundedRectangleGeometry_Outline(this,A,B) (this)->lpVtbl->Outline(this,A,B)
-#define ID2D1RoundedRectangleGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->StrokeContainsPoint(this,A,B,C,D,E)
-#define ID2D1RoundedRectangleGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Simplify(this,A,B,C)
-#define ID2D1RoundedRectangleGeometry_Tessellate(this,A,B) (this)->lpVtbl->Tessellate(this,A,B)
-#define ID2D1RoundedRectangleGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Widen(this,A,B,C,D)
+#else
+
+typedef struct ID2D1RoundedRectangleGeometryVtbl {
+    ID2D1GeometryVtbl Base;
+
+    STDMETHOD_(void, GetRoundedRect)(ID2D1RoundedRectangleGeometry *This, D2D1_ROUNDED_RECT *roundedRect) PURE;
+} ID2D1RoundedRectangleGeometryVtbl;
+
+interface ID2D1RoundedRectangleGeometry {
+    const struct ID2D1RoundedRectangleGeometryVtbl *lpVtbl;
+};
+
+#define ID2D1RoundedRectangleGeometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1RoundedRectangleGeometry_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1RoundedRectangleGeometry_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1RoundedRectangleGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RoundedRectangleGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RoundedRectangleGeometry_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RoundedRectangleGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RoundedRectangleGeometry_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1RoundedRectangleGeometry_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1RoundedRectangleGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1RoundedRectangleGeometry_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1RoundedRectangleGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1RoundedRectangleGeometry_GetRoundedRect(this,A) (this)->lpVtbl->GetRoundedRect(this,A)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1SolidColorBrush, 0x2cd906a9,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
@@ -2102,7 +2366,17 @@ DEFINE_GUID(IID_ID2D1SolidColorBrush, 0x2cd906a9,0x12e2,0x11dc,0x9f,0xed,0x00,0x
 
 interface ID2D1SolidColorBrush : public ID2D1Brush {
     STDMETHOD_(void, SetColor)(const D2D1_COLOR_F *color) PURE;
+
+#ifndef WIDL_EXPLICIT_AGGREGATE_RETURNS
     STDMETHOD_(D2D1_COLOR_F, GetColor)(void) const PURE;
+#else
+    virtual D2D1_COLOR_F* STDMETHODCALLTYPE GetColor(D2D1_COLOR_F*) const = 0;
+    D2D1_COLOR_F STDMETHODCALLTYPE GetColor() const {
+        D2D1_COLOR_F __ret;
+        GetColor(&__ret);
+        return __ret;
+    }
+#endif
 
     void SetColor(const D2D1_COLOR_F &color) {
         SetColor(&color);
@@ -2122,6 +2396,14 @@ interface ID2D1SolidColorBrush {
     const ID2D1SolidColorBrushVtbl *lpVtbl;
 };
 
+#define ID2D1SolidColorBrush_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1SolidColorBrush_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1SolidColorBrush_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1SolidColorBrush_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1SolidColorBrush_SetOpacity(this,A) (this)->lpVtbl->Base.SetOpacity((ID2D1Brush*)(this),A)
+#define ID2D1SolidColorBrush_SetTransform(this,A) (this)->lpVtbl->Base.SetTransform((ID2D1Brush*)(this),A)
+#define ID2D1SolidColorBrush_GetOpacity(this) (this)->lpVtbl->Base.GetOpacity((ID2D1Brush*)(this))
+#define ID2D1SolidColorBrush_GetTransform(this,A) (this)->lpVtbl->Base.GetTransform((ID2D1Brush*)(this),A)
 #define ID2D1SolidColorBrush_GetColor(this) (this)->lpVtbl->GetColor(this)
 #define ID2D1SolidColorBrush_SetColor(this,A) (this)->lpVtbl->SetColor(this,A)
 
@@ -2163,10 +2445,10 @@ interface ID2D1StrokeStyle {
     const ID2D1StrokeStyleVtbl *lpVtbl;
 };
 
-#define ID2D1StrokeStyle_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)this,A,B)
-#define ID2D1StrokeStyle_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)this)
-#define ID2D1StrokeStyle_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)this)
-#define ID2D1StrokeStyle_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)this,A)
+#define ID2D1StrokeStyle_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1StrokeStyle_AddRef(this) (this)->lpVtbl->Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1StrokeStyle_Release(this) (this)->lpVtbl->Base.Base.Release((IUnknown*)(this))
+#define ID2D1StrokeStyle_GetFactory(this,A) (this)->lpVtbl->Base.GetFactory((ID2D1Resource*)(this),A)
 #define ID2D1StrokeStyle_GetDashCap(this) (this)->lpVtbl->GetDashCap(this)
 #define ID2D1StrokeStyle_GetDashes(this,A,B) (this)->lpVtbl->GetDashes(this,A,B)
 #define ID2D1StrokeStyle_GetDashesCount(this) (this)->lpVtbl->GetDashesCount(this)
@@ -2179,29 +2461,35 @@ interface ID2D1StrokeStyle {
 
 #endif
 
-#define INTERFACE ID2D1TessellationSink
-DECLARE_INTERFACE_(ID2D1TessellationSink, IUnknown)
-{
-  BEGIN_INTERFACE
+DEFINE_GUID(IID_ID2D1TessellationSink, 0x2cd906c1,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
-  /* IUnknown methods */
-  STDMETHOD(QueryInterface)(THIS_ REFIID riid, void **ppvObject) PURE;
-  STDMETHOD_(ULONG, AddRef)(THIS) PURE;
-  STDMETHOD_(ULONG, Release)(THIS) PURE;
+#ifndef D2D_USE_C_DEFINITIONS
 
-  /* ID2D1TessellationSink methods */
-  STDMETHOD_(void, AddTriangles)(THIS_ D2D1_TRIANGLE *triangles, UINT trianglesCount) PURE;
-  STDMETHOD(Close)(THIS) PURE;
-
-  END_INTERFACE
+interface ID2D1TessellationSink : public IUnknown {
+    STDMETHOD_(void, AddTriangles)(const D2D1_TRIANGLE *triangles, UINT trianglesCount) PURE;
+    STDMETHOD(Close)() PURE;
 };
-#undef INTERFACE
 
-#define ID2D1TessellationSink_QueryInterface(this,A,B) (this)->lpVtbl->QueryInterface(this,A,B)
-#define ID2D1TessellationSink_AddRef(this) (this)->lpVtbl->AddRef(this)
-#define ID2D1TessellationSink_Release(this) (this)->lpVtbl->Release(this)
+#else
+
+typedef struct ID2D1TessellationSinkVtbl {
+    IUnknownVtbl Base;
+
+    STDMETHOD_(void, AddTriangles)(ID2D1TessellationSink *This, const D2D1_TRIANGLE *triangles, UINT trianglesCount) PURE;
+    STDMETHOD(Close)(ID2D1TessellationSink *This) PURE;
+} ID2D1TessellationSinkVtbl;
+
+interface ID2D1TessellationSink {
+    const struct ID2D1TessellationSinkVtbl *lpVtbl;
+};
+
+#define ID2D1TessellationSink_QueryInterface(this,A,B) (this)->lpVtbl->Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1TessellationSink_AddRef(this) (this)->lpVtbl->Base.AddRef((IUnknown*)(this))
+#define ID2D1TessellationSink_Release(this) (this)->lpVtbl->Base.Release((IUnknown*)(this))
 #define ID2D1TessellationSink_AddTriangles(this,A,B) (this)->lpVtbl->AddTriangles(this,A,B)
 #define ID2D1TessellationSink_Close(this) (this)->lpVtbl->Close(this)
+
+#endif
 
 DEFINE_GUID(IID_ID2D1TransformedGeometry, 0x2cd906bb,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
 
@@ -2225,6 +2513,23 @@ interface ID2D1TransformedGeometry {
     const ID2D1TransformedGeometryVtbl *lpVtbl;
 };
 
+#define ID2D1TransformedGeometry_QueryInterface(this,A,B) (this)->lpVtbl->Base.Base.Base.QueryInterface((IUnknown*)(this),A,B)
+#define ID2D1TransformedGeometry_AddRef(this) (this)->lpVtbl->Base.Base.Base.AddRef((IUnknown*)(this))
+#define ID2D1TransformedGeometry_Release(this) (this)->lpVtbl->Base.Base.Base.Release((IUnknown*)(this))
+#define ID2D1TransformedGeometry_GetFactory(this,A) (this)->lpVtbl->Base.Base.GetFactory((ID2D1Resource*)(this),A)
+#define ID2D1TransformedGeometry_CombineWithGeometry(this,A,B,C,D) (this)->lpVtbl->Base.CombineWithGeometry((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1TransformedGeometry_CompareWithGeometry(this,A,B,C) (this)->lpVtbl->Base.CompareWithGeometry((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1TransformedGeometry_ComputeArea(this,A,B) (this)->lpVtbl->Base.ComputeArea((ID2D1Geometry*)(this),A,B)
+#define ID2D1TransformedGeometry_ComputeLength(this,A,B) (this)->lpVtbl->Base.ComputeLength((ID2D1Geometry*)(this),A,B)
+#define ID2D1TransformedGeometry_ComputePointAtLength(this,A,B,C,D) (this)->lpVtbl->Base.ComputePointAtLength((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1TransformedGeometry_FillContainsPoint(this,A,B,C) (this)->lpVtbl->Base.FillContainsPoint((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1TransformedGeometry_GetBounds(this,A,B) (this)->lpVtbl->Base.GetBounds((ID2D1Geometry*)(this),A,B)
+#define ID2D1TransformedGeometry_GetWidenedBounds(this,A,B,C,D) (this)->lpVtbl->Base.GetWidenedBounds((ID2D1Geometry*)(this),A,B,C,D)
+#define ID2D1TransformedGeometry_Outline(this,A,B) (this)->lpVtbl->Base.Outline((ID2D1Geometry*)(this),A,B)
+#define ID2D1TransformedGeometry_StrokeContainsPoint(this,A,B,C,D,E) (this)->lpVtbl->Base.StrokeContainsPoint((ID2D1Geometry*)(this),A,B,C,D,E)
+#define ID2D1TransformedGeometry_Simplify(this,A,B,C) (this)->lpVtbl->Base.Simplify((ID2D1Geometry*)(this),A,B,C)
+#define ID2D1TransformedGeometry_Tessellate(this,A,B) (this)->lpVtbl->Base.Tessellate((ID2D1Geometry*)(this),A,B)
+#define ID2D1TransformedGeometry_Widen(this,A,B,C,D) (this)->lpVtbl->Base.Widen((ID2D1Geometry*)(this),A,B,C,D)
 #define ID2D1TransformedGeometry_GetSourceGeometry(this,A) (this)->lpVtbl->GetSourceGeometry(this,A)
 #define ID2D1TransformedGeometry_GetTransform(this,A) (this)->lpVtbl->GetTransform(this,A)
 
@@ -2251,6 +2556,48 @@ __CRT_UUID_DECL(ID2D1RectangleGeometry, 0x2cd906a2,0x12e2,0x11dc,0x9f,0xed,0x00,
 __CRT_UUID_DECL(ID2D1SolidColorBrush, 0x2cd906a9,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9)
 __CRT_UUID_DECL(ID2D1StrokeStyle, 0x2cd9069d,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9)
 __CRT_UUID_DECL(ID2D1TransformedGeometry, 0x2cd906bb,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9)
+__CRT_UUID_DECL(ID2D1Mesh,0x2cd906c2,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
+__CRT_UUID_DECL(ID2D1DrawingStateBlock, 0x28506e39,0xebf6,0x46a1,0xbb,0x47,0xfd,0x85,0x56,0x5a,0xb9,0x57);
+__CRT_UUID_DECL(ID2D1EllipseGeometry, 0x2cd906a4,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
+__CRT_UUID_DECL(ID2D1GeometryGroup, 0x2cd906a6,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
+__CRT_UUID_DECL(ID2D1RoundedRectangleGeometry, 0x2cd906a3,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
+__CRT_UUID_DECL(ID2D1TessellationSink, 0x2cd906c1,0x12e2,0x11dc,0x9f,0xed,0x00,0x11,0x43,0xa0,0x55,0xf9);
+__CRT_UUID_DECL(ID2D1Image, 0x65019f75,0x8da2,0x497c,0xb3,0x2c,0xdf,0xa3,0x4e,0x48,0xed,0xe6);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+HRESULT WINAPI D2D1CreateFactory(
+  D2D1_FACTORY_TYPE factoryType,
+  REFIID riid,
+  const D2D1_FACTORY_OPTIONS *pFactoryOptions,
+  void **ppIFactory
+);
+
+WINBOOL WINAPI D2D1InvertMatrix(
+  D2D1_MATRIX_3X2_F *matrix
+);
+
+WINBOOL WINAPI D2D1IsMatrixInvertible(
+  const D2D1_MATRIX_3X2_F *matrix
+);
+
+void WINAPI D2D1MakeRotateMatrix(
+  FLOAT angle,
+  D2D1_POINT_2F center,
+  D2D1_MATRIX_3X2_F *matrix
+);
+
+void WINAPI D2D1MakeSkewMatrix(
+  FLOAT angleX,
+  FLOAT angleY,
+  D2D1_POINT_2F center,
+  D2D1_MATRIX_3X2_F *matrix
+);
+#ifdef __cplusplus
+}
+#endif
 
 #ifndef D2D1FORCEINLINE
 #define D2D1FORCEINLINE FORCEINLINE
@@ -2258,25 +2605,22 @@ __CRT_UUID_DECL(ID2D1TransformedGeometry, 0x2cd906bb,0x12e2,0x11dc,0x9f,0xed,0x0
 
 #include <d2d1helper.h>
 
-#pragma pop_macro("IDWriteTextFormat")
-#pragma pop_macro("IDWriteRenderingParams")
-#pragma pop_macro("IDWriteTextLayout")
+#ifndef D2D_USE_C_DEFINITIONS
 
-#ifndef __MINGW_POISON_NAME
-#ifdef __MINGW_USE_BROKEN_INTERFACE
-#define __MINGW_POISON_NAME(__IFACE) __IFACE
-#else
-#define __MINGW_POISON_NAME(__IFACE)\
-  __IFACE##_layout_has_not_been_verified_and_its_declaration_is_most_likely_incorrect
-#endif
-#endif
+inline HRESULT D2D1CreateFactory(D2D1_FACTORY_TYPE factoryType, REFIID riid, void **ppv) {
+    return D2D1CreateFactory(factoryType, riid, NULL, ppv);
+}
 
-#define ID2D1DrawingStateBlock __MINGW_POISON_NAME(ID2D1DrawingStateBlock)
-#define ID2D1EllipseGeometry __MINGW_POISON_NAME(ID2D1EllipseGeometry)
-#define ID2D1GeometryGroup __MINGW_POISON_NAME(ID2D1GeometryGroup)
-#define ID2D1HwndRenderTarget __MINGW_POISON_NAME(ID2D1HwndRenderTarget)
-#define ID2D1Mesh __MINGW_POISON_NAME(ID2D1Mesh)
-#define ID2D1RoundedRectangleGeometry __MINGW_POISON_NAME(ID2D1RoundedRectangleGeometry)
-#define ID2D1TessellationSink __MINGW_POISON_NAME(ID2D1TessellationSink)
+template<class Factory>
+HRESULT D2D1CreateFactory(D2D1_FACTORY_TYPE factoryType, Factory **factory) {
+    return D2D1CreateFactory(factoryType, __uuidof(Factory), reinterpret_cast<void**>(factory));
+}
+
+template<class Factory>
+HRESULT D2D1CreateFactory(D2D1_FACTORY_TYPE factoryType, const D2D1_FACTORY_OPTIONS &factoryOptions, Factory **factory) {
+    return D2D1CreateFactory(factoryType, __uuidof(Factory), &factoryOptions, reinterpret_cast<void **>(factory));
+}
+
+#endif
 
 #endif /* _D2D1_H */

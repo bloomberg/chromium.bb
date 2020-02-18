@@ -14,12 +14,12 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/android/chrome_jni_headers/FeedOfflineBridge_jni.h"
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/core/content_metadata.h"
-#include "jni/FeedOfflineBridge_jni.h"
 
 using base::android::JavaRef;
 using base::android::JavaParamRef;
@@ -134,7 +134,7 @@ void FeedOfflineBridge::AppendContentMetadata(
   if (!j_snippet.is_null()) {
     metadata.snippet = base::android::ConvertJavaStringToUTF8(env, j_snippet);
   }
-  known_content_metadata_buffer_.push_back(std::move(metadata));
+  known_content_metadata_buffer_.emplace_back(std::move(metadata));
 }
 
 void FeedOfflineBridge::OnGetKnownContentDone(

@@ -5,9 +5,10 @@
 import collections
 import itertools
 import json
+import os
 
 from telemetry.internal.results import output_formatter
-from telemetry.value import trace
+from telemetry.internal.results import results_processor
 
 
 def _GetChartAndTraceName(value):
@@ -25,29 +26,27 @@ def _GetChartAndTraceName(value):
 
   # Dashboard handles the chart_name of trace values specially: it
   # strips out the field with chart_name 'trace'. Hence in case trace
-  # value has tir_label, we preserve the chart_name.
+  # value has grouping_label, we preserve the chart_name.
   # For relevant section code of dashboard code that handles this, see:
   # https://github.com/catapult-project/catapult/blob/25e660b/dashboard/dashboard/add_point.py#L199#L216
-  if value.tir_label and not isinstance(value, trace.TraceValue):
-    chart_name = value.tir_label + '@@' + chart_name
+  if value.grouping_label:
+    chart_name = value.grouping_label + '@@' + chart_name
 
   return chart_name, trace_name
 
 
-def ResultsAsChartDict(benchmark_metadata, results):
+def ResultsAsChartDict(results):
   """Produces a dict for serialization to Chart JSON format from raw values.
 
   Chart JSON is a transformation of the basic Telemetry JSON format that
   removes the page map, summarizes the raw values, and organizes the results
   by chart and trace name. This function takes the key pieces of data needed to
-  perform this transformation (namely, lists of values and a benchmark metadata
-  object) and processes them into a dict which can be serialized using the json
-  module.
+  perform this transformation and processes them into a dict which can be
+  serialized using the json module.
 
   Design doc for schema: http://goo.gl/kOtf1Y
 
   Args:
-    benchmark_metadata: a benchmark.BenchmarkMetadata object
     results: an instance of PageTestResults
 
   Returns:
@@ -68,53 +67,50 @@ def ResultsAsChartDict(benchmark_metadata, results):
     if value.page:
       charts[chart_name][trace_name]['story_tags'] = list(value.page.tags)
 
+  for run in results.IterStoryRuns():
+    artifact = run.GetArtifact(results_processor.HTML_TRACE_NAME)
+    if artifact is not None:
+      # This intentionally overwrites the trace if it already exists because
+      # this is expected of output from the buildbots currently.
+      # See: crbug.com/413393
+      charts['trace'][run.story.name] = {
+          'name': 'trace',
+          'type': 'trace',
+          'units': '',
+          'important': False,
+          'page_id': run.story.id,
+          'file_path': os.path.relpath(artifact.local_path, results.output_dir),
+      }
+      if artifact.url is not None:
+        charts['trace'][run.story.name]['cloud_url'] = artifact.url
+
   result_dict = {
       'format_version': '0.1',
       'next_version': '0.2',
       # TODO(sullivan): benchmark_name and benchmark_description should be
       # removed when incrementing format_version to 0.1.
-      'benchmark_name': benchmark_metadata.name,
-      'benchmark_description': benchmark_metadata.description,
-      'benchmark_metadata': benchmark_metadata.AsDict(),
+      'benchmark_name': results.benchmark_name,
+      'benchmark_description': results.benchmark_description,
+      'benchmark_metadata': {
+          'type': 'telemetry_benchmark',
+          'name': results.benchmark_name,
+          'description': results.benchmark_description,
+      },
       'charts': charts,
-      # Need to add this in for compatibility with disabled chartjson results.
-      'enabled': True
+      # Conveys whether the whole benchmark was disabled.
+      'enabled': not results.empty,
   }
 
   return result_dict
 
 
-def DisabledResultsDict(benchmark_name):
-  """Produces a dict for serialization to Chart JSON when a benchmark is
-    disabled.
-
-  Args:
-    benchmark_name: name of the disabled benchmark
-
-  Returns:
-    A Chart JSON dict corresponding to a disabled benchmark.
-  """
-  result_dict = {
-      'benchmark_name': benchmark_name,
-      'enabled': False
-  }
-
-  return result_dict
-
-
-# TODO(eakuefner): Transition this to translate Telemetry JSON.
 class ChartJsonOutputFormatter(output_formatter.OutputFormatter):
-  def __init__(self, output_stream, benchmark_metadata):
+  def __init__(self, output_stream):
     super(ChartJsonOutputFormatter, self).__init__(output_stream)
-    self._benchmark_metadata = benchmark_metadata
 
-  def FormatDisabled(self, page_test_results):
-    self._Dump(DisabledResultsDict(self._benchmark_metadata.name))
-
-  def Format(self, page_test_results):
-    self._Dump(ResultsAsChartDict(self._benchmark_metadata, page_test_results))
+  def Format(self, results):
+    self._Dump(ResultsAsChartDict(results))
 
   def _Dump(self, results):
-    json.dump(results, self.output_stream, indent=2,
-              separators=(',', ': '))
+    json.dump(results, self.output_stream, indent=2, separators=(',', ': '))
     self.output_stream.write('\n')

@@ -345,6 +345,11 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto nastavenie zakážete alebo nenakonfigurujete, nastavenia účtov Kerberos budú zakázané. Nebudete môcť pridať účty Kerberos ani použiť overenie Kerberos. Všetky existujúce účty Kerberos sa odstránia, rovnako ako všetky uložené heslá.</translation>
 <translation id="1561424797596341174">Prepísania pravidiel pre zostavy ladenia používané hostiteľom vzdialeného prístupu</translation>
 <translation id="1561967320164410511">U2F a rozšírenia na individuálne preverovanie</translation>
+<translation id="1566329065312331399">
+      Keď toto pravidlo nastavíte na hodnotu False, zariadenie nebude môcť spustiť obnovenie Powerwash.
+      Keď ho nastavíte na hodnotu True, zariadenie bude môcť spustiť obnovenie Powerwash.
+      Ak ho ponecháte nenastavené, predvolene bude nastavená hodnota False. Zariadenie teda nebude môcť spustiť obnovenie Powerwash.
+      </translation>
 <translation id="1574554504290354326">Podpora tohto nastavenia bola ukončená, použite namiesto neho SafeBrowsingExtendedReportingEnabled. Povolenie alebo zakázanie parametra SafeBrowsingExtendedReportingEnabled je rovnaké ako nastavenie parametra SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
 
       Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Googlu. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktorá pomáha zisťovať nebezpečné aplikácie a weby.
@@ -382,6 +387,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Upozornenie: Neodporúča sa delegovať ovládanie verzie systému <ph name="PRODUCT_OS_NAME" /> verejnej aplikácii, pretože môže zariadeniu zabrániť získavať aktualizácie softvéru a kritické opravy chýb zabezpečenia. Delegovanie ovládania verzie systému <ph name="PRODUCT_OS_NAME" /> môže používateľov vystaviť riziku.</translation>
 <translation id="1675002386741412210">Podporované na:</translation>
+<translation id="1700811900332333712">Povoliť zariadeniu vyžiadať obnovenie Powerwash</translation>
 <translation id="1704516734140344991">Umožňuje konfigurovať dostupnosť a správanie funkcií aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivé nastavenia môžete určiť vo vlastnostiach JSON:
@@ -932,6 +938,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
+<translation id="2694143893026486692">Bola zapnutá ukotvená lupa</translation>
 <translation id="2706708761587205154">Povoliť tlač iba s kódom PIN</translation>
 <translation id="2710534340210290498">Ak je toto pravidlo nastavené na hodnotu false, používatelia nebudú môcť uzamykať obrazovku (možné bude iba odhlásenie sa z relácie používateľa). Ak je toto pravidlo nastavené na hodnotu true alebo je ponechané nenastavené, používatelia, ktorí overili svoju totožnosť heslom, budú môcť obrazovku uzamykať.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
@@ -1112,6 +1119,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto pravidlo nie je nastavené, správanie konkrétnejších pravidiel nebude ovplyvnené.</translation>
 <translation id="2987155890997901449">Povoliť funkciu ARC</translation>
 <translation id="2987227569419001736">Ovládať používanie rozhrania Web Bluetooth API</translation>
+<translation id="2990018289267778247">Ak je toto pravidlo nastavené na hodnotu true, v ponuke oblasti oznámení sa vždy zobrazia možnosti dostupnosti.
+
+          Ak je nastavené na hodnotu false, možnosti dostupnosti sa v ponuke oblasti oznámení nikdy nezobrazia.
+
+          Ak toto pravidlo nastavíte, používatelia ho nebudú môcť zmeniť ani prepísať.
+
+          Ak nie je nastavené, možnosti dostupnosti sa v ponuke oblasti oznámení nezobrazia, ale používatelia môžu ich zobrazenie aktivovať na stránke Nastavenia.
+
+          Keď povolíte funkcie dostupnosti (iným spôsobom, napríklad kombináciou klávesov), v ponuke oblasti oznámení sa vždy zobrazia možnosti dostupnosti.</translation>
 <translation id="3011301228198307065">Konfiguruje predvolenú webovú adresu domovskej stránky prehliadača <ph name="PRODUCT_NAME" /> a zabraňuje používateľom ju zmeniť.
 
           Domovská stránka je stránka, ktorá sa otvára tlačidlom Domovská stránka. Stránky, ktoré sa otvoria po spustení, sú ovládané pravidlami RestoreOnStartup.
@@ -1159,6 +1175,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo je voliteľné. Ak nie je nastavené, nedôjde k žiadnej výmene hľadaných výrazov.
 
           Toto pravidlo sa rešpektuje len vtedy, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Toto pravidlo umožňuje používateľom funkcie WebDriver prepísať
       pravidlá, ktoré môžu prekážať v jej fungovaní.
 
@@ -1173,25 +1190,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak je toto pravidlo nastavené na možnosť False, optimalizácia WPAD je zakázaná a prehliadač <ph name="PRODUCT_NAME" /> tak musí čakať dlhšie na servery WPAD založené na systéme DNS. Ak je toto pravidlo povolené alebo nie je nastavené, optimalizácia WPAD je aktívna.
 
       Bez ohľadu na to, či je toto pravidlo nastavené, alebo na spôsob, akým bolo nastavené, nemôžu používatelia nastavenie optimalizácie WPAD zmeniť.</translation>
-<translation id="3071839057966069710">Umožňuje nakonfigurovať zoznam tlačiarní.
-
-      Toto pravidlo umožňuje správcom poskytnúť používateľom konfigurácie
-      tlačiarní.
-
-      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú textové reťazce, ktoré si môžete prispôsobiť na zjednodušenie výberu tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> slúžia na zjednodušenie identifikácie tlačiarní koncovými používateľmi. Predstavujú výrobcu a model tlačiarne. Hodnota <ph name="PRINTER_URI" /> by mala byť adresa dostupná z klientskeho počítača vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je voliteľná. Ak je zadaná, používa sa na odstraňovanie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> musí zodpovedať niektorému reťazcu, ktorý predstavuje podporovanú tlačiareň <ph name="PRODUCT_NAME" />. Daný reťazec sa použije na identifikáciu a inštaláciu vhodného súboru PPD pre tlačiareň. Ďalšie informácie nájdete na https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> je boolovský príznak označujúci, či sa má tlačiareň nastaviť pomocou štandardu IPP Everywhere. Tento príznak podporuje prehliadač <ph name="PRODUCT_OS_NAME" /> od verzie 76 (vrátane nej).
-
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> by mal obsahovať názov tlačiarne alebo pravidlo <ph name="PRINTER_AUTOCONF" /> by malo byť nastavené na hodnotu true. Tlačiarne s nastavenými vlastnosťami aj bez nich budú ignorované.
-
-      Nastavenie tlačiarne sa dokončí pri prvom použití.  Súbory PPD sa stiahnu až pri použití tlačiarne.  Často používané súbory PPD sa následne uložia do vyrovnávacej pamäte.
-
-      Toto pravidlo nemá vplyv na to, či používatelia môžu konfigurovať tlačiarne v jednotlivých zariadeniach.  Je určené ako doplnok konfigurácie tlačiarní jednotlivými používateľmi.
-
-      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podradený reťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
-      </translation>
 <translation id="3072045631333522102">Šetrič obrazovky, ktorý sa má použiť na prihlasovacej obrazovke v režime určenom pre predaj</translation>
 <translation id="3072847235228302527">Nastaviť Zmluvné podmienky pre miestny účet v zariadení</translation>
 <translation id="3077183141551274418">Povolí alebo zakáže životné cykly kariet</translation>
@@ -1453,6 +1451,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
         Toto pravidlo využíva registrácia pravidla rozsahu používania cloudu v počítači a je ho možné nastaviť pomocou databázy Registry alebo objektu skupinovej politiky (GPO) v systéme Windows, súboru plist v počítači Mac a súboru s pravidlami JSON v systéme Linux.</translation>
 <translation id="3660562134618097814">Preniesť súbory cookie poskytovateľa identity SAML počas prihlásenia</translation>
 <translation id="3701121231485832347">Umožňuje ovládať nastavenia špecifické pre zariadenia <ph name="PRODUCT_OS_NAME" />, ktoré spravuje <ph name="MS_AD_NAME" />.</translation>
+<translation id="3702518095257671450">Vzdialená atestácia</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora poľa s jedným riadkom bola ukončená a v budúcnosti bude odstránené. Začnite používať textové pole s viacerými riadkami nižšie.)</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="3711895659073496551">Režim spánku</translation>
@@ -1828,6 +1827,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="4285674129118156176">Povoliť používať funkciu ARC používateľom, ktorí nie sú partneri</translation>
+<translation id="4289903996435140853">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. V opačnom prípade bude pravidlo neplatné a ignorované.
+
+        Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, keď je načítaná v prvku iframe. Pole pre webové adresy môže preto obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
+
+        Ak toto pravidlo nenastavíte, globálna predvolená hodnota sa použije pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo osobnou konfiguráciou používateľa.
+
+        Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré boli nakonfigurované prostredníctvom pravidla WebUsbBlockedForUrls. Ak sú v konflikte, toto pravidlo bude mať prednosť pred pravidlami WebUsbBlockedForUrls a WebUsbAskForUrls.
+
+        Hodnoty tohto pravidla a pravidla WebUsbAllowDevicesForUrls sa zlúčia.</translation>
 <translation id="4298509794364745131">Špecifikuje zoznam aplikácií, ktoré môžu byť na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /> povolené ako aplikácie na písanie poznámok.
 
       Ak je na uzamknutej obrazovke povolená preferovaná aplikácia na písanie poznámok, na uzamknutej obrazovke bude prvok používateľského rozhrania na spustenie preferovanej aplikácie na písanie poznámok.
@@ -1979,6 +1987,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="4639407427807680016">Názvy hostiteľov pre odosielanie natívnych správ, ktorí budú vynechaní zo zoznamu zakázaných položiek</translation>
 <translation id="4650759511838826572">Zakázať schémy protokolu webovej adresy</translation>
 <translation id="465099050592230505">Webová adresa Internetového obchodu pre podniky (podpora je ukončená)</translation>
+<translation id="4661889655253181651">Nastavenia obsahu umožňujú určiť, akým spôsobom bude spracovávaný obsah určitého typu (napríklad súbory cookie, obrázky alebo JavaScript).</translation>
 <translation id="4665897631924472251">Nastavenia správy rozšírení</translation>
 <translation id="4668325077104657568">Predvolené nastavenie obrázkov</translation>
 <translation id="4670865688564083639">Minimum:</translation>
@@ -2028,6 +2037,14 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach so systémom<ph name="PRODUCT_OS_NAME" /> sa zobrazí v oblasti oznámení upozornenie na reštartovanie v súlade s pravidlom <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie tak, aby oznamovala potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pre prehliadače dodržiavajú rovnaký rozpis.
 
       Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače <ph name="PRODUCT_NAME" />.</translation>
+<translation id="4777805166623621364">
+      Pomocou tohto nastavenia SitePerProcess môžete zakázať používateľom deaktivovať predvolené správanie, ktorým je izolovanie všetkých webov. Na izolovanie ďalších, podrobnejších zdrojov môžete použiť aj pravidlo IsolateOrigins.
+      Ak toto pravidlo povolíte, používateľa nebudú môcť deaktivovať predvolené správanie, v rámci ktorého sa všetky weby spúšťajú vo vlastných procesoch.
+      Ak ho nenakonfigurujete alebo zakážete, používateľ bude môcť deaktivovať izolovanie webov (napr. pomocou vstupu Zakázať izolovanie webov na chrome://flags).  Ak ho zakážete alebo nenakonfigurujete, izolovanie webov sa nevypne.
+      V systéme <ph name="PRODUCT_OS_NAME" /> verzie 76 alebo skoršej odporúčame tiež nastaviť pravidlo pre zariadenie <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na rovnakú hodnotu. Ak sa hodnoty určené týmito dvoma pravidlami nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
+
+      UPOZORNENIE: Toto pravidlo neplatí v Androide. SitePerProcess povoľte v Androide pomocou nastavenia pravidla SitePerProcessAndroid.
+      </translation>
 <translation id="4788252609789586009">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Automatické dopĺňanie, ktorá používateľom umožňuje automaticky dopĺňať údaje kreditných kariet do webových formulárov na základe predtým uložených informácií.
 
       Ak toto nastavenie deaktivujete, Automatické dopĺňanie nebude nikdy navrhovať ani vyplňovať údaje kreditných kariet ani ukladať informácie o ďalších kartách, ktoré môže používateľ odoslať počas prehliadania webu.
@@ -2173,6 +2190,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="5148753489738115745">Umožňuje nastaviť dodatočné parametre, ktoré doplnok <ph name="PRODUCT_FRAME_NAME" /> pri spúšťaní aplikácie <ph name="PRODUCT_NAME" /> použije.
 
           Ak toto pravidlo nie je nastavené, použije sa predvolený príkazový riadok.</translation>
+<translation id="5152787786897382519">Chromium aj Google Chrome majú skupiny pravidiel, ktoré navzájom súvisia pri poskytovaní ovládania určitých funkcií. Tieto zoskupenia sú reprezentované nasledujúcimi skupinami pravidiel. Keďže pravidlá môžu mať viacero zdrojov, použijú sa iba hodnoty pochádzajúce zo zdroja s najvyššou prioritou. Hodnoty pochádzajúce zo zdroja s nižšou prioritou budú v rovnakej skupine ignorované. Poradie priority definuje stránka <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Ako často sa odosielajú sledovacie sieťové pakety (v milisekundách).
 
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia tri minúty. Minimálna
@@ -2231,6 +2249,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultNotificationsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="5213038356678567351">Weby, ktoré nemajú nikdy spustiť prepnutie prehliadačov</translation>
 <translation id="5219844027738217407">V prípade aplikácii pre Android toto pravidlo ovplyvňuje iba mikrofón. Keď je toto pravidlo nastavené na hodnotu True, mikrofón je stlmený pre všetky aplikácie pre Android (bez výnimiek).</translation>
+<translation id="5221394278852982313">Umožňuje nastaviť zoznam webových adries určujúcich weby, ktorým je automaticky udelené povolenie na prístup k zariadeniu USB s príslušnými identifikátormi dodávateľa a výrobku. Pravidlo je platné, keď každá položka v zozname obsahuje zariadenia aj webové adresy. Každá položka v zariadeniach môže obsahovať polia pre identifikátory dodávateľa a výrobku. Každý vynechaný identifikátor sa považuje za zástupný znak s jednou výnimkou, totiž že identifikátor výrobku sa nedá špecifikovať bez toho, aby ste zároveň neuviedli aj identifikátor dodávateľa. V opačnom prípade bude pravidlo neplatné a ignorované.
+
+        Model povolení USB udeľuje pomocou adresy webu odosielajúceho žiadosť (žiadajúcej webovej adresy) a adresy rámcového webu najvyššej úrovne (webová adresa vkladania) povolenie žiadajúcej webovej adrese na prístup k zariadeniu USB. Žiadajúca webová adresa sa môže od webovej adresy vkladania líšiť, keď je načítaná v prvku iframe. Pole pre webové adresy môže preto obsahovať až dva reťazce webovej adresy oddelené čiarkou, ktoré špecifikujú žiadajúcu webovú adresu a webovú adresu vkladania. Ak určíte iba jednu webovú adresu, prístup k príslušným zariadeniam USB bude udelený iba vtedy, keď sa adresa webu odosielajúceho žiadosť zhoduje s touto webovou adresu bez ohľadu na stav vloženia. V poli pre webové adresy musíte zadať platné webové adresy, inak bude pravidlo ignorované.
+
+        Ak toto pravidlo nenastavíte, globálna predvolená hodnota sa použije pre všetky weby buď z pravidla DefaultWebUsbGuardSetting (ak je nastavené), alebo osobnou konfiguráciou používateľa.
+
+        Vzory webových adries v tomto pravidle by nemali byť v konflikte s tými, ktoré boli nakonfigurované prostredníctvom pravidla WebUsbBlockedForUrls. Ak sú v konflikte, toto pravidlo bude mať prednosť pred pravidlami WebUsbBlockedForUrls a WebUsbAskForUrls.
+
+        Hodnoty tohto pravidla a pravidla DeviceWebUsbAllowDevicesForUrls sa zlúčia.</translation>
 <translation id="5228316810085661003">Oddialenie automatického prihlásenia do miestneho účtu zariadenia.
 
       Ak nenastavíte pravidlo |DeviceLocalAccountAutoLoginId|, toto pravidlo bude neúčinné. Inak platí nasledovné:
@@ -2483,6 +2510,10 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Upozorňujeme, že toto nastavenie sa neodporúča, pretože môže dôjsť k obchádzaniu rozšírenia nameConstraints obmedzujúceho názvy hostiteľa, pre ktoré je možné autorizovať daný certifikát.
 
       Ak toto pravidlo nenastavíte alebo nastavíte na možnosť False, certifikáty servera bez rozšírenia subjectAlternativeName, ktoré obsahujú názov DNS alebo adresu IP, nebudú považované za dôveryhodné.</translation>
+<translation id="5578571772998293651">Povoľte spätnú väzbu od používateľov.
+        Ak pravidlo nastavíte na hodnotu false, používatelia nemôžu odosielať spätnú väzbu do Googlu.
+
+        Ak ho nenastavíte alebo nastavíte na hodnotu true, používatelia môžu odoslať spätnú väzbu Googlu v časti ponuka -&gt;Pomocník-&gt;Nahlásiť problém alebo kombináciou klávesov.</translation>
 <translation id="5581292529942108810">Umožňuje konfigurovať pravidlá súvisiace s rozšírením na nahlasovanie údajov o Chrome.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2694,6 +2725,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 <translation id="5983708779415553259">Predvolené správanie pre webové stránky, ktoré sa nenachádzajú v žiadnom obsahovom balíku</translation>
 <translation id="5997543603646547632">Používať v predvolenom nastavení 24-hodinový formát hodín</translation>
 <translation id="5997846976342452720">Určiť, či má byť nástroj na vyhľadávanie doplnkov zakázaný (ukončená podpora)</translation>
+<translation id="5998198091336830580">Toto pravidlo je súčasťou nasledujúcej základnej skupiny (uplatňujú sa iba pravidlá zo zdroja s najvyššou prioritou prítomné v skupine):</translation>
 <translation id="6017568866726630990">Zobrazí systémové dialógové okno tlače namiesto ukážky tlače.
 
       Ak je toto nastavenie povolené a používateľ chce stránku vytlačiť, prehliadač <ph name="PRODUCT_NAME" /> otvorí systémové dialógové okno tlače namiesto vstavanej ukážky tlače.
@@ -2959,6 +2991,21 @@ Ak značku recommended nastavíte na hodnotu true, používatelia môžu zmeniť
 
       Ak ho nastavíte na možnosť Zakázať používateľom spravovať certifikáty, používatelia nebudú môcť spravovať certifikáty, ale budú si ich môcť zobraziť.</translation>
 <translation id="6573305661369899995">Nastavenie externého zdroja na obmedzenie webových adries</translation>
+<translation id="6583851521569686409">Umožňuje nakonfigurovať zoznam tlačiarní.
+
+      Toto pravidlo umožňuje správcom poskytnúť používateľom konfigurácie
+      tlačiarní.
+
+      <ph name="PRINTER_DISPLAY_NAME" /> a <ph name="PRINTER_DESCRIPTION" /> sú prispôsobiteľné textové reťazce, pomocou ktorých môžete zjednodušiť výber tlačiarne. Hodnoty <ph name="PRINTER_MANUFACTURER" /> a <ph name="PRINTER_MODEL" /> slúžia na zjednodušenie identifikácie tlačiarní koncovými používateľmi. Predstavujú výrobcu a model tlačiarne. Hodnota <ph name="PRINTER_URI" /> by mala byť adresa dostupná v klientskom počítači vrátane údajov <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> a <ph name="URI_QUEUE" />. Hodnota <ph name="PRINTER_UUID" /> je nepovinná. Ak je zadaná, používa sa na odstraňovanie duplicitných tlačiarní <ph name="ZEROCONF_DISCOVERY" />.
+
+      Hodnota <ph name="PRINTER_EFFECTIVE_MODEL" /> by mala obsahovať názov tlačiarne alebo pravidlo <ph name="PRINTER_AUTOCONF" /> by malo byť nastavené na hodnotu true. Tlačiarne s nastavenými vlastnosťami aj bez nich budú ignorované.
+
+      Nastavenie tlačiarne sa dokončí pri prvom použití.  Súbory PPD sa stiahnu až pri použití tlačiarne.  Často používané súbory PPD sa následne uložia do vyrovnávacej pamäte.
+
+      Toto pravidlo nemá vplyv na to, či používatelia môžu konfigurovať tlačiarne v jednotlivých zariadeniach.  Je určené ako doplnok konfigurácie tlačiarní jednotlivými používateľmi.
+
+      V prípade spravovaných zariadení Active Directory toto pravidlo podporuje rozšírenie premennej <ph name="MACHINE_NAME_VARIABLE" /> na názov zariadenia Active Directory alebo jeho podreťazec. Ak je napríklad názov zariadenia <ph name="MACHINE_NAME_EXAMPLE" />, potom bude premenná <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> nahradená štyrmi znakmi nasledujúcimi po šiestom mieste, t. j. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Pozície sa počítajú od nuly.
+      </translation>
 <translation id="6598235178374410284">Obrázok avatara používateľa</translation>
 <translation id="6603004149426829878">Počas rozpoznávania časového pásma vždy odosielať všetky dostupné signály polohy na server</translation>
 <translation id="6628120204569232711">Nahlasovať stav úložiska</translation>
@@ -3159,7 +3206,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 
       Ak nie je nastavené, môže sa používateľovi zobraziť výzva, či chce uložené heslá importovať, alebo môže import prebehnúť automaticky.</translation>
 <translation id="7003746348783715221">Predvoľby prehliadača <ph name="PRODUCT_NAME" /></translation>
-<translation id="7006788746334555276">Nastavenia obsahu</translation>
 <translation id="7007671350884342624">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie údajov používateľa.
 
       Ak toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ uviedol príznak „--user-data-dir“. Ak chcete zabrániť strate dát alebo iným neočakávaných chybám, nemali by ste v rámci tohto pravidla nastaviť hlavný adresár zväzku alebo adresár používaný na iné účely, pretože <ph name="PRODUCT_NAME" /> spravuje jeho obsah.
@@ -3244,12 +3290,6 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
 <translation id="7123160381479171745">Definuje zoznam používateľov, ktorí sa do zariadenia môžu prihlásiť. Záznamy sú v tvare <ph name="USER_WHITELIST_ENTRY_FORMAT" />, napríklad <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Ak chcete povoliť všetkých používateľov v doméne, použite položky v tvare <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ak toto pravidlo nenakonfigurujete, budú sa do zariadenia môcť prihlasovať všetci používatelia. Na vytváranie nových používateľov je však aj v tomto prípade potrebná správna konfigurácia pravidla <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> zaisťuje bezpečnú aktualizáciu a inštaláciu rozšírení. Obsah niektorých rozšírení hostený mimo Internetového obchodu Chrome však môže byť chránený iba nezabezpečenými prihlasovacími alebo hašovacími algoritmami, ako je napríklad SHA1. Keď toto pravidlo zakážete, Chrome nepovolí novú inštaláciu ani aktualizácie týchto rozšírení (kým vývojári do príslušného rozšírenia nepridajú silnejšie algoritmy). Keď toto pravidlo povolíte, inštalácia aj aktualizácie týchto rozšírení budú povolené.
-
-          Ak ho nenastavíte, inštalácie aj aktualizácie budú predvolene povolené.
-          Ak ho nenastavíte v prehliadači <ph name="PRODUCT_NAME" /> od verzie 75, inštalácie aj aktualizácie budú predvolene zakázané.
-
-          V prehliadači <ph name="PRODUCT_NAME" /> od verzie 77 bude toto pravidlo ignorované a považované za zakázané.</translation>
 <translation id="7126716959063786004">Povoliť ukončovanie procesov v Správcovi úloh</translation>
 <translation id="7127892035367404455">Vrátenie na cieľovú verziu</translation>
 <translation id="713121532817834879">Toto pravidlo je webová adresa, ktorá smeruje na súbor XML v rovnakom formáte ako pravidlo <ph name="IEEM_SITELIST_POLICY" /> prehliadača Internet Explorer. Načíta pravidlá zo súboru XML bez ich zdieľania s prehliadačom Internet Explorer.
@@ -3421,6 +3461,9 @@ Ak toto pravidlo nastavíte na hodnotu True, vstavaný klient DNS sa použije (p
       Keď ho nastavíte na hodnotu false, informácie použiteľné na identifikáciu zariadení sa nezhromažďujú.
 
       Toto pravidlo je účinné iba vtedy, keď povolíte aj rozšírenie <ph name="CHROME_REPORTING_EXTENSION_NAME" /> a zariadenie zaregistrujete prostredníctvom tokenu <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Toto pravidlo platí pre prihlasovaciu obrazovku. Prečítajte si aj pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré upravuje reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. Ak sa hodnoty nezhodujú, môže dôjsť pri prechode do relácie používateľa k oneskoreniu spôsobenému uplatňovaním hodnoty určenej pravidlom pre používateľov.
+      </translation>
 <translation id="737655323154569539">Obmedzí veľkosť tlačenej strany. Ak pravidlo nenastavíte alebo obsahuje prázdnu hodnotu, znamená to, že sa nepoužijú žiadne obmedzenia.</translation>
 <translation id="7389872682701720082">Ak toto nastavenie povolíte, doplnky, ktoré nie sú zastarané, sa vždy spustia.
 
@@ -3758,6 +3801,7 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
 
           Pozrite si tiež pravidlá „CookiesAllowedForUrls“ a „CookiesSessionOnlyForUrls“. Upozorňujeme, že medzi týmito troma pravidlami nesmú byť žiadne konfliktné vzory webových adries. Nie je určené, ktoré pravidlo má prednosť.</translation>
 <translation id="8099880303030573137">Oneskorenie režimu nečinnosti pri napájaní z batérie</translation>
+<translation id="8101381354936029836">Základná skupina pravidla:</translation>
 <translation id="8102913158860568230">Predvolené nastavenie mediálneho streamu</translation>
 <translation id="8104186956182795918">Umožňuje vám nastaviť, či môžu weby zobrazovať obrázky. Zobrazovanie obrázkov môže byť buď pre všetky weby povolené, alebo zakázané.
 
@@ -3833,6 +3877,7 @@ Ak toto pravidlo ponecháte nenastavené, bude táto možnosť povolená, ale po
       Ak toto pravidlo ponecháte nenastavené, nebudú k dispozícii žiadne výnimky pre zoznam zakázaných adries uvedený v rámci pravidla URLBlacklist.</translation>
 <translation id="8176035528522326671">Povolí používateľovi v podnikovej sieti stať sa iba hlavným používateľom s viacerými profilmi (predvolené správanie pre používateľov spravovaných podnikom)</translation>
 <translation id="8183108371184777472">Potláča otváranie okna prehliadača</translation>
+<translation id="8186911565834244165">Povoliť spätnú väzbu od používateľov</translation>
 <translation id="8214600119442850823">Umožňuje konfiguráciu správcu hesiel.</translation>
 <translation id="8217516105848565518">Podpora tohto pravidla bola ukončená. Použite namiesto neho pravidlo RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Povoliť šifrovacie súpravy RC4 v protokole TLS</translation>
@@ -3960,6 +4005,15 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Zakázať ukladanie histórie prehliadača</translation>
 <translation id="8499172469244085141">Predvolené nastavenia (používatelia ich môžu nahradiť)</translation>
+<translation id="849962487677588458">Toto pravidlo je zastarané a navrhnuté na odstránenie v Chrome 78 bez náhrady.
+
+      Toto pravidlo umožňuje používať protokol HTTP/0.9 pre iné porty než 80 pre HTTP a 443 pre HTTPS.
+
+      Toto pravidlo je predvolene zakázané. Ak ho povolíte, používatelia budú ohrození bezpečnostným problémom https://crbug.com/600352.
+
+      Cieľom tohto pravidla je poskytnúť podnikom možnosť migrovať existujúce servery z protokolu HTTP/0.9. V budúcnosti bude odstránené.
+
+      Ak toto pravidlo nenastavíte, protokol HTTP/0.9 bude zakázaný pre nepredvolené porty.</translation>
 <translation id="8507835864888987300">Umožňuje nastaviť cieľovú verziu automatických aktualizácií.
 
       Umožňuje určiť predponu cieľovej verzie, na ktorú by sa mal systém <ph name="PRODUCT_OS_NAME" /> aktualizovať. Ak zariadenie využíva verziu staršiu ako určená predpona, aktualizuje sa na najnovšiu verziu s danou predponou. Ak zariadenie už využíva novšiu verziu, dôsledky závisia od hodnoty parametra <ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />. Formát predpony funguje na základe komponentov tak, ako je uvedené v nasledujúcom príklade:
@@ -4089,12 +4143,6 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
 
           Ak toto nastavenie zakážete alebo ho ponecháte nenastavené, kanonický názov servera sa určí prostredníctvom vyhľadávania záznamov CNAME.</translation>
 <translation id="8764477907716150749">Toto pravidlo sa vzťahuje len na interné používanie služby <ph name="PRODUCT_NAME" />.</translation>
-<translation id="8765776988041674792">Nakonfiguruje webovú adresu na zmenu hesla (iba schémy HTTP a HTTPS). Služba ochrany hesiel odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
-      Na to, aby <ph name="PRODUCT_NAME" /> správne zaznamenal digitálny odtlačok nového hesla na tejto stránke na zmenu hesla, musí táto stránka dodržiavať pokyny uvedené na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ak toto nastavenie povolíte, služba ochrany hesiel odkáže používateľov na túto webovú adresu, aby si tam po zobrazení upozornenia v prehliadači zmenili heslo.
-      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesiel odkáže používateľov na https://myaccounts.google.com, aby si tam zmenili heslo.
-      Toto pravidlo je k dispozícii iba v inštanciách systému Windows, ktoré sú zapojené do domény <ph name="MS_AD_NAME" />, alebo v inštanciách systému Windows 10 Pro alebo Enterprise, ktoré sú zaregistrované do správy zariadení.</translation>
 <translation id="8798099450830957504">Predvolené</translation>
 <translation id="8800453707696044281">Nastaviť vlastnú hodnotu zastavenia nabíjania batérie v percentách</translation>
 <translation id="8801680448782904838">Upozorňovať používateľa, že sa odporúča alebo vyžaduje opätovné reštartovanie prehliadača</translation>
@@ -4139,6 +4187,7 @@ Platí to pre všetky skripty PAC bez ohľadu na ich pôvod (vrátane tých, kto
       Ak toto nastavenie povolíte alebo zakážete, používatelia ho nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť ani prepísať.
 
       Ak je toto nastavenie ponechané nenastavené, používateľ sa môže rozhodnúť, či chce túto funkciu použiť.</translation>
+<translation id="8871974300055371298">Nastavenia obsahu</translation>
 <translation id="8876188741456358123">Prepíše predvolený režim obojstrannej tlače. Ak daný režim nie je k dispozícii, toto pravidlo je ignorované.</translation>
 <translation id="8882006618241293596">Blokovať doplnok <ph name="FLASH_PLUGIN_NAME" /> na týchto weboch</translation>
 <translation id="8906768759089290519">Povoliť režim hosťa</translation>
@@ -4234,6 +4283,15 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Ak nastavíte hodnotu pravidla na token, ktorý mapuje na zostavu s rýchlou opravou, zariadenie bude aktualizované na zodpovedajúcu zostavu s rýchlou opravou (ak danú aktualizáciu neblokuje iné pravidlo).
 
       Ak toto pravidlo nenastavíte alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa na túto zostavu neaktualizuje. Ak zariadenie už používa zostavu s rýchlou opravou a pravidlo už nie je nastavené alebo jeho hodnota nemapuje na zostavu s rýchlou opravou, zariadenie sa aktualizuje na bežnú zostavu (ak danú aktualizáciu neblokuje iné pravidlo).</translation>
+<translation id="9054012305936267950">Toto pravidlo ovláda prihlasovacie správanie prehliadača. Umožňuje určiť, či sa používateľ môže prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho účtu a používať služby súvisiace s účtom, ako je napríklad synchronizácia Chromu.
+
+      Ak ho nastavíte na možnosť Zakázať prihlásenie do prehliadača, používateľ sa nebude môcť prihlásiť do prehliadača ani používať služby využívajúce účet. V tomto prípade nie je možné použiť funkcie na úrovni prehliadača, ako napríklad synchronizáciu Chromu, pričom nebudú k dispozícii. Ak bol používateľ prihlásený a pravidlo nastavíte na možnosť Zakázané, bude pri ďalšom spustení Chromu odhlásený, ale údaje jeho miestneho profilu (napríklad záložky, heslá atď.) sa zachovajú. Používateľ sa bude môcť naďalej prihlasovať do webových služieb Googlu, ako je napríklad Gmail, a používať ich.
+
+      Ak ho nastavíte na možnosť Povoliť prihlásenie do prehliadača, používateľ sa môže prihlásiť do prehliadača a automaticky bude prihlasovaný do prehliadača pri prihlásení do webových služieb Googlu, ako je napríklad Gmail. To, že je používateľ prihlásený do prehliadača, znamená, že prehliadač bude uchovávať informácie o jeho účte. Neznamená to však, že synchronizácia Chromu bude predvolene zapnutá. Používateľ si musí túto funkciu samostatne aktivovať. Povolením tohto pravidla zabránite používateľovi vypnúť nastavenie umožňujúce prihlásenie do účtu. Ak chcete ovládať dostupnosť synchronizácie Chromu, použite pravidlo SyncDisabled.
+
+      Ak ho nastavíte na možnosť Presadzovať prihlásenie do prehliadača, používateľovi sa zobrazí dialógové okno na výber účtu, v ktorom musí vybrať účet a prihlásiť sa doň, aby mohol prehliadač používať. Tým sa zaistí, že v prípade spravovaných účtov sa budú uplatňovať a presadzovať pravidlá priradené k danému účtu. Predvolene sa tým v danom účte zapne aj synchronizácia Chromu. Výnimku predstavujú prípady, keď je zakázaná správcom domény alebo pravidlom SyncDisabled. Predvolená hodnota pravidla BrowserGuestModeEnabled bude nastavená na hodnotu False. Upozorňujeme, že po povolení tohto pravidla sa existujúce nepriradené profily uzamknú a budú neprístupné. Ďalšie informácie nájdete v článku centra pomoci na https://support.google.com/chrome/a/answer/7572556. Táto možnosť nie je podporovaná v systéme Linux a v prípade jej použitia sa ako záložná hodnota použije Povoliť prihlásenie do prehliadača.
+
+      Ak toto pravidlo nenastavíte, používateľ sa môže rozhodnúť, či chce možnosť prihlásenia do prehliadača povoliť, a následne ju použiť, keď to považuje za vhodné.</translation>
 <translation id="9072600218500597787">Nakonfiguruje požadované názvy domén hostiteľa, ktoré budú použité pre hostiteľov vzdialeného prístupu, a zabráni používateľom ich zmeniť.
 
           Ak je toto nastavenie povolené, hostitelia sa dajú zdieľať iba s účtami, zaregistrovanými v niektorej zo zadaných domén.
@@ -4254,6 +4312,12 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
           Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
+<translation id="91196902572559194">Toto pravidlo povoľuje Asistentovi Google počúvať frázy aktivácie hlasom.
+
+      Ak ho povolíte, Asistent Google bude počúvať frázy aktivácie hlasom.
+      Ak ho zakážete, Asistent Google nebude počúvať frázy aktivácie hlasom.
+      Ak toto pravidlo nenastavíte, používatelia si môžu vybrať, či povolia Asistentovi počúvať frázy aktivácie hlasom.
+      </translation>
 <translation id="9123211093995421438">Umožňuje stanoviť minimálny počet míľnikov, od ktorého sa má kedykoľvek spustiť vrátenie systému <ph name="PRODUCT_OS_NAME" /> na stabilnú verziu.
 
       Pre spotrebiteľa je predvolená hodnota 0, pre podnikové registrované zariadenia je to 4 (približne polrok).

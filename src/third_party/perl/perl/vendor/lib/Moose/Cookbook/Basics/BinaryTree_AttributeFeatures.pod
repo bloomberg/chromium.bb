@@ -1,10 +1,11 @@
-package Moose::Cookbook::Basics::BinaryTree_AttributeFeatures;
-
+# PODNAME: Moose::Cookbook::Basics::BinaryTree_AttributeFeatures
 # ABSTRACT: Demonstrates various attribute features including lazy, predicates, weak refs, and more
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Cookbook::Basics::BinaryTree_AttributeFeatures - Demonstrates various att
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 SYNOPSIS
 
@@ -103,7 +104,7 @@ attribute), we want to make sure that we weaken the reference to avoid
 memory leaks. If C<weak_ref> is true, it alters the accessor function
 so that the reference is weakened when it is set.
 
-Finally, we have the the C<left> and C<right> attributes. They are
+Finally, we have the C<left> and C<right> attributes. They are
 essentially identical except for their names, so we'll just look at
 C<left>:
 
@@ -117,8 +118,8 @@ C<left>:
   );
 
 There are three new options here, C<lazy>, C<default>, and
-C<trigger>. The C<lazy> and C<default> options options are linked.  In
-fact, you cannot have a C<lazy> attribute unless it has a C<default>
+C<trigger>. The C<lazy> and C<default> options are linked.  In fact,
+you cannot have a C<lazy> attribute unless it has a C<default>
 (or a C<builder>, but we'll cover that later). If you try to make an
 attribute lazy without a default, class creation will fail with an
 exception. (2)
@@ -191,7 +192,7 @@ ensure that is has the correct value for its C<parent> attribute.
 
 As with all the other recipes, B<BinaryTree> can be used just like any
 other Perl 5 class. A more detailed example of its usage can be found
-in F<t/recipes/moose_cookbook_basics_recipe3.t>.
+in F<t/recipes/basics_binarytree_attributefeatures.t>.
 
 =head1 CONCLUSION
 
@@ -340,20 +341,57 @@ isnt(
 
 =end testing
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-
-

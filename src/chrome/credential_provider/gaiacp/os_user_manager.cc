@@ -26,6 +26,7 @@
 #include "base/macros.h"
 #include "base/scoped_native_library.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -69,6 +70,11 @@ OSUserManager* OSUserManager::Get() {
 // static
 void OSUserManager::SetInstanceForTesting(OSUserManager* instance) {
   *GetInstanceStorage() = instance;
+}
+
+// static
+bool OSUserManager::IsDeviceDomainJoined() {
+  return base::win::IsEnrolledToDomain();
 }
 
 // static
@@ -355,12 +361,13 @@ HRESULT OSUserManager::ChangeUserPassword(const wchar_t* domain,
     flags_changed = true;
   }
 
-  base::string16 password_domain = base::StringPrintf(L"\\\\%ls", domain);
+  base::string16 password_domain = base::StringPrintf(L"%ls", domain);
 
   NET_API_STATUS changepassword_nsts = ::NetUserChangePassword(
       password_domain.c_str(), username, old_password, new_password);
   if (changepassword_nsts != NERR_Success) {
     LOGFN(ERROR) << "Unable to change password for '" << username
+                 << "' domain '" << password_domain
                  << "' nsts=" << changepassword_nsts;
   }
 
@@ -549,6 +556,22 @@ HRESULT OSUserManager::FindUserBySID(const wchar_t* sid,
 
   ::LocalFree(psid);
   return hr;
+}
+
+bool OSUserManager::IsUserDomainJoined(const base::string16& sid) {
+  wchar_t username[kWindowsUsernameBufferLength];
+  wchar_t domain[kWindowsDomainBufferLength];
+
+  HRESULT hr = FindUserBySID(sid.c_str(), username, base::size(username),
+                             domain, base::size(domain));
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "IsUserDomainJoined sid=" << sid << " hr=" << putHR(hr);
+    return hr;
+  }
+
+  return !base::EqualsCaseInsensitiveASCII(
+      domain, OSUserManager::GetLocalDomain().c_str());
 }
 
 HRESULT OSUserManager::RemoveUser(const wchar_t* username,

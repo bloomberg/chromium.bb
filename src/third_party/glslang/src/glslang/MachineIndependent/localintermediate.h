@@ -240,7 +240,7 @@ public:
         invocations(TQualifier::layoutNotSet), vertices(TQualifier::layoutNotSet),
         inputPrimitive(ElgNone), outputPrimitive(ElgNone),
         pixelCenterInteger(false), originUpperLeft(false),
-        vertexSpacing(EvsNone), vertexOrder(EvoNone), pointMode(false), earlyFragmentTests(false),
+        vertexSpacing(EvsNone), vertexOrder(EvoNone), interlockOrdering(EioNone), pointMode(false), earlyFragmentTests(false),
         postDepthCoverage(false), depthLayout(EldNone), depthReplacing(false),
         hlslFunctionality1(false),
         blendEquations(0), xfbMode(false), multiStream(false),
@@ -266,7 +266,8 @@ public:
         needToLegalize(false),
         binaryDoubleOutput(false),
         usePhysicalStorageBuffer(false),
-        uniformLocationBase(0)
+        uniformLocationBase(0),
+        nanMinMaxClamp(false)
     {
         localSize[0] = 1;
         localSize[1] = 1;
@@ -608,6 +609,15 @@ public:
     void setPointMode() { pointMode = true; }
     bool getPointMode() const { return pointMode; }
 
+    bool setInterlockOrdering(TInterlockOrdering o)
+    {
+        if (interlockOrdering != EioNone)
+            return interlockOrdering == o;
+        interlockOrdering = o;
+        return true;
+    }
+    TInterlockOrdering getInterlockOrdering() const { return interlockOrdering; }
+
     bool setLocalSize(int dim, int size)
     {
         if (localSize[dim] > 1)
@@ -758,6 +768,9 @@ public:
     void setUniformLocationBase(int base) { uniformLocationBase = base; }
     int getUniformLocationBase() const { return uniformLocationBase; }
 
+    void setNanMinMaxClamp(bool setting) { nanMinMaxClamp = setting; }
+    bool getNanMinMaxClamp() const { return nanMinMaxClamp; }
+
     void setNeedsLegalization() { needToLegalize = true; }
     bool needsLegalization() const { return needToLegalize; }
 
@@ -766,6 +779,27 @@ public:
 
     const char* const implicitThisName;
     const char* const implicitCounterName;
+
+    // Certain explicit conversions are allowed conditionally
+    bool getArithemeticInt8Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int8);
+    }
+    bool getArithemeticInt16Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+#ifdef AMD_EXTENSIONS
+               extensionRequested(E_GL_AMD_gpu_shader_int16) ||
+#endif
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_int16);
+    }
+
+    bool getArithemeticFloat16Enabled() const {
+        return extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types) ||
+#ifdef AMD_EXTENSIONS
+               extensionRequested(E_GL_AMD_gpu_shader_half_float) ||
+#endif
+               extensionRequested(E_GL_EXT_shader_explicit_arithmetic_types_float16);
+    }
 
 protected:
     TIntermSymbol* addSymbol(int Id, const TString&, const TType&, const TConstUnionArray&, TIntermTyped* subtree, const TSourceLoc&);
@@ -826,6 +860,7 @@ protected:
     bool originUpperLeft;
     TVertexSpacing vertexSpacing;
     TVertexOrder vertexOrder;
+    TInterlockOrdering interlockOrdering;
     bool pointMode;
     int localSize[3];
     int localSizeSpecId[3];
@@ -890,6 +925,7 @@ protected:
 
     std::unordered_map<std::string, int> uniformLocationOverrides;
     int uniformLocationBase;
+    bool nanMinMaxClamp;            // true if desiring min/max/clamp to favor non-NaN over NaN
 
 private:
     void operator=(TIntermediate&); // prevent assignments

@@ -30,11 +30,11 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -54,11 +54,10 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
                ? FlatTreeTraversal::NextSkippingChildren(*node, dialog)
                : FlatTreeTraversal::Next(*node, dialog);
 
-    if (!node->IsElementNode())
+    auto* element = DynamicTo<Element>(node);
+    if (!element)
       continue;
-    Element* element = ToElement(node);
-    if (element->IsFormControlElement()) {
-      HTMLFormControlElement* control = ToHTMLFormControlElement(node);
+    if (auto* control = DynamicTo<HTMLFormControlElement>(node)) {
       if (control->IsAutofocusable() && control->IsFocusable()) {
         control->focus();
         return;

@@ -119,9 +119,7 @@ class MEDIA_EXPORT BitstreamBuffer {
   size_t size_;
   off_t offset_;
 
-  // This is only set when necessary. For example, AndroidVideoDecodeAccelerator
-  // needs the timestamp because the underlying decoder may require it to
-  // determine the output order.
+  // Note: Not set by all clients.
   base::TimeDelta presentation_timestamp_;
 
   // Note that BitstreamBuffer uses the settings in Audio/VideoDecoderConfig

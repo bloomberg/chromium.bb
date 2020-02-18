@@ -96,13 +96,11 @@ jumbo_source_set("fxfa") {
     "fxfa_basic.h",
   ]
   deps = [
-    "../../core/fpdfapi",
     "../../core/fpdfapi/font",
     "../../core/fpdfapi/parser",
     "../../core/fpdfdoc",
     "../../core/fxcodec",
     "../../core/fxcrt",
-    "../../core/fxcrt:seekablemultistream",
     "../../core/fxcrt/css",
     "../../core/fxge",
     "../../fxbarcode",
@@ -117,7 +115,6 @@ jumbo_source_set("fxfa") {
   ]
   allow_circular_includes_from = [
     "../../fxjs",
-    "../fwl",
     "layout",
     "parser",
   ]

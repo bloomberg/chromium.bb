@@ -64,8 +64,7 @@ LayerTreeView::LayerTreeView(
       compositor_thread_(std::move(compositor_thread)),
       task_graph_runner_(task_graph_runner),
       web_main_thread_scheduler_(scheduler),
-      animation_host_(cc::AnimationHost::CreateMainInstance()),
-      weak_factory_(this) {}
+      animation_host_(cc::AnimationHost::CreateMainInstance()) {}
 
 LayerTreeView::~LayerTreeView() = default;
 
@@ -189,29 +188,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::ForceRecalculateRasterScales() {
-  layer_tree_host_->SetNeedsRecalculateRasterScales();
-}
-
-void LayerTreeView::SetEventListenerProperties(
-    cc::EventListenerClass event_class,
-    cc::EventListenerProperties properties) {
-  layer_tree_host_->SetEventListenerProperties(event_class, properties);
-}
-
-cc::EventListenerProperties LayerTreeView::EventListenerProperties(
-    cc::EventListenerClass event_class) const {
-  return layer_tree_host_->event_listener_properties(event_class);
-}
-
-void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
-  layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
-}
-
-bool LayerTreeView::HaveScrollEventHandlers() const {
-  return layer_tree_host_->have_scroll_event_handlers();
-}
-
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   if (!layer_tree_frame_sink) {
@@ -219,20 +195,6 @@ void LayerTreeView::SetLayerTreeFrameSink(
     return;
   }
   layer_tree_host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
-}
-
-std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
-LayerTreeView::DeferMainFrameUpdate() {
-  return layer_tree_host_->DeferMainFrameUpdate();
-}
-
-void LayerTreeView::StartDeferringCommits(base::TimeDelta timeout) {
-  layer_tree_host_->StartDeferringCommits(timeout);
-}
-
-void LayerTreeView::StopDeferringCommits(
-    cc::PaintHoldingCommitTrigger trigger) {
-  layer_tree_host_->StopDeferringCommits(trigger);
 }
 
 int LayerTreeView::LayerTreeId() const {
@@ -301,11 +263,8 @@ void LayerTreeView::ApplyViewportChanges(
   delegate_->ApplyViewportChanges(args);
 }
 
-void LayerTreeView::RecordWheelAndTouchScrollingCount(
-    bool has_scrolled_by_wheel,
-    bool has_scrolled_by_touch) {
-  delegate_->RecordWheelAndTouchScrollingCount(has_scrolled_by_wheel,
-                                               has_scrolled_by_touch);
+void LayerTreeView::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
+  delegate_->RecordManipulationTypeCounts(info);
 }
 
 void LayerTreeView::SendOverscrollEventFromImplSide(
@@ -425,10 +384,6 @@ void LayerTreeView::SetExternalPageScaleFactor(
 
 void LayerTreeView::ClearCachesOnNextCommit() {
   layer_tree_host_->ClearCachesOnNextCommit();
-}
-
-void LayerTreeView::SetContentSourceId(uint32_t id) {
-  layer_tree_host_->SetContentSourceId(id);
 }
 
 void LayerTreeView::RequestBeginMainFrameNotExpected(bool new_state) {

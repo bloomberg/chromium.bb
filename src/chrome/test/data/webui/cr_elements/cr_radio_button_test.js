@@ -67,7 +67,7 @@ suite('cr-radio-button', function() {
     radioButton.fire('focus');
     assertTrue(!!radioButton.$$('paper-ripple'));
     assertTrue(radioButton.$$('paper-ripple').holdDown);
-    radioButton.fire('pointerup');
+    radioButton.fire('up');
     assertFalse(radioButton.$$('paper-ripple').holdDown);
   });
 });

@@ -35,26 +35,35 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
-#include "third_party/blink/public/web/web_application_cache_host_client.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class ApplicationCache;
 class DocumentLoader;
 class ResourceRequest;
-class ResourceResponse;
-class WebApplicationCacheHost;
 
-class CORE_EXPORT ApplicationCacheHost final
+class CORE_EXPORT ApplicationCacheHost
     : public GarbageCollectedFinalized<ApplicationCacheHost>,
-      public WebApplicationCacheHostClient {
+      public mojom::blink::AppCacheFrontend {
  public:
-  explicit ApplicationCacheHost(DocumentLoader*);
+  static ApplicationCacheHost* Create(DocumentLoader* document_loader);
+  // |interface_broker| can be null for workers and |task_runner| is null for
+  // kAppCacheForNone.
+  explicit ApplicationCacheHost(
+      DocumentLoader* document_loader,
+      mojom::blink::DocumentInterfaceBroker* interface_broker,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplicationCacheHost() override;
   void DetachFromDocumentLoader();
 
@@ -72,63 +81,64 @@ class CORE_EXPORT ApplicationCacheHost final
           update_time_(update_time),
           response_sizes_(response_sizes),
           padding_sizes_(padding_sizes) {}
+    CacheInfo() = default;
     KURL manifest_;
-    double creation_time_;
-    double update_time_;
-    int64_t response_sizes_;
-    int64_t padding_sizes_;
+    double creation_time_ = 0;
+    double update_time_ = 0;
+    int64_t response_sizes_ = 0;
+    int64_t padding_sizes_ = 0;
   };
 
-  struct ResourceInfo {
-    DISALLOW_NEW();
-    ResourceInfo(const KURL& resource,
-                 bool is_master,
-                 bool is_manifest,
-                 bool is_fallback,
-                 bool is_foreign,
-                 bool is_explicit,
-                 int64_t response_size,
-                 int64_t padding_size)
-        : resource_(resource),
-          is_master_(is_master),
-          is_manifest_(is_manifest),
-          is_fallback_(is_fallback),
-          is_foreign_(is_foreign),
-          is_explicit_(is_explicit),
-          response_size_(response_size),
-          padding_size_(padding_size) {}
-    KURL resource_;
-    bool is_master_;
-    bool is_manifest_;
-    bool is_fallback_;
-    bool is_foreign_;
-    bool is_explicit_;
-    int64_t response_size_;
-    int64_t padding_size_;
-  };
-
-  typedef Vector<ResourceInfo> ResourceInfoList;
-
-  void SelectCacheWithoutManifest();
-  void SelectCacheWithManifest(const KURL& manifest_url);
-
-  // Annotate request for ApplicationCache. This internally calls
-  // willStartLoadingMainResource if it's for frame resource or
-  // willStartLoadingResource for subresource requests.
+  // Annotate request for ApplicationCache.
   void WillStartLoading(ResourceRequest&);
-  void WillStartLoadingMainResource(DocumentLoader*,
-                                    const KURL&,
-                                    const String& method);
 
-  void DidReceiveResponseForMainResource(const ResourceResponse&);
-  void MainResourceDataReceived(const char* data, size_t length);
-
-  mojom::AppCacheStatus GetStatus() const;
-  bool Update();
-  bool SwapCache();
+  mojom::blink::AppCacheStatus GetStatus() const;
+  virtual bool Update() { return false; }
+  virtual bool SwapCache() { return false; }
   void Abort();
 
   void SetApplicationCache(ApplicationCache*);
+
+  void
+  StopDeferringEvents();  // Also raises the events that have been queued up.
+
+  void FillResourceList(Vector<mojom::blink::AppCacheResourceInfo>*);
+  CacheInfo ApplicationCacheInfo();
+  const base::UnguessableToken& GetHostID() const;
+  void SelectCacheForSharedWorker(int64_t app_cache_id,
+                                  base::OnceClosure completion_callback);
+
+  // mojom::blink::AppCacheFrontend
+  void CacheSelected(mojom::blink::AppCacheInfoPtr info) override;
+  void EventRaised(mojom::blink::AppCacheEventID event_id) override;
+  void ProgressEventRaised(const KURL& url,
+                           int32_t num_total,
+                           int32_t num_complete) override;
+  void ErrorEventRaised(mojom::blink::AppCacheErrorDetailsPtr details) override;
+  void LogMessage(mojom::blink::ConsoleMessageLevel log_level,
+                  const String& message) override {}
+  void SetSubresourceFactory(
+      network::mojom::blink::URLLoaderFactoryPtr url_loader_factory) override {}
+
+  // TODO(nhiroki): Move these virtual functions into
+  // ApplicationCacheHostForFrame after making DocumentLoader own only
+  // ApplicationCacheHostForFrame (not own ApplicationCacheHostForSharedWorker).
+  virtual void WillStartLoadingMainResource(DocumentLoader* loader,
+                                            const KURL& url,
+                                            const String& method);
+  virtual void SelectCacheWithoutManifest() {}
+  virtual void SelectCacheWithManifest(const KURL& manifest_url) {}
+  virtual void DidReceiveResponseForMainResource(const ResourceResponse&) {}
+  virtual void Trace(blink::Visitor*);
+
+ protected:
+  DocumentLoader* GetDocumentLoader() const { return document_loader_; }
+
+  mojo::Remote<mojom::blink::AppCacheHost> backend_host_;
+  mojom::blink::AppCacheStatus status_ =
+      mojom::blink::AppCacheStatus::APPCACHE_STATUS_UNCACHED;
+
+ private:
   void NotifyApplicationCache(mojom::AppCacheEventID,
                               int progress_total,
                               int progress_done,
@@ -137,29 +147,16 @@ class CORE_EXPORT ApplicationCacheHost final
                               int error_status,
                               const String& error_message);
 
-  void
-  StopDeferringEvents();  // Also raises the events that have been queued up.
-
-  void FillResourceList(ResourceInfoList*);
-  CacheInfo ApplicationCacheInfo();
-  const base::UnguessableToken& GetHostID() const;
-
-  void Trace(blink::Visitor*);
-
- private:
-  // WebApplicationCacheHostClient implementation
-  void DidChangeCacheAssociation() final;
-  void NotifyEventListener(mojom::AppCacheEventID) final;
-  void NotifyProgressEventListener(const WebURL&,
-                                   int progress_total,
-                                   int progress_done) final;
-  void NotifyErrorEventListener(mojom::AppCacheErrorReason,
-                                const WebURL&,
-                                int status,
-                                const WebString& message) final;
-
+  void GetAssociatedCacheInfo(CacheInfo* info);
   bool IsApplicationCacheEnabled();
-  DocumentLoader* GetDocumentLoader() const { return document_loader_; }
+  bool BindBackend();
+  void DispatchDOMEvent(mojom::AppCacheEventID,
+                        int progress_total,
+                        int progress_done,
+                        mojom::AppCacheErrorReason,
+                        const String& error_url,
+                        int error_status,
+                        const String& error_message);
 
   struct DeferredEvent {
     mojom::AppCacheEventID event_id;
@@ -185,20 +182,21 @@ class CORE_EXPORT ApplicationCacheHost final
           error_message(error_message) {}
   };
 
-  WeakMember<ApplicationCache> dom_application_cache_;
+  WeakMember<ApplicationCache> dom_application_cache_ = nullptr;
+
+  // TODO(https://crbug.com/982996): Move this to ApplicationCacheHostForFrame.
   Member<DocumentLoader> document_loader_;
-  bool defers_events_;  // Events are deferred until after document onload.
+
+  bool defers_events_ =
+      true;  // Events are deferred until after document onload.
   Vector<DeferredEvent> deferred_events_;
-
-  void DispatchDOMEvent(mojom::AppCacheEventID,
-                        int progress_total,
-                        int progress_done,
-                        mojom::AppCacheErrorReason,
-                        const String& error_url,
-                        int error_status,
-                        const String& error_message);
-
-  std::unique_ptr<WebApplicationCacheHost> host_;
+  mojo::Receiver<mojom::blink::AppCacheFrontend> receiver_{this};
+  base::UnguessableToken host_id_;
+  mojom::blink::AppCacheInfo cache_info_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  mojom::blink::DocumentInterfaceBroker* interface_broker_;
+  // Invoked when CacheSelected() is called.
+  base::OnceClosure select_cache_for_shared_worker_completion_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(DocumentTest, SandboxDisablesAppCache);
 

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
@@ -69,13 +70,22 @@ TEST(ComputedStyleTest, ClipPathEqual) {
 TEST(ComputedStyleTest, FocusRingWidth) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetEffectiveZoom(3.5);
-#if defined(OS_MACOSX)
   style->SetOutlineStyle(EBorderStyle::kSolid);
+#if defined(OS_MACOSX)
   EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
-  EXPECT_EQ(3.5, style->GetOutlineStrokeWidthForFocusRing());
+  style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
+  static uint16_t outline_width = 4;
+  style->SetOutlineWidth(outline_width);
+
+  double expected_width =
+      LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 3.5;
+  EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
+
+  expected_width =
+      LayoutTheme::GetTheme().IsFocusRingOutset() ? outline_width : 1.0;
   style->SetEffectiveZoom(0.5);
-  EXPECT_EQ(1, style->GetOutlineStrokeWidthForFocusRing());
+  EXPECT_EQ(expected_width, style->GetOutlineStrokeWidthForFocusRing());
 #endif
 }
 
@@ -447,9 +457,9 @@ TEST(ComputedStyleTest, CustomPropertiesEqual_Values) {
 
   using UnitType = CSSPrimitiveValue::UnitType;
 
-  const auto* value1 = CSSPrimitiveValue::Create(1.0, UnitType::kPixels);
-  const auto* value2 = CSSPrimitiveValue::Create(2.0, UnitType::kPixels);
-  const auto* value3 = CSSPrimitiveValue::Create(1.0, UnitType::kPixels);
+  const auto* value1 = CSSNumericLiteralValue::Create(1.0, UnitType::kPixels);
+  const auto* value2 = CSSNumericLiteralValue::Create(2.0, UnitType::kPixels);
+  const auto* value3 = CSSNumericLiteralValue::Create(1.0, UnitType::kPixels);
 
   Vector<AtomicString> properties;
   properties.push_back("--x");
@@ -504,8 +514,8 @@ TEST(ComputedStyleTest, ApplyColorSchemeLightOnDark) {
   dummy_page_holder_->GetDocument().GetSettings()->SetPreferredColorScheme(
       PreferredColorScheme::kDark);
   StyleResolverState state(dummy_page_holder_->GetDocument(),
-                           nullptr /* element */, nullptr /* pseudo_element */,
-                           initial, initial);
+                           *dummy_page_holder_->GetDocument().documentElement(),
+                           nullptr /* pseudo_element */, initial, initial);
 
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   state.SetStyle(style);

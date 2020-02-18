@@ -301,7 +301,7 @@ class VulkanClearTest : public MaskedScissoredClearTestBase
     // depth/stencil format
     void overrideFeaturesVk(FeaturesVk *featuresVk) override
     {
-        featuresVk->forceFeatureEnabled("force_fallback_format", true);
+        featuresVk->overrideFeatures({"force_fallback_format"}, true);
     }
 
   private:
@@ -515,10 +515,6 @@ TEST_P(ClearTest, DepthRangefIsClamped)
 // Test scissored clears on Depth16
 TEST_P(ClearTest, Depth16Scissored)
 {
-    // Crashes on NVIDIA and Android in FramebufferVk::clearWithClearAttachments.
-    // http://anglebug.com/3081
-    ANGLE_SKIP_TEST_IF(IsNVIDIA() || IsAndroid() || IsFuchsia());
-
     GLRenderbuffer renderbuffer;
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
     constexpr int kRenderbufferSize = 64;
@@ -547,10 +543,6 @@ TEST_P(ClearTest, Depth16Scissored)
 // Test scissored clears on Stencil8
 TEST_P(ClearTest, Stencil8Scissored)
 {
-    // Crashes on NVIDIA and Android in FramebufferVk::clearWithClearAttachments.
-    // http://anglebug.com/3081
-    ANGLE_SKIP_TEST_IF(IsNVIDIA() || IsAndroid() || IsFuchsia());
-
     GLRenderbuffer renderbuffer;
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
     constexpr int kRenderbufferSize = 64;
@@ -1254,6 +1246,9 @@ void MaskedScissoredClearTestBase::MaskedScissoredColorDepthStencilClear(
 
     ParseMaskedScissoredClearVariationsTestParams(params, &clearColor, &clearDepth, &clearStencil,
                                                   &maskColor, &maskDepth, &maskStencil, &scissor);
+
+    // clearDepth && !maskDepth fails on Intel Ubuntu 19.04 Mesa 19.0.2 GL. http://anglebug.com/3614
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsDesktopOpenGL() && clearDepth && !maskDepth);
 
     // Clear to a random color, 0.9 depth and 0x00 stencil
     Vector4 color1(0.1f, 0.2f, 0.3f, 0.4f);

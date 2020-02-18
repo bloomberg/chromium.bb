@@ -16,6 +16,7 @@
 #include <set>
 #include <vector>
 
+#include "api/function_view.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/critical_section.h"
@@ -30,7 +31,6 @@ class RtpPacketHistory {
  public:
   enum class StorageMode {
     kDisabled,     // Don't store any packets.
-    kStore,        // Store and keep at least |number_to_store| packets.
     kStoreAndCull  // Store up to |number_to_store| packets, but try to remove
                    // packets as they time out or as signaled as received.
   };
@@ -82,20 +82,44 @@ class RtpPacketHistory {
   std::unique_ptr<RtpPacketToSend> GetPacketAndSetSendTime(
       uint16_t sequence_number);
 
+  // Gets stored RTP packet corresponding to the input |sequence number|.
+  // Returns nullptr if packet is not found or was (re)sent too recently.
+  // If a packet copy is returned, it will be marked as pending transmission but
+  // does not update send time, that must be done by MarkPacketAsSent().
+  std::unique_ptr<RtpPacketToSend> GetPacketAndMarkAsPending(
+      uint16_t sequence_number);
+
+  // In addition to getting packet and marking as sent, this method takes an
+  // encapsulator function that takes a reference to the packet and outputs a
+  // copy that may be wrapped in a container, eg RTX.
+  // If the the encapsulator returns nullptr, the retransmit is aborted and the
+  // packet will not be marked as pending.
+  std::unique_ptr<RtpPacketToSend> GetPacketAndMarkAsPending(
+      uint16_t sequence_number,
+      rtc::FunctionView<std::unique_ptr<RtpPacketToSend>(
+          const RtpPacketToSend&)> encapsulate);
+
+  // Updates the send time for the given packet and increments the transmission
+  // counter. Marks the packet as no longer being in the pacer queue.
+  void MarkPacketAsSent(uint16_t sequence_number);
+
   // Similar to GetPacketAndSetSendTime(), but only returns a snapshot of the
   // current state for packet, and never updates internal state.
   absl::optional<PacketState> GetPacketState(uint16_t sequence_number) const;
-
-  // Get the packet (if any) from the history, with size closest to
-  // |packet_size|. The exact size of the packet is not guaranteed.
-  std::unique_ptr<RtpPacketToSend> GetBestFittingPacket(
-      size_t packet_size) const;
 
   // Get the packet (if any) from the history, that is deemed most likely to
   // the remote side. This is calculated from heuristics such as packet age
   // and times retransmitted. Updated the send time of the packet, so is not
   // a const method.
   std::unique_ptr<RtpPacketToSend> GetPayloadPaddingPacket();
+
+  // Same as GetPayloadPaddingPacket(void), but adds an encapsulation
+  // that can be used for instance to encapsulate the packet in an RTX
+  // container, or to abort getting the packet if the function returns
+  // nullptr.
+  std::unique_ptr<RtpPacketToSend> GetPayloadPaddingPacket(
+      rtc::FunctionView<std::unique_ptr<RtpPacketToSend>(
+          const RtpPacketToSend&)> encapsulate);
 
   // Cull packets that have been acknowledged as received by the remote end.
   void CullAcknowledgedPackets(rtc::ArrayView<const uint16_t> sequence_numbers);
@@ -104,6 +128,10 @@ class RtpPacketHistory {
   // removal or duplicate retransmissions in the pacer queue.
   // Returns true if status was set, false if packet was not found.
   bool SetPendingTransmission(uint16_t sequence_number);
+
+  // Remove all pending packets from the history, but keep storage mode and
+  // capacity.
+  void Clear();
 
  private:
   struct MoreUseful;
@@ -173,8 +201,6 @@ class RtpPacketHistory {
 
   // Map from rtp sequence numbers to stored packet.
   std::map<uint16_t, StoredPacket> packet_history_ RTC_GUARDED_BY(lock_);
-  // Map from packet size to sequence number.
-  std::map<size_t, uint16_t> packet_size_ RTC_GUARDED_BY(lock_);
 
   // Total number of packets with StorageType::kAllowsRetransmission inserted.
   uint64_t retransmittable_packets_inserted_ RTC_GUARDED_BY(lock_);

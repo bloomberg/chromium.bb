@@ -142,7 +142,7 @@ void InlineBox::DumpBox(StringBuilder& string_inlinebox) const {
     string_inlinebox.Append(' ');
   string_inlinebox.AppendFormat(
       "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i",
-      GetLineLayoutItem().DecoratedName().Ascii().data(),
+      GetLineLayoutItem().DecoratedName().Ascii().c_str(),
       GetLineLayoutItem().DebugPointer(), X().ToFloat(), Y().ToFloat(),
       Width().ToFloat(), Height().ToFloat(),
       BaselinePosition(kAlphabeticBaseline).ToInt(),
@@ -239,22 +239,20 @@ void InlineBox::Paint(const PaintInfo& paint_info,
 }
 
 bool InlineBox::NodeAtPoint(HitTestResult& result,
-                            const HitTestLocation& location_in_container,
-                            const LayoutPoint& accumulated_offset,
+                            const HitTestLocation& hit_test_location,
+                            const PhysicalOffset& accumulated_offset,
                             LayoutUnit /* lineTop */,
                             LayoutUnit /* lineBottom */) {
   // Hit test all phases of replaced elements atomically, as though the replaced
   // element established its own stacking context. (See Appendix E.2, section
   // 6.4 on inline block/table elements in the CSS2.1 specification.)
-  LayoutPoint child_point = accumulated_offset;
-  // Faster than calling containingBlock().
-  if (Parent()->GetLineLayoutItem().HasFlippedBlocksWritingMode())
-    child_point =
-        GetLineLayoutItem().ContainingBlock().FlipForWritingModeForChild(
-            LineLayoutBox(GetLineLayoutItem()), child_point);
-
-  return GetLineLayoutItem().HitTestAllPhases(result, location_in_container,
-                                              child_point);
+  PhysicalOffset layout_item_accumulated_offset = accumulated_offset;
+  if (GetLineLayoutItem().IsBox()) {
+    layout_item_accumulated_offset +=
+        LineLayoutBox(GetLineLayoutItem()).PhysicalLocation();
+  }
+  return GetLineLayoutItem().HitTestAllPhases(result, hit_test_location,
+                                              layout_item_accumulated_offset);
 }
 
 const RootInlineBox& InlineBox::Root() const {
@@ -336,10 +334,10 @@ void InlineBox::ClearKnownToHaveNoOverflow() {
     Parent()->ClearKnownToHaveNoOverflow();
 }
 
-LayoutPoint InlineBox::PhysicalLocation() const {
+PhysicalOffset InlineBox::PhysicalLocation() const {
   LayoutRect rect(Location(), Size());
   FlipForWritingMode(rect);
-  return rect.Location();
+  return PhysicalOffset(rect.Location());
 }
 
 void InlineBox::FlipForWritingMode(LayoutRect& rect) const {
@@ -354,13 +352,14 @@ LayoutPoint InlineBox::FlipForWritingMode(const LayoutPoint& point) const {
   return Root().Block().FlipForWritingMode(point);
 }
 
-void InlineBox::SetShouldDoFullPaintInvalidationRecursively() {
+void InlineBox::SetShouldDoFullPaintInvalidationForFirstLine() {
+  GetLineLayoutItem().StyleRef().ClearCachedPseudoStyles();
   GetLineLayoutItem().SetShouldDoFullPaintInvalidation();
   if (!IsInlineFlowBox())
     return;
   for (InlineBox* child = ToInlineFlowBox(this)->FirstChild(); child;
        child = child->NextOnLine())
-    child->SetShouldDoFullPaintInvalidationRecursively();
+    child->SetShouldDoFullPaintInvalidationForFirstLine();
 }
 
 void InlineBox::SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {

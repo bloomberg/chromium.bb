@@ -14,21 +14,21 @@ namespace blink {
 XRGripSpace::XRGripSpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
-XRPose* XRGripSpace::getPose(
-    XRSpace* other_space,
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+XRPose* XRGripSpace::getPose(XRSpace* other_space,
+                             const TransformationMatrix* base_pose_matrix) {
   // Grip is only available when using tracked pointer for input.
-  if (input_source_->target_ray_mode_ != XRInputSource::kTrackedPointer) {
+  if (input_source_->TargetRayMode() !=
+      device::mojom::XRTargetRayMode::POINTING) {
     return nullptr;
   }
 
   // Make sure the required pose matrices are available.
-  if (!base_pose_matrix || !input_source_->base_pose_matrix_) {
+  if (!base_pose_matrix || !input_source_->BasePose()) {
     return nullptr;
   }
 
   std::unique_ptr<TransformationMatrix> grip_pose =
-      other_space->TransformBaseInputPose(*(input_source_->base_pose_matrix_),
+      other_space->TransformBaseInputPose(*(input_source_->BasePose()),
                                           *base_pose_matrix);
 
   if (!grip_pose) {
@@ -37,10 +37,9 @@ XRPose* XRGripSpace::getPose(
 
   // Account for any changes made to the reference space's origin offset so
   // that things like teleportation works.
-  grip_pose = std::make_unique<TransformationMatrix>(
-      other_space->InverseOriginOffsetMatrix().Multiply(*grip_pose));
-
-  return MakeGarbageCollected<XRPose>(std::move(grip_pose),
+  TransformationMatrix adjusted_pose =
+      other_space->InverseOriginOffsetMatrix().Multiply(*grip_pose);
+  return MakeGarbageCollected<XRPose>(adjusted_pose,
                                       input_source_->emulatedPosition());
 }
 

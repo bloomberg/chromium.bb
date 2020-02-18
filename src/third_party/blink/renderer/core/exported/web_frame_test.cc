@@ -40,12 +40,14 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom-shared.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -4040,7 +4042,6 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestZoomToLegibleScaleDisabled) {
 
   web_view_helper.GetWebView()->EnableFakePageScaleAnimationForTesting(true);
 
-  WebRect edit_box_with_text(200, 200, 250, 20);
   WebRect edit_box_with_no_text(200, 250, 250, 20);
 
   // Test scrolling the focused node
@@ -4163,9 +4164,6 @@ TEST_F(WebFrameTest, CharacterIndexAtPointWithPinchZoom) {
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
   web_view_helper.GetWebView()->SetVisualViewportOffset(WebFloatPoint(100, 50));
 
-  WebRect base_rect;
-  WebRect extent_rect;
-
   WebLocalFrame* main_frame =
       web_view_helper.GetWebView()->MainFrame()->ToWebLocalFrame();
 
@@ -4193,9 +4191,6 @@ TEST_F(WebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
   float scale = 2;
   web_view_helper.GetWebView()->SetPageScaleFactor(scale);
   web_view_helper.GetWebView()->SetVisualViewportOffset(visual_offset);
-
-  WebRect base_rect;
-  WebRect extent_rect;
 
   WebRect rect;
   main_frame->FirstRectForCharacterRange(0, 5, rect);
@@ -4809,17 +4804,12 @@ TEST_F(WebFrameTest, ExecuteScriptDuringDidCreateScriptContext) {
 class TestFindInPageClient : public mojom::blink::FindInPageClient {
  public:
   TestFindInPageClient()
-      : find_results_are_ready_(false),
-        count_(-1),
-        active_index_(-1),
-        binding_(this) {}
+      : find_results_are_ready_(false), count_(-1), active_index_(-1) {}
 
   ~TestFindInPageClient() override = default;
 
   void SetFrame(WebLocalFrameImpl* frame) {
-    mojom::blink::FindInPageClientPtr client;
-    binding_.Bind(MakeRequest(&client));
-    frame->GetFindInPage()->SetClient(std::move(client));
+    frame->GetFindInPage()->SetClient(receiver_.BindNewPipeAndPassRemote());
   }
 
   void SetNumberOfMatches(
@@ -4848,7 +4838,7 @@ class TestFindInPageClient : public mojom::blink::FindInPageClient {
   bool find_results_are_ready_;
   int count_;
   int active_index_;
-  mojo::Binding<mojom::blink::FindInPageClient> binding_;
+  mojo::Receiver<mojom::blink::FindInPageClient> receiver_{this};
 };
 
 TEST_F(WebFrameTest, FindInPageMatchRects) {
@@ -5988,7 +5978,7 @@ TEST_F(WebFrameTest, SmartClipDoesNotCrashPositionReversed) {
 }
 
 static int ComputeOffset(LayoutObject* layout_object, int x, int y) {
-  return layout_object->PositionForPoint(LayoutPoint(x, y))
+  return layout_object->PositionForPoint(PhysicalOffset(x, y))
       .GetPosition()
       .ComputeOffsetInContainerNode();
 }
@@ -10315,7 +10305,7 @@ TEST_F(WebFrameTest, ImageDocumentLoadResponseEnd) {
   ImageResource* resource = img_document->CachedImageResourceDeprecated();
 
   EXPECT_TRUE(resource);
-  EXPECT_NE(TimeTicks(), resource->LoadResponseEnd());
+  EXPECT_NE(base::TimeTicks(), resource->LoadResponseEnd());
 
   DocumentLoader* loader = document->Loader();
 
@@ -10792,6 +10782,7 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
   url_test_helpers::RegisterMockedURLLoad(ToKURL(redirect_url),
                                           test::CoreTestDataPath("foo.html"));
   helper.LocalMainFrame()->LoadJavaScriptURL(javascript_url);
+  RunPendingTasks();
 
   // The result of the JS url replaces the existing contents on the
   // Document, but the JS-triggered navigation should still occur.
@@ -10799,7 +10790,6 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
                     ->GetDocument()
                     ->documentElement()
                     ->innerText());
-  RunPendingTasks();
   EXPECT_EQ(ToKURL(redirect_url),
             To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
                 ->GetDocument()
@@ -11102,7 +11092,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       WebFloatPoint(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5),
       WebFloatPoint(div1_tag->OffsetLeft() + 5, div1_tag->OffsetTop() + 5),
       WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
-      CurrentTimeTicks());
+      base::TimeTicks::Now());
   mouse_move_over_link_event.SetFrameScale(1);
   document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_over_link_event, Vector<WebMouseEvent>(),
@@ -11122,7 +11112,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
       WebFloatPoint(div2_tag->OffsetLeft() + 5, div2_tag->OffsetTop() + 5),
       WebFloatPoint(div2_tag->OffsetLeft() + 5, div2_tag->OffsetTop() + 5),
       WebPointerProperties::Button::kNoButton, 0, WebInputEvent::kNoModifiers,
-      CurrentTimeTicks());
+      base::TimeTicks::Now());
   mouse_move_event.SetFrameScale(1);
   document->GetFrame()->GetEventHandler().HandleMouseMoveEvent(
       mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
@@ -11194,7 +11184,7 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
   HitTestLocation location(
-      frame_view->ConvertFromRootFrame(LayoutPoint(100, -50)));
+      frame_view->ConvertFromRootFrame(PhysicalOffset(100, -50)));
   HitTestResult result(request, location);
   frame_view->GetLayoutView()->HitTest(location, result);
 
@@ -11467,7 +11457,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   // Now resize the visual viewport so that the input box is no longer in view
   // (e.g. a keyboard is overlayed).
-  WebView().MainFrameWidget()->ResizeVisualViewport(IntSize(200, 100));
+  WebView().ResizeVisualViewport(IntSize(200, 100));
   ASSERT_FALSE(frame_view->GetScrollableArea()->VisibleContentRect().Contains(
       inputRect));
 
@@ -12756,8 +12746,7 @@ class ExternallyHandledPluginDocumentTest
 
 TEST_P(ExternallyHandledPluginDocumentTest, DocumentType) {
   bool cross_process = GetParam();
-  RuntimeEnabledFeatures::SetMimeHandlerViewInCrossProcessFrameEnabled(
-      cross_process);
+  ScopedMimeHandlerViewInCrossProcessFrameForTest scoped_feature(cross_process);
   ScopedFakePluginRegistry fake_plugins;
   RegisterMockedHttpURLLoadWithMimeType("test.pdf", "application/pdf");
   frame_test_helpers::WebViewHelper web_view_helper;

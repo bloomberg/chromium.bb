@@ -3,41 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Parser unittest BUILD rules may cause script(s) under test to load, and call
- * dependent script methods, before the dependent scripts have loaded. Fix this
- * by creating fakes to avoid any undefined call exceptions, then synchronously
- * reload the affected script(s).
- */
-window.addEventListener(
-    'load', /** @type {Function} */ (async () => {
-      // Fake parser importScripts calls.
-      window.importScripts = (script) => {};
-
-      // Fake metadata dispatcher parser registry.
-      window.registerParserClass = (parser) => {};
-
-      // Reload an existing <script> element.
-      let reloadScript = (src) => {
-        let element = document.querySelector('script[src$="' + src + '"]');
-        if (!(element instanceof HTMLScriptElement)) {
-          return Promise.reject('reloading script: ' + src + ' not found');
-        }
-        element.remove();
-        return new Promise((resolve, reject) => {
-          let script = document.createElement('script');
-          script.onload = resolve;
-          script.onerror = reject;
-          document.body.appendChild(script);
-          script.src = element.src;
-        });
-      };
-
-      await Promise.all([
-        reloadScript('exif_parser.js'),
-      ]);
-    }));
-
-/**
  * Creates a directory with specified tag. This method only supports string
  * format tag, which is longer than 4 characters.
  * @param {!TypedArray} bytes Bytes to be written.
@@ -65,18 +30,34 @@ function writeDirectory_(bytes, tag) {
 }
 
 /**
+ * @implements {MetadataParserLogger}
+ * @final
+ */
+class ConsoleLogger {
+  constructor() {
+    this.verbose = true;
+  }
+
+  error(arg) {
+    console.error(arg);
+  }
+
+  log(arg) {
+    console.log(arg);
+  }
+
+  vlog(arg) {
+    console.log(arg);
+  }
+}
+
+/**
  * Parses exif data bytes (with logging) and returns the parsed tags.
  * @param {!TypedArray} bytes Bytes to be read.
  * @return {!Object<!Exif.Tag, !ExifEntry>} Tags.
  */
 function parseExifData_(bytes) {
-  let exifParser = new ExifParser(this);
-  exifParser.log = arg => {
-    console.log(arg);
-  };
-  exifParser.vlog = arg => {
-    console.log(arg);
-  };
+  const exifParser = new ExifParser(new ConsoleLogger());
 
   let tags = {};
   let byteReader = new ByteReader(bytes.buffer);

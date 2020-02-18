@@ -22,25 +22,7 @@ static void test_circlebounds(SkCanvas*) {
 }
 
 class CircleView : public Sample {
-public:
-    static const SkScalar ANIM_DX;
-    static const SkScalar ANIM_DY;
-    static const SkScalar ANIM_RAD;
-    SkScalar fDX, fDY, fRAD;
-
-    CircleView() {
-        fDX = fDY = fRAD = 0;
-        fN = 3;
-    }
-
-protected:
-    virtual bool onQuery(Sample::Event* evt) {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Circles");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Circles"); }
 
     void circle(SkCanvas* canvas, int width, bool aa) {
         SkPaint paint;
@@ -52,7 +34,7 @@ protected:
             paint.setStyle(SkPaint::kStroke_Style);
             paint.setStrokeWidth(SkIntToScalar(width));
         }
-        canvas->drawCircle(0, 0, SkIntToScalar(9) + fRAD, paint);
+        canvas->drawCircle(0, 0, 9.0f, paint);
         if (false) { // avoid bit rot, suppress warning
             test_circlebounds(canvas);
         }
@@ -84,7 +66,7 @@ protected:
         path->close();
     }
 
-    virtual void onDrawContent(SkCanvas* canvas) {
+    void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
         paint.setAntiAlias(true);
         paint.setStyle(SkPaint::kStroke_Style);
@@ -101,16 +83,6 @@ protected:
             canvas->drawPath(path, paint);
         }
     }
-
-private:
-    int fN;
-    typedef Sample INHERITED;
 };
-
-const SkScalar CircleView::ANIM_DX(SK_Scalar1 / 67);
-const SkScalar CircleView::ANIM_DY(SK_Scalar1 / 29);
-const SkScalar CircleView::ANIM_RAD(SK_Scalar1 / 19);
-
-//////////////////////////////////////////////////////////////////////////////
 
 DEF_SAMPLE( return new CircleView(); )

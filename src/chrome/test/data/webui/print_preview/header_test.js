@@ -65,6 +65,10 @@ cr.define('header_test', function() {
       assertEquals('Total: 3 pages', summary.textContent);
       header.setSetting('pages', [1]);
       assertEquals('Total: 1 page', summary.textContent);
+      // Verify the chrome://print case of a zero length document does not show
+      // the summary.
+      header.setSetting('pages', []);
+      assertEquals('', summary.textContent);
     });
 
     // Tests that the message is correctly adjusted with a duplex printer.
@@ -134,13 +138,12 @@ cr.define('header_test', function() {
     // See https://crbug.com/880562.
     test(assert(TestNames.ButtonOrder), function() {
       // Verify that there are only 2 buttons.
-      assertEquals(
-          2, header.shadowRoot.querySelectorAll('paper-button').length);
+      assertEquals(2, header.shadowRoot.querySelectorAll('cr-button').length);
 
-      const firstButton = header.$$('paper-button:first-child');
-      const lastButton = header.$$('paper-button:last-child');
-      const printButton = header.$$('paper-button.action-button');
-      const cancelButton = header.$$('paper-button.cancel-button');
+      const firstButton = header.$$('cr-button:first-child');
+      const lastButton = header.$$('cr-button:last-child');
+      const printButton = header.$$('cr-button.action-button');
+      const cancelButton = header.$$('cr-button.cancel-button');
 
       if (cr.isWindows) {
         // On Windows, the print button is on the left.

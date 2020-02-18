@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -31,6 +32,8 @@
 #include "third_party/webdriver/atoms.h"
 
 const int kFlickTouchEventsPerSecond = 30;
+const std::set<std::string> textControlTypes = {"text", "search", "tel", "url",
+                                                "password"};
 
 namespace {
 
@@ -81,14 +84,37 @@ Status FocusToElement(
   return Status(kOk);
 }
 
-Status SendKeysToElement(
-    Session* session,
-    WebView* web_view,
-    const std::string& element_id,
-    const base::ListValue* key_list) {
-  Status status = FocusToElement(session, web_view, element_id);
-  if (status.IsError())
-        return Status(kElementNotInteractable);
+Status SendKeysToElement(Session* session,
+                         WebView* web_view,
+                         const std::string& element_id,
+                         const bool is_text,
+                         const base::ListValue* key_list) {
+  // If we were previously focused, we don't need to focus again.
+  // But also, later we don't move the carat if we were already in focus.
+  // However, non-text elements such as contenteditable elements needs to be
+  // focused to ensure the keys will end up being sent to the correct place.
+  // So in the case of non-text elements, we still focusToElement.
+  bool wasPreviouslyFocused = false;
+  IsElementFocused(session, web_view, element_id, &wasPreviouslyFocused);
+  if (!wasPreviouslyFocused || !is_text) {
+    Status status = FocusToElement(session, web_view, element_id);
+    if (status.IsError())
+      return Status(kElementNotInteractable);
+  }
+
+  // Move cursor/caret to append the input if we only just focused this
+  // element. keys if element's type is text-related
+  if (is_text && !wasPreviouslyFocused) {
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    std::unique_ptr<base::Value> result;
+    Status status = web_view->CallFunction(
+        session->GetCurrentFrameId(),
+        "elem => elem.setSelectionRange(elem.value.length, elem.value.length)",
+        args, &result);
+    if (status.IsError())
+      return status;
+  }
   return SendKeysOnWindow(web_view, key_list, true, &session->sticky_modifiers);
 }
 
@@ -127,27 +153,6 @@ Status ExecuteFindChildElements(int interval_ms,
       interval_ms, false, &element_id, session, web_view, params, value);
 }
 
-Status ExecuteHoverOverElement(Session* session,
-                               WebView* web_view,
-                               const std::string& element_id,
-                               const base::DictionaryValue& params,
-                               std::unique_ptr<base::Value>* value) {
-  WebPoint location;
-  Status status = GetElementClickableLocation(
-      session, web_view, element_id, &location);
-  if (status.IsError())
-    return status;
-
-  MouseEvent move_event(kMovedMouseEventType, kNoneMouseButton, location.x,
-                        location.y, session->sticky_modifiers, 0, 0);
-  std::list<MouseEvent> events;
-  events.push_back(move_event);
-  status = web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
-  if (status.IsOk())
-    session->mouse_position = location;
-  return status;
-}
-
 Status ExecuteClickElement(Session* session,
                            WebView* web_view,
                            const std::string& element_id,
@@ -168,6 +173,18 @@ Status ExecuteClickElement(Session* session,
     else
       return SetOptionElementSelected(session, web_view, element_id, true);
   } else {
+    if (tag_name == "input") {
+      std::unique_ptr<base::Value> get_element_type;
+      status = GetElementAttribute(session, web_view, element_id, "type",
+                                   &get_element_type);
+      if (status.IsError())
+        return status;
+      std::string element_type;
+      if (get_element_type->GetAsString(&element_type))
+        element_type = base::ToLowerASCII(element_type);
+      if (element_type == "file")
+        return Status(kInvalidArgument);
+    }
     WebPoint location;
     status = GetElementClickableLocation(
         session, web_view, element_id, &location);
@@ -360,15 +377,20 @@ Status ExecuteSendKeysToElement(Session* session,
   }
 
   bool is_input = false;
-  status = IsElementAttributeEqualToIgnoreCase(
-      session, web_view, element_id, "tagName", "input", &is_input);
+  status = IsElementAttributeEqualToIgnoreCase(session, web_view, element_id,
+                                               "tagName", "input", &is_input);
   if (status.IsError())
     return status;
-  bool is_file = false;
-  status = IsElementAttributeEqualToIgnoreCase(
-      session, web_view, element_id, "type", "file", &is_file);
+  std::unique_ptr<base::Value> get_element_type;
+  status = GetElementAttribute(session, web_view, element_id, "type",
+                               &get_element_type);
   if (status.IsError())
     return status;
+  std::string element_type;
+  if (get_element_type->GetAsString(&element_type))
+    element_type = base::ToLowerASCII(element_type);
+  bool is_file = element_type == "file";
+
   if (is_input && is_file) {
     if (session->strict_file_interactability) {
       status = FocusToElement(session, web_view,element_id);
@@ -420,7 +442,59 @@ Status ExecuteSendKeysToElement(Session* session,
     return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
                                        paths, multiple);
   } else {
-    return SendKeysToElement(session, web_view, element_id, key_list);
+    std::unique_ptr<base::Value> get_content_editable;
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                    "element => element.isContentEditable",
+                                    args, &get_content_editable);
+    if (status.IsError())
+      return status;
+    bool is_content_editable;
+    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
+        is_content_editable) {
+      // If element is contentEditable, will move caret
+      // at end of element text. W3C mandates that the
+      // caret be moved "after any child content"
+      std::unique_ptr<base::Value> result;
+      status = web_view->CallFunction(
+          session->GetCurrentFrameId(),
+          "function(element) {"
+          "var range = document.createRange();"
+          "range.selectNodeContents(element);"
+          "range.collapse();"
+          "var sel = window.getSelection();"
+          "sel.removeAllRanges();"
+          "sel.addRange(range);"
+          "while (element.parentElement && "
+          "element.parentElement.isContentEditable) {"
+          "    element = element.parentElement;"
+          "  }"
+          "return element;"
+          "}",
+          args, &result);
+      if (status.IsError())
+        return status;
+      const base::DictionaryValue* element_dict;
+      std::string target_element_id;
+      if (!result->GetAsDictionary(&element_dict) ||
+          !element_dict->GetString(GetElementKey(), &target_element_id))
+        return Status(kUnknownError, "no element reference returned by script");
+      return SendKeysToElement(session, web_view, target_element_id, false,
+                               key_list);
+    }
+    // If element_type is in textControlTypes, sendKeys should append
+    bool is_textControlType = is_input && textControlTypes.find(element_type) !=
+                                              textControlTypes.end();
+    // If the element is a textarea, sendKeys should also append
+    bool is_textarea = false;
+    status = IsElementAttributeEqualToIgnoreCase(
+        session, web_view, element_id, "tagName", "textarea", &is_textarea);
+    if (status.IsError())
+      return status;
+    bool is_text = is_textControlType || is_textarea;
+
+    return SendKeysToElement(session, web_view, element_id, is_text, key_list);
   }
 }
 
@@ -761,16 +835,26 @@ Status ExecuteElementScreenshot(Session* session,
   // document.body, depending on document compatibility mode. The parentheses
   // around the JavaScript code below is needed because JavaScript syntax
   // doesn't allow a statement to start with an object literal.
-  std::unique_ptr<base::Value> scroll;
+  // document.documentElement.clientHeight and Width provide viewport height
+  // and width to crop screenshot if necessary.
+  std::unique_ptr<base::Value> browser_info;
   status = web_view->EvaluateScript(
       std::string(),
       "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
-      "  y: document.documentElement.scrollTop || document.body.scrollTop})",
-      &scroll);
+      "  y: document.documentElement.scrollTop || document.body.scrollTop,"
+      "  height: document.documentElement.clientHeight,"
+      "  width: document.documentElement.clientWidth,"
+      "  device_pixel_ratio: window.devicePixelRatio})",
+      &browser_info);
   if (status.IsError())
     return status;
-  int scroll_left = scroll->FindKey("x")->GetInt();
-  int scroll_top = scroll->FindKey("y")->GetInt();
+
+  double scroll_left = browser_info->FindKey("x")->GetDouble();
+  double scroll_top = browser_info->FindKey("y")->GetDouble();
+  double viewport_height = browser_info->FindKey("height")->GetDouble();
+  double viewport_width = browser_info->FindKey("width")->GetDouble();
+  double device_pixel_ratio =
+         browser_info->FindKey("device_pixel_ratio")->GetDouble();
 
   std::unique_ptr<base::DictionaryValue> clip_dict =
       base::DictionaryValue::From(std::move(clip));
@@ -780,9 +864,16 @@ Status ExecuteElementScreenshot(Session* session,
   // element, but its x and y are relative to containing frame. We replace them
   // with the x and y relative to top-level document origin, as expected by
   // CaptureScreenshot.
-  clip_dict->SetInteger("x", location.x + scroll_left);
-  clip_dict->SetInteger("y", location.y + scroll_top);
-  clip_dict->SetDouble("scale", 1.0);
+  clip_dict->SetDouble("x", location.x + scroll_left);
+  clip_dict->SetDouble("y", location.y + scroll_top);
+  clip_dict->SetDouble("scale", 1 / device_pixel_ratio);
+  // Crop screenshot by viewport if element is larger than viewport
+  clip_dict->SetDouble(
+      "height",
+      std::min(viewport_height, clip_dict->FindKey("height")->GetDouble()));
+  clip_dict->SetDouble(
+      "width",
+      std::min(viewport_width, clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;
   screenshot_params.SetDictionary("clip", std::move(clip_dict));
 

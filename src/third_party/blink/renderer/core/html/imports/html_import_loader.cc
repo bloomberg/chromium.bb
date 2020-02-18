@@ -151,7 +151,7 @@ void HTMLImportLoader::NotifyParserStopped() {
   parser->RemoveClient(this);
 }
 
-void HTMLImportLoader::DidRemoveAllPendingStylesheet() {
+void HTMLImportLoader::DidRemoveAllPendingStylesheets() {
   if (state_ == kStateParsed)
     SetState(FinishLoading());
 }

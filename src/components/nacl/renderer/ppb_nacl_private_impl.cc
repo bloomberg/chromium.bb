@@ -333,13 +333,11 @@ blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
   // Follow the original behavior in the trusted plugin and
   // PepperURLLoaderHost.
   if (document.GetSecurityOrigin().CanRequest(gurl)) {
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kSameOrigin);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kSameOrigin);
+    request.SetMode(network::mojom::RequestMode::kSameOrigin);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);
   } else {
-    request.SetFetchRequestMode(network::mojom::FetchRequestMode::kCors);
-    request.SetFetchCredentialsMode(
-        network::mojom::FetchCredentialsMode::kOmit);
+    request.SetMode(network::mojom::RequestMode::kCors);
+    request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
   }
 
   // Plug-ins should not load via service workers as plug-ins may have their own
@@ -1592,8 +1590,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
         stream_handler_(stream_handler),
         stream_handler_user_data_(stream_handler_user_data),
         success_(false),
-        expected_content_length_(-1),
-        weak_factory_(this) {}
+        expected_content_length_(-1) {}
 
   void Load(const blink::WebURLRequest& request) {
     url_loader_->LoadAsynchronously(request, this);
@@ -1701,7 +1698,7 @@ class PexeDownloader : public blink::WebAssociatedURLLoaderClient {
   void* stream_handler_user_data_;
   bool success_;
   int64_t expected_content_length_;
-  base::WeakPtrFactory<PexeDownloader> weak_factory_;
+  base::WeakPtrFactory<PexeDownloader> weak_factory_{this};
 };
 
 }  // namespace

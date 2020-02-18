@@ -9,6 +9,7 @@ import os
 import argparse
 import sys
 import json
+import tempfile
 import time
 import logging
 
@@ -32,9 +33,10 @@ BLINK_TOOLS_ABS_PATH = os.path.join(SRC_DIR, BLINK_TOOLS_PATH)
 sys.path.insert(0, BLINK_TOOLS_ABS_PATH)
 from blinkpy.common import exit_codes
 from blinkpy.common.host import Host
-from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.web_tests.models import test_expectations
 from blinkpy.common.path_finder import PathFinder
+from blinkpy.common.system.log_utils import configure_logging
+from blinkpy.w3c.common import CHROMIUM_WPT_DIR
+from blinkpy.web_tests.models import test_expectations
 
 WD_CLIENT_PATH = 'blinkpy/third_party/wpt/wpt/tools/webdriver'
 WEBDRIVER_CLIENT_ABS_PATH = os.path.join(BLINK_TOOLS_ABS_PATH, WD_CLIENT_PATH)
@@ -126,7 +128,7 @@ class SubtestResultRecorder(object):
     self.result.append(WebDriverTestResult(
         output_name, status, message))
 
-def set_up_config(chromedriver_server):
+def set_up_config(path_finder, chromedriver_server):
   # These envs are used to create a WebDriver session in the fixture.py file.
   os.environ["WD_HOST"] = chromedriver_server.GetHost()
   os.environ["WD_PORT"] = str(chromedriver_server.GetPort())
@@ -154,7 +156,13 @@ def set_up_config(chromedriver_server):
   # /blinkpy/web_tests/servers/wptserve.py?l=23&rcl=375b34c6ba64
   # 5d00c1413e4c6106c7bb74581c85
   os.environ["WD_SERVER_CONFIG"] = json.dumps({
+    "doc_root": path_finder.path_from_chromium_base(CHROMIUM_WPT_DIR),
     "browser_host": "web-platform.test",
+    "domains": {"": {"": "web-platform.test",
+                     "www": "www.web-platform.test",
+                     "www.www": "www.www.web-platform.test",
+                     "www1": "www1.web-platform.test",
+                     "www2": "www2.web-platform.test"}},
     "ports": {"ws": [9001], "wss": [9444], "http": [8001], "https": [8444]}})
 
 def run_test(path, path_finder, port, skipped_tests=[]):
@@ -182,6 +190,9 @@ if __name__ == '__main__':
   parser.add_argument(
       '--chrome', help='Path to chrome binary')
   parser.add_argument(
+      '--output-dir',
+      help='Output directory for misc logs (e.g. wptserve)')
+  parser.add_argument(
       '--isolated-script-test-output',
       help='JSON output file used by swarming')
   parser.add_argument(
@@ -189,6 +200,7 @@ if __name__ == '__main__':
       help='JSON perf output file used by swarming, ignored')
   parser.add_argument(
       '--test-path',
+      required=True,
       help='Path to the WPT WebDriver tests')
   parser.add_argument(
       '-v', '--verbose', action='store_true',
@@ -211,6 +223,12 @@ if __name__ == '__main__':
 
   host = Host()
   port = host.port_factory.get()
+  if options.output_dir:
+    port.set_option_default('results_directory', options.output_dir)
+  else:
+    output_dir = tempfile.mkdtemp('webdriver_tests')
+    _log.info('Using a temporary output dir %s', output_dir)
+    port.set_option_default('results_directory', output_dir)
   path_finder = PathFinder(host.filesystem)
 
   # Starts WPT Serve to serve the WPT WebDriver test content.
@@ -242,7 +260,7 @@ if __name__ == '__main__':
     _log.error('ChromeDriver is not running.')
     sys.exit(1)
 
-  set_up_config(chromedriver_server)
+  set_up_config(path_finder, chromedriver_server)
 
   test_path = options.test_path
   start_time = time.time()
@@ -254,7 +272,7 @@ if __name__ == '__main__':
     elif os.path.isdir(test_path):
       for root, dirnames, filenames in os.walk(test_path):
         for filename in filenames:
-          if '__init__' in filename:
+          if '__init__' in filename or not filename.endswith('.py'):
             continue
 
           test_file = os.path.join(root, filename)

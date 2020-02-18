@@ -29,11 +29,8 @@ class Window;
 
 namespace ash {
 class TabletModeController;
-class TabletModeWindowState;
-
-namespace wm {
 class TabletModeEventHandler;
-}
+class TabletModeWindowState;
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -47,8 +44,12 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public ShellObserver,
                                            public SessionObserver {
  public:
-  // This should only be deleted by the creator (TabletModeController).
+  // This should only be created or deleted by the creator
+  // (TabletModeController).
+  TabletModeWindowManager();
   ~TabletModeWindowManager() override;
+
+  static aura::Window* GetTopWindow();
 
   void Init();
 
@@ -72,7 +73,11 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
 
-  aura::Window* GetTopWindow();
+  // Tell all managing windows not to handle WM events.
+  void SetIgnoreWmEventsForExit();
+
+  // Stops animations on windows managed by this TabletModeWindowManager.
+  void StopWindowAnimations();
 
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
@@ -99,15 +104,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
-  // Tell all managing windows not to handle WM events.
-  void SetIgnoreWmEventsForExit();
-
- protected:
-  friend class TabletModeController;
-
-  // The object should only be created by TabletModeController.
-  TabletModeWindowManager();
-
  private:
   using WindowToState = std::map<aura::Window*, TabletModeWindowState*>;
 
@@ -115,22 +111,18 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // |window| is not yet tracked, returns the current state type of |window|.
   WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
 
-  // Returns a std::vector of up to two split view snap positions, parallel to
-  // |windows|, implementing the logic for carrying over snapped window states
-  // from desktop mode to tablet mode: if the active window is snapped, then it
-  // shall carry over to split view, along with the previous window if it is
-  // snapped to the opposite side.
-  std::vector<SplitViewController::SnapPosition> GetSnapPositions(
-      const MruWindowTracker::WindowList& windows) const;
-
-  // Maximize all windows, except that snapped windows shall carry over to split
-  // view as determined by GetSnapPositions().
+  // Maximizes all windows, except that snapped windows shall carry over to
+  // split view as determined by GetCarryOverWindowsInSplitView().
   void ArrangeWindowsForTabletMode();
 
-  // Revert all windows to how they were arranged before tablet mode.
-  // |was_in_overview| indicates whether it was in overview before entering
-  // desktop mode.
-  void ArrangeWindowsForDesktopMode(bool was_in_overview = false);
+  // Reverts all windows to how they were arranged before tablet mode.
+  // |windows_in_splitview| contains the windows that were in splitview before
+  // entering clamshell mode, and if clamshell split view is enabled, these
+  // windows will be carried over to clamshell split view. |was_in_overview|
+  // indicates whether overview is active before entering clamshell mode.
+  void ArrangeWindowsForClamshellMode(
+      base::flat_map<aura::Window*, WindowStateType> windows_in_splitview,
+      bool was_in_overview);
 
   // If the given window should be handled by us, this function will add it to
   // the list of known windows (remembering the initial show state).
@@ -141,7 +133,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                    bool snap = false,
                    bool animate_bounds_on_attach = true);
 
-  // Remove a window from our tracking list. |was_in_overview| used when
+  // Removes a window from our tracking list. |was_in_overview| used when
   // |destroyed| is false to help handle leaving tablet mode. If the window is
   // going to be destroyed, do not restore its old previous window state object
   // as it will send unnecessary window state change event.
@@ -165,9 +157,6 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Returns true when the |window| is a container window.
   bool IsContainerWindow(aura::Window* window);
 
-  // Add a backdrop behind the currently active window on each desktop.
-  void EnableBackdropBehindTopWindowOnEachDisplay(bool enable);
-
   // Every window which got touched by our window manager gets added here.
   WindowToState window_state_map_;
 
@@ -180,7 +169,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // All accounts that have been active at least once since tablet mode started.
   base::flat_set<AccountId> accounts_since_entering_tablet_;
 
-  std::unique_ptr<wm::TabletModeEventHandler> event_handler_;
+  std::unique_ptr<TabletModeEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };

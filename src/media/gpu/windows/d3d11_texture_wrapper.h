@@ -15,6 +15,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_com_defs.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi.h"
@@ -27,10 +28,6 @@ using CommandBufferHelperPtr = scoped_refptr<CommandBufferHelper>;
 using MailboxHolderArray = gpu::MailboxHolder[VideoFrame::kMaxPlanes];
 using GetCommandBufferHelperCB =
     base::RepeatingCallback<CommandBufferHelperPtr()>;
-using ComD3D11VideoDevice = Microsoft::WRL::ComPtr<ID3D11VideoDevice>;
-using ComD3D11Texture2D = Microsoft::WRL::ComPtr<ID3D11Texture2D>;
-using ComD3D11VideoDecoderOutputView =
-    Microsoft::WRL::ComPtr<ID3D11VideoDecoderOutputView>;
 
 class D3D11PictureBuffer;
 
@@ -45,9 +42,13 @@ class MEDIA_GPU_EXPORT Texture2DWrapper {
 
   // This pointer can be raw, since each Texture2DWrapper is directly owned
   // by the D3D11PictureBuffer through a unique_ptr.
-  virtual const MailboxHolderArray& ProcessTexture(
-      const D3D11PictureBuffer* owner_pb) = 0;
+  virtual bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
+                              MailboxHolderArray* mailbox_dest) = 0;
 
+  // |array_slice| Tells us which array index of the array-type Texture2D
+  // we should be using - if it is not an array-type, |array_slice| is 0.
+  // |textures_per_picture| is the number of entries present in an array-type
+  // Texture2D. It is 1 otherwise.
   virtual bool Init(GetCommandBufferHelperCB get_helper_cb,
                     size_t array_slice,
                     GLenum target,
@@ -71,8 +72,8 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
             gfx::Size size,
             int textures_per_picture) override;
 
-  const MailboxHolderArray& ProcessTexture(
-      const D3D11PictureBuffer* owner_pb) override;
+  bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
+                      MailboxHolderArray* mailbox_dest) override;
 
  private:
   // Things that are to be accessed / freed only on the main thread.  In

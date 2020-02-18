@@ -17,6 +17,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -36,7 +38,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_tiles/constants.h"
-#include "components/ntp_tiles/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -70,8 +71,11 @@ const int kDefaultCustomLinkMaxCount = 10;
 
 // Name for the Most Visited iframe in the NTP.
 const char kMostVisitedIframe[] = "mv-single";
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Name for the edit/add custom link iframe in the NTP.
 const char kEditCustomLinkIframe[] = "custom-links-edit";
+#endif
 
 // Returns the RenderFrameHost corresponding to the |iframe_name| in the
 // given |tab|. |tab| must correspond to an NTP.
@@ -105,9 +109,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   LocalNTPTest()
       : LocalNTPTest(
             /*enabled_features=*/{},
-            /*disabled_features=*/{features::kRemoveNtpFakebox,
-                                   features::kFirstRunDefaultSearchShortcut,
-                                   ntp_tiles::kDefaultSearchShortcut}) {}
+            /*disabled_features=*/{features::kFirstRunDefaultSearchShortcut}) {}
 
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
@@ -119,7 +121,7 @@ class LocalNTPTest : public InProcessBrowserTest {
     TestInstantServiceObserver mv_observer(instant_service);
     // Make sure the observer knows about the current items. Typically, this
     // gets triggered by navigating to an NTP.
-    instant_service->UpdateMostVisitedItemsInfo();
+    instant_service->UpdateMostVisitedInfo();
     mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
   }
 
@@ -402,9 +404,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Google", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
   // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).
@@ -454,9 +453,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Other", 1);
   histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
-  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
 
   // Make sure impression metrics were recorded. There should be 1 tile, the
   // default prepopulated TopSites (see history::PrepopulatedPage).
@@ -512,14 +508,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
   // favicon images.
   int succeeded_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.md-icon img').length",
+      iframe,
+      "document.querySelectorAll('.md-icon:not(.failed-favicon)').length",
       &succeeded_favicons));
   int failed_favicons = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.md-icon.failed-favicon').length",
       &failed_favicons));
-  // Check if only one add button exists in the frame. This will be included in
-  // the total favicon count.
+  // And check if only one add button exists in the frame.
   int add_button_favicon = 0;
   ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       iframe, "document.querySelectorAll('.md-add-icon').length",
@@ -528,14 +524,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsMDIframe) {
 
   // First, sanity check that the numbers line up (none of the css classes was
   // renamed, etc).
-  EXPECT_EQ(total_favicons,
-            succeeded_favicons + add_button_favicon + failed_favicons);
+  EXPECT_EQ(total_favicons, succeeded_favicons + failed_favicons);
 
   // Since we're in a non-signed-in, fresh profile with no history, there should
   // be the default TopSites tiles (see history::PrepopulatedPage).
   // Check that there is at least one tile, and that all of them loaded their
   // images successfully.
-  EXPECT_EQ(total_favicons, succeeded_favicons + add_button_favicon);
+  EXPECT_EQ(total_favicons, succeeded_favicons);
   EXPECT_EQ(0, failed_favicons);
 }
 
@@ -609,15 +604,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
       &title));
 
   // Move the tile to the front.
-  std::string tid;
+  std::string rid;
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       iframe,
       "document.querySelectorAll('#mv-tiles "
-      ".md-tile')[1].getAttribute('data-tid')",
-      &tid));
+      ".md-tile')[1].getAttribute('data-rid')",
+      &rid));
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
-                  tid + ", 0)");
+                  rid + ", 0)");
 
   // Check that the first tile is the tile that was moved.
   std::string new_title;
@@ -631,11 +626,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
   ASSERT_TRUE(instant_test_utils::GetStringFromJS(
       iframe,
       "document.querySelectorAll('#mv-tiles "
-      ".md-tile')[0].getAttribute('data-tid')",
-      &tid));
+      ".md-tile')[0].getAttribute('data-rid')",
+      &rid));
   local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
       iframe, "window.chrome.embeddedSearch.newTabPage.reorderCustomLink(" +
-                  tid + ", " + end_index + ")");
+                  rid + ", " + end_index + ")");
 
   // Check that the last tile is the tile that was moved.
   new_title = std::string();
@@ -645,6 +640,295 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, ReorderCustomLinks) {
           "].innerText",
       &new_title));
   EXPECT_EQ(new_title, title);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       ToggleShortcutType_WithoutCustomLinksInitialized) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+
+  // Assert that custom links is enabled (which should be by default). If so,
+  // the tiles will have an edit menu.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  ASSERT_TRUE(result);
+
+  // Enable Most Visited sites and disable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check that custom links is disabled. The tiles should not have an edit
+  // menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+
+  // Disable Most Visited sites and enable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check if custom links is enabled. The tiles should have an edit menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       ToggleShortcutType_WithCustomLinksInitialized) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Initialize custom links by adding a shortcut.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, "
+      "'https://1.com', 'Title1')");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Assert that custom links is enabled (which should be by default). If so,
+  // the tiles will have an edit menu.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  ASSERT_TRUE(result);
+
+  // Enable Most Visited sites and disable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check that custom links is disabled. The tiles should not have an edit
+  // menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+
+  // Disable Most Visited sites and enable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+
+  // Check if custom links is enabled. The tiles should have an edit menu.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutsVisibility) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Initialize custom links by adding a shortcut.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, "
+      "'https://1.com', 'Title1')");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Check that the shortcuts are visible.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  ASSERT_TRUE(result);
+
+  // Hide the shortcuts.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "true)");
+
+  // Check that the shortcuts are hidden.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
+
+  // Show the shortcuts.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "true)");
+
+  // Check that the shortcuts are visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ToggleShortcutVisibilityAndType) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestInstantServiceObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Initialize custom links by adding a shortcut.
+  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.updateCustomLink(-1, "
+      "'https://1.com', 'Title1')");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Check that the shortcuts are visible.
+  bool result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  ASSERT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  ASSERT_TRUE(result);
+
+  // Hide the shortcuts and immediately enable Most Visited sites. The
+  // successive calls should not interfere with each other, and only a single
+  // update should be sent.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "false); "
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+  // Confirm that there are the correct number of Most Visited tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount);
+
+  // Check that the tiles have updated properly, i.e. the tiles should not have
+  // an edit menu nor be visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
+
+  // Show the shortcuts and immediately enable custom links.
+  local_ntp_test_utils::ExecuteScriptOnNTPAndWaitUntilLoaded(
+      iframe,
+      "window.chrome.embeddedSearch.newTabPage.toggleShortcutsVisibility("
+      "false); "
+      "window.chrome.embeddedSearch.newTabPage.toggleMostVisitedOrCustomLinks("
+      ")");
+  // Confirm that there are the correct number of custom link tiles.
+  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
+
+  // Check that the tiles have updated properly, i.e. the tiles should have an
+  // edit menu and be visible.
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!window.chrome.embeddedSearch.newTabPage.isUsingMostVisited",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!!document.querySelector('#mv-tiles .md-edit-menu')", &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "window.chrome.embeddedSearch.newTabPage.areShortcutsVisible",
+      &result));
+  EXPECT_TRUE(result);
+  result = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      iframe, "!document.body.classList.contains('hide')", &result));
+  EXPECT_TRUE(result);
 }
 
 class LocalNTPRTLTest : public LocalNTPTest {
@@ -670,10 +954,22 @@ IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
   EXPECT_EQ("rtl", dir);
 }
 
+// TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
+// mode.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
 // Tests that dark mode styling is properly applied to the local NTP.
 class LocalNTPDarkModeTest : public LocalNTPTest, public DarkModeTestBase {
  public:
   LocalNTPDarkModeTest() {}
+
+ private:
+  void SetUpOnMainThread() override {
+    LocalNTPTest::SetUpOnMainThread();
+
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
@@ -681,7 +977,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(browser()->profile());
   theme()->SetDarkMode(false);
-  instant_service->SetDarkModeThemeForTesting(theme());
+  instant_service->SetNativeThemeForTesting(theme());
+  theme()->NotifyObservers();
 
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
@@ -699,11 +996,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   ASSERT_TRUE(GetIsLightChipsApplied(active_tab));
 
   // Enable dark mode and wait until the MV tiles have updated.
-  content::DOMMessageQueue msg_queue(active_tab);
   theme()->SetDarkMode(true);
   theme()->NotifyObservers();
-  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
-                                             /*delay=*/0);
 
   // Check that dark mode has been properly applied.
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
@@ -712,11 +1006,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_FALSE(GetIsLightChipsApplied(active_tab));
 
   // Disable dark mode and wait until the MV tiles have updated.
-  msg_queue.ClearQueue();
   theme()->SetDarkMode(false);
   theme()->NotifyObservers();
-  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
-                                             /*delay=*/0);
 
   // Check that dark mode has been removed.
   EXPECT_FALSE(GetIsDarkModeApplied(active_tab));
@@ -739,10 +1030,14 @@ class LocalNTPDarkModeStartupTest : public LocalNTPDarkModeTest,
   void SetUpOnMainThread() override {
     LocalNTPTest::SetUpOnMainThread();
 
+    theme()->AddColorSchemeNativeThemeObserver(
+        ui::NativeTheme::GetInstanceForWeb());
+
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
     theme()->SetDarkMode(GetParam());
-    instant_service->SetDarkModeThemeForTesting(theme());
+    instant_service->SetNativeThemeForTesting(theme());
+    theme()->NotifyObservers();
   }
 };
 
@@ -765,6 +1060,8 @@ IN_PROC_BROWSER_TEST_P(LocalNTPDarkModeStartupTest, DarkModeApplied) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, LocalNTPDarkModeStartupTest, testing::Bool());
+
+#endif
 
 // A minimal implementation of an interstitial page.
 class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
@@ -796,7 +1093,7 @@ class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
 class TestNavigationThrottle : public content::NavigationThrottle {
  public:
   explicit TestNavigationThrottle(content::NavigationHandle* handle)
-      : content::NavigationThrottle(handle), weak_ptr_factory_(this) {}
+      : content::NavigationThrottle(handle) {}
 
   static std::unique_ptr<NavigationThrottle> Create(
       content::NavigationHandle* handle) {
@@ -824,7 +1121,7 @@ class TestNavigationThrottle : public content::NavigationThrottle {
                                        navigation_handle()->GetURL());
   }
 
-  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationThrottle);
 };
@@ -864,9 +1161,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
 class LocalNTPNoSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPNoSearchShortcutTest()
-      : LocalNTPTest({},
-                     {features::kFirstRunDefaultSearchShortcut,
-                      ntp_tiles::kDefaultSearchShortcut}) {}
+      : LocalNTPTest({}, {features::kFirstRunDefaultSearchShortcut}) {}
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
@@ -881,33 +1176,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPNoSearchShortcutTest, SearchShortcutHidden) {
   EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
 }
 
-class LocalNTPNonFRESearchShortcutTest : public LocalNTPTest {
- public:
-  LocalNTPNonFRESearchShortcutTest()
-      : LocalNTPTest({ntp_tiles::kDefaultSearchShortcut}, {}) {}
-
-  void SetUpOnMainThread() override {
-    // Make sure TopSites are available before running the tests.
-    InstantService* instant_service =
-        InstantServiceFactory::GetForProfile(browser()->profile());
-    TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedItemsInfo();
-    mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(LocalNTPNonFRESearchShortcutTest, SearchShortcutAdded) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
-
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 class LocalNTPFRESearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPFRESearchShortcutTest()
@@ -918,7 +1187,7 @@ class LocalNTPFRESearchShortcutTest : public LocalNTPTest {
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(browser()->profile());
     TestInstantServiceObserver mv_observer(instant_service);
-    instant_service->UpdateMostVisitedItemsInfo();
+    instant_service->UpdateMostVisitedInfo();
     mv_observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 1);
   }
 };
@@ -950,39 +1219,6 @@ class LocalNTPExistingProfileSearchShortcutTest : public LocalNTPTest {
  public:
   LocalNTPExistingProfileSearchShortcutTest() : LocalNTPTest({}, {}) {}
 };
-
-IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
-                       SearchShortcutAdded) {
-  TestInstantServiceObserver observer(
-      InstantServiceFactory::GetForProfile(browser()->profile()));
-
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  content::RenderFrameHost* iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_FALSE(ContainsDefaultSearchTile(iframe));
-
-  // Navigate to a non-NTP URL, which should update most visited tiles.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(embedded_test_server()->GetURL("/title2.html"));
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-
-  // Enable the feature to insert the search shortcut for existing profiles.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(ntp_tiles::kDefaultSearchShortcut);
-  ASSERT_TRUE(base::FeatureList::IsEnabled(ntp_tiles::kDefaultSearchShortcut));
-
-  // Two new tiles (the non-NTP URL and the search shortcut) should be added.
-  observer.WaitForMostVisitedItems(kDefaultMostVisitedItemCount + 2);
-
-  active_tab = local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  iframe = GetIframe(active_tab, kMostVisitedIframe);
-  EXPECT_TRUE(ContainsDefaultSearchTile(iframe));
-}
 
 IN_PROC_BROWSER_TEST_F(LocalNTPExistingProfileSearchShortcutTest,
                        PRE_FRESearchShortcutNotAddedForExistingUsers) {
@@ -1075,6 +1311,105 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   // Verify request headers.
   EXPECT_THAT(request_headers, ::testing::HasSubstr("Sec-Fetch-Site: none"));
   EXPECT_THAT(request_headers, ::testing::HasSubstr("same-site-cookie=1"));
+}
+
+// Verifies that Chrome won't spawn a separate renderer process for
+// every single NTP tab.  This behavior goes all the way back to
+// the initial commit [1] which achieved that behavior by forcing
+// process-per-site mode for NTP tabs.  It seems desirable to preserve this
+// behavior going forward.
+//
+// [1] https://chromium.googlesource.com/chromium/src/+/09911bf300f1a419907a9412154760efd0b7abc3/chrome/browser/browsing_instance.cc#55
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite) {
+  GURL ntp_url("chrome-search://local-ntp/local-ntp.html");
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(browser());
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://remote-ntp [3rd-party NTP] or chrome://ntp [incognito]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(browser());
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
+}
+
+// Just like LocalNTPTest.ProcessPerSite, but for an incognito window.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, ProcessPerSite_Incognito) {
+  GURL ntp_url("chrome://newtab");
+  Browser* incognito_browser = new Browser(Browser::CreateParams(
+      browser()->profile()->GetOffTheRecordProfile(), true));
+
+  // Open NTP in |tab1|.
+  content::WebContents* tab1;
+  {
+    content::WebContentsAddedObserver tab1_observer;
+
+    // Try to simulate as closely as possible what would have happened in the
+    // real user interaction.  In particular, do *not* use
+    // local_ntp_test_utils::OpenNewTab, which requires the caller to specify
+    // the URL of the new tab.
+    chrome::NewTab(incognito_browser);
+
+    // Wait for the new tab.
+    tab1 = tab1_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab1));
+
+    // Sanity check: the NTP should be provided by |ntp_url| (and not by
+    // chrome-search://local-ntp [1st-party, non-incognito NTP] or
+    // chrome-search://remote-ntp [3rd-party NTP]).
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab1, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Open another NTP in |tab2|.
+  content::WebContents* tab2;
+  {
+    content::WebContentsAddedObserver tab2_observer;
+    chrome::NewTab(incognito_browser);
+    tab2 = tab2_observer.GetWebContents();
+    ASSERT_TRUE(WaitForLoadStop(tab2));
+    std::string loc;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        tab2, "domAutomationController.send(window.location.href)", &loc));
+    EXPECT_EQ(ntp_url, GURL(loc));
+  }
+
+  // Verify that |tab1| and |tab2| share a process.
+  EXPECT_EQ(tab1->GetMainFrame()->GetProcess(),
+            tab2->GetMainFrame()->GetProcess());
 }
 
 }  // namespace

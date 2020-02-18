@@ -204,10 +204,10 @@ void PrintContext::CollectLinkedDestinations(Node* node) {
   for (Node* i = node->firstChild(); i; i = i->nextSibling())
     CollectLinkedDestinations(i);
 
-  if (!node->IsLink() || !node->IsElementNode())
+  auto* element = DynamicTo<Element>(node);
+  if (!node->IsLink() || !element)
     return;
-  const AtomicString& href =
-      ToElement(node)->getAttribute(html_names::kHrefAttr);
+  const AtomicString& href = element->getAttribute(html_names::kHrefAttr);
   if (href.IsNull())
     return;
   KURL url = node->GetDocument().CompleteURL(href);
@@ -251,7 +251,8 @@ String PrintContext::PageProperty(LocalFrame* frame,
   // want to collect @page rules and figure out what declarations apply on a
   // given page (that may or may not exist).
   print_context->BeginPrintMode(800, 1000);
-  scoped_refptr<ComputedStyle> style = document->StyleForPage(page_number);
+  scoped_refptr<const ComputedStyle> style =
+      document->StyleForPage(page_number);
 
   // Implement formatters for properties we care about.
   if (!strcmp(property_name, "margin-left")) {

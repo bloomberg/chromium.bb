@@ -18,6 +18,7 @@
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
+#include "chromecast/renderer/on_load_script_injector.h"
 #include "chromecast/renderer/queryable_data_bindings.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
@@ -74,7 +75,8 @@ constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
 #endif  // defined(OS_ANDROID)
 
 CastContentRendererClient::CastContentRendererClient()
-    : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
+    : supported_profiles_(
+          std::make_unique<media::SupportedCodecProfileLevelsMemo>()),
       app_media_capabilities_observer_binding_(this),
       supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
 #if defined(OS_ANDROID)
@@ -168,6 +170,10 @@ void CastContentRendererClient::RenderFrameCreated(
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new CastMediaPlaybackOptions(render_frame);
   new QueryableDataBindings(render_frame);
+
+  // Add script injection support to the RenderFrame, used by Cast platform
+  // APIs. The objects' lifetimes are bound to the RenderFrame's lifetime.
+  new OnLoadScriptInjector(render_frame);
 
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
@@ -310,6 +316,9 @@ bool CastContentRendererClient::IsIdleMediaSuspendEnabled() {
 
 void CastContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+  // Allow HtmlMediaElement.volume to be greater than 1, for normalization.
+  blink::WebRuntimeFeatures::EnableFeatureFromString(
+      "MediaElementVolumeGreaterThanOne", true);
   // Settings for ATV (Android defaults are not what we want).
   blink::WebRuntimeFeatures::EnableMediaControlsOverlayPlayButton(false);
 }

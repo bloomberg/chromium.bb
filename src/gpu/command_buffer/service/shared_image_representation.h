@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_fence.h"
 
 typedef unsigned int GLenum;
 class SkPromiseImageTexture;
@@ -25,6 +26,12 @@ namespace gles2 {
 class Texture;
 class TexturePassthrough;
 }  // namespace gles2
+
+enum class RepresentationAccessMode {
+  kNone,
+  kRead,
+  kWrite,
+};
 
 // A representation of a SharedImageBacking for use with a specific use case /
 // api.
@@ -51,6 +58,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   }
 
  protected:
+  SharedImageManager* manager() const { return manager_; }
   SharedImageBacking* backing() const { return backing_; }
   bool has_context() const { return has_context_; }
 
@@ -69,7 +77,9 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
       : SharedImageRepresentation(manager, backing, tracker) {}
 
   const Mailbox& mailbox() const { return backing()->mailbox(); }
-  void Update() { backing()->Update(); }
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) {
+    backing()->Update(std::move(in_fence));
+  }
 #if defined(OS_WIN)
   void PresentSwapChain() { backing()->PresentSwapChain(); }
 #endif  // OS_WIN
@@ -149,6 +159,43 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
 
 class SharedImageRepresentationSkia : public SharedImageRepresentation {
  public:
+  class ScopedWriteAccess {
+   public:
+    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
+                      int final_msaa_count,
+                      const SkSurfaceProps& surface_props,
+                      std::vector<GrBackendSemaphore>* begin_semaphores,
+                      std::vector<GrBackendSemaphore>* end_semaphores);
+    ScopedWriteAccess(SharedImageRepresentationSkia* representation,
+                      std::vector<GrBackendSemaphore>* begin_semaphores,
+                      std::vector<GrBackendSemaphore>* end_semaphores);
+    ~ScopedWriteAccess();
+
+    bool success() const { return !!surface_; }
+    SkSurface* surface() const { return surface_.get(); }
+
+   private:
+    SharedImageRepresentationSkia* const representation_;
+    sk_sp<SkSurface> surface_;
+  };
+
+  class ScopedReadAccess {
+   public:
+    ScopedReadAccess(SharedImageRepresentationSkia* representation,
+                     std::vector<GrBackendSemaphore>* begin_semaphores,
+                     std::vector<GrBackendSemaphore>* end_semaphores);
+    ~ScopedReadAccess();
+
+    bool success() const { return !!promise_image_texture_; }
+    SkPromiseImageTexture* promise_image_texture() const {
+      return promise_image_texture_.get();
+    }
+
+   private:
+    SharedImageRepresentationSkia* const representation_;
+    sk_sp<SkPromiseImageTexture> promise_image_texture_;
+  };
+
   SharedImageRepresentationSkia(SharedImageManager* manager,
                                 SharedImageBacking* backing,
                                 MemoryTypeTracker* tracker)

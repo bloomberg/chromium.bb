@@ -95,6 +95,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
   EXPECT_TRUE(observer_b.WaitForResponse());  // Headers are received.
   observer_b.ResumeNavigation();  // ReadyToCommitNavigation is called.
   EXPECT_EQ(speculative_rfh_b, rfh_devtools_agent->GetFrameHostForTesting());
+  auto speculative_rfh_b_site_id =
+      speculative_rfh_b->GetSiteInstance()->GetId();
+  if (AreDefaultSiteInstancesEnabled())
+    EXPECT_TRUE(speculative_rfh_b->GetSiteInstance()->IsDefaultSiteInstance());
 
   // 4) Navigate elsewhere, it will cancel the previous navigation.
 
@@ -106,7 +110,21 @@ IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
   RenderFrameHostImpl* speculative_rfh_c =
       root->render_manager()->speculative_frame_host();
   EXPECT_TRUE(speculative_rfh_c);
-  EXPECT_EQ(current_rfh, rfh_devtools_agent->GetFrameHostForTesting());
+  auto speculative_rfh_c_site_id =
+      speculative_rfh_c->GetSiteInstance()->GetId();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Verify that this new URL also belongs to the default SiteInstance and
+    // therefore the RenderFrameHost from the previous navigation could be
+    // reused.
+    EXPECT_TRUE(speculative_rfh_c->GetSiteInstance()->IsDefaultSiteInstance());
+    EXPECT_EQ(speculative_rfh_c, rfh_devtools_agent->GetFrameHostForTesting());
+    EXPECT_EQ(speculative_rfh_b_site_id, speculative_rfh_c_site_id);
+  } else {
+    // Verify that the RenderFrameHost is restored because the new URL required
+    // a new SiteInstance.
+    EXPECT_EQ(current_rfh, rfh_devtools_agent->GetFrameHostForTesting());
+    EXPECT_NE(speculative_rfh_b_site_id, speculative_rfh_c_site_id);
+  }
 
   // 4.b) Navigation: ReadyToCommit.
   observer_c.ResumeNavigation();  // Send the request.

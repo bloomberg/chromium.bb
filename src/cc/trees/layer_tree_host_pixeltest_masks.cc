@@ -18,7 +18,7 @@
 #include "cc/test/layer_tree_pixel_resource_test.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/solid_color_content_layer_client.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 #if !defined(OS_ANDROID)
@@ -26,9 +26,33 @@
 namespace cc {
 namespace {
 
+auto CombineWithLayerMaskTypes(
+    const std::vector<PixelResourceTestCase>& test_cases) {
+  return ::testing::Combine(
+      ::testing::ValuesIn(test_cases),
+      ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK));
+}
+
+// TODO(penghuang): Fix vulkan with one copy or zero copy
+// https://crbug.com/979703
+std::vector<PixelResourceTestCase> const kTestCases = {
+    {LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE},
+    {LayerTreeTest::RENDERER_GL, GPU},
+    {LayerTreeTest::RENDERER_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_GL, ZERO_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, GPU},
+    {LayerTreeTest::RENDERER_SKIA_GL, ONE_COPY},
+    {LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    {LayerTreeTest::RENDERER_SKIA_VK, GPU},
+#endif
+};
+
 using LayerTreeHostMasksPixelTest = ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostMasksPixelTest);
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostMasksPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 class MaskContentLayerClient : public ContentLayerClient {
  public:
@@ -89,17 +113,23 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask.get());
 
+  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
+
   RunPixelResourceTest(background,
                        base::FilePath(FILE_PATH_LITERAL("mask_of_layer.png")));
 }
 
 class LayerTreeHostLayerListPixelTest : public ParameterizedPixelResourceTest {
+ protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->use_layer_lists = true;
+    settings->gpu_rasterization_forced = use_vulkan();
   }
 };
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(LayerTreeHostLayerListPixelTest);
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostLayerListPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   PropertyTrees property_trees;
@@ -152,6 +182,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffect) {
   mask->SetScrollTreeIndex(1);
   mask->SetTransformTreeIndex(1);
   root_layer->AddChild(mask);
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   RunPixelResourceTestWithLayerList(
       root_layer, base::FilePath(FILE_PATH_LITERAL("mask_with_effect.png")),
@@ -418,18 +451,7 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectNoContentToMask) {
       &property_trees);
 }
 
-using LayerTreeHostLayerListPixelTestNonSkia = LayerTreeHostLayerListPixelTest;
-
-// TODO(crbug.com/948128): Enable this test for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    PixelResourceTest,
-    LayerTreeHostLayerListPixelTestNonSkia,
-    ::testing::Combine(
-        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
-        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
-                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
-
-TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
+TEST_P(LayerTreeHostLayerListPixelTest, ScaledMaskWithEffect) {
   PropertyTrees property_trees;
   scoped_refptr<Layer> root_layer;
   InitializeForLayerListMode(&root_layer, &property_trees);
@@ -450,10 +472,12 @@ TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
 
   // Scale the mask with a non-integral transform. This will trigger the
   // AA path in the renderer.
-  TransformNode transform;
-  transform.local = gfx::Transform();
-  transform.local.Scale(1.5, 1.5);
-  property_trees.transform_tree.Insert(transform, 1);
+  TransformTree& transform_tree = property_trees.transform_tree;
+  auto& transform_node =
+      *transform_tree.Node(transform_tree.Insert(TransformNode(), 1));
+  transform_node.source_node_id = transform_node.parent_id;
+  transform_node.local = gfx::Transform();
+  transform_node.local.Scale(1.5, 1.5);
 
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
@@ -488,20 +512,13 @@ TEST_P(LayerTreeHostLayerListPixelTestNonSkia, ScaledMaskWithEffect) {
   mask->SetTransformTreeIndex(2);
   root_layer->AddChild(mask);
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 100.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed);
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   RunPixelResourceTestWithLayerList(
       root_layer,
-      base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect.png")),
+      base::FilePath(FILE_PATH_LITERAL("scaled_mask_with_effect_.png"))
+          .InsertBeforeExtensionASCII(GetRendererSuffix()),
       &property_trees);
 }
 
@@ -556,6 +573,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, MaskWithEffectDifferentSize) {
   mask->SetScrollTreeIndex(1);
   mask->SetTransformTreeIndex(1);
   root_layer->AddChild(mask);
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   // The mask is half the size of thing it's masking. In layer-list mode,
   // the mask is not automatically scaled to match the other layer.
@@ -631,6 +651,9 @@ TEST_P(LayerTreeHostLayerListPixelTest, ImageMaskWithEffect) {
                  SkMatrix::I(), false);
   root_layer->AddChild(mask);
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   // The mask is half the size of thing it's masking. In layer-list mode,
   // the mask is not automatically scaled to match the other layer.
   RunPixelResourceTestWithLayerList(
@@ -670,6 +693,9 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   green->SetMaskLayer(mask.get());
   background->AddChild(green);
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   RunPixelResourceTest(
       background, base::FilePath(FILE_PATH_LITERAL("image_mask_of_layer.png")));
 }
@@ -697,6 +723,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   mask->SetLayerMaskType(mask_type_);
   green->SetMaskLayer(mask.get());
 
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
+
   RunPixelResourceTest(
       background,
       base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
@@ -718,6 +747,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   mask->SetLayerMaskType(mask_type_);
   mask->set_fixed_tile_size(gfx::Size(173, 135));
   green->SetMaskLayer(mask.get());
+
+  pixel_comparator_ =
+      std::make_unique<FuzzyPixelOffByOneComparator>(true /* discard_alpha */);
 
   RunPixelResourceTest(background,
                        base::FilePath(FILE_PATH_LITERAL(
@@ -817,20 +849,9 @@ class CircleContentLayerClient : public ContentLayerClient {
 using LayerTreeHostMasksForBackdropFiltersPixelTest =
     ParameterizedPixelResourceTest;
 
-INSTANTIATE_PIXEL_RESOURCE_TEST_SUITE_P(
-    LayerTreeHostMasksForBackdropFiltersPixelTest);
-
-using LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia =
-    ParameterizedPixelResourceTest;
-
-// TODO(crbug.com/948128): Enable these tests for Skia.
-INSTANTIATE_TEST_SUITE_P(
-    PixelResourceTest,
-    LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
-    ::testing::Combine(
-        ::testing::Values(SOFTWARE, GPU, ONE_COPY, ZERO_COPY),
-        ::testing::Values(Layer::LayerMaskType::SINGLE_TEXTURE_MASK,
-                          Layer::LayerMaskType::MULTI_TEXTURE_MASK)));
+INSTANTIATE_TEST_SUITE_P(PixelResourceTest,
+                         LayerTreeHostMasksForBackdropFiltersPixelTest,
+                         CombineWithLayerMaskTypes(kTestCases));
 
 TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilter) {
@@ -863,9 +884,24 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
   CHECK_EQ(Layer::LayerMaskType::SINGLE_TEXTURE_MASK, mask->mask_type());
 
   base::FilePath image_name =
-      (test_case_ == GPU || test_case_ == SKIA_GL)
+      (raster_type() == GPU)
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
+
+  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+    // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+    // slight different).
+    float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 182.f;
+    int large_error_allowed = 182;
+    int small_error_allowed = 0;
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        true /* discard_alpha */, percentage_pixels_large_error,
+        percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+        large_error_allowed, small_error_allowed);
+  }
+
   RunPixelResourceTest(background, image_name);
 }
 
@@ -962,22 +998,16 @@ class LayerTreeHostMaskAsBlendingPixelTest
             Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
         use_antialiasing_(GetParam().flags & kUseAntialiasing),
         force_shaders_(GetParam().flags & kForceShaders) {
-    float percentage_pixels_small_error = 0.f;
     float percentage_pixels_error = 0.f;
+    float percentage_pixels_small_error = 0.f;
     float average_error_allowed_in_bad_pixels = 0.f;
     int large_error_allowed = 0;
     int small_error_allowed = 0;
-    if (use_antialiasing_) {
-      percentage_pixels_small_error = 0.9f;
-      percentage_pixels_error = 6.7f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
-      small_error_allowed = 1;
-    } else if (test_case_ != SOFTWARE) {
-      percentage_pixels_small_error = 0.9f;
-      percentage_pixels_error = 6.5f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
+    if (renderer_type() != RENDERER_SOFTWARE) {
+      percentage_pixels_error = 6.0f;
+      percentage_pixels_small_error = 2.f;
+      average_error_allowed_in_bad_pixels = 2.1f;
+      large_error_allowed = 11;
       small_error_allowed = 1;
     } else {
 #if defined(ARCH_CPU_ARM64)
@@ -1061,7 +1091,7 @@ class LayerTreeHostMaskAsBlendingPixelTest
   }
 
  protected:
-  std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
@@ -1080,13 +1110,21 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-// TODO(crbug.com/948128): Enable these tests for Skia.
 MaskTestConfig const kTestConfigs[] = {
-    MaskTestConfig{SOFTWARE, 0},
-    MaskTestConfig{ZERO_COPY, 0},
-    MaskTestConfig{ZERO_COPY, kUseAntialiasing},
-    MaskTestConfig{ZERO_COPY, kForceShaders},
-    MaskTestConfig{ZERO_COPY, kUseAntialiasing | kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kUseAntialiasing},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY},
+                   kUseAntialiasing | kForceShaders},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
+                   kUseAntialiasing},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY},
+                   kUseAntialiasing},
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1229,7 +1267,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_case_ == SOFTWARE)
+      (raster_type() == SOFTWARE)
           ? base::FilePath(
                 FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png"))
           : base::FilePath(
@@ -1276,7 +1314,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   mask_isolation->AddChild(mask_layer);
 
   base::FilePath image_name =
-      (test_case_ == SOFTWARE)
+      (raster_type() == SOFTWARE)
           ? base::FilePath(FILE_PATH_LITERAL(
                 "mask_as_blending_rotated_circle_underflow.png"))
           : base::FilePath(FILE_PATH_LITERAL(
@@ -1284,7 +1322,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   RunPixelResourceTest(root, image_name);
 }
 
-TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
+TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
        MaskOfLayerWithBackdropFilterAndBlend) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(128, 128), SK_ColorWHITE);
@@ -1322,20 +1360,14 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTestNonSkia,
   mask->SetLayerMaskType(mask_type_);
   picture_horizontal->SetMaskLayer(mask.get());
 
-  float percentage_pixels_large_error = 0.062f;  // 0.062%, ~10px / (128*128)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 200.0f;
-  int large_error_allowed = 256;
-  int small_error_allowed = 0;
-  pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-      true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed);
-
-  RunPixelResourceTest(background,
-                       base::FilePath(FILE_PATH_LITERAL(
-                           "mask_of_backdrop_filter_and_blend.png")));
+  base::FilePath result_path(
+      FILE_PATH_LITERAL("mask_of_backdrop_filter_and_blend_.png"));
+  if (raster_type() != GPU) {
+    result_path = result_path.InsertBeforeExtensionASCII("sw");
+  } else {
+    result_path = result_path.InsertBeforeExtensionASCII(GetRendererSuffix());
+  }
+  RunPixelResourceTest(background, result_path);
 }
 
 }  // namespace

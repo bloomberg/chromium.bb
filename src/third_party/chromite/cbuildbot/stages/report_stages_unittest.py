@@ -32,7 +32,6 @@ from chromite.lib import osutils
 from chromite.lib import patch_unittest
 from chromite.lib import results_lib
 from chromite.lib import retry_stats
-from chromite.lib import risk_report
 from chromite.lib import toolchain
 from chromite.lib.buildstore import FakeBuildStore
 
@@ -216,10 +215,6 @@ class AbstractReportStageTestCase(
                      return_value=1000)
     self.PatchObject(toolchain, 'GetToolchainsForBoard')
     self.PatchObject(toolchain, 'GetArchForTarget', return_value='x86')
-
-    # We need to mock out the function in risk_report that calls the real
-    # CL-Scanner API to avoid relying on external dependencies in the test.
-    self.PatchObject(risk_report, '_GetCLRisks', return_value={'1234': 1.0})
 
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to

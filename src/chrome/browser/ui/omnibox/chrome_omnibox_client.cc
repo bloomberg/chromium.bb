@@ -35,6 +35,7 @@
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -78,7 +79,7 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
 #include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
 #endif
@@ -463,7 +464,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 // We could go further to try to analyze the difference between the previous
 // and current URLs, but users edit URLs rarely enough that this is a
 // reasonable approximation.
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   if (controller_->GetLocationBarModel()->ShouldDisplayURL()) {
     feature_engagement::NewTabTrackerFactory::GetInstance()
         ->GetForProfile(profile_)
@@ -476,7 +477,8 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(nullptr, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+                       ProfileMetrics::GetBrowserProfileType(profile_));
 }
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {

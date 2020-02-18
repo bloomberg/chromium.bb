@@ -20,6 +20,8 @@
 #include "tools/Resources.h"
 #include "tools/ToolUtils.h"
 
+#ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
+
 /**
  *  Interprets c as an unpremultiplied color, and returns the
  *  premultiplied equivalent.
@@ -42,13 +44,9 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "unpremul");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("unpremul"); }
+
+    bool onChar(SkUnichar uni) override {
             char utf8[SkUTF::kMaxBytesInUTF8Sequence];
             size_t size = SkUTF::ToUTF8(uni, utf8);
             // Only consider events for single char keys
@@ -64,8 +62,7 @@ protected:
                         break;
                 }
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void onDrawBackground(SkCanvas* canvas) override {
@@ -174,3 +171,5 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 DEF_SAMPLE( return new UnpremulView(GetResourcePath("images")); )
+
+#endif

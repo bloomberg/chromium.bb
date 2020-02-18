@@ -14,10 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
@@ -29,12 +26,11 @@
 namespace blink {
 namespace {
 
+using NoiseSuppression = webrtc::AudioProcessing::Config::NoiseSuppression;
+
 base::Optional<double> GetGainControlCompressionGain(
-    const base::Value* config) {
-  if (!config)
-    return base::nullopt;
-  const base::Value* found =
-      config->FindKey("gain_control_compression_gain_db");
+    const base::Value& config) {
+  const base::Value* found = config.FindKey("gain_control_compression_gain_db");
   if (!found)
     return base::nullopt;
   double gain = found->GetDouble();
@@ -42,15 +38,39 @@ base::Optional<double> GetGainControlCompressionGain(
   return gain;
 }
 
-base::Optional<double> GetPreAmplifierGainFactor(const base::Value* config) {
-  if (!config)
-    return base::nullopt;
-  const base::Value* found = config->FindKey("pre_amplifier_fixed_gain_factor");
+base::Optional<double> GetPreAmplifierGainFactor(const base::Value& config) {
+  const base::Value* found = config.FindKey("pre_amplifier_fixed_gain_factor");
   if (!found)
     return base::nullopt;
   double factor = found->GetDouble();
   DCHECK_GE(factor, 1.f);
   return factor;
+}
+
+base::Optional<NoiseSuppression::Level> GetNoiseSuppressionLevel(
+    const base::Value& config) {
+  const base::Value* found = config.FindKey("noise_suppression_level");
+  if (!found)
+    return base::nullopt;
+  int level = found->GetInt();
+  DCHECK_GE(level, static_cast<int>(NoiseSuppression::kLow));
+  DCHECK_LE(level, static_cast<int>(NoiseSuppression::kVeryHigh));
+  return static_cast<NoiseSuppression::Level>(level);
+}
+
+void GetExtraConfigFromJson(
+    const std::string& audio_processing_platform_config_json,
+    base::Optional<double>* gain_control_compression_gain_db,
+    base::Optional<double>* pre_amplifier_fixed_gain_factor,
+    base::Optional<NoiseSuppression::Level>* noise_suppression_level) {
+  auto config = base::JSONReader::Read(audio_processing_platform_config_json);
+  if (!config) {
+    LOG(ERROR) << "Failed to parse platform config JSON.";
+    return;
+  }
+  *gain_control_compression_gain_db = GetGainControlCompressionGain(*config);
+  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(*config);
+  *noise_suppression_level = GetNoiseSuppressionLevel(*config);
 }
 
 }  // namespace
@@ -113,22 +133,6 @@ AudioProcessingProperties::ToAudioProcessingSettings() const {
   return out;
 }
 
-void EnableEchoCancellation(AudioProcessing::Config* apm_config) {
-  apm_config->echo_canceller.enabled = true;
-#if defined(OS_ANDROID)
-  apm_config->echo_canceller.mobile_mode = true;
-#else
-  apm_config->echo_canceller.mobile_mode = false;
-#endif
-}
-
-void EnableNoiseSuppression(
-    AudioProcessing::Config* apm_config,
-    AudioProcessing::Config::NoiseSuppression::Level ns_level) {
-  apm_config->noise_suppression.enabled = true;
-  apm_config->noise_suppression.level = ns_level;
-}
-
 void EnableTypingDetection(AudioProcessing::Config* apm_config,
                            webrtc::TypingDetection* typing_detector) {
   apm_config->voice_detection.enabled = true;
@@ -158,24 +162,6 @@ void StartEchoCancellationDump(AudioProcessing* audio_processing,
 
 void StopEchoCancellationDump(AudioProcessing* audio_processing) {
   audio_processing->DetachAecDump();
-}
-
-void GetExtraGainConfig(
-    const base::Optional<std::string>& audio_processing_platform_config_json,
-    base::Optional<double>* pre_amplifier_fixed_gain_factor,
-    base::Optional<double>* gain_control_compression_gain_db) {
-  if (!audio_processing_platform_config_json)
-    return;
-  std::unique_ptr<base::Value> config;
-  config =
-      base::JSONReader::ReadDeprecated(*audio_processing_platform_config_json);
-  if (!config) {
-    LOG(ERROR) << "Failed to parse platform config JSON.";
-    return;
-  }
-  *pre_amplifier_fixed_gain_factor = GetPreAmplifierGainFactor(config.get());
-  *gain_control_compression_gain_db =
-      GetGainControlCompressionGain(config.get());
 }
 
 void ConfigAutomaticGainControl(
@@ -234,11 +220,43 @@ void ConfigAutomaticGainControl(
   }
 }
 
-void ConfigPreAmplifier(AudioProcessing::Config* apm_config,
-                        base::Optional<double> fixed_gain_factor) {
-  if (!!fixed_gain_factor) {
+void PopulateApmConfig(
+    AudioProcessing::Config* apm_config,
+    const AudioProcessingProperties& properties,
+    const base::Optional<std::string>& audio_processing_platform_config_json,
+    base::Optional<double>* gain_control_compression_gain_db) {
+  // TODO(saza): When Chrome uses AGC2, handle all JSON config via the
+  // webrtc::AudioProcessing::Config, crbug.com/895814.
+  base::Optional<double> pre_amplifier_fixed_gain_factor;
+  base::Optional<NoiseSuppression::Level> noise_suppression_level;
+  if (audio_processing_platform_config_json.has_value()) {
+    GetExtraConfigFromJson(audio_processing_platform_config_json.value(),
+                           gain_control_compression_gain_db,
+                           &pre_amplifier_fixed_gain_factor,
+                           &noise_suppression_level);
+  }
+
+  apm_config->high_pass_filter.enabled = properties.goog_highpass_filter;
+
+  if (pre_amplifier_fixed_gain_factor.has_value()) {
     apm_config->pre_amplifier.enabled = true;
-    apm_config->pre_amplifier.fixed_gain_factor = fixed_gain_factor.value();
+    apm_config->pre_amplifier.fixed_gain_factor =
+        pre_amplifier_fixed_gain_factor.value();
+  }
+
+  if (properties.goog_noise_suppression) {
+    apm_config->noise_suppression.enabled = true;
+    apm_config->noise_suppression.level =
+        noise_suppression_level.value_or(NoiseSuppression::kHigh);
+  }
+
+  if (properties.EchoCancellationIsWebRtcProvided()) {
+    apm_config->echo_canceller.enabled = true;
+#if defined(OS_ANDROID)
+    apm_config->echo_canceller.mobile_mode = true;
+#else
+    apm_config->echo_canceller.mobile_mode = false;
+#endif
   }
 }
 

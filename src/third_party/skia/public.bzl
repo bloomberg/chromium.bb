@@ -251,6 +251,9 @@ BASE_SRCS_ALL = struct(
         # Currently exclude all vulkan specific files
         "src/gpu/vk/*",
 
+        # Currently exclude all Dawn-specific files
+        "src/gpu/dawn/*",
+
         # Defines main.
         "src/sksl/SkSLMain.cpp",
 
@@ -453,12 +456,13 @@ DM_SRCS_ALL = struct(
         "experimental/svg/model/*.h",
         "gm/*.cpp",
         "gm/*.h",
+        "src/utils/SkMultiPictureDocument.cpp",
         "src/xml/*.cpp",
         "tests/*.cpp",
         "tests/*.h",
-        "tools/ios_utils.h",
-        "tools/BinaryAsset.h",
+        "tools/AutoreleasePool.h",
         "tools/BigPathBench.inc",
+        "tools/BinaryAsset.h",
         "tools/CrashHandler.cpp",
         "tools/CrashHandler.h",
         "tools/DDLPromiseImageHelper.cpp",
@@ -473,6 +477,13 @@ DM_SRCS_ALL = struct(
         "tools/ResourceFactory.h",
         "tools/Resources.cpp",
         "tools/Resources.h",
+        "tools/SkMetaData.cpp",
+        "tools/SkMetaData.h",
+        "tools/SkSharingProc.cpp",
+        "tools/SkVMBuilders.cpp",
+        "tools/SkVMBuilders.h",
+        "tools/ToolUtils.cpp",
+        "tools/ToolUtils.h",
         "tools/UrlDataManager.cpp",
         "tools/UrlDataManager.h",
         "tools/debugger/*.cpp",
@@ -488,16 +499,15 @@ DM_SRCS_ALL = struct(
         "tools/fonts/TestTypeface.cpp",
         "tools/fonts/TestTypeface.h",
         "tools/fonts/ToolUtilsFont.cpp",
+        "tools/fonts/test_font_index.inc",
         "tools/fonts/test_font_monospace.inc",
         "tools/fonts/test_font_sans_serif.inc",
         "tools/fonts/test_font_serif.inc",
-        "tools/fonts/test_font_index.inc",
         "tools/gpu/**/*.cpp",
         "tools/gpu/**/*.h",
+        "tools/ios_utils.h",
         "tools/random_parse_path.cpp",
         "tools/random_parse_path.h",
-        "tools/ToolUtils.cpp",
-        "tools/ToolUtils.h",
         "tools/timer/*.cpp",
         "tools/timer/*.h",
         "tools/trace/*.cpp",
@@ -510,6 +520,7 @@ DM_SRCS_ALL = struct(
         "tests/FontMgrFontConfigTest.cpp",  # FontConfig-only.
         "tests/skia_test.cpp",  # Old main.
         "tools/gpu/atlastext/*",
+        "tools/gpu/dawn/*",
         "tools/gpu/gl/angle/*",
         "tools/gpu/gl/egl/*",
         "tools/gpu/gl/glx/*",
@@ -600,6 +611,8 @@ def base_defines(os_conditions):
         "SK_DISABLE_LOWP_RASTER_PIPELINE",
         # JPEG is in codec_limited
         "SK_HAS_JPEG_LIBRARY",
+        # Needed for some tests in dm
+        "SK_ENABLE_SKSL_INTERPRETER",
     ] + skia_select(
         os_conditions,
         [
@@ -663,7 +676,30 @@ def sksg_lib_hdrs():
     return native.glob(["modules/sksg/include/*.h"])
 
 def sksg_lib_srcs():
-    return native.glob(["modules/sksg/src/*.cpp"])
+    return native.glob([
+        "modules/sksg/src/*.cpp",
+        "modules/sksg/src/*.h",
+    ])
+
+################################################################################
+## skparagraph_lib
+################################################################################
+
+def skparagraph_lib_hdrs():
+    return native.glob(["modules/skparagraph/include/*.h"])
+
+def skparagraph_lib_srcs():
+    return native.glob(["modules/skparagraph/src/*.cpp"])
+
+################################################################################
+## experimental xform
+################################################################################
+
+def exp_xform_lib_hdrs():
+    return native.glob(["experimental/xform/*.h"])
+
+def exp_xform_lib_srcs():
+    return native.glob(["experimental/xform/*.cpp"])
 
 ################################################################################
 ## skottie_lib
@@ -677,6 +713,10 @@ def skottie_lib_srcs():
         [
             "modules/skottie/src/*.cpp",
             "modules/skottie/src/*.h",
+            "modules/skottie/src/effects/*.cpp",
+            "modules/skottie/src/effects/*.h",
+            "modules/skottie/src/layers/*.cpp",
+            "modules/skottie/src/layers/*.h",
             "modules/skottie/src/text/*.cpp",
             "modules/skottie/src/text/*.h",
         ],

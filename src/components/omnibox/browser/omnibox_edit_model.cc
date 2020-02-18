@@ -156,27 +156,30 @@ OmniboxEditModel::GetPageClassification() const {
       focus_source_);
 }
 
-const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
+OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() const {
+  // NOTE: it's important this doesn't attempt to access any state that
+  // may come from the active WebContents. At the time this is called, the
+  // active WebContents has already changed.
+
   // Like typing, switching tabs "accepts" the temporary text as the user
   // text, because it makes little sense to have temporary text when the
   // popup is closed.
+  base::string16 user_text;
   if (user_input_in_progress_) {
-    // Weird edge case to match other browsers: if the edit is empty, revert to
-    // the permanent text (so the user can get it back easily) but select it (so
-    // on switching back, typing will "just work").
     const base::string16 display_text = view_->GetText();
-    if (MaybePrependKeyword(display_text).empty()) {
-      base::AutoReset<bool> tmp(&in_revert_, true);
-      view_->RevertAll();
-      view_->SelectAll(true);
-    } else {
-      InternalSetUserText(display_text);
-    }
+    if (!MaybePrependKeyword(display_text).empty())
+      user_text = display_text;
+    // Else case is user deleted all the text. The expectation (which matches
+    // other browsers) is when the user restores the state a revert happens as
+    // well as a select all. The revert shouldn't be done here, as at the time
+    // this is called a revert would revert to the url of the newly activated
+    // tab (because at the time this is called, the WebContents has already
+    // changed). By leaving the |user_text| empty downstream code is able to
+    // detect this and select all.
+  } else {
+    user_text = user_text_;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("Omnibox.SaveStateForTabSwitch.UserInputInProgress",
-                        user_input_in_progress_);
-  return State(user_input_in_progress_, user_text_, keyword_, is_keyword_hint_,
+  return State(user_input_in_progress_, user_text, keyword_, is_keyword_hint_,
                keyword_mode_entry_method_, focus_state_, focus_source_, input_);
 }
 
@@ -213,7 +216,8 @@ void OmniboxEditModel::RestoreState(const State* state) {
   if (state->user_input_in_progress) {
     // NOTE: Be sure to set keyword-related state AFTER invoking
     // SetUserText(), as SetUserText() clears the keyword state.
-    view_->SetUserText(state->user_text, false);
+    if (!state->user_text.empty() || !state->keyword.empty())
+      view_->SetUserText(state->user_text, false);
     keyword_ = state->keyword;
     is_keyword_hint_ = state->is_keyword_hint;
     keyword_mode_entry_method_ = state->keyword_mode_entry_method;
@@ -568,14 +572,7 @@ void OmniboxEditModel::PasteAndGo(const base::string16& text,
                    match_selection_timestamp);
 }
 
-bool OmniboxEditModel::ClassifiesAsSearch(const base::string16& text) const {
-  AutocompleteMatch match;
-  ClassifyString(text, &match, nullptr);
-  return AutocompleteMatch::IsSearchType(match.type);
-}
-
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
-                                   bool for_drop,
                                    base::TimeTicks match_selection_timestamp) {
   // Get the URL and transition type for the selected entry.
   GURL alternate_nav_url;
@@ -634,9 +631,23 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // (e.g. manually retyping the same search query), and it seems wrong to
     // treat this as a reload.
     match.transition = ui::PAGE_TRANSITION_RELOAD;
-  } else if (for_drop ||
-             ((paste_state_ != NONE) &&
-              (match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED))) {
+  } else if (ui::PageTransitionCoreTypeIs(match.transition,
+                                          ui::PAGE_TRANSITION_GENERATED)) {
+    // When the omnibox is displaying the default search provider search terms,
+    // the user focuses the omnibox, and hits Enter without refining the search
+    // terms, we should classify this transition as a RELOAD.
+    base::string16 search_terms;
+    if (controller()->GetLocationBarModel()->GetDisplaySearchTerms(
+            &search_terms) &&
+        match.fill_into_edit == search_terms &&
+        match
+            .GetSubstitutingExplicitlyInvokedKeyword(
+                client_->GetTemplateURLService())
+            .empty()) {
+      match.transition = ui::PAGE_TRANSITION_RELOAD;
+    }
+  } else if (paste_state_ != NONE &&
+             match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED) {
     // When the user pasted in a URL and hit enter, score it like a link click
     // rather than a normal typed URL, so it doesn't get inline autocompleted
     // as aggressively later.
@@ -803,7 +814,9 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       client_->GetTemplateURLService()->IncrementUsageCount(template_url);
     } else {
       DCHECK(ui::PageTransitionTypeIncludingQualifiersIs(
-          match.transition, ui::PAGE_TRANSITION_GENERATED));
+                 match.transition, ui::PAGE_TRANSITION_GENERATED) ||
+             ui::PageTransitionTypeIncludingQualifiersIs(
+                 match.transition, ui::PAGE_TRANSITION_RELOAD));
       // NOTE: We purposefully don't increment the usage count of the default
       // search engine here like we do for explicit keywords above; see comments
       // in template_url.h.
@@ -1143,15 +1156,12 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
 
     // If, as a result of the key press, we would select the first result, then
     // we should revert the temporary text same as what pressing escape would
-    // have done. In the future, if the selection behavior becomes more involved
-    // (e.g. wrap around), then we should consider creating a helper method
-    // GetNewSelectionLine(int cont) to be compared with 0 here and to be reused
-    // in OmniboxPopupModel::Move.
-    if (has_temporary_text_ && count < 0 &&
-        (unsigned)-count >= popup_model()->selected_line()) {
+    // have done.
+    const size_t line_no = GetNewSelectedLine(count);
+    if (has_temporary_text_ && line_no == 0) {
       RevertTemporaryText(true);
     } else {
-      popup_model()->Move(count);
+      popup_model()->MoveTo(line_no);
     }
     return;
   }
@@ -1602,4 +1612,23 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
     view_->ApplyCaretVisibility();
 
   client_->OnFocusChanged(focus_state_, reason);
+}
+
+size_t OmniboxEditModel::GetNewSelectedLine(int count) {
+  if (!OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled()) {
+    if (count < 0) {
+      if ((size_t)-count >= popup_model()->selected_line())
+        return 0;
+    } else if (count + popup_model()->selected_line() >=
+               popup_model()->result().size()) {
+      return popup_model()->result().size() - 1;
+    }
+    return popup_model()->selected_line() + count;
+  } else {
+    int line_no = (static_cast<int>(popup_model()->selected_line()) + count) %
+                  static_cast<int>(popup_model()->result().size());
+    if (line_no < 0)
+      line_no += popup_model()->result().size();
+    return line_no;
+  }
 }

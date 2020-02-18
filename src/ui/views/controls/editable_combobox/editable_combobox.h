@@ -41,13 +41,13 @@ class VIEWS_EXPORT EditableCombobox : public View,
                                       public ViewObserver,
                                       public ButtonListener {
  public:
+  METADATA_HEADER(EditableCombobox);
+
   enum class Type {
     kRegular,
     kPassword,
   };
 
-  // The class name.
-  static const char kViewClassName[];
   static constexpr int kDefaultTextContext = style::CONTEXT_BUTTON;
   static constexpr int kDefaultTextStyle = style::STYLE_PRIMARY;
 
@@ -119,20 +119,17 @@ class VIEWS_EXPORT EditableCombobox : public View,
   void ShowDropDownMenu(ui::MenuSourceType source_type = ui::MENU_SOURCE_NONE);
 
   // Overridden from View:
-  const char* GetClassName() const override;
   void Layout() override;
   void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from TextfieldController:
   void ContentsChanged(Textfield* sender,
                        const base::string16& new_contents) override;
-  bool HandleMouseEvent(Textfield* sender,
-                        const ui::MouseEvent& mouse_event) override;
-  bool HandleGestureEvent(Textfield* sender,
-                          const ui::GestureEvent& gesture_event) override;
+  bool HandleKeyEvent(Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // Overridden from ViewObserver:
-  void OnViewFocused(View* observed_view) override;
   void OnViewBlurred(View* observed_view) override;
 
   // Overridden from ButtonListener:
@@ -159,10 +156,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
   const int text_style_;
 
   const Type type_;
-
-  // True between mouse press and release, used to avoid opening the menu and
-  // interrupting textfield selection interactions.
-  bool mouse_pressed_ = false;
 
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;

@@ -29,6 +29,10 @@
 namespace skiagm {
 
 class CircleGM : public GM {
+    sk_sp<SkDrawLooper> fLooper;
+    enum {
+        kLooperColorSentinel = 0x01020304
+    };
 public:
     CircleGM() {
         this->setBGColor(0xFF000000);
@@ -82,6 +86,7 @@ protected:
         fPaints.push_back(p);
         }
 
+#ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
         {
         // AA with blur
         SkPaint p;
@@ -91,7 +96,15 @@ protected:
                                      SkIntToScalar(5), SkIntToScalar(10)));
         fPaints.push_back(p);
         }
-
+#else
+        fLooper = SkBlurDrawLooper::Make(SK_ColorBLUE, SkBlurMask::ConvertRadiusToSigma(10),5,10);
+        {
+            SkPaint p;
+            p.setColor(kLooperColorSentinel);
+            p.setAntiAlias(true);
+            fPaints.push_back(p);
+        }
+#endif
         {
         // AA with stroke style
         SkPaint p;
@@ -171,13 +184,15 @@ protected:
             // position the path, and make it at off-integer coords.
             canvas->translate(SK_Scalar1 * 200 * (i % 5) + SK_Scalar1 / 4,
                               SK_Scalar1 * 200 * (i / 5) + 3 * SK_Scalar1 / 4);
-            SkColor color = rand.nextU();
-            color |= 0xff000000;
-            fPaints[i].setColor(color);
-
-            canvas->drawCircle(SkIntToScalar(40), SkIntToScalar(40),
-                               SkIntToScalar(20),
-                               fPaints[i]);
+            SkPaint p = fPaints[i];
+            p.setColor(rand.nextU() | 0xff000000);
+            if (fPaints[i].getColor() == kLooperColorSentinel) {
+                fLooper->apply(canvas, p, [](SkCanvas* c, const SkPaint& p) {
+                    c->drawCircle(40, 40, 20, p);
+                });
+            } else {
+                canvas->drawCircle(40, 40, 20, p);
+            }
             canvas->restore();
         }
 
@@ -191,14 +206,8 @@ protected:
 
             SkPaint paint;
             paint.setAntiAlias(true);
-
-            SkColor color = rand.nextU();
-            color |= 0xff000000;
-            paint.setColor(color);
-
-            canvas->drawCircle(SkIntToScalar(40), SkIntToScalar(40),
-                               SkIntToScalar(20),
-                               paint);
+            paint.setColor(rand.nextU() | 0xff000000);
+            canvas->drawCircle(40, 40, 20, paint);
 
             canvas->restore();
         }

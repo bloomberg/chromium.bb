@@ -21,14 +21,14 @@ namespace cc {
 PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<viz::ContextProvider> context_provider,
     bool flipped_output_surface)
-    : OutputSurface(std::move(context_provider)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(context_provider)) {
   capabilities_.flipped_output_surface = flipped_output_surface;
   capabilities_.supports_stencil = true;
 }
 
 PixelTestOutputSurface::PixelTestOutputSurface(
     std::unique_ptr<viz::SoftwareOutputDevice> software_device)
-    : OutputSurface(std::move(software_device)), weak_ptr_factory_(this) {
+    : OutputSurface(std::move(software_device)) {
   capabilities_.supports_stencil = true;
 }
 
@@ -77,14 +77,9 @@ void PixelTestOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
 }
 
 void PixelTestOutputSurface::SwapBuffersCallback() {
-  client_->DidReceiveSwapBuffersAck();
+  client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
   client_->DidReceivePresentationFeedback(
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(), 0));
-}
-
-std::unique_ptr<viz::OverlayCandidateValidator>
-PixelTestOutputSurface::TakeOverlayCandidateValidator() {
-  return nullptr;
 }
 
 bool PixelTestOutputSurface::IsDisplayedAsOverlayPlane() const {

@@ -40,14 +40,15 @@ class FakeContentCaptureSender {
     content_capture_receiver_->DidRemoveContent(data);
   }
 
-  mojom::ContentCaptureReceiverAssociatedRequest GetAssociatedRequest() {
-    return mojo::MakeRequestAssociatedWithDedicatedPipe(
-        &content_capture_receiver_);
+  mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+  GetPendingAssociatedReceiver() {
+    return content_capture_receiver_
+        .BindNewEndpointAndPassDedicatedReceiverForTesting();
   }
 
  private:
-  mojom::ContentCaptureReceiverAssociatedPtr content_capture_receiver_ =
-      nullptr;
+  mojo::AssociatedRemote<mojom::ContentCaptureReceiver>
+      content_capture_receiver_;
 };
 
 class SessionRemovedTestHelper {
@@ -131,6 +132,11 @@ class ContentCaptureReceiverManagerHelper
 
   void Reset() { removed_sessions_.clear(); }
 
+  ContentCaptureReceiver* GetContentCaptureReceiver(
+      content::RenderFrameHost* rfh) const {
+    return ContentCaptureReceiverForFrame(rfh);
+  }
+
  private:
   ContentCaptureSession parent_session_;
   ContentCaptureSession updated_parent_session_;
@@ -141,6 +147,8 @@ class ContentCaptureReceiverManagerHelper
   std::vector<ContentCaptureSession> removed_sessions_;
   SessionRemovedTestHelper* session_removed_test_helper_;
 };
+
+}  // namespace
 
 class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
  public:
@@ -158,7 +166,7 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
     main_frame_ = web_contents()->GetMainFrame();
     // Binds sender with receiver.
     ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        content_capture_sender_->GetAssociatedRequest(), main_frame_);
+        content_capture_sender_->GetPendingAssociatedReceiver(), main_frame_);
 
     ContentCaptureData child;
     // Have the unique id for text content.
@@ -206,7 +214,8 @@ class ContentCaptureReceiverTest : public content::RenderViewHostTestHarness {
         content::RenderFrameHostTester::For(main_frame_)->AppendChild("child");
     // Binds sender with receiver for child frame.
     ContentCaptureReceiverManager::BindContentCaptureReceiver(
-        child_content_capture_sender_->GetAssociatedRequest(), child_frame_);
+        child_content_capture_sender_->GetPendingAssociatedReceiver(),
+        child_frame_);
   }
 
   FakeContentCaptureSender* content_capture_sender() {
@@ -468,6 +477,21 @@ TEST_F(ContentCaptureReceiverTest, ChildFrameDidCaptureContent) {
             content_capture_receiver_manager_helper()->captured_data());
 }
 
+// This test is for issue crbug.com/995121 .
+TEST_F(ContentCaptureReceiverTest, RenderFrameHostGone) {
+  auto* receiver =
+      content_capture_receiver_manager_helper()->GetContentCaptureReceiver(
+          web_contents()->GetMainFrame());
+  // No good way to simulate crbug.com/995121, just set rfh_ to nullptr in
+  // ContentCaptureReceiver, so content::WebContents::FromRenderFrameHost()
+  // won't return WebContents.
+  receiver->rfh_ = nullptr;
+  // Ensure no crash.
+  DidCaptureContent(test_data(), true /* first_data */);
+  DidUpdateContent(test_data());
+  DidRemoveContent(expected_removed_ids());
+}
+
 TEST_F(ContentCaptureReceiverTest, ChildFrameCaptureContentFirst) {
   // Simulate add child frame.
   SetupChildFrame();
@@ -617,5 +641,5 @@ TEST_F(ContentCaptureReceiverMultipleFrameTest,
       2u,
       content_capture_receiver_manager_helper()->GetFrameMapSizeForTesting());
 }
-}  // namespace
+
 }  // namespace content_capture

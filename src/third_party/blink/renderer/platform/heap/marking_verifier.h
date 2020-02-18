@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VERIFIER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VERIFIER_H_
 
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
@@ -15,41 +13,25 @@ namespace blink {
 class MarkingVerifier final : public Visitor {
  public:
   explicit MarkingVerifier(ThreadState* state) : Visitor(state) {}
-  ~MarkingVerifier() override {}
+  ~MarkingVerifier() override = default;
 
-  void VerifyObject(HeapObjectHeader* header) {
-    // Verify only non-free marked objects.
-    if (header->IsFree() || !header->IsMarked())
-      return;
+  void VerifyObject(HeapObjectHeader* header);
 
-    const GCInfo* info =
-        GCInfoTable::Get().GCInfoFromIndex(header->GcInfoIndex());
-    const bool can_verify =
-        !info->has_v_table || blink::VTableInitialized(header->Payload());
-    if (can_verify) {
-      CHECK(header->IsValid());
-      info->trace(this, header->Payload());
-    }
-  }
-
-  void Visit(void* object, TraceDescriptor desc) final {
-    VerifyChild(object, desc.base_object_payload);
-  }
-
+  void Visit(void* object, TraceDescriptor desc) final;
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,
-                 WeakCallback callback) final {
-    VerifyChild(object, desc.base_object_payload);
-  }
+                 WeakCallback callback) final;
 
-  // Unused overrides.
-  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final {}
+  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final;
+
   void VisitBackingStoreWeakly(void*,
                                void**,
                                TraceDescriptor,
                                WeakCallback,
-                               void*) final {}
+                               void*) final;
+
+  // Unused overrides.
   void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void**, MovingObjectCallback, void*) final {
   }
@@ -57,23 +39,9 @@ class MarkingVerifier final : public Visitor {
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
  private:
-  void VerifyChild(void* object, void* base_object_payload) {
-    CHECK(object);
-    // Verification may check objects that are currently under construction and
-    // would require vtable access to figure out their headers. A nullptr in
-    // |base_object_payload| indicates that a mixin object is in construction
-    // and the vtable cannot be used to get to the object header.
-    const HeapObjectHeader* const child_header =
-        (base_object_payload)
-            ? HeapObjectHeader::FromPayload(base_object_payload)
-            : HeapObjectHeader::FromInnerAddress(object);
-    // These checks ensure that any children reachable from marked parents are
-    // also marked. If you hit these checks then marking is in an inconsistent
-    // state meaning that there are unmarked objects reachable from marked
-    // ones.
-    CHECK(child_header);
-    CHECK(child_header->IsMarked());
-  }
+  void VerifyChild(void* object, void* base_object_payload);
+
+  HeapObjectHeader* parent_ = nullptr;
 };
 
 }  // namespace blink

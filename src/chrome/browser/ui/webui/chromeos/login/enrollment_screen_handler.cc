@@ -365,25 +365,19 @@ void EnrollmentScreenHandler::ShowAuthError(
     const GoogleServiceAuthError& error) {
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
-    case GoogleServiceAuthError::CAPTCHA_REQUIRED:
-    case GoogleServiceAuthError::TWO_FACTOR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::REQUEST_CANCELED:
     case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::WEB_LOGIN_REQUIRED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR, false);
       return;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_ACCOUNT_ERROR, true);
       return;
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_AUTH_NETWORK_ERROR, true);
       return;
-    case GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED:
     case GoogleServiceAuthError::NUM_STATES:
       break;
   }

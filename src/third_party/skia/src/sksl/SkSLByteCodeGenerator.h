@@ -8,8 +8,8 @@
 #ifndef SKSL_BYTECODEGENERATOR
 #define SKSL_BYTECODEGENERATOR
 
+#include <algorithm>
 #include <stack>
-#include <tuple>
 #include <unordered_map>
 
 #include "src/sksl/SkSLByteCode.h"
@@ -71,7 +71,7 @@ public:
          * Stack before call: ... lvalue value
          * Stack after call: ...
          */
-        virtual void store() = 0;
+        virtual void store(bool discard) = 0;
 
     protected:
         ByteCodeGenerator& fGenerator;
@@ -88,7 +88,7 @@ public:
 
     void write32(uint32_t b);
 
-    void write(ByteCodeInstruction inst);
+    void write(ByteCodeInstruction inst, int count = kUnusedStackCount);
 
     /**
      * Based on 'type', writes the s (signed), u (unsigned), or f (float) instruction.
@@ -99,6 +99,9 @@ public:
     static int SlotCount(const Type& type);
 
 private:
+    static constexpr int kUnusedStackCount = INT32_MAX;
+    static int StackUsage(ByteCodeInstruction, int count);
+
     // reserves 16 bits in the output code, to be filled in later with an address once we determine
     // it
     class DeferredLocation {
@@ -131,39 +134,6 @@ private:
 #ifdef SK_DEBUG
         bool fSet = false;
 #endif
-    };
-
-    class DeferredCallTarget {
-    public:
-        DeferredCallTarget(ByteCodeGenerator* generator, const FunctionDeclaration& function)
-                : fGenerator(*generator)
-                , fCode(generator->fCode)
-                , fOffset(generator->fCode->size())
-                , fFunction(function) {
-            generator->write8(0);
-        }
-
-        bool set() {
-            size_t idx;
-            const auto& functions(fGenerator.fOutput->fFunctions);
-            for (idx = 0; idx < functions.size(); ++idx) {
-                if (fFunction.matches(functions[idx]->fDeclaration)) {
-                    break;
-                }
-            }
-            if (idx > 255 || idx > functions.size()) {
-                SkASSERT(false);
-                return false;
-            }
-            (*fCode)[fOffset] = idx;
-            return true;
-        }
-
-    private:
-        ByteCodeGenerator& fGenerator;
-        std::vector<uint8_t>* fCode;
-        size_t fOffset;
-        const FunctionDeclaration& fFunction;
     };
 
     // Intrinsics which do not simply map to a single opcode
@@ -214,7 +184,7 @@ private:
 
     void writeVariableExpression(const Expression& expr);
 
-    void writeExpression(const Expression& expr);
+    void writeExpression(const Expression& expr, bool discard = false);
 
     /**
      * Pushes whatever values are required by the lvalue onto the stack, and returns an LValue
@@ -234,19 +204,15 @@ private:
 
     void writeSwizzle(const Swizzle& swizzle);
 
-    void writeBinaryExpression(const BinaryExpression& b);
+    bool writeBinaryExpression(const BinaryExpression& b, bool discard);
 
     void writeTernaryExpression(const TernaryExpression& t);
 
-    void writeLogicalAnd(const BinaryExpression& b);
-
-    void writeLogicalOr(const BinaryExpression& o);
-
     void writeNullLiteral(const NullLiteral& n);
 
-    void writePrefixExpression(const PrefixExpression& p);
+    bool writePrefixExpression(const PrefixExpression& p, bool discard);
 
-    void writePostfixExpression(const PostfixExpression& p);
+    bool writePostfixExpression(const PostfixExpression& p, bool discard);
 
     void writeBoolLiteral(const BoolLiteral& b);
 
@@ -280,6 +246,26 @@ private:
     // updates the current set of continues to branch to the current location
     void setContinueTargets();
 
+    void enterLoop() {
+        fLoopCount++;
+        fMaxLoopCount = std::max(fMaxLoopCount, fLoopCount);
+    }
+
+    void exitLoop() {
+        SkASSERT(fLoopCount > 0);
+        fLoopCount--;
+    }
+
+    void enterCondition() {
+        fConditionCount++;
+        fMaxConditionCount = std::max(fMaxConditionCount, fConditionCount);
+    }
+
+    void exitCondition() {
+        SkASSERT(fConditionCount > 0);
+        fConditionCount--;
+    }
+
     const Context& fContext;
 
     ByteCode* fOutput;
@@ -294,9 +280,16 @@ private:
 
     std::stack<std::vector<DeferredLocation>> fBreakTargets;
 
-    std::vector<DeferredCallTarget> fCallTargets;
+    std::vector<const FunctionDefinition*> fFunctions;
 
     int fParameterCount;
+    int fStackCount;
+    int fMaxStackCount;
+
+    int fLoopCount;
+    int fMaxLoopCount;
+    int fConditionCount;
+    int fMaxConditionCount;
 
     const std::unordered_map<String, Intrinsic> fIntrinsics;
 

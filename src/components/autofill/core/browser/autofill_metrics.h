@@ -20,7 +20,9 @@
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -29,7 +31,6 @@ namespace autofill {
 
 class AutofillField;
 class CreditCard;
-enum class SubmissionSource;
 
 // A given maximum is enforced to minimize the number of buckets generated.
 extern const int kMaxBucketsCount;
@@ -498,7 +499,9 @@ class AutofillMetrics {
     // User used a local card and they only have a single migratable local card
     // on file, we will offer Upstream instead.
     NOT_OFFERED_SINGLE_LOCAL_CARD = 7,
-    kMaxValue = NOT_OFFERED_SINGLE_LOCAL_CARD,
+    // User used an unsupported local card, we will abort the migration.
+    NOT_OFFERED_USE_UNSUPPORTED_LOCAL_CARD = 8,
+    kMaxValue = NOT_OFFERED_USE_UNSUPPORTED_LOCAL_CARD,
   };
 
   // Metrics to track events when local credit card migration is offered.
@@ -829,7 +832,8 @@ class AutofillMetrics {
                                FormSignature form_signature);
     void LogSuggestionsShown(const FormStructure& form,
                              const AutofillField& field,
-                             const base::TimeTicks& form_parsed_timestamp);
+                             const base::TimeTicks& form_parsed_timestamp,
+                             bool off_the_record);
     void LogDidFillSuggestion(int record_type,
                               bool is_for_credit_card,
                               const FormStructure& form,
@@ -1141,11 +1145,6 @@ class AutofillMetrics {
   static void LogNumberOfProfilesAtAutofillableFormSubmission(
       size_t num_profiles);
 
-  // Log whether user modified an address profile shortly before submitting
-  // credit card form.
-  static void LogHasModifiedProfileOnCreditCardFormSubmission(
-      bool has_modified_profile);
-
   // Log the number of autofill address suggestions suppressed because they have
   // not been used for a long time. Note that these addresses are only
   // suppressed when the user has not typed any data into the field from which
@@ -1164,7 +1163,9 @@ class AutofillMetrics {
   static void LogAddressSuggestionsCount(size_t num_suggestions);
 
   // Log the index of the selected Autofill suggestion in the popup.
-  static void LogAutofillSuggestionAcceptedIndex(int index);
+  static void LogAutofillSuggestionAcceptedIndex(int index,
+                                                 PopupType popup_type,
+                                                 bool off_the_record);
 
   // Logs that the user cleared the form.
   static void LogAutofillFormCleared();
@@ -1241,11 +1242,12 @@ class AutofillMetrics {
   // Returns the UMA metric used to track whether or not an upload was sent
   // after being triggered by |submission_source|. This is exposed for testing.
   static const char* SubmissionSourceToUploadEventMetric(
-      SubmissionSource submission_source);
+      mojom::SubmissionSource submission_source);
 
   // Logs whether or not an upload |was_sent| after being triggered by a
   // |submission_source| event.
-  static void LogUploadEvent(SubmissionSource submission_source, bool was_sent);
+  static void LogUploadEvent(mojom::SubmissionSource submission_source,
+                             bool was_sent);
 
   // Logs the card upload decisions ukm for the specified |url|.
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.

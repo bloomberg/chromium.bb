@@ -36,6 +36,16 @@ class Port;
 // Forward declaration so that a ConnectionRequest can contain a Connection.
 class Connection;
 
+struct CandidatePair final : public CandidatePairInterface {
+  ~CandidatePair() override = default;
+
+  const Candidate& local_candidate() const override { return local; }
+  const Candidate& remote_candidate() const override { return remote; }
+
+  Candidate local;
+  Candidate remote;
+};
+
 // A ConnectionRequest is a simple STUN ping used to determine writability.
 class ConnectionRequest : public StunRequest {
  public:
@@ -202,9 +212,15 @@ class Connection : public CandidatePairInterface,
   // Called when this connection should try checking writability again.
   int64_t last_ping_sent() const { return last_ping_sent_; }
   void Ping(int64_t now);
-  void ReceivedPingResponse(int rtt, const std::string& request_id);
+  void ReceivedPingResponse(
+      int rtt,
+      const std::string& request_id,
+      const absl::optional<uint32_t>& nomination = absl::nullopt);
   int64_t last_ping_response_received() const {
     return last_ping_response_received_;
+  }
+  const absl::optional<std::string>& last_ping_id_received() const {
+    return last_ping_id_received_;
   }
   // Used to check if any STUN ping response has been received.
   int rtt_samples() const { return rtt_samples_; }
@@ -212,10 +228,14 @@ class Connection : public CandidatePairInterface,
   // Called whenever a valid ping is received on this connection.  This is
   // public because the connection intercepts the first ping for us.
   int64_t last_ping_received() const { return last_ping_received_; }
-  void ReceivedPing();
+  void ReceivedPing(
+      const absl::optional<std::string>& request_id = absl::nullopt);
   // Handles the binding request; sends a response if this is a valid request.
   void HandleBindingRequest(IceMessage* msg);
-
+  // Handles the piggyback acknowledgement of the lastest connectivity check
+  // that the remote peer has received, if it is indicated in the incoming
+  // connectivity check from the peer.
+  void HandlePiggybackCheckAcknowledgementIfAny(StunMessage* msg);
   int64_t last_data_received() const { return last_data_received_; }
 
   // Debugging description of this connection
@@ -322,8 +342,6 @@ class Connection : public CandidatePairInterface,
   void MaybeUpdateLocalCandidate(ConnectionRequest* request,
                                  StunMessage* response);
 
-  void CopyCandidatesToStatsAndSanitizeIfNecessary();
-
   void LogCandidatePairConfig(webrtc::IceCandidatePairConfigType type);
   void LogCandidatePairEvent(webrtc::IceCandidatePairEventType type,
                              uint32_t transaction_id);
@@ -347,8 +365,8 @@ class Connection : public CandidatePairInterface,
   // The last nomination that has been acknowledged.
   uint32_t acked_nomination_ = 0;
   // Used by the controlled side to remember the nomination value received from
-  // the controlling side. When the peer does not support ICE re-nomination,
-  // its value will be 1 if the connection has been nominated.
+  // the controlling side. When the peer does not support ICE re-nomination, its
+  // value will be 1 if the connection has been nominated.
   uint32_t remote_nomination_ = 0;
 
   IceMode remote_ice_mode_;
@@ -366,6 +384,9 @@ class Connection : public CandidatePairInterface,
   int64_t last_ping_response_received_;
   int64_t receiving_unchanged_since_ = 0;
   std::vector<SentPing> pings_since_last_response_;
+  // Transaction ID of the last connectivity check received. Null if having not
+  // received a ping yet.
+  absl::optional<std::string> last_ping_id_received_;
 
   absl::optional<int> unwritable_timeout_;
   absl::optional<int> unwritable_min_checks_;

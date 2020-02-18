@@ -795,7 +795,6 @@ TEST_P(PaintAndRasterInvalidationTest,
 }
 
 TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
     <div style='height: 4000px'></div>
@@ -845,7 +844,6 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
 }
 
 TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <svg style='position: absolute; top: 100px; left: 100px'>
       <mask id='mask'>
@@ -868,7 +866,7 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  ToElement(mask_rect->GetNode())->setAttribute("x", "20");
+  To<Element>(mask_rect->GetNode())->setAttribute("x", "20");
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(IntRect(), mask_rect->FirstFragment().VisualRect());

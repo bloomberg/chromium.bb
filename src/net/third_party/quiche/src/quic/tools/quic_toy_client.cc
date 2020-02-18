@@ -221,7 +221,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
 
   // Build the client, and try to connect.
   std::unique_ptr<QuicSpdyClientBase> client = client_factory_->CreateClient(
-      host, port, versions, std::move(proof_verifier));
+      url.host(), host, port, versions, std::move(proof_verifier));
 
   int32_t initial_mtu = GetQuicFlag(FLAGS_initial_mtu);
   client->set_initial_max_packet_length(
@@ -325,7 +325,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
       return 1;
     }
 
-    size_t response_code = client->latest_response_code();
+    int response_code = client->latest_response_code();
     if (response_code >= 200 && response_code < 300) {
       std::cout << "Request succeeded (" << response_code << ")." << std::endl;
     } else if (response_code >= 300 && response_code < 400) {

@@ -64,7 +64,7 @@ bool CanGoBack(const Browser* browser);
 void GoBack(Browser* browser, WindowOpenDisposition disposition);
 bool CanGoForward(const Browser* browser);
 void GoForward(Browser* browser, WindowOpenDisposition disposition);
-bool NavigateToIndexWithDisposition(Browser* browser,
+void NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
                                     WindowOpenDisposition disposition);
 void Reload(Browser* browser, WindowOpenDisposition disposition);
@@ -138,6 +138,8 @@ void Find(Browser* browser);
 void FindNext(Browser* browser);
 void FindPrevious(Browser* browser);
 void FindInPage(Browser* browser, bool find_next, bool forward_direction);
+bool CanCloseFind(Browser* browser);
+void CloseFind(Browser* browser);
 void Zoom(Browser* browser, content::PageZoom zoom);
 void FocusToolbar(Browser* browser);
 void FocusLocationBar(Browser* browser);
@@ -155,7 +157,7 @@ void ToggleBookmarkBar(Browser* browser);
 void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
-void DistillCurrentPage(Browser* browser);
+void ToggleDistilledView(Browser* browser);
 bool CanRequestTabletSite(content::WebContents* current_tab);
 bool IsRequestingTabletSite(Browser* browser);
 void ToggleRequestTabletSite(Browser* browser);

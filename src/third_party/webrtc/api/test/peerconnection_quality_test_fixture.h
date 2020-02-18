@@ -23,6 +23,7 @@
 #include "api/function_view.h"
 #include "api/media_transport_interface.h"
 #include "api/peer_connection_interface.h"
+#include "api/task_queue/task_queue_factory.h"
 #include "api/test/audio_quality_analyzer_interface.h"
 #include "api/test/simulated_network.h"
 #include "api/test/video_quality_analyzer_interface.h"
@@ -112,6 +113,43 @@ class PeerConnectionE2EQualityTestFixture {
 
   enum VideoGeneratorType { kDefault, kI420A, kI010 };
 
+  // Config for Vp8 simulcast or Vp9 SVC testing.
+  //
+  // SVC support is limited:
+  // During SVC testing there is no SFU, so framework will try to emulate SFU
+  // behavior in regular p2p call. Because of it there are such limitations:
+  //  * if |target_spatial_index| is not equal to the highest spatial layer
+  //    then no packet/frame drops are allowed.
+  //
+  //    If there will be any drops, that will affect requested layer, then
+  //    WebRTC SVC implementation will continue decoding only the highest
+  //    available layer and won't restore lower layers, so analyzer won't
+  //    receive required data which will cause wrong results or test failures.
+  struct VideoSimulcastConfig {
+    VideoSimulcastConfig(int simulcast_streams_count, int target_spatial_index)
+        : simulcast_streams_count(simulcast_streams_count),
+          target_spatial_index(target_spatial_index) {
+      RTC_CHECK_GT(simulcast_streams_count, 1);
+      RTC_CHECK_GE(target_spatial_index, 0);
+      RTC_CHECK_LT(target_spatial_index, simulcast_streams_count);
+    }
+
+    // Specified amount of simulcast streams/SVC layers, depending on which
+    // encoder is used.
+    int simulcast_streams_count;
+    // Specifies spatial index of the video stream to analyze.
+    // There are 2 cases:
+    // 1. simulcast encoder is used:
+    //    in such case |target_spatial_index| will specify the index of
+    //    simulcast stream, that should be analyzed. Other streams will be
+    //    dropped.
+    // 2. SVC encoder is used:
+    //    in such case |target_spatial_index| will specify the top interesting
+    //    spatial layer and all layers below, including target one will be
+    //    processed. All layers above target one will be dropped.
+    int target_spatial_index;
+  };
+
   // Contains properties of single video stream.
   struct VideoConfig {
     VideoConfig(size_t width, size_t height, int32_t fps)
@@ -135,19 +173,13 @@ class PeerConnectionE2EQualityTestFixture {
     absl::optional<std::string> input_file_name;
     // If specified screen share video stream will be created as input.
     absl::optional<ScreenShareConfig> screen_share_config;
-    // Specifies spatial index of the video stream to analyze.
-    // There are 3 cases:
-    // 1. |target_spatial_index| omitted: in such case it will be assumed that
-    //    video stream has not spatial layers and simulcast streams.
-    // 2. |target_spatial_index| presented and simulcast encoder is used:
-    //    in such case |target_spatial_index| will specify the index of
-    //    simulcast stream, that should be analyzed. Other streams will be
-    //    dropped.
-    // 3. |target_spatial_index| presented and SVP encoder is used:
-    //    in such case |target_spatial_index| will specify the top interesting
-    //    spatial layer and all layers bellow, including target one will be
-    //    processed. All layers above target one will be dropped.
-    absl::optional<int> target_spatial_index;
+    // If presented video will be transfered in simulcast/SVC mode depending on
+    // which encoder is used.
+    //
+    // Simulcast is supported only from 1st added peer and for now only for
+    // Vp8 encoder. Also RTX doesn't supported with simulcast and will
+    // automatically disabled for tracks with simulcast.
+    absl::optional<VideoSimulcastConfig> simulcast_config;
     // If specified the input stream will be also copied to specified file.
     // It is actually one of the test's output file, which contains copy of what
     // was captured during the test for this video stream on sender side.
@@ -176,8 +208,11 @@ class PeerConnectionE2EQualityTestFixture {
     absl::optional<std::string> input_dump_file_name;
     // If specified the output stream will be copied to specified file.
     absl::optional<std::string> output_dump_file_name;
+
     // Audio options to use.
     cricket::AudioOptions audio_options;
+    // Sampling frequency of input audio data (from file or generated).
+    int sampling_frequency_in_hz = 48000;
   };
 
   // This class is used to fully configure one peer inside the call.
@@ -185,9 +220,11 @@ class PeerConnectionE2EQualityTestFixture {
    public:
     virtual ~PeerConfigurer() = default;
 
-    // The parameters of the following 7 methods will be passed to the
+    // The parameters of the following 8 methods will be passed to the
     // PeerConnectionFactoryInterface implementation that will be created for
     // this peer.
+    virtual PeerConfigurer* SetTaskQueueFactory(
+        std::unique_ptr<TaskQueueFactory> task_queue_factory) = 0;
     virtual PeerConfigurer* SetCallFactory(
         std::unique_ptr<CallFactoryInterface> call_factory) = 0;
     virtual PeerConfigurer* SetEventLogFactory(
@@ -268,6 +305,9 @@ class PeerConnectionE2EQualityTestFixture {
     // estimated by WebRTC stack will be multiplied on this multiplier and then
     // provided into VideoEncoder::SetRates(...).
     double video_encoder_bitrate_multiplier = 1.0;
+    // If true will set conference mode in SDP media section for all video
+    // tracks for all peers.
+    bool use_conference_mode = false;
   };
 
   // Represent an entity that will report quality metrics after test.

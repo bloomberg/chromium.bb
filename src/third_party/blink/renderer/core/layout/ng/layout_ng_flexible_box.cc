@@ -8,19 +8,21 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 
 LayoutNGFlexibleBox::LayoutNGFlexibleBox(Element* element)
-    : LayoutBlock(element) {}
+    : LayoutNGMixin<LayoutBlock>(element) {}
 
 void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  // TODO(dgrogan): Reuse logic from LayoutNGBlockFlow's
-  // UpdateOutOfFlowBlockLayout when this flexbox is out of flow.
+  if (IsOutOfFlowPositioned()) {
+    UpdateOutOfFlowBlockLayout();
+    return;
+  }
 
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
@@ -28,7 +30,7 @@ void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   scoped_refptr<const NGLayoutResult> result =
       NGBlockNode(this).Layout(constraint_space);
 
-  for (NGOutOfFlowPositionedDescendant descendant :
+  for (const auto& descendant :
        result->PhysicalFragment().OutOfFlowPositionedDescendants())
     descendant.node.UseLegacyOutOfFlowPositioning();
 }

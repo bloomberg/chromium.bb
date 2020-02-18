@@ -41,7 +41,6 @@ source_set("activity_services") {
     "//ios/chrome/browser/ui/activity_services/activities",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/web",
     "//net",
@@ -73,6 +72,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/web_state_list",
     "//url",
   ]
 }
@@ -109,7 +109,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/activity_services/activities",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/testing:ocmock_support",
     "//ios/web",
@@ -125,6 +124,7 @@ source_set("unit_tests") {
 
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
+  defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
   sources = [
     "activity_service_controller_egtest.mm",
@@ -136,6 +136,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/material_components_ios",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
@@ -143,4 +144,29 @@ source_set("eg_tests") {
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
+}
+
+source_set("eg2_tests") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+
+  sources = [
+    "activity_service_controller_egtest.mm",
+  ]
+
+  deps = [
+    "//components/strings",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+    "//ios/web/public/test/http_server",
+    "//ui/base",
+  ]
+
+  libs = [ "UIKit.framework" ]
 }

@@ -4,9 +4,8 @@
 
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 
-#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/crypto_server_config_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
@@ -59,9 +58,7 @@ class ShloVerifier {
     crypto_config_->ProcessClientHello(
         result_, /*reject_only=*/false,
         /*connection_id=*/TestConnectionId(1), server_addr_, client_addr_,
-        AllSupportedVersions().front(), AllSupportedVersions(),
-        /*use_stateless_rejects=*/true,
-        /*server_designated_connection_id=*/TestConnectionId(2), clock_,
+        AllSupportedVersions().front(), AllSupportedVersions(), clock_,
         QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
         GetProcessClientHelloCallback());
@@ -71,12 +68,12 @@ class ShloVerifier {
    public:
     explicit ProcessClientHelloCallback(ShloVerifier* shlo_verifier)
         : shlo_verifier_(shlo_verifier) {}
-    void Run(
-        QuicErrorCode error,
-        const std::string& error_details,
-        std::unique_ptr<CryptoHandshakeMessage> message,
-        std::unique_ptr<DiversificationNonce> diversification_nonce,
-        std::unique_ptr<ProofSource::Details> proof_source_details) override {
+    void Run(QuicErrorCode /*error*/,
+             const std::string& /*error_details*/,
+             std::unique_ptr<CryptoHandshakeMessage> message,
+             std::unique_ptr<DiversificationNonce> /*diversification_nonce*/,
+             std::unique_ptr<ProofSource::Details> /*proof_source_details*/)
+        override {
       shlo_verifier_->ProcessClientHelloDone(std::move(message));
     }
 
@@ -112,8 +109,7 @@ TEST_F(CryptoTestUtilsTest, TestGenerateFullCHLO) {
   MockClock clock;
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
-      crypto_test_utils::ProofSourceForTesting(), KeyExchangeSource::Default(),
-      TlsServerHandshaker::CreateSslCtx());
+      crypto_test_utils::ProofSourceForTesting(), KeyExchangeSource::Default());
   QuicSocketAddress server_addr(QuicIpAddress::Any4(), 5);
   QuicSocketAddress client_addr(QuicIpAddress::Loopback4(), 1);
   QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config(

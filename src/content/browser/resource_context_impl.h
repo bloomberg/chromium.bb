@@ -11,7 +11,6 @@
 namespace content {
 
 class ChromeBlobStorageContext;
-class StreamContext;
 class BrowserContext;
 class URLDataManagerBackend;
 
@@ -20,9 +19,6 @@ class URLDataManagerBackend;
 // public API.
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
-    const ResourceContext* resource_context);
-
-CONTENT_EXPORT StreamContext* GetStreamContextForResourceContext(
     const ResourceContext* resource_context);
 
 URLDataManagerBackend* GetURLDataManagerForResourceContext(

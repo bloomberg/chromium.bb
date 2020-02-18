@@ -1,19 +1,13 @@
 package Moose::Meta::Role::Composite;
-BEGIN {
-  $Moose::Meta::Role::Composite::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Meta::Role::Composite::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 use metaclass;
 
-use Class::Load qw(load_class);
 use Scalar::Util 'blessed';
-
-use base 'Moose::Meta::Role';
+use Moose::Util 'throw_exception';
+use parent 'Moose::Meta::Role';
 
 # NOTE:
 # we need to override the ->name
@@ -37,6 +31,17 @@ __PACKAGE__->meta->add_attribute('_methods' => (
     Class::MOP::_definition_context(),
 ));
 
+__PACKAGE__->meta->add_attribute('_overloads' => (
+    reader  => '_overload_map',
+    default => sub { {} },
+    Class::MOP::_definition_context(),
+));
+
+__PACKAGE__->meta->add_attribute('_overload_fallback' => (
+    accessor  => '_overload_fallback',
+    Class::MOP::_definition_context(),
+));
+
 __PACKAGE__->meta->add_attribute(
     'application_role_summation_class',
     reader  => 'application_role_summation_class',
@@ -50,8 +55,10 @@ sub new {
     # the roles param is required ...
     foreach ( @{$params{roles}} ) {
         unless ( $_->isa('Moose::Meta::Role') ) {
-            require Moose;
-            Moose->throw_error("The list of roles must be instances of Moose::Meta::Role, not $_");
+            throw_exception( RolesListMustBeInstancesOfMooseMetaRole => params => \%params,
+                                                                        role   => $_,
+                                                                        class  => $class
+                           );
         }
     }
 
@@ -74,15 +81,21 @@ sub new {
     $class->_new(\%params);
 }
 
+# There's no such thing as an anonymous composite role since composites are an
+# artifact of Moose's internals. However, a composite role that contains an
+# anon role may _look_ like an anon role since $self->name =~ /$anon_key/ can
+# return true if the first role in the composite is anonymous itself.
+sub is_anon { 0 }
+
 # This is largely a copy of what's in Moose::Meta::Role (itself
 # largely a copy of Class::MOP::Class). However, we can't actually
-# call add_package_symbol, because there's no package to which which
+# call add_package_symbol, because there's no package into which to
 # add the symbol.
 sub add_method {
     my ($self, $method_name, $method) = @_;
 
     unless ( defined $method_name && $method_name ) {
-        Moose->throw_error("You must define a method name");
+        throw_exception( MustDefineAMethodName => instance => $self );
     }
 
     my $body;
@@ -125,9 +138,42 @@ sub get_method {
     return $self->_method_map->{$method_name};
 }
 
+sub is_overloaded {
+    my ($self) = @_;
+    return keys %{ $self->_overload_map };
+}
+
+sub add_overloaded_operator {
+    my ( $self, $op_name, $overload ) = @_;
+
+    unless ( defined $op_name && $op_name ) {
+        throw_exception(
+            'MustDefineAnOverloadOperator',
+            instance => $self,
+        );
+    }
+
+    $self->_overload_map->{$op_name} = $overload;
+}
+
+sub get_overload_fallback_value {
+    my ($self) = @_;
+    return $self->_overload_fallback;
+}
+
+sub set_overload_fallback_value {
+    my $self = shift;
+    $self->_overload_fallback(shift);
+}
+
+sub get_all_overloaded_operators {
+    my ( $self, $method_name ) = @_;
+    return values %{ $self->_overload_map };
+}
+
 sub apply_params {
     my ($self, $role_params) = @_;
-    load_class($self->application_role_summation_class);
+    Moose::Util::_load_user_class($self->application_role_summation_class);
 
     $self->application_role_summation_class->new(
         role_params => $role_params,
@@ -139,9 +185,10 @@ sub apply_params {
 sub reinitialize {
     my ( $class, $old_meta, @args ) = @_;
 
-    Moose->throw_error(
-        'Moose::Meta::Role::Composite instances can only be reinitialized from an existing metaclass instance'
-        )
+    throw_exception( CannotInitializeMooseMetaRoleComposite => old_meta       => $old_meta,
+                                                               args           => \@args,
+                                                               role_composite => $class
+                   )
         if !blessed $old_meta
             || !$old_meta->isa('Moose::Meta::Role::Composite');
 
@@ -156,9 +203,11 @@ sub reinitialize {
 
 # ABSTRACT: An object to represent the set of roles
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -166,7 +215,7 @@ Moose::Meta::Role::Composite - An object to represent the set of roles
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -179,16 +228,14 @@ role.
 
 C<Moose::Meta::Role::Composite> is a subclass of L<Moose::Meta::Role>.
 
-=head2 METHODS
+=head1 METHODS
 
-=over 4
-
-=item B<< Moose::Meta::Role::Composite->new(%options) >>
+=head2 Moose::Meta::Role::Composite->new(%options)
 
 This returns a new composite role object. It accepts the same
 options as its parent class, with a few changes:
 
-=over 8
+=over 4
 
 =item * roles
 
@@ -213,25 +260,61 @@ string with the package name, as there is no real package for composite roles.
 
 =back
 
-=back
-
 =head1 BUGS
 
 See L<Moose/BUGS> for details on reporting bugs.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

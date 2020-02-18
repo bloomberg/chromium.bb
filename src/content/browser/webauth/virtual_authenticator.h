@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -34,6 +35,31 @@ class CONTENT_EXPORT VirtualAuthenticator
   ~VirtualAuthenticator() override;
 
   void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
+
+  const device::VirtualFidoDevice::State::RegistrationsMap& registrations()
+      const {
+    return state_->registrations;
+  }
+
+  // Register a new credential. Returns true if the registration was successful,
+  // false otherwise.
+  bool AddRegistration(std::vector<uint8_t> key_handle,
+                       const std::vector<uint8_t>& rp_id_hash,
+                       const std::vector<uint8_t>& private_key,
+                       int32_t counter);
+
+  // Removes all the credentials.
+  void ClearRegistrations();
+
+  // Sets whether tests of user presence succeed or not for new requests sent to
+  // this authenticator. The default is true.
+  void SetUserPresence(bool is_user_present);
+
+  // Sets whether user verification should succeed or not for new requests sent
+  // to this authenticator. Defaults to true.
+  void set_user_verified(bool is_user_verified) {
+    is_user_verified_ = is_user_verified;
+  }
 
   ::device::FidoTransportProtocol transport() const {
     return state_->transport;
@@ -65,7 +91,9 @@ class CONTENT_EXPORT VirtualAuthenticator
   const ::device::AuthenticatorAttachment attachment_;
   const bool has_resident_key_;
   const bool has_user_verification_;
+  bool is_user_verified_ = true;
   const std::string unique_id_;
+  bool is_user_present_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
   mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;
 

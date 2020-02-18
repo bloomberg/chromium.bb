@@ -6,6 +6,8 @@
 
 #include <set>
 
+#include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/audio_focus_request.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 
@@ -15,12 +17,13 @@ namespace media_session {
 // size and type preferences it specified when the observer was added.
 class MediaController::ImageObserverHolder {
  public:
-  ImageObserverHolder(MediaController* owner,
-                      mojom::MediaSessionImageType type,
-                      int minimum_size_px,
-                      int desired_size_px,
-                      mojom::MediaControllerImageObserverPtr observer,
-                      const std::vector<MediaImage>& current_images)
+  ImageObserverHolder(
+      MediaController* owner,
+      mojom::MediaSessionImageType type,
+      int minimum_size_px,
+      int desired_size_px,
+      mojo::PendingRemote<mojom::MediaControllerImageObserver> observer,
+      const std::vector<MediaImage>& current_images)
       : manager_(minimum_size_px, desired_size_px),
         owner_(owner),
         type_(type),
@@ -53,10 +56,10 @@ class MediaController::ImageObserverHolder {
     }
 
     DCHECK(owner_->session_->ipc());
-    owner_->session_->ipc()->GetMediaImageBitmap(
+    owner_->session_->GetMediaImageBitmap(
         *image, minimum_size_px_, desired_size_px_,
         base::BindOnce(&MediaController::ImageObserverHolder::OnImage,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void ClearImage() {
@@ -80,6 +83,8 @@ class MediaController::ImageObserverHolder {
 
   mojom::MediaControllerImageObserverPtr observer_;
 
+  base::WeakPtrFactory<ImageObserverHolder> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(ImageObserverHolder);
 };
 
@@ -93,21 +98,21 @@ void MediaController::Suspend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Suspend(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kPause);
 }
 
 void MediaController::Resume() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Resume(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kPlay);
 }
 
 void MediaController::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (session_)
-    session_->ipc()->Stop(mojom::MediaSession::SuspendType::kUI);
+    session_->PerformUIAction(mojom::MediaSessionAction::kStop);
 }
 
 void MediaController::ToggleSuspendResume() {
@@ -126,29 +131,32 @@ void MediaController::ToggleSuspendResume() {
   }
 }
 
-void MediaController::AddObserver(mojom::MediaControllerObserverPtr observer) {
+void MediaController::AddObserver(
+    mojo::PendingRemote<mojom::MediaControllerObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  mojo::Remote<mojom::MediaControllerObserver> media_controller_observer(
+      std::move(observer));
   if (session_) {
-    observer->MediaSessionChanged(session_->id());
+    media_controller_observer->MediaSessionChanged(session_->id());
   } else {
-    observer->MediaSessionChanged(base::nullopt);
+    media_controller_observer->MediaSessionChanged(base::nullopt);
   }
 
   // Flush the new observer with the current state.
-  observer->MediaSessionInfoChanged(session_info_.Clone());
-  observer->MediaSessionMetadataChanged(session_metadata_);
-  observer->MediaSessionActionsChanged(session_actions_);
+  media_controller_observer->MediaSessionInfoChanged(session_info_.Clone());
+  media_controller_observer->MediaSessionMetadataChanged(session_metadata_);
+  media_controller_observer->MediaSessionActionsChanged(session_actions_);
+  media_controller_observer->MediaSessionPositionChanged(session_position_);
 
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(media_controller_observer));
 }
 
 void MediaController::MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  observers_.ForAllPtrs([&info](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_)
     observer->MediaSessionInfoChanged(info.Clone());
-  });
 
   session_info_ = std::move(info);
 }
@@ -157,9 +165,8 @@ void MediaController::MediaSessionMetadataChanged(
     const base::Optional<MediaMetadata>& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  observers_.ForAllPtrs([&metadata](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_)
     observer->MediaSessionMetadataChanged(metadata);
-  });
 
   session_metadata_ = metadata;
 }
@@ -168,11 +175,20 @@ void MediaController::MediaSessionActionsChanged(
     const std::vector<mojom::MediaSessionAction>& actions) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  observers_.ForAllPtrs([&actions](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_)
     observer->MediaSessionActionsChanged(actions);
-  });
 
   session_actions_ = actions;
+}
+
+void MediaController::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto& observer : observers_)
+    observer->MediaSessionPositionChanged(position);
+
+  session_position_ = position;
 }
 
 void MediaController::MediaSessionImagesChanged(
@@ -199,7 +215,7 @@ void MediaController::MediaSessionImagesChanged(
       // No image of this type is available from the session so we should clear
       // any image the observers might have.
       holder->ClearImage();
-    } else if (base::ContainsKey(types_changed, holder->type())) {
+    } else if (base::Contains(types_changed, holder->type())) {
       holder->ImagesChanged(it->second);
     }
   }
@@ -230,7 +246,7 @@ void MediaController::ObserveImages(
     mojom::MediaSessionImageType type,
     int minimum_size_px,
     int desired_size_px,
-    mojom::MediaControllerImageObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaControllerImageObserver> observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = session_images_.find(type);
@@ -238,6 +254,20 @@ void MediaController::ObserveImages(
   image_observers_.push_back(std::make_unique<ImageObserverHolder>(
       this, type, minimum_size_px, desired_size_px, std::move(observer),
       it == session_images_.end() ? std::vector<MediaImage>() : it->second));
+}
+
+void MediaController::SeekTo(base::TimeDelta seek_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->ipc()->SeekTo(seek_time);
+}
+
+void MediaController::ScrubTo(base::TimeDelta seek_time) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (session_)
+    session_->ipc()->ScrubTo(seek_time);
 }
 
 void MediaController::SetMediaSession(AudioFocusRequest* session) {
@@ -253,14 +283,11 @@ void MediaController::SetMediaSession(AudioFocusRequest* session) {
   session_ = session;
 
   // We should always notify the observers that the media session has changed.
-  observers_.ForAllPtrs([session](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_)
     observer->MediaSessionChanged(session->id());
-  });
 
   // Add |this| as an observer for |session|.
-  mojom::MediaSessionObserverPtr observer;
-  session_binding_.Bind(mojo::MakeRequest(&observer));
-  session->ipc()->AddObserver(std::move(observer));
+  session->ipc()->AddObserver(session_receiver_.BindNewPipeAndPassRemote());
 }
 
 void MediaController::ClearMediaSession() {
@@ -273,25 +300,27 @@ void MediaController::ClearMediaSession() {
 
   // If we are no longer bound to a session we should flush the observers
   // with empty data.
-  observers_.ForAllPtrs([](mojom::MediaControllerObserver* observer) {
+  for (auto& observer : observers_) {
     observer->MediaSessionChanged(base::nullopt);
     observer->MediaSessionInfoChanged(nullptr);
     observer->MediaSessionMetadataChanged(base::nullopt);
     observer->MediaSessionActionsChanged(
         std::vector<mojom::MediaSessionAction>());
-  });
+    observer->MediaSessionPositionChanged(base::nullopt);
+  }
 
   for (auto& holder : image_observers_)
     holder->ClearImage();
 }
 
-void MediaController::BindToInterface(mojom::MediaControllerRequest request) {
+void MediaController::BindToInterface(
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MediaController::FlushForTesting() {
-  bindings_.FlushForTesting();
+  receivers_.FlushForTesting();
 }
 
 void MediaController::CleanupImageObservers() {
@@ -301,11 +330,12 @@ void MediaController::CleanupImageObservers() {
 
 void MediaController::Reset() {
   session_ = nullptr;
-  session_binding_.Close();
+  session_receiver_.reset();
   session_info_.reset();
   session_metadata_.reset();
   session_actions_.clear();
   session_images_.clear();
+  session_position_.reset();
 }
 
 }  // namespace media_session

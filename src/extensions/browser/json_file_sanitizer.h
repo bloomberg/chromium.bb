@@ -51,7 +51,7 @@ class JsonFileSanitizer {
   // |connector| should be a connector to the ServiceManager usable on the
   // current thread. |identity| is used when accessing the data decoder service
   // which is used internally to parse JSON. It lets callers indicate they'd
-  // like to use a sahred process for the data decoder service with some
+  // like to use a shared process for the data decoder service with some
   // potentially unrelated data decoding operations.
   // |callback| is invoked asynchronously when all JSON files have been
   // sanitized or if an error occurred.
@@ -91,7 +91,7 @@ class JsonFileSanitizer {
   std::set<base::FilePath> file_paths_;
   Callback callback_;
   data_decoder::mojom::JsonParserPtr json_parser_ptr_;
-  base::WeakPtrFactory<JsonFileSanitizer> weak_factory_;
+  base::WeakPtrFactory<JsonFileSanitizer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsonFileSanitizer);
 };

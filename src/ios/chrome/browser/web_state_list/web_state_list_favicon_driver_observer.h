@@ -68,7 +68,7 @@ class WebStateListFaviconDriverObserver
 
   // Maps FaviconDriver to the WebState they are attached to. Used
   // to find the WebState that should be passed when forwarding the
-  // notification to TabModelObservers.
+  // notification to WebStateFaviconDriverObservers.
   std::map<favicon::FaviconDriver*, web::WebState*> driver_to_web_state_map_;
 
   ScopedObserver<WebStateList, WebStateListObserver> web_state_list_observer_;

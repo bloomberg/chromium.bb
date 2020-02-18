@@ -26,8 +26,7 @@ constexpr base::TimeDelta kTimeUpdateInterval =
 Receiver::Receiver(std::unique_ptr<Renderer> renderer, RpcBroker* rpc_broker)
     : renderer_(std::move(renderer)),
       rpc_broker_(rpc_broker),
-      rpc_handle_(rpc_broker_->GetUniqueHandle()),
-      weak_factory_(this) {
+      rpc_handle_(rpc_broker_->GetUniqueHandle()) {
   DCHECK(renderer_);
   DCHECK(rpc_broker_);
   rpc_broker_->RegisterMessageReceiverCallback(
@@ -253,9 +252,15 @@ void Receiver::OnStatisticsUpdate(const PipelineStatistics& stats) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
-void Receiver::OnBufferingStateChange(BufferingState state) {
+void Receiver::OnBufferingStateChange(BufferingState state,
+                                      BufferingStateChangeReason reason) {
   DVLOG(3) << __func__
            << ": Issues RPC_RC_ONBUFFERINGSTATECHANGE message: state=" << state;
+
+  // The |reason| is determined on the other side of the RPC in CourierRenderer.
+  // For now, there is no reason to provide this in the |message| below.
+  DCHECK_EQ(reason, BUFFERING_CHANGE_REASON_UNKNOWN);
+
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(remote_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_RC_ONBUFFERINGSTATECHANGE);
@@ -315,11 +320,6 @@ void Receiver::OnVideoOpacityChange(bool opaque) {
   rpc->set_proc(pb::RpcMessage::RPC_RC_ONVIDEOOPACITYCHANGE);
   rpc->set_boolean_value(opaque);
   rpc_broker_->SendMessageToRemote(std::move(rpc));
-}
-
-void Receiver::OnRemotePlayStateChange(MediaStatus::State state) {
-  // Only used with the FlingingRenderer.
-  NOTREACHED();
 }
 
 }  // namespace remoting

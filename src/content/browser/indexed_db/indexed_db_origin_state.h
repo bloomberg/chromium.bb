@@ -18,18 +18,15 @@
 #include "content/browser/indexed_db/scopes/disjoint_range_lock_manager.h"
 #include "content/common/content_export.h"
 
-namespace base {
-struct Feature;
-}
-
 namespace content {
 class IndexedDBBackingStore;
 class IndexedDBDatabase;
 class IndexedDBFactoryImpl;
 class IndexedDBPreCloseTaskQueue;
 
-CONTENT_EXPORT extern const base::Feature kIDBTombstoneStatistics;
-CONTENT_EXPORT extern const base::Feature kIDBTombstoneDeletion;
+namespace indexed_db {
+class LevelDBFactory;
+}  // namespace indexed_db
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
 
@@ -78,6 +75,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   // |earliest_global_sweep_time| is expected to outlive this object.
   IndexedDBOriginState(bool persist_for_incognito,
                        base::Clock* clock,
+                       indexed_db::LevelDBFactory* leveldb_factory,
                        base::Time* earliest_global_sweep_time,
                        base::OnceClosure destruct_myself,
                        std::unique_ptr<IndexedDBBackingStore> backing_store);
@@ -161,6 +159,7 @@ class CONTENT_EXPORT IndexedDBOriginState {
   bool has_blobs_outstanding_ = false;
   bool skip_closing_sequence_ = false;
   base::Clock* clock_;
+  indexed_db::LevelDBFactory* const leveldb_factory_;
   // This is safe because it is owned by IndexedDBFactoryImpl, which owns this
   // object.
   base::Time* earliest_global_sweep_time_;

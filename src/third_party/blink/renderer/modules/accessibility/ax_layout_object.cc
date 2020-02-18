@@ -222,7 +222,8 @@ ax::mojom::Role AXLayoutObject::NativeRoleIgnoringAria() const {
   // ARIA 1.2 (and Core-AAM 1.1) state that elements which are focusable
   // and not hidden must be included in the accessibility tree.
   if (layout_object_->IsTableSection()) {
-    if (node && node->IsElementNode() && ToElement(node)->SupportsFocus())
+    auto* element = DynamicTo<Element>(node);
+    if (element && element->SupportsFocus())
       return ax::mojom::Role::kGroup;
     return ax::mojom::Role::kIgnored;
   }
@@ -344,9 +345,9 @@ bool AXLayoutObject::IsEditable() const {
   // hopefully the standardized version will, in which case a more performant
   // implementation will be required, e.g. cache it or only expose on ancestor,
   // having browser-side propagate it.
-  const Element* elem = node->IsElementNode()
-                            ? ToElement(node)
-                            : FlatTreeTraversal::ParentElement(*node);
+  const auto* elem = DynamicTo<Element>(node);
+  if (!elem)
+    elem = FlatTreeTraversal::ParentElement(*node);
   if (elem && elem->hasAttribute("aria-goog-editable")) {
     auto editable = elem->getAttribute("aria-goog-editable");
     return !EqualIgnoringASCIICase("false", editable);
@@ -392,9 +393,9 @@ bool AXLayoutObject::IsRichlyEditable() const {
   // hopefully the standardized version will, in which case a more performant
   // implementation will be required, e.g. cache it or only expose on ancestor,
   // having browser-side propagate it.
-  const Element* elem = node->IsElementNode()
-                            ? ToElement(node)
-                            : FlatTreeTraversal::ParentElement(*node);
+  const Element* elem = DynamicTo<Element>(node);
+  if (!elem)
+    elem = FlatTreeTraversal::ParentElement(*node);
   if (elem && elem->hasAttribute("aria-goog-editable")) {
     auto editable = elem->getAttribute("aria-goog-editable");
     return !EqualIgnoringASCIICase("false", editable);
@@ -418,6 +419,21 @@ bool AXLayoutObject::IsRichlyEditable() const {
   }
 
   return AXNodeObject::IsRichlyEditable();
+}
+
+bool AXLayoutObject::IsLineBreakingObject() const {
+  if (IsDetached())
+    return AXNodeObject::IsLineBreakingObject();
+
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (layout_object->IsBR() || layout_object->IsLayoutBlock() ||
+      layout_object->IsAnonymousBlock() ||
+      (layout_object->IsLayoutBlockFlow() &&
+       layout_object->StyleRef().IsDisplayBlockContainer())) {
+    return true;
+  }
+
+  return AXNodeObject::IsLineBreakingObject();
 }
 
 bool AXLayoutObject::IsLinked() const {
@@ -591,9 +607,22 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   DCHECK(initialized_);
 #endif
 
+  // All nodes must have an unignored parent within their tree under
+  // kRootWebArea, so force kRootWebArea to always be unignored.
+  if (role_ == ax::mojom::Role::kRootWebArea)
+    return false;
+
   if (!layout_object_) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+    return true;
+  }
+
+  // Ignore continuations, since those are essentially duplicate copies
+  // of inline nodes with blocks inside.
+  if (layout_object_->IsElementContinuation()) {
+    if (ignored_reasons)
+      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
   }
 
@@ -612,14 +641,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return true;
 
   if (layout_object_->IsAnonymousBlock() && !IsEditable()) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
-    return true;
-  }
-
-  // Ignore continuations, since those are essentially duplicate copies
-  // of inline nodes with blocks inside.
-  if (layout_object_->IsElementContinuation()) {
     if (ignored_reasons)
       ignored_reasons->push_back(IgnoredReason(kAXUninteresting));
     return true;
@@ -678,7 +699,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (alt_text)
     return alt_text->IsEmpty();
 
-  if (IsWebArea() || layout_object_->IsListMarkerIncludingNG())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGInside())
     return false;
 
   // Positioned elements and scrollable containers are important for
@@ -770,11 +791,9 @@ bool AXLayoutObject::CanIgnoreSpaceNextTo(LayoutObject* layout,
   // False negatives are acceptable in that they merely lead to extra whitespace
   // static text nodes.
   // TODO(aleventhal) Do we want this? Is it too hard/complex for Braille/Cvox?
-  Node* node = layout->GetNode();
-  if (node && node->IsElementNode()) {
-    Element* elem = ToElement(node);
-    if (HasAriaCellRole(elem))
-      return true;
+  auto* elem = DynamicTo<Element>(layout->GetNode());
+  if (elem && HasAriaCellRole(elem)) {
+    return true;
   }
 
   // Test against the appropriate child text node.
@@ -835,12 +854,10 @@ bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
 //
 
 const AtomicString& AXLayoutObject::AccessKey() const {
-  Node* node = layout_object_->GetNode();
-  if (!node)
+  auto* element = DynamicTo<Element>(layout_object_->GetNode());
+  if (!element)
     return g_null_atom;
-  if (!node->IsElementNode())
-    return g_null_atom;
-  return ToElement(node)->getAttribute(kAccesskeyAttr);
+  return element->getAttribute(kAccesskeyAttr);
 }
 
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
@@ -1681,11 +1698,12 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 
-  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                         HitTestRequest::kRetargetForInert);
   HitTestLocation location(point);
   HitTestResult hit_test_result = HitTestResult(request, location);
   layer->HitTest(location, hit_test_result,
-                 LayoutRect(LayoutRect::InfiniteIntRect()));
+                 PhysicalRect(PhysicalRect::InfiniteIntRect()));
 
   Node* node = hit_test_result.InnerNode();
   if (!node)
@@ -2032,9 +2050,12 @@ void AXLayoutObject::AddChildren() {
   if (IsDetached())
     return;
 
-  if (GetNode() && GetNode()->IsElementNode()) {
-    Element* element = ToElement(GetNode());
-    if (!IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
+  // Avoid calling AXNodeObject logic for continuations.
+  bool is_continuation = layout_object_->IsElementContinuation();
+
+  if (auto* element = DynamicTo<Element>(GetNode())) {
+    if (!is_continuation &&
+        !IsHTMLMapElement(*element) &&   // Handled in AddImageMapChildren (img)
         !IsHTMLRubyElement(*element) &&  // Special layout handling
         !IsHTMLTableElement(*element) &&  // thead/tfoot move around
         !element->IsPseudoElement()) {    // Not visited in layout traversal
@@ -2042,9 +2063,7 @@ void AXLayoutObject::AddChildren() {
       return;
     }
   }
-  Element* element = nullptr;
-  if (GetNode() && GetNode()->IsElementNode())
-    element = ToElement(GetNode());
+
   // If the need to add more children in addition to existing children arises,
   // childrenChanged should have been called, leaving the object with no
   // children.
@@ -2055,10 +2074,8 @@ void AXLayoutObject::AddChildren() {
   ComputeAriaOwnsChildren(owned_children);
 
   for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AXObjectCache().IsAriaOwned(obj)) {
-      obj->SetParent(this);
+    if (!AXObjectCache().IsAriaOwned(obj))
       AddChild(obj);
-    }
   }
 
   AddHiddenChildren();
@@ -2070,8 +2087,11 @@ void AXLayoutObject::AddChildren() {
   AddAccessibleNodeChildren();
 
   for (const auto& child : children_) {
-    if (!child->CachedParentObject())
+    if (!is_continuation && !child->CachedParentObject()) {
+      // Never set continuations as a parent object. The first layout object
+      // in the chain must be used instead.
       child->SetParent(this);
+    }
   }
 
   for (const auto& owned_child : owned_children)
@@ -2082,6 +2102,8 @@ bool AXLayoutObject::CanHaveChildren() const {
   if (!layout_object_)
     return false;
   if (GetCSSAltText(GetNode()))
+    return false;
+  if (layout_object_->IsListMarkerIncludingNGInside())
     return false;
   return AXNodeObject::CanHaveChildren();
 }
@@ -2157,7 +2179,7 @@ Element* AXLayoutObject::AnchorElement() const {
     if (IsHTMLAnchorElement(runner) ||
         (runner.GetLayoutObject() &&
          cache.GetOrCreate(runner.GetLayoutObject())->IsAnchor()))
-      return ToElement(&runner);
+      return To<Element>(&runner);
   }
 
   return nullptr;
@@ -2295,9 +2317,9 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
   }
 }
 
-void AXLayoutObject::HandleAutofillStateChanged(bool is_available) {
-  if (is_autofill_available_ != is_available) {
-    is_autofill_available_ = is_available;
+void AXLayoutObject::HandleAutofillStateChanged(bool available) {
+  if (is_autofill_available_ != available) {
+    is_autofill_available_ = available;
     AXObjectCache().MarkAXObjectDirty(this, false);
   }
 }
@@ -2341,7 +2363,7 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
            layout_text->FirstAbstractInlineTextBox();
        box.get(); box = box->NextInlineTextBox()) {
     AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
-    if (!ax_object->AccessibilityIsIgnored())
+    if (ax_object->AccessibilityIsIncludedInTree())
       children_.push_back(ax_object);
   }
 }
@@ -2780,8 +2802,11 @@ ax::mojom::Role AXLayoutObject::DetermineTableRowRole() const {
   if (!parent)
     return ax::mojom::Role::kGenericContainer;
 
-  if (parent->RoleValue() == ax::mojom::Role::kGroup)
+  if (parent->RoleValue() == ax::mojom::Role::kGroup) {
     parent = parent->ParentObjectUnignored();
+    if (!parent)
+      return ax::mojom::Role::kGenericContainer;
+  }
 
   if (parent->RoleValue() == ax::mojom::Role::kLayoutTable)
     return ax::mojom::Role::kLayoutTableRow;
@@ -3065,7 +3090,7 @@ void AXLayoutObject::AddHiddenChildren() {
       // Find out where the last layout sibling is located within m_children.
       if (AXObject* child_object =
               AXObjectCache().Get(child.GetLayoutObject())) {
-        if (child_object->AccessibilityIsIgnored()) {
+        if (!child_object->AccessibilityIsIncludedInTree()) {
           const auto& children = child_object->Children();
           child_object = children.size() ? children.back().Get() : nullptr;
         }
@@ -3104,7 +3129,7 @@ void AXLayoutObject::AddImageMapChildren() {
       AXImageMapLink* area_object = ToAXImageMapLink(obj);
       area_object->SetParent(this);
       DCHECK_NE(area_object->AXObjectID(), 0U);
-      if (!area_object->AccessibilityIsIgnored())
+      if (area_object->AccessibilityIsIncludedInTree())
         children_.push_back(area_object);
       else
         AXObjectCache().Remove(area_object->AXObjectID());
@@ -3146,7 +3171,7 @@ void AXLayoutObject::AddRemoteSVGChildren() {
 
   root->SetParent(this);
 
-  if (root->AccessibilityIsIgnored()) {
+  if (!root->AccessibilityIsIncludedInTree()) {
     for (const auto& child : root->Children())
       children_.push_back(child);
   } else {
@@ -3167,7 +3192,7 @@ void AXLayoutObject::AddTableChildren() {
       if (HTMLTableCaptionElement* caption =
               ToHTMLTableElement(table_node)->caption()) {
         AXObject* caption_object = ax_cache.GetOrCreate(caption);
-        if (caption_object && !caption_object->AccessibilityIsIgnored())
+        if (caption_object && caption_object->AccessibilityIsIncludedInTree())
           children_.push_front(caption_object);
       }
     }

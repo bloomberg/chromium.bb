@@ -169,8 +169,7 @@ static content::RenderProcessHost* GetExtensionProcess(
 
 MessageService::MessageService(BrowserContext* context)
     : context_(context),
-      messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()),
-      weak_factory_(this) {
+      messaging_delegate_(ExtensionsAPIClient::Get()->GetMessagingDelegate()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(nullptr, messaging_delegate_);
 }
@@ -416,7 +415,7 @@ void MessageService::OpenChannelToNativeApp(
   // any issues arise from it.
   std::unique_ptr<MessagePort> receiver(
       messaging_delegate_->CreateReceiverForNativeApp(
-          weak_factory_.GetWeakPtr(), source_rfh, extension->id(),
+          context_, weak_factory_.GetWeakPtr(), source_rfh, extension->id(),
           receiver_port_id, native_app_name,
           policy_permission == MessagingDelegate::PolicyPermission::ALLOW_ALL,
           &error));
@@ -735,7 +734,7 @@ void MessageService::EnqueuePendingMessage(const PortId& source_port_id,
         PendingMessage(source_port_id, message));
     // A channel should only be holding pending messages because it is in one
     // of these states.
-    DCHECK(!base::ContainsKey(pending_lazy_context_channels_, channel_id));
+    DCHECK(!base::Contains(pending_lazy_context_channels_, channel_id));
     return;
   }
   EnqueuePendingMessageForLazyBackgroundLoad(source_port_id,

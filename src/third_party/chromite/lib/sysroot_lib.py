@@ -236,8 +236,23 @@ class Sysroot(object):
     self._cache_file = self._Path(_CACHE_PATH)
     self._cache_file_lock = self._cache_file + '.lock'
 
-  def Exists(self):
-    """Check if the sysroot exists."""
+  def __eq__(self, other):
+    """Equality check."""
+    return self.path == other.path
+
+  def Exists(self, chroot=None):
+    """Check if the sysroot exists.
+
+    Args:
+      chroot (chroot_lib.Chroot): Optionally check if the sysroot exists inside
+        the specified chroot.
+
+    Returns:
+      bool
+    """
+    if chroot:
+      return chroot.has_path(self.path)
+
     return os.path.exists(self.path)
 
   def _Path(self, *args):

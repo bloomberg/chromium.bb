@@ -54,7 +54,7 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
   // media::AudioCapturerSource::CaptureCallback overrides:
   void Capture(const media::AudioBus* audio_source,
-               int audio_delay_milliseconds,
+               base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override;
   void OnCaptureError(const std::string& message) override;
@@ -78,6 +78,8 @@ class AudioInputImpl : public assistant_client::AudioInput,
 
   void SetDeviceId(const std::string& device_id);
   void SetHotwordDeviceId(const std::string& device_id);
+  void SetDspHotwordLocale(std::string pref_locale);
+  void SetDspHotwordLocaleCallback(bool success);
 
   void RecreateAudioInputStream(bool use_dsp);
 

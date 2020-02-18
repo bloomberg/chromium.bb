@@ -8,9 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "pc/media_session.h"
+
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
@@ -21,7 +24,6 @@
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/transport_description.h"
 #include "p2p/base/transport_info.h"
-#include "pc/media_session.h"
 #include "pc/rtp_media_utils.h"
 #include "pc/srtp_filter.h"
 #include "rtc_base/checks.h"
@@ -518,6 +520,8 @@ class MediaSessionDescriptionFactoryTest : public ::testing::Test {
       EXPECT_EQ(
           media_desc_options_it->transport_options.enable_ice_renomination,
           GetIceRenomination(ti_audio));
+      EXPECT_EQ(media_desc_options_it->transport_options.opaque_parameters,
+                ti_audio->description.opaque_parameters);
 
     } else {
       EXPECT_TRUE(ti_audio == NULL);
@@ -525,10 +529,14 @@ class MediaSessionDescriptionFactoryTest : public ::testing::Test {
     const TransportInfo* ti_video = desc->GetTransportInfoByName("video");
     if (options.has_video()) {
       EXPECT_TRUE(ti_video != NULL);
+      auto media_desc_options_it =
+          FindFirstMediaDescriptionByMid("video", options);
       if (options.bundle_enabled) {
         EXPECT_EQ(ti_audio->description.ice_ufrag,
                   ti_video->description.ice_ufrag);
         EXPECT_EQ(ti_audio->description.ice_pwd, ti_video->description.ice_pwd);
+        EXPECT_EQ(ti_audio->description.opaque_parameters,
+                  ti_video->description.opaque_parameters);
       } else {
         if (has_current_desc) {
           EXPECT_EQ(current_video_ufrag, ti_video->description.ice_ufrag);
@@ -539,9 +547,9 @@ class MediaSessionDescriptionFactoryTest : public ::testing::Test {
           EXPECT_EQ(static_cast<size_t>(cricket::ICE_PWD_LENGTH),
                     ti_video->description.ice_pwd.size());
         }
+        EXPECT_EQ(media_desc_options_it->transport_options.opaque_parameters,
+                  ti_video->description.opaque_parameters);
       }
-      auto media_desc_options_it =
-          FindFirstMediaDescriptionByMid("video", options);
       EXPECT_EQ(
           media_desc_options_it->transport_options.enable_ice_renomination,
           GetIceRenomination(ti_video));
@@ -573,7 +581,7 @@ class MediaSessionDescriptionFactoryTest : public ::testing::Test {
           GetIceRenomination(ti_data));
 
     } else {
-      EXPECT_TRUE(ti_video == NULL);
+      EXPECT_TRUE(ti_data == NULL);
     }
   }
 
@@ -1349,8 +1357,8 @@ TEST_F(MediaSessionDescriptionFactoryTest, TestCreateDataAnswerGcm) {
   EXPECT_EQ(cricket::kMediaProtocolSavpf, dcd->protocol());
 }
 
-// The use_sctpmap flag should be set in a DataContentDescription by default.
-// The answer's use_sctpmap flag should match the offer's.
+// The use_sctpmap flag should be set in an Sctp DataContentDescription by
+// default. The answer's use_sctpmap flag should match the offer's.
 TEST_F(MediaSessionDescriptionFactoryTest, TestCreateDataAnswerUsesSctpmap) {
   MediaSessionOptions opts;
   AddDataSection(cricket::DCT_SCTP, RtpTransceiverDirection::kSendRecv, &opts);
@@ -2523,14 +2531,17 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   // TODO(wu): |updated_offer| should not include the codec
   // (i.e. |kAudioCodecs2[0]|) the other side doesn't support.
   const AudioCodec kUpdatedAudioCodecOffer[] = {
-      kAudioCodecsAnswer[0], kAudioCodecsAnswer[1], kAudioCodecs2[0],
+      kAudioCodecsAnswer[0],
+      kAudioCodecsAnswer[1],
+      kAudioCodecs2[0],
   };
 
   // The expected video codecs are the common video codecs from the first
   // offer/answer exchange plus the video codecs only |f2_| offer, sorted in
   // preference order.
   const VideoCodec kUpdatedVideoCodecOffer[] = {
-      kVideoCodecsAnswer[0], kVideoCodecs2[1],
+      kVideoCodecsAnswer[0],
+      kVideoCodecs2[1],
   };
 
   const AudioContentDescription* updated_acd =
@@ -3163,14 +3174,16 @@ TEST_F(MediaSessionDescriptionFactoryTest,
   // Since the default local extension id |f2_| uses has already been used by
   // |f1_| for another extensions, it is changed to 13.
   const RtpExtension kUpdatedAudioRtpExtensions[] = {
-      kAudioRtpExtensionAnswer[0], RtpExtension(kAudioRtpExtension2[1].uri, 13),
+      kAudioRtpExtensionAnswer[0],
+      RtpExtension(kAudioRtpExtension2[1].uri, 13),
       kAudioRtpExtension2[2],
   };
 
   // Since the default local extension id |f2_| uses has already been used by
   // |f1_| for another extensions, is is changed to 12.
   const RtpExtension kUpdatedVideoRtpExtensions[] = {
-      kVideoRtpExtensionAnswer[0], RtpExtension(kVideoRtpExtension2[1].uri, 12),
+      kVideoRtpExtensionAnswer[0],
+      RtpExtension(kVideoRtpExtension2[1].uri, 12),
       kVideoRtpExtension2[2],
   };
 
@@ -3200,7 +3213,8 @@ TEST_F(MediaSessionDescriptionFactoryTest, RtpExtensionIdReused) {
   // Since the audio extensions used ID 3 for "both_audio_and_video", so should
   // the video extensions.
   const RtpExtension kExpectedVideoRtpExtension[] = {
-      kVideoRtpExtension3[0], kAudioRtpExtension3[1],
+      kVideoRtpExtension3[0],
+      kAudioRtpExtension3[1],
   };
 
   EXPECT_EQ(
@@ -3268,14 +3282,22 @@ TEST(MediaSessionDescription, CopySessionDescription) {
   SessionDescription source;
   cricket::ContentGroup group(cricket::CN_AUDIO);
   source.AddGroup(group);
-  AudioContentDescription* acd(new AudioContentDescription());
+  std::unique_ptr<AudioContentDescription> acd =
+      absl::make_unique<AudioContentDescription>();
   acd->set_codecs(MAKE_VECTOR(kAudioCodecs1));
   acd->AddLegacyStream(1);
-  source.AddContent(cricket::CN_AUDIO, MediaProtocolType::kRtp, acd);
-  VideoContentDescription* vcd(new VideoContentDescription());
+  std::unique_ptr<AudioContentDescription> acd_passed =
+      absl::WrapUnique(acd->Copy());
+  source.AddContent(cricket::CN_AUDIO, MediaProtocolType::kRtp,
+                    std::move(acd_passed));
+  std::unique_ptr<VideoContentDescription> vcd =
+      absl::make_unique<VideoContentDescription>();
   vcd->set_codecs(MAKE_VECTOR(kVideoCodecs1));
   vcd->AddLegacyStream(2);
-  source.AddContent(cricket::CN_VIDEO, MediaProtocolType::kRtp, vcd);
+  std::unique_ptr<VideoContentDescription> vcd_passed =
+      absl::WrapUnique(vcd->Copy());
+  source.AddContent(cricket::CN_VIDEO, MediaProtocolType::kRtp,
+                    std::move(vcd_passed));
 
   std::unique_ptr<SessionDescription> copy = source.Clone();
   ASSERT_TRUE(copy.get() != NULL);
@@ -3422,6 +3444,46 @@ TEST_F(MediaSessionDescriptionFactoryTest,
                  &options);
   options.bundle_enabled = true;
   TestTransportInfo(false, options, true);
+}
+
+TEST_F(MediaSessionDescriptionFactoryTest,
+       TestTransportInfoOfferBundlesTransportOptions) {
+  MediaSessionOptions options;
+  AddAudioVideoSections(RtpTransceiverDirection::kRecvOnly, &options);
+
+  cricket::OpaqueTransportParameters audio_params;
+  audio_params.protocol = "audio-transport";
+  audio_params.parameters = "audio-params";
+  FindFirstMediaDescriptionByMid("audio", &options)
+      ->transport_options.opaque_parameters = audio_params;
+
+  cricket::OpaqueTransportParameters video_params;
+  video_params.protocol = "video-transport";
+  video_params.parameters = "video-params";
+  FindFirstMediaDescriptionByMid("video", &options)
+      ->transport_options.opaque_parameters = video_params;
+
+  TestTransportInfo(/*offer=*/true, options, /*has_current_desc=*/false);
+}
+
+TEST_F(MediaSessionDescriptionFactoryTest,
+       TestTransportInfoAnswerBundlesTransportOptions) {
+  MediaSessionOptions options;
+  AddAudioVideoSections(RtpTransceiverDirection::kRecvOnly, &options);
+
+  cricket::OpaqueTransportParameters audio_params;
+  audio_params.protocol = "audio-transport";
+  audio_params.parameters = "audio-params";
+  FindFirstMediaDescriptionByMid("audio", &options)
+      ->transport_options.opaque_parameters = audio_params;
+
+  cricket::OpaqueTransportParameters video_params;
+  video_params.protocol = "video-transport";
+  video_params.parameters = "video-params";
+  FindFirstMediaDescriptionByMid("video", &options)
+      ->transport_options.opaque_parameters = video_params;
+
+  TestTransportInfo(/*offer=*/false, options, /*has_current_desc=*/false);
 }
 
 // Create an offer with bundle enabled and verify the crypto parameters are
@@ -4184,7 +4246,7 @@ TEST_P(MediaProtocolTest, TestAudioVideoAcceptance) {
   std::unique_ptr<SessionDescription> offer = f1_.CreateOffer(opts, nullptr);
   ASSERT_TRUE(offer.get() != nullptr);
   // Set the protocol for all the contents.
-  for (auto content : offer.get()->contents()) {
+  for (auto& content : offer.get()->contents()) {
     content.media_description()->set_protocol(GetParam());
   }
   std::unique_ptr<SessionDescription> answer =

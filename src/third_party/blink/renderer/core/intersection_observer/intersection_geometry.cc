@@ -69,7 +69,7 @@ bool ComputeIsVisible(LayoutObject* target, const PhysicalRect& rect) {
   // TODO(layout-dev): This should hit-test the intersection rect, not the
   // target rect; it's not helpful to know that the portion of the target that
   // is clipped is also occluded.
-  HitTestResult result(target->HitTestForOcclusion(rect.ToLayoutRect()));
+  HitTestResult result(target->HitTestForOcclusion(rect));
   Node* hit_node = result.InnerNode();
   if (!hit_node || hit_node == target->GetNode())
     return true;
@@ -276,7 +276,8 @@ bool IntersectionGeometry::ClipToRoot(LayoutObject* root,
     return does_intersect;
   if (local_ancestor->HasOverflowClip()) {
     intersection_rect.Move(
-        -PhysicalOffset(local_ancestor->ScrolledContentOffset()));
+        -PhysicalOffset(LayoutPoint(local_ancestor->ScrollOrigin()) +
+                        local_ancestor->ScrolledContentOffset()));
   }
   LayoutRect root_clip_rect = root_rect.ToLayoutRect();
   // TODO(szager): This flipping seems incorrect because root_rect is already

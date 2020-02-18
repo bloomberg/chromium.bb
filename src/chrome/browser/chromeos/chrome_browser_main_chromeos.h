@@ -39,13 +39,12 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class CrosUsbDetector;
-class CupsProxyServiceManager;
 class DemoModeResourcesRemover;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
+class GnubbyNotification;
 class IdleActionWarningObserver;
-class KerberosCredentialsManager;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
 class NetworkPrefStateObserver;
@@ -57,7 +56,6 @@ class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
-class GnubbyNotification;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -71,7 +69,6 @@ class SystemTokenCertDBInitializer;
 namespace power {
 namespace ml {
 class AdaptiveScreenBrightnessManager;
-class UserActivityController;
 }  // namespace ml
 
 namespace auto_screen_brightness {
@@ -157,7 +154,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
       adaptive_screen_brightness_manager_;
 
-  std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
   std::unique_ptr<power::auto_screen_brightness::Controller>
       auto_screen_brightness_controller_;
 
@@ -175,11 +171,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
-  std::unique_ptr<KerberosCredentialsManager> kerberos_credentials_manager_;
 
   std::unique_ptr<GnubbyNotification> gnubby_notification_;
-  std::unique_ptr<chromeos::CupsProxyServiceManager>
-      cups_proxy_service_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

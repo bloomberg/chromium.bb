@@ -21,7 +21,7 @@ namespace blink {
 class MockPerformance : public Performance {
  public:
   explicit MockPerformance(ScriptState* script_state)
-      : Performance(TimeTicks(),
+      : Performance(base::TimeTicks(),
                     ExecutionContext::From(script_state)
                         ->GetTaskRunner(TaskType::kPerformanceTimeline)) {}
   ~MockPerformance() override = default;
@@ -69,12 +69,12 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
 
   NonThrowableExceptionState exception_state;
   PerformanceObserverInit* options = PerformanceObserverInit::Create();
-  options->setType("layoutShift");
+  options->setType("layout-shift");
   options->setBuffered(true);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   // add a layoutjank to performance so getEntries() returns it
-  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234);
+  auto* entry = MakeGarbageCollected<LayoutShift>(0.0, 1234, true, 5678);
   base_->AddLayoutJankBuffer(*entry);
 
   // call observe with the buffered flag
@@ -86,11 +86,12 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
 
 TEST_F(PerformanceObserverTest, Enqueue) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -99,11 +100,12 @@ TEST_F(PerformanceObserverTest, Enqueue) {
 
 TEST_F(PerformanceObserverTest, Deliver) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -115,11 +117,12 @@ TEST_F(PerformanceObserverTest, Deliver) {
 
 TEST_F(PerformanceObserverTest, Disconnect) {
   V8TestingScope scope;
+  NonThrowableExceptionState exception_state;
   Initialize(scope.GetScriptState());
 
   ScriptValue empty_value;
-  Persistent<PerformanceEntry> entry =
-      PerformanceMark::Create(scope.GetScriptState(), "m", 1234, empty_value);
+  Persistent<PerformanceEntry> entry = PerformanceMark::Create(
+      scope.GetScriptState(), "m", 1234, empty_value, exception_state);
   EXPECT_EQ(0, NumPerformanceEntries());
 
   observer_->EnqueuePerformanceEntry(*entry);
@@ -129,4 +132,4 @@ TEST_F(PerformanceObserverTest, Disconnect) {
   EXPECT_FALSE(IsRegistered());
   EXPECT_EQ(0, NumPerformanceEntries());
 }
-}
+}  // namespace blink

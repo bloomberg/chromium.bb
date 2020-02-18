@@ -64,7 +64,6 @@ ColumnPrinter SimulationNode::ConfigPrinter() const {
       });
 }
 
-
 NetworkNodeTransport::NetworkNodeTransport(Clock* sender_clock,
                                            Call* sender_call)
     : sender_clock_(sender_clock), sender_call_(sender_call) {}
@@ -98,7 +97,7 @@ bool NetworkNodeTransport::SendRtp(const uint8_t* packet,
 
 bool NetworkNodeTransport::SendRtcp(const uint8_t* packet, size_t length) {
   rtc::CopyOnWriteBuffer buffer(packet, length);
-  Timestamp send_time = Timestamp::ms(sender_clock_->TimeInMilliseconds());
+  Timestamp send_time = sender_clock_->CurrentTime();
   rtc::CritScope crit(&crit_sect_);
   buffer.SetSize(length + packet_overhead_.bytes());
   if (!send_net_)

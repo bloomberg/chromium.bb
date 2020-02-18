@@ -15,9 +15,8 @@
 
 namespace blink {
 
-class XRPose;
 class XRSession;
-class XRReferenceSpace;
+class XRSpace;
 
 class XRPlane : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -26,22 +25,27 @@ class XRPlane : public ScriptWrappable {
   enum Orientation { kHorizontal, kVertical };
 
   XRPlane(XRSession* session,
-          const device::mojom::blink::XRPlaneDataPtr& plane_data);
+          const device::mojom::blink::XRPlaneDataPtr& plane_data,
+          double timestamp);
   XRPlane(XRSession* session,
           const base::Optional<Orientation>& orientation,
           const TransformationMatrix& pose_matrix,
-          const HeapVector<Member<DOMPointReadOnly>>& polygon);
+          const HeapVector<Member<DOMPointReadOnly>>& polygon,
+          double timestamp);
 
-  // Returns a pose expressed in passed in reference space.
-  XRPose* getPose(XRReferenceSpace* reference_space) const;
+  XRSpace* planeSpace() const;
+
+  TransformationMatrix poseMatrix() const;
 
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
+  double lastChangedTime() const;
 
   // Updates plane data from passed in |plane_data|. The resulting instance
   // should be equivalent to the instance that would be create by calling
   // XRPlane(plane_data).
-  void Update(const device::mojom::blink::XRPlaneDataPtr& plane_data);
+  void Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
+              double timestamp);
 
   void Trace(blink::Visitor* visitor) override;
 
@@ -50,9 +54,14 @@ class XRPlane : public ScriptWrappable {
   base::Optional<Orientation> orientation_;
 
   // Plane center's pose in device (mojo) space.
-  TransformationMatrix pose_matrix_;
+  std::unique_ptr<TransformationMatrix> pose_matrix_;
 
   Member<XRSession> session_;
+
+  double last_changed_time_;
+
+  // Cached plane space - it will be created by `planeSpace()` if it's not set.
+  mutable Member<XRSpace> plane_space_;
 };
 
 }  // namespace blink

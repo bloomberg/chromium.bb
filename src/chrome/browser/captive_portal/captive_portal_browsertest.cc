@@ -67,6 +67,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
@@ -157,6 +158,12 @@ const char* const kMockHttpConnectionConnectionClosedErr =
 // captive portal.
 const char* const kInternetConnectedTitle = "Title Of Awesomeness";
 
+BrowserThread::ID GetInterceptorThreadID() {
+  return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)
+             ? BrowserThread::UI
+             : BrowserThread::IO;
+}
+
 // Creates a server-side redirect for use with the TestServer.
 std::string CreateServerRedirect(const std::string& dest_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
@@ -216,6 +223,7 @@ class MultiNavigationObserver : public content::NotificationObserver {
   // True if WaitForNavigations has been called, until
   // |num_navigations_to_wait_for_| have been observed.
   bool waiting_for_navigation_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   content::NotificationRegistrar registrar_;
 
@@ -241,7 +249,8 @@ void MultiNavigationObserver::WaitForNavigations(
   if (num_navigations_ < num_navigations_to_wait_for) {
     num_navigations_to_wait_for_ = num_navigations_to_wait_for;
     waiting_for_navigation_ = true;
-    content::RunMessageLoop();
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
     EXPECT_FALSE(waiting_for_navigation_);
   }
   EXPECT_EQ(num_navigations_, num_navigations_to_wait_for);
@@ -267,7 +276,8 @@ void MultiNavigationObserver::Observe(
   if (waiting_for_navigation_ &&
       num_navigations_to_wait_for_ == num_navigations_) {
     waiting_for_navigation_ = false;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (run_loop_)
+      run_loop_->Quit();
   }
 }
 
@@ -305,6 +315,7 @@ class FailLoadsAfterLoginObserver : public content::NotificationObserver {
   // True if WaitForNavigations has been called, until
   // |tabs_navigated_to_final_destination_| equals |tabs_needing_navigation_|.
   bool waiting_for_navigation_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   content::NotificationRegistrar registrar_;
 
@@ -332,7 +343,8 @@ void FailLoadsAfterLoginObserver::WaitForNavigations() {
   if (tabs_needing_navigation_.size() !=
           tabs_navigated_to_final_destination_.size()) {
     waiting_for_navigation_ = true;
-    content::RunMessageLoop();
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
     EXPECT_FALSE(waiting_for_navigation_);
   }
   EXPECT_EQ(tabs_needing_navigation_.size(),
@@ -359,7 +371,8 @@ void FailLoadsAfterLoginObserver::Observe(
       tabs_needing_navigation_.size() ==
           tabs_navigated_to_final_destination_.size()) {
     waiting_for_navigation_ = false;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (run_loop_)
+      run_loop_->Quit();
   }
 }
 
@@ -394,6 +407,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
   int num_results_to_wait_for_;
 
   bool waiting_for_result_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 
   Profile* profile_;
 
@@ -427,7 +441,8 @@ void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {
   if (num_results_received_ < num_results_to_wait_for) {
     num_results_to_wait_for_ = num_results_to_wait_for;
     waiting_for_result_ = true;
-    content::RunMessageLoop();
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
     EXPECT_FALSE(waiting_for_result_);
   }
   EXPECT_EQ(num_results_to_wait_for, num_results_received_);
@@ -453,7 +468,8 @@ void CaptivePortalObserver::Observe(
   if (waiting_for_result_ &&
       num_results_to_wait_for_ == num_results_received_) {
     waiting_for_result_ = false;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (run_loop_)
+      run_loop_->Quit();
   }
 }
 
@@ -587,9 +603,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   bool IsShowingInterstitial(WebContents* contents);
 
-  // Without committed interstitials, this waits for an interstitial to attach
-  // to the current WebContents. With committed interstitials, it instead
-  // asserts an interstitial is showing and waits for the render frame to be
+  // Asserts an interstitial is showing and waits for the render frame to be
   // ready.
   void WaitForInterstitial(content::WebContents* contents);
 
@@ -748,24 +762,37 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 
   // Waits for exactly |num_jobs| kMockHttps* requests.
   void WaitForJobs(int num_jobs) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
+      SetNumJobsToWaitForOnInterceptorThread(num_jobs);
+    } else {
       base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&CaptivePortalBrowserTest::WaitForJobs,
-                         base::Unretained(this), num_jobs));
-      content::RunMessageLoop();
+          FROM_HERE, {GetInterceptorThreadID()},
+          base::BindOnce(
+              &CaptivePortalBrowserTest::SetNumJobsToWaitForOnInterceptorThread,
+              base::Unretained(this), num_jobs));
+    }
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+    // Will be exited via QuitRunLoop() when the interceptor has received
+    // |num_jobs|.
+    run_loop_->Run();
+  }
+
+  void SetNumJobsToWaitForOnInterceptorThread(int num_jobs) {
+    DCHECK_CURRENTLY_ON(GetInterceptorThreadID());
+    DCHECK(!num_jobs_to_wait_for_);
+
+    int num_ongoing_jobs = static_cast<int>(ongoing_mock_requests_.size());
+    if (num_ongoing_jobs == num_jobs) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::UI},
+          base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
+                         base::Unretained(this)));
       return;
     }
 
-    DCHECK(!num_jobs_to_wait_for_);
-    EXPECT_LE(static_cast<int>(ongoing_mock_requests_.size()), num_jobs);
-    if (num_jobs == static_cast<int>(ongoing_mock_requests_.size())) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
-    } else {
-      num_jobs_to_wait_for_ = num_jobs;
-    }
+    EXPECT_LT(num_ongoing_jobs, num_jobs);
+    num_jobs_to_wait_for_ = num_jobs;
   }
 
   // Fails all active kMockHttps* requests with connection timeouts.
@@ -773,9 +800,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // failure.  The only way to guarantee this is with an earlier call to
   // WaitForJobs, so makes sure there has been a matching WaitForJobs call.
   void FailJobs(int expected_num_jobs) {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {GetInterceptorThreadID()},
           base::BindOnce(&CaptivePortalBrowserTest::FailJobs,
                          base::Unretained(this), expected_num_jobs));
       return;
@@ -794,9 +821,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // |expected_num_jobs| behaves just as in FailJobs.
   void FailJobsWithCertError(int expected_num_jobs,
                              const net::SSLInfo& ssl_info) {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {GetInterceptorThreadID()},
           base::BindOnce(&CaptivePortalBrowserTest::FailJobsWithCertError,
                          base::Unretained(this), expected_num_jobs, ssl_info));
       return;
@@ -836,9 +863,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
   // behaves just as in FailJobs.
   void AbandonJobs(int expected_num_jobs) {
-    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    if (!BrowserThread::CurrentlyOn(GetInterceptorThreadID())) {
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
+          FROM_HERE, {GetInterceptorThreadID()},
           base::BindOnce(&CaptivePortalBrowserTest::AbandonJobs,
                          base::Unretained(this), expected_num_jobs));
       return;
@@ -862,9 +889,16 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     return contents;
   }
 
+  void QuitRunLoop() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
  protected:
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
-  // Only accessed on the IO thread.
+  std::unique_ptr<base::RunLoop> run_loop_;
+  // Only accessed on the |GetInterceptorThreadID()| thread.
   int num_jobs_to_wait_for_ = 0;
   std::vector<content::URLLoaderInterceptor::RequestParams>
       ongoing_mock_requests_;
@@ -908,7 +942,7 @@ bool CaptivePortalBrowserTest::OnIntercept(
     content::URLLoaderInterceptor::RequestParams* params) {
   if (params->url_request.url.path() == kMockHttpsBadCertPath &&
       intercept_bad_cert_) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CHECK(BrowserThread::CurrentlyOn(GetInterceptorThreadID()));
     ongoing_mock_requests_.emplace_back(std::move(*params));
     return true;
   }
@@ -931,7 +965,7 @@ bool CaptivePortalBrowserTest::OnIntercept(
   if (url_string == kMockHttpsUrl || url_string == kMockHttpsUrl2 ||
       url_string == kMockHttpsQuickTimeoutUrl ||
       params->url_request.url.path() == kRedirectToMockHttpsPath) {
-    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    CHECK(BrowserThread::CurrentlyOn(GetInterceptorThreadID()));
     if (params->url_request.url.path() == kRedirectToMockHttpsPath) {
       net::RedirectInfo redirect_info;
       redirect_info.new_url = GURL(kMockHttpsUrl);
@@ -965,7 +999,8 @@ bool CaptivePortalBrowserTest::OnIntercept(
           num_jobs_to_wait_for_ = 0;
           base::PostTaskWithTraits(
               FROM_HERE, {BrowserThread::UI},
-              base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+              base::BindOnce(&CaptivePortalBrowserTest::QuitRunLoop,
+                             base::Unretained(this)));
         }
       }
     } else {
@@ -1062,23 +1097,16 @@ bool CaptivePortalBrowserTest::CheckPending(Browser* browser) {
 
 content::InterstitialPageDelegate::TypeID
 CaptivePortalBrowserTest::GetInterstitialType(WebContents* contents) const {
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            contents);
-    if (!helper)
-      return nullptr;
-    security_interstitials::SecurityInterstitialPage* blocking_page =
-        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
-    if (!blocking_page)
-      return nullptr;
-    return blocking_page->GetTypeForTesting();
-  }
-  if (!contents->ShowingInterstitialPage())
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          contents);
+  if (!helper)
     return nullptr;
-  return contents->GetInterstitialPage()
-      ->GetDelegateForTesting()
-      ->GetTypeForTesting();
+  security_interstitials::SecurityInterstitialPage* blocking_page =
+      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+  if (!blocking_page)
+    return nullptr;
+  return blocking_page->GetTypeForTesting();
 }
 
 bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
@@ -1087,15 +1115,8 @@ bool CaptivePortalBrowserTest::IsShowingInterstitial(WebContents* contents) {
 
 void CaptivePortalBrowserTest::WaitForInterstitial(
     content::WebContents* contents) {
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    ASSERT_TRUE(IsShowingInterstitial(contents));
-    ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
-  } else {
-    content::WaitForInterstitialAttach(contents);
-    ASSERT_TRUE(IsShowingInterstitial(contents));
-    ASSERT_TRUE(WaitForRenderFrameReady(
-        contents->GetInterstitialPage()->GetMainFrame()));
-  }
+  ASSERT_TRUE(IsShowingInterstitial(contents));
+  ASSERT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
 }
 
 CaptivePortalTabReloader::State CaptivePortalBrowserTest::GetStateOfTabReloader(
@@ -1867,10 +1888,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   // Wait for the interstitial to load all the JavaScript code. Otherwise,
   // trying to click on a button will fail.
   content::RenderFrameHost* rfh;
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials))
-    rfh = broken_tab_contents->GetMainFrame();
-  else
-    rfh = broken_tab_contents->GetInterstitialPage()->GetMainFrame();
+  rfh = broken_tab_contents->GetMainFrame();
   EXPECT_TRUE(WaitForRenderFrameReady(rfh));
   const char kClickConnectButtonJS[] =
       "document.getElementById('primary-button').click();";
@@ -2684,20 +2702,13 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
   info.unverified_cert = info.cert;
   FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
-  if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-    // With committed interstitials, the SSL interstitial navigation will result
-    // in the captive portal check firing (and returning no captive portal), so
-    // the state will get reset to none.
-    EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
-              GetStateOfTabReloaderAt(browser(), broken_tab_index));
-    WaitForInterstitial(broken_tab_contents);
-    portal_observer.WaitForResults(2);
-  } else {
-    EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,
-              GetStateOfTabReloaderAt(browser(), broken_tab_index));
-    WaitForInterstitial(broken_tab_contents);
-    portal_observer.WaitForResults(1);
-  }
+  // The SSL interstitial navigation will result in the captive portal check
+  // firing (and returning no captive portal), so the state will get reset to
+  // none.
+  EXPECT_EQ(CaptivePortalTabReloader::STATE_NONE,
+            GetStateOfTabReloaderAt(browser(), broken_tab_index));
+  WaitForInterstitial(broken_tab_contents);
+  portal_observer.WaitForResults(2);
 
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
             GetInterstitialType(broken_tab_contents));

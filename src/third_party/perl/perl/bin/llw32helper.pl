@@ -47,10 +47,10 @@ local $ENV{HOME} = undef;
 
 my $ll_exists = 0;
 my $default_path;
-if ( exists $environment_key->{'/MODULEBUILDRC'} ) {
+if ( exists $environment_key->{'/PERL_MB_OPT'} ) {
 	$ll_exists = 1;
 	my ( $volume, $directories, $file ) =
-	  File::Spec->splitpath( $environment_key->{'MODULEBUILDRC'} );
+	  File::Spec->splitpath( $environment_key->{'PERL_MB_OPT'} );
 	$default_path = catpath( $volume, $directories, undef );
 } else {
 	$default_path =
@@ -75,7 +75,7 @@ if ($ll_exists) {
 
 	goto EXISTS if ( 'y' ne lc substr $answer, 0, 1 );
 
-	delete $environment_key->{'/MODULEBUILDRC'};
+	delete $environment_key->{'/PERL_MB_OPT'};
 	delete $environment_key->{'/PERL_MM_OPT'};
 	delete $environment_key->{'/PERL5LIB'};
 
@@ -134,7 +134,7 @@ __END_TEXT__
 	my %ll_env_entries =
 	  'local::lib'->build_environment_vars_for( $answer, 0 );
 
-	$environment_key->{'/MODULEBUILDRC'} = $ll_env_entries{'MODULEBUILDRC'};
+	$environment_key->{'/PERL_MB_OPT'}   = $ll_env_entries{'PERL_MB_OPT'};
 	$environment_key->{'/PERL_MM_OPT'}   = $ll_env_entries{'PERL_MM_OPT'};
 	$environment_key->{'/PERL5LIB'}      = $ll_env_entries{'PERL5LIB'};
 

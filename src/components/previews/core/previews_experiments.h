@@ -15,6 +15,8 @@
 
 namespace previews {
 
+// Types of previews. This enum must remain synchronized with the enum
+// |PreviewsType| in tools/metrics/histograms/enums.xml.
 enum class PreviewsType {
   // Used to indicate that there is no preview type.
   NONE = 0,
@@ -22,8 +24,8 @@ enum class PreviewsType {
   // The user is shown an offline page as a preview.
   OFFLINE = 1,
 
-  // Replace images with placeholders.
-  LOFI = 2,
+  // Replace images with placeholders. Deprecated, and should not be used.
+  DEPRECATED_LOFI = 2,
 
   // The user is shown a server lite page.
   LITE_PAGE = 3,
@@ -85,14 +87,6 @@ size_t MaxStoredHistoryLengthForHostIndifferentBlackList();
 // The maximum number of hosts allowed in the in memory black list.
 size_t MaxInMemoryHostsInBlackList();
 
-// The maximum number of hosts allowed to be requested by the client to the
-// remote Optimzation Guide Service.
-size_t MaxHostsForOptimizationGuideServiceHintsFetch();
-
-// The amount of time a fetched hint will be considered fresh enough
-// to be used and remain in the HintCacheStore.
-base::TimeDelta StoredFetchedHintsFreshnessDuration();
-
 // The number of recent navigations that were opted out of for a given host that
 // would trigger that host to be blacklisted.
 int PerHostBlackListOptOutThreshold();
@@ -121,12 +115,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration();
 // The host for Lite Page server previews.
 GURL GetLitePagePreviewsDomainURL();
 
-// The API key for the One Platform Optimization Guide Service.
-std::string GetOptimizationGuideServiceAPIKey();
-
-// The host for the One Platform Optimization Guide Service.
-GURL GetOptimizationGuideServiceURL();
-
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
 
@@ -146,6 +134,12 @@ int LitePageRedirectPreviewMaxServerBlacklistByteSize();
 // The maximum number of times that a Lite Page Redirect preview should restart
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();
+
+// Whether we should preresolve the lite page redirect server.
+bool LitePageRedirectPreviewShouldPresolve();
+
+// The duration in between preresolving the lite page redirect server.
+base::TimeDelta LitePageRedirectPreviewPresolveInterval();
 
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
@@ -170,7 +164,6 @@ bool ArePreviewsAllowed();
 
 // Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
-bool IsClientLoFiEnabled();
 bool IsNoScriptPreviewsEnabled();
 bool IsResourceLoadingHintsEnabled();
 bool IsLitePageServerPreviewsEnabled();
@@ -178,21 +171,10 @@ bool IsDeferAllScriptPreviewsEnabled();
 
 // The blacklist version for each preview type.
 int OfflinePreviewsVersion();
-int ClientLoFiVersion();
 int LitePageServerPreviewsVersion();
 int NoScriptPreviewsVersion();
 int ResourceLoadingHintsVersion();
 int DeferAllScriptPreviewsVersion();
-
-// The maximum number of page hints that should be loaded to memory.
-size_t GetMaxPageHintsInMemoryThreshhold();
-
-// Whether server optimization hints are enabled.
-bool IsOptimizationHintsEnabled();
-
-// Returns true if the feature to fetch hints from the remote Optimization Guide
-// Service is enabled.
-bool IsHintsFetchingEnabled();
 
 // For estimating NoScript data savings, this is the percentage factor to
 // multiple by the network bytes for inflating the original_bytes count.
@@ -223,6 +205,10 @@ bool ShouldOverrideNavigationCoinFlipToAllowed();
 
 // Returns true if the given url matches an excluded media suffix.
 bool ShouldExcludeMediaSuffix(const GURL& url);
+
+// Returns true if the logic to detect redirect loops with defer all script
+// preview using a cache is enabled.
+bool DetectDeferRedirectLoopsUsingCache();
 
 }  // namespace params
 

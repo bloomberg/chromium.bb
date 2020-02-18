@@ -20,7 +20,9 @@
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/profile_metrics/counts.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)
@@ -211,6 +213,27 @@ bool ProfileMetrics::CountProfileInformation(ProfileManager* manager,
     }
   }
   return true;
+}
+
+profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
+    Profile* profile) {
+  if (profile->IsSystemProfile())
+    return profile_metrics::BrowserProfileType::kSystem;
+  if (profile->IsGuestSession())
+    return profile_metrics::BrowserProfileType::kGuest;
+  // A regular profile can be in a guest session or a system profile. Hence it
+  // should be checked after them.
+  if (profile->IsRegularProfile())
+    return profile_metrics::BrowserProfileType::kRegular;
+  if (profile->IsIncognitoProfile()) {
+    return profile->IsIndependentOffTheRecordProfile()
+               ? profile_metrics::BrowserProfileType::
+                     kIndependentIncognitoProfile
+               : profile_metrics::BrowserProfileType::kIncognito;
+  }
+
+  NOTREACHED();
+  return profile_metrics::BrowserProfileType::kMaxValue;
 }
 
 #if !defined(OS_ANDROID)
@@ -538,7 +561,9 @@ void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
 
 void ProfileMetrics::LogTimeToOpenUserManager(
     const base::TimeDelta& time_to_open) {
-  UMA_HISTOGRAM_TIMES("Profile.TimeToOpenUserManager", time_to_open);
+  UMA_HISTOGRAM_CUSTOM_TIMES("Profile.TimeToOpenUserManagerUpTo1min",
+                             time_to_open, base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMinutes(1), 50);
 }
 
 #if defined(OS_ANDROID)

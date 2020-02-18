@@ -36,10 +36,8 @@
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class BatteryMetrics;
-class ChromeChildProcessWatcher;
 class ChromeFeatureListCreator;
 class ChromeMetricsServicesManagerClient;
-class ChromeResourceDispatcherHostDelegate;
 class DevToolsAutoOpener;
 class RemoteDebuggingServer;
 class PrefRegistrySimple;
@@ -62,10 +60,6 @@ class ExtensionsBrowserClient;
 
 namespace gcm {
 class GCMDriver;
-}
-
-namespace net_log {
-class ChromeNetLog;
 }
 
 namespace policy {
@@ -131,14 +125,12 @@ class BrowserProcessImpl : public BrowserProcess,
       metrics_services_manager::MetricsServicesManagerClient* client);
 
   // BrowserProcess implementation.
-  void ResourceDispatcherHostCreated() override;
   void EndSession() override;
   void FlushLocalStateAndReply(base::OnceClosure reply) override;
   metrics_services_manager::MetricsServicesManager* GetMetricsServicesManager()
       override;
   metrics::MetricsService* metrics_service() override;
   rappor::RapporServiceImpl* rappor_service() override;
-  IOThread* io_thread() override;
   // TODO(qinmin): Remove this method as callers can retrieve the global
   // instance from SystemNetworkContextManager directly.
   SystemNetworkContextManager* system_network_context_manager() override;
@@ -148,7 +140,6 @@ class BrowserProcessImpl : public BrowserProcess,
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
-  net::URLRequestContextGetter* system_request_context() override;
   variations::VariationsService* variations_service() override;
   BrowserProcessPlatformPart* platform_part() override;
   extensions::EventRouterForwarder* extension_event_router_forwarder() override;
@@ -188,10 +179,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void StartAutoupdateTimer() override;
 #endif
 
-  net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
+#endif
   MediaFileSystemRegistry* media_file_system_registry() override;
   WebRtcLogUploader* webrtc_log_uploader() override;
   network_time::NetworkTimeTracker* network_time_tracker() override;
@@ -248,8 +240,6 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<metrics_services_manager::MetricsServicesManager>
       metrics_services_manager_;
-
-  std::unique_ptr<IOThread> io_thread_;
 
   bool created_watchdog_thread_ = false;
   std::unique_ptr<WatchDogThread> watchdog_thread_;
@@ -360,13 +350,7 @@ class BrowserProcessImpl : public BrowserProcess,
   // notifications are properly added and removed.
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Lives here so can safely log events on shutdown.
-  std::unique_ptr<net_log::ChromeNetLog> net_log_;
-
   std::unique_ptr<BatteryMetrics> battery_metrics_;
-
-  std::unique_ptr<ChromeResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
 
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   base::RepeatingTimer autoupdate_timer_;
@@ -384,8 +368,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // but some users of component updater only install per-user.
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::unique_ptr<component_updater::SupervisedUserWhitelistInstaller>
       supervised_user_whitelist_installer_;
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;
@@ -409,8 +395,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
 
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
-
-  std::unique_ptr<ChromeChildProcessWatcher> child_process_watcher_;
 
   shell_integration::DefaultWebClientState cached_default_web_client_state_ =
       shell_integration::UNKNOWN_DEFAULT;

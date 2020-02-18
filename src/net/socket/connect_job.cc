@@ -34,8 +34,7 @@ CommonConnectJobParams::CommonConnectJobParams(
     QuicStreamFactory* quic_stream_factory,
     ProxyDelegate* proxy_delegate,
     const HttpUserAgentSettings* http_user_agent_settings,
-    const SSLClientSocketContext& ssl_client_socket_context,
-    const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
+    SSLClientContext* ssl_client_context,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
@@ -49,9 +48,7 @@ CommonConnectJobParams::CommonConnectJobParams(
       quic_stream_factory(quic_stream_factory),
       proxy_delegate(proxy_delegate),
       http_user_agent_settings(http_user_agent_settings),
-      ssl_client_socket_context(ssl_client_socket_context),
-      ssl_client_socket_context_privacy_mode(
-          ssl_client_socket_context_privacy_mode),
+      ssl_client_context(ssl_client_context),
       socket_performance_watcher_factory(socket_performance_watcher_factory),
       network_quality_estimator(network_quality_estimator),
       net_log(net_log),
@@ -129,7 +126,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
         ssl_params = base::MakeRefCounted<SSLSocketParams>(
             std::move(proxy_tcp_params), nullptr, nullptr,
             proxy_server.host_port_pair(), *ssl_config_for_proxy,
-            PRIVACY_MODE_DISABLED);
+            PRIVACY_MODE_DISABLED, network_isolation_key);
         proxy_tcp_params = nullptr;
       }
 
@@ -158,7 +155,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
         std::move(ssl_tcp_params), std::move(socks_params),
         std::move(http_proxy_params), endpoint, *ssl_config_for_origin,
-        privacy_mode);
+        privacy_mode, network_isolation_key);
     return std::make_unique<SSLConnectJob>(
         request_priority, socket_tag, common_connect_job_params,
         std::move(ssl_params), delegate, nullptr /* net_log */);

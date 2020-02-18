@@ -39,9 +39,7 @@ ProxyMain::ProxyMain(LayerTreeHost* layer_tree_host,
       commit_waits_for_activation_(false),
       started_(false),
       defer_main_frame_update_(false),
-      defer_commits_(true),
-      frame_sink_bound_weak_factory_(this),
-      weak_factory_(this) {
+      defer_commits_(true) {
   TRACE_EVENT0("cc", "ProxyMain::ProxyMain");
   DCHECK(task_runner_provider_);
   DCHECK(IsMainThread());
@@ -157,7 +155,7 @@ void ProxyMain::BeginMainFrame(
                                   base::Unretained(proxy_impl_.get()),
                                   CommitEarlyOutReason::ABORTED_NOT_VISIBLE,
                                   begin_main_frame_start_time,
-                                  base::Passed(&empty_swap_promises)));
+                                  std::move(empty_swap_promises)));
     return;
   }
 
@@ -188,7 +186,7 @@ void ProxyMain::BeginMainFrame(
                        base::Unretained(proxy_impl_.get()),
                        CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE,
                        begin_main_frame_start_time,
-                       base::Passed(&empty_swap_promises)));
+                       std::move(empty_swap_promises)));
     // When we stop deferring main frame updates, we should resume any
     // previously requested pipeline stages.
     deferred_final_pipeline_stage_ =
@@ -202,11 +200,22 @@ void ProxyMain::BeginMainFrame(
 
   current_pipeline_stage_ = ANIMATE_PIPELINE_STAGE;
 
-  // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from the
-  // compositor thread thread to the main thread for both cc and and its
-  // client (e.g. Blink).
-  layer_tree_host_->ApplyScrollAndScale(
-      begin_main_frame_state->scroll_info.get());
+  // Check now if we should stop deferring commits due to a timeout. We
+  // may also stop deferring in BeginMainFrame, but maintain the status
+  // from this point to keep scroll in sync.
+  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
+    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
+  }
+  skip_commit |= defer_commits_;
+
+  if (!skip_commit) {
+    // Synchronizes scroll offsets and page scale deltas (for pinch zoom) from
+    // the compositor thread to the main thread for both cc and and its client
+    // (e.g. Blink). Do not do this if we explicitly plan to not commit the
+    // layer tree, to prevent scroll offsets getting out of sync.
+    layer_tree_host_->ApplyScrollAndScale(
+        begin_main_frame_state->scroll_info.get());
+  }
 
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->RecordStartOfFrameMetrics();
@@ -230,14 +239,10 @@ void ProxyMain::BeginMainFrame(
   // what this does.
   layer_tree_host_->RequestMainFrameUpdate();
 
-  // Check now if we should stop deferring commits
-  if (defer_commits_ && base::TimeTicks::Now() > commits_restart_time_) {
-    StopDeferringCommits(PaintHoldingCommitTrigger::kTimeout);
-  }
-
-  // At this point the main frame may have deferred commits to avoid committing
-  // right now, or we may be deferring commits but not deferring main
-  // frame updates.
+  // At this point the main frame may have deferred main frame updates to
+  // avoid committing right now, or we may be deferring commits but not
+  // deferring main frame updates. Either may have changed the status
+  // of the defer... flags, so re-evaluate skip_commit.
   skip_commit |= defer_main_frame_update_ || defer_commits_;
 
   if (skip_commit) {
@@ -252,7 +257,7 @@ void ProxyMain::BeginMainFrame(
                                   base::Unretained(proxy_impl_.get()),
                                   CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT,
                                   begin_main_frame_start_time,
-                                  base::Passed(&empty_swap_promises)));
+                                  std::move(empty_swap_promises)));
     // We intentionally don't report CommitComplete() here since it was aborted
     // prematurely and we're waiting to do another commit in the future.
     // When we stop deferring commits, we should resume any previously requested
@@ -295,11 +300,11 @@ void ProxyMain::BeginMainFrame(
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
-                                  base::Unretained(proxy_impl_.get()),
-                                  CommitEarlyOutReason::FINISHED_NO_UPDATES,
-                                  begin_main_frame_start_time,
-                                  base::Passed(&swap_promises)));
+        FROM_HERE,
+        base::BindOnce(&ProxyImpl::BeginMainFrameAbortedOnImpl,
+                       base::Unretained(proxy_impl_.get()),
+                       CommitEarlyOutReason::FINISHED_NO_UPDATES,
+                       begin_main_frame_start_time, std::move(swap_promises)));
 
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
@@ -315,7 +320,7 @@ void ProxyMain::BeginMainFrame(
   ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
   new_latency_info.AddLatencyNumberWithTimestamp(
       ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT,
-      begin_main_frame_state->begin_frame_args.frame_time, 1);
+      begin_main_frame_state->begin_frame_args.frame_time);
   layer_tree_host_->QueueSwapPromise(
       std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
 
@@ -363,12 +368,6 @@ void ProxyMain::DidPresentCompositorFrame(
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;
-}
-
-bool ProxyMain::CommitToActiveTree() const {
-  // With ProxyMain, we use a pending tree and activate it once it's ready to
-  // draw to allow input to modify the active tree and draw during raster.
-  return false;
 }
 
 void ProxyMain::SetLayerTreeFrameSink(

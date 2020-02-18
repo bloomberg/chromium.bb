@@ -4,22 +4,11 @@
 
 #include "ash/public/cpp/manifest.h"
 
-#include "ash/public/interfaces/accessibility_controller.mojom.h"
-#include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
-#include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_volume_control.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/cros_display_config.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/public/interfaces/ime_controller.mojom.h"
-#include "ash/public/interfaces/keyboard_controller.mojom.h"
-#include "ash/public/interfaces/kiosk_next_shell.mojom.h"
-#include "ash/public/interfaces/locale.mojom.h"
-#include "ash/public/interfaces/media.mojom.h"
-#include "ash/public/interfaces/night_light_controller.mojom.h"
-#include "ash/public/interfaces/shelf_integration_test_api.mojom.h"
-#include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/public/interfaces/vpn_list.mojom.h"
@@ -31,7 +20,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
 
 namespace ash {
 
@@ -54,31 +42,18 @@ const service_manager::Manifest& GetManifest() {
           .ExposeCapability(
               "system_ui",
               service_manager::Manifest::InterfaceList<
-                  mojom::AccessibilityController,
-                  mojom::AccessibilityFocusRingController,
-                  mojom::AshMessageCenterController,
                   mojom::AssistantAlarmTimerController,
                   mojom::AssistantController,
                   mojom::AssistantNotificationController,
                   mojom::AssistantScreenContextController,
                   mojom::AssistantVolumeControl,
-                  mojom::KioskNextShellController,
-                  mojom::CrosDisplayConfigController,
-                  mojom::EventRewriterController, mojom::ImeController,
-                  mojom::KeyboardController, mojom::LocaleUpdateController,
-                  mojom::MediaController, mojom::NightLightController,
-                  mojom::ShutdownController, mojom::TrayAction,
-                  mojom::VoiceInteractionController, mojom::VpnList>())
-          .ExposeCapability("test", service_manager::Manifest::InterfaceList<
-                                        mojom::ShelfIntegrationTestApi>())
+                  mojom::CrosDisplayConfigController, mojom::ImeController,
+                  mojom::TrayAction, mojom::VoiceInteractionController,
+                  mojom::VpnList>())
           .RequireCapability("*", "accessibility")
           .RequireCapability("*", "app")
-          .RequireCapability(prefs::mojom::kLocalStateServiceName,
-                             "pref_client")
           .RequireCapability(content::mojom::kServiceName, "navigation")
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
-          .RequireCapability(viz::mojom::kVizServiceName, "ozone")
-          .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
           .RequireCapability(device::mojom::kServiceName,
                              "device:bluetooth_system")
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")

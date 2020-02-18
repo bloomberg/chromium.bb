@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -66,6 +67,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/google/core/common/google_util.h"
@@ -127,7 +129,7 @@
 #include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker.h"
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #endif
@@ -478,15 +480,14 @@ void GoForward(Browser* browser, WindowOpenDisposition disposition) {
   }
 }
 
-bool NavigateToIndexWithDisposition(Browser* browser,
+void NavigateToIndexWithDisposition(Browser* browser,
                                     int index,
                                     WindowOpenDisposition disposition) {
   NavigationController* controller =
       &GetTabAndRevertIfNecessary(browser, disposition)->GetController();
-  if (index < 0 || index >= controller->GetEntryCount())
-    return false;
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, controller->GetEntryCount());
   controller->GoToIndex(index);
-  return true;
 }
 
 void Reload(Browser* browser, WindowOpenDisposition disposition) {
@@ -596,7 +597,7 @@ void NewWindow(Browser* browser) {
   if (extension && extension->is_hosted_app()) {
     const auto app_launch_params = CreateAppLaunchParamsUserContainer(
         browser->profile(), extension, WindowOpenDisposition::NEW_WINDOW,
-        extensions::SOURCE_KEYBOARD);
+        extensions::AppLaunchSource::kSourceKeyboard);
     OpenApplicationWindow(
         app_launch_params,
         extensions::AppLaunchInfo::GetLaunchWebURL(extension));
@@ -607,7 +608,7 @@ void NewWindow(Browser* browser) {
 }
 
 void NewIncognitoWindow(Profile* profile) {
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
   feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
       ->GetForProfile(profile)
       ->OnIncognitoWindowOpened();
@@ -628,16 +629,16 @@ void NewTab(Browser* browser) {
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_COMMAND,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Notify IPH that new tab was opened.
   auto* reopen_tab_iph =
       ReopenTabInProductHelpFactory::GetForProfile(browser->profile());
   reopen_tab_iph->NewTabOpened();
-#endif
 
   if (browser->is_type_tabbed()) {
-    AddTabAt(browser, GURL(), -1, true);
-    browser->tab_strip_model()->GetActiveWebContents()->RestoreFocus();
+    TabStripModel* const model = browser->tab_strip_model();
+    const auto group_id = model->GetTabGroupForTab(model->active_index());
+    AddTabAt(browser, GURL(), -1, true, group_id);
+    model->GetActiveWebContents()->RestoreFocus();
   } else {
     ScopedTabbedBrowserDisplayer displayer(browser->profile());
     Browser* b = displayer.browser();
@@ -741,13 +742,15 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
   if (browser->CanSupportWindowFeature(Browser::FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
-    int index = browser->tab_strip_model()->GetIndexOfWebContents(contents);
+    const int index =
+        browser->tab_strip_model()->GetIndexOfWebContents(contents);
     pinned = browser->tab_strip_model()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
+    const auto old_group = browser->tab_strip_model()->GetTabGroupForTab(index);
     browser->tab_strip_model()->InsertWebContentsAt(
-        index + 1, std::move(contents_dupe), add_types);
+        index + 1, std::move(contents_dupe), add_types, old_group);
   } else {
     Browser* new_browser = NULL;
     if (browser->is_app() && !browser->is_type_popup()) {
@@ -1109,6 +1112,20 @@ void FindInPage(Browser* browser, bool find_next, bool forward_direction) {
   }
 }
 
+bool CanCloseFind(Browser* browser) {
+  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
+  if (!current_tab)
+    return false;
+
+  FindTabHelper* find_helper = FindTabHelper::FromWebContents(current_tab);
+  return find_helper ? find_helper->find_ui_active() : false;
+}
+
+void CloseFind(Browser* browser) {
+  browser->GetFindBarController()->EndFindSession(
+      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+}
+
 void Zoom(Browser* browser, content::PageZoom zoom) {
   zoom::PageZoom::Zoom(browser->tab_strip_model()->GetActiveWebContents(),
                        zoom);
@@ -1215,8 +1232,15 @@ void OpenUpdateChromeDialog(Browser* browser) {
   }
 }
 
-void DistillCurrentPage(Browser* browser) {
-  DistillCurrentPageAndView(browser->tab_strip_model()->GetActiveWebContents());
+void ToggleDistilledView(Browser* browser) {
+  auto* current_web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (dom_distiller::url_utils::IsDistilledPage(
+          current_web_contents->GetLastCommittedURL())) {
+    ReturnToOriginalPage(current_web_contents);
+  } else {
+    DistillCurrentPageAndView(current_web_contents);
+  }
 }
 
 bool CanRequestTabletSite(WebContents* current_tab) {
@@ -1286,7 +1310,7 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
 }
 
 void CopyURL(Browser* browser) {
-  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  ui::ScopedClipboardWriter scw(ui::ClipboardType::kCopyPaste);
   scw.WriteText(base::UTF8ToUTF16(browser->tab_strip_model()
                                       ->GetActiveWebContents()
                                       ->GetVisibleURL()
@@ -1322,6 +1346,7 @@ bool CanViewSource(const Browser* browser) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
                                              bool force_shortcut_app) {
+  // TODO(alancutter): Legacy metric to remove in ~M80.
   base::RecordAction(UserMetricsAction("CreateHostedApp"));
   web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app,
                                               base::DoNothing());

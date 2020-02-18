@@ -24,6 +24,7 @@
 #include "components/sync/protocol/history_delete_directive_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/mountain_share_specifics.pb.h"
+#include "components/sync/protocol/nigori_local_data.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/persisted_entity_data.pb.h"
@@ -41,6 +42,7 @@
 #include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync/protocol/user_consent_specifics.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
+#include "components/sync/protocol/web_app_specifics.pb.h"
 
 // This file implements VisitProtoFields() functions for sync protos.
 //
@@ -371,7 +373,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(45 == ModelType::NUM_ENTRIES,
+  static_assert(46 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -415,6 +417,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(user_consent);
   VISIT(user_event);
   VISIT(wallet_metadata);
+  VISIT(web_app);
   VISIT(wifi_configuration);
   VISIT(wifi_credential);
 }
@@ -617,6 +620,35 @@ VISIT_PROTO_FIELDS(const sync_pb::ReplacedNavigation& proto) {
   VISIT_ENUM(first_page_transition);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::CryptographerData& proto) {
+  VISIT(key_bag);
+  VISIT(default_key_name);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::CustomPassphraseKeyDerivationParams& proto) {
+  VISIT(custom_passphrase_key_derivation_method);
+  VISIT(custom_passphrase_key_derivation_salt);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::NigoriModel& proto) {
+  VISIT(cryptographer_data);
+  VISIT(current_keystore_key_name);
+  VISIT(pending_keys);
+  VISIT(passphrase_type);
+  VISIT(keystore_migration_time);
+  VISIT(custom_passphrase_time);
+  VISIT(custom_passphrase_key_derivation_params);
+  VISIT(encrypt_everything);
+  VISIT_REP(encrypted_types_specifics_field_numbers);
+  VISIT_REP(keystore_keys);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::NigoriLocalData& proto) {
+  VISIT(model_type_state);
+  VISIT(entity_metadata);
+  VISIT(nigori_model);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encryption_keybag);
   VISIT(keybag_is_frozen);
@@ -640,7 +672,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encrypt_everything);
   VISIT(server_only_was_missing_keystore_migration_time);
   VISIT(sync_tab_favicons);
-  VISIT_ENUM(passphrase_type);
+  VISIT(passphrase_type);
   VISIT(keystore_decryptor_token);
   VISIT(keystore_migration_time);
   VISIT(custom_passphrase_time);
@@ -678,7 +710,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PersistedEntityData& proto) {
-  VISIT(non_unique_name);
+  VISIT(name);
   VISIT(specifics);
 }
 
@@ -896,6 +928,7 @@ VISIT_PROTO_FIELDS(const sync_pb::TabNavigation& proto) {
   VISIT_REP(navigation_redirect);
   VISIT(last_navigation_redirect_url);
   VISIT(correct_referrer_policy);
+  VISIT(page_language);
   VISIT_ENUM(password_state);
   VISIT(task_id);
   VISIT_REP(ancestor_task_id);
@@ -1033,6 +1066,13 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}
 
+VISIT_PROTO_FIELDS(const sync_pb::CloudTokenData& proto) {
+  VISIT(suffix);
+  VISIT(exp_month);
+  VISIT(exp_year);
+  VISIT(art_fife_url);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(id);
   VISIT_ENUM(status);
@@ -1077,6 +1117,13 @@ VISIT_PROTO_FIELDS(const sync_pb::PaymentsCustomerData& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::WalletSyncFlags& proto) {
   VISIT(enabled);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::WebAppSpecifics& proto) {
+  VISIT(app_id);
+  VISIT(launch_url);
+  VISIT(name);
+  VISIT(theme_color);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WifiCredentialSpecifics& proto) {

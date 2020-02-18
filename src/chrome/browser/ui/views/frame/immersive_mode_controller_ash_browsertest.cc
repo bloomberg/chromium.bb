@@ -9,9 +9,9 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ssl/chrome_mock_cert_verifier.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -25,10 +25,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/window/frame_caption_button.h"
@@ -97,12 +95,12 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   // Toggle the browser's fullscreen state.
   void ToggleFullscreen() {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously. The notification
-    // is used to trigger changes in whether the shelf is auto hidden.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
+    // The fullscreen change notification is sent asynchronously. The
+    // notification is used to trigger changes in whether the shelf is auto
+    // hidden.
+    FullscreenNotificationObserver waiter(browser());
     chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
+    waiter.Wait();
   }
 
   // Attempt revealing the top-of-window views.
@@ -142,9 +140,8 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   net::EmbeddedTestServer https_server_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
-  // used by the NetworkService. This is needed for when tests run with
-  // the NetworkService enabled.
-  ChromeMockCertVerifier cert_verifier_;
+  // used by the NetworkService.
+  content::ContentMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshHostedAppBrowserTest);
 };
@@ -220,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   // the associated window's top inset is 0 (the top of the window is not
   // visible).
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(controller()->IsEnabled());
   EXPECT_EQ(0, aura_window->GetProperty(aura::client::kTopViewInset));
 
@@ -238,13 +235,13 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that immersive mode remains if the browser was fullscreened when
   // entering tablet mode.
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(true));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   EXPECT_TRUE(controller()->IsEnabled());
 
   // Verify that if the browser is not fullscreened, upon exiting tablet mode,
@@ -253,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ToggleFullscreen();
   EXPECT_TRUE(controller()->IsEnabled());
   ASSERT_NO_FATAL_FAILURE(
-      ash::ShellTestApi().EnableTabletModeWindowManager(false));
+      ash::ShellTestApi().SetTabletModeEnabledForTest(false));
   EXPECT_FALSE(controller()->IsEnabled());
 
   EXPECT_GT(aura_window->GetProperty(aura::client::kTopViewInset), 0);
@@ -277,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
 
   // Verify the size button is hidden in tablet mode.
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   frame_test_api.EndAnimations();
 
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
@@ -286,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   frame_test_api.EndAnimations();
 
   EXPECT_TRUE(frame_test_api.size_button()->GetVisible());
@@ -303,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutStartInTabletMode) {
   // Start in tablet mode
-  ash::ShellTestApi().EnableTabletModeWindowManager(true);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   BrowserNonClientFrameViewAsh* frame_view = nullptr;
   {
@@ -324,6 +321,6 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
-  ash::ShellTestApi().EnableTabletModeWindowManager(false);
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   VerifyButtonsInImmersiveMode(frame_view);
 }

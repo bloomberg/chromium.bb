@@ -16,16 +16,16 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/dump_accessibility_browsertest_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/test/accessibility_browser_test_utils.h"
 
 namespace content {
 
@@ -255,8 +255,15 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-controls-changed.html"));
 }
 
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsAriaDisabledChanged \
+  DISABLED_AccessibilityEventsAriaDisabledChanged
+#else
+#define MAYBE_AccessibilityEventsAriaDisabledChanged \
+  AccessibilityEventsAriaDisabledChanged
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaDisabledChanged) {
+                       MAYBE_AccessibilityEventsAriaDisabledChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-disabled-changed.html"));
 }
 
@@ -288,6 +295,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaLiveChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-live-changed.html"));
+}
+
+// TODO(crbug.com/983709): Flaky.
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       DISABLED_AccessibilityEventsAriaMenuItemFocus) {
+  RunEventTest(FILE_PATH_LITERAL("aria-menuitem-focus.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -330,8 +343,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-tree-expand.html"));
 }
 
+// TODO(crbug.com/983801): Flaky.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaTreeItemFocus) {
+                       DISABLED_AccessibilityEventsAriaTreeItemFocus) {
   RunEventTest(FILE_PATH_LITERAL("aria-treeitem-focus.html"));
 }
 
@@ -340,9 +354,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
-// TODO(aboxhall): Fix flaky test
+// TODO(835455): Fails on Windows.
+#if defined(OS_WIN)
+#define MAYBE_AccessibilityEventsAriaComboBoxDelayAddList \
+  DISABLED_AccessibilityEventsAriaComboBoxDelayAddList
+#else
+#define MAYBE_AccessibilityEventsAriaComboBoxDelayAddList \
+  AccessibilityEventsAriaComboBoxDelayAddList
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       DISABLED_AccessibilityEventsAriaComboBoxDelayAddList) {
+                       MAYBE_AccessibilityEventsAriaComboBoxDelayAddList) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-delay-add-list.html"));
 }
 
@@ -464,8 +485,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
 }
 
+// http://crbug.com/982998
+// Test fails on Mac due to https://crbug.com/985925.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_AccessibilityEventsExpandedChange \
+  DISABLED_AccessibilityEventsExpandedChange
+#else
+#define MAYBE_AccessibilityEventsExpandedChange \
+  AccessibilityEventsExpandedChange
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsExpandedChange) {
+                       MAYBE_AccessibilityEventsExpandedChange) {
   RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
 }
 
@@ -524,9 +554,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("live-region-elem-reparent.html"));
 }
 
-// TODO(aboxhall): Fix flakiness.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       DISABLED_AccessibilityEventsLiveRegionIgnoresClick) {
+                       AccessibilityEventsLiveRegionIgnoresClick) {
   RunEventTest(FILE_PATH_LITERAL("live-region-ignores-click.html"));
 }
 

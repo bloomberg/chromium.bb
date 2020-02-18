@@ -35,11 +35,13 @@ namespace blink {
 
 RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                          Page& page,
-                         FrameOwner* owner)
+                         FrameOwner* owner,
+                         WindowAgentFactory* inheriting_agent_factory)
     : Frame(client,
             page,
             owner,
-            MakeGarbageCollected<RemoteWindowProxyManager>(*this)),
+            MakeGarbageCollected<RemoteWindowProxyManager>(*this),
+            inheriting_agent_factory),
       security_context_(MakeGarbageCollected<RemoteSecurityContext>()) {
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
   UpdateInertIfPossible();
@@ -145,7 +147,7 @@ void RemoteFrame::DetachImpl(FrameDetachType type) {
     SetCcLayer(nullptr, false, false);
 }
 
-bool RemoteFrame::PrepareForCommit() {
+bool RemoteFrame::DetachDocument() {
   DetachChildren();
   return !!GetPage();
 }

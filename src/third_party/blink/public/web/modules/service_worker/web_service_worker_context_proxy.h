@@ -52,7 +52,7 @@ class WebServiceWorkerContextProxy {
       // A handle for mojom::ServiceWorkerRequest.
       mojo::ScopedMessagePipeHandle request) = 0;
   virtual void BindControllerServiceWorker(
-      // A handle for mojom::ControllerServiceWorkerRequest.
+      // A handle for mojo::PendingReceiver<mojom::ControllerServiceWorker>.
       mojo::ScopedMessagePipeHandle request) = 0;
 
   virtual void OnNavigationPreloadResponse(
@@ -67,6 +67,8 @@ class WebServiceWorkerContextProxy {
                                            int64_t encoded_data_length,
                                            int64_t encoded_body_length,
                                            int64_t decoded_body_length) = 0;
+
+  virtual bool IsWindowInteractionAllowed() = 0;
 };
 
 }  // namespace blink

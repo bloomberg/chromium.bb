@@ -20,7 +20,9 @@ bool SkDrawLooper::canComputeFastBounds(const SkPaint& paint) const {
     for (;;) {
         SkPaint p(paint);
         if (context->next(&canvas, &p)) {
+#ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
             p.setLooper(nullptr);
+#endif
             if (!p.canComputeFastBounds()) {
                 return false;
             }
@@ -47,7 +49,9 @@ void SkDrawLooper::computeFastBounds(const SkPaint& paint, const SkRect& s,
         if (context->next(&canvas, &p)) {
             SkRect r(src);
 
+#ifdef SK_SUPPORT_LEGACY_DRAWLOOPER
             p.setLooper(nullptr);
+#endif
             p.computeFastBounds(r, &r);
             canvas.getTotalMatrix().mapRect(&r);
 
@@ -64,4 +68,19 @@ void SkDrawLooper::computeFastBounds(const SkPaint& paint, const SkRect& s,
 
 bool SkDrawLooper::asABlurShadow(BlurShadowRec*) const {
     return false;
+}
+
+void SkDrawLooper::apply(SkCanvas* canvas, const SkPaint& paint,
+                         std::function<void(SkCanvas*, const SkPaint&)> proc) {
+    SkSTArenaAlloc<256> alloc;
+    Context* ctx = this->makeContext(canvas, &alloc);
+    if (ctx) {
+        for (;;) {
+            SkPaint p = paint;
+            if (!ctx->next(canvas, &p)) {
+                break;
+            }
+            proc(canvas, p);
+        }
+    }
 }

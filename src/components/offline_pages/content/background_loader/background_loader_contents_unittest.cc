@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/window_container_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace background_loader {
@@ -36,10 +37,12 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool can_download_delegate_called() { return delegate_called_; }
 
   void MediaAccessCallback(const blink::MediaStreamDevices& devices,
-                           blink::MediaStreamRequestResult result,
+                           blink::mojom::MediaStreamRequestResult result,
                            std::unique_ptr<content::MediaStreamUI> ui);
   blink::MediaStreamDevices devices() { return devices_; }
-  blink::MediaStreamRequestResult request_result() { return request_result_; }
+  blink::mojom::MediaStreamRequestResult request_result() {
+    return request_result_;
+  }
   content::MediaStreamUI* media_stream_ui() { return media_stream_ui_.get(); }
 
   void WaitForSignal() { waiter_.Wait(); }
@@ -49,7 +52,7 @@ class BackgroundLoaderContentsTest : public testing::Test,
   bool download_;
   bool delegate_called_;
   blink::MediaStreamDevices devices_;
-  blink::MediaStreamRequestResult request_result_;
+  blink::mojom::MediaStreamRequestResult request_result_;
   std::unique_ptr<content::MediaStreamUI> media_stream_ui_;
   base::WaitableEvent waiter_;
 };
@@ -89,7 +92,7 @@ void BackgroundLoaderContentsTest::SetDelegate() {
 
 void BackgroundLoaderContentsTest::MediaAccessCallback(
     const blink::MediaStreamDevices& devices,
-    blink::MediaStreamRequestResult result,
+    blink::mojom::MediaStreamRequestResult result,
     std::unique_ptr<content::MediaStreamUI> ui) {
   devices_ = devices;
   request_result_ = result;
@@ -160,8 +163,8 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
       blink::MediaStreamRequestType::MEDIA_DEVICE_ACCESS /* request_type */,
       std::string() /* requested_audio_device_id */,
       std::string() /* requested_video_device_id */,
-      blink::MediaStreamType::MEDIA_GUM_TAB_AUDIO_CAPTURE /* audio_type */,
-      blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* video_type */,
+      blink::mojom::MediaStreamType::GUM_TAB_AUDIO_CAPTURE /* audio_type */,
+      blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* video_type */,
       false /* disable_local_echo */);
   contents()->RequestMediaAccessPermission(
       nullptr /* contents */, request /* request */,
@@ -171,7 +174,7 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
   // No devices allowed.
   ASSERT_TRUE(devices().empty());
   // Permission has been dismissed rather than denied.
-  ASSERT_EQ(blink::MediaStreamRequestResult::MEDIA_DEVICE_PERMISSION_DISMISSED,
+  ASSERT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DISMISSED,
             request_result());
   ASSERT_EQ(nullptr, media_stream_ui());
 }
@@ -179,7 +182,7 @@ TEST_F(BackgroundLoaderContentsTest, DoesNotGiveMediaAccessPermission) {
 TEST_F(BackgroundLoaderContentsTest, CheckMediaAccessPermissionFalse) {
   ASSERT_FALSE(contents()->CheckMediaAccessPermission(
       nullptr /* contents */, GURL::EmptyGURL() /* security_origin */,
-      blink::MediaStreamType::MEDIA_GUM_TAB_VIDEO_CAPTURE /* type */));
+      blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE /* type */));
 }
 
 TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {
@@ -192,24 +195,6 @@ TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {
   previews_state = content::PREVIEWS_NO_TRANSFORM;
   contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
   EXPECT_EQ(previews_state, content::PREVIEWS_NO_TRANSFORM);
-
-  // If the state starts out as a state unfriendly to offlining, we should
-  // and out the unfriendly previews.
-  previews_state = content::SERVER_LOFI_ON | content::CLIENT_LOFI_ON;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, content::SERVER_LOFI_ON);
-
-  // If the state starts out as offlining friendly previews, we should preserve
-  // them.
-  previews_state = content::PARTIAL_CONTENT_SAFE_PREVIEWS;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, content::PARTIAL_CONTENT_SAFE_PREVIEWS);
-
-  // If there are only offlining unfriendly previews, they should all get turned
-  // off.
-  previews_state = content::CLIENT_LOFI_ON;
-  contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, content::PREVIEWS_OFF);
 }
 
 }  // namespace background_loader

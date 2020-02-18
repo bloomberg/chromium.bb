@@ -16,13 +16,13 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -586,16 +586,17 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
+  // TODO(fserb): this shouldn't be software?
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           IntSize(video->videoWidth(), video->videoHeight()),
-          CanvasResourceProvider::kSoftwareResourceUsage,
+          CanvasResourceProvider::ResourceUsage::kSoftwareResourceUsage,
           nullptr,              // context_provider_wrapper
           0,                    // msaa_sample_count
           CanvasColorParams(),  // TODO: set color space here to avoid clamping
           CanvasResourceProvider::kDefaultPresentationMode,
-          nullptr,              // canvas_resource_dispatcher
-          IsAccelerated());     // is_origin_top_left
+          nullptr,           // canvas_resource_dispatcher
+          IsAccelerated());  // is_origin_top_left
   if (!resource_provider)
     return;
 

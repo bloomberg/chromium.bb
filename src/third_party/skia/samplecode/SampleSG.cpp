@@ -66,25 +66,19 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "SceneGraph");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("SceneGraph"); }
 
     void onDrawContent(SkCanvas* canvas) override {
         fScene->render(canvas);
     }
 
-    Click* onFindClickHandler(SkScalar x, SkScalar y, unsigned modi) override {
+    Click* onFindClickHandler(SkScalar x, SkScalar y, ModifierKey modi) override {
         if (auto node = fScene->nodeAt({x, y})) {
-            Click* click = new Click(this);
+            Click* click = new Click();
             click->fMeta.setPtr("node", (void*)node);
             return click;
         }
-        return this->INHERITED::onFindClickHandler(x, y, modi);
+        return nullptr;
     }
 
     bool onClick(Click* click) override {

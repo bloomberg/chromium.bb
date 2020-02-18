@@ -8,8 +8,11 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "api/jsep_session_description.h"
+
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -19,7 +22,6 @@
 #include "api/candidate.h"
 #include "api/jsep.h"
 #include "api/jsep_ice_candidate.h"
-#include "api/jsep_session_description.h"
 #include "media/base/codec.h"
 #include "p2p/base/p2p_constants.h"
 #include "p2p/base/port.h"
@@ -63,10 +65,12 @@ CreateCricketSessionDescription() {
   auto video = absl::make_unique<cricket::VideoContentDescription>();
 
   audio->AddCodec(cricket::AudioCodec(103, "ISAC", 16000, 0, 0));
-  desc->AddContent(cricket::CN_AUDIO, MediaProtocolType::kRtp, audio.release());
+  desc->AddContent(cricket::CN_AUDIO, MediaProtocolType::kRtp,
+                   std::move(audio));
 
   video->AddCodec(cricket::VideoCodec(120, "VP8"));
-  desc->AddContent(cricket::CN_VIDEO, MediaProtocolType::kRtp, video.release());
+  desc->AddContent(cricket::CN_VIDEO, MediaProtocolType::kRtp,
+                   std::move(video));
 
   desc->AddTransportInfo(cricket::TransportInfo(
       cricket::CN_AUDIO,

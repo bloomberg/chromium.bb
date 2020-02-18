@@ -57,11 +57,11 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   void UpdateLayout() override;
 
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) final;
 
-  void Autoscroll(const LayoutPoint&) final;
+  void Autoscroll(const PhysicalOffset&) final;
 
   // Subclassed to forward to our inner div.
   LayoutUnit ScrollLeft() const final;

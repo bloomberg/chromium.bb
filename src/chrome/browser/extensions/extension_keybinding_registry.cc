@@ -20,7 +20,7 @@
 #include "extensions/common/manifest_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/media_client.h"
+#include "chrome/browser/ui/ash/media_client_impl.h"
 #endif
 
 namespace {
@@ -109,7 +109,8 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
       media_keys_listener_manager->EnableInternalMediaKeyHandling();
     } else {
 #if defined(OS_CHROMEOS)
-      MediaClient::Get()->DisableCustomMediaKeyHandler(browser_context_, this);
+      MediaClientImpl::Get()->DisableCustomMediaKeyHandler(browser_context_,
+                                                           this);
 #endif
     }
   }
@@ -195,7 +196,8 @@ void ExtensionKeybindingRegistry::AddEventTarget(
       media_keys_listener_manager->DisableInternalMediaKeyHandling();
     } else {
 #if defined(OS_CHROMEOS)
-      MediaClient::Get()->EnableCustomMediaKeyHandler(browser_context_, this);
+      MediaClientImpl::Get()->EnableCustomMediaKeyHandler(browser_context_,
+                                                          this);
 #endif
     }
   }

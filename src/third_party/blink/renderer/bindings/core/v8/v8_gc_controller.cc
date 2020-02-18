@@ -31,8 +31,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 
 #include <algorithm>
-#include <unordered_map>
-#include <unordered_set>
 
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -48,7 +46,8 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -228,12 +227,10 @@ void V8GCController::CollectAllGarbageForTesting(
   constexpr unsigned kNumberOfGCs = 5;
 
   if (stack_state != v8::EmbedderHeapTracer::EmbedderStackState::kUnknown) {
-    V8PerIsolateData* data = V8PerIsolateData::From(isolate);
-    v8::EmbedderHeapTracer* tracer =
-        static_cast<v8::EmbedderHeapTracer*>(data->GetUnifiedHeapController());
+    v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
+        ThreadState::Current()->unified_heap_controller());
     // Passing a stack state is only supported when either wrapper tracing or
     // unified heap is enabled.
-    CHECK(tracer);
     for (unsigned i = 0; i < kNumberOfGCs; i++)
       tracer->GarbageCollectionForTesting(stack_state);
     return;
@@ -293,12 +290,9 @@ void V8GCController::TraceDOMWrappers(v8::Isolate* isolate,
                                       Visitor* parent_visitor) {
   DOMWrapperForwardingVisitor visitor(parent_visitor);
   isolate->VisitHandlesWithClassIds(&visitor);
-  v8::EmbedderHeapTracer* tracer =
-      V8PerIsolateData::From(isolate)->GetEmbedderHeapTracer();
-  // There may be no tracer during tear down garbage collections.
-  // Not all threads have a tracer attached.
-  if (tracer)
-    tracer->IterateTracedGlobalHandles(&visitor);
+  v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
+      ThreadState::Current()->unified_heap_controller());
+  tracer->IterateTracedGlobalHandles(&visitor);
 }
 
 }  // namespace blink

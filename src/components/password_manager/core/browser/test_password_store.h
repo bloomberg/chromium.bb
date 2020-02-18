@@ -48,8 +48,8 @@ class TestPasswordStore : public PasswordStore {
   // PasswordStore interface
   PasswordStoreChangeList AddLoginImpl(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
-  PasswordStoreChangeList UpdateLoginImpl(
-      const autofill::PasswordForm& form) override;
+  PasswordStoreChangeList UpdateLoginImpl(const autofill::PasswordForm& form,
+                                          UpdateLoginError* error) override;
   PasswordStoreChangeList RemoveLoginImpl(
       const autofill::PasswordForm& form) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
@@ -72,9 +72,6 @@ class TestPasswordStore : public PasswordStore {
   PasswordStoreChangeList RemoveLoginsCreatedBetweenImpl(
       base::Time begin,
       base::Time end) override;
-  PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
-      base::Time delete_begin,
-      base::Time delete_end) override;
   PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
       const base::Callback<bool(const GURL&)>& origin_filter) override;
   bool RemoveStatisticsByOriginAndTimeImpl(

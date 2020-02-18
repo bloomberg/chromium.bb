@@ -36,6 +36,7 @@
 #include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_graphstatedata.h"
+#include "core/fxge/render_defines.h"
 #include "third_party/base/logging.h"
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/span.h"
@@ -255,7 +256,7 @@ CPDF_StreamContentParser::CPDF_StreamContentParser(
     CPDF_Dictionary* pResources,
     const CFX_FloatRect& rcBBox,
     const CPDF_AllStates* pStates,
-    std::set<const uint8_t*>* parsedSet)
+    std::set<const uint8_t*>* pParsedSet)
     : m_pDocument(pDocument),
       m_pPageResources(pPageResources),
       m_pParentResources(pParentResources),
@@ -263,7 +264,7 @@ CPDF_StreamContentParser::CPDF_StreamContentParser(
                                                   pParentResources,
                                                   pPageResources)),
       m_pObjectHolder(pObjHolder),
-      m_ParsedSet(parsedSet),
+      m_ParsedSet(pParsedSet),
       m_BBox(rcBBox),
       m_ParamStartPos(0),
       m_ParamCount(0),
@@ -783,7 +784,7 @@ void CPDF_StreamContentParser::AddForm(CPDF_Stream* pStream) {
   status.m_TextState = m_pCurStates->m_TextState;
   auto form = pdfium::MakeUnique<CPDF_Form>(
       m_pDocument.Get(), m_pPageResources.Get(), pStream, m_pResources.Get());
-  form->ParseContent(&status, nullptr, nullptr, m_ParsedSet.Get());
+  form->ParseContent(&status, nullptr, m_ParsedSet.Get());
 
   CFX_Matrix matrix = m_pCurStates->m_CTM * m_mtContentToUser;
 
@@ -807,13 +808,16 @@ CPDF_ImageObject* CPDF_StreamContentParser::AddImage(
       pdfium::MakeUnique<CPDF_ImageObject>(GetCurrentStreamIndex());
   pImageObj->SetImage(
       pdfium::MakeRetain<CPDF_Image>(m_pDocument.Get(), std::move(pStream)));
+
   return AddImageObject(std::move(pImageObj));
 }
 
 CPDF_ImageObject* CPDF_StreamContentParser::AddImage(uint32_t streamObjNum) {
   auto pImageObj =
       pdfium::MakeUnique<CPDF_ImageObject>(GetCurrentStreamIndex());
-  pImageObj->SetImage(m_pDocument->LoadImageFromPageData(streamObjNum));
+  pImageObj->SetImage(CPDF_DocPageData::FromDocument(m_pDocument.Get())
+                          ->GetImage(streamObjNum));
+
   return AddImageObject(std::move(pImageObj));
 }
 
@@ -824,8 +828,8 @@ CPDF_ImageObject* CPDF_StreamContentParser::AddImage(
 
   auto pImageObj =
       pdfium::MakeUnique<CPDF_ImageObject>(GetCurrentStreamIndex());
-  pImageObj->SetImage(
-      m_pDocument->GetPageData()->GetImage(pImage->GetStream()->GetObjNum()));
+  pImageObj->SetImage(CPDF_DocPageData::FromDocument(m_pDocument.Get())
+                          ->GetImage(pImage->GetStream()->GetObjNum()));
 
   return AddImageObject(std::move(pImageObj));
 }
@@ -1059,7 +1063,7 @@ void CPDF_StreamContentParser::Handle_SetColorPS_Fill() {
 
   // A valid |pLastParam| implies |m_ParamCount| > 0, so GetNamedColors() call
   // below is safe.
-  CPDF_Pattern* pPattern = FindPattern(GetString(0), false);
+  RetainPtr<CPDF_Pattern> pPattern = FindPattern(GetString(0), false);
   if (pPattern)
     m_pCurStates->m_ColorState.SetFillPattern(pPattern, GetNamedColors());
 }
@@ -1076,13 +1080,13 @@ void CPDF_StreamContentParser::Handle_SetColorPS_Stroke() {
 
   // A valid |pLastParam| implies |m_ParamCount| > 0, so GetNamedColors() call
   // below is safe.
-  CPDF_Pattern* pPattern = FindPattern(GetString(0), false);
+  RetainPtr<CPDF_Pattern> pPattern = FindPattern(GetString(0), false);
   if (pPattern)
     m_pCurStates->m_ColorState.SetStrokePattern(pPattern, GetNamedColors());
 }
 
 void CPDF_StreamContentParser::Handle_ShadeFill() {
-  CPDF_Pattern* pPattern = FindPattern(GetString(0), true);
+  RetainPtr<CPDF_Pattern> pPattern = FindPattern(GetString(0), true);
   if (!pPattern)
     return;
 
@@ -1159,8 +1163,8 @@ CPDF_Font* CPDF_StreamContentParser::FindFont(const ByteString& name) {
     return CPDF_Font::GetStockFont(m_pDocument.Get(),
                                    CFX_Font::kDefaultAnsiFontName);
   }
-
-  CPDF_Font* pFont = m_pDocument->LoadFont(pFontDict);
+  CPDF_Font* pFont =
+      CPDF_DocPageData::FromDocument(m_pDocument.Get())->GetFont(pFontDict);
   if (pFont && pFont->IsType3Font()) {
     pFont->AsType3Font()->SetPageResources(m_pResources.Get());
     pFont->AsType3Font()->CheckType3FontMetrics();
@@ -1170,42 +1174,45 @@ CPDF_Font* CPDF_StreamContentParser::FindFont(const ByteString& name) {
 
 RetainPtr<CPDF_ColorSpace> CPDF_StreamContentParser::FindColorSpace(
     const ByteString& name) {
-  if (name == "Pattern") {
+  if (name == "Pattern")
     return CPDF_ColorSpace::GetStockCS(PDFCS_PATTERN);
-  }
+
   if (name == "DeviceGray" || name == "DeviceCMYK" || name == "DeviceRGB") {
     ByteString defname = "Default";
     defname += name.Right(name.GetLength() - 7);
     const CPDF_Object* pDefObj = FindResourceObj("ColorSpace", defname);
     if (!pDefObj) {
-      if (name == "DeviceGray") {
+      if (name == "DeviceGray")
         return CPDF_ColorSpace::GetStockCS(PDFCS_DEVICEGRAY);
-      }
-      if (name == "DeviceRGB") {
+
+      if (name == "DeviceRGB")
         return CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB);
-      }
+
       return CPDF_ColorSpace::GetStockCS(PDFCS_DEVICECMYK);
     }
-    return m_pDocument->LoadColorSpace(pDefObj, nullptr);
+    return CPDF_DocPageData::FromDocument(m_pDocument.Get())
+        ->GetColorSpace(pDefObj, nullptr);
   }
   const CPDF_Object* pCSObj = FindResourceObj("ColorSpace", name);
   if (!pCSObj) {
     m_bResourceMissing = true;
     return nullptr;
   }
-  return m_pDocument->LoadColorSpace(pCSObj, nullptr);
+  return CPDF_DocPageData::FromDocument(m_pDocument.Get())
+      ->GetColorSpace(pCSObj, nullptr);
 }
 
-CPDF_Pattern* CPDF_StreamContentParser::FindPattern(const ByteString& name,
-                                                    bool bShading) {
+RetainPtr<CPDF_Pattern> CPDF_StreamContentParser::FindPattern(
+    const ByteString& name,
+    bool bShading) {
   CPDF_Object* pPattern =
       FindResourceObj(bShading ? "Shading" : "Pattern", name);
   if (!pPattern || (!pPattern->IsDictionary() && !pPattern->IsStream())) {
     m_bResourceMissing = true;
     return nullptr;
   }
-  return m_pDocument->LoadPattern(pPattern, bShading,
-                                  m_pCurStates->m_ParentMatrix);
+  return CPDF_DocPageData::FromDocument(m_pDocument.Get())
+      ->GetPattern(pPattern, bShading, m_pCurStates->m_ParentMatrix);
 }
 
 void CPDF_StreamContentParser::AddTextObject(const ByteString* pStrs,

@@ -25,7 +25,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -237,13 +236,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 - (void)setUp {
   [super setUp];
-  GREYAssert(autofill::features::IsPasswordManualFallbackEnabled(),
-             @"Manual Fallback must be enabled for this Test Case");
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"hello!"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
   SaveExamplePasswordForm();
 }
 
@@ -306,10 +302,6 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is not present when presenting UI.
 - (void)testPasswordControllerPauses {
-  // For the search bar to appear in password settings at least one password is
-  // needed.
-  SaveExamplePasswordForm();
-
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
@@ -334,14 +326,13 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
 // Tests that the Password View Controller is resumed after selecting other
 // password.
-- (void)testPasswordControllerResumes {
-  if (([UIDevice currentDevice].systemVersion.doubleValue < 11.3)) {
-    // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
+// TODO(crbug.com/981922): Re-enable this test due to failing DB call.
+- (void)DISABLED_testPasswordControllerResumes {
+  if (([UIDevice currentDevice].systemVersion.doubleValue < 12)) {
+    // TODO(crbug.com/976348): iOS 11 support is being deprecated, disable this
+    // failing test for now.
     return;
   }
-
-  // For this test one password is needed.
-  SaveExamplePasswordForm();
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -386,6 +377,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
     // TODO(crbug.com/908776): OtherPasswordsMatcher is disabled in <11.3.
     return;
   }
+  if (base::ios::IsRunningOnIOS13OrLater() && [ChromeEarlGrey isIPadIdiom]) {
+    // TODO(crbug.com/984977): Support this behavior in iPads again.
+    return;
+  }
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
@@ -421,7 +416,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the
 // keyboard icon.
 - (void)testKeyboardIconDismissPasswordController {
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // The keyboard icon is never present in iPads.
     return;
   }
@@ -452,7 +447,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // Tests that the Password View Controller is dismissed when tapping the outside
 // the popover on iPad.
 - (void)testIPadTappingOutsidePopOverDismissPasswordController {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   // Bring up the keyboard.
@@ -486,7 +481,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 // TODO(crbug.com/909629): started to be flaky and sometimes opens full list
 // when typing text.
 - (void)DISABLED_testTappingKeyboardDismissPasswordControllerPopOver {
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     return;
   }
   // Bring up the keyboard.
@@ -575,9 +570,8 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   }
 
   const GURL URL = self.testServer->GetURL(kIFrameHTMLFile);
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:URL]);
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:"iFrame"]);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"iFrame"];
   SaveLocalPasswordForm(URL);
 
   // Bring up the keyboard.

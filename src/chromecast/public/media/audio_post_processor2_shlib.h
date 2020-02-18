@@ -35,7 +35,10 @@ namespace media {
 class AudioPostProcessor2 {
  public:
   struct Config {
-    int output_sample_rate;
+    int output_sample_rate;  // The output sample rate for this processor.
+    int system_output_sample_rate;  // The system (hardware) output sample rate.
+    // The number of output frames expected from ProcessFrames().
+    int output_frames_per_write;
   };
 
   struct Status {
@@ -70,9 +73,6 @@ class AudioPostProcessor2 {
     // is valid until the next call to ProcessFrames() or destruction.
     float* output_buffer = nullptr;
   };
-
-  // The maximum amount of data that will ever be processed in one call.
-  static constexpr int kMaxAudioWriteTimeMilliseconds = 20;
 
   virtual ~AudioPostProcessor2() = default;
 

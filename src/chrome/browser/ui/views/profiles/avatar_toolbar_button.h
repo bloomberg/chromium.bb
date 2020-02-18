@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "services/identity/public/cpp/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/events/event.h"
 
@@ -24,7 +24,7 @@ class AvatarToolbarButton : public ToolbarButton,
                             public AvatarButtonErrorControllerDelegate,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
-                            public identity::IdentityManager::Observer,
+                            public signin::IdentityManager::Observer,
                             public ui::MaterialDesignControllerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
@@ -32,6 +32,7 @@ class AvatarToolbarButton : public ToolbarButton,
 
   void UpdateIcon();
   void UpdateText();
+  void SetSuppressAvatarButtonState(bool suppress_avatar_button_state);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AvatarToolbarButtonTest,
@@ -63,7 +64,7 @@ class AvatarToolbarButton : public ToolbarButton,
   // IdentityManager::Observer:
   // Needed if the first sync promo account should be displayed.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
@@ -84,13 +85,17 @@ class AvatarToolbarButton : public ToolbarButton,
   Browser* const browser_;
   Profile* const profile_;
 
+  // Indicates if the avatar icon should show text and update highlight color
+  // when sync state is not normal.
+  bool suppress_avatar_button_state_ = false;
+
 #if !defined(OS_CHROMEOS)
   AvatarButtonErrorController error_controller_;
 #endif  // !defined(OS_CHROMEOS)
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
   ScopedObserver<ProfileAttributesStorage, AvatarToolbarButton>
       profile_observer_;
-  ScopedObserver<identity::IdentityManager, AvatarToolbarButton>
+  ScopedObserver<signin::IdentityManager, AvatarToolbarButton>
       identity_manager_observer_;
   ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
       md_observer_{this};

@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -406,9 +405,6 @@ class SafeBrowsingBlockingPageBrowserTest
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -465,50 +461,32 @@ class SafeBrowsingBlockingPageBrowserTest
     // Proceed through the HTTPS interstitial.
     ui_test_utils::NavigateToURL(browser(), url);
 
-    // TODO(carlosil, crbug.com/448486): This function is overly complicated
-    // due to the need to support combinations of safe browsing and SSL
-    // interstitials being committed navigations or overlays. Since most SSL
-    // specific code is only used in this function, it is stuck here for now.
-    // Once both SSL and SB committed interstitials launch, this function can
-    // use the general case interstitial code, and should be cleaned up.
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::InterstitialPageDelegate* ssl_blocking_page;
 
-    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-      EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
-      security_interstitials::SecurityInterstitialTabHelper* helper =
-          security_interstitials::SecurityInterstitialTabHelper::
-              FromWebContents(contents);
-      EXPECT_TRUE(helper);
-      ssl_blocking_page =
-          helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
-    } else {
-      EXPECT_TRUE(WaitForReady(browser()));
-      ssl_blocking_page = browser()
-                              ->tab_strip_model()
-                              ->GetActiveWebContents()
-                              ->GetInterstitialPage()
-                              ->GetDelegateForTesting();
-    }
+    EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            contents);
+    EXPECT_TRUE(helper);
+    ssl_blocking_page =
+        helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+
     EXPECT_EQ(SSLBlockingPage::kTypeForTesting,
               ssl_blocking_page->GetTypeForTesting());
     content::TestNavigationObserver observer(
         browser()->tab_strip_model()->GetActiveWebContents());
     ssl_blocking_page->CommandReceived(base::NumberToString(
         security_interstitials::SecurityInterstitialCommand::CMD_PROCEED));
-    if (base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials)) {
-      if (AreCommittedMainFrameInterstitialsEnabled()) {
-        // When both SB and SSL interstitials are committed navigations, we need
-        // to wait for two navigations here, one is from the SSL interstitial to
-        // the blocked site (which does not complete since SB blocks it) and the
-        // second one is to the actual SB interstitial.
-        observer.WaitForNavigationFinished();
-      } else {
-        EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
-      }
+    if (AreCommittedMainFrameInterstitialsEnabled()) {
+      // When both SB and SSL interstitials are committed navigations, we need
+      // to wait for two navigations here, one is from the SSL interstitial to
+      // the blocked site (which does not complete since SB blocks it) and the
+      // second one is to the actual SB interstitial.
+      observer.WaitForNavigationFinished();
     } else {
-      content::WaitForInterstitialDetach(contents);
+      EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
     }
 
     return SetupWarningAndNavigateToURL(url, browser());
@@ -1136,7 +1114,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
     ASSERT_EQ(2, report.dom_size());
     // Because the order of elements is not deterministic, we basically need to
     // verify the relationship. Namely that there is an IFRAME element and that
-    // its has a DIV as its parent.
+    // it has a DIV as its parent.
     int iframe_node_id = -1;
     for (const HTMLElement& elem : report.dom()) {
       if (elem.tag() == "IFRAME") {

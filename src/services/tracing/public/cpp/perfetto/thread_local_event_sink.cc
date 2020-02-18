@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer.h"
 
 namespace tracing {
 
@@ -24,7 +24,5 @@ ThreadLocalEventSink::~ThreadLocalEventSink() {
   TraceEventDataSource::GetInstance()->ReturnTraceWriter(
       std::move(trace_writer_));
 }
-
-void ThreadLocalEventSink::ResetIncrementalState() {}
 
 }  // namespace tracing

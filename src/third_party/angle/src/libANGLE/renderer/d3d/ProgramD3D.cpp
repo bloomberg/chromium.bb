@@ -386,7 +386,7 @@ ProgramD3DMetadata::ProgramD3DMetadata(RendererD3D *renderer,
     : mRendererMajorShaderModel(renderer->getMajorShaderModel()),
       mShaderModelSuffix(renderer->getShaderModelSuffix()),
       mUsesInstancedPointSpriteEmulation(
-          renderer->getWorkarounds().useInstancedPointSpriteEmulation.enabled),
+          renderer->getFeatures().useInstancedPointSpriteEmulation.enabled),
       mUsesViewScale(renderer->presentPathFastEnabled()),
       mCanSelectViewInVertexShader(renderer->canSelectViewInVertexShader()),
       mAttachedShaders(attachedShaders)
@@ -544,9 +544,9 @@ class ProgramD3D::GetExecutableTask : public Closure, public d3d::Context
     ShaderExecutableD3D *mExecutable = nullptr;
     HRESULT mStoredHR                = S_OK;
     std::string mStoredMessage;
-    const char *mStoredFile          = nullptr;
-    const char *mStoredFunction      = nullptr;
-    unsigned int mStoredLine         = 0;
+    const char *mStoredFile     = nullptr;
+    const char *mStoredFunction = nullptr;
+    unsigned int mStoredLine    = 0;
 };
 
 // ProgramD3D Implementation
@@ -677,6 +677,11 @@ bool ProgramD3D::usesGeometryShaderForPointSpriteEmulation() const
     return usesPointSpriteEmulation() && !usesInstancedPointSpriteEmulation();
 }
 
+bool ProgramD3D::usesGetDimensionsIgnoresBaseLevel() const
+{
+    return mRenderer->getFeatures().getDimensionsIgnoresBaseLevel.enabled;
+}
+
 bool ProgramD3D::usesGeometryShader(const gl::State &state, const gl::PrimitiveMode drawMode) const
 {
     if (mHasANGLEMultiviewEnabled && !mRenderer->canSelectViewInVertexShader())
@@ -689,14 +694,14 @@ bool ProgramD3D::usesGeometryShader(const gl::State &state, const gl::PrimitiveM
         {
             return false;
         }
-        return state.getProvokingVertex() == gl::ProvokingVertex::LastVertexConvention;
+        return state.getProvokingVertex() == gl::ProvokingVertexConvention::LastVertexConvention;
     }
     return usesGeometryShaderForPointSpriteEmulation();
 }
 
 bool ProgramD3D::usesInstancedPointSpriteEmulation() const
 {
-    return mRenderer->getWorkarounds().useInstancedPointSpriteEmulation.enabled;
+    return mRenderer->getFeatures().useInstancedPointSpriteEmulation.enabled;
 }
 
 GLint ProgramD3D::getSamplerMapping(gl::ShaderType type,
@@ -2597,9 +2602,9 @@ void ProgramD3D::setUniformMatrixfvInternal(GLint location,
     {
         if (targetUniform->mShaderData[shaderType])
         {
-            if (SetFloatUniformMatrixHLSL<cols, rows>(arrayElementOffset, elementCount, countIn,
-                                                      transpose, value,
-                                                      targetUniform->mShaderData[shaderType]))
+            if (SetFloatUniformMatrixHLSL<cols, rows>::Run(arrayElementOffset, elementCount,
+                                                           countIn, transpose, value,
+                                                           targetUniform->mShaderData[shaderType]))
             {
                 mShaderUniformsDirty.set(shaderType);
             }

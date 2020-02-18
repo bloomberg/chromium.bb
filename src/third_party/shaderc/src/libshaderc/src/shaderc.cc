@@ -477,6 +477,13 @@ void shaderc_compile_options_set_target_env(shaderc_compile_options_t options,
                                  GetCompilerTargetEnvVersion(version));
 }
 
+void shaderc_compile_options_set_target_spirv(shaderc_compile_options_t options,
+                                              shaderc_spirv_version ver) {
+  // We made the values match, so we can get away with a static cast.
+  options->compiler.SetTargetSpirv(
+      static_cast<shaderc_util::Compiler::SpirvVersion>(ver));
+}
+
 void shaderc_compile_options_set_warnings_as_errors(
     shaderc_compile_options_t options) {
   options->compiler.SetWarningsAsErrors();
@@ -536,6 +543,16 @@ void shaderc_compile_options_set_hlsl_register_set_and_binding(
 void shaderc_compile_options_set_hlsl_functionality1(
     shaderc_compile_options_t options, bool enable) {
   options->compiler.EnableHlslFunctionality1(enable);
+}
+
+void shaderc_compile_options_set_invert_y(
+    shaderc_compile_options_t options, bool enable) {
+  options->compiler.EnableInvertY(enable);
+}
+
+void shaderc_compile_options_set_nan_clamp(shaderc_compile_options_t options,
+                                           bool enable) {
+  options->compiler.SetNanClamp(enable);
 }
 
 shaderc_compiler_t shaderc_compiler_initialize() {

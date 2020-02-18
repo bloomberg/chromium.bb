@@ -8,13 +8,12 @@
 #include <utility>
 
 #include "base/strings/strcat.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
-#include "components/autofill_assistant/browser/mock_run_once_callback.h"
 #include "components/autofill_assistant/browser/mock_service.h"
-#include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,6 +22,7 @@ namespace autofill_assistant {
 
 namespace {
 
+using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Contains;
@@ -30,6 +30,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Field;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
@@ -49,12 +50,14 @@ class ScriptExecutorTest : public testing::Test,
  public:
   void SetUp() override {
     delegate_.SetService(&mock_service_);
-    delegate_.SetUiController(&mock_ui_controller_);
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.SetCurrentURL(GURL("http://example.com/"));
 
+    std::map<std::string, std::string> script_parameters;
+    script_parameters["additional_param"] = "additional_param_value";
     executor_ = std::make_unique<ScriptExecutor>(
         kScriptPath,
+        TriggerContext::Create(script_parameters, "additional_exp"),
         /* global_payload= */ "initial global payload",
         /* script_payload= */ "initial payload",
         /* listener= */ this, &scripts_state_, &ordered_interrupts_,
@@ -74,7 +77,7 @@ class ScriptExecutorTest : public testing::Test,
  protected:
   ScriptExecutorTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
 
   // Implements ScriptExecutor::Listener
   void OnServerPayloadChanged(const std::string& global_payload,
@@ -149,7 +152,6 @@ class ScriptExecutorTest : public testing::Test,
   Script script_;
   StrictMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
-  NiceMock<MockUiController> mock_ui_controller_;
   std::map<std::string, ScriptStatusProto> scripts_state_;
 
   // An owner for the pointers in |ordered_interrupts_|
@@ -176,16 +178,27 @@ TEST_F(ScriptExecutorTest, GetActionsFails) {
 }
 
 TEST_F(ScriptExecutorTest, ForwardParameters) {
-  auto* parameters = delegate_.GetMutableParameters();
-  (*parameters)["param1"] = "value1";
-  (*parameters)["param2"] = "value2";
-  EXPECT_CALL(mock_service_,
-              OnGetActions(StrEq(kScriptPath), _,
-                           Field(&TriggerContext::script_parameters,
-                                 AllOf(Contains(Pair("param1", "value1")),
-                                       Contains(Pair("param2", "value2")))),
-                           _, _, _))
-      .WillOnce(RunOnceCallback<5>(true, ""));
+  std::map<std::string, std::string> parameters;
+  parameters["param"] = "value";
+  delegate_.SetTriggerContext(TriggerContext::Create(parameters, "exp"));
+  EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
+      .WillOnce(Invoke([](const std::string& script_path, const GURL& url,
+                          const TriggerContext& trigger_context,
+                          const std::string& global_payload,
+                          const std::string& script_payload,
+                          Service::ResponseCallback& callback) {
+        // |trigger_context| includes data passed to
+        // ScriptExecutor constructor as well as data from the
+        // delegate's TriggerContext.
+        EXPECT_THAT("exp,additional_exp", trigger_context.experiment_ids());
+        EXPECT_THAT(
+            "additional_param_value",
+            trigger_context.GetParameter("additional_param").value_or(""));
+        EXPECT_THAT("value",
+                    trigger_context.GetParameter("param").value_or(""));
+
+        std::move(callback).Run(true, "");
+      }));
 
   EXPECT_CALL(executor_callback_,
               Run(Field(&ScriptExecutor::Result::success, true)));
@@ -833,7 +846,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
       next_actions_response.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->set_name("name");
+  presentation->mutable_chip()->set_text("name");
   presentation->mutable_precondition();
 
   EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
@@ -848,7 +861,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListGetNext) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("name", scripts_update_[0]->handle.chip.text());
+  EXPECT_THAT("name", scripts_update_[0]->handle.chip.text);
 }
 
 TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
@@ -861,7 +874,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListShouldNotifyMultipleTimes) {
   auto* script = actions_response.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->set_name("name");
+  presentation->mutable_chip()->set_text("name");
   presentation->mutable_precondition();
 
   EXPECT_CALL(mock_service_, OnGetActions(StrEq(kScriptPath), _, _, _, _, _))
@@ -899,7 +912,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   auto* script = interrupt_actions.mutable_update_script_list()->add_scripts();
   script->set_path("path");
   auto* presentation = script->mutable_presentation();
-  presentation->set_name("update_from_interrupt");
+  presentation->mutable_chip()->set_text("update_from_interrupt");
   presentation->mutable_precondition();
 
   // We expect a call from the interrupt which will update the script list and a
@@ -923,7 +936,7 @@ TEST_F(ScriptExecutorTest, UpdateScriptListFromInterrupt) {
   EXPECT_THAT(scripts_update_, SizeIs(1));
   EXPECT_THAT(scripts_update_count_, Eq(1));
   EXPECT_THAT("path", scripts_update_[0]->handle.path);
-  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.chip.text());
+  EXPECT_THAT("update_from_interrupt", scripts_update_[0]->handle.chip.text);
 }
 
 TEST_F(ScriptExecutorTest, RestorePreInterruptStatusMessage) {
@@ -1354,6 +1367,57 @@ TEST_F(ScriptExecutorTest, WaitForNavigationReportsError) {
   ASSERT_THAT(processed_actions_capture, SizeIs(2));
   EXPECT_EQ(ACTION_APPLIED, processed_actions_capture[0].status());
   EXPECT_EQ(NAVIGATION_ERROR, processed_actions_capture[1].status());
+}
+
+TEST_F(ScriptExecutorTest, InterceptUserActions) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("done");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  executor_->Run(executor_callback_.Get());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+  ASSERT_NE(nullptr, delegate_.GetUserActions());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+
+  // The prompt action must finish. We don't bother continuing with the script
+  // in this test.
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _));
+
+  (*delegate_.GetUserActions())[0].Call(TriggerContext::CreateEmpty());
+  EXPECT_EQ(AutofillAssistantState::RUNNING, delegate_.GetState());
+}
+
+TEST_F(ScriptExecutorTest, ReportDirectActionsChoices) {
+  ActionsResponseProto actions_response;
+  actions_response.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_direct_action()
+      ->add_names("done");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_service_, OnGetNextActions(_, _, _, _, _))
+      .WillOnce(SaveArg<3>(&processed_actions_capture));
+
+  auto context = std::make_unique<TriggerContextImpl>();
+  context->SetDirectAction(true);
+  executor_->Run(executor_callback_.Get());
+
+  ASSERT_NE(nullptr, delegate_.GetUserActions());
+  ASSERT_THAT(*delegate_.GetUserActions(), SizeIs(1));
+  (*delegate_.GetUserActions())[0].Call(std::move(context));
+
+  ASSERT_THAT(processed_actions_capture, SizeIs(1));
+  EXPECT_TRUE(processed_actions_capture[0].direct_action());
 }
 
 }  // namespace

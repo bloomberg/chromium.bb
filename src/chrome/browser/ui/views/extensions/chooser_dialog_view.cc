@@ -75,13 +75,12 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 views::View* ChooserDialogView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
-views::View* ChooserDialogView::CreateExtraView() {
-  std::unique_ptr<views::View> extra_view =
-      device_chooser_content_view_->CreateExtraView();
-  return extra_view ? extra_view.release() : nullptr;
+std::unique_ptr<views::View> ChooserDialogView::CreateExtraView() {
+  return device_chooser_content_view_->CreateExtraView();
 }
 
 bool ChooserDialogView::Accept() {

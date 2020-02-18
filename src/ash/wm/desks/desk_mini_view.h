@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/overview/overview_highlight_controller.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -23,9 +24,11 @@ class DeskPreviewView;
 // virtual desk in the desk bar view when overview mode is active. This view
 // shows a preview of the contents of the associated desk, its title, and
 // supports desk activation and removal.
-class ASH_EXPORT DeskMiniView : public views::Button,
-                                public views::ButtonListener,
-                                public Desk::Observer {
+class ASH_EXPORT DeskMiniView
+    : public views::Button,
+      public views::ButtonListener,
+      public Desk::Observer,
+      public OverviewHighlightController::OverviewHighlightableView {
  public:
   DeskMiniView(DesksBarView* owner_bar,
                aura::Window* root_window,
@@ -51,6 +54,11 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   // view is mouse hovered.
   void OnHoverStateMayHaveChanged();
 
+  // Gesture tapping may affect the visibility of the close button. There's only
+  // one mini_view that shows the close button on long press at any time.
+  // This is useful for touch-only UIs.
+  void OnWidgetGestureTap(const gfx::Rect& screen_rect, bool is_long_gesture);
+
   // Updates the border color of the DeskPreviewView based on the activation
   // state of the corresponding desk.
   void UpdateBorderColor();
@@ -67,9 +75,17 @@ class ASH_EXPORT DeskMiniView : public views::Button,
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
 
+  // OverviewHighlightController::OverviewHighlightableView:
+  views::View* GetView() override;
+  gfx::Rect GetHighlightBoundsInScreen() override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
+
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
  private:
+  void OnCloseButtonPressed();
+
   DesksBarView* const owner_bar_;
 
   // The root window on which this mini_view is created.
@@ -88,6 +104,10 @@ class ASH_EXPORT DeskMiniView : public views::Button,
 
   // The close button that shows on hover.
   CloseDeskButton* close_desk_button_;
+
+  // We force showing the close button when the mini_view is long pressed or
+  // tapped using touch gestures.
+  bool force_show_close_button_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeskMiniView);
 };

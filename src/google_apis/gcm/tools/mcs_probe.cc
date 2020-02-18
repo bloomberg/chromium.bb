@@ -22,9 +22,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -282,14 +282,15 @@ void MCSProbe::Start() {
       endpoints, kDefaultBackoffPolicy,
       base::BindRepeating(&MCSProbe::RequestProxyResolvingSocketFactory,
                           base::Unretained(this)),
-      &recorder_, network_connection_tracker_.get());
+      base::ThreadTaskRunnerHandle::Get(), &recorder_,
+      network_connection_tracker_.get());
   gcm_store_ = std::make_unique<GCMStoreImpl>(
       gcm_store_path_, file_thread_.task_runner(),
       std::make_unique<FakeEncryptor>());
 
-  mcs_client_ =
-      std::make_unique<MCSClient>("probe", &clock_, connection_factory_.get(),
-                                  gcm_store_.get(), &recorder_);
+  mcs_client_ = std::make_unique<MCSClient>(
+      "probe", &clock_, connection_factory_.get(), gcm_store_.get(),
+      base::ThreadTaskRunnerHandle::Get(), &recorder_);
   run_loop_ = std::make_unique<base::RunLoop>();
   gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
                    base::Bind(&MCSProbe::LoadCallback,
@@ -334,7 +335,7 @@ void MCSProbe::InitializeNetworkState() {
     base::FilePath log_path = command_line_.GetSwitchValuePath(kLogFileSwitch);
     logger_ = net::FileNetLogObserver::CreateUnbounded(log_path, nullptr);
     net::NetLogCaptureMode capture_mode =
-        net::NetLogCaptureMode::IncludeCookiesAndCredentials();
+        net::NetLogCaptureMode::kIncludeSensitive;
     logger_->StartObserving(&net_log_, capture_mode);
   }
 
@@ -398,7 +399,8 @@ void MCSProbe::CheckIn() {
   checkin_request_ = std::make_unique<CheckinRequest>(
       GServicesSettings().GetCheckinURL(), request_info, kDefaultBackoffPolicy,
       base::Bind(&MCSProbe::OnCheckInCompleted, base::Unretained(this)),
-      shared_url_loader_factory_, &recorder_);
+      shared_url_loader_factory_, base::ThreadTaskRunnerHandle::Get(),
+      &recorder_);
   checkin_request_->Start();
 }
 
@@ -444,7 +446,7 @@ int MCSProbeMain(int argc, char* argv[]) {
 
   mojo::core::Init();
 
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("MCSProbe");
 
   const base::CommandLine& command_line =

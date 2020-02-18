@@ -33,6 +33,7 @@
 #include "media/base/video_color_space.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/windows/d3d11_com_defs.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -387,17 +388,17 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   Microsoft::WRL::ComPtr<IDirect3DDeviceManager9> device_manager_;
   Microsoft::WRL::ComPtr<IDirect3DQuery9> query_;
 
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
-  Microsoft::WRL::ComPtr<ID3D11Device> angle_device_;
+  ComD3D11Device d3d11_device_;
+  ComD3D11Device angle_device_;
   Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
   Microsoft::WRL::ComPtr<ID3D10Multithread> multi_threaded_;
-  Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context_;
-  Microsoft::WRL::ComPtr<ID3D11Query> d3d11_query_;
+  ComD3D11DeviceContext d3d11_device_context_;
+  ComD3D11Query d3d11_query_;
 
-  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
-  Microsoft::WRL::ComPtr<ID3D11VideoProcessor> d3d11_processor_;
+  ComD3D11VideoDevice video_device_;
+  ComD3D11VideoContext video_context_;
+  ComD3D11VideoProcessorEnumerator enumerator_;
+  ComD3D11VideoProcessor d3d11_processor_;
 
   int processor_width_ = 0;
   int processor_height_ = 0;

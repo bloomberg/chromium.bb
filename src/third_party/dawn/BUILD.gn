@@ -33,7 +33,7 @@ config("libdawn_native_internal") {
   }
 }
 
-dawn_generator("libdawn_native_utils_gen") {
+dawn_json_generator("libdawn_native_utils_gen") {
   target = "dawn_native_utils"
   outputs = [
     "dawn_native/ProcTable.cpp",
@@ -42,6 +42,21 @@ dawn_generator("libdawn_native_utils_gen") {
     "dawn_native/ValidationUtils_autogen.h",
     "dawn_native/ValidationUtils_autogen.cpp",
   ]
+}
+
+if (dawn_enable_opengl) {
+  dawn_generator("libdawn_native_opengl_loader_gen") {
+    script = "generator/opengl_loader_generator.py"
+    args = [
+      "--gl-xml",
+      rebase_path("third_party/khronos/gl.xml", root_build_dir),
+    ]
+    outputs = [
+      "dawn_native/opengl/OpenGLFunctionsBase_autogen.cpp",
+      "dawn_native/opengl/OpenGLFunctionsBase_autogen.h",
+      "dawn_native/opengl/opengl_platform_autogen.h",
+    ]
+  }
 }
 
 # Public libdawn_native headers so they can be publically visible for
@@ -80,6 +95,11 @@ source_set("libdawn_native_sources") {
   configs += [ ":libdawn_native_internal" ]
   libs = []
 
+  # Dependencies that are needed to compile libdawn_native entry points in
+  # FooBackend.cpp need to be public deps so they are propagated to the
+  # libdawn_native target
+  public_deps = []
+
   sources = get_target_outputs(":libdawn_native_utils_gen")
   sources += [
     "src/dawn_native/Adapter.cpp",
@@ -110,6 +130,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Device.h",
     "src/dawn_native/DynamicUploader.cpp",
     "src/dawn_native/DynamicUploader.h",
+    "src/dawn_native/EncodingContext.cpp",
+    "src/dawn_native/EncodingContext.h",
     "src/dawn_native/Error.cpp",
     "src/dawn_native/Error.h",
     "src/dawn_native/ErrorData.cpp",
@@ -118,6 +140,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Fence.h",
     "src/dawn_native/FenceSignalTracker.cpp",
     "src/dawn_native/FenceSignalTracker.h",
+    "src/dawn_native/Format.cpp",
+    "src/dawn_native/Format.h",
     "src/dawn_native/Forward.h",
     "src/dawn_native/Instance.cpp",
     "src/dawn_native/Instance.h",
@@ -136,6 +160,8 @@ source_set("libdawn_native_sources") {
     "src/dawn_native/Queue.h",
     "src/dawn_native/RefCounted.cpp",
     "src/dawn_native/RefCounted.h",
+    "src/dawn_native/RenderEncoderBase.cpp",
+    "src/dawn_native/RenderEncoderBase.h",
     "src/dawn_native/RenderPassEncoder.cpp",
     "src/dawn_native/RenderPassEncoder.h",
     "src/dawn_native/RenderPipeline.cpp",
@@ -176,6 +202,8 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/d3d12/CommandBufferD3D12.h",
       "src/dawn_native/d3d12/ComputePipelineD3D12.cpp",
       "src/dawn_native/d3d12/ComputePipelineD3D12.h",
+      "src/dawn_native/d3d12/D3D12Info.cpp",
+      "src/dawn_native/d3d12/D3D12Info.h",
       "src/dawn_native/d3d12/DescriptorHeapAllocator.cpp",
       "src/dawn_native/d3d12/DescriptorHeapAllocator.h",
       "src/dawn_native/d3d12/DeviceD3D12.cpp",
@@ -259,7 +287,11 @@ source_set("libdawn_native_sources") {
   }
 
   if (dawn_enable_opengl) {
-    deps += [ "third_party:glad" ]
+    public_deps += [
+      ":libdawn_native_opengl_loader_gen",
+      "third_party:khronos_platform",
+    ]
+    sources += get_target_outputs(":libdawn_native_opengl_loader_gen")
     sources += [
       "src/dawn_native/opengl/BackendGL.cpp",
       "src/dawn_native/opengl/BackendGL.h",
@@ -272,6 +304,12 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/opengl/DeviceGL.cpp",
       "src/dawn_native/opengl/DeviceGL.h",
       "src/dawn_native/opengl/Forward.h",
+      "src/dawn_native/opengl/GLFormat.cpp",
+      "src/dawn_native/opengl/GLFormat.h",
+      "src/dawn_native/opengl/NativeSwapChainImplGL.cpp",
+      "src/dawn_native/opengl/NativeSwapChainImplGL.h",
+      "src/dawn_native/opengl/OpenGLFunctions.cpp",
+      "src/dawn_native/opengl/OpenGLFunctions.h",
       "src/dawn_native/opengl/PersistentPipelineStateGL.cpp",
       "src/dawn_native/opengl/PersistentPipelineStateGL.h",
       "src/dawn_native/opengl/PipelineGL.cpp",
@@ -292,11 +330,12 @@ source_set("libdawn_native_sources") {
       "src/dawn_native/opengl/TextureGL.h",
       "src/dawn_native/opengl/UtilsGL.cpp",
       "src/dawn_native/opengl/UtilsGL.h",
+      "src/dawn_native/opengl/opengl_platform.h",
     ]
   }
 
   if (dawn_enable_vulkan) {
-    deps += [ "third_party:vulkan_headers" ]
+    public_deps += [ "third_party:vulkan_headers" ]
     sources += [
       "src/dawn_native/vulkan/AdapterVk.cpp",
       "src/dawn_native/vulkan/AdapterVk.h",
@@ -382,11 +421,9 @@ dawn_component("libdawn_native") {
   }
   if (dawn_enable_opengl) {
     sources += [ "src/dawn_native/opengl/OpenGLBackend.cpp" ]
-    deps += [ "third_party:glad" ]
   }
   if (dawn_enable_vulkan) {
     sources += [ "src/dawn_native/vulkan/VulkanBackend.cpp" ]
-    deps += [ "third_party:vulkan_headers" ]
   }
 }
 
@@ -394,7 +431,7 @@ dawn_component("libdawn_native") {
 # libdawn_wire
 ###############################################################################
 
-dawn_generator("libdawn_wire_gen") {
+dawn_json_generator("libdawn_wire_gen") {
   target = "dawn_wire"
   outputs = [
     "dawn_wire/WireCmd_autogen.h",
@@ -435,6 +472,7 @@ dawn_component("libdawn_wire") {
     "src/dawn_wire/client/Client.cpp",
     "src/dawn_wire/client/Client.h",
     "src/dawn_wire/client/ClientDoers.cpp",
+    "src/dawn_wire/client/ClientInlineMemoryTransferService.cpp",
     "src/dawn_wire/client/Device.cpp",
     "src/dawn_wire/client/Device.h",
     "src/dawn_wire/client/Fence.cpp",
@@ -446,6 +484,7 @@ dawn_component("libdawn_wire") {
     "src/dawn_wire/server/ServerBuffer.cpp",
     "src/dawn_wire/server/ServerDevice.cpp",
     "src/dawn_wire/server/ServerFence.cpp",
+    "src/dawn_wire/server/ServerInlineMemoryTransferService.cpp",
     "src/dawn_wire/server/ServerQueue.cpp",
   ]
 
@@ -511,12 +550,10 @@ static_library("dawn_utils") {
 
   if (dawn_enable_opengl) {
     sources += [ "src/utils/OpenGLBinding.cpp" ]
-    deps += [ "third_party:glad" ]
   }
 
   if (dawn_enable_vulkan) {
     sources += [ "src/utils/VulkanBinding.cpp" ]
-    deps += [ "third_party:vulkan_headers" ]
   }
 }
 
@@ -524,7 +561,7 @@ static_library("dawn_utils") {
 # Dawn test targets
 ###############################################################################
 
-dawn_generator("mock_dawn_gen") {
+dawn_json_generator("mock_dawn_gen") {
   target = "mock_dawn"
   outputs = [
     "mock/mock_dawn.h",
@@ -552,6 +589,12 @@ test("dawn_unittests") {
 
   sources = get_target_outputs(":mock_dawn_gen")
   sources += [
+    "src/dawn_wire/client/ClientMemoryTransferService_mock.cpp",
+    "src/dawn_wire/client/ClientMemoryTransferService_mock.h",
+    "src/dawn_wire/server/ServerMemoryTransferService_mock.cpp",
+    "src/dawn_wire/server/ServerMemoryTransferService_mock.h",
+  ]
+  sources += [
     "src/tests/unittests/BitSetIteratorTests.cpp",
     "src/tests/unittests/CommandAllocatorTests.cpp",
     "src/tests/unittests/EnumClassBitmasksTests.cpp",
@@ -568,12 +611,13 @@ test("dawn_unittests") {
     "src/tests/unittests/validation/BindGroupValidationTests.cpp",
     "src/tests/unittests/validation/BufferValidationTests.cpp",
     "src/tests/unittests/validation/CommandBufferValidationTests.cpp",
+    "src/tests/unittests/validation/ComputeIndirectValidationTests.cpp",
     "src/tests/unittests/validation/ComputeValidationTests.cpp",
     "src/tests/unittests/validation/CopyCommandsValidationTests.cpp",
     "src/tests/unittests/validation/DebugMarkerValidationTests.cpp",
+    "src/tests/unittests/validation/DrawIndirectValidationTests.cpp",
     "src/tests/unittests/validation/DynamicStateCommandValidationTests.cpp",
     "src/tests/unittests/validation/FenceValidationTests.cpp",
-    "src/tests/unittests/validation/PushConstantsValidationTests.cpp",
     "src/tests/unittests/validation/QueueSubmitValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassDescriptorValidationTests.cpp",
     "src/tests/unittests/validation/RenderPassValidationTests.cpp",
@@ -593,6 +637,7 @@ test("dawn_unittests") {
     "src/tests/unittests/wire/WireErrorCallbackTests.cpp",
     "src/tests/unittests/wire/WireFenceTests.cpp",
     "src/tests/unittests/wire/WireInjectTextureTests.cpp",
+    "src/tests/unittests/wire/WireMemoryTransferServiceTests.cpp",
     "src/tests/unittests/wire/WireOptionalTests.cpp",
     "src/tests/unittests/wire/WireTest.cpp",
     "src/tests/unittests/wire/WireTest.h",
@@ -632,13 +677,18 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/BufferTests.cpp",
     "src/tests/end2end/ClipSpaceTests.cpp",
     "src/tests/end2end/ColorStateTests.cpp",
+    "src/tests/end2end/CompressedTextureFormatTests.cpp",
     "src/tests/end2end/ComputeCopyStorageBufferTests.cpp",
+    "src/tests/end2end/ComputeIndirectTests.cpp",
     "src/tests/end2end/ComputeSharedMemoryTests.cpp",
     "src/tests/end2end/CopyTests.cpp",
+    "src/tests/end2end/CullingTests.cpp",
     "src/tests/end2end/DebugMarkerTests.cpp",
     "src/tests/end2end/DepthStencilStateTests.cpp",
     "src/tests/end2end/DestroyTests.cpp",
+    "src/tests/end2end/DrawIndexedIndirectTests.cpp",
     "src/tests/end2end/DrawIndexedTests.cpp",
+    "src/tests/end2end/DrawIndirectTests.cpp",
     "src/tests/end2end/DrawTests.cpp",
     "src/tests/end2end/DynamicBufferOffsetTests.cpp",
     "src/tests/end2end/FenceTests.cpp",
@@ -647,15 +697,17 @@ test("dawn_end2end_tests") {
     "src/tests/end2end/NonzeroTextureCreationTests.cpp",
     "src/tests/end2end/ObjectCachingTests.cpp",
     "src/tests/end2end/PrimitiveTopologyTests.cpp",
-    "src/tests/end2end/PushConstantTests.cpp",
     "src/tests/end2end/RenderPassLoadOpTests.cpp",
     "src/tests/end2end/RenderPassTests.cpp",
     "src/tests/end2end/SamplerTests.cpp",
     "src/tests/end2end/ScissorTests.cpp",
+    "src/tests/end2end/TextureFormatTests.cpp",
     "src/tests/end2end/TextureViewTests.cpp",
+    "src/tests/end2end/TextureZeroInitTests.cpp",
     "src/tests/end2end/VertexFormatTests.cpp",
     "src/tests/end2end/VertexInputTests.cpp",
     "src/tests/end2end/ViewportOrientationTests.cpp",
+    "src/tests/end2end/ViewportTests.cpp",
   ]
 
   libs = []
@@ -783,11 +835,8 @@ group("dawn_fuzzers") {
   testonly = true
   deps = [
     "src/fuzzers:dawn_spirv_cross_glsl_fast_fuzzer",
-    "src/fuzzers:dawn_spirv_cross_glsl_full_fuzzer",
     "src/fuzzers:dawn_spirv_cross_hlsl_fast_fuzzer",
-    "src/fuzzers:dawn_spirv_cross_hlsl_full_fuzzer",
     "src/fuzzers:dawn_spirv_cross_msl_fast_fuzzer",
-    "src/fuzzers:dawn_spirv_cross_msl_full_fuzzer",
     "src/fuzzers:dawn_wire_server_and_frontend_fuzzer",
   ]
 }

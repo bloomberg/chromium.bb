@@ -64,7 +64,6 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
-#include "chrome/browser/chromeos/login/screens/supervision_onboarding_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
@@ -116,7 +115,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/supervision_onboarding_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -235,6 +233,7 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
 
   screen_name[0] = std::toupper(screen_name[0]);
   std::string histogram_name = "OOBE.StepCompletionTime." + screen_name;
+
   // Equivalent to using UMA_HISTOGRAM_MEDIUM_TIMES. UMA_HISTOGRAM_MEDIUM_TIMES
   // can not be used here, because |histogram_name| is calculated dynamically
   // and changes from call to call.
@@ -507,10 +506,6 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<DeviceDisabledScreenHandler>()));
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
-  append(std::make_unique<SupervisionOnboardingScreen>(
-      oobe_ui->GetView<SupervisionOnboardingScreenHandler>(),
-      base::BindRepeating(&WizardController::OnSupervisionOnboardingScreenExit,
-                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<SupervisionTransitionScreen>(
       oobe_ui->GetView<SupervisionTransitionScreenHandler>(),
       base::BindRepeating(&WizardController::OnSupervisionTransitionScreenExit,
@@ -676,10 +671,6 @@ void WizardController::ShowEncryptionMigrationScreen() {
   SetCurrentScreen(GetScreen(EncryptionMigrationScreenView::kScreenId));
 }
 
-void WizardController::ShowSupervisionOnboardingScreen() {
-  SetCurrentScreen(GetScreen(SupervisionOnboardingScreenView::kScreenId));
-}
-
 void WizardController::ShowSupervisionTransitionScreen() {
   SetCurrentScreen(GetScreen(SupervisionTransitionScreenView::kScreenId));
 }
@@ -725,10 +716,8 @@ void WizardController::OnScreenExit(OobeScreenId screen, int exit_code) {
 
   VLOG(1) << "Wizard screen " << screen << " exited with code: " << exit_code;
 
-  if (IsOOBEStepToTrack(screen)) {
-    RecordUMAHistogramForOOBEStepCompletionTime(
-        screen, base::Time::Now() - screen_show_times_[screen]);
-  }
+  RecordUMAHistogramForOOBEStepCompletionTime(
+      screen, base::Time::Now() - screen_show_times_[screen]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1079,13 +1068,14 @@ void WizardController::OnArcTermsOfServiceAccepted() {
   }
 
   // If the recommend app screen should be shown, show it after the user
-  // finished with the PlayStore Terms of Service. Otherwise, advance to the
-  // assistant opt-in flow screen.
+  // accepted the Arc TOS. Otherwise, advance to the assistant opt-in flow
+  // screen.
   if (ShouldShowRecommendAppsScreen()) {
     ShowRecommendAppsScreen();
-  } else {
-    ShowAssistantOptInFlowScreen();
+    return;
   }
+
+  ShowAssistantOptInFlowScreen();
 }
 
 void WizardController::OnRecommendAppsScreenExit(
@@ -1117,7 +1107,7 @@ void WizardController::OnAssistantOptInFlowScreenExit() {
 void WizardController::OnMultiDeviceSetupScreenExit() {
   OnScreenExit(MultiDeviceSetupScreenView::kScreenId, 0 /* exit_code */);
 
-  ShowSupervisionOnboardingScreen();
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnResetScreenExit() {
@@ -1141,14 +1131,11 @@ void WizardController::OnDeviceModificationCanceled() {
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
   } else {
+    if (current_screen_)
+      current_screen_->Hide();
+
     ShowLoginScreen(LoginScreenContext());
   }
-}
-
-void WizardController::OnSupervisionOnboardingScreenExit() {
-  OnScreenExit(SupervisionOnboardingScreenView::kScreenId, 0 /* exit_code */);
-
-  OnOobeFlowFinished();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
@@ -1316,9 +1303,8 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     current_screen_->SetConfiguration(nullptr);
   }
 
-  const OobeScreenId screen = new_current->screen_id();
-  if (IsOOBEStepToTrack(screen))
-    screen_show_times_[screen] = base::Time::Now();
+  // Record show time for UMA.
+  screen_show_times_[new_current->screen_id()] = base::Time::Now();
 
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
@@ -1449,8 +1435,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowFingerprintSetupScreen();
   } else if (screen == MarketingOptInScreenView::kScreenId) {
     ShowMarketingOptInScreen();
-  } else if (screen == SupervisionOnboardingScreenView::kScreenId) {
-    ShowSupervisionOnboardingScreen();
   } else if (screen == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
@@ -1510,7 +1494,7 @@ void WizardController::OnAccessibilityStatusChanged(
 }
 
 void WizardController::OnGuestModePolicyUpdated() {
-  ash::LoginScreen::Get()->ShowGuestButtonInOobe(
+  ash::LoginScreen::Get()->SetAllowLoginAsGuest(
       user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 
@@ -1555,16 +1539,6 @@ void WizardController::SetZeroDelays() {
 // static
 bool WizardController::IsZeroDelayEnabled() {
   return g_using_zero_delays;
-}
-
-// static
-bool WizardController::IsOOBEStepToTrack(OobeScreenId screen_id) {
-  return (screen_id == HIDDetectionView::kScreenId ||
-          screen_id == WelcomeView::kScreenId ||
-          screen_id == UpdateView::kScreenId ||
-          screen_id == EulaView::kScreenId ||
-          screen_id == OobeScreen::SCREEN_SPECIAL_LOGIN ||
-          screen_id == WrongHWIDScreenView::kScreenId);
 }
 
 // static

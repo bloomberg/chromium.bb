@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1385214448885562192">按 Enter 鍵接受或 Esc 鍵取消；按向下鍵可移至下一個搜尋結果，按向上鍵可移至上一個搜尋結果。</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">朗讀 RTF 格式屬性</translation>
 <translation id="1405567553485452995">淺綠色</translation>
 <translation id="1417889266572670458">海軍藍</translation>
 <translation id="1431911867058218151">梅紅</translation>
@@ -319,11 +320,11 @@
 <translation id="3232388865800379423">彈出式按鈕</translation>
 <translation id="3241052487511142956">上一個造訪過的連結</translation>
 <translation id="3241638166094654466">各行儲存格數目：</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />：<ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">縱向</translation>
 <translation id="3286390186030710347">滑桿</translation>
 <translation id="3299925995433437805">沒有下一個造訪過的連結。</translation>
 <translation id="3300348286427369683">支援 RTF 格式：ChromeVox 現在支援 RTF 格式欄位，包括跳轉指令、點字游標路徑、選取等等。</translation>
-<translation id="3304756947457041303">自訂 RTF 格式指標</translation>
 <translation id="3307886118343381874">前往表格結尾</translation>
 <translation id="3311969765485641742">按下 Alt+Shift+A 鍵即可查看警示內容</translation>
 <translation id="3312997241656799641">下一個造訪過的連結</translation>

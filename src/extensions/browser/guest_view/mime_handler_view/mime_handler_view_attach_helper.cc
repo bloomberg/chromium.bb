@@ -74,7 +74,7 @@ MimeHandlerViewAttachHelper* MimeHandlerViewAttachHelper::Get(
     int32_t render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto& map = *GetProcessIdToHelperMap();
-  if (!base::ContainsKey(map, render_process_id)) {
+  if (!base::Contains(map, render_process_id)) {
     auto* process_host = content::RenderProcessHost::FromID(render_process_id);
     if (!process_host)
       return nullptr;
@@ -145,7 +145,7 @@ void MimeHandlerViewAttachHelper::CreateFullPageMimeHandlerView(
 
 MimeHandlerViewAttachHelper::MimeHandlerViewAttachHelper(
     content::RenderProcessHost* render_process_host)
-    : render_process_host_(render_process_host), weak_factory_(this) {
+    : render_process_host_(render_process_host) {
   render_process_host->AddObserver(this);
 }
 

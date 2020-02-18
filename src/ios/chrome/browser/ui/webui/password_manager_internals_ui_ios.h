@@ -7,20 +7,20 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "components/password_manager/core/browser/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_receiver.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 
 // The implementation for the chrome://password-manager-internals page.
 class PasswordManagerInternalsUIIOS : public web::WebUIIOSController,
                                       public web::WebStateObserver,
-                                      public password_manager::LogReceiver {
+                                      public autofill::LogReceiver {
  public:
   explicit PasswordManagerInternalsUIIOS(web::WebUIIOS* web_ui);
   ~PasswordManagerInternalsUIIOS() override;
 
   // LogReceiver implementation.
-  void LogSavePasswordProgress(const std::string& text) override;
+  void LogEntry(const base::Value& entry) override;
 
   // web::WebStateObserver implementation.
   void PageLoaded(
@@ -29,7 +29,7 @@ class PasswordManagerInternalsUIIOS : public web::WebUIIOSController,
   void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
-  bool registered_with_logging_service_ = false;
+  bool registered_with_log_router_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsUIIOS);
 };

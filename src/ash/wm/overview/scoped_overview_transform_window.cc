@@ -27,6 +27,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
@@ -96,78 +97,6 @@ class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
   DISALLOW_COPY_AND_ASSIGN(LayerCachingAndFilteringObserver);
 };
 
-// WindowMask is applied to overview windows to give them rounded edges while
-// they are in overview mode.
-class ScopedOverviewTransformWindow::WindowMask : public ui::LayerDelegate,
-                                                  public aura::WindowObserver {
- public:
-  explicit WindowMask(aura::Window* window)
-      : layer_(ui::LAYER_TEXTURED), window_(window) {
-    window_->AddObserver(this);
-    layer_.set_delegate(this);
-    layer_.SetFillsBoundsOpaquely(false);
-  }
-
-  ~WindowMask() override {
-    if (window_)
-      window_->RemoveObserver(this);
-    layer_.set_delegate(nullptr);
-  }
-
-  void set_top_inset(int top_inset) { top_inset_ = top_inset; }
-  ui::Layer* layer() { return &layer_; }
-
- private:
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    cc::PaintFlags flags;
-    flags.setAlpha(255);
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    // The amount of round applied on the mask gets scaled as |window_| gets
-    // transformed, so reverse the transform so the final scaled round matches
-    // |kOverviewWindowRoundingDp|.
-    const gfx::Vector2dF scale = window_->transform().Scale2d();
-    const SkScalar r_x =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.x()));
-    const SkScalar r_y =
-        SkIntToScalar(std::round(kOverviewWindowRoundingDp / scale.y()));
-
-    SkPath path;
-    SkScalar radii[8] = {r_x, r_y, r_x, r_y, r_x, r_y, r_x, r_y};
-    gfx::Rect bounds(layer()->size());
-    bounds.Inset(0, top_inset_, 0, 0);
-    path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-
-    ui::PaintRecorder recorder(context, layer()->size());
-    recorder.canvas()->DrawPath(path, flags);
-  }
-
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-
-  // aura::WindowObserver:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override {
-    layer_.SetBounds(new_bounds);
-  }
-
-  void OnWindowDestroying(aura::Window* window) override {
-    window_->RemoveObserver(this);
-    window_ = nullptr;
-  }
-
-  ui::Layer layer_;
-  int top_inset_ = 0;
-  // Pointer to the window of which this is a mask to.
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowMask);
-};
-
 ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
     OverviewItem* overview_item,
     aura::Window* window)
@@ -175,39 +104,45 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_mask_layer_(window_->layer()->layer_mask_layer()),
+      original_clip_rect_(window_->layer()->clip_rect()),
       weak_ptr_factory_(this) {
   type_ = GetWindowDimensionsType(window);
-  original_event_targeting_policy_ = window_->event_targeting_policy();
-  window_->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
-  window_->SetProperty(kIsShowingInOverviewKey, true);
 
-  // Hide transient children which have been specified to be hidden in overview
-  // mode.
   std::vector<aura::Window*> transient_children_to_hide;
-  for (auto* transient : wm::GetTransientTreeIterator(window)) {
-    if (transient == window)
-      continue;
-
-    if (transient->GetProperty(kHideInOverviewKey))
-      transient_children_to_hide.push_back(transient);
-
+  for (auto* transient : GetTransientTreeIterator(window)) {
+    targeting_policy_map_[transient] = transient->event_targeting_policy();
+    transient->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
     transient->SetProperty(kIsShowingInOverviewKey, true);
+
+    // Hide transient children which have been specified to be hidden in
+    // overview mode.
+    if (transient != window && transient->GetProperty(kHideInOverviewKey))
+      transient_children_to_hide.push_back(transient);
   }
 
   if (!transient_children_to_hide.empty()) {
     hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
         std::move(transient_children_to_hide), /*forced_hidden=*/true);
   }
+
+  aura::client::GetTransientWindowClient()->AddObserver(this);
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
-  for (auto* transient : wm::GetTransientTreeIterator(window_))
+  for (auto* transient : GetTransientTreeIterator(window_)) {
     transient->ClearProperty(kIsShowingInOverviewKey);
-  DCHECK(!window_->GetProperty(kIsShowingInOverviewKey));
+    DCHECK(targeting_policy_map_.contains(transient));
+    auto it = targeting_policy_map_.find(transient);
+    transient->SetEventTargetingPolicy(it->second);
+    targeting_policy_map_.erase(it);
+  }
 
-  window_->SetEventTargetingPolicy(original_event_targeting_policy_);
-  UpdateMask(/*show=*/false);
+  // No need to update the clip since we're about to restore it to
+  // `original_clip_rect_`.
+  UpdateRoundedCorners(/*show=*/false, /*update_clip=*/false);
   StopObservingImplicitAnimations();
+  aura::client::GetTransientWindowClient()->RemoveObserver(this);
+  window_->layer()->SetClipRect(original_clip_rect_);
 }
 
 // static
@@ -304,7 +239,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
 }
 
 bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
-  for (auto* window : wm::GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     if (window->Contains(target))
       return true;
   }
@@ -416,7 +351,7 @@ void ScopedOverviewTransformWindow::Close() {
 }
 
 bool ScopedOverviewTransformWindow::IsMinimized() const {
-  return wm::GetWindowState(window_)->IsMinimized();
+  return WindowState::Get(window_)->IsMinimized();
 }
 
 void ScopedOverviewTransformWindow::PrepareForOverview() {
@@ -437,17 +372,6 @@ void ScopedOverviewTransformWindow::PrepareForOverview() {
   }
 }
 
-void ScopedOverviewTransformWindow::CloseWidget() {
-  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
-  if (parent_window)
-    wm::CloseWidgetForWindow(parent_window);
-}
-
-// static
-void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
-  immediate_close_for_tests = true;
-}
-
 void ScopedOverviewTransformWindow::EnsureVisible() {
   original_opacity_ = 1.f;
 }
@@ -457,7 +381,8 @@ void ScopedOverviewTransformWindow::UpdateWindowDimensionsType() {
   overview_bounds_.reset();
 }
 
-void ScopedOverviewTransformWindow::UpdateMask(bool show) {
+void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
+                                                         bool update_clip) {
   // Minimized windows have their corners rounded in CaptionContainerView.
   if (IsMinimized())
     return;
@@ -465,25 +390,26 @@ void ScopedOverviewTransformWindow::UpdateMask(bool show) {
   // Add the mask which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
-  if (ash::features::ShouldUseShaderRoundedCorner()) {
-    const float scale = layer->transform().Scale2d().x();
-    const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
-                                          : 0.0f);
-    layer->SetRoundedCornerRadius(radii);
-    layer->SetIsFastRoundedCorner(true);
-    return;
-  }
+  const float scale = layer->transform().Scale2d().x();
+  const gfx::RoundedCornersF radii(show ? kOverviewWindowRoundingDp / scale
+                                        : 0.0f);
+  layer->SetRoundedCornerRadius(radii);
+  layer->SetIsFastRoundedCorner(true);
 
-  if (!base::FeatureList::IsEnabled(features::kEnableOverviewRoundedCorners) ||
-      !show) {
-    mask_.reset();
+  if (!update_clip || layer->GetAnimator()->is_animating())
     return;
-  }
 
-  mask_ = std::make_unique<WindowMask>(window_);
-  mask_->layer()->SetBounds(layer->bounds());
-  mask_->set_top_inset(GetTopInset());
-  layer->SetMaskLayer(mask_->layer());
+  const int top_inset = GetTopInset();
+  if (top_inset > 0) {
+    gfx::Rect clip_rect(window_->bounds().size());
+    // We add 1 to the top_inset, because in some cases, the header is not
+    // clipped fully due to what seems to be a rounding error.
+    // TODO(afakhry|sammiequon): Investigate a proper fix for this.
+    clip_rect.Inset(0, top_inset + 1, 0, 0);
+    ScopedOverviewAnimationSettings settings(
+        OVERVIEW_ANIMATION_FRAME_HEADER_CLIP, window_);
+    layer->SetClipRect(clip_rect);
+  }
 }
 
 void ScopedOverviewTransformWindow::CancelAnimationsListener() {
@@ -492,20 +418,51 @@ void ScopedOverviewTransformWindow::CancelAnimationsListener() {
 
 void ScopedOverviewTransformWindow::OnLayerAnimationStarted(
     ui::LayerAnimationSequence* sequence) {
-  // Remove the mask before animating because masks affect animation
-  // performance. The mask will be added back once the animation is completed.
-  overview_item_->UpdateMaskAndShadow();
+  // Remove the shadow before animating because it may affect animation
+  // performance. The shadow will be added back once the animation is completed.
+  // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
+  // to update the rounded corners.
+  overview_item_->SetShadowBounds(base::nullopt);
 }
 
 void ScopedOverviewTransformWindow::OnImplicitAnimationsCompleted() {
-  overview_item_->UpdateMaskAndShadow();
+  overview_item_->UpdateRoundedCornersAndShadow();
   overview_item_->OnDragAnimationCompleted();
 }
 
-gfx::Rect ScopedOverviewTransformWindow::GetMaskBoundsForTesting() const {
-  if (!mask_)
-    return gfx::Rect();
-  return mask_->layer()->bounds();
+void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
+    return;
+
+  DCHECK(!targeting_policy_map_.contains(transient_child));
+  targeting_policy_map_[transient_child] =
+      transient_child->event_targeting_policy();
+  transient_child->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
+}
+
+void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
+    aura::Window* parent,
+    aura::Window* transient_child) {
+  if (parent != window_ && !::wm::HasTransientAncestor(parent, window_))
+    return;
+
+  DCHECK(targeting_policy_map_.contains(transient_child));
+  auto it = targeting_policy_map_.find(transient_child);
+  transient_child->SetEventTargetingPolicy(it->second);
+  targeting_policy_map_.erase(it);
+}
+
+void ScopedOverviewTransformWindow::CloseWidget() {
+  aura::Window* parent_window = ::wm::GetTransientRoot(window_);
+  if (parent_window)
+    window_util::CloseWidgetForWindow(parent_window);
+}
+
+// static
+void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
+  immediate_close_for_tests = true;
 }
 
 }  // namespace ash

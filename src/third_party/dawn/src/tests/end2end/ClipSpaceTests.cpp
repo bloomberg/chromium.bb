@@ -27,26 +27,26 @@ class ClipSpaceTest : public DawnTest {
         // 2. The depth value of the bottom-right one is <= 0.5
         const char* vs =
             R"(#version 450
-        const vec3 pos[6] = vec3[6](vec3(-1.0f, -1.0f, 1.0f),
+            const vec3 pos[6] = vec3[6](vec3(-1.0f, -1.0f, 1.0f),
                                     vec3(-1.0f,  1.0f, 0.5f),
                                     vec3( 1.0f, -1.0f, 0.5f),
                                     vec3( 1.0f, -1.0f, 0.5f),
                                     vec3(-1.0f,  1.0f, 0.5f),
                                     vec3( 1.0f,  1.0f, 0.0f));
-        void main() {
-           gl_Position = vec4(pos[gl_VertexIndex], 1.0);
-       })";
+            void main() {
+                gl_Position = vec4(pos[gl_VertexIndex], 1.0);
+            })";
         pipelineDescriptor.cVertexStage.module =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, vs);
+            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs);
 
         const char* fs =
-            "#version 450\n"
-            "layout(location = 0) out vec4 fragColor;"
-            "void main() {\n"
-            "   fragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
-            "}\n";
+            R"(#version 450
+            layout(location = 0) out vec4 fragColor;
+            void main() {
+               fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            })";
         pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fs);
+            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs);
 
         pipelineDescriptor.cDepthStencilState.depthCompare = dawn::CompareFunction::LessEqual;
         pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
@@ -59,7 +59,7 @@ class ClipSpaceTest : public DawnTest {
         textureDescriptor.dimension = dawn::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
+            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
@@ -72,8 +72,9 @@ class ClipSpaceTest : public DawnTest {
 
 // Test that the clip space is correctly configured.
 TEST_P(ClipSpaceTest, ClipSpace) {
-    dawn::Texture colorTexture = Create2DTextureForTest(dawn::TextureFormat::R8G8B8A8Unorm);
-    dawn::Texture depthStencilTexture = Create2DTextureForTest(dawn::TextureFormat::D32FloatS8Uint);
+    dawn::Texture colorTexture = Create2DTextureForTest(dawn::TextureFormat::RGBA8Unorm);
+    dawn::Texture depthStencilTexture =
+        Create2DTextureForTest(dawn::TextureFormat::Depth24PlusStencil8);
 
     utils::ComboRenderPassDescriptor renderPassDescriptor(
         {colorTexture.CreateDefaultView()}, depthStencilTexture.CreateDefaultView());

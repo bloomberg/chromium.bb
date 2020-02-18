@@ -110,7 +110,7 @@ struct CredentialManagementRequest {
   static CredentialManagementRequest ForDeleteCredential(
       Version version,
       base::span<const uint8_t> pin_token,
-      std::vector<uint8_t> credential_id);
+      const PublicKeyCredentialDescriptor& credential_id);
 
   CredentialManagementRequest(CredentialManagementRequest&&);
   CredentialManagementRequest& operator=(CredentialManagementRequest&&);
@@ -148,6 +148,11 @@ struct EnumerateRPsResponse {
       bool expect_rp_count,
       const base::Optional<cbor::Value>& cbor_response);
 
+  // StringFixupPredicate indicates which fields of an EnumerateRPsResponse may
+  // contain truncated UTF-8 strings. See
+  // |Ctap2DeviceOperation::CBORPathPredicate|.
+  static bool StringFixupPredicate(const std::vector<const cbor::Value*>& path);
+
   EnumerateRPsResponse(EnumerateRPsResponse&&);
   EnumerateRPsResponse& operator=(EnumerateRPsResponse&&);
   ~EnumerateRPsResponse();
@@ -170,12 +175,21 @@ struct EnumerateCredentialsResponse {
       bool expect_credential_count,
       const base::Optional<cbor::Value>& cbor_response);
 
+  // StringFixupPredicate indicates which fields of an
+  // EnumerateCredentialsResponse may contain truncated UTF-8 strings. See
+  // |Ctap2DeviceOperation::CBORPathPredicate|.
+  static bool StringFixupPredicate(const std::vector<const cbor::Value*>& path);
+
   EnumerateCredentialsResponse(EnumerateCredentialsResponse&&);
   EnumerateCredentialsResponse& operator=(EnumerateCredentialsResponse&&);
   ~EnumerateCredentialsResponse();
 
   PublicKeyCredentialUserEntity user;
   PublicKeyCredentialDescriptor credential_id;
+  // For convenience, also return the serialized |credential_id| so that the UI
+  // doesn't have to do CBOR serialization. (It only cares about the opaque byte
+  // string.)
+  std::vector<uint8_t> credential_id_cbor_bytes;
   size_t credential_count;
 
  private:
@@ -196,7 +210,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AggregatedEnumerateCredentialsResponse {
   ~AggregatedEnumerateCredentialsResponse();
 
   PublicKeyCredentialRpEntity rp;
-  std::list<EnumerateCredentialsResponse> credentials;
+  std::vector<EnumerateCredentialsResponse> credentials;
 
  private:
   AggregatedEnumerateCredentialsResponse(

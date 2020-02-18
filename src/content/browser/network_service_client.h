@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -23,6 +24,8 @@
 #endif
 
 namespace content {
+
+class WebRtcConnectionsObserver;
 
 class CONTENT_EXPORT NetworkServiceClient
     : public network::mojom::NetworkServiceClient,
@@ -39,7 +42,8 @@ class CONTENT_EXPORT NetworkServiceClient
   ~NetworkServiceClient() override;
 
   // network::mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(uint32_t process_id,
+  void OnAuthRequired(const base::Optional<base::UnguessableToken>& window_id,
+                      uint32_t process_id,
                       uint32_t routing_id,
                       uint32_t request_id,
                       const GURL& url,
@@ -69,18 +73,6 @@ class CONTENT_EXPORT NetworkServiceClient
                              bool async,
                              const std::vector<base::FilePath>& file_paths,
                              OnFileUploadRequestedCallback callback) override;
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy) override;
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy) override;
   void OnLoadingStateUpdate(std::vector<network::mojom::LoadInfoPtr> infos,
                             OnLoadingStateUpdateCallback callback) override;
   void OnDataUseUpdate(int32_t network_traffic_annotation_id_hash,
@@ -94,19 +86,28 @@ class CONTENT_EXPORT NetworkServiceClient
       const std::string& spn,
       OnGenerateHttpNegotiateAuthTokenCallback callback) override;
 #endif
-  void OnFlaggedRequestCookies(
+  void OnRawRequest(
       int32_t process_id,
       int32_t routing_id,
-      const net::CookieStatusList& excluded_cookies) override;
-  void OnFlaggedResponseCookies(
+      const std::string& devtools_request_id,
+      const net::CookieStatusList& cookies_with_status,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers) override;
+  void OnRawResponse(
       int32_t process_id,
       int32_t routing_id,
-      const net::CookieAndLineStatusList& excluded_cookies) override;
+      const std::string& devtools_request_id,
+      const net::CookieAndLineStatusList& cookies_with_status,
+      std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+      const base::Optional<std::string>& raw_response_headers) override;
   // net::CertDatabase::Observer implementation:
   void OnCertDBChanged() override;
 
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_presure_level);
+
+  // Called when there is a change in the count of media connections that
+  // require low network latency.
+  void OnPeerToPeerConnectionsCountChange(uint32_t count);
 
 #if defined(OS_ANDROID)
   void OnApplicationStateChange(base::android::ApplicationState state);
@@ -132,6 +133,8 @@ class CONTENT_EXPORT NetworkServiceClient
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;
 
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+
+  std::unique_ptr<WebRtcConnectionsObserver> webrtc_connections_observer_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<base::android::ApplicationStatusListener>

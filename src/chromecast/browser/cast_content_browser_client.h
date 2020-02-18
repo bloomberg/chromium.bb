@@ -42,7 +42,6 @@ class MetricsService;
 
 namespace net {
 class SSLPrivateKey;
-class URLRequestContextGetter;
 class X509Certificate;
 }
 
@@ -66,7 +65,6 @@ class VideoResolutionPolicy;
 namespace shell {
 class CastBrowserMainParts;
 class CastNetworkContexts;
-class CastResourceDispatcherHostDelegate;
 class URLRequestContextFactory;
 
 class CastContentBrowserClient
@@ -78,15 +76,17 @@ class CastContentBrowserClient
   static std::unique_ptr<CastContentBrowserClient> Create(
       CastFeatureListCreator* cast_feature_list_creator);
 
+  // Returns a list of headers that will be exempt from CORS preflight checks.
+  // This is needed since currently servers don't have the correct response to
+  // preflight checks.
+  static std::vector<std::string> GetCorsExemptHeadersList();
+
   ~CastContentBrowserClient() override;
 
   // Creates and returns the CastService instance for the current process.
-  // Note: |request_context_getter| might be different than the main request
-  // getter accessible via CastBrowserProcess.
   virtual std::unique_ptr<CastService> CreateCastService(
       content::BrowserContext* browser_context,
       PrefService* pref_service,
-      net::URLRequestContextGetter* request_context_getter,
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager);
 
@@ -97,7 +97,6 @@ class CastContentBrowserClient
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // Gets object for enforcing video resolution policy restrictions.
   virtual media::VideoResolutionPolicy* GetVideoResolutionPolicy();
 
@@ -113,7 +112,6 @@ class CastContentBrowserClient
   std::unique_ptr<::media::AudioManager> CreateAudioManager(
       ::media::AudioLogFactory* audio_log_factory) override;
   bool OverridesAudioManager() override;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaCapsImpl* media_caps();
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -148,7 +146,6 @@ class CastContentBrowserClient
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
-  void ResourceDispatcherHostCreated() override;
   std::string GetApplicationLocale() override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;
@@ -166,7 +163,7 @@ class CastContentBrowserClient
       bool expired_previous_decision,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback) override;
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       content::WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
@@ -227,7 +224,7 @@ class CastContentBrowserClient
       content::BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
-  std::string GetUserAgent() const override;
+  std::string GetUserAgent() override;
   bool DoesSiteRequireDedicatedProcess(
       content::BrowserOrResourceContext browser_or_resource_context,
       const GURL& effective_site_url) override;
@@ -296,20 +293,16 @@ class CastContentBrowserClient
 #endif  // !defined(OS_ANDROID)
 #endif  // !defined(OS_FUCHSIA)
 
-#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.
   std::unique_ptr<base::Thread> media_thread_;
 
   // Tracks usage of media resource by e.g. CMA pipeline, CDM.
   media::MediaResourceTracker* media_resource_tracker_ = nullptr;
-#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
   // Created by CastContentBrowserClient but owned by BrowserMainLoop.
   CastBrowserMainParts* cast_browser_main_parts_;
   std::unique_ptr<CastNetworkContexts> cast_network_contexts_;
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
-  std::unique_ptr<CastResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
   std::unique_ptr<GeneralAudienceBrowsingService>
       general_audience_browsing_service_;

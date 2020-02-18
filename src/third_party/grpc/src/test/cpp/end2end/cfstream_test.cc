@@ -42,27 +42,36 @@
 #include "src/core/lib/gpr/env.h"
 
 #include "src/proto/grpc/testing/echo.grpc.pb.h"
+#include "test/core/util/debugger_macros.h"
 #include "test/core/util/port.h"
 #include "test/core/util/test_config.h"
 #include "test/cpp/end2end/test_service_impl.h"
+#include "test/cpp/util/test_credentials_provider.h"
 
 #ifdef GRPC_CFSTREAM
+using grpc::ClientAsyncResponseReader;
 using grpc::testing::EchoRequest;
 using grpc::testing::EchoResponse;
+using grpc::testing::RequestParams;
 using std::chrono::system_clock;
 
 namespace grpc {
 namespace testing {
 namespace {
 
-class CFStreamTest : public ::testing::Test {
+struct TestScenario {
+  TestScenario(const grpc::string& creds_type, const grpc::string& content)
+      : credentials_type(creds_type), message_content(content) {}
+  const grpc::string credentials_type;
+  const grpc::string message_content;
+};
+
+class CFStreamTest : public ::testing::TestWithParam<TestScenario> {
  protected:
   CFStreamTest()
       : server_host_("grpctest"),
         interface_("lo0"),
-        ipv4_address_("10.0.0.1"),
-        netmask_("/32"),
-        kRequestMessage_("🖖") {}
+        ipv4_address_("10.0.0.1") {}
 
   void DNSUp() {
     std::ostringstream cmd;
@@ -92,11 +101,13 @@ class CFStreamTest : public ::testing::Test {
   }
 
   void NetworkUp() {
+    gpr_log(GPR_DEBUG, "Bringing network up");
     InterfaceUp();
     DNSUp();
   }
 
   void NetworkDown() {
+    gpr_log(GPR_DEBUG, "Bringing network down");
     InterfaceDown();
     DNSDown();
   }
@@ -115,7 +126,7 @@ class CFStreamTest : public ::testing::Test {
 
   void StartServer() {
     port_ = grpc_pick_unused_port_or_die();
-    server_.reset(new ServerData(port_));
+    server_.reset(new ServerData(port_, GetParam().credentials_type));
     server_->Start(server_host_);
   }
   void StopServer() { server_->Shutdown(); }
@@ -128,8 +139,22 @@ class CFStreamTest : public ::testing::Test {
   std::shared_ptr<Channel> BuildChannel() {
     std::ostringstream server_address;
     server_address << server_host_ << ":" << port_;
-    return CreateCustomChannel(
-        server_address.str(), InsecureChannelCredentials(), ChannelArguments());
+    ChannelArguments args;
+    auto channel_creds = GetCredentialsProvider()->GetChannelCredentials(
+        GetParam().credentials_type, &args);
+    return CreateCustomChannel(server_address.str(), channel_creds, args);
+  }
+
+  int GetStreamID(ClientContext& context) {
+    int stream_id = 0;
+    grpc_call* call = context.c_call();
+    if (call) {
+      grpc_chttp2_stream* stream = grpc_chttp2_stream_from_call(call);
+      if (stream) {
+        stream_id = stream->id;
+      }
+    }
+    return stream_id;
   }
 
   void SendRpc(
@@ -137,18 +162,40 @@ class CFStreamTest : public ::testing::Test {
       bool expect_success = false) {
     auto response = std::unique_ptr<EchoResponse>(new EchoResponse());
     EchoRequest request;
-    request.set_message(kRequestMessage_);
+    auto& msg = GetParam().message_content;
+    request.set_message(msg);
     ClientContext context;
     Status status = stub->Echo(&context, request, response.get());
+    int stream_id = GetStreamID(context);
     if (status.ok()) {
-      gpr_log(GPR_DEBUG, "RPC returned %s\n", response->message().c_str());
+      gpr_log(GPR_DEBUG, "RPC with stream_id %d succeeded", stream_id);
+      EXPECT_EQ(msg, response->message());
     } else {
-      gpr_log(GPR_DEBUG, "RPC failed: %s", status.error_message().c_str());
+      gpr_log(GPR_DEBUG, "RPC with stream_id %d failed: %s", stream_id,
+              status.error_message().c_str());
     }
     if (expect_success) {
       EXPECT_TRUE(status.ok());
     }
   }
+  void SendAsyncRpc(
+      const std::unique_ptr<grpc::testing::EchoTestService::Stub>& stub,
+      RequestParams param = RequestParams()) {
+    EchoRequest request;
+    request.set_message(GetParam().message_content);
+    *request.mutable_param() = std::move(param);
+    AsyncClientCall* call = new AsyncClientCall;
+
+    call->response_reader =
+        stub->PrepareAsyncEcho(&call->context, request, &cq_);
+
+    call->response_reader->StartCall();
+    call->response_reader->Finish(&call->reply, &call->status, (void*)call);
+  }
+
+  void ShutdownCQ() { cq_.Shutdown(); }
+
+  bool CQNext(void** tag, bool* ok) { return cq_.Next(tag, ok); }
 
   bool WaitForChannelNotReady(Channel* channel, int timeout_seconds = 5) {
     const gpr_timespec deadline =
@@ -172,15 +219,24 @@ class CFStreamTest : public ::testing::Test {
     return true;
   }
 
+  struct AsyncClientCall {
+    EchoResponse reply;
+    ClientContext context;
+    Status status;
+    std::unique_ptr<ClientAsyncResponseReader<EchoResponse>> response_reader;
+  };
+
  private:
   struct ServerData {
     int port_;
+    const grpc::string creds_;
     std::unique_ptr<Server> server_;
     TestServiceImpl service_;
     std::unique_ptr<std::thread> thread_;
     bool server_ready_ = false;
 
-    explicit ServerData(int port) { port_ = port; }
+    ServerData(int port, const grpc::string& creds)
+        : port_(port), creds_(creds) {}
 
     void Start(const grpc::string& server_host) {
       gpr_log(GPR_INFO, "starting server on port %d", port_);
@@ -199,8 +255,9 @@ class CFStreamTest : public ::testing::Test {
       std::ostringstream server_address;
       server_address << server_host << ":" << port_;
       ServerBuilder builder;
-      builder.AddListeningPort(server_address.str(),
-                               InsecureServerCredentials());
+      auto server_creds =
+          GetCredentialsProvider()->GetServerCredentials(creds_);
+      builder.AddListeningPort(server_address.str(), server_creds);
       builder.RegisterService(&service_);
       server_ = builder.BuildAndStart();
       std::lock_guard<std::mutex> lock(*mu);
@@ -214,19 +271,50 @@ class CFStreamTest : public ::testing::Test {
     }
   };
 
+  CompletionQueue cq_;
   const grpc::string server_host_;
   const grpc::string interface_;
   const grpc::string ipv4_address_;
-  const grpc::string netmask_;
-  std::unique_ptr<grpc::testing::EchoTestService::Stub> stub_;
   std::unique_ptr<ServerData> server_;
   int port_;
-  const grpc::string kRequestMessage_;
 };
+
+std::vector<TestScenario> CreateTestScenarios() {
+  std::vector<TestScenario> scenarios;
+  std::vector<grpc::string> credentials_types;
+  std::vector<grpc::string> messages;
+
+  credentials_types.push_back(kInsecureCredentialsType);
+  auto sec_list = GetCredentialsProvider()->GetSecureCredentialsTypeList();
+  for (auto sec = sec_list.begin(); sec != sec_list.end(); sec++) {
+    credentials_types.push_back(*sec);
+  }
+
+  messages.push_back("🖖");
+  for (size_t k = 1; k < GRPC_DEFAULT_MAX_RECV_MESSAGE_LENGTH / 1024; k *= 32) {
+    grpc::string big_msg;
+    for (size_t i = 0; i < k * 1024; ++i) {
+      char c = 'a' + (i % 26);
+      big_msg += c;
+    }
+    messages.push_back(big_msg);
+  }
+  for (auto cred = credentials_types.begin(); cred != credentials_types.end();
+       ++cred) {
+    for (auto msg = messages.begin(); msg != messages.end(); msg++) {
+      scenarios.emplace_back(*cred, *msg);
+    }
+  }
+
+  return scenarios;
+}
+
+INSTANTIATE_TEST_CASE_P(CFStreamTest, CFStreamTest,
+                        ::testing::ValuesIn(CreateTestScenarios()));
 
 // gRPC should automatically detech network flaps (without enabling keepalives)
 //  when CFStream is enabled
-TEST_F(CFStreamTest, NetworkTransition) {
+TEST_P(CFStreamTest, NetworkTransition) {
   auto channel = BuildChannel();
   auto stub = BuildStub(channel);
   // Channel should be in READY state after we send an RPC
@@ -259,6 +347,118 @@ TEST_F(CFStreamTest, NetworkTransition) {
   EXPECT_EQ(channel->GetState(false), GRPC_CHANNEL_READY);
   shutdown.store(true);
   sender.join();
+}
+
+// Network flaps while RPCs are in flight
+TEST_P(CFStreamTest, NetworkFlapRpcsInFlight) {
+  auto channel = BuildChannel();
+  auto stub = BuildStub(channel);
+  std::atomic_int rpcs_sent{0};
+
+  // Channel should be in READY state after we send some RPCs
+  for (int i = 0; i < 10; ++i) {
+    RequestParams param;
+    param.set_skip_cancelled_check(true);
+    SendAsyncRpc(stub, param);
+    ++rpcs_sent;
+  }
+  EXPECT_TRUE(WaitForChannelReady(channel.get()));
+
+  // Bring down the network
+  NetworkDown();
+
+  std::thread thd = std::thread([this, &rpcs_sent]() {
+    void* got_tag;
+    bool ok = false;
+    bool network_down = true;
+    int total_completions = 0;
+
+    while (CQNext(&got_tag, &ok)) {
+      ++total_completions;
+      GPR_ASSERT(ok);
+      AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
+      int stream_id = GetStreamID(call->context);
+      if (!call->status.ok()) {
+        gpr_log(GPR_DEBUG, "RPC with stream_id %d failed with error: %s",
+                stream_id, call->status.error_message().c_str());
+        // Bring network up when RPCs start failing
+        if (network_down) {
+          NetworkUp();
+          network_down = false;
+        }
+      } else {
+        gpr_log(GPR_DEBUG, "RPC with stream_id %d succeeded", stream_id);
+      }
+      delete call;
+    }
+    EXPECT_EQ(total_completions, rpcs_sent);
+  });
+
+  for (int i = 0; i < 100; ++i) {
+    RequestParams param;
+    param.set_skip_cancelled_check(true);
+    SendAsyncRpc(stub, param);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    ++rpcs_sent;
+  }
+
+  ShutdownCQ();
+
+  thd.join();
+}
+
+// Send a bunch of RPCs, some of which are expected to fail.
+// We should get back a response for all RPCs
+TEST_P(CFStreamTest, ConcurrentRpc) {
+  auto channel = BuildChannel();
+  auto stub = BuildStub(channel);
+  std::atomic_int rpcs_sent{0};
+  std::thread thd = std::thread([this, &rpcs_sent]() {
+    void* got_tag;
+    bool ok = false;
+    int total_completions = 0;
+
+    while (CQNext(&got_tag, &ok)) {
+      ++total_completions;
+      GPR_ASSERT(ok);
+      AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
+      int stream_id = GetStreamID(call->context);
+      if (!call->status.ok()) {
+        gpr_log(GPR_DEBUG, "RPC with stream_id %d failed with error: %s",
+                stream_id, call->status.error_message().c_str());
+        // Bring network up when RPCs start failing
+      } else {
+        gpr_log(GPR_DEBUG, "RPC with stream_id %d succeeded", stream_id);
+      }
+      delete call;
+    }
+    EXPECT_EQ(total_completions, rpcs_sent);
+  });
+
+  for (int i = 0; i < 10; ++i) {
+    if (i % 3 == 0) {
+      RequestParams param;
+      ErrorStatus* error = param.mutable_expected_error();
+      error->set_code(StatusCode::INTERNAL);
+      error->set_error_message("internal error");
+      SendAsyncRpc(stub, param);
+    } else if (i % 5 == 0) {
+      RequestParams param;
+      param.set_echo_metadata(true);
+      DebugInfo* info = param.mutable_debug_info();
+      info->add_stack_entries("stack_entry1");
+      info->add_stack_entries("stack_entry2");
+      info->set_detail("detailed debug info");
+      SendAsyncRpc(stub, param);
+    } else {
+      SendAsyncRpc(stub);
+    }
+    ++rpcs_sent;
+  }
+
+  ShutdownCQ();
+
+  thd.join();
 }
 
 }  // namespace

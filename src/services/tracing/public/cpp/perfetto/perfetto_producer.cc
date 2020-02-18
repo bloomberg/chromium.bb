@@ -4,9 +4,9 @@
 
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 
-#include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer_registry.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 
 namespace tracing {
 

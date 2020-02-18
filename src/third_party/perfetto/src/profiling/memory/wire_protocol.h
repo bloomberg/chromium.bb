@@ -90,7 +90,7 @@ struct AllocMetadata {
   // Size of the allocation that was made.
   uint64_t alloc_size;
   // Total number of bytes attributed to this allocation.
-  uint64_t total_size;
+  uint64_t sample_size;
   // Pointer returned by malloc(2) for this allocation.
   uint64_t alloc_address;
   // Current value of the stack pointer.
@@ -99,8 +99,7 @@ struct AllocMetadata {
   uint64_t stack_pointer_offset;
   uint64_t clock_monotonic_coarse_timestamp;
   alignas(uint64_t) char register_data[kMaxRegisterDataSize];
-  // CPU architecture of the client. This determines the size of the
-  // register data that follows this struct.
+  // CPU architecture of the client.
   unwindstack::ArchEnum arch;
 };
 
@@ -119,9 +118,9 @@ struct FreeBatch {
 
 enum HandshakeFDs : size_t {
   kHandshakeMaps = 0,
-  kHandshakeMem = 1,
-  kHandshakePageMap = 2,
-  kHandshakeSize = 3,
+  kHandshakeMem,
+  kHandshakePageIdle,
+  kHandshakeSize,
 };
 
 struct WireMessage {

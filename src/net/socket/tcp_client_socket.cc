@@ -49,9 +49,7 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> connected_socket,
 TCPClientSocket::~TCPClientSocket() {
   Disconnect();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->RemoveObserver(this);
+  base::PowerMonitor::RemoveObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 
@@ -144,15 +142,12 @@ TCPClientSocket::TCPClientSocket(std::unique_ptr<TCPSocket> socket,
       previously_disconnected_(false),
       total_received_bytes_(0),
       was_ever_used_(false),
-      was_disconnected_on_suspend_(false),
-      weak_ptr_factory_(this) {
+      was_disconnected_on_suspend_(false) {
   DCHECK(socket_);
   if (socket_->IsValid())
     socket_->SetDefaultOptionsForClient();
 #if defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
-  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
-  if (power_monitor)
-    power_monitor->AddObserver(this);
+  base::PowerMonitor::AddObserver(this);
 #endif  // defined(TCP_CLIENT_SOCKET_OBSERVES_SUSPEND)
 }
 

@@ -14,13 +14,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/handoff/handoff_utility.h"
 #include "components/search_engines/template_url_service.h"
+#import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/spotlight/actions_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
-#include "ios/chrome/browser/app_startup_parameters.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -172,10 +172,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   if (applicationIsActive && ![startupInformation isPresentingFirstRunUI]) {
     // The app is already active so the applicationDidBecomeActive: method will
     // never be called. Open the requested URL immediately.
-    ApplicationMode targetMode =
+    ApplicationModeForTabOpening targetMode =
         [[startupInformation startupParameters] launchInIncognito]
-            ? ApplicationMode::INCOGNITO
-            : ApplicationMode::NORMAL;
+            ? ApplicationModeForTabOpening::INCOGNITO
+            : ApplicationModeForTabOpening::NORMAL;
     UrlLoadParams params = UrlLoadParams::InNewTab(webpageGURL);
     [tabOpener dismissModalsAndOpenSelectedTabInMode:targetMode
                                    withUrlLoadParams:params
@@ -262,10 +262,10 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // will never be called. Open the requested URL after all modal UIs have
     // been dismissed. |_startupParameters| must be retained until all deferred
     // modal UIs are dismissed and tab opened with requested URL.
-    ApplicationMode targetMode =
+    ApplicationModeForTabOpening targetMode =
         [[startupInformation startupParameters] launchInIncognito]
-            ? ApplicationMode::INCOGNITO
-            : ApplicationMode::NORMAL;
+            ? ApplicationModeForTabOpening::INCOGNITO
+            : ApplicationModeForTabOpening::NORMAL;
     GURL URL;
     GURL virtualURL;
     GURL completeURL = startupInformation.startupParameters.completeURL;

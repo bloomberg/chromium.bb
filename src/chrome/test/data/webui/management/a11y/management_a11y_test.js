@@ -15,7 +15,8 @@ GEN('#include "chrome/browser/ui/webui/management_a11y_browsertest.h"');
  * @constructor
  * @extends {PolymerTest}
  */
-CrManagementA11yTest = class extends PolymerTest {
+// eslint-disable-next-line no-var
+var CrManagementA11yTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://management/';

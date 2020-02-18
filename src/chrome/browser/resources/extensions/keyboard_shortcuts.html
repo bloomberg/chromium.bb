@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/md_select_css.html">
+<link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="shortcut_input.html">
@@ -17,10 +17,10 @@
       }
 
       .shortcut-card {
-        @apply --cr-primary-text;
         @apply --cr-card-elevation;
         background-color: var(--cr-card-background-color);
         border-radius: var(--cr-card-border-radius);
+        color: var(--cr-primary-text-color);
         margin: 0 auto 16px auto;
         padding-bottom: 8px;
         width: var(--cr-toolbar-field-width);
@@ -64,7 +64,6 @@
         display: flex;
         margin-bottom: 9px;
         padding: 16px var(--cr-section-padding);
-        @apply --cr-title-text;
       }
 
       .icon {
@@ -83,7 +82,7 @@
     <div id="container">
       <template is="dom-repeat" items="[[calculateShownItems_(items.*)]]">
         <div class="shortcut-card">
-          <div class="card-title">
+          <div class="card-title cr-title-text">
             <img class="icon" src="[[item.iconUrl]]"
                 alt$="[[appOrExtension(
                     item.type,

@@ -32,22 +32,16 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
       base::OnceCallback<void(const kerberos::ListAccountsResponse& response)>;
   using SetConfigCallback =
       base::OnceCallback<void(const kerberos::SetConfigResponse& response)>;
+  using ValidateConfigCallback = base::OnceCallback<void(
+      const kerberos::ValidateConfigResponse& response)>;
   using AcquireKerberosTgtCallback = base::OnceCallback<void(
       const kerberos::AcquireKerberosTgtResponse& response)>;
   using GetKerberosFilesCallback = base::OnceCallback<void(
       const kerberos::GetKerberosFilesResponse& response)>;
   using KerberosFilesChangedCallback =
       base::RepeatingCallback<void(const std::string& principal_name)>;
-
-  // Interface for testing. Only implemented in the fake implementation.
-  class TestInterface {
-   public:
-    // Sets whether the (fake) daemon has been started by Upstart.
-    virtual void set_started(bool started) = 0;
-
-    // Whether the (fake) daemon has been started and is in a running state.
-    virtual bool started() const = 0;
-  };
+  using KerberosTicketExpiringCallback =
+      base::RepeatingCallback<void(const std::string& principal_name)>;
 
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
@@ -79,6 +73,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
   virtual void SetConfig(const kerberos::SetConfigRequest& request,
                          SetConfigCallback callback) = 0;
 
+  virtual void ValidateConfig(const kerberos::ValidateConfigRequest& request,
+                              ValidateConfigCallback callback) = 0;
+
   virtual void AcquireKerberosTgt(
       const kerberos::AcquireKerberosTgtRequest& request,
       int password_fd,
@@ -90,6 +87,9 @@ class COMPONENT_EXPORT(KERBEROS) KerberosClient {
 
   virtual void ConnectToKerberosFileChangedSignal(
       KerberosFilesChangedCallback callback) = 0;
+
+  virtual void ConnectToKerberosTicketExpiringSignal(
+      KerberosTicketExpiringCallback callback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

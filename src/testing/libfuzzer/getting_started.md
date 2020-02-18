@@ -117,6 +117,10 @@ INFO: A corpus is not provided, starting from an empty corpus
 For more information about libFuzzer's output, please refer to [its own
 documentation].
 
+*Note*: if you observe an `odr-violation` error in the log, please try setting
+the following environment variable: `ASAN_OPTIONS=detect_odr_violation=0` and
+running the fuzz target again.
+
 ### Symbolize Stacktrace
 
 If your fuzz target crashes when running locally and you see non-symbolized
@@ -302,9 +306,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 ```
 
-There is [base::FuzzedDataProvider] class that might be helpful for writing
-fuzz targets using that approach.
+There is [FuzzedDataProvider] class that might be helpful for writing fuzz
+targets using that approach. In order to use it, add
+`#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"` to your fuzz
+target source file. To learn more about `FuzzedDataProvider`, check out the
+[google/fuzzing documentation page] on it.
 
+Note that it's not recommended to use `FuzzedDataProvider` unless you actually
+need to split the fuzz input. If you need to convert the fuzz input into a
+vector or string object, for example, simply initialize that object by passing
+`const uint8_t* data, size_t size` to its constructor.
 
 ## Submitting Fuzz Target to ClusterFuzz
 
@@ -335,5 +346,6 @@ performance and for optimization hints.
 [Build Config]: reference.md#Builder-configurations
 [its own documentation]: http://llvm.org/docs/LibFuzzer.html#output
 [Getting Started with libprotobuf-mutator in Chromium]: libprotobuf-mutator.md
-[base::FuzzedDataProvider]: https://cs.chromium.org/chromium/src/base/test/fuzzed_data_provider.h
+[FuzzedDataProvider]: https://cs.chromium.org/chromium/src/third_party/libFuzzer/src/utils/FuzzedDataProvider.h
 [code coverage report]: efficient_fuzzer.md#Code-Coverage
+[google/fuzzing documentation page]: https://github.com/google/fuzzing/blob/master/docs/split-inputs.md#fuzzed-data-provider

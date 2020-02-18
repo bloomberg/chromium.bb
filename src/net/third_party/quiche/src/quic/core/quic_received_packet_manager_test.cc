@@ -82,13 +82,11 @@ class QuicReceivedPacketManagerTest : public QuicTestWithParam<TestParams> {
   }
 
   bool HasPendingAck() {
-    DCHECK(received_manager_.decide_when_to_send_acks());
     return received_manager_.ack_timeout().IsInitialized();
   }
 
   void MaybeUpdateAckTimeout(bool should_last_packet_instigate_acks,
                              uint64_t last_received_packet_number) {
-    DCHECK(received_manager_.decide_when_to_send_acks());
     received_manager_.MaybeUpdateAckTimeout(
         should_last_packet_instigate_acks,
         QuicPacketNumber(last_received_packet_number), clock_.ApproximateNow(),
@@ -136,9 +134,7 @@ TEST_P(QuicReceivedPacketManagerTest, GetUpdatedAckFrame) {
   EXPECT_TRUE(received_manager_.ack_frame_updated());
 
   QuicFrame ack = received_manager_.GetUpdatedAckFrame(QuicTime::Zero());
-  if (received_manager_.decide_when_to_send_acks()) {
-    received_manager_.ResetAckStates();
-  }
+  received_manager_.ResetAckStates();
   EXPECT_FALSE(received_manager_.ack_frame_updated());
   // When UpdateReceivedPacketInfo with a time earlier than the time of the
   // largest observed packet, make sure that the delta is 0, not negative.
@@ -147,9 +143,7 @@ TEST_P(QuicReceivedPacketManagerTest, GetUpdatedAckFrame) {
 
   QuicTime four_ms = QuicTime::Zero() + QuicTime::Delta::FromMilliseconds(4);
   ack = received_manager_.GetUpdatedAckFrame(four_ms);
-  if (received_manager_.decide_when_to_send_acks()) {
-    received_manager_.ResetAckStates();
-  }
+  received_manager_.ResetAckStates();
   EXPECT_FALSE(received_manager_.ack_frame_updated());
   // When UpdateReceivedPacketInfo after not having received a new packet,
   // the delta should still be accurate.
@@ -166,9 +160,7 @@ TEST_P(QuicReceivedPacketManagerTest, GetUpdatedAckFrame) {
   received_manager_.RecordPacketReceived(header, two_ms);
   EXPECT_TRUE(received_manager_.ack_frame_updated());
   ack = received_manager_.GetUpdatedAckFrame(two_ms);
-  if (received_manager_.decide_when_to_send_acks()) {
-    received_manager_.ResetAckStates();
-  }
+  received_manager_.ResetAckStates();
   EXPECT_FALSE(received_manager_.ack_frame_updated());
   // UpdateReceivedPacketInfo should discard any times which can't be
   // expressed on the wire.
@@ -223,33 +215,16 @@ TEST_P(QuicReceivedPacketManagerTest, IgnoreOutOfOrderTimestamps) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, HasMissingPackets) {
-  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    EXPECT_QUIC_BUG(received_manager_.PeerFirstSendingPacketNumber(),
-                    "No packets have been received yet");
-  } else {
-    EXPECT_EQ(QuicPacketNumber(1),
-              received_manager_.PeerFirstSendingPacketNumber());
-  }
+  EXPECT_QUIC_BUG(received_manager_.PeerFirstSendingPacketNumber(),
+                  "No packets have been received yet");
   RecordPacketReceipt(4, QuicTime::Zero());
-  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    EXPECT_EQ(QuicPacketNumber(4),
-              received_manager_.PeerFirstSendingPacketNumber());
-    EXPECT_FALSE(received_manager_.HasMissingPackets());
-  } else {
-    EXPECT_TRUE(received_manager_.HasMissingPackets());
-    EXPECT_EQ(QuicPacketNumber(1),
-              received_manager_.PeerFirstSendingPacketNumber());
-  }
+  EXPECT_EQ(QuicPacketNumber(4),
+            received_manager_.PeerFirstSendingPacketNumber());
+  EXPECT_FALSE(received_manager_.HasMissingPackets());
   RecordPacketReceipt(3, QuicTime::Zero());
-  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    EXPECT_FALSE(received_manager_.HasMissingPackets());
-    EXPECT_EQ(QuicPacketNumber(3),
-              received_manager_.PeerFirstSendingPacketNumber());
-  } else {
-    EXPECT_TRUE(received_manager_.HasMissingPackets());
-    EXPECT_EQ(QuicPacketNumber(1),
-              received_manager_.PeerFirstSendingPacketNumber());
-  }
+  EXPECT_FALSE(received_manager_.HasMissingPackets());
+  EXPECT_EQ(QuicPacketNumber(3),
+            received_manager_.PeerFirstSendingPacketNumber());
   RecordPacketReceipt(1, QuicTime::Zero());
   EXPECT_EQ(QuicPacketNumber(1),
             received_manager_.PeerFirstSendingPacketNumber());
@@ -261,20 +236,12 @@ TEST_P(QuicReceivedPacketManagerTest, HasMissingPackets) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
 
   RecordPacketReceipt(3, clock_.ApproximateNow());
   MaybeUpdateAckTimeout(kInstigateAck, 3);
-  if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    // Delayed ack is scheduled.
-    CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
-  } else {
-    // Should ack immediately since we have missing packets.
-    CheckAckTimeout(clock_.ApproximateNow());
-  }
+  // Delayed ack is scheduled.
+  CheckAckTimeout(clock_.ApproximateNow() + kDelayedAckTime);
 
   RecordPacketReceipt(2, clock_.ApproximateNow());
   MaybeUpdateAckTimeout(kInstigateAck, 2);
@@ -292,9 +259,6 @@ TEST_P(QuicReceivedPacketManagerTest, OutOfOrderReceiptCausesAckSent) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, OutOfOrderAckReceiptCausesNoAck) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
 
   RecordPacketReceipt(2, clock_.ApproximateNow());
@@ -307,9 +271,6 @@ TEST_P(QuicReceivedPacketManagerTest, OutOfOrderAckReceiptCausesNoAck) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, AckReceiptCausesAckSend) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
 
   RecordPacketReceipt(1, clock_.ApproximateNow());
@@ -337,9 +298,6 @@ TEST_P(QuicReceivedPacketManagerTest, AckReceiptCausesAckSend) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, AckSentEveryNthPacket) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   received_manager_.set_ack_frequency_before_ack_decimation(3);
 
@@ -356,9 +314,6 @@ TEST_P(QuicReceivedPacketManagerTest, AckSentEveryNthPacket) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, AckDecimationReducesAcks) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_,
                                             ACK_DECIMATION_WITH_REORDERING);
@@ -394,9 +349,6 @@ TEST_P(QuicReceivedPacketManagerTest, AckDecimationReducesAcks) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, SendDelayedAfterQuiescence) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetFastAckAfterQuiescence(&received_manager_,
                                                            true);
@@ -430,9 +382,6 @@ TEST_P(QuicReceivedPacketManagerTest, SendDelayedAfterQuiescence) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimation) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_, ACK_DECIMATION);
   // The ack time should be based on min_rtt * 1/4, since it's less than the
@@ -466,9 +415,6 @@ TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimation) {
 
 TEST_P(QuicReceivedPacketManagerTest,
        SendDelayedAckAckDecimationAfterQuiescence) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_, ACK_DECIMATION);
   QuicReceivedPacketManagerPeer::SetFastAckAfterQuiescence(&received_manager_,
@@ -536,9 +482,6 @@ TEST_P(QuicReceivedPacketManagerTest,
 
 TEST_P(QuicReceivedPacketManagerTest,
        SendDelayedAckDecimationUnlimitedAggregation) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicConfig config;
   QuicTagVector connection_options;
@@ -579,9 +522,6 @@ TEST_P(QuicReceivedPacketManagerTest,
 }
 
 TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimationEighthRtt) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_, ACK_DECIMATION);
   QuicReceivedPacketManagerPeer::SetAckDecimationDelay(&received_manager_,
@@ -617,9 +557,6 @@ TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimationEighthRtt) {
 }
 
 TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimationWithReordering) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_,
                                             ACK_DECIMATION_WITH_REORDERING);
@@ -663,9 +600,6 @@ TEST_P(QuicReceivedPacketManagerTest, SendDelayedAckDecimationWithReordering) {
 
 TEST_P(QuicReceivedPacketManagerTest,
        SendDelayedAckDecimationWithLargeReordering) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_,
                                             ACK_DECIMATION_WITH_REORDERING);
@@ -711,9 +645,6 @@ TEST_P(QuicReceivedPacketManagerTest,
 
 TEST_P(QuicReceivedPacketManagerTest,
        SendDelayedAckDecimationWithReorderingEighthRtt) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_,
                                             ACK_DECIMATION_WITH_REORDERING);
@@ -755,9 +686,6 @@ TEST_P(QuicReceivedPacketManagerTest,
 
 TEST_P(QuicReceivedPacketManagerTest,
        SendDelayedAckDecimationWithLargeReorderingEighthRtt) {
-  if (!received_manager_.decide_when_to_send_acks()) {
-    return;
-  }
   EXPECT_FALSE(HasPendingAck());
   QuicReceivedPacketManagerPeer::SetAckMode(&received_manager_,
                                             ACK_DECIMATION_WITH_REORDERING);

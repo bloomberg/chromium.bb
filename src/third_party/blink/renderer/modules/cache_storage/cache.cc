@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -53,11 +53,6 @@
 namespace blink {
 
 namespace {
-
-void RecordResponseTypeForAdd(const Member<Response>& response) {
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorkerCache.Cache.AddResponseType",
-                            response->GetResponse()->GetType());
-}
 
 bool VaryHeaderContainsAsterisk(const Response* response) {
   const FetchHeaderList* headers = response->headers()->HeaderList();
@@ -178,9 +173,6 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
         return ScriptValue(GetScriptState(), rejection.V8Value());
       }
     }
-
-    for (const auto& response : responses)
-      RecordResponseTypeForAdd(response);
 
     ScriptPromise put_promise =
         cache_->PutImpl(GetScriptState(), method_name_, requests_, responses,

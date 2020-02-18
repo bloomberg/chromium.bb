@@ -85,8 +85,8 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
 
   def VersionComponents(self):
     """Return an array of ints of the version fields for comparing."""
-    return map(int, [self.build_number, self.branch_build_number,
-                     self.patch_number, self.revision_number])
+    return [int(x) for x in [self.build_number, self.branch_build_number,
+                             self.patch_number, self.revision_number]]
 
   def IncrementVersion(self):
     """Increments the version by incrementing the revision #."""
@@ -264,7 +264,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     for patch in validation_pool.applied:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
       attr_dict = patch.GetAttributeDict()
-      for k, v in attr_dict.iteritems():
+      for k, v in attr_dict.items():
         pending_commit.setAttribute(k, v)
 
       try:
@@ -552,7 +552,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
   reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
   author_re = re.compile(r'^Author:.*<(\S+)@\S+>\s*')
   committer_re = re.compile(r'^Commit:.*<(\S+)@\S+>\s*')
-  for rel_src_path, checkout in handler.checkouts_by_path.iteritems():
+  for rel_src_path, checkout in handler.checkouts_by_path.items():
     project = checkout['name']
 
     # Additional case in case the repo has been removed from the manifest.

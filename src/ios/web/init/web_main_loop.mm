@@ -11,21 +11,21 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #import "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/init/ios_global_state.h"
 #include "ios/web/public/init/web_main_parts.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/service_manager_context.h"
+#include "ios/web/service/service_manager_context.h"
 #include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"
@@ -45,9 +45,10 @@ WebMainLoop* g_current_web_main_loop = nullptr;
 WebMainLoop::WebMainLoop()
     : result_code_(0),
       created_threads_(false),
-      destroy_message_loop_(base::Bind(&ios_global_state::DestroyMessageLoop)),
+      destroy_task_executor_(
+          base::BindOnce(&ios_global_state::DestroySingleThreadTaskExecutor)),
       destroy_network_change_notifier_(
-          base::Bind(&ios_global_state::DestroyNetworkChangeNotifier)) {
+          base::BindOnce(&ios_global_state::DestroyNetworkChangeNotifier)) {
   DCHECK(!g_current_web_main_loop);
   g_current_web_main_loop = this;
 }
@@ -73,15 +74,14 @@ void WebMainLoop::MainMessageLoopStart() {
     parts_->PreMainMessageLoopStart();
   }
 
-  ios_global_state::BuildMessageLoop();
+  ios_global_state::BuildSingleThreadTaskExecutor();
 
   InitializeMainThread();
 
   // TODO(crbug.com/807279): Do we need PowerMonitor on iOS, or can we get rid
   // of it?
-  std::unique_ptr<base::PowerMonitorSource> power_monitor_source(
-      new base::PowerMonitorDeviceSource());
-  power_monitor_.reset(new base::PowerMonitor(std::move(power_monitor_source)));
+  base::PowerMonitor::Initialize(
+      std::make_unique<base::PowerMonitorDeviceSource>());
 
   ios_global_state::CreateNetworkChangeNotifier();
 
@@ -121,7 +121,7 @@ int WebMainLoop::CreateThreads() {
   ios_global_state::StartThreadPool();
 
   base::Thread::Options io_message_loop_options;
-  io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  io_message_loop_options.message_loop_type = base::MessagePump::Type::IO;
   io_thread_ = std::make_unique<WebSubThread>(WebThread::IO);
   if (!io_thread_->StartWithOptions(io_message_loop_options))
     LOG(FATAL) << "Failed to start WebThread::IO";
@@ -205,7 +205,7 @@ void WebMainLoop::InitializeMainThread() {
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
   main_thread_.reset(new WebThreadImpl(
       WebThread::UI,
-      ios_global_state::GetMainThreadMessageLoop()->task_runner()));
+      ios_global_state::GetMainThreadTaskExecutor()->task_runner()));
 }
 
 int WebMainLoop::WebThreadsStarted() {

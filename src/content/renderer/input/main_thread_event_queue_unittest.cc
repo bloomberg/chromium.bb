@@ -111,8 +111,7 @@ class ReceivedCallback {
 
 class HandledEventCallbackTracker {
  public:
-  HandledEventCallbackTracker()
-      : handling_event_(false), weak_ptr_factory_(this) {
+  HandledEventCallbackTracker() : handling_event_(false) {
     weak_this_ = weak_ptr_factory_.GetWeakPtr();
   }
 
@@ -144,7 +143,7 @@ class HandledEventCallbackTracker {
  private:
   std::vector<ReceivedCallback> callbacks_received_;
   base::WeakPtr<HandledEventCallbackTracker> weak_this_;
-  base::WeakPtrFactory<HandledEventCallbackTracker> weak_ptr_factory_;
+  base::WeakPtrFactory<HandledEventCallbackTracker> weak_ptr_factory_{this};
 };
 
 class MainThreadEventQueueTest : public testing::Test,
@@ -335,7 +334,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[0];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[0]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
         static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
@@ -364,7 +363,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingWheel) {
 
   {
     WebMouseWheelEvent coalesced_event = kEvents[2];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[1]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebMouseWheelEvent* coalesced_wheel_event0 =
         static_cast<const WebMouseWheelEvent*>(coalesced_events[0]);
@@ -460,7 +459,7 @@ TEST_F(MainThreadEventQueueTest, NonBlockingTouch) {
   {
     EXPECT_EQ(2u, handled_tasks_[2]->taskAsEvent()->CoalescedEventSize());
     WebTouchEvent coalesced_event = kEvents[2];
-    std::vector<const WebInputEvent*> coalesced_events =
+    blink::WebVector<const WebInputEvent*> coalesced_events =
         handled_tasks_[2]->taskAsEvent()->GetCoalescedEventsPointers();
     const WebTouchEvent* coalesced_touch_event0 =
         static_cast<const WebTouchEvent*>(coalesced_events[0]);

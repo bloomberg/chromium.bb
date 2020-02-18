@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "content/browser/indexed_db/leveldb/leveldb_env.h"
 
 namespace content {
 namespace {
@@ -18,18 +19,20 @@ using blink::IndexedDBKeyRange;
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kInMemory,
                             nullptr /* indexed_db_factory */,
+                            indexed_db::LevelDBFactory::Get(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
-                            std::unique_ptr<LevelDBDatabase>(),
+                            std::unique_ptr<TransactionalLevelDBDatabase>(),
                             base::SequencedTaskRunnerHandle::Get().get()) {}
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(IndexedDBBackingStore::Mode::kOnDisk,
                             factory,
+                            indexed_db::LevelDBFactory::Get(),
                             url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
-                            std::unique_ptr<LevelDBDatabase>(),
+                            std::unique_ptr<TransactionalLevelDBDatabase>(),
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 

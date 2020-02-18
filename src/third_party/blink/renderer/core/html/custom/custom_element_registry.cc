@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
@@ -29,7 +28,8 @@
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -37,11 +37,10 @@ namespace {
 
 void CollectUpgradeCandidateInNode(Node& root,
                                    HeapVector<Member<Element>>& candidates) {
-  if (root.IsElementNode()) {
-    Element& root_element = ToElement(root);
-    if (root_element.GetCustomElementState() == CustomElementState::kUndefined)
+  if (auto* root_element = DynamicTo<Element>(root)) {
+    if (root_element->GetCustomElementState() == CustomElementState::kUndefined)
       candidates.push_back(root_element);
-    if (auto* shadow_root = root_element.GetShadowRoot()) {
+    if (auto* shadow_root = root_element->GetShadowRoot()) {
       if (shadow_root->GetType() != ShadowRootType::kUserAgent)
         CollectUpgradeCandidateInNode(*shadow_root, candidates);
     }

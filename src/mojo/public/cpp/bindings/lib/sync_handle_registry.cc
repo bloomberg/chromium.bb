@@ -36,7 +36,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
                                         const HandleCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (base::ContainsKey(handles_, handle))
+  if (base::Contains(handles_, handle))
     return false;
 
   MojoResult result = wait_set_.AddHandle(handle, handle_signals);
@@ -49,7 +49,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
 
 void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!base::ContainsKey(handles_, handle))
+  if (!base::Contains(handles_, handle))
     return;
 
   MojoResult result = wait_set_.RemoveHandle(handle);
@@ -85,17 +85,14 @@ void SyncHandleRegistry::UnregisterEvent(base::WaitableEvent* event,
     // Not safe to remove any elements from |callbacks| here since an outer
     // stack frame is currently iterating over it in Wait().
     for (auto& cb : callbacks) {
-      if (cb.Equals(callback))
+      if (cb == callback)
         cb.Reset();
       else if (cb)
         has_valid_callbacks = true;
     }
     remove_invalid_event_callbacks_after_dispatch_ = true;
   } else {
-    callbacks.erase(std::remove_if(callbacks.begin(), callbacks.end(),
-                                   [&callback](const base::Closure& cb) {
-                                     return cb.Equals(callback);
-                                   }),
+    callbacks.erase(std::remove(callbacks.begin(), callbacks.end(), callback),
                     callbacks.end());
     if (callbacks.empty())
       events_.erase(it);

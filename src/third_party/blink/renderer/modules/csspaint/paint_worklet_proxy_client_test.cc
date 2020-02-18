@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -22,17 +23,44 @@
 
 namespace blink {
 
+// We inject a fake task runner in multiple tests, to avoid actually posting
+// tasks cross-thread whilst still being able to know if they have been posted.
+class FakeTaskRunner : public base::SingleThreadTaskRunner {
+ public:
+  FakeTaskRunner() : task_posted_(false) {}
+
+  bool PostNonNestableDelayedTask(const base::Location& from_here,
+                                  base::OnceClosure task,
+                                  base::TimeDelta delay) override {
+    task_posted_ = true;
+    return true;
+  }
+  bool PostDelayedTask(const base::Location& from_here,
+                       base::OnceClosure task,
+                       base::TimeDelta delay) override {
+    task_posted_ = true;
+    return true;
+  }
+  bool RunsTasksInCurrentSequence() const override { return true; }
+
+  bool task_posted_;
+
+ protected:
+  ~FakeTaskRunner() override {}
+};
+
 class PaintWorkletProxyClientTest : public RenderingTest {
  public:
   PaintWorkletProxyClientTest() = default;
 
   void SetUp() override {
     RenderingTest::SetUp();
-    dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
-
     paint_worklet_ = MakeGarbageCollected<PaintWorklet>(&GetFrame());
+    dispatcher_ = std::make_unique<PaintWorkletPaintDispatcher>();
+    fake_compositor_thread_runner_ = base::MakeRefCounted<FakeTaskRunner>();
     proxy_client_ = MakeGarbageCollected<PaintWorkletProxyClient>(
-        1, paint_worklet_, dispatcher_);
+        1, paint_worklet_, dispatcher_->GetWeakPtr(),
+        fake_compositor_thread_runner_);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
@@ -60,13 +88,13 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     // create multiple WorkerThread for this. Note that the underlying thread
     // may be shared even though they are unique WorkerThread instances!
     Vector<std::unique_ptr<WorkerThread>> worklet_threads;
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       worklet_threads.push_back(CreateThreadAndProvidePaintWorkletProxyClient(
           &GetDocument(), reporting_proxy_.get(), proxy_client_));
     }
 
     // Add the global scopes. This must happen on the worklet thread.
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       base::WaitableEvent waitable_event;
       PostCrossThreadTask(
           *worklet_threads[i]->GetTaskRunner(TaskType::kInternalTest),
@@ -92,29 +120,30 @@ class PaintWorkletProxyClientTest : public RenderingTest {
     waitable_event.Wait();
 
     // And finally clean up.
-    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes; i++) {
+    for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread; i++) {
       worklet_threads[i]->Terminate();
       worklet_threads[i]->WaitForShutdownForTesting();
     }
   }
 
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher_;
+  std::unique_ptr<PaintWorkletPaintDispatcher> dispatcher_;
   Persistent<PaintWorklet> paint_worklet_;
+  scoped_refptr<FakeTaskRunner> fake_compositor_thread_runner_;
   Persistent<PaintWorkletProxyClient> proxy_client_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 
 TEST_F(PaintWorkletProxyClientTest, PaintWorkletProxyClientConstruction) {
   PaintWorkletProxyClient* proxy_client =
-      MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, nullptr);
+      MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, nullptr,
+                                                    nullptr);
   EXPECT_EQ(proxy_client->worklet_id_, 1);
   EXPECT_EQ(proxy_client->paint_dispatcher_, nullptr);
 
-  scoped_refptr<PaintWorkletPaintDispatcher> dispatcher =
-      base::MakeRefCounted<PaintWorkletPaintDispatcher>();
+  auto dispatcher = std::make_unique<PaintWorkletPaintDispatcher>();
 
   proxy_client = MakeGarbageCollected<PaintWorkletProxyClient>(
-      1, nullptr, std::move(dispatcher));
+      1, nullptr, dispatcher->GetWeakPtr(), nullptr);
   EXPECT_EQ(proxy_client->worklet_id_, 1);
   EXPECT_NE(proxy_client->paint_dispatcher_, nullptr);
 }
@@ -122,26 +151,26 @@ TEST_F(PaintWorkletProxyClientTest, PaintWorkletProxyClientConstruction) {
 void RunAddGlobalScopesTestOnWorklet(
     WorkerThread* thread,
     PaintWorkletProxyClient* proxy_client,
-    scoped_refptr<PaintWorkletPaintDispatcher> dispatcher,
+    scoped_refptr<FakeTaskRunner> compositor_task_runner,
     base::WaitableEvent* waitable_event) {
   // For this test, we cheat and reuse the same global scope object from a
   // single WorkerThread. In real code these would be different global scopes.
 
   // First, add all but one of the global scopes. The proxy client should not
   // yet register itself.
-  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopes - 1; i++) {
+  for (size_t i = 0; i < PaintWorklet::kNumGlobalScopesPerThread - 1; i++) {
     proxy_client->AddGlobalScope(To<WorkletGlobalScope>(thread->GlobalScope()));
   }
 
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes - 1);
-  EXPECT_EQ(dispatcher->PainterMapForTesting().size(), 0u);
+            PaintWorklet::kNumGlobalScopesPerThread - 1);
+  EXPECT_FALSE(compositor_task_runner->task_posted_);
 
   // Now add the final global scope. This should trigger the registration.
   proxy_client->AddGlobalScope(To<WorkletGlobalScope>(thread->GlobalScope()));
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
-  EXPECT_EQ(dispatcher->PainterMapForTesting().size(), 1u);
+            PaintWorklet::kNumGlobalScopesPerThread);
+  EXPECT_TRUE(compositor_task_runner->task_posted_);
 
   waitable_event->Signal();
 }
@@ -162,7 +191,8 @@ TEST_F(PaintWorkletProxyClientTest, AddGlobalScopes) {
           &RunAddGlobalScopesTestOnWorklet,
           CrossThreadUnretained(worklet_thread.get()),
           CrossThreadPersistent<PaintWorkletProxyClient>(proxy_client_),
-          dispatcher_, CrossThreadUnretained(&waitable_event)));
+          fake_compositor_thread_runner_,
+          CrossThreadUnretained(&waitable_event)));
   waitable_event.Wait();
 
   worklet_thread->Terminate();
@@ -176,7 +206,7 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // Register the painter on all global scopes.
   for (const auto& global_scope : proxy_client->GetGlobalScopesForTesting()) {
@@ -186,9 +216,11 @@ void RunPaintTestOnWorklet(WorkerThread* thread,
   }
 
   PaintWorkletStylePropertyMap::CrossThreadData data;
+  Vector<std::unique_ptr<CrossThreadStyleValue>> input_arguments;
   scoped_refptr<PaintWorkletInput> input =
       base::MakeRefCounted<PaintWorkletInput>("foo", FloatSize(100, 100), 1.0f,
-                                              1, std::move(data));
+                                              1, std::move(data),
+                                              std::move(input_arguments));
   sk_sp<PaintRecord> record = proxy_client->Paint(input.get());
   EXPECT_NE(record, nullptr);
 
@@ -208,17 +240,17 @@ void RunDefinitionsMustBeCompatibleTestOnWorklet(
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // This test doesn't make sense if there's only one global scope!
-  EXPECT_GT(PaintWorklet::kNumGlobalScopes, 1u);
+  EXPECT_GT(PaintWorklet::kNumGlobalScopesPerThread, 1u);
 
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>& global_scopes =
       proxy_client->GetGlobalScopesForTesting();
 
   // Things that can be different: alpha different, native properties
   // different, custom properties different, input type args different.
-  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  const HashMap<String, std::unique_ptr<DocumentPaintDefinition>>&
       document_definition_map = proxy_client->DocumentDefinitionMapForTesting();
 
   // Differing native properties.
@@ -281,19 +313,15 @@ namespace {
 // since the task will just queue up to run after the test has finished, but
 // the following tests want to know whether or not the task has posted; this
 // class provides that information.
-class ScopedFakePaintWorkletProxyClientTaskRunner {
- private:
-  class FakeTaskRunner;
-
+class ScopedFakeMainThreadTaskRunner {
  public:
-  ScopedFakePaintWorkletProxyClientTaskRunner(
-      PaintWorkletProxyClient* proxy_client)
+  ScopedFakeMainThreadTaskRunner(PaintWorkletProxyClient* proxy_client)
       : proxy_client_(proxy_client), fake_task_runner_(new FakeTaskRunner) {
     original_task_runner_ = proxy_client->MainThreadTaskRunnerForTesting();
     proxy_client_->SetMainThreadTaskRunnerForTesting(fake_task_runner_);
   }
 
-  ~ScopedFakePaintWorkletProxyClientTaskRunner() {
+  ~ScopedFakeMainThreadTaskRunner() {
     proxy_client_->SetMainThreadTaskRunnerForTesting(original_task_runner_);
   }
 
@@ -307,30 +335,6 @@ class ScopedFakePaintWorkletProxyClientTaskRunner {
   CrossThreadPersistent<PaintWorkletProxyClient> proxy_client_;
   scoped_refptr<FakeTaskRunner> fake_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
-
-  class FakeTaskRunner : public base::SingleThreadTaskRunner {
-   public:
-    FakeTaskRunner() : task_posted_(false) {}
-
-    bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                    base::OnceClosure task,
-                                    base::TimeDelta delay) override {
-      task_posted_ = true;
-      return true;
-    }
-    bool PostDelayedTask(const base::Location& from_here,
-                         base::OnceClosure task,
-                         base::TimeDelta delay) override {
-      task_posted_ = true;
-      return true;
-    }
-    bool RunsTasksInCurrentSequence() const override { return true; }
-
-    bool task_posted_;
-
-   protected:
-    ~FakeTaskRunner() override {}
-  };
 };
 }  // namespace
 
@@ -338,13 +342,13 @@ void RunAllDefinitionsMustBeRegisteredBeforePostingTestOnWorklet(
     WorkerThread* thread,
     PaintWorkletProxyClient* proxy_client,
     base::WaitableEvent* waitable_event) {
-  ScopedFakePaintWorkletProxyClientTaskRunner fake_runner(proxy_client);
+  ScopedFakeMainThreadTaskRunner fake_runner(proxy_client);
 
   // Assert that all global scopes have been registered. Note that we don't
   // use ASSERT_EQ here as that would crash the worklet thread and the test
   // would timeout rather than fail.
   EXPECT_EQ(proxy_client->GetGlobalScopesForTesting().size(),
-            PaintWorklet::kNumGlobalScopes);
+            PaintWorklet::kNumGlobalScopesPerThread);
 
   // Register a new paint function on all but one global scope. They should not
   // end up posting a task to the PaintWorklet.

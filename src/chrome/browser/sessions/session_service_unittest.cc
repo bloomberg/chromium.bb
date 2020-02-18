@@ -21,6 +21,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/token.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
@@ -28,7 +29,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -39,7 +39,9 @@
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_state.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::NavigationEntry;
@@ -85,6 +87,16 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
       service()->SetSelectedNavigationIndex(
           window_id, tab_id, navigation.index());
     }
+  }
+
+  SessionID CreateTabWithTestNavigationData(SessionID window_id,
+                                            int visual_index) {
+    const SessionID tab_id = SessionID::NewUnique();
+    const SerializedNavigationEntry nav =
+        SerializedNavigationEntryTestHelper::CreateNavigationForTest();
+    helper_.PrepareTabInWindow(window_id, tab_id, visual_index, true);
+    UpdateNavigation(window_id, tab_id, nav, true);
+    return tab_id;
   }
 
   void ReadWindows(
@@ -158,58 +170,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
                                ui::SHOW_STATE_MAXIMIZED);
     helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
     UpdateNavigation(window2_id, tab2_id, *nav2, true);
-  }
-
-  void TestAppRestore(const std::string& app_name,
-                      SessionService::AppType app_type) {
-    SessionID window2_id = SessionID::NewUnique();
-    SessionID tab_id = SessionID::NewUnique();
-    SessionID tab2_id = SessionID::NewUnique();
-    ASSERT_NE(window2_id, window_id);
-
-    service()->SetWindowType(window2_id, Browser::TYPE_POPUP, app_type);
-    service()->SetWindowBounds(window2_id, window_bounds,
-                               ui::SHOW_STATE_NORMAL);
-    service()->SetWindowAppName(window2_id, app_name);
-
-    SerializedNavigationEntry nav1 =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            "http://google.com", "abc");
-    SerializedNavigationEntry nav2 =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            "http://google2.com", "abcd");
-
-    helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
-    UpdateNavigation(window_id, tab_id, nav1, true);
-
-    helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
-    UpdateNavigation(window2_id, tab2_id, nav2, true);
-
-    std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
-    ReadWindows(&windows, NULL);
-
-    ASSERT_EQ(2U, windows.size());
-    int tabbed_index =
-        windows[0]->type == sessions::SessionWindow::TYPE_TABBED ? 0 : 1;
-    int app_index = tabbed_index == 0 ? 1 : 0;
-    ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
-    ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
-    ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
-
-    sessions::SessionTab* tab = windows[tabbed_index]->tabs[0].get();
-    helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
-    helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
-
-    ASSERT_EQ(0, windows[app_index]->selected_tab_index);
-    ASSERT_EQ(window2_id, windows[app_index]->window_id);
-    ASSERT_EQ(1U, windows[app_index]->tabs.size());
-    ASSERT_TRUE(windows[app_index]->type ==
-                sessions::SessionWindow::TYPE_POPUP);
-    ASSERT_EQ(app_name, windows[app_index]->app_name);
-
-    tab = windows[app_index]->tabs[0].get();
-    helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
-    helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
   }
 
   SessionService* service() { return helper_.service(); }
@@ -597,19 +557,59 @@ TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   EXPECT_EQ(sessions::SessionWindow::TYPE_TABBED, windows_list[0]->type);
 }
 
-// Makes sure we track Web Apps on all platforms. Don't test on OS X since web
-// apps on that platform require a shim on disk to open in windows.
-#if !defined(OS_MACOSX)
-TEST_F(SessionServiceTest, RestoreWebApps) {
-  TestAppRestore(web_app::GenerateApplicationNameFromAppId("TestAppId"),
-                 SessionService::TYPE_WEB_APP);
-}
-#endif  // defined(OS_MACOSX)
+#if defined (OS_CHROMEOS)
+// Makes sure we track apps. Only applicable on chromeos.
+TEST_F(SessionServiceTest, RestoreApp) {
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
+  ASSERT_NE(window2_id, window_id);
 
-#if defined(OS_CHROMEOS)
-// Makes sure we track Chrome Apps on Chrome OS.
-TEST_F(SessionServiceTest, RestoreChromeApps) {
-  TestAppRestore("TestAppName", SessionService::TYPE_CHROME_APP);
+  service()->SetWindowType(window2_id,
+                           Browser::TYPE_POPUP,
+                           SessionService::TYPE_APP);
+  service()->SetWindowBounds(window2_id,
+                             window_bounds,
+                             ui::SHOW_STATE_NORMAL);
+  service()->SetWindowAppName(window2_id, "TestApp");
+
+  SerializedNavigationEntry nav1 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          "http://google.com", "abc");
+  SerializedNavigationEntry nav2 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          "http://google2.com", "abcd");
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, true);
+
+  helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
+  UpdateNavigation(window2_id, tab2_id, nav2, true);
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, NULL);
+
+  ASSERT_EQ(2U, windows.size());
+  int tabbed_index = windows[0]->type == sessions::SessionWindow::TYPE_TABBED ?
+      0 : 1;
+  int app_index = tabbed_index == 0 ? 1 : 0;
+  ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
+  ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
+  ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
+
+  sessions::SessionTab* tab = windows[tabbed_index]->tabs[0].get();
+  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+
+  ASSERT_EQ(0, windows[app_index]->selected_tab_index);
+  ASSERT_EQ(window2_id, windows[app_index]->window_id);
+  ASSERT_EQ(1U, windows[app_index]->tabs.size());
+  ASSERT_TRUE(windows[app_index]->type == sessions::SessionWindow::TYPE_POPUP);
+  ASSERT_EQ("TestApp", windows[app_index]->app_name);
+
+  tab = windows[app_index]->tabs[0].get();
+  helper_.AssertTabEquals(window2_id, tab2_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav2, tab->navigations[0]);
 }
 
 // Don't track Crostini apps. Only applicable on Chrome OS.
@@ -628,7 +628,8 @@ TEST_F(SessionServiceTest, IgnoreCrostiniApps) {
   for (auto& window : windows)
     ASSERT_NE(window2_id, window->window_id);
 }
-#endif  // defined(OS_CHROMEOS)
+
+#endif  // defined (OS_CHROMEOS)
 
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {
@@ -1162,6 +1163,46 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
+}
+
+TEST_F(SessionServiceTest, TabGroupDefaultsToNone) {
+  CreateTabWithTestNavigationData(window_id, 0);
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+
+  // Verify that the recorded tab has no group.
+  sessions::SessionTab* tab = windows[0]->tabs[0].get();
+  EXPECT_EQ(base::nullopt, tab->group);
+}
+
+TEST_F(SessionServiceTest, TabGroupIdsSaved) {
+  const auto group1_token = base::Token::CreateRandom();
+  const auto group2_token = base::Token::CreateRandom();
+  constexpr int kNumTabs = 5;
+  const std::array<base::Optional<base::Token>, kNumTabs> groups = {
+      base::nullopt, group1_token, group1_token, base::nullopt, group2_token};
+
+  // Create |kNumTabs| tabs with group IDs in |groups|.
+  for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
+    const SessionID tab_id =
+        CreateTabWithTestNavigationData(window_id, tab_ndx);
+    service()->SetTabGroup(window_id, tab_id, groups[tab_ndx]);
+  }
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(kNumTabs, static_cast<int>(windows[0]->tabs.size()));
+
+  for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
+    sessions::SessionTab* tab = windows[0]->tabs[tab_ndx].get();
+    EXPECT_EQ(groups[tab_ndx], tab->group);
+  }
 }
 
 // Functions used by GetSessionsAndDestroy.

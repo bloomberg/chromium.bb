@@ -17,6 +17,7 @@
 #include "build/buildflag.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "mojo/core/embedder/embedder.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -89,6 +90,7 @@ class ComponentsTestSuite : public base::TestSuite {
     url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("devtools", url::SCHEME_WITH_HOST);
     url::AddStandardScheme("chrome-search", url::SCHEME_WITH_HOST);
+    url::AddStandardScheme("chrome-distiller", url::SCHEME_WITH_HOST);
 
     ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
         kNonWildcardDomainNonPortSchemes,
@@ -142,10 +144,8 @@ class ComponentsUnitTestEventListener : public testing::EmptyTestEventListener {
 
 base::RunTestSuiteCallback GetLaunchCallback(int argc, char** argv) {
 #if !defined(OS_IOS)
-  // components_unittests don't currently work with the Network Service enabled.
-  // https://crbug.com/966633.
   auto test_suite = std::make_unique<content::UnitTestTestSuite>(
-      new ComponentsTestSuite(argc, argv), "NetworkService");
+      new ComponentsTestSuite(argc, argv));
 #else
   auto test_suite = std::make_unique<ComponentsTestSuite>(argc, argv);
 #endif

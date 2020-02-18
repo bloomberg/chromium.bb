@@ -1,19 +1,12 @@
 package Moose::Deprecated;
-BEGIN {
-  $Moose::Deprecated::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Moose::Deprecated::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
 use Package::DeprecationManager 0.07 -deprecations => {
-    'optimized type constraint sub ref' => '2.0000',
-    'default is for Native Trait'       => '1.14',
-    'default default for Native Trait'  => '1.14',
-    'coerce without coercion'           => '1.08',
+    'non-arrayref form of enum'         => '2.1100',
+    'non-arrayref form of duck_type'    => '2.1100',
     },
     -ignore => [qr/^(?:Class::MOP|Moose)(?:::)?/],
     ;
@@ -22,9 +15,11 @@ use Package::DeprecationManager 0.07 -deprecations => {
 
 # ABSTRACT: Manages deprecation warnings for Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -32,7 +27,7 @@ Moose::Deprecated - Manages deprecation warnings for Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -47,19 +42,57 @@ If you specify C<< -api_version => $version >>, you can use deprecated features
 without warnings. Note that this special treatment is limited to the package
 that loads C<Moose::Deprecated>.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

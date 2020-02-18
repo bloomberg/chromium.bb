@@ -257,9 +257,7 @@ std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
   return finder;
 }
 
-LastDownloadFinder::LastDownloadFinder()
-    : history_service_observer_(this), weak_ptr_factory_(this) {
-}
+LastDownloadFinder::LastDownloadFinder() : history_service_observer_(this) {}
 
 LastDownloadFinder::LastDownloadFinder(
     const DownloadDetailsGetter& download_details_getter,
@@ -267,8 +265,7 @@ LastDownloadFinder::LastDownloadFinder(
     const LastDownloadCallback& callback)
     : download_details_getter_(download_details_getter),
       callback_(callback),
-      history_service_observer_(this),
-      weak_ptr_factory_(this) {
+      history_service_observer_(this) {
   // Observe profile lifecycle events so that the finder can begin or abandon
   // the search in profiles while it is running.
   notification_registrar_.Add(this,
@@ -333,8 +330,8 @@ void LastDownloadFinder::OnMetadataQuery(
   }
   if (history_service->BackendLoaded()) {
     history_service->QueryDownloads(
-        base::Bind(&LastDownloadFinder::OnDownloadQuery,
-                   weak_ptr_factory_.GetWeakPtr(), profile));
+        base::BindOnce(&LastDownloadFinder::OnDownloadQuery,
+                       weak_ptr_factory_.GetWeakPtr(), profile));
   } else {
     // else wait until history is loaded.
     history_service_observer_.Add(history_service);
@@ -350,7 +347,7 @@ void LastDownloadFinder::AbandonSearchInProfile(Profile* profile) {
 
 void LastDownloadFinder::OnDownloadQuery(
     Profile* profile,
-    std::unique_ptr<std::vector<history::DownloadRow>> downloads) {
+    std::vector<history::DownloadRow> downloads) {
   // Early-exit if the history search for this profile was abandoned.
   auto iter = profile_states_.find(profile);
   if (iter == profile_states_.end())
@@ -361,7 +358,7 @@ void LastDownloadFinder::OnDownloadQuery(
     // Find the most recent from this profile and use it if it's better than
     // anything else found so far.
     const history::DownloadRow* profile_best_binary =
-        FindMostInteresting(*downloads, true);
+        FindMostInteresting(downloads, true);
     if (profile_best_binary &&
         IsMostInterestingBinary(*profile_best_binary, details_.get(),
                                 most_recent_binary_row_)) {
@@ -371,7 +368,7 @@ void LastDownloadFinder::OnDownloadQuery(
   }
 
   const history::DownloadRow* profile_best_non_binary =
-      FindMostInteresting(*downloads, false);
+      FindMostInteresting(downloads, false);
   if (profile_best_non_binary &&
       IsMoreInterestingNonBinaryThan(*profile_best_non_binary,
                                      most_recent_non_binary_row_)) {
@@ -445,9 +442,8 @@ void LastDownloadFinder::OnHistoryServiceLoaded(
       if (pair.second == WAITING_FOR_HISTORY ||
           pair.second == WAITING_FOR_NON_BINARY_HISTORY) {
         history_service->QueryDownloads(
-            base::Bind(&LastDownloadFinder::OnDownloadQuery,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       pair.first));
+            base::BindOnce(&LastDownloadFinder::OnDownloadQuery,
+                           weak_ptr_factory_.GetWeakPtr(), pair.first));
       }
       return;
     }

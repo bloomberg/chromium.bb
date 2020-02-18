@@ -1,15 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="extensions-pack-dialog-alert">
   <template>
-    <style include="cr-shared-style paper-button-style">
+    <style include="cr-shared-style">
       .body {
         white-space: pre-wrap;
         word-break: break-word;
@@ -21,14 +20,14 @@
       <!-- No whitespace or new-lines allowed within the div.body tag. -->
       <div class="body" slot="body">[[model.message]]</div>
       <div class="button-container" slot="button-container">
-        <paper-button class$="[[getCancelButtonClass_(confirmLabel_)]]"
+        <cr-button class$="[[getCancelButtonClass_(confirmLabel_)]]"
             on-click="onCancelTap_" hidden="[[!cancelLabel_]]">
           [[cancelLabel_]]
-        </paper-button>
-        <paper-button class="action-button" on-click="onConfirmTap_"
+        </cr-button>
+        <cr-button class="action-button" on-click="onConfirmTap_"
             hidden="[[!confirmLabel_]]">
           [[confirmLabel_]]
-        </paper-button>
+        </cr-button>
       </div>
     </cr-dialog>
   </template>

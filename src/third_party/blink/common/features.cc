@@ -30,7 +30,7 @@ const base::Feature kEagerCacheStorageSetupForServiceWorkers{
 // mobile. See https://crbug.com/899399
 const base::Feature kEnableGpuRasterizationViewportRestriction{
     "EnableGpuRasterizationViewportRestriction",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls script streaming.
 const base::Feature kScriptStreaming{"ScriptStreaming",
@@ -46,7 +46,7 @@ const base::Feature kUserLevelMemoryPressureSignal{
 
 // Enable FCP++ by experiment. See https://crbug.com/869924
 const base::Feature kFirstContentfulPaintPlusPlus{
-    "FirstContentfulPaintPlusPlus", base::FEATURE_DISABLED_BY_DEFAULT};
+    "FirstContentfulPaintPlusPlus", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Perform memory purges after freezing only if all pages are frozen.
 const base::Feature kFreezePurgeMemoryAllPagesFrozen{
@@ -67,8 +67,18 @@ const base::Feature kBlinkGenPropertyTrees{"BlinkGenPropertyTrees",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable a new CSS property called backdrop-filter.
-const base::Feature kCSSBackdropFilter{"CSSBackdropFilter",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCSSBackdropFilter {
+  "CSSBackdropFilter",
+#if defined(OS_ANDROID)
+      // There are two bugs in the backdrop-filter feature for Android Webview
+      // only (crbug.com/990535 and crbug.com/991869). Because there is no
+      // compile-time flag for Webview, this disables all of Android, and the
+      // feature will be re-enabled for non-Webview Android by Finch.
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
@@ -114,10 +124,6 @@ const base::Feature kOffMainThreadServiceWorkerScriptFetch{
 // (https://crbug.com/924041)
 const base::Feature kOffMainThreadSharedWorkerScriptFetch{
     "OffMainThreadSharedWorkerScriptFetch", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Onion souping for all DOMStorage. https://crbug.com/781870
-const base::Feature kOnionSoupDOMStorage{"OnionSoupDOMStorage",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
@@ -179,15 +185,11 @@ const base::Feature kRTCOfferExtmapAllowMixed{
     "RTCOfferExtmapAllowMixed", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerIsolateInForeground{
-    "ServiceWorkerIsolateInForeground", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerIsolateInForeground", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables reading a subresource's body data and side data in parallel.
-const base::Feature kServiceWorkerParallelSideDataReading{
-    "ServiceWorkerParallelSideDataReading", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kServiceWorkerAggressiveCodeCache{
     "ServiceWorkerAggressiveCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -254,6 +256,12 @@ const base::Feature kDecodeLossyWebPImagesToYUV{
 const base::Feature kAlwaysAccelerateCanvas{"AlwaysAccelerateCanvas",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables usage of render frame observer as the receiver of the resource
+// loading hints in the render process.
+// https://crbug.com/891328.
+const base::Feature kSendPreviewsLoadingHintsBeforeCommit{
+    "SendPreviewsLoadingHintsBeforeCommit", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at
 // https://crbug.com/942440.
@@ -274,9 +282,13 @@ const base::Feature kBlockingFocusWithoutUserActivation{
 const base::Feature kAudioWorkletRealtimeThread{
     "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A feature to reduce the set of resources fetched by No-State Prefetch.
+const base::Feature kLightweightNoStatePrefetch{
+    "LightweightNoStatePrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use scroll gestures for scrollbar scrolls (see https://crbug.com/954007).
 const base::Feature kScrollbarInjectScrollGestures{
-    "ScrollbarInjectScrollGestures", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ScrollbarInjectScrollGestures", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsOffMainThreadSharedWorkerScriptFetchEnabled() {
   // Off-the-main-thread shared worker script fetch depends on PlzSharedWorker
@@ -307,12 +319,48 @@ bool IsPlzDedicatedWorkerEnabled() {
          base::FeatureList::IsEnabled(features::kPlzDedicatedWorker);
 }
 
+const base::Feature kCanvasAlwaysDeferral{"CanvasAlwaysDeferral",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use the new C++ implementation of WHATWG Streams. See
+// https://crbug.com/977500.
+const base::Feature kStreamsNative{"StreamsNative",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Blink garbage collection.
+// Enables compaction of backing stores on Blink's heap.
+const base::Feature kBlinkHeapCompaction{"BlinkHeapCompaction",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables concurrently marking Blink's heap.
+const base::Feature kBlinkHeapConcurrentMarking{
+    "BlinkHeapConcurrentMarking", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables concurrently sweeping Blink's heap.
+const base::Feature kBlinkHeapConcurrentSweeping{
+    "BlinkHeapConcurrentSweeping", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables incrementally marking Blink's heap.
+const base::Feature kBlinkHeapIncrementalMarking{
+    "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables a marking stress mode that schedules more garbage collections and
+// also adds additional verification passes.
+const base::Feature kBlinkHeapIncrementalMarkingStress{
+    "BlinkHeapIncrementalMarkingStress", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables unified heap garbage collection scheduling where scheduling is
+// delegated to V8's heap controller.
+const base::Feature kBlinkHeapUnifiedGCScheduling{
+    "BlinkHeapUnifiedGCScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables a delay before BufferingBytesConsumer begins reading from its
 // underlying consumer when instantiated with CreateWithDelay().
 const base::Feature kBufferingBytesConsumerDelay{
     "BufferingBytesConsumerDelay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
     &kBufferingBytesConsumerDelay, "milliseconds", 50};
+
+// Enables removing AppCache delays when triggering requests when the HTML was
+// not fetched from AppCache.
+const base::Feature kVerifyHTMLFetchedFromAppCacheBeforeDelay{
+    "VerifyHTMLFetchedFromAppCacheBeforeDelay",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

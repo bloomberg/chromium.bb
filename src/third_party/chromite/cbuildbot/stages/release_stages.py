@@ -255,7 +255,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
     # Log all signer results, then handle any signing failures.
     failures = []
     for url_results in self.signing_results.values():
-      for url, signer_result in url_results.iteritems():
+      for url, signer_result in url_results.items():
         result_description = os.path.basename(url)
         logging.PrintBuildbotStepText(result_description)
         logging.info('Received results for: %s', result_description)

@@ -70,7 +70,7 @@ bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
 // including one of its group IDs in |exposed_group_ids|.
 std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
     std::vector<const webrtc::RTCStatsMemberInterface*> stats_members,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   // Note that using "is_standarized" avoids having to maintain a whitelist of
   // every single standardized member, as we do at the "stats object" level
   // with "RTCStatsWhitelist".
@@ -81,7 +81,7 @@ std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
           return false;
         }
 
-        const std::vector<webrtc::NonStandardGroupId>& ids =
+        const blink::WebVector<webrtc::NonStandardGroupId>& ids =
             member->group_ids();
         for (const webrtc::NonStandardGroupId& id : exposed_group_ids) {
           if (std::find(ids.begin(), ids.end(), id) != ids.end()) {
@@ -93,15 +93,27 @@ std::vector<const webrtc::RTCStatsMemberInterface*> FilterMembers(
   return stats_members;
 }
 
+size_t CountWhitelistedStats(
+    const scoped_refptr<const webrtc::RTCStatsReport>& stats_report) {
+  size_t size = 0;
+  for (const auto& stats : *stats_report) {
+    if (IsWhitelistedStats(stats)) {
+      ++size;
+    }
+  }
+  return size;
+}
+
 }  // namespace
 
 RTCStatsReport::RTCStatsReport(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_report,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : stats_report_(stats_report),
       it_(stats_report_->begin()),
       end_(stats_report_->end()),
-      exposed_group_ids_(exposed_group_ids) {
+      exposed_group_ids_(exposed_group_ids),
+      size_(CountWhitelistedStats(stats_report)) {
   DCHECK(stats_report_);
 }
 
@@ -135,16 +147,13 @@ std::unique_ptr<blink::WebRTCStats> RTCStatsReport::Next() {
 }
 
 size_t RTCStatsReport::Size() const {
-  // TODO(crbug.com/908072): If there are non-whitelisted stats objects in the
-  // report, this would return the wrong thing; DCHECK that all objects are
-  // whitelisted or make this method return the whitelisted count
-  return stats_report_->size();
+  return size_;
 }
 
 RTCStats::RTCStats(
     const scoped_refptr<const webrtc::RTCStatsReport>& stats_owner,
     const webrtc::RTCStats* stats,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : stats_owner_(stats_owner),
       stats_(stats),
       stats_members_(FilterMembers(stats->Members(), exposed_group_ids)) {
@@ -328,7 +337,7 @@ rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>
 RTCStatsCollectorCallbackImpl::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
   return rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(
       new rtc::RefCountedObject<RTCStatsCollectorCallbackImpl>(
           std::move(main_thread), std::move(callback), exposed_group_ids));
@@ -337,7 +346,7 @@ RTCStatsCollectorCallbackImpl::Create(
 RTCStatsCollectorCallbackImpl::RTCStatsCollectorCallbackImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids)
+    const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids)
     : main_thread_(std::move(main_thread)),
       callback_(std::move(callback)),
       exposed_group_ids_(exposed_group_ids) {}

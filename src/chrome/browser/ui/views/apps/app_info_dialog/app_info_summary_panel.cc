@@ -99,13 +99,12 @@ base::string16 LaunchOptionsComboboxModel::GetItemAt(int index) {
 AppInfoSummaryPanel::AppInfoSummaryPanel(Profile* profile,
                                          const extensions::Extension* app)
     : AppInfoPanel(profile, app),
-      size_value_(NULL),
-      homepage_link_(NULL),
-      licenses_link_(NULL),
-      launch_options_combobox_(NULL),
-      weak_ptr_factory_(this) {
+      size_value_(nullptr),
+      homepage_link_(nullptr),
+      licenses_link_(nullptr),
+      launch_options_combobox_(nullptr) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
@@ -122,7 +121,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
   auto description_and_labels_stack = std::make_unique<views::View>();
   description_and_labels_stack->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
-          views::BoxLayout::kVertical, gfx::Insets(),
+          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
           ChromeLayoutProvider::Get()->GetDistanceMetric(
               DISTANCE_RELATED_CONTROL_VERTICAL_SMALL)));
 

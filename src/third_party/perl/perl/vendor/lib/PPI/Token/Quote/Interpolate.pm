@@ -24,22 +24,18 @@ There are no methods available for C<PPI::Token::Quote::Interpolate>
 beyond those provided by the parent L<PPI::Token::Quote>, L<PPI::Token> and
 L<PPI::Element> classes.
 
-Got any ideas for methods? Submit a report to rt.cpan.org!
-
 =cut
 
 use strict;
 use PPI::Token::Quote ();
 use PPI::Token::_QuoteEngine::Full ();
 
-use vars qw{$VERSION @ISA};
-BEGIN {
-	$VERSION = '1.215';
-	@ISA     = qw{
-		PPI::Token::_QuoteEngine::Full
-		PPI::Token::Quote
-	};
-}
+our $VERSION = '1.269'; # VERSION
+
+our @ISA = qw{
+	PPI::Token::_QuoteEngine::Full
+	PPI::Token::Quote
+};
 
 
 
@@ -47,25 +43,6 @@ BEGIN {
 
 #####################################################################
 # PPI::Token::Quote Methods
-
-=pod
-
-=begin testing string 8
-
-my $Document = PPI::Document->new( \"print qq{foo}, qq!bar!, qq <foo>;" );
-isa_ok( $Document, 'PPI::Document' );
-my $Interpolate = $Document->find('Token::Quote::Interpolate');
-is( scalar(@$Interpolate), 3, '->find returns three objects' );
-isa_ok( $Interpolate->[0], 'PPI::Token::Quote::Interpolate' );
-isa_ok( $Interpolate->[1], 'PPI::Token::Quote::Interpolate' );
-isa_ok( $Interpolate->[2], 'PPI::Token::Quote::Interpolate' );
-is( $Interpolate->[0]->string, 'foo', '->string returns as expected' );
-is( $Interpolate->[1]->string, 'bar', '->string returns as expected' );
-is( $Interpolate->[2]->string, 'foo', '->string returns as expected' );
-
-=end testing
-
-=cut
 
 sub string {
 	my $self     = shift;

@@ -47,7 +47,6 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_application_cache_host.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
@@ -93,11 +92,10 @@
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -761,10 +759,10 @@ void LocalFrameClientImpl::DidObserveNewCssPropertyUsage(int css_property,
   }
 }
 
-void LocalFrameClientImpl::DidObserveLayoutJank(double jank_fraction,
-                                                bool after_input_or_scroll) {
+void LocalFrameClientImpl::DidObserveLayoutShift(double score,
+                                                 bool after_input_or_scroll) {
   if (WebLocalFrameClient* client = web_frame_->Client())
-    client->DidObserveLayoutJank(jank_fraction, after_input_or_scroll);
+    client->DidObserveLayoutShift(score, after_input_or_scroll);
 }
 
 void LocalFrameClientImpl::DidObserveLazyLoadBehavior(
@@ -856,10 +854,10 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
 std::pair<RemoteFrame*, base::UnguessableToken>
 LocalFrameClientImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request,
-    mojom::blink::PortalClientAssociatedPtrInfo client) {
-  return web_frame_->CreatePortal(portal, std::move(request),
-                                  std::move(client));
+    mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
+    mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
+  return web_frame_->CreatePortal(portal, std::move(portal_receiver),
+                                  std::move(portal_client));
 }
 
 RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
@@ -921,12 +919,6 @@ WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
       html_media_element);
 }
 
-WebCookieJar* LocalFrameClientImpl::CookieJar() const {
-  if (!web_frame_->Client())
-    return nullptr;
-  return web_frame_->Client()->CookieJar();
-}
-
 void LocalFrameClientImpl::FrameFocused() const {
   if (web_frame_->Client())
     web_frame_->Client()->FrameFocused();
@@ -946,7 +938,7 @@ void LocalFrameClientImpl::DidEnforceInsecureRequestPolicy(
 }
 
 void LocalFrameClientImpl::DidEnforceInsecureNavigationsSet(
-    const std::vector<unsigned>& set) {
+    const WebVector<unsigned>& set) {
   if (!web_frame_->Client())
     return;
   web_frame_->Client()->DidEnforceInsecureNavigationsSet(set);
@@ -1010,16 +1002,6 @@ LocalFrameClientImpl::CreateServiceWorkerProvider() {
 
 WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
   return web_frame_->GetContentSettingsClient();
-}
-
-std::unique_ptr<WebApplicationCacheHost>
-LocalFrameClientImpl::CreateApplicationCacheHost(
-    DocumentLoader* loader,
-    WebApplicationCacheHostClient* client) {
-  if (!web_frame_->Client())
-    return nullptr;
-  return web_frame_->Client()->CreateApplicationCacheHost(
-      WebDocumentLoaderImpl::FromDocumentLoader(loader), client);
 }
 
 void LocalFrameClientImpl::DispatchDidChangeManifest() {
@@ -1158,8 +1140,11 @@ void LocalFrameClientImpl::AnnotatedRegionsChanged() {
   web_frame_->Client()->DraggableRegionsChanged();
 }
 
-void LocalFrameClientImpl::DidBlockFramebust(const KURL& url) {
-  web_frame_->Client()->DidBlockFramebust(url);
+void LocalFrameClientImpl::DidBlockNavigation(
+    const KURL& blocked_url,
+    const KURL& initiator_url,
+    blink::NavigationBlockedReason reason) {
+  web_frame_->Client()->DidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
 base::UnguessableToken LocalFrameClientImpl::GetDevToolsFrameToken() const {
@@ -1213,6 +1198,11 @@ void LocalFrameClientImpl::FrameRectsChanged(const IntRect& frame_rect) {
   web_frame_->Client()->FrameRectsChanged(frame_rect);
 }
 
+void LocalFrameClientImpl::LifecycleStateChanged(
+    mojom::FrameLifecycleState state) {
+  web_frame_->Client()->LifecycleStateChanged(state);
+}
+
 bool LocalFrameClientImpl::IsPluginHandledExternally(
     HTMLPlugInElement& plugin_element,
     const KURL& resource_url,
@@ -1262,6 +1252,17 @@ void LocalFrameClientImpl::TransferUserActivationFrom(
     LocalFrame* source_frame) {
   web_frame_->Client()->TransferUserActivationFrom(
       WebLocalFrameImpl::FromFrame(source_frame));
+}
+
+void LocalFrameClientImpl::UpdateSubresourceFactory(
+    std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {
+  DCHECK(web_frame_->Client());
+  web_frame_->Client()->UpdateSubresourceFactory(std::move(info));
+}
+
+WebLocalFrameClient::AppCacheType LocalFrameClientImpl::GetAppCacheType() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->GetAppCacheType();
 }
 
 STATIC_ASSERT_ENUM(DownloadCrossOriginRedirects::kFollow,

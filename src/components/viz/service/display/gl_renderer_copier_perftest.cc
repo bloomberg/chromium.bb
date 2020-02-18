@@ -11,12 +11,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/lap_timer.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/test/paths.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -51,9 +51,8 @@ base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
 class GLRendererCopierPerfTest : public testing::Test {
  public:
   GLRendererCopierPerfTest() {
-    auto context_provider =
-        base::MakeRefCounted<cc::TestInProcessContextProvider>(
-            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+    auto context_provider = base::MakeRefCounted<TestInProcessContextProvider>(
+        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_provider->ContextGL();

@@ -972,7 +972,7 @@ void InputType::AddWarningToConsole(const char* message_format,
       mojom::ConsoleMessageSource::kRendering,
       mojom::ConsoleMessageLevel::kWarning,
       String::Format(message_format,
-                     JSONValue::QuoteString(value).Utf8().data())));
+                     JSONValue::QuoteString(value).Utf8().c_str())));
 }
 
 }  // namespace blink

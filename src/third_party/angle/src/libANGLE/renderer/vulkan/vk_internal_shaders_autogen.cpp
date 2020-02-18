@@ -16,6 +16,34 @@ namespace vk
 {
 namespace
 {
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000000.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000001.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000002.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000003.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000004.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000005.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000006.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000007.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000008.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000009.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000A.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000B.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000C.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000D.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000E.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.0000000F.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000010.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000011.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000012.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000013.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000014.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000015.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000016.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolve.frag.00000017.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolveStencilNoExport.comp.00000000.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolveStencilNoExport.comp.00000001.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolveStencilNoExport.comp.00000002.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/BlitResolveStencilNoExport.comp.00000003.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.00000001.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.00000002.inc"
@@ -28,6 +56,8 @@ namespace
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.00000009.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.0000000A.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/BufferUtils.comp.0000000B.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000000.inc"
+#include "libANGLE/renderer/vulkan/shaders/gen/ConvertIndex.comp.00000001.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000000.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000001.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ConvertVertex.comp.00000002.inc"
@@ -87,20 +117,6 @@ namespace
 #include "libANGLE/renderer/vulkan/shaders/gen/ImageCopy.frag.00000013.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ImageCopy.frag.00000014.inc"
 #include "libANGLE/renderer/vulkan/shaders/gen/ImageCopy.frag.00000015.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000000.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000001.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000002.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000003.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000004.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000005.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000006.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000007.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000008.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.00000009.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.0000000A.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/Resolve.frag.0000000B.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ResolveStencilNoExport.comp.00000000.inc"
-#include "libANGLE/renderer/vulkan/shaders/gen/ResolveStencilNoExport.comp.00000001.inc"
 
 // This is SPIR-V binary blob and the size.
 struct ShaderBlob
@@ -109,6 +125,38 @@ struct ShaderBlob
     size_t codeSize;
 };
 
+constexpr ShaderBlob kBlitResolve_frag_shaders[] = {
+    {kBlitResolve_frag_00000000, sizeof(kBlitResolve_frag_00000000)},
+    {kBlitResolve_frag_00000001, sizeof(kBlitResolve_frag_00000001)},
+    {kBlitResolve_frag_00000002, sizeof(kBlitResolve_frag_00000002)},
+    {kBlitResolve_frag_00000003, sizeof(kBlitResolve_frag_00000003)},
+    {kBlitResolve_frag_00000004, sizeof(kBlitResolve_frag_00000004)},
+    {kBlitResolve_frag_00000005, sizeof(kBlitResolve_frag_00000005)},
+    {kBlitResolve_frag_00000006, sizeof(kBlitResolve_frag_00000006)},
+    {kBlitResolve_frag_00000007, sizeof(kBlitResolve_frag_00000007)},
+    {kBlitResolve_frag_00000008, sizeof(kBlitResolve_frag_00000008)},
+    {kBlitResolve_frag_00000009, sizeof(kBlitResolve_frag_00000009)},
+    {kBlitResolve_frag_0000000A, sizeof(kBlitResolve_frag_0000000A)},
+    {kBlitResolve_frag_0000000B, sizeof(kBlitResolve_frag_0000000B)},
+    {kBlitResolve_frag_0000000C, sizeof(kBlitResolve_frag_0000000C)},
+    {kBlitResolve_frag_0000000D, sizeof(kBlitResolve_frag_0000000D)},
+    {kBlitResolve_frag_0000000E, sizeof(kBlitResolve_frag_0000000E)},
+    {kBlitResolve_frag_0000000F, sizeof(kBlitResolve_frag_0000000F)},
+    {kBlitResolve_frag_00000010, sizeof(kBlitResolve_frag_00000010)},
+    {kBlitResolve_frag_00000011, sizeof(kBlitResolve_frag_00000011)},
+    {kBlitResolve_frag_00000012, sizeof(kBlitResolve_frag_00000012)},
+    {kBlitResolve_frag_00000013, sizeof(kBlitResolve_frag_00000013)},
+    {kBlitResolve_frag_00000014, sizeof(kBlitResolve_frag_00000014)},
+    {kBlitResolve_frag_00000015, sizeof(kBlitResolve_frag_00000015)},
+    {kBlitResolve_frag_00000016, sizeof(kBlitResolve_frag_00000016)},
+    {kBlitResolve_frag_00000017, sizeof(kBlitResolve_frag_00000017)},
+};
+constexpr ShaderBlob kBlitResolveStencilNoExport_comp_shaders[] = {
+    {kBlitResolveStencilNoExport_comp_00000000, sizeof(kBlitResolveStencilNoExport_comp_00000000)},
+    {kBlitResolveStencilNoExport_comp_00000001, sizeof(kBlitResolveStencilNoExport_comp_00000001)},
+    {kBlitResolveStencilNoExport_comp_00000002, sizeof(kBlitResolveStencilNoExport_comp_00000002)},
+    {kBlitResolveStencilNoExport_comp_00000003, sizeof(kBlitResolveStencilNoExport_comp_00000003)},
+};
 constexpr ShaderBlob kBufferUtils_comp_shaders[] = {
     {kBufferUtils_comp_00000000, sizeof(kBufferUtils_comp_00000000)},
     {kBufferUtils_comp_00000001, sizeof(kBufferUtils_comp_00000001)},
@@ -122,6 +170,10 @@ constexpr ShaderBlob kBufferUtils_comp_shaders[] = {
     {kBufferUtils_comp_00000009, sizeof(kBufferUtils_comp_00000009)},
     {kBufferUtils_comp_0000000A, sizeof(kBufferUtils_comp_0000000A)},
     {kBufferUtils_comp_0000000B, sizeof(kBufferUtils_comp_0000000B)},
+};
+constexpr ShaderBlob kConvertIndex_comp_shaders[] = {
+    {kConvertIndex_comp_00000000, sizeof(kConvertIndex_comp_00000000)},
+    {kConvertIndex_comp_00000001, sizeof(kConvertIndex_comp_00000001)},
 };
 constexpr ShaderBlob kConvertVertex_comp_shaders[] = {
     {kConvertVertex_comp_00000000, sizeof(kConvertVertex_comp_00000000)},
@@ -194,24 +246,6 @@ constexpr ShaderBlob kImageCopy_frag_shaders[] = {
     {kImageCopy_frag_00000014, sizeof(kImageCopy_frag_00000014)},
     {kImageCopy_frag_00000015, sizeof(kImageCopy_frag_00000015)},
 };
-constexpr ShaderBlob kResolve_frag_shaders[] = {
-    {kResolve_frag_00000000, sizeof(kResolve_frag_00000000)},
-    {kResolve_frag_00000001, sizeof(kResolve_frag_00000001)},
-    {kResolve_frag_00000002, sizeof(kResolve_frag_00000002)},
-    {kResolve_frag_00000003, sizeof(kResolve_frag_00000003)},
-    {kResolve_frag_00000004, sizeof(kResolve_frag_00000004)},
-    {kResolve_frag_00000005, sizeof(kResolve_frag_00000005)},
-    {kResolve_frag_00000006, sizeof(kResolve_frag_00000006)},
-    {kResolve_frag_00000007, sizeof(kResolve_frag_00000007)},
-    {kResolve_frag_00000008, sizeof(kResolve_frag_00000008)},
-    {kResolve_frag_00000009, sizeof(kResolve_frag_00000009)},
-    {kResolve_frag_0000000A, sizeof(kResolve_frag_0000000A)},
-    {kResolve_frag_0000000B, sizeof(kResolve_frag_0000000B)},
-};
-constexpr ShaderBlob kResolveStencilNoExport_comp_shaders[] = {
-    {kResolveStencilNoExport_comp_00000000, sizeof(kResolveStencilNoExport_comp_00000000)},
-    {kResolveStencilNoExport_comp_00000001, sizeof(kResolveStencilNoExport_comp_00000001)},
-};
 
 angle::Result GetShader(Context *context,
                         RefCounted<ShaderAndSerial> *shaders,
@@ -243,7 +277,19 @@ ShaderLibrary::~ShaderLibrary() {}
 
 void ShaderLibrary::destroy(VkDevice device)
 {
+    for (RefCounted<ShaderAndSerial> &shader : mBlitResolve_frag_shaders)
+    {
+        shader.get().destroy(device);
+    }
+    for (RefCounted<ShaderAndSerial> &shader : mBlitResolveStencilNoExport_comp_shaders)
+    {
+        shader.get().destroy(device);
+    }
     for (RefCounted<ShaderAndSerial> &shader : mBufferUtils_comp_shaders)
+    {
+        shader.get().destroy(device);
+    }
+    for (RefCounted<ShaderAndSerial> &shader : mConvertIndex_comp_shaders)
     {
         shader.get().destroy(device);
     }
@@ -263,14 +309,24 @@ void ShaderLibrary::destroy(VkDevice device)
     {
         shader.get().destroy(device);
     }
-    for (RefCounted<ShaderAndSerial> &shader : mResolve_frag_shaders)
-    {
-        shader.get().destroy(device);
-    }
-    for (RefCounted<ShaderAndSerial> &shader : mResolveStencilNoExport_comp_shaders)
-    {
-        shader.get().destroy(device);
-    }
+}
+
+angle::Result ShaderLibrary::getBlitResolve_frag(Context *context,
+                                                 uint32_t shaderFlags,
+                                                 RefCounted<ShaderAndSerial> **shaderOut)
+{
+    return GetShader(context, mBlitResolve_frag_shaders, kBlitResolve_frag_shaders,
+                     ArraySize(kBlitResolve_frag_shaders), shaderFlags, shaderOut);
+}
+
+angle::Result ShaderLibrary::getBlitResolveStencilNoExport_comp(
+    Context *context,
+    uint32_t shaderFlags,
+    RefCounted<ShaderAndSerial> **shaderOut)
+{
+    return GetShader(context, mBlitResolveStencilNoExport_comp_shaders,
+                     kBlitResolveStencilNoExport_comp_shaders,
+                     ArraySize(kBlitResolveStencilNoExport_comp_shaders), shaderFlags, shaderOut);
 }
 
 angle::Result ShaderLibrary::getBufferUtils_comp(Context *context,
@@ -279,6 +335,14 @@ angle::Result ShaderLibrary::getBufferUtils_comp(Context *context,
 {
     return GetShader(context, mBufferUtils_comp_shaders, kBufferUtils_comp_shaders,
                      ArraySize(kBufferUtils_comp_shaders), shaderFlags, shaderOut);
+}
+
+angle::Result ShaderLibrary::getConvertIndex_comp(Context *context,
+                                                  uint32_t shaderFlags,
+                                                  RefCounted<ShaderAndSerial> **shaderOut)
+{
+    return GetShader(context, mConvertIndex_comp_shaders, kConvertIndex_comp_shaders,
+                     ArraySize(kConvertIndex_comp_shaders), shaderFlags, shaderOut);
 }
 
 angle::Result ShaderLibrary::getConvertVertex_comp(Context *context,
@@ -311,23 +375,6 @@ angle::Result ShaderLibrary::getImageCopy_frag(Context *context,
 {
     return GetShader(context, mImageCopy_frag_shaders, kImageCopy_frag_shaders,
                      ArraySize(kImageCopy_frag_shaders), shaderFlags, shaderOut);
-}
-
-angle::Result ShaderLibrary::getResolve_frag(Context *context,
-                                             uint32_t shaderFlags,
-                                             RefCounted<ShaderAndSerial> **shaderOut)
-{
-    return GetShader(context, mResolve_frag_shaders, kResolve_frag_shaders,
-                     ArraySize(kResolve_frag_shaders), shaderFlags, shaderOut);
-}
-
-angle::Result ShaderLibrary::getResolveStencilNoExport_comp(Context *context,
-                                                            uint32_t shaderFlags,
-                                                            RefCounted<ShaderAndSerial> **shaderOut)
-{
-    return GetShader(context, mResolveStencilNoExport_comp_shaders,
-                     kResolveStencilNoExport_comp_shaders,
-                     ArraySize(kResolveStencilNoExport_comp_shaders), shaderFlags, shaderOut);
 }
 
 }  // namespace vk

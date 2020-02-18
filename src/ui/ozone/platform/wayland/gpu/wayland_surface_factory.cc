@@ -30,11 +30,8 @@ namespace {
 class GLOzoneEGLWayland : public GLOzoneEGL {
  public:
   GLOzoneEGLWayland(WaylandConnection* connection,
-                    WaylandBufferManagerGpu* buffer_manager,
-                    WaylandSurfaceFactory* factory)
-      : connection_(connection),
-        buffer_manager_(buffer_manager),
-        factory_(factory) {}
+                    WaylandBufferManagerGpu* buffer_manager)
+      : connection_(connection), buffer_manager_(buffer_manager) {}
   ~GLOzoneEGLWayland() override {}
 
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
@@ -53,7 +50,6 @@ class GLOzoneEGLWayland : public GLOzoneEGL {
  private:
   WaylandConnection* const connection_;
   WaylandBufferManagerGpu* const buffer_manager_;
-  WaylandSurfaceFactory* const factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLWayland);
 };
@@ -79,8 +75,6 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
 
 scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
-  DCHECK(factory_);
-
   // Only EGLGLES2 is supported with surfaceless view gl.
   if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2)
     return nullptr;
@@ -90,7 +84,7 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateSurfacelessViewGLSurface(
   if (!buffer_manager_->gbm_device())
     return nullptr;
   return gl::InitializeGLSurface(
-      new GbmSurfacelessWayland(factory_, buffer_manager_, window));
+      new GbmSurfacelessWayland(buffer_manager_, window));
 #else
   return nullptr;
 #endif
@@ -121,38 +115,15 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 }  // namespace
 
-WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
-    : connection_(connection) {}
+WaylandSurfaceFactory::WaylandSurfaceFactory(
+    WaylandConnection* connection,
+    WaylandBufferManagerGpu* buffer_manager)
+    : connection_(connection), buffer_manager_(buffer_manager) {
+  egl_implementation_ =
+      std::make_unique<GLOzoneEGLWayland>(connection_, buffer_manager_);
+}
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() = default;
-
-void WaylandSurfaceFactory::SetBufferManager(
-    WaylandBufferManagerGpu* buffer_manager) {
-  DCHECK(!buffer_manager_ && buffer_manager);
-  buffer_manager_ = buffer_manager;
-
-  egl_implementation_ =
-      std::make_unique<GLOzoneEGLWayland>(connection_, buffer_manager_, this);
-}
-
-void WaylandSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
-                                            GbmSurfacelessWayland* surface) {
-  widget_to_surface_map_.insert(std::make_pair(widget, surface));
-}
-
-void WaylandSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
-  widget_to_surface_map_.erase(widget);
-}
-
-GbmSurfacelessWayland* WaylandSurfaceFactory::GetSurface(
-    gfx::AcceleratedWidget widget) const {
-  GbmSurfacelessWayland* surface = nullptr;
-  auto it = widget_to_surface_map_.find(widget);
-  if (it != widget_to_surface_map_.end())
-    surface = it->second;
-  return surface;
-}
-
 
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
@@ -188,7 +159,7 @@ scoped_refptr<gfx::NativePixmap> WaylandSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
 #if defined(WAYLAND_GBM)
   scoped_refptr<GbmPixmapWayland> pixmap =
-      base::MakeRefCounted<GbmPixmapWayland>(this, buffer_manager_, widget);
+      base::MakeRefCounted<GbmPixmapWayland>(buffer_manager_, widget);
   if (!pixmap->InitializeBuffer(size, format, usage))
     return nullptr;
   return pixmap;

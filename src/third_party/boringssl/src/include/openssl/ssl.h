@@ -1296,7 +1296,8 @@ OPENSSL_EXPORT uint16_t SSL_CIPHER_get_max_version(const SSL_CIPHER *cipher);
 OPENSSL_EXPORT const char *SSL_CIPHER_standard_name(const SSL_CIPHER *cipher);
 
 // SSL_CIPHER_get_name returns the OpenSSL name of |cipher|. For example,
-// "ECDHE-RSA-AES128-GCM-SHA256".
+// "ECDHE-RSA-AES128-GCM-SHA256". Callers are recommended to use
+// |SSL_CIPHER_standard_name| instead.
 OPENSSL_EXPORT const char *SSL_CIPHER_get_name(const SSL_CIPHER *cipher);
 
 // SSL_CIPHER_get_kx_name returns a string that describes the key-exchange
@@ -1399,7 +1400,7 @@ OPENSSL_EXPORT int SSL_CIPHER_get_bits(const SSL_CIPHER *cipher,
 // based on client preferences. An equal-preference is specified with square
 // brackets, combining multiple selectors separated by |. For example:
 //
-//   [ECDHE-ECDSA-CHACHA20-POLY1305|ECDHE-ECDSA-AES128-GCM-SHA256]
+//   [TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256|TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256]
 //
 // Once an equal-preference group is used, future directives must be
 // opcode-less. Inside an equal-preference group, spaces are not allowed.
@@ -2039,13 +2040,13 @@ OPENSSL_EXPORT SSL_SESSION *SSL_magic_pending_session_ptr(void);
 // On the client, ticket-based sessions use the same APIs as ID-based tickets.
 // Callers do not need to handle them differently.
 //
-// On the server, tickets are encrypted and authenticated with a secret key. By
-// default, an |SSL_CTX| generates a key on creation and uses it for the
-// lifetime of the |SSL_CTX|. Tickets are minted and processed
-// transparently. The following functions may be used to configure a persistent
-// key or implement more custom behavior, including key rotation and sharing
-// keys between multiple servers in a large deployment. There are three levels
-// of customisation possible:
+// On the server, tickets are encrypted and authenticated with a secret key.
+// By default, an |SSL_CTX| will manage session ticket encryption keys by
+// generating them internally and rotating every 48 hours. Tickets are minted
+// and processed transparently. The following functions may be used to configure
+// a persistent key or implement more custom behavior, including key rotation
+// and sharing keys between multiple servers in a large deployment. There are
+// three levels of customisation possible:
 //
 // 1) One can simply set the keys with |SSL_CTX_set_tlsext_ticket_keys|.
 // 2) One can configure an |EVP_CIPHER_CTX| and |HMAC_CTX| directly for
@@ -2206,6 +2207,7 @@ OPENSSL_EXPORT int SSL_set1_curves_list(SSL *ssl, const char *curves);
 #define SSL_CURVE_SECP521R1 25
 #define SSL_CURVE_X25519 29
 #define SSL_CURVE_CECPQ2 16696
+#define SSL_CURVE_CECPQ2b 65074
 
 // SSL_get_curve_id returns the ID of the curve used by |ssl|'s most recently
 // completed handshake or 0 if not applicable.
@@ -3033,6 +3035,19 @@ OPENSSL_EXPORT const char *SSL_get_psk_identity_hint(const SSL *ssl);
 OPENSSL_EXPORT const char *SSL_get_psk_identity(const SSL *ssl);
 
 
+// Post-quantum experiment signaling extension.
+//
+// *** EXPERIMENTAL ***
+//
+// In order to define a control group in an experiment of post-quantum key
+// agreements, clients and servers may send a non-IANA defined extension as a
+// signaling bit. These functions should not be used without explicit permission
+// from BoringSSL-team.
+
+OPENSSL_EXPORT void SSL_CTX_enable_pq_experiment_signal(SSL_CTX *ctx);
+OPENSSL_EXPORT int SSL_pq_experiment_signal_seen(const SSL *ssl);
+
+
 // QUIC transport parameters.
 //
 // draft-ietf-quic-tls defines a new TLS extension quic_transport_parameters
@@ -3098,6 +3113,10 @@ OPENSSL_EXPORT void SSL_get_peer_quic_transport_params(const SSL *ssl,
 OPENSSL_EXPORT int SSL_set1_delegated_credential(
     SSL *ssl, CRYPTO_BUFFER *dc, EVP_PKEY *pkey,
     const SSL_PRIVATE_KEY_METHOD *key_method);
+
+// SSL_delegated_credential_used returns one if a delegated credential was used
+// and zero otherwise.
+OPENSSL_EXPORT int SSL_delegated_credential_used(const SSL *ssl);
 
 
 // QUIC integration.

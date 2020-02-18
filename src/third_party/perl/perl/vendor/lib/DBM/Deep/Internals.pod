@@ -1,6 +1,6 @@
 =head1 NAME
 
-DBM::Deep::Internals
+DBM::Deep::Internals - Out of date documentation on DBM::Deep internals
 
 =head1 OUT OF DATE
 
@@ -216,7 +216,7 @@ DBM::Deep is I/O-bound, not CPU-bound.
 
 DBM::Deep uses extremely little RAM relative to the amount of data you can
 access. You can iterate through a million keys (using C<each()>) without
-increasing your memeory usage at all.
+increasing your memory usage at all.
 
 =head2 DISK
 

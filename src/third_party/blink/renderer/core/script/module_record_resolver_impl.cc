@@ -40,7 +40,7 @@ void ModuleRecordResolverImpl::UnregisterModuleScript(
   record_to_module_script_map_.erase(module_script->Record());
 }
 
-const ModuleScript* ModuleRecordResolverImpl::GetHostDefined(
+const ModuleScript* ModuleRecordResolverImpl::GetModuleScriptFromModuleRecord(
     const ModuleRecord& record) const {
   const auto it = record_to_module_script_map_.find(record);
   CHECK_NE(it, record_to_module_script_map_.end())
@@ -58,38 +58,47 @@ ModuleRecord ModuleRecordResolverImpl::Resolve(
     ExceptionState& exception_state) {
   DVLOG(1) << "ModuleRecordResolverImpl::resolve(specifier=\"" << specifier
            << ", referrer.hash=" << ModuleRecordHash::GetHash(referrer) << ")";
-
-  // <spec step="1">Let referencing script be
-  // referencingScriptOrModule.[[HostDefined]].</spec>
-  const ModuleScript* referrer_module = GetHostDefined(referrer);
-
-  // <spec step="2">Let moduleMap be referencing script's settings object's
-  // module map.</spec>
+  // <spec step="3">If referencingScriptOrModule is not null, then:</spec>
   //
-  // Note: Blink finds out "module script's settings object"
-  // (Modulator) from context where HostResolveImportedModule was called.
+  // Currently this function implements the spec before
+  // https://github.com/tc39/proposal-dynamic-import is applied, i.e. where
+  // |referencingScriptOrModule| was always a non-null module script.
 
-  // <spec step="3">Let url be the result of resolving a module specifier given
-  // referencing script's base URL and specifier.</spec>
+  // <spec step="3.2">Set settings object to referencing script's settings
+  // object.</spec>
+  //
+  // <spec step="4">Let moduleMap be settings object's module map.</spec>
+  //
+  // These are |modulator_| and |this|, respectively, because module script's
+  // settings object is always the current settings object in Blink.
+
+  // <spec step="3.1">Let referencing script be
+  // referencingScriptOrModule.[[HostDefined]].</spec>
+  const ModuleScript* referrer_module =
+      GetModuleScriptFromModuleRecord(referrer);
+
+  // <spec step="3.3">Set base URL to referencing script's base URL.</spec>
+  // <spec step="5">Let url be the result of resolving a module specifier given
+  // base URL and specifier.</spec>
   KURL url = referrer_module->ResolveModuleSpecifier(specifier);
 
-  // <spec step="4">Assert: url is never failure, because resolving a module
+  // <spec step="6">Assert: url is never failure, because resolving a module
   // specifier must have been previously successful with these same two
-  // arguments.</spec>
+  // arguments ...</spec>
   DCHECK(url.IsValid());
 
-  // <spec step="5">Let resolved module script be moduleMap[url]. (This entry
+  // <spec step="7">Let resolved module script be moduleMap[url]. (This entry
   // must exist for us to have gotten to this point.)</spec>
   ModuleScript* module_script = modulator_->GetFetchedModuleScript(url);
 
-  // <spec step="6">Assert: resolved module script is a module script (i.e., is
+  // <spec step="8">Assert: resolved module script is a module script (i.e., is
   // not null or "fetching").</spec>
   //
-  // <spec step="7">Assert: resolved module script's record is not null.</spec>
+  // <spec step="9">Assert: resolved module script's record is not null.</spec>
   DCHECK(module_script);
   CHECK(!module_script->Record().IsNull());
 
-  // <spec step="8">Return resolved module script's record.</spec>
+  // <spec step="10">Return resolved module script's record.</spec>
   return module_script->Record();
 }
 
@@ -99,7 +108,7 @@ void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {
   record_to_module_script_map_.clear();
 }
 
-void ModuleRecordResolverImpl::Trace(blink::Visitor* visitor) {
+void ModuleRecordResolverImpl::Trace(Visitor* visitor) {
   ModuleRecordResolver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);

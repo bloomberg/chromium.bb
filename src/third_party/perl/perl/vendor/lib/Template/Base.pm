@@ -74,7 +74,7 @@ sub new {
 # package variable $ERROR (class method) or internal member 
 # $self->{ _ERROR } (object method).  The presence of parameters indicates
 # that the error value should be set.  Undef is then returned.  In the
-# abscence of parameters, the current error value is returned.
+# absence of parameters, the current error value is returned.
 #------------------------------------------------------------------------
 
 sub error {
@@ -238,7 +238,7 @@ is sent to C<STDERR>:
 Objects can set an internal C<DEBUG> value which the C<debug()>
 method will examine.  If this value sets the relevant bits
 to indicate C<DEBUG_CALLER> then the file and line number of
-the caller will be appened to the message.
+the caller will be append to the message.
 
     use Template::Constants qw( :debug );
     

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
@@ -36,15 +35,8 @@ void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request,
 namespace ui {
 
 DrmDeviceConnector::DrmDeviceConnector(
-    service_manager::Connector* connector,
-    const std::string& service_name,
     scoped_refptr<HostDrmDevice> host_drm_device)
-    : connector_(connector),
-      service_name_(service_name),
-      host_drm_device_(host_drm_device),
-      ws_runner_(base::ThreadTaskRunnerHandle::IsSet()
-                     ? base::ThreadTaskRunnerHandle::Get()
-                     : nullptr) {}
+    : host_drm_device_(host_drm_device) {}
 
 DrmDeviceConnector::~DrmDeviceConnector() = default;
 
@@ -52,60 +44,37 @@ void DrmDeviceConnector::OnGpuProcessLaunched(
     int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-    const base::RepeatingCallback<void(IPC::Message*)>& send_callback) {
+    base::RepeatingCallback<void(IPC::Message*)> send_callback) {
   NOTREACHED();
 }
 
 void DrmDeviceConnector::OnChannelDestroyed(int host_id) {
+  if (host_id != host_id_)
+    return;
   host_drm_device_->OnGpuServiceLost();
 }
 
 void DrmDeviceConnector::OnGpuServiceLaunched(
+    int host_id,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     GpuHostBindInterfaceCallback binder,
     GpuHostTerminateCallback terminate_callback) {
+  // We can get into this state if a new instance of GpuProcessHost is created
+  // before the old one is destroyed.
+  if (host_drm_device_->IsConnected())
+    host_drm_device_->OnGpuServiceLost();
+
   // We need to preserve |binder| to let us bind interfaces later.
   binder_callback_ = std::move(binder);
-  if (am_running_in_ws_mode()) {
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_ui, drm_device_ptr_ws;
-    ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ws, cursor_ptr_io;
+  host_id_ = host_id;
 
-    BindInterfaceDrmDevice(&drm_device_ptr_ui);
-    BindInterfaceDrmDevice(&drm_device_ptr_ws);
-    BindInterfaceDeviceCursor(&cursor_ptr_ws);
-    BindInterfaceDeviceCursor(&cursor_ptr_io);
-
-    ws_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
-                       std::move(drm_device_ptr_ws), std::move(cursor_ptr_ws),
-                       std::move(cursor_ptr_io)));
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedCompositor,
-                       host_drm_device_, std::move(drm_device_ptr_ui)));
-
-  } else {
-    ui::ozone::mojom::DrmDevicePtr drm_device_ptr_ui;
-    ui::ozone::mojom::DeviceCursorPtr cursor_ptr_ui, cursor_ptr_io;
-
-    BindInterfaceDrmDevice(&drm_device_ptr_ui);
-    BindInterfaceDeviceCursor(&cursor_ptr_ui);
-    BindInterfaceDeviceCursor(&cursor_ptr_io);
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
-                       std::move(drm_device_ptr_ui), std::move(cursor_ptr_ui),
-                       std::move(cursor_ptr_io)));
-
-    ui_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedCompositor,
-                       host_drm_device_, std::move(drm_device_ptr_ui)));
-  }
+  ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
+  BindInterfaceDrmDevice(&drm_device_ptr);
+  ui_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HostDrmDevice::OnGpuServiceLaunched, host_drm_device_,
+                     drm_device_ptr.PassInterface()));
 }
 
 void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
@@ -115,22 +84,13 @@ void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
 
 void DrmDeviceConnector::BindInterfaceDrmDevice(
     ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const {
-  if (connector_) {
-    connector_->BindInterface(service_name_, drm_device_ptr);
-  } else {
-    auto request = mojo::MakeRequest(drm_device_ptr);
-    BindInterfaceInGpuProcess(std::move(request), binder_callback_);
-  }
+  auto request = mojo::MakeRequest(drm_device_ptr);
+  BindInterfaceInGpuProcess(std::move(request), binder_callback_);
 }
 
-void DrmDeviceConnector::BindInterfaceDeviceCursor(
-    ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const {
-  if (connector_) {
-    connector_->BindInterface(service_name_, cursor_ptr);
-  } else {
-    auto request = mojo::MakeRequest(cursor_ptr);
-    BindInterfaceInGpuProcess(std::move(request), binder_callback_);
-  }
+void DrmDeviceConnector::ConnectSingleThreaded(
+    ui::ozone::mojom::DrmDevicePtr drm_device_ptr) {
+  host_drm_device_->OnGpuServiceLaunched(drm_device_ptr.PassInterface());
 }
 
 }  // namespace ui

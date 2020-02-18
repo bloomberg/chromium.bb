@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Kelaamisen liukusäädin</translation>
 <translation id="1399648040768741453">Telugunkielinen näppäimistö (foneettinen)</translation>
 <translation id="1430915738399379752">Tulosta</translation>
+<translation id="1439494416798956626">Siirretty kansioon <ph name="FOLDER_NAME" /></translation>
 <translation id="1441841714100794440">Vietnamilainen näppäimistö (telex)</translation>
 <translation id="1455548678241328678">Näppäimistö: norja</translation>
 <translation id="1464724975715666883">1 virhe.</translation>
@@ -90,9 +91,9 @@
 <translation id="197560921582345123">Voi muokata</translation>
 <translation id="1984603991036629094">Armenialainen foneettinen näppäimistö</translation>
 <translation id="2001796770603320721">Ylläpidä Drivessa</translation>
+<translation id="2009067268969781306">Driven alustaminen poistaa kaiken sille tallennetun datan. Tätä toimintoa ei voi kumota.</translation>
 <translation id="2028997212275086731">RAR-arkisto</translation>
 <translation id="2046702855113914483">Ramen</translation>
-<translation id="204914487372604757">Luo pikakuvake</translation>
 <translation id="2070909990982335904">Pisteellä alkavat nimet on varattu järjestelmän käyttöön. Valitse toinen nimi.</translation>
 <translation id="2079545284768500474">Kumoa</translation>
 <translation id="2080010875307505892">Näppäimistö: serbia</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Tarkistetaan medialaitettasi…</translation>
 <translation id="3468522857997926824"><ph name="FILE_COUNT" /> valokuvaa on varmuuskopioitu <ph name="BEGIN_LINK" />Google Driveen<ph name="END_LINK" />.</translation>
 <translation id="3470502288861289375">Kopioidaan…</translation>
+<translation id="3473378059788601120">Kopioitu kansioon <ph name="FOLDER_NAME" /></translation>
 <translation id="3475447146579922140">Google-laskentataulukko</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> virhettä.</translation>
 <translation id="3519867315646775981">Translitterointi (shalom ← שלום)</translation>
@@ -220,6 +222,7 @@
 <translation id="3620292326130836921">Kaikki on varmuuskopioitu!</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3644896802912593514">Leveys</translation>
+<translation id="3645531960514756307">Irrota kansio</translation>
 <translation id="3678559383040232393">Näppäimistö: malta</translation>
 <translation id="3685122418104378273">Google Driven synkronointi on oletuksena pois käytöstä käyttäessäsi mobiilitiedonsiirtoa.</translation>
 <translation id="3726463242007121105">Tätä laitetta ei voi avata, sillä sen tiedostojärjestelmää ei tueta.</translation>
@@ -240,6 +243,7 @@
 <translation id="383652340667548381">serbia</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3855472144336161447">saksa, Neo 2</translation>
+<translation id="3856075812838139784">Vain luku</translation>
 <translation id="3858678421048828670">Näppäimistö: italia</translation>
 <translation id="386548886866354912">Pakkaa laajennuksella <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Kuvaus</translation>
@@ -266,6 +270,7 @@
 <translation id="426015154560005552">Arabialainen näppäimistö</translation>
 <translation id="4261901459838235729">Google-esitys</translation>
 <translation id="4290535918735525311">1 kansio jaettu Linuxin kanssa</translation>
+<translation id="42981349822642051">Laajenna</translation>
 <translation id="4298972503445160211">Näppäimistö: tanska</translation>
 <translation id="4299729908419173967">brasilianportugali</translation>
 <translation id="4309915981827077375">Yleistiedot</translation>
@@ -285,7 +290,9 @@
 <translation id="4568854179928172494">Muokkausaika</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-tiedosto</translation>
 <translation id="457386861538956877">Lisää...</translation>
+<translation id="4579744207439506346"><ph name="ENTRY_NAME" /> lisättiin valintaan.</translation>
 <translation id="4582497162516204941">Asenna Linuxilla (beta)</translation>
+<translation id="4594543368593301662">Näytetään tulokset haulla <ph name="SEARCH_TERM" /></translation>
 <translation id="4631887759990505102">Esittäjä</translation>
 <translation id="4656293982926141856">Tällä tietokoneella</translation>
 <translation id="4669606053856530811">Jäsenet (<ph name="SOURCE_NAME" />) menettävät käyttöoikeuden, ellei näitä kohteita jaeta heille.</translation>
@@ -338,6 +345,7 @@
 <translation id="5038625366300922036">Lisätietoja…</translation>
 <translation id="5061708541166515394">Kontrasti</translation>
 <translation id="5068919226082848014">Pizza</translation>
+<translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> tiedostoja poistetaan</translation>
 <translation id="509429900233858213">Tapahtui virhe.</translation>
 <translation id="5098629044894065541">heprea</translation>
 <translation id="5123433949759960244">Koripallo</translation>
@@ -383,12 +391,14 @@
 <translation id="5412637665001827670">Näppäimistö: bulgaria</translation>
 <translation id="5418923334382419584">Myanmarilainen näppäimistö</translation>
 <translation id="5428105026674456456">espanja</translation>
+<translation id="5438282218546237410">Ei tuloksia haulla <ph name="SEARCH_TERM" /></translation>
 <translation id="5464696796438641524">Näppäimistö: puola</translation>
 <translation id="5465122519792752163">Nepalinkielinen näppäimistö (InScript)</translation>
 <translation id="5469868506864199649">italia</translation>
 <translation id="5494920125229734069">Valitse kaikki</translation>
 <translation id="5500122897333236901">islanti</translation>
 <translation id="5508696409934741614">Pisteet</translation>
+<translation id="5522908512596376669">Tiedostot näkyvät nyt luettelona.</translation>
 <translation id="5524517123096967210">Tiedostoa ei voi lukea.</translation>
 <translation id="5533102081734025921">Kuva, jonka tyyppi on <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Translitterointi (namaste → नमस्ते)</translation>
@@ -407,6 +417,7 @@
 <translation id="5752453871435543420">Chrome-käyttöjärjestelmän pilvivarmuuskopiointi</translation>
 <translation id="5756666464756035725">Unkarilainen QWERTY</translation>
 <translation id="5771585441665576801">Translitterointi (geia → γεια)</translation>
+<translation id="5776325638577448643">Poista ja alusta</translation>
 <translation id="57838592816432529">Mykistä</translation>
 <translation id="5788127256798019331">Play-tiedostot</translation>
 <translation id="5790193330357274855">kazakki</translation>
@@ -415,6 +426,7 @@
 <translation id="5819442873484330149">Hangul 3-set (lopullinen)</translation>
 <translation id="5833610766403489739">Tämä tiedosto on siirretty jonnekin muualle. Tarkista lataussijainnin asetukset ja yritä uudelleen.</translation>
 <translation id="5838051104334203064">Play Kaupan sovellukset eivät pääse laitteelle</translation>
+<translation id="5838451609423551646">Kaikki kohteet poistettiin valinnasta.</translation>
 <translation id="5838825566232597749">Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="5850516540536751549">Tätä tiedostotyyppiä ei tueta. Etsi tämäntyyppisiä tiedostoja avaava sovellus <ph name="BEGIN_LINK" />Chrome Web Storesta<ph name="END_LINK" />.
 	      <ph name="BEGIN_LINK_HELP" />Lisätietoja<ph name="END_LINK_HELP" /></translation>
@@ -422,10 +434,12 @@
 <translation id="5857774240076772505">Anna Linux-sovelluksille lupa muokata kansiossa <ph name="FOLDER_NAME" /> olevia tiedostoja</translation>
 <translation id="5892290200158927959">Ranskalainen BÉPO-näppäimistö</translation>
 <translation id="5911887972742538906">Linux-sovellusta asennettaessa tapahtui virhe.</translation>
+<translation id="5912396950572065471">Muoto</translation>
 <translation id="5913638992615760742">Kopiointi epäonnistui odottamattoman virheen vuoksi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Japanin syöttö (japanilainen näppäimistö)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Anna Linux-sovelluksille lupa muokata Google Driveesi tallennettuja tiedostoja. Muutokset synkronoidaan muille laitteillesi.</translation>
+<translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> kohdetta</translation>
 <translation id="5982621672636444458">Lajitteluasetukset</translation>
 <translation id="6005282720244019462">Näppäimistö: Latinalainen Amerikka</translation>
 <translation id="6007237601604674381">Siirto epäonnistui. <ph name="ERROR_MESSAGE" /></translation>
@@ -436,6 +450,7 @@
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="6054173164583630569">Näppäimistö: ranska</translation>
 <translation id="6074825444536523002">Google-lomake</translation>
+<translation id="6096979789310008754">Hakukysely poistettu, kaikki tiedostot ja kansiot näytetään.</translation>
 <translation id="6111770213269631447">Translitterointi (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Välilyönti</translation>
 <translation id="6133173853026656527">Siirretään tiedostoa <ph name="FILE_NAME" />…</translation>
@@ -446,6 +461,7 @@
 <translation id="6189412234224385711">Avaa laajennuksella <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Odotetaan tietoja tallennustilasta...</translation>
 <translation id="6205710420833115353">Jotkin toiminnot kestävät odotettua kauemmin. Haluatko keskeyttää ne?</translation>
+<translation id="6224253798271602650">Alusta <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Tätä tiedostoa ei voi toistaa.</translation>
 <translation id="6248400709929739064">Ota tekstitykset käyttöön</translation>
 <translation id="6264347891387618177">Translitterointi (selam → ሰላም)</translation>
@@ -488,6 +504,7 @@
 <translation id="6820687829547641339">Gzip-pakattu Tar-arkisto</translation>
 <translation id="6825883775269213504">venäjä</translation>
 <translation id="6827236167376090743">Tätä videota näytetään niin kauan, kunnes lehmät tulevat kotiin.</translation>
+<translation id="6847101934483209767"><ph name="ENTRY_NAME" /> poistettiin valinnasta.</translation>
 <translation id="6862635236584086457">Kaikki tähän kansioon tallennetut tiedostot varmuuskopioidaan verkkoon automaattisesti</translation>
 <translation id="6870130893560916279">Näppäimistö: ukraina</translation>
 <translation id="6876155724392614295">Pyörä</translation>
@@ -524,6 +541,7 @@
 <translation id="719009910964971313">Näppäimistö: US, Dvorak ohjelmoijille</translation>
 <translation id="7191454237977785534">Tallenna tiedosto nimellä</translation>
 <translation id="7222624196722476520">Bulgarian foneettinen näppäimistö</translation>
+<translation id="7238097264433196391">Driven nimi</translation>
 <translation id="7248671827512403053">Sovellus</translation>
 <translation id="7268659760406822741">Käytettävissä olevat palvelut</translation>
 <translation id="7283041136720745563">Google Drive ‑kiintiösi ei riitä.</translation>
@@ -594,7 +612,6 @@
 <translation id="7969525169268594403">sloveeni</translation>
 <translation id="7982283708762922719">Korkeus</translation>
 <translation id="7987485481246785146">Soranîn arabiaan perustuva näppäimistö</translation>
-<translation id="799547531016638432">Poista pikakuvake</translation>
 <translation id="799923393800005025">Voi tarkastella</translation>
 <translation id="8008366997883261463">Jackrussellinterrieri</translation>
 <translation id="8028993641010258682">Koko</translation>
@@ -614,11 +631,13 @@
 <translation id="8148264977957212129">Pinyin-syöttötapa</translation>
 <translation id="8151638057146502721">Määritä:</translation>
 <translation id="8153607920959057464">Tätä tiedostoa ei voi näyttää.</translation>
+<translation id="8154842056504218462">Kaikki kohteet valittiin.</translation>
 <translation id="8157684860301034423">Sovellustietojen noutaminen epäonnistui.</translation>
 <translation id="8157939133946352716">7 x 5</translation>
 <translation id="8160015581537295331">Näppäimistö: espanja</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Laitteen malli</translation>
+<translation id="8208580316430297579">Kuvitus</translation>
 <translation id="8223479393428528563">Jos haluat tallentaa nämä tiedostot offline-käyttöä varten, siirry online-tilaan, klikkaa tiedostoja hiiren kakkospainikkeella ja valitse vaihtoehto <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Keskeytä</translation>
 <translation id="8261506727792406068">Poista</translation>
@@ -632,6 +651,7 @@
 <translation id="8336153091935557858">Eilen <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Islantilainen näppäimistö</translation>
 <translation id="8342318071240498787">Samanniminen tiedosto tai hakemisto on jo olemassa.</translation>
+<translation id="8382450452152102026">Kohde: <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Translitterointi (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Mittasuhteet</translation>
 <translation id="8412586565681117057">Nopea syöttötapa</translation>
@@ -650,11 +670,13 @@
 <translation id="8561206103590473338">Norsu</translation>
 <translation id="8569764466147087991">Valitse avattava tiedosto</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES" /> kohdetta…</translation>
+<translation id="8600173386174225982">Tiedostot näkyvät nyt pikkukuvina.</translation>
 <translation id="8669949407341943408">Siirretään…</translation>
 <translation id="8671210955687109937">Voi kommentoida</translation>
 <translation id="8686213429977032554">Tätä Drive-tiedostoa ei ole vielä jaettu</translation>
 <translation id="8698464937041809063">Google-piirros</translation>
 <translation id="8714406895390098252">Polkupyörä</translation>
+<translation id="8719721339511222681"><ph name="ENTRY_NAME" /> valittiin.</translation>
 <translation id="8722421161699219904">Yhdysvaltain kansainvälinen näppäimistö</translation>
 <translation id="872537912056138402">kroaatti</translation>
 <translation id="874420130893181774">Perinteinen pinyin-syöttötapa</translation>
@@ -679,6 +701,7 @@
 <translation id="9099674669267916096">Sivumäärä</translation>
 <translation id="9110990317705400362">Pyrimme jatkuvasti tekemään selaamisesta turvallisempaa. Aiemmin mikä tahansa sivusto pystyi pyytämään laajennuksen lisäämistä selaimeen. Uusimmissa Google Chrome -versioissa sinun on erikseen ilmoitettava Chromelle, että haluat asentaa nämä laajennukset, lisäämällä ne Laajennukset-sivulla. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Pakkaus</translation>
+<translation id="9129931661813833980">Kiinnitä kansio</translation>
 <translation id="9130775360844693113">Paikan <ph name="DESTINATION_NAME" /> jäsenet saavat käyttöoikeuden näihin kohteisiin.</translation>
 <translation id="9131598836763251128">Valitse vähintään yksi tiedosto</translation>
 <translation id="9133055936679483811">Pakkaus epäonnistui. <ph name="ERROR_MESSAGE" /></translation>
@@ -695,6 +718,7 @@
 <translation id="942954117721265519">Tässä hakemistossa ei ole kuvia.</translation>
 <translation id="943972244133411984">Muokkaaja</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>
+<translation id="947144732524271678">Valittiin <ph name="ENTRY_COUNT" /> kohdetta välillä <ph name="FROM_ENTRY_NAME" /> ja <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="988685240266037636">Tiedosto nimeltä <ph name="FILE_NAME" /> on jo olemassa. Haluatko korvata sen?</translation>
 <translation id="996903396648773764"><ph name="NUMBER_OF_MB" /> Mt</translation>

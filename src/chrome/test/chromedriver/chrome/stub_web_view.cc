@@ -94,11 +94,11 @@ Status StubWebView::CallUserAsyncFunction(
   return Status(kOk);
 }
 
-Status StubWebView::CallUserSyncFunction(const std::string& frame,
-                                         const std::string& function,
-                                         const base::ListValue& args,
-                                         const base::TimeDelta& timeout,
-                                         std::unique_ptr<base::Value>* result) {
+Status StubWebView::CallUserSyncScript(const std::string& frame,
+                                       const std::string& script,
+                                       const base::ListValue& args,
+                                       const base::TimeDelta& timeout,
+                                       std::unique_ptr<base::Value>* result) {
   return Status(kOk);
 }
 
@@ -174,6 +174,11 @@ Status StubWebView::OverrideNetworkConditions(
   return Status(kOk);
 }
 
+Status StubWebView::OverrideDownloadDirectoryIfNeeded(
+    const std::string& download_directory) {
+  return Status(kOk);
+}
+
 Status StubWebView::CaptureScreenshot(
     std::string* screenshot,
     const base::DictionaryValue& params) {
@@ -210,22 +215,6 @@ Status StubWebView::SynthesizeScrollGesture(int x,
                                             int y,
                                             int xoffset,
                                             int yoffset) {
-  return Status(kOk);
-}
-
-Status StubWebView::SynthesizePinchGesture(int x, int y, double scale_factor) {
-  return Status(kOk);
-}
-
-Status StubWebView::GetScreenOrientation(std::string* orientation) {
-  return Status(kOk);
-}
-
-Status StubWebView::SetScreenOrientation(std::string orientation) {
-  return Status(kOk);
-}
-
-Status StubWebView::DeleteScreenOrientation() {
   return Status(kOk);
 }
 

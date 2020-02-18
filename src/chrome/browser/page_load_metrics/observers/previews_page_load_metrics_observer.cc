@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_content_util.h"
@@ -50,10 +49,6 @@ void RecordPageLoadHistogram(previews::PreviewsType previews_type,
 void RecordPageSizeHistograms(previews::PreviewsType previews_type,
                               int64_t num_network_resources,
                               int64_t network_bytes) {
-  // Match PAGE_RESOURCE_COUNT_HISTOGRAM params:
-  base::UmaHistogramCounts10000(GetHistogramNamePrefix(previews_type) +
-                                    "Experimental.CompletedResources.Network",
-                                num_network_resources);
   // Match PAGE_BYTES_HISTOGRAM params:
   base::UmaHistogramCustomCounts(
       GetHistogramNamePrefix(previews_type) +
@@ -124,7 +119,7 @@ PreviewsPageLoadMetricsObserver::OnCommit(
     return STOP_OBSERVING;
 
   previews_type_ = previews::GetMainFramePreviewsType(
-      previews_user_data->committed_previews_state());
+      previews_user_data->PreHoldbackCommittedPreviewsState());
   if (previews_type_ != previews::PreviewsType::NOSCRIPT &&
       previews_type_ != previews::PreviewsType::RESOURCE_LOADING_HINTS) {
     return STOP_OBSERVING;
@@ -224,7 +219,9 @@ void PreviewsPageLoadMetricsObserver::OnResourceDataUseObserved(
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
-    if (!resource->was_fetched_via_cache && resource->is_complete) {
+    if (resource->cache_type ==
+            page_load_metrics::mojom::CacheType::kNotCached &&
+        resource->is_complete) {
       num_network_resources_++;
     }
     total_network_bytes_ += resource->delta_bytes;

@@ -26,7 +26,6 @@
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -666,18 +666,20 @@ void AudioBufferSourceHandler::HandleStoppableSourceNode() {
 // ----------------------------------------------------------------
 AudioBufferSourceNode::AudioBufferSourceNode(BaseAudioContext& context)
     : AudioScheduledSourceNode(context),
-      playback_rate_(
-          AudioParam::Create(context,
-                             kParamTypeAudioBufferSourcePlaybackRate,
-                             1.0,
-                             AudioParamHandler::AutomationRate::kControl,
-                             AudioParamHandler::AutomationRateMode::kFixed)),
-      detune_(
-          AudioParam::Create(context,
-                             kParamTypeAudioBufferSourceDetune,
-                             0.0,
-                             AudioParamHandler::AutomationRate::kControl,
-                             AudioParamHandler::AutomationRateMode::kFixed)) {
+      playback_rate_(AudioParam::Create(
+          context,
+          Uuid(),
+          AudioParamHandler::kParamTypeAudioBufferSourcePlaybackRate,
+          1.0,
+          AudioParamHandler::AutomationRate::kControl,
+          AudioParamHandler::AutomationRateMode::kFixed)),
+      detune_(AudioParam::Create(
+          context,
+          Uuid(),
+          AudioParamHandler::kParamTypeAudioBufferSourceDetune,
+          0.0,
+          AudioParamHandler::AutomationRate::kControl,
+          AudioParamHandler::AutomationRateMode::kFixed)) {
   SetHandler(AudioBufferSourceHandler::Create(*this, context.sampleRate(),
                                               playback_rate_->Handler(),
                                               detune_->Handler()));

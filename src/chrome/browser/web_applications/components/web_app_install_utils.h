@@ -26,8 +26,9 @@ class WebContents;
 
 namespace web_app {
 
+enum class ExternalInstallSource;
+enum class InstallResultCode;
 struct BitmapAndSource;
-struct InstallOptions;
 
 enum class ForInstallableSite {
   kYes,
@@ -94,8 +95,12 @@ void UpdateWebAppIconsWithoutChangingLinks(
 // shown for this app.
 void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
 
-WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const InstallOptions& options);
+WebappInstallSource ConvertExternalInstallSourceToInstallSource(
+    ExternalInstallSource external_install_source);
+
+void RecordExternalAppInstallResultCode(
+    const char* histogram_name,
+    std::map<GURL, InstallResultCode> install_results);
 
 }  // namespace web_app
 

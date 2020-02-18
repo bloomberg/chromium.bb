@@ -44,11 +44,15 @@
 #include "vp9/common/vp9_tile_common.h"
 #include "vp9/common/vp9_scan.h"
 
+#if !CONFIG_REALTIME_ONLY
 #include "vp9/encoder/vp9_alt_ref_aq.h"
 #include "vp9/encoder/vp9_aq_360.h"
 #include "vp9/encoder/vp9_aq_complexity.h"
+#endif
 #include "vp9/encoder/vp9_aq_cyclicrefresh.h"
+#if !CONFIG_REALTIME_ONLY
 #include "vp9/encoder/vp9_aq_variance.h"
+#endif
 #include "vp9/encoder/vp9_bitstream.h"
 #if CONFIG_INTERNAL_STATS
 #include "vp9/encoder/vp9_blockiness.h"
@@ -127,6 +131,7 @@ void highbd_wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
 void wht_fwd_txfm(int16_t *src_diff, int bw, tran_low_t *coeff,
                   TX_SIZE tx_size);
 
+#if !CONFIG_REALTIME_ONLY
 // compute adaptive threshold for skip recoding
 static int compute_context_model_thresh(const VP9_COMP *const cpi) {
   const VP9_COMMON *const cm = &cpi->common;
@@ -451,6 +456,7 @@ static int compute_context_model_diff(const VP9_COMMON *const cm) {
 
   return -diff;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 // Test for whether to calculate metrics for the frame.
 static int is_psnr_calc_enabled(VP9_COMP *cpi) {
@@ -816,8 +822,28 @@ static void setup_frame(VP9_COMP *cpi) {
   // layer ARF case as well.
   if (cpi->multi_layer_arf && !cpi->use_svc) {
     GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    cm->frame_context_idx = clamp(gf_group->layer_depth[gf_group->index] - 1, 0,
-                                  FRAME_CONTEXTS - 1);
+    const int gf_group_index = gf_group->index;
+    const int boost_frame =
+        !cpi->rc.is_src_frame_alt_ref &&
+        (cpi->refresh_golden_frame || cpi->refresh_alt_ref_frame);
+
+    // frame_context_idx           Frame Type
+    //        0              Intra only frame, base layer ARF
+    //        1              ARFs with layer depth = 2,3
+    //        2              ARFs with layer depth > 3
+    //        3              Non-boosted frames
+    if (frame_is_intra_only(cm)) {
+      cm->frame_context_idx = 0;
+    } else if (boost_frame) {
+      if (gf_group->rf_level[gf_group_index] == GF_ARF_STD)
+        cm->frame_context_idx = 0;
+      else if (gf_group->layer_depth[gf_group_index] <= 3)
+        cm->frame_context_idx = 1;
+      else
+        cm->frame_context_idx = 2;
+    } else {
+      cm->frame_context_idx = 3;
+    }
   }
 
   if (cm->frame_type == KEY_FRAME) {
@@ -1507,13 +1533,15 @@ static void set_rc_buffer_sizes(RATE_CONTROL *rc,
 }
 
 #if CONFIG_VP9_HIGHBITDEPTH
+// TODO(angiebird): make sdx8f available for highbitdepth if needed
 #define HIGHBD_BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF) \
   cpi->fn_ptr[BT].sdf = SDF;                             \
   cpi->fn_ptr[BT].sdaf = SDAF;                           \
   cpi->fn_ptr[BT].vf = VF;                               \
   cpi->fn_ptr[BT].svf = SVF;                             \
   cpi->fn_ptr[BT].svaf = SVAF;                           \
-  cpi->fn_ptr[BT].sdx4df = SDX4DF;
+  cpi->fn_ptr[BT].sdx4df = SDX4DF;                       \
+  cpi->fn_ptr[BT].sdx8f = NULL;
 
 #define MAKE_BFP_SAD_WRAPPER(fnname)                                           \
   static unsigned int fnname##_bits8(const uint8_t *src_ptr,                   \
@@ -2180,7 +2208,9 @@ VP9_COMP *vp9_create_compressor(VP9EncoderConfig *oxcf,
       cm, cpi->skin_map,
       vpx_calloc(cm->mi_rows * cm->mi_cols, sizeof(cpi->skin_map[0])));
 
+#if !CONFIG_REALTIME_ONLY
   CHECK_MEM_ERROR(cm, cpi->alt_ref_aq, vp9_alt_ref_aq_create());
+#endif
 
   CHECK_MEM_ERROR(
       cm, cpi->consec_zero_mv,
@@ -2389,7 +2419,7 @@ VP9_COMP *vp9_create_compressor(VP9EncoderConfig *oxcf,
   vp9_set_speed_features_framesize_dependent(cpi, oxcf->speed);
 
   {
-    const int bsize = BLOCK_64X64;
+    const int bsize = BLOCK_16X16;
     const int w = num_8x8_blocks_wide_lookup[bsize];
     const int h = num_8x8_blocks_high_lookup[bsize];
     const int num_cols = (cm->mi_cols + w - 1) / w;
@@ -2410,62 +2440,67 @@ VP9_COMP *vp9_create_compressor(VP9EncoderConfig *oxcf,
   CHECK_MEM_ERROR(cm, cpi->source_diff_var, vpx_calloc(cm->MBs, sizeof(diff)));
   cpi->source_var_thresh = 0;
   cpi->frames_till_next_var_check = 0;
+#define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF, SDX8F) \
+  cpi->fn_ptr[BT].sdf = SDF;                             \
+  cpi->fn_ptr[BT].sdaf = SDAF;                           \
+  cpi->fn_ptr[BT].vf = VF;                               \
+  cpi->fn_ptr[BT].svf = SVF;                             \
+  cpi->fn_ptr[BT].svaf = SVAF;                           \
+  cpi->fn_ptr[BT].sdx4df = SDX4DF;                       \
+  cpi->fn_ptr[BT].sdx8f = SDX8F;
 
-#define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX4DF) \
-  cpi->fn_ptr[BT].sdf = SDF;                      \
-  cpi->fn_ptr[BT].sdaf = SDAF;                    \
-  cpi->fn_ptr[BT].vf = VF;                        \
-  cpi->fn_ptr[BT].svf = SVF;                      \
-  cpi->fn_ptr[BT].svaf = SVAF;                    \
-  cpi->fn_ptr[BT].sdx4df = SDX4DF;
-
+  // TODO(angiebird): make sdx8f available for every block size
   BFP(BLOCK_32X16, vpx_sad32x16, vpx_sad32x16_avg, vpx_variance32x16,
       vpx_sub_pixel_variance32x16, vpx_sub_pixel_avg_variance32x16,
-      vpx_sad32x16x4d)
+      vpx_sad32x16x4d, NULL)
 
   BFP(BLOCK_16X32, vpx_sad16x32, vpx_sad16x32_avg, vpx_variance16x32,
       vpx_sub_pixel_variance16x32, vpx_sub_pixel_avg_variance16x32,
-      vpx_sad16x32x4d)
+      vpx_sad16x32x4d, NULL)
 
   BFP(BLOCK_64X32, vpx_sad64x32, vpx_sad64x32_avg, vpx_variance64x32,
       vpx_sub_pixel_variance64x32, vpx_sub_pixel_avg_variance64x32,
-      vpx_sad64x32x4d)
+      vpx_sad64x32x4d, NULL)
 
   BFP(BLOCK_32X64, vpx_sad32x64, vpx_sad32x64_avg, vpx_variance32x64,
       vpx_sub_pixel_variance32x64, vpx_sub_pixel_avg_variance32x64,
-      vpx_sad32x64x4d)
+      vpx_sad32x64x4d, NULL)
 
   BFP(BLOCK_32X32, vpx_sad32x32, vpx_sad32x32_avg, vpx_variance32x32,
       vpx_sub_pixel_variance32x32, vpx_sub_pixel_avg_variance32x32,
-      vpx_sad32x32x4d)
+      vpx_sad32x32x4d, vpx_sad32x32x8)
 
   BFP(BLOCK_64X64, vpx_sad64x64, vpx_sad64x64_avg, vpx_variance64x64,
       vpx_sub_pixel_variance64x64, vpx_sub_pixel_avg_variance64x64,
-      vpx_sad64x64x4d)
+      vpx_sad64x64x4d, NULL)
 
   BFP(BLOCK_16X16, vpx_sad16x16, vpx_sad16x16_avg, vpx_variance16x16,
       vpx_sub_pixel_variance16x16, vpx_sub_pixel_avg_variance16x16,
-      vpx_sad16x16x4d)
+      vpx_sad16x16x4d, vpx_sad16x16x8)
 
   BFP(BLOCK_16X8, vpx_sad16x8, vpx_sad16x8_avg, vpx_variance16x8,
       vpx_sub_pixel_variance16x8, vpx_sub_pixel_avg_variance16x8,
-      vpx_sad16x8x4d)
+      vpx_sad16x8x4d, vpx_sad16x8x8)
 
   BFP(BLOCK_8X16, vpx_sad8x16, vpx_sad8x16_avg, vpx_variance8x16,
       vpx_sub_pixel_variance8x16, vpx_sub_pixel_avg_variance8x16,
-      vpx_sad8x16x4d)
+      vpx_sad8x16x4d, vpx_sad8x16x8)
 
   BFP(BLOCK_8X8, vpx_sad8x8, vpx_sad8x8_avg, vpx_variance8x8,
-      vpx_sub_pixel_variance8x8, vpx_sub_pixel_avg_variance8x8, vpx_sad8x8x4d)
+      vpx_sub_pixel_variance8x8, vpx_sub_pixel_avg_variance8x8, vpx_sad8x8x4d,
+      vpx_sad8x8x8)
 
   BFP(BLOCK_8X4, vpx_sad8x4, vpx_sad8x4_avg, vpx_variance8x4,
-      vpx_sub_pixel_variance8x4, vpx_sub_pixel_avg_variance8x4, vpx_sad8x4x4d)
+      vpx_sub_pixel_variance8x4, vpx_sub_pixel_avg_variance8x4, vpx_sad8x4x4d,
+      NULL)
 
   BFP(BLOCK_4X8, vpx_sad4x8, vpx_sad4x8_avg, vpx_variance4x8,
-      vpx_sub_pixel_variance4x8, vpx_sub_pixel_avg_variance4x8, vpx_sad4x8x4d)
+      vpx_sub_pixel_variance4x8, vpx_sub_pixel_avg_variance4x8, vpx_sad4x8x4d,
+      NULL)
 
   BFP(BLOCK_4X4, vpx_sad4x4, vpx_sad4x4_avg, vpx_variance4x4,
-      vpx_sub_pixel_variance4x4, vpx_sub_pixel_avg_variance4x4, vpx_sad4x4x4d)
+      vpx_sub_pixel_variance4x4, vpx_sub_pixel_avg_variance4x4, vpx_sad4x4x4d,
+      vpx_sad4x4x8)
 
 #if CONFIG_VP9_HIGHBITDEPTH
   highbd_set_var_fns(cpi);
@@ -2655,7 +2690,9 @@ void vp9_remove_compressor(VP9_COMP *cpi) {
     vp9_bitstream_encode_tiles_buffer_dealloc(cpi);
   }
 
+#if !CONFIG_REALTIME_ONLY
   vp9_alt_ref_aq_destroy(cpi->alt_ref_aq);
+#endif
 
   dealloc_compressor_data(cpi);
 
@@ -2942,6 +2979,7 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
 }
 #endif  // CONFIG_VP9_HIGHBITDEPTH
 
+#if !CONFIG_REALTIME_ONLY
 static int scale_down(VP9_COMP *cpi, int q) {
   RATE_CONTROL *const rc = &cpi->rc;
   GF_GROUP *const gf_group = &cpi->twopass.gf_group;
@@ -3045,14 +3083,19 @@ static int recode_loop_test(VP9_COMP *cpi, int high_limit, int low_limit, int q,
   }
   return force_recode;
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static void update_ref_frames(VP9_COMP *cpi) {
   VP9_COMMON *const cm = &cpi->common;
   BufferPool *const pool = cm->buffer_pool;
   GF_GROUP *const gf_group = &cpi->twopass.gf_group;
 
-  // Pop ARF.
-  if (cm->show_existing_frame) {
+  if (cpi->rc.show_arf_as_gld) {
+    int tmp = cpi->alt_fb_idx;
+    cpi->alt_fb_idx = cpi->gld_fb_idx;
+    cpi->gld_fb_idx = tmp;
+  } else if (cm->show_existing_frame) {
+    // Pop ARF.
     cpi->lst_fb_idx = cpi->alt_fb_idx;
     cpi->alt_fb_idx =
         stack_pop(gf_group->arf_index_stack, gf_group->stack_size);
@@ -3556,7 +3599,8 @@ static void set_size_dependent_vars(VP9_COMP *cpi, int *q, int *bottom_index,
           vpx_calloc(cpi->un_scaled_source->y_width,
                      sizeof(*cpi->common.postproc_state.limits));
     }
-    vp9_denoise(cpi->Source, cpi->Source, l, cpi->common.postproc_state.limits);
+    vp9_denoise(&cpi->common, cpi->Source, cpi->Source, l,
+                cpi->common.postproc_state.limits);
   }
 #endif  // CONFIG_VP9_POSTPROC
 }
@@ -3972,6 +4016,7 @@ static int encode_without_recode_loop(VP9_COMP *cpi, size_t *size,
     }
   }
 
+#if !CONFIG_REALTIME_ONLY
   // Variance adaptive and in frame q adjustment experiments are mutually
   // exclusive.
   if (cpi->oxcf.aq_mode == VARIANCE_AQ) {
@@ -3980,15 +4025,20 @@ static int encode_without_recode_loop(VP9_COMP *cpi, size_t *size,
     vp9_360aq_frame_setup(cpi);
   } else if (cpi->oxcf.aq_mode == COMPLEXITY_AQ) {
     vp9_setup_in_frame_q_adj(cpi);
-  } else if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
-    vp9_cyclic_refresh_setup(cpi);
   } else if (cpi->oxcf.aq_mode == LOOKAHEAD_AQ) {
     // it may be pretty bad for rate-control,
     // and I should handle it somehow
     vp9_alt_ref_aq_setup_map(cpi->alt_ref_aq, cpi);
-  } else if (cpi->roi.enabled && !frame_is_intra_only(cm)) {
-    apply_roi_map(cpi);
+  } else {
+#endif
+    if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
+      vp9_cyclic_refresh_setup(cpi);
+    } else if (cpi->roi.enabled && !frame_is_intra_only(cm)) {
+      apply_roi_map(cpi);
+    }
+#if !CONFIG_REALTIME_ONLY
   }
+#endif
 
   apply_active_map(cpi);
 
@@ -4041,6 +4091,7 @@ static int encode_without_recode_loop(VP9_COMP *cpi, size_t *size,
   return 1;
 }
 
+#if !CONFIG_REALTIME_ONLY
 #define MAX_QSTEP_ADJ 4
 static int get_qstep_adj(int rate_excess, int rate_limit) {
   int qstep =
@@ -4403,6 +4454,7 @@ static void encode_with_recode_loop(VP9_COMP *cpi, size_t *size,
     restore_coding_context(cpi);
   }
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 static int get_ref_frame_flags(const VP9_COMP *cpi) {
   const int *const map = cpi->common.ref_frame_map;
@@ -4696,6 +4748,7 @@ static void spatial_denoise_frame(VP9_COMP *cpi) {
 }
 #endif  // ENABLE_KF_DENOISE
 
+#if !CONFIG_REALTIME_ONLY
 static void vp9_try_disable_lookahead_aq(VP9_COMP *cpi, size_t *size,
                                          uint8_t *dest) {
   if (cpi->common.seg.enabled)
@@ -4719,6 +4772,7 @@ static void vp9_try_disable_lookahead_aq(VP9_COMP *cpi, size_t *size,
         vp9_enable_segmentation(&cpi->common.seg);
     }
 }
+#endif
 
 static void set_frame_index(VP9_COMP *cpi, VP9_COMMON *cm) {
   RefCntBuffer *const ref_buffer = get_ref_cnt_buffer(cm, cm->new_fb_idx);
@@ -4737,15 +4791,9 @@ static void set_frame_index(VP9_COMP *cpi, VP9_COMMON *cm) {
 // Some sample values are:
 // (for midres test set)
 // SSIM_VAR_SCALE  avg_psnr   ssim   ms_ssim
-//     16.0          2.312   -3.062  -3.882
-//     32.0          0.852   -2.260  -2.821
-//     64.0          0.294   -1.606  -1.925
-// (for midres_10bd test set)
-// SSIM_VAR_SCALE  avg_psnr   ssim   ms_ssim
-//      8.0          6.782   -3.872  -5.464
-//     16.0          3.189   -4.083  -5.258
-//     32.0          1.113   -3.423  -4.309
-//     64.0          0.241   -2.515  -3.074
+//      8.0          9.421   -5.537  -6.898
+//     16.0          4.703   -5.378  -6.238
+//     32.0          1.929   -4.308  -4.807
 #define SSIM_VAR_SCALE 16.0
 static void set_mb_ssim_rdmult_scaling(VP9_COMP *cpi) {
   VP9_COMMON *cm = &cpi->common;
@@ -4754,7 +4802,7 @@ static void set_mb_ssim_rdmult_scaling(VP9_COMP *cpi) {
   MACROBLOCKD *xd = &x->e_mbd;
   uint8_t *y_buffer = cpi->Source->y_buffer;
   const int y_stride = cpi->Source->y_stride;
-  const int block_size = BLOCK_64X64;
+  const int block_size = BLOCK_16X16;
 
   const int num_8x8_w = num_8x8_blocks_wide_lookup[block_size];
   const int num_8x8_h = num_8x8_blocks_high_lookup[block_size];
@@ -4763,18 +4811,7 @@ static void set_mb_ssim_rdmult_scaling(VP9_COMP *cpi) {
   double log_sum = 0.0;
   int row, col;
 
-#if CONFIG_VP9_HIGHBITDEPTH
-  double c2;
-  if (xd->bd == 10) {
-    c2 = 941.8761;  // (.03*1023)^2
-  } else if (xd->bd == 12) {
-    c2 = 15092.1225;  // (.03*4095)^2
-  } else {
-    c2 = 58.5225;  // (.03*255)^2
-  }
-#else
-  const double c2 = 58.5225;  // (.03*255)^2
-#endif
+  const double c2 = 58.5225 * SSIM_VAR_SCALE;  // 58.5225 = (.03*255)^2
 
   // Loop through each 64x64 block.
   for (row = 0; row < num_rows; ++row) {
@@ -4797,18 +4834,18 @@ static void set_mb_ssim_rdmult_scaling(VP9_COMP *cpi) {
           // In order to make SSIM_VAR_SCALE in a same scale for both 8 bit
           // and high bit videos, the variance needs to be divided by 2.0 or
           // 64.0 separately.
+          // TODO(sdeng): need to tune for 12bit videos.
 #if CONFIG_VP9_HIGHBITDEPTH
           if (cpi->Source->flags & YV12_FLAG_HIGHBITDEPTH)
-            var +=
-                vp9_high_get_sby_variance(cpi, &buf, BLOCK_8X8, xd->bd) / 2.0;
+            var += vp9_high_get_sby_variance(cpi, &buf, BLOCK_8X8, xd->bd);
           else
 #endif
-            var += vp9_get_sby_variance(cpi, &buf, BLOCK_8X8) / 64.0;
+            var += vp9_get_sby_variance(cpi, &buf, BLOCK_8X8);
 
           num_of_var += 1.0;
         }
       }
-      var = var / num_of_var / SSIM_VAR_SCALE;
+      var = var / num_of_var / 64.0;
       var = 2.0 * var + c2;
       cpi->mi_ssim_rdmult_scaling_factors[index] = var;
       log_sum += log(var);
@@ -5054,7 +5091,9 @@ static void encode_frame_to_data_rate(VP9_COMP *cpi, size_t *size,
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     if (!encode_without_recode_loop(cpi, size, dest)) return;
   } else {
+#if !CONFIG_REALTIME_ONLY
     encode_with_recode_loop(cpi, size, dest);
+#endif
   }
 
   // TODO(jingning): When using show existing frame mode, we assume that the
@@ -5066,9 +5105,11 @@ static void encode_frame_to_data_rate(VP9_COMP *cpi, size_t *size,
                cm->ref_frame_map[cpi->alt_fb_idx]);
   }
 
+#if !CONFIG_REALTIME_ONLY
   // Disable segmentation if it decrease rate/distortion ratio
   if (cpi->oxcf.aq_mode == LOOKAHEAD_AQ)
     vp9_try_disable_lookahead_aq(cpi, size, dest);
+#endif
 
 #if CONFIG_VP9_TEMPORAL_DENOISING
 #ifdef OUTPUT_YUV_DENOISED
@@ -5228,8 +5269,10 @@ static void encode_frame_to_data_rate(VP9_COMP *cpi, size_t *size,
 
   cpi->force_update_segmentation = 0;
 
+#if !CONFIG_REALTIME_ONLY
   if (cpi->oxcf.aq_mode == LOOKAHEAD_AQ)
     vp9_alt_ref_aq_unset_all(cpi->alt_ref_aq, cpi);
+#endif
 
   cpi->svc.previous_frame_is_intra_only = cm->intra_only;
   cpi->svc.set_intra_only_frame = 0;
@@ -5867,10 +5910,9 @@ static uint32_t motion_compensated_prediction(VP9_COMP *cpi, ThreadData *td,
 #if CONFIG_NON_GREEDY_MV
   // lambda is used to adjust the importance of motion vector consitency.
   // TODO(angiebird): Figure out lambda's proper value.
-  double lambda = cpi->tpl_stats[frame_idx].lambda;
+  const int lambda = cpi->tpl_stats[frame_idx].lambda;
   int_mv nb_full_mvs[NB_MVS_NUM];
-  double mv_dist;
-  double mv_cost;
+  int nb_full_mv_num;
 #endif
 
   MV best_ref_mv1 = { 0, 0 };
@@ -5893,11 +5935,11 @@ static uint32_t motion_compensated_prediction(VP9_COMP *cpi, ThreadData *td,
 #if CONFIG_NON_GREEDY_MV
   (void)search_method;
   (void)sadpb;
-  vp9_prepare_nb_full_mvs(&cpi->tpl_stats[frame_idx], mi_row, mi_col, rf_idx,
-                          bsize, nb_full_mvs);
+  nb_full_mv_num = vp9_prepare_nb_full_mvs(&cpi->tpl_stats[frame_idx], mi_row,
+                                           mi_col, rf_idx, bsize, nb_full_mvs);
   vp9_full_pixel_diamond_new(cpi, x, &best_ref_mv1_full, step_param, lambda, 1,
-                             &cpi->fn_ptr[bsize], nb_full_mvs, NB_MVS_NUM, mv,
-                             &mv_dist, &mv_cost);
+                             &cpi->fn_ptr[bsize], nb_full_mvs, nb_full_mv_num,
+                             mv);
 #else
   (void)frame_idx;
   (void)mi_row;
@@ -6773,7 +6815,8 @@ static void build_motion_field(VP9_COMP *cpi, MACROBLOCKD *xd, int frame_idx,
   int fs_loc_heap_size;
   int mi_row, mi_col;
 
-  tpl_frame->lambda = (pw * ph) / 4;
+  tpl_frame->lambda = (pw * ph) >> 2;
+  assert(pw * ph == tpl_frame->lambda << 2);
 
   fs_loc_sort_size = 0;
   for (mi_row = 0; mi_row < cm->mi_rows; mi_row += mi_height) {

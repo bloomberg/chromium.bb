@@ -5,8 +5,6 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
-#include <set>
-#include <string>
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -80,7 +78,7 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
 
 // Extract a substring from |source| from [start to end), trimming leading
 // whitespace.
-std::string ExtractAndTrimString(std::string source, size_t start, size_t end) {
+String ExtractAndTrimString(String source, size_t start, size_t end) {
   DCHECK(start < source.length());
   DCHECK(end <= source.length());
   DCHECK(start <= end);
@@ -88,27 +86,28 @@ std::string ExtractAndTrimString(std::string source, size_t start, size_t end) {
   while (start < end && source[start] == ' ')
     ++start;
   if (start < end)
-    return source.substr(start, end - start);
+    return source.Substring(start, end - start);
   return "";
 }
 
-std::set<std::string> TaskTypesFromFieldTrialParam(const char* param) {
-  std::set<std::string> result;
-  std::string task_type_list = base::GetFieldTrialParamValueByFeature(
-      kThrottleAndFreezeTaskTypes, param);
+HashSet<String> TaskTypesFromFieldTrialParam(const char* param) {
+  HashSet<String> result;
+  String task_type_list =
+      String::FromUTF8(base::GetFieldTrialParamValueByFeature(
+          kThrottleAndFreezeTaskTypes, param));
   if (!task_type_list.length())
     return result;
   // Extract the individual names, separated by ",".
   size_t pos = 0, start = 0;
-  while ((pos = task_type_list.find(',', start)) != std::string::npos) {
-    std::string task_type = ExtractAndTrimString(task_type_list, start, pos);
+  while ((pos = task_type_list.find(',', start)) != kNotFound) {
+    String task_type = ExtractAndTrimString(task_type_list, start, pos);
     // Not valid to start with "," or have ",," in the list.
     DCHECK(task_type.length());
     result.insert(task_type);
     start = pos + 1;
   }
   // Handle the last or only task type name.
-  std::string task_type =
+  String task_type =
       ExtractAndTrimString(task_type_list, start, task_type_list.length());
   DCHECK(task_type.length());
   result.insert(task_type);
@@ -218,9 +217,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
           "FrameScheduler.KeepActive",
           this,
           &tracing_controller_,
-          KeepActiveStateToString),
-      document_bound_weak_factory_(this),
-      weak_factory_(this) {
+          KeepActiveStateToString) {
   frame_task_queue_controller_.reset(
       new FrameTaskQueueController(main_thread_scheduler_, this, this));
 }
@@ -238,7 +235,7 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
   DCHECK(queue);
 
   queue->DetachFromMainThreadScheduler();
-  queue->DetachFromFrameScheduler();
+  DCHECK(!queue->GetFrameScheduler());
   queue->SetBlameContext(nullptr);
 }
 
@@ -262,6 +259,10 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
     if (opted_out_from_aggressive_throttling())
       parent_page_scheduler_->OnAggressiveThrottlingStatusUpdated();
   }
+
+  // Can be null in tests.
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->OnFrameSchedulerDestroyed(this);
 }
 
 void FrameSchedulerImpl::DetachFromPageScheduler() {
@@ -368,8 +369,8 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
             static_cast<size_t>(TaskType::kCount));
   // Using std set and strings here because field trial parameters are std
   // strings, and we cannot use WTF strings as Blink is not yet initialized.
-  std::set<std::string> throttleable_task_type_names;
-  std::set<std::string> freezable_task_type_names;
+  HashSet<String> throttleable_task_type_names;
+  HashSet<String> freezable_task_type_names;
   if (base::FeatureList::IsEnabled(kThrottleAndFreezeTaskTypes)) {
     throttleable_task_type_names =
         TaskTypesFromFieldTrialParam(kThrottleableTaskTypesListParam);
@@ -380,19 +381,19 @@ void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
     TaskType type = static_cast<TaskType>(i);
     base::Optional<QueueTraits> queue_traits =
         CreateQueueTraitsForTaskType(type);
-    if (queue_traits && (!throttleable_task_type_names.empty() ||
-                         !freezable_task_type_names.empty())) {
+    if (queue_traits && (!throttleable_task_type_names.IsEmpty() ||
+                         !freezable_task_type_names.IsEmpty())) {
       const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
-      if (throttleable_task_type_names.erase(task_type_name))
+      if (!throttleable_task_type_names.Take(task_type_name).IsEmpty())
         queue_traits->SetCanBeThrottled(true);
-      if (freezable_task_type_names.erase(task_type_name))
+      if (freezable_task_type_names.Take(task_type_name).IsEmpty())
         queue_traits->SetCanBeFrozen(true);
     }
     frame_task_types_to_queue_traits[i] = queue_traits;
   }
   // Protect against configuration errors.
-  DCHECK(throttleable_task_type_names.empty());
-  DCHECK(freezable_task_type_names.empty());
+  DCHECK(throttleable_task_type_names.IsEmpty());
+  DCHECK(freezable_task_type_names.IsEmpty());
 }
 
 // static
@@ -401,7 +402,7 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     // kInternalContentCapture uses BestEffortTaskQueue and is handled
-    // sparately.
+    // separately.
     case TaskType::kInternalContentCapture:
     case TaskType::kJavascriptTimer:
       return ThrottleableTaskQueueTraits();
@@ -410,10 +411,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kNetworkingWithURLLoaderAnnotation:
     case TaskType::kNetworkingControl:
       // Loading task queues are handled separately.
-      return base::nullopt;
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      // WebScheduling queues are handled separately.
       return base::nullopt;
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
@@ -452,23 +449,33 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     // Media events should not be deferred to ensure that media playback is
     // smooth.
     case TaskType::kMediaElementEvent:
-    case TaskType::kDatabaseAccess:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
+    case TaskType::kInternalContinueScriptLoading:
       return PausableTaskQueueTraits();
+    case TaskType::kDatabaseAccess:
+      if (base::FeatureList::IsEnabled(kHighPriorityDatabaseTaskType))
+        return PausableTaskQueueTraits().SetIsHighPriority(true);
+      else
+        return PausableTaskQueueTraits();
+    case TaskType::kInternalFreezableIPC:
+      return FreezableTaskQueueTraits();
     case TaskType::kInternalIPC:
-    // The TaskType of Inspector tasks needs to be unpausable because they need
-    // to run even on a paused page.
-    case TaskType::kInternalInspector:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:
+    // kWebLocks can be frozen if for entire page, but not for individual
+    // frames. See https://crrev.com/c/1687716
+    case TaskType::kWebLocks:
       return UnpausableTaskQueueTraits();
     case TaskType::kInternalTranslation:
       return ForegroundOnlyTaskQueueTraits();
+    // The TaskType of Inspector tasks need to be unpausable and should not use virtual time
+    // because they need to run on a paused page or when virtual time is paused.
+    case TaskType::kInternalInspector:
     // Navigation IPCs do not run using virtual time to avoid hanging.
     case TaskType::kInternalNavigationAssociated:
       return DoesNotUseVirtualTimeTaskQueueTraits();
@@ -508,24 +515,16 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
   switch (type) {
+    case TaskType::kInternalContinueScriptLoading:
+      return frame_task_queue_controller_->VeryHighPriorityTaskQueue();
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
     case TaskType::kNetworkingWithURLLoaderAnnotation:
       return frame_task_queue_controller_->LoadingTaskQueue();
     case TaskType::kNetworkingControl:
       return frame_task_queue_controller_->LoadingControlTaskQueue();
-    case TaskType::kInternalInspector:
-      return frame_task_queue_controller_->InspectorTaskQueue();
     case TaskType::kInternalContentCapture:
       return frame_task_queue_controller_->BestEffortTaskQueue();
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
-          FrameTaskQueueController::WebSchedulingTaskQueueType::
-              kWebSchedulingUserVisiblePriority);
-    case TaskType::kExperimentalWebSchedulingBestEffort:
-      return frame_task_queue_controller_->ExperimentalWebSchedulingTaskQueue(
-          FrameTaskQueueController::WebSchedulingTaskQueueType::
-              kWebSchedulingBestEffortPriority);
     default:
       // Non-loading task queue.
       DCHECK_LT(static_cast<size_t>(type),
@@ -787,6 +786,17 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
   UpdatePolicy();
 }
 
+void FrameSchedulerImpl::SetShouldReportPostedTasksWhenDisabled(
+    bool should_report) {
+  // Forward this to all the task queues associated with this frame.
+  for (const auto& task_queue_and_voter :
+       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
+    auto* task_queue = task_queue_and_voter.first;
+    if (task_queue->CanBeFrozen())
+      task_queue->SetShouldReportPostedTasksWhenDisabled(should_report);
+  }
+}
+
 void FrameSchedulerImpl::SetPageFrozenForTracing(bool frozen) {
   page_frozen_for_tracing_ = frozen;
 }
@@ -990,16 +1000,6 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
     }
   }
 
-  if (task_queue->queue_type() ==
-      MainThreadTaskQueue::QueueType::kWebSchedulingUserInteraction) {
-    return TaskQueue::QueuePriority::kNormalPriority;
-  }
-
-  if (task_queue->queue_type() ==
-      MainThreadTaskQueue::QueueType::kWebSchedulingBestEffort) {
-    return TaskQueue::QueuePriority::kLowPriority;
-  }
-
   return task_queue->queue_type() ==
                  MainThreadTaskQueue::QueueType::kFrameLoadingControl
              ? TaskQueue::QueuePriority::kHighPriority
@@ -1098,7 +1098,8 @@ FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
       .SetCanBeThrottled(true)
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
 }
 
 // static
@@ -1108,31 +1109,44 @@ FrameSchedulerImpl::DeferrableTaskQueueTraits() {
       .SetCanBeDeferred(true)
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
 }
 
 // static
-MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::PausableTaskQueueTraits() {
   return QueueTraits()
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
+}
+
+// static
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::FreezableTaskQueueTraits() {
+  // Should not use VirtualTime because using VirtualTime would make the task
+  // execution non-deterministic and produce timeouts failures.
+  return QueueTraits().SetCanBeFrozen(true);
 }
 
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::UnpausableTaskQueueTraits() {
-  return QueueTraits();
+  return QueueTraits().SetShouldUseVirtualTime(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
-  return ThrottleableTaskQueueTraits().SetCanRunInBackground(false);
+  return ThrottleableTaskQueueTraits()
+      .SetCanRunInBackground(false)
+      .SetShouldUseVirtualTime(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
-  return UnpausableTaskQueueTraits().SetShouldUseVirtualTime(false);
+  return QueueTraits().SetShouldUseVirtualTime(false);
 }
 
 }  // namespace scheduler

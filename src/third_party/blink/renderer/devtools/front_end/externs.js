@@ -544,7 +544,7 @@ CodeMirror.prototype = {
 };
 /** @type {!{cursorDiv: Element, lineSpace: Element, gutters: Element}} */
 CodeMirror.prototype.display;
-/** @type {!{mode: string, lineWrapping: boolean}} */
+/** @type {!{devtoolsAccessibleName: string, mode: string, lineWrapping: boolean}} */
 CodeMirror.prototype.options;
 /** @type {!Object} */
 CodeMirror.Pass;
@@ -663,6 +663,17 @@ CodeMirror.defineMIME = function(mime, mode) {};
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
+
+/**
+ * Inserts the given HTML Element into the node at the location.
+ * @param {string} where Where to insert the HTML text, one of 'beforeBegin',
+ *     'afterBegin', 'beforeEnd', 'afterEnd'.
+ * @param {!Element} element DOM Element to insert.
+ * @return {?Element} The element that was inserted, or null, if the
+ *     insertion failed.
+ * @see https://dom.spec.whatwg.org/#dom-element-insertadjacentelement
+ */
+Node.prototype.insertAdjacentElement = function(where, element) {};
 
 /**
  * @param {Array.<Object>} keyframes
@@ -909,7 +920,13 @@ ReportRenderer.prototype = {
  * @constructor
  * @param {!DOM} dom
  */
-const ReportUIFeatures = function(dom) {};
+const ReportUIFeatures = function(dom) {
+  /** @type {!ReportRenderer.ReportJSON} */
+  this.json;
+
+  /** @type {!Document} */
+  this._document;
+};
 
 ReportUIFeatures.prototype = {
   /**
@@ -921,6 +938,8 @@ ReportUIFeatures.prototype = {
    * @param {!ReportRenderer.ReportJSON} report
    */
   initFeatures: function(report) {},
+
+  _resetUIState: function() {},
 };
 
 /**

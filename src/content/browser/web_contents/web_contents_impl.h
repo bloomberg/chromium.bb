@@ -22,6 +22,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/process/process.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -53,31 +54,39 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
 #include "net/base/load_states.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/common/frame/blocked_navigation_types.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/native_theme/dark_mode_observer.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/native_theme_observer.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/nfc_host.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
+namespace base {
+class FilePath;
+}
+
 namespace service_manager {
 class InterfaceProvider;
 }
 
 namespace content {
+enum class PictureInPictureResult;
 class BrowserPluginEmbedder;
 class BrowserPluginGuest;
 class DateTimeChooserAndroid;
@@ -99,7 +108,7 @@ class RenderWidgetHostInputEventRouter;
 class SavePackage;
 class ScreenOrientationProvider;
 class SiteInstance;
-class TestWCBeforeUnloadDelegate;  // site_per_process_browsertest.cc
+class BeforeUnloadBlockingDelegate;  // content_browser_test_utils_internal.h
 class
     TestWCDelegateForDialogsAndFullscreen;  // web_contents_impl_browsertest.cc
 class TestWebContents;
@@ -143,7 +152,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        public blink::mojom::ColorChooserFactory,
                                        public NotificationObserver,
                                        public NavigationControllerDelegate,
-                                       public NavigatorDelegate {
+                                       public NavigatorDelegate,
+                                       public ui::NativeThemeObserver {
  public:
   class FriendWrapper;
 
@@ -344,7 +354,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetAudioMuted(bool mute) override;
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
-  bool IsConnectedToSerialPort() const override;
+  bool IsConnectedToSerialPort() override;
+  bool HasNativeFileSystemDirectoryHandles() override;
+  std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() override;
+  bool HasWritableNativeFileSystemHandles() override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -368,6 +381,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<WebContents*> GetInnerWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
+  void OnCookiesRead(const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override;
+  void OnCookieChange(const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override;
 
   void Stop() override;
   void SetPageFrozen(bool frozen) override;
@@ -452,6 +473,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsFullscreenForCurrentTab() override;
   bool ShouldShowStaleContentOnEviction() override;
   void ExitFullscreen(bool will_cause_resize) override;
+  void ForSecurityDropFullscreen() override;
   void ResumeLoadingCreatedWebContents() override;
   void SetIsOverlayContent(bool is_overlay_content) override;
   bool IsFocusedElementEditable() override;
@@ -460,6 +482,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetShowingContextMenu(bool showing) override;
   base::UnguessableToken GetAudioGroupId() override;
   bool CompletedFirstVisuallyNonEmptyPaint() override;
+  ukm::SourceId GetLastCommittedSourceId() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -487,7 +510,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
-  void OnDidBlockFramebust(const GURL& url) override;
+  void OnDidBlockNavigation(const GURL& blocked_url,
+                            const GURL& initiator_url,
+                            blink::NavigationBlockedReason reason) override;
   const GURL& GetMainFrameLastCommittedURL() override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -655,8 +680,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                     MediaResponseCallback callback) override;
   bool CheckMediaAccessPermission(RenderFrameHost* render_frame_host,
                                   const url::Origin& security_origin,
-                                  blink::MediaStreamType type) override;
-  std::string GetDefaultMediaDeviceID(blink::MediaStreamType type) override;
+                                  blink::mojom::MediaStreamType type) override;
+  std::string GetDefaultMediaDeviceID(
+      blink::mojom::MediaStreamType type) override;
   SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) override;
   SessionStorageNamespaceMap GetSessionStorageNamespaceMap() override;
@@ -725,6 +751,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   gfx::Size GetAutoResizeSize() override;
   void ResetAutoResizeSize() override;
   InputEventShim* GetInputEventShim() const override;
+  void NotifyVisibleViewportSizeChanged(
+      const gfx::Size& visible_viewport_size) override;
+  RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate() override;
 
 #if !defined(OS_ANDROID)
   double GetPendingPageZoomLevel() override;
@@ -947,6 +976,17 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void IncrementSerialActiveFrameCount();
   void DecrementSerialActiveFrameCount();
 
+  // Add and remove a reference for a native file system directory handle for a
+  // certain |path|. Multiple Add calls should be balanced by the same number of
+  // Remove calls for the same |path|.
+  void AddNativeFileSystemDirectoryHandle(const base::FilePath& path);
+  void RemoveNativeFileSystemDirectoryHandle(const base::FilePath& path);
+
+  // Modify the counter of native file system handles with write access for this
+  // WebContents.
+  void IncrementWritableNativeFileSystemHandleCount();
+  void DecrementWritableNativeFileSystemHandleCount();
+
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool has_persistent_video);
 
@@ -962,11 +1002,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |IsFullscreen| must return |true| when this method is called.
   bool IsPictureInPictureAllowedForFullscreenVideo() const;
 
-  // The WebContents is trying to take some action that would cause user
-  // confusion if taken while in fullscreen. If this WebContents or any outer
-  // WebContents is in fullscreen, drop it.
-  void ForSecurityDropFullscreen();
-
   // When inner or outer WebContents are present, become the focused
   // WebContentsImpl. This will activate this content's main frame RenderWidget
   // and indirectly all its subframe widgets.  GetFocusedRenderWidgetHost will
@@ -981,9 +1016,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Notifies the Picture-in-Picture controller that there is a new player
   // entering Picture-in-Picture.
-  // Returns the size of the Picture-in-Picture window.
-  gfx::Size EnterPictureInPicture(const viz::SurfaceId&,
-                                  const gfx::Size& natural_size);
+  // Returns the result of the enter request.
+  PictureInPictureResult EnterPictureInPicture(const viz::SurfaceId&,
+                                               const gfx::Size& natural_size);
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.
@@ -1041,13 +1076,16 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
     return javascript_dialog_navigation_deferrer_.get();
   }
 
+  // Returns the focused frame's input handler.
+  mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 
   friend class RenderFrameHostImplBeforeUnloadBrowserTest;
   friend class WebContentsImplBrowserTest;
-  friend class TestWCBeforeUnloadDelegate;
+  friend class BeforeUnloadBlockingDelegate;
   friend class TestWCDelegateForDialogsAndFullscreen;
 
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
@@ -1252,6 +1290,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           int maximum_percent);
   void OnPageScaleFactorChanged(RenderViewHostImpl* source,
                                 float page_scale_factor);
+  void OnTextAutosizerPageInfoChanged(
+      RenderViewHostImpl* source,
+      const blink::WebTextAutosizerPageInfo& page_info);
 
   void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
                                  const std::string& protocol,
@@ -1472,9 +1513,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
-  // Called by DarkModeObserver when the dark mode state changes; triggers a
-  // preference update.
-  void OnDarkModeChanged(bool dark_mode);
+  // ui::NativeThemeObserver:
+  void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
 
   // Data for core operation ---------------------------------------------------
 
@@ -1777,6 +1817,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   size_t bluetooth_connected_device_count_ = 0;
   size_t serial_active_frame_count_ = 0;
 
+  std::map<base::FilePath, size_t> native_file_system_directory_handles_;
+  size_t native_file_system_writable_handle_count_ = 0;
+
   bool has_picture_in_picture_video_ = false;
 
   // Notifies ResourceDispatcherHostImpl of various events related to loading.
@@ -1870,12 +1913,20 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
 
-  // Observe dark mode native theme changes to notify the renderer about
-  // preferred color scheme changes.
-  ui::DarkModeObserver dark_mode_observer_{
-      ui::NativeTheme::GetInstanceForWeb(),
-      base::BindRepeating(&WebContentsImpl::OnDarkModeChanged,
-                          base::Unretained(this))};
+  // Stores information from the main frame's renderer that needs to be shared
+  // with OOPIF renderers.
+  blink::WebTextAutosizerPageInfo text_autosizer_page_info_;
+
+  // Observe native theme for changes to dark mode, high contrast and preferred
+  // color scheme. Used to notify the renderer of preferred color scheme and
+  // forced colors changes.
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver>
+      native_theme_observer_;
+
+  bool in_high_contrast_ = false;
+  bool in_dark_mode_ = false;
+  ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
+      ui::NativeTheme::PreferredColorScheme::kNoPreference;
 
   // TODO(crbug.com/934637): Remove this field when pdf/any inner web contents
   // user gesture is properly propagated. This is a temporary fix for history
@@ -1887,8 +1938,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<JavaScriptDialogNavigationDeferrer>
       javascript_dialog_navigation_deferrer_;
 
-  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
-  base::WeakPtrFactory<WebContentsImpl> weak_factory_;
+  base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_{this};
+  base::WeakPtrFactory<WebContentsImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

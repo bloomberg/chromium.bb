@@ -19,9 +19,7 @@
 #include "ui/views/view.h"
 
 class ToolbarView;
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
 enum class InProductHelpFeature;
-#endif
 
 // The app menu button in the main browser window (as opposed to hosted app
 // windows, which is implemented in HostedAppMenuButton).
@@ -42,12 +40,10 @@ class BrowserAppMenuButton : public AppMenuButton,
   // with the menu.
   void ShowMenu(int run_types);
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // Called to inform the button that it's being used as an anchor for a promo
   // for |promo_feature|.  When this is non-null, the button is highlighted in a
   // noticeable color, and the menu item appearance may be affected.
   void SetPromoFeature(base::Optional<InProductHelpFeature> promo_feature);
-#endif
 
   // views::MenuButton:
   gfx::Rect GetAnchorBoundsInScreen() const override;
@@ -98,10 +94,8 @@ class BrowserAppMenuButton : public AppMenuButton,
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   // The feature, if any, for which this button is anchoring a promo.
   base::Optional<InProductHelpFeature> promo_feature_;
-#endif
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

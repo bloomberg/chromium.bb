@@ -11,9 +11,9 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 
@@ -32,8 +33,7 @@ int GetLazyImageLoadingViewportDistanceThresholdPx(const Document& document) {
   if (!settings)
     return 0;
 
-  DCHECK(document.GetFrame() && document.GetFrame()->Client());
-  switch (document.GetFrame()->Client()->GetEffectiveConnectionType()) {
+  switch (GetNetworkStateNotifier().EffectiveType()) {
     case WebEffectiveConnectionType::kTypeUnknown:
       return settings->GetLazyImageLoadingDistanceThresholdPxUnknown();
     case WebEffectiveConnectionType::kTypeOffline:
@@ -55,6 +55,24 @@ Document* GetRootDocumentOrNull(Element* element) {
   if (LocalFrame* frame = element->GetDocument().GetFrame())
     return frame->LocalFrameRoot().GetDocument();
   return nullptr;
+}
+
+// Returns if the element or its ancestors are invisible, due to their style or
+// attribute or due to themselves not connected to the main document tree.
+bool IsElementInInvisibleSubTree(const Element& element) {
+  if (!element.isConnected())
+    return true;
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(element)) {
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    const ComputedStyle* style = ancestor_element->EnsureComputedStyle();
+    if (style && (style->Visibility() != EVisibility::kVisible ||
+                  style->Display() == EDisplay::kNone)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -139,10 +157,26 @@ void LazyLoadImageObserver::LoadIfNearViewport(
   DCHECK(!entries.IsEmpty());
 
   for (auto entry : entries) {
+    Element* element = entry->target();
+    HTMLImageElement* image_element = ToHTMLImageElementOrNull(element);
+    if (!entry->isIntersecting() && image_element) {
+      // Fully load the invisible image elements. The elements can be invisible
+      // by style such as display:none, visibility: hidden, or hidden via
+      // attribute, etc. Style might also not be calculated if the ancestors
+      // were invisible.
+      const ComputedStyle* style = entry->target()->GetComputedStyle();
+      if (!style || style->Visibility() != EVisibility::kVisible ||
+          style->Display() == EDisplay::kNone) {
+        // Check that style was null because it was not computed since the
+        // element was in an invisible subtree.
+        DCHECK(style || IsElementInInvisibleSubTree(*element));
+        image_element->LoadDeferredImage();
+        lazy_load_intersection_observer_->unobserve(element);
+      }
+    }
     if (!entry->isIntersecting())
       continue;
-    Element* element = entry->target();
-    if (auto* image_element = ToHTMLImageElementOrNull(element))
+    if (image_element)
       image_element->LoadDeferredImage();
 
     // Load the background image if the element has one deferred.
@@ -185,16 +219,13 @@ void LazyLoadImageObserver::OnLoadFinished(HTMLImageElement* image_element) {
   visible_load_time_metrics.record_visibility_metrics = false;
   visibility_metrics_observer_->unobserve(image_element);
 
-  TimeDelta visible_load_delay;
+  base::TimeDelta visible_load_delay;
   if (!visible_load_time_metrics.time_when_first_visible.is_null()) {
-    visible_load_delay =
-        CurrentTimeTicks() - visible_load_time_metrics.time_when_first_visible;
+    visible_load_delay = base::TimeTicks::Now() -
+                         visible_load_time_metrics.time_when_first_visible;
   }
 
-  switch (image_element->GetDocument()
-              .GetFrame()
-              ->Client()
-              ->GetEffectiveConnectionType()) {
+  switch (GetNetworkStateNotifier().EffectiveType()) {
     case WebEffectiveConnectionType::kTypeSlow2G:
       if (visible_load_time_metrics.is_initially_intersecting) {
         UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -266,7 +297,8 @@ void LazyLoadImageObserver::OnVisibilityChanged(
       }
       if (entry->isIntersecting()) {
         DCHECK(visible_load_time_metrics.time_when_first_visible.is_null());
-        visible_load_time_metrics.time_when_first_visible = CurrentTimeTicks();
+        visible_load_time_metrics.time_when_first_visible =
+            base::TimeTicks::Now();
 
         if (visible_load_time_metrics.record_visibility_metrics &&
             image_element->GetDocument().GetFrame()) {
@@ -282,17 +314,11 @@ void LazyLoadImageObserver::OnVisibilityChanged(
           if (visible_load_time_metrics.is_initially_intersecting) {
             UMA_HISTOGRAM_ENUMERATION(
                 "Blink.VisibleBeforeLoaded.LazyLoadImages.AboveTheFold",
-                image_element->GetDocument()
-                    .GetFrame()
-                    ->Client()
-                    ->GetEffectiveConnectionType());
+                GetNetworkStateNotifier().EffectiveType());
           } else {
             UMA_HISTOGRAM_ENUMERATION(
                 "Blink.VisibleBeforeLoaded.LazyLoadImages.BelowTheFold",
-                image_element->GetDocument()
-                    .GetFrame()
-                    ->Client()
-                    ->GetEffectiveConnectionType());
+                GetNetworkStateNotifier().EffectiveType());
           }
         }
 

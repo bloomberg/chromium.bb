@@ -65,7 +65,7 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
                              QuicTime time_of_last_received_packet,
                              QuicTime now,
                              const RttStats* rtt_stats,
-                             QuicTime::Delta delayed_ack_time);
+                             QuicTime::Delta local_max_ack_delay);
 
   // Resets ACK related states, called after an ACK is successfully sent.
   void ResetAckStates();
@@ -85,11 +85,10 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
 
   QuicPacketNumber GetLargestObserved() const;
 
-  // Returns peer first sending packet number to our best knowledge. If
-  // GetQuicRestartFlag(quic_enable_accept_random_ipn) is false, returns 1.
-  // Otherwise considers least_received_packet_number_ as peer first sending
-  // packet number. Please note, this function should only be called when at
-  // least one packet has been received.
+  // Returns peer first sending packet number to our best knowledge. Considers
+  // least_received_packet_number_ as peer first sending packet number. Please
+  // note, this function should only be called when at least one packet has been
+  // received.
   QuicPacketNumber PeerFirstSendingPacketNumber() const;
 
   void set_connection_stats(QuicConnectionStats* stats) { stats_ = stats; }
@@ -121,8 +120,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
   }
 
   QuicTime ack_timeout() const { return ack_timeout_; }
-
-  bool decide_when_to_send_acks() const { return decide_when_to_send_acks_; }
 
  private:
   friend class test::QuicConnectionPeer;
@@ -186,10 +183,6 @@ class QUIC_EXPORT_PRIVATE QuicReceivedPacketManager {
 
   // Last sent largest acked, which gets updated when ACK was successfully sent.
   QuicPacketNumber last_sent_largest_acked_;
-
-  // Latched value of quic_deprecate_ack_bundling_mode and
-  // quic_rpm_decides_when_to_send_acks.
-  const bool decide_when_to_send_acks_;
 };
 
 }  // namespace quic

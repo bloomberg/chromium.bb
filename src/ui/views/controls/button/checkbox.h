@@ -26,8 +26,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
  public:
   METADATA_HEADER(Checkbox);
 
-  static const char kViewClassName[];
-
   // |force_md| forces MD even when --secondary-ui-md flag is not set.
   explicit Checkbox(const base::string16& label,
                     ButtonListener* listener = nullptr);
@@ -51,7 +49,6 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
 
  protected:
   // LabelButton:
-  const char* GetClassName() const override;
   void OnThemeChanged() override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;

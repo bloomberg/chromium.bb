@@ -106,7 +106,7 @@ class ResourceLoadingCancellingThrottle
     resource->received_data_length = 10 * 1024;
     resource->delta_bytes = 10 * 1024;
     resource->encoded_body_length = 10 * 1024;
-    resource->was_fetched_via_cache = false;
+    resource->cache_type = page_load_metrics::mojom::CacheType::kNotCached;
     resource->is_complete = true;
     resource->is_primary_frame_resource = true;
     resources.push_back(std::move(resource));
@@ -338,7 +338,9 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     resource->encoded_body_length = resource_size_in_kbyte << 10;
     resource->reported_as_ad_resource = is_ad_resource;
     resource->is_complete = true;
-    resource->was_fetched_via_cache = static_cast<bool>(resource_cached);
+    resource->cache_type = (resource_cached == ResourceCached::NOT_CACHED)
+                               ? page_load_metrics::mojom::CacheType::kNotCached
+                               : page_load_metrics::mojom::CacheType::kHttp;
     resource->mime_type = mime_type;
     resource->is_primary_frame_resource = true;
     resource->is_main_frame_resource =
@@ -382,32 +384,24 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     std::string suffix = type == "Activated" ? "Activation" : "Interactive";
     type = type.empty() ? "" : "." + type;
 
+    CheckSpecificCpuHistogram(SuffixedHistogram(prefix + ".TotalUsage" + type),
+                              total_task_time, total_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type),
-        SuffixedHistogram(prefix + ".TotalUsage" + type), total_task_time,
-        total_time);
-    CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Pre" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Pre" + suffix),
         pre_task_time, pre_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + type + ".Post" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Post" + suffix),
         post_task_time, post_time);
   }
 
  private:
-  void CheckSpecificCpuHistogram(std::string percent_histogram,
-                                 std::string total_histogram,
+  void CheckSpecificCpuHistogram(std::string total_histogram,
                                  int total_task_time,
                                  int total_time) {
     if (total_time) {
-      histogram_tester().ExpectUniqueSample(
-          percent_histogram, 100 * total_task_time / total_time, 1);
       histogram_tester().ExpectUniqueSample(total_histogram, total_task_time,
                                             1);
     } else {
-      histogram_tester().ExpectTotalCount(percent_histogram, 0);
       histogram_tester().ExpectTotalCount(total_histogram, 0);
     }
   }
@@ -845,6 +839,58 @@ TEST_F(AdsPageLoadMetricsObserverTest, FilterAds_DoNotLogMetrics) {
                  0u /* non_ad_uncached_kb */);
 }
 
+// Per-frame histograms recorded when root ad frame is destroyed.
+TEST_F(AdsPageLoadMetricsObserverTest,
+       FrameDestroyed_PerFrameHistogramsLogged) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
+  RenderFrameHost* child_ad_frame = CreateAndNavigateSubFrame(kAdUrl, ad_frame);
+
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Add some data to the ad frame so it gets reported.
+  ResourceDataUpdate(ad_frame, ResourceCached::NOT_CACHED, 10);
+  ResourceDataUpdate(child_ad_frame, ResourceCached::NOT_CACHED, 10);
+
+  // Just delete the child frame this time.
+  content::RenderFrameHostTester::For(child_ad_frame)->Detach();
+
+  // Verify per-frame histograms not recorded.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("Bytes.AdFrames.PerFrame.Total"), 0);
+
+  // Delete the root ad frame.
+  content::RenderFrameHostTester::For(ad_frame)->Detach();
+
+  // Verify per-frame histograms are recorded.
+  histogram_tester().ExpectUniqueSample(
+      SuffixedHistogram("Bytes.AdFrames.PerFrame.Total"), 20, 1);
+
+  // Verify page totals not reported yet.
+  histogram_tester().ExpectTotalCount(
+      SuffixedHistogram("FrameCounts.AnyParentFrame.AdFrames"), 0);
+
+  NavigateMainFrame(kNonAdUrl);
+
+  // Verify histograms are logged correctly for the whole page.
+  TestHistograms(histogram_tester(), test_ukm_recorder(), {{0, 20}},
+                 0 /* non_ad_cached_kb */, 10 /* non_ad_uncached_kb */);
+}
+
+// Tests that a non ad frame that is deleted does not cause any unspecified
+// behavior (see https://crbug.com/973954).
+TEST_F(AdsPageLoadMetricsObserverTest, NonAdFrameDestroyed_FrameDeleted) {
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* vanilla_frame =
+      CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
+
+  ResourceDataUpdate(main_frame, ResourceCached::NOT_CACHED, 10);
+
+  content::RenderFrameHostTester::For(vanilla_frame)->Detach();
+
+  NavigateMainFrame(kNonAdUrl);
+}
+
 // Tests that main frame ad bytes are recorded correctly.
 TEST_F(AdsPageLoadMetricsObserverTest, MainFrameAdBytesRecorded) {
   NavigateMainFrame(kNonAdUrl);
@@ -1070,6 +1116,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1124,6 +1174,10 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1182,6 +1236,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
   test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1000 / 30000);
+  test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName,
       1000);
   test_ukm_recorder().ExpectEntryMetric(
@@ -1235,6 +1293,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 0);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName, 0);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1272,6 +1333,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 500 / 30000);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
@@ -1315,6 +1380,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {

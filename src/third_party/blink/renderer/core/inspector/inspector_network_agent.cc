@@ -37,9 +37,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
@@ -426,9 +426,11 @@ std::unique_ptr<protocol::Network::WebSocketFrame> WebSocketMessageToProtocol(
       .setOpcode(op_code)
       .setMask(masked)
       // Only interpret the payload as UTF-8 when it's a text message
-      .setPayloadData(op_code == 1 ? String::FromUTF8WithLatin1Fallback(
-                                         payload, payload_length)
-                                   : Base64Encode(payload, payload_length))
+      .setPayloadData(
+          op_code == 1
+              ? String::FromUTF8WithLatin1Fallback(payload, payload_length)
+              : Base64Encode(
+                    base::as_bytes(base::make_span(payload, payload_length))))
       .build();
 }
 
@@ -537,16 +539,16 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
   String security_state = protocol::Security::SecurityStateEnum::Unknown;
   switch (response.GetSecurityStyle()) {
-    case ResourceResponse::kSecurityStyleUnknown:
+    case kWebSecurityStyleUnknown:
       security_state = protocol::Security::SecurityStateEnum::Unknown;
       break;
-    case ResourceResponse::kSecurityStyleUnauthenticated:
+    case kWebSecurityStyleNeutral:
       security_state = protocol::Security::SecurityStateEnum::Neutral;
       break;
-    case ResourceResponse::kSecurityStyleAuthenticationBroken:
+    case kWebSecurityStyleInsecure:
       security_state = protocol::Security::SecurityStateEnum::Insecure;
       break;
-    case ResourceResponse::kSecurityStyleAuthenticated:
+    case kWebSecurityStyleSecure:
       security_state = protocol::Security::SecurityStateEnum::Secure;
       break;
   }
@@ -621,21 +623,15 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
   }
   response_object->setProtocol(protocol);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
+    auto san_list = std::make_unique<protocol::Array<String>>(
+        response_security_details->san_list.begin(),
+        response_security_details->san_list.end());
 
-    std::unique_ptr<protocol::Array<String>> san_list =
-        protocol::Array<String>::create();
-    for (auto const& san : response_security_details->san_list)
-      san_list->addItem(san);
-
-    std::unique_ptr<
-        protocol::Array<protocol::Network::SignedCertificateTimestamp>>
-        signed_certificate_timestamp_list = protocol::Array<
-            protocol::Network::SignedCertificateTimestamp>::create();
+    auto signed_certificate_timestamp_list = std::make_unique<
+        protocol::Array<protocol::Network::SignedCertificateTimestamp>>();
     for (auto const& sct : response_security_details->sct_list) {
       std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
           signed_certificate_timestamp =
@@ -649,7 +645,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
                   .setSignatureAlgorithm(sct.signature_algorithm_)
                   .setSignatureData(sct.signature_data_)
                   .build();
-      signed_certificate_timestamp_list->addItem(
+      signed_certificate_timestamp_list->emplace_back(
           std::move(signed_certificate_timestamp));
     }
 
@@ -727,7 +723,7 @@ void InspectorNetworkAgent::DidBlockRequest(
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   String protocol_reason = BuildBlockedReason(reason);
   GetFrontend()->loadingFailed(
-      request_id, CurrentTimeTicksInSeconds(),
+      request_id, base::TimeTicks::Now().since_origin().InSecondsF(),
       InspectorPageAgent::ResourceTypeJson(
           resources_data_->GetResourceType(request_id)),
       String(), false, protocol_reason);
@@ -738,9 +734,9 @@ void InspectorNetworkAgent::DidChangeResourcePriority(
     uint64_t identifier,
     ResourceLoadPriority load_priority) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
-  GetFrontend()->resourceChangedPriority(request_id,
-                                         ResourcePriorityJSON(load_priority),
-                                         CurrentTimeTicksInSeconds());
+  GetFrontend()->resourceChangedPriority(
+      request_id, ResourcePriorityJSON(load_priority),
+      base::TimeTicks::Now().since_origin().InSecondsF());
 }
 
 void InspectorNetworkAgent::WillSendRequestInternal(
@@ -780,7 +776,7 @@ void InspectorNetworkAgent::WillSendRequestInternal(
       BuildInitiatorObject(loader && loader->GetFrame()
                                ? loader->GetFrame()->GetDocument()
                                : nullptr,
-                           initiator_info);
+                           initiator_info, std::numeric_limits<int>::max());
 
   std::unique_ptr<protocol::Network::Request> request_info(
       BuildObjectForResourceRequest(request, max_post_data_size_.Get()));
@@ -808,7 +804,8 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     maybe_frame_id = frame_id;
   GetFrontend()->requestWillBeSent(
       request_id, loader_id, documentURL, std::move(request_info),
-      CurrentTimeTicksInSeconds(), CurrentTime(), std::move(initiator_object),
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      base::Time::Now().ToDoubleT(), std::move(initiator_object),
       BuildObjectForResourceResponse(redirect_response), resource_type,
       std::move(maybe_frame_id), request.HasUserGesture());
   if (is_handling_sync_xhr_)
@@ -864,7 +861,8 @@ void InspectorNetworkAgent::PrepareRequest(
       // inside state_'s kExtraRequestHeaders, somewhere else.
       if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
         request.SetHttpReferrer(
-            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
+            Referrer(value, network::mojom::ReferrerPolicy::kAlways),
+            ResourceRequest::SetHttpReferrerLocation::kInspectorNetworkAgent);
       } else {
         request.SetHttpHeaderField(header_name, AtomicString(value));
       }
@@ -960,11 +958,9 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   resources_data_->ResponseReceived(request_id, frame_id, response);
   resources_data_->SetResourceType(request_id, type);
 
-  if (response.GetSecurityStyle() != ResourceResponse::kSecurityStyleUnknown &&
-      response.GetSecurityStyle() !=
-          ResourceResponse::kSecurityStyleUnauthenticated) {
-    const ResourceResponse::SecurityDetails* response_security_details =
-        response.GetSecurityDetails();
+  const base::Optional<ResourceResponse::SecurityDetails>&
+      response_security_details = response.GetSecurityDetails();
+  if (response_security_details.has_value()) {
     resources_data_->SetCertificate(request_id,
                                     response_security_details->certificate);
   }
@@ -976,7 +972,8 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
     if (!frame_id.IsEmpty())
       maybe_frame_id = frame_id;
     GetFrontend()->responseReceived(
-        request_id, loader_id, CurrentTimeTicksInSeconds(),
+        request_id, loader_id,
+        base::TimeTicks::Now().since_origin().InSecondsF(),
         InspectorPageAgent::ResourceTypeJson(type),
         std::move(resource_response), std::move(maybe_frame_id));
   }
@@ -1011,7 +1008,8 @@ void InspectorNetworkAgent::DidReceiveData(uint64_t identifier,
   }
 
   GetFrontend()->dataReceived(
-      request_id, CurrentTimeTicksInSeconds(), static_cast<int>(data_length),
+      request_id, base::TimeTicks::Now().since_origin().InSecondsF(),
+      static_cast<int>(data_length),
       static_cast<int>(
           resources_data_->GetAndClearPendingEncodedDataLength(request_id)));
 }
@@ -1031,12 +1029,13 @@ void InspectorNetworkAgent::DidReceiveEncodedDataLength(
   resources_data_->AddPendingEncodedDataLength(request_id, encoded_data_length);
 }
 
-void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
-                                             DocumentLoader* loader,
-                                             TimeTicks monotonic_finish_time,
-                                             int64_t encoded_data_length,
-                                             int64_t decoded_body_length,
-                                             bool should_report_corb_blocking) {
+void InspectorNetworkAgent::DidFinishLoading(
+    uint64_t identifier,
+    DocumentLoader* loader,
+    base::TimeTicks monotonic_finish_time,
+    int64_t encoded_data_length,
+    int64_t decoded_body_length,
+    bool should_report_corb_blocking) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
@@ -1044,8 +1043,9 @@ void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
   int pending_encoded_data_length = static_cast<int>(
       resources_data_->GetAndClearPendingEncodedDataLength(request_id));
   if (pending_encoded_data_length > 0) {
-    GetFrontend()->dataReceived(request_id, CurrentTimeTicksInSeconds(), 0,
-                                pending_encoded_data_length);
+    GetFrontend()->dataReceived(
+        request_id, base::TimeTicks::Now().since_origin().InSecondsF(), 0,
+        pending_encoded_data_length);
   }
 
   if (resource_data &&
@@ -1058,10 +1058,10 @@ void InspectorNetworkAgent::DidFinishLoading(uint64_t identifier,
 
   resources_data_->MaybeDecodeDataToContent(request_id);
   if (monotonic_finish_time.is_null())
-    monotonic_finish_time = CurrentTimeTicks();
+    monotonic_finish_time = base::TimeTicks::Now();
 
   is_handling_sync_xhr_ = false;
-  // TODO(npm): Use TimeTicks in Network.h.
+  // TODO(npm): Use base::TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
       request_id, monotonic_finish_time.since_origin().InSecondsF(),
       encoded_data_length, should_report_corb_blocking);
@@ -1074,7 +1074,7 @@ void InspectorNetworkAgent::DidReceiveCorsRedirectResponse(
     Resource* resource) {
   // Update the response and finish loading
   DidReceiveResourceResponse(identifier, loader, response, resource);
-  DidFinishLoading(identifier, loader, TimeTicks(),
+  DidFinishLoading(identifier, loader, base::TimeTicks(),
                    WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 
@@ -1092,7 +1092,7 @@ void InspectorNetworkAgent::DidFailLoading(uint64_t identifier,
   }
   is_handling_sync_xhr_ = false;
   GetFrontend()->loadingFailed(
-      request_id, CurrentTimeTicksInSeconds(),
+      request_id, base::TimeTicks::Now().since_origin().InSecondsF(),
       InspectorPageAgent::ResourceTypeJson(
           resources_data_->GetResourceType(request_id)),
       error.LocalizedDescription(), canceled, std::move(blocked_reason));
@@ -1150,14 +1150,15 @@ void InspectorNetworkAgent::WillDispatchEventSourceEvent(
     const String& data) {
   GetFrontend()->eventSourceMessageReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds(), event_name.GetString(), event_id.GetString(),
-      data);
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      event_name.GetString(), event_id.GetString(), data);
 }
 
 std::unique_ptr<protocol::Network::Initiator>
 InspectorNetworkAgent::BuildInitiatorObject(
     Document* document,
-    const FetchInitiatorInfo& initiator_info) {
+    const FetchInitiatorInfo& initiator_info,
+    int max_async_depth) {
   if (!initiator_info.imported_module_referrer.IsEmpty()) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
@@ -1171,7 +1172,8 @@ InspectorNetworkAgent::BuildInitiatorObject(
 
   std::unique_ptr<v8_inspector::protocol::Runtime::API::StackTrace>
       current_stack_trace =
-          SourceLocation::Capture(document)->BuildInspectorObject();
+          SourceLocation::Capture(document)->BuildInspectorObject(
+              max_async_depth);
   if (current_stack_trace) {
     std::unique_ptr<protocol::Network::Initiator> initiator_object =
         protocol::Network::Initiator::create()
@@ -1243,7 +1245,8 @@ void InspectorNetworkAgent::WillSendWebSocketHandshakeRequest(
           .build();
   GetFrontend()->webSocketWillSendHandshakeRequest(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds(), CurrentTime(), std::move(request_object));
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      base::Time::Now().ToDoubleT(), std::move(request_object));
 }
 
 void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
@@ -1286,25 +1289,36 @@ void InspectorNetworkAgent::DidReceiveWebSocketHandshakeResponse(
 
   GetFrontend()->webSocketHandshakeResponseReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds(), std::move(response_object));
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      std::move(response_object));
 }
 
 void InspectorNetworkAgent::DidCloseWebSocket(ExecutionContext*,
                                               uint64_t identifier) {
   GetFrontend()->webSocketClosed(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds());
+      base::TimeTicks::Now().since_origin().InSecondsF());
 }
 
-void InspectorNetworkAgent::DidReceiveWebSocketMessage(uint64_t identifier,
-                                                       int op_code,
-                                                       bool masked,
-                                                       const char* payload,
-                                                       size_t payload_length) {
+void InspectorNetworkAgent::DidReceiveWebSocketMessage(
+    uint64_t identifier,
+    int op_code,
+    bool masked,
+    const Vector<base::span<const char>>& data) {
+  size_t size = 0;
+  for (const auto& span : data) {
+    size += span.size();
+  }
+  Vector<char> flatten;
+  flatten.ReserveCapacity(SafeCast<wtf_size_t>(size));
+  for (const auto& span : data) {
+    flatten.Append(span.data(), SafeCast<wtf_size_t>(span.size()));
+  }
   GetFrontend()->webSocketFrameReceived(
       IdentifiersFactory::SubresourceRequestId(identifier),
-      CurrentTimeTicksInSeconds(),
-      WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
+      base::TimeTicks::Now().since_origin().InSecondsF(),
+      WebSocketMessageToProtocol(op_code, masked, flatten.data(),
+                                 flatten.size()));
 }
 
 void InspectorNetworkAgent::DidSendWebSocketMessage(uint64_t identifier,
@@ -1314,7 +1328,7 @@ void InspectorNetworkAgent::DidSendWebSocketMessage(uint64_t identifier,
                                                     size_t payload_length) {
   GetFrontend()->webSocketFrameSent(
       IdentifiersFactory::RequestId(nullptr, identifier),
-      CurrentTimeTicksInSeconds(),
+      base::TimeTicks::Now().since_origin().InSecondsF(),
       WebSocketMessageToProtocol(op_code, masked, payload, payload_length));
 }
 
@@ -1323,7 +1337,7 @@ void InspectorNetworkAgent::DidReceiveWebSocketMessageError(
     const String& error_message) {
   GetFrontend()->webSocketFrameError(
       IdentifiersFactory::RequestId(nullptr, identifier),
-      CurrentTimeTicksInSeconds(), error_message);
+      base::TimeTicks::Now().since_origin().InSecondsF(), error_message);
 }
 
 Response InspectorNetworkAgent::enable(Maybe<int> total_buffer_size,
@@ -1348,6 +1362,8 @@ void InspectorNetworkAgent::Enable() {
 
 Response InspectorNetworkAgent::disable() {
   DCHECK(!pending_request_type_);
+  if (IsMainThread())
+    GetNetworkStateNotifier().ClearOverride();
   instrumenting_agents_->RemoveInspectorNetworkAgent(this);
   agent_state_.ClearAllFields();
   resources_data_->Clear();
@@ -1416,8 +1432,8 @@ void InspectorNetworkAgent::getResponseBody(
 Response InspectorNetworkAgent::setBlockedURLs(
     std::unique_ptr<protocol::Array<String>> urls) {
   blocked_urls_.Clear();
-  for (size_t i = 0; i < urls->length(); i++)
-    blocked_urls_.Set(urls->get(i), true);
+  for (const String& url : *urls)
+    blocked_urls_.Set(url, true);
   return Response::OK();
 }
 
@@ -1519,7 +1535,7 @@ Response InspectorNetworkAgent::setDataSizeLimitsForTest(int max_total,
 Response InspectorNetworkAgent::getCertificate(
     const String& origin,
     std::unique_ptr<protocol::Array<String>>* certificate) {
-  *certificate = protocol::Array<String>::create();
+  *certificate = std::make_unique<protocol::Array<String>>();
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(origin);
   for (auto& resource : resources_data_->Resources()) {
@@ -1528,8 +1544,9 @@ Response InspectorNetworkAgent::getCertificate(
     if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
         resource->Certificate().size()) {
       for (auto& cert : resource->Certificate()) {
-        certificate->get()->addItem(
-            Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
+        (*certificate)
+            ->emplace_back(
+                Base64Encode(base::as_bytes(base::make_span(cert.Latin1()))));
       }
       return Response::OK();
     }
@@ -1553,9 +1570,13 @@ void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      const KURL&,
                                                      double,
                                                      ClientNavigationReason) {
+  // For navigations, we limit async stack trace to depth 1 to avoid the
+  // base::Value depth limits with Mojo serialization / parsing.
+  // See http://crbug.com/809996.
   frame_navigation_initiator_map_.Set(
       IdentifiersFactory::FrameId(frame),
-      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo()));
+      BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
+                           /*max_async_depth=*/1));
 }
 
 void InspectorNetworkAgent::FrameClearedScheduledNavigation(LocalFrame* frame) {
@@ -1615,10 +1636,9 @@ Response InspectorNetworkAgent::searchInResponseBody(
   auto results = v8_session_->searchInTextByLines(
       ToV8InspectorStringView(content), ToV8InspectorStringView(query),
       case_sensitive.fromMaybe(false), is_regex.fromMaybe(false));
-  *matches = protocol::Array<
-      v8_inspector::protocol::Debugger::API::SearchMatch>::create();
-  for (size_t i = 0; i < results.size(); ++i)
-    matches->get()->addItem(std::move(results[i]));
+  *matches = std::make_unique<
+      protocol::Array<v8_inspector::protocol::Debugger::API::SearchMatch>>(
+      std::move(results));
   return Response::OK();
 }
 
@@ -1656,7 +1676,11 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
   if (it != frame_navigation_initiator_map_.end())
     return it->value->toJSON();
-  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo())
+  // For navigations, we limit async stack trace to depth 1 to avoid the
+  // base::Value depth limits with Mojo serialization / parsing.
+  // See http://crbug.com/809996.
+  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
+                              /*max_async_depth=*/1)
       ->toJSON();
 }
 

@@ -11,15 +11,16 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -143,7 +144,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnError(PipelineStatus status) override { NOTREACHED(); }
   void OnEnded() override {}
   void OnMetadata(const PipelineMetadata& metadata) override {}
-  void OnBufferingStateChange(BufferingState state) override {}
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override {}
   void OnDurationChange() override {}
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override {}
@@ -153,11 +155,10 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnVideoConfigChange(const VideoDecoderConfig& config) override {}
   void OnVideoOpacityChange(bool opaque) override {}
   void OnVideoAverageKeyframeDistanceUpdate() override {}
-  void OnAudioDecoderChange(const std::string& name) override {}
-  void OnVideoDecoderChange(const std::string& name) override {}
-  void OnRemotePlayStateChange(MediaStatus::State state) override {}
+  void OnAudioDecoderChange(const PipelineDecoderInfo& info) override {}
+  void OnVideoDecoderChange(const PipelineDecoderInfo& info) override {}
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   NiceMock<MockDemuxer> demuxer_;
   StrictMock<MockPipeline>* pipeline_;

@@ -14,6 +14,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <vector>
 
@@ -42,9 +43,10 @@ class RTC_EXPORT EncoderSimulcastProxy : public VideoEncoder {
 
   // Implements VideoEncoder.
   int Release() override;
-  int InitEncode(const VideoCodec* inst,
-                 int number_of_cores,
-                 size_t max_payload_size) override;
+  void SetFecControllerOverride(
+      FecControllerOverride* fec_controller_override) override;
+  int InitEncode(const VideoCodec* codec_settings,
+                 const VideoEncoder::Settings& settings) override;
   int Encode(const VideoFrame& input_image,
              const std::vector<VideoFrameType>* frame_types) override;
   int RegisterEncodeCompleteCallback(EncodedImageCallback* callback) override;

@@ -107,6 +107,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   void OnIncomingInvalidation(
       const syncer::ObjectIdInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
+  bool IsPublicTopic(const syncer::Topic& topic) const override;
 
   // CloudPolicyCore::Observer:
   void OnCoreConnected(CloudPolicyCore* core) override;
@@ -242,7 +243,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   base::ThreadChecker thread_checker_;
 
   // WeakPtrFactory used to create callbacks to this object.
-  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_;
+  base::WeakPtrFactory<CloudPolicyInvalidator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyInvalidator);
 };

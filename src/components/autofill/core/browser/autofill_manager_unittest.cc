@@ -78,15 +78,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
-using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
-using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
-using autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using testing::_;
 using testing::AnyOf;
 using testing::AtLeast;
+using testing::Contains;
+using testing::ElementsAre;
 using testing::HasSubstr;
 using testing::Not;
 using testing::Return;
@@ -94,6 +92,15 @@ using testing::SaveArg;
 using testing::UnorderedElementsAre;
 
 namespace autofill {
+
+using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
+using features::kAutofillEnforceMinRequiredFieldsForQuery;
+using features::kAutofillEnforceMinRequiredFieldsForUpload;
+using features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
+using mojom::ButtonTitleType;
+using mojom::SubmissionIndicatorEvent;
+using mojom::SubmissionSource;
+
 namespace {
 
 const int kDefaultPageID = 137;
@@ -545,7 +552,7 @@ class AutofillManagerTest : public testing::Test {
   CardUnmaskDelegate* full_card_unmask_delegate() {
     payments::FullCardRequest* full_card_request =
         autofill_manager_->credit_card_access_manager_
-            ->credit_card_cvc_authenticator()
+            ->GetOrCreateCVCAuthenticator()
             ->full_card_request_.get();
     DCHECK(full_card_request);
     return static_cast<CardUnmaskDelegate*>(full_card_request);
@@ -587,7 +594,6 @@ class AutofillManagerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
   MockAutofillClient autofill_client_;
   std::unique_ptr<MockAutofillDriver> autofill_driver_;
   std::unique_ptr<TestAutofillManager> autofill_manager_;
@@ -597,8 +603,8 @@ class AutofillManagerTest : public testing::Test {
   MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   std::unique_ptr<MockAutocompleteHistoryManager> autocomplete_history_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   variations::testing::VariationParamsManager variation_params_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   int ToHistogramSample(AutofillMetrics::CardUploadDecisionMetric metric) {
@@ -659,6 +665,89 @@ class AutofillManagerTest : public testing::Test {
     credit_card3.set_guid("00000000-0000-0000-0000-000000000006");
     personal_data_.AddCreditCard(credit_card3);
   }
+};
+
+class SuggestionMatchingTest
+    : public AutofillManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, std::string>> {
+ protected:
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+    InitializeFeatures();
+  }
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  void InitializeFeatures();
+#else
+  void InitializeFeatures();
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+  std::string MakeLabel(const std::vector<std::string>& parts);
+  std::string MakeMobileLabel(const std::vector<std::string>& parts);
+
+  enum class EnabledFeature { kNone, kDesktop, kMobileShowAll, kMobileShowOne };
+  EnabledFeature enabled_feature_;
+  base::test::ScopedFeatureList features_;
+};
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+void SuggestionMatchingTest::InitializeFeatures() {
+  if (std::get<0>(GetParam())) {
+    std::string variant = std::get<1>(GetParam());
+
+    if (variant ==
+        features::kAutofillUseMobileLabelDisambiguationParameterShowAll) {
+      enabled_feature_ = EnabledFeature::kMobileShowAll;
+    } else if (variant ==
+               features::
+                   kAutofillUseMobileLabelDisambiguationParameterShowOne) {
+      enabled_feature_ = EnabledFeature::kMobileShowOne;
+    } else {
+      NOTREACHED();
+    }
+
+    std::map<std::string, std::string> parameters;
+    parameters[features::kAutofillUseMobileLabelDisambiguationParameterName] =
+        variant;
+    features_.InitAndEnableFeatureWithParameters(
+        features::kAutofillUseMobileLabelDisambiguation, parameters);
+  } else {
+    enabled_feature_ = EnabledFeature::kNone;
+  }
+}
+#else
+void SuggestionMatchingTest::InitializeFeatures() {
+  enabled_feature_ = std::get<0>(GetParam()) ? EnabledFeature::kDesktop
+                                             : EnabledFeature::kNone;
+  features_.InitWithFeatureState(
+      features::kAutofillUseImprovedLabelDisambiguation,
+      std::get<0>(GetParam()));
+}
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+std::string SuggestionMatchingTest::MakeLabel(
+    const std::vector<std::string>& parts) {
+  return base::JoinString(
+      parts, l10n_util::GetStringUTF8(IDS_AUTOFILL_SUGGESTION_LABEL_SEPARATOR));
+}
+
+std::string SuggestionMatchingTest::MakeMobileLabel(
+    const std::vector<std::string>& parts) {
+  return base::JoinString(
+      parts, l10n_util::GetStringUTF8(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR));
+}
+
+class CreditCardSuggestionMatchingTest
+    : public AutofillManagerTest,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    AutofillManagerTest::SetUp();
+    features_.InitWithFeatureState(features::kAutofillKeyboardAccessory,
+                                   GetParam());
+  }
+
+  base::test::ScopedFeatureList features_;
 };
 
 // Test that calling OnFormsSeen with an empty set of forms (such as when
@@ -970,9 +1059,9 @@ TEST_F(AutofillManagerTest, OnAutocompleteEntrySelected) {
   autofill_manager_->OnAutocompleteEntrySelected(test_value);
 }
 
-// Test that we return all address profile suggestions when all form fields are
-// empty.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
+// Test that we return all address profile suggestions when all form fields
+// are empty.
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_EmptyValue) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -982,17 +1071,40 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_EmptyValue) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include full first relevant field, which in this case is the
-  // address line 1.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      label1 = MakeMobileLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeMobileLabel({"3734 Elvis Presley Blvd., Apt. 10",
+                                "(234) 567-8901", "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      label1 = "123 Apple St., unit 6";
+      label2 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, "", 1),
+                   Suggestion("Elvis", label2, "", 2));
 }
 
 // Test that we return only matching address profile suggestions when the
 // selected form field has been partially filled out.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_MatchCharacter) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1003,14 +1115,24 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_MatchCharacter) {
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
 
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, "", 1));
 }
 
 // Tests that we return address profile suggestions values when the section
 // is already autofilled, and that we merge identical values.
-TEST_F(AutofillManagerTest,
+TEST_P(SuggestionMatchingTest,
        GetProfileSuggestions_AlreadyAutofilledMergeValues) {
   // Set up our form data.
   FormData form;
@@ -1052,17 +1174,29 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Last Name", "lastname", "G", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. No labels,
-  // with duplicate values "Grimes" merged.
-  CheckSuggestions(
-      kDefaultPageID, Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
-      Suggestion("Grimes", "1234 Smith Blvd., Carl Grimes", "", 2),
-      Suggestion("Grimes", "1234 Smith Blvd., Robin Grimes", "", 3));
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      CheckSuggestions(kDefaultPageID,
+                       Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
+                       Suggestion("Grimes", "1234 Smith Blvd.", "", 2));
+      break;
+    case EnabledFeature::kNone:
+      // Test that we sent the right values to the external delegate. No labels
+      // with duplicate values "Grimes" merged.
+      CheckSuggestions(
+          kDefaultPageID,
+          Suggestion("Googler", "1600 Amphitheater pkwy", "", 1),
+          Suggestion("Grimes", "1234 Smith Blvd., Carl Grimes", "", 2),
+          Suggestion("Grimes", "1234 Smith Blvd., Robin Grimes", "", 3));
+  }
 }
 
 // Tests that we return address profile suggestions values when the section
 // is already autofilled, and that they have no label.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
+TEST_P(SuggestionMatchingTest,
+       GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1077,9 +1211,19 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_AlreadyAutofilledNoLabels) {
   test::CreateTestFormField("First Name", "firstname", "E", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. No labels.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, "", 1));
 }
 
 // Test that we return no suggestions when the form has no relevant fields.
@@ -1108,7 +1252,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_UnknownFields) {
 }
 
 // Test that we cull duplicate profile suggestions.
-TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_WithDuplicates) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1123,10 +1267,35 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_WithDuplicates) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      label1 = MakeMobileLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeMobileLabel({"3734 Elvis Presley Blvd., Apt. 10",
+                                "(234) 567-8901", "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      label1 = "123 Apple St., unit 6";
+      label2 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, "", 1),
+                   Suggestion("Elvis", label2, "", 2));
 }
 
 // Test that we return no suggestions when autofill is disabled.
@@ -1179,24 +1348,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the credit card suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1213,24 +1381,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1247,24 +1414,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1281,24 +1447,23 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_InvisibleUnicodeOnly) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card profile suggestions when the triggering
@@ -1324,17 +1489,16 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kMasterCardSuggestionLabel = std::string("08/17");
+  const std::string master_card_label = std::string("08/17");
 #else
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 08/17");
+  const std::string master_card_label = std::string("Expires on 08/17");
 #endif
 
   // Test that we sent the right value to the external delegate.
   CheckSuggestions(kDefaultPageID,
                    Suggestion(std::string("Mastercard  ") +
                                   test::ObfuscatedCardDigitsAsUTF8("3123"),
-                              kMasterCardSuggestionLabel, kMasterCard,
+                              master_card_label, kMasterCard,
                               autofill_manager_->GetPackedCreditCardID(7)));
 }
 
@@ -1352,22 +1516,22 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
+  const std::string visa_label = std::string("04/99");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
+  const std::string visa_label = std::string("Expires on 04/99");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that we return credit card profile suggestions when the selected form
 // field is not the credit card number field.
-TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
+TEST_P(CreditCardSuggestionMatchingTest, GetCreditCardSuggestions_NonCCNumber) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, true, false);
@@ -1383,27 +1547,32 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
       test::ObfuscatedCardDigitsAsUTF8("8765");
 
 #if defined(OS_ANDROID)
-  const std::string kVisaSuggestionLabel =
-      std::string("Visa  ") + obfuscated_last_four_digits1;
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Mastercard  ") + obfuscated_last_four_digits2;
+  const std::string visa_label =
+      IsKeyboardAccessoryEnabled()
+          ? obfuscated_last_four_digits1
+          : std::string("Visa  ") + obfuscated_last_four_digits1;
+  const std::string master_card_label =
+      IsKeyboardAccessoryEnabled()
+          ? obfuscated_last_four_digits2
+          : std::string("Mastercard  ") + obfuscated_last_four_digits2;
+
 #elif defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = obfuscated_last_four_digits1;
-  const std::string kMasterCardSuggestionLabel = obfuscated_last_four_digits2;
+  const std::string visa_label = obfuscated_last_four_digits1;
+  const std::string master_card_label = obfuscated_last_four_digits2;
+
 #else
-  const std::string kVisaSuggestionLabel = base::JoinString(
+  const std::string visa_label = base::JoinString(
       {"Visa  ", obfuscated_last_four_digits1, ", expires on 04/99"}, "");
-  const std::string kMasterCardSuggestionLabel = base::JoinString(
+  const std::string master_card_label = base::JoinString(
       {"Mastercard  ", obfuscated_last_four_digits2, ", expires on 10/98"}, "");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Elvis Presley", kVisaSuggestionLabel, kVisaCard,
-                 autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion("Buddy Holly", kMasterCardSuggestionLabel, kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion("Elvis Presley", visa_label, kVisaCard,
+                              autofill_manager_->GetPackedCreditCardID(4)),
+                   Suggestion("Buddy Holly", master_card_label, kMasterCard,
+                              autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we will eventually return the credit card signin promo when there
@@ -1483,24 +1652,23 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return credit card suggestions for secure pages that have a
@@ -1519,24 +1687,23 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that we return all credit card suggestions in the case that two cards
@@ -1563,35 +1730,33 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   GetAutofillSuggestions(form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel1 = std::string("10/98");
-  const std::string kMasterCardSuggestionLabel2 = std::string("05/99");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label1 = std::string("10/98");
+  const std::string master_card_label2 = std::string("05/99");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel1 =
-      std::string("Expires on 10/98");
-  const std::string kMasterCardSuggestionLabel2 =
-      std::string("Expires on 05/99");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label1 = std::string("Expires on 10/98");
+  const std::string master_card_label2 = std::string("Expires on 05/99");
 #endif
 
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel1, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kMasterCardSuggestionLabel2, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(7)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label1, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("3456"),
+                 master_card_label2, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(7)));
 }
 
 // Test that we return profile and credit card suggestions for combined forms.
-TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
+TEST_P(SuggestionMatchingTest, GetAddressAndCreditCardSuggestions) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1602,34 +1767,58 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right address suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      label1 = MakeMobileLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeMobileLabel({"3734 Elvis Presley Blvd., Apt. 10",
+                                "(234) 567-8901", "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      label1 = "123 Apple St., unit 6";
+      label2 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, "", 1),
+                   Suggestion("Elvis", label2, "", 2));
 
   const int kPageID2 = 2;
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   GetAutofillSuggestions(kPageID2, form, field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
   // Test that we sent the credit card suggestions to the external delegate.
-  CheckSuggestions(kPageID2,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)),
-                   Suggestion(std::string("Mastercard  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("8765"),
-                              kMasterCardSuggestionLabel, kMasterCard,
-                              autofill_manager_->GetPackedCreditCardID(5)));
+  CheckSuggestions(
+      kPageID2,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
+                 master_card_label, kMasterCard,
+                 autofill_manager_->GetPackedCreditCardID(5)));
 }
 
 // Test that for non-https forms with both address and credit card fields, we
@@ -1647,10 +1836,8 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   FormFieldData field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right suggestions to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  // Verify that suggestions are returned.
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 
   test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
   const int kPageID2 = 2;
@@ -1670,21 +1857,20 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
 
 TEST_F(AutofillManagerTest,
        ShouldShowAddressSuggestionsIfCreditCardAutofillDisabled) {
-  DisableCreditCardAutofill();
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(
+      features::kAutofillCreditCardAblationExperiment);
 
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
-
   FormFieldData field = form.fields[0];
-  GetAutofillSuggestions(form, field);
 
-  // Check that address suggestions will still be available.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  GetAutofillSuggestions(form, field);
+  // Verify that suggestions are returned.
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
 
 TEST_F(AutofillManagerTest,
@@ -1724,9 +1910,9 @@ TEST_F(AutofillManagerTest,
                                      1);
 }
 
-// Test that we return normal autofill suggestions when trying to autofill
+// Test that we return normal Autofill suggestions when trying to autofill
 // already filled forms.
-TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
+TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1738,10 +1924,35 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWhenFormIsAutofilled) {
   const FormFieldData& field = form.fields[0];
   GetAutofillSuggestions(form, field);
 
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+    case EnabledFeature::kDesktop:
+      label1 = MakeLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeLabel({"3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      label1 = MakeMobileLabel(
+          {"123 Apple St., unit 6", "23456789012", "buddy@gmail.com"});
+      label2 = MakeMobileLabel({"3734 Elvis Presley Blvd., Apt. 10",
+                                "(234) 567-8901", "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      label1 = "123 Apple St., unit 6";
+      label2 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  CheckSuggestions(kDefaultPageID, Suggestion("Charles", label1, "", 1),
+                   Suggestion("Elvis", label2, "", 2));
 }
 
 // Test that nothing breaks when there are autocomplete suggestions but no
@@ -1772,7 +1983,7 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsForAutocompleteOnly) {
 
 // Test that we do not return duplicate values drawn from multiple profiles when
 // filling an already filled field.
-TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
+TEST_P(SuggestionMatchingTest, GetFieldSuggestionsWithDuplicateValues) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1791,12 +2002,22 @@ TEST_F(AutofillManagerTest, GetFieldSuggestionsWithDuplicateValues) {
   field.value = ASCIIToUTF16("Elvis");
   GetAutofillSuggestions(form, field);
 
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      label = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label = "3734 Elvis Presley Blvd.";
+  }
   // Test that we sent the right values to the external delegate.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 1));
+  CheckSuggestions(kDefaultPageID, Suggestion("Elvis", label, "", 1));
 }
 
-TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
+TEST_P(SuggestionMatchingTest, GetProfileSuggestions_FancyPhone) {
   // Set up our form data.
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -1812,13 +2033,56 @@ TEST_F(AutofillManagerTest, GetProfileSuggestions_FancyPhone) {
   const FormFieldData& field = form.fields[9];
   GetAutofillSuggestions(form, field);
 
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include the most private field of those that would be filled.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("18007724743", "Natty Bumppo", "", 1),  // 1800PRAIRIE
-      Suggestion("23456789012", "123 Apple St.", "", 2),
-      Suggestion("12345678901", "3734 Elvis Presley Blvd.", "", 3));
+  std::string value1;
+  std::string value2;
+  std::string value3;
+  std::string label1;
+  std::string label2;
+  std::string label3;
+
+  switch (enabled_feature_) {
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+    case EnabledFeature::kDesktop:
+      value1 = "(800) 772-4743";
+      value2 = "23456789012";
+      value3 = "(234) 567-8901";
+      label1 = "Natty Bumppo";
+      label2 = MakeLabel(
+          {"Charles Holley", "123 Apple St., unit 6", "buddy@gmail.com"});
+      label3 = MakeLabel({"Elvis Presley", "3734 Elvis Presley Blvd., Apt. 10",
+                          "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      value1 = "(800) 772-4743";
+      value2 = "23456789012";
+      value3 = "(234) 567-8901";
+      label1 = "Natty";
+      label2 = MakeMobileLabel(
+          {"Charles", "123 Apple St., unit 6", "buddy@gmail.com"});
+      label3 = MakeMobileLabel(
+          {"Elvis", "3734 Elvis Presley Blvd., Apt. 10", "theking@gmail.com"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      value1 = "(800) 772-4743";
+      value2 = "23456789012";
+      value3 = "(234) 567-8901";
+      label1 = "";
+      label2 = "123 Apple St., unit 6";
+      label3 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      value1 = "18007724743";  // 1800PRAIRIE
+      value2 = "23456789012";
+      value3 = "12345678901";
+      label1 = "Natty Bumppo";
+      label2 = "123 Apple St.";
+      label3 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion(value1, label1, "", 1),
+                   Suggestion(value2, label2, "", 2),
+                   Suggestion(value3, label3, "", 3));
 }
 
 TEST_F(AutofillManagerTest, GetProfileSuggestions_ForPhonePrefixOrSuffix) {
@@ -3904,25 +4168,32 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 }
 
 // Test that the value patterns metric is reported.
-TEST_F(AutofillManagerTest, FormSubmitted_ValuePatternsMetric) {
-  // Set up our form data.
-  FormData form;
-  FormFieldData field;
-  test::CreateTestFormField("Some label", "my-field", "user@okaxis", "text",
-                            &field);
-  field.is_focusable = true;  // The metric skips hidden fields.
-  form.name = ASCIIToUTF16("my-form");
-  form.url = GURL("http://myform.com/form.html");
-  form.action = GURL("https://myform.com/submit.html");
-  form.fields.push_back(field);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
+TEST_F(AutofillManagerTest, ValuePatternsMetric) {
+  struct ValuePatternTestCase {
+    const char* value;
+    autofill::ValuePatternsMetric pattern;
+  } kTestCases[] = {
+      {"user@okaxis", autofill::ValuePatternsMetric::kUpiVpa},
+      {"IT60X0542811101000000123456", autofill::ValuePatternsMetric::kIban}};
+  for (const ValuePatternTestCase test_case : kTestCases) {
+    // Set up our form data.
+    FormData form;
+    FormFieldData field;
+    test::CreateTestFormField("Some label", "my-field", test_case.value, "text",
+                              &field);
+    field.is_focusable = true;  // The metric skips hidden fields.
+    form.name = ASCIIToUTF16("my-form");
+    form.url = GURL("http://myform.com/form.html");
+    form.action = GURL("https://myform.com/submit.html");
+    form.fields.push_back(field);
+    std::vector<FormData> forms(1, form);
+    FormsSeen(forms);
 
-  base::HistogramTester histogram_tester;
-  FormSubmitted(form);
-  histogram_tester.ExpectUniqueSample("Autofill.SubmittedValuePatterns",
-                                      autofill::ValuePatternsMetric::kUpiVpa,
-                                      1);
+    base::HistogramTester histogram_tester;
+    FormSubmitted(form);
+    histogram_tester.ExpectUniqueSample("Autofill.SubmittedValuePatterns",
+                                        test_case.pattern, 1);
+  }
 }
 
 // Test that when Autofill is disabled, Autocomplete suggestions are still
@@ -3985,22 +4256,16 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_NoneWhenAutofillPresent) {
   test::CreateTestAddressFormData(&form);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
-
   const FormFieldData& field = form.fields[0];
 
-  // Autocomplete manager is not called for suggestions.
+  // AutocompleteManager is not called for suggestions.
   EXPECT_CALL(*(autocomplete_history_manager_.get()),
               OnGetAutocompleteSuggestions)
       .Times(0);
 
   GetAutofillSuggestions(form, field);
-
-  // Test that we sent the right values to the external delegate. Inferred
-  // labels include full first relevant field, which in this case is the
-  // address line 1.
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion("Charles", "123 Apple St.", "", 1),
-                   Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+  // Verify that suggestions are returned.
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test that we query for Autocomplete suggestions when there are no Autofill
@@ -4646,8 +4911,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"France", ADDRESS_HOME_COUNTRY},
     {"33249197070", PHONE_HOME_WHOLE_NUMBER},
     {"+33 2 49 19 70 70", PHONE_HOME_WHOLE_NUMBER},
-    {"2 49 19 70 70", PHONE_HOME_CITY_AND_NUMBER},
-    {"249197070", PHONE_HOME_CITY_AND_NUMBER},
+    {"02 49 19 70 70", PHONE_HOME_CITY_AND_NUMBER},
+    {"0249197070", PHONE_HOME_CITY_AND_NUMBER},
     {"33", PHONE_HOME_COUNTRY_CODE},
     {"2", PHONE_HOME_CITY_CODE},
 
@@ -4681,8 +4946,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"TN", ADDRESS_HOME_STATE},     // Saved as "Tennessee" in profile.
     {"Texas", ADDRESS_HOME_STATE},  // Saved as "TX" in profile.
 
-    // Special phone number case. A profile with no country code should only
-    // match PHONE_HOME_CITY_AND_NUMBER.
+    // Special phone number case. A profile with no country code should
+    // only match PHONE_HOME_CITY_AND_NUMBER.
     {"5142821292", PHONE_HOME_CITY_AND_NUMBER},
 
     // Make sure unsupported variants do not match.
@@ -4695,8 +4960,8 @@ const ProfileMatchingTypesTestCase kProfileMatchingTypesTestCases[] = {
     {"901", UNKNOWN_TYPE},
 };
 
-// Tests that DeterminePossibleFieldTypesForUpload finds accurate possible types
-// and validities.
+// Tests that DeterminePossibleFieldTypesForUpload finds accurate possible
+// types and validities.
 TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
   // Unpack the test paramters
   const auto& test_case = std::get<0>(GetParam());
@@ -4742,8 +5007,8 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
         // An UNKNOWN type is always UNVALIDATED
         validity_state = AutofillDataModel::UNVALIDATED;
       } else if (profile.IsAnInvalidPhoneNumber(test_case.field_type)) {
-        // a phone field is a compound field, an invalid part would make it
-        // invalid.
+        // A phone field is a compound field, and an invalid part makes
+        // the phone number invalid.
         validity_state = AutofillDataModel::INVALID;
       }
       profile.SetValidityState(test_case.field_type, validity_state,
@@ -4794,15 +5059,6 @@ TEST_P(ProfileMatchingTypesTest, DeterminePossibleFieldTypesForUpload) {
                   : AutofillDataModel::UNVALIDATED);
   }
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    AutofillManagerTest,
-    ProfileMatchingTypesTest,
-    testing::Combine(
-        testing::ValuesIn(kProfileMatchingTypesTestCases),
-        testing::Range(static_cast<int>(AutofillDataModel::UNVALIDATED),
-                       static_cast<int>(AutofillDataModel::UNSUPPORTED) + 1),
-        testing::Bool()));
 
 // Tests that DeterminePossibleFieldTypesForUpload is called when a form is
 // submitted.
@@ -5136,6 +5392,28 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
   }
 }
 
+// When a field contains fields with UPI/VPA values, a crowdsourcing vote should
+// be uploaded.
+TEST_F(AutofillManagerTest, CrowdsourceUPIVPA) {
+  std::vector<AutofillProfile> profiles;
+  std::vector<CreditCard> credit_cards;
+
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("", "name1", "1234@indianbank", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("", "name2", "not-upi@gmail.com", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+
+  AutofillManager::DeterminePossibleFieldTypesForUpload(
+      profiles, credit_cards, "en-us", &form_structure);
+
+  EXPECT_THAT(form_structure.field(0)->possible_types(), ElementsAre(UPI_VPA));
+  EXPECT_THAT(form_structure.field(1)->possible_types(),
+              Not(Contains(UPI_VPA)));
+}
+
 TEST_F(AutofillManagerTest, RemoveProfile) {
   // Add and remove an Autofill profile.
   AutofillProfile profile;
@@ -5413,19 +5691,18 @@ TEST_F(AutofillManagerTest,
   GetAutofillSuggestions(form, number_field);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string kVisaSuggestionLabel = std::string("04/99");
-  const std::string kMasterCardSuggestionLabel = std::string("10/98");
+  const std::string visa_label = std::string("04/99");
+  const std::string master_card_label = std::string("10/98");
 #else
-  const std::string kVisaSuggestionLabel = std::string("Expires on 04/99");
-  const std::string kMasterCardSuggestionLabel =
-      std::string("Expires on 10/98");
+  const std::string visa_label = std::string("Expires on 04/99");
+  const std::string master_card_label = std::string("Expires on 10/98");
 #endif
 
-  CheckSuggestions(kDefaultPageID,
-                   Suggestion(std::string("Visa  ") +
-                                  test::ObfuscatedCardDigitsAsUTF8("3456"),
-                              kVisaSuggestionLabel, kVisaCard,
-                              autofill_manager_->GetPackedCreditCardID(4)));
+  CheckSuggestions(
+      kDefaultPageID,
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          visa_label, kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that inputs detected to be CVC inputs are forced to
@@ -5582,9 +5859,9 @@ TEST_F(AutofillManagerTest, CreditCardDisabledDoesNotSuggest) {
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
-// Verify that typing "gmail" will match "theking@gmail.com" and
-// "buddy@gmail.com" when substring matching is enabled.
-TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
+// Verify that typing "gmail" matches "theking@gmail.com" and "buddy@gmail.com"
+// when substring matching is enabled.
+TEST_P(SuggestionMatchingTest, DisplaySuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5598,14 +5875,44 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   test::CreateTestFormField("Email", "email", "gmail", "email", &field);
   GetAutofillSuggestions(form, field);
 
-  CheckSuggestions(
-      kDefaultPageID, Suggestion("buddy@gmail.com", "123 Apple St.", "", 1),
-      Suggestion("theking@gmail.com", "3734 Elvis Presley Blvd.", "", 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+    case EnabledFeature::kDesktop:
+      label1 =
+          MakeLabel({"Charles Holley", "123 Apple St., unit 6", "23456789012"});
+      label2 = MakeLabel({"Elvis Presley", "3734 Elvis Presley Blvd., Apt. 10",
+                          "(234) 567-8901"});
+      break;
+    case EnabledFeature::kMobileShowAll:
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It
+      // has an extra digit.
+      label1 =
+          MakeMobileLabel({"Charles", "123 Apple St., unit 6", "23456789012"});
+      label2 = MakeMobileLabel(
+          {"Elvis", "3734 Elvis Presley Blvd., Apt. 10", "(234) 567-8901"});
+      break;
+    case EnabledFeature::kMobileShowOne:
+      label1 = "123 Apple St., unit 6";
+      label2 = "3734 Elvis Presley Blvd., Apt. 10";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "123 Apple St.";
+      label2 = "3734 Elvis Presley Blvd.";
+  }
+  // Test that we sent the right values to the external delegate.
+  CheckSuggestions(kDefaultPageID, Suggestion("buddy@gmail.com", label1, "", 1),
+                   Suggestion("theking@gmail.com", label2, "", 2));
 }
 
 // Verify that typing "apple" will match "123 Apple St." when substring matching
 // is enabled.
-TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
+TEST_P(SuggestionMatchingTest,
+       DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5619,8 +5926,24 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsWithMatchingTokens_CaseIgnored) {
   test::CreateTestFormField("Address Line 2", "addr2", "apple", "text", &field);
   GetAutofillSuggestions(form, field);
 
+  std::string label;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+      label = "Charles Holley";
+      break;
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      // 23456789012 is not formatted because it is invalid for the app locale.
+      // It has an extra digit.
+      label = "23456789012";
+      break;
+    case EnabledFeature::kNone:
+      label = "123 Apple St.";
+  }
+  // Test that we sent the right values to the external delegate.
   CheckSuggestions(kDefaultPageID,
-                   Suggestion("123 Apple St., unit 6", "123 Apple St.", "", 1));
+                   Suggestion("123 Apple St., unit 6", label, "", 1));
 }
 
 // Verify that typing "mail" will not match any of the "@gmail.com" email
@@ -5643,7 +5966,8 @@ TEST_F(AutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
 // Verify that typing "dre" matches "Nancy Drew" when substring matching is
 // enabled.
-TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
+TEST_P(CreditCardSuggestionMatchingTest,
+       DisplayCreditCardSuggestionsWithMatchingTokens) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
 
@@ -5666,20 +5990,23 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
   personal_data_.AddCreditCard(credit_card);
 
 #if defined(OS_ANDROID)
-  const std::string kVisaSuggestionLabel =
-      std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("7777");
+  const std::string visa_label =
+      IsKeyboardAccessoryEnabled()
+          ? test::ObfuscatedCardDigitsAsUTF8("7777")
+          : std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("7777");
+
 #elif defined(OS_IOS)
-  const std::string kVisaSuggestionLabel =
-      test::ObfuscatedCardDigitsAsUTF8("7777");
+  const std::string visa_label = test::ObfuscatedCardDigitsAsUTF8("7777");
+
 #else
-  const std::string kVisaSuggestionLabel = base::UTF16ToUTF8(
+  const std::string visa_label = base::UTF16ToUTF8(
       credit_card.NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
           "en-US"));
 #endif
 
   GetAutofillSuggestions(form, field);
   CheckSuggestions(kDefaultPageID,
-                   Suggestion("Nancy Drew", kVisaSuggestionLabel, kVisaCard,
+                   Suggestion("Nancy Drew", visa_label, kVisaCard,
                               MakeFrontendID(guid, std::string())));
 }
 
@@ -5893,7 +6220,7 @@ TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_AddressField) {
 // Verify that typing "S" into the middle name field will match and order middle
 // names "Shawn Smith" followed by "Adam Smith" i.e. prefix matched followed by
 // substring matched.
-TEST_F(AutofillManagerTest,
+TEST_P(SuggestionMatchingTest,
        DisplaySuggestionsWithPrefixesPrecedeSubstringMatched) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kAutofillTokenPrefixMatching);
@@ -5926,12 +6253,22 @@ TEST_F(AutofillManagerTest,
   test::CreateTestFormField("Middle Name", "middlename", "S", "text", &field);
   GetAutofillSuggestions(form, field);
 
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion("Shawn Smith", "1234 Smith Blvd., Carl Shawn Smith Grimes", "",
-                 1),
-      Suggestion("Adam Smith", "1234 Smith Blvd., Robin Adam Smith Grimes", "",
-                 2));
+  std::string label1;
+  std::string label2;
+
+  switch (enabled_feature_) {
+    case EnabledFeature::kDesktop:
+    case EnabledFeature::kMobileShowAll:
+    case EnabledFeature::kMobileShowOne:
+      label1 = "1234 Smith Blvd.";
+      label2 = "1234 Smith Blvd.";
+      break;
+    case EnabledFeature::kNone:
+      label1 = "1234 Smith Blvd., Carl Shawn Smith Grimes";
+      label2 = "1234 Smith Blvd., Robin Adam Smith Grimes";
+  }
+  CheckSuggestions(kDefaultPageID, Suggestion("Shawn Smith", label1, "", 1),
+                   Suggestion("Adam Smith", label2, "", 2));
 }
 
 TEST_F(AutofillManagerTest, ShouldUploadForm) {
@@ -7039,13 +7376,21 @@ class OnFocusOnFormFieldTest : public AutofillManagerTest,
 
   void TearDown() override {
     external_delegate_->set_has_active_screen_reader(false);
-
     AutofillManagerTest::TearDown();
   }
 
   void CheckSuggestionsAvailableIfScreenReaderRunning() {
+#if defined(OS_CHROMEOS)
+    // The only existing functions for determining whether ChromeVox is in use
+    // are in the src/chrome directory, which cannot be included in components.
+    // Thus, if the platform is ChromeOS, we assume that ChromeVox is in use at
+    // this point in the code.
+    EXPECT_EQ(true,
+              external_delegate_->has_suggestions_available_on_field_focus());
+#else
     EXPECT_EQ(has_active_screen_reader_,
               external_delegate_->has_suggestions_available_on_field_focus());
+#endif  // defined(OS_CHROMEOS)
   }
 
   void CheckNoSuggestionsAvailableOnFieldFocus() {
@@ -7182,6 +7527,30 @@ TEST_P(OnFocusOnFormFieldTest, CreditCardSuggestions_Ablation) {
   CheckNoSuggestionsAvailableOnFieldFocus();
 }
 
+INSTANTIATE_TEST_SUITE_P(
+    AutofillManagerTest,
+    ProfileMatchingTypesTest,
+    testing::Combine(
+        testing::ValuesIn(kProfileMatchingTypesTestCases),
+        testing::Range(static_cast<int>(AutofillDataModel::UNVALIDATED),
+                       static_cast<int>(AutofillDataModel::UNSUPPORTED) + 1),
+        testing::Bool()));
+
 INSTANTIATE_TEST_SUITE_P(All, OnFocusOnFormFieldTest, testing::Bool());
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+INSTANTIATE_TEST_SUITE_P(,
+                         SuggestionMatchingTest,
+                         testing::Values(std::make_tuple(0, ""),
+                                         std::make_tuple(1, "show-all"),
+                                         std::make_tuple(1, "show-one")));
+#else
+INSTANTIATE_TEST_SUITE_P(,
+                         SuggestionMatchingTest,
+                         testing::Values(std::make_tuple(0, ""),
+                                         std::make_tuple(1, "")));
+#endif  // defined(OS_IOS) || defined(OS_ANDROID)
+
+INSTANTIATE_TEST_SUITE_P(, CreditCardSuggestionMatchingTest, testing::Bool());
 
 }  // namespace autofill

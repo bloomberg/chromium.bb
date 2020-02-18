@@ -39,6 +39,12 @@
         "description": "Accessibility gestures fired by the touch exploration controller."
       },
       {
+        "id": "SwitchAccessCommand",
+        "type": "string",
+        "enum": [ "select", "next", "previous" ],
+        "description": "Commands that can be triggered by switch activation."
+      },
+      {
         "id": "SyntheticKeyboardEventType",
         "type": "string",
         "description": "The event to send",
@@ -141,6 +147,23 @@
       }
     ],
     "functions": [
+      {
+        "name": "getDisplayLanguage",
+        "type": "function",
+        "nocompile": true,
+        "description": "Called to translate language code into human-readable string in the language of the provided language code.",
+        "parameters": [
+          {
+            "name": "languageCode",
+            "type": "string"
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "The human-readable language string in the provided language."
+        },
+        "platforms": ["chromeos"]
+      },
       {
         "name": "getBatteryDescription",
         "type": "function",
@@ -351,6 +374,18 @@
         "platforms": ["chromeos"]
       },
       {
+        "name": "onScrollableBoundsForPointFound",
+        "type": "function",
+        "description": "Called by the Autoclick extension when findScrollableBoundsForPoint has found a scrolling container. |rect| will be the bounds of the nearest scrollable ancestor of the node at the point requested using findScrollableBoundsForPoint.",
+        "parameters": [
+          {
+            "name": "rect",
+            "$ref": "ScreenRect"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "toggleDictation",
         "type": "function",
         "description": "Toggles dictation between active and inactive states.",
@@ -365,6 +400,18 @@
           {
             "name": "isVisible",
             "type": "boolean"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "openSettingsSubpage",
+        "type": "function",
+        "description": "Opens a specified settings subpage. To open a page with url chrome://settings/manageAccessibility/tts, pass in the substring 'manageAccessibility/tts'.",
+        "parameters": [
+          {
+            "name": "subpage",
+            "type": "string"
           }
         ],
         "platforms": ["chromeos"]
@@ -407,6 +454,18 @@
         "platforms": ["chromeos"]
       },
       {
+        "name": "onSwitchAccessCommand",
+        "type": "function",
+        "description": "Called when Chrome OS has received a key event corresponding to a Switch Access command.",
+        "parameters": [
+          {
+            "name": "command",
+            "$ref": "SwitchAccessCommand"
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
         "name": "onAnnounceForAccessibility",
         "type": "function",
         "description": "Called when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
@@ -416,6 +475,24 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "Text to be announced."
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "findScrollableBoundsForPoint",
+        "type": "function",
+        "description": "Called when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
+        "parameters": [
+          {
+            "name": "x",
+            "type": "number",
+            "description": "X screen coordinate of the point."
+          },
+          {
+            "name": "y",
+            "type": "number",
+            "description": "Y screen coordinate of the point."
           }
         ],
         "platforms": ["chromeos"]

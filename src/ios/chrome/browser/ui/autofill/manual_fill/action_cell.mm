@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -79,8 +79,6 @@
   self.action = nil;
   [self.titleButton setTitle:nil forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = nil;
-  [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
-                         forState:UIControlStateNormal];
   self.titleButton.enabled = YES;
   self.grayLine.hidden = YES;
 }
@@ -100,7 +98,7 @@
   self.titleButton.accessibilityIdentifier = accessibilityID;
   self.titleButton.enabled = enabled;
   if (!enabled) {
-    [self.titleButton setTitleColor:UIColor.lightGrayColor
+    [self.titleButton setTitleColor:UIColor.cr_secondaryLabelColor
                            forState:UIControlStateNormal];
   }
   self.action = action;

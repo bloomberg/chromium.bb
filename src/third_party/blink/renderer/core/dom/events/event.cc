@@ -34,11 +34,11 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -65,7 +65,7 @@ Event::Event() : Event("", Bubbles::kNo, Cancelable::kNo) {
 Event::Event(const AtomicString& event_type,
              Bubbles bubbles,
              Cancelable cancelable,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : Event(event_type,
             bubbles,
             cancelable,
@@ -80,13 +80,13 @@ Event::Event(const AtomicString& event_type,
             bubbles,
             cancelable,
             composed_mode,
-            CurrentTimeTicks()) {}
+            base::TimeTicks::Now()) {}
 
 Event::Event(const AtomicString& event_type,
              Bubbles bubbles,
              Cancelable cancelable,
              ComposedMode composed_mode,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : type_(event_type),
       bubbles_(bubbles == Bubbles::kYes),
       cancelable_(cancelable == Cancelable::kYes),
@@ -109,7 +109,7 @@ Event::Event(const AtomicString& event_type,
 
 Event::Event(const AtomicString& event_type,
              const EventInit* initializer,
-             TimeTicks platform_time_stamp)
+             base::TimeTicks platform_time_stamp)
     : Event(event_type,
             initializer->bubbles() ? Bubbles::kYes : Bubbles::kNo,
             initializer->cancelable() ? Cancelable::kYes : Cancelable::kNo,
@@ -245,7 +245,6 @@ bool Event::IsErrorEvent() const {
 void Event::preventDefault() {
   if (handling_passive_ != PassiveMode::kNotPassive &&
       handling_passive_ != PassiveMode::kNotPassiveDefault) {
-    prevent_default_called_during_passive_ = true;
 
     const LocalDOMWindow* window =
         event_path_ ? event_path_->GetWindowEventContext().Window() : nullptr;
@@ -312,7 +311,6 @@ HeapVector<Member<EventTarget>> Event::composedPath(
 
 void Event::SetHandlingPassive(PassiveMode mode) {
   handling_passive_ = mode;
-  prevent_default_called_during_passive_ = false;
 }
 
 HeapVector<Member<EventTarget>> Event::PathInternal(ScriptState* script_state,

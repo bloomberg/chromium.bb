@@ -135,20 +135,18 @@ class CertNetFetcherImpl::AsyncCertNetFetcherImpl {
   void Fetch(std::unique_ptr<RequestParams> request_params,
              scoped_refptr<RequestCore> request);
 
+  // Removes |job| from the in progress jobs and transfers ownership to the
+  // caller.
+  std::unique_ptr<Job> RemoveJob(Job* job);
+
   // Cancels outstanding jobs, which stops network requests and signals the
   // corresponding RequestCores that the requests have completed.
   void Shutdown();
 
  private:
-  friend class Job;
-
   // Finds a job with a matching RequestPararms or returns nullptr if there was
   // no match.
   Job* FindJob(const RequestParams& params);
-
-  // Removes |job| from the in progress jobs and transfers ownership to the
-  // caller.
-  std::unique_ptr<Job> RemoveJob(Job* job);
 
   // The in-progress jobs. This set does not contain the job which is actively
   // invoking callbacks (OnJobCompleted).

@@ -80,7 +80,7 @@ TEST_F(NavigationConsoleLoggerTest, NavigationCommitsSuccessfully_Logs) {
   EXPECT_TRUE(GetConsoleMessages(main_rfh()).empty());
   navigation->Commit();
 
-  EXPECT_TRUE(base::ContainsValue(GetConsoleMessages(main_rfh()), "foo"));
+  EXPECT_TRUE(base::Contains(GetConsoleMessages(main_rfh()), "foo"));
 }
 
 TEST_F(NavigationConsoleLoggerTest, NavigationAlreadyCommit_Logs) {
@@ -90,7 +90,7 @@ TEST_F(NavigationConsoleLoggerTest, NavigationAlreadyCommit_Logs) {
   };
   NavigationFinishCaller caller(web_contents(), base::BindRepeating(on_finish));
   NavigateAndCommit(GURL("http://example.test/"));
-  EXPECT_TRUE(base::ContainsValue(GetConsoleMessages(main_rfh()), "foo"));
+  EXPECT_TRUE(base::Contains(GetConsoleMessages(main_rfh()), "foo"));
 }
 
 TEST_F(NavigationConsoleLoggerTest, NavigationAlreadyFailed_NoLog) {

@@ -27,7 +27,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -131,16 +130,21 @@ void ProfileInfoCacheTest::ResetCache() {
 
 TEST_F(ProfileInfoCacheTest, AddProfiles) {
   EXPECT_EQ(0u, GetCache()->GetNumberOfProfiles());
-
+  // Avatar icons not used on Android.
+#if !defined(OS_ANDROID)
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+#endif
+
   for (uint32_t i = 0; i < 4; ++i) {
     base::FilePath profile_path =
         GetProfilePath(base::StringPrintf("path_%ud", i));
     base::string16 profile_name =
         ASCIIToUTF16(base::StringPrintf("name_%ud", i));
+#if !defined(OS_ANDROID)
     const SkBitmap* icon = rb.GetImageNamed(
         profiles::GetDefaultAvatarIconResourceIDAtIndex(
             i)).ToSkBitmap();
+#endif
     std::string supervised_user_id = "";
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     if (i == 3)
@@ -157,12 +161,19 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     EXPECT_EQ(i + 1, GetCache()->GetNumberOfProfiles());
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
     EXPECT_EQ(profile_path, GetCache()->GetPathOfProfileAtIndex(i));
+#if !defined(OS_ANDROID)
     const SkBitmap* actual_icon =
         GetCache()->GetAvatarIconOfProfileAtIndex(i).ToSkBitmap();
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
+#endif
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     EXPECT_EQ(i == 3, GetCache()->ProfileIsSupervisedAtIndex(i));
     EXPECT_EQ(i == 3, GetCache()->IsOmittedProfileAtIndex(i));
+#else
+    EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(i));
+    EXPECT_FALSE(GetCache()->IsOmittedProfileAtIndex(i));
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     EXPECT_EQ(supervised_user_id,
               GetCache()->GetSupervisedUserIdOfProfileAtIndex(i));
   }
@@ -178,7 +189,9 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     base::string16 profile_name =
         ASCIIToUTF16(base::StringPrintf("name_%ud", i));
     EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(i));
+#if !defined(OS_ANDROID)
     EXPECT_EQ(i, GetCache()->GetAvatarIconIndexOfProfileAtIndex(i));
+#endif
     EXPECT_EQ(true, GetCache()->GetBackgroundStatusOfProfileAtIndex(i));
     base::string16 gaia_name = ASCIIToUTF16(base::StringPrintf("gaia_%ud", i));
     EXPECT_EQ(gaia_name, GetCache()->GetGAIANameOfProfileAtIndex(i));
@@ -228,6 +241,8 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   EXPECT_EQ(new_gaia_id, GetCache()->GetGAIAIdOfProfileAtIndex(1));
   EXPECT_NE(new_user_name, GetCache()->GetUserNameOfProfileAtIndex(0));
 
+  // Avatar icons not used on Android.
+#if !defined(OS_ANDROID)
   const size_t new_icon_index = 3;
   GetCache()->SetAvatarIconOfProfileAtIndex(1, new_icon_index);
   EXPECT_EQ(new_icon_index, GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
@@ -239,6 +254,7 @@ TEST_F(ProfileInfoCacheTest, MutateProfile) {
   GetCache()->SetAvatarIconOfProfileAtIndex(1, wrong_icon_index);
   EXPECT_EQ(generic_icon_index,
             GetCache()->GetAvatarIconIndexOfProfileAtIndex(1));
+#endif
 }
 
 TEST_F(ProfileInfoCacheTest, Sort) {
@@ -397,12 +413,15 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   GetCache()->SetProfileIsUsingDefaultAvatarAtIndex(1, false);
   EXPECT_FALSE(GetCache()->ProfileIsUsingDefaultAvatarAtIndex(1));
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
+// Avatar icons not used on Android.
+#if !defined(OS_ANDROID)
   int other_avatar_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(kOtherAvatarIndex);
   const gfx::Image& other_avatar_image(
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(other_avatar_id));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+#endif
 
   // Explicitly setting the GAIA picture should make it preferred again.
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(1, true);
@@ -418,8 +437,10 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
+#if !defined(OS_ANDROID)
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       other_avatar_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
+#endif
 }
 
 TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {

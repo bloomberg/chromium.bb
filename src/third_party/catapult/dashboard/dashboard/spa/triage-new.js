@@ -4,18 +4,18 @@
 */
 'use strict';
 
-import './cp-checkbox.js';
-import './cp-input.js';
-import './cp-textarea.js';
-import './raised-button.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@chopsui/chops-button';
+import '@chopsui/chops-checkbox';
+import '@chopsui/chops-input';
+import '@chopsui/chops-switch';
+import '@chopsui/chops-textarea';
 import {ElementBase, STORE} from './element-base.js';
-import {UPDATE} from './simple-redux.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
-import {isElementChildOf, setImmutable} from './utils.js';
+import {TOGGLE, UPDATE} from './simple-redux.js';
+import {get, set} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
+import {isElementChildOf} from './utils.js';
 
-export default class TriageNew extends ElementBase {
+export class TriageNew extends ElementBase {
   static get is() { return 'triage-new'; }
 
   static get properties() {
@@ -24,10 +24,11 @@ export default class TriageNew extends ElementBase {
       cc: String,
       components: Array,
       description: String,
-      isOpen: {type: Boolean, reflectToAttribute: true},
+      isOpen: {type: Boolean, reflect: true},
       labels: Array,
       owner: String,
       summary: String,
+      startBisect: Boolean,
     };
   }
 
@@ -42,89 +43,100 @@ export default class TriageNew extends ElementBase {
           options.alerts, 'bugLabels'),
       owner: options.owner || '',
       summary: TriageNew.summarize(options.alerts),
+      startBisect: options.startBisect !== false,
     };
   }
 
-  static get template() {
-    return html`
-      <style>
-        :host {
-          background: var(--background-color, white);
-          box-shadow: var(--elevation-2);
-          display: none;
-          flex-direction: column;
-          min-width: 500px;
-          outline: none;
-          padding: 16px;
-          position: absolute;
-          right: 0;
-          z-index: var(--layer-menu, 100);
-        }
-        :host([is-open]) {
-          display: flex;
-        }
-        *:not(:nth-child(2)) {
-          margin-top: 12px;
-        }
-      </style>
+  static get styles() {
+    return css`
+      :host {
+        background: var(--background-color, white);
+        box-shadow: var(--elevation-2);
+        display: none;
+        flex-direction: column;
+        min-width: 500px;
+        outline: none;
+        padding: 16px;
+        position: absolute;
+        right: 0;
+        z-index: var(--layer-menu, 100);
+      }
+      :host([isopen]) {
+        display: flex;
+      }
+      *:not(:nth-child(1)) {
+        margin-top: 12px;
+      }
+    `;
+  }
 
-      <cp-input
+  render() {
+    return html`
+      <chops-input
           id="summary"
           label="Summary"
           tabindex="0"
-          value="[[summary]]"
-          on-change="onSummary_">
-      </cp-input>
+          value="${this.summary}"
+          @change="${this.onSummary_}">
+      </chops-input>
 
-      <cp-input
+      <chops-input
           id="owner"
           label="Owner"
           tabindex="0"
-          value="[[owner]]"
-          on-change="onOwner_">
-      </cp-input>
+          value="${this.owner}"
+          @change="${this.onOwner_}">
+      </chops-input>
 
-      <cp-input
+      <chops-input
           id="cc"
           label="CC"
           tabindex="0"
-          value="[[cc]]"
-          on-change="onCC_">
-      </cp-input>
+          value="${this.cc}"
+          @change="${this.onCC_}">
+      </chops-input>
 
-      <cp-textarea
+      <chops-textarea
           autofocus
           id="description"
           label="Description"
           tabindex="0"
-          value="[[description]]"
-          on-keyup="onDescription_">
-      </cp-textarea>
+          value="${this.description}"
+          @keyup="${this.onDescription_}">
+      </chops-textarea>
 
-      <template is="dom-repeat" items="[[labels]]" as="label">
-        <cp-checkbox
-            checked="[[label.isEnabled]]"
+      ${(this.labels || []).map(label => html`
+        <chops-checkbox
+            .checked="${label.isEnabled}"
             tabindex="0"
-            on-change="onLabel_">
-          [[label.name]]
-        </cp-checkbox>
-      </template>
+            @change="${event => this.onLabel_(label.name)}">
+          ${label.name}
+        </chops-checkbox>
+      `)}
 
-      <template is="dom-repeat" items="[[components]]" as="component">
-        <cp-checkbox
-            checked="[[component.isEnabled]]"
+      ${(this.components || []).map(component => html`
+        <chops-checkbox
+            .checked="${component.isEnabled}"
             tabindex="0"
-            on-change="onComponent_">
-          [[component.name]]
-        </cp-checkbox>
-      </template>
+            @change="${event => this.onComponent_(component.name)}">
+          ${component.name}
+        </chops-checkbox>
+      `)}
 
-      <raised-button
+      <chops-switch
+          id="pinpoint"
+          .checked="${this.startBisect}"
+          @click="${this.onTogglePinpoint_}"
+          tabindex="0">
+        Start Pinpoint Bisect
+      </chops-switch>
+
+      <chops-button
           id="submit"
-          on-click="onSubmit_"
+          @click="${this.onSubmit_}"
           tabindex="0">
         Submit
-      </raised-button>
+      </chops-button>
     `;
   }
 
@@ -132,15 +144,23 @@ export default class TriageNew extends ElementBase {
     const oldIsOpen = this.isOpen;
     super.stateChanged(rootState);
 
-    if (this.isOpen && !oldIsOpen) {
-      this.$.description.focus();
+    if (this.isOpen && !oldIsOpen && this.descriptionInput) {
+      this.descriptionInput.focus();
     }
   }
 
-  ready() {
-    super.ready();
+  get descriptionInput() {
+    return this.shadowRoot.querySelector('#description');
+  }
+
+  constructor() {
+    super();
     this.addEventListener('blur', this.onBlur_.bind(this));
     this.addEventListener('keyup', this.onKeyup_.bind(this));
+  }
+
+  onTogglePinpoint_(event) {
+    STORE.dispatch(TOGGLE(this.statePath + '.startBisect'));
   }
 
   async onKeyup_(event) {
@@ -171,19 +191,19 @@ export default class TriageNew extends ElementBase {
     }));
   }
 
-  async onLabel_(event) {
+  async onLabel_(name) {
     await STORE.dispatch({
       type: TriageNew.reducers.toggleLabel.name,
       statePath: this.statePath,
-      name: event.model.label.name,
+      name,
     });
   }
 
-  async onComponent_(event) {
+  async onComponent_(name) {
     await STORE.dispatch({
       type: TriageNew.reducers.toggleComponent.name,
       statePath: this.statePath,
-      name: event.model.component.name,
+      name,
     });
   }
 
@@ -208,8 +228,7 @@ TriageNew.reducers = {
   toggleLabel: (state, action, rootState) => {
     for (let i = 0; i < state.labels.length; ++i) {
       if (state.labels[i].name === action.name) {
-        return setImmutable(
-            state, `labels.${i}.isEnabled`, e => !e);
+        return set(state, `labels.${i}.isEnabled`, e => !e);
       }
     }
     return state;
@@ -218,8 +237,7 @@ TriageNew.reducers = {
   toggleComponent: (state, action, rootState) => {
     for (let i = 0; i < state.components.length; ++i) {
       if (state.components[i].name === action.name) {
-        return setImmutable(
-            state, `components.${i}.isEnabled`, e => !e);
+        return set(state, `components.${i}.isEnabled`, e => !e);
       }
     }
     return state;

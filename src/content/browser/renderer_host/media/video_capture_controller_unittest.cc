@@ -141,8 +141,8 @@ class VideoCaptureControllerTest
 
   void SetUp() override {
     const std::string arbitrary_device_id = "arbitrary_device_id";
-    const blink::MediaStreamType arbitrary_stream_type =
-        blink::MEDIA_DEVICE_VIDEO_CAPTURE;
+    const blink::mojom::MediaStreamType arbitrary_stream_type =
+        blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE;
     const media::VideoCaptureParams arbitrary_params;
     auto device_launcher = std::make_unique<MockVideoCaptureDeviceLauncher>();
     controller_ = new VideoCaptureController(
@@ -195,8 +195,8 @@ class VideoCaptureControllerTest
         stub_frame->data(0),
         media::VideoFrame::AllocationSize(stub_frame->format(),
                                           stub_frame->coded_size()),
-        format, color_space, rotation, base::TimeTicks(), base::TimeDelta(),
-        frame_feedback_id);
+        format, color_space, rotation, false /* flip_y */, base::TimeTicks(),
+        base::TimeDelta(), frame_feedback_id);
   }
 
   TestBrowserThreadBundle bundle_;

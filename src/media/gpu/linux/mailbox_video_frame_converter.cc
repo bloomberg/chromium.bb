@@ -173,15 +173,20 @@ void MailboxVideoFrameConverter::GenerateMailbox(VideoFrame* origin_frame,
 
   // Get NativePixmap.
   scoped_refptr<gfx::NativePixmap> pixmap;
-  gfx::BufferFormat buffer_format =
+  auto buffer_format =
       VideoPixelFormatToGfxBufferFormat(origin_frame->format());
+  if (!buffer_format) {
+    VLOGF(1) << "Unsupported format: " << origin_frame->format();
+    return;
+  };
 #if defined(USE_OZONE)
   gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(origin_frame);
+  DCHECK(!handle.is_null());
   pixmap = ui::OzonePlatform::GetInstance()
                ->GetSurfaceFactoryOzone()
                ->CreateNativePixmapFromHandle(
                    gfx::kNullAcceleratedWidget, origin_frame->coded_size(),
-                   buffer_format, std::move(handle.native_pixmap_handle));
+                   *buffer_format, std::move(handle.native_pixmap_handle));
 #endif  // defined(USE_OZONE)
   if (!pixmap) {
     VLOGF(1) << "Cannot create NativePixmap.";
@@ -190,7 +195,7 @@ void MailboxVideoFrameConverter::GenerateMailbox(VideoFrame* origin_frame,
 
   // Create GLImage.
   auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(
-      origin_frame->coded_size(), buffer_format);
+      origin_frame->coded_size(), *buffer_format);
   if (!image->Initialize(std::move(pixmap))) {
     VLOGF(1) << "Failed to initialize GLImage.";
     return;

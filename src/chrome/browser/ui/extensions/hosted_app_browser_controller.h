@@ -5,13 +5,11 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_HOSTED_APP_BROWSER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_HOSTED_APP_BROWSER_CONTROLLER_H_
 
-#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -24,19 +22,11 @@ class ImageSkia;
 
 namespace extensions {
 
-// Returns true if |page_url| is in the scope of the app for |app_url|. If the
-// app has no scope defined (as in a bookmark app), we fall back to checking
-// |page_url| has the same origin as |app_url|.
-bool IsSameScope(const GURL& app_url,
-                 const GURL& page_url,
-                 content::BrowserContext* profile);
-
 class Extension;
 
 // Class to encapsulate logic to control the browser UI for extension based web
 // apps.
-class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
-                                   public web_app::AppBrowserController {
+class HostedAppBrowserController : public web_app::AppBrowserController {
  public:
   // Functions to set preferences that are unique to app windows.
   static void SetAppPrefsForWebContents(
@@ -84,6 +74,8 @@ class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
   // Gets the launch url for the app.
   GURL GetAppLaunchURL() const override;
 
+  bool IsUrlInAppScope(const GURL& url) const override;
+
   // Gets the extension for this controller.
   const Extension* GetExtensionForTesting() const;
 
@@ -108,7 +100,6 @@ class HostedAppBrowserController : public ExtensionUninstallDialog::Delegate,
 
   const std::string extension_id_;
   const bool created_for_installed_pwa_;
-  std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);
 };

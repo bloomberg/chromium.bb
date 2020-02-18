@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
@@ -601,7 +601,7 @@ extern "C"{
 #define NETWORKSTATUS_FLAGS_TRIGGER_PENDING (0x1)
 
 #define MAKE_WORD(l,h) (((WORD) (l)) | (((WORD) (h)) << 8))
-#define MAKE_LONG(l,h) (((DWORD) (l)) | (((DWORD) (h)) << 16L))
+#define MAKE_LONG(l,h) (((DWORD) (l)) | (((DWORD) (h)) << 16))
 #define MAKE_SIG(a,b,c,d) MAKE_LONG(MAKE_WORD(a,b),MAKE_WORD(c,d))
 
 #define MAX_SESSIONS (100)
@@ -891,7 +891,7 @@ extern "C"{
       WORD Uint16Val;
       short Sint16Val;
       DWORD Uint32Val;
-      long Sint32Val;
+      __LONG32 Sint32Val;
       DOUBLE Float64Val;
       DWORD FrameVal;
       WINBOOL YesNoVal;

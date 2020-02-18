@@ -31,8 +31,14 @@ WorkerScheduler::WorkerScheduler(WorkerThreadScheduler* worker_thread_scheduler,
           worker_thread_scheduler->CreateTaskQueue("worker_pausable_tq")),
       unpausable_task_queue_(
           worker_thread_scheduler->CreateTaskQueue("worker_unpausable_tq")),
-      thread_scheduler_(worker_thread_scheduler),
-      weak_factory_(this) {
+      thread_scheduler_(worker_thread_scheduler) {
+  task_runners_.insert(
+      std::make_pair(throttleable_task_queue_,
+                     throttleable_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.insert(std::make_pair(
+      pausable_task_queue_, pausable_task_queue_->CreateQueueEnabledVoter()));
+  task_runners_.insert(std::make_pair(unpausable_task_queue_, nullptr));
+
   thread_scheduler_->RegisterWorkerScheduler(this);
 
   SetUpThrottling();
@@ -62,8 +68,11 @@ void WorkerScheduler::PauseImpl() {
   thread_scheduler_->helper()->CheckOnValidThread();
   paused_count_++;
   if (paused_count_ == 1) {
-    throttleable_task_queue_->SetPaused(true);
-    pausable_task_queue_->SetPaused(true);
+    for (const auto& pair : task_runners_) {
+      if (pair.second) {
+        pair.second->SetVoteToEnable(false);
+      }
+    }
   }
 }
 
@@ -71,8 +80,11 @@ void WorkerScheduler::ResumeImpl() {
   thread_scheduler_->helper()->CheckOnValidThread();
   paused_count_--;
   if (paused_count_ == 0 && !is_disposed_) {
-    throttleable_task_queue_->SetPaused(false);
-    pausable_task_queue_->SetPaused(false);
+    for (const auto& pair : task_runners_) {
+      if (pair.second) {
+        pair.second->SetVoteToEnable(true);
+      }
+    }
   }
 }
 
@@ -110,9 +122,11 @@ void WorkerScheduler::Dispose() {
 
   thread_scheduler_->UnregisterWorkerScheduler(this);
 
-  unpausable_task_queue_->ShutdownTaskQueue();
-  pausable_task_queue_->ShutdownTaskQueue();
-  throttleable_task_queue_->ShutdownTaskQueue();
+  for (const auto& pair : task_runners_) {
+    pair.first->ShutdownTaskQueue();
+  }
+
+  task_runners_.clear();
 
   is_disposed_ = true;
 }
@@ -156,6 +170,8 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalIntersectionObserver:
+    case TaskType::kInternalFreezableIPC:
+    case TaskType::kInternalContinueScriptLoading:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
@@ -166,6 +182,9 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalInspector:
     case TaskType::kInternalTest:
     case TaskType::kInternalNavigationAssociated:
+      // kWebLocks can be frozen if for entire page, but not for individual
+      // frames. See https://crrev.com/c/1687716
+    case TaskType::kWebLocks:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
@@ -185,8 +204,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kWorkerThreadTaskQueueDefault:
     case TaskType::kWorkerThreadTaskQueueV8:
     case TaskType::kWorkerThreadTaskQueueCompositor:
-    case TaskType::kExperimentalWebSchedulingUserInteraction:
-    case TaskType::kExperimentalWebSchedulingBestEffort:
     case TaskType::kInternalTranslation:
     case TaskType::kServiceWorkerClientMessage:
     case TaskType::kInternalContentCapture:

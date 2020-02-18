@@ -16,10 +16,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
@@ -41,7 +41,7 @@ class MenuRunner;
 }
 
 class OmniboxResultView : public views::View,
-                          public gfx::AnimationDelegate,
+                          public views::AnimationDelegateViews,
                           public views::ButtonListener,
                           public views::ContextMenuController,
                           public ui::SimpleMenuModel::Delegate {
@@ -60,7 +60,7 @@ class OmniboxResultView : public views::View,
 
   void ShowKeyword(bool show_keyword);
 
-  void Invalidate();
+  void Invalidate(bool force_reapply_styles = false);
 
   // Invoked when this result view has been selected.
   void OnSelected();
@@ -87,6 +87,10 @@ class OmniboxResultView : public views::View,
 
   // Removes the shown |match_| from history, if possible.
   void RemoveSuggestion() const;
+
+  // Helper to emit accessibility events (may only emit if conditions are met).
+  void EmitTextChangedAccessiblityEvent();
+  void EmitSelectedChildrenChangedAccessibilityEvent();
 
   // views::View:
   void Layout() override;
@@ -126,7 +130,7 @@ class OmniboxResultView : public views::View,
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
-  // gfx::AnimationDelegate:
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // The parent view.
@@ -140,6 +144,9 @@ class OmniboxResultView : public views::View,
 
   // The data this class is built to display (the "Omnibox Result").
   AutocompleteMatch match_;
+
+  // Accessible name (enables to emit certain events).
+  base::string16 accessible_name_;
 
   // For sliding in the keyword search.
   std::unique_ptr<gfx::SlideAnimation> animation_;

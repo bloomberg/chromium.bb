@@ -121,6 +121,9 @@ class HistoryService : public KeyedService {
   // out any cached data associated with that context.
   void ClearCachedDataForContextID(ContextID context_id);
 
+  // Clears all on-demand favicons from thumbnail database.
+  void ClearAllOnDemandFavicons();
+
   // Triggers the backend to load if it hasn't already, and then returns the
   // in-memory URL database. The returned pointer may be null if the in-memory
   // database has not been loaded yet. This pointer is owned by the history
@@ -274,28 +277,24 @@ class HistoryService : public KeyedService {
   // Requests the number of user-visible visits (i.e. no redirects or subframes)
   // to all urls on the same scheme/host/port as |url|.  This is only valid for
   // HTTP and HTTPS URLs.
-  typedef base::Callback<void(
-      bool,         // Were we able to determine the # of visits?
-      int,          // Number of visits.
-      base::Time)>  // Time of first visit. Only set if bool
-                    // is true and int is > 0.
-      GetVisibleVisitCountToHostCallback;
+  using GetVisibleVisitCountToHostCallback =
+      base::OnceCallback<void(VisibleVisitCountToHostResult)>;
 
   base::CancelableTaskTracker::TaskId GetVisibleVisitCountToHost(
       const GURL& url,
-      const GetVisibleVisitCountToHostCallback& callback,
+      GetVisibleVisitCountToHostCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Request the |result_count| most visited URLs and the chain of
   // redirects leading to each of these URLs. |days_back| is the
   // number of days of history to use. Used by TopSites.
-  typedef base::Callback<void(const MostVisitedURLList*)>
-      QueryMostVisitedURLsCallback;
+  using QueryMostVisitedURLsCallback =
+      base::OnceCallback<void(MostVisitedURLList)>;
 
   base::CancelableTaskTracker::TaskId QueryMostVisitedURLs(
       int result_count,
       int days_back,
-      const QueryMostVisitedURLsCallback& callback,
+      QueryMostVisitedURLsCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Statistics ----------------------------------------------------------------
@@ -304,16 +303,16 @@ class HistoryService : public KeyedService {
   // [|begin_time|, |end_time|). Each URL is counted only once per day. For
   // determination of the date, timestamps are converted to dates using local
   // time.
-  typedef base::Callback<void(HistoryCountResult)> GetHistoryCountCallback;
+  using GetHistoryCountCallback = base::OnceCallback<void(HistoryCountResult)>;
 
   base::CancelableTaskTracker::TaskId GetHistoryCount(
       const base::Time& begin_time,
       const base::Time& end_time,
-      const GetHistoryCountCallback& callback,
+      GetHistoryCountCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // Returns, via a callback, the number of Hosts visited in the last month.
-  void CountUniqueHostsVisitedLastMonth(const GetHistoryCountCallback& callback,
+  void CountUniqueHostsVisitedLastMonth(GetHistoryCountCallback callback,
                                         base::CancelableTaskTracker* tracker);
 
   // Database management operations --------------------------------------------
@@ -376,33 +375,32 @@ class HistoryService : public KeyedService {
 
   // Implemented by the caller of 'CreateDownload' below, and is called when the
   // history service has created a new entry for a download in the history db.
-  typedef base::Callback<void(bool)> DownloadCreateCallback;
+  using DownloadCreateCallback = base::OnceCallback<void(bool)>;
 
   // Begins a history request to create a new row for a download. 'info'
   // contains all the download's creation state, and 'callback' runs when the
   // history service request is complete. The callback is called on the thread
   // that calls CreateDownload().
-  void CreateDownload(const DownloadRow& info,
-                      const DownloadCreateCallback& callback);
+  void CreateDownload(const DownloadRow& info, DownloadCreateCallback callback);
 
   // Implemented by the caller of 'GetNextDownloadId' below, and is called with
   // the maximum id of all downloads records in the database plus 1.
-  typedef base::Callback<void(uint32_t)> DownloadIdCallback;
+  using DownloadIdCallback = base::OnceCallback<void(uint32_t)>;
 
   // Responds on the calling thread with the maximum id of all downloads records
   // in the database plus 1.
-  void GetNextDownloadId(const DownloadIdCallback& callback);
+  void GetNextDownloadId(DownloadIdCallback callback);
 
   // Implemented by the caller of 'QueryDownloads' below, and is called when the
   // history service has retrieved a list of all download state. The call
-  typedef base::Callback<void(std::unique_ptr<std::vector<DownloadRow>>)>
-      DownloadQueryCallback;
+  using DownloadQueryCallback =
+      base::OnceCallback<void(std::vector<DownloadRow>)>;
 
   // Begins a history request to retrieve the state of all downloads in the
   // history db. 'callback' runs when the history service request is complete,
   // at which point 'info' contains an array of DownloadRow, one per
   // download. The callback is called on the thread that calls QueryDownloads().
-  void QueryDownloads(const DownloadQueryCallback& callback);
+  void QueryDownloads(DownloadQueryCallback callback);
 
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
@@ -457,8 +455,8 @@ class HistoryService : public KeyedService {
   // icon URL (e.g. http://www.google.com/favicon.ico) for which the favicon
   // data has changed. It is valid to call the callback with non-empty
   // "page URLs" and no "icon URL" and vice versa.
-  typedef base::Callback<void(const std::set<GURL>&, const GURL&)>
-      OnFaviconsChangedCallback;
+  using OnFaviconsChangedCallback =
+      base::RepeatingCallback<void(const std::set<GURL>&, const GURL&)>;
 
   // Add a callback to the list. The callback will remain registered until the
   // returned Subscription is destroyed. The Subscription must be destroyed
@@ -869,7 +867,7 @@ class HistoryService : public KeyedService {
   base::OnceClosure origin_queried_closure_for_testing_;
 
   // All vended weak pointers are invalidated in Cleanup().
-  base::WeakPtrFactory<HistoryService> weak_ptr_factory_;
+  base::WeakPtrFactory<HistoryService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };

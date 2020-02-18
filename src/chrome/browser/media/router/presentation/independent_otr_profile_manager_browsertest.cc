@@ -177,8 +177,8 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
                                        run_loop1.QuitWhenIdleClosure());
   otr_browser1->window()->Close();
   run_loop1.Run();
-  ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser1));
-  ASSERT_TRUE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser2));
+  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser1));
+  ASSERT_TRUE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
 
   bool destroyed = false;
   watcher.Watch(otr_profile, &destroyed);
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
                                        run_loop2.QuitWhenIdleClosure());
   otr_browser2->window()->Close();
   run_loop2.Run();
-  ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser2));
+  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
   EXPECT_TRUE(destroyed);
 }
 
@@ -214,10 +214,8 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
     otr_browser2->window()->Close();
     run_loop1.Run();
     run_loop2.Run();
-    ASSERT_FALSE(
-        base::ContainsValue(*BrowserList::GetInstance(), otr_browser1));
-    ASSERT_FALSE(
-        base::ContainsValue(*BrowserList::GetInstance(), otr_browser2));
+    ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser1));
+    ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser2));
 
     watcher.Watch(otr_profile, &destroyed);
   }
@@ -349,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
                                       run_loop.QuitWhenIdleClosure());
   otr_browser->window()->Close();
   run_loop.Run();
-  ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser));
+  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser));
   EXPECT_TRUE(destroyed2);
 
   watcher1.Watch(otr_profile1, &destroyed1);
@@ -377,6 +375,6 @@ IN_PROC_BROWSER_TEST_F(IndependentOTRProfileManagerTest,
                                       run_loop.QuitWhenIdleClosure());
   otr_browser->window()->Close();
   run_loop.Run();
-  ASSERT_FALSE(base::ContainsValue(*BrowserList::GetInstance(), otr_browser));
+  ASSERT_FALSE(base::Contains(*BrowserList::GetInstance(), otr_browser));
   EXPECT_TRUE(destroyed);
 }

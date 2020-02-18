@@ -122,8 +122,8 @@ class SessionRestorePageLoadMetricsObserverTest
     std::vector<std::unique_ptr<content::NavigationEntry>> entries;
     std::unique_ptr<content::NavigationEntry> entry(
         content::NavigationController::CreateNavigationEntry(
-            GetTestURL(), content::Referrer(), ui::PAGE_TRANSITION_RELOAD,
-            false, std::string(), browser_context(),
+            GetTestURL(), content::Referrer(), base::nullopt,
+            ui::PAGE_TRANSITION_RELOAD, false, std::string(), browser_context(),
             nullptr /* blob_url_loader_factory */));
     entries.emplace_back(std::move(entry));
 
@@ -139,7 +139,7 @@ class SessionRestorePageLoadMetricsObserverTest
   }
 
   void SimulateTimingUpdateForTab(WebContents* contents) {
-    ASSERT_TRUE(base::ContainsKey(testers_, contents));
+    ASSERT_TRUE(base::Contains(testers_, contents));
     testers_[contents]->SimulateTimingUpdate(timing_);
   }
 

@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
+import android.support.annotation.Nullable;
+
+import org.chromium.base.BundleUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
@@ -16,31 +20,72 @@ import org.chromium.components.module_installer.ModuleInstaller;
  * Manages the loading of autofill assistant DFM, and provides implementation of
  * AutofillAssistantModuleEntry.
  */
-class AutofillAssistantModuleEntryProvider {
+public class AutofillAssistantModuleEntryProvider {
+    private static final String TAG = "AutofillAssistant";
+
     /**
-     * Returns AutofillAssistantModuleEntry by using it as argument to the
-     * passed in callback, or null if DFM loading fails.
+     * The real singleton instances. Using an instance instead of static methods allows modifying
+     * method implementation during tests. Outside of tests, this is the only instance that should
+     * exist.
      */
-    /* package */ static void getModuleEntry(
-            ChromeActivity activity, Callback<AutofillAssistantModuleEntry> callback) {
-        getTab(activity, tab -> {
-            // Required to access resources in DFM using this activity as context.
-            ModuleInstaller.initActivity(activity);
-            if (AutofillAssistantModule.isInstalled()) {
-                callback.onResult(createEntry(tab));
-                return;
-            }
-            loadDynamicModuleWithUi(activity, tab, callback);
-        });
+    static final AutofillAssistantModuleEntryProvider INSTANCE =
+            new AutofillAssistantModuleEntryProvider();
+
+    /* Returns the AA module entry, if it is already installed. */
+    @Nullable
+    /* package */ AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
+        // Required to access resources in DFM using this activity as context.
+        ModuleInstaller.getInstance().initActivity(context);
+        if (AutofillAssistantModule.isInstalled()) {
+            return AutofillAssistantModule.getImpl();
+        }
+        return null;
     }
 
-    private static AutofillAssistantModuleEntry createEntry(Tab tab) {
-        AutofillAssistantModuleEntryFactory factory = AutofillAssistantModule.getImpl();
-        return factory.createEntry(tab.getWebContents());
+    /** Gets the AA module entry, installing it if necessary. */
+    /* package */ void getModuleEntry(
+            Context context, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
+        AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled(context);
+        if (entry != null) {
+            callback.onResult(entry);
+            return;
+        }
+        loadDynamicModuleWithUi(context, tab, callback);
+    }
+
+    /**
+     * Maybe trigger a deferred install of the module.
+     *
+     * <p>This is public so that it can be used in the Chrome upgrade package. The conditions for
+     * eligibility are:
+     *
+     * <ul>
+     *   <li>This is a Bundle build.
+     *   <li>The autofill_assistant DFM is not installed yet.
+     *   <li>The Android version is L+.
+     *   <li>The device has high disk capacity.
+     * </ul>
+     */
+    public static void maybeInstallDeferred() {
+        boolean isNotBundle = !BundleUtils.isBundle();
+        boolean isInstalled = AutofillAssistantModule.isInstalled();
+        boolean isVersionBeforeLollipop =
+                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.LOLLIPOP;
+        boolean isNotHighEndDiskDevice = !SysUtils.isHighEndDiskDevice();
+        if (isNotBundle || isInstalled || isVersionBeforeLollipop || isNotHighEndDiskDevice) {
+            Log.v(TAG,
+                    "Deferred install not triggered: not_bundle=" + isNotBundle
+                            + ", already_installed=" + isInstalled
+                            + ", before_lollipop=" + isVersionBeforeLollipop
+                            + ", not_high_end_device=" + isNotHighEndDiskDevice);
+            return;
+        }
+        Log.v(TAG, "Deferred install triggered.");
+        AutofillAssistantModule.installDeferred();
     }
 
     private static void loadDynamicModuleWithUi(
-            ChromeActivity activity, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
+            Context activity, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
         ModuleInstallUi ui = new ModuleInstallUi(tab, R.string.autofill_assistant_module_title,
                 new ModuleInstallUi.FailureUiListener() {
                     @Override
@@ -55,37 +100,17 @@ class AutofillAssistantModuleEntryProvider {
                 });
         // Shows toast informing user about install start.
         ui.showInstallStartUi();
-        ModuleInstaller.install("autofill_assistant", (success) -> {
+        ModuleInstaller.getInstance().install("autofill_assistant", (success) -> {
             if (success) {
                 // Clean install of chrome will have issues here without initializing
                 // after installation of DFM.
-                ModuleInstaller.initActivity(activity);
+                ModuleInstaller.getInstance().initActivity(activity);
                 // Don't show success UI from DFM, transition to autobot UI directly.
-                callback.onResult(createEntry(tab));
+                callback.onResult(AutofillAssistantModule.getImpl());
                 return;
             }
             // Show inforbar to ask user if they want to retry or cancel.
             ui.showInstallFailureUi();
         });
-    }
-
-    private static void getTab(ChromeActivity activity, Callback<Tab> callback) {
-        if (activity.getActivityTab() != null
-                && activity.getActivityTab().getWebContents() != null) {
-            callback.onResult(activity.getActivityTab());
-            return;
-        }
-
-        // The tab is not yet available. We need to register as listener and wait for it.
-        activity.getActivityTabProvider().addObserverAndTrigger(
-                new ActivityTabProvider.HintlessActivityTabObserver() {
-                    @Override
-                    public void onActivityTabChanged(Tab tab) {
-                        if (tab == null) return;
-                        activity.getActivityTabProvider().removeObserver(this);
-                        assert tab.getWebContents() != null;
-                        callback.onResult(tab);
-                    }
-                });
     }
 }

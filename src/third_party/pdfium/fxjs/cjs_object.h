@@ -8,7 +8,6 @@
 #define FXJS_CJS_OBJECT_H_
 
 #include "core/fxcrt/unowned_ptr.h"
-#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fxjs/cjs_runtime.h"
 #include "third_party/base/span.h"
 
@@ -56,7 +55,7 @@ class CJS_Object {
  private:
   UnownedPtr<v8::Isolate> m_pIsolate;
   v8::Global<v8::Object> m_pV8Object;
-  CJS_Runtime::ObservedPtr m_pRuntime;
+  ObservedPtr<CJS_Runtime> m_pRuntime;
 };
 
 #endif  // FXJS_CJS_OBJECT_H_

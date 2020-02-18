@@ -175,7 +175,10 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   }
 
   void OnItemRemoved(const ContentId& id) override {}
-  void OnItemUpdated(const OfflineItem& item) override {
+  void OnItemUpdated(
+      const OfflineItem& item,
+      const base::Optional<offline_items_collection::UpdateDelta>& update_delta)
+      override {
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&
         item.state != offline_items_collection::OfflineItemState::PAUSED &&
@@ -242,12 +245,13 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
     download_observer_ = std::make_unique<WaitableDownloadLoggerObserver>();
 
-    download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
+    download_service_ =
+        DownloadServiceFactory::GetForKey(profile->GetProfileKey());
     download_service_->GetLogger()->AddObserver(download_observer_.get());
 
     // Register our observer for the offline items collection.
     OfflineContentAggregatorFactory::GetInstance()
-        ->GetForBrowserContext(profile)
+        ->GetForKey(profile->GetProfileKey())
         ->AddObserver(offline_content_provider_observer_.get());
 
     SetUpBrowser(browser());
@@ -277,7 +281,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     OfflineContentAggregatorFactory::GetInstance()
-        ->GetForBrowserContext(active_browser_->profile())
+        ->GetForKey(active_browser_->profile()->GetProfileKey())
         ->RemoveObserver(offline_content_provider_observer_.get());
 
     download_service_->GetLogger()->RemoveObserver(download_observer_.get());
@@ -412,9 +416,10 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     DownloadRequestLimiter::TabDownloadState* tab_download_state =
         g_browser_process->download_request_limiter()->GetDownloadState(
-            web_contents, web_contents, true /* create */);
+            web_contents, true /* create */);
     tab_download_state->set_download_seen();
     tab_download_state->SetDownloadStatusAndNotify(
+        web_contents->GetVisibleURL().GetOrigin(),
         DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   }
 

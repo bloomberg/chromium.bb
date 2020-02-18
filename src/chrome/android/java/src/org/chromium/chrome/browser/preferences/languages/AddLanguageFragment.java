@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.preferences.languages;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -109,10 +109,10 @@ public class AddLanguageFragment extends Fragment {
         final Activity activity = getActivity();
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.language_list);
-        LinearLayoutManager layoutMangager = new LinearLayoutManager(activity);
-        mRecyclerView.setLayoutManager(layoutMangager);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(activity);
+        mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.addItemDecoration(
-                new DividerItemDecoration(activity, layoutMangager.getOrientation()));
+                new DividerItemDecoration(activity, layoutManager.getOrientation()));
 
         mFullLanguageList = LanguagesManager.getInstance().getLanguageItemsExcludingUserAccept();
         mItemClickListener = item -> {

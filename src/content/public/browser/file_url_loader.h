@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/system/file_data_pipe_producer.h"
+#include "mojo/public/cpp/system/filtered_data_source.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -24,7 +24,7 @@ namespace content {
 class SharedCorsOriginAccessList;
 
 class CONTENT_EXPORT FileURLLoaderObserver
-    : public mojo::FileDataPipeProducer::Observer {
+    : public mojo::FilteredDataSource::Filter {
  public:
   FileURLLoaderObserver() {}
   ~FileURLLoaderObserver() override {}
@@ -67,9 +67,9 @@ CONTENT_EXPORT void CreateFileURLLoader(
 // passed, all file accesses are permitted even for CORS requests. This list
 // does not affect no-cors requests.
 CONTENT_EXPORT std::unique_ptr<network::mojom::URLLoaderFactory>
-CreateFileURLLoaderFactory(const base::FilePath& profile_path,
-                           scoped_refptr<const SharedCorsOriginAccessList>
-                               shared_cors_origin_access_list);
+CreateFileURLLoaderFactory(
+    const base::FilePath& profile_path,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list);
 
 }  // namespace content
 

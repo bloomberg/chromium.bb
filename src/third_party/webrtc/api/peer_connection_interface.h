@@ -67,6 +67,8 @@
 #ifndef API_PEER_CONNECTION_INTERFACE_H_
 #define API_PEER_CONNECTION_INTERFACE_H_
 
+#include <stdio.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -103,10 +105,7 @@
 // PortAllocator in the PeerConnection api.
 #include "media/base/media_engine.h"  // nogncheck
 #include "p2p/base/port_allocator.h"  // nogncheck
-// TODO(nisse): The interface for bitrate allocation strategy belongs in api/.
-#include "rtc_base/bitrate_allocation_strategy.h"
 #include "rtc_base/network.h"
-#include "rtc_base/platform_file.h"
 #include "rtc_base/rtc_certificate.h"
 #include "rtc_base/rtc_certificate_generator.h"
 #include "rtc_base/socket_address.h"
@@ -506,6 +505,17 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // re-determining was removed in ICEbis (ICE v2).
     bool redetermine_role_on_ice_restart = true;
 
+    // This flag is only effective when |continual_gathering_policy| is
+    // GATHER_CONTINUALLY.
+    //
+    // If true, after the ICE transport type is changed such that new types of
+    // ICE candidates are allowed by the new transport type, e.g. from
+    // IceTransportsType::kRelay to IceTransportsType::kAll, candidates that
+    // have been gathered by the ICE transport but not matching the previous
+    // transport type and as a result not observed by PeerConnectionObserver,
+    // will be surfaced to the observer.
+    bool surface_ice_candidates_on_ice_transport_type_changed = false;
+
     // The following fields define intervals in milliseconds at which ICE
     // connectivity checks are sent.
     //
@@ -619,11 +629,7 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // informs PeerConnection that it should use the DatagramTransportInterface
     // for packets instead DTLS. It's invalid to set it to |true| if the
     // MediaTransportFactory wasn't provided.
-    //
-    // TODO(sukhanov): Once we have a working mechanism for negotiating media
-    // transport through SDP, we replace media transport flags in
-    // RTCConfiguration with field trials.
-    bool use_datagram_transport = false;
+    absl::optional<bool> use_datagram_transport;
 
     // Defines advanced optional cryptographic settings related to SRTP and
     // frame encryption for native WebRTC. Setting this will overwrite any
@@ -670,6 +676,10 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
     // If true, will offer to BUNDLE audio/video/data together. Not to be
     // confused with RTCP mux (multiplexing RTP and RTCP together).
     bool use_rtp_mux = true;
+
+    // If true, "a=packetization:<payload_type> raw" attribute will be offered
+    // in the SDP for all video payload and accepted in the answer if offered.
+    bool raw_packetization_for_video = false;
 
     // This will apply to all video tracks with a Plan B SDP offer/answer.
     int num_simulcast_layers = 1;
@@ -925,6 +935,14 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   virtual const SessionDescriptionInterface* pending_local_description() const;
   virtual const SessionDescriptionInterface* pending_remote_description() const;
 
+  // Tells the PeerConnection that ICE should be restarted. This triggers a need
+  // for negotiation and subsequent CreateOffer() calls will act as if
+  // RTCOfferAnswerOptions::ice_restart is true.
+  // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-restartice
+  // TODO(hbos): Remove default implementation when downstream projects
+  // implement this.
+  virtual void RestartIce() {}
+
   // Create a new offer.
   // The CreateSessionDescriptionObserver callback will be called when done.
   virtual void CreateOffer(CreateSessionDescriptionObserver* observer,
@@ -1024,14 +1042,6 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   // of the methods.
   virtual RTCError SetBitrate(const BitrateParameters& bitrate_parameters);
 
-  // Sets current strategy. If not set default WebRTC allocator will be used.
-  // May be changed during an active session. The strategy
-  // ownership is passed with std::unique_ptr
-  // TODO(alexnarest): Make this pure virtual when tests will be updated
-  virtual void SetBitrateAllocationStrategy(
-      std::unique_ptr<rtc::BitrateAllocationStrategy>
-          bitrate_allocation_strategy) {}
-
   // Enable/disable playout of received audio streams. Enabled by default. Note
   // that even if playout is enabled, streams will only be played out if the
   // appropriate SDP is also applied. Setting |playout| to false will stop
@@ -1075,14 +1085,6 @@ class RTC_EXPORT PeerConnectionInterface : public rtc::RefCountInterface {
   virtual PeerConnectionState peer_connection_state();
 
   virtual IceGatheringState ice_gathering_state() = 0;
-
-  // Starts RtcEventLog using existing file. Takes ownership of |file| and
-  // passes it on to Call, which will take the ownership. If the
-  // operation fails the file will be closed.
-  // The logging will stop when |max_size_bytes| is reached or when the
-  // StopRtcEventLog function is called.
-  // TODO(eladalon): Deprecate and remove this.
-  virtual bool StartRtcEventLog(rtc::PlatformFile file, int64_t max_size_bytes);
 
   // Start RtcEventLog using an existing output-sink. Takes ownership of
   // |output| and passes it on to Call, which will take the ownership. If the
@@ -1164,6 +1166,14 @@ class PeerConnectionObserver {
 
   // A new ICE candidate has been gathered.
   virtual void OnIceCandidate(const IceCandidateInterface* candidate) = 0;
+
+  // Gathering of an ICE candidate failed.
+  // See https://w3c.github.io/webrtc-pc/#event-icecandidateerror
+  // |host_candidate| is a stringified socket address.
+  virtual void OnIceCandidateError(const std::string& host_candidate,
+                                   const std::string& url,
+                                   int error_code,
+                                   const std::string& error_text) {}
 
   // Ice candidates have been removed.
   // TODO(honghaiz): Make this a pure virtual method when all its subclasses
@@ -1390,7 +1400,11 @@ class PeerConnectionFactoryInterface : public rtc::RefCountInterface {
   // reached, logging is stopped automatically. If max_size_bytes is set to a
   // value <= 0, no limit will be used, and logging will continue until the
   // StopAecDump function is called.
-  virtual bool StartAecDump(rtc::PlatformFile file, int64_t max_size_bytes) = 0;
+  // TODO(webrtc:6463): Delete default implementation when downstream mocks
+  // classes are updated.
+  virtual bool StartAecDump(FILE* file, int64_t max_size_bytes) {
+    return false;
+  }
 
   // Stops logging the AEC dump.
   virtual void StopAecDump() = 0;

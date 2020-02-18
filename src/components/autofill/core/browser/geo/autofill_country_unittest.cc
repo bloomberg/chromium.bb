@@ -66,7 +66,7 @@ TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
   const std::vector<std::string>& country_codes =
       CountryDataMap::GetInstance()->country_codes();
   for (const std::string& country_code : country_codes) {
-    if (base::ContainsKey(expected_failures, country_code))
+    if (base::Contains(expected_failures, country_code))
       continue;
     SCOPED_TRACE("Country code '" + country_code + "' should have a name.");
     EXPECT_NE(ASCIIToUTF16(country_code),

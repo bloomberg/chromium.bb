@@ -52,6 +52,7 @@ namespace net {
 class CertVerifyResult;
 class DatagramClientSocket;
 class NetLog;
+class NetworkIsolationKey;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
@@ -62,6 +63,10 @@ class TransportSecurityState;
 namespace test {
 class QuicChromiumClientSessionPeer;
 }  // namespace test
+
+// SETTINGS_MAX_HEADERS_LIST_SIZE, the maximum size of uncompressed QUIC headers
+// that the server is allowed to send.
+const size_t kQuicMaxHeaderListSize = 256 * 1024;
 
 // Result of a session migration attempt.
 enum class MigrationResult {
@@ -182,7 +187,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // Returns a new packet bundler while will cause writes to be batched up
     // until a packet is full, or the last bundler is destroyed.
     std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher>
-    CreatePacketBundler(quic::QuicConnection::AckBundling bundling_mode);
+    CreatePacketBundler();
 
     // Populates network error details for this session.
     void PopulateNetErrorDetails(NetErrorDetails* details) const;
@@ -354,7 +359,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     const NetworkTrafficAnnotationTag traffic_annotation_;
 
-    base::WeakPtrFactory<StreamRequest> weak_factory_;
+    base::WeakPtrFactory<StreamRequest> weak_factory_{this};
 
     DISALLOW_COPY_AND_ASSIGN(StreamRequest);
   };
@@ -373,6 +378,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicSessionKey& session_key,
       bool require_confirmation,
+      quic::QuicStreamId max_allowed_push_id,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
       NetworkChangeNotifier::NetworkHandle default_network,
@@ -483,7 +489,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::CryptoHandshakeMessage& message) override;
   void OnGoAway(const quic::QuicGoAwayFrame& frame) override;
   void OnRstStream(const quic::QuicRstStreamFrame& frame) override;
-  void OnCanCreateNewOutgoingStream() override;
+  void OnCanCreateNewOutgoingStream(bool unidirectional) override;
 
   // QuicClientSessionBase methods:
   void OnConfigNegotiated() override;
@@ -493,8 +499,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::ProofVerifyDetails& verify_details) override;
 
   // quic::QuicConnectionVisitorInterface methods:
-  void OnConnectionClosed(quic::QuicErrorCode error,
-                          const std::string& error_details,
+  void OnConnectionClosed(const quic::QuicConnectionCloseFrame& frame,
                           quic::ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;
@@ -555,11 +560,14 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // presented during the handshake.
   bool CanPool(const std::string& hostname,
                PrivacyMode privacy_mode,
-               const SocketTag& socket_tag) const;
+               const SocketTag& socket_tag,
+               const NetworkIsolationKey& network_isolation_key) const;
 
   const quic::QuicServerId& server_id() const {
     return session_key_.server_id();
   }
+
+  const QuicSessionKey& quic_session_key() const { return session_key_; }
 
   // Attempts to migrate session when |writer| encounters a write error.
   // If |writer| is no longer actively used, abort migration.
@@ -658,7 +666,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   QuicChromiumClientStream* CreateIncomingStream(
       quic::QuicStreamId id) override;
   QuicChromiumClientStream* CreateIncomingStream(
-      quic::PendingStream pending) override;
+      quic::PendingStream* pending) override;
 
  private:
   friend class test::QuicChromiumClientSessionPeer;
@@ -674,7 +682,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       quic::QuicStreamId id,
       const NetworkTrafficAnnotationTag& traffic_annotation);
   QuicChromiumClientStream* CreateIncomingReliableStreamImpl(
-      quic::PendingStream pending,
+      quic::PendingStream* pending,
       const NetworkTrafficAnnotationTag& traffic_annotation);
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);
@@ -837,7 +845,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool headers_include_h2_stream_dependency_;
   Http2PriorityDependencies priority_dependency_state_;
 
-  base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);
 };

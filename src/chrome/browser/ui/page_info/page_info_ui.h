@@ -37,14 +37,6 @@ class X509Certificate;
 // etc.).
 class PageInfoUI {
  public:
-  // The Page Info UI contains several tabs. Each tab is associated with
-  // a unique tab id. The enum |TabId| contains all the ids for the tabs.
-  enum TabId {
-    TAB_ID_PERMISSIONS = 0,
-    TAB_ID_CONNECTION,
-    NUM_TAB_IDS,
-  };
-
   enum class SecuritySummaryColor {
     RED,
     GREEN,
@@ -117,6 +109,8 @@ class PageInfoUI {
     std::string site_identity;
     // Status of the site's identity.
     PageInfo::SiteIdentityStatus identity_status;
+    // Site's Safe Browsing status.
+    PageInfo::SafeBrowsingStatus safe_browsing_status;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;

@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/browser/ui/ui_features.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -57,22 +56,32 @@ ToolbarActionsModel::ToolbarActionsModel(
       has_active_bubble_(false),
       extension_action_observer_(this),
       extension_registry_observer_(this),
-      load_error_reporter_observer_(this),
-      weak_ptr_factory_(this) {
+      load_error_reporter_observer_(this) {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ToolbarActionsModel::OnReady,
                                 weak_ptr_factory_.GetWeakPtr()));
   visible_icon_count_ =
       prefs_->GetInteger(extensions::pref_names::kToolbarSize);
 
-  // We only care about watching the prefs if not in incognito mode.
-  if (!profile_->IsOffTheRecord()) {
+  // We only care about watching toolbar-order prefs if not in incognito mode.
+  const bool watch_toolbar_order = !profile_->IsOffTheRecord();
+  const bool watch_pinned_extensions =
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu);
+  if (watch_toolbar_order || watch_pinned_extensions) {
     pref_change_registrar_.Init(prefs_);
     pref_change_callback_ =
         base::Bind(&ToolbarActionsModel::OnActionToolbarPrefChange,
                    base::Unretained(this));
-    pref_change_registrar_.Add(extensions::pref_names::kToolbar,
-                               pref_change_callback_);
+
+    if (watch_toolbar_order) {
+      pref_change_registrar_.Add(extensions::pref_names::kToolbar,
+                                 pref_change_callback_);
+    }
+
+    if (watch_pinned_extensions) {
+      pref_change_registrar_.Add(extensions::pref_names::kPinnedExtensions,
+                                 pref_change_callback_);
+    }
   }
 }
 
@@ -309,8 +318,7 @@ void ToolbarActionsModel::AddAction(const ActionId& action_id) {
   CHECK(actions_initialized_);
 
   // See if we have a last known good position for this extension.
-  bool is_new_extension =
-      !base::ContainsValue(last_known_positions_, action_id);
+  bool is_new_extension = !base::Contains(last_known_positions_, action_id);
 
   // New extensions go at the right (end) of the visible extensions. Other
   // extensions go at their previous position.
@@ -424,6 +432,11 @@ ToolbarActionsModel::GetExtensionMessageBubbleController(Browser* browser) {
   return controller;
 }
 
+bool ToolbarActionsModel::IsActionPinned(const ActionId& action_id) const {
+  DCHECK(base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+  return base::Contains(pinned_action_ids_, action_id);
+}
+
 void ToolbarActionsModel::RemoveExtension(
     const extensions::Extension* extension) {
   RemoveAction(extension->id());
@@ -440,10 +453,14 @@ void ToolbarActionsModel::InitializeActionList() {
   CHECK(action_ids_.empty());  // We shouldn't have any actions yet.
 
   last_known_positions_ = extension_prefs_->GetToolbarOrder();
+
   if (profile_->IsOffTheRecord())
     IncognitoPopulate();
   else
     Populate();
+
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    pinned_action_ids_ = GetFilteredPinnedActionIds();
 }
 
 void ToolbarActionsModel::Populate() {
@@ -525,35 +542,6 @@ void ToolbarActionsModel::Populate() {
   UMA_HISTOGRAM_COUNTS_100("ExtensionToolbarModel.BrowserActionsCount",
                            action_ids_.size());
 
-  if (extension_registry_->GetExtensionById(
-          extension_misc::kDocsOfflineExtensionId,
-          extensions::ExtensionRegistry::ENABLED |
-              extensions::ExtensionRegistry::DISABLED) != nullptr) {
-    // Note: This enum is used in UMA (directly below). Don't renumber.
-    enum ExtensionState {
-      DISABLED   = 0,
-      VISIBLE    = 1,
-      OVERFLOWED = 2,
-      BOUNDARY   = 3,
-    };
-    ExtensionState doc_state = DISABLED;
-    if (extensions.GetByID(
-            extension_misc::kDocsOfflineExtensionId)) {  // In the enabled set.
-      auto current_pos = std::find_if(
-          action_ids_.begin(), action_ids_.end(),
-          [](const ActionId& action_id) {
-            return action_id == extension_misc::kDocsOfflineExtensionId;
-          });
-      doc_state = current_pos - action_ids_.begin() <
-                              static_cast<int>(visible_icon_count()) ||
-                          all_icons_visible()
-                      ? VISIBLE
-                      : OVERFLOWED;
-    }
-    UMA_HISTOGRAM_ENUMERATION("Extensions.DocsOfflineIconState", doc_state,
-                              BOUNDARY);
-  }
-
   if (!action_ids_.empty()) {
     // Visible count can be -1, meaning: 'show all'. Since UMA converts negative
     // values to 0, this would be counted as 'show none' unless we convert it to
@@ -562,16 +550,11 @@ void ToolbarActionsModel::Populate() {
                              visible_icon_count_ == -1
                                  ? base::HistogramBase::kSampleType_MAX
                                  : visible_icon_count_);
-
-    UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.ToolbarActionsVisible",
-                             visible_icon_count_ == -1
-                                 ? base::HistogramBase::kSampleType_MAX
-                                 : visible_icon_count_);
   }
 }
 
 bool ToolbarActionsModel::HasAction(const ActionId& action_id) const {
-  return base::ContainsValue(action_ids_, action_id);
+  return base::Contains(action_ids_, action_id);
 }
 
 void ToolbarActionsModel::IncognitoPopulate() {
@@ -614,7 +597,17 @@ void ToolbarActionsModel::UpdatePrefs() {
 void ToolbarActionsModel::SetActionVisibility(const ActionId& action_id,
                                               bool is_now_visible) {
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    // TODO(pbos): Add extension pinning using a vector of pinned action IDs.
+    DCHECK_NE(is_now_visible, IsActionPinned(action_id));
+    auto new_pinned_action_ids = pinned_action_ids_;
+    if (is_now_visible) {
+      new_pinned_action_ids.push_back(action_id);
+    } else {
+      base::Erase(new_pinned_action_ids, action_id);
+    }
+    extension_prefs_->SetPinnedExtensions(new_pinned_action_ids);
+    // The |pinned_action_ids_| should be updated as a result of updating the
+    // preference.
+    DCHECK(pinned_action_ids_ == new_pinned_action_ids);
     return;
   }
 
@@ -645,12 +638,21 @@ void ToolbarActionsModel::OnActionToolbarPrefChange() {
   if (!actions_initialized_)
     return;
 
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    std::vector<ActionId> pinned_extensions = GetFilteredPinnedActionIds();
+    if (pinned_extensions != pinned_action_ids_) {
+      pinned_action_ids_ = pinned_extensions;
+      for (Observer& observer : observers_)
+        observer.OnToolbarPinnedActionsChanged();
+    }
+  }
+
   // Recalculate |last_known_positions_| to be |pref_positions| followed by
   // ones that are only in |last_known_positions_|.
   std::vector<ActionId> pref_positions = extension_prefs_->GetToolbarOrder();
   size_t pref_position_size = pref_positions.size();
   for (size_t i = 0; i < last_known_positions_.size(); ++i) {
-    if (!base::ContainsValue(pref_positions, last_known_positions_[i])) {
+    if (!base::Contains(pref_positions, last_known_positions_[i])) {
       pref_positions.push_back(last_known_positions_[i]);
     }
   }
@@ -760,4 +762,16 @@ bool ToolbarActionsModel::IsActionVisible(const ActionId& action_id) const {
   while (action_ids().size() > index && action_ids()[index] != action_id)
     ++index;
   return index < visible_icon_count();
+}
+
+std::vector<ToolbarActionsModel::ActionId>
+ToolbarActionsModel::GetFilteredPinnedActionIds() const {
+  // TODO(pbos): Make sure that the pinned IDs are pruned from ExtensionPrefs on
+  // startup so that we don't keep saving stale IDs.
+  std::vector<ActionId> filtered_action_ids;
+  for (auto& action_id : extension_prefs_->GetPinnedExtensions()) {
+    if (HasAction(action_id))
+      filtered_action_ids.push_back(action_id);
+  }
+  return filtered_action_ids;
 }

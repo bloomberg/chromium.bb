@@ -1,10 +1,7 @@
 MenuOpened on role=menu, name=menu
 === Start Continuation ===
-MenuClosed on role=menu, name=menu
-MenuOpened on role=menu, name=submenu1
+MenuOpened on role=menu
 === Start Continuation ===
-MenuClosed on role=menu, name=submenu1
+MenuClosed 
 === Start Continuation ===
-MenuOpened on role=menu, name=submenu2
-=== Start Continuation ===
-MenuClosed on role=menu, name=submenu2
+MenuClosed 

@@ -39,16 +39,21 @@ Create a new I/O layer based on a file descriptor.
 
 Create a new I/O layer based on a memory buffer.
 
-The supplied variable must not be changed on the the life of the I/O
-object.
-
 Buffer I/O layers are read only.
+
+C<$data> can either a simple octet string, or a reference to an octet
+string.  If C<$data> contains characters with a code point above
+C<0xFF> an exception will be thrown.
 
 =item new_cb($writecb, $readcb, $seekcb, $closecb)
 
 Create a new I/O layer based on callbacks.  See 
 L<Imager::Files/"I/O Callbacks"> for details on the behavior of 
 the callbacks.
+
+=item new_fh($fh)
+
+Create a new I/O layer based on a perl file handle.
 
 =item new_bufchain()
 
@@ -143,6 +148,12 @@ Returns the ordinal of the byte or -1 on error or end of file.
   while ((my $c = $io->getc) != -1) {
     print chr($c);
   }
+
+=item nextc()
+
+Discard the next byte from the stream.
+
+Returns nothing.
 
 =item gets()
 

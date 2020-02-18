@@ -1,6 +1,6 @@
 package DBI::DBD::Metadata;
 
-# $Id: Metadata.pm 14213 2010-06-30 19:29:18Z mjevans $
+# $Id: Metadata.pm 14213 2010-06-30 19:29:18Z Martin $
 #
 # Copyright (c) 1997-2003 Jonathan Leffler, Jochen Wiedmann,
 # Steffen Goeldner and Tim Bunce
@@ -8,20 +8,19 @@ package DBI::DBD::Metadata;
 # You may distribute under the terms of either the GNU General Public
 # License or the Artistic License, as specified in the Perl README file.
 
+use strict;
+
 use Exporter ();
 use Carp;
 
 use DBI;
 use DBI::Const::GetInfoType qw(%GetInfoType);
 
-# Perl 5.005_03 does not recognize 'our'
-@ISA = qw(Exporter);
-@EXPORT = qw(write_getinfo_pm write_typeinfo_pm);
+our @ISA = qw(Exporter);
+our @EXPORT = qw(write_getinfo_pm write_typeinfo_pm);
 
-$VERSION = sprintf("2.%06d", q$Revision: 14213 $ =~ /(\d+)/o);
+our $VERSION = "2.014214";
 
-
-use strict;
 
 =head1 NAME
 

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
+<body>
+<script type="module">
+import 'std:elements/switch';
+
+function singleFrame() {
+  return new Promise((resolve, reject) => {
+    requestAnimationFrame(resolve);
+  });
+}
+
+promise_test(async () => {
+  let switchElement = document.createElement('std-switch');
+  document.body.appendChild(switchElement);
+  assert_false(switchElement.on);
+  let thumb = internals.shadowRoot(switchElement).getElementById('thumb');
+  let transitionStartCounter = 0;
+  let transitionEndCounter = 0;
+  thumb.addEventListener('transitionstart', e => { ++transitionStartCounter; });
+  thumb.addEventListener('transitionend', e => { ++transitionEndCounter; });
+
+  await test_driver.click(switchElement);
+  assert_true(switchElement.on, 'click');
+  await singleFrame();
+  assert_true(transitionStartCounter > 0, 'A transition starts');
+  if (transitionStartCounter > transitionEndCounter) {
+    await new Promise((resolve, reject) => {
+      thumb.addEventListener('transitionend', () => {
+        if (transitionStartCounter == transitionEndCounter) {
+          resolve();
+        }
+      });
+    });
+  }
+  assert_equals(thumb.runningTransitions, 0);
+  // The track element doesn't animate by default.
+  let trackElement = internals.shadowRoot(switchElement).getElementById('track');
+  assert_equals(trackElement.runningTransitions, 0);
+
+  // Changing the state with an IDL attribute should not animate.
+  transitionStartCounter = 0;
+  switchElement.on = false;
+  await singleFrame();
+  assert_equals(transitionStartCounter, 0, 'No additional events');
+}, 'Click event handler should start transition');
+</script>
+</body>

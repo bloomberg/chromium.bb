@@ -8,7 +8,9 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/android/chrome_jni_headers/AppBannerManager_jni.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
@@ -22,7 +24,6 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/AppBannerManager_jni.h"
 #include "net/base/url_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -31,6 +32,8 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 
 namespace {
+
+constexpr char kPlatformPlay[] = "play";
 
 // Returns a pointer to the InstallableAmbientBadgeInfoBar if it is currently
 // showing. Otherwise returns nullptr.
@@ -81,17 +84,6 @@ bool AppBannerManagerAndroid::IsRunningForTesting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return IsRunning();
-}
-
-void AppBannerManagerAndroid::RecordMenuOpen(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  manager()->RecordMenuOpenHistogram();
-}
-
-void AppBannerManagerAndroid::RecordMenuItemAddToHomescreen(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  manager()->RecordMenuItemAddToHomescreenHistogram();
 }
 
 bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
@@ -218,7 +210,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
         weak_factory_.GetWeakPtr(),
         ShortcutHelper::CreateShortcutInfo(manifest_url_, manifest_,
                                            primary_icon_url_, badge_icon_url_),
-        primary_icon_, badge_icon_, install_source, can_install_webapk_);
+        primary_icon_, badge_icon_, install_source, can_install_webapk_,
+        has_maskable_primary_icon_);
   } else {
     ui_delegate_ = AppBannerUiDelegateAndroid::Create(
         weak_factory_.GetWeakPtr(), native_app_title_,
@@ -264,18 +257,24 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
 }
 
 bool AppBannerManagerAndroid::ShouldPerformInstallableNativeAppCheck() {
-  return manifest_.prefer_related_applications &&
-         manifest_.related_applications.size() &&
-         !java_banner_manager_.is_null();
+  if (!manifest_.prefer_related_applications || java_banner_manager_.is_null())
+    return false;
+
+  // Ensure there is at least one related app specified that is supported on the
+  // current platform.
+  for (const auto& application : manifest_.related_applications) {
+    if (base::EqualsASCII(application.platform.string(), kPlatformPlay))
+      return true;
+  }
+  return false;
 }
 
 void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
   DCHECK(ShouldPerformInstallableNativeAppCheck());
   InstallableStatusCode code = NO_ERROR_DETECTED;
   for (const auto& application : manifest_.related_applications) {
-    std::string platform = base::UTF16ToUTF8(application.platform.string());
     std::string id = base::UTF16ToUTF8(application.id.string());
-    code = QueryNativeApp(platform, application.url, id);
+    code = QueryNativeApp(application.platform.string(), application.url, id);
     if (code == NO_ERROR_DETECTED)
       return;
   }
@@ -285,10 +284,10 @@ void AppBannerManagerAndroid::PerformInstallableNativeAppCheck() {
 }
 
 InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
-    const std::string& platform,
+    const base::string16& platform,
     const GURL& url,
     const std::string& id) {
-  if (platform != "play")
+  if (!base::EqualsASCII(platform, kPlatformPlay))
     return PLATFORM_NOT_SUPPORTED_ON_ANDROID;
 
   if (id.empty())

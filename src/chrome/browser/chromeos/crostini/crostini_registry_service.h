@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -86,6 +86,8 @@ class CrostiniRegistryService : public KeyedService {
     std::set<std::string> MimeTypes() const;
     std::set<std::string> Keywords() const;
     bool NoDisplay() const;
+
+    std::string PackageId() const;
 
     base::Time InstallTime() const;
     base::Time LastLaunchTime() const;
@@ -204,7 +206,7 @@ class CrostiniRegistryService : public KeyedService {
   // Callback for when we request an icon from the container.
   void OnContainerAppIcon(const std::string& app_id,
                           ui::ScaleFactor scale_factor,
-                          CrostiniResult result,
+                          bool success,
                           const std::vector<Icon>& icons);
   // Callback for our internal call for saving out icon data.
   void OnIconInstalled(const std::string& app_id,

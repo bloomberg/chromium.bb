@@ -31,12 +31,11 @@
 
 AppInfoFooterPanel::AppInfoFooterPanel(Profile* profile,
                                        const extensions::Extension* app)
-    : AppInfoPanel(profile, app),
-      weak_ptr_factory_(this) {
+    : AppInfoPanel(profile, app) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal,
+      views::BoxLayout::Orientation::kHorizontal,
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
 

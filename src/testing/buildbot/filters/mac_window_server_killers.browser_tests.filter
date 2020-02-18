@@ -32,7 +32,6 @@
 -BrowserUiTest.*
 -BrowsingDataRemoverBrowserTestP.*
 -CDM_11/ECKEncryptedMediaTest.*
--CDM_9/ECKEncryptedMediaTest.*
 -CaptivePortalBlockingPageTest.*
 -CaptivePortalBrowserTest.*
 -CardUnmaskPromptViewBrowserTest.*

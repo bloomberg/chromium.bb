@@ -83,9 +83,9 @@ class CORE_EXPORT NGLayoutInputNode {
 
   bool IsBlockFlow() const { return IsBlock() && box_->IsLayoutBlockFlow(); }
   bool IsColumnSpanAll() const { return IsBlock() && box_->IsColumnSpanAll(); }
-  bool IsFloating() const { return IsBlock() && Style().IsFloating(); }
+  bool IsFloating() const { return IsBlock() && box_->IsFloating(); }
   bool IsOutOfFlowPositioned() const {
-    return IsBlock() && Style().HasOutOfFlowPosition();
+    return IsBlock() && box_->IsOutOfFlowPositioned();
   }
   bool IsReplaced() const { return box_->IsLayoutReplaced(); }
   bool IsAbsoluteContainer() const {
@@ -130,14 +130,6 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsQuirkyContainer() const {
     return box_->GetDocument().InQuirksMode() &&
            (box_->IsBody() || box_->IsTableCell());
-  }
-
-  // In quirks mode, in-flow positioned BODY and root elements must completely
-  // fill the viewport. Return true if this is such a node.
-  bool IsQuirkyAndFillsViewport() const {
-    if (!GetDocument().InQuirksMode())
-      return false;
-    return (IsDocumentElement() || IsBody()) && !Style().HasOutOfFlowPosition();
   }
 
   bool CreatesNewFormattingContext() const {

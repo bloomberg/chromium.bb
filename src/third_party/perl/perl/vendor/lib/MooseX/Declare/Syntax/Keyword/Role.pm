@@ -1,31 +1,51 @@
 package MooseX::Declare::Syntax::Keyword::Role;
-BEGIN {
-  $MooseX::Declare::Syntax::Keyword::Role::AUTHORITY = 'cpan:FLORA';
-}
-{
-  $MooseX::Declare::Syntax::Keyword::Role::VERSION = '0.35';
-}
 # ABSTRACT: Role declarations
 
+our $VERSION = '0.43';
+
 use Moose;
-use Moose::Util qw(does_role);
+use Moose::Util qw(does_role find_meta);
 use aliased 'Parse::Method::Signatures' => 'PMS';
 use aliased 'MooseX::Declare::Syntax::MethodDeclaration';
 use aliased 'Parse::Method::Signatures::Param::Placeholder';
 use aliased 'MooseX::Declare::Context::Parameterized', 'ParameterizedCtx';
 use aliased 'MooseX::Declare::Syntax::MethodDeclaration::Parameterized', 'ParameterizedMethod';
 
-use namespace::clean -except => 'meta';
+use namespace::autoclean;
 
+#pod =head1 CONSUMES
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare::Syntax::MooseSetup>
+#pod * L<MooseX::Declare::Syntax::RoleApplication>
+#pod
+#pod =cut
 
 with qw(
     MooseX::Declare::Syntax::MooseSetup
     MooseX::Declare::Syntax::RoleApplication
 );
 
+#pod =head1 MODIFIED METHODS
+#pod
+#pod =head2 imported_moose_symbols
+#pod
+#pod   List Object->imported_moose_symbols ()
+#pod
+#pod Extends the existing L<MooseX::Declare::Syntax::MooseSetup/imported_moose_symbols>
+#pod with C<requires>, C<extends>, C<has>, C<inner> and C<super>.
+#pod
+#pod =cut
 
 around imported_moose_symbols => sub { shift->(@_), qw( requires excludes extends has inner super ) };
 
+#pod =head2 import_symbols_from
+#pod
+#pod   Str Object->import_symbols_from ()
+#pod
+#pod Will return L<Moose::Role> instead of the default L<Moose>.
+#pod
+#pod =cut
 
 around import_symbols_from => sub {
     my ($next, $self, $ctx) = @_;
@@ -34,6 +54,13 @@ around import_symbols_from => sub {
         : 'Moose::Role';
 };
 
+#pod =head2 make_anon_metaclass
+#pod
+#pod   Object Object->make_anon_metaclass ()
+#pod
+#pod This will return an anonymous instance of L<Moose::Meta::Role>.
+#pod
+#pod =cut
 
 around make_anon_metaclass => sub { Moose::Meta::Role->create_anon_role };
 
@@ -51,6 +78,13 @@ around default_inner => sub {
     return $inner;
 };
 
+#pod =method generate_export
+#pod
+#pod   CodeRef Object->generate_export ()
+#pod
+#pod Returns a closure with a call to L</make_anon_metaclass>.
+#pod
+#pod =cut
 
 sub generate_export { my $self = shift; sub { $self->make_anon_metaclass } }
 
@@ -109,7 +143,7 @@ after handle_post_parsing => sub {
     my ($self, $ctx, $package, $class) = @_;
     return unless $ctx->has_parameter_signature;
     $ctx->shadow(sub (&) {
-        my $meta = Class::MOP::class_of($class);
+        my $meta = find_meta($class);
         $meta->add_parameter($_->[0], %{ $_->[1] })
             for $ctx->get_parameters;
         $meta->role_generator($_[0]);
@@ -117,17 +151,31 @@ after handle_post_parsing => sub {
     });
 };
 
+#pod =head1 SEE ALSO
+#pod
+#pod =for :list
+#pod * L<MooseX::Declare>
+#pod * L<MooseX::Declare::Syntax::Keyword::Class>
+#pod * L<MooseX::Declare::Syntax::RoleApplication>
+#pod * L<MooseX::Declare::Syntax::MooseSetup>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
 MooseX::Declare::Syntax::Keyword::Role - Role declarations
+
+=head1 VERSION
+
+version 0.43
 
 =head1 METHODS
 
@@ -194,90 +242,15 @@ L<MooseX::Declare::Syntax::MooseSetup>
 
 =back
 
-=head1 AUTHORS
-
-=over 4
-
-=item *
+=head1 AUTHOR
 
 Florian Ragwitz <rafl@debian.org>
 
-=item *
-
-Ash Berlin <ash@cpan.org>
-
-=item *
-
-Chas. J. Owens IV <chas.owens@gmail.com>
-
-=item *
-
-Chris Prather <chris@prather.org>
-
-=item *
-
-Dave Rolsky <autarch@urth.org>
-
-=item *
-
-Devin Austin <dhoss@cpan.org>
-
-=item *
-
-Hans Dieter Pearcey <hdp@cpan.org>
-
-=item *
-
-Justin Hunter <justin.d.hunter@gmail.com>
-
-=item *
-
-Matt Kraai <kraai@ftbfs.org>
-
-=item *
-
-Michele Beltrame <arthas@cpan.org>
-
-=item *
-
-Nelo Onyiah <nelo.onyiah@gmail.com>
-
-=item *
-
-nperez <nperez@cpan.org>
-
-=item *
-
-Piers Cawley <pdcawley@bofh.org.uk>
-
-=item *
-
-Rafael Kitover <rkitover@io.com>
-
-=item *
-
-Robert 'phaylon' Sedlacek <rs@474.at>
-
-=item *
-
-Stevan Little <stevan.little@iinteractive.com>
-
-=item *
-
-Tomas Doran <bobtfish@bobtfish.net>
-
-=item *
-
-Yanick Champoux <yanick@babyl.dyndns.org>
-
-=back
-
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Florian Ragwitz.
+This software is copyright (c) 2008 by Florian Ragwitz.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

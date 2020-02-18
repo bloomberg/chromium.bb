@@ -377,8 +377,9 @@ bool QuicUtils::IsIetfPacketShortHeader(uint8_t first_byte) {
 
 // static
 QuicStreamId QuicUtils::GetInvalidStreamId(QuicTransportVersion version) {
-  return version == QUIC_VERSION_99 ? std::numeric_limits<QuicStreamId>::max()
-                                    : 0;
+  return VersionHasIetfQuicFrames(version)
+             ? std::numeric_limits<QuicStreamId>::max()
+             : 0;
 }
 
 // static
@@ -399,6 +400,11 @@ bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
+  if (version == QUIC_VERSION_99) {
+    // TODO(b/130659182) Turn this into a QUIC_BUG once we've fully removed
+    // the headers stream in those versions.
+    return GetQuicFlag(FLAGS_quic_headers_stream_id_in_v99);
+  }
   return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
@@ -408,7 +414,7 @@ bool QuicUtils::IsClientInitiatedStreamId(QuicTransportVersion version,
   if (id == GetInvalidStreamId(version)) {
     return false;
   }
-  return version == QUIC_VERSION_99 ? id % 2 == 0 : id % 2 != 0;
+  return VersionHasIetfQuicFrames(version) ? id % 2 == 0 : id % 2 != 0;
 }
 
 // static
@@ -417,7 +423,7 @@ bool QuicUtils::IsServerInitiatedStreamId(QuicTransportVersion version,
   if (id == GetInvalidStreamId(version)) {
     return false;
   }
-  return version == QUIC_VERSION_99 ? id % 2 != 0 : id % 2 == 0;
+  return VersionHasIetfQuicFrames(version) ? id % 2 != 0 : id % 2 == 0;
 }
 
 // static
@@ -454,14 +460,14 @@ StreamType QuicUtils::GetStreamType(QuicStreamId id,
 
 // static
 QuicStreamId QuicUtils::StreamIdDelta(QuicTransportVersion version) {
-  return version == QUIC_VERSION_99 ? 4 : 2;
+  return VersionHasIetfQuicFrames(version) ? 4 : 2;
 }
 
 // static
 QuicStreamId QuicUtils::GetFirstBidirectionalStreamId(
     QuicTransportVersion version,
     Perspective perspective) {
-  if (version == QUIC_VERSION_99) {
+  if (VersionHasIetfQuicFrames(version)) {
     return perspective == Perspective::IS_CLIENT ? 0 : 1;
   } else if (QuicVersionUsesCryptoFrames(version)) {
     return perspective == Perspective::IS_CLIENT ? 1 : 2;
@@ -473,16 +479,12 @@ QuicStreamId QuicUtils::GetFirstBidirectionalStreamId(
 QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
     QuicTransportVersion version,
     Perspective perspective) {
-  if (version == QUIC_VERSION_99) {
+  if (VersionHasIetfQuicFrames(version)) {
     return perspective == Perspective::IS_CLIENT ? 2 : 3;
   } else if (QuicVersionUsesCryptoFrames(version)) {
     return perspective == Perspective::IS_CLIENT ? 1 : 2;
   }
   return perspective == Perspective::IS_CLIENT ? 3 : 2;
-  if (perspective == Perspective::IS_CLIENT) {
-    return version == QUIC_VERSION_99 ? 2 : 1;
-  }
-  return version == QUIC_VERSION_99 ? 3 : 2;
 }
 
 // static
@@ -523,12 +525,6 @@ QuicConnectionId QuicUtils::CreateRandomConnectionId(
 // static
 bool QuicUtils::VariableLengthConnectionIdAllowedForVersion(
     QuicTransportVersion version) {
-  if (!GetQuicRestartFlag(
-          quic_allow_variable_length_connection_id_for_negotiation)) {
-    return version >= QUIC_VERSION_47;
-  }
-  QUIC_RESTART_FLAG_COUNT(
-      quic_allow_variable_length_connection_id_for_negotiation);
   // We allow variable length connection IDs for unsupported versions to
   // ensure that IETF version negotiation works when other implementations
   // trigger version negotiation with custom connection ID lengths.

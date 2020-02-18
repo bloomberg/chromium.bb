@@ -10,10 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/events/event_rewriter_controller.h"
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/event_rewriter_controller.mojom.h"
+#include "ash/public/cpp/event_rewriter_controller.h"
+#include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -48,10 +47,12 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
+#include "chrome/browser/chromeos/dbus/cryptohome_key_delegate_service_provider.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/libvda_service_provider.h"
+#include "chrome/browser/chromeos/dbus/machine_learning_decision_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
@@ -61,10 +62,9 @@
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/extensions/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
@@ -92,12 +92,10 @@
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_manager.h"
-#include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
-#include "chrome/browser/chromeos/printing/cups_proxy_service_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
@@ -139,6 +137,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -175,9 +174,9 @@
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/common/service_manager_connection.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
@@ -290,13 +289,14 @@ namespace internal {
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
-    // In Mash, power policy is sent to powerd by ash.
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Initialize(PowerManagerClient::Get());
+    PowerPolicyController::Initialize(PowerManagerClient::Get());
 
     dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
                                 ? nullptr
                                 : DBusThreadManager::Get()->GetSystemBus();
+
+    // See also PostBrowserStart() where machine_learning_decision_service_ is
+    // initialized.
 
     proxy_resolution_service_ = CrosDBusService::Create(
         system_bus, kNetworkProxyServiceName,
@@ -359,6 +359,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<DriveFileStreamServiceProvider>()));
 
+    cryptohome_key_delegate_service_ = CrosDBusService::Create(
+        system_bus, cryptohome::kCryptohomeKeyDelegateServiceName,
+        dbus::ObjectPath(cryptohome::kCryptohomeKeyDelegateServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<CryptohomeKeyDelegateServiceProvider>()));
+
     if (arc::IsArcVmEnabled()) {
       libvda_service_ = CrosDBusService::Create(
           system_bus, libvda::kLibvdaServiceName,
@@ -390,6 +396,19 @@ class DBusServices {
         OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil());
   }
 
+  void CreateMachineLearningDecisionProvider() {
+    dbus::Bus* system_bus = DBusThreadManager::Get()->IsUsingFakes()
+                                ? nullptr
+                                : DBusThreadManager::Get()->GetSystemBus();
+    // TODO(alanlxl): update Ml here to MachineLearning after powerd is
+    // uprevved.
+    machine_learning_decision_service_ = CrosDBusService::Create(
+        system_bus, machine_learning::kMlDecisionServiceName,
+        dbus::ObjectPath(machine_learning::kMlDecisionServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<MachineLearningDecisionServiceProvider>()));
+  }
+
   ~DBusServices() {
     NetworkHandler::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
@@ -406,11 +425,16 @@ class DBusServices {
     chrome_features_service_.reset();
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
+    cryptohome_key_delegate_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
-    if (!::features::IsMultiProcessMash())
-      PowerPolicyController::Shutdown();
+    PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
+  }
+
+  void PreAshShutdown() {
+    // Services depending on ash should be released here.
+    machine_learning_decision_service_.reset();
   }
 
  private:
@@ -424,7 +448,9 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
+  std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
   std::unique_ptr<CrosDBusService> libvda_service_;
+  std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
@@ -630,7 +656,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   system_token_certdb_initializer_->Initialize();
 
   CrasAudioHandler::Initialize(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content::GetSystemConnector(),
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
@@ -689,8 +715,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   lock_to_single_user_manager_ =
       std::make_unique<policy::LockToSingleUserManager>();
 
-  cups_proxy_service_manager_ = std::make_unique<CupsProxyServiceManager>();
-
   ChromeBrowserMainPartsLinux::PreMainMessageLoopRun();
 }
 
@@ -724,8 +748,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // keyboard::KeyboardController initializes ChromeKeyboardUI which depends
   // on ChromeKeyboardControllerClient.
-  chrome_keyboard_controller_client_ = ChromeKeyboardControllerClient::Create(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  chrome_keyboard_controller_client_ = ChromeKeyboardControllerClient::Create();
 
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
@@ -747,22 +770,16 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
         new default_app_order::ExternalLoader(true /* async */));
   }
 
-  audio::SoundsManager::Create(
-      content::ServiceManagerConnection::GetForProcess()
-          ->GetConnector()
-          ->Clone());
+  audio::SoundsManager::Create(content::GetSystemConnector()->Clone());
 
   // |arc_service_launcher_| must be initialized before NoteTakingHelper.
   NoteTakingHelper::Initialize();
 
   AccessibilityManager::Initialize();
 
-  if (!::features::IsMultiProcessMash()) {
-    // Initialize magnification manager before ash tray is created. And this
-    // must be placed after UserManager::SessionStarted();
-    // TODO(crbug.com/821551): Mash support.
-    MagnificationManager::Initialize();
-  }
+  // Initialize magnification manager before ash tray is created. And this
+  // must be placed after UserManager::SessionStarted();
+  MagnificationManager::Initialize();
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -790,6 +807,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes
   // ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
+
+  // Needs to be initialized after ash::Shell.
+  chrome_keyboard_controller_client_->Init(ash::KeyboardController::Get());
 
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
@@ -966,9 +986,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   user_removal_manager::RemoveUsersIfNeeded();
 
-  kerberos_credentials_manager_ = std::make_unique<KerberosCredentialsManager>(
-      g_browser_process->local_state());
-
   // This observer cannot be created earlier because it requires the shell to be
   // available.
   idle_action_warning_observer_ = std::make_unique<IdleActionWarningObserver>();
@@ -979,7 +996,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     low_disk_notification_ = std::make_unique<LowDiskNotification>();
 
   gnubby_notification_ = std::make_unique<GnubbyNotification>();
-
   demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
       g_browser_process->local_state());
   // Start measuring crosvm processes resource usage.
@@ -1012,30 +1028,20 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // Enable the KeyboardDrivenEventRewriter if the OEM manifest flag is on.
-  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation()) {
-    content::ServiceManagerConnection* connection =
-        content::ServiceManagerConnection::GetForProcess();
-    ash::mojom::EventRewriterControllerPtr event_rewriter_controller_ptr;
-    connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
-                                              &event_rewriter_controller_ptr);
-    event_rewriter_controller_ptr->SetKeyboardDrivenEventRewriterEnabled(true);
-  }
+  auto* event_rewriter_controller = ash::EventRewriterController::Get();
+  if (system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation())
+    event_rewriter_controller->SetKeyboardDrivenEventRewriterEnabled(true);
 
   // Construct a delegate to connect ChromeVox and SpokenFeedbackEventRewriter.
   spoken_feedback_event_rewriter_delegate_ =
       std::make_unique<SpokenFeedbackEventRewriterDelegate>();
 
-  if (!::features::IsMultiProcessMash()) {
-    // TODO(mash): Support EventRewriterController; see crbug.com/647781
-    ash::EventRewriterController* event_rewriter_controller =
-        ash::Shell::Get()->event_rewriter_controller();
-    event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
-        ash::Shell::Get()->activation_client());
-    event_rewriter_controller->AddEventRewriter(
-        std::make_unique<ui::EventRewriterChromeOS>(
-            event_rewriter_delegate_.get(),
-            ash::Shell::Get()->sticky_keys_controller()));
-  }
+  event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
+      ash::Shell::Get()->activation_client());
+  event_rewriter_controller->AddEventRewriter(
+      std::make_unique<ui::EventRewriterChromeOS>(
+          event_rewriter_delegate_.get(),
+          ash::Shell::Get()->sticky_keys_controller()));
 
   // In classic ash must occur after ash::Shell is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
@@ -1048,8 +1054,10 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
   if (base::FeatureList::IsEnabled(::features::kUserActivityEventLogging)) {
-    user_activity_controller_ =
-        std::make_unique<power::ml::UserActivityController>();
+    // MachineLearningDecisionServiceProvider needs to be created after
+    // UserActivityController which depends on UserActivityDetector, not
+    // available until PostBrowserStart.
+    dbus_services_->CreateMachineLearningDecisionProvider();
   }
 
   auto_screen_brightness_controller_ =
@@ -1062,7 +1070,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   }
 
   dark_resume_controller_ = std::make_unique<system::DarkResumeController>(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+      content::GetSystemConnector());
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
@@ -1120,7 +1128,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();
   demo_mode_resources_remover_.reset();
-  user_activity_controller_.reset();
   adaptive_screen_brightness_manager_.reset();
   scheduler_configuration_manager_.reset();
   auto_screen_brightness_controller_.reset();
@@ -1128,7 +1135,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   lock_to_single_user_manager_.reset();
   wilco_dtc_supportd_manager_.reset();
   gnubby_notification_.reset();
-  kerberos_credentials_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
@@ -1136,8 +1142,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (LoginScreenExtensionUiHandler::Get(false /*can_create*/))
     LoginScreenExtensionUiHandler::Shutdown();
 
-  if (!::features::IsMultiProcessMash())
-    MagnificationManager::Shutdown();
+  MagnificationManager::Shutdown();
 
   audio::SoundsManager::Shutdown();
 
@@ -1190,6 +1195,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
         language::prefs::kApplicationLocale));
   }
 
+  // Cleans up dbus services depending on ash.
+  dbus_services_->PreAshShutdown();
+
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
@@ -1203,9 +1211,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  // TODO(crbug.com/594887): Mash support.
-  if (!::features::IsMultiProcessMash())
-    AccessibilityManager::Shutdown();
+  AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
 

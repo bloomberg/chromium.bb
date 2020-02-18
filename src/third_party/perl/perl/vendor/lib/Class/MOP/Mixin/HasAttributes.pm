@@ -1,18 +1,12 @@
 package Class::MOP::Mixin::HasAttributes;
-BEGIN {
-  $Class::MOP::Mixin::HasAttributes::AUTHORITY = 'cpan:STEVAN';
-}
-{
-  $Class::MOP::Mixin::HasAttributes::VERSION = '2.0602';
-}
+our $VERSION = '2.2011';
 
 use strict;
 use warnings;
 
-use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use base 'Class::MOP::Mixin';
+use parent 'Class::MOP::Mixin';
 
 sub add_attribute {
     my $self = shift;
@@ -21,8 +15,9 @@ sub add_attribute {
         = blessed( $_[0] ) ? $_[0] : $self->attribute_metaclass->new(@_);
 
     ( $attribute->isa('Class::MOP::Mixin::AttributeCore') )
-        || confess
-        "Your attribute must be an instance of Class::MOP::Mixin::AttributeCore (or a subclass)";
+        || $self->_throw_exception( AttributeMustBeAnClassMOPMixinAttributeCoreOrSubclass => attribute  => $attribute,
+                                                                                     class_name => $self->name,
+                          );
 
     $self->_attach_attribute($attribute);
 
@@ -51,7 +46,7 @@ sub has_attribute {
     my ( $self, $attribute_name ) = @_;
 
     ( defined $attribute_name )
-        || confess "You must define an attribute name";
+        || $self->_throw_exception( MustDefineAnAttributeName => class_name => $self->name );
 
     exists $self->_attribute_map->{$attribute_name};
 }
@@ -60,7 +55,7 @@ sub get_attribute {
     my ( $self, $attribute_name ) = @_;
 
     ( defined $attribute_name )
-        || confess "You must define an attribute name";
+        || $self->_throw_exception( MustDefineAnAttributeName => class_name => $self->name );
 
     return $self->_attribute_map->{$attribute_name};
 }
@@ -69,7 +64,7 @@ sub remove_attribute {
     my ( $self, $attribute_name ) = @_;
 
     ( defined $attribute_name )
-        || confess "You must define an attribute name";
+        || $self->_throw_exception( MustDefineAnAttributeName => class_name => $self->name );
 
     my $removed_attribute = $self->_attribute_map->{$attribute_name};
     return unless defined $removed_attribute;
@@ -100,9 +95,11 @@ sub _restore_metaattributes_from {
 
 # ABSTRACT: Methods for metaclasses which have attributes
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -110,7 +107,7 @@ Class::MOP::Mixin::HasAttributes - Methods for metaclasses which have attributes
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -118,19 +115,57 @@ This class implements methods for metaclasses which have attributes
 (L<Class::MOP::Class> and L<Moose::Meta::Role>). See L<Class::MOP::Class> for
 API details.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

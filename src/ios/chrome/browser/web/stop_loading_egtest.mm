@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
@@ -95,18 +94,16 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   web::test::SetUpHttpServer(
       std::make_unique<InfinitePendingResponseProvider>(infinitePendingURL));
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // TODO(crbug.com/960508): Investigate why test fails on iPad if
     // synchronization is enabled.
     ScopedSynchronizationDisabler disabler;
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
-                                    waitForCompletion:NO]);
+    [ChromeEarlGrey loadURL:infinitePendingURL waitForCompletion:NO];
   } else {
-    CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey loadURL:infinitePendingURL
-                                    waitForCompletion:NO]);
+    [ChromeEarlGrey loadURL:infinitePendingURL waitForCompletion:NO];
   }
 
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     // Disable EG synchronization so the framework does not wait until the tab
     // loading spinner becomes idle (which will not happen until the stop button
     // is tapped).
@@ -116,11 +113,10 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   }
 
   // Wait until the page is half loaded.
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:kPageText]);
+  [ChromeEarlGrey waitForWebStateContainingText:kPageText];
 
   // On iPhone Stop/Reload button is a part of tools menu, so open it.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     [ChromeEarlGreyUI openToolsMenu];
   }
 
@@ -141,7 +137,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   // Verify that stop button is hidden and reload button is visible.
-  if (!IsIPadIdiom()) {
+  if (![ChromeEarlGrey isIPadIdiom]) {
     [ChromeEarlGreyUI openToolsMenu];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::StopButton()]

@@ -151,10 +151,11 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame)
-    : frame_(frame),
+    : views::AnimationDelegateViews(frame->GetRootView()),
+      frame_(frame),
       model_(std::make_unique<DefaultCaptionButtonModel>(frame)) {
-  auto layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kHorizontal);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
@@ -403,7 +404,7 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
     }
   } else if (sender == close_button_) {
     frame_->Close();
-    if (TabletMode::Get()->IsEnabled())
+    if (TabletMode::Get()->InTabletMode())
       RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
     else
       RecordAction(UserMetricsAction("CloseButton_Clk"));

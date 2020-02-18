@@ -9,6 +9,7 @@
 
 Es posible que algunas funciones no estén disponibles y que no se guarden los cambios que hagas en las preferencias.</translation>
 <translation id="1088300314857992706"><ph name="USER_EMAIL_ADDRESS" /> usaba Chrome anteriormente</translation>
+<translation id="1097330777386562916">Borrar las cookies y los datos de sitios web al salir de Chrome</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="110877069173485804">Este es tu navegador Chrome</translation>
 <translation id="1142745911746664600">No se puede actualizar Chrome</translation>
@@ -23,12 +24,12 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
-<translation id="1585657529869845941">Haz clic en <ph name="BEGIN_BOLD" />Cambiar de todos modos<ph name="END_BOLD" /> (si aparece)</translation>
 <translation id="1587223624401073077">Google Chrome está utilizando la cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> es peligroso, por lo que Chrome lo ha bloqueado.</translation>
 <translation id="1590588151039584890">Para actualizar, es necesario que Chrome deje de estar en uso en este ordenador. Es posible que otros usuarios que hayan iniciado sesión en este ordenador pierdan los cambios que no han guardado.</translation>
 <translation id="1619887657840448962">Para aumentar la seguridad de Chrome, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que puede haberse añadido sin tu conocimiento.</translation>
 <translation id="1628000112320670027">Obtener ayuda de Chrome</translation>
+<translation id="1635734105302489219">Las cookies se borran al salir de Chrome. Para continuar la sincronización, cambia <ph name="COOKIE_SETTINGS_LINK" />.</translation>
 <translation id="1662639173275167396">Chrome OS se ha creado gracias a <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional, como <ph name="BEGIN_LINK_LINUX_OSS" />Linux (beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="1674870198290878346">Abrir enlace en una ventana de incó&amp;gnito de Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer el directorio de datos ni escribir en él:
@@ -36,7 +37,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a gran velocidad. Es rápido, estable y fácil de utilizar. Navega por la Web de forma más segura gracias a la protección integrada contra suplantación de identidad y software malicioso.</translation>
 <translation id="1713301662689114961">{0,plural, =1{Chrome se reiniciará dentro de 1 hora}other{Chrome se reiniciará dentro de # horas}}</translation>
-<translation id="1718131156967340976">Selecciona <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" /></translation>
 <translation id="1734234790201236882">Chrome guardará esta contraseña en tu cuenta de Google para que no tengas que recordarla.</translation>
 <translation id="174539241580958092">Google Chrome no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -96,6 +96,7 @@ Para evitar que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, bloquea tu pe
 
 Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más información.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
+<translation id="3340978935015468852">configuración</translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome se reiniciará ahora}=1{Chrome se reiniciará dentro de 1 segundo}other{Chrome se reiniciará dentro de # segundos}}</translation>
 <translation id="3395323229510056640">Obtener ayuda de Chrome OS</translation>
@@ -103,7 +104,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3398288718845740432">Ocultar en el menú de Chrome</translation>
 <translation id="3451115285585441894">Añadiendo a Chrome...</translation>
 <translation id="345171907106878721">Añadirte a Chrome</translation>
-<translation id="3479552764303398839">Ahora no</translation>
 <translation id="34857402635545079">Borrar también los datos de Chrome (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">Chrome necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="3576528680708590453">El administrador del sistema ha configurado Google Chrome para que abra otro navegador al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -118,8 +118,6 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome y vuelve a intentarlo.</translation>
 <translation id="3873044882194371212">Abrir enlace en una ventana de incó&amp;gnito de Chrome</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
-<translation id="3898493977366060150">Navegación web con soluciones inteligentes de Google</translation>
-<translation id="4028693306634653894">Accede a Chrome más rápido</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
 <translation id="4143243756087420366">Nombre y foto de Chrome</translation>
@@ -131,7 +129,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="4251625577313994583">descarga Chrome en tu iPhone</translation>
 <translation id="4293420128516039005">Inicia sesión para sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS</translation>
+<translation id="4331809312908958774">SO de Chrome</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> se ha añadido a Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Hay otra operación en curso en Google Chrome. Vuelve a intentarlo más tarde.</translation>
@@ -207,7 +205,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6750954913813541382">Chrome envía a Google el texto que escribes en el navegador para corregir los errores ortográficos</translation>
 <translation id="677276454032249905">¿Quieres salir de Chrome de todas formas?</translation>
 <translation id="683440813066116847">Regla entrante para que Google Chrome Canary permita tráfico mDNS.</translation>
-<translation id="686561893457936865">Llévate Chrome a todas partes</translation>
 <translation id="6885412569789873916">Aplicaciones de Chrome Beta</translation>
 <translation id="6943584222992551122">Los datos de navegación de este usuario se eliminarán del dispositivo. Para recuperar los datos, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Regla entrante para que Google Chrome Beta permita tráfico mDNS.</translation>
@@ -244,7 +241,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7808348361785373670">Desinstalar de Chrome...</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="7855730255114109580">Google Chrome está actualizado</translation>
-<translation id="7888186132678118370">Ancla Chrome a la barra de tareas</translation>
 <translation id="7890208801193284374">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
 <translation id="7896673875602241923">Otro usuario ha iniciado sesión anteriormente en Chrome con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chrome para proteger tu información.</translation>
 <translation id="7908168227788431038">Google Chrome casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
@@ -293,6 +289,5 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="9138603949443464873">Reinicia Chrome para aplicar los cambios</translation>
 <translation id="919706545465235479">Actualiza Chrome para iniciar la sincronización</translation>
-<translation id="924447568950697217">Establece Chrome como navegador predeterminado</translation>
 <translation id="989369509083708165">Google Chrome es tu navegador predeterminado</translation>
 </translationbundle>

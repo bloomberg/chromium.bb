@@ -326,11 +326,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   // the front of the list.
   base::Optional<NTPTile> CreateExploreSitesTile();
 
-  // Adds the Google Search page as first tile to |tiles| and returns them as
-  // new vector. Drops existing tiles with the same host as the Google Search
-  // page and tiles that would exceed the maximum.
-  NTPTilesVector InsertSearchTile(NTPTilesVector tiles) const;
-
   void OnHomepageTitleDetermined(NTPTilesVector tiles,
                                  const base::Optional<base::string16>& title);
 
@@ -384,7 +379,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // For callbacks may be run after destruction, used exclusively for TopSites
   // (since it's used to detect whether there's a query in flight).
-  base::WeakPtrFactory<MostVisitedSites> top_sites_weak_ptr_factory_;
+  base::WeakPtrFactory<MostVisitedSites> top_sites_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };

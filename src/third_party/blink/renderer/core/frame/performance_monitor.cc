@@ -17,13 +17,14 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 namespace {
-constexpr auto kLongTaskSubTaskThreshold = TimeDelta::FromMilliseconds(12);
+constexpr auto kLongTaskSubTaskThreshold =
+    base::TimeDelta::FromMilliseconds(12);
 }  // namespace
 
 void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
@@ -239,7 +240,7 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
   String name = user_callback->name ? String(user_callback->name)
                                     : String(user_callback->atomic_name);
   String text = String::Format("'%s' handler took %" PRId64 "ms",
-                               name.Utf8().data(), duration.InMilliseconds());
+                               name.Utf8().c_str(), duration.InMilliseconds());
   InnerReportGenericViolation(probe.context, handler_type, text, duration,
                               SourceLocation::FromFunction(probe.function));
 }
@@ -256,7 +257,7 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
   if (!enabled_ || thresholds_[kLongTask].is_zero())
     return;
 
-  TimeDelta v8_compile_duration = probe.Duration();
+  base::TimeDelta v8_compile_duration = probe.Duration();
 
   if (bypass_long_compile_threshold_) {
     bypass_long_compile_threshold_ = false;
@@ -267,7 +268,7 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
 
   auto sub_task_attribution = std::make_unique<SubTaskAttribution>(
       AtomicString("script-compile"),
-      String::Format("%s(%d, %d)", probe.file_name.Utf8().data(), probe.line,
+      String::Format("%s(%d, %d)", probe.file_name.Utf8().c_str(), probe.line,
                      probe.column),
       v8_compile_start_time_, v8_compile_duration);
   sub_task_attributions_.push_back(std::move(sub_task_attribution));
@@ -312,9 +313,9 @@ void PerformanceMonitor::WillProcessTask(base::TimeTicks start_time) {
   // Reset everything for regular and nested tasks.
   script_depth_ = 0;
   layout_depth_ = 0;
-  per_task_style_and_layout_time_ = TimeDelta();
+  per_task_style_and_layout_time_ = base::TimeDelta();
   user_callback_ = nullptr;
-  v8_compile_start_time_ = TimeTicks();
+  v8_compile_start_time_ = base::TimeTicks();
   sub_task_attributions_.clear();
 }
 

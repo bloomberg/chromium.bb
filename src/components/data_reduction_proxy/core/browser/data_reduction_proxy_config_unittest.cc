@@ -27,7 +27,6 @@
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/default_clock.h"
@@ -45,6 +44,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_type_info.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
@@ -53,10 +53,6 @@
 #include "net/nqe/effective_connection_type.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
 using testing::_;
@@ -209,7 +205,7 @@ class DataReductionProxyConfigTest : public testing::Test {
     return test_context_->GetConfiguredProxiesForHttp();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_{
+  content::TestBrowserThreadBundle task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
@@ -282,7 +278,13 @@ TEST_F(DataReductionProxyConfigTest, TestOnConnectionChangePersistedData) {
             GetConfiguredProxiesForHttp());
 }
 
-TEST_F(DataReductionProxyConfigTest, TestOnNetworkChanged) {
+// Flaky on Linux. http://crbug.com/973385
+#if defined(OS_LINUX)
+#define MAYBE_TestOnNetworkChanged DISABLED_TestOnNetworkChanged
+#else
+#define MAYBE_TestOnNetworkChanged TestOnNetworkChanged
+#endif
+TEST_F(DataReductionProxyConfigTest, MAYBE_TestOnNetworkChanged) {
   // The test manually controls the fetch of warmup URL and the response.
   test_context_->DisableWarmupURLFetchCallback();
 
@@ -418,7 +420,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                            "Enabled");
 
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
     TestDataReductionProxyConfig config(task_runner(), task_runner(),
                                         configurator());
 
@@ -1240,8 +1241,9 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherTimeout) {
       "DataReductionProxy.WarmupURL.FetchInitiated", 2);
 }
 
+// https://crbug.com/974895: Flaky test.
 TEST_F(DataReductionProxyConfigTest,
-       HandleWarmupFetcherRetryWithConnectionChange) {
+       DISABLED_HandleWarmupFetcherRetryWithConnectionChange) {
   // The test manually controls the fetch of warmup URL and the response.
   test_context_->DisableWarmupURLFetchCallback();
 

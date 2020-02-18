@@ -54,7 +54,6 @@ namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
 using extensions::AppRuntimeEventRouter;
-using extensions::api::app_runtime::PlayStoreStatus;
 using extensions::app_file_handler_util::CreateFileEntry;
 using extensions::app_file_handler_util::FileHandlerCanHandleEntry;
 using extensions::app_file_handler_util::FileHandlerForId;
@@ -346,7 +345,8 @@ class PlatformAppPathLauncher
   // not kept as the extension may be unloaded and deleted during the course of
   // the launch.
   const std::string extension_id;
-  extensions::AppLaunchSource launch_source_ = extensions::SOURCE_FILE_HANDLER;
+  extensions::AppLaunchSource launch_source_ =
+      extensions::AppLaunchSource::kSourceFileHandler;
   std::unique_ptr<app_runtime::ActionData> action_data_;
   // A list of files and directories to be passed through to the app.
   std::vector<base::FilePath> entry_paths_;
@@ -368,11 +368,9 @@ void LaunchPlatformAppWithCommandLine(content::BrowserContext* context,
                                       const extensions::Extension* app,
                                       const base::CommandLine& command_line,
                                       const base::FilePath& current_directory,
-                                      extensions::AppLaunchSource source,
-                                      PlayStoreStatus play_store_status) {
+                                      extensions::AppLaunchSource source) {
   LaunchPlatformAppWithCommandLineAndLaunchId(context, app, "", command_line,
-                                              current_directory, source,
-                                              play_store_status);
+                                              current_directory, source);
 }
 
 void LaunchPlatformAppWithCommandLineAndLaunchId(
@@ -381,8 +379,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
     const std::string& launch_id,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory,
-    extensions::AppLaunchSource source,
-    PlayStoreStatus play_store_status) {
+    extensions::AppLaunchSource source) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -415,8 +412,6 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
                        args[0] == about_blank_url)) {
     std::unique_ptr<app_runtime::LaunchData> launch_data =
         std::make_unique<app_runtime::LaunchData>();
-    if (play_store_status != PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN)
-      launch_data->play_store_status = play_store_status;
     if (!launch_id.empty())
       launch_data->id.reset(new std::string(launch_id));
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(context, app, source,
@@ -452,7 +447,7 @@ void LaunchPlatformAppWithAction(
   scoped_refptr<PlatformAppPathLauncher> launcher =
       new PlatformAppPathLauncher(context, app, file_path);
   launcher->set_action_data(std::move(action_data));
-  launcher->set_launch_source(extensions::AppLaunchSource::SOURCE_UNTRACKED);
+  launcher->set_launch_source(extensions::AppLaunchSource::kSourceUntracked);
   launcher->Launch();
 }
 
@@ -494,7 +489,7 @@ void RestartPlatformApp(content::BrowserContext* context,
 
   if (listening_to_launch && had_windows) {
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(
-        context, app, extensions::SOURCE_RESTART, nullptr);
+        context, app, extensions::AppLaunchSource::kSourceRestart, nullptr);
   }
 }
 

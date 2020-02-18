@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/input_event_activation_protector.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -88,7 +89,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   gfx::Insets content_margins() const { return content_margins_; }
 
-  void SetFootnoteView(View* view);
+  void SetFootnoteView(std::unique_ptr<View> view);
   void set_footnote_margins(const gfx::Insets& footnote_margins) {
     footnote_margins_ = footnote_margins;
   }
@@ -216,9 +217,6 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // A view to contain the footnote view, if it exists.
   FootnoteContainerView* footnote_container_;
 
-  // Time when view has been shown.
-  base::TimeTicks view_shown_time_stamp_;
-
   // Set preference for how the arrow will be adjusted if the window is outside
   // the available bounds.
   PreferredArrowAdjustment preferred_arrow_adjustment_ =
@@ -227,6 +225,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // If true the view is transparent to all  hit tested events (i.e. click and
   // hover).
   bool hit_test_transparent_ = false;
+
+  InputEventActivationProtector input_protector_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleFrameView);
 };

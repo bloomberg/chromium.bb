@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_tree_formatter.h"
+#include "content/browser/accessibility/accessibility_tree_formatter_base.h"
 
 #include <math.h>
 #include <oleacc.h>
@@ -37,7 +37,7 @@
 
 namespace content {
 
-class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
+class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatterBase {
  public:
   AccessibilityTreeFormatterWin();
   ~AccessibilityTreeFormatterWin() override;
@@ -995,11 +995,11 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
         bool did_pass_filters = false;
         if (strcmp(attribute_name, "size") == 0) {
           did_pass_filters = WriteAttribute(
-              false, FormatCoordinates("size", "width", "height", *dict_value),
+              false, FormatCoordinates(*dict_value, "size", "width", "height"),
               &line);
         } else if (strcmp(attribute_name, "location") == 0) {
           did_pass_filters = WriteAttribute(
-              false, FormatCoordinates("location", "x", "y", *dict_value),
+              false, FormatCoordinates(*dict_value, "location", "x", "y"),
               &line);
         }
         if (filtered_dict_result && did_pass_filters)

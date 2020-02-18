@@ -6,7 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_DUMMY_PRODUCER_H_
 
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/producer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/producer.h"
 
 namespace tracing {
 
@@ -50,9 +50,11 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
   // tracing::PerfettoProducer functions.
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
+  bool IsTracingActive() override;
 
   // Functions expected for SystemProducer
-  void Disconnect() override;
+  void DisconnectWithReply(base::OnceClosure on_disconnect_complete) override;
+  bool IsDummySystemProducerForTesting() override;
 };
 }  // namespace tracing
 

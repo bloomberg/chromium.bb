@@ -38,7 +38,9 @@ TestSyncService::TestSyncService()
     : user_settings_(this),
       preferred_data_types_(ModelTypeSet::All()),
       active_data_types_(ModelTypeSet::All()),
-      last_cycle_snapshot_(MakeDefaultCycleSnapshot()) {}
+      last_cycle_snapshot_(MakeDefaultCycleSnapshot()),
+      user_demographics_result_(UserDemographicsResult::ForStatus(
+          UserDemographicsStatus::kIneligibleDemographicsData)) {}
 
 TestSyncService::~TestSyncService() = default;
 
@@ -85,6 +87,11 @@ void TestSyncService::SetActiveDataTypes(const ModelTypeSet& types) {
 
 void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
+}
+
+void TestSyncService::SetUserDemographics(
+    const UserDemographicsResult& user_demographics_result) {
+  user_demographics_result_ = user_demographics_result;
 }
 
 void TestSyncService::SetEmptyLastCycleSnapshot() {
@@ -267,6 +274,11 @@ void TestSyncService::GetAllNodesForDebugging(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
+UserDemographicsResult TestSyncService::GetUserNoisedBirthYearAndGender(
+    base::Time now) {
+  return user_demographics_result_;
+}
 
 void TestSyncService::Shutdown() {}
 

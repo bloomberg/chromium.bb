@@ -32,7 +32,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -332,11 +331,10 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_Sandbox, Download) {
       !enable_blocking_downloads_in_sandbox_without_user_activation ||
       initiate_with_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
-
+  bool sandboxed =
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expect_download_in_sandbox_without_user_activation =
-      sandbox_option ==
-          SandboxOption::kDisallowDownloadsWithoutUserActivation &&
-      !initiate_with_gesture;
+      sandboxed && !initiate_with_gesture;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
   SetNumDownloadsExpectation(expect_download);
@@ -348,6 +346,10 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_Sandbox, Download) {
   if (expect_download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+  }
+  if (sandboxed) {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInSandbox);
   }
   if (expect_download_in_sandbox_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
@@ -424,8 +426,6 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_AdFrame, Download) {
   bool expect_download =
       !enable_blocking_downloads_in_ad_frame_without_user_activation ||
       initiate_with_gesture || !is_ad_frame;
-  bool expect_download_in_ad_frame_with_user_activation =
-      is_ad_frame && initiate_with_gesture;
   bool expect_download_in_ad_frame_without_user_activation =
       is_ad_frame && !initiate_with_gesture;
 
@@ -440,9 +440,9 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_AdFrame, Download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
   }
-  if (expect_download_in_ad_frame_with_user_activation) {
+  if (is_ad_frame) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
-        blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
+        blink::mojom::WebFeature::kDownloadInAdFrame);
   }
   if (expect_download_in_ad_frame_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
@@ -520,6 +520,8 @@ IN_PROC_BROWSER_TEST_P(OtherFrameNavigationDownloadBrowserTest_Sandbox,
 
   GetWebFeatureWaiter()->AddWebFeatureExpectation(
       blink::mojom::WebFeature::kDownloadPrePolicyCheck);
+  GetWebFeatureWaiter()->AddWebFeatureExpectation(
+      blink::mojom::WebFeature::kDownloadInSandbox);
   if (!expect_gesture) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
@@ -632,10 +634,10 @@ IN_PROC_BROWSER_TEST_P(OtherFrameNavigationDownloadBrowserTest_AdFrame,
 
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPrePolicyCheck);
-    if (expect_gesture) {
-      GetWebFeatureWaiter()->AddWebFeatureExpectation(
-          blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
-    } else {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInAdFrame);
+
+    if (!expect_gesture) {
       GetWebFeatureWaiter()->AddWebFeatureExpectation(
           blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
     }
@@ -725,11 +727,10 @@ IN_PROC_BROWSER_TEST_P(TopFrameSameFrameDownloadBrowserTest, Download) {
       !enable_blocking_downloads_in_sandbox_without_user_activation ||
       initiate_with_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
-
+  bool sandboxed =
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expect_download_in_sandbox_without_user_activation =
-      sandbox_option ==
-          SandboxOption::kDisallowDownloadsWithoutUserActivation &&
-      !initiate_with_gesture;
+      sandboxed && !initiate_with_gesture;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
   SetNumDownloadsExpectation(expect_download);
@@ -740,6 +741,10 @@ IN_PROC_BROWSER_TEST_P(TopFrameSameFrameDownloadBrowserTest, Download) {
   if (expect_download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+  }
+  if (sandboxed) {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInSandbox);
   }
   if (expect_download_in_sandbox_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
@@ -765,48 +770,6 @@ INSTANTIATE_TEST_SUITE_P(
             SandboxOption::kDisallowDownloadsWithoutUserActivation,
             SandboxOption::kAllowDownloadsWithoutUserActivation),
         ::testing::Bool()));
-
-class DefaultBlockSandboxDownloadBrowserTest
-    : public DownloadFramePolicyBrowserTest {
- public:
-  DefaultBlockSandboxDownloadBrowserTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        network::features::kNetworkService);
-  }
-
-  ~DefaultBlockSandboxDownloadBrowserTest() override = default;
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SetRuntimeFeatureCommand(
-        true, "BlockingDownloadsInSandboxWithoutUserActivation", command_line);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// To test PDF works fine when the policy disallows just download, which
-// essentially tests that the appropriate ResourceInterceptPolicy
-// |kAllowPluginOnly| is set for resource handling.
-//
-// When NetworkService is disabled and when ResourceInterceptPolicy has been
-// incorrectly set to |kAllowNone|, no stream interceptor will be set up to
-// handle the PDF content, and the content will instead be sent to the renderer
-// where a UTF-8 GUID is expected to arrive. It'll then hit a DCHECK checking
-// the UTF-8-ness of the GUID.
-//
-// TODO(yaoxia): Use a more straightforward approach to assert that the pdf
-// content displays fine rather than relying on the DCHECK failure that would
-// happen with an incorrect implementation.
-IN_PROC_BROWSER_TEST_F(DefaultBlockSandboxDownloadBrowserTest, PdfNotBlocked) {
-  InitializeOneSubframeSetup(
-      SandboxOption::kDisallowDownloadsWithoutUserActivation,
-      false /* is_ad_frame */, false /* is_cross_origin */);
-  content::TestNavigationObserver navigation_observer(web_contents());
-  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(GetSubframeRfh(),
-                                              "top.location = 'test.pdf';"));
-  navigation_observer.Wait();
-}
 
 // Download gets blocked when LoadPolicy is DISALLOW for the navigation to
 // download. This test is technically unrelated to policy on frame, but stays

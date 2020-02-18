@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "ash/keyboard/ui/keyboard_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -20,14 +20,14 @@ namespace {
 // TODO(stevenjb): Remove remaining calls from src/chrome.
 // https://crbug.com/84332.
 
-bool GetFlag(mojom::KeyboardEnableFlag flag) {
-  return KeyboardController::HasInstance()
-             ? KeyboardController::Get()->IsEnableFlagSet(flag)
+bool GetFlag(KeyboardEnableFlag flag) {
+  return KeyboardUIController::HasInstance()
+             ? KeyboardUIController::Get()->IsEnableFlagSet(flag)
              : false;
 }
 
-void SetOrClearEnableFlag(mojom::KeyboardEnableFlag flag, bool enabled) {
-  auto* controller = KeyboardController::Get();
+void SetOrClearEnableFlag(KeyboardEnableFlag flag, bool enabled) {
+  auto* controller = KeyboardUIController::Get();
   if (!controller)
     return;
   if (enabled)
@@ -39,32 +39,31 @@ void SetOrClearEnableFlag(mojom::KeyboardEnableFlag flag, bool enabled) {
 }  // namespace
 
 void SetAccessibilityKeyboardEnabled(bool enabled) {
-  SetOrClearEnableFlag(mojom::KeyboardEnableFlag::kAccessibilityEnabled,
-                       enabled);
+  SetOrClearEnableFlag(KeyboardEnableFlag::kAccessibilityEnabled, enabled);
 }
 
 bool GetAccessibilityKeyboardEnabled() {
-  return GetFlag(mojom::KeyboardEnableFlag::kAccessibilityEnabled);
+  return GetFlag(KeyboardEnableFlag::kAccessibilityEnabled);
 }
 
 void SetKeyboardEnabledFromShelf(bool enabled) {
-  SetOrClearEnableFlag(mojom::KeyboardEnableFlag::kShelfEnabled, enabled);
+  SetOrClearEnableFlag(KeyboardEnableFlag::kShelfEnabled, enabled);
 }
 
 bool GetKeyboardEnabledFromShelf() {
-  return GetFlag(mojom::KeyboardEnableFlag::kShelfEnabled);
+  return GetFlag(KeyboardEnableFlag::kShelfEnabled);
 }
 
 void SetTouchKeyboardEnabled(bool enabled) {
-  SetOrClearEnableFlag(mojom::KeyboardEnableFlag::kTouchEnabled, enabled);
+  SetOrClearEnableFlag(KeyboardEnableFlag::kTouchEnabled, enabled);
 }
 
 bool GetTouchKeyboardEnabled() {
-  return GetFlag(mojom::KeyboardEnableFlag::kTouchEnabled);
+  return GetFlag(KeyboardEnableFlag::kTouchEnabled);
 }
 
 bool IsKeyboardEnabled() {
-  return KeyboardController::Get()->IsEnabled();
+  return KeyboardUIController::Get()->IsEnabled();
 }
 
 }  // namespace keyboard

@@ -48,6 +48,142 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+bool IsPunctuationOrWhitespace(const int8_t character) {
+  switch (character) {
+    // Punctuation
+    case U_DASH_PUNCTUATION:
+    case U_START_PUNCTUATION:
+    case U_END_PUNCTUATION:
+    case U_CONNECTOR_PUNCTUATION:
+    case U_OTHER_PUNCTUATION:
+    // Whitespace
+    case U_CONTROL_CHAR:  // To escape the '\n' character.
+    case U_SPACE_SEPARATOR:
+    case U_LINE_SEPARATOR:
+    case U_PARAGRAPH_SEPARATOR:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+// Iterator for a string that processes punctuation and white space according to
+// |collapse_skippable_|.
+class NormalizingIterator {
+ public:
+  NormalizingIterator(
+      const base::StringPiece16& text,
+      AutofillProfileComparator::WhitespaceSpec whitespace_spec);
+  ~NormalizingIterator();
+
+  // Advances to the next non-skippable character in the string. Whether a
+  // punctuation or white space character is skippable depends on
+  // |collapse_skippable_|. Returns false if the end of the string has been
+  // reached.
+  void Advance();
+
+  // Returns true if the iterator has reached the end of the string.
+  bool End();
+
+  // Returns true if the iterator ends in skippable characters or if the
+  // iterator has reached the end of the string. Has the side effect of
+  // advancing the iterator to either the first skippable character or to the
+  // end of the string.
+  bool EndsInSkippableCharacters();
+
+  // Returns the next character that should be considered.
+  int32_t GetNextChar();
+
+ private:
+  // When |collapse_skippable_| is false, this member is initialized to false
+  // and is not updated.
+  //
+  // When |collapse_skippable_| is true, this member indicates whether the
+  // previous character was punctuation or white space so that one or more
+  // consecutive embedded punctuation and white space characters can be
+  // collapsed to a single white space.
+  bool previous_was_skippable_;
+
+  // True if punctuation and white space within the string should be collapsed
+  // to a single white space.
+  bool collapse_skippable_;
+
+  base::i18n::UTF16CharIterator iter_;
+};
+
+NormalizingIterator::NormalizingIterator(
+    const base::StringPiece16& text,
+    AutofillProfileComparator::WhitespaceSpec whitespace_spec)
+    : previous_was_skippable_(false),
+      collapse_skippable_(whitespace_spec ==
+                          AutofillProfileComparator::RETAIN_WHITESPACE),
+      iter_(base::i18n::UTF16CharIterator(text.data(), text.length())) {
+  int32_t character = iter_.get();
+
+  while (!iter_.end() && IsPunctuationOrWhitespace(u_charType(character))) {
+    iter_.Advance();
+    character = iter_.get();
+  }
+}
+
+NormalizingIterator::~NormalizingIterator() = default;
+
+void NormalizingIterator::Advance() {
+  if (!iter_.Advance()) {
+    return;
+  }
+
+  while (!End()) {
+    int32_t character = iter_.get();
+    bool is_punctuation_or_whitespace =
+        IsPunctuationOrWhitespace(u_charType(character));
+
+    if (!is_punctuation_or_whitespace) {
+      previous_was_skippable_ = false;
+      return;
+    }
+
+    if (is_punctuation_or_whitespace && !previous_was_skippable_ &&
+        collapse_skippable_) {
+      // Punctuation or white space within the string was found, e.g. the "," in
+      // the string "Hotel Schmotel, 3 Old Rd", and is after a non-skippable
+      // character.
+      previous_was_skippable_ = true;
+      return;
+    }
+
+    iter_.Advance();
+  }
+}
+
+bool NormalizingIterator::End() {
+  return iter_.end();
+}
+
+bool NormalizingIterator::EndsInSkippableCharacters() {
+  while (!End()) {
+    int32_t character = iter_.get();
+    if (!IsPunctuationOrWhitespace(u_charType(character))) {
+      return false;
+    }
+    iter_.Advance();
+  }
+  return true;
+}
+
+int32_t NormalizingIterator::GetNextChar() {
+  if (End()) {
+    return 0;
+  }
+
+  if (previous_was_skippable_) {
+    return ' ';
+  }
+
+  return iter_.get();
+}
+
 }  // namespace
 
 AutofillProfileComparator::AutofillProfileComparator(
@@ -71,15 +207,66 @@ AutofillProfileComparator::AutofillProfileComparator(
 
 AutofillProfileComparator::~AutofillProfileComparator() {}
 
+bool AutofillProfileComparator::Compare(base::StringPiece16 text1,
+                                        base::StringPiece16 text2,
+                                        WhitespaceSpec whitespace_spec) const {
+  if (text1.empty() && text2.empty()) {
+    return true;
+  }
+
+  NormalizingIterator normalizing_iter1{text1, whitespace_spec};
+  NormalizingIterator normalizing_iter2{text2, whitespace_spec};
+
+  while (!normalizing_iter1.End() && !normalizing_iter2.End()) {
+    icu::UnicodeString char1 =
+        icu::UnicodeString(normalizing_iter1.GetNextChar());
+    icu::UnicodeString char2 =
+        icu::UnicodeString(normalizing_iter2.GetNextChar());
+
+    if (transliterator_ == nullptr) {
+      if (char1.toLower() != char2.toLower()) {
+        return false;
+      }
+    } else {
+      transliterator_->transliterate(char1);
+      transliterator_->transliterate(char2);
+      if (char1 != char2) {
+        return false;
+      }
+    }
+    normalizing_iter1.Advance();
+    normalizing_iter2.Advance();
+  }
+
+  if (normalizing_iter1.EndsInSkippableCharacters() &&
+      normalizing_iter2.EndsInSkippableCharacters()) {
+    return true;
+  }
+
+  return false;
+}
+
+bool AutofillProfileComparator::HasOnlySkippableCharacters(
+    base::StringPiece16 text) const {
+  if (text.empty()) {
+    return true;
+  }
+
+  return NormalizingIterator(text,
+                             AutofillProfileComparator::DISCARD_WHITESPACE)
+      .End();
+}
+
 base::string16 AutofillProfileComparator::NormalizeForComparison(
     base::StringPiece16 text,
     AutofillProfileComparator::WhitespaceSpec whitespace_spec) const {
   // This algorithm is not designed to be perfect, we could get arbitrarily
   // fancy here trying to canonicalize address lines. Instead, this is designed
   // to handle common cases for all types of data (addresses and names) without
-  // the need of domain-specific logic.
+  // needing domain-specific logic.
   //
-  // 1. Convert punctuation to spaces and normalize all whitespace to spaces.
+  // 1. Convert punctuation to spaces and normalize all whitespace to spaces if
+  //    |whitespace_spec| is RETAIN_WHITESPACE.
   //    This will convert "Mid-Island Plz." -> "Mid Island Plz " (the trailing
   //    space will be trimmed off outside of the end of the loop).
   //
@@ -94,28 +281,14 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   bool previous_was_whitespace = (whitespace_spec == RETAIN_WHITESPACE);
   for (base::i18n::UTF16CharIterator iter(text.data(), text.length());
        !iter.end(); iter.Advance()) {
-    switch (u_charType(iter.get())) {
-      // Punctuation
-      case U_DASH_PUNCTUATION:
-      case U_START_PUNCTUATION:
-      case U_END_PUNCTUATION:
-      case U_CONNECTOR_PUNCTUATION:
-      case U_OTHER_PUNCTUATION:
-      // Whitespace
-      case U_CONTROL_CHAR:  // To escape the '\n' character.
-      case U_SPACE_SEPARATOR:
-      case U_LINE_SEPARATOR:
-      case U_PARAGRAPH_SEPARATOR:
-        if (!previous_was_whitespace && whitespace_spec == RETAIN_WHITESPACE) {
-          result.push_back(' ');
-          previous_was_whitespace = true;
-        }
-        break;
-
-      default:
-        previous_was_whitespace = false;
-        base::WriteUnicodeCharacter(iter.get(), &result);
-        break;
+    if (IsPunctuationOrWhitespace(u_charType(iter.get()))) {
+      if (!previous_was_whitespace && whitespace_spec == RETAIN_WHITESPACE) {
+        result.push_back(' ');
+        previous_was_whitespace = true;
+      }
+    } else {
+      previous_was_whitespace = false;
+      base::WriteUnicodeCharacter(iter.get(), &result);
     }
   }
 
@@ -129,17 +302,6 @@ base::string16 AutofillProfileComparator::NormalizeForComparison(
   icu::UnicodeString value = icu::UnicodeString(result.data(), result.length());
   transliterator_->transliterate(value);
   return base::i18n::UnicodeStringToString16(value);
-}
-
-bool AutofillProfileComparator::MatchesAfterNormalization(
-    base::StringPiece16 text1,
-    base::StringPiece16 text2) const {
-  return NormalizeForComparison(
-             text1,
-             AutofillProfileComparator::WhitespaceSpec::DISCARD_WHITESPACE) ==
-         NormalizeForComparison(
-             text2,
-             AutofillProfileComparator::WhitespaceSpec::DISCARD_WHITESPACE);
 }
 
 bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
@@ -186,23 +348,19 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
   const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
 
-  const base::string16& normalized_full_name_1 =
-      NormalizeForComparison(full_name_1);
-  const base::string16& normalized_full_name_2 =
-      NormalizeForComparison(full_name_2);
-
   const base::string16* best_name = nullptr;
-  if (normalized_full_name_1.empty()) {
+  if (HasOnlySkippableCharacters(full_name_1)) {
     // p1 has no name, so use the name from p2.
     best_name = &full_name_2;
-  } else if (normalized_full_name_2.empty()) {
+  } else if (HasOnlySkippableCharacters(full_name_2)) {
     // p2 has no name, so use the name from p1.
     best_name = &full_name_1;
   } else if (data_util::IsCJKName(full_name_1) &&
              data_util::IsCJKName(full_name_2)) {
     // Use a separate logic for CJK names.
     return MergeCJKNames(p1, p2, name_info);
-  } else if (IsNameVariantOf(normalized_full_name_1, normalized_full_name_2)) {
+  } else if (IsNameVariantOf(NormalizeForComparison(full_name_1),
+                             NormalizeForComparison(full_name_2))) {
     // full_name_2 is a variant of full_name_1.
     best_name = &full_name_1;
   } else {
@@ -389,12 +547,16 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   DCHECK(HaveMergeablePhoneNumbers(p1, p2))
       << "Phone numbers are not mergeable: '" << s1 << "' vs '" << s2 << "'";
 
-  if (s1.empty()) {
+  if (HasOnlySkippableCharacters(s1) && HasOnlySkippableCharacters(s2)) {
+    phone_number->SetRawInfo(kWholePhoneNumber, base::string16());
+  }
+
+  if (HasOnlySkippableCharacters(s1)) {
     phone_number->SetRawInfo(kWholePhoneNumber, s2);
     return true;
   }
 
-  if (s2.empty() || s1 == s2) {
+  if (HasOnlySkippableCharacters(s2) || s1 == s2) {
     phone_number->SetRawInfo(kWholePhoneNumber, s1);
     return true;
   }
@@ -466,7 +628,6 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   }
 
   phone_number->SetRawInfo(kWholePhoneNumber, UTF8ToUTF16(new_number));
-
   return true;
 }
 
@@ -684,8 +845,8 @@ AutofillProfileComparator::CompareTokens(base::StringPiece16 s1,
   std::set<base::StringPiece16> t1 = UniqueTokens(s1);
   std::set<base::StringPiece16> t2 = UniqueTokens(s2);
 
-  // Does s1 contains all of the tokens in s2? As a special case, return 0 if
-  // the two sets are exactly the same.
+  // Does s1 contain all of the tokens in s2? As a special case, return 0 if the
+  // two sets are exactly the same.
   if (std::includes(t1.begin(), t1.end(), t2.begin(), t2.end()))
     return t1.size() == t2.size() ? SAME_TOKENS : S1_CONTAINS_S2;
 
@@ -755,33 +916,21 @@ std::set<base::string16> AutofillProfileComparator::GetNamePartVariants(
 bool AutofillProfileComparator::HaveMergeableNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  base::string16 full_name_1 =
-      NormalizeForComparison(p1.GetInfo(NAME_FULL, app_locale_));
-  base::string16 full_name_2 =
-      NormalizeForComparison(p2.GetInfo(NAME_FULL, app_locale_));
+  base::string16 full_name_1 = p1.GetInfo(NAME_FULL, app_locale_);
+  base::string16 full_name_2 = p2.GetInfo(NAME_FULL, app_locale_);
 
-  if (full_name_1.empty() || full_name_2.empty() ||
-      full_name_1 == full_name_2) {
+  if (HasOnlySkippableCharacters(full_name_1) ||
+      HasOnlySkippableCharacters(full_name_2) ||
+      Compare(full_name_1, full_name_2)) {
     return true;
   }
 
-  if (data_util::IsCJKName(full_name_1) && data_util::IsCJKName(full_name_2)) {
-    return HaveMergeableCJKNames(p1, p2);
-  }
+  base::string16 canon_full_name_1 = NormalizeForComparison(full_name_1);
+  base::string16 canon_full_name_2 = NormalizeForComparison(full_name_2);
 
   // Is it reasonable to merge the names from p1 and p2.
-  return IsNameVariantOf(full_name_1, full_name_2) ||
-         IsNameVariantOf(full_name_2, full_name_1);
-}
-
-bool AutofillProfileComparator::HaveMergeableCJKNames(
-    const AutofillProfile& p1,
-    const AutofillProfile& p2) const {
-  base::string16 name_1 = NormalizeForComparison(
-      p1.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
-  base::string16 name_2 = NormalizeForComparison(
-      p2.GetInfo(NAME_FULL, app_locale_), DISCARD_WHITESPACE);
-  return name_1 == name_2;
+  return IsNameVariantOf(canon_full_name_1, canon_full_name_2) ||
+         IsNameVariantOf(canon_full_name_2, canon_full_name_1);
 }
 
 bool AutofillProfileComparator::HaveMergeableEmailAddresses(
@@ -796,12 +945,13 @@ bool AutofillProfileComparator::HaveMergeableEmailAddresses(
 bool AutofillProfileComparator::HaveMergeableCompanyNames(
     const AutofillProfile& p1,
     const AutofillProfile& p2) const {
-  const base::string16& company_name_1 =
-      NormalizeForComparison(p1.GetInfo(COMPANY_NAME, app_locale_));
-  const base::string16& company_name_2 =
-      NormalizeForComparison(p2.GetInfo(COMPANY_NAME, app_locale_));
-  return company_name_1.empty() || company_name_2.empty() ||
-         CompareTokens(company_name_1, company_name_2) != DIFFERENT_TOKENS;
+  const base::string16& company_name_1 = p1.GetInfo(COMPANY_NAME, app_locale_);
+  const base::string16& company_name_2 = p2.GetInfo(COMPANY_NAME, app_locale_);
+  return HasOnlySkippableCharacters(company_name_1) ||
+         HasOnlySkippableCharacters(company_name_2) ||
+         CompareTokens(NormalizeForComparison(company_name_1),
+                       NormalizeForComparison(company_name_2)) !=
+             DIFFERENT_TOKENS;
 }
 
 bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
@@ -813,8 +963,8 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   const base::string16& raw_phone_2 = p2.GetRawInfo(PHONE_HOME_WHOLE_NUMBER);
 
   // Are the two phone numbers trivially mergeable?
-  if (raw_phone_1.empty() || raw_phone_2.empty() ||
-      raw_phone_1 == raw_phone_2) {
+  if (HasOnlySkippableCharacters(raw_phone_1) ||
+      HasOnlySkippableCharacters(raw_phone_2) || raw_phone_1 == raw_phone_2) {
     return true;
   }
 
@@ -822,13 +972,11 @@ bool AutofillProfileComparator::HaveMergeablePhoneNumbers(
   // SHORT_NSN_MATCH and just call that instead of accessing the underlying
   // utility library directly?
 
-  // The phone number util library needs the numbers in utf8.
-  const std::string phone_1 = base::UTF16ToUTF8(raw_phone_1);
-  const std::string phone_2 = base::UTF16ToUTF8(raw_phone_2);
-
   // Parse and compare the phone numbers.
+  // The phone number util library needs the numbers in utf8.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
-  switch (phone_util->IsNumberMatchWithTwoStrings(phone_1, phone_2)) {
+  switch (phone_util->IsNumberMatchWithTwoStrings(
+      base::UTF16ToUTF8(raw_phone_1), base::UTF16ToUTF8(raw_phone_2))) {
     case PhoneNumberUtil::SHORT_NSN_MATCH:
     case PhoneNumberUtil::NSN_MATCH:
     case PhoneNumberUtil::EXACT_MATCH:

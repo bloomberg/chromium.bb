@@ -57,17 +57,16 @@
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
 #include "ios/web/common/origin_util.h"
+#import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#include "ios/web/public/favicon_status.h"
+#include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
-#import "ios/web/public/url_scheme_util.h"
-#import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -97,7 +96,7 @@ const NSTimeInterval kNoopInterval = 0.1;
 const NSTimeInterval kTimeoutInterval = 60.0;
 
 // Error messages used in Payment Request API.
-NSString* const kCancelErrorMessage = @"Request cancelled";
+NSString* const kCancelErrorMessage = @"User closed the Payment Request UI.";
 
 struct PendingPaymentResponse {
   std::string methodName;
@@ -136,6 +135,9 @@ struct PendingPaymentResponse {
   // Storage for data to return in the payment response, until we're ready to
   // send an actual PaymentResponse.
   PendingPaymentResponse _pendingPaymentResponse;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> _subscription;
 }
 
 // YES if Payment Request is enabled on the active web state.
@@ -309,7 +311,6 @@ struct PendingPaymentResponse {
     _paymentRequestJsManager = nil;
 
     _activeWebState->RemoveObserver(_activeWebStateObserver.get());
-    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
     _activeWebStateObserver.reset();
     _activeWebState = nullptr;
   }
@@ -320,7 +321,7 @@ struct PendingPaymentResponse {
     _paymentRequestJsManager = nil;
 
     _activeWebState->RemoveObserver(_activeWebStateObserver.get());
-    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+    _subscription.reset();
     _activeWebState = nullptr;
   }
 
@@ -329,17 +330,17 @@ struct PendingPaymentResponse {
   if (_activeWebState) {
     __weak PaymentRequestManager* weakSelf = self;
     auto callback = base::BindRepeating(
-        ^bool(const base::DictionaryValue& JSON, const GURL& originURL,
-              bool interacting, bool isMainFrame, web::WebFrame* senderFrame) {
-          if (!isMainFrame) {
-            // Payment request is only supported on main frame.
-            return false;
+        ^(const base::DictionaryValue& JSON, const GURL& originURL,
+          bool userIsInteracting, web::WebFrame* senderFrame) {
+          // Payment request is only supported on main frame.
+          if (senderFrame->IsMainFrame()) {
+            // |originURL| and |userIsInteracting| aren't used.
+            [weakSelf handleScriptCommand:JSON];
           }
-          // |originURL| and |userIsInteracting| aren't used.
-          return [weakSelf handleScriptCommand:JSON];
         });
     _activeWebState->AddObserver(_activeWebStateObserver.get());
-    _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
+    _subscription =
+        _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
 
     _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
@@ -680,7 +681,8 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   BOOL connectionSecure =
       _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   // Payment Request is only enabled in main frame.
-  web::WebFrame* main_frame = web::GetMainWebFrame(_activeWebState);
+  web::WebFrame* main_frame =
+      _activeWebState->GetWebFramesManager()->GetMainWebFrame();
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_activeWebState,
                                                            main_frame)
@@ -704,6 +706,11 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
 
     [self setUnblockEventQueueTimer];
     [self setUpdateEventTimeoutTimer];
+  } else {
+    paymentRequest->journey_logger().RecordTransactionAmount(
+        paymentRequest->payment_details().total->amount->currency,
+        paymentRequest->payment_details().total->amount->value,
+        false /*completed*/);
   }
 
   return YES;
@@ -862,6 +869,10 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     _pendingPaymentRequest->RecordUseStats();
     _pendingPaymentRequest->GetPrefService()->SetBoolean(
         payments::kPaymentsFirstTransactionCompleted, true);
+    _pendingPaymentRequest->journey_logger().RecordTransactionAmount(
+        _pendingPaymentRequest->payment_details().total->amount->currency,
+        _pendingPaymentRequest->payment_details().total->amount->value,
+        true /*completed*/);
     [self dismissPaymentRequestUIWithCallback:callback];
   }
 
@@ -913,6 +924,11 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
     LOG(ERROR) << errorMessage;
     return NO;
   }
+
+  _pendingPaymentRequest->journey_logger().RecordTransactionAmount(
+      _pendingPaymentRequest->payment_details().total->amount->currency,
+      _pendingPaymentRequest->payment_details().total->amount->value,
+      false /*completed*/);
 
   [_paymentRequestCoordinator updatePaymentDetails:paymentDetails];
 

@@ -15,10 +15,10 @@
 #ifndef sw_VertexRoutine_hpp
 #define sw_VertexRoutine_hpp
 
-#include "Device/Color.hpp"
-#include "Device/VertexProcessor.hpp"
 #include "ShaderCore.hpp"
 #include "SpirvShader.hpp"
+#include "Device/Color.hpp"
+#include "Device/VertexProcessor.hpp"
 
 namespace vk
 {
@@ -27,7 +27,7 @@ namespace vk
 
 namespace sw
 {
-	class VertexRoutinePrototype : public Function<Void(Pointer<Byte>, Pointer<Byte>, Pointer<Byte>, Pointer<Byte>)>
+	class VertexRoutinePrototype : public Function<Void(Pointer<Byte>, Pointer<UInt>, Pointer<Byte>, Pointer<Byte>)>
 	{
 	public:
 		VertexRoutinePrototype() : vertex(Arg<0>()), batch(Arg<1>()), task(Arg<2>()), data(Arg<3>()) {}
@@ -35,7 +35,7 @@ namespace sw
 
 	protected:
 		Pointer<Byte> vertex;
-		Pointer<Byte> batch;
+		Pointer<UInt> batch;
 		Pointer<Byte> task;
 		Pointer<Byte> data;
 	};
@@ -62,15 +62,15 @@ namespace sw
 		SpirvShader const * const spirvShader;
 
 	private:
-		virtual void program(UInt &index) = 0;
+		virtual void program(Pointer<UInt> &batch) = 0;
 
 		typedef VertexProcessor::State::Input Stream;
 
-		Vector4f readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, const UInt &index);
-		void readInput(UInt &index);
+		Vector4f readStream(Pointer<Byte> &buffer, UInt &stride, const Stream &stream, Pointer<UInt> &batch);
+		void readInput(Pointer<UInt> &batch);
 		void computeClipFlags();
-		void writeCache(Pointer<Byte> &cacheLine);
-		void writeVertex(const Pointer<Byte> &vertex, Pointer<Byte> &cacheLine);
+		void writeCache(Pointer<Byte> &vertexCache, Pointer<UInt> &tagCache, Pointer<UInt> &batch);
+		void writeVertex(const Pointer<Byte> &vertex, Pointer<Byte> &cacheEntry);
 	};
 }
 

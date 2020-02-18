@@ -27,10 +27,12 @@
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {
@@ -120,7 +122,9 @@ base::FilePath ProfileHelper::GetProfilePathByUserIdHash(
   // you start a guest session or Chrome crashes. Be sure to add
   //   "--login-profile=user@example.com-hash"
   // to the command line flags.
-  DCHECK(!user_id_hash.empty());
+  DCHECK(!user_id_hash.empty())
+      << "user_id_hash is empty, probably need to add "
+         "--login-profile=user@example.com-hash to command line parameters";
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath profile_path = profile_manager->user_data_dir();
 
@@ -178,6 +182,25 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
   return profile &&
          profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+}
+
+// static
+bool ProfileHelper::IsSigninProfileInitialized() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager &&
+         profile_manager->GetProfileByPath(GetSigninProfileDir());
+}
+
+// static
+bool ProfileHelper::SigninProfileHasLoginScreenExtensions() {
+  DCHECK(IsSigninProfileInitialized());
+  const Profile* profile = GetSigninProfile();
+  const PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs->GetInitializationStatus() ==
+         PrefService::INITIALIZATION_STATUS_SUCCESS);
+  const base::DictionaryValue* pref_value =
+      prefs->GetDictionary(extensions::pref_names::kLoginScreenExtensions);
+  return !pref_value->DictEmpty();
 }
 
 // static
@@ -538,7 +561,6 @@ void ProfileHelper::FlushProfile(Profile* profile) {
   excludes.push_back(base::FilePath(chrome::kPreferencesFilename));
   // Do not flush cache files.
   excludes.push_back(base::FilePath(chrome::kCacheDirname));
-  excludes.push_back(base::FilePath(chrome::kMediaCacheDirname));
   excludes.push_back(base::FilePath(FILE_PATH_LITERAL("GPUCache")));
   // Do not flush user Downloads.
   excludes.push_back(

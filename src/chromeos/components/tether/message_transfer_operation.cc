@@ -172,8 +172,8 @@ void MessageTransferOperation::UnregisterDevice(
 
   remote_device_to_connection_attempt_delegate_map_.erase(remote_device);
 
-  if (base::ContainsKey(remote_device_to_client_channel_observer_map_,
-                        remote_device)) {
+  if (base::Contains(remote_device_to_client_channel_observer_map_,
+                     remote_device)) {
     remote_device_to_client_channel_observer_map_.erase(remote_device);
   }
 
@@ -184,8 +184,8 @@ void MessageTransferOperation::UnregisterDevice(
 int MessageTransferOperation::SendMessageToDevice(
     multidevice::RemoteDeviceRef remote_device,
     std::unique_ptr<MessageWrapper> message_wrapper) {
-  DCHECK(base::ContainsKey(remote_device_to_client_channel_observer_map_,
-                           remote_device));
+  DCHECK(base::Contains(remote_device_to_client_channel_observer_map_,
+                        remote_device));
   int sequence_number = next_message_sequence_number_++;
   bool success =
       remote_device_to_client_channel_observer_map_[remote_device]

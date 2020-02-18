@@ -57,12 +57,13 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
+#include "chrome/browser/component_updater/on_device_head_suggest_component_installer.h"
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#include "chrome/browser/component_updater/safety_tips_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
-#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -148,9 +149,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/signin/core/browser/account_consistency_method.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/field_trial_config/field_trial_util.h"
@@ -170,13 +169,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/profiling.h"
-#include "content/public/common/service_manager_connection.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/localized_strings.h"
@@ -188,6 +187,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/layout.h"
@@ -341,6 +341,10 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -485,11 +489,14 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     RegisterPnaclComponent(cus);
 #endif  // BUILDFLAG(ENABLE_NACL) && !defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   component_updater::SupervisedUserWhitelistInstaller* whitelist_installer =
       g_browser_process->supervised_user_whitelist_installer();
   whitelist_installer->RegisterComponents();
+#endif
 
   RegisterSubresourceFilterComponent(cus);
+  RegisterOnDeviceHeadSuggestComponent(cus);
   RegisterOptimizationHintsComponent(cus, profile_prefs);
 
   base::FilePath path;
@@ -546,6 +553,8 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     component_updater::RegisterVrAssetsComponent(cus);
   }
 #endif
+
+  RegisterSafetyTipsComponent(cus, path);
 }
 
 #if !defined(OS_ANDROID)
@@ -636,14 +645,6 @@ bool IsWebDriverOverridingPolicy(PrefService* local_state) {
                 prefs::kWebDriverOverridesIncompatiblePolicies)));
 }
 
-// Sets up the ThreadProfiler for the browser process, runs it, and returns the
-// profiler.
-std::unique_ptr<ThreadProfiler> CreateAndStartBrowserMainThreadProfiler() {
-  ThreadProfiler::SetBrowserProcessReceiverCallback(base::BindRepeating(
-      &metrics::CallStackProfileMetricsProvider::ReceiveProfile));
-  return ThreadProfiler::CreateAndStartOnMainThread();
-}
-
 }  // namespace
 
 // BrowserMainParts ------------------------------------------------------------
@@ -654,7 +655,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
-      ui_thread_profiler_(CreateAndStartBrowserMainThreadProfiler()),
       heap_profiler_controller_(std::make_unique<HeapProfilerController>()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
@@ -867,8 +867,7 @@ void ChromeBrowserMainParts::PreMainMessageLoopStart() {
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostMainMessageLoopStart");
 
-  ui_thread_profiler_->SetMainThreadTaskRunner(
-      base::ThreadTaskRunnerHandle::Get());
+  ThreadProfiler::SetMainThreadTaskRunner(base::ThreadTaskRunnerHandle::Get());
 
   heap_profiler_controller_->Start();
 
@@ -992,10 +991,6 @@ int ChromeBrowserMainParts::ApplyFirstRunPrefs() {
         master_prefs_->suppress_default_browser_prompt_for_version);
   }
 
-#if defined(OS_WIN)
-  if (!master_prefs_->welcome_page_on_os_upgrade_enabled)
-    local_state->SetBoolean(prefs::kWelcomePageOnOSUpgradeEnabled, false);
-#endif
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
@@ -1187,19 +1182,13 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 #if !defined(OS_ANDROID)
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&tracing::TracingSamplerProfiler::CreateOnChildThread));
+      base::BindOnce(&tracing::TracingSamplerProfiler::CreateForCurrentThread));
 #endif
-}
 
-void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
-    content::ServiceManagerConnection* connection) {
-  // This should be called after the creation of the tracing controller. The
-  // tracing controller is created when the service manager connection is
-  // started.
   tracing::SetupBackgroundTracingFieldTrial();
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->ServiceManagerConnectionStarted(connection);
+    chrome_extra_parts_[i]->PostCreateThreads();
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
@@ -1293,9 +1282,9 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {
     web_usb_detector_.reset(new WebUsbDetector());
-    BrowserThread::PostAfterStartupTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
-        base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI}),
+        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&WebUsbDetector::Initialize,
                        base::Unretained(web_usb_detector_.get())));
   }
@@ -1503,12 +1492,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       case TryChromeDialog::NOT_NOW:
         return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
       case TryChromeDialog::OPEN_CHROME_WELCOME:
-        browser_creator_->set_welcome_back_page(
-            StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard);
-        break;
-      case TryChromeDialog::OPEN_CHROME_WELCOME_WIN10:
-        browser_creator_->set_welcome_back_page(
-            StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10);
+        browser_creator_->set_welcome_back_page(true);
         break;
       case TryChromeDialog::OPEN_CHROME_DEFAULT:
         break;
@@ -1574,9 +1558,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       language::GetOverrideLanguageModel() ==
           language::OverrideLanguageModel::GEO) {
     language::GeoLanguageProvider::GetInstance()->StartUp(
-        content::ServiceManagerConnection::GetForProcess()
-            ->GetConnector()
-            ->Clone(),
+        content::GetSystemConnector()->Clone(),
         browser_process_->local_state());
   }
 

@@ -114,23 +114,22 @@ class OffscreenTab : protected content::WebContentsDelegate,
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) final;
-  bool EmbedsFullscreenWidget() const final;
+  bool EmbedsFullscreenWidget() final;
   void EnterFullscreenModeForTab(
       content::WebContents* contents,
       const GURL& origin,
       const blink::WebFullscreenOptions& options) final;
   void ExitFullscreenModeForTab(content::WebContents* contents) final;
-  bool IsFullscreenForTabOrPending(
-      const content::WebContents* contents) const final;
+  bool IsFullscreenForTabOrPending(const content::WebContents* contents) final;
   blink::WebDisplayMode GetDisplayMode(
-      const content::WebContents* contents) const final;
+      const content::WebContents* contents) final;
   void RequestMediaAccessPermission(
       content::WebContents* contents,
       const content::MediaStreamRequest& request,
       content::MediaResponseCallback callback) final;
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
-                                  blink::MediaStreamType type) final;
+                                  blink::mojom::MediaStreamType type) final;
 
   // content::WebContentsObserver overrides
   void DidShowFullscreenWidget() final;

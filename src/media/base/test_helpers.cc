@@ -136,7 +136,7 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
   gfx::Size natural_size = coded_size;
 
   return VideoDecoderConfig(
-      codec, profile, PIXEL_FORMAT_I420, color_space,
+      codec, profile, VideoDecoderConfig::AlphaMode::kIsOpaque, color_space,
       VideoTransformation(rotation), coded_size, visible_rect, natural_size,
       EmptyExtraData(),
       is_encrypted ? AesCtrEncryptionScheme() : Unencrypted());
@@ -160,7 +160,7 @@ static VideoCodecProfile MinProfile(VideoCodec codec) {
     case kCodecHEVC:
       return HEVCPROFILE_MIN;
     case kCodecDolbyVision:
-      return DOLBYVISION_MIN;
+      return DOLBYVISION_PROFILE0;
     case kCodecAV1:
       return AV1PROFILE_MIN;
   }

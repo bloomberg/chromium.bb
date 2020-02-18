@@ -768,6 +768,14 @@ class GooglePlayStoreDesktopStory(_MediaBrowsingStory):
     action_runner.Wait(2)
     action_runner.ScrollPage()
 
+  def __init__(self, story_set, take_memory_measurement,
+               extra_browser_args=None, name_suffix=''):
+    self.NAME = self.NAME + name_suffix
+    super(GooglePlayStoreDesktopStory, self).__init__(story_set,
+      take_memory_measurement,
+      extra_browser_args=extra_browser_args)
+
+
 
 ##############################################################################
 # Emerging market browsing stories.

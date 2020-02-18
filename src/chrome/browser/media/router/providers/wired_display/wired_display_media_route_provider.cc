@@ -111,7 +111,7 @@ void WiredDisplayMediaRouteProvider::CreateRoute(
     base::TimeDelta timeout,
     bool incognito,
     CreateRouteCallback callback) {
-  DCHECK(!base::ContainsKey(presentations_, presentation_id));
+  DCHECK(!base::Contains(presentations_, presentation_id));
   base::Optional<Display> display = GetDisplayBySinkId(sink_id);
   if (!display) {
     std::move(callback).Run(base::nullopt, nullptr,
@@ -344,11 +344,11 @@ void WiredDisplayMediaRouteProvider::Presentation::UpdatePresentationTitle(
 }
 
 void WiredDisplayMediaRouteProvider::Presentation::SetMojoConnections(
-    mojom::MediaControllerRequest media_controller,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
     mojom::MediaStatusObserverPtr observer) {
   // This provider does not support media controls, so we do not bind
   // |media_controller| to a controller implementation.
-  media_controller_request_ = std::move(media_controller);
+  media_controller_receiver_ = std::move(media_controller);
 
   media_status_observer_ = std::move(observer);
   media_status_observer_->OnMediaStatusUpdated(status_);
@@ -358,7 +358,7 @@ void WiredDisplayMediaRouteProvider::Presentation::SetMojoConnections(
 }
 
 void WiredDisplayMediaRouteProvider::Presentation::ResetMojoConnections() {
-  media_controller_request_ = nullptr;
+  media_controller_receiver_.reset();
   media_status_observer_ = nullptr;
 }
 

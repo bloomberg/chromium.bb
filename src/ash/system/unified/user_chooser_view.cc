@@ -78,8 +78,8 @@ AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
     : Button(this), controller_(controller) {
   SetID(VIEW_ID_ADD_USER_BUTTON);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(kUnifiedTopShortcutSpacing),
-      kUnifiedTopShortcutSpacing));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
 
   auto* icon = new views::ImageView;
   icon->SetImage(
@@ -147,7 +147,8 @@ views::View* CreateUserAvatarView(int user_index) {
 
   if (user_session->user_info.type == user_manager::USER_TYPE_GUEST) {
     // In guest mode, the user avatar is just a disabled button pod.
-    return new TopShortcutButton(kSystemMenuGuestIcon);
+    return new TopShortcutButton(kSystemMenuGuestIcon,
+                                 IDS_ASH_STATUS_TRAY_GUEST_LABEL);
   } else {
     auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
     image_view->set_can_process_events_within_subtree(false);
@@ -196,8 +197,8 @@ UserItemButton::UserItemButton(int user_index,
             VIEW_ID_USER_ITEM_BUTTON_START + user_index);
   SetID(VIEW_ID_USER_ITEM_BUTTON_START + user_index);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
-      kUnifiedTopShortcutSpacing));
+      views::BoxLayout::Orientation::kHorizontal,
+      gfx::Insets(0, kUnifiedTopShortcutSpacing), kUnifiedTopShortcutSpacing));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   layout->set_minimum_cross_axis_size(kUnifiedUserChooserRowHeight);
@@ -205,8 +206,9 @@ UserItemButton::UserItemButton(int user_index,
 
   views::View* vertical_labels = new views::View;
   vertical_labels->set_can_process_events_within_subtree(false);
-  auto* vertical_layout = vertical_labels->SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* vertical_layout =
+      vertical_labels->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
   vertical_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
@@ -247,22 +249,22 @@ UserItemButton::UserItemButton(int user_index,
   SetFocusForPlatform();
 }
 
-void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
-  capture_icon_->SetVisible(capture_state != mojom::MediaCaptureState::NONE);
+void UserItemButton::SetCaptureState(MediaCaptureState capture_state) {
+  capture_icon_->SetVisible(capture_state != MediaCaptureState::kNone);
   Layout();
 
   int res_id = 0;
   switch (capture_state) {
-    case mojom::MediaCaptureState::AUDIO_VIDEO:
+    case MediaCaptureState::kAudioVideo:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
       break;
-    case mojom::MediaCaptureState::AUDIO:
+    case MediaCaptureState::kAudio:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
       break;
-    case mojom::MediaCaptureState::VIDEO:
+    case MediaCaptureState::kVideo:
       res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
       break;
-    case mojom::MediaCaptureState::NONE:
+    case MediaCaptureState::kNone:
       break;
   }
   if (res_id)
@@ -286,8 +288,8 @@ void UserItemButton::ButtonPressed(views::Button* sender,
 
 UserChooserView::UserChooserView(
     UserChooserDetailedViewController* controller) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
   const int num_users =
       Shell::Get()->session_controller()->NumberOfLoggedInUsers();
   for (int i = 0; i < num_users; ++i) {
@@ -330,7 +332,7 @@ UserChooserView::~UserChooserView() {
 }
 
 void UserChooserView::OnMediaCaptureChanged(
-    const base::flat_map<AccountId, mojom::MediaCaptureState>& capture_states) {
+    const base::flat_map<AccountId, MediaCaptureState>& capture_states) {
   if (user_item_buttons_.size() != capture_states.size())
     return;
 

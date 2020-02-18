@@ -81,6 +81,8 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
   bool SystemDarkModeEnabled() const override;
+  bool SystemDarkModeSupported() const override;
+  PreferredColorScheme CalculatePreferredColorScheme() const override;
 
  protected:
   friend class NativeTheme;
@@ -90,6 +92,8 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   NativeThemeWin();
   ~NativeThemeWin() override;
+
+  mutable std::map<int, SkColor> system_colors_;
 
  private:
   bool IsUsingHighContrastThemeInternal() const;
@@ -326,7 +330,11 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // The system color change listener and the updated cache of system colors.
   gfx::ScopedSysColorChangeListener color_change_listener_;
-  mutable std::map<int, SkColor> system_colors_;
+
+  // Used to notify the web native theme of changes to dark mode, high
+  // contrast, and preferred color scheme.
+  std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
+      color_scheme_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeWin);
 };

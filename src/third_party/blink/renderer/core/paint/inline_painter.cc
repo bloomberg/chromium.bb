@@ -52,13 +52,13 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
       if (fragment->PhysicalFragment().IsText()) {
         const auto& text_fragment =
             To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
-        NodeHolder holder;
+        DOMNodeId node_id = kInvalidDOMNodeId;
         if (auto* node = text_fragment.GetNode()) {
           if (node->GetLayoutObject()->IsText())
-            holder = ToLayoutText(node->GetLayoutObject())->EnsureNodeHolder();
+            node_id = ToLayoutText(node->GetLayoutObject())->EnsureNodeId();
         }
         NGTextFragmentPainter(*fragment).Paint(paint_info, child_offset,
-                                               holder);
+                                               node_id);
 
       } else {
         NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
@@ -80,7 +80,7 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   }
 
   LineBoxListPainter(*layout_inline_.LineBoxes())
-      .Paint(layout_inline_, local_paint_info, paint_offset.ToLayoutPoint());
+      .Paint(layout_inline_, local_paint_info, paint_offset);
 }
 
 }  // namespace blink

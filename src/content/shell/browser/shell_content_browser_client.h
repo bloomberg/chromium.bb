@@ -49,7 +49,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       const service_manager::Identity& id) override;
   base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
       base::StringPiece name) override;
-  std::vector<service_manager::Manifest> GetExtraServiceManifests() override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetAcceptLangs(BrowserContext* context) override;
@@ -65,14 +64,13 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       storage::OptionalQuotaSettingsCallback callback) override;
   GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
-  void SelectClientCertificate(
+  base::OnceClosure SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       net::ClientCertIdentityList client_certs,
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
-  net::NetLog* GetNetLog() override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
@@ -89,8 +87,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
 
-  std::string GetUserAgent() const override;
-  blink::UserAgentMetadata GetUserAgentMetadata() const override;
+  std::string GetUserAgent() override;
+  blink::UserAgentMetadata GetUserAgentMetadata() override;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
@@ -127,7 +125,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       base::OnceCallback<bool(const service_manager::Identity&)> callback) {
     should_terminate_on_service_quit_callback_ = std::move(callback);
   }
-  void set_login_request_callback(base::OnceClosure login_request_callback) {
+  void set_login_request_callback(
+      base::OnceCallback<void(bool is_main_frame)> login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
 
@@ -147,7 +146,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::OnceClosure select_client_certificate_callback_;
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;
-  base::OnceClosure login_request_callback_;
+  base::OnceCallback<void(bool is_main_frame)> login_request_callback_;
 
   std::unique_ptr<
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>>

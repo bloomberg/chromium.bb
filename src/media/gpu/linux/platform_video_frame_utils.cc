@@ -11,10 +11,12 @@
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/format_utils.h"
+#include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/native_pixmap.h"
 
 #if defined(USE_OZONE)
-#include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -35,26 +37,25 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   DCHECK(factory);
 
-  gfx::BufferFormat buffer_format =
-      VideoPixelFormatToGfxBufferFormat(pixel_format);
+  auto buffer_format = VideoPixelFormatToGfxBufferFormat(pixel_format);
+  if (!buffer_format)
+    return nullptr;
+
   auto pixmap =
       factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, VK_NULL_HANDLE,
-                                  coded_size, buffer_format, buffer_usage);
+                                  coded_size, *buffer_format, buffer_usage);
   if (!pixmap)
     return nullptr;
 
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   std::vector<VideoFrameLayout::Plane> planes(num_planes);
-  std::vector<size_t> buffer_sizes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);
-    buffer_sizes[i] = planes[i].offset +
-                      planes[i].stride * VideoFrame::Rows(i, pixel_format,
-                                                          coded_size.height());
+    planes[i].size = pixmap->GetDmaBufPlaneSize(i);
   }
   auto layout = VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes), std::move(buffer_sizes),
+      pixel_format, coded_size, std::move(planes),
       VideoFrameLayout::kBufferAddressAlignment,
       pixmap->GetBufferFormatModifier());
 
@@ -102,6 +103,19 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
   return nullptr;
 }
 
+base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
+    VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    gfx::BufferUsage buffer_usage) {
+  // |visible_rect| and |natural_size| are not matter here. |coded_size| is set
+  // as a dummy variable.
+  auto frame =
+      CreatePlatformVideoFrame(pixel_format, coded_size, gfx::Rect(coded_size),
+                               coded_size, base::TimeDelta(), buffer_usage);
+  return frame ? base::make_optional<VideoFrameLayout>(frame->layout())
+               : base::nullopt;
+}
+
 gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     const VideoFrame* video_frame) {
   DCHECK(video_frame);
@@ -113,21 +127,41 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   std::vector<base::ScopedFD> duped_fds =
       DuplicateFDs(video_frame->DmabufFds());
   const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  const size_t num_buffers = video_frame->layout().buffer_sizes().size();
   DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
   handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
   for (size_t i = 0; i < num_planes; ++i) {
     const auto& plane = video_frame->layout().planes()[i];
-    size_t buffer_size = 0;
-    if (i < num_buffers)
-      buffer_size = video_frame->layout().buffer_sizes()[i];
     handle.native_pixmap_handle.planes.emplace_back(
-        plane.stride, plane.offset, buffer_size, std::move(duped_fds[i]));
+        plane.stride, plane.offset, plane.size, std::move(duped_fds[i]));
   }
 #else
   NOTREACHED();
 #endif  // defined(OS_LINUX)
   return handle;
+}
+
+scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf(
+    const VideoFrame* video_frame) {
+  DCHECK(video_frame);
+
+  // Create a native pixmap from the frame's memory buffer handle.
+  gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
+      CreateGpuMemoryBufferHandle(video_frame);
+  DCHECK(!gpu_memory_buffer_handle.is_null());
+
+  auto buffer_format =
+      VideoPixelFormatToGfxBufferFormat(video_frame->layout().format());
+  if (!buffer_format) {
+    VLOGF(1) << "Unexpected video frame format";
+    return nullptr;
+  }
+
+  auto native_pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+      video_frame->coded_size(), *buffer_format,
+      std::move(gpu_memory_buffer_handle.native_pixmap_handle));
+
+  DCHECK(native_pixmap->AreDmaBufFdsValid());
+  return native_pixmap;
 }
 
 }  // namespace media

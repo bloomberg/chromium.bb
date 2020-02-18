@@ -125,10 +125,6 @@ typedef NS_ENUM(NSInteger, ConfirmInfoBarUITags) {
   }
 }
 
-- (ConfirmInfoBarView*)view {
-  return _infoBarView;
-}
-
 #pragma mark - Handling of User Events
 
 - (void)infoBarButtonDidPress:(id)sender {

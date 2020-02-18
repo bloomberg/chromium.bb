@@ -192,7 +192,7 @@ bool ExtensionManagement::IsAllowedManifestType(
     return true;
   const std::vector<Manifest::Type>& allowed_types =
       global_settings_->allowed_types;
-  return base::ContainsValue(allowed_types, manifest_type);
+  return base::Contains(allowed_types, manifest_type);
 }
 
 APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
@@ -314,7 +314,6 @@ bool ExtensionManagement::CheckMinimumVersion(
 
 void ExtensionManagement::Refresh() {
   TRACE_EVENT0("browser,startup", "ExtensionManagement::Refresh");
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ExtensionManagement_RefreshTime");
   // Load all extension management settings preferences.
   const base::ListValue* allowed_list_pref =
       static_cast<const base::ListValue*>(LoadPreference(

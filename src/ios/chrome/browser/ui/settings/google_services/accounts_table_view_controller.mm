@@ -8,6 +8,8 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "components/signin/public/identity_manager/identity_manager.h"
+#import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/feature.h"
@@ -43,8 +45,6 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_browser_opener.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "net/base/mac/url_conversions.h"
-#import "services/identity/public/cpp/identity_manager.h"
-#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ios::ChromeBrowserState* _browserState;  // weak
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   // Modal alert for sign out.
   AlertCoordinator* _alertCoordinator;
@@ -96,7 +96,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Whether the view controller is currently being dismissed and new dismiss
   // requests should be ignored.
   BOOL _isBeingDismissed;
-  __weak UIViewController* _settingsDetails;
+  ios::DismissASMViewControllerBlock _dimissAccountDetailsViewControllerBlock;
   ResizedAvatarCache* _avatarCache;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
 
@@ -140,7 +140,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       _syncObserver.reset(new SyncObserverBridge(self, syncService));
     }
     _identityManagerObserver =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(_browserState), self);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -219,7 +219,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierAccounts];
   [model setHeader:[self header]
       forSectionWithIdentifier:SectionIdentifierAccounts];
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
@@ -431,9 +431,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)onEndBatchOfRefreshTokenStateChanges {
   [self reloadData];
   [self popViewIfSignedOut];
-  if (![self authService] -> IsAuthenticated() && _settingsDetails) {
-    [_settingsDetails dismissViewControllerAnimated:YES completion:nil];
-    _settingsDetails = nil;
+  if (![self authService] -> IsAuthenticated() &&
+                                 _dimissAccountDetailsViewControllerBlock) {
+    _dimissAccountDetailsViewControllerBlock(/*animated=*/YES);
+    _dimissAccountDetailsViewControllerBlock = nil;
   }
 }
 
@@ -463,27 +464,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   base::RecordAction(base::UserMetricsAction(
       "Signin_AccountSettings_GoogleActivityControlsClicked"));
-  UINavigationController* settingsDetails =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->CreateWebAndAppSettingDetailsController(
-              [self authService] -> GetAuthenticatedIdentity(), self);
-  UIImage* closeIcon = [ChromeIcon closeIcon];
-  SEL action = @selector(closeGoogleActivitySettings:);
-  [settingsDetails.topViewController navigationItem].leftBarButtonItem =
-      [ChromeIcon templateBarButtonItemWithImage:closeIcon
-                                          target:self
-                                          action:action];
-  [self presentViewController:settingsDetails animated:YES completion:nil];
-
-  // Keep a weak reference on the settings details, to be able to dismiss it
-  // when the primary account is removed.
-  _settingsDetails = settingsDetails;
-}
-
-- (void)closeGoogleActivitySettings:(id)sender {
-  DCHECK(_settingsDetails);
-  [self dismissViewControllerAnimated:YES completion:nil];
+  ios::GetChromeBrowserProvider()
+      ->GetChromeIdentityService()
+      ->PresentWebAndAppSettingDetailsController(
+          [self authService] -> GetAuthenticatedIdentity(), self, YES);
 }
 
 #pragma mark - Authentication operations
@@ -523,19 +507,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAccountDetails:(ChromeIdentity*)identity {
   if ([_alertCoordinator isVisible])
     return;
-  UIViewController* accountDetails =
+  _dimissAccountDetailsViewControllerBlock =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateAccountDetailsController(identity, self);
-  if (!accountDetails) {
-    // Failed to create a new account details. Ignored.
-    return;
-  }
-  [self presentViewController:accountDetails animated:YES completion:nil];
-
-  // Keep a weak reference on the account details, to be able to dismiss it
-  // when the primary account is removed.
-  _settingsDetails = accountDetails;
+          ->PresentAccountDetailsController(identity, self, /*animated=*/YES);
 }
 
 - (void)showDisconnect {
@@ -551,7 +526,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* continueButtonTitle =
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   if ([self authService] -> IsAuthenticatedIdentityManaged()) {
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
     base::Optional<AccountInfo> accountInfo =
         identityManager->FindExtendedAccountInfoForAccount(

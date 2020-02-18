@@ -55,7 +55,7 @@ class AssistantFormSelectionInput extends AssistantFormInput {
 
             TextView choiceView = new TextView(context);
             ApiCompatibilityUtils.setTextAppearance(
-                    choiceView, org.chromium.chrome.R.style.TextAppearance_BlackCaptionDefault);
+                    choiceView, R.style.TextAppearance_BlackCaptionDefault);
             choiceView.setGravity(Gravity.CENTER_VERTICAL);
             choiceView.setText(choice.getLabel());
 

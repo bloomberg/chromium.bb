@@ -6,12 +6,11 @@
 
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/accelerometer/accelerometer_types.h"
-#include "ash/home_screen/home_screen_controller.h"
-#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
@@ -218,9 +217,11 @@ ScreenOrientationController::ScreenOrientationController()
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
+  Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -277,9 +278,7 @@ void ScreenOrientationController::UnlockAll() {
 }
 
 bool ScreenOrientationController::ScreenOrientationProviderSupported() const {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 bool ScreenOrientationController::IsUserLockedOrientationPortrait() {
@@ -342,7 +341,7 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (base::ContainsKey(lock_info_map_, window))
+  if (base::Contains(lock_info_map_, window))
     ApplyLockForActiveWindow();
 }
 
@@ -415,6 +414,14 @@ void ScreenOrientationController::OnTabletModeEnding() {
 
 void ScreenOrientationController::OnTabletModeEnded() {
   UnlockAll();
+}
+
+void ScreenOrientationController::OnSplitViewModeStarted() {
+  ApplyLockForActiveWindow();
+}
+
+void ScreenOrientationController::OnSplitViewModeEnded() {
+  ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::SetDisplayRotation(
@@ -591,29 +598,22 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
     return;
 
   Shell* shell = Shell::Get();
+
+  if (shell->split_view_controller()->InTabletSplitViewMode()) {
+    // While split view is enabled, ignore rotation lock set by windows.
+    LockRotationToOrientation(user_locked_orientation_);
+    return;
+  }
+
   MruWindowTracker::WindowList mru_windows(
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
 
-  bool has_visible_window = false;
   for (auto* window : mru_windows) {
     if (!window->TargetVisibility())
       continue;
-    has_visible_window = true;
+
     if (ApplyLockForWindowIfPossible(window))
       return;
-  }
-
-  // No visible MRU window means that the home screen might be showing. Check
-  // if it has an orientation lock.
-  if (!has_visible_window) {
-    DCHECK(shell->home_screen_controller()->IsHomeScreenAvailable());
-    const aura::Window* home_screen_window =
-        shell->home_screen_controller()->delegate()->GetHomeScreenWindow();
-    if (home_screen_window &&
-        shell->activation_client()->GetActiveWindow() == home_screen_window &&
-        ApplyLockForWindowIfPossible(home_screen_window)) {
-      return;
-    }
   }
 
   LockRotationToOrientation(user_locked_orientation_);

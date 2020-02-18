@@ -21,11 +21,6 @@
 
 namespace sw
 {
-	extern TranscendentalPrecision logPrecision;
-	extern TranscendentalPrecision expPrecision;
-	extern TranscendentalPrecision rcpPrecision;
-	extern TranscendentalPrecision rsqPrecision;
-
 	Vector4s::Vector4s()
 	{
 	}
@@ -140,7 +135,7 @@ namespace sw
 		return ii * ff;
 	}
 
-	Float4 logarithm2(RValue<Float4> x, bool absolute, bool pp)
+	Float4 logarithm2(RValue<Float4> x, bool pp)
 	{
 		Float4 x0;
 		Float4 x1;
@@ -171,35 +166,26 @@ namespace sw
 		return exponential2(Float4(1.44269504f) * x, pp);   // 1/ln(2)
 	}
 
-	Float4 logarithm(RValue<Float4> x, bool absolute, bool pp)
+	Float4 logarithm(RValue<Float4> x, bool pp)
 	{
 		// FIXME: Propagate the constant
-		return Float4(6.93147181e-1f) * logarithm2(x, absolute, pp);   // ln(2)
+		return Float4(6.93147181e-1f) * logarithm2(x, pp);   // ln(2)
 	}
 
 	Float4 power(RValue<Float4> x, RValue<Float4> y, bool pp)
 	{
-		Float4 log = logarithm2(x, true, pp);
+		Float4 log = logarithm2(x, pp);
 		log *= y;
 		return exponential2(log, pp);
 	}
 
 	Float4 reciprocal(RValue<Float4> x, bool pp, bool finite, bool exactAtPow2)
 	{
-		Float4 rcp;
+		Float4 rcp = Rcp_pp(x, exactAtPow2);
 
-		if(!pp && rcpPrecision >= WHQL)
+		if(!pp)
 		{
-			rcp = Float4(1.0f) / x;
-		}
-		else
-		{
-			rcp = Rcp_pp(x, exactAtPow2);
-
-			if(!pp)
-			{
-				rcp = (rcp + rcp) - (x * rcp * rcp);
-			}
+			rcp = (rcp + rcp) - (x * rcp * rcp);
 		}
 
 		if(finite)
@@ -562,14 +548,22 @@ namespace sw
 
 	UInt4 halfToFloatBits(UInt4 halfBits)
 	{
-		static const uint32_t mask_nosign = 0x7FFF;
-		static const uint32_t magic = (254 - 15) << 23;
-		static const uint32_t was_infnan = 0x7BFF;
-		static const uint32_t exp_infnan = 255 << 23;
+		auto magic = UInt4(126 << 23);
 
-		UInt4 expmant = halfBits & UInt4(mask_nosign);
-		return As<UInt4>(As<Float4>(expmant << 13) * As<Float4>(UInt4(magic))) |
-		((halfBits ^ UInt4(expmant)) << 16) |
-		(CmpNLE(As<UInt4>(expmant), UInt4(was_infnan)) & UInt4(exp_infnan));
+		auto sign16 = halfBits & UInt4(0x8000);
+		auto man16  = halfBits & UInt4(0x3FF);
+		auto exp16  = halfBits & UInt4(0x7C00);
+
+		auto isDnormOrZero = CmpEQ(exp16, UInt4(0));
+		auto isInfOrNaN = CmpEQ(exp16, UInt4(0x7C00));
+
+		auto sign32 = sign16 << 16;
+		auto man32  = man16 << 13;
+		auto exp32  = (exp16 + UInt4(0x1C000)) << 13;
+		auto norm32 = (man32 | exp32) | (isInfOrNaN & UInt4(0x7F800000));
+
+		auto denorm32 = As<UInt4>(As<Float4>(magic + man16) - As<Float4>(magic));
+
+		return sign32 | (norm32 & ~isDnormOrZero) | (denorm32 & isDnormOrZero);
 	}
 }

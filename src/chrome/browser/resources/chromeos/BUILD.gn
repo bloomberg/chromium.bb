@@ -34,16 +34,40 @@ grit("multidevice_setup_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
+grit("camera_resources") {
+  source = "camera/camera_resources.grd"
+
+  defines = chrome_grit_defines
+  outputs = [
+    "grit/camera_resources.h",
+    "grit/camera_resources_map.cc",
+    "grit/camera_resources_map.h",
+    "camera_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+
+  deps = [
+    "//media/capture/video/chromeos/mojo:cros_camera_js",
+  ]
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+}
+
 group("closure_compile") {
   deps = [
     "add_supervision:closure_compile",
     "bluetooth_pairing_dialog:closure_compile",
     "braille_ime:closure_compile",
+    "camera/src/js:closure_compile",
     "internet_config_dialog:closure_compile",
     "internet_detail_dialog:closure_compile",
-    "kiosk_next_home:closure_compile",
     "login:closure_compile",
-    "login:closure_compile_supervision",
     "machine_learning:closure_compile",
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",

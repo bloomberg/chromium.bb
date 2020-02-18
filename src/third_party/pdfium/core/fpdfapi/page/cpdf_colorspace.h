@@ -7,15 +7,18 @@
 #ifndef CORE_FPDFAPI_PAGE_CPDF_COLORSPACE_H_
 #define CORE_FPDFAPI_PAGE_CPDF_COLORSPACE_H_
 
+#include <array>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "core/fpdfapi/page/cpdf_pattern.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/fx_system.h"
-#include "core/fxcrt/observable.h"
+#include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "third_party/base/span.h"
 
 #define PDFCS_DEVICEGRAY 1
 #define PDFCS_DEVICERGB 2
@@ -36,29 +39,45 @@ class CPDF_PatternCS;
 
 constexpr size_t kMaxPatternColorComps = 16;
 
-struct PatternValue {
-  CPDF_Pattern* m_pPattern;
-  CPDF_CountedPattern* m_pCountedPattern;
-  int m_nComps;
-  float m_Comps[kMaxPatternColorComps];
+class PatternValue {
+ public:
+  PatternValue();
+  PatternValue(const PatternValue& that);
+  ~PatternValue();
+
+  void SetComps(pdfium::span<const float> comps);
+  pdfium::span<const float> GetComps() const {
+    // TODO(tsepez): update span.h from base for implicit std::array ctor.
+    return {m_Comps.data(), m_Comps.size()};
+  }
+
+  CPDF_Pattern* GetPattern() const { return m_pRetainedPattern.Get(); }
+  void SetPattern(const RetainPtr<CPDF_Pattern>& pPattern) {
+    m_pRetainedPattern = pPattern;
+  }
+
+ private:
+  RetainPtr<CPDF_Pattern> m_pRetainedPattern;
+  std::array<float, kMaxPatternColorComps> m_Comps;
 };
 
-class CPDF_ColorSpace : public Retainable, public Observable<CPDF_ColorSpace> {
+class CPDF_ColorSpace : public Retainable, public Observable {
  public:
   static RetainPtr<CPDF_ColorSpace> GetStockCS(int Family);
   static RetainPtr<CPDF_ColorSpace> ColorspaceFromName(const ByteString& name);
   static RetainPtr<CPDF_ColorSpace> Load(CPDF_Document* pDoc,
-                                         CPDF_Object* pCSObj);
+                                         CPDF_Object* pObj);
   static RetainPtr<CPDF_ColorSpace> Load(
       CPDF_Document* pDoc,
-      const CPDF_Object* pCSObj,
+      const CPDF_Object* pObj,
       std::set<const CPDF_Object*>* pVisited);
+  static uint32_t ComponentsForFamily(int family);
 
-  size_t GetBufSize() const;
-  float* CreateBuf() const;
+  const CPDF_Array* GetArray() const { return m_pArray.Get(); }
+  CPDF_Document* GetDocument() const { return m_pDocument.Get(); }
 
   // Should only be called if this colorspace is not a pattern.
-  float* CreateBufAndSetDefaultColor() const;
+  std::vector<float> CreateBufAndSetDefaultColor() const;
 
   uint32_t CountComponents() const;
   int GetFamily() const { return m_Family; }
@@ -67,16 +86,15 @@ class CPDF_ColorSpace : public Retainable, public Observable<CPDF_ColorSpace> {
            GetFamily() == PDFCS_INDEXED || GetFamily() == PDFCS_PATTERN;
   }
 
-  virtual void GetDefaultValue(int iComponent,
-                               float* value,
-                               float* min,
-                               float* max) const;
-
   virtual bool GetRGB(const float* pBuf,
                       float* R,
                       float* G,
                       float* B) const = 0;
 
+  virtual void GetDefaultValue(int iComponent,
+                               float* value,
+                               float* min,
+                               float* max) const;
   virtual void TranslateImageLine(uint8_t* dest_buf,
                                   const uint8_t* src_buf,
                                   int pixels,
@@ -84,10 +102,7 @@ class CPDF_ColorSpace : public Retainable, public Observable<CPDF_ColorSpace> {
                                   int image_height,
                                   bool bTransMask) const;
   virtual void EnableStdConversion(bool bEnabled);
-
   virtual bool IsNormal() const;
-
-  // Only call these 3 methods below if GetFamily() returns |PDFCS_PATTERN|.
 
   // Returns |this| as a CPDF_PatternCS* if |this| is a pattern.
   virtual CPDF_PatternCS* AsPatternCS();
@@ -98,9 +113,6 @@ class CPDF_ColorSpace : public Retainable, public Observable<CPDF_ColorSpace> {
                              float* R,
                              float* G,
                              float* B) const;
-
-  const CPDF_Array* GetArray() const { return m_pArray.Get(); }
-  CPDF_Document* GetDocument() const { return m_pDocument.Get(); }
 
  protected:
   CPDF_ColorSpace(CPDF_Document* pDoc, int family);

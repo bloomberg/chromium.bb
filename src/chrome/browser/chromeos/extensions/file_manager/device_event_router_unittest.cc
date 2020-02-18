@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chromeos/disks/disk.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,7 +86,7 @@ class DeviceEventRouterTest : public testing::Test {
   std::unique_ptr<DeviceEventRouterImpl> device_event_router;
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(DeviceEventRouterTest, AddAndRemoveDevice) {

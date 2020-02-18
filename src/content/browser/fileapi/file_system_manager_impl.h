@@ -19,9 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "components/services/filesystem/public/interfaces/types.mojom.h"
-#include "content/browser/streams/stream.h"
-#include "content/browser/streams/stream_context.h"
+#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -225,7 +223,7 @@ class CONTENT_EXPORT FileSystemManagerImpl
   base::IDMap<scoped_refptr<storage::ShareableFileReference>>
       in_transit_snapshot_files_;
 
-  base::WeakPtrFactory<FileSystemManagerImpl> weak_factory_;
+  base::WeakPtrFactory<FileSystemManagerImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemManagerImpl);
 };

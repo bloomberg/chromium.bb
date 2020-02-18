@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "base/win/windows_types.h"
+#include "url/gurl.h"
 
 namespace credential_provider {
 
@@ -20,11 +21,17 @@ namespace credential_provider {
 // to GCPW that have invalid token handles.
 extern const wchar_t kRegMdmUrl[];
 
+// Base server url for the password recovery escrow service.
+extern const wchar_t kRegMdmEscrowServiceServerUrl[];
+
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
 
 // Allow sign in using normal consumer accounts.
 extern const wchar_t kRegMdmAllowConsumerAccounts[];
+
+// Password lsa store key prefix.
+extern const wchar_t kUserPasswordLsaStoreKeyPrefix[];
 
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.
@@ -41,17 +48,38 @@ class GoogleMdmEnrolledStatusForTesting {
   ~GoogleMdmEnrolledStatusForTesting();
 };
 
+#if !defined(GOOGLE_CHROME_BUILD)
+// Class used in tests to force password escrow service availability when not
+// in a Google Chrome build.
+class GoogleMdmEscrowServiceEnablerForTesting {
+ public:
+  explicit GoogleMdmEscrowServiceEnablerForTesting(bool enable);
+  ~GoogleMdmEscrowServiceEnablerForTesting();
+};
+#endif
+
 // If MdmEnrollmentEnabled returns true, this function verifies that the machine
 // is enrolled to MDM AND that the server to which it is enrolled is the same
 // as the one specified in |kGlobalMdmUrlRegKey|, otherwise returns false.
 bool NeedsToEnrollWithMdm();
 
-// Checks whether the |kGlobalMdmUrlRegKey| is set on this machine and points
+// Checks whether the |kRegMdmUrl| is set on this machine and points
 // to a valid URL. Returns false otherwise.
 bool MdmEnrollmentEnabled();
 
+// Checks whether the |kRegMdmEscrowServiceServerUrl| is not empty on this
+// machine.
+bool MdmPasswordRecoveryEnabled();
+
+// Gets the escrow service URL as defined in the registry or a default value if
+// nothing is set.
+GURL MdmEscrowServiceUrl();
+
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);
+
+// Constructs the password lsa store key for the given |sid|.
+base::string16 GetUserPasswordLsaStoreKey(const base::string16& sid);
 
 }  // namespace credential_provider
 

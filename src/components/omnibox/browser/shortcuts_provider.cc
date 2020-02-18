@@ -68,6 +68,8 @@ struct ShortcutMatch {
         type(static_cast<AutocompleteMatch::Type>(shortcut->match_core.type)) {}
 
   int relevance;
+  // To satisfy |CompareWithDemoteByType<>::operator()|.
+  size_t subrelevance = 0;
   GURL stripped_destination_url;
   const ShortcutsDatabase::Shortcut* shortcut;
   base::string16 contents;
@@ -118,7 +120,7 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.from_omnibox_focus() ||
-      (input.type() == metrics::OmniboxInputType::INVALID) ||
+      (input.type() == metrics::OmniboxInputType::EMPTY) ||
       input.text().empty() || !initialized_)
     return;
 
@@ -257,6 +259,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   match.fill_into_edit = shortcut.match_core.fill_into_edit;
   match.destination_url = shortcut.match_core.destination_url;
   DCHECK(match.destination_url.is_valid());
+  match.document_type = static_cast<AutocompleteMatch::DocumentType>(
+      shortcut.match_core.document_type);
   match.contents = shortcut.match_core.contents;
   match.contents_class = AutocompleteMatch::ClassificationsFromString(
       shortcut.match_core.contents_class);

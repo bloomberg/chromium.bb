@@ -17,7 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "cc/trees/element_id.h"
+#include "cc/paint/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -64,7 +64,6 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
-class FrameSinkManagerImpl;
 class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceIdAllocation;
@@ -115,9 +114,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
   // Allocate a new client ID for the display compositor.
   virtual viz::FrameSinkId AllocateFrameSinkId() = 0;
 
-  // Gets the frame sink manager.
-  virtual viz::FrameSinkManagerImpl* GetFrameSinkManager() = 0;
-
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
 
@@ -140,10 +136,9 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
                                      const SkMatrix44& matrix) = 0;
 
   // Set the output color profile into which this compositor should render.
-  virtual void SetDisplayColorSpace(
-      ui::Compositor* compositor,
-      const gfx::ColorSpace& blending_color_space,
-      const gfx::ColorSpace& output_color_space) = 0;
+  virtual void SetDisplayColorSpace(ui::Compositor* compositor,
+                                    const gfx::ColorSpace& output_color_space,
+                                    float sdr_white_level) = 0;
 
   // Mac path for transporting vsync parameters to the display.  Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
@@ -382,8 +377,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void UpdateLayerTreeHost() override;
   void ApplyViewportChanges(const cc::ApplyViewportChangesArgs& args) override {
   }
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
+  void RecordManipulationTypeCounts(cc::ManipulationInfo info) override {}
   void SendOverscrollEventFromImplSide(
       const gfx::Vector2dF& overscroll_delta,
       cc::ElementId scroll_latched_element_id) override {}
@@ -498,7 +492,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   SkMatrix44 display_color_matrix_;
 
   gfx::ColorSpace output_color_space_;
-  gfx::ColorSpace blending_color_space_;
 
   float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
 
@@ -514,7 +507,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   const char* trace_environment_name_;
 
-  base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_;
+  base::WeakPtrFactory<Compositor> context_creation_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Compositor);
 };

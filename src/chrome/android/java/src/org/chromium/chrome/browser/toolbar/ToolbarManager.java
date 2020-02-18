@@ -27,14 +27,12 @@ import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
@@ -65,14 +63,13 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.search_engines.TemplateUrl;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -99,6 +96,7 @@ import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
@@ -109,11 +107,13 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.search_engines.TemplateUrl;
+import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHandle;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -146,7 +146,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     /** A means of tracking which mechanism is being used to focus the omnibox. */
     @IntDef({OmniboxFocusReason.OMNIBOX_TAP, OmniboxFocusReason.OMNIBOX_LONG_PRESS,
             OmniboxFocusReason.FAKE_BOX_TAP, OmniboxFocusReason.FAKE_BOX_LONG_PRESS,
-            OmniboxFocusReason.ACCELERATOR_TAP})
+            OmniboxFocusReason.ACCELERATOR_TAP, OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OmniboxFocusReason {
         int OMNIBOX_TAP = 0;
@@ -154,7 +154,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         int FAKE_BOX_TAP = 2;
         int FAKE_BOX_LONG_PRESS = 3;
         int ACCELERATOR_TAP = 4;
-        int NUM_ENTRIES = 5;
+        int TAB_SWITCHER_OMNIBOX_TAP = 5;
+        int NUM_ENTRIES = 6;
     }
     private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
             new EnumeratedHistogramSample(
@@ -177,7 +178,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final TabCountProvider mTabCountProvider;
     private final ThemeColorProvider mTabThemeColorProvider;
     private final AppThemeColorProvider mAppThemeColorProvider;
-    private TopToolbarCoordinator mToolbar;
+    private final TopToolbarCoordinator mToolbar;
     private final ToolbarControlContainer mControlContainer;
 
     private BottomControlsCoordinator mBottomControlsCoordinator;
@@ -756,6 +757,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param reason A {@link OmniboxFocusReason} that the omnibox was focused.
      */
     public static void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
+        if (OmniboxFocusReason.OMNIBOX_TAP == reason
+                && ReturnToChromeExperimentsUtil.isInOverviewWithOmnibox()) {
+            reason = OmniboxFocusReason.TAB_SWITCHER_OMNIBOX_TAP;
+        }
         ENUMERATED_FOCUS_REASON.record(reason);
     }
 
@@ -929,17 +934,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      *
      * @param tabModelSelector           The selector that handles tab management.
      * @param controlsVisibilityDelegate The delegate to handle visibility of browser controls.
-     * @param findToolbarManager         The manager for find in page.
      * @param overviewModeBehavior       The overview mode manager.
      * @param layoutManager              A {@link LayoutManager} instance used to watch for scene
      *                                   changes.
      */
     public void initializeWithNative(TabModelSelector tabModelSelector,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            FindToolbarManager findToolbarManager, OverviewModeBehavior overviewModeBehavior,
-            LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler) {
+            OverviewModeBehavior overviewModeBehavior, LayoutManager layoutManager,
+            OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler) {
         assert !mInitializedWithNative;
 
         mTabModelSelector = tabModelSelector;
@@ -965,14 +968,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mLocationBarModel.setShouldShowOmniboxInOverviewMode(
                 ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher());
 
-        mFindToolbarManager = findToolbarManager;
 
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
         mNativeLibraryReady = false;
-
-        mFindToolbarManager.addObserver(mFindToolbarObserver);
 
         if (overviewModeBehavior != null) {
             mOverviewModeBehavior = overviewModeBehavior;
@@ -1021,6 +1021,15 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mOnInitializedRunnable.run();
             mOnInitializedRunnable = null;
         }
+    }
+
+    /**
+     * Set the {@link FindToolbarManager}.
+     * @param findToolbarManager The manager for find in page.
+     */
+    public void setFindToolbarManager(FindToolbarManager findToolbarManager) {
+        mFindToolbarManager = findToolbarManager;
+        mFindToolbarManager.addObserver(mFindToolbarObserver);
     }
 
     /**
@@ -1196,7 +1205,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             mBookmarkBridge = null;
         }
         if (mTemplateUrlObserver != null) {
-            TemplateUrlService.getInstance().removeObserver(mTemplateUrlObserver);
+            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
             mTemplateUrlObserver = null;
         }
         if (mOverviewModeBehavior != null) {
@@ -1275,7 +1284,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     private void registerTemplateUrlObserver() {
-        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         assert mTemplateUrlObserver == null;
         mTemplateUrlObserver = new TemplateUrlServiceObserver() {
             private TemplateUrl mSearchEngine =
@@ -1290,6 +1299,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
 
                 mSearchEngine = searchEngine;
+                mLocationBar.updateSearchEngineStatusIcon(
+                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(),
+                        TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
+                        SearchEngineLogoUtils.getSearchLogoUrl());
                 mToolbar.onDefaultSearchEngineChanged();
             }
         };
@@ -1299,7 +1312,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private void onNativeLibraryReady() {
         mNativeLibraryReady = true;
 
-        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         TemplateUrlService.LoadListener mTemplateServiceLoadListener =
                 new TemplateUrlService.LoadListener() {
                     @Override
@@ -1688,20 +1701,34 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param activityName Simple class name for the activity this toolbar belongs to.
      */
     public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
-        // Record startup performance statistics
+        recordStartupHistograms(activityCreationTimeMs, activityName);
+        mLocationBar.onDeferredStartup();
+    }
+
+    /**
+     * Record histograms covering Chrome startup.
+     * This method will collect metrics no sooner than RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS since
+     * Activity creation to ensure availability of collected data.
+     *
+     * Histograms will not be collected if Chrome is destroyed before the above timeout passed.
+     */
+    private void recordStartupHistograms(
+            final long activityCreationTimeMs, final String activityName) {
+        // Schedule call to self if minimum time since activity creation has not yet passed.
         long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
         if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
-                onDeferredStartup(activityCreationTimeMs, activityName);
-            }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            // clang-format off
+            mHandler.postDelayed(
+                    () -> recordStartupHistograms(activityCreationTimeMs, activityName),
+                    RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            // clang-format on
             return;
         }
+
         RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs);
 
-        // mOmniboxStartupMetrics might be null. ie. ToolbarManager is destroyed. See
-        // https://crbug.com/860449
-        if (mOmniboxStartupMetrics != null) mOmniboxStartupMetrics.maybeRecordHistograms();
+        mOmniboxStartupMetrics.maybeRecordHistograms();
     }
 
     /**

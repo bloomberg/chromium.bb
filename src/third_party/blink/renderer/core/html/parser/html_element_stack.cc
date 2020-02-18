@@ -165,8 +165,9 @@ void HTMLElementStack::PopAll() {
   stack_depth_ = 0;
   while (top_) {
     Node& node = *TopNode();
-    if (node.IsElementNode()) {
-      ToElement(node).FinishParsingChildren();
+    auto* element = DynamicTo<Element>(node);
+    if (element) {
+      element->FinishParsingChildren();
       if (auto* select = ToHTMLSelectElementOrNull(node))
         select->SetBlocksFormSubmission(true);
     }
@@ -470,7 +471,7 @@ bool HTMLElementStack::HasTemplateInHTMLScope() const {
 
 Element* HTMLElementStack::HtmlElement() const {
   DCHECK(root_node_);
-  return ToElement(root_node_);
+  return To<Element>(root_node_.Get());
 }
 
 Element* HTMLElementStack::HeadElement() const {

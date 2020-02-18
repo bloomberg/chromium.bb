@@ -50,11 +50,9 @@ Network.BlockedURLsPane = class extends UI.VBox {
    */
   _createEmptyPlaceholder() {
     const element = this.contentElement.createChild('div', 'no-blocked-urls');
-    element.createChild('span').textContent = Common.UIString('Requests are not blocked. ');
-    const addLink = element.createChild('span', 'link');
-    addLink.textContent = Common.UIString('Add pattern.');
-    addLink.href = '';
+    const addLink = UI.XLink.create('', ls`Add pattern`);
     addLink.addEventListener('click', this._addButtonClicked.bind(this), false);
+    element.appendChild(UI.formatLocalized('Requests are not blocked. %s.', [addLink]));
     return element;
   }
 
@@ -156,10 +154,11 @@ Network.BlockedURLsPane = class extends UI.VBox {
     titles.createChild('div').textContent =
         Common.UIString('Text pattern to block matching requests; use * for wildcard');
     const fields = content.createChild('div', 'blocked-url-edit-row');
-    const urlInput = editor.createInput(
-        'url', 'text', '',
-        (item, index, input) =>
-            !!input.value && !this._manager.blockedPatterns().find(pattern => pattern.url === input.value));
+    const validator = (item, index, input) => {
+      const valid = !!input.value && !this._manager.blockedPatterns().find(pattern => pattern.url === input.value);
+      return {valid};
+    };
+    const urlInput = editor.createInput('url', 'text', '', validator);
     fields.createChild('div', 'blocked-url-edit-value').appendChild(urlInput);
     return editor;
   }

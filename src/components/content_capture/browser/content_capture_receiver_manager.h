@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_CONTENT_CAPTURE_BROWSER_CONTENT_CAPTURE_RECEIVER_MANAGER_H_
 #define COMPONENTS_CONTENT_CAPTURE_BROWSER_CONTENT_CAPTURE_RECEIVER_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "base/supports_user_data.h"
@@ -37,7 +37,8 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
   // Binds the |request| with the |render_frame_host| associated
   // ContentCaptureReceiver.
   static void BindContentCaptureReceiver(
-      mojom::ContentCaptureReceiverAssociatedRequest request,
+      mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+          pending_receiver,
       content::RenderFrameHost* render_frame_host);
 
   // The methods called by ContentCaptureReceiver.
@@ -76,9 +77,11 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
 
   virtual bool ShouldCapture(const GURL& url) = 0;
 
- private:
-  friend class ContentCaptureReceiverManagerHelper;
+  // Visible for testing.
+  ContentCaptureReceiver* ContentCaptureReceiverForFrame(
+      content::RenderFrameHost* render_frame_host) const;
 
+ private:
   // Builds ContentCaptureSession and returns in |session|, |ancestor_only|
   // specifies if only ancestor should be returned in |session|.
   void BuildContentCaptureSession(
@@ -93,11 +96,7 @@ class ContentCaptureReceiverManager : public content::WebContentsObserver,
       ContentCaptureReceiver* content_capture_receiver,
       ContentCaptureSession* session);
 
-  ContentCaptureReceiver* ContentCaptureReceiverForFrame(
-      content::RenderFrameHost* render_frame_host);
-
-  std::unordered_map<content::RenderFrameHost*,
-                     std::unique_ptr<ContentCaptureReceiver>>
+  std::map<content::RenderFrameHost*, std::unique_ptr<ContentCaptureReceiver>>
       frame_map_;
 };
 

@@ -14,6 +14,7 @@ and setting flags to show that a build has been processed.
 
 from __future__ import print_function
 
+import functools
 import json
 import operator
 import os
@@ -146,7 +147,7 @@ def _LogList(title, obj_list):
 
 def _FilterForImages(artifacts):
   """Return only instances of Image from a list of artifacts."""
-  return filter(gspaths.IsImage, artifacts)
+  return [x for x in artifacts if gspaths.IsImage(x)]
 
 
 def _FilterForMp(artifacts):
@@ -195,7 +196,7 @@ def _FilterForBasic(artifacts):
 
 def _FilterForUnsignedImageArchives(artifacts):
   """Return only instances of UnsignedImageArchive from a list of artifacts."""
-  return filter(gspaths.IsUnsignedImageArchive, artifacts)
+  return [x for x in artifacts if gspaths.IsUnsignedImageArchive(x)]
 
 
 def _FilterForImageType(artifacts, image_type):
@@ -206,7 +207,8 @@ def _FilterForImageType(artifacts, image_type):
 def _FilterForValidImageType(artifacts):
   """Return only images with image types that paygen supports."""
   v = gspaths.ChromeosReleases.UNSIGNED_IMAGE_TYPES
-  return reduce(operator.add, [_FilterForImageType(artifacts, x) for x in v])
+  return functools.reduce(
+      operator.add, [_FilterForImageType(artifacts, x) for x in v])
 
 
 def _FilterForTest(artifacts):

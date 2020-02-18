@@ -17,7 +17,7 @@
 namespace download_internals {
 
 DownloadInternalsUIMessageHandler::DownloadInternalsUIMessageHandler()
-    : download_service_(nullptr), weak_ptr_factory_(this) {}
+    : download_service_(nullptr) {}
 
 DownloadInternalsUIMessageHandler::~DownloadInternalsUIMessageHandler() {
   if (download_service_)
@@ -42,7 +42,8 @@ void DownloadInternalsUIMessageHandler::RegisterMessages() {
           weak_ptr_factory_.GetWeakPtr()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
+  download_service_ =
+      DownloadServiceFactory::GetForKey(profile->GetProfileKey());
   download_service_->GetLogger()->AddObserver(this);
 }
 

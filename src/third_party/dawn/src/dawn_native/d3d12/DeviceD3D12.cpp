@@ -43,13 +43,18 @@ namespace dawn_native { namespace d3d12 {
         ASSERT(SUCCEEDED(hr));
     }
 
-    Device::Device(Adapter* adapter,
-                   ComPtr<ID3D12Device> d3d12Device,
-                   const DeviceDescriptor* descriptor)
-        : DeviceBase(adapter, descriptor), mD3d12Device(d3d12Device) {
+    Device::Device(Adapter* adapter, const DeviceDescriptor* descriptor)
+        : DeviceBase(adapter, descriptor) {
         if (descriptor != nullptr) {
             ApplyToggleOverrides(descriptor);
         }
+    }
+
+    MaybeError Device::Initialize() {
+        mD3d12Device = ToBackend(GetAdapter())->GetDevice();
+
+        ASSERT(mD3d12Device != nullptr);
+
         // Create device-global objects
         D3D12_COMMAND_QUEUE_DESC queueDesc = {};
         queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -68,9 +73,41 @@ namespace dawn_native { namespace d3d12 {
         mResourceAllocator = std::make_unique<ResourceAllocator>(this);
 
         NextSerial();
+
+        // Initialize indirect commands
+        D3D12_INDIRECT_ARGUMENT_DESC argumentDesc = {};
+        argumentDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DISPATCH;
+
+        D3D12_COMMAND_SIGNATURE_DESC programDesc = {};
+        programDesc.ByteStride = 3 * sizeof(uint32_t);
+        programDesc.NumArgumentDescs = 1;
+        programDesc.pArgumentDescs = &argumentDesc;
+
+        GetD3D12Device()->CreateCommandSignature(&programDesc, NULL,
+                                                 IID_PPV_ARGS(&mDispatchIndirectSignature));
+
+        argumentDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW;
+        programDesc.ByteStride = 4 * sizeof(uint32_t);
+
+        GetD3D12Device()->CreateCommandSignature(&programDesc, NULL,
+                                                 IID_PPV_ARGS(&mDrawIndirectSignature));
+
+        argumentDesc.Type = D3D12_INDIRECT_ARGUMENT_TYPE_DRAW_INDEXED;
+        programDesc.ByteStride = 5 * sizeof(uint32_t);
+
+        GetD3D12Device()->CreateCommandSignature(&programDesc, NULL,
+                                                 IID_PPV_ARGS(&mDrawIndexedIndirectSignature));
+
+        return {};
     }
 
     Device::~Device() {
+        // Immediately forget about all pending commands
+        if (mPendingCommands.open) {
+            mPendingCommands.commandList->Close();
+            mPendingCommands.open = false;
+            mPendingCommands.commandList = nullptr;
+        }
         NextSerial();
         WaitForSerial(mLastSubmittedSerial);  // Wait for all in-flight commands to finish executing
         TickImpl();                    // Call tick one last time so resources are cleaned up
@@ -93,6 +130,18 @@ namespace dawn_native { namespace d3d12 {
 
     ComPtr<ID3D12CommandQueue> Device::GetCommandQueue() const {
         return mCommandQueue;
+    }
+
+    ComPtr<ID3D12CommandSignature> Device::GetDispatchIndirectSignature() const {
+        return mDispatchIndirectSignature;
+    }
+
+    ComPtr<ID3D12CommandSignature> Device::GetDrawIndirectSignature() const {
+        return mDrawIndirectSignature;
+    }
+
+    ComPtr<ID3D12CommandSignature> Device::GetDrawIndexedIndirectSignature() const {
+        return mDrawIndexedIndirectSignature;
     }
 
     DescriptorHeapAllocator* Device::GetDescriptorHeapAllocator() const {
@@ -213,8 +262,9 @@ namespace dawn_native { namespace d3d12 {
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return new Buffer(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder) {
-        return new CommandBuffer(this, encoder);
+    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder,
+                                                   const CommandBufferDescriptor* descriptor) {
+        return new CommandBuffer(encoder, descriptor);
     }
     ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
@@ -263,7 +313,7 @@ namespace dawn_native { namespace d3d12 {
                                                uint64_t destinationOffset,
                                                uint64_t size) {
         ToBackend(destination)
-            ->TransitionUsageNow(GetPendingCommandList(), dawn::BufferUsageBit::TransferDst);
+            ->TransitionUsageNow(GetPendingCommandList(), dawn::BufferUsageBit::CopyDst);
 
         GetPendingCommandList()->CopyBufferRegion(
             ToBackend(destination)->GetD3D12Resource().Get(), destinationOffset,

@@ -13,9 +13,9 @@
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/x11/x11_clipboard.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
@@ -24,12 +24,29 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/input_method_chromeos.h"
+#else
+#include "ui/base/ime/input_method_minimal.h"
+#endif
 
 namespace ui {
 
 namespace {
+
+constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
+    /*needs_view_token=*/false,
+    /*custom_frame_pref_default=*/false,
+    /*use_system_title_bar=*/false,
+    /*requires_mojo=*/false,
+
+    // When the Ozone X11 backend is running, use a UI loop to grab Expose
+    // events. See GLSurfaceGLX and https://crbug.com/326995.
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_UI};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform {
@@ -67,7 +84,7 @@ class OzonePlatformX11 : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     std::unique_ptr<X11WindowOzone> window = std::make_unique<X11WindowOzone>(
-        window_manager_.get(), delegate, properties.bounds);
+        delegate, properties, window_manager_.get());
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
   }
@@ -78,7 +95,29 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    return std::make_unique<X11ScreenOzone>();
+    DCHECK(window_manager_);
+    auto screen = std::make_unique<X11ScreenOzone>(window_manager_.get());
+    screen->Init();
+    return screen;
+  }
+
+  PlatformClipboard* GetPlatformClipboard() override {
+    return clipboard_.get();
+  }
+
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+#if defined(OS_CHROMEOS)
+    return std::make_unique<InputMethodChromeOS>(delegate);
+#else
+    // TODO(spang): Fix InputMethodAuraLinux which requires another level
+    // of initization.
+    return std::make_unique<InputMethodMinimal>(delegate);
+#endif
+  }
+
+  const PlatformProperties& GetPlatformProperties() override {
+    return kX11PlatformProperties;
   }
 
   void InitializeUI(const InitParams& params) override {
@@ -87,6 +126,7 @@ class OzonePlatformX11 : public OzonePlatform {
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
+    clipboard_ = std::make_unique<X11Clipboard>();
     cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
@@ -102,12 +142,6 @@ class OzonePlatformX11 : public OzonePlatform {
       CreatePlatformEventSource();
 
     surface_factory_ozone_ = std::make_unique<X11SurfaceFactory>();
-  }
-
-  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
-    // When Ozone X11 backend is running use an UI loop to grab Expose events.
-    // See GLSurfaceGLX and https://crbug.com/326995.
-    return base::MessageLoop::TYPE_UI;
   }
 
  private:
@@ -145,6 +179,7 @@ class OzonePlatformX11 : public OzonePlatform {
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<X11Clipboard> clipboard_;
   std::unique_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 

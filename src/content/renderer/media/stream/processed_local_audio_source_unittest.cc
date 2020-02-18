@@ -102,10 +102,10 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
     std::unique_ptr<ProcessedLocalAudioSource> source =
         std::make_unique<ProcessedLocalAudioSource>(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
-            blink::MediaStreamDevice(blink::MEDIA_DEVICE_AUDIO_CAPTURE,
-                                     "mock_audio_device_id",
-                                     "Mock audio device", kSampleRate,
-                                     kChannelLayout, kRequestedBufferSize),
+            blink::MediaStreamDevice(
+                blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                "mock_audio_device_id", "Mock audio device", kSampleRate,
+                kChannelLayout, kRequestedBufferSize),
             false /* disable_local_echo */, properties, base::DoNothing(),
             &mock_dependency_factory_,
             blink::scheduler::GetSingleThreadTaskRunnerForTesting());
@@ -192,11 +192,13 @@ TEST_F(ProcessedLocalAudioSourceTest, VerifyAudioFlowWithoutAudioProcessing) {
   int delay_ms = 65;
   bool key_pressed = true;
   double volume = 0.9;
+  const base::TimeTicks capture_time =
+      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(delay_ms);
   std::unique_ptr<media::AudioBus> audio_bus =
       media::AudioBus::Create(2, kExpectedSourceBufferSize);
   audio_bus->Zero();
   EXPECT_CALL(*sink, OnDataCallback()).Times(AtLeast(1));
-  capture_source_callback()->Capture(audio_bus.get(), delay_ms, volume,
+  capture_source_callback()->Capture(audio_bus.get(), capture_time, volume,
                                      key_pressed);
 
   // Expect the ProcessedLocalAudioSource to auto-stop the MockCapturerSource

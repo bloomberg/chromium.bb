@@ -1,24 +1,710 @@
-package MooseX::Types::Structured;
-BEGIN {
-  $MooseX::Types::Structured::AUTHORITY = 'cpan:JJNAPIORK';
-}
-{
-  $MooseX::Types::Structured::VERSION = '0.28';
-}
-# ABSTRACT: MooseX::Types::Structured - Structured Type Constraints for Moose
+package MooseX::Types::Structured; # git description: v0.35-8-gc2cf3da
+# ABSTRACT: Structured Type Constraints for Moose
+
+our $VERSION = '0.36';
 
 use 5.008;
-
-use Moose::Util::TypeConstraints 1.06;
+use Moose::Util::TypeConstraints 1.06 'find_type_constraint';
 use MooseX::Meta::TypeConstraint::Structured;
 use MooseX::Meta::TypeConstraint::Structured::Optional;
 use MooseX::Types::Structured::OverflowHandler;
 use MooseX::Types::Structured::MessageStack;
-use MooseX::Types 0.22 -declare => [qw(Dict Map Tuple Optional)];
-use Sub::Exporter 0.982 -setup => [ qw(Dict Map Tuple Optional slurpy) ];
-use Devel::PartialDump 0.10;
+use Devel::PartialDump 0.13;
 use Scalar::Util qw(blessed);
+use namespace::clean 0.19;
+use MooseX::Types 0.22 -declare => [qw(Dict Map Tuple Optional)];
+use Sub::Exporter 0.982 -setup => {
+    exports => [ qw(Dict Map Tuple Optional slurpy) ],
+};
+use if MooseX::Types->VERSION >= 0.42,
+    'namespace::autoclean' => -except => 'import'; # TODO: https://github.com/rjbs/Sub-Exporter/issues/8
 
+#pod =head1 SYNOPSIS
+#pod
+#pod The following is example usage for this module.
+#pod
+#pod     package Person;
+#pod
+#pod     use Moose;
+#pod     use MooseX::Types::Moose qw(Str Int HashRef);
+#pod     use MooseX::Types::Structured qw(Dict Tuple Optional);
+#pod
+#pod     ## A name has a first and last part, but middle names are not required
+#pod     has name => (
+#pod         isa=>Dict[
+#pod             first => Str,
+#pod             last => Str,
+#pod             middle => Optional[Str],
+#pod         ],
+#pod     );
+#pod
+#pod     ## description is a string field followed by a HashRef of tagged data.
+#pod     has description => (
+#pod       isa=>Tuple[
+#pod         Str,
+#pod         Optional[HashRef],
+#pod      ],
+#pod     );
+#pod
+#pod     ## Remainder of your class attributes and methods
+#pod
+#pod Then you can instantiate this class with something like:
+#pod
+#pod     my $john = Person->new(
+#pod         name => {
+#pod             first => 'John',
+#pod             middle => 'James'
+#pod             last => 'Napiorkowski',
+#pod         },
+#pod         description => [
+#pod             'A cool guy who loves Perl and Moose.', {
+#pod                 married_to => 'Vanessa Li',
+#pod                 born_in => 'USA',
+#pod             };
+#pod         ]
+#pod     );
+#pod
+#pod Or with:
+#pod
+#pod     my $vanessa = Person->new(
+#pod         name => {
+#pod             first => 'Vanessa',
+#pod             last => 'Li'
+#pod         },
+#pod         description => ['A great student!'],
+#pod     );
+#pod
+#pod But all of these would cause a constraint error for the C<name> attribute:
+#pod
+#pod     ## Value for 'name' not a HashRef
+#pod     Person->new( name => 'John' );
+#pod
+#pod     ## Value for 'name' has incorrect hash key and missing required keys
+#pod     Person->new( name => {
+#pod         first_name => 'John'
+#pod     });
+#pod
+#pod     ## Also incorrect keys
+#pod     Person->new( name => {
+#pod         first_name => 'John',
+#pod         age => 39,
+#pod     });
+#pod
+#pod     ## key 'middle' incorrect type, should be a Str not a ArrayRef
+#pod     Person->new( name => {
+#pod         first => 'Vanessa',
+#pod         middle => [1,2],
+#pod         last => 'Li',
+#pod     });
+#pod
+#pod And these would cause a constraint error for the C<description> attribute:
+#pod
+#pod     ## Should be an ArrayRef
+#pod     Person->new( description => 'Hello I am a String' );
+#pod
+#pod     ## First element must be a string not a HashRef.
+#pod     Person->new (description => [{
+#pod         tag1 => 'value1',
+#pod         tag2 => 'value2'
+#pod     }]);
+#pod
+#pod Please see the test cases for more examples.
+#pod
+#pod =head1 DESCRIPTION
+#pod
+#pod A structured type constraint is a standard container L<Moose> type constraint,
+#pod such as an C<ArrayRef> or C<HashRef>, which has been enhanced to allow you to
+#pod explicitly name all the allowed type constraints inside the structure.  The
+#pod generalized form is:
+#pod
+#pod     TypeConstraint[@TypeParameters or %TypeParameters]
+#pod
+#pod Where C<TypeParameters> is an array reference or hash references of
+#pod L<Moose::Meta::TypeConstraint> objects.
+#pod
+#pod This type library enables structured type constraints. It is built on top of the
+#pod L<MooseX::Types> library system, so you should review the documentation for that
+#pod if you are not familiar with it.
+#pod
+#pod =head2 Comparing Parameterized types to Structured types
+#pod
+#pod Parameterized constraints are built into core Moose and you are probably already
+#pod familiar with the type constraints C<HashRef> and C<ArrayRef>.  Structured types
+#pod have similar functionality, so their syntax is likewise similar. For example,
+#pod you could define a parameterized constraint like:
+#pod
+#pod     subtype ArrayOfInts,
+#pod      as ArrayRef[Int];
+#pod
+#pod which would constrain a value to something like [1,2,3,...] and so on.  On the
+#pod other hand, a structured type constraint explicitly names all it's allowed
+#pod 'internal' type parameter constraints.  For the example:
+#pod
+#pod     subtype StringFollowedByInt,
+#pod      as Tuple[Str,Int];
+#pod
+#pod would constrain its value to things like C<< ['hello', 111] >>  but C<< ['hello', 'world'] >>
+#pod would fail, as well as C<< ['hello', 111, 'world'] >> and so on.  Here's another
+#pod example:
+#pod
+#pod 	package MyApp::Types;
+#pod
+#pod     use MooseX::Types -declare [qw(StringIntOptionalHashRef)];
+#pod     use MooseX::Types::Moose qw(Str Int);
+#pod     use MooseX::Types::Structured qw(Tuple Optional);
+#pod
+#pod     subtype StringIntOptionalHashRef,
+#pod      as Tuple[
+#pod         Str, Int,
+#pod         Optional[HashRef]
+#pod      ];
+#pod
+#pod This defines a type constraint that validates values like:
+#pod
+#pod     ['Hello', 100, {key1 => 'value1', key2 => 'value2'}];
+#pod     ['World', 200];
+#pod
+#pod Notice that the last type constraint in the structure is optional.  This is
+#pod enabled via the helper C<Optional> type constraint, which is a variation of the
+#pod core Moose type constraint C<Maybe>.  The main difference is that C<Optional> type
+#pod constraints are required to validate if they exist, while C<Maybe> permits
+#pod undefined values.  So the following example would not validate:
+#pod
+#pod     StringIntOptionalHashRef->validate(['Hello Undefined', 1000, undef]);
+#pod
+#pod Please note the subtle difference between undefined and null.  If you wish to
+#pod allow both null and undefined, you should use the core Moose C<Maybe> type
+#pod constraint instead:
+#pod
+#pod     package MyApp::Types;
+#pod
+#pod     use MooseX::Types -declare [qw(StringIntMaybeHashRef)];
+#pod     use MooseX::Types::Moose qw(Str Int Maybe);
+#pod     use MooseX::Types::Structured qw(Tuple);
+#pod
+#pod     subtype StringIntMaybeHashRef,
+#pod      as Tuple[
+#pod         Str, Int, Maybe[HashRef]
+#pod      ];
+#pod
+#pod This would validate the following:
+#pod
+#pod     ['Hello', 100, {key1 => 'value1', key2 => 'value2'}];
+#pod     ['World', 200, undef];
+#pod     ['World', 200];
+#pod
+#pod Structured constraints are not limited to arrays.  You can define a structure
+#pod against a C<HashRef> with the C<Dict> type constraint as in this example:
+#pod
+#pod     subtype FirstNameLastName,
+#pod      as Dict[
+#pod         firstname => Str,
+#pod         lastname => Str,
+#pod      ];
+#pod
+#pod This would constrain a C<HashRef> that validates something like:
+#pod
+#pod     {firstname => 'Christopher', lastname => 'Parsons'};
+#pod
+#pod but all the following would fail validation:
+#pod
+#pod     ## Incorrect keys
+#pod     {first => 'Christopher', last => 'Parsons'};
+#pod
+#pod     ## Too many keys
+#pod     {firstname => 'Christopher', lastname => 'Parsons', middlename => 'Allen'};
+#pod
+#pod     ## Not a HashRef
+#pod     ['Christopher', 'Parsons'];
+#pod
+#pod These structures can be as simple or elaborate as you wish.  You can even
+#pod combine various structured, parameterized and simple constraints all together:
+#pod
+#pod     subtype Crazy,
+#pod      as Tuple[
+#pod         Int,
+#pod         Dict[name=>Str, age=>Int],
+#pod         ArrayRef[Int]
+#pod      ];
+#pod
+#pod Which would match:
+#pod
+#pod     [1, {name=>'John', age=>25},[10,11,12]];
+#pod
+#pod Please notice how the type parameters can be visually arranged to your liking
+#pod and to improve the clarity of your meaning.  You don't need to run then
+#pod altogether onto a single line.  Additionally, since the C<Dict> type constraint
+#pod defines a hash constraint, the key order is not meaningful.  For example:
+#pod
+#pod     subtype AnyKeyOrder,
+#pod       as Dict[
+#pod         key1=>Int,
+#pod         key2=>Str,
+#pod         key3=>Int,
+#pod      ];
+#pod
+#pod Would validate both:
+#pod
+#pod     {key1 => 1, key2 => "Hi!", key3 => 2};
+#pod     {key2 => "Hi!", key1 => 100, key3 => 300};
+#pod
+#pod As you would expect, since underneath it's just a plain old Perl hash at work.
+#pod
+#pod =head2 Alternatives
+#pod
+#pod You should exercise some care as to whether or not your complex structured
+#pod constraints would be better off contained by a real object as in the following
+#pod example:
+#pod
+#pod     package MyApp::MyStruct;
+#pod     use Moose;
+#pod
+#pod     ## lazy way to make a bunch of attributes
+#pod     has $_ for qw(full_name age_in_years);
+#pod
+#pod     package MyApp::MyClass;
+#pod     use Moose;
+#pod
+#pod     has person => (isa => 'MyApp::MyStruct');
+#pod
+#pod     my $instance = MyApp::MyClass->new(
+#pod         person=>MyApp::MyStruct->new(
+#pod             full_name => 'John',
+#pod             age_in_years => 39,
+#pod         ),
+#pod     );
+#pod
+#pod This method may take some additional time to set up but will give you more
+#pod flexibility.  However, structured constraints are highly compatible with this
+#pod method, granting some interesting possibilities for coercion.  Try:
+#pod
+#pod     package MyApp::MyClass;
+#pod
+#pod     use Moose;
+#pod     use MyApp::MyStruct;
+#pod
+#pod     ## It's recommended your type declarations live in a separate class in order
+#pod     ## to promote reusability and clarity.  Inlined here for brevity.
+#pod
+#pod     use MooseX::Types::DateTime qw(DateTime);
+#pod     use MooseX::Types -declare [qw(MyStruct)];
+#pod     use MooseX::Types::Moose qw(Str Int);
+#pod     use MooseX::Types::Structured qw(Dict);
+#pod
+#pod     ## Use class_type to create an ISA type constraint if your object doesn't
+#pod     ## inherit from Moose::Object.
+#pod     class_type 'MyApp::MyStruct';
+#pod
+#pod     ## Just a shorter version really.
+#pod     subtype MyStruct,
+#pod      as 'MyApp::MyStruct';
+#pod
+#pod     ## Add the coercions.
+#pod     coerce MyStruct,
+#pod      from Dict[
+#pod         full_name=>Str,
+#pod         age_in_years=>Int
+#pod      ], via {
+#pod         MyApp::MyStruct->new(%$_);
+#pod      },
+#pod      from Dict[
+#pod         lastname=>Str,
+#pod         firstname=>Str,
+#pod         dob=>DateTime
+#pod      ], via {
+#pod         my $name = $_->{firstname} .' '. $_->{lastname};
+#pod         my $age = DateTime->now - $_->{dob};
+#pod
+#pod         MyApp::MyStruct->new(
+#pod             full_name=>$name,
+#pod             age_in_years=>$age->years,
+#pod         );
+#pod      };
+#pod
+#pod     has person => (isa=>MyStruct);
+#pod
+#pod This would allow you to instantiate with something like:
+#pod
+#pod     my $obj = MyApp::MyClass->new( person => {
+#pod         full_name=>'John Napiorkowski',
+#pod         age_in_years=>39,
+#pod     });
+#pod
+#pod Or even:
+#pod
+#pod     my $obj = MyApp::MyClass->new( person => {
+#pod         lastname=>'John',
+#pod         firstname=>'Napiorkowski',
+#pod         dob=>DateTime->new(year=>1969),
+#pod     });
+#pod
+#pod If you are not familiar with how coercions work, check out the L<Moose> cookbook
+#pod entry L<Moose::Cookbook::Recipe5> for an explanation.  The section L</Coercions>
+#pod has additional examples and discussion.
+#pod
+#pod =for stopwords Subtyping
+#pod
+#pod =head2 Subtyping a Structured type constraint
+#pod
+#pod You need to exercise some care when you try to subtype a structured type as in
+#pod this example:
+#pod
+#pod     subtype Person,
+#pod      as Dict[name => Str];
+#pod
+#pod     subtype FriendlyPerson,
+#pod      as Person[
+#pod         name => Str,
+#pod         total_friends => Int,
+#pod      ];
+#pod
+#pod This will actually work BUT you have to take care that the subtype has a
+#pod structure that does not contradict the structure of it's parent.  For now the
+#pod above works, but I will clarify the syntax for this at a future point, so
+#pod it's recommended to avoid (should not really be needed so much anyway).  For
+#pod now this is supported in an EXPERIMENTAL way.  Your thoughts, test cases and
+#pod patches are welcomed for discussion.  If you find a good use for this, please
+#pod let me know.
+#pod
+#pod =head2 Coercions
+#pod
+#pod Coercions currently work for 'one level' deep.  That is you can do:
+#pod
+#pod     subtype Person,
+#pod      as Dict[
+#pod         name => Str,
+#pod         age => Int
+#pod     ];
+#pod
+#pod     subtype Fullname,
+#pod      as Dict[
+#pod         first => Str,
+#pod         last => Str
+#pod      ];
+#pod
+#pod     coerce Person,
+#pod      ## Coerce an object of a particular class
+#pod      from BlessedPersonObject, via {
+#pod         +{
+#pod             name=>$_->name,
+#pod             age=>$_->age,
+#pod         };
+#pod      },
+#pod
+#pod      ## Coerce from [$name, $age]
+#pod      from ArrayRef, via {
+#pod         +{
+#pod             name=>$_->[0],
+#pod             age=>$_->[1],
+#pod         },
+#pod      },
+#pod      ## Coerce from {fullname=>{first=>...,last=>...}, dob=>$DateTimeObject}
+#pod      from Dict[fullname=>Fullname, dob=>DateTime], via {
+#pod         my $age = $_->dob - DateTime->now;
+#pod         my $firstn = $_->{fullname}->{first};
+#pod         my $lastn = $_->{fullname}->{last}
+#pod         +{
+#pod             name => $_->{fullname}->{first} .' '. ,
+#pod             age =>$age->years
+#pod         }
+#pod      };
+#pod
+#pod And that should just work as expected.  However, if there are any 'inner'
+#pod coercions, such as a coercion on C<Fullname> or on C<DateTime>, that coercion
+#pod won't currently get activated.
+#pod
+#pod Please see the test F<07-coerce.t> for a more detailed example.  Discussion on
+#pod extending coercions to support this welcome on the Moose development channel or
+#pod mailing list.
+#pod
+#pod =head2 Recursion
+#pod
+#pod Newer versions of L<MooseX::Types> support recursive type constraints.  That is
+#pod you can include a type constraint as a contained type constraint of itself.  For
+#pod example:
+#pod
+#pod     subtype Person,
+#pod      as Dict[
+#pod          name=>Str,
+#pod          friends=>Optional[
+#pod              ArrayRef[Person]
+#pod          ],
+#pod      ];
+#pod
+#pod This would declare a C<Person> subtype that contains a name and an optional
+#pod C<ArrayRef> of C<Person>s who are friends as in:
+#pod
+#pod     {
+#pod         name => 'Mike',
+#pod         friends => [
+#pod             { name => 'John' },
+#pod             { name => 'Vincent' },
+#pod             {
+#pod                 name => 'Tracey',
+#pod                 friends => [
+#pod                     { name => 'Stephenie' },
+#pod                     { name => 'Ilya' },
+#pod                 ],
+#pod             },
+#pod         ],
+#pod     };
+#pod
+#pod Please take care to make sure the recursion node is either C<Optional>, or declare
+#pod a union with an non-recursive option such as:
+#pod
+#pod     subtype Value
+#pod      as Tuple[
+#pod          Str,
+#pod          Str|Tuple,
+#pod      ];
+#pod
+#pod Which validates:
+#pod
+#pod     [
+#pod         'Hello', [
+#pod             'World', [
+#pod                 'Is', [
+#pod                     'Getting',
+#pod                     'Old',
+#pod                 ],
+#pod             ],
+#pod         ],
+#pod     ];
+#pod
+#pod Otherwise you will define a subtype that is impossible to validate since it is
+#pod infinitely recursive.  For more information about defining recursive types,
+#pod please see the documentation in L<MooseX::Types> and the test cases.
+#pod
+#pod =head1 TYPE CONSTRAINTS
+#pod
+#pod This type library defines the following constraints.
+#pod
+#pod =head2 Tuple[@constraints]
+#pod
+#pod This defines an ArrayRef based constraint which allows you to validate a specific
+#pod list of contained constraints.  For example:
+#pod
+#pod     Tuple[Int,Str]; ## Validates [1,'hello']
+#pod     Tuple[Str|Object, Int]; ## Validates ['hello', 1] or [$object, 2]
+#pod
+#pod The Values of @constraints should ideally be L<MooseX::Types> declared type
+#pod constraints.  We do support 'old style' L<Moose> string based constraints to a
+#pod limited degree but these string type constraints are considered deprecated.
+#pod There will be limited support for bugs resulting from mixing string and
+#pod L<MooseX::Types> in your structures.  If you encounter such a bug and really
+#pod need it fixed, we will required a detailed test case at the minimum.
+#pod
+#pod =head2 Dict[%constraints]
+#pod
+#pod This defines a HashRef based constraint which allowed you to validate a specific
+#pod hashref.  For example:
+#pod
+#pod     Dict[name=>Str, age=>Int]; ## Validates {name=>'John', age=>39}
+#pod
+#pod The keys in C<%constraints> follow the same rules as C<@constraints> in the above
+#pod section.
+#pod
+#pod =head2 Map[ $key_constraint, $value_constraint ]
+#pod
+#pod This defines a C<HashRef>-based constraint in which both the keys and values are
+#pod required to meet certain constraints.  For example, to map hostnames to IP
+#pod addresses, you might say:
+#pod
+#pod   Map[ HostName, IPAddress ]
+#pod
+#pod The type constraint would only be met if every key was a valid C<HostName> and
+#pod every value was a valid C<IPAddress>.
+#pod
+#pod =head2 Optional[$constraint]
+#pod
+#pod This is primarily a helper constraint for C<Dict> and C<Tuple> type constraints.  What
+#pod this allows is for you to assert that a given type constraint is allowed to be
+#pod null (but NOT undefined).  If the value is null, then the type constraint passes
+#pod but if the value is defined it must validate against the type constraint.  This
+#pod makes it easy to make a Dict where one or more of the keys doesn't have to exist
+#pod or a tuple where some of the values are not required.  For example:
+#pod
+#pod     subtype Name() => as Dict[
+#pod         first=>Str,
+#pod         last=>Str,
+#pod         middle=>Optional[Str],
+#pod     ];
+#pod
+#pod ...creates a constraint that validates against a hashref with the keys 'first' and
+#pod 'last' being strings and required while an optional key 'middle' is must be a
+#pod string if it appears but doesn't have to appear.  So in this case both the
+#pod following are valid:
+#pod
+#pod     {first=>'John', middle=>'James', last=>'Napiorkowski'}
+#pod     {first=>'Vanessa', last=>'Li'}
+#pod
+#pod If you use the C<Maybe> type constraint instead, your values will also validate
+#pod against C<undef>, which may be incorrect for you.
+#pod
+#pod =head1 EXPORTABLE SUBROUTINES
+#pod
+#pod This type library makes available for export the following subroutines
+#pod
+#pod =for stopwords slurpy
+#pod
+#pod =head2 slurpy
+#pod
+#pod Structured type constraints by their nature are closed; that is validation will
+#pod depend on an exact match between your structure definition and the arguments to
+#pod be checked.  Sometimes you might wish for a slightly looser amount of validation.
+#pod For example, you may wish to validate the first 3 elements of an array reference
+#pod and allow for an arbitrary number of additional elements.  At first thought you
+#pod might think you could do it this way:
+#pod
+#pod     #  I want to validate stuff like: [1,"hello", $obj, 2,3,4,5,6,...]
+#pod     subtype AllowTailingArgs,
+#pod      as Tuple[
+#pod        Int,
+#pod        Str,
+#pod        Object,
+#pod        ArrayRef[Int],
+#pod      ];
+#pod
+#pod However what this will actually validate are structures like this:
+#pod
+#pod     [10,"Hello", $obj, [11,12,13,...] ]; # Notice element 4 is an ArrayRef
+#pod
+#pod In order to allow structured validation of, "and then some", arguments, you can
+#pod use the L</slurpy> method against a type constraint.  For example:
+#pod
+#pod     use MooseX::Types::Structured qw(Tuple slurpy);
+#pod
+#pod     subtype AllowTailingArgs,
+#pod      as Tuple[
+#pod        Int,
+#pod        Str,
+#pod        Object,
+#pod        slurpy ArrayRef[Int],
+#pod      ];
+#pod
+#pod This will now work as expected, validating ArrayRef structures such as:
+#pod
+#pod     [1,"hello", $obj, 2,3,4,5,6,...]
+#pod
+#pod A few caveats apply.  First, the slurpy type constraint must be the last one in
+#pod the list of type constraint parameters.  Second, the parent type of the slurpy
+#pod type constraint must match that of the containing type constraint.  That means
+#pod that a C<Tuple> can allow a slurpy C<ArrayRef> (or children of C<ArrayRef>s, including
+#pod another C<Tuple>) and a C<Dict> can allow a slurpy C<HashRef> (or children/subtypes of
+#pod HashRef, also including other C<Dict> constraints).
+#pod
+#pod Please note the technical way this works 'under the hood' is that the
+#pod slurpy keyword transforms the target type constraint into a coderef.  Please do
+#pod not try to create your own custom coderefs; always use the slurpy method.  The
+#pod underlying technology may change in the future but the slurpy keyword will be
+#pod supported.
+#pod
+#pod =head1 ERROR MESSAGES
+#pod
+#pod Error reporting has been improved to return more useful debugging messages. Now
+#pod I will stringify the incoming check value with L<Devel::PartialDump> so that you
+#pod can see the actual structure that is tripping up validation.  Also, I report the
+#pod 'internal' validation error, so that if a particular element inside the
+#pod Structured Type is failing validation, you will see that.  There's a limit to
+#pod how deep this internal reporting goes, but you shouldn't see any of the "failed
+#pod with ARRAY(XXXXXX)" that we got with earlier versions of this module.
+#pod
+#pod This support is continuing to expand, so it's best to use these messages for
+#pod debugging purposes and not for creating messages that 'escape into the wild'
+#pod such as error messages sent to the user.
+#pod
+#pod Please see the test '12-error.t' for a more lengthy example.  Your thoughts and
+#pod preferable tests or code patches very welcome!
+#pod
+#pod =head1 EXAMPLES
+#pod
+#pod Here are some additional example usage for structured types.  All examples can
+#pod be found also in the 't/examples.t' test.  Your contributions are also welcomed.
+#pod
+#pod =head2 Normalize a HashRef
+#pod
+#pod You need a hashref to conform to a canonical structure but are required accept a
+#pod bunch of different incoming structures.  You can normalize using the C<Dict> type
+#pod constraint and coercions.  This example also shows structured types mixed which
+#pod other L<MooseX::Types> libraries.
+#pod
+#pod     package Test::MooseX::Meta::TypeConstraint::Structured::Examples::Normalize;
+#pod
+#pod     use Moose;
+#pod     use DateTime;
+#pod
+#pod     use MooseX::Types::Structured qw(Dict Tuple);
+#pod     use MooseX::Types::DateTime qw(DateTime);
+#pod     use MooseX::Types::Moose qw(Int Str Object);
+#pod     use MooseX::Types -declare => [qw(Name Age Person)];
+#pod
+#pod     subtype Person,
+#pod      as Dict[
+#pod          name=>Str,
+#pod          age=>Int,
+#pod      ];
+#pod
+#pod     coerce Person,
+#pod      from Dict[
+#pod          first=>Str,
+#pod          last=>Str,
+#pod          years=>Int,
+#pod      ], via { +{
+#pod         name => "$_->{first} $_->{last}",
+#pod         age => $_->{years},
+#pod      }},
+#pod      from Dict[
+#pod          fullname=>Dict[
+#pod              last=>Str,
+#pod              first=>Str,
+#pod          ],
+#pod          dob=>DateTime,
+#pod      ],
+#pod      ## DateTime needs to be inside of single quotes here to disambiguate the
+#pod      ## class package from the DataTime type constraint imported via the
+#pod      ## line "use MooseX::Types::DateTime qw(DateTime);"
+#pod      via { +{
+#pod         name => "$_->{fullname}{first} $_->{fullname}{last}",
+#pod         age => ($_->{dob} - 'DateTime'->now)->years,
+#pod      }};
+#pod
+#pod     has person => (is=>'rw', isa=>Person, coerce=>1);
+#pod
+#pod And now you can instantiate with all the following:
+#pod
+#pod     __PACKAGE__->new(
+#pod         person=>{
+#pod             name=>'John Napiorkowski',
+#pod             age=>39,
+#pod         },
+#pod     );
+#pod
+#pod     __PACKAGE__->new(
+#pod         person=>{
+#pod             first=>'John',
+#pod             last=>'Napiorkowski',
+#pod             years=>39,
+#pod         },
+#pod     );
+#pod
+#pod     __PACKAGE__->new(
+#pod         person=>{
+#pod             fullname => {
+#pod                 first=>'John',
+#pod                 last=>'Napiorkowski'
+#pod             },
+#pod             dob => 'DateTime'->new(
+#pod                 year=>1969,
+#pod                 month=>2,
+#pod                 day=>13
+#pod             ),
+#pod         },
+#pod     );
+#pod
+#pod This technique is a way to support various ways to instantiate your class in a
+#pod clean and declarative way.
+#pod
+#pod =cut
 
 my $Optional = MooseX::Meta::TypeConstraint::Structured::Optional->new(
     name => 'MooseX::Types::Structured::Optional',
@@ -306,17 +992,30 @@ sub slurpy ($) {
     );
 }
 
+#pod =head1 SEE ALSO
+#pod
+#pod The following modules or resources may be of interest.
+#pod
+#pod L<Moose>, L<MooseX::Types>, L<Moose::Meta::TypeConstraint>,
+#pod L<MooseX::Meta::TypeConstraint::Structured>
+#pod
+#pod =cut
 
 1;
 
 __END__
+
 =pod
 
-=encoding utf-8
+=encoding UTF-8
 
 =head1 NAME
 
-MooseX::Types::Structured - MooseX::Types::Structured - Structured Type Constraints for Moose
+MooseX::Types::Structured - Structured Type Constraints for Moose
+
+=head1 VERSION
+
+version 0.36
 
 =head1 SYNOPSIS
 
@@ -373,7 +1072,7 @@ Or with:
         description => ['A great student!'],
     );
 
-But all of these would cause a constraint error for the 'name' attribute:
+But all of these would cause a constraint error for the C<name> attribute:
 
     ## Value for 'name' not a HashRef
     Person->new( name => 'John' );
@@ -396,7 +1095,7 @@ But all of these would cause a constraint error for the 'name' attribute:
         last => 'Li',
     });
 
-And these would cause a constraint error for the 'description' attribute:
+And these would cause a constraint error for the C<description> attribute:
 
     ## Should be an ArrayRef
     Person->new( description => 'Hello I am a String' );
@@ -412,13 +1111,13 @@ Please see the test cases for more examples.
 =head1 DESCRIPTION
 
 A structured type constraint is a standard container L<Moose> type constraint,
-such as an ArrayRef or HashRef, which has been enhanced to allow you to
+such as an C<ArrayRef> or C<HashRef>, which has been enhanced to allow you to
 explicitly name all the allowed type constraints inside the structure.  The
 generalized form is:
 
     TypeConstraint[@TypeParameters or %TypeParameters]
 
-Where 'TypeParameters' is an array reference or hash references of
+Where C<TypeParameters> is an array reference or hash references of
 L<Moose::Meta::TypeConstraint> objects.
 
 This type library enables structured type constraints. It is built on top of the
@@ -428,7 +1127,7 @@ if you are not familiar with it.
 =head2 Comparing Parameterized types to Structured types
 
 Parameterized constraints are built into core Moose and you are probably already
-familiar with the type constraints 'HashRef' and 'ArrayRef'.  Structured types
+familiar with the type constraints C<HashRef> and C<ArrayRef>.  Structured types
 have similar functionality, so their syntax is likewise similar. For example,
 you could define a parameterized constraint like:
 
@@ -442,8 +1141,8 @@ other hand, a structured type constraint explicitly names all it's allowed
     subtype StringFollowedByInt,
      as Tuple[Str,Int];
 
-would constrain it's value to things like ['hello', 111] but ['hello', 'world']
-would fail, as well as ['hello', 111, 'world'] and so on.  Here's another
+would constrain its value to things like C<< ['hello', 111] >>  but C<< ['hello', 'world'] >>
+would fail, as well as C<< ['hello', 111, 'world'] >> and so on.  Here's another
 example:
 
 	package MyApp::Types;
@@ -464,15 +1163,15 @@ This defines a type constraint that validates values like:
     ['World', 200];
 
 Notice that the last type constraint in the structure is optional.  This is
-enabled via the helper Optional type constraint, which is a variation of the
-core Moose type constraint 'Maybe'.  The main difference is that Optional type
-constraints are required to validate if they exist, while 'Maybe' permits
+enabled via the helper C<Optional> type constraint, which is a variation of the
+core Moose type constraint C<Maybe>.  The main difference is that C<Optional> type
+constraints are required to validate if they exist, while C<Maybe> permits
 undefined values.  So the following example would not validate:
 
     StringIntOptionalHashRef->validate(['Hello Undefined', 1000, undef]);
 
 Please note the subtle difference between undefined and null.  If you wish to
-allow both null and undefined, you should use the core Moose 'Maybe' type
+allow both null and undefined, you should use the core Moose C<Maybe> type
 constraint instead:
 
     package MyApp::Types;
@@ -493,7 +1192,7 @@ This would validate the following:
     ['World', 200];
 
 Structured constraints are not limited to arrays.  You can define a structure
-against a HashRef with the 'Dict' type constaint as in this example:
+against a C<HashRef> with the C<Dict> type constraint as in this example:
 
     subtype FirstNameLastName,
      as Dict[
@@ -501,7 +1200,7 @@ against a HashRef with the 'Dict' type constaint as in this example:
         lastname => Str,
      ];
 
-This would constrain a HashRef that validates something like:
+This would constrain a C<HashRef> that validates something like:
 
     {firstname => 'Christopher', lastname => 'Parsons'};
 
@@ -532,7 +1231,7 @@ Which would match:
 
 Please notice how the type parameters can be visually arranged to your liking
 and to improve the clarity of your meaning.  You don't need to run then
-altogether onto a single line.  Additionally, since the 'Dict' type constraint
+altogether onto a single line.  Additionally, since the C<Dict> type constraint
 defines a hash constraint, the key order is not meaningful.  For example:
 
     subtype AnyKeyOrder,
@@ -547,7 +1246,7 @@ Would validate both:
     {key1 => 1, key2 => "Hi!", key3 => 2};
     {key2 => "Hi!", key1 => 100, key3 => 300};
 
-As you would expect, since underneath its just a plain old Perl hash at work.
+As you would expect, since underneath it's just a plain old Perl hash at work.
 
 =head2 Alternatives
 
@@ -573,7 +1272,7 @@ example:
         ),
     );
 
-This method may take some additional time to setup but will give you more
+This method may take some additional time to set up but will give you more
 flexibility.  However, structured constraints are highly compatible with this
 method, granting some interesting possibilities for coercion.  Try:
 
@@ -641,6 +1340,8 @@ If you are not familiar with how coercions work, check out the L<Moose> cookbook
 entry L<Moose::Cookbook::Recipe5> for an explanation.  The section L</Coercions>
 has additional examples and discussion.
 
+=for stopwords Subtyping
+
 =head2 Subtyping a Structured type constraint
 
 You need to exercise some care when you try to subtype a structured type as in
@@ -707,10 +1408,10 @@ Coercions currently work for 'one level' deep.  That is you can do:
      };
 
 And that should just work as expected.  However, if there are any 'inner'
-coercions, such as a coercion on 'Fullname' or on 'DateTime', that coercion
+coercions, such as a coercion on C<Fullname> or on C<DateTime>, that coercion
 won't currently get activated.
 
-Please see the test '07-coerce.t' for a more detailed example.  Discussion on
+Please see the test F<07-coerce.t> for a more detailed example.  Discussion on
 extending coercions to support this welcome on the Moose development channel or
 mailing list.
 
@@ -728,8 +1429,8 @@ example:
          ],
      ];
 
-This would declare a Person subtype that contains a name and an optional
-ArrayRef of Persons who are friends as in:
+This would declare a C<Person> subtype that contains a name and an optional
+C<ArrayRef> of C<Person>s who are friends as in:
 
     {
         name => 'Mike',
@@ -746,8 +1447,8 @@ ArrayRef of Persons who are friends as in:
         ],
     };
 
-Please take care to make sure the recursion node is either Optional, or declare
-a Union with an non recursive option such as:
+Please take care to make sure the recursion node is either C<Optional>, or declare
+a union with an non-recursive option such as:
 
     subtype Value
      as Tuple[
@@ -768,7 +1469,7 @@ Which validates:
         ],
     ];
 
-Otherwise you will define a subtype thatis impossible to validate since it is
+Otherwise you will define a subtype that is impossible to validate since it is
 infinitely recursive.  For more information about defining recursive types,
 please see the documentation in L<MooseX::Types> and the test cases.
 
@@ -798,23 +1499,23 @@ hashref.  For example:
 
     Dict[name=>Str, age=>Int]; ## Validates {name=>'John', age=>39}
 
-The keys in %constraints follow the same rules as @constraints in the above
+The keys in C<%constraints> follow the same rules as C<@constraints> in the above
 section.
 
 =head2 Map[ $key_constraint, $value_constraint ]
 
-This defines a HashRef based constraint in which both the keys and values are
+This defines a C<HashRef>-based constraint in which both the keys and values are
 required to meet certain constraints.  For example, to map hostnames to IP
 addresses, you might say:
 
   Map[ HostName, IPAddress ]
 
-The type constraint would only be met if every key was a valid HostName and
-every value was a valid IPAddress.
+The type constraint would only be met if every key was a valid C<HostName> and
+every value was a valid C<IPAddress>.
 
 =head2 Optional[$constraint]
 
-This is primarily a helper constraint for Dict and Tuple type constraints.  What
+This is primarily a helper constraint for C<Dict> and C<Tuple> type constraints.  What
 this allows is for you to assert that a given type constraint is allowed to be
 null (but NOT undefined).  If the value is null, then the type constraint passes
 but if the value is defined it must validate against the type constraint.  This
@@ -827,7 +1528,7 @@ or a tuple where some of the values are not required.  For example:
         middle=>Optional[Str],
     ];
 
-Creates a constraint that validates against a hashref with the keys 'first' and
+...creates a constraint that validates against a hashref with the keys 'first' and
 'last' being strings and required while an optional key 'middle' is must be a
 string if it appears but doesn't have to appear.  So in this case both the
 following are valid:
@@ -835,12 +1536,14 @@ following are valid:
     {first=>'John', middle=>'James', last=>'Napiorkowski'}
     {first=>'Vanessa', last=>'Li'}
 
-If you use the 'Maybe' type constraint instead, your values will also validate
-against 'undef', which may be incorrect for you.
+If you use the C<Maybe> type constraint instead, your values will also validate
+against C<undef>, which may be incorrect for you.
 
 =head1 EXPORTABLE SUBROUTINES
 
 This type library makes available for export the following subroutines
+
+=for stopwords slurpy
 
 =head2 slurpy
 
@@ -884,11 +1587,11 @@ This will now work as expected, validating ArrayRef structures such as:
 A few caveats apply.  First, the slurpy type constraint must be the last one in
 the list of type constraint parameters.  Second, the parent type of the slurpy
 type constraint must match that of the containing type constraint.  That means
-that a Tuple can allow a slurpy ArrayRef (or children of ArrayRefs, including
-another Tuple) and a Dict can allow a slurpy HashRef (or children/subtypes of
-HashRef, also including other Dict constraints).
+that a C<Tuple> can allow a slurpy C<ArrayRef> (or children of C<ArrayRef>s, including
+another C<Tuple>) and a C<Dict> can allow a slurpy C<HashRef> (or children/subtypes of
+HashRef, also including other C<Dict> constraints).
 
-Please note the the technical way this works 'under the hood' is that the
+Please note the technical way this works 'under the hood' is that the
 slurpy keyword transforms the target type constraint into a coderef.  Please do
 not try to create your own custom coderefs; always use the slurpy method.  The
 underlying technology may change in the future but the slurpy keyword will be
@@ -919,9 +1622,9 @@ be found also in the 't/examples.t' test.  Your contributions are also welcomed.
 =head2 Normalize a HashRef
 
 You need a hashref to conform to a canonical structure but are required accept a
-bunch of different incoming structures.  You can normalize using the Dict type
+bunch of different incoming structures.  You can normalize using the C<Dict> type
 constraint and coercions.  This example also shows structured types mixed which
-other MooseX::Types libraries.
+other L<MooseX::Types> libraries.
 
     package Test::MooseX::Meta::TypeConstraint::Structured::Examples::Normalize;
 
@@ -1006,6 +1709,17 @@ The following modules or resources may be of interest.
 L<Moose>, L<MooseX::Types>, L<Moose::Meta::TypeConstraint>,
 L<MooseX::Meta::TypeConstraint::Structured>
 
+=head1 SUPPORT
+
+Bugs may be submitted through L<the RT bug tracker|https://rt.cpan.org/Public/Dist/Display.html?Name=MooseX-Types-Structured>
+(or L<bug-MooseX-Types-Structured@rt.cpan.org|mailto:bug-MooseX-Types-Structured@rt.cpan.org>).
+
+There is also a mailing list available for users of this distribution, at
+L<http://lists.perl.org/list/moose.html>.
+
+There is also an irc channel available for users of this distribution, at
+L<C<#moose> on C<irc.perl.org>|irc://irc.perl.org/#moose>.
+
 =head1 AUTHORS
 
 =over 4
@@ -1020,11 +1734,11 @@ Florian Ragwitz <rafl@debian.org>
 
 =item *
 
-Yuval Kogman <nothingmuch@woobling.org>
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
 
 =item *
 
-Tomas Doran <bobtfish@bobtfish.net>
+Tomas (t0m) Doran <bobtfish@bobtfish.net>
 
 =item *
 
@@ -1032,12 +1746,51 @@ Robert Sedlacek <rs@474.at>
 
 =back
 
+=head1 CONTRIBUTORS
+
+=for stopwords Karen Etheridge Ricardo Signes Dave Rolsky Ansgar Burchardt Stevan Little arcanez Jesse Luehrs D. Ilmari Mannsåker
+
+=over 4
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Ricardo Signes <rjbs@cpan.org>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Ansgar Burchardt <ansgar@43-1.org>
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+arcanez <justin.d.hunter@gmail.com>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+D. Ilmari Mannsåker <ilmari@cpan.org>
+
+=back
+
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by John Napiorkowski.
+This software is copyright (c) 2008 by John Napiorkowski.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-

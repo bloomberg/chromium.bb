@@ -76,7 +76,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void Close() override;
   WebSize Size() override;
   void Resize(const WebSize&) override;
-  void ResizeVisualViewport(const WebSize&) override;
   void DidEnterFullscreen() override;
   void DidExitFullscreen() override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
@@ -114,6 +113,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget implementation.
+  void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
 
@@ -153,9 +153,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
-      const LayoutPoint& pos_in_root_frame);
+      const PhysicalOffset& pos_in_root_frame);
 
-  void SetIsAcceleratedCompositingActive(bool);
   void UpdateLayerTreeViewport();
 
   // PageWidgetEventHandler functions
@@ -178,7 +177,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // includes the caret and is with respect to absolute coordinates.
   void GetScrollParamsForFocusedEditableElement(
       const Element& element,
-      LayoutRect& rect_to_scroll,
+      PhysicalRect& rect_to_scroll,
       WebScrollIntoViewParams& params);
 
   base::Optional<WebSize> size_;

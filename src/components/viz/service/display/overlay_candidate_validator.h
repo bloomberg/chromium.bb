@@ -12,12 +12,17 @@
 #include "components/viz/service/viz_service_export.h"
 
 namespace viz {
+class RendererSettings;
+class ContextProvider;
 
 // This class that can be used to answer questions about possible overlay
 // configurations for a particular output device.
 class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
  public:
-  OverlayCandidateValidator();
+  static std::unique_ptr<OverlayCandidateValidator> Create(
+      gpu::SurfaceHandle surface_handle,
+      const ContextProvider* context_provider,
+      const RendererSettings& renderer_settings);
   virtual ~OverlayCandidateValidator();
 
   // Populates a list of strategies that may work with this validator. Should be
@@ -76,6 +81,8 @@ class VIZ_SERVICE_EXPORT OverlayCandidateValidator {
       std::vector<gfx::Rect>* content_bounds) const;
 
  protected:
+  OverlayCandidateValidator();
+
   OverlayProcessor::StrategyList strategies_;
 };
 

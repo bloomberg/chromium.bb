@@ -40,14 +40,16 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
  private:
   // quic_enable_version_99 flag
   bool enable_version_99_;
+  // quic_enable_version_48 flag
+  bool enable_version_48_;
   // quic_enable_version_47 flag
   bool enable_version_47_;
-  // quic_enable_version_46 flag
-  bool enable_version_46_;
-  // quic_enable_version_44 flag
-  bool enable_version_44_;
+  // quic_disable_version_44 flag
+  bool disable_version_44_;
   // quic_disable_version_39 flag
   bool disable_version_39_;
+  // quic_supports_tls_handshake flag
+  bool enable_tls_;
   // The list of versions that may be supported.
   ParsedQuicVersionVector allowed_supported_versions_;
   // This vector contains QUIC versions which are currently supported based on

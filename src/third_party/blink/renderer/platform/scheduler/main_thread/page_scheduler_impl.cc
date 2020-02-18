@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -156,8 +155,7 @@ PageSchedulerImpl::PageSchedulerImpl(
       freeze_on_network_idle_enabled_(base::FeatureList::IsEnabled(
           blink::features::kFreezeBackgroundTabOnNetworkIdle)),
       delay_for_background_and_network_idle_tab_freezing_(
-          GetDelayForBackgroundAndNetworkIdleTabFreezing()),
-      weak_factory_(this) {
+          GetDelayForBackgroundAndNetworkIdleTabFreezing()) {
   page_lifecycle_state_tracker_.reset(new PageLifecycleStateTracker(
       this, kDefaultPageVisibility == PageVisibilityState::kVisible
                 ? PageLifecycleState::kActive
@@ -259,8 +257,10 @@ void PageSchedulerImpl::SetPageFrozenImpl(
   if (is_frozen_ == frozen)
     return;
   is_frozen_ = frozen;
-  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->SetPageFrozenForTracing(frozen);
+    frame_scheduler->SetShouldReportPostedTasksWhenDisabled(frozen);
+  }
   if (notification_policy ==
       PageSchedulerImpl::NotificationPolicy::kNotifyFrames)
     NotifyFrames();
@@ -341,8 +341,8 @@ void PageSchedulerImpl::OnNavigation() {
   reported_background_throttling_since_navigation_ = false;
 }
 
-void PageSchedulerImpl::ReportIntervention(const std::string& message) {
-  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
+void PageSchedulerImpl::ReportIntervention(const String& message) {
+  delegate_->ReportIntervention(message);
 }
 
 base::TimeTicks PageSchedulerImpl::EnableVirtualTime() {
@@ -545,7 +545,7 @@ void PageSchedulerImpl::OnThrottlingReported(
     return;
   reported_background_throttling_since_navigation_ = true;
 
-  std::string message = base::StringPrintf(
+  String message = String::Format(
       "Timer tasks have taken too much time while the page was in the "
       "background. "
       "As a result, they have been deferred for %.3f seconds. "
@@ -553,7 +553,7 @@ void PageSchedulerImpl::OnThrottlingReported(
       "for more details",
       throttling_duration.InSecondsF());
 
-  delegate_->ReportIntervention(String::FromUTF8(message.c_str()));
+  delegate_->ReportIntervention(message);
 }
 
 void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
@@ -634,8 +634,8 @@ void PageSchedulerImpl::OnLocalMainFrameNetworkAlmostIdle() {
 
   // If delay_for_background_and_network_idle_tab_freezing_ passes after
   // the page is not visible, we should freeze the page.
-  TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
-                     page_visibility_changed_time_;
+  base::TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
+                           page_visibility_changed_time_;
   if (passed < delay_for_background_and_network_idle_tab_freezing_)
     return;
 
@@ -647,8 +647,9 @@ void PageSchedulerImpl::DoFreezePage() {
 
   if (freeze_on_network_idle_enabled_) {
     DCHECK(delegate_);
-    TimeDelta passed = main_thread_scheduler_->GetTickClock()->NowTicks() -
-                       page_visibility_changed_time_;
+    base::TimeDelta passed =
+        main_thread_scheduler_->GetTickClock()->NowTicks() -
+        page_visibility_changed_time_;
     // The page will be frozen if:
     // (1) the main frame is remote, or,
     // (2) the local main frame's network is almost idle, or,

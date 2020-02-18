@@ -189,6 +189,16 @@ TEST_F(MediaDrmBridgeTest, Provision_Widevine) {
     return;
   }
 
+  // On Android M occasionally MediaDrm.getProvisionRequest() throws and thus a
+  // request can not be generated. This has been fixed in Android N. As Android
+  // M is unlikely to be fixed, disabling this test if running on Android M.
+  // http://crbug.com/973096#c21
+  if (base::android::BuildInfo::GetInstance()->sdk_int() ==
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    VLOG(0) << "Disabled for Android M.";
+    return;
+  }
+
   // Calling Provision() later should trigger a provisioning request. As we
   // can't pass the request to a license server,
   // MockProvisionFetcher::Retrieve() simply drops the request and never

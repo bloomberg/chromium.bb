@@ -7,15 +7,21 @@ package com.android.webview.chromium;
 import android.app.Application;
 import android.content.Context;
 
+import org.chromium.android_webview.AwLocaleConfig;
+import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Application subclass for SystemWebView and Trichrome.
  *
- * Application subclass is only used in renderer processes and in the WebView APK's own services.
+ * Application subclass is used by renderer processes, services, and content providers that run
+ * under the WebView APK's package.
+ *
  * None of this code runs in an application which simply uses WebView.
  */
 @JNINamespace("android_webview")
@@ -26,12 +32,34 @@ public class WebViewApkApplication extends Application {
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
+        maybeInitProcessGlobals();
+
+        // MonochromeApplication has its own locale configuration already, so call this here
+        // rather than in maybeInitProcessGlobals.
+        ResourceBundle.setAvailablePakLocales(
+                new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         FontPreloadingWorkaround.maybeInstallWorkaround(this);
+    }
+
+    /**
+     * Initializes globals needed for components that run in the "webview_apk" or "webview_service"
+     * process.
+     *
+     * This is also called by MonochromeApplication, so the initialization here will run
+     * for those processes regardless of whether the WebView is standalone or Monochrome.
+     */
+    public static void maybeInitProcessGlobals() {
+        // Either "webview_service", or "webview_apk".
+        // "webview_service" is meant to be very light-weight and never load the native library.
+        if (ContextUtils.getProcessName().contains(":webview_")) {
+            PathUtils.setPrivateDataDirectorySuffix("webview");
+            CommandLineUtil.initCommandLine();
+        }
     }
 
     /**

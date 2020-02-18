@@ -11,11 +11,14 @@
 
 #include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_headers_stream.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
+#include "net/third_party/quiche/src/quic/core/http/quic_send_control_stream.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_decoder_stream_sender.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder_stream_sender.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
@@ -27,12 +30,6 @@ namespace quic {
 namespace test {
 class QuicSpdySessionPeer;
 }  // namespace test
-
-// Unidirectional stream types define by IETF HTTP/3 draft in section 3.2.
-const uint64_t kControlStream = 0;
-const uint64_t kServerPushStream = 1;
-const uint64_t kQpackEncoderStream = 2;
-const uint64_t kQpackDecoderStream = 3;
 
 // QuicHpackDebugVisitor gathers data used for understanding HPACK HoL
 // dynamics.  Specifically, it is to help predict the compression
@@ -57,9 +54,7 @@ class QUIC_EXPORT_PRIVATE QuicHpackDebugVisitor {
 class QUIC_EXPORT_PRIVATE QuicSpdySession
     : public QuicSession,
       public QpackEncoder::DecoderStreamErrorDelegate,
-      public QpackEncoderStreamSender::Delegate,
-      public QpackDecoder::EncoderStreamErrorDelegate,
-      public QpackDecoderStreamSender::Delegate {
+      public QpackDecoder::EncoderStreamErrorDelegate {
  public:
   // Does not take ownership of |connection| or |visitor|.
   QuicSpdySession(QuicConnection* connection,
@@ -76,14 +71,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // QpackEncoder::DecoderStreamErrorDelegate implementation.
   void OnDecoderStreamError(QuicStringPiece error_message) override;
 
-  // QpackEncoderStreamSender::Delegate implemenation.
-  void WriteEncoderStreamData(QuicStringPiece data) override;
-
   // QpackDecoder::EncoderStreamErrorDelegate implementation.
   void OnEncoderStreamError(QuicStringPiece error_message) override;
-
-  // QpackDecoderStreamSender::Delegate implementation.
-  void WriteDecoderStreamData(QuicStringPiece data) override;
 
   // Called by |headers_stream_| when headers with a priority have been
   // received for a stream.  This method will only be called for server streams.
@@ -133,27 +122,23 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
                        int weight,
                        bool exclusive);
 
+  // Writes a HTTP/3 PRIORITY frame to the peer.
+  void WriteH3Priority(const PriorityFrame& priority);
+
   // Write |headers| for |promised_stream_id| on |original_stream_id| in a
   // PUSH_PROMISE frame to peer.
-  // Return the size, in bytes, of the resulting PUSH_PROMISE frame.
-  virtual size_t WritePushPromise(QuicStreamId original_stream_id,
-                                  QuicStreamId promised_stream_id,
-                                  spdy::SpdyHeaderBlock headers);
+  virtual void WritePushPromise(QuicStreamId original_stream_id,
+                                QuicStreamId promised_stream_id,
+                                spdy::SpdyHeaderBlock headers);
 
   // Sends SETTINGS_MAX_HEADER_LIST_SIZE SETTINGS frame.
   void SendMaxHeaderListSize(size_t value);
 
   QpackEncoder* qpack_encoder();
   QpackDecoder* qpack_decoder();
-  QuicHeadersStream* headers_stream() {
-    return eliminate_static_stream_map() ? unowned_headers_stream_
-                                         : headers_stream_.get();
-  }
+  QuicHeadersStream* headers_stream() { return headers_stream_; }
 
-  const QuicHeadersStream* headers_stream() const {
-    return eliminate_static_stream_map() ? unowned_headers_stream_
-                                         : headers_stream_.get();
-  }
+  const QuicHeadersStream* headers_stream() const { return headers_stream_; }
 
   bool server_push_enabled() const { return server_push_enabled_; }
 
@@ -168,8 +153,18 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   void CloseConnectionWithDetails(QuicErrorCode error,
                                   const std::string& details);
 
+  // Must be called before Initialize().
+  // TODO(bnc): Move to constructor argument.
   void set_max_inbound_header_list_size(size_t max_inbound_header_list_size) {
     max_inbound_header_list_size_ = max_inbound_header_list_size;
+  }
+
+  void set_max_outbound_header_list_size(size_t max_outbound_header_list_size) {
+    max_outbound_header_list_size_ = max_outbound_header_list_size;
+  }
+
+  size_t max_outbound_header_list_size() const {
+    return max_outbound_header_list_size_;
   }
 
   size_t max_inbound_header_list_size() const {
@@ -184,7 +179,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   // CreateOutgoingUnidirectionalStream() with QuicSpdyStream return type to
   // make sure that all data streams are QuicSpdyStreams.
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override = 0;
-  QuicSpdyStream* CreateIncomingStream(PendingStream pending) override = 0;
+  QuicSpdyStream* CreateIncomingStream(PendingStream* pending) override = 0;
   virtual QuicSpdyStream* CreateOutgoingBidirectionalStream() = 0;
   virtual QuicSpdyStream* CreateOutgoingUnidirectionalStream() = 0;
 
@@ -238,16 +233,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   bool IsConnected() { return connection()->connected(); }
 
-  // Sets how much encoded data the hpack decoder of h2_deframer_ is willing to
-  // buffer.
-  void set_max_decode_buffer_size_bytes(size_t max_decode_buffer_size_bytes) {
-    h2_deframer_.GetHpackDecoder()->set_max_decode_buffer_size_bytes(
-        max_decode_buffer_size_bytes);
-  }
-
-  void set_max_uncompressed_header_bytes(
-      size_t set_max_uncompressed_header_bytes);
-
  private:
   friend class test::QuicSpdySessionPeer;
 
@@ -263,8 +248,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
 
   // Called when a PUSH_PROMISE frame has been received.
   void OnPushPromise(spdy::SpdyStreamId stream_id,
-                     spdy::SpdyStreamId promised_stream_id,
-                     bool end);
+                     spdy::SpdyStreamId promised_stream_id);
 
   // Called when a PRIORITY frame has been received.
   void OnPriority(spdy::SpdyStreamId stream_id, spdy::SpdyPriority priority);
@@ -278,19 +262,22 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   std::unique_ptr<QpackEncoder> qpack_encoder_;
   std::unique_ptr<QpackDecoder> qpack_decoder_;
 
-  // TODO(123528590): Remove this member.
-  std::unique_ptr<QuicHeadersStream> headers_stream_;
+  // Pointer to the header stream in stream_map_.
+  QuicHeadersStream* headers_stream_;
 
-  // Unowned headers stream pointer that points to the stream
-  // in dynamic_stream_map.
-  // TODO(renjietang): Merge this with headers_stream_ and clean up other
-  // static_stream_map logic when flag eliminate_static_stream_map
-  // is deprecated.
-  QuicHeadersStream* unowned_headers_stream_;
+  // HTTP/3 control streams. They are owned by QuicSession inside dynamic
+  // stream map, and can be accessed by those unowned pointers below.
+  QuicSendControlStream* send_control_stream_;
+  QuicReceiveControlStream* receive_control_stream_;
 
   // The maximum size of a header block that will be accepted from the peer,
   // defined per spec as key + value + overhead per field (uncompressed).
   size_t max_inbound_header_list_size_;
+
+  // The maximum size of a header block that can be sent to the peer. This field
+  // is informed and set by the peer via SETTINGS frame.
+  // TODO(renjietang): Honor this field when sending headers.
+  size_t max_outbound_header_list_size_;
 
   // Set during handshake. If true, resources in x-associated-content and link
   // headers will be pushed.
@@ -308,6 +295,10 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession
   spdy::SpdyFramer spdy_framer_;
   http2::Http2DecoderAdapter h2_deframer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
+
+  // TODO(renjietang): Replace these two members with actual QPACK send streams.
+  NoopQpackStreamSenderDelegate encoder_stream_sender_delegate_;
+  NoopQpackStreamSenderDelegate decoder_stream_sender_delegate_;
 };
 
 }  // namespace quic

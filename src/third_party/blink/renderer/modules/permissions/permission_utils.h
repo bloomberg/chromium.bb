@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_PERMISSION_UTILS_H_
 
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -13,6 +14,8 @@ class ExecutionContext;
 
 void ConnectToPermissionService(ExecutionContext*,
                                 mojom::blink::PermissionServiceRequest);
+
+String PermissionStatusToString(mojom::blink::PermissionStatus);
 
 mojom::blink::PermissionDescriptorPtr CreatePermissionDescriptor(
     mojom::blink::PermissionName);
@@ -23,6 +26,9 @@ mojom::blink::PermissionDescriptorPtr CreateMidiPermissionDescriptor(
 mojom::blink::PermissionDescriptorPtr CreateClipboardPermissionDescriptor(
     mojom::blink::PermissionName,
     bool allow_without_gesture);
+
+mojom::blink::PermissionDescriptorPtr CreateWakeLockPermissionDescriptor(
+    mojom::blink::WakeLockType type);
 
 }  // namespace blink
 

@@ -2,9 +2,9 @@
 rem simplified replacement for the original shell script
 set ROOT=%~dp0
 
-set XCFLAGS=-I%ROOT%..\include\mysql_5
+set XCFLAGS=-I%ROOT%..\include\mysql50716
 set XLIBS=-L%ROOT%..\lib -lmysql
-set XVERSION=5.5.11
+set XVERSION=5.7.16
 set XPREFIX=%ROOT%..\
 
 for %%p in (%*) do (

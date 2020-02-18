@@ -10,8 +10,11 @@
 #include <memory>
 #include <utility>
 
+#include "ash/assistant/test/test_assistant_service.h"
 #include "ash/session/test_session_controller_client.h"
+#include "ash/shell_init_params.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/scoped_command_line.h"
 
 class PrefService;
@@ -45,21 +48,44 @@ class AppListTestHelper;
 class AshTestViewsDelegate;
 class TestKeyboardControllerObserver;
 class TestNewWindowDelegate;
+class TestNotifierSettingsController;
 class TestPrefServiceProvider;
 class TestShellDelegate;
+class TestSystemTrayClient;
 
 // A helper class that does common initialization required for Ash. Creates a
 // root window and an ash::Shell instance with a test delegate.
 class AshTestHelper {
  public:
+  // Instantiates/destroys an AshTestHelper. This can happen in a
+  // single-threaded phase without a backing task environment. As such, the vast
+  // majority of initialization/tear down will be done in SetUp()/TearDown().
   AshTestHelper();
   ~AshTestHelper();
 
-  // Creates the ash::Shell and performs associated initialization.  Set
-  // |start_session| to true if the user should log in before the test is run.
-  // Set |provide_local_state| to true to inject local-state PrefService into
-  // the Shell before the test is run.
-  void SetUp(bool start_session, bool provide_local_state = true);
+  enum ConfigType {
+    // The configuration for shell executable.
+    kShell,
+    // The configuration for unit tests.
+    kUnitTest,
+    // The configuration for perf tests. Unlike kUnitTest, this
+    // does not disable animations.
+    kPerfTest,
+  };
+
+  struct InitParams {
+    // True if the user should log in.
+    bool start_session = true;
+    // True to inject local-state PrefService into the Shell.
+    bool provide_local_state = true;
+    ConfigType config_type = kUnitTest;
+  };
+
+  // Creates the ash::Shell and performs associated initialization according
+  // to |init_params|. |shell_init_params| is used to initialize ash::Shell,
+  // or it uses test settings if omitted.
+  void SetUp(const InitParams& init_params,
+             base::Optional<ShellInitParams> shell_init_params = base::nullopt);
 
   // Destroys the ash::Shell and performs associated cleanup.
   void TearDown();
@@ -88,6 +114,12 @@ class AshTestHelper {
       std::unique_ptr<TestSessionControllerClient> session_controller_client) {
     session_controller_client_ = std::move(session_controller_client);
   }
+  TestNotifierSettingsController* notifier_settings_controller() {
+    return notifier_settings_controller_.get();
+  }
+  TestSystemTrayClient* system_tray_client() {
+    return system_tray_client_.get();
+  }
   TestPrefServiceProvider* prefs_provider() { return prefs_provider_.get(); }
 
   AppListTestHelper* app_list_test_helper() {
@@ -102,7 +134,8 @@ class AshTestHelper {
 
  private:
   // Called when running in ash to create Shell.
-  void CreateShell(bool provide_local_state);
+  void CreateShell(bool provide_local_state,
+                   base::Optional<ShellInitParams> init_params);
 
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
@@ -118,8 +151,10 @@ class AshTestHelper {
   bool power_policy_controller_initialized_ = false;
 
   std::unique_ptr<TestSessionControllerClient> session_controller_client_;
+  std::unique_ptr<TestNotifierSettingsController> notifier_settings_controller_;
+  std::unique_ptr<TestSystemTrayClient> system_tray_client_;
   std::unique_ptr<TestPrefServiceProvider> prefs_provider_;
-
+  std::unique_ptr<TestAssistantService> assistant_service_;
   std::unique_ptr<ui::TestContextFactories> context_factories_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;

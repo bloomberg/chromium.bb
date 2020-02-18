@@ -58,7 +58,7 @@ TEST_F(LayoutObjectTest, LayoutDecoratedNameCalledWithPositionedObject) {
   DCHECK(div);
   LayoutObject* obj = div->GetLayoutObject();
   DCHECK(obj);
-  EXPECT_THAT(obj->DecoratedName().Ascii().data(),
+  EXPECT_THAT(obj->DecoratedName().Ascii(),
               MatchesRegex("LayoutN?G?BlockFlow \\(positioned\\)"));
 }
 
@@ -740,7 +740,7 @@ lime'>
 
   StringBuilder result;
   block->DumpLayoutObject(result, false, 0);
-  EXPECT_THAT(result.ToString().Utf8().data(),
+  EXPECT_THAT(result.ToString().Utf8(),
               MatchesRegex("LayoutN?G?BlockFlow\tDIV id=\"block\" "
                            "style=\"background:\\\\nlime\""));
 
@@ -1037,6 +1037,30 @@ TEST_F(LayoutObjectTest, FirstLineBackgroundImageAddBlockBackgroundImageCrash) {
       html_names::kStyleAttr,
       "background-image: url(data:image/gif;base64,"
       "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==)");
+  UpdateAllLifecyclePhasesForTest();
+}
+
+TEST_F(LayoutObjectTest, FirstLineBackgroundImageChangeStyleCrash) {
+  SetBodyInnerHTML(R"HTML(
+    <style id="style">
+      #target::first-line {
+        background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
+      }
+    </style>
+    <div id="target">Target</div>
+  )HTML");
+
+  // These should not crash.
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
+                                                       "color: blue");
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
+                                                       "display: none");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* style_element = GetDocument().getElementById("style");
+  style_element->setTextContent(style_element->textContent() + "dummy");
   UpdateAllLifecyclePhasesForTest();
 }
 

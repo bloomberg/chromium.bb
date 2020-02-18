@@ -277,4 +277,18 @@ TEST(FilteredRE2Test, MatchTests) {
   EXPECT_EQ(2, matching_regexps.size());
 }
 
+TEST(FilteredRE2Test, EmptyStringInStringSetBug) {
+  // Bug due to find() finding "" at the start of everything in a string
+  // set and thus SimplifyStringSet() would end up erasing everything.
+  // In order to test this, we have to keep PrefilterTree from discarding
+  // the OR entirely, so we have to make the minimum atom length zero.
+
+  FilterTestVars v(0);  // override the minimum atom length
+  const char* regexps[] = {"-R.+(|ADD=;AA){12}}"};
+  const char* atoms[] = {"", "-r", "add=;aa", "}"};
+  AddRegexpsAndCompile(regexps, arraysize(regexps), &v);
+  EXPECT_TRUE(CheckExpectedAtoms(atoms, arraysize(atoms),
+                                 "EmptyStringInStringSetBug", &v));
+}
+
 }  //  namespace re2

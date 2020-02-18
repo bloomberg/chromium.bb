@@ -19,6 +19,8 @@ import android.support.annotation.Nullable;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -82,16 +84,17 @@ public class FeatureUtilities {
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
+    private static Boolean sIsTabToGtsAnimationEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
     private static Boolean sIsNetworkServiceEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
-    private static Boolean sIsTabPersistentStoreTaskRunnerEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
-    private static Boolean sAllowStartingServiceManagerOnly;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
+
+    private static String sReachedCodeProfilerTrialGroup;
 
     private static final String NTP_BUTTON_TRIAL_NAME = "NewTabPage";
     private static final String NTP_BUTTON_VARIANT_PARAM_NAME = "variation";
@@ -185,13 +188,10 @@ public class FeatureUtilities {
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
         cacheNetworkService();
-        cacheAllowStartingServiceManagerOnly();
-        cacheServiceManagerForDownloadResumption();
-        cacheServiceManagerForBackgroundPrefetch();
         cacheNetworkServiceWarmUpEnabled();
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
-        cacheTabPersistentStoreTaskRunnerVariant();
+        cacheReachedCodeProfilerTrialGroup();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -200,6 +200,18 @@ public class FeatureUtilities {
         // LibraryLoader itself because it lives in //base and can't depend on ChromeFeatureList.
         LibraryLoader.setReachedCodeProfilerEnabledOnNextRuns(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * Caches flags that are enabled in ServiceManager only mode and must take effect on startup but
+     * are set via native code. This function needs to be called in ServiceManager only mode to mark
+     * these field trials as active, otherwise histogram data recorded in ServiceManager only mode
+     * won't be tagged with their corresponding field trial experiments.
+     */
+    public static void cacheNativeFlagsForServiceManagerOnlyMode() {
+        // TODO(crbug.com/995355): Move other related flags from {@link cacheNativeFlags} to here.
+        cacheServiceManagerForDownloadResumption();
+        cacheServiceManagerForBackgroundPrefetch();
     }
 
     /**
@@ -244,15 +256,6 @@ public class FeatureUtilities {
         sIsHomePageButtonForceEnabled = null;
     }
 
-    private static void cacheAllowStartingServiceManagerOnly() {
-        boolean allowStartingServiceManagerOnly =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_STARTING_SERVICE_MANAGER_ONLY);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY,
-                allowStartingServiceManagerOnly);
-    }
-
     private static void cacheNetworkService() {
         boolean networkService = ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
 
@@ -268,19 +271,6 @@ public class FeatureUtilities {
                     prefManager.readBoolean(ChromePreferenceManager.NETWORK_SERVICE_KEY, false);
         }
         return sIsNetworkServiceEnabled;
-    }
-
-    /**
-     * @return if allowing to start service manager only mode.
-     */
-    private static boolean isAllowStartingServiceManagerOnlyEnabled() {
-        if (sAllowStartingServiceManagerOnly == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sAllowStartingServiceManagerOnly = prefManager.readBoolean(
-                    ChromePreferenceManager.ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY, false);
-        }
-        return sAllowStartingServiceManagerOnly && isNetworkServiceEnabled();
     }
 
     private static void cacheServiceManagerForDownloadResumption() {
@@ -302,10 +292,10 @@ public class FeatureUtilities {
             sServiceManagerForDownloadResumption = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY, false);
         }
-        return sServiceManagerForDownloadResumption && isAllowStartingServiceManagerOnlyEnabled();
+        return sServiceManagerForDownloadResumption && isNetworkServiceEnabled();
     }
 
-    private static void cacheServiceManagerForBackgroundPrefetch() {
+    public static void cacheServiceManagerForBackgroundPrefetch() {
         boolean backgroundPrefetchInReducedMode = ChromeFeatureList.isEnabled(
                 ChromeFeatureList.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH);
 
@@ -324,8 +314,7 @@ public class FeatureUtilities {
             sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
         }
-        return sServiceManagerForBackgroundPrefetch && isFeedEnabled()
-                && isAllowStartingServiceManagerOnlyEnabled();
+        return sServiceManagerForBackgroundPrefetch && isFeedEnabled() && isNetworkServiceEnabled();
     }
 
     /**
@@ -389,29 +378,6 @@ public class FeatureUtilities {
                     ChromePreferenceManager.HOMEPAGE_TILE_ENABLED_KEY, false);
         }
         return sIsHomepageTileEnabled;
-    }
-
-    /**
-     * Cache the whether or not TabPersistentStore is using TaskRunners, so on next startup, the
-     * value can be made available immediately.
-     */
-    private static void cacheTabPersistentStoreTaskRunnerVariant() {
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY,
-                ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_PERSISTENT_STORE_TASK_RUNNER));
-    }
-
-    /**
-     * @return Whether or not we are using the TaskRunner API in TabPersistentStore.
-     */
-    public static boolean isTabPersistentStoreTaskRunnerEnabled() {
-        if (sIsTabPersistentStoreTaskRunnerEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsTabPersistentStoreTaskRunnerEnabled = prefManager.readBoolean(
-                    ChromePreferenceManager.TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY, false);
-        }
-        return sIsTabPersistentStoreTaskRunnerEnabled;
     }
 
     /**
@@ -688,6 +654,31 @@ public class FeatureUtilities {
         sIsTabGroupsAndroidEnabled = available;
     }
 
+    /**
+     * Toggles whether the Tab-to-GTS animation is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setIsTabToGtsAnimationEnabledForTesting(@Nullable Boolean enabled) {
+        sIsTabToGtsAnimationEnabled = enabled;
+    }
+
+    /**
+     * @return Whether the Tab-to-Grid (and Grid-to-Tab) transition animation is enabled.
+     */
+    public static boolean isTabToGtsAnimationEnabled() {
+        if (sIsTabToGtsAnimationEnabled != null) {
+            Log.d(TAG, "IsTabToGtsAnimationEnabled forced to " + sIsTabToGtsAnimationEnabled);
+            return sIsTabToGtsAnimationEnabled;
+        }
+        Log.d(TAG, "GTS.MinSdkVersion = " + GridTabSwitcherUtil.getMinSdkVersion());
+        Log.d(TAG, "GTS.MinMemoryMB = " + GridTabSwitcherUtil.getMinMemoryMB());
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+                && Build.VERSION.SDK_INT >= GridTabSwitcherUtil.getMinSdkVersion()
+                && SysUtils.amountOfPhysicalMemoryKB() / 1024
+                >= GridTabSwitcherUtil.getMinMemoryMB();
+    }
+
     private static boolean isHighEndPhone() {
         return !SysUtils.isLowEndDevice()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
@@ -798,6 +789,63 @@ public class FeatureUtilities {
                 ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT));
+    }
+
+    /**
+     * Caches the trial group of the reached code profiler feature to be using on next startup.
+     */
+    private static void cacheReachedCodeProfilerTrialGroup() {
+        // Make sure that the existing value is saved in a static variable before overwriting it.
+        if (sReachedCodeProfilerTrialGroup == null) {
+            getReachedCodeProfilerTrialGroup();
+        }
+
+        ChromePreferenceManager.getInstance().writeString(
+                ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY,
+                FieldTrialList.findFullName(ChromeFeatureList.REACHED_CODE_PROFILER));
+    }
+
+    /**
+     * @return The trial group of the reached code profiler.
+     */
+    @CalledByNative
+    public static String getReachedCodeProfilerTrialGroup() {
+        if (sReachedCodeProfilerTrialGroup == null) {
+            sReachedCodeProfilerTrialGroup = ChromePreferenceManager.getInstance().readString(
+                    ChromePreferenceManager.REACHED_CODE_PROFILER_GROUP_KEY, "");
+        }
+
+        return sReachedCodeProfilerTrialGroup;
+    }
+
+    private static class GridTabSwitcherUtil {
+        // Field trial parameter for the minimum Android SDK version to enable zooming animation.
+        private static final String MIN_SDK_PARAM = "zooming-min-sdk-version";
+        private static final int DEFAULT_MIN_SDK = Build.VERSION_CODES.O;
+
+        // Field trial parameter for the minimum physical memory size to enable zooming animation.
+        private static final String MIN_MEMORY_MB_PARAM = "zooming-min-memory-mb";
+        private static final int DEFAULT_MIN_MEMORY_MB = 2048;
+
+        private static int getMinSdkVersion() {
+            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_SDK_PARAM);
+            try {
+                return Integer.valueOf(sdkVersion);
+            } catch (NumberFormatException e) {
+                return DEFAULT_MIN_SDK;
+            }
+        }
+
+        private static int getMinMemoryMB() {
+            String sdkVersion = ChromeFeatureList.getFieldTrialParamByFeature(
+                    ChromeFeatureList.TAB_TO_GTS_ANIMATION, MIN_MEMORY_MB_PARAM);
+            try {
+                return Integer.valueOf(sdkVersion);
+            } catch (NumberFormatException e) {
+                return DEFAULT_MIN_MEMORY_MB;
+            }
+        }
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

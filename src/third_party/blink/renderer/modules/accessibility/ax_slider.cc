@@ -87,7 +87,7 @@ void AXSlider::AddChildren() {
 
   // Before actually adding the value indicator to the hierarchy,
   // allow the platform to make a final decision about it.
-  if (thumb->AccessibilityIsIgnored())
+  if (!thumb->AccessibilityIsIncludedInTree())
     cache.Remove(thumb->AXObjectID());
   else
     children_.push_back(thumb);
@@ -131,7 +131,7 @@ LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
   if (!slider_layout_object || !slider_layout_object->IsSlider())
     return nullptr;
   Element* thumb_element =
-      ToElement(slider_layout_object->GetNode())
+      To<Element>(slider_layout_object->GetNode())
           ->UserAgentShadowRoot()
           ->getElementById(shadow_element_names::SliderThumb());
   DCHECK(thumb_element);

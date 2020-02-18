@@ -40,8 +40,6 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
 
   EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
   EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
-  EXPECT_EQ(gfx::Vector2dF(0, 0),
-            host()->compositor()->root_layer()->subpixel_position_offset());
 }
 
 #if defined(OS_CHROMEOS)
@@ -107,14 +105,15 @@ TEST_F(WindowTreeHostTest, ColorSpaceHDR) {
   EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
             host()->compositor()->output_color_space());
 
-  // Setting SDR white level scales HDR color spaces but not SDR color spaces.
-  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
+  // UI compositor does not override color space if it's already SCRGB linear.
   test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear(), 200.f);
-  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(
-                gfx::ColorSpace::kDefaultSDRWhiteLevel / 200.f),
+  host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
+  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
             host()->compositor()->output_color_space());
 
+  // UI compositor does not override SDR color space.
   test_screen()->SetColorSpace(gfx::ColorSpace::CreateSRGB(), 200.f);
+  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
             host()->compositor()->output_color_space());
 }

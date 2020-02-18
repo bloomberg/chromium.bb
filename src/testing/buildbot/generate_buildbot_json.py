@@ -279,6 +279,12 @@ class BBJSONGenerator(object):
       return None
     return exception.get('modifications', {}).get(tester_name)
 
+  def get_test_replacements(self, test, test_name, tester_name):
+    exception = self.get_exception_for_test(test_name, test)
+    if not exception:
+      return None
+    return exception.get('replacements', {}).get(tester_name)
+
   def merge_command_line_args(self, arr, prefix, splitter):
     prefix_len = len(prefix)
     idx = 0
@@ -447,8 +453,43 @@ class BBJSONGenerator(object):
       for d in test['swarming'].get('dimension_sets', []):
         if d.get('os') == 'Android' and not d.get('device_os_type'):
           d['device_os_type'] = 'userdebug'
+    self.replace_test_args(test, test_name, tester_name)
 
     return test
+
+  def replace_test_args(self, test, test_name, tester_name):
+    replacements = self.get_test_replacements(
+        test, test_name, tester_name) or {}
+    valid_replacement_keys = ['args', 'non_precommit_args', 'precommit_args']
+    for key, replacement_dict in replacements.iteritems():
+      if key not in valid_replacement_keys:
+        raise BBGenErr(
+            'Given replacement key %s for %s on %s is not in the list of valid '
+            'keys %s' % (key, test_name, tester_name, valid_replacement_keys))
+      for replacement_key, replacement_val in replacement_dict.iteritems():
+        found_key = False
+        for i, test_key in enumerate(test.get(key, [])):
+          # Handle both the key/value being replaced being defined as two
+          # separate items or as key=value.
+          if test_key == replacement_key:
+            found_key = True
+            # Handle flags without values.
+            if replacement_val == None:
+              del test[key][i]
+            else:
+              test[key][i+1] = replacement_val
+            break
+          elif test_key.startswith(replacement_key + '='):
+            found_key = True
+            if replacement_val == None:
+              del test[key][i]
+            else:
+              test[key][i] = '%s=%s' % (replacement_key, replacement_val)
+            break
+        if not found_key:
+          raise BBGenErr('Could not find %s in existing list of values for key '
+                         '%s in %s on %s' % (replacement_key, key, test_name,
+                             tester_name))
 
   def add_common_test_properties(self, test, tester_config):
     if tester_config.get('use_multi_dimension_trigger_script'):
@@ -476,13 +517,14 @@ class BBJSONGenerator(object):
 
   def add_android_presentation_args(self, tester_config, test_name, result):
     args = result.get('args', [])
-    args.append('--gs-results-bucket=chromium-result-details')
+    bucket = tester_config.get('results_bucket', 'chromium-result-details')
+    args.append('--gs-results-bucket=%s' % bucket)
     if (result['swarming']['can_use_on_swarming_builders'] and not
         tester_config.get('skip_merge_script', False)):
       result['merge'] = {
         'args': [
           '--bucket',
-          'chromium-result-details',
+          bucket,
           '--test-name',
           test_name
         ],
@@ -1005,9 +1047,6 @@ class BBJSONGenerator(object):
       'Linux Tests Code Coverage',
       'GPU Linux Builder Code Coverage',
       'Linux Release Code Coverage (NVIDIA)',
-      # chromium.memory. exists, but is omitted from consoles for now.
-      # https://crbug.com/790202
-      'android-asan'
     ]
 
   def check_input_file_consistency(self, verbose=False):

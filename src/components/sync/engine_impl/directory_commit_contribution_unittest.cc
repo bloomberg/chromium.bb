@@ -114,8 +114,8 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
-  EXPECT_TRUE(base::ContainsValue(cc->metahandles_, pref1));
-  EXPECT_TRUE(base::ContainsValue(cc->metahandles_, pref2));
+  EXPECT_TRUE(base::Contains(cc->metahandles_, pref1));
+  EXPECT_TRUE(base::Contains(cc->metahandles_, pref2));
 
   cc->CleanUp();
 }

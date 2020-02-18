@@ -155,6 +155,13 @@ class CONTENT_EXPORT NotificationDatabase {
   Status DeleteNotificationData(const std::string& notification_id,
                                 const GURL& origin);
 
+  // Deletes resources associated with the notification identified by
+  // |notification_id| belonging to |origin| from the database. Returns the
+  // status code of the deletion operation. Note that it is not considered a
+  // failure if the to-be-deleted resources do not exist.
+  Status DeleteNotificationResources(const std::string& notification_id,
+                                     const GURL& origin);
+
   // Deletes all data associated with |origin| from the database, optionally
   // filtered by the |tag|, and appends the deleted notification ids to
   // |deleted_notification_ids|. Returns the status code of the deletion

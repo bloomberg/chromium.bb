@@ -154,9 +154,7 @@ void AllocateExtraSpace(std::vector<gfx::Rect>& bounds,
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabSizeInfo& tab_size_info,
     const std::vector<TabAnimationState>& tabs,
-    int width,
-    int* active_width,
-    int* inactive_width) {
+    int width) {
   DCHECK_LE(tab_size_info.min_inactive_width, tab_size_info.min_active_width);
   if (tabs.empty())
     return std::vector<gfx::Rect>();
@@ -175,22 +173,6 @@ std::vector<gfx::Rect> CalculateTabBounds(
 
   AllocateExtraSpace(bounds, tabs, width, tab_sizer);
 
-  if (active_width != nullptr) {
-    *active_width =
-        tab_sizer.CalculateTabWidth(TabAnimationState::ForIdealTabState(
-            TabAnimationState::TabOpenness::kOpen,
-            TabAnimationState::TabPinnedness::kUnpinned,
-            TabAnimationState::TabActiveness::kActive, 0));
-  }
-
-  if (inactive_width != nullptr) {
-    *inactive_width =
-        tab_sizer.CalculateTabWidth(TabAnimationState::ForIdealTabState(
-            TabAnimationState::TabOpenness::kOpen,
-            TabAnimationState::TabPinnedness::kUnpinned,
-            TabAnimationState::TabActiveness::kInactive, 0));
-  }
-
   return bounds;
 }
 
@@ -198,5 +180,5 @@ std::vector<gfx::Rect> CalculatePinnedTabBounds(
     const TabSizeInfo& tab_size_info,
     const std::vector<TabAnimationState>& pinned_tabs) {
   // Pinned tabs are always the same size regardless of the available width.
-  return CalculateTabBounds(tab_size_info, pinned_tabs, 0, nullptr, nullptr);
+  return CalculateTabBounds(tab_size_info, pinned_tabs, 0);
 }

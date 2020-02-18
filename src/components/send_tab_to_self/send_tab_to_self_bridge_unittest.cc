@@ -26,7 +26,7 @@
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
 #include "components/sync_device_info/device_info.h"
-#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/fake_device_info_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +38,6 @@ using testing::_;
 using testing::AllOf;
 using testing::ElementsAre;
 using testing::IsEmpty;
-using testing::Pair;
 using testing::Return;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
@@ -89,58 +88,18 @@ MATCHER_P(GuidIs, e, "") {
   return testing::ExplainMatchResult(e, arg->GetGUID(), result_listener);
 }
 
-// TODO(crbug.com/958016): Extract into its own file.
-// Mock DeviceInfoTracker class for setting device info.
-class TestDeviceInfoTracker : public syncer::DeviceInfoTracker {
- public:
-  TestDeviceInfoTracker() = default;
-  ~TestDeviceInfoTracker() override = default;
-
-  static std::unique_ptr<syncer::DeviceInfo> CloneDeviceInfo(
-      const syncer::DeviceInfo& device_info) {
-    return std::make_unique<syncer::DeviceInfo>(
-        device_info.guid(), device_info.client_name(),
-        device_info.chrome_version(), device_info.sync_user_agent(),
-        device_info.device_type(), device_info.signin_scoped_device_id(),
-        device_info.last_updated_timestamp(),
-        device_info.send_tab_to_self_receiving_enabled());
-  }
-
-  void Add(const syncer::DeviceInfo* device) { devices_.push_back(device); }
-
-  // DeviceInfoTracker implementation.
-  bool IsSyncing() const override { return false; }
-  std::unique_ptr<syncer::DeviceInfo> GetDeviceInfo(
-      const std::string& client_id) const override {
-    NOTIMPLEMENTED();
-    return std::unique_ptr<syncer::DeviceInfo>();
-  }
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllDeviceInfo()
-      const override {
-    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices;
-    for (const syncer::DeviceInfo* device : devices_) {
-      devices.push_back(CloneDeviceInfo(*device));
-    }
-    return devices;
-  }
-  int CountActiveDevices() const override { return devices_.size(); }
-  void AddObserver(Observer* observer) override { NOTIMPLEMENTED(); }
-  void RemoveObserver(Observer* observer) override { NOTIMPLEMENTED(); }
-  void ForcePulseForTest() override { NOTIMPLEMENTED(); }
-
- private:
-  // DeviceInfo stored here are not owned.
-  std::vector<const syncer::DeviceInfo*> devices_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDeviceInfoTracker);
-};
-
 class SendTabToSelfBridgeTest : public testing::Test {
  protected:
   SendTabToSelfBridgeTest()
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
     SetLocalDeviceCacheGuid(kLocalDeviceCacheGuid);
+    local_device_ = std::make_unique<syncer::DeviceInfo>(
+        kLocalDeviceCacheGuid, "device", "72", "agent",
+        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+        clock()->Now() - base::TimeDelta::FromDays(1),
+        /*send_tab_to_self_receiving_enabled=*/true);
+    AddTestDevice(local_device_.get());
   }
 
   // Initialized the bridge based on the current local device and store. Can
@@ -180,7 +139,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
     *(entity_data->specifics.mutable_send_tab_to_self()) =
         specifics.specifics();
-    entity_data->non_unique_name = entry.GetURL().spec();
+    entity_data->name = entry.GetURL().spec();
     return entity_data;
   }
 
@@ -194,7 +153,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
       auto entity_data = std::make_unique<syncer::EntityData>();
 
       *(entity_data->specifics.mutable_send_tab_to_self()) = specifics;
-      entity_data->non_unique_name = specifics.url();
+      entity_data->name = specifics.url();
 
       changes.push_back(syncer::EntityChange::CreateAdd(
           specifics.guid(), std::move(entity_data)));
@@ -242,13 +201,15 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 
-  TestDeviceInfoTracker device_info_tracker_;
+  syncer::FakeDeviceInfoTracker device_info_tracker_;
 
   std::unique_ptr<SendTabToSelfBridge> bridge_;
 
   testing::NiceMock<MockSendTabToSelfModelObserver> mock_observer_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<syncer::DeviceInfo> local_device_;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridgeTest);
 };
@@ -300,6 +261,7 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesAddTwoSpecifics) {
 
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
   InitializeBridge();
+
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
                            kLocalDeviceCacheGuid);
@@ -320,6 +282,7 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
 // Tests that the send tab to self entry is correctly removed.
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
   InitializeBridge();
+
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
                            kLocalDeviceCacheGuid);
@@ -612,17 +575,17 @@ TEST_F(SendTabToSelfBridgeTest,
       /*enabled_features=*/{kSendTabToSelfShowSendingUI},
       /*disabled_features=*/{kSendTabToSelfBroadcast});
 
+  const std::string kRemoteGuid = "RemoteDevice";
   InitializeBridge();
-  SetLocalDeviceCacheGuid("Device1");
 
   // Add on entry targeting this device and another targeting another device.
   syncer::EntityChangeList remote_input;
   SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
                             AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device1");
+                            kLocalDeviceCacheGuid);
   SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
                             AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device2");
+                            kRemoteGuid);
   remote_input.push_back(
       syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
   remote_input.push_back(
@@ -677,7 +640,7 @@ TEST_F(SendTabToSelfBridgeTest,
 // Tests that only the most recent device's guid is returned when multiple
 // devices have the same name.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_OneDevicePerName) {
+       GetTargetDeviceInfoSortedList_OneDevicePerName) {
   const std::string kRecentGuid = "guid1";
   const std::string kOldGuid = "guid2";
   const std::string kOlderGuid = "guid3";
@@ -706,19 +669,18 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&older_device);
 
-  TargetDeviceInfo target_device_info(recent_device.guid(),
-                                      recent_device.device_type(),
-                                      recent_device.last_updated_timestamp());
+  TargetDeviceInfo target_device_info(
+      recent_device.client_name(), recent_device.guid(),
+      recent_device.device_type(), recent_device.last_updated_timestamp());
 
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      ElementsAre(Pair(recent_device.client_name(), target_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(target_device_info));
 }
 
 // Tests that only devices that have the send tab to self receiving feature
 // enabled are returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_OnlyReceivingEnabled) {
+       GetTargetDeviceInfoSortedList_OnlyReceivingEnabled) {
   InitializeBridge();
 
   syncer::DeviceInfo enabled_device(
@@ -735,18 +697,17 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/false);
   AddTestDevice(&disabled_device);
 
-  TargetDeviceInfo target_device_info(enabled_device.guid(),
-                                      enabled_device.device_type(),
-                                      enabled_device.last_updated_timestamp());
+  TargetDeviceInfo target_device_info(
+      enabled_device.client_name(), enabled_device.guid(),
+      enabled_device.device_type(), enabled_device.last_updated_timestamp());
 
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      ElementsAre(Pair(enabled_device.client_name(), target_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(target_device_info));
 }
 
 // Tests that only devices that are not expired are returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_NoExpiredDevices) {
+       GetTargetDeviceInfoSortedList_NoExpiredDevices) {
   InitializeBridge();
 
   syncer::DeviceInfo expired_device(
@@ -763,18 +724,16 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&valid_device);
 
-  TargetDeviceInfo target_device_info(valid_device.guid(),
-                                      valid_device.device_type(),
-                                      valid_device.last_updated_timestamp());
+  TargetDeviceInfo target_device_info(
+      valid_device.client_name(), valid_device.guid(),
+      valid_device.device_type(), valid_device.last_updated_timestamp());
 
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      ElementsAre(Pair(valid_device.client_name(), target_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(target_device_info));
 }
 
 // Tests that the local device is not returned.
-TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_NoLocalDevice) {
+TEST_F(SendTabToSelfBridgeTest, GetTargetDeviceInfoSortedList_NoLocalDevice) {
   InitializeBridge();
   bridge()->SetLocalDeviceNameForTest(kLocalDeviceName);
 
@@ -799,18 +758,17 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&other_device);
 
-  TargetDeviceInfo target_device_info(other_device.guid(),
-                                      other_device.device_type(),
-                                      other_device.last_updated_timestamp());
+  TargetDeviceInfo target_device_info(
+      other_device.client_name(), other_device.guid(),
+      other_device.device_type(), other_device.last_updated_timestamp());
 
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      ElementsAre(Pair(other_device.client_name(), target_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(target_device_info));
 }
 
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_Updated_DeviceExpired) {
+       GetTargetDeviceInfoSortedList_Updated_DeviceExpired) {
   InitializeBridge();
 
   // Set a device that is about to expire and a more recent device.
@@ -828,31 +786,28 @@ TEST_F(SendTabToSelfBridgeTest,
       /*send_tab_to_self_receiving_enabled=*/true);
   AddTestDevice(&recent_device);
 
-  TargetDeviceInfo older_device_info(older_device.guid(),
-                                     older_device.device_type(),
-                                     older_device.last_updated_timestamp());
-  TargetDeviceInfo recent_device_info(recent_device.guid(),
-                                      recent_device.device_type(),
-                                      recent_device.last_updated_timestamp());
+  TargetDeviceInfo older_device_info(
+      older_device.client_name(), older_device.guid(),
+      older_device.device_type(), older_device.last_updated_timestamp());
+  TargetDeviceInfo recent_device_info(
+      recent_device.client_name(), recent_device.guid(),
+      recent_device.device_type(), recent_device.last_updated_timestamp());
 
   // Set the map by calling it. Make sure it has the 2 devices.
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              UnorderedElementsAre(
-                  Pair(older_device.client_name(), older_device_info),
-                  Pair(recent_device.client_name(), recent_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(recent_device_info, older_device_info));
 
   // Advance the time so that the older device expires.
   clock()->Advance(base::TimeDelta::FromDays(5));
 
   // Make sure only the recent device is in the map.
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      ElementsAre(Pair(recent_device.client_name(), recent_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(recent_device_info));
 }
 
 // Tests that the local device is not returned.
 TEST_F(SendTabToSelfBridgeTest,
-       GetTargetDeviceNameToCacheInfoMap_Updated_NewEntries) {
+       GetTargetDeviceInfoSortedList_Updated_NewEntries) {
   InitializeBridge();
 
   // Set a valid device.
@@ -863,11 +818,12 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&device);
 
   // Set the map by calling it. Make sure it has the device.
-  TargetDeviceInfo device_info(device.guid(), device.device_type(),
+  TargetDeviceInfo device_info(device.client_name(), device.guid(),
+                               device.device_type(),
                                device.last_updated_timestamp());
 
-  EXPECT_THAT(bridge()->GetTargetDeviceNameToCacheInfoMap(),
-              ElementsAre(Pair(device.client_name(), device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(device_info));
 
   // Add a new device.
   syncer::DeviceInfo new_device("new_guid", "new_name", "72", "agent",
@@ -878,13 +834,12 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&new_device);
 
   // Make sure both devices are in the map.
-  TargetDeviceInfo new_device_info(new_device.guid(), new_device.device_type(),
+  TargetDeviceInfo new_device_info(new_device.client_name(), new_device.guid(),
+                                   new_device.device_type(),
                                    new_device.last_updated_timestamp());
 
-  EXPECT_THAT(
-      bridge()->GetTargetDeviceNameToCacheInfoMap(),
-      UnorderedElementsAre(Pair(device.client_name(), device_info),
-                           Pair(new_device.client_name(), new_device_info)));
+  EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
+              ElementsAre(device_info, new_device_info));
 }
 
 TEST_F(SendTabToSelfBridgeTest, NotifyRemoteSendTabToSelfEntryOpened) {

@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1385214448885562192">‏اضغط على Enter للموافقة أو Esc للإلغاء، واضغط على السهم لأسفل للانتقال إلى النتيجة التالية وعلى السهم لأعلى للانتقال إلى النتيجة السابقة.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">الإعلان عن سمات النص المنسق</translation>
 <translation id="1405567553485452995">أخضر فاتح</translation>
 <translation id="1417889266572670458">أزرق داكن</translation>
 <translation id="1431911867058218151">برقوقي</translation>
@@ -319,11 +320,11 @@
 <translation id="3232388865800379423">زر بقائمة منبثقة</translation>
 <translation id="3241052487511142956">الرابط السابق الذي تمّ الانتقال إليه</translation>
 <translation id="3241638166094654466">الخلايا في كل سطر:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">صورة أشخاص</translation>
 <translation id="3286390186030710347">شريط تمرير</translation>
 <translation id="3299925995433437805">ليس هناك رابط تالٍ تم الانتقال إليه.</translation>
 <translation id="3300348286427369683">‏دعم نص منسق. يدعم ChromeVox الآن حقول النص المنسق، بما في ذلك أوامر الانتقال السريع وتوجيه مؤشر لغة برايل والاختيار والمزيد.</translation>
-<translation id="3304756947457041303">تخصيص إشارة النص المنسَّق</translation>
 <translation id="3307886118343381874">الانتقال إلى نهاية الجدول</translation>
 <translation id="3311969765485641742">‏اضغط على Alt+Shift+A لمراجعة التنبيهات</translation>
 <translation id="3312997241656799641">الرابط التالي الذي تم الانتقال إليه</translation>
@@ -613,7 +614,7 @@
 <translation id="5304943142864553931">علامة التبويب <ph name="TITLE" /></translation>
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5310788376443009632">تمت إزالة:</translation>
-<translation id="5320727453979144100">تم تفعيل الوضع الثابت</translation>
+<translation id="5320727453979144100">تم تفعيل وضع التثبيت</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{فاصلة واحدة}zero{# commas}two{فاصلتان (#)}few{# فواصل}many{# فاصلة}other{# من الفواصل}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />، مربع النص</translation>
 <translation id="5330443287809544590">الرابط <ph name="NAME" /></translation>

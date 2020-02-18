@@ -17,6 +17,7 @@ cr.define('app_management.util', function() {
         pageType: PageType.MAIN,
         selectedAppId: null,
       },
+      arcSupported: false,
       search: {
         term: null,
         results: null,
@@ -34,6 +35,10 @@ cr.define('app_management.util', function() {
    */
   function createInitialState(apps) {
     const initialState = createEmptyState();
+
+    initialState.arcSupported =
+        loadTimeData.valueExists('isSupportedArcVersion') &&
+        loadTimeData.getBoolean('isSupportedArcVersion');
 
     for (const app of apps) {
       initialState.apps[app.id] = app;
@@ -58,13 +63,15 @@ cr.define('app_management.util', function() {
    * @param {number} permissionId
    * @param {!PermissionValueType} valueType
    * @param {number} value
+   * @param {boolean} isManaged
    * @return {!Permission}
    */
-  function createPermission(permissionId, valueType, value) {
+  function createPermission(permissionId, valueType, value, isManaged) {
     return {
-      permissionId: permissionId,
-      valueType: valueType,
-      value: value,
+      permissionId,
+      valueType,
+      value,
+      isManaged,
     };
   }
 
@@ -218,6 +225,23 @@ cr.define('app_management.util', function() {
     return a.localeCompare(b);
   }
 
+  /**
+   * Toggles an OptionalBool
+   *
+   * @param {OptionalBool} bool
+   * @return {OptionalBool}
+   */
+  function toggleOptionalBool(bool) {
+    switch (bool) {
+      case OptionalBool.kFalse:
+        return OptionalBool.kTrue;
+      case OptionalBool.kTrue:
+        return OptionalBool.kFalse;
+      default:
+        assertNotReached();
+    }
+  }
+
   return {
     addIfNeeded: addIfNeeded,
     alphabeticalSort: alphabeticalSort,
@@ -232,5 +256,6 @@ cr.define('app_management.util', function() {
     notificationsPermissionType: notificationsPermissionType,
     permissionTypeHandle: permissionTypeHandle,
     removeIfNeeded: removeIfNeeded,
+    toggleOptionalBool: toggleOptionalBool,
   };
 });

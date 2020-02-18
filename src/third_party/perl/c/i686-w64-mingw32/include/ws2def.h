@@ -1,13 +1,13 @@
 /**
- * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
- * No warranty is given; refer to the file DISCLAIMER.PD within this package.
+ * This file is part of the mingw-w64 runtime package.
+ * No warranty is given; refer to the file DISCLAIMER within this package.
  */
 
 #ifndef _WS2DEF_
 #define _WS2DEF_
 
 #include <_mingw.h>
+#include <winapifamily.h>
 
 /* FIXME FIXME FIXME FIXME FIXME: Much more data need moving here.
  * This holds only SCOPE_LEVEL and SCOPE_ID so that compilations
@@ -36,4 +36,3 @@ typedef struct _SCOPE_ID {
 } SCOPE_ID, *PSCOPE_ID;
 
 #endif /* _WS2DEF_ */
-

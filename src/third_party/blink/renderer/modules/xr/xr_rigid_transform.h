@@ -25,7 +25,6 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
 
  public:
   explicit XRRigidTransform(const TransformationMatrix&);
-  explicit XRRigidTransform(std::unique_ptr<TransformationMatrix>);
   XRRigidTransform(DOMPointInit*, DOMPointInit*);
   static XRRigidTransform* Create(DOMPointInit*, DOMPointInit*);
 

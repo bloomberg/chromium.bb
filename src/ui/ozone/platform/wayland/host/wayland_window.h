@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
@@ -51,18 +53,20 @@ class WaylandWindow : public PlatformWindow,
 
   bool Initialize(PlatformWindowInitProperties properties);
 
+  // Updates the surface buffer scale of the window.  Top level windows take
+  // scale from the output attached to either their current display or the
+  // primary one if their widget is not yet created, children inherit scale from
+  // their parent.  The method recalculates window bounds appropriately if asked
+  // to do so (this is not needed upon window initialization).
+  void UpdateBufferScale(bool update_bounds);
+
   wl_surface* surface() const { return surface_.get(); }
   XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }
   XDGPopupWrapper* xdg_popup() const { return xdg_popup_.get(); }
 
-  gfx::AcceleratedWidget GetWidget() const;
+  WaylandWindow* parent_window() const { return parent_window_; }
 
-  // Returns the list of wl_outputs aka displays, which this window occupies.
-  // The window can be shown on one or more displays at the same time. An empty
-  // vector can also be returned if the window is not configured on the
-  // compositor side or it has been moved due to unplug action (check the
-  // comment in RemoveEnteredOutputId).
-  std::set<uint32_t> GetEnteredOutputsIds() const;
+  gfx::AcceleratedWidget GetWidget() const;
 
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.
@@ -89,7 +93,13 @@ class WaylandWindow : public PlatformWindow,
   void set_has_implicit_grab(bool value) { has_implicit_grab_ = value; }
   bool has_implicit_grab() const { return has_implicit_grab_; }
 
+  int32_t buffer_scale() const { return buffer_scale_; }
+
   bool is_active() const { return is_active_; }
+
+  const base::flat_set<uint32_t>& entered_outputs_ids() const {
+    return entered_outputs_ids_;
+  }
 
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
@@ -118,10 +128,11 @@ class WaylandWindow : public PlatformWindow,
   void Minimize() override;
   void Restore() override;
   PlatformWindowState GetPlatformWindowState() const override;
+  void Activate() override;
+  void Deactivate() override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
   void SetRestoredBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Rect GetRestoredBoundsInPixels() const override;
 
@@ -129,6 +140,10 @@ class WaylandWindow : public PlatformWindow,
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 
+  // Handles the configuration events coming from the surface (see
+  // |XDGSurfaceWrapperV5::Configure| and
+  // |XDGSurfaceWrapperV6::ConfigureTopLevel|.  The width and height come in
+  // DIP of the output that the surface is currently bound to.
   void HandleSurfaceConfigure(int32_t widht,
                               int32_t height,
                               bool is_maximized,
@@ -147,6 +162,11 @@ class WaylandWindow : public PlatformWindow,
   void OnDragSessionClose(uint32_t dnd_action);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetBufferScale);
+
+  void SetBoundsDip(const gfx::Rect& bounds_dip);
+  void SetBufferScale(int32_t scale, bool update_bounds);
+
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;
@@ -214,20 +234,39 @@ class WaylandWindow : public PlatformWindow,
 
   base::OnceCallback<void(int)> drag_closed_callback_;
 
-  gfx::Rect bounds_;
-  gfx::Rect pending_bounds_;
-  // The bounds of the window before it went maximized or fullscreen.
-  gfx::Rect restored_bounds_;
+  // These bounds attributes below have suffices that indicate units used.
+  // Wayland operates in DIP but the platform operates in physical pixels so
+  // our WaylandWindow is the link that has to translate the units.  See also
+  // comments in the implementation.
+  //
+  // Bounds that will be applied when the window state is finalized.  The window
+  // may get several configuration events that update the pending bounds, and
+  // only upon finalizing the state is the latest value stored as the current
+  // bounds via |ApplyPendingBounds|.  Measured in DIP because updated in the
+  // handler that receives DIP from Wayland.
+  gfx::Rect pending_bounds_dip_;
+  // Current bounds of the platform window.
+  gfx::Rect bounds_px_;
+  // The bounds of the platform window before it went maximized or fullscreen.
+  gfx::Rect restored_bounds_px_;
+
   bool has_pointer_focus_ = false;
   bool has_keyboard_focus_ = false;
   bool has_touch_focus_ = false;
   bool has_implicit_grab_ = false;
+  // Wayland's scale factor for the output that this window currently belongs
+  // to.
+  int32_t buffer_scale_ = 1;
+  // The UI scale may be forced through the command line, which means that it
+  // replaces the default value that is equal to the natural device scale.
+  // We need it to place and size the menus properly.
+  float ui_scale_ = 1.0;
 
   // Stores current states of the window.
-  ui::PlatformWindowState state_;
+  PlatformWindowState state_;
   // Stores a pending state of the window, which is used before the surface is
   // activated.
-  ui::PlatformWindowState pending_state_;
+  PlatformWindowState pending_state_;
 
   // Stores current opacity of the window. Set on ::Initialize call.
   ui::PlatformWindowOpacity opacity_;
@@ -237,8 +276,15 @@ class WaylandWindow : public PlatformWindow,
 
   bool is_tooltip_ = false;
 
-  // Stores the list of entered outputs that the window is currently in.
-  std::set<uint32_t> entered_outputs_ids_;
+  // For top level window, stores IDs of outputs that the window is currently
+  // rendered at.
+  //
+  // Not used by popups.  When sub-menus are hidden and shown again, Wayland
+  // 'repositions' them to wrong outputs by sending them leave and enter
+  // events so their list of entered outputs becomes meaningless after they have
+  // been hidden at least once.  To determine which output the popup belongs to,
+  // we ask its parent.
+  base::flat_set<uint32_t> entered_outputs_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };

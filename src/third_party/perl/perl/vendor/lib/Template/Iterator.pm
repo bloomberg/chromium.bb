@@ -217,7 +217,7 @@ sub AUTOLOAD {
     $item =~ s/.*:://;
     return if $item eq 'DESTROY';
 
-    # alias NUMBER to COUNT for backwards compatability
+    # alias NUMBER to COUNT for backwards compatibility
     $item = 'COUNT' if $item =~ /NUMBER/i;
 
     return $self->{ uc $item };

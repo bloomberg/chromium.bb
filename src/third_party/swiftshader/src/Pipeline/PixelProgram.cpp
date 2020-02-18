@@ -20,8 +20,6 @@
 
 namespace sw
 {
-	extern bool postBlendSRGB;
-
 	void PixelProgram::setBuiltins(Int &x, Int &y, Float4(&z)[4], Float4 &w)
 	{
 		routine.windowSpacePosition[0] = x + SIMD::Int(0,1,0,1);
@@ -35,6 +33,16 @@ namespace sw
 			var[it->second.FirstComponent+1] = SIMD::Float(Float(y)) + SIMD::Float(0.5f, 0.5f, 1.5f, 1.5f);
 			var[it->second.FirstComponent+2] = z[0];	// sample 0
 			var[it->second.FirstComponent+3] = w;
+		}
+
+		it = spirvShader->inputBuiltins.find(spv::BuiltInPointCoord);
+		if(it != spirvShader->inputBuiltins.end())
+		{
+			auto &var = routine.getVariable(it->second.Id);
+			var[it->second.FirstComponent] = SIMD::Float(0.5f) +
+				SIMD::Float(Float(x) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordX))));
+			var[it->second.FirstComponent + 1] = SIMD::Float(0.5f) +
+				SIMD::Float(Float(y) - (*Pointer<Float>(primitive + OFFSET(Primitive, pointCoordY))));
 		}
 
 		it = spirvShader->inputBuiltins.find(spv::BuiltInSubgroupSize);
@@ -73,6 +81,25 @@ namespace sw
 			ASSERT(it->second.SizeInComponents == 1);
 			auto frontFacing = Int4(*Pointer<Int>(primitive + OFFSET(Primitive, clockwiseMask)));
 			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<Float4>(frontFacing);
+		}
+
+		it = spirvShader->inputBuiltins.find(spv::BuiltInSampleMask);
+		if (it != spirvShader->inputBuiltins.end())
+		{
+			static_assert(SIMD::Width == 4, "Expects SIMD width to be 4");
+			Int4 laneBits = Int4(1, 2, 4, 8);
+
+			Int4 inputSampleMask = Int4(1) & CmpNEQ(Int4(cMask[0]) & laneBits, Int4(0));
+			for (auto i = 1u; i < state.multiSample; i++)
+			{
+				inputSampleMask |= Int4(1 << i) & CmpNEQ(Int4(cMask[i]) & laneBits, Int4(0));
+			}
+
+			routine.getVariable(it->second.Id)[it->second.FirstComponent] = As<Float4>(inputSampleMask);
+			// Sample mask input is an array, as the spec contemplates MSAA levels higher than 32.
+			// Fill any non-zero indices with 0.
+			for (auto i = 1u; i < it->second.SizeInComponents; i++)
+				routine.getVariable(it->second.Id)[it->second.FirstComponent + i] = Float4(0);
 		}
 
 		// Note: all lanes initially active to facilitate derivatives etc. Actual coverage is

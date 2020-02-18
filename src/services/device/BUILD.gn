@@ -15,6 +15,7 @@ source_set("lib") {
   # dependence should only be for the purpose of embedding the Device Service.
   visibility = [
     ":test_support",
+    ":tests",
     "//content/browser",
   ]
   sources = [
@@ -124,6 +125,7 @@ source_set("tests") {
   ]
 
   deps = [
+    ":lib",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -269,6 +271,8 @@ source_set("tests") {
   }
 
   if (is_win) {
+    sources += [ "generic_sensor/platform_sensor_provider_winrt_unittest.cc" ]
+
     # Needed for "generic_sensor/platform_sensor_and_provider_unittest_win.cc"
     libs = [
       "propsys.lib",
@@ -306,7 +310,6 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/services/device/InterfaceRegistrar.java",
     ]
-    jni_package = "device_service"
   }
 
   android_library("java") {

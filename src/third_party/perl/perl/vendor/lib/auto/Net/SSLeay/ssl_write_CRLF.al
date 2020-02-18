@@ -3,8 +3,8 @@
 # See AutoSplit.pm.
 package Net::SSLeay;
 
-#line 827 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_write_CRLF.al)"
-sub ssl_write_CRLF ($$) { 
+#line 915 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_write_CRLF.al)"
+sub ssl_write_CRLF ($$) {
   # the next line uses less memory but might use more network packets
   return ssl_write_all($_[0], $_[1]) + ssl_write_all($_[0], $CRLF);
 

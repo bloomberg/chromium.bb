@@ -16,7 +16,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 
-namespace openscreen {
+namespace media_router {
 namespace {
 
 // Set a reasonable maximum number of packets in flight, for a total of
@@ -42,8 +42,7 @@ NetworkServiceQuicPacketWriter::NetworkServiceQuicPacketWriter(
       is_write_blocked_(false),
       task_runner_(task_runner),
       async_packet_sender_(std::move(async_packet_sender)),
-      delegate_(delegate),
-      weak_factory_(this) {
+      delegate_(delegate) {
   DCHECK(async_packet_sender_ != nullptr);
   DCHECK(delegate_ != nullptr);
   DCHECK(task_runner_ != nullptr);
@@ -165,4 +164,4 @@ void NetworkServiceQuicPacketWriter::WritePacketHelper(
   UpdateIsWriteBlocked();
 }
 
-}  // namespace openscreen
+}  // namespace media_router

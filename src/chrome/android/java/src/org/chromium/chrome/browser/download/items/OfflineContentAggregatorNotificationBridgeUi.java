@@ -15,6 +15,7 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.components.offline_items_collection.UpdateDelta;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class OfflineContentAggregatorNotificationBridgeUi
     // OfflineContentProvider.Observer implementation.
     @Override
     public void onItemsAdded(ArrayList<OfflineItem> items) {
-        for (int i = 0; i < items.size(); ++i) getVisualsAndUpdateItem(items.get(i));
+        for (int i = 0; i < items.size(); ++i) getVisualsAndUpdateItem(items.get(i), null);
     }
 
     @Override
@@ -84,8 +85,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
     }
 
     @Override
-    public void onItemUpdated(OfflineItem item) {
-        getVisualsAndUpdateItem(item);
+    public void onItemUpdated(OfflineItem item, UpdateDelta updateDelta) {
+        getVisualsAndUpdateItem(item, updateDelta);
     }
 
     // OfflineContentProvider.VisualsCallback implementation.
@@ -121,8 +122,9 @@ public class OfflineContentAggregatorNotificationBridgeUi
     @Override
     public void destroyServiceDelegate() {}
 
-    private void getVisualsAndUpdateItem(OfflineItem item) {
-        if (item.refreshVisuals) mVisualsCache.remove(item.id);
+    private void getVisualsAndUpdateItem(OfflineItem item, UpdateDelta updateDelta) {
+        if (shouldIgnoreUpdate(item, updateDelta)) return;
+        if (updateDelta != null && updateDelta.visualsChanged) mVisualsCache.remove(item.id);
         if (needsVisualsForUi(item)) {
             if (!mVisualsCache.containsKey(item.id)) {
                 // We don't have any visuals for this item yet.  Stash the current OfflineItem and,
@@ -207,5 +209,14 @@ public class OfflineContentAggregatorNotificationBridgeUi
             default:
                 return false;
         }
+    }
+
+    private boolean shouldIgnoreUpdate(OfflineItem item, UpdateDelta updateDelta) {
+        // We only ignore updates for completed items, if there is no significant state change
+        // update.
+        if (item.state != OfflineItemState.COMPLETE) return false;
+        if (updateDelta == null) return false;
+        if (updateDelta.stateChanged || updateDelta.visualsChanged) return false;
+        return true;
     }
 }

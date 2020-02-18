@@ -86,15 +86,15 @@ void HTMLAreaElement::InvalidateCachedPath() {
   path_ = nullptr;
 }
 
-bool HTMLAreaElement::PointInArea(const LayoutPoint& location,
+bool HTMLAreaElement::PointInArea(const PhysicalOffset& location,
                                   const LayoutObject* container_object) const {
   return GetPath(container_object).Contains(FloatPoint(location));
 }
 
-LayoutRect HTMLAreaElement::ComputeAbsoluteRect(
+PhysicalRect HTMLAreaElement::ComputeAbsoluteRect(
     const LayoutObject* container_object) const {
   if (!container_object)
-    return LayoutRect();
+    return PhysicalRect();
 
   // FIXME: This doesn't work correctly with transforms.
   PhysicalOffset abs_pos = container_object->LocalToAbsolutePoint(
@@ -102,7 +102,7 @@ LayoutRect HTMLAreaElement::ComputeAbsoluteRect(
 
   Path path = GetPath(container_object);
   path.Translate(FloatSize(abs_pos));
-  return EnclosingLayoutRect(path.BoundingRect());
+  return PhysicalRect::EnclosingRect(path.BoundingRect());
 }
 
 Path HTMLAreaElement::GetPath(const LayoutObject* container_object) const {

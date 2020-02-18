@@ -137,7 +137,7 @@ void SensorDeviceManager::OnDeviceAdded(ScopedUdevDevicePtr dev) {
     }
 
     // Update own cache of known sensor devices.
-    if (!base::ContainsKey(sensors_by_node_, device_node))
+    if (!base::Contains(sensors_by_node_, device_node))
       sensors_by_node_[device_node] = data.type;
 
     std::unique_ptr<SensorInfoLinux> device(new SensorInfoLinux(
@@ -177,8 +177,6 @@ void SensorDeviceManager::OnDeviceRemoved(ScopedUdevDevicePtr dev) {
                                 delegate_, type, device_node));
 }
 
-void SensorDeviceManager::OnDeviceChanged(ScopedUdevDevicePtr) {
-  NOTIMPLEMENTED();
-}
+void SensorDeviceManager::OnDeviceChanged(ScopedUdevDevicePtr) {}
 
 }  // namespace device

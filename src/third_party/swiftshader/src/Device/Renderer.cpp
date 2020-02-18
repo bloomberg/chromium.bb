@@ -17,12 +17,10 @@
 #include "Clipper.hpp"
 #include "Primitive.hpp"
 #include "Polygon.hpp"
-#include "Device/SwiftConfig.hpp"
 #include "Reactor/Reactor.hpp"
 #include "Pipeline/Constants.hpp"
 #include "System/CPUID.hpp"
 #include "System/Memory.hpp"
-#include "System/Resource.hpp"
 #include "System/Half.hpp"
 #include "System/Math.hpp"
 #include "System/Timer.hpp"
@@ -36,8 +34,6 @@
 
 #undef max
 
-bool disableServer = true;
-
 #ifndef NDEBUG
 unsigned int minPrimitives = 1;
 unsigned int maxPrimitives = 1 << 21;
@@ -45,41 +41,10 @@ unsigned int maxPrimitives = 1 << 21;
 
 namespace sw
 {
-	extern bool booleanFaceRegister;
-	extern bool fullPixelPositionRegister;
-
-	extern bool forceWindowed;
-	extern bool postBlendSRGB;
-	extern bool exactColorRounding;
-	extern TransparencyAntialiasing transparencyAntialiasing;
-	extern bool forceClearRegisters;
-
-	extern bool precacheVertex;
-	extern bool precacheSetup;
-	extern bool precachePixel;
-
 	static const int batchSize = 128;
-	AtomicInt threadCount(1);
-	AtomicInt Renderer::unitCount(1);
-	AtomicInt Renderer::clusterCount(1);
-
-	TranscendentalPrecision logPrecision = ACCURATE;
-	TranscendentalPrecision expPrecision = ACCURATE;
-	TranscendentalPrecision rcpPrecision = ACCURATE;
-	TranscendentalPrecision rsqPrecision = ACCURATE;
-
-	static void setGlobalRenderingSettings(Conventions conventions, bool exactColorRounding)
-	{
-		static bool initialized = false;
-
-		if(!initialized)
-		{
-			sw::booleanFaceRegister = conventions.booleanFaceRegister;
-			sw::fullPixelPositionRegister = conventions.fullPixelPositionRegister;
-			sw::exactColorRounding = exactColorRounding;
-			initialized = true;
-		}
-	}
+	std::atomic<int> threadCount(1);
+	std::atomic<int> Renderer::unitCount(1);
+	std::atomic<int> Renderer::clusterCount(1);
 
 	template<typename T>
 	inline bool setBatchIndices(unsigned int batch[128][3], VkPrimitiveTopology topology, T indices, unsigned int start, unsigned int triangleCount)
@@ -197,14 +162,8 @@ namespace sw
 		deallocate(data);
 	}
 
-	Renderer::Renderer(Conventions conventions, bool exactColorRounding)
+	Renderer::Renderer()
 	{
-		setGlobalRenderingSettings(conventions, exactColorRounding);
-
-		#if PERF_HUD
-			resetTimers();
-		#endif
-
 		for(int i = 0; i < 16; i++)
 		{
 			vertexTask[i] = nullptr;
@@ -245,20 +204,13 @@ namespace sw
 			pixelProgress[cluster].init();
 		}
 
-		clipFlags = 0;
-
-		swiftConfig = new SwiftConfig(disableServer);
 		updateConfiguration(true);
-
-		sync = new Resource(0);
 	}
 
 	Renderer::~Renderer()
 	{
-		sync->lock(EXCLUSIVE);
-		sync->destruct();
+		sync.wait();
 		terminateThreads();
-		sync->unlock();
 
 		delete resumeApp;
 		resumeApp = nullptr;
@@ -268,9 +220,6 @@ namespace sw
 			delete drawCall[draw];
 			drawCall[draw] = nullptr;
 		}
-
-		delete swiftConfig;
-		swiftConfig = nullptr;
 	}
 
 	// This object has to be mem aligned
@@ -303,10 +252,14 @@ namespace sw
 		if(count == 0) { return; }
 
 		#ifndef NDEBUG
+		{
+			unsigned int minPrimitives = 1;
+			unsigned int maxPrimitives = 1 << 21;
 			if(count < minPrimitives || count > maxPrimitives)
 			{
 				return;
 			}
+		}
 		#endif
 
 		updateConfiguration();
@@ -318,7 +271,7 @@ namespace sw
 			return;
 		}
 
-		sync->lock(sw::PRIVATE);
+		sync.add();
 
 		if(update)
 		{
@@ -410,7 +363,7 @@ namespace sw
 		ASSERT(!draw->events);
 		draw->events = events;
 
-		for(int i = 0; i < MAX_VERTEX_INPUTS; i++)
+		for(int i = 0; i < MAX_INTERFACE_COMPONENTS/4; i++)
 		{
 			data->input[i] = context->input[i].buffer;
 			data->stride[i] = context->input[i].vertexStride;
@@ -459,16 +412,6 @@ namespace sw
 				data->occlusion[cluster] = 0;
 			}
 		}
-
-		#if PERF_PROFILE
-			for(int cluster = 0; cluster < clusterCount; cluster++)
-			{
-				for(int i = 0; i < PERF_TIMERS; i++)
-				{
-					data->cycles[i][cluster] = 0;
-				}
-			}
-		#endif
 
 		// Viewport
 		{
@@ -579,11 +522,8 @@ namespace sw
 		Renderer *renderer = static_cast<Parameters*>(parameters)->renderer;
 		int threadIndex = static_cast<Parameters*>(parameters)->threadIndex;
 
-		if(logPrecision < IEEE)
-		{
-			CPUID::setFlushToZero(true);
-			CPUID::setDenormalsAreZero(true);
-		}
+		CPUID::setFlushToZero(true);
+		CPUID::setDenormalsAreZero(true);
 
 		renderer->threadLoop(threadIndex);
 	}
@@ -632,7 +572,7 @@ namespace sw
 
 								// Commit to the task queue
 								qHead = (qHead + 1) & TASK_COUNT_BITS;
-								qSize++;
+								++qSize; // Atomic
 
 								break;
 							}
@@ -673,7 +613,7 @@ namespace sw
 				count = draw->count;
 				int batch = draw->batchSize;
 
-				primitiveProgress[unit].drawCall = currentDraw;
+				primitiveProgress[unit].drawCall = currentDraw.load();
 				primitiveProgress[unit].firstPrimitive = primitive;
 				primitiveProgress[unit].primitiveCount = count - primitive >= batch ? batch : count - primitive;
 
@@ -687,7 +627,7 @@ namespace sw
 
 				// Commit to the task queue
 				qHead = (qHead + 1) & TASK_COUNT_BITS;
-				qSize++;
+				++qSize; // Atomic
 			}
 		}
 	}
@@ -706,7 +646,7 @@ namespace sw
 		if(qSize != 0)
 		{
 			task[threadIndex] = taskQueue[(qHead - qSize) & TASK_COUNT_BITS];
-			qSize--;
+			--qSize; // Atomic
 
 			if(curThreadsAwake != threadCount)
 			{
@@ -738,11 +678,7 @@ namespace sw
 
 	void Renderer::executeTask(int threadIndex)
 	{
-		#if PERF_HUD
-			int64_t startTick = Timer::ticks();
-		#endif
-
-		switch(task[threadIndex].type)
+		switch(task[threadIndex].type.load())
 		{
 		case Task::PRIMITIVES:
 			{
@@ -755,12 +691,6 @@ namespace sw
 
 				processPrimitiveVertices(unit, input, count, draw->count, threadIndex);
 
-				#if PERF_HUD
-					int64_t time = Timer::ticks();
-					vertexTime[threadIndex] += time - startTick;
-					startTick = time;
-				#endif
-
 				int visible = 0;
 
 				if(!draw->setupState.rasterizerDiscard)
@@ -769,11 +699,7 @@ namespace sw
 				}
 
 				primitiveProgress[unit].visible = visible;
-				primitiveProgress[unit].references = clusterCount;
-
-				#if PERF_HUD
-					setupTime[threadIndex] += Timer::ticks() - startTick;
-				#endif
+				primitiveProgress[unit].references = clusterCount.load();
 			}
 			break;
 		case Task::PIXELS:
@@ -793,10 +719,6 @@ namespace sw
 				}
 
 				finishRendering(task[threadIndex]);
-
-				#if PERF_HUD
-					pixelTime[threadIndex] += Timer::ticks() - startTick;
-				#endif
 			}
 			break;
 		case Task::RESUME:
@@ -810,8 +732,7 @@ namespace sw
 
 	void Renderer::synchronize()
 	{
-		sync->lock(sw::PUBLIC);
-		sync->unlock();
+		sync.wait();
 	}
 
 	void Renderer::finishRendering(Task &pixelTask)
@@ -833,24 +754,14 @@ namespace sw
 			pixelProgress[cluster].processedPrimitives = 0;
 		}
 
-		int ref = primitiveProgress[unit].references--; // Atomic
+		int ref = --primitiveProgress[unit].references; // Atomic
 
 		if(ref == 0)
 		{
-			ref = draw.references--; // Atomic
+			ref = --draw.references; // Atomic
 
 			if(ref == 0)
 			{
-				#if PERF_PROFILE
-					for(int cluster = 0; cluster < clusterCount; cluster++)
-					{
-						for(int i = 0; i < PERF_TIMERS; i++)
-						{
-							profiler.cycles[i] += data.cycles[i][cluster];
-						}
-					}
-				#endif
-
 				if(draw.queries)
 				{
 					for(auto &query : *(draw.queries))
@@ -884,7 +795,7 @@ namespace sw
 					draw.events = nullptr;
 				}
 
-				sync->unlock();
+				sync.done();
 
 				draw.references = -1;
 				resumeApp->signal();
@@ -911,7 +822,7 @@ namespace sw
 			task->vertexCache.drawCall = primitiveDrawCall;
 		}
 
-		unsigned int batch[128][3];   // FIXME: Adjust to dynamic batch size
+		unsigned int batch[128 + 1][3];  // One extra for SIMD width overrun. TODO: Adjust to dynamic batch size.
 		VkPrimitiveTopology topology = static_cast<VkPrimitiveTopology>(static_cast<int>(draw->topology));
 
 		if(!indices)
@@ -928,7 +839,7 @@ namespace sw
 		}
 		else
 		{
-			switch(draw->indexType)
+			switch(draw->indexType.load())
 			{
 			case VK_INDEX_TYPE_UINT16:
 				if(!setBatchIndices(batch, topology, static_cast<const uint16_t*>(indices), start, triangleCount))
@@ -948,6 +859,11 @@ namespace sw
 				return;
 			}
 		}
+
+		// Repeat the last index to allow for SIMD width overrun.
+		batch[triangleCount][0] = batch[triangleCount - 1][2];
+		batch[triangleCount][1] = batch[triangleCount - 1][2];
+		batch[triangleCount][2] = batch[triangleCount - 1][2];
 
 		task->primitiveStart = start;
 		task->vertexCount = triangleCount * 3;
@@ -975,7 +891,7 @@ namespace sw
 
 			if((v0.clipFlags & v1.clipFlags & v2.clipFlags) == Clipper::CLIP_FINITE)
 			{
-				Polygon polygon(&v0.builtins.position, &v1.builtins.position, &v2.builtins.position);
+				Polygon polygon(&v0.position, &v1.position, &v2.position);
 
 				int clipFlagsOr = v0.clipFlags | v1.clipFlags | v2.clipFlags;
 
@@ -1059,8 +975,8 @@ namespace sw
 		Vertex &v0 = triangle.v0;
 		Vertex &v1 = triangle.v1;
 
-		const float4 &P0 = v0.builtins.position;
-		const float4 &P1 = v1.builtins.position;
+		const float4 &P0 = v0.position;
+		const float4 &P1 = v1.position;
 
 		if(P0.w <= 0 && P1.w <= 0)
 		{
@@ -1249,17 +1165,17 @@ namespace sw
 
 		Vertex &v = triangle.v0;
 
-		float pSize = v.builtins.pointSize;
+		float pSize = v.pointSize;
 
 		pSize = clamp(pSize, 1.0f, static_cast<float>(vk::MAX_POINT_SIZE));
 
 		float4 P[4];
 		int C[4];
 
-		P[0] = v.builtins.position;
-		P[1] = v.builtins.position;
-		P[2] = v.builtins.position;
-		P[3] = v.builtins.position;
+		P[0] = v.position;
+		P[1] = v.position;
+		P[2] = v.position;
+		P[3] = v.position;
 
 		const float X = pSize * P[0].w * data.halfPixelX[0];
 		const float Y = pSize * P[0].w * data.halfPixelY[0];
@@ -1280,12 +1196,6 @@ namespace sw
 		P[3].y -= Y;
 		C[3] = Clipper::ComputeClipFlags(P[3]);
 
-		triangle.v1 = triangle.v0;
-		triangle.v2 = triangle.v0;
-
-		triangle.v1.projected.x += iround(16 * 0.5f * pSize);
-		triangle.v2.projected.y -= iround(16 * 0.5f * pSize) * (data.Hx16[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
-
 		Polygon polygon(P, 4);
 
 		if((C[0] & C[1] & C[2] & C[3]) == Clipper::CLIP_FINITE)
@@ -1300,6 +1210,11 @@ namespace sw
 				}
 			}
 
+			triangle.v1 = triangle.v0;
+			triangle.v2 = triangle.v0;
+
+			triangle.v1.projected.x += iround(16 * 0.5f * pSize);
+			triangle.v2.projected.y -= iround(16 * 0.5f * pSize) * (data.Hx16[0] > 0.0f ? 1 : -1);   // Both Direct3D and OpenGL expect (0, 0) in the top-left corner
 			return setupRoutine(&primitive, &triangle, &polygon, &data);
 		}
 
@@ -1399,38 +1314,6 @@ namespace sw
 		}
 	}
 
-	#if PERF_HUD
-		int Renderer::getThreadCount()
-		{
-			return threadCount;
-		}
-
-		int64_t Renderer::getVertexTime(int thread)
-		{
-			return vertexTime[thread];
-		}
-
-		int64_t Renderer::getSetupTime(int thread)
-		{
-			return setupTime[thread];
-		}
-
-		int64_t Renderer::getPixelTime(int thread)
-		{
-			return pixelTime[thread];
-		}
-
-		void Renderer::resetTimers()
-		{
-			for(int thread = 0; thread < threadCount; thread++)
-			{
-				vertexTime[thread] = 0;
-				setupTime[thread] = 0;
-				pixelTime[thread] = 0;
-			}
-		}
-	#endif
-
 	void Renderer::setViewport(const VkViewport &viewport)
 	{
 		this->viewport = viewport;
@@ -1443,97 +1326,21 @@ namespace sw
 
 	void Renderer::updateConfiguration(bool initialUpdate)
 	{
-		bool newConfiguration = swiftConfig->hasNewConfiguration();
-
-		if(newConfiguration || initialUpdate)
+		if(initialUpdate)
 		{
 			terminateThreads();
 
-			SwiftConfig::Configuration configuration = {};
-			swiftConfig->getConfiguration(configuration);
+			VertexProcessor::setRoutineCacheSize(1024);
+			PixelProcessor::setRoutineCacheSize(1024);
+			SetupProcessor::setRoutineCacheSize(1024);
 
-			precacheVertex = !newConfiguration && configuration.precache;
-			precacheSetup = !newConfiguration && configuration.precache;
-			precachePixel = !newConfiguration && configuration.precache;
+			threadCount = CPUID::processAffinity();
 
-			VertexProcessor::setRoutineCacheSize(configuration.vertexRoutineCacheSize);
-			PixelProcessor::setRoutineCacheSize(configuration.pixelRoutineCacheSize);
-			SetupProcessor::setRoutineCacheSize(configuration.setupRoutineCacheSize);
-
-			switch(configuration.transcendentalPrecision)
-			{
-			case 0:
-				logPrecision = APPROXIMATE;
-				expPrecision = APPROXIMATE;
-				rcpPrecision = APPROXIMATE;
-				rsqPrecision = APPROXIMATE;
-				break;
-			case 1:
-				logPrecision = PARTIAL;
-				expPrecision = PARTIAL;
-				rcpPrecision = PARTIAL;
-				rsqPrecision = PARTIAL;
-				break;
-			case 2:
-				logPrecision = ACCURATE;
-				expPrecision = ACCURATE;
-				rcpPrecision = ACCURATE;
-				rsqPrecision = ACCURATE;
-				break;
-			case 3:
-				logPrecision = WHQL;
-				expPrecision = WHQL;
-				rcpPrecision = WHQL;
-				rsqPrecision = WHQL;
-				break;
-			case 4:
-				logPrecision = IEEE;
-				expPrecision = IEEE;
-				rcpPrecision = IEEE;
-				rsqPrecision = IEEE;
-				break;
-			default:
-				logPrecision = ACCURATE;
-				expPrecision = ACCURATE;
-				rcpPrecision = ACCURATE;
-				rsqPrecision = ACCURATE;
-				break;
-			}
-
-			switch(configuration.transparencyAntialiasing)
-			{
-			case 0:  transparencyAntialiasing = TRANSPARENCY_NONE;              break;
-			case 1:  transparencyAntialiasing = TRANSPARENCY_ALPHA_TO_COVERAGE; break;
-			default: transparencyAntialiasing = TRANSPARENCY_NONE;              break;
-			}
-
-			switch(configuration.threadCount)
-			{
-			case -1: threadCount = CPUID::coreCount();        break;
-			case 0:  threadCount = CPUID::processAffinity();  break;
-			default: threadCount = configuration.threadCount; break;
-			}
-
-			CPUID::setEnableSSE4_1(configuration.enableSSE4_1);
-			CPUID::setEnableSSSE3(configuration.enableSSSE3);
-			CPUID::setEnableSSE3(configuration.enableSSE3);
-			CPUID::setEnableSSE2(configuration.enableSSE2);
-			CPUID::setEnableSSE(configuration.enableSSE);
-
-			for(int pass = 0; pass < 10; pass++)
-			{
-				optimization[pass] = configuration.optimization[pass];
-			}
-
-			forceWindowed = configuration.forceWindowed;
-			postBlendSRGB = configuration.postBlendSRGB;
-			exactColorRounding = configuration.exactColorRounding;
-			forceClearRegisters = configuration.forceClearRegisters;
-
-		#ifndef NDEBUG
-			minPrimitives = configuration.minPrimitives;
-			maxPrimitives = configuration.maxPrimitives;
-		#endif
+			CPUID::setEnableSSE4_1(true);
+			CPUID::setEnableSSSE3(true);
+			CPUID::setEnableSSE3(true);
+			CPUID::setEnableSSE2(true);
+			CPUID::setEnableSSE(true);
 		}
 
 		if(!initialUpdate && !worker[0])

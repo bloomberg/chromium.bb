@@ -10,20 +10,16 @@
 #include <unordered_map>
 
 #include "base/macros.h"
-#include "cc/test/test_image_factory.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_image_factory.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
 #include "ui/compositor/compositor.h"
-
-namespace cc {
-class FrameSinkManagerImpl;
-}
 
 namespace viz {
 class HostFrameSinkManager;
@@ -36,12 +32,20 @@ class InProcessContextFactory : public ContextFactory,
                                 public ContextFactoryPrivate {
  public:
   // Both |host_frame_sink_manager| and |frame_sink_manager| must outlive the
-  // ContextFactory.
+  // ContextFactory. The constructor without |use_skia_renderer| will use
+  // SkiaRenderer if the feature is enabled.
   // TODO(crbug.com/657959): |frame_sink_manager| should go away and we should
   // use the LayerTreeFrameSink from the HostFrameSinkManager.
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           viz::FrameSinkManagerImpl* frame_sink_manager);
+  InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
+                          viz::FrameSinkManagerImpl* frame_sink_manager,
+                          bool use_skia_renderer);
   ~InProcessContextFactory() override;
+
+  viz::FrameSinkManagerImpl* GetFrameSinkManager() {
+    return frame_sink_manager_;
+  }
 
   // If true (the default) an OutputSurface is created that does not display
   // anything. Set to false if you want to see results on the screen.
@@ -80,10 +84,9 @@ class InProcessContextFactory : public ContextFactory,
   void DisableSwapUntilResize(ui::Compositor* compositor) override;
   void SetDisplayColorMatrix(ui::Compositor* compositor,
                              const SkMatrix44& matrix) override;
-  void SetDisplayColorSpace(
-      ui::Compositor* compositor,
-      const gfx::ColorSpace& blending_color_space,
-      const gfx::ColorSpace& output_color_space) override {}
+  void SetDisplayColorSpace(ui::Compositor* compositor,
+                            const gfx::ColorSpace& output_color_space,
+                            float sdr_white_level) override {}
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override {}
@@ -96,7 +99,6 @@ class InProcessContextFactory : public ContextFactory,
   void AddObserver(ContextFactoryObserver* observer) override;
   void RemoveObserver(ContextFactoryObserver* observer) override;
   bool SyncTokensRequiredForDisplayCompositor() override;
-  viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
   void ResetOutputColorMatrixToIdentity(ui::Compositor* compositor);
@@ -110,7 +112,7 @@ class InProcessContextFactory : public ContextFactory,
   scoped_refptr<InProcessContextProvider> shared_worker_context_provider_;
   viz::TestSharedBitmapManager shared_bitmap_manager_;
   viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  cc::TestImageFactory image_factory_;
+  viz::TestImageFactory image_factory_;
   cc::TestTaskGraphRunner task_graph_runner_;
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   bool use_test_surface_;

@@ -14,16 +14,17 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
+#include "components/optimization_guide/bloom_filter.h"
+#include "components/optimization_guide/hint_cache.h"
+#include "components/optimization_guide/hint_cache_store.h"
+#include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/host_filter.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
-#include "components/previews/content/hint_cache.h"
-#include "components/previews/content/hint_cache_store.h"
-#include "components/previews/content/hint_update_data.h"
-#include "components/previews/content/previews_hints_util.h"
-#include "components/previews/content/proto_database_provider_test_base.h"
+#include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/previews/core/previews_features.h"
-#include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -34,12 +35,13 @@ namespace {
 const int kBlackBlacklistBloomFilterNumHashFunctions = 7;
 const int kBlackBlacklistBloomFilterNumBits = 511;
 
-void PopulateBlackBlacklistBloomFilter(BloomFilter* bloom_filter) {
+void PopulateBlackBlacklistBloomFilter(
+    optimization_guide::BloomFilter* bloom_filter) {
   bloom_filter->Add("black.com");
 }
 
 void AddBlacklistBloomFilterToConfig(
-    const BloomFilter& blacklist_bloom_filter,
+    const optimization_guide::BloomFilter& blacklist_bloom_filter,
     int num_hash_functions,
     int num_bits,
     optimization_guide::proto::Configuration* config) {
@@ -59,7 +61,7 @@ void AddBlacklistBloomFilterToConfig(
 
 }  // namespace
 
-class TestHostFilter : public previews::HostFilter {
+class TestHostFilter : public optimization_guide::HostFilter {
  public:
   explicit TestHostFilter(std::string single_host_match)
       : HostFilter(nullptr), single_host_match_(single_host_match) {}
@@ -72,7 +74,8 @@ class TestHostFilter : public previews::HostFilter {
   std::string single_host_match_;
 };
 
-class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
+class PreviewsHintsTest
+    : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsHintsTest() {}
 
@@ -80,9 +83,10 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
 
   void SetUp() override {
     ProtoDatabaseProviderTestBase::SetUp();
-    hint_cache_ = std::make_unique<HintCache>(std::make_unique<HintCacheStore>(
-        db_provider_, temp_dir_.GetPath(), nullptr /* pref_service */,
-        scoped_task_environment_.GetMainThreadTaskRunner()));
+    hint_cache_ = std::make_unique<optimization_guide::HintCache>(
+        std::make_unique<optimization_guide::HintCacheStore>(
+            db_provider_.get(), temp_dir_.GetPath(), nullptr /* pref_service */,
+            scoped_task_environment_.GetMainThreadTaskRunner()));
 
     is_store_initialized_ = false;
     hint_cache_->Initialize(
@@ -122,6 +126,8 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
   }
 
   PreviewsHints* previews_hints() { return previews_hints_.get(); }
+
+  optimization_guide::HintCache* hint_cache() { return hint_cache_.get(); }
 
   bool HasLitePageRedirectBlacklist() {
     return previews_hints_->lite_page_redirect_blacklist_.get() != nullptr;
@@ -168,7 +174,7 @@ class PreviewsHintsTest : public ProtoDatabaseProviderTestBase {
   bool are_previews_hints_initialized_;
   bool is_hint_loaded_;
 
-  std::unique_ptr<HintCache> hint_cache_;
+  std::unique_ptr<optimization_guide::HintCache> hint_cache_;
   std::unique_ptr<PreviewsHints> previews_hints_;
 };
 
@@ -276,7 +282,7 @@ TEST_F(PreviewsHintsTest, IsBlacklistedReturnsTrueIfNoBloomFilter) {
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
 
   EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
-                                               PreviewsType::LOFI));
+                                               PreviewsType::OFFLINE));
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -290,8 +296,9 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     kBlackBlacklistBloomFilterNumBits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   optimization_guide::proto::Configuration config;
@@ -302,7 +309,7 @@ TEST_F(PreviewsHintsTest, IsBlacklisted) {
 
   EXPECT_TRUE(HasLitePageRedirectBlacklist());
   EXPECT_FALSE(previews_hints()->IsBlacklisted(GURL("https://black.com/path"),
-                                               PreviewsType::LOFI));
+                                               PreviewsType::OFFLINE));
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
@@ -316,8 +323,9 @@ TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(features::kLitePageServerPreviews);
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     kBlackBlacklistBloomFilterNumBits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions,
+      kBlackBlacklistBloomFilterNumBits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   // Set num_bits in config to one more than the size of the data.
@@ -331,11 +339,14 @@ TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
 
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      0 /* FOUND_SERVER_BLACKLIST_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      2 /* FAILED_SERVER_BLACKLIST_BAD_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistBadConfig,
+      1);
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -351,8 +362,8 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
           8 +
       1;
 
-  BloomFilter blacklist_bloom_filter(kBlackBlacklistBloomFilterNumHashFunctions,
-                                     too_many_bits);
+  optimization_guide::BloomFilter blacklist_bloom_filter(
+      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);
   PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
 
   optimization_guide::proto::Configuration config;
@@ -363,11 +374,14 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
 
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      0 /* FOUND_SERVER_BLACKLIST_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      3 /* FAILED_SERVER_BLACKLIST_TOO_BIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistTooBig,
+      1);
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -517,9 +531,9 @@ TEST_F(PreviewsHintsTest, IsWhitelistedOutParams) {
 }
 
 TEST_F(PreviewsHintsTest,
-       IsWhitelistedForSecondOptimizationNoScriptWithFirstDisabled) {
+       IsWhitelistedForSecondOptimizationDeferAllScriptWithFirstDisabled) {
   base::test::ScopedFeatureList scoped_list;
-  scoped_list.InitWithFeatures({features::kNoScriptPreviews},
+  scoped_list.InitWithFeatures({features::kDeferAllScriptPreviews},
                                {features::kResourceLoadingHints});
   optimization_guide::proto::Configuration config;
 
@@ -528,7 +542,7 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with NOSCRIPT optimization
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations.
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =
@@ -537,7 +551,8 @@ TEST_F(PreviewsHintsTest,
       optimization_guide::proto::RESOURCE_LOADING);
   optimization_guide::proto::Optimization* optimization2 =
       page_hint1->add_whitelisted_optimizations();
-  optimization2->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization2->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
 
   ParseConfig(config);
 
@@ -547,7 +562,7 @@ TEST_F(PreviewsHintsTest,
   std::string serialized_hint_version_string;
   EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
-      PreviewsType::NOSCRIPT, &inflation_percent, &ect_threshold,
+      PreviewsType::DEFER_ALL_SCRIPT, &inflation_percent, &ect_threshold,
       &serialized_hint_version_string));
   EXPECT_FALSE(MaybeLoadHintAndCheckIsWhitelisted(
       GURL("https://www.somedomain.org/has_multiple_optimizations/"),
@@ -559,7 +574,7 @@ TEST_F(PreviewsHintsTest,
        IsWhitelistedForSecondOptimizationResourceLoadingWithFirstDisabled) {
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitWithFeatures({features::kResourceLoadingHints},
-                               {features::kNoScriptPreviews});
+                               {features::kDeferAllScriptPreviews});
   optimization_guide::proto::Configuration config;
 
   optimization_guide::proto::Hint* hint1 = config.add_hints();
@@ -567,12 +582,13 @@ TEST_F(PreviewsHintsTest,
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
 
-  // Page hint with NOSCRIPT optimization
+  // Page hint with RESOURCE_LOADING and DEFER_ALL_SCRIPT optimizations.
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/has_multiple_optimizations/");
   optimization_guide::proto::Optimization* optimization1 =
       page_hint1->add_whitelisted_optimizations();
-  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization1->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
   optimization_guide::proto::Optimization* optimization2 =
       page_hint1->add_whitelisted_optimizations();
   optimization2->set_optimization_type(
@@ -667,7 +683,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     int inflation_percent = 0;
@@ -749,7 +765,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForNoopExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     int inflation_percent = 0;
@@ -828,7 +844,7 @@ TEST_F(PreviewsHintsTest, IsWhitelistedForExcludedExperimentalPreview) {
   {
     base::test::ScopedFeatureList scoped_list2;
     scoped_list2.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsExperiments,
+        optimization_guide::features::kOptimizationHintsExperiments,
         {{"experiment_name", "foo_experiment"}});
 
     EXPECT_TRUE(MaybeLoadHintAndCheckIsWhitelisted(
@@ -871,8 +887,11 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   {
     base::HistogramTester histogram_tester;
     ParseConfig(config);
-    histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                        1 /* kProcessedPreviewsHints */, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        static_cast<int>(
+            optimization_guide::ProcessHintsComponentResult::kSuccess),
+        1);
   }
 
   // Test the second time parsing the config. This will be treated by the cache
@@ -880,10 +899,30 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   {
     base::HistogramTester histogram_tester;
     ParseConfig(config);
-    histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                       3 /* kSkippedProcessingPreviewsHints */,
-                                       1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.ProcessHintsResult",
+        static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                             kSkippedProcessingHints),
+        1);
   }
+}
+
+TEST_F(PreviewsHintsTest, ComponentInfoDidNotProduceConfig) {
+  base::HistogramTester histogram_tester;
+
+  optimization_guide::HintsComponentInfo info(base::Version("1.0"),
+                                              base::FilePath());
+  std::unique_ptr<PreviewsHints> previews_hints =
+      PreviewsHints::CreateFromHintsComponent(
+          info,
+          hint_cache()->MaybeCreateUpdateDataForComponentHints(info.version));
+
+  EXPECT_EQ(nullptr, previews_hints);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kFailedInvalidParameters),
+      1);
 }
 
 }  // namespace previews

@@ -27,6 +27,7 @@
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/web_payment_request.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/validation_rules_storage_factory.h"
@@ -36,7 +37,6 @@
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/web/public/web_state/web_state.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -147,11 +147,6 @@ bool PaymentRequest::IsIncognito() const {
   return browser_state_->IsOffTheRecord();
 }
 
-bool PaymentRequest::IsSslCertificateValid() {
-  NOTREACHED() << "Implementation is never used";
-  return false;
-}
-
 const GURL& PaymentRequest::GetLastCommittedURL() const {
   return web_state_->GetLastCommittedURL();
 }
@@ -180,7 +175,7 @@ ukm::UkmRecorder* PaymentRequest::GetUkmRecorder() {
 }
 
 std::string PaymentRequest::GetAuthenticatedEmail() const {
-  const identity::IdentityManager* identity_manager =
+  const signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserStateIfExists(browser_state_);
   if (identity_manager && identity_manager->HasPrimaryAccount())
     return identity_manager->GetPrimaryAccountInfo().email;
@@ -517,7 +512,7 @@ void PaymentRequest::CreateNativeAppPaymentMethods() {
       ios_instrument_finder_.CreateIOSPaymentInstrumentsForMethods(
           url_payment_method_identifiers_,
           base::BindOnce(&PaymentRequest::PopulatePaymentMethodCache,
-                         base::Unretained(this)));
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentRequest::PopulatePaymentMethodCache(

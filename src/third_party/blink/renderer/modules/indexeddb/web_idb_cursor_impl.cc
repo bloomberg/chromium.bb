@@ -6,9 +6,6 @@
 
 #include <stddef.h>
 
-#include <string>
-#include <vector>
-
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
@@ -30,8 +27,7 @@ WebIDBCursorImpl::WebIDBCursorImpl(
       used_prefetches_(0),
       pending_onsuccess_callbacks_(0),
       prefetch_amount_(kMinPrefetchAmount),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+      task_runner_(task_runner) {
   cursor_.Bind(std::move(cursor_info), std::move(task_runner));
   IndexedDBDispatcher::RegisterCursor(this);
 }

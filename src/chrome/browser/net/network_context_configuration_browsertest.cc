@@ -102,7 +102,6 @@ const char kCacheRandomPath[] = "/cacherandom";
 const char kControllablePath[] = "/controllable";
 
 enum class NetworkServiceState {
-  kDisabled,
   kEnabled,
   // Similar to |kEnabled|, but will simulate a crash and run tests again the
   // restarted Network Service process.
@@ -133,6 +132,42 @@ const NetworkContextType kNetworkContextTypes[] = {
 struct TestCase {
   NetworkServiceState network_service_state;
   NetworkContextType network_context_type;
+};
+
+// Waits for the network connection type to be the specified value.
+class ConnectionTypeWaiter
+    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
+ public:
+  ConnectionTypeWaiter() : tracker_(content::GetNetworkConnectionTracker()) {
+    tracker_->AddNetworkConnectionObserver(this);
+  }
+
+  ~ConnectionTypeWaiter() override {
+    tracker_->RemoveNetworkConnectionObserver(this);
+  }
+
+  void Wait(network::mojom::ConnectionType expected_type) {
+    auto current_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    network::NetworkConnectionTracker::ConnectionTypeCallback callback =
+        base::BindOnce(&ConnectionTypeWaiter::OnConnectionChanged,
+                       base::Unretained(this));
+    while (!tracker_->GetConnectionType(&current_type, std::move(callback)) ||
+           current_type != expected_type) {
+      run_loop_ = std::make_unique<base::RunLoop>(
+          base::RunLoop::Type::kNestableTasksAllowed);
+      run_loop_->Run();
+    }
+  }
+
+ private:
+  // network::NetworkConnectionTracker::NetworkConnectionObserver:
+  void OnConnectionChanged(network::mojom::ConnectionType type) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  network::NetworkConnectionTracker* tracker_;
+  std::unique_ptr<base::RunLoop> run_loop_;
 };
 
 // Tests the system, profile, and incognito profile NetworkContexts.
@@ -181,13 +216,6 @@ class NetworkContextConfigurationBrowserTest
 
   ~NetworkContextConfigurationBrowserTest() override {}
 
-  void SetUpInProcessBrowserTestFixture() override {
-    if (GetParam().network_service_state != NetworkServiceState::kDisabled)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-    else
-      feature_list_.InitAndDisableFeature(network::features::kNetworkService);
-  }
-
   void SetUpOnMainThread() override {
     // Used in a bunch of proxy tests. Should not resolve.
     host_resolver()->AddSimulatedFailure("does.not.resolve.test");
@@ -202,6 +230,15 @@ class NetworkContextConfigurationBrowserTest
     if (is_incognito())
       incognito_ = CreateIncognitoBrowser();
     SimulateNetworkServiceCrashIfNecessary();
+
+#if defined(OS_CHROMEOS)
+    // On ChromeOS the connection type comes from a fake Shill service, which
+    // is configured with a fake ethernet connection asynchronously. Wait for
+    // the connection type to be available to avoid getting notified of the
+    // connection change halfway through the test.
+    ConnectionTypeWaiter().Wait(
+        network::mojom::ConnectionType::CONNECTION_ETHERNET);
+#endif
   }
 
   // Returns true if the NetworkContext being tested is associated with an
@@ -740,42 +777,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   EXPECT_EQ("Echo", *simple_loader_helper.response_body());
 }
 
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
-  if (IsRestartStateWithInProcessNetworkService())
-    return;
-  // File URLs require a FileURLFactory that is not present in the default
-  // URLLoaderFactories.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir temp_dir_;
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  base::FilePath file_path;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &file_path));
-  const char kFileContents[] = "This file intentionally left empty.";
-  ASSERT_EQ(static_cast<int>(strlen(kFileContents)),
-            base::WriteFile(file_path, kFileContents, strlen(kFileContents)));
-
-  std::unique_ptr<network::ResourceRequest> request =
-      std::make_unique<network::ResourceRequest>();
-  request->url = net::FilePathToFileURL(file_path);
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      loader_factory(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-
-  ASSERT_TRUE(simple_loader->ResponseInfo());
-  // File URLs don't have headers.
-  EXPECT_FALSE(simple_loader->ResponseInfo()->headers);
-  ASSERT_TRUE(simple_loader_helper.response_body());
-  EXPECT_EQ(kFileContents, *simple_loader_helper.response_body());
-}
-
 // Make sure a cache is used when expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   if (IsRestartStateWithInProcessNetworkService())
@@ -1041,8 +1042,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Hsts) {
   // The network service must be cleanly shut down to guarantee HSTS information
   // is flushed to disk, but that currently generally doesn't happen. See
   // https://crbug.com/820996.
-  if (GetParam().network_service_state != NetworkServiceState::kDisabled &&
-      GetHttpCacheType() == StorageType::kDisk) {
+  if (GetHttpCacheType() == StorageType::kDisk) {
     return;
   }
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -1242,11 +1242,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   request->referrer = kReferrer;
   ASSERT_TRUE(FetchHeaderEcho("referer", &referrer, std::move(request)));
 
-  // SafeBrowsing never sends the referrer when then network service is enabled,
-  // since it doesn't need to. When the network service is disabled, it matches
-  // the behavior of the system NetworkContext, since it shares internals.
-  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  // SafeBrowsing never sends the referrer since it doesn't need to.
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing) {
     EXPECT_EQ("None", referrer);
   } else {
     EXPECT_EQ(kReferrer.spec(), referrer);
@@ -1312,10 +1309,8 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory(), simple_loader_helper.GetCallback());
   simple_loader_helper.WaitForCallback();
-  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
-      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Safebrowsing ignores referrers, when the network service is enabled, so
-    // the requests succeed.
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing) {
+    // Safebrowsing ignores referrers so the requests succeed.
     EXPECT_EQ(net::OK, simple_loader->NetError());
     ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ("None", *simple_loader_helper.response_body());
@@ -1550,14 +1545,8 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 
 // Test that when there's a proxy configuration at startup, the initial requests
 // use that configuration.
-// Flaky on CrOS only. http://crbug.com/922876
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestInitialProxyConfig DISABLED_TestInitialProxyConfig
-#else
-#define MAYBE_TestInitialProxyConfig TestInitialProxyConfig
-#endif
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
-                       MAYBE_TestInitialProxyConfig) {
+                       TestInitialProxyConfig) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
   TestProxyConfigured(/*expect_success=*/true);
@@ -1607,8 +1596,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
 // file URLs.
 class NetworkContextConfigurationFilePacBrowserTest
-    : public NetworkContextConfigurationBrowserTest,
-      public network::NetworkConnectionTracker::NetworkConnectionObserver {
+    : public NetworkContextConfigurationBrowserTest {
  public:
   NetworkContextConfigurationFilePacBrowserTest() {}
 
@@ -1630,37 +1618,8 @@ class NetworkContextConfigurationFilePacBrowserTest
         switches::kProxyPacUrl, net::FilePathToFileURL(pac_file_path).spec());
   }
 
-  void SetUpOnMainThread() override {
-    NetworkContextConfigurationBrowserTest::SetUpOnMainThread();
-
-    // The network service will have just been killed if network_service_state
-    // is kRestarted. Make sure it knows about the correct network state before
-    // continuing.
-    network::NetworkConnectionTracker* tracker =
-        content::GetNetworkConnectionTracker();
-    auto connection_type = network::mojom::ConnectionType::CONNECTION_NONE;
-    run_loop_.reset(new base::RunLoop());
-    tracker->AddNetworkConnectionObserver(this);
-    while (!tracker->GetConnectionType(
-               &connection_type,
-               base::BindOnce(&NetworkContextConfigurationFilePacBrowserTest::
-                                  OnConnectionChanged,
-                              base::Unretained(this))) ||
-           connection_type == network::mojom::ConnectionType::CONNECTION_NONE) {
-      run_loop_->Run();
-      run_loop_.reset(new base::RunLoop());
-    }
-    tracker->RemoveNetworkConnectionObserver(this);
-  }
-
-  // network::NetworkConnectionTracker::NetworkConnectionObserver
-  void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    run_loop_->Quit();
-  }
-
  private:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContextConfigurationFilePacBrowserTest);
 };
@@ -1668,10 +1627,7 @@ class NetworkContextConfigurationFilePacBrowserTest
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFilePacBrowserTest, FilePac) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-  bool network_service_disabled =
-      !base::FeatureList::IsEnabled(network::features::kNetworkService);
-  // PAC file URLs are not supported with the network service
-  TestProxyConfigured(/*expect_success=*/network_service_disabled);
+  TestProxyConfigured(false);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
@@ -1793,24 +1749,12 @@ class NetworkContextConfigurationHttpsStrippingPacBrowserTest
   }
 };
 
-// Instiates tests with a prefix indicating which NetworkContext is being
+// Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
-
-#if defined(OS_CHROMEOS)
-// There's an extra network change event on ChromeOS, likely from
-// NetworkChangeNotifierPosix that makes these tests flaky on ChromeOS when
-// there's an out of process network stack.
-//
-// TODO(https://crbug.com/927293): Fix that, and enable these tests on ChromeOS.
-#define TEST_CASES(network_context_type) \
-  TestCase({NetworkServiceState::kDisabled, network_context_type})
-#else  // !defined(OS_CHROMEOS)
 #define TEST_CASES(network_context_type)                               \
-  TestCase({NetworkServiceState::kDisabled, network_context_type}),    \
       TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
-#endif  // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #define INSTANTIATE_EXTENSION_TESTS(TestFixture)                        \

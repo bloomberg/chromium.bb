@@ -20,7 +20,7 @@ namespace {
 
 using LifecycleState = PageNodeImpl::LifecycleState;
 
-class LenientMockGraphObserver : public GraphObserverDefaultImpl {
+class LenientMockGraphObserver : public GraphImplObserverDefaultImpl {
  public:
   LenientMockGraphObserver() = default;
   ~LenientMockGraphObserver() override = default;
@@ -43,13 +43,11 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
   ~FrozenFrameAggregatorTest() override = default;
 
   void SetUp() override {
-    ffa_ = std::make_unique<FrozenFrameAggregator>();
-    graph()->RegisterObserver(ffa_.get());
+    ffa_ = new FrozenFrameAggregator();
+    graph()->PassToGraph(base::WrapUnique(ffa_));
     process_node_ = CreateNode<ProcessNodeImpl>();
     page_node_ = CreateNode<PageNodeImpl>();
   }
-
-  void TearDown() override { graph()->UnregisterObserver(ffa_.get()); }
 
   template <typename NodeType>
   void ExpectData(NodeType* node,
@@ -85,7 +83,7 @@ class FrozenFrameAggregatorTest : public GraphTestHarness {
                                      parent_frame_node, frame_tree_node_id);
   }
 
-  std::unique_ptr<FrozenFrameAggregator> ffa_;
+  FrozenFrameAggregator* ffa_;
   TestNodeWrapper<ProcessNodeImpl> process_node_;
   TestNodeWrapper<PageNodeImpl> page_node_;
 

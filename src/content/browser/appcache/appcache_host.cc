@@ -17,9 +17,11 @@
 #include "content/browser/appcache/appcache_request.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_subresource_url_factory.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -57,29 +59,40 @@ blink::mojom::AppCacheInfoPtr CreateCacheInfo(
   return info;
 }
 
+bool CanAccessDocumentURL(int process_id, const GURL& document_url) {
+  DCHECK_NE(process_id, ChildProcessHost::kInvalidUniqueID);
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  return document_url.is_empty() ||       // window.open("javascript:''") case.
+         document_url.IsAboutSrcdoc() ||  // <iframe srcdoc= ...> case.
+         document_url.IsAboutBlank() ||   // <iframe src="javascript:''"> case.
+         document_url == GURL("data:,") ||  // CSP blocked_urls.
+         security_policy->CanAccessDataForOrigin(process_id,
+                                                 document_url) ||
+         !security_policy->HasSecurityState(process_id);  // process shutdown.
+}
+
 }  // namespace
 
-AppCacheHost::AppCacheHost(const base::UnguessableToken& host_id,
-                           int process_id,
-                           int render_frame_id,
-                           blink::mojom::AppCacheFrontendPtr frontend,
-                           AppCacheServiceImpl* service)
+AppCacheHost::AppCacheHost(
+    const base::UnguessableToken& host_id,
+    int process_id,
+    int render_frame_id,
+    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
+    AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
       is_cache_selection_enabled_(true),
-      frontend_ptr_(std::move(frontend)),
-      frontend_(frontend_ptr_.get()),
+      frontend_remote_(std::move(frontend_remote)),
+      frontend_(frontend_remote_.is_bound() ? frontend_remote_.get() : nullptr),
       render_frame_id_(render_frame_id),
       service_(service),
       storage_(service->storage()),
       main_resource_was_namespace_entry_(false),
       main_resource_blocked_(false),
-      associated_cache_info_pending_(false),
-      binding_(this),
-      weak_factory_(this) {
+      associated_cache_info_pending_(false) {
   service_->AddObserver(this);
 }
 
@@ -107,10 +120,11 @@ AppCacheHost::~AppCacheHost() {
     std::move(pending_start_update_callback_).Run(false);
 }
 
-void AppCacheHost::BindRequest(blink::mojom::AppCacheHostRequest request) {
-  binding_.Bind(std::move(request));
-  // Unretained is safe because |this| will outlive |binding_|.
-  binding_.set_connection_error_handler(
+void AppCacheHost::BindReceiver(
+    mojo::PendingReceiver<blink::mojom::AppCacheHost> receiver) {
+  receiver_.Bind(std::move(receiver));
+  // Unretained is safe because |this| will outlive |receiver_|.
+  receiver_.set_disconnect_handler(
       base::BindOnce(&AppCacheHost::Unregister, base::Unretained(this)));
 }
 
@@ -131,6 +145,20 @@ void AppCacheHost::SelectCache(const GURL& document_url,
                                const GURL& manifest_url) {
   if (was_select_cache_called_) {
     mojo::ReportBadMessage("ACH_SELECT_CACHE");
+    return;
+  }
+
+  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  if (!CanAccessDocumentURL(process_id_, document_url)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
+    return;
+  }
+
+  auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!manifest_url.is_empty() &&
+      !security_policy->CanAccessDataForOrigin(process_id_, manifest_url) &&
+      security_policy->HasSecurityState(process_id_)) {
+    mojo::ReportBadMessage("ACH_SELECT_CACHE_MANIFEST_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
@@ -156,7 +184,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // after cache or group loading is complete.
   // Note: Foreign entries are detected on the client side and
   // MarkAsForeignEntry is called in that case, so that detection
-  // step is skipped here. See WebApplicationCacheHostImpl.cc
+  // step is skipped here.
 
   if (cache_document_was_loaded_from != blink::mojom::kAppCacheNoCacheId) {
     LoadSelectedCache(cache_document_was_loaded_from);
@@ -189,7 +217,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
     }
     // Note: The client detects if the document was not loaded using HTTP GET
     // and invokes SelectCache without a manifest url, so that detection step
-    // is also skipped here. See WebApplicationCacheHostImpl.cc
+    // is also skipped here.
     set_preferred_manifest_url(manifest_url);
     new_master_entry_url_ = document_url;
     LoadOrCreateGroup(manifest_url);
@@ -223,6 +251,12 @@ void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64_t cache_document_was_loaded_from) {
   if (was_select_cache_called_) {
     mojo::ReportBadMessage("ACH_MARK_AS_FOREIGN_ENTRY");
+    return;
+  }
+
+  if (!CanAccessDocumentURL(process_id_, document_url)) {
+    mojo::ReportBadMessage(
+        "ACH_MARK_AS_FOREIGN_ENTRY_DOCUMENT_URL_ACCESS_NOT_ALLOWED");
     return;
   }
 
@@ -599,7 +633,9 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
                                                         &factory_ptr);
 
-  frontend()->SetSubresourceFactory(std::move(factory_ptr));
+  // We may not have bound |factory_ptr| if the storage partition has shut down.
+  if (factory_ptr)
+    frontend()->SetSubresourceFactory(std::move(factory_ptr));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

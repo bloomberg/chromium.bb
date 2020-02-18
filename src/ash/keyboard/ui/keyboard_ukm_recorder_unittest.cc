@@ -38,8 +38,8 @@ TEST(KeyboardUkmRecorderTest, RecordUkmWithNavigationId) {
   EXPECT_EQ(0u, test_recorder.sources_count());
   EXPECT_EQ(1u, test_recorder.entries_count());
   const auto entries = test_recorder.GetEntriesByName("VirtualKeyboard.Open");
-  test_recorder.ExpectEntryMetric(entries[0], "TextInputType",
-                                  ui::TEXT_INPUT_TYPE_PASSWORD);
+  ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(entries[0], "TextInputType",
+                                                 ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
 }  // namespace keyboard

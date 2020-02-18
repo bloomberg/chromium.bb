@@ -58,7 +58,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
-
   return S_OK;
 }
 
@@ -168,7 +167,11 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
           ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
       break;
     case TextUnit_Paragraph:
-      return E_NOTIMPL;
+      start_ = start_->CreatePreviousParagraphStartPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      end_ = start_->CreateNextParagraphEndPosition(
+          ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+      break;
     // Since web content is not paginated, TextUnit_Page is not supported.
     // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
@@ -183,8 +186,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   // Some text positions are equal when compared, but they could be located at
   // different anchors, affecting how `GetEnclosingElement` works. Normalize the
   // endpoints to correctly enclose characters of the text representation.
-  AXPositionInstance normalized_start = start_->AsPositionBeforeCharacter();
-  AXPositionInstance normalized_end = end_->AsPositionBeforeCharacter();
+  AXPositionInstance normalized_start =
+      start_->AsLeafTextPositionBeforeCharacter();
+  AXPositionInstance normalized_end = end_->AsLeafTextPositionBeforeCharacter();
 
   if (!normalized_start->IsNullPosition()) {
     DCHECK_EQ(*start_, *normalized_start);
@@ -234,9 +238,13 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *result = nullptr;
+  AXPositionInstance matched_range_start = nullptr;
+  AXPositionInstance matched_range_end = nullptr;
+
+  std::vector<AXNodeRange> anchors;
   AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-  AXPositionInstance matched_range_start = nullptr, matched_range_end = nullptr;
+  for (AXNodeRange leaf_text_range : range)
+    anchors.emplace_back(std::move(leaf_text_range));
 
   auto expand_match = [&matched_range_start, &matched_range_end, is_backward](
                           auto& current_start, auto& current_end) {
@@ -352,29 +360,19 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
     VARIANT* value) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETATTRIBUTEVALUE);
 
-  AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-
-  if (anchors.empty())
-    return UIA_E_ELEMENTNOTAVAILABLE;
-
   base::win::ScopedVariant attribute_value_variant;
+  AXNodeRange range(start_->Clone(), end_->Clone());
 
-  for (auto&& current_range : anchors) {
-    DCHECK(current_range.anchor()->GetAnchor() ==
-           current_range.focus()->GetAnchor());
-
-    AXPlatformNodeDelegate* delegate = GetDelegate(current_range.anchor());
-    DCHECK(delegate);
+  for (const AXNodeRange& leaf_text_range : range) {
+    AXPositionInstanceType* anchor_start = leaf_text_range.anchor();
+    AXPlatformNodeDelegate* delegate = GetDelegate(anchor_start);
+    DCHECK(anchor_start && delegate);
 
     AXPlatformNodeWin* platform_node = static_cast<AXPlatformNodeWin*>(
-        delegate->GetFromNodeID(current_range.anchor()->GetAnchor()->id()));
+        delegate->GetFromNodeID(anchor_start->anchor_id()));
     DCHECK(platform_node);
-    if (!platform_node)
-      continue;
 
     base::win::ScopedVariant current_variant;
-
     HRESULT hr = platform_node->GetTextAttributeValue(
         attribute_id, current_variant.Receive());
     if (FAILED(hr))
@@ -386,7 +384,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
         *value = attribute_value_variant.Release();
         return S_OK;
       }
-    } else if (0 != attribute_value_variant.Compare(current_variant)) {
+    } else if (attribute_value_variant.Compare(current_variant)) {
       V_VT(value) = VT_UNKNOWN;
       return ::UiaGetReservedMixedAttributeValue(&V_UNKNOWN(value));
     }
@@ -402,20 +400,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
   *rectangles = nullptr;
-
   AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<AXNodeRange> anchors = range.GetAnchors();
-
-  std::vector<gfx::Rect> rects;
-  for (auto&& current_range : anchors) {
-    std::vector<gfx::Rect> current_anchor_rects =
-        current_range.GetScreenRects();
-    // std::vector does not have a built-in way of appending another
-    // std::vector. Using insert with iterators is the safest and most
-    // performant way to accomplish this.
-    rects.insert(rects.end(), current_anchor_rects.begin(),
-                 current_anchor_rects.end());
-  }
+  std::vector<gfx::Rect> rects = range.GetScreenRects();
 
   // 4 array items per rect: left, top, width, height
   SAFEARRAY* safe_array = SafeArrayCreateVector(
@@ -448,7 +434,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
   }
 
   *rectangles = safe_array;
-
   return S_OK;
 }
 
@@ -554,7 +539,6 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
   }
 
   *units_moved = start_units_moved;
-
   return S_OK;
 }
 
@@ -593,7 +577,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
                                         count, units_moved);
       break;
     case TextUnit_Paragraph:
-      return E_NOTIMPL;
+      new_position = MoveEndpointByParagraph(
+          position_to_move, is_start_endpoint, count, units_moved);
+      break;
     // Since web content is not paginated, TextUnit_Page is not supported.
     // Substituting it by the next larger unit: TextUnit_Document.
     case TextUnit_Page:
@@ -798,12 +784,20 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
 
 base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
   AXNodeRange range(start_->Clone(), end_->Clone());
-
-  return range.GetText();
+  return range.GetText(AXTextConcatenationBehavior::kAsInnerText);
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
   return owner_;
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
+    const AXPositionInstanceType* position) const {
+  AXTreeManager* manager =
+      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
+  return manager
+             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
+             : owner()->GetDelegate();
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
@@ -884,6 +878,48 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByFormat(
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance
+AXPlatformNodeTextRangeProviderWin::MoveEndpointByParagraph(
+    const AXNodePosition::AXPositionInstance& endpoint,
+    const bool is_start_endpoint,
+    const int count,
+    int* count_moved) {
+  auto current_endpoint = endpoint->Clone();
+  const bool forwards = count > 0;
+  const int count_abs = std::abs(count);
+  const auto behavior = ui::AXBoundaryBehavior::CrossBoundary;
+  int iteration = 0;
+  for (iteration = 0; iteration < count_abs; ++iteration) {
+    AXPositionInstance next_endpoint;
+    if (forwards) {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreateNextParagraphStartPosition(behavior)
+              : current_endpoint->CreateNextParagraphEndPosition(behavior);
+    } else {
+      next_endpoint =
+          is_start_endpoint
+              ? current_endpoint->CreatePreviousParagraphStartPosition(behavior)
+              : current_endpoint->CreatePreviousParagraphEndPosition(behavior);
+    }
+
+    // End of document
+    if (next_endpoint->IsNullPosition()) {
+      int document_moved;
+      next_endpoint = MoveEndpointByDocument(endpoint, count, &document_moved);
+      if (*endpoint != *next_endpoint && !next_endpoint->IsNullPosition()) {
+        ++iteration;
+        current_endpoint = std::move(next_endpoint);
+      }
+      break;
+    }
+    current_endpoint = std::move(next_endpoint);
+  }
+
+  *count_moved = (forwards) ? iteration : -iteration;
+  return current_endpoint;
+}
+
+AXPlatformNodeTextRangeProviderWin::AXPositionInstance
 AXPlatformNodeTextRangeProviderWin::MoveEndpointByDocument(
     const AXPositionInstance& endpoint,
     const int count,
@@ -930,16 +966,6 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
 
   *units_moved = count;
   return current_endpoint;
-}
-
-AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
-    const ui::AXPosition<ui::AXNodePosition, ui::AXNode>* position) const {
-  AXTreeManager* manager =
-      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
-
-  return manager
-             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
-             : owner()->GetDelegate();
 }
 
 }  // namespace ui

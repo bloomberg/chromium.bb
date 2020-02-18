@@ -23,12 +23,12 @@
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContext.h"
 #include "include/private/GrRecordingContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrColorSpaceXform.h"
 #include "src/gpu/GrContextPriv.h"
 #include "src/gpu/GrFixedClip.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/SkGr.h"
 #endif
 #include <atomic>
@@ -245,20 +245,27 @@ bool SkImageFilter::canComputeFastBounds() const {
 sk_sp<SkSpecialImage> SkImageFilter::DrawWithFP(GrRecordingContext* context,
                                                 std::unique_ptr<GrFragmentProcessor> fp,
                                                 const SkIRect& bounds,
-                                                const OutputProperties& outputProperties) {
+                                                const OutputProperties& outputProperties,
+                                                GrProtected isProtected) {
     GrPaint paint;
     paint.addColorFragmentProcessor(std::move(fp));
     paint.setPorterDuffXPFactory(SkBlendMode::kSrc);
 
     sk_sp<SkColorSpace> colorSpace = sk_ref_sp(outputProperties.colorSpace());
-    GrPixelConfig config = SkColorType2GrPixelConfig(outputProperties.colorType());
-    GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(
-                    outputProperties.colorType());
+    GrColorType colorType = SkColorTypeToGrColorType(outputProperties.colorType());
     sk_sp<GrRenderTargetContext> renderTargetContext(
-        context->priv().makeDeferredRenderTargetContext(
-                                format, SkBackingFit::kApprox, bounds.width(), bounds.height(),
-                                config, std::move(colorSpace)));
+            context->priv().makeDeferredRenderTargetContext(
+                    SkBackingFit::kApprox,
+                    bounds.width(),
+                    bounds.height(),
+                    colorType,
+                    std::move(colorSpace),
+                    1,
+                    GrMipMapped::kNo,
+                    kBottomLeft_GrSurfaceOrigin,
+                    nullptr,
+                    SkBudgeted::kYes,
+                    isProtected));
     if (!renderTargetContext) {
         return nullptr;
     }
@@ -512,6 +519,16 @@ static sk_sp<SkImageFilter> apply_ctm_to_filter(sk_sp<SkImageFilter> input, cons
         // decomposeScale splits ctm into scale * ctmToEmbed, so bake ctmToEmbed into DAG
         // with a matrix filter and return scale as the remaining matrix for the real CTM.
         remainder->setScale(scale.fWidth, scale.fHeight);
+
+        // ctmToEmbed is passed to SkMatrixImageFilter, which performs its transforms as if it were
+        // a pre-transformation before applying the image-filter context's CTM. In this case, we
+        // need ctmToEmbed to be a post-transformation (i.e. after the scale matrix since
+        // decomposeScale produces ctm = ctmToEmbed * scale). Giving scale^-1 * ctmToEmbed * scale
+        // to the matrix filter achieves this effect.
+        // TODO (michaelludwig) - When the original root node of a filter can be drawn directly to a
+        // device using ctmToEmbed, this abuse of SkMatrixImageFilter can go away.
+        ctmToEmbed.preScale(scale.fWidth, scale.fHeight);
+        ctmToEmbed.postScale(1.f / scale.fWidth, 1.f / scale.fHeight);
     } else {
         // Unable to decompose
         // FIXME Ideally we'd embed the entire CTM as part of the matrix image filter, but
@@ -559,4 +576,9 @@ bool SkIsSameFilter(const SkImageFilter* a, const SkImageFilter* b) {
     } else {
         return a->fUniqueID == b->fUniqueID;
     }
+}
+
+SkIRect SkFilterNodeBounds(const SkImageFilter* filter, const SkIRect& srcRect, const SkMatrix& ctm,
+                           SkImageFilter::MapDirection dir, const SkIRect* inputRect) {
+    return filter->onFilterNodeBounds(srcRect, ctm, dir, inputRect);
 }

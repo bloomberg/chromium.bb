@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_
 
 #include <memory>
-#include <set>
 
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
@@ -105,6 +104,10 @@ class WebGLUniformLocation;
 class WebGLVertexArrayObjectBase;
 
 class WebGLRenderingContextErrorMessageCallback;
+
+using GLenumHashSet = HashSet<GLenum,
+                              WTF::AlreadyHashed,
+                              WTF::UnsignedWithZeroKeyHashTraits<GLenum>>;
 
 // This class uses the color mask to prevent drawing to the alpha channel, if
 // the DrawingBuffer requires RGB emulation.
@@ -1001,13 +1004,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool is_ext_srgb_formats_types_added_ = false;
   bool is_ext_color_buffer_float_formats_added_ = false;
 
-  std::set<GLenum> supported_internal_formats_;
-  std::set<GLenum> supported_tex_image_source_internal_formats_;
-  std::set<GLenum> supported_internal_formats_copy_tex_image_;
-  std::set<GLenum> supported_formats_;
-  std::set<GLenum> supported_tex_image_source_formats_;
-  std::set<GLenum> supported_types_;
-  std::set<GLenum> supported_tex_image_source_types_;
+  GLenumHashSet supported_internal_formats_;
+  GLenumHashSet supported_tex_image_source_internal_formats_;
+  GLenumHashSet supported_internal_formats_copy_tex_image_;
+  GLenumHashSet supported_formats_;
+  GLenumHashSet supported_tex_image_source_formats_;
+  GLenumHashSet supported_types_;
+  GLenumHashSet supported_tex_image_source_types_;
 
   // Helpers for getParameter and others
   ScriptValue GetBooleanParameter(ScriptState*, GLenum);
@@ -1185,9 +1188,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // true.
   bool ValidateSize(const char* function_name, GLint x, GLint y, GLint z = 0);
 
+  // Helper function to check if a character belongs to the ASCII subset as
+  // defined in GLSL ES 1.0 spec section 3.1.
+  bool ValidateCharacter(unsigned char c);
+
   // Helper function to check if all characters in the string belong to the
   // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
   bool ValidateString(const char* function_name, const String&);
+
+  // Helper function to check if an identifier starts with reserved prefixes.
+  bool IsPrefixReserved(const String& name);
 
   // Helper function to check if all characters in the shader source belong to
   // the ASCII subset as defined in GLSL ES 1.0 spec section 3.1 Character Set
@@ -1746,6 +1756,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                             bool* completed);
   static constexpr unsigned int kMaxProgramCompletionQueries = 128u;
   base::MRUCache<WebGLProgram*, GLuint> program_completion_queries_;
+
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };

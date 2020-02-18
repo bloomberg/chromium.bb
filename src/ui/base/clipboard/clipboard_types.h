@@ -7,14 +7,13 @@
 
 namespace ui {
 
-// This type designates which clipboard the action should be applied to.
-// Only platforms that use the X Window System support the selection buffer.
-// Drag type is only supported on Mac OS X.
-enum ClipboardType {
-  CLIPBOARD_TYPE_COPY_PASTE,
-  CLIPBOARD_TYPE_SELECTION,
-  CLIPBOARD_TYPE_DRAG,
-  CLIPBOARD_TYPE_LAST = CLIPBOARD_TYPE_DRAG
+// |ClipboardType| designates which clipboard buffer the action should be
+// applied to.
+enum class ClipboardType {
+  kCopyPaste,
+  kSelection,  // Only supported on systems running X11.
+  kDrag,       // Only supported on Mac OS X.
+  kMaxValue = kDrag
 };
 
 }  // namespace ui

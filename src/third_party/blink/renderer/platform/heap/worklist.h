@@ -19,7 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -59,6 +59,8 @@ class Worklist {
     bool IsGlobalEmpty() { return worklist_->IsGlobalEmpty(); }
 
     bool IsGlobalPoolEmpty() { return worklist_->IsGlobalPoolEmpty(); }
+
+    void FlushToGlobal() { worklist_->FlushToGlobal(task_id_); }
 
     size_t LocalPushSegmentSize() const {
       return worklist_->LocalPushSegmentSize(task_id_);

@@ -34,13 +34,23 @@ namespace net {
 
 namespace {
 
-base::Value NetLogQuicPushStreamCallback(quic::QuicStreamId stream_id,
-                                         const GURL* url,
-                                         NetLogCaptureMode capture_mode) {
+base::Value NetLogQuicPushStreamParams(quic::QuicStreamId stream_id,
+                                       const GURL& url) {
   base::DictionaryValue dict;
   dict.SetInteger("stream_id", stream_id);
-  dict.SetString("url", url->spec());
+  dict.SetString("url", url.spec());
   return std::move(dict);
+}
+
+void NetLogQuicPushStream(const NetLogWithSource& net_log1,
+                          const NetLogWithSource& net_log2,
+                          NetLogEventType type,
+                          quic::QuicStreamId stream_id,
+                          const GURL& url) {
+  net_log1.AddEvent(type,
+                    [&] { return NetLogQuicPushStreamParams(stream_id, url); });
+  net_log2.AddEvent(type,
+                    [&] { return NetLogQuicPushStreamParams(stream_id, url); });
 }
 
 }  // namespace
@@ -67,8 +77,7 @@ QuicHttpStream::QuicHttpStream(
       user_buffer_len_(0),
       session_error_(ERR_UNEXPECTED),
       found_promise_(false),
-      in_loop_(false),
-      weak_factory_(this) {}
+      in_loop_(false) {}
 
 QuicHttpStream::~QuicHttpStream() {
   CHECK(!in_loop_);
@@ -90,6 +99,8 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_46;
     case quic::QUIC_VERSION_47:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_47;
+    case quic::QUIC_VERSION_48:
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_48;
     case quic::QUIC_VERSION_99:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_99;
     case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
@@ -115,14 +126,13 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   if (!quic_session()->IsConnected())
     return GetResponseStatus();
 
-  stream_net_log.AddEvent(
+  stream_net_log.AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION,
-      quic_session()->net_log().source().ToEventParametersCallback());
-  stream_net_log.AddEvent(
+      quic_session()->net_log().source());
+  stream_net_log.AddEventWithIntParams(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_MODE,
-      NetLog::IntCallback(
-          "connection_migration_mode",
-          static_cast<int>(quic_session()->connection_migration_mode())));
+      "connection_migration_mode",
+      static_cast<int>(quic_session()->connection_migration_mode()));
 
   stream_net_log_ = stream_net_log;
   request_info_ = request_info;
@@ -137,14 +147,10 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
       quic_session()->GetPushPromiseIndex()->GetPromised(url);
   if (promised) {
     found_promise_ = true;
-    stream_net_log_.AddEvent(
+    NetLogQuicPushStream(
+        stream_net_log_, quic_session()->net_log(),
         NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
-        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
-                   &request_info_->url));
-    quic_session()->net_log().AddEvent(
-        NetLogEventType::QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
-        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
-                   &request_info_->url));
+        promised->id(), request_info_->url);
     return OK;
   }
 
@@ -179,14 +185,9 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
   stream_->SetPriority(spdy_priority);
 
   next_state_ = STATE_OPEN;
-  stream_net_log_.AddEvent(
-      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                 &request_info_->url));
-  quic_session()->net_log().AddEvent(
-      NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
-                 &request_info_->url));
+  NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
+                       NetLogEventType::QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+                       stream_->id(), request_info_->url);
   return OK;
 }
 
@@ -345,9 +346,12 @@ bool QuicHttpStream::IsConnectionReused() const {
 }
 
 int64_t QuicHttpStream::GetTotalReceivedBytes() const {
-  // TODO(sclittle): Currently, this only includes headers and response body
-  // bytes. Change this to include QUIC overhead as well.
-  int64_t total_received_bytes = headers_bytes_received_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_received_bytes =
+      quic::VersionUsesQpack(quic_session()->GetQuicVersion())
+          ? 0
+          : headers_bytes_received_;
   if (stream_) {
     DCHECK_LE(stream_->NumBytesConsumed(), stream_->stream_bytes_read());
     // Only count the uniquely received bytes.
@@ -359,9 +363,12 @@ int64_t QuicHttpStream::GetTotalReceivedBytes() const {
 }
 
 int64_t QuicHttpStream::GetTotalSentBytes() const {
-  // TODO(sclittle): Currently, this only includes request headers and body
-  // bytes. Change this to include QUIC overhead as well.
-  int64_t total_sent_bytes = headers_bytes_sent_;
+  // When QPACK is enabled, headers are sent and received on the stream, so
+  // the headers bytes do not need to be accounted for independently.
+  int64_t total_sent_bytes =
+      quic::VersionUsesQpack(quic_session()->GetQuicVersion())
+          ? 0
+          : headers_bytes_sent_;
   if (stream_) {
     total_sent_bytes += stream_->stream_bytes_written();
   } else {
@@ -463,8 +470,7 @@ int QuicHttpStream::DoLoop(int rv) {
   CHECK(!in_loop_);
   base::AutoReset<bool> auto_reset_in_loop(&in_loop_, true);
   std::unique_ptr<quic::QuicConnection::ScopedPacketFlusher> packet_flusher =
-      quic_session()->CreatePacketBundler(
-          quic::QuicConnection::AckBundling::SEND_ACK_IF_QUEUED);
+      quic_session()->CreatePacketBundler();
   do {
     State state = next_state_;
     next_state_ = STATE_NONE;
@@ -575,8 +581,10 @@ int QuicHttpStream::DoSendHeaders() {
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
-      base::Bind(&QuicRequestNetLogCallback, stream_->id(), &request_headers_,
-                 priority_));
+      [&](NetLogCaptureMode capture_mode) {
+        return QuicRequestNetLogParams(stream_->id(), &request_headers_,
+                                       priority_, capture_mode);
+      });
   DispatchRequestHeadersCallback(request_headers_);
   bool has_upload_data = request_body_stream_ != nullptr;
 

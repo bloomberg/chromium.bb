@@ -33,8 +33,8 @@ using TestOnRequestFinishedClientContext = int;
 void TestRequestInfoListener_OnRequestFinished(
     Cronet_RequestFinishedInfoListenerPtr self,
     Cronet_RequestFinishedInfoPtr request_info,
-    Cronet_UrlResponseInfoPtr,
-    Cronet_ErrorPtr) {
+    Cronet_UrlResponseInfoPtr url_response_info,
+    Cronet_ErrorPtr error) {
   CHECK(self);
   Cronet_ClientContext context =
       Cronet_RequestFinishedInfoListener_GetClientContext(self);
@@ -43,6 +43,8 @@ void TestRequestInfoListener_OnRequestFinished(
   ++(*listener_run_count);
   auto* metrics = Cronet_RequestFinishedInfo_metrics_get(request_info);
   EXPECT_EQ(kSentByteCount, Cronet_Metrics_sent_byte_count_get(metrics));
+  EXPECT_NE(nullptr, url_response_info);
+  EXPECT_NE(nullptr, error);
 }
 
 TEST(EngineUnitTest, HasNoRequestFinishedInfoListener) {
@@ -76,6 +78,8 @@ TEST(EngineUnitTest, HasRequestFinishedInfoListener) {
 
 TEST(EngineUnitTest, RequestFinishedInfoListeners) {
   using RequestInfo = base::RefCountedData<Cronet_RequestFinishedInfo>;
+  using UrlResponseInfo = base::RefCountedData<Cronet_UrlResponseInfo>;
+  using CronetError = base::RefCountedData<Cronet_Error>;
   constexpr int kNumListeners = 5;
   TestOnRequestFinishedClientContext listener_run_count = 0;
 
@@ -96,10 +100,12 @@ TEST(EngineUnitTest, RequestFinishedInfoListeners) {
   // Simulate the UrlRequest reporting metrics to the engine.
   auto* engine_impl = static_cast<Cronet_EngineImpl*>(engine);
   auto request_info = base::MakeRefCounted<RequestInfo>();
+  auto url_response_info = base::MakeRefCounted<UrlResponseInfo>();
+  auto error = base::MakeRefCounted<CronetError>();
   auto metrics = std::make_unique<Cronet_Metrics>();
   metrics->sent_byte_count = kSentByteCount;
   request_info->data.metrics.emplace(*metrics);
-  engine_impl->ReportRequestFinished(request_info);
+  engine_impl->ReportRequestFinished(request_info, url_response_info, error);
   EXPECT_EQ(kNumListeners, listener_run_count);
 
   for (auto* listener : listeners) {

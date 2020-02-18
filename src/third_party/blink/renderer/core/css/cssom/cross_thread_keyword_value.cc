@@ -9,7 +9,7 @@
 namespace blink {
 
 CSSStyleValue* CrossThreadKeywordValue::ToCSSStyleValue() {
-  return CSSKeywordValue::Create(keyword_value_);
+  return CSSKeywordValue::Create(std::move(keyword_value_.IsolatedCopy()));
 }
 
 bool CrossThreadKeywordValue::operator==(

@@ -28,8 +28,6 @@ std::string GetChromeFlagsSetupString() {
       return "Experiment";
     case ExploreSitesVariation::PERSONALIZED:
       return "Personalized";
-    case ExploreSitesVariation::CONDENSED:
-      return "Condensed";
     case ExploreSitesVariation::MOST_LIKELY:
       return "Most Likely";
     case ExploreSitesVariation::DISABLED:
@@ -59,7 +57,7 @@ void ExploreSitesInternalsPageHandler::GetProperties(
 
 void ExploreSitesInternalsPageHandler::ClearCachedExploreSitesCatalog(
     ClearCachedExploreSitesCatalogCallback callback) {
-  if (ExploreSitesVariation::ENABLED != GetExploreSitesVariation()) {
+  if (ExploreSitesVariation::DISABLED == GetExploreSitesVariation()) {
     std::move(callback).Run(false);
     return;
   }
@@ -79,7 +77,7 @@ void ExploreSitesInternalsPageHandler::ForceNetworkRequest(
 void ExploreSitesInternalsPageHandler::OverrideCountryCode(
     const std::string& country_code,
     OverrideCountryCodeCallback callback) {
-  if (ExploreSitesVariation::ENABLED != GetExploreSitesVariation()) {
+  if (ExploreSitesVariation::DISABLED == GetExploreSitesVariation()) {
     std::move(callback).Run(false);
     return;
   }

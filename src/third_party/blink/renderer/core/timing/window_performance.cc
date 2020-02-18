@@ -39,18 +39,19 @@
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 static constexpr base::TimeDelta kLongTaskObserverThreshold =
     base::TimeDelta::FromMilliseconds(50);
@@ -119,14 +120,14 @@ bool IsSameOrigin(const AtomicString& key) {
 
 }  // namespace
 
-static TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
+static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
   Document* document = window->document();
   if (!document)
-    return TimeTicks();
+    return base::TimeTicks();
 
   DocumentLoader* loader = document->Loader();
   if (!loader)
-    return TimeTicks();
+    return base::TimeTicks();
 
   return loader->GetTiming().ReferenceMonotonicTime();
 }
@@ -321,16 +322,10 @@ void WindowPerformance::ReportLongTask(
   }
 }
 
-// We buffer Element Timing and Event Timing (long-latency events) entries until
-// onload, i.e., LoadEventStart is not reached yet.
-bool WindowPerformance::ShouldBufferEntries() {
-  return !timing() || !timing()->loadEventStart();
-}
-
 void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
-                                            TimeTicks start_time,
-                                            TimeTicks processing_start,
-                                            TimeTicks processing_end,
+                                            base::TimeTicks start_time,
+                                            base::TimeTicks processing_start,
+                                            base::TimeTicks processing_end,
                                             bool cancelable) {
   // |start_time| could be null in some tests that inject input.
   DCHECK(!processing_start.is_null());
@@ -357,7 +352,7 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
 }
 
 void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
-                                           TimeTicks timestamp) {
+                                           base::TimeTicks timestamp) {
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   bool event_timing_enabled =
       RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext());
@@ -386,31 +381,29 @@ void WindowPerformance::ReportEventTimings(WebWidgetClient::SwapResult result,
       NotifyObserversOfEntry(*entry);
     }
 
-    if (ShouldBufferEntries() && !IsEventTimingBufferFull())
+    if (!IsEventTimingBufferFull())
       AddEventTimingBuffer(*entry);
   }
   event_timings_.clear();
 }
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,
+                                         const String& url,
                                          const FloatRect& rect,
-                                         TimeTicks start_time,
-                                         TimeTicks response_end,
+                                         base::TimeTicks start_time,
+                                         base::TimeTicks load_time,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,
                                          Element* element) {
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
-      name, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
+      name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
+      MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
-  if (HasObserverFor(PerformanceEntry::kElement)) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kElementTimingExplicitlyRequested);
+  if (HasObserverFor(PerformanceEntry::kElement))
     NotifyObserversOfEntry(*entry);
-  }
-  if (ShouldBufferEntries() && !IsElementTimingBufferFull())
+  if (!IsElementTimingBufferFull())
     AddElementTimingBuffer(*entry);
 }
 
@@ -418,7 +411,7 @@ void WindowPerformance::DispatchFirstInputTiming(
     PerformanceEventTiming* entry) {
   if (!entry)
     return;
-  DCHECK_EQ("firstInput", entry->entryType());
+  DCHECK_EQ("first-input", entry->entryType());
   if (HasObserverFor(PerformanceEntry::kFirstInput)) {
     UseCounter::Count(GetExecutionContext(),
                       WebFeature::kEventTimingExplicitlyRequested);
@@ -429,14 +422,37 @@ void WindowPerformance::DispatchFirstInputTiming(
   first_input_timing_ = entry;
 }
 
-void WindowPerformance::AddLayoutJankFraction(double jank_fraction) {
+void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
+                                              bool input_detected,
+                                              base::TimeTicks input_timestamp) {
   DCHECK(RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(
       GetExecutionContext()));
-  auto* entry = MakeGarbageCollected<LayoutShift>(now(), jank_fraction);
-  if (HasObserverFor(PerformanceEntry::kLayoutJank))
+  auto* entry = MakeGarbageCollected<LayoutShift>(
+      now(), jank_fraction, input_detected,
+      input_detected ? MonotonicTimeToDOMHighResTimeStamp(input_timestamp)
+                     : 0.0);
+  if (HasObserverFor(PerformanceEntry::kLayoutShift))
     NotifyObserversOfEntry(*entry);
-  if (ShouldBufferEntries())
-    AddLayoutJankBuffer(*entry);
+  AddLayoutJankBuffer(*entry);
+}
+
+void WindowPerformance::OnLargestContentfulPaintUpdated(
+    base::TimeTicks paint_time,
+    uint64_t paint_size,
+    base::TimeTicks load_time,
+    const AtomicString& id,
+    const String& url,
+    Element* element) {
+  double render_timestamp = MonotonicTimeToDOMHighResTimeStamp(paint_time);
+  double load_timestamp = MonotonicTimeToDOMHighResTimeStamp(load_time);
+  double start_timestamp =
+      render_timestamp != 0.0 ? render_timestamp : load_timestamp;
+  auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
+      start_timestamp, render_timestamp, paint_size, load_timestamp, id, url,
+      element);
+  if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
+    NotifyObserversOfEntry(*entry);
+  AddLargestContentfulPaint(entry);
 }
 
 }  // namespace blink

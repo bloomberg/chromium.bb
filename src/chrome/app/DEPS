@@ -24,7 +24,7 @@ include_rules = [
   "+components/policy",
   "+components/safe_browsing",
   "+components/startup_metric_utils/browser",
-  "+components/tracing/common/tracing_sampler_profiler.h",
+  "+services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h",
   "+components/upload_list",
   "+components/version_info",
   "+content/public/app",
@@ -37,7 +37,6 @@ include_rules = [
   "+sandbox",
   "+services/preferences/public",
   "+services/service_manager/public",
-  "+services/ws/public",
   "+third_party/breakpad/breakpad",
   "+third_party/crashpad/crashpad",
 ]
@@ -68,13 +67,13 @@ specific_include_rules = {
     "+services/identity",
     "+services/image_annotation/public",
     "+services/resource_coordinator/public",
-    "+services/ws/common",
     "+third_party/blink/public/mojom",
   ],
   "chrome_content_gpu_overlay_manifest\.cc": [
     "+components/arc/common",
   ],
   "chrome_content_renderer_overlay_manifest\.cc": [
+    "+chromeos/services/network_config/public",
     "+components/autofill/content/common",
     "+components/dom_distiller/content/common",
     "+components/spellcheck/common",
@@ -85,11 +84,9 @@ specific_include_rules = {
   ],
   "builtin_service_manifests\.cc": [
     "+chrome/services/cups_ipp_parser/public",
-    "+chrome/services/cups_proxy/public",
     "+chrome/services/file_util/public",
     "+chrome/services/isolated_xr_device/manifest.h",
     "+chrome/services/media_gallery_util/public",
-    "+chrome/services/noop/public",
     "+chrome/services/printing/public",
     "+chrome/services/removable_storage_writer/public",
     "+chrome/services/util_win/public",

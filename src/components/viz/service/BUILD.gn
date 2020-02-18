@@ -169,9 +169,6 @@ viz_component("service") {
     "surfaces/surface_client.h",
     "surfaces/surface_dependency_deadline.cc",
     "surfaces/surface_dependency_deadline.h",
-    "surfaces/surface_hittest.cc",
-    "surfaces/surface_hittest.h",
-    "surfaces/surface_hittest_delegate.h",
     "surfaces/surface_manager.cc",
     "surfaces/surface_manager.h",
     "surfaces/surface_manager_delegate.h",
@@ -238,8 +235,6 @@ viz_component("service") {
 
   if (is_mac) {
     sources += [
-      "display_embedder/gl_output_surface_mac.cc",
-      "display_embedder/gl_output_surface_mac.h",
       "display_embedder/overlay_candidate_validator_mac.cc",
       "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
@@ -254,8 +249,6 @@ viz_component("service") {
     sources += [
       "display_embedder/gl_output_surface_android.cc",
       "display_embedder/gl_output_surface_android.h",
-      "display_embedder/gl_output_surface_buffer_queue_android.cc",
-      "display_embedder/gl_output_surface_buffer_queue_android.h",
       "display_embedder/overlay_candidate_validator_android.cc",
       "display_embedder/overlay_candidate_validator_android.h",
       "display_embedder/overlay_candidate_validator_surface_control.cc",
@@ -271,8 +264,6 @@ viz_component("service") {
 
   if (use_ozone) {
     sources += [
-      "display_embedder/gl_output_surface_ozone.cc",
-      "display_embedder/gl_output_surface_ozone.h",
       "display_embedder/overlay_candidate_validator_ozone.cc",
       "display_embedder/overlay_candidate_validator_ozone.h",
       "display_embedder/software_output_device_ozone.cc",
@@ -284,14 +275,19 @@ viz_component("service") {
 
   if (is_win) {
     sources += [
-      "display_embedder/gl_output_surface_win.cc",
-      "display_embedder/gl_output_surface_win.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
       "display_embedder/overlay_candidate_validator_win.cc",
       "display_embedder/overlay_candidate_validator_win.h",
       "display_embedder/software_output_device_win.cc",
       "display_embedder/software_output_device_win.h",
+    ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "display_embedder/output_surface_unified.cc",
+      "display_embedder/output_surface_unified.h",
     ]
   }
 
@@ -314,16 +310,17 @@ viz_source_set("gpu_service_dependencies") {
     "display_embedder/image_context.h",
     "display_embedder/skia_output_device.cc",
     "display_embedder/skia_output_device.h",
+    "display_embedder/skia_output_device_buffer_queue.cc",
+    "display_embedder/skia_output_device_buffer_queue.h",
     "display_embedder/skia_output_device_gl.cc",
     "display_embedder/skia_output_device_gl.h",
     "display_embedder/skia_output_device_offscreen.cc",
     "display_embedder/skia_output_device_offscreen.h",
-    "display_embedder/skia_output_surface_base.cc",
-    "display_embedder/skia_output_surface_base.h",
+    "display_embedder/skia_output_surface_dependency.h",
+    "display_embedder/skia_output_surface_dependency_impl.cc",
+    "display_embedder/skia_output_surface_dependency_impl.h",
     "display_embedder/skia_output_surface_impl.cc",
     "display_embedder/skia_output_surface_impl.h",
-    "display_embedder/skia_output_surface_impl_non_ddl.cc",
-    "display_embedder/skia_output_surface_impl_non_ddl.h",
     "display_embedder/skia_output_surface_impl_on_gpu.cc",
     "display_embedder/skia_output_surface_impl_on_gpu.h",
     "gl/gpu_service_impl.cc",
@@ -353,6 +350,10 @@ viz_source_set("gpu_service_dependencies") {
       "//gpu/command_buffer/service:gles2",
       "//media/mojo/services",
     ]
+  }
+
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
   }
 
   if (use_ozone) {
@@ -403,6 +404,7 @@ viz_source_set("unit_tests") {
     "display/texture_deleter_unittest.cc",
     "display_embedder/buffer_queue_unittest.cc",
     "display_embedder/server_shared_bitmap_manager_unittest.cc",
+    "display_embedder/skia_output_device_buffer_queue_unittest.cc",
     "display_embedder/skia_output_surface_impl_unittest.cc",
     "display_embedder/software_output_surface_unittest.cc",
     "display_embedder/vsync_parameter_listener_unittest.cc",
@@ -418,7 +420,6 @@ viz_source_set("unit_tests") {
     "gl/gpu_service_impl_unittest.cc",
     "hit_test/hit_test_aggregator_unittest.cc",
     "surfaces/referenced_surface_tracker_unittest.cc",
-    "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_unittest.cc",
   ]
 
@@ -448,7 +449,6 @@ viz_source_set("unit_tests") {
     "//media",
     "//media/capture:capture_lib",
     "//services/viz/public/interfaces",
-    "//services/ws/public/mojom",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -487,13 +487,13 @@ viz_source_set("unit_tests") {
       "//gpu/vulkan:test_support",
       "//gpu/vulkan/init",
     ]
-  }
 
-  # TODO(samans): Support more configurations.
-  # CFI issue: https://crbug.com/967819
-  # x86 issue: https://crbug.com/967831
-  if (use_x11 && target_cpu != "x86" && !is_cfi) {
-    defines = [ "ENABLE_VIZ_VULKAN_TESTS" ]
+    # TODO(samans): Support more configurations.
+    # CFI issue: https://crbug.com/967819
+    # LSAN issue: https://crbug.com/971357
+    if (use_x11 && !is_cfi && !is_lsan) {
+      defines = [ "ENABLE_VIZ_VULKAN_TESTS" ]
+    }
   }
 }
 
@@ -505,6 +505,7 @@ viz_source_set("perf_tests") {
     "display/bsp_tree_perftest.cc",
     "display/display_perftest.cc",
     "display/gl_renderer_copier_perftest.cc",
+    "display/renderer_perftest.cc",
     "display/surface_aggregator_perftest.cc",
   ]
 
@@ -515,6 +516,7 @@ viz_source_set("perf_tests") {
     "//cc",
     "//cc:test_support",
     "//cc/base",
+    "//components/viz/client:client",
     "//components/viz/test:test_support",
     "//testing/gtest",
     "//testing/perf",
@@ -548,7 +550,6 @@ if (is_android) {
   }
 
   generate_jni("service_jni_headers") {
-    jni_package = "components/viz/service"
     sources = [
       "java/src/org/chromium/components/viz/service/frame_sinks/ExternalBeginFrameSourceAndroid.java",
       "java/src/org/chromium/components/viz/service/gl/ThrowUncaughtException.java",

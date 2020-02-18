@@ -15,30 +15,35 @@
 namespace send_tab_to_self {
 
 class SendTabToSelfEntry;
+class SendTabToSelfModel;
 
 class IOSSendTabToSelfInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   static std::unique_ptr<IOSSendTabToSelfInfoBarDelegate> Create(
-      const SendTabToSelfEntry* entry);
+      const SendTabToSelfEntry* entry,
+      SendTabToSelfModel* model);
 
+  explicit IOSSendTabToSelfInfoBarDelegate(const SendTabToSelfEntry* entry,
+                                           SendTabToSelfModel* model);
   ~IOSSendTabToSelfInfoBarDelegate() override;
 
  private:
-  IOSSendTabToSelfInfoBarDelegate(const SendTabToSelfEntry* entry);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetButtons() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
   int GetIconId() const override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
-  base::string16 GetLinkText() const override;
-  GURL GetLinkURL() const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
+  bool Accept() override;
   bool Cancel() override;
 
   // The entry that was share to this device. Must outlive this instance.
   const SendTabToSelfEntry* entry_ = nullptr;
+
+  // The SendTabToSelfModel that holds the |entry_|. Must outlive this instance.
+  SendTabToSelfModel* model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSendTabToSelfInfoBarDelegate);
 };

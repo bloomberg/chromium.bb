@@ -206,6 +206,109 @@ class MergeProfilesTest(unittest.TestCase):
                   stderr=-2,
               ), mock_exec_cmd.call_args)
 
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data=json.dumps(
+                  {'shards': [{'task_id': '1234567890abcdeff'}]}))
+  def test_mark_invalid_shards(self, mo):
+    mock_result = mock.mock_open()
+    mock_write = mock.MagicMock()
+    mock_result.return_value.write = mock_write
+    mo.side_effect = (
+        mo.return_value,
+        mock.mock_open(read_data='{}').return_value,
+        mock_result.return_value,
+    )
+    merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                      'o.json')
+    written = json.loads(''.join(c[0][0] for c in mock_write.call_args_list))
+    self.assertIn('missing_shards', written)
+    self.assertEqual(written['missing_shards'], [0])
+
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data='invalid data')
+  def test_mark_invalid_shards_bad_summary(self, _mo):
+    # Should not raise an exception.
+    raised_exception = False
+    try:
+      merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                        'o.json')
+    except:  # pylint: disable=bare-except
+      raised_exception = True
+    self.assertFalse(raised_exception, 'unexpected exception')
+
+  @mock.patch('__builtin__.open',
+              new_callable=mock.mock_open,
+              read_data=json.dumps(
+                  {'shards': [{'task_id': '1234567890abcdeff'}]}))
+  def test_mark_invalid_shards_bad_output(self, mo):
+    mock_result = mock.mock_open()
+    mock_write = mock.MagicMock()
+    mock_result.return_value.write = mock_write
+    mo.side_effect = (
+        mo.return_value,
+        mock.mock_open(read_data='invalid_data').return_value,
+        mock_result.return_value,
+    )
+    # Should succeed anyway.
+    merge_results.mark_invalid_shards(['1234567890abcdeff'], 'dummy.json',
+                                      'o.json')
+    written = json.loads(''.join(c[0][0] for c in mock_write.call_args_list))
+    self.assertIn('missing_shards', written)
+    self.assertEqual(written['missing_shards'], [0])
+
+  def test_get_shards_to_retry(self):
+    bad_profiles = [
+        '/b/s/w/ir/tmp/t/tmpSvBRii/44b643576cf39f10/profraw/default-1.profraw',
+        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-1.profraw',
+        '/b/s/w/ir/tmp/t/tmpAbCDEf/44b1234567890123/profraw/default-2.profraw',
+    ]
+    self.assertEqual(set(['44b643576cf39f10', '44b1234567890123']),
+                     merger.get_shards_to_retry(bad_profiles))
+
+  def test_merge_java_exec_files(self):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+        ('/b/some/path/0', [],
+         ['output.json', 'default-1.exec', 'default-2.exec']),
+        ('/b/some/path/1', [],
+         ['output.json', 'default-3.exec', 'default-4.exec']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      mock_walk.return_value = mock_input_dir_walk
+      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        merger.merge_java_exec_files(
+            '/b/some/path', 'output/path', 'path/to/jacococli.jar')
+        self.assertEqual(
+            mock.call(
+                [
+                    'java',
+                    '-jar',
+                    'path/to/jacococli.jar',
+                    'merge',
+                    '/b/some/path/0/default-1.exec',
+                    '/b/some/path/0/default-2.exec',
+                    '/b/some/path/1/default-3.exec',
+                    '/b/some/path/1/default-4.exec',
+                    '--destfile',
+                    'output/path',
+                ],
+                stderr=-2,
+            ), mock_exec_cmd.call_args)
+
+  def test_merge_java_exec_files_if_there_is_no_file(self):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      mock_walk.return_value = mock_input_dir_walk
+      with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+        merger.merge_java_exec_files(
+            '/b/some/path', 'output/path', 'path/to/jacococli.jar')
+        self.assertFalse(mock_exec_cmd.called)
 
 if __name__ == '__main__':
   unittest.main()

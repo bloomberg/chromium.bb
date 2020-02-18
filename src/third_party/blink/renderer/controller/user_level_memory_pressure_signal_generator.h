@@ -9,7 +9,11 @@
 #include "third_party/blink/renderer/controller/memory_usage_monitor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace blink {
 
@@ -31,6 +35,10 @@ class CONTROLLER_EXPORT UserLevelMemoryPressureSignalGenerator
   UserLevelMemoryPressureSignalGenerator();
   ~UserLevelMemoryPressureSignalGenerator() override;
 
+  // The caller is the owner of the |clock|. The |clock| must outlive the
+  // UserLevelMemoryPressureSignalGenerator.
+  void SetTickClockForTesting(const base::TickClock* clock);
+
  private:
   friend class user_level_memory_pressure_signal_generator_test::
       MockUserLevelMemoryPressureSignalGenerator;
@@ -49,10 +57,11 @@ class CONTROLLER_EXPORT UserLevelMemoryPressureSignalGenerator
 
   bool monitoring_ = false;
   bool is_loading_ = false;
-  WTF::TimeTicks last_generated_;
+  base::TimeTicks last_generated_;
   double memory_threshold_mb_;
-  WTF::TimeDelta minimum_interval_;
+  base::TimeDelta minimum_interval_;
   TaskRunnerTimer<UserLevelMemoryPressureSignalGenerator> delayed_report_timer_;
+  const base::TickClock* clock_;
 };
 
 }  // namespace blink

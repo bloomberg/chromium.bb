@@ -26,7 +26,7 @@ class CORE_EXPORT ModuleRecordResolver
     : public GarbageCollectedFinalized<ModuleRecordResolver> {
  public:
   virtual ~ModuleRecordResolver() = default;
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
   // Notifies the ModuleRecordResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record
@@ -36,8 +36,8 @@ class CORE_EXPORT ModuleRecordResolver
   // Notifies the ModuleRecordResolver to clear its ModuleScript mapping.
   virtual void UnregisterModuleScript(const ModuleScript*) = 0;
 
-  // Corresponds to the spec concept "[[HostDefined]]".
-  virtual const ModuleScript* GetHostDefined(const ModuleRecord&) const = 0;
+  virtual const ModuleScript* GetModuleScriptFromModuleRecord(
+      const ModuleRecord&) const = 0;
 
   // Implements "Runtime Semantics: HostResolveImportedModule"
   // https://tc39.github.io/ecma262/#sec-hostresolveimportedmodule

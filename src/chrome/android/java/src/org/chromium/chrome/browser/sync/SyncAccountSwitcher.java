@@ -4,16 +4,15 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 
-import org.chromium.chrome.browser.preferences.SyncedAccountPreference;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
+import org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.chrome.browser.signin.ConfirmSyncDataStateMachine;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.SignoutReason;
@@ -27,9 +26,8 @@ import org.chromium.chrome.browser.signin.SignoutReason;
  *   {@link ConfirmImportSyncDataDialog.Listener#onConfirm}
  *   {@link SignInCallback#onSignInComplete}
  */
-public class SyncAccountSwitcher
-        implements OnPreferenceChangeListener, ConfirmImportSyncDataDialog.Listener,
-                   SignInCallback {
+public class SyncAccountSwitcher implements Preference.OnPreferenceChangeListener,
+                                            ConfirmImportSyncDataDialog.Listener, SignInCallback {
     private static final String TAG = "SyncAccountSwitcher";
 
     private final SyncedAccountPreference mSyncedAccountPreference;
@@ -69,25 +67,20 @@ public class SyncAccountSwitcher
     @Override
     public void onConfirm(final boolean wipeData) {
         assert mNewAccountName != null;
-
+	SigninManager signinManager = IdentityServicesProvider.getSigninManager();
         // Sign out first to ensure we don't wipe the data when sync is still on.
-        SigninManager
-                .get()
-                // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
-                .signOutPromise(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS)
+        // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
+        signinManager.signOutPromise(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS)
                 .then((Void argument) -> {
                     // Once signed out, clear the last signed in user and wipe data if needed.
-                    SigninManager.get().clearLastSignedInUser();
+                    signinManager.clearLastSignedInUser();
                     return SyncUserDataWiper.wipeSyncUserDataIfRequired(wipeData);
                 })
                 .then((Void argument) -> {
                     // Once the data has been wiped (if needed), sign in to the next account.
-                    SigninManager.get().signIn(
+                    signinManager.signIn(
                             mNewAccountName, mActivity, SyncAccountSwitcher.this);
                 });
-
-        AccountSigninActivity.recordSwitchAccountSourceHistogram(
-                AccountSigninActivity.SwitchAccountSource.SYNC_ACCOUNT_SWITCHER);
     }
 
     @Override

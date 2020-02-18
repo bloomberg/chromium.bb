@@ -146,7 +146,7 @@ class FakeSyncedPrintersManager : public SyncedPrintersManager {
                       std::vector<Printer>* target) {
     auto new_end = std::remove_if(target->begin(), target->end(),
                                   [&ids](const Printer& printer) -> bool {
-                                    return base::ContainsKey(ids, printer.id());
+                                    return base::Contains(ids, printer.id());
                                   });
 
     target->resize(new_end - target->begin());
@@ -203,7 +203,7 @@ class FakePrinterDetector : public PrinterDetector {
     auto new_end =
         std::remove_if(detections_.begin(), detections_.end(),
                        [&ids](const DetectedPrinter& detection) -> bool {
-                         return base::ContainsKey(ids, detection.printer.id());
+                         return base::Contains(ids, detection.printer.id());
                        });
 
     detections_.resize(new_end - detections_.begin());

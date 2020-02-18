@@ -12,6 +12,8 @@ static_library("core") {
     "common_string_util.h",
     "controller_client.cc",
     "controller_client.h",
+    "features.cc",
+    "features.h",
     "metrics_helper.cc",
     "metrics_helper.h",
     "mitm_software_ui.cc",
@@ -50,6 +52,6 @@ static_library("core") {
   ]
 
   public_deps = [
-    "//components/security_interstitials/core/common/interfaces:interfaces",
+    "//components/security_interstitials/core/common/mojom",
   ]
 }

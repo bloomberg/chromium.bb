@@ -44,14 +44,13 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       metric_recorder_(std::move(metric_recorder)),
-      accept_langs_(std::move(accept_langs)),
-      weak_factory_(this) {
-}
+      accept_langs_(std::move(accept_langs)) {}
 
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
 
 void SignedExchangeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
@@ -78,14 +77,15 @@ void SignedExchangeRequestHandler::MaybeCreateLoader(
 
 bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceRequest& request,
-    const network::ResourceResponseHead& response,
+    const network::ResourceResponseHead& response_head,
+    mojo::ScopedDataPipeConsumerHandle* response_body,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader,
     bool* skip_other_interceptors) {
   DCHECK(!signed_exchange_loader_);
   if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request.url,
-                                                               response)) {
+                                                               response_head)) {
     return false;
   }
 
@@ -101,13 +101,15 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   // the redirected request will be checked when it's restarted we suppose
   // this is fine.
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
-      request, response, std::move(client), url_loader->Unbind(),
-      url_loader_options_, true /* should_redirect_to_fallback */,
+      request, response_head, std::move(*response_body), std::move(client),
+      url_loader->Unbind(), url_loader_options_,
+      true /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          request.url, response, frame_tree_node_id_getter,
+          request.url, response_head, frame_tree_node_id_getter,
           devtools_navigation_token_, request.report_raw_headers),
       SignedExchangeReporter::MaybeCreate(request.url, request.referrer.spec(),
-                                          response, frame_tree_node_id_getter),
+                                          response_head,
+                                          frame_tree_node_id_getter),
       url_loader_factory_, url_loader_throttles_getter_,
       frame_tree_node_id_getter, metric_recorder_, accept_langs_);
 

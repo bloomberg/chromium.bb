@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -113,7 +113,7 @@ class ResourceManagerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   WindowAndroid* window_android_;
 
  protected:

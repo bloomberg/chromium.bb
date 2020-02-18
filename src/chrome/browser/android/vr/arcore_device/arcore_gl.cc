@@ -20,7 +20,7 @@
 #include "base/trace_event/traced_value.h"
 #include "chrome/browser/android/vr/arcore_device/ar_image_transport.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_impl.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
@@ -119,7 +119,7 @@ ArCoreGl::~ArCoreGl() {
   CloseBindingsIfOpen();
 }
 
-void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
+void ArCoreGl::Initialize(vr::ArCoreSessionUtils* session_utils,
                           ArCoreFactory* arcore_factory,
                           gfx::AcceleratedWidget drawing_widget,
                           const gfx::Size& frame_size,
@@ -141,7 +141,7 @@ void ArCoreGl::Initialize(vr::ArCoreInstallUtils* install_utils,
 
   // Get the activity context.
   base::android::ScopedJavaLocalRef<jobject> application_context =
-      install_utils->GetApplicationContext();
+      session_utils->GetApplicationContext();
   if (!application_context.obj()) {
     DLOG(ERROR) << "Unable to retrieve the Java context/activity!";
     std::move(callback).Run(false);
@@ -319,16 +319,16 @@ void ArCoreGl::GetFrameData(
 
     // VRFieldOfView wants positive angles.
     mojom::VRFieldOfViewPtr field_of_view = mojom::VRFieldOfView::New();
-    field_of_view->leftDegrees = gfx::RadToDeg(atanf(-left / depth_near));
-    field_of_view->rightDegrees = gfx::RadToDeg(atanf(right / depth_near));
-    field_of_view->downDegrees = gfx::RadToDeg(atanf(-bottom / depth_near));
-    field_of_view->upDegrees = gfx::RadToDeg(atanf(top / depth_near));
-    DVLOG(3) << " fov degrees up=" << field_of_view->upDegrees
-             << " down=" << field_of_view->downDegrees
-             << " left=" << field_of_view->leftDegrees
-             << " right=" << field_of_view->rightDegrees;
+    field_of_view->left_degrees = gfx::RadToDeg(atanf(-left / depth_near));
+    field_of_view->right_degrees = gfx::RadToDeg(atanf(right / depth_near));
+    field_of_view->down_degrees = gfx::RadToDeg(atanf(-bottom / depth_near));
+    field_of_view->up_degrees = gfx::RadToDeg(atanf(top / depth_near));
+    DVLOG(3) << " fov degrees up=" << field_of_view->up_degrees
+             << " down=" << field_of_view->down_degrees
+             << " left=" << field_of_view->left_degrees
+             << " right=" << field_of_view->right_degrees;
 
-    display_info_->leftEye->fieldOfView = std::move(field_of_view);
+    display_info_->left_eye->field_of_view = std::move(field_of_view);
     display_info_changed_ = true;
 
     should_recalculate_uvs_ = false;
@@ -377,7 +377,7 @@ void ArCoreGl::GetFrameData(
   DVLOG(2) << __func__ << " frame=" << frame_data->frame_id;
 
   if (display_info_changed_) {
-    frame_data->left_eye = display_info_->leftEye.Clone();
+    frame_data->left_eye = display_info_->left_eye.Clone();
     display_info_changed_ = false;
   }
   // Set up a shared buffer for the renderer to draw into, it'll be sent
@@ -399,9 +399,7 @@ void ArCoreGl::GetFrameData(
   frame_data->time_delta = base::TimeTicks::Now() - base::TimeTicks();
 
   if (options && options->include_plane_data) {
-    frame_data->detected_planes = arcore_->GetDetectedPlanes();
-    DVLOG(3) << __func__ << ": detected planes size="
-             << frame_data->detected_planes.value().size();
+    frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
 
   fps_meter_.AddFrame(base::TimeTicks::Now());
@@ -554,6 +552,13 @@ void ArCoreGl::GetEnvironmentIntegrationProvider(
   environment_binding_.Bind(std::move(environment_request));
   environment_binding_.set_connection_error_handler(base::BindOnce(
       &ArCoreGl::OnBindingDisconnect, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArCoreGl::SetInputSourceButtonListener(
+    device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo) {
+  // Input eventing is not supported. This call should not
+  // be made on this device.
+  mojo::ReportBadMessage("Input eventing is not supported.");
 }
 
 void ArCoreGl::RequestHitTest(

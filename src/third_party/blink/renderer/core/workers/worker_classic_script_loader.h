@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -76,8 +76,8 @@ class CORE_EXPORT WorkerClassicScriptLoader final
       ResourceFetcher* fetch_client_settings_object_fetcher,
       const KURL&,
       mojom::RequestContextType,
-      network::mojom::FetchRequestMode,
-      network::mojom::FetchCredentialsMode,
+      network::mojom::RequestMode,
+      network::mojom::CredentialsMode,
       base::OnceClosure response_callback,
       base::OnceClosure finished_callback);
 

@@ -15,13 +15,11 @@
 if (current_toolchain == host_toolchain) {
   executable("ipc_plugin") {
     sources = [
-      "ipc_generator.cc",
-      "ipc_generator.h",
       "ipc_plugin.cc",
     ]
     deps = [
       "../../../gn:default_deps",
-      "../../../gn:protoc_lib_deps",
+      "../../../gn:protoc_lib",
     ]
   }
 }  # host_toolchain

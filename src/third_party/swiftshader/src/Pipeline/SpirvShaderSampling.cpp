@@ -16,13 +16,11 @@
 
 #include "SamplerCore.hpp" // TODO: Figure out what's needed.
 #include "System/Math.hpp"
-#include "Vulkan/VkBuffer.hpp"
 #include "Vulkan/VkDebug.hpp"
-#include "Vulkan/VkDescriptorSet.hpp"
-#include "Vulkan/VkPipelineLayout.hpp"
+#include "Vulkan/VkDescriptorSetLayout.hpp"
+#include "Vulkan/VkDevice.hpp"
 #include "Vulkan/VkImageView.hpp"
 #include "Vulkan/VkSampler.hpp"
-#include "Vulkan/VkDescriptorSetLayout.hpp"
 #include "Device/Config.hpp"
 
 #include <spirv/unified1/spirv.hpp>
@@ -31,31 +29,6 @@
 #include <climits>
 #include <mutex>
 
-namespace
-{
-
-struct SamplingRoutineKey
-{
-	uint32_t instruction;
-	uint32_t sampler;
-	uint32_t imageView;
-
-	bool operator==(const SamplingRoutineKey &rhs) const
-	{
-		return instruction == rhs.instruction && sampler == rhs.sampler && imageView == rhs.imageView;
-	}
-
-	struct Hash
-	{
-		std::size_t operator()(const SamplingRoutineKey &key) const noexcept
-		{
-			return (key.instruction << 16) ^ (key.sampler << 8) ^ key.imageView;
-		}
-	};
-};
-
-}
-
 namespace sw {
 
 SpirvShader::ImageSampler *SpirvShader::getImageSampler(uint32_t inst, vk::SampledImageDescriptor const *imageDescriptor, const vk::Sampler *sampler)
@@ -63,15 +36,18 @@ SpirvShader::ImageSampler *SpirvShader::getImageSampler(uint32_t inst, vk::Sampl
 	ImageInstruction instruction(inst);
 	ASSERT(imageDescriptor->imageViewId != 0 && (sampler->id != 0 || instruction.samplerMethod == Fetch));
 
-	// TODO(b/129523279): Move somewhere sensible.
-	static std::unordered_map<SamplingRoutineKey, ImageSampler*, SamplingRoutineKey::Hash> cache;
-	static std::mutex mutex;
+	vk::Device::SamplingRoutineCache::Key key = {inst, imageDescriptor->imageViewId, sampler->id};
 
-	SamplingRoutineKey key = {inst, imageDescriptor->imageViewId, sampler->id};
+	ASSERT(imageDescriptor->device);
 
-	std::unique_lock<std::mutex> lock(mutex);
-	auto it = cache.find(key);
-	if (it != cache.end()) { return it->second; }
+	std::unique_lock<std::mutex> lock(imageDescriptor->device->getSamplingRoutineCacheMutex());
+	vk::Device::SamplingRoutineCache* cache = imageDescriptor->device->getSamplingRoutineCache();
+
+	rr::Routine* routine = cache->query(key);
+	if(routine)
+	{
+		return (ImageSampler*)(routine->getEntry());
+	}
 
 	auto type = imageDescriptor->type;
 
@@ -108,16 +84,16 @@ SpirvShader::ImageSampler *SpirvShader::getImageSampler(uint32_t inst, vk::Sampl
 		UNSUPPORTED("anisotropyEnable");
 	}
 
-	auto fptr = emitSamplerFunction(instruction, samplerState);
+	routine = emitSamplerRoutine(instruction, samplerState);
 
-	cache.emplace(key, fptr);
-	return fptr;
+	cache->add(key, routine);
+	return (ImageSampler*)(routine->getEntry());
 }
 
-SpirvShader::ImageSampler *SpirvShader::emitSamplerFunction(ImageInstruction instruction, const Sampler &samplerState)
+rr::Routine *SpirvShader::emitSamplerRoutine(ImageInstruction instruction, const Sampler &samplerState)
 {
 	// TODO(b/129523279): Hold a separate mutex lock for the sampler being built.
-	Function<Void(Pointer<Byte>, Pointer<Byte>, Pointer<SIMD::Float>, Pointer<SIMD::Float>, Pointer<Byte>)> function;
+	rr::Function<Void(Pointer<Byte>, Pointer<Byte>, Pointer<SIMD::Float>, Pointer<SIMD::Float>, Pointer<Byte>)> function;
 	{
 		Pointer<Byte> texture = function.Arg<0>();
 		Pointer<Byte> sampler = function.Arg<1>();
@@ -125,12 +101,12 @@ SpirvShader::ImageSampler *SpirvShader::emitSamplerFunction(ImageInstruction ins
 		Pointer<SIMD::Float> out = function.Arg<3>();
 		Pointer<Byte> constants = function.Arg<4>();
 
-		SIMD::Float uvw[4];
-		SIMD::Float q;
-		SIMD::Float lodOrBias;  // Explicit level-of-detail, or bias added to the implicit level-of-detail (depending on samplerMethod).
-		Vector4f dsx;
-		Vector4f dsy;
-		Vector4f offset;
+		SIMD::Float uvw[4] = {0, 0, 0, 0};
+		SIMD::Float q = 0;
+		SIMD::Float lodOrBias = 0;  // Explicit level-of-detail, or bias added to the implicit level-of-detail (depending on samplerMethod).
+		Vector4f dsx = {0, 0, 0, 0};
+		Vector4f dsy = {0, 0, 0, 0};
+		Vector4f offset = {0, 0, 0, 0};
 		SamplerFunction samplerFunction = instruction.getSamplerFunction();
 
 		uint32_t i = 0;
@@ -145,7 +121,7 @@ SpirvShader::ImageSampler *SpirvShader::emitSamplerFunction(ImageInstruction ins
 			i++;
 		}
 
-		// TODO(b/129523279): Currently 1D textures are treated as 2D by setting the second coordinate to 0.
+		// TODO(b/134669567): Currently 1D textures are treated as 2D by setting the second coordinate to 0.
 		// Implement optimized 1D sampling.
 		if(samplerState.textureType == TEXTURE_1D)
 		{
@@ -164,36 +140,74 @@ SpirvShader::ImageSampler *SpirvShader::emitSamplerFunction(ImageInstruction ins
 		}
 		else if(instruction.samplerMethod == Grad)
 		{
-			for(uint32_t j = 0; j < instruction.gradComponents; j++, i++)
+			for(uint32_t j = 0; j < instruction.grad; j++, i++)
 			{
 				dsx[j] = in[i];
 			}
 
-			for(uint32_t j = 0; j < instruction.gradComponents; j++, i++)
+			for(uint32_t j = 0; j < instruction.grad; j++, i++)
 			{
 				dsy[j] = in[i];
 			}
 		}
 
-		if(instruction.samplerOption == Offset)
+		for(uint32_t j = 0; j < instruction.offset; j++, i++)
 		{
-			for(uint32_t j = 0; j < instruction.offsetComponents; j++, i++)
-			{
-				offset[j] = in[i];
-			}
+			offset[j] = in[i];
 		}
 
-		SamplerCore s(constants, samplerState);
-		Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lodOrBias, dsx, dsy, offset, samplerFunction);
+		// TODO(b/133868964): Handle 'Sample' operand.
 
-		Pointer<SIMD::Float> rgba = out;
-		rgba[0] = sample.x;
-		rgba[1] = sample.y;
-		rgba[2] = sample.z;
-		rgba[3] = sample.w;
+		SamplerCore s(constants, samplerState);
+
+		// For explicit-lod instructions the LOD can be different per SIMD lane. SamplerCore currently assumes
+		// a single LOD per four elements, so we sample the image again for each LOD separately.
+		if(samplerFunction.method == Lod || samplerFunction.method == Grad)  // TODO(b/133868964): Also handle divergent Bias and Fetch with Lod.
+		{
+			auto lod = Pointer<Float>(&lodOrBias);
+
+			For(Int i = 0, i < SIMD::Width, i++)
+			{
+				SIMD::Float dPdx;
+				SIMD::Float dPdy;
+
+				dPdx.x = Pointer<Float>(&dsx.x)[i];
+				dPdx.y = Pointer<Float>(&dsx.y)[i];
+				dPdx.z = Pointer<Float>(&dsx.z)[i];
+
+				dPdy.x = Pointer<Float>(&dsy.x)[i];
+				dPdy.y = Pointer<Float>(&dsy.y)[i];
+				dPdy.z = Pointer<Float>(&dsy.z)[i];
+
+				// 1D textures are treated as 2D texture with second coordinate 0, so we also need to zero out the second grad component. TODO(b/134669567)
+				if(samplerState.textureType == TEXTURE_1D || samplerState.textureType == TEXTURE_1D_ARRAY)
+				{
+					dPdx.y = Float(0.0f);
+					dPdy.y = Float(0.0f);
+				}
+
+				Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lod[i], dPdx, dPdy, offset, samplerFunction);
+
+				Pointer<Float> rgba = out;
+				rgba[0 * SIMD::Width + i] = Pointer<Float>(&sample.x)[i];
+				rgba[1 * SIMD::Width + i] = Pointer<Float>(&sample.y)[i];
+				rgba[2 * SIMD::Width + i] = Pointer<Float>(&sample.z)[i];
+				rgba[3 * SIMD::Width + i] = Pointer<Float>(&sample.w)[i];
+			}
+		}
+		else
+		{
+			Vector4f sample = s.sampleTexture(texture, sampler, uvw[0], uvw[1], uvw[2], q, lodOrBias.x, (dsx.x), (dsy.x), offset, samplerFunction);
+
+			Pointer<SIMD::Float> rgba = out;
+			rgba[0] = sample.x;
+			rgba[1] = sample.y;
+			rgba[2] = sample.z;
+			rgba[3] = sample.w;
+		}
 	}
 
-	return (ImageSampler*)function("sampler")->getEntry();
+	return function("sampler");
 }
 
 sw::TextureType SpirvShader::convertTextureType(VkImageViewType imageViewType)
@@ -238,9 +252,11 @@ sw::FilterType SpirvShader::convertFilterMode(const vk::Sampler *sampler)
 		}
 		break;
 	default:
-		UNIMPLEMENTED("magFilter %d", sampler->magFilter);
-		return FILTER_POINT;
+		break;
 	}
+
+	UNIMPLEMENTED("magFilter %d", sampler->magFilter);
+	return FILTER_POINT;
 }
 
 sw::MipmapType SpirvShader::convertMipmapMode(const vk::Sampler *sampler)
@@ -272,12 +288,7 @@ sw::AddressingMode SpirvShader::convertAddressingMode(int coordinateIndex, VkSam
 		}
 		// Fall through to CUBE case:
 	case VK_IMAGE_VIEW_TYPE_CUBE:
-		if(coordinateIndex >= 2)
-		{
-			// Cube faces are addressed as 2D images.
-			return ADDRESSING_UNUSED;
-		}
-		else
+		if(coordinateIndex <= 1)  // Cube faces themselves are addressed as 2D images.
 		{
 			// Vulkan 1.1 spec:
 			// "Cube images ignore the wrap modes specified in the sampler. Instead, if VK_FILTER_NEAREST is used within a mip level then
@@ -286,9 +297,18 @@ sw::AddressingMode SpirvShader::convertAddressingMode(int coordinateIndex, VkSam
 			// This corresponds with our 'SEAMLESS' addressing mode.
 			return ADDRESSING_SEAMLESS;
 		}
+		else if(coordinateIndex == 2)
+		{
+			// The cube face is an index into array layers.
+			return ADDRESSING_CUBEFACE;
+		}
+		else
+		{
+			return ADDRESSING_UNUSED;
+		}
 		break;
 
-	case VK_IMAGE_VIEW_TYPE_1D:  // Treated as 2D texture with second coordinate 0.
+	case VK_IMAGE_VIEW_TYPE_1D:  // Treated as 2D texture with second coordinate 0. TODO(b/134669567)
 		if(coordinateIndex == 1)
 		{
 			return ADDRESSING_WRAP;
@@ -306,7 +326,7 @@ sw::AddressingMode SpirvShader::convertAddressingMode(int coordinateIndex, VkSam
 		}
 		break;
 
-	case VK_IMAGE_VIEW_TYPE_1D_ARRAY:  // Treated as 2D texture with second coordinate 0.
+	case VK_IMAGE_VIEW_TYPE_1D_ARRAY:  // Treated as 2D texture with second coordinate 0. TODO(b/134669567)
 		if(coordinateIndex == 1)
 		{
 			return ADDRESSING_WRAP;

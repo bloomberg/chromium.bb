@@ -8,12 +8,12 @@
 #include "src/gpu/GrSWMaskHelper.h"
 
 #include "include/private/GrRecordingContext.h"
-#include "include/private/GrTextureProxy.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrSurfaceContext.h"
+#include "src/gpu/GrTextureProxy.h"
+#include "src/gpu/geometry/GrShape.h"
 
 /*
  * Convert a boolean operation into a transfer mode code
@@ -107,10 +107,6 @@ sk_sp<GrTextureProxy> GrSWMaskHelper::toTextureProxy(GrRecordingContext* context
         return nullptr;
     }
 
-    auto clearFlag = kNone_GrSurfaceFlags;
-    if (context->priv().caps()->shouldInitializeTextures() && fit == SkBackingFit::kApprox) {
-        clearFlag = kPerformInitialClear_GrSurfaceFlag;
-    }
-    return context->priv().proxyProvider()->createTextureProxy(
-            std::move(img), clearFlag, 1, SkBudgeted::kYes, fit);
+    return context->priv().proxyProvider()->createTextureProxy(std::move(img), GrRenderable::kNo, 1,
+                                                               SkBudgeted::kYes, fit);
 }

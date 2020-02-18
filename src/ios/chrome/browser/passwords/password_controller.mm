@@ -30,7 +30,6 @@
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "components/password_manager/core/browser/form_parsing/ios_form_parser.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -62,10 +61,10 @@
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/origin_util.h"
+#include "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
-#include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -76,7 +75,7 @@
 #endif
 
 using autofill::FormData;
-using autofill::NewPasswordFormGenerationData;
+using autofill::PasswordFormGenerationData;
 using autofill::PasswordForm;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
@@ -106,7 +105,7 @@ enum class PasswordSuggestionType {
   SHOW_ALL = 1,
   // "Suggest Password" is listed.
   SUGGESTED = 2,
-  COUNT
+  COUNT = 3,
 };
 
 // Password is considered not generated when user edits it below 4 characters.
@@ -161,7 +160,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 // Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
 - (void)didFinishPasswordFormExtraction:
-    (const std::vector<autofill::PasswordForm>&)forms;
+    (const std::vector<autofill::FormData>&)forms;
 
 // Finds all password forms in DOM and sends them to the password store for
 // fetching stored credentials.
@@ -202,7 +201,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   std::unique_ptr<autofill::PasswordForm> _pendingAutoSigninPasswordForm;
 
   // Form data for password generation on this page.
-  std::map<base::string16, NewPasswordFormGenerationData> _formGenerationData;
+  std::map<base::string16, PasswordFormGenerationData> _formGenerationData;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
@@ -319,8 +318,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   if (!webState->ContentIsHTML()) {
     // If the current page is not HTML, it does not contain any HTML forms.
-    [self
-        didFinishPasswordFormExtraction:std::vector<autofill::PasswordForm>()];
+    [self didFinishPasswordFormExtraction:std::vector<autofill::FormData>()];
   }
 
   [self findPasswordFormsAndSendThemToPasswordStore];
@@ -443,23 +441,6 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                          identifier:autofill::
                                         POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY]];
     LogSuggestionShown(PasswordSuggestionType::SUGGESTED);
-  }
-
-  // Once Manual Fallback is enabled the access to settings will exist as an
-  // option in the new passwords UI.
-  if (!autofill::features::IsPasswordManualFallbackEnabled()) {
-    // Add "Show all".
-    NSString* showAll = GetNSString(IDS_IOS_SHOW_ALL_PASSWORDS);
-    [suggestions
-        addObject:
-            [FormSuggestion
-                suggestionWithValue:showAll
-                 displayDescription:nil
-                               icon:nil
-                         identifier:
-                             autofill::
-                                 POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY]];
-    LogSuggestionShown(PasswordSuggestionType::SHOW_ALL);
   }
 
   completion([suggestions copy], self);
@@ -597,24 +578,27 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   return _passwordGenerationHelper.get();
 }
 
-- (void)formEligibleForGenerationFound:
-    (const NewPasswordFormGenerationData&)form {
+- (void)formEligibleForGenerationFound:(const PasswordFormGenerationData&)form {
   _formGenerationData[form.form_name] = form;
 }
 
 #pragma mark - PasswordFormHelperDelegate
 
 - (void)formHelper:(PasswordFormHelper*)formHelper
-     didSubmitForm:(const PasswordForm&)form
+     didSubmitForm:(const FormData&)form
        inMainFrame:(BOOL)inMainFrame {
+  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
+  // parser is gone.
+  PasswordForm password_form;
+  password_form.form_data = form;
   if (inMainFrame) {
     self.passwordManager->OnPasswordFormSubmitted(self.passwordManagerDriver,
-                                                  form);
+                                                  password_form);
   } else {
     // Show a save prompt immediately because for iframes it is very hard to
     // figure out correctness of password forms submission.
     self.passwordManager->OnPasswordFormSubmittedNoChecks(
-        self.passwordManagerDriver, form);
+        self.passwordManagerDriver, password_form);
   }
 }
 
@@ -627,19 +611,24 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
 #pragma mark - Private methods
 
-- (void)didFinishPasswordFormExtraction:
-    (const std::vector<autofill::PasswordForm>&)forms {
+- (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms {
   // Do nothing if |self| has been detached.
   if (!self.passwordManager)
     return;
 
-  if (!forms.empty()) {
+  // TODO(crbug.com/949519): remove using PasswordForm completely when the old
+  // parser is gone.
+  std::vector<PasswordForm> password_forms(forms.size());
+  for (size_t i = 0; i < forms.size(); ++i)
+    password_forms[i].form_data = forms[i];
+
+  if (!password_forms.empty()) {
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
 
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     self.passwordManager->OnPasswordFormsParsed(self.passwordManagerDriver,
-                                                forms);
+                                                password_forms);
   } else {
     [self onNoSavedCredentials];
   }
@@ -650,7 +639,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // and OnPasswordFormsRendered(). Bling has to improvised a bit on the
   // ordering of these two calls.
   self.passwordManager->OnPasswordFormsRendered(self.passwordManagerDriver,
-                                                forms, true);
+                                                password_forms, true);
 }
 
 - (void)findPasswordFormsAndSendThemToPasswordStore {
@@ -658,7 +647,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   // manager.
   __weak PasswordController* weakSelf = self;
   [self.formHelper findPasswordFormsWithCompletionHandler:^(
-                       const std::vector<autofill::PasswordForm>& forms) {
+                       const std::vector<autofill::FormData>& forms) {
     [weakSelf didFinishPasswordFormExtraction:forms];
   }];
 }
@@ -739,7 +728,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     return NO;
   if (![fieldType isEqualToString:@"password"])
     return NO;
-  const NewPasswordFormGenerationData* generation_data =
+  const PasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
     return NO;
@@ -753,7 +742,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
   return NO;
 }
 
-- (const NewPasswordFormGenerationData*)getFormForGenerationFromFormName:
+- (const PasswordFormGenerationData*)getFormForGenerationFromFormName:
     (NSString*)formName {
   const base::string16 name = SysNSStringToUTF16(formName);
   if (_formGenerationData.find(name) != _formGenerationData.end()) {
@@ -797,13 +786,8 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 
   __weak PasswordController* weakSelf = self;
 
-  auto restoreFocus = ^{
+  auto popupDismissed = ^{
     [weakSelf generatePasswordPopupDismissed];
-    // Suggestion are still visible but they lost their state, so by forcing
-    // a focus event on the current field, it will reset the suggestions.
-    [weakSelf.formHelper focusOnForm:formName
-                     fieldIdentifier:fieldIdentifier
-                   completionHandler:nil];
   };
 
   [self.actionSheetCoordinator
@@ -813,12 +797,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                       injectGeneratedPasswordForFormName:formName
                                        generatedPassword:
                                            weakSelf.generatedPotentialPassword
-                                       completionHandler:restoreFocus];
+                                       completionHandler:popupDismissed];
                 }
                  style:UIAlertActionStyleDefault];
 
   [self.actionSheetCoordinator addItemWithTitle:GetNSString(IDS_CANCEL)
-                                         action:restoreFocus
+                                         action:popupDismissed
                                           style:UIAlertActionStyleCancel];
 
   // Set 'suggest' as preferred action, as per UX.
@@ -864,7 +848,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (void)injectGeneratedPasswordForFormName:(NSString*)formName
                          generatedPassword:(NSString*)generatedPassword
                          completionHandler:(void (^)())completionHandler {
-  const autofill::NewPasswordFormGenerationData* generation_data =
+  const autofill::PasswordFormGenerationData* generation_data =
       [self getFormForGenerationFromFormName:formName];
   if (!generation_data)
     return;

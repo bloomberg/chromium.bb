@@ -9,30 +9,32 @@
 #include "include/gpu/GrRenderTarget.h"
 #include "include/gpu/vk/GrVkBackendContext.h"
 #include "include/gpu/vk/GrVkExtensions.h"
-#include "include/private/GrRenderTargetProxy.h"
+#include "src/gpu/GrRenderTargetProxy.h"
 #include "src/gpu/GrShaderCaps.h"
+#include "src/gpu/GrUtil.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/vk/GrVkCaps.h"
 #include "src/gpu/vk/GrVkInterface.h"
 #include "src/gpu/vk/GrVkTexture.h"
 #include "src/gpu/vk/GrVkUtil.h"
 
+#ifdef SK_BUILD_FOR_ANDROID
+#include <sys/system_properties.h>
+#endif
+
 GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* vkInterface,
                    VkPhysicalDevice physDev, const VkPhysicalDeviceFeatures2& features,
                    uint32_t instanceVersion, uint32_t physicalDeviceVersion,
-                   const GrVkExtensions& extensions)
-    : INHERITED(contextOptions) {
-
+                   const GrVkExtensions& extensions, GrProtected isProtected)
+        : INHERITED(contextOptions) {
     /**************************************************************************
      * GrCaps fields
      **************************************************************************/
     fMipMapSupport = true;   // always available in Vulkan
     fSRGBSupport = true;   // always available in Vulkan
     fNPOTTextureTileSupport = true;  // always available in Vulkan
-    fDiscardRenderTargetSupport = true;
     fReuseScratchTextures = true; //TODO: figure this out
     fGpuTracingSupport = false; //TODO: figure this out
-    fCompressedTexSubImageSupport = true;
     fOversizedStencilSupport = false; //TODO: figure this out
     fInstanceAttribSupport = true;
 
@@ -40,6 +42,10 @@ GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* 
     fFenceSyncSupport = true;   // always available in Vulkan
     fCrossContextTextureSupport = true;
     fHalfFloatVertexAttributeSupport = true;
+
+    // We always copy in/out of a transfer buffer so it's trivial to support row bytes.
+    fReadPixelsRowBytesSupport = true;
+    fWritePixelsRowBytesSupport = true;
 
     fTransferBufferSupport = true;
 
@@ -50,29 +56,8 @@ GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* 
 
     fShaderCaps.reset(new GrShaderCaps(contextOptions));
 
-    this->init(contextOptions, vkInterface, physDev, features, physicalDeviceVersion, extensions);
-}
-
-bool GrVkCaps::initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc* desc,
-                                  GrSurfaceOrigin* origin, bool* rectsMustMatch,
-                                  bool* disallowSubrect) const {
-    // Vk doesn't use rectsMustMatch or disallowSubrect. Always return false.
-    *rectsMustMatch = false;
-    *disallowSubrect = false;
-
-    // We can always succeed here with either a CopyImage (none msaa src) or ResolveImage (msaa).
-    // For CopyImage we can make a simple texture, for ResolveImage we require the dst to be a
-    // render target as well.
-    *origin = src->origin();
-    desc->fConfig = src->config();
-    if (src->numColorSamples() > 1 || src->asTextureProxy()) {
-        desc->fFlags = kRenderTarget_GrSurfaceFlag;
-    } else {
-        // Just going to use CopyImage here
-        desc->fFlags = kNone_GrSurfaceFlags;
-    }
-
-    return true;
+    this->init(contextOptions, vkInterface, physDev, features, physicalDeviceVersion, extensions,
+               isProtected);
 }
 
 static int get_compatible_format_class(GrPixelConfig config) {
@@ -87,6 +72,7 @@ static int get_compatible_format_class(GrPixelConfig config) {
         case kRG_88_GrPixelConfig:
         case kAlpha_half_GrPixelConfig:
         case kAlpha_half_as_Red_GrPixelConfig:
+        case kR_16_GrPixelConfig:
             return 2;
         case kRGB_888_GrPixelConfig:
             return 3;
@@ -94,12 +80,11 @@ static int get_compatible_format_class(GrPixelConfig config) {
         case kRGB_888X_GrPixelConfig:
         case kBGRA_8888_GrPixelConfig:
         case kSRGBA_8888_GrPixelConfig:
-        case kSBGRA_8888_GrPixelConfig:
         case kRGBA_1010102_GrPixelConfig:
+        case kRG_1616_GrPixelConfig:
             return 4;
         case kRGBA_half_GrPixelConfig:
         case kRGBA_half_Clamped_GrPixelConfig:
-        case kRG_float_GrPixelConfig:
             return 5;
         case kRGBA_float_GrPixelConfig:
             return 6;
@@ -108,16 +93,22 @@ static int get_compatible_format_class(GrPixelConfig config) {
         case kUnknown_GrPixelConfig:
         case kAlpha_8_as_Alpha_GrPixelConfig:
         case kGray_8_as_Lum_GrPixelConfig:
+        case kAlpha_half_as_Lum_GrPixelConfig:
             SK_ABORT("Unsupported Vulkan pixel config");
             return 0;
+
+        // Experimental (for Y416 and mutant P016/P010)
+        case kRGBA_16161616_GrPixelConfig:
+            return 8;
+        case kRG_half_GrPixelConfig:
+            return 4;
     }
     SK_ABORT("Invalid pixel config");
     return 0;
 }
 
-bool GrVkCaps::canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, GrSurfaceOrigin dstOrigin,
-                            bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSampleCnt,
-                            GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const {
+bool GrVkCaps::canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, bool dstHasYcbcr,
+                            GrPixelConfig srcConfig, int srcSampleCnt, bool srcHasYcbcr) const {
     if ((dstSampleCnt > 1 || srcSampleCnt > 1) && dstSampleCnt != srcSampleCnt) {
         return false;
     }
@@ -128,13 +119,7 @@ bool GrVkCaps::canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, GrSurface
 
     // We require that all vulkan GrSurfaces have been created with transfer_dst and transfer_src
     // as image usage flags.
-    if (srcOrigin != dstOrigin ||
-        get_compatible_format_class(srcConfig) != get_compatible_format_class(dstConfig)) {
-        return false;
-    }
-
-    if (this->shaderCaps()->configOutputSwizzle(srcConfig) !=
-        this->shaderCaps()->configOutputSwizzle(dstConfig)) {
+    if (get_compatible_format_class(srcConfig) != get_compatible_format_class(dstConfig)) {
         return false;
     }
 
@@ -156,11 +141,6 @@ bool GrVkCaps::canCopyAsBlit(GrPixelConfig dstConfig, int dstSampleCnt, bool dst
         return false;
     }
 
-    if (this->shaderCaps()->configOutputSwizzle(srcConfig) !=
-        this->shaderCaps()->configOutputSwizzle(dstConfig)) {
-        return false;
-    }
-
     // We cannot blit images that are multisampled. Will need to figure out if we can blit the
     // resolved msaa though.
     if (dstSampleCnt > 1 || srcSampleCnt > 1) {
@@ -174,10 +154,8 @@ bool GrVkCaps::canCopyAsBlit(GrPixelConfig dstConfig, int dstSampleCnt, bool dst
     return true;
 }
 
-bool GrVkCaps::canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt,
-                                GrSurfaceOrigin dstOrigin, bool dstHasYcbcr,
-                                GrPixelConfig srcConfig, int srcSampleCnt,
-                                GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const {
+bool GrVkCaps::canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt, bool dstHasYcbcr,
+                                GrPixelConfig srcConfig, int srcSampleCnt, bool srcHasYcbcr) const {
     // The src surface must be multisampled.
     if (srcSampleCnt <= 1) {
         return false;
@@ -193,33 +171,7 @@ bool GrVkCaps::canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt,
         return false;
     }
 
-    // Surfaces must have the same origin.
-    if (srcOrigin != dstOrigin) {
-        return false;
-    }
-
     if (dstHasYcbcr || srcHasYcbcr) {
-        return false;
-    }
-
-    return true;
-}
-
-bool GrVkCaps::canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable, bool dstHasYcbcr,
-                             GrPixelConfig srcConfig, bool srcIsTextureable,
-                             bool srcHasYcbcr) const {
-    // TODO: Make copySurfaceAsDraw handle the swizzle
-    if (this->shaderCaps()->configOutputSwizzle(srcConfig) !=
-        this->shaderCaps()->configOutputSwizzle(dstConfig)) {
-        return false;
-    }
-
-    // Make sure the dst is a render target and the src is a texture.
-    if (!dstIsRenderable || !srcIsTextureable) {
-        return false;
-    }
-
-    if (dstHasYcbcr) {
         return false;
     }
 
@@ -228,8 +180,9 @@ bool GrVkCaps::canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable, bool
 
 bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
                                 const SkIRect& srcRect, const SkIPoint& dstPoint) const {
-    GrSurfaceOrigin dstOrigin = dst->origin();
-    GrSurfaceOrigin srcOrigin = src->origin();
+    if (src->isProtected() && !dst->isProtected()) {
+        return false;
+    }
 
     GrPixelConfig dstConfig = dst->config();
     GrPixelConfig srcConfig = src->config();
@@ -250,7 +203,7 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
         if (rtProxy->wrapsVkSecondaryCB()) {
             return false;
         }
-        dstSampleCnt = rtProxy->numColorSamples();
+        dstSampleCnt = rtProxy->numSamples();
     }
     if (const GrRenderTargetProxy* rtProxy = src->asRenderTargetProxy()) {
         // Copying to or from render targets that wrap a secondary command buffer is not allowed
@@ -259,7 +212,7 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
         if (rtProxy->wrapsVkSecondaryCB()) {
             return false;
         }
-        srcSampleCnt = rtProxy->numColorSamples();
+        srcSampleCnt = rtProxy->numSamples();
     }
     SkASSERT((dstSampleCnt > 0) == SkToBool(dst->asRenderTargetProxy()));
     SkASSERT((srcSampleCnt > 0) == SkToBool(src->asRenderTargetProxy()));
@@ -278,14 +231,12 @@ bool GrVkCaps::onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy*
         }
     }
 
-    return this->canCopyImage(dstConfig, dstSampleCnt, dstOrigin, dstHasYcbcr,
-                              srcConfig, srcSampleCnt, srcOrigin, srcHasYcbcr) ||
+    return this->canCopyImage(dstConfig, dstSampleCnt, dstHasYcbcr,
+                              srcConfig, srcSampleCnt, srcHasYcbcr) ||
            this->canCopyAsBlit(dstConfig, dstSampleCnt, dstIsLinear, dstHasYcbcr,
                                srcConfig, srcSampleCnt, srcIsLinear, srcHasYcbcr) ||
-           this->canCopyAsResolve(dstConfig, dstSampleCnt, dstOrigin, dstHasYcbcr,
-                                  srcConfig, srcSampleCnt, srcOrigin, srcHasYcbcr) ||
-           this->canCopyAsDraw(dstConfig, dstSampleCnt > 0, dstHasYcbcr,
-                               srcConfig, SkToBool(src->asTextureProxy()), srcHasYcbcr);
+           this->canCopyAsResolve(dstConfig, dstSampleCnt, dstHasYcbcr,
+                                  srcConfig, srcSampleCnt, srcHasYcbcr);
 }
 
 template<typename T> T* get_extension_feature_struct(const VkPhysicalDeviceFeatures2& features,
@@ -311,7 +262,8 @@ template<typename T> T* get_extension_feature_struct(const VkPhysicalDeviceFeatu
 
 void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface* vkInterface,
                     VkPhysicalDevice physDev, const VkPhysicalDeviceFeatures2& features,
-                    uint32_t physicalDeviceVersion, const GrVkExtensions& extensions) {
+                    uint32_t physicalDeviceVersion, const GrVkExtensions& extensions,
+                    GrProtected isProtected) {
     VkPhysicalDeviceProperties properties;
     GR_VK_CALL(vkInterface, GetPhysicalDeviceProperties(physDev, &properties));
 
@@ -399,6 +351,13 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
     // will return a key of 0.
     fYcbcrInfos.push_back(GrVkYcbcrConversionInfo());
 
+    if ((isProtected == GrProtected::kYes) &&
+        (physicalDeviceVersion >= VK_MAKE_VERSION(1, 1, 0))) {
+        fSupportsProtectedMemory = true;
+        fAvoidUpdateBuffers = true;
+        fShouldAlwaysUseDedicatedImageMemory = true;
+    }
+
     this->initGrCaps(vkInterface, physDev, properties, memoryProperties, features, extensions);
     this->initShaderCaps(properties, features);
 
@@ -445,12 +404,6 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
         this->applyDriverCorrectnessWorkarounds(properties);
     }
 
-    // On nexus player we disable suballocating VkImage memory since we've seen large slow downs on
-    // bot run times.
-    if (kImagination_VkVendor == properties.vendorID) {
-        fShouldAlwaysUseDedicatedImageMemory = true;
-    }
-
     this->applyOptionsOverrides(contextOptions);
     fShaderCaps->applyOptionsOverrides(contextOptions);
 }
@@ -469,6 +422,17 @@ void GrVkCaps::applyDriverCorrectnessWorkarounds(const VkPhysicalDevicePropertie
 #elif defined(SK_BUILD_FOR_ANDROID)
     if (kImagination_VkVendor == properties.vendorID) {
         fMustSleepOnTearDown = true;
+    }
+#endif
+
+#if defined(SK_BUILD_FOR_ANDROID)
+    // Protected memory features have problems in Android P and earlier.
+    if (fSupportsProtectedMemory && (kQualcomm_VkVendor == properties.vendorID)) {
+        char androidAPIVersion[PROP_VALUE_MAX];
+        int strLength = __system_property_get("ro.build.version.sdk", androidAPIVersion);
+        if (strLength == 0 || atoi(androidAPIVersion) <= 28) {
+            fSupportsProtectedMemory = false;
+        }
     }
 #endif
 
@@ -601,34 +565,6 @@ void GrVkCaps::initShaderCaps(const VkPhysicalDeviceProperties& properties,
     GrShaderCaps* shaderCaps = fShaderCaps.get();
     shaderCaps->fVersionDeclString = "#version 330\n";
 
-
-    // fConfigOutputSwizzle will default to RGBA so we only need to set it for alpha only config.
-    for (int i = 0; i < kGrPixelConfigCnt; ++i) {
-        GrPixelConfig config = static_cast<GrPixelConfig>(i);
-        // Vulkan doesn't support a single channel format stored in alpha.
-        if (GrPixelConfigIsAlphaOnly(config) &&
-            kAlpha_8_as_Alpha_GrPixelConfig != config) {
-            shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RRRR();
-            shaderCaps->fConfigOutputSwizzle[i] = GrSwizzle::AAAA();
-        } else {
-            if (kGray_8_GrPixelConfig == config ||
-                kGray_8_as_Red_GrPixelConfig == config) {
-                shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RRRA();
-            } else if (kRGBA_4444_GrPixelConfig == config) {
-                // The vulkan spec does not require R4G4B4A4 to be supported for texturing so we
-                // store the data in a B4G4R4A4 texture and then swizzle it when doing texture reads
-                // or writing to outputs. Since we're not actually changing the data at all, the
-                // only extra work is the swizzle in the shader for all operations.
-                shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::BGRA();
-                shaderCaps->fConfigOutputSwizzle[i] = GrSwizzle::BGRA();
-            } else if (kRGB_888X_GrPixelConfig == config) {
-                shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RGB1();
-            } else {
-                shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RGBA();
-            }
-        }
-    }
-
     // Vulkan is based off ES 3.0 so the following should all be supported
     shaderCaps->fUsesPrecisionModifiers = true;
     shaderCaps->fFlatInterpolationSupport = true;
@@ -653,9 +589,6 @@ void GrVkCaps::initShaderCaps(const VkPhysicalDeviceProperties& properties,
     // Assume the minimum precisions mandated by the SPIR-V spec.
     shaderCaps->fFloatIs32Bits = true;
     shaderCaps->fHalfIs32Bits = false;
-
-    // SPIR-V supports unsigned integers.
-    shaderCaps->fUnsignedSupport = true;
 
     shaderCaps->fMaxFragmentSamplers = SkTMin(
                                        SkTMin(properties.limits.maxPerStageDescriptorSampledImages,
@@ -694,33 +627,17 @@ void GrVkCaps::initStencilFormat(const GrVkInterface* interface, VkPhysicalDevic
 }
 
 static bool format_is_srgb(VkFormat format) {
+    SkASSERT(GrVkFormatIsSupported(format));
+
     switch (format) {
         case VK_FORMAT_R8G8B8A8_SRGB:
-        case VK_FORMAT_B8G8R8A8_SRGB:
             return true;
-        case VK_FORMAT_R8G8B8A8_UNORM:
-        case VK_FORMAT_B8G8R8A8_UNORM:
-        case VK_FORMAT_R8G8B8A8_SINT:
-        case VK_FORMAT_R8G8B8_UNORM:
-        case VK_FORMAT_R8G8_UNORM:
-        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-        case VK_FORMAT_R5G6B5_UNORM_PACK16:
-        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
-        case VK_FORMAT_R8_UNORM:
-        case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-        case VK_FORMAT_R32G32B32A32_SFLOAT:
-        case VK_FORMAT_R32G32_SFLOAT:
-        case VK_FORMAT_R16G16B16A16_SFLOAT:
-        case VK_FORMAT_R16_SFLOAT:
-            return false;
         default:
-            SK_ABORT("Unsupported VkFormat");
             return false;
     }
 }
 
-// These are all the valid VkFormats that we support in Skia. They are roughly order from most
+// These are all the valid VkFormats that we support in Skia. They are roughly ordered from most
 // frequently used to least to improve look up times in arrays.
 static constexpr VkFormat kVkFormats[] = {
     VK_FORMAT_R8G8B8A8_UNORM,
@@ -729,17 +646,19 @@ static constexpr VkFormat kVkFormats[] = {
     VK_FORMAT_R5G6B5_UNORM_PACK16,
     VK_FORMAT_R16G16B16A16_SFLOAT,
     VK_FORMAT_R16_SFLOAT,
-    VK_FORMAT_R8G8B8A8_SINT,
     VK_FORMAT_R8G8B8_UNORM,
     VK_FORMAT_R8G8_UNORM,
     VK_FORMAT_A2B10G10R10_UNORM_PACK32,
     VK_FORMAT_B4G4R4A4_UNORM_PACK16,
     VK_FORMAT_R4G4B4A4_UNORM_PACK16,
     VK_FORMAT_R32G32B32A32_SFLOAT,
-    VK_FORMAT_R32G32_SFLOAT,
     VK_FORMAT_R8G8B8A8_SRGB,
-    VK_FORMAT_B8G8R8A8_SRGB,
-    VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK
+    VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK,
+    VK_FORMAT_R16_UNORM,
+    VK_FORMAT_R16G16_UNORM,
+    // Experimental (for Y416 and mutant P016/P010)
+    VK_FORMAT_R16G16B16A16_UNORM,
+    VK_FORMAT_R16G16_SFLOAT,
 };
 
 const GrVkCaps::FormatInfo& GrVkCaps::getFormatInfo(VkFormat format) const {
@@ -751,8 +670,8 @@ const GrVkCaps::FormatInfo& GrVkCaps::getFormatInfo(VkFormat format) const {
         }
     }
     SK_ABORT("Invalid VkFormat");
-    static const FormatInfo kInvalidConfig;
-    return kInvalidConfig;
+    static const FormatInfo kInvalidFormat;
+    return kInvalidFormat;
 }
 
 void GrVkCaps::initFormatTable(const GrVkInterface* interface, VkPhysicalDevice physDev,
@@ -811,6 +730,12 @@ void GrVkCaps::FormatInfo::initSampleCounts(const GrVkInterface* interface,
         // MSAA does not work on imagination
         return;
     }
+    if (kIntel_VkVendor == physProps.vendorID) {
+        // MSAA on Intel before Gen 9 is slow and/or buggy
+        if (GrGetIntelGpuFamily(physProps.deviceID) < kFirstGen9_IntelGpuFamily) {
+            return;
+        }
+    }
     if (flags & VK_SAMPLE_COUNT_2_BIT) {
         fColorSampleCounts.push_back(2);
     }
@@ -845,7 +770,23 @@ void GrVkCaps::FormatInfo::init(const GrVkInterface* interface,
     }
 }
 
-bool GrVkCaps::isFormatTexturable(VkFormat format) const {
+bool GrVkCaps::isFormatSRGB(const GrBackendFormat& format) const {
+    if (!format.getVkFormat()) {
+        return false;
+    }
+
+    return format_is_srgb(*format.getVkFormat());
+}
+
+bool GrVkCaps::isFormatTexturable(GrColorType, const GrBackendFormat& format) const {
+    if (!format.getVkFormat()) {
+        return false;
+    }
+
+    return this->isVkFormatTexturable(*format.getVkFormat());
+}
+
+bool GrVkCaps::isVkFormatTexturable(VkFormat format) const {
     if (!GrVkFormatIsSupported(format)) {
         return false;
     }
@@ -859,11 +800,20 @@ bool GrVkCaps::isConfigTexturable(GrPixelConfig config) const {
     if (!GrPixelConfigToVkFormat(config, &format)) {
         return false;
     }
-    return this->isFormatTexturable(format);
+    return this->isVkFormatTexturable(format);
 }
 
 bool GrVkCaps::isFormatRenderable(VkFormat format) const {
     return this->maxRenderTargetSampleCount(format) > 0;
+}
+
+int GrVkCaps::getRenderTargetSampleCount(int requestedCount,
+                                         GrColorType, const GrBackendFormat& format) const {
+    if (!format.getVkFormat()) {
+        return 0;
+    }
+
+    return this->getRenderTargetSampleCount(requestedCount, *format.getVkFormat());
 }
 
 int GrVkCaps::getRenderTargetSampleCount(int requestedCount, GrPixelConfig config) const {
@@ -905,6 +855,14 @@ int GrVkCaps::getRenderTargetSampleCount(int requestedCount, VkFormat format) co
     return 0;
 }
 
+int GrVkCaps::maxRenderTargetSampleCount(GrColorType, const GrBackendFormat& format) const {
+    if (!format.getVkFormat()) {
+        return 0;
+    }
+
+    return this->maxRenderTargetSampleCount(*format.getVkFormat());
+}
+
 int GrVkCaps::maxRenderTargetSampleCount(GrPixelConfig config) const {
     // Currently we don't allow RGB_888X to be renderable because we don't have a way to handle
     // blends that reference dst alpha when the values in the dst alpha channel are uninitialized.
@@ -929,19 +887,28 @@ int GrVkCaps::maxRenderTargetSampleCount(VkFormat format) const {
     return table[table.count() - 1];
 }
 
-bool GrVkCaps::surfaceSupportsReadPixels(const GrSurface* surface) const {
+GrCaps::SurfaceReadPixelsSupport GrVkCaps::surfaceSupportsReadPixels(
+        const GrSurface* surface) const {
+    if (surface->isProtected()) {
+        return SurfaceReadPixelsSupport::kUnsupported;
+    }
     if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
         // We can't directly read from a VkImage that has a ycbcr sampler.
         if (tex->ycbcrConversionInfo().isValid()) {
-            return false;
+            return SurfaceReadPixelsSupport::kCopyToTexture2D;
+        }
+        // We can't directly read from a compressed format
+        SkImage::CompressionType compressionType;
+        if (GrVkFormatToCompressionType(tex->imageFormat(), &compressionType)) {
+            return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
     }
-    return true;
+    return SurfaceReadPixelsSupport::kSupported;
 }
 
 bool GrVkCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
     if (auto rt = surface->asRenderTarget()) {
-        return rt->numColorSamples() <= 1 && SkToBool(surface->asTexture());
+        return rt->numSamples() <= 1 && SkToBool(surface->asTexture());
     }
     // We can't write to a texture that has a ycbcr sampler.
     if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
@@ -953,7 +920,8 @@ bool GrVkCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
     return true;
 }
 
-static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool hasYcbcrConversion) {
+// A near clone of format_color_type_valid_pair
+static GrPixelConfig validate_image_info(VkFormat format, GrColorType ct, bool hasYcbcrConversion) {
     if (format == VK_FORMAT_UNDEFINED) {
         // If the format is undefined then it is only valid as an external image which requires that
         // we have a valid VkYcbcrConversion.
@@ -973,32 +941,35 @@ static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool h
     }
 
     switch (ct) {
-        case kUnknown_SkColorType:
+        case GrColorType::kUnknown:
             break;
-        case kAlpha_8_SkColorType:
+        case GrColorType::kAlpha_8:
             if (VK_FORMAT_R8_UNORM == format) {
                 return kAlpha_8_as_Red_GrPixelConfig;
             }
             break;
-        case kRGB_565_SkColorType:
+        case GrColorType::kBGR_565:
             if (VK_FORMAT_R5G6B5_UNORM_PACK16 == format) {
                 return kRGB_565_GrPixelConfig;
             }
             break;
-        case kARGB_4444_SkColorType:
+        case GrColorType::kABGR_4444:
             if (VK_FORMAT_B4G4R4A4_UNORM_PACK16 == format ||
                 VK_FORMAT_R4G4B4A4_UNORM_PACK16 == format) {
                 return kRGBA_4444_GrPixelConfig;
             }
             break;
-        case kRGBA_8888_SkColorType:
+        case GrColorType::kRGBA_8888:
             if (VK_FORMAT_R8G8B8A8_UNORM == format) {
                 return kRGBA_8888_GrPixelConfig;
-            } else if (VK_FORMAT_R8G8B8A8_SRGB == format) {
+            }
+            break;
+        case GrColorType::kRGBA_8888_SRGB:
+            if (VK_FORMAT_R8G8B8A8_SRGB == format) {
                 return kSRGBA_8888_GrPixelConfig;
             }
             break;
-        case kRGB_888x_SkColorType:
+        case GrColorType::kRGB_888x:
             if (VK_FORMAT_R8G8B8_UNORM == format) {
                 return kRGB_888_GrPixelConfig;
             }
@@ -1006,38 +977,64 @@ static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool h
                 return kRGB_888X_GrPixelConfig;
             }
             break;
-        case kBGRA_8888_SkColorType:
-            if (VK_FORMAT_B8G8R8A8_UNORM == format) {
-                return kBGRA_8888_GrPixelConfig;
-            } else if (VK_FORMAT_B8G8R8A8_SRGB == format) {
-                return kSBGRA_8888_GrPixelConfig;
+        case GrColorType::kRG_88:
+            if (VK_FORMAT_R8G8_UNORM == format) {
+                return kRG_88_GrPixelConfig;
             }
             break;
-        case kRGBA_1010102_SkColorType:
+        case GrColorType::kBGRA_8888:
+            if (VK_FORMAT_B8G8R8A8_UNORM == format) {
+                return kBGRA_8888_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kRGBA_1010102:
             if (VK_FORMAT_A2B10G10R10_UNORM_PACK32 == format) {
                 return kRGBA_1010102_GrPixelConfig;
             }
             break;
-        case kRGB_101010x_SkColorType:
-            return kUnknown_GrPixelConfig;
-        case kGray_8_SkColorType:
+        case GrColorType::kGray_8:
             if (VK_FORMAT_R8_UNORM == format) {
                 return kGray_8_as_Red_GrPixelConfig;
             }
             break;
-        case kRGBA_F16Norm_SkColorType:
-            if (VK_FORMAT_R16G16B16A16_SFLOAT == format) {
-                return kRGBA_half_Clamped_GrPixelConfig;
+        case GrColorType::kAlpha_F16:
+            if (VK_FORMAT_R16_SFLOAT == format) {
+                return kAlpha_half_as_Red_GrPixelConfig;
             }
             break;
-        case kRGBA_F16_SkColorType:
+        case GrColorType::kRGBA_F16:
             if (VK_FORMAT_R16G16B16A16_SFLOAT == format) {
                 return kRGBA_half_GrPixelConfig;
             }
             break;
-        case kRGBA_F32_SkColorType:
+        case GrColorType::kRGBA_F16_Clamped:
+            if (VK_FORMAT_R16G16B16A16_SFLOAT == format) {
+                return kRGBA_half_Clamped_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kRGBA_F32:
             if (VK_FORMAT_R32G32B32A32_SFLOAT == format) {
                 return kRGBA_float_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kR_16:
+            if (VK_FORMAT_R16_UNORM == format) {
+                return kR_16_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kRG_1616:
+            if (VK_FORMAT_R16G16_UNORM == format) {
+                return kRG_1616_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kRGBA_16161616:
+            if (VK_FORMAT_R16G16B16A16_UNORM == format) {
+                return kRGBA_16161616_GrPixelConfig;
+            }
+            break;
+        case GrColorType::kRG_F16:
+            if (VK_FORMAT_R16G16_SFLOAT == format) {
+                return kRG_half_GrPixelConfig;
             }
             break;
     }
@@ -1046,7 +1043,7 @@ static GrPixelConfig validate_image_info(VkFormat format, SkColorType ct, bool h
 }
 
 GrPixelConfig GrVkCaps::validateBackendRenderTarget(const GrBackendRenderTarget& rt,
-                                                    SkColorType ct) const {
+                                                    GrColorType ct) const {
     GrVkImageInfo imageInfo;
     if (!rt.getVkImageInfo(&imageInfo)) {
         return kUnknown_GrPixelConfig;
@@ -1054,8 +1051,20 @@ GrPixelConfig GrVkCaps::validateBackendRenderTarget(const GrBackendRenderTarget&
     return validate_image_info(imageInfo.fFormat, ct, imageInfo.fYcbcrConversionInfo.isValid());
 }
 
-GrPixelConfig GrVkCaps::getConfigFromBackendFormat(const GrBackendFormat& format,
-                                                   SkColorType ct) const {
+bool GrVkCaps::onAreColorTypeAndFormatCompatible(GrColorType ct,
+                                                 const GrBackendFormat& format) const {
+    const VkFormat* vkFormat = format.getVkFormat();
+    const GrVkYcbcrConversionInfo* ycbcrInfo = format.getVkYcbcrConversionInfo();
+    if (!vkFormat || !ycbcrInfo) {
+        return false;
+    }
+
+    return kUnknown_GrPixelConfig != validate_image_info(*vkFormat, ct, ycbcrInfo->isValid());
+}
+
+
+GrPixelConfig GrVkCaps::onGetConfigFromBackendFormat(const GrBackendFormat& format,
+                                                     GrColorType ct) const {
     const VkFormat* vkFormat = format.getVkFormat();
     const GrVkYcbcrConversionInfo* ycbcrInfo = format.getVkYcbcrConversionInfo();
     if (!vkFormat || !ycbcrInfo) {
@@ -1078,6 +1087,15 @@ static GrPixelConfig get_yuva_config(VkFormat vkFormat) {
             return kBGRA_8888_GrPixelConfig;
         case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
             return kRGBA_1010102_GrPixelConfig;
+        case VK_FORMAT_R16_UNORM:
+            return kR_16_GrPixelConfig;
+        case VK_FORMAT_R16G16_UNORM:
+            return kRG_1616_GrPixelConfig;
+        // Experimental (for Y416 and mutant P016/P010)
+        case VK_FORMAT_R16G16B16A16_UNORM:
+            return kRGBA_16161616_GrPixelConfig;
+        case VK_FORMAT_R16G16_SFLOAT:
+            return kRG_half_GrPixelConfig;
         default:
             return kUnknown_GrPixelConfig;
     }
@@ -1091,9 +1109,32 @@ GrPixelConfig GrVkCaps::getYUVAConfigFromBackendFormat(const GrBackendFormat& fo
     return get_yuva_config(*vkFormat);
 }
 
-GrBackendFormat GrVkCaps::getBackendFormatFromGrColorType(GrColorType ct,
-                                                          GrSRGBEncoded srgbEncoded) const {
-    GrPixelConfig config = GrColorTypeToPixelConfig(ct, srgbEncoded);
+GrColorType GrVkCaps::getYUVAColorTypeFromBackendFormat(const GrBackendFormat& format) const {
+    const VkFormat* vkFormat = format.getVkFormat();
+    if (!vkFormat) {
+        return GrColorType::kUnknown;
+    }
+
+    switch (*vkFormat) {
+        case VK_FORMAT_R8_UNORM:                 return GrColorType::kAlpha_8;
+        case VK_FORMAT_R8G8B8A8_UNORM:           return GrColorType::kRGBA_8888;
+        case VK_FORMAT_R8G8B8_UNORM:             return GrColorType::kRGB_888x;
+        case VK_FORMAT_R8G8_UNORM:               return GrColorType::kRG_88;
+        case VK_FORMAT_B8G8R8A8_UNORM:           return GrColorType::kBGRA_8888;
+        case VK_FORMAT_A2B10G10R10_UNORM_PACK32: return GrColorType::kRGBA_1010102;
+        case VK_FORMAT_R16_UNORM:                return GrColorType::kR_16;
+        case VK_FORMAT_R16G16_UNORM:             return GrColorType::kRG_1616;
+        // Experimental (for Y416 and mutant P016/P010)
+        case VK_FORMAT_R16G16B16A16_UNORM:       return GrColorType::kRGBA_16161616;
+        case VK_FORMAT_R16G16_SFLOAT:            return GrColorType::kRG_F16;
+        default:                                 return GrColorType::kUnknown;
+    }
+
+    SkUNREACHABLE;
+}
+
+GrBackendFormat GrVkCaps::getBackendFormatFromColorType(GrColorType ct) const {
+    GrPixelConfig config = GrColorTypeToPixelConfig(ct);
     if (config == kUnknown_GrPixelConfig) {
         return GrBackendFormat();
     }
@@ -1104,6 +1145,18 @@ GrBackendFormat GrVkCaps::getBackendFormatFromGrColorType(GrColorType ct,
     return GrBackendFormat::MakeVk(format);
 }
 
+GrBackendFormat GrVkCaps::getBackendFormatFromCompressionType(
+        SkImage::CompressionType compressionType) const {
+    switch (compressionType) {
+        case SkImage::kETC1_CompressionType:
+            return GrBackendFormat::MakeVk(VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK);
+    }
+    SK_ABORT("Invalid compression type");
+    return {};
+}
+
+bool GrVkCaps::canClearTextureOnCreation() const { return true; }
+
 #ifdef SK_DEBUG
 static bool format_color_type_valid_pair(VkFormat vkFormat, GrColorType colorType) {
     switch (colorType) {
@@ -1111,19 +1164,24 @@ static bool format_color_type_valid_pair(VkFormat vkFormat, GrColorType colorTyp
             return false;
         case GrColorType::kAlpha_8:
             return VK_FORMAT_R8_UNORM == vkFormat;
-        case GrColorType::kRGB_565:
+        case GrColorType::kBGR_565:
             return VK_FORMAT_R5G6B5_UNORM_PACK16 == vkFormat;
         case GrColorType::kABGR_4444:
             return VK_FORMAT_B4G4R4A4_UNORM_PACK16 == vkFormat ||
                    VK_FORMAT_R4G4B4A4_UNORM_PACK16 == vkFormat;
         case GrColorType::kRGBA_8888:
-            return VK_FORMAT_R8G8B8A8_UNORM == vkFormat || VK_FORMAT_R8G8B8A8_SRGB == vkFormat;
+            return VK_FORMAT_R8G8B8A8_UNORM == vkFormat;
+        case GrColorType::kRGBA_8888_SRGB:
+            return VK_FORMAT_R8G8B8A8_SRGB == vkFormat;
         case GrColorType::kRGB_888x:
-            return VK_FORMAT_R8G8B8_UNORM == vkFormat || VK_FORMAT_R8G8B8A8_UNORM == vkFormat;
+            GR_STATIC_ASSERT(GrCompressionTypeClosestColorType(SkImage::kETC1_CompressionType) ==
+                             GrColorType::kRGB_888x);
+            return VK_FORMAT_R8G8B8_UNORM == vkFormat || VK_FORMAT_R8G8B8A8_UNORM == vkFormat ||
+                   VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK == vkFormat;
         case GrColorType::kRG_88:
             return VK_FORMAT_R8G8_UNORM == vkFormat;
         case GrColorType::kBGRA_8888:
-            return VK_FORMAT_B8G8R8A8_UNORM == vkFormat || VK_FORMAT_B8G8R8A8_SRGB == vkFormat;
+            return VK_FORMAT_B8G8R8A8_UNORM == vkFormat;
         case GrColorType::kRGBA_1010102:
             return VK_FORMAT_A2B10G10R10_UNORM_PACK32 == vkFormat;
         case GrColorType::kGray_8:
@@ -1134,12 +1192,17 @@ static bool format_color_type_valid_pair(VkFormat vkFormat, GrColorType colorTyp
             return VK_FORMAT_R16G16B16A16_SFLOAT == vkFormat;
         case GrColorType::kRGBA_F16_Clamped:
             return VK_FORMAT_R16G16B16A16_SFLOAT == vkFormat;
-        case GrColorType::kRG_F32:
-            return VK_FORMAT_R32G32_SFLOAT == vkFormat;
         case GrColorType::kRGBA_F32:
             return VK_FORMAT_R32G32B32A32_SFLOAT == vkFormat;
-        case GrColorType::kRGB_ETC1:
-            return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK == vkFormat;
+        case GrColorType::kR_16:
+            return VK_FORMAT_R16_UNORM == vkFormat;
+        case GrColorType::kRG_1616:
+            return VK_FORMAT_R16G16_UNORM == vkFormat;
+        // Experimental (for Y416 and mutant P016/P010)
+        case GrColorType::kRGBA_16161616:
+            return VK_FORMAT_R16G16B16A16_UNORM == vkFormat;
+        case GrColorType::kRG_F16:
+            return VK_FORMAT_R16G16_SFLOAT == vkFormat;
     }
     SK_ABORT("Unknown color type");
     return false;
@@ -1204,5 +1267,62 @@ size_t GrVkCaps::onTransferFromOffsetAlignment(GrColorType bufferColorType) cons
         case 2:     return 2 * bpp;
         // bpp is not a multiple of 2.
         default:    return 4 * bpp;
+    }
+}
+
+GrCaps::SupportedRead GrVkCaps::supportedReadPixelsColorType(
+        GrColorType srcColorType, const GrBackendFormat& srcBackendFormat,
+        GrColorType dstColorType) const {
+    const VkFormat* vkFormat = srcBackendFormat.getVkFormat();
+    if (!vkFormat) {
+        return {GrSwizzle(), GrColorType::kUnknown};
+    }
+
+    switch (*vkFormat) {
+        case VK_FORMAT_R8G8B8A8_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kRGBA_8888};
+        case VK_FORMAT_R8_UNORM:
+            if (srcColorType == GrColorType::kAlpha_8) {
+                return {GrSwizzle::RGBA(), GrColorType::kAlpha_8};
+            } else if (srcColorType == GrColorType::kGray_8) {
+                return {GrSwizzle::RGBA(), GrColorType::kGray_8};
+            }
+        case VK_FORMAT_B8G8R8A8_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kBGRA_8888};
+        case VK_FORMAT_R5G6B5_UNORM_PACK16:
+            return {GrSwizzle::RGBA(), GrColorType::kBGR_565};
+        case VK_FORMAT_R16G16B16A16_SFLOAT:
+            if (srcColorType == GrColorType::kRGBA_F16) {
+                return {GrSwizzle::RGBA(), GrColorType::kRGBA_F16};
+            } else if (srcColorType == GrColorType::kRGBA_F16_Clamped){
+                return {GrSwizzle::RGBA(), GrColorType::kRGBA_F16_Clamped};
+            }
+        case VK_FORMAT_R16_SFLOAT:
+            return {GrSwizzle::RGBA(), GrColorType::kAlpha_F16};
+        case VK_FORMAT_R8G8B8_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kRGB_888x};
+        case VK_FORMAT_R8G8_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kRG_88};
+        case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+            return {GrSwizzle::RGBA(), GrColorType::kRGBA_1010102};
+        case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+            return {GrSwizzle::RGBA(), GrColorType::kABGR_4444};
+        case VK_FORMAT_R4G4B4A4_UNORM_PACK16:
+            return {GrSwizzle::RGBA(), GrColorType::kABGR_4444};
+        case VK_FORMAT_R32G32B32A32_SFLOAT:
+            return {GrSwizzle::RGBA(), GrColorType::kRGBA_F32};
+        case VK_FORMAT_R8G8B8A8_SRGB:
+            return {GrSwizzle::RGBA(), GrColorType::kRGBA_8888_SRGB};
+        case VK_FORMAT_R16_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kR_16};
+        case VK_FORMAT_R16G16_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kRG_1616};
+        // Experimental (for Y416 and mutant P016/P010)
+        case VK_FORMAT_R16G16B16A16_UNORM:
+            return {GrSwizzle::RGBA(), GrColorType::kRGBA_16161616};
+        case VK_FORMAT_R16G16_SFLOAT:
+            return {GrSwizzle::RGBA(), GrColorType::kRG_F16};
+        default:
+            return {GrSwizzle(), GrColorType::kUnknown};
     }
 }

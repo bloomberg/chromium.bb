@@ -15,12 +15,10 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.metrics.WebappSplashUmaCache;
@@ -74,9 +72,8 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
     @Override
     public View buildSplashView() {
         Context appContext = ContextUtils.getApplicationContext();
-        int backgroundColor = ColorUtils.getOpaqueColor(
-                mWebappInfo.backgroundColor(ApiCompatibilityUtils.getColor(
-                        appContext.getResources(), R.color.webapp_default_bg)));
+        int backgroundColor =
+                ColorUtils.getOpaqueColor(mWebappInfo.backgroundColorFallbackToDefault());
         if (mWebappInfo.isSplashProvidedByWebApk()) {
             return buildSplashWithWebApkProvidedScreenshot(appContext, backgroundColor);
         }
@@ -138,6 +135,7 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
 
         Bitmap selectedIcon = splashImage;
         boolean selectedIconGenerated = false;
+        // TODO(crbug.com/977173): assign selectedIconAdaptive to correct value
         boolean selectedIconAdaptive = false;
         if (selectedIcon == null) {
             selectedIcon = mWebappInfo.icon();
@@ -193,7 +191,7 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
         splashView.setBackgroundColor(backgroundColor);
 
         Bitmap splashBitmap = null;
-        try (StrictModeContext smc = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             splashBitmap = FileUtils.queryBitmapFromContentProvider(appContext,
                     Uri.parse(WebApkCommonUtils.generateSplashContentProviderUri(
                             mWebappInfo.webApkPackageName())));

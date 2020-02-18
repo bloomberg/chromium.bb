@@ -12,13 +12,13 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
+import org.chromium.chrome.browser.util.UrlConstants;
 
 /**
  * Native page for managing downloads handled through Chrome.

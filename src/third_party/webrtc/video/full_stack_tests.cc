@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"
 #include "api/test/simulated_network.h"
@@ -22,39 +24,26 @@
 #include "api/video_codecs/video_encoder_config.h"
 #include "media/base/vp9_profile.h"
 #include "modules/video_coding/codecs/vp9/include/vp9.h"
-#include "rtc_base/flags.h"
 #include "system_wrappers/include/field_trial.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
 #include "video/video_quality_test.h"
 
-namespace webrtc {
-namespace flags {
-
-WEBRTC_DEFINE_string(rtc_event_log_name,
-                     "",
-                     "Filename for rtc event log. Two files "
-                     "with \"_send\" and \"_recv\" suffixes will be created.");
-std::string RtcEventLogName() {
-  return static_cast<std::string>(FLAG_rtc_event_log_name);
-}
-WEBRTC_DEFINE_string(rtp_dump_name,
-                     "",
-                     "Filename for dumped received RTP stream.");
-std::string RtpDumpName() {
-  return static_cast<std::string>(FLAG_rtp_dump_name);
-}
-WEBRTC_DEFINE_string(
-    encoded_frame_path,
-    "",
-    "The base path for encoded frame logs. Created files will have "
-    "the form <encoded_frame_path>.<n>.(recv|send.<m>).ivf");
-std::string EncodedFramePath() {
-  return static_cast<std::string>(FLAG_encoded_frame_path);
-}
-}  // namespace flags
-}  // namespace webrtc
+ABSL_FLAG(std::string,
+          rtc_event_log_name,
+          "",
+          "Filename for rtc event log. Two files "
+          "with \"_send\" and \"_recv\" suffixes will be created.");
+ABSL_FLAG(std::string,
+          rtp_dump_name,
+          "",
+          "Filename for dumped received RTP stream.");
+ABSL_FLAG(std::string,
+          encoded_frame_path,
+          "",
+          "The base path for encoded frame logs. Created files will have "
+          "the form <encoded_frame_path>.<n>.(recv|send.<m>).ivf");
 
 namespace webrtc {
 
@@ -67,8 +56,9 @@ struct ParamsWithLogging : public VideoQualityTest::Params {
  public:
   ParamsWithLogging() {
     // Use these logging flags by default, for everything.
-    logging = {flags::RtcEventLogName(), flags::RtpDumpName(),
-               flags::EncodedFramePath()};
+    logging = {absl::GetFlag(FLAGS_rtc_event_log_name),
+               absl::GetFlag(FLAGS_rtp_dump_name),
+               absl::GetFlag(FLAGS_encoded_frame_path)};
     this->config = BuiltInNetworkBehaviorConfig();
   }
 };
@@ -290,9 +280,8 @@ TEST(FullStackTest, ForemanCifLink150kbpsWithoutPacketLoss) {
       30000, 500000, 2000000, false,
       "VP8", 1,      0,       0,
       false, false,  true,    ClipNameToClipPath("foreman_cif")};
-  foreman_cif.analyzer = {"foreman_cif_link_150kbps_net_delay_0_0_plr_0",
-                          0.0, 0.0,
-                          kFullStackTestDurationSecs};
+  foreman_cif.analyzer = {"foreman_cif_link_150kbps_net_delay_0_0_plr_0", 0.0,
+                          0.0, kFullStackTestDurationSecs};
   foreman_cif.config->link_capacity_kbps = 150;
   fixture->RunWithAnalyzer(foreman_cif);
 }
@@ -834,19 +823,12 @@ TEST(FullStackTest, ScreenshareSlidesVP8_2TL) {
   fixture->RunWithAnalyzer(screenshare);
 }
 
-#if !defined(WEBRTC_MAC)
-// All the tests using this constant are disabled on Mac.
-const char kScreenshareSimulcastExperiment[] =
-    "WebRTC-SimulcastScreenshare/Enabled/";
+#if !defined(WEBRTC_MAC) && !defined(WEBRTC_WIN)
 // TODO(bugs.webrtc.org/9840): Investigate why is this test flaky on Win/Mac.
-#if !defined(WEBRTC_WIN)
 const char kScreenshareSimulcastVariableFramerateExperiment[] =
-    "WebRTC-SimulcastScreenshare/Enabled/"
     "WebRTC-VP8VariableFramerateScreenshare/"
     "Enabled,min_fps:5.0,min_qp:15,undershoot:30/";
 TEST(FullStackTest, ScreenshareSlidesVP8_2TL_Simulcast) {
-  test::ScopedFieldTrials field_trial(
-      AppendFieldTrials(kScreenshareSimulcastExperiment));
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging screenshare;
   screenshare.call.send_side_bwe = true;
@@ -905,8 +887,6 @@ TEST(FullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_Variable_Framerate) {
 }
 
 TEST(FullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_low) {
-  test::ScopedFieldTrials field_trial(
-      AppendFieldTrials(kScreenshareSimulcastExperiment));
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging screenshare;
   screenshare.call.send_side_bwe = true;
@@ -934,8 +914,7 @@ TEST(FullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_low) {
   fixture->RunWithAnalyzer(screenshare);
 }
 
-#endif  // !defined(WEBRTC_WIN)
-#endif  // !defined(WEBRTC_MAC)
+#endif  // !defined(WEBRTC_MAC) && !defined(WEBRTC_WIN)
 
 TEST(FullStackTest, ScreenshareSlidesVP8_2TL_Scroll) {
   auto fixture = CreateVideoQualityTestFixture();
@@ -1243,18 +1222,17 @@ TEST(FullStackTest, MAYBE_SimulcastFullHdOveruse) {
   auto fixture = CreateVideoQualityTestFixture();
   ParamsWithLogging simulcast;
   simulcast.call.send_side_bwe = true;
-  simulcast.video[0] = {true,    1920,    1080,  30,    800000,
-                        2500000, 2500000, false, "VP8", 3,
-                        2,       400000,  false, false, false, "Generator"};
+  simulcast.video[0] = {true,    1920,  1080,  30,         800000, 2500000,
+                        2500000, false, "VP8", 3,          2,      400000,
+                        false,   false, false, "Generator"};
   simulcast.analyzer = {"simulcast_HD_high", 0.0, 0.0,
                         kFullStackTestDurationSecs};
   simulcast.config->loss_percent = 0;
   simulcast.config->queue_delay_ms = 100;
   std::vector<VideoStream> streams = {
-    VideoQualityTest::DefaultVideoStream(simulcast, 0),
-    VideoQualityTest::DefaultVideoStream(simulcast, 0),
-    VideoQualityTest::DefaultVideoStream(simulcast, 0)
-  };
+      VideoQualityTest::DefaultVideoStream(simulcast, 0),
+      VideoQualityTest::DefaultVideoStream(simulcast, 0),
+      VideoQualityTest::DefaultVideoStream(simulcast, 0)};
   simulcast.ss[0] = {
       streams, 2, 1, 0, InterLayerPredMode::kOn, std::vector<SpatialLayer>(),
       true};
@@ -1482,8 +1460,6 @@ class DualStreamsTest : public ::testing::TestWithParam<int> {};
 #if !defined(WEBRTC_ANDROID) && !defined(WEBRTC_IOS) && !defined(WEBRTC_MAC)
 TEST_P(DualStreamsTest,
        ModeratelyRestricted_SlidesVp8_2TL_Simulcast_Video_Simulcast_High) {
-  test::ScopedFieldTrials field_trial(
-      AppendFieldTrials(std::string(kScreenshareSimulcastExperiment)));
   const int first_stream = GetParam();
   ParamsWithLogging dual_streams;
 
@@ -1550,10 +1526,9 @@ TEST_P(DualStreamsTest, Conference_Restricted) {
 
   // Screenshare Settings.
   dual_streams.screenshare[first_stream] = {true, false, 10};
-  dual_streams.video[first_stream] = {true,    1850,    1110,  5,     800000,
-                                      2500000, 2500000, false, "VP8", 3,
-                                      2,       400000,  false, false, false,
-                                      ""};
+  dual_streams.video[first_stream] = {true,    1850,  1110,  5, 800000, 2500000,
+                                      2500000, false, "VP8", 3, 2,      400000,
+                                      false,   false, false, ""};
   // Video settings.
   dual_streams.video[1 - first_stream] = {
       true,   1280,

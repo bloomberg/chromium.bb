@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/service_worker/service_worker_types.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -97,7 +97,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   // the same context, but could live longer until the context is GC'ed)
   blink::WebServiceWorkerProviderClient* provider_client_;
 
-  base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_;
+  base::WeakPtrFactory<WebServiceWorkerProviderImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerProviderImpl);
 };

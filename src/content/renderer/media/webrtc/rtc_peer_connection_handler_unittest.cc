@@ -25,8 +25,6 @@
 #include "base/values.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio/mock_audio_device_factory.h"
-#include "content/renderer/media/stream/mock_constraint_factory.h"
-#include "content/renderer/media/stream/mock_media_stream_video_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -56,6 +54,8 @@
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_constraint_factory.h"
+#include "third_party/blink/public/web/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
@@ -311,8 +311,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         new ProcessedLocalAudioSource(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
             blink::MediaStreamDevice(
-                blink::MEDIA_DEVICE_AUDIO_CAPTURE, "mock_device_id",
-                "Mock device", media::AudioParameters::kAudioCDSampleRate,
+                blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+                "mock_device_id", "Mock device",
+                media::AudioParameters::kAudioCDSampleRate,
                 media::CHANNEL_LAYOUT_STEREO,
                 media::AudioParameters::kAudioCDSampleRate / 100),
             false /* disable_local_echo */, blink::AudioProcessingProperties(),
@@ -327,8 +328,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
                             blink::WebMediaStreamSource::kTypeVideo,
                             blink::WebString::FromUTF8("video_track"),
                             false /* remote */);
-    MockMediaStreamVideoSource* native_video_source =
-        new MockMediaStreamVideoSource();
+    blink::MockMediaStreamVideoSource* native_video_source =
+        new blink::MockMediaStreamVideoSource();
     video_source.SetPlatformSource(base::WrapUnique(native_video_source));
 
     blink::WebVector<blink::WebMediaStreamTrack> audio_tracks(

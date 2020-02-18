@@ -8,9 +8,9 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "net/url_request/url_fetcher.h"
-#include "services/identity/public/cpp/identity_manager.h"
-#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace feedback {
@@ -32,7 +32,7 @@ FeedbackUploaderChrome::~FeedbackUploaderChrome() = default;
 
 void FeedbackUploaderChrome::AccessTokenAvailable(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
   if (error.state() == GoogleServiceAuthError::NONE) {
@@ -46,6 +46,9 @@ void FeedbackUploaderChrome::AccessTokenAvailable(
 }
 
 void FeedbackUploaderChrome::StartDispatchingReport() {
+  if (delegate_)
+    delegate_->OnStartDispatchingReport();
+
   access_token_.clear();
 
   // TODO(crbug.com/849591): Instead of getting the IdentityManager from the
@@ -53,18 +56,17 @@ void FeedbackUploaderChrome::StartDispatchingReport() {
   // ctor.
   Profile* profile = Profile::FromBrowserContext(context());
   DCHECK(profile);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
   if (identity_manager && identity_manager->HasPrimaryAccount()) {
     identity::ScopeSet scopes;
     scopes.insert("https://www.googleapis.com/auth/supportcontent");
-    token_fetcher_ =
-        std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
-            "feedback_uploader_chrome", identity_manager, scopes,
-            base::BindOnce(&FeedbackUploaderChrome::AccessTokenAvailable,
-                           base::Unretained(this)),
-            identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+    token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+        "feedback_uploader_chrome", identity_manager, scopes,
+        base::BindOnce(&FeedbackUploaderChrome::AccessTokenAvailable,
+                       base::Unretained(this)),
+        signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
     return;
   }
 

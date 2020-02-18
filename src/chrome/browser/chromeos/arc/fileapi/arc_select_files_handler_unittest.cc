@@ -27,6 +27,7 @@ using arc::mojom::SelectFilesActionType;
 using arc::mojom::SelectFilesRequest;
 using arc::mojom::SelectFilesRequestPtr;
 using testing::_;
+using testing::Return;
 using ui::SelectFileDialog;
 
 namespace arc {
@@ -79,10 +80,11 @@ class MockSelectFileDialogHolder : public SelectFileDialogHolder {
   explicit MockSelectFileDialogHolder(ui::SelectFileDialog::Listener* listener)
       : SelectFileDialogHolder(listener) {}
   ~MockSelectFileDialogHolder() override = default;
-  MOCK_METHOD4(SelectFile,
-               void(ui::SelectFileDialog::Type type,
+  MOCK_METHOD5(SelectFile,
+               bool(ui::SelectFileDialog::Type type,
                     const base::FilePath& default_path,
                     const ui::SelectFileDialog::FileTypeInfo* file_types,
+                    int task_id,
                     bool show_android_picker_apps));
   MOCK_METHOD2(ExecuteJavaScript,
                void(const std::string&, JavaScriptResultCallback));
@@ -110,6 +112,8 @@ class ArcSelectFilesHandlerTest : public testing::Test {
     mock_dialog_holder_ = mock_dialog_holder.get();
     arc_select_files_handler_->SetDialogHolderForTesting(
         std::move(mock_dialog_holder));
+    ON_CALL(*mock_dialog_holder_, SelectFile(_, _, _, _, _))
+        .WillByDefault(Return(true));
   }
 
   void TearDown() override {
@@ -128,7 +132,7 @@ class ArcSelectFilesHandlerTest : public testing::Test {
     request->allow_multiple = request_allow_multiple;
 
     EXPECT_CALL(*mock_dialog_holder_,
-                SelectFile(expected_dialog_type, _, _,
+                SelectFile(expected_dialog_type, _, _, _,
                            expected_show_android_picker_apps))
         .Times(1);
 
@@ -185,6 +189,7 @@ TEST_F(ArcSelectFilesHandlerTest, SelectFiles_FileTypeInfo) {
   SelectFilesRequestPtr request = SelectFilesRequest::New();
   request->action_type = SelectFilesActionType::OPEN_DOCUMENT;
   request->mime_types.push_back("text/plain");
+  request->task_id = 1234;
 
   SelectFileDialog::FileTypeInfo expected_file_type_info;
   expected_file_type_info.allowed_paths =
@@ -198,7 +203,7 @@ TEST_F(ArcSelectFilesHandlerTest, SelectFiles_FileTypeInfo) {
       *mock_dialog_holder_,
       SelectFile(_, _,
                  testing::Pointee(FileTypeInfoMatcher(expected_file_type_info)),
-                 _))
+                 1234, _))
       .Times(1);
 
   base::MockCallback<SelectFilesCallback> callback;
@@ -217,7 +222,7 @@ TEST_F(ArcSelectFilesHandlerTest, SelectFiles_InitialDocumentPath) {
       "/special/arc-documents-provider/testing.provider/doc:root");
 
   EXPECT_CALL(*mock_dialog_holder_,
-              SelectFile(_, FilePathMatcher(expected_file_path), _, _))
+              SelectFile(_, FilePathMatcher(expected_file_path), _, _, _))
       .Times(1);
 
   base::MockCallback<SelectFilesCallback> callback;
@@ -284,6 +289,10 @@ TEST_F(ArcSelectFilesHandlerTest, OnFileSelectorEvent) {
   CallOnFileSelectorEventAndCheckScript(
       mojom::FileSelectorEventType::CLICK_FILE, "Click\tTarget",
       base::StringPrintf(kScriptClickFile, "\"Click\\tTarget\""));
+
+  // The handler executes click-cancel script in its destructor.
+  EXPECT_CALL(*mock_dialog_holder_, ExecuteJavaScript(kScriptClickCancel, _))
+      .Times(1);
 }
 
 TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
@@ -309,7 +318,12 @@ TEST_F(ArcSelectFilesHandlerTest, GetFileSelectorElements) {
               Run(FileSelectorElementsMatcher(expectedElements.get())))
       .Times(1);
 
-  arc_select_files_handler_->GetFileSelectorElements(callback.Get());
+  arc_select_files_handler_->GetFileSelectorElements(
+      arc::mojom::GetFileSelectorElementsRequest::New(), callback.Get());
+
+  // The handler executes click-cancel script in its destructor.
+  EXPECT_CALL(*mock_dialog_holder_, ExecuteJavaScript(kScriptClickCancel, _))
+      .Times(1);
 }
 
 }  // namespace arc

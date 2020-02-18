@@ -18,6 +18,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_element_reader.h"
 #include "net/cert/cert_status_flags.h"
@@ -149,7 +150,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->fetch_window_id(),
       resource_request_info->GetResourceType(),
       resource_request_info->GetPageTransition(),
-      resource_request_info->IsDownload(), resource_request_info->is_stream(),
+      resource_request_info->IsDownload(),
       resource_request_info->resource_intercept_policy(),
       resource_request_info->HasUserGesture(),
       resource_request_info->is_load_timing_enabled(),
@@ -565,8 +566,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
       devtools_token_(devtools_token),
       callback_(callback),
       resource_type_(resource_type),
-      stage_to_intercept_(stage_to_intercept),
-      weak_ptr_factory_(this) {
+      stage_to_intercept_(stage_to_intercept) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 

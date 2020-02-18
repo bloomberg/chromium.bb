@@ -17,11 +17,13 @@
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/buildflags.h"
@@ -83,12 +85,12 @@ OverlaySupport FlagsToOverlaySupport(UINT flags) {
 
 void InitializePlatformOverlaySettings(GPUInfo* gpu_info) {
 #if defined(OS_WIN)
-// This has to be called after a context is created, active GPU is identified,
-// and GPU driver bug workarounds are computed again. Otherwise the workaround
-// |disable_direct_composition| may not be correctly applied.
-// Also, this has to be called after falling back to SwiftShader decision is
-// finalized because this function depends on GL is ANGLE's GLES or not.
-  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
+  // This has to be called after a context is created, active GPU is identified,
+  // and GPU driver bug workarounds are computed again. Otherwise the workaround
+  // |disable_direct_composition| may not be correctly applied.
+  // Also, this has to be called after falling back to SwiftShader decision is
+  // finalized because this function depends on GL is ANGLE's GLES or not.
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
     DCHECK(gpu_info);
     gpu_info->direct_composition =
         gl::DirectCompositionSurfaceWin::IsDirectCompositionSupported();
@@ -200,8 +202,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    } else {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    }
+
 #if defined(OS_WIN)
     // This is a workaround for an occasional deadlock between watchdog and
     // current thread. Watchdog hangs at thread initialization in
@@ -251,19 +259,22 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_preferences_.enable_vulkan) {
-    vulkan_implementation_ = gpu::CreateVulkanImplementation();
+  if (gpu_preferences_.use_vulkan != gpu::VulkanImplementationName::kNone) {
+    bool use_swiftshader = gpu_preferences_.use_vulkan ==
+                           gpu::VulkanImplementationName::kSwiftshader;
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences_.disable_vulkan_surface)) {
-      DLOG(WARNING) << "Failed to create and initialize Vulkan implementation.";
+      DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
       vulkan_implementation_ = nullptr;
       CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
     }
-    gpu_preferences_.enable_vulkan = !!vulkan_implementation_;
+    if (!vulkan_implementation_)
+      gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
   }
 #else
-  gpu_preferences_.enable_vulkan = false;
+  gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
 #endif
 
   if (!use_swiftshader) {
@@ -273,8 +284,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   if (gl_initialized && use_swiftshader &&
       gl::GetGLImplementation() != gl::kGLImplementationSwiftShaderGL) {
+#if defined(OS_LINUX)
+    VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+            << "on Linux";
+    return false;
+#else
     gl::init::ShutdownGL(true);
     gl_initialized = false;
+#endif  // OS_LINUX
   }
   if (!gl_initialized)
     gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
@@ -300,13 +317,25 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
+#if defined(OS_LINUX)
+      VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+              << "on Linux";
+      return false;
+#else
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff()) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
                 << "failed";
         return false;
       }
+#endif  // OS_LINUX
     }
+  }
+
+  // Collect GPU process info
+  if (!gl_disabled) {
+    if (!CollectGpuExtraInfo(&gpu_extra_info_))
+      return false;
   }
 
   if (!gl_disabled) {
@@ -342,12 +371,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
-      gl::init::ShutdownGL(true);
-      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
-        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
-                << "failed";
-        return false;
-      }
+      VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
+              << "on Linux";
+      return false;
     }
   }
 #endif  // defined(OS_LINUX)
@@ -384,8 +410,13 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;
   } else if (enable_watchdog && delayed_watchdog_enable) {
-    watchdog_thread_ = gpu::GpuWatchdogThread::Create(
-        gpu_preferences_.watchdog_starts_backgrounded);
+    if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    } else {
+      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+          gpu_preferences_.watchdog_starts_backgrounded);
+    }
   }
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
@@ -396,6 +427,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);
+
+  // Notify the gpu watchdog that the gpu init has completed So the watchdog
+  // can be disarmed.
+  if (watchdog_thread_)
+    watchdog_thread_->OnInitComplete();
 
   init_successful_ = true;
 #if defined(USE_OZONE)

@@ -60,7 +60,7 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
 }
 
-views::View* SaveCardOfferBubbleViews::CreateExtraView() {
+std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateExtraView() {
   // Only show the (i) info icon for upload saves using implicit sync.
   // GetLegalMessageLines() being empty denotes a local save.
   if (controller()->GetLegalMessageLines().empty() ||
@@ -71,27 +71,28 @@ views::View* SaveCardOfferBubbleViews::CreateExtraView() {
 
   // CreateMainContentView() must happen prior to this so that |prefilled_name|
   // gets populated.
-  auto* upload_explanation_tooltip =
-      new views::TooltipIcon(l10n_util::GetStringUTF16(
-          (cardholder_name_textfield_ &&
-           !cardholder_name_textfield_->text().empty())
-              ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
-              : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+  auto upload_explanation_tooltip = std::make_unique<
+      views::TooltipIcon>(l10n_util::GetStringUTF16(
+      (cardholder_name_textfield_ &&
+       !cardholder_name_textfield_->text().empty())
+          ? IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_AND_CARDHOLDER_NAME_TOOLTIP
+          : IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
   upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
   upload_explanation_tooltip->set_anchor_point_arrow(
       views::BubbleBorder::Arrow::TOP_RIGHT);
   return upload_explanation_tooltip;
 }
 
-views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
+std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
   if (controller()->GetLegalMessageLines().empty())
     return nullptr;
 
-  legal_message_view_ =
-      new LegalMessageView(controller()->GetLegalMessageLines(), this);
+  auto legal_message_view = std::make_unique<LegalMessageView>(
+      controller()->GetLegalMessageLines(), this);
 
+  legal_message_view_ = legal_message_view.get();
   InitFootnoteView(legal_message_view_);
-  return legal_message_view_;
+  return legal_message_view;
 }
 
 bool SaveCardOfferBubbleViews::Accept() {
@@ -110,10 +111,11 @@ bool SaveCardOfferBubbleViews::Accept() {
 }
 
 int SaveCardOfferBubbleViews::GetDialogButtons() const {
-  return base::FeatureList::IsEnabled(
-             features::kAutofillSaveCardImprovedUserConsent)
-             ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
-             : ui::DIALOG_BUTTON_OK;
+  if (features::ShouldShowImprovedUserConsentForCreditCardSave() ||
+      base::FeatureList::IsEnabled(features::kAutofillSaveCardShowNoThanks)) {
+    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  }
+  return ui::DIALOG_BUTTON_OK;
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(
@@ -198,7 +200,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     //              padding. Make a new Harmony DistanceMetric?
     cardholder_name_label_row->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::kHorizontal, gfx::Insets(),
+            views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
             provider->GetDistanceMetric(
                 views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
     std::unique_ptr<views::Label> cardholder_name_label =
@@ -211,8 +213,8 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
 
     // Prepare the prefilled cardholder name.
     base::string16 prefilled_name;
-    if (!features::
-            IsAutofillUpstreamBlankCardholderNameFieldExperimentEnabled()) {
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillUpstreamBlankCardholderNameField)) {
       prefilled_name =
           base::UTF8ToUTF16(controller()->GetAccountInfo().full_name);
     }
@@ -253,7 +255,7 @@ std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateMainContentView() {
     std::unique_ptr<views::View> cardholder_name_view =
         std::make_unique<views::View>();
     cardholder_name_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kVertical, gfx::Insets(),
+        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
         provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
     cardholder_name_view->AddChildView(cardholder_name_label_row.release());
     cardholder_name_view->AddChildView(cardholder_name_textfield_);
@@ -271,7 +273,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
   auto expiration_date_view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   expiration_date_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
   expiration_date_view->SetID(DialogViewId::EXPIRATION_DATE_VIEW);
 
@@ -306,7 +308,7 @@ SaveCardOfferBubbleViews::CreateRequestExpirationDateView() {
 
   auto input_row = std::make_unique<views::View>();
   input_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
   input_row->AddChildView(month_input_dropdown_);
   input_row->AddChildView(year_input_dropdown_);

@@ -47,9 +47,7 @@ class SOCKSConnectJobTest : public testing::Test,
 
   SOCKSConnectJobTest()
       : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::NowSource::
-                MAIN_THREAD_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
         common_connect_job_params_(
             &client_socket_factory_,
             &host_resolver_,
@@ -60,16 +58,11 @@ class SOCKSConnectJobTest : public testing::Test,
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             &net_log_,
-            nullptr /* websocket_endpoint_lock_manager */) {
-    // Set an initial delay to ensure that the first call to TimeTicks::Now()
-    // before incrementing the counter does not return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
-  }
+            nullptr /* websocket_endpoint_lock_manager */) {}
 
   ~SOCKSConnectJobTest() override {}
 

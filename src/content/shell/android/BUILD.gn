@@ -11,7 +11,6 @@ content_shell_manifest =
     "$target_gen_dir/content_shell_manifest/AndroidManifest.xml"
 
 generate_jni("content_shell_jni_headers") {
-  jni_package = "content/shell"
   sources = [
     "java/src/org/chromium/content_shell/Shell.java",
     "java/src/org/chromium/content_shell/ShellManager.java",
@@ -172,7 +171,7 @@ android_apk("content_shell_apk") {
     "//base:base_java_test_support",
     "//components/crash/android:java",
     "//content/public/android:content_java",
-    "//content/public/test/android:web_test_java_support",
+    "//content/public/test/android:android_test_message_pump_support_java",
     "//media/capture/video/android:capture_java",
     "//net/android:net_java",
     "//services/shape_detection:shape_detection_java",
@@ -228,6 +227,12 @@ instrumentation_test_apk("content_shell_test_apk") {
   enable_multidex = false
   shared_libraries = [ ":libcontent_native_test" ]
   android_manifest = "javatests/AndroidManifest.xml"
+
+  if (enable_chrome_android_internal) {
+    data_deps = [
+      "//clank/build/bot/filters:content_shell_test_apk_filters",
+    ]
+  }
 }
 
 if (current_cpu != "x64") {
@@ -323,7 +328,6 @@ if (current_cpu != "x64") {
 
   generate_jni("linker_test_jni_headers") {
     testonly = true
-    jni_package = "content/shell"
     sources = [
       "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
     ]

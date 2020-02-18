@@ -4,14 +4,14 @@
 */
 'use strict';
 
-import DescribeRequest from './describe-request.js';
-import TestSuitesRequest from './test-suites-request.js';
-import TimeseriesDescriptor from './timeseries-descriptor.js';
-import findElements from './find-elements.js';
+import {DescribeRequest} from './describe-request.js';
 import {ENSURE, TOGGLE, UPDATE} from './simple-redux.js';
 import {STORE} from './element-base.js';
+import {TestSuitesRequest} from './test-suites-request.js';
+import {TimeseriesDescriptor} from './timeseries-descriptor.js';
 import {afterRender} from './utils.js';
 import {assert} from 'chai';
+import {findElements} from './find-elements.js';
 
 suite('timeseries-descriptor', function() {
   let originalFetch;
@@ -60,7 +60,7 @@ suite('timeseries-descriptor', function() {
     await afterRender();
 
     findElements(td, e =>
-      e.matches('cp-checkbox') && /suite_a/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /suite_a/.test(e.textContent))[0].click();
     await afterRender();
 
     assert.lengthOf(td.measurement.options, 3);
@@ -84,17 +84,17 @@ suite('timeseries-descriptor', function() {
     });
 
     findElements(td, e =>
-      e.matches('cp-checkbox') && /suite_a/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /suite_a/.test(e.textContent))[0].click();
     findElements(td, e =>
-      e.matches('cp-checkbox') && /suite_b/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /suite_b/.test(e.textContent))[0].click();
     await afterRender();
     findElements(td, e =>
-      e.matches('cp-checkbox') &&
+      e.matches('chops-checkbox') &&
       /measurement_a/.test(e.textContent))[0].click();
     findElements(td, e =>
-      e.matches('cp-checkbox') && /bot_a/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /bot_a/.test(e.textContent))[0].click();
     findElements(td, e =>
-      e.matches('cp-checkbox') && /bot_b/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /bot_b/.test(e.textContent))[0].click();
     await afterRender();
 
     assert.deepEqual([['suite_a', 'suite_b']], matrix.suites);
@@ -107,9 +107,9 @@ suite('timeseries-descriptor', function() {
     STORE.dispatch(TOGGLE('test.case.isAggregated'));
 
     findElements(td, e =>
-      e.matches('cp-checkbox') && /case_a/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /case_a/.test(e.textContent))[0].click();
     findElements(td, e =>
-      e.matches('cp-checkbox') && /case_b/.test(e.textContent))[0].click();
+      e.matches('chops-checkbox') && /case_b/.test(e.textContent))[0].click();
     await afterRender();
 
     assert.deepEqual([['suite_a'], ['suite_b']], matrix.suites);

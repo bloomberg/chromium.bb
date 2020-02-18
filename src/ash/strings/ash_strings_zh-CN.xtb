@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">协同运作可使您的各部设备更好地发挥作用</translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
+<translation id="1175572348579024023">滚动</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="119944043368869598">全部清除</translation>
-<translation id="123828989343052515">新桌面</translation>
 <translation id="1247372569136754018">麦克风（内部）</translation>
 <translation id="1252999807265626933">正在通过“<ph name="POWER_SOURCE" />”充电</translation>
 <translation id="1255033239764210633">天气怎么样？</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1761222317188459878">切换网络连接设置。<ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">向右滚动</translation>
 <translation id="1812997170047690955">我的屏幕上有什么内容？</translation>
+<translation id="1820355135508821526"><ph name="FEATURE_NAME" />已由应用于此设备的某个政策停用。如要更改，请与您的管理员联系。</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">设置语言</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">文字输入</translation>
 <translation id="1993072747612765854">详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新</translation>
 <translation id="1995660704900986789">关机</translation>
 <translation id="2012624427112548395">Ctrl+搜索键+H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2067602449040652523">键盘亮度</translation>
 <translation id="209965399369889474">未连接到网络</translation>
+<translation id="2126242104232412123">新桌面</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2135456203358955318">停靠的放大镜</translation>
 <translation id="2144487987174258011">请重新启动以更新 Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">无法在公用自助终端使用 Google 助理。</translation>
 <translation id="2575685495496069081">多帐号登录已被停用</translation>
 <translation id="2582112259361606227">重启以进行更新</translation>
-<translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
+<translation id="2651765386227849097">此设备已停用 Google 助理。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2658778018866295321">点击并拖动</translation>
 <translation id="2700493154570097719">设置键盘</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{已连接到 1 台设备}other{已连接到 # 台设备}}</translation>
 <translation id="3226991577105957773">+另外 <ph name="COUNT" /> 条</translation>
 <translation id="3236488194889173876">没有可用的移动网络</translation>
+<translation id="3249513730522716925">窗口“<ph name="WINDOW_TITLE" />”已由桌面 <ph name="ACTIVE_DESK" /> 移至桌面 <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">你能做些什么？</translation>
 <translation id="3294437725009624529">访客</translation>
 <translation id="3308453408813785101">日后“<ph name="USER_EMAIL_ADDRESS" />”仍能登录。</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
 <translation id="3576141592585647168">更改时区</translation>
 <translation id="3595596368722241419">电池已充满</translation>
+<translation id="3604801046548457007">已创建桌面“<ph name="DESK_TITILE" />”</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="3621202678540785336">输入</translation>
 <translation id="3626281679859535460">亮度</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">当前的电池电量为 <ph name="PERCENTAGE" />%，正在充电。</translation>
 <translation id="3995138139523574647">USB-C 设备（右侧后端端口）</translation>
 <translation id="4017989525502048489">激光笔</translation>
+<translation id="4021716437419160885">向下滚动</translation>
 <translation id="4042660782729322247">您正在共享屏幕</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{针对 1 个应用关闭}other{针对 # 个应用关闭}}</translation>
 <translation id="4072264167173457037">信号中等</translation>
@@ -220,8 +227,7 @@
 <translation id="4296136865091727875">清除所有 <ph name="COUNT" /> 条通知</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4321776623976362024">您按下了高对比度的键盘快捷键。要开启这项功能吗？</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">Chrome 操作系统</translation>
 <translation id="4338109981321384717">放大镜</translation>
 <translation id="4351433414020964307">智能助理正在加载中…</translation>
 <translation id="435527878592612277">选择您的照片</translation>
@@ -259,9 +265,11 @@
 <translation id="4895488851634969361">电池电量已满。</translation>
 <translation id="490375751687810070">纵向</translation>
 <translation id="4905614135390995787">用于切换高反差模式的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
+<translation id="490788395437447240">电池电量：<ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4924411785043111640">重启并重置</translation>
+<translation id="495046168593986294">向上滚动</translation>
 <translation id="4961318399572185831">投射屏幕</translation>
 <translation id="5030687792513154421">时间到</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />已连接到新手机</translation>
@@ -295,6 +303,7 @@
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5669267381087807207">正在激活</translation>
 <translation id="5673434351075758678">当系统同步完您的设置后，“<ph name="FROM_LOCALE" />”即会改为“<ph name="TO_LOCALE" />”。</translation>
+<translation id="5682642926269496722">当前用户帐号无法使用 Google 助理。</translation>
 <translation id="5691772641933328258">无法识别指纹</translation>
 <translation id="5710450975648804523">“请勿打扰”模式已开启</translation>
 <translation id="574392208103952083">中</translation>
@@ -319,6 +328,8 @@
 <translation id="598882571027504733">要想获取此项更新，请在已连接该键盘的情况下重新启动您的 Chromebook。</translation>
 <translation id="5992218262414051481">已启用高反差模式。再按一次 Ctrl+搜索键+H 组合键即可关闭此模式。</translation>
 <translation id="6018164090099858612">正在退出镜像模式</translation>
+<translation id="602001110135236999">向左滚动</translation>
+<translation id="6040143037577758943">关闭</translation>
 <translation id="6043212731627905357">该显示器与您的<ph name="DEVICE_TYPE" />不兼容（系统不支持该显示器）。</translation>
 <translation id="6043994281159824495">立即退出</translation>
 <translation id="6047696787498798094">切换到其他用户后将停止屏幕共享。要继续吗？</translation>
@@ -326,6 +337,7 @@
 <translation id="6064337552080329342">抱歉，系统无法验证您的密码。请重试。</translation>
 <translation id="607652042414456612">附近的蓝牙设备可检测到您的计算机（名称将显示为“<ph name="NAME" />”，地址为<ph name="ADDRESS" />）</translation>
 <translation id="6106745654298855237">正在为“<ph name="POWER_SOURCE" />”充电</translation>
+<translation id="612734058257491180">无法在访客会话中使用 Google 助理。</translation>
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL" /> 上查看该用户的设置和访问过的网站。</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -367,7 +379,9 @@
 <translation id="6713285437468012787">蓝牙设备“<ph name="DEVICE_NAME" />”已配对，现可供所有用户使用。您可以通过“设置”取消此配对。</translation>
 <translation id="6715542151869432661">找不到任何移动设备。</translation>
 <translation id="6723839937902243910">电源</translation>
+<translation id="6727969043791803658">已连接，剩余电量为 <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">已启用性能跟踪</translation>
+<translation id="6752912906630585008">桌面“<ph name="REMOVED_DESK" />”已移除并与桌面“<ph name="RECEIVE_DESK" />”合并</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
 <translation id="6820676911989879663">休息一下！</translation>
@@ -425,6 +439,7 @@
 <translation id="7692480393933218409">正在为已连接的 USB-C 设备充电</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 条通知}other{# 条通知}}</translation>
+<translation id="7749443890790263709">已达到桌面数量上限。</translation>
 <translation id="776344839111254542">点击即可查看相关更新的详情</translation>
 <translation id="7780159184141939021">旋转屏幕</translation>
 <translation id="7796353162336583443">点按任务栏中的触控笔按钮可开始记事、截取屏幕截图，以及使用 Google 助理、激光笔或放大镜。</translation>
@@ -468,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">创建记事</translation>
 <translation id="8375916635258623388">此<ph name="DEVICE_NAME" />将会自动连接到您的手机</translation>
+<translation id="8388750414311082622">无法移除最后一个桌面。</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
 <translation id="8394567579869570560">您的家长锁定了此设备</translation>
 <translation id="8406981827175133772">全屏放大镜</translation>
@@ -476,6 +492,7 @@
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433186206711564395">网络设置</translation>
 <translation id="8433977262951327081">用于在任务栏中显示输入法选项菜单气泡的快捷键已更改。请使用<ph name="NEW_SHORTCUT" />（而不是 <ph name="OLD_SHORTCUT" />）。</translation>
+<translation id="8444246603146515890">桌面 <ph name="DESK_TITILE" /> 已激活</translation>
 <translation id="8452135315243592079">缺少 SIM 卡</translation>
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
 <translation id="847056008324733326">显示比例设置</translation>

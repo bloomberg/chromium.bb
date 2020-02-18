@@ -36,16 +36,18 @@ WebAppDataRetriever::~WebAppDataRetriever() = default;
 void WebAppDataRetriever::GetWebApplicationInfo(
     content::WebContents* web_contents,
     GetWebApplicationInfoCallback callback) {
+  Observe(web_contents);
+
   // Concurrent calls are not allowed.
-  CHECK(!get_web_app_info_callback_);
+  DCHECK(!get_web_app_info_callback_);
   get_web_app_info_callback_ = std::move(callback);
 
   content::NavigationEntry* entry =
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(get_web_app_info_callback_), nullptr));
+        FROM_HERE, base::BindOnce(&WebAppDataRetriever::CallCallbackOnError,
+                                  weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -57,15 +59,15 @@ void WebAppDataRetriever::GetWebApplicationInfo(
   // the WebContents or the RenderFrameHost are destroyed and the connection
   // to ChromeRenderFrame is lost.
   chrome_render_frame.set_connection_error_handler(
-      base::BindOnce(&WebAppDataRetriever::OnGetWebApplicationInfoFailed,
+      base::BindOnce(&WebAppDataRetriever::CallCallbackOnError,
                      weak_ptr_factory_.GetWeakPtr()));
   // Bind the InterfacePtr into the callback so that it's kept alive
   // until there's either a connection error or a response.
   auto* web_app_info_proxy = chrome_render_frame.get();
-  web_app_info_proxy->GetWebApplicationInfo(base::BindOnce(
-      &WebAppDataRetriever::OnGetWebApplicationInfo,
-      weak_ptr_factory_.GetWeakPtr(), std::move(chrome_render_frame),
-      web_contents, entry->GetUniqueID()));
+  web_app_info_proxy->GetWebApplicationInfo(
+      base::BindOnce(&WebAppDataRetriever::OnGetWebApplicationInfo,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(chrome_render_frame), entry->GetUniqueID()));
 }
 
 void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
@@ -75,6 +77,12 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents);
   DCHECK(installable_manager);
+
+  Observe(web_contents);
+
+  // Concurrent calls are not allowed.
+  DCHECK(!check_installability_callback_);
+  check_installability_callback_ = std::move(callback);
 
   // TODO(crbug.com/829232) Unify with other calls to GetData.
   InstallableParams params;
@@ -86,9 +94,8 @@ void WebAppDataRetriever::CheckInstallabilityAndRetrieveManifest(
   params.has_worker = !bypass_service_worker_check;
   // Do not wait_for_worker. OnDidPerformInstallableCheck is always invoked.
   installable_manager->GetData(
-      params,
-      base::BindOnce(&WebAppDataRetriever::OnDidPerformInstallableCheck,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      params, base::BindOnce(&WebAppDataRetriever::OnDidPerformInstallableCheck,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
@@ -96,6 +103,12 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
                                    bool skip_page_favicons,
                                    WebappInstallSource install_source,
                                    GetIconsCallback callback) {
+  Observe(web_contents);
+
+  // Concurrent calls are not allowed.
+  CHECK(!get_icons_callback_);
+  get_icons_callback_ = std::move(callback);
+
   const char* https_status_code_class_histogram_name =
       install_source == WebappInstallSource::SYNC
           ? "WebApp.Icon.HttpStatusCodeClassOnSync"
@@ -105,7 +118,7 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
       web_contents, icon_urls, https_status_code_class_histogram_name,
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (skip_page_favicons)
     icon_downloader_->SkipPageFavicons();
@@ -113,13 +126,26 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
   icon_downloader_->Start();
 }
 
+void WebAppDataRetriever::WebContentsDestroyed() {
+  CallCallbackOnError();
+}
+
+void WebAppDataRetriever::RenderProcessGone(base::TerminationStatus status) {
+  CallCallbackOnError();
+}
+
 void WebAppDataRetriever::OnGetWebApplicationInfo(
     chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
-    content::WebContents* web_contents,
     int last_committed_nav_entry_unique_id,
     const WebApplicationInfo& web_app_info) {
+  if (ShouldStopRetrieval())
+    return;
+
+  content::WebContents* contents = web_contents();
+  Observe(nullptr);
+
   content::NavigationEntry* entry =
-      web_contents->GetController().GetLastCommittedEntry();
+      contents->GetController().GetLastCommittedEntry();
   if (!entry || last_committed_nav_entry_unique_id != entry->GetUniqueID()) {
     std::move(get_web_app_info_callback_).Run(nullptr);
     return;
@@ -127,43 +153,68 @@ void WebAppDataRetriever::OnGetWebApplicationInfo(
 
   auto info = std::make_unique<WebApplicationInfo>(web_app_info);
   if (info->app_url.is_empty())
-    info->app_url = web_contents->GetLastCommittedURL();
+    info->app_url = contents->GetLastCommittedURL();
 
   if (info->title.empty())
-    info->title = web_contents->GetTitle();
+    info->title = contents->GetTitle();
   if (info->title.empty())
     info->title = base::UTF8ToUTF16(info->app_url.spec());
 
   std::move(get_web_app_info_callback_).Run(std::move(info));
 }
 
-void WebAppDataRetriever::OnGetWebApplicationInfoFailed() {
-  std::move(get_web_app_info_callback_).Run(nullptr);
-}
-
 void WebAppDataRetriever::OnDidPerformInstallableCheck(
-    CheckInstallabilityCallback callback,
     const InstallableData& data) {
+  if (ShouldStopRetrieval())
+    return;
+
+  Observe(nullptr);
+
   DCHECK(data.manifest);
   DCHECK(data.manifest_url.is_valid() || data.manifest->IsEmpty());
 
   const bool is_installable = data.errors.empty();
 
-  std::move(callback).Run(*data.manifest, data.valid_manifest, is_installable);
+  std::move(check_installability_callback_)
+      .Run(*data.manifest, data.valid_manifest, is_installable);
 }
 
-void WebAppDataRetriever::OnIconsDownloaded(GetIconsCallback callback,
-                                            bool success,
+void WebAppDataRetriever::OnIconsDownloaded(bool success,
                                             const IconsMap& icons_map) {
+  if (ShouldStopRetrieval())
+    return;
+
+  Observe(nullptr);
+
   // |icons_map| is owned by |icon_downloader_|. Take a copy before destroying
-  // the downloader. Return empty |result_map| if the tab has navigated away
-  // during the icon download.
+  // the downloader. Return empty |result_map| if the web contents has navigated
+  // away during the icon download.
   IconsMap result_map;
   if (success)
     result_map = icons_map;
   icon_downloader_.reset();
 
-  std::move(callback).Run(std::move(result_map));
+  std::move(get_icons_callback_).Run(std::move(result_map));
+}
+
+void WebAppDataRetriever::CallCallbackOnError() {
+  Observe(nullptr);
+  DCHECK(ShouldStopRetrieval());
+
+  // Call a callback as a tail call. The callback may destroy |this|.
+  if (get_web_app_info_callback_) {
+    std::move(get_web_app_info_callback_).Run(nullptr);
+  } else if (check_installability_callback_) {
+    std::move(check_installability_callback_)
+        .Run(blink::Manifest{}, /*valid_manifest_for_web_app=*/false,
+             /*is_installable=*/false);
+  } else if (get_icons_callback_) {
+    std::move(get_icons_callback_).Run(IconsMap{});
+  }
+}
+
+bool WebAppDataRetriever::ShouldStopRetrieval() const {
+  return !web_contents();
 }
 
 }  // namespace web_app

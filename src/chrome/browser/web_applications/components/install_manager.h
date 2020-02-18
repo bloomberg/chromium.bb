@@ -26,7 +26,9 @@ namespace web_app {
 
 enum class InstallResultCode;
 class InstallManagerObserver;
-struct InstallOptions;
+class InstallFinalizer;
+class AppRegistrar;
+struct ExternalInstallOptions;
 
 // TODO(loyso): Rework this interface once BookmarkAppHelper erased. Unify the
 // API and merge similar InstallWebAppZZZZ functions. crbug.com/915043.
@@ -89,9 +91,10 @@ class InstallManager {
 
   // Starts a background web app installation process for a given
   // |web_contents|.
-  virtual void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                        const InstallOptions& install_options,
-                                        OnceInstallCallback callback) = 0;
+  virtual void InstallWebAppWithOptions(
+      content::WebContents* web_contents,
+      const ExternalInstallOptions& install_options,
+      OnceInstallCallback callback) = 0;
 
   // Starts background installation or an update of a web app from the sync
   // system. |web_application_info| contains received sync data. Icons will be
@@ -110,6 +113,8 @@ class InstallManager {
   explicit InstallManager(Profile* profile);
   virtual ~InstallManager();
 
+  void SetSubsystems(AppRegistrar* registrar, InstallFinalizer* finalizer);
+
   virtual void Shutdown();
 
   // Loads |web_app_url| in a new WebContents and determines if it is
@@ -123,10 +128,16 @@ class InstallManager {
 
  protected:
   Profile* profile() { return profile_; }
+  AppRegistrar* registrar() { return registrar_; }
+  InstallFinalizer* finalizer() { return finalizer_; }
 
  private:
   Profile* profile_;
   WebAppUrlLoader url_loader_;
+
+  AppRegistrar* registrar_ = nullptr;
+  InstallFinalizer* finalizer_ = nullptr;
+
   base::ObserverList<InstallManagerObserver, true /*check_empty*/> observers_;
 };
 

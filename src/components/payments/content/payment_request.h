@@ -88,6 +88,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // PaymentRequestState::Delegate:
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
+  void OnPaymentResponseError(const std::string& error_message) override;
   void OnShippingOptionIdSelected(std::string shipping_option_id) override;
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
@@ -114,12 +115,6 @@ class PaymentRequest : public mojom::PaymentRequest,
   void HideIfNecessary();
 
   bool IsIncognito() const;
-
-  // Allow to skip UI into payment handlers for such payment methods as
-  // "basic-card". Used only in tests.
-  void set_skip_ui_for_non_url_payment_method_identifiers_for_test() {
-    skip_ui_for_non_url_payment_method_identifiers_for_test_ = true;
-  }
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -161,7 +156,8 @@ class PaymentRequest : public mojom::PaymentRequest,
                                      bool has_enrolled_instrument);
 
   // The callback for PaymentRequestState::AreRequestedMethodsSupported.
-  void AreRequestedMethodsSupportedCallback(bool methods_supported);
+  void AreRequestedMethodsSupportedCallback(bool methods_supported,
+                                            const std::string& error_message);
 
   // Sends either HAS_ENROLLED_INSTRUMENT or HAS_NO_ENROLLED_INSTRUMENT to the
   // renderer, depending on |has_enrolled_instrument| value. Does not check
@@ -218,12 +214,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   // Whether PaymentRequest.show() has been called.
   bool is_show_called_ = false;
 
-  // Whether payment instruments for such payment methods as "basic-card" can
-  // skip UI for testing of the skip-UI flow. This is always false in
-  // production.
-  bool skip_ui_for_non_url_payment_method_identifiers_for_test_ = false;
+  // If not empty, use this error message for rejecting PaymentRequest.show().
+  std::string reject_show_error_message_;
 
-  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
+  base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

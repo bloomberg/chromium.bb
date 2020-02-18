@@ -95,9 +95,16 @@ std::string GetCrashKeyValue(const std::string& key_name) {
   return base::SysNSStringToUTF8(value);
 }
 
+void InitializeCrashKeysForTesting() {
+  [[BreakpadController sharedInstance] updateConfiguration:@{
+    @BREAKPAD_URL : @"http://breakpad.test"
+  }];
+  [[BreakpadController sharedInstance] start:YES];
+  InitializeCrashKeys();
+}
+
 void ResetCrashKeysForTesting() {
-  // There's no way to do this on iOS without tearing down the
-  // BreakpadController.
+  [[BreakpadController sharedInstance] stop];
 }
 
 }  // namespace crash_reporter

@@ -65,7 +65,7 @@ const char* SignalStrategyErrorToString(SignalStrategy::Error error) {
 }  // namespace
 
 FtlSignalingConnector::FtlSignalingConnector(
-    FtlSignalStrategy* signal_strategy,
+    SignalStrategy* signal_strategy,
     base::OnceClosure auth_failed_callback)
     : signal_strategy_(signal_strategy),
       auth_failed_callback_(std::move(auth_failed_callback)),
@@ -102,7 +102,9 @@ void FtlSignalingConnector::OnSignalStrategyStateChange(
     backoff_.InformOfRequest(false);
     if (signal_strategy_->IsSignInError() &&
         signal_strategy_->GetError() == SignalStrategy::AUTHENTICATION_FAILED) {
-      std::move(auth_failed_callback_).Run();
+      if (auth_failed_callback_) {
+        std::move(auth_failed_callback_).Run();
+      }
       return;
     }
     TryReconnect(backoff_.GetTimeUntilRelease());

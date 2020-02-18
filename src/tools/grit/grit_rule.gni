@@ -95,6 +95,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/gcc_toolchain.gni")  # For enable_resource_whitelist_generation
 import("//third_party/closure_compiler/closure_args.gni")
@@ -107,6 +108,13 @@ if (enable_resource_whitelist_generation) {
 }
 
 grit_defines = []
+
+if (is_mac || is_win || is_linux || is_ios) {
+  grit_defines += [
+    "-D",
+    "scale_factors=2x",
+  ]
+}
 
 # Mac and iOS want Title Case strings.
 use_titlecase_in_grd_files = is_mac || is_ios
@@ -137,8 +145,6 @@ if (is_chromeos) {
   grit_defines += [
     "-D",
     "chromeos",
-    "-D",
-    "scale_factors=2x",
   ]
 }
 
@@ -184,13 +190,6 @@ if (is_android) {
   ]
 }
 
-if (is_mac || is_ios) {
-  grit_defines += [
-    "-D",
-    "scale_factors=2x",
-  ]
-}
-
 # When cross-compiling, explicitly pass the target system to grit.
 if (current_toolchain != host_toolchain) {
   if (is_android) {
@@ -227,7 +226,7 @@ if (current_toolchain != host_toolchain) {
 
 # TODO(aberent): Enable for other platforms once the build machines have
 #                Java on them (and hence can run the closure compiler).
-_strip_resource_files = is_android
+_strip_resource_files = is_android && is_official_build
 _js_minifier = "//third_party/closure_compiler/js_minify.py"
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
@@ -350,6 +349,16 @@ template("grit") {
     depfile = "$depfile_dir/${grit_output_name}_stamp.d"
     outputs = [ "${depfile}.stamp" ] + grit_outputs + pak_info_outputs
 
+    brotli_target = "//third_party/brotli:brotli($host_toolchain)"
+
+    brotli_executable = get_label_info(brotli_target, "root_out_dir") + "/" +
+                        get_label_info(brotli_target, "name")
+    if (host_os == "win") {
+      brotli_executable += ".exe"
+    }
+
+    inputs += [ brotli_executable ]
+
     args = [
              "-i",
              source_path,
@@ -362,6 +371,8 @@ template("grit") {
              rebase_path(depfile, root_build_dir),
              "--write-only-new=1",
              "--depend-on-stamp",
+             "--brotli",
+             rebase_path(brotli_executable, root_build_dir),
            ] + grit_defines
 
     # Add extra defines with -D flags.
@@ -445,6 +456,11 @@ template("grit") {
     deps = [
       "//tools/grit:grit_sources",
     ]
+    if (is_mac && is_asan) {
+      deps += [ "//tools/grit:brotli_mac_asan_workaround" ]
+    } else {
+      deps += [ brotli_target ]
+    }
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -463,6 +479,7 @@ template("grit") {
     set_sources_assignment_filter([
                                     "*.json",
                                     "*.pak",
+                                    "*.xml",
                                   ])
     sources = grit_outputs
     set_sources_assignment_filter(sources_assignment_filter)

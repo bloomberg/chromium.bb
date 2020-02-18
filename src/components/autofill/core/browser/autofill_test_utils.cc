@@ -113,14 +113,16 @@ void CreateTestAddressFormData(FormData* form,
                                const char* unique_id) {
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
-  form->button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form->button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form->url = GURL("http://myform.com/form.html");
   form->action = GURL("http://myform.com/submit.html");
   form->main_frame_origin =
       url::Origin::Create(GURL("https://myform_root.com/form.html"));
   types->clear();
-  form->submission_event = SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+  form->submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
   FormFieldData field;
   ServerFieldTypeSet type_set;
@@ -394,6 +396,20 @@ CreditCard GetCreditCard2() {
   CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
   SetCreditCardInfo(&credit_card, "Someone Else", "378282246310005" /* AmEx */,
                     "07", "2022", "1");
+  return credit_card;
+}
+
+CreditCard GetExpiredCreditCard() {
+  CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  SetCreditCardInfo(&credit_card, "Test User", "4111111111111111" /* Visa */,
+                    "11", "2002", "1");
+  return credit_card;
+}
+
+CreditCard GetIncompleteCreditCard() {
+  CreditCard credit_card(base::GenerateGUID(), kEmptyOrigin);
+  SetCreditCardInfo(&credit_card, "", "4111111111111111" /* Visa */, "11",
+                    "2022", "1");
   return credit_card;
 }
 

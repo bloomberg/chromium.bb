@@ -96,7 +96,7 @@ void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
 
   effect->DisposeImageFilters();
 
-  FilterEffectSet& effect_references = this->EffectReferences(effect);
+  FilterEffectSet& effect_references = EffectReferences(effect);
   for (FilterEffect* effect_reference : effect_references)
     InvalidateDependentEffects(effect_reference);
 }
@@ -179,8 +179,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
     if (!element->IsFilterEffect())
       continue;
 
-    SVGFilterPrimitiveStandardAttributes& effect_element =
-        ToSVGFilterPrimitiveStandardAttributes(*element);
+    auto& effect_element = To<SVGFilterPrimitiveStandardAttributes>(*element);
     FilterEffect* effect = effect_element.Build(this, filter);
     if (!effect)
       continue;

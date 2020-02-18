@@ -164,7 +164,10 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   if (focused_id_ < 0) {
     if (root_id_ >= 0) {
       ArcAccessibilityInfoData* root = GetRoot();
-      if (root->IsNode()) {
+      // TODO (sarakato): Add proper fix once cause of invalid node is known.
+      if (!IsValid(root)) {
+        return;
+      } else if (root->IsNode()) {
         focused_id_ = root_id_;
       } else {
         std::vector<ArcAccessibilityInfoData*> children;
@@ -304,6 +307,10 @@ ArcAccessibilityInfoData* AXTreeSourceArc::GetParent(
   if (it != parent_map_.end())
     return GetFromId(it->second);
   return nullptr;
+}
+
+bool AXTreeSourceArc::IsIgnored(ArcAccessibilityInfoData* info_data) const {
+  return false;
 }
 
 bool AXTreeSourceArc::IsValid(ArcAccessibilityInfoData* info_data) const {

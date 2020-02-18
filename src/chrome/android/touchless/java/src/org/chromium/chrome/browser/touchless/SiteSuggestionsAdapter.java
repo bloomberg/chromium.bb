@@ -21,10 +21,10 @@ import android.view.ContextMenu;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.modelutil.ForwardingListObservable;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -182,7 +182,6 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                     (view)
                             -> mNavDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, UrlConstants.EXPLORE_URL));
-            tile.setContentDescription(tile.getResources().getString(R.string.ntp_all_apps));
             ContextMenuManager.registerViewForTouchlessContextMenu(
                     tile, new ContextMenuManager.EmptyDelegate() {
                         @Override
@@ -190,6 +189,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                             return menuItemId == ContextMenuManager.ContextMenuItemId.SEARCH;
                         }
                     });
+            tile.setContentDescription(tile.getResources().getString(R.string.ntp_all_apps));
         } else if (holder.getItemViewType() == ViewType.SUGGESTION_TYPE) {
             // If site suggestion, attach context menu handler; clicks navigate to site url.
             int itemCount = mModel.get(ITEM_COUNT_KEY);

@@ -14,7 +14,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/download/local_media_data_source_factory.h"
 #include "content/public/browser/android/gpu_video_accelerator_factories_provider.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "media/base/overlay_info.h"
 #include "media/base/video_thumbnail_decoder.h"
 #include "media/mojo/clients/mojo_video_decoder.h"
@@ -24,7 +24,7 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -74,7 +74,6 @@ void DownloadMediaParser::Start(ParseCompleteCB parse_complete_cb) {
       FROM_HERE, kTimeOut,
       base::BindOnce(&DownloadMediaParser::OnError, weak_factory_.GetWeakPtr(),
                      MediaParserEvent::kTimeout));
-  start_time_ = base::Time::Now();
 
   // Only process media mime types.
   if (!IsSupportedMediaMimeType(mime_type_)) {
@@ -97,8 +96,7 @@ void DownloadMediaParser::OnReadFileSize(int64_t file_size) {
   }
 
   size_ = file_size;
-  RetrieveMediaParser(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  RetrieveMediaParser(content::GetSystemConnector());
 }
 
 void DownloadMediaParser::OnMediaParserCreated() {
@@ -269,9 +267,8 @@ DownloadMediaParser::GetMediaInterfaceFactory() {
     media_interface_provider_ = std::make_unique<media::MediaInterfaceProvider>(
         mojo::MakeRequest(&interfaces));
     media::mojom::MediaServicePtr media_service;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(media::mojom::kMediaServiceName, &media_service);
+    content::GetSystemConnector()->BindInterface(
+        media::mojom::kMediaServiceName, &media_service);
     media_service->CreateInterfaceFactory(
         MakeRequest(&media_interface_factory_), std::move(interfaces));
     media_interface_factory_.set_connection_error_handler(
@@ -298,7 +295,6 @@ void DownloadMediaParser::NotifyComplete(SkBitmap bitmap) {
   DCHECK(metadata_);
   DCHECK(parse_complete_cb_);
   RecordMediaParserEvent(MediaParserEvent::kSuccess);
-  RecordMediaParserCompletionTime(base::Time::Now() - start_time_);
   std::move(parse_complete_cb_)
       .Run(true, std::move(metadata_), std::move(bitmap));
 }

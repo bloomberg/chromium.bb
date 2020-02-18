@@ -34,7 +34,7 @@ ScriptPromise WorkerInternalsFetch::getResourcePriority(
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  KURL resource_url = url_test_helpers::ToKURL(url.Utf8().data());
+  KURL resource_url = url_test_helpers::ToKURL(url.Utf8());
   DCHECK(worker_global);
 
   auto callback = WTF::Bind(&WorkerInternalsFetch::ResolveResourcePriority,

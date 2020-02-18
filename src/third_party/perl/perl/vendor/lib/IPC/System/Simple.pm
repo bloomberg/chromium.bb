@@ -1,5 +1,7 @@
 package IPC::System::Simple;
 
+# ABSTRACT: Run commands simply, with detailed diagnostics
+
 use 5.006;
 use strict;
 use warnings;
@@ -84,7 +86,7 @@ our @EXPORT_OK = qw(
     $EXITVAL EXIT_ANY
 );
 
-our $VERSION = '1.21';
+our $VERSION = '1.25'; # VERSION : From dzil
 our $EXITVAL = -1;
 
 my @Signal_from_number = split(' ', $Config{sig_name});
@@ -98,7 +100,7 @@ if (VMS) {
 	push(@Check_tainted_env, 'DCL$PATH');
 }
 
-# Not all systems implment the WIFEXITED calls, but POSIX
+# Not all systems implement the WIFEXITED calls, but POSIX
 # will always export them (even if they're just stubs that
 # die with an error).  Test for the presence of a working
 # WIFEXITED and friends, or define our own.
@@ -167,8 +169,11 @@ sub run {
 	# We're throwing our own exception on command not found, so
 	# we don't need a warning from Perl.
 
-	no warnings 'exec';		## no critic
-	CORE::system($command,@args);
+        {
+            # silence 'Statement unlikely to be reached' warning
+            no warnings 'exec';             ## no critic
+            CORE::system($command,@args);
+        }
 
 	return _process_child_error($?,$command,$valid_returns);
 }
@@ -640,7 +645,7 @@ you can just write:
 
     use IPC::System::Simple qw(system);
 
-and all of your C<system> commands will either succeeed (run to
+and all of your C<system> commands will either succeed (run to
 completion and return a zero exit value), or die with rich diagnostic
 messages.
 
@@ -847,7 +852,7 @@ value of the process:
 
 =head3 $EXITVAL
 
-The exit value of any command exeucted by C<IPC::System::Simple>
+The exit value of any command executed by C<IPC::System::Simple>
 can always be retrieved from the C<$IPC::System::Simple::EXITVAL>
 variable:
 
@@ -909,7 +914,7 @@ The command was killed by a signal.  The name of the signal
 will be reported, or C<UNKNOWN> if it cannot be determined.  The
 signal number is always reported.  If we detected that the
 process dumped core, then the string C<and dumped core> is
-appeneded.
+appended.
 
 =item IPC::System::Simple::%s called with no arguments
 
@@ -991,7 +996,7 @@ running, you are informed of exactly which datais
 
 =item Exceptions on failure
 
-C<IPC::System::Simple> takes an agressive approach to error handling.
+C<IPC::System::Simple> takes an aggressive approach to error handling.
 Rather than allow commands to fail silently, exceptions are thrown
 when unexpected results are seen.  This allows for easy development
 using a try/catch style, and avoids the possibility of accidently
@@ -1024,7 +1029,7 @@ if you need it, or consider using the L<autodie> module to replace
 C<system> with lexical scope.
 
 Core dumps are only checked for when a process dies due to a
-signal.  It is not believed thare exist any systems where processes
+signal.  It is not believed there are any systems where processes
 can dump core without dying to a signal.
 
 C<WIFSTOPPED> status is not checked, as perl never spawns processes
@@ -1050,7 +1055,7 @@ L<http://rt.cpan.org/Public/Dist/Display.html?Name=IPC-System-Simple> .
 Please check to see if your bug has already been reported; if
 in doubt, report yours anyway.
 
-Submitting a patch and/or failing test case will greatly expediate
+Submitting a patch and/or failing test case will greatly expedite
 the fixing of bugs.
 
 =head1 FEEDBACK
@@ -1082,5 +1087,7 @@ Copyright (C) 2006-2008 by Paul Fenwick
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.6.0 or,
 at your option, any later version of Perl 5 you may have available.
+
+=for Pod::Coverage WCOREDUMP
 
 =cut

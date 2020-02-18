@@ -44,6 +44,7 @@ enum {
   S_FORMAT_RGB_YCBCR_422_CHROMIUM,
   S_FORMAT_COMPRESSED,
   S_FORMAT_RGB10_A2,
+  S_FORMAT_RGB_YCBCR_P010_CHROMIUM,
   NUM_S_FORMAT
 };
 
@@ -189,6 +190,9 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
     case GL_RGB10_A2:
       sourceFormatIndex = S_FORMAT_RGB10_A2;
       break;
+    case GL_RGB_YCBCR_P010_CHROMIUM:
+      sourceFormatIndex = S_FORMAT_RGB_YCBCR_P010_CHROMIUM;
+      break;
     default:
       NOTREACHED() << "Invalid source format "
                    << gl::GLEnums::GetStringEnum(source_format);
@@ -301,10 +305,11 @@ ShaderId GetFragmentShaderId(bool premultiply_alpha,
 
 const char* kShaderPrecisionPreamble =
     "#ifdef GL_ES\n"
-    "precision mediump float;\n"
     "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+    "precision highp float;\n"
     "#define TexCoordPrecision highp\n"
     "#else\n"
+    "precision mediump float;\n"
     "#define TexCoordPrecision mediump\n"
     "#endif\n"
     "#else\n"

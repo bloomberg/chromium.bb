@@ -263,7 +263,8 @@ class CONTENT_EXPORT ServiceWorkerStorage
   int64_t NewVersionId();
 
   // Returns a new resource id which is guaranteed to be unique in the storage.
-  // Returns kInvalidServiceWorkerResourceId if the storage is disabled.
+  // Returns ServiceWorkerConsts::kInvalidServiceWorkerResourceId if the storage
+  // is disabled.
   int64_t NewResourceId();
 
   // Intended for use only by ServiceWorkerRegisterJob and
@@ -286,7 +287,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   // the uncommitted resource keys.
   void PurgeResources(const ResourceList& resources);
 
-  bool LazyInitializeForTest(base::OnceClosure callback);
+  void LazyInitializeForTest(base::OnceClosure callback);
 
  private:
   friend class service_worker_storage_unittest::ServiceWorkerStorageTest;
@@ -614,7 +615,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   bool is_purge_pending_;
   bool has_checked_for_stale_resources_;
 
-  base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_;
+  base::WeakPtrFactory<ServiceWorkerStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStorage);
 };

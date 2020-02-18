@@ -9,9 +9,11 @@ from __future__ import print_function
 
 import os
 
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.lib import toolchain
@@ -26,7 +28,10 @@ class SysrootLibTest(cros_test_lib.MockTempDirTestCase):
     # SudoRunCommand.
     self.PatchObject(os, 'getuid', return_value=0)
     self.PatchObject(os, 'geteuid', return_value=0)
-    self.sysroot = sysroot_lib.Sysroot(self.tempdir)
+    sysroot_path = os.path.join(self.tempdir, 'sysroot')
+    osutils.SafeMakedirs(sysroot_path)
+    self.sysroot = sysroot_lib.Sysroot(sysroot_path)
+    self.relative_sysroot = sysroot_lib.Sysroot('sysroot')
 
   def testGetStandardField(self):
     """Tests that standard field can be fetched correctly."""
@@ -87,6 +92,17 @@ baz
 
     dne_sysroot = sysroot_lib.Sysroot(os.path.join(self.tempdir, 'DNE'))
     self.assertFalse(dne_sysroot.Exists())
+
+  def testExistsInChroot(self):
+    """Test the Exists method with a chroot."""
+    chroot = chroot_lib.Chroot(self.tempdir)
+    self.assertTrue(self.relative_sysroot.Exists(chroot=chroot))
+
+  def testEquals(self):
+    """Sanity check for the __eq__ methods."""
+    sysroot1 = sysroot_lib.Sysroot(self.tempdir)
+    sysroot2 = sysroot_lib.Sysroot(self.tempdir)
+    self.assertEqual(sysroot1, sysroot2)
 
 
 class SysrootLibInstallConfigTest(cros_test_lib.MockTempDirTestCase):

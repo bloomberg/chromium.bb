@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/payments/content/icon/icon_size.h"
+#include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/url_util.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -63,7 +64,7 @@ class ReadOnlyOriginView : public views::View {
     SkColor foreground = color_utils::GetColorWithMaxContrast(background_color);
     views::GridLayout* title_origin_layout =
         title_origin_container->SetLayoutManager(
-            std::make_unique<views::GridLayout>(title_origin_container.get()));
+            std::make_unique<views::GridLayout>());
 
     views::ColumnSet* columns = title_origin_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1.0,
@@ -82,12 +83,12 @@ class ReadOnlyOriginView : public views::View {
       // contrast into account.
       title_label->SetAutoColorReadabilityEnabled(false);
       title_label->SetEnabledColor(foreground);
-      title_origin_layout->AddView(title_label.release());
+      title_origin_layout->AddView(std::move(title_label));
     }
 
     title_origin_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    views::Label* origin_label =
-        new views::Label(base::UTF8ToUTF16(origin.host()));
+    auto origin_label =
+        std::make_unique<views::Label>(base::UTF8ToUTF16(origin.host()));
     origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
@@ -104,10 +105,10 @@ class ReadOnlyOriginView : public views::View {
     origin_label->SetEnabledColor(foreground);
 
     origin_label->SetBackgroundColor(background_color);
-    title_origin_layout->AddView(origin_label);
+    title_origin_layout->AddView(std::move(origin_label));
 
     views::GridLayout* top_level_layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+        SetLayoutManager(std::make_unique<views::GridLayout>());
     views::ColumnSet* top_level_columns = top_level_layout->AddColumnSet(0);
     top_level_columns->AddColumn(views::GridLayout::LEADING,
                                  views::GridLayout::CENTER, 1.0,
@@ -129,7 +130,7 @@ class ReadOnlyOriginView : public views::View {
     }
 
     top_level_layout->StartRow(views::GridLayout::kFixedSize, 0);
-    top_level_layout->AddView(title_origin_container.release());
+    top_level_layout->AddView(std::move(title_origin_container));
     if (has_icon) {
       std::unique_ptr<views::ImageView> instrument_icon_view =
           CreateInstrumentIconView(/*icon_id=*/0, icon_image_skia,
@@ -139,7 +140,7 @@ class ReadOnlyOriginView : public views::View {
       instrument_icon_view->SetImageSize(gfx::Size(
           adjusted_width,
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
-      top_level_layout->AddView(instrument_icon_view.release());
+      top_level_layout->AddView(std::move(instrument_icon_view));
     }
   }
   ~ReadOnlyOriginView() override {}
@@ -223,11 +224,13 @@ bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
 }
 
 std::unique_ptr<views::View>
-PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
+PaymentHandlerWebFlowViewController::CreateHeaderContentView(
+    views::View* header_view) {
   const GURL origin = web_contents()
                           ? web_contents()->GetVisibleURL().GetOrigin()
                           : target_.GetOrigin();
-  std::unique_ptr<views::Background> background = GetHeaderBackground();
+  std::unique_ptr<views::Background> background =
+      GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents(), https_prefix_), origin,
       state()->selected_instrument()->icon_image_skia(),
@@ -242,9 +245,10 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentSeparatorView() {
 }
 
 std::unique_ptr<views::Background>
-PaymentHandlerWebFlowViewController::GetHeaderBackground() {
+PaymentHandlerWebFlowViewController::GetHeaderBackground(
+    views::View* header_view) {
   auto default_header_background =
-      PaymentRequestSheetController::GetHeaderBackground();
+      PaymentRequestSheetController::GetHeaderBackground(header_view);
   if (web_contents()) {
     return views::CreateSolidBackground(color_utils::GetResultingPaintColor(
         web_contents()->GetThemeColor().value_or(SK_ColorTRANSPARENT),
@@ -287,9 +291,6 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
     content::WebContents* source) {
   DCHECK(source == web_contents());
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(source)) {
-    log_.Error("Aborting payment handler window \"" + target_.spec() +
-               "\" because of insecure certificate state on \"" +
-               source->GetVisibleURL().spec() + "\"");
     AbortPayment();
   }
 }
@@ -322,14 +323,14 @@ void PaymentHandlerWebFlowViewController::AddNewContents(
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!is_active())
+    return;
+
   if (navigation_handle->IsSameDocument())
     return;
 
   if (!SslValidityChecker::IsValidPageInPaymentHandlerWindow(
           navigation_handle->GetWebContents())) {
-    log_.Error("Aborting payment handler window \"" + target_.spec() +
-               "\" because of navigation to an insecure url \"" +
-               navigation_handle->GetURL().spec() + "\"");
     AbortPayment();
     return;
   }
@@ -350,9 +351,6 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
 }
 
 void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
-  log_.Error("Aborting payment handler window \"" + target_.spec() +
-             "\" because of navigation to a page with invalid certificate "
-             "state or malicious content.");
   AbortPayment();
 }
 
@@ -360,7 +358,7 @@ void PaymentHandlerWebFlowViewController::AbortPayment() {
   if (web_contents())
     web_contents()->Close();
 
-  dialog()->ShowErrorMessage();
+  state()->OnPaymentResponseError(errors::kPaymentHandlerInsecureNavigation);
 }
 
 }  // namespace payments

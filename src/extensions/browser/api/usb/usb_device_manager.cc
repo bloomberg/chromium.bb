@@ -11,7 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/common/api/usb.h"
@@ -81,9 +81,7 @@ void UsbDeviceManager::Observer::OnDeviceRemoved(
 void UsbDeviceManager::Observer::OnDeviceManagerConnectionError() {}
 
 UsbDeviceManager::UsbDeviceManager(content::BrowserContext* browser_context)
-    : browser_context_(browser_context),
-      client_binding_(this),
-      weak_factory_(this) {
+    : browser_context_(browser_context), client_binding_(this) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (event_router) {
     event_router->RegisterObserver(this, usb::OnDeviceAdded::kEventName);
@@ -194,10 +192,8 @@ void UsbDeviceManager::EnsureConnectionWithDeviceManager() {
 
   // Request UsbDeviceManagerPtr from DeviceService.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(device::mojom::kServiceName,
-                      mojo::MakeRequest(&device_manager_));
+  content::GetSystemConnector()->BindInterface(
+      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
 
   SetUpDeviceManagerConnection();
 }
@@ -225,7 +221,7 @@ void UsbDeviceManager::OnDeviceAdded(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(!base::ContainsKey(devices_, device_info->guid));
+  DCHECK(!base::Contains(devices_, device_info->guid));
   std::string guid = device_info->guid;
   auto result =
       devices_.insert(std::make_pair(std::move(guid), std::move(device_info)));
@@ -242,7 +238,7 @@ void UsbDeviceManager::OnDeviceRemoved(
     device::mojom::UsbDeviceInfoPtr device_info) {
   DCHECK(device_info);
   // Update the device list.
-  DCHECK(base::ContainsKey(devices_, device_info->guid));
+  DCHECK(base::Contains(devices_, device_info->guid));
   devices_.erase(device_info->guid);
 
   DispatchEvent(usb::OnDeviceRemoved::kEventName, *device_info);

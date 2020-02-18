@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_reader.h"
 #include "third_party/blink/renderer/core/streams/stream_algorithms.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
+#include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
@@ -25,17 +25,11 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
-
-struct ReadableStreamNative::PipeOptions {
-  PipeOptions() = default;
-  bool prevent_close = false;
-  bool prevent_abort = false;
-  bool prevent_cancel = false;
-};
 
 // PipeToEngine implements PipeTo(). All standard steps in this class come from
 // https://streams.spec.whatwg.org/#readable-stream-pipe-to
@@ -1053,8 +1047,7 @@ ReadableStreamNative* ReadableStreamNative::Create(
   //    sizeAlgorithm).
   ReadableStreamDefaultController::SetUp(
       script_state, stream, controller, start_algorithm, pull_algorithm,
-      cancel_algorithm, high_water_mark, size_algorithm, false,
-      exception_state);
+      cancel_algorithm, high_water_mark, size_algorithm, exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -1065,14 +1058,12 @@ ReadableStreamNative* ReadableStreamNative::Create(
 
 ReadableStreamNative::ReadableStreamNative() = default;
 
-// TODO(ricea): Remove |enable_blink_lock_notifications| once
-// blink::ReadableStreamOperations has been updated to use CreateReadableStream.
 ReadableStreamNative::ReadableStreamNative(ScriptState* script_state,
                                            ScriptValue raw_underlying_source,
                                            ScriptValue raw_strategy,
-                                           bool enable_blink_lock_notifications,
+                                           bool created_by_ua,
                                            ExceptionState& exception_state) {
-  if (!enable_blink_lock_notifications) {
+  if (!created_by_ua) {
     // TODO(ricea): Move this to IDL once blink::ReadableStreamOperations is
     // no longer using the public constructor.
     UseCounter::Count(ExecutionContext::From(script_state),
@@ -1157,7 +1148,7 @@ ReadableStreamNative::ReadableStreamNative(ScriptState* script_state,
   //  (this, underlyingSource, highWaterMark, sizeAlgorithm).
   ReadableStreamDefaultController::SetUpFromUnderlyingSource(
       script_state, this, underlying_source, high_water_mark, size_algorithm,
-      enable_blink_lock_notifications, exception_state);
+      exception_state);
 }
 
 ReadableStreamNative::~ReadableStreamNative() = default;
@@ -1394,7 +1385,43 @@ void ReadableStreamNative::LockAndDisturb(ScriptState* script_state,
 void ReadableStreamNative::Serialize(ScriptState* script_state,
                                      MessagePort* port,
                                      ExceptionState& exception_state) {
-  // TODO(ricea): Implement this.
+  if (IsLocked(this)) {
+    exception_state.ThrowTypeError("Cannot transfer a locked stream");
+    return;
+  }
+
+  auto* writable =
+      CreateCrossRealmTransformWritable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return;
+  }
+
+  auto promise = PipeTo(script_state, this, writable, PipeOptions());
+  promise.MarkAsHandled();
+}
+
+ReadableStreamNative* ReadableStreamNative::Deserialize(
+    ScriptState* script_state,
+    MessagePort* port,
+    ExceptionState& exception_state) {
+  // We need to execute JavaScript to call "Then" on v8::Promises. We will not
+  // run author code.
+  v8::Isolate::AllowJavascriptExecutionScope allow_js(
+      script_state->GetIsolate());
+  auto* readable =
+      CreateCrossRealmTransformReadable(script_state, port, exception_state);
+  if (exception_state.HadException()) {
+    return nullptr;
+  }
+  return readable;
+}
+
+ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
+                                           ReadableStreamNative* readable,
+                                           WritableStreamNative* destination,
+                                           PipeOptions pipe_options) {
+  auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
+  return engine->Start(readable, destination);
 }
 
 v8::Local<v8::Value> ReadableStreamNative::GetStoredError(
@@ -1407,14 +1434,6 @@ void ReadableStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(reader_);
   visitor->Trace(stored_error_);
   ReadableStream::Trace(visitor);
-}
-
-ScriptPromise ReadableStreamNative::PipeTo(ScriptState* script_state,
-                                           ReadableStreamNative* readable,
-                                           WritableStreamNative* destination,
-                                           PipeOptions pipe_options) {
-  auto* engine = MakeGarbageCollected<PipeToEngine>(script_state, pipe_options);
-  return engine->Start(readable, destination);
 }
 
 //

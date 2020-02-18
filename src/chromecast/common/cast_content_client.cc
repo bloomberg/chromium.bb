@@ -30,9 +30,7 @@
 #if !defined(OS_FUCHSIA)
 #include "base/no_destructor.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"  // nogncheck
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
 namespace chromecast {
@@ -115,28 +113,22 @@ void CastContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #endif
 }
 
-base::string16 CastContentClient::GetLocalizedString(int message_id) const {
+base::string16 CastContentClient::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 
 base::StringPiece CastContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
-base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
-    int resource_id) const {
-  return ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceBytes(
-      resource_id);
-}
-
-bool CastContentClient::IsDataResourceGzipped(int resource_id) const {
+bool CastContentClient::IsDataResourceGzipped(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
-gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
@@ -147,17 +139,16 @@ gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
 }
 #endif  // OS_ANDROID
 
-void CastContentClient::OnServiceManagerConnected(
-    content::ServiceManagerConnection* connection) {
+void CastContentClient::BindChildProcessInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* receiving_handle) {
 #if !defined(OS_FUCHSIA)
   static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
-
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
-                          base::Unretained(profiling_client.get())));
-  connection->AddConnectionFilter(
-      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
+  if (interface_name == heap_profiling::ProfilingClient::Name_) {
+    profiling_client->BindToInterface(
+        mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>(
+            std::move(*receiving_handle)));
+  }
 #endif  // !defined(OS_FUCHSIA)
 }
 

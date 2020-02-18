@@ -8,72 +8,76 @@ use Scalar::Util;
 
 sub init
 {
-	my $self = shift;
+  my $self = shift;
 
-	# get them all into [$name,@args] => $value format
-	my @methods;
-	while (@_)
-	{
-		my $name = shift;
-		my $value = shift;
-		push(@methods,
-			[
-				ref($name) ? $name : [ $name ],
-				$value
-			]
-		);
-	}
-	$self->{methods} = \@methods;
+  # get them all into [$name,@args] => $value format
+  my @methods;
+  while (@_)
+  {
+    my $name = shift;
+    my $value = shift;
+    push(@methods,
+      [
+        ref($name) ? $name : [ $name ],
+        $value
+      ]
+    );
+  }
+  $self->{methods} = \@methods;
 }
 
 sub descend
 {
-	my $self = shift;
-	my $got = shift;
+  my $self = shift;
+  my $got = shift;
 
-	my $data = $self->data;
+  my $data = $self->data;
 
-	foreach my $method (@{$self->{methods}})
-	{
-		$data->{method} = $method;
+  foreach my $method (@{$self->{methods}})
+  {
+    $data->{method} = $method;
 
-		my ($call, $exp_res) = @$method;
-		my ($name) = @$call;
+    my ($call, $exp_res) = @$method;
+    my ($name, @args) = @$call;
 
-		my $got_res = Scalar::Util::blessed($got) && $got->can($name) ?
-			$self->call_method($got, $call) :
-			$Test::Deep::DNE;
+    local $@;
 
-		next if Test::Deep::descend($got_res, $exp_res);
+    my $got_res;
+    if (! eval { $got_res = $self->call_method($got, $call); 1 }) {
+      die $@ unless $@ =~ /\ACan't locate object method "\Q$name"/;
+      $got_res = $Test::Deep::DNE;
+    }
 
-		return 0;
-	}
+    next if Test::Deep::descend($got_res, $exp_res);
 
-	return 1;
+    return 0;
+  }
+
+  return 1;
 }
 
 sub call_method
 {
-	my $self = shift;
-	my ($got, $call) = @_;
-	my ($name, @args) = @$call;
+  my $self = shift;
+  my ($got, $call) = @_;
+  my ($name, @args) = @$call;
 
-	return $got->$name(@args);
+  return $got->$name(@args);
 }
 
 sub render_stack
 {
-	my $self = shift;
-	my ($var, $data) = @_;
+  my $self = shift;
+  my ($var, $data) = @_;
 
-	my $method = $data->{method};
-	my ($call, $expect) = @$method;
-	my ($name, @args) = @$call;
+  my $method = $data->{method};
+  my ($call, $expect) = @$method;
+  my ($name, @args) = @$call;
 
-	my $args = @args ? "(".join(", ", @args).")" : "";
-	$var .= "->$name$args";
+  my $args = @args ? "(".join(", ", @args).")" : "";
+  $var .= "->$name$args";
 
-	return $var;
+  return $var;
 }
 
 1;

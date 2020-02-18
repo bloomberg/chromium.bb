@@ -67,13 +67,13 @@ CPDF_Dictionary* LoadFontDesc(CPDF_Document* pDoc,
   pFontDesc->SetNewFor<CPDF_Name>("Type", "FontDescriptor");
   pFontDesc->SetNewFor<CPDF_Name>("FontName", font_name);
   int flags = 0;
-  if (FXFT_Is_Face_fixedwidth(pFont->GetFace()))
+  if (FXFT_Is_Face_fixedwidth(pFont->GetFaceRec()))
     flags |= FXFONT_FIXED_PITCH;
   if (font_name.Contains("Serif"))
     flags |= FXFONT_SERIF;
-  if (FXFT_Is_Face_Italic(pFont->GetFace()))
+  if (FXFT_Is_Face_Italic(pFont->GetFaceRec()))
     flags |= FXFONT_ITALIC;
-  if (FXFT_Is_Face_Bold(pFont->GetFace()))
+  if (FXFT_Is_Face_Bold(pFont->GetFaceRec()))
     flags |= FXFONT_BOLD;
 
   // TODO(npm): How do I know if a  font is symbolic, script, allcap, smallcap
@@ -275,7 +275,8 @@ CPDF_Font* LoadSimpleFont(CPDF_Document* pDoc,
   pFontDict->SetNewFor<CPDF_Name>("BaseFont", name);
 
   uint32_t dwGlyphIndex;
-  uint32_t dwCurrentChar = FXFT_Get_First_Char(pFont->GetFace(), &dwGlyphIndex);
+  uint32_t dwCurrentChar =
+      FT_Get_First_Char(pFont->GetFaceRec(), &dwGlyphIndex);
   static constexpr uint32_t kMaxSimpleFontChar = 0xFF;
   if (dwCurrentChar > kMaxSimpleFontChar || dwGlyphIndex == 0)
     return nullptr;
@@ -288,7 +289,7 @@ CPDF_Font* LoadSimpleFont(CPDF_Document* pDoc,
                  static_cast<uint32_t>(std::numeric_limits<int>::max()));
     widthsArray->AddNew<CPDF_Number>(static_cast<int>(width));
     uint32_t nextChar =
-        FXFT_Get_Next_Char(pFont->GetFace(), dwCurrentChar, &dwGlyphIndex);
+        FT_Get_Next_Char(pFont->GetFaceRec(), dwCurrentChar, &dwGlyphIndex);
     // Simple fonts have 1-byte charcodes only.
     if (nextChar > kMaxSimpleFontChar || dwGlyphIndex == 0)
       break;
@@ -305,7 +306,7 @@ CPDF_Font* LoadSimpleFont(CPDF_Document* pDoc,
 
   pFontDict->SetNewFor<CPDF_Reference>("FontDescriptor", pDoc,
                                        pFontDesc->GetObjNum());
-  return pDoc->LoadFont(pFontDict);
+  return CPDF_DocPageData::FromDocument(pDoc)->GetFont(pFontDict);
 }
 
 CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
@@ -346,7 +347,8 @@ CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
                                       pFontDesc->GetObjNum());
 
   uint32_t dwGlyphIndex;
-  uint32_t dwCurrentChar = FXFT_Get_First_Char(pFont->GetFace(), &dwGlyphIndex);
+  uint32_t dwCurrentChar =
+      FT_Get_First_Char(pFont->GetFaceRec(), &dwGlyphIndex);
   static constexpr uint32_t kMaxUnicode = 0x10FFFF;
   // If it doesn't have a single char, just fail
   if (dwGlyphIndex == 0 || dwCurrentChar > kMaxUnicode)
@@ -362,7 +364,7 @@ CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
       widths[dwGlyphIndex] = pFont->GetGlyphWidth(dwGlyphIndex);
     to_unicode[dwGlyphIndex] = dwCurrentChar;
     dwCurrentChar =
-        FXFT_Get_Next_Char(pFont->GetFace(), dwCurrentChar, &dwGlyphIndex);
+        FT_Get_Next_Char(pFont->GetFaceRec(), dwCurrentChar, &dwGlyphIndex);
     if (dwGlyphIndex == 0)
       break;
   }
@@ -375,7 +377,7 @@ CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
       auto oneW = pdfium::MakeRetain<CPDF_Array>();
       oneW->AddNew<CPDF_Number>(w);
       widthsArray->AddNew<CPDF_Number>(ch);
-      widthsArray->Add(std::move(oneW));
+      widthsArray->Add(oneW);
       break;
     }
     ++it;
@@ -412,7 +414,7 @@ CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
       ++it;
       curWidthArray->AddNew<CPDF_Number>(static_cast<int>(it->second));
     }
-    widthsArray->Add(std::move(curWidthArray));
+    widthsArray->Add(curWidthArray);
   }
   pCIDFont->SetNewFor<CPDF_Reference>("W", pDoc, widthsArray->GetObjNum());
 
@@ -424,7 +426,7 @@ CPDF_Font* LoadCompositeFont(CPDF_Document* pDoc,
   CPDF_Stream* toUnicodeStream = LoadUnicode(pDoc, to_unicode);
   pFontDict->SetNewFor<CPDF_Reference>("ToUnicode", pDoc,
                                        toUnicodeStream->GetObjNum());
-  return pDoc->LoadFont(pFontDict);
+  return CPDF_DocPageData::FromDocument(pDoc)->GetFont(pFontDict);
 }
 
 CPDF_TextObject* CPDFTextObjectFromFPDFPageObject(FPDF_PAGEOBJECT page_object) {
@@ -577,7 +579,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDFFont_Close(FPDF_FONT font) {
   if (!pDoc)
     return;
 
-  CPDF_DocPageData* pPageData = pDoc->GetPageData();
+  auto* pPageData = CPDF_DocPageData::FromDocument(pDoc);
   if (!pPageData->IsForceClear())
     pPageData->ReleaseFont(pFont->GetFontDict());
 }
@@ -592,7 +594,8 @@ FPDFPageObj_CreateTextObj(FPDF_DOCUMENT document,
     return nullptr;
 
   auto pTextObj = pdfium::MakeUnique<CPDF_TextObject>();
-  pTextObj->m_TextState.SetFont(pDoc->LoadFont(pFont->GetFontDict()));
+  pTextObj->m_TextState.SetFont(
+      CPDF_DocPageData::FromDocument(pDoc)->GetFont(pFont->GetFontDict()));
   pTextObj->m_TextState.SetFontSize(font_size);
   pTextObj->DefaultStates();
   return FPDFPageObjectFromCPDFPageObject(pTextObj.release());

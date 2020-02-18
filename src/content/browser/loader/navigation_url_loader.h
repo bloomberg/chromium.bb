@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
 
@@ -21,6 +22,7 @@ class HttpRequestHeaders;
 namespace content {
 
 class AppCacheNavigationHandle;
+class BrowserContext;
 class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
@@ -45,6 +47,7 @@ class CONTENT_EXPORT NavigationURLLoader {
   // structure. Information like has_user_gesture and
   // should_replace_current_entry shouldn't be needed at this layer.
   static std::unique_ptr<NavigationURLLoader> Create(
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
@@ -53,7 +56,9 @@ class CONTENT_EXPORT NavigationURLLoader {
       AppCacheNavigationHandle* appcache_handle,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      NavigationURLLoaderDelegate* delegate);
+      NavigationURLLoaderDelegate* delegate,
+      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+          initial_interceptors = {});
 
   // For testing purposes; sets the factory for use in testing.
   static void SetFactoryForTesting(NavigationURLLoaderFactory* factory);

@@ -8,11 +8,10 @@ include_rules = [
   "+components/sync/protocol",
   "+components/sync_preferences",
   "+components/variations",
+  "+crypto", # For sha256
   "+google", # For third_party/protobuf.
-  "+jni",
   "+third_party/dom_distiller_js",
   "+third_party/re2",
-  "+third_party/zlib/google",
   "+net/base",
   "+net/http",
   "+net/traffic_annotation",

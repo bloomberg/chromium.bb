@@ -41,6 +41,7 @@ class Sample;
 namespace content {
 
 class BrowserAccessibilityManager;
+class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
 class RenderViewHostDelegateView;
@@ -323,6 +324,14 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns an object that will override handling of Text Input and Mouse
   // Lock events from the renderer.
   virtual InputEventShim* GetInputEventShim() const;
+
+  // Notifies all renderers in a page about changes to the size of the visible
+  // viewport.
+  virtual void NotifyVisibleViewportSizeChanged(
+      const gfx::Size& visible_viewport_size) {}
+
+  // Returns the focused frame across all delegates, or nullptr if none.
+  virtual RenderFrameHostImpl* GetFocusedFrameFromFocusedDelegate();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

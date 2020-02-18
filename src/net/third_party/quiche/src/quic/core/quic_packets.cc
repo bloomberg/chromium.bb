@@ -13,6 +13,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_text_utils.h"
 
 namespace quic {
@@ -27,13 +28,23 @@ QuicConnectionId GetServerConnectionIdAsRecipient(
   return header.source_connection_id;
 }
 
+QuicConnectionId GetClientConnectionIdAsRecipient(
+    const QuicPacketHeader& header,
+    Perspective perspective) {
+  DCHECK(GetQuicRestartFlag(quic_do_not_override_connection_id));
+  if (perspective == Perspective::IS_CLIENT) {
+    return header.destination_connection_id;
+  }
+  return header.source_connection_id;
+}
+
 QuicConnectionId GetServerConnectionIdAsSender(const QuicPacketHeader& header,
                                                Perspective perspective) {
   if (perspective == Perspective::IS_CLIENT ||
       !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
     return header.destination_connection_id;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 3, 5);
+  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 3, 7);
   return header.source_connection_id;
 }
 
@@ -44,8 +55,18 @@ QuicConnectionIdIncluded GetServerConnectionIdIncludedAsSender(
       !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
     return header.destination_connection_id_included;
   }
-  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 4, 5);
+  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 4, 7);
   return header.source_connection_id_included;
+}
+
+QuicConnectionId GetClientConnectionIdAsSender(const QuicPacketHeader& header,
+                                               Perspective perspective) {
+  if (perspective == Perspective::IS_CLIENT ||
+      !GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+    return header.source_connection_id;
+  }
+  QUIC_RESTART_FLAG_COUNT_N(quic_do_not_override_connection_id, 7, 7);
+  return header.destination_connection_id;
 }
 
 QuicConnectionIdIncluded GetClientConnectionIdIncludedAsSender(
@@ -101,16 +122,28 @@ size_t GetPacketHeaderSize(
     QuicVariableLengthIntegerLength retry_token_length_length,
     QuicByteCount retry_token_length,
     QuicVariableLengthIntegerLength length_length) {
-  if (version > QUIC_VERSION_43) {
+  if (VersionHasIetfInvariantHeader(version)) {
     if (include_version) {
       // Long header.
-      return kPacketHeaderTypeSize + kConnectionIdLengthSize +
-             destination_connection_id_length + source_connection_id_length +
-             (version > QUIC_VERSION_44 ? packet_number_length
-                                        : PACKET_4BYTE_PACKET_NUMBER) +
-             kQuicVersionSize +
-             (include_diversification_nonce ? kDiversificationNonceSize : 0) +
-             retry_token_length_length + retry_token_length + length_length;
+      size_t size = kPacketHeaderTypeSize + kConnectionIdLengthSize +
+                    destination_connection_id_length +
+                    source_connection_id_length +
+                    (version > QUIC_VERSION_44 ? packet_number_length
+                                               : PACKET_4BYTE_PACKET_NUMBER) +
+                    kQuicVersionSize;
+      if (include_diversification_nonce) {
+        size += kDiversificationNonceSize;
+      }
+      DCHECK(QuicVersionHasLongHeaderLengths(version) ||
+             !GetQuicReloadableFlag(quic_fix_get_packet_header_size) ||
+             retry_token_length_length + retry_token_length + length_length ==
+                 0);
+      if (QuicVersionHasLongHeaderLengths(version) ||
+          !GetQuicReloadableFlag(quic_fix_get_packet_header_size)) {
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_fix_get_packet_header_size, 1, 3);
+        size += retry_token_length_length + retry_token_length + length_length;
+      }
+      return size;
     }
     // Short header.
     return kPacketHeaderTypeSize + destination_connection_id_length +
@@ -280,7 +313,7 @@ QuicPacket::QuicPacket(
       retry_token_length_(retry_token_length),
       length_length_(length_length) {}
 
-QuicPacket::QuicPacket(QuicTransportVersion version,
+QuicPacket::QuicPacket(QuicTransportVersion /*version*/,
                        char* buffer,
                        size_t length,
                        bool owns_buffer,
@@ -465,6 +498,43 @@ char* CopyBuffer(const SerializedPacket& packet) {
   char* dst_buffer = new char[packet.encrypted_length];
   memcpy(dst_buffer, packet.encrypted_buffer, packet.encrypted_length);
   return dst_buffer;
+}
+
+ReceivedPacketInfo::ReceivedPacketInfo(const QuicSocketAddress& self_address,
+                                       const QuicSocketAddress& peer_address,
+                                       const QuicReceivedPacket& packet)
+    : self_address(self_address),
+      peer_address(peer_address),
+      packet(packet),
+      form(GOOGLE_QUIC_PACKET),
+      version_flag(false),
+      version_label(0),
+      version(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+      destination_connection_id(EmptyQuicConnectionId()),
+      source_connection_id(EmptyQuicConnectionId()) {}
+
+ReceivedPacketInfo::~ReceivedPacketInfo() {}
+
+std::string ReceivedPacketInfo::ToString() const {
+  std::string output =
+      QuicStrCat("{ self_address: ", self_address.ToString(),
+                 ", peer_address: ", peer_address.ToString(),
+                 ", packet_length: ", packet.length(),
+                 ", header_format: ", form, ", version_flag: ", version_flag);
+  if (version_flag) {
+    QuicStrAppend(&output, ", version: ", ParsedQuicVersionToString(version));
+  }
+  QuicStrAppend(
+      &output,
+      ", destination_connection_id: ", destination_connection_id.ToString(),
+      ", source_connection_id: ", source_connection_id.ToString(), " }\n");
+  return output;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const ReceivedPacketInfo& packet_info) {
+  os << packet_info.ToString();
+  return os;
 }
 
 }  // namespace quic

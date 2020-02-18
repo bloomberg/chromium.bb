@@ -10,6 +10,7 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTypes.h"
 #include "modules/skottie/include/Skottie.h"
+#include "modules/sksg/include/SkSGInvalidationController.h"
 #include "src/core/SkMakeUnique.h"
 
 #include <string>
@@ -48,8 +49,9 @@ public:
     }
 
     sk_sp<skottie::ImageAsset> loadImageAsset(const char[] /* path */,
-                                              const char name[]) const override {
-        // For CK/Skottie we ignore paths and identify images based solely on name.
+                                              const char name[],
+                                              const char[] /* id */) const override {
+        // For CK/Skottie we ignore paths & IDs, and identify images based solely on name.
         if (auto data = this->findAsset(name)) {
             return skottie_utils::MultiFrameImageAsset::Make(std::move(data), true /* predecode */);
         }
@@ -99,7 +101,12 @@ public:
     // skottie::Animation API
     void render(SkCanvas* canvas) const { fAnimation->render(canvas, nullptr); }
     void render(SkCanvas* canvas, const SkRect& dst) const { fAnimation->render(canvas, &dst); }
-    void seek(SkScalar t) { fAnimation->seek(t); }
+    // Returns a damage rect.
+    SkRect seek(SkScalar t) {
+        sksg::InvalidationController ic;
+        fAnimation->seek(t, &ic);
+        return ic.bounds();
+    }
     SkScalar duration() const { return fAnimation->duration(); }
     const SkSize&      size() const { return fAnimation->size(); }
     std::string version() const { return std::string(fAnimation->version().c_str()); }
@@ -173,7 +180,9 @@ EMSCRIPTEN_BINDINGS(Skottie) {
         }))
         .function("size", &skottie::Animation::size)
         .function("duration", &skottie::Animation::duration)
-        .function("seek", &skottie::Animation::seek)
+        .function("seek", optional_override([](skottie::Animation& self, SkScalar t)->void {
+            self.seek(t);
+        }))
         .function("render", optional_override([](skottie::Animation& self, SkCanvas* canvas)->void {
             self.render(canvas, nullptr);
         }), allow_raw_pointers())

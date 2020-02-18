@@ -96,7 +96,7 @@ def _collect_net_io_duplex_counters():
 def _net_io_iter():
   """Generate network IO information."""
   nics = psutil.net_io_counters(pernic=True)
-  for nic, counters in nics.iteritems():
+  for nic, counters in nics.items():
     if _is_virtual_netif(nic):
       continue
     yield nic, counters
@@ -112,7 +112,7 @@ _net_if_metrics = (
 
 def _collect_net_if_stats():
   """Collect metrics for network interface stats."""
-  for nic, stats in psutil.net_if_stats().iteritems():
+  for nic, stats in psutil.net_if_stats().items():
     if _is_virtual_netif(nic):
       continue
     fields = {'interface': nic}
@@ -132,7 +132,7 @@ _family_field_strings = {
 
 def _collect_net_if_addrs():
   """Collects network addresses as metrics."""
-  for nic, addresses in psutil.net_if_addrs().iteritems():
+  for nic, addresses in psutil.net_if_addrs().items():
     if _is_virtual_netif(nic):
       continue
     for address in addresses:

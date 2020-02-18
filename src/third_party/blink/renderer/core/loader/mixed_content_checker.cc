@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
@@ -52,6 +51,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -300,8 +300,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetch(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure %s '%s'. %s",
-      main_resource_url.ElidedString().Utf8().data(),
-      RequestContextName(request_context), url.ElidedString().Utf8().data(),
+      main_resource_url.ElidedString().Utf8().c_str(),
+      RequestContextName(request_context), url.ElidedString().Utf8().c_str(),
       allowed ? "This content should also be served over HTTPS."
               : "This request has been blocked; the content must be served "
                 "over HTTPS.");
@@ -549,8 +549,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutWebSocket(
   String message = String::Format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted to "
       "connect to the insecure WebSocket endpoint '%s'. %s",
-      main_resource_url.ElidedString().Utf8().data(),
-      url.ElidedString().Utf8().data(),
+      main_resource_url.ElidedString().Utf8().c_str(),
+      url.ElidedString().Utf8().c_str(),
       allowed ? "This endpoint should be available via WSS. Insecure access is "
                 "deprecated."
               : "This request has been blocked; this endpoint must be "
@@ -656,8 +656,8 @@ bool MixedContentChecker::IsMixedFormAction(
         "Mixed Content: The page at '%s' was loaded over a secure connection, "
         "but contains a form that targets an insecure endpoint '%s'. This "
         "endpoint should be made available over a secure connection.",
-        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().data(),
-        url.ElidedString().Utf8().data());
+        MainResourceUrlForFrame(mixed_frame).ElidedString().Utf8().c_str(),
+        url.ElidedString().Utf8().c_str());
     frame->GetDocument()->AddConsoleMessage(
         ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                mojom::ConsoleMessageLevel::kWarning, message));
@@ -675,7 +675,7 @@ bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
     return false;
   }
 
-  std::string autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
+  auto autoupgrade_mode = base::GetFieldTrialParamValueByFeature(
       blink::features::kMixedContentAutoupgrade,
       blink::features::kMixedContentAutoupgradeModeParamName);
 
@@ -774,8 +774,8 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
       "automatically upgraded to HTTPS, For more information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",
-      main_resource_url.ElidedString().Utf8().data(),
-      mixed_content_url.ElidedString().Utf8().data());
+      main_resource_url.ElidedString().Utf8().c_str(),
+      mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }
@@ -792,8 +792,8 @@ MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
       "information see "
       "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
       "autoupgrade-mixed.md",
-      main_resource_url.ElidedString().Utf8().data(),
-      mixed_content_url.ElidedString().Utf8().data());
+      main_resource_url.ElidedString().Utf8().c_str(),
+      mixed_content_url.ElidedString().Utf8().c_str());
   return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }

@@ -123,7 +123,7 @@ void DialActivityManager::AddActivity(const DialActivity& activity) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   MediaRoute::Id route_id = activity.route.media_route_id();
-  DCHECK(!base::ContainsKey(records_, route_id));
+  DCHECK(!base::Contains(records_, route_id));
   // TODO(https://crbug.com/816628): Consider adding a timeout for transitioning
   // to kLaunched state to clean up unresponsive launches.
   records_.emplace(route_id,

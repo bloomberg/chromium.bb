@@ -14,7 +14,7 @@
 #include "modules/skottie/include/Skottie.h"
 #include "modules/skottie/utils/SkottieUtils.h"
 #include "src/utils/SkOSPath.h"
-#include "tools/timer/AnimTimer.h"
+#include "tools/timer/TimeUtils.h"
 
 #include <cmath>
 
@@ -104,7 +104,6 @@ void SkottieSlide::load(SkScalar w, SkScalar h) {
     fTimeBase       = 0; // force a time reset
 
     if (fAnimation) {
-        fAnimation->setShowInval(fShowAnimationInval);
         SkDebugf("Loaded Bodymovin animation v: %s, size: [%f %f]\n",
                  fAnimation->version().c_str(),
                  fAnimation->size().width(),
@@ -133,19 +132,39 @@ void SkottieSlide::draw(SkCanvas* canvas) {
         if (fShowAnimationStats) {
             draw_stats_box(canvas, fAnimationStats);
         }
+        if (fShowAnimationInval) {
+            const auto t = SkMatrix::MakeRectToRect(SkRect::MakeSize(fAnimation->size()),
+                                                    dstR,
+                                                    SkMatrix::kCenter_ScaleToFit);
+            SkPaint fill, stroke;
+            fill.setAntiAlias(true);
+            fill.setColor(0x40ff0000);
+            stroke.setAntiAlias(true);
+            stroke.setColor(0xffff0000);
+            stroke.setStyle(SkPaint::kStroke_Style);
+
+            for (const auto& r : fInvalController) {
+                SkRect bounds;
+                t.mapRect(&bounds, r);
+                canvas->drawRect(bounds, fill);
+                canvas->drawRect(bounds, stroke);
+            }
+        }
     }
 }
 
-bool SkottieSlide::animate(const AnimTimer& timer) {
+bool SkottieSlide::animate(double nanos) {
+    SkMSec msec = TimeUtils::NanosToMSec(nanos);
     if (fTimeBase == 0) {
         // Reset the animation time.
-        fTimeBase = timer.msec();
+        fTimeBase = msec;
     }
 
     if (fAnimation) {
-        const auto t = timer.msec() - fTimeBase;
+        fInvalController.reset();
+        const auto t = msec - fTimeBase;
         const auto d = fAnimation->duration() * 1000;
-        fAnimation->seek(std::fmod(t, d) / d);
+        fAnimation->seek(std::fmod(t, d) / d, &fInvalController);
     }
     return true;
 }
@@ -162,12 +181,11 @@ bool SkottieSlide::onChar(SkUnichar c) {
     return INHERITED::onChar(c);
 }
 
-bool SkottieSlide::onMouse(SkScalar x, SkScalar y, sk_app::Window::InputState state, uint32_t) {
+bool SkottieSlide::onMouse(SkScalar x, SkScalar y, InputState state, ModifierKey) {
     switch (state) {
-    case sk_app::Window::kUp_InputState:
+    case InputState::kUp:
         fShowAnimationInval = !fShowAnimationInval;
         fShowAnimationStats = !fShowAnimationStats;
-        fAnimation->setShowInval(fShowAnimationInval);
         break;
     default:
         break;

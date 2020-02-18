@@ -3,7 +3,7 @@ package Socket;
 use strict;
 { use 5.006001; }
 
-our $VERSION = '2.001';
+our $VERSION = '2.029';
 
 =head1 NAME
 
@@ -87,6 +87,13 @@ functions as sockaddr_family().
 Socket type constants to use as the second argument to socket(), or the value
 of the C<SO_TYPE> socket option.
 
+=head2 SOCK_NONBLOCK. SOCK_CLOEXEC
+
+Linux-specific shortcuts to specify the C<O_NONBLOCK> and C<FD_CLOEXEC> flags
+during a C<socket(2)> call.
+
+ socket( my $sockh, PF_INET, SOCK_DGRAM|SOCK_NONBLOCK, 0 )
+
 =head2 SOL_SOCKET
 
 Socket option level constant for setsockopt() and getsockopt().
@@ -100,6 +107,14 @@ C<SOL_SOCKET> level.
 
 Socket option name constants for IPv4 socket options at the C<IPPROTO_IP>
 level.
+
+=head2 IP_PMTUDISC_WANT, IP_PMTUDISC_DONT, ...
+
+Socket option value contants for C<IP_MTU_DISCOVER> socket option.
+
+=head2 IPTOS_LOWDELAY, IPTOS_THROUGHPUT, IPTOS_RELIABILITY, ...
+
+Socket option value constants for C<IP_TOS> socket option.
 
 =head2 MSG_BCAST, MSG_OOB, MSG_TRUNC, ...
 
@@ -169,6 +184,9 @@ arguments packed in and C<AF_INET> filled in. For Internet domain sockets,
 this structure is normally what you need for the arguments in bind(),
 connect(), and send().
 
+An undefined $port argument is taken as zero; an undefined $ip_address is
+considered a fatal error.
+
 =head2 ($port, $ip_address) = unpack_sockaddr_in $sockaddr
 
 Takes a C<sockaddr_in> structure (as returned by pack_sockaddr_in(),
@@ -176,6 +194,8 @@ getpeername() or recv()). Returns a list of two elements: the port and an
 opaque string representing the IP address (you can use inet_ntoa() to convert
 the address to the four-dotted numeric format). Will croak if the structure
 does not represent an C<AF_INET> address.
+
+In scalar context will return just the IP address.
 
 =head2 $sockaddr = sockaddr_in $port, $ip_address
 
@@ -196,6 +216,9 @@ inet_pton()), optionally a scope ID number, and optionally a flow label
 number. Returns the C<sockaddr_in6> structure with those arguments packed in
 and C<AF_INET6> filled in. IPv6 equivalent of pack_sockaddr_in().
 
+An undefined $port argument is taken as zero; an undefined $ip6_address is
+considered a fatal error.
+
 =head2 ($port, $ip6_address, $scope_id, $flowinfo) = unpack_sockaddr_in6 $sockaddr
 
 Takes a C<sockaddr_in6> structure. Returns a list of four elements: the port
@@ -203,6 +226,8 @@ number, an opaque string representing the IPv6 address, the scope ID, and the
 flow label. (You can use inet_ntop() to convert the address to the usual
 string format). Will croak if the structure does not represent an C<AF_INET6>
 address.
+
+In scalar context will return just the IP address.
 
 =head2 $sockaddr = sockaddr_in6 $port, $ip6_address, [$scope_id, [$flowinfo]]
 
@@ -241,13 +266,37 @@ pack_sockaddr_un() or unpack_sockaddr_un() explicitly.
 
 These are only supported if your system has E<lt>F<sys/un.h>E<gt>.
 
-=head2 $ipv6_mreq = pack_ipv6_mreq $ip6_address, $ifindex
+=head2 $ip_mreq = pack_ip_mreq $multiaddr, $interface
 
-Takes an IPv6 address and an interface number. Returns the C<ipv6_mreq>
-structure with those arguments packed in. Suitable for use with the
-C<IPV6_ADD_MEMBERSHIP> and C<IPV6_DROP_MEMBERSHIP> sockopts.
+Takes an IPv4 multicast address and optionally an interface address (or
+C<INADDR_ANY>). Returns the C<ip_mreq> structure with those arguments packed
+in. Suitable for use with the C<IP_ADD_MEMBERSHIP> and C<IP_DROP_MEMBERSHIP>
+sockopts.
 
-=head2 ($ip6_address, $ifindex) = unpack_ipv6_mreq $ipv6_mreq
+=head2 ($multiaddr, $interface) = unpack_ip_mreq $ip_mreq
+
+Takes an C<ip_mreq> structure. Returns a list of two elements; the IPv4
+multicast address and interface address.
+
+=head2 $ip_mreq_source = pack_ip_mreq_source $multiaddr, $source, $interface
+
+Takes an IPv4 multicast address, source address, and optionally an interface
+address (or C<INADDR_ANY>). Returns the C<ip_mreq_source> structure with those
+arguments packed in. Suitable for use with the C<IP_ADD_SOURCE_MEMBERSHIP>
+and C<IP_DROP_SOURCE_MEMBERSHIP> sockopts.
+
+=head2 ($multiaddr, $source, $interface) = unpack_ip_mreq_source $ip_mreq
+
+Takes an C<ip_mreq_source> structure. Returns a list of three elements; the
+IPv4 multicast address, source address and interface address.
+
+=head2 $ipv6_mreq = pack_ipv6_mreq $multiaddr6, $ifindex
+
+Takes an IPv6 multicast address and an interface number. Returns the
+C<ipv6_mreq> structure with those arguments packed in. Suitable for use with
+the C<IPV6_ADD_MEMBERSHIP> and C<IPV6_DROP_MEMBERSHIP> sockopts.
+
+=head2 ($multiaddr6, $ifindex) = unpack_ipv6_mreq $ipv6_mreq
 
 Takes an C<ipv6_mreq> structure. Returns a list of two elements; the IPv6
 address and an interface number.
@@ -345,7 +394,7 @@ Restrict to only generating addresses for this protocol
 The return value will be a list; the first value being an error indication,
 followed by a list of address structures (if no error occurred).
 
-The error value will be a dualvar; comparable to the C<EI_*> error constants,
+The error value will be a dualvar; comparable to the C<EAI_*> error constants,
 or printable as a human-readable error message string. If no error occurred it
 will be zero numerically and an empty string.
 
@@ -413,7 +462,7 @@ constants, or defaults to 0 if unspecified.
 The return value will be a list; the first value being an error condition,
 followed by the hostname and service name.
 
-The error value will be a dualvar; comparable to the C<EI_*> error constants,
+The error value will be a dualvar; comparable to the C<EAI_*> error constants,
 or printable as a human-readable error message string. The host and service
 names will be plain strings.
 
@@ -543,8 +592,8 @@ service on the named host.
  print <$sock>;
 
 Because a list of potential candidates is returned, the C<while> loop tries
-each in turn until it it finds one that succeeds both the socket() and
-connect() calls.
+each in turn until it finds one that succeeds both the socket() and connect()
+calls.
 
 This function performs the work of the legacy functions gethostbyname(),
 getservbyname(), inet_aton() and pack_sockaddr_in().
@@ -683,11 +732,11 @@ our @EXPORT = qw(
 	SO_SECURITY_ENCRYPTION_TRANSPORT SO_SNDBUF SO_SNDLOWAT SO_SNDTIMEO
 	SO_STATE SO_TYPE SO_USELOOPBACK SO_XOPEN SO_XSE
 
-	IP_OPTIONS IP_HDRINCL IP_TOS IP_TTL IP_RECVOPTS IP_RECVRETOPTS
-	IP_RETOPTS
+	IP_HDRINCL IP_OPTIONS IP_RECVOPTS IP_RECVRETOPTS IP_RETOPTS IP_TOS
+	IP_TTL
 
 	MSG_BCAST MSG_BTAG MSG_CTLFLAGS MSG_CTLIGNORE MSG_CTRUNC MSG_DONTROUTE
-	MSG_DONTWAIT MSG_EOF MSG_EOR MSG_ERRQUEUE MSG_ETAG MSG_FIN
+	MSG_DONTWAIT MSG_EOF MSG_EOR MSG_ERRQUEUE MSG_ETAG MSG_FASTOPEN MSG_FIN
 	MSG_MAXIOVLEN MSG_MCAST MSG_NOSIGNAL MSG_OOB MSG_PEEK MSG_PROXY MSG_RST
 	MSG_SYN MSG_TRUNC MSG_URG MSG_WAITALL MSG_WIRE
 
@@ -715,19 +764,38 @@ our @EXPORT = qw(
 our @EXPORT_OK = qw(
 	CR LF CRLF $CR $LF $CRLF
 
-	IPPROTO_IP IPPROTO_IPV6 IPPROTO_RAW IPPROTO_ICMP IPPROTO_TCP
-	IPPROTO_UDP
+	SOCK_NONBLOCK SOCK_CLOEXEC
 
-	TCP_CONGESTION TCP_CORK TCP_DEFER_ACCEPT TCP_INFO TCP_KEEPALIVE
-	TCP_KEEPCNT TCP_KEEPIDLE TCP_KEEPINTVL TCP_LINGER2 TCP_MAXRT TCP_MAXSEG
-	TCP_MD5SIG TCP_NODELAY TCP_QUICKACK TCP_STDURG TCP_SYNCNT
-	TCP_WINDOW_CLAMP 
+	IP_ADD_MEMBERSHIP IP_ADD_SOURCE_MEMBERSHIP IP_BIND_ADDRESS_NO_PORT
+	IP_DROP_MEMBERSHIP IP_DROP_SOURCE_MEMBERSHIP IP_FREEBIND
+	IP_MULTICAST_ALL IP_MULTICAST_IF IP_MULTICAST_LOOP IP_MULTICAST_TTL
+	IP_MTU IP_MTU_DISCOVER IP_NODEFRAG IP_RECVERR IP_TRANSPARENT
+
+	IPPROTO_IP IPPROTO_IPV6 IPPROTO_RAW IPPROTO_ICMP IPPROTO_IGMP
+	IPPROTO_TCP IPPROTO_UDP IPPROTO_GRE IPPROTO_ESP IPPROTO_AH
+	IPPROTO_ICMPV6 IPPROTO_SCTP
+
+	IP_PMTUDISC_DO IP_PMTUDISC_DONT IP_PMTUDISC_PROBE IP_PMTUDISC_WANT
+
+	IPTOS_LOWDELAY IPTOS_THROUGHPUT IPTOS_RELIABILITY IPTOS_MINCOST
+
+	TCP_CONGESTION TCP_CONNECTIONTIMEOUT TCP_CORK TCP_DEFER_ACCEPT
+	TCP_FASTOPEN TCP_INFO TCP_INIT_CWND TCP_KEEPALIVE TCP_KEEPCNT
+	TCP_KEEPIDLE TCP_KEEPINTVL TCP_LINGER2 TCP_MAXRT TCP_MAXSEG
+	TCP_MD5SIG TCP_NODELAY TCP_NOOPT TCP_NOPUSH TCP_QUICKACK
+	TCP_SACK_ENABLE TCP_STDURG TCP_SYNCNT TCP_USER_TIMEOUT
+	TCP_WINDOW_CLAMP
 
 	IN6ADDR_ANY IN6ADDR_LOOPBACK
 
-	IPV6_ADD_MEMBERSHIP IPV6_DROP_MEMBERSHIP IPV6_MTU IPV6_MTU_DISCOVER
-	IPV6_MULTICAST_HOPS IPV6_MULTICAST_IF IPV6_MULTICAST_LOOP
+	IPV6_ADDRFROM IPV6_ADD_MEMBERSHIP IPV6_DROP_MEMBERSHIP IPV6_JOIN_GROUP
+	IPV6_LEAVE_GROUP IPV6_MTU IPV6_MTU_DISCOVER IPV6_MULTICAST_HOPS
+	IPV6_MULTICAST_IF IPV6_MULTICAST_LOOP IPV6_RECVERR IPV6_ROUTER_ALERT
 	IPV6_UNICAST_HOPS IPV6_V6ONLY
+
+	SO_LOCK_FILTER SO_RCVBUFFORCE SO_SNDBUFFORCE
+
+	pack_ip_mreq unpack_ip_mreq pack_ip_mreq_source unpack_ip_mreq_source
 
 	pack_ipv6_mreq unpack_ipv6_mreq
 
@@ -885,7 +953,7 @@ if( defined &getaddrinfo ) {
 # family
 
 # Borrowed from Regexp::Common::net
-my $REGEXP_IPv4_DECIMAL = qr/25[0-5]|2[0-4][0-9]|1?[0-9][0-9]{1,2}/;
+my $REGEXP_IPv4_DECIMAL = qr/25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}/;
 my $REGEXP_IPv4_DOTTEDQUAD = qr/$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL\.$REGEXP_IPv4_DECIMAL/;
 
 sub fake_makeerr
@@ -948,7 +1016,7 @@ sub fake_getaddrinfo
     my @ports; # Actually ARRAYrefs of [ socktype, protocol, port ]
     my $protname = "";
     if( $protocol ) {
-	$protname = getprotobynumber( $protocol );
+	$protname = eval { getprotobynumber( $protocol ) };
     }
 
     if( $service ne "" and $service !~ m/^\d+$/ ) {
@@ -979,7 +1047,7 @@ sub fake_getaddrinfo
 	    $port = 0;
 	}
 
-	push @ports, [ $this_socktype, scalar getprotobyname( $this_protname ) || 0, $port ];
+	push @ports, [ $this_socktype, eval { scalar getprotobyname( $this_protname ) } || 0, $port ];
     }
 
     my @ret;

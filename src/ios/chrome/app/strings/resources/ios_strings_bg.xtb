@@ -113,6 +113,7 @@
 <translation id="2500374554657206846">Опции за запазване на паролата</translation>
 <translation id="2523363575747517183">Този уебсайт многократно се опитва да отвори друго приложение.</translation>
 <translation id="2529021024822217800">Отваряне на всички</translation>
+<translation id="2562041823070056534">Изпраща се до <ph name="DEVICE_NAME" />...</translation>
 <translation id="2570206273416014374">Изпраща някои „бисквитки“ и заявките за търсене от адресната лента и полето за търсене до стандартната ви търсеща машина.</translation>
 <translation id="2572712655377361602">Достъпът до снимките ви е блокиран от правило за устройства</translation>
 <translation id="2578571896248130439">Изпращане на уеб страницата</translation>
@@ -150,6 +151,7 @@
 <translation id="2933759065870693102">Фенерче</translation>
 <translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Влизането не бе успешно. Моля, опитайте пак по-късно.</translation>
+<translation id="298306318844797842">Добавяне на начин на плащане…</translation>
 <translation id="2989805286512600854">Отваряне в нов раздел</translation>
 <translation id="3037605927509011580">Ужас!</translation>
 <translation id="3112556859945124369">Означаване…</translation>
@@ -313,6 +315,7 @@
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5614553682702429503">Да се запази ли паролата?</translation>
 <translation id="5626245204502895507">Понастоящем файлът не можа да бъде изтеглен.</translation>
+<translation id="5631164295104953411">Добавяне на начин на плащане</translation>
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
@@ -464,6 +467,7 @@
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете търсене в нов раздел в Chrome.</translation>
+<translation id="7791543448312431591">Добавяне</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
 <translation id="7840771868269352570">Избраните елементи ще бъдат премахнати.</translation>
 <translation id="7856733331829174190">Неуспешно изтегляне</translation>
@@ -477,6 +481,7 @@
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7971521879845308059">Изск. прозорци: Блокиране</translation>
 <translation id="7982789257301363584">Мрежа</translation>
+<translation id="8007420562015504427">Търсене в режим „инкогнито“</translation>
 <translation id="8019783059653722575">Това ви позволява да запазвате и качвате снимки.</translation>
 <translation id="802154636333426148">Изтеглянето не бе успешно</translation>
 <translation id="8023878949384262191">Разгъва секцията.</translation>
@@ -491,6 +496,7 @@
 <translation id="8225985093977202398">Кеширани изображения и файлове</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8281781826761538115">Стандартно – <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8319076807703933069">Ново търсене</translation>
 <translation id="8328777765163860529">Затваряне на всички</translation>
 <translation id="8381750437846184350">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
 <translation id="8407669440184693619">Няма намерени пароли за този сайт</translation>
@@ -507,7 +513,6 @@
 <translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>
-<translation id="8583866649835978847">Изпращане на <ph name="TITLE" /> до някое от устройствата ви.</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
@@ -530,7 +535,6 @@
 <translation id="8976382372951310360">Помощ</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8985320356172329008">Влезли сте в Google като</translation>
-<translation id="9016406938567631235">Изпраща се...</translation>
 <translation id="902659348151742535">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
 <translation id="9034759925968272072">Няма да излезете от профила си в Google. Възможно е в него да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Капацитет</translation>

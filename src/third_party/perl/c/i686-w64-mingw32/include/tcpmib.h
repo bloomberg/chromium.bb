@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _INC_TCPMIB
@@ -15,6 +15,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* As I read msdn on Vista the defines above were moved into
+   typedef enum { MIB_..., } MIB_TCP_STATE;
+   We simply typedef it to int.  */
+typedef int MIB_TCP_STATE;
 
 typedef enum _TCP_CONNECTION_OFFLOAD_STATE {
   TcpConnectionOffloadStateInHost       = 0,

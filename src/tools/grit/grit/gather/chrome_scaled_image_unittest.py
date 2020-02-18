@@ -5,6 +5,8 @@
 
 '''Unit tests for ChromeScaledImage.'''
 
+from __future__ import print_function
+
 import os
 import sys
 if __name__ == '__main__':
@@ -61,7 +63,7 @@ def _GetFilesInRc(rcname, tmp_dir, contents):
   data = util.ReadFile(rcname, util.BINARY).decode('utf-16')
   contents = dict((tmp_dir.GetPath(k), v) for k, v in contents.items())
   return set(contents[os.path.normpath(m.group(1))]
-             for m in re.finditer(ur'(?m)^\w+\s+BINDATA\s+"([^"]+)"$', data))
+             for m in re.finditer(r'(?m)^\w+\s+BINDATA\s+"([^"]+)"$', data))
 
 
 def _MakeFallbackAttr(fallback):

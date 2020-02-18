@@ -18,7 +18,6 @@
 /android_protobuf/src
 /android_support_test_runner/lib/
 /android_system_sdk/*.jar
-/android_tools/
 /android_tools_internal/
 /android_webview_glue/src
 /androidx/lib/
@@ -79,9 +78,9 @@
 /flatbuffers/src
 /fontconfig/src
 /freetype/src
+/fuchsia-sdk/images
 /fuchsia-sdk/sdk
 /gestures/gestures
-/gles1_conform
 /gles2_conform
 /glfw/src
 /glslang/src
@@ -114,6 +113,7 @@
 /instrumented_libraries/scripts/out/*
 /javax_inject/lib/
 /jacoco/lib/
+/javalang/src/
 /jsoncpp/source
 /jsr-305/src
 /junit/src
@@ -168,6 +168,7 @@
 /omaha/src/omaha
 /openh264/src
 /openscreen/src
+/openxr/src
 /ow2_asm/lib/
 /pdfsqueeze
 /pdfium

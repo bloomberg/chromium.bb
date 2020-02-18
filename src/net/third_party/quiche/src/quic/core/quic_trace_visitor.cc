@@ -225,6 +225,7 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
 }
 
 void QuicTraceVisitor::OnIncomingAck(
+    QuicPacketNumber /*ack_packet_number*/,
     const QuicAckFrame& ack_frame,
     QuicTime ack_receive_time,
     QuicPacketNumber /*largest_observed*/,
@@ -242,7 +243,7 @@ void QuicTraceVisitor::OnIncomingAck(
 }
 
 void QuicTraceVisitor::OnPacketLoss(QuicPacketNumber lost_packet_number,
-                                    TransmissionType transmission_type,
+                                    TransmissionType /*transmission_type*/,
                                     QuicTime detection_time) {
   quic_trace::Event* event = trace_.add_events();
   event->set_time_us(ConvertTimestampToRecordedFormat(detection_time));
@@ -279,8 +280,8 @@ void QuicTraceVisitor::OnApplicationLimited() {
 
 void QuicTraceVisitor::OnAdjustNetworkParameters(QuicBandwidth bandwidth,
                                                  QuicTime::Delta rtt,
-                                                 QuicByteCount old_cwnd,
-                                                 QuicByteCount new_cwnd) {
+                                                 QuicByteCount /*old_cwnd*/,
+                                                 QuicByteCount /*new_cwnd*/) {
   quic_trace::Event* event = trace_.add_events();
   event->set_time_us(
       ConvertTimestampToRecordedFormat(connection_->clock()->ApproximateNow()));

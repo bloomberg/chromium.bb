@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.touchless;
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
-import android.widget.ListView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
@@ -29,18 +29,27 @@ public class TouchlessPreferences extends Preferences {
         mTouchlessModelCoordinator = AppHooks.get().createTouchlessModelCoordinator(this);
         mDialogModel =
                 new PropertyModel.Builder(TouchlessDialogProperties.MINIMAL_DIALOG_KEYS).build();
-        mTouchlessModelCoordinator.addModelToQueue(mDialogModel);
+        if (mTouchlessModelCoordinator != null) {
+            mTouchlessModelCoordinator.addModelToQueue(mDialogModel);
+        }
     }
 
+    /**
+     * Adds paddings for the main list in the current support library Fragment.
+     */
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
+        Fragment fragment = getMainFragmentCompat();
+        if (fragment == null || fragment.getView() == null
+                || fragment.getView().findViewById(R.id.list) == null) {
+            return;
+        }
+
         int padding = getResources().getDimensionPixelSize(
                 org.chromium.chrome.touchless.R.dimen.touchless_preferences_highlight_padding);
-        Fragment fragment = getFragmentManager().findFragmentById(android.R.id.content);
-        ListView listView = fragment.getView().findViewById(android.R.id.list);
-        listView.setPadding(padding, 0, padding, 0);
-        listView.setDividerHeight(padding);
+        RecyclerView recyclerView = fragment.getView().findViewById(R.id.list);
+        recyclerView.setPadding(padding, 0, padding, 0);
     }
 
     @Override

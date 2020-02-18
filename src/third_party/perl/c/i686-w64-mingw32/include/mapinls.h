@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _MAPINLS_H_
@@ -11,7 +11,11 @@ extern "C" {
 #endif
 
 #ifndef WINAPI
+#if defined(_ARM_)
+#define WINAPI
+#else
 #define WINAPI __stdcall
+#endif
 #endif
 
 #ifdef DOS
@@ -24,7 +28,7 @@ extern "C" {
 
   typedef unsigned char BYTE;
   typedef unsigned short WORD;
-  typedef unsigned long DWORD;
+  typedef unsigned __LONG32 DWORD;
   typedef unsigned int UINT;
   typedef int WINBOOL;
 

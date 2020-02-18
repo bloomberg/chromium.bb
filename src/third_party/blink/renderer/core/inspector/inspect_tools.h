@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECT_TOOLS_H_
 
+#include <vector>
 #include <v8-inspector.h>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_agent.h"
@@ -20,7 +21,7 @@ class SearchingForNodeTool : public InspectTool {
  public:
   SearchingForNodeTool(InspectorDOMAgent* dom_agent,
                        bool ua_shadow,
-                       const String& highlight_config);
+                       const std::vector<uint8_t>& highlight_config);
 
  private:
   bool HandleInputEvent(LocalFrameView* frame_view,
@@ -95,7 +96,7 @@ class NearbyDistanceTool : public InspectTool {
   NearbyDistanceTool() = default;
 
  private:
-  CString GetDataResourceName() override;
+  String GetDataResourceName() override;
   bool HandleMouseDown(const WebMouseEvent& event,
                        bool* swallow_next_mouse_up) override;
   bool HandleMouseMove(const WebMouseEvent& event) override;
@@ -115,7 +116,7 @@ class ShowViewSizeTool : public InspectTool {
 
  private:
   bool ForwardEventsToOverlay() override;
-  CString GetDataResourceName() override;
+  String GetDataResourceName() override;
   void Draw(float scale) override;
   DISALLOW_COPY_AND_ASSIGN(ShowViewSizeTool);
 };
@@ -127,7 +128,7 @@ class ScreenshotTool : public InspectTool {
   ScreenshotTool() = default;
 
  private:
-  CString GetDataResourceName() override;
+  String GetDataResourceName() override;
   void DoInit() override;
   void Dispatch(const String& message) override;
 
@@ -143,7 +144,7 @@ class PausedInDebuggerTool : public InspectTool {
       : v8_session_(v8_session), message_(message) {}
 
  private:
-  CString GetDataResourceName() override;
+  String GetDataResourceName() override;
   void Draw(float scale) override;
   void Dispatch(const String& message) override;
   v8_inspector::V8InspectorSession* v8_session_;

@@ -134,19 +134,13 @@ class Port(object):
         ('trusty', 'x86_64'),
 
         ('fuchsia', 'x86_64'),
-
-        # FIXME: Technically this should be 'arm', but adding a third
-        # architecture type breaks TestConfigurationConverter.
-        # If we need this to be 'arm' in the future, then we first have to
-        # fix TestConfigurationConverter.
-        ('kitkat', 'x86'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12', 'mac10.13'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
-        'android': ['kitkat'],
+        'fuschia': ['fuchsia'],
     }
 
     # List of ports open on the host that the tests will connect to. When tests
@@ -260,13 +254,6 @@ class Port(object):
     def additional_driver_flags(self):
         # Clone list to avoid mutating option state.
         flags = list(self.get_option('additional_driver_flag', []))
-
-        # Disable LayoutNG unless explicitly enabled during transition period to
-        # avoid having to unnecessarily update test expectations every time the flag
-        # is flipped and to allow us to update expectations one bot at a time.
-        # TODO(eae): Remove once LayoutNG launches. https://crbug.com/961437
-        if not '--enable-blink-features=LayoutNG' in flags:
-            flags += ['--disable-blink-features=LayoutNG']
 
         if flags and flags[0] == self.primary_driver_flag():
             flags = flags[1:]

@@ -19,8 +19,10 @@
  */
 
 // https://html.spec.whatwg.org/C/#the-a-element
-[HTMLConstructor]
-interface HTMLAnchorElement : HTMLElement {
+[
+    Exposed=Window,
+    HTMLConstructor
+] interface HTMLAnchorElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
     [CEReactions, Reflect] attribute DOMString download;
     [CEReactions, Reflect] attribute USVString ping;

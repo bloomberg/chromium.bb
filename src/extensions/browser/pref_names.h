@@ -88,6 +88,10 @@ extern const char kNativeMessagingUserLevelHosts[];
 // Time of the next scheduled extensions auto-update checks.
 extern const char kNextUpdateCheck[];
 
+// A preference that tracks extensions pinned to the toolbar. This is a list
+// object stored in the Preferences file. The extensions are stored by ID.
+extern const char kPinnedExtensions[];
+
 // Indicates on-disk data might have skeletal data that needs to be cleaned
 // on the next start of the browser.
 extern const char kStorageGarbageCollect[];

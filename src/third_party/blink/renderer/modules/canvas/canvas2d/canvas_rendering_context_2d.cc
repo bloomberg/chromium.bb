@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -76,8 +77,8 @@
 
 namespace blink {
 
-static const TimeDelta kTryRestoreContextInterval =
-    TimeDelta::FromMilliseconds(500);
+static const base::TimeDelta kTryRestoreContextInterval =
+    base::TimeDelta::FromMilliseconds(500);
 static const unsigned kMaxTryRestoreContextAttempts = 4;
 
 static bool ContextLostRestoredEventsEnabled() {
@@ -199,7 +200,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
   if (context_lost_mode_ == kSyntheticLostContext && Host()) {
     Host()->DiscardResourceProvider();
   }
-  dispatch_context_lost_event_timer_.StartOneShot(TimeDelta(), FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
 void CanvasRenderingContext2D::DidSetSurfaceSize() {
@@ -211,7 +212,7 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 
   if (CanCreateCanvas2dResourceProvider()) {
     if (ContextLostRestoredEventsEnabled()) {
-      dispatch_context_restored_event_timer_.StartOneShot(TimeDelta(),
+      dispatch_context_restored_event_timer_.StartOneShot(base::TimeDelta(),
                                                           FROM_HERE);
     } else {
       // legacy synchronous context restoration.
@@ -358,12 +359,11 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   FloatRect bounding_rect = transformed_path.BoundingRect();
 
   // We first map canvas coordinates to layout coordinates.
-  LayoutRect path_rect(bounding_rect);
-  LayoutRect canvas_rect = layout_box->PhysicalContentBoxRect().ToLayoutRect();
+  PhysicalRect path_rect = PhysicalRect::EnclosingRect(bounding_rect);
+  PhysicalRect canvas_rect = layout_box->PhysicalContentBoxRect();
   // TODO(fserb): Is this kIgnoreTransforms correct?
-  canvas_rect.MoveBy(
-      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms)
-          .ToLayoutPoint());
+  canvas_rect.Move(
+      layout_box->LocalToAbsolutePoint(PhysicalOffset(), kIgnoreTransforms));
   path_rect.SetX(
       (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
   path_rect.SetY(
@@ -443,13 +443,11 @@ cc::PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
 }
 
 cc::PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
+  if (isContextLost())
+    return nullptr;
   if (IsPaintable())
     return canvas()->GetCanvas2DLayerBridge()->Canvas();
   return nullptr;
-}
-
-void CanvasRenderingContext2D::DisableDeferral(DisableDeferralReason reason) {
-  canvas()->DisableDeferral(reason);
 }
 
 String CanvasRenderingContext2D::font() const {
@@ -498,6 +496,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
   if (!canvas()->GetDocument().GetFrame())
     return;
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   // The following early exit is dependent on the cache not being empty
@@ -540,7 +539,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       font_style->SetFontDescription(element_font_description);
       font_style->GetFont().Update(font_style->GetFont().GetFontSelector());
       canvas()->GetDocument().EnsureStyleResolver().ComputeFont(
-          font_style.get(), *parsed_style);
+          *canvas(), font_style.get(), *parsed_style);
 
       // We need to reset Computed and Adjusted size so we skip zoom and
       // minimum font size.
@@ -559,7 +558,8 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
     }
   } else {
     Font resolved_font;
-    if (!canvas_font_cache->GetFontUsingDefaultStyle(new_font, resolved_font))
+    if (!canvas_font_cache->GetFontUsingDefaultStyle(*canvas(), new_font,
+                                                     resolved_font))
       return;
 
     // We need to reset Computed and Adjusted size so we skip zoom and
@@ -576,6 +576,10 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       new_font);  // Create a string copy since newFont can be
                   // deleted inside realizeSaves.
   ModifiableState().SetUnparsedFont(new_font_safe_copy);
+
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "Canvas.TextMetrics.SetFont", elapsed);
 }
 
 void CanvasRenderingContext2D::DidProcessTask(
@@ -670,13 +674,12 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
 }
 
 HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
-    const LayoutPoint& location) {
+    const PhysicalOffset& location) {
   if (HitRegionsCount() <= 0)
     return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 
   LayoutBox* box = canvas()->GetLayoutBox();
-  FloatPoint local_pos(
-      box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(location)));
+  FloatPoint local_pos(box->AbsoluteToLocalPoint(location));
   if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
     local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
   float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
@@ -793,6 +796,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   if (!canvas()->GetDocument().GetFrame())
     return MakeGarbageCollected<TextMetrics>();
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
   const Font& font = AccessFont();
@@ -804,9 +808,13 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   else
     direction = ToTextDirection(GetState().GetDirection(), canvas());
 
-  return MakeGarbageCollected<TextMetrics>(font, direction,
-                                           GetState().GetTextBaseline(),
-                                           GetState().GetTextAlign(), text);
+  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
+      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
+      text);
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+      "Canvas.TextMetrics.MeasureText", elapsed);
+  return text_metrics;
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -833,15 +841,6 @@ void CanvasRenderingContext2D::DrawTextInternal(
     return;
   if (max_width && (!std::isfinite(*max_width) || *max_width <= 0))
     return;
-
-  // Currently, SkPictureImageFilter does not support subpixel text
-  // anti-aliasing, which is expected when !creationAttributes().alpha, so we
-  // need to fall out of display list mode when drawing text to an opaque
-  // canvas. crbug.com/583809
-  if (!IsComposited()) {
-    canvas()->DisableDeferral(
-        kDisableDeferralReasonSubPixelTextAntiAliasingSupport);
-  }
 
   const Font& font = AccessFont();
   font.GetFontDescription().SetSubpixelAscentDescent(true);

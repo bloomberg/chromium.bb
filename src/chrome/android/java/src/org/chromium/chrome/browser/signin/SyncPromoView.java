@@ -18,8 +18,8 @@ import android.widget.TextView;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
+import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
@@ -175,7 +175,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
 
         ButtonState positiveButton = new ButtonPresent(R.string.enable_sync_button,
                 view
-                -> PreferencesLauncher.launchSettingsPage(getContext(),
+                -> PreferencesLauncher.launchSettingsPageCompat(getContext(),
                         SyncAndServicesPreferences.class,
                         SyncAndServicesPreferences.createArguments(false)));
 

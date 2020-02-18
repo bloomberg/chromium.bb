@@ -13,6 +13,8 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
@@ -84,7 +86,7 @@ bool CheckPINToken(base::span<const uint8_t> pin_token,
 
 // CheckUserVerification implements the first, common steps of
 // makeCredential and getAssertion from the CTAP2 spec.
-CtapDeviceResponseCode CheckUserVerification(
+base::Optional<CtapDeviceResponseCode> CheckUserVerification(
     bool is_make_credential,
     const AuthenticatorSupportedOptions& options,
     const base::Optional<std::vector<uint8_t>>& pin_auth,
@@ -92,7 +94,8 @@ CtapDeviceResponseCode CheckUserVerification(
     base::span<const uint8_t> pin_token,
     base::span<const uint8_t> client_data_hash,
     UserVerificationRequirement user_verification,
-    base::RepeatingCallback<void(void)> simulate_press_callback,
+    base::RepeatingCallback<bool(void)> simulate_press_callback,
+    bool internal_user_verification_succeeds,
     bool* out_user_verified) {
   // The following quotes are from the CTAP2 spec:
 
@@ -103,9 +106,9 @@ CtapDeviceResponseCode CheckUserVerification(
       options.client_pin_availability !=
       AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported;
   if (supports_pin && pin_auth && pin_auth->empty()) {
-    if (simulate_press_callback) {
-      simulate_press_callback.Run();
-    }
+    if (simulate_press_callback && !simulate_press_callback.Run())
+      return base::nullopt;
+
     switch (options.client_pin_availability) {
       case AuthenticatorSupportedOptions::ClientPinAvailability::
           kSupportedAndPinSet:
@@ -148,9 +151,13 @@ CtapDeviceResponseCode CheckUserVerification(
       if (options.user_verification_availability ==
           AuthenticatorSupportedOptions::UserVerificationAvailability::
               kSupportedAndConfigured) {
-        // Internal UV is assumed to always succeed.
-        if (simulate_press_callback) {
-          simulate_press_callback.Run();
+        if (simulate_press_callback && !simulate_press_callback.Run())
+          return base::nullopt;
+
+        if (!internal_user_verification_succeeds) {
+          if (is_make_credential)
+            return CtapDeviceResponseCode::kCtap2ErrPinAuthInvalid;
+          return CtapDeviceResponseCode::kCtap2ErrOperationDenied;
         }
         uv = true;
       } else {
@@ -432,6 +439,84 @@ CtapDeviceResponseCode CheckCredentialManagementPINAuth(
   }
   return CtapDeviceResponseCode::kSuccess;
 }
+
+// Like AsCBOR(const PublicKeyCredentialRpEntity&), but optionally allows name
+// to be INVALID_UTF8.
+base::Optional<cbor::Value> RpEntityAsCBOR(
+    const PublicKeyCredentialRpEntity& rp,
+    bool allow_invalid_utf8) {
+  if (!allow_invalid_utf8) {
+    return AsCBOR(rp);
+  }
+
+  cbor::Value::MapValue rp_map;
+  rp_map.emplace(kEntityIdMapKey, rp.id);
+  if (rp.name) {
+    rp_map.emplace(kEntityNameMapKey,
+                   cbor::Value::InvalidUTF8StringValueForTesting(*rp.name));
+  }
+  if (rp.icon_url) {
+    rp_map.emplace(kIconUrlMapKey, rp.icon_url->spec());
+  }
+  return cbor::Value(std::move(rp_map));
+}
+
+// Like AsCBOR(const PublicKeyCredentialUserEntity&), but optionally allows name
+// or displayName to be INVALID_UTF8.
+base::Optional<cbor::Value> UserEntityAsCBOR(
+    const PublicKeyCredentialUserEntity& user,
+    bool allow_invalid_utf8) {
+  if (!allow_invalid_utf8) {
+    return AsCBOR(user);
+  }
+
+  cbor::Value::MapValue user_map;
+  user_map.emplace(kEntityIdMapKey, user.id);
+  if (user.name) {
+    user_map.emplace(kEntityNameMapKey,
+                     cbor::Value::InvalidUTF8StringValueForTesting(*user.name));
+  }
+  // Empty icon URLs result in CTAP1_ERR_INVALID_LENGTH on some security keys.
+  if (user.icon_url && !user.icon_url->is_empty()) {
+    user_map.emplace(kIconUrlMapKey, user.icon_url->spec());
+  }
+  if (user.display_name) {
+    user_map.emplace(
+        kDisplayNameMapKey,
+        cbor::Value::InvalidUTF8StringValueForTesting(*user.display_name));
+  }
+  return cbor::Value(std::move(user_map));
+}
+
+std::vector<uint8_t> WriteCBOR(cbor::Value value,
+                               bool allow_invalid_utf8 = false) {
+  cbor::Writer::Config config;
+  config.allow_invalid_utf8_for_testing = allow_invalid_utf8;
+  return *cbor::Writer::Write(std::move(value), std::move(config));
+}
+
+std::vector<uint8_t> EncodeGetAssertionResponse(
+    const AuthenticatorGetAssertionResponse& response,
+    bool allow_invalid_utf8) {
+  cbor::Value::MapValue response_map;
+  if (response.credential()) {
+    response_map.emplace(1, AsCBOR(*response.credential()));
+  }
+
+  response_map.emplace(2, response.auth_data().SerializeToByteArray());
+  response_map.emplace(3, response.signature());
+
+  if (response.user_entity()) {
+    response_map.emplace(
+        4, *UserEntityAsCBOR(*response.user_entity(), allow_invalid_utf8));
+  }
+  if (response.num_credentials()) {
+    response_map.emplace(5, response.num_credentials().value());
+  }
+
+  return WriteCBOR(cbor::Value(std::move(response_map)), allow_invalid_utf8);
+}
+
 }  // namespace
 
 VirtualCtap2Device::Config::Config() = default;
@@ -497,6 +582,17 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (config.bio_enrollment_support) {
     options_updated = true;
     if (mutable_state()->bio_enrollment_provisioned) {
+      options.bio_enrollment_availability = AuthenticatorSupportedOptions::
+          BioEnrollmentAvailability::kSupportedAndProvisioned;
+    } else {
+      options.bio_enrollment_availability = AuthenticatorSupportedOptions::
+          BioEnrollmentAvailability::kSupportedButUnprovisioned;
+    }
+  }
+
+  if (config.bio_enrollment_preview_support) {
+    options_updated = true;
+    if (mutable_state()->bio_enrollment_provisioned) {
       options.bio_enrollment_availability_preview =
           AuthenticatorSupportedOptions::BioEnrollmentAvailability::
               kSupportedAndProvisioned;
@@ -558,12 +654,24 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
 
       response_code = OnAuthenticatorGetInfo(&response_data);
       break;
-    case CtapRequestCommand::kAuthenticatorMakeCredential:
-      response_code = OnMakeCredential(request_bytes, &response_data);
+    case CtapRequestCommand::kAuthenticatorMakeCredential: {
+      auto opt_response_code = OnMakeCredential(request_bytes, &response_data);
+      if (!opt_response_code) {
+        // Simulate timeout due to unresponded User Presence check.
+        return 0;
+      }
+      response_code = *opt_response_code;
       break;
-    case CtapRequestCommand::kAuthenticatorGetAssertion:
-      response_code = OnGetAssertion(request_bytes, &response_data);
+    }
+    case CtapRequestCommand::kAuthenticatorGetAssertion: {
+      auto opt_response_code = OnGetAssertion(request_bytes, &response_data);
+      if (!opt_response_code) {
+        // Simulate timeout due to unresponded User Presence check.
+        return 0;
+      }
+      response_code = *opt_response_code;
       break;
+    }
     case CtapRequestCommand::kAuthenticatorGetNextAssertion:
       response_code = OnGetNextAssertion(request_bytes, &response_data);
       break;
@@ -573,6 +681,7 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
     case CtapRequestCommand::kAuthenticatorCredentialManagement:
       response_code = OnCredentialManagement(request_bytes, &response_data);
       break;
+    case CtapRequestCommand::kAuthenticatorBioEnrollment:
     case CtapRequestCommand::kAuthenticatorBioEnrollmentPreview:
       response_code = OnBioEnrollment(request_bytes, &response_data);
       break;
@@ -590,12 +699,7 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
-    const AuthenticatorSupportedOptions& options) {
-  device_info_->options = options;
-}
-
-CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
+base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   const auto& cbor_request = cbor::Reader::Read(request_bytes);
@@ -616,11 +720,15 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
-  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+  const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       true /* is makeCredential */, options, request.pin_auth,
       request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, mutable_state()->simulate_press_callback,
-      &user_verified);
+      request.user_verification,
+      mutable_state()->simulate_press_callback
+          ? base::BindRepeating(mutable_state()->simulate_press_callback,
+                                base::Unretained(this))
+          : base::RepeatingCallback<bool(void)>(),
+      config_.user_verification_succeeds, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -643,8 +751,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
           // a credentials ends up being created it'll overwrite this one.
           continue;
         }
-        if (mutable_state()->simulate_press_callback) {
-          mutable_state()->simulate_press_callback.Run();
+        if (mutable_state()->simulate_press_callback &&
+            !mutable_state()->simulate_press_callback.Run(this)) {
+          return base::nullopt;
         }
         return CtapDeviceResponseCode::kCtap2ErrCredentialExcluded;
       }
@@ -665,8 +774,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   }
 
   // Step 10.
-  if (!user_verified && mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+  if (!user_verified && mutable_state()->simulate_press_callback &&
+      !mutable_state()->simulate_press_callback.Run(this)) {
+    return base::nullopt;
   }
 
   // Create key to register.
@@ -764,7 +874,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   return CtapDeviceResponseCode::kSuccess;
 }
 
-CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
+base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   // Step numbers in this function refer to
@@ -787,11 +897,15 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
-  const CtapDeviceResponseCode uv_error = CheckUserVerification(
+  const base::Optional<CtapDeviceResponseCode> uv_error = CheckUserVerification(
       false /* not makeCredential */, options, request.pin_auth,
       request.pin_protocol, mutable_state()->pin_token, client_data_hash,
-      request.user_verification, mutable_state()->simulate_press_callback,
-      &user_verified);
+      request.user_verification,
+      mutable_state()->simulate_press_callback
+          ? base::BindRepeating(mutable_state()->simulate_press_callback,
+                                base::Unretained(this))
+          : base::RepeatingCallback<bool(void)>(),
+      config_.user_verification_succeeds, &user_verified);
   if (uv_error != CtapDeviceResponseCode::kSuccess) {
     return uv_error;
   }
@@ -871,8 +985,9 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
 
   // Step 7.
   if (request.user_presence_required && !user_verified &&
-      mutable_state()->simulate_press_callback) {
-    mutable_state()->simulate_press_callback.Run();
+      mutable_state()->simulate_press_callback &&
+      !mutable_state()->simulate_press_callback.Run(this)) {
+    return base::nullopt;
   }
 
   // Step 8.
@@ -926,13 +1041,15 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
         DCHECK_LT(found_registrations.size(), 256u);
         assertion.SetNumCredentials(found_registrations.size());
       }
-      *response = GetSerializedCtapDeviceResponse(assertion);
+      *response = EncodeGetAssertionResponse(
+          assertion, config_.allow_invalid_utf8_in_credential_entities);
       done_first = true;
     } else {
       // These replies will be returned in response to a GetNextAssertion
       // request.
       mutable_state()->pending_assertions.emplace_back(
-          GetSerializedCtapDeviceResponse(assertion));
+          EncodeGetAssertionResponse(
+              assertion, config_.allow_invalid_utf8_in_credential_entities));
     }
   }
 
@@ -1196,8 +1313,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
         GetNextRP(&response_map);
       }
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1207,8 +1324,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       }
       GetNextRP(&response_map);
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1250,8 +1367,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
           static_cast<int>(mutable_state()->pending_registrations.size()));
       mutable_state()->pending_registrations.pop_front();
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1263,8 +1380,8 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       response_map.swap(mutable_state()->pending_registrations.front());
       mutable_state()->pending_registrations.pop_front();
 
-      *response =
-          cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+      *response = WriteCBOR(cbor::Value(std::move(response_map)),
+                            config_.allow_invalid_utf8_in_credential_entities);
       return CtapDeviceResponseCode::kSuccess;
     }
 
@@ -1296,15 +1413,19 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       const auto credential_id_it = params.find(cbor::Value(static_cast<int>(
           CredentialManagementRequestParamKey::kCredentialID)));
       if (credential_id_it == params.end() ||
-          !credential_id_it->second.is_bytestring()) {
+          !credential_id_it->second.is_map()) {
         return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
       }
-      const std::vector<uint8_t>& credential_id =
-          credential_id_it->second.GetBytestring();
-      if (!base::ContainsKey(mutable_state()->registrations, credential_id)) {
+      auto credential_id = PublicKeyCredentialDescriptor::CreateFromCBORValue(
+          cbor::Value(credential_id_it->second.GetMap()));
+      if (!credential_id) {
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      if (!base::Contains(mutable_state()->registrations,
+                          credential_id->id())) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
-      mutable_state()->registrations.erase(credential_id);
+      mutable_state()->registrations.erase(credential_id->id());
       *response = {};
       return CtapDeviceResponseCode::kSuccess;
     }
@@ -1317,8 +1438,12 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   // Check to ensure that device supports bio enrollment.
-  if (device_info_->options.bio_enrollment_availability_preview ==
-      AuthenticatorSupportedOptions::BioEnrollmentAvailability::kNotSupported) {
+  if (device_info_->options.bio_enrollment_availability ==
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kNotSupported &&
+      device_info_->options.bio_enrollment_availability_preview ==
+          AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+              kNotSupported) {
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
@@ -1334,7 +1459,14 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
   // Check for the get-modality command.
   auto it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kGetModality)));
-  if (it != request_map.end() && it->second.GetBool()) {
+  if (it != request_map.end()) {
+    if (!it->second.is_bool()) {
+      return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+    }
+    if (!it->second.GetBool()) {
+      // This value is optional so sending |false| is prohibited by the spec.
+      return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+    }
     response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
                          static_cast<int>(BioEnrollmentModality::kFingerprint));
     *response =
@@ -1342,38 +1474,174 @@ CtapDeviceResponseCode VirtualCtap2Device::OnBioEnrollment(
     return CtapDeviceResponseCode::kSuccess;
   }
 
-  // Check for the get-sensor-info command.
+  // Check for subcommands.
   it = request_map.find(
       cbor::Value(static_cast<int>(BioEnrollmentRequestKey::kSubCommand)));
-  if (it != request_map.end() &&
-      it->second.GetUnsigned() ==
-          static_cast<int>(
-              BioEnrollmentSubCommand::kGetFingerprintSensorInfo)) {
-    response_map.emplace(static_cast<int>(BioEnrollmentResponseKey::kModality),
-                         static_cast<int>(BioEnrollmentModality::kFingerprint));
-
-    response_map.emplace(
-        static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
-        static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
-    response_map.emplace(
-        static_cast<int>(
-            BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
-        7);
-
-    *response =
-        cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
-    return CtapDeviceResponseCode::kSuccess;
+  if (it == request_map.end()) {
+    // Could not find a valid command, so return an error.
+    NOTREACHED();
+    return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
   }
 
-  // Handle all other commands as if they were unsupported (will change when
-  // support is added).
-  if (it != request_map.end()) {
+  if (!it->second.is_unsigned()) {
+    return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+  }
+
+  // Template id from subcommand parameters, if it exists.
+  base::Optional<uint8_t> template_id;
+  base::Optional<std::string> name;
+  auto params_it = request_map.find(cbor::Value(
+      static_cast<int>(BioEnrollmentRequestKey::kSubCommandParams)));
+  if (params_it != request_map.end()) {
+    const auto& params = params_it->second.GetMap();
+    auto template_it = params.find(cbor::Value(
+        static_cast<int>(BioEnrollmentSubCommandParam::kTemplateId)));
+    if (template_it != params.end()) {
+      if (!template_it->second.is_bytestring()) {
+        NOTREACHED() << "Template ID parameter must be a CBOR bytestring.";
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      // Simplification: for unit tests, enforce one byte template IDs
+      DCHECK_EQ(template_it->second.GetBytestring().size(), 1u);
+      template_id = template_it->second.GetBytestring()[0];
+    }
+    auto name_it = params.find(cbor::Value(
+        static_cast<int>(BioEnrollmentSubCommandParam::kTemplateFriendlyName)));
+    if (name_it != params.end()) {
+      if (!name_it->second.is_string()) {
+        NOTREACHED() << "Name parameter must be a CBOR string.";
+        return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
+      }
+      name = name_it->second.GetString();
+    }
+  }
+
+  auto cmd =
+      ToBioEnrollmentEnum<BioEnrollmentSubCommand>(it->second.GetUnsigned());
+  if (!cmd) {
+    // Invalid command is unsupported.
     return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
   }
 
-  // Could not find a valid command, so return an error.
-  NOTREACHED();
-  return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+  using SubCmd = BioEnrollmentSubCommand;
+  switch (*cmd) {
+    case SubCmd::kGetFingerprintSensorInfo:
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kModality),
+          static_cast<int>(BioEnrollmentModality::kFingerprint));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kFingerprintKind),
+          static_cast<int>(BioEnrollmentFingerprintKind::kTouch));
+      response_map.emplace(
+          static_cast<int>(
+              BioEnrollmentResponseKey::kMaxCaptureSamplesRequiredForEnroll),
+          config_.bio_enrollment_samples_required);
+      break;
+    case SubCmd::kEnrollBegin:
+      if (mutable_state()->bio_templates.size() ==
+          config_.bio_enrollment_capacity) {
+        return CtapDeviceResponseCode::kCtap2ErrKeyStoreFull;
+      }
+      mutable_state()->bio_current_template_id = 0;
+      while (mutable_state()->bio_templates.find(
+                 ++(*mutable_state()->bio_current_template_id)) !=
+             mutable_state()->bio_templates.end()) {
+        // Check for integer overflow (indicates full)
+        DCHECK(*mutable_state()->bio_current_template_id < 255);
+      }
+      mutable_state()->bio_remaining_samples =
+          config_.bio_enrollment_samples_required;
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kTemplateId),
+          std::vector<uint8_t>{*mutable_state()->bio_current_template_id});
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+          static_cast<int>(BioEnrollmentSampleStatus::kGood));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+          --mutable_state()->bio_remaining_samples);
+      break;
+    case SubCmd::kEnrollCaptureNextSample:
+      if (!mutable_state()->bio_current_template_id ||
+          mutable_state()->bio_current_template_id != *template_id) {
+        NOTREACHED() << "Invalid current enrollment or template id parameter.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kLastEnrollSampleStatus),
+          static_cast<int>(BioEnrollmentSampleStatus::kGood));
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kRemainingSamples),
+          --mutable_state()->bio_remaining_samples);
+
+      if (mutable_state()->bio_remaining_samples == 0) {
+        mutable_state()
+            ->bio_templates[*mutable_state()->bio_current_template_id] =
+            base::StrCat(
+                {"Template", base::NumberToString(
+                                 *mutable_state()->bio_current_template_id)});
+        mutable_state()->bio_current_template_id = base::nullopt;
+      }
+      break;
+    case SubCmd::kEnumerateEnrollments: {
+      if (mutable_state()->bio_templates.empty()) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+      cbor::Value::ArrayValue template_infos;
+      for (const auto& enroll : mutable_state()->bio_templates) {
+        cbor::Value::MapValue template_info;
+        template_info.emplace(cbor::Value(static_cast<int>(
+                                  BioEnrollmentTemplateInfoParam::kTemplateId)),
+                              std::vector<uint8_t>{enroll.first});
+        template_info.emplace(
+            cbor::Value(static_cast<int>(
+                BioEnrollmentTemplateInfoParam::kTemplateFriendlyName)),
+            cbor::Value(enroll.second));
+        template_infos.emplace_back(std::move(template_info));
+      }
+      response_map.emplace(
+          static_cast<int>(BioEnrollmentResponseKey::kTemplateInfos),
+          std::move(template_infos));
+      break;
+    }
+    case SubCmd::kSetFriendlyName:
+      if (!template_id || !name) {
+        NOTREACHED() << "Could not parse template_id or name from parameters.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
+
+      // Template ID from parameter does not exist, cannot rename.
+      if (mutable_state()->bio_templates.find(*template_id) ==
+          mutable_state()->bio_templates.end()) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+
+      mutable_state()->bio_templates[*template_id] = *name;
+      return CtapDeviceResponseCode::kSuccess;
+    case SubCmd::kRemoveEnrollment:
+      if (!template_id) {
+        NOTREACHED() << "Could not parse template_id or name from parameters.";
+        return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
+      }
+
+      // Template ID from parameter does not exist, cannot remove.
+      if (mutable_state()->bio_templates.find(*template_id) ==
+          mutable_state()->bio_templates.end()) {
+        return CtapDeviceResponseCode::kCtap2ErrInvalidOption;
+      }
+
+      mutable_state()->bio_templates.erase(*template_id);
+      return CtapDeviceResponseCode::kSuccess;
+    case SubCmd::kCancelCurrentEnrollment:
+      mutable_state()->bio_current_template_id = base::nullopt;
+      return CtapDeviceResponseCode::kSuccess;
+    default:
+      // Handle all other commands as if they were unsupported (will change
+      // when support is added).
+      return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+  *response = cbor::Writer::Write(cbor::Value(std::move(response_map))).value();
+  return CtapDeviceResponseCode::kSuccess;
 }
 
 void VirtualCtap2Device::InitPendingRPs() {
@@ -1386,7 +1654,7 @@ void VirtualCtap2Device::InitPendingRPs() {
     DCHECK(!registration.second.is_u2f);
     DCHECK(registration.second.user);
     DCHECK(registration.second.rp);
-    if (!base::ContainsKey(rp_ids, registration.second.rp->id)) {
+    if (!base::Contains(rp_ids, registration.second.rp->id)) {
       mutable_state()->pending_rps.push_back(*registration.second.rp);
     }
   }
@@ -1407,7 +1675,8 @@ void VirtualCtap2Device::InitPendingRegistrations(
     cbor::Value::MapValue response_map;
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kUser),
-        AsCBOR(*registration.second.user));
+        *UserEntityAsCBOR(*registration.second.user,
+                          config_.allow_invalid_utf8_in_credential_entities));
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kCredentialID),
         AsCBOR(PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
@@ -1426,8 +1695,10 @@ void VirtualCtap2Device::InitPendingRegistrations(
 
 void VirtualCtap2Device::GetNextRP(cbor::Value::MapValue* response_map) {
   DCHECK(!mutable_state()->pending_rps.empty());
-  response_map->emplace(static_cast<int>(CredentialManagementResponseKey::kRP),
-                        AsCBOR(mutable_state()->pending_rps.front()));
+  response_map->emplace(
+      static_cast<int>(CredentialManagementResponseKey::kRP),
+      *RpEntityAsCBOR(mutable_state()->pending_rps.front(),
+                      config_.allow_invalid_utf8_in_credential_entities));
   response_map->emplace(
       static_cast<int>(CredentialManagementResponseKey::kRPIDHash),
       fido_parsing_utils::CreateSHA256Hash(

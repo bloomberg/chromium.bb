@@ -51,7 +51,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/forms/color_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
@@ -74,6 +73,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -901,8 +901,8 @@ void HTMLInputElement::AttachLayoutTree(AttachContext& context) {
   input_type_->CountUsage();
 }
 
-void HTMLInputElement::DetachLayoutTree(const AttachContext& context) {
-  TextControlElement::DetachLayoutTree(context);
+void HTMLInputElement::DetachLayoutTree(bool performing_reattach) {
+  TextControlElement::DetachLayoutTree(performing_reattach);
   needs_to_update_view_value_ = true;
   input_type_view_->ClosePopupView();
 }
@@ -1652,8 +1652,7 @@ bool HTMLInputElement::HasValidDataListOptions() const {
     return false;
   HTMLDataListOptionsCollection* options = data_list->options();
   for (unsigned i = 0; HTMLOptionElement* option = options->Item(i); ++i) {
-    if (!option->value().IsEmpty() && !option->IsDisabledFormControl() &&
-        IsValidValue(option->value()))
+    if (!option->value().IsEmpty() && !option->IsDisabledFormControl())
       return true;
   }
   return false;
@@ -1687,9 +1686,7 @@ HTMLInputElement::FilteredDataListOptions() const {
           option->label().FoldCase().Find(value) == kNotFound)
         continue;
     }
-    // TODO(tkent): Should allow invalid strings. crbug.com/607097.
-    if (option->value().IsEmpty() || option->IsDisabledFormControl() ||
-        !IsValidValue(option->value()))
+    if (option->value().IsEmpty() || option->IsDisabledFormControl())
       continue;
     filtered.push_back(option);
   }

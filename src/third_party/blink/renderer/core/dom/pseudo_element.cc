@@ -31,13 +31,13 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_quote.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -142,7 +142,7 @@ void PseudoElement::Dispose() {
 PseudoElement::AttachLayoutTreeScope::AttachLayoutTreeScope(
     PseudoElement* element)
     : element_(element) {
-  if (ComputedStyle* style = element->MutableComputedStyle()) {
+  if (const ComputedStyle* style = element->GetComputedStyle()) {
     if (style->Display() == EDisplay::kContents) {
       original_style_ = style;
       element->SetComputedStyle(element->LayoutStyleForDisplayContents(*style));
@@ -172,7 +172,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(layout_object->Parent());
   DCHECK(CanHaveGeneratedChildren(*layout_object->Parent()));
 
-  ComputedStyle& style = layout_object->MutableStyleRef();
+  const ComputedStyle& style = layout_object->StyleRef();
   if (style.StyleType() != kPseudoIdBefore &&
       style.StyleType() != kPseudoIdAfter)
     return;

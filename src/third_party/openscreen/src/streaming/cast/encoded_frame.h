@@ -10,8 +10,8 @@
 #include <chrono>
 #include <vector>
 
-#include "osp_base/macros.h"
 #include "platform/api/time.h"
+#include "platform/base/macros.h"
 #include "streaming/cast/frame_id.h"
 #include "streaming/cast/rtp_time.h"
 

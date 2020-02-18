@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/flag.h"
 #include "api/audio/audio_frame.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "modules/audio_coding/codecs/pcm16b/pcm16b.h"
@@ -36,12 +37,10 @@
 #include "rtc_base/string_encode.h"
 #include "rtc_base/strings/string_builder.h"
 #include "rtc_base/system/arch.h"
+#include "system_wrappers/include/clock.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
 #include "test/testsupport/file_utils.h"
-
-// This must come after test/gtest.h
-#include "rtc_base/flags.h"  // NOLINT(build/include)
 
 #ifdef WEBRTC_NETEQ_UNITTEST_BITEXACT
 RTC_PUSH_IGNORING_WUNDEF()
@@ -53,7 +52,7 @@ RTC_PUSH_IGNORING_WUNDEF()
 RTC_POP_IGNORING_WUNDEF()
 #endif
 
-WEBRTC_DEFINE_bool(gen_ref, false, "Generate reference files.");
+ABSL_FLAG(bool, gen_ref, false, "Generate reference files.");
 
 namespace webrtc {
 
@@ -288,11 +287,11 @@ class NetEqDecodingTest : public ::testing::Test {
 
   void DuplicateCng();
 
+  SimulatedClock clock_;
   NetEq* neteq_;
   NetEq::Config config_;
   std::unique_ptr<test::RtpFileSource> rtp_source_;
   std::unique_ptr<test::Packet> packet_;
-  unsigned int sim_clock_;
   AudioFrame out_frame_;
   int output_sample_rate_;
   int algorithmic_delay_ms_;
@@ -306,16 +305,16 @@ const size_t NetEqDecodingTest::kBlockSize32kHz;
 const int NetEqDecodingTest::kInitSampleRateHz;
 
 NetEqDecodingTest::NetEqDecodingTest()
-    : neteq_(NULL),
+    : clock_(0),
+      neteq_(NULL),
       config_(),
-      sim_clock_(0),
       output_sample_rate_(kInitSampleRateHz),
       algorithmic_delay_ms_(0) {
   config_.sample_rate_hz = kInitSampleRateHz;
 }
 
 void NetEqDecodingTest::SetUp() {
-  neteq_ = NetEq::Create(config_, CreateBuiltinAudioDecoderFactory());
+  neteq_ = NetEq::Create(config_, &clock_, CreateBuiltinAudioDecoderFactory());
   NetEqNetworkStatistics stat;
   ASSERT_EQ(0, neteq_->NetworkStatistics(&stat));
   algorithmic_delay_ms_ = stat.current_buffer_size_ms;
@@ -333,7 +332,7 @@ void NetEqDecodingTest::OpenInputFile(const std::string& rtp_file) {
 
 void NetEqDecodingTest::Process() {
   // Check if time to receive.
-  while (packet_ && sim_clock_ >= packet_->time_ms()) {
+  while (packet_ && clock_.TimeInMilliseconds() >= packet_->time_ms()) {
     if (packet_->payload_length_bytes() > 0) {
 #ifndef WEBRTC_CODEC_ISAC
       // Ignore payload type 104 (iSAC-swb) if ISAC is not supported.
@@ -363,7 +362,7 @@ void NetEqDecodingTest::Process() {
   EXPECT_EQ(output_sample_rate_, neteq_->last_output_sample_rate_hz());
 
   // Increase time.
-  sim_clock_ += kTimeStepMs;
+  clock_.AdvanceTimeMilliseconds(kTimeStepMs);
 }
 
 void NetEqDecodingTest::DecodeAndCompare(
@@ -394,7 +393,7 @@ void NetEqDecodingTest::DecodeAndCompare(
         output.AddResult(out_frame_.data(), out_frame_.samples_per_channel_));
 
     // Query the network statistics API once per second
-    if (sim_clock_ % 1000 == 0) {
+    if (clock_.TimeInMilliseconds() % 1000 == 0) {
       // Process NetworkStatistics.
       NetEqNetworkStatistics current_network_stats;
       ASSERT_EQ(0, neteq_->NetworkStatistics(&current_network_stats));
@@ -458,19 +457,19 @@ TEST_F(NetEqDecodingTest, MAYBE_TestBitExactness) {
       webrtc::test::ResourcePath("audio_coding/neteq_universal_new", "rtp");
 
   const std::string output_checksum =
-      PlatformChecksum("9652cee1d6771a9cbfda821ae1bbdb41b0dd4dee",
-                       "54a7e32f163663c0af35bf70bf45cefc24ad62ef", "not used",
-                       "9652cee1d6771a9cbfda821ae1bbdb41b0dd4dee",
-                       "79496b0a1ef0a3824f3ee04789748a461bed643f");
+      PlatformChecksum("998be2e5a707e636af0b6298f54bedfabe72aae1",
+                       "61e238ece4cd3b67d66a0b7047e06b20607dcb79", "not used",
+                       "998be2e5a707e636af0b6298f54bedfabe72aae1",
+                       "4116ac2a6e75baac3194b712d6fabe28b384275e");
 
   const std::string network_stats_checksum =
-      PlatformChecksum("c59b1f9f282b6d8733cdff975e3c150ca4a47d51",
-                       "bca95e565996a4ffd6e2ac15736e08843bdca93b", "not used",
-                       "c59b1f9f282b6d8733cdff975e3c150ca4a47d51",
-                       "c59b1f9f282b6d8733cdff975e3c150ca4a47d51");
+      PlatformChecksum("3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4",
+                       "0a596217fccd8d90eff7d1666b8cc63143eeda12", "not used",
+                       "3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4",
+                       "3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4");
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
-                   FLAG_gen_ref);
+                   absl::GetFlag(FLAGS_gen_ref));
 }
 
 #if !defined(WEBRTC_IOS) && defined(WEBRTC_NETEQ_UNITTEST_BITEXACT) && \
@@ -485,21 +484,21 @@ TEST_F(NetEqDecodingTest, MAYBE_TestOpusBitExactness) {
 
   // Checksum depends on libopus being compiled with or without SSE.
   const std::string maybe_sse =
-      "14a63b3c7b925c82296be4bafc71bec85f2915c2|"
-      "2c05677daa968d6c68b92adf4affb7cd9bb4d363";
+      "6b602683ca7285a98118b4824d72f4257952c18f|"
+      "eb0b68bddcac00fc85403df64f83126f8ea9bc93";
   const std::string output_checksum = PlatformChecksum(
-      maybe_sse, "b7b7ed802b0e18ee416973bf3b9ae98599b0181d",
-      "5876e52dda90d5ca433c3726555b907b97c86374", maybe_sse, maybe_sse);
+      maybe_sse, "f95f2a220c9ca5d60b81c4653d46e0de2bee159f",
+      "6f288a03d34958f62496f18fa85655593eef4dbe", maybe_sse, maybe_sse);
 
   const std::string network_stats_checksum =
-      PlatformChecksum("adb3272498e436d1c019cbfd71610e9510c54497",
-                       "fa935a91abc7291db47428a2d7c5361b98713a92",
-                       "42106aa5267300f709f63737707ef07afd9dac61",
-                       "adb3272498e436d1c019cbfd71610e9510c54497",
-                       "adb3272498e436d1c019cbfd71610e9510c54497");
+      PlatformChecksum("0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a",
+                       "a71dce66c7bea85ba22d4e29a5298f606f810444",
+                       "7c64e1e915bace7c4bf583484efd64eaf234552f",
+                       "0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a",
+                       "0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a");
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
-                   FLAG_gen_ref);
+                   absl::GetFlag(FLAGS_gen_ref));
 }
 
 #if !defined(WEBRTC_IOS) && defined(WEBRTC_NETEQ_UNITTEST_BITEXACT) && \
@@ -523,7 +522,7 @@ TEST_F(NetEqDecodingTest, MAYBE_TestOpusDtxBitExactness) {
       "bab58dc587d956f326056d7340c96eb9d2d3cc21";
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
-                   FLAG_gen_ref);
+                   absl::GetFlag(FLAGS_gen_ref));
 }
 
 // Use fax mode to avoid time-scaling. This is to simplify the testing of
@@ -796,7 +795,7 @@ TEST_F(NetEqDecodingTest, LongCngWithNegativeClockDriftNetworkFreeze) {
   const double kDriftFactor = 1000.0 / (1000.0 + 25.0);
   const double kNetworkFreezeTimeMs = 5000.0;
   const bool kGetAudioDuringFreezeRecovery = false;
-  const int kDelayToleranceMs = 50;
+  const int kDelayToleranceMs = 60;
   const int kMaxTimeToSpeechMs = 200;
   LongCngWithClockDrift(kDriftFactor, kNetworkFreezeTimeMs,
                         kGetAudioDuringFreezeRecovery, kDelayToleranceMs,
@@ -1435,7 +1434,8 @@ class NetEqDecodingTestTwoInstances : public NetEqDecodingTest {
   }
 
   void CreateSecondInstance() {
-    neteq2_.reset(NetEq::Create(config2_, CreateBuiltinAudioDecoderFactory()));
+    neteq2_.reset(
+        NetEq::Create(config2_, &clock_, CreateBuiltinAudioDecoderFactory()));
     ASSERT_TRUE(neteq2_);
     LoadDecoders(neteq2_.get());
   }

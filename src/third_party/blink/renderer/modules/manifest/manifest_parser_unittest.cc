@@ -103,7 +103,6 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_EQ(manifest->orientation, kWebScreenOrientationLockDefault);
   ASSERT_FALSE(manifest->has_theme_color);
   ASSERT_FALSE(manifest->has_background_color);
-  ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
   ASSERT_TRUE(manifest->gcm_sender_id.IsNull());
   ASSERT_EQ(DefaultDocumentUrl().BaseAsString(), manifest->scope.GetString());
 }
@@ -1662,7 +1661,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kGet);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
   }
 
   // Auto-fill in "GET" for method and "application/x-www-form-urlencoded" for
@@ -1677,7 +1676,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kGet);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
   }
 
   // Invalid method values, return undefined.
@@ -1743,7 +1742,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kApplication);
+              mojom::blink::ManifestShareTarget::Enctype::kFormUrlEncoded);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1759,7 +1758,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1775,7 +1774,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -1791,7 +1790,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(manifest->share_target->method,
               mojom::blink::ManifestShareTarget::Method::kPost);
     EXPECT_EQ(manifest->share_target->enctype,
-              mojom::blink::ManifestShareTarget::Enctype::kMultipart);
+              mojom::blink::ManifestShareTarget::Enctype::kMultipartFormData);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -2666,91 +2665,6 @@ TEST_F(ManifestParserTest, BackgroundColorParserRules) {
         "{ \"background_color\": \"rgba(0,0,0,"
         "0)\" }");
     EXPECT_EQ(manifest->background_color, 0x00000000u);
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-}
-
-TEST_F(ManifestParserTest, SplashScreenUrlParseRules) {
-  // Smoke test.
-  {
-    auto& manifest =
-        ParseManifest("{ \"splash_screen_url\": \"splash.html\" }");
-    ASSERT_EQ(manifest->splash_screen_url,
-              KURL(DefaultDocumentUrl(), "splash.html"));
-    ASSERT_FALSE(IsManifestEmpty(manifest));
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Whitespaces.
-  {
-    auto& manifest =
-        ParseManifest("{ \"splash_screen_url\": \"    splash.html\" }");
-    ASSERT_EQ(manifest->splash_screen_url,
-              KURL(DefaultDocumentUrl(), "splash.html").GetString());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Don't parse if property isn't a string.
-  {
-    auto& manifest = ParseManifest("{ \"splash_screen_url\": {} }");
-    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'splash_screen_url' ignored, type string expected.",
-              errors()[0]);
-  }
-
-  // Don't parse if property isn't a string.
-  {
-    auto& manifest = ParseManifest("{ \"splash_screen_url\": 42 }");
-    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'splash_screen_url' ignored, type string expected.",
-              errors()[0]);
-  }
-
-  // Don't parse if property isn't a valid URL.
-  {
-    auto& manifest =
-        ParseManifest("{ \"splash_screen_url\": \"http://www.google.ca:a\" }");
-    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'splash_screen_url' ignored, URL is invalid.",
-              errors()[0]);
-  }
-
-  // Absolute splash_screen_url, same origin with document.
-  {
-    auto& manifest = ParseManifestWithURLs(
-        "{ \"splash_screen_url\": \"http://foo.com/splash.html\" }",
-        KURL("http://foo.com/manifest.json"),
-        KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->splash_screen_url.GetString(),
-              "http://foo.com/splash.html");
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Absolute splash_screen_url, cross origin with document.
-  {
-    auto& manifest = ParseManifestWithURLs(
-        "{ \"splash_screen_url\": \"http://bar.com/splash.html\" }",
-        KURL("http://foo.com/manifest.json"),
-        KURL("http://foo.com/index.html"));
-    ASSERT_TRUE(manifest->splash_screen_url.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'splash_screen_url' ignored, should "
-        "be same origin as document.",
-        errors()[0]);
-  }
-
-  // Resolving has to happen based on the manifest_url.
-  {
-    auto& manifest =
-        ParseManifestWithURLs("{ \"splash_screen_url\": \"splash.html\" }",
-                              KURL("http://foo.com/splashy/manifest.json"),
-                              KURL("http://foo.com/index.html"));
-    ASSERT_EQ(manifest->splash_screen_url.GetString(),
-              "http://foo.com/splashy/splash.html");
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

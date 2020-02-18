@@ -91,7 +91,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   // |timeout| is used to abort the sync request on timeouts. TimeDelta::Max()
   // is interpreted as no-timeout.
   // If |download_to_blob_registry| is not null, it is used to redirect the
-  // download to a blob, using StartAsync's |pass_response_pipe_to_peer| flag.
+  // download to a blob.
   virtual void StartSync(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
@@ -110,11 +110,6 @@ class CONTENT_EXPORT ResourceDispatcher {
   // |routing_id| is used to associated the bridge with a frame's network
   // context.
   //
-  // If |pass_response_pipe_to_peer| is true, the raw datapipe containing the
-  // response body is passed on to |peer| without any extra processing. If it
-  // is set to false instead OnReceivedData is called on the |peer| whenever a
-  // chunk of data is available.
-  //
   // You need to pass a non-null |loading_task_runner| to specify task queue to
   // execute loading tasks on.
   virtual int StartAsync(
@@ -123,7 +118,6 @@ class CONTENT_EXPORT ResourceDispatcher {
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       bool is_sync,
-      bool pass_response_pipe_to_peer,
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
@@ -253,7 +247,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
-  base::WeakPtrFactory<ResourceDispatcher> weak_factory_;
+  base::WeakPtrFactory<ResourceDispatcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcher);
 };

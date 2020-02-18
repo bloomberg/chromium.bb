@@ -161,7 +161,7 @@ void GCMDriverDesktop::IOWorker::Initialize(
       network::SharedURLLoaderFactory::Create(std::move(loader_factory_info));
 
   gcm_client_->Initialize(chrome_build_info, store_path, blocking_task_runner,
-                          std::move(get_socket_factory_callback),
+                          io_thread_, std::move(get_socket_factory_callback),
                           url_loader_factory_for_io, network_connection_tracker,
                           std::make_unique<SystemEncryptor>(), this);
 }
@@ -520,7 +520,7 @@ GCMDriverDesktop::GCMDriverDesktop(
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : GCMDriver(store_path, blocking_task_runner),
+    : GCMDriver(store_path, blocking_task_runner, url_loader_factory_for_ui),
       gcm_channel_status_syncer_(
           new GCMChannelStatusSyncer(this,
                                      prefs,
@@ -538,8 +538,7 @@ GCMDriverDesktop::GCMDriverDesktop(
       last_token_fetch_time_(base::Time::Max()),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
-      wake_from_suspend_enabled_(false),
-      weak_ptr_factory_(this) {
+      wake_from_suspend_enabled_(false) {
   gcm_enabled_ = gcm_channel_status_syncer_->gcm_enabled();
 
   // Create and initialize the GCMClient. Note that this does not initiate the

@@ -12,6 +12,7 @@
 #define VIDEO_REPORT_BLOCK_STATS_H_
 
 #include <stdint.h>
+
 #include <map>
 #include <vector>
 
@@ -27,10 +28,6 @@ class ReportBlockStats {
   typedef std::vector<RTCPReportBlock> ReportBlockVector;
   ReportBlockStats();
   ~ReportBlockStats();
-
-  // Updates stats and stores report blocks.
-  // Returns an aggregate of the |report_blocks|.
-  RTCPReportBlock AggregateAndStore(const ReportBlockVector& report_blocks);
 
   // Updates stats and stores report block.
   void Store(const RtcpStatistics& rtcp_stats,

@@ -20,9 +20,9 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
 
@@ -230,9 +230,13 @@ class ThreadedWorkletTest : public testing::Test {
  public:
   void SetUp() override {
     page_ = std::make_unique<DummyPageHolder>();
-    Document* document = page_->GetFrame().GetDocument();
-    document->SetURL(KURL("https://example.com/"));
-    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    KURL url("https://example.com/");
+    page_->GetFrame().Loader().CommitNavigation(
+        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        nullptr /* extra_data */);
+    blink::test::RunPendingTasks();
+    ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+
     messaging_proxy_ =
         MakeGarbageCollected<ThreadedWorkletMessagingProxyForTest>(
             &page_->GetDocument());

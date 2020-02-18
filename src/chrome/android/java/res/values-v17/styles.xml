@@ -154,6 +154,7 @@
         <item name="android:textAppearanceSmall">@style/TextAppearance.BlackBody</item>
         <item name="android:preferenceCategoryStyle">@style/PreferenceCategory</item>
         <item name="android:windowContentOverlay">@null</item>
+        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
     </style>
 
     <style name="Theme.Chromium.Preferences.ManageSpace">
@@ -240,6 +241,75 @@
     <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />
 
     <!-- Preferences styles -->
+    <style name="Theme.Chromium.PreferenceTheme">
+        <item name="preferenceStyle">@style/Theme.Chromium.PreferenceItem</item>
+        <item name="preferenceFragmentCompatStyle">@style/Theme.Chromium.PreferenceFragment</item>
+        <item name="preferenceFragmentListStyle">@style/Theme.Chromium.PreferenceFragmentList</item>
+        <item name="dialogPreferenceStyle">@style/Theme.Chromium.DialogPreference</item>
+        <item name="checkBoxPreferenceStyle">@style/Theme.Chromium.CheckBoxPreferenceCompat</item>
+        <item name="switchPreferenceCompatStyle">@style/Theme.Chromium.SwitchPreferenceCompat</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragment">
+        <item name="android:divider">@drawable/list_divider_compat</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceItem">
+        <item name="android:layout">@layout/preference_compat</item>
+    </style>
+
+    <!-- TODO(crbug.com/971791): The asymmetric start and end paddings here preserve the same
+         overall padding as the pre-support library custom preference layout. Following migration to
+         the support library preferences, we should investigate simplifying these styles.-->
+    <style name="Theme.Chromium.PreferenceLayoutCompat">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceDescriptionCompat">
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceWidgetCompat">
+        <item name="android:minWidth">48dp</item>
+    </style>
+
+    <style name="Theme.Chromium.PreferenceFragmentList">
+        <item name="android:paddingStart">@dimen/pref_list_padding_kitkat</item>
+        <item name="android:paddingEnd">@dimen/pref_list_padding_kitkat</item>
+    </style>
+
+    <style name="Theme.Chromium.DialogPreference">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:negativeButtonText">@android:string/cancel</item>
+    </style>
+
+    <style name="Theme.Chromium.CheckBoxPreferenceCompat">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
+    </style>
+
+    <style name="Theme.Chromium.Preferences.AlertDialog" parent="Theme.Chromium.AlertDialog">
+        <item name="buttonBarButtonStyle">@style/TextAppearance.DialogButtonCompat</item>
+    </style>
+
+    <!-- TODO(chouinard): Using all caps for support library preference dialog buttons to match
+         existing non-compat style, however we should later reexamine whether this is still the
+         right choice since it looks like most of our other AlertDialogs use the default title case.
+         -->
+    <style name="TextAppearance.DialogButtonCompat" parent="AlertDialogButtonStyle">
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <style name="Theme.Chromium.SwitchPreferenceCompat">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
+    </style>
+
     <style name="PreferenceActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/TextAppearance.BlackHeadline</item>
     </style>
@@ -265,7 +335,7 @@
     <style name="PreferenceTitle">
         <item name="android:ellipsize">end</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
     <style name="PreferenceSummary">
         <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
@@ -840,11 +910,14 @@
         <item name="android:windowExitAnimation">@null</item>
     </style>
 
-    <!-- Content and Site Suggestions -->
-    <style name="SuggestionCardModern">
-        <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
+
+    <!-- Card for General Use -->
+    <style name="Card">
         <item name="android:background">@drawable/hairline_border_card_background</item>
-        <item name="android:foreground">@drawable/button_borderless_compat</item>
+      </style>
+    <!-- Content and Site Suggestions -->
+    <style name="SuggestionCardModern" parent="Card">
+        <item name="android:layout_marginBottom">@dimen/content_suggestions_card_modern_margin</item>
     </style>
     <!-- TODO(twellington): Use standard line height for SuggestionsCard*. Updating the leading
      for these requires updating the NTP article suggestions thumbnail size as well. -->
@@ -889,31 +962,6 @@
         <item name="android:textColor">@color/suggestion_url_dark_modern</item>
     </style>
 
-    <style name="TextAppearance.OmniboxAnswerTextLarge">
-        <item name="android:textSize">24sp</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerTextMedium">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerTextSmall">
-        <item name="android:textSize">@dimen/text_size_small</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerDescriptionNegative">
-        <item name="android:textSize">@dimen/text_size_large</item>
-        <item name="android:textColor">@color/answers_description_text_negative</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerDescriptionPositive">
-        <item name="android:textSize">@dimen/text_size_large</item>
-        <item name="android:textColor">@color/answers_description_text_positive</item>
-    </style>
-
     <style name="TextAppearance.OmniboxAnswerDescriptionNegativeSmall">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textColor">@color/answers_description_text_negative</item>
@@ -929,5 +977,22 @@
         <item name="android:layout_width">@dimen/min_touch_target_size</item>
         <item name="android:layout_height">@dimen/omnibox_suggestion_edit_url_min_height</item>
         <item name="tint">@color/default_icon_color</item>
+    </style>
+
+    <style name="OmniboxIcon" parent="LocationBarButton">
+        <item name="android:layout_width">@dimen/location_bar_start_icon_width</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginEnd">4dp</item>
+    </style>
+
+    <!-- Revamped context menu -->
+    <style name="RevampedContextMenuItemText">
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:minHeight">@dimen/min_touch_target_size</item>
+        <item name="android:paddingStart">@dimen/revamped_context_menu_list_lateral_padding</item>
+        <item name="android:paddingEnd">@dimen/revamped_context_menu_list_lateral_padding</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
     </style>
 </resources>

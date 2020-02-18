@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
@@ -63,7 +62,7 @@ bool Extensions3DUtil::EnsureExtensionEnabled(const String& name) {
     return true;
 
   if (requestable_extensions_.Contains(name)) {
-    gl_->RequestExtensionCHROMIUM(name.Ascii().data());
+    gl_->RequestExtensionCHROMIUM(name.Ascii().c_str());
     enabled_extensions_.clear();
     requestable_extensions_.clear();
     InitializeExtensions();

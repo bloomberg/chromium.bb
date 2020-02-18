@@ -68,6 +68,7 @@
 <translation id="1383876407941801731">Tafuta</translation>
 <translation id="1385214448885562192">Bonyeza "enter" ili kukubali au "escape" ili kughairi, "down" kwenda inayofuata na "up" kurudi iliyotangulia.</translation>
 <translation id="1396114365388024581">orodha ya vichupo</translation>
+<translation id="139902759009894363">Tangaza sifa za maandishi anuai</translation>
 <translation id="1405567553485452995">Kijani Isiyokolea</translation>
 <translation id="1417889266572670458">Nili</translation>
 <translation id="1431911867058218151">Rangi ya Plamu</translation>
@@ -318,11 +319,11 @@
 <translation id="3232388865800379423">Kitufe ibukizi</translation>
 <translation id="3241052487511142956">Kiungo kilichotembelewa kilichotangulia</translation>
 <translation id="3241638166094654466">Visanduku katika kila mstari:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">wima</translation>
 <translation id="3286390186030710347">Kitelezi</translation>
 <translation id="3299925995433437805">Hakuna kiungo kilichotembelewa kinachofuata.</translation>
 <translation id="3300348286427369683">Inatumia maandishi anuai. ChromeVox sasa inatumia sehemu za maandishi anuai ikiwa ni pamoja na amri za kuruka, kiashiria cha kuelekeza nukta nundu, uteuzi na mengineyo.</translation>
-<translation id="3304756947457041303">Weka mapendeleo ya kuashiria maandishi anuai</translation>
 <translation id="3307886118343381874">Nenda hadi mwisho wa jedwali</translation>
 <translation id="3311969765485641742">Bonyeza Alt+Shift+A ili kukagua arifa</translation>
 <translation id="3312997241656799641">Kiungo kilichotembelewa kinachofuata</translation>
@@ -889,7 +890,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="725969808843520477">Kitufe cha mviringo kinachofuata</translation>
 <translation id="7261612856573623172">Sauti ya mfumo wa Ubadilishaji wa Maandishi kwenda Usemi</translation>
 <translation id="7269119382257320590">Hakuna vituo  vya maandishi</translation>
-<translation id="7273174640290488576">Mtupu</translation>
+<translation id="7273174640290488576">Hamna chochote</translation>
 <translation id="7274770952766771364">Marejeleo ya dokezo</translation>
 <translation id="7285387653379749618">Majedwali</translation>
 <translation id="7289186959554153431">Kichwa 3</translation>

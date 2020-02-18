@@ -20,9 +20,9 @@
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/thread/web_task_traits.h"
+#include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/public/web_task_traits.h"
-#include "ios/web/public/web_thread.h"
 #include "ios/web/webui/shared_resources_data_source_ios.h"
 #include "ios/web/webui/url_data_source_ios_impl.h"
 #include "net/base/io_buffer.h"
@@ -60,7 +60,7 @@ bool CheckURLIsValid(const GURL& url) {
   std::vector<std::string> additional_schemes;
   DCHECK(GetWebClient()->IsAppSpecificURL(url) ||
          (GetWebClient()->GetAdditionalWebUISchemes(&additional_schemes),
-          base::ContainsValue(additional_schemes, url.scheme())));
+          base::Contains(additional_schemes, url.scheme())));
 
   if (!url.is_valid()) {
     NOTREACHED();

@@ -4,46 +4,48 @@
 */
 'use strict';
 
-import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import './cp-flex.js';
+import {LitElement, html, css} from 'lit-element';
 
-class PlaceHolder extends PolymerElement {
+class PlaceHolder extends LitElement {
   static get is() { return 'place-holder'; }
 
-  static get template() {
+  static get styles() {
+    return css`
+      :host {
+        position: relative;
+        display: flex;
+      }
+
+      #container {
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #content {
+        background: var(--background-color, white);
+        padding: 8px;
+      }
+
+      :host, #container, svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      pattern rect {
+        fill: var(--neutral-color-light, lightgrey);
+      }
+    `;
+  }
+
+  render() {
     return html`
-      <style>
-        :host {
-          position: relative;
-          display: flex;
-        }
-
-        #container {
-          position: absolute;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        #content {
-          background: var(--background-color, white);
-          padding: 8px;
-        }
-
-        :host, #container, svg {
-          width: 100%;
-          height: 100%;
-        }
-
-        pattern rect {
-          fill: var(--neutral-color-light, lightgrey);
-        }
-      </style>
-
-      <div id="container">
+      <cp-flex id="container">
         <div id="content">
           <slot></slot>
         </div>
-      </div>
+      </cp-flex>
 
       <svg>
         <pattern id="pattern"

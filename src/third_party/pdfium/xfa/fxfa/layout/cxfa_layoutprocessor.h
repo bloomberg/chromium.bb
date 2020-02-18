@@ -12,20 +12,24 @@
 
 #include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "xfa/fxfa/parser/cxfa_document.h"
 
-class CXFA_Document;
-class CXFA_ItemLayoutProcessor;
+class CXFA_ContentLayoutProcessor;
 class CXFA_LayoutItem;
-class CXFA_LayoutPageMgr;
 class CXFA_Node;
 class CXFA_ViewLayoutItem;
+class CXFA_ViewLayoutProcessor;
 
-class CXFA_LayoutProcessor {
+class CXFA_LayoutProcessor : public CXFA_Document::LayoutProcessorIface {
  public:
-  explicit CXFA_LayoutProcessor(CXFA_Document* pDocument);
-  ~CXFA_LayoutProcessor();
+  static CXFA_LayoutProcessor* FromDocument(const CXFA_Document* pXFADoc);
 
-  CXFA_Document* GetDocument() const;
+  CXFA_LayoutProcessor();
+  ~CXFA_LayoutProcessor() override;
+
+  // CXFA_Document::LayoutProcessorIface:
+  void SetForceRelayout(bool bForceRestart) override;
+
   int32_t StartLayout(bool bForceRestart);
   int32_t DoLayout();
   bool IncrementLayout();
@@ -33,24 +37,22 @@ class CXFA_LayoutProcessor {
   CXFA_ViewLayoutItem* GetPage(int32_t index) const;
   CXFA_LayoutItem* GetLayoutItem(CXFA_Node* pFormItem);
   void AddChangedContainer(CXFA_Node* pContainer);
-  void SetForceReLayout(bool bForceRestart) { m_bNeedLayout = bForceRestart; }
   CXFA_ViewLayoutItem* GetRootLayoutItem() const;
-  CXFA_ItemLayoutProcessor* GetRootRootItemLayoutProcessor() const {
-    return m_pRootItemLayoutProcessor.get();
+  CXFA_ContentLayoutProcessor* GetRootContentLayoutProcessor() const {
+    return m_pContentLayoutProcessor.get();
   }
-  CXFA_LayoutPageMgr* GetLayoutPageMgr() const {
-    return m_pLayoutPageMgr.get();
+  CXFA_ViewLayoutProcessor* GetLayoutPageMgr() const {
+    return m_pViewLayoutProcessor.get();
   }
 
  private:
   bool IsNeedLayout();
 
-  UnownedPtr<CXFA_Document> const m_pDocument;
-  std::unique_ptr<CXFA_LayoutPageMgr> m_pLayoutPageMgr;
-  std::unique_ptr<CXFA_ItemLayoutProcessor> m_pRootItemLayoutProcessor;
+  std::unique_ptr<CXFA_ViewLayoutProcessor> m_pViewLayoutProcessor;
+  std::unique_ptr<CXFA_ContentLayoutProcessor> m_pContentLayoutProcessor;
   std::vector<CXFA_Node*> m_rgChangedContainers;
-  uint32_t m_nProgressCounter;
-  bool m_bNeedLayout;
+  uint32_t m_nProgressCounter = 0;
+  bool m_bNeedLayout = true;
 };
 
 #endif  // XFA_FXFA_LAYOUT_CXFA_LAYOUTPROCESSOR_H_

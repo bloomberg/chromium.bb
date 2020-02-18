@@ -10,9 +10,11 @@
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/accelerometer/accelerometer_reader.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
+#include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/power/backlights_forced_off_setter.h"
@@ -136,6 +138,12 @@ class LauncherStateWaiter {
 ShellTestApi::ShellTestApi() : shell_(Shell::Get()) {}
 ShellTestApi::~ShellTestApi() = default;
 
+// static
+void ShellTestApi::SetTabletControllerUseScreenshotForTest(
+    bool use_screenshot) {
+  TabletModeController::SetUseScreenshotForTest(use_screenshot);
+}
+
 MessageCenterController* ShellTestApi::message_center_controller() {
   return shell_->message_center_controller_.get();
 }
@@ -171,13 +179,6 @@ void ShellTestApi::ResetPowerButtonControllerForTest() {
       shell_->backlights_forced_off_setter_.get());
 }
 
-void ShellTestApi::ResetTabletModeController() {
-  // Delete the old controller before constructing the new one to avoid
-  // coexistence of two instances of what should be a singleton.
-  shell_->tablet_mode_controller_.reset();
-  shell_->tablet_mode_controller_ = std::make_unique<TabletModeController>();
-}
-
 void ShellTestApi::SimulateModalWindowOpenForTest(bool modal_window_open) {
   shell_->simulate_modal_window_open_for_test_ = modal_window_open;
 }
@@ -186,22 +187,20 @@ bool ShellTestApi::IsSystemModalWindowOpen() {
   return Shell::IsSystemModalWindowOpen();
 }
 
-void ShellTestApi::EnableTabletModeWindowManager(bool enable) {
-  AccelerometerReader::GetInstance()->DisableForTest();
-  shell_->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
+void ShellTestApi::SetTabletModeEnabledForTest(bool enable,
+                                               bool wait_for_completion) {
+  TabletMode::Waiter waiter(enable);
+  shell_->tablet_mode_controller()->SetEnabledForTest(enable);
+  waiter.Wait();
 }
 
 void ShellTestApi::EnableVirtualKeyboard() {
-  shell_->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kCommandLineEnabled);
+  shell_->keyboard_controller()->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kCommandLineEnabled);
 }
 
 void ShellTestApi::ToggleFullscreen() {
   ash::accelerators::ToggleFullscreen();
-}
-
-void ShellTestApi::ToggleOverviewMode() {
-  shell_->overview_controller()->ToggleOverview();
 }
 
 bool ShellTestApi::IsOverviewSelecting() {
@@ -255,6 +254,14 @@ void ShellTestApi::WaitForLauncherAnimationState(
   base::RunLoop run_loop;
   new LauncherStateWaiter(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
+}
+
+PaginationModel* ShellTestApi::GetAppListPaginationModel() {
+  app_list::AppListView* view =
+      Shell::Get()->app_list_controller()->presenter()->GetView();
+  if (!view)
+    return nullptr;
+  return view->GetAppsPaginationModel();
 }
 
 std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {

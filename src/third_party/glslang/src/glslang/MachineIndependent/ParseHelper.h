@@ -85,6 +85,7 @@ public:
             statementNestingLevel(0), loopNestingLevel(0), structNestingLevel(0), controlFlowNestingLevel(0),
             postEntryPointReturn(false),
             contextPragma(true, false),
+            beginInvocationInterlockCount(0), endInvocationInterlockCount(0),
             parsingBuiltins(parsingBuiltins), scanContext(nullptr), ppContext(nullptr),
             limits(resources.limits),
             globalUniformBlock(nullptr),
@@ -182,6 +183,8 @@ public:
     // the statementNestingLevel the current switch statement is at, which must match the level of its case statements
     TList<int> switchLevel;
     struct TPragma contextPragma;
+    int beginInvocationInterlockCount;
+    int endInvocationInterlockCount;
 
 protected:
     TParseContextBase(TParseContextBase&);
@@ -426,7 +429,7 @@ public:
     // Determine loop control from attributes
     void handleLoopAttributes(const TAttributes& attributes, TIntermNode*);
 
-    void resizeMeshViewDimension(const TSourceLoc&, TType&);
+    void checkAndResizeMeshViewDim(const TSourceLoc&, TType&, bool isBlockMember);
 
 protected:
     void nonInitConstCheck(const TSourceLoc&, TString& identifier, TType& type);

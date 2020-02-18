@@ -213,13 +213,6 @@ This variable holds the number of bytes required to align a
 double-- or a long double when applicable. Usual values are
 2, 4 and 8.  The default is eight, for safety.
 
-=item C<ansi2knr>
-
-From F<ansi2knr.U>:
-
-This variable is set if the user needs to run ansi2knr.
-Currently, this is not supported, so we just abort.
-
 =item C<aphostname>
 
 From F<d_gethname.U>:
@@ -794,6 +787,13 @@ From F<d__fwalk.U>:
 This variable conditionally defines C<HAS__FWALK> if _fwalk() is
 available to apply a function to all the file handles.
 
+=item C<d_accept4>
+
+From F<d_accept4.U>:
+
+This variable conditionally defines HAS_ACCEPT4 if accept4() is
+available to accept socket connections.
+
 =item C<d_access>
 
 From F<d_access.U>:
@@ -807,6 +807,13 @@ From F<d_accessx.U>:
 
 This variable conditionally defines the C<HAS_ACCESSX> symbol, which
 indicates to the C program that the accessx() routine is available.
+
+=item C<d_acosh>
+
+From F<d_acosh.U>:
+
+This variable conditionally defines the C<HAS_ACOSH> symbol, which
+indicates to the C program that the acosh() routine is available.
 
 =item C<d_aintl>
 
@@ -845,6 +852,20 @@ From F<d_asctime_r.U>:
 This variable conditionally defines the C<HAS_ASCTIME_R> symbol,
 which indicates to the C program that the asctime_r()
 routine is available.
+
+=item C<d_asinh>
+
+From F<d_asinh.U>:
+
+This variable conditionally defines the C<HAS_ASINH> symbol, which
+indicates to the C program that the asinh() routine is available.
+
+=item C<d_atanh>
+
+From F<d_atanh.U>:
+
+This variable conditionally defines the C<HAS_ATANH> symbol, which
+indicates to the C program that the atanh() routine is available.
 
 =item C<d_atolf>
 
@@ -926,19 +947,13 @@ C<HASATTRIBUTE_WARN_UNUSED_RESULT>, which indicates that the C
 compiler can know that certain functions have a return values
 that must not be ignored, such as malloc() or open().
 
-=item C<d_bcmp>
+=item C<d_backtrace>
 
-From F<d_bcmp.U>:
+From F<d_backtrace.U>:
 
-This variable conditionally defines the C<HAS_BCMP> symbol if
-the bcmp() routine is available to compare strings.
-
-=item C<d_bcopy>
-
-From F<d_bcopy.U>:
-
-This variable conditionally defines the C<HAS_BCOPY> symbol if
-the bcopy() routine is available to copy strings.
+This variable conditionally defines the C<HAS_BACKTRACE> symbol, which
+indicates to the C program that the backtrace() routine is available
+to get a stack trace.
 
 =item C<d_bsd>
 
@@ -962,6 +977,14 @@ This variable conditionally defines C<USE_BSD_SETPGRP> if
 setpgrp needs two arguments whereas C<USG> one needs none.
 See also d_setpgid for a C<POSIX> interface.
 
+=item C<d_builtin_add_overflow>
+
+From F<d_builtin_overflow.U>:
+
+This variable conditionally defines C<HAS_BUILTIN_ADD_OVERFLOW>, which
+indicates that the compiler supports __builtin_add_overflow(x,y,&z)
+for safely adding x and y into z while checking for overflow.
+
 =item C<d_builtin_choose_expr>
 
 From F<d_builtin.U>:
@@ -982,12 +1005,21 @@ that the compiler supports __builtin_expect(exp,c).  You may use
 __builtin_expect to provide the compiler with branch prediction
 information.
 
-=item C<d_bzero>
+=item C<d_builtin_mul_overflow>
 
-From F<d_bzero.U>:
+From F<d_builtin_overflow.U>:
 
-This variable conditionally defines the C<HAS_BZERO> symbol if
-the bzero() routine is available to set memory to 0.
+This variable conditionally defines C<HAS_BUILTIN_MUL_OVERFLOW>, which
+indicates that the compiler supports __builtin_mul_overflow(x,y,&z)
+for safely multiplying x and y into z while checking for overflow.
+
+=item C<d_builtin_sub_overflow>
+
+From F<d_builtin_overflow.U>:
+
+This variable conditionally defines C<HAS_BUILTIN_SUB_OVERFLOW>, which
+indicates that the compiler supports __builtin_sub_overflow(x,y,&z)
+for safely subtracting y from x into z while checking for overflow.
 
 =item C<d_c99_variadic_macros>
 
@@ -1011,13 +1043,13 @@ From F<d_castneg.U>:
 This variable conditionally defines C<CASTNEG>, which indicates
 whether the C compiler can cast negative float to unsigned.
 
-=item C<d_charvspr>
+=item C<d_cbrt>
 
-From F<d_vprintf.U>:
+From F<d_cbrt.U>:
 
-This variable conditionally defines C<CHARVSPRINTF> if this system
-has vsprintf returning type (char*).  The trend seems to be to
-declare it as "int vsprintf()".
+This variable conditionally defines the C<HAS_CBRT> symbol, which
+indicates to the C program that the cbrt() (cube root) function
+is available.
 
 =item C<d_chown>
 
@@ -1069,13 +1101,12 @@ From F<d_cmsghdr_s.U>:
 This variable conditionally defines the C<HAS_STRUCT_CMSGHDR> symbol,
 which indicates that the struct cmsghdr is supported.
 
-=item C<d_const>
+=item C<d_copysign>
 
-From F<d_const.U>:
+From F<d_copysign.U>:
 
-This variable conditionally defines the C<HASCONST> symbol, which
-indicates to the C program that this C compiler knows about the
-const type.
+This variable conditionally defines the C<HAS_COPYSIGN> symbol, which
+indicates to the C program that the copysign() routine is available.
 
 =item C<d_copysignl>
 
@@ -1154,14 +1185,6 @@ This variable conditionally defines the C<HAS_CUSERID> symbol, which
 indicates to the C program that the cuserid() routine is available
 to get character login names.
 
-=item C<d_dbl_dig>
-
-From F<d_dbl_dig.U>:
-
-This variable conditionally defines d_dbl_dig if this system's
-header files provide C<DBL_DIG>, which is the number of significant
-digits in a double precision number.
-
 =item C<d_dbminitproto>
 
 From F<d_dbminitproto.U>:
@@ -1209,6 +1232,14 @@ This variable conditionally defines C<DIRNAMLEN>, which indicates
 to the C program that the length of directory entry names is
 provided by a d_namelen field.
 
+=item C<d_dladdr>
+
+From F<d_dladdr.U>:
+
+This variable conditionally defines the C<HAS_DLADDR> symbol, which
+indicates to the C program that the dladdr() routine is available
+to get a stack trace.
+
 =item C<d_dlerror>
 
 From F<d_dlerror.U>:
@@ -1239,6 +1270,62 @@ This variable conditionally defines the symbol C<DOSUID>, which
 tells the C program that it should insert setuid emulation code
 on hosts which have setuid #! scripts disabled.
 
+=item C<d_double_has_inf>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_HAS_INF>
+which indicates that the double type has an infinity.
+
+=item C<d_double_has_nan>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_HAS_NAN>
+which indicates that the double type has a not-a-number.
+
+=item C<d_double_has_negative_zero>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_HAS_NEGATIVE_ZERO>
+which indicates that the double type has a negative zero.
+
+=item C<d_double_has_subnormals>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_HAS_SUBNORMALS>
+which indicates that the double type has subnormals (denormals).
+
+=item C<d_double_style_cray>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_STYLE_CRAY>
+which indicates that the double is the 64-bit C<CRAY> mainframe format.
+
+=item C<d_double_style_ibm>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_STYLE_IBM>,
+which indicates that the double is the 64-bit C<IBM> mainframe format.
+
+=item C<d_double_style_ieee>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_STYLE_IEEE>,
+which indicates that the double is the 64-bit C<IEEE> 754.
+
+=item C<d_double_style_vax>
+
+From F<longdblfio.U>:
+
+This variable conditionally defines the symbol C<DOUBLE_STYLE_VAX>,
+which indicates that the double is the 64-bit C<VAX> format D or G.
+
 =item C<d_drand48_r>
 
 From F<d_drand48_r.U>:
@@ -1262,6 +1349,21 @@ From F<d_dup2.U>:
 
 This variable conditionally defines HAS_DUP2 if dup2() is
 available to duplicate file descriptors.
+
+=item C<d_dup3>
+
+From F<d_dup3.U>:
+
+This variable conditionally defines HAS_DUP3 if dup3() is
+available to duplicate file descriptors.
+
+=item C<d_duplocale>
+
+From F<d_newlocale.U>:
+
+This variable conditionally defines the C<HAS_DUPLOCALE> symbol, which
+indicates to the C program that the duplocale() routine is available
+to duplicate a locale object.
 
 =item C<d_eaccess>
 
@@ -1369,12 +1471,40 @@ From F<nblock_io.U>:
 This variable conditionally defines C<EOF_NONBLOCK> if C<EOF> can be seen
 when reading from a non-blocking I/O source.
 
+=item C<d_erf>
+
+From F<d_erf.U>:
+
+This variable conditionally defines the C<HAS_ERF> symbol, which
+indicates to the C program that the erf() routine is available.
+
+=item C<d_erfc>
+
+From F<d_erfc.U>:
+
+This variable conditionally defines the C<HAS_ERFC> symbol, which
+indicates to the C program that the erfc() routine is available.
+
 =item C<d_eunice>
 
 From F<Guess.U>:
 
 This variable conditionally defines the symbols C<EUNICE> and C<VAX>, which
 alerts the C program that it must deal with idiosyncrasies of C<VMS>.
+
+=item C<d_exp2>
+
+From F<d_exp2.U>:
+
+This variable conditionally defines the HAS_EXP2 symbol, which
+indicates to the C program that the exp2() routine is available.
+
+=item C<d_expm1>
+
+From F<d_expm1.U>:
+
+This variable conditionally defines the HAS_EXPM1 symbol, which
+indicates to the C program that the expm1() routine is available.
 
 =item C<d_faststdio>
 
@@ -1398,6 +1528,13 @@ From F<d_fchmod.U>:
 This variable conditionally defines the C<HAS_FCHMOD> symbol, which
 indicates to the C program that the fchmod() routine is available
 to change mode of opened files.
+
+=item C<d_fchmodat>
+
+From F<d_fsat.U>:
+
+This variable conditionally defines the C<HAS_FCHMODAT> symbol, which
+indicates the C<POSIX> fchmodat() function is available.
 
 =item C<d_fchown>
 
@@ -1436,6 +1573,20 @@ From F<d_fd_set.U>:
 This variable contains the eventual value of the C<HAS_FD_SET> symbol,
 which indicates if your C compiler knows about the fd_set typedef.
 
+=item C<d_fdclose>
+
+From F<d_fdclose.U>:
+
+This variable conditionally defines the C<HAS_FDCLOSE> symbol, which
+indicates to the C program that the fdclose() routine is available.
+
+=item C<d_fdim>
+
+From F<d_fdim.U>:
+
+This variable conditionally defines the C<HAS_FDIM> symbol, which
+indicates to the C program that the fdim() routine is available.
+
 =item C<d_fds_bits>
 
 From F<d_fd_set.U>:
@@ -1445,6 +1596,13 @@ which indicates if your fd_set typedef contains the fds_bits member.
 If you have an fd_set typedef, but the dweebs who installed it did
 a half-fast job and neglected to provide the macros to manipulate
 an fd_set, C<HAS_FDS_BITS> will let us know how to fix the gaffe.
+
+=item C<d_fegetround>
+
+From F<d_fegetround.U>:
+
+This variable conditionally defines C<HAS_FEGETROUND> if fegetround() is
+available to get the floating point rounding mode.
 
 =item C<d_fgetpos>
 
@@ -1490,6 +1648,27 @@ which indicates to the C program that the system provides
 a prototype for the flock() function.  Otherwise, it is
 up to the program to supply one.
 
+=item C<d_fma>
+
+From F<d_fma.U>:
+
+This variable conditionally defines the C<HAS_FMA> symbol, which
+indicates to the C program that the fma() routine is available.
+
+=item C<d_fmax>
+
+From F<d_fmax.U>:
+
+This variable conditionally defines the C<HAS_FMAX> symbol, which
+indicates to the C program that the fmax() routine is available.
+
+=item C<d_fmin>
+
+From F<d_fmin.U>:
+
+This variable conditionally defines the C<HAS_FMIN> symbol, which
+indicates to the C program that the fmin() routine is available.
+
 =item C<d_fork>
 
 From F<d_fork.U>:
@@ -1503,6 +1682,20 @@ From F<d_fp_class.U>:
 
 This variable conditionally defines the C<HAS_FP_CLASS> symbol, which
 indicates to the C program that the fp_class() routine is available.
+
+=item C<d_fp_classify>
+
+From F<d_fpclassify.U>:
+
+This variable conditionally defines the C<HAS_FP_CLASSIFY> symbol, which
+indicates to the C program that the fp_classify() routine is available.
+
+=item C<d_fp_classl>
+
+From F<d_fp_classl.U>:
+
+This variable conditionally defines the C<HAS_FP_CLASSL> symbol, which
+indicates to the C program that the fp_classl() routine is available.
 
 =item C<d_fpathconf>
 
@@ -1534,11 +1727,26 @@ From F<d_fpclassl.U>:
 This variable conditionally defines the C<HAS_FPCLASSL> symbol, which
 indicates to the C program that the fpclassl() routine is available.
 
+=item C<d_fpgetround>
+
+From F<d_fpgetround.U>:
+
+This variable conditionally defines C<HAS_FPGETROUND> if fpgetround()
+is available to get the floating point rounding mode.
+
 =item C<d_fpos64_t>
 
 From F<d_fpos64_t.U>:
 
 This symbol will be defined if the C compiler supports fpos64_t.
+
+=item C<d_freelocale>
+
+From F<d_newlocale.U>:
+
+This variable conditionally defines the C<HAS_FREELOCALE> symbol, which
+indicates to the C program that the freelocale() routine is available
+to deallocates the resources associated with a locale object.
 
 =item C<d_frexpl>
 
@@ -1611,6 +1819,15 @@ From F<d_futimes.U>:
 This variable conditionally defines the C<HAS_FUTIMES> symbol, which
 indicates to the C program that the futimes() routine is available.
 
+=item C<d_gai_strerror>
+
+From F<d_gai_strerror.U>:
+
+This variable conditionally defines the C<HAS_GAI_STRERROR> symbol
+if the gai_strerror() routine is available and can be used to
+translate error codes returned by getaddrinfo() into human
+readable strings.
+
 =item C<d_Gconvert>
 
 From F<d_gconvert.U>:
@@ -1618,7 +1835,7 @@ From F<d_gconvert.U>:
 This variable holds what Gconvert is defined as to convert
 floating point numbers into strings.  By default, Configure
 sets C<this> macro to use the first of gconvert, gcvt, or sprintf
-that pass sprintf-%g-like behaviour tests.  If perl is using
+that pass sprintf-%g-like behavior tests.  If perl is using
 long doubles, the macro uses the first of the following
 functions that pass Configure's tests: qgcvt, sprintf (if
 Configure knows how to make sprintf format long doubles--see
@@ -2147,6 +2364,13 @@ From F<i_grp.U>:
 This variable conditionally defines C<GRPASSWD>, which indicates
 that struct group in <grp.h> contains gr_passwd.
 
+=item C<d_has_C_UTF8>
+
+From F<d_setlocale.U>:
+
+This variable is set to either C<true> or C<false> depending on
+whether the compilation system supports the F<C.UTF>-8 locale.
+
 =item C<d_hasmntopt>
 
 From F<d_hasmntopt.U>:
@@ -2162,12 +2386,28 @@ From F<d_htonl.U>:
 This variable conditionally defines C<HAS_HTONL> if htonl() and its
 friends are available to do network order byte swapping.
 
+=item C<d_hypot>
+
+From F<d_hypot.U>:
+
+This variable conditionally defines C<HAS_HYPOT> if hypot is available
+for numerically stable hypotenuse function.
+
+=item C<d_ilogb>
+
+From F<d_ilogb.U>:
+
+This variable conditionally defines the C<HAS_ILOGB> symbol, which
+indicates to the C program that the ilogb() routine is available
+for extracting the exponent of double x as a signed integer.
+
 =item C<d_ilogbl>
 
 From F<d_ilogbl.U>:
 
 This variable conditionally defines the C<HAS_ILOGBL> symbol, which
-indicates to the C program that the ilogbl() routine is available.
+indicates to the C program that the ilogbl() routine is available
+for extracting the exponent of long double x as a signed integer.
 If scalbnl is also present we can emulate frexpl.
 
 =item C<d_inc_version_list>
@@ -2176,13 +2416,6 @@ From F<inc_version_list.U>:
 
 This variable conditionally defines C<PERL_INC_VERSION_LIST>.
 It is set to undef when C<PERL_INC_VERSION_LIST> is empty.
-
-=item C<d_index>
-
-From F<d_strchr.U>:
-
-This variable conditionally defines C<HAS_INDEX> if index() and
-rindex() are available for string searching.
 
 =item C<d_inetaton>
 
@@ -2214,12 +2447,33 @@ From F<d_int64_t.U>:
 
 This symbol will be defined if the C compiler supports int64_t.
 
+=item C<d_ip_mreq>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the C<HAS_IP_MREQ> symbol, which
+indicates the availability of a struct ip_mreq.
+
+=item C<d_ip_mreq_source>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the C<HAS_IP_MREQ_SOURCE> symbol,
+which indicates the availability of a struct ip_mreq_source.
+
 =item C<d_ipv6_mreq>
 
 From F<d_socket.U>:
 
 This variable conditionally defines the HAS_IPV6_MREQ symbol, which
 indicates the availability of a struct ipv6_mreq.
+
+=item C<d_ipv6_mreq_source>
+
+From F<d_socket.U>:
+
+This variable conditionally defines the HAS_IPV6_MREQ_SOURCE symbol,
+which indicates the availability of a struct ipv6_mreq_source.
 
 =item C<d_isascii>
 
@@ -2242,12 +2496,33 @@ From F<d_isfinite.U>:
 This variable conditionally defines the C<HAS_ISFINITE> symbol, which
 indicates to the C program that the isfinite() routine is available.
 
+=item C<d_isfinitel>
+
+From F<d_isfinitel.U>:
+
+This variable conditionally defines the C<HAS_ISFINITEL> symbol, which
+indicates to the C program that the isfinitel() routine is available.
+
 =item C<d_isinf>
 
 From F<d_isinf.U>:
 
 This variable conditionally defines the C<HAS_ISINF> symbol, which
 indicates to the C program that the isinf() routine is available.
+
+=item C<d_isinfl>
+
+From F<d_isinfl.U>:
+
+This variable conditionally defines the C<HAS_ISINFL> symbol, which
+indicates to the C program that the isinfl() routine is available.
+
+=item C<d_isless>
+
+From F<d_isless.U>:
+
+This variable conditionally defines the C<HAS_ISLESS> symbol, which
+indicates to the C program that the isless() routine is available.
 
 =item C<d_isnan>
 
@@ -2263,6 +2538,27 @@ From F<d_isnanl.U>:
 This variable conditionally defines the C<HAS_ISNANL> symbol, which
 indicates to the C program that the isnanl() routine is available.
 
+=item C<d_isnormal>
+
+From F<d_isnormal.U>:
+
+This variable conditionally defines the C<HAS_ISNORMAL> symbol, which
+indicates to the C program that the isnormal() routine is available.
+
+=item C<d_j0>
+
+From F<d_j0.U>:
+
+This variable conditionally defines the HAS_J0 symbol, which
+indicates to the C program that the j0() routine is available.
+
+=item C<d_j0l>
+
+From F<d_j0.U>:
+
+This variable conditionally defines the HAS_J0L symbol, which
+indicates to the C program that the j0l() routine is available.
+
 =item C<d_killpg>
 
 From F<d_killpg.U>:
@@ -2270,6 +2566,14 @@ From F<d_killpg.U>:
 This variable conditionally defines the C<HAS_KILLPG> symbol, which
 indicates to the C program that the killpg() routine is available
 to kill process groups.
+
+=item C<d_lc_monetary_2008>
+
+From F<d_lc_monetary_2008.U>:
+
+This variable conditionally defines HAS_LC_MONETARY_2008 if libc
+has the international currency locale rules from C<POSIX>
+1003.1-2008.
 
 =item C<d_lchown>
 
@@ -2287,6 +2591,29 @@ This variable conditionally defines d_ldbl_dig if this system's
 header files provide C<LDBL_DIG>, which is the number of significant
 digits in a long double precision number.
 
+=item C<d_ldexpl>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines the C<HAS_LDEXPL> symbol, which
+indicates to the C program that the ldexpl() routine is available.
+
+=item C<d_lgamma>
+
+From F<d_lgamma.U>:
+
+This variable conditionally defines the C<HAS_LGAMMA> symbol, which
+indicates to the C program that the lgamma() routine is available
+for the log gamma function.  See also d_tgamma and d_lgamma_r.
+
+=item C<d_lgamma_r>
+
+From F<d_lgamma_r.U>:
+
+This variable conditionally defines the C<HAS_LGAMMA_R> symbol, which
+indicates to the C program that the lgamma_r() routine is available
+for the log gamma function, without using the global signgam variable.
+
 =item C<d_libm_lib_version>
 
 From F<d_libm_lib_version.U>:
@@ -2295,12 +2622,69 @@ This variable conditionally defines the C<LIBM_LIB_VERSION> symbol,
 which indicates to the C program that F<math.h> defines C<_LIB_VERSION>
 being available in libm
 
+=item C<d_libname_unique>
+
+From F<so.U>:
+
+This variable is defined if the target system insists on unique
+basenames for shared library files. This is currently true on Android,
+false everywhere else we know of.
+Defaults to C<undef>.
+
 =item C<d_link>
 
 From F<d_link.U>:
 
 This variable conditionally defines C<HAS_LINK> if link() is
 available to create hard links.
+
+=item C<d_linkat>
+
+From F<d_fsat.U>:
+
+This variable conditionally defines the C<HAS_LINKAT> symbol, which
+indicates the C<POSIX> linkat() function is available.
+
+=item C<d_llrint>
+
+From F<d_llrint.U>:
+
+This variable conditionally defines the C<HAS_LLRINT> symbol, which
+indicates to the C program that the llrint() routine is available
+to return the long long value closest to a double (according
+to the current rounding mode).
+
+=item C<d_llrintl>
+
+From F<d_llrintl.U>:
+
+This variable conditionally defines the C<HAS_LLRINTL> symbol, which
+indicates to the C program that the llrintl() routine is available
+to return the long long value closest to a long double (according
+to the current rounding mode).
+
+=item C<d_llround>
+
+From F<d_llround.U>:
+
+This variable conditionally defines the C<HAS_LLROUND> symbol, which
+indicates to the C program that the llround() routine is available
+to return the long long value nearest to x.
+
+=item C<d_llroundl>
+
+From F<d_llroundl.U>:
+
+This variable conditionally defines the C<HAS_LLROUNDL> symbol, which
+indicates to the C program that the llroundl() routine is available
+to return the long long value nearest to x away from zero.
+
+=item C<d_localeconv_l>
+
+From F<d_localeconv_l.U>:
+
+This variable conditionally defines the C<HAS_LOCALECONV_L> symbol, which
+indicates to the C program that the localeconv_l() routine is available.
 
 =item C<d_localtime64>
 
@@ -2338,6 +2722,69 @@ From F<d_lockf.U>:
 This variable conditionally defines C<HAS_LOCKF> if lockf() is
 available to do file locking.
 
+=item C<d_log1p>
+
+From F<d_log1p.U>:
+
+This variable conditionally defines the HAS_LOG1P symbol, which
+indicates to the C program that the logp1() routine is available
+to compute log(1 + x) for values of x close to zero.
+
+=item C<d_log2>
+
+From F<d_log2.U>:
+
+This variable conditionally defines the HAS_LOG2 symbol, which
+indicates to the C program that the log2() routine is available
+to compute log base two.
+
+=item C<d_logb>
+
+From F<d_logb.U>:
+
+This variable conditionally defines the C<HAS_LOGB> symbol, which
+indicates to the C program that the logb() routine is available
+to extract the exponent of x.
+
+=item C<d_long_double_style_ieee>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines C<LONG_DOUBLE_STYLE_IEEE>
+if the long double is any of the C<IEEE> 754 style long doubles:
+C<LONG_DOUBLE_STYLE_IEEE_STD>, C<LONG_DOUBLE_STYLE_IEEE_EXTENDED>,
+C<LONG_DOUBLE_STYLE_IEEE_DOUBLEDOUBLE>.
+
+=item C<d_long_double_style_ieee_doubledouble>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines C<LONG_DOUBLE_STYLE_IEEE_DOUBLEDOUBLE>
+if the long double is the 128-bit C<IEEE> 754 double-double.
+
+=item C<d_long_double_style_ieee_extended>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines C<LONG_DOUBLE_STYLE_IEEE_EXTENDED>
+if the long double is the 80-bit C<IEEE> 754 extended precision.
+Note that despite the C<extended> this is less than the C<std>,
+since thisis an extension of the double precision.
+
+=item C<d_long_double_style_ieee_std>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines C<LONG_DOUBLE_STYLE_IEEE_STD>
+if the long double is the 128-bit C<IEEE> 754.
+
+=item C<d_long_double_style_vax>
+
+From F<d_longdbl.U>:
+
+This variable conditionally defines C<LONG_DOUBLE_STYLE_VAX>
+if the long double is the 128-bit C<VAX> format H.
+
 =item C<d_longdbl>
 
 From F<d_longdbl.U>:
@@ -2351,6 +2798,40 @@ From F<d_longlong.U>:
 
 This variable conditionally defines C<HAS_LONG_LONG> if
 the long long type is supported.
+
+=item C<d_lrint>
+
+From F<d_lrint.U>:
+
+This variable conditionally defines the C<HAS_LRINT> symbol, which
+indicates to the C program that the lrint() routine is available
+to return the integral value closest to a double (according
+to the current rounding mode).
+
+=item C<d_lrintl>
+
+From F<d_lrintl.U>:
+
+This variable conditionally defines the C<HAS_LRINTL> symbol, which
+indicates to the C program that the lrintl() routine is available
+to return the integral value closest to a long double (according
+to the current rounding mode).
+
+=item C<d_lround>
+
+From F<d_lround.U>:
+
+This variable conditionally defines the C<HAS_LROUND> symbol, which
+indicates to the C program that the lround() routine is available
+to return the integral value nearest to x.
+
+=item C<d_lroundl>
+
+From F<d_lroundl.U>:
+
+This variable conditionally defines the C<HAS_LROUNDL> symbol, which
+indicates to the C program that the lroundl() routine is available
+to return the integral value nearest to x away from zero.
 
 =item C<d_lseekproto>
 
@@ -2397,6 +2878,22 @@ This variable conditionally defines the C<HAS_MBLEN> symbol, which
 indicates to the C program that the mblen() routine is available
 to find the number of bytes in a multibye character.
 
+=item C<d_mbrlen>
+
+From F<d_mbrlen.U>:
+
+This variable conditionally defines the C<HAS_MBRLEN> symbol if the
+mbrlen() routine is available to be used to get the length of
+multi-byte character strings.
+
+=item C<d_mbrtowc>
+
+From F<d_mbrtowc.U>:
+
+This variable conditionally defines the C<HAS_MBRTOWC> symbol if the
+mbrtowc() routine is available to be used to convert a multi-byte
+character into a wide character.
+
 =item C<d_mbstowcs>
 
 From F<d_mbstowcs.U>:
@@ -2413,45 +2910,23 @@ This variable conditionally defines the C<HAS_MBTOWC> symbol, which
 indicates to the C program that the mbtowc() routine is available
 to convert multibyte to a wide character.
 
-=item C<d_memchr>
+=item C<d_memmem>
 
-From F<d_memchr.U>:
+From F<d_memmem.U>:
 
-This variable conditionally defines the C<HAS_MEMCHR> symbol, which
-indicates to the C program that the memchr() routine is available
-to locate characters within a C string.
+This variable conditionally defines the C<HAS_MEMMEM> symbol, which
+indicates to the C program that the memmem() routine is available
+to return a pointer to the start of the first occurance of a
+substring in a memory area (or C<NULL> if not found).
 
-=item C<d_memcmp>
+=item C<d_memrchr>
 
-From F<d_memcmp.U>:
+From F<d_memrchr.U>:
 
-This variable conditionally defines the C<HAS_MEMCMP> symbol, which
-indicates to the C program that the memcmp() routine is available
-to compare blocks of memory.
-
-=item C<d_memcpy>
-
-From F<d_memcpy.U>:
-
-This variable conditionally defines the C<HAS_MEMCPY> symbol, which
-indicates to the C program that the memcpy() routine is available
-to copy blocks of memory.
-
-=item C<d_memmove>
-
-From F<d_memmove.U>:
-
-This variable conditionally defines the C<HAS_MEMMOVE> symbol, which
-indicates to the C program that the memmove() routine is available
-to copy potentially overlapping blocks of memory.
-
-=item C<d_memset>
-
-From F<d_memset.U>:
-
-This variable conditionally defines the C<HAS_MEMSET> symbol, which
-indicates to the C program that the memset() routine is available
-to set blocks of memory.
+This variable conditionally defines the C<HAS_MEMRCHR> symbol, which
+indicates to the C program that the memrchr() routine is available
+to return a pointer to the last occurrence of a byte in a memory
+area (or C<NULL> if not found).
 
 =item C<d_mkdir>
 
@@ -2475,6 +2950,14 @@ From F<d_mkfifo.U>:
 
 This variable conditionally defines the C<HAS_MKFIFO> symbol, which
 indicates to the C program that the mkfifo() routine is available.
+
+=item C<d_mkostemp>
+
+From F<d_mkostemp.U>:
+
+This variable conditionally defines C<HAS_MKOSTEMP> if mkostemp() is
+available to exclusively create and open a uniquely named (with a
+suffix) temporary file.
 
 =item C<d_mkstemp>
 
@@ -2520,16 +3003,6 @@ From F<d_modfl.U>:
 
 This variable conditionally defines the C<HAS_MODFL> symbol, which
 indicates to the C program that the modfl() routine is available.
-
-=item C<d_modfl_pow32_bug>
-
-From F<d_modfl.U>:
-
-This variable conditionally defines the HAS_MODFL_POW32_BUG symbol,
-which indicates that modfl() is broken for long doubles >= pow(2, 32).
-For example from 4294967303.150000 one would get 4294967302.000000
-and 1.150000.  The bug has been seen in certain versions of glibc,
-release 2.2.2 is known to be okay.
 
 =item C<d_modflproto>
 
@@ -2651,6 +3124,20 @@ This variable conditionally defines C<MYMALLOC> in case other parts
 of the source want to take special action if C<MYMALLOC> is used.
 This may include different sorts of profiling or error detection.
 
+=item C<d_nan>
+
+From F<d_nan.U>:
+
+This variable conditionally defines C<HAS_NAN> if nan() is
+available to generate NaN.
+
+=item C<d_nanosleep>
+
+From F<d_nanosleep.U>:
+
+This variable conditionally defines C<HAS_NANOSLEEP>
+if nanosleep() is available to sleep with 1E-9 sec accuracy.
+
 =item C<d_ndbm>
 
 From F<i_ndbm.U>:
@@ -2673,6 +3160,38 @@ declarations are unsupported in C++, so the include file requires
 special handling when using a C++ compiler and this variable is
 undefined. Consult the different d_*ndbm_h_uses_prototypes variables
 to get the same information for alternative F<ndbm.h> include files.
+
+=item C<d_nearbyint>
+
+From F<d_nearbyint.U>:
+
+This variable conditionally defines C<HAS_NEARBYINT> if nearbyint()
+is available to return the integral value closest to (according to
+the current rounding mode) to x.
+
+=item C<d_newlocale>
+
+From F<d_newlocale.U>:
+
+This variable conditionally defines the C<HAS_NEWLOCALE> symbol, which
+indicates to the C program that the newlocale() routine is available
+to return a new locale object or modify an existing locale object.
+
+=item C<d_nextafter>
+
+From F<d_nextafter.U>:
+
+This variable conditionally defines C<HAS_NEXTAFTER> if nextafter()
+is available to return the next machine representable double from
+x in direction y.
+
+=item C<d_nexttoward>
+
+From F<d_nexttoward.U>:
+
+This variable conditionally defines C<HAS_NEXTTOWARD> if nexttoward()
+is available to return the next machine representable long double from
+x in direction y.
 
 =item C<d_nice>
 
@@ -2739,6 +3258,13 @@ This variable conditionally defines the HAS_OPEN3 manifest constant,
 which indicates to the C program that the 3 argument version of
 the open(2) function is available.
 
+=item C<d_openat>
+
+From F<d_fsat.U>:
+
+This variable conditionally defines the C<HAS_OPENAT> symbol, which
+indicates the C<POSIX> openat() function is available.
+
 =item C<d_pathconf>
 
 From F<d_pathconf.U>:
@@ -2780,6 +3306,14 @@ This variable conditionally defines the C<HAS_PIPE> symbol, which
 indicates to the C program that the pipe() routine is available
 to create an inter-process channel.
 
+=item C<d_pipe2>
+
+From F<d_pipe2.U>:
+
+This variable conditionally defines the HAS_PIPE2 symbol, which
+indicates to the C program that the pipe2() routine is available
+to create an inter-process channel.
+
 =item C<d_poll>
 
 From F<d_poll.U>:
@@ -2802,6 +3336,8 @@ From F<d_prctl.U>:
 
 This variable conditionally defines the C<HAS_PRCTL> symbol, which
 indicates to the C program that the prctl() routine is available.
+Note that there are at least two prctl variants: Linux and Irix.
+While they are somewhat similar, they are incompatible.
 
 =item C<d_prctl_set_name>
 
@@ -2949,6 +3485,12 @@ This variable conditionally defines the C<HAS_PTHREAD_YIELD>
 symbol if the pthread_yield routine is available to yield
 the execution of the current thread.
 
+=item C<d_ptrdiff_t>
+
+From F<d_ptrdiff_t.U>:
+
+This symbol will be defined if the C compiler supports ptrdiff_t.
+
 =item C<d_pwage>
 
 From F<i_pwd.U>:
@@ -3019,6 +3561,14 @@ From F<quadtype.U>:
 This variable, if defined, tells that there's a 64-bit integer type,
 quadtype.
 
+=item C<d_querylocale>
+
+From F<d_newlocale.U>:
+
+This variable conditionally defines the C<HAS_QUERYLOCALE> symbol, which
+indicates to the C program that the querylocale() routine is available
+to return the name of the locale for a category mask.
+
 =item C<d_random_r>
 
 From F<d_random_r.U>:
@@ -3026,6 +3576,15 @@ From F<d_random_r.U>:
 This variable conditionally defines the C<HAS_RANDOM_R> symbol,
 which indicates to the C program that the random_r()
 routine is available.
+
+=item C<d_re_comp>
+
+From F<d_regcmp.U>:
+
+This variable conditionally defines the C<HAS_RECOMP> symbol, which
+indicates to the C program that the re_comp() routine is available
+for regular patern matching (usally on C<BSD>). If so, it is likely that
+re_exec() exists.
 
 =item C<d_readdir>
 
@@ -3072,6 +3631,36 @@ From F<d_recvmsg.U>:
 This variable conditionally defines the C<HAS_RECVMSG> symbol, which
 indicates to the C program that the recvmsg() routine is available.
 
+=item C<d_regcmp>
+
+From F<d_regcmp.U>:
+
+This variable conditionally defines the C<HAS_REGCMP> symbol, which
+indicates to the C program that the regcmp() routine is available
+for regular patern matching (usally on System V).
+
+=item C<d_regcomp>
+
+From F<d_regcmp.U>:
+
+This variable conditionally defines the C<HAS_REGCOMP> symbol, which
+indicates to the C program that the regcomp() routine is available
+for regular patern matching (usally on F<POSIX.2> conforming systems).
+
+=item C<d_remainder>
+
+From F<d_remainder.U>:
+
+This variable conditionally defines the C<HAS_REMAINDER> symbol, which
+indicates to the C program that the remainder() routine is available.
+
+=item C<d_remquo>
+
+From F<d_remquo.U>:
+
+This variable conditionally defines the C<HAS_REMQUO> symbol, which
+indicates to the C program that the remquo() routine is available.
+
 =item C<d_rename>
 
 From F<d_rename.U>:
@@ -3080,12 +3669,26 @@ This variable conditionally defines the C<HAS_RENAME> symbol, which
 indicates to the C program that the rename() routine is available
 to rename files.
 
+=item C<d_renameat>
+
+From F<d_fsat.U>:
+
+This variable conditionally defines the C<HAS_RENAMEAT> symbol, which
+indicates the C<POSIX> renameat() function is available.
+
 =item C<d_rewinddir>
 
 From F<d_readdir.U>:
 
 This variable conditionally defines C<HAS_REWINDDIR> if rewinddir() is
 available.
+
+=item C<d_rint>
+
+From F<d_rint.U>:
+
+This variable conditionally defines the C<HAS_RINT> symbol, which
+indicates to the C program that the rint() routine is available.
 
 =item C<d_rmdir>
 
@@ -3094,29 +3697,12 @@ From F<d_rmdir.U>:
 This variable conditionally defines C<HAS_RMDIR> if rmdir() is
 available to remove directories.
 
-=item C<d_safebcpy>
+=item C<d_round>
 
-From F<d_safebcpy.U>:
+From F<d_round.U>:
 
-This variable conditionally defines the C<HAS_SAFE_BCOPY> symbol if
-the bcopy() routine can do overlapping copies.  Normally, you
-should probably use memmove().
-
-=item C<d_safemcpy>
-
-From F<d_safemcpy.U>:
-
-This variable conditionally defines the C<HAS_SAFE_MEMCPY> symbol if
-the memcpy() routine can do overlapping copies.
-For overlapping copies, memmove() should be used, if available.
-
-=item C<d_sanemcmp>
-
-From F<d_sanemcmp.U>:
-
-This variable conditionally defines the C<HAS_SANE_MEMCMP> symbol if
-the memcpy() routine is available and can be used to compare relative
-magnitudes of chars with their high bits set.
+This variable conditionally defines the C<HAS_ROUND> symbol, which
+indicates to the C program that the round() routine is available.
 
 =item C<d_sbrkproto>
 
@@ -3126,6 +3712,13 @@ This variable conditionally defines the C<HAS_SBRK_PROTO> symbol,
 which indicates to the C program that the system provides
 a prototype for the sbrk() function.  Otherwise, it is
 up to the program to supply one.
+
+=item C<d_scalbn>
+
+From F<d_scalbn.U>:
+
+This variable conditionally defines the C<HAS_SCALBN> symbol, which
+indicates to the C program that the scalbn() routine is available.
 
 =item C<d_scalbnl>
 
@@ -3300,6 +3893,13 @@ From F<d_setlocale.U>:
 This variable conditionally defines C<HAS_SETLOCALE> if setlocale() is
 available to handle locale-specific ctype implementations.
 
+=item C<d_setlocale_accepts_any_locale_name>
+
+From F<d_setlocale.U>:
+
+This variable conditionally defines C<SETLOCALE_ACCEPTS_ANY_LOCALE_NAME>
+if setlocale() accepts any locale name.
+
 =item C<d_setlocale_r>
 
 From F<d_setlocale_r.U>:
@@ -3469,13 +4069,6 @@ This variable conditionally defines the C<HAS_SETVBUF> symbol, which
 indicates to the C program that the setvbuf() routine is available
 to change buffering on an open stdio stream.
 
-=item C<d_sfio>
-
-From F<d_sfio.U>:
-
-This variable conditionally defines the C<USE_SFIO> symbol,
-and indicates whether sfio is available (and should be used).
-
 =item C<d_shm>
 
 From F<d_shm.U>:
@@ -3525,6 +4118,62 @@ From F<d_sigaction.U>:
 
 This variable conditionally defines the C<HAS_SIGACTION> symbol, which
 indicates that the Vr4 sigaction() routine is available.
+
+=item C<d_siginfo_si_addr>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_ADDR> symbol,
+which indicates that the siginfo_t struct has the si_addr member.
+
+=item C<d_siginfo_si_band>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_BAND> symbol,
+which indicates that the siginfo_t struct has the si_band member.
+
+=item C<d_siginfo_si_errno>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_ERRNO> symbol,
+which indicates that the siginfo_t struct has the si_errno member.
+
+=item C<d_siginfo_si_fd>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_FD> symbol,
+which indicates that the siginfo_t struct has the si_fd member.
+
+=item C<d_siginfo_si_pid>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_PID> symbol,
+which indicates that the siginfo_t struct has the si_pid member.
+
+=item C<d_siginfo_si_status>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_STATUS> symbol,
+which indicates that the siginfo_t struct has the si_status member.
+
+=item C<d_siginfo_si_uid>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_UID> symbol,
+which indicates that the siginfo_t struct has the si_uid member.
+
+=item C<d_siginfo_si_value>
+
+From F<d_siginfo_si.U>:
+
+This variable conditionally defines the C<HAS_SIGINFO_SI_VALUE> symbol,
+which indicates that the siginfo_t struct has the si_value member.
 
 =item C<d_signbit>
 
@@ -3632,15 +4281,6 @@ From F<d_socks5_init.U>:
 This variable conditionally defines the HAS_SOCKS5_INIT symbol, which
 indicates to the C program that the socks5_init() routine is available.
 
-=item C<d_sprintf_returns_strlen>
-
-From F<d_sprintf_len.U>:
-
-This variable defines whether sprintf returns the length of the string
-(as per the C<ANSI> spec). Some C libraries retain compatibility with
-pre-C<ANSI> C and return a pointer to the passed in buffer; for these
-this variable will be undef.
-
 =item C<d_sqrtl>
 
 From F<d_sqrtl.U>:
@@ -3681,6 +4321,13 @@ This variable conditionally defines the C<HAS_SETRESUID_PROTO> symbol,
 which indicates to the C program that the system provides
 a prototype for the setresuid() function.  Otherwise, it is
 up to the program to supply one.
+
+=item C<d_stat>
+
+From F<d_stat.U>:
+
+This variable conditionally defines C<HAS_STAT> if stat() is
+available to get file status.
 
 =item C<d_statblks>
 
@@ -3774,13 +4421,6 @@ This variable conditionally defines C<USE_STDIO_PTR> if this system
 has a C<FILE> structure declaring usable _ptr and _cnt fields (or
 equivalent) in F<stdio.h>.
 
-=item C<d_strchr>
-
-From F<d_strchr.U>:
-
-This variable conditionally defines C<HAS_STRCHR> if strchr() and
-strrchr() are available for string searching.
-
 =item C<d_strcoll>
 
 From F<d_strcoll.U>:
@@ -3788,29 +4428,14 @@ From F<d_strcoll.U>:
 This variable conditionally defines C<HAS_STRCOLL> if strcoll() is
 available to compare strings using collating information.
 
-=item C<d_strctcpy>
+=item C<d_strerror_l>
 
-From F<d_strctcpy.U>:
+From F<d_strerror_l.U>:
 
-This variable conditionally defines the C<USE_STRUCT_COPY> symbol, which
-indicates to the C program that this C compiler knows how to copy
-structures.
-
-=item C<d_strerrm>
-
-From F<d_strerror.U>:
-
-This variable holds what Strerrr is defined as to translate an error
-code condition into an error message string. It could be C<strerror>
-or a more C<complex> macro emulating strrror with sys_errlist[], or the
-C<unknown> string when both strerror and sys_errlist are missing.
-
-=item C<d_strerror>
-
-From F<d_strerror.U>:
-
-This variable conditionally defines C<HAS_STRERROR> if strerror() is
-available to translate error numbers to strings.
+This variable conditionally defines the C<HAS_STRERROR_L> symbol, which
+indicates to the C program that the strerror_l() routine is available
+to return the error message for a given errno value in a particular
+locale (identified by a locale_t object).
 
 =item C<d_strerror_r>
 
@@ -3841,6 +4466,13 @@ From F<d_strlcpy.U>:
 This variable conditionally defines the C<HAS_STRLCPY> symbol, which
 indicates to the C program that the strlcpy () routine is available.
 
+=item C<d_strnlen>
+
+From F<d_strnlen.U>:
+
+This variable conditionally defines the C<HAS_STRNLEN> symbol, which
+indicates to the C program that the strnlen () routine is available.
+
 =item C<d_strtod>
 
 From F<d_strtod.U>:
@@ -3848,6 +4480,13 @@ From F<d_strtod.U>:
 This variable conditionally defines the C<HAS_STRTOD> symbol, which
 indicates to the C program that the strtod() routine is available
 to provide better numeric string conversion than atof().
+
+=item C<d_strtod_l>
+
+From F<d_strtod_l.U>:
+
+This variable conditionally defines the C<HAS_STRTOD_L> symbol, which
+indicates to the C program that the strtod_l() routine is available.
 
 =item C<d_strtol>
 
@@ -3863,6 +4502,13 @@ From F<d_strtold.U>:
 
 This variable conditionally defines the C<HAS_STRTOLD> symbol, which
 indicates to the C program that the strtold() routine is available.
+
+=item C<d_strtold_l>
+
+From F<d_strtold_l.U>:
+
+This variable conditionally defines the C<HAS_STRTOLD_L> symbol, which
+indicates to the C program that the strtold_l() routine is available.
 
 =item C<d_strtoll>
 
@@ -3999,6 +4645,22 @@ which indicates to the C program that the system provides
 a prototype for the telldir() function.  Otherwise, it is
 up to the program to supply one.
 
+=item C<d_tgamma>
+
+From F<d_tgamma.U>:
+
+This variable conditionally defines the C<HAS_TGAMMA> symbol, which
+indicates to the C program that the tgamma() routine is available
+for the gamma function.  See also d_lgamma.
+
+=item C<d_thread_safe_nl_langinfo_l>
+
+From F<d_nl_langinfo_l.U>:
+
+This variable contains the eventual value of the
+C<HAS_THREAD_SAFE_NL_LANGINFO_L> symbol, which indicates if the
+nl_langinfo_l() function exists and is thread-safe.
+
 =item C<d_time>
 
 From F<d_time.U>:
@@ -4044,12 +4706,43 @@ This variable conditionally defines the C<HAS_TMPNAM_R> symbol,
 which indicates to the C program that the tmpnam_r()
 routine is available.
 
+=item C<d_towlower>
+
+From F<d_towlower.U>:
+
+This variable conditionally defines the C<HAS_TOWLOWER> symbol, which
+indicates to the C program that the towlower() routine is available.
+
+=item C<d_towupper>
+
+From F<d_towupper.U>:
+
+This variable conditionally defines the C<HAS_TOWUPPER> symbol, which
+indicates to the C program that the towupper() routine is available.
+
+=item C<d_trunc>
+
+From F<d_trunc.U>:
+
+This variable conditionally defines the C<HAS_TRUNC> symbol, which
+indicates to the C program that the trunc() routine is available
+to round doubles towards zero.
+
 =item C<d_truncate>
 
 From F<d_truncate.U>:
 
 This variable conditionally defines C<HAS_TRUNCATE> if truncate() is
 available to truncate files.
+
+=item C<d_truncl>
+
+From F<d_truncl.U>:
+
+This variable conditionally defines the C<HAS_TRUNCL> symbol, which
+indicates to the C program that the truncl() routine is available
+to round long doubles towards zero. If copysignl is also present,
+we can emulate modfl.
 
 =item C<d_ttyname_r>
 
@@ -4103,6 +4796,13 @@ From F<d_union_semun.U>:
 This variable conditionally defines C<HAS_UNION_SEMUN> if the
 union semun is defined by including <sys/sem.h>.
 
+=item C<d_unlinkat>
+
+From F<d_fsat.U>:
+
+This variable conditionally defines the C<HAS_UNLINKAT> symbol, which
+indicates the C<POSIX> unlinkat() function isavailable.
+
 =item C<d_unordered>
 
 From F<d_unordered.U>:
@@ -4116,6 +4816,14 @@ From F<d_unsetenv.U>:
 
 This variable conditionally defines the C<HAS_UNSETENV> symbol, which
 indicates to the C program that the unsetenv () routine is available.
+
+=item C<d_uselocale>
+
+From F<d_newlocale.U>:
+
+This variable conditionally defines the C<HAS_USELOCALE> symbol, which
+indicates to the C program that the uselocale() routine is available
+to set the current locale for the calling thread.
 
 =item C<d_usleep>
 
@@ -4195,22 +4903,6 @@ ioctl() call with C<TIOCNOTTY> should be used to void tty association.
 Otherwise (on C<USG> probably), it is enough to close the standard file
 descriptors and do a setpgrp().
 
-=item C<d_volatile>
-
-From F<d_volatile.U>:
-
-This variable conditionally defines the C<HASVOLATILE> symbol, which
-indicates to the C program that this C compiler knows about the
-volatile declaration.
-
-=item C<d_vprintf>
-
-From F<d_vprintf.U>:
-
-This variable conditionally defines the C<HAS_VPRINTF> symbol, which
-indicates to the C program that the vprintf() routine is available
-to printf with a pointer to an argument list.
-
 =item C<d_vsnprintf>
 
 From F<d_snprintf.U>:
@@ -4233,6 +4925,14 @@ From F<d_waitpid.U>:
 This variable conditionally defines C<HAS_WAITPID> if waitpid() is
 available to wait for child process.
 
+=item C<d_wcscmp>
+
+From F<d_wcscmp.U>:
+
+This variable conditionally defines the C<HAS_WCSCMP> symbol if the
+wcscmp() routine is available and can be used to compare wide
+character strings.
+
 =item C<d_wcstombs>
 
 From F<d_wcstombs.U>:
@@ -4240,6 +4940,14 @@ From F<d_wcstombs.U>:
 This variable conditionally defines the C<HAS_WCSTOMBS> symbol, which
 indicates to the C program that the wcstombs() routine is available
 to convert wide character strings to multibyte strings.
+
+=item C<d_wcsxfrm>
+
+From F<d_wcsxfrm.U>:
+
+This variable conditionally defines the C<HAS_WCSXFRM> symbol if the
+wcsxfrm() routine is available and can be used to compare wide
+character strings.
 
 =item C<d_wctomb>
 
@@ -4310,11 +5018,11 @@ This variable contains the patch version number of
 Berkeley C<DB> found in the <db.h> header file.
 For C<DB> version 1 this is always 0.
 
-=item C<defvoidused>
+=item C<default_inc_excludes_dot>
 
-From F<voidflags.U>:
+From F<defaultincdot.U>:
 
-This variable contains the default value of the C<VOIDUSED> symbol (15).
+When defined, remove the legacy F<.> from @C<INC>
 
 =item C<direntrytype>
 
@@ -4329,7 +5037,7 @@ portably declare your directory entries.
 From F<dlext.U>:
 
 This variable contains the extension that is to be used for the
-dynamically loaded modules that perl generaties.
+dynamically loaded modules that perl generates.
 
 =item C<dlsrc>
 
@@ -4337,6 +5045,51 @@ From F<dlsrc.U>:
 
 This variable contains the name of the dynamic loading file that
 will be used with the package.
+
+=item C<doubleinfbytes>
+
+From F<infnan.U>:
+
+This variable contains comma-separated list of hexadecimal bytes
+for the double precision infinity.
+
+=item C<doublekind>
+
+From F<longdblfio.U>:
+
+This variable, if defined, encodes the type of a double:
+1 = C<IEEE> 754 32-bit little endian,
+2 = C<IEEE> 754 32-bit big endian,
+3 = C<IEEE> 754 64-bit little endian,
+4 = C<IEEE> 754 64-bit big endian,
+5 = C<IEEE> 754 128-bit little endian,
+6 = C<IEEE> 754 128-bit big endian,
+7 = C<IEEE> 754 64-bit mixed endian le-be,
+8 = C<IEEE> 754 64-bit mixed endian be-le,
+9 = C<VAX> 32bit little endian F float format
+10 = C<VAX> 64bit little endian D float format
+11 = C<VAX> 64bit little endian G float format
+12 = C<IBM> 32bit format
+13 = C<IBM> 64bit format
+14 = Cray 64bit format
+-1 = unknown format.
+
+=item C<doublemantbits>
+
+From F<mantbits.U>:
+
+This symbol, if defined, tells how many mantissa bits
+there are in double precision floating point format.
+Note that this is usually C<DBL_MANT_DIG> minus one, since
+with the standard C<IEEE> 754 formats C<DBL_MANT_DIG> includes
+the implicit bit which doesn't really exist.
+
+=item C<doublenanbytes>
+
+From F<infnan.U>:
+
+This variable contains comma-separated list of hexadecimal bytes
+for the double precision not-a-number.
 
 =item C<doublesize>
 
@@ -4370,6 +5123,20 @@ From F<usedtrace.U>:
 
 This variable holds the location of the dtrace executable.
 
+=item C<dtraceobject>
+
+From F<dtraceobject.U>:
+
+Whether we need to build an object file with the dtrace tool.
+
+=item C<dtracexnolibs>
+
+From F<dtraceobject.U>:
+
+Whether dtrace accepts -xnolibs.  If available we call dtrace -h
+and dtrace -G with -xnolibs to allow dtrace to run in a jail on
+FreeBSD.
+
 =item C<dynamic_ext>
 
 From F<Extensions.U>:
@@ -4400,9 +5167,7 @@ read() blocks naturally).
 From F<ebcdic.U>:
 
 This variable conditionally defines C<EBCDIC> if this
-system uses C<EBCDIC> encoding.  Among other things, this
-means that the character ranges are not contiguous.
-See F<trnl.U>
+system uses C<EBCDIC> encoding.
 
 =item C<echo>
 
@@ -4508,7 +5273,7 @@ the value is reset to a plain C<expr> and is not useful.
 From F<Extensions.U>:
 
 This variable holds a list of all extension files (both C<XS> and
-non-xs linked into the package.  It is propagated to F<Config.pm>
+non-xs) installed with the package.  It is propagated to F<Config.pm>
 and is typically used to test whether a particular extension
 is available.
 
@@ -4549,8 +5314,10 @@ even be probed for and will be left undefined.
 
 From F<fflushall.U>:
 
-This symbol, if defined, tells that fflush(C<NULL>) does flush
-all pending stdio output.
+This symbol, if defined, tells that fflush(C<NULL>) correctly
+flushes all pending stdio output without side effects. In
+particular, on some platforms calling fflush(C<NULL>) *still*
+corrupts C<STDIN> if it is a pipe.
 
 =item C<find>
 
@@ -4982,6 +5749,33 @@ F</etc/hosts> file.  This is normally "cat F</etc/hosts>", but can be
 On some systems, such as os390, there may be no equivalent
 command, in which case this variable is unset.
 
+=item C<hostgenerate>
+
+From F<Cross.U>:
+
+This variable contains the path to a generate_uudmap binary that
+can be run on the host C<OS> when cross-compiling.  Useful and
+available only during Perl build.
+Empty string '' if not cross-compiling.
+
+=item C<hostosname>
+
+From F<Cross.U>:
+
+This variable contains the original value of C<$^O> for hostperl
+when cross-compiling.  This is useful to pick the proper tools
+when running build code in the host.
+Empty string '' if not cross-compiling.
+
+=item C<hostperl>
+
+From F<Cross.U>:
+
+This variable contains the path to a miniperl binary that can be
+run on the host C<OS> when cross-compiling.  Useful and available only
+during Perl build.
+Empty string '' if not cross-compiling.
+
 =item C<html1dir>
 
 From F<html1dir.U>:
@@ -5080,13 +5874,12 @@ From F<i_arpainet.U>:
 This variable conditionally defines the C<I_ARPA_INET> symbol,
 and indicates whether a C program should include <arpa/inet.h>.
 
-=item C<i_assert>
+=item C<i_bfd>
 
-From F<i_assert.U>:
+From F<i_bfd.U>:
 
-This variable conditionally defines the C<I_ASSERT> symbol, which
-indicates to the C program that <assert.h> exists and could be
-included.
+This variable conditionally defines the C<I_BFD> symbol, and
+indicates whether a C program can include <bfd.h>.
 
 =item C<i_bsdioctl>
 
@@ -5125,14 +5918,6 @@ From F<i_dirent.U>:
 This variable conditionally defines C<I_DIRENT>, which indicates
 to the C program that it should include <dirent.h>.
 
-=item C<i_dld>
-
-From F<i_dld.U>:
-
-This variable conditionally defines the C<I_DLD> symbol, which
-indicates to the C program that <dld.h> (C<GNU> dynamic loading)
-exists and should be included.
-
 =item C<i_dlfcn>
 
 From F<i_dlfcn.U>:
@@ -5141,6 +5926,13 @@ This variable conditionally defines the C<I_DLFCN> symbol, which
 indicates to the C program that <dlfcn.h> exists and should
 be included.
 
+=item C<i_execinfo>
+
+From F<i_execinfo.U>:
+
+This variable conditionally defines the C<I_EXECINFO> symbol, and indicates
+whether a C program may include <execinfo.h>, for backtrace() support.
+
 =item C<i_fcntl>
 
 From F<i_fcntl.U>:
@@ -5148,13 +5940,13 @@ From F<i_fcntl.U>:
 This variable controls the value of C<I_FCNTL> (which tells
 the C program to include <fcntl.h>).
 
-=item C<i_float>
+=item C<i_fenv>
 
-From F<i_float.U>:
+From F<i_fenv.U>:
 
-This variable conditionally defines the C<I_FLOAT> symbol, and indicates
-whether a C program may include <float.h> to get symbols like C<DBL_MAX>
-or C<DBL_MIN>, F<i.e>. machine dependent floating point values.
+This variable conditionally defines the C<I_FENV> symbol, which
+indicates to the C program that <fenv.h> exists and should
+be included.
 
 =item C<i_fp>
 
@@ -5231,14 +6023,6 @@ From F<i_libutil.U>:
 This variable conditionally defines the C<I_LIBUTIL> symbol, and indicates
 whether a C program should include <libutil.h>.
 
-=item C<i_limits>
-
-From F<i_limits.U>:
-
-This variable conditionally defines the C<I_LIMITS> symbol, and indicates
-whether a C program may include <limits.h> to get symbols like C<WORD_BIT>
-and friends.
-
 =item C<i_locale>
 
 From F<i_locale.U>:
@@ -5266,20 +6050,6 @@ From F<i_mallocmalloc.U>:
 
 This variable conditionally defines the C<I_MALLOCMALLOC> symbol,
 and indicates whether a C program should include <malloc/malloc.h>.
-
-=item C<i_math>
-
-From F<i_math.U>:
-
-This variable conditionally defines the C<I_MATH> symbol, and indicates
-whether a C program may include <math.h>.
-
-=item C<i_memory>
-
-From F<i_memory.U>:
-
-This variable conditionally defines the C<I_MEMORY> symbol, and indicates
-whether a C program should include <memory.h>.
 
 =item C<i_mntent>
 
@@ -5354,6 +6124,13 @@ From F<i_pwd.U>:
 This variable conditionally defines C<I_PWD>, which indicates
 to the C program that it should include <pwd.h>.
 
+=item C<i_quadmath>
+
+From F<i_quadmath.U>:
+
+This variable conditionally defines C<I_QUADMATH>, which indicates
+to the C program that it should include <quadmath.h>.
+
 =item C<i_rpcsvcdbm>
 
 From F<i_dbm.U>:
@@ -5361,13 +6138,6 @@ From F<i_dbm.U>:
 This variable conditionally defines the C<I_RPCSVC_DBM> symbol, which
 indicates to the C program that <rpcsvc/dbm.h> exists and should
 be included.  Some System V systems might need this instead of <dbm.h>.
-
-=item C<i_sfio>
-
-From F<i_sfio.U>:
-
-This variable conditionally defines the C<I_SFIO> symbol,
-and indicates whether a C program should include <sfio.h>.
 
 =item C<i_sgtty>
 
@@ -5391,14 +6161,6 @@ From F<i_socks.U>:
 This variable conditionally defines the C<I_SOCKS> symbol, and indicates
 whether a C program should include <socks.h>.
 
-=item C<i_stdarg>
-
-From F<i_varhdr.U>:
-
-This variable conditionally defines the C<I_STDARG> symbol, which
-indicates to the C program that <stdarg.h> exists and should
-be included.
-
 =item C<i_stdbool>
 
 From F<i_stdbool.U>:
@@ -5407,28 +6169,19 @@ This variable conditionally defines the C<I_STDBOOL> symbol, which
 indicates to the C program that <stdbool.h> exists and should
 be included.
 
-=item C<i_stddef>
+=item C<i_stdint>
 
-From F<i_stddef.U>:
+From F<i_stdint.U>:
 
-This variable conditionally defines the C<I_STDDEF> symbol, which
-indicates to the C program that <stddef.h> exists and should
+This variable conditionally defines the C<I_STDINT> symbol, which
+indicates to the C program that <stdint.h> exists and should
 be included.
 
 =item C<i_stdlib>
 
 From F<i_stdlib.U>:
 
-This variable conditionally defines the C<I_STDLIB> symbol, which
-indicates to the C program that <stdlib.h> exists and should
-be included.
-
-=item C<i_string>
-
-From F<i_string.U>:
-
-This variable conditionally defines the C<I_STRING> symbol, which
-indicates that <string.h> should be included rather than <strings.h>.
+This variable unconditionally defines the C<I_STDLIB> symbol.
 
 =item C<i_sunmath>
 
@@ -5493,8 +6246,8 @@ and indicates whether a C program should include <syslog.h>.
 
 From F<i_sysmman.U>:
 
-This variable conditionally defines the C<I_SYS_MMAN> symbol, and
-indicates whether a C program should include <sys/mman.h>.
+This variable conditionally defines the C<I_SYS_MMAN> symbol,
+and indicates whether a C program should include <sys/mman.h>.
 
 =item C<i_sysmode>
 
@@ -5667,7 +6420,7 @@ to be included.
 
 From F<i_time.U>:
 
-This variable conditionally defines C<I_TIME>, which indicates
+This variable unconditionally defines C<I_TIME>, which indicates
 to the C program that it should include <time.h>.
 
 =item C<i_unistd>
@@ -5691,34 +6444,33 @@ From F<i_utime.U>:
 This variable conditionally defines the C<I_UTIME> symbol, and indicates
 whether a C program should include <utime.h>.
 
-=item C<i_values>
-
-From F<i_values.U>:
-
-This variable conditionally defines the C<I_VALUES> symbol, and indicates
-whether a C program may include <values.h> to get symbols like C<MAXLONG>
-and friends.
-
-=item C<i_varargs>
-
-From F<i_varhdr.U>:
-
-This variable conditionally defines C<I_VARARGS>, which indicates
-to the C program that it should include <varargs.h>.
-
-=item C<i_varhdr>
-
-From F<i_varhdr.U>:
-
-Contains the name of the header to be included to get va_dcl definition.
-Typically one of F<varargs.h> or F<stdarg.h>.
-
 =item C<i_vfork>
 
 From F<i_vfork.U>:
 
 This variable conditionally defines the C<I_VFORK> symbol, and indicates
 whether a C program should include F<vfork.h>.
+
+=item C<i_wchar>
+
+From F<i_wchar.U>:
+
+This variable conditionally defines the C<I_WCHAR> symbol,
+that indicates whether a C program may include <wchar.h>.
+
+=item C<i_wctype>
+
+From F<i_wctype.U>:
+
+This variable conditionally defines the C<I_WCTYPE> symbol,
+that indicates whether a C program may include <wctype.h>.
+
+=item C<i_xlocale>
+
+From F<d_newlocale.U>:
+
+This symbol, if defined, indicates to the C program that it should
+include <xlocale.h> to get uselocale() and its friends
 
 =item C<ignore_versioned_solibs>
 
@@ -5759,7 +6511,15 @@ suitable for use in the C<PERL_INC_VERSION_LIST> initialization.
 From F<usrinc.U>:
 
 This variable must precede the normal include path to get the
-right one, as in F<$F<incpath/usr/include>> or F<$F<incpath/usr/lib>>.
+right one, as in F<$incpath/usr/include> or F<$incpath/usr/lib>.
+Value can be "" or F</bsd43> on mips.
+
+=item C<incpth>
+
+From F<libpth.U>:
+
+This variable must precede the normal include path to get the
+right one, as in F<$incpath/usr/include> or F<$incpath/usr/lib>.
 Value can be "" or F</bsd43> on mips.
 
 =item C<inews>
@@ -5776,7 +6536,7 @@ From F<bin.U>:
 When userelocatableinc is true, this variable holds the location
 that make install should copy the perl binary to, with all the
 run-time relocatable paths calculated from this at install time.
-When used, it is initialised to the original value of binexp, and
+When used, it is initialized to the original value of binexp, and
 then binexp is set to F<.../>, as the other binaries are found
 relative to the perl binary.
 
@@ -6091,8 +6851,12 @@ This variable contains the C type used for Perl's C<IV>.
 
 From F<Extensions.U>:
 
-This variable holds a list of all C<XS> extensions included in
-the package.
+This variable holds a list of all extensions (both C<XS> and non-xs)
+included in the package source distribution.  This information is
+only really of use during the Perl build, as the list makes no
+distinction between extensions which were build and installed, and
+those which where not.  See C<extensions> for the list of extensions
+actually built and available.
 
 =item C<ksh>
 
@@ -6312,13 +7076,56 @@ This variable holds the paths (space-separated) used to find local
 libraries.  It is prepended to libpth, and is intended to be easily
 set from the command line.
 
+=item C<longdblinfbytes>
+
+From F<infnan.U>:
+
+This variable contains comma-separated list of hexadecimal bytes
+for the long double precision infinity.
+
+=item C<longdblkind>
+
+From F<d_longdbl.U>:
+
+This variable, if defined, encodes the type of a long double:
+0 = double,
+1 = C<IEEE> 754 128-bit little endian,
+2 = C<IEEE> 754 128-bit big endian,
+3 = x86 80-bit little endian,
+4 = x86 80-bit big endian,
+5 = double-double 128-bit little endian,
+6 = double-double 128-bit big endian,
+7 = 128-bit mixed-endian double-double (64-bit LEs in C<BE>),
+8 = 128-bit mixed-endian double-double (64-bit BEs in C<LE>),
+9 = 128-bit C<PDP>-style mixed-endian long doubles,
+-1 = unknown format.
+
+=item C<longdblmantbits>
+
+From F<mantbits.U>:
+
+This symbol, if defined, tells how many mantissa bits
+there are in long double precision floating point format.
+Note that this can be C<LDBL_MANT_DIG> minus one,
+since C<LDBL_MANT_DIG> can include the C<IEEE> 754 implicit bit.
+The common x86-style 80-bit long double does not have
+an implicit bit.
+
+=item C<longdblnanbytes>
+
+From F<infnan.U>:
+
+This variable contains comma-separated list of hexadecimal bytes
+for the long double precision not-a-number.
+
 =item C<longdblsize>
 
 From F<d_longdbl.U>:
 
 This variable contains the value of the C<LONG_DOUBLESIZE> symbol, which
 indicates to the C program how many bytes there are in a long double,
-if this system supports long doubles.
+if this system supports long doubles.  Note that this is
+sizeof(long double), which may include unused bytes.
 
 =item C<longlongsize>
 
@@ -6382,34 +7189,6 @@ kernel (which also appears to be lseek's return type).
 =over 4
 
 =cut
-
-=item C<mad>
-
-From F<mad.U>:
-
-This variable indicates that the Misc Attribute Definition code is to
-be compiled.
-
-=item C<madlyh>
-
-From F<mad.U>:
-
-If the Misc Attribute Decoration is to be compiled, this variable is
-set to the name of the extra header files to be used, else it is ''
-
-=item C<madlyobj>
-
-From F<mad.U>:
-
-If the Misc Attribute Decoration is to be compiled, this variable is
-set to the name of the extra object files to be used, else it is ''
-
-=item C<madlysrc>
-
-From F<mad.U>:
-
-If the Misc Attribute Decoration is to be compiled, this variable is
-set to the name of the extra C source files to be used, else it is ''
 
 =item C<mail>
 
@@ -6617,9 +7396,9 @@ The dot comes with mydomain, and need not be supplied by the program.
 
 From F<Oldconfig.U>:
 
-The output of C<uname -a> if available, otherwise the hostname. On Xenix,
-pseudo variables assignments in the output are stripped, thank you. The
-whole thing is then lower-cased.
+The output of C<uname -a> if available, otherwise the hostname.
+The whole thing is then lower-cased and slashes and single quotes are
+removed.
 
 =back
 
@@ -6713,8 +7492,10 @@ Maybe Linux should just always set usenm=false.
 
 From F<Extensions.U>:
 
-This variable holds a list of all non-xs extensions included
-in the package.  All of them will be built.
+This variable holds a list of all non-xs extensions built and
+installed by the package.  By default, all non-xs extensions
+distributed will be built, with the exception of platform-specific
+extensions (currently only one C<VMS> specific extension).
 
 =item C<nroff>
 
@@ -6757,14 +7538,14 @@ a Perl C<NV> using %E-ish floating point format.
 
 From F<perlxvf.U>:
 
-This variable confains the format string used for printing
+This variable contains the format string used for printing
 a Perl C<NV> using %f-ish floating point format.
 
 =item C<nvFUformat>
 
 From F<perlxvf.U>:
 
-This variable confains the format string used for printing
+This variable contains the format string used for printing
 a Perl C<NV> using %F-ish floating point format.
 
 =item C<nvgformat>
@@ -6781,11 +7562,19 @@ From F<perlxvf.U>:
 This variable contains the format string used for printing
 a Perl C<NV> using %G-ish floating point format.
 
+=item C<nvmantbits>
+
+From F<mantbits.U>:
+
+This variable tells how many bits the mantissa of a Perl C<NV> has,
+not including the possible implicit bit.
+
 =item C<nvsize>
 
 From F<perlxv.U>:
 
-This variable is the size of an C<NV> in bytes.
+This variable is the size of a Perl C<NV> in bytes.
+Note that some floating point formats have unused bytes.
 
 =item C<nvtype>
 
@@ -7159,13 +7948,6 @@ If d_procselfexe is defined, $procselfexe is the filename
 of the symbolic link pointing to the absolute pathname of
 the executing program.
 
-=item C<prototype>
-
-From F<prototype.U>:
-
-This variable holds the eventual value of C<CAN_PROTOTYPE>, which
-indicates the C compiler can handle funciton prototypes.
-
 =item C<ptrsize>
 
 From F<ptrsize.U>:
@@ -7528,6 +8310,7 @@ shrpenv="env C<LD_RUN_PATH>=F<$archlibexp/C<CORE>>"
 or
 shrpenv=''
 See the main perl F<Makefile.SH> for actual working usage.
+
 Alternatively, we might be able to use a command line option such
 as -R F<$archlibexp/C<CORE>> (Solaris) or -Wl,-rpath
 F<$archlibexp/C<CORE>> (Linux).
@@ -8118,13 +8901,6 @@ It is zero if d_strerror_r is undef, and one of the
 C<REENTRANT_PROTO_T_ABC> macros of F<reentr.h> if d_strerror_r
 is defined.
 
-=item C<strings>
-
-From F<i_string.U>:
-
-This variable holds the full path of the string header that will be
-used. Typically F</usr/include/string.h> or F</usr/include/strings.h>.
-
 =item C<submit>
 
 From F<Loc.U>:
@@ -8150,6 +8926,15 @@ This variable holds the place where the manual is located on this
 system. It is not the place where the user wants to put his manual
 pages. Rather it is the place where Configure may look to find manual
 for unix commands (section 1 of the manual usually). See mansrc.
+
+=item C<sysroot>
+
+From F<Sysroot.U>:
+
+This variable is empty unless supplied by the Configure user.
+It can contain a path to an alternative root directory, under which
+headers and libraries for the compilation target can be found. This
+is generally used when cross-compiling using a gcc-like compiler.
 
 =back
 
@@ -8181,6 +8966,55 @@ From F<Cross.U>:
 
 If cross-compiling, this variable contains the target architecture.
 If not, this will be empty.
+
+=item C<targetdir>
+
+From F<Cross.U>:
+
+This variable contains a path that will be created on the target
+host using targetmkdir, and then used to copy the cross-compiled
+executables to. Defaults to F</tmp> if not set.
+
+=item C<targetenv>
+
+From F<Cross.U>:
+
+If cross-compiling, this variable can be used to modify the
+environment on the target system.
+However, how and where it's used, and even if it's used at all, is
+entirely dependent on both the transport mechanism (targetrun) and
+what the target system is.  Unless the relevant documentation says
+otherwise, it is genereally not useful.
+
+=item C<targethost>
+
+From F<Cross.U>:
+
+This variable contains the name of a separate host machine that
+can be used to run compiled test programs and perl tests on.
+Set to empty string if not in use.
+
+=item C<targetmkdir>
+
+From F<Cross.U>:
+
+This variable contains the command used by Configure to create a
+new directory on the target host.
+
+=item C<targetport>
+
+From F<Cross.U>:
+
+This variable contains the number of a network port to be used to
+connect to the host in targethost, if unset defaults to 22 for ssh.
+
+=item C<targetsh>
+
+From F<sh.U>:
+
+If cross-compiling, this variable contains the location of sh on the
+target system.
+If not, this will be the same as $sh.
 
 =item C<tbl>
 
@@ -8417,6 +9251,13 @@ is employed, just enough to get 64-bit integers into Perl.
 This may mean using for example "long longs", while your memory
 may still be limited to 2 gigabytes.
 
+=item C<usecbacktrace>
+
+From F<usebacktrace.U>:
+
+This variable indicates whether we are compiling with backtrace
+support.
+
 =item C<usecrosscompile>
 
 From F<Cross.U>:
@@ -8468,6 +9309,15 @@ From F<usekernprocpathname.U>:
 This variable, indicates that we can use sysctl with
 C<KERN_PROC_PATHNAME> to get a full path for the executable, and hence
 convert $^X to an absolute path.
+
+=item C<uselanginfo>
+
+From F<Extensions.U>:
+
+This variable holds either C<true> or C<false> to indicate
+whether the I18N::Langinfo extension should be used.  The sole
+use for this currently is to allow an easy mechanism for users to skip
+this extension from the Configure command line.
 
 =item C<uselargefiles>
 
@@ -8559,6 +9409,14 @@ use for this currently is to allow an easy mechanism
 for hints files to indicate that C<POSIX> will not compile
 on a particular system.
 
+=item C<usequadmath>
+
+From F<usequadmath.U>:
+
+This variable conditionally defines the C<USE_QUADMATH> symbol,
+and indicates that the quadmath library __float128 long doubles
+should be used when available.
+
 =item C<usereentrant>
 
 From F<usethreads.U>:
@@ -8579,16 +9437,6 @@ Any @C<INC> paths starting F<.../> are relocated relative to the directory
 containing the perl binary, and a logical cleanup of the path is then
 made around the join point (removing F<dir/../> pairs)
 
-=item C<usesfio>
-
-From F<d_sfio.U>:
-
-This variable is set to true when the user agrees to use sfio.
-It is set to false when sfio is not available or when the user
-explicitly requests not to use sfio.  It is here primarily so
-that command-line settings can override the auto-detection of
-d_sfio without running into a "WHOA THERE".
-
 =item C<useshrplib>
 
 From F<libperl.U>:
@@ -8602,7 +9450,7 @@ From F<d_sitecustomize.U>:
 
 This variable is set to true when the user requires a mechanism that
 allows the sysadmin to add entries to @C<INC> at runtime.  This variable
-being set, makes perl run F<$F<sitelib/sitecustomize.pl>> at startup.
+being set, makes perl run F<$sitelib/sitecustomize.pl> at startup.
 
 =item C<usesocks>
 
@@ -8624,6 +9472,13 @@ From F<vendorprefix.U>:
 
 This variable tells whether the vendorprefix
 and consequently other vendor* paths are in use.
+
+=item C<useversionedarchname>
+
+From F<archname.U>:
+
+This variable indicates whether to include the $api_versionstring
+as a component of the $archname.
 
 =item C<usevfork>
 
@@ -8696,14 +9551,6 @@ a Perl C<UV> as an unsigned hexadecimal integer in uppercase C<ABCDEF>.
 =over 4
 
 =cut
-
-=item C<vaproto>
-
-From F<vaproto.U>:
-
-This variable conditionally defines C<CAN_VAPROTO> on systems supporting
-prototype declaration of functions with a variable number of
-arguments. See also prototype.
 
 =item C<vendorarch>
 
@@ -8923,14 +9770,6 @@ From F<Loc.U>:
 
 This variable is defined but not used by Configure.
 The value is the empty string and is not useful.
-
-=item C<voidflags>
-
-From F<voidflags.U>:
-
-This variable contains the eventual value of the C<VOIDFLAGS> symbol,
-which indicates how much support of the void type is given by this
-compiler.  See C<VOIDFLAGS> for more info.
 
 =back
 

@@ -13,14 +13,40 @@
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
+namespace {
+
+CPDF_FontGlobals* g_FontGlobals = nullptr;
+
+}  // namespace
+
+// static
+void CPDF_FontGlobals::Create() {
+  ASSERT(!g_FontGlobals);
+  g_FontGlobals = new CPDF_FontGlobals();
+}
+
+// static
+void CPDF_FontGlobals::Destroy() {
+  ASSERT(g_FontGlobals);
+  delete g_FontGlobals;
+  g_FontGlobals = nullptr;
+}
+
+// static
+CPDF_FontGlobals* CPDF_FontGlobals::GetInstance() {
+  ASSERT(g_FontGlobals);
+  return g_FontGlobals;
+}
+
 CPDF_FontGlobals::CPDF_FontGlobals() {
   memset(m_EmbeddedCharsets, 0, sizeof(m_EmbeddedCharsets));
   memset(m_EmbeddedToUnicodes, 0, sizeof(m_EmbeddedToUnicodes));
 }
 
-CPDF_FontGlobals::~CPDF_FontGlobals() {}
+CPDF_FontGlobals::~CPDF_FontGlobals() = default;
 
-CPDF_Font* CPDF_FontGlobals::Find(CPDF_Document* pDoc, uint32_t index) {
+CPDF_Font* CPDF_FontGlobals::Find(CPDF_Document* pDoc,
+                                  CFX_FontMapper::StandardFont index) {
   auto it = m_StockMap.find(pDoc);
   if (it == m_StockMap.end())
     return nullptr;
@@ -28,7 +54,7 @@ CPDF_Font* CPDF_FontGlobals::Find(CPDF_Document* pDoc, uint32_t index) {
 }
 
 CPDF_Font* CPDF_FontGlobals::Set(CPDF_Document* pDoc,
-                                 uint32_t index,
+                                 CFX_FontMapper::StandardFont index,
                                  std::unique_ptr<CPDF_Font> pFont) {
   if (!pdfium::ContainsKey(m_StockMap, pDoc))
     m_StockMap[pDoc] = pdfium::MakeUnique<CFX_StockFontArray>();

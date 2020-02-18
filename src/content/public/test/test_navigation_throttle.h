@@ -35,17 +35,6 @@ class TestNavigationThrottle : public NavigationThrottle {
     ASYNCHRONOUS,
   };
 
-  struct Status {
-    Status(ThrottleMethod method,
-           ResultSynchrony synchrony,
-           NavigationThrottle::ThrottleCheckResult result)
-        : method(method), synchrony(synchrony), result(result) {}
-
-    ThrottleMethod method;
-    ResultSynchrony synchrony;
-    NavigationThrottle::ThrottleCheckResult result;
-  };
-
   TestNavigationThrottle(NavigationHandle* handle);
   ~TestNavigationThrottle() override;
 
@@ -111,7 +100,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   };
   MethodProperties method_properties_[NUM_THROTTLE_METHODS];
 
-  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_;
+  base::WeakPtrFactory<TestNavigationThrottle> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigationThrottle);
 };

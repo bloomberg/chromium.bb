@@ -26,6 +26,7 @@
 #include "public/fpdf_structtree.h"
 #include "public/fpdf_sysfontinfo.h"
 #include "public/fpdf_text.h"
+#include "public/fpdf_thumbnail.h"
 #include "public/fpdf_transformpage.h"
 #include "public/fpdfview.h"
 
@@ -59,6 +60,7 @@ int CheckPDFiumCApi() {
     CHK(FPDFAnnot_GetValueType);
     CHK(FPDFAnnot_HasAttachmentPoints);
     CHK(FPDFAnnot_HasKey);
+    CHK(FPDFAnnot_IsChecked);
     CHK(FPDFAnnot_IsObjectSupportedSubtype);
     CHK(FPDFAnnot_IsSupportedSubtype);
     CHK(FPDFAnnot_RemoveObject);
@@ -311,6 +313,7 @@ int CheckPDFiumCApi() {
     CHK(FPDFLink_CountRects);
     CHK(FPDFLink_CountWebLinks);
     CHK(FPDFLink_GetRect);
+    CHK(FPDFLink_GetTextRange);
     CHK(FPDFLink_GetURL);
     CHK(FPDFLink_LoadWebLinks);
     CHK(FPDFText_ClosePage);
@@ -332,6 +335,11 @@ int CheckPDFiumCApi() {
     CHK(FPDFText_GetText);
     CHK(FPDFText_GetUnicode);
     CHK(FPDFText_LoadPage);
+
+    // fpdf_thumbnail.h
+    CHK(FPDFPage_GetDecodedThumbnailData);
+    CHK(FPDFPage_GetRawThumbnailData);
+    CHK(FPDFPage_GetThumbnailAsBitmap);
 
     // fpdf_transformpage.h
     CHK(FPDFPageObj_TransformClipPath);

@@ -13,12 +13,12 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -65,26 +65,10 @@ class ServiceWorkerUtils {
     return oss.str();
   }
 
-  static bool ShouldBypassCacheDueToUpdateViaCache(
-      bool is_main_script,
-      blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
-
-  static bool ShouldValidateBrowserCacheForScript(
-      bool is_main_script,
-      bool force_bypass_cache,
-      blink::mojom::ServiceWorkerUpdateViaCache cache_mode,
-      base::TimeDelta time_since_last_check);
-
   // Converts an enum defined in net/base/load_flags.h to
   // blink::mojom::FetchCacheMode.
   CONTENT_EXPORT static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(
       int load_flags);
-
-  CONTENT_EXPORT static std::string SerializeFetchRequestToString(
-      const blink::mojom::FetchAPIRequest& request);
-
-  CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
-  DeserializeFetchRequestFromString(const std::string& serialized);
 
   CONTENT_EXPORT static const char* FetchResponseSourceToSuffix(
       network::mojom::FetchResponseSource source);

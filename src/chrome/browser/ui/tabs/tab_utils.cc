@@ -53,7 +53,8 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
 
   // Check if VR content is being presented in a headset.
   // NOTE: This icon must take priority over the audio alert ones
-  // because most VR content has audio and its usage is implied by the VR icon.
+  // because most VR content has audio and its usage is implied by the VR
+  // icon.
   if (vr::VrTabHelper::IsContentDisplayedInHeadset(contents))
     return TabAlertState::VR_PRESENTING_IN_HEADSET;
 

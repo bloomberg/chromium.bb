@@ -52,7 +52,7 @@ unsigned LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
 unsigned LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
 unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
 
-TimeDelta LayoutThemeDefault::caret_blink_interval_;
+base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
 
 LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
   caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
@@ -73,8 +73,8 @@ bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 }
 
 Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
-  static const Color kDefaultButtonGrayColor(0xffdddddd);
-  static const Color kDefaultMenuColor(0xfff7f7f7);
+  constexpr Color kDefaultButtonGrayColor(0xffdddddd);
+  constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
   if (css_value_id == CSSValueID::kButtonface) {
     if (UseMockTheme())
@@ -94,13 +94,24 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
           ? GetDataResourceAsASCIIString("input_multiple_fields.css")
           : String();
   String windows_style_sheet = GetDataResourceAsASCIIString("win.css");
+  String controls_refresh_style_sheet =
+      RuntimeEnabledFeatures::FormControlsRefreshEnabled()
+          ? GetDataResourceAsASCIIString("controls_refresh.css")
+          : String();
+  String forced_colors_style_sheet =
+      RuntimeEnabledFeatures::ForcedColorsEnabled()
+          ? GetDataResourceAsASCIIString("forced_colors.css")
+          : String();
   StringBuilder builder;
-  builder.ReserveCapacity(extra_style_sheet.length() +
-                          multiple_fields_style_sheet.length() +
-                          windows_style_sheet.length());
+  builder.ReserveCapacity(
+      extra_style_sheet.length() + multiple_fields_style_sheet.length() +
+      windows_style_sheet.length() + controls_refresh_style_sheet.length() +
+      forced_colors_style_sheet.length());
   builder.Append(extra_style_sheet);
   builder.Append(multiple_fields_style_sheet);
   builder.Append(windows_style_sheet);
+  builder.Append(controls_refresh_style_sheet);
+  builder.Append(forced_colors_style_sheet);
   return builder.ToString();
 }
 
@@ -249,7 +260,7 @@ bool LayoutThemeDefault::SupportsHover(const ComputedStyle& style) const {
 }
 
 Color LayoutThemeDefault::PlatformFocusRingColor() const {
-  static Color focus_ring_color(229, 151, 0, 255);
+  constexpr Color focus_ring_color(0xFFE59700);
   return focus_ring_color;
 }
 
@@ -386,15 +397,16 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
 //
 // The following values come from the defaults of GTK+.
 //
-static const int kProgressAnimationFrames = 10;
-static constexpr TimeDelta kProgressAnimationInterval =
-    TimeDelta::FromMilliseconds(125);
+constexpr int kProgressAnimationFrames = 10;
+constexpr base::TimeDelta kProgressAnimationInterval =
+    base::TimeDelta::FromMilliseconds(125);
 
-TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar() const {
+base::TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar()
+    const {
   return kProgressAnimationInterval;
 }
 
-TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
+base::TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
   return kProgressAnimationInterval * kProgressAnimationFrames *
          2;  // "2" for back and forth
 }

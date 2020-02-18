@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/core/browser/account_consistency_method.h"
-#include "components/signin/core/browser/signin_pref_names.h"
-#include "components/signin/core/browser/test_signin_client.h"
+#include "components/signin/public/base/account_consistency_method.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/base/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,23 +36,21 @@ TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
     // Dice is enabled, revoke only tokens in error state.
     DiceAccountReconcilorDelegate delegate(&client,
                                            AccountConsistencyMethod::kDice);
-    EXPECT_EQ(
-        signin::AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError,
-        delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
-            std::vector<gaia::ListedAccount>()));
+    EXPECT_EQ(AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError,
+              delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+                  std::vector<gaia::ListedAccount>()));
   }
   {
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
     // Gaia accounts are not empty, don't revoke.
     gaia::ListedAccount gaia_account;
-    gaia_account.id = "other";
-    EXPECT_EQ(
-        signin::AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke,
-        delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
-            std::vector<gaia::ListedAccount>{gaia_account}));
+    gaia_account.id = CoreAccountId("other");
+    EXPECT_EQ(AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke,
+              delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+                  std::vector<gaia::ListedAccount>{gaia_account}));
     // Revoke.
-    EXPECT_EQ(signin::AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
+    EXPECT_EQ(AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
               delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
                   std::vector<gaia::ListedAccount>()));
   }
@@ -71,7 +69,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 true /* is_reconcile_noop */);
   }
 
   pref_service.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
@@ -83,7 +82,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", false /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 false /* is_reconcile_noop */);
   }
 
   {
@@ -92,7 +92,8 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     EXPECT_CALL(client, SetReadyForDiceMigration(true)).Times(1);
     DiceAccountReconcilorDelegate delegate(
         &client, AccountConsistencyMethod::kDiceMigration);
-    delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
+    delegate.OnReconcileFinished(CoreAccountId("account"),
+                                 true /* is_reconcile_noop */);
   }
 }
 

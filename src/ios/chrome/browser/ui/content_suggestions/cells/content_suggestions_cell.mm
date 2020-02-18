@@ -4,9 +4,11 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -71,15 +73,6 @@ const CGFloat kAnimationDuration = 0.3;
 
 @implementation ContentSuggestionsCell
 
-@synthesize titleLabel = _titleLabel;
-@synthesize imageContainer = _imageContainer;
-@synthesize noImageIcon = _noImageIcon;
-@synthesize additionalInformationLabel = _additionalInformationLabel;
-@synthesize contentImageView = _contentImageView;
-@synthesize faviconView = _faviconView;
-@synthesize imageSizeConstraint = _imageSizeConstraint;
-@synthesize displayImage = _displayImage;
-
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -121,8 +114,7 @@ const CGFloat kAnimationDuration = 0.3;
     [[self class] configureTitleLabel:_titleLabel];
     _additionalInformationLabel.font = [[self class] additionalInformationFont];
     _faviconView.font = [[MDCTypography fontLoader] mediumFontOfSize:10];
-    _additionalInformationLabel.textColor =
-        [UIColor colorWithWhite:0 alpha:0.54];
+    _additionalInformationLabel.textColor = UIColor.cr_secondaryLabelColor;
 
     [self applyConstraints];
   }
@@ -202,6 +194,10 @@ const CGFloat kAnimationDuration = 0.3;
   CGFloat additionalInfoHeight =
       [additionalInfoLabel sizeThatFits:sizeForLabels].height;
   labelHeight += MAX(additionalInfoHeight, kFaviconSize);
+  // Add extra space at the bottom for separators between cells.
+  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
+    return MAX(minimalHeight, labelHeight) + kStandardSpacing;
+  }
   return MAX(minimalHeight, labelHeight);
 }
 
@@ -269,14 +265,11 @@ const CGFloat kAnimationDuration = 0.3;
   [NSLayoutConstraint activateConstraints:@[
     // Image.
     _imageSizeConstraint,
-    [_imageContainer.bottomAnchor
-        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
     [_imageContainer.widthAnchor
         constraintEqualToAnchor:_imageContainer.heightAnchor],
-
-    // Additional Information.
-    [_additionalInformationLabel.trailingAnchor
-        constraintEqualToAnchor:_titleLabel.trailingAnchor],
+    [_imageContainer.topAnchor
+        constraintEqualToAnchor:self.contentView.topAnchor
+                       constant:kStandardSpacing],
 
     // Favicon.
     [_faviconView.leadingAnchor
@@ -287,8 +280,15 @@ const CGFloat kAnimationDuration = 0.3;
     [_faviconView.widthAnchor
         constraintEqualToAnchor:_faviconView.heightAnchor],
     [_faviconView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.titleLabel.bottomAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
                                     constant:kSmallSpacing],
+
+    // Additional Information.
+    [_additionalInformationLabel.leadingAnchor
+        constraintEqualToAnchor:_faviconView.trailingAnchor
+                       constant:kSmallSpacing],
+    [_additionalInformationLabel.trailingAnchor
+        constraintEqualToAnchor:_titleLabel.trailingAnchor],
 
     // No image icon.
     [_noImageIcon.centerXAnchor
@@ -301,22 +301,65 @@ const CGFloat kAnimationDuration = 0.3;
 
   AddSameConstraints(_contentImageView, _imageContainer);
 
-  _imageTitleHorizontalSpacing = [_titleLabel.leadingAnchor
-      constraintEqualToAnchor:_imageContainer.trailingAnchor
-                     constant:kStandardSpacing];
+  // For standard layout, the image container should be aligned to the right
+  // border if kOptionalArticleThumbnail is enabled, otherwise the left border.
+  if (base::FeatureList::IsEnabled(kOptionalArticleThumbnail)) {
+    // Prevent _additionalInformationLabel from overlapping with _titleLabel
+    // when a11y font size is used.
+    [_additionalInformationLabel.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_titleLabel.bottomAnchor
+                                    constant:kSmallSpacing]
+        .active = YES;
+
+    _imageTitleHorizontalSpacing = [_imageContainer.leadingAnchor
+        constraintEqualToAnchor:_titleLabel.trailingAnchor
+                       constant:kStandardSpacing];
+
+    _standardConstraints = @[
+      _imageTitleHorizontalSpacing,
+      [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
+      [_titleLabel.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kStandardSpacing],
+      [_imageContainer.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kStandardSpacing],
+    ];
+  } else {
+    [_imageContainer.bottomAnchor
+        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor]
+        .active = YES;
+
+    _imageTitleHorizontalSpacing = [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:_imageContainer.trailingAnchor
+                       constant:kStandardSpacing];
+
+    _standardConstraints = @[
+      _imageTitleHorizontalSpacing,
+      [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
+      [_imageContainer.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor
+                         constant:kStandardSpacing],
+      [_titleLabel.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
+                         constant:-kStandardSpacing],
+    ];
+  }
+
+  // For a11y layout, the image container is always aligned to the left border.
   _imageTitleVerticalSpacing = [_titleLabel.topAnchor
       constraintEqualToAnchor:_imageContainer.bottomAnchor
                      constant:kStandardSpacing];
-  _standardConstraints = @[
-    _imageTitleHorizontalSpacing,
-    [_titleLabel.topAnchor constraintEqualToAnchor:_imageContainer.topAnchor],
-  ];
-
   _accessibilityConstraints = @[
-    [_titleLabel.leadingAnchor
+    _imageTitleVerticalSpacing,
+    [_imageContainer.leadingAnchor
         constraintEqualToAnchor:self.contentView.leadingAnchor
                        constant:kStandardSpacing],
-    _imageTitleVerticalSpacing,
+    [_titleLabel.leadingAnchor
+        constraintEqualToAnchor:_imageContainer.leadingAnchor],
+    [_titleLabel.trailingAnchor
+        constraintEqualToAnchor:self.contentView.trailingAnchor
+                       constant:-kStandardSpacing],
   ];
 
   if (UIContentSizeCategoryIsAccessibilityCategory(
@@ -325,22 +368,6 @@ const CGFloat kAnimationDuration = 0.3;
   } else {
     [NSLayoutConstraint activateConstraints:self.standardConstraints];
   }
-
-  ApplyVisualConstraintsWithMetrics(
-      @[
-        @"H:[title]-(space)-|",
-        @"H:|-(space)-[image]",
-        @"V:|-(space)-[image]",
-        @"H:[favicon]-(small)-[additional]",
-      ],
-      @{
-        @"image" : _imageContainer,
-        @"title" : _titleLabel,
-        @"additional" : _additionalInformationLabel,
-        @"favicon" : _faviconView,
-      },
-      @{ @"space" : @(kStandardSpacing),
-         @"small" : @(kSmallSpacing) });
 }
 
 + (CGFloat)standardSpacing {
@@ -349,7 +376,7 @@ const CGFloat kAnimationDuration = 0.3;
 
 // Configures the |titleLabel|.
 + (void)configureTitleLabel:(UILabel*)titleLabel {
-  titleLabel.textColor = [UIColor colorWithWhite:0 alpha:0.8];
+  titleLabel.textColor = UIColor.cr_labelColor;
   UIFontDescriptor* descriptor = [[UIFontDescriptor
       preferredFontDescriptorWithTextStyle:UIFontTextStyleSubheadline]
       fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];

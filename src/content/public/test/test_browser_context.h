@@ -44,12 +44,12 @@ class TestBrowserContext : public BrowserContext {
   }
 
   // BrowserContext implementation.
-  base::FilePath GetPath() const override;
+  base::FilePath GetPath() override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
 #endif  // !defined(OS_ANDROID)
-  bool IsOffTheRecord() const override;
+  bool IsOffTheRecord() override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   ResourceContext* GetResourceContext() override;
   BrowserPluginGuestManager* GetGuestManager() override;
@@ -64,15 +64,7 @@ class TestBrowserContext : public BrowserContext {
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,
       URLRequestInterceptorScopedVector request_interceptors) override;
-  net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory,
-      ProtocolHandlerMap* protocol_handlers,
-      URLRequestInterceptorScopedVector request_interceptors)  override;
   net::URLRequestContextGetter* CreateMediaRequestContext() override;
-  net::URLRequestContextGetter* CreateMediaRequestContextForStoragePartition(
-      const base::FilePath& partition_path,
-      bool in_memory) override;
 
  private:
   // Hold a reference here because BrowserContext owns lifetime.

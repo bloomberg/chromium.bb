@@ -6,8 +6,8 @@
 
 #include <memory>
 
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
 
 namespace openscreen {
 namespace {
@@ -15,8 +15,12 @@ namespace {
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Expectation;
+using ::testing::Mock;
+using ::testing::NiceMock;
 
 using State = ServiceListener::State;
+
+namespace {
 
 class MockObserver final : public ServiceListener::Observer {
  public:
@@ -37,7 +41,7 @@ class MockObserver final : public ServiceListener::Observer {
   MOCK_METHOD1(OnMetrics, void(ServiceListener::Metrics));
 };
 
-class MockMdnsDelegate final : public ServiceListenerImpl::Delegate {
+class MockMdnsDelegate : public ServiceListenerImpl::Delegate {
  public:
   MockMdnsDelegate() = default;
   ~MockMdnsDelegate() override = default;
@@ -53,13 +57,15 @@ class MockMdnsDelegate final : public ServiceListenerImpl::Delegate {
   MOCK_METHOD0(RunTasksListener, void());
 };
 
+}  // namespace
+
 class ServiceListenerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
     service_listener_ = std::make_unique<ServiceListenerImpl>(&mock_delegate_);
   }
 
-  MockMdnsDelegate mock_delegate_;
+  NiceMock<MockMdnsDelegate> mock_delegate_;
   std::unique_ptr<ServiceListenerImpl> service_listener_;
 };
 
@@ -280,23 +286,31 @@ TEST_F(ServiceListenerImplTest, ObserveFromSearching) {
   MockObserver observer;
   service_listener_->AddObserver(&observer);
 
+  EXPECT_CALL(observer, OnStarted());
   service_listener_->Start();
   mock_delegate_.SetState(State::kRunning);
+  Mock::VerifyAndClearExpectations(&observer);
 
+  EXPECT_CALL(observer, OnSearching());
   service_listener_->SearchNow();
   mock_delegate_.SetState(State::kSearching);
+  Mock::VerifyAndClearExpectations(&observer);
 
-  service_listener_->Suspend();
   EXPECT_CALL(observer, OnSuspended());
+  service_listener_->Suspend();
   mock_delegate_.SetState(State::kSuspended);
+  Mock::VerifyAndClearExpectations(&observer);
 
+  EXPECT_CALL(observer, OnSearching());
   EXPECT_TRUE(service_listener_->SearchNow());
   mock_delegate_.SetState(State::kSearching);
+  Mock::VerifyAndClearExpectations(&observer);
 
   service_listener_->Resume();
   EXPECT_CALL(observer, OnStarted());
   mock_delegate_.SetState(State::kRunning);
   service_listener_->RemoveObserver(&observer);
+  Mock::VerifyAndClearExpectations(&observer);
 }
 
 TEST_F(ServiceListenerImplTest, ReceiverObserverPassThrough) {

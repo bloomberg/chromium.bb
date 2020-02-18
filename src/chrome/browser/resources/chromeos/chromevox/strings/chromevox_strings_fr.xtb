@@ -6,9 +6,9 @@
 <translation id="1012173283529841972">Élément de liste</translation>
 <translation id="1013742170491673792">recherche</translation>
 <translation id="1014370462248694370">Balayer l'écran vers la droite avec deux doigts</translation>
-<translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce didacticiel rapide explique les bases pour commencer à utiliser ChromeVox.</translation>
+<translation id="1022586497894531524">Est-ce la première fois que vous utilisez les commentaires audio de ChromeVox ? Ce tutoriel rapide explique les bases pour commencer à utiliser ChromeVox.</translation>
 <translation id="1023866615269196768">Cellule fractionnée</translation>
-<translation id="1025074108959230262">Mode permanent désactivé</translation>
+<translation id="1025074108959230262">Mode persistant désactivé</translation>
 <translation id="1031961866430398710">puis</translation>
 <translation id="1038643060055067718">Lignes :</translation>
 <translation id="1038795173450935438">Pour passer à l'élément suivant sur une page, appuyez sur la touche de recherche + la flèche vers la droite, et pour revenir directement à l'élément précédent, appuyez sur la touche de recherche + la flèche vers la gauche. Pour passer à la ligne suivante, appuyez sur la touche de recherche + la flèche vers le bas, et pour revenir à la ligne précédente, appuyez sur la touche de recherche + la flèche vers le haut. Si vous atteignez un élément sur lequel vous souhaitez cliquer, appuyez sur la touche de recherche + la barre d'espace.</translation>
@@ -38,7 +38,7 @@
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox donne la parole à Google Chrome.</translation>
 <translation id="1225437811932752266">Félicitations ! Vous avez appris les bases pour utiliser ChromeVox. N'oubliez pas que vous pouvez ouvrir le menu de commandes ChromeVox à tout moment en appuyant sur la touche de recherche+point. Pour en savoir davantage sur ChromeVox et Chrome OS, consultez les articles ci-après.
-Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de fermeture, puis cliquez sur ce dernier.</translation>
+Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fermeture, puis cliquez sur ce dernier.</translation>
 <translation id="1225969361094801578">Gris ardoise foncé</translation>
 <translation id="1229276918471378188">Renvoi précédent</translation>
 <translation id="1236794971743289975">Note de fin</translation>
@@ -69,6 +69,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1385214448885562192">Appuyez sur Entrée pour accepter ou Échap pour annuler. Passez au résultat suivant à l'aide de la flèche vers le bas et revenez au résultat précédent à l'aide de la flèche vers le haut.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">Annoncer les attributs du texte enrichi</translation>
 <translation id="1405567553485452995">Vert clair</translation>
 <translation id="1417889266572670458">Bleu marine</translation>
 <translation id="1431911867058218151">Prune</translation>
@@ -200,7 +201,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2490721194269245365">Marron rosé</translation>
 <translation id="249330843868392562">Ouvrir les paramètres de synthèse vocale</translation>
 <translation id="2497706219848005458">Vert-jaune</translation>
-<translation id="2523609930580546572">Didacticiel ChromeVox</translation>
+<translation id="2523609930580546572">Tutoriel ChromeVox</translation>
 <translation id="2525706221823668172">Raccourcis clavier dans Chromebook</translation>
 <translation id="2549392850788122959">Le mappage du clavier <ph name="KEY" /> a été réinitialisé.</translation>
 <translation id="2553108862507765288">erreur grammaticale</translation>
@@ -220,7 +221,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2673280813984708147">modifie</translation>
 <translation id="267442004702508783">actualiser</translation>
 <translation id="2675533876313964202">Chartreuse</translation>
-<translation id="2684412629217766642">Fermer le didacticiel ChromeVox</translation>
+<translation id="2684412629217766642">Fermer le tutoriel ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{parenthèse ouverte}one{# parenthèse ouverte}other{# parenthèses ouvertes}}</translation>
 <translation id="2705875883745373140">Non appuyé</translation>
@@ -256,7 +257,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="2885764457467528513">{COUNT,plural, =1{minute}one{minute}other{minutes}}</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{accolade gauche}one{# accolade gauche}other{# accolades gauches}}</translation>
-<translation id="2911433807131383493">Ouvrir le didacticiel ChromeVox</translation>
+<translation id="2911433807131383493">Ouvrir le tutoriel ChromeVox</translation>
 <translation id="2912405967290226587">Balayer l'écran vers la droite avec trois doigts</translation>
 <translation id="2932083475399492303">Changer de type de ligne (ligne de structure et ligne de mise en page)</translation>
 <translation id="2942710183375260152">Bleu ardoise foncé</translation>
@@ -319,11 +320,11 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="3232388865800379423">Un bouton de fenêtre pop-up</translation>
 <translation id="3241052487511142956">Lien consulté précédent</translation>
 <translation id="3241638166094654466">Cellules sur chaque ligne :</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" /> : <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Curseur</translation>
 <translation id="3299925995433437805">Aucun lien consulté suivant.</translation>
 <translation id="3300348286427369683">Compatible avec le texte enrichi. ChromeVox accepte désormais les champs de texte enrichi, tels que les commandes d'accès direct, le déplacement de curseur en braille, la sélection, etc.</translation>
-<translation id="3304756947457041303">Personnaliser l'indication du texte enrichi</translation>
 <translation id="3307886118343381874">Accéder à la fin du tableau</translation>
 <translation id="3311969765485641742">Appuyez sur Alt + Maj + A pour examiner les alertes.</translation>
 <translation id="3312997241656799641">Lien consulté suivant</translation>
@@ -613,7 +614,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5304943142864553931"><ph name="TITLE" />, onglet</translation>
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5310788376443009632">Éléments supprimés :</translation>
-<translation id="5320727453979144100">Mode permanent activé</translation>
+<translation id="5320727453979144100">Mode persistant activé</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{virgule}one{# virgule}other{# virgules}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, zone de texte</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, lien</translation>
@@ -699,7 +700,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5851548754964597211">Liste d'onglets</translation>
 <translation id="5859752971144398932">Vous avez quitté la recherche.</translation>
 <translation id="5866042630553435010">Partiellement cochée</translation>
-<translation id="5867591286054666064">Lorsque vous utilisez ce didacticiel, appuyez sur n'importe quelle touche pour entendre le nom de la touche en question.</translation>
+<translation id="5867591286054666064">Lorsque vous utilisez ce tutoriel, appuyez sur n'importe quelle touche pour entendre le nom de la touche en question.</translation>
 <translation id="5869546221129391014">Grille</translation>
 <translation id="5876817486144482042">Diminuer le volume de la voix</translation>
 <translation id="5878908838135392163">Bleu poudre</translation>

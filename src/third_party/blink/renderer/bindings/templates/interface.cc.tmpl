@@ -402,12 +402,12 @@ void {{v8_class_or_partial}}::IndexedPropertyDefinerCallback(
 static void NamedPropertyGetter(const AtomicString& name,
                                 const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if getter.is_raises_exception %}
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "{{interface_name}}",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
   {% endif %}
   {% if getter.is_call_with_script_state %}
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
@@ -461,12 +461,12 @@ static void NamedPropertySetter(
     v8::Local<v8::Value> v8_value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if setter.has_exception_state %}
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kSetterContext,
       "{{interface_name}}",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
   {% endif %}
   {% if setter.is_ce_reactions %}
   CEReactionsScope ce_reactions_scope;
@@ -539,12 +539,12 @@ void {{v8_class_or_partial}}::NamedPropertySetterCallback(
 static void NamedPropertyDeleter(
     const AtomicString& name, const v8::PropertyCallbackInfo<v8::Boolean>& info) {
   {% if deleter.is_raises_exception %}
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kDeletionContext,
       "{{interface_name}}",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
   {% endif %}
   {% if deleter.is_ce_reactions %}
   CEReactionsScope ce_reactions_scope;
@@ -619,12 +619,12 @@ template <typename T>
 static void NamedPropertyQuery(
     const AtomicString& name, const v8::PropertyCallbackInfo<T>& info) {
 {% endif %}
-  const CString& name_in_utf8 = name.Utf8();
+  const std::string& name_in_utf8 = name.Utf8();
   ExceptionState exception_state(
       info.GetIsolate(),
       ExceptionState::kGetterContext,
       "{{interface_name}}",
-      name_in_utf8.data());
+      name_in_utf8.c_str());
   {% if getter.is_call_with_script_state %}
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
   {% endif %}

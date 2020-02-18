@@ -82,8 +82,6 @@ _COMMANDS = {
     "DeleteCookie": (Method.DELETE, "/session/:sessionId/cookie/:name"),
     "DeleteNetworkConditions":
     (Method.DELETE, "/session/:sessionId/chromium/network_conditions"),
-    "DeleteScreenOrientation":
-    (Method.DELETE, "/session/:sessionId/orientation"),
     "DismissAlert": (Method.POST, "/session/:sessionId/dismiss_alert"),
     "DoubleClick": (Method.POST, "/session/:sessionId/doubleclick"),
     "ElementScreenshot":
@@ -131,7 +129,6 @@ _COMMANDS = {
     (Method.GET, "/session/:sessionId/chromium/network_conditions"),
     "GetNetworkConnection":
     (Method.GET, "/session/:sessionId/network_connection"),
-    "GetScreenOrientation": (Method.GET, "/session/:sessionId/orientation"),
     "GetSessionCapabilities": (Method.GET, "/session/:sessionId"),
     "GetSessionStorageItem":
     (Method.GET, "/session/:sessionId/session_storage/key/:key"),
@@ -156,10 +153,8 @@ _COMMANDS = {
     "GoBack": (Method.POST, "/session/:sessionId/back"),
     "GoForward": (Method.POST, "/session/:sessionId/forward"),
     "HeapSnapshot": (Method.GET, "/session/:sessionId/chromium/heap_snapshot"),
-    "HoverElement": (Method.POST, "/session/:sessionId/element/:id/hover"),
     "InitSession": (Method.POST, "/session"),
     "IsAlertOpen": (Method.GET, "/session/:sessionId/alert"),
-    "IsAutoReporting": (Method.GET, "/session/:sessionId/autoreport"),
     "IsElementDisplayed":
     (Method.GET, "/session/:sessionId/element/:id/displayed"),
     "IsElementEnabled": (Method.GET, "/session/:sessionId/element/:id/enabled"),
@@ -189,7 +184,6 @@ _COMMANDS = {
     "SendCommandAndGetResult":
     (Method.POST, "/session/:sessionId/chromium/send_command_and_get_result"),
     "SetAlertPrompt": (Method.POST, "/session/:sessionId/alert_text"),
-    "SetAutoReporting": (Method.POST, "/session/:sessionId/autoreport"),
     "SetGeolocation": (Method.POST, "/session/:sessionId/location"),
     "SetImplicitWait":
     (Method.POST, "/session/:sessionId/timeouts/implicit_wait"),
@@ -198,7 +192,6 @@ _COMMANDS = {
     (Method.POST, "/session/:sessionId/chromium/network_conditions"),
     "SetNetworkConnection":
     (Method.POST, "/session/:sessionId/network_connection"),
-    "SetScreenOrientation": (Method.POST, "/session/:sessionId/orientation"),
     "SetScriptTimeout":
     (Method.POST, "/session/:sessionId/timeouts/async_script"),
     "SetSessionStorageItem":
@@ -219,7 +212,6 @@ _COMMANDS = {
     "TouchFlick": (Method.POST, "/session/:sessionId/touch/flick"),
     "TouchLongPress": (Method.POST, "/session/:sessionId/touch/longclick"),
     "TouchMove": (Method.POST, "/session/:sessionId/touch/move"),
-    "TouchPinch": (Method.POST, "/session/:sessionId/touch/pinch"),
     "TouchScroll": (Method.POST, "/session/:sessionId/touch/scroll"),
     "TouchUp": (Method.POST, "/session/:sessionId/touch/up"),
     "Type": (Method.POST, "/session/:sessionId/keys"),

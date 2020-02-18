@@ -6,14 +6,16 @@
 
 #include <string>
 
+#include "ash/public/interfaces/voice_interaction_controller.mojom-shared.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/account_info.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
@@ -40,10 +42,9 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION;
 
-  // TODO(wutao): Add a new type DISALLOWED_BY_KIOSK_MODE.
   if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
       user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE;
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE;
   }
 
   // String literals used in some cases in the array because their
@@ -53,14 +54,17 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
                                          ULOC_CANADA_FRENCH,
                                          ULOC_FRANCE,
                                          ULOC_FRENCH,
+                                         ULOC_GERMANY,
+                                         ULOC_ITALY,
+                                         ULOC_JAPAN,
+                                         ULOC_JAPANESE,
                                          ULOC_UK,
                                          ULOC_US,
                                          "da",
-                                         "de_DE",
                                          "en_AU",
                                          "en_NZ",
-                                         "ja",
-                                         "ja_JP",
+                                         "es_ES",
+                                         "es_MX",
                                          "nb",
                                          "nl",
                                          "nn",
@@ -77,18 +81,21 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
   // in these test environments.
   if (!chromeos::switches::IsGaiaServicesDisabled() && !pref_locale.empty()) {
     base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-    bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale) &&
-                      !base::ContainsValue(kAllowedLocales, kRuntimeLocale);
+    bool disallowed = !base::Contains(kAllowedLocales, pref_locale) &&
+                      !base::Contains(kAllowedLocales, kRuntimeLocale);
 
     if (disallowed)
       return ash::mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE;
   }
 
+  if (prefs->GetBoolean(chromeos::assistant::prefs::kAssistantDisabledByPolicy))
+    return ash::mojom::AssistantAllowedState::DISALLOWED_BY_POLICY;
+
   // Bypass the account type check when using fake gaia login, e.g. in Tast
   // tests, or the account is logged in a device with a physical Assistant key
   // on keyboard.
   if (!chromeos::switches::IsGaiaServicesDisabled() &&
-      !ui::DeviceUsesKeyboardLayout2()) {
+      !ui::DeviceKeyboardHasAssistantKey()) {
     // Only enable non-dasher accounts for devices without physical key.
     bool account_supported = false;
     auto* identity_manager =
@@ -97,6 +104,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
     if (identity_manager) {
       const std::string email = identity_manager->GetPrimaryAccountInfo().email;
       if (base::EndsWith(email, "@gmail.com",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
+          base::EndsWith(email, "@googlemail.com",
                          base::CompareCase::INSENSITIVE_ASCII) ||
           base::EndsWith(email, "@google.com",
                          base::CompareCase::INSENSITIVE_ASCII)) {

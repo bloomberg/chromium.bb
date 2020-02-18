@@ -94,14 +94,14 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
                                                            R.id.omnibox_results_container_stub))
                                               .inflate();
                 OmniboxSuggestionsList list;
-                try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
                     list = new OmniboxSuggestionsList(context);
                 }
 
                 // Start with visibility GONE to ensure that show() is called.
                 // http://crbug.com/517438
                 list.setVisibility(View.GONE);
-                ModelListAdapter adapter = new ModelListAdapter(context);
+                ModelListAdapter adapter = new ModelListAdapter();
                 list.setAdapter(adapter);
                 list.setClipToPadding(false);
 
@@ -252,6 +252,16 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     @Override
     public void startAutocompleteForQuery(String query) {
         mMediator.startAutocompleteForQuery(query);
+    }
+
+    @Override
+    public String qualifyPartialURLQuery(String query) {
+        return AutocompleteController.nativeQualifyPartialURLQuery(query);
+    }
+
+    @Override
+    public void prefetchZeroSuggestResults() {
+        AutocompleteController.nativePrefetchZeroSuggestResults();
     }
 
     @VisibleForTesting

@@ -43,7 +43,6 @@ void LockFreeAddressHashSet::Insert(void* key) {
     }
   }
   // There are no empty nodes to reuse left in the bucket.
-  DCHECK_EQ(node, nullptr);
   // Create a new node first...
   Node* new_node = new Node(key, bucket.load(std::memory_order_relaxed));
   // ... and then publish the new chain.

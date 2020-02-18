@@ -74,8 +74,7 @@ GuestViewManager::GuestViewManager(
     : current_instance_id_(0),
       last_instance_id_removed_(0),
       context_(context),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {}
+      delegate_(std::move(delegate)) {}
 
 GuestViewManager::~GuestViewManager() {
   // It seems that ChromeOS OTR profiles may still have RenderProcessHosts at
@@ -260,8 +259,7 @@ WebContents* GuestViewManager::GetFullPageGuest(
 
 void GuestViewManager::AddGuest(int guest_instance_id,
                                 WebContents* guest_web_contents) {
-  CHECK(!base::ContainsKey(guest_web_contents_by_instance_id_,
-                           guest_instance_id));
+  CHECK(!base::Contains(guest_web_contents_by_instance_id_, guest_instance_id));
   CHECK(CanUseGuestInstanceID(guest_instance_id));
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
 
@@ -450,7 +448,7 @@ bool GuestViewManager::CanEmbedderAccessInstanceIDMaybeKill(
 bool GuestViewManager::CanUseGuestInstanceID(int guest_instance_id) {
   if (guest_instance_id <= last_instance_id_removed_)
     return false;
-  return !base::ContainsKey(removed_instance_ids_, guest_instance_id);
+  return !base::Contains(removed_instance_ids_, guest_instance_id);
 }
 
 // static

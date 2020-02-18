@@ -32,11 +32,6 @@ void WebViewPasswordManagerDriver::InformNoSavedCredentials() {
   [delegate_ informNoSavedCredentials];
 }
 
-void WebViewPasswordManagerDriver::FormsEligibleForGenerationFound(
-    const std::vector<autofill::PasswordFormGenerationData>& forms) {
-  // Password generation is not supported.
-}
-
 void WebViewPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {
   NOTIMPLEMENTED();
@@ -70,9 +65,6 @@ PasswordManager* WebViewPasswordManagerDriver::GetPasswordManager() {
   return [delegate_ passwordManager];
 }
 
-void WebViewPasswordManagerDriver::AllowPasswordGenerationForForm(
-    const autofill::PasswordForm& form) {}
-
 PasswordAutofillManager*
 WebViewPasswordManagerDriver::GetPasswordAutofillManager() {
   return nullptr;
@@ -88,7 +80,7 @@ bool WebViewPasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
-GURL WebViewPasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& WebViewPasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }
 }  // namespace ios_web_view

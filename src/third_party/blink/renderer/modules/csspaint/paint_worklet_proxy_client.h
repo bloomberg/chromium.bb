@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class DocumentPaintDefinition;
+class PaintWorklet;
 class WorkletGlobalScope;
 
 // Mediates between the (multiple) PaintWorkletGlobalScopes on the worklet
@@ -25,7 +27,7 @@ class WorkletGlobalScope;
 // as choosing the global scope to use for any given paint request.
 //
 // This class is constructed on the main thread but it is used in the worklet
-// backing thread.
+// backing thread. The entire class is used for off-thread CSS Paint.
 class MODULES_EXPORT PaintWorkletProxyClient
     : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
@@ -46,12 +48,13 @@ class MODULES_EXPORT PaintWorkletProxyClient
   PaintWorkletProxyClient(
       int worklet_id,
       PaintWorklet*,
-      scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
+      base::WeakPtr<PaintWorkletPaintDispatcher> compositor_paintee,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue);
   ~PaintWorkletProxyClient() override = default;
 
   // PaintWorkletPainter implementation.
   int GetWorkletId() const override { return worklet_id_; }
-  sk_sp<PaintRecord> Paint(CompositorPaintWorkletInput*) override;
+  sk_sp<PaintRecord> Paint(const CompositorPaintWorkletInput*) override;
 
   // Add a global scope to the PaintWorkletProxyClient.
   virtual void AddGlobalScope(WorkletGlobalScope*);
@@ -74,7 +77,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
   GetGlobalScopesForTesting() const {
     return global_scopes_;
   }
-  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  const HashMap<String, std::unique_ptr<DocumentPaintDefinition>>&
   DocumentDefinitionMapForTesting() const {
     return document_definition_map_;
   }
@@ -98,7 +101,11 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // non-worklet threads to the correct PaintWorkletProxyClient on its worklet
   // thread. PaintWorkletProxyClient requires a reference to the dispatcher in
   // order to register and unregister itself.
-  scoped_refptr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  //
+  // PaintWorkletPaintDispatcher is only accessed on the compositor, so we store
+  // a base::SingleThreadTaskRunner to post to it.
+  base::WeakPtr<PaintWorkletPaintDispatcher> paint_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_host_queue_;
 
   // The unique id for the PaintWorklet that this class is a proxy client for.
   const int worklet_id_;
@@ -119,7 +126,10 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // DocumentPaintDefinition or the definition is invalid. Additionally we
   // cannot tell the main thread about a paint definition until all global
   // scopes have registered it.
-  HeapHashMap<String, Member<DocumentPaintDefinition>> document_definition_map_;
+  //
+  // The value of an entry being nullptr means that it is an invalid definition.
+  HashMap<String, std::unique_ptr<DocumentPaintDefinition>>
+      document_definition_map_;
 
   // The main thread needs to know about registered paint definitions so that it
   // can invalidate any associated paint objects and correctly create the paint

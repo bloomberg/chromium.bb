@@ -29,6 +29,7 @@
 
 #include "core/fxcrt/fx_extension.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
+#include "core/fxge/text_char_pos.h"
 #include "fxbarcode/BC_Writer.h"
 #include "fxbarcode/oned/BC_OneDimWriter.h"
 #include "fxbarcode/oned/BC_OnedEANChecksum.h"
@@ -176,7 +177,7 @@ bool CBC_OnedEAN13Writer::ShowChars(WideStringView contents,
     if (matrix)
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, &charpos[1], m_pFont.Get(),
-                           static_cast<float>(iFontSize), &affine_matrix1,
+                           static_cast<float>(iFontSize), affine_matrix1,
                            m_fontColor, FXTEXT_CLEARTYPE);
   }
   tempStr = str.Mid(7, 6);
@@ -191,7 +192,7 @@ bool CBC_OnedEAN13Writer::ShowChars(WideStringView contents,
     if (matrix)
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, &charpos[7], m_pFont.Get(),
-                           static_cast<float>(iFontSize), &affine_matrix1,
+                           static_cast<float>(iFontSize), affine_matrix1,
                            m_fontColor, FXTEXT_CLEARTYPE);
   }
   tempStr = str.Left(1);
@@ -207,7 +208,7 @@ bool CBC_OnedEAN13Writer::ShowChars(WideStringView contents,
     if (matrix)
       affine_matrix1.Concat(*matrix);
     device->DrawNormalText(length, charpos.data(), m_pFont.Get(),
-                           static_cast<float>(iFontSize), &affine_matrix1,
+                           static_cast<float>(iFontSize), affine_matrix1,
                            m_fontColor, FXTEXT_CLEARTYPE);
   }
   return true;

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
 #include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
@@ -25,17 +26,28 @@ QuicVersionLabel MakeVersionLabel(char a, char b, char c, char d) {
   return MakeQuicTag(d, c, b, a);
 }
 
+QuicVersionLabel CreateRandomVersionLabelForNegotiation() {
+  if (!GetQuicReloadableFlag(quic_version_negotiation_grease)) {
+    return MakeVersionLabel(0xda, 0x5a, 0x3a, 0x3a);
+  }
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_version_negotiation_grease, 2, 2);
+  QuicVersionLabel result;
+  if (!GetQuicFlag(FLAGS_quic_disable_version_negotiation_grease_randomness)) {
+    QuicRandom::GetInstance()->RandBytes(&result, sizeof(result));
+  } else {
+    result = MakeVersionLabel(0xd1, 0x57, 0x38, 0x3f);
+  }
+  result &= 0xf0f0f0f0;
+  result |= 0x0a0a0a0a;
+  return result;
+}
+
 }  // namespace
 
 ParsedQuicVersion::ParsedQuicVersion(HandshakeProtocol handshake_protocol,
                                      QuicTransportVersion transport_version)
     : handshake_protocol(handshake_protocol),
-      transport_version(transport_version) {
-  if (handshake_protocol == PROTOCOL_TLS1_3 &&
-      !GetQuicFlag(FLAGS_quic_supports_tls_handshake)) {
-    QUIC_BUG << "TLS use attempted when not enabled";
-  }
-}
+      transport_version(transport_version) {}
 
 bool ParsedQuicVersion::KnowsWhichDecrypterToUse() const {
   return transport_version >= QUIC_VERSION_47 ||
@@ -55,10 +67,28 @@ bool ParsedQuicVersion::SupportsRetry() const {
   return transport_version > QUIC_VERSION_46;
 }
 
+bool ParsedQuicVersion::SendsVariableLengthPacketNumberInLongHeader() const {
+  return transport_version > QUIC_VERSION_46;
+}
+
 bool ParsedQuicVersion::SupportsClientConnectionIds() const {
-  // This will be enabled in v99 after the rest of the client connection ID
-  // code lands.
-  return false;
+  if (!GetQuicRestartFlag(quic_do_not_override_connection_id)) {
+    // Do not enable this feature in a production version until this flag has
+    // been deprecated.
+    return false;
+  }
+  return transport_version >= QUIC_VERSION_99;
+}
+
+bool ParsedQuicVersion::DoesNotHaveHeadersStream() const {
+  return VersionLacksHeadersStream(transport_version);
+}
+
+bool VersionLacksHeadersStream(QuicTransportVersion transport_version) {
+  if (GetQuicFlag(FLAGS_quic_headers_stream_id_in_v99) == 0) {
+    return false;
+  }
+  return transport_version == QUIC_VERSION_99;
 }
 
 std::ostream& operator<<(std::ostream& os, const ParsedQuicVersion& version) {
@@ -76,8 +106,8 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       proto = 'T';
       break;
     default:
-      QUIC_LOG(ERROR) << "Invalid HandshakeProtocol: "
-                      << parsed_version.handshake_protocol;
+      QUIC_BUG << "Invalid HandshakeProtocol: "
+               << parsed_version.handshake_protocol;
       return 0;
   }
   switch (parsed_version.transport_version) {
@@ -91,6 +121,8 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       return MakeVersionLabel(proto, '0', '4', '6');
     case QUIC_VERSION_47:
       return MakeVersionLabel(proto, '0', '4', '7');
+    case QUIC_VERSION_48:
+      return MakeVersionLabel(proto, '0', '4', '8');
     case QUIC_VERSION_99:
       if (parsed_version.handshake_protocol == PROTOCOL_TLS1_3 &&
           GetQuicFlag(FLAGS_quic_ietf_draft_version) != 0) {
@@ -99,12 +131,12 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       }
       return MakeVersionLabel(proto, '0', '9', '9');
     case QUIC_VERSION_RESERVED_FOR_NEGOTIATION:
-      return MakeVersionLabel(0xda, 0x5a, 0x3a, 0x3a);
+      return CreateRandomVersionLabelForNegotiation();
     default:
-      // This shold be an ERROR because we should never attempt to convert an
-      // invalid QuicTransportVersion to be written to the wire.
-      QUIC_LOG(ERROR) << "Unsupported QuicTransportVersion: "
-                      << parsed_version.transport_version;
+      // This is a bug because we should never attempt to convert an invalid
+      // QuicTransportVersion to be written to the wire.
+      QUIC_BUG << "Unsupported QuicTransportVersion: "
+               << parsed_version.transport_version;
       return 0;
   }
 }
@@ -120,10 +152,8 @@ QuicVersionLabelVector CreateQuicVersionLabelVector(
 }
 
 ParsedQuicVersion ParseQuicVersionLabel(QuicVersionLabel version_label) {
-  std::vector<HandshakeProtocol> protocols = {PROTOCOL_QUIC_CRYPTO};
-  if (GetQuicFlag(FLAGS_quic_supports_tls_handshake)) {
-    protocols.push_back(PROTOCOL_TLS1_3);
-  }
+  std::vector<HandshakeProtocol> protocols = {PROTOCOL_QUIC_CRYPTO,
+                                              PROTOCOL_TLS1_3};
   for (QuicTransportVersion version : kSupportedTransportVersions) {
     for (HandshakeProtocol handshake : protocols) {
       if (version_label ==
@@ -185,15 +215,10 @@ QuicTransportVersionVector AllSupportedTransportVersions() {
 ParsedQuicVersionVector AllSupportedVersions() {
   ParsedQuicVersionVector supported_versions;
   for (HandshakeProtocol protocol : kSupportedHandshakeProtocols) {
-    if (protocol == PROTOCOL_TLS1_3 &&
-        !GetQuicFlag(FLAGS_quic_supports_tls_handshake)) {
-      continue;
-    }
     for (QuicTransportVersion version : kSupportedTransportVersions) {
       if (protocol == PROTOCOL_TLS1_3 &&
           !QuicVersionUsesCryptoFrames(version)) {
-        // The TLS handshake is only deployable if CRYPTO frames are also used,
-        // which are added in v47.
+        // The TLS handshake is only deployable if CRYPTO frames are also used.
         continue;
       }
       supported_versions.push_back(ParsedQuicVersion(protocol, version));
@@ -232,26 +257,24 @@ ParsedQuicVersionVector FilterSupportedVersions(
   ParsedQuicVersionVector filtered_versions;
   filtered_versions.reserve(versions.size());
   for (ParsedQuicVersion version : versions) {
+    if (version.handshake_protocol == PROTOCOL_TLS1_3 &&
+        !GetQuicFlag(FLAGS_quic_supports_tls_handshake)) {
+      continue;
+    }
     if (version.transport_version == QUIC_VERSION_99) {
-      if (GetQuicReloadableFlag(quic_enable_version_99) &&
-          GetQuicReloadableFlag(quic_enable_version_47) &&
-          GetQuicReloadableFlag(quic_enable_version_46) &&
-          GetQuicReloadableFlag(quic_enable_version_44)) {
+      if (GetQuicReloadableFlag(quic_enable_version_99)) {
+        filtered_versions.push_back(version);
+      }
+    } else if (version.transport_version == QUIC_VERSION_48) {
+      if (GetQuicReloadableFlag(quic_enable_version_48)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_47) {
-      if (GetQuicReloadableFlag(quic_enable_version_47) &&
-          GetQuicReloadableFlag(quic_enable_version_46) &&
-          GetQuicReloadableFlag(quic_enable_version_44)) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version.transport_version == QUIC_VERSION_46) {
-      if (GetQuicReloadableFlag(quic_enable_version_46) &&
-          GetQuicReloadableFlag(quic_enable_version_44)) {
+      if (GetQuicReloadableFlag(quic_enable_version_47)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_44) {
-      if (GetQuicReloadableFlag(quic_enable_version_44)) {
+      if (!GetQuicReloadableFlag(quic_disable_version_44)) {
         filtered_versions.push_back(version);
       }
     } else if (version.transport_version == QUIC_VERSION_39) {
@@ -351,6 +374,7 @@ std::string QuicVersionToString(QuicTransportVersion transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_44);
     RETURN_STRING_LITERAL(QUIC_VERSION_46);
     RETURN_STRING_LITERAL(QUIC_VERSION_47);
+    RETURN_STRING_LITERAL(QUIC_VERSION_48);
     RETURN_STRING_LITERAL(QUIC_VERSION_99);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
@@ -358,6 +382,9 @@ std::string QuicVersionToString(QuicTransportVersion transport_version) {
 }
 
 std::string ParsedQuicVersionToString(ParsedQuicVersion version) {
+  if (version == UnsupportedQuicVersion()) {
+    return "0";
+  }
   return QuicVersionLabelToString(CreateQuicVersionLabel(version));
 }
 
@@ -424,43 +451,27 @@ void QuicVersionInitializeSupportForIetfDraft(int32_t draft_version) {
 
   // Enable necessary flags.
   SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
-  SetQuicReloadableFlag(quic_deprecate_ack_bundling_mode, true);
-  SetQuicReloadableFlag(quic_rpm_decides_when_to_send_acks, true);
-  SetQuicReloadableFlag(quic_use_uber_loss_algorithm, true);
-  SetQuicReloadableFlag(quic_use_uber_received_packet_manager, true);
-  SetQuicReloadableFlag(quic_validate_packet_number_post_decryption, true);
-  SetQuicReloadableFlag(quic_print_tag_hex, true);
-  SetQuicReloadableFlag(quic_send_version_negotiation_fixed_bit, true);
-  SetQuicReloadableFlag(quic_no_client_conn_ver_negotiation, true);
-  SetQuicReloadableFlag(quic_eliminate_static_stream_map_3, true);
-  SetQuicReloadableFlag(quic_tolerate_reneging, true);
+  SetQuicFlag(FLAGS_quic_headers_stream_id_in_v99, 60);
   SetQuicReloadableFlag(quic_simplify_stop_waiting, true);
-  SetQuicRestartFlag(quic_no_server_conn_ver_negotiation2, true);
-  SetQuicRestartFlag(quic_server_drop_version_negotiation, true);
-  SetQuicRestartFlag(quic_enable_accept_random_ipn, true);
-  SetQuicRestartFlag(quic_allow_variable_length_connection_id_for_negotiation,
-                     true);
   SetQuicRestartFlag(quic_do_not_override_connection_id, true);
-  SetQuicRestartFlag(quic_no_framer_object_in_dispatcher, true);
+  SetQuicRestartFlag(quic_use_allocated_connection_ids, true);
+  SetQuicRestartFlag(quic_dispatcher_hands_chlo_extractor_one_version, true);
 }
 
 void QuicEnableVersion(ParsedQuicVersion parsed_version) {
   if (parsed_version.handshake_protocol == PROTOCOL_TLS1_3) {
     SetQuicFlag(FLAGS_quic_supports_tls_handshake, true);
   }
-  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 6u,
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 7u,
                 "Supported versions out of sync");
-  if (parsed_version.transport_version >= QUIC_VERSION_99) {
+  if (parsed_version.transport_version == QUIC_VERSION_99) {
     SetQuicReloadableFlag(quic_enable_version_99, true);
   }
-  if (parsed_version.transport_version >= QUIC_VERSION_47) {
+  if (parsed_version.transport_version == QUIC_VERSION_48) {
+    SetQuicReloadableFlag(quic_enable_version_48, true);
+  }
+  if (parsed_version.transport_version == QUIC_VERSION_47) {
     SetQuicReloadableFlag(quic_enable_version_47, true);
-  }
-  if (parsed_version.transport_version >= QUIC_VERSION_46) {
-    SetQuicReloadableFlag(quic_enable_version_46, true);
-  }
-  if (parsed_version.transport_version >= QUIC_VERSION_44) {
-    SetQuicReloadableFlag(quic_enable_version_44, true);
   }
 }
 

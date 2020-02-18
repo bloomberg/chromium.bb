@@ -16,6 +16,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/values.h"
 #include "net/base/host_mapping_rules.h"
+#include "net/base/load_flags.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
@@ -32,8 +33,7 @@ namespace {
 
 // Returns parameters associated with the proxy resolution.
 base::Value NetLogHttpStreamJobProxyServerResolved(
-    const ProxyServer& proxy_server,
-    NetLogCaptureMode /* capture_mode */) {
+    const ProxyServer& proxy_server) {
   base::DictionaryValue dict;
 
   dict.SetString("proxy_server", proxy_server.is_valid()
@@ -48,18 +48,15 @@ base::Value NetLogHttpStreamJobProxyServerResolved(
 // the main job.
 const int kMaxDelayTimeForMainJobSecs = 3;
 
-base::Value NetLogJobControllerCallback(const GURL* url,
-                                        bool is_preconnect,
-                                        NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogJobControllerParams(const GURL& url, bool is_preconnect) {
   base::DictionaryValue dict;
-  dict.SetString("url", url->possibly_invalid_spec());
+  dict.SetString("url", url.possibly_invalid_spec());
   dict.SetBoolean("is_preconnect", is_preconnect);
   return std::move(dict);
 }
 
-base::Value NetLogAltSvcCallback(const AlternativeServiceInfo* alt_svc_info,
-                                 bool is_broken,
-                                 NetLogCaptureMode /* capture_mode */) {
+base::Value NetLogAltSvcParams(const AlternativeServiceInfo* alt_svc_info,
+                               bool is_broken) {
   base::DictionaryValue dict;
   dict.SetString("alt_svc", alt_svc_info->ToString());
   dict.SetBoolean("is_broken", is_broken);
@@ -102,14 +99,13 @@ HttpStreamFactory::JobController::JobController(
       proxy_ssl_config_(proxy_ssl_config),
       num_streams_(0),
       priority_(IDLE),
-      net_log_(
-          NetLogWithSource::Make(session->net_log(),
-                                 NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)),
-      ptr_factory_(this) {
+      net_log_(NetLogWithSource::Make(
+          session->net_log(),
+          NetLogSourceType::HTTP_STREAM_JOB_CONTROLLER)) {
   DCHECK(factory);
-  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER,
-                      base::Bind(&NetLogJobControllerCallback,
-                                 &request_info.url, is_preconnect));
+  net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER, [&] {
+    return NetLogJobControllerParams(request_info.url, is_preconnect);
+  });
 }
 
 HttpStreamFactory::JobController::~JobController() {
@@ -143,10 +139,11 @@ std::unique_ptr<HttpStreamRequest> HttpStreamFactory::JobController::Start(
   request_ = request.get();
 
   // Associates |net_log_| with |source_net_log|.
-  source_net_log.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
-                          net_log_.source().ToEventParametersCallback());
-  net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
-                    source_net_log.source().ToEventParametersCallback());
+  source_net_log.AddEventReferencingSource(
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND, net_log_.source());
+  net_log_.AddEventReferencingSource(
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
+      source_net_log.source());
 
   RunLoop(OK);
   return request;
@@ -459,8 +456,8 @@ void HttpStreamFactory::JobController::AddConnectionAttemptsToRequest(
 
 void HttpStreamFactory::JobController::ResumeMainJobLater(
     const base::TimeDelta& delay) {
-  net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_DELAYED,
-                    NetLog::Int64Callback("delay", delay.InMilliseconds()));
+  net_log_.AddEventWithInt64Params(NetLogEventType::HTTP_STREAM_JOB_DELAYED,
+                                   "delay", delay.InMilliseconds());
   resume_main_job_callback_.Reset(
       base::BindOnce(&HttpStreamFactory::JobController::ResumeMainJob,
                      ptr_factory_.GetWeakPtr()));
@@ -475,9 +472,9 @@ void HttpStreamFactory::JobController::ResumeMainJob() {
     return;
   }
   main_job_is_resumed_ = true;
-  main_job_->net_log().AddEvent(
-      NetLogEventType::HTTP_STREAM_JOB_RESUMED,
-      NetLog::Int64Callback("delay", main_job_wait_time_.InMilliseconds()));
+  main_job_->net_log().AddEventWithInt64Params(
+      NetLogEventType::HTTP_STREAM_JOB_RESUMED, "delay",
+      main_job_wait_time_.InMilliseconds());
 
   main_job_->Resume();
   main_job_wait_time_ = base::TimeDelta();
@@ -641,10 +638,11 @@ int HttpStreamFactory::JobController::DoResolveProxyComplete(int rv) {
 
   proxy_resolve_request_ = nullptr;
   net_log_.AddEvent(
-      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED,
-      base::Bind(
-          &NetLogHttpStreamJobProxyServerResolved,
-          proxy_info_.is_empty() ? ProxyServer() : proxy_info_.proxy_server()));
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED, [&] {
+        return NetLogHttpStreamJobProxyServerResolved(
+            proxy_info_.is_empty() ? ProxyServer()
+                                   : proxy_info_.proxy_server());
+      });
 
   if (rv != OK)
     return rv;
@@ -771,12 +769,12 @@ void HttpStreamFactory::JobController::BindJob(Job* job) {
   job_bound_ = true;
   bound_job_ = job;
 
-  request_->net_log().AddEvent(
+  request_->net_log().AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_JOB,
-      job->net_log().source().ToEventParametersCallback());
-  job->net_log().AddEvent(
+      job->net_log().source());
+  job->net_log().AddEventReferencingSource(
       NetLogEventType::HTTP_STREAM_JOB_BOUND_TO_REQUEST,
-      request_->net_log().source().ToEventParametersCallback());
+      request_->net_log().source());
 
   OrphanUnboundJob();
 }
@@ -1013,9 +1011,9 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     const bool is_broken = http_server_properties.IsAlternativeServiceBroken(
         alternative_service_info.alternative_service());
     net_log_.AddEvent(
-        NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND,
-        base::BindRepeating(&NetLogAltSvcCallback, &alternative_service_info,
-                            is_broken));
+        NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_ALT_SVC_FOUND, [&] {
+          return NetLogAltSvcParams(&alternative_service_info, is_broken);
+        });
     if (is_broken) {
       HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
       continue;
@@ -1050,7 +1048,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
       continue;
 
     if (stream_type == HttpStreamRequest::BIDIRECTIONAL_STREAM &&
-        session_->params().quic_disable_bidirectional_streams) {
+        session_->params().quic_params.disable_bidirectional_streams) {
       continue;
     }
 
@@ -1067,11 +1065,12 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     HostPortPair mapped_origin(origin.host(), origin.port());
     ignore_result(ApplyHostMappingRules(original_url, &mapped_origin));
     QuicSessionKey session_key(mapped_origin, request_info.privacy_mode,
-                               request_info.socket_tag);
+                               request_info.socket_tag,
+                               request_info.network_isolation_key);
 
     HostPortPair destination(alternative_service_info.host_port_pair());
     if (session_key.host() != destination.host() &&
-        !session_->params().quic_allow_remote_alt_svc) {
+        !session_->params().quic_params.allow_remote_alt_svc) {
       continue;
     }
     ignore_result(ApplyHostMappingRules(original_url, &destination));
@@ -1098,7 +1097,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
 quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
     const quic::ParsedQuicVersionVector& advertised_versions) {
   const quic::ParsedQuicVersionVector& supported_versions =
-      session_->params().quic_supported_versions;
+      session_->params().quic_params.supported_versions;
   if (advertised_versions.empty())
     return supported_versions[0];
 
@@ -1242,7 +1241,7 @@ bool HttpStreamFactory::JobController::IsQuicWhitelistedForHost(
     return true;
 
   std::string lowered_host = base::ToLowerASCII(host);
-  return base::ContainsKey(host_whitelist, lowered_host);
+  return base::Contains(host_whitelist, lowered_host);
 }
 
 }  // namespace net

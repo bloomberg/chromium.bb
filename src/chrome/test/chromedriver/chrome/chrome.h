@@ -16,6 +16,11 @@ class WebView;
 
 class Chrome {
  public:
+  enum class WindowType {
+    kWindow,
+    kTab,
+  };
+
   virtual ~Chrome() {}
 
   virtual Status GetAsDesktop(ChromeDesktopImpl** desktop) = 0;
@@ -36,6 +41,11 @@ class Chrome {
 
   // Return the WebView for the given id.
   virtual Status GetWebViewById(const std::string& id, WebView** web_view) = 0;
+
+  // Makes new window or tab.
+  virtual Status NewWindow(const std::string& target_id,
+                           WindowType type,
+                           std::string* window_handle) = 0;
 
   // Gets the size of the specified WebView.
   virtual Status GetWindowSize(const std::string& id,

@@ -11,11 +11,11 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -23,9 +23,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/request_priority.h"
@@ -37,27 +34,6 @@
 using content::BrowserThread;
 
 namespace {
-
-void AssertInterceptedIO(
-    const GURL& url,
-    net::URLRequestJobFactory* interceptor) {
-  net::URLRequestContext context;
-  std::unique_ptr<net::URLRequest> request(context.CreateRequest(
-      url, net::DEFAULT_PRIORITY, nullptr, TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<net::URLRequestJob> job(
-      interceptor->MaybeCreateJobWithProtocolHandler(
-          url.scheme(), request.get(), context.network_delegate()));
-  ASSERT_TRUE(job.get());
-}
-
-void AssertIntercepted(
-    const GURL& url,
-    net::URLRequestJobFactory* interceptor) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(AssertInterceptedIO, url, base::Unretained(interceptor)));
-  base::RunLoop().RunUntilIdle();
-}
 
 // FakeURLRequestJobFactory returns NULL for all job creation requests and false
 // for all IsHandledProtocol() requests. FakeURLRequestJobFactory can be chained
@@ -93,26 +69,6 @@ class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
     return true;
   }
 };
-
-void AssertWillHandleIO(
-    const std::string& scheme,
-    bool expected,
-    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>(
-      new FakeURLRequestJobFactory()));
-  ASSERT_EQ(expected, interceptor->IsHandledProtocol(scheme));
-  interceptor->Chain(std::unique_ptr<net::URLRequestJobFactory>());
-}
-
-void AssertWillHandle(
-    const std::string& scheme,
-    bool expected,
-    ProtocolHandlerRegistry::JobInterceptorFactory* interceptor) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(AssertWillHandleIO, scheme, expected,
-                                          base::Unretained(interceptor)));
-  base::RunLoop().RunUntilIdle();
-}
 
 std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
     const std::string& protocol,
@@ -187,53 +143,53 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
   bool force_os_failure_;
 };
 
-class NotificationCounter : public content::NotificationObserver {
+class ProtocolHandlerChangeListener : public ProtocolHandlerRegistry::Observer {
  public:
-  explicit NotificationCounter(content::BrowserContext* context)
-      : events_(0),
-        notification_registrar_() {
-    notification_registrar_.Add(this,
-        chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-            content::Source<content::BrowserContext>(context));
+  explicit ProtocolHandlerChangeListener(ProtocolHandlerRegistry* registry) {
+    registry_observer_.Add(registry);
   }
+  ~ProtocolHandlerChangeListener() override = default;
 
   int events() { return events_; }
   bool notified() { return events_ > 0; }
   void Clear() { events_ = 0; }
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    ++events_;
-  }
 
-  int events_;
-  content::NotificationRegistrar notification_registrar_;
+  // ProtocolHandlerRegistry::Observer:
+  void OnProtocolHandlerRegistryChanged() override { ++events_; }
+
+ private:
+  int events_ = 0;
+
+  ScopedObserver<ProtocolHandlerRegistry, ProtocolHandlerRegistry::Observer>
+      registry_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerChangeListener);
 };
 
-class QueryProtocolHandlerOnChange
-    : public content::NotificationObserver {
+class QueryProtocolHandlerOnChange : public ProtocolHandlerRegistry::Observer {
  public:
-  QueryProtocolHandlerOnChange(content::BrowserContext* context,
-                               ProtocolHandlerRegistry* registry)
-    : local_registry_(registry),
-      called_(false),
-      notification_registrar_() {
-    notification_registrar_.Add(this,
-        chrome::NOTIFICATION_PROTOCOL_HANDLER_REGISTRY_CHANGED,
-            content::Source<content::BrowserContext>(context));
+  explicit QueryProtocolHandlerOnChange(ProtocolHandlerRegistry* registry)
+      : local_registry_(registry) {
+    registry_observer_.Add(registry);
   }
 
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
+  // ProtocolHandlerRegistry::Observer:
+  void OnProtocolHandlerRegistryChanged() override {
     std::vector<std::string> output;
     local_registry_->GetRegisteredProtocols(&output);
     called_ = true;
   }
 
+  bool called() const { return called_; }
+
+ private:
   ProtocolHandlerRegistry* local_registry_;
-  bool called_;
-  content::NotificationRegistrar notification_registrar_;
+  bool called_ = false;
+
+  ScopedObserver<ProtocolHandlerRegistry, ProtocolHandlerRegistry::Observer>
+      registry_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(QueryProtocolHandlerOnChange);
 };
 
 }  // namespace
@@ -672,9 +628,9 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsHandledProtocol) {
   ASSERT_FALSE(registry()->IsHandledProtocol("test"));
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestNotifications) {
+TEST_F(ProtocolHandlerRegistryTest, TestObserver) {
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
-  NotificationCounter counter(profile());
+  ProtocolHandlerChangeListener counter(registry());
 
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   ASSERT_TRUE(counter.notified());
@@ -693,11 +649,11 @@ TEST_F(ProtocolHandlerRegistryTest, TestNotifications) {
   counter.Clear();
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestReentrantNotifications) {
-  QueryProtocolHandlerOnChange queryer(profile(), registry());
+TEST_F(ProtocolHandlerRegistryTest, TestReentrantObserver) {
+  QueryProtocolHandlerOnChange queryer(registry());
   ProtocolHandler ph1 = CreateProtocolHandler("test", "test1");
   registry()->OnAcceptRegisterProtocolHandler(ph1);
-  ASSERT_TRUE(queryer.called_);
+  ASSERT_TRUE(queryer.called());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestProtocolsWithNoDefaultAreHandled) {
@@ -767,27 +723,6 @@ TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestOSRegistrationFailure) {
   ASSERT_EQ(static_cast<size_t>(1), registry()->GetHandlersFor("dont").size());
 }
 
-TEST_F(ProtocolHandlerRegistryTest, TestMaybeCreateTaskWorksFromIOThread) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  GURL url("mailto:someone@something.com");
-
-  std::unique_ptr<net::URLRequestJobFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertIntercepted(url, interceptor.get());
-}
-
-TEST_F(ProtocolHandlerRegistryTest,
-       TestIsHandledProtocolWorksOnIOThread) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(scheme, true, interceptor.get());
-}
-
 TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultFallsBackToOldDefault) {
   ProtocolHandler ph1 = CreateProtocolHandler("mailto", "test1");
   ProtocolHandler ph2 = CreateProtocolHandler("mailto", "test2");
@@ -822,29 +757,6 @@ TEST_F(ProtocolHandlerRegistryTest, TestRemovingDefaultDoesntChangeHandlers) {
 
   ASSERT_EQ(ph2, handlers[0]);
   ASSERT_EQ(ph1, handlers[1]);
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestClearDefaultGetsPropagatedToIO) {
-  std::string scheme("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(scheme, "test1");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-  registry()->ClearDefault(scheme);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(scheme, false, interceptor.get());
-}
-
-TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
-  std::string mailto("mailto");
-  ProtocolHandler ph1 = CreateProtocolHandler(mailto, "MailtoHandler");
-  registry()->OnAcceptRegisterProtocolHandler(ph1);
-
-  std::unique_ptr<ProtocolHandlerRegistry::JobInterceptorFactory> interceptor(
-      registry()->CreateJobInterceptorFactory());
-  AssertWillHandle(mailto, true, interceptor.get());
-  registry()->Disable();
-  AssertWillHandle(mailto, false, interceptor.get());
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {

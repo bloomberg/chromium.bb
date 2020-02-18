@@ -19,10 +19,6 @@
 
 class PermissionUmaUtil;
 
-namespace autofill {
-class TestAutofillClient;
-}  // namespace autofill
-
 namespace blink {
 class Document;
 }  // namespace blink
@@ -75,7 +71,6 @@ class METRICS_EXPORT UkmRecorder {
   friend DelegatingUkmRecorder;
   friend TestRecordingHelper;
   friend UkmBackgroundRecorderService;
-  friend autofill::TestAutofillClient;
   friend blink::Document;
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
@@ -96,6 +91,11 @@ class METRICS_EXPORT UkmRecorder {
   virtual void RecordNavigation(
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) = 0;
+
+  // Marks a source as no longer needed to kept alive in memory. Called by
+  // SourceUrlRecorderWebContentsObserver when a browser tab or its WebContents
+  // are no longer alive. Not to be used through mojo interface.
+  virtual void MarkSourceForDeletion(ukm::SourceId source_id) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UkmRecorder);
 };

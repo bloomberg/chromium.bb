@@ -47,6 +47,8 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
@@ -54,7 +56,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
@@ -111,6 +112,10 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(chromeos::switches::kLoginUser)) {
+    // TODO(https://crbug.com/977489): There's a lot of code duplication with
+    // UserSessionManager::FinalizePrepareProfile, which is (only!) run for
+    // regular session starts. This needs to be refactored.
+
     // This is done in SessionManager::OnProfileCreated during normal login.
     UserSessionManager* user_session_mgr = UserSessionManager::GetInstance();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
@@ -157,6 +162,9 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
     if (crostini_manager)
       crostini_manager->MaybeUpgradeCrostini();
 
+    g_browser_process->platform_part()->InitializePrimaryProfileServices(
+        user_profile);
+
     if (user->GetType() == user_manager::USER_TYPE_CHILD) {
       ConsumerStatusReportingServiceFactory::GetForBrowserContext(user_profile);
       ScreenTimeControllerFactory::GetForBrowserContext(user_profile);
@@ -168,6 +176,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
         chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
         content::NotificationService::AllSources(),
         content::Details<Profile>(user_profile));
+    session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
+        ProfileHelper::Get()->GetUserByProfile(user_profile)->GetAccountId());
 
     // This call will set session state to SESSION_STATE_ACTIVE (same one).
     session_manager::SessionManager::Get()->SessionStarted();
@@ -197,6 +207,8 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   UserSessionManager::GetInstance()->CheckEolStatus(user_profile);
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
   UserSessionManager::GetInstance()->MaybeShowU2FNotification();
+  UserSessionManager::GetInstance()->MaybeShowReleaseNotesNotification(
+      user_profile);
   g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->GetTPMAutoUpdateModePolicyHandler()
@@ -254,10 +266,10 @@ void ChromeSessionManager::Initialize(
     // In these contexts, emulate as if sync has been initialized.
     VLOG(1) << "Starting Chrome with stub login.";
 
-    // TODO(https://crbug.com/814787): Determine the right long-term flow here.
     std::string login_user_id = login_account_id.GetUserEmail();
-    IdentityManagerFactory::GetForProfile(profile)->LegacySetPrimaryAccount(
-        login_user_id, login_user_id);
+    IdentityManagerFactory::GetForProfile(profile)
+        ->GetPrimaryAccountMutator()
+        ->SetPrimaryAccountAndUpdateAccountInfo(login_user_id, login_user_id);
     StartUserSession(profile, login_user_id);
     return;
   }

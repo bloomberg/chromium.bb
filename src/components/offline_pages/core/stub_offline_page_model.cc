@@ -54,7 +54,6 @@ void StubOfflinePageModel::GetVisualsAvailability(
     base::OnceCallback<void(VisualsAvailability)> callback) {}
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
-    std::unique_ptr<OfflinePageArchiver> archiver,
     PublishPageCallback publish_done_callback) {}
 const base::FilePath& StubOfflinePageModel::GetInternalArchiveDirectory(
     const std::string& name_space) const {
@@ -65,9 +64,6 @@ bool StubOfflinePageModel::IsArchiveInInternalDir(
   return archive_directory_.IsParent(file_path);
 }
 
-ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
-  return &policy_controller_;
-}
 OfflineEventLogger* StubOfflinePageModel::GetLogger() {
   return nullptr;
 }

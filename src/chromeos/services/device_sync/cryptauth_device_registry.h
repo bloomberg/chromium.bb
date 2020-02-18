@@ -18,11 +18,12 @@ namespace device_sync {
 // Stores the devices managed by CryptAuth v2 DeviceSync.
 class CryptAuthDeviceRegistry {
  public:
+  using InstanceIdToDeviceMap = base::flat_map<std::string, CryptAuthDevice>;
+
   virtual ~CryptAuthDeviceRegistry();
 
   // Returns a map from Instance ID to CryptAuthDevice.
-  const base::flat_map<std::string, CryptAuthDevice>&
-  instance_id_to_device_map() const;
+  const InstanceIdToDeviceMap& instance_id_to_device_map() const;
 
   // Returns the device with Instance ID |instance_id| if it exists in the
   // registry, and returns null if it cannot be found.
@@ -30,14 +31,16 @@ class CryptAuthDeviceRegistry {
 
   // Adds |device| to the registry. If a device with the same Instance ID
   // already exists in the registry, the existing device will be overwritten.
-  void AddDevice(const CryptAuthDevice& device);
+  // Returns true if the registry changes.
+  bool AddDevice(const CryptAuthDevice& device);
 
-  // Removes the device with corresponding |instance_id|.
-  void DeleteDevice(const std::string& instance_id);
+  // Removes the device with corresponding |instance_id|.  Returns true if the
+  // registry changes.
+  bool DeleteDevice(const std::string& instance_id);
 
-  // Replaces the entire registry with |instance_id_to_device_map|.
-  void SetRegistry(const base::flat_map<std::string, CryptAuthDevice>&
-                       instance_id_to_device_map);
+  // Replaces the entire registry with |instance_id_to_device_map|. Returns true
+  // if the registry changes.
+  bool SetRegistry(const InstanceIdToDeviceMap& instance_id_to_device_map);
 
  protected:
   CryptAuthDeviceRegistry();
@@ -46,7 +49,7 @@ class CryptAuthDeviceRegistry {
   virtual void OnDeviceRegistryUpdated() = 0;
 
  private:
-  base::flat_map<std::string, CryptAuthDevice> instance_id_to_device_map_;
+  InstanceIdToDeviceMap instance_id_to_device_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthDeviceRegistry);
 };

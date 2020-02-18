@@ -21,7 +21,6 @@
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
@@ -56,14 +55,13 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
   }
 
   // From quic::QuicSession.
-  MOCK_METHOD3(OnConnectionClosed,
-               void(quic::QuicErrorCode error,
-                    const std::string& error_details,
+  MOCK_METHOD2(OnConnectionClosed,
+               void(const quic::QuicConnectionCloseFrame& frame,
                     quic::ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));
   MOCK_METHOD1(CreateIncomingStream,
-               quic::QuicSpdyStream*(quic::PendingStream pending));
+               quic::QuicSpdyStream*(quic::PendingStream* pending));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD5(WritevData,
@@ -161,8 +159,8 @@ class QuicChromiumClientStreamTest
       public WithScopedTaskEnvironment {
  public:
   QuicChromiumClientStreamTest()
-      : crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
-                       quic::TlsClientHandshaker::CreateSslCtx()),
+      : crypto_config_(
+            quic::test::crypto_test_utils::ProofVerifierForTesting()),
         session_(new quic::test::MockQuicConnection(
                      &helper_,
                      &alarm_factory_,

@@ -5,7 +5,6 @@ include_rules = [
   "+components/metrics",
   "+components/metrics:single_sample_metrics",
   "+components/payments",
-  "+components/tracing",
   "+components/url_formatter",
   "+components/viz/client",
   "+components/viz/common",

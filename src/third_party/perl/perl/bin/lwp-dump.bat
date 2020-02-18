@@ -1,34 +1,42 @@
 @rem = '--*-Perl-*--
 @echo off
 if "%OS%" == "Windows_NT" goto WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+) ELSE (
+perl -x -S "%0" %1 %2 %3 %4 %5 %6 %7 %8 %9
+)
+
 goto endofperl
 :WinNT
+IF EXIST "%~dp0perl.exe" (
 "%~dp0perl.exe" -x -S %0 %*
+) ELSE IF EXIST "%~dp0..\..\bin\perl.exe" (
+"%~dp0..\..\bin\perl.exe" -x -S %0 %*
+) ELSE (
+perl -x -S %0 %*
+)
+
 if NOT "%COMSPEC%" == "%SystemRoot%\system32\cmd.exe" goto endofperl
 if %errorlevel% == 9009 echo You do not have Perl in your PATH.
 if errorlevel 1 goto script_failed_so_exit_with_non_zero_val 2>nul
 goto endofperl
 @rem ';
-#!/usr/bin/perl -w
-#line 15
+#!/usr/bin/perl
+#line 29
 
 use strict;
+use warnings;
 use LWP::UserAgent ();
 use Getopt::Long qw(GetOptions);
 use Encode;
 use Encode::Locale;
 
-my $VERSION = "6.00";
-
-GetOptions(\my %opt,
-    'parse-head',
-    'max-length=n',
-    'keep-client-headers',
-    'method=s',
-    'agent=s',
-    'request',
-) || usage();
+GetOptions(\my %opt, 'parse-head', 'max-length=n', 'keep-client-headers',
+    'method=s', 'agent=s', 'request',)
+    || usage();
 
 my $url = shift || usage();
 @ARGV && usage();
@@ -52,15 +60,15 @@ EOT
 my $ua = LWP::UserAgent->new(
     parse_head => $opt{'parse-head'} || 0,
     keep_alive => 1,
-    env_proxy => 1,
-    agent => $opt{agent} || "lwp-dump/$VERSION ",
+    env_proxy  => 1,
+    agent      => $opt{agent}        || "lwp-dump/$LWP::UserAgent::VERSION ",
 );
 
 my $req = HTTP::Request->new($opt{method} || 'GET' => decode(locale => $url));
 my $res = $ua->simple_request($req);
 $res->remove_header(grep /^Client-/, $res->header_field_names)
-    unless $opt{'keep-client-headers'} or
-        ($res->header("Client-Warning") || "") eq "Internal response";
+    unless $opt{'keep-client-headers'}
+    or ($res->header("Client-Warning") || "") eq "Internal response";
 
 if ($opt{request}) {
     $res->request->dump;
@@ -81,7 +89,7 @@ B<lwp-dump> [ I<options> ] I<URL>
 
 =head1 DESCRIPTION
 
-The B<lwp-dump> program will get the resource indentified by the URL and then
+The B<lwp-dump> program will get the resource identified by the URL and then
 dump the response object to STDOUT.  This will display the headers returned and
 the initial part of the content, escaped so that it's safe to display even
 binary content.  The escapes syntax used is the same as for Perl's double
@@ -92,7 +100,7 @@ The following options are recognized:
 
 =over
 
-=item B<--agent> I<str>
+=item B<--agent> I<string>
 
 Override the user agent string passed to the server.
 
@@ -111,7 +119,7 @@ If the content is longer then the string is chopped at the
 limit and the string "...\n(### more bytes not shown)"
 appended.
 
-=item B<--method> I<str>
+=item B<--method> I<string>
 
 Use the given method for the request instead of the default "GET".
 
@@ -130,7 +138,6 @@ Also dump the request sent.
 =head1 SEE ALSO
 
 L<lwp-request>, L<LWP>, L<HTTP::Message/"dump">
-
 
 __END__
 :endofperl

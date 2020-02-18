@@ -30,8 +30,8 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/resource_scheduler.h"
-#include "services/network/resource_scheduler_client.h"
+#include "services/network/resource_scheduler/resource_scheduler.h"
+#include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/upload_progress_tracker.h"
 
 namespace net {
@@ -62,6 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
+      mojom::NetworkContextClient* network_context_client,
       DeleteCallback delete_callback,
       mojom::URLLoaderRequest url_loader_request,
       int32_t options,
@@ -232,8 +233,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   };
   BlockResponseForCorbResult BlockResponseForCorb();
 
+  void ReportFlaggedResponseCookies();
+
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
+  mojom::NetworkContextClient* network_context_client_;
   DeleteCallback delete_callback_;
 
   int32_t options_;
@@ -323,7 +327,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // CORB-excluded requests must be blocked if the CORS check fails.
   bool is_nocors_corb_excluded_request_ = false;
 
-  mojom::FetchRequestMode fetch_request_mode_;
+  mojom::RequestMode request_mode_;
 
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
@@ -349,7 +353,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 
-  base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
+  // See detailed comment in
+  // mojom::network::URLRequest::update_network_isolation_key_on_redirect.
+  mojom::UpdateNetworkIsolationKeyOnRedirect
+      update_network_isolation_key_on_redirect_;
+
+  base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(URLLoader);
 };

@@ -30,7 +30,7 @@ class ServiceDiscoveryClientMdns
   // ServiceDiscoveryClient:
   std::unique_ptr<ServiceWatcher> CreateServiceWatcher(
       const std::string& service_type,
-      const ServiceWatcher::UpdatedCallback& callback) override;
+      ServiceWatcher::UpdatedCallback callback) override;
   std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
       ServiceResolver::ResolveCompleteCallback callback) override;
@@ -49,7 +49,6 @@ class ServiceDiscoveryClientMdns
   void StartNewClient();
   void OnInterfaceListReady(const net::InterfaceIndexFamilyList& interfaces);
   void OnMdnsInitialized(int net_error);
-  void ReportSuccess();
   void InvalidateWeakPtrs();
   void OnBeforeMdnsDestroy();
   void DestroyMdns();
@@ -70,7 +69,7 @@ class ServiceDiscoveryClientMdns
   // If false, delay tasks until initialization is posted to |mdns_runner_|.
   bool need_delay_mdns_tasks_ = true;
 
-  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceDiscoveryClientMdns> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMdns);
 };

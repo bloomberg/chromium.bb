@@ -17,7 +17,7 @@
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_utils.h"
-#include "cc/test/test_in_process_context_provider.h"
+#include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -25,10 +25,11 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/test/paths.h"
 #include "components/viz/test/test_gpu_service_holder.h"
-#include "components/viz/test/test_layer_tree_frame_sink.h"
+#include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/ipc/gl_in_process_context.h"
 
@@ -43,19 +44,23 @@ LayerTreePixelTest::LayerTreePixelTest()
 
 LayerTreePixelTest::~LayerTreePixelTest() = default;
 
-std::unique_ptr<viz::TestLayerTreeFrameSink>
+std::unique_ptr<TestLayerTreeFrameSink>
 LayerTreePixelTest::CreateLayerTreeFrameSink(
     const viz::RendererSettings& renderer_settings,
     double refresh_rate,
     scoped_refptr<viz::ContextProvider>,
     scoped_refptr<viz::RasterContextProvider>) {
-  scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
-  scoped_refptr<TestInProcessContextProvider> worker_context_provider;
-  if (renderer_type_ == RENDERER_GL || renderer_type_ == RENDERER_SKIA_GL) {
-    compositor_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
-    worker_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false, /*support_locking=*/true);
+  scoped_refptr<viz::TestInProcessContextProvider> compositor_context_provider;
+  scoped_refptr<viz::TestInProcessContextProvider> worker_context_provider;
+  if (!use_software_renderer()) {
+    compositor_context_provider =
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+    // With vulkan, OOPR has to be enabled.
+    worker_context_provider =
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
+            /*enable_oop_rasterization=*/use_vulkan(),
+            /*support_locking=*/true);
     // Bind worker context to main thread like it is in production. This is
     // needed to fully initialize the context. Compositor context is bound to
     // the impl thread in LayerTreeFrameSink::BindToCurrentThread().
@@ -70,11 +75,10 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
   // floating point badness in texcoords.
   test_settings.dont_round_texture_sizes_for_pixel_tests = true;
-  auto delegating_output_surface =
-      std::make_unique<viz::TestLayerTreeFrameSink>(
-          compositor_context_provider, worker_context_provider,
-          gpu_memory_buffer_manager(), test_settings, ImplThreadTaskRunner(),
-          synchronous_composite, disable_display_vsync, refresh_rate);
+  auto delegating_output_surface = std::make_unique<TestLayerTreeFrameSink>(
+      compositor_context_provider, worker_context_provider,
+      gpu_memory_buffer_manager(), test_settings, ImplThreadTaskRunner(),
+      synchronous_composite, disable_display_vsync, refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
@@ -83,9 +87,11 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
 std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
   // Set up the SkiaOutputSurfaceImpl.
-  auto output_surface = std::make_unique<viz::SkiaOutputSurfaceImpl>(
-      viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
-      gpu::kNullSurfaceHandle, viz::RendererSettings());
+  auto output_surface = viz::SkiaOutputSurfaceImpl::Create(
+      std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+          viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+          gpu::kNullSurfaceHandle),
+      viz::RendererSettings());
   return output_surface;
 }
 
@@ -98,7 +104,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // mimic texture transport from the renderer process to the Display
     // compositor.
     auto display_context_provider =
-        base::MakeRefCounted<TestInProcessContextProvider>(
+        base::MakeRefCounted<viz::TestInProcessContextProvider>(
             /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     gpu::ContextResult result = display_context_provider->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
@@ -193,7 +199,7 @@ void LayerTreePixelTest::EndTest() {
 }
 
 void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
-  settings->layer_transforms_should_scale_layer_contents = true;
+  settings->gpu_rasterization_forced = use_vulkan();
 }
 
 void LayerTreePixelTest::TryEndTest() {
@@ -283,8 +289,11 @@ void LayerTreePixelTest::InitializeForLayerListMode(
   ScrollNode scroll_node;
   property_trees->scroll_tree.Insert(scroll_node, 0);
 
-  TransformNode transform_node;
-  property_trees->transform_tree.Insert(transform_node, 0);
+  TransformTree& transform_tree = property_trees->transform_tree;
+  auto& transform_node =
+      *transform_tree.Node(transform_tree.Insert(TransformNode(), 0));
+  transform_node.source_node_id = transform_node.parent_id;
+  transform_tree.set_needs_update(true);
 
   *root_layer = Layer::Create();
   (*root_layer)->SetBounds(gfx::Size(100, 100));
@@ -339,7 +348,7 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
     const gfx::ColorSpace& color_space) {
   SkBitmap bitmap;
   std::unique_ptr<gpu::GLInProcessContext> context =
-      CreateTestInProcessContext();
+      viz::CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
 
   if (sync_token.HasData())
@@ -392,7 +401,7 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
 
 void LayerTreePixelTest::Finish() {
   std::unique_ptr<gpu::GLInProcessContext> context =
-      CreateTestInProcessContext();
+      viz::CreateTestInProcessContext();
   GLES2Interface* gl = context->GetImplementation();
   gl->Finish();
 }

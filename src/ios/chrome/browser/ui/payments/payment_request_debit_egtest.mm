@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +76,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [super setUp];
   _profile = std::make_unique<autofill::AutofillProfile>(
       autofill::test::GetFullProfile());
-  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:*_profile]);
+  [self addAutofillProfile:*_profile];
 
   // Allow canMakePayment to return a truthful value by default.
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
@@ -99,13 +98,11 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
   [self addServerCardWithType:DEBIT];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"];
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
@@ -116,27 +113,23 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
   [self addServerCardWithType:UNKNOWN];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"];
 
   [self waitForWebViewContainingTexts:{"true"}];
 }
 
 // Tests that canMakePayment() resolves with false with credit or prepaid cards.
 - (void)testCannotMakePaymentWithCreditAndPrepaidCard {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
   [self addServerCardWithType:CREDIT];
   [self addServerCardWithType:PREPAID];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"canMakePayment"];
 
   [self waitForWebViewContainingTexts:{"false"}];
 }
@@ -147,12 +140,11 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   featureList.InitAndEnableFeature(
       payments::features::kReturnGooglePayInBasicCard);
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
   [self addServerCardWithType:DEBIT];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -166,12 +158,11 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
 
 // Tests that an "unknown" card is not preselected.
 - (void)testUnknownCardTypeIsNotPreselected {
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
   [self addServerCardWithType:UNKNOWN];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
@@ -189,12 +180,11 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   // All local cards have "unknown" card type by design.
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(_profile->guid());
-  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
+  [self addCreditCard:card];
 
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)]);
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 
-  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey tapWebStateElementWithID:@"buy"]);
+  [ChromeEarlGrey tapWebStateElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]

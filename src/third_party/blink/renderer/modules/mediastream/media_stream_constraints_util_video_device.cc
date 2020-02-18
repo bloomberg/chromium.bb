@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
 #include "media/base/limits.h"
 #include "media/mojo/interfaces/display_media_information.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -309,12 +308,12 @@ class CandidateFormat {
     }
 
     if (basic_constraint_set.resize_mode.HasIdeal()) {
-      if (!base::ContainsValue(basic_constraint_set.resize_mode.Ideal(),
-                               WebMediaStreamTrack::kResizeModeNone)) {
+      if (!base::Contains(basic_constraint_set.resize_mode.Ideal(),
+                          WebMediaStreamTrack::kResizeModeNone)) {
         track_fitness_without_rescale += 1.0;
       }
-      if (!base::ContainsValue(basic_constraint_set.resize_mode.Ideal(),
-                               WebMediaStreamTrack::kResizeModeRescale)) {
+      if (!base::Contains(basic_constraint_set.resize_mode.Ideal(),
+                          WebMediaStreamTrack::kResizeModeRescale)) {
         track_fitness_with_rescale += 1.0;
       }
     }

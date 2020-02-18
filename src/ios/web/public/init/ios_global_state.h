@@ -8,7 +8,7 @@
 #include "base/task/thread_pool/thread_pool.h"
 
 namespace base {
-class MessageLoop;
+class SingleThreadTaskExecutor;
 }
 
 namespace ios_global_state {
@@ -38,13 +38,13 @@ struct CreateParams {
 // call.
 void Create(const CreateParams& create_params);
 
-// Creates a message loop for the UI thread and attaches it. It is safe to call
+// Creates a task executor for the UI thread and attaches it. It is safe to call
 // this method more than once, the initialization will only be performed once.
-void BuildMessageLoop();
+void BuildSingleThreadTaskExecutor();
 
-// Destroys the message loop create by BuildMessageLoop. It is safe to call
-// multiple time.
-void DestroyMessageLoop();
+// Destroys the message loop create by BuildSingleThreadTaskExecutor. It is safe
+// to call multiple times.
+void DestroySingleThreadTaskExecutor();
 
 // Creates a network change notifier.  It is safe to call this method more than
 // once, the initialization will only be performed once.
@@ -65,8 +65,8 @@ void StartThreadPool();
 // AtExitManager will be destroyed on the first call.
 void DestroyAtExitManager();
 
-// Returns message loop for the UI thread.
-base::MessageLoop* GetMainThreadMessageLoop();
+// Returns SingleThreadTaskExecutor for the UI thread.
+base::SingleThreadTaskExecutor* GetMainThreadTaskExecutor();
 
 }  // namespace ios_global_state
 

@@ -75,7 +75,9 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     """Initialize attributes related to workspace paths."""
     # pylint:disable=protected-access,attribute-defined-outside-init
     self.workspace = os.path.join(self.tempdir, workspace)
+    self.chroot = os.path.join(self.tempdir, 'chroot')
     osutils.SafeMakedirs(self.workspace)
+    osutils.SafeMakedirs(self.chroot)
     self.moblab_workdir_path = os.path.join(self.workspace,
                                             moblab_vm._WORKSPACE_MOBLAB_DIR)
     self.moblab_image_path = os.path.join(self.moblab_workdir_path,
@@ -190,7 +192,7 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
 
     # Create a new moblabvm instance. MoblabVm persists everything to disk an
     # must work seamlessly across instance discards.
-    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    vmsetup = moblab_vm.MoblabVm(self.workspace, chroot_dir=self.chroot)
     vmsetup.Start()
     self.assertTrue(vmsetup.initialized)
     self.assertTrue(vmsetup.running)
@@ -213,11 +215,11 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     vm_calls = [mock.call(
         self.moblab_image_path, self._PORT + 2, self._PORT + 6,
         self.moblab_tap_dev, mock.ANY, is_moblab=True,
-        disk_path=self.moblab_disk_path)]
+        disk_path=self.moblab_disk_path, chroot_path=self.chroot)]
     if with_dut:
       vm_calls.append(mock.call(
           self.dut_image_path, self._PORT + 6, self._PORT + 7,
-          self.dut_tap_dev, mock.ANY, is_moblab=False))
+          self.dut_tap_dev, mock.ANY, is_moblab=False, chroot_path=self.chroot))
     self.assertEqual(self._mock_start_vm.call_args_list, vm_calls)
     if with_dut:
       # Different SSH ports are used for the two VMs
@@ -240,15 +242,15 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
                                                         self.bridge_name)
     self._mock_create_tap_device.side_effect = iter([self.moblab_tap_dev,
                                                      self.dut_tap_dev])
-    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    vmsetup = moblab_vm.MoblabVm(self.workspace, chroot_dir=self.chroot)
     vmsetup.Start()
 
     # Verify .Stop releases global resources.
-    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    vmsetup = moblab_vm.MoblabVm(self.workspace, chroot_dir=self.chroot)
     vmsetup.Stop()
     self.assertEqual(self._mock_stop_vm.call_args_list,
-                     [mock.call(self.dut_ssh_port),
-                      mock.call(self.moblab_ssh_port)])
+                     [mock.call(self.dut_ssh_port, chroot_path=self.chroot),
+                      mock.call(self.moblab_ssh_port, chroot_path=self.chroot)])
     self.assertEqual(self._mock_remove_tap_device.call_args_list,
                      [mock.call(self.dut_tap_dev),
                       mock.call(self.moblab_tap_dev)])
@@ -276,10 +278,10 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
       vmsetup.Start()
 
     # Verify .Stop releases global resources.
-    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    vmsetup = moblab_vm.MoblabVm(self.workspace, chroot_dir=self.chroot)
     vmsetup.Stop()
     self.assertEqual(self._mock_stop_vm.call_args_list,
-                     [mock.call(self.moblab_ssh_port)])
+                     [mock.call(self.moblab_ssh_port, chroot_path=self.chroot)])
     self.assertEqual(self._mock_remove_tap_device.call_args_list,
                      [mock.call(self.dut_tap_dev),
                       mock.call(self.moblab_tap_dev)])
@@ -298,6 +300,28 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
     shutil.move(self.workspace, new_workspace)
     self._InitializeWorkspaceAttributes(new_workspace)
     self._testSuccessfulStartAfterCreate(False)
+
+  def testRunVmsContextNoFailure(self):
+    """Calls .Start and .Stop in a basic use case."""
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    start = self.PatchObject(moblab_vm.MoblabVm, 'Start')
+    destroy = self.PatchObject(moblab_vm.MoblabVm, 'Destroy')
+    with vmsetup.RunVmsContext():
+      pass
+    self.assertEqual(start.call_count, 1)
+    self.assertEqual(destroy.call_count, 1)
+
+  def testRunVmsContextWithFailure(self):
+    """Calls .Start and .Stop when exception is raised within context."""
+    vmsetup = moblab_vm.MoblabVm(self.workspace)
+    start = self.PatchObject(moblab_vm.MoblabVm, 'Start')
+    destroy = self.PatchObject(moblab_vm.MoblabVm, 'Destroy')
+    try:
+      with vmsetup.RunVmsContext():
+        raise ValueError('uh oh!')
+    except ValueError:
+      self.assertEqual(start.call_count, 1)
+      self.assertEqual(destroy.call_count, 1)
 
   def testMountMoblabDiskContextInUninitilizedWorkspaceRaises(self):
     """Cannot mount a disk if the workspace isn't even initialized."""

@@ -28,7 +28,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
+#include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller.h"
@@ -48,16 +50,11 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/client_view.h"
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-#include "chrome/browser/ui/views/feature_promos/reopen_tab_promo_controller.h"
-#endif  // BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
-
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
 class BookmarkBarView;
 class Browser;
-class BrowserViewLayout;
 class ContentsLayoutManager;
 class DownloadShelfView;
 class ExclusiveAccessBubbleViews;
@@ -179,6 +176,13 @@ class BrowserView : public BrowserWindow,
   // Container for the web contents.
   views::View* contents_container() { return contents_container_; }
 
+  void set_contents_border_widget(views::Widget* contents_border_widget) {
+    GetBrowserViewLayout()->set_contents_border_widget(contents_border_widget);
+  }
+  views::Widget* contents_border_widget() {
+    return GetBrowserViewLayout()->contents_border_widget();
+  }
+
   // Accessor for the TabStrip.
   TabStrip* tabstrip() { return tabstrip_; }
   const TabStrip* tabstrip() const { return tabstrip_; }
@@ -293,8 +297,8 @@ class BrowserView : public BrowserWindow,
   void Deactivate() override;
   bool IsActive() const override;
   void FlashFrame(bool flash) override;
-  bool IsAlwaysOnTop() const override;
-  void SetAlwaysOnTop(bool always_on_top) override;
+  ui::ZOrderLevel GetZOrderLevel() const override;
+  void SetZOrderLevel(ui::ZOrderLevel order) override;
   gfx::NativeWindow GetNativeWindow() const override;
   void SetTopControlsShownRatio(content::WebContents* web_contents,
                                 float ratio) override;
@@ -350,6 +354,7 @@ class BrowserView : public BrowserWindow,
   void ResetToolbarTabState(content::WebContents* contents) override;
   void FocusToolbar() override;
   ToolbarActionsBar* GetToolbarActionsBar() override;
+  ExtensionsContainer* GetExtensionsContainer() override;
   void ToolbarSizeChanged(bool is_animating) override;
   void TabDraggingStatusChanged(bool is_dragging) override;
   void FocusAppMenu() override;
@@ -362,11 +367,14 @@ class BrowserView : public BrowserWindow,
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
+  ClickToCallDialog* ShowClickToCallDialog(
+      content::WebContents* contents,
+      ClickToCallSharingDialogController* controller) override;
   void ShowUpdateChromeDialog() override;
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
-      bool show_stay_in_chrome,
-      bool show_remember_selection,
+      bool enable_stay_in_chrome,
+      bool show_persistence_options,
       IntentPickerResponse callback) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
@@ -409,15 +417,15 @@ class BrowserView : public BrowserWindow,
   bool HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) override;
   void CutCopyPaste(int command_id) override;
-  FindBar* CreateFindBar() override;
+  std::unique_ptr<FindBar> CreateFindBar() override;
   web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
       override;
-  void ShowHatsBubbleFromAppMenuButton() override;
   void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override;
+  void ShowHatsBubbleFromAppMenuButton() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
@@ -433,9 +441,7 @@ class BrowserView : public BrowserWindow,
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override;
-#endif
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -842,9 +848,7 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
 
-#if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)
   ReopenTabPromoController reopen_tab_promo_controller_{this};
-#endif
 
   struct ResizeSession {
     // The time when user started resizing the window.

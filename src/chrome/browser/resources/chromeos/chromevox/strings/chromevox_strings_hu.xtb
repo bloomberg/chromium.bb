@@ -69,6 +69,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1385214448885562192">Nyomja le az entert az elfogadáshoz vagy az escape-et a visszavonáshoz, a le gombot a következőhöz, a fel gombot az előzőhöz.</translation>
 <translation id="1396114365388024581">füllista</translation>
+<translation id="139902759009894363">Szövegformázási attribútumok bejelentése</translation>
 <translation id="1405567553485452995">Világoszöld</translation>
 <translation id="1417889266572670458">Tengerészkék</translation>
 <translation id="1431911867058218151">Szilvalila</translation>
@@ -319,11 +320,11 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3232388865800379423">Előugró gomb</translation>
 <translation id="3241052487511142956">Előző felkeresett link</translation>
 <translation id="3241638166094654466">Az egyes sorokban található cellák száma:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">álló</translation>
 <translation id="3286390186030710347">Csúszka</translation>
 <translation id="3299925995433437805">Nincs következő felkeresett link.</translation>
 <translation id="3300348286427369683">Formázott szöveg támogatása. A ChromeVox már támogatja a formázott szöveget tartalmazó mezőket, beleértve az „ugrás” parancsokat, a Braille-kurzor irányítását, a kiválasztást és egyebeket.</translation>
-<translation id="3304756947457041303">A formázott szöveg jelzésének személyre szabása</translation>
 <translation id="3307886118343381874">Ugrás a táblázat végére</translation>
 <translation id="3311969765485641742">Az értesítések megtekintéséhez nyomja meg az Alt+Shift+A kombinációt</translation>
 <translation id="3312997241656799641">A következő felkeresett link</translation>
@@ -444,7 +445,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4161104397932142764">{COUNT,plural, =1{másodperc}other{másodperc}}</translation>
 <translation id="4161663686871496107">A ChromeVox hangos visszajelzés készen áll</translation>
 <translation id="4173994908659439270">Nincs következő szerkeszthető szövegmező.</translation>
-<translation id="4176463684765177261">Kikapcsolva</translation>
+<translation id="4176463684765177261">Letiltva</translation>
 <translation id="4187322598335821254">A sor szerinti mozgáshoz csúsztassa ujját fel vagy le</translation>
 <translation id="4188530942454211480">Előző mondat</translation>
 <translation id="4191918948604314587">Gomb</translation>

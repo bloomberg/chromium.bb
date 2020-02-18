@@ -51,8 +51,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -292,7 +292,7 @@ content::WebContents* GetWebContentsForPrompt(
 
 MediaGalleriesEventRouter::MediaGalleriesEventRouter(
     content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
+    : profile_(Profile::FromBrowserContext(context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
 
@@ -679,7 +679,7 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       std::move(media_data_source_factory));
   SafeMediaMetadataParser* parser_ptr = parser.get();
   parser_ptr->Start(
-      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      content::GetSystemConnector(),
       base::BindOnce(
           &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
           this, std::move(parser)));

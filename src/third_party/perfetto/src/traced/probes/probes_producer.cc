@@ -24,18 +24,19 @@
 #include <string>
 
 #include "perfetto/base/logging.h"
-#include "perfetto/base/utils.h"
-#include "perfetto/base/weak_ptr.h"
-#include "perfetto/traced/traced.h"
+#include "perfetto/ext/base/utils.h"
+#include "perfetto/ext/base/weak_ptr.h"
+#include "perfetto/ext/traced/traced.h"
+#include "perfetto/ext/tracing/core/trace_packet.h"
+#include "perfetto/ext/tracing/ipc/producer_ipc_client.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
 #include "perfetto/tracing/core/trace_config.h"
-#include "perfetto/tracing/core/trace_packet.h"
-#include "perfetto/tracing/ipc/producer_ipc_client.h"
 #include "src/traced/probes/android_log/android_log_data_source.h"
 #include "src/traced/probes/filesystem/inode_file_data_source.h"
 #include "src/traced/probes/ftrace/ftrace_config.h"
 #include "src/traced/probes/ftrace/ftrace_data_source.h"
+#include "src/traced/probes/metatrace/metatrace_data_source.h"
 #include "src/traced/probes/packages_list/packages_list_data_source.h"
 #include "src/traced/probes/power/android_power_data_source.h"
 #include "src/traced/probes/probes_data_source.h"
@@ -129,6 +130,12 @@ void ProbesProducer::OnConnect() {
     desc.set_name(kPackagesListSourceName);
     endpoint_->RegisterDataSource(desc);
   }
+
+  {
+    DataSourceDescriptor desc;
+    desc.set_name(MetatraceDataSource::kDataSourceName);
+    endpoint_->RegisterDataSource(desc);
+  }
 }
 
 void ProbesProducer::OnDisconnect() {
@@ -183,6 +190,8 @@ void ProbesProducer::SetupDataSource(DataSourceInstanceID instance_id,
     data_source = CreateAndroidLogDataSource(session_id, config);
   } else if (config.name() == kPackagesListSourceName) {
     data_source = CreatePackagesListDataSource(session_id, config);
+  } else if (config.name() == MetatraceDataSource::kDataSourceName) {
+    data_source = CreateMetatraceDataSource(session_id, config);
   }
 
   if (!data_source) {
@@ -300,7 +309,7 @@ std::unique_ptr<ProbesDataSource> ProbesProducer::CreatePackagesListDataSource(
     const DataSourceConfig& config) {
   auto buffer_id = static_cast<BufferID>(config.target_buffer());
   return std::unique_ptr<ProbesDataSource>(new PackagesListDataSource(
-      session_id, endpoint_->CreateTraceWriter(buffer_id)));
+      config, session_id, endpoint_->CreateTraceWriter(buffer_id)));
 }
 
 std::unique_ptr<ProbesDataSource> ProbesProducer::CreateSysStatsDataSource(
@@ -310,6 +319,14 @@ std::unique_ptr<ProbesDataSource> ProbesProducer::CreateSysStatsDataSource(
   return std::unique_ptr<SysStatsDataSource>(
       new SysStatsDataSource(task_runner_, session_id,
                              endpoint_->CreateTraceWriter(buffer_id), config));
+}
+
+std::unique_ptr<ProbesDataSource> ProbesProducer::CreateMetatraceDataSource(
+    TracingSessionID session_id,
+    const DataSourceConfig& config) {
+  auto buffer_id = static_cast<BufferID>(config.target_buffer());
+  return std::unique_ptr<ProbesDataSource>(new MetatraceDataSource(
+      task_runner_, session_id, endpoint_->CreateTraceWriter(buffer_id)));
 }
 
 void ProbesProducer::StopDataSource(DataSourceInstanceID id) {
@@ -472,6 +489,7 @@ void ProbesProducer::OnFtraceDataWrittenIntoDataSourceBuffers() {
       case SysStatsDataSource::kTypeId:
       case AndroidLogDataSource::kTypeId:
       case PackagesListDataSource::kTypeId:
+      case MetatraceDataSource::kTypeId:
         break;
       default:
         PERFETTO_DFATAL("Invalid data source.");

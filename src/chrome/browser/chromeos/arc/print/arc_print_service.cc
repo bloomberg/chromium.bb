@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -149,27 +150,30 @@ std::unique_ptr<printing::MetafileSkia> ReadFileOnBlockingTaskRunner(
 }
 
 using PrinterQueryCallback =
-    base::OnceCallback<void(scoped_refptr<printing::PrinterQuery>)>;
+    base::OnceCallback<void(std::unique_ptr<printing::PrinterQuery>)>;
 
-void OnSetSettingsDoneOnIOThread(scoped_refptr<printing::PrinterQuery> query,
+void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
                                  PrinterQueryCallback callback);
 
 void CreateQueryOnIOThread(std::unique_ptr<printing::PrintSettings> settings,
                            PrinterQueryCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  auto query = base::MakeRefCounted<printing::PrinterQuery>(
+  auto query = std::make_unique<printing::PrinterQuery>(
       content::ChildProcessHost::kInvalidUniqueID,
       content::ChildProcessHost::kInvalidUniqueID);
-  query->SetSettingsFromPOD(
+  auto* query_ptr = query.get();
+  query_ptr->SetSettingsFromPOD(
       std::move(settings),
-      base::BindOnce(&OnSetSettingsDoneOnIOThread, query, std::move(callback)));
+      base::BindOnce(&OnSetSettingsDoneOnIOThread, std::move(query),
+                     std::move(callback)));
 }
 
 // Send initialized PrinterQuery to UI thread.
-void OnSetSettingsDoneOnIOThread(scoped_refptr<printing::PrinterQuery> query,
+void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
                                  PrinterQueryCallback callback) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(callback), query));
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(std::move(callback), std::move(query)));
 }
 
 std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
@@ -470,10 +474,10 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   }
 
   // Create PrintJob and start printing if Metafile is created as well.
-  void OnSetSettingsDone(scoped_refptr<printing::PrinterQuery> query) {
+  void OnSetSettingsDone(std::unique_ptr<printing::PrinterQuery> query) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     job_ = base::MakeRefCounted<printing::PrintJob>();
-    job_->Initialize(query.get(), base::string16() /* name */,
+    job_->Initialize(std::move(query), base::string16() /* name */,
                      1 /* page_count */);
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::Source<printing::PrintJob>(job_.get()));

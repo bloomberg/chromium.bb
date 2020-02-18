@@ -7,36 +7,26 @@
 #include <memory>
 
 #include "absl/strings/string_view.h"
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+#include "osp/impl/presentation/testing/mock_connection_delegate.h"
 #include "osp/impl/quic/testing/fake_quic_connection.h"
 #include "osp/impl/quic/testing/fake_quic_connection_factory.h"
 #include "osp/impl/quic/testing/quic_test_support.h"
-#include "osp/impl/testing/fake_clock.h"
 #include "osp/public/network_service_manager.h"
 #include "osp/public/presentation/presentation_controller.h"
-#include "third_party/googletest/src/googlemock/include/gmock/gmock.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "platform/test/fake_clock.h"
 
 namespace openscreen {
 namespace presentation {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::NiceMock;
 
-class MockConnectionDelegate final : public Connection::Delegate {
- public:
-  MockConnectionDelegate() = default;
-  ~MockConnectionDelegate() override = default;
+namespace {
 
-  MOCK_METHOD0(OnConnected, void());
-  MOCK_METHOD0(OnClosedByRemote, void());
-  MOCK_METHOD0(OnDiscarded, void());
-  MOCK_METHOD1(OnError, void(const absl::string_view message));
-  MOCK_METHOD0(OnTerminated, void());
-  MOCK_METHOD1(OnStringMessage, void(const absl::string_view message));
-  MOCK_METHOD1(OnBinaryMessage, void(const std::vector<uint8_t>& data));
-};
-
-class MockParentDelegate final : public Connection::ParentDelegate {
+class MockParentDelegate : public Connection::ParentDelegate {
  public:
   MockParentDelegate() = default;
   ~MockParentDelegate() override = default;
@@ -62,6 +52,8 @@ class MockConnectRequest final
   MOCK_METHOD1(OnConnectionFailed, void(uint64_t request_id));
 };
 
+}  // namespace
+
 class ConnectionTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -82,15 +74,15 @@ class ConnectionTest : public ::testing::Test {
     return response;
   }
 
-  FakeClock fake_clock_{
+  platform::FakeClock fake_clock_{
       platform::Clock::time_point(std::chrono::milliseconds(1298424))};
-  FakeQuicBridge quic_bridge_{FakeClock::now};
+  FakeQuicBridge quic_bridge_{platform::FakeClock::now};
   ConnectionManager controller_connection_manager_{
       quic_bridge_.controller_demuxer.get()};
   ConnectionManager receiver_connection_manager_{
       quic_bridge_.receiver_demuxer.get()};
-  MockParentDelegate mock_controller_;
-  MockParentDelegate mock_receiver_;
+  NiceMock<MockParentDelegate> mock_controller_;
+  NiceMock<MockParentDelegate> mock_receiver_;
 };
 
 TEST_F(ConnectionTest, ConnectAndSend) {

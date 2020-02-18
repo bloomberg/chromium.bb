@@ -16,7 +16,7 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
@@ -35,8 +35,8 @@ class BookmarkAppInstallManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
 
     install_finalizer_ = std::make_unique<web_app::TestInstallFinalizer>();
-    install_manager_ = std::make_unique<BookmarkAppInstallManager>(
-        profile(), install_finalizer_.get());
+    install_manager_ = std::make_unique<BookmarkAppInstallManager>(profile());
+    install_manager_->SetSubsystems(nullptr, install_finalizer_.get());
 
     extensions::TestExtensionSystem* test_extension_system =
         static_cast<extensions::TestExtensionSystem*>(
@@ -135,9 +135,9 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_WebContentsDestroyed) {
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -167,9 +167,9 @@ TEST_F(BookmarkAppInstallManagerTest,
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop retrieval_run_loop;
   bool data_retrieval_passed = false;
@@ -227,9 +227,9 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_InstallManagerDestroyed) {
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop run_loop;
   bool callback_called = false;
@@ -260,9 +260,9 @@ TEST_F(BookmarkAppInstallManagerTest,
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
-      web_app::InstallSource::kExternalPolicy);
+      web_app::ExternalInstallSource::kExternalPolicy);
 
   base::RunLoop retrieval_run_loop;
   bool data_retrieval_passed = false;

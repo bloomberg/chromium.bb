@@ -35,6 +35,7 @@
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
@@ -53,7 +54,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
-#include "components/metrics/system_memory_stats_recorder.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -158,28 +158,12 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
       restored_tab_count_(0u),
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       loading_slots_(kNumOfLoadingSlots),
-      tab_load_tracker_(tab_load_tracker),
-      weak_ptr_factory_(this) {
+      tab_load_tracker_(tab_load_tracker) {
 #if defined(OS_CHROMEOS)
   delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-
-  // Create the graph observer. This is the source of page almost idle data and
-  // EQT measurements.
-  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
-    // The performance manager is torn down on its own sequence so its safe to
-    // pass it unretained. The observer itself learns of the tab manager tear
-    // down via the weak ptr it is given.
-    perf_man->task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &performance_manager::PerformanceManager::RegisterObserver,
-            base::Unretained(perf_man),
-            std::make_unique<ResourceCoordinatorSignalObserver>(
-                weak_ptr_factory_.GetWeakPtr())));
-  }
 
   stats_collector_.reset(new TabManagerStatsCollector());
   proactive_freeze_discard_params_ =
@@ -222,6 +206,27 @@ void TabManager::Start() {
     }
   }
 #endif
+
+  // Create the graph observer. This is the source of page almost idle data and
+  // EQT measurements.
+  if (auto* perf_man = performance_manager::PerformanceManager::GetInstance()) {
+    // The performance manager is torn down on its own sequence so its safe to
+    // pass it unretained. The observer itself learns of the tab manager tear
+    // down via the weak ptr it is given.
+    perf_man->CallOnGraph(
+        FROM_HERE, base::BindOnce(
+                       [](std::unique_ptr<ResourceCoordinatorSignalObserver>
+                              rc_signal_observer,
+                          performance_manager::GraphImpl* graph) {
+                         graph->PassToGraph(std::move(rc_signal_observer));
+                       },
+                       std::make_unique<ResourceCoordinatorSignalObserver>(
+                           weak_ptr_factory_.GetWeakPtr())));
+  }
+
+  g_browser_process->resource_coordinator_parts()
+      ->tab_lifecycle_unit_source()
+      ->Start();
 }
 
 LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
@@ -736,7 +741,7 @@ int TabManager::GetNumAliveTabs() const {
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
-  if (base::ContainsKey(loading_contents_, contents))
+  if (base::Contains(loading_contents_, contents))
     return true;
   DCHECK_NE(LoadingState::LOADING,
             GetWebContentsData(contents)->tab_loading_state());

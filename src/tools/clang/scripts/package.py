@@ -15,7 +15,7 @@ import subprocess
 import sys
 import tarfile
 
-from update import RELEASE_VERSION
+from update import RELEASE_VERSION, STAMP_FILE
 
 # Path constants.
 THIS_DIR = os.path.dirname(__file__)
@@ -30,7 +30,6 @@ LLVM_BUILD_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-build')
 LLVM_RELEASE_DIR = os.path.join(LLVM_BUILD_DIR, 'Release+Asserts')
 EU_STRIP = os.path.join(BUILDTOOLS_DIR, 'third_party', 'eu-strip', 'bin',
                         'eu-strip')
-STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
 
 def Tee(output, logfile):
@@ -193,12 +192,14 @@ def main():
     shutil.rmtree(LLVM_BOOTSTRAP_INSTALL_DIR, ignore_errors=True)
     shutil.rmtree(LLVM_BUILD_DIR, ignore_errors=True)
 
-    opt_flags = []
-    if sys.platform.startswith('linux'):
-      opt_flags += ['--lto-lld']
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
                  '--bootstrap', '--disable-asserts',
-                 '--run-tests'] + opt_flags
+                 '--run-tests']
+    if sys.platform != 'win32':
+      # TODO(hans): Use --pgo for the Windows package too.
+      build_cmd.append('--pgo')
+    if sys.platform.startswith('linux'):
+      build_cmd.append('--lto-lld')
     TeeCmd(build_cmd, log)
 
   stamp = open(STAMP_FILE).read().rstrip()
@@ -231,17 +232,14 @@ def main():
       'bin/clang',
 
       # Include libclang_rt.builtins.a for Fuchsia targets.
-      'lib/clang/$V/aarch64-fuchsia/lib/libclang_rt.builtins.a',
-      'lib/clang/$V/x86_64-fuchsia/lib/libclang_rt.builtins.a',
+      'lib/clang/$V/lib/aarch64-fuchsia/libclang_rt.builtins.a',
+      'lib/clang/$V/lib/x86_64-fuchsia/libclang_rt.builtins.a',
     ])
   if sys.platform == 'darwin':
     want.extend([
       # AddressSanitizer runtime.
       'lib/clang/$V/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
       'lib/clang/$V/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
-
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/darwin/libclang_rt.fuzzer_no_main_osx.a',
 
       # OS X and iOS builtin libraries (iossim is lipo'd into ios) for the
       # _IsOSVersionAtLeast runtime function.
@@ -254,16 +252,25 @@ def main():
     ])
   elif sys.platform.startswith('linux'):
     want.extend([
+      # Copy the stdlibc++.so.6 we linked the binaries against.
+      'lib/libstdc++.so.6',
+
+      # Add LLD.
       'bin/lld',
 
       # Add llvm-ar for LTO.
       'bin/llvm-ar',
 
+      # Add llvm-objcopy for partition extraction on Android.
+      'bin/llvm-objcopy',
+
       # AddressSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
 
       # AddressSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
 
@@ -271,9 +278,6 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
       'lib/clang/$V/lib/linux/libclang_rt.asan-arm-android.so',
       'lib/clang/$V/lib/linux/libclang_rt.asan-i686-android.so',
-
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
 
       # HWASAN Android runtime.
       'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
@@ -287,6 +291,7 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
 
       # Profile runtime (used by profiler and code coverage).
+      'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
       'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
@@ -300,10 +305,12 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
 
       # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
 
       # UndefinedBehaviorSanitizer C++ runtime.
+      'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
       'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
 
@@ -321,9 +328,6 @@ def main():
 
       # AddressSanitizer C++ runtime.
       'lib/clang/$V/lib/windows/clang_rt.asan_cxx-x86_64.lib',
-
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
 
       # Thunk for AddressSanitizer needed for static build of a shared lib.
       'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',
@@ -384,6 +388,7 @@ def main():
   if sys.platform.startswith('linux'):
     stripped_binaries.append('lld')
     stripped_binaries.append('llvm-ar')
+    stripped_binaries.append('llvm-objcopy')
   for f in stripped_binaries:
     if sys.platform != 'win32':
       subprocess.call(['strip', os.path.join(pdir, 'bin', f)])

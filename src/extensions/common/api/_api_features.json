@@ -156,6 +156,16 @@
     "contexts": ["blessed_extension"],
     "channel": "trunk"
   },
+  "declarativeNetRequest.getMatchedRules": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
+  },
+  "declarativeNetRequest.setActionCountAsBadgeText": {
+    "dependencies": ["permission:declarativeNetRequest"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk"
+  },
   "declarativeWebRequest": {
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
@@ -194,10 +204,7 @@
       "internal": true,
       "channel": "stable",
       "contexts": ["webui"],
-      "matches": [
-        "chrome://cast/*",
-        "chrome://media-router/*"
-      ]
+      "matches": ["chrome://cast/*"]
     }
   ],
   "events": {
@@ -238,7 +245,6 @@
         "chrome://home/*",
         "chrome://chrome-signin/*",
         "chrome://hats/*",
-        "chrome://media-router/*",
         "chrome://mobilesetup/*",
         "chrome://oobe/*",
         "chrome://password-change/*"
@@ -271,6 +277,7 @@
   "management": [{
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false,
     "default_parent": true
   }, {
     "channel": "stable",
@@ -298,16 +305,7 @@
   "management.installReplacementWebApp": {
     "dependencies": ["manifest:replacement_web_app"],
     "channel": "stable",
-    "extension_types": ["extension"],
-    "whitelist": [
-      "E7E2461CE072DF036CF9592740196159E2D7C089",  // https://crbug.com/968407
-      "A74A4D44C7CFCD8844830E6140C8D763E12DD8F3",  // https://crbug.com/968407
-      "312745D9BF916161191143F6490085EEA0434997",  // https://crbug.com/968407
-      "53041A2FA309EECED01FFC751E7399186E860B2C",  // https://crbug.com/968407
-      "A07A5B743CD82A1C2579DB77D353C98A23201EEF",  // https://crbug.com/968407
-      "2D22CDB6583FD0A13758AEBE8B15E45208B4E9A7",  // https://crbug.com/968407
-      "0F42756099D914A026DADFA182871C015735DD95"   // https://crbug.com/968407
-    ]
+    "extension_types": ["extension", "platform_app"]
   },
   "management.uninstallSelf": {
     "dependencies": [],
@@ -440,9 +438,9 @@
     ],
     "contexts": [
       "blessed_extension",
-      "lock_screen_extension",
-      "extension_service_worker"
-    ]
+      "lock_screen_extension"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.getManifest": {
     "contexts": [
@@ -460,32 +458,33 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page",
-      "extension_service_worker"
+      "web_page"
     ],
+    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "runtime.getURL": {
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.id": {
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.lastError": {
     "contexts": "all",
@@ -497,9 +496,9 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.onConnectNative": {
     "dependencies": ["permission:nativeMessaging"],
@@ -510,9 +509,9 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.sendMessage": {
     // Everything except WebUI.
@@ -522,14 +521,15 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page",
-      "extension_service_worker"
+      "web_page"
     ],
+    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "serial": {
     "dependencies": ["permission:serial"],
@@ -553,8 +553,8 @@
   },
   "storage": {
     "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script",
-                 "extension_service_worker"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "disallow_for_service_workers": false
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],
@@ -601,10 +601,10 @@
       "blessed_extension",
       "blessed_web_page",
       "content_script",
-      "extension_service_worker",
       "lock_screen_extension",
       "unblessed_extension"
-    ]
+    ],
+    "disallow_for_service_workers": false
   }, {
     "channel": "stable",
     "contexts": ["webui"],
@@ -634,12 +634,14 @@
   },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "webRequestInternal": [{
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   }, {
     // webview uses webRequestInternal API.
     "channel": "stable",
@@ -652,7 +654,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*"
@@ -673,7 +674,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://password-change/*"
@@ -692,7 +692,6 @@
       "chrome://discards/*",
       "chrome://hats/*",
       "chrome://home/*",
-      "chrome://media-router/*",
       "chrome://mobilesetup/*",
       "chrome://oobe/*"
     ]

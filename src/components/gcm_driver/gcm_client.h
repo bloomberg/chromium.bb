@@ -230,10 +230,14 @@ class GCMClient {
   virtual ~GCMClient();
 
   // Begins initialization of the GCM Client. This will not trigger a
-  // connection.
+  // connection. Must be called on |io_task_runner|.
   // |chrome_build_info|: chrome info, i.e., version, channel and etc.
   // |store_path|: path to the GCM store.
   // |blocking_task_runner|: for running blocking file tasks.
+  // |io_task_runner|: for running IO tasks. When provided, it could be a
+  //     wrapper on top of base::ThreadTaskRunnerHandle::Get() to provide power
+  //     management featueres so that a delayed task posted to it can wake the
+  //     system up from sleep to perform the task.
   // |get_socket_factory_callback|: a callback that can accept a request for a
   //     network::mojom::ProxyResolvingSocketFactoryPtr. It needs to be safe to
   //     run on any thread.
@@ -243,6 +247,7 @@ class GCMClient {
       const ChromeBuildInfo& chrome_build_info,
       const base::FilePath& store_path,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       base::RepeatingCallback<
           void(network::mojom::ProxyResolvingSocketFactoryRequest)>
           get_socket_factory_callback,

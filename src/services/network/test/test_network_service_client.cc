@@ -21,6 +21,7 @@ TestNetworkServiceClient::TestNetworkServiceClient(
 TestNetworkServiceClient::~TestNetworkServiceClient() {}
 
 void TestNetworkServiceClient::OnAuthRequired(
+    const base::Optional<base::UnguessableToken>& window_id,
     uint32_t process_id,
     uint32_t routing_id,
     uint32_t request_id,
@@ -50,25 +51,6 @@ void TestNetworkServiceClient::OnSSLCertificateError(
     const net::SSLInfo& ssl_info,
     bool fatal,
     OnSSLCertificateErrorCallback response) {
-  NOTREACHED();
-}
-
-void TestNetworkServiceClient::OnCookiesRead(int process_id,
-                                             int routing_id,
-                                             const GURL& url,
-                                             const GURL& first_party_url,
-                                             const net::CookieList& cookie_list,
-                                             bool blocked_by_policy) {
-  NOTREACHED();
-}
-
-void TestNetworkServiceClient::OnCookieChange(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
   NOTREACHED();
 }
 
@@ -130,14 +112,19 @@ void TestNetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
-void TestNetworkServiceClient::OnFlaggedRequestCookies(
+void TestNetworkServiceClient::OnRawRequest(
     int32_t process_id,
     int32_t routing_id,
-    const net::CookieStatusList& excluded_cookies) {}
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {}
 
-void TestNetworkServiceClient::OnFlaggedResponseCookies(
+void TestNetworkServiceClient::OnRawResponse(
     int32_t process_id,
     int32_t routing_id,
-    const net::CookieAndLineStatusList& excluded_cookies) {}
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    const base::Optional<std::string>& raw_response_headers) {}
 
 }  // namespace network

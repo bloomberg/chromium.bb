@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_app_setup_controller_impl.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -19,9 +20,9 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/web_applications/components/install_options.h"
-#include "chrome/browser/web_applications/components/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -41,9 +42,10 @@ const char kTestUrl1[] = "https://test-url-1.com/";
 const char kTestInstallUrl1[] = "https://test-url-1.com/install";
 const char kTestUrl2[] = "https://test-url-2.com/";
 
-web_app::InstallOptions GetInstallOptionsForUrl(const GURL& url) {
-  web_app::InstallOptions options(url, web_app::LaunchContainer::kWindow,
-                                  web_app::InstallSource::kInternal);
+web_app::ExternalInstallOptions GetInstallOptionsForUrl(const GURL& url) {
+  web_app::ExternalInstallOptions options(
+      url, web_app::LaunchContainer::kWindow,
+      web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;
   options.bypass_service_worker_check = true;
   options.require_manifest = true;
@@ -137,7 +139,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
     void SetHasPwa(const GURL& url) {
       // If a PWA already exists for this URL, there is nothing to do.
-      if (base::ContainsKey(url_to_pwa_map_, url))
+      if (base::Contains(url_to_pwa_map_, url))
         return;
 
       // Create a test Extension and add it to |url_to_pwa_map_|.
@@ -151,7 +153,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     // AndroidSmsAppSetupControllerImpl::PwaDelegate:
     const extensions::Extension* GetPwaForUrl(const GURL& install_url,
                                               Profile* profile) override {
-      if (!base::ContainsKey(url_to_pwa_map_, install_url))
+      if (!base::Contains(url_to_pwa_map_, install_url))
         return nullptr;
 
       return url_to_pwa_map_[install_url].get();
@@ -182,8 +184,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   };
 
   AndroidSmsAppSetupControllerImplTest()
-      : thread_bundle_(
-            content::TestBrowserThreadBundle::MainThreadType::UI_MOCK_TIME),
+      : thread_bundle_(content::TestBrowserThreadBundle::TimeSource::MOCK_TIME),
         host_content_settings_map_(
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 
@@ -197,8 +198,9 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     auto test_pwa_delegate =
         std::make_unique<TestPwaDelegate>(fake_cookie_manager_.get());
     test_pwa_delegate_ = test_pwa_delegate.get();
+
     test_pending_app_manager_ =
-        std::make_unique<web_app::TestPendingAppManager>();
+        std::make_unique<web_app::TestPendingAppManager>(&test_app_registrar_);
     setup_controller_ = base::WrapUnique(new AndroidSmsAppSetupControllerImpl(
         &profile_, test_pending_app_manager_.get(),
         host_content_settings_map_));
@@ -430,6 +432,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
   TestingProfile profile_;
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<FakeCookieManager> fake_cookie_manager_;
+  web_app::TestAppRegistrar test_app_registrar_;
   std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
   TestPwaDelegate* test_pwa_delegate_;
   std::unique_ptr<AndroidSmsAppSetupController> setup_controller_;

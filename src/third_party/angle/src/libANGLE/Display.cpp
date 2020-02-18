@@ -19,6 +19,7 @@
 #include <EGL/eglext.h>
 #include <platform/Platform.h>
 
+#include "common/android_util.h"
 #include "common/debug.h"
 #include "common/mathutil.h"
 #include "common/platform.h"
@@ -37,7 +38,11 @@
 #include "libANGLE/renderer/DeviceImpl.h"
 #include "libANGLE/renderer/DisplayImpl.h"
 #include "libANGLE/renderer/ImageImpl.h"
-#include "third_party/trace_event/trace_event.h"
+#include "libANGLE/trace.h"
+
+#if ANGLE_CAPTURE_ENABLED
+#    include "libANGLE/FrameCapture.h"
+#endif  // ANGLE_CAPTURE_ENABLED
 
 #if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
 #    include "libANGLE/renderer/d3d/DisplayD3D.h"
@@ -306,7 +311,22 @@ void Display_logWarning(angle::PlatformMethods *platform, const char *warningMes
 void Display_logInfo(angle::PlatformMethods *platform, const char *infoMessage)
 {
     // Uncomment to get info spam
-    // gl::Trace(gl::LOG_WARN, infoMessage);
+#if defined(ANGLE_ENABLE_DEBUG_TRACE)
+    gl::Trace(gl::LOG_INFO, infoMessage);
+#endif
+}
+
+const std::vector<std::string> EGLStringArrayToStringVector(const char **ary)
+{
+    std::vector<std::string> vec;
+    if (ary != nullptr)
+    {
+        for (; *ary != nullptr; ary++)
+        {
+            vec.push_back(std::string(*ary));
+        }
+    }
+    return vec;
 }
 
 void ANGLESetDefaultDisplayPlatform(angle::EGLDisplayType display)
@@ -364,6 +384,21 @@ Display *Display::GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay
     }
 
     return display;
+}
+
+// static
+Display *Display::GetExistingDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay)
+{
+    ANGLEPlatformDisplayMap *displays = GetANGLEPlatformDisplayMap();
+    const auto &iter                  = displays->find(nativeDisplay);
+
+    // Check that there is a matching display
+    if (iter == displays->end())
+    {
+        return nullptr;
+    }
+
+    return iter->second;
 }
 
 // static
@@ -427,12 +462,18 @@ Display::Display(EGLenum platform, EGLNativeDisplayType displayId, Device *eglDe
       mDisplayExtensionString(),
       mVendorString(),
       mDevice(eglDevice),
+      mSurface(nullptr),
       mPlatform(platform),
       mTextureManager(nullptr),
       mBlobCache(gl::kDefaultMaxProgramCacheMemoryBytes),
       mMemoryProgramCache(mBlobCache),
-      mGlobalTextureShareGroupUsers(0)
-{}
+      mGlobalTextureShareGroupUsers(0),
+      mFrameCapture(nullptr)
+{
+#if ANGLE_CAPTURE_ENABLED
+    mFrameCapture = new FrameCapture;
+#endif  // ANGLE_CAPTURE_ENABLED
+}
 
 Display::~Display()
 {
@@ -464,6 +505,10 @@ Display::~Display()
 
     SafeDelete(mDevice);
     SafeDelete(mImplementation);
+
+#if ANGLE_CAPTURE_ENABLED
+    SafeDelete(mFrameCapture);
+#endif  // ANGLE_CAPTURE_ENABLED
 }
 
 void Display::setLabel(EGLLabelKHR label)
@@ -498,6 +543,13 @@ void Display::setAttributes(rx::DisplayImpl *impl, const AttributeMap &attribMap
     {
         ANGLESetDefaultDisplayPlatform(this);
     }
+
+    const char **featuresForceEnabled =
+        reinterpret_cast<const char **>(mAttributeMap.get(EGL_FEATURE_OVERRIDES_ENABLED_ANGLE, 0));
+    const char **featuresForceDisabled =
+        reinterpret_cast<const char **>(mAttributeMap.get(EGL_FEATURE_OVERRIDES_DISABLED_ANGLE, 0));
+    mState.featureOverridesEnabled  = EGLStringArrayToStringVector(featuresForceEnabled);
+    mState.featureOverridesDisabled = EGLStringArrayToStringVector(featuresForceDisabled);
 }
 
 Error Display::initialize()
@@ -510,7 +562,7 @@ Error Display::initialize()
     gl::InitializeDebugMutexIfNeeded();
 
     SCOPED_ANGLE_HISTOGRAM_TIMER("GPU.ANGLE.DisplayInitializeMS");
-    TRACE_EVENT0("gpu.angle", "egl::Display::initialize");
+    ANGLE_TRACE_EVENT0("gpu.angle", "egl::Display::initialize");
 
     if (isInitialized())
     {
@@ -543,7 +595,10 @@ Error Display::initialize()
         config.second.renderableType |= EGL_OPENGL_ES_BIT;
     }
 
+    initializeFrontendFeatures();
+
     mFeatures.clear();
+    mFrontendFeatures.populateFeatureList(&mFeatures);
     mImplementation->populateFeatureList(&mFeatures);
 
     initDisplayExtensions();
@@ -700,6 +755,8 @@ Error Display::createWindowSurface(const Config *configuration,
     ASSERT(windowSurfaces && windowSurfaces->find(window) == windowSurfaces->end());
     windowSurfaces->insert(std::make_pair(window, *outSurface));
 
+    mSurface = *outSurface;
+
     return NoError();
 }
 
@@ -836,6 +893,7 @@ Error Display::createStream(const AttributeMap &attribs, Stream **outStream)
 
 Error Display::createContext(const Config *configuration,
                              const gl::Context *shareContext,
+                             EGLenum clientType,
                              const AttributeMap &attribs,
                              gl::Context **outContext)
 {
@@ -882,7 +940,7 @@ Error Display::createContext(const Config *configuration,
     }
 
     gl::Context *context =
-        new gl::Context(mImplementation, configuration, shareContext, shareTextures, cachePointer,
+        new gl::Context(this, configuration, shareContext, shareTextures, cachePointer, clientType,
                         attribs, mDisplayExtensions, GetClientExtensions());
 
     ASSERT(context != nullptr);
@@ -1090,6 +1148,12 @@ void Display::setBlobCacheFuncs(EGLSetBlobFuncANDROID set, EGLGetBlobFuncANDROID
     mImplementation->setBlobCacheFuncs(set, get);
 }
 
+// static
+EGLClientBuffer Display::GetNativeClientBuffer(const AHardwareBuffer *buffer)
+{
+    return angle::android::AHardwareBufferToClientBuffer(buffer);
+}
+
 Error Display::waitClient(const gl::Context *context)
 {
     return mImplementation->waitClient(context);
@@ -1189,6 +1253,7 @@ static ClientExtensions GenerateClientExtensions()
     extensions.clientGetAllProcAddresses = true;
     extensions.debug                     = true;
     extensions.explicitContext           = true;
+    extensions.featureControlANGLE       = true;
 
     return extensions;
 }
@@ -1247,8 +1312,8 @@ void Display::initDisplayExtensions()
     // that ANativeWindow is not recordable.
     mDisplayExtensions.recordable = true;
 
-    // EGL_ANGLE_workaround_control is implemented on all backends.
-    mDisplayExtensions.workaroundControlANGLE = true;
+    // All backends support specific context versions
+    mDisplayExtensions.createContextBackwardsCompatible = true;
 
     mDisplayExtensionString = GenerateExtensionsString(mDisplayExtensions);
 }
@@ -1322,6 +1387,17 @@ void Display::initVendorString()
     mVendorString = mImplementation->getVendorString();
 }
 
+void Display::initializeFrontendFeatures()
+{
+    // Enable on all Impls
+    mFrontendFeatures.loseContextOnOutOfMemory.enabled          = true;
+    mFrontendFeatures.scalarizeVecAndMatConstructorArgs.enabled = true;
+
+    mImplementation->initializeFrontendFeatures(&mFrontendFeatures);
+
+    rx::OverrideFeaturesWithDisplayState(&mFrontendFeatures, mState);
+}
+
 const DisplayExtensions &Display::getExtensions() const
 {
     return mDisplayExtensions;
@@ -1340,6 +1416,11 @@ const std::string &Display::getVendorString() const
 Device *Display::getDevice() const
 {
     return mDevice;
+}
+
+Surface *Display::getWGLSurface() const
+{
+    return mSurface;
 }
 
 gl::Version Display::getMaxSupportedESVersion() const
@@ -1448,27 +1529,20 @@ const char *Display::queryStringi(const EGLint name, const EGLint index)
     const char *result = nullptr;
     switch (name)
     {
-        case EGL_WORKAROUND_NAME_ANGLE:
+        case EGL_FEATURE_NAME_ANGLE:
             result = mFeatures[index]->name;
             break;
-        case EGL_WORKAROUND_CATEGORY_ANGLE:
+        case EGL_FEATURE_CATEGORY_ANGLE:
             result = angle::FeatureCategoryToString(mFeatures[index]->category);
             break;
-        case EGL_WORKAROUND_DESCRIPTION_ANGLE:
+        case EGL_FEATURE_DESCRIPTION_ANGLE:
             result = mFeatures[index]->description;
             break;
-        case EGL_WORKAROUND_BUG_ANGLE:
+        case EGL_FEATURE_BUG_ANGLE:
             result = mFeatures[index]->bug;
             break;
-        case EGL_WORKAROUND_ENABLED_ANGLE:
-            if (mFeatures[index]->enabled)
-            {
-                result = "true";
-            }
-            else
-            {
-                result = "false";
-            }
+        case EGL_FEATURE_STATUS_ANGLE:
+            result = angle::FeatureStatusToString(mFeatures[index]->enabled);
             break;
         default:
             UNREACHABLE();
@@ -1477,4 +1551,30 @@ const char *Display::queryStringi(const EGLint name, const EGLint index)
     return result;
 }
 
+EGLAttrib Display::queryAttrib(const EGLint attribute)
+{
+    EGLAttrib value = 0;
+    switch (attribute)
+    {
+        case EGL_DEVICE_EXT:
+            value = reinterpret_cast<EGLAttrib>(mDevice);
+            break;
+
+        case EGL_FEATURE_COUNT_ANGLE:
+            value = mFeatures.size();
+            break;
+
+        default:
+            UNREACHABLE();
+    }
+    return value;
+}
+
+void Display::onPostSwap() const
+{
+#if ANGLE_CAPTURE_ENABLED
+    // Dump frame capture if enabled.
+    mFrameCapture->onEndFrame();
+#endif  // ANGLE_CAPTURE_ENABLED
+}
 }  // namespace egl

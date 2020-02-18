@@ -28,7 +28,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 
@@ -153,8 +153,6 @@ class ArcTracingDataSource
                         const perfetto::DataSourceConfig& data_source_config) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    DCHECK(!producer_);
-    producer_ = producer;
     data_source_config_ = data_source_config;
 
     for (ArcTracingBridge* bridge : bridges_) {
@@ -269,7 +267,6 @@ class ArcTracingDataSource
   // Called when all bridges have completed stopping, notifying
   // PerfettoProducer.
   base::OnceClosure stop_complete_callback_;
-  tracing::PerfettoProducer* producer_ = nullptr;
   perfetto::DataSourceConfig data_source_config_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);

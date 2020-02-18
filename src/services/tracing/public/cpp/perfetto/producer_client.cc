@@ -13,10 +13,10 @@
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/commit_data_request.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/shared_memory_arbiter.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/startup_trace_writer_registry.h"
-#include "third_party/perfetto/include/perfetto/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 
 namespace tracing {
 
@@ -92,6 +92,7 @@ void ProducerClient::NewDataSourceAdded(
   new_registration.set_name(data_source->name());
   new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
+  new_registration.set_handles_incremental_state_clear(true);
   producer_host_->RegisterDataSource(std::move(new_registration));
 }
 
@@ -100,14 +101,16 @@ perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiter() {
                              : shared_memory_arbiter_.get();
 }
 
+bool ProducerClient::IsTracingActive() {
+  return data_sources_tracing_ > 0;
+}
+
 void ProducerClient::OnTracingStart(
-    mojo::ScopedSharedBufferHandle shared_memory) {
+    mojo::ScopedSharedBufferHandle shared_memory,
+    uint64_t shared_memory_buffer_page_size_bytes) {
   // If we're using in-process mode, we don't need to set up our
   // own SharedMemoryArbiter.
   DCHECK(!in_process_arbiter_);
-  // TODO(oysteine): In next CLs plumb this through the service.
-  const size_t kShmemBufferPageSize = 4096;
-
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(producer_host_);
   if (!shared_memory_) {
@@ -115,7 +118,7 @@ void ProducerClient::OnTracingStart(
         std::make_unique<MojoSharedMemory>(std::move(shared_memory));
 
     shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateInstance(
-        shared_memory_.get(), kShmemBufferPageSize, this,
+        shared_memory_.get(), shared_memory_buffer_page_size_bytes, this,
         PerfettoTracedProcess::GetTaskRunner());
   } else {
     // TODO(oysteine): This is assuming the SMB is the same, currently. Swapping
@@ -133,9 +136,30 @@ void ProducerClient::StartDataSource(
   // TODO(oysteine): Support concurrent tracing sessions.
   for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
     if (data_source->name() == data_source_config.name()) {
-      data_source->StartTracingWithID(id, this, data_source_config);
-      // TODO(eseckler): Consider plumbing this callback through |data_source|.
-      std::move(callback).Run();
+      ++data_sources_tracing_;
+      // ProducerClient should never be denied permission to start, but it will
+      // only start tracing once the callback passed below is called.
+      bool result = PerfettoTracedProcess::Get()->CanStartTracing(
+          this,
+          base::BindOnce(
+              [](base::WeakPtr<ProducerClient> weak_ptr,
+                 PerfettoTracedProcess::DataSourceBase* data_source,
+                 perfetto::DataSourceInstanceID id,
+                 const perfetto::DataSourceConfig& data_source_config,
+                 StartDataSourceCallback callback) {
+                if (!weak_ptr) {
+                  return;
+                }
+                DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+                data_source->StartTracingWithID(id, weak_ptr.get(),
+                                                data_source_config);
+                // TODO(eseckler): Consider plumbing this callback through
+                // |data_source|.
+                std::move(callback).Run();
+              },
+              weak_ptr_factory_.GetWeakPtr(), data_source, id,
+              data_source_config, std::move(callback)));
+      DCHECK(result);
       return;
     }
   }
@@ -146,8 +170,18 @@ void ProducerClient::StopDataSource(uint64_t id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
-    if (data_source->data_source_id() == id) {
-      data_source->StopTracing(std::move(callback));
+    if (data_source->data_source_id() == id &&
+        data_source->producer() == this) {
+      data_source->StopTracing(base::BindOnce(
+          [](base::WeakPtr<ProducerClient> weak_ptr,
+             StopDataSourceCallback callback, uint64_t id) {
+            std::move(callback).Run();
+            if (weak_ptr) {
+              DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+              --weak_ptr->data_sources_tracing_;
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback), id));
       return;
     }
   }
@@ -175,6 +209,12 @@ void ProducerClient::Flush(uint64_t flush_request_id,
   }
 }
 
+void ProducerClient::ClearIncrementalState() {
+  for (auto* data_source : PerfettoTracedProcess::Get()->data_sources()) {
+    data_source->ClearIncrementalState();
+  }
+}
+
 void ProducerClient::RegisterDataSource(const perfetto::DataSourceDescriptor&) {
   NOTREACHED();
 }
@@ -199,6 +239,12 @@ void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
                                 CommitDataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto commit_callback =
+      callback ? base::BindOnce([](CommitDataCallback callback) { callback(); },
+                                callback)
+               : mojom::ProducerHost::CommitDataCallback();
+
   // We need to make sure the CommitData IPC is sent off without triggering any
   // trace events, as that could stall waiting for SMB chunks to be freed up
   // which requires the tracing service to receive the IPC.
@@ -206,17 +252,11 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
     AutoThreadLocalBoolean thread_is_in_trace_event(
         TraceEventDataSource::GetThreadIsInTraceEventTLS());
 
-    producer_host_->CommitData(commit);
+    producer_host_->CommitData(commit, std::move(commit_callback));
     return;
   }
 
-  producer_host_->CommitData(commit);
-}
-
-void ProducerClient::CommitDataOnSequence(
-    const perfetto::CommitDataRequest& request) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  producer_host_->CommitData(request);
+  producer_host_->CommitData(commit, std::move(commit_callback));
 }
 
 perfetto::SharedMemory* ProducerClient::shared_memory() const {

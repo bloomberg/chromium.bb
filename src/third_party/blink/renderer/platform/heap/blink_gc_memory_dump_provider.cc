@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 
-#include <unordered_map>
-
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -29,8 +27,7 @@ void DumpMemoryTotals(base::trace_event::ProcessMemoryDump* memory_dump) {
   // ThreadHeap::markedObjectSize() can be underestimated if we're still in the
   // process of lazy sweeping.
   objects_dump->AddScalar("size", "bytes",
-                          ProcessHeap::TotalAllocatedObjectSize() +
-                              ProcessHeap::TotalMarkedObjectSize());
+                          ProcessHeap::TotalAllocatedObjectSize());
 }
 
 }  // namespace
@@ -67,7 +64,7 @@ BlinkGCMemoryDumpProvider::CreateMemoryAllocatorDumpForCurrentGC(
     const String& absolute_name) {
   // TODO(bashi): Change type name of |absoluteName|.
   return current_process_memory_dump_->CreateAllocatorDump(
-      absolute_name.Utf8().data());
+      absolute_name.Utf8());
 }
 
 void BlinkGCMemoryDumpProvider::ClearProcessDumpForCurrentGC() {

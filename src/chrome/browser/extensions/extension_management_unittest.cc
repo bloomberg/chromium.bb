@@ -399,9 +399,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyAllowedTypes) {
       ReadGlobalSettings()->allowed_types;
   ASSERT_TRUE(ReadGlobalSettings()->has_restricted_allowed_types);
   EXPECT_EQ(allowed_types.size(), 2u);
-  EXPECT_FALSE(base::ContainsValue(allowed_types, Manifest::TYPE_EXTENSION));
-  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_THEME));
-  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_USER_SCRIPT));
+  EXPECT_FALSE(base::Contains(allowed_types, Manifest::TYPE_EXTENSION));
+  EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_THEME));
+  EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_USER_SCRIPT));
 }
 
 // Verify that preference controlled by legacy ExtensionInstallBlacklist policy
@@ -518,8 +518,8 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   const std::vector<Manifest::Type>& allowed_types =
       ReadGlobalSettings()->allowed_types;
   EXPECT_EQ(allowed_types.size(), 2u);
-  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_THEME));
-  EXPECT_TRUE(base::ContainsValue(allowed_types, Manifest::TYPE_USER_SCRIPT));
+  EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_THEME));
+  EXPECT_TRUE(base::Contains(allowed_types, Manifest::TYPE_USER_SCRIPT));
 
   // Verifies blocked permission list settings.
   APIPermissionSet api_permission_set;

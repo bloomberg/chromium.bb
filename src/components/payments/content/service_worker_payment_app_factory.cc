@@ -40,7 +40,7 @@ bool CapabilityMatches(const std::vector<T>& requested,
   if (requested.empty())
     return true;
   for (const auto& request : requested) {
-    if (base::ContainsValue(capabilities, static_cast<int32_t>(request)))
+    if (base::Contains(capabilities, static_cast<int32_t>(request)))
       return true;
   }
   return false;
@@ -138,7 +138,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
         web_contents->GetBrowserContext(),
         base::BindOnce(
             &SelfDeletingServiceWorkerPaymentAppFactory::OnGotAllPaymentApps,
-            base::Unretained(this)));
+            weak_ptr_factory_.GetWeakPtr()));
   }
 
   void IgnorePortInOriginComparisonForTesting() {
@@ -153,7 +153,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
     ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
         requested_method_data_, &apps);
     if (apps.empty()) {
-      OnPaymentAppsVerified(std::move(apps));
+      OnPaymentAppsVerified(std::move(apps), first_error_message_);
       OnPaymentAppsVerifierFinishedUsingResources();
       return;
     }
@@ -166,13 +166,16 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
         std::move(apps),
         base::BindOnce(
             &SelfDeletingServiceWorkerPaymentAppFactory::OnPaymentAppsVerified,
-            base::Unretained(this)),
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
                            OnPaymentAppsVerifierFinishedUsingResources,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps) {
+  void OnPaymentAppsVerified(content::PaymentAppProvider::PaymentApps apps,
+                             const std::string& error_message) {
+    if (first_error_message_.empty())
+      first_error_message_ = error_message;
     if (apps.empty() && crawler_ != nullptr) {
       // Crawls installable web payment apps if no web payment apps have been
       // installed.
@@ -181,10 +184,10 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
           requested_method_data_,
           base::BindOnce(
               &SelfDeletingServiceWorkerPaymentAppFactory::OnPaymentAppsCrawled,
-              base::Unretained(this)),
+              weak_ptr_factory_.GetWeakPtr()),
           base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
                              OnPaymentAppsCrawlerFinishedUsingResources,
-                         base::Unretained(this)));
+                         weak_ptr_factory_.GetWeakPtr()));
       return;
     }
 
@@ -193,13 +196,17 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
 
     std::move(callback_).Run(
         std::move(apps),
-        ServiceWorkerPaymentAppFactory::InstallablePaymentApps());
+        ServiceWorkerPaymentAppFactory::InstallablePaymentApps(),
+        first_error_message_);
   }
 
   void OnPaymentAppsCrawled(
-      std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info) {
+      std::map<GURL, std::unique_ptr<WebAppInstallationInfo>> apps_info,
+      const std::string& error_message) {
+    if (first_error_message_.empty())
+      first_error_message_ = error_message;
     std::move(callback_).Run(content::PaymentAppProvider::PaymentApps(),
-                             std::move(apps_info));
+                             std::move(apps_info), first_error_message_);
   }
 
   void OnPaymentAppsCrawlerFinishedUsingResources() {
@@ -234,6 +241,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
   std::vector<mojom::PaymentMethodDataPtr> requested_method_data_;
   ServiceWorkerPaymentAppFactory::GetAllPaymentAppsCallback callback_;
   base::OnceClosure finished_using_resources_callback_;
+  std::string first_error_message_;
 
   std::unique_ptr<ManifestVerifier> verifier_;
   bool is_payment_verifier_finished_using_resources_ = true;
@@ -242,6 +250,9 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
   bool is_payment_app_crawler_finished_using_resources_ = true;
 
   bool ignore_port_in_origin_comparison_for_testing_ = false;
+
+  base::WeakPtrFactory<SelfDeletingServiceWorkerPaymentAppFactory>
+      weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFactory);
 };

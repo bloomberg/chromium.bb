@@ -38,6 +38,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -81,10 +82,10 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -164,7 +165,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
       view->GetChromeClient().NotifyPopupOpeningObservers();
 
     // 2. Disable active objects
-    WebView::WillEnterModalLoop();
+    page_pauser_ = WebScopedPagePauser::Create();
 
     // 3. Process messages until quitNow is called.
     message_loop_->Run();
@@ -193,7 +194,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // NOTE: This code used to be above right after the |mesasge_loop_->Run()|
     // code, but it is moved here to support browser-side navigation.
     message_loop_->QuitNow();
-    WebView::DidExitModalLoop();
+    page_pauser_.reset();
     WebFrameWidgetBase::SetIgnoreInputEvents(false);
   }
 
@@ -212,6 +213,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   bool running_for_debug_break_;
   bool running_for_page_wait_;
   std::unique_ptr<Platform::NestedMessageLoopRunner> message_loop_;
+  std::unique_ptr<WebScopedPagePauser> page_pauser_;
 
   static ClientMessageLoopAdapter* instance_;
 };
@@ -411,7 +413,7 @@ void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
   HitTestRequest request(hit_type);
   WebMouseEvent dummy_event(WebInputEvent::kMouseDown,
                             WebInputEvent::kNoModifiers,
-                            WTF::CurrentTimeTicks());
+                            base::TimeTicks::Now());
   dummy_event.SetPositionInWidget(point.x, point.y);
   IntPoint transformed_point = FlooredIntPoint(
       TransformWebMouseEvent(web_local_frame_impl_->GetFrameView(), dummy_event)

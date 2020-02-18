@@ -29,10 +29,6 @@ CPDF_TilingPattern* CPDF_TilingPattern::AsTilingPattern() {
   return this;
 }
 
-CPDF_ShadingPattern* CPDF_TilingPattern::AsShadingPattern() {
-  return nullptr;
-}
-
 std::unique_ptr<CPDF_Form> CPDF_TilingPattern::Load(CPDF_PageObject* pPageObj) {
   const CPDF_Dictionary* pDict = pattern_obj()->GetDict();
   m_bColored = pDict->GetIntegerFor("PaintType") == 1;
@@ -51,7 +47,7 @@ std::unique_ptr<CPDF_Form> CPDF_TilingPattern::Load(CPDF_PageObject* pPageObj) {
   allStates.m_GraphState.Emplace();
   allStates.m_TextState.Emplace();
   allStates.m_GeneralState = pPageObj->m_GeneralState;
-  form->ParseContent(&allStates, &matrix, nullptr, nullptr);
+  form->ParseContent(&allStates, &matrix, nullptr);
   m_BBox = pDict->GetRectFor("BBox");
   return form;
 }

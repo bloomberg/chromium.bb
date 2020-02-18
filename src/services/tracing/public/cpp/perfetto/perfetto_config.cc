@@ -5,6 +5,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 
 #include <cstdint>
+#include <string>
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -42,7 +43,22 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   if (size_limit == 0) {
     size_limit = 100 * 1024;
   }
-  perfetto_config.add_buffers()->set_size_kb(size_limit);
+  auto* buffer_config = perfetto_config.add_buffers();
+  buffer_config->set_size_kb(size_limit);
+  switch (chrome_config.GetTraceRecordMode()) {
+    case base::trace_event::RECORD_UNTIL_FULL:
+    case base::trace_event::RECORD_AS_MUCH_AS_POSSIBLE:
+      buffer_config->set_fill_policy(
+          perfetto::TraceConfig::BufferConfig::FillPolicy::DISCARD);
+      break;
+    case base::trace_event::RECORD_CONTINUOUSLY:
+      buffer_config->set_fill_policy(
+          perfetto::TraceConfig::BufferConfig::FillPolicy::RING_BUFFER);
+      break;
+    case base::trace_event::ECHO_TO_CONSOLE:
+      NOTREACHED();
+      break;
+  }
 
   // Perfetto uses clock_gettime for its internal snapshotting, which gets
   // blocked by the sandboxed and isn't needed for Chrome regardless.
@@ -50,6 +66,10 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   builtin_data_sources->set_disable_clock_snapshotting(true);
   builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
   builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
+
+  // Clear incremental state every 5 seconds, so that we lose at most the first
+  // 5 seconds of the trace (if we wrap around perfetto's central buffer).
+  perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(5000);
 
   // We strip the process filter from the config string we send to Perfetto,
   // so perfetto doesn't reject it from a future
@@ -87,6 +107,13 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
   // Also capture global metadata.
   AddDataSourceConfig(&perfetto_config, tracing::mojom::kMetaDataSourceName,
                       chrome_config_string, privacy_filtering_enabled);
+
+  if (chrome_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
+    AddDataSourceConfig(&perfetto_config,
+                        tracing::mojom::kSamplerProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
 
   return perfetto_config;
 }

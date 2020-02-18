@@ -17,7 +17,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_constants.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -50,8 +50,8 @@ void MimeHandlerViewEmbedder::Create(int32_t frame_tree_node_id,
                                      const std::string& mime_type,
                                      const std::string& stream_id,
                                      const std::string& internal_id) {
-  DCHECK(!base::ContainsKey(*GetMimeHandlerViewEmbeddersMap(),
-                            frame_tree_node_id));
+  DCHECK(
+      !base::Contains(*GetMimeHandlerViewEmbeddersMap(), frame_tree_node_id));
   GetMimeHandlerViewEmbeddersMap()->insert_or_assign(
       frame_tree_node_id, base::WrapUnique(new MimeHandlerViewEmbedder(
                               frame_tree_node_id, resource_url, mime_type,
@@ -69,8 +69,7 @@ MimeHandlerViewEmbedder::MimeHandlerViewEmbedder(int32_t frame_tree_node_id,
       resource_url_(resource_url),
       mime_type_(mime_type),
       stream_id_(stream_id),
-      internal_id_(internal_id),
-      weak_factory_(this) {}
+      internal_id_(internal_id) {}
 
 MimeHandlerViewEmbedder::~MimeHandlerViewEmbedder() {}
 

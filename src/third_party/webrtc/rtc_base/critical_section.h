@@ -34,19 +34,11 @@
 #endif
 
 // See notes in the 'Performance' unit test for the effects of this flag.
-#define USE_NATIVE_MUTEX_ON_MAC 1
+#define RTC_USE_NATIVE_MUTEX_ON_MAC 1
 
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
 #include <dispatch/dispatch.h>
 #endif
-
-#define CS_DEBUG_CHECKS RTC_DCHECK_IS_ON
-
-#if CS_DEBUG_CHECKS
-#define CS_DEBUG_CODE(x) x
-#else  // !CS_DEBUG_CHECKS
-#define CS_DEBUG_CODE(x)
-#endif  // !CS_DEBUG_CHECKS
 
 namespace rtc {
 
@@ -69,7 +61,7 @@ class RTC_LOCKABLE CriticalSection {
 #if defined(WEBRTC_WIN)
   mutable CRITICAL_SECTION crit_;
 #elif defined(WEBRTC_POSIX)
-#if defined(WEBRTC_MAC) && !USE_NATIVE_MUTEX_ON_MAC
+#if defined(WEBRTC_MAC) && !RTC_USE_NATIVE_MUTEX_ON_MAC
   // Number of times the lock has been locked + number of threads waiting.
   // TODO(tommi): We could use this number and subtract the recursion count
   // to find places where we have multiple threads contending on the same lock.
@@ -100,31 +92,6 @@ class RTC_SCOPED_LOCKABLE CritScope {
  private:
   const CriticalSection* const cs_;
   RTC_DISALLOW_COPY_AND_ASSIGN(CritScope);
-};
-
-// Tries to lock a critical section on construction via
-// CriticalSection::TryEnter, and unlocks on destruction if the
-// lock was taken. Never blocks.
-//
-// IMPORTANT: Unlike CritScope, the lock may not be owned by this thread in
-// subsequent code. Users *must* check locked() to determine if the
-// lock was taken. If you're not calling locked(), you're doing it wrong!
-class TryCritScope {
- public:
-  explicit TryCritScope(const CriticalSection* cs);
-  ~TryCritScope();
-#if defined(WEBRTC_WIN)
-  _Check_return_ bool locked() const;
-#elif defined(WEBRTC_POSIX)
-  bool locked() const __attribute__((__warn_unused_result__));
-#else  // !defined(WEBRTC_WIN) && !defined(WEBRTC_POSIX)
-#error Unsupported platform.
-#endif
- private:
-  const CriticalSection* const cs_;
-  const bool locked_;
-  mutable bool lock_was_called_;  // Only used by RTC_DCHECKs.
-  RTC_DISALLOW_COPY_AND_ASSIGN(TryCritScope);
 };
 
 // A POD lock used to protect global variables. Do NOT use for other purposes.

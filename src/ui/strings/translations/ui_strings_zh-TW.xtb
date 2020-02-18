@@ -16,6 +16,7 @@
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1398853756734560583">放到最大</translation>
 <translation id="1409544243779336081">推薦的應用程式</translation>
+<translation id="1498028757988366001">你過去曾搜尋這個項目。如果將「<ph name="QUERY" />」從搜尋記錄中刪除，該項目將從你所有裝置上的帳戶記錄中永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分鐘 }other{# 分鐘 }}</translation>
 <translation id="1643823602425662293">通知</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -45,13 +46,16 @@
 <translation id="2289052229480071835">輕觸畫面上的觸控目標。</translation>
 <translation id="2295140143284145483">問卷調查</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
+<translation id="2388990488038464401">要透過你的手機撥打這個號碼嗎？</translation>
 <translation id="24452542372838207">展開通知</translation>
 <translation id="2445449901874883781">使用高密度模式</translation>
+<translation id="2451871130406122810">已傳送到裝置</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">所有檔案</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2522350507219695259">校正完成</translation>
 <translation id="252373100621549798">顯示器不明</translation>
+<translation id="2545651323591713692">延後</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 小時內}other{# 小時內}}</translation>
 <translation id="2583543531130364912">校正觸控螢幕</translation>
 <translation id="2666092431469916601">置頂</translation>
@@ -70,6 +74,7 @@
 <translation id="3183922693828471536">捲動至此</translation>
 <translation id="3234408098842461169">向下鍵</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
+<translation id="3295886253693811851">透過以下應用程式撥打電話：</translation>
 <translation id="335581015389089642">語音</translation>
 <translation id="3443810440409579745">已收到分頁。</translation>
 <translation id="3479552764303398839">現在不要</translation>
@@ -91,10 +96,11 @@
 <translation id="3990502903496589789">右邊緣</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 則未讀取的通知}other{# 則未讀取的通知}}</translation>
 <translation id="4202807286478387388">跳至另一頁</translation>
-<translation id="4250229828105606438">螢幕擷取畫面</translation>
+<translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 個月前}other{# 個月前}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
+<translation id="4467014365953759647">無法傳送號碼</translation>
 <translation id="4588090240171750605">向右捲動</translation>
 <translation id="4690510401873698237">在底部顯示檔案櫃</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 則未讀通知</translation>
@@ -111,6 +117,7 @@
 <translation id="5266161281976477809">顯示/隱藏三角標記</translation>
 <translation id="5278860589123563674">無法傳送</translation>
 <translation id="528468243742722775">結束</translation>
+<translation id="5327567770033251652">開啟同步功能</translation>
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5395308026110844773">「<ph name="DRAGGED_APP_NAME" />」已拖曳到「<ph name="IN_PLACE_APP" />」上方，放開滑鼠即可建立資料夾。</translation>
 <translation id="5463830097259460683">表情符號和符號</translation>
@@ -150,6 +157,7 @@
 <translation id="6620110761915583480">儲存檔案</translation>
 <translation id="6699343763173986273">下一首媒體曲目</translation>
 <translation id="673773751041746814">刪除</translation>
+<translation id="6779314412797872738">如要將號碼從這個裝置傳送到你的 Android 手機，請在這兩個裝置的設定中<ph name="TROUBLESHOOT_LINK" />。</translation>
 <translation id="6786750046913594791">關閉資料夾</translation>
 <translation id="6808150112686056157">停止媒體播放</translation>
 <translation id="6845383723252244143">選取資料夾</translation>
@@ -168,7 +176,9 @@
 <translation id="7319740667687257810">啟動器，部分檢視</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分鐘前}other{# 分鐘前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
+<translation id="7399254631220132461">請檢查你的手機連線，然後再試一次。</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{還剩 1 分鐘}other{還剩 # 分鐘}}</translation>
+<translation id="7430878839542012341">要將這個搜尋從你的記錄中刪除嗎？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符號</translation>
 <translation id="7658239707568436148">取消</translation>
@@ -186,7 +196,6 @@
 <translation id="8144660977431427332">你的搜尋結果由 Google 助理提供。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自動完成</translation>
 <translation id="815598010540052116">向下捲動</translation>
-<translation id="8170087467028567933">如果移除這項建議，你的帳戶會在所有裝置上隱藏該建議。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻頁</translation>
 <translation id="8245914219290430011">Tab 鍵</translation>
@@ -197,7 +206,6 @@
 <translation id="838869780401515933">選取</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
 <translation id="8394908167088220973">媒體播放/暫停</translation>
-<translation id="8420205633584771378">要移除這項建議嗎？</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 年}other{# 年}}</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 檔案 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">一律顯示檔案櫃</translation>

@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "platform/api/socket.h"
-#include "platform/base/event_loop.h"
+#include "platform/api/udp_socket.h"
+#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 
@@ -71,7 +71,7 @@ class QuicConnection {
   // Passes a received UDP packet to the QUIC implementation.  If this contains
   // any stream data, it will be passed automatically to the relevant
   // QuicStream::Delegate objects.
-  virtual void OnDataReceived(const platform::ReceivedData& data) = 0;
+  virtual void OnDataReceived(const platform::UdpPacket& packet) = 0;
 
   virtual std::unique_ptr<QuicStream> MakeOutgoingStream(
       QuicStream::Delegate* delegate) = 0;

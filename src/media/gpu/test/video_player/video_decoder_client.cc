@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/waiting.h"
 #include "media/gpu/macros.h"
@@ -16,6 +18,12 @@
 #include "media/gpu/test/video_player/frame_renderer.h"
 #include "media/gpu/test/video_player/test_vda_video_decoder.h"
 #include "media/gpu/test/video_player/video.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/gpu/chromeos/chromeos_video_decoder_factory.h"
+#include "media/gpu/linux/platform_video_frame_pool.h"
+#include "media/gpu/video_frame_converter.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace media {
 namespace test {
@@ -32,16 +40,8 @@ VideoDecoderClient::VideoDecoderClient(
       decoder_client_config_(config),
       decoder_client_thread_("VDAClientDecoderThread"),
       decoder_client_state_(VideoDecoderClientState::kUninitialized),
-      video_(video),
-      weak_this_factory_(this) {
+      video_(video) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
-
-  // Video frame processors are currently only supported in import mode, as
-  // wrapping texture-backed video frames is not supported (See
-  // http://crbug/362521).
-  LOG_ASSERT(config.allocation_mode == AllocationMode::kImport ||
-             frame_processors.size() == 0)
-      << "Video frame processors are only supported when using import mode";
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
@@ -50,13 +50,16 @@ VideoDecoderClient::~VideoDecoderClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
   DestroyDecoder();
-  decoder_client_thread_.Stop();
 
   // Wait until the renderer and frame processors are done before destroying
-  // them. This needs to be done after |decoder_client_thread_| is stopped so no
-  // new frames will be queued while waiting.
+  // them. This needs to be done after destroying the decoder so no new frames
+  // will be queued while waiting.
   WaitForRenderer();
   WaitForFrameProcessors();
+  frame_renderer_ = nullptr;
+  frame_processors_.clear();
+
+  decoder_client_thread_.Stop();
 }
 
 // static
@@ -157,7 +160,8 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
   LOG_ASSERT(video_);
 
   VideoDecoderConfig config(
-      video_->Codec(), video_->Profile(), PIXEL_FORMAT_I420, VideoColorSpace(),
+      video_->Codec(), video_->Profile(),
+      VideoDecoderConfig::AlphaMode::kIsOpaque, VideoColorSpace(),
       kNoTransformation, video_->Resolution(), gfx::Rect(video_->Resolution()),
       video_->Resolution(), std::vector<uint8_t>(0), EncryptionScheme());
 
@@ -169,8 +173,13 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
       base::BindRepeating([](WaitingReason) { NOTIMPLEMENTED(); });
 
   if (decoder_client_config_.use_vd) {
-    // TODO(dstaessens@) Create VD-based video decoder.
-    NOTIMPLEMENTED();
+#if defined(OS_CHROMEOS)
+    decoder_ = ChromeosVideoDecoderFactory::Create(
+        base::ThreadTaskRunnerHandle::Get(),
+        std::make_unique<PlatformVideoFramePool>(),
+        std::make_unique<VideoFrameConverter>());
+#endif  // defined(OS_CHROMEOS)
+    LOG_ASSERT(decoder_) << "Failed to create decoder.";
   } else {
     // The video decoder client expects decoders to use the VD interface. We can
     // use the TestVDAVideoDecoder wrapper here to test VDA-based video
@@ -178,9 +187,10 @@ void VideoDecoderClient::CreateDecoderTask(base::WaitableEvent* done) {
     decoder_ = std::make_unique<TestVDAVideoDecoder>(
         decoder_client_config_.allocation_mode, gfx::ColorSpace(),
         frame_renderer_.get());
-    decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
-                         waiting_cb);
   }
+
+  decoder_->Initialize(config, false, nullptr, std::move(init_cb), output_cb,
+                       waiting_cb);
 
   DCHECK_LE(decoder_client_config_.max_outstanding_decode_requests,
             static_cast<size_t>(decoder_->GetMaxDecodeRequests()));
@@ -197,8 +207,7 @@ void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
   // Invalidate all scheduled tasks.
   weak_this_factory_.InvalidateWeakPtrs();
 
-  // Destroy the decoder. This will destroy all video frames, which requires an
-  // active GLcontext.
+  // Destroy the decoder. This will destroy all video frames.
   if (decoder_) {
     decoder_.reset();
   }
@@ -323,16 +332,10 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
 void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
-  // When using allocate mode the frame will be reused after this function, so
-  // the frame should be rendered synchronously in this case.
   frame_renderer_->RenderFrame(video_frame);
 
-  // When using allocate mode, direct texture memory access is not supported.
-  // Since this is required by the video frame processors we can't use these.
-  if (decoder_client_config_.allocation_mode == AllocationMode::kImport) {
-    for (auto& frame_processor : frame_processors_)
-      frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
-  }
+  for (auto& frame_processor : frame_processors_)
+    frame_processor->ProcessVideoFrame(video_frame, current_frame_index_);
 
   // Notify the test a frame has been decoded. We should only do this after
   // scheduling the frame to be processed, so calling WaitForFrameProcessors()

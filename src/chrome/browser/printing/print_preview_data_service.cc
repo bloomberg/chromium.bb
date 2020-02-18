@@ -117,7 +117,7 @@ void PrintPreviewDataService::SetDataEntry(
     int32_t preview_ui_id,
     int index,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
-  if (!base::ContainsKey(data_store_map_, preview_ui_id))
+  if (!base::Contains(data_store_map_, preview_ui_id))
     data_store_map_[preview_ui_id] = std::make_unique<PrintPreviewDataStore>();
   data_store_map_[preview_ui_id]->SetPreviewDataForIndex(index,
                                                          std::move(data_bytes));

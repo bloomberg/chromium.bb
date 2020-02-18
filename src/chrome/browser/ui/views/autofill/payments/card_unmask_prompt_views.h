@@ -22,7 +22,6 @@ class WebContents;
 
 namespace views {
 class Checkbox;
-class GridLayout;
 class Label;
 class Link;
 class Textfield;
@@ -52,7 +51,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   // views::DialogDelegateView
   View* GetContentsView() override;
-  View* CreateFootnoteView() override;
+  std::unique_ptr<View> CreateFootnoteView() override;
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
@@ -88,7 +87,6 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void SetInputsEnabled(bool enabled);
   void ShowNewCardLink();
   void ClosePrompt();
-  views::GridLayout* ResetOverlayLayout();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;
@@ -120,7 +118,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   views::Label* overlay_label_ = nullptr;
   views::Throbber* progress_throbber_ = nullptr;
 
-  base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_;
+  base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };

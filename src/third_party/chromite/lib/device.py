@@ -49,9 +49,11 @@ class Device(object):
 
   def InitRemote(self):
     """Initialize remote access."""
-    self.remote = remote_access.RemoteDevice(self.device,
-                                             port=self.ssh_port,
-                                             private_key=self.private_key)
+    self.remote = remote_access.RemoteDevice(
+        self.device,
+        port=self.ssh_port,
+        connect_settings=self._ConnectSettings(),
+        private_key=self.private_key)
 
     self.device_addr = 'ssh://%s' % self.device
     if self.ssh_port:
@@ -125,6 +127,14 @@ class Device(object):
     assert self.dry_run, 'Use with --dry-run only'
     logging.info('[DRY RUN] %s', cros_build_lib.CmdToStr(cmd))
     return cros_build_lib.CommandResult(cmd, output='', returncode=0)
+
+  def _ConnectSettings(self):
+    """Increase ServerAliveCountMax and ServerAliveInterval.
+
+    Wait 2 min before dropping the SSH connection.
+    """
+    return remote_access.CompileSSHConnectSettings(
+        ServerAliveInterval=15, ServerAliveCountMax=8)
 
   @property
   def is_vm(self):

@@ -56,6 +56,15 @@ void V0InsertionPoint::SetDistributedNodes(
   // Attempt not to reattach nodes that would be distributed to the exact same
   // location by comparing the old and new distributions.
 
+  if (DistributedNodesAreFallback() && distributed_nodes.size() &&
+      distributed_nodes.at(0)->parentNode() != this) {
+    // Detach fallback nodes. Host children which are no longer distributed are
+    // detached in the DistributionPool destructor.
+    for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
+      distributed_nodes_.at(i)->RemovedFromFlatTree();
+    distributed_nodes_.Clear();
+  }
+
   wtf_size_t i = 0;
   wtf_size_t j = 0;
 
@@ -103,12 +112,9 @@ void V0InsertionPoint::SetDistributedNodes(
 }
 
 void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
-  // We need to attach the distribution here so that they're inserted in the
-  // right order otherwise the n^2 protection inside LayoutTreeBuilder will
-  // cause them to be inserted in the wrong place later. This also lets
-  // distributed nodes benefit from the n^2 protection. If the distributed
-  // children are the direct fallback children they are attached in
-  // ContainerNodes::AttachLayoutTree() via the base class call below.
+  // If the distributed children are the direct fallback children they are
+  // attached in ContainerNodes::AttachLayoutTree() via the base class call
+  // below.
   if (!DistributedNodesAreFallback()) {
     AttachContext children_context(context);
     for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
@@ -119,11 +125,11 @@ void V0InsertionPoint::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 }
 
-void V0InsertionPoint::DetachLayoutTree(const AttachContext& context) {
+void V0InsertionPoint::DetachLayoutTree(bool performing_reattach) {
   for (wtf_size_t i = 0; i < distributed_nodes_.size(); ++i)
-    distributed_nodes_.at(i)->DetachLayoutTree(context);
+    distributed_nodes_.at(i)->DetachLayoutTree(performing_reattach);
 
-  HTMLElement::DetachLayoutTree(context);
+  HTMLElement::DetachLayoutTree(performing_reattach);
 }
 
 void V0InsertionPoint::RebuildDistributedChildrenLayoutTrees(
@@ -147,8 +153,8 @@ void V0InsertionPoint::DidRecalcStyle(const StyleRecalcChange change) {
     Node* node = distributed_nodes_.at(i);
     if (!change.TraverseChild(*node))
       continue;
-    if (node->IsElementNode())
-      ToElement(node)->RecalcStyle(change);
+    if (auto* this_element = DynamicTo<Element>(node))
+      this_element->RecalcStyle(change);
     else if (auto* text_node = DynamicTo<Text>(node))
       text_node->RecalcTextStyle(change);
   }

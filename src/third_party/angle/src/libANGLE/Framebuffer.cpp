@@ -602,10 +602,15 @@ int FramebufferState::getBaseViewIndex() const
 
 Box FramebufferState::getDimensions() const
 {
+    Extents extents = getExtents();
+    return Box(0, 0, 0, extents.width, extents.height, extents.depth);
+}
+
+Extents FramebufferState::getExtents() const
+{
     ASSERT(attachmentsHaveSameDimensions());
     ASSERT(getFirstNonNullAttachment() != nullptr);
-    Extents extents = getFirstNonNullAttachment()->getSize();
-    return Box(0, 0, 0, extents.width, extents.height, extents.depth);
+    return getFirstNonNullAttachment()->getSize();
 }
 
 Framebuffer::Framebuffer(const Caps &caps, rx::GLImplFactory *factory, GLuint id)
@@ -766,27 +771,27 @@ bool Framebuffer::detachMatchingAttachment(const Context *context,
     return false;
 }
 
-const FramebufferAttachment *Framebuffer::getColorbuffer(size_t colorAttachment) const
+const FramebufferAttachment *Framebuffer::getColorAttachment(size_t colorAttachment) const
 {
     return mState.getColorAttachment(colorAttachment);
 }
 
-const FramebufferAttachment *Framebuffer::getDepthbuffer() const
+const FramebufferAttachment *Framebuffer::getDepthAttachment() const
 {
     return mState.getDepthAttachment();
 }
 
-const FramebufferAttachment *Framebuffer::getStencilbuffer() const
+const FramebufferAttachment *Framebuffer::getStencilAttachment() const
 {
     return mState.getStencilAttachment();
 }
 
-const FramebufferAttachment *Framebuffer::getDepthStencilBuffer() const
+const FramebufferAttachment *Framebuffer::getDepthStencilAttachment() const
 {
     return mState.getDepthStencilAttachment();
 }
 
-const FramebufferAttachment *Framebuffer::getDepthOrStencilbuffer() const
+const FramebufferAttachment *Framebuffer::getDepthOrStencilAttachment() const
 {
     return mState.getDepthOrStencilAttachment();
 }
@@ -796,18 +801,18 @@ const FramebufferAttachment *Framebuffer::getStencilOrDepthStencilAttachment() c
     return mState.getStencilOrDepthStencilAttachment();
 }
 
-const FramebufferAttachment *Framebuffer::getReadColorbuffer() const
+const FramebufferAttachment *Framebuffer::getReadColorAttachment() const
 {
     return mState.getReadAttachment();
 }
 
-GLenum Framebuffer::getReadColorbufferType() const
+GLenum Framebuffer::getReadColorAttachmentType() const
 {
     const FramebufferAttachment *readAttachment = mState.getReadAttachment();
     return (readAttachment != nullptr ? readAttachment->type() : GL_NONE);
 }
 
-const FramebufferAttachment *Framebuffer::getFirstColorbuffer() const
+const FramebufferAttachment *Framebuffer::getFirstColorAttachment() const
 {
     return mState.getFirstColorAttachment();
 }
@@ -925,7 +930,7 @@ void Framebuffer::setReadBuffer(GLenum buffer)
     mDirtyBits.set(DIRTY_BIT_READ_BUFFER);
 }
 
-size_t Framebuffer::getNumColorBuffers() const
+size_t Framebuffer::getNumColorAttachments() const
 {
     return mState.mColorAttachments.size();
 }
@@ -953,13 +958,13 @@ bool Framebuffer::usingExtendedDrawBuffers() const
     return false;
 }
 
-void Framebuffer::invalidateCompletenessCache(const Context *context)
+void Framebuffer::invalidateCompletenessCache()
 {
     if (mState.mId != 0)
     {
         mCachedStatus.reset();
     }
-    onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
+    onStateChange(angle::SubjectMessage::DirtyBitsFlagged);
 }
 
 GLenum Framebuffer::checkStatusImpl(const Context *context)
@@ -1507,7 +1512,7 @@ angle::Result Framebuffer::readPixels(const Context *context,
     Buffer *unpackBuffer = context->getState().getTargetBuffer(BufferBinding::PixelUnpack);
     if (unpackBuffer)
     {
-        unpackBuffer->onPixelPack(context);
+        unpackBuffer->onPixelPack();
     }
 
     return angle::Result::Continue;
@@ -1830,7 +1835,7 @@ void Framebuffer::updateAttachment(const Context *context,
     mState.mResourceNeedsInit.set(dirtyBit, attachment->initState() == InitState::MayNeedInit);
     onDirtyBinding->bind(resource);
 
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 }
 
 void Framebuffer::resetAttachment(const Context *context, GLenum binding)
@@ -1850,9 +1855,7 @@ angle::Result Framebuffer::syncState(const Context *context)
     return angle::Result::Continue;
 }
 
-void Framebuffer::onSubjectStateChange(const Context *context,
-                                       angle::SubjectIndex index,
-                                       angle::SubjectMessage message)
+void Framebuffer::onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message)
 {
     if (message != angle::SubjectMessage::SubjectChanged)
     {
@@ -1860,7 +1863,7 @@ void Framebuffer::onSubjectStateChange(const Context *context,
         if (message == angle::SubjectMessage::ContentsChanged)
         {
             mDirtyBits.set(DIRTY_BIT_COLOR_BUFFER_CONTENTS_0 + index);
-            onStateChange(context, angle::SubjectMessage::DirtyBitsFlagged);
+            onStateChange(angle::SubjectMessage::DirtyBitsFlagged);
             return;
         }
 
@@ -1872,7 +1875,7 @@ void Framebuffer::onSubjectStateChange(const Context *context,
     ASSERT(!mDirtyBitsGuard.valid() || mDirtyBitsGuard.value().test(index));
     mDirtyBits.set(index);
 
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 
     FramebufferAttachment *attachment = getAttachmentFromSubjectIndex(index);
 
@@ -1915,8 +1918,8 @@ bool Framebuffer::formsRenderingFeedbackLoopWith(const Context *context) const
         return false;
     }
 
-    const FramebufferAttachment *depth   = getDepthbuffer();
-    const FramebufferAttachment *stencil = getStencilbuffer();
+    const FramebufferAttachment *depth   = getDepthAttachment();
+    const FramebufferAttachment *stencil = getStencilAttachment();
 
     const bool checkDepth = depth && depth->type() == GL_TEXTURE;
     // Skip the feedback loop check for stencil if depth/stencil point to the same resource.
@@ -1980,7 +1983,7 @@ bool Framebuffer::formsCopyingFeedbackLoopWith(GLuint copyTextureID,
         return false;
     }
 
-    const FramebufferAttachment *readAttachment = getReadColorbuffer();
+    const FramebufferAttachment *readAttachment = getReadColorAttachment();
     ASSERT(readAttachment);
 
     if (readAttachment->isTextureWithId(copyTextureID))
@@ -2025,21 +2028,21 @@ void Framebuffer::setDefaultWidth(const Context *context, GLint defaultWidth)
 {
     mState.mDefaultWidth = defaultWidth;
     mDirtyBits.set(DIRTY_BIT_DEFAULT_WIDTH);
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 }
 
 void Framebuffer::setDefaultHeight(const Context *context, GLint defaultHeight)
 {
     mState.mDefaultHeight = defaultHeight;
     mDirtyBits.set(DIRTY_BIT_DEFAULT_HEIGHT);
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 }
 
 void Framebuffer::setDefaultSamples(const Context *context, GLint defaultSamples)
 {
     mState.mDefaultSamples = defaultSamples;
     mDirtyBits.set(DIRTY_BIT_DEFAULT_SAMPLES);
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 }
 
 void Framebuffer::setDefaultFixedSampleLocations(const Context *context,
@@ -2047,7 +2050,7 @@ void Framebuffer::setDefaultFixedSampleLocations(const Context *context,
 {
     mState.mDefaultFixedSampleLocations = defaultFixedSampleLocations;
     mDirtyBits.set(DIRTY_BIT_DEFAULT_FIXED_SAMPLE_LOCATIONS);
-    invalidateCompletenessCache(context);
+    invalidateCompletenessCache();
 }
 
 void Framebuffer::setDefaultLayers(GLint defaultLayers)
@@ -2285,6 +2288,11 @@ void Framebuffer::markBufferInitialized(GLenum bufferType, GLint bufferIndex)
 Box Framebuffer::getDimensions() const
 {
     return mState.getDimensions();
+}
+
+Extents Framebuffer::getExtents() const
+{
+    return mState.getExtents();
 }
 
 angle::Result Framebuffer::ensureBufferInitialized(const Context *context,

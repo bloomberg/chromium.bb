@@ -12,14 +12,17 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/autofill/manual_filling_view_interface.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
 class AddressAccessoryController;
+class CreditCardAccessoryController;
 }
+
 class AccessoryController;
 class PasswordAccessoryController;
-class PasswordGenerationController;
+class TouchToFillController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
 class ManualFillingControllerImpl
@@ -29,19 +32,18 @@ class ManualFillingControllerImpl
   ~ManualFillingControllerImpl() override;
 
   // ManualFillingController:
-  void RefreshSuggestionsForField(
-      autofill::mojom::FocusedFieldType focused_field_type,
+  void RefreshSuggestions(
       const autofill::AccessorySheetData& accessory_sheet_data) override;
-  void OnFilledIntoFocusedField(autofill::FillingStatus status) override;
-  void ShowWhenKeyboardIsVisible(FillingSource source) override;
-  void ShowTouchToFillSheet() override;
-  void Hide(FillingSource source) override;
+  void NotifyFocusedInputChanged(
+      autofill::mojom::FocusedFieldType focused_field_type) override;
+  void UpdateSourceAvailability(FillingSource source,
+                                bool has_suggestions) override;
+  void Hide() override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void OnFillingTriggered(autofill::AccessoryTabType type,
                           const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(
       autofill::AccessoryAction selected_action) const override;
-  void OnGenerationRequested() override;
   void GetFavicon(
       int desired_size_in_pixel,
       base::OnceCallback<void(const gfx::Image&)> icon_callback) override;
@@ -57,17 +59,13 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
-      PasswordGenerationController* pwd_generation_controller_for_testing,
+      base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
   // Returns the held view for testing.
   ManualFillingViewInterface* view() const { return view_.get(); }
 #endif  // defined(UNIT_TEST)
-  // Returns the connected password accessory controller for testing.
-  PasswordAccessoryController* password_controller_for_testing() const {
-    return pwd_controller_.get();
-  }
 
  protected:
   friend class ManualFillingController;  // Allow protected access in factories.
@@ -89,8 +87,14 @@ class ManualFillingControllerImpl
       content::WebContents* web_contents,
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
-      PasswordGenerationController* pwd_generation_controller_for_testing,
+      base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
       std::unique_ptr<ManualFillingViewInterface> view);
+
+  // Returns true if the keyboard accessory needs to be shown.
+  bool ShouldShowAccessory() const;
+
+  // Adjusts visibility based on focused field type and available suggestions.
+  void UpdateVisibility();
 
   // Returns the controller that is responsible for a tab of given |type|.
   AccessoryController* GetControllerForTab(autofill::AccessoryTabType type);
@@ -99,29 +103,33 @@ class ManualFillingControllerImpl
   AccessoryController* GetControllerForAction(
       autofill::AccessoryAction action) const;
 
+  // Returns the controller that is responsible for a given |action|.
+  PasswordAccessoryController* GetPasswordController() const;
+
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
   // This set contains sources to be shown to the user.
-  base::flat_set<FillingSource> visible_sources_;
+  base::flat_set<FillingSource> available_sources_;
 
-  // The password accessory controller object to forward view requests to.
-  base::WeakPtr<PasswordAccessoryController> pwd_controller_;
+  // Type of the last known selected field. Helps to determine UI visibility.
+  autofill::mojom::FocusedFieldType focused_field_type_ =
+      autofill::mojom::FocusedFieldType::kUnknown;
 
-  // The address accessory controller object to forward view requests to.
+  // Controllers which handle events relating to a specific tab and the
+  // associated data.
+  base::WeakPtr<PasswordAccessoryController> pwd_controller_for_testing_;
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
-
-  // A password generation controller used in tests which receives requests
-  // from the view.
-  PasswordGenerationController* pwd_generation_controller_for_testing_ =
-      nullptr;
+  base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller_;
+  base::WeakPtr<TouchToFillController> touch_to_fill_controller_;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up
   // controller instance.
-  std::unique_ptr<ManualFillingViewInterface> view_;
+  std::unique_ptr<ManualFillingViewInterface> view_ =
+      ManualFillingViewInterface::Create(this);
 
-  base::WeakPtrFactory<ManualFillingControllerImpl> weak_factory_;
+  base::WeakPtrFactory<ManualFillingControllerImpl> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

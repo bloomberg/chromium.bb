@@ -38,7 +38,6 @@ HistoryStatisticsReporter::HistoryStatisticsReporter(
     : history_service_(history_service),
       prefs_(prefs),
       clock_(clock),
-      cancelable_task_tracker_(new base::CancelableTaskTracker()),
       history_service_observer_(this),
       weak_ptr_factory_(this) {}
 
@@ -92,9 +91,9 @@ void HistoryStatisticsReporter::MaybeReportStatistics() {
 
 void HistoryStatisticsReporter::ComputeStatistics() {
   history_service_->CountUniqueHostsVisitedLastMonth(
-      base::BindRepeating(&HistoryStatisticsReporter::ReportStatistics,
-                          weak_ptr_factory_.GetWeakPtr()),
-      cancelable_task_tracker_.get());
+      base::BindOnce(&HistoryStatisticsReporter::ReportStatistics,
+                     weak_ptr_factory_.GetWeakPtr()),
+      &cancelable_task_tracker_);
 }
 
 void HistoryStatisticsReporter::ReportStatistics(

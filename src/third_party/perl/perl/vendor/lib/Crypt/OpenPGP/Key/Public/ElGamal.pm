@@ -55,10 +55,7 @@ sub gen_k {
     my $bits = 198;
     my $p_minus1 = $p - 1;
 
-    require Crypt::Random;
-    my $k = Crypt::Random::makerandom( Size => $bits, Strength => 0 );
-    # We get back a Math::Pari object, but need a Math::BigInt
-    $k = Math::BigInt->new($k);
+    my $k = Crypt::OpenPGP::Util::get_random_bigint($bits);
     while (1) {
         last if Math::BigInt::bgcd($k, $p_minus1) == 1;
         $k++;

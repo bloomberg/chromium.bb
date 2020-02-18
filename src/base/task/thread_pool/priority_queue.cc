@@ -65,6 +65,7 @@ class PriorityQueue::TaskSourceAndSortKey {
   }
 
   const TaskSource* task_source() const { return task_source_.get(); }
+  TaskSource* task_source() { return task_source_.get(); }
 
   const SequenceSortKey& sort_key() const { return sort_key_; }
 
@@ -88,16 +89,26 @@ PriorityQueue::~PriorityQueue() {
 PriorityQueue& PriorityQueue::operator=(PriorityQueue&& other) = default;
 
 void PriorityQueue::Push(
-    RegisteredTaskSourceAndTransaction task_source_and_transaction) {
-  auto sequence_sort_key = task_source_and_transaction.transaction.GetSortKey();
+    TransactionWithRegisteredTaskSource transaction_with_task_source) {
+  auto sequence_sort_key = transaction_with_task_source.GetSortKey();
   container_.insert(TaskSourceAndSortKey(
-      std::move(task_source_and_transaction.task_source), sequence_sort_key));
+      transaction_with_task_source.take_task_source(), sequence_sort_key));
   IncrementNumTaskSourcesForPriority(sequence_sort_key.priority());
 }
 
 const SequenceSortKey& PriorityQueue::PeekSortKey() const {
   DCHECK(!IsEmpty());
   return container_.Min().sort_key();
+}
+
+TaskSource* PriorityQueue::PeekTaskSource() const {
+  DCHECK(!IsEmpty());
+
+  // The const_cast on Min() is okay since modifying the TaskSource cannot alter
+  // the sort order of TaskSourceAndSortKey.
+  auto& task_source_and_sort_key =
+      const_cast<PriorityQueue::TaskSourceAndSortKey&>(container_.Min());
+  return task_source_and_sort_key.task_source();
 }
 
 RegisteredTaskSource PriorityQueue::PopTaskSource() {
@@ -107,7 +118,7 @@ RegisteredTaskSource PriorityQueue::PopTaskSource() {
   // transactionally being popped from |container_| right after and taking its
   // TaskSource does not alter its sort order.
   auto& task_source_and_sort_key =
-      const_cast<PriorityQueue::TaskSourceAndSortKey&>(container_.Min());
+      const_cast<TaskSourceAndSortKey&>(container_.Min());
   DecrementNumTaskSourcesForPriority(
       task_source_and_sort_key.sort_key().priority());
   RegisteredTaskSource task_source =
@@ -141,19 +152,19 @@ RegisteredTaskSource PriorityQueue::RemoveTaskSource(
 }
 
 void PriorityQueue::UpdateSortKey(
-    TaskSourceAndTransaction task_source_and_transaction) {
-  DCHECK(task_source_and_transaction.task_source);
+    TransactionWithOwnedTaskSource transaction_with_task_source) {
+  DCHECK(transaction_with_task_source);
 
   if (IsEmpty())
     return;
 
   const HeapHandle heap_handle =
-      task_source_and_transaction.task_source->heap_handle();
+      transaction_with_task_source.task_source()->heap_handle();
   if (!heap_handle.IsValid())
     return;
 
   auto old_sort_key = container_.at(heap_handle).sort_key();
-  auto new_sort_key = task_source_and_transaction.transaction.GetSortKey();
+  auto new_sort_key = transaction_with_task_source.GetSortKey();
   auto registered_task_source =
       const_cast<PriorityQueue::TaskSourceAndSortKey&>(
           container_.at(heap_handle))

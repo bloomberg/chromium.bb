@@ -7,12 +7,11 @@
 #include <set>
 #include <vector>
 
-#include "ash/media/media_controller.h"
+#include "ash/media/media_controller_impl.h"
 #include "ash/multi_user/user_switch_animator.h"
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/wallpaper_user_info.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
@@ -58,26 +57,6 @@ bool HasSystemModalTransientChildWindow(aura::Window* window) {
       return true;
   }
   return false;
-}
-
-WallpaperUserInfo WallpaperUserInfoForAccount(const AccountId& account_id) {
-  DCHECK(account_id.is_valid());
-  WallpaperUserInfo wallpaper_user_info;
-  SessionControllerImpl* session_controller =
-      Shell::Get()->session_controller();
-  for (const std::unique_ptr<UserSession>& user_session :
-       session_controller->GetUserSessions()) {
-    if (user_session->user_info.account_id == account_id) {
-      wallpaper_user_info.account_id = account_id;
-      wallpaper_user_info.type = user_session->user_info.type;
-      wallpaper_user_info.is_ephemeral = user_session->user_info.is_ephemeral;
-      wallpaper_user_info.has_gaia_account =
-          user_session->user_info.has_gaia_account;
-      return wallpaper_user_info;
-    }
-  }
-  NOTREACHED();
-  return wallpaper_user_info;
 }
 
 }  // namespace
@@ -306,8 +285,7 @@ void MultiUserWindowManagerImpl::OnActiveUserSessionChanged(
   // animation only to be reshown again by the destructor of the old animation.
   animation_.reset();
   animation_ = std::make_unique<UserSwitchAnimator>(
-      this, WallpaperUserInfoForAccount(current_account_id_),
-      GetAdjustedAnimationTime(kUserFadeTime));
+      this, current_account_id_, GetAdjustedAnimationTime(kUserFadeTime));
 
   // Call RequestCaptureState here instead of having MediaClient observe
   // ActiveUserChanged because it must happen after
@@ -421,7 +399,7 @@ bool MultiUserWindowManagerImpl::ShowWindowForUserIntern(
       (owner == account_id && IsWindowOnDesktopOfUser(window, account_id)))
     return false;
 
-  bool minimized = ::wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED);
+  bool minimized = wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED);
   // Check that we are not trying to transfer ownership of a minimized window.
   if (account_id != owner && minimized)
     return false;
@@ -552,7 +530,8 @@ void MultiUserWindowManagerImpl::RemoveTransientOwnerRecursive(
 
   bool unowned_view_state = visibility_item->second;
   transient_window_to_visibility_.erase(visibility_item);
-  if (unowned_view_state && !window->IsVisible()) {
+  if (unowned_view_state && !window->IsVisible() &&
+      desks_util::BelongsToActiveDesk(window)) {
     // To prevent these commands from being recorded as any other commands, we
     // are suppressing any window entry changes while this is going on.
     // Instead of calling SetWindowVisible, only show gets called here since all

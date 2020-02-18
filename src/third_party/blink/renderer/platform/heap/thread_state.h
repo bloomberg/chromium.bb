@@ -37,10 +37,11 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace v8 {
+class EmbedderGraph;
 class Isolate;
 }
 
@@ -67,6 +69,7 @@ class PersistentNode;
 class PersistentRegion;
 class ThreadHeap;
 class ThreadState;
+class UnifiedHeapController;
 class Visitor;
 
 template <ThreadAffinity affinity>
@@ -173,6 +176,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   class ObjectResurrectionForbiddenScope;
   class SweepForbiddenScope;
 
+  using V8TraceRootsCallback = void (*)(v8::Isolate*, Visitor*);
+  using V8BuildEmbedderGraphCallback = void (*)(v8::Isolate*,
+                                                v8::EmbedderGraph*,
+                                                void*);
+
   // Returns true if some thread (possibly the current thread) may be doing
   // incremental marking. If false is returned, the *current* thread is
   // definitely not doing incremental marking. See atomic_entry_flag.h for
@@ -208,6 +216,22 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   ThreadHeap& Heap() const { return *heap_; }
   base::PlatformThreadId ThreadId() const { return thread_; }
 
+  // Associates |ThreadState| with a given |v8::Isolate|, essentially tying
+  // there garbage collectors together.
+  void AttachToIsolate(v8::Isolate*,
+                       V8TraceRootsCallback,
+                       V8BuildEmbedderGraphCallback);
+
+  // Removes the association from a potentially attached |v8::Isolate|.
+  void DetachFromIsolate();
+
+  // Returns an |UnifiedHeapController| if ThreadState is attached to a V8
+  // isolate (see |AttachToIsolate|), nullptr otherwise.
+  UnifiedHeapController* unified_heap_controller() const {
+    DCHECK(isolate_);
+    return unified_heap_controller_.get();
+  }
+
   // When ThreadState is detaching from non-main thread its
   // heap is expected to be empty (because it is going away).
   // Perform registered cleanup tasks and garbage collection
@@ -217,9 +241,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // in the dangling pointer situation.
   void RunTerminationGC();
 
-  void PerformIdleLazySweep(TimeTicks deadline);
+  void PerformIdleLazySweep(base::TimeTicks deadline);
+  void PerformConcurrentSweep();
 
   void ScheduleIdleLazySweep();
+  void ScheduleConcurrentAndLazySweep();
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
@@ -260,42 +286,27 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void FinishSnapshot();
   void PostSweep();
 
-  // Support for disallowing allocation. Mainly used for sanity
-  // checks asserts.
+  // Returns whether it is currently allowed to allocate an object. Mainly used
+  // for sanity checks asserts.
   bool IsAllocationAllowed() const {
     // Allocation is not allowed during atomic marking pause, but it is allowed
     // during atomic sweeping pause.
     return !InAtomicMarkingPause() && !no_allocation_count_;
   }
-  void EnterNoAllocationScope() { no_allocation_count_++; }
-  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  // Returns whether it is currently forbidden to trigger a GC.
   bool IsGCForbidden() const { return gc_forbidden_count_; }
-  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
-  void LeaveGCForbiddenScope() {
-    DCHECK_GT(gc_forbidden_count_, 0u);
-    gc_forbidden_count_--;
-  }
+
+  // Returns whether it is currently forbidden to sweep objects.
   bool SweepForbidden() const { return sweep_forbidden_; }
+
+  // Returns whether is is currently forbidden to resurrect objects.
   bool IsObjectResurrectionForbidden() const {
     return object_resurrection_forbidden_;
   }
-  void EnterObjectResurrectionForbiddenScope() {
-    DCHECK(!object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = true;
-  }
-  void LeaveObjectResurrectionForbiddenScope() {
-    DCHECK(object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = false;
-  }
+
   bool in_atomic_pause() const { return in_atomic_pause_; }
-  void EnterAtomicPause() {
-    DCHECK(!in_atomic_pause_);
-    in_atomic_pause_ = true;
-  }
-  void LeaveAtomicPause() {
-    DCHECK(in_atomic_pause_);
-    in_atomic_pause_ = false;
-  }
+
   bool InAtomicMarkingPause() const {
     return in_atomic_pause() && IsMarkingInProgress();
   }
@@ -354,14 +365,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     Vector<size_t> dead_size;
   };
 
-  void RegisterTraceDOMWrappers(v8::Isolate* isolate,
-                                void (*trace_dom_wrappers)(v8::Isolate*,
-                                                           Visitor*)) {
-    isolate_ = isolate;
-    DCHECK(!isolate_ || trace_dom_wrappers);
-    trace_dom_wrappers_ = trace_dom_wrappers;
-  }
-
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
 
   using PersistentClearCallback = void (*)(void*);
@@ -403,10 +406,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
       DCHECK(state->CheckThread());
 #endif
       DCHECK(!state->SweepForbidden());
-      DCHECK(!state->ordered_pre_finalizers_.Contains(
-          PreFinalizer(self, T::InvokePreFinalizer)));
-      state->ordered_pre_finalizers_.insert(
-          PreFinalizer(self, T::InvokePreFinalizer));
+      DCHECK(std::find(state->ordered_pre_finalizers_.begin(),
+                       state->ordered_pre_finalizers_.end(),
+                       PreFinalizer(self, T::InvokePreFinalizer)) ==
+             state->ordered_pre_finalizers_.end());
+      state->ordered_pre_finalizers_.emplace_back(self, T::InvokePreFinalizer);
     }
   };
 
@@ -426,6 +430,14 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // Implementation for RAILModeObserver
   void OnRAILModeChanged(RAILMode new_mode) override;
 
+  bool VerifyMarkingEnabled() const;
+
+  // Returns true if the current GC is a memory reducing GC.
+  bool IsMemoryReducingGC() {
+    return current_gc_data_.reason ==
+           BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
+  }
+
  private:
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
@@ -443,17 +455,51 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   ThreadState();
   ~ThreadState() override;
 
+  void EnterNoAllocationScope() { no_allocation_count_++; }
+  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  void EnterObjectResurrectionForbiddenScope() {
+    DCHECK(!object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = true;
+  }
+  void LeaveObjectResurrectionForbiddenScope() {
+    DCHECK(object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = false;
+  }
+
+  void EnterAtomicPause() {
+    DCHECK(!in_atomic_pause_);
+    in_atomic_pause_ = true;
+  }
+  void LeaveAtomicPause() {
+    DCHECK(in_atomic_pause_);
+    in_atomic_pause_ = false;
+  }
+
+  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
+  void LeaveGCForbiddenScope() {
+    DCHECK_GT(gc_forbidden_count_, 0u);
+    gc_forbidden_count_--;
+  }
+
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these
   // methods to compose a full garbage collection.
   void AtomicPauseMarkPrologue(BlinkGC::StackState,
                                BlinkGC::MarkingType,
                                BlinkGC::GCReason);
+  void AtomicPauseMarkRoots(BlinkGC::StackState,
+                            BlinkGC::MarkingType,
+                            BlinkGC::GCReason);
   void AtomicPauseMarkTransitiveClosure();
   void AtomicPauseMarkEpilogue(BlinkGC::MarkingType);
   void AtomicPauseSweepAndCompact(BlinkGC::MarkingType marking_type,
                                   BlinkGC::SweepingType sweeping_type);
+  void AtomicPauseEpilogue();
 
+  // RunAtomicPause composes the final atomic pause that finishes a mark-compact
+  // phase of a garbage collection. Depending on SweepingType it may also finish
+  // sweeping or schedule lazy/concurrent sweeping.
   void RunAtomicPause(BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
@@ -465,17 +511,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void MarkPhasePrologue(BlinkGC::StackState,
                          BlinkGC::MarkingType,
                          BlinkGC::GCReason);
-  void AtomicPausePrologue(BlinkGC::StackState,
-                           BlinkGC::MarkingType,
-                           BlinkGC::GCReason);
-  void AtomicPauseEpilogue(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
   void MarkPhaseVisitNotFullyConstructedObjects();
-  bool MarkPhaseAdvanceMarking(TimeTicks deadline);
+  bool MarkPhaseAdvanceMarking(base::TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
-
-  bool ShouldVerifyMarking() const;
 
   // ShouldForceConservativeGC
   // implements the heuristics that are used to determine when to collect
@@ -497,10 +537,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // (aka being under "memory pressure".)
   bool ShouldForceMemoryPressureGC();
 
-  // Returns true if shouldForceMemoryPressureGC() held and a
-  // conservative GC was performed to handle the emergency.
-  bool ForceMemoryPressureGCIfNeeded();
-
   size_t EstimatedLiveSize(size_t current_size, size_t size_at_last_gc);
   size_t TotalMemorySize();
   double HeapGrowingRate();
@@ -513,7 +549,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void UpdateIncrementalMarkingStepDuration();
 
-  void EagerSweep();
+  void SynchronizeAndFinishConcurrentSweeping();
 
   void InvokePreFinalizers();
 
@@ -528,6 +564,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // doesn't take ownership of the argument. The argument must not be null.
   // The argument must be registered before calling this.
   void RemoveObserver(BlinkGCObserver*);
+
+  bool IsForcedGC(BlinkGC::GCReason reason) {
+    return reason == BlinkGC::GCReason::kThreadTerminationGC ||
+           reason == BlinkGC::GCReason::kForcedGCForTesting;
+  }
 
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
@@ -544,8 +585,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   size_t no_allocation_count_ = 0;
   size_t gc_forbidden_count_ = 0;
 
-  TimeDelta next_incremental_marking_step_duration_;
-  TimeDelta previous_incremental_marking_time_left_;
+  base::TimeDelta next_incremental_marking_step_duration_;
+  base::TimeDelta previous_incremental_marking_time_left_;
 
   GCState gc_state_;
   GCPhase gc_phase_;
@@ -557,10 +598,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // Pre-finalizers are called in the reverse order in which they are
   // registered by the constructors (including constructors of Mixin objects)
   // for an object, by processing the ordered_pre_finalizers_ back-to-front.
-  LinkedHashSet<PreFinalizer> ordered_pre_finalizers_;
+  Deque<PreFinalizer> ordered_pre_finalizers_;
 
   v8::Isolate* isolate_ = nullptr;
-  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*) = nullptr;
+  V8TraceRootsCallback v8_trace_roots_ = nullptr;
+  V8BuildEmbedderGraphCallback v8_build_embedder_graph_ = nullptr;
+  std::unique_ptr<UnifiedHeapController> unified_heap_controller_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;
@@ -591,13 +634,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   };
   GCData current_gc_data_;
 
-  // Used to ensure precise GC is only run when we don't need to scan the stack.
-  // crbug.com/937117
-  bool precise_gc_allowed_ = false;
+  CancelableTaskScheduler sweeper_scheduler_;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
+  friend class HeapAllocator;
   template <typename T>
   friend class PrefinalizerRegistration;
   friend class TestGCScope;

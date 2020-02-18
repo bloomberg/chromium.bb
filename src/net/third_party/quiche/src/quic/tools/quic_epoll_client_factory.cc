@@ -32,22 +32,23 @@ QuicSocketAddress LookupAddress(std::string host, std::string port) {
   CHECK(info_list != nullptr);
   std::unique_ptr<addrinfo, void (*)(addrinfo*)> info_list_owned(info_list,
                                                                  freeaddrinfo);
-  return QuicSocketAddress(*info_list->ai_addr);
+  return QuicSocketAddress(info_list->ai_addr, info_list->ai_addrlen);
 }
 
 }  // namespace
 
 std::unique_ptr<QuicSpdyClientBase> QuicEpollClientFactory::CreateClient(
-    std::string host,
+    std::string host_for_handshake,
+    std::string host_for_lookup,
     uint16_t port,
     ParsedQuicVersionVector versions,
     std::unique_ptr<ProofVerifier> verifier) {
-  QuicSocketAddress addr = LookupAddress(host, QuicStrCat(port));
+  QuicSocketAddress addr = LookupAddress(host_for_lookup, QuicStrCat(port));
   if (!addr.IsInitialized()) {
-    QUIC_LOG(ERROR) << "Unable to resolve address: " << host;
+    QUIC_LOG(ERROR) << "Unable to resolve address: " << host_for_lookup;
     return nullptr;
   }
-  QuicServerId server_id(host, port, false);
+  QuicServerId server_id(host_for_handshake, port, false);
   return QuicMakeUnique<QuicClient>(addr, server_id, versions, &epoll_server_,
                                     std::move(verifier));
 }

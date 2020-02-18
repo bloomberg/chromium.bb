@@ -11,8 +11,9 @@ namespace previous_session_info_constants {
 // Key in the UserDefaults for a boolean value keeping track of memory warnings.
 extern NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating;
 
-// The values of this enum are persisted representing the state of the last
-// session (which may have been running a different version of the application).
+// The values of this enum are persisted (both to NSUserDefaults and logs) and
+// represent the state of the last session (which may have been running a
+// different version of the application).
 // Therefore, entries should not be renumbered and numeric values should never
 // be reused.
 enum class DeviceThermalState {
@@ -21,6 +22,21 @@ enum class DeviceThermalState {
   kFair = 2,
   kSerious = 3,
   kCritical = 4,
+  kMaxValue = kCritical,
+};
+
+// The values of this enum are persisted (both to NSUserDefaults and logs) and
+// represent the state of the last session (which may have been running a
+// different version of the application).
+// Therefore, entries should not be renumbered and numeric values should never
+// be reused.
+enum class DeviceBatteryState {
+  kUnknown = 0,
+  kUnplugged = 1,
+  kCharging = 2,
+  // Battery is plugged into power and the battery is 100% charged.
+  kFull = 3,
+  kMaxValue = kFull,
 };
 }  // namespace previous_session_info_constants
 
@@ -30,6 +46,17 @@ enum class DeviceThermalState {
 //   instance.
 // - Persist information about the current session, for use in a next session.
 @interface PreviousSessionInfo : NSObject
+
+// The battery level of the device at the end of the previous session.
+@property(nonatomic, assign, readonly) float deviceBatteryLevel;
+
+// The battery state of the device at the end of the previous session.
+@property(nonatomic, assign, readonly)
+    previous_session_info_constants::DeviceBatteryState deviceBatteryState;
+
+// The storage available, in kilobytes, at the end of the previous session or -1
+// if no previous session data is available.
+@property(nonatomic, assign, readonly) NSInteger availableDeviceStorage;
 
 // The thermal state of the device at the end of the previous session.
 @property(nonatomic, assign, readonly)
@@ -53,6 +80,14 @@ enum class DeviceThermalState {
 // session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterLanguageChange;
 
+// The OS version during the previous session or nil if no previous session data
+// is available.
+@property(nonatomic, strong, readonly) NSString* OSVersion;
+
+// The time at which the previous sesion ended. Note that this is only an
+// estimate and is updated whenever another value of the receiver is updated.
+@property(nonatomic, strong, readonly) NSDate* sessionEndTime;
+
 // Singleton PreviousSessionInfo. During the lifetime of the app, the returned
 // object is the same, and describes the previous session, even after a new
 // session has started (by calling beginRecordingCurrentSession).
@@ -61,6 +96,18 @@ enum class DeviceThermalState {
 // Clears the persisted information about the previous session and starts
 // persisting information about the current session, for use in a next session.
 - (void)beginRecordingCurrentSession;
+
+// Updates the currently available device storage, in kilobytes.
+- (void)updateAvailableDeviceStorage:(NSInteger)availableStorage;
+
+// Updates the saved last known session time.
+- (void)updateSessionEndTime;
+
+// Updates the saved last known battery level of the device.
+- (void)updateStoredBatteryLevel;
+
+// Updates the saved last known battery state of the device.
+- (void)updateStoredBatteryState;
 
 // Updates the saved last known low power mode setting of the device.
 - (void)updateStoredLowPowerMode;

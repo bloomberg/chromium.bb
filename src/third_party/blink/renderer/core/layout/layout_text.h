@@ -25,13 +25,13 @@
 
 #include <iterator>
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/line/line_box_list.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -40,7 +40,6 @@ class AbstractInlineTextBox;
 class ContentCaptureManager;
 class InlineTextBox;
 class NGInlineItem;
-class NGInlineItems;
 class NGOffsetMapping;
 
 enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
@@ -84,7 +83,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   ~LayoutText() override;
 
   static LayoutText* CreateEmptyAnonymous(Document&,
-                                          scoped_refptr<ComputedStyle>,
+                                          scoped_refptr<const ComputedStyle>,
                                           LegacyLayout);
 
   const char* GetName() const override { return "LayoutText"; }
@@ -123,7 +122,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void LocalQuadsInFlippedBlocksDirection(Vector<FloatQuad>&,
                                           ClippingOption = kNoClipping) const;
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   bool Is8Bit() const { return text_.Is8Bit(); }
   const LChar* Characters8() const { return text_.Impl()->Characters8(); }
@@ -193,8 +192,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
                        bool avoid_layout_and_only_paint = false);
   void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
-                         unsigned len,
-                         bool force = false);
+                         unsigned len);
 
   virtual void TransformText();
 
@@ -310,13 +308,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool MapDOMOffsetToTextContentOffset(const NGOffsetMapping&,
                                        unsigned* start,
                                        unsigned* end) const;
-  NodeHolder EnsureNodeHolder();
-  bool HasNodeHolder() const { return !node_holder_.is_empty; }
+  DOMNodeId EnsureNodeId();
+  bool HasNodeId() const { return node_id_ != kInvalidDOMNodeId; }
 
   void SetInlineItems(NGInlineItem* begin, NGInlineItem* end);
   void ClearInlineItems();
   bool HasValidInlineItems() const { return valid_ng_items_; }
-  const NGInlineItems& InlineItems() const;
+  const base::span<NGInlineItem>& InlineItems() const;
   // Inline items depends on context. It needs to be invalidated not only when
   // it was inserted/changed but also it was moved.
   void InvalidateInlineItems() { valid_ng_items_ = false; }
@@ -326,8 +324,10 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void ClearHasBidiControlInlineItems() { has_bidi_control_items_ = false; }
 
  protected:
-  virtual const NGInlineItems* GetNGInlineItems() const { return nullptr; }
-  virtual NGInlineItems* GetNGInlineItems() { return nullptr; }
+  virtual const base::span<NGInlineItem>* GetNGInlineItems() const {
+    return nullptr;
+  }
+  virtual base::span<NGInlineItem>* GetNGInlineItems() { return nullptr; }
   void WillBeDestroyed() override;
 
   void StyleWillChange(StyleDifference, const ComputedStyle&) final {}
@@ -369,7 +369,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   void UpdateLayout() final { NOTREACHED(); }
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
-                   const LayoutPoint&,
+                   const PhysicalOffset&,
                    HitTestAction) final {
     NOTREACHED();
     return false;
@@ -395,10 +395,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
-
- private:
-  ContentCaptureManager* GetContentCaptureManager();
-  NodeHolder node_holder_;
 
   // We put the bitfield first to minimize padding on 64-bit.
  protected:
@@ -435,6 +431,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned is_text_fragment_ : 1;
 
  private:
+  ContentCaptureManager* GetContentCaptureManager();
+
   // Used for LayoutNG with accessibility. True if inline fragments are
   // associated to |NGAbstractInlineTextBox|.
   unsigned has_abstract_inline_text_box_ : 1;
@@ -454,6 +452,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     // Valid only when IsInLayoutNGInlineFormattingContext().
     NGPaintFragment* first_paint_fragment_;
   };
+  DOMNodeId node_id_ = kInvalidDOMNodeId;
 };
 
 inline InlineTextBoxList& LayoutText::MutableTextBoxes() {

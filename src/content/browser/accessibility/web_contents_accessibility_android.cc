@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,9 +18,9 @@
 #include "content/browser/android/render_widget_host_connector.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/content_jni_headers/WebContentsAccessibilityImpl_jni.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
-#include "jni/WebContentsAccessibilityImpl_jni.h"
 #include "ui/events/android/motion_event_android.h"
 
 using base::android::AttachCurrentThread;
@@ -645,6 +646,18 @@ jint WebContentsAccessibilityAndroid::GetEditableTextSelectionEnd(
   return node->GetSelectionEnd();
 }
 
+static size_t ActualUnignoredChildCount(const ui::AXNode* node) {
+  size_t count = 0;
+  for (const ui::AXNode* child : node->children()) {
+    if (child->data().HasState(ax::mojom::State::kIgnored)) {
+      count += ActualUnignoredChildCount(child);
+    } else {
+      ++count;
+    }
+  }
+  return count;
+}
+
 jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -660,9 +673,10 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoParent(
         env, obj, info, android_node->unique_id());
   }
-  for (unsigned i = 0; i < node->PlatformChildCount(); ++i) {
-    auto* android_node =
-        static_cast<BrowserAccessibilityAndroid*>(node->PlatformGetChild(i));
+  for (BrowserAccessibility::PlatformChildIterator it =
+           node->PlatformChildrenBegin();
+       it != node->PlatformChildrenEnd(); ++it) {
+    auto* android_node = static_cast<BrowserAccessibilityAndroid*>(it.get());
     Java_WebContentsAccessibilityImpl_addAccessibilityNodeInfoChild(
         env, obj, info, android_node->unique_id());
   }

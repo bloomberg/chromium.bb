@@ -34,12 +34,13 @@ class FaviconUrlParserTest : public testing::Test {
 };
 
 // Test parsing path with no extra parameters.
-TEST_F(FaviconUrlParserTest, ParsingNoExtraParams) {
+TEST_F(FaviconUrlParserTest, LegacyParsingNoExtraParams) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
   chrome::ParsedFaviconPath parsed;
 
   const std::string path1 = url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path1, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path1, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(url, parsed.url);
   EXPECT_EQ(16, parsed.size_in_dip);
@@ -47,13 +48,14 @@ TEST_F(FaviconUrlParserTest, ParsingNoExtraParams) {
 }
 
 // Test parsing path with a 'size' parameter.
-TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
+TEST_F(FaviconUrlParserTest, LegacyParsingSizeParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
   chrome::ParsedFaviconPath parsed;
 
   // Test that we can still parse the legacy 'size' parameter format.
   const std::string path2 = "size/32/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path2, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path2, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(url, parsed.url);
   EXPECT_EQ(32, parsed.size_in_dip);
@@ -61,7 +63,8 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
 
   // Test parsing current 'size' parameter format.
   const std::string path3 = "size/32@1.4x/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path3, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path3, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(url, parsed.url);
   EXPECT_EQ(32, parsed.size_in_dip);
@@ -70,7 +73,8 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
   // Test that we pick the ui::ScaleFactor which is closest to the passed in
   // scale factor.
   const std::string path4 = "size/16@1.41x/" + url;
-  EXPECT_TRUE(chrome::ParseFaviconPath(path4, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path4, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(url, parsed.url);
   EXPECT_EQ(16, parsed.size_in_dip);
@@ -78,15 +82,19 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
 
   // Invalid cases.
   const std::string path5 = "size/" + url;
-  EXPECT_FALSE(chrome::ParseFaviconPath(path5, &parsed));
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path5, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   const std::string path6 = "size/@1x/" + url;
-  EXPECT_FALSE(chrome::ParseFaviconPath(path6, &parsed));
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path6, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   const std::string path7 = "size/abc@1x/" + url;
-  EXPECT_FALSE(chrome::ParseFaviconPath(path7, &parsed));
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      path7, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
 
   // Part of url looks like 'size' parameter.
   const std::string path8 = "http://www.google.com/size/32@1.4x";
-  EXPECT_TRUE(chrome::ParseFaviconPath(path8, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path8, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_FALSE(parsed.is_icon_url);
   EXPECT_EQ(path8, parsed.url);
   EXPECT_EQ(16, parsed.size_in_dip);
@@ -94,12 +102,13 @@ TEST_F(FaviconUrlParserTest, ParsingSizeParam) {
 }
 
 // Test parsing path with 'iconurl' parameter.
-TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
+TEST_F(FaviconUrlParserTest, LegacyParsingIconUrlParam) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
   chrome::ParsedFaviconPath parsed;
 
   const std::string path10 = "iconurl/http://www.google.com/favicon.ico";
-  EXPECT_TRUE(chrome::ParseFaviconPath(path10, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path10, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_TRUE(parsed.is_icon_url);
   EXPECT_EQ("http://www.google.com/favicon.ico", parsed.url);
   EXPECT_EQ(16, parsed.size_in_dip);
@@ -108,14 +117,102 @@ TEST_F(FaviconUrlParserTest, ParsingIconUrlParam) {
 
 // Test parsing paths with both a 'size' parameter and a 'url modifier'
 // parameter.
-TEST_F(FaviconUrlParserTest, ParsingSizeParamAndUrlModifier) {
+TEST_F(FaviconUrlParserTest, LegacyParsingSizeParamAndUrlModifier) {
   const std::string url("https://www.google.ca/imghp?hl=en&tab=wi");
   chrome::ParsedFaviconPath parsed;
 
   const std::string path14 =
       "size/32/iconurl/http://www.google.com/favicon.ico";
-  EXPECT_TRUE(chrome::ParseFaviconPath(path14, &parsed));
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      path14, chrome::FaviconUrlFormat::kFaviconLegacy, &parsed));
   EXPECT_TRUE(parsed.is_icon_url);
   EXPECT_EQ("http://www.google.com/favicon.ico", parsed.url);
   EXPECT_EQ(32, parsed.size_in_dip);
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingSizeParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  EXPECT_TRUE(chrome::ParseFaviconPath("?size=32&url=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
+  EXPECT_FALSE(parsed.is_icon_url);
+  EXPECT_EQ(32, parsed.size_in_dip);
+
+  EXPECT_FALSE(chrome::ParseFaviconPath("?size=abc&url=https%3A%2F%2Fg.com",
+                                        chrome::FaviconUrlFormat::kFavicon2,
+                                        &parsed));
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingScaleFactorParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?scale_factor=2.1x&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_EQ(2.1f, parsed.device_scale_factor);
+
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?scale_factor=-1&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingIconUrlParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?url_type=icon_url&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(parsed.is_icon_url);
+
+  EXPECT_TRUE(
+      chrome::ParseFaviconPath("?url_type=page_url&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(parsed.is_icon_url);
+
+  EXPECT_FALSE(
+      chrome::ParseFaviconPath("?url_type=invalid&url=https%3A%2F%2Fg.com",
+                               chrome::FaviconUrlFormat::kFavicon2, &parsed));
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingUrlParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  // Url parameter is mandatory.
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      "?", chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  // Url parameter is mandatory.
+  EXPECT_TRUE(chrome::ParseFaviconPath("?url=https%3A%2F%2Fg.com",
+                                       chrome::FaviconUrlFormat::kFavicon2,
+                                       &parsed));
+  EXPECT_EQ(parsed.url, "https://g.com");
+}
+
+TEST_F(FaviconUrlParserTest, Favicon2ParsingAllowFallbackParam) {
+  chrome::ParsedFaviconPath parsed;
+
+  // If request is by icon url, fallback parameter should have no effect.
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=icon_url&allow_google_server_fallback=1&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(parsed.allow_favicon_server_fallback);
+
+  EXPECT_FALSE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=invalid&url=https%"
+      "3A%2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=0&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_FALSE(parsed.allow_favicon_server_fallback);
+
+  EXPECT_TRUE(chrome::ParseFaviconPath(
+      "?url_type=page_url&allow_google_server_fallback=1&url=https%3A%"
+      "2F%2Fg.com",
+      chrome::FaviconUrlFormat::kFavicon2, &parsed));
+  EXPECT_TRUE(parsed.allow_favicon_server_fallback);
 }

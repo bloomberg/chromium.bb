@@ -76,6 +76,31 @@ class ProgressCenterItem {
     this.message = '';
 
     /**
+     * Source message for the progress item.
+     * @type {string}
+     */
+    this.sourceMessage = '';
+
+    /**
+     * Destination message for the progress item.
+     * @type {string}
+     */
+    this.destinationMessage = '';
+
+    /**
+     * Optional sub message for the progress item.
+     * TODO(crbug.com/947388) get rid of the subMessage field.
+     * @type {string}
+     */
+    this.subMessage = '';
+
+    /**
+     * Number of items being processed.
+     * @type {number}
+     */
+    this.itemCount = 0;
+
+    /**
      * Max value of the progress.
      * @type {number}
      */

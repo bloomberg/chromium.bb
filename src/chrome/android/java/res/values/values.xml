@@ -48,7 +48,6 @@
     <string name="help_context_bookmarks">mobile_bookmarks</string>
     <string name="help_context_history">mobile_history</string>
     <string name="help_context_privacy">mobile_privacy</string>
-    <string name="help_context_translate">mobile_translate</string>
     <string name="help_context_general">mobile_general</string>
     <string name="help_context_protected_content">protected_content</string>
     <string name="help_context_data_reduction">reduce_data_usage</string>
@@ -84,7 +83,7 @@
     <!-- Bottom navigation bar styling. -->
     <bool name="window_light_navigation_bar">true</bool>
 
-    <!-- Preferences-Languages -->
+    <!-- Drag-Reorderable List Item -->
     <!-- Used for 90% = 230/255 alpha -->
-    <integer name="pref_languages_item_dragged_alpha">230</integer>
+    <integer name="list_item_dragged_alpha">230</integer>
 </resources>

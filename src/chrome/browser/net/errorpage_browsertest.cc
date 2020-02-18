@@ -28,7 +28,6 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
-#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
@@ -324,6 +323,12 @@ class DNSErrorPageTest : public ErrorPageTest {
                content::URLLoaderInterceptor::RequestParams* params) {
               // Add an interceptor that serves LinkDoctor responses
               if (google_util::LinkDoctorBaseURL() == params->url_request.url) {
+                // The origin header should exist and be opaque.
+                std::string origin;
+                bool has_origin = params->url_request.headers.GetHeader(
+                    net::HttpRequestHeaders::kOrigin, &origin);
+                EXPECT_TRUE(has_origin);
+                EXPECT_EQ(origin, "null");
                 // Send RequestCreated so that anyone blocking on
                 // WaitForRequests can continue.
                 base::PostTaskWithTraits(

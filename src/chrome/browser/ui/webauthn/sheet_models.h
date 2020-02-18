@@ -155,10 +155,14 @@ class AuthenticatorNotRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnAccept() override;
 };
 
 class AuthenticatorAlreadyRegisteredErrorModel
@@ -170,10 +174,14 @@ class AuthenticatorAlreadyRegisteredErrorModel
   // AuthenticatorSheetModelBase:
   bool IsBackButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnAccept() override;
 };
 
 class AuthenticatorInternalUnrecognizedErrorSheetModel
@@ -183,10 +191,16 @@ class AuthenticatorInternalUnrecognizedErrorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
   const gfx::VectorIcon& GetStepIllustration(
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  void OnBack() override;
+  void OnAccept() override;
 };
 
 class AuthenticatorBlePowerOnManualSheetModel
@@ -528,4 +542,19 @@ class AttestationPermissionRequestSheetModel
   bool IsCancelButtonVisible() const override;
   base::string16 GetCancelButtonLabel() const override;
 };
+
+class AuthenticatorQRSheetModel : public AuthenticatorSheetModelBase {
+ public:
+  explicit AuthenticatorQRSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorQRSheetModel() override;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  const gfx::VectorIcon& GetStepIllustration(
+      ImageColorScheme color_scheme) const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_

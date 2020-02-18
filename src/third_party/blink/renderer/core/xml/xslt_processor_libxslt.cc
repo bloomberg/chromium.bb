@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
@@ -109,8 +108,8 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       ResourceLoaderOptions fetch_options;
       fetch_options.initiator_info.name = fetch_initiator_type_names::kXml;
       FetchParameters params(ResourceRequest(url), fetch_options);
-      params.MutableResourceRequest().SetFetchRequestMode(
-          network::mojom::FetchRequestMode::kSameOrigin);
+      params.MutableResourceRequest().SetMode(
+          network::mojom::RequestMode::kSameOrigin);
       Resource* resource =
           RawResource::FetchSynchronously(params, g_global_resource_fetcher);
       if (!g_global_processor)
@@ -247,9 +246,9 @@ static const char** XsltParamArrayFromParameterMap(
   unsigned index = 0;
   for (auto& parameter : parameters) {
     parameter_array[index++] =
-        AllocateParameterArray(parameter.key.Utf8().data());
+        AllocateParameterArray(parameter.key.Utf8().c_str());
     parameter_array[index++] =
-        AllocateParameterArray(parameter.value.Utf8().data());
+        AllocateParameterArray(parameter.value.Utf8().c_str());
   }
   parameter_array[index] = nullptr;
 

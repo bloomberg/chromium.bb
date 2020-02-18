@@ -87,10 +87,10 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 #endif
   info.papers.insert(info.papers.end(), additional_papers.begin(),
                      additional_papers.end());
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;
-#endif  // defined(CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
@@ -136,9 +136,8 @@ base::Value GetSettingsOnBlockingPool(
                       base::Value(basic_info.printer_description));
   printer_info.SetKey(
       kCUPSEnterprisePrinter,
-      base::Value(
-          base::ContainsKey(basic_info.options, kCUPSEnterprisePrinter) &&
-          basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
+      base::Value(base::Contains(basic_info.options, kCUPSEnterprisePrinter) &&
+                  basic_info.options.at(kCUPSEnterprisePrinter) == kValueTrue));
 
   base::Value printer_info_capabilities(base::Value::Type::DICTIONARY);
   printer_info_capabilities.SetKey(kPrinter, std::move(printer_info));

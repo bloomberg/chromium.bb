@@ -77,6 +77,36 @@ Polymer({
       readOnly: true,
       value: [0, 1, 2, 3, 4, 5],
     },
+
+    /**
+     * The time in milliseconds at which a connection attempt started (that is,
+     * when this dialog is opened).
+     * @private {?number}
+     */
+    connectionAttemptStartTimestampMs_: {
+      type: Number,
+      value: null,
+    },
+
+    /**
+     * The time in milliseconds at which the user is asked to comfirm the
+     * pairing auth process.
+     * @private {?number}
+     */
+    pairingUserAuthAttemptStartTimestampMs_: {
+      type: Number,
+      value: null,
+    },
+
+    /**
+     * The time in milliseconds at which the user confirms the pairing auth
+     * process.
+     * @private {?number}
+     */
+    pairingUserAuthAttemptFinishTimestampMs_: {
+      type: Number,
+      value: null,
+    },
   },
 
   observers: [
@@ -200,6 +230,8 @@ Polymer({
           this.onBluetoothPrivateOnPairing_.bind(this);
       this.bluetoothPrivate.onPairing.addListener(
           this.bluetoothPrivateOnPairingListener_);
+
+      this.connectionAttemptStartTimestampMs_ = Date.now();
     }
     if (!this.bluetoothDeviceChangedListener_) {
       this.bluetoothDeviceChangedListener_ =
@@ -262,9 +294,23 @@ Polymer({
       return;
     }
 
+    if (!this.pairingUserAuthAttemptStartTimestampMs_ && !!this.pairingEvent_ &&
+        (this.pairingEvent_.pairing === PairingEventType.REQUEST_PINCODE ||
+         this.pairingEvent_.pairing === PairingEventType.REQUEST_PASSKEY ||
+         this.pairingEvent_.pairing === PairingEventType.DISPLAY_PINCODE ||
+         this.pairingEvent_.pairing === PairingEventType.DISPLAY_PASSKEY ||
+         this.pairingEvent_.pairing === PairingEventType.CONFIRM_PASSKEY ||
+         this.pairingEvent_.pairing === PairingEventType.KEYS_ENTERED)) {
+      this.pairingUserAuthAttemptStartTimestampMs_ = Date.now();
+    }
+
     // Auto-close the dialog when pairing completes.
     if (this.pairingDevice.paired && !this.pairingDevice.connecting &&
         this.pairingDevice.connected) {
+      if (this.pairingUserAuthAttemptStartTimestampMs_) {
+        this.pairingUserAuthAttemptFinishTimestampMs_ = Date.now();
+      }
+
       this.close();
       return;
     }
@@ -534,6 +580,44 @@ Polymer({
       }
     }
 
-    chrome.bluetoothPrivate.recordPairing(success, transport);
+    chrome.bluetoothPrivate.recordPairing(
+        success, transport, this.getPairingDurationMs_());
+  },
+
+  /**
+   * Calculate how long it took to complete pairing, excluding how long the user
+   * took to confirm the pairing auth process.
+   * @return {number}
+   * @private
+   */
+  getPairingDurationMs_: function() {
+    let unadjustedPairingDurationMs = 0;
+    if (this.connectionAttemptStartTimestampMs_) {
+      unadjustedPairingDurationMs =
+          Date.now() - this.connectionAttemptStartTimestampMs_;
+    } else {
+      console.error('No connection start timestamp present.');
+    }
+
+    let userAuthActionDurationMs = 0;
+    if (this.pairingUserAuthAttemptStartTimestampMs_) {
+      if (this.pairingUserAuthAttemptFinishTimestampMs_) {
+        userAuthActionDurationMs =
+            this.pairingUserAuthAttemptFinishTimestampMs_ -
+            this.pairingUserAuthAttemptStartTimestampMs_;
+      } else {
+        console.error(
+            'No auth attempt finish timestamp present to' +
+            ' complement start timestamp.');
+      }
+    }
+
+    this.connectionAttemptStartTimestampMs_ = null;
+    this.pairingUserAuthAttemptStartTimestampMs_ = null;
+    this.pairingUserAuthAttemptFinishTimestampMs_ = null;
+
+    // If the pairing process required authentication, do not include the time
+    // it took the user to complete or confirm the authentication process.
+    return unadjustedPairingDurationMs - userAuthActionDurationMs;
   },
 });

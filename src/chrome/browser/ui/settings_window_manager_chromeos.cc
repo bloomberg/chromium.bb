@@ -13,16 +13,15 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/settings_window_manager_observer_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils_chromeos.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 namespace chrome {
@@ -101,11 +100,8 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
 
   auto* window = browser->window()->GetNativeWindow();
   window->SetProperty(kOverrideWindowIconResourceIdKey, IDR_SETTINGS_LOGO_192);
-  // For Mash, this is set by BrowserFrameMash.
-  if (!features::IsUsingWindowService()) {
-    window->SetProperty(aura::client::kAppType,
-                        static_cast<int>(ash::AppType::CHROME_APP));
-  }
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::CHROME_APP));
 
   for (SettingsWindowManagerObserver& observer : observers_)
     observer.OnNewSettingsWindow(browser);
@@ -117,13 +113,7 @@ void SettingsWindowManager::ShowOSSettings(Profile* profile) {
 
 void SettingsWindowManager::ShowOSSettings(Profile* profile,
                                            const std::string& sub_page) {
-  DCHECK(sub_page.empty() || chrome::IsOSSettingsSubPage(sub_page)) << sub_page;
-  std::string url =
-      base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-          ? kChromeUIOSSettingsURL
-          : kChromeUISettingsURL;
-  url += sub_page;
-  ShowChromePageForProfile(profile, GURL(url));
+  ShowChromePageForProfile(profile, chrome::GetOSSettingsUrl(sub_page));
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
@@ -148,9 +138,7 @@ bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
         web_app::GetAppIdForSystemWebApp(profile,
                                          web_app::SystemAppType::SETTINGS);
     return settings_app_id && browser->app_controller() &&
-           static_cast<extensions::HostedAppBrowserController*>(
-               browser->app_controller())
-                   ->GetAppId() == settings_app_id.value();
+           browser->app_controller()->GetAppId() == settings_app_id.value();
   } else {
     auto iter = settings_session_map_.find(profile);
     return iter != settings_session_map_.end() &&

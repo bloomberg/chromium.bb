@@ -36,6 +36,8 @@ namespace ash {
 
 namespace {
 
+constexpr int kBrowserAppIndexOnShelf = 0;
+
 // A test shelf item delegate that simulates an activated window when a shelf
 // item is selected.
 class TestShelfItemDelegate : public ShelfItemDelegate {
@@ -105,8 +107,9 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
         GetPrimaryShelf()->GetShelfViewForTesting());
     ShelfView* shelf_view = shelf_test_api.shelf_view();
     const views::ViewModel* view_model = shelf_view->view_model_for_test();
-    gfx::Point center =
-        view_model->view_at(2)->GetBoundsInScreen().CenterPoint();
+    gfx::Point center = view_model->view_at(kBrowserAppIndexOnShelf)
+                            ->GetBoundsInScreen()
+                            .CenterPoint();
 
     // Click on the shelf item.
     ui::test::EventGenerator* generator = GetEventGenerator();
@@ -394,7 +397,7 @@ TEST_F(AppListAppLaunchedMetricTest, ClosedLaunchFromShelf) {
 // Test that the histogram records an app launch from the shelf while the
 // homecher all apps state is showing.
 TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromShelf) {
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::HistogramTester histogram_tester;
 
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
@@ -413,7 +416,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromGrid) {
   base::HistogramTester histogram_tester;
 
   // Enable tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 
   PopulateAndLaunchAppInGrid();
@@ -431,7 +434,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherAllAppsLaunchFromChip) {
 
   GetAppListTestHelper()->WaitUntilIdle();
   // Enable tablet mode.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   GetAppListTestHelper()->CheckState(ash::AppListViewState::kFullscreenAllApps);
 
   PopulateAndLaunchSuggestionChip();
@@ -449,7 +452,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromShelf) {
 
   // Enable tablet mode.
   GetAppListTestHelper()->WaitUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Press a letter key, the AppListView should transition to kFullscreenSearch.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_H, 0);
@@ -471,7 +474,7 @@ TEST_F(AppListAppLaunchedMetricTest, HomecherSearchLaunchFromSearchBox) {
 
   // Enable tablet mode.
   GetAppListTestHelper()->WaitUntilIdle();
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Press a letter key, the AppListView should transition to kFullscreenSearch.
   GetEventGenerator()->PressKey(ui::KeyboardCode::VKEY_H, 0);

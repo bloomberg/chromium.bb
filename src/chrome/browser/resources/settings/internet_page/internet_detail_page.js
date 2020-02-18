@@ -10,11 +10,17 @@
 (function() {
 'use strict';
 
+const mojom = chromeos.networkConfig.mojom;
+
 Polymer({
   is: 'settings-internet-detail-page',
 
-  behaviors:
-      [CrPolicyNetworkBehavior, settings.RouteObserverBehavior, I18nBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    CrPolicyNetworkBehavior,
+    settings.RouteObserverBehavior,
+    I18nBehavior,
+  ],
 
   properties: {
     /** The network GUID to display details for. */
@@ -65,9 +71,9 @@ Polymer({
 
     /**
      * Whether the network has been lost (e.g., has gone out of range). A
-     * network is considered to be lost when a 'network-list-changed' event
-     * occurs, and the new network list does not contain the GUID of the current
-     * network.
+     * network is considered to be lost when a OnNetworkStateListChanged
+     * is signaled and the new network list does not contain the GUID of the
+     * current network.
      * @private
      */
     outOfRange_: {
@@ -77,7 +83,7 @@ Polymer({
 
     /**
      * Highest priority connected network or null.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {?OncMojo.NetworkStateProperties}
      */
     defaultNetwork: {
       type: Object,
@@ -178,11 +184,6 @@ Polymer({
     'autoConnectChanged_(autoConnect_.*)', 'alwaysOnVpnChanged_(alwaysOnVpn_.*)'
   ],
 
-  listeners: {
-    'network-list-changed': 'checkNetworkExists_',
-    'networks-changed': 'updateNetworkDetails_'
-  },
-
   /** @private {boolean} */
   didSetFocus_: false,
 
@@ -204,9 +205,20 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   */
+  networkConfigProxy_: null,
+
   /** @override */
   created: function() {
     this.browserProxy_ = settings.InternetPageBrowserProxyImpl.getInstance();
+    this.networkConfigProxy_ =
+        network_config.MojoInterfaceProviderImpl.getInstance()
+            .getMojoServiceProxy();
   },
 
   /**
@@ -276,7 +288,38 @@ Polymer({
     });
   },
 
-  /** @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy */
+  /**
+   * CrosNetworkConfigObserver impl
+   * @param {!Array<OncMojo.NetworkStateProperties>} networks
+   */
+  onActiveNetworksChanged: function(networks) {
+    if (!this.guid || !this.networkProperties_) {
+      return;
+    }
+    // If the network was or is active, request an update.
+    if (this.networkProperties_.ConnectionState !=
+            CrOnc.ConnectionState.NOT_CONNECTED ||
+        networks.find(network => network.guid == this.guid)) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onNetworkStateListChanged: function() {
+    this.checkNetworkExists_();
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    if (this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /**
+   * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
+   * @private
+   */
   globalPolicyChanged_: function(globalPolicy) {
     this.updateAutoConnectPref_(
         !!(this.autoConnect_ && this.autoConnect_.value), globalPolicy);
@@ -314,7 +357,7 @@ Polymer({
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
       const button = this.$$('#titleDiv .action-button:not([hidden])') ||
-          this.$$('#titleDiv paper-button:not([hidden])');
+          this.$$('#titleDiv cr-button:not([hidden])');
       if (button) {
         setTimeout(() => button.focus());
       }
@@ -384,24 +427,25 @@ Polymer({
     this.setNetworkProperties_(onc);
   },
 
-  /**
-   * @param {!CustomEvent<!Array<string>>} event
-   * @private
-   */
-  checkNetworkExists_: function(event) {
-    const networkIds = event.detail;
-    this.outOfRange_ = networkIds.indexOf(this.guid) == -1;
-  },
-
-  /**
-   * @param {!CustomEvent<!Array<string>>} event
-   * @private
-   */
-  updateNetworkDetails_: function(event) {
-    const networkIds = event.detail;
-    if (networkIds.indexOf(this.guid) != -1) {
-      this.getNetworkDetails_();
-    }
+  /** @private */
+  checkNetworkExists_: function() {
+    const filter = {
+      networkType: CrOnc.Type.ALL,
+      visible: true,
+      configured: false
+    };
+    this.networkingPrivate.getNetworks(filter, networks => {
+      if (networks.find(network => network.GUID == this.guid)) {
+        return;
+      }
+      this.outOfRange_ = true;
+      if (this.networkProperties_) {
+        // Set the connection state since we won't receive an update for a non
+        // existent network.
+        this.networkProperties_.ConnectionState =
+            CrOnc.ConnectionState.NOT_CONNECTED;
+      }
+    });
   },
 
   /**
@@ -411,8 +455,9 @@ Polymer({
   getNetworkDetails_: function() {
     assert(this.guid);
     if (this.isSecondaryUser_) {
-      this.networkingPrivate.getState(
-          this.guid, this.getStateCallback_.bind(this));
+      this.networkConfigProxy_.getNetworkState(this.guid).then(response => {
+        this.getStateCallback_(response.result);
+      });
     } else {
       this.networkingPrivate.getManagedProperties(
           this.guid, this.getPropertiesCallback_.bind(this));
@@ -444,7 +489,7 @@ Polymer({
     }
 
     if (!properties) {
-      console.error('No properties for: ' + this.guid);
+      // Edge case, may occur when disabling. Close this.
       this.close();
       return;
     }
@@ -461,26 +506,51 @@ Polymer({
   },
 
   /**
-   * networkingPrivate.getState callback.
-   * @param {CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {?OncMojo.NetworkStateProperties} networkState
    * @private
    */
-  getStateCallback_: function(state) {
-    if (!state) {
-      // If |state| is null, the network is no longer visible, close this.
-      console.error('Network no longer exists: ' + this.guid);
-      this.networkProperties_ = undefined;
+  getStateCallback_: function(networkState) {
+    if (!networkState) {
+      // Edge case, may occur when disabling. Close this.
       this.close();
       return;
     }
+    const type = /** @type {CrOnc.Type} */ (
+        OncMojo.getNetworkTypeString(networkState.type));
+
+    let connectionState;
+    switch (networkState.connectionState) {
+      case mojom.ConnectionStateType.kOnline:
+      case mojom.ConnectionStateType.kConnected:
+      case mojom.ConnectionStateType.kPortal:
+        connectionState = CrOnc.ConnectionState.CONNECTED;
+        break;
+      case mojom.ConnectionStateType.kConnecting:
+        connectionState = CrOnc.ConnectionState.CONNECTING;
+        break;
+      case mojom.ConnectionStateType.kNotConnected:
+        connectionState = CrOnc.ConnectionState.NOT_CONNECTED;
+        break;
+    }
+
     this.networkProperties_ = {
-      GUID: state.GUID,
-      Type: state.Type,
-      Connectable: state.Connectable,
-      ConnectionState: state.ConnectionState,
+      GUID: networkState.guid,
+      Name: {Active: networkState.name},
+      Type: type,
+      Connectable: networkState.connectable,
+      ConnectionState: connectionState,
     };
     this.networkPropertiesReceived_ = true;
     this.outOfRange_ = false;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {!OncMojo.NetworkStateProperties|undefined}
+   */
+  getNetworkState_: function(properties) {
+    return properties ? OncMojo.oncPropertiesToNetworkState(properties) :
+                        undefined;
   },
 
   /**
@@ -544,6 +614,22 @@ Polymer({
     return this.isCellular_(networkProperties) ?
         this.i18n('networkAutoConnectCellular') :
         this.i18n('networkAutoConnect');
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {string} The text to display with roaming details.
+   * @private
+   */
+  getRoamingDetails_: function(networkProperties) {
+    if (!networkProperties.Cellular.AllowRoaming) {
+      return this.i18n('networkAllowDataRoamingDisabled');
+    }
+
+    return networkProperties.Cellular.RoamingState ===
+            CrOnc.RoamingState.ROAMING ?
+        this.i18n('networkAllowDataRoamingEnabledRoaming') :
+        this.i18n('networkAllowDataRoamingEnabledHome');
   },
 
   /**
@@ -805,7 +891,7 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {?CrOnc.NetworkStateProperties} defaultNetwork
+   * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} networkPropertiesReceived
    * @param {boolean} outOfRange
    * @param {!chrome.networkingPrivate.GlobalPolicy} globalPolicy
@@ -850,8 +936,7 @@ Polymer({
   /** @private */
   updateAlwaysOnVpnPrefValue_: function() {
     this.alwaysOnVpn_.value = this.prefs.arc && this.prefs.arc.vpn &&
-        this.prefs.arc.vpn.always_on &&
-        this.prefs.arc.vpn.always_on.lockdown &&
+        this.prefs.arc.vpn.always_on && this.prefs.arc.vpn.always_on.lockdown &&
         this.prefs.arc.vpn.always_on.lockdown.value;
   },
 
@@ -868,9 +953,8 @@ Polymer({
     // Only mark VPN networks as enforced. This fake pref also controls the
     // policy indicator on the connect/disconnect buttons, so it shouldn't be
     // shown on non-VPN networks.
-    if (this.isVpn_(this.networkProperties_) &&
-        this.prefs.vpn_config_allowed &&
-        !this.prefs.vpn_config_allowed.value) {
+    if (this.isVpn_(this.networkProperties_) && this.prefs &&
+        this.prefs.vpn_config_allowed && !this.prefs.vpn_config_allowed.value) {
       fakeAlwaysOnVpnEnforcementPref.enforcement =
           chrome.settingsPrivate.Enforcement.ENFORCED;
       fakeAlwaysOnVpnEnforcementPref.controlledBy =
@@ -897,20 +981,33 @@ Polymer({
 
   /** @private */
   onConnectTap_: function() {
-    if (CrOnc.shouldShowTetherDialogBeforeConnection(this.networkProperties_)) {
+    // For Tether networks that have not connected to a host, show a dialog.
+    if (this.networkProperties_.Type == CrOnc.Type.TETHER &&
+        (!this.networkProperties_.Tether ||
+         !this.networkProperties_.Tether.HasConnectedToHost)) {
       this.showTetherDialog_();
       return;
     }
-    this.fire('network-connect', {networkProperties: this.networkProperties_});
+    this.fireNetworkConnect_(/*bypassDialog=*/ false);
   },
 
   /** @private */
   onTetherConnect_: function() {
     this.getTetherDialog_().close();
-    this.fire('network-connect', {
-      networkProperties: this.networkProperties_,
-      bypassConnectionDialog: true
-    });
+    this.fireNetworkConnect_(/*bypassDialog=*/ true);
+  },
+
+  /**
+   * @param {boolean} bypassDialog
+   * @private
+   */
+  fireNetworkConnect_: function(bypassDialog) {
+    assert(this.networkProperties_);
+    const networkState =
+        OncMojo.oncPropertiesToNetworkState(this.networkProperties_);
+    this.fire(
+        'network-connect',
+        {networkState: networkState, bypassConnectionDialog: bypassDialog});
   },
 
   /** @private */
@@ -939,7 +1036,11 @@ Polymer({
       return;
     }
 
-    this.fire('show-config', this.networkProperties_);
+    this.fire('show-config', {
+      guid: this.networkProperties_.GUID,
+      type: this.networkProperties_.Type,
+      name: CrOnc.getNetworkName(this.networkProperties_)
+    });
   },
 
   /** @private */
@@ -954,6 +1055,17 @@ Polymer({
   /** @private */
   showTetherDialog_: function() {
     this.getTetherDialog_().open();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showHiddenNetworkWarning_: function() {
+    return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
+        !!this.autoConnect_ && !!this.autoConnect_.value &&
+        !!this.networkProperties_ && !!this.networkProperties_.WiFi &&
+        !!CrOnc.getActiveValue(this.networkProperties_.WiFi.HiddenSSID);
   },
 
   /**
@@ -1254,8 +1366,8 @@ Polymer({
     const type = this.networkProperties_.Type;
     if (type == CrOnc.Type.CELLULAR && !!this.networkProperties_.Cellular) {
       fields.push(
-          'Cellular.ActivationState', 'Cellular.RoamingState',
-          'RestrictedConnectivity', 'Cellular.ServingOperator.Name');
+          'Cellular.ActivationState', 'RestrictedConnectivity',
+          'Cellular.ServingOperator.Name');
     } else if (type == CrOnc.Type.TETHER && !!this.networkProperties_.Tether) {
       fields.push(
           'Tether.BatteryPercentage', 'Tether.SignalStrength',
@@ -1509,6 +1621,11 @@ Polymer({
     // TODO(lgcheng@) Show correct IP address when we implement IP configuration
     // correctly.
     if (this.isArcVpn_(networkProperties)) {
+      return false;
+    }
+
+    // Cellular IP addresses are shown under the network details section.
+    if (this.isCellular_(networkProperties)) {
       return false;
     }
 

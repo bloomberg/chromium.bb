@@ -41,6 +41,9 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -119,6 +122,10 @@ const char kCPUTempFilePattern[] = "temp*_input";
 
 // The location where storage device statistics are read from.
 const char kStorageInfoPath[] = "/var/log/storage_info.txt";
+
+// Generic device name when reported from runtime_probe. Used to filter out
+// data for components.
+const char kGenericDeviceName[] = "generic";
 
 // How often the child's usage time is stored.
 static constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
@@ -413,6 +420,64 @@ std::vector<em::CPUTempInfo> InvokeCpuTempFetcher(
   return fetcher.Run();
 }
 
+// Utility method to complete information for a reported Crostini App.
+// Returns whether all required App information could be retrieved or not.
+bool AddCrostiniAppInfo(
+    const crostini::CrostiniRegistryService::Registration& registration,
+    em::CrostiniApp* const app) {
+  app->set_app_name(registration.Name());
+  const base::Time last_launch_time = registration.LastLaunchTime();
+  if (!last_launch_time.is_null()) {
+    app->set_last_launch_time_window_start_timestamp(
+        crostini::GetThreeDayWindowStart(last_launch_time).ToJavaTime());
+  }
+
+  if (registration.is_terminal_app()) {
+    app->set_app_type(em::CROSTINI_APP_TYPE_TERMINAL);
+    // We do not log package information if the App is the terminal:
+    return true;
+  }
+  app->set_app_type(em::CROSTINI_APP_TYPE_INTERACTIVE);
+
+  const std::string& package_id = registration.PackageId();
+  if (package_id.empty())
+    return true;
+
+  const std::vector<std::string> package_info = base::SplitString(
+      package_id, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  // The package identifier is in the form of a semicolon delimited string of
+  // the format: name;version;arch;data (see cicerone_service.proto)
+  if (package_info.size() != 4) {
+    LOG(ERROR) << "Package id has the wrong format: " << package_id;
+    return false;
+  }
+
+  app->set_package_name(package_info[0]);
+  app->set_package_version(package_info[1]);
+
+  return true;
+}
+
+// Utility method to add a list of installed Crostini Apps to Crostini status
+void AddCrostiniAppListForProfile(Profile* const profile,
+                                  em::CrostiniStatus* const crostini_status) {
+  crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+  const std::vector<std::string> registered_app_ids =
+      registry_service->GetRegisteredAppIds();
+  for (auto registered_app_id : registered_app_ids) {
+    crostini::CrostiniRegistryService::Registration registration =
+        *registry_service->GetRegistration(registered_app_id);
+    em::CrostiniApp* const app = crostini_status->add_installed_apps();
+    if (!AddCrostiniAppInfo(registration, app)) {
+      LOG(ERROR) << "Could not retrieve all required information for "
+                    "registered app_id: "
+                 << registered_app_id;
+    }
+  }
+}
+
 }  // namespace
 
 namespace policy {
@@ -577,6 +642,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       em::PowerStatus* const power_status =
           response_params_.device_status->mutable_power_status();
       for (const auto& battery : probe_result.value().battery()) {
+        if (battery.name() != kGenericDeviceName)
+          continue;
         em::BatteryInfo* const battery_info = power_status->add_batteries();
         battery_info->set_serial(battery.values().serial_number());
         battery_info->set_manufacturer(battery.values().manufacturer());
@@ -613,6 +680,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       em::StorageStatus* const storage_status =
           response_params_.device_status->mutable_storage_status();
       for (const auto& storage : probe_result.value().storage()) {
+        if (storage.name() != kGenericDeviceName)
+          continue;
         em::DiskInfo* const disk_info = storage_status->add_disks();
         disk_info->set_serial(base::NumberToString(storage.values().serial()));
         disk_info->set_manufacturer(
@@ -629,6 +698,8 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       // while logically it should be optional. Using iteration + value checks
       // just for future-proofing code.
       for (const auto& vpd_values : probe_result.value().vpd_cached()) {
+        if (vpd_values.name() != kGenericDeviceName)
+          continue;
         const std::string& sku_number = vpd_values.values().vpd_sku_number();
         if (!sku_number.empty())
           system_status->set_vpd_sku_number(sku_number);
@@ -1163,6 +1234,8 @@ void DeviceStatusCollector::SampleProbeData(
     return;
 
   for (const auto& battery : result.value().battery()) {
+    if (battery.name() != kGenericDeviceName)
+      continue;
     enterprise_management::BatterySample battery_sample;
     battery_sample.set_timestamp(sample->timestamp.ToJavaTime());
     // Convert uV to mV
@@ -1863,10 +1936,20 @@ bool DeviceStatusCollector::GetCrostiniUsage(
   const int64_t last_launch_time_window_start = profile->GetPrefs()->GetInt64(
       crostini::prefs::kCrostiniLastLaunchTimeWindowStart);
   const std::string& termina_version = profile->GetPrefs()->GetString(
-      crostini::prefs::kCrostiniLastLaunchVersion);
+      crostini::prefs::kCrostiniLastLaunchTerminaComponentVersion);
   crostini_status->set_last_launch_time_window_start_timestamp(
       last_launch_time_window_start);
   crostini_status->set_last_launch_vm_image_version(termina_version);
+
+  if (profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled) &&
+      base::FeatureList::IsEnabled(
+          features::kCrostiniAdditionalEnterpriseReporting)) {
+    const std::string& vm_kernel_version = profile->GetPrefs()->GetString(
+        crostini::prefs::kCrostiniLastLaunchTerminaKernelVersion);
+    crostini_status->set_last_launch_vm_kernel_version(vm_kernel_version);
+
+    AddCrostiniAppListForProfile(profile, crostini_status);
+  }
 
   return true;
 }

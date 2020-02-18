@@ -154,8 +154,10 @@ bool IsNodeIdIntAttribute(ax::mojom::IntAttribute attr) {
     case ax::mojom::IntAttribute::kTextUnderlineStyle:
     case ax::mojom::IntAttribute::kAriaColumnCount:
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
+    case ax::mojom::IntAttribute::kAriaCellColumnSpan:
     case ax::mojom::IntAttribute::kAriaRowCount:
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
+    case ax::mojom::IntAttribute::kAriaCellRowSpan:
     case ax::mojom::IntAttribute::kImageAnnotationStatus:
     case ax::mojom::IntAttribute::kDropeffect:
       return false;
@@ -311,7 +313,7 @@ bool AXNodeData::GetIntAttribute(ax::mojom::IntAttribute attribute,
                                  int* value) const {
   auto iter = FindInVectorOfPairs(attribute, int_attributes);
   if (iter != int_attributes.end()) {
-    *value = iter->second;
+    *value = int{iter->second};
     return true;
   }
 
@@ -947,11 +949,17 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::IntAttribute::kAriaCellColumnIndex:
         result += " aria_cell_column_index=" + value;
         break;
+      case ax::mojom::IntAttribute::kAriaCellColumnSpan:
+        result += " aria_cell_column_span=" + value;
+        break;
       case ax::mojom::IntAttribute::kAriaRowCount:
         result += " aria_row_count=" + value;
         break;
       case ax::mojom::IntAttribute::kAriaCellRowIndex:
         result += " aria_cell_row_index=" + value;
+        break;
+      case ax::mojom::IntAttribute::kAriaCellRowSpan:
+        result += " aria_cell_row_span=" + value;
         break;
       case ax::mojom::IntAttribute::kTableRowCount:
         result += " rows=" + value;
@@ -1202,12 +1210,6 @@ std::string AXNodeData::ToString() const {
           case ax::mojom::InvalidState::kTrue:
             result += " invalid_state=true";
             break;
-          case ax::mojom::InvalidState::kSpelling:
-            result += " invalid_state=spelling";
-            break;
-          case ax::mojom::InvalidState::kGrammar:
-            result += " invalid_state=grammar";
-            break;
           case ax::mojom::InvalidState::kOther:
             result += " invalid_state=other";
             break;
@@ -1419,6 +1421,9 @@ std::string AXNodeData::ToString() const {
         break;
       case ax::mojom::BoolAttribute::kGrabbed:
         result += " grabbed=" + value;
+        break;
+      case ax::mojom::BoolAttribute::kIsLineBreakingObject:
+        result += " is_line_breaking_object=" + value;
         break;
       case ax::mojom::BoolAttribute::kNone:
         break;

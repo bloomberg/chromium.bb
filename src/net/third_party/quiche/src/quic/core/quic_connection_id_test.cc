@@ -89,6 +89,70 @@ TEST_F(QuicConnectionIdTest, Hash) {
   EXPECT_NE(connection_id64_1.Hash(), connection_id64_2.Hash());
   EXPECT_NE(connection_id64_1.Hash(), connection_id64_3.Hash());
   EXPECT_NE(connection_id64_2.Hash(), connection_id64_3.Hash());
+
+  // Verify that any two all-zero connection IDs of different lengths never
+  // have the same hash.
+  if (sizeof(connection_id64_1.Hash()) < sizeof(uint64_t) &&
+      !GetQuicRestartFlag(quic_connection_id_use_siphash)) {
+    // The old hashing algorithm returns 0 for all-zero connection IDs on
+    // 32bit platforms.
+    return;
+  }
+  const char connection_id_bytes[kQuicMaxConnectionIdLength] = {};
+  for (uint8_t i = 0; i < kQuicMaxConnectionIdLength - 1; ++i) {
+    QuicConnectionId connection_id_i(connection_id_bytes, i);
+    for (uint8_t j = i + 1; j < kQuicMaxConnectionIdLength; ++j) {
+      QuicConnectionId connection_id_j(connection_id_bytes, j);
+      EXPECT_NE(connection_id_i.Hash(), connection_id_j.Hash());
+    }
+  }
+}
+
+TEST_F(QuicConnectionIdTest, AssignAndCopy) {
+  QuicConnectionId connection_id = test::TestConnectionId(1);
+  QuicConnectionId connection_id2 = test::TestConnectionId(2);
+  connection_id = connection_id2;
+  EXPECT_EQ(connection_id, test::TestConnectionId(2));
+  EXPECT_NE(connection_id, test::TestConnectionId(1));
+  connection_id = QuicConnectionId(test::TestConnectionId(1));
+  EXPECT_EQ(connection_id, test::TestConnectionId(1));
+  EXPECT_NE(connection_id, test::TestConnectionId(2));
+}
+
+TEST_F(QuicConnectionIdTest, ChangeLength) {
+  QuicConnectionId connection_id64_1 = test::TestConnectionId(1);
+  QuicConnectionId connection_id64_2 = test::TestConnectionId(2);
+  QuicConnectionId connection_id136_2 = test::TestConnectionId(2);
+  connection_id136_2.set_length(17);
+  memset(connection_id136_2.mutable_data() + 8, 0, 9);
+  char connection_id136_2_bytes[17] = {0, 0, 0, 0, 0, 0, 0, 2, 0,
+                                       0, 0, 0, 0, 0, 0, 0, 0};
+  QuicConnectionId connection_id136_2b(connection_id136_2_bytes,
+                                       sizeof(connection_id136_2_bytes));
+  EXPECT_EQ(connection_id136_2, connection_id136_2b);
+  QuicConnectionId connection_id = connection_id64_1;
+  connection_id.set_length(17);
+  EXPECT_NE(connection_id64_1, connection_id);
+  // Check resizing big to small.
+  connection_id.set_length(8);
+  EXPECT_EQ(connection_id64_1, connection_id);
+  // Check resizing small to big.
+  connection_id.set_length(17);
+  memset(connection_id.mutable_data(), 0, connection_id.length());
+  memcpy(connection_id.mutable_data(), connection_id64_2.data(),
+         connection_id64_2.length());
+  EXPECT_EQ(connection_id136_2, connection_id);
+  EXPECT_EQ(connection_id136_2b, connection_id);
+  QuicConnectionId connection_id120(connection_id136_2_bytes, 15);
+  connection_id.set_length(15);
+  EXPECT_EQ(connection_id120, connection_id);
+  // Check resizing big to big.
+  QuicConnectionId connection_id2 = connection_id120;
+  connection_id2.set_length(17);
+  connection_id2.mutable_data()[15] = 0;
+  connection_id2.mutable_data()[16] = 0;
+  EXPECT_EQ(connection_id136_2, connection_id2);
+  EXPECT_EQ(connection_id136_2b, connection_id2);
 }
 
 }  // namespace

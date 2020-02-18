@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/navigation_controller_impl.h"
-
 #include <stdint.h>
+
 #include <algorithm>
 #include <utility>
 #include <vector>
@@ -20,13 +19,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -51,6 +50,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -98,6 +98,24 @@ class NavigationControllerBrowserTest : public ContentBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kExposeInternalsForTesting);
+  }
+
+  // TODO(bokan): There's one test whose result depends on whether the
+  // FractionalScrollOffsets feature is enabled in Blink's
+  // RuntimeEnabledFeatures. Since there's just one, we can determine the
+  // status of the feature using script, rather than plumbing this state across
+  // the browser/renderer boundary. This can be removed once the feature is
+  // shipped to stable and the flag removed. https://crbug.com/414283.
+  bool IsFractionalScrollOffsetsEnabled() {
+    std::string script =
+        "internals.runtimeFlags.fractionalScrollOffsetsEnabled";
+    return EvalJs(shell(), script).ExtractBool();
   }
 };
 
@@ -1521,9 +1539,18 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadWithUrlAnchor) {
 
   double window_scroll_y = EvalJs(shell(), "window.scrollY").ExtractDouble();
 
+  // TODO(bokan): The floor hack below required when ZoomForDSFEnabled can go
+  // away once FractionalScrolLOffsets ships. The reason it's required is that,
+  // at certain device scale factors, the given CSS pixel scroll value may land
+  // between physical pixels. Without the feature Blink will truncate to the
+  // nearest physical pixel so the expectation must account for that. When the
+  // feature is enabled, Blink stores the fractional offset so the truncation
+  // is unnecessary. https://crbug.com/414283.
+  bool fractional_scroll_offsets_enabled = IsFractionalScrollOffsetsEnabled();
+
   // The 'center-element' y-position is 2000px. 2000px is an arbitrary value.
   double expected_window_scroll_y = 2000;
-  if (IsUseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled() && !fractional_scroll_offsets_enabled) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()
@@ -1556,8 +1583,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   double window_scroll_y = EvalJs(shell(), "window.scrollY").ExtractDouble();
 
+  // TODO(bokan): The floor hack below required when ZoomForDSFEnabled can go
+  // away once FractionalScrolLOffsets ships. The reason it's required is that,
+  // at certain device scale factors, the given CSS pixel scroll value may land
+  // between physical pixels. Without the feature Blink will truncate to the
+  // nearest physical pixel so the expectation must account for that. When the
+  // feature is enabled, Blink stores the fractional offset so the truncation
+  // is unnecessary. https://crbug.com/414283.
+  bool fractional_scroll_offsets_enabled = IsFractionalScrollOffsetsEnabled();
+
   double expected_window_scroll_y = 2100;
-  if (IsUseZoomForDSFEnabled()) {
+  if (IsUseZoomForDSFEnabled() && !fractional_scroll_offsets_enabled) {
     float device_scale_factor = shell()
                                     ->web_contents()
                                     ->GetRenderWidgetHostView()
@@ -1899,6 +1935,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
   EXPECT_EQ(main_origin, root_entry->committed_origin());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // Verify subframe entries.  The entry should now have one blank subframe
   // FrameNavigationEntry, but this does not count as committing a real load.
@@ -1907,6 +1944,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       entry->root_node()->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
 
   // 1a. A nested iframe with no URL should also create a subframe entry but not
@@ -1927,6 +1966,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->child_at(0)->has_committed_real_load());
 
   // 2. Create another iframe with an explicit about:blank URL.
@@ -1951,6 +1992,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
 
   // 3. A real same-site navigation in the nested iframe should be AUTO.
@@ -1978,6 +2021,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
   EXPECT_EQ(url::Origin::Create(frame_url), frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_FALSE(root->child_at(1)->has_committed_real_load());
@@ -2006,6 +2051,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
   EXPECT_EQ(url::Origin::Create(foo_url), frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
@@ -2036,6 +2083,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       entry2->root_node()->children[0]->children[0]->frame_entry.get();
   EXPECT_EQ(about_blank_url, frame_entry->url());
   EXPECT_EQ(main_origin, frame_entry->committed_origin());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(main_origin, frame_entry->initiator_origin().value());
   EXPECT_FALSE(root->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(0)->child_at(0)->has_committed_real_load());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
@@ -2375,6 +2424,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   FrameNavigationEntry* root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // The entry should now have a subframe FrameNavigationEntry.
@@ -2382,6 +2432,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   FrameNavigationEntry* frame_entry =
       entry->root_node()->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
   EXPECT_TRUE(root->child_at(0)->has_committed_real_load());
 
   // 2. Create a second, initially cross-site iframe.
@@ -2404,12 +2457,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
   EXPECT_FALSE(controller.GetPendingEntry());
 
   // The entry should now have 2 subframe FrameNavigationEntries.
   ASSERT_EQ(2U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[1]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
   EXPECT_TRUE(root->child_at(1)->has_committed_real_load());
 
   // 3. Create a nested iframe in the second subframe.
@@ -2430,12 +2487,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // The entry should now have 2 subframe FrameNavigationEntries.
   ASSERT_EQ(2U, entry->root_node()->children.size());
   ASSERT_EQ(1U, entry->root_node()->children[1]->children.size());
   frame_entry = entry->root_node()->children[1]->children[0]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(foo_url),
+            frame_entry->initiator_origin().value());
 
   // 4. Create a third iframe on the same site as the second.  This ensures that
   // the commit type is correct even when the subframe process already exists.
@@ -2456,11 +2517,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // The entry should now have 3 subframe FrameNavigationEntries.
   ASSERT_EQ(3U, entry->root_node()->children.size());
   frame_entry = entry->root_node()->children[2]->frame_entry.get();
   EXPECT_EQ(foo_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(main_url),
+            frame_entry->initiator_origin().value());
 
   // 5. Create a nested iframe on the original site (A-B-A).
   {
@@ -2481,11 +2546,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry->GetURL());
   root_entry = entry->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry->url());
+  EXPECT_FALSE(root_entry->initiator_origin().has_value());
 
   // There should be a corresponding FrameNavigationEntry.
   ASSERT_EQ(1U, entry->root_node()->children[2]->children.size());
   frame_entry = entry->root_node()->children[2]->children[0]->frame_entry.get();
   EXPECT_EQ(frame_url, frame_entry->url());
+  ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+  EXPECT_EQ(url::Origin::Create(foo_url),
+            frame_entry->initiator_origin().value());
 
   // Check the end result of the frame tree.
   if (AreAllSitesIsolatedForTesting()) {
@@ -2550,6 +2619,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(main_url, entry2->GetURL());
   FrameNavigationEntry* root_entry2 = entry2->root_node()->frame_entry.get();
   EXPECT_EQ(main_url, root_entry2->url());
+  EXPECT_FALSE(root_entry2->initiator_origin().has_value());
 
   // The entry should have a new FrameNavigationEntries for the subframe.
   ASSERT_EQ(1U, entry2->root_node()->children.size());
@@ -2882,6 +2952,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                 ->children[0]
                 ->frame_entry->committed_origin()
                 ->GetTupleOrPrecursorTupleIfOpaque());
+  ASSERT_TRUE(entry2->root_node()
+                  ->children[0]
+                  ->frame_entry->initiator_origin()
+                  .has_value());
+  EXPECT_EQ(url::Origin::Create(main_url_a),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->initiator_origin()
+                .value());
 
   // 3. Navigate the iframe cross-site to a page with a nested iframe.
   GURL frame_url_b(embedded_test_server()->GetURL(
@@ -3061,6 +3140,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                 ->children[0]
                 ->frame_entry->committed_origin()
                 ->GetTupleOrPrecursorTupleIfOpaque());
+  ASSERT_TRUE(entry2->root_node()
+                  ->children[0]
+                  ->frame_entry->initiator_origin()
+                  .has_value());
+  EXPECT_EQ(url::Origin::Create(main_url_a),
+            entry2->root_node()
+                ->children[0]
+                ->frame_entry->initiator_origin()
+                .value());
 
   // 9. Go back again, to the initial main frame page.
   {
@@ -3456,7 +3544,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // nested iframe.
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/inject_iframe_srcdoc_with_nested_frame.html"));
-  GURL srcdoc_url(content::kAboutSrcDocURL);
   GURL inner_url(
       embedded_test_server()->GetURL("/navigation_controller/form.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3471,7 +3558,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, root->child_at(0)->child_count());
   ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
   EXPECT_EQ(main_url, root->current_url());
-  EXPECT_EQ(srcdoc_url, root->child_at(0)->current_url());
+  EXPECT_TRUE(root->child_at(0)->current_url().IsAboutSrcdoc());
   EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
 
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -3480,7 +3567,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // The entry should have FrameNavigationEntries for the subframes.
   ASSERT_EQ(1U, entry->root_node()->children.size());
-  EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
+  EXPECT_TRUE(
+      entry->root_node()->children[0]->frame_entry->url().IsAboutSrcdoc());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
 
@@ -3508,7 +3596,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, root->child_at(0)->child_count());
   ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
   EXPECT_EQ(main_url, root->current_url());
-  EXPECT_EQ(srcdoc_url, root->child_at(0)->current_url());
+  EXPECT_TRUE(root->child_at(0)->current_url().IsAboutSrcdoc());
 
   // Verify that the inner iframe went to the correct URL.
   EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
@@ -3524,7 +3612,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, entry->root_node()->children.size());
 
   // The entry should have FrameNavigationEntries for the subframes.
-  EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
+  EXPECT_TRUE(
+      entry->root_node()->children[0]->frame_entry->url().IsAboutSrcdoc());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
 
@@ -4022,8 +4111,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());
@@ -4093,8 +4182,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   restored_entry->SetPageState(PageState::CreateFromURL(main_url));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
@@ -5041,8 +5130,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::unique_ptr<NavigationEntryImpl> restored_entry =
       NavigationEntryImpl::FromNavigationEntry(
           NavigationController::CreateNavigationEntry(
-              main_url_a, Referrer(), ui::PAGE_TRANSITION_RELOAD, false,
-              std::string(), controller.GetBrowserContext(),
+              main_url_a, Referrer(), base::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
   EXPECT_EQ(0U, restored_entry->root_node()->children.size());
   restored_entry->SetPageState(entry2->GetPageState());
@@ -5526,8 +5615,10 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   // TODO(lukasza): https://crbug.com/417518: Get tests working with
   // --site-per-process.
-  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+  if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites() ||
+      IsProactivelySwapBrowsingInstanceEnabled()) {
     return;
+  }
 
   GURL original_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -6622,10 +6713,19 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
 // https://crbug.com/860807.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   GURL main_url(embedded_test_server()->GetURL(
-      "/form_that_posts_to_echoall_nocache.html"));
+      "initial-page.example.com", "/form_that_posts_to_echoall_nocache.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   WebContents* web_contents = shell()->web_contents();
   EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Tweak the test page, so that it POSTs directly to the right cross-site URL
+  // (without going through the /cross-site-307/host.com handler, because it
+  // seems that such redirects do not preserve the Origin header).
+  GURL target_url(
+      embedded_test_server()->GetURL("another-site.com", "/echoall/nocache"));
+  ASSERT_TRUE(ExecJs(
+      web_contents,
+      JsReplace("document.getElementById('form').action = $1", target_url)));
 
   // Submit the form.
   TestNavigationObserver form_post_observer(web_contents, 1);
@@ -6634,7 +6734,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   form_post_observer.Wait();
 
   // Verify that we arrived at the expected location.
-  GURL target_url(embedded_test_server()->GetURL("/echoall/nocache"));
   EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
 
@@ -6658,12 +6757,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
   EXPECT_EQ("text=value\n", body);
 
   // Extract the response nonce.
-  std::string old_response_nonce;
-  std::string response_nonce_extraction_script = R"(
-      domAutomationController.send(
-          document.getElementById('response-nonce').innerText); )";
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, response_nonce_extraction_script, &old_response_nonce));
+  std::string old_response_nonce =
+      EvalJs(web_contents,
+             "document.getElementById('response-nonce').innerText")
+          .ExtractString();
+
+  // Verify that the Origin header correctly reflects the initial initiator.
+  EXPECT_THAT(EvalJs(web_contents,
+                     "document.getElementById('request-headers').innerText")
+                  .ExtractString(),
+              ::testing::HasSubstr("Origin: http://initial-page.example.com"));
 
   // Go back.
   {
@@ -6720,10 +6823,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
 
   // Extract the new response nonce and verify that it did change (e.g. that the
   // reload did load fresh content).
-  std::string new_response_nonce;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      web_contents, response_nonce_extraction_script, &new_response_nonce));
-  EXPECT_NE(new_response_nonce, old_response_nonce);
+  EXPECT_NE(old_response_nonce,
+            EvalJs(web_contents,
+                   "document.getElementById('response-nonce').innerText"));
+
+  // Verify that the Origin header correctly reflects the initial initiator.
+  // This is a regression test for https://crbug.com/915538.
+  EXPECT_THAT(EvalJs(web_contents,
+                     "document.getElementById('request-headers').innerText")
+                  .ExtractString(),
+              ::testing::HasSubstr("Origin: http://initial-page.example.com"));
 }
 
 // This test verifies that it is possible to reload a POST request that
@@ -7318,121 +7427,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // test will fail.
 }
 
-namespace {
-
-// Execute JavaScript without the user gesture flag set, and wait for the
-// triggered load finished.
-void ExecuteJavaScriptAndWaitForLoadStop(WebContents* web_contents,
-                                         const std::string script) {
-  // WaitForLoadStop() does not work to wait for loading that is triggered by
-  // JavaScript asynchronously.
-  TestNavigationObserver observer(web_contents);
-
-  // ExecJs() sets a user gesture flag internally for testing, but we
-  // want to run JavaScript without the flag.  Call ExecuteJavaScriptForTests
-  // directly.
-  static_cast<WebContentsImpl*>(web_contents)
-      ->GetMainFrame()
-      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script),
-                                  base::NullCallback());
-
-  observer.Wait();
-}
-
-}  // namespace
-
-// Check if consecutive reloads can be correctly captured by metrics.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       ConsecutiveReloadMetrics) {
-  base::HistogramTester histogram;
-
-  const char kReloadToReloadMetricName[] =
-      "Navigation.Reload.ReloadToReloadDuration";
-  const char kReloadMainResourceToReloadMetricName[] =
-      "Navigation.Reload.ReloadMainResourceToReloadDuration";
-
-  // Navigate to a page, and check if metrics are initialized correctly.
-  EXPECT_TRUE(NavigateToURL(
-      shell(), embedded_test_server()->GetURL(
-                   "/navigation_controller/page_with_links.html")));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 0);
-
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
-
-  // Reload triggers a reload of ReloadType::NORMAL.  The first reload should
-  // not be counted.
-  controller.Reload(ReloadType::NORMAL, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 0);
-
-  // Reload with ReloadType::BYPASSING_CACHE.  Both metrics should count the
-  // consecutive reloads.
-  controller.Reload(ReloadType::BYPASSING_CACHE, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 1);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
-
-  // Triggers another reload with ReloadType::BYPASSING_CACHE.
-  // ReloadMainResourceToReload should not be counted here.
-  controller.Reload(ReloadType::BYPASSING_CACHE, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
-
-  // A browser-initiated navigation should reset the reload tracking
-  // information.
-  EXPECT_TRUE(
-      NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                 "/navigation_controller/simple_page_1.html")));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
-
-  // Then, the next reload should be assumed as the first reload.  Metrics
-  // should not be changed for the first reload.
-  controller.Reload(ReloadType::NORMAL, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
-
-  // Another reload of ReloadType::NORMAL should be counted by both metrics
-  // again.
-  controller.Reload(ReloadType::NORMAL, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
-
-  // A renderer-initiated navigations with no user gesture don't reset reload
-  // tracking information, and the following reload will be counted by metrics.
-  ExecuteJavaScriptAndWaitForLoadStop(
-      shell()->web_contents(),
-      "history.pushState({}, 'page 1', 'simple_page_1.html')");
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
-  ExecuteJavaScriptAndWaitForLoadStop(shell()->web_contents(),
-                                      "location.href='simple_page_2.html'");
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
-
-  controller.Reload(ReloadType::NORMAL, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
-
-  // Go back to the first page. Reload tracking information should be reset.
-  shell()->web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
-
-  controller.Reload(ReloadType::NORMAL, false);
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
-  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
-}
-
 // Check that the referrer is stored inside FrameNavigationEntry for subframes.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        RefererStoredForSubFrame) {
@@ -7462,7 +7456,7 @@ namespace {
 
 class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
  public:
-  RequestMonitoringNavigationBrowserTest() : weak_factory_(this) {}
+  RequestMonitoringNavigationBrowserTest() {}
 
   const net::test_server::HttpRequest* FindAccumulatedRequest(
       const GURL& url_to_find) {
@@ -7511,7 +7505,8 @@ class RequestMonitoringNavigationBrowserTest : public ContentBrowserTest {
   }
 
   std::vector<net::test_server::HttpRequest> accumulated_requests_;
-  base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_;
+  base::WeakPtrFactory<RequestMonitoringNavigationBrowserTest> weak_factory_{
+      this};
 };
 
 // Helper for waiting until the main frame of |web_contents| has loaded
@@ -8913,9 +8908,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerHistoryInterventionBrowserTest,
   EXPECT_TRUE(controller.GetEntryAtIndex(3)->should_skip_on_back_forward_ui());
   EXPECT_FALSE(controller.GetEntryAtIndex(4)->should_skip_on_back_forward_ui());
 
-  // Simulate a user gesture.
-  root->UpdateUserActivationState(
-      blink::UserActivationUpdateType::kNotifyActivation);
+  // Simulate a user gesture. ExecuteScript internally also sends a user
+  // gesture.
+  script = "a=5";
+  EXPECT_TRUE(content::ExecuteScript(shell()->web_contents(), script));
 
   // We now have (After user gesture)
   // [skippable_url(skip), redirected_url, push_state_url1*, push_state_url2,
@@ -9837,6 +9833,119 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_THAT(GetProcessedMainDocumentSequenceNumbers(),
               ElementsAre(1, 1, 2, 1));
+}
+
+// When running OpenURL to an invalid URL on a frame proxy it should not spoof
+// the url by canceling a main frame navigation.
+// See https://crbug.com/966914.
+// Failing on Linux CFI. http://crbug.com/974319
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#else
+#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
+  CrossProcessIframeToInvalidURLCancelsRedirectSpoof
+#endif
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+  const GURL main_frame_url(embedded_test_server()->GetURL(
+      "a.com",
+      "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts,sandbox-allow-"
+      "top-navigation}())"));
+  const GURL main_frame_url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  // Load the initial page, containing a fully scriptable cross-site iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+
+  // Setup the message trigger on the main frame and the handler on the iframe.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  std::string script =
+      "var messageUnloadEventSent = false;"
+      "window.addEventListener('beforeunload', function "
+      "   onBeforeUnload(event) {"
+      "       if(messageUnloadEventSent) {"
+      "         return;"
+      "       }"
+      "       messageUnloadEventSent = true;"
+      "       var iframe = document.getElementById('child-0');"
+      "       iframe.contentWindow.postMessage('', '*');"
+      "   }"
+      ");";
+  EXPECT_TRUE(ExecJs(root, script));
+
+  script =
+      "window.addEventListener('message', function (event) {"
+      "  parent.location.href = 'chrome-guest://1234';"
+      "});";
+  EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+  // This navigation will be raced by a navigation started in the iframe.
+  // It should still be prevalent compared to a non user-initiated render frame
+  // navigation.
+  // TODO(ahemery): EXPECT_TRUE when https://crbug.com/973415 is fixed.
+  // The navigation started in the iframe sometimes has_user_gesture set to
+  // true. It should not be the case and is being investigated in the above bug.
+  // Here we simply care that no spoof happens, which is verified below anyway.
+  ignore_result(NavigateToURL(shell(), main_frame_url_2));
+
+  // Check that no spoof happened.
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(controller.GetVisibleEntry()->GetVirtualURL(),
+            shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Tests a renderer aborting the navigation it started, while still waiting on a
+// long cross-process subframe beforeunload handler.
+// Regression test: https://crbug.com/972154
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    NavigationAbortDuringLongCrossProcessIframeBeforeUnload) {
+  // This test relies on the main frame and the iframe to live in different
+  // processes. This allows one renderer process to cancel a navigation while
+  // the other renderer process is busy executing its beforeunload handler.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  const GURL navigated_url(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Have a first page with a cross process iframe.
+  // The iframe itself does have a dialog-showing beforeunload handler.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  std::string script =
+      "window.addEventListener('beforeunload', function (event) {"
+      "  event.returnValue='blocked'"
+      "});";
+  EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+  TestNavigationObserver load_observer(web_contents);
+  NavigationHandleObserver abort_observer(web_contents, navigated_url);
+  BeforeUnloadBlockingDelegate beforeunload_pauser(web_contents);
+
+  // Navigate to any page, renderer initiated.
+  EXPECT_TRUE(ExecJs(shell(), "location.href = 'title1.html'"));
+
+  // The previous navigation is paused while the beforeunloadhandler dialog is
+  // shown to the user. In the meantime, the navigation is aborted:
+  beforeunload_pauser.Wait();
+  EXPECT_TRUE(ExecJs(shell(), "document.write()"));  // Cancel the navigation.
+
+  // Wait for javascript to get processed, and its consequences (aborting the
+  // navigation) to finish. To achieve that we simply wait for DidStopLoading.
+  load_observer.Wait();
+
+  // Verify that the navigation was aborted as expected.
+  EXPECT_FALSE(abort_observer.has_committed());
 }
 
 }  // namespace content

@@ -123,7 +123,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
                                             &delegate_,
                                             kTrafficAnnotation)),
         connect_delegate_(std::move(connect_delegate)),
-        perform_upgrade_has_been_called_(false),
         api_delegate_(std::move(api_delegate)) {
     HttpRequestHeaders headers = additional_headers;
     headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
@@ -189,17 +188,11 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
 
   void PerformUpgrade() {
     DCHECK(timer_);
-    CHECK(!perform_upgrade_has_been_called_);
-    // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
-    CHECK(connect_delegate_);
-
-    perform_upgrade_has_been_called_ = true;
+    DCHECK(connect_delegate_);
 
     timer_->Stop();
 
     if (!handshake_stream_) {
-      // TODO(https://crbug.com/850183):
-      // Find out why this can happen and make it stop.
       ReportFailureWithMessage(
           "No handshake stream has been created "
           "or handshake stream is already destroyed.");
@@ -209,9 +202,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
     WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_.get();
     handshake_stream_.reset();
-    // TODO(bnc): Combine into one line after https://crbug.com/850183 is fixed.
-    std::unique_ptr<WebSocketStream> stream = handshake_stream->Upgrade();
-    connect_delegate_->OnSuccess(std::move(stream));
+    connect_delegate_->OnSuccess(handshake_stream->Upgrade());
 
     // This is safe even if |this| has already been deleted.
     url_request->CancelWithError(ERR_WS_UPGRADE);
@@ -275,8 +266,7 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
  private:
   void OnHandshakeStreamCreated(
       WebSocketHandshakeStreamBase* handshake_stream) {
-    // TODO(bnc): Change to DCHECK after https://crbug.com/850183 is fixed.
-    CHECK(handshake_stream);
+    DCHECK(handshake_stream);
 
     handshake_stream_ = handshake_stream->GetWeakPtr();
   }
@@ -298,9 +288,6 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequestAPI {
   // handshake. This is only guaranteed to be a valid pointer if the handshake
   // succeeded.
   base::WeakPtr<WebSocketHandshakeStreamBase> handshake_stream_;
-
-  // TODO(bnc): Remove after https://crbug.com/850183 is fixed.
-  bool perform_upgrade_has_been_called_;
 
   // The failure message supplied by WebSocketBasicHandshakeStream, if any.
   std::string failure_message_;

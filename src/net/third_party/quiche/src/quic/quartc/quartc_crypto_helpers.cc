@@ -4,16 +4,14 @@
 
 #include "net/third_party/quiche/src/quic/quartc/quartc_crypto_helpers.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/core/tls_server_handshaker.h"
 
 namespace quic {
 
 void DummyProofSource::GetProof(const QuicSocketAddress& server_address,
                                 const std::string& hostname,
-                                const std::string& server_config,
-                                QuicTransportVersion transport_version,
-                                QuicStringPiece chlo_hash,
+                                const std::string& /*server_config*/,
+                                QuicTransportVersion /*transport_version*/,
+                                QuicStringPiece /*chlo_hash*/,
                                 std::unique_ptr<Callback> callback) {
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
       GetCertChain(server_address, hostname);
@@ -24,8 +22,8 @@ void DummyProofSource::GetProof(const QuicSocketAddress& server_address,
 }
 
 QuicReferenceCountedPointer<DummyProofSource::Chain>
-DummyProofSource::GetCertChain(const QuicSocketAddress& server_address,
-                               const std::string& hostname) {
+DummyProofSource::GetCertChain(const QuicSocketAddress& /*server_address*/,
+                               const std::string& /*hostname*/) {
   std::vector<std::string> certs;
   certs.push_back(kDummyCertName);
   return QuicReferenceCountedPointer<ProofSource::Chain>(
@@ -33,39 +31,39 @@ DummyProofSource::GetCertChain(const QuicSocketAddress& server_address,
 }
 
 void DummyProofSource::ComputeTlsSignature(
-    const QuicSocketAddress& server_address,
-    const std::string& hostname,
-    uint16_t signature_algorithm,
-    QuicStringPiece in,
+    const QuicSocketAddress& /*server_address*/,
+    const std::string& /*hostname*/,
+    uint16_t /*signature_algorithm*/,
+    QuicStringPiece /*in*/,
     std::unique_ptr<SignatureCallback> callback) {
   callback->Run(true, "Dummy signature");
 }
 
 QuicAsyncStatus InsecureProofVerifier::VerifyProof(
-    const std::string& hostname,
-    const uint16_t port,
-    const std::string& server_config,
-    QuicTransportVersion transport_version,
-    QuicStringPiece chlo_hash,
-    const std::vector<std::string>& certs,
-    const std::string& cert_sct,
-    const std::string& signature,
-    const ProofVerifyContext* context,
-    std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* verify_details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    const std::string& /*hostname*/,
+    const uint16_t /*port*/,
+    const std::string& /*server_config*/,
+    QuicTransportVersion /*transport_version*/,
+    QuicStringPiece /*chlo_hash*/,
+    const std::vector<std::string>& /*certs*/,
+    const std::string& /*cert_sct*/,
+    const std::string& /*signature*/,
+    const ProofVerifyContext* /*context*/,
+    std::string* /*error_details*/,
+    std::unique_ptr<ProofVerifyDetails>* /*verify_details*/,
+    std::unique_ptr<ProofVerifierCallback> /*callback*/) {
   return QUIC_SUCCESS;
 }
 
 QuicAsyncStatus InsecureProofVerifier::VerifyCertChain(
-    const std::string& hostname,
-    const std::vector<std::string>& certs,
-    const std::string& ocsp_response,
-    const std::string& cert_sct,
-    const ProofVerifyContext* context,
-    std::string* error_details,
-    std::unique_ptr<ProofVerifyDetails>* details,
-    std::unique_ptr<ProofVerifierCallback> callback) {
+    const std::string& /*hostname*/,
+    const std::vector<std::string>& /*certs*/,
+    const std::string& /*ocsp_response*/,
+    const std::string& /*cert_sct*/,
+    const ProofVerifyContext* /*context*/,
+    std::string* /*error_details*/,
+    std::unique_ptr<ProofVerifyDetails>* /*details*/,
+    std::unique_ptr<ProofVerifierCallback> /*callback*/) {
   return QUIC_SUCCESS;
 }
 
@@ -75,28 +73,26 @@ InsecureProofVerifier::CreateDefaultContext() {
 }
 
 QuicConnectionId QuartcCryptoServerStreamHelper::GenerateConnectionIdForReject(
-    QuicTransportVersion version,
-    QuicConnectionId connection_id) const {
+    QuicTransportVersion /*version*/,
+    QuicConnectionId /*connection_id*/) const {
   // TODO(b/124399417):  Request a zero-length connection id here when the QUIC
-  // server perspective supports it.  Right now, the stateless rejector requires
-  // a connection id that is not the same as the client-chosen connection id.
+  // server perspective supports it.
   return QuicUtils::CreateRandomConnectionId();
 }
 
 bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
-    const CryptoHandshakeMessage& message,
-    const QuicSocketAddress& client_address,
-    const QuicSocketAddress& peer_address,
-    const QuicSocketAddress& self_address,
-    std::string* error_details) const {
+    const CryptoHandshakeMessage& /*message*/,
+    const QuicSocketAddress& /*client_address*/,
+    const QuicSocketAddress& /*peer_address*/,
+    const QuicSocketAddress& /*self_address*/,
+    std::string* /*error_details*/) const {
   return true;
 }
 
 std::unique_ptr<QuicCryptoClientConfig> CreateCryptoClientConfig(
     QuicStringPiece pre_shared_key) {
   auto config = QuicMakeUnique<QuicCryptoClientConfig>(
-      QuicMakeUnique<InsecureProofVerifier>(),
-      TlsClientHandshaker::CreateSslCtx());
+      QuicMakeUnique<InsecureProofVerifier>());
   config->set_pad_inchoate_hello(false);
   config->set_pad_full_hello(false);
   if (!pre_shared_key.empty()) {
@@ -117,8 +113,7 @@ CryptoServerConfig CreateCryptoServerConfig(QuicRandom* random,
   random->RandBytes(source_address_token_secret, kInputKeyingMaterialLength);
   auto config = QuicMakeUnique<QuicCryptoServerConfig>(
       std::string(source_address_token_secret, kInputKeyingMaterialLength),
-      random, QuicMakeUnique<DummyProofSource>(), KeyExchangeSource::Default(),
-      TlsServerHandshaker::CreateSslCtx());
+      random, QuicMakeUnique<DummyProofSource>(), KeyExchangeSource::Default());
 
   // We run QUIC over ICE, and ICE is verifying remote side with STUN pings.
   // We disable source address token validation in order to allow for 0-rtt

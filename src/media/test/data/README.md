@@ -819,11 +819,35 @@ ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 
 ### WebP Test Files
 
+#### BlackAndWhite_criss-cross_pattern_2015x2015.webp
+A lossy WebP encoded image of 2015x2015. Created by gildekel@ using Gimp.
+
 #### bouncy_ball.webp
-An animated (extended) WebP encoded image of 450x450. Created by gildekel@ using Gimp.
+An animated (extended) WebP encoded image of 450x450. Created by gildekel@
+using Gimp.
 
 #### red_green_gradient_lossy.webp
 A lossy WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
+
+#### RGB_noise_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 that contains RGB noise. Created by
+gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_115x115.webp
+A lossy WebP encoded image of 115x115 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_4000x4000.webp
+A lossy WebP encoded image of 4000x4000 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### solid_green_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 of solid bright green. Created by
+gildekel@ using Gimp.
 
 #### yellow_pink_gradient_lossless.webp
 A lossless WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
@@ -925,6 +949,25 @@ HEVC video stream in fragmented MP4 container, generated with
 ```
 ffmpeg -i bear-320x240.webm -c:v libx265 -an -movflags faststart+frag_keyframe bear-320x240-v_frag-hevc.mp4
 ```
+
+#### bear-320x240-v-2frames_frag-hevc.mp4
+HEVC video stream in fragmented MP4 container, including the first 2 frames, generated with
+```
+ffmpeg -i bear-320x240.webm -c:v libx265 -an -movflags frag_keyframe+empty_moov+default_base_moof \
+    -vframes 2  bear-320x240-v-2frames_frag-hevc.mp4
+```
+
+#### bear-320x240-v-2frames-keyframe-is-non-sync-sample_frag-hevc.mp4
+This is bear-320x240-v-2frames_frag-hevc.mp4, with manually updated
+trun.first_sample_flags: s/0x02000000/0x01010000 (first frame is
+non-sync-sample, depends on another frame, mismatches compressed h265 first
+frame's keyframe-ness).
+
+#### bear-320x240-v-2frames-nonkeyframe-is-sync-sample_frag-hevc.mp4
+This is bear-320x240-v-2frames_frag-hevc.mp4, with manually updated
+tfhd.default_sample_flags: s/0x01010000/0x02000000 (second frame is sync-sample,
+doesn't depend on other frames, mismatches compressed h265 second frame's
+nonkeyframe-ness).
 
 ### Multi-track MP4 file
 

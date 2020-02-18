@@ -26,8 +26,6 @@ jumbo_source_set("renderer") {
     "api_definitions_natives.h",
     "app_window_custom_bindings.cc",
     "app_window_custom_bindings.h",
-    "async_scripts_run_info.cc",
-    "async_scripts_run_info.h",
     "binding_generating_native_handler.cc",
     "binding_generating_native_handler.h",
     "bindings/api_binding.cc",
@@ -72,6 +70,7 @@ jumbo_source_set("renderer") {
     "bindings/event_emitter.h",
     "bindings/exception_handler.cc",
     "bindings/exception_handler.h",
+    "bindings/interaction_provider.h",
     "bindings/js_runner.cc",
     "bindings/js_runner.h",
     "bindings/listener_tracker.cc",
@@ -104,6 +103,8 @@ jumbo_source_set("renderer") {
     "extension_frame_helper.h",
     "extension_injection_host.cc",
     "extension_injection_host.h",
+    "extension_interaction_provider.cc",
+    "extension_interaction_provider.h",
     "extension_js_runner.cc",
     "extension_js_runner.h",
     "extension_throttle_entry.cc",
@@ -252,15 +253,23 @@ jumbo_source_set("renderer") {
 
   deps = [
     "//chrome:resources",
+    "//components/crx_file",
+    "//components/guest_view/common",
     "//components/guest_view/renderer",
+    "//components/version_info",
     "//content:resources",
+    "//content/app/strings:strings",
+    "//content/public/renderer",
     "//extensions:extensions_resources",
     "//extensions/common",
     "//extensions/common/api",
     "//gin",
+    "//mojo/public/js:resources",
     "//skia",
+    "//storage/common",
     "//third_party/blink/public:blink",
     "//third_party/cld_3/src/src:cld_3",
+    "//third_party/zlib/google:compression_utils",
   ]
 
   if (proprietary_codecs && enable_wifi_display) {
@@ -309,6 +318,8 @@ jumbo_static_library("unit_test_support") {
     "bindings/api_binding_test.h",
     "bindings/api_binding_test_util.cc",
     "bindings/api_binding_test_util.h",
+    "bindings/test_interaction_provider.cc",
+    "bindings/test_interaction_provider.h",
     "bindings/test_js_runner.cc",
     "bindings/test_js_runner.h",
     "native_extension_bindings_system_test_base.cc",
@@ -324,8 +335,9 @@ jumbo_static_library("unit_test_support") {
   deps = [
     ":renderer",
     "//base",
+    "//base/test:test_support",
     "//components/crx_file",
-    "//content/public/child",
+    "//content/public/renderer",
     "//content/test:test_support",
     "//extensions:test_support",
     "//extensions/common",
@@ -333,6 +345,7 @@ jumbo_static_library("unit_test_support") {
     "//gin:gin_test",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/zlib/google:compression_utils",
   ]
 }
 
@@ -392,7 +405,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/crx_file:crx_file",
-    "//content/public/child",
     "//content/test:test_support",
     "//extensions:extensions_renderer_resources",
     "//extensions:test_support",

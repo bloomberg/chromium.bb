@@ -11,10 +11,10 @@
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/split_view.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -43,8 +43,8 @@ class SplitViewOverviewSessionTest;
 // TODO(xdai): Make it work for multi-display non mirror environment.
 class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                        public aura::WindowObserver,
-                                       public ash::wm::WindowStateObserver,
-                                       public ::wm::ActivationChangeObserver,
+                                       public WindowStateObserver,
+                                       public wm::ActivationChangeObserver,
                                        public ShellObserver,
                                        public OverviewObserver,
                                        public display::DisplayObserver,
@@ -59,18 +59,20 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // top of the screen.
   enum SnapPosition { NONE, LEFT, RIGHT };
 
-  // Why splitview was ended. For now, all reasons will be kNormal except when
-  // the home launcher button is pressed, an unsnappable window just got
-  // activated, the active user session changed, or the window dragging
-  // started.
+  // Why splitview was ended.
   enum class EndReason {
     kNormal = 0,
     kHomeLauncherPressed,
     kUnsnappableWindowActivated,
     kActiveUserChanged,
     kWindowDragStarted,
-    // TODO(950827): Consider not ending Split-View on PIP expand.
+    // TODO(edcourtney): Consider not ending Split-View on PIP expand.
+    // See crbug.com/950827.
     kPipExpanded,
+    kExitTabletMode,
+    // Splitview is being ended due to a change in Virtual Desks, such as
+    // switching desks or removing a desk.
+    kDesksChange,
   };
 
   // The behaviors of split view are very different when in tablet mode and in
@@ -137,19 +139,26 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // Gets the default value of |divider_position_|.
   int GetDefaultDividerPosition(aura::Window* window) const;
 
+  // Returns true during the divider snap animation.
+  bool IsDividerAnimating();
+
   void StartResize(const gfx::Point& location_in_screen);
   void Resize(const gfx::Point& location_in_screen);
   void EndResize(const gfx::Point& location_in_screen);
-
-  // Displays a toast notifying users the application selected for split view is
-  // not compatible.
-  void ShowAppCannotSnapToast();
 
   // Ends the split view mode.
   void EndSplitView(EndReason end_reason = EndReason::kNormal);
 
   // Returns true if |window| is a snapped window in splitview.
   bool IsWindowInSplitView(const aura::Window* window) const;
+
+  // This function is only supposed to be called during clamshell <-> tablet
+  // transition or multi-user transition, when we need to carry over one/two
+  // snapped windows into splitview, we calculate the divider position based on
+  // the one or two to-be-snapped windows' bounds so that we can keep the
+  // snapped windows' bounds after transition (instead of putting them always
+  // on the middle split position).
+  void InitDividerPositionForTransition(int divider_position);
 
   // Called when a window (either it's browser window or an app window) start/
   // end being dragged.
@@ -175,8 +184,8 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                const void* key,
                                intptr_t old) override;
 
-  // ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
                                    ash::WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
@@ -196,6 +205,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                uint32_t metrics) override;
 
   // TabletModeObserver:
+  void OnTabletModeStarting() override;
   void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
   void OnTabletControllerDestroyed() override;
@@ -264,9 +274,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
 
   // Returns the closest fix location for |divider_position_|.
   int GetClosestFixedDividerPosition();
-
-  // Returns true during the divider snap animation.
-  bool IsDividerAnimating();
 
   // While the divider is animating to somewhere, stop it and shove it there.
   void StopAndShoveAnimatedDivider();
@@ -364,10 +371,6 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   // Inserts |window| into overview window grid if overview mode is active. Do
   // nothing if overview mode is inactive at the moment.
   void InsertWindowToOverview(aura::Window* window, bool animate = true);
-
-  // Starts/Ends overview mode if the overview mode is inactive/active.
-  void StartOverview(bool window_drag = false);
-  void EndOverview();
 
   // Finalizes and cleans up after stopping dragging the divider bar to resize
   // snapped windows.

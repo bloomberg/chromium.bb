@@ -699,8 +699,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
-  LayoutRect ScrollRectToVisibleRecursive(const LayoutRect&,
-                                          const WebScrollIntoViewParams&);
+  PhysicalRect ScrollRectToVisibleRecursive(const PhysicalRect&,
+                                            const WebScrollIntoViewParams&);
 
   LayoutRectOutsets MarginBoxOutsets() const { return margin_box_outsets_; }
   LayoutUnit MarginTop() const override { return margin_box_outsets_.Top(); }
@@ -768,12 +768,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   bool HitTestAllPhases(HitTestResult&,
-                        const HitTestLocation& location_in_container,
-                        const LayoutPoint& accumulated_offset,
+                        const HitTestLocation&,
+                        const PhysicalOffset& accumulated_offset,
                         HitTestFilter = kHitTestAll) final;
   bool NodeAtPoint(HitTestResult&,
-                   const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const HitTestLocation&,
+                   const PhysicalOffset& accumulated_offset,
                    HitTestAction) override;
 
   LayoutUnit MinPreferredLogicalWidth() const override;
@@ -1134,7 +1134,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
-  virtual void Autoscroll(const LayoutPoint&);
+  virtual void Autoscroll(const PhysicalOffset&);
   bool CanAutoscroll() const;
   PhysicalOffset CalculateAutoscrollDirection(
       const FloatPoint& point_in_root_frame) const;
@@ -1232,7 +1232,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void LogicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logical_top,
                                               LogicalExtentComputedValues&);
 
-  PositionWithAffinity PositionForPoint(const LayoutPoint&) const override;
+  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 
   void RemoveFloatingOrPositionedChildFromBlockLists();
 
@@ -1305,11 +1305,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
 
-  // TODO(wangxianzhu): This should be also type-safe. Will do when converting
-  // hit testing geometry to use physical geometry types.
-  LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
-                                         const LayoutPoint&) const;
-
   WARN_UNUSED_RESULT LayoutUnit
   FlipForWritingMode(LayoutUnit position,
                      LayoutUnit width = LayoutUnit()) const {
@@ -1336,7 +1331,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Passing |flipped_blocks_container| causes flipped-block flipping w.r.t.
   // that container, or LocationContainer() otherwise.
   PhysicalOffset PhysicalLocation(
-      const LayoutBox* flipped_blocks_container = nullptr) const;
+      const LayoutBox* flipped_blocks_container = nullptr) const {
+    return PhysicalLocationInternal(flipped_blocks_container
+                                        ? flipped_blocks_container
+                                        : LocationContainer());
+  }
 
   // Convert a local rect in this box's blocks direction into parent's blocks
   // direction, for parent to accumulate layout or visual overflow.
@@ -1374,7 +1373,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // See README.md for an explanation of scroll origin.
   IntSize OriginAdjustmentForScrollbars() const;
   IntPoint ScrollOrigin() const;
-  IntSize ScrolledContentOffset() const;
+  LayoutSize ScrolledContentOffset() const;
 
   // Maps from scrolling contents space to box space and apply overflow
   // clip if needed. Returns true if no clipping applied or the flattened quad
@@ -1465,8 +1464,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void AddCustomLayoutChildIfNeeded();
   void ClearCustomLayoutChild();
 
-  bool HitTestClippedOutByBorder(const HitTestLocation& location_in_container,
-                                 const LayoutPoint& border_box_location) const;
+  bool HitTestClippedOutByBorder(
+      const HitTestLocation&,
+      const PhysicalOffset& border_box_location) const;
 
   // Returns true if the box intersects the viewport visible to the user.
   bool IntersectsVisibleViewport() const;
@@ -1614,12 +1614,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual bool HitTestOverflowControl(HitTestResult&,
                                       const HitTestLocation&,
-                                      const LayoutPoint&) {
+                                      const PhysicalOffset&) {
     return false;
   }
   virtual bool HitTestChildren(HitTestResult&,
-                               const HitTestLocation& location_in_container,
-                               const LayoutPoint& accumulated_offset,
+                               const HitTestLocation&,
+                               const PhysicalOffset& accumulated_offset,
                                HitTestAction);
 
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
@@ -1780,6 +1780,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBox* box_for_flipping) const final {
     DCHECK(!box_for_flipping || box_for_flipping == this);
     return FlipForWritingMode(position, width);
+  }
+
+  PhysicalOffset PhysicalLocationInternal(
+      const LayoutBox* container_box) const {
+    DCHECK_EQ(container_box, LocationContainer());
+    if (LIKELY(!container_box || !container_box->HasFlippedBlocksWritingMode()))
+      return PhysicalOffset(Location());
+
+    return PhysicalOffset(
+        container_box->Size().Width() - Size().Width() - Location().X(),
+        Location().Y());
   }
 
   // The CSS border box rect for this box.

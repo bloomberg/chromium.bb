@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/task/single_thread_task_executor.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/cpp/service_executable/service_main.h"
@@ -60,6 +60,6 @@ class Embedder : public service_manager::Service {
 }  // namespace
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
-  base::MessageLoop message_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   Embedder(std::move(request)).RunUntilTermination();
 }

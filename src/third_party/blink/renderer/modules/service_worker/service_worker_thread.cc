@@ -38,9 +38,9 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_proxy.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
-#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ void ServiceWorkerThread::RunInstalledClassicScript(
 void ServiceWorkerThread::RunInstalledModuleScript(
     const KURL& module_url_record,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
       CrossThreadBindOnce(
@@ -110,7 +110,7 @@ void ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread(
     const KURL& module_url_record,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
-    network::mojom::FetchCredentialsMode credentials_mode) {
+    network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsCurrentThread());
   To<ServiceWorkerGlobalScope>(GlobalScope())
       ->RunInstalledModuleScript(

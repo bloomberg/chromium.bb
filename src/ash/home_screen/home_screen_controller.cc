@@ -36,8 +36,8 @@ bool MinimizeAllWindows() {
   aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
-    if (!container->Contains(*it) && !wm::GetWindowState(*it)->IsMinimized()) {
-      wm::GetWindowState(*it)->Minimize();
+    if (!container->Contains(*it) && !WindowState::Get(*it)->IsMinimized()) {
+      WindowState::Get(*it)->Minimize();
       handled = true;
     }
   }
@@ -59,9 +59,7 @@ HomeScreenController::~HomeScreenController() {
 }
 
 bool HomeScreenController::IsHomeScreenAvailable() {
-  return Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 void HomeScreenController::Show() {
@@ -88,8 +86,8 @@ bool HomeScreenController::GoHome(int64_t display_id) {
 
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
     // End overview mode.
-    Shell::Get()->overview_controller()->ToggleOverview(
-        OverviewSession::EnterExitOverviewType::kWindowsMinimized);
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewSession::EnterExitOverviewType::kSlideOutExit);
     return true;
   }
 
@@ -126,7 +124,7 @@ void HomeScreenController::OnOverviewModeStarting() {
                      ->overview_controller()
                      ->overview_session()
                      ->enter_exit_overview_type() ==
-                 OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+                 OverviewSession::EnterExitOverviewType::kSlideInEnter;
   home_screen_presenter_.ScheduleOverviewModeAnimation(true /* start */,
                                                        animate);
 }
@@ -140,7 +138,7 @@ void HomeScreenController::OnOverviewModeEnding(
   // here.
   use_slide_to_exit_overview_ =
       overview_session->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kWindowsMinimized;
+      OverviewSession::EnterExitOverviewType::kSlideOutExit;
 }
 
 void HomeScreenController::OnOverviewModeEndingAnimationComplete(

@@ -47,9 +47,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const
 // pointer down event occurs on them.
 AURA_EXPORT extern const WindowProperty<bool>* const kActivateOnPointerKey;
 
-// A property key to store always-on-top flag.
-AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
-
 // A property key to store whether animations are disabled for the window. Type
 // of value is an int.
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
@@ -155,10 +152,6 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
 // A property key to store the title of the window; sometimes shown to users.
 AURA_EXPORT extern const WindowProperty<base::string16*>* const kTitleKey;
 
-// Indicates if the title of the window should be shown. This is only used for
-// top-levels that show a title. Default is false.
-AURA_EXPORT extern const WindowProperty<bool>* const kTitleShownKey;
-
 // The inset of the topmost view in the client view from the top of the
 // non-client view. The topmost view depends on the window type. The topmost
 // view is the tab strip for tabbed browser windows, the toolbar for popups,
@@ -171,6 +164,9 @@ AURA_EXPORT extern const WindowProperty<gfx::ImageSkia*>* const kWindowIconKey;
 // The corner radius of a window in DIPs. Currently only used for shadows.
 // Default is -1, meaning "unspecified". 0 Ensures corners are square.
 AURA_EXPORT extern const WindowProperty<int>* const kWindowCornerRadiusKey;
+
+// A property key to store the z-ordering.
+AURA_EXPORT extern const WindowProperty<ui::ZOrderLevel>* const kZOrderingKey;
 
 // Alphabetical sort.
 

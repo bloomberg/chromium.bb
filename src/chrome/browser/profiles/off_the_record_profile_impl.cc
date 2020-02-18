@@ -31,8 +31,6 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -99,7 +97,6 @@
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #endif
 
@@ -119,20 +116,6 @@ namespace {
 
 // Key names for OTR Profile user data.
 constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
-                                       void* otr_profile) {
-  extensions::ExtensionWebRequestEventRouter::GetInstance()
-      ->OnOTRBrowserContextCreated(original_profile, otr_profile);
-}
-
-void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
-                                         void* otr_profile) {
-  extensions::ExtensionWebRequestEventRouter::GetInstance()
-      ->OnOTRBrowserContextDestroyed(original_profile, otr_profile);
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -193,11 +176,8 @@ void OffTheRecordProfileImpl::Init() {
   content::URLDataSource::Add(
       this, std::make_unique<extensions::ExtensionIconSource>(profile_));
 
-  extensions::ExtensionSystem::Get(this)->InitForIncognitoProfile();
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextCreated(profile_, this);
 #endif
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
@@ -235,9 +215,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextDestroyed(profile_, this);
 #endif
 
   // This must be called before ProfileIOData::ShutdownOnUIThread but after
@@ -299,6 +278,10 @@ Profile::ProfileType OffTheRecordProfileImpl::GetProfileType() const {
 #endif
 }
 
+base::FilePath OffTheRecordProfileImpl::GetPath() {
+  return profile_->GetPath();
+}
+
 base::FilePath OffTheRecordProfileImpl::GetPath() const {
   return profile_->GetPath();
 }
@@ -317,8 +300,17 @@ OffTheRecordProfileImpl::GetIOTaskRunner() {
   return profile_->GetIOTaskRunner();
 }
 
+bool OffTheRecordProfileImpl::IsOffTheRecord() {
+  return true;
+}
+
 bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
+}
+
+bool OffTheRecordProfileImpl::IsIndependentOffTheRecordProfile() {
+  return !GetOriginalProfile()->HasOffTheRecordProfile() ||
+         GetOriginalProfile()->GetOffTheRecordProfile() != this;
 }
 
 Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile() {
@@ -385,23 +377,13 @@ DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
 net::URLRequestContextGetter* OffTheRecordProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_->CreateMainRequestContextGetter(
-                     protocol_handlers, std::move(request_interceptors))
-      .get();
+  return nullptr;
 }
 
 net::URLRequestContextGetter*
     OffTheRecordProfileImpl::CreateMediaRequestContext() {
   // In OTR mode, media request context is the same as the original one.
   return GetRequestContext();
-}
-
-net::URLRequestContextGetter*
-OffTheRecordProfileImpl::CreateMediaRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory) {
-  return io_data_->GetIsolatedAppRequestContextGetter(partition_path, in_memory)
-      .get();
 }
 
 std::unique_ptr<service_manager::Service>
@@ -442,32 +424,10 @@ net::URLRequestContextGetter* OffTheRecordProfileImpl::GetRequestContext() {
   return GetDefaultStoragePartition(this)->GetURLRequestContext();
 }
 
-base::OnceCallback<net::CookieStore*()>
-OffTheRecordProfileImpl::GetExtensionsCookieStoreGetter() {
-  return base::BindOnce(
-      [](content::ResourceContext* context) {
-        auto* io_data = ProfileIOData::FromResourceContext(context);
-        return io_data->GetExtensionsCookieStore();
-      },
-      GetResourceContext());
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 OffTheRecordProfileImpl::GetURLLoaderFactory() {
   return GetDefaultStoragePartition(this)
       ->GetURLLoaderFactoryForBrowserProcess();
-}
-
-net::URLRequestContextGetter*
-OffTheRecordProfileImpl::CreateRequestContextForStoragePartition(
-    const base::FilePath& partition_path,
-    bool in_memory,
-    content::ProtocolHandlerMap* protocol_handlers,
-    content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_->CreateIsolatedAppRequestContextGetter(
-                     partition_path, in_memory, protocol_handlers,
-                     std::move(request_interceptors))
-      .get();
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {
@@ -572,8 +532,8 @@ void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
       << "CorsOriginAccessList should not be modified in incognito profiles";
 }
 
-const content::SharedCorsOriginAccessList*
-OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() const {
+content::SharedCorsOriginAccessList*
+OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
   return profile_->GetSharedCorsOriginAccessList();
 }
 

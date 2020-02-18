@@ -135,7 +135,7 @@ For VT_EMPTY and VT_NULL variants, the DATA argument may be omitted.
 For all non-VT_ARRAY variants DATA specifies the initial value.
 
 To create a SAFEARRAY variant, you have to specify the VT_ARRAY flag in
-addition to the variant base type of the array elemnts.  In this cases
+addition to the variant base type of the array elements.  In this cases
 DATA must be a list specifying the dimensions of the array.  Each element
 can be either an element count (indices 0 to count-1) or an array
 reference pointing to the lower and upper array bounds of this dimension:
@@ -145,7 +145,7 @@ reference pointing to the lower and upper array bounds of this dimension:
 This creates a 2-dimensional SAFEARRAY of doubles with 4 elements:
 (1,0), (1,1), (2,0) and (2,1).
 
-A special case is the the creation of one-dimensional VT_UI1 arrays with
+A special case is the creation of one-dimensional VT_UI1 arrays with
 a string DATA argument:
 
 	my $String = Variant(VT_ARRAY|VT_UI1, "String");
@@ -200,7 +200,7 @@ C<$Int> is now a VT_I4 Variant object containing the value of element (1,2).
 
 =item Currency([FORMAT[, LCID]])
 
-This method converts the VARIANT value into a formatted curency string.  The
+This method converts the VARIANT value into a formatted currency string.  The
 FORMAT can be either an integer constant or a hash reference.  Valid constants
 are 0 and LOCALE_NOUSEROVERRIDE.  You get the value of LOCALE_NOUSEROVERRIDE
 from the Win32::OLE::NLS module:
@@ -253,7 +253,7 @@ The constants are available from the Win32::OLE::NLS module:
 
 The following elements can be used to construct a date format string.
 Characters must be specified exactly as given below (e.g. "dd" B<not> "DD").
-Spaces can be inserted anywhere between formating codes, other verbatim
+Spaces can be inserted anywhere between formatting codes, other verbatim
 text should be included in single quotes.
 
 	d	day of month
@@ -404,7 +404,7 @@ The constants are available from the Win32::OLE::NLS module:
 
 The following elements can be used to construct a time format string.
 Characters must be specified exactly as given below (e.g. "dd" B<not> "DD").
-Spaces can be inserted anywhere between formating codes, other verbatim
+Spaces can be inserted anywhere between formatting codes, other verbatim
 text should be included in single quotes.
 
 	h	hours; 12-hour clock
@@ -460,7 +460,7 @@ method first.
 
 The Win32::OLE::Variant class used to have its own set of class variables
 like C<$CP>, C<$LCID> and C<$Warn>.  In version 0.1003 and later of the
-Win32::OLE module these variables have been eleminated.  Now the settings
+Win32::OLE module these variables have been eliminated.  Now the settings
 of Win32::OLE are used by the Win32::OLE::Variant module too.  Please read
 the documentation of the C<Win32::OLE-&gt;Option> class method.
 

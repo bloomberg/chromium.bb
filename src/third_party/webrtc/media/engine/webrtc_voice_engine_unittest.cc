@@ -8,9 +8,12 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
+#include "media/engine/webrtc_voice_engine.h"
+
 #include <memory>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/match.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
@@ -25,10 +28,8 @@
 #include "media/base/fake_rtp.h"
 #include "media/base/media_constants.h"
 #include "media/engine/fake_webrtc_call.h"
-#include "media/engine/webrtc_voice_engine.h"
 #include "modules/audio_device/include/mock_audio_device.h"
 #include "modules/audio_processing/include/mock_audio_processing.h"
-#include "pc/channel.h"
 #include "rtc_base/arraysize.h"
 #include "rtc_base/byte_order.h"
 #include "rtc_base/numerics/safe_conversions.h"
@@ -646,7 +647,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
     stats.bytes_rcvd = 456;
     stats.packets_rcvd = 768;
     stats.packets_lost = 101;
-    stats.fraction_lost = 23.45f;
     stats.codec_name = "codec_name_recv";
     stats.codec_payload_type = 42;
     stats.ext_seqnum = 678;
@@ -689,7 +689,6 @@ class WebRtcVoiceEngineTestFake : public ::testing::Test {
               stats.packets_rcvd);
     EXPECT_EQ(rtc::checked_cast<unsigned int>(info.packets_lost),
               stats.packets_lost);
-    EXPECT_EQ(info.fraction_lost, stats.fraction_lost);
     EXPECT_EQ(info.codec_name, stats.codec_name);
     EXPECT_EQ(info.codec_payload_type, stats.codec_payload_type);
     EXPECT_EQ(rtc::checked_cast<unsigned int>(info.ext_seqnum),
@@ -3460,8 +3459,9 @@ TEST(WebRtcVoiceEngineTest, StartupShutdown) {
       webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
   engine.Init();
   webrtc::RtcEventLogNullImpl event_log;
-  std::unique_ptr<webrtc::Call> call(
-      webrtc::Call::Create(webrtc::Call::Config(&event_log)));
+  webrtc::Call::Config call_config(&event_log);
+  call_config.task_queue_factory = task_queue_factory.get();
+  auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
   cricket::VoiceMediaChannel* channel = engine.CreateMediaChannel(
       call.get(), cricket::MediaConfig(), cricket::AudioOptions(),
       webrtc::CryptoOptions());
@@ -3487,8 +3487,9 @@ TEST(WebRtcVoiceEngineTest, StartupShutdownWithExternalADM) {
         webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
     engine.Init();
     webrtc::RtcEventLogNullImpl event_log;
-    std::unique_ptr<webrtc::Call> call(
-        webrtc::Call::Create(webrtc::Call::Config(&event_log)));
+    webrtc::Call::Config call_config(&event_log);
+    call_config.task_queue_factory = task_queue_factory.get();
+    auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
     cricket::VoiceMediaChannel* channel = engine.CreateMediaChannel(
         call.get(), cricket::MediaConfig(), cricket::AudioOptions(),
         webrtc::CryptoOptions());
@@ -3560,8 +3561,9 @@ TEST(WebRtcVoiceEngineTest, Has32Channels) {
       webrtc::MockAudioDecoderFactory::CreateUnusedFactory(), nullptr, apm);
   engine.Init();
   webrtc::RtcEventLogNullImpl event_log;
-  std::unique_ptr<webrtc::Call> call(
-      webrtc::Call::Create(webrtc::Call::Config(&event_log)));
+  webrtc::Call::Config call_config(&event_log);
+  call_config.task_queue_factory = task_queue_factory.get();
+  auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
 
   cricket::VoiceMediaChannel* channels[32];
   size_t num_channels = 0;
@@ -3602,8 +3604,9 @@ TEST(WebRtcVoiceEngineTest, SetRecvCodecs) {
       webrtc::CreateBuiltinAudioDecoderFactory(), nullptr, apm);
   engine.Init();
   webrtc::RtcEventLogNullImpl event_log;
-  std::unique_ptr<webrtc::Call> call(
-      webrtc::Call::Create(webrtc::Call::Config(&event_log)));
+  webrtc::Call::Config call_config(&event_log);
+  call_config.task_queue_factory = task_queue_factory.get();
+  auto call = absl::WrapUnique(webrtc::Call::Create(call_config));
   cricket::WebRtcVoiceMediaChannel channel(&engine, cricket::MediaConfig(),
                                            cricket::AudioOptions(),
                                            webrtc::CryptoOptions(), call.get());

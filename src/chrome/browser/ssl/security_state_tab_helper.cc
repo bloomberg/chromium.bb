@@ -20,6 +20,7 @@
 #include "chrome/common/secure_origin_whitelist.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -63,6 +64,7 @@ void RecordSecurityLevel(
 
 }  // namespace
 
+using password_manager::metrics_util::PasswordType;
 using safe_browsing::SafeBrowsingUIManager;
 
 SecurityStateTabHelper::SecurityStateTabHelper(
@@ -128,34 +130,6 @@ void SecurityStateTabHelper::DidFinishNavigation(
     // the number of times it was available.
     UMA_HISTOGRAM_BOOLEAN("interstitial.ssl.visited_site_after_warning", true);
   }
-
-  // Security indicator UI study (https://crbug.com/803501): Show a message in
-  // the console to reduce developer confusion about the experimental UI
-  // treatments for HTTPS pages with EV certificates.
-  const std::string parameter =
-      base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)
-          ? base::GetFieldTrialParamValueByFeature(
-                omnibox::kSimplifyHttpsIndicator,
-                OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName)
-          : std::string();
-  if (GetSecurityLevel() == security_state::EV_SECURE) {
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure) {
-      web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
-          "As part of an experiment, Chrome temporarily shows only the "
-          "\"Secure\" text in the address bar. Your SSL certificate with "
-          "Extended Validation is still valid.");
-    }
-    if (parameter ==
-        OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterBothToLock) {
-      web_contents()->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
-          "As part of an experiment, Chrome temporarily shows only the lock "
-          "icon in the address bar. Your SSL certificate with Extended "
-          "Validation is still valid.");
-    }
-  }
 }
 
 void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
@@ -202,9 +176,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
 #if defined(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
-                    web_contents(),
-                    safe_browsing::LoginReputationClientRequest::
-                        PasswordReuseEvent::SIGN_IN_PASSWORD)) {
+                    web_contents(), PasswordType::PRIMARY_ACCOUNT_PASSWORD)) {
           return security_state::
               MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
         }
@@ -216,9 +188,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
 #if defined(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
-                    web_contents(),
-                    safe_browsing::LoginReputationClientRequest::
-                        PasswordReuseEvent::ENTERPRISE_PASSWORD)) {
+                    web_contents(), PasswordType::ENTERPRISE_PASSWORD)) {
           return security_state::
               MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE;
         }
@@ -237,8 +207,11 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
       case safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST:
       case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+      case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
+      case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:
       case safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE:
       case safe_browsing::SB_THREAT_TYPE_APK_DOWNLOAD:
+      case safe_browsing::SB_THREAT_TYPE_HIGH_CONFIDENCE_ALLOWLIST:
         // These threat types are not currently associated with
         // interstitials, and thus resources with these threat types are
         // not ever whitelisted or pending whitelisting.

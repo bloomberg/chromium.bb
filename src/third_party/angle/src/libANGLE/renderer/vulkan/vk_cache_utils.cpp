@@ -338,6 +338,12 @@ constexpr size_t kTransitionBitShift = kTransitionByteShift + Log2(kBitsPerByte)
 // the update function.
 #define ANGLE_GET_INDEXED_TRANSITION_BIT(Member, Field, Index, BitWidth) \
     (((BitWidth * Index) >> kTransitionBitShift) + ANGLE_GET_TRANSITION_BIT(Member, Field))
+
+constexpr angle::PackedEnumMap<gl::ComponentType, VkFormat> kMismatchedComponentTypeMap = {{
+    {gl::ComponentType::Float, VK_FORMAT_R32G32B32A32_SFLOAT},
+    {gl::ComponentType::Int, VK_FORMAT_R32G32B32A32_SINT},
+    {gl::ComponentType::UnsignedInt, VK_FORMAT_R32G32B32A32_UINT},
+}};
 }  // anonymous namespace
 
 // RenderPassDesc implementation.
@@ -567,6 +573,7 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
     const RenderPass &compatibleRenderPass,
     const PipelineLayout &pipelineLayout,
     const gl::AttributesMask &activeAttribLocationsMask,
+    const gl::ComponentTypeMask &programAttribsTypeMask,
     const ShaderModule *vertexModule,
     const ShaderModule *fragmentModule,
     Pipeline *pipelineOut) const
@@ -595,7 +602,8 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
     shaderStages.push_back(vertexStage);
 
     // Fragment shader is optional.
-    if (fragmentModule)
+    // anglebug.com/3509 - Don't compile the fragment shader if rasterizationDiscardEnable = true
+    if (fragmentModule && !mRasterizationAndMultisampleStateInfo.bits.rasterizationDiscardEnable)
     {
         VkPipelineShaderStageCreateInfo fragmentStage = {};
         fragmentStage.sType               = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -647,9 +655,28 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
             bindingDesc.inputRate = static_cast<VkVertexInputRate>(VK_VERTEX_INPUT_RATE_VERTEX);
         }
 
+        // Get the corresponding VkFormat for the attrib's format.
+        angle::FormatID formatID         = static_cast<angle::FormatID>(packedAttrib.format);
+        const vk::Format &format         = context->getRenderer()->getFormat(formatID);
+        const angle::Format &angleFormat = format.angleFormat();
+        VkFormat vkFormat                = format.vkBufferFormat;
+
+        gl::ComponentType attribType =
+            GetVertexAttributeComponentType(angleFormat.isPureInt(), angleFormat.vertexAttribType);
+        gl::ComponentType programAttribType =
+            gl::GetComponentTypeMask(programAttribsTypeMask, attribIndex);
+
+        if (attribType != programAttribType)
+        {
+            // Override the format with a compatible one.
+            vkFormat = kMismatchedComponentTypeMap[programAttribType];
+
+            bindingDesc.stride = 0;  // Prevent out-of-bounds accesses.
+        }
+
         // The binding index could become more dynamic in ES 3.1.
         attribDesc.binding  = attribIndex;
-        attribDesc.format   = static_cast<VkFormat>(packedAttrib.format);
+        attribDesc.format   = vkFormat;
         attribDesc.location = static_cast<uint32_t>(attribIndex);
         attribDesc.offset   = packedAttrib.offset;
 
@@ -676,10 +703,22 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
 
     // Set initial viewport and scissor state.
 
+    // 0-sized viewports are invalid in Vulkan.  We always use a scissor that at least matches the
+    // requested viewport, so it's safe to adjust the viewport size here.
+    VkViewport viewport = mViewport;
+    if (viewport.width == 0)
+    {
+        viewport.width = 1;
+    }
+    if (viewport.height == 0)
+    {
+        viewport.height = 1;
+    }
+
     viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.flags         = 0;
     viewportState.viewportCount = 1;
-    viewportState.pViewports    = &mViewport;
+    viewportState.pViewports    = &viewport;
     viewportState.scissorCount  = 1;
     viewportState.pScissors     = &mScissor;
 
@@ -709,8 +748,7 @@ angle::Result GraphicsPipelineDesc::initializePipeline(
     multisampleState.sampleShadingEnable =
         static_cast<VkBool32>(rasterAndMS.bits.sampleShadingEnable);
     multisampleState.minSampleShading = rasterAndMS.minSampleShading;
-    // TODO(jmadill): sample masks
-    multisampleState.pSampleMask = nullptr;
+    multisampleState.pSampleMask      = rasterAndMS.sampleMask;
     multisampleState.alphaToCoverageEnable =
         static_cast<VkBool32>(rasterAndMS.bits.alphaToCoverageEnable);
     multisampleState.alphaToOneEnable = static_cast<VkBool32>(rasterAndMS.bits.alphaToOneEnable);
@@ -792,7 +830,7 @@ void GraphicsPipelineDesc::updateVertexInput(GraphicsPipelineTransitionBits *tra
                                              uint32_t attribIndex,
                                              GLuint stride,
                                              GLuint divisor,
-                                             VkFormat format,
+                                             angle::FormatID format,
                                              GLuint relativeOffset)
 {
     vk::PackedAttribDesc &packedAttrib = mVertexInputAttribs.attribs[attribIndex];
@@ -804,7 +842,7 @@ void GraphicsPipelineDesc::updateVertexInput(GraphicsPipelineTransitionBits *tra
     SetBitField(packedAttrib.stride, stride);
     SetBitField(packedAttrib.divisor, divisor);
 
-    if (format == VK_FORMAT_UNDEFINED)
+    if (format == angle::FormatID::NONE)
     {
         UNIMPLEMENTED();
     }
@@ -830,6 +868,14 @@ void GraphicsPipelineDesc::updateTopology(GraphicsPipelineTransitionBits *transi
     transition->set(ANGLE_GET_TRANSITION_BIT(mInputAssemblyAndColorBlendStateInfo, primitive));
 }
 
+void GraphicsPipelineDesc::updatePrimitiveRestartEnabled(GraphicsPipelineTransitionBits *transition,
+                                                         bool primitiveRestartEnabled)
+{
+    mInputAssemblyAndColorBlendStateInfo.primitive.restartEnable =
+        static_cast<uint16_t>(primitiveRestartEnabled);
+    transition->set(ANGLE_GET_TRANSITION_BIT(mInputAssemblyAndColorBlendStateInfo, primitive));
+}
+
 void GraphicsPipelineDesc::updateCullMode(GraphicsPipelineTransitionBits *transition,
                                           const gl::RasterizerState &rasterState)
 {
@@ -852,6 +898,15 @@ void GraphicsPipelineDesc::updateLineWidth(GraphicsPipelineTransitionBits *trans
 {
     mRasterizationAndMultisampleStateInfo.lineWidth = lineWidth;
     transition->set(ANGLE_GET_TRANSITION_BIT(mRasterizationAndMultisampleStateInfo, lineWidth));
+}
+
+void GraphicsPipelineDesc::updateRasterizerDiscardEnabled(
+    GraphicsPipelineTransitionBits *transition,
+    bool rasterizerDiscardEnabled)
+{
+    mRasterizationAndMultisampleStateInfo.bits.rasterizationDiscardEnable =
+        static_cast<uint32_t>(rasterizerDiscardEnabled);
+    transition->set(ANGLE_GET_TRANSITION_BIT(mRasterizationAndMultisampleStateInfo, bits));
 }
 
 void GraphicsPipelineDesc::setRasterizationSamples(uint32_t rasterizationSamples)
@@ -1205,8 +1260,10 @@ void GraphicsPipelineDesc::updateDepthRange(GraphicsPipelineTransitionBits *tran
 {
     // GLES2.0 Section 2.12.1: Each of n and f are clamped to lie within [0, 1], as are all
     // arguments of type clampf.
-    mViewport.minDepth = gl::clamp01(nearPlane);
-    mViewport.maxDepth = gl::clamp01(farPlane);
+    ASSERT(nearPlane >= 0.0f && nearPlane <= 1.0f);
+    ASSERT(farPlane >= 0.0f && farPlane <= 1.0f);
+    mViewport.minDepth = nearPlane;
+    mViewport.maxDepth = farPlane;
     transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, minDepth));
     transition->set(ANGLE_GET_TRANSITION_BIT(mViewport, maxDepth));
 }
@@ -1400,7 +1457,7 @@ void PipelineLayoutDesc::updatePushConstantRange(gl::ShaderType shaderType,
 {
     ASSERT(shaderType == gl::ShaderType::Vertex || shaderType == gl::ShaderType::Fragment ||
            shaderType == gl::ShaderType::Compute);
-    PackedPushConstantRange &packed = mPushConstantRanges[static_cast<size_t>(shaderType)];
+    PackedPushConstantRange &packed = mPushConstantRanges[shaderType];
     packed.offset                   = offset;
     packed.size                     = size;
 }
@@ -1427,6 +1484,52 @@ void PipelineHelper::addTransition(GraphicsPipelineTransitionBits bits,
 {
     mTransitions.emplace_back(bits, desc, pipeline);
 }
+
+TextureDescriptorDesc::TextureDescriptorDesc() : mMaxIndex(0)
+{
+    mSerials.fill(0);
+}
+
+TextureDescriptorDesc::~TextureDescriptorDesc()                                  = default;
+TextureDescriptorDesc::TextureDescriptorDesc(const TextureDescriptorDesc &other) = default;
+TextureDescriptorDesc &TextureDescriptorDesc::operator=(const TextureDescriptorDesc &other) =
+    default;
+
+void TextureDescriptorDesc::update(size_t index, Serial serial)
+{
+    if (index >= mMaxIndex)
+    {
+        mMaxIndex = index + 1;
+    }
+
+    // If the serial number overflows we should defragment and regenerate all serials.
+    // There should never be more than UINT_MAX textures alive at a time.
+    ASSERT(serial.getValue() < std::numeric_limits<uint32_t>::max());
+    mSerials[index] = static_cast<uint32_t>(serial.getValue());
+}
+
+size_t TextureDescriptorDesc::hash() const
+{
+    return angle::ComputeGenericHash(&mSerials, sizeof(uint32_t) * mMaxIndex);
+}
+
+void TextureDescriptorDesc::reset()
+{
+    memset(mSerials.data(), 0, sizeof(mSerials[0]) * mMaxIndex);
+    mMaxIndex = 0;
+}
+
+bool TextureDescriptorDesc::operator==(const TextureDescriptorDesc &other) const
+{
+    if (mMaxIndex != other.mMaxIndex)
+        return false;
+
+    if (mMaxIndex == 0)
+        return true;
+
+    return memcmp(mSerials.data(), other.mSerials.data(), sizeof(uint32_t) * mMaxIndex) == 0;
+}
+
 }  // namespace vk
 
 // RenderPassCache implementation.
@@ -1559,6 +1662,7 @@ angle::Result GraphicsPipelineCache::insertPipeline(
     const vk::RenderPass &compatibleRenderPass,
     const vk::PipelineLayout &pipelineLayout,
     const gl::AttributesMask &activeAttribLocationsMask,
+    const gl::ComponentTypeMask &programAttribsTypeMask,
     const vk::ShaderModule *vertexModule,
     const vk::ShaderModule *fragmentModule,
     const vk::GraphicsPipelineDesc &desc,
@@ -1571,8 +1675,9 @@ angle::Result GraphicsPipelineCache::insertPipeline(
     if (context != nullptr)
     {
         ANGLE_TRY(desc.initializePipeline(context, pipelineCacheVk, compatibleRenderPass,
-                                          pipelineLayout, activeAttribLocationsMask, vertexModule,
-                                          fragmentModule, &newPipeline));
+                                          pipelineLayout, activeAttribLocationsMask,
+                                          programAttribsTypeMask, vertexModule, fragmentModule,
+                                          &newPipeline));
     }
 
     // The Serial will be updated outside of this query.
@@ -1695,30 +1800,22 @@ angle::Result PipelineLayoutCache::getPipelineLayout(
         }
     }
 
-    angle::FixedVector<VkPushConstantRange, vk::kMaxPushConstantRanges> pushConstantRanges;
     const vk::PushConstantRangeArray<vk::PackedPushConstantRange> &descPushConstantRanges =
         desc.getPushConstantRanges();
-    for (size_t shaderIndex = 0; shaderIndex < descPushConstantRanges.size(); ++shaderIndex)
+
+    gl::ShaderVector<VkPushConstantRange> pushConstantRanges;
+
+    for (const gl::ShaderType shaderType : gl::AllShaderTypes())
     {
-        const vk::PackedPushConstantRange &pushConstantDesc = descPushConstantRanges[shaderIndex];
+        const vk::PackedPushConstantRange &pushConstantDesc = descPushConstantRanges[shaderType];
         if (pushConstantDesc.size > 0)
         {
-            static constexpr VkShaderStageFlagBits kShaderStages[vk::kMaxPushConstantRanges] = {
-                VK_SHADER_STAGE_VERTEX_BIT,
-                VK_SHADER_STAGE_FRAGMENT_BIT,
-                VK_SHADER_STAGE_GEOMETRY_BIT,
-                VK_SHADER_STAGE_COMPUTE_BIT,
-            };
-            static_assert(static_cast<uint32_t>(gl::ShaderType::Vertex) == 0, "Fix this table");
-            static_assert(static_cast<uint32_t>(gl::ShaderType::Fragment) == 1, "Fix this table");
-            static_assert(static_cast<uint32_t>(gl::ShaderType::Geometry) == 2, "Fix this table");
-            static_assert(static_cast<uint32_t>(gl::ShaderType::Compute) == 3, "Fix this table");
-            VkPushConstantRange pushConstantRange = {};
-            pushConstantRange.stageFlags          = kShaderStages[shaderIndex];
-            pushConstantRange.offset              = pushConstantDesc.offset;
-            pushConstantRange.size                = pushConstantDesc.size;
+            VkPushConstantRange range;
+            range.stageFlags = gl_vk::kShaderStageMap[shaderType];
+            range.offset     = pushConstantDesc.offset;
+            range.size       = pushConstantDesc.size;
 
-            pushConstantRanges.push_back(pushConstantRange);
+            pushConstantRanges.push_back(range);
         }
     }
 
@@ -1728,7 +1825,7 @@ angle::Result PipelineLayoutCache::getPipelineLayout(
     createInfo.flags                      = 0;
     createInfo.setLayoutCount             = static_cast<uint32_t>(setLayoutHandles.size());
     createInfo.pSetLayouts                = setLayoutHandles.data();
-    createInfo.pushConstantRangeCount     = static_cast<uint32_t>(pushConstantRanges.size());
+    createInfo.pushConstantRangeCount     = pushConstantRanges.size();
     createInfo.pPushConstantRanges        = pushConstantRanges.data();
 
     vk::PipelineLayout newLayout;

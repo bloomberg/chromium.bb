@@ -12,10 +12,10 @@
 <translation id="1104621072296271835">Os seus dispositivos funcionam ainda melhor juntos</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
+<translation id="1175572348579024023">Deslocar</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
-<translation id="123828989343052515">Novo espaço de trabalho</translation>
 <translation id="1247372569136754018">Microfone (interno)</translation>
 <translation id="1252999807265626933">A carregar a partir de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Como está o tempo?</translation>
@@ -56,7 +56,9 @@
 <translation id="1746730358044914197">Os métodos de introdução são configurados pelo gestor.</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1761222317188459878">Ativar/desativar ligação de rede. <ph name="STATE_TEXT" /></translation>
+<translation id="1771761307086386028">Deslocar para a direita</translation>
 <translation id="1812997170047690955">O que está no meu ecrã?</translation>
+<translation id="1820355135508821526">A funcionalidade <ph name="FEATURE_NAME" /> foi desativada por uma política aplicada a este dispositivo. Fale com o seu administrador para solicitar alterações.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
@@ -70,6 +72,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Definir o idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1978498689038657292">Entrada de texto</translation>
 <translation id="1993072747612765854">Saiba mais sobre a mais recente atualização do <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="1995660704900986789">Desligar</translation>
 <translation id="2012624427112548395">Ctrl + Pesquisa + H</translation>
@@ -77,6 +80,7 @@
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brilho do teclado</translation>
 <translation id="209965399369889474">Não está ligado à rede.</translation>
+<translation id="2126242104232412123">Novo espaço de trabalho</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2135456203358955318">Lupa ancorada</translation>
 <translation id="2144487987174258011">Reinicie para atualizar o Adobe Flash Player</translation>
@@ -109,8 +113,8 @@
 <translation id="255671100581129685">O Assistente Google não está disponível para sessões públicas.</translation>
 <translation id="2575685495496069081">O início de sessão integrado foi desativado</translation>
 <translation id="2582112259361606227">Reiniciar para atualizar</translation>
-<translation id="2597972630681408282">Luz noturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
+<translation id="2651765386227849097">O Assistente Google está desativado neste dispositivo.</translation>
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2658778018866295321">Clique e arraste</translation>
 <translation id="2700493154570097719">Definir o teclado</translation>
@@ -153,6 +157,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Ligado a um dispositivo}other{Ligado a # dispositivos}}</translation>
 <translation id="3226991577105957773">E mais <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
+<translation id="3249513730522716925">A janela <ph name="WINDOW_TITLE" /> foi movida do espaço de trabalho <ph name="ACTIVE_DESK" /> para o espaço de trabalho <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">O que podes fazer?</translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> pode iniciar sessão mais tarde.</translation>
@@ -174,6 +179,7 @@
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3576141592585647168">Altere o fuso horário</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
+<translation id="3604801046548457007">Foi criado o espaço de trabalho <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Visualização em braille ligada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3626281679859535460">Brilho</translation>
@@ -203,6 +209,7 @@
 <translation id="3977512764614765090">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
+<translation id="4021716437419160885">Deslocar para baixo</translation>
 <translation id="4042660782729322247">Está a partilhar o seu ecrã</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
@@ -258,9 +265,11 @@
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4924411785043111640">Reiniciar e repor</translation>
+<translation id="495046168593986294">Deslocar para cima</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="5030687792513154421">O tempo terminou</translation>
 <translation id="5035236842988137213">O dispositivo <ph name="DEVICE_NAME" /> estabeleceu ligação a um novo telemóvel.</translation>
@@ -294,6 +303,7 @@
 <translation id="5648021990716966815">Entrada para microfone</translation>
 <translation id="5669267381087807207">A activar</translation>
 <translation id="5673434351075758678">De "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização das suas definições.</translation>
+<translation id="5682642926269496722">O Assistente Google não está disponível para a conta do utilizador atual.</translation>
 <translation id="5691772641933328258">Impressão digital não reconhecida</translation>
 <translation id="5710450975648804523">Modo Não incomodar ativado</translation>
 <translation id="574392208103952083">Médio</translation>
@@ -318,6 +328,8 @@
 <translation id="598882571027504733">Para obter a atualização, reinicie o Chromebook com o teclado ligado.</translation>
 <translation id="5992218262414051481">Modo de alto contraste ativado. Prima Ctrl + Pesquisa + H novamente para o desativar.</translation>
 <translation id="6018164090099858612">A sair do modo espelhado</translation>
+<translation id="602001110135236999">Deslocar para a esquerda</translation>
+<translation id="6040143037577758943">Fechar</translation>
 <translation id="6043212731627905357">Este monitor está em conflito com o seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Terminar sessão agora</translation>
 <translation id="6047696787498798094">A partilha do ecrã será interrompida quando mudar para outro utilizador. Pretende continuar?</translation>
@@ -325,6 +337,7 @@
 <translation id="6064337552080329342">Lamentamos, mas não foi possível validar a sua palavra-passe. Tente novamente.</translation>
 <translation id="607652042414456612">O seu computador é detetável para os dispositivos Bluetooth nas proximidades e aparecerá como "<ph name="NAME" />" com o endereço <ph name="ADDRESS" /></translation>
 <translation id="6106745654298855237">A carregar <ph name="POWER_SOURCE" /></translation>
+<translation id="612734058257491180">O Assistente Google não está disponível em sessões de convidado.</translation>
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6164005077879661055">Todos os ficheiros e dados locais associados ao utilizador supervisionado serão definitivamente eliminados depois de este utilizador supervisionado ser removido. Os Sites visitados e as definições deste utilizador supervisionado poderão continuar visíveis para o gestor em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
@@ -366,7 +379,9 @@
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="6715542151869432661">Não foram encontrados dispositivos móveis.</translation>
 <translation id="6723839937902243910">Alimentação</translation>
+<translation id="6727969043791803658">Ligado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
+<translation id="6752912906630585008">O espaço de trabalho <ph name="REMOVED_DESK" /> foi removido e unido ao espaço de trabalho <ph name="RECEIVE_DESK" /></translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
@@ -424,6 +439,7 @@
 <translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{1 notificação}other{# notificações}}</translation>
+<translation id="7749443890790263709">Atingiu o número máximo de espaços de trabalho.</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
 <translation id="7780159184141939021">Rodar ecrã</translation>
 <translation id="7796353162336583443">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente Google, o ponteiro de laser ou a lupa.</translation>
@@ -467,6 +483,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e o telemóvel serão associados automaticamente.</translation>
+<translation id="8388750414311082622">Não é possível remover o último espaço de trabalho.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Os teus pais bloquearam este dispositivo</translation>
 <translation id="8406981827175133772">Lupa de ecrã inteiro</translation>
@@ -475,6 +492,7 @@
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições de rede</translation>
 <translation id="8433977262951327081">O atalho para mostrar o balão do menu de opções de introdução na prateleira foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="8444246603146515890">Espaço de trabalho <ph name="DESK_TITILE" /> ativado</translation>
 <translation id="8452135315243592079">Cartão SIM em falta</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
 <translation id="847056008324733326">Definições de escala do ecrã</translation>

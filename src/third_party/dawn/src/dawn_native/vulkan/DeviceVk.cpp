@@ -148,8 +148,9 @@ namespace dawn_native { namespace vulkan {
     ResultOrError<BufferBase*> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return new Buffer(this, descriptor);
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder) {
-        return new CommandBuffer(this, encoder);
+    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoderBase* encoder,
+                                                   const CommandBufferDescriptor* descriptor) {
+        return new CommandBuffer(encoder, descriptor);
     }
     ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
@@ -340,6 +341,11 @@ namespace dawn_native { namespace vulkan {
         usedKnobs.features.independentBlend = VK_TRUE;
         // Always require imageCubeArray because it is a core Dawn feature
         usedKnobs.features.imageCubeArray = VK_TRUE;
+        // Always require fragmentStoresAndAtomics because it is required by end2end tests.
+        usedKnobs.features.fragmentStoresAndAtomics = VK_TRUE;
+
+        // TODO(jiawei.shao@intel.com): support BC formats as extension
+        usedKnobs.features.textureCompressionBC = VK_TRUE;
 
         // Find a universal queue family
         {
@@ -520,7 +526,7 @@ namespace dawn_native { namespace vulkan {
         // Insert pipeline barrier to ensure correct ordering with previous memory operations on the
         // buffer.
         ToBackend(destination)
-            ->TransitionUsageNow(GetPendingCommandBuffer(), dawn::BufferUsageBit::TransferDst);
+            ->TransitionUsageNow(GetPendingCommandBuffer(), dawn::BufferUsageBit::CopyDst);
 
         VkBufferCopy copy;
         copy.srcOffset = sourceOffset;

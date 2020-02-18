@@ -132,8 +132,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       seen_embedder_drag_source_ended_at_(false),
       ignore_dragged_url_(true),
       delegate_(delegate),
-      can_use_cross_process_frames_(delegate->CanUseCrossProcessFrames()),
-      weak_ptr_factory_(this) {
+      can_use_cross_process_frames_(delegate->CanUseCrossProcessFrames()) {
   DCHECK(web_contents);
   DCHECK(delegate);
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Create"));
@@ -917,7 +916,7 @@ void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
                                               const std::string& name) {
   RenderFrameHostImpl* focused_frame =
       static_cast<RenderFrameHostImpl*>(web_contents()->GetFocusedFrame());
-  if (!focused_frame)
+  if (!focused_frame || !focused_frame->GetFrameInputHandler())
     return;
 
   focused_frame->GetFrameInputHandler()->ExecuteEditCommand(name,
@@ -971,7 +970,7 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
     int after) {
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
       web_contents()->GetFocusedFrame());
-  if (rfh)
+  if (rfh && rfh->GetFrameInputHandler())
     rfh->GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
 }
 

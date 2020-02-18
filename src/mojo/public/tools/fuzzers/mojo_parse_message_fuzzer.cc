@@ -52,7 +52,7 @@ struct Environment {
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static Environment* env = new Environment();
-  /* Pass the data along to run on a MessageLoop, and wait for it to finish. */
+  /* Pass the data along to run on a TaskExecutor, and wait for it to finish. */
   base::RunLoop run;
   env->main_thread_task_executor.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&FuzzMessage, data, size, &run));

@@ -387,9 +387,9 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks whether syncing is "requested" by the user, i.e. the user has not disabled syncing
-     * in settings. Note that even if this is true, other reasons might prevent Sync from actually
-     * starting up.
+     * Checks whether syncing is requested by the user, i.e. the user has at least started a Sync
+     * setup flow, and has not disabled syncing in settings. Note that even if this is true, other
+     * reasons might prevent Sync from actually starting up.
      *
      * @return true if the user wants to sync, false otherwise.
      */
@@ -416,6 +416,16 @@ public class ProfileSyncService {
      */
     public boolean isSyncActive() {
         return nativeIsSyncActive(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
+     * Checks whether Sync is disabled by enterprise policy (through prefs) or account policy
+     * received from the sync server.
+     *
+     * @return true if Sync is disabled, false otherwise.
+     */
+    public boolean isSyncDisabledByEnterprisePolicy() {
+        return nativeIsSyncDisabledByEnterprisePolicy(mNativeProfileSyncServiceAndroid);
     }
 
     /**
@@ -650,6 +660,8 @@ public class ProfileSyncService {
     private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
     private native boolean nativeCanSyncFeatureStart(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncDisabledByEnterprisePolicy(
+            long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);

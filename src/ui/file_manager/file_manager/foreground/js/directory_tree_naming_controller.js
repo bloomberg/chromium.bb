@@ -25,7 +25,7 @@ class DirectoryTreeNamingController {
     this.currentDirectoryItem_ = null;
 
     /** @private {boolean} */
-    this.editting_ = false;
+    this.editing_ = false;
 
     /** @private {boolean} */
     this.isRemovableRoot_ = false;
@@ -56,6 +56,17 @@ class DirectoryTreeNamingController {
   }
 
   /**
+   * Returns the '.label' class element child of this.currentDirectoryItem_.
+   * @private
+   * @return {!HTMLElement}
+   */
+  getLabelElement_() {
+    const element = this.currentDirectoryItem_.firstElementChild;
+    const label = element.querySelector('.label');
+    return /** @type {!HTMLElement} */ (assert(label));
+  }
+
+  /**
    * Attaches naming controller to specified directory item and start rename.
    * @param {!DirectoryItem} directoryItem An html element of a node of the
    *     target.
@@ -83,15 +94,15 @@ class DirectoryTreeNamingController {
     if (this.isRemovableRoot_ && renameInputElementPlaceholder.length === 1) {
       renameInputElementPlaceholder[0].appendChild(this.inputElement_);
     } else {
-      this.currentDirectoryItem_.firstElementChild.appendChild(
-          this.inputElement_);
+      const label = this.getLabelElement_();
+      label.insertAdjacentElement('afterend', this.inputElement_);
     }
 
     this.inputElement_.value = this.currentDirectoryItem_.label;
     this.inputElement_.select();
     this.inputElement_.focus();
 
-    this.editting_ = true;
+    this.editing_ = true;
   }
 
   /**
@@ -99,10 +110,10 @@ class DirectoryTreeNamingController {
    * @private
    */
   commitRename_() {
-    if (!this.editting_) {
+    if (!this.editing_) {
       return;
     }
-    this.editting_ = false;
+    this.editing_ = false;
 
     const entry = this.currentDirectoryItem_.entry;
     const newName = this.inputElement_.value;
@@ -115,7 +126,8 @@ class DirectoryTreeNamingController {
 
     if (this.isRemovableRoot_) {
       // Validate new name.
-      util.validateExternalDriveName(newName, assert(this.volumeInfo_))
+      util.validateExternalDriveName(
+              newName, assert(this.volumeInfo_).diskFileSystemType)
           .then(
               this.performExternalDriveRename_.bind(this, entry, newName),
               errorMessage => {
@@ -159,12 +171,9 @@ class DirectoryTreeNamingController {
     new Promise(util.rename.bind(null, entry, newName))
         .then(
             newEntry => {
-              // Show new name before detaching input element to prevent showing
-              // old name.
-              const label =
-                  this.currentDirectoryItem_.firstElementChild.querySelector(
-                      '.label');
-              label.textContent = newName;
+              // Put the new name in the .label element before detaching the
+              // <input> to prevent showing the old name.
+              this.getLabelElement_().textContent = newName;
 
               this.currentDirectoryItem_.entry = newEntry;
               this.currentDirectoryItem_.updateSubDirectories(
@@ -183,7 +192,7 @@ class DirectoryTreeNamingController {
             },
             error => {
               this.directoryModel_.setIgnoringCurrentDirectoryDeletion(
-                  false /* not ignore*/);
+                  false /* not ignore */);
               this.detach_();
 
               this.alertDialog_.show(util.getRenameErrorMessage(
@@ -200,12 +209,10 @@ class DirectoryTreeNamingController {
   performExternalDriveRename_(entry, newName) {
     // Invoke external drive rename
     chrome.fileManagerPrivate.renameVolume(this.volumeInfo_.volumeId, newName);
-    // Show new name before detaching input element to prevent showing old
-    // name.
-    const label =
-        this.currentDirectoryItem_.firstElementChild.querySelector('.label');
-    label.textContent = newName;
 
+    // Put the new name in the .label element before detaching the <input> to
+    // prevent showing the old name.
+    this.getLabelElement_().textContent = newName;
     this.detach_();
   }
 
@@ -214,11 +221,11 @@ class DirectoryTreeNamingController {
    * @private
    */
   cancelRename_() {
-    if (!this.editting_) {
+    if (!this.editing_) {
       return;
     }
-    this.editting_ = false;
 
+    this.editing_ = false;
     this.detach_();
   }
 
@@ -229,16 +236,7 @@ class DirectoryTreeNamingController {
   detach_() {
     assert(!!this.currentDirectoryItem_);
 
-    const renameInputElementPlaceholder =
-        this.currentDirectoryItem_.firstElementChild.getElementsByClassName(
-            'rename-placeholder');
-
-    if (this.isRemovableRoot_ && renameInputElementPlaceholder.length === 1) {
-      renameInputElementPlaceholder[0].removeChild(this.inputElement_);
-    } else {
-      this.currentDirectoryItem_.firstElementChild.removeChild(
-          this.inputElement_);
-    }
+    this.inputElement_.remove();
 
     this.currentDirectoryItem_.removeAttribute('renaming');
     this.currentDirectoryItem_ = null;

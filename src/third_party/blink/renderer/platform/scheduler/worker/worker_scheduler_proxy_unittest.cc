@@ -103,7 +103,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
  public:
   WorkerSchedulerProxyTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
             base::sequence_manager::SequenceManagerForTest::Create(
@@ -114,14 +114,11 @@ class WorkerSchedulerProxyTest : public testing::Test {
         page_scheduler_(
             std::make_unique<PageSchedulerImpl>(nullptr,
                                                 main_thread_scheduler_.get())),
-        frame_scheduler_(
-            FrameSchedulerImpl::Create(page_scheduler_.get(),
-                                       nullptr,
-                                       nullptr,
-                                       FrameScheduler::FrameType::kMainFrame)) {
-    // Null clock triggers some assertions.
-    task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
-  }
+        frame_scheduler_(FrameSchedulerImpl::Create(
+            page_scheduler_.get(),
+            nullptr,
+            nullptr,
+            FrameScheduler::FrameType::kMainFrame)) {}
 
   ~WorkerSchedulerProxyTest() override {
     frame_scheduler_.reset();

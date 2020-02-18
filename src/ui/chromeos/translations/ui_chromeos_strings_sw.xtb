@@ -44,6 +44,7 @@
 <translation id="1395262318152388157">Tafuta Kitelezi</translation>
 <translation id="1399648040768741453">Kibodi ya Kitelugu (Fonetiki)</translation>
 <translation id="1430915738399379752">Chapisha</translation>
+<translation id="1439494416798956626">Imehamishiwa kwenye <ph name="FOLDER_NAME" />.</translation>
 <translation id="1441841714100794440">Kibodi ya Kivietnamu (Telex)</translation>
 <translation id="1455548678241328678">Kibodi ya Kinorwe</translation>
 <translation id="1464724975715666883">Hitilafu 1.</translation>
@@ -90,9 +91,9 @@
 <translation id="197560921582345123">Unaweza kubadilisha</translation>
 <translation id="1984603991036629094">Kibodi ya Kifonetiki ya Kiarmenia</translation>
 <translation id="2001796770603320721">Dhibiti katika Hifadhi ya Google</translation>
+<translation id="2009067268969781306">Hatua ya kubadilisha muundo wa hifadhi itafuta data yote iliyomo. Kitendo hiki hakiwezi kutenduliwa.</translation>
 <translation id="2028997212275086731">Kumbukumbu la RAR</translation>
 <translation id="2046702855113914483">Rameni</translation>
-<translation id="204914487372604757">Unda njia mkato</translation>
 <translation id="2070909990982335904">Majina yanayoanza kwa nukta yametengwa mahususi kwa mfumo. Tafadahili chagua jina jingine.</translation>
 <translation id="2079545284768500474">Tendua</translation>
 <translation id="2080010875307505892">Kibodi ya Kiserbia</translation>
@@ -204,6 +205,7 @@
 <translation id="3466147780910026086">Inachaganua kifaa chako cha kuhifadhia data...</translation>
 <translation id="3468522857997926824">Picha <ph name="FILE_COUNT" /> zimehifadhiwa nakala rudufu kwenye <ph name="BEGIN_LINK" />Hifadhi ya Google<ph name="END_LINK" /></translation>
 <translation id="3470502288861289375">Inanakili...</translation>
+<translation id="3473378059788601120">Imenakiliwa kwenye <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Lahajedwali ya Google</translation>
 <translation id="3495304270784461826">Hitilafu <ph name="COUNT" />.</translation>
 <translation id="3519867315646775981">Unukuzi wa mfumo wa kuandika (shalom ← שלום)</translation>
@@ -220,6 +222,7 @@
 <translation id="3620292326130836921">Zote zimehifadhiwa nakala!</translation>
 <translation id="3626281679859535460">Ung'aavu</translation>
 <translation id="3644896802912593514">Upana</translation>
+<translation id="3645531960514756307">Bandua folda</translation>
 <translation id="3678559383040232393">Kibodi ya Kimalta</translation>
 <translation id="3685122418104378273">Usawazishaji wa Hifadhi ya Google umezimwa kwa chaguomsingi wakati wa kutumia data ya kifaa cha mkononi.</translation>
 <translation id="3726463242007121105">Kifaa hakiwezi kufunguliwa kwa sababu mfumo wake wa faili hauhimiliwi.</translation>
@@ -240,6 +243,7 @@
 <translation id="383652340667548381">Kiserbia</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3855472144336161447">Kijerumani Neo 2</translation>
+<translation id="3856075812838139784">Soma tu</translation>
 <translation id="3858678421048828670">Kibodi ya Kiitaliano</translation>
 <translation id="386548886866354912">Fungasha kwa <ph name="EXTENSION_NAME" /></translation>
 <translation id="3866249974567520381">Maelezo</translation>
@@ -266,6 +270,7 @@
 <translation id="426015154560005552">Kibodi ya Kiarabu</translation>
 <translation id="4261901459838235729">Wasilisho la Google</translation>
 <translation id="4290535918735525311">Folda 1 imeshirikiwa na Linux</translation>
+<translation id="42981349822642051">Panua</translation>
 <translation id="4298972503445160211">Kibodi ya Kidenmaki</translation>
 <translation id="4299729908419173967">Kibrazili</translation>
 <translation id="4309915981827077375">Maelezo ya jumla</translation>
@@ -285,7 +290,9 @@
 <translation id="4568854179928172494">Wakati uliorekebishwa</translation>
 <translation id="4572815280350369984">Faili ya <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Zaidi...</translation>
+<translation id="4579744207439506346">Umeongeza <ph name="ENTRY_NAME" /> kwenye vipengee ulivyochagua.</translation>
 <translation id="4582497162516204941">Sakinisha ukitumia Linux (Beta)</translation>
+<translation id="4594543368593301662">Inaonyesha matokeo ya <ph name="SEARCH_TERM" />.</translation>
 <translation id="4631887759990505102">Msanii</translation>
 <translation id="4656293982926141856">Kompyuta hii</translation>
 <translation id="4669606053856530811">Wanachama wa '<ph name="SOURCE_NAME" />' hawataweza kuifikia isipokuwa vipengee hivi viwe vinashirikiwa nao.</translation>
@@ -338,6 +345,7 @@
 <translation id="5038625366300922036">Tazama zaidi...</translation>
 <translation id="5061708541166515394">Ulinganuzi</translation>
 <translation id="5068919226082848014">Piza</translation>
+<translation id="5081517858322016911">Itafuta <ph name="TOTAL_FILE_SIZE" /> za faili</translation>
 <translation id="509429900233858213">Hitilafu fulani imetokea.</translation>
 <translation id="5098629044894065541">Kiyahudi</translation>
 <translation id="5123433949759960244">Mpira wa kikapu</translation>
@@ -383,12 +391,14 @@
 <translation id="5412637665001827670">Kidobi ya Kibulgeria</translation>
 <translation id="5418923334382419584">Kibodi ya Kimyanma</translation>
 <translation id="5428105026674456456">Kihispania</translation>
+<translation id="5438282218546237410">Hakuna matokeo ya <ph name="SEARCH_TERM" />.</translation>
 <translation id="5464696796438641524">Kibodi ya Kipoli</translation>
 <translation id="5465122519792752163">Kibodi ya Kinepali (InScript)</translation>
 <translation id="5469868506864199649">Kiitaliano</translation>
 <translation id="5494920125229734069">Chagua zote</translation>
 <translation id="5500122897333236901">Kiaislandi</translation>
 <translation id="5508696409934741614">Nukta</translation>
+<translation id="5522908512596376669">Umebadilisha orodha ya faili kuwa mwonekano wa orodha.</translation>
 <translation id="5524517123096967210">Faili isingeweza kusomwa.</translation>
 <translation id="5533102081734025921">Picha ya <ph name="IMAGE_TYPE" /></translation>
 <translation id="5533555070048896610">Unukuzi wa mfumo wa kuandika (namaste → नमस्ते)</translation>
@@ -407,6 +417,7 @@
 <translation id="5752453871435543420">Hifadhi rudufu ya Wingu la Chrome OS</translation>
 <translation id="5756666464756035725">QWERTY ya Kihungaria</translation>
 <translation id="5771585441665576801">Unukuzi wa mfumo wa kuandika (geia → γεια)</translation>
+<translation id="5776325638577448643">Futa na ubadilishe muundo</translation>
 <translation id="57838592816432529">Zima sauti</translation>
 <translation id="5788127256798019331">Faili za Google Play</translation>
 <translation id="5790193330357274855">Kikazakhi</translation>
@@ -415,6 +426,7 @@
 <translation id="5819442873484330149">Seti ya Hangul 3 (Ya mwisho)</translation>
 <translation id="5833610766403489739">Faili hii imepotelea mahali fulani. Tafadhali angalia mipangilio yako ya mahali pa kupakulia na ujaribu tena.</translation>
 <translation id="5838051104334203064">Programu za Duka la Google Play haviwezi kufikia kifaa hiki</translation>
+<translation id="5838451609423551646">Umeondoa vipengee vyote kwenye sehemu ya vipengee ilivyochagua.</translation>
 <translation id="5838825566232597749">Kibodi ya US Workman ya kimataifa</translation>
 <translation id="5850516540536751549">Aina hii ya faili haitumiki. Tafadhali tembelea <ph name="BEGIN_LINK" />Duka la Wavuti la Chrome<ph name="END_LINK" /> ili upate programu ambayo inaweza kufungua aina hii ya faili.
 	      <ph name="BEGIN_LINK_HELP" />Pata Maelezo zaidi<ph name="END_LINK_HELP" /></translation>
@@ -422,10 +434,12 @@
 <translation id="5857774240076772505">Ruhusu programu za Linux zibadilishe faili katika folda ya <ph name="FOLDER_NAME" /></translation>
 <translation id="5892290200158927959">Kibodi ya BEPO ya Kifaransa</translation>
 <translation id="5911887972742538906">Hitilafu imetokea wakati wa kusakinisha programu yako ya Linux.</translation>
+<translation id="5912396950572065471">Muundo</translation>
 <translation id="5913638992615760742">Uendeshaji wa kunakili umeshindikana, hitilafu isiyotarajiwa: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Mbinu ya kuchapa maandishi ya Kijapani (kwenye kibodi ya Kijapani)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Ruhusu programu za Linux zibadilishe faili kwenye Hifadhi yako ya Google. Mabadiliko utakayofanya yatasawazishwa kwenye vifaa vyako vingine.</translation>
+<translation id="5955954492236143329">Faili <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5982621672636444458">Chaguo za kupanga</translation>
 <translation id="6005282720244019462">Kibodi ya Amerika Kusini</translation>
 <translation id="6007237601604674381">Kusogezwa kumeshindika. <ph name="ERROR_MESSAGE" /></translation>
@@ -436,6 +450,7 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6054173164583630569">Kibodi ya Kifaransa</translation>
 <translation id="6074825444536523002">Fomu ya Google</translation>
+<translation id="6096979789310008754">Imefuta hoja ya utafutaji, inaonyesha faili na folda zote.</translation>
 <translation id="6111770213269631447">Unukuzi wa mfumo wa kuandika (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Nafasi</translation>
 <translation id="6133173853026656527">Inasogeza <ph name="FILE_NAME" />...</translation>
@@ -446,6 +461,7 @@
 <translation id="6189412234224385711">Fungua ukitumia <ph name="EXTENSION_NAME" /></translation>
 <translation id="6199801702437275229">Inasubiri maelezo ya nafasi...</translation>
 <translation id="6205710420833115353">Vitendo vingine vinachukua muda zaidi ya ilivyotarajiwa. Unataka kuvighairi?</translation>
+<translation id="6224253798271602650">Badilisha muundo <ph name="DRIVE_NAME" /></translation>
 <translation id="6227235786875481728">Faili hii isingeweza kuchezwa.</translation>
 <translation id="6248400709929739064">Washa manukuu</translation>
 <translation id="6264347891387618177">Unukuzi wa mfumo wa kuandika (selam → ሰላም)</translation>
@@ -488,6 +504,7 @@
 <translation id="6820687829547641339">Gzip imebana kumbukumbu ya tar</translation>
 <translation id="6825883775269213504">Kirusi</translation>
 <translation id="6827236167376090743">Video hii itaendelea kucheza bila kukoma.</translation>
+<translation id="6847101934483209767">Umeondoa <ph name="ENTRY_NAME" /> kwenye vipengee ulivyochagua.</translation>
 <translation id="6862635236584086457">Faili zote zilizohifadhiwa kwenye folda hii zinachelezwa kiotomatiki mtandaoni</translation>
 <translation id="6870130893560916279">Kibodi ya Kiukreni</translation>
 <translation id="6876155724392614295">Baiskeli</translation>
@@ -524,6 +541,7 @@
 <translation id="719009910964971313">Kibodi ya Programmer Dvorak, Marekani</translation>
 <translation id="7191454237977785534">Hifadhi faili kama</translation>
 <translation id="7222624196722476520">Kibodi ya Fonetiki ya Kibulgaria</translation>
+<translation id="7238097264433196391">Jina la Hifadhi</translation>
 <translation id="7248671827512403053">Programu</translation>
 <translation id="7268659760406822741">Huduma zinazopatikana</translation>
 <translation id="7283041136720745563">Mgao wako wa nafasi kwenye Hifadhi ya Google hautoshi.</translation>
@@ -594,7 +612,6 @@
 <translation id="7969525169268594403">Kislovenia</translation>
 <translation id="7982283708762922719">Urefu</translation>
 <translation id="7987485481246785146">Kibodi inayolingana na Kiarabu cha Kurdu ya Sorani</translation>
-<translation id="799547531016638432">Ondoa njia ya mkato</translation>
 <translation id="799923393800005025">Unaweza kuangalia</translation>
 <translation id="8008366997883261463">Mbwa</translation>
 <translation id="8028993641010258682">Ukubwa</translation>
@@ -614,11 +631,13 @@
 <translation id="8148264977957212129">Mbinu ingizo ya Pinyin</translation>
 <translation id="8151638057146502721">Sanidi</translation>
 <translation id="8153607920959057464">Faili hii haikuweza kuonyesha.</translation>
+<translation id="8154842056504218462">Umechagua vipengee vyote.</translation>
 <translation id="8157684860301034423">Imeshindwa kuleta maelezo ya programu.</translation>
 <translation id="8157939133946352716">7x5</translation>
 <translation id="8160015581537295331">Kibodi ya Kihispania</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8193175696669055101">Muundo wa kifaa</translation>
+<translation id="8208580316430297579">Kazi ya sanaa</translation>
 <translation id="8223479393428528563">Ili kuhifadhi faili hizi kwa matumizi ya nje ya mtandao, rudi mtandaoni, bofya faili kulia, na uchague chaguo la <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Ghairi</translation>
 <translation id="8261506727792406068">Futa</translation>
@@ -632,6 +651,7 @@
 <translation id="8336153091935557858">Jana <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8336579025507394412">Kibodi ya Kiayalandi</translation>
 <translation id="8342318071240498787">Faili au saraka iliyo na jina sawa tayari ipo.</translation>
+<translation id="8382450452152102026">Kwenye <ph name="FOLDER_NAME" /></translation>
 <translation id="8391950649760071442">Unukuzi wa mfumo wa kuandika (emandi → ఏమండీ)</translation>
 <translation id="8395901698320285466">Vipimo</translation>
 <translation id="8412586565681117057">Mbinu ya kuingiza data ya Quick</translation>
@@ -650,11 +670,13 @@
 <translation id="8561206103590473338">Tembo</translation>
 <translation id="8569764466147087991">Chagua faili ya kufungua</translation>
 <translation id="8579285237314169903">Inasasisha vipengee <ph name="NUMBER_OF_FILES" />...</translation>
+<translation id="8600173386174225982">Orodha ya faili imebadilishwa kuwa mwonekano wa kijipicha.</translation>
 <translation id="8669949407341943408">Inahamisha...</translation>
 <translation id="8671210955687109937">Anaweza kutoa maoni</translation>
 <translation id="8686213429977032554">Faili hii ya Hifadhi bado haijashirikiwa</translation>
 <translation id="8698464937041809063">Mchoro wa Google</translation>
 <translation id="8714406895390098252">Baiskeli</translation>
+<translation id="8719721339511222681">Umechagua <ph name="ENTRY_NAME" />.</translation>
 <translation id="8722421161699219904">Kibodi ya Marekani ya kimataifa</translation>
 <translation id="872537912056138402">Kikroeshia</translation>
 <translation id="874420130893181774">Mbinu ya kuingiza data ya Pinyin ya Jadi</translation>
@@ -679,6 +701,7 @@
 <translation id="9099674669267916096">Idadi ya kurasa</translation>
 <translation id="9110990317705400362">Tunaendelea kutafuta njia za kufanya kuvinjari kwako kuwe salama zaidi. Hapo awali, tovuti yoyote ingeweza kukuomba kuongeza kiendelezi katika kivinjari chako. Katika matoleo mapya ya Google Chrome, lazima uiambie Chrome kwa uwazi kuwa unataka kusakinisha viendelezi hivi kwa kuviongeza kupitia ukurasa wa Viendelezi. <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Kodeki</translation>
+<translation id="9129931661813833980">Bandika folda</translation>
 <translation id="9130775360844693113">Wanachama wa '<ph name="DESTINATION_NAME" />' watapata idhini ya kuvifikia vipengee hivi.</translation>
 <translation id="9131598836763251128">Chagua faili moja au zaidi</translation>
 <translation id="9133055936679483811">Haikuwezekana kubana. <ph name="ERROR_MESSAGE" /></translation>
@@ -695,6 +718,7 @@
 <translation id="942954117721265519">Hakuna picha katika saraka hii.</translation>
 <translation id="943972244133411984">Ilibadilishwa na</translation>
 <translation id="945522503751344254">Tuma maoni</translation>
+<translation id="947144732524271678">Umechagua fungu lenye vipengee <ph name="ENTRY_COUNT" /> kuanzia <ph name="FROM_ENTRY_NAME" /> hadi <ph name="TO_ENTRY_NAME" />.</translation>
 <translation id="981121421437150478">Nje ya mtandao</translation>
 <translation id="988685240266037636">Faili yenye jina "<ph name="FILE_NAME" />" tayari ipo. Ungependa kuibadilisha?</translation>
 <translation id="996903396648773764">MB <ph name="NUMBER_OF_MB" /></translation>

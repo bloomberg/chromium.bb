@@ -2,6 +2,9 @@ blundell@chromium.org
 caitkp@chromium.org
 jochen@chromium.org
 
+# For build configuration things and simple changes.
+thakis@chromium.org
+
 per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 per-file autofill_assistant_strings.grdp=file://components/autofill_assistant/OWNERS
 per-file autofill_payments_strings.grdp=file://components/autofill/core/browser/payments/OWNERS
@@ -12,6 +15,7 @@ per-file crash_strings.grdp=file://components/crash/OWNERS
 per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 per-file error_page_strings.grdp=file://components/error_page/OWNERS
 per-file management_strings.grdp=file://docs/privacy/OWNERS
+per-file media_message_center_strings.grdp=file://components/media_message_center/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
 per-file ntp_tiles_strings.grdp=file://components/ntp_tiles/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS

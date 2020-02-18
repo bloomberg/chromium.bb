@@ -15,12 +15,15 @@ use strict;
 package SOAP::Transport::LOOPBACK::Client;
 use strict;
 
+our $VERSION = '1.27'; # VERSION
+
 use vars qw(@ISA);
+use SOAP::Lite;
 @ISA = qw(SOAP::Client);
 
 sub new {
-    my $class = ref $_[0] || $_[0];
-    return bless {}, $class;
+    return $_[0] if ref $_[0];
+    return bless {}, $_[0];
 }
 
 sub send_receive {

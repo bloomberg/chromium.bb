@@ -516,6 +516,27 @@ TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
   TextureBase::SetTarget(target);
 }
 
+TexturePassthrough::TexturePassthrough(GLuint service_id,
+                                       GLenum target,
+                                       GLenum internal_format,
+                                       GLsizei width,
+                                       GLsizei height,
+                                       GLsizei depth,
+                                       GLint border,
+                                       GLenum format,
+                                       GLenum type)
+    : TexturePassthrough(service_id, target) {
+  DCHECK(target != GL_TEXTURE_CUBE_MAP);
+  LevelInfo* level_info = GetLevelInfo(target, 0);
+  level_info->internal_format = internal_format;
+  level_info->width = width;
+  level_info->height = height;
+  level_info->depth = depth;
+  level_info->border = border;
+  level_info->format = format;
+  level_info->type = type;
+}
+
 TexturePassthrough::~TexturePassthrough() {
   DeleteFromMailboxManager();
   if (have_context_) {
@@ -608,6 +629,32 @@ void TexturePassthrough::SetLevelImageInternal(
     gl::GLImage* image,
     GLStreamTextureImage* stream_texture_image,
     GLuint service_id) {
+  LevelInfo* level_info = GetLevelInfo(target, level);
+  level_info->image = image;
+  level_info->stream_texture_image = stream_texture_image;
+
+  if (service_id != 0 && service_id != service_id_) {
+    service_id_ = service_id;
+  }
+
+  if (stream_texture_image &&
+      gl::g_current_gl_driver->ext.b_GL_ANGLE_texture_external_update) {
+    // Notify the texture that its size has changed
+    GLint prev_texture = 0;
+    glGetIntegerv(GetTextureBindingQuery(target_), &prev_texture);
+    glBindTexture(target_, service_id_);
+
+    glTexImage2DExternalANGLE(target_, level, level_info->internal_format,
+                              level_info->width, level_info->height,
+                              level_info->border, level_info->format,
+                              level_info->type);
+
+    glBindTexture(target_, prev_texture);
+  }
+}
+
+TexturePassthrough::LevelInfo* TexturePassthrough::GetLevelInfo(GLenum target,
+                                                                GLint level) {
   size_t face_idx = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK(face_idx < level_images_.size());
   DCHECK(level >= 0);
@@ -617,12 +664,7 @@ void TexturePassthrough::SetLevelImageInternal(
     level_images_[face_idx].resize(level + 1);
   }
 
-  level_images_[face_idx][level].image = image;
-  level_images_[face_idx][level].stream_texture_image = stream_texture_image;
-
-  if (service_id != 0 && service_id != service_id_) {
-    service_id_ = service_id;
-  }
+  return &level_images_[face_idx][level];
 }
 
 Texture::Texture(GLuint service_id)
@@ -1702,10 +1744,14 @@ bool Texture::ClearRenderableLevels(DecoderContext* decoder) {
   return true;
 }
 
-void Texture::SetImmutable(bool immutable) {
-  if (immutable_ == immutable)
+void Texture::SetImmutable(bool immutable, bool immutable_storage) {
+  DCHECK(!immutable_storage || immutable);
+
+  if (immutable_ == immutable && immutable_storage_ == immutable_storage)
     return;
+
   immutable_ = immutable;
+  immutable_storage_ = immutable_storage;
 
   UpdateNumMipLevels();
 }
@@ -1893,6 +1939,10 @@ void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
+  // Workaround for StreamTexture which must be re-copied on each access.
+  // TODO(ericrk): Remove this once SharedImage transition is complete.
+  if (info.image && !info.image->HasMutableState())
+    return;
   info.image_state = state;
 }
 

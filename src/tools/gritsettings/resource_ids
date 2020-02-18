@@ -74,24 +74,31 @@
 
   # Leave space for theme_resources since it has many structures.
   "chrome/app/theme/theme_resources.grd": {
-    "structures": [10210],
+    "structures": [10250],
   },
   # END chrome/app section.
 
   # START chrome/browser section.
   "chrome/browser/browser_resources.grd": {
     "includes": [11000],
-    "structures": [11900],
+    "structures": [11850],
+  },
+  "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
+    "includes": [11930],
+    "structures": [11990],
+  },
+  "chrome/browser/resources/chromeos/camera/strings/camera_strings.grd": {
+    "messages": [12030],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [11940],
+    "structures": [12100],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [11945],
+    "structures": [12110],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [12000],
-    "structures": [12250],
+    "includes": [12120],
+    "structures": [12260],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
     "includes": [12300],
@@ -145,15 +152,12 @@
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13890],
   },
-  "chrome/browser/resources/welcome/onboarding_welcome/onboarding_welcome_resources.grd": {
+  "chrome/browser/resources/welcome/onboarding_welcome_resources.grd": {
     "includes": [13900],
     "structures": [13950],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
     "includes": [13990],
-  },
-  "chrome/browser/resources/kiosk_next_internal_resources.grd": {
-    "includes": [14040],
   },
   # END chrome/browser section.
 
@@ -219,6 +223,9 @@
   },
   "components/embedder_suppport/android/java/strings/web_contents_delegate_android_strings.grd": {
     "messages": [17600],
+  },
+  "components/autofill/core/browser/autofill_address_rewriter_resources.grd":{
+    "includes": [18000]
   },
   # END components/ section.
 
@@ -314,10 +321,10 @@
     "structures": [23520],
   },
   "ash/ash_strings.grd": {
-    "messages": [23530],
+    "messages": [23525],
   },
   "ash/components/ash_components_strings.grd": {
-    "messages": [24100],
+    "messages": [24130],
   },
   "ash/components/resources/ash_components_resources.grd": {
     "structures": [24350],
@@ -440,7 +447,7 @@
     "messages": [27350],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27580],
+    "structures": [27600],
   },
   "ui/webui/resources/webui_resources.grd": {
     "includes": [27880],

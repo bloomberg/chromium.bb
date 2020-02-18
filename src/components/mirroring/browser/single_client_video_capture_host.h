@@ -38,7 +38,7 @@ class SingleClientVideoCaptureHost final
   using DeviceLauncherCreateCallback = base::RepeatingCallback<
       std::unique_ptr<content::VideoCaptureDeviceLauncher>()>;
   SingleClientVideoCaptureHost(const std::string& device_id,
-                               blink::MediaStreamType type,
+                               blink::mojom::MediaStreamType type,
                                DeviceLauncherCreateCallback callback);
   ~SingleClientVideoCaptureHost() override;
 
@@ -99,7 +99,7 @@ class SingleClientVideoCaptureHost final
                                  double consumer_resource_utilization);
 
   const std::string device_id_;
-  const blink::MediaStreamType type_;
+  const blink::mojom::MediaStreamType type_;
   const DeviceLauncherCreateCallback device_launcher_callback_;
 
   media::mojom::VideoCaptureObserverPtr observer_;
@@ -128,7 +128,7 @@ class SingleClientVideoCaptureHost final
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<SingleClientVideoCaptureHost> weak_factory_;
+  base::WeakPtrFactory<SingleClientVideoCaptureHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SingleClientVideoCaptureHost);
 };

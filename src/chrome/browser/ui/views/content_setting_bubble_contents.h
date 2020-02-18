@@ -67,7 +67,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  View* CreateExtraView() override;
+  std::unique_ptr<View> CreateExtraView() override;
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
@@ -75,7 +75,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   void OnThemeChanged() override;
 
  private:
-  class Favicon;
   class ListItemContainer;
 
   // Applies coloring to the learn more button.
@@ -99,14 +98,14 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // Provides data for this bubble.
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
 
-  ListItemContainer* list_item_container_;
+  ListItemContainer* list_item_container_ = nullptr;
 
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
-  views::Link* custom_link_;
-  views::LabelButton* manage_button_;
-  views::Checkbox* manage_checkbox_;
-  views::ImageButton* learn_more_button_;
+  views::Link* custom_link_ = nullptr;
+  views::LabelButton* manage_button_ = nullptr;
+  views::Checkbox* manage_checkbox_ = nullptr;
+  views::ImageButton* learn_more_button_ = nullptr;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

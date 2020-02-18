@@ -23,7 +23,7 @@ TlsClientHandshaker::ProofVerifierCallbackImpl::~ProofVerifierCallbackImpl() {}
 
 void TlsClientHandshaker::ProofVerifierCallbackImpl::Run(
     bool ok,
-    const std::string& error_details,
+    const std::string& /*error_details*/,
     std::unique_ptr<ProofVerifyDetails>* details) {
   if (parent_ == nullptr) {
     return;
@@ -53,7 +53,8 @@ TlsClientHandshaker::TlsClientHandshaker(
       proof_verifier_(proof_verifier),
       verify_context_(std::move(verify_context)),
       user_agent_id_(user_agent_id),
-      crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {}
+      crypto_negotiated_params_(new QuicCryptoNegotiatedParameters),
+      tls_connection_(ssl_ctx, this) {}
 
 TlsClientHandshaker::~TlsClientHandshaker() {
   if (proof_verify_callback_) {
@@ -63,25 +64,11 @@ TlsClientHandshaker::~TlsClientHandshaker() {
 
 // static
 bssl::UniquePtr<SSL_CTX> TlsClientHandshaker::CreateSslCtx() {
-  return TlsHandshaker::CreateSslCtx();
+  return TlsClientConnection::CreateSslCtx();
 }
 
 bool TlsClientHandshaker::CryptoConnect() {
-  CrypterPair crypters;
-  CryptoUtils::CreateTlsInitialCrypters(
-      Perspective::IS_CLIENT, session()->connection()->transport_version(),
-      session()->connection_id(), &crypters);
-  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL,
-                                        std::move(crypters.encrypter));
-  session()->connection()->InstallDecrypter(ENCRYPTION_INITIAL,
-                                            std::move(crypters.decrypter));
   state_ = STATE_HANDSHAKE_RUNNING;
-  // Configure certificate verification.
-  // TODO(nharper): This only verifies certs on initial connection, not on
-  // resumption. Chromium has this callback be a no-op and verifies the
-  // certificate after the connection is complete. We need to re-verify on
-  // resumption in case of expiration or revocation/distrust.
-  SSL_set_custom_verify(ssl(), SSL_VERIFY_PEER, &VerifyCallback);
 
   // Configure the SSL to be a client.
   SSL_set_connect_state(ssl());
@@ -89,8 +76,7 @@ bool TlsClientHandshaker::CryptoConnect() {
     return false;
   }
 
-  std::string alpn_string =
-      AlpnForVersion(session()->supported_versions().front());
+  std::string alpn_string = AlpnForVersion(session()->connection()->version());
   if (alpn_string.length() > std::numeric_limits<uint8_t>::max()) {
     QUIC_BUG << "ALPN too long: '" << alpn_string << "'";
     CloseConnection(QUIC_HANDSHAKE_FAILED, "ALPN too long");
@@ -278,7 +264,7 @@ void TlsClientHandshaker::FinishHandshake() {
     std::string received_alpn_string(reinterpret_cast<const char*>(alpn_data),
                                      alpn_length);
     std::string sent_alpn_string =
-        AlpnForVersion(session()->supported_versions().front());
+        AlpnForVersion(session()->connection()->version());
     if (received_alpn_string != sent_alpn_string) {
       QUIC_LOG(ERROR) << "Client: received mismatched ALPN '"
                       << received_alpn_string << "', expected '"
@@ -296,19 +282,6 @@ void TlsClientHandshaker::FinishHandshake() {
   session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
-}
-
-// static
-TlsClientHandshaker* TlsClientHandshaker::HandshakerFromSsl(SSL* ssl) {
-  return static_cast<TlsClientHandshaker*>(
-      TlsHandshaker::HandshakerFromSsl(ssl));
-}
-
-// static
-enum ssl_verify_result_t TlsClientHandshaker::VerifyCallback(
-    SSL* ssl,
-    uint8_t* out_alert) {
-  return HandshakerFromSsl(ssl)->VerifyCert(out_alert);
 }
 
 enum ssl_verify_result_t TlsClientHandshaker::VerifyCert(uint8_t* out_alert) {

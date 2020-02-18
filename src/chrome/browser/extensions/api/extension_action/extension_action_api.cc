@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
@@ -90,34 +89,7 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI>>::
     DestructorAtExit g_extension_action_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
-    : browser_context_(context),
-      extension_prefs_(nullptr) {
-  ExtensionFunctionRegistry& registry =
-      ExtensionFunctionRegistry::GetInstance();
-
-  // Browser Actions
-  registry.RegisterFunction<BrowserActionSetIconFunction>();
-  registry.RegisterFunction<BrowserActionSetTitleFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionSetPopupFunction>();
-  registry.RegisterFunction<BrowserActionGetTitleFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeTextFunction>();
-  registry.RegisterFunction<BrowserActionGetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<BrowserActionGetPopupFunction>();
-  registry.RegisterFunction<BrowserActionEnableFunction>();
-  registry.RegisterFunction<BrowserActionDisableFunction>();
-  registry.RegisterFunction<BrowserActionOpenPopupFunction>();
-
-  // Page Actions
-  registry.RegisterFunction<PageActionShowFunction>();
-  registry.RegisterFunction<PageActionHideFunction>();
-  registry.RegisterFunction<PageActionSetIconFunction>();
-  registry.RegisterFunction<PageActionSetTitleFunction>();
-  registry.RegisterFunction<PageActionSetPopupFunction>();
-  registry.RegisterFunction<PageActionGetTitleFunction>();
-  registry.RegisterFunction<PageActionGetPopupFunction>();
-}
+    : browser_context_(context), extension_prefs_(nullptr) {}
 
 ExtensionActionAPI::~ExtensionActionAPI() {
 }
@@ -316,9 +288,9 @@ ExtensionFunction::ResponseAction ExtensionActionFunction::Run() {
     if (!contents_)
       return RespondNow(Error(kNoTabError, base::NumberToString(tab_id_)));
   } else {
-    // Only browser actions have a default tabId.
-    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() ==
-                                ActionInfo::TYPE_BROWSER);
+    // Page actions do not have a default tabId.
+    EXTENSION_FUNCTION_VALIDATE(extension_action_->action_type() !=
+                                ActionInfo::TYPE_PAGE);
   }
   return RunExtensionAction();
 }

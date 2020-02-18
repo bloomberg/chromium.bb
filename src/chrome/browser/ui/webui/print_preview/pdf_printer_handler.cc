@@ -97,7 +97,7 @@ base::Value GetPdfCapabilities(const std::string& locale) {
   Media default_media("", "", default_media_size.width(),
                       default_media_size.height());
   if (!default_media.MatchBySize() ||
-      !base::ContainsValue(kPdfMedia, default_media.type)) {
+      !base::Contains(kPdfMedia, default_media.type)) {
     default_media =
         Media(locale == "en-US" ? MediaType::NA_LETTER : MediaType::ISO_A4);
   }
@@ -115,13 +115,13 @@ base::Value GetPdfCapabilities(const std::string& locale) {
 // Callback that stores a PDF file on disk.
 void PrintToPdfCallback(scoped_refptr<base::RefCountedMemory> data,
                         const base::FilePath& path,
-                        const base::Closure& pdf_file_saved_closure) {
+                        base::OnceClosure pdf_file_saved_closure) {
   base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->front()),
                          base::checked_cast<int>(data->size()));
   if (!pdf_file_saved_closure.is_null())
-    pdf_file_saved_closure.Run();
+    std::move(pdf_file_saved_closure).Run();
 }
 
 base::FilePath SelectSaveDirectory(const base::FilePath& path,
@@ -140,8 +140,7 @@ PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
                                      StickySettings* sticky_settings)
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
-      sticky_settings_(sticky_settings),
-      weak_ptr_factory_(this) {}
+      sticky_settings_(sticky_settings) {}
 
 PdfPrinterHandler::~PdfPrinterHandler() {
   if (select_file_dialog_.get())
@@ -153,7 +152,7 @@ void PdfPrinterHandler::Reset() {
 }
 
 void PdfPrinterHandler::StartGetPrinters(
-    const AddedPrintersCallback& added_printers_callback,
+    AddedPrintersCallback added_printers_callback,
     GetPrintersDoneCallback done_callback) {
   NOTREACHED();
 }
@@ -226,8 +225,8 @@ void PdfPrinterHandler::FileSelectionCanceled(void* params) {
 }
 
 void PdfPrinterHandler::SetPdfSavedClosureForTesting(
-    const base::Closure& closure) {
-  pdf_file_saved_closure_ = closure;
+    base::OnceClosure closure) {
+  pdf_file_saved_closure_ = std::move(closure);
 }
 
 // static
@@ -315,9 +314,9 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
   if (!prompt_user) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&base::GetUniquePath, path.Append(default_filename)),
-        base::Bind(&PdfPrinterHandler::OnGotUniqueFileName,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&base::GetUniquePath, path.Append(default_filename)),
+        base::BindOnce(&PdfPrinterHandler::OnGotUniqueFileName,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -342,7 +341,7 @@ void PdfPrinterHandler::PostPrintToPdfTask() {
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&PrintToPdfCallback, print_data_, print_to_pdf_path_,
-                     pdf_file_saved_closure_));
+                     std::move(pdf_file_saved_closure_)));
   print_to_pdf_path_.clear();
   std::move(print_callback_).Run(base::Value());
 }

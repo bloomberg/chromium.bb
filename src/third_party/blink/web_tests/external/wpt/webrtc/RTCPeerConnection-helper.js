@@ -254,6 +254,9 @@ async function doSignalingHandshake(localPc, remotePc, options={}) {
 // This should work for RTCSctpTransport, RTCDtlsTransport and RTCIceTransport.
 function waitForState(transport, state) {
   return new Promise((resolve, reject) => {
+    if (transport.state == state) {
+      resolve();
+    }
     const eventHandler = () => {
       if (transport.state == state) {
         transport.removeEventListener('statechange', eventHandler, false);
@@ -310,6 +313,21 @@ function listenToConnected(pc) {
       if (pc.connectionState == 'connected')
         resolve();
     };
+  });
+}
+
+// Returns a promise that resolves when |pc.connectionState| is in one of the
+// wanted states.
+function waitForConnectionStateChange(pc, wantedStates) {
+  return new Promise((resolve) => {
+    if (wantedStates.includes(pc.connectionState)) {
+      resolve();
+      return;
+    }
+    pc.addEventListener('connectionstatechange', () => {
+      if (wantedStates.includes(pc.connectionState))
+        resolve();
+    });
   });
 }
 

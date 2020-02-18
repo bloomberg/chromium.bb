@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_summary_element.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
@@ -102,7 +102,7 @@ Element* HTMLDetailsElement::FindMainSummary() const {
   HTMLSlotElement* slot = To<HTMLSlotElement>(element);
   DCHECK(slot->firstChild());
   CHECK(IsHTMLSummaryElement(*slot->firstChild()));
-  return ToElement(slot->firstChild());
+  return To<Element>(slot->firstChild());
 }
 
 void HTMLDetailsElement::ParseAttribute(

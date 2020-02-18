@@ -16,9 +16,9 @@
 #include "chrome/common/chrome_features.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_ui.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
-#include "services/identity/public/cpp/identity_test_utils.h"
 
 using extensions::Manifest;
 using ActionType = extensions::ExtensionBuilder::ActionType;
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
                        DISABLED_InvokeUi_NoAction) {
   // Sign in to supppress the signin promo.
-  identity::MakePrimaryAccountAvailable(
+  signin::MakePrimaryAccountAvailable(
       IdentityManagerFactory::GetForProfile(profile()), "test@example.com");
   ShowAndVerifyUi();
 }

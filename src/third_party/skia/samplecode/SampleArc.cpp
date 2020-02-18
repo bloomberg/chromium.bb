@@ -22,7 +22,6 @@
 #include "include/utils/SkTextUtils.h"
 #include "samplecode/Sample.h"
 #include "src/utils/SkUTF.h"
-#include "tools/timer/AnimTimer.h"
 
 #include "include/utils/SkParsePath.h"
 static void testparse() {
@@ -79,21 +78,11 @@ class ArcsView : public Sample {
         }
     };
 
-public:
-    SkRect fRect;
+    SkRect fRect = {20, 20, 220, 220};
     sk_sp<MyDrawable> fAnimatingDrawable;
     sk_sp<SkDrawable> fRootDrawable;
 
-    ArcsView() { }
-
-protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Arcs");
-            return true;
-        }
-        return this->INHERITED::onQuery(evt);
-    }
+    SkString name() override { return SkString("Arcs"); }
 
     static void DrawRectWithLines(SkCanvas* canvas, const SkRect& r, const SkPaint& p) {
         canvas->drawRect(r, p);
@@ -171,11 +160,8 @@ protected:
 
     void onOnceBeforeDraw() override {
         testparse();
-        fSweep = SkIntToScalar(100);
         this->setBGColor(0xFFDDDDDD);
 
-        fRect.set(0, 0, SkIntToScalar(200), SkIntToScalar(200));
-        fRect.offset(SkIntToScalar(20), SkIntToScalar(20));
         fAnimatingDrawable = sk_make_sp<MyDrawable>(fRect);
 
         SkPictureRecorder recorder;
@@ -187,20 +173,13 @@ protected:
         canvas->drawDrawable(fRootDrawable.get());
     }
 
-    bool onAnimate(const AnimTimer& timer) override {
-        SkScalar angle = SkDoubleToScalar(fmod(timer.secs() * 360 / 24, 360));
+    bool onAnimate(double nanos) override {
+        SkScalar angle = SkDoubleToScalar(fmod(1e-9 * nanos * 360 / 24, 360));
         if (fAnimatingDrawable) {
             fAnimatingDrawable->setSweep(angle);
         }
         return true;
     }
-
-private:
-    SkScalar fSweep;
-
-    typedef Sample INHERITED;
 };
-
-//////////////////////////////////////////////////////////////////////////////
 
 DEF_SAMPLE( return new ArcsView(); )

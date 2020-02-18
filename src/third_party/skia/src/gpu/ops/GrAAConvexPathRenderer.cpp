@@ -10,14 +10,15 @@
 #include "src/core/SkGeometry.h"
 #include "src/core/SkPathPriv.h"
 #include "src/core/SkPointPriv.h"
+#include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDrawOpTest.h"
 #include "src/gpu/GrGeometryProcessor.h"
-#include "src/gpu/GrPathUtils.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/GrVertexWriter.h"
+#include "src/gpu/geometry/GrPathUtils.h"
+#include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
@@ -653,7 +654,7 @@ sk_sp<GrGeometryProcessor> QuadEdgeEffect::TestCreate(GrProcessorTestData* d) {
 GrPathRenderer::CanDrawPath
 GrAAConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
     if (args.fCaps->shaderCaps()->shaderDerivativeSupport() &&
-        (AATypeFlags::kCoverage & args.fAATypeFlags) && args.fShape->style().isSimpleFill() &&
+        (GrAAType::kCoverage == args.fAAType) && args.fShape->style().isSimpleFill() &&
         !args.fShape->inverseFilled() && args.fShape->knownToBeConvex()) {
         return CanDrawPath::kYes;
     }
@@ -704,11 +705,12 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
+            GrClampType clampType) override {
         return fHelper.finalizeProcessors(
-                caps, clip, fsaaType, clampType, GrProcessorAnalysisCoverage::kSingleChannel,
-                &fPaths.back().fColor, &fWideColor);
+                caps, clip, hasMixedSampledCoverage, clampType,
+                GrProcessorAnalysisCoverage::kSingleChannel, &fPaths.back().fColor, &fWideColor);
     }
 
 private:
@@ -834,7 +836,7 @@ private:
 bool GrAAConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
     GR_AUDIT_TRAIL_AUTO_FRAME(args.fRenderTargetContext->auditTrail(),
                               "GrAAConvexPathRenderer::onDrawPath");
-    SkASSERT(GrFSAAType::kUnifiedMSAA != args.fRenderTargetContext->fsaaType());
+    SkASSERT(args.fRenderTargetContext->numSamples() <= 1);
     SkASSERT(!args.fShape->isEmpty());
 
     SkPath path;

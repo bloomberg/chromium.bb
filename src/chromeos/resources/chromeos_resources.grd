@@ -14,6 +14,7 @@
     <includes>
       <part file="cellular_resources.grdp" />
       <part file="multidevice_resources.grdp" />
+      <part file="cros_network_config_resources.grdp" />
       <if expr="enable_cros_libassistant">
         <part file="assistant_resources.grdp" />
       </if>

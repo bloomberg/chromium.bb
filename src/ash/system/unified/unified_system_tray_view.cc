@@ -7,6 +7,7 @@
 #include <numeric>
 
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
@@ -18,6 +19,7 @@
 #include "ash/system/unified/notification_hidden_view.h"
 #include "ash/system/unified/page_indicator_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
+#include "ash/system/unified/unified_managed_device_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -86,8 +88,8 @@ class TopCornerBorder : public views::Border {
 class SystemTrayContainer : public views::View {
  public:
   SystemTrayContainer() {
-    SetLayoutManager(
-        std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
     SetBackground(UnifiedSystemTrayView::CreateBackground());
     SetBorder(std::make_unique<TopCornerBorder>());
   }
@@ -244,8 +246,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
-  auto* layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
   SetBackground(CreateBackground());
   SetPaintToLayer();
@@ -271,6 +273,11 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   system_tray_container_->AddChildView(sliders_container_);
   system_tray_container_->AddChildView(system_info_view_);
 
+  if (features::IsManagedDeviceUIRedesignEnabled()) {
+    managed_device_view_ = new UnifiedManagedDeviceView();
+    system_tray_container_->AddChildView(managed_device_view_);
+  }
+
   detailed_view_container_->SetVisible(false);
   AddChildView(detailed_view_container_);
 
@@ -290,6 +297,15 @@ UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
 void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
   max_height_ = max_height;
   message_center_view_->SetMaxHeight(max_height_);
+
+  // FeaturePodsContainer can adjust it's height by reducing the number of rows
+  // it uses. It will calculate how many rows to use based on the max height
+  // passed here.
+  feature_pods_container_->SetMaxHeight(
+      max_height - top_shortcuts_view_->GetPreferredSize().height() -
+      page_indicator_view_->GetPreferredSize().height() -
+      sliders_container_->GetPreferredSize().height() -
+      system_info_view_->GetPreferredSize().height());
 
   // Because the message center view requires a certain height to be usable, it
   // will be hidden if there isn't sufficient remaining height.
@@ -331,12 +347,17 @@ void UnifiedSystemTrayView::ResetDetailedView() {
   Layout();
 }
 
-void UnifiedSystemTrayView::SaveFeaturePodFocus() {
-  feature_pods_container_->SaveFocus();
+void UnifiedSystemTrayView::SaveFocus() {
+  auto* focus_manager = GetFocusManager();
+  if (!focus_manager)
+    return;
+
+  saved_focused_view_ = focus_manager->GetFocusedView();
 }
 
-void UnifiedSystemTrayView::RestoreFeaturePodFocus() {
-  feature_pods_container_->RestoreFocus();
+void UnifiedSystemTrayView::RestoreFocus() {
+  if (saved_focused_view_)
+    saved_focused_view_->RequestFocus();
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
@@ -449,6 +470,10 @@ void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
   // The size change is not caused by SetExpandedAmount(), because they don't
   // trigger PreferredSizeChanged().
   PreferredSizeChanged();
+}
+
+const char* UnifiedSystemTrayView::GetClassName() const {
+  return "UnifiedSystemTrayView";
 }
 
 views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversable() {

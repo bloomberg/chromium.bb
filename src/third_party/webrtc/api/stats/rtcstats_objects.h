@@ -12,6 +12,7 @@
 #define API_STATS_RTCSTATS_OBJECTS_H_
 
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -317,12 +318,12 @@ class RTC_EXPORT RTCMediaStreamTrackStats final : public RTCStats {
   // TODO(hbos): Not collected by |RTCStatsCollector|. crbug.com/659137
   RTCStatsMember<uint32_t> full_frames_lost;
   // Audio-only members
-  RTCStatsMember<double> audio_level;
-  RTCStatsMember<double> total_audio_energy;
+  RTCStatsMember<double> audio_level;         // Receive-only
+  RTCStatsMember<double> total_audio_energy;  // Receive-only
   RTCStatsMember<double> echo_return_loss;
   RTCStatsMember<double> echo_return_loss_enhancement;
   RTCStatsMember<uint64_t> total_samples_received;
-  RTCStatsMember<double> total_samples_duration;
+  RTCStatsMember<double> total_samples_duration;  // Receive-only
   RTCStatsMember<uint64_t> concealed_samples;
   RTCStatsMember<uint64_t> silent_concealed_samples;
   RTCStatsMember<uint64_t> concealment_events;
@@ -376,7 +377,7 @@ class RTC_EXPORT RTCRTPStreamStats : public RTCStats {
   RTCStatsMember<std::string> associate_stats_id;
   // TODO(hbos): Remote case not supported by |RTCStatsCollector|.
   // crbug.com/657855, 657856
-  RTCStatsMember<bool> is_remote;  // = false
+  RTCStatsMember<bool> is_remote;          // = false
   RTCStatsMember<std::string> media_type;  // renamed to kind.
   RTCStatsMember<std::string> kind;
   RTCStatsMember<std::string> track_id;
@@ -419,7 +420,6 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value for both "audio" and "video",
   // currently not collected for "video". https://bugs.webrtc.org/7065
   RTCStatsMember<double> jitter;
-  RTCStatsMember<double> fraction_lost;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> round_trip_time;
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
@@ -443,6 +443,8 @@ class RTC_EXPORT RTCInboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7065
   RTCStatsMember<double> gap_discard_rate;
   RTCStatsMember<uint32_t> frames_decoded;
+  RTCStatsMember<uint32_t> key_frames_decoded;
+  RTCStatsMember<double> total_decode_time;
   // https://henbos.github.io/webrtc-provisional-stats/#dom-rtcinboundrtpstreamstats-contenttype
   RTCStatsMember<std::string> content_type;
 };
@@ -467,6 +469,7 @@ class RTC_EXPORT RTCOutboundRTPStreamStats final : public RTCRTPStreamStats {
   // TODO(hbos): Collect and populate this value. https://bugs.webrtc.org/7066
   RTCStatsMember<double> target_bitrate;
   RTCStatsMember<uint32_t> frames_encoded;
+  RTCStatsMember<uint32_t> key_frames_encoded;
   RTCStatsMember<double> total_encode_time;
   RTCStatsMember<uint64_t> total_encoded_bytes_target;
   // TODO(https://crbug.com/webrtc/10635): This is only implemented for video;
@@ -546,6 +549,10 @@ class RTC_EXPORT RTCAudioSourceStats final : public RTCMediaSourceStats {
   RTCAudioSourceStats(std::string&& id, int64_t timestamp_us);
   RTCAudioSourceStats(const RTCAudioSourceStats& other);
   ~RTCAudioSourceStats() override;
+
+  RTCStatsMember<double> audio_level;
+  RTCStatsMember<double> total_audio_energy;
+  RTCStatsMember<double> total_samples_duration;
 };
 
 // https://w3c.github.io/webrtc-stats/#dom-rtcvideosourcestats

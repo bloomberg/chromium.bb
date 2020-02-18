@@ -14,7 +14,6 @@ import tempfile
 
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import goma_util
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import auth
@@ -286,7 +285,7 @@ class AllConfigsTestCase(generic_stages_unittest.AbstractStageTestCase,
 
     with parallel.BackgroundTaskRunner(task) as queue:
       # Test every build config on an waterfall, that builds something.
-      for bot_id, cfg in site_config.iteritems():
+      for bot_id, cfg in site_config.items():
         if not cfg.boards or cfg.boards[0] not in boards:
           continue
 
@@ -312,6 +311,7 @@ class BuildPackagesStageTest(AllConfigsTestCase,
         self._run,
         self.buildstore,
         self._current_board,
+        record_packages_under_test=False,
         update_metadata=self._update_metadata)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
@@ -490,7 +490,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGoma(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir, \
@@ -515,7 +514,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
   def testGomaWithMissingCertFile(self):
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
-    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:
@@ -530,7 +528,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
     self.PatchObject(
         build_stages.BuildPackagesStage, '_ShouldEnableGoma', return_value=True)
     self.PatchObject(cros_build_lib, 'HostIsCIBuilder', return_value=True)
-    self.PatchObject(goma_util.Goma, 'ForceUpdate')
     self._Prepare('amd64-generic-paladin')
     # Set dummy dir name to enable goma.
     with osutils.TempDir() as goma_dir:

@@ -11,9 +11,11 @@ from telemetry.core import exceptions
 from telemetry import decorators
 from telemetry.internal import app
 from telemetry.internal.backends import browser_backend
+from telemetry.internal.backends.chrome_inspector import tracing_backend
 from telemetry.internal.browser import extension_dict
 from telemetry.internal.browser import tab_list
 from telemetry.internal.browser import web_contents
+from telemetry.testing import test_utils
 
 
 class Browser(app.App):
@@ -84,6 +86,10 @@ class Browser(app.App):
           'Extensions not supported')
     return extension_dict.ExtensionDict(self._browser_backend.extension_backend)
 
+  def GetTypExpectationsTags(self):
+    tags = self.platform.GetTypExpectationsTags()
+    return tags + test_utils.sanitizeTypExpectationsTags([self.browser_type])
+
   def _LogBrowserInfo(self):
     trim_logs = self._browser_backend.browser_options.trim_logs
     logs = []
@@ -122,77 +128,6 @@ class Browser(app.App):
     else:
       logging.warning('System info not supported')
     logging.info('Browser information:\n%s', '\n'.join(logs))
-
-  def _GetStatsCommon(self, pid_stats_function):
-    browser_pid = self._browser_backend.GetPid()
-    result = {
-        'Browser': dict(pid_stats_function(browser_pid), **{'ProcessCount': 1}),
-        'Renderer': {'ProcessCount': 0},
-        'Gpu': {'ProcessCount': 0},
-        'Other': {'ProcessCount': 0}
-    }
-    process_count = 1
-    for child_pid in self._platform_backend.GetChildPids(browser_pid):
-      try:
-        child_cmd_line = self._platform_backend.GetCommandLine(child_pid)
-        child_stats = pid_stats_function(child_pid)
-      except exceptions.ProcessGoneException:
-        # It is perfectly fine for a process to have gone away between calling
-        # GetChildPids() and then further examining it.
-        continue
-      child_process_name = self._browser_backend.GetProcessName(child_cmd_line)
-      process_name_type_key_map = {'gpu-process': 'Gpu', 'renderer': 'Renderer'}
-      if child_process_name in process_name_type_key_map:
-        child_process_type_key = process_name_type_key_map[child_process_name]
-      else:
-        # TODO: identify other process types (zygote, plugin, etc), instead of
-        # lumping them in a single category.
-        child_process_type_key = 'Other'
-      result[child_process_type_key]['ProcessCount'] += 1
-      for k, v in child_stats.iteritems():
-        if k in result[child_process_type_key]:
-          result[child_process_type_key][k] += v
-        else:
-          result[child_process_type_key][k] = v
-      process_count += 1
-    for v in result.itervalues():
-      if v['ProcessCount'] > 1:
-        for k in v.keys():
-          if k.endswith('Peak'):
-            del v[k]
-      del v['ProcessCount']
-    result['ProcessCount'] = process_count
-    return result
-
-  @property
-  def cpu_stats(self):
-    """Returns a dict of cpu statistics for the system.
-    { 'Browser': {
-        'CpuProcessTime': S,
-        'TotalTime': T
-      },
-      'Gpu': {
-        'CpuProcessTime': S,
-        'TotalTime': T
-      },
-      'Renderer': {
-        'CpuProcessTime': S,
-        'TotalTime': T
-      }
-    }
-    Any of the above keys may be missing on a per-platform basis.
-    """
-    result = self._GetStatsCommon(self._platform_backend.GetCpuStats)
-    del result['ProcessCount']
-
-    # We want a single time value, not the sum for all processes.
-    cpu_timestamp = self._platform_backend.GetCpuTimestamp()
-    for process_type in result:
-      # Skip any process_types that are empty
-      if not len(result[process_type]):
-        continue
-      result[process_type].update(cpu_timestamp)
-    return result
 
   @exc_util.BestEffort
   def Close(self):
@@ -276,7 +211,14 @@ class Browser(app.App):
     return self._browser_backend.supports_memory_dumping
 
   def DumpMemory(self, timeout=None):
-    return self._browser_backend.DumpMemory(timeout=timeout)
+    try:
+      return self._browser_backend.DumpMemory(timeout=timeout)
+    except tracing_backend.TracingUnrecoverableException:
+      logging.exception('Failed to record memory dump due to exception:')
+      # Re-raise as an AppCrashException to obtain further debug information
+      # about the browser state.
+      raise exceptions.AppCrashException(
+          app=self, msg='Browser failed to record memory dump.')
 
   @property
   def supports_java_heap_garbage_collection( # pylint: disable=invalid-name
@@ -323,10 +265,6 @@ class Browser(app.App):
   @property
   def supports_memory_metrics(self):
     return self._browser_backend.supports_memory_metrics
-
-  @property
-  def supports_power_metrics(self):
-    return self._browser_backend.supports_power_metrics
 
   def LogSymbolizedUnsymbolizedMinidumps(self, log_level):
     paths = self.GetAllUnsymbolizedMinidumpPaths()

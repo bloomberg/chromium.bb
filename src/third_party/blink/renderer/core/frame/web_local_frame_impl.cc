@@ -114,7 +114,7 @@
 #include "third_party/blink/public/web/web_console_message.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_dom_event.h"
+#include "third_party/blink/public/web/web_dom_message_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
@@ -173,7 +173,6 @@
 #include "third_party/blink/renderer/core/events/before_print_event.h"
 #include "third_party/blink/renderer/core/events/portal_activate_event.h"
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
-#include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -193,7 +192,6 @@
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/smart_clip.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -228,6 +226,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -255,6 +254,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -951,10 +951,12 @@ void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
   String referrer = referrer_url.IsEmpty()
                         ? GetFrame()->GetDocument()->OutgoingReferrer()
                         : String(referrer_url.GetString());
-  request.ToMutableResourceRequest().SetHttpReferrer(
-      SecurityPolicy::GenerateReferrer(
-          GetFrame()->GetDocument()->GetReferrerPolicy(), request.Url(),
-          referrer));
+  ResourceRequest& resource_request = request.ToMutableResourceRequest();
+  resource_request.SetReferrerPolicy(
+      GetFrame()->GetDocument()->GetReferrerPolicy(),
+      ResourceRequest::SetReferrerPolicyLocation::kWebLocalFrameImpl);
+  resource_request.SetReferrerString(
+      referrer, ResourceRequest::SetReferrerStringLocation::kWebLocalFrameImpl);
 }
 
 WebAssociatedURLLoader* WebLocalFrameImpl::CreateAssociatedURLLoader(
@@ -1430,6 +1432,7 @@ void WebLocalFrameImpl::DispatchBeforePrintEvent() {
   is_in_printing_ = true;
 #endif
 
+  GetFrame()->GetDocument()->SetPrinting(Document::kBeforePrinting);
   DispatchPrintEventRecursively(event_type_names::kBeforeprint);
 }
 
@@ -1555,7 +1558,7 @@ void WebLocalFrameImpl::PageSizeAndMarginsInPixels(int page_index,
 WebString WebLocalFrameImpl::PageProperty(const WebString& property_name,
                                           int page_index) {
   DCHECK(print_context_);
-  return print_context_->PageProperty(GetFrame(), property_name.Utf8().data(),
+  return print_context_->PageProperty(GetFrame(), property_name.Utf8().c_str(),
                                       page_index);
 }
 
@@ -1627,12 +1630,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
-  frame->InitializeCoreFrame(page, nullptr, name);
-  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
-    frame->GetFrame()->SetOpenerFeatureState(opener_feature_state);
-  // Can't force sandbox flags until there's a core frame.
-  frame->GetFrame()->Loader().ForceSandboxFlags(
-      static_cast<SandboxFlags>(sandbox_flags));
+  frame->InitializeCoreFrame(
+      page, nullptr, name,
+      opener ? &ToCoreFrame(*opener)->window_agent_factory() : nullptr,
+      sandbox_flags, opener_feature_state);
   return frame;
 }
 
@@ -1650,6 +1651,17 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
+  WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone;
+  FeaturePolicy::FeatureState feature_state;
+  if (!previous_frame->Owner()) {
+    // Provisional main frames need to force sandbox flags.  This is necessary
+    // to inherit sandbox flags when a sandboxed frame does a window.open()
+    // which triggers a cross-process navigation.
+    sandbox_flags = frame_policy.sandbox_flags;
+    // If there is an opener (even disowned), the opener policies must be
+    // inherited the same way as sandbox flag.
+    feature_state = previous_frame->OpenerFeatureState();
+  }
   // Note: this *always* temporarily sets a frame owner, even for main frames!
   // When a core Frame is created with no owner, it attempts to set itself as
   // the main frame of the Page. However, this is a provisional frame, and may
@@ -1661,23 +1673,17 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   // unscriptable. Once the provisional frame gets properly attached and is
   // observable, it will have the real FrameOwner, and any subsequent real
   // documents will correctly inherit sandbox flags from the owner.
-  web_frame->InitializeCoreFrame(*previous_frame->GetPage(),
-                                 MakeGarbageCollected<DummyFrameOwner>(),
-                                 previous_frame->Tree().GetName());
+  web_frame->InitializeCoreFrame(
+      *previous_frame->GetPage(), MakeGarbageCollected<DummyFrameOwner>(),
+      previous_frame->Tree().GetName(),
+      &ToCoreFrame(*previous_web_frame)->window_agent_factory(), sandbox_flags,
+      feature_state);
 
   LocalFrame* new_frame = web_frame->GetFrame();
   new_frame->SetOwner(previous_frame->Owner());
   if (auto* remote_frame_owner =
           DynamicTo<RemoteFrameOwner>(new_frame->Owner())) {
     remote_frame_owner->SetFramePolicy(frame_policy);
-  } else if (!new_frame->Owner()) {
-    // Provisional main frames need to force sandbox flags.  This is necessary
-    // to inherit sandbox flags when a sandboxed frame does a window.open()
-    // which triggers a cross-process navigation.
-    new_frame->Loader().ForceSandboxFlags(frame_policy.sandbox_flags);
-    // If there is an opener (even disowned), the opener policies must be
-    // inherited the same way as sandbox flag.
-    new_frame->SetOpenerFeatureState(previous_frame->OpenerFeatureState());
   }
 
   return web_frame;
@@ -1711,7 +1717,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       interface_registry_(interface_registry),
       input_method_controller_(*this),
       spell_check_panel_host_client_(nullptr),
-      self_keep_alive_(this) {
+      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
   DCHECK(client_);
   g_frame_count++;
   client_->BindToFrame(this);
@@ -1738,12 +1744,21 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
 }
 
-void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
-                                            FrameOwner* owner,
-                                            const AtomicString& name) {
+void WebLocalFrameImpl::InitializeCoreFrame(
+    Page& page,
+    FrameOwner* owner,
+    const AtomicString& name,
+    WindowAgentFactory* window_agent_factory,
+    WebSandboxFlags sandbox_flags,
+    const FeaturePolicy::FeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
-                                                owner, interface_registry_));
+                                                owner, window_agent_factory,
+                                                interface_registry_));
   frame_->Tree().SetName(name);
+  if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled())
+    frame_->SetOpenerFeatureState(opener_feature_state);
+  frame_->Loader().ForceSandboxFlags(sandbox_flags);
+
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
   frame_->Init();
@@ -1791,7 +1806,8 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
     return nullptr;
 
   webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
-                                      name);
+                                      name,
+                                      &GetFrame()->window_agent_factory());
 
   DCHECK(webframe_child->Parent());
   return webframe_child->GetFrame();
@@ -1799,21 +1815,18 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
 
 std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
-    mojom::blink::PortalAssociatedRequest request,
-    mojom::blink::PortalClientAssociatedPtrInfo client) {
-  auto pair = client_->CreatePortal(request.PassHandle(), client.PassHandle());
-  WebRemoteFrameImpl* portal_frame = ToWebRemoteFrameImpl(pair.first);
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
-                                    g_null_atom);
-  return std::pair<RemoteFrame*, base::UnguessableToken>(
-      portal_frame->GetFrame(), pair.second);
+    mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
+    mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
+  WebRemoteFrame* portal_frame;
+  base::UnguessableToken portal_token;
+  std::tie(portal_frame, portal_token) = client_->CreatePortal(
+      portal_receiver.PassHandle(), portal_client.PassHandle(), portal);
+  return {ToWebRemoteFrameImpl(portal_frame)->GetFrame(), portal_token};
 }
 
 RemoteFrame* WebLocalFrameImpl::AdoptPortal(HTMLPortalElement* portal) {
   WebRemoteFrameImpl* portal_frame =
-      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken()));
-  portal_frame->InitializeCoreFrame(*GetFrame()->GetPage(), portal,
-                                    g_null_atom);
+      ToWebRemoteFrameImpl(client_->AdoptPortal(portal->GetToken(), portal));
   return portal_frame->GetFrame();
 }
 
@@ -2023,8 +2036,8 @@ void WebLocalFrameImpl::CommitNavigation(
   DCHECK(!navigation_params->url.ProtocolIs("javascript"));
   if (GetTextFinder())
     GetTextFinder()->ClearActiveFindMatch();
-  GetFrame()->Loader().CommitNavigation(
-      std::move(navigation_params), std::move(extra_data));
+  GetFrame()->Loader().CommitNavigation(std::move(navigation_params),
+                                        std::move(extra_data));
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2148,13 +2161,17 @@ void WebLocalFrameImpl::NotifyUserActivation() {
   LocalFrame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 }
 
-void WebLocalFrameImpl::BlinkFeatureUsageReport(const std::set<int>& features) {
+void WebLocalFrameImpl::BlinkFeatureUsageReport(
+    const std::set<blink::mojom::WebFeature>& features) {
   DCHECK(!features.empty());
   // Assimilate all features used/performed by the browser into UseCounter.
-  for (int feature : features) {
-    UseCounter::Count(GetFrame()->GetDocument(),
-                      static_cast<WebFeature>(feature));
-  }
+  for (const auto& feature : features)
+    UseCounter::Count(GetFrame()->GetDocument(), feature);
+}
+
+void WebLocalFrameImpl::BlinkFeatureUsageReport(
+    blink::mojom::WebFeature feature) {
+  UseCounter::Count(GetFrame()->GetDocument(), feature);
 }
 
 void WebLocalFrameImpl::MixedContentFound(
@@ -2223,7 +2240,7 @@ void WebLocalFrameImpl::DidCallIsSearchProviderInstalled() {
 
 void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intended_target_origin,
-    const WebDOMEvent& event,
+    const WebDOMMessageEvent& event,
     bool has_user_gesture) {
   DCHECK(!event.IsNull());
 
@@ -2237,15 +2254,27 @@ void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     UserGestureIndicator::SetWasForwardedCrossProcess();
   }
 
-  // Transfer user activation state in the target's renderer when
-  // |transferUserActivation| is true.
   MessageEvent* msg_event = static_cast<MessageEvent*>((Event*)event);
   Frame* source_frame = nullptr;
   if (msg_event->source() && msg_event->source()->ToDOMWindow())
     source_frame = msg_event->source()->ToDOMWindow()->GetFrame();
-  if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
-      msg_event->transferUserActivation()) {
+
+  // Transfer user activation state in the target's renderer when
+  // |transferUserActivation| is true.
+  //
+  // Also do the same as an ad-hoc solution to allow the origin trial of dynamic
+  // delegation of autoplay capability through postMessages.  Note that we
+  // skipped updating the user activation states in all other copies of the
+  // frame tree in this case because this is a temporary hack.
+  //
+  // TODO(mustaq): Remove the ad-hoc solution when the API shape is
+  // ready. crbug.com/985914
+  if ((RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
+       msg_event->transferUserActivation()) ||
+      msg_event->allowAutoplay()) {
     GetFrame()->TransferUserActivationFrom(source_frame);
+    if (msg_event->allowAutoplay())
+      UseCounter::Count(GetDocument(), WebFeature::kAutoplayDynamicDelegation);
   }
 
   GetFrame()->DomWindow()->DispatchMessageEventWithOriginCheck(
@@ -2258,6 +2287,9 @@ WebNode WebLocalFrameImpl::ContextMenuNode() const {
 }
 
 void WebLocalFrameImpl::WillBeDetached() {
+  // The |frame_widget_| can be null for frames in non-composited WebViews.
+  if (IsLocalRoot() && frame_widget_)
+    frame_widget_->DidDetachLocalFrameTree();
   if (dev_tools_agent_)
     dev_tools_agent_->WillBeDestroyed();
   if (find_in_page_)
@@ -2311,7 +2343,7 @@ void WebLocalFrameImpl::SaveImageAt(const WebPoint& pos_in_viewport) {
   if (!node || !(IsHTMLCanvasElement(*node) || IsHTMLImageElement(*node)))
     return;
 
-  String url = ToElement(*node).ImageSourceURL();
+  String url = To<Element>(*node).ImageSourceURL();
   if (!KURL(NullURL(), url).ProtocolIsData())
     return;
 
@@ -2473,15 +2505,15 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
   next_element->focus();
 }
 
-bool WebLocalFrameImpl::CanFocusedFieldBeAutofilled() const {
+bool WebLocalFrameImpl::TryToShowTouchToFillForFocusedElement() {
+  if (!autofill_client_)
+    return false;
+
   DCHECK(GetFrame()->GetDocument());
   auto* focused_form_control_element = ToHTMLFormControlElementOrNull(
       GetFrame()->GetDocument()->FocusedElement());
-
-  if (!focused_form_control_element)
-    return false;
-
-  return autofill_client_->HasFillData(focused_form_control_element);
+  return focused_form_control_element &&
+         autofill_client_->TryToShowTouchToFill(focused_form_control_element);
 }
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(
@@ -2521,6 +2553,7 @@ void WebLocalFrameImpl::PerformMediaPlayerAction(
         PictureInPictureController::From(node->GetDocument())
             .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
       }
+
       break;
   }
 }
@@ -2545,9 +2578,9 @@ void WebLocalFrameImpl::OnPortalActivated(
 
   PortalActivateEvent* event = PortalActivateEvent::Create(
       frame_.Get(), portal_token,
-      mojom::blink::PortalAssociatedPtr(mojom::blink::PortalAssociatedPtrInfo(
-          std::move(portal_pipe), mojom::blink::Portal::Version_)),
-      mojom::blink::PortalClientAssociatedRequest(
+      mojo::PendingAssociatedRemote<mojom::blink::Portal>(
+          std::move(portal_pipe), mojom::blink::Portal::Version_),
+      mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>(
           std::move(portal_client_pipe)),
       std::move(blink_data.message), ports, std::move(callback));
 
@@ -2558,6 +2591,17 @@ void WebLocalFrameImpl::OnPortalActivated(
   if (debugger)
     debugger->ExternalAsyncTaskFinished(blink_data.sender_stack_trace_id);
   event->DetachPortalIfNotAdopted();
+
+  // After dispatching the portalactivate event, we check to see if we need to
+  // cleanup the portal hosting the predecessor. If the portal was created,
+  // but wasn't inserted or activated, we destroy it.
+  HTMLPortalElement* portal_element =
+      DocumentPortals::From(*(GetFrame()->GetDocument()))
+          .GetPortal(portal_token);
+  if (portal_element && !portal_element->isConnected() &&
+      !portal_element->IsActivating()) {
+    portal_element->ConsumePortal();
+  }
 }
 
 void WebLocalFrameImpl::ForwardMessageFromHost(

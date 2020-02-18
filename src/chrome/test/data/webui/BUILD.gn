@@ -55,7 +55,6 @@ js2gtest("browser_tests_js_webui") {
     "js2gtest_browsertest.js",
     "load_time_data_browsertest.js",
     "management/a11y/management_a11y_test.js",
-    "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
     "net_internals/chromeos_view.js",
     "net_internals/dns_view.js",
@@ -83,11 +82,15 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
+  if (!optimize_webui) {
+    sources += [ "js/webui_resource_module_async_browsertest.js" ]
+  }
+
   extra_js_files = [
     "test_browser_proxy.js",
     "settings/test_password_manager_proxy.js",
     "settings/passwords_and_autofill_fake_data.js",
-    "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js",
+    "//chrome/browser/resources/signin/sync_confirmation/sync_confirmation_browser_proxy.js",
     "//chrome/browser/ui/webui/chromeos/account_migration_proxy_test.js",
   ]
 
@@ -99,11 +102,13 @@ js2gtest("browser_tests_js_webui") {
       "../chromeos/oobe_webui_browsertest.js",
       "certificate_viewer_dialog_test.js",
       "set_time_dialog_browsertest.js",
+      "settings/a11y/crostini_accessibility_test.js",
       "settings/a11y/crostini_settings_details_a11y_test.js",
       "settings/a11y/crostini_settings_export_import_a11y_test.js",
       "settings/a11y/crostini_settings_shared_paths_a11y_test.js",
       "settings/a11y/crostini_settings_shared_usb_devices_a11y_test.js",
       "settings/a11y/crostini_settings_subpage_a11y_test.js",
+      "settings/a11y/google_assistant_a11y_test.js",
       "settings/a11y/manage_accessibility_a11y_test.js",
       "settings/a11y/multidevice_a11y_test.js",
       "settings/a11y/multidevice_features_a11y_test.js",

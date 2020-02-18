@@ -54,13 +54,9 @@ public:
     }
 
 protected:
-    bool onQuery(Sample::Event* evt) override {
-        if (Sample::TitleQ(*evt)) {
-            Sample::TitleR(evt, "Rectanizer");
-            return true;
-        }
-        SkUnichar uni;
-        if (Sample::CharQ(*evt, &uni)) {
+    SkString name() override { return SkString("Rectanizer"); }
+
+    bool onChar(SkUnichar uni) override {
             char utf8[SkUTF::kMaxBytesInUTF8Sequence];
             size_t size = SkUTF::ToUTF8(uni, utf8);
             // Only consider events for single char keys
@@ -76,8 +72,7 @@ protected:
                     break;
                 }
             }
-        }
-        return this->INHERITED::onQuery(evt);
+            return false;
     }
 
     void onDrawContent(SkCanvas* canvas) override {

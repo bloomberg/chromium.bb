@@ -9,9 +9,9 @@
 #define GrCCDrawPathsOp_DEFINED
 
 #include "src/core/SkTInternalLList.h"
-#include "src/gpu/GrShape.h"
 #include "src/gpu/ccpr/GrCCPathCache.h"
 #include "src/gpu/ccpr/GrCCSTLList.h"
+#include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/ops/GrDrawOp.h"
 
 class GrCCAtlas;
@@ -35,8 +35,8 @@ public:
 
     const char* name() const override { return "GrCCDrawPathsOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrFSAAType,
-                                      GrClampType) override;
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
+                                      bool hasMixedSampledCoverage, GrClampType) override;
     CombineResult onCombineIfPossible(GrOp*, const GrCaps&) override;
     void visitProxies(const VisitProxyFunc& fn) const override {
         for (const auto& range : fInstanceRanges) {
@@ -84,7 +84,8 @@ private:
                     const SkIRect& shapeConservativeIBounds, const SkIRect& maskDevIBounds,
                     const SkRect& conservativeDevBounds, GrPaint&&);
 
-    void recordInstance(GrTextureProxy* atlasProxy, int instanceIdx);
+    void recordInstance(
+            GrCCPathProcessor::CoverageMode, GrTextureProxy* atlasProxy, int instanceIdx);
 
     const SkMatrix fViewMatrixIfUsingLocalCoords;
 
@@ -96,7 +97,8 @@ private:
 
         // See the corresponding methods in GrCCDrawPathsOp.
         GrProcessorSet::Analysis finalize(
-                const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType, GrProcessorSet*);
+                const GrCaps&, const GrAppliedClip*, bool hasMixedSampledCoverage, GrClampType,
+                GrProcessorSet*);
         void accountForOwnPath(GrCCPathCache*, GrOnFlushResourceProvider*,
                                GrCCPerFlushResourceSpecs*);
         void setupResources(GrCCPathCache*, GrOnFlushResourceProvider*, GrCCPerFlushResources*,
@@ -116,6 +118,7 @@ private:
         SkIVector fCachedMaskShift;
         bool fDoCopyToA8Coverage = false;
         bool fDoCachePathMask = false;
+        SkDEBUGCODE(bool fWasCountedAsRender = false);
 
         SingleDraw* fNext = nullptr;
 
@@ -132,6 +135,7 @@ private:
     GrProcessorSet fProcessors;
 
     struct InstanceRange {
+        GrCCPathProcessor::CoverageMode fCoverageMode;
         GrTextureProxy* fAtlasProxy;
         int fEndInstanceIdx;
     };

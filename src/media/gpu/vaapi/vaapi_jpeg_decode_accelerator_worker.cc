@@ -4,20 +4,22 @@
 
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
 
-#include <utility>
-
 #include <va/va.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -52,19 +54,19 @@ void DecodeTask(
   gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB scoped_decode_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(decode_cb),
                                                   nullptr);
-  VaapiJpegDecodeStatus status;
-  decoder->Decode(
-      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()),
-      &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
-    VLOGF(1) << "Failed to decode - status = " << static_cast<uint32_t>(status);
+  DCHECK(decoder);
+  VaapiImageDecodeStatus status = decoder->Decode(
+      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()));
+  if (status != VaapiImageDecodeStatus::kSuccess) {
+    DVLOGF(1) << "Failed to decode - status = "
+              << static_cast<uint32_t>(status);
     return;
   }
   std::unique_ptr<ScopedVAImage> scoped_image =
       decoder->GetImage(VA_FOURCC_RGBX /* preferred_image_fourcc */, &status);
-  if (status != VaapiJpegDecodeStatus::kSuccess) {
-    VLOGF(1) << "Failed to get image - status = "
-             << static_cast<uint32_t>(status);
+  if (status != VaapiImageDecodeStatus::kSuccess) {
+    DVLOGF(1) << "Failed to get image - status = "
+              << static_cast<uint32_t>(status);
     return;
   }
 
@@ -75,13 +77,23 @@ void DecodeTask(
 
 }  // namespace
 
-VaapiJpegDecodeAcceleratorWorker::VaapiJpegDecodeAcceleratorWorker()
-    : decoder_(std::make_unique<VaapiJpegDecoder>()) {
-  if (!decoder_->Initialize(
+// static
+std::unique_ptr<VaapiJpegDecodeAcceleratorWorker>
+VaapiJpegDecodeAcceleratorWorker::Create() {
+  auto decoder = std::make_unique<VaapiJpegDecoder>();
+  if (!decoder->Initialize(
           base::BindRepeating(&ReportToVAJDAWorkerDecoderFailureUMA,
                               VAJDAWorkerDecoderFailure::kVaapiError))) {
-    return;
+    return nullptr;
   }
+  return base::WrapUnique(
+      new VaapiJpegDecodeAcceleratorWorker(std::move(decoder)));
+}
+
+VaapiJpegDecodeAcceleratorWorker::VaapiJpegDecodeAcceleratorWorker(
+    std::unique_ptr<VaapiJpegDecoder> decoder)
+    : decoder_(std::move(decoder)) {
+  DCHECK(decoder_);
   decoder_task_runner_ = base::CreateSequencedTaskRunnerWithTraits({});
   DCHECK(decoder_task_runner_);
 }
@@ -91,19 +103,20 @@ VaapiJpegDecodeAcceleratorWorker::~VaapiJpegDecodeAcceleratorWorker() {
     decoder_task_runner_->DeleteSoon(FROM_HERE, std::move(decoder_));
 }
 
-bool VaapiJpegDecodeAcceleratorWorker::IsValid() const {
-  // If |decoder_task_runner_| is nullptr, it means that the initialization of
-  // |decoder_| failed.
-  return !!decoder_task_runner_;
+std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
+VaapiJpegDecodeAcceleratorWorker::GetSupportedProfiles() {
+  DCHECK(decoder_);
+  const gpu::ImageDecodeAcceleratorSupportedProfile supported_profile =
+      decoder_->GetSupportedProfile();
+  DCHECK_EQ(gpu::ImageDecodeAcceleratorType::kJpeg,
+            supported_profile.image_type);
+  return {supported_profile};
 }
 
 void VaapiJpegDecodeAcceleratorWorker::Decode(std::vector<uint8_t> encoded_data,
                                               const gfx::Size& output_size,
                                               CompletedDecodeCB decode_cb) {
-  if (!IsValid()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(decoder_task_runner_);
   DCHECK(!decoder_task_runner_->RunsTasksInCurrentSequence());
   decoder_task_runner_->PostTask(
       FROM_HERE,

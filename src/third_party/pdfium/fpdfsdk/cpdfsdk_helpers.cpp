@@ -6,6 +6,7 @@
 
 #include "fpdfsdk/cpdfsdk_helpers.h"
 
+#include "build/build_config.h"
 #include "constants/form_fields.h"
 #include "constants/stream_dict_common.h"
 #include "core/fpdfapi/cpdf_modulemgr.h"
@@ -29,11 +30,11 @@ namespace {
 constexpr char kQuadPoints[] = "QuadPoints";
 
 // 0 bit: FPDF_POLICY_MACHINETIME_ACCESS
-static uint32_t g_sandbox_policy = 0xFFFFFFFF;
+uint32_t g_sandbox_policy = 0xFFFFFFFF;
 
-#ifndef _WIN32
-int g_last_error;
-#endif  // _WIN32
+#if !defined(OS_WIN)
+int g_last_error = 0;
+#endif
 
 bool RaiseUnsupportedError(int nError) {
   auto* pAdapter = CPDF_ModuleMgr::Get()->GetUnsupportInfoAdapter();
@@ -44,6 +45,26 @@ bool RaiseUnsupportedError(int nError) {
   if (info && info->FSDK_UnSupport_Handler)
     info->FSDK_UnSupport_Handler(info, nError);
   return true;
+}
+
+unsigned long GetStreamMaybeCopyAndReturnLengthImpl(const CPDF_Stream* stream,
+                                                    void* buffer,
+                                                    unsigned long buflen,
+                                                    bool decode) {
+  ASSERT(stream);
+  auto stream_acc = pdfium::MakeRetain<CPDF_StreamAcc>(stream);
+
+  if (decode)
+    stream_acc->LoadAllDataFiltered();
+  else
+    stream_acc->LoadAllDataRaw();
+
+  const auto stream_data_size = stream_acc->GetSize();
+  if (!buffer || buflen < stream_data_size)
+    return stream_data_size;
+
+  memcpy(buffer, stream_acc->GetData(), stream_data_size);
+  return stream_data_size;
 }
 
 #ifdef PDF_ENABLE_XFA
@@ -261,18 +282,18 @@ unsigned long Utf16EncodeMaybeCopyAndReturnLength(const WideString& text,
   return len;
 }
 
+unsigned long GetRawStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
+                                                   void* buffer,
+                                                   unsigned long buflen) {
+  return GetStreamMaybeCopyAndReturnLengthImpl(stream, buffer, buflen,
+                                               /*decode=*/false);
+}
+
 unsigned long DecodeStreamMaybeCopyAndReturnLength(const CPDF_Stream* stream,
                                                    void* buffer,
                                                    unsigned long buflen) {
-  ASSERT(stream);
-  auto stream_acc = pdfium::MakeRetain<CPDF_StreamAcc>(stream);
-  stream_acc->LoadAllDataFiltered();
-  const auto stream_data_size = stream_acc->GetSize();
-  if (!buffer || buflen < stream_data_size)
-    return stream_data_size;
-
-  memcpy(buffer, stream_acc->GetData(), stream_data_size);
-  return stream_data_size;
+  return GetStreamMaybeCopyAndReturnLengthImpl(stream, buffer, buflen,
+                                               /*decode=*/true);
 }
 
 void FSDK_SetSandBoxPolicy(FPDF_DWORD policy, FPDF_BOOL enable) {
@@ -377,7 +398,7 @@ void CheckForUnsupportedAnnot(const CPDF_Annot* pAnnot) {
   }
 }
 
-#ifndef _WIN32
+#if !defined(OS_WIN)
 void SetLastError(int err) {
   g_last_error = err;
 }
@@ -385,7 +406,7 @@ void SetLastError(int err) {
 int GetLastError() {
   return g_last_error;
 }
-#endif  // _WIN32
+#endif
 
 void ProcessParseError(CPDF_Parser::Error err) {
   uint32_t err_code = FPDF_ERR_SUCCESS;

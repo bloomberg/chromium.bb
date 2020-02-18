@@ -6,20 +6,24 @@
 <link rel="import" href="permission_view_header.html">
 <link rel="import" href="shared_style.html">
 <link rel="import" href="store_client.html">
+<link rel="import" href="pin_to_shelf_item.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="app-management-pwa-permission-view">
   <template>
-    <style include="app-management-shared-css paper-button-style">
+    <style include="app-management-shared-css">
     </style>
 
     <app-management-permission-view-header>
     </app-management-permission-view-header>
 
     <div class="permission-list card-container">
+      <app-management-pin-to-shelf-item
+        id="pin-to-shelf-setting"
+        class="permission-card-row separated-row header-text"
+        app_="[[app_]]">
+      </app-management-pin-to-shelf-item>
       <app-management-permission-item id="notifications-card"
         class="permission-card-row separated-row header-text"
         permission-label="$i18n{notifications}"
@@ -44,18 +48,18 @@
             permission-label="$i18n{microphone}"
             permission-type="CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC">
           </app-management-permission-item>
-          <div class="subpermission-row separated-row"
+          <div class="subpermission-row separated-row clickable"
             on-click="onClickSiteSettingsButton_">
-            <div class="header-text">$i18n{morePermissions}</div>
+            <div class="header-text">$i18n{moreSettings}</div>
             <div class="permission-row-controls">
-              <cr-icon-button class="native-settings-icon icon-external" noink>
+              <cr-icon-button class="native-settings-icon icon-external"
+                tabindex="0">
               </cr-icon-button>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <app-management-metadata-view></app-management-metadata-view>
   </template>
   <script src="pwa_permission_view.js"></script>
 </dom-module>

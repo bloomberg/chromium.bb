@@ -28,14 +28,12 @@ SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
         handle_ssl_error_callback)
     : content::NavigationThrottle(navigation_handle),
       ssl_cert_reporter_(std::move(ssl_cert_reporter)),
-      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)),
-      weak_ptr_factory_(this) {}
+      handle_ssl_error_callback_(std::move(handle_ssl_error_callback)) {}
 
 SSLErrorNavigationThrottle::~SSLErrorNavigationThrottle() {}
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillFailRequest() {
-  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
 
   // Check the network error code in case we are here due to a non-ssl related
@@ -65,7 +63,6 @@ SSLErrorNavigationThrottle::WillFailRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SSLErrorNavigationThrottle::WillProcessResponse() {
-  DCHECK(base::FeatureList::IsEnabled(features::kSSLCommittedInterstitials));
   content::NavigationHandle* handle = navigation_handle();
   // If there was no certificate error, SSLInfo will be empty.
   const net::SSLInfo info = handle->GetSSLInfo().value_or(net::SSLInfo());

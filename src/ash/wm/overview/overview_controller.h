@@ -29,11 +29,13 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   OverviewController();
   ~OverviewController() override;
 
-  // Attempts to toggle overview mode and returns true if successful (showing
+  // Starts/Ends overview with |type|. Returns true if successful (showing
   // overview would be unsuccessful if there are no windows to show). Depending
   // on |type| the enter/exit animation will look different.
-  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
-                          OverviewSession::EnterExitOverviewType::kNormal);
+  bool StartOverview(OverviewSession::EnterExitOverviewType type =
+                         OverviewSession::EnterExitOverviewType::kNormal);
+  bool EndOverview(OverviewSession::EnterExitOverviewType type =
+                       OverviewSession::EnterExitOverviewType::kNormal);
 
   // Returns true if overview mode is active.
   bool InOverviewSession() const;
@@ -67,11 +69,10 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void AddObserver(OverviewObserver* observer);
   void RemoveObserver(OverviewObserver* observer);
 
-  // Post a task to update the shadow and mask of overview windows.
-  void DelayedUpdateMaskAndShadow();
+  // Post a task to update the shadow and rounded corners of overview windows.
+  void DelayedUpdateRoundedCornersAndShadow();
 
   // OverviewDelegate:
-  void EndOverview() override;
   void AddExitAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation) override;
   void RemoveAndDestroyExitAnimationObserver(
@@ -115,6 +116,12 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabletModeControllerTest,
                            DisplayDisconnectionDuringOverview);
 
+  // Attempts to toggle overview mode and returns true if successful (showing
+  // overview would be unsuccessful if there are no windows to show). Depending
+  // on |type| the enter/exit animation will look different.
+  bool ToggleOverview(OverviewSession::EnterExitOverviewType type =
+                          OverviewSession::EnterExitOverviewType::kNormal);
+
   // There is no need to blur or dim the wallpaper for tests.
   static void SetDoNotChangeWallpaperForTests();
 
@@ -126,7 +133,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void OnEndingAnimationComplete(bool canceled);
   void ResetPauser();
 
-  void UpdateMaskAndShadow();
+  void UpdateRoundedCornersAndShadow();
 
   // Collection of DelayedAnimationObserver objects that own widgets that may be
   // still animating after overview mode ends. If shell needs to shut down while

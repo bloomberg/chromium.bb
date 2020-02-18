@@ -60,6 +60,7 @@ namespace blink {
 
 class PerformanceMarkOptions;
 class ExceptionState;
+class LargestContentfulPaint;
 class LayoutShift;
 class MemoryInfo;
 class PerformanceElementTiming;
@@ -104,15 +105,15 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   static double ClampTimeResolution(double time_seconds);
 
   static DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(
-      TimeTicks time_origin,
-      TimeTicks monotonic_time,
+      base::TimeTicks time_origin,
+      base::TimeTicks monotonic_time,
       bool allow_negative_value);
 
   // Translate given platform monotonic time in seconds into a high resolution
   // DOMHighResTimeStamp in milliseconds. The result timestamp is relative to
   // document's time origin and has a time resolution that is safe for
   // exposing to web.
-  DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(TimeTicks) const;
+  DOMHighResTimeStamp MonotonicTimeToDOMHighResTimeStamp(base::TimeTicks) const;
   DOMHighResTimeStamp now() const;
 
   // High Resolution Time Level 3 timeOrigin.
@@ -142,8 +143,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                   kResourcetimingbufferfull)
 
   void AddLongTaskTiming(
-      TimeTicks start_time,
-      TimeTicks end_time,
+      base::TimeTicks start_time,
+      base::TimeTicks end_time,
       const AtomicString& name,
       const String& culprit_frame_src,
       const String& culprit_frame_id,
@@ -168,26 +169,19 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void NotifyNavigationTimingToObservers();
 
-  void AddFirstPaintTiming(TimeTicks start_time);
+  void AddFirstPaintTiming(base::TimeTicks start_time);
 
-  void AddFirstContentfulPaintTiming(TimeTicks start_time);
+  void AddFirstContentfulPaintTiming(base::TimeTicks start_time);
 
   bool IsElementTimingBufferFull() const;
   void AddElementTimingBuffer(PerformanceElementTiming&);
-  unsigned ElementTimingBufferSize() const;
-  void clearElementTimings();
-  void setElementTimingBufferMaxSize(unsigned);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(elementtimingbufferfull,
-                                  kElementtimingbufferfull)
 
   bool IsEventTimingBufferFull() const;
   void AddEventTimingBuffer(PerformanceEventTiming&);
-  unsigned EventTimingBufferSize() const;
-  void clearEventTimings();
-  void setEventTimingBufferMaxSize(unsigned);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull, kEventtimingbufferfull)
 
   void AddLayoutJankBuffer(LayoutShift&);
+
+  void AddLargestContentfulPaint(LargestContentfulPaint*);
 
   PerformanceMark* mark(ScriptState*,
                         const AtomicString& mark_name,
@@ -199,6 +193,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                         ExceptionState&);
 
   void clearMarks(const AtomicString& mark_name);
+  void clearMarks() { return clearMarks(AtomicString()); }
 
   // This enum is used to index different possible strings for for UMA enum
   // histogram. New enum values can be added, but existing enums must never be
@@ -256,6 +251,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       ExceptionState&);
 
   void clearMeasures(const AtomicString& measure_name);
+  void clearMeasures() { return clearMeasures(AtomicString()); }
 
   ScriptPromise profile(ScriptState*,
                         const ProfilerInitOptions*,
@@ -288,7 +284,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     UnifiedClock(const base::Clock* clock, const base::TickClock* tick_clock)
         : clock_(clock), tick_clock_(tick_clock) {}
     DOMHighResTimeStamp GetUnixAtZeroMonotonic() const;
-    TimeTicks NowTicks() const;
+    base::TimeTicks NowTicks() const;
 
    private:
     const base::Clock* clock_;
@@ -301,7 +297,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void ResetTimeOriginForTesting(base::TimeTicks time_origin);
 
  private:
-  void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
+  void AddPaintTiming(PerformancePaintTiming::PaintType,
+                      base::TimeTicks start_time);
 
   PerformanceMeasure* MeasureInternal(
       ScriptState*,
@@ -322,7 +319,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       PerformanceEntry::EntryType type);
 
  protected:
-  Performance(TimeTicks time_origin,
+  Performance(base::TimeTicks time_origin,
               scoped_refptr<base::SingleThreadTaskRunner>);
 
   // Expect WindowPerformance to override this method,
@@ -354,13 +351,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector element_timing_buffer_;
   unsigned element_timing_buffer_max_size_;
   PerformanceEntryVector layout_jank_buffer_;
+  PerformanceEntryVector largest_contentful_paint_buffer_;
   Member<PerformanceEntry> navigation_timing_;
   Member<UserTiming> user_timing_;
   Member<PerformanceEntry> first_paint_timing_;
   Member<PerformanceEntry> first_contentful_paint_timing_;
   Member<PerformanceEventTiming> first_input_timing_;
 
-  TimeTicks time_origin_;
+  base::TimeTicks time_origin_;
   const UnifiedClock* unified_clock_;
 
   PerformanceEntryTypeMask observer_filter_options_;

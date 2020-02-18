@@ -40,15 +40,15 @@
     #url-checker-input {
       width: 400px;
     }
+
+    #xml-not-fetched-yet,
+    #xml-last-fetch {
+        display: none;
+    }
   </style>
 </head>
 <body>
   <h1>Legacy Browser Support Internals</h1>
-
-  <p>
-    If an XML sitelist is configured, wait 1 minute after browser
-    startup for it to download, and then refresh this page.
-  </p>
 
   <!-- TODO(crbug/959379): Hide all this and show a message if
                            BrowserSwitcherEnabled is false. -->
@@ -73,6 +73,30 @@
   <h2>Greylist</h2>
   <table id="greylist"></table>
 
+  <h2>XML sitelists</h2>
+
+  <table id="xml-sitelists"></table>
+
+  <div id="xml-description-wrapper">
+    <p id="xml-not-fetched-yet">
+      XML sitelists have not been fetched yet.
+    </p>
+
+    <p id="xml-last-fetch">
+      XML sitelists were last downloaded at
+      <span id="last-fetch-placeholder"></span>.
+    </p>
+
+    <p id="xml-next-fetch">
+      Next download is at
+      <span id="next-fetch-placeholder"></span>.
+    </p>
+
+    <p>
+      <button id="refresh-xml-button">Download now</button>
+    </p>
+  </div>
+
   <template id="header-row-template">
     <tr>
       <th>Rule</th>
@@ -86,6 +110,20 @@
     <tr>
       <td></td>
       <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </template>
+
+  <template id="xml-header-row-template">
+    <tr>
+      <th>Source policy</th>
+      <th>URL</th>
+    </tr>
+  </template>
+
+  <template id="xml-row-template">
+    <tr>
       <td></td>
       <td></td>
     </tr>

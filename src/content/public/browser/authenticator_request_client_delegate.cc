@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
+#include "device/fido/fido_discovery_factory.h"
 
 namespace content {
 
@@ -17,12 +19,14 @@ AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
 bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   return false;
 }
 
 void AuthenticatorRequestClientDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
+    base::Closure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback,
     device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {}
@@ -34,6 +38,7 @@ bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
 
 void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
+    const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
@@ -57,16 +62,34 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }
 
-bool AuthenticatorRequestClientDelegate::ShouldDisablePlatformAuthenticators() {
+#if defined(OS_MACOSX)
+base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
+AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
+  return base::nullopt;
+}
+#endif  // defined(OS_MACOSX)
+
+bool AuthenticatorRequestClientDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
   return false;
 }
 
+device::FidoDiscoveryFactory*
+AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
+#if defined(OS_ANDROID)
+  // Android uses an internal FIDO API to manage device discovery.
+  NOTREACHED();
+  return nullptr;
+#else
+  if (!discovery_factory_) {
+    discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
 #if defined(OS_MACOSX)
-base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() const {
-  return base::nullopt;
-}
+    discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
+#endif  // defined(OS_MACOSX)
+  }
+  return discovery_factory_.get();
 #endif
+}
 
 void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
     device::FidoTransportProtocol transport) {}
@@ -100,7 +123,8 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorIdChanged(
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {}
+    bool is_in_pairing_mode,
+    base::string16 display_name) {}
 
 bool AuthenticatorRequestClientDelegate::SupportsPIN() const {
   return false;

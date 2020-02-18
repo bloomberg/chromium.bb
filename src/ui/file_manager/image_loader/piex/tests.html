@@ -70,6 +70,27 @@ found in the LICENSE file.
       return thumbnail;
     }
 
+    details() {
+      const details = this.result ? this.result.details : null;
+      if (!details || this.result.error)
+        return null;
+
+      let format = {};
+      for (const [key, value] of Object.entries(details)) {
+        if (typeof value === 'string') {
+          format[key] = value.replace(/\0+$/, '').trim();
+        } else if (typeof value === 'number') {
+          if (!Number.isInteger(value)) {
+            format[key] = Number(value.toFixed(3).replace(/0+$/, ''));
+          } else {
+            format[key] = value;
+          }
+        }
+      }
+
+      return JSON.stringify(format);
+    }
+
     close() {
       Module._free(this.memory);
     }
@@ -214,6 +235,16 @@ found in the LICENSE file.
       return renderRGB(name, image);
   }
 
+  function renderDetails(name, details) {
+    if (!details)
+      return;
+
+    const text = new TextEncoder('UTF-8').encode(details);
+    const hash = hashUint8Array(text);
+
+    console.log('test:', name, 'details hash', hash, details);
+  }
+
   window.Module = {
     onRuntimeInitialized: () => document.title = 'READY',
   };
@@ -250,9 +281,11 @@ found in the LICENSE file.
     }).then((result) => {
       let preview = imageBuffer.preview();
       let thumb = imageBuffer.thumbnail();
+      let details = imageBuffer.details();
       imageBuffer.close();
       time = window.performance.now() - time;
       window.images_ = 0;
+      renderDetails(image, details);
       renderResult(image, preview);
       renderResult(image, thumb);
       console.log('test: done',

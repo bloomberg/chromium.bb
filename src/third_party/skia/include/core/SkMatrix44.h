@@ -36,6 +36,7 @@
         return fabs(x);
     }
     static const SkMScalar SK_MScalarPI = 3.141592653589793;
+    static const SkMScalar SK_MScalarNaN = SK_DoubleNaN;
 
     #define SkMScalarFloor(x)           sk_double_floor(x)
     #define SkMScalarCeil(x)            sk_double_ceil(x)
@@ -68,6 +69,7 @@
         return sk_float_abs(x);
     }
     static const SkMScalar SK_MScalarPI = 3.14159265f;
+    static const SkMScalar SK_MScalarNaN = SK_FloatNaN;
 
     #define SkMScalarFloor(x)           sk_float_floor(x)
     #define SkMScalarCeil(x)            sk_float_ceil(x)
@@ -109,13 +111,11 @@ struct SkVector4 {
         return *this;
     }
 
-    bool operator==(const SkVector4& v) {
+    bool operator==(const SkVector4& v) const {
         return fData[0] == v.fData[0] && fData[1] == v.fData[1] &&
                fData[2] == v.fData[2] && fData[3] == v.fData[3];
     }
-    bool operator!=(const SkVector4& v) {
-        return !(*this == v);
-    }
+    bool operator!=(const SkVector4& v) const { return !(*this == v); }
     bool equals(SkScalar x, SkScalar y, SkScalar z, SkScalar w = SK_Scalar1) {
         return fData[0] == x && fData[1] == y &&
                fData[2] == z && fData[3] == w;
@@ -143,6 +143,9 @@ public:
     enum Identity_Constructor {
         kIdentity_Constructor
     };
+    enum NaN_Constructor {
+        kNaN_Constructor
+    };
 
     SkMatrix44(Uninitialized_Constructor) {}  // ironically, cannot be constexpr
 
@@ -151,8 +154,14 @@ public:
                { 0, 1, 0, 0, },
                { 0, 0, 1, 0, },
                { 0, 0, 0, 1, }}
-        , fTypeMask(kIdentity_Mask)
-    {}
+        , fTypeMask(kIdentity_Mask) {}
+
+    SkMatrix44(NaN_Constructor)
+        : fMat{{ SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN },
+               { SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN },
+               { SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN },
+               { SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN, SK_MScalarNaN }}
+        , fTypeMask(kTranslate_Mask | kScale_Mask | kAffine_Mask | kPerspective_Mask) {}
 
     constexpr SkMatrix44() : SkMatrix44{kIdentity_Constructor} {}
 

@@ -69,6 +69,7 @@
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1385214448885562192">‏enter را برای پذیرش یا escape را برای لغو، پیکان پایین را برای بعدی یا پیکان بالا را برای قبلی فشار دهید.</translation>
 <translation id="1396114365388024581">tablst</translation>
+<translation id="139902759009894363">اعلام ویژگی‌های نوشتار غنی‌شده</translation>
 <translation id="1405567553485452995">سبز روشن</translation>
 <translation id="1417889266572670458">آبی سورمه‌ای</translation>
 <translation id="1431911867058218151">بنفش کدر</translation>
@@ -319,11 +320,11 @@
 <translation id="3232388865800379423">دکمه بازشو</translation>
 <translation id="3241052487511142956">پیوند بازدید شده قبلی</translation>
 <translation id="3241638166094654466">تعداد سلول‌ها در هر خط:</translation>
+<translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3286372614333682499">چهره</translation>
 <translation id="3286390186030710347">اسلایدر</translation>
 <translation id="3299925995433437805">پیوند بازدید شده بعدی وجود ندارد.</translation>
 <translation id="3300348286427369683">‏پشتیبانی از نوشتار غنی. ChromeVox اکنون از فیلدهای نوشتار غنی (مثل فرمان‌های پرش، مسیریابی مکان‌نمای بریل، انتخاب و غیره) پشتیبانی می‌کند.</translation>
-<translation id="3304756947457041303">سفارشی کردن نشانگر نوشتار غنی‌شده</translation>
 <translation id="3307886118343381874">رفتن به انتهای جدول</translation>
 <translation id="3311969765485641742">‏برای بررسی هشدارها Alt+Shift+A را فشار دهید</translation>
 <translation id="3312997241656799641">پیوند بازدید شده بعدی</translation>

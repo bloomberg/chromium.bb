@@ -20,8 +20,10 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 class PrefService;
 
@@ -155,16 +157,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   // For testing.
   void SetManagedForTest(bool is_managed);
 
-  // Get/Set number of memory warnings received.
-  int GetMemoryPressureWarningCount() const;
-  void SetMemoryPressureWarningCount(int value);
-
-  // Check if the previous shutdown was clean.
-  bool DidSyncShutdownCleanly() const;
-
-  // Set whether the last shutdown was clean.
-  void SetCleanShutdown(bool value);
-
   // Get/set for the last known sync invalidation versions.
   void GetInvalidationVersions(
       std::map<ModelType, int64_t>* invalidation_versions) const;
@@ -181,13 +173,19 @@ class SyncPrefs : public CryptoSyncPrefs,
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
 
+  // Gets the synced user’s birth year and gender from synced prefs and adds
+  // noise to the birth year, see doc of UserDemographicsStatus in
+  // components/sync/base/user_demographics.h for more details. You need to
+  // provide an accurate |now| time that represents the current time.
+  UserDemographicsResult GetUserNoisedBirthYearAndGender(base::Time now);
+
  private:
   static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,
                                        UserSelectableType type);
 
   void OnSyncManagedPrefChanged();
   void OnFirstSetupCompletePrefChange();
-  void OnSyncSuppressedPrefChange();
+  void OnSyncRequestedPrefChange();
 
   // Never null.
   PrefService* const pref_service_;
@@ -200,7 +198,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   BooleanPrefMember pref_first_setup_complete_;
 
-  BooleanPrefMember pref_sync_suppressed_;
+  BooleanPrefMember pref_sync_requested_;
 
   bool local_sync_enabled_;
 
@@ -218,6 +216,8 @@ void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
 #if defined(OS_CHROMEOS)
 void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service);
 #endif  // defined(OS_CHROMEOS)
+void MigrateSyncSuppressedPref(PrefService* pref_service);
+void ClearObsoleteMemoryPressurePrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

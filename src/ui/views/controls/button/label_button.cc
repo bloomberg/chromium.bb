@@ -29,9 +29,6 @@
 
 namespace views {
 
-// static
-const char LabelButton::kViewClassName[] = "LabelButton";
-
 LabelButton::LabelButton(ButtonListener* listener,
                          const base::string16& text,
                          int button_context)
@@ -70,7 +67,7 @@ void LabelButton::SetImage(ButtonState for_state, const gfx::ImageSkia& image) {
 }
 
 base::string16 LabelButton::GetText() const {
-  return label_->text();
+  return label_->GetText();
 }
 
 void LabelButton::SetText(const base::string16& text) {
@@ -259,7 +256,7 @@ void LabelButton::Layout() {
       label_area.height());
 
   gfx::Point image_origin(child_area.origin());
-  if (label_->multi_line()) {
+  if (label_->GetMultiLine()) {
     // Right now this code currently only works for CheckBox and RadioButton
     // descendants that have multi-line enabled for their label.
     image_origin.Offset(
@@ -293,10 +290,6 @@ void LabelButton::Layout() {
 
   label_->SetBoundsRect(label_bounds);
   Button::Layout();
-}
-
-const char* LabelButton::GetClassName() const {
-  return kViewClassName;
 }
 
 void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
@@ -389,7 +382,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
   params->button.has_border = false;
   params->button.classic_state = 0;
-  params->button.background_color = label_->background_color();
+  params->button.background_color = label_->GetBackgroundColor();
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {
@@ -510,7 +503,7 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
 
 void LabelButton::ResetLabelEnabledColor() {
   const SkColor color = button_state_colors_[state()];
-  if (state() != STATE_DISABLED && label_->enabled_color() != color)
+  if (state() != STATE_DISABLED && label_->GetEnabledColor() != color)
     label_->SetEnabledColor(color);
 }
 

@@ -6,11 +6,11 @@
 
 #include <string>
 
+#include "android_webview/native_jni/AwFeatureList_jni.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "jni/AwFeatureList_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
@@ -56,10 +56,6 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 // navigations when the navigation commits.
 const base::Feature kWebViewPageStartedOnCommit{
     "WebViewPageStartedOnCommit", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether the application package name is logged in UMA.
-const base::Feature kWebViewUmaLogAppPackageName{
-    "WebViewUmaLogAppPackageName", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable raster in wide color gamut for apps that use webview in a wide color
 // gamut activity.

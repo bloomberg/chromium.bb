@@ -102,8 +102,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
                      LayoutUnit line_top,
                      LayoutUnit line_bottom) const;
   virtual bool NodeAtPoint(HitTestResult&,
-                           const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset,
+                           const HitTestLocation&,
+                           const PhysicalOffset& accumulated_offset,
                            LayoutUnit line_top,
                            LayoutUnit line_bottom);
 
@@ -353,7 +353,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // Physical location of the top-left corner of the box in the containing
   // block.
-  LayoutPoint PhysicalLocation() const;
+  PhysicalOffset PhysicalLocation() const;
 
   // TODO(szager): The Rect versions should return a rect, not modify the
   // argument.
@@ -374,8 +374,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   }
 
   // Set all LineLayoutItems in the inline box subtree should do full paint
-  // invalidation.
-  void SetShouldDoFullPaintInvalidationRecursively();
+  // invalidation and clear the first line style cache.
+  void SetShouldDoFullPaintInvalidationForFirstLine();
 
 #define ADD_BOOLEAN_BITFIELD(field_name_, MethodNameBase)               \
  public:                                                                \

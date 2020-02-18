@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef MAPICODE_H
@@ -8,7 +8,7 @@
 
 #include <winerror.h>
 
-#define MAKE_MAPI_SCODE(sev,fac,code) ((SCODE) (((unsigned long)(sev)<<31) | ((unsigned long)(fac)<<16) | ((unsigned long)(code))))
+#define MAKE_MAPI_SCODE(sev,fac,code) ((SCODE) (((unsigned __LONG32)(sev)<<31) | ((unsigned __LONG32)(fac)<<16) | ((unsigned __LONG32)(code))))
 
 #define MAKE_MAPI_E(err) (MAKE_MAPI_SCODE(1,FACILITY_ITF,err))
 #define MAKE_MAPI_S(warn) (MAKE_MAPI_SCODE(0,FACILITY_ITF,warn))
@@ -16,7 +16,7 @@
 #ifdef SUCCESS_SUCCESS
 #undef SUCCESS_SUCCESS
 #endif
-#define SUCCESS_SUCCESS 0L
+#define SUCCESS_SUCCESS __MSABI_LONG(0)
 
 #define MAPI_E_CALL_FAILED E_FAIL
 #define MAPI_E_NOT_ENOUGH_MEMORY E_OUTOFMEMORY

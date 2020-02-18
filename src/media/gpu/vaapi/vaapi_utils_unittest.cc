@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <va/va.h>
+
 #include <memory>
 #include <vector>
-
-#include <va/va.h>
 
 // This has to be included first.
 // See http://code.google.com/p/googletest/issues/detail?id=371
@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/test/gtest_util.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -74,6 +75,7 @@ TEST_F(VaapiUtilsTest, ScopedVAImage) {
     EXPECT_TRUE(scoped_image->va_buffer()->IsValid());
     EXPECT_TRUE(scoped_image->va_buffer()->data());
   }
+  vaapi_wrapper_->DestroyContextAndSurfaces(va_surfaces);
 }
 
 // This test exercises creation of a ScopedVAImage with a bad VASurfaceID.
@@ -117,6 +119,35 @@ TEST_F(VaapiUtilsTest, BadScopedVABufferMapping) {
   auto scoped_buffer = std::make_unique<ScopedVABufferMapping>(
       vaapi_wrapper_->va_lock_, vaapi_wrapper_->va_display_, VA_INVALID_ID - 1);
   EXPECT_FALSE(scoped_buffer->IsValid());
+}
+
+// This test exercises the creation of a valid ScopedVASurface.
+TEST_F(VaapiUtilsTest, ScopedVASurface) {
+  const gfx::Size coded_size(64, 64);
+  auto scoped_va_surface = vaapi_wrapper_->CreateContextAndScopedVASurface(
+      VA_RT_FORMAT_YUV420, coded_size);
+
+  ASSERT_TRUE(scoped_va_surface);
+  EXPECT_TRUE(scoped_va_surface->IsValid());
+  EXPECT_EQ(VA_RT_FORMAT_YUV420,
+            base::checked_cast<int>(scoped_va_surface->format()));
+  EXPECT_EQ(coded_size, scoped_va_surface->size());
+}
+
+// This test exercises the creation of a ScopedVASurface with an invalid
+// size.
+TEST_F(VaapiUtilsTest, ScopedVASurfaceInvalidSizeRequest) {
+  const gfx::Size invalid_size(0, 0);
+  EXPECT_FALSE(vaapi_wrapper_->CreateContextAndScopedVASurface(
+      VA_RT_FORMAT_YUV420, invalid_size));
+}
+
+// This test exercises the creation of a ScopedVASurface with an invalid
+// RT format.
+TEST_F(VaapiUtilsTest, ScopedVASurfaceInvalidRTFormatRequest) {
+  const gfx::Size coded_size(64, 64);
+  EXPECT_FALSE(vaapi_wrapper_->CreateContextAndScopedVASurface(
+      kInvalidVaRtFormat, coded_size));
 }
 
 }  // namespace media

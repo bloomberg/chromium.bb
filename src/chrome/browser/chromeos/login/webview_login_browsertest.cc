@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -253,6 +254,9 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
+  ASSERT_TRUE(LoginDisplayHost::default_host());
+  EXPECT_TRUE(LoginDisplayHost::default_host()->GetWebUILoginView());
+
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
@@ -261,7 +265,16 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
 
+  // The login view should be destroyed after the browser window opens.
+  ui_test_utils::WaitForBrowserToOpen();
+  EXPECT_FALSE(LoginDisplayHost::default_host()->GetWebUILoginView());
+
   session_start_waiter.Wait();
+
+  // Wait for the LoginDisplayHost to delete itself, which is a posted task.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(LoginDisplayHost::default_host());
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
@@ -277,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {
   ExpectPasswordPage();
 
   // Click back to identifier page.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
   // Click next to password page, user id is remembered.
@@ -351,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
 
   // Press the back button at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
@@ -1022,7 +1035,7 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, DISABLED_ProxyAuthTransfer) {
   // start a new sign-in attempt.
   // This will re-load gaia, rotating the StoragePartition. The new
   // StoragePartition must also have the proxy auth details.
-  test::OobeJS().TapOnPath({"gaia-signin", "signin-back-button"});
+  test::OobeJS().ClickOnPath({"gaia-signin", "signin-back-button"});
   WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.

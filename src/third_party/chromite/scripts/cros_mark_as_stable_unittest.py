@@ -64,8 +64,11 @@ class NonClassTests(cros_test_lib.MockTestCase):
 
     git_mock.AddCmdResult(['checkout', self._branch])
 
-    cmd = ['log', '--format=short', '--perl-regexp', '--author',
-           '^(?!chrome-bot)', 'refs/remotes/gerrit/master..%s' % self._branch]
+    cmd = [
+        'log', '--format=short', '--perl-regexp', '--author',
+        '^(?!chrome-bot|chromeos-ci-prod)',
+        'refs/remotes/gerrit/master..%s' % self._branch
+    ]
 
     if bad_cls:
       push_mock.side_effect = side_effect

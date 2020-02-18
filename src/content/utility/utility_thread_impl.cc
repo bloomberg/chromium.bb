@@ -4,20 +4,28 @@
 
 #include "content/utility/utility_thread_impl.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/content_utility_client.h"
+#include "content/utility/services.h"
 #include "content/utility/utility_blink_platform_with_sandbox_support_impl.h"
 #include "content/utility/utility_service_factory.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/sandbox/switches.h"
 
@@ -27,6 +35,70 @@
 #endif
 
 namespace content {
+
+namespace {
+
+class ServiceBinderImpl {
+ public:
+  explicit ServiceBinderImpl(
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
+      : main_thread_task_runner_(std::move(main_thread_task_runner)) {}
+  ~ServiceBinderImpl() = default;
+
+  void BindServiceInterface(mojo::GenericPendingReceiver receiver) {
+    // We watch for and terminate on PEER_CLOSED, but we also terminate if the
+    // watcher is cancelled (meaning the local endpoint was closed rather than
+    // the peer). Hence any breakage of the service pipe leads to termination.
+    auto watcher = std::make_unique<mojo::SimpleWatcher>(
+        FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC);
+    watcher->Watch(receiver.pipe(), MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+                   MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                   base::BindRepeating(&ServiceBinderImpl::OnServicePipeClosed,
+                                       base::Unretained(this), watcher.get()));
+    service_pipe_watchers_.insert(std::move(watcher));
+    HandleServiceRequestOnIOThread(std::move(receiver),
+                                   main_thread_task_runner_.get());
+  }
+
+ private:
+  void OnServicePipeClosed(mojo::SimpleWatcher* which,
+                           MojoResult result,
+                           const mojo::HandleSignalsState& state) {
+    // NOTE: It doesn't matter whether this was peer closure or local closure,
+    // and those are the only two ways this method can be invoked.
+
+    auto it = service_pipe_watchers_.find(which);
+    DCHECK(it != service_pipe_watchers_.end());
+    service_pipe_watchers_.erase(it);
+
+    // No more services running in this process.
+    if (service_pipe_watchers_.empty()) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce([] { UtilityThread::Get()->ReleaseProcess(); }));
+    }
+  }
+
+  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+
+  // These trap signals on any (unowned) primordial service pipes. We don't
+  // actually care about the signals so these never get armed. We only watch for
+  // cancellation, because that means the service's primordial pipe handle was
+  // closed locally and we treat that as the service calling it quits.
+  std::set<std::unique_ptr<mojo::SimpleWatcher>, base::UniquePtrComparator>
+      service_pipe_watchers_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceBinderImpl);
+};
+
+ChildThreadImpl::Options::ServiceBinder GetServiceBinder() {
+  static base::NoDestructor<ServiceBinderImpl> binder(
+      base::ThreadTaskRunnerHandle::Get());
+  return base::BindRepeating(&ServiceBinderImpl::BindServiceInterface,
+                             base::Unretained(binder.get()));
+}
+
+}  // namespace
 
 #if !defined(OS_ANDROID)
 class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
@@ -59,6 +131,7 @@ UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
     : ChildThreadImpl(std::move(quit_closure),
                       ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
+                          .ServiceBinder(GetServiceBinder())
                           .Build()) {
   Init();
 }
@@ -68,6 +141,7 @@ UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
                       ChildThreadImpl::Options::Builder()
                           .AutoStartServiceManagerConnection(false)
                           .InBrowserProcess(params)
+                          .ServiceBinder(GetServiceBinder())
                           .Build()) {
   Init();
 }
@@ -143,8 +217,6 @@ void UtilityThreadImpl::Init() {
   service_factory_.reset(new UtilityServiceFactory);
 
   if (connection) {
-    GetContentClient()->OnServiceManagerConnected(connection);
-
     // NOTE: You must register any ConnectionFilter instances on |connection|
     // *before* this call to |Start()|, otherwise incoming interface requests
     // may race with the registration.

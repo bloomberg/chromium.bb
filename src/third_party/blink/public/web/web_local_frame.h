@@ -18,6 +18,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom-shared.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -41,7 +42,7 @@ class WebContentCaptureClient;
 class WebContentSettingsClient;
 class WebDocument;
 class WebDoubleSize;
-class WebDOMEvent;
+class WebDOMMessageEvent;
 class WebLocalFrameClient;
 class WebFrameWidget;
 class WebInputMethodController;
@@ -250,10 +251,11 @@ class WebLocalFrame : public WebFrame {
   virtual bool IsNavigationScheduledWithin(
       double interval_in_seconds) const = 0;
 
-  // Reports a list of unique blink::WebFeature values representing
-  // Blink features used, performed or encountered by the browser during the
-  // current page load happening on the frame.
-  virtual void BlinkFeatureUsageReport(const std::set<int>& features) = 0;
+  // Reports a list of Blink features used, performed or encountered by the
+  // browser during the current page load happening on the frame.
+  virtual void BlinkFeatureUsageReport(
+      const std::set<blink::mojom::WebFeature>& features) = 0;
+  virtual void BlinkFeatureUsageReport(blink::mojom::WebFeature feature) = 0;
 
   // Informs the renderer that mixed content was found externally regarding this
   // frame. Currently only the the browser process can do so. The included data
@@ -607,7 +609,7 @@ class WebLocalFrame : public WebFrame {
   // Dispatches a message event on the current DOMWindow in this WebFrame.
   virtual void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&,
+      const WebDOMMessageEvent&,
       bool has_user_gesture) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.
@@ -722,9 +724,9 @@ class WebLocalFrame : public WebFrame {
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
 
-  // Returns whether the currently focused field could be autofilled by the
-  // active WebAutofillClient.
-  virtual bool CanFocusedFieldBeAutofilled() const = 0;
+  // Asks the active WebAutofillClient to show the touch to fill UI for the
+  // currently focused field. Returns whether this request succeeded.
+  virtual bool TryToShowTouchToFillForFocusedElement() = 0;
 
   // Performance --------------------------------------------------------
 

@@ -43,6 +43,7 @@ public final class TabHelpers {
         }
         MediaSessionTabHelper.createForTab(tab);
         TaskTabHelper.createForTab(tab, parentTab);
+        TabBrowserControlsState.createForTab(tab);
 
         // TODO(jinsukkim): Do this by having something observe new tab creation.
         if (tab.isIncognito()) CipherFactory.getInstance().triggerKeyGeneration();
@@ -60,15 +61,10 @@ public final class TabHelpers {
         InfoBarContainer.from(tab);
 
         TabWebContentsObserver.from(tab);
-        TabGestureStateListener.from(tab);
         SwipeRefreshHandler.from(tab);
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
         TabAssociatedApp.from(tab);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION)
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.DELEGATE_OVERSCROLL_SWIPES)) {
-            TabContentViewDelegate.from(tab);
-        }
 
         WebContents webContents = tab.getWebContents();
 

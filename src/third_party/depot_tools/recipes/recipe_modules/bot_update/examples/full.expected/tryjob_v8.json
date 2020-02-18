@@ -23,6 +23,7 @@
     },
     "infra_step": true,
     "name": "gerrit fetch current CL info",
+    "timeout": 600,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -241,7 +242,6 @@
     ]
   },
   {
-    "jsonResult": null,
     "name": "$result"
   }
 ]

@@ -25,19 +25,26 @@ class MockChromePromptIPC : public ChromePromptIPC {
                void(base::OnceClosure delete_allowed_callback,
                     base::OnceClosure delete_not_allowed_callback));
 
-  // Workaround for GMock's limitation, in which MOCK_METHOD* doesn't accept
-  // base::OnceCallback parameters. Will forward any calls to
-  // MockPostPromptUserTask() and pass along a raw pointer for |callback|.
+  // Workaround for GMock's limitation, in which MOCK_METHOD* doesn't
+  // accept base::OnceCallback parameters. Will forward any calls to
+  // MockPost*() and pass along a raw pointer for |callback|.
   void PostPromptUserTask(
       const std::vector<base::FilePath>& files_to_delete,
       const std::vector<base::string16>& registry_keys,
       const std::vector<base::string16>& extension_ids,
       mojom::ChromePrompt::PromptUserCallback callback) override;
+  void PostDisableExtensionsTask(
+      const std::vector<base::string16>& extension_ids,
+      mojom::ChromePrompt::DisableExtensionsCallback callback) override;
+
   MOCK_METHOD4(MockPostPromptUserTask,
                void(const std::vector<base::FilePath>& files_to_delete,
                     const std::vector<base::string16>& registry_keys,
                     const std::vector<base::string16>& extension_ids,
                     mojom::ChromePrompt::PromptUserCallback* callback));
+  MOCK_METHOD2(MockPostDisableExtensionsTask,
+               void(const std::vector<base::string16>& extension_ids,
+                    mojom::ChromePrompt::DisableExtensionsCallback* callback));
 };
 
 }  // namespace chrome_cleaner

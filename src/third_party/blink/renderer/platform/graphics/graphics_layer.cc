@@ -86,8 +86,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_clipping_mask_layer_(nullptr),
       contents_layer_(nullptr),
       contents_layer_id_(0),
-      rendering_context3d_(0),
-      weak_ptr_factory_(this) {
+      rendering_context3d_(0) {
 #if DCHECK_IS_ON()
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();
@@ -307,8 +306,10 @@ void GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
-  if (client_.PaintBlockedByDisplayLock())
+  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
     return;
+  }
 
   if (PaintsContentOrHitTest()) {
     if (Paint())
@@ -391,7 +392,7 @@ bool GraphicsLayer::PaintWithoutCommit(
     const IntRect* interest_rect) {
   DCHECK(PaintsContentOrHitTest());
 
-  if (client_.ShouldThrottleRendering())
+  if (client_.ShouldThrottleRendering() || client_.IsUnderSVGHiddenContainer())
     return false;
 
   IntRect new_interest_rect;
@@ -1049,6 +1050,14 @@ sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   if (client_.ShouldThrottleRendering())
     return sk_sp<PaintRecord>(new PaintRecord);
 
+  if (client_.IsUnderSVGHiddenContainer())
+    return sk_sp<PaintRecord>(new PaintRecord);
+
+  if (client_.PaintBlockedByDisplayLockIncludingAncestors(
+          DisplayLockContextLifecycleTarget::kSelf)) {
+    return sk_sp<PaintRecord>(new PaintRecord);
+  }
+
   FloatRect bounds((IntRect(IntPoint(), IntSize(Size()))));
   GraphicsContext graphics_context(GetPaintController());
   graphics_context.BeginRecording(bounds);
@@ -1071,8 +1080,11 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    if (auto* layer = CcLayer())
+      layer->SetSubtreePropertyChanged();
     client_.GraphicsLayersDidChange();
+  }
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
@@ -1090,8 +1102,10 @@ void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    ContentsLayer()->SetSubtreePropertyChanged();
     client_.GraphicsLayersDidChange();
+  }
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

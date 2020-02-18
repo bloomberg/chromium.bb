@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -23,8 +23,7 @@ DistillerJsRenderFrameObserver::DistillerJsRenderFrameObserver(
     service_manager::BinderRegistry* registry)
     : RenderFrameObserver(render_frame),
       distiller_isolated_world_id_(distiller_isolated_world_id),
-      is_distiller_page_(false),
-      weak_factory_(this) {
+      is_distiller_page_(false) {
   registry->AddInterface(base::Bind(
       &DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService,
       weak_factory_.GetWeakPtr()));

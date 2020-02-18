@@ -1,6 +1,6 @@
 package DBD::Gofer::Transport::Base;
 
-#   $Id: Base.pm 14120 2010-06-07 19:52:19Z hmbrand $
+#   $Id: Base.pm 14120 2010-06-07 19:52:19Z H.Merijn $
 #
 #   Copyright (c) 2007, Tim Bunce, Ireland
 #
@@ -12,7 +12,7 @@ use warnings;
 
 use base qw(DBI::Gofer::Transport::Base);
 
-our $VERSION = sprintf("0.%06d", q$Revision: 14120 $ =~ /(\d+)/o);
+our $VERSION = "0.014121";
 
 __PACKAGE__->mk_accessors(qw(
     trace
@@ -38,7 +38,7 @@ sub new {
     $args->{keep_meta_frozen} ||= 1 if $args->{go_cache};
     #warn "args @{[ %$args ]}\n";
     return $class->SUPER::new($args);
-}   
+}
 
 
 sub _init_trace { $ENV{DBD_GOFER_TRACE} || 0 }
@@ -184,7 +184,7 @@ sub response_retry_preference {
     # This is the main decision point.  We don't retry requests that got
     # as far as executing because the error is probably from the database
     # (not transport) so retrying is unlikely to help. But note that any
-    # severe transport error occuring after execute is likely to return
+    # severe transport error occurring after execute is likely to return
     # a new response object that doesn't have the execute flag set. Beware!
     return 0 if $response->executed_flag_set;
 

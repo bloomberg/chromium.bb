@@ -22,7 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#include "ui/base/mojo/window_open_disposition.mojom.h"
+#include "ui/base/mojom/window_open_disposition.mojom.h"
 #include "ui/display/types/display_constants.h"
 
 namespace web_app {
@@ -65,7 +65,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   // TODO(calamity): Plumb through better launch sources from callsites.
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-      profile, extension, 0, extensions::SOURCE_CHROME_INTERNAL,
+      profile, extension, 0, extensions::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId);
   params.override_url = url;
 
@@ -103,7 +103,7 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
             ->GetExtensionById(GetAppIdFromApplicationName(browser->app_name()),
                                extensions::ExtensionRegistry::EVERYTHING);
 
-    if (browser_extension->id() == extension->id())
+    if (browser_extension && browser_extension->id() == extension->id())
       return browser;
   }
 

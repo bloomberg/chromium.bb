@@ -45,20 +45,37 @@
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/network_service_instance.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace offline_pages {
 
 namespace {
 
-void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
+image_fetcher::ImageFetcher* GetImageFetcher(
+    ProfileKey* key,
+    image_fetcher::ImageFetcherConfig config) {
+  image_fetcher::ImageFetcherService* image_fetcher_service =
+      ImageFetcherServiceFactory::GetForKey(key);
+  DCHECK(image_fetcher_service);
+  return image_fetcher_service->GetImageFetcher(config);
+}
+
+void SwitchToFullBrowserImageFetcher(PrefetchServiceImpl* prefetch_service,
+                                     ProfileKey* key) {
+  // We don't need to switch the image_fetcher if it isn't created.
+  if (!prefetch_service->GetImageFetcher())
+    return;
+
+  DCHECK(base::FeatureList::IsEnabled(feed::kInterestFeedContentSuggestions));
+  prefetch_service->ReplaceImageFetcher(
+      GetImageFetcher(key, image_fetcher::ImageFetcherConfig::kDiskCacheOnly));
+}
+
+void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
   auto gcm_app_handler = std::make_unique<PrefetchGCMAppHandler>(
       std::make_unique<PrefetchInstanceIDProxy>(kPrefetchingOfflinePagesAppId,
                                                 profile));
-  service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
+  prefetch_service->SetPrefetchGCMHandler(std::move(gcm_app_handler));
   if (IsPrefetchingOfflinePagesEnabled()) {
     // Trigger an update of the cached GCM token. This needs to be post tasked
     // because otherwise leads to circular dependency between
@@ -69,9 +86,11 @@ void OnProfileCreated(PrefetchServiceImpl* service, Profile* profile) {
     base::PostTaskWithTraits(
         FROM_HERE,
         {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&PrefetchServiceImpl::GetGCMToken, service->GetWeakPtr(),
-                       base::DoNothing::Once<const std::string&>()));
+        base::BindOnce(&PrefetchServiceImpl::RefreshGCMToken,
+                       prefetch_service->GetWeakPtr()));
   }
+
+  SwitchToFullBrowserImageFetcher(prefetch_service, profile->GetProfileKey());
 }
 
 }  // namespace
@@ -111,14 +130,6 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
   auto prefetch_dispatcher =
       std::make_unique<PrefetchDispatcherImpl>(profile_key->GetPrefs());
 
-  // Starts the network service if it hasn't yet. This is because when network
-  // service is enabled in the reduced mode, it only starts upon request.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    content::GetNetworkServiceFromConnector(connector);
-  }
-
   auto* system_network_context_manager =
       SystemNetworkContextManager::GetInstance();
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory;
@@ -153,11 +164,8 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
     suggested_articles_observer = std::make_unique<SuggestedArticlesObserver>();
     thumbnail_fetcher = std::make_unique<ThumbnailFetcherImpl>();
   } else {
-    image_fetcher::ImageFetcherService* image_fetcher_service =
-        ImageFetcherServiceFactory::GetForKey(profile_key);
-    DCHECK(image_fetcher_service);
-    image_fetcher = image_fetcher_service->GetImageFetcher(
-        image_fetcher::ImageFetcherConfig::kDiskCacheOnly);
+    image_fetcher = GetImageFetcher(
+        profile_key, image_fetcher::ImageFetcherConfig::kReducedMode);
   }
 
   auto prefetch_downloader = std::make_unique<PrefetchDownloaderImpl>(
@@ -177,7 +185,7 @@ std::unique_ptr<KeyedService> PrefetchServiceFactory::BuildServiceInstanceFor(
       std::move(prefetch_store), std::move(suggested_articles_observer),
       std::move(prefetch_downloader), std::move(prefetch_importer),
       std::move(prefetch_background_task_handler), std::move(thumbnail_fetcher),
-      image_fetcher);
+      image_fetcher, profile_key->GetPrefs());
 
   auto callback = base::BindOnce(&OnProfileCreated, service.get());
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(

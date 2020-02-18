@@ -65,7 +65,7 @@ void PaymentRequestItemList::Item::Init() {
       CreateContentView(&accessible_item_description_);
 
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
 
   // Add a column for the item's content view.
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -96,12 +96,12 @@ void PaymentRequestItemList::Item::Init() {
 
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   content->set_can_process_events_within_subtree(false);
-  layout->AddView(content.release());
+  layout->AddView(std::move(content));
 
-  layout->AddView(CreateCheckmark(selected() && clickable()).release());
+  layout->AddView(CreateCheckmark(selected() && clickable()));
 
   if (extra_view)
-    layout->AddView(extra_view.release());
+    layout->AddView(std::move(extra_view));
 
   if (show_edit_button_) {
     auto edit_button = views::CreateVectorImageButton(this);
@@ -115,7 +115,7 @@ void PaymentRequestItemList::Item::Init() {
     edit_button->SetID(static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
     edit_button->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_PAYMENTS_EDIT));
-    layout->AddView(edit_button.release());
+    layout->AddView(std::move(edit_button));
   }
 
   UpdateAccessibleName();
@@ -206,7 +206,7 @@ std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
   std::unique_ptr<views::View> content_view = std::make_unique<views::View>();
 
   content_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
+      views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kPaymentRequestRowVerticalInsets, 0), 0));
 
   for (auto& item : items_)

@@ -496,6 +496,13 @@ class TestImporterTest(LoggingTestCase):
         self.assertEqual('external@example.com', importer.tbr_reviewer())
         self.assertLog([])
 
+    def test_tbr_reviewer_skips_non_committer(self):
+        host = MockHost()
+        importer = TestImporter(host)
+        importer._fetch_ecosystem_infra_sheriff_username = lambda: 'kyleju'
+        self.assertEqual(TBR_FALLBACK, importer.tbr_reviewer())
+        self.assertLog(['WARNING: Cannot TBR by kyleju: not a committer\n'])
+
     def test_generate_manifest_successful_run(self):
         # This test doesn't test any aspect of the real manifest script, it just
         # asserts that TestImporter._generate_manifest would invoke the script.
@@ -510,7 +517,6 @@ class TestImporterTest(LoggingTestCase):
                     'python',
                     '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
                     'manifest',
-                    '--work',
                     '--no-download',
                     '--tests-root',
                     MOCK_WEB_TESTS + 'external/wpt',
@@ -599,10 +605,6 @@ class TestImporterTest(LoggingTestCase):
         host.filesystem.write_text_file(dest_path + '/foo-test-expected.txt', '')
         host.filesystem.write_text_file(dest_path + '/OWNERS', '')
         host.filesystem.write_text_file(dest_path + '/bar/baz/OWNERS', '')
-        # TODO(crbug.com/927187): Delete it once webdrive/tests manual import is done.
-        host.filesystem.write_text_file(dest_path + '/webdriver/tests/A.txt', '')
-        host.filesystem.write_text_file(dest_path + '/webdriver/tests/test/assert.py', '')
-        host.filesystem.write_text_file(dest_path + '/webdriver/META.yml', '')
         # When the destination path is cleared, OWNERS files and baselines
         # are kept.
         importer._clear_out_dest_path()
@@ -610,7 +612,3 @@ class TestImporterTest(LoggingTestCase):
         self.assertTrue(host.filesystem.exists(dest_path + '/foo-test-expected.txt'))
         self.assertTrue(host.filesystem.exists(dest_path + '/OWNERS'))
         self.assertTrue(host.filesystem.exists(dest_path + '/bar/baz/OWNERS'))
-
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/A.txt'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/tests/test/assert.py'))
-        self.assertTrue(host.filesystem.exists(dest_path + '/webdriver/META.yml'))

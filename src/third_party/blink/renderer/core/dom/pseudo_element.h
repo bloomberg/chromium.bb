@@ -69,7 +69,7 @@ class CORE_EXPORT PseudoElement : public Element {
 
    private:
     Member<PseudoElement> element_;
-    scoped_refptr<ComputedStyle> original_style_;
+    scoped_refptr<const ComputedStyle> original_style_;
   };
 
   PseudoId pseudo_id_;

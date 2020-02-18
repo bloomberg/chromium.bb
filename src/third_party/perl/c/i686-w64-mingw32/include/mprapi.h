@@ -1,13 +1,19 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef __ROUTING_MPRADMIN_H__
 #define __ROUTING_MPRADMIN_H__
 
+#include <winapifamily.h>
+
+#if WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP)
+
 #include <lmcons.h>
 #include <ras.h>
+#include <in6addr.h>
+#include <wincrypt.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -735,6 +741,8 @@ typedef enum  {
 
 typedef struct _MPRAPI_OBJECT_HEADER {
   UCHAR revision;
+  UCHAR  type;
+  USHORT size;
 } MPRAPI_OBJECT_HEADER, *PMPRAPI_OBJECT_HEADER;
 
 typedef struct _AUTH_VALIDATION_EX {
@@ -906,12 +914,89 @@ typedef struct _MPR_SERVER_SET_CONFIG_EX {
   MPRAPI_TUNNEL_CONFIG_PARAMS ConfigParams;
 } MPR_SERVER_SET_CONFIG_EX, *PMPR_SERVER_SET_CONFIG_EX;
 
+typedef struct _MPR_SERVER_EX {
+  MPRAPI_OBJECT_HEADER        Header;
+  DWORD                       fLanOnlyMode;
+  DWORD                       dwUpTime;
+  DWORD                       dwTotalPorts;
+  DWORD                       dwPortsInUse;
+  DWORD                       Reserved;
+  MPRAPI_TUNNEL_CONFIG_PARAMS ConfigParams;
+} MPR_SERVER_EX, *PMPR_SERVER_EX;
+
+typedef DWORD (APIENTRY * PMPRADMINGETIPADDRESSFORUSER)(WCHAR *, WCHAR *, DWORD *, WINBOOL *);
+typedef VOID  (APIENTRY * PMPRADMINRELEASEIPADRESS)(WCHAR *, WCHAR *, DWORD *);
+typedef DWORD (APIENTRY * PMPRADMINGETIPV6ADDRESSFORUSER)(WCHAR *, WCHAR *, IN6_ADDR *, WINBOOL *);
+typedef VOID  (APIENTRY * PMPRADMINRELEASEIPV6ADDRESSFORUSER)(WCHAR *, WCHAR *, IN6_ADDR *);
+typedef WINBOOL (APIENTRY * PMPRADMINACCEPTNEWLINK)(RAS_PORT_0 *, RAS_PORT_1 *);
+typedef VOID  (APIENTRY * PMPRADMINLINKHANGUPNOTIFICATION)(RAS_PORT_0 *, RAS_PORT_1 *);
+typedef DWORD (APIENTRY * PMPRADMINTERMINATEDLL)();
+typedef BOOL  (APIENTRY * PMPRADMINACCEPTNEWCONNECTIONEX)(RAS_CONNECTION_EX *);
+typedef BOOL  (APIENTRY * PMPRADMINACCEPTREAUTHENTICATIONEX)(RAS_CONNECTION_EX *);
+typedef VOID  (APIENTRY * PMPRADMINCONNECTIONHANGUPNOTIFICATIONEX)(RAS_CONNECTION_EX *);
+
+typedef struct _MPRAPI_ADMIN_DLL_CALLBACKS {
+  UCHAR                                   revision;
+  PMPRADMINGETIPADDRESSFORUSER            lpfnMprAdminGetIpAddressForUser;
+  PMPRADMINRELEASEIPADRESS                lpfnMprAdminReleaseIpAddress;
+  PMPRADMINGETIPV6ADDRESSFORUSER          lpfnMprAdminGetIpv6AddressForUser;
+  PMPRADMINRELEASEIPV6ADDRESSFORUSER      lpfnMprAdminReleaseIpV6AddressForUser;
+  PMPRADMINACCEPTNEWLINK                  lpfnRasAdminAcceptNewLink;
+  PMPRADMINLINKHANGUPNOTIFICATION         lpfnRasAdminLinkHangupNotification;
+  PMPRADMINTERMINATEDLL                   lpfnRasAdminTerminateDll;
+  PMPRADMINACCEPTNEWCONNECTIONEX          lpfnRasAdminAcceptNewConnectionEx;
+  PMPRADMINACCEPTREAUTHENTICATIONEX       lpfnRasAdminAcceptReauthenticationEx;
+  PMPRADMINCONNECTIONHANGUPNOTIFICATIONEX lpfnRasAdminConnectionHangupNotificationEx;
+} MPRAPI_ADMIN_DLL_CALLBACKS, *PMPRAPI_ADMIN_DLL_CALLBACKS;
+
 DWORD APIENTRY MprConfigServerSetInfoEx(HANDLE hMprConfig,MPR_SERVER_SET_CONFIG_EX *pSetServerConfig);
+
+DWORD APIENTRY MprConfigServerGetInfoEx(
+  HANDLE hMprConfig,
+  MPR_SERVER_EX *pServerInfo
+);
+
+DWORD APIENTRY MprAdminConnectionEnumEx(
+  RAS_SERVER_HANDLE hRasServer,
+  PMPRAPI_OBJECT_HEADER pObjectHeader,
+  DWORD dwPreferedMaxLen,
+  LPDWORD lpdwEntriesRead,
+  LPDWORD lpdwTotalEntries,
+  PRAS_CONNECTION_EX *ppRasConn,
+  LPDWORD lpdwResumeHandle
+);
+
+DWORD APIENTRY MprAdminConnectionGetInfoEx(
+  RAS_SERVER_HANDLE hRasServer,
+  HANDLE hConnection,
+  PRAS_CONNECTION_EX pRasConnection
+);
+
+DWORD APIENTRY MprAdminInitializeDllEx(
+  PMPRAPI_ADMIN_DLL_CALLBACKS pAdminCallbacks
+);
+
+DWORD APIENTRY MprAdminIsServiceInitialized(
+  LPWSTR   lpwsServerName,
+  WINBOOL  *fIsServiceInitialized
+);
+
+DWORD APIENTRY MprAdminServerGetInfoEx(
+  MPR_SERVER_HANDLE hMprServer,
+  MPR_SERVER_EX *pServerInfo
+);
+
+DWORD APIENTRY MprAdminServerSetInfoEx(
+  MPR_SERVER_HANDLE hMprServer,
+  MPR_SERVER_SET_CONFIG_EX *pServerInfo
+);
 
 #endif /*(_WIN32_WINNT >= 0x0601)*/
 
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* WINAPI_FAMILY_PARTITION (WINAPI_PARTITION_DESKTOP) */
 
 #endif /* __ROUTING_MPRADMIN_H__ */

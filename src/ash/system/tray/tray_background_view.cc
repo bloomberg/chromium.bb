@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -71,7 +72,7 @@ gfx::Insets GetMirroredBackgroundInsets(bool is_shelf_horizontal) {
   gfx::Insets insets;
   // "Primary" is the same direction as the shelf, "secondary" is orthogonal.
   const int primary_padding = 0;
-  const int secondary_padding = -ash::kHitRegionPadding;
+  const int secondary_padding = -ash::TrayConstants::hit_region_padding();
 
   if (is_shelf_horizontal) {
     insets.Set(secondary_padding, primary_padding, secondary_padding,
@@ -126,7 +127,7 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     int border_radius = kTrayRoundedBorderRadius;
-    background_flags.setColor(tray_background_view_->GetBackgroundColor());
+    background_flags.setColor(kShelfControlPermanentHighlightBackground);
     border_radius = ShelfConstants::control_border_radius();
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();
@@ -270,37 +271,7 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   if (!delegate || !delegate->ShouldFocusOut(reverse))
     return;
 
-  // At this point, we know we should focus out of the status widget. It
-  // remains to be determined whether we should bring focus to the shelf, or
-  // whether we should delegate to system tray focus observers to decide
-  // where the focus goes next.
-  bool should_focus_shelf = true;
-
-  if (!ShelfWidget::IsUsingViewsShelf()) {
-    // Never bring the focus to the shelf if it's not a views-based shelf as
-    // it is visually not on par with the status widget.
-    return;
-  }
-
-  // If we are using a views-based shelf:
-  // * If we're in an active session, always bring focus to the shelf whether
-  //   we are going in reverse or not.
-  // * Otherwise (login/lock screen, OOBE), bring focus to the shelf only
-  //   if we're going in reverse; if we're going forward, let the system tray
-  //   focus observers focus the lock/login view.
-  if (shelf->shelf_widget()->login_shelf_view()->GetVisible()) {
-    // Login/lock screen or OOBE.
-    should_focus_shelf = reverse;
-  }
-
-  if (should_focus_shelf) {
-    shelf->shelf_widget()->set_default_last_focusable_child(reverse);
-    shelf->shelf_widget()->set_activated_from_other_widget(true);
-    Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
-    shelf->shelf_widget()->FocusFirstOrLastFocusableChild(reverse);
-  } else {
-    Shell::Get()->system_tray_notifier()->NotifyFocusOut(reverse);
-  }
+  shelf_->shelf_focus_cycler()->FocusOut(reverse, SourceView::kSystemTrayView);
 }
 
 void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -455,12 +426,6 @@ gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(GetBackgroundInsets());
   return bounds;
-}
-
-SkColor TrayBackgroundView::GetBackgroundColor() const {
-  return shelf_->shelf_layout_manager()->IsShowingStatusAreaWithoutShelf()
-             ? kStandaloneStatusAreaBackground
-             : kShelfControlPermanentHighlightBackground;
 }
 
 void TrayBackgroundView::OnBoundsChanged(const gfx::Rect& previous_bounds) {

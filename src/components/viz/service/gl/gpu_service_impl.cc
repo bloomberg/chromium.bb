@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
 #include "base/task/post_task.h"
@@ -25,6 +26,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/dx_diag_node.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -36,10 +38,12 @@
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "gpu/vulkan/buildflags.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
@@ -57,6 +61,10 @@
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
+#endif  // BUILDFLAG(USE_VAAPI)
 
 #if defined(OS_ANDROID)
 #include "components/viz/service/gl/throw_uncaught_exception.h"
@@ -140,6 +148,7 @@ GpuServiceImpl::GpuServiceImpl(
     const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu,
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu,
+    const gpu::GpuExtraInfo& gpu_extra_info,
     gpu::VulkanImplementation* vulkan_implementation,
     base::OnceClosure exit_callback)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -150,12 +159,12 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_feature_info_(gpu_feature_info),
       gpu_info_for_hardware_gpu_(gpu_info_for_hardware_gpu),
       gpu_feature_info_for_hardware_gpu_(gpu_feature_info_for_hardware_gpu),
+      gpu_extra_info_(gpu_extra_info),
 #if BUILDFLAG(ENABLE_VULKAN)
       vulkan_implementation_(vulkan_implementation),
 #endif
       exit_callback_(std::move(exit_callback)),
-      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
-      weak_ptr_factory_(this) {
+      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(exit_callback_);
 
@@ -178,6 +187,14 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
+#if BUILDFLAG(USE_VAAPI)
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration)) {
+    jpeg_decode_accelerator_worker_ =
+        media::VaapiJpegDecodeAcceleratorWorker::Create();
+  }
+#endif
+
 #if defined(OS_MACOSX)
   if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
       gpu::kGpuFeatureStatusEnabled) {
@@ -193,6 +210,10 @@ GpuServiceImpl::GpuServiceImpl(
 
 GpuServiceImpl::~GpuServiceImpl() {
   DCHECK(main_runner_->BelongsToCurrentThread());
+
+  // Ensure we don't try to exit when already in the process of exiting.
+  is_exiting_.Set();
+
   bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get().Reset();
@@ -202,12 +223,6 @@ GpuServiceImpl::~GpuServiceImpl() {
     wait.Wait();
   }
 
-  // The sequence id and scheduler_ could be null for unit tests.
-  if (!skia_output_surface_sequence_id_.is_null()) {
-    DCHECK(scheduler_);
-    scheduler_->DestroySequence(skia_output_surface_sequence_id_);
-  }
-
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
 
@@ -215,6 +230,11 @@ GpuServiceImpl::~GpuServiceImpl() {
   scheduler_.reset();
   owned_sync_point_manager_.reset();
   owned_shared_image_manager_.reset();
+
+  // The image decode accelerator worker must outlive the GPU channel manager so
+  // that it doesn't get any decode requests during/after destruction.
+  DCHECK(!gpu_channel_manager_);
+  jpeg_decode_accelerator_worker_.reset();
 
   // Signal this event before destroying the child process. That way all
   // background threads can cleanup. For example, in the renderer the
@@ -238,24 +258,31 @@ void GpuServiceImpl::UpdateGPUInfo() {
               gpu_preferences_));
   gpu_info_.jpeg_decode_accelerator_supported =
       IsAcceleratedJpegDecodeSupported();
+
+  if (jpeg_decode_accelerator_worker_) {
+    gpu_info_.image_decode_accelerator_supported_profiles =
+        jpeg_decode_accelerator_worker_->GetSupportedProfiles();
+  }
+
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
   gpu_info_.initialization_time = base::Time::Now() - start_time_;
 }
 
 void GpuServiceImpl::InitializeWithHost(
-    mojom::GpuHostPtr gpu_host,
+    mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     gpu::GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
     gpu::SharedImageManager* shared_image_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
+
+  mojo::Remote<mojom::GpuHost> gpu_host(std::move(pending_gpu_host));
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_,
                           gpu_info_for_hardware_gpu_,
-                          gpu_feature_info_for_hardware_gpu_);
-  gpu_host_ =
-      mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
+                          gpu_feature_info_for_hardware_gpu_, gpu_extra_info_);
+  gpu_host_ = mojo::SharedRemote<mojom::GpuHost>(gpu_host.Unbind(), io_runner_);
   if (!in_host_process()) {
     // The global callback is reset from the dtor. So Unretained() here is safe.
     // Note that the callback can be called from any thread. Consequently, the
@@ -289,9 +316,6 @@ void GpuServiceImpl::InitializeWithHost(
   scheduler_ =
       std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager);
 
-  skia_output_surface_sequence_id_ =
-      scheduler_->CreateSequence(gpu::SchedulingPriority::kHigh);
-
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
@@ -300,7 +324,7 @@ void GpuServiceImpl::InitializeWithHost(
       scheduler_.get(), sync_point_manager, shared_image_manager,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
-      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider(),
+      jpeg_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider_.get());
 
   media_gpu_channel_manager_.reset(
@@ -322,7 +346,7 @@ void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
 
 void GpuServiceImpl::DisableGpuCompositing() {
   // Can be called from any thread.
-  (*gpu_host_)->DisableGpuCompositing();
+  gpu_host_->DisableGpuCompositing();
 }
 
 scoped_refptr<gpu::SharedContextState> GpuServiceImpl::GetContextState() {
@@ -343,7 +367,7 @@ void GpuServiceImpl::RecordLogMessage(int severity,
   // This can be run from any thread.
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
-  (*gpu_host_)->RecordLogMessage(severity, header, message);
+  gpu_host_->RecordLogMessage(severity, header, message);
 }
 
 #if defined(OS_CHROMEOS)
@@ -458,8 +482,8 @@ void GpuServiceImpl::CreateGpuMemoryBuffer(
     CreateGpuMemoryBufferCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   // This needs to happen in the IO thread.
-  std::move(callback).Run(gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-      id, size, format, usage, client_id, surface_handle));
+  gpu_memory_buffer_factory_->CreateGpuMemoryBufferAsync(
+      id, size, format, usage, client_id, surface_handle, std::move(callback));
 }
 
 void GpuServiceImpl::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -592,39 +616,62 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 }
 #endif
 
+void GpuServiceImpl::RegisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  display_contexts_.AddObserver(display_context);
+}
+
+void GpuServiceImpl::UnregisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  display_contexts_.RemoveObserver(display_context);
+}
+
+void GpuServiceImpl::LoseAllContexts() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+
+  if (IsExiting())
+    return;
+
+  for (auto& display_context : display_contexts_)
+    display_context.MarkContextLost();
+  gpu_channel_manager_->LoseAllContexts();
+}
+
 void GpuServiceImpl::DidCreateContextSuccessfully() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidCreateContextSuccessfully();
+  gpu_host_->DidCreateContextSuccessfully();
 }
 
 void GpuServiceImpl::DidCreateOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidCreateOffscreenContext(active_url);
+  gpu_host_->DidCreateOffscreenContext(active_url);
 }
 
 void GpuServiceImpl::DidDestroyChannel(int client_id) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   media_gpu_channel_manager_->RemoveChannel(client_id);
-  (*gpu_host_)->DidDestroyChannel(client_id);
+  gpu_host_->DidDestroyChannel(client_id);
 }
 
 void GpuServiceImpl::DidDestroyOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidDestroyOffscreenContext(active_url);
+  gpu_host_->DidDestroyOffscreenContext(active_url);
 }
 
 void GpuServiceImpl::DidLoseContext(bool offscreen,
                                     gpu::error::ContextLostReason reason,
                                     const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidLoseContext(offscreen, reason, active_url);
+  gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
 
 void GpuServiceImpl::StoreShaderToDisk(int client_id,
                                        const std::string& key,
                                        const std::string& shader) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
+  gpu_host_->StoreShaderToDisk(client_id, key, shader);
 }
 
 void GpuServiceImpl::MaybeExitOnContextLost() {
@@ -639,7 +686,7 @@ bool GpuServiceImpl::IsExiting() const {
 void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
                                             gpu::SurfaceHandle child_window) {
   // This can be called from main or display compositor thread.
-  (*gpu_host_)->SetChildSurface(parent_window, child_window);
+  gpu_host_->SetChildSurface(parent_window, child_window);
 }
 #endif
 
@@ -830,14 +877,15 @@ void GpuServiceImpl::MaybeExit(bool for_context_loss) {
   if (in_host_process())
     return;
 
-  if (exit_callback_) {
-    if (for_context_loss) {
-      LOG(ERROR) << "Exiting GPU process because some drivers can't recover "
-                    "from errors. GPU process will restart shortly.";
-    }
-    is_exiting_.Set();
-    std::move(exit_callback_).Run();
+  if (IsExiting() || !exit_callback_)
+    return;
+
+  if (for_context_loss) {
+    LOG(ERROR) << "Exiting GPU process because some drivers can't recover "
+                  "from errors. GPU process will restart shortly.";
   }
+  is_exiting_.Set();
+  std::move(exit_callback_).Run();
 }
 
 }  // namespace viz

@@ -25,13 +25,13 @@ constexpr int kFieldsColumnSetId = 1;
 void AddHeaderLabel(views::GridLayout* layout,
                     const base::string16& text,
                     int text_style) {
-  views::Label* label =
-      new views::Label(text, views::style::CONTEXT_LABEL, text_style);
+  auto label = std::make_unique<views::Label>(text, views::style::CONTEXT_LABEL,
+                                              text_style);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);
   layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
-  layout->AddView(label);
+  layout->AddView(std::move(label));
 }
 
 }  // namespace
@@ -52,7 +52,7 @@ LoginView::LoginView(const base::string16& authority,
 
   // Initialize the Grid Layout Manager used for this dialog box.
   views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>(this));
+      SetLayoutManager(std::make_unique<views::GridLayout>());
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                         views::GridLayout::FIXED, kMessageWidth, 0);

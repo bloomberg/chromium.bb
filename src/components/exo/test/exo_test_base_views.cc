@@ -47,6 +47,11 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
     static std::vector<uint8_t> no_data;
     return no_data;
   }
+  bool GetActiveModeForDisplayId(
+      int64_t display_id,
+      display::ManagedDisplayMode* mode) const override {
+    return false;
+  }
 
   aura::Window* GetPrimaryDisplayContainer(int container_id) override {
     return root_window_;
@@ -62,8 +67,10 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
   void RemovePreTargetHandler(ui::EventHandler* handler) override {}
   void AddPostTargetHandler(ui::EventHandler* handler) override {}
   void RemovePostTargetHandler(ui::EventHandler* handler) override {}
-  bool IsTabletModeWindowManagerEnabled() const override { return false; }
+  bool InTabletMode() const override { return false; }
   double GetDefaultDeviceScaleFactor() const override { return 1.0; }
+  void SetImeBlocked(aura::Window* window, bool ime_blocked) override {}
+  bool IsImeBlocked(aura::Window* window) const override { return false; }
 
   LifetimeManager* GetLifetimeManager() override { return &lifetime_manager_; }
   aura::client::CaptureClient* GetCaptureClient() override { return nullptr; }
@@ -72,7 +79,10 @@ class WMHelperTester : public WMHelper, public VSyncTimingManager::Delegate {
   void OnDragEntered(const ui::DropTargetEvent& event) override {}
   int OnDragUpdated(const ui::DropTargetEvent& event) override { return 0; }
   void OnDragExited() override {}
-  int OnPerformDrop(const ui::DropTargetEvent& event) override { return 0; }
+  int OnPerformDrop(const ui::DropTargetEvent& event,
+                    std::unique_ptr<ui::OSExchangeData> data) override {
+    return 0;
+  }
 
   // Overridden from VSyncTimingManager::Delegate:
   void AddVSyncParameterObserver(

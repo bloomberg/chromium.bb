@@ -146,7 +146,6 @@ CastRemotingConnector* CastRemotingConnector::Get(
         base::BindRepeating(
             [](content::WebContents* contents,
                PermissionResultCallback result_callback) {
-              if (media_router::ShouldUseViewsDialog()) {
                 media_router::MediaRemotingDialogView::GetPermission(
                     contents, std::move(result_callback));
                 return media_router::MediaRemotingDialogView::IsShowing()
@@ -154,10 +153,6 @@ CastRemotingConnector* CastRemotingConnector::Get(
                                  &media_router::MediaRemotingDialogView::
                                      HideDialog)
                            : CancelPermissionRequestCallback();
-              } else {
-                std::move(result_callback).Run(true);
-                return CancelPermissionRequestCallback();
-              }
             },
             contents)
 #else
@@ -198,8 +193,7 @@ CastRemotingConnector::CastRemotingConnector(
       active_bridge_(nullptr),
       deprecated_binding_(this),
       binding_(this),
-      pref_service_(pref_service),
-      weak_factory_(this) {
+      pref_service_(pref_service) {
   DCHECK(permission_request_callback_);
 #if !defined(OS_ANDROID)
   if (!media_router::ShouldUseMirroringService() && tab_id_.is_valid()) {
@@ -633,6 +627,7 @@ void CastRemotingConnector::OnPrefChanged() {
       pref_service_->FindPreference(prefs::kMediaRouterMediaRemotingEnabled);
   bool enabled = false;
   pref->GetValue()->GetAsBoolean(&enabled);
+  remoting_allowed_ = enabled;
   if (!enabled)
     OnStopped(media::mojom::RemotingStopReason::USER_DISABLED);
 }

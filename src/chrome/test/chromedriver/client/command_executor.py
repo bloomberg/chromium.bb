@@ -58,7 +58,6 @@ class Command(object):
   IS_ELEMENT_ENABLED = (_Method.GET, '/session/:sessionId/element/:id/enabled')
   IS_ELEMENT_DISPLAYED = (
       _Method.GET, '/session/:sessionId/element/:id/displayed')
-  HOVER_OVER_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/hover')
   GET_ELEMENT_LOCATION = (
       _Method.GET, '/session/:sessionId/element/:id/location')
   GET_ELEMENT_RECT = (
@@ -83,6 +82,8 @@ class Command(object):
   GET_WINDOW_RECT = (_Method.GET, '/session/:sessionId/window/rect')
   GET_WINDOW_SIZE = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/size')
+  NEW_WINDOW = (
+      _Method.POST, '/session/:sessionId/window/new')
   GET_WINDOW_POSITION = (
       _Method.GET, '/session/:sessionId/window/:windowHandle/position')
   SET_WINDOW_SIZE = (
@@ -141,10 +142,6 @@ class Command(object):
       _Method.DELETE, '/session/:sessionId/session_storage')
   GET_SESSION_STORAGE_SIZE = (
       _Method.GET, '/session/:sessionId/session_storage/size')
-  GET_SCREEN_ORIENTATION = (_Method.GET, '/session/:sessionId/orientation')
-  SET_SCREEN_ORIENTATION = (_Method.POST, '/session/:sessionId/orientation')
-  DELETE_SCREEN_ORIENTATION = (
-      _Method.DELETE, '/session/:sessionId/orientation')
   MOUSE_CLICK = (_Method.POST, '/session/:sessionId/click')
   MOUSE_DOUBLE_CLICK = (_Method.POST, '/session/:sessionId/doubleclick')
   MOUSE_BUTTON_DOWN = (_Method.POST, '/session/:sessionId/buttondown')
@@ -163,23 +160,22 @@ class Command(object):
   RELEASE_ACTIONS = (_Method.DELETE, '/session/:sessionId/actions')
   GET_LOG = (_Method.POST, '/session/:sessionId/se/log')
   GET_AVAILABLE_LOG_TYPES = (_Method.GET, '/session/:sessionId/se/log/types')
-  IS_AUTO_REPORTING = (_Method.GET, '/session/:sessionId/autoreport')
-  SET_AUTO_REPORTING = (_Method.POST, '/session/:sessionId/autoreport')
   GET_SESSION_LOGS = (_Method.POST, '/logs')
   STATUS = (_Method.GET, '/status')
   SET_NETWORK_CONNECTION = (
       _Method.POST, '/session/:sessionId/network_connection')
-  SEND_COMMAND = (
-      _Method.POST, '/session/:sessionId/chromium/send_command')
   SEND_COMMAND_AND_GET_RESULT = (
       _Method.POST, '/session/:sessionId/chromium/send_command_and_get_result')
   GENERATE_TEST_REPORT = (
       _Method.POST, '/session/:sessionId/reporting/generate_test_report')
+  ADD_VIRTUAL_AUTHENTICATOR = (
+      _Method.POST, '/session/:sessionId/webauthn/authenticator')
+  REMOVE_VIRTUAL_AUTHENTICATOR = (
+      _Method.DELETE,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')
-  TOUCH_PINCH = (_Method.POST, '/session/:sessionId/touch/pinch')
-
 
 class CommandExecutor(object):
   def __init__(self, server_url):

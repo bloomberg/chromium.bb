@@ -20,7 +20,6 @@
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -29,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/task/thread_pool/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
@@ -120,9 +120,7 @@ void EnsureSharedMemory(base::CommandLine* cmd_line) {
 class HttpServer : public net::HttpServer::Delegate {
  public:
   explicit HttpServer(const HttpRequestHandlerFunc& handle_request_func)
-      : handle_request_func_(handle_request_func),
-        allow_remote_(false),
-        weak_factory_(this) {}
+      : handle_request_func_(handle_request_func), allow_remote_(false) {}
 
   ~HttpServer() override {}
 
@@ -184,7 +182,7 @@ class HttpServer : public net::HttpServer::Delegate {
   HttpRequestHandlerFunc handle_request_func_;
   std::unique_ptr<net::HttpServer> server_;
   bool allow_remote_;
-  base::WeakPtrFactory<HttpServer> weak_factory_;  // Should be last.
+  base::WeakPtrFactory<HttpServer> weak_factory_{this};  // Should be last.
 };
 
 void SendResponseOnCmdThread(
@@ -202,7 +200,7 @@ void HandleRequestOnCmdThread(
     const HttpResponseSenderFunc& send_response_func) {
   if (!whitelisted_ips.empty()) {
     const net::IPAddress& peer_address = request.peer.address();
-    if (!base::ContainsValue(whitelisted_ips, peer_address)) {
+    if (!base::Contains(whitelisted_ips, peer_address)) {
       LOG(WARNING) << "unauthorized access from " << request.peer.ToString();
       std::unique_ptr<net::HttpServerResponseInfo> response(
           new net::HttpServerResponseInfo(net::HTTP_UNAUTHORIZED));
@@ -356,7 +354,7 @@ void RunServer(uint16_t port,
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
 
-  base::MessageLoop cmd_loop;
+  base::SingleThreadTaskExecutor main_task_executor;
   base::RunLoop cmd_run_loop;
   HttpHandler handler(cmd_run_loop.QuitClosure(), io_thread.task_runner(),
                       url_base, adb_port);
@@ -364,10 +362,10 @@ void RunServer(uint16_t port,
       base::Bind(&HandleRequestOnCmdThread, &handler, whitelisted_ips);
 
   io_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&StartServerOnIOThread, port, allow_remote,
-                     base::Bind(&HandleRequestOnIOThread,
-                                cmd_loop.task_runner(), handle_request_func)));
+      FROM_HERE, base::BindOnce(&StartServerOnIOThread, port, allow_remote,
+                                base::Bind(&HandleRequestOnIOThread,
+                                           main_task_executor.task_runner(),
+                                           handle_request_func)));
   // Run the command loop. This loop is quit after the response for a shutdown
   // request is posted to the IO loop. After the command loop quits, a task
   // is posted to the IO loop to stop the server. Lastly, the IO thread is

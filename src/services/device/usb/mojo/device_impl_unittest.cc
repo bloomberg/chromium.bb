@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <numeric>
@@ -26,7 +27,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/usb/mock_usb_device.h"
 #include "services/device/usb/mock_usb_device_handle.h"
-#include "services/device/usb/mojo/type_converters.h"
+#include "services/device/usb/usb_descriptors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -38,6 +39,8 @@ using mojom::UsbControlTransferRecipient;
 using mojom::UsbControlTransferType;
 using mojom::UsbDevicePtr;
 using mojom::UsbIsochronousPacketPtr;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
 
 namespace usb {
 
@@ -49,22 +52,26 @@ MATCHER_P(BufferSizeIs, size, "") {
 
 class ConfigBuilder {
  public:
-  explicit ConfigBuilder(uint8_t value) : config_(value, false, false, 0) {}
+  explicit ConfigBuilder(uint8_t value)
+      : config_(BuildUsbConfigurationInfoPtr(value, false, false, 0)) {}
 
   ConfigBuilder& AddInterface(uint8_t interface_number,
                               uint8_t alternate_setting,
                               uint8_t class_code,
                               uint8_t subclass_code,
                               uint8_t protocol_code) {
-    config_.interfaces.emplace_back(interface_number, alternate_setting,
-                                    class_code, subclass_code, protocol_code);
+    config_->interfaces.push_back(
+        BuildUsbInterfaceInfoPtr(interface_number, alternate_setting,
+                                 class_code, subclass_code, protocol_code));
     return *this;
   }
 
-  const UsbConfigDescriptor& config() const { return config_; }
+  mojom::UsbConfigurationInfoPtr Build() { return std::move(config_); }
 
  private:
-  UsbConfigDescriptor config_;
+  mojom::UsbConfigurationInfoPtr config_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConfigBuilder);
 };
 
 void ExpectOpenAndThen(mojom::UsbOpenDeviceError expected,
@@ -226,33 +233,31 @@ class USBDeviceImplTest : public testing::Test {
 
   UsbDevicePtr GetMockDeviceProxy() { return GetMockDeviceProxy(nullptr); }
 
-  void AddMockConfig(const ConfigBuilder& builder) {
-    const UsbConfigDescriptor& config = builder.config();
-    DCHECK(!base::ContainsKey(mock_configs_, config.configuration_value));
-    mock_configs_.insert(std::make_pair(config.configuration_value, config));
-    mock_device_->AddMockConfig(config);
+  void AddMockConfig(mojom::UsbConfigurationInfoPtr config) {
+    DCHECK(!base::Contains(mock_configs_, config->configuration_value));
+    mock_configs_.insert(
+        std::make_pair(config->configuration_value, config.get()));
+    mock_device_->AddMockConfig(std::move(config));
   }
 
   void AddMockInboundData(const std::vector<uint8_t>& data) {
     mock_inbound_data_.push(data);
   }
 
-  void AddMockInboundPackets(
-      const std::vector<uint8_t>& data,
-      const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
+  void AddMockInboundPackets(const std::vector<uint8_t>& data,
+                             std::vector<UsbIsochronousPacketPtr> packets) {
     mock_inbound_data_.push(data);
-    mock_inbound_packets_.push(packets);
+    mock_inbound_packets_.push(std::move(packets));
   }
 
   void AddMockOutboundData(const std::vector<uint8_t>& data) {
     mock_outbound_data_.push(data);
   }
 
-  void AddMockOutboundPackets(
-      const std::vector<uint8_t>& data,
-      const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
+  void AddMockOutboundPackets(const std::vector<uint8_t>& data,
+                              std::vector<UsbIsochronousPacketPtr> packets) {
     mock_outbound_data_.push(data);
-    mock_outbound_packets_.push(packets);
+    mock_outbound_packets_.push(std::move(packets));
   }
 
  private:
@@ -280,8 +285,8 @@ class USBDeviceImplTest : public testing::Test {
   void ClaimInterface(uint8_t interface_number,
                       UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
-      for (const auto& interface : config.second.interfaces) {
-        if (interface.interface_number == interface_number) {
+      for (const auto& interface : config.second->interfaces) {
+        if (interface->interface_number == interface_number) {
           claimed_interfaces_.insert(interface_number);
           std::move(callback).Run(true);
           return;
@@ -293,7 +298,7 @@ class USBDeviceImplTest : public testing::Test {
 
   void ReleaseInterface(uint8_t interface_number,
                         UsbDeviceHandle::ResultCallback& callback) {
-    if (base::ContainsKey(claimed_interfaces_, interface_number)) {
+    if (base::Contains(claimed_interfaces_, interface_number)) {
       claimed_interfaces_.erase(interface_number);
       std::move(callback).Run(true);
     } else {
@@ -305,12 +310,11 @@ class USBDeviceImplTest : public testing::Test {
                                     uint8_t alternate_setting,
                                     UsbDeviceHandle::ResultCallback& callback) {
     for (const auto& config : mock_configs_) {
-      for (const auto& interface : config.second.interfaces) {
-        if (interface.interface_number == interface_number &&
-            interface.alternate_setting == alternate_setting) {
-          std::move(callback).Run(true);
-          return;
-        }
+      CombinedInterfaceInfo interface = FindInterfaceInfoFromConfig(
+          config.second, interface_number, alternate_setting);
+      if (interface.IsValid()) {
+        std::move(callback).Run(true);
+        return;
       }
     }
     std::move(callback).Run(false);
@@ -380,16 +384,17 @@ class USBDeviceImplTest : public testing::Test {
     mock_inbound_data_.pop();
 
     ASSERT_FALSE(mock_inbound_packets_.empty());
-    std::vector<UsbDeviceHandle::IsochronousPacket> packets =
-        mock_inbound_packets_.front();
-    ASSERT_EQ(packets.size(), packet_lengths.size());
-    for (size_t i = 0; i < packets.size(); ++i) {
-      EXPECT_EQ(packets[i].length, packet_lengths[i])
-          << "Packet lengths differ at index: " << i;
-    }
+    std::vector<UsbIsochronousPacketPtr> packets =
+        std::move(mock_inbound_packets_.front());
     mock_inbound_packets_.pop();
 
-    std::move(callback).Run(buffer, packets);
+    ASSERT_EQ(packets.size(), packet_lengths.size());
+    for (size_t i = 0; i < packets.size(); ++i) {
+      EXPECT_EQ(packets[i]->length, packet_lengths[i])
+          << "Packet lengths differ at index: " << i;
+    }
+
+    std::move(callback).Run(buffer, std::move(packets));
   }
 
   void IsochronousTransferOut(
@@ -410,16 +415,17 @@ class USBDeviceImplTest : public testing::Test {
     mock_outbound_data_.pop();
 
     ASSERT_FALSE(mock_outbound_packets_.empty());
-    std::vector<UsbDeviceHandle::IsochronousPacket> packets =
-        mock_outbound_packets_.front();
-    ASSERT_EQ(packets.size(), packet_lengths.size());
-    for (size_t i = 0; i < packets.size(); ++i) {
-      EXPECT_EQ(packets[i].length, packet_lengths[i])
-          << "Packet lengths differ at index: " << i;
-    }
+    std::vector<UsbIsochronousPacketPtr> packets =
+        std::move(mock_outbound_packets_.front());
     mock_outbound_packets_.pop();
 
-    std::move(callback).Run(buffer, packets);
+    ASSERT_EQ(packets.size(), packet_lengths.size());
+    for (size_t i = 0; i < packets.size(); ++i) {
+      EXPECT_EQ(packets[i]->length, packet_lengths[i])
+          << "Packet lengths differ at index: " << i;
+    }
+
+    std::move(callback).Run(buffer, std::move(packets));
   }
 
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -428,14 +434,12 @@ class USBDeviceImplTest : public testing::Test {
   bool is_device_open_;
   bool allow_reset_;
 
-  std::map<uint8_t, UsbConfigDescriptor> mock_configs_;
+  std::map<uint8_t, const mojom::UsbConfigurationInfo*> mock_configs_;
 
   base::queue<std::vector<uint8_t>> mock_inbound_data_;
   base::queue<std::vector<uint8_t>> mock_outbound_data_;
-  base::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
-      mock_inbound_packets_;
-  base::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
-      mock_outbound_packets_;
+  base::queue<std::vector<UsbIsochronousPacketPtr>> mock_inbound_packets_;
+  base::queue<std::vector<UsbIsochronousPacketPtr>> mock_outbound_packets_;
 
   std::set<uint8_t> claimed_interfaces_;
 
@@ -590,7 +594,7 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 
   EXPECT_CALL(mock_handle(), SetConfigurationInternal(42, _));
 
-  AddMockConfig(ConfigBuilder(42));
+  AddMockConfig(ConfigBuilder(42).Build());
 
   {
     // SetConfiguration should succeed because 42 is a valid mock configuration.
@@ -655,7 +659,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   }
 
   // Now add a mock interface #1.
-  AddMockConfig(ConfigBuilder(1).AddInterface(1, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(1, 0, 1, 2, 3).Build());
 
   EXPECT_CALL(mock_handle(), SetConfigurationInternal(1, _));
 
@@ -721,7 +725,8 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
   AddMockConfig(ConfigBuilder(1)
                     .AddInterface(1, 0, 1, 2, 3)
                     .AddInterface(1, 42, 1, 2, 3)
-                    .AddInterface(2, 0, 1, 2, 3));
+                    .AddInterface(2, 0, 1, 2, 3)
+                    .Build());
 
   EXPECT_CALL(mock_handle(), SetInterfaceAlternateSettingInternal(1, 42, _));
 
@@ -757,7 +762,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     loop.Run();
   }
 
-  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3).Build());
 
   EXPECT_CALL(mock_handle(), SetConfigurationInternal(1, _));
 
@@ -844,7 +849,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   std::vector<uint8_t> fake_inbound_data(message2.size());
   std::copy(message2.begin(), message2.end(), fake_inbound_data.begin());
 
-  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3).Build());
   AddMockOutboundData(fake_outbound_data);
   AddMockInboundData(fake_inbound_data);
 
@@ -892,11 +897,16 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
     loop.Run();
   }
 
-  std::vector<UsbDeviceHandle::IsochronousPacket> fake_packets(4);
-  for (size_t i = 0; i < fake_packets.size(); ++i) {
-    fake_packets[i].length = 8;
-    fake_packets[i].transferred_length = 8;
-    fake_packets[i].status = UsbTransferStatus::COMPLETED;
+  std::vector<UsbIsochronousPacketPtr> fake_packets_in(4);
+  for (size_t i = 0; i < fake_packets_in.size(); ++i) {
+    fake_packets_in[i] = mojom::UsbIsochronousPacket::New();
+    fake_packets_in[i]->length = 8;
+    fake_packets_in[i]->transferred_length = 8;
+    fake_packets_in[i]->status = UsbTransferStatus::COMPLETED;
+  }
+  std::vector<UsbIsochronousPacketPtr> fake_packets_out;
+  for (const auto& packet : fake_packets_in) {
+    fake_packets_out.push_back(packet->Clone());
   }
   std::vector<uint32_t> fake_packet_lengths(4, 8);
 
@@ -912,9 +922,9 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   std::copy(inbound_data.begin(), inbound_data.end(),
             fake_inbound_data.begin());
 
-  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
-  AddMockOutboundPackets(fake_outbound_data, fake_packets);
-  AddMockInboundPackets(fake_inbound_data, fake_packets);
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3).Build());
+  AddMockOutboundPackets(fake_outbound_data, std::move(fake_packets_in));
+  AddMockInboundPackets(fake_inbound_data, std::move(fake_packets_out));
 
   EXPECT_CALL(mock_handle(), IsochronousTransferOutInternal(
                                  0x01, _, fake_packet_lengths, 0, _));

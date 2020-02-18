@@ -17,6 +17,8 @@ class AuditorResult {
     ERROR_MISSING_TAG_USED,  // A function is called with
                              // MISSING_TRAFFIC_ANNOTATION tag.
     ERROR_NO_ANNOTATION,     // A function is called with NO_ANNOTATION tag.
+                             // Deprecated, as NO_ANNOTATION is now undefined on
+                             // supported platforms.
     ERROR_SYNTAX,            // Annotation syntax is not right.
     ERROR_RESERVED_ID_HASH_CODE,    // An id has a hash code equal to a reserved
                                     // word.
@@ -48,6 +50,14 @@ class AuditorResult {
     ERROR_INVALID_OS,              // Invalid 'os_list' in annotations.xml
     ERROR_DEPRECATED_WITH_OS,      // Marked deprecated, but 'os_list' is not
                                    // empty in annotations.xml.
+
+    // This is the python_script equivalent of ERROR_DIRECT_ASSIGNMENT.
+    //
+    // TODO(crbug/966883): remove ERROR_DIRECT_ASSIGNMENT and related code
+    // when done migrating to python_script.
+    ERROR_MUTABLE_TAG,  // Can't create a
+                        // |MutableNetworkTrafficAnnotationTag| from
+                        // anywhere (except whitelisted files).
   };
 
   static const int kNoCodeLineSpecified;

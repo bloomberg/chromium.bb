@@ -40,8 +40,7 @@ class SignedInAccountsViewControllerTest : public BlockCleanupTest {
     identity_service->AddIdentities(
         @[ @"identity1", @"identity2", @"identity3" ]);
     auth_service_->SignIn(
-        [identity_service->GetAllIdentitiesSortedForDisplay() objectAtIndex:0],
-        std::string());
+        [identity_service->GetAllIdentitiesSortedForDisplay() objectAtIndex:0]);
   }
 
  protected:
@@ -60,8 +59,10 @@ TEST_F(SignedInAccountsViewControllerTest,
 
 // Tests that the signed in accounts view should be presented when the accounts
 // have changed.
+// Temporary disabled for regression for http://crbug.com/1006744: Disable
+// showing the signed-in account modal dialog.
 TEST_F(SignedInAccountsViewControllerTest,
-       ShouldBePresentedForBrowserStateNecessary) {
+       DISABLED_ShouldBePresentedForBrowserStateNecessary) {
   auth_service_->SetHaveAccountsChanged(true);
   EXPECT_TRUE([SignedInAccountsViewController
       shouldBePresentedForBrowserState:browser_state_.get()]);

@@ -110,10 +110,10 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   HitTestRequest hit_request(HitTestRequest::kTouchEvent |
                              HitTestRequest::kListBased);
 
-  LayoutRect hit_rect(1, 3, 2, 4);
+  PhysicalRect hit_rect(1, 3, 2, 4);
   HitTestLocation location(hit_rect);
   HitTestResult hit_result(hit_request, location);
-  LayoutPoint hit_offset;
+  PhysicalOffset hit_offset;
 
   // The return value of HitTestCulledInline() indicates whether the hit test
   // rect is completely contained by the part of |lots_of_boxes| being hit-
@@ -158,8 +158,8 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
 
   HitTestRequest hit_request(HitTestRequest::kReadOnly |
                              HitTestRequest::kActive);
-  const LayoutPoint container_offset(8, 8);
-  const LayoutPoint hit_location(18, 15);
+  const PhysicalOffset container_offset(8, 8);
+  const PhysicalOffset hit_location(18, 15);
   HitTestLocation location(hit_location);
 
   Element* div = GetDocument().QuerySelector("div");
@@ -211,11 +211,11 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   HitTestRequest hit_request(HitTestRequest::kReadOnly |
                              HitTestRequest::kActive |
                              HitTestRequest::kIgnorePointerEventsNone);
-  const LayoutPoint container_offset(8, 8);
+  const PhysicalOffset container_offset(8, 8);
 
   // Hit test first line
   {
-    LayoutPoint hit_location(13, 13);
+    PhysicalOffset hit_location(13, 13);
     HitTestLocation location(hit_location);
     Node* target = GetElementById("span")->firstChild();
 
@@ -235,7 +235,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
 
   // Hit test second line
   {
-    LayoutPoint hit_location(13, 23);
+    PhysicalOffset hit_location(13, 23);
     HitTestLocation location(hit_location);
     Node* target = GetElementById("line2")->firstChild();
 
@@ -255,7 +255,7 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
 
   // Hit test image in third line
   {
-    LayoutPoint hit_location(13, 33);
+    PhysicalOffset hit_location(13, 33);
     HitTestLocation location(hit_location);
     Node* target = GetDocument().QuerySelector("img");
 

@@ -5,15 +5,25 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.BuildInfo;
+import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeActivity.ActivityType;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
-import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
+import org.chromium.chrome.browser.directactions.DirectActionHandler;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -90,32 +100,57 @@ public class AutofillAssistantFacade {
         }
 
         // Early exit if autofill assistant should not be triggered.
-        if (!canStart(activity.getInitialIntent())
-                && !AutofillAssistantPreferencesUtil.getShowOnboarding()) {
+        boolean canStartWithoutOnboarding = canStart(activity.getInitialIntent());
+        if (!canStartWithoutOnboarding && !AutofillAssistantPreferencesUtil.getShowOnboarding()) {
             return;
         }
 
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
-        AutofillAssistantModuleEntryProvider.getModuleEntry(activity, (moduleEntry) -> {
-            if (moduleEntry == null) {
-                AutofillAssistantMetrics.recordDropOut(DropOutReason.DFM_CANCELLED);
-                return;
-            }
-            // Starting autofill assistant without onboarding.
-            if (canStart(activity.getInitialIntent())) {
-                AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
-                startNow(activity, moduleEntry);
-                return;
-            }
-            // Starting autofill assistant with onboarding.
-            if (AutofillAssistantPreferencesUtil.getShowOnboarding()) {
-                moduleEntry.showOnboarding(
-                        getExperimentIds(activity.getInitialIntent().getExtras()),
-                        () -> startNow(activity, moduleEntry));
-                return;
-            }
+        waitForTabWithWebContents(activity, tab -> {
+            AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntry(
+                    activity, tab, (moduleEntry) -> {
+                        if (moduleEntry == null) {
+                            AutofillAssistantMetrics.recordDropOut(
+                                    DropOutReason.DFM_INSTALL_FAILED);
+                            return;
+                        }
+
+                        Bundle bundleExtras = activity.getInitialIntent().getExtras();
+                        Map<String, String> parameters = extractParameters(bundleExtras);
+                        parameters.remove(PARAMETER_ENABLED);
+                        String initialUrl = activity.getInitialIntent().getDataString();
+                        moduleEntry.start(tab, tab.getWebContents(), canStartWithoutOnboarding,
+                                initialUrl, parameters, experimentIds,
+                                activity.getInitialIntent().getExtras());
+                    });
         });
+    }
+
+    /**
+     * Checks whether direct actions provided by Autofill Assistant should be available - assuming
+     * that direct actions are available at all.
+     */
+    public static boolean areDirectActionsAvailable(@ActivityType int activityType) {
+        return BuildInfo.isAtLeastQ()
+                && (activityType == ActivityType.CUSTOM_TAB || activityType == ActivityType.TABBED)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
+    }
+
+    /**
+     * Returns a {@link DirectActionHandler} for making dynamic actions available under Android Q.
+     *
+     * <p>This should only be called if {@link #areDirectActionsAvailable} returns true. This method
+     * can also return null if autofill assistant is not available for some other reasons.
+     */
+    public static DirectActionHandler createDirectActionHandler(Context context,
+            BottomSheetController bottomSheetController, ScrimView scrimView,
+            TabModelSelector tabModelSelector) {
+        // TODO(b/134740534): Consider restricting signature of createDirectActionHandler() to get
+        // only getCurrentTab instead of a TabModelSelector.
+        return new AutofillAssistantDirectActionHandler(context, bottomSheetController, scrimView,
+                tabModelSelector::getCurrentTab, AutofillAssistantModuleEntryProvider.INSTANCE);
     }
 
     /**
@@ -142,16 +177,6 @@ public class AutofillAssistantFacade {
             experiments.append(experimentsFromIntent);
         }
         return experiments.toString();
-    }
-
-    private static void startNow(ChromeActivity activity, AutofillAssistantModuleEntry entry) {
-        Bundle bundleExtras = activity.getInitialIntent().getExtras();
-        Map<String, String> parameters = extractParameters(bundleExtras);
-        parameters.remove(PARAMETER_ENABLED);
-        String initialUrl = activity.getInitialIntent().getDataString();
-
-        entry.start(initialUrl, parameters, getExperimentIds(bundleExtras),
-                activity.getInitialIntent().getExtras());
     }
 
     /** Return the value if the given boolean parameter from the extras. */
@@ -210,5 +235,26 @@ public class AutofillAssistantFacade {
             }
         }
         return false;
+    }
+
+    /** Provides the callback with a tab that has a web contents, waits if necessary. */
+    private static void waitForTabWithWebContents(ChromeActivity activity, Callback<Tab> callback) {
+        if (activity.getActivityTab() != null
+                && activity.getActivityTab().getWebContents() != null) {
+            callback.onResult(activity.getActivityTab());
+            return;
+        }
+
+        // The tab is not yet available. We need to register as listener and wait for it.
+        activity.getActivityTabProvider().addObserverAndTrigger(
+                new ActivityTabProvider.HintlessActivityTabObserver() {
+                    @Override
+                    public void onActivityTabChanged(Tab tab) {
+                        if (tab == null) return;
+                        activity.getActivityTabProvider().removeObserver(this);
+                        assert tab.getWebContents() != null;
+                        callback.onResult(tab);
+                    }
+                });
     }
 }

@@ -309,7 +309,7 @@ class PrefMapping {
   void RegisterPrefTransformer(
       const std::string& browser_pref,
       std::unique_ptr<PrefTransformerInterface> transformer) {
-    DCHECK(!base::ContainsKey(transformers_, browser_pref))
+    DCHECK(!base::Contains(transformers_, browser_pref))
         << "Trying to register pref transformer for " << browser_pref
         << " twice";
     transformers_[browser_pref] = std::move(transformer);

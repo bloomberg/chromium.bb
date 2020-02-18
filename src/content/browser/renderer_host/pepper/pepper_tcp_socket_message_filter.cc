@@ -88,8 +88,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       pending_write_bytes_written_(0),
       pending_write_pp_error_(PP_OK_COMPLETIONPENDING),
       is_potentially_secure_plugin_context_(
-          host->IsPotentiallySecurePluginContext(instance)),
-      weak_ptr_factory_(this) {
+          host->IsPotentiallySecurePluginContext(instance)) {
   DCHECK(host);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -125,6 +124,13 @@ PepperTCPSocketMessageFilter::~PepperTCPSocketMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (host_)
     host_->RemoveInstanceObserver(instance_, this);
+#if defined(OS_CHROMEOS)
+  // Close the firewall hole on UI thread if there is one.
+  if (firewall_hole_) {
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
+                              std::move(firewall_hole_));
+  }
+#endif  // defined(OS_CHROMEOS)
   --g_num_tcp_filter_instances;
 }
 

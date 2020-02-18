@@ -17,12 +17,12 @@
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_string.h"
 #include "core/fpdfapi/parser/fpdf_parser_decode.h"
+#include "core/fpdfdoc/cba_fontmap.h"
 #include "core/fpdfdoc/cpvt_word.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
-#include "fpdfsdk/formfiller/cba_fontmap.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
 #include "fpdfsdk/pwl/cpwl_edit_impl.h"
 #include "fpdfsdk/pwl/cpwl_icon.h"
@@ -1231,12 +1231,11 @@ void CPWL_AppStream::SetAsPushButton() {
   SetDefaultIconName(pRolloverIcon, "ImgB");
   SetDefaultIconName(pDownIcon, "ImgC");
 
-  CPDF_IconFit iconFit = pControl->GetIconFit();
-  CBA_FontMap font_map(
-      widget_.Get(),
-      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
+  CBA_FontMap font_map(widget_->GetPDFPage()->GetDocument(),
+                       widget_->GetPDFAnnot()->GetAnnotDict());
   font_map.SetAPType("N");
 
+  CPDF_IconFit iconFit = pControl->GetIconFit();
   ByteString csAP =
       GetRectFillAppStream(rcWindow, crBackground) +
       GetBorderAppStreamInternal(rcWindow, fBorderWidth, crBorder, crLeftTop,
@@ -1589,9 +1588,8 @@ void CPWL_AppStream::SetAsComboBox(Optional<WideString> sValue) {
   rcButton.Normalize();
 
   // Font map must outlive |pEdit|.
-  CBA_FontMap font_map(
-      widget_.Get(),
-      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
+  CBA_FontMap font_map(widget_->GetPDFPage()->GetDocument(),
+                       widget_->GetPDFAnnot()->GetAnnotDict());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1656,9 +1654,8 @@ void CPWL_AppStream::SetAsListBox() {
   std::ostringstream sBody;
 
   // Font map must outlive |pEdit|.
-  CBA_FontMap font_map(
-      widget_.Get(),
-      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
+  CBA_FontMap font_map(widget_->GetPDFPage()->GetDocument(),
+                       widget_->GetPDFAnnot()->GetAnnotDict());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1741,9 +1738,8 @@ void CPWL_AppStream::SetAsTextField(Optional<WideString> sValue) {
   std::ostringstream sLines;
 
   // Font map must outlive |pEdit|.
-  CBA_FontMap font_map(
-      widget_.Get(),
-      widget_->GetInteractiveForm()->GetFormFillEnv()->GetSysHandler());
+  CBA_FontMap font_map(widget_->GetPDFPage()->GetDocument(),
+                       widget_->GetPDFAnnot()->GetAnnotDict());
 
   auto pEdit = pdfium::MakeUnique<CPWL_EditImpl>();
   pEdit->EnableRefresh(false);
@@ -1941,7 +1937,7 @@ void CPWL_AppStream::Write(const ByteString& sAPType,
   }
   pStreamDict->SetMatrixFor("Matrix", widget_->GetMatrix());
   pStreamDict->SetRectFor("BBox", widget_->GetRotatedRect());
-  pStream->SetDataAndRemoveFilter(sContents.AsRawSpan());
+  pStream->SetDataAndRemoveFilter(sContents.raw_span());
 }
 
 void CPWL_AppStream::Remove(const ByteString& sAPType) {

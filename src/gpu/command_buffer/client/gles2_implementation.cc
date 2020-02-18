@@ -208,6 +208,7 @@ GLES2Implementation::GLES2Implementation(
       bound_atomic_counter_buffer_(0),
       bound_copy_read_buffer_(0),
       bound_copy_write_buffer_(0),
+      bound_dispatch_indirect_buffer_(0),
       bound_pixel_pack_buffer_(0),
       bound_pixel_unpack_buffer_(0),
       bound_shader_storage_buffer_(0),
@@ -223,8 +224,7 @@ GLES2Implementation::GLES2Implementation(
       max_extra_transfer_buffer_size_(0),
       current_trace_stack_(0),
       aggressively_free_resources_(false),
-      cached_extension_string_(nullptr),
-      weak_ptr_factory_(this) {
+      cached_extension_string_(nullptr) {
   DCHECK(helper);
 
   std::stringstream ss;
@@ -1053,6 +1053,9 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
       return true;
     case GL_ATOMIC_COUNTER_BUFFER_BINDING:
       *params = bound_atomic_counter_buffer_;
+      return true;
+    case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
+      *params = bound_dispatch_indirect_buffer_;
       return true;
     case GL_SHADER_STORAGE_BUFFER_BINDING:
       *params = bound_shader_storage_buffer_;
@@ -4654,6 +4657,12 @@ void GLES2Implementation::BindBufferHelper(GLenum target, GLuint buffer_id) {
         changed = true;
       }
       break;
+    case GL_DISPATCH_INDIRECT_BUFFER:
+      if (bound_dispatch_indirect_buffer_ != buffer_id) {
+        bound_dispatch_indirect_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
     case GL_ELEMENT_ARRAY_BUFFER:
       changed = vertex_array_object_manager_->BindElementArray(buffer_id);
       break;
@@ -4975,6 +4984,9 @@ void GLES2Implementation::DeleteBuffersHelper(GLsizei n,
     }
     if (buffers[ii] == bound_copy_write_buffer_) {
       bound_copy_write_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_dispatch_indirect_buffer_) {
+      bound_dispatch_indirect_buffer_ = 0;
     }
     if (buffers[ii] == bound_pixel_pack_buffer_) {
       bound_pixel_pack_buffer_ = 0;
@@ -5385,9 +5397,11 @@ void GLES2Implementation::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
+    const GLfloat* rounded_corner_bounds,
     GLint sorting_context_id,
     const GLfloat* transform) {
-  uint32_t shm_size = 20 * sizeof(GLfloat);
+  // 4 for clip_rect, 5 for rounded_corner_rect, 16 for transform.
+  uint32_t shm_size = 25 * sizeof(GLfloat);
   ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
   if (!buffer.valid() || buffer.size() < shm_size) {
     SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleCALayerSharedStateCHROMIUM",
@@ -5396,7 +5410,8 @@ void GLES2Implementation::ScheduleCALayerSharedStateCHROMIUM(
   }
   GLfloat* mem = static_cast<GLfloat*>(buffer.address());
   memcpy(mem + 0, clip_rect, 4 * sizeof(GLfloat));
-  memcpy(mem + 4, transform, 16 * sizeof(GLfloat));
+  memcpy(mem + 4, rounded_corner_bounds, 5 * sizeof(GLfloat));
+  memcpy(mem + 9, transform, 16 * sizeof(GLfloat));
   helper_->ScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped,
                                               sorting_context_id,
                                               buffer.shm_id(), buffer.offset());
@@ -5678,6 +5693,7 @@ GLboolean GLES2Implementation::UnmapBuffer(GLenum target) {
     case GL_ELEMENT_ARRAY_BUFFER:
     case GL_COPY_READ_BUFFER:
     case GL_COPY_WRITE_BUFFER:
+    case GL_DISPATCH_INDIRECT_BUFFER:
     case GL_PIXEL_PACK_BUFFER:
     case GL_PIXEL_UNPACK_BUFFER:
     case GL_SHADER_STORAGE_BUFFER:
@@ -6700,6 +6716,8 @@ bool CreateImageValidInternalFormat(GLenum internalformat,
       return capabilities.texture_norm16;
     case GL_RGB10_A2_EXT:
       return capabilities.image_xr30 || capabilities.image_xb30;
+    case GL_RGB_YCBCR_P010_CHROMIUM:
+      return capabilities.image_ycbcr_p010;
     case GL_RED:
     case GL_RG_EXT:
     case GL_RGB:

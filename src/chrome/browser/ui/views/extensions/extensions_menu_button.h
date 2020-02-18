@@ -22,8 +22,7 @@ class MenuRunner;
 
 class ExtensionsMenuButton : public HoverButton,
                              public views::ButtonListener,
-                             public ToolbarActionViewDelegateViews,
-                             public views::ContextMenuController {
+                             public ToolbarActionViewDelegateViews {
  public:
   ExtensionsMenuButton(Browser* browser,
                        std::unique_ptr<ToolbarActionViewController> controller);
@@ -44,10 +43,7 @@ class ExtensionsMenuButton : public HoverButton,
   void UpdateState() override;
   bool IsMenuRunning() const override;
 
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
+  void RunExtensionContextMenu(ui::MenuSourceType source_type);
 
   // Callback for MenuModelAdapter.
   void OnMenuClosed();

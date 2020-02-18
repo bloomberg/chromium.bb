@@ -46,6 +46,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gfx/transform.h"
 #include "ui/latency/latency_info.h"
 
@@ -159,25 +160,49 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
       const DirectRenderer::DrawingFrame& drawing_frame,
       bool validate_output_color_matrix) {
     renderer()->SetCurrentFrameForTesting(drawing_frame);
-    const size_t kNumSrcColorSpaces = 4;
+    const size_t kNumSrcColorSpaces = 5;
     gfx::ColorSpace src_color_spaces[kNumSrcColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
                         gfx::ColorSpace::TransferID::GAMMA28),
-        gfx::ColorSpace::CreateREC709(), gfx::ColorSpace::CreateExtendedSRGB(),
+        gfx::ColorSpace::CreateREC709(),
+        gfx::ColorSpace::CreateExtendedSRGB(),
+        gfx::ColorSpace::CreateSCRGBLinear(),
     };
-    const size_t kNumDstColorSpaces = 3;
+    const size_t kNumDstColorSpaces = 4;
     gfx::ColorSpace dst_color_spaces[kNumDstColorSpaces] = {
         gfx::ColorSpace::CreateSRGB(),
         gfx::ColorSpace(gfx::ColorSpace::PrimaryID::ADOBE_RGB,
                         gfx::ColorSpace::TransferID::GAMMA18),
+        gfx::ColorSpace::CreateExtendedSRGB(),
         gfx::ColorSpace::CreateSCRGBLinear(),
     };
     for (size_t i = 0; i < kNumDstColorSpaces; ++i) {
       for (size_t j = 0; j < kNumSrcColorSpaces; ++j) {
-        renderer()->SetUseProgram(program_key, src_color_spaces[j],
-                                  dst_color_spaces[i]);
+        const auto& src_color_space = src_color_spaces[j];
+        const auto& dst_color_space = dst_color_spaces[i];
+
+        renderer()->SetUseProgram(program_key, src_color_space,
+                                  dst_color_space);
         EXPECT_TRUE(renderer()->current_program_->initialized());
+
+        if (src_color_space != dst_color_space) {
+          const float sdr_white_level = drawing_frame.sdr_white_level;
+          auto adjusted_color_space = src_color_space;
+          if (!src_color_space.IsHDR() &&
+              sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+            adjusted_color_space = src_color_space.GetScaledColorSpace(
+                sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+          }
+          auto color_transform = gfx::ColorTransform::NewColorTransform(
+              adjusted_color_space, dst_color_space,
+              gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+          EXPECT_EQ(color_transform->GetShaderSource(),
+                    renderer()
+                        ->current_program_->color_transform_for_testing()
+                        ->GetShaderSource());
+        }
+
         if (validate_output_color_matrix) {
           EXPECT_NE(
               -1, renderer()->current_program_->output_color_matrix_location());
@@ -215,20 +240,34 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     TestShaderWithDrawingFrame(program_key, frame, true);
   }
 
+  void TestShadersWithSDRWhiteLevel(const ProgramKey& program_key,
+                                    float sdr_white_level) {
+    GLRenderer::DrawingFrame frame;
+    frame.sdr_white_level = sdr_white_level;
+    TestShaderWithDrawingFrame(program_key, frame, false);
+  }
+
   void TestBasicShaders() {
     TestShader(ProgramKey::DebugBorder());
     TestShader(ProgramKey::SolidColor(NO_AA, false, false));
     TestShader(ProgramKey::SolidColor(USE_AA, false, false));
+    TestShader(ProgramKey::SolidColor(NO_AA, true, false));
 
     TestShadersWithOutputColorMatrix(ProgramKey::DebugBorder());
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(NO_AA, false, false));
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(USE_AA, false, false));
-
-    TestShader(ProgramKey::SolidColor(NO_AA, true, false));
     TestShadersWithOutputColorMatrix(
         ProgramKey::SolidColor(NO_AA, true, false));
+
+    TestShadersWithSDRWhiteLevel(ProgramKey::DebugBorder(), 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(NO_AA, false, false),
+                                 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(USE_AA, false, false),
+                                 200.f);
+    TestShadersWithSDRWhiteLevel(ProgramKey::SolidColor(NO_AA, true, false),
+                                 200.f);
   }
 
   void TestColorShaders() {
@@ -359,7 +398,7 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
 namespace {
 
-#if !defined(OS_ANDROID) && !defined(OS_WIN)
+#if !defined(OS_ANDROID)
 static const TexCoordPrecision kPrecisionList[] = {TEX_COORD_PRECISION_MEDIUM,
                                                    TEX_COORD_PRECISION_HIGH};
 
@@ -691,7 +730,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
                        nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -754,7 +793,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
                        SK_ColorTRANSPARENT, vertex_opacity, flipped,
                        nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   DrawFrame(renderer_.get(), viewport_size);
 
@@ -2042,8 +2081,6 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
-  MOCK_METHOD0(TakeOverlayCandidateValidator,
-               std::unique_ptr<OverlayCandidateValidator>());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
   MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
@@ -2077,7 +2114,6 @@ class MockOutputSurfaceTest : public GLRendererTest {
         DisplayResourceProvider::kGpu, output_surface_->context_provider(),
         shared_bitmap_manager_.get());
 
-    EXPECT_CALL(*output_surface_, TakeOverlayCandidateValidator()).Times(1);
     renderer_.reset(new FakeRendererGL(&settings_, output_surface_.get(),
                                        resource_provider_.get()));
     renderer_->Initialize();
@@ -2178,8 +2214,12 @@ class TestOverlayProcessor : public OverlayProcessor {
     }
   };
 
-  explicit TestOverlayProcessor(ContextProvider* context_provider)
-      : OverlayProcessor(context_provider) {}
+  explicit TestOverlayProcessor(
+      ContextProvider* context_provider,
+      std::unique_ptr<OverlayCandidateValidator> overlay_validator)
+      : OverlayProcessor(context_provider) {
+    SetOverlayCandidateValidator(std::move(overlay_validator));
+  }
   ~TestOverlayProcessor() override = default;
 
   const Validator* GetTestValidator() const {
@@ -2248,8 +2288,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.SetVisible(true);
 
   TestOverlayProcessor* processor = new TestOverlayProcessor(
-      output_surface->context_provider());
-  processor->SetOverlayCandidateValidator(
+      output_surface->context_provider(),
       std::make_unique<TestOverlayProcessor::Validator>());
   renderer.SetOverlayProcessor(processor);
   const TestOverlayProcessor::Validator* validator =
@@ -2275,7 +2314,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
@@ -2302,7 +2341,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
@@ -2325,7 +2364,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       gfx::Rect(viewport_size), needs_blending, parent_resource_id,
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
@@ -2491,7 +2530,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        parent_resource_id, premultiplied_alpha, uv_top_left,
                        uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
                        flipped, nearest_neighbor, /*secure_output_only=*/false,
-                       ui::ProtectedVideoType::kClear);
+                       gfx::ProtectedVideoType::kClear);
 
   // The verified flush flag will be set by
   // ClientResourceProvider::PrepareSendToParent. Before checking if the
@@ -2846,9 +2885,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                           parent_resource_provider.get());
   renderer.Initialize();
   renderer.SetVisible(true);
-  TestOverlayProcessor* processor =
-      new TestOverlayProcessor(output_surface->context_provider());
-  processor->SetOverlayCandidateValidator(std::make_unique<DCLayerValidator>());
+  TestOverlayProcessor* processor = new TestOverlayProcessor(
+      output_surface->context_provider(), std::make_unique<DCLayerValidator>());
   processor->SetDCHasHwOverlaySupportForTesting();
   renderer.SetOverlayProcessor(processor);
 
@@ -2892,9 +2930,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
 
     // Frame 0 should have DC Layers enabled because of the overlay.
     // After 60 frames of no overlays DC layers should be disabled again.
-    if (i < 60)
+    if (i == 0)
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_TRUE));
-    else
+    else if (i == 60)
       EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_FALSE));
 
     renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -3094,10 +3132,11 @@ class CALayerValidator : public OverlayCandidateValidator {
 
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD5(ScheduleCALayerSharedStateCHROMIUM,
+  MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,
                void(GLfloat opacity,
                     GLboolean is_clipped,
                     const GLfloat* clip_rect,
+                    const GLfloat* rounded_corner_bounds,
                     GLint sorting_context_id,
                     const GLfloat* transform));
   MOCK_METHOD6(ScheduleCALayerCHROMIUM,
@@ -3109,6 +3148,9 @@ class MockCALayerGLES2Interface : public TestGLES2Interface {
                     GLuint filter));
   MOCK_METHOD2(ScheduleCALayerInUseQueryCHROMIUM,
                void(GLsizei count, const GLuint* textures));
+  MOCK_METHOD5(
+      Uniform4f,
+      void(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w));
 };
 
 class CALayerGLRendererTest : public GLRendererTest {
@@ -3149,9 +3191,8 @@ class CALayerGLRendererTest : public GLRendererTest {
     // quads can be turned into CALayer overlays, then all damage is removed and
     // we can skip the root RenderPass, swapping empty.
     TestOverlayProcessor* processor =
-        new TestOverlayProcessor(output_surface_->context_provider());
-    processor->SetOverlayCandidateValidator(
-        std::make_unique<CALayerValidator>());
+        new TestOverlayProcessor(output_surface_->context_provider(),
+                                 std::make_unique<CALayerValidator>());
     renderer_->SetOverlayProcessor(processor);
   }
 
@@ -3198,7 +3239,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
   // CALayer.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3244,13 +3285,70 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
   // RenderPassDrawQuad is emitted.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _));
   }
   DrawFrame(&renderer(), viewport_size);
   Mock::VerifyAndClearExpectations(&gl());
 
   renderer().SwapBuffers(std::vector<ui::LatencyInfo>());
+}
+
+TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
+  gfx::Size viewport_size(10, 10);
+
+  for (size_t subtest = 0; subtest < 3; ++subtest) {
+    RenderPass* child_pass =
+        cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(250, 250),
+                          gfx::Transform(), cc::FilterOperations());
+
+    RenderPassId root_pass_id = 1;
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    auto* quad = cc::AddRenderPassQuad(root_pass, child_pass);
+    SharedQuadState* sqs =
+        const_cast<SharedQuadState*>(quad->shared_quad_state);
+
+    sqs->is_clipped = true;
+    sqs->clip_rect = gfx::Rect(2, 2, 6, 6);
+    const float radius = 2;
+    sqs->rounded_corner_bounds =
+        gfx::RRectF(gfx::RectF(sqs->clip_rect), radius);
+
+    switch (subtest) {
+      case 0:
+        // Subtest 0 is a simple round rect that matches the clip rect, and
+        // should be handled by CALayers.
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(1);
+        EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _))
+            .Times(1);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
+        break;
+      case 1:
+        // Subtest 1 doesn't match clip and rounded rect, but we can still
+        // use CALayers.
+        sqs->clip_rect = gfx::Rect(3, 3, 4, 4);
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(1);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
+        break;
+      case 2:
+        // Subtest 2 has a non-simple rounded rect.
+        sqs->rounded_corner_bounds.SetCornerRadii(
+            gfx::RRectF::Corner::kUpperLeft, 1, 1);
+        // Called 2 extra times in order to set up the rounded corner
+        // parameters in the shader, because the CALayer is not handling
+        // the rounded corners.
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(3);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(0);
+        break;
+    }
+
+    renderer().DecideRenderPassAllocationsForFrame(
+        render_passes_in_draw_order_);
+    DrawFrame(&renderer(), viewport_size);
+    Mock::VerifyAndClearExpectations(&gl());
+  }
 }
 
 TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
@@ -3282,7 +3380,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3335,7 +3433,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   // is still in use.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3383,7 +3481,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
   // an existing 256x256 texture, we can reuse that.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3434,7 +3532,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3485,7 +3583,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   // is still in use.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3532,7 +3630,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
   // existing 256x256 texture, but it's too large for us to reuse it.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3579,7 +3677,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   uint32_t saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3619,7 +3717,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   uint32_t second_saved_texture_id = 0;
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3666,7 +3764,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
   // verify that happened.
   {
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3712,7 +3810,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3773,7 +3871,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(Invoke([&](GLuint contents_texture_id,
                              const GLfloat* contents_rect,
@@ -3837,7 +3935,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
         .WillOnce(
             Invoke([&](GLuint contents_texture_id, const GLfloat* contents_rect,
@@ -3886,7 +3984,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
         render_passes_in_draw_order_);
 
     InSequence sequence;
-    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
     EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _));
     DrawFrame(&renderer(), viewport_size);
     Mock::VerifyAndClearExpectations(&gl());
@@ -3917,7 +4015,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
   InSequence sequence;
-  EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+  EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _));
   EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
       .WillOnce(Invoke([&](GLuint contents_texture_id,
                            const GLfloat* contents_rect,
@@ -4180,7 +4278,7 @@ TEST_F(GLRendererWithGpuFenceTest,
       needs_blending, create_overlay_resource(), premultiplied_alpha,
       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
       flipped, nearest_neighbor,
-      /*secure_output_only=*/false, ui::ProtectedVideoType::kClear);
+      /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 
   EXPECT_CALL(overlay_scheduler,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, kSurfaceOverlayTextureId,

@@ -4,7 +4,6 @@
 
 mojom = "//components/autofill/core/common/mojom/autofill_types.mojom"
 public_headers = [
-  "//components/autofill/core/common/filling_status.h",
   "//components/autofill/core/common/form_data.h",
   "//components/autofill/core/common/form_data_predictions.h",
   "//components/autofill/core/common/form_field_data.h",
@@ -14,12 +13,11 @@ public_headers = [
   "//components/autofill/core/common/password_form_fill_data.h",
   "//components/autofill/core/common/password_form_generation_data.h",
   "//components/autofill/core/common/password_generation_util.h",
-  "//components/autofill/core/common/submission_source.h",
 ]
 traits_headers =
-    [ "//components/autofill/core/common/mojom/autofill_types_struct_traits.h" ]
+    [ "//components/autofill/core/common/mojom/autofill_types_mojom_traits.h" ]
 sources = [
-  "//components/autofill/core/common/mojom/autofill_types_struct_traits.cc",
+  "//components/autofill/core/common/mojom/autofill_types_mojom_traits.cc",
 ]
 deps = [
   "//base",
@@ -29,21 +27,16 @@ deps = [
 ]
 
 type_mappings = [
-  "autofill.mojom.FillingStatus=autofill::FillingStatus",
   "autofill.mojom.FormData=autofill::FormData",
   "autofill.mojom.FormDataPredictions=autofill::FormDataPredictions",
   "autofill.mojom.FormFieldData=autofill::FormFieldData",
   "autofill.mojom.FormFieldDataPredictions=autofill::FormFieldDataPredictions",
   "autofill.mojom.FormsPredictionsMap=autofill::FormsPredictionsMap",
-  "autofill.mojom.NewPasswordFormGenerationData=autofill::NewPasswordFormGenerationData",
   "autofill.mojom.PasswordAndRealm=autofill::PasswordAndRealm",
   "autofill.mojom.PasswordForm=autofill::PasswordForm",
   "autofill.mojom.PasswordFormFieldPredictionMap=autofill::PasswordFormFieldPredictionMap",
-  "autofill.mojom.PasswordFormFieldPredictionType=autofill::PasswordFormFieldPredictionType",
   "autofill.mojom.PasswordFormFillData=autofill::PasswordFormFillData",
   "autofill.mojom.PasswordFormGenerationData=autofill::PasswordFormGenerationData",
-  "autofill.mojom.SubmissionIndicatorEvent=autofill::SubmissionIndicatorEvent",
   "autofill.mojom.PasswordGenerationUIData=autofill::password_generation::PasswordGenerationUIData",
-  "autofill.mojom.SubmissionSource=autofill::SubmissionSource",
   "autofill.mojom.ValueElementPair=autofill::ValueElementPair",
 ]

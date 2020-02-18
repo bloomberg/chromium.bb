@@ -136,8 +136,7 @@ Ui::Ui(UiBrowserInterface* browser,
       input_manager_(std::make_unique<UiInputManager>(scene_.get())),
       keyboard_delegate_(std::move(keyboard_delegate)),
       text_input_delegate_(std::move(text_input_delegate)),
-      audio_delegate_(std::move(audio_delegate)),
-      weak_ptr_factory_(this) {
+      audio_delegate_(std::move(audio_delegate)) {
   UiInitialState state = ui_initial_state;
   if (text_input_delegate_) {
     text_input_delegate_->SetRequestFocusCallback(
@@ -613,8 +612,6 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
-  model_->use_new_incognito_strings =
-      ui_initial_state.use_new_incognito_strings;
   model_->controllers.push_back(ControllerModel());
 }
 

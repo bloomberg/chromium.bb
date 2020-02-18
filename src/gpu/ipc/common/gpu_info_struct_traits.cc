@@ -79,6 +79,10 @@ EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::ToMojom(
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE5;
     case gpu::VideoCodecProfile::DOLBYVISION_PROFILE7:
       return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE8:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE8;
+    case gpu::VideoCodecProfile::DOLBYVISION_PROFILE9:
+      return gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE9;
     case gpu::VideoCodecProfile::THEORAPROFILE_ANY:
       return gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY;
     case gpu::VideoCodecProfile::AV1PROFILE_PROFILE_MAIN:
@@ -169,6 +173,12 @@ bool EnumTraits<gpu::mojom::VideoCodecProfile, gpu::VideoCodecProfile>::
     case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE7:
       *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE7;
       return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE8:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE8;
+      return true;
+    case gpu::mojom::VideoCodecProfile::DOLBYVISION_PROFILE9:
+      *out = gpu::VideoCodecProfile::DOLBYVISION_PROFILE9;
+      return true;
     case gpu::mojom::VideoCodecProfile::THEORAPROFILE_ANY:
       *out = gpu::VideoCodecProfile::THEORAPROFILE_ANY;
       return true;
@@ -227,6 +237,8 @@ gpu::mojom::ImageDecodeAcceleratorType EnumTraits<
   switch (image_type) {
     case gpu::ImageDecodeAcceleratorType::kJpeg:
       return gpu::mojom::ImageDecodeAcceleratorType::kJpeg;
+    case gpu::ImageDecodeAcceleratorType::kWebP:
+      return gpu::mojom::ImageDecodeAcceleratorType::kWebP;
     case gpu::ImageDecodeAcceleratorType::kUnknown:
       return gpu::mojom::ImageDecodeAcceleratorType::kUnknown;
   }
@@ -240,6 +252,9 @@ bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorType,
   switch (input) {
     case gpu::mojom::ImageDecodeAcceleratorType::kJpeg:
       *out = gpu::ImageDecodeAcceleratorType::kJpeg;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorType::kWebP:
+      *out = gpu::ImageDecodeAcceleratorType::kWebP;
       return true;
     case gpu::mojom::ImageDecodeAcceleratorType::kUnknown:
       *out = gpu::ImageDecodeAcceleratorType::kUnknown;

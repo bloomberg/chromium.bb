@@ -25,10 +25,12 @@
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
@@ -463,6 +465,10 @@ void ArcSessionManager::Initialize() {
   DCHECK_EQ(state_, State::NOT_INITIALIZED);
   state_ = State::STOPPED;
 
+  const std::string user_id_hash(
+      chromeos::ProfileHelper::GetUserIdHashFromProfile(profile_));
+  arc_session_runner_->SetUserIdHashForProfile(user_id_hash);
+
   // Create the support host at initialization. Note that, practically,
   // ARC support Chrome app is rarely used (only opt-in and re-auth flow).
   // So, it may be better to initialize it lazily.
@@ -482,6 +488,7 @@ void ArcSessionManager::Initialize() {
       profile_->GetPrefs(),
       cryptohome::Identification(
           multi_user_util::GetAccountIdFromProfile(profile_)));
+  data_remover_->set_user_id_hash_for_profile(user_id_hash);
 
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();

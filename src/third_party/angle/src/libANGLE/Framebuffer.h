@@ -82,6 +82,7 @@ class FramebufferState final : angle::NonCopyable
     bool hasSeparateDepthAndStencilAttachments() const;
     bool colorAttachmentsAreUniqueImages() const;
     Box getDimensions() const;
+    Extents getExtents() const;
 
     const FramebufferAttachment *getDrawBuffer(size_t drawBufferIdx) const;
     size_t getDrawBufferCount() const;
@@ -186,15 +187,15 @@ class Framebuffer final : public angle::ObserverInterface,
     bool detachTexture(const Context *context, GLuint texture);
     bool detachRenderbuffer(const Context *context, GLuint renderbuffer);
 
-    const FramebufferAttachment *getColorbuffer(size_t colorAttachment) const;
-    const FramebufferAttachment *getDepthbuffer() const;
-    const FramebufferAttachment *getStencilbuffer() const;
-    const FramebufferAttachment *getDepthStencilBuffer() const;
-    const FramebufferAttachment *getDepthOrStencilbuffer() const;
+    const FramebufferAttachment *getColorAttachment(size_t colorAttachment) const;
+    const FramebufferAttachment *getDepthAttachment() const;
+    const FramebufferAttachment *getStencilAttachment() const;
+    const FramebufferAttachment *getDepthStencilAttachment() const;
+    const FramebufferAttachment *getDepthOrStencilAttachment() const;
     const FramebufferAttachment *getStencilOrDepthStencilAttachment() const;
-    const FramebufferAttachment *getReadColorbuffer() const;
-    GLenum getReadColorbufferType() const;
-    const FramebufferAttachment *getFirstColorbuffer() const;
+    const FramebufferAttachment *getReadColorAttachment() const;
+    GLenum getReadColorAttachmentType() const;
+    const FramebufferAttachment *getFirstColorAttachment() const;
     const FramebufferAttachment *getFirstNonNullAttachment() const;
 
     const FramebufferAttachment *getAttachment(const Context *context, GLenum attachment) const;
@@ -202,6 +203,7 @@ class Framebuffer final : public angle::ObserverInterface,
     bool readDisallowedByMultiview() const;
     GLsizei getNumViews() const;
     GLint getBaseViewIndex() const;
+    Extents getExtents() const;
 
     size_t getDrawbufferStateCount() const;
     GLenum getDrawBufferState(size_t drawBuffer) const;
@@ -216,7 +218,7 @@ class Framebuffer final : public angle::ObserverInterface,
     GLenum getReadBufferState() const;
     void setReadBuffer(GLenum buffer);
 
-    size_t getNumColorBuffers() const;
+    size_t getNumColorAttachments() const;
     bool hasDepth() const;
     bool hasStencil() const;
 
@@ -238,7 +240,7 @@ class Framebuffer final : public angle::ObserverInterface,
     void setDefaultFixedSampleLocations(const Context *context, bool defaultFixedSampleLocations);
     void setDefaultLayers(GLint defaultLayers);
 
-    void invalidateCompletenessCache(const Context *context);
+    void invalidateCompletenessCache();
 
     ANGLE_INLINE GLenum checkStatus(const Context *context)
     {
@@ -343,9 +345,7 @@ class Framebuffer final : public angle::ObserverInterface,
     angle::Result syncState(const Context *context);
 
     // Observer implementation
-    void onSubjectStateChange(const Context *context,
-                              angle::SubjectIndex index,
-                              angle::SubjectMessage message) override;
+    void onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMessage message) override;
 
     bool formsRenderingFeedbackLoopWith(const Context *context) const;
     bool formsCopyingFeedbackLoopWith(GLuint copyTextureID,

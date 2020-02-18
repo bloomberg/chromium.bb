@@ -14,8 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/android/audio_track_jni_headers/AudioSinkAudioTrackImpl_jni.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
-#include "jni/AudioSinkAudioTrackImpl_jni.h"
 #include "media/base/audio_bus.h"
 
 #define RUN_ON_FEEDER_THREAD(callback, ...)                               \
@@ -384,7 +384,7 @@ void AudioSinkAndroidAudioTrackImpl::SetStreamVolumeMultiplier(
     float multiplier) {
   RUN_ON_FEEDER_THREAD(SetStreamVolumeMultiplier, multiplier);
 
-  stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  stream_volume_multiplier_ = std::max(0.0f, multiplier);
   LOG(INFO) << __func__ << "(" << this << "): device_id_=" << device_id_
             << " stream_multiplier=" << stream_volume_multiplier_
             << " effective=" << EffectiveVolume();

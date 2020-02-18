@@ -1,4 +1,5 @@
 include_rules = [
+  "+chrome/android/features/media_router/jni_headers",
   "+media/audio",
   "+media/base",
   "+media/cast",
@@ -15,5 +16,8 @@ include_rules = [
 specific_include_rules = {
   "cast_remoting_connector\.cc": [
     "+chrome/browser/ui/views/media_router/media_remoting_dialog_view.h",
+  ],
+  "output_protection_proxy\.h": [
+    "+ash/display/output_protection_delegate.h",
   ],
 }

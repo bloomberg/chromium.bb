@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "include/private/GrColor.h"
 #include "src/gpu/GrCaps.h"
+#include "src/gpu/GrColor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrRenderTargetContext.h"
@@ -229,8 +229,7 @@ GR_DEFINE_XP_FACTORY_TEST(GrCoverageSetOpXPFactory);
 #if GR_TEST_UTILS
 const GrXPFactory* GrCoverageSetOpXPFactory::TestGet(GrProcessorTestData* d) {
     SkRegion::Op regionOp = SkRegion::Op(d->fRandom->nextULessThan(SkRegion::kLastOp + 1));
-    bool isMixedSamples = GrFSAAType::kMixedSamples == d->fRenderTargetContext->fsaaType();
-    bool invertCoverage = !isMixedSamples && d->fRandom->nextBool();
+    bool invertCoverage = d->fRandom->nextBool();
     return GrCoverageSetOpXPFactory::Get(regionOp, invertCoverage);
 }
 #endif

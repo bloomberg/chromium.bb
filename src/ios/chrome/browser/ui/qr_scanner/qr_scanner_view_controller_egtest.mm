@@ -29,7 +29,6 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -116,16 +115,13 @@ void ShowQRScanner() {
   // Tap the omnibox to get the keyboard accessory view to show up.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NewTabPageOmnibox()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForSufficientlyVisibleElementWithMatcher:
-                          chrome_test_util::Omnibox()]);
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
 
   // Tap the QR Code scanner button in the keyboard accessory view.
-  id<GREYMatcher> matcher =
-      grey_allOf(grey_accessibilityLabel(@"QR code Search"),
-                 grey_kindOfClass([UIButton class]), nil);
-
-  [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(@"QR code Search")]
+      performAction:grey_tap()];
 }
 
 // Taps the |button|.
@@ -777,8 +773,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   } else {
     TapKeyboardReturnKeyInOmniboxWithText(result);
   }
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForWebStateContainingText:response]);
+  [ChromeEarlGrey waitForWebStateContainingText:response];
 
   // Press the back button to get back to the NTP.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
@@ -799,7 +794,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)testReceivingQRScannerURLResultAndEditingTheURL {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 
@@ -819,7 +814,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 - (void)testReceivingQRScannerSearchQueryResultAndEditingTheQuery {
   // TODO(crbug.com/753098): Re-enable this test on iPad once grey_typeText
   // works.
-  if (IsIPadIdiom()) {
+  if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on iPad.");
   }
 

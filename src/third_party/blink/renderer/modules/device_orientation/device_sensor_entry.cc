@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_entry.h"
 
+#include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "third_party/blink/renderer/modules/device_orientation/device_sensor_event_pump.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -73,10 +74,9 @@ bool DeviceSensorEntry::GetReading(device::SensorReading* reading) {
   if (!sensor_)
     return false;
 
-  DCHECK(shared_buffer_);
+  DCHECK(shared_buffer_reader_);
 
-  if (!shared_buffer_handle_->is_valid() ||
-      !shared_buffer_reader_->GetReading(reading)) {
+  if (!shared_buffer_reader_->GetReading(reading)) {
     HandleSensorError();
     return false;
   }
@@ -121,21 +121,13 @@ void DeviceSensorEntry::OnSensorCreated(
   sensor_.Bind(std::move(params->sensor));
   client_binding_.Bind(std::move(params->client_request));
 
-  shared_buffer_handle_ = std::move(params->memory);
-  DCHECK(!shared_buffer_);
-  shared_buffer_ = shared_buffer_handle_->MapAtOffset(kReadBufferSize,
-                                                      params->buffer_offset);
-  if (!shared_buffer_) {
+  shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
+      std::move(params->memory), params->buffer_offset);
+  if (!shared_buffer_reader_) {
     HandleSensorError();
     event_pump_->DidStartIfPossible();
     return;
   }
-
-  const device::SensorReadingSharedBuffer* buffer =
-      static_cast<const device::SensorReadingSharedBuffer*>(
-          shared_buffer_.get());
-  shared_buffer_reader_.reset(
-      new device::SensorReadingSharedBufferReader(buffer));
 
   device::mojom::blink::SensorConfigurationPtr config =
       std::move(params->default_configuration);
@@ -167,8 +159,7 @@ void DeviceSensorEntry::OnSensorAddConfiguration(bool success) {
 void DeviceSensorEntry::HandleSensorError() {
   sensor_.reset();
   state_ = State::NOT_INITIALIZED;
-  shared_buffer_handle_.reset();
-  shared_buffer_.reset();
+  shared_buffer_reader_.reset();
   client_binding_.Close();
 }
 

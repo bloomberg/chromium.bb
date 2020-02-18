@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -55,6 +57,7 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     private PropertyModel mSelectableModel;
     private PropertyModelChangeProcessor mSelectableMCP;
     private SelectionDelegate<Integer> mSelectionDelegate;
+    private int mSelectedTabBackgroundDrawableId = R.drawable.selected_tab_background;
 
     private TabListMediator.ThumbnailFetcher mMockThumbnailProvider =
             new TabListMediator.ThumbnailFetcher(new TabListMediator.ThumbnailProvider() {
@@ -115,6 +118,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         mGridModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                              .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
                              .with(TabProperties.TAB_CLOSED_LISTENER, mMockCloseListener)
+                             .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+                                     mSelectedTabBackgroundDrawableId)
                              .build();
         mStripModel = new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_STRIP)
                               .with(TabProperties.TAB_SELECTED_LISTENER, mMockSelectedListener)
@@ -124,6 +129,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.SELECTABLE_TAB_CLICKED_LISTENER, mMockSelectedListener)
                         .with(TabProperties.TAB_SELECTION_DELEGATE, mSelectionDelegate)
+                        .with(TabProperties.SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
+                                mSelectedTabBackgroundDrawableId)
                         .build();
 
         mGridMCP = PropertyModelChangeProcessor.create(mGridModel, mTabGridViewHolder,
@@ -143,14 +150,10 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             Assert.assertFalse(((FrameLayout) (holder.itemView)).getForeground() != null);
         } else {
             model.set(TabProperties.IS_SELECTED, true);
-            Drawable selectedDrawable =
-                    holder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(selectedDrawable != null);
+            View selectedView = holder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
             model.set(TabProperties.IS_SELECTED, false);
-            Drawable elevationDrawable =
-                    holder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(elevationDrawable != null);
-            Assert.assertNotSame(selectedDrawable, elevationDrawable);
+            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
         }
         mStripModel.set(TabProperties.IS_SELECTED, true);
         Assert.assertTrue(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
@@ -179,6 +182,48 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         Assert.assertTrue(
                 mSelectableTabGridViewHolder.actionButton.getBackground().getLevel() == 0);
         Assert.assertTrue(mSelectableTabGridViewHolder.actionButton.getDrawable() == null);
+    }
+
+    @Test
+    @MediumTest
+    public void testAnimationRestored() throws Exception {
+        View backgroundView = mTabGridViewHolder.itemView.findViewById(R.id.background_view);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mGridModel.set(TabProperties.IS_SELECTED, true);
+            mGridModel.set(TabProperties.CARD_ANIMATION_STATUS,
+                    ClosableTabGridViewHolder.AnimationStatus.CARD_RESTORE);
+        });
+        CriteriaHelper.pollUiThread(
+                () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
+
+        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            View selectedView =
+                    mTabGridViewHolder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
+        } else {
+            Drawable selectedDrawable = mTabGridViewHolder.itemView.getForeground();
+            Assert.assertNotNull(selectedDrawable);
+        }
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mGridModel.set(TabProperties.IS_SELECTED, false);
+            mGridModel.set(TabProperties.CARD_ANIMATION_STATUS,
+                    ClosableTabGridViewHolder.AnimationStatus.CARD_RESTORE);
+        });
+        CriteriaHelper.pollUiThread(
+                () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
+        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            View selectedView =
+                    mTabGridViewHolder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
+        } else {
+            Drawable selectedDrawable = mTabGridViewHolder.itemView.getForeground();
+            Assert.assertNull(selectedDrawable);
+        }
     }
 
     @Test

@@ -5,17 +5,23 @@
 #include "chrome/browser/ui/ash/fake_tablet_mode_controller.h"
 
 #include <utility>
+#include "base/logging.h"
 
 FakeTabletModeController::FakeTabletModeController() = default;
 
 FakeTabletModeController::~FakeTabletModeController() = default;
 
-void FakeTabletModeController::SetTabletModeToggleObserver(
-    ash::TabletModeToggleObserver* observer) {
+void FakeTabletModeController::AddObserver(ash::TabletModeObserver* observer) {
   observer_ = observer;
 }
 
-bool FakeTabletModeController::IsEnabled() const {
+void FakeTabletModeController::RemoveObserver(
+    ash::TabletModeObserver* observer) {
+  DCHECK_EQ(observer_, observer);
+  observer_ = nullptr;
+}
+
+bool FakeTabletModeController::InTabletMode() const {
   return enabled_;
 }
 

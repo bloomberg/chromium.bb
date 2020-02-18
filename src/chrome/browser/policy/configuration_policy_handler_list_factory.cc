@@ -42,6 +42,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
+#include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/history/core/common/pref_names.h"
@@ -62,7 +63,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"
@@ -321,6 +322,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSafeSitesFilterBehavior,
     policy_prefs::kSafeSitesFilterBehavior,
     base::Value::Type::INTEGER},
+  { key::kSafeBrowsingRealTimeLookupEnabled,
+    prefs::kSafeBrowsingRealTimeLookupEnabled,
+    base::Value::Type::BOOLEAN
+  },
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
     prefs::kAuthNegotiateDelegateByKdcPolicy,
@@ -336,9 +341,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kDiskCacheSize,
     prefs::kDiskCacheSize,
-    base::Value::Type::INTEGER },
-  { key::kMediaCacheSize,
-    prefs::kMediaCacheSize,
     base::Value::Type::INTEGER },
   { key::kPolicyRefreshRate,
     policy_prefs::kUserPolicyRefreshRate,
@@ -535,8 +537,8 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)
-  { key::kCertificateManagementAllowed,
-    prefs::kCertificateManagementAllowed,
+  { key::kClientCertificateManagementAllowed,
+    prefs::kClientCertificateManagementAllowed,
     base::Value::Type::INTEGER },
   { key::kChromeOsLockOnIdleSuspend,
     ash::prefs::kEnableAutoScreenLock,
@@ -598,6 +600,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kLargeCursorEnabled,
     ash::prefs::kAccessibilityLargeCursorEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kSelectToSpeakEnabled,
+    ash::prefs::kAccessibilitySelectToSpeakEnabled,
+    base::Value::Type::BOOLEAN },
   { key::kSpokenFeedbackEnabled,
     ash::prefs::kAccessibilitySpokenFeedbackEnabled,
     base::Value::Type::BOOLEAN },
@@ -609,9 +614,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kStickyKeysEnabled,
     ash::prefs::kAccessibilityStickyKeysEnabled,
-    base::Value::Type::BOOLEAN },
-  { key::kDockedMagnifierEnabled,
-    ash::prefs::kDockedMagnifierEnabled,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultLargeCursorEnabled,
     nullptr,
@@ -660,6 +662,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kUnifiedDesktopEnabledByDefault,
     prefs::kUnifiedDesktopEnabledByDefault,
+    base::Value::Type::BOOLEAN },
+  { key::kBuiltinCertificateVerifierEnabled,
+    prefs::kBuiltinCertificateVerifierEnabled,
     base::Value::Type::BOOLEAN },
   { key::kArcEnabled,
     arc::prefs::kArcEnabled,
@@ -711,6 +716,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kCrostiniExportImportUIAllowed,
     crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+  { key::kVmManagementCliAllowed,
+    crostini::prefs::kVmManagementCliAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+  { key::kCrostiniRootAccessAllowed,
+    crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy,
     base::Value::Type::BOOLEAN },
   { key::kReportCrostiniUsageEnabled,
     crostini::prefs::kReportCrostiniUsageEnabled,
@@ -846,9 +857,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  { key::kWelcomePageOnOSUpgradeEnabled,
-    prefs::kWelcomePageOnOSUpgradeEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kChromeCleanupEnabled,
     prefs::kSwReporterEnabled,
     base::Value::Type::BOOLEAN },
@@ -1019,6 +1027,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowPopupsDuringPageUnload,
     prefs::kAllowPopupsDuringPageUnload,
     base::Value::Type::BOOLEAN },
+  { key::kUserFeedbackAllowed,
+    prefs::kUserFeedbackAllowed,
+    base::Value::Type::BOOLEAN },
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
@@ -1060,6 +1071,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBrowserSwitcherChromeParameters,
     browser_switcher::prefs::kChromeParameters,
     base::Value::Type::LIST },
+#endif
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+  { key::kBrowserGuestModeEnforced,
+    prefs::kBrowserGuestModeEnforced,
+    base::Value::Type::BOOLEAN },
 #endif
 };
 // clang-format on
@@ -1118,6 +1134,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<autofill::AutofillCreditCardPolicyHandler>());
   handlers->AddHandler(std::make_unique<autofill::AutofillPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<content_settings::CookieSettingsPolicyHandler>());
   handlers->AddHandler(std::make_unique<DefaultSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceYouTubeSafetyModePolicyHandler>());
@@ -1129,28 +1147,27 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ProxyPolicyHandler>());
   handlers->AddHandler(std::make_unique<URLBlacklistPolicyHandler>());
 
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForUrls,
       certificate_transparency::prefs::kCTExcludedHosts, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForCas,
       certificate_transparency::prefs::kCTExcludedSPKIs, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kCertificateTransparencyEnforcementDisabledForLegacyCas,
       certificate_transparency::prefs::kCTExcludedLegacySPKIs, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
-      std::make_unique<WebUsbAllowDevicesForUrlsPolicyHandler>(chrome_schema));
+      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForUserPolicy(
+          chrome_schema));
 
 // On most platforms, there is a legacy policy
 // kUnsafelyTreatInsecureOriginAsSecure which has been replaced by
@@ -1220,11 +1237,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kWebAppInstallForceList, prefs::kWebAppInstallForceList,
-      chrome_schema, SCHEMA_STRICT,
+      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif
@@ -1247,11 +1262,10 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<DownloadDirPolicyHandler>());
   handlers->AddHandler(std::make_unique<LocalSyncPolicyHandler>());
 
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kRegisteredProtocolHandlers,
-      prefs::kPolicyRegisteredProtocolHandlers, chrome_schema, SCHEMA_STRICT,
+      prefs::kPolicyRegisteredProtocolHandlers, chrome_schema,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
 
@@ -1262,14 +1276,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kSafeBrowsingExtendedReportingOptInAllowed,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed,
       base::Value::Type::BOOLEAN));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
       std::move(sber_legacy_policy),
       std::make_unique<SimpleSchemaValidatingPolicyHandler>(
           key::kSafeBrowsingExtendedReportingEnabled,
           prefs::kSafeBrowsingScoutReportingEnabled, chrome_schema,
-          SCHEMA_STRICT,
+          SCHEMA_ALLOW_UNKNOWN,
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED)));
 
@@ -1408,7 +1420,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kUptimeLimit, prefs::kUptimeLimit, 3600, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kDeviceLoginScreenDefaultScreenMagnifierType, nullptr,
-      chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_FULL, false));
+      chromeos::MAGNIFIER_DISABLED, chromeos::MAGNIFIER_DOCKED, false));
   // TODO(binjin): Remove LegacyPoliciesDeprecatingPolicyHandler for these two
   // policies once deprecation of legacy power management policies is done.
   // http://crbug.com/346229
@@ -1429,12 +1441,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<ExternalDataPolicyHandler>(key::kWallpaperImage));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kNativePrintersBulkConfiguration));
+  handlers->AddHandler(
+      std::make_unique<ExternalDataPolicyHandler>(key::kExternalPrintServers));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(
       key::kDeviceWilcoDtcConfiguration));
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
-      key::kSessionLocales, nullptr, chrome_schema, SCHEMA_STRICT,
+      key::kSessionLocales, nullptr, chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_PROHIBITED));
   handlers->AddHandler(
@@ -1446,11 +1458,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<SecondaryGoogleAccountSigninPolicyHandler>());
   if (base::FeatureList::IsEnabled(features::kUsageTimeLimitPolicy)) {
-    // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-    // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
     handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
         key::kUsageTimeLimit, prefs::kUsageTimeLimit, chrome_schema,
-        SCHEMA_STRICT,
+        SCHEMA_ALLOW_UNKNOWN,
         SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
         SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   }
@@ -1472,17 +1482,15 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingPinDefaultPolicyHandler>());
   handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
-  // TODO(https://crbug.com/953615): Consider switching from SCHEMA_STRICT to
-  // SCHEMA_ALLOW_UNKNOWN for all schema validating policy handlers.
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,
-      SCHEMA_STRICT,
+      SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kParentAccessCodeConfig, prefs::kParentAccessCodeConfig,
-      chrome_schema, SCHEMA_STRICT,
+      chrome_schema, SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
   handlers->AddHandler(
@@ -1492,6 +1500,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(
+      WebUsbAllowDevicesForUrlsPolicyHandler::CreateForDevicePolicy(
+          chrome_schema));
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

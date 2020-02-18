@@ -355,6 +355,11 @@
           Ja šī politika ir atspējota vai nav iestatīta, Kerberos kontu iestatījumi ir atspējoti. Kerberos kontus nevar pievienot, un Kerberos autentifikāciju nevar izmantot. Visi esošie Kerberos konti, kā arī visas saglabātās paroles tiek dzēstas.</translation>
 <translation id="1561424797596341174">Politikas ignorēšana attālās piekļuves saimniekdatora atkļūdošanas versijām</translation>
 <translation id="1561967320164410511">Universālā divfaktoru autentificēšana (U2F) un paplašinājumi atsevišķai apstiprināšanai</translation>
+<translation id="1566329065312331399">
+      Ja šai politikai ir iestatīta vērtība “False”, tā neļauj ierīcei aktivizēt funkciju Powerwash.
+      Ja šai politikai ir iestatīta vērtība “True”, tā ļauj ierīcei aktivizēt funkciju Powerwash.
+      Ja vērtība netiek iestatīta, tās noklusējums ir “False”, un politika neļauj ierīcei aktivizēt funkciju Powerwash.
+      </translation>
 <translation id="1574554504290354326">Šis iestatījums vairs netiek izmantots, tā vietā izmantojiet “SafeBrowsingExtendedReportingEnabled”. “SafeBrowsingExtendedReportingEnabled” iespējošana vai atspējošana ir ekvivalenta “SafeBrowsingExtendedReportingOptInAllowed” vērtības “False” iestatīšanai.
 
       Iestatot šai politikai vērtību “False”, lietotājiem tiek liegta iespēja Google serveriem nosūtīt noteiktu sistēmas informāciju un lapas saturu. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt noteiktu sistēmas informāciju un lapas saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
@@ -396,6 +401,7 @@
 
       Brīdinājums: nav ieteicams piešķirt kioska lietotnei <ph name="PRODUCT_OS_NAME" /> versijas kontroli, jo ierīcē var netikt saņemti programmatūras atjauninājumi un kritiski drošības labojumi. <ph name="PRODUCT_OS_NAME" /> versijas kontroles deleģēšana var apdraudēt lietotājus.</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
+<translation id="1700811900332333712">Atļaut ierīcei pieprasīt funkciju Powerwash</translation>
 <translation id="1704516734140344991">Tiek konfigurēta <ph name="TPM_FIRMWARE_UPDATE_TPM" /> programmaparatūras atjauninājuma funkcionalitātes pieejamība un darbība.
 
       Atsevišķus iestatījumus var norādīt JSON rekvizītos.
@@ -947,6 +953,7 @@
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="268577405881275241">Iespējot datu saspiešanas starpniekservera funkciju</translation>
 <translation id="2693108589792503178">Konfigurēt paroles maiņas URL.</translation>
+<translation id="2694143893026486692">Ir iespējota dokota lupa</translation>
 <translation id="2706708761587205154">Atļaut drukāšanu tikai ar PIN kodu</translation>
 <translation id="2710534340210290498">Ja šai politikai ir iestatīta vērtība “False”, lietotāji nevarēs bloķēt ekrānu (varēs tikai izrakstīties no lietotāja sesijas). Ja šī iestatījuma vērtība “True” vai tā nav iestatīta, lietotāji, kuri būs autentificējušies ar paroli, varēs bloķēt ekrānu.</translation>
 <translation id="2731627323327011390">Atspējot <ph name="PRODUCT_OS_NAME" /> sertifikātu izmantošanu ARC lietotnēm</translation>
@@ -1127,6 +1134,15 @@
           Ja šī politika netiek iestatīta, precīzāko politiku darbība netiek ietekmēta.</translation>
 <translation id="2987155890997901449">ARC iespējošana</translation>
 <translation id="2987227569419001736">Web Bluetooth API lietošanas pārvaldība</translation>
+<translation id="2990018289267778247">Ja šai politikai ir iestatīta vērtība “True”, pieejamības iespējas vienmēr tiek rādītas sistēmas teknes izvēlnē.
+
+          Ja šai politikai ir iestatīta vērtība “False”, pieejamības iespējas nekad netiek rādītas sistēmas teknes izvēlnē.
+
+          Ja iestatīsiet šo politiku, lietotāji nevarēs to mainīt vai ignorēt.
+
+          Ja šī politika netiks iestatīta, pieejamības iespējas netiks rādītas sistēmas teknes izvēlnē, taču lietotājs varēs iestatīt pieejamības iespēju rādīšanu lapā Iestatījumi.
+
+          Ja ir iespējotas pieejamības funkcijas (citā veidā, piemēram, ar taustiņu kombināciju), pieejamības iespējas vienmēr tiek rādītas sistēmas teknes izvēlnē.</translation>
 <translation id="3011301228198307065">Konfigurē noklusējuma sākumlapas URL pārlūkprogrammā <ph name="PRODUCT_NAME" /> un neļauj lietotājiem to mainīt.
 
           Sākumlapa ir lapa, kas tiek atvērta, nospiežot pogu Sākums. Lapas, kas atvērtas startēšanas laikā, kontrolē RestoreOnStartup politikas.
@@ -1174,6 +1190,7 @@
           Šī politika nav jāiestata obligāti. Ja tā nebūs iestatīta, meklēšanas vienumu aizstāšana nenotiks.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
+<translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="306887062252197004">Ar šo politiku funkcijas WebDriver lietotāji var ignorēt
       politikas, kas var ietekmēt šīs funkcijas darbību.
 
@@ -1188,25 +1205,6 @@
       Ja šai politikai ir iestatīta vērtība Nepatiesa, WPAD optimizācija ir atspējota, tādējādi pārlūkā <ph name="PRODUCT_NAME" /> tiek ilgāk gaidīts uz DNS WPAD serveriem. Ja politika nav iestatīta vai ir iespējota, WPAD optimizācija ir iespējota.
 
       Neatkarīgi no tā, vai šī politika ir iespējota un kā tā ir iespējota, lietotāji nevar mainīt WPAD optimizācijas iestatījumu.</translation>
-<translation id="3071839057966069710">Konfigurē printeru sarakstu.
-
-      Izmantojot šo politiku, administratori var nodrošināt printeru konfigurāciju
-      lietotājiem.
-
-      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīva formāta virknes, ko var pielāgot ērtai printera atlasei. Parametri <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. Parametrs <ph name="PRINTER_UUID" /> nav norāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
-
-      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāatbilst vienai no virknēm, kas apzīmē pārlūkā <ph name="PRODUCT_NAME" /> atbalstītu printeri. Šī virkne tiks izmantota, lai identificētu un instalētu printerim atbilstošo PPD failu. Plašāku informāciju skatiet vietnē https://support.google.com/chrome?p=noncloudprint.
-
-      <ph name="PRINTER_AUTOCONF" /> ir Būla karogs, kas norāda, vai printera iestatīšanai visur ir jāizmanto IPP. Šis karogs tiek atbalstīts pārlūka <ph name="PRODUCT_OS_NAME" /> versijā 76 un jaunākās.
-
-      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāietver printera nosaukums, vai parametram <ph name="PRINTER_AUTOCONF" /> ir jābūt iestatītam uz “true”. Printeri ar abiem parametriem vai bez tiem tiks ignorēti.
-
-      Printera iestatīšana tiek pabeigta, kad printeris tiek izmantots pirmo reizi.  PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots.  Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
-
-      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs.  Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
-
-      Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ņemiet vērā, ka pozīciju numurēšana sākas ar nulli.
-      </translation>
 <translation id="3072045631333522102">Ekrānsaudzētājs, kas jāizmanto mazumtirdzniecības režīma pieteikšanās ekrānā</translation>
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
 <translation id="3077183141551274418">Ciļņu dzīves ciklu iespējošana vai atspējošana</translation>
@@ -1467,6 +1465,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
         Šo politiku izmanto ierīces tvēruma mākoņa politikas reģistrācijai galddatoros, un to var iestatīt, izmantojot reģistru vai GPO operētājsistēmā Windows, “plist” failu operētājsistēmā Mac un JSON politikas failu operētājsistēmā Linux.</translation>
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
 <translation id="3701121231485832347">Kontrolē iestatījumus, kas ir raksturīgi <ph name="MS_AD_NAME" /> pārvaldītajām <ph name="PRODUCT_OS_NAME" /> ierīcēm.</translation>
+<translation id="3702518095257671450">Attālinātā apstiprināšana</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Vienas rindas lauks ir novecojis, un to ir plānots noņemt. Lūdzu, sāciet lietot tālāk esošo vairākrindu tekstlodziņu.)</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="3711895659073496551">Darbības apturēšana</translation>
@@ -1844,6 +1843,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="4285674129118156176">Ļauj nesaistītiem lietotājiem izmantot ARC</translation>
+<translation id="4289903996435140853">Ļauj jums iestatīt to vietrāžu URL sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan vietrāži URL. Katrs vienums ierīcēs var ietvert pakalpojumu sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs derīga un tiks ignorēta.
+
+        USB atļauju modelis izmanto pieprasošās vietnes URL (“pieprasošais URL”) un augstākā līmeņa ietvara vietnes URL (“iegultais URL”), lai piešķirtu piekļuvi pieprasošajam URL piekļūt USB ierīcei. Pieprasošais URL var atšķirties no iegultā URL, kad pieprasošā vietne tiek ielādēta ietvarā iframe. Tāpēc laukā “urls” nedrīkst ietvert vairāk par divām URL virknēm, kas atdalītas ar komatu un norāda attiecīgi pieprasošo un iegulto URL. Ja ir norādīts tikai viens URL, piekļuve atbilstošajām USB ierīcēm tiks piešķirta, kad pieprasošās vietnes URL atbildīs šim URL neatkarīgi no iegulšanas statusa. Laukā “urls” ievadītajiem vietrāžiem URL ir jābūt derīgiem vietrāžiem URL, pretējā gadījumā politika tiks ignorēta.
+
+        Ja politika netiks iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta); pretējā gadījumā tiks izmantota lietotāja personīgā konfigurācija.
+
+        Šajā politikā norādītie URL modeļi nedrīkst būt pretrunā ar modeļiem, kas konfigurēti politikā “WebUsbBlockedForUrls”. Ja rodas pretrunas, šai politikai ir augstāka prioritāte nekā politikām “WebUsbBlockedForUrls” un “WebUsbAskForUrls”.
+
+        Šīs politikas un politikas “WebUsbAllowDevicesForUrls” vērtības ir apvienotas.</translation>
 <translation id="4298509794364745131">Nosaka lietotņu sarakstu, kuras var iespējot kā piezīmju lietotnes <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā.
 
       Ja bloķēšanas ekrānā ir iespējota vēlamā piezīmju lietotne, bloķēšanas ekrānā būs lietotāja saskarnes elements, ar ko varēs palaist vēlamo piezīmju lietotni.
@@ -1995,6 +2003,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4639407427807680016">Vietējās ziņojumapmaiņas saimniekdatoru nosaukumi, kas nav jāiekļauj melnajā sarakstā</translation>
 <translation id="4650759511838826572">Atspējo URL protokolu shēmas</translation>
 <translation id="465099050592230505">Uzņēmuma interneta veikala URL (darbība ir pārtraukta)</translation>
+<translation id="4661889655253181651">Satura iestatījumi ļauj norādīt, kā jārīkojas ar noteikta veida saturu (piemēram, sīkfailiem, attēliem vai JavaScript).</translation>
 <translation id="4665897631924472251">Paplašinājumu pārvaldības iestatījumi</translation>
 <translation id="4668325077104657568">Noklusējuma attēlu iestatījums</translation>
 <translation id="4670865688564083639">Minimums:</translation>
@@ -2044,6 +2053,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Šajā periodā lietotājs tiks atkārtoti informēts par atjaunināšanu. <ph name="PRODUCT_OS_NAME" /> ierīcēs paziņojums par restartēšanu tiek rādīts sistēmas teknē atbilstoši politikai <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. <ph name="PRODUCT_NAME" /> pārlūkprogrammās: kad ir pagājusi trešdaļa no perioda, lietotnes izvēlne tiek mainīta, lai norādītu, ka nepieciešama atkārtota lietotnes palaišana. Kad ir pagājusi puse no perioda, šī paziņojuma krāsa tiek mainīta. Kad ir pagājis viss periods, paziņojuma krāsa tiek mainīta vēl vienu reizi. Tādā pašā veidā tiek rādīti arī pārlūkprogrammas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikas papildu iespējotie paziņojumi.
 
       Ja šī politika nav iestatīta, <ph name="PRODUCT_OS_NAME" /> ierīcēs tiek izmantots noklusējuma periods 345 600 000 milisekundes (četras dienas), savukārt pārlūkprogrammā <ph name="PRODUCT_NAME" /> — 604 800 000 milisekundes (viena nedēļa).</translation>
+<translation id="4777805166623621364">
+      Šis politikas SitePerProcess iestatījums var tikt izmantots, lai neatļautu lietotājiem atteikties no noklusējuma rīcības — visu vietņu izolēšanas. Ņemiet vērā, ka politika IsolateOrigins var būt noderīga arī papildu detalizētāku vietņu izolēšanai.
+      Ja politika ir iespējota, lietotāji nevarēs atteikties no noklusējuma rīcības, kad katrai vietnei tiek izpildīts atsevišķs process.
+      Ja politika nav konfigurēta vai ir atspējota, lietotājs varēs atteikties no vietnes izolācijas
+      (piemēram, izmantojot ierakstu “Atspējot vietnes izolēšanu” vietnē chrome://flags).  Atspējojot politiku un/vai nekonfigurējot politiku, vietnes izolācija netiek izslēgta.
+      Operētājsistēmas <ph name="PRODUCT_OS_NAME" /> 76. versijai un vecākām versijām šādu vērtību ieteicams iestatīt arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abām politikām iestatītās vērtības nav vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+
+      PIEZĪME. Šī politika neattiecas uz operētājsistēmu Android. Lai politiku SitePerProcess iespējotu operētājsistēmā Android, izmantojiet politikas SitePerProcessAndroid iestatījumu.
+      </translation>
 <translation id="4788252609789586009">Iespējo pārlūka <ph name="PRODUCT_NAME" /> funkciju Automātiskā aizpilde un ļauj lietotājiem automātiski aizpildīt kredītkaršu informāciju tīmekļa veidlapās, izmantojot iepriekš saglabāto informāciju.
 
       Ja šis iestatījums ir atspējots, funkcija Automātiskā aizpilde nekad nerādīs kredītkaršu informācijas ieteikumus un neaizpildīs šo informāciju, kā arī nesaglabās papildu kredītkaršu informāciju, ko lietotājs var norādīt, pārlūkojot tīmekli.
@@ -2192,6 +2210,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5148753489738115745">Ļauj noteikt papildu parametrus, kas tiek lietoti, kad spraudnis <ph name="PRODUCT_FRAME_NAME" /> palaiž pārlūkprogrammu <ph name="PRODUCT_NAME" />.
 
           Ja šī politika nav iestatīta, tiks izmantota noklusējuma komandrinda.</translation>
+<translation id="5152787786897382519">Gan pārlūkam Chromium, gan pārlūkam Google Chrome ir dažas politiku grupas, kuras ir atkarīgas viena no otras, lai nodrošinātu kādas funkcijas kontroli. Šīs kopas ir tālāk norādītās politiku grupas. Ņemot vērā, ka politikām var būt vairāki avoti, tiek lietotas tikai vērtības no avota, kam ir visaugstākā prioritāte. Vērtības no zemākas prioritātes avota tajā pašā grupā tiks ignorētas. Prioritāšu secība pieejama vietnē <ph name="POLICY_PRIORITY_DOC_URL" />.</translation>
 <translation id="5159469559091666409">Pārraudzības tīkla pakešu sūtīšanas biežums (milisekundēs).
 
       Ja šī politika netiek iestatīta, noklusējuma intervāls ir 3 minūtes. Minimālais
@@ -2256,6 +2275,15 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultNotificationsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="5213038356678567351">Vietnes, kuras nekad neaktivizēs pārlūkprogrammas pārslēgšanu.</translation>
 <translation id="5219844027738217407">Android lietotnēs šī politika ietekmē tikai mikrofonu. Kad šī politika ir iestatīta kā patiesa, mikrofons tiek izslēgts visās Android lietotnēs bez izņēmuma.</translation>
+<translation id="5221394278852982313">Ļauj jums iestatīt to vietrāžu URL sarakstu, kas norāda, kurām vietnēm tiks automātiski piešķirta atļauja piekļūt USB ierīcei, izmantojot norādīto pakalpojumu sniedzēja un produkta ID. Lai politika būtu derīga, katrā saraksta vienumā jānorāda gan ierīces, gan vietrāži URL. Katrs vienums ierīcēs var ietvert pakalpojum sniedzēja ID un produkta ID lauku. Katrs izlaistais ID tiek uzskatīts par aizstājējzīmi, izņemot vienu gadījumu — produkta ID nevar norādīt, ja nav norādīts arī pakalpojumu sniedzēja ID. Pretējā gadījumā politika nebūs derīga un tiks ignorēta.
+
+        USB atļauju modelis izmanto pieprasošās vietnes URL (“pieprasošais URL”) un augstākā līmeņa ietvara vietnes URL (“iegultais URL”), lai piešķirtu piekļuvi pieprasošajam URL piekļūt USB ierīcei. Pieprasošais URL var atšķirties no iegultā URL, kad pieprasošā vietne tiek ielādēta ietvarā iframe. Tāpēc laukā “urls” nedrīkst ietvert vairāk par divām URL virknēm, kas atdalītas ar komatu un norāda attiecīgi pieprasošo un iegulto URL. Ja ir norādīts tikai viens URL, piekļuve atbilstošajām USB ierīcēm tiks piešķirta, kad pieprasošās vietnes URL atbildīs šim URL neatkarīgi no iegulšanas statusa. Laukā “urls” ievadītajiem vietrāžiem URL ir jābūt derīgiem vietrāžiem URL, pretējā gadījumā politika tiks ignorēta.
+
+        Ja šī politika netiks iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultWebUsbGuardSetting” (ja tā ir iestatīta); pretējā gadījumā tiks izmantota lietotāja personīgā konfigurācija.
+
+        Šajā politikā norādītie URL modeļi nedrīkst būt pretrunā ar modeļiem, kas konfigurēti politikā “WebUsbBlockedForUrls”. Ja rodas pretrunas, šai politikai ir augstāka prioritāte nekā politikām “WebUsbBlockedForUrls” un “WebUsbAskForUrls”.
+
+        Šīs politikas un politikas “DeviceWebUsbAllowDevicesForUrls” vērtības ir apvienotas.</translation>
 <translation id="5228316810085661003">Ierīces lokālā konta automātiskās pieteikšanās aizkave.
 
       Ja politikas |DeviceLocalAccountAutoLoginId| vērtība nav iestatīta, šī politika nedarbojas. Pretējā gadījumā ir spēkā tālāk minētais.
@@ -2511,6 +2539,10 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ņemiet vērā, ka tas nav ieteicams, jo var atļaut paplašinājuma nameConstraints ignorēšanu, kas ierobežo tos saimniekdatora nosaukumus, kuriem var autorizēt minēto sertifikātu.
 
       Ja šī politika nav iestatīta vai ir iestatīta vērtība “false”, servera sertifikāti, kam trūks paplašinājuma subjectAlternativeName, kurā ietverts DNS nosaukums vai IP adrese, nebūs uzticami.</translation>
+<translation id="5578571772998293651">Atļaut lietotāju atsauksmes.
+        Ja politikai ir iestatīta vērtība “False”, lietotāji nevar sūtīt atsauksmes uzņēmumam Google.
+
+        Ja politika nav iestatīta vai tai ir iestatīta vērtība “True”, lietotāji var sūtīt atsauksmes uzņēmumam Google, pārejot uz sadaļu Izvēlne &gt; Palīdzība &gt; Ziņot par problēmu vai izmantojot taustiņu kombināciju.</translation>
 <translation id="5581292529942108810">Ar pārlūkprogrammas Chrome pārskatu paplašinājumu saistītu politiku konfigurēšana.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un mašīna ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
@@ -2730,6 +2762,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="5983708779415553259">Noklusējuma darbība vietnēm, kas nav iekļautas nevienā satura pakotnē</translation>
 <translation id="5997543603646547632">Pēc noklusējuma izmantot 24 stundu pulksteni</translation>
 <translation id="5997846976342452720">Norāda, vai ir jāatspējo spraudņu meklētājs (novecojis)</translation>
+<translation id="5998198091336830580">Šī politika ir daļa no tālāk norādītās atomiskās grupas (tiek piemērotas politikas tikai no avota ar augstāko prioritāti).</translation>
 <translation id="6017568866726630990">Drukas priekšskatījuma vietā tiek rādīts sistēmas drukāšanas dialoglodziņš.
 
       Ja šis iestatījums ir iespējots, pieprasot lapas drukāšanu, pārlūkā <ph name="PRODUCT_NAME" /> tiks atvērts sistēmas drukāšanas dialoglodziņš, nevis iebūvētais drukas priekšskatījums.
@@ -2984,6 +3017,21 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika ir iestatīta uz vērtību “Neatļaut lietotājiem pārvaldīt sertifikātus”, lietotāji nevarēs pārvaldīt sertifikātus, viņi varēs tikai tos skatīt.</translation>
 <translation id="6573305661369899995">Ārēja URL ierobežojumu avota iestatīšana</translation>
+<translation id="6583851521569686409">Konfigurē printeru sarakstu.
+
+      Izmantojot šo politiku, administratori var nodrošināt printeru
+      konfigurāciju lietotājiem.
+
+      Parametri <ph name="PRINTER_DISPLAY_NAME" /> un <ph name="PRINTER_DESCRIPTION" /> ir brīva formāta virknes, ko var pielāgot ērtai printera atlasei. Parametri <ph name="PRINTER_MANUFACTURER" /> un <ph name="PRINTER_MODEL" /> ļauj galalietotājiem identificēt printeri. Tie apzīmē printera ražotāju un modeli. Parametram <ph name="PRINTER_URI" /> ir jābūt adresei, ko var sasniegt no klienta datora, tostarp <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> un <ph name="URI_QUEUE" />. Parametrs <ph name="PRINTER_UUID" /> nav jānorāda obligāti. Ja tas ir norādīts, tas tiek izmantots, lai novērstu <ph name="ZEROCONF_DISCOVERY" /> printeru dublēšanu.
+
+      Parametram <ph name="PRINTER_EFFECTIVE_MODEL" /> ir jāietver printera nosaukums, vai parametram <ph name="PRINTER_AUTOCONF" /> ir jābūt iestatītai vērtībai “True”. Printeri ar abiem parametriem vai bez tiem tiks ignorēti.
+
+      Printera iestatīšana ir pabeigta, kad printeris tiek izmantots pirmo reizi.  PPD faili netiek lejupielādēti, kamēr printeris netiek izmantots.  Pēc tam bieži izmantotie PPD faili tiek saglabāti kešatmiņā.
+
+      Šī politika neietekmē to, vai lietotāji var konfigurēt printerus atsevišķās ierīcēs.  Tās mērķis ir papildināt printeru konfigurāciju, ko veic individuāli lietotāji.
+
+      Ierīcēs, kas tiek pārvaldītas pakalpojumā Active Directory, šī politika atbalsta Active Directory ierīces nosaukuma vai tās apakšvirknes iekļaušanu ierīces <ph name="MACHINE_NAME_VARIABLE" /> nosaukumā. Piemēram, ja ierīces nosaukums ir <ph name="MACHINE_NAME_EXAMPLE" />, vērtība <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> pēc sestās pozīcijas tiktu aizstāta ar četrām rakstzīmēm: <ph name="MACHINE_NAME_PART_EXAMPLE" />. Ņemiet vērā, ka pozīciju numurēšana sākas ar nulli.
+      </translation>
 <translation id="6598235178374410284">Lietotāja iemiesojuma attēls</translation>
 <translation id="6603004149426829878">Vienmēr sūtīt visus signālus par atrašanās vietu serverim laika joslas noteikšanas laikā</translation>
 <translation id="6628120204569232711">Ziņot par krātuves statusu</translation>
@@ -3185,7 +3233,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
       Ja tā nav iestatīta, vai nu lietotājam var tikt vaicāts, vai importēt, vai arī importēšana var notikt automātiski.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> preferences</translation>
-<translation id="7006788746334555276">Satura iestatījumi</translation>
 <translation id="7007671350884342624">Konfigurē direktoriju, ko <ph name="PRODUCT_NAME" /> izmantos lietotāja datu glabāšanai.
 
       Ja iestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> izmantos nodrošināto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--user-data-dir”. Lai izvairītos no datu zaudējuma vai citām neparedzētām kļūdām, šai politikai nav jābūt iestatītai krājuma saknes direktorijam vai direktorijam, kas tiek izmantots citos nolūkos, jo <ph name="PRODUCT_NAME" /> pārvalda tā saturu.
@@ -3270,12 +3317,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7123160381479171745">Nosaka to lietotāju sarakstu, kuriem ir atļauts pieteikties ierīcē. Ieraksti ir šādā formā: <ph name="USER_WHITELIST_ENTRY_FORMAT" />, piemēram, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Lai ļautu neregulāriem lietotājiem izmantot domēnu, lietojiet ierakstus formā <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 
       Ja politika nav konfigurēta, nav nekādu ierobežojumu attiecībā uz to, kuriem lietotājiem ir atļauts pierakstīties. Ņemiet vērā, ka jaunu lietotāju izveidei joprojām ir atbilstoši jākonfigurē politika <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
-<translation id="7123266440503901785"><ph name="PRODUCT_NAME" /> sniedz iespēju droši atjaunināt un instalēt paplašinājumus. Tomēr dažos paplašinājumos, kas netiek viesoti Chrome interneta veikalā, saturs var būt aizsargāts tikai ar nedrošiem parakstīšanas vai jaukšanas algoritmiem, piemēram, SHA1. Ja šī politika ir atspējota, pārlūkā Chrome netiek atļauts instalēt un atjaunināt šādus paplašinājumus (līdz paplašinājumu izstrādātāji pārveido tos, uzlabojot algoritmus). Ja šī politika ir iespējota, tiek atļauts instalēt un atjaunināt šādus paplašinājumus.
-
-          Ja politikai nav iestatīta vērtība, pēc noklusējuma tiek lietota iespējošanas izturēšanās.
-          Sākot no versijas <ph name="PRODUCT_NAME" /> 75, ja vērtība nav iestatīta, tiek lietota atspējošanas izturēšanās.
-
-          Sākot no versijas <ph name="PRODUCT_NAME" /> 77, šī politika netiek ievērota un tiek uzskatīta par atspējotu.</translation>
 <translation id="7126716959063786004">Procesu beigšanas iespējošana uzdevumu pārvaldniekā</translation>
 <translation id="7127892035367404455">Atritināšana uz mērķa versiju</translation>
 <translation id="713121532817834879">Šī politika ir vietrādis URL, kas norāda uz XML failu tādā pašā formātā kā Internet Explorer politika <ph name="IEEM_SITELIST_POLICY" />. Kārtulas tiek ielādētas no XML faila, nekopīgojot šīs kārtulas ar pārlūkprogrammu Internet Explorer.
@@ -3448,6 +3489,9 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šai politikai ir iestatīta vērtība “False”, informācija, kas var tikt izmantota iekārtu identificēšanai, netiek apkopota.
 
       Šī politika ir spēkā tikai tad, ja ir iespējots paplašinājums <ph name="CHROME_REPORTING_EXTENSION_NAME" /> un ierīce ir reģistrēta pakalpojumā <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="7359307926583593395">
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības nebūs vienādas, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+      </translation>
 <translation id="737655323154569539">Ierobežo drukāšanas lapas izmēru. Ja politika nav iestatīta, tiek uzskatīts, ka ierobežojuma nav.</translation>
 <translation id="7389872682701720082">Ja šis iestatījums tiek iespējots, vienmēr tiek palaisti spraudņi, kas nav novecojuši.
 
@@ -3784,6 +3828,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Skatiet arī politikas CookiesAllowedForUrls un CookiesSessionOnlyForUrls. Ņemiet vērā, ka šo trīs politiku URL rakstiem ir savstarpēji jāatbilst, jo politiku prioritāte nav norādīta.</translation>
 <translation id="8099880303030573137">Aizkave līdz dīkstāvei, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="8101381354936029836">Politikas atomiskā grupa:</translation>
 <translation id="8102913158860568230">Noklusējuma Mediastream iestatījums</translation>
 <translation id="8104186956182795918">Ļauj iestatīt, vai vietnēm ir atļauts attēlot attēlus. Attēlu attēlošana var tikt atļauta visām vietnēm vai noraidīta visām vietnēm.
 
@@ -3859,6 +3904,7 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja šī politika nav iestatīta, netiek lietots neviens politikas URLBlacklist melnā saraksta izņēmums.</translation>
 <translation id="8176035528522326671">Atļaut korporatīvajam lietotājam būt tikai primārajam vairākprofilu lietotājam (noklusējuma rīcība attiecībā uz uzņēmuma pārvaldītiem lietotājiem)</translation>
 <translation id="8183108371184777472">Novērst pārlūka loga atvēršanu</translation>
+<translation id="8186911565834244165">Atļaut lietotāju atsauksmes</translation>
 <translation id="8214600119442850823">Konfigurē paroļu pārvaldnieku.</translation>
 <translation id="8217516105848565518">Šī politika ir novecojusi. Tās vietā, lūdzu, izmantojiet RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Standartā TLS iespējot RC4 šifru komplektus</translation>
@@ -3991,6 +4037,15 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8489964335640955763">PluginVm</translation>
 <translation id="8493645415242333585">Atspējo pārlūkošanas vēstures saglabāšanu</translation>
 <translation id="8499172469244085141">Noklusējuma iestatījumi (lietotāji var ignorēt)</translation>
+<translation id="849962487677588458">Šī politika ir novecojusi, un to ir paredzēts noņemt no pārlūka Chrome 78 bez aizvietošanas.
+
+      Šī politika iespējo protokolu HTTP/0.9 portos, kas nav 80 (HTTP) un 443 (HTTPS).
+
+      Pēc noklusējuma šī politika ir atspējota. Ja tā tiek iespējota, lietotājiem var rasties drošības problēma: https://crbug.com/600352.
+
+      Šī politika ir paredzēta, lai uzņēmumi varētu migrēt esošos serverus no protokola HTTP/0.9. Vēlāk tā tiks noņemta.
+
+      Ja šī politika nav iestatīta, protokols HTTP/0.9 tiks atspējots portos, kas nav noklusējuma porti.</translation>
 <translation id="8507835864888987300">Iestata automātisko atjauninājumu mērķa versiju.
 
       Norāda mērķa versijas prefiksu, uz kuru jāatjaunina <ph name="PRODUCT_OS_NAME" />. Ja ierīcē darbojas versija, kura ir vecāka par norādīto prefiksu, tiks veikta atjaunināšana uz jaunāko versiju ar norādīto prefiksu. Ja ierīcē jau darbojas jaunāka versija, rezultāts būs atkarīgs no politikas “<ph name="DEVICE_ROLLBACK_TO_TARGET_VERSION_POLICY_NAME" />” vērtības. Prefiksa formāta komponentu nozīme ir paskaidrota tālāk minētajā piemērā.
@@ -4119,12 +4174,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, servera kanoniskais nosaukums tiks noteikts, izmantojot CNAME meklēšanu.</translation>
 <translation id="8764477907716150749">Šī politika ir paredzēta tikai <ph name="PRODUCT_NAME" /> iekšējai lietošanai.</translation>
-<translation id="8765776988041674792">Konfigurē paroles maiņas URL (tikai HTTP un HTTPS shēmās). Paroļu aizsardzības pakalpojums novirzīs lietotājus uz šo URL, lai nomainītu paroli pēc brīdinājuma pārlūkprogrammā.
-      Lai pārlūkprogramma <ph name="PRODUCT_NAME" /> varētu pareizi tvert jaunās paroles ciparnospiedumu attiecīgajā paroles maiņas lapā, paroles maiņas lapai noteikti ir jāatbilst šeit norādītajām valdīnijām: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Ja šis iestatījums ir iespējots, paroļu aizsardzības pakalpojums novirza lietotājus uz šo URL, lai nomainītu paroli pēc brīdinājuma pārlūkprogrammā.
-      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, paroļu aizsardzības pakalpojums novirza lietotājus uz vietni https://myaccounts.google.com, lai nomainītu paroli.
-      Šī politika ir pieejama tikai Windows instancēs, kas ir savienotas ar <ph name="MS_AD_NAME" /> domēnu, vai Windows 10 Pro vai Enterprise instancēs, kas ir reģistrētas ierīču pārvaldībai.</translation>
 <translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8800453707696044281">Iestatīt pielāgotu akumulatora uzlādes līmeni (procentos), kurā ir jāpārtrauc uzlāde</translation>
 <translation id="8801680448782904838">Paziņot lietotājam, ka ir ieteicama vai nepieciešama pārlūka atkārtota palaišana vai ierīces restartēšana</translation>
@@ -4169,6 +4218,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
       Ja iespējosiet vai atspējosiet šo iestatījumu, lietotāji nevarēs mainīt vai ignorēt šo iestatījumu produktā <ph name="PRODUCT_NAME" />.
 
       Ja šis iestatījums nav iestatīts, lietotājs var izlemt, vai izmantot šo funkciju.</translation>
+<translation id="8871974300055371298">Satura iestatījumi</translation>
 <translation id="8876188741456358123">Tiek ignorēts noklusējuma divpusējas drukāšanas režīms. Ja režīms nav pieejams, šī politika tiek ignorēta.</translation>
 <translation id="8882006618241293596">Spraudņa <ph name="FLASH_PLUGIN_NAME" /> bloķēšana šajās vietnēs</translation>
 <translation id="8906768759089290519">Iespējot viesa režīmu</translation>
@@ -4282,6 +4332,12 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>
+<translation id="91196902572559194">Šī politika ļauj Google asistentam klausīties balss aktivizēšanas frāzi.
+
+      Ja politika ir iespējota, Google asistents klausīsies balss aktivizēšanas frāzi.
+      Ja politika ir atspējota, Google asistents neklausīsies balss aktivizēšanas frāzi.
+      Ja politika nav iestatīta, lietotāji var izlemt, vai ļaut Google asistentam klausīties balss aktivizēšanas frāzi.
+      </translation>
 <translation id="9123211093995421438">Norāda minimālo <ph name="PRODUCT_OS_NAME" /> versiju skaitu, cik atļauts atritināt no stabilās versijas.
 
       Noklusējuma iestatījums ir “0” patērētāju ierīcēm un “4” (aptuveni seši mēneši) uzņēmumu reģistrētām ierīcēm.

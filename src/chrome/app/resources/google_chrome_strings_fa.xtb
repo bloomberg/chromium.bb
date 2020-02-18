@@ -7,6 +7,7 @@
 <translation id="1051826050538111504">‏نرم‌افزار مضری در رایانه‌تان وجود دارد. Chrome می‌تواند آن را بردارد، تنظیمات را بازیابی کند و افزونه‌ها را غیرفعال کند تا عملکرد مرورگرتان دوباره عادی شود.</translation>
 <translation id="1065672644894730302">تنظیمات برگزیده شما را نمی‌توان خواند. بعضی ویژگی‌ها ممکن است در دسترس نباشند و تغییرات تنظیمات برگزیده ذخیره نخواهد شد.</translation>
 <translation id="1088300314857992706">‏<ph name="USER_EMAIL_ADDRESS" /> قبلاً از Chrome استفاده می‌کرد</translation>
+<translation id="1097330777386562916">‏هنگام خروج از Chrome، کوکی‌‌ها و داده‌های سایت پاک شوند</translation>
 <translation id="1104959162601287462">‏درباره سیستم عامل &amp;Chrome</translation>
 <translation id="110877069173485804">‏این Chrome شماست</translation>
 <translation id="1142745911746664600">‏به‌روزرسانی Chrome امکان‌پذیر نیست</translation>
@@ -21,18 +22,17 @@
 <translation id="1457721931618994305">‏به‌روزرسانی Google Chrome…</translation>
 <translation id="1469002951682717133">‏را‌ه‌انداز برنامه Chrome</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
-<translation id="1585657529869845941">درصورتی‌که نمایان شد، روی <ph name="BEGIN_BOLD" />به‌هرصورت جابه‌جایی<ph name="END_BOLD" /> کلیک کنید</translation>
 <translation id="1587223624401073077">‏Google Chrome درحال استفاده از دوربین شما است.</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک است، بنابراین Chrome آن را مسدود کرده ست.</translation>
 <translation id="1590588151039584890">‏برای به‌روزرسانی، Chrome باید در این رایانه متوقف شود. شاید با این کار، تغییرات ذخیره‌نشده کاربرانی که در این رایانه به سیستم وارد شده‌اند، از دست برود.</translation>
 <translation id="1619887657840448962">‏برای ایمن‌تر کردن Chrome، افزونه زیر را که در <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> فهرست نشده است و ممکن است بدون اطلاع شما اضافه شده باشد، غیرفعال کردیم.</translation>
 <translation id="1628000112320670027">‏دریافت کمک برای Chrome</translation>
+<translation id="1635734105302489219">‏هنگام خروج از Chrome، کوکی‌ها را پاک می‌کنید. برای اینکه همگام‌سازی ادامه یابد، این <ph name="COOKIE_SETTINGS_LINK" /> را تغییر دهید.</translation>
 <translation id="1662639173275167396">‏ساخت سیستم‌عامل Chrome به کمک <ph name="BEGIN_LINK_CROS_OSS" />نرم‌افزار منبع آزاد<ph name="END_LINK_CROS_OSS" /> دیگری (همان‌گونه که <ph name="BEGIN_LINK_LINUX_OSS" />Linux (بتا)<ph name="END_LINK_LINUX_OSS" /> است)، امکان‌پذیر شده است.</translation>
 <translation id="1674870198290878346">‏باز کردن پیوند در پنجره &amp;ناشناس Chrome</translation>
 <translation id="1682634494516646069">‏Google Chrome نمی‌تواند مسیر داده‌های خود را بخواند یا در آن بنویسد: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏Google Chrome یک مرورگر وب است که برنامه‌های کاربردی و صفحات وب را در یک چشم به هم زدن اجرا و باز می‌کند. استفاده از آن سریع و آسان است و همیشه در دسترس است. با برنامه‌های حفاظت در برابر فیشینگ و بدافزار تعبیه شده در Google Chrome، وب را با امنیت بیشتر مرور کنید.</translation>
 <translation id="1713301662689114961">{0,plural, =1{‏Chrome یک ساعت دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome # ساعت دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome # ساعت دیگر راه‌اندازی مجدد می‌شود}}</translation>
-<translation id="1718131156967340976">‏انتخاب <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="1734234790201236882">‏Chrome این گذرواژه را در حساب Google شما ذخیره می‌کند. لازم نیست آن را به خاطر بسپارید.</translation>
 <translation id="174539241580958092">‏به دلیل وجود خطا در ورود به سیستم، Google Chrome قادر به همگام‌سازی داده‌های شما نبود.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -92,6 +92,7 @@
 
 برای دستورالعمل‌های بیشتر، لطفاً رایانامه‌تان (<ph name="ACCOUNT_EMAIL" />) را بررسی کنید.</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
+<translation id="3340978935015468852">تنظیمات</translation>
 <translation id="3360895254066713204">‏راهنمای Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{‏Chrome هم‌اکنون راه‌اندازی مجدد می‌شود}=1{‏Chrome ‏۱ ثانیه دیگر راه‌اندازی مجدد می‌شود}one{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}other{‏Chrome ‏# ثانیه دیگر راه‌اندازی مجدد می‌شود}}</translation>
 <translation id="3395323229510056640">‏دریافت کمک از سیستم عامل Chrome</translation>
@@ -99,7 +100,6 @@
 <translation id="3398288718845740432">‏پنهان در منوی Chrome</translation>
 <translation id="3451115285585441894">‏افزودن به Chrome...</translation>
 <translation id="345171907106878721">‏افرودن خودتان به Chrome</translation>
-<translation id="3479552764303398839">اکنون نه</translation>
 <translation id="34857402635545079">‏همچنین داده‌ها از Chrome پاک شود (<ph name="URL" />)</translation>
 <translation id="3503306920980160878">‏Chrome برای هم‌رسانی مکانتان با این سایت باید به مکان شما دسترسی داشته باشد</translation>
 <translation id="3576528680708590453">‏سرپرست سیستم برای باز شدن مرورگری دیگر جهت دسترسی به <ph name="TARGET_URL_HOSTNAME" />، Google Chrome را پیکربندی کرده است.</translation>
@@ -114,8 +114,6 @@
 <translation id="386202838227397562">‏لطفاً همه پنجره‌های Google Chrome را ببندید و دوباره امتحان کنید.</translation>
 <translation id="3873044882194371212">‏باز کردن پیوند در پنجره &amp;ناشناس Chrome</translation>
 <translation id="3889417619312448367">‏حذف نصب Google Chrome</translation>
-<translation id="3898493977366060150">‏مرور وب با هوشمندی‌های Google</translation>
-<translation id="4028693306634653894">‏دسترسی سریع‌تر به Chrome</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
 <translation id="4053720452172726777">‏‫سفارشی کردن و کنترل Google Chrome</translation>
 <translation id="4143243756087420366">‏نام و تصویر Chrome</translation>
@@ -127,8 +125,7 @@
 <translation id="4251625577313994583">‏نصب Chrome در iPhone</translation>
 <translation id="4293420128516039005">‏برای همگام‌سازی و شخصی‌سازی Chrome در همه دستگاه‌هایتان، به سیستم وارد شوید</translation>
 <translation id="4328355335528187361">‏Google Chrome نسخه Dev‏، (mDNS-In)</translation>
-<translation id="4331809312908958774">Chrome OS
-</translation>
+<translation id="4331809312908958774">‏سیستم عامل Chrome</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -200,7 +197,6 @@
 <translation id="6750954913813541382">‏Chrome برای رفع غلط‌های املایی، نوشتاری را که در مرورگر تایپ می‌کنید به Google ارسال می‌کند</translation>
 <translation id="677276454032249905">‏درهرصورت از Chrome خارج می‌شوید؟</translation>
 <translation id="683440813066116847">‏قانون ترافیک ورودی برای Google Chrome Canary به منظور اجازه به ترافیک mDNS .</translation>
-<translation id="686561893457936865">‏Chrome را همه‌ جا ببرید</translation>
 <translation id="6885412569789873916">‏برنامه‌های Chrome نسخه بتا</translation>
 <translation id="6943584222992551122">‏داده‌های محصول مرور این فرد از این دستگاه حذف می‌شود. برای بازیابی داده‌ها، با نام <ph name="USER_EMAIL" /> به سیستم Chrome وارد شوید.</translation>
 <translation id="6967962315388095737">‏قانون ترافیک ورودی Google Chrome نسخه بتا برای امکان دادن به ترافیک mDNS.</translation>
@@ -237,7 +233,6 @@
 <translation id="7808348361785373670">‏حذف از Chrome...</translation>
 <translation id="7825851276765848807">‏بدلیل خطای نامشخص، نصب ناموفق بود. لطفاً دوباره Google Chrome را بارگیری کنید.</translation>
 <translation id="7855730255114109580">‏Google Chrome به‌روز است</translation>
-<translation id="7888186132678118370">‏پین کردن Chrome به نوار وظیفه شما</translation>
 <translation id="7890208801193284374">‏اگر رایانه‌ای را به صورت مشترک استفاده می‌کنید، دوستان و خانواده می‌توانند به صورت جداگانه مرور کنند و Chrome را به صورتی که مایلند تنظیم کنند.</translation>
 <translation id="7896673875602241923">‏شخصی قبلاً به‌عنوان <ph name="ACCOUNT_EMAIL_LAST" /> به سیستم Chrome در این رایانه وارد شده است. برای اینکه اطلاعاتتان جدا حفظ شود، لطفاً کاربر Chrome جدیدی ایجاد کنید.</translation>
 <translation id="7908168227788431038">‏تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، Google Chrome را راه‌اندازی مجدد کنید.</translation>
@@ -286,6 +281,5 @@
 <translation id="911206726377975832">داده‌های مرور شما نیز حذف شود؟</translation>
 <translation id="9138603949443464873">‏برای اعمال تغییراتتان، Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="919706545465235479">‏به‌روزرسانی Chrome برای شروع همگام‌سازی</translation>
-<translation id="924447568950697217">‏تنظیم Chrome به‌عنوان مرورگر پیش‌فرض</translation>
 <translation id="989369509083708165">‏Google Chrome مرورگر پیش‌فرضتان است</translation>
 </translationbundle>

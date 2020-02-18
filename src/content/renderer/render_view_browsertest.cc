@@ -29,6 +29,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -171,19 +172,19 @@ class WebUITestWebUIControllerFactory : public WebUIControllerFactory {
  public:
   std::unique_ptr<WebUIController> CreateWebUIControllerForURL(
       WebUI* web_ui,
-      const GURL& url) const override {
+      const GURL& url) override {
     return nullptr;
   }
   WebUI::TypeID GetWebUIType(BrowserContext* browser_context,
-                             const GURL& url) const override {
+                             const GURL& url) override {
     return WebUI::kNoWebUI;
   }
   bool UseWebUIForURL(BrowserContext* browser_context,
-                      const GURL& url) const override {
+                      const GURL& url) override {
     return HasWebUIScheme(url);
   }
   bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) const override {
+                              const GURL& url) override {
     return HasWebUIScheme(url);
   }
 };
@@ -711,10 +712,9 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchCredentialsMode(
-      network::mojom::FetchCredentialsMode::kInclude);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetCredentialsMode(network::mojom::CredentialsMode::kInclude);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(requestor_origin);
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -901,8 +901,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
 
   // Empty url should never fork.
   blink::WebURLRequest request(empty_url);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -925,8 +925,8 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
 
   // about:blank should never fork.
   blink::WebURLRequest request(blank_url);
-  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
-  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetMode(network::mojom::RequestMode::kNavigate);
+  request.SetRedirectMode(network::mojom::RedirectMode::kManual);
   request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
   request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
@@ -2396,7 +2396,7 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
         EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
         // Swaps the main frame.
-        frame()->OnMessageReceived(FrameMsg_SwapOut(
+        frame()->OnMessageReceived(UnfreezableFrameMsg_SwapOut(
             frame()->GetRoutingID(), 1, false, FrameReplicationState()));
 
         was_callback_run = true;

@@ -13,10 +13,11 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"
@@ -49,6 +50,7 @@ class BrowserState;
 class NavigationManager;
 class SessionCertificatePolicyCache;
 class WebFrame;
+class WebFramesManager;
 class WebInterstitial;
 class WebStateDelegate;
 class WebStateInterfaceProvider;
@@ -152,6 +154,11 @@ class WebState : public base::SupportsUserData {
   virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
 
+  // Gets the WebFramesManager associated with this WebState. Can never return
+  // null.
+  virtual const WebFramesManager* GetWebFramesManager() const = 0;
+  virtual WebFramesManager* GetWebFramesManager() = 0;
+
   // Gets the SessionCertificatePolicyCache for this WebState.  Can never return
   // null.
   virtual const SessionCertificatePolicyCache*
@@ -248,39 +255,29 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
-  // Callback used to handle script commands.
-  // The callback must return true if the command was handled, and false
-  // otherwise.
-  // In particular the callback must return false if the command is unexpected
-  // or ill-formatted.
-  // The first parameter is the content of the command, the second parameter is
-  // the URL of the page, the third parameter is a bool indicating if the
-  // user is currently interacting with the page, the fourth parameter indicates
-  // if the message was sent from the main frame.
-  // The fifth parameter is the frame that sent the message. If frame messaging
-  // is not supported, its value will always be null (see
-  // |CRWWebController frameBecameAvailableWithMessage:|, and javascript
-  // function isFrameMessagingSupported_ for details).
-  // TODO(crbug.com/881811): remove the fourth parameter indicating if message
-  // has been sent from main frame once frame messaging is fully enabled.
-  // TODO(crbug.com/881813): remove the second parameter indicating the URL
-  // of the main frame.
-  // TODO(crbug.com/881816): Update comment once WebFrame cannot be null.
-  typedef base::RepeatingCallback<bool(const base::DictionaryValue&,
-                                       const GURL&,
-                                       bool,
-                                       bool,
-                                       web::WebFrame*)>
-      ScriptCommandCallback;
-
-  // Registers a callback that will be called when a command matching
-  // |command_prefix| is received.
-  virtual void AddScriptCommandCallback(const ScriptCommandCallback& callback,
-                                        const std::string& command_prefix) = 0;
-
-  // Removes the callback associated with |command_prefix|.
-  virtual void RemoveScriptCommandCallback(
-      const std::string& command_prefix) = 0;
+  // Callback used to handle script commands. |message| is the JS message sent
+  // from the |sender_frame| in the page, |page_url| is the URL of page's main
+  // frame, |user_is_interacting| indicates if the user is interacting with the
+  // page.
+  // TODO(crbug.com/881813): remove |page_url|.
+  using ScriptCommandCallbackSignature =
+      void(const base::DictionaryValue& message,
+           const GURL& page_url,
+           bool user_is_interacting,
+           web::WebFrame* sender_frame);
+  using ScriptCommandCallback =
+      base::RepeatingCallback<ScriptCommandCallbackSignature>;
+  using ScriptCommandSubscription =
+      base::CallbackList<ScriptCommandCallbackSignature>::Subscription;
+  // Registers |callback| for JS message whose 'command' matches
+  // |command_prefix|. The returned ScriptCommandSubscription should be stored
+  // by the caller. When the description object is destroyed, it will unregister
+  // |callback| if this WebState is still alive, and do nothing if this WebState
+  // is already destroyed. Therefore if the caller want to stop receiving JS
+  // messages it can just destroy the subscription object.
+  virtual std::unique_ptr<ScriptCommandSubscription> AddScriptCommandCallback(
+      const ScriptCommandCallback& callback,
+      const std::string& command_prefix) WARN_UNUSED_RESULT = 0;
 
   // Returns the current CRWWebViewProxy object.
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;
@@ -321,7 +318,12 @@ class WebState : public base::SupportsUserData {
   virtual void SetHasOpener(bool has_opener) = 0;
 
   // Callback used to handle snapshots. The parameter is the snapshot image.
-  typedef base::OnceCallback<void(const gfx::Image&)> SnapshotCallback;
+  typedef base::RepeatingCallback<void(const gfx::Image&)> SnapshotCallback;
+
+  // Returns whether TakeSnapshot() can be executed.  The API may be disabled if
+  // the WKWebView IPC mechanism is blocked due to an outstanding JavaScript
+  // dialog.
+  virtual bool CanTakeSnapshot() const = 0;
 
   // Takes a snapshot of this WebState with |rect|. |rect| should be specified
   // in the coordinate system of the view returned by GetView(). |callback| is

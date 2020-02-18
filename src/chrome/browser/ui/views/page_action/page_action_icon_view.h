@@ -51,6 +51,8 @@ class PageActionIconView : public IconLabelBubbleView {
     virtual const OmniboxView* GetOmniboxView() const;
   };
 
+  ~PageActionIconView() override;
+
   // Updates the color of the icon, this must be set before the icon is drawn.
   void SetIconColor(SkColor icon_color);
 
@@ -81,7 +83,6 @@ class PageActionIconView : public IconLabelBubbleView {
                      int command_id,
                      Delegate* delegate,
                      const gfx::FontList& = gfx::FontList());
-  ~PageActionIconView() override;
 
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const override;
@@ -125,7 +126,6 @@ class PageActionIconView : public IconLabelBubbleView {
   // IconLabelBubbleView:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnTouchUiChanged() override;
-  void UpdateBorder() override;
 
   // Updates the icon image after some state has changed.
   virtual void UpdateIconImage();
@@ -143,6 +143,8 @@ class PageActionIconView : public IconLabelBubbleView {
   Delegate* delegate() const { return delegate_; }
 
  private:
+  void UpdateBorder();
+
   // The size of the icon image (excluding the ink drop).
   int icon_size_ = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
 

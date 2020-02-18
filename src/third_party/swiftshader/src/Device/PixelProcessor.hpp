@@ -15,6 +15,7 @@
 #ifndef sw_PixelProcessor_hpp
 #define sw_PixelProcessor_hpp
 
+#include "Color.hpp"
 #include "Context.hpp"
 #include "RoutineCache.hpp"
 
@@ -24,22 +25,24 @@ namespace sw
 	class Rasterizer;
 	struct Texture;
 	struct DrawData;
+	struct Primitive;
 
 	class PixelProcessor
 	{
 	public:
-		struct States
+		struct States : Memset<States>
 		{
-			unsigned int computeHash();
+			States() : Memset(this, 0) {}
 
-			int shaderID;
+			uint32_t computeHash();
+
+			uint64_t shaderID;
 
 			VkCompareOp depthCompareMode;
 			bool depthWriteEnable;
 			bool quadLayoutDepthBuffer;
 
 			bool stencilActive;
-			bool twoSidedStencil;
 			VkStencilOpState frontStencil;
 			VkStencilOpState backStencil;
 
@@ -62,14 +65,12 @@ namespace sw
 			unsigned int multiSampleMask;
 			bool alphaToCoverage;
 			bool centroid;
-			bool frontFaceCCW;
+			VkFrontFace frontFace;
 			VkFormat depthFormat;
 		};
 
 		struct State : States
 		{
-			State();
-
 			bool operator==(const State &state) const;
 
 			int colorWriteActive(int index) const
@@ -77,7 +78,7 @@ namespace sw
 				return (colorWriteMask >> (index * 4)) & 0xF;
 			}
 
-			unsigned int hash;
+			uint32_t hash;
 		};
 
 		struct Stencil

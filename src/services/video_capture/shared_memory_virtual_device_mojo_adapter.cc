@@ -85,7 +85,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::RequestFrameBuffer(
     return;
   }
 
-  if (!base::ContainsValue(known_buffer_ids_, buffer_id)) {
+  if (!base::Contains(known_buffer_ids_, buffer_id)) {
     if (receiver_.is_bound()) {
       media::mojom::VideoBufferHandlePtr buffer_handle =
           media::mojom::VideoBufferHandle::New();
@@ -126,7 +126,7 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
     ::media::mojom::VideoFrameInfoPtr frame_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Unknown buffer ID.
-  if (!base::ContainsValue(known_buffer_ids_, buffer_id)) {
+  if (!base::Contains(known_buffer_ids_, buffer_id)) {
     return;
   }
 

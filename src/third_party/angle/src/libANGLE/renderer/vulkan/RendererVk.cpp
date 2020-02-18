@@ -30,8 +30,8 @@
 #include "libANGLE/renderer/vulkan/VertexArrayVk.h"
 #include "libANGLE/renderer/vulkan/vk_caps_utils.h"
 #include "libANGLE/renderer/vulkan/vk_format_utils.h"
+#include "libANGLE/trace.h"
 #include "platform/Platform.h"
-#include "third_party/trace_event/trace_event.h"
 
 // Consts
 namespace
@@ -47,9 +47,6 @@ namespace rx
 
 namespace
 {
-// We currently only allocate 2 uniform buffer per descriptor set, one for the fragment shader and
-// one for the vertex shader.
-constexpr size_t kUniformBufferDescriptorsPerDescriptorSet = 2;
 // Update the pipeline cache every this many swaps (if 60fps, this means every 10 minutes)
 constexpr uint32_t kPipelineCacheVkUpdatePeriod = 10 * 60 * 60;
 // Wait a maximum of 10s.  If that times out, we declare it a failure.
@@ -473,7 +470,7 @@ angle::Result WaitFences(vk::Context *context,
         }
         ANGLE_VK_TRY(context, result);
 
-        fences->back().reset(context->getDevice());
+        context->getRenderer()->resetSharedFence(&fences->back());
         fences->pop_back();
     }
 
@@ -512,6 +509,8 @@ RendererVk::~RendererVk()
 void RendererVk::onDestroy(vk::Context *context)
 {
     (void)cleanupGarbage(context, true);
+
+    mFenceRecycler.destroy(mDevice);
 
     mPipelineLayoutCache.destroy(mDevice);
     mDescriptorSetLayoutCache.destroy(mDevice);
@@ -889,6 +888,7 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
     enabledDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
     initFeatures(deviceExtensionNames);
+    OverrideFeaturesWithDisplayState(&mFeatures, displayVk->getState());
     mFeaturesInitialized = true;
 
     // Selectively enable KHR_MAINTENANCE1 to support viewport flipping.
@@ -950,6 +950,10 @@ angle::Result RendererVk::initializeDevice(DisplayVk *displayVk, uint32_t queueF
     enabledFeatures.features.independentBlend    = mPhysicalDeviceFeatures.independentBlend;
     enabledFeatures.features.robustBufferAccess  = mPhysicalDeviceFeatures.robustBufferAccess;
     enabledFeatures.features.samplerAnisotropy   = mPhysicalDeviceFeatures.samplerAnisotropy;
+    enabledFeatures.features.vertexPipelineStoresAndAtomics =
+        mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics;
+    enabledFeatures.features.fragmentStoresAndAtomics =
+        mPhysicalDeviceFeatures.fragmentStoresAndAtomics;
     if (!vk::CommandBuffer::ExecutesInline())
     {
         enabledFeatures.features.inheritedQueries = mPhysicalDeviceFeatures.inheritedQueries;
@@ -1106,12 +1110,20 @@ std::string RendererVk::getRendererDescription() const
 gl::Version RendererVk::getMaxSupportedESVersion() const
 {
     // Current highest supported version
-    gl::Version maxVersion = gl::Version(3, 0);
+    gl::Version maxVersion = gl::Version(3, 1);
 
-#if ANGLE_VULKAN_CONFORMANT_CONFIGS_ONLY
-    // TODO: Disallow ES 3.0 until supported. http://crbug.com/angleproject/2950
-    maxVersion = gl::Version(2, 0);
-#endif
+    // Limit to ES3.0 if there are any blockers for 3.1.
+
+    // ES3.1 requires at least one atomic counter buffer and four storage buffers in compute.
+    // Atomic counter buffers are emulated with storage buffers, so if Vulkan doesn't support at
+    // least 5 storage buffers in compute, we cannot support 3.1.
+    if (mPhysicalDeviceProperties.limits.maxPerStageDescriptorStorageBuffers <
+        gl::limits::kMinimumComputeStorageBuffers + 1)
+    {
+        maxVersion = std::min(maxVersion, gl::Version(3, 0));
+    }
+
+    // Limit to ES2.0 if there are any blockers for 3.0.
 
     // If the command buffer doesn't support queries, we can't support ES3.
     if (!vk::CommandBuffer::SupportsQueries(mPhysicalDeviceFeatures))
@@ -1127,13 +1139,27 @@ gl::Version RendererVk::getMaxSupportedESVersion() const
         maxVersion = std::max(maxVersion, gl::Version(2, 0));
     }
 
+    // If vertexPipelineStoresAndAtomics is not supported, we can't currently support transform
+    // feedback.  TODO(syoussefi): this should be conditioned to the extension not being present as
+    // well, when that code path is implemented.  http://anglebug.com/3206
+    if (!mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics)
+    {
+        maxVersion = std::max(maxVersion, gl::Version(2, 0));
+    }
+
     return maxVersion;
+}
+
+gl::Version RendererVk::getMaxConformantESVersion() const
+{
+    // 3.0 is needed to pass all of dEQP GLES 2.0 tests despite it not being fully conformant.
+    return std::min(getMaxSupportedESVersion(), gl::Version(3, 0));
 }
 
 void RendererVk::initFeatures(const ExtensionNameList &deviceExtensionNames)
 {
-// Use OpenGL line rasterization rules by default.
-// TODO(jmadill): Fix Android support. http://anglebug.com/2830
+    // Use OpenGL line rasterization rules by default.
+    // TODO(jmadill): Fix Android support. http://anglebug.com/2830
 #if defined(ANGLE_PLATFORM_ANDROID)
     mFeatures.basicGLLineRasterization.enabled = false;
 #else
@@ -1201,6 +1227,13 @@ void RendererVk::initFeatures(const ExtensionNameList &deviceExtensionNames)
         mFeatures.supportsShaderStencilExport.enabled = true;
     }
 
+    // TODO(syoussefi): when the code path using the extension is implemented, this should be
+    // conditioned to the extension not being present as well.  http://anglebug.com/3206
+    if (mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics)
+    {
+        mFeatures.emulateTransformFeedback.enabled = true;
+    }
+
     if (IsLinux() && IsIntel(mPhysicalDeviceProperties.vendorID))
     {
         mFeatures.disableFifoPresentMode.enabled = true;
@@ -1221,9 +1254,20 @@ void RendererVk::initFeatures(const ExtensionNameList &deviceExtensionNames)
         mFeatures.forceNonZeroScissor.enabled = true;
     }
 
+    if (IsIntel(mPhysicalDeviceProperties.vendorID) ||
+        (IsWindows() && IsAMD(mPhysicalDeviceProperties.vendorID)))
+    {
+        mFeatures.perFrameWindowSizeQuery.enabled = true;
+    }
+
     if (IsAndroid() && IsQualcomm(mPhysicalDeviceProperties.vendorID))
     {
         mFeatures.forceD16TexFilter.enabled = true;
+    }
+
+    if (IsAndroid() && IsQualcomm(mPhysicalDeviceProperties.vendorID))
+    {
+        mFeatures.disableFlippingBlitWithCommand.enabled = true;
     }
 }
 
@@ -1287,19 +1331,6 @@ const gl::Limitations &RendererVk::getNativeLimitations() const
 {
     ensureCapsInitialized();
     return mNativeLimitations;
-}
-
-uint32_t RendererVk::getMaxUniformBlocks() const
-{
-    return std::min<uint32_t>(mPhysicalDeviceProperties.limits.maxDescriptorSetUniformBuffers,
-                              gl::IMPLEMENTATION_MAX_UNIFORM_BUFFER_BINDINGS);
-}
-
-uint32_t RendererVk::getMaxActiveTextures() const
-{
-    // TODO(lucferron): expose this limitation to GL in Context Caps
-    return std::min<uint32_t>(mPhysicalDeviceProperties.limits.maxDescriptorSetSamplers,
-                              gl::IMPLEMENTATION_MAX_ACTIVE_TEXTURES);
 }
 
 angle::Result RendererVk::getDescriptorSetLayout(
@@ -1425,13 +1456,39 @@ angle::Result RendererVk::queueWaitIdle(vk::Context *context)
 
 VkResult RendererVk::queuePresent(const VkPresentInfoKHR &presentInfo)
 {
+    ANGLE_TRACE_EVENT0("gpu.angle", "RendererVk::queuePresent");
+
     std::lock_guard<decltype(mQueueMutex)> lock(mQueueMutex);
-    return vkQueuePresentKHR(mQueue, &presentInfo);
+
+    {
+        ANGLE_TRACE_EVENT0("gpu.angle", "vkQueuePresentKHR");
+        return vkQueuePresentKHR(mQueue, &presentInfo);
+    }
 }
 
 Serial RendererVk::nextSerial()
 {
     return mQueueSerialFactory.generate();
+}
+
+angle::Result RendererVk::newSharedFence(vk::Context *context,
+                                         vk::Shared<vk::Fence> *sharedFenceOut)
+{
+    vk::Fence fence;
+    if (mFenceRecycler.empty())
+    {
+        VkFenceCreateInfo fenceCreateInfo = {};
+        fenceCreateInfo.sType             = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceCreateInfo.flags             = 0;
+        ANGLE_VK_TRY(context, fence.init(mDevice, fenceCreateInfo));
+    }
+    else
+    {
+        mFenceRecycler.fetch(mDevice, &fence);
+        ANGLE_VK_TRY(context, fence.reset(mDevice));
+    }
+    sharedFenceOut->assign(mDevice, std::move(fence));
+    return angle::Result::Continue;
 }
 
 void RendererVk::addGarbage(vk::Shared<vk::Fence> &&fence,
@@ -1508,11 +1565,6 @@ angle::Result RendererVk::cleanupGarbage(vk::Context *context, bool block)
     }
 
     return angle::Result::Continue;
-}
-
-uint32_t GetUniformBufferDescriptorCount()
-{
-    return kUniformBufferDescriptorsPerDescriptorSet;
 }
 
 }  // namespace rx

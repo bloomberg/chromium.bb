@@ -37,7 +37,7 @@ class TestPrintJob : public PrintJob {
                const content::NotificationDetails& details) override {}
 
   // All remaining functions are PrintJob implementation.
-  void Initialize(PrinterQuery* query,
+  void Initialize(std::unique_ptr<PrinterQuery> query,
                   const base::string16& name,
                   int page_count) override;
 

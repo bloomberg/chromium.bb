@@ -10,18 +10,19 @@
 #include <memory>
 #include <vector>
 
-#include "core/fxcodec/codec/ccodec_gifmodule.h"
 #include "core/fxcodec/gif/cfx_gif.h"
 #include "core/fxcodec/gif/cfx_lzwdecompressor.h"
+#include "core/fxcodec/gif/gifmodule.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
 
 class CFX_CodecMemory;
 
-class CFX_GifContext : public CodecModuleIface::Context {
+namespace fxcodec {
+
+class CFX_GifContext : public ModuleIface::Context {
  public:
-  CFX_GifContext(CCodec_GifModule* gif_module,
-                 CCodec_GifModule::Delegate* delegate);
+  CFX_GifContext(GifModule* gif_module, GifModule::Delegate* delegate);
   ~CFX_GifContext() override;
 
   void RecordCurrentPosition(uint32_t* cur_pos);
@@ -45,8 +46,8 @@ class CFX_GifContext : public CodecModuleIface::Context {
   uint32_t GetAvailInput() const;
   size_t GetFrameNum() const { return images_.size(); }
 
-  UnownedPtr<CCodec_GifModule> const gif_module_;
-  UnownedPtr<CCodec_GifModule::Delegate> const delegate_;
+  UnownedPtr<GifModule> const gif_module_;
+  UnownedPtr<GifModule::Delegate> const delegate_;
   std::vector<CFX_GifPalette> global_palette_;
   uint8_t global_pal_exp_ = 0;
   uint32_t img_row_offset_ = 0;
@@ -76,5 +77,7 @@ class CFX_GifContext : public CodecModuleIface::Context {
   void DecodingFailureAtTailCleanup(CFX_GifImage* gif_image);
   bool ScanForTerminalMarker();
 };
+
+}  // namespace fxcodec
 
 #endif  // CORE_FXCODEC_GIF_CFX_GIFCONTEXT_H_

@@ -5,9 +5,9 @@
 #include <cmath>
 
 #include "absl/types/span.h"
+#include "gtest/gtest.h"
 #include "streaming/cast/sender_report_builder.h"
 #include "streaming/cast/sender_report_parser.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace openscreen {
 namespace cast_streaming {

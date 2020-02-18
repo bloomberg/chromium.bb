@@ -9,10 +9,11 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -49,6 +50,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
+    CHECK(!is_layout_object_destroyed_);
     return *physical_fragment_;
   }
 
@@ -114,7 +116,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
    public:
     static NGPaintFragment* Next(NGPaintFragment* current) {
-      return current->next_sibling_.get();
+      return current->NextSibling();
     }
   };
   using ChildList = List<TraverseNextSibling>;
@@ -123,9 +125,11 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // is not for NGPaint. In the first phase, this means that this is a root of
   // an inline formatting context.
   NGPaintFragment* Parent() const { return parent_; }
-  NGPaintFragment* FirstChild() const { return first_child_.get(); }
-  NGPaintFragment* NextSibling() const { return next_sibling_.get(); }
-  ChildList Children() const { return ChildList(first_child_.get()); }
+  NGPaintFragment* FirstChild() const { return FirstAlive(first_child_.get()); }
+  NGPaintFragment* NextSibling() const {
+    return FirstAlive(next_sibling_.get());
+  }
+  ChildList Children() const { return ChildList(FirstChild()); }
 
   // Note, as the name implies, |IsDescendantOfNotSelf| returns false for the
   // same object. This is different from |LayoutObject::IsDescendant| but is
@@ -262,13 +266,15 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // Same as |InlineFragmentsFor()| but this function includes descendants if
   // the |layout_object| is culled (i.e., did not generate fragments.)
-  typedef void (*Callback)(NGPaintFragment*, void*);
+  template <typename Callback>
   static void InlineFragmentsIncludingCulledFor(const LayoutObject&,
-                                                Callback callback,
-                                                void* context);
+                                                Callback callback);
 
   const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
+  void LayoutObjectWillBeDestroyed();
+
+  void ClearAssociationWithLayoutObject();
 
   // Called when lines containing |child| is dirty.
   static void DirtyLinesFromChangedChild(LayoutObject* child);
@@ -288,6 +294,14 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
+  // Returns the first "alive" fragment; i.e., fragment that doesn't have
+  // destroyed LayoutObject.
+  static NGPaintFragment* FirstAlive(NGPaintFragment* fragment) {
+    while (UNLIKELY(fragment && fragment->is_layout_object_destroyed_))
+      fragment = fragment->next_sibling_.get();
+    return fragment;
+  }
+
   struct CreateContext {
     STACK_ALLOCATED();
 
@@ -301,6 +315,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
           last_fragment_map(parent_context->last_fragment_map),
           previous_instance(std::move(parent->first_child_)) {}
 
+    void SkipDestroyedPreviousInstances();
     void DestroyPreviousInstances();
 
     NGPaintFragment* parent = nullptr;
@@ -372,12 +387,43 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   };
   std::unique_ptr<NGInkOverflowModel> ink_overflow_;
 
+  // Set when the corresponding LayoutObject is destroyed.
+  unsigned is_layout_object_destroyed_ : 1;
+
   // For a line box, this indicates it is dirty. This helps to determine if the
   // fragment is re-usable when part of an inline formatting context is changed.
   // For an inline box, this flag helps to avoid traversing up to its line box
   // every time.
   unsigned is_dirty_inline_ : 1;
 };
+
+template <typename Callback>
+void NGPaintFragment::InlineFragmentsIncludingCulledFor(
+    const LayoutObject& layout_object,
+    Callback callback) {
+  DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
+
+  auto fragments = InlineFragmentsFor(&layout_object);
+  if (!fragments.IsEmpty()) {
+    for (const NGPaintFragment* fragment : fragments)
+      callback(fragment);
+    return;
+  }
+
+  // This is a culled LayoutInline. Iterate children's fragments.
+  if (const LayoutInline* layout_inline =
+          ToLayoutInlineOrNull(&layout_object)) {
+    for (LayoutObject* child = layout_inline->FirstChild(); child;
+         child = child->NextSibling()) {
+      // |layout_inline| may still have non-inline children, e.g.,
+      // 'position:absolute'. Skip them as they don't contribute to the culled
+      // rects of |layout_inline|.
+      if (!child->IsInline())
+        continue;
+      InlineFragmentsIncludingCulledFor(*child, callback);
+    }
+  }
+}
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT
     NGPaintFragment::List<NGPaintFragment::TraverseNextForSameLayoutObject>;

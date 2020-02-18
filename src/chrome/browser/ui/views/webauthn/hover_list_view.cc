@@ -79,7 +79,7 @@ std::unique_ptr<HoverButton> CreateHoverButtonForListItem(
   auto color_reference_label = std::make_unique<views::Label>(
       base::string16(), CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
   const SkColor icon_color = color_utils::DeriveDefaultIconColor(
-      color_reference_label->enabled_color());
+      color_reference_label->GetEnabledColor());
 
   auto item_image = std::make_unique<views::ImageView>();
   if (vector_icon) {
@@ -166,7 +166,7 @@ HoverListView::HoverListView(std::unique_ptr<HoverListModel> model)
 
   auto item_container = std::make_unique<views::View>();
   item_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets(),
+      views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       0 /* betweeen_child_spacing */));
 
   item_container_ = item_container.get();
@@ -222,7 +222,7 @@ void HoverListView::CreateAndAppendPlaceholderItem() {
 }
 
 void HoverListView::AddListItemView(int item_tag) {
-  CHECK(!base::ContainsKey(tags_to_list_item_views_, item_tag));
+  CHECK(!base::Contains(tags_to_list_item_views_, item_tag));
   if (placeholder_list_item_view_) {
     RemoveListItemView(*placeholder_list_item_view_);
     placeholder_list_item_view_.reset();

@@ -110,8 +110,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
       is_showing_bubble_(false),
-      tab_strip_observer_(this),
-      weak_ptr_factory_(this) {
+      tab_strip_observer_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 
@@ -126,6 +125,11 @@ ToolbarActionsBar::~ToolbarActionsBar() {
   // the order of deletion between the views and the ToolbarActionsBar.
   DCHECK(toolbar_actions_.empty())
       << "Must call DeleteActions() before destruction.";
+
+  // Make sure we don't listen to any more model changes during
+  // ToolbarActionsBar destruction.
+  model_observer_.RemoveAll();
+
   for (ToolbarActionsBarObserver& observer : observers_)
     observer.OnToolbarActionsBarDestroyed();
 }
@@ -792,6 +796,10 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   CHECK(toolbar_actions_.empty());
   CreateActions();
   ResizeDelegate(gfx::Tween::EASE_OUT);
+}
+
+void ToolbarActionsBar::OnToolbarPinnedActionsChanged() {
+  NOTREACHED();
 }
 
 void ToolbarActionsBar::OnTabStripModelChanged(

@@ -53,9 +53,13 @@
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_invalid_variable_value.h"
+#include "third_party/blink/renderer/core/css/css_keyframe_shorthand_value.h"
 #include "third_party/blink/renderer/core/css/css_layout_function_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 #include "third_party/blink/renderer/core/css/css_path_value.h"
+#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -95,7 +99,7 @@ CSSValue* CSSValue::Create(const Length& value, float zoom) {
     case Length::kPercent:
     case Length::kFixed:
     case Length::kCalculated:
-      return CSSPrimitiveValue::Create(value, zoom);
+      return CSSPrimitiveValue::CreateFromLength(value, zoom);
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
     case Length::kMaxSizeNone:
@@ -214,12 +218,16 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSGridTemplateAreasValue>(*this, other);
       case kPathClass:
         return CompareCSSValues<CSSPathValue>(*this, other);
-      case kPrimitiveClass:
-        return CompareCSSValues<CSSPrimitiveValue>(*this, other);
+      case kNumericLiteralClass:
+        return CompareCSSValues<CSSNumericLiteralValue>(*this, other);
+      case kMathFunctionClass:
+        return CompareCSSValues<CSSMathFunctionValue>(*this, other);
       case kRayClass:
         return CompareCSSValues<CSSRayValue>(*this, other);
       case kIdentifierClass:
         return CompareCSSValues<CSSIdentifierValue>(*this, other);
+      case kKeyframeShorthandClass:
+        return CompareCSSValues<CSSKeyframeShorthandValue>(*this, other);
       case kQuadClass:
         return CompareCSSValues<CSSQuadValue>(*this, other);
       case kReflectClass:
@@ -245,6 +253,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSImageSetValue>(*this, other);
       case kCSSContentDistributionClass:
         return CompareCSSValues<CSSContentDistributionValue>(*this, other);
+      case kPendingInterpolationClass:
+        return CompareCSSValues<CSSPendingInterpolationValue>(*this, other);
       case kCustomPropertyDeclarationClass:
         return CompareCSSValues<CSSCustomPropertyDeclaration>(*this, other);
       case kVariableReferenceClass:
@@ -324,12 +334,16 @@ String CSSValue::CssText() const {
       return To<CSSGridTemplateAreasValue>(this)->CustomCSSText();
     case kPathClass:
       return To<CSSPathValue>(this)->CustomCSSText();
-    case kPrimitiveClass:
-      return To<CSSPrimitiveValue>(this)->CustomCSSText();
+    case kNumericLiteralClass:
+      return To<CSSNumericLiteralValue>(this)->CustomCSSText();
+    case kMathFunctionClass:
+      return To<CSSMathFunctionValue>(this)->CustomCSSText();
     case kRayClass:
       return To<CSSRayValue>(this)->CustomCSSText();
     case kIdentifierClass:
       return To<CSSIdentifierValue>(this)->CustomCSSText();
+    case kKeyframeShorthandClass:
+      return To<CSSKeyframeShorthandValue>(this)->CustomCSSText();
     case kQuadClass:
       return To<CSSQuadValue>(this)->CustomCSSText();
     case kReflectClass:
@@ -354,6 +368,8 @@ String CSSValue::CssText() const {
       return To<CSSImageSetValue>(this)->CustomCSSText();
     case kCSSContentDistributionClass:
       return To<CSSContentDistributionValue>(this)->CustomCSSText();
+    case kPendingInterpolationClass:
+      return To<CSSPendingInterpolationValue>(this)->CustomCSSText();
     case kVariableReferenceClass:
       return To<CSSVariableReferenceValue>(this)->CustomCSSText();
     case kCustomPropertyDeclarationClass:
@@ -462,14 +478,20 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kPathClass:
       To<CSSPathValue>(this)->~CSSPathValue();
       return;
-    case kPrimitiveClass:
-      To<CSSPrimitiveValue>(this)->~CSSPrimitiveValue();
+    case kNumericLiteralClass:
+      To<CSSNumericLiteralValue>(this)->~CSSNumericLiteralValue();
+      return;
+    case kMathFunctionClass:
+      To<CSSMathFunctionValue>(this)->~CSSMathFunctionValue();
       return;
     case kRayClass:
       To<CSSRayValue>(this)->~CSSRayValue();
       return;
     case kIdentifierClass:
       To<CSSIdentifierValue>(this)->~CSSIdentifierValue();
+      return;
+    case kKeyframeShorthandClass:
+      To<CSSKeyframeShorthandValue>(this)->~CSSKeyframeShorthandValue();
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->~CSSQuadValue();
@@ -507,6 +529,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
       return;
     case kCSSContentDistributionClass:
       To<CSSContentDistributionValue>(this)->~CSSContentDistributionValue();
+      return;
+    case kPendingInterpolationClass:
+      To<CSSPendingInterpolationValue>(this)->~CSSPendingInterpolationValue();
       return;
     case kVariableReferenceClass:
       To<CSSVariableReferenceValue>(this)->~CSSVariableReferenceValue();
@@ -619,14 +644,20 @@ void CSSValue::Trace(blink::Visitor* visitor) {
     case kPathClass:
       To<CSSPathValue>(this)->TraceAfterDispatch(visitor);
       return;
-    case kPrimitiveClass:
-      To<CSSPrimitiveValue>(this)->TraceAfterDispatch(visitor);
+    case kNumericLiteralClass:
+      To<CSSNumericLiteralValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kMathFunctionClass:
+      To<CSSMathFunctionValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kRayClass:
       To<CSSRayValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kIdentifierClass:
       To<CSSIdentifierValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kKeyframeShorthandClass:
+      To<CSSKeyframeShorthandValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kQuadClass:
       To<CSSQuadValue>(this)->TraceAfterDispatch(visitor);
@@ -663,6 +694,9 @@ void CSSValue::Trace(blink::Visitor* visitor) {
       return;
     case kCSSContentDistributionClass:
       To<CSSContentDistributionValue>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kPendingInterpolationClass:
+      To<CSSPendingInterpolationValue>(this)->TraceAfterDispatch(visitor);
       return;
     case kVariableReferenceClass:
       To<CSSVariableReferenceValue>(this)->TraceAfterDispatch(visitor);

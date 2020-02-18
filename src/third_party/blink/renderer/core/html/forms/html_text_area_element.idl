@@ -20,8 +20,10 @@
  */
 
 // https://html.spec.whatwg.org/C/#the-textarea-element
-[HTMLConstructor]
-interface HTMLTextAreaElement : HTMLElement {
+[
+    Exposed=Window,
+    HTMLConstructor
+] interface HTMLTextAreaElement : HTMLElement {
     [CEReactions, ImplementedAs=IDLExposedAutofillValue] attribute DOMString autocomplete;
     [CEReactions, Reflect] attribute boolean autofocus;
     [CEReactions] attribute unsigned long cols;

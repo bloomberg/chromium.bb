@@ -150,8 +150,8 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeNode(
     UpdateChecksumWithFolderNode(id, title);
 
     auto child_values = std::make_unique<base::ListValue>();
-    for (int i = 0; i < node->child_count(); ++i)
-      child_values->Append(EncodeNode(node->GetChild(i)));
+    for (const auto& child : node->children())
+      child_values->Append(EncodeNode(child.get()));
     value->Set(kChildrenKey, std::move(child_values));
   }
   const BookmarkNode::MetaInfoMap* meta_info_map = node->GetMetaInfoMap();
@@ -251,12 +251,8 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
     base::Base64Decode(sync_metadata_str_base64, sync_metadata_str);
   }
 
-  // Need to reset the type as decoding resets the type to FOLDER. Similarly
-  // we need to reset the title as the title is persisted and restored from
+  // Need to reset the title as the title is persisted and restored from
   // the file.
-  bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
-  other_folder_node->set_type(BookmarkNode::OTHER_NODE);
-  mobile_folder_node->set_type(BookmarkNode::MOBILE);
   bb_node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   other_folder_node->SetTitle(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
@@ -339,8 +335,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
       return false;  // Node invalid.
 
     if (parent)
-      parent->Add(base::WrapUnique(node), parent->child_count());
-    node->set_type(BookmarkNode::URL);
+      parent->Add(base::WrapUnique(node));
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
     std::string last_modified_date;
@@ -361,13 +356,12 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
       node->set_id(id);
     }
 
-    node->set_type(BookmarkNode::FOLDER);
     int64_t internal_time;
     base::StringToInt64(last_modified_date, &internal_time);
     node->set_date_folder_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
-      parent->Add(base::WrapUnique(node), parent->child_count());
+      parent->Add(base::WrapUnique(node));
 
     UpdateChecksumWithFolderNode(id_string, title);
 
@@ -478,8 +472,8 @@ void BookmarkCodec::ReassignIDs(BookmarkNode* bb_node,
 void BookmarkCodec::ReassignIDsHelper(BookmarkNode* node) {
   DCHECK(node);
   node->set_id(++maximum_id_);
-  for (int i = 0; i < node->child_count(); ++i)
-    ReassignIDsHelper(node->GetChild(i));
+  for (const auto& child : node->children())
+    ReassignIDsHelper(child.get());
 }
 
 void BookmarkCodec::UpdateChecksum(const std::string& str) {

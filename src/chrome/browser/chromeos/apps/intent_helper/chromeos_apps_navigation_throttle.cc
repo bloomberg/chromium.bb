@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -75,8 +74,10 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
               url, launch_name, should_launch_app, should_persist)) {
         CloseOrGoBack(web_contents);
       } else {
-        close_reason = apps::IntentPickerCloseReason::PICKER_ERROR;
+        close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
+      RecordUma(launch_name, app_type, close_reason, apps::Source::kHttpOrHttps,
+                should_persist);
       return;
     case apps::mojom::AppType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
@@ -106,6 +107,7 @@ void ChromeOsAppsNavigationThrottle::RecordUma(
     const std::string& selected_app_package,
     apps::mojom::AppType app_type,
     apps::IntentPickerCloseReason close_reason,
+    apps::Source source,
     bool should_persist) {
   if (app_type == apps::mojom::AppType::kArc &&
       (close_reason == apps::IntentPickerCloseReason::PREFERRED_APP_FOUND ||
@@ -114,7 +116,7 @@ void ChromeOsAppsNavigationThrottle::RecordUma(
                               arc::UserInteractionType::APP_STARTED_FROM_LINK);
   }
   apps::AppsNavigationThrottle::RecordUma(selected_app_package, app_type,
-                                          close_reason, should_persist);
+                                          close_reason, source, should_persist);
 }
 
 ChromeOsAppsNavigationThrottle::ChromeOsAppsNavigationThrottle(
@@ -134,9 +136,9 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
     std::vector<apps::IntentPickerAppInfo> apps) {
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindPwaForUrl(web_contents, url, std::move(apps));
+  bool show_persistence_options = ShouldShowPersistenceOptions(apps_for_picker);
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps_for_picker),
-      /*show_remember_selection=*/true,
+      web_contents, std::move(apps_for_picker), show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -155,7 +157,8 @@ ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
     case PickerAction::ARC_APP_PRESSED:
     case PickerAction::ARC_APP_PREFERRED_PRESSED:
     case PickerAction::PWA_APP_PRESSED:
-    case PickerAction::PICKER_ERROR:
+    case PickerAction::ERROR_BEFORE_PICKER:
+    case PickerAction::ERROR_AFTER_PICKER:
     case PickerAction::DIALOG_DEACTIVATED:
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:
@@ -266,10 +269,6 @@ IntentPickerResponse ChromeOsAppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool ChromeOsAppsNavigationThrottle::ShouldShowRememberSelection() {
-  return true;
-}
-
 void ChromeOsAppsNavigationThrottle::CloseTab() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
@@ -289,12 +288,7 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
   // until "Remember my choice" is available for desktop PWAs.
   // TODO(crbug.com/826982): show the intent picker when the app registry is
   // available to persist "Remember my choice" for PWAs.
-  bool only_pwa_apps =
-      std::all_of(apps_for_picker.begin(), apps_for_picker.end(),
-                  [](const apps::IntentPickerAppInfo& app_info) {
-                    return app_info.type == apps::mojom::AppType::kWeb;
-                  });
-  if (only_pwa_apps)
+  if (ContainsOnlyPwas(apps_for_picker))
     return false;
 
   DCHECK(ui_auto_display_service_);

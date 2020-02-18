@@ -18,6 +18,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
@@ -130,14 +131,14 @@ struct UserInitiatedInfo {
 // Derived from the FrameRenderDataUpdate that is sent via UpdateTiming IPC.
 struct PageRenderData {
   PageRenderData()
-      : layout_jank_score(0), layout_jank_score_before_input_or_scroll(0) {}
+      : layout_shift_score(0), layout_shift_score_before_input_or_scroll(0) {}
 
   // How much visible elements on the page shifted (bit.ly/lsm-explainer).
-  float layout_jank_score;
+  float layout_shift_score;
 
   // How much visible elements on the page shifted (bit.ly/lsm-explainer),
   // before user input or document scroll.
-  float layout_jank_score_before_input_or_scroll;
+  float layout_shift_score_before_input_or_scroll;
 };
 
 struct PageLoadExtraInfo {
@@ -499,7 +500,9 @@ class PageLoadMetricsObserver {
 
   // Invoked when there is data use for loading a resource on the page
   // for a given render frame host. This only contains resources that have had
-  // new data use since the last callback.
+  // new data use since the last callback. Resources loaded from the cache only
+  // receive a single update. Multiple updates can be received for the same
+  // resource if it is loaded in multiple documents.
   virtual void OnResourceDataUseObserved(
       content::RenderFrameHost* rfh,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) {}
@@ -573,6 +576,18 @@ class PageLoadMetricsObserver {
                                 const gfx::Size& frame_size) {}
 
   virtual void OnFrameDeleted(content::RenderFrameHost* render_frame_host) {}
+
+  // Called when a cookie is read for a resource request or by document.cookie.
+  virtual void OnCookiesRead(const GURL& url,
+                             const GURL& first_party_url,
+                             const net::CookieList& cookie_list,
+                             bool blocked_by_policy) {}
+
+  // Called when a cookie is set by a header or via document.cookie.
+  virtual void OnCookieChange(const GURL& url,
+                              const GURL& first_party_url,
+                              const net::CanonicalCookie& cookie,
+                              bool blocked_by_policy) {}
 
   // Called when the event corresponding to |event_key| occurs in this page
   // load.

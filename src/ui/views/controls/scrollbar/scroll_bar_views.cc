@@ -31,7 +31,6 @@ class ScrollBarButton : public BaseScrollBarButton {
   ~ScrollBarButton() override;
 
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override { return "ScrollBarButton"; }
 
  protected:
   void PaintButtonContents(gfx::Canvas* canvas) override;
@@ -51,7 +50,6 @@ class ScrollBarThumb : public BaseScrollBarThumb {
   ~ScrollBarThumb() override;
 
   gfx::Size CalculatePreferredSize() const override;
-  const char* GetClassName() const override { return "ScrollBarThumb"; }
 
  protected:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -197,8 +195,6 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollBarViews, public:
 
-const char ScrollBarViews::kViewClassName[] = "ScrollBarViews";
-
 ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
   using Type = ScrollBarButton::Type;
   SetThumb(new ScrollBarThumb(this));
@@ -280,10 +276,6 @@ gfx::Size ScrollBarViews::CalculatePreferredSize() const {
                    IsHorizontal() ? GetThickness() : 0);
 }
 
-const char* ScrollBarViews::GetClassName() const {
-  return kViewClassName;
-}
-
 int ScrollBarViews::GetThickness() const {
   const ui::NativeTheme* theme = GetNativeTheme();
   return IsHorizontal() ? GetHorizontalScrollBarHeight(theme)
@@ -338,5 +330,9 @@ int ScrollBarViews::GetHorizontalScrollBarHeight(const ui::NativeTheme* theme) {
 
   return std::max(track_size.height(), button_size.height());
 }
+
+BEGIN_METADATA(ScrollBarViews)
+METADATA_PARENT_CLASS(ScrollBar)
+END_METADATA()
 
 }  // namespace views

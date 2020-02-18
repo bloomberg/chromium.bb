@@ -104,12 +104,18 @@ class AuthenticatorRequestDialogModel {
 
     // Attestation permission request.
     kAttestationPermissionRequest,
+
+    // Display QR code for phone pairing.
+    kQRCode,
   };
 
   // Implemented by the dialog to observe this model and show the UI panels
   // appropriate for the current step.
   class Observer {
    public:
+    // Called when the user clicks "Try Again" to restart the user flow.
+    virtual void OnStartOver() {}
+
     // Called just before the model is destructed.
     virtual void OnModelDestroyed() = 0;
 
@@ -165,7 +171,7 @@ class AuthenticatorRequestDialogModel {
   }
 
   const base::Optional<std::string>& selected_authenticator_id() const {
-    return selected_authenticator_id_;
+    return ephemeral_state_.selected_authenticator_id_;
   }
 
   // Starts the UX flow, by either showing the welcome screen, the transport
@@ -176,6 +182,9 @@ class AuthenticatorRequestDialogModel {
       TransportAvailabilityInfo transport_availability,
       base::Optional<device::FidoTransportProtocol> last_used_transport,
       const base::ListValue* previously_paired_bluetooth_device_list);
+
+  // Restarts the UX flow.
+  void StartOver();
 
   // Starts the UX flow. Tries to figure out the most likely transport to be
   // used, and starts the guided flow for that transport; or shows the manual
@@ -321,6 +330,10 @@ class AuthenticatorRequestDialogModel {
   // credential because of insufficient storage.
   void OnAuthenticatorStorageFull();
 
+  // To be called when the user denies consent, e.g. by clicking "Cancel" on the
+  // system Touch ID prompt.
+  void OnUserConsentDenied();
+
   // To be called when the Bluetooth adapter powered state changes.
   void OnBluetoothPoweredStateChanged(bool powered);
 
@@ -354,7 +367,8 @@ class AuthenticatorRequestDialogModel {
 
   void UpdateAuthenticatorReferencePairingMode(
       base::StringPiece authenticator_id,
-      bool is_in_pairing_mode);
+      bool is_in_pairing_mode,
+      base::string16 display_name);
 
   // SelectAccount is called to trigger an account selection dialog.
   void SelectAccount(
@@ -370,7 +384,7 @@ class AuthenticatorRequestDialogModel {
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   ObservableAuthenticatorList& saved_authenticators() {
-    return saved_authenticators_;
+    return ephemeral_state_.saved_authenticators_;
   }
 
   const std::vector<AuthenticatorTransport>& available_transports() {
@@ -379,17 +393,19 @@ class AuthenticatorRequestDialogModel {
 
   void CollectPIN(base::Optional<int> attempts,
                   base::OnceCallback<void(std::string)> provide_pin_cb);
-  bool has_attempted_pin_entry() const { return has_attempted_pin_entry_; }
+  bool has_attempted_pin_entry() const {
+    return ephemeral_state_.has_attempted_pin_entry_;
+  }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
 
   void RequestAttestationPermission(base::OnceCallback<void(bool)> callback);
 
   const std::vector<device::AuthenticatorGetAssertionResponse>& responses() {
-    return responses_;
+    return ephemeral_state_.responses_;
   }
 
   void set_has_attempted_pin_entry_for_testing() {
-    has_attempted_pin_entry_ = true;
+    ephemeral_state_.has_attempted_pin_entry_ = true;
   }
 
   void set_incognito_mode(bool incognito_mode) {
@@ -406,9 +422,36 @@ class AuthenticatorRequestDialogModel {
 
   const std::string& relying_party_id() const { return relying_party_id_; }
 
+  bool request_may_start_over() const { return request_may_start_over_; }
+
  private:
+  // Contains the state that will be reset when calling StartOver(). StartOver()
+  // might be called at an arbitrary point of execution.
+  struct EphemeralState {
+    EphemeralState();
+    ~EphemeralState();
+
+    void Reset();
+
+    // Represents the id of the Bluetooth authenticator that the user is trying
+    // to connect to or conduct WebAuthN request to via the WebAuthN UI.
+    base::Optional<std::string> selected_authenticator_id_;
+
+    // Transport type and id of Mac TouchId and BLE authenticators are cached so
+    // that the WebAuthN request for the corresponding authenticators can be
+    // dispatched lazily after the user interacts with the UI element.
+    ObservableAuthenticatorList saved_authenticators_;
+
+    bool has_attempted_pin_entry_ = false;
+
+    // responses_ contains possible accounts to select between.
+    std::vector<device::AuthenticatorGetAssertionResponse> responses_;
+  };
+
   void DispatchRequestAsync(AuthenticatorReference* authenticator);
   void DispatchRequestAsyncInternal(const std::string& authenticator_id);
+
+  EphemeralState ephemeral_state_;
 
   // relying_party_id is the RP ID from Webauthn, essentially a domain name.
   const std::string relying_party_id_;
@@ -433,22 +476,12 @@ class AuthenticatorRequestDialogModel {
   std::vector<AuthenticatorTransport> available_transports_;
   base::Optional<device::FidoTransportProtocol> last_used_transport_;
 
-  // Transport type and id of Mac TouchId and BLE authenticators are cached so
-  // that the WebAuthN request for the corresponding authenticators can be
-  // dispatched lazily after the user interacts with the UI element.
-  ObservableAuthenticatorList saved_authenticators_;
-
-  // Represents the id of the Bluetooth authenticator that the user is trying to
-  // connect to or conduct WebAuthN request to via the WebAuthN UI.
-  base::Optional<std::string> selected_authenticator_id_;
-
   RequestCallback request_callback_;
   BlePairingCallback ble_pairing_callback_;
   base::RepeatingClosure bluetooth_adapter_power_on_callback_;
   BleDevicePairedCallback ble_device_paired_callback_;
 
   base::OnceCallback<void(std::string)> pin_callback_;
-  bool has_attempted_pin_entry_ = false;
   base::Optional<int> pin_attempts_;
 
   base::OnceCallback<void(bool)> attestation_callback_;
@@ -459,14 +492,17 @@ class AuthenticatorRequestDialogModel {
   // authenticator and thus has privacy implications.
   bool might_create_resident_credential_ = false;
 
-  // responses_ contains possible accounts to select between.
-  std::vector<device::AuthenticatorGetAssertionResponse> responses_;
   base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
       selection_callback_;
 
   bool incognito_mode_ = false;
 
-  base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_;
+  // request_may_start_over_ indicates whether a button to retry the request
+  // should be included on the dialog sheet shown when encountering certain
+  // errors.
+  bool request_may_start_over_ = true;
+
+  base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);
 };

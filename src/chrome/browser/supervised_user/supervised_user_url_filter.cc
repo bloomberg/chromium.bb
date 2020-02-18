@@ -220,8 +220,7 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
       blacklist_(nullptr),
       blocking_task_runner_(base::CreateTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {}
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -339,7 +338,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   static const base::NoDestructor<base::flat_set<GURL>> kWhitelistedOrigins(
       base::flat_set<GURL>({GURL(kFamiliesUrl).GetOrigin(),
                             GURL(kFamiliesSecureUrl).GetOrigin()}));
-  if (base::ContainsKey(*kWhitelistedOrigins, effective_url.GetOrigin()))
+  if (base::Contains(*kWhitelistedOrigins, effective_url.GetOrigin()))
     return ALLOW;
 
   // Check Play Store terms of service.
@@ -536,7 +535,7 @@ void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    identity::IdentityManager* identity_manager) {
+    signin::IdentityManager* identity_manager) {
   std::string country;
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();

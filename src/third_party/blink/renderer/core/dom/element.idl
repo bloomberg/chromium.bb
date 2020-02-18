@@ -26,7 +26,9 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
 // https://dom.spec.whatwg.org/#interface-element
 
-interface Element : Node {
+[
+    Exposed=Window
+] interface Element : Node {
     readonly attribute DOMString? namespaceURI;
     readonly attribute DOMString? prefix;
     readonly attribute DOMString localName;
@@ -55,7 +57,7 @@ interface Element : Node {
     [CEReactions, CustomElementCallbacks] void removeAttributeNS(DOMString? namespaceURI, DOMString localName);
     [Affects=Nothing] boolean hasAttribute(DOMString name);
     [Affects=Nothing] boolean hasAttributeNS(DOMString? namespaceURI, DOMString localName);
-    [RaisesException] boolean toggleAttribute(DOMString qualifiedName, optional boolean force);
+    [RaisesException, CEReactions, CustomElementCallbacks] boolean toggleAttribute(DOMString qualifiedName, optional boolean force);
 
     Attr? getAttributeNode(DOMString name);
     Attr? getAttributeNodeNS(DOMString? namespaceURI, DOMString localName);
@@ -142,6 +144,9 @@ interface Element : Node {
 
     // Display locking. Returns a display lock context.
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
+
+    // Element Timing
+    [RuntimeEnabled=ElementTiming, Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;
 };
 
 Element includes ParentNode;

@@ -32,11 +32,8 @@ void IOSChromePasswordManagerDriver::InformNoSavedCredentials() {
   [delegate_ onNoSavedCredentials];
 }
 
-void IOSChromePasswordManagerDriver::FormsEligibleForGenerationFound(
-    const std::vector<autofill::PasswordFormGenerationData>& forms) {}
-
 void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
-    const autofill::NewPasswordFormGenerationData& form) {
+    const autofill::PasswordFormGenerationData& form) {
   if (GetPasswordGenerationHelper() &&
       GetPasswordGenerationHelper()->IsGenerationEnabled(
           /*log_debug_data*/ true)) {
@@ -80,10 +77,6 @@ PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {
   return [delegate_ passwordManager];
 }
 
-void IOSChromePasswordManagerDriver::AllowPasswordGenerationForForm(
-    const autofill::PasswordForm& form) {
-}
-
 PasswordAutofillManager*
 IOSChromePasswordManagerDriver::GetPasswordAutofillManager() {
   // TODO(crbug.com/341877): Use PasswordAutofillManager to implement password
@@ -101,6 +94,6 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
-GURL IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
+const GURL& IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }

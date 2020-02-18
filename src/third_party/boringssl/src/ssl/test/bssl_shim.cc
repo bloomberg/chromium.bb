@@ -665,6 +665,21 @@ static bool CheckHandshakeProperties(SSL *ssl, bool is_resume,
     return false;
   }
 
+  if (config->expect_delegated_credential_used !=
+      !!SSL_delegated_credential_used(ssl)) {
+    fprintf(stderr,
+            "Got %s delegated credential usage, but wanted opposite. \n",
+            SSL_delegated_credential_used(ssl) ? "" : "no");
+    return false;
+  }
+
+  if (config->expect_pq_experiment_signal !=
+      !!SSL_pq_experiment_signal_seen(ssl)) {
+    fprintf(stderr, "Got %sPQ experiment signal, but wanted opposite. \n",
+            SSL_pq_experiment_signal_seen(ssl) ? "" : "no ");
+    return false;
+  }
+
   return true;
 }
 

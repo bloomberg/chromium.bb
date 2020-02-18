@@ -26,7 +26,6 @@
 #include "chrome/common/cloud_print.mojom.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -43,14 +42,7 @@
 class ServiceProcessControlBrowserTest
     : public InProcessBrowserTest {
  public:
-  ServiceProcessControlBrowserTest() {
-    // Disable the field trial config, since the MojoChannelMac feature state
-    // will not be carried into the service process being launched in this test.
-    // TODO(https://crbug.com/944985): Remove this after the feature is
-    // launched.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        variations::switches::kDisableFieldTrialTestingConfig);
-  }
+  ServiceProcessControlBrowserTest() {}
   ~ServiceProcessControlBrowserTest() override {}
 
   void HistogramsCallback(base::RepeatingClosure on_done) {
@@ -136,7 +128,8 @@ class ServiceProcessControlBrowserTest
   void ProcessControlLaunched(base::OnceClosure on_done) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::ProcessId service_pid;
-    EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
+    EXPECT_TRUE(
+        ServiceProcessState::GetServiceProcessData(nullptr, &service_pid));
     EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
 #if defined(OS_WIN)
     service_process_ =
@@ -218,7 +211,14 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
   EXPECT_TRUE(ServiceProcessControl::GetInstance()->Shutdown());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndReconnect) {
+// Flaky on macOS: https://crbug.com/978948
+#if defined(OS_MACOSX)
+#define MAYBE_LaunchAndReconnect DISABLED_LaunchAndReconnect
+#else
+#define MAYBE_LaunchAndReconnect LaunchAndReconnect
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
+                       MAYBE_LaunchAndReconnect) {
   LaunchServiceProcessControlAndWait();
 
   // Make sure we are connected to the service process.
@@ -386,7 +386,8 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
   ASSERT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   base::ProcessId service_pid;
   base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
+  EXPECT_TRUE(
+      ServiceProcessState::GetServiceProcessData(nullptr, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
   ForceServiceProcessShutdown(version_info::GetVersionNumber(), service_pid);
 }
@@ -400,10 +401,12 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_ForceShutdown) {
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MAYBE_CheckPid) {
   base::ProcessId service_pid;
   base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_FALSE(GetServiceProcessData(NULL, &service_pid));
+  EXPECT_FALSE(
+      ServiceProcessState::GetServiceProcessData(nullptr, &service_pid));
   // Launch the service process.
   LaunchServiceProcessControlAndWait();
-  EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
+  EXPECT_TRUE(
+      ServiceProcessState::GetServiceProcessData(nullptr, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);
   // Disconnect from service process.
   Disconnect();

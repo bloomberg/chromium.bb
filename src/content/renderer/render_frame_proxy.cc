@@ -20,6 +20,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
 #include "content/common/swapped_out_messages.h"
+#include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -172,12 +173,13 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 RenderFrameProxy* RenderFrameProxy::CreateProxyForPortal(
     RenderFrameImpl* parent,
     int proxy_routing_id,
-    const base::UnguessableToken& devtools_frame_token) {
+    const base::UnguessableToken& devtools_frame_token,
+    const blink::WebElement& portal_element) {
   std::unique_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(proxy_routing_id));
   proxy->devtools_frame_token_ = devtools_frame_token;
-  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::Create(
-      blink::WebTreeScopeType::kDocument, proxy.get());
+  blink::WebRemoteFrame* web_frame = blink::WebRemoteFrame::CreateForPortal(
+      blink::WebTreeScopeType::kDocument, proxy.get(), portal_element);
   proxy->Init(web_frame, parent->render_view(),
               parent->GetLocalRootRenderWidget(), true);
   return proxy.release();
@@ -265,16 +267,6 @@ void RenderFrameProxy::ResendVisualProperties() {
   // viz::LocalSurfaceId.
   sent_visual_properties_ = base::nullopt;
   SynchronizeVisualProperties();
-}
-
-void RenderFrameProxy::WillBeginCompositorFrame() {
-  if (compositing_helper_ && compositing_helper_->surface_id().is_valid()) {
-    FrameHostMsg_HittestData_Params params;
-    params.surface_id = compositing_helper_->surface_id();
-    params.ignored_for_hittest = web_frame_->IsIgnoredForHitTest();
-    render_widget_->QueueMessage(
-        new FrameHostMsg_HittestData(render_widget_->routing_id(), params));
-  }
 }
 
 void RenderFrameProxy::OnScreenInfoChanged(const ScreenInfo& screen_info) {
@@ -396,7 +388,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
-    IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
     IPC_MESSAGE_HANDLER(FrameMsg_FirstSurfaceActivation,
                         OnFirstSurfaceActivation)
@@ -443,6 +434,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
+    IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

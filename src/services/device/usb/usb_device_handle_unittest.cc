@@ -21,6 +21,11 @@
 
 namespace device {
 
+using mojom::UsbControlTransferRecipient;
+using mojom::UsbControlTransferType;
+using mojom::UsbTransferDirection;
+using mojom::UsbTransferStatus;
+
 namespace {
 
 class UsbDeviceHandleTest : public ::testing::Test {
@@ -140,7 +145,7 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
   handle->ClaimInterface(0, claim_interface.GetCallback());
   ASSERT_TRUE(claim_interface.WaitForResult());
 
-  const UsbInterfaceDescriptor* interface =
+  const mojom::UsbInterfaceInfo* interface =
       handle->FindInterfaceByEndpoint(0x81);
   EXPECT_TRUE(interface);
   EXPECT_EQ(0, interface->interface_number);
@@ -208,7 +213,7 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
 
   EXPECT_FALSE(handle->FindInterfaceByEndpoint(0x81));
   EXPECT_FALSE(handle->FindInterfaceByEndpoint(0x01));
-  const UsbInterfaceDescriptor* interface =
+  const mojom::UsbInterfaceInfo* interface =
       handle->FindInterfaceByEndpoint(0x82);
   EXPECT_TRUE(interface);
   EXPECT_EQ(1, interface->interface_number);

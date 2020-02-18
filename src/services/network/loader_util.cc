@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
@@ -27,6 +29,28 @@ const char kFrameAcceptHeader[] =
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
     "image/apng,*/*;q=0.8";
 const char kDefaultAcceptHeader[] = "*/*";
+
+// Concerning headers that consumers probably shouldn't be allowed to set.
+// Gathering numbers on these before adding them to kUnsafeHeaders.
+const struct {
+  const char* name;
+  ConcerningHeaderId histogram_id;
+} kConcerningHeaders[] = {
+    {net::HttpRequestHeaders::kConnection, ConcerningHeaderId::kConnection},
+    {net::HttpRequestHeaders::kCookie, ConcerningHeaderId::kCookie},
+    {"Cookie2", ConcerningHeaderId::kCookie2},
+    {"Content-transfer-encoding", ConcerningHeaderId::kContentTransferEncoding},
+    {"Date", ConcerningHeaderId::kDate},
+    {"Expect", ConcerningHeaderId::kExpect},
+    {"Keep-alive", ConcerningHeaderId::kKeepAlive},
+    // The referer is passed in from the caller on a per-request basis, but
+    // there's a separate field for it that should be used instead.
+    {net::HttpRequestHeaders::kReferer, ConcerningHeaderId::kReferer},
+    {"Te", ConcerningHeaderId::kTe},
+    {net::HttpRequestHeaders::kTransferEncoding,
+     ConcerningHeaderId::kTransferEncoding},
+    {"Via", ConcerningHeaderId::kVia},
+};
 
 bool ShouldSniffContent(net::URLRequest* url_request,
                         ResourceResponse* response) {
@@ -109,15 +133,38 @@ std::string ComputeReferrer(const GURL& referrer) {
   return referrer.spec();
 }
 
-bool AreRequestHeadersSafe(const net::HttpRequestHeaders& request_headers) {
-  // Disallow setting the Host header because it can conflict with specified URL
-  // and logic related to isolating sites.
-  if (request_headers.HasHeader(net::HttpRequestHeaders::kHost)) {
-    LOG(WARNING)
-        << "Host header should not be set from outside the network service";
-    return false;
+void LogConcerningRequestHeaders(const net::HttpRequestHeaders& request_headers,
+                                 bool added_during_redirect) {
+  net::HttpRequestHeaders::Iterator it(request_headers);
+
+  bool concerning_header_found = false;
+
+  while (it.GetNext()) {
+    for (const auto& header : kConcerningHeaders) {
+      if (base::EqualsCaseInsensitiveASCII(header.name, it.name())) {
+        concerning_header_found = true;
+        if (added_during_redirect) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "NetworkService.ConcerningRequestHeader.HeaderAddedOnRedirect",
+              header.histogram_id);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "NetworkService.ConcerningRequestHeader.HeaderPresentOnStart",
+              header.histogram_id);
+        }
+      }
+    }
   }
-  return true;
+
+  if (added_during_redirect) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "NetworkService.ConcerningRequestHeader.AddedOnRedirect",
+        concerning_header_found);
+  } else {
+    UMA_HISTOGRAM_BOOLEAN(
+        "NetworkService.ConcerningRequestHeader.PresentOnStart",
+        concerning_header_found);
+  }
 }
 
 }  // namespace network

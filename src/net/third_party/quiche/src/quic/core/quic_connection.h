@@ -26,7 +26,7 @@
 
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters.pb.h"
+#include "net/third_party/quiche/src/quic/core/proto/cached_network_parameters_proto.h"
 #include "net/third_party/quiche/src/quic/core/quic_alarm.h"
 #include "net/third_party/quiche/src/quic/core/quic_alarm_factory.h"
 #include "net/third_party/quiche/src/quic/core/quic_blocked_writer_interface.h"
@@ -124,8 +124,7 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
 
   // Called when the connection is closed either locally by the framer, or
   // remotely by the peer.
-  virtual void OnConnectionClosed(QuicErrorCode error,
-                                  const std::string& error_details,
+  virtual void OnConnectionClosed(const QuicConnectionCloseFrame& frame,
                                   ConnectionCloseSource source) = 0;
 
   // Called when the connection failed to write because the socket was blocked.
@@ -201,107 +200,107 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
   ~QuicConnectionDebugVisitor() override {}
 
   // Called when a packet has been sent.
-  virtual void OnPacketSent(const SerializedPacket& serialized_packet,
-                            QuicPacketNumber original_packet_number,
-                            TransmissionType transmission_type,
-                            QuicTime sent_time) {}
+  virtual void OnPacketSent(const SerializedPacket& /*serialized_packet*/,
+                            QuicPacketNumber /*original_packet_number*/,
+                            TransmissionType /*transmission_type*/,
+                            QuicTime /*sent_time*/) {}
 
   // Called when a PING frame has been sent.
   virtual void OnPingSent() {}
 
   // Called when a packet has been received, but before it is
   // validated or parsed.
-  virtual void OnPacketReceived(const QuicSocketAddress& self_address,
-                                const QuicSocketAddress& peer_address,
-                                const QuicEncryptedPacket& packet) {}
+  virtual void OnPacketReceived(const QuicSocketAddress& /*self_address*/,
+                                const QuicSocketAddress& /*peer_address*/,
+                                const QuicEncryptedPacket& /*packet*/) {}
 
   // Called when the unauthenticated portion of the header has been parsed.
-  virtual void OnUnauthenticatedHeader(const QuicPacketHeader& header) {}
+  virtual void OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) {}
 
   // Called when a packet is received with a connection id that does not
   // match the ID of this connection.
-  virtual void OnIncorrectConnectionId(QuicConnectionId connection_id) {}
+  virtual void OnIncorrectConnectionId(QuicConnectionId /*connection_id*/) {}
 
   // Called when an undecryptable packet has been received.
   virtual void OnUndecryptablePacket() {}
 
   // Called when a duplicate packet has been received.
-  virtual void OnDuplicatePacket(QuicPacketNumber packet_number) {}
+  virtual void OnDuplicatePacket(QuicPacketNumber /*packet_number*/) {}
 
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
-  virtual void OnProtocolVersionMismatch(ParsedQuicVersion version) {}
+  virtual void OnProtocolVersionMismatch(ParsedQuicVersion /*version*/) {}
 
   // Called when the complete header of a packet has been parsed.
-  virtual void OnPacketHeader(const QuicPacketHeader& header) {}
+  virtual void OnPacketHeader(const QuicPacketHeader& /*header*/) {}
 
   // Called when a StreamFrame has been parsed.
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) {}
+  virtual void OnStreamFrame(const QuicStreamFrame& /*frame*/) {}
 
   // Called when a StopWaitingFrame has been parsed.
-  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {}
+  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& /*frame*/) {}
 
   // Called when a QuicPaddingFrame has been parsed.
-  virtual void OnPaddingFrame(const QuicPaddingFrame& frame) {}
+  virtual void OnPaddingFrame(const QuicPaddingFrame& /*frame*/) {}
 
   // Called when a Ping has been parsed.
-  virtual void OnPingFrame(const QuicPingFrame& frame) {}
+  virtual void OnPingFrame(const QuicPingFrame& /*frame*/) {}
 
   // Called when a GoAway has been parsed.
-  virtual void OnGoAwayFrame(const QuicGoAwayFrame& frame) {}
+  virtual void OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) {}
 
   // Called when a RstStreamFrame has been parsed.
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {}
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) {}
 
   // Called when a ConnectionCloseFrame has been parsed. All forms
   // of CONNECTION CLOSE are handled, Google QUIC, IETF QUIC
   // CONNECTION CLOSE/Transport and IETF QUIC CONNECTION CLOSE/Application
-  virtual void OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) {}
+  virtual void OnConnectionCloseFrame(
+      const QuicConnectionCloseFrame& /*frame*/) {}
 
   // Called when a WindowUpdate has been parsed.
-  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame,
-                                   const QuicTime& receive_time) {}
+  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/,
+                                   const QuicTime& /*receive_time*/) {}
 
   // Called when a BlockedFrame has been parsed.
-  virtual void OnBlockedFrame(const QuicBlockedFrame& frame) {}
+  virtual void OnBlockedFrame(const QuicBlockedFrame& /*frame*/) {}
 
   // Called when a MessageFrame has been parsed.
-  virtual void OnMessageFrame(const QuicMessageFrame& frame) {}
+  virtual void OnMessageFrame(const QuicMessageFrame& /*frame*/) {}
 
   // Called when a public reset packet has been received.
-  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
+  virtual void OnPublicResetPacket(const QuicPublicResetPacket& /*packet*/) {}
 
   // Called when a version negotiation packet has been received.
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) {}
+      const QuicVersionNegotiationPacket& /*packet*/) {}
 
   // Called when the connection is closed.
-  virtual void OnConnectionClosed(QuicErrorCode error,
-                                  const std::string& error_details,
-                                  ConnectionCloseSource source) {}
+  virtual void OnConnectionClosed(const QuicConnectionCloseFrame& /*frame*/,
+                                  ConnectionCloseSource /*source*/) {}
 
   // Called when the version negotiation is successful.
   virtual void OnSuccessfulVersionNegotiation(
-      const ParsedQuicVersion& version) {}
+      const ParsedQuicVersion& /*version*/) {}
 
   // Called when a CachedNetworkParameters is sent to the client.
   virtual void OnSendConnectionState(
-      const CachedNetworkParameters& cached_network_params) {}
+      const CachedNetworkParameters& /*cached_network_params*/) {}
 
   // Called when a CachedNetworkParameters are received from the client.
   virtual void OnReceiveConnectionState(
-      const CachedNetworkParameters& cached_network_params) {}
+      const CachedNetworkParameters& /*cached_network_params*/) {}
 
   // Called when the connection parameters are set from the supplied
   // |config|.
-  virtual void OnSetFromConfig(const QuicConfig& config) {}
+  virtual void OnSetFromConfig(const QuicConfig& /*config*/) {}
 
   // Called when RTT may have changed, including when an RTT is read from
   // the config.
-  virtual void OnRttChanged(QuicTime::Delta rtt) const {}
+  virtual void OnRttChanged(QuicTime::Delta /*rtt*/) const {}
 
   // Called when a StopSendingFrame has been parsed.
-  virtual void OnStopSendingFrame(const QuicStopSendingFrame& frame) {}
+  virtual void OnStopSendingFrame(const QuicStopSendingFrame& /*frame*/) {}
 };
 
 class QUIC_EXPORT_PRIVATE QuicConnectionHelperInterface {
@@ -324,19 +323,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       public QuicPacketGenerator::DelegateInterface,
       public QuicSentPacketManager::NetworkChangeVisitor {
  public:
-  // TODO(fayang): Remove this enum when deprecating
-  // quic_deprecate_ack_bundling_mode.
-  enum AckBundling {
-    // Send an ack if it's already queued in the connection.
-    SEND_ACK_IF_QUEUED,
-    // Always send an ack.
-    SEND_ACK,
-    // Bundle an ack with outgoing data.
-    SEND_ACK_IF_PENDING,
-    // Do not send ack.
-    NO_ACK,
-  };
-
   // Constructs a new QuicConnection for |connection_id| and
   // |initial_peer_address| using |writer| to write packets. |owns_writer|
   // specifies whether the connection takes ownership of |writer|. |helper| must
@@ -477,8 +463,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // From QuicFramerVisitorInterface
   void OnError(QuicFramer* framer) override;
-  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version,
-                                 PacketHeaderFormat form) override;
+  bool OnProtocolVersionMismatch(ParsedQuicVersion received_version) override;
   void OnPacket() override;
   void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
   void OnVersionNegotiationPacket(
@@ -526,10 +511,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool ShouldGeneratePacket(HasRetransmittableData retransmittable,
                             IsHandshake handshake) override;
   const QuicFrames MaybeBundleAckOpportunistically() override;
-  // Please note, this is not a const function. For logging purpose, please use
-  // ack_frame().
-  const QuicFrame GetUpdatedAckFrame() override;
-  void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting) override;
 
   // QuicPacketCreator::DelegateInterface
   char* GetPacketBuffer() override;
@@ -540,6 +521,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionChange() override;
   void OnPathMtuIncreased(QuicPacketLength packet_size) override;
+
+  // Please note, this is not a const function. For logging purpose, please use
+  // ack_frame().
+  const QuicFrame GetUpdatedAckFrame();
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of
@@ -582,6 +567,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     return effective_peer_address_;
   }
   QuicConnectionId connection_id() const { return server_connection_id_; }
+  QuicConnectionId client_connection_id() const {
+    return client_connection_id_;
+  }
+  void set_client_connection_id(QuicConnectionId client_connection_id);
   const QuicClock* clock() const { return clock_; }
   QuicRandom* random_generator() const { return random_generator_; }
   QuicByteCount max_packet_length() const;
@@ -599,10 +588,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Testing only.
   size_t NumQueuedPackets() const { return queued_packets_.size(); }
-
-  // Once called, any sent crypto packets to be saved as the
-  // termination packet, for use with stateless rejections.
-  void EnableSavingCryptoPackets();
 
   // Returns true if the underlying UDP socket is writable, there is
   // no queued data and the connection is not congestion-control
@@ -707,16 +692,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // information to be sent.
   class QUIC_EXPORT_PRIVATE ScopedPacketFlusher {
    public:
-    // Setting |include_ack| to true ensures that an ACK frame is
-    // opportunistically bundled with the first outgoing packet.
-    // TODO(fayang): Remove |ack_mode| when deprecating
-    // quic_deprecate_ack_bundling_mode.
-    ScopedPacketFlusher(QuicConnection* connection, AckBundling ack_mode);
+    explicit ScopedPacketFlusher(QuicConnection* connection);
     ~ScopedPacketFlusher();
 
    private:
-    bool ShouldSendAck(AckBundling ack_mode) const;
-
     QuicConnection* connection_;
     // If true, when this flusher goes out of scope, flush connection and set
     // retransmission alarm if there is one pending.
@@ -779,8 +758,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   std::vector<std::unique_ptr<QuicEncryptedPacket>>* termination_packets() {
     return termination_packets_.get();
   }
-
-  bool ack_queued() const { return ack_queued_; }
 
   bool ack_frame_updated() const;
 
@@ -890,6 +867,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // For logging purpose.
   const QuicAckFrame& ack_frame() const;
+
+  // Install encrypter and decrypter for ENCRYPTION_INITIAL using
+  // |connection_id| as the first client-sent destination connection ID,
+  // or the one sent after an IETF Retry.
+  void InstallInitialCrypters(QuicConnectionId connection_id);
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -1028,10 +1010,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // acks and pending writes if an ack opened the congestion window.
   void MaybeSendInResponseToPacket();
 
-  // Queue an ack or set the ack alarm if needed.  |was_missing| is true if
-  // the most recently received packet was formerly missing.
-  void MaybeQueueAck(bool was_missing);
-
   // Gets the least unacked packet number, which is the next packet number to be
   // sent if there are no outstanding packets.
   QuicPacketNumber GetLeastUnacked() const;
@@ -1116,13 +1094,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // num_retransmittable_packets_received_since_last_ack_sent_ etc.
   void ResetAckStates();
 
+  void PopulateStopWaitingFrame(QuicStopWaitingFrame* stop_waiting);
+
   // Enables multiple packet number spaces support based on handshake protocol
   // and flags.
   void MaybeEnableMultiplePacketNumberSpacesSupport();
-
-  // Returns true if ack alarm is not set and there is no pending ack in the
-  // generator.
-  bool ShouldSetAckAlarm() const;
 
   // Returns the encryption level the connection close packet should be sent at,
   // which is the highest encryption level that peer can guarantee to process.
@@ -1143,9 +1119,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Whether incoming_connection_ids_ contains connection_id.
   bool HasIncomingConnectionId(QuicConnectionId connection_id);
-
-  // Install encrypter and decrypter for ENCRYPTION_INITIAL.
-  void InstallInitialCrypters();
 
   QuicFramer framer_;
 
@@ -1173,6 +1146,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   QuicRandom* random_generator_;
 
   QuicConnectionId server_connection_id_;
+  QuicConnectionId client_connection_id_;
+  // On the server, the connection ID is set when receiving the first packet.
+  // This variable ensures we only set it this way once.
+  bool client_connection_id_is_set_;
   // Address on the last successfully processed packet received from the
   // direct peer.
   QuicSocketAddress self_address_;
@@ -1205,10 +1182,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   EncryptionLevel last_decrypted_packet_level_;
   QuicPacketHeader last_header_;
   bool should_last_packet_instigate_acks_;
-  // Whether the most recent packet was missing before it was received.
-  // TODO(fayang): Remove was_last_packet_missing_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  bool was_last_packet_missing_;
 
   // Track some peer state so we can do less bookkeeping
   // Largest sequence sent by the peer which had an ack frame (latest ack info).
@@ -1252,9 +1225,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // the original scope of the SerializedPacket.
   QueuedPacketList queued_packets_;
 
-  // If true, then crypto packets will be saved as termination packets.
-  bool save_crypto_packets_as_termination_packets_;
-
   // Contains the connection close packets if the connection has been closed.
   std::unique_ptr<std::vector<std::unique_ptr<QuicEncryptedPacket>>>
       termination_packets_;
@@ -1269,40 +1239,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // 200ms, this is over 5 seconds.
   bool close_connection_after_five_rtos_;
 
-  // TODO(fayang): remove received_packet_manager_ when deprecating
-  // quic_use_uber_received_packet_manager.
-  QuicReceivedPacketManager received_packet_manager_;
-  // Used when use_uber_received_packet_manager_ is true.
   UberReceivedPacketManager uber_received_packet_manager_;
 
-  // Indicates whether an ack should be sent the next time we try to write.
-  // TODO(fayang): Remove ack_queued_ when deprecating
-  // quic_deprecate_ack_bundling_mode.
-  bool ack_queued_;
-  // How many retransmittable packets have arrived without sending an ack.
-  // TODO(fayang): Remove
-  // num_retransmittable_packets_received_since_last_ack_sent_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
-  // How many consecutive packets have arrived without sending an ack.
-  QuicPacketCount num_packets_received_since_last_ack_sent_;
   // Indicates how many consecutive times an ack has arrived which indicates
   // the peer needs to stop waiting for some packets.
   // TODO(fayang): remove this when deprecating quic_simplify_stop_waiting.
   int stop_waiting_count_;
-  // TODO(fayang): Remove ack_mode_, ack_decimation_delay_,
-  // unlimited_ack_decimation_, fast_ack_after_quiescence_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  // Indicates the current ack mode, defaults to acking every 2 packets.
-  AckMode ack_mode_;
-  // The max delay in fraction of min_rtt to use when sending decimated acks.
-  float ack_decimation_delay_;
-  // When true, removes ack decimation's max number of packets(10) before
-  // sending an ack.
-  bool unlimited_ack_decimation_;
-  // When true, use a 1ms delayed ack timer if it's been an SRTT since a packet
-  // was received.
-  bool fast_ack_after_quiescence_;
 
   // Indicates the retransmission alarm needs to be set.
   bool pending_retransmission_alarm_;
@@ -1363,31 +1305,13 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
-  // The time the previous ack-instigating packet was received and processed.
-  // TODO(fayang): Remove time_of_previous_received_packet_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  QuicTime time_of_previous_received_packet_;
-
   // Sent packet manager which tracks the status of packets sent by this
   // connection and contains the send and receive algorithms to determine when
   // to send packets.
   QuicSentPacketManager sent_packet_manager_;
 
-  // The state of connection in version negotiation finite state machine.
-  enum QuicVersionNegotiationState {
-    START_NEGOTIATION = 0,
-    // Server-side this implies we've sent a version negotiation packet and are
-    // waiting on the client to select a compatible version.  Client-side this
-    // implies we've gotten a version negotiation packet, are retransmitting the
-    // initial packets with a supported version and are waiting for our first
-    // packet from the server.
-    NEGOTIATION_IN_PROGRESS,
-    // This indicates this endpoint has received a packet from the peer with a
-    // version this endpoint supports.  Version negotiation is complete, and the
-    // version number will no longer be sent with future packets.
-    NEGOTIATED_VERSION
-  };
-  QuicVersionNegotiationState version_negotiation_state_;
+  // Indicates whether connection version has been negotiated.
+  bool version_negotiated_;
 
   // Tracks if the connection was created by the server or the client.
   Perspective perspective_;
@@ -1448,16 +1372,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // from the peer. Default to kMaxConsecutiveNonRetransmittablePackets.
   size_t max_consecutive_num_packets_with_no_retransmittable_frames_;
 
-  // Ack decimation will start happening after this many packets are received.
-  // TODO(fayang): Remove min_received_before_ack_decimation_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  size_t min_received_before_ack_decimation_;
-
-  // Before ack decimation starts (if enabled), we ack every n-th packet.
-  // TODO(fayang): Remove ack_frequency_before_ack_decimation_ when deprecating
-  // quic_rpm_decides_when_to_send_acks.
-  size_t ack_frequency_before_ack_decimation_;
-
   // If true, the connection will fill up the pipe with extra data whenever the
   // congestion controller needs it in order to make a bandwidth estimate.  This
   // is useful if the application pesistently underutilizes the link, but still
@@ -1491,12 +1405,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
 
-  // Indicates whether server connection does version negotiation. Server
-  // connection does not support version negotiation if a single version is
-  // provided in constructor.
-  const bool no_version_negotiation_;
-
-  // Payload of most recently transmitted QUIC_VERSION_99 connectivity
+  // Payload of most recently transmitted IETF QUIC connectivity
   // probe packet (the PATH_CHALLENGE payload). This implementation transmits
   // only one PATH_CHALLENGE per connectivity probe, so only one
   // QuicPathFrameBuffer is needed.
@@ -1513,22 +1422,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // vector to improve performance since it is expected to be very small.
   std::vector<QuicConnectionId> incoming_connection_ids_;
 
-  // Indicates whether an ACK needs to be sent in OnCanWrite(). Only used when
-  // deprecate_ack_bundling_mode is true.
-  // TODO(fayang): Remove this when ACK sending logic is moved to received
-  // packet manager, and an ACK timeout would be used to record when an ACK
-  // needs to be sent.
-  bool send_ack_when_on_can_write_;
-
   // Indicates whether a RETRY packet has been parsed.
   bool retry_has_been_parsed_;
-
-  // Latched value of quic_validate_packet_number_post_decryption.
-  const bool validate_packet_number_post_decryption_;
-
-  // Latched value of quic_rpm_decides_when_to_send_acks and
-  // quic_use_uber_received_packet_manager.
-  const bool use_uber_received_packet_manager_;
 };
 
 }  // namespace quic

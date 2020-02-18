@@ -25,10 +25,19 @@ import {
   State,
   Status,
   TraceTime,
+  TrackState,
 } from './state';
 
 type StateDraft = Draft<State>;
 
+export interface AddTrackArgs {
+  id?: string;
+  engineId: string;
+  kind: string;
+  name: string;
+  trackGroup?: string;
+  config: {};
+}
 
 function clearTraceState(state: StateDraft) {
   const nextId = state.nextId;
@@ -58,9 +67,26 @@ export const StateActions = {
     state.route = `/viewer`;
   },
 
-  convertTraceToJson(_: StateDraft, args: {file: File}): void {
-    ConvertTrace(args.file);
+  openTraceFromBuffer(state: StateDraft, args: {buffer: ArrayBuffer}): void {
+    clearTraceState(state);
+    const id = `${state.nextId++}`;
+    state.engines[id] = {
+      id,
+      ready: false,
+      source: args.buffer,
+    };
+    state.route = `/viewer`;
   },
+
+  openVideoFromFile(state: StateDraft, args: {file: File}): void {
+    state.video = URL.createObjectURL(args.file);
+    state.videoEnabled = true;
+  },
+
+  convertTraceToJson(_: StateDraft, args: {file: File, truncate: boolean}):
+      void {
+        ConvertTrace(args.file, args.truncate);
+      },
 
   openTraceFromUrl(state: StateDraft, args: {url: string}): void {
     clearTraceState(state);
@@ -71,6 +97,19 @@ export const StateActions = {
       source: args.url,
     };
     state.route = `/viewer`;
+  },
+
+  addTracks(state: StateDraft, args: {tracks: AddTrackArgs[]}) {
+    args.tracks.forEach(track => {
+      const id = track.id === undefined ? `${state.nextId++}` : track.id;
+      track.id = id;
+      state.tracks[id] = track as TrackState;
+      if (track.trackGroup === SCROLLING_TRACK_GROUP) {
+        state.scrollingTracks.push(id);
+      } else if (track.trackGroup !== undefined) {
+        assertExists(state.trackGroups[track.trackGroup]).tracks.push(id);
+      }
+    });
   },
 
   addTrack(state: StateDraft, args: {
@@ -256,15 +295,40 @@ export const StateActions = {
     }
   },
 
-  addNote(state: StateDraft, args: {timestamp: number, color: string}): void {
+  addNote(
+      state: StateDraft,
+      args: {timestamp: number, color: string, isMovie: boolean}): void {
     const id = `${state.nextId++}`;
     state.notes[id] = {
       id,
       timestamp: args.timestamp,
       color: args.color,
       text: '',
+      isMovie: args.isMovie
     };
+    if (args.isMovie) {
+      state.videoNoteIds.push(id);
+    }
     this.selectNote(state, {id});
+  },
+
+  toggleVideo(state: StateDraft): void {
+    state.videoEnabled = !state.videoEnabled;
+    if (!state.videoEnabled) {
+      state.video = null;
+      state.flagPauseEnabled = false;
+      state.videoNoteIds.forEach(id => {
+        this.removeNote(state, {id: id});
+      });
+    }
+  },
+
+  toggleFlagPause(state: StateDraft): void {
+    if (state.video === null) {
+      state.flagPauseEnabled = false;
+    } else {
+      state.flagPauseEnabled = !state.flagPauseEnabled;
+    }
   },
 
   changeNoteColor(state: StateDraft, args: {id: string, newColor: string}):
@@ -281,6 +345,11 @@ export const StateActions = {
   },
 
   removeNote(state: StateDraft, args: {id: string}): void {
+    if (state.notes[args.id].isMovie) {
+      state.videoNoteIds = state.videoNoteIds.filter(function(id) {
+        return id != args.id;
+      });
+    }
     delete state.notes[args.id];
     if (state.currentSelection === null) return;
     if (state.currentSelection.kind === 'NOTE' &&

@@ -13,11 +13,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_service.h"
@@ -32,6 +32,7 @@
 #include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/ozone/public/system_input_injector.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
@@ -42,7 +43,8 @@ constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
     /*needs_view_token=*/true,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
-    /*requires_mojo=*/true};
+    /*requires_mojo=*/true,
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_IO};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
@@ -112,6 +114,11 @@ class OzonePlatformScenic
     return window_manager_->CreateScreen();
   }
 
+  std::unique_ptr<InputMethod> CreateInputMethod(
+      internal::InputMethodDelegate* delegate) override {
+    return std::make_unique<InputMethodFuchsia>(delegate);
+  }
+
   void InitializeUI(const InitParams& params) override {
     if (!PlatformEventSource::GetInstance())
       platform_event_source_ = std::make_unique<ScenicPlatformEventSource>();
@@ -148,11 +155,6 @@ class OzonePlatformScenic
       surface_factory_ =
           std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
     }
-  }
-
-  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
-    // Scenic FIDL calls require async dispatcher.
-    return base::MessageLoop::TYPE_IO;
   }
 
   void AddInterfaces(service_manager::BinderRegistry* registry) override {

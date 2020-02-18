@@ -86,8 +86,8 @@ SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
       provider_(provider),
       next_render_pass_id_(1),
       aggregate_only_damaged_(aggregate_only_damaged),
-      needs_surface_occluding_damage_rect_(needs_surface_occluding_damage_rect),
-      weak_factory_(this) {
+      needs_surface_occluding_damage_rect_(
+          needs_surface_occluding_damage_rect) {
   DCHECK(manager_);
 }
 
@@ -460,13 +460,18 @@ void SurfaceAggregator::EmitSurfaceContent(
 
     RenderPassId remapped_pass_id = RemapPassId(source.id, surface_id);
 
-    copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target, source.filters,
-                      source.backdrop_filters, source.backdrop_filter_bounds,
-                      blending_color_space_, source.has_transparent_background,
-                      source.cache_render_pass,
-                      source.has_damage_from_contributing_content,
-                      source.generate_mipmap);
+    gfx::Rect output_rect = source.output_rect;
+    if (max_texture_size_ > 0) {
+      output_rect.set_width(std::min(output_rect.width(), max_texture_size_));
+      output_rect.set_height(std::min(output_rect.height(), max_texture_size_));
+    }
+    copy_pass->SetAll(
+        remapped_pass_id, output_rect, output_rect,
+        source.transform_to_root_target, source.filters,
+        source.backdrop_filters, source.backdrop_filter_bounds,
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
 
@@ -560,7 +565,8 @@ void SurfaceAggregator::EmitSurfaceContent(
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
     quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
                  remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                 gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
+                 /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+                 gfx::PointF(), gfx::RectF(scaled_rect),
                  /*force_anti_aliasing_off=*/false,
                  /* backdrop_filter_quality*/ 1.0f);
   }
@@ -692,7 +698,8 @@ void SurfaceAggregator::AddColorConversionPass() {
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+               gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
@@ -742,7 +749,8 @@ void SurfaceAggregator::AddDisplayTransformPass() {
       display_transform_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
+               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
+               gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(display_transform_pass));
@@ -1023,9 +1031,9 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     copy_pass->SetAll(
         remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
-        blending_color_space_, source.has_transparent_background,
-        source.cache_render_pass, source.has_damage_from_contributing_content,
-        source.generate_mipmap);
+        output_color_space_.GetBlendingColorSpace(),
+        source.has_transparent_background, source.cache_render_pass,
+        source.has_damage_from_contributing_content, source.generate_mipmap);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
                     frame.device_scale_factor(), child_to_parent_map,
@@ -1177,7 +1185,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
       moved_pixel_passes_.insert(remapped_pass_id);
     bool in_moved_pixel_pass =
         has_pixel_moving_filter ||
-        base::ContainsKey(moved_pixel_passes_, remapped_pass_id);
+        base::Contains(moved_pixel_passes_, remapped_pass_id);
 
     for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::Material::kSurfaceContent) {
@@ -1238,12 +1246,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
 
-  gfx::Rect damage_rect;
-  gfx::Rect full_damage;
   RenderPass* last_pass = frame.render_pass_list.back().get();
-  full_damage = last_pass->output_rect;
-  damage_rect =
-      DamageRectForSurface(surface, *last_pass, last_pass->output_rect);
+  gfx::Rect full_damage = last_pass->output_rect;
+  gfx::Rect damage_rect =
+      DamageRectForSurface(surface, *last_pass, full_damage);
   damage_rect = cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       root_pass_transform, damage_rect);
 
@@ -1309,6 +1315,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   }
 
   if (!damage_rect.IsEmpty()) {
+    // If there is a damage on the surface, boundaries of mirror layers should
+    // also be marked as damaged so they can reflect the changes in the
+    // sub-surfaces of this surface.
+    damage_rect.Union(cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+        root_pass_transform, frame.metadata.mirror_rect));
+
     // The following call can cause one or more copy requests to be added to the
     // Surface. Therefore, no code before this point should have assumed
     // anything about the presence or absence of copy requests after this point.
@@ -1569,14 +1581,15 @@ void SurfaceAggregator::SetFullDamageForSurface(const SurfaceId& surface_id) {
 }
 
 void SurfaceAggregator::SetOutputColorSpace(
-    const gfx::ColorSpace& blending_color_space,
     const gfx::ColorSpace& output_color_space) {
-  blending_color_space_ = blending_color_space.IsValid()
-                              ? blending_color_space
-                              : gfx::ColorSpace::CreateSRGB();
   output_color_space_ = output_color_space.IsValid()
                             ? output_color_space
                             : gfx::ColorSpace::CreateSRGB();
+}
+
+void SurfaceAggregator::SetMaximumTextureSize(int max_texture_size) {
+  DCHECK_GE(max_texture_size, 0);
+  max_texture_size_ = max_texture_size;
 }
 
 bool SurfaceAggregator::NotifySurfaceDamageAndCheckForDisplayDamage(

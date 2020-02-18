@@ -26,7 +26,7 @@
 #include "device/bluetooth/bluetooth_low_energy_device_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_device_watcher_mac.h"
 #include "device/bluetooth/bluetooth_low_energy_discovery_manager_mac.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 @class CBUUID;
 @class IOBluetoothDevice;
@@ -104,12 +104,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
 
   // Registers that a new |device| has connected to the local host.
   void DeviceConnected(IOBluetoothDevice* device);
-
-  // We only use CoreBluetooth when OS X >= 10.10. This because the
-  // CBCentralManager destructor was found to crash on the mac-rel builder
-  // running 10.9.5. May also cause blued to crash on OS X 10.9.5
-  // (crbug.com/506287).
-  static bool IsLowEnergyAvailable();
 
   // Creates a GATT connection by calling CoreBluetooth APIs.
   void CreateGattConnection(BluetoothLowEnergyDeviceMac* device_mac);

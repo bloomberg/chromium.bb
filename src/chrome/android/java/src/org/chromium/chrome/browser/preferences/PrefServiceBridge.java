@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,7 +100,7 @@ public class PrefServiceBridge {
             // TODO(wnwen): Check while refactoring TemplateUrlService whether this belongs here.
             // This is necessary as far as ensuring that TemplateUrlService is loaded at some point.
             // Put initialization here to make instantiation in unit tests easier.
-            TemplateUrlService.getInstance().load();
+            TemplateUrlServiceFactory.get().load();
         }
         return sInstance;
     }
@@ -356,13 +356,6 @@ public class PrefServiceBridge {
      */
     public void setEulaAccepted() {
         nativeSetEulaAccepted();
-    }
-
-    /**
-     * Resets translate defaults if needed
-     */
-    public void resetTranslateDefaults() {
-        nativeResetTranslateDefaults();
     }
 
     /**
@@ -674,6 +667,7 @@ public class PrefServiceBridge {
 
         switch (contentSettingsType) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
@@ -729,6 +723,7 @@ public class PrefServiceBridge {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
             // Returns true if websites are allowed to request permission to access USB devices.
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(contentSettingsType);
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
                 return nativeGetAutomaticDownloadsEnabled();
@@ -1106,7 +1101,6 @@ public class PrefServiceBridge {
     private native boolean nativeGetSoundEnabled();
     private native boolean nativeGetSupervisedUserSafeSitesEnabled();
     private native void nativeSetTranslateEnabled(boolean enabled);
-    private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
     private native boolean nativeGetBrowsingDataDeletionPreference(
             int dataType, int clearBrowsingDataTab);

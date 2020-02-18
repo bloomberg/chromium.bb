@@ -4,9 +4,9 @@
 */
 'use strict';
 
-import RequestBase from './request-base.js';
+import {RequestBase} from './request-base.js';
 
-export default class NewBugRequest extends RequestBase {
+export class NewBugRequest extends RequestBase {
   constructor(options) {
     super(options);
     this.method_ = 'POST';
@@ -20,6 +20,7 @@ export default class NewBugRequest extends RequestBase {
     this.body_.set('description', options.description);
     this.body_.set('owner', options.owner);
     this.body_.set('cc', options.cc);
+    this.body_.set('bisect', options.startBisect);
   }
 
   get url_() {

@@ -26,12 +26,21 @@ QUIC_EXPORT_PRIVATE std::ostream& operator<<(
 
 struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicConnectionCloseFrame();
-  QuicConnectionCloseFrame(QuicErrorCode error_code);
+
+  // TODO(fkastenholz): After migration to supporting IETF QUIC, this probably
+  // should be deprecated.
   QuicConnectionCloseFrame(QuicErrorCode error_code, std::string error_details);
-  QuicConnectionCloseFrame(QuicIetfTransportErrorCodes transport_error_code,
-                           QuicErrorCode extracted_error_code,
+
+  // Sets close_type to IETF_QUIC_APPLICATION_CONNECTION_CLOSE.
+  QuicConnectionCloseFrame(QuicErrorCode quic_error_code,
                            std::string error_details,
-                           uint64_t frame_type);
+                           uint64_t ietf_application_error_code);
+
+  // Sets close_type to IETF_QUIC_TRANSPORT_CONNECTION_CLOSE.
+  QuicConnectionCloseFrame(QuicErrorCode quic_error_code,
+                           std::string error_details,
+                           QuicIetfTransportErrorCodes transport_error_code,
+                           uint64_t transport_frame_type);
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(
       std::ostream& os,
@@ -42,13 +51,15 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicConnectionCloseType close_type;
 
   // This is the error field in the frame.
-  // The CONNECTION_CLOSE frame reports a 16-bit error code:
+  // The CONNECTION_CLOSE frame reports an error code:
   // - The transport error code as reported in a CONNECTION_CLOSE/Transport
-  //   frame,
-  // - An opaque 16-bit code as reported in CONNECTION_CLOSE/Application frames,
-  // - A QuicErrorCode, which is used in Google QUIC.
+  //   frame (serialized as a VarInt),
+  // - An opaque 64-bit code as reported in CONNECTION_CLOSE/Application frames
+  //  (serialized as a VarInt),,
+  // - A 16 bit QuicErrorCode, which is used in Google QUIC.
   union {
     QuicIetfTransportErrorCodes transport_error_code;
+    // TODO(fkastenholz): Change this to uint64_t to reflect -22 of the ID.
     uint16_t application_error_code;
     QuicErrorCode quic_error_code;
   };

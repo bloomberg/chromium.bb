@@ -7,7 +7,7 @@
 
 #include "src/gpu/GrDeinstantiateProxyTracker.h"
 
-#include "include/private/GrSurfaceProxy.h"
+#include "src/gpu/GrSurfaceProxy.h"
 #include "src/gpu/GrSurfaceProxyPriv.h"
 
 void GrDeinstantiateProxyTracker::addProxy(GrSurfaceProxy* proxy) {
@@ -18,8 +18,7 @@ void GrDeinstantiateProxyTracker::addProxy(GrSurfaceProxy* proxy) {
         SkASSERT(proxy != fProxies[i].get());
     }
 #endif
-    proxy->firstRefAccess().ref(fCache);
-    fProxies.push_back(sk_sp<GrSurfaceProxy>(proxy));
+    fProxies.push_back(sk_ref_sp<GrSurfaceProxy>(proxy));
 }
 
 void GrDeinstantiateProxyTracker::deinstantiateAllProxies() {

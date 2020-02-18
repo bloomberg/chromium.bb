@@ -20,6 +20,7 @@
 #include "call/syncable.h"
 #include "call/video_receive_stream.h"
 #include "modules/rtp_rtcp/include/flexfec_receiver.h"
+#include "modules/rtp_rtcp/source/source_tracker.h"
 #include "modules/video_coding/frame_buffer2.h"
 #include "modules/video_coding/video_coding_impl.h"
 #include "rtc_base/synchronization/sequence_checker.h"
@@ -100,7 +101,10 @@ class VideoReceiveStream : public webrtc::VideoReceiveStream,
   void OnFrame(const VideoFrame& video_frame) override;
 
   // Implements NackSender.
-  void SendNack(const std::vector<uint16_t>& sequence_numbers) override;
+  // For this particular override of the interface,
+  // only (buffering_allowed == true) is acceptable.
+  void SendNack(const std::vector<uint16_t>& sequence_numbers,
+                bool buffering_allowed) override;
 
   // Implements video_coding::OnCompleteFrameCallback.
   void OnCompleteFrame(
@@ -160,6 +164,7 @@ class VideoReceiveStream : public webrtc::VideoReceiveStream,
   bool decoder_running_ RTC_GUARDED_BY(worker_sequence_checker_) = false;
   bool decoder_stopped_ RTC_GUARDED_BY(decode_queue_) = true;
 
+  SourceTracker source_tracker_;
   ReceiveStatisticsProxy stats_proxy_;
   // Shared by media and rtx stream receivers, since the latter has no RtpRtcp
   // module of its own.

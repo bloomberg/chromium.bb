@@ -1,21 +1,22 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import sys
-import urllib2
+
+from six.moves import urllib
+from six.moves import input # pylint: disable=redefined-builtin
 
 import metrics_utils
 
 
 def main():
-  metrics = raw_input()
+  metrics = input()
   try:
-    urllib2.urlopen(metrics_utils.APP_URL + '/upload', metrics)
-  except urllib2.HTTPError:
-    pass
-  except urllib2.URLError:
+    urllib.request.urlopen(
+        metrics_utils.APP_URL + '/upload', metrics.encode('utf-8'))
+  except (urllib.error.HTTPError, urllib.error.URLError):
     pass
 
   return 0

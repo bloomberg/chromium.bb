@@ -28,7 +28,7 @@ bool IsOriginSecure(const GURL& url) {
     return true;
   }
 
-  if (base::ContainsValue(url::GetSecureSchemes(), url.scheme()))
+  if (base::Contains(url::GetSecureSchemes(), url.scheme()))
     return true;
 
   if (net::IsLocalhost(url))

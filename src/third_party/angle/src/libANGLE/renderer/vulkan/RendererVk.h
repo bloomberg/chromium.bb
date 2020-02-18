@@ -64,6 +64,7 @@ class RendererVk : angle::NonCopyable
     std::string getRendererDescription() const;
 
     gl::Version getMaxSupportedESVersion() const;
+    gl::Version getMaxConformantESVersion() const;
 
     VkInstance getInstance() const { return mInstance; }
     VkPhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
@@ -85,8 +86,6 @@ class RendererVk : angle::NonCopyable
     const gl::TextureCapsMap &getNativeTextureCaps() const;
     const gl::Extensions &getNativeExtensions() const;
     const gl::Limitations &getNativeLimitations() const;
-    uint32_t getMaxUniformBlocks() const;
-    uint32_t getMaxActiveTextures() const;
 
     uint32_t getQueueFamilyIndex() const { return mCurrentQueueFamilyIndex; }
 
@@ -144,6 +143,12 @@ class RendererVk : angle::NonCopyable
 
     Serial nextSerial();
 
+    angle::Result newSharedFence(vk::Context *context, vk::Shared<vk::Fence> *sharedFenceOut);
+    inline void resetSharedFence(vk::Shared<vk::Fence> *sharedFenceIn)
+    {
+        sharedFenceIn->resetAndRecycle(&mFenceRecycler);
+    }
+
     void addGarbage(vk::Shared<vk::Fence> &&fence, std::vector<vk::GarbageObjectBase> &&garbage);
     void addGarbage(std::vector<vk::Shared<vk::Fence>> &&fences,
                     std::vector<vk::GarbageObjectBase> &&garbage);
@@ -192,11 +197,13 @@ class RendererVk : angle::NonCopyable
     uint32_t mCurrentQueueFamilyIndex;
     uint32_t mMaxVertexAttribDivisor;
     VkDevice mDevice;
-    SerialFactory mQueueSerialFactory;
-    SerialFactory mShaderSerialFactory;
+    AtomicSerialFactory mQueueSerialFactory;
+    AtomicSerialFactory mShaderSerialFactory;
     Serial mCurrentQueueSerial;
 
     bool mDeviceLost;
+
+    vk::Recycler<vk::Fence> mFenceRecycler;
 
     std::mutex mGarbageMutex;
     using FencedGarbage =
@@ -223,8 +230,6 @@ class RendererVk : angle::NonCopyable
     std::mutex mDescriptorSetLayoutCacheMutex;
     DescriptorSetLayoutCache mDescriptorSetLayoutCache;
 };
-
-uint32_t GetUniformBufferDescriptorCount();
 
 }  // namespace rx
 

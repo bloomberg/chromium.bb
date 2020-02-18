@@ -161,7 +161,7 @@ void URLDataManager::UpdateWebUIDataSource(
 bool URLDataManager::IsScheduledForDeletion(
     const URLDataSourceImpl* data_source) {
   base::AutoLock lock(g_delete_lock.Get());
-  return data_sources_ && base::ContainsValue(*data_sources_, data_source);
+  return data_sources_ && base::Contains(*data_sources_, data_source);
 }
 
 }  // namespace content

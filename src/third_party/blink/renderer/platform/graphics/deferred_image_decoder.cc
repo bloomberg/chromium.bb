@@ -34,8 +34,8 @@
 #include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -124,7 +124,7 @@ struct DeferredFrameData {
       : orientation_(kDefaultImageOrientation), is_received_(false) {}
 
   ImageOrientation orientation_;
-  TimeDelta duration_;
+  base::TimeDelta duration_;
   bool is_received_;
 
  private:
@@ -207,7 +207,7 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   if (image_is_high_bit_depth_)
     info = info.makeColorType(kRGBA_F16_SkColorType);
 
-  std::vector<FrameMetadata> frames(frame_data_.size());
+  WebVector<FrameMetadata> frames(frame_data_.size());
   for (size_t i = 0; i < frame_data_.size(); ++i) {
     frames[i].complete = frame_data_[i].is_received_;
     frames[i].duration = FrameDurationAtIndex(i);
@@ -339,8 +339,8 @@ bool DeferredImageDecoder::FrameIsReceivedAtIndex(size_t index) const {
   return false;
 }
 
-TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
-  TimeDelta duration;
+base::TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
+  base::TimeDelta duration;
   if (metadata_decoder_)
     duration = metadata_decoder_->FrameDurationAtIndex(index);
   if (index < frame_data_.size())
@@ -350,8 +350,8 @@ TimeDelta DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
   // possible. We follow Firefox's behavior and use a duration of 100 ms for any
   // frames that specify a duration of <= 10 ms. See <rdar://problem/7689300>
   // and <http://webkit.org/b/36082> for more information.
-  if (duration <= TimeDelta::FromMilliseconds(10))
-    duration = TimeDelta::FromMilliseconds(100);
+  if (duration <= base::TimeDelta::FromMilliseconds(10))
+    duration = base::TimeDelta::FromMilliseconds(100);
 
   return duration;
 }

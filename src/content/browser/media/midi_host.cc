@@ -203,7 +203,7 @@ void MidiHost::SendData(uint32_t port,
   // happens here in the browser process.
   // Check |has_sys_ex_permission_| first to avoid searching kSysExByte in large
   // bulk data transfers for correct uses.
-  if (!has_sys_ex_permission_ && base::ContainsValue(data, kSysExByte)) {
+  if (!has_sys_ex_permission_ && base::Contains(data, kSysExByte)) {
     if (!has_sys_ex_permission_) {
       has_sys_ex_permission_ =
           ChildProcessSecurityPolicyImpl::GetInstance()

@@ -20,11 +20,11 @@ public class AssistantInfoBox {
         this.mExplanation = explanation;
     }
 
-    String getImagePath() {
+    public String getImagePath() {
         return mImagePath;
     }
 
-    String getExplanation() {
+    public String getExplanation() {
         return mExplanation;
     }
 

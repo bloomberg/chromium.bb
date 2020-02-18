@@ -33,8 +33,13 @@ message ProbeRequest {
     storage = 2;
     vpd_cached = 3;
   }
-  // repeated string categories = 1;
   repeated SupportCategory categories = 1;
+  // This option allows clients to retrieve data with privacy implication from
+  // D-Bus call to runtime_probe. Default to false and please use with caution.
+  bool include_privacy_fields = 2;
+  // If probe_default_category is True, the supplied categories above will be
+  // ignored.
+  bool probe_default_category = 3;
 }
 
 // Things about audio_codec
@@ -148,7 +153,7 @@ message Storage {
 }
 
 // Things about VPD (Vital Product Data) , cached version.
-message VpdCached{
+message VpdCached {
   // TODO(itspeter): Add more fileds for Vpd.
   message Fields {
     // Allowed VPD fileds are reviewed on https://b/131849646
@@ -162,12 +167,16 @@ message VpdCached{
   Fields values = 2;  // Component's details
 }
 
-// A ProbeResult contains all potential probe results. For category not existed
-// or not requested for probing, field is expected to be empty.
+// A ProbeResult contains all potential probe results. For category not
+// existed or not requested for probing, field is expected to be empty.
 message ProbeResult {
   // If a call was successful, error will not be defined.
   // If a call failed, it must set an error code.
   ErrorCode error = 1;
+  // The checksum of probe config content calculated using SHA1 hash.
+  string probe_config_checksum = 6;
+
+  // The following are the fields for different component categories.
   repeated AudioCodec audio_codec = 2;
   repeated Battery battery = 3;
   repeated Storage storage = 4;

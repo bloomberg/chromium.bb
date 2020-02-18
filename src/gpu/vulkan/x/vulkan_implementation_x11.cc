@@ -76,7 +76,7 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   if (!vulkan_function_pointers->vulkan_loader_library_)
     return false;
 
-  if (!vulkan_instance_.Initialize(required_extensions, {}, use_swiftshader()))
+  if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;
   return true;
 }
@@ -112,7 +112,9 @@ VulkanImplementationX11::GetRequiredDeviceExtensions() {
   // TODO(samans): Add these extensions once Swiftshader supports them.
   // https://crbug.com/963988
   if (!use_swiftshader()) {
+    extensions.push_back(VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME);
     extensions.push_back(VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
     extensions.push_back(VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
   }
   if (using_surface_)

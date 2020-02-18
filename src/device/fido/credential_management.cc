@@ -114,11 +114,11 @@ CredentialManagementRequest::ForEnumerateCredentialsGetNext(Version version) {
 CredentialManagementRequest CredentialManagementRequest::ForDeleteCredential(
     Version version,
     base::span<const uint8_t> pin_token,
-    std::vector<uint8_t> credential_id) {
+    const PublicKeyCredentialDescriptor& credential_id) {
   cbor::Value::MapValue params_map;
   params_map.emplace(
       static_cast<int>(CredentialManagementRequestParamKey::kCredentialID),
-      std::move(credential_id));
+      AsCBOR(credential_id));
   base::Optional<std::vector<uint8_t>> pin_auth_bytes =
       cbor::Writer::Write(cbor::Value(params_map));
   DCHECK(pin_auth_bytes);
@@ -227,6 +227,19 @@ base::Optional<EnumerateRPsResponse> EnumerateRPsResponse::Parse(
                               rp_count);
 }
 
+// static
+bool EnumerateRPsResponse::StringFixupPredicate(
+    const std::vector<const cbor::Value*>& path) {
+  // In the rp field (0x04), "name" may be truncated.
+  if (path.size() != 2 || !path[0]->is_unsigned() ||
+      path[0]->GetUnsigned() !=
+          static_cast<int>(CredentialManagementResponseKey::kRP) ||
+      !path[1]->is_string()) {
+    return false;
+  }
+  return path[1]->GetString() == "name";
+}
+
 EnumerateRPsResponse::EnumerateRPsResponse(EnumerateRPsResponse&&) = default;
 EnumerateRPsResponse& EnumerateRPsResponse::operator=(EnumerateRPsResponse&&) =
     default;
@@ -302,6 +315,20 @@ EnumerateCredentialsResponse::Parse(
       std::move(*opt_user), std::move(*opt_credential_id), credential_count);
 }
 
+// static
+bool EnumerateCredentialsResponse::StringFixupPredicate(
+    const std::vector<const cbor::Value*>& path) {
+  // In the user field (0x06), "name" or "displayName" may be truncated.
+  if (path.size() != 2 || !path[0]->is_unsigned() ||
+      path[0]->GetUnsigned() !=
+          static_cast<int>(CredentialManagementResponseKey::kUser) ||
+      !path[1]->is_string()) {
+    return false;
+  }
+  const std::string& user_key = path[1]->GetString();
+  return user_key == "name" || user_key == "displayName";
+}
+
 EnumerateCredentialsResponse::EnumerateCredentialsResponse(
     EnumerateCredentialsResponse&&) = default;
 EnumerateCredentialsResponse& EnumerateCredentialsResponse::operator=(
@@ -313,7 +340,9 @@ EnumerateCredentialsResponse::EnumerateCredentialsResponse(
     size_t credential_count_)
     : user(std::move(user_)),
       credential_id(std::move(credential_id_)),
-      credential_count(credential_count_) {}
+      credential_count(credential_count_) {
+  credential_id_cbor_bytes = *cbor::Writer::Write(AsCBOR(credential_id));
+}
 
 AggregatedEnumerateCredentialsResponse::AggregatedEnumerateCredentialsResponse(
     PublicKeyCredentialRpEntity rp_)

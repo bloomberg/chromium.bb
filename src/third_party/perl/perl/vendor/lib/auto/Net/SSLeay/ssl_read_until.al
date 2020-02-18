@@ -3,7 +3,7 @@
 # See AutoSplit.pm.
 package Net::SSLeay;
 
-#line 711 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_read_until.al)"
+#line 799 "blib\lib\Net\SSLeay.pm (autosplit into blib\lib\auto\Net\SSLeay\ssl_read_until.al)"
 ### from patch by Clinton Wong <clintdw@netcom.com>
 
 # ssl_read_until($ssl [, $delimit [, $max_length]])
@@ -14,7 +14,7 @@ sub ssl_read_until ($;$$) {
     my ($ssl,$delim, $max_length) = @_;
 
     # guess the delim string if missing
-    if ( ! defined $delim ) {           
+    if ( ! defined $delim ) {
       if ( defined $/ && length $/  ) { $delim = $/ }
       else { $delim = "\n" }      # Note: \n,$/ value depends on the platform
     }
@@ -22,7 +22,7 @@ sub ssl_read_until ($;$$) {
 
     my ($got);
     my $reply = '';
-    
+
     # If we have OpenSSL 0.9.6a or later, we can use SSL_peek to
     # speed things up.
     # N.B. 0.9.6a has security problems, so the support for
@@ -41,9 +41,9 @@ sub ssl_read_until ($;$$) {
 	    $got = Net::SSLeay::peek($ssl, $peek_length);
 	    last if print_errs('SSL_peek');
 	    $peek_length = blength($got);
-	    
+
 	    #$found = index($got, $delim);  # Old and broken
-	    
+
 	    # the delimiter may be split across two gets, so we prepend
 	    # a little from the last get onto this one before we check
 	    # for a match
@@ -60,16 +60,16 @@ sub ssl_read_until ($;$$) {
 	    $found = index($match, $delim);
 
 	    if ($found > -1) {
-		#$got = Net::SSLeay::read($ssl, $found+$len_delim);
+		#$got = Net::SSLeay::ssl_read_all($ssl, $found+$len_delim);
 		#read up to the end of the delimiter
-		$got = Net::SSLeay::read($ssl,
+		$got = Net::SSLeay::ssl_read_all($ssl,
 					 $found + $len_delim
-					 - ((blength $match) - (blength $got)));
+					 - ((blength($match)) - (blength($got))));
 		$done = 1;
 	    } else {
-		$got = Net::SSLeay::read($ssl, $peek_length);
+		$got = Net::SSLeay::ssl_read_all($ssl, $peek_length);
 		$done = 1 if ($peek_length == $max_length - blength($reply));
-	    } 
+	    }
 
 	    last if print_errs('SSL_read');
 	    debug_read(\$reply, \$got) if $trace>1;
@@ -78,7 +78,7 @@ sub ssl_read_until ($;$$) {
 	}
     } else {
 	while (!defined $max_length || length $reply < $max_length) {
-	    $got = Net::SSLeay::read($ssl,1);  # one by one
+	    $got = Net::SSLeay::ssl_read_all($ssl,1);  # one by one
 	    last if print_errs('SSL_read');
 	    debug_read(\$reply, \$got) if $trace>1;
 	    last if $got eq '';

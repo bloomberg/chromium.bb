@@ -13,7 +13,9 @@
   testText('color: var(-);margin: 0;padding:0');
   testText('color: red;/* a comment */;color: blue');
   testText(`:; color: red; color: blue`);
-  testText('color: red;/* a comment;;; */ :; color: blue;')
+  testText('color: red;/* a comment;;; */ :; color: blue;');
+  testText('grid: "a a" 10px "b b" 20px / 100px');
+  testText('grid: [first-row-start] "a a" 10px [first-row-end] [second-row-start] "b b" 20px / 100px');
   TestRunner.completeTest();
 
   function testText(cssText) {

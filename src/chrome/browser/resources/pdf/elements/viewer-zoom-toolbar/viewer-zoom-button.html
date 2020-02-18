@@ -54,13 +54,17 @@
         color: white;
       }
 
-      :host-context(:not([dark])):host([new-print-preview]) cr-icon-button {
-        --cr-icon-button-ripple-opacity: .5;
+      @media (prefers-color-scheme: light) {
+        :host([new-print-preview]) cr-icon-button {
+          --cr-icon-button-ripple-opacity: .5;
+        }
       }
 
-      :host-context([dark]):host([new-print-preview]) cr-icon-button {
-        background-color: var(--google-grey-900);
-        color: var(--google-grey-200);
+      @media (prefers-color-scheme: dark) {
+        :host([new-print-preview]) cr-icon-button {
+          background-color: var(--google-grey-900);
+          color: var(--google-grey-200);
+        }
       }
 
       :host([keyboard-navigation-active]) cr-icon-button:focus {

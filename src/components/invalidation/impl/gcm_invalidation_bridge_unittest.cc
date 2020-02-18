@@ -17,9 +17,9 @@
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/ip_endpoint.h"
-#include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -99,7 +99,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<ProfileIdentityProvider> identity_provider_;
 

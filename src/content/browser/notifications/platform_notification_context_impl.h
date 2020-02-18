@@ -24,6 +24,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 
 class GURL;
@@ -65,8 +66,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void Shutdown();
 
   // Creates a BlinkNotificationServiceImpl that is owned by this context.
-  void CreateService(const url::Origin& origin,
-                     blink::mojom::NotificationServiceRequest request);
+  void CreateService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
 
   // Removes |service| from the list of owned services, for example because the
   // Mojo pipe disconnected. Must be called on the UI thread.
@@ -102,6 +104,12 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       int64_t service_worker_registration_id,
       ReadAllResultCallback callback) override;
   void TriggerNotifications() override;
+  void WriteNotificationResources(
+      std::vector<NotificationResourceData> resource_data,
+      WriteResourcesResultCallback callback) override;
+  void ReDisplayNotifications(
+      std::vector<GURL> origins,
+      ReDisplayNotificationsResultCallback callback) override;
 
   // ServiceWorkerContextCoreObserver implementation.
   void OnRegistrationDeleted(int64_t registration_id,
@@ -230,6 +238,22 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void DoDeleteAllNotificationDataForOrigins(std::set<GURL> origins,
                                              DeleteAllResultCallback callback,
                                              bool initialized);
+
+  // Actually writes the notification resources to the database. Must only be
+  // called on the |task_runner_| thread. |callback| will be invoked on the UI
+  // thread when the operation has completed.
+  void DoWriteNotificationResources(
+      std::vector<NotificationResourceData> resource_data,
+      WriteResourcesResultCallback callback,
+      bool initialized);
+
+  // Actually reads all notification that should be on screen for |origins| from
+  // the database and displays them. Must only be called on the |task_runner_|
+  // thread. |callback| will be invoked on the UI thread with the number of
+  // displayed notifications when the operation has completed.
+  void DoReDisplayNotifications(std::vector<GURL> origins,
+                                ReDisplayNotificationsResultCallback callback,
+                                bool initialized);
 
   void OnStorageWipedInitialized(bool initialized);
 

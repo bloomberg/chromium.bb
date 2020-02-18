@@ -24,8 +24,6 @@ namespace vk
 class Fence : public Object<Fence, VkFence>, public sw::TaskEvents
 {
 public:
-	Fence() : signaled(sw::Event::ClearMode::Manual, false) {}
-
 	Fence(const VkFenceCreateInfo* pCreateInfo, void* mem) :
 		signaled(sw::Event::ClearMode::Manual, (pCreateInfo->flags & VK_FENCE_CREATE_SIGNALED_BIT) != 0) {}
 
@@ -82,7 +80,7 @@ private:
 
 static inline Fence* Cast(VkFence object)
 {
-	return reinterpret_cast<Fence*>(object.get());
+	return Fence::Cast(object);
 }
 
 } // namespace vk

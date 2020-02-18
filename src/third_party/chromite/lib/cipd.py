@@ -16,109 +16,131 @@ import json
 import os
 import pprint
 import tempfile
-import urllib
 import urlparse
 
 import chromite.lib.cros_logging as log
 from chromite.lib import cache
-from chromite.lib import memoize
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import cros_build_lib
+from chromite.utils import memoize
 
 import httplib2
 
-# The version of CIPD to download.
-# TODO(phobbs) we could make a call to the 'resolveVersion' endpoint
-#   to resolve 'latest' into an instance_id for us.
+# pylint: disable=line-too-long
+# CIPD client to download.
 #
-# $ cipd resolve infra/tools/cipd/linux-amd64 \
-#       -version git_revision:b6cdec8586c9f8d3d728b1bc0bd4331330ba66fc
-CIPD_INSTANCE_ID = '04ed3a799b80e6815d428501d9bee416b7c3daca'
-CIPD_PACKAGE = 'infra/tools/cipd/linux-amd64'
+# This is version "git_revision:db7a486094873e3944b8e27ab5b23a3ae3c401e7".
+#
+# To switch to another version:
+#   1. Find it in CIPD Web UI, e.g.
+#      https://chrome-infra-packages.appspot.com/p/infra/tools/cipd/linux-amd64/+/latest
+#   2. Look up SHA256 there.
+# pylint: enable=line-too-long
+CIPD_CLIENT_PACKAGE = 'infra/tools/cipd/linux-amd64'
+CIPD_CLIENT_SHA256 = (
+    'ea6b7547ddd316f32fd9974f598949c3f8f22f6beb8c260370242d0d84825162')
 
 CHROME_INFRA_PACKAGES_API_BASE = (
-    'https://chrome-infra-packages.appspot.com/_ah/api/repo/v1/')
+    'https://chrome-infra-packages.appspot.com/prpc/cipd.Repository/')
 
 
-def _ChromeInfraRequest(endpoint, request_args=None):
+class Error(Exception):
+  """Raised on fatal errors."""
+
+
+def _ChromeInfraRequest(method, request):
   """Makes a request to the Chrome Infra Packages API with httplib2.
 
   Args:
-    endpoint: The endpoint to make a request to.
-    request_args: Keyword arguments to put into the request string.
+    method: Name of RPC method to call.
+    request: RPC request body.
 
   Returns:
-    A tuple of (headers, content) returned by the server. The body content is
-    assumed to be JSON.
+    Deserialized RPC response body.
   """
-  uri = ''.join([CHROME_INFRA_PACKAGES_API_BASE,
-                 endpoint,
-                 '?',
-                 urllib.urlencode(request_args or {})])
-  result = httplib2.Http().request(uri=uri)
+  resp, body = httplib2.Http().request(
+      uri=CHROME_INFRA_PACKAGES_API_BASE+method,
+      method='POST',
+      headers={
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'User-Agent': 'chromite',
+      },
+      body=json.dumps(request))
+  if resp.status != 200:
+    raise Error('Got HTTP %d from CIPD %r: %s' % (resp.status, method, body))
   try:
-    return result[0], json.loads(result[1])
-  except Exception as e:
-    e.message = 'Encountered exception requesting "%s":\n' + e.message
-    raise
+    return json.loads(body.lstrip(')]}\'\n'))
+  except ValueError:
+    raise Error('Bad response from CIPD server:\n%s' % (body,))
 
 
-def _DownloadCIPD(instance_id):
+def _DownloadCIPD(instance_sha256):
   """Finds the CIPD download link and requests the binary.
 
-  The 'client' endpoit of the chrome infra packages API responds with a sha1 and
-  a Google Storage link. After downloading the binary, we validate that the sha1
-  of the response and return it.
-
   Args:
-    instance_id: The version of CIPD to download.
+    instance_sha256: The version of CIPD client to download.
 
   Returns:
-    the CIPD binary as a string.
+    The CIPD binary as a string.
   """
-  args = {'instance_id': instance_id, 'package_name': CIPD_PACKAGE}
-  _, body = _ChromeInfraRequest('client', request_args=args)
-  if 'client_binary' not in body:
+  # Grab the signed URL to fetch the client binary from.
+  resp = _ChromeInfraRequest('DescribeClient', {
+      'package': CIPD_CLIENT_PACKAGE,
+      'instance': {
+          'hashAlgo': 'SHA256',
+          'hexDigest': instance_sha256,
+      },
+  })
+  if 'clientBinary' not in resp:
     log.error(
         'Error requesting the link to download CIPD from. Got:\n%s',
-        pprint.pformat(body))
-    return
+        pprint.pformat(resp))
+    raise Error('Failed to bootstrap CIPD client')
 
+  # Download the actual binary.
   http = httplib2.Http(cache=None)
-  response, binary = http.request(uri=body['client_binary']['fetch_url'])
-  assert response['status'] == '200', (
-      'Got a %s response from Google Storage.' % response['status'])
-  digest = unicode(hashlib.sha1(binary).hexdigest())
-  assert digest == body['client_binary']['sha1'], (
-      'The binary downloaded does not match the expected SHA1.')
+  response, binary = http.request(uri=resp['clientBinary']['signedUrl'])
+  if response.status != 200:
+    raise Error('Got a %d response from Google Storage.' % response.status)
+
+  # Check SHA256 matches what server expects.
+  digest = unicode(hashlib.sha256(binary).hexdigest())
+  for alias in resp['clientRefAliases']:
+    if alias['hashAlgo'] == 'SHA256':
+      if digest != alias['hexDigest']:
+        raise Error(
+            'Unexpected CIPD client SHA256: got %s, want %s' %
+            (digest, alias['hexDigest']))
+      break
+  else:
+    raise Error('CIPD server didn\'t provide expected SHA256')
+
   return binary
 
 
 class CipdCache(cache.RemoteCache):
   """Supports caching of the CIPD download."""
   def _Fetch(self, key, path):
-    instance_id = urlparse.urlparse(key).netloc
-    binary = _DownloadCIPD(instance_id)
-    log.info('Fetched CIPD package %s:%s', CIPD_PACKAGE, instance_id)
+    instance_sha256 = urlparse.urlparse(key).netloc
+    binary = _DownloadCIPD(instance_sha256)
+    log.info('Fetched CIPD package %s:%s', CIPD_CLIENT_PACKAGE, instance_sha256)
     osutils.WriteFile(path, binary)
     os.chmod(path, 0o755)
 
 
-def GetCIPDFromCache(instance_id=CIPD_INSTANCE_ID):
+def GetCIPDFromCache():
   """Checks the cache, downloading CIPD if it is missing.
-
-  Args:
-    instance_id: The version of CIPD to download. Default CIPD_INSTANCE_ID
 
   Returns:
     Path to the CIPD binary.
   """
   cache_dir = os.path.join(path_util.GetCacheDir(), 'cipd')
   bin_cache = CipdCache(cache_dir)
-  key = (instance_id,)
+  key = (CIPD_CLIENT_SHA256,)
   ref = bin_cache.Lookup(key)
-  ref.SetDefault('cipd://' + instance_id)
+  ref.SetDefault('cipd://' + CIPD_CLIENT_SHA256)
   return ref.path
 
 
@@ -196,7 +218,7 @@ def CreatePackage(cipd_path, package, in_dir, tags, refs,
       '-name', package,
       '-in', in_dir,
   ]
-  for key, value in tags.iteritems():
+  for key, value in tags.items():
     args.extend(['-tag', '%s:%s' % (key, value)])
   for ref in refs:
     args.extend(['-ref', ref])
@@ -235,7 +257,7 @@ def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
     cred_path: The path of the service account credentials.
   """
   args = [cipd_path, 'pkg-register', package_file]
-  for key, value in tags.iteritems():
+  for key, value in tags.items():
     args.extend(['-tag', '%s:%s' % (key, value)])
   for ref in refs:
     args.extend(['-ref', ref])

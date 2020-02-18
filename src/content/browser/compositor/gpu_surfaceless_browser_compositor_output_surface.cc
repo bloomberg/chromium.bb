@@ -14,26 +14,27 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
-#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
+#include "ui/gl/gl_enums.h"
 
 namespace content {
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
-        scoped_refptr<ws::ContextProviderCommandBuffer> context,
+        scoped_refptr<viz::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        std::unique_ptr<viz::OverlayCandidateValidator>
-            overlay_candidate_validator,
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
-    : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        std::move(overlay_candidate_validator)),
+    : GpuBrowserCompositorOutputSurface(std::move(context)),
       use_gpu_fence_(
           context_provider_->ContextCapabilities().chromium_gpu_fence &&
           context_provider_->ContextCapabilities()
               .use_gpu_fences_for_overlay_planes),
       gpu_fence_id_(0),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
+      current_texture_(0u),
+      fbo_(0u),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_handle_(surface_handle) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for surfaceless, which aligns scheduling
@@ -45,16 +46,20 @@ GpuSurfacelessBrowserCompositorOutputSurface::
   // implementation.
   capabilities_.max_frames_pending = 2;
 
+  auto* gl = context_provider_->ContextGL();
   buffer_queue_.reset(new viz::BufferQueue(
-      context_provider_->ContextGL(), format, gpu_memory_buffer_manager_,
-      surface_handle, context_provider_->ContextCapabilities()));
-  buffer_queue_->Initialize();
+      gl, format, gpu_memory_buffer_manager_, surface_handle,
+      context_provider_->ContextCapabilities()));
+  gl->GenFramebuffers(1, &fbo_);
 }
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     ~GpuSurfacelessBrowserCompositorOutputSurface() {
+  auto* gl = context_provider_->ContextGL();
   if (gpu_fence_id_ > 0)
-    context_provider_->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+    gl->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+  DCHECK_NE(0u, fbo_);
+  gl->DeleteFramebuffers(1, &fbo_);
 }
 
 bool GpuSurfacelessBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
@@ -64,7 +69,8 @@ bool GpuSurfacelessBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
 
 unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
     const {
-  return buffer_queue_->GetCurrentTextureId();
+  DCHECK(current_texture_);
+  return current_texture_;
 }
 
 gfx::BufferFormat
@@ -89,8 +95,30 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
+  auto* gl = context_provider_->ContextGL();
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
   DCHECK(buffer_queue_);
-  buffer_queue_->BindFramebuffer();
+  unsigned stencil;
+  current_texture_ = buffer_queue_->GetCurrentBuffer(&stencil);
+  if (!current_texture_)
+    return;
+  // TODO(andrescj): if the texture hasn't changed since the last call to
+  // BindFrameBuffer(), we may be able to avoid mutating the FBO which may lead
+  // to performance improvements.
+  gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           buffer_queue_->texture_target(), current_texture_,
+                           0);
+
+#if DCHECK_IS_ON() && defined(OS_CHROMEOS)
+  const GLenum result = gl->CheckFramebufferStatus(GL_FRAMEBUFFER);
+  if (result != GL_FRAMEBUFFER_COMPLETE)
+    DLOG(ERROR) << " Incomplete fb: " << gl::GLEnums::GetStringError(result);
+#endif
+
+  if (stencil) {
+    gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, stencil);
+  }
 }
 
 GLenum GpuSurfacelessBrowserCompositorOutputSurface::
@@ -108,7 +136,15 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
   GpuBrowserCompositorOutputSurface::Reshape(
       size, device_scale_factor, color_space, has_alpha, use_stencil);
   DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(size, device_scale_factor, color_space, use_stencil);
+  if (buffer_queue_->Reshape(size, device_scale_factor, color_space,
+                             use_stencil)) {
+    auto* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             buffer_queue_->texture_target(), 0, 0);
+    gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                GL_RENDERBUFFER, 0);
+  }
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
@@ -121,7 +157,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     modified_params.swap_response.result = gfx::SwapResult::SWAP_ACK;
-    buffer_queue_->RecreateBuffers();
+    buffer_queue_->FreeAllSurfaces();
     force_swap = true;
   }
   buffer_queue_->PageFlipComplete();
@@ -135,10 +171,11 @@ unsigned GpuSurfacelessBrowserCompositorOutputSurface::UpdateGpuFence() {
   if (!use_gpu_fence_)
     return 0;
 
+  auto* gl = context_provider_->ContextGL();
   if (gpu_fence_id_ > 0)
-    context_provider_->ContextGL()->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
+    gl->DestroyGpuFenceCHROMIUM(gpu_fence_id_);
 
-  gpu_fence_id_ = context_provider_->ContextGL()->CreateGpuFenceCHROMIUM();
+  gpu_fence_id_ = gl->CreateGpuFenceCHROMIUM();
 
   return gpu_fence_id_;
 }
@@ -149,4 +186,8 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SetDrawRectangle(
   buffer_queue_->CopyDamageForCurrentSurface(damage);
 }
 
+gpu::SurfaceHandle
+GpuSurfacelessBrowserCompositorOutputSurface::GetSurfaceHandle() const {
+  return surface_handle_;
+}
 }  // namespace content

@@ -15,6 +15,7 @@
 #include "fpdfsdk/cfx_systemhandler.h"
 #include "fpdfsdk/cpdfsdk_actionhandler.h"
 #include "fpdfsdk/cpdfsdk_annothandlermgr.h"
+#include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_interactiveform.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
@@ -405,7 +406,7 @@ FS_RECTF CPDFSDK_FormFillEnvironment::GetPageViewRect(CPDFXFA_Page* page) {
 bool CPDFSDK_FormFillEnvironment::PopupMenu(CPDFXFA_Page* page,
                                             FPDF_WIDGET hWidget,
                                             int menuFlag,
-                                            CFX_PointF pt) {
+                                            const CFX_PointF& pt) {
   return m_pInfo && m_pInfo->FFI_PopupMenu &&
          m_pInfo->FFI_PopupMenu(m_pInfo, FPDFPageFromIPDFPage(page), hWidget,
                                 menuFlag, pt.x, pt.y);
@@ -575,11 +576,11 @@ bool CPDFSDK_FormFillEnvironment::ProcOpenAction() {
   if (!m_pCPDFDoc)
     return false;
 
-  const CPDF_Dictionary* pRoot = m_pCPDFDoc->GetRoot();
+  CPDF_Dictionary* pRoot = m_pCPDFDoc->GetRoot();
   if (!pRoot)
     return false;
 
-  const CPDF_Object* pOpenAction = pRoot->GetDictFor("OpenAction");
+  CPDF_Object* pOpenAction = pRoot->GetDictFor("OpenAction");
   if (!pOpenAction)
     pOpenAction = pRoot->GetArrayFor("OpenAction");
   if (!pOpenAction)
@@ -588,7 +589,7 @@ bool CPDFSDK_FormFillEnvironment::ProcOpenAction() {
   if (pOpenAction->IsArray())
     return true;
 
-  const CPDF_Dictionary* pDict = pOpenAction->AsDictionary();
+  CPDF_Dictionary* pDict = pOpenAction->AsDictionary();
   if (!pDict)
     return false;
 
@@ -646,7 +647,7 @@ void CPDFSDK_FormFillEnvironment::UpdateAllViews(CPDFSDK_PageView* pSender,
 }
 
 bool CPDFSDK_FormFillEnvironment::SetFocusAnnot(
-    CPDFSDK_Annot::ObservedPtr* pAnnot) {
+    ObservedPtr<CPDFSDK_Annot>* pAnnot) {
   if (m_bBeingDestroyed)
     return false;
   if (m_pFocusAnnot == *pAnnot)
@@ -665,7 +666,7 @@ bool CPDFSDK_FormFillEnvironment::SetFocusAnnot(
     return false;
 
 #ifdef PDF_ENABLE_XFA
-  CPDFSDK_Annot::ObservedPtr pLastFocusAnnot(m_pFocusAnnot.Get());
+  ObservedPtr<CPDFSDK_Annot> pLastFocusAnnot(m_pFocusAnnot.Get());
   if (!pAnnotHandler->Annot_OnChangeFocus(pAnnot, &pLastFocusAnnot))
     return false;
 #endif  // PDF_ENABLE_XFA
@@ -683,11 +684,11 @@ bool CPDFSDK_FormFillEnvironment::KillFocusAnnot(uint32_t nFlag) {
     return false;
 
   CPDFSDK_AnnotHandlerMgr* pAnnotHandler = GetAnnotHandlerMgr();
-  CPDFSDK_Annot::ObservedPtr pFocusAnnot(m_pFocusAnnot.Get());
+  ObservedPtr<CPDFSDK_Annot> pFocusAnnot(m_pFocusAnnot.Get());
   m_pFocusAnnot.Reset();
 
 #ifdef PDF_ENABLE_XFA
-  CPDFSDK_Annot::ObservedPtr pNull;
+  ObservedPtr<CPDFSDK_Annot> pNull;
   if (!pAnnotHandler->Annot_OnChangeFocus(&pNull, &pFocusAnnot))
     return false;
 #endif  // PDF_ENABLE_XFA
@@ -707,6 +708,7 @@ bool CPDFSDK_FormFillEnvironment::KillFocusAnnot(uint32_t nFlag) {
   }
   return !m_pFocusAnnot;
 }
+
 #ifdef PDF_ENABLE_XFA
 CPDFXFA_Context* CPDFSDK_FormFillEnvironment::GetXFAContext() const {
   if (!m_pCPDFDoc)
@@ -716,6 +718,10 @@ CPDFXFA_Context* CPDFSDK_FormFillEnvironment::GetXFAContext() const {
 
 int CPDFSDK_FormFillEnvironment::GetPageViewCount() const {
   return pdfium::CollectionSize<int>(m_PageMap);
+}
+
+bool CPDFSDK_FormFillEnvironment::ContainsXFAForm() const {
+  return GetXFAContext()->ContainsXFAForm();
 }
 #endif  // PDF_ENABLE_XFA
 

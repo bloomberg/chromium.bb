@@ -33,6 +33,7 @@ if (is_chromeos) {
       "input_method_manager.mojom",
       "intent_common.mojom",
       "intent_helper.mojom",
+      "keymaster.mojom",
       "kiosk.mojom",
       "lock_screen.mojom",
       "media_session.mojom",
@@ -67,6 +68,7 @@ if (is_chromeos) {
     public_deps = [
       ":media",
       ":notifications",
+      "//media/capture/video/chromeos/mojo:cros_camera",
       "//mojo/public/mojom/base",
       "//services/device/public/mojom:usb",
       "//services/media_session/public/mojom",
@@ -88,9 +90,9 @@ if (is_chromeos) {
     ]
   }
 
-  # Media related mojo interfaces. There are used by //services/ws/public/mojom.
-  # We have this separate mojom target to avoid pulling in unnecessary
-  # interfaces.
+  # Media related mojo interfaces. These are used by
+  # //services/viz/public/interfaces. We have this separate mojom target to
+  # avoid pulling in unnecessary interfaces.
   mojom("media") {
     sources = [
       "gfx.mojom",
@@ -115,6 +117,20 @@ if (is_chromeos) {
     deps = [
       ":common",
       "//ui/base/ime:text_input_types",
+    ]
+  }
+
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "video_accelerator_struct_traits_unittest.cc",
+    ]
+
+    deps = [
+      ":common",
+      "//media",
+      "//mojo/public/cpp/test_support:test_utils",
+      "//testing/gtest",
     ]
   }
 }

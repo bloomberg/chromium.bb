@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.widget.selection;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
@@ -28,14 +27,14 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
-import org.chromium.chrome.browser.widget.FadingShadow;
-import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.LoadingView;
 import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserver;
 import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig.DisplayStyle;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
+import org.chromium.chrome.lib.browser.widget.FadingShadow;
+import org.chromium.chrome.lib.browser.widget.FadingShadowView;
 
 import java.util.List;
 
@@ -226,18 +225,15 @@ public class SelectableListLayout<E>
     /**
      * Initializes the view shown when the selectable list is empty.
      *
-     * @param emptyDrawable The Drawable to show when the selectable list is empty.
      * @param emptyStringResId The string to show when the selectable list is empty.
      * @param searchEmptyStringResId The string to show when the selectable list is empty during
      *                               a search.
      * @return The {@link TextView} displayed when the list is empty.
      */
-    public TextView initializeEmptyView(
-            Drawable emptyDrawable, int emptyStringResId, int searchEmptyStringResId) {
+    public TextView initializeEmptyView(int emptyStringResId, int searchEmptyStringResId) {
         mEmptyStringResId = emptyStringResId;
         mSearchEmptyStringResId = searchEmptyStringResId;
 
-        mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
         mEmptyView.setText(mEmptyStringResId);
 
         // Dummy listener to have the touch events dispatched to this view tree for navigation UI.

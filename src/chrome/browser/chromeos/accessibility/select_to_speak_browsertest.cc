@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_focus_ring_controller.h"
+#include "ash/accessibility/accessibility_focus_ring_controller_impl.h"
 #include "ash/accessibility/accessibility_focus_ring_layer.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -29,7 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/notification_types.h"
@@ -63,10 +63,8 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 
     // Connect to the ash test interface for the StatusAreaWidget.
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName,
-                        &status_area_widget_test_api_);
+    content::GetSystemConnector()->BindInterface(ash::mojom::kServiceName,
+                                                 &status_area_widget_test_api_);
 
     content::WindowedNotificationObserver extension_load_waiter(
         extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
@@ -335,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
       chromeos::AccessibilityManager::Get()->GetFocusRingId(
           extension_misc::kSelectToSpeakExtensionId, "");
 
-  ash::AccessibilityFocusRingController* controller =
+  ash::AccessibilityFocusRingControllerImpl* controller =
       ash::Shell::Get()->accessibility_focus_ring_controller();
   controller->SetNoFadeForTesting();
   const ash::AccessibilityFocusRingGroup* focus_ring_group =

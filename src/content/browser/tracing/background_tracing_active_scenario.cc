@@ -16,7 +16,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
-#include "content/public/common/service_manager_connection.h"
+#include "content/public/browser/system_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -27,10 +27,6 @@
 
 using base::trace_event::TraceConfig;
 using Metrics = content::BackgroundTracingManagerImpl::Metrics;
-
-namespace {
-const size_t kDefaultTraceBufferSizeInKb = 10 * 1024;
-}  // namespace
 
 namespace content {
 
@@ -76,9 +72,8 @@ class PerfettoTracingSession
  public:
   PerfettoTracingSession(BackgroundTracingActiveScenario* parent_scenario,
                          const TraceConfig& chrome_config,
-                         BackgroundTracingConfigImpl::CategoryPreset preset)
+                         int interning_reset_interval_ms)
       : parent_scenario_(parent_scenario),
-        category_preset_(preset),
         raw_data_(std::make_unique<std::string>()) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
@@ -90,11 +85,13 @@ class PerfettoTracingSession
     }
 #endif
 
-    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        tracing::mojom::kServiceName, &consumer_host_);
+    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
+                                        &consumer_host_);
 
     perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
         chrome_config, /*privacy_filtering_enabled=*/true);
+    perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(
+        interning_reset_interval_ms);
 
     tracing::mojom::TracingSessionClientPtr tracing_session_client;
     binding_.Bind(mojo::MakeRequest(&tracing_session_client));
@@ -143,7 +140,7 @@ class PerfettoTracingSession
   // tracing::mojom::TracingSession implementation:
   void OnTracingEnabled() override {
     BackgroundTracingManagerImpl::GetInstance()->OnStartTracingDone(
-        category_preset_);
+        parent_scenario_->GetConfig()->category_preset());
   }
 
   void OnTracingDisabled() override {
@@ -182,7 +179,6 @@ class PerfettoTracingSession
   tracing::mojom::TracingSessionHostPtr tracing_session_host_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
   tracing::mojom::ConsumerHostPtr consumer_host_;
-  BackgroundTracingConfigImpl::CategoryPreset category_preset_;
   std::unique_ptr<std::string> raw_data_;
   bool has_finished_read_buffers_ = false;
   bool has_finished_receiving_data_ = false;
@@ -192,8 +188,7 @@ class LegacyTracingSession
     : public BackgroundTracingActiveScenario::TracingSession {
  public:
   LegacyTracingSession(BackgroundTracingActiveScenario* parent_scenario,
-                       const TraceConfig& chrome_config,
-                       BackgroundTracingConfigImpl::CategoryPreset preset)
+                       const TraceConfig& chrome_config)
       : parent_scenario_(parent_scenario) {
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
@@ -210,7 +205,7 @@ class LegacyTracingSession
         base::BindOnce(
             &BackgroundTracingManagerImpl::OnStartTracingDone,
             base::Unretained(BackgroundTracingManagerImpl::GetInstance()),
-            preset));
+            parent_scenario->GetConfig()->category_preset()));
     // We check IsEnabled() before creating the LegacyTracingSession,
     // so any failures to start tracing at this point would be due to invalid
     // configs which we treat as a failure scenario.
@@ -272,16 +267,11 @@ class LegacyTracingSession
 
 BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
     std::unique_ptr<BackgroundTracingConfigImpl> config,
-    bool requires_anonymized_data,
     BackgroundTracingManager::ReceiveCallback receive_callback,
     base::OnceClosure on_aborted_callback)
     : config_(std::move(config)),
-      requires_anonymized_data_(requires_anonymized_data),
-      scenario_state_(State::kIdle),
       receive_callback_(std::move(receive_callback)),
-      triggered_named_event_handle_(-1),
-      on_aborted_callback_(std::move(on_aborted_callback)),
-      weak_ptr_factory_(this) {
+      on_aborted_callback_(std::move(on_aborted_callback)) {
   DCHECK(config_ && !config_->rules().empty());
   for (const auto& rule : config_->rules()) {
     rule->Install();
@@ -309,18 +299,8 @@ void BackgroundTracingActiveScenario::SetState(State new_state) {
     // which means that we're left in a state where the Mojo interface doesn't
     // think we're tracing but TraceLog is still enabled. If that's the case,
     // we abort tracing here.
-    auto record_mode =
-        (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE)
-            ? base::trace_event::RECORD_CONTINUOUSLY
-            : base::trace_event::RECORD_UNTIL_FULL;
-    TraceConfig config =
-        BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
-            config_->category_preset(), record_mode);
-
-    uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;
-    if (!config.event_filters().empty())
-      modes |= base::trace_event::TraceLog::FILTERING_MODE;
-    base::trace_event::TraceLog::GetInstance()->SetDisabled(modes);
+    base::trace_event::TraceLog::GetInstance()->SetDisabled(
+        base::trace_event::TraceLog::GetInstance()->enabled_modes());
   }
 
   if (scenario_state_ == State::kAborted) {
@@ -347,32 +327,14 @@ BackgroundTracingActiveScenario::GetWeakPtr() {
 void BackgroundTracingActiveScenario::StartTracingIfConfigNeedsIt() {
   DCHECK(config_);
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
-    StartTracing(config_->category_preset(),
-                 base::trace_event::RECORD_CONTINUOUSLY);
+    StartTracing();
   }
 
   // There is nothing to do in case of reactive tracing.
 }
 
-bool BackgroundTracingActiveScenario::StartTracing(
-    BackgroundTracingConfigImpl::CategoryPreset preset,
-    base::trace_event::TraceRecordMode record_mode) {
-  TraceConfig chrome_config =
-      BackgroundTracingConfigImpl::GetConfigForCategoryPreset(preset,
-                                                              record_mode);
-  if (requires_anonymized_data_) {
-    chrome_config.EnableArgumentFilter();
-  }
-
-  chrome_config.SetTraceBufferSizeInKb(kDefaultTraceBufferSizeInKb);
-
-#if defined(OS_ANDROID)
-  // Set low trace buffer size on Android in order to upload small trace files.
-  if (config_->tracing_mode() == BackgroundTracingConfigImpl::PREEMPTIVE) {
-    chrome_config.SetTraceBufferSizeInEvents(20000);
-    chrome_config.SetTraceBufferSizeInKb(500);
-  }
-#endif
+bool BackgroundTracingActiveScenario::StartTracing() {
+  TraceConfig chrome_config = config_->GetTraceConfig();
 
   // If the tracing controller is tracing, i.e. DevTools or about://tracing,
   // we don't start background tracing to not interfere with the user activity.
@@ -392,11 +354,11 @@ bool BackgroundTracingActiveScenario::StartTracing(
 
   DCHECK(!tracing_session_);
   if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {
-    tracing_session_ =
-        std::make_unique<PerfettoTracingSession>(this, chrome_config, preset);
+    tracing_session_ = std::make_unique<PerfettoTracingSession>(
+        this, chrome_config, config_->interning_reset_interval_ms());
   } else {
     tracing_session_ =
-        std::make_unique<LegacyTracingSession>(this, chrome_config, preset);
+        std::make_unique<LegacyTracingSession>(this, chrome_config);
   }
 
   SetState(State::kTracing);
@@ -562,8 +524,7 @@ void BackgroundTracingActiveScenario::OnRuleTriggered(
     return;
   }
 
-  last_triggered_rule_.reset(new base::DictionaryValue);
-  triggered_rule->IntoDict(last_triggered_rule_.get());
+  last_triggered_rule_ = triggered_rule;
 
   int trace_delay = triggered_rule->GetTraceDelay();
 
@@ -574,8 +535,7 @@ void BackgroundTracingActiveScenario::OnRuleTriggered(
 
     if (state() != State::kTracing) {
       // It was not already tracing, start a new trace.
-      if (!StartTracing(triggered_rule->category_preset(),
-                        base::trace_event::RECORD_UNTIL_FULL)) {
+      if (!StartTracing()) {
         return;
       }
     } else {
@@ -642,8 +602,24 @@ void BackgroundTracingActiveScenario::GenerateMetadataDict(
   metadata_dict->SetString("scenario_name", config_->scenario_name());
 
   if (last_triggered_rule_) {
-    metadata_dict->Set("last_triggered_rule", std::move(last_triggered_rule_));
+    auto rule = std::make_unique<base::DictionaryValue>();
+    last_triggered_rule_->IntoDict(rule.get());
+    metadata_dict->Set("last_triggered_rule", std::move(rule));
   }
+}
+
+void BackgroundTracingActiveScenario::GenerateMetadataProto(
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+  if (!last_triggered_rule_) {
+    return;
+  }
+  auto* triggered_rule =
+      metadata->set_background_tracing_metadata()->set_triggered_rule();
+  last_triggered_rule_->GenerateMetadataProto(triggered_rule);
+}
+
+size_t BackgroundTracingActiveScenario::GetTraceUploadLimitKb() const {
+  return config_->GetTraceUploadLimitKb();
 }
 
 }  // namespace content

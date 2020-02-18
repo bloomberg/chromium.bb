@@ -66,7 +66,6 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/logging/logging_utils.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -197,17 +196,6 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
   }
 }
 
-void RemoveWebViewEventListenersOnIOThread(
-    void* profile,
-    int embedder_process_id,
-    int view_instance_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile,
-      embedder_process_id,
-      view_instance_id);
-}
-
 double ConvertZoomLevelToZoomFactor(double zoom_level) {
   double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
   // Because the conversion from zoom level to zoom factor isn't perfect, the
@@ -243,10 +231,8 @@ void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
   }
 
   // Clean up web request event listeners for the WebView.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&RemoveWebViewEventListenersOnIOThread, browser_context,
-                     embedder_process_id, view_instance_id));
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
+      browser_context, embedder_process_id, view_instance_id);
 
   // Clean up content scripts for the WebView.
   auto* csm = WebViewContentScriptManager::Get(browser_context);
@@ -794,18 +780,9 @@ bool WebViewGuest::ClearData(base::Time remove_since,
 
     // We cannot use |BrowsingDataRemover| here since it doesn't support
     // non-default StoragePartition.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // Note that we've deprecated the concept of a media cache, and are now
-      // using a single cache for both purposes.
-      partition->GetNetworkContext()->ClearHttpCache(
-          remove_since, base::Time::Now(), nullptr /* ClearDataFilter */,
-          std::move(cache_removal_done_callback));
-    } else {
-      partition->ClearHttpAndMediaCaches(
-          remove_since, base::Time::Now(),
-          base::RepeatingCallback<bool(const GURL&)>(),
-          std::move(cache_removal_done_callback));
-    }
+    partition->GetNetworkContext()->ClearHttpCache(
+        remove_since, base::Time::Now(), nullptr /* ClearDataFilter */,
+        std::move(cache_removal_done_callback));
     return true;
   }
 
@@ -828,8 +805,7 @@ WebViewGuest::WebViewGuest(WebContents* owner_web_contents)
       did_set_explicit_zoom_(false),
       is_spatial_navigation_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableSpatialNavigation)),
-      weak_ptr_factory_(this) {
+              switches::kEnableSpatialNavigation)) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
 }
@@ -1055,7 +1031,7 @@ void WebViewGuest::RequestMediaAccessPermission(
 bool WebViewGuest::CheckMediaAccessPermission(
     content::RenderFrameHost* render_frame_host,
     const GURL& security_origin,
-    blink::MediaStreamType type) {
+    blink::mojom::MediaStreamType type) {
   return web_view_permission_helper_->CheckMediaAccessPermission(
       render_frame_host, security_origin, type);
 }
@@ -1455,7 +1431,7 @@ void WebViewGuest::ExitFullscreenModeForTab(WebContents* web_contents) {
 }
 
 bool WebViewGuest::IsFullscreenForTabOrPending(
-    const WebContents* web_contents) const {
+    const WebContents* web_contents) {
   return is_guest_fullscreen_;
 }
 

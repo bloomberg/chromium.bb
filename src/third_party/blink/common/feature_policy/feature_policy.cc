@@ -84,19 +84,14 @@ void FeaturePolicy::Allowlist::Add(const url::Origin& origin,
 
 PolicyValue FeaturePolicy::Allowlist::GetValueForOrigin(
     const url::Origin& origin) const {
-  // This does not handle the case where origin is an opaque origin, which is
-  // also supposed to exist in the allowlist. (The identical opaque origins
-  // should match in that case)
-  // TODO(iclelland): Fix that, possibly by having another flag for
-  // 'matches_self', which will explicitly match the policy's origin.
-  // https://crbug.com/690520
   // |fallback_value_| will either be min (initialized in the parser) value or
   // set to the corresponding value for * origins.
+  auto value = values_.find(origin);
+  if (value != values_.end())
+    return value->second;
   if (origin.opaque())
     return opaque_value_;
-
-  auto value = values_.find(origin);
-  return value == values_.end() ? fallback_value_ : value->second;
+  return fallback_value_;
 }
 
 const PolicyValue& FeaturePolicy::Allowlist::GetFallbackValue() const {
@@ -170,8 +165,8 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
 PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
     mojom::FeaturePolicyFeature feature,
     const url::Origin& origin) const {
-  DCHECK(base::ContainsKey(feature_list_, feature));
-  DCHECK(base::ContainsKey(inherited_policies_, feature));
+  DCHECK(base::Contains(feature_list_, feature));
+  DCHECK(base::Contains(inherited_policies_, feature));
 
   auto inherited_value = inherited_policies_.at(feature);
   auto allowlist = allowlists_.find(feature);
@@ -194,8 +189,8 @@ PolicyValue FeaturePolicy::GetFeatureValueForOrigin(
 
 const FeaturePolicy::Allowlist FeaturePolicy::GetAllowlistForFeature(
     mojom::FeaturePolicyFeature feature) const {
-  DCHECK(base::ContainsKey(feature_list_, feature));
-  DCHECK(base::ContainsKey(inherited_policies_, feature));
+  DCHECK(base::Contains(feature_list_, feature));
+  DCHECK(base::Contains(inherited_policies_, feature));
   mojom::PolicyValueType type = feature_list_.at(feature).second;
   // Return an empty allowlist when disabled through inheritance.
   if (inherited_policies_.at(feature) <=
@@ -244,12 +239,6 @@ FeaturePolicy::FeatureState FeaturePolicy::GetFeatureState() const {
 FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
     : origin_(std::move(origin)), feature_list_(feature_list) {
-  if (origin_.opaque()) {
-    // FeaturePolicy was written expecting opaque Origins to be indistinct, but
-    // this has changed. Split out a new opaque origin here, to defend against
-    // origin-equality.
-    origin_ = origin_.DeriveNewOpaqueOrigin();
-  }
 }
 
 FeaturePolicy::~FeaturePolicy() = default;
@@ -475,9 +464,6 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForAll,
                             mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kSerial,
-        FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
-                            mojom::PolicyValueType::kBool)},
-       {mojom::FeaturePolicyFeature::kSpeaker,
         FeatureDefaultValue(FeaturePolicy::FeatureDefault::EnableForSelf,
                             mojom::PolicyValueType::kBool)},
        {mojom::FeaturePolicyFeature::kSyncScript,

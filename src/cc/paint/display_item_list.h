@@ -63,9 +63,9 @@ class CC_PAINT_EXPORT DisplayItemList
   void Raster(SkCanvas* canvas, ImageProvider* image_provider = nullptr) const;
 
   // Captures the DrawTextBlobOp within |rect| and returns the associated
-  // NodeHolder in |content|.
+  // NodeId in |content|.
   void CaptureContent(const gfx::Rect& rect,
-                      std::vector<NodeHolder>* content) const;
+                      std::vector<NodeId>* content) const;
 
   void StartPaint() {
 #if DCHECK_IS_ON()
@@ -165,6 +165,7 @@ class CC_PAINT_EXPORT DisplayItemList
 
   int NumSlowPaths() const { return paint_op_buffer_.numSlowPaths(); }
   bool HasNonAAPaint() const { return paint_op_buffer_.HasNonAAPaint(); }
+  bool HasText() const { return paint_op_buffer_.HasText(); }
 
   // This gives the total number of PaintOps.
   size_t TotalOpCount() const { return paint_op_buffer_.total_op_count(); }

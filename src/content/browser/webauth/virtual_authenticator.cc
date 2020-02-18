@@ -5,8 +5,8 @@
 #include "content/browser/webauth/virtual_authenticator.h"
 
 #include <utility>
-#include <vector>
 
+#include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
@@ -28,6 +28,10 @@ VirtualAuthenticator::VirtualAuthenticator(
       unique_id_(base::GenerateGUID()),
       state_(base::MakeRefCounted<::device::VirtualFidoDevice::State>()) {
   state_->transport = transport;
+  // If the authenticator has user verification, simulate having set it up
+  // already.
+  state_->fingerprints_enrolled = has_user_verification_;
+  SetUserPresence(true);
 }
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
@@ -35,6 +39,41 @@ VirtualAuthenticator::~VirtualAuthenticator() = default;
 void VirtualAuthenticator::AddBinding(
     blink::test::mojom::VirtualAuthenticatorRequest request) {
   binding_set_.AddBinding(this, std::move(request));
+}
+
+bool VirtualAuthenticator::AddRegistration(
+    std::vector<uint8_t> key_handle,
+    const std::vector<uint8_t>& rp_id_hash,
+    const std::vector<uint8_t>& private_key,
+    int32_t counter) {
+  if (rp_id_hash.size() != device::kRpIdHashLength)
+    return false;
+
+  auto ec_private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
+  if (!ec_private_key)
+    return false;
+
+  return state_->registrations
+      .emplace(
+          std::move(key_handle),
+          ::device::VirtualFidoDevice::RegistrationData(
+              std::move(ec_private_key),
+              base::make_span<device::kRpIdHashLength>(rp_id_hash), counter))
+      .second;
+}
+
+void VirtualAuthenticator::ClearRegistrations() {
+  state_->registrations.clear();
+}
+
+void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
+  is_user_present_ = is_user_present;
+  state_->simulate_press_callback = base::BindRepeating(
+      [](bool is_user_present, device::VirtualFidoDevice* device) {
+        return is_user_present;
+      },
+      is_user_present);
 }
 
 std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
@@ -47,6 +86,7 @@ std::unique_ptr<::device::FidoDevice> VirtualAuthenticator::ConstructDevice() {
       config.internal_uv_support = has_user_verification_;
       config.is_platform_authenticator =
           attachment_ == ::device::AuthenticatorAttachment::kPlatform;
+      config.user_verification_succeeds = is_user_verified_;
       return std::make_unique<::device::VirtualCtap2Device>(state_, config);
     }
     default:
@@ -78,38 +118,25 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
 void VirtualAuthenticator::AddRegistration(
     blink::test::mojom::RegisteredKeyPtr registration,
     AddRegistrationCallback callback) {
-  if (registration->application_parameter.size() != device::kRpIdHashLength) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  bool success = false;
-  std::tie(std::ignore, success) = state_->registrations.emplace(
-      std::move(registration->key_handle),
-      ::device::VirtualFidoDevice::RegistrationData(
-          crypto::ECPrivateKey::CreateFromPrivateKeyInfo(
-              registration->private_key),
-          base::make_span<device::kRpIdHashLength>(
-              registration->application_parameter),
-          registration->counter));
-  std::move(callback).Run(success);
+  std::move(callback).Run(AddRegistration(
+      std::move(registration->key_handle), registration->application_parameter,
+      registration->private_key, registration->counter));
 }
 
 void VirtualAuthenticator::ClearRegistrations(
     ClearRegistrationsCallback callback) {
-  state_->registrations.clear();
+  ClearRegistrations();
   std::move(callback).Run();
 }
 
 void VirtualAuthenticator::SetUserPresence(bool present,
                                            SetUserPresenceCallback callback) {
-  // TODO(https://crbug.com/785955): Implement once VirtualFidoDevice supports
-  // this.
+  SetUserPresence(present);
   std::move(callback).Run();
 }
 
 void VirtualAuthenticator::GetUserPresence(GetUserPresenceCallback callback) {
-  std::move(callback).Run(false);
+  std::move(callback).Run(is_user_present_);
 }
 
 }  // namespace content

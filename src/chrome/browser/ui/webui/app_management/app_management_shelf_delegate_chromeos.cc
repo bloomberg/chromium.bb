@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 
@@ -25,6 +26,15 @@ AppManagementShelfDelegate::~AppManagementShelfDelegate() {
 
 bool AppManagementShelfDelegate::IsPinned(const std::string& app_id) {
   return ChromeLauncherController::instance()->IsAppPinned(app_id);
+}
+
+bool AppManagementShelfDelegate::IsPolicyPinned(
+    const std::string& app_id) const {
+  auto* shelf_item =
+      ChromeLauncherController::instance()->GetItem(ash::ShelfID(app_id));
+  // If the app does not exist on the launcher, it has not been pinned by
+  // policy.
+  return shelf_item && shelf_item->pinned_by_policy;
 }
 
 void AppManagementShelfDelegate::SetPinned(const std::string& app_id,

@@ -14,30 +14,21 @@ class IOSInternal(config_util.Config):
 
   @staticmethod
   def fetch_spec(props):
-    url = 'https://chrome-internal.googlesource.com/chrome/ios_internal.git'
-    solution = { 'name'   :'src/ios_internal',
-                 'url'    : url,
-                 'deps_file': 'DEPS',
-                 'managed'   : False,
-                 'custom_deps': {},
-    }
-    spec = {
-      'solutions': [solution],
-    }
-    if props.get('target_os'):
-      spec['target_os'] = props['target_os'].split(',')
-    else:
-      spec['target_os'] = ['ios']
-    if props.get('target_os_only'):
-      spec['target_os_only'] = props['target_os_only']
     return {
-      'type': 'gclient_git',
-      'gclient_git_spec': spec,
+      'alias': {
+        'config': 'chromium',
+        'props': [
+          '--flash=False',
+          '--internal=True',
+          '--target_os=ios',
+          '--target_os_only=True',
+        ],
+      },
     }
 
   @staticmethod
   def expected_root(_props):
-    return 'src'
+    return ''
 
 
 def main(argv=None):

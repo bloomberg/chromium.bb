@@ -4,18 +4,25 @@
 */
 'use strict';
 
-import AlertsRequest from './alerts-request.js';
-import AlertsSection from './alerts-section.js';
-import DescribeRequest from './describe-request.js';
-import ExistingBugRequest from './existing-bug-request.js';
-import NewBugRequest from './new-bug-request.js';
-import ReportNamesRequest from './report-names-request.js';
-import SheriffsRequest from './sheriffs-request.js';
-import findElements from './find-elements.js';
+import {AlertsRequest} from './alerts-request.js';
+import {AlertsSection} from './alerts-section.js';
+import {DescribeRequest} from './describe-request.js';
+import {ExistingBugRequest} from './existing-bug-request.js';
+import {NewBugRequest} from './new-bug-request.js';
+import {ReportNamesRequest} from './report-names-request.js';
+import {RequestBase} from './request-base.js';
+import {SheriffsRequest} from './sheriffs-request.js';
+import {findElements} from './find-elements.js';
 import {CHAIN, ENSURE, UPDATE} from './simple-redux.js';
 import {STORE} from './element-base.js';
-import {afterRender} from './utils.js';
 import {assert} from 'chai';
+
+import {
+  afterRender,
+  setDebugForTesting,
+  setProductionForTesting,
+  timeout,
+} from './utils.js';
 
 suite('alerts-section', function() {
   async function fixture() {
@@ -45,6 +52,7 @@ suite('alerts-section', function() {
         UPDATE('test', AlertsSection.buildState({}))));
     document.body.appendChild(section);
     await afterRender();
+    await afterRender();
     return section;
   }
 
@@ -52,7 +60,8 @@ suite('alerts-section', function() {
   let existingBugBody;
   let newBugBody;
   setup(() => {
-    window.IS_DEBUG = true;
+    RequestBase.getAuthorizationHeaders = async() => { return {}; };
+    setDebugForTesting(true);
     originalFetch = window.fetch;
     window.fetch = async(url, options) => {
       return {
@@ -73,7 +82,7 @@ suite('alerts-section', function() {
             return {};
           }
           if (url === SheriffsRequest.URL) {
-            return [];
+            return ['test'];
           }
           if (url === AlertsRequest.URL) {
             const improvements = Boolean(options.body.get('improvements'));
@@ -109,9 +118,7 @@ suite('alerts-section', function() {
               });
             }
             alerts.sort((x, y) => x.start_revision - y.start_revision);
-            return {
-              anomalies: alerts,
-            };
+            return {anomalies: alerts};
           }
         },
       };
@@ -161,16 +168,15 @@ suite('alerts-section', function() {
   });
 
   test('triageNew', async function() {
+    setProductionForTesting(true);
+
     const section = await fixture();
-    section.$.controls.dispatchEvent(new CustomEvent('sources', {
-      detail: {sources: [
-        {bug: 42},
-      ]},
-    }));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
     await afterRender();
 
     const selectAll = findElements(section, e =>
-      e.matches('th cp-checkbox'))[0];
+      e.matches('th chops-checkbox'))[0];
     selectAll.click();
     let state = STORE.getState().test;
     assert.strictEqual(10, state.selectedAlertsCount);
@@ -180,7 +186,7 @@ suite('alerts-section', function() {
     button.click();
 
     const submit = findElements(section, e =>
-      e.matches('raised-button') && /SUBMIT/i.test(e.textContent))[0];
+      e.matches('chops-button') && /SUBMIT/i.test(e.textContent))[0];
     submit.click();
     await afterRender();
 
@@ -200,16 +206,14 @@ suite('alerts-section', function() {
   });
 
   test('triageExisting', async function() {
+    setProductionForTesting(true);
     const section = await fixture();
-    section.$.controls.dispatchEvent(new CustomEvent('sources', {
-      detail: {sources: [
-        {bug: 42},
-      ]},
-    }));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
     await afterRender();
 
     const selectAll = findElements(section, e =>
-      e.matches('th cp-checkbox'))[0];
+      e.matches('th chops-checkbox'))[0];
     selectAll.click();
     let state = STORE.getState().test;
     assert.strictEqual(10, state.selectedAlertsCount);
@@ -223,7 +227,7 @@ suite('alerts-section', function() {
 
     const menu = findElements(section, e => e.matches('triage-existing'))[0];
     const submit = findElements(menu, e =>
-      e.matches('raised-button') && /SUBMIT/i.test(e.textContent))[0];
+      e.matches('chops-button') && /SUBMIT/i.test(e.textContent))[0];
     submit.click();
     await afterRender();
 
@@ -238,16 +242,14 @@ suite('alerts-section', function() {
   });
 
   test('ignore', async function() {
+    setProductionForTesting(true);
     const section = await fixture();
-    section.$.controls.dispatchEvent(new CustomEvent('sources', {
-      detail: {sources: [
-        {bug: 42},
-      ]},
-    }));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
     await afterRender();
 
     const selectAll = findElements(section, e =>
-      e.matches('th cp-checkbox'))[0];
+      e.matches('th chops-checkbox'))[0];
     selectAll.click();
     let state = STORE.getState().test;
     assert.strictEqual(10, state.selectedAlertsCount);
@@ -257,7 +259,8 @@ suite('alerts-section', function() {
     ignore.click();
     await afterRender();
 
-    assert.strictEqual('-2', existingBugBody.get('bug'));
+    assert.strictEqual('' + ExistingBugRequest.IGNORE_BUG_ID,
+        existingBugBody.get('bug'));
     assert.lengthOf(existingBugBody.getAll('key'), 10);
     for (let i = 0; i < 10; ++i) {
       assert.include(existingBugBody.getAll('key'), 'key' + i);
@@ -268,16 +271,14 @@ suite('alerts-section', function() {
   });
 
   test('unassign', async function() {
+    setProductionForTesting(true);
     const section = await fixture();
-    section.$.controls.dispatchEvent(new CustomEvent('sources', {
-      detail: {sources: [
-        {bug: 42},
-      ]},
-    }));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
     await afterRender();
 
     const selectAll = findElements(section, e =>
-      e.matches('th cp-checkbox'))[0];
+      e.matches('th chops-checkbox'))[0];
     selectAll.click();
     let state = STORE.getState().test;
     assert.strictEqual(10, state.selectedAlertsCount);
@@ -349,15 +350,240 @@ suite('alerts-section', function() {
     };
 
     const section = await fixture();
-    section.$.controls.dispatchEvent(new CustomEvent('sources', {
-      detail: {sources: [
-        {bug: 42},
-      ]},
-    }));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
     await afterRender();
 
     const divs = findElements(section, e => e.matches('div.error') &&
       /Error loading alerts: 500 test/.test(e.textContent));
     assert.lengthOf(divs, 1);
+  });
+
+  test('autotriage', async function() {
+    setProductionForTesting(true);
+    const section = await fixture();
+    STORE.dispatch(UPDATE('test.sheriff', {selectedOptions: ['test']}));
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await afterRender();
+    const groupCount = section.alertGroups.length;
+    const selectAll = findElements(section, e =>
+      e.matches('td chops-checkbox'))[0];
+    selectAll.dispatchEvent(new CustomEvent('change'));
+    await afterRender();
+
+    const autotriage = section.shadowRoot.querySelector('#autotriage');
+    const explanation = autotriage.querySelector('#explanation');
+    const button = autotriage.querySelector('chops-button');
+    button.click();
+    await afterRender();
+
+    // There should be one fewer alertGroup.
+    assert.strictEqual(section.alertGroups.length, groupCount - 1);
+
+    // The next group should be selected.
+    assert.isTrue(section.alertGroups[0].alerts[0].isSelected);
+  });
+
+  async function press(key, statePath) {
+    await afterRender();
+    STORE.dispatch(UPDATE(statePath, {hotkeyable: true}));
+    await afterRender();
+
+    const event = new CustomEvent('keyup');
+    event.key = key;
+    window.dispatchEvent(event);
+    await afterRender();
+  }
+
+  test('hotkey help', async function() {
+    const section = await fixture();
+    await press('?', section.statePath);
+    assert.isTrue(section.isHelping);
+
+    await press('?', section.statePath);
+    assert.isFalse(section.isHelping);
+  });
+
+  test('hotkey down', async function() {
+    const setupFetch = window.fetch;
+    window.fetch = async(url, options) => {
+      if (url === AlertsRequest.URL) {
+        return {
+          ok: true,
+          async json() {
+            return {anomalies: [
+              {
+                bot: 'bot',
+                bug_components: [],
+                bug_labels: [],
+                descriptor: {
+                  bot: 'master:bot',
+                  measurement: 'measure',
+                  statistic: 'avg',
+                  testCase: 'case',
+                  testSuite: 'suite',
+                },
+                end_revision: 200,
+                improvement: false,
+                key: 'key0',
+                master: 'master',
+                median_after_anomaly: 100 * Math.random(),
+                median_before_anomaly: 100 * Math.random(),
+                start_revision: 100,
+                units: 'ms',
+              },
+              {
+                bot: 'bot',
+                bug_components: [],
+                bug_labels: [],
+                descriptor: {
+                  bot: 'master:bot',
+                  measurement: 'measure',
+                  statistic: 'avg',
+                  testCase: 'case',
+                  testSuite: 'suite',
+                },
+                end_revision: 400,
+                improvement: false,
+                key: 'key0',
+                master: 'master',
+                median_after_anomaly: 100 * Math.random(),
+                median_before_anomaly: 100 * Math.random(),
+                start_revision: 300,
+                units: 'ms',
+              },
+            ]};
+          },
+        };
+      }
+      return await setupFetch(url, options);
+    };
+
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('j', section.statePath);
+    assert.strictEqual('0,0', section.cursor.join());
+
+    await press('j', section.statePath);
+    assert.strictEqual('1,0', section.cursor.join());
+  });
+
+  test('hotkey up', async function() {
+    const setupFetch = window.fetch;
+    window.fetch = async(url, options) => {
+      if (url === AlertsRequest.URL) {
+        return {
+          ok: true,
+          async json() {
+            return {anomalies: [
+              {
+                bot: 'bot',
+                bug_components: [],
+                bug_labels: [],
+                descriptor: {
+                  bot: 'master:bot',
+                  measurement: 'measure',
+                  statistic: 'avg',
+                  testCase: 'case',
+                  testSuite: 'suite',
+                },
+                end_revision: 200,
+                improvement: false,
+                key: 'key0',
+                master: 'master',
+                median_after_anomaly: 100 * Math.random(),
+                median_before_anomaly: 100 * Math.random(),
+                start_revision: 100,
+                units: 'ms',
+              },
+              {
+                bot: 'bot',
+                bug_components: [],
+                bug_labels: [],
+                descriptor: {
+                  bot: 'master:bot',
+                  measurement: 'measure',
+                  statistic: 'avg',
+                  testCase: 'case',
+                  testSuite: 'suite',
+                },
+                end_revision: 400,
+                improvement: false,
+                key: 'key0',
+                master: 'master',
+                median_after_anomaly: 100 * Math.random(),
+                median_before_anomaly: 100 * Math.random(),
+                start_revision: 300,
+                units: 'ms',
+              },
+            ]};
+          },
+        };
+      }
+      return await setupFetch(url, options);
+    };
+
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('k', section.statePath);
+    assert.strictEqual('1,0', section.cursor.join());
+
+    await press('k', section.statePath);
+    assert.isFalse(section.isHelping);
+    assert.strictEqual('0,0', section.cursor.join());
+  });
+
+  test('hotkey select', async function() {
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('j', section.statePath);
+    await press('x', section.statePath);
+    assert.isTrue(section.alertGroups[0].alerts[0].isSelected);
+
+    await press('x', section.statePath);
+    assert.isFalse(section.alertGroups[0].alerts[0].isSelected);
+  });
+
+  test('hotkey expand group', async function() {
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('j', section.statePath);
+    await press('g', section.statePath);
+    assert.isTrue(section.alertGroups[0].isExpanded);
+
+    await press('g', section.statePath);
+    assert.isFalse(section.alertGroups[0].isExpanded);
+  });
+
+  test('hotkey expand triaged', async function() {
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('j', section.statePath);
+    await press('t', section.statePath);
+    assert.isTrue(section.alertGroups[0].triaged.isExpanded);
+
+    await press('t', section.statePath);
+    assert.isFalse(section.alertGroups[0].triaged.isExpanded);
+  });
+
+  test('hotkey sort', async function() {
+    const section = await fixture();
+    section.shadowRoot.querySelector('#controls').dispatchEvent(
+        new CustomEvent('sources', {detail: {sources: [{bug: 42}]}}));
+    await press('s', section.statePath);
+    await press('s', section.statePath);
+    assert.strictEqual(section.sortColumn, 'suite');
+    assert.isFalse(section.sortDescending);
+
+    await press('s', section.statePath);
+    await press('s', section.statePath);
+    assert.strictEqual(section.sortColumn, 'suite');
+    assert.isTrue(section.sortDescending);
   });
 });

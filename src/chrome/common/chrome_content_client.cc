@@ -43,8 +43,6 @@
 #include "content/public/common/cdm_info.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
@@ -54,6 +52,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/http/http_util.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -80,10 +79,6 @@
 #if BUILDFLAG(ENABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/features/feature_util.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -634,8 +629,7 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->secure_schemes.push_back(chrome::kChromeNativeScheme);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (extensions::feature_util::ExtensionServiceWorkersEnabled())
-    schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
+  schemes->service_worker_schemes.push_back(extensions::kExtensionScheme);
 
   // As far as Blink is concerned, they should be allowed to receive CORS
   // requests. At the Extensions layer, requests will actually be blocked unless
@@ -655,40 +649,40 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
 #endif
 }
 
-base::string16 ChromeContentClient::GetLocalizedString(int message_id) const {
+base::string16 ChromeContentClient::GetLocalizedString(int message_id) {
   return l10n_util::GetStringUTF16(message_id);
 }
 
 base::string16 ChromeContentClient::GetLocalizedString(
     int message_id,
-    const base::string16& replacement) const {
+    const base::string16& replacement) {
   return l10n_util::GetStringFUTF16(message_id, replacement);
 }
 
 base::StringPiece ChromeContentClient::GetDataResource(
     int resource_id,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
       resource_id, scale_factor);
 }
 
 base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
-    int resource_id) const {
+    int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
 }
 
-bool ChromeContentClient::IsDataResourceGzipped(int resource_id) const {
+bool ChromeContentClient::IsDataResourceGzipped(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
-gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) const {
+gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
       resource_id);
 }
 
-base::DictionaryValue ChromeContentClient::GetNetLogConstants() const {
-  auto platform_dict = net_log::ChromeNetLog::GetPlatformConstants(
+base::DictionaryValue ChromeContentClient::GetNetLogConstants() {
+  auto platform_dict = net_log::GetPlatformConstantsForNetLog(
       base::CommandLine::ForCurrentProcess()->GetCommandLineString(),
       chrome::GetChannelName());
   if (platform_dict)
@@ -736,14 +730,13 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 }
 #endif  // OS_ANDROID
 
-void ChromeContentClient::OnServiceManagerConnected(
-    content::ServiceManagerConnection* connection) {
+void ChromeContentClient::BindChildProcessInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* receiving_handle) {
   static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
-
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::BindRepeating(&heap_profiling::ProfilingClient::BindToInterface,
-                          base::Unretained(profiling_client.get())));
-  connection->AddConnectionFilter(
-      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
+  if (interface_name == heap_profiling::ProfilingClient::Name_) {
+    profiling_client->BindToInterface(
+        mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>(
+            std::move(*receiving_handle)));
+  }
 }

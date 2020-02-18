@@ -9,7 +9,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/api/mime_handler.mojom.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -96,7 +96,7 @@ class MimeHandlerViewEmbedder : public content::WebContentsObserver {
 
   bool ready_to_create_mime_handler_view_ = false;
 
-  base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_;
+  base::WeakPtrFactory<MimeHandlerViewEmbedder> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewEmbedder);
 };

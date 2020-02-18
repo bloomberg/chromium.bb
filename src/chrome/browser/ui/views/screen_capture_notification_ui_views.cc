@@ -85,8 +85,9 @@ class ScreenCaptureNotificationUIViews
   ~ScreenCaptureNotificationUIViews() override;
 
   // ScreenCaptureNotificationUI interface.
-  gfx::NativeViewId OnStarted(base::OnceClosure stop_callback,
-                              base::RepeatingClosure source_callback) override;
+  gfx::NativeViewId OnStarted(
+      base::OnceClosure stop_callback,
+      content::MediaStreamUI::SourceCallback source_callback) override;
 
   // views::View overrides.
   void Layout() override;
@@ -115,7 +116,7 @@ class ScreenCaptureNotificationUIViews
 
   const base::string16 text_;
   base::OnceClosure stop_callback_;
-  base::RepeatingClosure source_callback_;
+  content::MediaStreamUI::SourceCallback source_callback_;
   NotificationBarClientView* client_view_;
   views::ImageView* gripper_;
   views::Label* label_;
@@ -138,7 +139,8 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   set_owned_by_client();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(), kHorizontalMargin));
+      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+      kHorizontalMargin));
 
   auto gripper = std::make_unique<views::ImageView>();
   gripper->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -176,7 +178,7 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
 
 gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     base::OnceClosure stop_callback,
-    base::RepeatingClosure source_callback) {
+    content::MediaStreamUI::SourceCallback source_callback) {
   stop_callback_ = std::move(stop_callback);
   source_callback_ = std::move(source_callback);
 
@@ -194,7 +196,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.remove_standard_frame = true;
-  params.keep_on_top = true;
+  params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.name = "ScreenCaptureNotificationUIViews";
 
 #if defined(OS_CHROMEOS)
@@ -206,7 +208,6 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
 
   widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   widget->Init(params);
-  widget->SetAlwaysOnTop(true);
 
   SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground)));
@@ -305,7 +306,7 @@ void ScreenCaptureNotificationUIViews::LinkClicked(views::Link* source,
 
 void ScreenCaptureNotificationUIViews::NotifySourceChange() {
   if (!source_callback_.is_null())
-    source_callback_.Run();
+    source_callback_.Run(content::DesktopMediaID());
 }
 
 void ScreenCaptureNotificationUIViews::NotifyStopped() {

@@ -223,6 +223,8 @@ bool DownloadItemModel::MightBeMalicious() const {
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
       return true;
 
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -262,6 +264,8 @@ bool DownloadItemModel::IsMalicious() const {
       NOTREACHED();
       FALLTHROUGH;
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
       return false;
   }
   NOTREACHED();

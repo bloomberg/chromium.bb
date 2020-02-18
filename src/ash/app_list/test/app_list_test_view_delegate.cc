@@ -113,6 +113,11 @@ void AppListTestViewDelegate::GetContextMenuModel(
   std::move(callback).Run(std::move(menu_model));
 }
 
+ui::ImplicitAnimationObserver* AppListTestViewDelegate::GetAnimationObserver(
+    ash::AppListViewState target_state) {
+  return nullptr;
+}
+
 void AppListTestViewDelegate::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
@@ -129,9 +134,17 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
   return true;
 }
 
+bool AppListTestViewDelegate::ShouldDismissImmediately() {
+  return false;
+}
+
 void AppListTestViewDelegate::GetNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
   fake_navigable_contents_factory_.BindReceiver(std::move(receiver));
+}
+int AppListTestViewDelegate::GetTargetYForAppListHide(
+    aura::Window* root_window) {
+  return 0;
 }
 
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
@@ -154,6 +167,11 @@ void AppListTestViewDelegate::OnSearchResultVisibilityChanged(
     const std::string& id,
     bool visibility) {}
 
+void AppListTestViewDelegate::NotifySearchResultsForLogging(
+    const base::string16& raw_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int position_index) {}
+
 bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
   return false;
 }
@@ -171,6 +189,11 @@ void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
 
 void AppListTestViewDelegate::GetAppLaunchedMetricParams(
     app_list::AppLaunchedMetricParams* metric_params) {}
+
+gfx::Rect AppListTestViewDelegate::SnapBoundsToDisplayEdge(
+    const gfx::Rect& bounds) {
+  return bounds;
+}
 
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {

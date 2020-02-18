@@ -164,6 +164,13 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool IsElementAnimating(ElementId element_id) const override;
   bool HasTickingKeyframeModelForTesting(ElementId element_id) const override;
 
+  void ImplOnlyAutoScrollAnimationCreate(
+      ElementId element_id,
+      const gfx::ScrollOffset& target_offset,
+      const gfx::ScrollOffset& current_offset,
+      float autoscroll_velocity,
+      base::TimeDelta animation_start_offset) override;
+
   void ImplOnlyScrollAnimationCreate(
       ElementId element_id,
       const gfx::ScrollOffset& target_offset,
@@ -255,7 +262,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool current_frame_had_raf_ = false;
   bool next_frame_has_pending_raf_ = false;
 
-  base::WeakPtrFactory<AnimationHost> weak_factory_;
+  base::WeakPtrFactory<AnimationHost> weak_factory_{this};
 };
 
 }  // namespace cc

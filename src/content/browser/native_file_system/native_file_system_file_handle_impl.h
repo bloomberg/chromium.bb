@@ -13,10 +13,6 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom.h"
 
-namespace storage {
-class BlobDataHandle;
-}  // namespace storage
-
 namespace content {
 
 // This is the browser side implementation of the
@@ -35,52 +31,32 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
     : public NativeFileSystemHandleBase,
       public blink::mojom::NativeFileSystemFileHandle {
  public:
-  NativeFileSystemFileHandleImpl(
-      NativeFileSystemManagerImpl* manager,
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      storage::IsolatedContext::ScopedFSHandle file_system);
+  NativeFileSystemFileHandleImpl(NativeFileSystemManagerImpl* manager,
+                                 const BindingContext& context,
+                                 const storage::FileSystemURL& url,
+                                 const SharedHandleState& handle_state);
   ~NativeFileSystemFileHandleImpl() override;
 
   // blink::mojom::NativeFileSystemFileHandle:
+  void GetPermissionStatus(bool writable,
+                           GetPermissionStatusCallback callback) override;
+  void RequestPermission(bool writable,
+                         RequestPermissionCallback callback) override;
   void AsBlob(AsBlobCallback callback) override;
   void Remove(RemoveCallback callback) override;
-  void Write(uint64_t offset,
-             blink::mojom::BlobPtr data,
-             WriteCallback callback) override;
-  void WriteStream(uint64_t offset,
-                   mojo::ScopedDataPipeConsumerHandle stream,
-                   WriteStreamCallback callback) override;
-  void Truncate(uint64_t length, TruncateCallback callback) override;
+  void CreateFileWriter(CreateFileWriterCallback callback) override;
   void Transfer(
       blink::mojom::NativeFileSystemTransferTokenRequest token) override;
 
  private:
-  // State that is kept for the duration of a write operation, to keep track of
-  // progress until the write completes.
-  struct WriteState;
-
   void DidGetMetaDataForBlob(AsBlobCallback callback,
                              base::File::Error result,
                              const base::File::Info& info);
 
-  void DoWriteBlob(WriteCallback callback,
-                   uint64_t position,
-                   std::unique_ptr<storage::BlobDataHandle> blob);
-  void DoWriteBlobWithFileInfo(WriteCallback callback,
-                               uint64_t position,
-                               std::unique_ptr<storage::BlobDataHandle> blob,
-                               base::File::Error result,
-                               const base::File::Info& file_info);
-  void DoWriteStreamWithFileInfo(WriteStreamCallback callback,
-                                 uint64_t position,
-                                 mojo::ScopedDataPipeConsumerHandle data_pipe,
-                                 base::File::Error result,
-                                 const base::File::Info& file_info);
-  void DidWrite(WriteState* state,
-                base::File::Error result,
-                int64_t bytes,
-                bool complete);
+  void RemoveImpl(RemoveCallback callback);
+  void CreateFileWriterImpl(CreateFileWriterCallback callback);
+
+  base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() override;
 
   base::WeakPtrFactory<NativeFileSystemFileHandleImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemFileHandleImpl);

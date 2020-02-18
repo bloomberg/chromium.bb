@@ -45,14 +45,15 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
     DCHECK(!out->object_stores.Contains(key));
     out->object_stores.insert(key, object_store);
   }
+  out->was_cold_open = data.was_cold_open();
   return true;
 }
 
 // static
 bool StructTraits<blink::mojom::IDBIndexKeysDataView, blink::IDBIndexKeys>::
     Read(blink::mojom::IDBIndexKeysDataView data, blink::IDBIndexKeys* out) {
-  out->first = data.index_id();
-  if (!data.ReadIndexKeys(&out->second))
+  out->id = data.index_id();
+  if (!data.ReadIndexKeys(&out->keys))
     return false;
   return true;
 }

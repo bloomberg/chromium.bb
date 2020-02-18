@@ -70,10 +70,6 @@ void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Button, static public:
-
-// static
-const char Button::kViewClassName[] = "Button";
 
 // static
 const Button* Button::AsButton(const views::View* view) {
@@ -226,10 +222,6 @@ void Button::RemoveButtonObserver(ButtonObserver* observer) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
-
-const char* Button::GetClassName() const {
-  return kViewClassName;
-}
 
 bool Button::OnMousePressed(const ui::MouseEvent& event) {
   return button_controller_->OnMousePressed(event);
@@ -482,7 +474,9 @@ Button::CreateButtonControllerDelegate() {
 }
 
 Button::Button(ButtonListener* listener)
-    : listener_(listener), ink_drop_base_color_(gfx::kPlaceholderColor) {
+    : AnimationDelegateViews(this),
+      listener_(listener),
+      ink_drop_base_color_(gfx::kPlaceholderColor) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetProperty(kIsButtonProperty, true);
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
@@ -598,5 +592,9 @@ void Button::OnEnabledChanged() {
 void Button::WidgetActivationChanged(Widget* widget, bool active) {
   StateChanged(state());
 }
+
+BEGIN_METADATA(Button)
+METADATA_PARENT_CLASS(InkDropHostView)
+END_METADATA()
 
 }  // namespace views

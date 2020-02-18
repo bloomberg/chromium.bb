@@ -32,10 +32,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // doesn't look too close to the element.
   static const int kElementBorderPadding = 1;
 
-  // Horizontal spacing between value and description in the row.
-  // TODO(crbug.com/876364): Replace this with a global constant.
-  static const int kValueLabelPadding = 24;
-
   static int GetCornerRadius();
 
   // Get colors used throughout various popup UIs, based on the current native
@@ -114,7 +110,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // The time when the popup was shown.
   base::Time show_time_;
 
-  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_;
+  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseView);
 };

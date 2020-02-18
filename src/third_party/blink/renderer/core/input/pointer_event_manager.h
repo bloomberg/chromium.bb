@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/input/boundary_event_dispatcher.h"
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ class CORE_EXPORT PointerEventManager
 
   // Returns whether pointerId is for an active touch pointerevent and whether
   // the last event was sent to the given frame.
-  bool IsTouchPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
+  bool IsPointerIdActiveOnFrame(PointerId, LocalFrame*) const;
 
   // Returns true if the primary pointerdown corresponding to the given
   // |uniqueTouchEventId| was canceled. Also drops stale ids from
@@ -190,6 +190,13 @@ class CORE_EXPORT PointerEventManager
                           EventTarget* entered_target,
                           PointerEvent*);
   void SetElementUnderPointer(PointerEvent*, Element*);
+
+  // First movement after entering a new frame should be 0 as the new frame
+  // doesn't have the info for the previous events. This function sets the
+  // LastPosition to be same as current event position when target is in
+  // different frame, so that movement_x/y will be 0.
+  void SetLastPointerPositionForFrameBoundary(const WebPointerEvent& event,
+                                              Element* target);
 
   // Processes the assignment of |m_pointerCaptureTarget| from
   // |m_pendingPointerCaptureTarget| and sends the got/lostpointercapture

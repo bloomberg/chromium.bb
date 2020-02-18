@@ -71,8 +71,13 @@ class VIEWS_EXPORT Textfield : public View,
                                public ui::TouchEditable,
                                public ui::TextInputClient {
  public:
-  // The textfield's class name.
-  static const char kViewClassName[];
+  METADATA_HEADER(Textfield);
+
+  // An enum giving different model properties unique keys for the
+  // OnPropertyChanged call.
+  enum ModelPropertyKey {
+    kTextProperty = 1,
+  };
 
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
@@ -242,6 +247,7 @@ class VIEWS_EXPORT Textfield : public View,
   // Set the accessible name of the text field. If the textfield has a visible
   // label, use SetAssociatedLabel() instead.
   void SetAccessibleName(const base::string16& name);
+  const base::string16& accessible_name() const { return accessible_name_; }
 
   // If the accessible name should be the same as the labelling view's text,
   // use this. It will set the accessible label relationship and copy the
@@ -260,7 +266,6 @@ class VIEWS_EXPORT Textfield : public View,
   int GetBaseline() const override;
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
-  const char* GetClassName() const override;
   void SetBorder(std::unique_ptr<Border> b) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -294,6 +299,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // TextfieldModel::Delegate overrides:
   void OnCompositionTextConfirmedOrCleared() override;
+  void OnTextChanged() override;
 
   // ContextMenuController overrides:
   void ShowContextMenuForViewImpl(View* source,
@@ -384,6 +390,9 @@ class VIEWS_EXPORT Textfield : public View,
       const base::string16& active_composition_text,
       bool is_composition_committed) override;
 #endif
+
+  views::PropertyChangedSubscription AddTextChangedCallback(
+      views::PropertyChangedCallback callback);
 
  protected:
   // Inserts or appends a character in response to an IME operation.
@@ -668,7 +677,7 @@ class VIEWS_EXPORT Textfield : public View,
                               base::Unretained(this)));
 
   // Used to bind callback functions to this object.
-  base::WeakPtrFactory<Textfield> weak_ptr_factory_;
+  base::WeakPtrFactory<Textfield> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Textfield);
 };

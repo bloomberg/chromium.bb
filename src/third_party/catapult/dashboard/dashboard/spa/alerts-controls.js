@@ -4,26 +4,26 @@
 */
 'use strict';
 
-import './cp-checkbox.js';
-import './cp-input.js';
-import './cp-switch.js';
-import './raised-button.js';
+import './cp-flex.js';
+import './cp-icon.js';
 import './recommended-options.js';
-import '@polymer/polymer/lib/elements/dom-if.js';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import '@chopsui/chops-button';
+import '@chopsui/chops-checkbox';
+import '@chopsui/chops-input';
+import '@chopsui/chops-switch';
 import * as PolymerAsync from '@polymer/polymer/lib/utils/async.js';
-import AlertsTable from './alerts-table.js';
-import MenuInput from './menu-input.js';
-import OptionGroup from './option-group.js';
-import ReportNamesRequest from './report-names-request.js';
-import SheriffsRequest from './sheriffs-request.js';
+import {AlertsTable} from './alerts-table.js';
 import {ElementBase, STORE} from './element-base.js';
+import {MenuInput} from './menu-input.js';
+import {OptionGroup} from './option-group.js';
+import {ReportNamesRequest} from './report-names-request.js';
+import {SheriffsRequest} from './sheriffs-request.js';
 import {TOGGLE, UPDATE} from './simple-redux.js';
-import {crbug} from './utils.js';
-import {get} from '@polymer/polymer/lib/utils/path.js';
-import {html} from '@polymer/polymer/polymer-element.js';
+import {crbug, plural} from './utils.js';
+import {get} from 'dot-prop-immutable';
+import {html, css} from 'lit-element';
 
-export default class AlertsControls extends ElementBase {
+export class AlertsControls extends ElementBase {
   static get is() { return 'alerts-controls'; }
 
   static get properties() {
@@ -50,6 +50,7 @@ export default class AlertsControls extends ElementBase {
       showingRecentlyModifiedBugs: Boolean,
       triagedBugId: Number,
       alertGroups: Array,
+      isHelping: Boolean,
     };
   }
 
@@ -85,235 +86,253 @@ export default class AlertsControls extends ElementBase {
       triagedBugId: 0,
       alertGroups: options.alertGroups ||
         AlertsTable.placeholderAlertGroups(),
+      isHelping: false,
     };
   }
 
-  static get template() {
+  static get styles() {
+    return css`
+      :host {
+        align-items: center;
+        display: flex;
+        margin-bottom: 8px;
+      }
+
+      #sheriff-container,
+      #bug-container,
+      #report-container {
+        margin-right: 8px;
+      }
+
+      chops-input {
+        margin-right: 8px;
+        margin-top: 12px;
+      }
+
+      #triaged {
+        margin-left: 8px;
+        margin-right: 8px;
+      }
+
+      #spacer {
+        flex-grow: 1;
+      }
+
+      #recent-bugs-container {
+        position: relative;
+      }
+
+      .bug_notification {
+        background-color: var(--background-color, white);
+        box-shadow: var(--elevation-2);
+        overflow: hidden;
+        padding: 8px;
+        position: absolute;
+        right: 0;
+        white-space: nowrap;
+        z-index: var(--layer-menu, 100);
+      }
+
+      #recent-bugs-table {
+        margin: 0;
+        padding: 0;
+      }
+
+      #filter[enabled] {
+        background-color: var(--primary-color-dark, blue);
+        border-radius: 50%;
+        color: var(--background-color, white);
+        padding: 4px;
+      }
+
+      cp-icon {
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      #help-container {
+        align-self: flex-start;
+        position: relative;
+      }
+      #help {
+        color: var(--primary-color-dark, blue);
+      }
+      #help-dialog {
+        background: var(--background-color, white);
+        box-shadow: var(--elevation-2);
+        display: none;
+        padding: 16px;
+        position: absolute;
+        right: 0;
+        width: 25em;
+        z-index: var(--layer-menu, 100);
+      }
+      #help-dialog[isopen] {
+        display: block;
+      }
+
+      #close {
+        align-self: flex-start;
+      }
+    `;
+  }
+
+  render() {
+    const showSheriff = this.showMenuInput_(
+        this.showEmptyInputs, this.sheriff, this.bug, this.report,
+        this.minRevision, this.maxRevision);
+    const showBug = this.showMenuInput_(
+        this.showEmptyInputs, this.bug, this.sheriff, this.report,
+        this.minRevision, this.maxRevision);
+    const showReport = this.showMenuInput_(
+        this.showEmptyInputs, this.report, this.sheriff, this.bug,
+        this.minRevision, this.maxRevision);
+    const showMin = this.showInput_(
+        this.showEmptyInputs, this.minRevision, this.maxRevision, this.sheriff,
+        this.bug, this.report);
+    const showMax = this.showInput_(
+        this.showEmptyInputs, this.minRevision, this.maxRevision, this.sheriff,
+        this.bug, this.report);
+
+    const improvementsTooltip = this.showingImprovements ?
+      'Now showing both regressions and improvements. Click to toggle to ' +
+      'show only regressions.' :
+      'Now showing regressions but not improvements. Click to toggle to ' +
+      'show both regressions and improvements.';
+
+    const triagedTooltip = this.showingTriaged ?
+      'Now showing both triaged and untriaged alerts. Click to toggle to ' +
+      'show only untriaged alerts.' :
+      'Now showing only untriaged alerts. Click to toggle to show both ' +
+      'triaged and untriaged alerts.';
+
     return html`
-      <style>
-        :host {
-          align-items: center;
-          display: flex;
-          margin-bottom: 8px;
-        }
-
-        #sheriff-container,
-        #bug-container,
-        #report-container {
-          margin-right: 8px;
-        }
-
-        cp-input {
-          margin-right: 8px;
-          margin-top: 12px;
-        }
-
-        #report-container {
-          display: flex;
-        }
-
-        #triaged {
-          margin-left: 8px;
-          margin-right: 8px;
-        }
-
-        #spacer {
-          flex-grow: 1;
-        }
-
-        #recent-bugs-container {
-          position: relative;
-        }
-
-        .bug_notification {
-          background-color: var(--background-color, white);
-          box-shadow: var(--elevation-2);
-          overflow: hidden;
-          padding: 8px;
-          position: absolute;
-          right: 0;
-          white-space: nowrap;
-          z-index: var(--layer-menu, 100);
-        }
-
-        #recent-bugs-table {
-          margin: 0;
-          padding: 0;
-        }
-
-        #filter[enabled] {
-          background-color: var(--primary-color-dark, blue);
-          border-radius: 50%;
-          color: var(--background-color, white);
-          padding: 4px;
-        }
-
-        iron-icon {
-          cursor: pointer;
-          flex-shrink: 0;
-          height: var(--icon-size, 1em);
-          width: var(--icon-size, 1em);
-        }
-
-        #close {
-          align-self: flex-start;
-        }
-
-        #edit, #documentation {
-          color: var(--primary-color-dark, blue);
-          padding: 8px;
-        }
-      </style>
-
-      <iron-collapse
-          horizontal
-          id="sheriff-container"
-          opened="[[showMenuInput_(showEmptyInputs, sheriff, bug, report,
-                                    minRevision, maxRevision)]]">
+      <div id="sheriff-container"
+          ?hidden="${!showSheriff}">
         <menu-input
             id="sheriff"
-            state-path="[[statePath]].sheriff"
-            on-clear="onSheriffClear_"
-            on-option-select="onSheriffSelect_">
-          <recommended-options slot="top" state-path="[[statePath]].sheriff">
+            .statePath="${this.statePath}.sheriff"
+            @clear="${this.onSheriffClear_}"
+            @option-select="${this.onSheriffSelect_}">
+          <recommended-options
+              slot="top"
+              .statePath="${this.statePath}.sheriff">
           </recommended-options>
         </menu-input>
-      </iron-collapse>
+      </div>
 
-      <iron-collapse
-          horizontal
-          id="bug-container"
-          opened="[[showMenuInput_(showEmptyInputs, bug, sheriff, report,
-                                    minRevision, maxRevision)]]">
+      <div id="bug-container"
+          ?hidden="${!showBug}">
         <menu-input
             id="bug"
-            state-path="[[statePath]].bug"
-            on-clear="onBugClear_"
-            on-input-keyup="onBugKeyup_"
-            on-option-select="onBugSelect_">
-          <recommended-options slot="top" state-path="[[statePath]].bug">
+            .statePath="${this.statePath}.bug"
+            @clear="${this.onBugClear_}"
+            @input-keyup="${this.onBugKeyup_}"
+            @option-select="${this.onBugSelect_}">
+          <recommended-options slot="top" .statePath="${this.statePath}.bug">
           </recommended-options>
         </menu-input>
-      </iron-collapse>
+      </div>
 
-      <iron-collapse
-          horizontal
-          id="report-container"
-          opened="[[showMenuInput_(showEmptyInputs, report, sheriff, bug,
-                                    minRevision, maxRevision)]]">
+      <cp-flex id="report-container" ?hidden="${!showReport}">
         <menu-input
             id="report"
-            state-path="[[statePath]].report"
-            on-clear="onReportClear_"
-            on-option-select="onReportSelect_">
-          <recommended-options slot="top" state-path="[[statePath]].report">
+            .statePath="${this.statePath}.report"
+            @clear="${this.onReportClear_}"
+            @option-select="${this.onReportSelect_}">
+          <recommended-options
+              slot="top"
+              .statePath="${this.statePath}.report">
           </recommended-options>
         </menu-input>
-      </iron-collapse>
+      </cp-flex>
 
-      <iron-collapse
-          horizontal
-          id="min-container"
-          opened="[[showInput_(showEmptyInputs, minRevision, maxRevision,
-                                sheriff, bug, report)]]">
-        <cp-input
+      <div id="min-container"
+          ?hidden="${!showMin}">
+        <chops-input
             id="min-revision"
-            value="[[minRevision]]"
+            .value="${this.minRevision}"
             label="Min Revision"
-            on-keyup="onMinRevisionKeyup_">
-        </cp-input>
-      </iron-collapse>
+            @keyup="${this.onMinRevisionKeyup_}">
+        </chops-input>
+      </div>
 
-      <iron-collapse
-          horizontal
-          id="max-container"
-          opened="[[showInput_(showEmptyInputs, minRevision, maxRevision,
-                                sheriff, bug, report)]]">
-        <cp-input
+      <div id="max-container"
+          ?hidden="${!showMax}">
+        <chops-input
             id="max-revision"
-            value="[[maxRevision]]"
+            .value="${this.maxRevision}"
             label="Max Revision"
-            on-keyup="onMaxRevisionKeyup_">
-        </cp-input>
-      </iron-collapse>
+            @keyup="${this.onMaxRevisionKeyup_}">
+        </chops-input>
+      </div>
 
-      <iron-icon
+      <cp-icon
           id="filter"
-          icon="cp:filter"
-          enabled$="[[showEmptyInputs]]"
-          on-click="onFilter_">
-      </iron-icon>
+          icon="filter"
+          ?enabled="${this.showEmptyInputs}"
+          @click="${this.onFilter_}">
+      </cp-icon>
 
-      <iron-collapse
-          horizontal
-          opened="[[isEmpty_(bug.selectedOptions)]]">
-        <cp-switch
+      <div ?hidden="${this.bug && this.bug.selectedOptions.length > 0}">
+        <chops-switch
             id="improvements"
-            disabled="[[!isEmpty_(bug.selectedOptions)]]"
-            title="[[getImprovementsTooltip_(showingImprovements)]]"
-            checked$="[[showingImprovements]]"
-            on-change="onToggleImprovements_">
-          <template is="dom-if" if="[[showingImprovements]]">
-            Regressions and Improvements
-          </template>
-          <template is="dom-if" if="[[!showingImprovements]]">
-            Regressions Only
-          </template>
-        </cp-switch>
+            title="${improvementsTooltip}"
+            ?checked="${this.showingImprovements}"
+            @change="${this.onToggleImprovements_}">
+          Improvements
+        </chops-switch>
 
-        <cp-switch
+        <chops-switch
             id="triaged"
-            disabled="[[!isEmpty_(bug.selectedOptions)]]"
-            title="[[getTriagedTooltip_(showingTriaged)]]"
-            checked$="[[showingTriaged]]"
-            on-change="onToggleTriaged_">
-          <template is="dom-if" if="[[showingTriaged]]">
-            New and Triaged
-          </template>
-          <template is="dom-if" if="[[!showingTriaged]]">
-            New Only
-          </template>
-        </cp-switch>
-      </iron-collapse>
+            ?disabled="${this.bug && (this.bug.selectedOptions.length > 0)}"
+            title="${triagedTooltip}"
+            ?checked="${this.showingTriaged}"
+            @change="${this.onToggleTriaged_}">
+          Triaged
+        </chops-switch>
+      </div>
 
       <span id=spacer></span>
 
       <span id="recent-bugs-container">
-        <raised-button
+        <chops-button
             id="recent-bugs"
-            disabled$="[[isEmpty_(recentlyModifiedBugs)]]"
-            on-click="onClickRecentlyModifiedBugs_">
+            ?disabled="${
+  this.recentlyModifiedBugs && (this.recentlyModifiedBugs.length === 0)}"
+            @click="${this.onClickRecentlyModifiedBugs_}">
           Recent Bugs
-        </raised-button>
+        </chops-button>
 
-        <iron-collapse
+        <div
             class="bug_notification"
-            opened="[[hasTriagedNew]]">
+            ?hidden="${!this.hasTriagedNew}">
           Created
-          <a href="[[crbug_(triagedBugId)]]" target="_blank">
-            [[triagedBugId]]
+          <a href="${crbug(this.triagedBugId)}" target="_blank">
+            ${this.triagedBugId}
           </a>
-        </iron-collapse>
+        </div>
 
-        <iron-collapse
+        <div
             class="bug_notification"
-            opened="[[hasTriagedExisting]]">
+            ?hidden="${!this.hasTriagedExisting}">
           Updated
-          <a href="[[crbug_(triagedBugId)]]" target="_blank">
-            [[triagedBugId]]
+          <a href="${crbug(this.triagedBugId)}" target="_blank">
+            ${this.triagedBugId}
           </a>
-        </iron-collapse>
+        </div>
 
-        <iron-collapse
+        <div
             class="bug_notification"
-            opened="[[hasIgnored]]">
-          Ignored [[ignoredCount]] alert[[plural_(ignoredCount)]]
-        </iron-collapse>
+            ?hidden="${!this.hasIgnored}">
+          Ignored ${this.ignoredCount} alert${plural(this.ignoredCount)}
+        </div>
 
-        <iron-collapse
+        <div
             class="bug_notification"
-            opened="[[showingRecentlyModifiedBugs]]"
-            on-blur="onRecentlyModifiedBugsBlur_">
+            ?hidden="${!this.showingRecentlyModifiedBugs}"
+            tabindex="0"
+            @blur="${this.onRecentlyModifiedBugsBlur_}">
           <table id="recent-bugs-table">
             <thead>
               <tr>
@@ -321,23 +340,137 @@ export default class AlertsControls extends ElementBase {
                 <th>Summary</th>
               </tr>
             </thead>
-            <template is="dom-repeat" items="[[recentlyModifiedBugs]]"
-                                      as="bug">
+            ${(this.recentlyModifiedBugs || []).map(bug => html`
               <tr>
                 <td>
-                  <a href="[[crbug_(bug.id)]]" target="_blank">
-                    [[bug.id]]
+                  <a href="${crbug(bug.id)}" target="_blank">
+                    ${bug.id}
                   </a>
                 </td>
-                <td>[[bug.summary]]</td>
+                <td>${bug.summary}</td>
               </tr>
-            </template>
+            `)}
           </table>
-        </iron-collapse>
+        </div>
       </span>
 
-      <iron-icon id="close" icon="cp:close" on-click="onClose_">
-      </iron-icon>
+      <span id="help-container">
+        <cp-icon
+            id="help"
+            tabindex="0"
+            icon="help"
+            @click="${this.onHelp_}">
+        </cp-icon>
+        <div
+            id="help-dialog"
+            tabindex="0"
+            ?isopen="${this.isHelping}"
+            @keydown="${this.onHelpKeydown_}"
+            @blur="${this.onBlurHelp_}">
+          When this section is in the middle of the screen, it responds to the
+          following hotkeys.
+          <table>
+            <tr>
+              <td>?</td>
+              <td>Toggle this dialog</td>
+            </tr>
+            <tr>
+              <td>j</td>
+              <td>Move the cursor down through the alerts table</td>
+            </tr>
+            <tr>
+              <td>k</td>
+              <td>Move the cursor up through the alerts table</td>
+            </tr>
+            <tr>
+              <td>x</td>
+              <td>Toggle selection of the alert at the cursor</td>
+            </tr>
+            <tr>
+              <td>g</td>
+              <td>Toggle expansion of the alert group at the cursor</td>
+            </tr>
+            <tr>
+              <td>t</td>
+              <td>Toggle expansion of the triaged alerts at the cursor</td>
+            </tr>
+            <tr>
+              <td>a</td>
+              <td>Accept autotriage suggestion for selected alerts</td>
+            </tr>
+            <tr>
+              <td>e</td>
+              <td>Assign selected alerts to an existing bug</td>
+            </tr>
+            <tr>
+              <td>n</td>
+              <td>File a new bug for selected alerts</td>
+            </tr>
+            <tr>
+              <td>i</td>
+              <td>Ignore selected alerts</td>
+            </tr>
+            <tr>
+              <td>u</td>
+              <td>Unassign selected alerts</td>
+            </tr>
+            <tr>
+              <td>/</td>
+              <td>Focus the Sheriff menu</td>
+            </tr>
+            <tr>
+              <td>sc</td>
+              <td>Sort the alerts table by Count</td>
+            </tr>
+            <tr>
+              <td>st</td>
+              <td>Sort the alerts table by Triaged</td>
+            </tr>
+            <tr>
+              <td>su</td>
+              <td>Sort the alerts table by Bug</td>
+            </tr>
+            <tr>
+              <td>sr</td>
+              <td>Sort the alertstable by Revision</td>
+            </tr>
+            <tr>
+              <td>ss</td>
+              <td>Sort the alerts table by Suite</td>
+            </tr>
+            <tr>
+              <td>sm</td>
+              <td>Sort the alerts table by Measurement</td>
+            </tr>
+            <tr>
+              <td>sa</td>
+              <td>Sort the alerts table by Master</td>
+            </tr>
+            <tr>
+              <td>sb</td>
+              <td>Sort the alerts table by Bot</td>
+            </tr>
+            <tr>
+              <td>se</td>
+              <td>Sort the alerts table by Case</td>
+            </tr>
+            <tr>
+              <td>sd</td>
+              <td>Sort the alerts table by Delta</td>
+            </tr>
+            <tr>
+              <td>sp</td>
+              <td>Sort the alerts table by Percent Delta</td>
+            </tr>
+          </table>
+          For more information, see the
+          <a href="https://chromium.googlesource.com/catapult.git/+/HEAD/dashboard/docs/user-guide.md" target="_blank">
+            user guide
+          </a>.
+        </div>
+      </span>
+
+      <cp-icon id="close" icon="close" @click="${this.onClose_}"></cp-icon>
     `;
   }
 
@@ -357,28 +490,51 @@ export default class AlertsControls extends ElementBase {
     });
   }
 
-  stateChanged(rootState) {
+  async stateChanged(rootState) {
     if (!this.statePath) return;
+
     const oldUserEmail = this.userEmail;
-    this.set('userEmail', rootState.userEmail);
+    const oldIsHelping = this.isHelping;
     const oldRecentPerformanceBugs = this.recentPerformanceBugs;
-    this.set('recentPerformanceBugs', rootState.recentPerformanceBugs);
-    this.setProperties(get(rootState, this.statePath));
-    this.set('areAlertGroupsPlaceholders', this.alertGroups ===
+
+    Object.assign(this, get(rootState, this.statePath));
+    this.userEmail = rootState.userEmail;
+    this.recentPerformanceBugs = rootState.recentPerformanceBugs;
+    this.areAlertGroupsPlaceholders = (this.alertGroups ===
       AlertsTable.placeholderAlertGroups());
+
     if (this.hasTriagedNew || this.hasTriagedExisting || this.hasIgnored) {
-      this.$['recent-bugs'].scrollIntoView(true);
+      this.shadowRoot.querySelector('#recent-bugs').scrollIntoView(true);
     }
+
     if (this.recentPerformanceBugs !== oldRecentPerformanceBugs) {
       STORE.dispatch({
         type: AlertsControls.reducers.receiveRecentPerformanceBugs.name,
         statePath: this.statePath,
       });
     }
+
     if (this.userEmail !== oldUserEmail) {
       AlertsControls.loadReportNames(this.statePath);
       AlertsControls.loadSheriffs(this.statePath);
     }
+
+    if (this.isHelping && !oldIsHelping) {
+      await this.updateComplete;
+      this.shadowRoot.querySelector('#help-dialog').focus();
+    }
+  }
+
+  onHelp_(event) {
+    STORE.dispatch(TOGGLE(this.statePath + '.isHelping'));
+  }
+
+  onBlurHelp_(event) {
+    STORE.dispatch(UPDATE(this.statePath, {isHelping: false}));
+  }
+
+  onHelpKeydown_(event) {
+    if (event.key === 'Escape') this.onBlurHelp_(event);
   }
 
   static async loadReportNames(statePath) {
@@ -409,7 +565,7 @@ export default class AlertsControls extends ElementBase {
     });
 
     const state = get(STORE.getState(), statePath);
-    if (state.sheriff.selectedOptions.length === 0) {
+    if (state.sheriff && (state.sheriff.selectedOptions.length === 0)) {
       MenuInput.focus(statePath + '.sheriff');
     }
   }
@@ -447,10 +603,6 @@ export default class AlertsControls extends ElementBase {
       return true;
     }
     return false;
-  }
-
-  crbug_(bugId) {
-    return crbug(bugId);
   }
 
   async dispatchSources_() {
@@ -525,24 +677,6 @@ export default class AlertsControls extends ElementBase {
     }, PolymerAsync.timeOut.after(AlertsControls.TYPING_DEBOUNCE_MS));
   }
 
-  getImprovementsTooltip_(showingImprovements) {
-    if (showingImprovements) {
-      return 'Now showing both regressions and improvements. ' +
-        'Click to toggle to show only regressions.';
-    }
-    return 'Now showing regressions but not improvements. ' +
-      'Click to toggle to show both regressions and improvements.';
-  }
-
-  getTriagedTooltip_(showingTriaged) {
-    if (showingTriaged) {
-      return 'Now showing both triaged and untriaged alerts. ' +
-        'Click to toggle to show only untriaged alerts.';
-    }
-    return 'Now showing only untriaged alerts. ' +
-      'Click to toggle to show both triaged and untriaged alerts.';
-  }
-
   async onToggleImprovements_(event) {
     STORE.dispatch(TOGGLE(this.statePath + '.showingImprovements'));
     this.dispatchSources_();
@@ -574,7 +708,7 @@ AlertsControls.TYPING_DEBOUNCE_MS = 300;
 AlertsControls.reducers = {
   receiveReportNames: (state, {infos, error}, rootState) => {
     if (error) {
-      const errors = [...new Set([error.message, ...state.errors])];
+      const errors = [...new Set([error.message, ...(state.errors || [])])];
       return {...state, errors};
     }
 
@@ -589,7 +723,7 @@ AlertsControls.reducers = {
 
   receiveSheriffs: (state, {sheriffs, error}, rootState) => {
     if (error) {
-      const errors = [...new Set([error.message, ...state.errors])];
+      const errors = [...new Set([error.message, ...(state.errors || [])])];
       return {...state, errors};
     }
 

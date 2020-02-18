@@ -4,10 +4,11 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_keyboard.h"
 
-#include <sys/mman.h>
 #include <utility>
 
 #include "base/files/scoped_file.h"
+#include "base/memory/unsafe_shared_memory_region.h"
+#include "base/unguessable_token.h"
 #include "ui/base/buildflags.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
@@ -58,25 +59,26 @@ WaylandKeyboard::~WaylandKeyboard() {}
 void WaylandKeyboard::Keymap(void* data,
                              wl_keyboard* obj,
                              uint32_t format,
-                             int32_t raw_fd,
+                             int32_t keymap_fd,
                              uint32_t size) {
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   DCHECK(keyboard);
 
-  base::ScopedFD fd(raw_fd);
-  if (!data || format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
+  base::ScopedFD fd(keymap_fd);
+  auto length = size - 1;
+  auto shmen = base::subtle::PlatformSharedMemoryRegion::Take(
+      std::move(fd), base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+      length, base::UnguessableToken::Create());
+  auto mapped_memory =
+      base::UnsafeSharedMemoryRegion::Deserialize(std::move(shmen)).Map();
+  const char* keymap = mapped_memory.GetMemoryAs<char>();
+
+  if (!keymap || format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1)
     return;
 
-  char* keymap_str = reinterpret_cast<char*>(
-      mmap(nullptr, size, PROT_READ, MAP_SHARED, fd.get(), 0));
-  if (keymap_str == MAP_FAILED)
-    return;
-
-  auto length = strnlen(keymap_str, size);
-  bool success =
-      keyboard->layout_engine_->SetCurrentLayoutFromBuffer(keymap_str, length);
+  bool success = keyboard->layout_engine_->SetCurrentLayoutFromBuffer(
+      keymap, mapped_memory.size());
   DCHECK(success) << "Failed to set the XKB keyboard mapping.";
-  munmap(keymap_str, size);
 }
 
 void WaylandKeyboard::Enter(void* data,

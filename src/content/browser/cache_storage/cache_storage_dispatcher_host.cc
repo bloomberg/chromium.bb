@@ -89,8 +89,15 @@ class CacheStorageDispatcherHost::CacheImpl
                            "request", CacheStorageTracedValue(request),
                            "options", CacheStorageTracedValue(match_options));
 
+    content::CacheStorageCache* cache = cache_handle_.value();
+    bool cache_initialized =
+        cache ? cache->GetInitState() ==
+                    content::CacheStorageCache::InitState::Initialized
+              : false;
+
     auto cb = base::BindOnce(
-        [](base::TimeTicks start_time, bool ignore_search, int64_t trace_id,
+        [](base::TimeTicks start_time, bool ignore_search,
+           bool cache_initialized, int64_t trace_id,
            blink::mojom::CacheStorageCache::MatchCallback callback,
            blink::mojom::CacheStorageError error,
            blink::mojom::FetchAPIResponsePtr response) {
@@ -100,6 +107,10 @@ class CacheStorageDispatcherHost::CacheImpl
           if (ignore_search) {
             UMA_HISTOGRAM_LONG_TIMES(
                 "ServiceWorkerCache.Cache.Browser.Match.IgnoreSearch", elapsed);
+          }
+          if (cache_initialized) {
+            UMA_HISTOGRAM_LONG_TIMES(
+                "ServiceWorkerCache.Cache.Browser.Match.Initialized", elapsed);
           }
           if (error == CacheStorageError::kErrorNotFound) {
             UMA_HISTOGRAM_LONG_TIMES(
@@ -127,10 +138,9 @@ class CacheStorageDispatcherHost::CacheImpl
           std::move(callback).Run(
               blink::mojom::MatchResult::NewResponse(std::move(response)));
         },
-        base::TimeTicks::Now(), match_options->ignore_search, trace_id,
-        std::move(callback));
+        base::TimeTicks::Now(), match_options->ignore_search, cache_initialized,
+        trace_id, std::move(callback));
 
-    content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
       std::move(cb).Run(CacheStorageError::kErrorNotFound, nullptr);
       return;
@@ -356,7 +366,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
     : public blink::mojom::CacheStorage {
  public:
   CacheStorageImpl(CacheStorageDispatcherHost* owner, const url::Origin& origin)
-      : owner_(owner), origin_(origin), weak_factory_(this) {
+      : owner_(owner), origin_(origin) {
     // The CacheStorageHandle is empty to start and lazy initialized on first
     // use via GetOrCreateCacheStorage().  In the future we could eagerly create
     // the backend when the mojo connection is created.
@@ -629,7 +639,7 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
   CacheStorageHandle cache_storage_handle_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CacheStorageImpl> weak_factory_;
+  base::WeakPtrFactory<CacheStorageImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(CacheStorageImpl);
 };
 
@@ -662,11 +672,11 @@ void CacheStorageDispatcherHost::AddCacheBinding(
 CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!context_ || !context_->cache_manager() ||
+  if (!context_ || !context_->CacheManager() ||
       !OriginCanAccessCacheStorage(origin))
     return CacheStorageHandle();
 
-  return context_->cache_manager()->OpenCacheStorage(
+  return context_->CacheManager()->OpenCacheStorage(
       origin, CacheStorageOwner::kCacheAPI);
 }
 

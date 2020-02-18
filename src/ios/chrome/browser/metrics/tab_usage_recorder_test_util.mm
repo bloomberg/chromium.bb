@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 
 #import <EarlGrey/EarlGrey.h>
 #import <Foundation/Foundation.h>
@@ -14,7 +13,6 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#include "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -28,6 +26,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
 
@@ -58,41 +58,31 @@ bool ShowTabSwitcher() {
 
 namespace tab_usage_recorder_test_util {
 
-NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
+bool OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   int nb_incognito_tab = [ChromeEarlGrey incognitoTabCount];
   [ChromeEarlGreyUI openToolsMenu];
   id<GREYMatcher> new_incognito_tab_button_matcher =
       grey_accessibilityID(kToolsMenuNewIncognitoTabId);
   [[EarlGrey selectElementWithMatcher:new_incognito_tab_button_matcher]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_NO_ERROR(
-      [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)]);
-  ConditionBlock condition = ^bool {
+  [ChromeEarlGrey waitForIncognitoTabCount:(nb_incognito_tab + 1)];
+  bool success = WaitUntilConditionOrTimeout(kWaitElementTimeout, ^{
     return [ChromeEarlGrey isIncognitoMode];
-  };
-
-  bool success = base::test::ios::WaitUntilConditionOrTimeout(
-      kWaitElementTimeout, condition);
+  });
   if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Waiting switch to incognito mode.");
+    return false;
   }
 
   [ChromeEarlGrey evictOtherTabModelTabs];
-  return nil;
+  return true;
 }
 
-NSError* SwitchToNormalMode() {
-  if (![ChromeEarlGrey isIncognitoMode]) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Switching to normal mode is only allowed from Incognito.");
-  }
+void SwitchToNormalMode() {
+  GREYAssertTrue([ChromeEarlGrey isIncognitoMode],
+                 @"Switching to normal mode is only allowed from Incognito.");
 
   // Enter the tab grid to switch modes.
-  if (!ShowTabSwitcher()) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Tab switcher could not be tapped.");
-  }
+  GREYAssertTrue(ShowTabSwitcher(), @"Tab switcher could not be tapped.");
 
   // Switch modes and exit the tab grid.
   TabModel* model = chrome_test_util::GetMainController()
@@ -108,20 +98,19 @@ NSError* SwitchToNormalMode() {
   [[GREYConfiguration sharedInstance]
           setValue:@(NO)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  ConditionBlock condition = ^bool {
-    return ![ChromeEarlGrey isIncognitoMode];
-  };
 
-  if (!base::test::ios::WaitUntilConditionOrTimeout(kWaitElementTimeout,
-                                                    condition)) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Waiting switch to normal mode.");
-  }
+  bool success = WaitUntilConditionOrTimeout(kWaitElementTimeout, ^{
+    return ![ChromeEarlGrey isIncognitoMode];
+  });
 
   [[GREYConfiguration sharedInstance]
           setValue:@(YES)
       forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  return nil;
+  if (!success) {
+    // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
+    // due to timing issues.
+    GREYFail(@"Failed to switch to normal mode.");
+  }
 }
 
 }  // namespace tab_usage_recorder_test_util

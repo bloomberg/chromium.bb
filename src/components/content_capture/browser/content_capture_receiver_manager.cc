@@ -10,6 +10,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 
 namespace content_capture {
 namespace {
@@ -41,7 +42,8 @@ ContentCaptureReceiverManager* ContentCaptureReceiverManager::FromWebContents(
 
 // static
 void ContentCaptureReceiverManager::BindContentCaptureReceiver(
-    mojom::ContentCaptureReceiverAssociatedRequest request,
+    mojo::PendingAssociatedReceiver<mojom::ContentCaptureReceiver>
+        pending_receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -56,12 +58,12 @@ void ContentCaptureReceiverManager::BindContentCaptureReceiver(
 
   auto* receiver = manager->ContentCaptureReceiverForFrame(render_frame_host);
   if (receiver)
-    receiver->BindRequest(std::move(request));
+    receiver->BindPendingReceiver(std::move(pending_receiver));
 }
 
 ContentCaptureReceiver*
 ContentCaptureReceiverManager::ContentCaptureReceiverForFrame(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host) const {
   auto mapping = frame_map_.find(render_frame_host);
   return mapping == frame_map_.end() ? nullptr : mapping->second.get();
 }

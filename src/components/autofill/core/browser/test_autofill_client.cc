@@ -15,8 +15,7 @@ namespace autofill {
 TestAutofillClient::TestAutofillClient()
     : form_origin_(GURL("https://example.test")), source_id_(-1) {}
 
-TestAutofillClient::~TestAutofillClient() {
-}
+TestAutofillClient::~TestAutofillClient() {}
 
 PersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
   return &test_personal_data_manager_;
@@ -35,7 +34,7 @@ syncer::SyncService* TestAutofillClient::GetSyncService() {
   return test_sync_service_;
 }
 
-identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
+signin::IdentityManager* TestAutofillClient::GetIdentityManager() {
   return identity_test_env_.identity_manager();
 }
 
@@ -52,13 +51,13 @@ StrikeDatabase* TestAutofillClient::GetStrikeDatabase() {
 }
 
 ukm::UkmRecorder* TestAutofillClient::GetUkmRecorder() {
-  return ukm::UkmRecorder::Get();
+  return &test_ukm_recorder_;
 }
 
 ukm::SourceId TestAutofillClient::GetUkmSourceId() {
   if (source_id_ == -1) {
     source_id_ = ukm::UkmRecorder::GetNewSourceID();
-    UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
+    test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);
   }
   return source_id_;
 }
@@ -152,6 +151,8 @@ void TestAutofillClient::ConfirmSaveCreditCardToCloud(
   std::move(callback).Run(AutofillClient::ACCEPTED, {});
 }
 
+void TestAutofillClient::CreditCardUploadCompleted(bool card_saved) {}
+
 void TestAutofillClient::ConfirmCreditCardFillAssist(
     const CreditCard& card,
     base::OnceClosure callback) {
@@ -217,23 +218,18 @@ void TestAutofillClient::LoadRiskData(
 }
 
 void TestAutofillClient::InitializeUKMSources() {
-  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
+  test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);
 }
 
 void TestAutofillClient::set_form_origin(const GURL& url) {
   form_origin_ = url;
   // Also reset source_id_.
   source_id_ = ukm::UkmRecorder::GetNewSourceID();
-  UpdateSourceURL(GetUkmRecorder(), source_id_, form_origin_);
+  test_ukm_recorder_.UpdateSourceURL(source_id_, form_origin_);
 }
 
-// static
-void TestAutofillClient::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
-                                         ukm::SourceId source_id,
-                                         GURL url) {
-  if (ukm_recorder) {
-    ukm_recorder->UpdateSourceURL(source_id, url);
-  }
+ukm::TestUkmRecorder* TestAutofillClient::GetTestUkmRecorder() {
+  return &test_ukm_recorder_;
 }
 
 }  // namespace autofill

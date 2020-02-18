@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
@@ -62,10 +63,10 @@ class PLATFORM_EXPORT HeapCompact final {
     return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
   }
 
-  // See |Heap::registerMovingObjectReference()| documentation.
-  void RegisterMovingObjectReference(MovableReference* slot);
+  // See |Heap::ShouldRegisterMovingObjectReference()| documentation.
+  bool ShouldRegisterMovingObjectReference(MovableReference* slot);
 
-  // See |Heap::registerMovingObjectCallback()| documentation.
+  // See |Heap::RegisterMovingObjectCallback()| documentation.
   void RegisterMovingObjectCallback(MovableReference*,
                                     MovingObjectCallback,
                                     void* callback_data);
@@ -132,11 +133,6 @@ class PLATFORM_EXPORT HeapCompact final {
 
   ThreadHeap* const heap_;
   std::unique_ptr<MovableObjectFixups> fixups_;
-
-  // The set is to remember slots that traced during
-  // marking phases. The mapping between the slots and the backing stores are
-  // created at the atomic pause phase.
-  HashSet<MovableReference*> traced_slots_;
 
   // Set to |true| when a compacting sweep will go ahead.
   bool do_compact_ = false;

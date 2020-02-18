@@ -53,6 +53,7 @@
 #endif
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
+#include "net/ftp/ftp_auth_cache.h"                // nogncheck
 #include "net/ftp/ftp_network_layer.h"             // nogncheck
 #include "net/url_request/ftp_protocol_handler.h"  // nogncheck
 #endif
@@ -359,14 +360,7 @@ void URLRequestContextBuilder::SetCreateLayeredNetworkDelegateCallback(
 
 void URLRequestContextBuilder::set_proxy_delegate(
     std::unique_ptr<ProxyDelegate> proxy_delegate) {
-  DCHECK(!shared_proxy_delegate_);
   proxy_delegate_ = std::move(proxy_delegate);
-}
-
-void URLRequestContextBuilder::set_shared_proxy_delegate(
-    ProxyDelegate* shared_proxy_delegate) {
-  DCHECK(!proxy_delegate_);
-  shared_proxy_delegate_ = shared_proxy_delegate;
 }
 
 void URLRequestContextBuilder::SetHttpAuthHandlerFactory(
@@ -584,14 +578,9 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   if (proxy_delegate_) {
-    DCHECK(!shared_proxy_delegate_);
     proxy_resolution_service->AssertNoProxyDelegate();
     proxy_resolution_service->SetProxyDelegate(proxy_delegate_.get());
     storage->set_proxy_delegate(std::move(proxy_delegate_));
-  } else if (shared_proxy_delegate_) {
-    proxy_resolution_service->AssertNoProxyDelegate();
-    proxy_resolution_service->SetProxyDelegate(shared_proxy_delegate_);
-    context->set_proxy_delegate(shared_proxy_delegate_);
   }
 
   HttpNetworkSession::Context network_session_context;
@@ -673,8 +662,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
+    storage->set_ftp_auth_cache(std::make_unique<FtpAuthCache>());
     job_factory->SetProtocolHandler(
-        url::kFtpScheme, FtpProtocolHandler::Create(context->host_resolver()));
+        url::kFtpScheme, FtpProtocolHandler::Create(context->host_resolver(),
+                                                    context->ftp_auth_cache()));
   }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 

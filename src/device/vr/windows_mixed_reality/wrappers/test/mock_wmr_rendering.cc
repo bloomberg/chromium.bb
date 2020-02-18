@@ -128,23 +128,15 @@ bool MockWMRCameraPose::TryGetViewTransform(
 
   // We need to get the inverse of the given transform, as it's the
   // device-to-origin transform and we need the origin-to-device transform.
-  float* t = pose_data.device_to_origin;
-  // The gfx::Transform constructor takes arguments in row-major order, but
-  // we're given data in column-major order. Construct in column-major order and
-  // transpose since it looks cleaner than manually transposing the arguments
-  // passed to the constructor.
-  gfx::Transform device_to_origin(t[0], t[1], t[2], t[3], t[4], t[5], t[6],
-                                  t[7], t[8], t[9], t[10], t[11], t[12], t[13],
-                                  t[14], t[15]);
-  device_to_origin.Transpose();
+  gfx::Transform device_to_origin = PoseFrameDataToTransform(pose_data);
   gfx::Transform origin_to_device = device_to_origin;
   auto success = origin_to_device.GetInverse(&origin_to_device);
   DCHECK(success);
-  float row_major_transform[16];
-  origin_to_device.matrix().asRowMajorf(row_major_transform);
+  float col_major_transform[16];
+  origin_to_device.matrix().asColMajorf(col_major_transform);
 
-  CopyRowMajorFloatArrayToWindowsMatrix(row_major_transform, transform->Left);
-  CopyRowMajorFloatArrayToWindowsMatrix(row_major_transform, transform->Right);
+  CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Left);
+  CopyRowMajorFloatArrayToWindowsMatrix(col_major_transform, transform->Right);
 
   return true;
 }
@@ -157,24 +149,27 @@ MockWMRRenderingParameters::~MockWMRRenderingParameters() = default;
 
 Microsoft::WRL::ComPtr<ID3D11Texture2D>
 MockWMRRenderingParameters::TryGetBackbufferAsTexture2D() {
+  if (backbuffer_texture_)
+    return backbuffer_texture_;
   if (!d3d11_device_)
     return nullptr;
   auto desc = CD3D11_TEXTURE2D_DESC();
   desc.ArraySize = 2;
   desc.Width = kDefaultWmrRenderWidth;
   desc.Height = kDefaultWmrRenderHeight;
+  desc.MipLevels = 1;
   desc.SampleDesc = {1, 0};
   desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.BindFlags = D3D11_BIND_RENDER_TARGET;
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE | D3D11_CPU_ACCESS_READ;
 
-  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture = nullptr;
-  auto hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &texture);
+  auto hr =
+      d3d11_device_->CreateTexture2D(&desc, nullptr, &backbuffer_texture_);
   if (FAILED(hr))
     return nullptr;
 
-  return texture;
+  return backbuffer_texture_;
 }
 
 }  // namespace device

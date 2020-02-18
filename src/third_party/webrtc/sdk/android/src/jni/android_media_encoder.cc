@@ -36,7 +36,7 @@
 #include "rtc_base/thread.h"
 #include "rtc_base/time_utils.h"
 #include "rtc_base/weak_ptr.h"
-#include "sdk/android/generated_video_jni/jni/MediaCodecVideoEncoder_jni.h"
+#include "sdk/android/generated_video_jni/MediaCodecVideoEncoder_jni.h"
 #include "sdk/android/native_api/jni/java_types.h"
 #include "sdk/android/src/jni/android_media_codec_common.h"
 #include "sdk/android/src/jni/jni_helpers.h"
@@ -97,8 +97,7 @@ class MediaCodecVideoEncoder : public VideoEncoder {
 
   // VideoEncoder implementation.
   int32_t InitEncode(const VideoCodec* codec_settings,
-                     int32_t /* number_of_cores */,
-                     size_t /* max_payload_size */) override;
+                     const Settings& settings) override;
   int32_t Encode(const VideoFrame& input_image,
                  const std::vector<VideoFrameType>* frame_types) override;
   int32_t RegisterEncodeCompleteCallback(
@@ -304,8 +303,7 @@ MediaCodecVideoEncoder::MediaCodecVideoEncoder(JNIEnv* jni,
 }
 
 int32_t MediaCodecVideoEncoder::InitEncode(const VideoCodec* codec_settings,
-                                           int32_t /* number_of_cores */,
-                                           size_t /* max_payload_size */) {
+                                           const Settings& settings) {
   RTC_DCHECK_RUN_ON(&encoder_queue_checker_);
   if (codec_settings == NULL) {
     ALOGE << "NULL VideoCodec instance";
@@ -991,8 +989,11 @@ bool MediaCodecVideoEncoder::DeliverPendingOutputs(JNIEnv* jni) {
     EncodedImageCallback::Result callback_result(
         EncodedImageCallback::Result::OK);
     if (callback_) {
-      std::unique_ptr<EncodedImage> image(
-          new EncodedImage(payload, payload_size, payload_size));
+      auto image = absl::make_unique<EncodedImage>();
+      // The corresponding (and deprecated) java classes are not prepared for
+      // late calls to releaseOutputBuffer, so to keep things simple, make a
+      // copy here, and call releaseOutputBuffer before returning.
+      image->SetEncodedData(EncodedImageBuffer::Create(payload, payload_size));
       image->_encodedWidth = width_;
       image->_encodedHeight = height_;
       image->SetTimestamp(output_timestamp_);

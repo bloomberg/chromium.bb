@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
-import org.chromium.chrome.browser.suggestions.TileGridLayout;
+import org.chromium.chrome.browser.suggestions.tile.TileGridLayout;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -143,8 +143,8 @@ public class ExploreSitesSection {
             ExploreSitesBridge.updateCatalogFromNetwork(mProfile, true /*isImmediateFetch*/,
                     (Boolean success) -> { updateCategoryIcons(); });
             RecordHistogram.recordEnumeratedHistogram("ExploreSites.CatalogUpdateRequestSource",
-                    ExploreSitesEnums.CatalogUpdateRequestSource.NEW_TAB_PAGE,
-                    ExploreSitesEnums.CatalogUpdateRequestSource.NUM_ENTRIES);
+                    ExploreSitesCatalogUpdateRequestSource.NEW_TAB_PAGE,
+                    ExploreSitesCatalogUpdateRequestSource.NUM_ENTRIES);
         }
         RecordHistogram.recordBooleanHistogram(
                 "ExploreSites.NTPLoadingCatalogFromNetwork", loadingCatalogFromNetwork);

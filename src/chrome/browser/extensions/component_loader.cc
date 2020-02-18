@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -149,15 +150,10 @@ ComponentLoader::ComponentExtensionInfo::operator=(
 ComponentLoader::ComponentExtensionInfo::~ComponentExtensionInfo() {}
 
 ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
-                                 PrefService* profile_prefs,
-                                 PrefService* local_state,
                                  Profile* profile)
-    : profile_prefs_(profile_prefs),
-      local_state_(local_state),
-      profile_(profile),
+    : profile_(profile),
       extension_service_(extension_service),
-      ignore_whitelist_for_testing_(false),
-      weak_factory_(this) {}
+      ignore_whitelist_for_testing_(false) {}
 
 ComponentLoader::~ComponentLoader() {
 }
@@ -521,6 +517,17 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
   if (!skip_session_components) {
+#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+    AddHangoutServicesExtension();
+#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
+
+    bool install_feedback = enable_background_extensions_during_testing;
+#if defined(GOOGLE_CHROME_BUILD)
+    install_feedback = true;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+    if (install_feedback)
+      Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
+
 #if defined(OS_CHROMEOS)
     AddChromeCameraApp();
     AddVideoPlayerExtension();
@@ -532,27 +539,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if BUILDFLAG(ENABLE_NACL)
     AddZipArchiverExtension();
 #endif  // BUILDFLAG(ENABLE_NACL)
-#endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
-    AddHangoutServicesExtension();
-#endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
-    bool install_feedback = enable_background_extensions_during_testing;
-#if defined(GOOGLE_CHROME_BUILD)
-    install_feedback = true;
-#endif  // defined(GOOGLE_CHROME_BUILD)
-    if (install_feedback)
-      Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
-  }
-
-#if defined(OS_CHROMEOS)
-  if (!skip_session_components) {
-#if defined(KIOSK_NEXT)
-    if (base::FeatureList::IsEnabled(ash::features::kKioskNextShell)) {
-      Add(IDR_KIOSK_NEXT_HOME_MANIFEST,
-          base::FilePath(FILE_PATH_LITERAL("chromeos/kiosk_next_home")));
-    }
-#endif  // defined(KIOSK_NEXT)
 
 #if defined(GOOGLE_CHROME_BUILD)
     std::string id = Add(IDR_QUICKOFFICE_MANIFEST,
@@ -579,8 +565,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
     Add(IDR_ARC_SUPPORT_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/arc_support")));
-  }
 #endif  // defined(OS_CHROMEOS)
+  }
 
 #if defined(GOOGLE_CHROME_BUILD)
 #if !defined(OS_CHROMEOS)  // http://crbug.com/314799

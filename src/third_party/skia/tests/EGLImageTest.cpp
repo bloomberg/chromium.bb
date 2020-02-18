@@ -84,13 +84,13 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
 
     // Use GL Context 1 to create a texture unknown to GrContext.
     context1->flush();
-    GrGpu* gpu1 = context1->priv().getGpu();
     static const int kSize = 100;
     backendTexture1 =
         context1->createBackendTexture(kSize, kSize, kRGBA_8888_SkColorType,
-                                       GrMipMapped::kNo, GrRenderable::kNo);
+                                       SkColors::kTransparent,
+                                       GrMipMapped::kNo, GrRenderable::kNo, GrProtected::kNo);
 
-    if (!backendTexture1.isValid() || !gpu1->isTestingOnlyBackendTexture(backendTexture1)) {
+    if (!backendTexture1.isValid()) {
         ERRORF(reporter, "Error creating texture for EGL Image");
         cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, &backendTexture1, image);
         return;
@@ -144,6 +144,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     glCtx0->makeCurrent();
     externalTexture.fTarget = GR_GL_TEXTURE_EXTERNAL;
     externalTexture.fID = glCtx0->eglImageToExternalTexture(image);
+    externalTexture.fFormat = GR_GL_RGBA8;
     if (0 == externalTexture.fID) {
         ERRORF(reporter, "Error converting EGL Image back to texture");
         cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, &backendTexture1, image);
@@ -157,7 +158,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     // TODO: If I make this TopLeft origin to match resolve_origin calls for kDefault, this test
     // fails on the Nexus5. Why?
     sk_sp<GrTextureContext> surfaceContext = context0->priv().makeBackendTextureContext(
-            backendTex, kBottomLeft_GrSurfaceOrigin, nullptr);
+            backendTex, kBottomLeft_GrSurfaceOrigin, GrColorType::kRGBA_8888, kPremul_SkAlphaType,
+            nullptr);
 
     if (!surfaceContext) {
         ERRORF(reporter, "Error wrapping external texture in GrSurfaceContext.");
@@ -177,9 +179,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
 
     // Should not be able to wrap as a RT
     {
-        sk_sp<GrRenderTargetContext> temp =
-                context0->priv().makeBackendTextureRenderTargetContext(
-                        backendTex, kBottomLeft_GrSurfaceOrigin, 1, nullptr);
+        sk_sp<GrRenderTargetContext> temp = context0->priv().makeBackendTextureRenderTargetContext(
+                backendTex, kBottomLeft_GrSurfaceOrigin, 1, GrColorType::kRGBA_8888, nullptr);
         if (temp) {
             ERRORF(reporter, "Should not be able to wrap an EXTERNAL texture as a RT.");
         }
@@ -193,7 +194,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(EGLImageTest, reporter, ctxInfo) {
     // Only test RT-config
     // TODO: why do we always need to draw to copy from an external texture?
     test_copy_from_surface(reporter, context0, surfaceContext->asSurfaceProxy(),
-                           pixels.get(), true, "EGLImageTest-copy");
+                           GrColorType::kRGBA_8888, pixels.get(), "EGLImageTest-copy");
 
     cleanup(glCtx0, externalTexture.fID, glCtx1.get(), context1, &backendTexture1, image);
 }

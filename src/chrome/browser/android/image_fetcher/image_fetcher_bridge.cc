@@ -16,11 +16,11 @@
 #include "chrome/browser/image_fetcher/image_fetcher_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/lib/image_fetcher/public/android/jni_headers/ImageFetcherBridge_jni.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/image_fetcher_service.h"
-#include "jni/ImageFetcherBridge_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
@@ -119,8 +119,6 @@ void ImageFetcherBridge::FetchImageData(JNIEnv* j_env,
   // We can skip transcoding here because this method is used in java as
   // ImageFetcher.fetchGif, which decodes the data in a Java-only library.
   params.set_skip_transcoding(true);
-  // We checked disk in Java, so we can skip it for native.
-  params.set_skip_disk_cache_read(true);
   image_fetcher_service_->GetImageFetcher(config)->FetchImageData(
       GURL(url),
       base::BindOnce(&ImageFetcherBridge::OnImageDataFetched,
@@ -142,8 +140,6 @@ void ImageFetcherBridge::FetchImage(JNIEnv* j_env,
       base::android::ConvertJavaStringToUTF8(j_client_name);
 
   ImageFetcherParams params(kTrafficAnnotation, client_name);
-  // We checked disk in Java, so we can skip it for native.
-  params.set_skip_disk_cache_read(true);
   image_fetcher_service_->GetImageFetcher(config)->FetchImage(
       GURL(url),
       base::BindOnce(&ImageFetcherBridge::OnImageFetched,

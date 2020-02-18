@@ -62,7 +62,7 @@ base::string16 SendTabToSelfBubbleController::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
 }
 
-std::map<std::string, TargetDeviceInfo>
+const std::vector<TargetDeviceInfo>&
 SendTabToSelfBubbleController::GetValidDevices() const {
   return valid_devices_;
 }
@@ -86,10 +86,12 @@ void SendTabToSelfBubbleController::OnBubbleClosed() {
   send_tab_to_self_bubble_view_ = nullptr;
 }
 
+SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;
+
 SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  this->FetchDeviceInfo();
+  FetchDeviceInfo();
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {
@@ -103,7 +105,7 @@ void SendTabToSelfBubbleController::FetchDeviceInfo() {
   if (!model) {
     return;
   }
-  valid_devices_ = model->GetTargetDeviceNameToCacheInfoMap();
+  valid_devices_ = model->GetTargetDeviceInfoSortedList();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SendTabToSelfBubbleController)

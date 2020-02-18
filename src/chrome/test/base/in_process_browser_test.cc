@@ -51,11 +51,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -68,7 +70,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/display/display_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -90,23 +91,20 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
-#include "chrome/test/base/default_ash_event_generator_delegate.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS) && defined(OS_LINUX)
 #include "ui/views/test/test_desktop_screen_x11.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_api_frame_id_map.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -115,9 +113,6 @@
 #endif
 
 namespace {
-
-// Passed as value of kTestType.
-const char kBrowserTestType[] = "browser";
 
 #if defined(OS_CHROMEOS)
 class FakeDeviceSyncImplFactory
@@ -128,7 +123,7 @@ class FakeDeviceSyncImplFactory
 
   // chromeos::device_sync::DeviceSyncImpl::Factory:
   std::unique_ptr<chromeos::device_sync::DeviceSyncBase> BuildInstance(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const chromeos::device_sync::GcmDeviceInfoProvider*
@@ -153,25 +148,22 @@ FakeDeviceSyncImplFactory* GetFakeDeviceSyncImplFactory() {
 InProcessBrowserTest::SetUpBrowserFunction*
     InProcessBrowserTest::global_browser_set_up_function_ = nullptr;
 
-InProcessBrowserTest::InProcessBrowserTest()
+InProcessBrowserTest::InProcessBrowserTest() {
+  Initialize();
 #if defined(TOOLKIT_VIEWS)
-    : InProcessBrowserTest(
-          base::BindOnce([]() -> std::unique_ptr<views::ViewsDelegate> {
-            return std::make_unique<AccessibilityChecker>();
-          })) {
+  views_delegate_ = std::make_unique<AccessibilityChecker>();
+#endif
 }
 
+#if defined(TOOLKIT_VIEWS)
 InProcessBrowserTest::InProcessBrowserTest(
-    DelegateCallback viewsDelegateCallback)
-#endif  // defined(TOOLKIT_VIEWS)
-    : browser_(NULL),
-      exit_when_last_browser_closes_(true),
-      open_about_blank_on_browser_launch_(true)
-#if defined(OS_MACOSX)
-      ,
-      autorelease_pool_(NULL)
-#endif  // OS_MACOSX
-{
+    std::unique_ptr<views::ViewsDelegate> views_delegate) {
+  Initialize();
+  views_delegate_ = std::move(views_delegate);
+}
+#endif
+
+void InProcessBrowserTest::Initialize() {
   CreateTestServer(GetChromeTestDataDir());
   base::FilePath src_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
@@ -183,16 +175,7 @@ InProcessBrowserTest::InProcessBrowserTest(
                                     src_dir.Append(GetChromeTestDataDir())));
 
 #if defined(OS_MACOSX)
-  bundle_swizzler_.reset(new ScopedBundleSwizzlerMac);
-#endif
-
-#if defined(OS_CHROMEOS)
-  ui::test::EventGeneratorDelegate::SetFactoryFunction(
-      base::BindRepeating(&CreateAshEventGeneratorDelegate));
-#endif
-
-#if defined(TOOLKIT_VIEWS)
-  views_delegate_ = std::move(viewsDelegateCallback).Run();
+  bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 }
 
@@ -201,6 +184,11 @@ InProcessBrowserTest::~InProcessBrowserTest() = default;
 void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
+
+  // Initialize sampling profiler in browser tests. This mimics the behavior
+  // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
+  // which does not get called by browser tests.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -215,7 +203,7 @@ void InProcessBrowserTest::SetUp() {
   SetUpDefaultCommandLine(command_line);
 
   // Create a temporary user data directory if required.
-  ASSERT_TRUE(CreateUserDataDirectory())
+  ASSERT_TRUE(test_launcher_utils::CreateUserDataDir(&temp_user_data_dir_))
       << "Could not create user data directory.";
 
   // Allow subclasses the opportunity to make changes to the default user data
@@ -282,6 +270,10 @@ void InProcessBrowserTest::SetUp() {
   // access to all files here since browser_tests and interactive_ui_tests
   // rely on the ability to open any files via file: scheme.
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
+
+  // Using a screenshot for clamshell to tablet mode transitions makes the flow
+  // async which we want to disable for most tests.
+  ash::ShellTestApi::SetTabletControllerUseScreenshotForTest(false);
 #endif  // defined(OS_CHROMEOS)
 
   // Use hardcoded quota settings to have a consistent testing environment.
@@ -302,39 +294,13 @@ void InProcessBrowserTest::SetUp() {
 
 void InProcessBrowserTest::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {
-  // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
-  // This is a Browser test.
-  command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
-
-  // Use an sRGB color profile to ensure that the machine's color profile does
-  // not affect the results.
-  command_line->AppendSwitchASCII(switches::kForceDisplayColorProfile, "srgb");
+  test_launcher_utils::PrepareBrowserCommandLineForBrowserTests(
+      command_line, open_about_blank_on_browser_launch_);
 
   // TODO(pkotwicz): Investigate if we can remove this switch.
   if (exit_when_last_browser_closes_)
     command_line->AppendSwitch(switches::kDisableZeroBrowsersOpenForTests);
-
-  if (open_about_blank_on_browser_launch_ && command_line->GetArgs().empty())
-    command_line->AppendArg(url::kAboutBlankURL);
-}
-
-bool InProcessBrowserTest::CreateUserDataDirectory() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath user_data_dir =
-      command_line->GetSwitchValuePath(switches::kUserDataDir);
-  if (user_data_dir.empty()) {
-    if (temp_user_data_dir_.CreateUniqueTempDir() &&
-        temp_user_data_dir_.IsValid()) {
-      user_data_dir = temp_user_data_dir_.GetPath();
-    } else {
-      LOG(ERROR) << "Could not create temporary user data directory \""
-                 << temp_user_data_dir_.GetPath().value() << "\".";
-      return false;
-    }
-  }
-  return test_launcher_utils::OverrideUserDataDir(user_data_dir);
 }
 
 void InProcessBrowserTest::TearDown() {
@@ -347,14 +313,6 @@ void InProcessBrowserTest::TearDown() {
   OSCryptMocker::TearDown();
   ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // By now, all the WebContents should be destroyed, Ensure that we are not
-  // leaking memory in ExtensionAPIFrameIdMap. crbug.com/817205.
-  EXPECT_EQ(
-      0u,
-      extensions::ExtensionApiFrameIdMap::Get()->GetFrameDataCountForTesting());
-#endif
-
 #if defined(OS_CHROMEOS)
   chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
       nullptr);
@@ -362,10 +320,8 @@ void InProcessBrowserTest::TearDown() {
 }
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
   CloseBrowserAsynchronously(browser);
-  observer.Wait();
+  ui_test_utils::WaitForBrowserToClose(browser);
 }
 
 void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {

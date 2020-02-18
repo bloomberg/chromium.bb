@@ -165,9 +165,19 @@ IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSharedImageWithData,
                     GpuChannelMsg_CreateSharedImageWithData_Params /* params */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateGMBSharedImage,
                     GpuChannelMsg_CreateGMBSharedImage_Params /* params */)
-IPC_MESSAGE_ROUTED2(GpuChannelMsg_UpdateSharedImage,
+
+// The following IPC message, that can be used by the browser or renderers,
+// updates the SharedImage referenced by |id| after its contents are modified
+// (e.g: its GpuMemoryBuffer is modified via the CPU or through external
+// devices).
+// The sync token in the shared image sequence at position |release_id| will be
+// released once this command has been executed service side.
+// |in_fence_handle|, if not null, represents a fence that will be waited on
+// before reading the contents represented by the shared image.
+IPC_MESSAGE_ROUTED3(GpuChannelMsg_UpdateSharedImage,
                     gpu::Mailbox /* id */,
-                    uint32_t /* release_id */)
+                    uint32_t /* release_id */,
+                    gfx::GpuFenceHandle /* in_fence_handle */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSwapChain,
@@ -195,6 +205,11 @@ IPC_MESSAGE_CONTROL0(GpuChannelMsg_CrashForTesting)
 // messages have been received.
 IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)
 
+// Creates a StreamTexture attached to the provided |stream_id|.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateStreamTexture,
+                            int32_t, /* stream_id */
+                            bool /* succeeded */)
+
 #if defined(OS_ANDROID)
 //------------------------------------------------------------------------------
 // Tells the StreamTexture to send its SurfaceTexture to the browser process,
@@ -202,16 +217,22 @@ IPC_SYNC_MESSAGE_CONTROL0_0(GpuChannelMsg_Nop)
 IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_ForwardForSurfaceRequest,
                     base::UnguessableToken)
 
-// Tells the GPU process to set the size of StreamTexture from the given
-// stream Id.
-IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_SetSize, gfx::Size /* size */)
-
 // Tells the service-side instance to start sending frame available
 // notifications.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_StartListening)
 
 // Inform the renderer that a new frame is available.
 IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_FrameAvailable)
+
+// Create a SharedImage for the current StreamTexture at the provided |size|.
+IPC_MESSAGE_ROUTED3(GpuStreamTextureMsg_CreateSharedImage,
+                    gpu::Mailbox /* mailbox */,
+                    gfx::Size /* size */,
+                    uint32_t /* release_id */)
+
+// Destroys the StreamTexture attached to the provided |stream_id|.
+IPC_MESSAGE_ROUTED0(GpuStreamTextureMsg_Destroy)
+
 #endif
 
 //------------------------------------------------------------------------------
@@ -310,12 +331,6 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_CreateImage,
 
 // Destroy a previously created image.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyImage, int32_t /* id */)
-
-// Attaches an external image stream to the client texture.
-IPC_SYNC_MESSAGE_ROUTED2_1(GpuCommandBufferMsg_CreateStreamTexture,
-                           uint32_t, /* client_texture_id */
-                           int32_t,  /* stream_id */
-                           bool /* succeeded */)
 
 // Send a GPU fence handle and store it for the specified gpu fence ID.
 IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_CreateGpuFenceFromHandle,

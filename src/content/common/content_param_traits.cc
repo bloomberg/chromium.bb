@@ -31,7 +31,7 @@ namespace IPC {
 void ParamTraits<content::WebCursor>::Write(base::Pickle* m,
                                             const param_type& p) {
   WriteParam(m, p.info().type);
-  if (p.info().type == blink::WebCursorInfo::kTypeCustom) {
+  if (p.info().type == ui::CursorType::kCustom) {
     WriteParam(m, p.info().hotspot);
     WriteParam(m, p.info().image_scale_factor);
     WriteParam(m, p.info().custom_image);
@@ -45,7 +45,7 @@ bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &info.type))
     return false;
 
-  if (info.type == blink::WebCursorInfo::kTypeCustom &&
+  if (info.type == ui::CursorType::kCustom &&
       (!ReadParam(m, iter, &info.hotspot) ||
        !ReadParam(m, iter, &info.image_scale_factor) ||
        !ReadParam(m, iter, &info.custom_image))) {
@@ -294,6 +294,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
+  WriteParam(m, p->data.allow_autoplay);
   if (p->data.user_activation) {
     WriteParam(m, p->data.user_activation->has_been_active);
     WriteParam(m, p->data.user_activation->was_active);
@@ -325,7 +326,8 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation) ||
-      !ReadParam(m, iter, &(*r)->data.transfer_user_activation)) {
+      !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
+      !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {
     return false;
   }
 

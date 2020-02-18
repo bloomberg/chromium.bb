@@ -397,8 +397,12 @@ ContextResult WebGPUDecoderImpl::Initialize() {
     return ContextResult::kFatalFailure;
   }
 
-  wire_server_ = std::make_unique<dawn_wire::WireServer>(
-      dawn_device_, dawn_procs_, wire_serializer_.get());
+  dawn_wire::WireServerDescriptor descriptor = {};
+  descriptor.device = dawn_device_;
+  descriptor.procs = &dawn_procs_;
+  descriptor.serializer = wire_serializer_.get();
+
+  wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
 
   return ContextResult::kSuccess;
 }
@@ -585,8 +589,8 @@ error::Error WebGPUDecoderImpl::HandleAssociateMailboxImmediate(
   }
 
   static constexpr uint32_t kAllowedTextureUsages = static_cast<uint32_t>(
-      DAWN_TEXTURE_USAGE_BIT_TRANSFER_SRC |
-      DAWN_TEXTURE_USAGE_BIT_TRANSFER_DST | DAWN_TEXTURE_USAGE_BIT_SAMPLED |
+      DAWN_TEXTURE_USAGE_BIT_COPY_SRC | DAWN_TEXTURE_USAGE_BIT_COPY_DST |
+      DAWN_TEXTURE_USAGE_BIT_SAMPLED |
       DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT);
   if (usage & ~kAllowedTextureUsages) {
     DLOG(ERROR) << "AssociateMailbox: Invalid usage";

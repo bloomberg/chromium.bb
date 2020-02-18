@@ -28,10 +28,16 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 
 #if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
+#endif
+
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
 #endif
 
 namespace {
@@ -86,7 +92,9 @@ ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
     const std::string& relying_party_id)
     : render_frame_host_(render_frame_host),
       relying_party_id_(relying_party_id),
-      weak_ptr_factory_(this) {}
+      transient_dialog_model_holder_(
+          std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id)),
+      weak_dialog_model_(transient_dialog_model_holder_.get()) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying
@@ -119,11 +127,23 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
+    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   if (!IsWebAuthnUIEnabled())
     return false;
   if (!weak_dialog_model_)
     return false;
+
+  DCHECK(authenticator || reason == InterestingFailureReason::kTimeout);
+
+#if defined(OS_WIN)
+  if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
+    // Do not display a Chrome error dialog if the user cancels out of the
+    // Windows UI. No other errors are reachable.
+    DCHECK(reason == InterestingFailureReason::kUserConsentDenied);
+    return false;
+  }
+#endif  // defined(OS_WIN)
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
@@ -153,31 +173,30 @@ bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
     case InterestingFailureReason::kStorageFull:
       weak_dialog_model_->OnAuthenticatorStorageFull();
       break;
+    case InterestingFailureReason::kUserConsentDenied:
+      weak_dialog_model_->OnUserConsentDenied();
+      break;
   }
   return true;
 }
 
 void ChromeAuthenticatorRequestDelegate::RegisterActionCallbacks(
     base::OnceClosure cancel_callback,
+    base::Closure start_over_callback,
     device::FidoRequestHandlerBase::RequestCallback request_callback,
     base::RepeatingClosure bluetooth_adapter_power_on_callback,
     device::FidoRequestHandlerBase::BlePairingCallback ble_pairing_callback) {
   request_callback_ = request_callback;
   cancel_callback_ = std::move(cancel_callback);
+  start_over_callback_ = std::move(start_over_callback);
 
-  transient_dialog_model_holder_ =
-      std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id_);
-  transient_dialog_model_holder_->SetRequestCallback(request_callback);
-  transient_dialog_model_holder_->SetBluetoothAdapterPowerOnCallback(
+  weak_dialog_model_->SetRequestCallback(request_callback);
+  weak_dialog_model_->SetBluetoothAdapterPowerOnCallback(
       bluetooth_adapter_power_on_callback);
-  transient_dialog_model_holder_->SetBlePairingCallback(ble_pairing_callback);
-  transient_dialog_model_holder_->SetBleDevicePairedCallback(
-      base::BindRepeating(
-          &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
-          weak_ptr_factory_.GetWeakPtr()));
-
-  weak_dialog_model_ = transient_dialog_model_holder_.get();
-  weak_dialog_model_->AddObserver(this);
+  weak_dialog_model_->SetBlePairingCallback(ble_pairing_callback);
+  weak_dialog_model_->SetBleDevicePairedCallback(base::BindRepeating(
+      &ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
@@ -195,6 +214,7 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
 
 void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
+    const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
 #if defined(OS_ANDROID)
   // Android is expected to use platform APIs for webauthn which will take care
@@ -215,6 +235,16 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     std::move(callback).Run(false);
     return;
   }
+
+#if defined(OS_WIN)
+  if (authenticator->IsWinNativeApiAuthenticator() &&
+      static_cast<const device::WinWebAuthnApiAuthenticator*>(authenticator)
+          ->ShowsPrivacyNotice()) {
+    // The OS' native API includes an attestation prompt.
+    std::move(callback).Run(true);
+    return;
+  }
+#endif  // defined(OS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
 #endif
@@ -276,19 +306,11 @@ std::string TouchIdMetadataSecret(Profile* profile) {
 }  // namespace
 
 // static
-content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig
+ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig
 ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfigForProfile(
     Profile* profile) {
-  return content::AuthenticatorRequestClientDelegate::
-      TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
-                                 TouchIdMetadataSecret(profile)};
-}
-
-base::Optional<
-    content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() const {
-  return TouchIdAuthenticatorConfigForProfile(
-      Profile::FromBrowserContext(browser_context()));
+  return TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
+                                    TouchIdMetadataSecret(profile)};
 }
 #endif
 
@@ -329,30 +351,53 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
   return !disable_ui_;
 }
 
-bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
+bool ChromeAuthenticatorRequestDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
 #if defined(OS_MACOSX)
   // Touch ID is available in Incognito, but not in Guest mode.
-  return Profile::FromBrowserContext(browser_context())->IsGuestSession();
-#else  // Windows, Android
-  return browser_context()->IsOffTheRecord();
-#endif
+  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
+    return false;
+
+  return device::fido::mac::TouchIdAuthenticator::IsAvailable(
+      TouchIdAuthenticatorConfigForProfile(
+          Profile::FromBrowserContext(browser_context())));
+#elif defined(OS_WIN)
+  if (browser_context()->IsOffTheRecord())
+    return false;
+
+  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+         device::WinWebAuthnApiAuthenticator::
+             IsUserVerifyingPlatformAuthenticatorAvailable();
+#else
+  return false;
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
+
+#if defined(OS_MACOSX)
+base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
+ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
+  if (!IsUserVerifyingPlatformAuthenticatorAvailable())
+    return base::nullopt;
+
+  return TouchIdAuthenticatorConfigForProfile(
+      Profile::FromBrowserContext(browser_context()));
+}
+#endif  // defined(OS_MACOSX)
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
 #if !defined(OS_ANDROID)
-  if (disable_ui_) {
+  if (disable_ui_ || !transient_dialog_model_holder_) {
     return;
   }
 
+  weak_dialog_model_->AddObserver(this);
   weak_dialog_model_->set_incognito_mode(
       Profile::FromBrowserContext(browser_context())->IsIncognitoProfile());
 
   weak_dialog_model_->StartFlow(std::move(data), GetLastTransportUsed(),
                                 GetPreviouslyPairedFidoBleDeviceIds());
 
-  DCHECK(transient_dialog_model_holder_)
-      << "RegisterActionCallbacks() must be called first";
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
@@ -406,12 +451,13 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {
+    bool is_in_pairing_mode,
+    base::string16 display_name) {
   if (!weak_dialog_model_)
     return;
 
   weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(
-      authenticator_id, is_in_pairing_mode);
+      authenticator_id, is_in_pairing_mode, display_name);
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(
@@ -446,6 +492,11 @@ void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(
     return;
   }
   weak_dialog_model_->set_might_create_resident_credential(v);
+}
+
+void ChromeAuthenticatorRequestDelegate::OnStartOver() {
+  DCHECK(start_over_callback_);
+  start_over_callback_.Run();
 }
 
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {

@@ -85,6 +85,7 @@ const char* const kKnownSettings[] = {
     kDeviceNativePrintersAccessMode,
     kDeviceNativePrintersBlacklist,
     kDeviceNativePrintersWhitelist,
+    kDevicePowerwashAllowed,
     kDeviceQuirksDownloadEnabled,
     kDeviceRebootOnUserSignout,
     kDeviceScheduledUpdateCheck,
@@ -809,6 +810,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
         kDeviceSecondFactorAuthenticationMode,
         policy.device_second_factor_authentication().mode());
   }
+
+  if (policy.has_device_powerwash_allowed()) {
+    const em::DevicePowerwashAllowedProto& container(
+        policy.device_powerwash_allowed());
+    if (container.has_device_powerwash_allowed()) {
+      new_values_cache->SetBoolean(kDevicePowerwashAllowed,
+                                   container.device_powerwash_allowed());
+    }
+  }
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -867,7 +877,7 @@ DeviceSettingsProvider::~DeviceSettingsProvider() {
 
 // static
 bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
-  return base::ContainsValue(kKnownSettings, name);
+  return base::Contains(kKnownSettings, name);
 }
 
 // static

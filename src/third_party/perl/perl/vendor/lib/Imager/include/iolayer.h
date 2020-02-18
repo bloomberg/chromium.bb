@@ -22,10 +22,10 @@
 void io_glue_gettypes    (io_glue *ig, int reqmeth);
 
 /* XS functions */
-io_glue *io_new_fd(int fd);
-io_glue *io_new_bufchain(void);
-io_glue *io_new_buffer(const char *data, size_t len, i_io_closebufp_t closecb, void *closedata);
-io_glue *io_new_cb(void *p, i_io_readl_t readcb, i_io_writel_t writecb, i_io_seekl_t seekcb, i_io_closel_t closecb, i_io_destroyl_t destroycb);
+io_glue *im_io_new_fd(pIMCTX, int fd);
+io_glue *im_io_new_bufchain(pIMCTX);
+io_glue *im_io_new_buffer(pIMCTX, const char *data, size_t len, i_io_closebufp_t closecb, void *closedata);
+io_glue *im_io_new_cb(pIMCTX, void *p, i_io_readl_t readcb, i_io_writel_t writecb, i_io_seekl_t seekcb, i_io_closel_t closecb, i_io_destroyl_t destroycb);
 size_t   io_slurp(io_glue *ig, unsigned char **c);
 void     io_glue_destroy(io_glue *ig);
 

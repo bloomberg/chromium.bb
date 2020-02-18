@@ -27,6 +27,7 @@
 
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -153,13 +154,16 @@ typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
 
-class CORE_EXPORT Element : public ContainerNode {
+class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static Element* Create(const QualifiedName&, Document*);
 
   Element(const QualifiedName& tag_name, Document*, ConstructionType);
+
+  // Animatable implementation.
+  Element* GetAnimationTarget() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy, kBeforecopy)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecut, kBeforecut)
@@ -508,7 +512,7 @@ class CORE_EXPORT Element : public ContainerNode {
                                                CloneChildrenFlag) {}
 
   void AttachLayoutTree(AttachContext&) override;
-  void DetachLayoutTree(const AttachContext& = AttachContext()) override;
+  void DetachLayoutTree(bool performing_reattach = false) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
@@ -731,9 +735,7 @@ class CORE_EXPORT Element : public ContainerNode {
   PseudoElement* GetPseudoElement(PseudoId) const;
   LayoutObject* PseudoElementLayoutObject(PseudoId) const;
 
-  const ComputedStyle* CachedStyleForPseudoElement(
-      const PseudoStyleRequest&,
-      const ComputedStyle* parent_style = nullptr);
+  const ComputedStyle* CachedStyleForPseudoElement(const PseudoStyleRequest&);
   scoped_refptr<ComputedStyle> StyleForPseudoElement(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
@@ -912,6 +914,9 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void ActivateDisplayLockIfNeeded();
 
+  virtual void SetActive(bool active);
+  virtual void SetHovered(bool hovered);
+
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
@@ -1029,7 +1034,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId);
   void AttachPseudoElement(PseudoId, AttachContext&);
-  void DetachPseudoElement(PseudoId, const AttachContext&);
+  void DetachPseudoElement(PseudoId, bool performing_reattach);
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 
@@ -1075,6 +1080,10 @@ class CORE_EXPORT Element : public ContainerNode {
                                SynchronizationOfLazyAttribute);
   void RemoveAttributeInternal(wtf_size_t index,
                                SynchronizationOfLazyAttribute);
+  std::pair<wtf_size_t, const QualifiedName> LookupAttributeQNameInternal(
+      const AtomicString& local_name) const;
+  SpecificTrustedType ExpectedTrustedTypeForAttribute(
+      const QualifiedName&) const;
 
   void CancelFocusAppearanceUpdate();
 
@@ -1163,6 +1172,12 @@ class CORE_EXPORT Element : public ContainerNode {
   // within a formatting context.
   void ForceLegacyLayoutInFormattingContext(const ComputedStyle& new_style);
 
+  // If this element requires legacy layout, and we're inside a fragmentation
+  // context, we need to force legacy layout for the entire fragmentation
+  // context. LayoutNG block fragmentation and legacy block fragmentation cannot
+  // cooperate within a fragmentation context.
+  void ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+
   Member<ElementData> element_data_;
 };
 
@@ -1209,59 +1224,19 @@ inline const T* ToElement(const Node* node) {
   return static_cast<const T*>(node);
 }
 
-template <typename T>
-inline T* ToElementOrNull(Node& node) {
-  return IsElementOfType<const T>(node) ? static_cast<T*>(&node) : nullptr;
-}
-template <typename T>
-inline T* ToElementOrNull(Node* node) {
-  return (node && IsElementOfType<const T>(*node)) ? static_cast<T*>(node)
-                                                   : nullptr;
-}
-template <typename T>
-inline const T* ToElementOrNull(const Node& node) {
-  return IsElementOfType<const T>(node) ? static_cast<const T*>(&node)
-                                        : nullptr;
-}
-template <typename T>
-inline const T* ToElementOrNull(const Node* node) {
-  return (node && IsElementOfType<const T>(*node)) ? static_cast<const T*>(node)
-                                                   : nullptr;
-}
-
-template <typename T>
-inline T& ToElementOrDie(Node& node) {
-  CHECK(IsElementOfType<const T>(node));
-  return static_cast<T&>(node);
-}
-template <typename T>
-inline T* ToElementOrDie(Node* node) {
-  CHECK(!node || IsElementOfType<const T>(*node));
-  return static_cast<T*>(node);
-}
-template <typename T>
-inline const T& ToElementOrDie(const Node& node) {
-  CHECK(IsElementOfType<const T>(node));
-  return static_cast<const T&>(node);
-}
-template <typename T>
-inline const T* ToElementOrDie(const Node* node) {
-  CHECK(!node || IsElementOfType<const T>(*node));
-  return static_cast<const T*>(node);
-}
-
 inline bool IsDisabledFormControl(const Node* node) {
-  return node->IsElementNode() && ToElement(node)->IsDisabledFormControl();
+  auto* element = DynamicTo<Element>(node);
+  return element && element->IsDisabledFormControl();
 }
 
 inline Element* Node::parentElement() const {
-  ContainerNode* parent = parentNode();
-  return parent && parent->IsElementNode() ? ToElement(parent) : nullptr;
+  return DynamicTo<Element>(parentNode());
 }
 
 inline bool Element::FastHasAttribute(const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(FastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name))
+      << TagQName().ToString().Utf8() << "/@" << name.ToString().Utf8();
 #endif
   return GetElementData() &&
          GetElementData()->Attributes().FindIndex(name) != kNotFound;
@@ -1270,7 +1245,8 @@ inline bool Element::FastHasAttribute(const QualifiedName& name) const {
 inline const AtomicString& Element::FastGetAttribute(
     const QualifiedName& name) const {
 #if DCHECK_IS_ON()
-  DCHECK(FastAttributeLookupAllowed(name));
+  DCHECK(FastAttributeLookupAllowed(name))
+      << TagQName().ToString().Utf8() << "/@" << name.ToString().Utf8();
 #endif
   if (GetElementData()) {
     if (const Attribute* attribute = GetElementData()->Attributes().Find(name))

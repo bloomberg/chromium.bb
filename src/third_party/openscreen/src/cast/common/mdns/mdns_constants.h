@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ constexpr uint8_t kDefaultMulticastGroupIPv4[4] = {224, 0, 0, 251};
 // IPv6 group address for joining mDNS multicast group, given as byte array in
 // network-order. This is a link-local multicast address, so messages will not
 // be forwarded outside local network. See RFC 6762, section 3.
-constexpr uint8_t kDefaultMulticastGroupIpv6[16] = {
+constexpr uint8_t kDefaultMulticastGroupIPv6[16] = {
     0xFF, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFB,
 };
@@ -125,10 +125,10 @@ constexpr bool kDefaultSupportSiteLocalGroup = true;
 struct Header {
   uint16_t id;
   uint16_t flags;
-  uint16_t qdcount;
-  uint16_t ancount;
-  uint16_t nscount;
-  uint16_t arcount;
+  uint16_t question_count;
+  uint16_t answer_count;
+  uint16_t authority_record_count;
+  uint16_t additional_record_count;
 };
 
 // TODO(mayaki): Here and below consider converting constants to members of
@@ -173,8 +173,9 @@ constexpr uint8_t kRcodeREFUSED = 5;
 
 // RFC 1035: https://www.ietf.org/rfc/rfc1035.txt
 
-// Maximum number of octets allowed in a single domain name.
-constexpr size_t kMaxDomainNameLength = 255;
+// Maximum number of octets allowed in a single domain name including the
+// terminating character octet
+constexpr size_t kMaxDomainNameLength = 256;
 // Maximum number of octets allowed in a single domain name label.
 constexpr size_t kMaxLabelLength = 63;
 
@@ -200,11 +201,44 @@ constexpr size_t kMaxLabelLength = 63;
 //  | 1  1|               OFFSET                    |
 //  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 
-constexpr uint8_t kLabelMask = 0xC0;
-constexpr uint8_t kLabelPointer = 0xC0;
-constexpr uint8_t kLabelDirect = 0x00;
 constexpr uint8_t kLabelTermination = 0x00;
+constexpr uint8_t kLabelTypeMask = 0xC0;
+constexpr uint8_t kLabelDirect = 0x00;
+constexpr uint8_t kLabelPointer = 0xC0;
+constexpr uint8_t kLabelLengthMask = 0x3F;
 constexpr uint16_t kLabelOffsetMask = 0x3FFF;
+
+constexpr bool IsTerminationLabel(uint8_t label) {
+  return label == kLabelTermination;
+}
+
+constexpr bool IsDirectLabel(uint8_t label) {
+  return (label & kLabelTypeMask) == kLabelDirect;
+}
+
+constexpr bool IsPointerLabel(uint8_t label) {
+  return (label & kLabelTypeMask) == kLabelPointer;
+}
+
+constexpr uint8_t GetDirectLabelLength(uint8_t label) {
+  return label & kLabelLengthMask;
+}
+
+constexpr uint16_t GetPointerLabelOffset(uint16_t label) {
+  return label & kLabelOffsetMask;
+}
+
+constexpr bool IsValidPointerLabelOffset(size_t offset) {
+  return offset <= kLabelOffsetMask;
+}
+
+constexpr uint16_t MakePointerLabel(uint16_t offset) {
+  return (uint16_t(kLabelPointer) << 8) | (offset & kLabelOffsetMask);
+}
+
+constexpr uint8_t MakeDirectLabel(uint8_t length) {
+  return kLabelDirect | (length & kLabelLengthMask);
+}
 
 // ============================================================================
 // Record Fields
@@ -250,19 +284,18 @@ constexpr uint16_t kLabelOffsetMask = 0x3FFF;
 
 // DNS TYPE values. See http://www.iana.org/assignments/dns-parameters for full
 // list. Only a sub-set is used and listed here.
-constexpr uint16_t kTypeA = 1;
-constexpr uint16_t kTypeCNAME = 5;
-constexpr uint16_t kTypePTR = 12;
-constexpr uint16_t kTypeTXT = 16;
-constexpr uint16_t kTypeAAAA = 28;
-constexpr uint16_t kTypeSRV = 33;
-constexpr uint16_t kTypeNSEC = 47;
-constexpr uint16_t kTypeANY = 255;  // Only allowed for QTYPE
+enum class DnsType : uint16_t {
+  kA = 1,
+  kPTR = 12,
+  kTXT = 16,
+  kAAAA = 28,
+  kSRV = 33,
+  kANY = 255,  // Only allowed for QTYPE
+};
 
 // DNS CLASS masks and values.
 constexpr uint16_t kClassMask = 0x7FFF;
-constexpr uint16_t kClassIN = 1;
-constexpr uint16_t kClassANY = 255;  // Only allowed for QCLASS
+
 // In mDNS the most significant bit of the RRCLASS for response records is
 // designated as the "cache-flush bit", as described in
 // https://tools.ietf.org/html/rfc6762#section-10.2
@@ -271,6 +304,34 @@ constexpr uint16_t kCacheFlushBit = 0x8000;
 // designated as the "unicast-response bit", as described in
 // https://tools.ietf.org/html/rfc6762#section-5.4
 constexpr uint16_t kUnicastResponseBit = 0x8000;
+
+enum class DnsClass : uint16_t {
+  kIN = 1,
+  kANY = 255,  // Only allowed for QCLASS
+};
+
+constexpr DnsClass GetDnsClass(uint16_t rrclass) {
+  return static_cast<DnsClass>(rrclass & kClassMask);
+}
+
+constexpr bool GetCacheFlush(uint16_t rrclass) {
+  return rrclass & kCacheFlushBit;
+}
+
+constexpr bool GetUnicastResponse(uint16_t rrclass) {
+  return rrclass & kUnicastResponseBit;
+}
+
+constexpr uint16_t MakeRecordClass(DnsClass dns_class, bool cache_flush) {
+  return static_cast<uint16_t>(dns_class) |
+         (static_cast<uint16_t>(cache_flush) << 15);
+}
+
+constexpr uint16_t MakeQuestionClass(DnsClass dns_class,
+                                     bool unicast_response) {
+  return static_cast<uint16_t>(dns_class) |
+         (static_cast<uint16_t>(unicast_response) << 15);
+}
 
 // See RFC 6762, section 11: https://tools.ietf.org/html/rfc6762#section-11
 //

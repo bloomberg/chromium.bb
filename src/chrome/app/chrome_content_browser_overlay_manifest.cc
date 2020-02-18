@@ -25,13 +25,13 @@
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
 #include "chrome/common/prerender.mojom.h"
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
-#include "components/contextual_search/content/common/contextual_search_js_api_service.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
-#include "components/dom_distiller/content/common/distillability_service.mojom.h"
-#include "components/dom_distiller/content/common/distiller_javascript_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
+#include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
-#include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"
@@ -49,10 +49,9 @@
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/kiosk_next_home/mojom/kiosk_next_home_interface_broker.mojom.h"  // nogncheck
-#include "chrome/browser/chromeos/supervision/mojom/onboarding_controller.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chrome/services/cups_proxy/public/mojom/constants.mojom.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
@@ -61,7 +60,8 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 #include "chromeos/services/assistant/public/cpp/manifest.h"  // nogncheck
@@ -87,7 +87,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
-#include "extensions/common/mojo/keep_alive.mojom.h"   // nogncheck
+#include "extensions/common/mojom/keep_alive.mojom.h"  // nogncheck
 #endif
 
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
@@ -104,9 +104,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .ExposeCapability("gpu",
                           service_manager::Manifest::InterfaceList<
                               metrics::mojom::CallStackProfileCollector>())
-        .ExposeCapability("profiling_client",
-                          service_manager::Manifest::InterfaceList<
-                              heap_profiling::mojom::ProfilingClient>())
         .ExposeCapability("renderer",
                           service_manager::Manifest::InterfaceList<
                               chrome::mojom::AvailableOfflineContentProvider,
@@ -121,17 +118,12 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                               safe_browsing::mojom::SafeBrowsing>())
         .RequireCapability("apps", "app_service")
         .RequireCapability("ash", "system_ui")
-        // Used by ShelfTestApi and ShelfIntegrationTestApi
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
-        // Only used in the classic Ash case
-        .RequireCapability("ash_pref_connector", "pref_connector")
         .RequireCapability("assistant", "assistant")
-        .RequireCapability("cellular_setup", "cellular_setup")
         // Only used in the classic Ash case
         .RequireCapability("chrome", "input_device_controller")
         .RequireCapability("chrome_printing", "converter")
-        .RequireCapability("content_system", "profiling_client")
         .RequireCapability("cups_ipp_parser", "ipp_parser")
         .RequireCapability("device", "device:fingerprint")
         .RequireCapability("device", "device:geolocation_config")
@@ -146,11 +138,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability(image_annotation::mojom::kServiceName,
                            image_annotation::mojom::kAnnotationCapability)
         .RequireCapability("ime", "input_engine")
-        // Only used in the classic Ash case
-        .RequireCapability("local_state", "pref_client")
         .RequireCapability("media_gallery_util", "parse_media")
         .RequireCapability("mirroring", "mirroring")
-        .RequireCapability("multidevice_setup", "multidevice_setup")
         .RequireCapability("nacl_broker", "browser")
         .RequireCapability("nacl_loader", "browser")
         .RequireCapability("noop", "noop")
@@ -159,7 +148,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("preferences", "pref_client")
         .RequireCapability("preferences", "pref_control")
         .RequireCapability("profile_import", "import")
-        .RequireCapability("proxy_resolver", "factory")
         .RequireCapability(quarantine::mojom::kServiceName,
                            quarantine::mojom::kQuarantineFileCapability)
         .RequireCapability("removable_storage_writer",
@@ -182,9 +170,16 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             chromeos::printing::mojom::kCupsProxyServiceName,
             chromeos::printing::mojom::kStartCupsProxyServiceCapability)
         .ExposeInterfaceFilterCapability_Deprecated(
+            "navigation:frame",
+            chromeos::network_config::mojom::kNetworkConfigCapability,
+            service_manager::Manifest::InterfaceList<
+                chromeos::network_config::mojom::CrosNetworkConfig>())
+        .RequireCapability("cellular_setup", "cellular_setup")
+        .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "cellular_setup",
             service_manager::Manifest::InterfaceList<
                 chromeos::cellular_setup::mojom::CellularSetup>())
+        .RequireCapability("multidevice_setup", "multidevice_setup")
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "multidevice_setup",
             service_manager::Manifest::InterfaceList<
@@ -210,10 +205,8 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)
                 chromeos::ime::mojom::InputEngineManager,
-                chromeos::kiosk_next_home::mojom::KioskNextHomeInterfaceBroker,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
-                chromeos::supervision::mojom::OnboardingController,
                 cros::mojom::CrosImageCapture,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
@@ -261,6 +254,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::device_sync::GetManifest())
         .PackageService(chromeos::multidevice_setup::GetManifest())
+        .PackageService(chromeos::printing::GetCupsProxyManifest())
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
         .PackageService(chromeos::assistant::GetManifest())
 #endif

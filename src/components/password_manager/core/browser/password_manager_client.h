@@ -27,6 +27,7 @@ class PrefService;
 
 namespace autofill {
 class AutofillDownloadManager;
+class LogManager;
 }
 
 namespace favicon {
@@ -43,7 +44,6 @@ class PasswordProtectionService;
 
 namespace password_manager {
 
-class LogManager;
 class PasswordFormManagerForUI;
 class PasswordManager;
 class PasswordManagerDriver;
@@ -187,14 +187,12 @@ class PasswordManagerClient {
       const std::map<base::string16, const autofill::PasswordForm*>&
           best_matches,
       const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>* federated_matches)
-      const;
+      const std::vector<const autofill::PasswordForm*>* federated_matches);
 
   // Sends username/password from |preferred_match| for filling in the http auth
   // prompt.
-  virtual void AutofillHttpAuth(
-      const autofill::PasswordForm& preferred_match,
-      const PasswordFormManagerForUI* form_manager) const;
+  virtual void AutofillHttpAuth(const autofill::PasswordForm& preferred_match,
+                                const PasswordFormManagerForUI* form_manager);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;
@@ -238,7 +236,7 @@ class PasswordManagerClient {
   virtual const CredentialsFilter* GetStoreResultFilter() const = 0;
 
   // Returns a LogManager instance.
-  virtual const LogManager* GetLogManager() const;
+  virtual const autofill::LogManager* GetLogManager() const;
 
   // Record that we saw a password field on this page.
   virtual void AnnotateNavigationEntry(bool has_password_field);

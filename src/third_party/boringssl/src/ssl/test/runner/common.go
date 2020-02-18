@@ -126,6 +126,7 @@ const (
 	extensionQUICTransportParams        uint16 = 0xffa5 // draft-ietf-quic-tls-13
 	extensionChannelID                  uint16 = 30032  // not IANA assigned
 	extensionDelegatedCredentials       uint16 = 0xff02 // not IANA assigned
+	extensionPQExperimentSignal         uint16 = 54538
 )
 
 // TLS signaling cipher suite values
@@ -144,12 +145,13 @@ var tls13HelloRetryRequest = []uint8{
 type CurveID uint16
 
 const (
-	CurveP224   CurveID = 21
-	CurveP256   CurveID = 23
-	CurveP384   CurveID = 24
-	CurveP521   CurveID = 25
-	CurveX25519 CurveID = 29
-	CurveCECPQ2 CurveID = 16696
+	CurveP224    CurveID = 21
+	CurveP256    CurveID = 23
+	CurveP384    CurveID = 24
+	CurveP521    CurveID = 25
+	CurveX25519  CurveID = 29
+	CurveCECPQ2  CurveID = 16696
+	CurveCECPQ2b CurveID = 65074
 )
 
 // TLS Elliptic Curve Point Formats
@@ -498,6 +500,11 @@ type Config struct {
 	QUICTransportParams []byte
 
 	CertCompressionAlgs map[uint16]CertCompressionAlg
+
+	// PQExperimentSignal instructs a client to send a non-IANA defined extension
+	// that signals participation in an experiment of post-quantum key exchange
+	// methods.
+	PQExperimentSignal bool
 
 	// Bugs specifies optional misbehaviour to be used for testing other
 	// implementations.
@@ -1649,6 +1656,10 @@ type ProtocolBugs struct {
 	// DisableDelegatedCredentials, if true, disables client support for delegated
 	// credentials.
 	DisableDelegatedCredentials bool
+
+	// ExpectPQExperimentSignal specifies whether or not the post-quantum
+	// experiment signal should be received by a client or server.
+	ExpectPQExperimentSignal bool
 }
 
 func (c *Config) serverInit() {
@@ -1728,7 +1739,7 @@ func (c *Config) maxVersion(isDTLS bool) uint16 {
 	return ret
 }
 
-var defaultCurvePreferences = []CurveID{CurveCECPQ2, CurveX25519, CurveP256, CurveP384, CurveP521}
+var defaultCurvePreferences = []CurveID{CurveCECPQ2b, CurveCECPQ2, CurveX25519, CurveP256, CurveP384, CurveP521}
 
 func (c *Config) curvePreferences() []CurveID {
 	if c == nil || len(c.CurvePreferences) == 0 {

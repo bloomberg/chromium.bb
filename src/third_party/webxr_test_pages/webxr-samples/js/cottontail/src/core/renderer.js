@@ -557,7 +557,7 @@ export class Renderer {
     if (buffer._buffer) {
       let gl = this._gl;
       gl.bindBuffer(buffer._target, buffer._buffer);
-      if (offset == 0 && buffer._length == data.byteLength) {
+      if (offset == 0 && buffer._length <= data.byteLength) {
         gl.bufferData(buffer._target, data, buffer._usage);
       } else {
         gl.bufferSubData(buffer._target, offset, data);

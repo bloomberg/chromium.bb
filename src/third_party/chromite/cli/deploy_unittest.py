@@ -36,9 +36,14 @@ class ChromiumOSDeviceFake(object):
     self.username = None
     self.port = None
     self.lsb_release = None
+    self.cmds = []
+    self.work_dir = '/testdir/'
 
   def MountRootfsReadWrite(self):
     return True
+
+  def RunCommand(self, cmd, **_kwargs):
+    self.cmds.append(cmd)
 
 
 class ChromiumOSDeviceHandlerFake(object):
@@ -65,7 +70,7 @@ class ChromiumOSDeviceHandlerFake(object):
     pass
 
   def __enter__(self):
-    return ChromiumOSDeviceFake()
+    return self.device
 
 
 class BrilloDeployOperationFake(deploy.BrilloDeployOperation):
@@ -289,8 +294,9 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     return ['/path/to/%s.tbz2' % cpv.pv for cpv in cpvs]
 
   def setUp(self):
-    self.PatchObject(remote_access, 'ChromiumOSDeviceHandler',
-                     side_effect=ChromiumOSDeviceHandlerFake)
+    self.device = ChromiumOSDeviceHandlerFake()
+    self.PatchObject(
+        remote_access, 'ChromiumOSDeviceHandler', return_value=self.device)
     self.PatchObject(cros_build_lib, 'GetBoard', return_value=None)
     self.PatchObject(cros_build_lib, 'GetSysroot', return_value='sysroot')
     self.package_scanner = self.PatchObject(deploy, '_InstallPackageScanner')
@@ -298,8 +304,10 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
         deploy, '_GetPackagesByCPV', side_effect=self.FakeGetPackagesByCPV)
     self.emerge = self.PatchObject(deploy, '_Emerge', return_value=None)
     self.unmerge = self.PatchObject(deploy, '_Unmerge', return_value=None)
-    self.selinux = self.PatchObject(
-        deploy, '_SetSELinuxPermissive', return_value=None)
+    self.has_selinux = self.PatchObject(
+        deploy, '_HasSELinux', return_value=False)
+    self.is_selinux_enforced = self.PatchObject(
+        deploy, '_IsSELinuxEnforced', return_value=True)
 
   def testDeployEmerge(self):
     """Test that deploy._Emerge is called for each package."""
@@ -321,7 +329,41 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     # Check that deploy._Emerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, len(packages))
     self.assertEqual(self.unmerge.call_count, 0)
-    self.assertEqual(self.selinux.call_count, 1)
+
+  def testDeployEmergeSELinux(self):
+    """Test deploy progress when the device has SELinux"""
+
+    _BINPKG = '/path/to/bar-1.2.5.tbz2'
+    def FakeIsFile(fname):
+      return fname == _BINPKG
+
+    def GetRestoreconCommand(pkgfile):
+      remote_path = os.path.join('/testdir/packages/to/', pkgfile)
+      return [['setenforce', '0'],
+              ['cd', '/', '&&',
+               'tar', 'tf', remote_path, '|',
+               'restorecon', '-i', '-f', '-'],
+              ['setenforce', '1']]
+
+    self.has_selinux.return_value = True
+    packages = ['some/foo-1.2.3', _BINPKG, 'some/foobar-2.0']
+    cpvs = ['some/foo-1.2.3', 'to/bar-1.2.5', 'some/foobar-2.0']
+    self.package_scanner.return_value = PackageScannerFake(packages, cpvs)
+    self.PatchObject(os.path, 'isfile', side_effect=FakeIsFile)
+
+    deploy.Deploy(None, ['package'], force=True, clean_binpkg=False)
+
+    # Check that package names were correctly resolved into binary packages.
+    self.get_packages_paths.assert_called_once_with(
+        [portage_util.SplitCPV(p) for p in cpvs], True, 'sysroot')
+    # Check that deploy._Emerge is called the right number of times.
+    self.assertEqual(self.emerge.call_count, len(packages))
+    self.assertEqual(self.unmerge.call_count, 0)
+
+    self.assertEqual(self.device.device.cmds,
+                     GetRestoreconCommand('foo-1.2.3.tbz2') +
+                     GetRestoreconCommand('bar-1.2.5.tbz2') +
+                     GetRestoreconCommand('foobar-2.0.tbz2'))
 
   def testDeployUnmerge(self):
     """Test that deploy._Unmerge is called for each package."""
@@ -334,7 +376,6 @@ class TestDeploy(cros_test_lib.ProgressBarTestCase):
     # Check that deploy._Unmerge is called the right number of times.
     self.assertEqual(self.emerge.call_count, 0)
     self.assertEqual(self.unmerge.call_count, len(packages))
-    self.assertEqual(self.selinux.call_count, 1)
 
   def testDeployMergeWithProgressBar(self):
     """Test that BrilloDeployOperation.Run() is called for merge."""

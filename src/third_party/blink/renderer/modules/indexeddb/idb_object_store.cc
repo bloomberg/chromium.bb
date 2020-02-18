@@ -48,7 +48,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "v8/include/v8.h"
 
@@ -556,8 +556,9 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     if (clone.IsEmpty())
       value_wrapper.Clone(script_state, &clone);
     index_keys.emplace_back(
-        it.key, GenerateIndexKeysForValue(script_state->GetIsolate(), *it.value,
-                                          clone));
+        IDBIndexKeys{.id = it.key,
+                     .keys = GenerateIndexKeysForValue(
+                         script_state->GetIsolate(), *it.value, clone)});
   }
   // Records 1KB to 1GB.
   UMA_HISTOGRAM_COUNTS_1M(
@@ -745,10 +746,10 @@ class IndexPopulator final : public NativeEventListener {
 
       Vector<IDBIndexKeys> index_keys;
       index_keys.ReserveInitialCapacity(1);
-      index_keys.emplace_back(
-          IndexMetadata().id,
-          GenerateIndexKeysForValue(script_state_->GetIsolate(),
-                                    IndexMetadata(), value));
+      index_keys.emplace_back(IDBIndexKeys{
+          .id = IndexMetadata().id,
+          .keys = GenerateIndexKeysForValue(script_state_->GetIsolate(),
+                                            IndexMetadata(), value)});
 
       database_->Backend()->SetIndexKeys(transaction_id_, object_store_id_,
                                          IDBKey::Clone(primary_key),

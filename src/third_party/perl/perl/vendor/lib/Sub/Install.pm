@@ -1,89 +1,75 @@
-package Sub::Install;
-
-use warnings;
 use strict;
-
+use warnings;
+package Sub::Install;
+# ABSTRACT: install subroutines into packages easily
+$Sub::Install::VERSION = '0.928';
 use Carp;
 use Scalar::Util ();
 
-=head1 NAME
-
-Sub::Install - install subroutines into packages easily
-
-=head1 VERSION
-
-version 0.926
-
-=cut
-
-our $VERSION = '0.926';
-
-=head1 SYNOPSIS
-
-  use Sub::Install;
-
-  Sub::Install::install_sub({
-    code => sub { ... },
-    into => $package,
-    as   => $subname
-  });
-
-=head1 DESCRIPTION
-
-This module makes it easy to install subroutines into packages without the
-unslightly mess of C<no strict> or typeglobs lying about where just anyone can
-see them.
-
-=head1 FUNCTIONS
-
-=head2 install_sub
-
-  Sub::Install::install_sub({
-   code => \&subroutine,
-   into => "Finance::Shady",
-   as   => 'launder',
-  });
-
-This routine installs a given code reference into a package as a normal
-subroutine.  The above is equivalent to:
-
-  no strict 'refs';
-  *{"Finance::Shady" . '::' . "launder"} = \&subroutine;
-
-If C<into> is not given, the sub is installed into the calling package.
-
-If C<code> is not a code reference, it is looked for as an existing sub in the
-package named in the C<from> parameter.  If C<from> is not given, it will look
-in the calling package.
-
-If C<as> is not given, and if C<code> is a name, C<as> will default to C<code>.
-If C<as> is not given, but if C<code> is a code ref, Sub::Install will try to
-find the name of the given code ref and use that as C<as>.
-
-That means that this code:
-
-  Sub::Install::install_sub({
-    code => 'twitch',
-    from => 'Person::InPain',
-    into => 'Person::Teenager',
-    as   => 'dance',
-  });
-
-is the same as:
-
-  package Person::Teenager;
-
-  Sub::Install::install_sub({
-    code => Person::InPain->can('twitch'),
-    as   => 'dance',
-  });
-
-=head2 reinstall_sub
-
-This routine behaves exactly like C<L</install_sub>>, but does not emit a
-warning if warnings are on and the destination is already defined.
-
-=cut
+#pod =head1 SYNOPSIS
+#pod
+#pod   use Sub::Install;
+#pod
+#pod   Sub::Install::install_sub({
+#pod     code => sub { ... },
+#pod     into => $package,
+#pod     as   => $subname
+#pod   });
+#pod
+#pod =head1 DESCRIPTION
+#pod
+#pod This module makes it easy to install subroutines into packages without the
+#pod unsightly mess of C<no strict> or typeglobs lying about where just anyone can
+#pod see them.
+#pod
+#pod =func install_sub
+#pod
+#pod   Sub::Install::install_sub({
+#pod    code => \&subroutine,
+#pod    into => "Finance::Shady",
+#pod    as   => 'launder',
+#pod   });
+#pod
+#pod This routine installs a given code reference into a package as a normal
+#pod subroutine.  The above is equivalent to:
+#pod
+#pod   no strict 'refs';
+#pod   *{"Finance::Shady" . '::' . "launder"} = \&subroutine;
+#pod
+#pod If C<into> is not given, the sub is installed into the calling package.
+#pod
+#pod If C<code> is not a code reference, it is looked for as an existing sub in the
+#pod package named in the C<from> parameter.  If C<from> is not given, it will look
+#pod in the calling package.
+#pod
+#pod If C<as> is not given, and if C<code> is a name, C<as> will default to C<code>.
+#pod If C<as> is not given, but if C<code> is a code ref, Sub::Install will try to
+#pod find the name of the given code ref and use that as C<as>.
+#pod
+#pod That means that this code:
+#pod
+#pod   Sub::Install::install_sub({
+#pod     code => 'twitch',
+#pod     from => 'Person::InPain',
+#pod     into => 'Person::Teenager',
+#pod     as   => 'dance',
+#pod   });
+#pod
+#pod is the same as:
+#pod
+#pod   package Person::Teenager;
+#pod
+#pod   Sub::Install::install_sub({
+#pod     code => Person::InPain->can('twitch'),
+#pod     as   => 'dance',
+#pod   });
+#pod
+#pod =func reinstall_sub
+#pod
+#pod This routine behaves exactly like C<L</install_sub>>, but does not emit a
+#pod warning if warnings are on and the destination is already defined.
+#pod
+#pod =cut
 
 sub _name_of_code {
   my ($code) = @_;
@@ -139,9 +125,9 @@ my $_redef_warn_re;
 BEGIN {
   $_misc_warn_re = qr/
     Prototype\ mismatch:\ sub\ .+?  |
-    Constant subroutine \S+ redefined
+    Constant subroutine .+? redefined
   /x;
-  $_redef_warn_re = qr/Subroutine\ \S+\ redefined/x;
+  $_redef_warn_re = qr/Subroutine\ .+?\ redefined/x;
 }
 
 my $eow_re;
@@ -207,28 +193,28 @@ BEGIN {
   });
 }
 
-=head2 install_installers
-
-This routine is provided to allow Sub::Install compatibility with
-Sub::Installer.  It installs C<install_sub> and C<reinstall_sub> methods into
-the package named by its argument.
-
- Sub::Install::install_installers('Code::Builder'); # just for us, please
- Code::Builder->install_sub({ name => $code_ref });
-
- Sub::Install::install_installers('UNIVERSAL'); # feeling lucky, punk?
- Anything::At::All->install_sub({ name => $code_ref });
-
-The installed installers are similar, but not identical, to those provided by
-Sub::Installer.  They accept a single hash as an argument.  The key/value pairs
-are used as the C<as> and C<code> parameters to the C<install_sub> routine
-detailed above.  The package name on which the method is called is used as the
-C<into> parameter.
-
-Unlike Sub::Installer's C<install_sub> will not eval strings into code, but
-will look for named code in the calling package.
-
-=cut
+#pod =func install_installers
+#pod
+#pod This routine is provided to allow Sub::Install compatibility with
+#pod Sub::Installer.  It installs C<install_sub> and C<reinstall_sub> methods into
+#pod the package named by its argument.
+#pod
+#pod  Sub::Install::install_installers('Code::Builder'); # just for us, please
+#pod  Code::Builder->install_sub({ name => $code_ref });
+#pod
+#pod  Sub::Install::install_installers('UNIVERSAL'); # feeling lucky, punk?
+#pod  Anything::At::All->install_sub({ name => $code_ref });
+#pod
+#pod The installed installers are similar, but not identical, to those provided by
+#pod Sub::Installer.  They accept a single hash as an argument.  The key/value pairs
+#pod are used as the C<as> and C<code> parameters to the C<install_sub> routine
+#pod detailed above.  The package name on which the method is called is used as the
+#pod C<into> parameter.
+#pod
+#pod Unlike Sub::Installer's C<install_sub> will not eval strings into code, but
+#pod will look for named code in the calling package.
+#pod
+#pod =cut
 
 sub install_installers {
   my ($into) = @_;
@@ -252,6 +238,167 @@ sub install_installers {
   }
 }
 
+#pod =head1 EXPORTS
+#pod
+#pod Sub::Install exports C<install_sub> and C<reinstall_sub> only if they are
+#pod requested.
+#pod
+#pod =head2 exporter
+#pod
+#pod Sub::Install has a never-exported subroutine called C<exporter>, which is used
+#pod to implement its C<import> routine.  It takes a hashref of named arguments,
+#pod only one of which is currently recognize: C<exports>.  This must be an arrayref
+#pod of subroutines to offer for export.
+#pod
+#pod This routine is mainly for Sub::Install's own consumption.  Instead, consider
+#pod L<Sub::Exporter>.
+#pod
+#pod =cut
+
+sub exporter {
+  my ($arg) = @_;
+
+  my %is_exported = map { $_ => undef } @{ $arg->{exports} };
+
+  sub {
+    my $class = shift;
+    my $target = caller;
+    for (@_) {
+      Carp::croak "'$_' is not exported by $class" if !exists $is_exported{$_};
+      install_sub({ code => $_, from => $class, into => $target });
+    }
+  }
+}
+
+BEGIN { *import = exporter({ exports => [ qw(install_sub reinstall_sub) ] }); }
+
+#pod =head1 SEE ALSO
+#pod
+#pod =over
+#pod
+#pod =item L<Sub::Installer>
+#pod
+#pod This module is (obviously) a reaction to Damian Conway's Sub::Installer, which
+#pod does the same thing, but does it by getting its greasy fingers all over
+#pod UNIVERSAL.  I was really happy about the idea of making the installation of
+#pod coderefs less ugly, but I couldn't bring myself to replace the ugliness of
+#pod typeglobs and loosened strictures with the ugliness of UNIVERSAL methods.
+#pod
+#pod =item L<Sub::Exporter>
+#pod
+#pod This is a complete Exporter.pm replacement, built atop Sub::Install.
+#pod
+#pod =back
+#pod
+#pod =head1 EXTRA CREDITS
+#pod
+#pod Several of the tests are adapted from tests that shipped with Damian Conway's
+#pod Sub-Installer distribution.
+#pod
+#pod =cut
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Sub::Install - install subroutines into packages easily
+
+=head1 VERSION
+
+version 0.928
+
+=head1 SYNOPSIS
+
+  use Sub::Install;
+
+  Sub::Install::install_sub({
+    code => sub { ... },
+    into => $package,
+    as   => $subname
+  });
+
+=head1 DESCRIPTION
+
+This module makes it easy to install subroutines into packages without the
+unsightly mess of C<no strict> or typeglobs lying about where just anyone can
+see them.
+
+=head1 FUNCTIONS
+
+=head2 install_sub
+
+  Sub::Install::install_sub({
+   code => \&subroutine,
+   into => "Finance::Shady",
+   as   => 'launder',
+  });
+
+This routine installs a given code reference into a package as a normal
+subroutine.  The above is equivalent to:
+
+  no strict 'refs';
+  *{"Finance::Shady" . '::' . "launder"} = \&subroutine;
+
+If C<into> is not given, the sub is installed into the calling package.
+
+If C<code> is not a code reference, it is looked for as an existing sub in the
+package named in the C<from> parameter.  If C<from> is not given, it will look
+in the calling package.
+
+If C<as> is not given, and if C<code> is a name, C<as> will default to C<code>.
+If C<as> is not given, but if C<code> is a code ref, Sub::Install will try to
+find the name of the given code ref and use that as C<as>.
+
+That means that this code:
+
+  Sub::Install::install_sub({
+    code => 'twitch',
+    from => 'Person::InPain',
+    into => 'Person::Teenager',
+    as   => 'dance',
+  });
+
+is the same as:
+
+  package Person::Teenager;
+
+  Sub::Install::install_sub({
+    code => Person::InPain->can('twitch'),
+    as   => 'dance',
+  });
+
+=head2 reinstall_sub
+
+This routine behaves exactly like C<L</install_sub>>, but does not emit a
+warning if warnings are on and the destination is already defined.
+
+=head2 install_installers
+
+This routine is provided to allow Sub::Install compatibility with
+Sub::Installer.  It installs C<install_sub> and C<reinstall_sub> methods into
+the package named by its argument.
+
+ Sub::Install::install_installers('Code::Builder'); # just for us, please
+ Code::Builder->install_sub({ name => $code_ref });
+
+ Sub::Install::install_installers('UNIVERSAL'); # feeling lucky, punk?
+ Anything::At::All->install_sub({ name => $code_ref });
+
+The installed installers are similar, but not identical, to those provided by
+Sub::Installer.  They accept a single hash as an argument.  The key/value pairs
+are used as the C<as> and C<code> parameters to the C<install_sub> routine
+detailed above.  The package name on which the method is called is used as the
+C<into> parameter.
+
+Unlike Sub::Installer's C<install_sub> will not eval strings into code, but
+will look for named code in the calling package.
+
 =head1 EXPORTS
 
 Sub::Install exports C<install_sub> and C<reinstall_sub> only if they are
@@ -266,25 +413,6 @@ of subroutines to offer for export.
 
 This routine is mainly for Sub::Install's own consumption.  Instead, consider
 L<Sub::Exporter>.
-
-=cut
-
-sub exporter {
-  my ($arg) = @_;
-  
-  my %is_exported = map { $_ => undef } @{ $arg->{exports} };
-
-  sub {
-    my $class = shift;
-    my $target = caller;
-    for (@_) {
-      Carp::croak "'$_' is not exported by $class" if !exists $is_exported{$_};
-      install_sub({ code => $_, from => $class, into => $target });
-    }
-  }
-}
-
-BEGIN { *import = exporter({ exports => [ qw(install_sub reinstall_sub) ] }); }
 
 =head1 SEE ALSO
 
@@ -304,26 +432,20 @@ This is a complete Exporter.pm replacement, built atop Sub::Install.
 
 =back
 
-=head1 AUTHOR
-
-Ricardo Signes, C<< <rjbs@cpan.org> >>
+=head1 EXTRA CREDITS
 
 Several of the tests are adapted from tests that shipped with Damian Conway's
 Sub-Installer distribution.
 
-=head1 BUGS
+=head1 AUTHOR
 
-Please report any bugs or feature requests through the web interface at
-L<http://rt.cpan.org>.  I will be notified, and then you'll automatically be
-notified of progress on your bug as I make changes.
+Ricardo SIGNES <rjbs@cpan.org>
 
-=head1 COPYRIGHT
+=head1 COPYRIGHT AND LICENSE
 
-Copyright 2005-2006 Ricardo Signes, All Rights Reserved.
+This software is copyright (c) 2005 by Ricardo SIGNES.
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-1;

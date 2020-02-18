@@ -62,12 +62,32 @@ class APP_LIST_EXPORT ContentsView : public views::View,
     virtual void OnSearchBoxClearAndDeactivated() = 0;
   };
 
+  // Used to SetActiveState without animations.
+  class ScopedSetActiveStateAnimationDisabler {
+   public:
+    explicit ScopedSetActiveStateAnimationDisabler(ContentsView* contents_view)
+        : contents_view_(contents_view) {
+      contents_view_->set_active_state_without_animation_ = true;
+    }
+    ~ScopedSetActiveStateAnimationDisabler() {
+      contents_view_->set_active_state_without_animation_ = false;
+    }
+
+   private:
+    ContentsView* const contents_view_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveStateAnimationDisabler);
+  };
+
   explicit ContentsView(AppListView* app_list_view);
   ~ContentsView() override;
 
   // Initialize the pages of the launcher. Should be called after
   // set_contents_switcher_view().
   void Init(AppListModel* model);
+
+  // Resets the state of the view so it is ready to be shown.
+  void ResetForShow();
 
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
@@ -225,8 +245,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                                 ash::AppListState current_state,
                                 ash::AppListState target_state);
 
-  // Updates the expand arrow's focus behavior based on AppListViewState.
-  void UpdateExpandArrowFocusBehavior(ash::AppListViewState target_state);
+  // Updates the expand arrow's behavior based on AppListViewState.
+  void UpdateExpandArrowBehavior(ash::AppListViewState target_state);
 
   // Updates search box visibility based on the current state.
   void UpdateSearchBoxVisibility(ash::AppListState current_state);
@@ -288,7 +308,10 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   int page_before_assistant_ = 0;
 
   // Manages the pagination for the launcher pages.
-  ash::PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_{this};
+
+  // If true, SetActiveState immediately.
+  bool set_active_state_without_animation_ = false;
 
   base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 

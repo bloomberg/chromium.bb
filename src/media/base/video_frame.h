@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -39,7 +40,11 @@
 #if defined(OS_MACOSX)
 #include <CoreVideo/CVPixelBuffer.h>
 #include "base/mac/scoped_cftyperef.h"
-#endif
+#endif  // defined(OS_MACOSX)
+
+#if defined(OS_LINUX)
+#include "base/files/scoped_file.h"
+#endif  // defined(OS_LINUX)
 
 namespace media {
 
@@ -477,6 +482,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Returns true if |frame| has DmaBufs.
   bool HasDmaBufs() const;
+
+  // Returns true if both VideoFrames are backed by DMABUF memory and point
+  // to the same set of DMABUFs, meaning that both frames use the same memory.
+  bool IsSameDmaBufsAs(const VideoFrame& frame) const;
 #endif
 
   void AddReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion* region);
@@ -664,10 +673,17 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   size_t shared_memory_offset_;
 
 #if defined(OS_LINUX)
+  class DmabufHolder;
+
   // Dmabufs for the frame, used when storage is STORAGE_DMABUFS. Size is either
   // equal or less than the number of planes of the frame. If it is less, then
   // the memory area represented by the last FD contains the remaining planes.
-  std::vector<base::ScopedFD> dmabuf_fds_;
+  // If a STORAGE_DMABUFS frame is wrapped into another, the wrapping frame
+  // will get an extra reference to the FDs (i.e. no duplication is involved).
+  // This makes it possible to test whether two VideoFrame instances point to
+  // the same DMABUF memory by testing for
+  // (&vf1->DmabufFds() == &vf2->DmabufFds()).
+  scoped_refptr<DmabufHolder> dmabuf_fds_;
 #endif
 
 #if defined(OS_MACOSX)

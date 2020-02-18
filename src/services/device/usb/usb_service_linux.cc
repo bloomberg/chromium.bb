@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file.h"
@@ -67,7 +68,7 @@ void OnDeviceOpenedToReadDescriptors(
 
 class UsbServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
  public:
-  BlockingTaskRunnerHelper(base::WeakPtr<UsbServiceLinux> service);
+  explicit BlockingTaskRunnerHelper(base::WeakPtr<UsbServiceLinux> service);
   ~BlockingTaskRunnerHelper() override;
 
   void Start();
@@ -141,52 +142,50 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceAdded(
   if (!base::ReadFileToString(descriptors_path, &descriptors_str))
     return;
 
-  UsbDeviceDescriptor descriptor;
-  if (!descriptor.Parse(std::vector<uint8_t>(descriptors_str.begin(),
-                                             descriptors_str.end()))) {
+  std::unique_ptr<UsbDeviceDescriptor> descriptor(new UsbDeviceDescriptor());
+  if (!descriptor->Parse(std::vector<uint8_t>(descriptors_str.begin(),
+                                              descriptors_str.end()))) {
     return;
   }
 
-  if (descriptor.device_class == kDeviceClassHub) {
+  if (descriptor->device_info->class_code == kDeviceClassHub) {
     // Don't try to enumerate hubs. We never want to connect to a hub.
     return;
   }
 
-  std::string manufacturer;
   value = udev_device_get_sysattr_value(device.get(), "manufacturer");
   if (value)
-    manufacturer = value;
+    descriptor->device_info->manufacturer_name = base::UTF8ToUTF16(value);
 
-  std::string product;
   value = udev_device_get_sysattr_value(device.get(), "product");
   if (value)
-    product = value;
+    descriptor->device_info->product_name = base::UTF8ToUTF16(value);
 
-  std::string serial_number;
   value = udev_device_get_sysattr_value(device.get(), "serial");
   if (value)
-    serial_number = value;
+    descriptor->device_info->serial_number = base::UTF8ToUTF16(value);
 
   unsigned active_configuration = 0;
   value = udev_device_get_sysattr_value(device.get(), "bConfigurationValue");
   if (value)
     base::StringToUint(value, &active_configuration);
+  descriptor->device_info->active_configuration = active_configuration;
 
   unsigned bus_number = 0;
   value = udev_device_get_sysattr_value(device.get(), "busnum");
   if (value)
     base::StringToUint(value, &bus_number);
+  descriptor->device_info->bus_number = bus_number;
 
   unsigned port_number = 0;
   value = udev_device_get_sysattr_value(device.get(), "devnum");
   if (value)
     base::StringToUint(value, &port_number);
+  descriptor->device_info->port_number = port_number;
 
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_, device_path,
-                     descriptor, manufacturer, product, serial_number,
-                     active_configuration, bus_number, port_number));
+      FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_,
+                                device_path, std::move(descriptor)));
 }
 
 void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
@@ -204,15 +203,12 @@ void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceRemoved(
 }
 
 void UsbServiceLinux::BlockingTaskRunnerHelper::OnDeviceChanged(
-    ScopedUdevDevicePtr) {
-  NOTIMPLEMENTED();
-}
+    ScopedUdevDevicePtr) {}
 
 UsbServiceLinux::UsbServiceLinux()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
-      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
-      weak_factory_(this) {
+      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
   blocking_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::Start,
@@ -231,17 +227,12 @@ void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
     enumeration_callbacks_.push_back(callback);
 }
 
-void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
-                                    const UsbDeviceDescriptor& descriptor,
-                                    const std::string& manufacturer,
-                                    const std::string& product,
-                                    const std::string& serial_number,
-                                    uint8_t active_configuration,
-                                    uint32_t bus_number,
-                                    uint32_t port_number) {
+void UsbServiceLinux::OnDeviceAdded(
+    const std::string& device_path,
+    std::unique_ptr<UsbDeviceDescriptor> descriptor) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (ContainsKey(devices_by_path_, device_path)) {
+  if (base::Contains(devices_by_path_, device_path)) {
     USB_LOG(ERROR) << "Got duplicate add event for path: " << device_path;
     return;
   }
@@ -252,9 +243,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  scoped_refptr<UsbDeviceLinux> device(new UsbDeviceLinux(
-      device_path, descriptor, manufacturer, product, serial_number,
-      active_configuration, bus_number, port_number));
+  scoped_refptr<UsbDeviceLinux> device(
+      new UsbDeviceLinux(device_path, std::move(descriptor)));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(
@@ -284,7 +274,7 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   if (it == devices_by_path_.end()) {
     success = false;
   } else if (success) {
-    DCHECK(!base::ContainsKey(devices(), device->guid()));
+    DCHECK(!base::Contains(devices(), device->guid()));
     devices()[device->guid()] = device;
 
     USB_LOG(USER) << "USB device added: path=" << device->device_path()

@@ -4,9 +4,9 @@
 */
 'use strict';
 
-import RequestBase from './request-base.js';
+import {RequestBase} from './request-base.js';
 
-export default class ExistingBugRequest extends RequestBase {
+export class ExistingBugRequest extends RequestBase {
   constructor(options) {
     super(options);
     this.method_ = 'POST';
@@ -24,4 +24,5 @@ export default class ExistingBugRequest extends RequestBase {
       ${this.body_.get('bug')}`;
   }
 }
+ExistingBugRequest.IGNORE_BUG_ID = -2;
 ExistingBugRequest.URL = '/api/existing_bug';

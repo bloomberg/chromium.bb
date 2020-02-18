@@ -37,6 +37,15 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
   PollJavaScriptBooleanOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession != null",
       kPollTimeoutLong, web_contents);
+
+#if defined(OS_WIN)
+  // For WMR, creating a session may take foreground from us, and Windows may
+  // not return it when the session terminates. This means subsequent requests
+  // to enter an immersive session may fail. The fix for testing is to call
+  // SetForegroundWindow manually. In real code, we'll have foreground if there
+  // was a user gesture to enter VR.
+  SetForegroundWindow(hwnd_);
+#endif
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
@@ -56,10 +65,21 @@ void WebXrVrBrowserTestBase::EndSessionOrFail(
       kPollTimeoutLong, web_contents);
 }
 
+gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
+  return gfx::Vector3dF();
+}
+
 #if defined(OS_WIN)
 XrBrowserTestBase::RuntimeType WebXrVrOpenVrBrowserTestBase::GetRuntimeType()
     const {
   return XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR;
+}
+
+gfx::Vector3dF WebXrVrOpenVrBrowserTestBase::GetControllerOffset() const {
+  // The 0.08f comes from the slight adjustment we perform in
+  // openvr_render_loop.cc to account for OpenVR reporting the controller
+  // position at the tip, but WebXR using the position at the grip.
+  return gfx::Vector3dF(0, 0, 0.08f);
 }
 
 WebXrVrWmrBrowserTestBase::WebXrVrWmrBrowserTestBase() {}

@@ -147,9 +147,10 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
 
   // ThreadGroup:
   void UpdateSortKey(
-      TaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithOwnedTaskSource transaction_with_task_source) override;
   void PushTaskSourceAndWakeUpWorkers(
-      RegisteredTaskSourceAndTransaction task_source_and_transaction) override;
+      TransactionWithRegisteredTaskSource transaction_with_task_source)
+      override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -205,12 +206,24 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   bool ShouldPeriodicallyAdjustMaxTasksLockRequired()
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Increments/decrements the number of tasks that can run in this thread
-  // group. |is_running_best_effort_task| indicates whether the worker causing
-  // the change is currently running a TaskPriority::BEST_EFFORT task.
-  void DecrementMaxTasksLockRequired(bool is_running_best_effort_task)
+  // Updates the minimum priority allowed to run below which tasks should yield.
+  // This should be called whenever |num_running_tasks_| or |max_tasks| changes,
+  // or when a new task is added to |priority_queue_|.
+  void UpdateMinAllowedPriorityLockRequired() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Increments/decrements the number of tasks of |priority| that are currently
+  // running in this thread group. Must be invoked before/after running a task.
+  void DecrementTasksRunningLockRequired(TaskPriority priority)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void IncrementMaxTasksLockRequired(bool is_running_best_effort_task)
+  void IncrementTasksRunningLockRequired(TaskPriority priority)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // Increments/decrements the number of tasks that can run in this thread
+  // group.  May only be called in a scope where a task is running with
+  // |priority|.
+  void DecrementMaxTasksLockRequired(TaskPriority priority)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void IncrementMaxTasksLockRequired(TaskPriority priority)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Values set at Start() and never modified afterwards.

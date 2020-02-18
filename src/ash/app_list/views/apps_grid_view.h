@@ -30,6 +30,7 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
@@ -82,7 +83,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                                      public AppListItemListObserver,
                                      public ash::PaginationModelObserver,
                                      public AppListModelObserver,
-                                     public ui::ImplicitAnimationObserver {
+                                     public ui::ImplicitAnimationObserver,
+                                     public views::BoundsAnimatorObserver {
  public:
   enum Pointer {
     NONE,
@@ -107,8 +109,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the padding around a tile view.
   gfx::Insets GetTilePadding() const;
 
-  // Returns the size of the entire tile grid without padding.
-  gfx::Size GetTileGridSizeWithoutPadding() const;
+  // Returns the size of the entire tile grid with padding between tiles.
+  gfx::Size GetTileGridSizeWithPadding() const;
 
   // Returns the minimum size of the entire tile grid.
   gfx::Size GetMinimumTileGridSize(int cols, int rows_per_page) const;
@@ -200,7 +202,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
   // Returns true if a touch or click lies between two occupied tiles.
   bool EventIsBetweenOccupiedTiles(const ui::LocatedEvent* event);
@@ -350,7 +352,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Calculates the item views' bounds for folder.
   void CalculateIdealBoundsForFolder();
-  void AnimateToIdealBounds();
+  void AnimateToIdealBounds(AppListItemView* released_drag_view);
 
   // Invoked when the given |view|'s current bounds and target bounds are on
   // different rows. To avoid moving diagonally, |view| would be put into a
@@ -482,6 +484,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
+
+  // views::BoundsAnimatorObserver:
+  void OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) override;
+  void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
   // Hide a given view temporarily without losing (mouse) events and / or
   // changing the size of it. If |immediate| is set the change will be
@@ -665,13 +671,17 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void BeginHideCurrentGhostImageView();
 
+  // Indicates whether the drag event (from the gesture or mouse) should be
+  // handled by AppsGridView.
+  bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
   // This can be NULL. Only grid views inside folders have a folder delegate.
   AppsGridViewFolderDelegate* folder_delegate_ = nullptr;
 
-  ash::PaginationModel pagination_model_;
+  ash::PaginationModel pagination_model_{this};
   // Must appear after |pagination_model_|.
   std::unique_ptr<ash::PaginationController> pagination_controller_;
 
@@ -803,6 +813,18 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
+
+  // Indicates whether the AppsGridView is in mouse drag.
+  bool is_in_mouse_drag_ = false;
+
+  // The initial mouse drag location in screen coordinate. Updates when drag
+  // on AppsGridView starts.
+  gfx::Point mouse_drag_start_point_;
+
+  // The last mouse drag location in screen coordinate. Different from
+  // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
+  // recent drag on AppsGridView instead of the app icon.
+  gfx::Point last_mouse_drag_point_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

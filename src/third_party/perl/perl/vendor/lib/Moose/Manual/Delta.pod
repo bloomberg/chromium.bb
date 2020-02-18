@@ -1,10 +1,11 @@
-package Moose::Manual::Delta;
-
+# PODNAME: Moose::Manual::Delta
 # ABSTRACT: Important Changes in Moose
 
-
+__END__
 
 =pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -12,7 +13,7 @@ Moose::Manual::Delta - Important Changes in Moose
 
 =head1 VERSION
 
-version 2.0602
+version 2.2011
 
 =head1 DESCRIPTION
 
@@ -26,6 +27,172 @@ for finding the lowest version of Moose that supported a given
 feature.  If you encounter a problem and have a solution but don't see
 it documented here, or think we missed an important feature, please
 send us a patch.
+
+=head1 2.1400
+
+=over 4
+
+=item Overloading implementation has changed
+
+Overloading meta information used to be implemented by a
+C<Class::MOP::Method::Overload> class. This class has been removed, and
+overloading is now implemented by L<Class::MOP::Overload>. Overloading is not
+really equivalent to a method, so the former implementation didn't work
+properly for various cases.
+
+All of the overloading-related methods for classes and roles have the same
+names, but those methods now return L<Class::MOP::Overload> objects.
+
+=item Core support for overloading in roles
+
+Roles which use overloading now pass that overloading onto other classes (and
+roles) which consume that role.
+
+This works much like L<MooseX::Role::WithOverloading>, except that we properly
+detect overloading conflicts during role summation and when applying one role
+to another. L<MooseX::Role::WithOverloading> did not do any conflict
+detection.
+
+If you want to write code that uses overloading and works with previous
+versions of Moose and this one, upgrade to L<MooseX::Role::WithOverloading>
+version 0.15 or greater. That version will detect when Moose itself handles
+overloading and get out of the way.
+
+=back
+
+=head1 2.1200
+
+=over 4
+
+=item Classes created by Moose are now registered in C<%INC>
+
+This means that this will no longer die (and will also no longer try to load
+C<Foo.pm>):
+
+  {
+      package Foo;
+      use Moose;
+  }
+
+  # ...
+
+  use Foo;
+
+If you're using the MOP, this behavior will occur when the C<create> (or
+C<create_anon_class>) method is used, but not when the C<initialize> method
+is used.
+
+=item Moose now uses L<Module::Runtime> instead of L<Class::Load> to load classes
+
+Class::Load has always had some weird issues with the ways that it tries to
+figure out if a class is loaded. For instance, extending an empty package was
+previously impossible, because Class::Load would think that the class failed to
+load, even though that is a perfectly valid thing to do. It was also difficult
+to deal with modules like L<IO::Handle>, which partially populate several other
+packages when they are loaded (so calling C<load_class> on C<'IO::Handle'>
+followed by C<'IO::File'> could end up with a broken C<IO::File>, in some
+cases).
+
+Now, Moose uses the same mechanisms as perl itself to figure out if a class is
+loaded. A class is considered to be loaded if its entry in C<%INC> is set. Perl
+sets the C<%INC> entry for you automatically whenever a file is loaded via
+C<use> or C<require>. Also, as mentioned above, Moose also now sets the C<%INC>
+entry for any classes defined with it, even if they aren't loaded from a
+separate file. This does however mean that if you are trying to use Moose with
+non-Moose classes defined in the same file, then you will need to set C<%INC>
+manually now, where it may have worked in the past. For instance:
+
+  {
+      package My::NonMoose;
+
+      sub new { bless {}, shift }
+
+      $INC{'My/NonMoose.pm'} = __FILE__;
+      # alternatively:
+      # use Module::Runtime 'module_notional_filename';
+      # $INC{module_notional_filename(__PACKAGE__)} = __FILE__;
+  }
+
+  {
+      package My::Moose;
+      use Moose;
+
+      extends 'My::NonMoose';
+  }
+
+If you don't do this, you will get an error message about not being able to
+locate C<My::NonMoose> in C<@INC>. We hope that this case will be fairly rare.
+
+=item The Class::Load wrapper functions in Class::MOP have been deprecated
+
+C<Class::MOP::load_class>, C<Class::MOP::is_class_loaded>, and
+C<Class::MOP::load_first_existing_class> have been deprecated. They have been
+undocumented and discouraged since version 2.0200. You should replace their use
+with the corresponding functions in L<Class::Load>, or just use
+L<Module::Runtime> directly.
+
+=item The non-arrayref forms of C<enum> and C<duck_type> have been deprecated
+
+Originally, C<enum> could be called like this:
+
+  enum('MyType' => qw(foo bar baz))
+
+This was confusing, however (since it was different from the syntax for
+anonymous enum types), and it makes error checking more difficult (since you
+can't tell just by looking whether C<enum('Foo', 'Bar', 'Baz')> was intended to
+be a type named C<Foo> with elements of C<Bar> and C<Baz>, or if this was
+actually a mistake where someone got the syntax for an anonymous enum type
+wrong). This all also applies to C<duck_type>.
+
+Calling C<enum> and C<duck_type> with a list of arguments as described above
+has been undocumented since version 0.93, and is now deprecated. You should
+replace
+
+  enum MyType => qw(foo bar baz);
+
+in your code with
+
+  enum MyType => [qw(foo bar baz)];
+
+=item Moose string exceptions have been replaced by Moose exception objects
+
+Previously, Moose threw string exceptions on error conditions, which were not
+so verbose. All those string exceptions have now been converted to exception
+objects, which provide very detailed information about the exceptions. These
+exception objects provide a string overload that matches the previous exception
+message, so in most cases you should not have to change your code.
+
+For learning about the usage of Moose exception objects, read
+L<Moose::Manual::Exceptions>. Individual exceptions are documented in
+L<Moose::Manual::Exceptions::Manifest>.
+
+This work was funded as part of the GNOME Outreach Program for Women.
+
+=back
+
+=head1 2.1000
+
+=over 4
+
+=item The Num type is now stricter
+
+The C<Num> type used to accept anything that fits Perl's notion of a number,
+which included Inf, NaN, and strings like C<" 1234 \n">.  We believe that the
+type constraint should indicate "this is a number", not "this coerces to a
+number".  Therefore, Num now only accepts integers, floating point numbers
+(both in decimal notation and exponential notation), 0, .0, 0.0, etc.
+
+If you want the old behavior you can use the C<LaxNum> type in
+L<MooseX::Types::LaxNum>.
+
+=item You can use L<Specio> instead of core Moose types
+
+The L<Specio> distribution is an experimental new type system intended to
+eventually replace the core Moose types, but yet also work with things like
+L<Moo> and L<Mouse> and anything else. Right now this is all speculative, but
+at least you can use Specio with Moose.
+
+=back
 
 =head1 2.0600
 
@@ -197,10 +364,14 @@ After upgrading Moose, running C<moose-outdated | cpanm> should be sufficient
 to ensure that all of the Moose extensions you use will continue to work.
 
 The other part is that Moose's C<META.json> file will also specify the
-conflicts under the C<x_conflicts> key. We are working with the Perl tool chain
+conflicts under the C<x_conflicts> (now C<x_breaks>) key. We are working with the Perl tool chain
 developers to try to get conflicts support added to CPAN clients, and if/when
 that happens, the metadata already exists, and so the conflict checking will
 become automatic.
+
+=item The lazy_build attribute feature is discouraged
+
+While not deprecated, we strongly discourage you from using this feature.
 
 =item Most deprecated APIs/features are slated for removal in Moose 2.0200
 
@@ -535,10 +706,10 @@ advantage of this.
 
 =item The composition_class_roles attribute in L<Moose::Meta::Role> is now a method
 
-This was done to make it possible for roles to alter the the list of
-composition class roles by applying a method modifiers. Previously, this was
-an attribute and MooseX modules override it. Since that no longer works, this
-was made a method.
+This was done to make it possible for roles to alter the list of composition
+class roles by applying a method modifiers. Previously, this was an attribute
+and MooseX modules override it. Since that no longer works, this was made a
+method.
 
 This I<should> be an attribute, so this may switch back to being an attribute
 in the future if we can figure out how to make this work.
@@ -1048,19 +1219,57 @@ crazy to not upgrade.
 Also, I am tired of going through the Changelog so I am stopping here,
 if anyone would like to continue this please feel free.
 
-=head1 AUTHOR
+=head1 AUTHORS
 
-Moose is maintained by the Moose Cabal, along with the help of many contributors. See L<Moose/CABAL> and L<Moose/CONTRIBUTORS> for details.
+=over 4
+
+=item *
+
+Stevan Little <stevan.little@iinteractive.com>
+
+=item *
+
+Dave Rolsky <autarch@urth.org>
+
+=item *
+
+Jesse Luehrs <doy@tozt.net>
+
+=item *
+
+Shawn M Moore <code@sartak.org>
+
+=item *
+
+יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Florian Ragwitz <rafl@debian.org>
+
+=item *
+
+Hans Dieter Pearcey <hdp@weftsoar.net>
+
+=item *
+
+Chris Prather <chris@prather.org>
+
+=item *
+
+Matt S Trout <mst@shadowcat.co.uk>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2012 by Infinity Interactive, Inc..
+This software is copyright (c) 2006 by Infinity Interactive, Inc.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.
 
 =cut
-
-
-__END__
-

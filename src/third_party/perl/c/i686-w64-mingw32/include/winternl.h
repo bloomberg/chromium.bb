@@ -1,6 +1,6 @@
 /**
  * This file has no copyright assigned and is placed in the Public Domain.
- * This file is part of the w64 mingw-runtime package.
+ * This file is part of the mingw-w64 runtime package.
  * No warranty is given; refer to the file DISCLAIMER.PD within this package.
  */
 #ifndef _WINTERNL_
@@ -8,15 +8,26 @@
 
 #include <windef.h>
 
+#ifndef NT_SUCCESS
+#define NT_SUCCESS(status)	((NTSTATUS) (status) >= 0)
+#endif
+
+#ifndef DEVICE_TYPE
+#define DEVICE_TYPE ULONG
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifndef __UNICODE_STRING_DEFINED
+#define __UNICODE_STRING_DEFINED
   typedef struct _UNICODE_STRING {
     USHORT Length;
     USHORT MaximumLength;
     PWSTR Buffer;
   } UNICODE_STRING;
+#endif
 
   typedef struct _PEB_LDR_DATA {
     BYTE Reserved1[8];
@@ -25,7 +36,7 @@ extern "C" {
   } PEB_LDR_DATA,*PPEB_LDR_DATA;
  
   typedef struct _LDR_DATA_TABLE_ENTRY {
-    BYTE Reserved1[2];
+    PVOID Reserved1[2];
     LIST_ENTRY InMemoryOrderLinks;
     PVOID Reserved2[2];
     PVOID DllBase;
@@ -49,7 +60,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
   
   /* This function pointer is undocumented and just valid for windows 2000.
      Therefore I guess.  */
-  typedef VOID (WINAPI *PPS_POST_PROCESS_INIT_ROUTINE)(VOID);
+  typedef VOID (NTAPI *PPS_POST_PROCESS_INIT_ROUTINE)(VOID);
   
   typedef struct _PEB {
     BYTE Reserved1[2];
@@ -58,34 +69,49 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     PVOID Reserved3[2];
     PPEB_LDR_DATA Ldr;
     PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
-    BYTE Reserved4[104];
-    PVOID Reserved5[52];
+    PVOID Reserved4[3];
+    PVOID AtlThunkSListPtr;
+    PVOID Reserved5;
+    ULONG Reserved6;
+    PVOID Reserved7;
+    ULONG Reserved8;
+    ULONG AtlThunkSListPtr32;
+    PVOID Reserved9[45];
+    BYTE Reserved10[96];
     PPS_POST_PROCESS_INIT_ROUTINE PostProcessInitRoutine;
-    BYTE Reserved6[128];
-    PVOID Reserved7[1];
+    BYTE Reserved11[128];
+    PVOID Reserved12[1];
     ULONG SessionId;
   } PEB,*PPEB;
 
   typedef struct _TEB {
-    BYTE Reserved1[1952];
-    PVOID Reserved2[412];
+    PVOID Reserved1[12];
+    PPEB ProcessEnvironmentBlock;
+    PVOID Reserved2[399];
+    BYTE Reserved3[1952];
     PVOID TlsSlots[64];
-    BYTE Reserved3[8];
-    PVOID Reserved4[26];
+    BYTE Reserved4[8];
+    PVOID Reserved5[26];
     PVOID ReservedForOle;
-    PVOID Reserved5[4];
+    PVOID Reserved6[4];
     PVOID TlsExpansionSlots;
   } TEB;
 
   typedef TEB *PTEB;
-  typedef LONG NTSTATUS;
+  #if !defined (_NTDEF_) && !defined (_NTSTATUS_PSDK)
+  #define _NTSTATUS_PSDK
+  typedef LONG NTSTATUS, *PNTSTATUS;
+  #endif
   typedef CONST char *PCSZ;
 
+#ifndef __STRING_DEFINED
+#define __STRING_DEFINED
   typedef struct _STRING {
     USHORT Length;
     USHORT MaximumLength;
     PCHAR Buffer;
   } STRING;
+#endif
 
   typedef STRING *PSTRING;
   typedef STRING ANSI_STRING;
@@ -98,6 +124,8 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
   typedef UNICODE_STRING *PUNICODE_STRING;
   typedef const UNICODE_STRING *PCUNICODE_STRING;
 
+#ifndef __OBJECT_ATTRIBUTES_DEFINED
+#define __OBJECT_ATTRIBUTES_DEFINED
   typedef struct _OBJECT_ATTRIBUTES {
     ULONG Length;
 #ifdef _WIN64
@@ -112,6 +140,28 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     PVOID SecurityDescriptor;
     PVOID SecurityQualityOfService;
   } OBJECT_ATTRIBUTES, *POBJECT_ATTRIBUTES;
+#endif
+
+/* Values for the Attributes member */
+ #define OBJ_INHERIT             0x00000002
+ #define OBJ_PERMANENT           0x00000010
+ #define OBJ_EXCLUSIVE           0x00000020
+ #define OBJ_CASE_INSENSITIVE    0x00000040
+ #define OBJ_OPENIF              0x00000080
+ #define OBJ_OPENLINK            0x00000100
+ #define OBJ_KERNEL_HANDLE       0x00000200
+ #define OBJ_FORCE_ACCESS_CHECK  0x00000400
+ #define OBJ_VALID_ATTRIBUTES    0x000007F2
+
+ /* Helper Macro */
+ #define InitializeObjectAttributes(p,n,a,r,s) { \
+   (p)->Length = sizeof(OBJECT_ATTRIBUTES); \
+   (p)->RootDirectory = (r); \
+   (p)->Attributes = (a); \
+   (p)->ObjectName = (n); \
+   (p)->SecurityDescriptor = (s); \
+   (p)->SecurityQualityOfService = NULL; \
+ }
 
   typedef struct _OBJECT_DATA_INFORMATION {
     BOOLEAN InheritHandle;
@@ -229,7 +279,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     WCHAR FileName[ANYSIZE_ARRAY];
   } FILE_DIRECTORY_INFORMATION, *PFILE_DIRECTORY_INFORMATION;
 
-  typedef struct _FILE_FULL_DIRECTORY_INFORMATION {
+  typedef struct _FILE_FULL_DIR_INFORMATION {
     ULONG NextEntryOffset;
     ULONG FileIndex;
     LARGE_INTEGER CreationTime;
@@ -242,9 +292,9 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     ULONG FileNameLength;
     ULONG EaSize;
     WCHAR FileName[ANYSIZE_ARRAY];
-  } FILE_FULL_DIRECTORY_INFORMATION, *PFILE_FULL_DIRECTORY_INFORMATION,FILE_FULL_DIR_INFORMATION, *PFILE_FULL_DIR_INFORMATION;
+  } FILE_FULL_DIR_INFORMATION, *PFILE_FULL_DIR_INFORMATION;
 
-  typedef struct _FILE_ID_FULL_DIRECTORY_INFORMATION {
+  typedef struct _FILE_ID_FULL_DIR_INFORMATION {
     ULONG NextEntryOffset;
     ULONG FileIndex;
     LARGE_INTEGER CreationTime;
@@ -258,9 +308,9 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     ULONG EaSize;
     LARGE_INTEGER FileId;
     WCHAR FileName[ANYSIZE_ARRAY];
-  } FILE_ID_FULL_DIRECTORY_INFORMATION, *PFILE_ID_FULL_DIRECTORY_INFORMATION;
+  } FILE_ID_FULL_DIR_INFORMATION, *PFILE_ID_FULL_DIR_INFORMATION;
 
-  typedef struct _FILE_BOTH_DIRECTORY_INFORMATION {
+  typedef struct _FILE_BOTH_DIR_INFORMATION {
     ULONG NextEntryOffset;
 	 ULONG FileIndex;
     LARGE_INTEGER CreationTime;
@@ -275,9 +325,9 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     CHAR ShortNameLength;
     WCHAR ShortName[12];
     WCHAR FileName[ANYSIZE_ARRAY];
-  } FILE_BOTH_DIRECTORY_INFORMATION, *PFILE_BOTH_DIRECTORY_INFORMATION,FILE_BOTH_DIR_INFORMATION, *PFILE_BOTH_DIR_INFORMATION;
+  } FILE_BOTH_DIR_INFORMATION, *PFILE_BOTH_DIR_INFORMATION;
 
-  typedef struct _FILE_ID_BOTH_DIRECTORY_INFORMATION {
+  typedef struct _FILE_ID_BOTH_DIR_INFORMATION {
     ULONG NextEntryOffset;
     ULONG FileIndex;
     LARGE_INTEGER CreationTime;
@@ -293,7 +343,18 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     WCHAR ShortName[12];
     LARGE_INTEGER FileId;
     WCHAR FileName[ANYSIZE_ARRAY];
-  } FILE_ID_BOTH_DIRECTORY_INFORMATION, *PFILE_ID_BOTH_DIRECTORY_INFORMATION;
+  } FILE_ID_BOTH_DIR_INFORMATION, *PFILE_ID_BOTH_DIR_INFORMATION;
+
+  /* Old names of dir info structures as (partially) used in Nebbitt's
+     Native API Reference.  Keep for backward compatibility. */
+  typedef struct _FILE_FULL_DIR_INFORMATION
+    FILE_FULL_DIRECTORY_INFORMATION, *PFILE_FULL_DIRECTORY_INFORMATION;
+  typedef struct _FILE_ID_FULL_DIR_INFORMATION
+    FILE_ID_FULL_DIRECTORY_INFORMATION, *PFILE_ID_FULL_DIRECTORY_INFORMATION;
+  typedef struct _FILE_BOTH_DIR_INFORMATION
+    FILE_BOTH_DIRECTORY_INFORMATION, *PFILE_BOTH_DIRECTORY_INFORMATION;
+  typedef struct _FILE_ID_BOTH_DIR_INFORMATION
+    FILE_ID_BOTH_DIRECTORY_INFORMATION, *PFILE_ID_BOTH_DIRECTORY_INFORMATION;
 
   typedef struct _FILE_BASIC_INFORMATION {
     LARGE_INTEGER CreationTime;
@@ -323,14 +384,21 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     ACCESS_MASK AccessFlags;
   } FILE_ACCESS_INFORMATION, *PFILE_ACCESS_INFORMATION;
 
+  typedef struct _FILE_LINK_INFORMATION {
+    BOOLEAN ReplaceIfExists;
+    HANDLE RootDirectory;
+    ULONG FileNameLength;
+    WCHAR FileName[1];
+  } FILE_LINK_INFORMATION, *PFILE_LINK_INFORMATION;
+
   typedef struct _FILE_NAME_INFORMATION {
     ULONG FileNameLength;
     WCHAR FileName[1];
   } FILE_NAME_INFORMATION, *PFILE_NAME_INFORMATION;
 
   typedef struct _FILE_RENAME_INFORMATION {
-    BOOLEAN Replace;
-    HANDLE RootDir;
+    BOOLEAN ReplaceIfExists;
+    HANDLE RootDirectory;
     ULONG FileNameLength;
     WCHAR FileName[1];
   } FILE_RENAME_INFORMATION, *PFILE_RENAME_INFORMATION;
@@ -433,7 +501,66 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     FILE_ALIGNMENT_INFORMATION AlignmentInformation;
     FILE_NAME_INFORMATION      NameInformation;
   } FILE_ALL_INFORMATION, *PFILE_ALL_INFORMATION;
- 
+
+  typedef enum _FSINFOCLASS {
+    FileFsVolumeInformation = 1,
+    FileFsLabelInformation,
+    FileFsSizeInformation,
+    FileFsDeviceInformation,
+    FileFsAttributeInformation,
+    FileFsControlInformation,
+    FileFsFullSizeInformation,
+    FileFsObjectIdInformation,
+    FileFsDriverPathInformation,
+    FileFsVolumeFlagsInformation,
+    FileFsMaximumInformation
+  } FS_INFORMATION_CLASS, *PFS_INFORMATION_CLASS;
+
+  typedef struct _FILE_FS_VOLUME_INFORMATION {
+    LARGE_INTEGER VolumeCreationTime;
+    ULONG VolumeSerialNumber;
+    ULONG VolumeLabelLength;
+    BOOLEAN SupportsObjects;
+    WCHAR VolumeLabel[1];
+  } FILE_FS_VOLUME_INFORMATION, *PFILE_FS_VOLUME_INFORMATION;
+
+  typedef struct _FILE_FS_LABEL_INFORMATION {
+    ULONG VolumeLabelLength;
+    WCHAR VolumeLabel[1];
+  } FILE_FS_LABEL_INFORMATION, *PFILE_FS_LABEL_INFORMATION;
+
+  typedef struct _FILE_FS_SIZE_INFORMATION {
+    LARGE_INTEGER TotalAllocationUnits;
+    LARGE_INTEGER AvailableAllocationUnits;
+    ULONG SectorsPerAllocationUnit;
+    ULONG BytesPerSector;
+  } FILE_FS_SIZE_INFORMATION, *PFILE_FS_SIZE_INFORMATION;
+
+  typedef struct _FILE_FS_DEVICE_INFORMATION {
+    DEVICE_TYPE DeviceType;
+    ULONG Characteristics;
+  } FILE_FS_DEVICE_INFORMATION, *PFILE_FS_DEVICE_INFORMATION;
+
+  typedef struct _FILE_FS_ATTRIBUTE_INFORMATION {
+    ULONG FileSystemAttributes;
+    ULONG MaximumComponentNameLength;
+    ULONG FileSystemNameLength;
+    WCHAR FileSystemName[1];
+  } FILE_FS_ATTRIBUTE_INFORMATION, *PFILE_FS_ATTRIBUTE_INFORMATION;
+
+  typedef struct _FILE_FS_FULL_SIZE_INFORMATION {
+    LARGE_INTEGER TotalAllocationUnits;
+    LARGE_INTEGER CallerAvailableAllocationUnits;
+    LARGE_INTEGER ActualAvailableAllocationUnits;
+    ULONG SectorsPerAllocationUnit;
+    ULONG BytesPerSector;
+  } FILE_FS_FULL_SIZE_INFORMATION, *PFILE_FS_FULL_SIZE_INFORMATION;
+
+  typedef struct _FILE_FS_OBJECTID_INFORMATION {
+    UCHAR ObjectId[16];
+    UCHAR ExtendedInfo[48];
+  } FILE_FS_OBJECTID_INFORMATION, *PFILE_FS_OBJECTID_INFORMATION;
+
   typedef struct _IO_STATUS_BLOCK {
     __C89_NAMELESS union {
       NTSTATUS Status;
@@ -584,9 +711,9 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     ULONG LowestPhysicalPage;
     ULONG HighestPhysicalPage;
     ULONG AllocationGranularity;
-    ULONG LowestUserAddress;
-    ULONG HighestUserAddress;
-    ULONG ActiveProcessors;
+    ULONG_PTR LowestUserAddress;
+    ULONG_PTR HighestUserAddress;
+    ULONG_PTR ActiveProcessors;
     CCHAR NumberOfProcessors;
   } SYSTEM_BASIC_INFORMATION,*PSYSTEM_BASIC_INFORMATION;
 
@@ -709,9 +836,67 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     SYSTEM_HANDLE_ENTRY Handle[1];
   } SYSTEM_HANDLE_INFORMATION, *PSYSTEM_HANDLE_INFORMATION;
 
+  typedef struct _SYSTEM_PAGEFILE_INFORMATION {
+    ULONG NextEntryOffset;
+    ULONG CurrentSize;
+    ULONG TotalUsed;
+    ULONG PeakUsed;
+    UNICODE_STRING FileName;
+  } SYSTEM_PAGEFILE_INFORMATION, *PSYSTEM_PAGEFILE_INFORMATION;
+
   typedef enum _PROCESSINFOCLASS {
-    ProcessBasicInformation = 0,ProcessQuotaLimits = 1,ProcessIoCounters = 2,ProcessVmCounters = 3,ProcessTimes = 4,ProcessBasePriority = 5,
-    ProcessRaisePriority = 6,ProcessDebugPort = 7,ProcessExceptionPort = 8,ProcessAccessToken = 9,ProcessWow64Information = 26,ProcessImageFileName = 27
+    ProcessBasicInformation,
+    ProcessQuotaLimits,
+    ProcessIoCounters,
+    ProcessVmCounters,
+    ProcessTimes,
+    ProcessBasePriority,
+    ProcessRaisePriority,
+    ProcessDebugPort,
+    ProcessExceptionPort,
+    ProcessAccessToken,
+    ProcessLdtInformation,
+    ProcessLdtSize,
+    ProcessDefaultHardErrorMode,
+    ProcessIoPortHandlers,
+    ProcessPooledUsageAndLimits,
+    ProcessWorkingSetWatch,
+    ProcessUserModeIOPL,
+    ProcessEnableAlignmentFaultFixup,
+    ProcessPriorityClass,
+    ProcessWx86Information,
+    ProcessHandleCount,
+    ProcessAffinityMask,
+    ProcessPriorityBoost,
+    ProcessDeviceMap,
+    ProcessSessionInformation,
+    ProcessForegroundInformation,
+    ProcessWow64Information,
+    ProcessImageFileName,
+    ProcessLUIDDeviceMapsEnabled,
+    ProcessBreakOnTermination,
+    ProcessDebugObjectHandle,
+    ProcessDebugFlags,
+    ProcessHandleTracing,
+    ProcessIoPriority,
+    ProcessExecuteFlags,
+    ProcessTlsInformation,
+    ProcessCookie,
+    ProcessImageInformation,
+    ProcessCycleTime,
+    ProcessPagePriority,
+    ProcessInstrumentationCallback,
+    ProcessThreadStackAllocation,
+    ProcessWorkingSetWatchEx,
+    ProcessImageFileNameWin32,
+    ProcessImageFileMapping,
+    ProcessAffinityUpdateMode,
+    ProcessMemoryAllocationMode,
+    ProcessGroupInformation,
+    ProcessTokenVirtualizationEnabled,
+    ProcessConsoleHostProcess,
+    ProcessWindowInformation,
+    MaxProcessInfoClass
   } PROCESSINFOCLASS;
 
   typedef enum _THREADINFOCLASS {
@@ -734,11 +919,19 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
      ThreadIsIoPending,
      ThreadHideFromDebugger
   } THREADINFOCLASS;
-  typedef THREADINFOCLASS THREAD_INFORMATION_CLASS, *PTHREAD_INFORMATION_CLASS;
 
   typedef enum _SYSTEM_INFORMATION_CLASS {
-    SystemBasicInformation = 0,SystemProcessorInformation = 1,SystemPerformanceInformation = 2,SystemTimeOfDayInformation = 3,SystemProcessInformation = 5,
-    SystemProcessorPerformanceInformation = 8,SystemHandleInformation = 16,SystemInterruptInformation = 23,SystemExceptionInformation = 33,SystemRegistryQuotaInformation = 37,
+    SystemBasicInformation = 0,
+    SystemProcessorInformation = 1,
+    SystemPerformanceInformation = 2,
+    SystemTimeOfDayInformation = 3,
+    SystemProcessInformation = 5,
+    SystemProcessorPerformanceInformation = 8,
+    SystemHandleInformation = 16,
+    SystemPagefileInformation = 18,
+    SystemInterruptInformation = 23,
+    SystemExceptionInformation = 33,
+    SystemRegistryQuotaInformation = 37,
     SystemLookasideInformation = 45
   } SYSTEM_INFORMATION_CLASS;
 
@@ -756,40 +949,68 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
 #define RtlFillMemory(Destination,Length,Fill) memset((Destination),(Fill),(Length))
 #define RtlZeroMemory(Destination,Length) memset((Destination),0,(Length))
 
-  NTSTATUS WINAPI NtClose(HANDLE Handle);
-  NTSTATUS WINAPI NtCreateFile(PHANDLE FileHandle,ACCESS_MASK DesiredAccess,POBJECT_ATTRIBUTES ObjectAttributes,PIO_STATUS_BLOCK IoStatusBlock,PLARGE_INTEGER AllocationSize,ULONG FileAttributes,ULONG ShareAccess,ULONG CreateDisposition,ULONG CreateOptions,PVOID EaBuffer,ULONG EaLength);
-  NTSTATUS WINAPI NtOpenFile(PHANDLE FileHandle,ACCESS_MASK DesiredAccess,POBJECT_ATTRIBUTES ObjectAttributes,PIO_STATUS_BLOCK IoStatusBlock,ULONG ShareAccess,ULONG OpenOptions);
-  NTSTATUS WINAPI NtDeviceIoControlFile(HANDLE FileHandle,HANDLE Event,PIO_APC_ROUTINE ApcRoutine,PVOID ApcContext,PIO_STATUS_BLOCK IoStatusBlock,ULONG IoControlCode,PVOID InputBuffer,ULONG InputBufferLength,PVOID OutputBuffer,ULONG OutputBufferLength);
-  NTSTATUS WINAPI NtWaitForSingleObject(HANDLE Handle,BOOLEAN Alertable,PLARGE_INTEGER Timeout);
-  BOOLEAN WINAPI RtlIsNameLegalDOS8Dot3(PUNICODE_STRING Name,POEM_STRING OemName,PBOOLEAN NameContainsSpaces);
-  ULONG WINAPI RtlNtStatusToDosError (NTSTATUS Status);
-  NTSTATUS WINAPI NtQueryInformationProcess(HANDLE ProcessHandle,PROCESSINFOCLASS ProcessInformationClass,PVOID ProcessInformation,ULONG ProcessInformationLength,PULONG ReturnLength);
-  NTSTATUS WINAPI NtQueryInformationThread(HANDLE ThreadHandle,THREADINFOCLASS ThreadInformationClass,PVOID ThreadInformation,ULONG ThreadInformationLength,PULONG ReturnLength);
-  NTSTATUS WINAPI NtQueryInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,LONG len,FILE_INFORMATION_CLASS FileInformationClass);
-  NTSTATUS WINAPI NtQueryObject(HANDLE Handle,OBJECT_INFORMATION_CLASS ObjectInformationClass,PVOID ObjectInformation,ULONG ObjectInformationLength,PULONG ReturnLength);
-  NTSTATUS WINAPI NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass,PVOID SystemInformation,ULONG SystemInformationLength,PULONG ReturnLength);
-  NTSTATUS WINAPI NtQuerySystemTime(PLARGE_INTEGER SystemTime);
-  NTSTATUS WINAPI RtlLocalTimeToSystemTime(PLARGE_INTEGER LocalTime,PLARGE_INTEGER SystemTime);
-  BOOLEAN WINAPI RtlTimeToSecondsSince1970(PLARGE_INTEGER Time,PULONG ElapsedSeconds);
-  VOID WINAPI RtlFreeAnsiString(PANSI_STRING AnsiString);
-  VOID WINAPI RtlFreeUnicodeString(PUNICODE_STRING UnicodeString);
-  VOID WINAPI RtlFreeOemString(POEM_STRING OemString);
-  VOID WINAPI RtlInitString (PSTRING DestinationString,PCSZ SourceString);
-  VOID WINAPI RtlInitAnsiString(PANSI_STRING DestinationString,PCSZ SourceString);
-  VOID WINAPI RtlInitUnicodeString(PUNICODE_STRING DestinationString,PCWSTR SourceString);
-  NTSTATUS WINAPI RtlAnsiStringToUnicodeString(PUNICODE_STRING DestinationString,PCANSI_STRING SourceString,BOOLEAN AllocateDestinationString);
-  NTSTATUS WINAPI RtlUnicodeStringToAnsiString(PANSI_STRING DestinationString,PCUNICODE_STRING SourceString,BOOLEAN AllocateDestinationString);
-  NTSTATUS WINAPI RtlUnicodeStringToOemString(POEM_STRING DestinationString,PCUNICODE_STRING SourceString,BOOLEAN AllocateDestinationString);
-  NTSTATUS WINAPI RtlUnicodeToMultiByteSize(PULONG BytesInMultiByteString,PWCH UnicodeString,ULONG BytesInUnicodeString);
-  NTSTATUS WINAPI RtlCharToInteger (PCSZ String,ULONG Base,PULONG Value);
-  NTSTATUS WINAPI RtlConvertSidToUnicodeString(PUNICODE_STRING UnicodeString,PSID Sid,BOOLEAN AllocateDestinationString);
-  ULONG WINAPI RtlUniform(PULONG Seed);
-  VOID WINAPI RtlUnwind (PVOID TargetFrame,PVOID TargetIp,PEXCEPTION_RECORD ExceptionRecord,PVOID ReturnValue);
-
+  NTSTATUS NTAPI NtClose(HANDLE Handle);
+  NTSTATUS NTAPI NtCreateFile(PHANDLE FileHandle,ACCESS_MASK DesiredAccess,POBJECT_ATTRIBUTES ObjectAttributes,PIO_STATUS_BLOCK IoStatusBlock,PLARGE_INTEGER AllocationSize,ULONG FileAttributes,ULONG ShareAccess,ULONG CreateDisposition,ULONG CreateOptions,PVOID EaBuffer,ULONG EaLength);
+  NTSTATUS NTAPI NtOpenFile(PHANDLE FileHandle,ACCESS_MASK DesiredAccess,POBJECT_ATTRIBUTES ObjectAttributes,PIO_STATUS_BLOCK IoStatusBlock,ULONG ShareAccess,ULONG OpenOptions);
+  NTSTATUS NTAPI NtFsControlFile(HANDLE FileHandle,HANDLE Event,PIO_APC_ROUTINE ApcRoutine,PVOID ApcContext,PIO_STATUS_BLOCK IoStatusBlock,ULONG IoControlCode,PVOID InputBuffer,ULONG InputBufferLength,PVOID OutputBuffer,ULONG OutputBufferLength);
+  NTSTATUS NTAPI NtDeviceIoControlFile(HANDLE FileHandle,HANDLE Event,PIO_APC_ROUTINE ApcRoutine,PVOID ApcContext,PIO_STATUS_BLOCK IoStatusBlock,ULONG IoControlCode,PVOID InputBuffer,ULONG InputBufferLength,PVOID OutputBuffer,ULONG OutputBufferLength);
+  NTSTATUS NTAPI NtWaitForSingleObject(HANDLE Handle,BOOLEAN Alertable,PLARGE_INTEGER Timeout);
+  BOOLEAN NTAPI RtlIsNameLegalDOS8Dot3(PUNICODE_STRING Name,POEM_STRING OemName,PBOOLEAN NameContainsSpaces);
+  ULONG NTAPI RtlNtStatusToDosError (NTSTATUS Status);
+  NTSTATUS NTAPI NtQueryInformationProcess(HANDLE ProcessHandle,PROCESSINFOCLASS ProcessInformationClass,PVOID ProcessInformation,ULONG ProcessInformationLength,PULONG ReturnLength);
+  NTSTATUS NTAPI NtQueryInformationThread(HANDLE ThreadHandle,THREADINFOCLASS ThreadInformationClass,PVOID ThreadInformation,ULONG ThreadInformationLength,PULONG ReturnLength);
+  NTSTATUS NTAPI NtQueryInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,ULONG len,FILE_INFORMATION_CLASS FileInformationClass);
+  NTSTATUS NTAPI NtQueryObject(HANDLE Handle,OBJECT_INFORMATION_CLASS ObjectInformationClass,PVOID ObjectInformation,ULONG ObjectInformationLength,PULONG ReturnLength);
+  NTSTATUS NTAPI NtQuerySystemInformation(SYSTEM_INFORMATION_CLASS SystemInformationClass,PVOID SystemInformation,ULONG SystemInformationLength,PULONG ReturnLength);
+  NTSTATUS NTAPI NtQuerySystemTime(PLARGE_INTEGER SystemTime);
+  NTSTATUS NTAPI NtQueryVolumeInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,ULONG len,FS_INFORMATION_CLASS FsInformationClass);
+  NTSTATUS NTAPI NtSetInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,ULONG len,FILE_INFORMATION_CLASS FileInformationClass);
+  NTSTATUS NTAPI NtSetInformationProcess(HANDLE ProcessHandle, PROCESSINFOCLASS ProcessInformationClass, PVOID ProcessInformation, ULONG ProcessInformationLength);
+  NTSTATUS NTAPI NtSetVolumeInformationFile(HANDLE hFile,PIO_STATUS_BLOCK io,PVOID ptr,ULONG len,FILE_INFORMATION_CLASS FileInformationClass);
+  NTSTATUS NTAPI RtlLocalTimeToSystemTime(PLARGE_INTEGER LocalTime,PLARGE_INTEGER SystemTime);
+  BOOLEAN NTAPI RtlTimeToSecondsSince1970(PLARGE_INTEGER Time,PULONG ElapsedSeconds);
+  VOID NTAPI RtlFreeAnsiString(PANSI_STRING AnsiString);
+  VOID NTAPI RtlFreeUnicodeString(PUNICODE_STRING UnicodeString);
+  VOID NTAPI RtlFreeOemString(POEM_STRING OemString);
+  VOID NTAPI RtlInitString (PSTRING DestinationString,PCSZ SourceString);
+  VOID NTAPI RtlInitAnsiString(PANSI_STRING DestinationString,PCSZ SourceString);
+  VOID NTAPI RtlInitUnicodeString(PUNICODE_STRING DestinationString,PCWSTR SourceString);
+  NTSTATUS NTAPI RtlAnsiStringToUnicodeString(PUNICODE_STRING DestinationString,PCANSI_STRING SourceString,BOOLEAN AllocateDestinationString);
+  NTSTATUS NTAPI RtlUnicodeStringToAnsiString(PANSI_STRING DestinationString,PCUNICODE_STRING SourceString,BOOLEAN AllocateDestinationString);
+  NTSTATUS NTAPI RtlUnicodeStringToOemString(POEM_STRING DestinationString,PCUNICODE_STRING SourceString,BOOLEAN AllocateDestinationString);
+  NTSTATUS NTAPI RtlUnicodeToMultiByteSize(PULONG BytesInMultiByteString,PWCH UnicodeString,ULONG BytesInUnicodeString);
+  NTSTATUS NTAPI RtlCharToInteger (PCSZ String,ULONG Base,PULONG Value);
+  NTSTATUS NTAPI RtlConvertSidToUnicodeString(PUNICODE_STRING UnicodeString,PSID Sid,BOOLEAN AllocateDestinationString);
+  ULONG NTAPI RtlUniform(PULONG Seed);
+  VOID NTAPI RtlUnwind (PVOID TargetFrame,PVOID TargetIp,PEXCEPTION_RECORD ExceptionRecord,PVOID ReturnValue);
+  BOOL NTAPI RtlDosPathNameToNtPathName_U(PCWSTR DosPathName, PUNICODE_STRING NtPathName, PCWSTR *NtFileNamePart, VOID *DirectoryInfo);
+  BOOLEAN NTAPI RtlPrefixUnicodeString(PCUNICODE_STRING String1, PCUNICODE_STRING String2, BOOLEAN CaseInSensitive);
+  BOOLEAN NTAPI RtlCreateUnicodeStringFromAsciiz(PUNICODE_STRING target, LPCSTR src);
 #ifdef __ia64__
   VOID RtlUnwind2(FRAME_POINTERS TargetFrame,PVOID TargetIp,PEXCEPTION_RECORD ExceptionRecord,PVOID ReturnValue,PCONTEXT ContextRecord);
   VOID RtlUnwindEx(FRAME_POINTERS TargetFrame,PVOID TargetIp,PEXCEPTION_RECORD ExceptionRecord,PVOID ReturnValue,PCONTEXT ContextRecord,PUNWIND_HISTORY_TABLE HistoryTable);
 #endif
+
+  typedef NTSTATUS (NTAPI *PRTL_HEAP_COMMIT_ROUTINE) (PVOID Base, PVOID *CommitAddress, PSIZE_T CommitSize);
+
+  typedef struct _RTL_HEAP_PARAMETERS {
+    ULONG Length;
+    SIZE_T SegmentReserve;
+    SIZE_T SegmentCommit;
+    SIZE_T DeCommitFreeBlockThreshold;
+    SIZE_T DeCommitTotalFreeThreshold;
+    SIZE_T MaximumAllocationSize;
+    SIZE_T VirtualMemoryThreshold;
+    SIZE_T InitialCommit;
+    SIZE_T InitialReserve;
+    PRTL_HEAP_COMMIT_ROUTINE CommitRoutine;
+    SIZE_T Reserved[ 2 ];
+  } RTL_HEAP_PARAMETERS, *PRTL_HEAP_PARAMETERS;
+
+  BOOLEAN NTAPI RtlFreeHeap(PVOID HeapHandle, ULONG Flags, PVOID HeapBase);
+  PVOID NTAPI RtlAllocateHeap(PVOID HeapHandle, ULONG Flags, SIZE_T Size);
+  PVOID NTAPI RtlCreateHeap(ULONG Flags, PVOID HeapBase, SIZE_T ReserveSize, SIZE_T CommitSize, PVOID Lock, PRTL_HEAP_PARAMETERS Parameters);
+  PVOID NTAPI RtlDestroyHeap(PVOID HeapHandle);
 
 #define LOGONID_CURRENT ((ULONG)-1)
 #define SERVERNAME_CURRENT ((HANDLE)NULL)
@@ -804,7 +1025,7 @@ typedef struct _RTL_USER_PROCESS_PARAMETERS {
     BYTE Reserved3[1140];
   } WINSTATIONINFORMATIONW,*PWINSTATIONINFORMATIONW;
 
-  typedef BOOLEAN (WINAPI *PWINSTATIONQUERYINFORMATIONW)(HANDLE,ULONG,WINSTATIONINFOCLASS,PVOID,ULONG,PULONG);
+  typedef BOOLEAN (NTAPI *PWINSTATIONQUERYINFORMATIONW)(HANDLE,ULONG,WINSTATIONINFOCLASS,PVOID,ULONG,PULONG);
 
 #ifdef __cplusplus
 }

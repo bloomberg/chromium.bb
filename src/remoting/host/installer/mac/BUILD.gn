@@ -137,7 +137,6 @@ mac_app_bundle("remoting_host_uninstaller") {
 
   deps = [
     ":remoting_host_uninstaller_resources",
-    ":remoting_host_uninstaller_xibs",
     "//base",
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/host/mac:constants",
@@ -146,12 +145,6 @@ mac_app_bundle("remoting_host_uninstaller") {
   foreach(locale, remoting_locales_with_underscores) {
     deps += [ ":remoting_uninstaller_strings_${locale}_bundle_data" ]
   }
-}
-
-mac_xib_bundle_data("remoting_host_uninstaller_xibs") {
-  sources = [
-    "uninstaller/remoting_uninstaller.xib",
-  ]
 }
 
 bundle_data("remoting_host_uninstaller_resources") {

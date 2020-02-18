@@ -31,7 +31,6 @@
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -129,6 +128,8 @@ class DelayableBackend : public disk_cache::Backend {
       open_entry_callback_ = base::BindOnce(
           &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
           base::Unretained(entry), std::move(callback));
+      if (open_entry_started_callback_)
+        std::move(open_entry_started_callback_).Run();
       return net::ERR_IO_PENDING;
     }
     return backend_->OpenEntry(key, request_priority, entry,
@@ -193,6 +194,11 @@ class DelayableBackend : public disk_cache::Backend {
 
   void set_delay_open_entry(bool value) { delay_open_entry_ = value; }
 
+  void set_open_entry_started_callback(
+      base::OnceClosure open_entry_started_callback) {
+    open_entry_started_callback_ = std::move(open_entry_started_callback);
+  }
+
  private:
   void OpenEntryDelayedImpl(const std::string& key,
                             disk_cache::Entry** entry,
@@ -207,6 +213,7 @@ class DelayableBackend : public disk_cache::Backend {
   std::unique_ptr<disk_cache::Backend> backend_;
   bool delay_open_entry_;
   base::OnceClosure open_entry_callback_;
+  base::OnceClosure open_entry_started_callback_;
 };
 
 class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
@@ -239,8 +246,8 @@ std::string CopySideData(blink::mojom::Blob* actual_blob) {
   base::RunLoop loop;
   actual_blob->ReadSideData(base::BindLambdaForTesting(
       [&](const base::Optional<mojo_base::BigBuffer> data) {
-        ASSERT_TRUE(data);
-        output.append(data->data(), data->data() + data->size());
+        if (data)
+          output.append(data->data(), data->data() + data->size());
         loop.Quit();
       }));
   loop.Run();
@@ -2299,6 +2306,10 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
   DelayableBackend* delayable_backend = cache_->UseDelayableBackend();
   delayable_backend->set_delay_open_entry(true);
 
+  base::RunLoop open_started_loop;
+  delayable_backend->set_open_entry_started_callback(
+      open_started_loop.QuitClosure());
+
   int sequence_out = -1;
 
   blink::mojom::BatchOperationPtr operation1 =
@@ -2318,8 +2329,9 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
                      close_loop1.get()),
       CacheStorageCache::BadMessageCallback());
 
-  // Blocks on creating the cache entry.
-  base::RunLoop().RunUntilIdle();
+  // Wait until the first operation attempts to open the entry and becomes
+  // delayed.
+  open_started_loop.Run();
 
   blink::mojom::BatchOperationPtr operation2 =
       blink::mojom::BatchOperation::New();
@@ -2341,7 +2353,7 @@ TEST_P(CacheStorageCacheTestP, VerifySerialScheduling) {
 
   // The second put operation should wait for the first to complete.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(callback_response_);
+  EXPECT_EQ(-1, sequence_out);
 
   EXPECT_TRUE(delayable_backend->OpenEntryContinue());
   close_loop1->Run();

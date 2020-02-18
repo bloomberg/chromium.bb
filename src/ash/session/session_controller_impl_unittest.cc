@@ -312,25 +312,6 @@ TEST_F(SessionControllerImplTest, GetLoginStateForActiveSession) {
   }
 }
 
-TEST_F(SessionControllerImplTest, GetLoginStateForOwner) {
-  // Simulate an active user session.
-  SessionInfo info;
-  FillDefaultSessionInfo(&info);
-  info.state = SessionState::ACTIVE;
-  SetSessionInfo(info);
-
-  UserSession session;
-  session.session_id = 1u;
-  session.user_info.type = user_manager::USER_TYPE_REGULAR;
-  session.user_info.account_id = AccountId::FromUserEmail("owner@test.com");
-  session.user_info.display_name = "Owner";
-  session.user_info.display_email = "owner@test.com";
-  session.user_info.is_device_owner = true;
-  controller()->UpdateUserSession(session);
-
-  EXPECT_EQ(LoginStatus::OWNER, controller()->login_status());
-}
-
 // Tests that user sessions can be set and updated.
 TEST_F(SessionControllerImplTest, UserSessions) {
   EXPECT_FALSE(controller()->IsActiveUserSessionStarted());
@@ -632,8 +613,8 @@ class CanSwitchUserTest : public AshTestBase {
   }
 
   // Methods needed to test with overview mode.
-  bool ToggleOverview() {
-    return Shell::Get()->overview_controller()->ToggleOverview();
+  bool StartOverview() {
+    return Shell::Get()->overview_controller()->StartOverview();
   }
   bool InOverviewSession() const {
     return Shell::Get()->overview_controller()->InOverviewSession();
@@ -650,7 +631,7 @@ class CanSwitchUserTest : public AshTestBase {
 
  private:
   static void CloseMessageBox(ActionType action) {
-    aura::Window* active_window = ash::wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     views::DialogDelegate* dialog =
         active_window ? views::Widget::GetWidgetForNativeWindow(active_window)
                             ->widget_delegate()
@@ -790,7 +771,7 @@ TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
   EXPECT_EQ(0, switch_callback_hit_count());
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
-  ASSERT_TRUE(ToggleOverview());
+  ASSERT_TRUE(StartOverview());
   ASSERT_TRUE(InOverviewSession());
   SwitchUser(CanSwitchUserTest::NO_DIALOG);
   ASSERT_FALSE(InOverviewSession());

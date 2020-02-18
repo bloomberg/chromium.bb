@@ -90,7 +90,6 @@ struct CastMediaSink {
 enum RouteControllerType {
   kNone,
   kGeneric,
-  kHangouts,
   kMirroring
 };
 
@@ -235,9 +234,6 @@ struct MediaRouteProviderConfig {
 
   // If the MRP should enable Cast sink query.
   bool enable_cast_sink_query;
-
-  // If the Views dialog is being used.
-  bool use_views_dialog;
 
   // If Mirroring Service is being used.
   bool use_mirroring_service;

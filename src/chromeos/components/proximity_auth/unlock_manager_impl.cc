@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/messenger.h"
@@ -24,13 +25,22 @@
 namespace proximity_auth {
 namespace {
 
-// The maximum amount of time, in seconds, that the unlock manager can stay in
-// the 'waking up' state after resuming from sleep.
+// The maximum amount of time that the unlock manager can stay in the 'waking
+// up' state after resuming from sleep.
 constexpr base::TimeDelta kWakingUpDuration = base::TimeDelta::FromSeconds(15);
 
-// The limit, in seconds, on the elapsed time for an auth attempt. If an auth
-// attempt exceeds this limit, it will time out and be rejected. This is
-// provided as a failsafe, in case something goes wrong.
+// The maximum amount of time that we wait for the BluetoothAdapter to be
+// fully initialized after resuming from sleep.
+// TODO(crbug.com/986896): This is necessary because the BluetoothAdapter
+// returns incorrect presence and power values directly after resume, and does
+// not return correct values until about 1-2 seconds later. Remove this once
+// the bug is fixed.
+constexpr base::TimeDelta kBluetoothAdapterResumeMaxDuration =
+    base::TimeDelta::FromSeconds(3);
+
+// The limit on the elapsed time for an auth attempt. If an auth attempt exceeds
+// this limit, it will time out and be rejected. This is provided as a failsafe,
+// in case something goes wrong.
 constexpr base::TimeDelta kAuthAttemptTimeout = base::TimeDelta::FromSeconds(5);
 
 constexpr base::TimeDelta kMinGetUnlockableRemoteStatusDuration =
@@ -107,14 +117,9 @@ UnlockManagerImpl::UnlockManagerImpl(
     ProximityAuthSystem::ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
-      life_cycle_(nullptr),
       proximity_auth_client_(proximity_auth_client),
-      is_attempting_auth_(false),
-      is_performing_initial_scan_(false),
-      screenlock_state_(ScreenlockState::INACTIVE),
-      initial_scan_timeout_weak_ptr_factory_(this),
-      reject_auth_attempt_weak_ptr_factory_(this),
-      weak_ptr_factory_(this) {
+      bluetooth_suspension_recovery_timer_(
+          std::make_unique<base::OneShotTimer>()) {
   chromeos::PowerManagerClient::Get()->AddObserver(this);
 
   if (device::BluetoothAdapterFactory::IsBluetoothSupported()) {
@@ -125,14 +130,13 @@ UnlockManagerImpl::UnlockManagerImpl(
 }
 
 UnlockManagerImpl::~UnlockManagerImpl() {
+  if (life_cycle_)
+    life_cycle_->RemoveObserver(this);
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
-
   if (proximity_monitor_)
     proximity_monitor_->RemoveObserver(this);
-
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
 }
@@ -153,16 +157,20 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   PA_LOG(VERBOSE) << "Request received to change scan state to: "
                   << (life_cycle == nullptr ? "inactive" : "active") << ".";
 
+  if (life_cycle_)
+    life_cycle_->RemoveObserver(this);
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
 
   life_cycle_ = life_cycle;
   if (life_cycle_) {
+    life_cycle_->AddObserver(this);
+
     attempt_secure_connection_start_time_ =
         base::DefaultClock::GetInstance()->Now();
 
-    AttemptToStartRemoteDeviceLifecycle();
     SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+    AttemptToStartRemoteDeviceLifecycle();
   } else {
     ResetPerformanceMetricsTimestamps();
 
@@ -174,11 +182,11 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   UpdateLockScreen();
 }
 
-void UnlockManagerImpl::OnLifeCycleStateChanged() {
-  RemoteDeviceLifeCycle::State state = life_cycle_->GetState();
-
+void UnlockManagerImpl::OnLifeCycleStateChanged(
+    RemoteDeviceLifeCycle::State old_state,
+    RemoteDeviceLifeCycle::State new_state) {
   remote_screenlock_state_.reset();
-  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
+  if (new_state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
     DCHECK(life_cycle_->GetChannel());
     DCHECK(GetMessenger());
     if (!proximity_monitor_) {
@@ -196,7 +204,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
     proximity_monitor_.reset();
   }
 
-  if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
+  if (new_state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
 
   UpdateLockScreen();
@@ -311,13 +319,42 @@ void UnlockManagerImpl::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
   UpdateLockScreen();
 }
 
+void UnlockManagerImpl::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  // TODO(crbug.com/986896): For a short time window after resuming from
+  // suspension, BluetoothAdapter returns incorrect presence and power values.
+  // Cache the correct values now, in case we need to check those values during
+  // that time window when the device resumes.
+  was_bluetooth_present_and_powered_before_last_suspend_ =
+      IsBluetoothPresentAndPowered();
+  bluetooth_suspension_recovery_timer_->Stop();
+}
+
 void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
+  bluetooth_suspension_recovery_timer_->Start(
+      FROM_HERE, kBluetoothAdapterResumeMaxDuration,
+      base::Bind(&UnlockManagerImpl::UpdateLockScreen,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
 }
 
 bool UnlockManagerImpl::IsBluetoothPresentAndPowered() const {
+  // TODO(crbug.com/986896): If the BluetoothAdapter is still "resuming after
+  // suspension" at this time, it's prone to this bug, meaning we cannot trust
+  // its returned presence and power values. If this is the case, depend on
+  // the cached |was_bluetooth_present_and_powered_before_last_suspend_| to
+  // signal if Bluetooth is enabled; otherwise, directly check request values
+  // from BluetoothAdapter. Remove this check once the bug is fixed.
+  if (IsBluetoothAdapterRecoveringFromSuspend())
+    return was_bluetooth_present_and_powered_before_last_suspend_;
+
   return bluetooth_adapter_ && bluetooth_adapter_->IsPresent() &&
          bluetooth_adapter_->IsPowered();
+}
+
+bool UnlockManagerImpl::IsBluetoothAdapterRecoveringFromSuspend() const {
+  return bluetooth_suspension_recovery_timer_->IsRunning();
 }
 
 void UnlockManagerImpl::AttemptToStartRemoteDeviceLifecycle() {
@@ -475,6 +512,9 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
       case RemoteScreenlockState::UNKNOWN:
         return ScreenlockState::PHONE_UNSUPPORTED;
 
+      case RemoteScreenlockState::PRIMARY_USER_ABSENT:
+        return ScreenlockState::PRIMARY_USER_ABSENT;
+
       case RemoteScreenlockState::UNLOCKED:
         // Handled by the code below.
         break;
@@ -592,6 +632,11 @@ UnlockManagerImpl::GetScreenlockStateFromRemoteUpdate(
       return RemoteScreenlockState::DISABLED;
 
     case SECURE_SCREEN_LOCK_ENABLED:
+      if (update.user_presence == USER_PRESENCE_SECONDARY ||
+          update.user_presence == USER_PRESENCE_BACKGROUND) {
+        return RemoteScreenlockState::PRIMARY_USER_ABSENT;
+      }
+
       if (update.user_presence == USER_PRESENT)
         return RemoteScreenlockState::UNLOCKED;
 
@@ -647,6 +692,11 @@ void UnlockManagerImpl::RecordUnlockableRemoteStatusReceived() {
 void UnlockManagerImpl::ResetPerformanceMetricsTimestamps() {
   attempt_secure_connection_start_time_ = base::Time();
   attempt_get_remote_status_start_time_ = base::Time();
+}
+
+void UnlockManagerImpl::SetBluetoothSuspensionRecoveryTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> timer) {
+  bluetooth_suspension_recovery_timer_ = std::move(timer);
 }
 
 }  // namespace proximity_auth

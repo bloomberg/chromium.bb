@@ -26,6 +26,9 @@ const char kCL[] = "cl";
 const char kCommandLine[] = "command_line";
 const char kCommandLineName[] = "command_line_name";
 const char kCompany[] = "company";
+#if defined(OS_IOS)
+const char kCompiler[] = "compiler";
+#endif
 #if defined(OS_WIN)
 const char kUpdateCohortName[] = "update_cohort_name";
 #endif
@@ -66,6 +69,7 @@ const char kProfilePath[] = "profile_path";
 const char kProfilePathName[] = "profile_path_name";
 #endif
 const char kRevision[] = "revision";
+const char kSanitizer[] = "sanitizer";
 const char kTitle[] = "title";
 const char kUserAgent[] = "useragent";
 const char kUserAgentName[] = "user_agent_name";

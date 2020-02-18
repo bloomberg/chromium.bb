@@ -26,12 +26,14 @@
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.
-constexpr TimeDelta kAdjustedTimeoutLower = TimeDelta::FromSeconds(10);
-constexpr TimeDelta kAdjustedTimeoutUpper = TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kAdjustedTimeoutLower =
+    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kAdjustedTimeoutUpper =
+    base::TimeDelta::FromMinutes(10);
 
-WTF::TimeDelta AdjustTimeout(uint32_t timeout) {
-  WTF::TimeDelta adjusted_timeout;
-  adjusted_timeout = WTF::TimeDelta::FromMilliseconds(timeout);
+base::TimeDelta AdjustTimeout(uint32_t timeout) {
+  base::TimeDelta adjusted_timeout;
+  adjusted_timeout = base::TimeDelta::FromMilliseconds(timeout);
   return std::max(kAdjustedTimeoutLower,
                   std::min(kAdjustedTimeoutUpper, adjusted_timeout));
 }
@@ -125,6 +127,8 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::PENDING_REQUEST;
     case blink::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
       return CredentialManagerError::INVALID_DOMAIN;
+    case blink::mojom::blink::AuthenticatorStatus::INVALID_ICON_URL:
+      return CredentialManagerError::INVALID_ICON_URL;
     case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
       return CredentialManagerError::CREDENTIAL_EXCLUDED;
     case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
@@ -289,8 +293,11 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
   mojo_criteria->authenticator_attachment =
       ConvertTo<AuthenticatorAttachment>(criteria->authenticatorAttachment());
   mojo_criteria->require_resident_key = criteria->requireResidentKey();
-  mojo_criteria->user_verification =
-      ConvertTo<UserVerificationRequirement>(criteria->userVerification());
+  mojo_criteria->user_verification = UserVerificationRequirement::PREFERRED;
+  if (criteria->hasUserVerification()) {
+    mojo_criteria->user_verification =
+        ConvertTo<UserVerificationRequirement>(criteria->userVerification());
+  }
   return mojo_criteria;
 }
 
@@ -549,8 +556,11 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
     }
   }
 
-  mojo_options->user_verification =
-      ConvertTo<UserVerificationRequirement>(options->userVerification());
+  mojo_options->user_verification = UserVerificationRequirement::PREFERRED;
+  if (options->hasUserVerification()) {
+    mojo_options->user_verification =
+        ConvertTo<UserVerificationRequirement>(options->userVerification());
+  }
 
   if (options->hasExtensions()) {
     auto* extensions = options->extensions();

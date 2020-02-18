@@ -6,12 +6,14 @@
 #   Andy Wardley  <abw@wardley.org>
 #
 # COPYRIGHT
-#   Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+#   Copyright (C) 1996-2014 Andy Wardley.  All Rights Reserved.
 #
 #   This module is free software; you can redistribute it and/or
 #   modify it under the same terms as Perl itself.
 #
 #========================================================================
+
+=encoding utf8
 
 =head1 NAME
 
@@ -62,7 +64,7 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2014 Andy Wardley.  All Rights Reserved.
 
 The Template Toolkit is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
@@ -70,28 +72,29 @@ modify it under the same terms as Perl itself.
 =head1 CONTRIBUTORS
 
 Many people have contributed ideas, inspiration, fixes and features to
-the Template Toolkit.  Their efforts continue to be very much appreciated.  
+the Template Toolkit.  Their efforts continue to be very much appreciated.
 Please let me know if you think anyone is missing from this list.
 
-Chuck Adams, Stephen Adkins, Ivan Adzhubey, Mark Anderson, Bradley Baetz,
-Thierry-Michel Barral, Craig Barratt, Stas Bekman, Robin Berjon, Tony Bowden,
-Neil Bowers, Leon Brocard, Lyle Brooks, Norbert Buchmüller, Dave Cash, Piers
-Cawley, Darren Chamberlain, Timmy Chan, Eric Cholet, Nik Clayton, Tosh Cooey,
-Dave Cross, Chris Dean, Francois Desarmenien, Horst Dumcke, Mark Fowler,
-Michael Fowler, Kenny Gatdula, Axel Gerstmair, Dylan William Hardison, Perrin
-Harkins, Bryce Harrington, Dave Hodgkinson, Lubomir Host, Dave Howorth, Harald
-Joerg, Colin Johnson, Adam Kennedy, Vivek Khera, Alexey A. Kiritchun, Rafael
-Kitover, Ivan Kurmanov, Denis F. Latypoff, Hans von Lengerke, Jonas Liljegren,
-Simon Luff, Andy Maas, Paul Makepeace, Gervase Markham, Sergey Martynoff,
-Simon Matthews, Robert McArthur, Craig McLane, Myk Melez, Eugene Miretskiy,
-Tatsuhiko Miyagawa, Bill Moseley, Keith G. Murphy, Chris Nandor, John
-Napiorkowski, Breno G. de Oliveira, Leslie Michael Orchard, Paul Orrock,
+If you submit a patch/pull request then please make sure you add your
+own name to this list and include it in the changes.
+
+Amiri Barksdale, Thierry-Michel Barral, Craig Barratt, Stas Bekman, Robin Berjon,
+Tony Bowden, Neil Bowers, Leon Brocard, Lyle Brooks, Norbert Buchmüller,
+Dave Cash, Piers Cawley, Darren Chamberlain, Timmy Chan, Eric Cholet, Chromatic,
+Nik Clayton, Tosh Cooey, Dave Cross, Chris Dean, Francois Desarmenien, Horst Dumcke,
+Mark Fowler, Michael Fowler, Brian Fraser, Kenny Gatdula, Axel Gerstmair, Jay Hannah,  Dylan
+William Hardison, Perrin Harkins, Bryce Harrington, Dave Hodgkinson,  Lubomir
+Host, Dave Howorth, Jon Jensen, Harald Joerg, Colin Johnson,  Colin Keith,
+Adam Kennedy, Vivek Khera, Alexey A. Kiritchun, Rafael Kitover,  Andreas
+Koenig, Ivan Kurmanov, Denis F. Latypoff, Hans von Lengerke,  Jonas Liljegren,
+Simon Napiorkowski, Breno G. de Oliveira, Leslie Michael Orchard, Paul Orrock,
 Jonathon Padfield, Steve Peters, Briac PilprE<eacute>, Yuri Pimenov, Martin
-Portman, Slaven Rezic, Jess Robinson, Josh Rosenbaum, Christian Schaffner,
-Mike Schilli, Randal L. Schwartz, Paul Seamons, Paul Sharpe, Ville
-SkyttE<auml>, Barrie Slaymaker, Doug Steinwand, Michael Stevens, Autrijus
-Tang, Drew Taylor, Rod Taylor, Swen Thuemmler, Richard Tietjen, Ben Tilly,
-Stathy G. Touloumis, Jim Vaughan, Simon Wilcox, Chris Winters
+Portman, Marc Remy, Slaven Rezic, Jess Robinson, Josh Rosenbaum, Christian
+Schaffner, Mike Schilli, Randal L. Schwartz, Paul Seamons, Paul Sharpe,
+Ricardo Signes, Ville SkyttE<auml>, Barrie Slaymaker, David Steinbrunner, Doug
+Steinwand, Michael Stevens, Autrijus Tang, Drew Taylor, Rod Taylor, Swen
+Thuemmler, Richard Tietjen, Ben Tilly, Stathy G. Touloumis, Jim Vaughan, Simon
+Wilcox, Chris Winters.
 
 =cut
 

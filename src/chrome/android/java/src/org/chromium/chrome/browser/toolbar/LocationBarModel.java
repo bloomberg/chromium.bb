@@ -11,13 +11,11 @@ import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -31,6 +29,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -47,11 +46,14 @@ public class LocationBarModel implements ToolbarDataProvider {
     private final Context mContext;
 
     private Tab mTab;
-    private boolean mIsIncognito;
     private int mPrimaryColor;
+    private OverviewModeBehavior mOverviewModeBehavior;
+
+    private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
-    private OverviewModeBehavior mOverviewModeBehavior;
+    private boolean mShouldShowSearchEngineLogo;
+    private boolean mIsSearchEngineGoogle;
 
     private long mNativeLocationBarModelAndroid;
 
@@ -242,7 +244,7 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
         if (mTab == null) return true;
 
-        return !shouldDisplaySearchTerms() && TrustedCdn.getPublisherUrl(mTab) == null;
+        return getDisplaySearchTerms() == null && TrustedCdn.getPublisherUrl(mTab) == null;
     }
 
     /**
@@ -313,18 +315,16 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     private void updateUsingBrandColor() {
-        Context context = ContextUtils.getApplicationContext();
         mIsUsingBrandColor = !isIncognito()
                 && mPrimaryColor
-                        != ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
+                        != ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 && hasTab() && !mTab.isNativePage();
     }
 
     @Override
     public int getPrimaryColor() {
-        Context context = ContextUtils.getApplicationContext();
         return isInOverviewAndShowingOmnibox()
-                ? ColorUtils.getDefaultThemeColor(context.getResources(), isIncognito())
+                ? ColorUtils.getDefaultThemeColor(mContext.getResources(), isIncognito())
                 : mPrimaryColor;
     }
 
@@ -352,12 +352,29 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
+    public int getPageClassification(boolean isFocusedFromFakebox) {
+        if (mNativeLocationBarModelAndroid == 0) return 0;
+        return nativeGetPageClassification(mNativeLocationBarModelAndroid, isFocusedFromFakebox);
+    }
+
+    @Override
     public int getSecurityIconResource(boolean isTablet) {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
-        if (shouldDisplaySearchTerms()) {
-            return R.drawable.omnibox_search;
+        if (getDisplaySearchTerms() != null) {
+            if (mShouldShowSearchEngineLogo && mIsSearchEngineGoogle) {
+                return R.drawable.ic_logo_googleg_24dp;
+            } else {
+                return R.drawable.omnibox_search;
+            }
+        } else if (getNewTabPageForCurrentTab() != null && mShouldShowSearchEngineLogo) {
+            if (mIsSearchEngineGoogle) {
+                return R.drawable.ic_logo_googleg_24dp;
+            } else {
+                return R.drawable.omnibox_search;
+            }
         }
+
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
     }
 
@@ -409,6 +426,12 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     @Override
     public @ColorRes int getSecurityIconColorStateList() {
+        // Don't apply tint to the search logo, which is shown on the NTP and the SRP pages.
+        if ((getNewTabPageForCurrentTab() != null || getDisplaySearchTerms() != null)
+                && mShouldShowSearchEngineLogo) {
+            return 0;
+        }
+
         int securityLevel = getSecurityLevel();
         int color = getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
@@ -438,11 +461,11 @@ public class LocationBarModel implements ToolbarDataProvider {
         // TODO(https://crbug.com/940134): Change the color here and also #needLightIcon logic.
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
             // For the default toolbar color, use a green or red icon.
-            assert !shouldDisplaySearchTerms();
+            assert getDisplaySearchTerms() == null;
             return R.color.google_red_600;
         }
 
-        if (!shouldDisplaySearchTerms()
+        if (getDisplaySearchTerms() == null
                 && (securityLevel == ConnectionSecurityLevel.SECURE
                         || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
             return R.color.google_green_600;
@@ -452,21 +475,18 @@ public class LocationBarModel implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldDisplaySearchTerms() {
-        return getDisplaySearchTerms() != null && !isPreview();
-    }
-
-    /**
-     * If the current tab state is eligible for displaying the search query terms instead of the
-     * URL, this extracts the query terms from the current URL.
-     *
-     * @return The search terms. Returns null if the tab is ineligible to display the search terms
-     *         instead of the URL.
-     */
     public String getDisplaySearchTerms() {
         if (mNativeLocationBarModelAndroid == 0) return null;
         if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
+        if (isPreview()) return null;
         return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
+    }
+
+    @Override
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+        mIsSearchEngineGoogle = isSearchEngineGoogle;
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -486,4 +506,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
     private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
     private native String nativeGetDisplaySearchTerms(long nativeLocationBarModelAndroid);
+    private native int nativeGetPageClassification(
+            long nativeLocationBarModelAndroid, boolean isFocusedFromFakebox);
 }

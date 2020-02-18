@@ -11,11 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -27,6 +29,8 @@ class SimpleURLLoader;
 namespace safe_browsing {
 
 class PasswordProtectionNavigationThrottle;
+
+using password_manager::metrics_util::PasswordType;
 
 // A request for checking if an unfamiliar login form or a password reuse event
 // is safe. PasswordProtectionRequest objects are owned by
@@ -47,17 +51,17 @@ class PasswordProtectionNavigationThrottle;
 // (8) |   UI   | On receiving response, handle response and finish.
 //     |        | On request timeout, cancel request.
 //     |        | On deletion of |password_protection_service_|, cancel request.
-class PasswordProtectionRequest
-    : public base::RefCountedThreadSafe<
-          PasswordProtectionRequest,
-          content::BrowserThread::DeleteOnUIThread> {
+class PasswordProtectionRequest : public base::RefCountedThreadSafe<
+                                      PasswordProtectionRequest,
+                                      content::BrowserThread::DeleteOnUIThread>,
+                                  public content::WebContentsObserver {
  public:
   PasswordProtectionRequest(content::WebContents* web_contents,
                             const GURL& main_frame_url,
                             const GURL& password_form_action,
                             const GURL& password_form_frame_url,
                             const std::string& username,
-                            ReusedPasswordType reused_password_type,
+                            PasswordType password_type,
                             const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
                             bool password_field_exists,
@@ -93,9 +97,7 @@ class PasswordProtectionRequest
 
   const std::string username() const { return username_; }
 
-  ReusedPasswordType reused_password_type() const {
-    return reused_password_type_;
-  }
+  PasswordType password_type() const { return password_type_; }
 
   bool is_modal_warning_showing() const { return is_modal_warning_showing_; }
 
@@ -115,6 +117,9 @@ class PasswordProtectionRequest
   // Cancels navigation if there is modal warning showing, resumes it otherwise.
   void HandleDeferredNavigations();
 
+  // WebContentsObserver implementation
+  void WebContentsDestroyed() override;
+
  protected:
   friend class base::RefCountedThreadSafe<PasswordProtectionRequest>;
 
@@ -124,7 +129,7 @@ class PasswordProtectionRequest
   friend class base::DeleteHelper<PasswordProtectionRequest>;
   friend class PasswordProtectionServiceTest;
   friend class ChromePasswordProtectionServiceTest;
-  virtual ~PasswordProtectionRequest();
+  ~PasswordProtectionRequest() override;
 
   // Start checking the whitelist.
   void CheckWhitelist();
@@ -185,7 +190,7 @@ class PasswordProtectionRequest
   const std::string username_;
 
   // Type of the reused password.
-  const ReusedPasswordType reused_password_type_;
+  const PasswordType password_type_;
 
   // Domains from the Password Manager that match this password.
   // Should be non-empty if |reused_password_type_| == SAVED_PASSWORD.
@@ -239,7 +244,7 @@ class PasswordProtectionRequest
   // PasswordProtection.DomFeatureExtractionDuration.
   base::TimeTicks dom_feature_start_time_;
 
-  base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
+  base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);
 };
 

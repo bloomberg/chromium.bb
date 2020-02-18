@@ -49,8 +49,9 @@ enum class AssistantExitPoint {
   kBackInLauncher = 8,
   kLauncherClose = 9,
   kLauncherOpen = 10,
+  kScreenshot = 11,
   // Special enumerator value used by histogram macros.
-  kMaxValue = kLauncherOpen
+  kMaxValue = kScreenshot
 };
 
 // Enumeration of Assistant UI modes.

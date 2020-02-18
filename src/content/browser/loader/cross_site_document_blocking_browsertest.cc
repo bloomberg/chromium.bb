@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
@@ -18,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 #include "content/browser/site_instance_impl.h"
@@ -63,18 +66,12 @@ namespace {
 enum CorbExpectations {
   kShouldBeBlocked = 1 << 0,
   kShouldBeSniffed = 1 << 1,
-  kShouldLogContentLengthUma = 1 << 2,
 
   kShouldBeAllowedWithoutSniffing = 0,
   kShouldBeBlockedWithoutSniffing = kShouldBeBlocked,
   kShouldBeSniffedAndAllowed = kShouldBeSniffed,
   kShouldBeSniffedAndBlocked = kShouldBeSniffed | kShouldBeBlocked,
 };
-
-CorbExpectations operator|(CorbExpectations a, CorbExpectations b) {
-  return static_cast<CorbExpectations>(static_cast<int>(a) |
-                                       static_cast<int>(b));
-}
 
 std::ostream& operator<<(std::ostream& os, const CorbExpectations& value) {
   if (value == 0) {
@@ -87,8 +84,6 @@ std::ostream& operator<<(std::ostream& os, const CorbExpectations& value) {
     os << "kShouldBeBlocked ";
   if (0 != (value & kShouldBeSniffed))
     os << "kShouldBeSniffed ";
-  if (0 != (value & kShouldLogContentLengthUma))
-    os << "kShouldLogContentLengthUma ";
   os << ")";
   return os;
 }
@@ -117,30 +112,19 @@ void InspectHistograms(
         expected_lock_compatibility, 1);
   }
 
-  std::string bucket;
   CorbMimeType expected_mime_type = CorbMimeType::kInvalidMimeType;
   if (base::MatchPattern(resource_name, "*.html")) {
-    bucket = "HTML";
     expected_mime_type = CorbMimeType::kHtml;
   } else if (base::MatchPattern(resource_name, "*.xml")) {
-    bucket = "XML";
     expected_mime_type = CorbMimeType::kXml;
   } else if (base::MatchPattern(resource_name, "*.json")) {
-    bucket = "JSON";
     expected_mime_type = CorbMimeType::kJson;
   } else if (base::MatchPattern(resource_name, "*.txt")) {
-    bucket = "Plain";
     expected_mime_type = CorbMimeType::kPlain;
   } else if (base::MatchPattern(resource_name, "*.zip") ||
              base::MatchPattern(resource_name, "*.pdf")) {
-    // SiteIsolation.XSD.Browser.Blocked* histograms are only logged from the
-    // pre-kNetworkService code.  Because of this we did not add
-    // SiteIsolation.XSD.Browser.Blocked.NonSniffed histogram.  An empty
-    // |bucket| value indicates that the test should not expect a histogram.
-    bucket = "";
     expected_mime_type = CorbMimeType::kNeverSniffed;
   } else {
-    bucket = "Others";
     expected_mime_type = CorbMimeType::kOthers;
   }
 
@@ -150,27 +134,8 @@ void InspectHistograms(
   base::HistogramTester::CountsMap expected_counts;
   std::string base = "SiteIsolation.XSD.Browser";
   expected_counts[base + ".Action"] = 2;
-  if ((base::MatchPattern(resource_name, "*prefixed*") || bucket == "Others") &&
-      (0 != (expectations & kShouldBeBlocked)) && !is_restricted_uma_expected) {
-    expected_counts[base + ".BlockedForParserBreaker"] = 1;
-  }
-  if (0 != (expectations & kShouldBeSniffed))
-    expected_counts[base + ".BytesReadForSniffing"] = 1;
-  if (0 != (expectations & kShouldBeBlocked && !is_restricted_uma_expected)) {
-    expected_counts[base + ".Blocked"] = 1;
-    if (!bucket.empty())
-      expected_counts[base + ".Blocked." + bucket] = 1;
-  }
   if (0 != (expectations & kShouldBeBlocked)) {
     expected_counts[base + ".Blocked.CanonicalMimeType"] = 1;
-    expected_counts[base + ".Blocked.ContentLength.WasAvailable"] = 1;
-    bool should_have_content_length =
-        0 != (expectations & kShouldLogContentLengthUma);
-    histograms.ExpectBucketCount(base + ".Blocked.ContentLength.WasAvailable",
-                                 should_have_content_length, 1);
-
-    if (should_have_content_length)
-      expected_counts[base + ".Blocked.ContentLength.ValueIfAvailable"] = 1;
   }
 
   // Make sure that the expected metrics, and only those metrics, were
@@ -186,18 +151,6 @@ void InspectHistograms(
                 testing::ElementsAre(
                     base::Bucket(static_cast<int>(expected_mime_type), 1)))
         << "The wrong CorbMimeType bucket was incremented.";
-    if (!is_restricted_uma_expected) {
-      EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked"),
-                  testing::ElementsAre(
-                      base::Bucket(static_cast<int>(resource_type), 1)))
-          << "The wrong Blocked bucket was incremented.";
-      if (!bucket.empty()) {
-        EXPECT_THAT(histograms.GetAllSamples(base + ".Blocked." + bucket),
-                    testing::ElementsAre(
-                        base::Bucket(static_cast<int>(resource_type), 1)))
-            << "The wrong Blocked bucket was incremented.";
-      }
-    }
   }
 
   // SiteIsolation.XSD.Browser.Action should always include kResponseStarted.
@@ -221,6 +174,15 @@ void InspectHistograms(
                                static_cast<int>(expected_action), 1);
 }
 
+// Gets contents of a file at //content/test/data/<dir>/<file>.
+std::string GetTestFileContents(const char* dir, const char* file) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  base::FilePath path = GetTestFilePath(dir, file);
+  std::string result;
+  EXPECT_TRUE(ReadFileToString(path, &result));
+  return result;
+}
+
 // Helper for intercepting a resource request to the given URL and capturing the
 // response headers and body.
 //
@@ -242,7 +204,7 @@ class RequestInterceptor {
   }
 
   ~RequestInterceptor() {
-    WaitForCleanUpOnIOThread(
+    WaitForCleanUpOnInterceptorThread(
         network::ResourceResponseHead(), "",
         network::URLLoaderCompletionStatus(net::ERR_NOT_IMPLEMENTED));
   }
@@ -261,8 +223,8 @@ class RequestInterceptor {
     }
 
     // Wait until IO cleanup completes.
-    WaitForCleanUpOnIOThread(test_client_.response_head(), body_,
-                             test_client_.completion_status());
+    WaitForCleanUpOnInterceptorThread(test_client_.response_head(), body_,
+                                      test_client_.completion_status());
 
     // Mark the request as completed (for DCHECK purposes).
     request_completed_ = true;
@@ -286,7 +248,8 @@ class RequestInterceptor {
     return body_;
   }
 
-  void Verify(CorbExpectations expectations) {
+  void Verify(CorbExpectations expectations,
+              const std::string& expected_resource_body) {
     if (0 != (expectations & kShouldBeBlocked)) {
       ASSERT_EQ(net::OK, completion_status().error_code);
 
@@ -303,7 +266,9 @@ class RequestInterceptor {
       // Verify that the console message would have been printed.
       EXPECT_TRUE(completion_status().should_report_corb_blocking);
     } else {
+      ASSERT_EQ(net::OK, completion_status().error_code);
       EXPECT_FALSE(completion_status().should_report_corb_blocking);
+      EXPECT_EQ(expected_resource_body, response_body());
     }
   }
 
@@ -311,8 +276,8 @@ class RequestInterceptor {
     request_initiator_to_inject_ = request_initiator;
   }
 
-  void InjectFetchMode(network::mojom::FetchRequestMode fetch_mode) {
-    fetch_mode_to_inject_ = fetch_mode;
+  void InjectFetchMode(network::mojom::RequestMode request_mode) {
+    request_mode_to_inject_ = request_mode;
   }
 
  private:
@@ -357,7 +322,6 @@ class RequestInterceptor {
   }
 
   bool InterceptorCallback(URLLoaderInterceptor::RequestParams* params) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(params);
 
     if (url_to_intercept_ != params->url_request.url)
@@ -367,12 +331,13 @@ class RequestInterceptor {
     if (request_intercepted_)
       return false;
     request_intercepted_ = true;
+    interceptor_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
     // Modify |params| if requested.
     if (request_initiator_to_inject_.has_value())
       params->url_request.request_initiator = request_initiator_to_inject_;
-    if (fetch_mode_to_inject_.has_value())
-      params->url_request.fetch_request_mode = fetch_mode_to_inject_.value();
+    if (request_mode_to_inject_.has_value())
+      params->url_request.mode = request_mode_to_inject_.value();
 
     // Inject |test_client_| into the request.
     DCHECK(!original_client_);
@@ -386,30 +351,32 @@ class RequestInterceptor {
     return false;
   }
 
-  void WaitForCleanUpOnIOThread(network::ResourceResponseHead response_head,
-                                std::string response_body,
-                                network::URLLoaderCompletionStatus status) {
+  void WaitForCleanUpOnInterceptorThread(
+      network::ResourceResponseHead response_head,
+      std::string response_body,
+      network::URLLoaderCompletionStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (io_cleanup_done_)
+    if (cleanup_done_)
       return;
 
-    base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&RequestInterceptor::CleanUpOnIOThread,
-                       base::Unretained(this), response_head, response_body,
-                       status),
-        run_loop.QuitClosure());
-    run_loop.Run();
+    if (interceptor_task_runner_) {
+      base::RunLoop run_loop;
+      interceptor_task_runner_->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(&RequestInterceptor::CleanUpOnInterceptorThread,
+                         base::Unretained(this), response_head, response_body,
+                         status),
+          run_loop.QuitClosure());
+      run_loop.Run();
+    }
 
-    io_cleanup_done_ = true;
+    cleanup_done_ = true;
   }
 
-  void CleanUpOnIOThread(network::ResourceResponseHead response_head,
-                         std::string response_body,
-                         network::URLLoaderCompletionStatus status) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  void CleanUpOnInterceptorThread(network::ResourceResponseHead response_head,
+                                  std::string response_body,
+                                  network::URLLoaderCompletionStatus status) {
     if (!request_intercepted_)
       return;
 
@@ -439,7 +406,7 @@ class RequestInterceptor {
   URLLoaderInterceptor interceptor_;
 
   base::Optional<url::Origin> request_initiator_to_inject_;
-  base::Optional<network::mojom::FetchRequestMode> fetch_mode_to_inject_;
+  base::Optional<network::mojom::RequestMode> request_mode_to_inject_;
 
   // |test_client_ptr_info_| below is used to transition results of
   // |test_client_.CreateInterfacePtr()| into IO thread.
@@ -449,11 +416,12 @@ class RequestInterceptor {
   network::TestURLLoaderClient test_client_;
   std::string body_;
   bool request_completed_ = false;
-  bool io_cleanup_done_ = false;
+  bool cleanup_done_ = false;
 
-  // IO thread state:
+  // Interceptor thread state:
   network::mojom::URLLoaderClientPtr original_client_;
   bool request_intercepted_ = false;
+  scoped_refptr<base::SingleThreadTaskRunner> interceptor_task_runner_;
   network::mojom::URLLoaderClientPtr test_client_ptr_;
   std::unique_ptr<mojo::Binding<network::mojom::URLLoaderClient>>
       test_client_binding_;
@@ -499,13 +467,33 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
   }
 
   void VerifyImgRequest(std::string resource, CorbExpectations expectations) {
-    SCOPED_TRACE("... while testing via <img> tag");
+    // Test from a http: origin.
+    VerifyImgRequest(resource, expectations,
+                     GURL("http://foo.com/title1.html"));
 
-    // Navigate to the test page while request interceptor is active.
+    // Pre-NetworkService CORB implementation doesn't have an equivalent of
+    // URLLoaderFactoryParams::is_corb_enabled and therefore there is no way to
+    // turn off CORB only when allow_universal_access_from_file_urls is false.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      // Test from a file: origin.
+      VerifyImgRequest(resource, expectations,
+                       GetTestUrl(nullptr, "title1.html"));
+    }
+  }
+
+  void VerifyImgRequest(std::string resource,
+                        CorbExpectations expectations,
+                        GURL page_url) {
     GURL resource_url(
         std::string("http://cross-origin.com/site_isolation/" + resource));
+    SCOPED_TRACE(
+        base::StringPrintf("... while testing via <img src='%s'> from %s",
+                           resource_url.spec().c_str(),
+                           url::Origin::Create(page_url).Serialize().c_str()));
+
+    // Navigate to the test page while request interceptor is active.
     RequestInterceptor interceptor(resource_url);
-    EXPECT_TRUE(NavigateToURL(shell(), GURL("http://foo.com/title1.html")));
+    EXPECT_TRUE(NavigateToURL(shell(), page_url));
 
     // Make sure that base::HistogramTester below starts with a clean slate.
     FetchHistogramsFromChildProcesses();
@@ -521,7 +509,8 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
 
     // Verify...
     InspectHistograms(histograms, expectations, resource, ResourceType::kImage);
-    interceptor.Verify(expectations);
+    interceptor.Verify(expectations,
+                       GetTestFileContents("site_isolation", resource.c_str()));
   }
 
  private:
@@ -531,6 +520,7 @@ class CrossSiteDocumentBlockingTestBase : public ContentBrowserTest {
 enum class TestMode {
   kWithoutOutOfBlinkCors,
   kWithOutOfBlinkCors,
+  kWithoutCORBProtectionSniffing,
 };
 class CrossSiteDocumentBlockingTest
     : public CrossSiteDocumentBlockingTestBase,
@@ -546,6 +536,9 @@ class CrossSiteDocumentBlockingTest
         scoped_feature_list_.InitAndEnableFeature(
             network::features::kOutOfBlinkCors);
         break;
+      case TestMode::kWithoutCORBProtectionSniffing:
+        scoped_feature_list_.InitAndDisableFeature(
+            network::features::kCORBProtectionSniffing);
     }
   }
   ~CrossSiteDocumentBlockingTest() override = default;
@@ -556,7 +549,7 @@ class CrossSiteDocumentBlockingTest
   DISALLOW_COPY_AND_ASSIGN(CrossSiteDocumentBlockingTest);
 };
 
-IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImagesWithSniffing) {
   embedded_test_server()->StartAcceptingConnections();
 
   // The following are files under content/test/data/site_isolation. All
@@ -583,11 +576,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                      "json-prefixed-4.js",
                                      "nosniff.json.js",
                                      "nosniff.json-prefixed.js"};
-  for (const char* resource : blocked_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
-    VerifyImgRequest(resource,
-                     kShouldBeSniffedAndBlocked | kShouldLogContentLengthUma);
-  }
+  for (const char* resource : blocked_resources)
+    VerifyImgRequest(resource, kShouldBeSniffedAndBlocked);
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImagesNoSniffing) {
+  embedded_test_server()->StartAcceptingConnections();
 
   // These files should be disallowed without sniffing.
   //   nosniff.*   - Won't sniff correctly, but blocked because of nosniff.
@@ -599,10 +593,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
   // ChromeContentBrowserClient::OnNetworkServiceCreated.
   const char* nosniff_blocked_resources[] = {
       "nosniff.html", "nosniff.xml", "nosniff.json", "nosniff.txt", "fake.zip"};
-  for (const char* resource : nosniff_blocked_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
+  for (const char* resource : nosniff_blocked_resources)
     VerifyImgRequest(resource, kShouldBeBlockedWithoutSniffing);
-  }
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AllowImagesWithSniffing) {
+  embedded_test_server()->StartAcceptingConnections();
 
   // These files are allowed for XHR under the document blocking policy because
   // the sniffing logic determines they are not actually documents.
@@ -629,10 +625,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockImages) {
                                            "nosniff.json-list.js",
                                            "js-html-polyglot.html",
                                            "js-html-polyglot2.html"};
-  for (const char* resource : sniff_allowed_resources) {
-    SCOPED_TRACE(base::StringPrintf("... while testing page: %s", resource));
+  for (const char* resource : sniff_allowed_resources)
     VerifyImgRequest(resource, kShouldBeSniffedAndAllowed);
-  }
 }
 
 // This test covers an aspect of Cross-Origin-Resource-Policy (CORP, different
@@ -876,8 +870,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that the response completed successfully, was blocked and was logged
   // as having initially a non-empty body.
-  interceptor.Verify(kShouldBeBlockedWithoutSniffing |
-                     kShouldLogContentLengthUma);
+  interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                     "no resource body needed for blocking verification");
 
   // Verify that most response headers have been removed by CORB.
   const std::string& headers =
@@ -967,8 +961,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, SharedWorker) {
   // only possible when NetworkService is enabled).
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     interceptor.WaitForRequestCompletion();
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing |
-                       kShouldLogContentLengthUma);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                       "no resource body needed for blocking verification");
   }
 
   // Wait for fetch result (really needed only without NetworkService, if no
@@ -1057,7 +1051,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
                       "nosniff.json", ResourceType::kImage,
                       special_request_initiator_origin_lock_check_for_appcache);
-    interceptor.Verify(kShouldBeBlockedWithoutSniffing);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing,
+                       "no resource body needed for blocking verification");
   }
 }
 
@@ -1152,7 +1147,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 }
 
 // Tests that renderer will be terminated if it asks AppCache to initiate a
-// cross-origin request with network::mojom::FetchRequestMode::kNavigate.
+// cross-origin request with network::mojom::RequestMode::kNavigate.
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
                        AppCache_NoNavigationsEnforcement) {
   embedded_test_server()->StartAcceptingConnections();
@@ -1176,7 +1171,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // RenderFrameHostImpl is created.
   GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
   RequestInterceptor interceptor(cross_site_url);
-  interceptor.InjectFetchMode(network::mojom::FetchRequestMode::kNavigate);
+  interceptor.InjectFetchMode(network::mojom::RequestMode::kNavigate);
 
   // Load the main page twice. The second navigation should have AppCache
   // initialized for the page.
@@ -1372,10 +1367,12 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
       // NetworkService enforices |request_initiator_site_lock| for CORB,
       // which means that legitimate fetches from HTML Imported scripts may get
       // incorrectly blocked.
-      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing);
+      interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing,
+                         "no resource body needed for blocking verification");
     } else {
       // Without |request_initiator_site_lock| no CORB blocking is expected.
-      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+      interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                         GetTestFileContents("site_isolation", "nosniff.json"));
     }
   }
 }
@@ -1439,7 +1436,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
     // |request_initiator| is same-origin (foo.com), and so the fetch should not
     // be blocked by CORB.
-    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                       GetTestFileContents("site_isolation", "nosniff.json"));
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
@@ -1505,7 +1503,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 
     // |request_initiator| is same-origin (foo.com), and so the fetch should not
     // be blocked by CORB.
-    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing);
+    interceptor.Verify(CorbExpectations::kShouldBeAllowedWithoutSniffing,
+                       GetTestFileContents("site_isolation", "nosniff.json"));
     std::string fetch_result;
     EXPECT_TRUE(msg_queue.WaitForMessage(&fetch_result));
     EXPECT_THAT(fetch_result, ::testing::HasSubstr("BODY: runMe"));
@@ -1519,6 +1518,11 @@ INSTANTIATE_TEST_SUITE_P(WithoutOutOfBlinkCors,
 INSTANTIATE_TEST_SUITE_P(WithOutOfBlinkCors,
                          CrossSiteDocumentBlockingTest,
                          ::testing::Values(TestMode::kWithOutOfBlinkCors));
+
+INSTANTIATE_TEST_SUITE_P(
+    WithoutCORBProtectionSniffing,
+    CrossSiteDocumentBlockingTest,
+    ::testing::Values(TestMode::kWithoutCORBProtectionSniffing));
 
 // This test class sets up a service worker that can be used to try to respond
 // to same-origin requests with cross-origin responses.

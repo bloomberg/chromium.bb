@@ -23,7 +23,7 @@ see the [Linux instructions](linux_build_instructions.md) for some suggestions.
 
 Building the Android client on Windows or Mac is not supported and doesn't work.
 
-## Install `depot_tools`
+## Install depot\_tools
 
 Clone the `depot_tools` repository:
 
@@ -158,7 +158,7 @@ ro.product.cpu.abi`:
 *** promo
 `arm` and `x86` may optionally be used instead of `arm64` and `x64` for
 non-WebView targets. This is also allowed for Monochrome, but only when not set
-as WebView the provider.
+as the WebView provider.
 ***
 
 ## Build Chromium

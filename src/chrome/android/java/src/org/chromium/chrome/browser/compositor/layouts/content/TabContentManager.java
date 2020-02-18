@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -19,11 +20,14 @@ import android.view.ViewGroup.MarginLayoutParams;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,6 +37,8 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.display.DisplayAndroid;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +48,20 @@ import java.util.List;
  */
 @JNINamespace("android")
 public class TabContentManager {
+    // These are used for UMA logging, so append only. Please update the
+    // GridTabSwitcherThumbnailFetchingResult enum in enums.xml if these change.
+    @IntDef({ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.GOT_ETC1,
+            ThumbnailFetchingResult.GOT_NOTHING})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ThumbnailFetchingResult {
+        int GOT_JPEG = 0;
+        int GOT_ETC1 = 1;
+        int GOT_NOTHING = 2;
+        int NUM_ENTRIES = 3;
+    }
+    private static final String UMA_THUMBNAIL_FETCHING_RESULT =
+            "GridTabSwitcher.ThumbnailFetchingResult";
+
     private final float mThumbnailScale;
     private final int mFullResThumbnailsMaxSize;
     private final ContentOffsetProvider mContentOffsetProvider;
@@ -201,7 +221,12 @@ public class TabContentManager {
             return null;
         }
 
-        View viewToDraw = isNativeViewShowing ? tab.getContentView() : nativePage.getView();
+        View viewToDraw = null;
+        if (isNativeViewShowing) {
+            viewToDraw = tab.getContentView();
+        } else if (!(nativePage instanceof FrozenNativePage)) {
+            viewToDraw = nativePage.getView();
+        }
         if (viewToDraw == null || viewToDraw.getWidth() == 0 || viewToDraw.getHeight() == 0) {
             return null;
         }
@@ -295,24 +320,53 @@ public class TabContentManager {
         });
     }
 
+    /**
+     * @param tab The {@link Tab} the thumbnail is for.
+     * @return The file storing the thumbnail in ETC1 format of a certain {@link Tab}.
+     */
+    public static File getTabThumbnailFileEtc1(Tab tab) {
+        return new File(PathUtils.getThumbnailCacheDirectory(), String.valueOf(tab.getId()));
+    }
+
+    /**
+     * @param tab The {@link Tab} the thumbnail is for.
+     * @return The file storing the thumbnail in JPEG format of a certain {@link Tab}.
+     */
+    public static File getTabThumbnailFileJpeg(Tab tab) {
+        return new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+    }
+
     private void getTabThumbnailFromDisk(@NonNull Tab tab, @NonNull Callback<Bitmap> callback) {
         // Try JPEG thumbnail first before using the more costly nativeGetEtc1TabThumbnail.
         new AsyncTask<Bitmap>() {
             @Override
             public Bitmap doInBackground() {
-                File file = new File(PathUtils.getThumbnailCacheDirectory(), tab.getId() + ".jpeg");
+                File file = getTabThumbnailFileJpeg(tab);
                 if (!file.isFile()) return null;
                 return BitmapFactory.decodeFile(file.getPath());
             }
 
             @Override
-            public void onPostExecute(Bitmap bitmap) {
-                if (bitmap != null) {
-                    callback.onResult(bitmap);
+            public void onPostExecute(Bitmap jpeg) {
+                if (jpeg != null) {
+                    RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                            ThumbnailFetchingResult.GOT_JPEG, ThumbnailFetchingResult.NUM_ENTRIES);
+                    callback.onResult(jpeg);
                     return;
                 }
                 if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
-                nativeGetEtc1TabThumbnail(mNativeTabContentManager, tab.getId(), callback);
+                nativeGetEtc1TabThumbnail(mNativeTabContentManager, tab.getId(), (etc1) -> {
+                    if (etc1 != null) {
+                        RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                                ThumbnailFetchingResult.GOT_ETC1,
+                                ThumbnailFetchingResult.NUM_ENTRIES);
+                    } else {
+                        RecordHistogram.recordEnumeratedHistogram(UMA_THUMBNAIL_FETCHING_RESULT,
+                                ThumbnailFetchingResult.GOT_NOTHING,
+                                ThumbnailFetchingResult.NUM_ENTRIES);
+                    }
+                    callback.onResult(etc1);
+                });
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -401,7 +455,6 @@ public class TabContentManager {
         invalidateIfChanged(id, url);
     }
 
-
     /**
      * Update the priority-ordered list of visible tabs.
      * @param priority The list of tab ids ordered in terms of priority.
@@ -421,7 +474,6 @@ public class TabContentManager {
         }
     }
 
-
     /**
      * Removes a thumbnail of the tab whose id is |tabId|.
      * @param tabId The Id of the tab whose thumbnail is being removed.
@@ -430,6 +482,16 @@ public class TabContentManager {
         if (mNativeTabContentManager != 0) {
             nativeRemoveTabThumbnail(mNativeTabContentManager, tabId);
         }
+    }
+
+    @VisibleForTesting
+    public void setCaptureMinRequestTimeForTesting(int timeMs) {
+        nativeSetCaptureMinRequestTimeForTesting(mNativeTabContentManager, timeMs);
+    }
+
+    @VisibleForTesting
+    public int getPendingReadbacksForTesting() {
+        return nativeGetPendingReadbacksForTesting(mNativeTabContentManager);
     }
 
     @CalledByNative
@@ -461,5 +523,8 @@ public class TabContentManager {
     private native void nativeRemoveTabThumbnail(long nativeTabContentManager, int tabId);
     private native void nativeGetEtc1TabThumbnail(
             long nativeTabContentManager, int tabId, Callback<Bitmap> callback);
+    private native void nativeSetCaptureMinRequestTimeForTesting(
+            long nativeTabContentManager, int timeMs);
+    private native int nativeGetPendingReadbacksForTesting(long nativeTabContentManager);
     private static native void nativeDestroy(long nativeTabContentManager);
 }

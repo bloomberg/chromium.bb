@@ -32,13 +32,13 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -71,7 +71,7 @@ HTMLElement* HTMLLabelElement::control() const {
     return nullptr;
 
   if (Element* element = GetTreeScope().getElementById(control_id)) {
-    if (auto* html_element = ToHTMLElementOrNull(*element)) {
+    if (auto* html_element = DynamicTo<HTMLElement>(*element)) {
       if (html_element->IsLabelable()) {
         if (!html_element->IsFormControlElement()) {
           UseCounter::Count(
@@ -96,10 +96,10 @@ HTMLFormElement* HTMLLabelElement::form() const {
   return nullptr;
 }
 
-void HTMLLabelElement::SetActive(bool down) {
-  if (down != IsActive()) {
+void HTMLLabelElement::SetActive(bool active) {
+  if (active != IsActive()) {
     // Update our status first.
-    HTMLElement::SetActive(down);
+    HTMLElement::SetActive(active);
   }
 
   // Also update our corresponding control.
@@ -108,10 +108,10 @@ void HTMLLabelElement::SetActive(bool down) {
     control_element->SetActive(IsActive());
 }
 
-void HTMLLabelElement::SetHovered(bool over) {
-  if (over != IsHovered()) {
+void HTMLLabelElement::SetHovered(bool hovered) {
+  if (hovered != IsHovered()) {
     // Update our status first.
-    HTMLElement::SetHovered(over);
+    HTMLElement::SetHovered(hovered);
   }
 
   // Also update our corresponding control.

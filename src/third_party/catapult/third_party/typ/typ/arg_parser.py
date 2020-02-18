@@ -98,6 +98,8 @@ class ArgumentParser(argparse.ArgumentParser):
             self.add_argument('--metadata', action='append', default=[],
                               help=('Optional key=value metadata that will '
                                     'be included in the results.'))
+            self.add_argument('--repository-absolute-path', default='', action='store',
+                              help=('Specifies the absolute path of the repository.'))
             self.add_argument('--test-results-server',
                               help=('If specified, uploads the full results '
                                     'to this server.'))
@@ -204,6 +206,10 @@ class ArgumentParser(argparse.ArgumentParser):
                 help='Pass a double-colon-separated ("::") list of exact test '
                 'names or globs, to run just that subset of tests. fnmatch will '
                 'be used to match globs to test names')
+            self.add_argument(
+                '--partial-match-filter', type=str, default=[], action='append',
+                help='Pass a string and Typ will run tests whose names '
+                     'partially match the passed string')
 
 
     def parse_args(self, args=None, namespace=None):
